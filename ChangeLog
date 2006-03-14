@@ -1,3 +1,55 @@
+2006-03-14  James Gallagher <jgallagher@opendap.org>
+
+	I changed the way DODSFilter handles the compression sub-process.
+	The class was caling waitpid on the child process which was blocking
+	even after the child had exited. I found that calling fflush on
+	the FILE* where teh server is writing the response is sufficient
+	to guarantee that all the data from the compressor is written w/o
+	using waitpod. This is a fix for ticket #335
+
+2006-03-10  James Gallagher <jgallagher@opendap.org>
+
+	Added a new public method to Connect read_data_no_mime() which can
+	be used to read from a file. This method read a DAP2 data object
+	from a file but does not try to parse MIME headers before reading
+	the data. I modified getdap.cc so that it uses this when reading
+	from a file that's not stdin.
+
+2006-03-10  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Updated for 3.6.1
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Bumped up the version to 3.6.1. Files affected: configure.ac libdap.spec,
+	INSTALL, README, NEWS.
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Updated tests/expr-testsuite/expr-test.0/test.c by changing its name to
+	test.d so that Eclipse's indexer won't gag on it.
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	removed unused test directories expr-testsuite and grid-func-testsuite
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Added -t option to DODSFilter.cc. This was left out by mistake.
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Changed tests from dodsdev to test.opendap.org
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2006-03-09  James Gallagher <jgallagher@opendap.org>
 
 	Bumped up the version to 3.6.1. Files affected: configure.ac libdap.spec,

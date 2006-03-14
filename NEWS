@@ -1,6 +1,17 @@
 
 $Id$
 
+News for version 3.6.2
+
+This version includes two bug fixes. 
+
+1. The library can now correctly read binary data objects saved using the web
+interface. Before this was very hard to do. The utility getdap has been
+modified so that it can doced these saved '.dods' files.
+
+2. The DODSFilter class used to build all of our data handlers no longer 
+blocks when returning a data object to a web browser. 
+
 News for version 3.6.1
 
 Fixed a bug in deflate.c: Some comments used the C++ style comments and gcc
