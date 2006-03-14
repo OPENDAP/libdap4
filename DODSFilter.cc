@@ -87,10 +87,15 @@ options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
          -t <seconds>: Timeout the handler after <seconds>.\n\
 ";
 
+#if 0
+// Removed the call to waitpid in send_data() because I think calling fflush
+// addresses the problem wait() was supposed to solve and I think calling
+// wait() is the root of ticket #335. jheg 3/10/06
 #ifdef WIN32
 #define WAITPID(pid) while(_cwait(NULL, pid, NULL) > 0)
 #else
 #define WAITPID(pid) while(waitpid(pid, 0, 0) > 0)
+#endif
 #endif
 
 /** Create an instance of DODSFilter using the command line
@@ -732,7 +737,7 @@ DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location,
 	    set_mime_text(out, dods_das, d_cgi_ver, x_plain, das_lmt);
 	das.print(out);
     }
-    fflush( stdout ) ;
+    fflush( out ) ;
 }
 
 void
@@ -781,7 +786,7 @@ DODSFilter::send_dds(FILE *out, DDS &dds, bool constrained,
 	    dds.print(out);
     }
 
-    fflush( stdout ) ;
+    fflush( out ) ;
 }
 
 void
@@ -905,10 +910,16 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location,
     else
 	dataset_constraint(dds, data_stream, data_lmt);
     
-    //fclose(data_stream);
     fflush(data_stream);
-    if (compress)
+#if 0
+    // This call seems to be why requests for data in the browser hang for so
+    // long. I think it might have been added to fix a problem that was then
+    // really fixed by calling fflush() (which was added by Patrick West). 
+    // jhrg 3/10/06
+    if (compress) {
 	WAITPID(childpid);
+    }
+#endif
 }
 
 /** Send the DDX response. The DDX never contains data, instead it holds a
