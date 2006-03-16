@@ -6,7 +6,7 @@ News for version 3.6.2
 This version includes two bug fixes. 
 
 1. The library can now correctly reads binary data objects saved using the web
-interface. Before this was very hard to do. The utility getdap has been
+interface. Before, this was very hard to do. The utility getdap has been
 modified so that it can docode these saved '.dods' files.
 
 2. The DODSFilter class used to build all of our data handlers no longer 
