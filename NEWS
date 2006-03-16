@@ -5,12 +5,15 @@ News for version 3.6.2
 
 This version includes two bug fixes. 
 
-1. The library can now correctly read binary data objects saved using the web
+1. The library can now correctly reads binary data objects saved using the web
 interface. Before this was very hard to do. The utility getdap has been
-modified so that it can doced these saved '.dods' files.
+modified so that it can docode these saved '.dods' files.
 
 2. The DODSFilter class used to build all of our data handlers no longer 
-blocks when returning a data object to a web browser. 
+blocks when returning a data object to a web browser. This fixes a problem
+where the 'Get Binary' button on the data server's web interface would hang
+seemingly forever. In fact it did return the data blob, but only after the 
+blocked handler had timed out.
 
 News for version 3.6.1
 
