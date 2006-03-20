@@ -357,12 +357,15 @@ setup:
 	@-echo /*  temp file, feel free to scratch it.                   */ >> unistd.h
 	@-echo #include "io.h" >> unistd.h
 
+# Win32 libnc-dap requires the gl\regex.h.  Under unix builds, it is simply
+# assumed to be on the machine already.
 install: installMT installMD
 	copy $(OBJDIR)\MT\getdap.exe $(INSTALLBINDIR)
 	copy $(OBJDIR)\MT\deflate.exe $(INSTALLETCDIR)
 	copy dods-datatypes.h $(INSTALLINCDIR)
 	copy $(SRCDIR)\*.h $(INSTALLINCDIR)
 	copy $(SRCDIR)\GNU\*.h $(INSTALLINCDIR)\GNU
+	copy $(SRCDIR)\gl\regex.h $(INSTALLINCDIR)
 
 installMT:
 	@-copy $(OBJDIR)\MT\libdapMT.lib $(INSTALLLIBDIR)
