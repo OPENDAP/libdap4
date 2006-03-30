@@ -1,0 +1,64 @@
+This is from an email message from Martin Peschke 
+<Martin.Peschke at noaa dot gov>. Matrin discribes building the OPeNDAP data
+server, which requires libdap, so these instructions should work for the library
+although there maybe some steps that are not needed if you're building just 
+libdap. The instructionspertain to libdap 3.6.2.
+
+The AIX Version should be “powerpc-ibm-aix5.2.0.0”
+The xlc_r and xlC_r should be “VisualAge C++ Professional / C for AIX Compiler,
+Version 6.”
+The system has perl version 5.8.0
+
+I used the following packages:
+zlib-1.2.3
+curl-7.15.1
+libxml2-2.6.23
+libdap-3.6.2
+netcdf-3.6.0-p1
+netcdf_handler-3.6.0
+dap-server-3.6.1
+
+I used for most of the packages the following setup:
+
+export PATH=$PATH:<your opendap directory>/bin:\
+<your opendap directory>/lib:<your opendap directory>/include
+export CC="xlc_r -q64 /usr/local/lib/libmmalloc.a"
+export CXX="xlC_r -qlanglvl=extended -q64 /usr/local/lib/libmmalloc.a"
+export OBJECT_MODE=64
+./configure --prefix=<your opendap directory>
+make
+make install
+
+I encountered a few problems:
+
+The first one is that I had to uncomment the rpl_malloc in libdap-3.6.2:
+
+Open the file "config.h" look for the following line:
+#define malloc rpl_malloc
+change this line to:
+/* #define malloc rpl_malloc */
+
+The next one is that I had to manually link deflate in libdap-3.6.2 because
+make could not find the zlib library.
+
+For the netcdf_handler-3.6.0, I had to add a new parameter for the
+configuration:
+
+./configure --prefix=<your opendap directory> --with-netcdf=<your opendap directory>
+
+Also in netcdf_handler-3.6.0, I had to change the configure file to be more
+C conform and not C++.  Please see the included discussion.
+
+For the dap-server-3.6.1, I extended the export for CXX to:
+
+export CXX="xlC_r -qlanglvl=extended -q64 -I<your opendap directory>/include /usr/local/lib/libmmalloc.a"
+
+And then I changed the file dap-server.rc to point to the right curl
+executable and that only netcdf is available.
+
+The last thing what I did, I changed the DODS_Dispatch.pm to a specified port.
+I believe that this change is more a site specific change and a firewall
+problem.
+
+Hope this helps.
+    
