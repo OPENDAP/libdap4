@@ -40,8 +40,11 @@
 #include "Error.h"
 #endif
 
+#if 0
+// Removed when splitting server code from libdap. 3/30/06
 #ifndef _gseclause_h
 #include "GSEClause.h"
+#endif
 #endif
 
 #define YYDEBUG 1
@@ -87,26 +90,6 @@ struct parser_arg {
     void set_status(int val = 0) { _status = val; }
 };
 
-/** Argument to the GSE parser. Assumes all errors will be signalled by
-    throws; Error objects are not returned. */
-struct gse_arg {
-    GSEClause *_gsec;		// The gse parsed.
-    Grid *_grid;		// The Grid being constrained.
-    int _status;		// The parser's status.
-
-    gse_arg(): _gsec(0), _grid(0), _status(1) {}
-    gse_arg(Grid *g): _gsec(0), _grid(g), _status(1) {}
-    virtual ~gse_arg() {}
-
-    void set_gsec(GSEClause *gsec) { _gsec = gsec; }
-    GSEClause *get_gsec() { return _gsec; }
-    void set_grid(Grid *g) { _grid = g; }
-    Grid *get_grid() { return _grid; }
-    void set_status(int stat) { _status = stat; }
-    int get_status() { return _status; }
-};
-
-
 /** <tt>parser_error()</tt> generates error messages for the various
     parsers used by libdap. There are two versions of the
     function, one which takes a <tt>const char *message</tt> and a
@@ -128,10 +111,6 @@ struct gse_arg {
 //@{
 void parse_error(parser_arg *arg, const char *s, const int line_num = 0,
 		 const char *context = 0);
-#if character
-void parse_error(const char *s, const int line_num = 0, 
-		 const char *context = 0) throw (Error);
-#endif
 void parse_error(const string &msg, const int line_num, 
 		 const char *context = 0) throw (Error);
 //@}

@@ -354,9 +354,11 @@ public:
 
     void print_xml(FILE *out, bool constrained, const string &blob);
 
+#if OLD_DDS_TRANS_CODE
     bool send(const string &dataset, const string &constraint, FILE *out, 
 	      bool compressed = true, const string &cgi_ver = "",
 	      time_t lmt = 0);
+#endif
 
     void mark_all(bool state);
     bool mark(const string &name, bool state);

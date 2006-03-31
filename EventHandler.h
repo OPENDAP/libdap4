@@ -30,8 +30,8 @@
 
 #include <iostream>
 
-#include "Error.h"
-#include "cgi_util.h"
+//#include "Error.h"
+//#include "cgi_util.h"
 
 /** An abstract class which provides a hook method used by SignalHandler.
 

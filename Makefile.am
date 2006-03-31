@@ -22,7 +22,7 @@ TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 SUBDIRS = gl . tests 
 DIST_SUBDIRS = unit-tests gl tests
 
-lib_LTLIBRARIES = libdap.la 
+lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 
 bin_SCRIPTS = dap-config
 
@@ -30,16 +30,24 @@ bin_PROGRAMS = getdap
 
 sbin_PROGRAMS = deflate
 
-libdap_la_SOURCES = $(DAP_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(GNU_SRC)
+libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)
+libdapclient_la_SOURCES = $(CLIENT_SRC) 
+libdapserver_la_SOURCES = $(SERVER_SRC)
 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_LIBADD = gl/libgnu.la
 
-pkginclude_HEADERS = $(DAP_HDR) $(CLIENT_HDR) $(SERVER_HDR) $(GNU_HDR)
+libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
+libdapclient_la_LIBADD = gl/libgnu.la
+
+libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
+libdapserver_la_LIBADD = gl/libgnu.la
+
+pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
 noinst_HEADERS = config_dap.h
 
 getdap_SOURCES = getdap.cc
-getdap_LDADD = libdap.la
+getdap_LDADD = libdap.la libdapclient.la
 
 deflate_SOURCES = deflate.c
 
@@ -67,7 +75,7 @@ docs:
 
 grammarclean: clean
 	-rm *.tab.cc *.tab.h lex.*.cc
-	
+
 ###########################################################################
 
 # Build linux RPMs
@@ -103,45 +111,49 @@ GNU_HDR = GNU/builtin.h GNU/GetOpt.h GNU/GNURegex.h
 # future, make three different libraries. jhrg 
 
 GRAM_SRC = lex.das.cc das.tab.cc lex.dds.cc dds.tab.cc lex.expr.cc \
-	expr.tab.cc lex.Error.cc Error.tab.cc lex.gse_.cc gse.tab.cc 
+	expr.tab.cc lex.Error.cc Error.tab.cc
 
-DAP_SRC = $(GRAM_SRC) AttrTable.cc DAS.cc parser-util.cc escaping.cc	\
-	DDS.cc DataDDS.cc DDXParser.cc Clause.cc RValue.cc Error.cc	\
-	InternalErr.cc BaseType.cc Byte.cc Int32.cc Float64.cc		\
-	Str.cc Url.cc Vector.cc Array.cc Structure.cc Sequence.cc	\
-	Grid.cc UInt32.cc util.cc xdrutil_ppc.c ce_functions.cc		\
-	GSEClause.cc Int16.cc UInt16.cc Float32.cc Constructor.cc	\
-	PassiveByte.cc PassiveInt32.cc PassiveFloat64.cc PassiveStr.cc	\
-	PassiveUrl.cc PassiveUInt32.cc PassiveInt16.cc PassiveUInt16.cc	\
-	PassiveFloat32.cc PassiveArray.cc PassiveStructure.cc		\
-	util_mit.cc BaseTypeFactory.cc 
+DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
+	Byte.cc Int32.cc Float64.cc Str.cc Url.cc Vector.cc Array.cc	 \
+	Structure.cc Sequence.cc Grid.cc UInt32.cc Int16.cc UInt16.cc	 \
+	Float32.cc Constructor.cc					 \
+	PassiveByte.cc PassiveInt32.cc PassiveFloat64.cc PassiveStr.cc	 \
+	PassiveUrl.cc PassiveUInt32.cc PassiveInt16.cc PassiveUInt16.cc	 \
+	PassiveFloat32.cc PassiveArray.cc PassiveStructure.cc		 \
+	BaseTypeFactory.cc SignalHandler.cc Error.cc InternalErr.cc	 \
+	util.cc xdrutil_ppc.c parser-util.cc escaping.cc		 \
+	Clause.cc RValue.cc						 \
+	$(GRAM_SRC)
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
-	AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc
+	AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc  \
+	util_mit.cc ResponseTooBigErr.cc
 
-SERVER_SRC = SignalHandler.cc OPeNDAPFile.cc OPeNDAPDir.cc cgi_util.cc	\
-	DODSFilter.cc ResponseTooBigErr.cc  
+SERVER_SRC = DODSFilter.cc ce_functions.cc GSEClause.cc \
+	lex.gse_.cc gse.tab.cc OPeNDAPFile.cc OPeNDAPDir.cc cgi_util.cc
 
-DAP_HDR = escaping.h AttrTable.h DAS.h parser.h debug.h dods-limits.h	\
-	ce_functions.h Operators.h EventHandler.h DDS.h			\
-	DataDDS.h DDXParser.h DDXExceptions.h expr.h Clause.h RValue.h	\
-	Error.h InternalErr.h BaseType.h Byte.h Int32.h GSEClause.h	\
-	Constructor.h Float64.h Str.h Url.h Vector.h Array.h		\
-	Structure.h Sequence.h Grid.h UInt32.h util.h Int16.h UInt16.h	\
-	Float32.h dods-datatypes.h util_mit.h PassiveByte.h		\
-	PassiveInt32.h PassiveFloat64.h PassiveStr.h PassiveUrl.h	\
-	PassiveUInt32.h PassiveInt16.h PassiveUInt16.h			\
-	PassiveFloat32.h PassiveArray.h PassiveStructure.h		\
-	DODSResponseObject.h BaseTypeFactory.h
+DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
+	BaseType.h Byte.h Int32.h Float64.h Str.h Url.h Vector.h Array.h   \
+	Constructor.h Structure.h Sequence.h Grid.h UInt32.h Int16.h	   \
+	UInt16.h Float32.h						   \
+	PassiveByte.h PassiveInt32.h PassiveFloat64.h PassiveStr.h	   \
+	PassiveUrl.h PassiveUInt32.h PassiveInt16.h PassiveUInt16.h	   \
+	PassiveFloat32.h PassiveArray.h PassiveStructure.h		   \
+	DODSResponseObject.h BaseTypeFactory.h ObjectType.h EncodingType.h \
+	SignalHandler.h Operators.h Error.h InternalErr.h		   \
+	util.h escaping.h parser.h debug.h dods-limits.h dods-datatypes.h  \
+	expr.h Clause.h RValue.h
 
-CLIENT_HDR = ResponseTooBigErr.h RCReader.h Connect.h HTTPConnect.h	    \
-	ObjectType.h EncodingType.h HTTPCache.h HTTPCacheDisconnectedMode.h \
-	Response.h HTTPResponse.h HTTPCacheResponse.h AISConnect.h	    \
-	AISMerge.h AISExceptions.h AISDatabaseParser.h AISResources.h	    \
-	Resource.h HTTPCacheInterruptHandler.h PipeResponse.h StdinResponse.h
+CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
+	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		 \
+	Response.h HTTPResponse.h HTTPCacheResponse.h  PipeResponse.h	 \
+	StdinResponse.h SignalHandlerRegisteredErr.h ResponseTooBigErr.h \
+	AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h	 \
+	AISResources.h Resource.h
 
-SERVER_HDR = cgi_util.h DODSFilter.h SignalHandler.h OPeNDAPFile.h	\
-	OPeNDAPDir.h SignalHandlerRegisteredErr.h AlarmHandler.h
+SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h			\
+	OPeNDAPFile.h OPeNDAPDir.h					\
+	ce_functions.h  gse_parser.h GSEClause.h cgi_util.h util_mit.h 
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support

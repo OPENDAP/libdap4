@@ -38,6 +38,9 @@
 
 #include "GNURegex.h"		// GNU Regex class used for string =~ op.
 
+#include "parser.h"		// for ID_MAX
+#include "expr.tab.h"
+
 using namespace std;
 
 static unsigned

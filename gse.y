@@ -42,7 +42,7 @@ static char rcsid[] not_used = {"$Id$"};
 
 #include "Error.h"
 #include "GSEClause.h"
-#include "parser.h"
+#include "gse_parser.h"
 
 using std::cerr;
 using std::endl;

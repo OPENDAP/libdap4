@@ -46,9 +46,10 @@ static char rcsid[] not_used = {"$Id$"};
 #include "Sequence.h"
 #include "Grid.h"
 #include "Error.h"
+
 #include "GSEClause.h"
 
-#include "parser.h"
+#include "gse_parser.h"
 #include "gse.tab.h"
 #include "debug.h"
 #include "util.h"

@@ -48,6 +48,7 @@
 #ifndef _attrtable_h
 #include "AttrTable.h"
 #endif
+
 #include "DODSResponseObject.h"
 
 using std::cout;

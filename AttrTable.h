@@ -38,8 +38,6 @@
 #include <string>
 #include <vector>
 
-//#include <Pix.h>
-
 #ifndef _error_h
 #include "Error.h"
 #endif

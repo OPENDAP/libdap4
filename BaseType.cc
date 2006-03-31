@@ -43,11 +43,13 @@
 
 // #define DODS_DEBUG
 
-#include "debug.h"
 #include "BaseType.h"
-#include "util.h"
 #include "InternalErr.h"
+
+#include "util.h"
 #include "escaping.h"
+
+#include "debug.h"
 
 using namespace std;
 

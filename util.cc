@@ -70,7 +70,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "Sequence.h"
 #include "Error.h"
 #include "parser.h"
-#include "expr.tab.h"
+//#include "expr.tab.h"
 #include "util.h"
 #include "debug.h"
 

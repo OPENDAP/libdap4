@@ -41,12 +41,12 @@ static char rcsid[] not_used = {"$Id$"};
 #include <stdlib.h>
 
 #include "Byte.h"
-#include "Int16.h"
+//#include "Int16.h"
 #include "DDS.h"
+#include "Operators.h"
+
 #include "util.h"
 #include "parser.h"
-#include "expr.tab.h"
-#include "Operators.h"
 #include "dods-limits.h"
 #include "InternalErr.h"
 

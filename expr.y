@@ -56,7 +56,7 @@ static char rcsid[] not_used = {"$Id$"};
 
 #include "DDS.h"
 
-#include "Connect.h"
+// #include "Connect.h"
 
 #include "BaseType.h"
 #include "Array.h"
@@ -69,10 +69,6 @@ static char rcsid[] not_used = {"$Id$"};
 #include "parser.h"
 #include "expr.h"
 #include "RValue.h"
-
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 using std::cerr;
 using std::endl;
@@ -122,8 +118,10 @@ rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
 
 BaseType *make_variable(DDS &table, const value &val);
 
+#if NO_DEREFERENCE_OP
 rvalue *dereference_variable(rvalue *rv, DDS &dds);
 rvalue *dereference_url(value &val);
+#endif
 
 bool_func get_function(const DDS &table, const char *name);
 btp_func get_btp_function(const DDS &table, const char *name);
@@ -284,6 +282,7 @@ bool_function: SCAN_WORD '(' arg_list ')'
 ;
 
 r_value:        id_or_const
+		/* Removed. I have removed '*' from DAP2. 3/31/06 jhrg
 		| '*' id_or_const
 		{
 		    $$ = dereference_variable($2, *DDS_OBJ(arg));
@@ -292,6 +291,7 @@ r_value:        id_or_const
 				  ($2)->value_name());
 		    }
 		}
+		*/
 		| SCAN_WORD '(' arg_list ')'
 		{
 		    btp_func func = get_btp_function((*DDS_OBJ(arg)), $1);
@@ -988,7 +988,7 @@ append_rvalue_list(rvalue_list *rvals, rvalue *rv)
 
 // Given a string which is a URL, dereference it and return the data it
 // points to.
-
+#if NO_DEREFERENCE_OP
 static rvalue *
 dereference_string(string &s)
 {
@@ -1055,6 +1055,7 @@ dereference_variable(rvalue *rv, DDS &dds)
     
     return dereference_string(s);
 }
+#endif
 
 // Given a value, wrap it up in a BaseType and return a pointer to the same.
 

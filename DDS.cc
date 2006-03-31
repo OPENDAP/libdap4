@@ -54,11 +54,11 @@ static char rcsid[] not_used = {"$Id$"};
 
 #include "GNURegex.h"
 
+#include "DAS.h"
+//#include "AttrTable.h"
+#include "DDS.h"
 #include "expr.h"
 #include "Clause.h"
-#include "DAS.h"
-#include "AttrTable.h"
-#include "DDS.h"
 #include "Error.h"
 #include "InternalErr.h"
 //#include "BTIterAdapter.h"
@@ -68,8 +68,8 @@ static char rcsid[] not_used = {"$Id$"};
 #include "debug.h"
 #include "util.h"
 #include "escaping.h"
-#include "ce_functions.h"
-#include "cgi_util.h"
+// #include "ce_functions.h"
+// #include "cgi_util.h"
 
 
 const string default_schema_location = "http://xml.opendap.org/dap/dap2.xsd";
@@ -121,8 +121,10 @@ DDS::DDS(BaseTypeFactory *factory, const string &n)
     : d_factory(factory), //d_local_basetype_factory(false), 
       name(n), d_timeout(0)
 {
+#if OLD_DDS_TRANS_CODE
     add_function("length", func_length);
     add_function("grid", func_grid_select);
+#endif
 }
 
 /** The DDS copy constructor. */
@@ -1246,6 +1248,7 @@ clean_sinks(int childpid, bool compressed, XDR *xdr_sink, FILE *comp_sink)
     }
 }
 
+#if OLD_DDS_TRANS_CODE
 static void
 print_variable(FILE *out, BaseType *var, bool constrained = false)
 {
@@ -1264,7 +1267,9 @@ print_variable(FILE *out, BaseType *var, bool constrained = false)
 
     return;
 }
+#endif
 
+#if OLD_DDS_TRANS_CODE
 /** This function sends the variables described in the constrained DDS to
     the output described by the FILE pointer. This function calls
     <tt>parse_constraint()</tt>, <tt>BaseType::read()</tt>, and
@@ -1348,6 +1353,7 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 
     return status;
 }
+#endif
 
 /** @brief Mark the <tt>send_p</tt> flag of the named variable to
     <i>state</i>.  

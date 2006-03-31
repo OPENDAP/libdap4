@@ -37,14 +37,14 @@ static char rcsid[] not_used ="$Id$";
 
 #include <assert.h>
 
-// #include <iostream>
-
-#include "Error.h"
-#include "debug.h"
-#include "util.h"
 #include "AttrTable.h"
+
+//#include "Error.h"
+
+#include "util.h"
 #include "escaping.h"
-//#include "AttrIterAdapter.h"
+
+#include "debug.h"
 
 using std::cerr;
 using std::string;

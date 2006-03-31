@@ -123,6 +123,7 @@ do_version(const string &script_ver, const string &dataset_ver)
     return true;
 }
 
+#if OLD_DDS_TRANS_CODE
 #ifndef WIN32
 // // 02/13/98 jhrg
 /** This function sends data to the client.
@@ -173,7 +174,7 @@ do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
     return true;
 }
 #endif
-
+#endif
 
 /** This function accepts a dataset path name, and searches for a
     matching ancillary data file name with a very specific set of
