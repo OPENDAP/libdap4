@@ -1,8 +1,12 @@
-This is from an email message from Martin Peschke 
-<Martin.Peschke at noaa dot gov>. Matrin discribes building the OPeNDAP data
-server, which requires libdap, so these instructions should work for the library
-although there maybe some steps that are not needed if you're building just 
-libdap. The instructionspertain to libdap 3.6.2.
+This is from an email message from Martin Peschke. Martin describes building
+the OPeNDAP data server, which requires libdap, so these instructions should
+work for the library although there maybe some steps that are not needed if
+you're building just libdap. The instructions pertain to libdap 3.6.2. Note
+that other people have had some problems building on AIX, so these steps
+might not work for you. Please direct all questions about the build to
+OPeNDAP's support email (support@unidata.ucar.edu) or to our email list
+dods-tech@unidata.ucar.edu and not to Martin! Also, Martin wanted me to pass
+on that he cannot guarantee these steps will work for anyone else!
 
 The AIX Version should be “powerpc-ibm-aix5.2.0.0”
 The xlc_r and xlC_r should be “VisualAge C++ Professional / C for AIX Compiler,
