@@ -98,6 +98,11 @@ private:
     int _argc;			// arg count
     rvalue *_arg1;		// only for operator
     rvalue_list *_args;		// vector arg
+    
+    Clause(const Clause &) {}
+    Clause &operator=(const Clause &) { 
+        throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
+    }
 
 public:
     Clause(const int oper, rvalue *a1, rvalue_list *rv);
@@ -107,15 +112,15 @@ public:
 
     virtual ~Clause();
 
-  bool OK();
+    bool OK();
 
-  bool boolean_clause();
+    bool boolean_clause();
 
-  bool value_clause();
+    bool value_clause();
 
-  bool value(const string &dataset, DDS &dds);
+    bool value(const string &dataset, DDS &dds);
 
-  bool value(const string &dataset, DDS &dds, BaseType **value);
+    bool value(const string &dataset, DDS &dds, BaseType **value);
 };
 
 #endif // _clause_h
