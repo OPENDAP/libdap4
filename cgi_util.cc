@@ -123,59 +123,6 @@ do_version(const string &script_ver, const string &dataset_ver)
     return true;
 }
 
-#if OLD_DDS_TRANS_CODE
-#ifndef WIN32
-// // 02/13/98 jhrg
-/** This function sends data to the client.
-
-    This function has been superseded by the DODSFilter::send_data() mfunc.
-
-    @deprecated Use DODSFilter's methods instead.
-
-    @brief Send data. (deprecated)
-    @param compression A Boolean value indicating whether the data is
-    to be sent in compressed form or not.  A value of TRUE indicates
-    that the data is to be comressed.
-    @param data_stream A file pointer indicating where to print the
-    data.  This is typically an XDR pointer.
-    @param dds The DODS Dataset Descriptor Structure of the dataset
-    whose data is to be sent.  The <tt>do_data_transfer</tt> uses the
-    <tt>send</tt> method of this DDS to do the sending.
-    @param dataset The (local) name of the dataset whose data is to be
-    sent.
-    @param constraint A constraint expression that may have been sent
-    with the original data request.
-    @return TRUE for success, FALSE otherwise.
-*/
-bool
-do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
-		 const string &dataset, const string &constraint)
-{
-    if (compression) {
-	int childpid;
-	FILE *data_sink = compressor(data_stream, childpid);
-	if (!dds.send(dataset, constraint, data_sink, true)) {
-	    ErrMsgT("Could not send compressed data");
-	    return false;
-	}
-	fclose(data_sink);
-	int pid;
-	while ((pid = waitpid(childpid, 0, 0)) > 0) {
-	    DBG(cerr << "pid: " << pid << endl);
-	}
-    }
-    else {
-	if (!dds.send(dataset, constraint, data_stream, false)) {
-	    ErrMsgT("Could not send data");
-	    return false;
-	}
-    }
-
-    return true;
-}
-#endif
-#endif
-
 /** This function accepts a dataset path name, and searches for a
     matching ancillary data file name with a very specific set of
     search rules, given here:
