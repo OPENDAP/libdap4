@@ -763,13 +763,14 @@ DODSFilter::send_das(DAS &das, const string &anc_location,
     @return void
     @see DDS */
 void
-DODSFilter::send_dds(FILE *out, DDS &dds, bool constrained,
+DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval, 
+                     bool constrained,
 		     const string &anc_location,
                      bool with_mime_headers)
 {
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (constrained)
-	dds.parse_constraint(d_ce);
+	eval.parse_constraint(d_ce, dds);
 
     time_t dds_lmt = get_dds_last_modified_time(anc_location);
     if (is_conditional() 
@@ -790,17 +791,19 @@ DODSFilter::send_dds(FILE *out, DDS &dds, bool constrained,
 }
 
 void
-DODSFilter::send_dds(DDS &dds, bool constrained, const string &anc_location,
+DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval, 
+                     bool constrained, const string &anc_location,
                      bool with_mime_headers)
 {
-    send_dds(stdout, dds, constrained, anc_location, with_mime_headers);
+    send_dds(stdout, dds, eval, constrained, anc_location, with_mime_headers);
 }
 
 // 'lmt' unused. Should it be used to supply a LMT or removed from the
 // method? jhrg 8/9/05
 void
-DODSFilter::functional_constraint(BaseType &var, DDS &dds, FILE *out,
-				  time_t /* lmt */) throw(Error)
+DODSFilter::functional_constraint(BaseType &var, DDS &dds, 
+                                  ConstraintEvaluator &eval, FILE *out)
+    throw(Error)
 {
     fprintf(out, "Dataset {\n");
     var.print_decl(out, "    ", true, false, true);
@@ -814,7 +817,7 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds, FILE *out,
 
     try {
 	// In the following call to serialize, suppress CE evaluation.
-	var.serialize(d_dataset, dds, xdr_sink, false);
+	var.serialize(d_dataset, eval, dds, xdr_sink, false);
 	delete_xdrstdio(xdr_sink);
     }
     catch (Error &e) {
@@ -824,7 +827,7 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds, FILE *out,
 }
 
 void
-DODSFilter::dataset_constraint(DDS &dds, FILE *out, time_t /* lmt */) 
+DODSFilter::dataset_constraint(DDS &dds, ConstraintEvaluator &eval, FILE *out) 
     throw(Error)
 {
     // send constrained DDS	    
@@ -840,7 +843,7 @@ DODSFilter::dataset_constraint(DDS &dds, FILE *out, time_t /* lmt */)
 	for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
 	    if ((*i)->send_p()) {
 		DBG(cerr << "Sending " << (*i)->name() << endl);
-		(*i)->serialize(d_dataset, dds, xdr_sink, true);
+		(*i)->serialize(d_dataset, eval, dds, xdr_sink, true);
 	    }
 
 	delete_xdrstdio(xdr_sink);
@@ -867,8 +870,8 @@ DODSFilter::dataset_constraint(DDS &dds, FILE *out, time_t /* lmt */)
     Defaults to true.
     @return void */
 void
-DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location,
-                      bool with_mime_headers)
+DODSFilter::send_data(DDS &dds, ConstraintEvaluator &eval, FILE *data_stream,
+                      const string &anc_location, bool with_mime_headers)
 {
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
@@ -885,7 +888,7 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location,
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
-    dds.parse_constraint(d_ce);	// Throws Error if the ce doesn't parse.
+    eval.parse_constraint(d_ce, dds);	// Throws Error if the ce doesn't parse.
 
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
@@ -900,15 +903,16 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location,
     if (compress)
 	data_stream = compressor(data_stream, childpid);
     // Handle *functional* constraint expressions specially 
-    if (dds.functional_expression()) {
-	BaseType *var = dds.eval_function(d_dataset);
+    if (eval.functional_expression()) {
+	BaseType *var = eval.eval_function(dds, d_dataset);
 	if (!var)
 	    throw Error(unknown_error, "Error calling the CE function.");
 
-	functional_constraint(*var, dds, data_stream, data_lmt);
+	functional_constraint(*var, dds, eval, data_stream);
+        delete var; var = 0;
     }
     else
-	dataset_constraint(dds, data_stream, data_lmt);
+	dataset_constraint(dds, eval, data_stream);
     
     fflush(data_stream);
 #if 0
@@ -932,11 +936,12 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location,
     @param with_mime_headers If true, include the MIME headers in the response.
     Defaults to true. */
 void
-DODSFilter::send_ddx(DDS &dds, FILE *out, bool with_mime_headers)
+DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
+                     bool with_mime_headers)
 {
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (!d_ce.empty())
-	dds.parse_constraint(d_ce);
+	eval.parse_constraint(d_ce, dds);
 
     time_t data_lmt = get_data_last_modified_time(d_anc_dir);
 
@@ -961,6 +966,8 @@ DODSFilter::send_ddx(DDS &dds, FILE *out, bool with_mime_headers)
 void
 DODSFilter::send_blob(DDS &dds, FILE *out, bool with_mime_headers)
 {
+#if 0
+    // Broken. jhrg 4/3/06
     bool compress = d_comp && deflate_exists();
     time_t data_lmt = get_data_last_modified_time(d_anc_dir);
 
@@ -1012,5 +1019,6 @@ DODSFilter::send_blob(DDS &dds, FILE *out, bool with_mime_headers)
     
 	clean_sinks(childpid, compress, xdr_sink, comp_sink);
     }
+#endif
 }
 

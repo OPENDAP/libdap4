@@ -47,6 +47,9 @@
 #include "DDS.h"
 #endif
 
+#ifndef constraint_evaluator_h
+#include "ConstraintEvaluator.h"
+#endif
 
 /** When a DODS server receives a request from a DODS client, the
     server CGI script dispatches the request to one of several
@@ -179,24 +182,30 @@ public:
     virtual void send_das(FILE *out, DAS &das, const string &anc_location="",
                           bool with_mime_headers = true);
 
-    virtual void send_dds(DDS &dds, bool constrained = false,
+    virtual void send_dds(DDS &dds, ConstraintEvaluator &eval,
+                          bool constrained = false,
 			  const string &anc_location = "",
                           bool with_mime_headers = true);
-    virtual void send_dds(FILE *out, DDS &dds, bool constrained = false,
+    virtual void send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
+                          bool constrained = false,
 			  const string &anc_location = "",
                           bool with_mime_headers = true);
 
-    virtual void functional_constraint(BaseType &var, DDS &dds, FILE *out, 
-				       time_t lmt) throw(Error);
-    virtual void dataset_constraint(DDS &dds, FILE *out, time_t lmt) 
+    virtual void functional_constraint(BaseType &var, DDS &dds, 
+                                       ConstraintEvaluator &eval, FILE *out)
 	throw(Error);
+    virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval, 
+                                    FILE *out) throw(Error);
 
-    virtual void send_data(DDS &dds, FILE *data_stream,
+    virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
+                           FILE *data_stream,
 			   const string &anc_location = "",
                            bool with_mime_headers = true);
 
-    virtual void send_ddx(DDS &dds, FILE *out, bool with_mime_headers = true);
+    virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
+                          bool with_mime_headers = true);
     
+    // Broken. 4/5/06 jhrg
     virtual void send_blob(DDS &dds, FILE *out, bool with_mime_headers = true);
 };
 
