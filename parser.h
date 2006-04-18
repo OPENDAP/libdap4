@@ -40,13 +40,6 @@
 #include "Error.h"
 #endif
 
-#if 0
-// Removed when splitting server code from libdap. 3/30/06
-#ifndef _gseclause_h
-#include "GSEClause.h"
-#endif
-#endif
-
 #define YYDEBUG 1
 #undef YYERROR_VERBOSE
 #define YY_NO_UNPUT 1
