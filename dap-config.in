@@ -18,7 +18,7 @@ Available values for OPTION include:
   --cc        C compiler
   --cxx       C++ compiler
   --cflags    pre-processor and compiler flags
-  --libs      library linking information for libdap++
+  --libs      library linking information for libdap
   --prefix    OPeNDAP install prefix
   --version   Library version
 EOF
@@ -58,6 +58,14 @@ while test $# -gt 0; do
 
     --libs)
        	echo "-L${libdir} -ldap @LIBS@"
+       	;;
+
+    --server-libs)
+       	echo "-L${libdir} -ldap -ldapserver @LIBS@"
+       	;;
+
+    --client-libs)
+       	echo "-L${libdir} -ldap -ldapclient @LIBS@"
        	;;
 
     --prefix)

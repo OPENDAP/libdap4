@@ -2,9 +2,9 @@
 dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.57)
+AC_PREREQ(2.59)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.6.2, dods-tech@unidata.ucar.edu)
+AC_INIT(libdap, 3.7.0, dods-tech@unidata.ucar.edu)
 AC_CONFIG_SRCDIR([AISConnect.cc])
 AC_CONFIG_AUX_DIR(conf)
 AM_CONFIG_HEADER([config.h dods-datatypes.h])
@@ -15,7 +15,7 @@ AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])
 AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
 AC_DEFINE_UNQUOTED(DVR, "${CNAME}/${CVER}", [Client name and vesion combined])
 AC_SUBST(DVR)
-AC_DEFINE(DAP_PROTOCOL_VERSION, "3.0", [What DAP version is supported?])
+AC_DEFINE(DAP_PROTOCOL_VERSION, "3.1", [What DAP version is supported?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
 dnl flags for the compilers and linkers - set these before locating the
@@ -27,7 +27,7 @@ AC_SUBST(host)
 
 dnl library versionning: Update these when the interface changes. Generally,
 dnl assume that the interface tracks the major and minor release numbers.
-DAPLIB_CURRENT=4
+DAPLIB_CURRENT=5
 DAPLIB_AGE=0
 DAPLIB_REVISION=0
 AC_SUBST(DAPLIB_CURRENT)
@@ -37,7 +37,7 @@ AC_SUBST(DAPLIB_REVISION)
 LIBDAP_VERSION="$DAPLIB_CURRENT:$DAPLIB_REVISION:$DAPLIB_AGE"
 AC_SUBST(LIBDAP_VERSION)
 
-CLIENTLIB_CURRENT=4
+CLIENTLIB_CURRENT=1
 CLIENTLIB_AGE=0
 CLIENTLIB_REVISION=0
 AC_SUBST(CLIENTLIB_CURRENT)
@@ -47,7 +47,7 @@ AC_SUBST(CLIENTLIB_REVISION)
 CLIENTLIB_VERSION="$CLIENTLIB_CURRENT:$CLIENTLIB_REVISION:$CLIENTLIB_AGE"
 AC_SUBST(CLIENTLIB_VERSION)
 
-SERVERLIB_CURRENT=4
+SERVERLIB_CURRENT=1
 SERVERLIB_AGE=0
 SERVERLIB_REVISION=0
 AC_SUBST(SERVERLIB_CURRENT)
