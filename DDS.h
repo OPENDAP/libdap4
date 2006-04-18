@@ -37,7 +37,6 @@
 #ifndef _dds_h
 #define _dds_h 1
 
-
 #include <stdio.h>
 
 #include <iostream>
@@ -62,22 +61,7 @@
 #include "DAS.h"
 #endif
 
-#ifndef _clause_h
-#include "Clause.h"
-#endif
-
-#ifndef _expr_h
-#include "expr.h"
-#endif
-
-#ifndef _rvalue_h
-#include "RValue.h"
-#endif
-
 using std::cout;
-
-int get_sinks(FILE *out, bool compress, FILE **comp_sink, XDR **xdr_sink);
-void clean_sinks(int childpid, bool compress, XDR *xdr_sink, FILE *comp_sink);
 
 /** The DAP2 Data Descriptor Object (DDS) is a data structure used by
     the DAP2 software to describe datasets and subsets of those
@@ -178,23 +162,6 @@ void clean_sinks(int childpid, bool compress, XDR *xdr_sink, FILE *comp_sink);
 
 class DDS : public DODSResponseObject {
 private:
-    // This struct is used to hold all the known `user defined' functions
-    // (including those that are `built-in'). 
-    struct function {
-	string name;
-	bool_func b_func;
-	btp_func bt_func;
-	proj_func p_func;
-
-	function(const string &n, const bool_func f)
-	    : name(n), b_func(f), bt_func(0), p_func(0) {}
-	function(const string &n, const btp_func f)
-	    : name(n), b_func(0), bt_func(f), p_func(0) {}
-	function(const string &n, const proj_func f)
-	    : name(n), b_func(0), bt_func(0), p_func(f) {}
-	function(): name(""), b_func(0), bt_func(0), p_func(0) {}
-    };
-
     BaseTypeFactory *d_factory;
 
     string name;		// The dataset name
@@ -207,13 +174,7 @@ private:
     AttrTable d_attr;           // Global attributes.
 
     vector<BaseType *> vars;	// Variables at the top level 
-    
-    vector<Clause *> expr;	// List of CE Clauses
 
-    vector<BaseType *> constants;// List of temporary objects
-
-    vector<function> functions; // Known external functions
-    
     bool is_global_attr(string name);
     void add_global_attribute(AttrTable::entry *entry);
 
@@ -238,19 +199,8 @@ public:
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;
     typedef std::vector<BaseType *>::reverse_iterator Vars_riter ;
-    
-    typedef std::vector<Clause *>::const_iterator Clause_citer ;
-    typedef std::vector<Clause *>::iterator Clause_iter ;
-    typedef std::vector<BaseType *>::const_iterator Constants_citer ;
-    typedef std::vector<BaseType *>::iterator Constants_iter ;
-    typedef std::vector<function>::const_iterator Functions_citer ;
-    typedef std::vector<function>::iterator Functions_iter ;
 
     DDS(BaseTypeFactory *factory, const string &n = "");
-    // #ifdef DEFAULT_BASETYPE_FACTORY
-    //DDS(const string &n = "");
-    // #endif
-
     DDS(const DDS &dds);
 
     virtual ~DDS();
@@ -315,36 +265,6 @@ public:
     void set_timeout(int t);
     int get_timeout();
 
-    void add_function(const string &name, bool_func f);
-    void add_function(const string &name, btp_func f);
-    void add_function(const string &name, proj_func f);
-
-    bool find_function(const string &name, bool_func *f) const;
-    bool find_function(const string &name, btp_func *f) const;
-    bool find_function(const string &name, proj_func *f) const;
-
-    void append_clause(int op, rvalue *arg1, rvalue_list *arg2);
-    void append_clause(bool_func func, rvalue_list *args);
-    void append_clause(btp_func func, rvalue_list *args);
-
-    bool functional_expression();
-    bool boolean_expression();
-    bool eval_selection(const string &dataset);
-    BaseType *eval_function(const string &dataset);
-    /** Returns the first clause in a parsed constraint expression. */
-    Clause_iter clause_begin();
-
-    /** Returns a reference to the end of the list of clauses in a parsed 
-	constraint expression. It does not reference the last clause */
-    Clause_iter clause_end();
-
-    /** Returns the value of the indicated clause of a constraint
-	expression. */
-    bool clause_value(Clause_iter &i, const string &dataset);
-
-    void parse_constraint(const string &constraint);
-    void append_constant(BaseType *btp);
-
     void parse(string fname);
     void parse(int fd);
     void parse(FILE *in=stdin);
@@ -353,12 +273,6 @@ public:
     void print_constrained(FILE *out);
 
     void print_xml(FILE *out, bool constrained, const string &blob);
-
-#if OLD_DDS_TRANS_CODE
-    bool send(const string &dataset, const string &constraint, FILE *out, 
-	      bool compressed = true, const string &cgi_ver = "",
-	      time_t lmt = 0);
-#endif
 
     void mark_all(bool state);
     bool mark(const string &name, bool state);
