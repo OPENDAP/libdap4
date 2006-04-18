@@ -46,7 +46,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "DDS.h"
 #include "util.h"
 #include "parser.h"
-#include "expr.tab.h"
+#include "ce_expr.tab.h"
 #include "Operators.h"
 #include "dods-limits.h"
 #include "InternalErr.h"
@@ -99,15 +99,15 @@ Float64::width()
 }
 
 bool
-Float64::serialize(const string &dataset, DDS &dds, XDR *sink, 
-		   bool ce_eval)
+Float64::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
+                   XDR *sink, bool ce_eval)
 {
     dds.timeout_on();
 
     if (!read_p())
 	read(dataset);		// read() throws Error and InternalErr
 
-    if (ce_eval && !dds.eval_selection(dataset))
+    if (ce_eval && !eval.eval_selection(dds, dataset))
 	return true;
 
     dds.timeout_off();

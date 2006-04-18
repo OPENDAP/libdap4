@@ -45,6 +45,10 @@
 #include "BaseType.h"
 #endif
 
+#ifndef constraint_evaluator_h
+#include "ConstraintEvaluator.h"
+#endif
+
 /** This class is used to hold eight bits of information.  No sign
     information is implied in its value.
 
@@ -80,7 +84,8 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    bool serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval);
+    bool serialize(const string &dataset, ConstraintEvaluator &eval, 
+                   DDS &dds, XDR *sink, bool ce_eval);
     bool deserialize(XDR *source, DDS *, bool);
 
   virtual unsigned int val2buf(void *val, bool reuse = false);

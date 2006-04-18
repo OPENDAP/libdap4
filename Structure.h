@@ -57,6 +57,10 @@
 #include "DDS.h"
 #endif
 
+#ifndef constraint_evaluator_h
+#include "ConstraintEvaluator.h"
+#endif
+
 
 
 /** This data type is used to hold a collection of related data types,
@@ -118,8 +122,8 @@ public:
     
     virtual unsigned int width();
 
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
+    virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
+                           DDS &dds, XDR *sink, bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     // Do not store values in memory as for C; force users to work with the

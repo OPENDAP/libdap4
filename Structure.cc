@@ -244,22 +244,22 @@ Structure::width()
 // false. This bug might be fixed using exceptions.
 
 bool
-Structure::serialize(const string &dataset, DDS &dds, XDR *sink, 
-		     bool ce_eval)
+Structure::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
+                     XDR *sink, bool ce_eval)
 {
     dds.timeout_on();
 
     if (!read_p())
 	read(dataset);		// read() throws Error and InternalErr
 
-    if (ce_eval && !dds.eval_selection(dataset))
+    if (ce_eval && !eval.eval_selection(dds, dataset))
 	return true;
 
     dds.timeout_off();
 
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
 	if ((*i)->send_p()) {
-	    (*i)->serialize(dataset, dds, sink, false);
+	    (*i)->serialize(dataset, eval, dds, sink, false);
 	}
     }
 

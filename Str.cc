@@ -42,10 +42,10 @@ static char rcsid[] not_used = {"$Id$"};
 
 #include "Str.h"
 #include "DDS.h"
-#include "parser.h"
-#include "expr.tab.h"
-#include "Operators.h"
 #include "util.h"
+#include "parser.h"
+#include "ce_expr.tab.h"
+#include "Operators.h"
 #include "InternalErr.h"
 #include "escaping.h"
 #include "debug.h"
@@ -106,7 +106,8 @@ Str::width()
 }
 
 bool
-Str::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
+Str::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
+               XDR *sink, bool ce_eval)
 {
 
     DBG(cerr << "Entering (" << this->name() << " [" << this << "])" << endl);
@@ -116,7 +117,7 @@ Str::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
     if (!read_p())
       read(dataset);
 
-    if (ce_eval && !dds.eval_selection(dataset))
+    if (ce_eval && !eval.eval_selection(dds, dataset))
 	return true;
 
     dds.timeout_off();

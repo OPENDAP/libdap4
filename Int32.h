@@ -45,6 +45,10 @@
 #include "BaseType.h"
 #endif
 
+#ifndef constraint_evaluator_h
+#include "ConstraintEvaluator.h"
+#endif
+
 /** @brief Holds a 32-bit signed integer. 
 
     @see BaseType
@@ -79,8 +83,8 @@ public:
     
   virtual unsigned int width();
 
-  virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
+  virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
+                         DDS &dds, XDR *sink, bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);

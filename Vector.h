@@ -53,6 +53,10 @@
 #include "DDS.h"
 #endif
 
+#ifndef constraint_evaluator_h
+#include "ConstraintEvaluator.h"
+#endif
+
 /** Holds a one-dimensional array of DAP2 data types.  This class
     takes two forms, depending on whether the elements of the vector
     are themselves simple or compound objects. This class contains
@@ -113,8 +117,8 @@ public:
 
     virtual void set_length(int l);
 
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
+    virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
+                           DDS &dds, XDR *sink, bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);

@@ -75,6 +75,7 @@ using namespace std;
 
 class BaseType;			// Forward declarations
 class DDS;
+class ConstraintEvaluator;
 
 typedef stack<BaseType *> btp_stack;
 
@@ -413,8 +414,8 @@ public:
 	@exception InternalErr.
 	@exception Error.
 	@see DDS */
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true) = 0; 
+    virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
+                           DDS &dds, XDR *sink, bool ce_eval = true) = 0; 
 
     /** Receives data from the network connection identified by the 
 	<tt>source</tt> parameter.  The data is put into the class data buffer

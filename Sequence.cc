@@ -49,8 +49,6 @@
 #include "InternalErr.h"
 #include "escaping.h"
 
-
-
 using namespace std;
 
 // I don't know if this is needed given the namespace declaration above...
@@ -563,7 +561,8 @@ Sequence::reset_row_number()
     @param ce_eval If True, evaluate any CE, otherwise do not.
 */
 bool
-Sequence::read_row(int row, const string &dataset, DDS &dds, bool ce_eval)
+Sequence::read_row(int row, const string &dataset, DDS &dds,
+                   ConstraintEvaluator &eval, bool ce_eval)
 {
     DBG(cerr << "Entering Sequence::read_row for " << name() << endl);
     if (row < d_row_number)
@@ -585,7 +584,7 @@ Sequence::read_row(int row, const string &dataset, DDS &dds, bool ce_eval)
 	// Advance the row number if ce_eval is false (we're not supposed to
 	// evaluate the selection) or both ce_eval and the selection are
 	// true.
-	if (!eof && (!ce_eval || dds.eval_selection(dataset)))
+	if (!eof && (!ce_eval || eval.eval_selection(dds, dataset)))
 	    d_row_number++;
 
 	set_read_p(false);	// ...so that the next instance will be read
@@ -677,15 +676,16 @@ Sequence::is_end_of_rows(int i)
     </ol>
 */
 bool
-Sequence::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
+Sequence::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
+                    XDR *sink, bool ce_eval)
 {
     DBG(cerr << "Entering Sequence::serialize for " << name() << endl);
     
     // Special case leaf sequences!
     if (is_leaf_sequence())
-	return serialize_leaf(dataset, dds, sink, ce_eval);
+	return serialize_leaf(dataset, dds, eval, sink, ce_eval);
     else 
-	return serialize_parent_part_one(dataset, dds, sink);
+	return serialize_parent_part_one(dataset, dds, eval, sink);
 }
 
 // We know this is not a leaf Sequence. That means that this Sequence holds
@@ -693,7 +693,8 @@ Sequence::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 // the actual transmission of values.
 
 bool
-Sequence::serialize_parent_part_one(const string &dataset, DDS &dds, XDR *sink)
+Sequence::serialize_parent_part_one(const string &dataset, DDS &dds, 
+                                    ConstraintEvaluator &eval, XDR *sink)
 {
     DBG(cerr << "Entering serialize_parent_part_one for " << name() << endl);
     
@@ -703,7 +704,7 @@ Sequence::serialize_parent_part_one(const string &dataset, DDS &dds, XDR *sink)
     // found. 6/1/2001 jhrg
     // Since this is a parent sequence, read the row ignoring the CE (all of
     // the CE clauses will be evaluated by the leaf sequence).
-    bool status = read_row(i, dataset, dds, false);
+    bool status = read_row(i, dataset, dds, eval, false);
     DBG(cerr << "Sequence::serialize_parent_part_one::read_row() status: " << status << endl);
     
     while (status && !is_end_of_rows(i)) {
@@ -725,12 +726,12 @@ Sequence::serialize_parent_part_one(const string &dataset, DDS &dds, XDR *sink)
             // sequence must be the lowest level sequence with values whose send_p
             // property is true.
 	    if ((*iter)->send_p() && (*iter)->type() == dods_sequence_c)
-		(*iter)->serialize(dataset, dds, sink);
+		(*iter)->serialize(dataset, eval, dds, sink);
 	}
 
 	set_read_p(false);	// ...so this will read the next instance
 
-	status = read_row(i, dataset, dds, false);
+	status = read_row(i, dataset, dds, eval, false);
         DBG(cerr << "Sequence::serialize_parent_part_one::read_row() status: " << status << endl);
     }
     // Reset current row number for next nested sequence element.
@@ -759,13 +760,15 @@ Sequence::serialize_parent_part_one(const string &dataset, DDS &dds, XDR *sink)
 // NB: This code only works if the child sequences appear after all other
 // variables. 
 void
-Sequence::serialize_parent_part_two(const string &dataset, DDS &dds, XDR *sink)
+Sequence::serialize_parent_part_two(const string &dataset, DDS &dds, 
+                                    ConstraintEvaluator &eval, XDR *sink)
 {
     DBG(cerr << "Entering serialize_parent_part_two for " << name() << endl);
     
     BaseType *btp = get_parent();
     if (btp && btp->type() == dods_sequence_c)
-        dynamic_cast<Sequence&>(*btp).serialize_parent_part_two(dataset, dds, sink);
+        dynamic_cast<Sequence&>(*btp).serialize_parent_part_two(dataset, dds, 
+                                                                eval, sink);
 
     if (d_unsent_data) {
         DBG(cerr << "Writing Start of Instance marker" << endl);
@@ -779,7 +782,7 @@ Sequence::serialize_parent_part_two(const string &dataset, DDS &dds, XDR *sink)
                      << (*iter)->name() << endl);
             if ((*iter)->send_p() && (*iter)->type() != dods_sequence_c) {
                 DBG(cerr << "Send P is true, sending " << (*iter)->name() << endl);
-                (*iter)->serialize(dataset, dds, sink, false);
+                (*iter)->serialize(dataset, eval, dds, sink, false);
             }
         }
 
@@ -790,15 +793,15 @@ Sequence::serialize_parent_part_two(const string &dataset, DDS &dds, XDR *sink)
 // This code is only run by a leaf sequence. Note that a one level sequence
 // is also a leaf sequence.
 bool
-Sequence::serialize_leaf(const string &dataset, DDS &dds, XDR *sink, 
-			 bool ce_eval)
+Sequence::serialize_leaf(const string &dataset, DDS &dds, 
+                         ConstraintEvaluator &eval, XDR *sink, bool ce_eval)
 {
     DBG(cerr << "Entering Sequence::serialize_leaf for " << name() << endl);
     int i = (d_starting_row_number != -1) ? d_starting_row_number : 0;
 
     // read_row returns true if valid data was read, false if the EOF was
     // found. 6/1/2001 jhrg
-    bool status = read_row(i, dataset, dds, ce_eval);
+    bool status = read_row(i, dataset, dds, eval, ce_eval);
     DBG(cerr << "Sequence::serialize_leaf::read_row() status: " << status << endl);
     
     // Once the first valid (satisfies the CE) row of the leaf sequence has
@@ -816,7 +819,9 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds, XDR *sink,
     if (status && !is_end_of_rows(i)) {
 	BaseType *btp = get_parent();
 	if (btp && btp->type() == dods_sequence_c)
-	    dynamic_cast<Sequence&>(*btp).serialize_parent_part_two(dataset, dds, sink);
+	    dynamic_cast<Sequence&>(*btp).serialize_parent_part_two(dataset, 
+                                                                    dds, eval,
+                                                                    sink);
     }
 
     d_wrote_soi = false;
@@ -833,13 +838,13 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds, XDR *sink,
                      << (*iter)->name() << endl);
 	    if ((*iter)->send_p()) {
                  DBG(cerr << "Send P is true, sending " << (*iter)->name() << endl);
-		(*iter)->serialize(dataset, dds, sink, false);
+		(*iter)->serialize(dataset, eval, dds, sink, false);
             }
 	}
 
 	set_read_p(false);	// ...so this will read the next instance
 
-        status = read_row(i, dataset, dds, ce_eval);
+        status = read_row(i, dataset, dds, eval, ce_eval);
         DBG(cerr << "Sequence::serialize_leaf::read_row() status: " << status << endl);
     }
 

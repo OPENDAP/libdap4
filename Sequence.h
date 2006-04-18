@@ -54,6 +54,10 @@
 #include "Constructor.h"
 #endif
 
+#ifndef constraint_evaluator_h
+#include "ConstraintEvaluator.h"
+#endif
+
 /** The type BaseTypeRow is used to store single rows of values in an
     instance of Sequence. Values are stored in instances of BaseType. */
 typedef vector<BaseType *> BaseTypeRow;
@@ -191,10 +195,12 @@ private:
 
     bool is_end_of_rows(int i);
 
-    bool serialize_parent_part_one(const string &dataset, DDS &dds, XDR *sink);
-    void serialize_parent_part_two(const string &dataset, DDS &dds, XDR *sink);
-    bool serialize_leaf(const string &dataset, DDS &dds, XDR *sink, 
-			bool ce_eval);
+    bool serialize_parent_part_one(const string &dataset, DDS &dds, 
+                                   ConstraintEvaluator &eval, XDR *sink);
+    void serialize_parent_part_two(const string &dataset, DDS &dds, 
+                                   ConstraintEvaluator &eval, XDR *sink);
+    bool serialize_leaf(const string &dataset, DDS &dds, 
+                        ConstraintEvaluator &eval, XDR *sink, bool ce_eval);
 
 public:
 
@@ -225,10 +231,10 @@ public:
     virtual int number_of_rows();
 
     virtual bool read_row(int row, const string &dataset, DDS &dds, 
-			  bool ce_eval = true);
+			  ConstraintEvaluator &eval, bool ce_eval = true);
 
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
+    virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
+                           DDS &dds, XDR *sink, bool ce_eval = true);
 
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 

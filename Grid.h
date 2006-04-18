@@ -52,6 +52,10 @@
 #include "Constructor.h"
 #endif
 
+#ifndef constraint_evaluator_h
+#include "ConstraintEvaluator.h"
+#endif
+
 /** The Grid data type is a collection of an Array and a set of ``Map''
     vectors.  The Map vectors are one-dimensional arrays corresponding
     to each dimension of the central Array.  Using this scheme, a Grid
@@ -148,8 +152,8 @@ public:
 
     virtual bool projection_yields_grid();
 
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
+    virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
+                           DDS &dds, XDR *sink, bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     virtual unsigned int val2buf(void *buf, bool reuse = false);
