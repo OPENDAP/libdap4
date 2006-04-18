@@ -51,12 +51,12 @@ getdap_LDADD = libdap.la libdapclient.la
 
 deflate_SOURCES = deflate.c
 
-LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y expr.lex expr.y gse.lex gse.y \
+LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex gse.y \
 	Error.lex Error.y
 
 LEX_YACC_FILES = das.tab.h das.tab.cc lex.das.cc dds.tab.h dds.tab.cc \
-	lex.dds.cc expr.tab.h expr.tab.cc lex.expr.cc Error.tab.h Error.tab.cc \
-	lex.Error.cc gse.tab.h gse.tab.cc lex.gse_.cc
+	lex.dds.cc ce_expr.tab.h ce_expr.tab.cc lex.ce_expr.cc Error.tab.h \
+	Error.tab.cc lex.Error.cc gse.tab.h gse.tab.cc lex.gse_.cc
 
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
@@ -64,7 +64,7 @@ EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 
 dist_aclocal_DATA = conf/libdap.m4
 
-CLEANFILES = *.log das.output dds.output expr.output Error.output gse.output
+CLEANFILES = *.log *.output
 
 # MAINTAINERCLEANFILES = $(LEX_YACC_FILES)
 
@@ -110,8 +110,12 @@ GNU_HDR = GNU/builtin.h GNU/GetOpt.h GNU/GNURegex.h
 # Roughly divide the source into DAP, Client and Server groups. In the
 # future, make three different libraries. jhrg 
 
-GRAM_SRC = lex.das.cc das.tab.cc lex.dds.cc dds.tab.cc lex.expr.cc \
-	expr.tab.cc lex.Error.cc Error.tab.cc
+GRAM_SRC = lex.das.cc das.tab.cc das.tab.h \
+	lex.dds.cc dds.tab.cc dds.tab.h \
+	lex.ce_expr.cc ce_expr.tab.cc ce_expr.tab.h \
+	lex.Error.cc Error.tab.cc Error.tab.h
+
+# lex.expr.cc expr.tab.cc 
 
 DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	Byte.cc Int32.cc Float64.cc Str.cc Url.cc Vector.cc Array.cc	 \
@@ -122,15 +126,15 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	PassiveFloat32.cc PassiveArray.cc PassiveStructure.cc		 \
 	BaseTypeFactory.cc SignalHandler.cc Error.cc InternalErr.cc	 \
 	util.cc xdrutil_ppc.c parser-util.cc escaping.cc		 \
-	Clause.cc RValue.cc						 \
+	Clause.cc RValue.cc ConstraintEvaluator.cc		 	 \
 	$(GRAM_SRC)
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 	AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc  \
 	util_mit.cc ResponseTooBigErr.cc
 
-SERVER_SRC = DODSFilter.cc ce_functions.cc GSEClause.cc \
-	lex.gse_.cc gse.tab.cc OPeNDAPFile.cc OPeNDAPDir.cc cgi_util.cc
+SERVER_SRC = DODSFilter.cc cgi_util.cc ce_functions.cc GSEClause.cc \
+	lex.gse_.cc gse.tab.cc OPeNDAPFile.cc OPeNDAPDir.cc
 
 DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	BaseType.h Byte.h Int32.h Float64.h Str.h Url.h Vector.h Array.h   \
@@ -142,7 +146,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	DODSResponseObject.h BaseTypeFactory.h ObjectType.h EncodingType.h \
 	SignalHandler.h Operators.h Error.h InternalErr.h		   \
 	util.h escaping.h parser.h debug.h dods-limits.h dods-datatypes.h  \
-	expr.h Clause.h RValue.h
+	expr.h Clause.h RValue.h ConstraintEvaluator.h
 
 CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		 \
@@ -183,13 +187,21 @@ dds.tab.cc dds.tab.h: dds.y
 
 # CE 
 
-lex.expr.cc: expr.lex expr.tab.cc expr.tab.h
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pexpr $<
-	mv lex.expr.c lex.expr.cc
+#lex.expr.cc: expr.lex expr.tab.cc expr.tab.h
+#	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pexpr $<
+#	mv lex.expr.c lex.expr.cc
+#
+#expr.tab.cc expr.tab.h: expr.y
+#	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p expr $<
+#	mv expr.tab.c expr.tab.cc
 
-expr.tab.cc expr.tab.h: expr.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p expr $<
-	mv expr.tab.c expr.tab.cc
+lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.h
+	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pce_expr $<
+	mv lex.ce_expr.c lex.ce_expr.cc
+
+ce_expr.tab.cc ce_expr.tab.h: ce_expr.y
+	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p ce_expr $<
+	mv ce_expr.tab.c ce_expr.tab.cc
 
 # Build the grid selection sub_expression scanner and parser
 
