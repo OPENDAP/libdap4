@@ -105,7 +105,6 @@ func_length(int argc, BaseType *argv[], DDS &dds)
 	  ret->val2buf(&result);
 	  ret->set_read_p(true);
 	  ret->set_send_p(true);
-	  dds.append_constant(ret); 
     
 	  return ret;
       }
@@ -113,6 +112,8 @@ func_length(int argc, BaseType *argv[], DDS &dds)
       default:
 	throw Error("Wrong type argument to length()");
     }
+
+    return 0;
 }
 
 void
