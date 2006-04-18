@@ -255,3 +255,23 @@ DAS &Connect::das();
 DDS &Connect::dds();
 Error &Connect::error();
 
+Removed from DDS
+
+add_function()
+find_function()
+append_clause()
+functional_expression()
+boolean_expression()
+eval_expression()
+eval_selection()
+eval_function()
+clause_begin()
+clause_end()
+clause_value()
+parse_constraint()
+append_constant()
+send()
+
+Removed from cgi_util.cc
+
+do_data_transfer()
