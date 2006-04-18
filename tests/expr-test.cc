@@ -35,6 +35,8 @@
 
 #include "config.h"
 
+//#define DODS_DEBUG 0
+
 static char rcsid[] not_used = {"$Id$"};
 
 #include <stdio.h>
@@ -61,16 +63,18 @@ static char rcsid[] not_used = {"$Id$"};
 
 #include <string>
 
+#include "BaseType.h"
 #include "DDS.h"
 #include "DataDDS.h"
-#include "BaseType.h"
+#include "ConstraintEvaluator.h"
+
 #include "TestSequence.h"
 #include "TestCommon.h"
 #include "TestTypeFactory.h"
 
 #include "parser.h"
 #include "expr.h"
-#include "expr.tab.h"
+#include "ce_expr.tab.h"
 #include "util.h"
 #include "debug.h"
 
@@ -85,23 +89,24 @@ int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 
 void test_scanner(const string &str);
 void test_scanner(bool show_prompt);
-void test_parser(DDS &table, const string &dds_name, const string &constraint);
+void test_parser(ConstraintEvaluator &eval, DDS &table, const string &dds_name,
+                 const string &constraint);
 bool read_table(DDS &table, const string &name, bool print);
 void evaluate_dds(DDS &table, bool print_constrained);
 bool loopback_pipe(FILE **pout, FILE **pin);
 bool constrained_trans(const string &dds_name, const bool constraint_expr,
 		       const string &ce, const bool series_values);
 
-int exprlex();			// exprlex() uses the global exprlval
-int exprparse(void *arg);
-void exprrestart(FILE *in);
+int ce_exprlex();			// exprlex() uses the global ce_exprlval
+int ce_exprparse(void *arg);
+void ce_exprrestart(FILE *in);
 
 // Glue routines declared in expr.lex
-void expr_switch_to_buffer(void *new_buffer);
-void expr_delete_buffer(void * buffer);
-void *expr_string(const char *yy_str);
+void ce_expr_switch_to_buffer(void *new_buffer);
+void ce_expr_delete_buffer(void * buffer);
+void *ce_expr_string(const char *yy_str);
 
-extern int exprdebug;
+extern int ce_exprdebug;
 
 static int keep_temps = 0;	// MT-safe; test code.
 
@@ -148,8 +153,9 @@ main(int argc, char *argv[])
     string dds_file_name;
     string dataset = "";
     string constraint = "";
-    TestTypeFactory *ttf = new TestTypeFactory();
-    DDS table(ttf);
+    TestTypeFactory ttf;
+    DDS table(&ttf);
+    ConstraintEvaluator eval;
 
     // process options
 
@@ -159,7 +165,7 @@ main(int argc, char *argv[])
             series_values = true;
             break;
         case 'd':
-            exprdebug = true;
+            ce_exprdebug = true;
             break;
         case 's':
             scanner_test = true;
@@ -207,8 +213,6 @@ main(int argc, char *argv[])
         if (!scanner_test && !parser_test && !evaluate_test
             && !whole_enchalada) {
             fprintf(stderr, "%s\n", usage.c_str());
-            delete ttf;
-            ttf = 0;
             exit(1);
         }
         // run selected tests
@@ -219,13 +223,11 @@ main(int argc, char *argv[])
             else
                 test_scanner(true);
 
-            delete ttf;
-            ttf = 0;
             exit(0);
         }
 
         if (parser_test) {
-            test_parser(table, dds_file_name, constraint);
+            test_parser(eval, table, dds_file_name, constraint);
         }
 
         if (evaluate_test) {
@@ -242,9 +244,6 @@ main(int argc, char *argv[])
         fprintf(stderr, "Caught exception: %s\n", e.what());
     }
 
-    delete ttf;
-    ttf = 0;
-
     exit(0);
 }
 
@@ -254,13 +253,13 @@ main(int argc, char *argv[])
 void
 test_scanner(const string &str)
 {
-    exprrestart(0);
-    void *buffer = expr_string(str.c_str());
-    expr_switch_to_buffer(buffer);
+    ce_exprrestart(0);
+    void *buffer = ce_expr_string(str.c_str());
+    ce_expr_switch_to_buffer(buffer);
 
     test_scanner(false);
 
-    expr_delete_buffer(buffer);
+    ce_expr_delete_buffer(buffer);
 }
 
 void
@@ -270,34 +269,34 @@ test_scanner(bool show_prompt)
 	fprintf( stdout, "%s", prompt.c_str() )	; // first prompt
 
     int tok;
-    while ((tok = exprlex())) {
+    while ((tok = ce_exprlex())) {
 	switch (tok) {
 	  case SCAN_WORD:
-	    fprintf( stdout, "WORD: %s\n", exprlval.id ) ;
+	    fprintf( stdout, "WORD: %s\n", ce_exprlval.id ) ;
 	    break;
 	  case SCAN_STR:
-	    fprintf( stdout, "STR: %s\n", exprlval.val.v.s->c_str() ) ;
+	    fprintf( stdout, "STR: %s\n", ce_exprlval.val.v.s->c_str() ) ;
 	    break;
 	  case SCAN_EQUAL:
-	    fprintf( stdout, "EQUAL: %d\n", exprlval.op ) ;
+	    fprintf( stdout, "EQUAL: %d\n", ce_exprlval.op ) ;
 	    break;
 	  case SCAN_NOT_EQUAL:
-	    fprintf( stdout, "NOT_EQUAL: %d\n", exprlval.op ) ;
+	    fprintf( stdout, "NOT_EQUAL: %d\n", ce_exprlval.op ) ;
 	    break;
 	  case SCAN_GREATER:
-	    fprintf( stdout, "GREATER: %d\n", exprlval.op ) ;
+	    fprintf( stdout, "GREATER: %d\n", ce_exprlval.op ) ;
 	    break;
 	  case SCAN_GREATER_EQL:
-	    fprintf( stdout, "GREATER_EQL: %d\n", exprlval.op ) ;
+	    fprintf( stdout, "GREATER_EQL: %d\n", ce_exprlval.op ) ;
 	    break;
 	  case SCAN_LESS:
-	    fprintf( stdout, "LESS: %d\n", exprlval.op ) ;
+	    fprintf( stdout, "LESS: %d\n", ce_exprlval.op ) ;
 	    break;
 	  case SCAN_LESS_EQL:
-	    fprintf( stdout, "LESS_EQL: %d\n", exprlval.op ) ;
+	    fprintf( stdout, "LESS_EQL: %d\n", ce_exprlval.op ) ;
 	    break;
 	  case SCAN_REGEXP:
-	    fprintf( stdout, "REGEXP: %d\n", exprlval.op ) ;
+	    fprintf( stdout, "REGEXP: %d\n", ce_exprlval.op ) ;
 	    break;
 	  case '*':
 	    fprintf( stdout, "Dereference\n" ) ;
@@ -345,19 +344,20 @@ test_scanner(bool show_prompt)
 // stdin and thus the expr scanner exits immediately.
 
 void
-test_parser(DDS &table, const string &dds_name, const string &constraint)
+test_parser(ConstraintEvaluator &eval, DDS &dds, const string &dds_name,
+            const string &constraint)
 {
     try {
-	read_table(table, dds_name, true);
+	read_table(dds, dds_name, true);
 
 	if (constraint != "") {
-	    table.parse_constraint(constraint);
+	    eval.parse_constraint(constraint, dds);
 	}
 	else {
-	    exprrestart(stdin);
+	    ce_exprrestart(stdin);
 	    fprintf( stdout, "%s", prompt.c_str() ) ;
-	    parser_arg arg(&table);
-	    exprparse((void *)&arg);
+	    parser_arg arg(&eval);
+	    ce_exprparse((void *)&arg);
 	}
 
 	fprintf( stdout, "Input parsed\n" ) ;	// Parser throws on failure.
@@ -517,15 +517,7 @@ void
 set_series_values(DDS &dds, bool state)
 {
     for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
-#if 1
 	dynamic_cast<TestCommon&>(**q).set_series_values(state);
-#else
-        TestCommon *tc = dynamic_cast<TestCommon*>(*q);
-        if (tc)
-            tc->set_series_values(state);
-        else
-            cerr << "TC is null" << endl;
-#endif
     }
 }
 
@@ -548,18 +540,10 @@ bool
 constrained_trans(const string &dds_name, const bool constraint_expr, 
 		  const string &constraint, const bool series_values) 
 {
-    bool status;
     FILE *pin, *pout;
-    TestTypeFactory *ttf = new TestTypeFactory;
-    DDS server(ttf);
-
-    fprintf( stdout, "The complete DDS:\n" ) ;
-    read_table(server, dds_name, true);
-
-    status = loopback_pipe(&pout, &pin);
+    bool status = loopback_pipe(&pout, &pin);
     if (!status) {
 	fprintf( stderr, "Could not create the loopback streams\n" ) ;
-	delete ttf; ttf = 0;
 	return false;
     }
 
@@ -571,7 +555,6 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 	cin.getline(c, 256);
 	if (!cin) {
 	    fprintf( stderr, "Could nore read the constraint expression\n" ) ;
-	    delete ttf; ttf = 0;
 	    exit(1);
 	}
 	ce = c;
@@ -581,28 +564,43 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 
     string dataset = "";
     
+    TestTypeFactory ttf;
+    DDS server(&ttf);
+    ConstraintEvaluator eval;
+
+    fprintf( stdout, "The complete DDS:\n" ) ;
+    read_table(server, dds_name, true);
+
     // by default this is false (to get the old-style values that are
     // constant); set series_values to true for testing Sequence constraints.
     // 01/14/05 jhrg
     set_series_values(server, series_values);
 
     try {
-	// send the variable given the constraint; TRUE flushes the I/O
-	// channel. Currently only Sequence uses the `dataset' parameter.
-	//
-	// We're at that awkward stage between two different error processing
-	// techniques. 4/6/2000 jhrg
-	// I think we've passed that stage... 08/08/05 jhrg
-	if (!server.send(dataset, ce, pout, false)) {
-	    fprintf( stderr, "Could not send the DDS\n" ) ;
-	    delete ttf; ttf = 0;
-	    return false;
-	}
+        eval.parse_constraint(ce, server);        // Throws Error if the ce doesn't parse.
+
+        server.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
+
+        // send constrained DDS         
+        server.print_constrained(pout);
+        fprintf(pout, "Data:\n");
+        fflush(pout);
+
+        // Grab a stream that encodes using XDR.
+        XDR *xdr_sink = new_xdrstdio(pout, XDR_ENCODE);
+
+        // Send all variables in the current projection (send_p())
+        for (DDS::Vars_iter i = server.var_begin(); i != server.var_end(); i++)
+            if ((*i)->send_p()) {
+                DBG(cerr << "Sending " << (*i)->name() << endl);
+                (*i)->serialize(dataset, eval, server, xdr_sink, true);
+            }
+
+        delete_xdrstdio(xdr_sink);
     }
     catch(Error &e) {
         cerr << e.get_error_message() << endl;
 	fclose(pout);
-	delete ttf; ttf = 0;
 	return false;
     }
 
@@ -613,14 +611,13 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
     // First read the DDS into a new object (using a file to store the DDS
     // temporarily - the parser/scanner won't stop reading until an EOF is
     // found, this fixes that problem).
-    BaseTypeFactory *factory = new BaseTypeFactory;
     try {
 	// I use the default BaseTypeFactory since we're just printing the
 	// values here.
-	DataDDS dds(factory, "Test_data", "DODS/3.2"); // Must use DataDDS on receving end
+        BaseTypeFactory factory;
+	DataDDS dds(&factory, "Test_data", "DAP/3.1"); // Must use DataDDS on receving end
 	FILE *dds_fp = move_dds(pin);
 	DBG( fprintf( stderr, "Moved the DDS to a temp file\n" ) ) ;
-	parse_mime(dds_fp);
 	dds.parse(dds_fp);
 	fclose(dds_fp);
 
@@ -639,16 +636,10 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 	delete_xdrstdio(source);
     }
     catch (Error &e) {
-	delete factory; factory = 0;
-	delete ttf; ttf = 0;
-
         cerr << e.get_error_message() << endl;
 	return false;
     }
 	
-    delete ttf; ttf = 0;
-    delete factory; factory = 0;
-
     return true;
 }
 

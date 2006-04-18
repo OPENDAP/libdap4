@@ -55,7 +55,7 @@ dds_test_SOURCES = dds-test.cc
 dds_test_LDADD = ../libdap.la libtest-types.a
 
 expr_test_SOURCES = expr-test.cc
-expr_test_LDADD = ../libdap.la libtest-types.a
+expr_test_LDADD = ../libdap.la ../libdapserver.la libtest-types.a
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestSequence.cc		 \

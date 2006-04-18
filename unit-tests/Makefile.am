@@ -43,13 +43,13 @@ RegexTest_SOURCES = RegexTest.cc
 RegexTest_LDADD = -lcppunit ../libdap.la
 
 AISDatabaseParserTest_SOURCES = AISDatabaseParserTest.cc
-AISDatabaseParserTest_LDADD = -lcppunit ../libdap.la
+AISDatabaseParserTest_LDADD = -lcppunit ../libdap.la ../libdapclient.la
 
 AISMergeTest_SOURCES = AISMergeTest.cc
-AISMergeTest_LDADD = -lcppunit ../libdap.la
+AISMergeTest_LDADD = -lcppunit ../libdap.la ../libdapclient.la
 
 AISResourcesTest_SOURCES = AISResourcesTest.cc
-AISResourcesTest_LDADD = -lcppunit ../libdap.la
+AISResourcesTest_LDADD = -lcppunit ../libdap.la ../libdapclient.la
 
 ArrayTest_SOURCES = ArrayTest.cc
 ArrayTest_LDADD = -lcppunit ../libdap.la
@@ -61,7 +61,7 @@ ByteTest_SOURCES = ByteTest.cc
 ByteTest_LDADD = -lcppunit ../libdap.la
 
 cgiUtilTest_SOURCES = cgiUtilTest.cc
-cgiUtilTest_LDADD = -lcppunit ../libdap.la
+cgiUtilTest_LDADD = -lcppunit ../libdap.la ../libdapserver.la
 
 DASTest_SOURCES = DASTest.cc
 DASTest_LDADD = -lcppunit ../libdap.la
@@ -73,22 +73,22 @@ DDXParserTest_SOURCES = DDXParserTest.cc
 DDXParserTest_LDADD = -lcppunit ../libdap.la
 
 DODSFilterTest_SOURCES = DODSFilterTest.cc
-DODSFilterTest_LDADD = -lcppunit ../libdap.la
+DODSFilterTest_LDADD = -lcppunit ../libdap.la ../libdapserver.la
 
 generalUtilTest_SOURCES = generalUtilTest.cc
 generalUtilTest_LDADD = -lcppunit ../libdap.la
 
 HTTPCacheTest_SOURCES = HTTPCacheTest.cc
-HTTPCacheTest_LDADD = -lcppunit ../libdap.la
+HTTPCacheTest_LDADD = -lcppunit ../libdap.la ../libdapclient.la
 
 HTTPConnectTest_SOURCES = HTTPConnectTest.cc
-HTTPConnectTest_LDADD = -lcppunit ../libdap.la
+HTTPConnectTest_LDADD = -lcppunit ../libdap.la ../libdapclient.la
 
 parserUtilTest_SOURCES = parserUtilTest.cc
 parserUtilTest_LDADD = -lcppunit ../libdap.la
 
 RCReaderTest_SOURCES = RCReaderTest.cc
-RCReaderTest_LDADD = -lcppunit ../libdap.la
+RCReaderTest_LDADD = -lcppunit ../libdap.la ../libdapclient.la
 
 SequenceTest_SOURCES = SequenceTest.cc
 SequenceTest_LDADD = -lcppunit ../libdap.la

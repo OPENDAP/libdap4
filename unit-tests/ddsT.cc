@@ -352,12 +352,13 @@ public:
 	    }
 	}
 
+#if 0
 	dds.add_function( "test_grid_select", func_grid_select ) ;
 	proj_func projf ;
 	bool found_func = dds.find_function( "test_grid_select", &projf ) ;
 	CPPUNIT_ASSERT( found_func == true ) ;
 	CPPUNIT_ASSERT( projf ) ;
-
+#endif
 	{
             string sof;
             FILE2string(sof, of, dds.print( of ));
