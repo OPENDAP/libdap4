@@ -454,7 +454,7 @@ char *yytext;
 
 #include "config.h"
 
-static char rcsid[] not_used = {"$Id: expr.lex 13269 2006-02-24 18:54:20Z jimg $"};
+static char rcsid[] not_used = {"$Id$"};
 
 #include <string.h>
 #include <assert.h>

@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc 13553 2006-03-31 23:15:07Z jimg $"};
+static char rcsid[] not_used = {"$Id$"};
 
 #include "ConstraintEvaluator.h"
 
