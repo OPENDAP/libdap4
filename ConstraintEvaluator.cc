@@ -40,16 +40,6 @@ int ce_exprparse(void *arg);
 void ce_expr_switch_to_buffer(void *new_buffer);
 void ce_expr_delete_buffer(void * buffer);
 void *ce_expr_string(const char *yy_str);
-#if 0
-void 
-ConstraintEvaluator::register_functions()
-{
-#if 0
-    add_function("length", func_length);
-    add_function("grid", func_grid_select);
-#endif
-}
-#endif
 
 ConstraintEvaluator::~ConstraintEvaluator()
 {

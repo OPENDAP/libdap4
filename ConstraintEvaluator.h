@@ -49,17 +49,12 @@ private:
         function(): name(""), b_func(0), bt_func(0), p_func(0) {}
     };
 
-#if 0
-    DDS *d_dds;
-#endif    
     vector<Clause *> expr;      // List of CE Clauses
 
     vector<BaseType *> constants;// List of temporary objects
 
     vector<function> functions; // Known external functions
-#if 0    
-    void register_functions();
-#endif    
+
     // The default versions of these methods will break this class. Because
     // Clause does not support deep copies, that class will need to be modified
     // before these can be properly implemented. jhrg 4/3/06
@@ -77,15 +72,7 @@ public:
     typedef std::vector<function>::iterator Functions_iter ;
 
     ConstraintEvaluator() { /*register_functions();*/ }
-#if 0
-    ConstraintEvaluator(DDS *dds) : d_dds(dds) { register_functions(); }
-#endif
     virtual ~ConstraintEvaluator();
-
-#if 0    
-    DDS *get_dds() const { return d_dds; }
-    void set_dds(DDS *dds) { d_dds = dds; }
-#endif
 
     void add_function(const string &name, bool_func f);
     void add_function(const string &name, btp_func f);
