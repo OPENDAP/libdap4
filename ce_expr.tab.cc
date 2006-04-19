@@ -1237,7 +1237,7 @@ yyreduce:
 		    }
 		    else if ((p_f = get_proj_function(*(EVALUATOR(arg)), (yyvsp[-3].id)))) {
 			BaseType **args = build_btp_args((yyvsp[-1].r_val_l_ptr), *(DDS(arg)));
-			(*p_f)(((yyvsp[-1].r_val_l_ptr)) ? (yyvsp[-1].r_val_l_ptr)->size():0, args, *(DDS(arg)));
+			(*p_f)(((yyvsp[-1].r_val_l_ptr)) ? (yyvsp[-1].r_val_l_ptr)->size():0, args, *(DDS(arg)), *(EVALUATOR(arg)));
 			(yyval.boolean) = true;
 		    }
 		    else {

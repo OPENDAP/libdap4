@@ -215,7 +215,7 @@ proj_function:  SCAN_WORD '(' arg_list ')'
 		    }
 		    else if ((p_f = get_proj_function(*(EVALUATOR(arg)), $1))) {
 			BaseType **args = build_btp_args($3, *(DDS(arg)));
-			(*p_f)(($3) ? $3->size():0, args, *(DDS(arg)));
+			(*p_f)(($3) ? $3->size():0, args, *(DDS(arg)), *(EVALUATOR(arg)));
 			$$ = true;
 		    }
 		    else {
