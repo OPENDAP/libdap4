@@ -1,3 +1,12 @@
+These are instructions for building the source on AIX. Hopefully more and more
+of these steps will be incorporated into the regular build. jhrg
+
+Patches to the source from Dan Stromberg:
+    
+    http://dcs.nac.uci.edu/~strombrg/opendap/libdap-AIX-patches.tar.gz
+
+  [These patches have been applied to version 3.7.0 of the library. jhrg]
+
 This is from an email message from Martin Peschke. Martin describes building
 the OPeNDAP data server, which requires libdap, so these instructions should
 work for the library although there maybe some steps that are not needed if
