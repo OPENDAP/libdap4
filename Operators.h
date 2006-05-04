@@ -43,7 +43,7 @@
 
 using namespace std;
 
-static unsigned
+unsigned
 dods_max(int i1, int i2)
 {
     return (unsigned)((i1 > i2) ? i1 : i2);

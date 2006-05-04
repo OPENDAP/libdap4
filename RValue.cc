@@ -130,7 +130,7 @@ build_btp_args(rvalue_list *args, DDS &dds)
 	argc = args->size();
 
     // Add space for a null terminator
-    BaseType **argv = new (BaseType *[argc + 1]);
+    BaseType **argv = new BaseType *[argc + 1];
 
     string dataset = dds.filename();
 		
