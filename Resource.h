@@ -68,24 +68,17 @@ public:
 
     /** Build a Resource with a null URL and set the combination rule to the
 	default. */
-    Resource() :d_url(""), d_rule(Resource::overwrite) {}
+    Resource() :d_url(""), d_rule(overwrite) {}
 
     /** Build a resource. Set the combination rule to the default value,
 	which is overwrite. 
 	@param u The ancillary resource URL. */
-    Resource(const string &u) :d_url(u), d_rule(Resource::overwrite) {}
+    Resource(const string &u) :d_url(u), d_rule(overwrite) {}
 
     /** Build a Resource.
 	@param u The ancillary resource URL.
 	@param r The combination rule. */
-#ifdef WIN32
-	//  VC++ doesn't like using "Resource" before it is exhaustively defined
-	//  so much.  Seems we can get away with it in the absense of the 'const'
-	//  however, like in the no-arg constructor above.  ROM - 6/14/03.
     Resource(const string &u, const rule &r) :d_url(u), d_rule(r) {}
-#else
-    Resource(const string &u, const Resource::rule &r) :d_url(u), d_rule(r) {}
-#endif
 
     /** Build a Resource. 
 
@@ -99,16 +92,17 @@ public:
 	@param r The name of the combination rule. */
     Resource(const string &u, const string &r) throw(Error) : d_url(u) {
 	if (r == "replace")
-	    d_rule = Resource::replace;
+	    d_rule = replace;
 	else if (r == "fallback")
-	    d_rule = Resource::fallback;
+	    d_rule = fallback;
 	else if (r == "overwrite" || r == "default")
-	    d_rule = Resource::overwrite;
+	    d_rule = overwrite;
 	else
 	    throw Error(string("An AIS Resource object was created with an unknown rule type '") + r);
     }
 
     virtual ~Resource() {}
+    
     /** Return the resource URL. */ 
     virtual string get_url() const {
 	return d_url;

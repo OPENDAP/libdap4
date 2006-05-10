@@ -47,7 +47,7 @@
 
     Static methods are used as callbacks for the SAX parser. They do not
     throw exceptions because exceptions from within callbacks are not
-    reliable or portable (although exceptions themselves are not 100%
+    reliable or portable (and exceptions themselves are not 100%
     portable...). To signal errors, the methods record information in the
     AISParserState object. Once any of the error handlers (aisWarning,
     aisError or aisFatalError) is called, construction of an AISResources

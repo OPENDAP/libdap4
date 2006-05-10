@@ -48,18 +48,28 @@ typedef ResourceVector::iterator ResourceVectorIter;
 typedef ResourceVector::const_iterator ResourceVectorCIter;
 
 /** Maintain a database of AIS resources. Groups of AIS resources are
-    accessed using a primary resource.
+    accessed using a primary resource. The AISResources object is the in-memory
+    database of mappings between 'primary' and 'ancillary' resources.
 
     Note that read_database() takes filenames because the underlying XML
     parser library uses filenames. The write_database() method takes a
     filename to be symmetrical. 
 
-    @todo Develop some tighter rules about regular expressions in the AIS
-    database. How should they be applied relative to explicit entries?
-
+    @note The word 'primary,' as in 'primary resource,' means a Data Source URL.
+    This is a URL to a DAP-compliant server that will return DAS, DDS, et c., 
+    responses using the DAP. The word 'Ancillary' or 'AIS,' as in 'Ancillary/AIS
+    Resources,' means DAS, DDS, or Data information in a file that the software
+    can access. In practice, these might come from servers, too, but the terms
+    are used to try to keep things sane. A 'primary resource' is the data set
+    and the 'ancillary resource' is the stuff you're trying to jam into it.
+    
     @brief Manage AIS resources. */
 class AISResources {
 private:
+    // The AIS database is broken into two parts. The entires where the primary
+    // resource is a URL are stored in a map<> while the primaries that are
+    // regular expressions are stored in a vector of pairs. The latter is
+    // seached using the MatchRegexp struct.
     typedef map<string, ResourceVector> ResourceMap;
     typedef ResourceMap::iterator ResourceMapIter;
     typedef ResourceMap::const_iterator ResourceMapCIter;
