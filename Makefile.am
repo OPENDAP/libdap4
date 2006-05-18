@@ -22,7 +22,7 @@ TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 SUBDIRS = gl . tests 
 DIST_SUBDIRS = unit-tests gl tests
 
-lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
+lib_LTLIBRARIES = libdapclient.la libdapserver.la libdap.la
 
 bin_SCRIPTS = dap-config
 
@@ -146,7 +146,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	DODSResponseObject.h BaseTypeFactory.h ObjectType.h EncodingType.h \
 	SignalHandler.h Operators.h Error.h InternalErr.h		   \
 	util.h escaping.h parser.h debug.h dods-limits.h dods-datatypes.h  \
-	expr.h Clause.h RValue.h ConstraintEvaluator.h
+	expr.h Clause.h RValue.h ConstraintEvaluator.h ce_parser.h
 
 CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		 \
