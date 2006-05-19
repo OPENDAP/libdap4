@@ -46,7 +46,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "DDS.h"
 #include "util.h"
 #include "parser.h"
-#include "ce_expr.tab.h"
+//#include "ce_expr.tab.h"
 #include "Operators.h"
 #include "dods-limits.h"
 #include "InternalErr.h"

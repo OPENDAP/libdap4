@@ -160,10 +160,10 @@ bool is_sequence_t(BaseType *variable);
 rvalue_list *make_rvalue_list(rvalue *rv);
 rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
 
-BaseType *make_variable(DDS &table, ConstraintEvaluator &table, const value &val);
-bool_func get_function(const ConstraintEvaluator &table, const char *name);
-btp_func get_btp_function(const ConstraintEvaluator &table, const char *name);
-proj_func get_proj_function(const ConstraintEvaluator &table, const char *name);
+BaseType *make_variable(DDS &table, ConstraintEvaluator &eval, const value &val);
+bool_func get_function(const ConstraintEvaluator &eval, const char *name);
+btp_func get_btp_function(const ConstraintEvaluator &eval, const char *name);
+proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 
 
 
@@ -2357,36 +2357,35 @@ make_variable(DDS &table, ConstraintEvaluator &eval, const value &val)
 // Returns: A poitner to the function or NULL if not such function exists.
 
 bool_func
-get_function(const ConstraintEvaluator &table, const char *name)
+get_function(const ConstraintEvaluator &eval, const char *name)
 {
     bool_func f;
 
-    if (table.find_function(name, &f))
+    if (eval.find_function(name, &f))
 	return f;
     else
 	return 0;
 }
 
 btp_func
-get_btp_function(const ConstraintEvaluator &table, const char *name)
+get_btp_function(const ConstraintEvaluator &eval, const char *name)
 {
     btp_func f;
 
-    if (table.find_function(name, &f))
+    if (eval.find_function(name, &f))
 	return f;
     else
 	return 0;
 }
 
 proj_func
-get_proj_function(const ConstraintEvaluator &table, const char *name)
+get_proj_function(const ConstraintEvaluator &eval, const char *name)
 {
     proj_func f;
 
-    if (table.find_function(name, &f))
+    if (eval.find_function(name, &f))
 	return f;
     else
 	return 0;
 }
-
 
