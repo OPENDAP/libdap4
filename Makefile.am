@@ -38,10 +38,10 @@ libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_LIBADD = gl/libgnu.la
 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
-libdapclient_la_LIBADD = gl/libgnu.la
+#libdapclient_la_LIBADD = gl/libgnu.la
 
 libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
-libdapserver_la_LIBADD = gl/libgnu.la
+#libdapserver_la_LIBADD = gl/libgnu.la
 
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
 noinst_HEADERS = config_dap.h
@@ -184,16 +184,6 @@ lex.dds.cc: dds.lex dds.tab.cc dds.tab.h
 dds.tab.cc dds.tab.h: dds.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p dds $<
 	mv dds.tab.c dds.tab.cc
-
-# CE 
-
-#lex.expr.cc: expr.lex expr.tab.cc expr.tab.h
-#	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pexpr $<
-#	mv lex.expr.c lex.expr.cc
-#
-#expr.tab.cc expr.tab.h: expr.y
-#	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p expr $<
-#	mv expr.tab.c expr.tab.cc
 
 lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.h
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pce_expr $<
