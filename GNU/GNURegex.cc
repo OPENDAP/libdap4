@@ -83,8 +83,8 @@ Regex::match(const char*s, int len, int pos) const
     // The declaration of pmatch is a hack to work around a problem encountered 
     // on Potter's Mac (PowerMac G5, quad-processor, 2GB RAM, OS-X 10.4.6). 
     // The array declaration should be for one element, not two. However for
-    // some reason when it's one the call to regexec works, but the call in the
-    // return statement:
+    // some reason when it's declared to be one element the call to regexec works, 
+    // but the call in the return statement:
     //
     //     return pmatch[0].rm_eo - pmatch[0].rm_so; 
     //
