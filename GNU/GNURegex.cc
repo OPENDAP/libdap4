@@ -68,6 +68,8 @@ Regex::Regex(const char* t, int) throw(Error)
 }
 
 /** Does the regular expression match the string? 
+    <p><b> We Need To Fix A Bug in This Code That is Held At Bay By A Workaround
+    In The Code. See In Line Comments For More Detail.</b></p>
     @param s The string
     @param len The length of string to consider
     @param pos Start looking at this position in the string
@@ -75,10 +77,39 @@ Regex::Regex(const char* t, int) throw(Error)
 int 
 Regex::match(const char*s, int len, int pos) const
 {
-    regmatch_t pmatch[1];
+
+    // @todo Fix this regex bug for real, stop using the workaround!
+    //
+    // The declaration of pmatch is a hack to work around a problem encountered 
+    // on Potter's Mac (PowerMac G5, quad-processor, 2GB RAM, OS-X 10.4.6). 
+    // The array declaration should be for one element, not two. However for
+    // some reason when it's one the call to regexec works, but the call in the
+    // return statement:
+    //
+    //     return pmatch[0].rm_eo - pmatch[0].rm_so; 
+    //
+    // causes a:
+    //
+    //     Program received signal EXC_BAD_ACCESS, Could not access memory.
+    //     Reason: KERN_INVALID_ADDRESS at address: 0xfffffffc
+    // Here:
+    //    (gdb) where
+    //    #0  0x947b20b0 in __gnu_cxx::__exchange_and_add ()
+    //    #1  0x9479ce84 in std::string::_Rep::_M_dispose ()
+    //    #2  0x9479f070 in std::basic_string<char, std::char_traits<char>, std::allocator<char> >::~basic_string ()
+    //    #3  0x019125c8 in Regex::match (this=0xbfffe998, s=0x24026ec "/nc/123.nc", len=10, pos=0) at GNU/GNURegex.cc:117
+    //
+    // That's nasty, and we don't know why.
+    // We need to fix it for real at some point.
+    //
+    // ndp 5/31/2006
+
+    regmatch_t pmatch[2];
     string ss = s;
     
-    int result = regexec(&d_preg, ss.substr(pos, len).c_str(), 1, pmatch, 0);
+    const char* foo = ss.substr(pos, len).c_str();
+    
+    int result = regexec(&d_preg, foo, 1, pmatch, 0);
     if (result == REG_NOMATCH)
         return -1;
 
