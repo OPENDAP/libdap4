@@ -35,7 +35,7 @@
 using namespace std;
 
 void
-Regex::init(const char *t) // throw(Error)
+Regex::init(const char *t) throw(Error)
 {
     int result = regcomp(&d_preg, t, REG_EXTENDED);
 
@@ -43,9 +43,9 @@ Regex::init(const char *t) // throw(Error)
         size_t msg_len = regerror(result, &d_preg, (char *)NULL, (size_t)0);
         char *msg = new char[msg_len+1];
         regerror(result, &d_preg, msg, msg_len);
-        // Error e(string("Regex error: ") + string(msg));
+        Error e(string("Regex error: ") + string(msg));
         delete[] msg;
-        // throw e;
+        throw e;
     }
 }
 
@@ -57,14 +57,14 @@ Regex::~Regex()
 /** Initialize a POSIX regular expression (using the 'extended' features).
 
     @param t The regular expression pattern. */
-Regex::Regex(const char* t) // throw(Error)
+Regex::Regex(const char* t) throw(Error)
 {
     init(t);
 }
 
 /** Compatability ctor.
     @see Regex::Regex(const char* t) */
-Regex::Regex(const char* t, int) // throw(Error)
+Regex::Regex(const char* t, int) throw(Error)
 {
     init(t);
 }
@@ -79,32 +79,6 @@ Regex::Regex(const char* t, int) // throw(Error)
 int 
 Regex::match(const char*s, int len, int pos)
 {
-
-    // @todo Fix this regex bug for real, stop using the workaround!
-    //
-    // The declaration of pmatch is a hack to work around a problem encountered 
-    // on Potter's Mac (PowerMac G5, quad-processor, 2GB RAM, OS-X 10.4.6). 
-    // The array declaration should be for one element, not two. However for
-    // some reason when it's declared to be one element the call to regexec works, 
-    // but the call in the return statement:
-    //
-    //     return pmatch[0].rm_eo - pmatch[0].rm_so; 
-    //
-    // causes a:
-    //
-    //     Program received signal EXC_BAD_ACCESS, Could not access memory.
-    //     Reason: KERN_INVALID_ADDRESS at address: 0xfffffffc
-    // Here:
-    //    (gdb) where
-    //    #0  0x947b20b0 in __gnu_cxx::__exchange_and_add ()
-    //    #1  0x9479ce84 in std::string::_Rep::_M_dispose ()
-    //    #2  0x9479f070 in std::basic_string<char, std::char_traits<char>, std::allocator<char> >::~basic_string ()
-    //    #3  0x019125c8 in Regex::match (this=0xbfffe998, s=0x24026ec "/nc/123.nc", len=10, pos=0) at GNU/GNURegex.cc:117
-    //
-    // That's nasty, and we don't know why.
-    // We need to fix it for real at some point.
-    //
-    // ndp 5/31/2006
     regmatch_t pmatch[1];
     string ss = s;
     
