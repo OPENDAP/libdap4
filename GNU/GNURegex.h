@@ -34,27 +34,27 @@
 #include <sys/types.h>
 #include <regex.h>
 
-#include "Error.h"
+// #include "Error.h"
 
 
 /** a C++ interface to POSIX regular expression functions.
 
-    @author James Gallagehr <jgallagher@opendap.org> */
+    @author James Gallagher <jgallagher@opendap.org> */
 class Regex
 {
 private:
     regex_t d_preg;
-    void init(const char *t) throw(Error);
+    void init(const char *t); // throw(Error);
     
 public:
-    Regex(const char *t)  throw(Error);
-    Regex(const char *t, int dummy)  throw(Error);
+    Regex(const char *t); //  throw(Error);
+    Regex(const char *t, int dummy); //  throw(Error);
     ~Regex();
 
     /// Does the pattern match.
-    int match(const char* s, int len, int pos = 0) const;
+    int match(const char* s, int len, int pos = 0);
     /// How much of the string does the pattern matche.
-    int search(const char* s, int len, int& matchlen, int pos = 0) const;
+    int search(const char* s, int len, int& matchlen, int pos = 0);
 };
 
 #endif

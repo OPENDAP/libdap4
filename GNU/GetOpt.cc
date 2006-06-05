@@ -16,6 +16,8 @@ License along with this library; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include <config.h>
+
 /* AIX requires the alloca decl to be the first thing in the file. */
 #ifdef __GNUC__
 #define alloca __builtin_alloca

@@ -23,17 +23,19 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include <config.h>
+
 #include <new>
 #include <string>
 #include <stdexcept>
 
 #include <GNURegex.h>
-#include <Error.h>
+// #include <Error.h>
 
 using namespace std;
 
 void
-Regex::init(const char *t) throw(Error)
+Regex::init(const char *t) // throw(Error)
 {
     int result = regcomp(&d_preg, t, REG_EXTENDED);
 
@@ -41,9 +43,9 @@ Regex::init(const char *t) throw(Error)
         size_t msg_len = regerror(result, &d_preg, (char *)NULL, (size_t)0);
         char *msg = new char[msg_len+1];
         regerror(result, &d_preg, msg, msg_len);
-        Error e(string("Regex error: ") + string(msg));
+        // Error e(string("Regex error: ") + string(msg));
         delete[] msg;
-        throw e;
+        // throw e;
     }
 }
 
@@ -55,14 +57,14 @@ Regex::~Regex()
 /** Initialize a POSIX regular expression (using the 'extended' features).
 
     @param t The regular expression pattern. */
-Regex::Regex(const char* t) throw(Error)
+Regex::Regex(const char* t) // throw(Error)
 {
     init(t);
 }
 
 /** Compatability ctor.
     @see Regex::Regex(const char* t) */
-Regex::Regex(const char* t, int) throw(Error)
+Regex::Regex(const char* t, int) // throw(Error)
 {
     init(t);
 }
@@ -75,7 +77,7 @@ Regex::Regex(const char* t, int) throw(Error)
     @param pos Start looking at this position in the string
     @return The number of characters that match, -1 if there's no match. */
 int 
-Regex::match(const char*s, int len, int pos) const
+Regex::match(const char*s, int len, int pos)
 {
 
     // @todo Fix this regex bug for real, stop using the workaround!
@@ -103,13 +105,10 @@ Regex::match(const char*s, int len, int pos) const
     // We need to fix it for real at some point.
     //
     // ndp 5/31/2006
-
-    regmatch_t pmatch[2];
+    regmatch_t pmatch[1];
     string ss = s;
     
-    const char* foo = ss.substr(pos, len).c_str();
-    
-    int result = regexec(&d_preg, foo, 1, pmatch, 0);
+    int result = regexec(&d_preg, ss.substr(pos, len).c_str(), 1, pmatch, 0);
     if (result == REG_NOMATCH)
         return -1;
 
@@ -127,7 +126,7 @@ Regex::match(const char*s, int len, int pos) const
     POSIX regular expressions, whcih return the start position of the 
     longest match. */
 int 
-Regex::search(const char* s, int len, int& matchlen, int pos) const
+Regex::search(const char* s, int len, int& matchlen, int pos)
 {
     // alloc space for len matches, which is theoretical max.
     regmatch_t *pmatch = new regmatch_t[len];
