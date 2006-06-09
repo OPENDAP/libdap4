@@ -1,6 +1,38 @@
 These are instructions for building the source on AIX. Hopefully more and more
 of these steps will be incorporated into the regular build. jhrg
 
+On May 4, 2006, at 11:10 AM, Dan Stromberg wrote:
+
+Hi James.
+
+Believe it or not, I appear to have gotten it working last night, based
+in part on my earlier work, and based in part on the message Martin
+sent.
+
+I did it a little bit differently both from how Martin wrapped things
+up, as well as a bit differently from what I was doing previously.
+
+Specifically:
+
+     1. I did all my configure's with --disable-dynamic --enable-static
+        - because AIX's shared libraries are a bit of a mess
+     2. On any package with C++ in it, I used CXX='xlC_r -q64
+        -qrtti=all'.  I suspect this is an alternative to the
+        -qlanglvl=extended Martin was using
+     3. On libdap I used CONFIG_SHELL=/usr/local/bin/bash prior to
+        configure
+     4. On libdap I got around the malloc problem by relying on the
+        malloc version that comes with the software instead of using an
+        external malloc library.  I did this by changing #undef malloc
+        to #undef this_was_malloc in config.h.in followed by an
+        autoconf.
+
+Thanks!
+
+Here's the body of an older email, also from Dan, about an earlier albeit somewhat
+more complicated success. The patches he describes has since been applied to the
+sources and the result checked into our source code control system. 
+
 Patches to the source from Dan Stromberg:
     
     http://dcs.nac.uci.edu/~strombrg/opendap/libdap-AIX-patches.tar.gz
