@@ -1665,7 +1665,7 @@ gse_delete_buffer(void *buf)
     gse__delete_buffer((YY_BUFFER_STATE)buf);
 }
 
-// Note that the grid() CE funxtion only deals with numeric maps (8/28/2001
+// Note that the grid() CE function only deals with numeric maps (8/28/2001
 // jhrg) and that all comparisons are done using doubles. 
 
 static void
