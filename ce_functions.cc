@@ -85,7 +85,7 @@ extract_string_argument(BaseType *arg)
     return s;
 }
 
-// In reality no server imlements this; it _should_ be removed. 03/28/05 jhrg
+// In reality no server implements this; it _should_ be removed. 03/28/05 jhrg
 BaseType *
 func_length(int argc, BaseType *argv[], DDS &dds)
 {
