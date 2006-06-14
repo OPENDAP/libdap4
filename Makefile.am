@@ -60,7 +60,7 @@ LEX_YACC_FILES = das.tab.h das.tab.cc lex.das.cc dds.tab.h dds.tab.cc \
 
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
-	win32 $(LEX_YACC_EXTRA) $(LEX_YACC_FILES)
+	VCPP $(LEX_YACC_EXTRA) $(LEX_YACC_FILES)
 
 dist_aclocal_DATA = conf/libdap.m4
 

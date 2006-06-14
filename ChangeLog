@@ -1,3 +1,302 @@
+2006-06-13  James Gallagher <jgallagher@opendap.org>
+
+	lex.gse_.cc: Comments
+
+2006-06-13  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc, gse.lex: fixed comments
+
+2006-06-09  James Gallagher <jgallagher@opendap.org>
+
+	INSTALL.AIX: Added newer comments from Dan S.
+
+2006-06-09  James Gallagher <jgallagher@opendap.org>
+
+	INSTALL: Updated by adding a reference to the INSTALL.AIX file.
+
+2006-06-06  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-06-05  James Gallagher <jgallagher@opendap.org>
+
+	GNURegex: Added Error thows back into the code
+
+2006-06-05  James Gallagher <jgallagher@opendap.org>
+
+	In GNU: Removed some now-unused files and fixed a bug in
+	GNURegex.cc where config.h was not included when it must be. This
+	caused a failure on OS/X because the rpl_regexec(), ..., symbols
+	were not defined.
+
+2006-06-02  James Gallagher <jgallagher@opendap.org>
+
+	regex_test.cc: Added
+
+2006-06-01  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-05-31  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	GNURegex.cc: kludge! Added a workaround patch to
+	GNURegex.cc:match() to avoid a illegal memory access segmentation
+	fault under OS-X 10.4.6. Inline comments provide greater detail.
+	(ndp)
+
+2006-05-31  James Gallagher <jgallagher@opendap.org>
+
+	ssize_t.m4: Added during most recent update.
+
+2006-05-30  James Gallagher <jgallagher@opendap.org>
+
+	In gl/: Update to the gnulib code. This may fix a problem on OS/X
+	where the gnulib regexec function appears to corrupt the stack.
+
+2006-05-19  James Gallagher <jgallagher@opendap.org>
+
+	Various types (Int16, et c.): Removed include of ce_expr.tab.h since
+	that header is included by Operators.h
+
+2006-05-19  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Removed include of libgnu from libdapclient and
+	libdapserver. This should fix the multiple define error at link time.
+
+2006-05-19  James Gallagher <jgallagher@opendap.org>
+
+	ce_expr.y: fixed multiple use of the variable name 'table' in
+	declarations.
+
+2006-05-18  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: reordered libraries and added ce_parser.h to DAP_HDR
+
+2006-05-10  James Gallagher <jgallagher@opendap.org>
+
+	AISDatabaseParser.h, AISResources.cc, AISResources.h, Resource.cc:
+	Updates to doxygen comments.
+
+2006-05-08  James Gallagher <jgallagher@opendap.org>
+
+	Operators.h: Made dods_max() inline. This should improve performance
+	and also fix a problem introduced by the recently applied AIX patch
+	where dods_max() was multiply defined.
+
+2006-05-04  James Gallagher <jgallagher@opendap.org>
+
+	INSTALL.AIX: Updated the information from Dan Stromberg and Martin
+	Peschke.
+
+2006-05-04  James Gallagher <jgallagher@opendap.org>
+
+	Operators.h, RValue.cc, deflate.c: Applied patches from Dan Stromberg
+	which fix problems found during a port to the native AIX compiler.
+
+2006-05-01  James Gallagher <jgallagher@opendap.org>
+
+	libdap.m4: Added DAP_CLIENT_LIBS and DAP_SERVER_LIBS to symbols
+	that are written out.
+
+2006-04-20  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-04-19  James Gallagher <jgallagher@opendap.org>
+
+	ce_expr.y: The expression parser now passes the ConstraintEvaluator
+	object to projection functions.
+
+2006-04-19  James Gallagher <jgallagher@opendap.org>
+
+	ConstraintEvaluator: Removed some code that was commented out.
+
+2006-04-19  James Gallagher <jgallagher@opendap.org>
+
+	expr.h: The projection function typedef now includes a fourth
+	argument so that the ConstraintEvaluator can be passed to the
+	projection function. This provides a way for the proj_function to
+	register the matching selection function.
+
+2006-04-19  James Gallagher <jgallagher@opendap.org>
+
+	ce_parser.h: Added. Used to pass both the DDS and ConstraintEvaluator
+	to the CE Parser.
+
+2006-04-19  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	configure.ac, dap-config.in, conf/libdap.m4: bumped up the revision
+	number to 3.7.0 (which will be the next revision), added options to
+	dap-config --server-libs and --client-libs and updated the libdap.m4
+	macro to match the new three-library organization of libdap.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	expr.lex, expr.y, lex.expr.cc, expr.tab.cc: Removed/Replaced with
+	ce_expr...
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	Removed_functions.txt: Updated for the latest changes.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	lex.ce_expr.cc: Added
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	expr-test.cc, tests/Makefile.am: Tests updated for changes in DDS,
+	DODSFilter, et cetera.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	DODSFilter: Modified so that this class now takes a ConstraintEvaluator
+	object in the places where needed.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	DDS: Removed the constraint evaluator and the send() method.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	BaseType.h and it's child classes: Now the serialize() method
+	takes not only a DDS but also a ConstraintEvaluator object.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	ce_expr.lex, ce_expr.y, ce_expr.tab.{cc,h}: Added files that
+	contains a modified ce parser. This parser takes two objects as
+	input: ConstraintEvaluator and DDS. The old parser took only the
+	DDS.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	ConstraintEvaluator: Added this class. Now the ce evaluator is separate
+	from the DDS object.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	Clause.h: Added private methods for the const ctor and operator=
+	so that default versions would not get called by accident.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	cgi_util.cc: Removed the do_data_transfer() function. Use DODSFilter.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Minor change to the func_length code. It no
+	longer uses the 'constants' vector in DDS to store the BaseType
+	used for the return value. The caller can easily free the storage.
+	Also, this function is never used!
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	INSTALL.AIX: Fixed spelling and added a note about not bugging
+	Martin or assuming he's going to guarantee the steps will work.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Now builds the ce_expr parser in place of the expr
+	parser. There's no real difference in the grammar accepted by the
+	new parser, but ce_expr takes both the ConstraintEvaluator and
+	DDS objects, where the old one took only the DDS.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	Operators.h: Now uses the ce_expr parser header.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	parser.h: Removed the GSEClause include that I'd commented out earlier.
+
+2006-04-16  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Rename, add dirs and prune as appropriate for VC++ port
+
+2006-04-04  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-04-03  James Gallagher <jgallagher@opendap.org>
+
+	gse_parser.h: Added. This holds parser info used by the grid() ce
+	function. The contents of this file were originally in parser.h, which
+	holds definitions for the DAP parsers. Moving the info about grid()
+	here maens that the grid() code can be part of the dapserver library.
+
+2006-04-03  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Edit 'scalar deleting destructors' out of win32 module def's
+
+2006-03-31  James Gallagher <jgallagher@opendap.org>
+
+	For ticket 307 I modified the build so that three libraries are
+	made instead of just one. The libdap library now contains only
+	classes used for the DAP2 implementation. The client and server
+	support code is now in libdapclient and libdapserver. Many files
+	were modified since I trimmed the includes so that classes in
+	libdapclient don't include headers in libdapserver and vice versa.
+
+2006-03-31  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-03-30  James Gallagher <jgallagher@opendap.org>
+
+	Added INSTALL.AIX
+
+2006-03-27  James Gallagher <jgallagher@opendap.org>
+
+	Massive propset on libdap to get svn to ignore many things so
+	eclipse will work more smoothly
+
+2006-03-24  James Gallagher <jgallagher@opendap.org>
+
+	Updated svn:ignore for some files.
+
+2006-03-21  James Gallagher <jgallagher@opendap.org>
+
+	Build of docs/html.tar.gz for 3.6.2 on 3/21/06
+
+2006-03-21  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-03-20  James Gallagher <jgallagher@opendap.org>
+
+	Moved tests/expr-testsuite/test.a to tests/expr-testsuite/test.10.
+
+2006-03-20  James Gallagher <jgallagher@opendap.org>
+
+	test.c.exp: Removed log
+
+2006-03-19  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Win32 libnc-dods requires core's regex.h installed.  None stock on
+	windows. 
+
+2006-03-19  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Update export module definitions per recent core changes
+
+2006-03-16  James Gallagher <jgallagher@opendap.org>
+
+	NEWS: Spelling... one more time
+
+2006-03-16  James Gallagher <jgallagher@opendap.org>
+
+	NEWS: Spelling...
+
+2006-03-14  James Gallagher <jgallagher@opendap.org>
+
+	Updated ChangeLog, configure.ac, libdap.spec and NEWS for version
+	3.6.2
+
 2006-03-14  James Gallagher <jgallagher@opendap.org>
 
 	I changed the way DODSFilter handles the compression sub-process.

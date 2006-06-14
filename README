@@ -1,7 +1,45 @@
 
 $Id$
 
-Updated for 3.6.1
+NOTES for version 3.7.0
+
+This version includes new features and an implementation change.
+
+This version of libdap now returns the DAP protocol version number, 3.1, in
+an HTTP response header. Use this to determine which protocol version the
+library implements. The inclusion of a protocol version number is the sole
+official new feature of DAP 3.1. Use Connect::get_protocol() to get the
+version number. Clients can use this to determine the features supported by a
+server. The Connect::get_version() method can still be used to get our
+server's implementation version. The distinction is that as more groups
+provide their own implementations of the DAP, the protocol version will
+provide a way for clients to determine capabilities independently of
+implementation.
+
+The libdap library now contains an implementation of the DDX object/response,
+although this is an alpha implementation and it's actually been part of the
+library for some time now. The implementation contained in this version of
+the library is close enough to the version we intend for DAP4 that developers
+can start to use it. Most of the server handlers will return DDXs when asked.
+
+The DDX combines the information previously held by the DDS and DAS objects,
+making it much easier to associate attributes to variables. As the name
+suggests, the DDX uses XML rather than curly-braces. You can drop the DDX
+into your favorite XML parser and get a DOM tree; no need to use our parsers.
+However, libdap contains a nice SAX parser that will build the libdap objects
+directly from the XML DDX object/response. Also included in libdap are
+methods to build a DDX using a DDS and DAS, so there's an easy migration path
+for both servers and clients.
+
+Finally, the library contains two structural changes. First, the library
+named 'libdap' now holds the DAP implementation while two new libraries,
+'libdapclient' and 'libdapserver', now hold the client and server helper
+classes which are not strictly part of the DAP. Secondly, the DDS/DDX object
+now takes the constraint evaluator as a parameter. The class
+ConstraintEvaluator holds our default evaluator, but it's now possible to use
+your own evaluator .
+
+NOTES for version 3.6.1
 
 Version 3.6.1 is bug fix release.
 

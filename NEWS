@@ -1,6 +1,40 @@
 
 $Id$
 
+News for version 3.7.0
+
+The big change: The first of the DAP3/4 features was added to the libdap
+library; the library now includes the DAP protocol version number in all
+responses. A savvy client can test for this and process accordingly. 
+
+A second feature, representation of the data source metadata in XML, is
+supported in alpha form. Expect the 'DDX' response to change slightly in the
+next release. The DDX returned now contains an obsolete element named 'Blob'
+which we won't be using. Other than the Blob element, the current DDX
+probably will not change much except for the addition of new datatypes,
+something that will take place only after other changes are made to the
+protocol. Many of the handlers now support returning the DDX, so developers
+can begin to play with it's capabilities. 
+
+What's really nice about the DDX: It's cool that the DDX now encode the
+metadata in XML, but the really nice feature is that it combines information
+from the DDS and DAS, making the association of attributes to variables much
+easier. 
+
+Updated the reference guide (HTML pages in docs).
+
+Fixed a pernicious bug in GNURegex.cc
+
+Added the class ConstraintEvaluator. The DDS class now takes the constraint
+evaluator as a parameter, so it's possible to replace ours with your own.
+
+The single library libdap has been split into three libraries: libdap for the 
+DAP functionality, libdapclient for the client-side classes and libdapserver
+for the server-side classes.
+
+Added INSTALL.AIX which contains information about building libdap on AIX
+using the _native compiler_. 
+
 News for version 3.6.2
 
 This version includes two bug fixes. 
