@@ -103,9 +103,9 @@ pkg:
 # Library sources
 # 
 
-GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc GNU/GNUerror.cc
+GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc
 
-GNU_HDR = GNU/builtin.h GNU/GetOpt.h GNU/GNURegex.h
+GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h
 
 # Roughly divide the source into DAP, Client and Server groups. In the
 # future, make three different libraries. jhrg 
