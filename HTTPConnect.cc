@@ -355,7 +355,20 @@ HTTPConnect::read_url(const string &url, FILE *stream,
 		      const vector<string> *headers) throw(Error)
 {
     curl_easy_setopt(d_curl, CURLOPT_URL, url.c_str());
+
+#ifdef WIN32
+    //  See the curl documentation for CURLOPT_FILE (nka CURLOPT_WRITEDATA)
+    //  and the CURLOPT_WRITEFUNCTION option.  Quote: "If you are using libcurl as
+    //  a win32 DLL, you MUST use the CURLOPT_WRITEFUNCTION option if you set the
+    //  CURLOPT_WRITEDATA option or you will experience crashes".  At the root of
+    //  this issue is that one should not pass a FILE * to a windows DLL.  Close
+    //  inspection of libcurl yields that their default write function when using
+    //  the CURLOPT_WRITEDATA is just "fwrite".
     curl_easy_setopt(d_curl, CURLOPT_FILE, stream);
+    curl_easy_setopt(d_curl, CURLOPT_WRITEFUNCTION, &fwrite);
+#else
+    curl_easy_setopt(d_curl, CURLOPT_FILE, stream);
+#endif
 
     DBG(copy(d_request_headers.begin(), d_request_headers.end(),
 	     ostream_iterator<string>(cerr, "\n")));
