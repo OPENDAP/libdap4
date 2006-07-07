@@ -124,8 +124,8 @@ unoctstring(string s)
 
     @param in The string in which to replace characters.
     @param allowable The set of characters that are allowed in a URI.
-    default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
-    0123456789_.!~*'()-";
+    default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/%.\\*"
+    @see id2www_ce()
     @return The modified identifier. */
 string
 id2www(string in, const string &allowable)
@@ -140,16 +140,15 @@ id2www(string in, const string &allowable)
     return in;
 }
 
-/** Replace characters that are not allowed in WWW URLs. This function bends
-    the rules so that characters that we've been sending in CEs will be sent
-    unencoded. This is needed to keep the newer clients from breaking the old
-    servers. The only difference between this function and id2www is that
-    <code>[]:{}&</code> have been added to the allowable set of characters.
+/** Replace characters that are not allowed in WWW URLs using rules specific
+    to Constraint Expressions. This has canged over time and now the only
+    difference is that '*' is escaped by this function while it is not
+    escaped by id2www().
 
     @param in The string in which to replace characters.
     @param allowable The set of characters that are allowed in a URI.
-    default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
-    0123456789_.!~*'()-[]:{}&";
+    default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/%.\\"
+    @see id2www()    
     @return The modified identifier. */
 string
 id2www_ce(string in, const string &allowable)
