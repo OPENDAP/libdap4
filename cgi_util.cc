@@ -460,7 +460,7 @@ static const char *encoding[]={"unknown", "deflate", "x-plain"};
     @param out Write the MIME header to this FILE pointer.
     @param type The type of this this response. Defaults to
     application/octet-stream.
-    @param ver The version string; denotes the DAP spec and implementation
+    @param ver The version string; denotes the libdap implementation
     version.
     @param enc How is this response encoded? Can be plain or deflate or the
     x_... versions of those. Default is x_plain.
@@ -471,9 +471,15 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
 	      EncodingType enc, const time_t last_modified)
 {
     fprintf( out, "HTTP/1.0 200 OK%s", CRLF ) ;
-    fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
-    fprintf( out, "XOPeNDAP-Server: %s%s", ver.c_str(), CRLF ) ;
-    fprintf( out, "XDAP: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
+    if (ver == "") {
+      fprintf( out, "XDODS-Server: %s%s", DVR, CRLF ) ;
+      fprintf( out, "XOPeNDAP-Server: %s%s", DVR, CRLF ) ;
+    }
+    else {
+        fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
+        fprintf( out, "XOPeNDAP-Server: %s%s", ver.c_str(), CRLF ) ;
+    }
+   fprintf( out, "XDAP: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
 
     const time_t t = time(0);
     fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
@@ -501,7 +507,7 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
 
     @param out Write the MIME header to this FILE pointer.
     @param type The type of this this response.
-    @param ver The version string; denotes the DAP spec and implementation
+    @param ver The version string; denotes the libdap implementation
     version.
     @param enc How is this response encoded? Can be plain or deflate or the
     x_... versions of those. Default is x_plain.
@@ -512,8 +518,14 @@ set_mime_html(FILE *out, ObjectType type, const string &ver,
 	      EncodingType enc, const time_t last_modified)
 {
     fprintf( out, "HTTP/1.0 200 OK%s", CRLF ) ;
-    fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
-    fprintf( out, "XOPeNDAP-Server: %s%s", ver.c_str(), CRLF ) ;
+    if (ver == "") {
+      fprintf( out, "XDODS-Server: %s%s", DVR, CRLF ) ;
+      fprintf( out, "XOPeNDAP-Server: %s%s", DVR, CRLF ) ;
+    }
+    else {
+        fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
+        fprintf( out, "XOPeNDAP-Server: %s%s", ver.c_str(), CRLF ) ;
+    }
     fprintf( out, "XDAP: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
 
     const time_t t = time(0);
@@ -543,7 +555,7 @@ set_mime_html(FILE *out, ObjectType type, const string &ver,
     @param out Write the MIME header to this FILE pointer.
     @param type The type of this this response. Defaults to
     application/octet-stream.
-    @param ver The version string; denotes the DAP spec and implementation
+    @param ver The version string; denotes the libdap implementation
     version.
     @param enc How is this response encoded? Can be plain or deflate or the
     x_... versions of those. Default is x_plain.
@@ -555,8 +567,14 @@ set_mime_binary(FILE *out, ObjectType type, const string &ver,
 		EncodingType enc, const time_t last_modified)
 {
     fprintf( out, "HTTP/1.0 200 OK%s", CRLF ) ;
-    fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
-    fprintf( out, "XOPeNDAP-Server: %s%s", ver.c_str(), CRLF ) ;
+    if (ver == "") {
+      fprintf( out, "XDODS-Server: %s%s", DVR, CRLF ) ;
+      fprintf( out, "XOPeNDAP-Server: %s%s", DVR, CRLF ) ;
+    }
+    else {
+        fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
+        fprintf( out, "XOPeNDAP-Server: %s%s", ver.c_str(), CRLF ) ;
+    }
     fprintf( out, "XDAP: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
    
     const time_t t = time(0);

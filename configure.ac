@@ -13,8 +13,9 @@ AM_INIT_AUTOMAKE
 
 AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])
 AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
-AC_DEFINE_UNQUOTED(DVR, "${CNAME}/${CVER}", [Client name and vesion combined])
+AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and vesion combined])
 AC_SUBST(DVR)
+AC_MSG_RESULT([DVR is $DVR])
 AC_DEFINE(DAP_PROTOCOL_VERSION, "3.1", [What DAP version is supported?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
