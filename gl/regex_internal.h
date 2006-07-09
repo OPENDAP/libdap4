@@ -22,7 +22,12 @@
 
 #include <assert.h>
 #include <ctype.h>
+#ifdef WIN32
+#include <stdbool_.h>
+#define inline
+#else
 #include <stdbool.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -469,7 +474,11 @@ static unsigned int re_string_context_at (const re_string_t *input, Idx idx,
 #define re_string_skip_bytes(pstr,idx) ((pstr)->cur_idx += (idx))
 #define re_string_set_index(pstr,idx) ((pstr)->cur_idx = (idx))
 
+#ifdef WIN32
+#include <alloca_.h>
+#else
 #include <alloca.h>
+#endif
 
 #ifndef _LIBC
 # if HAVE_ALLOCA
