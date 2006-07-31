@@ -32,22 +32,36 @@ MDCFLAGS	= /MD /D HAVE_PTHREAD_H
 CFLAGS		= /nologo /W0 /GR /EHsc /c
 
 # Setup linker flags for libdap
-MTLFLAGS	= -lib /nologo -libpath:$(INSTALLLIBDIR)
-MDLFLAGS	= -libpath:$(INSTALLLIBDIR) /dll /def:libdap.def /map /fixed:NO /base:0x06000000 /NODEFAULTLIB:LIBCMT.lib
+DAP_MTLFLAGS	= -lib /nologo -libpath:$(INSTALLLIBDIR)
+DAP_MDLFLAGS	= -libpath:$(INSTALLLIBDIR) /dll /def:libdap.def /map /fixed:NO /base:0x06000000 /NODEFAULTLIB:LIBCMT.lib
+
+# Setup linker flags for libdapclient
+CLIENT_MTLFLAGS	= -lib /nologo -libpath:$(INSTALLLIBDIR)
+CLIENT_MDLFLAGS	= -libpath:$(INSTALLLIBDIR) /dll /def:libdapclient.def /map /fixed:NO /base:0x07000000 /NODEFAULTLIB:LIBCMT.lib
+
+# Setup linker flags for libdapserver
+SERVER_MTLFLAGS	= -lib /nologo -libpath:$(INSTALLLIBDIR)
+SERVER_MDLFLAGS	= -libpath:$(INSTALLLIBDIR) /dll /def:libdapserver.def /map /fixed:NO /base:0x08000000 /NODEFAULTLIB:LIBCMT.lib
 
 # Setup link libraries for libdap
-MTLIBS		=
-MDLIBS		= libdirent.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
+DAP_MTLIBS		=
+DAP_MDLIBS		= libdirent.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
+
+# Setup link libraries for libdapclient
+CLIENT_MTLIBS		=
+CLIENT_MDLIBS		= libdapMD.lib libdirent.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
+
+# Setup link libraries for libdapserver
+SERVER_MTLIBS		=
+SERVER_MDLIBS		= libdapMD.lib libdirent.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
 
 # Setup linker flags for executables
 EMTLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR) /NODEFAULTLIB:MSVCRT.lib
 EMDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
 
 # Setup link libraries for executables
-EMTLLIBS	= libdapMT.lib libdapclientMT.lib libdapserverMT.lib libxml2.lib \
-		libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
-EMDLLIBS	= libdapMD.lib libdapclientMD.lib libdapserverMD.lib libxml2.lib \
-		libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
+EMTLLIBS	= libdapclientMT.lib libdapserverMT.lib libdapMT.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
+EMDLLIBS	= libdapclientMD.lib libdapserverMD.lib libdapMD.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
 
 # Setup compiler includes and defines
 INCS		= /I . /I .. /I ..\GNU /I ..\gl /I $(INCLUDEDIR)
@@ -64,20 +78,34 @@ all:	setup
 	nmake modelMD
 
 modelMT: setup
-	@-md $(OBJDIR)\MT
-	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(MTLFLAGS)" LIBS="$(MTLIBS)" OBJDIR=$(OBJDIR)\MT libdapMT.lib
-	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(MTLFLAGS)" LIBS="$(MTLIBS)" OBJDIR=$(OBJDIR)\MT libdapclientMT.lib
-	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(MTLFLAGS)" LIBS="$(MTLIBS)" OBJDIR=$(OBJDIR)\MT libdapserverMT.lib
-	nmake installMT
+	@-md $(OBJDIR)\MT\libdap
+	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(DAP_MTLFLAGS)" LIBS="$(DAP_MTLIBS)" OBJDIR=$(OBJDIR)\MT\libdap libdapMT.lib
+	nmake installMTdap
+
+	@-md $(OBJDIR)\MT\libdapclient
+	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(CLIENT_MTLFLAGS)" LIBS="$(CLIENT_MTLIBS)" OBJDIR=$(OBJDIR)\MT\libdapclient libdapclientMT.lib
+	nmake installMTclient
+
+	@-md $(OBJDIR)\MT\libdapserver
+	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(SERVER_MTLFLAGS)" LIBS="$(SERVER_MTLIBS)" OBJDIR=$(OBJDIR)\MT\libdapserver libdapserverMT.lib
+	nmake installMTserver
+
 	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT getdap
 	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT deflate
 
 modelMD: setup
-	@-md $(OBJDIR)\MD
-	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(MDLFLAGS)" LIBS="$(MDLIBS)" OBJDIR=$(OBJDIR)\MD libdapMD.dll
-	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(MDLFLAGS)" LIBS="$(MDLIBS)" OBJDIR=$(OBJDIR)\MD libdapclientMD.dll
-	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(MDLFLAGS)" LIBS="$(MDLIBS)" OBJDIR=$(OBJDIR)\MD libdapserverMD.dll
-	nmake installMD
+	@-md $(OBJDIR)\MD\libdap
+	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(DAP_MDLFLAGS)" LIBS="$(DAP_MDLIBS)" OBJDIR=$(OBJDIR)\MD\libdap libdapMD.dll
+	nmake installMDdap
+
+	@-md $(OBJDIR)\MD\libdapclient
+	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(CLIENT_MDLFLAGS)" LIBS="$(CLIENT_MDLIBS)" OBJDIR=$(OBJDIR)\MD\libdapclient libdapclientMD.dll
+	nmake installMDclient
+
+	@-md $(OBJDIR)\MD\libdapserver
+	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(SERVER_MDLFLAGS)" LIBS="$(SERVER_MDLIBS)" OBJDIR=$(OBJDIR)\MD\libdapserver libdapserverMD.dll
+	nmake installMDserver
+
 	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD getdap
 	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD deflate
 
@@ -190,22 +218,22 @@ deflate:	$(OBJDIR)\deflate.exe
 
 # Link the libraries
 $(OBJDIR)\libdapMT.lib: $(DAP_OBJS) $(GNU_OBJS)
-	@$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
 
 $(OBJDIR)\libdapMD.dll: $(DAP_OBJS) $(GNU_OBJS)
-	@$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
 
 $(OBJDIR)\libdapclientMT.lib: $(CLIENT_OBJS)
-	@$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
 
 $(OBJDIR)\libdapclientMD.dll: $(CLIENT_OBJS)
-	@$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
 
 $(OBJDIR)\libdapserverMT.lib: $(SERVER_OBJS)
-	@$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
 
 $(OBJDIR)\libdapserverMD.dll: $(SERVER_OBJS)
-	@$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
 
 # Libdap with the gram objs
 $(OBJDIR)\lex.das.obj		: $(SRCDIR)\lex.das.cc
@@ -388,18 +416,30 @@ install: installMT installMD
 	copy $(SRCDIR)\GNU\*.h $(INSTALLINCDIR)\GNU
 	copy $(SRCDIR)\gl\regex.h $(INSTALLINCDIR)
 
-installMT:
-	@-copy $(OBJDIR)\MT\libdapMT.lib $(INSTALLLIBDIR)
-	@-copy $(OBJDIR)\MT\libdapclientMT.lib $(INSTALLLIBDIR)
-	@-copy $(OBJDIR)\MT\libdapserverMT.lib $(INSTALLLIBDIR)
+installMT: installMTdap installMTclient installMTserver
 
-installMD:
-	@-copy $(OBJDIR)\MD\libdapMD.lib $(INSTALLLIBDIR)
-	@-copy $(OBJDIR)\MD\libdapMD.dll $(INSTALLDLLDIR)
-	@-copy $(OBJDIR)\MD\libdapclientMD.lib $(INSTALLLIBDIR)
-	@-copy $(OBJDIR)\MD\libdapclientMD.dll $(INSTALLDLLDIR)
-	@-copy $(OBJDIR)\MD\libdapserverMD.lib $(INSTALLLIBDIR)
-	@-copy $(OBJDIR)\MD\libdapserverMD.dll $(INSTALLDLLDIR)
+installMD: installMDdap installMDclient installMDserver
+
+installMTdap:
+	@-copy $(OBJDIR)\MT\libdap\libdapMT.lib $(INSTALLLIBDIR)
+
+installMTclient:
+	@-copy $(OBJDIR)\MT\libdapclient\libdapclientMT.lib $(INSTALLLIBDIR)
+
+installMTserver:
+	@-copy $(OBJDIR)\MT\libdapserver\libdapserverMT.lib $(INSTALLLIBDIR)
+
+installMDdap:
+	@-copy $(OBJDIR)\MD\libdap\libdapMD.lib $(INSTALLLIBDIR)
+	@-copy $(OBJDIR)\MD\libdap\libdapMD.dll $(INSTALLDLLDIR)
+
+installMDclient:
+	@-copy $(OBJDIR)\MD\libdapclient\libdapclientMD.lib $(INSTALLLIBDIR)
+	@-copy $(OBJDIR)\MD\libdapclient\libdapclientMD.dll $(INSTALLDLLDIR)
+
+installMDserver:
+	@-copy $(OBJDIR)\MD\libdapserver\libdapserverMD.lib $(INSTALLLIBDIR)
+	@-copy $(OBJDIR)\MD\libdapserver\libdapserverMD.dll $(INSTALLDLLDIR)
 
 clean:
 	@-rd /Q /S $(OBJDIR)
