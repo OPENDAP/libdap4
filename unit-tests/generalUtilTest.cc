@@ -131,7 +131,7 @@ public:
 	CPPUNIT_ASSERT(id2www("This-is") == "This-is");
 	CPPUNIT_ASSERT(id2www("This_is") == "This_is");
 	CPPUNIT_ASSERT(id2www("This/is") == "This/is");
-	CPPUNIT_ASSERT(id2www("This%is") == "This%is");
+	CPPUNIT_ASSERT(id2www("This%is") == "This%25is");
     }
 
     void www2id_test() {
