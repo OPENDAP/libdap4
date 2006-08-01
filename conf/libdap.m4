@@ -64,8 +64,13 @@ AC_DEFUN([AC_CHECK_LIBDAP],
        dap_no=yes
      else
        DAP_LIBS="`$DAP_CONFIG --libs`"
-       DAP_CLIENT_LIBS="`$DAP_CONFIG --client-libs`"
-       DAP_SERVER_LIBS="`$DAP_CONFIG --server-libs`"
+       if ($DAP_CONFIG --client-libs 2>&1 | grep unknown) >/dev/null 2>&1; then
+         DAP_CLIENT_LIBS=$DAP_LIBS
+         DAP_SERVER_LIBS=$DAP_LIBS
+       else
+         DAP_CLIENT_LIBS="`$DAP_CONFIG --client-libs`"
+         DAP_SERVER_LIBS="`$DAP_CONFIG --server-libs`"
+       fi
        DAP_CFLAGS="`$DAP_CONFIG --cflags`"
      fi
    fi
@@ -242,13 +247,21 @@ AC_DEFUN([AC_CHECK_DODS],
      fi
   fi 
   if test "x$ac_dods_ok" = "xyes" ; then
+     if test "z$DAP_CLIENT_LIBS" = 'z' ; then
+       DAP_CLIENT_LIBS=$DAP_LIBS
+       DAP_SERVER_LIBS=$DAP_LIBS
+     fi
      m4_if([$1], [], [:], [$1])
   else
      DAP_LIBS=""
      DAP_CFLAGS=""
+     DAP_CLIENT_LIBS=""
+     DAP_SERVER_LIBS=""
      m4_if([$2], [], [:], [$2])
   fi
   AC_SUBST([DAP_CFLAGS])
   AC_SUBST([DAP_LIBS])
+  AC_SUBST([DAP_CLIENT_LIBS])
+  AC_SUBST([DAP_SERVER_LIBS])
   AC_SUBST([DAP_ROOT])
 ])
