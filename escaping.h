@@ -51,10 +51,10 @@ string unoctstring(string s);
 // The characters allowable in an id in a URI (see RFC 2396): 
 // [-A-Za-z0-9_.!~*'()].
 
-string id2www(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/%.\\*");
+string id2www(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/.\\*");
 
 // This is what DAP2 allows in a ce: [-+a-zA-Z0-9_/%.\\#] 
-string id2www_ce(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/%.\\");
+string id2www_ce(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/.\\");
 
 string www2id(const string &in, const string &escape = "%",
 	      const string &except = "");

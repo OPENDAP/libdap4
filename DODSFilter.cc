@@ -755,6 +755,7 @@ DODSFilter::send_das(DAS &das, const string &anc_location,
     @brief Transmit a DDS.
     @param out The output stream to which the DAS is to be sent.
     @param dds The DDS to send back to a client.
+    @param eval A reference to the ConstraintEvaluator to use.
     @param constrained If this argument is true, evaluate the
     current constraint expression and send the `constrained DDS'
     back to the client. 
@@ -862,6 +863,7 @@ DODSFilter::dataset_constraint(DDS &dds, ConstraintEvaluator &eval, FILE *out)
 
     @brief Transmit data.
     @param dds A DDS object containing the data to be sent.
+    @param eval A reference to the ConstraintEvaluator to use.    
     @param data_stream Write the response to this stream.
     @param anc_location A directory to search for ancillary files (in
     addition to the CWD).  This is used in a call to 
@@ -931,8 +933,9 @@ DODSFilter::send_data(DDS &dds, ConstraintEvaluator &eval, FILE *data_stream,
     DDS and DAS objects are built using code that already exists in the
     servers. 
 
-    @param out Destination
     @param dds The dataset's DDS \e with attributes in the variables.
+    @param eval A reference to the ConstraintEvaluator to use.    
+    @param out Destination
     @param with_mime_headers If true, include the MIME headers in the response.
     Defaults to true. */
 void

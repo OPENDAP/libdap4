@@ -558,6 +558,7 @@ Sequence::reset_row_number()
     @param dataset A string, often a file name, used to refer to t he
     dataset. 
     @param dds A reference to the DDS for this dataset.
+    @param eval Use this as the constraint expression evaluator.    
     @param ce_eval If True, evaluate any CE, otherwise do not.
 */
 bool

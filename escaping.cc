@@ -121,10 +121,27 @@ unoctstring(string s)
 }
 
 /** Replace characters that are not allowed in DAP2 identifiers.
+    
+    -In the DAP itself, id2www() is called in:
+     -# Array::print_decl() where dimension names are escaped
+     -# AttrTable::print() (which calls AttrTable::simple_print()) where
+        attribute names are escaped
+     -# BaseType::print_decl() where variable names are escaped.
+     -# Constructor::print_decl() where the name of the constructor type is 
+        printed.
+     -# DDS::print() and DDS::print_constrained() where the name of the 
+        dataset is printed.
+     -# Grid::print_decl() where the name of the grid is printed. 
+
+    -In the client code:
+     -# id2www_ce() is called five times in the five methods that are used to 
+        request responses where a CE is appended to a URL 
+        (Connect::request_version, request_protocol, request_das, request_dds, 
+        request_data). 
 
     @param in The string in which to replace characters.
     @param allowable The set of characters that are allowed in a URI.
-    default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/%.\\*"
+    default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/.\\*"
     @see id2www_ce()
     @return The modified identifier. */
 string
@@ -147,7 +164,7 @@ id2www(string in, const string &allowable)
 
     @param in The string in which to replace characters.
     @param allowable The set of characters that are allowed in a URI.
-    default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/%.\\"
+    default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/.\\"
     @see id2www()    
     @return The modified identifier. */
 string
@@ -159,6 +176,23 @@ id2www_ce(string in, const string &allowable)
 /** Given a string that contains WWW escape sequences, translate those escape
     sequences back into ASCII characters. Return the modified string. 
 
+    -Places in the dap code where www2id() is called:
+     -# Array::append_dim() the name is decoded before it is added
+     -# AttrTable::set_name(), AttrTable::append_attr(), 
+        AttrTable::append_container(), AttrTable?::del_attr(), AttrTable::add_container_alias(), AttrTable::add_value_alias() names are decoded before that are set/used.
+     -# BaseType::set_name() Names are decoded before they are set
+     -# When the constraint expression parser looks for a variable, the name is 
+        first decoded.
+     -# DAS::DAS() Named attribute containers are decoded
+     -# DDS::var() When a DDS searches for a variable, the name is first decoded.
+     -# Grid::var(), Sequence::var(), Structure::var() Variable names are decoded. 
+   
+   -In the server code:
+     -# DODSFilter::initialize() The dataset name is decoded except that %20 
+        is not removed.
+     -# DODSFilter::set_ce() The CE is decoded, except for spaces (%20).
+     -# DODSFilter::set_dataset_name() same logic as the first case. 
+   
     @param in The string to modify.
     @param escape The character used to signal the begining of an escape
     sequence. default: "%"

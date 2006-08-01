@@ -317,6 +317,8 @@ ConstraintEvaluator::eval_selection(DDS &dds, const string &dataset)
     correctly read the variable's value and send it to the client.
 
     @param constraint A string containing the constraint expression.
+    @param dds The DDS that provides the environment within which the 
+    constraint is evaluated.
     @exception Throws Error if the constraint does not parse. */
 void
 ConstraintEvaluator::parse_constraint(const string &constraint, DDS &dds)

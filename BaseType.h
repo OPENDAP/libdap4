@@ -401,6 +401,7 @@ public:
 
 	@brief Move data to the net.
 	@param dataset The (local) name of dataset to be read.
+        @param eval Use this as the constraint expression evaluator.
 	@param dds The Data Descriptor Structure object corresponding to
 	this dataset.  See <i>The DODS User Manual</i> for information
 	about this structure.
