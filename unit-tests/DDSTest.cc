@@ -188,7 +188,7 @@ public:
         </Map>\n\
     </Grid>\n\
 \n\
-    <dodsBLOB URL=\"http://localhost/dods/test.xyz\"/>\n\
+    <dataBLOB href=\"http://localhost/dods/test.xyz\"/>\n\
 </Dataset>\n");
 	CPPUNIT_ASSERT(re_match(r, file_to_string(tmp)));
         
@@ -264,7 +264,7 @@ public:
         </Map>\n\
     </Grid>\n\
 \n\
-    <dodsBLOB URL=\"http://localhost/dods/test.xyz\"/>\n\
+    <dataBLOB href=\"http://localhost/dods/test.xyz\"/>\n\
 </Dataset>\n");
 
 	CPPUNIT_ASSERT(re_match(r, output));
