@@ -3,5 +3,5 @@
 
     <BYTE name="b1"/>
 
-    <dodsBLOB URL="huh.blob"/>
+    <dataBLOB href="huh.blob"/>
 </Dataset>

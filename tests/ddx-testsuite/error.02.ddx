@@ -6,5 +6,5 @@
 	    <value>2</value>
     </Byte>
 
-    <dodsBLOB URL="huh.blob"/>
+    <dataBLOB href="huh.blob"/>
 </Dataset>

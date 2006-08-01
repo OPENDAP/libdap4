@@ -29,6 +29,8 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#define DODS_DEBUG 1
+
 #include "DDXParser.h"
 #include "BaseTypeFactory.h"
 #include "debug.h"

@@ -15,5 +15,5 @@
 
     </Attribute>
 
-    <dodsBLOB URL="huh.blob"/>
+    <dataBLOB href="huh.blob"/>
 </Dataset>

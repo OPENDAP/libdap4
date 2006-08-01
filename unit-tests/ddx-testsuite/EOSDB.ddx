@@ -183,5 +183,5 @@ xsi:schemaLocation="http://www.dods.org/ns/DODS  http://dods.coas.oregonstate.ed
 		<String name="Comment"/>
 	</Sequence>
 
-	<dodsBLOB URL="http://dods.coas.oregonstate.edu:8080/dods/dts/EOSDB.blob"/>
+	<dataBLOB href="http://dods.coas.oregonstate.edu:8080/dods/dts/EOSDB.blob"/>
 </Dataset>

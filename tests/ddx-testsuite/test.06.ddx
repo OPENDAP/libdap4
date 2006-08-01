@@ -40,5 +40,5 @@ xmlns="http://www.dods.org/ns/DODS">
 		<dimension size="25"/>
 	</Array>
 
-	<dodsBLOB URL="http://dods.coas.oregonstate.edu:8080/dods/dts/test.02.blob"/>
+	<dataBLOB href="http://dods.coas.oregonstate.edu:8080/dods/dts/test.02.blob"/>
 </Dataset>

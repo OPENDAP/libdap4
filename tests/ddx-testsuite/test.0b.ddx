@@ -43,5 +43,5 @@ xsi:schemaLocation="http://www.dods.org/ns/DODS  http://dods.coas.oregonstate.ed
 		</Map>
 	</Grid>
 
-	<dodsBLOB URL="http://dods.coas.oregonstate.edu:8080/dods/dts/d3.blob"/>
+	<dataBLOB href="http://dods.coas.oregonstate.edu:8080/dods/dts/d3.blob"/>
 </Dataset>

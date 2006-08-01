@@ -58,7 +58,7 @@ static const not_used char *states[] = {
     "structure",
     "sequence",
 
-    "blob url",
+    "blob href",
 
     "unknown",
     "error"
@@ -343,17 +343,17 @@ DDXParser::process_dimension(const char **attrs)
     }
 }
 
-/** Given that a \t dodsBLOB tag has just been read, extract and save the URL
-    included in the element. This URL can be read using the get_blob_url
-    method of this class.
+/** Given that a \t dataBLOB tag has just been read, extract and save the URL
+    included in the element. 
+    
     @param attrs The XML attributes */
 void
 DDXParser::process_blob(const char **attrs)
 {
     transfer_attrs(attrs);
-   if (check_required_attribute(string("url"))) {
-       set_state(inside_blob_url);
-       *blob_url = attributes["url"];
+   if (check_required_attribute(string("href"))) {
+       set_state(inside_blob_href);
+       *blob_href = attributes["href"];
    }
 }
 
@@ -536,9 +536,9 @@ DDXParser::ddx_start_element(DDXParser *parser, const char *name,
 	    break;
 	else if (parser->is_variable(name, attrs))
 	    break;
-	else if (strcmp(name, "dodsBLOB") == 0) {
+	else if (strcmp(name, "dataBLOB") == 0) {
 	    parser->process_blob(attrs);
-	    // next state: inside_dods_blob
+	    // next state: inside_data_blob
 	}
 	else
 	    DDXParser::ddx_fatal_error(parser, "Expected an Attribute, Alias or variable element; found '%s' instead.", name);
@@ -635,8 +635,8 @@ DDXParser::ddx_start_element(DDXParser *parser, const char *name,
 	    ddx_fatal_error(parser, "Expected an 'Attribute', 'Alias', variable or 'dimension' element; found '%s' instead.", name);
 	break;
 
-      case inside_blob_url:
-	ddx_fatal_error(parser, "Internal parser error; unexpected state, inside blob url while processing element '%s'.", name);
+      case inside_blob_href:
+	ddx_fatal_error(parser, "Internal parser error; unexpected state, inside blob href while processing element '%s'.", name);
 	break;
 
       case parser_unknown:
@@ -752,11 +752,11 @@ DDXParser::ddx_end_element(DDXParser *parser, const char *name)
 	parser->finish_variable(name, dods_array_c, "Map");
 	break;
 
-      case inside_blob_url:
-	if (strcmp(name, "dodsBLOB") == 0)
+      case inside_blob_href:
+	if (strcmp(name, "dataBLOB") == 0)
 	    parser->pop_state();
 	else
-	    DDXParser::ddx_fatal_error(parser, "Expected an end dodsBLOB tag; found '%s' instead.", name);
+	    DDXParser::ddx_fatal_error(parser, "Expected an end dataBLOB tag; found '%s' instead.", name);
 	break;
 
       case parser_unknown:
@@ -867,10 +867,10 @@ static xmlSAXHandler ddx_sax_parser = {
     object where each instance of BaseType can hold an AttrTable object.
 
     @param document Read the DDX from this file.
-    @param dest_dds Value/result parameter; dump the inforamtion to this DDS
+    @param dest_dds Value/result parameter; dumps the inforamtion to this DDS
     instance.  
-    @param blob Value/result parameter; put the URL which references the \c
-    dodsBLOBL document here. 
+    @param blob Value/result parameter; puts the href which references the \c
+    dataBLOB document here. 
     @exception DDXParseFailed Thrown if the XML document could not be
     read or parsed. */
 void
@@ -889,7 +889,7 @@ DDXParser::intern(const string &document, DDS *dest_dds, string *blob)
 	throw DDXParseFailed(string("Could not initialize the parser with the file: '") + document + string("'."));
 
     dds = dest_dds;		// dump values here
-    blob_url = blob;		// blob goes here
+    blob_href = blob;		// blob goes here
     ctxt = context;		// need ctxt for error messages
 
     context->sax = &ddx_sax_parser;

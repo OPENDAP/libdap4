@@ -835,13 +835,13 @@ public:
 /** Print an XML represnetation of this DDS. This method is used to generate
     the part of the DDX response. The \c Dataset tag is \e not written by
     this code. The caller of this method must handle writing that and
-    including the \c dodsBLOB tag.
+    including the \c dataBLOB tag.
 
     @param out Destination.
     @param constrained True if the output should be limited to just those
     variables that are in the projection of the current constraint
     expression. 
-    @param blob The dodsBLOB URL. */
+    @param blob The dataBLOB href. */
 void
 DDS::print_xml(FILE *out, bool constrained, const string &blob)
 {
@@ -862,7 +862,7 @@ DDS::print_xml(FILE *out, bool constrained, const string &blob)
 	
     fprintf(out, "\n");
 
-    fprintf(out, "    <dodsBLOB URL=\"%s\"/>\n", blob.c_str());
+    fprintf(out, "    <dataBLOB href=\"%s\"/>\n", blob.c_str());
 	
     fprintf(out, "</Dataset>\n");
 }

@@ -41,5 +41,5 @@ xsi:schemaLocation="http://www.dods.org/ns/DODS  http://dods.coas.oregonstate.ed
 	<String name="s"/>
 	<Url name="u"/>
 
-	<dodsBLOB URL="http://dods.coas.oregonstate.edu:8080/dods/dts/test.01.blob"/>
+	<dataBLOB href="http://dods.coas.oregonstate.edu:8080/dods/dts/test.01.blob"/>
 </Dataset>
