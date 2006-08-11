@@ -40,6 +40,7 @@ static char rcsid[] not_used = {"$Id$"};
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 #include "BaseType.h"
 #include "Array.h"
@@ -116,7 +117,7 @@ func_length(int argc, BaseType *argv[], DDS &dds)
     return 0;
 }
 
-void
+static void
 parse_gse_expression(gse_arg *arg, BaseType *expr)
 {
     gse_restart(0);		// Restart the scanner.
@@ -142,7 +143,7 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
     DBG(cerr << "Entering func_grid_select..." << endl);
 
     if (argc < 1)
-	throw Error(unknown_error, "Wrong number of arguments to grid()");
+	throw Error("Wrong number of arguments to grid(), there must be at least one argument.");
 
     Grid *grid = dynamic_cast<Grid*>(argv[0]);
     if (!grid)
@@ -153,6 +154,9 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
 	throw Error("Could not find the variable: " + grid->name());
 
     // argv[1..n] holds strings; each are little expressions to be parsed.
+    // When each expression is parsed, the parser makes a new instance of
+    // GSEClause. GSEClause checks to make sure the named map really exists
+    // in the Grid and that the range of values given makes sense.
     vector<GSEClause *> clauses;
     gse_arg *arg = new gse_arg(grid);
     for (int i = 1; i < argc; ++i) {
@@ -167,11 +171,13 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
     // do this? 9/21/2001 jhrg
     Array *grid_array = dynamic_cast<Array *>(grid->array_var());
 
+    // Basic plan: For each map, look at each clause and set start and stop
+    // to be the intersection of the ranges in those clauses.
     Grid::Map_iter piter = grid->map_begin() ;
     Array::Dim_iter grid_dim = grid_array->dim_begin() ;
     for (; piter != grid->map_end(); piter++, grid_dim++)
     {
-	Array *map = dynamic_cast<Array *>((*piter)) ;
+        Array *map = dynamic_cast<Array *>((*piter)) ;
 	string map_name = map->name();
 
 	// a valid Grid Map is a vector.
@@ -184,34 +190,45 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
 	for (cs_iter = clauses.begin(); cs_iter != clauses.end(); cs_iter++) {
 	    GSEClause *gsec = *cs_iter;
 	    if (gsec->get_map_name() == map_name) {
-		if (gsec->get_start() >= start)
-		    start = gsec->get_start();
-		else
-		    throw InternalErr(__FILE__, __LINE__,
-			      "Improper starting Grid selection value; the value preceeds the starting index of the map vector.");
+                DBG(cerr << "map_name: " << map_name << endl);
+                DBG(cerr << "Map starts at: " << start << endl);
+                DBG(cerr << "GSE Clause start: " << gsec->get_start() << endl);
+                // Set start to the maximum of either its current value or the
+                // value in current clause. At the end of this loop, start
+                // should be the max value of any of the (matching) clause's
+                // start values. This is necesary because one map may be named
+                // in several clauses such as 'first>3' and 'first<7'. When the
+                // second expression is evaluated the clause will have a start
+                // value of 0 while the array will have a starting value 4 
+                // (assume first = {0,1,2,...,9}). Note that the stop and start
+                // values are the Map indices, not the values in the Maps, so
+                // it makes sense to think of the start always being smaller 
+                // than the stop and the indices monotonically increasing.
+                start = max(start, gsec->get_start());
 
-		if (gsec->get_stop() <= stop)
-		    stop = gsec->get_stop();
-		else
-		    throw InternalErr(__FILE__, __LINE__,
-			       "Improper ending Grid selection value; the index overran the end of the map vector");
-
+                stop = min(stop, gsec->get_stop());
+                
 		if (start > stop) {
-		    string msg = "The selection range given does not correspond to any values of ";
-		    msg += gsec->get_map_name()
-			+ (string)".\nThe vector's values range from "
-			+ gsec->get_map_min_value()
-			+ (string)" to "
-			+ gsec->get_map_max_value()
-			+ (string)".";
-		    throw Error(unknown_error, msg);
+                    // Change this to a message about inclusive ranges only.
+                    ostringstream msg;
+                    msg 
+<< "The expresions passed to grid() do not result in an inclusive \n"
+
+<< "subset of '" << gsec->get_map_name() << "'. The map's values range "
+<< "from " << gsec->get_map_min_value() << " to " << gsec->get_map_max_value()
+<< ". The values \n"
+
+<< "supplied selected a range starting at element " << start 
+<< " and an ending at element " << stop << ".";
+		    throw Error(msg.str());
 		}
 		// This map is constrained, set read_p so that during
 		// serialization new values will be read according to the
 		// constraint set here. 9/21/2001 jhrg
 		map->set_read_p(false);
 	    }
-	}		
+	}
+                    		
 	DBG(cerr << "Setting constraint on " << map->name() \
 	    << "[" << start << ":" << stop << "]" << endl);
 
