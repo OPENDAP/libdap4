@@ -41,14 +41,13 @@
 
 #define YYSTYPE char *
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <assert.h>
 
 #include <vector>
 
