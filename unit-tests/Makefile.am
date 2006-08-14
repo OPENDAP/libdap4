@@ -36,7 +36,7 @@ UNIT_TESTS = arrayT attrTableT structT sequenceT ddsT RegexTest	\
 	AttrTableTest ByteTest cgiUtilTest DASTest DDSTest		\
 	DDXParserTest DODSFilterTest generalUtilTest HTTPCacheTest	\
 	HTTPConnectTest parserUtilTest RCReaderTest SequenceTest	\
-	SignalHandlerTest
+	SignalHandlerTest CEFunctionsTest
 
 
 RegexTest_SOURCES = RegexTest.cc
@@ -110,3 +110,7 @@ sequenceT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a
 
 ddsT_SOURCES = ddsT.cc
 ddsT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a
+
+CEFunctionsTest_SOURCES = CEFunctionsTest.cc
+CEFunctionsTest_LDADD = -lcppunit ../libdap.la ../libdapserver.la
+
