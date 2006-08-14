@@ -97,14 +97,13 @@
 
 #define YYSTYPE char *
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <assert.h>
 
 #include <vector>
 
@@ -201,7 +200,7 @@ typedef int YYSTYPE;
 
 
 /* Line 213 of yacc.c.  */
-#line 205 "das.tab.c"
+#line 204 "das.tab.c"
 
 #if ! defined (yyoverflow) || YYERROR_VERBOSE
 
@@ -398,14 +397,14 @@ static const yysigned_char yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned short int yyrline[] =
 {
-       0,   182,   182,   182,   197,   198,   202,   203,   209,   210,
-     211,   214,   216,   217,   216,   220,   221,   220,   224,   225,
-     224,   228,   229,   228,   232,   233,   232,   236,   237,   236,
-     240,   241,   240,   244,   245,   244,   248,   249,   248,   253,
-     273,   252,   281,   280,   286,   290,   296,   300,   306,   310,
-     316,   320,   326,   330,   336,   340,   346,   350,   356,   360,
-     366,   370,   376,   379,   382,   385,   385,   385,   385,   385,
-     386,   386,   386,   386,   387,   387,   387,   391,   395,   390
+       0,   181,   181,   181,   196,   197,   201,   202,   208,   209,
+     210,   213,   215,   216,   215,   219,   220,   219,   223,   224,
+     223,   227,   228,   227,   231,   232,   231,   235,   236,   235,
+     239,   240,   239,   243,   244,   243,   247,   248,   247,   252,
+     272,   251,   280,   279,   285,   289,   295,   299,   305,   309,
+     315,   319,   325,   329,   335,   339,   345,   349,   355,   359,
+     365,   369,   375,   378,   381,   384,   384,   384,   384,   384,
+     385,   385,   385,   385,   386,   386,   386,   390,   394,   389
 };
 #endif
 
@@ -1216,7 +1215,7 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 182 "das.y"
+#line 181 "das.y"
     {
 		    name = new string();
 		    type = new string();
@@ -1226,7 +1225,7 @@ yyreduce:
     break;
 
   case 3:
-#line 189 "das.y"
+#line 188 "das.y"
     {
 		    POP;	// pop the DAS/AttrTable before stack's dtor
 		    delete name;
@@ -1236,104 +1235,104 @@ yyreduce:
     break;
 
   case 7:
-#line 204 "das.y"
+#line 203 "das.y"
     {
 		    parse_error((parser_arg *)arg, NO_DAS_MSG, das_line_num);
 		;}
     break;
 
   case 12:
-#line 216 "das.y"
+#line 215 "das.y"
     { save_str(*type, "Byte", das_line_num); ;}
     break;
 
   case 13:
-#line 217 "das.y"
+#line 216 "das.y"
     { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 15:
-#line 220 "das.y"
+#line 219 "das.y"
     { save_str(*type, "Int16", das_line_num); ;}
     break;
 
   case 16:
-#line 221 "das.y"
+#line 220 "das.y"
     { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 18:
-#line 224 "das.y"
+#line 223 "das.y"
     { save_str(*type, "UInt16", das_line_num); ;}
     break;
 
   case 19:
-#line 225 "das.y"
+#line 224 "das.y"
     { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 21:
-#line 228 "das.y"
+#line 227 "das.y"
     { save_str(*type, "Int32", das_line_num); ;}
     break;
 
   case 22:
-#line 229 "das.y"
+#line 228 "das.y"
     { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 24:
-#line 232 "das.y"
+#line 231 "das.y"
     { save_str(*type, "UInt32", das_line_num); ;}
     break;
 
   case 25:
-#line 233 "das.y"
+#line 232 "das.y"
     { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 27:
-#line 236 "das.y"
+#line 235 "das.y"
     { save_str(*type, "Float32", das_line_num); ;}
     break;
 
   case 28:
-#line 237 "das.y"
+#line 236 "das.y"
     { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 30:
-#line 240 "das.y"
+#line 239 "das.y"
     { save_str(*type, "Float64", das_line_num); ;}
     break;
 
   case 31:
-#line 241 "das.y"
+#line 240 "das.y"
     { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 33:
-#line 244 "das.y"
+#line 243 "das.y"
     { *type = "String"; ;}
     break;
 
   case 34:
-#line 245 "das.y"
+#line 244 "das.y"
     { *name = (yyvsp[0]); ;}
     break;
 
   case 36:
-#line 248 "das.y"
+#line 247 "das.y"
     { *type = "Url"; ;}
     break;
 
   case 37:
-#line 249 "das.y"
+#line 248 "das.y"
     { *name = (yyvsp[0]); ;}
     break;
 
   case 39:
-#line 253 "das.y"
+#line 252 "das.y"
     {
 		    DBG(cerr << "Processing ID: " << (yyvsp[0]) << endl);
 		    
@@ -1356,7 +1355,7 @@ yyreduce:
     break;
 
   case 40:
-#line 273 "das.y"
+#line 272 "das.y"
     {
 		    /* pop top of stack; store in attr_tab */
 		    DBG(cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
@@ -1365,147 +1364,147 @@ yyreduce:
     break;
 
   case 42:
-#line 281 "das.y"
+#line 280 "das.y"
     { 
 		    parse_error(ATTR_TUPLE_MSG, das_line_num, (yyvsp[0]));
 		;}
     break;
 
   case 44:
-#line 287 "das.y"
+#line 286 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_byte);
 		;}
     break;
 
   case 45:
-#line 291 "das.y"
+#line 290 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_byte);
 		;}
     break;
 
   case 46:
-#line 297 "das.y"
+#line 296 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_int16);
 		;}
     break;
 
   case 47:
-#line 301 "das.y"
+#line 300 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_int16);
 		;}
     break;
 
   case 48:
-#line 307 "das.y"
+#line 306 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_uint16);
 		;}
     break;
 
   case 49:
-#line 311 "das.y"
+#line 310 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_uint16);
 		;}
     break;
 
   case 50:
-#line 317 "das.y"
+#line 316 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_int32);
 		;}
     break;
 
   case 51:
-#line 321 "das.y"
+#line 320 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_int32);
 		;}
     break;
 
   case 52:
-#line 327 "das.y"
+#line 326 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_uint32);
 		;}
     break;
 
   case 53:
-#line 331 "das.y"
+#line 330 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_uint32);
 		;}
     break;
 
   case 54:
-#line 337 "das.y"
+#line 336 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_float32);
 		;}
     break;
 
   case 55:
-#line 341 "das.y"
+#line 340 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_float32);
 		;}
     break;
 
   case 56:
-#line 347 "das.y"
+#line 346 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_float64);
 		;}
     break;
 
   case 57:
-#line 351 "das.y"
+#line 350 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_float64);
 		;}
     break;
 
   case 58:
-#line 357 "das.y"
+#line 356 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), 0);
 		;}
     break;
 
   case 59:
-#line 361 "das.y"
+#line 360 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), 0);
 		;}
     break;
 
   case 60:
-#line 367 "das.y"
+#line 366 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_url);
 		;}
     break;
 
   case 61:
-#line 371 "das.y"
+#line 370 "das.y"
     {
 		    add_attribute(*type, *name, (yyvsp[0]), &check_url);
 		;}
     break;
 
   case 77:
-#line 391 "das.y"
+#line 390 "das.y"
     { 
 		    *name = (yyvsp[0]);
 		;}
     break;
 
   case 78:
-#line 395 "das.y"
+#line 394 "das.y"
     {
 		    add_alias(DAS_OBJ(arg), TOP_OF_STACK, *name, string((yyvsp[0])))
                 ;}
@@ -1515,7 +1514,7 @@ yyreduce:
     }
 
 /* Line 1037 of yacc.c.  */
-#line 1519 "das.tab.c"
+#line 1518 "das.tab.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1743,7 +1742,7 @@ yyreturn:
 }
 
 
-#line 401 "das.y"
+#line 400 "das.y"
 
 
 // This function is required for linking, but DODS uses its own error
