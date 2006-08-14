@@ -211,7 +211,7 @@ GSEClause::GSEClause(Grid *grid, const string &map, const double value,
 {
     d_map = dynamic_cast<Array *>(grid->var(map));
     if (!d_map)
-	throw Error(string("The variable '") + map 
+	throw Error(string("The map variable '") + map 
 		    + string("' does not exist in the grid '")
 		    + grid->name() + string("'."));
 
@@ -234,7 +234,7 @@ GSEClause::GSEClause(Grid *grid, const string &map, const double value1,
 {
     d_map = dynamic_cast<Array *>(grid->var(map));
     if (!d_map)
-	throw Error(string("The variable '") + map 
+	throw Error(string("The map variable '") + map 
 		    + string("' does not exist in the grid '")
 		    + grid->name() + string("'."));
 
