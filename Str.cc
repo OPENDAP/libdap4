@@ -54,8 +54,6 @@ static char rcsid[] not_used = {"$Id$"};
 using std::cerr;
 using std::endl;
 
-string escattr(string s);
-
 /** The Str constructor requires only the name of the variable
     to be created.  The name may be omitted, which will create a
     nameless variable.  This may be adequate for some applications. 
