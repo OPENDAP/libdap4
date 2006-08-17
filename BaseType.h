@@ -265,48 +265,47 @@ public:
     virtual void set_parent(BaseType *parent) throw(InternalErr);
     virtual BaseType *get_parent();
 
-        /** Returns a pointer to the contained variable in a composite class. The
-            composite classes are those made up of aggregated simple data types.
-            Array, Grid, and Structure are composite types, while Int and Float are
-            simple types. This function is only used by composite classes. The
-            BaseType implementation always returns null.
+    // I put this comment here because the version in BaseType.cc does not 
+    // include the exact_match or s variables since they are not used. Doxygen
+    // was gaging on the comment.
+    /** Returns a pointer to the contained variable in a composite class. The
+        composite classes are those made up of aggregated simple data types.
+        Array, Grid, and Structure are composite types, while Int and Float are
+        simple types. This function is only used by composite classes. The
+        BaseType implementation always returns null.
+    
+        Several of the subclasses provide alternate access
+        methods that make sense for that particular data type. For example, the
+        Array class defines a <tt>*var(int i)</tt> method that returns the ith
+        entry in the Array data, and the Structure provides a 
+        <tt>*var(Vars_iter)</tt> function using a pseudo-index to access the 
+        different members of the structure.
+    
+        @brief Returns a pointer to a member of a constructor class.
+        @param name The name of the class member.  Defaults to ""
+        @param exact_match
+        True if only interested in variables whose full names match
+        \e n exactly. If false, returns the first variable
+        whose name matches \e name. For example, if
+        \e name is \c x and \c point.x is a variable, then var("x",
+        false) would return a BaseType pointer to \c point.x. If
+        \e exact_match was <tt>true</tt> then \e name
+        would need to be \c "point.x" for var to return that
+        pointer. This feature simplifies constraint expressions for
+        datasets which have complex, nested, constructor variables.
+        Defaults to true.
+        @param s Record the path to \e name. Defaults to null, in which case it is
+        not used.
         
-            Several of the subclasses provide alternate access
-            methods that make sense for that particular data type. For example, the
-            Array class defines a <tt>*var(int i)</tt> method that returns the ith
-            entry in the Array data, and the Structure provides a 
-            <tt>*var(Vars_iter)</tt> function using a pseudo-index to access the 
-            different members of the structure.
-        
-            @brief Returns a pointer to a member of a constructor class.
-            @param name The name of the class member.  Defaults to ""
-            @param exact_match
-            True if only interested in variables whose full names match
-            \e n exactly. If false, returns the first variable
-            whose name matches \e name. For example, if
-            \e name is \c x and \c point.x is a variable, then var("x",
-            false) would return a BaseType pointer to \c point.x. If
-            \e exact_match was <tt>true</tt> then \e name
-            would need to be \c "point.x" for var to return that
-            pointer. This feature simplifies constraint expressions for
-            datasets which have complex, nested, constructor variables.
-            Defaults to true.
-            @param s Record the path to \e name. Defaults to null, in which case it is
-            not used.
-        
-            @return A pointer to the member named in the \e n argument. If no name is
-            given, the function returns the first (only) variable.  For example, an
-            Array has only one variable, while a Structure can have many. */
+        @return A pointer to the member named in the \e n argument. If no name is
+        given, the function returns the first (only) variable.  For example, an
+        Array has only one variable, while a Structure can have many. */
     virtual BaseType *var(const string &name = "", bool exact_match = true,
 			  btp_stack *s = 0);
     virtual BaseType *var(const string &name, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part = nil);
 
-    // This used to be virutal, but unlike the other virtual methods, it has
-    // no sensible definition for the classes here *and* some uses of the DAP
-    // don't need this. I provide a default implementation that throws
-    // InternalErr. 
     virtual bool read(const string &dataset);
     
     virtual bool check_semantics(string &msg, bool all = false);
