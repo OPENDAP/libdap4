@@ -196,7 +196,7 @@ AttrTable::set_name(const string &n)
     value, the given value is appended to the attribute vector. Calling this
     function repeatedly is the way to append to an attribute vector.
 
-    The function returns an error condition if the attribute is a container,
+    The function throws an Error if the attribute is a container,
     or if the type of the input value does not match the existing attribute's
     type. Use <tt>append_container()</tt> to add container attributes.
 
@@ -244,14 +244,61 @@ AttrTable::append_attr(const string &name, const string &type,
     }
 }
 
-#if character
+/** This version of append_attr() takes a vector<string> of values. 
+    If the given name already refers to an attribute, and the attribute has
+    values, append the new values to the existing ones.
+
+    The function throws an Error if the attribute is a container,
+    or if the type of the input value does not match the existing attribute's
+    type. Use <tt>append_container()</tt> to add container attributes.
+
+    This method performs a simple search for <tt>name</tt> in this attribute
+    table only; sub-tables are not searched and the dot notation is not
+    recognized.
+
+    @brief Add an attribute to the table.
+    @return Returns the length of the added attribute value.
+    @param name The name of the attribute to add or modify.
+    @param type The type of the attribute to add or modify.
+    @param values A vector of values. */
 unsigned int
-AttrTable::append_attr(const char *name, const char *type, const char *attr)
-    throw (Error)
+AttrTable::append_attr(const string &name, const string &type, 
+                       vector<string> *values) throw (Error)
 {
-    return append_attr((string)name, (string)type, (string)attr);
+    string lname = www2id(name);
+
+    Attr_iter iter = simple_find(lname) ;
+
+    // If the types don't match OR this attribute is a container, calling
+    // this mfunc is an error!
+    if (iter != attr_map.end() && ((*iter)->type != String_to_AttrType(type)))
+        throw Error(string("An attribute called `") + name 
+                    + string("' already exists but is of a different type"));
+    if (iter != attr_map.end() && (get_type(iter) == "Container"))
+        throw Error(string("An attribute called `") + name 
+                    + string("' already exists but is a container."));
+
+    if (iter != attr_map.end()) {    // Must be new attribute values; add.
+        vector<string>::iterator i = values->begin();
+        while (i != values->end()) 
+            (*iter)->attr->push_back(*i++);
+
+        return (*iter)->attr->size();
+    } 
+    else {                    // Must be a completely new attribute; add it
+        entry *e = new entry;
+
+        e->name = lname;
+        e->is_alias = false;
+        e->type = String_to_AttrType(type); // Record type using standard names.
+        e->attr = new vector<string>(*values);
+        
+        attr_map.push_back(e);
+    
+        return e->attr->size(); // return the length of the attr vector
+    }
 }
-#endif
+
 /** Create and append an attribute container to this AttrTable. If this
     attribute table already contains an attribute container called
     <tt>name</tt> an exception is thrown.
@@ -475,14 +522,6 @@ AttrTable::get_attr_table(const string &name)
     return find_container(name);
 }
 
-#if character
-AttrTable *
-AttrTable::get_attr_table(const char *name)
-{
-    return get_attr_table((string)name);
-}
-#endif
-
 /** @brief Get the type name of an attribute within this attribute table. */
 string
 AttrTable::get_type(const string &name)
@@ -490,14 +529,6 @@ AttrTable::get_type(const string &name)
     Attr_iter p = simple_find(name);
     return (p != attr_map.end()) ? get_type(p) : (string)"";
 }
-
-#if character
-string
-AttrTable::get_type(const char *name)
-{
-    return get_type((string)name);
-}
-#endif
 
 /** @brief Get the type of an attribute.
     @return The <tt>AttrType</tt> value describing the attribute. */
@@ -507,14 +538,6 @@ AttrTable::get_attr_type(const string &name)
     Attr_iter p = simple_find(name);
     return (p != attr_map.end()) ? get_attr_type(p) : Attr_unknown;
 }
-
-#if character
-AttrType
-AttrTable::get_attr_type(const char *name)
-{
-    return get_attr_type((string)name);
-}
-#endif
 
 /** If the indicated attribute is a container attribute, this function
     returns the number of attributes in <i>its</i> attribute table. If the
@@ -529,14 +552,6 @@ AttrTable::get_attr_num(const string &name)
     Attr_iter iter = simple_find(name);
     return (iter != attr_map.end()) ?  get_attr_num(iter) : 0;
 }
-
-#if character
-unsigned int 
-AttrTable::get_attr_num(const char *name)
-{
-    return get_attr_num((string)name);
-}
-#endif
 
 /** Get a pointer to the vector of values associated with the attribute
     referenced by Pix <tt>p</tt> or named <tt>name</tt>.
@@ -556,14 +571,6 @@ AttrTable::get_attr_vector(const string &name)
     Attr_iter p = simple_find(name);
     return (p != attr_map.end()) ? get_attr_vector(p) : 0;
 }
-
-#if character
-vector<string> *
-AttrTable::get_attr_vector(const char *name)
-{
-    return get_attr_vector((string)name);
-}
-#endif
 
 /** Delete the attribute named <tt>name</tt>. If <tt>i</tt> is given, and
     the attribute has a vector value, delete the <tt>i</tt>$^th$
@@ -743,14 +750,6 @@ AttrTable::get_attr(Attr_iter iter, unsigned int i)
     assert(iter != attr_map.end());
     return (*iter)->type == Attr_container ? (string)"None" : (*(*iter)->attr)[i];
 }
-
-#if character
-string
-AttrTable::get_attr(const char *name, unsigned int i)
-{
-    return get_attr((string)name, i);
-}
-#endif
 
 string
 AttrTable::get_attr(const string &name, unsigned int i)
