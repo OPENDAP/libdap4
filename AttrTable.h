@@ -251,7 +251,10 @@ public:
     }
 
     unsigned int append_attr(const string &name, const string &type, 
-			     const string &value) throw (Error);
+                             const string &value) throw (Error);
+    unsigned int append_attr(const string &name, const string &type, 
+                             vector<string> *values) throw (Error);
+    
     AttrTable *append_container(const string &name) throw (Error);
     AttrTable *append_container(AttrTable *at, const string &name) 
 	throw (Error);
