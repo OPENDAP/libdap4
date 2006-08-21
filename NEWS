@@ -1,6 +1,21 @@
 
 $Id$
 
+News for version 3.7.1
+
+Fixed bug #480. Attributes from the HDF4 server were not being handled in a
+way that made sense to netCDF clients.
+
+Added a new method to AttrTable so that a vector of strings can be used to
+set a vector of attribute values in one call. No more need to build a loop
+every time you want to set values.
+
+The grid() CE function now conforms to the design submitted to URI as part of
+the REASoN award.
+
+Fixed a bug when % signs were not handled correctly by the code in
+escaping.cc. 
+
 News for version 3.7.0
 
 The big change: The first of the DAP3/4 features was added to the libdap

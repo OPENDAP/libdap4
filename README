@@ -1,6 +1,12 @@
 
 $Id$
 
+Notes for version 3.7.1
+
+This is a bug fix release (mostly) made for users of the netcdf client
+library who need a fix for a problem dealing with attributes from the HDF4
+server. 
+
 NOTES for version 3.7.0
 
 This version includes new features and an implementation change.

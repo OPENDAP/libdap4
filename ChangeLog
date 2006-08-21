@@ -1,3 +1,194 @@
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc, DDS.cc, CEFunctionsTest.cc, docs/html.tar.gz:
+	Updates for documentation. For CEFunctionsTest.cc: Added tests
+	for the new grid() and nascent geogrid() code.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint.cc: Added
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	DDS.cc: Fixed tcket 480. The transfer_attributes() method
+	was not handling the HDF4 *_dim_? attribute containers
+	correctly, at least as far as the libnc-dap was concerned.
+	Now those attribute containers are made subtables of the
+	associated variable. That is, if there's a variable <var>
+	and a container <var>_dim_0, then the attribute table
+	<var> will have a subtable 'dim_0'.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Added stuff for gwogrid() (which still doesn't
+	work).
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	BaseType.cc: Updates to comments.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	Grid.h: Comment fixes, moved some doxygen comments into
+	Grid.cc.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint.h: Added. Currently does nothing.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.h: changed the name of func_grid_select() to
+	projection_function_grid(). Added projection _function_geogrid().
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	AttrTableTest.cc: Added a test for the new append_attr() method.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	DDSTest.cc: Added a test for ticket 480 (transfer_attributes()).
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	S2000415.HDF.test1.das: Added for more DDS::transfer_attributes()
+	tests.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	Mkaefile.am: GetConstraint.cc Added.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	RValue.cc: Fixes for some comments.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	Grid.cc: Fixes for some comments.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	DAS.cc: Removed the 'char*' versions of the methods. These have not
+	been needed since we stopped using the GNU String class.
+
+2006-08-17  James Gallagher <jgallagher@opendap.org>
+
+	BaseType.h: Reformatted a doc comment for var().
+
+2006-08-17  James Gallagher <jgallagher@opendap.org>
+
+	AttrTable: Added append_attr() method that takes a vector of values
+	so that client code does not have to call the single value version
+	in a loop.
+
+2006-08-17  James Gallagher <jgallagher@opendap.org>
+
+	AttrTable: Added append_attr() method that takes a vector of values
+	so that client code does not have to call the single value version
+	in a loop.
+
+2006-08-15  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-08-14  James Gallagher <jgallagher@opendap.org>
+
+	das.tab.cc: Updated (edits to das.y).
+
+2006-08-14  James Gallagher <jgallagher@opendap.org>
+
+	das.y: config_dap.h --> config.h
+
+2006-08-14  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am, CEFunctionsTest.cc: Added unit tests for the the
+	grid() ce function.
+
+2006-08-14  James Gallagher <jgallagher@opendap.org>
+
+	Str.cc: No longer includes an extern declaration for escattr() since
+	that function is not called by this code.
+
+2006-08-14  James Gallagher <jgallagher@opendap.org>
+
+	GSEClause.cc: Added the word 'map' to the error messages about
+	missing map variables.
+
+2006-08-11  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Modified so that the errors returned match those
+	in the design.
+
+2006-08-01  James Gallagher <jgallagher@opendap.org>
+
+	DDS.cc, DDXParser.cc/h, tests/ddx-testsuite/*.ddx: Changed the name
+	of the dodsBLOB element to dataBLOB and the attribute from URL to href.
+	See ticket #454.
+
+2006-08-01  James Gallagher <jgallagher@opendap.org>
+
+	DDSTest.cc: Changed expected name to dataBLOB from dodsBLOB and
+	attribute of that element to href from URL.
+
+2006-08-01  James Gallagher <jgallagher@opendap.org>
+
+	html.tar.gz: Updated build of reference docs.
+
+2006-08-01  James Gallagher <jgallagher@opendap.org>
+
+	generalUtilTest.cc: Fixed test for the new id2www/www2id behavior
+	which escapes the percent sign.
+
+2006-08-01  James Gallagher <jgallagher@opendap.org>
+
+	BaseType.h, ConstraintEvaluator.cc, DODSFilter.cc, escaping.cc/.h,
+	Sequence.cc: Updated comments.
+
+2006-08-01  James Gallagher <jgallagher@opendap.org>
+
+	libdap.m4: Applied Patrice Dumas' patch which checks for the newer
+	dap-config and uses it's options for the three library setup.
+
+2006-07-31  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-07-30  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	w32 Makefile rewrite & export def's for 3-lib split-up of libdap
+
+2006-07-09  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Tweeks for win32 porting effort
+
+2006-07-09  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	New makefile for win32 libdap version to accomodate 3-library split
+
+2006-07-07  James Gallagher <jgallagher@opendap.org>
+
+	docs/html.tar.gz, escaping.cc: Updated/corrected documentation.
+
+2006-07-07  James Gallagher <jgallagher@opendap.org>
+
+	cgi_util.cc, configure.ac: Fixed bug 437. When a handler is not passed
+	a version number, it will now use the library's version number set at
+	compile time.
+
+2006-07-03  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Patch core to use libcurl as a dll without crashing
+
+2006-06-14  James Gallagher <jgallagher@opendap.org>
+
+	Removed GNU error and builtin from Makefile.am (they were already
+	removed from the directry GNU.
+
+2006-06-14  James Gallagher <jgallagher@opendap.org>
+
+	Updates to ChangeLog, README, INSTALL, NEWS, libdap.spec,
+	Makefile.am and html.tar.gz for the beta releae 3.7.0.
+
 2006-06-13  James Gallagher <jgallagher@opendap.org>
 
 	lex.gse_.cc: Comments
