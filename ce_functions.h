@@ -38,6 +38,7 @@
 
 BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
 
-void func_grid_select(int argc, BaseType *argv[], DDS &dds);
+void projection_function_grid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &);
+void projection_function_geogrid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &);
 
 #endif // _ce_functions_h
