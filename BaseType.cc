@@ -217,7 +217,8 @@ BaseType::type_name() const
     }
 }
 
-/** @brief Returns true if the instance is a simple type variable. */
+/** @brief Returns true if the instance is a numeric. string or URL
+    type variable. */
 bool
 BaseType::is_simple_type()
 {
@@ -244,7 +245,7 @@ BaseType::is_simple_type()
     return false;
 }
 
-/** @brief Returns true if the instance is a vector type variable. */
+/** @brief Returns true if the instance is a vector (i.e., array) type variable. */
 bool
 BaseType::is_vector_type()
 {
@@ -273,7 +274,8 @@ BaseType::is_vector_type()
     return false;
 }
 
-/** @brief Returns true if the instance is a constructor type variable. */
+/** @brief Returns true if the instance is a constructor (i.e., Structure,
+    Sequence or Grid) type variable. */
 bool
 BaseType::is_constructor_type()
 {
@@ -463,9 +465,13 @@ BaseType::set_attr_table(const AttrTable &at)
 
 /** Does this variable appear in either the selection part or as a function
     argument in the current constrain expression. If this property is set
-    (true) then implementation of the read() method should read this
+    (true) then implementations of the read() method should read this
     variable.
 
+    @note This method does not check, nor does it know about the semantics of,
+    string arguments passed to functions. Those functions might include
+    variable names in strings; they are responsible for reading those variables.
+    See the grid (func_grid_select()) for an example.
     @see BaseType::read()
     @brief Is this variable part of the current selection? */
 bool 
@@ -481,7 +487,8 @@ BaseType::is_in_selection()
     this variable.
 
     @param state Set the \e in_selection property to this state.
-    @see BaseType::read() */
+    @see BaseType::read()
+    @see BaseType::is_in_selection() for more information. */
 void
 BaseType::set_in_selection(bool state)
 {
