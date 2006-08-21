@@ -134,13 +134,30 @@ public:
                 AttrTable::Attr_iter i = at.attr_begin();
                 CPPUNIT_ASSERT(at.get_name(i) == "HDF_GLOBAL");
                 AttrTable &at2 = dds.var("WVC_Lat")->get_attr_table();
-                DBG(at2.print(cerr));
+                DBG(at2.print(stderr));
                 CPPUNIT_ASSERT(at2.get_name(at2.attr_begin()) == "long_name");
         }
         catch (Error &e) {
             cout << "Error: " << e.get_error_message() << endl;
             CPPUNIT_ASSERT(!"Error thrown!");
         }
+        try {
+                BaseTypeFactory factory;
+                DDS dds(&factory);
+                dds.parse("dds-testsuite/S2000415.HDF.dds");
+                DAS das;
+                das.parse("dds-testsuite/S2000415.HDF.test1.das");
+                dds.transfer_attributes(&das);
+                
+                AttrTable &at2 = dds.var("WVC_Lat")->get_attr_table();
+                DBG(at2.print(stderr));
+                CPPUNIT_ASSERT(at2.get_name(at2.attr_begin()) == "long_name");
+        }
+        catch (Error &e) {
+            cout << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error thrown!");
+        }
+        
     }
     
     void symbol_name_test() {
