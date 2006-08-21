@@ -168,15 +168,14 @@ public:
     virtual void print_xml(FILE *out, string space = "    ", 
 			   bool constrained =false);
 
-     virtual void print_val(FILE *out, string space = "",
+    virtual void print_val(FILE *out, string space = "",
 			   bool print_decl_p = true);
 
-   virtual bool check_semantics(string &msg, bool all = false);
-    /** Returns an iterator referencing the first Map vector. */
+    virtual bool check_semantics(string &msg, bool all = false);
+    
     Map_iter map_begin() ;
 
-    /** Returns an iterator referencing the end of the list of Map vectors.
-        It does not reference the last Map vector */
+    
     Map_iter map_end() ;
 
     Map_iter get_map_iter(int i);
