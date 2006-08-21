@@ -49,6 +49,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "Error.h"
 
 #include "GSEClause.h"
+#include "GeoConstraint.h"
 
 #include "gse_parser.h"
 #include "gse.tab.h"
@@ -69,6 +70,13 @@ void gse_switch_to_buffer(void *new_buffer);
 void gse_delete_buffer(void * buffer);
 void *gse_string(const char *yy_str);
 
+/** Given a BaseType pointer, extract the string value it contains and return
+    it. 
+    
+    @param arg The BaseType pointer
+    @return A C++ string
+    @excepton Error thrown if the referenced BaseType object does not contain
+    a DAP String. */ 
 string
 extract_string_argument(BaseType *arg)
 {
@@ -76,6 +84,10 @@ extract_string_argument(BaseType *arg)
 	throw Error(malformed_expr, 
 		    "The function requires a DAP string-type argument.");
     
+    if (!arg->read_p())
+        throw InternalErr(__FILE__, __LINE__,
+            "The CE Evaluator built an argument list where some constants held no values.");
+
     string *sp = 0;
     arg->buf2val((void **)&sp);
     string s = *sp;
@@ -84,6 +96,52 @@ extract_string_argument(BaseType *arg)
     DBG(cerr << "s: " << s << endl);
 
     return s;
+}
+
+/** Given a BaseType pointer, extract the numeric value it contains and return
+    it in a C++ double. 
+    
+    @param arg The BaseType pointer
+    @return A C++ double
+    @excepton Error thrown if the referenced BaseType object does not contain
+    a DAP numeric value. */ 
+double
+extract_double_argument(BaseType *arg)
+{
+    if (arg->is_simple_type() 
+        && arg->type() != dods_str_c
+        && arg->type() != dods_url_c)
+        throw Error(malformed_expr, 
+                    "The function requires a DAP numeric-type argument.");
+    if (!arg->read_p())
+        throw InternalErr(__FILE__, __LINE__,
+            "The CE Evaluator built an argument list where some constants held no values.");
+            
+    // The types of arguments that the CE Parser will build for numeric 
+    // constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
+    switch (arg->type()) {
+        case dods_uint32_c: {
+            dods_uint32 i;
+            dods_uint32 *pi = & i;
+            arg->buf2val((void **)&pi);
+            return (double)(i);
+        }
+        case dods_int32_c: {
+            dods_int32 i;
+            dods_int32 *pi = & i;
+            arg->buf2val((void **)&pi);
+            return (double)(i);
+        }
+        case dods_float64_c: {
+            dods_float64 i;
+            dods_float64 *pi = & i;
+            arg->buf2val((void **)&pi);
+            return i;
+        }
+        default:
+            throw InternalErr(__FILE__, __LINE__, 
+               "The argument list built by the CE parser contained an unsupported numeric type.");
+    }
 }
 
 // In reality no server implements this; it _should_ be removed. 03/28/05 jhrg
@@ -129,16 +187,31 @@ parse_gse_expression(gse_arg *arg, BaseType *expr)
 	throw Error(malformed_expr, "Error parsing grid selection.");
 }
 
-// Assume the following arguments are sent to func_grid_select:
-// Grid name, 0 or more strings which contain relational expressions.
+/** The grid function uses a set of relational expressions to form a selection
+    within a Grid variable based on the values in the Grid's map vectors.
+    Thus, if a Grid has a 'temperature' map which ranges from 0.0 to 32.0
+    degrees, it's possible to request the vlaues of the Grid that fall between
+    10.5 and 12.5 degrees without knowing to which array indeces those values
+    correspond. The function takes one or more arguments:<ul>
+    <li>The name of a Grid.</li>
+    <li>Zero or more strings which hold relational expressions of the form:<ul>
+        <li><code>&lt;map var&gt; &lt;relop&gt; &lt;constant&gt;</code></li>
+        <li><code>&lt;constant&gt; &lt;relop&gt; &lt;map var&gt; &lt;relop&gt; &lt;constant&gt;</code></li>
+        </ul></li>
+    </ul>
+    
+    Each of the relation expressions is applied to the Grid and the result is
+    returned.
 
-// This function has the type 'proj_func' (it is a projection function). It
-// must be used in the projection part of a CE. However, it performs a mix of
-// operations, some that are really projection (marking variables to be
-// returned) and some that are selection (choosing what to return based on
-// the values of variables, not just their structure).
+    @param argc The number of values in argv.
+    @param argv An array of BaseType pointers which hold the arguments to be
+    passed to geogrid. The arguments may be Strings, Integers, or Reals, subject
+    to the above constraints.
+    @param dds The DDS which holds the Grid.
+    @see geogrid() (func_geogrid_select) A function which has logic specific 
+    to longitude/latitude selection. */
 void 
-func_grid_select(int argc, BaseType *argv[], DDS &dds)
+projection_function_grid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &)
 {
     DBG(cerr << "Entering func_grid_select..." << endl);
 
@@ -242,5 +315,74 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
     grid_array->set_read_p(false);
 
     DBG(cerr << "Exiting func_grid_select." << endl);
+}
+
+/** The geogrid function returns the part of a Grid which includes a 
+    geographically specified rectangle. The arguments to the function are
+    the name of a Grid, the left-top and right-bottom points of the rectable
+    and zero or more relational expressions of the sort that the grid frunction
+    accepts. The constraints on the arguments are:<ul>
+    <li>The Grid must have Latitude and Longitude map verctors. Those are 
+    discovered by looking for data sources which satisfy enough of any one of
+    a set of conventions to make the identification of those map vectors 
+    positive or by guessing which maps are which. The set of conventions
+    supported is: COARDS, CF 1.0, GDT and CSC (see 
+    http://www.unidata.ucar.edu/software/netcdf/conventions.html). If the 
+    geogrid guesses at the maps, it adds an attribute (geogrid_warning) which
+    says so.</li>
+    <li>The rectangle corner points are in Longitude-Latitude. Longitude may be
+    given using -180 to 180 or 0 to 360. For data sources with global coverage,
+    geogrid assumes that the Longitude axis is circular. For requests made using
+    0/360 notation, it assumes it is module 360. Requests made using -180/180
+    notation cannot use values outside that range.</li>
+    <li>The notation used to specify the rectangular region determines the
+    notation used in the longitude/latitude map vectors of the Grid returned by
+    the function.</li>
+    <li>There are no restrictions on the relational expressions beyond those
+    for the grid() (see func_grid_select()) function.</li>
+    </ul>
+    
+    @param argc The number of values in argv.
+    @param argv An array of BaseType pointers which hold the arguments to be
+    passed to geogrid. The arguments may be Strings, Integers, or Reals, subject
+    to the above constraints.
+    @param dds The DDS which holds the Grid. This DDS \e must include
+    attributes.*/
+void 
+projection_function_geogrid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
+{
+    if (argc < 5)
+        throw Error("Wrong number of arguments to geogrid(), there must be at least five arguments,\n\
+        A Grid followed by the left-top and right-bottom points of a longitude-latitude bounding box.");
+
+    Grid *grid = dynamic_cast<Grid*>(argv[0]);
+    if (!grid)
+        throw Error("The first argument to geogrid() must be a Grid variable!");
+
+    // Mark this grid as part of the current projection.
+    if (!dds.mark(grid->name(), true))
+        throw Error("Could not find the variable: " + grid->name());
+        
+    double left = extract_double_argument(argv[1]); 
+    double top = extract_double_argument(argv[2]);
+    double right = extract_double_argument(argv[3]);
+    double bottom = extract_double_argument(argv[4]);
+    
+    // Build a GeoConstraint object. If there are no longitude/latitude maps
+    // then this constructor throws an Error.
+    GeoConstraint gc(grid, dds);
+    
+    // This sets the bounding box, applies the constraint and modifies the
+    // maps to match the notation of the box (0/360 or -180/180)
+    gc.set_bounding_box(left, top, right, bottom);
+    
+    // Modify argv[] so that it can be passed to projection_function_grid()
+    // to handle any remaining 'relational expressions.'
+    BaseType **argv2 = new BaseType*[argc-4];
+    argv2[0]= argv[0];
+    for (int i = 1; i < argc-4; ++i)
+        argv2[i] = argv2[i+4];
+        
+    projection_function_grid(argc-4, argv2, dds, ce);
 }
 
