@@ -108,6 +108,7 @@ public:
     }
 
     CPPUNIT_TEST_SUITE( AttrTableTest );
+    
     CPPUNIT_TEST(find_container_test);
     CPPUNIT_TEST(get_parent_test);
     CPPUNIT_TEST(recurrsive_find_test);
@@ -119,6 +120,7 @@ public:
     CPPUNIT_TEST(containers_with_spaces_test);
     CPPUNIT_TEST(get_attr_iter_test);
     CPPUNIT_TEST(del_attr_table_test);
+    CPPUNIT_TEST(append_attr_vector_test);
 
 #if 0
     CPPUNIT_TEST(print_xml_test);
@@ -334,6 +336,19 @@ String longer%20name \"second test\";";
             cerr << "caught an exception!" << endl;
             throw;
         }
+    }
+    
+    void append_attr_vector_test() {
+        // ("size", "Int32", "7")
+        vector<string> vs;
+        vs.push_back("8");
+        vs.push_back("9");
+        cont_a->append_attr("size", "Int32", &vs);
+        
+        CPPUNIT_ASSERT(cont_a->get_attr("size", 0) == "7");
+        CPPUNIT_ASSERT(cont_a->get_attr("size", 1) == "8");
+        CPPUNIT_ASSERT(cont_a->get_attr("size", 2) == "9");
+        CPPUNIT_ASSERT(cont_a->get_attr_num("size") == 3);
     }
     
     void print_xml_test() {
