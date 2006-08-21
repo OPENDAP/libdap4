@@ -340,12 +340,15 @@ Grid::array_var()
     return _array_var;
 }
 
+/** @brief Returns an iterator referencing the first Map vector. */
 Grid::Map_iter
 Grid::map_begin()
 {
     return _map_vars.begin() ;
 }
 
+/** Returns an iterator referencing the end of the list of Map vectors.
+    It does not reference the last Map vector */
 Grid::Map_iter
 Grid::map_end()
 {
@@ -613,7 +616,7 @@ Grid::check_semantics(string &msg, bool all)
     if (!BaseType::check_semantics(msg))
 	return false;
 #if 0
-    // Actually, thespec doesn't say this. jhrg 2/13/06
+    // Actually, the spec doesn't say this. jhrg 2/13/06
     if (!unique_names(_map_vars, name(), type_name(), msg))
 	return false;
 #endif
