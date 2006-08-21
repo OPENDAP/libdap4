@@ -134,7 +134,7 @@ CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 	util_mit.cc ResponseTooBigErr.cc
 
 SERVER_SRC = DODSFilter.cc cgi_util.cc ce_functions.cc GSEClause.cc \
-	lex.gse_.cc gse.tab.cc OPeNDAPFile.cc OPeNDAPDir.cc
+	lex.gse_.cc gse.tab.cc OPeNDAPFile.cc OPeNDAPDir.cc GeoConstraint.cc
 
 DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	BaseType.h Byte.h Int32.h Float64.h Str.h Url.h Vector.h Array.h   \
@@ -156,7 +156,7 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	AISResources.h Resource.h
 
 SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h			\
-	OPeNDAPFile.h OPeNDAPDir.h					\
+	OPeNDAPFile.h OPeNDAPDir.h	GeoConstraint.h 				\
 	ce_functions.h  gse_parser.h GSEClause.h cgi_util.h util_mit.h 
 
 ############################################################################
