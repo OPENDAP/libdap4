@@ -276,8 +276,8 @@ DDS::transfer_attr_table(DAS *das, AttrTable *at, Constructor *c,
     object and the variables it contains.
     
     If a DAS contans attributes from the current (8/2006) HDF4 server with 
-    names like <var>_dim_0, <var>_dim_1, then make those attribute tables
-    sub tables of the <var> table.
+    names like var_dim_0, var_dim_1, then make those attribute tables
+    sub tables of the \e var table.
     
     @todo Generalize the code that treats the _dim_? attributes or make
     is obsolete by fixing the HDF4 server.

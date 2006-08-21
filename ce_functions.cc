@@ -75,7 +75,7 @@ void *gse_string(const char *yy_str);
     
     @param arg The BaseType pointer
     @return A C++ string
-    @excepton Error thrown if the referenced BaseType object does not contain
+    @exception Error thrown if the referenced BaseType object does not contain
     a DAP String. */ 
 string
 extract_string_argument(BaseType *arg)
@@ -103,7 +103,7 @@ extract_string_argument(BaseType *arg)
     
     @param arg The BaseType pointer
     @return A C++ double
-    @excepton Error thrown if the referenced BaseType object does not contain
+    @exception Error thrown if the referenced BaseType object does not contain
     a DAP numeric value. */ 
 double
 extract_double_argument(BaseType *arg)
@@ -347,7 +347,8 @@ projection_function_grid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluat
     passed to geogrid. The arguments may be Strings, Integers, or Reals, subject
     to the above constraints.
     @param dds The DDS which holds the Grid. This DDS \e must include
-    attributes.*/
+    attributes.
+    @param ce The ConstraintEvaluator to use. */
 void 
 projection_function_geogrid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
