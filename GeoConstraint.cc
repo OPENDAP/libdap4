@@ -34,7 +34,7 @@
 
 #include "config.h"
 
-static char id[] not_used = {"$Id: GSEClause.cc 14315 2006-08-14 17:04:41Z jimg $"};
+static char id[] not_used = {"$Id$"};
 
 #include <iostream>
 #include <sstream>
