@@ -36,6 +36,9 @@
 #ifndef _ce_functions_h
 #define _ce_functions_h
 
+string extract_string_argument(BaseType *arg);
+double extract_double_value(BaseType *arg);
+
 BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
 
 void projection_function_grid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &);

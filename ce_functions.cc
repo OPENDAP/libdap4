@@ -106,7 +106,7 @@ extract_string_argument(BaseType *arg)
     @exception Error thrown if the referenced BaseType object does not contain
     a DAP numeric value. */ 
 double
-extract_double_argument(BaseType *arg)
+extract_double_value(BaseType *arg)
 {
     if (arg->is_simple_type() 
         && arg->type() != dods_str_c
@@ -119,7 +119,27 @@ extract_double_argument(BaseType *arg)
             
     // The types of arguments that the CE Parser will build for numeric 
     // constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
+    // Expanded to work for any numeric type so it can be used for more than 
+    // just arguments.
     switch (arg->type()) {
+        case dods_byte_c: {
+            dods_byte i;
+            dods_byte *pi = & i;
+            arg->buf2val((void **)&pi);
+            return (double)(i);
+        }
+        case dods_uint16_c: {
+            dods_uint16 i;
+            dods_uint16 *pi = & i;
+            arg->buf2val((void **)&pi);
+            return (double)(i);
+        }
+        case dods_int16_c: {
+            dods_int16 i;
+            dods_int16 *pi = & i;
+            arg->buf2val((void **)&pi);
+            return (double)(i);
+        }
         case dods_uint32_c: {
             dods_uint32 i;
             dods_uint32 *pi = & i;
@@ -131,6 +151,12 @@ extract_double_argument(BaseType *arg)
             dods_int32 *pi = & i;
             arg->buf2val((void **)&pi);
             return (double)(i);
+        }
+        case dods_float32_c: {
+            dods_float32 i;
+            dods_float32 *pi = & i;
+            arg->buf2val((void **)&pi);
+            return i;
         }
         case dods_float64_c: {
             dods_float64 i;
@@ -203,6 +229,17 @@ parse_gse_expression(gse_arg *arg, BaseType *expr)
     Each of the relation expressions is applied to the Grid and the result is
     returned.
 
+    @note Since this is a funcion and one of the arguments is the grid, the 
+    grid is read (using the Grid::read() method) at the time the argument list
+    is built.
+    
+    @todo In order to be used by geogrid() , this code may have to be modified 
+    so that the maps and array are not re-read by the serialize() method. It 
+    might also be a good idea to change from the '?grid(SST,"10<time<20")'
+    syntax in a URL to '?SST&grid(SST,"10<time<20")' even though it's more
+    verbose in the URL, it would make the function a true 'secection operator'
+    and allow several grids to be returned with selections in one request.
+    
     @param argc The number of values in argv.
     @param argv An array of BaseType pointers which hold the arguments to be
     passed to geogrid. The arguments may be Strings, Integers, or Reals, subject
@@ -364,10 +401,10 @@ projection_function_geogrid(int argc, BaseType *argv[], DDS &dds, ConstraintEval
     if (!dds.mark(grid->name(), true))
         throw Error("Could not find the variable: " + grid->name());
         
-    double left = extract_double_argument(argv[1]); 
-    double top = extract_double_argument(argv[2]);
-    double right = extract_double_argument(argv[3]);
-    double bottom = extract_double_argument(argv[4]);
+    double left = extract_double_value(argv[1]); 
+    double top = extract_double_value(argv[2]);
+    double right = extract_double_value(argv[3]);
+    double bottom = extract_double_value(argv[4]);
     
     // Build a GeoConstraint object. If there are no longitude/latitude maps
     // then this constructor throws an Error.

@@ -164,6 +164,7 @@ Clause::value(const string &dataset, DDS &dds)
 	return result;
     }
     else if (_b_func) {		// ...A bool function?
+        // build_btp_args() calls read for BaseTypes
 	BaseType **argv = build_btp_args(_args, dds);
 
 	bool result = (*_b_func)(_argc, argv, dds);
@@ -189,6 +190,8 @@ Clause::value(const string &, DDS &dds, BaseType **value)
     assert(_bt_func);
 
     if (_bt_func) {
+        // build_btp_args() is a function defiend in RValue.cc. It reads
+        // (using BaseType::read()) values as it builds the arguments.
 	BaseType **argv = build_btp_args(_args, dds);
 
 	*value = (*_bt_func)(_argc, argv, dds);

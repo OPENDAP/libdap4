@@ -47,7 +47,7 @@ pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR)
 noinst_HEADERS = config_dap.h
 
 getdap_SOURCES = getdap.cc
-getdap_LDADD = libdap.la libdapclient.la
+getdap_LDADD = libdapclient.la libdap.la
 
 deflate_SOURCES = deflate.c
 

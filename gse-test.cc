@@ -233,6 +233,7 @@ test_parser(const string &dds_file)
     Grid *grid = 0;
     DDS dds;
     dds.parse(dds_file);
+    // Add 'grid' to loop test? jhrg 
     for (DDS::Vars_iter p = dds.var_begin(); p != dds.var_end(); p++)
     {
 	if ((*p)->type() == dods_grid_c)

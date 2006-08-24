@@ -29,6 +29,7 @@
 
 #include <string>
 #include <sstream>
+#include <set>
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -47,16 +48,39 @@
 
 class GeoConstraint {
 private:
+    /** The longitude extents of the constraint bounding box can be expressed
+        two ways: using a 0/360 notation and using a -180/180 notation. I call
+        the 0/360 notation 'pos' and the -180/180 noation 'neg_pos'. */
+    enum Notation {
+        pos,
+        neg_pos
+    };
+    
+    Grid *d_grid;
+    const DDS &d_dds;
+    
+    Array *d_latitude;
+    Array *d_longitude;
+    
+    set<string> d_coards_lat_units;
+    set<string> d_coards_lon_units;
 
     GeoConstraint();                // Hidden default constructor.
 
     GeoConstraint(const GeoConstraint &param); // Hide
     GeoConstraint &operator=(GeoConstraint &rhs); // Hide
-
+    
+    bool find_lat_lon_maps(); // modifies d_longitude and d_latitude
+    Notation categorize_notation(double left, double right) const;
+    void transform_constraint_to_pos_notation(double &left, double &right) const;
+    void transform_map_to_pos_notation();       //modifies d_grid, et c.
+    
+    friend class CEFunctionsTest; // Unit tests
+    
 public:
     /** @name Constructors */
     //@{
-    GeoConstraint(Grid *grid, DDS &dds) throw (Error);
+    GeoConstraint(Grid *grid, const DDS &dds) throw (Error);
     //@}
     
     void set_bounding_box(double left, double top, double right, double bottom)

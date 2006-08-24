@@ -36,6 +36,8 @@
 #include "Array.h"
 #include "Grid.h"
 #include "DDS.h"
+#include "DAS.h"
+#include "GeoConstraint.h"
 #include "ce_functions.h"
 #include "debug.h"
 
@@ -43,31 +45,102 @@ using namespace CppUnit;
 using namespace std;
 
 class CEFunctionsTest:public TestFixture {
-private:
-    DDS *dds;
+  private:
+    DDS * dds;
     BaseTypeFactory btf;
     ConstraintEvaluator ce;
-    
-public:
-    CEFunctionsTest() {} 
-    ~CEFunctionsTest() {} 
+
+    DDS *geo_dds;
+
+  public:
+     CEFunctionsTest() {
+    } ~CEFunctionsTest() {
+    }
 
     void setUp() {
-        dds = new DDS(&btf);
-        dds->parse("ce-functions-testsuite/two_grid.dds");
-        DBG2(dds->print(stderr));
-        // Load values into the grid variables
-        Grid &a = dynamic_cast<Grid&>(*dds->var("a"));
-        Array &m1 = dynamic_cast<Array&>(**a.map_begin());
-        dods_float64 first_a[10] = {0,1,2,3,4,5,6,7,8,9};
-        m1.val2buf(first_a);
-        m1.set_read_p(true);
+        try {
+            dds = new DDS(&btf);
+            dds->parse("unit-tests/ce-functions-testsuite/two_grid.dds");
+            DBG2(dds->print(stderr));
+            // Load values into the grid variables
+            Grid & a = dynamic_cast < Grid & >(*dds->var("a"));
+            Array & m1 = dynamic_cast < Array & >(**a.map_begin());
+            dods_float64 first_a[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+            m1.val2buf(first_a);
+            m1.set_read_p(true);
+
+            Grid & b = dynamic_cast < Grid & >(*dds->var("b"));
+            Array & m2 = dynamic_cast < Array & >(**b.map_begin());
+            dods_float64 first_b[10] = { 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
+
+            m2.val2buf(first_b);
+            m2.set_read_p(true);
+        }
+
+        catch(Error & e) {
+            cerr << "SetUp: " << e.get_error_message() << endl;
+            throw;
+        }
         
-        Grid &b = dynamic_cast<Grid&>(*dds->var("b"));
-        Array &m2 = dynamic_cast<Array&>(**b.map_begin());
-        dods_float64 first_b[10] = {9,8,7,6,5,4,3,2,1,0};
-        m2.val2buf(first_b);
-        m2.set_read_p(true);
+        // geo grid test data
+        try {
+            geo_dds = new DDS(&btf);
+            geo_dds->parse("unit-tests/ce-functions-testsuite/geo_grid.dds");
+            DAS das;
+            das.parse("unit-tests/ce-functions-testsuite/geo_grid.das");
+            geo_dds->transfer_attributes(&das);
+            
+            DBG2(geo_dds->print_xml(stderr, false, "No blob"));
+        
+            // Load values into the grid variables
+            Grid & sst1 = dynamic_cast < Grid & >(*geo_dds->var("SST1"));
+            Array & lon1 = dynamic_cast < Array & >(**sst1.map_begin());
+            dods_float64 tmp_lon1[10] =
+                { 0, 40, 80, 120, 160, 200, 240, 280, 320, 359 };
+            lon1.val2buf(tmp_lon1);
+            lon1.set_read_p(true);
+        
+            Array & lat1 = dynamic_cast < Array & >(**(sst1.map_begin() + 1));
+            dods_float64 tmp_lat1[10] =
+                { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
+            lat1.val2buf(tmp_lat1);
+            lat1.set_read_p(true);
+        
+            // Load values into the grid variables
+            Grid & sst2 = dynamic_cast < Grid & >(*geo_dds->var("SST2"));
+            Array & lon2 = dynamic_cast < Array & >(**sst2.map_begin());
+            dods_float64 tmp_lon2[10] =
+                { -179, -120, -80, -40, 0, 40, 80, 120, 160, 179 };
+            lon2.val2buf(tmp_lon2);
+            lon2.set_read_p(true);
+        
+            Array & lat2 = dynamic_cast < Array & >(**(sst2.map_begin() + 1));
+            dods_float64 tmp_lat2[10] =
+                { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
+            lat2.val2buf(tmp_lat2);
+            lat2.set_read_p(true);
+        
+            // Load values into the grid variables
+            Grid & sst3 = dynamic_cast < Grid & >(*geo_dds->var("SST3"));
+            Array & lon3 = dynamic_cast < Array & >(**sst3.map_begin());
+            dods_float64 tmp_lon3[10] =
+                { 20, 60, 100, 140, 180, 220, 260, 300, 340, 379 };
+            lon3.val2buf(tmp_lon3);
+            lon3.set_read_p(true);
+        
+            Array & lat3 = dynamic_cast < Array & >(**(sst3.map_begin() + 1));
+            dods_float64 tmp_lat3[10] =
+                { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
+            lat3.val2buf(tmp_lat3);
+            lat3.set_read_p(true);
+        }
+        
+        catch(Error & e)
+        {
+            cerr << "SetUp: " << e.get_error_message() << endl;
+            throw;
+        }
     } 
 
     void tearDown() {
@@ -91,6 +164,8 @@ public:
     // grid() is not required to handle this case.
     CPPUNIT_TEST(values_outside_map_range_test);
 #endif
+
+    CPPUNIT_TEST(geoconstraint_find_lat_lon_maps_test);
 
     CPPUNIT_TEST_SUITE_END();
         
@@ -294,6 +369,21 @@ public:
             DBG(cerr << e.get_error_message() << endl);
             CPPUNIT_ASSERT(true);
         }        
+    }
+    
+    void geoconstraint_find_lat_lon_maps_test() {
+        try {
+        Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
+        CPPUNIT_ASSERT(g);
+        GeoConstraint gc(g, *geo_dds);
+        CPPUNIT_ASSERT(gc.find_lat_lon_maps());
+        CPPUNIT_ASSERT(gc.d_longitude->name() == "lon");
+        CPPUNIT_ASSERT(gc.d_latitude->name() == "lat");
+        }
+        catch (Error &e) {
+            cerr << "find_lat_lon_maps: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"find_lat_lon_maps should not have thrown Error")'
+        }
     }
 };
 

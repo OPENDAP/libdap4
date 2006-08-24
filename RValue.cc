@@ -94,7 +94,7 @@ rvalue::value_name()
 BaseType *
 rvalue::bvalue(const string &dataset, DDS &dds) 
 {
-    if (value) {
+    if (value) {        // i.e., if this RValue is a BaseType
 	if (!value->read_p())
 	    value->read(dataset);
 
@@ -120,7 +120,7 @@ rvalue::bvalue(const string &dataset, DDS &dds)
     member. 
 
     This function performs a common task but does not fit within the RValue
-    class well. It is used by Clause and expr.y. */
+    class well. It is used by Clause and ce_expr.y. */
 BaseType **
 build_btp_args(rvalue_list *args, DDS &dds)
 {
