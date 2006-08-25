@@ -269,15 +269,20 @@ Vector::var(const string &n, btp_stack &s)
 //
 // Returns: A BaseType pointer to the Ith element of the Vector.
 
-/** Returns a pointer to the specified Vector element.  For Vectors
-    containing simple data types, the element returned will be a
-    copy of the indicated element.  For compound types, the return
-    pointer will indicate the element itself.
+/** Returns a pointer to the specified Vector element.  The return
+    pointer will reference the element itself, so multiple calls to this
+    method should save each value before making the next call.
 
+    @todo Is this method thread safe? If 'apartment threding' is used, I
+    think so. But if the library is running in more than one thread, then
+    this is not thread safe.
+    
     @param i The index of the desired Vector element.  Zero
     indicates the first element of the Vector.
     @return A pointer to a BaseType class instance containing
-    the value of the indicated element.
+    the value of the indicated element. The BaseType pointer is locally 
+    maintained and should not be deleted or referenced. Extract the value 
+    right after the method returns.
     @see BaseType::var */
 BaseType *
 Vector::var(unsigned int i)
@@ -729,6 +734,12 @@ Vector::val2buf(void *val, bool reuse)
 
     In the case of a Vector of Str objects, this method will return an array
     of C++ std::string objects.
+    
+    @note It's best to define the pointer to reference the data as 
+    'char *data' and then call this method using '..->buf2val((void**)&data)'.
+    Then free the storage once you're done using 'delete[] data'. It's not
+    correct C++ to use 'delete[]' on a void pointer and the allocated memory
+    \e is an array of char, so 'delete[]' is needed.
 
     @return The number of bytes used to store the array.
     @param val A pointer to a pointer to the memory into which the

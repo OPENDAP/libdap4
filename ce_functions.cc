@@ -98,6 +98,146 @@ extract_string_argument(BaseType *arg)
     return s;
 }
 
+template<class T> 
+static void
+set_array_using_double_helper(Array *a, double *src, int src_len)
+{
+    T *values = new T[src_len];
+    for (int i = 0; i < src_len; ++i)
+        values[i] = (T)src[i];
+    a->val2buf(values, true);
+    delete[] values;
+}
+
+/** Given an array that holds some sort of numeric data, load it with values
+    using an array of doubles. This function makes several assumptions. First,
+    it assumes the caller really wants to put the doubles into whatever types
+    the array holds! Caveat emptor. Second, it assumes that if the size of 
+    source (\e src) array is different than the destination (\e dest) the
+    caller has made a mistake. In that case it will throw an Error object. 
+    
+    After setting that values, this method sets the \c read_p property for
+    \e dest.
+    
+    @param dest An Array. The values are written to this array, reusing
+    its storage. Existing values are lost.
+    @param src The source data.
+    @param src_len The number of elements in the \e src array.
+    @exception Error Thrown if \e dest is not a numeric-type array (Byte, ...,
+    Float64) or if the number of elements in \e src does not match the number
+    is \e dest. */
+void
+set_array_using_double(Array *dest, double *src, int src_len)
+{
+    // Simple types are Byte, ..., Float64, String and Url.
+    if ( dest->type() == dods_array_c
+         && !dest->var()->is_simple_type() 
+         || dest->var()->type() == dods_str_c
+         || dest->var()->type() == dods_url_c )
+        throw InternalErr(__FILE__, __LINE__,
+            "The function requires a DAP numeric-type array argument.");
+                    
+    // Test sizes. Note that Array::length() takes any constraint into account
+    // when it returns the length. Even if this was removed, the 'helper'
+    // function this uses calls Vector::val2buf() which uses Vector::width()
+    // which in turn uses length(). 
+    if (dest->length() != src_len)
+        throw InternalErr(__FILE__, __LINE__,
+            "The source and destination array sizes don't match."); 
+                
+    // The types of arguments that the CE Parser will build for numeric 
+    // constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
+    // Expanded to work for any numeric type so it can be used for more than 
+    // just arguments.
+    switch (dest->var()->type()) {
+        case dods_byte_c:
+            set_array_using_double_helper<dods_byte>(dest, src, src_len);
+            break;
+        case dods_uint16_c:
+            set_array_using_double_helper<dods_uint16>(dest, src, src_len);
+            break;
+        case dods_int16_c:
+            set_array_using_double_helper<dods_int16>(dest, src, src_len);
+            break;
+        case dods_uint32_c:
+            set_array_using_double_helper<dods_uint32>(dest, src, src_len);
+            break;
+        case dods_int32_c:
+            set_array_using_double_helper<dods_int32>(dest, src, src_len);
+            break;
+        case dods_float32_c:
+            set_array_using_double_helper<dods_float32>(dest, src, src_len);
+            break;
+        case dods_float64_c:
+            set_array_using_double_helper<dods_float64>(dest, src, src_len);
+            break;
+        default:
+            throw InternalErr(__FILE__, __LINE__, 
+               "The argument list built by the CE parser contained an unsupported numeric type.");
+    }
+    
+    // Set the read_p property.
+    dest->set_read_p(true);
+}
+
+template<class T> 
+static double *
+extract_double_array_helper(Array * a)
+{
+    int length = a->length();
+    double *dest = new double[length];
+    T *b = new T[length];
+    a->buf2val((void **) &b);
+    for (int i = 0; i < length; ++i)
+        dest[i] = (double)b[i];
+    delete[] b;
+    return dest;
+}
+
+/** Given a pointer to an Array which holds a numeric type, extract the 
+    values and return in an array of doubles. This function allocates the
+    array using 'new double[n]' so delete[] can be used when you are done
+    the data. */
+double *
+extract_double_array(Array *a) throw(Error)
+{
+    // Simple types are Byte, ..., Float64, String and Url.
+    if ( a->type() == dods_array_c
+         && !a->var()->is_simple_type() 
+         || a->var()->type() == dods_str_c
+         || a->var()->type() == dods_url_c )
+        throw Error(malformed_expr, 
+                    "The function requires a DAP numeric-type array argument.");
+                    
+    if (!a->read_p())
+        throw InternalErr(__FILE__, __LINE__,
+            string("The Array '") + a->name() + "'does not contain values.");
+            
+    // The types of arguments that the CE Parser will build for numeric 
+    // constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
+    // Expanded to work for any numeric type so it can be used for more than 
+    // just arguments.
+    switch (a->var()->type()) {
+        case dods_byte_c:
+            return extract_double_array_helper<dods_byte>(a);
+        case dods_uint16_c:
+            return extract_double_array_helper<dods_uint16>(a);
+        case dods_int16_c:
+            return extract_double_array_helper<dods_int16>(a);
+        case dods_uint32_c:
+            return extract_double_array_helper<dods_uint32>(a);
+        case dods_int32_c:
+            return extract_double_array_helper<dods_int32>(a);
+        case dods_float32_c:
+            return extract_double_array_helper<dods_float32>(a);
+        case dods_float64_c:
+            return extract_double_array_helper<dods_float64>(a);
+        default:
+            throw InternalErr(__FILE__, __LINE__, 
+               "The argument list built by the CE parser contained an unsupported numeric type.");
+    }
+}
+
 /** Given a BaseType pointer, extract the numeric value it contains and return
     it in a C++ double. 
     
@@ -108,11 +248,13 @@ extract_string_argument(BaseType *arg)
 double
 extract_double_value(BaseType *arg)
 {
-    if (arg->is_simple_type() 
-        && arg->type() != dods_str_c
-        && arg->type() != dods_url_c)
+    // Simple types are Byte, ..., Float64, String and Url.
+    if ( !arg->is_simple_type() 
+         || arg->type() == dods_str_c
+         || arg->type() == dods_url_c )
         throw Error(malformed_expr, 
                     "The function requires a DAP numeric-type argument.");
+                    
     if (!arg->read_p())
         throw InternalErr(__FILE__, __LINE__,
             "The CE Evaluator built an argument list where some constants held no values.");
@@ -156,12 +298,14 @@ extract_double_value(BaseType *arg)
             dods_float32 i;
             dods_float32 *pi = & i;
             arg->buf2val((void **)&pi);
-            return i;
+            return (double)i;
         }
         case dods_float64_c: {
+            DBG(cerr << "arg->value(): " << dynamic_cast<Float64*>(arg)->value() << endl);
             dods_float64 i;
             dods_float64 *pi = & i;
             arg->buf2val((void **)&pi);
+            DBG(cerr << "i: " << i << endl);
             return i;
         }
         default:
@@ -370,7 +514,7 @@ projection_function_grid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluat
     <li>The rectangle corner points are in Longitude-Latitude. Longitude may be
     given using -180 to 180 or 0 to 360. For data sources with global coverage,
     geogrid assumes that the Longitude axis is circular. For requests made using
-    0/360 notation, it assumes it is module 360. Requests made using -180/180
+    0/359 notation, it assumes it is module 360. Requests made using -180/179
     notation cannot use values outside that range.</li>
     <li>The notation used to specify the rectangular region determines the
     notation used in the longitude/latitude map vectors of the Grid returned by
@@ -411,7 +555,7 @@ projection_function_geogrid(int argc, BaseType *argv[], DDS &dds, ConstraintEval
     GeoConstraint gc(grid, dds);
     
     // This sets the bounding box, applies the constraint and modifies the
-    // maps to match the notation of the box (0/360 or -180/180)
+    // maps to match the notation of the box (0/359 or -180/179)
     gc.set_bounding_box(left, top, right, bottom);
     
     // Modify argv[] so that it can be passed to projection_function_grid()

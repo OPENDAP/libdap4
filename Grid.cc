@@ -463,6 +463,15 @@ Grid::projection_yields_grid()
     return valid;
 }
 
+/** For each of the Array and Maps in this Grid, call clear_constraint(). */
+void 
+Grid::clear_constraint()
+{
+    dynamic_cast<Array&>(*_array_var).clear_constraint();
+    for (Map_iter m = map_begin(); m != map_end(); ++m)
+        dynamic_cast<Array&>(*(*m)).clear_constraint();
+}
+
 void 
 Grid::print_decl(FILE *out, string space, bool print_semi,
 		 bool constraint_info, bool constrained)

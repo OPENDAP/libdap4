@@ -32,6 +32,8 @@
 #define DODS_DEBUG 
 
 #include "BaseType.h"
+#include "Int32.h"
+#include "Float64.h"
 #include "Str.h"
 #include "Array.h"
 #include "Grid.h"
@@ -111,9 +113,11 @@ class CEFunctionsTest:public TestFixture {
             Grid & sst2 = dynamic_cast < Grid & >(*geo_dds->var("SST2"));
             Array & lon2 = dynamic_cast < Array & >(**sst2.map_begin());
             dods_float64 tmp_lon2[10] =
-                { -179, -120, -80, -40, 0, 40, 80, 120, 160, 179 };
+                { -180, -120, -80, -40, 0, 40, 80, 120, 160, 179 };
             lon2.val2buf(tmp_lon2);
             lon2.set_read_p(true);
+            BaseType *btp = lon2.var(0);
+            DBG2(cerr << "lon2[0]: " << dynamic_cast<Float64*>(btp)->value() << endl);
         
             Array & lat2 = dynamic_cast < Array & >(**(sst2.map_begin() + 1));
             dods_float64 tmp_lat2[10] =
@@ -166,7 +170,12 @@ class CEFunctionsTest:public TestFixture {
 #endif
 
     CPPUNIT_TEST(geoconstraint_find_lat_lon_maps_test);
-
+    CPPUNIT_TEST(transform_longitude_to_pos_notation_test);
+    CPPUNIT_TEST(find_longitude_indeces_test);
+    CPPUNIT_TEST(set_array_using_double_test);
+    CPPUNIT_TEST(set_bounding_box_test1);        
+    CPPUNIT_TEST(set_bounding_box_test2);        
+    
     CPPUNIT_TEST_SUITE_END();
         
     void no_arguments_test() {
@@ -371,20 +380,178 @@ class CEFunctionsTest:public TestFixture {
         }        
     }
     
+    // geogrid, including GeoConstraint, tests begin here
+    
     void geoconstraint_find_lat_lon_maps_test() {
         try {
         Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
         CPPUNIT_ASSERT(g);
-        GeoConstraint gc(g, *geo_dds);
-        CPPUNIT_ASSERT(gc.find_lat_lon_maps());
-        CPPUNIT_ASSERT(gc.d_longitude->name() == "lon");
-        CPPUNIT_ASSERT(gc.d_latitude->name() == "lat");
+        GeoConstraint gc1(g, *geo_dds);
+        CPPUNIT_ASSERT(gc1.find_lat_lon_maps());
+
+        g = dynamic_cast<Grid*>(geo_dds->var("SST2"));
+        CPPUNIT_ASSERT(g);
+        GeoConstraint gc2(g, *geo_dds);
+        CPPUNIT_ASSERT(gc2.find_lat_lon_maps());
+
+        g = dynamic_cast<Grid*>(geo_dds->var("SST3"));
+        CPPUNIT_ASSERT(g);
+        GeoConstraint gc3(g, *geo_dds);
+        CPPUNIT_ASSERT(gc3.find_lat_lon_maps());
         }
         catch (Error &e) {
-            cerr << "find_lat_lon_maps: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(!"find_lat_lon_maps should not have thrown Error")'
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"find_lat_lon_maps_test() failed");
         }
     }
+    
+    void transform_longitude_to_pos_notation_test() {
+        try {
+        Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST2"));
+        CPPUNIT_ASSERT(g);
+        GeoConstraint gc2(g, *geo_dds);
+        CPPUNIT_ASSERT(gc2.find_lat_lon_maps());
+
+        CPPUNIT_ASSERT(gc2.d_lon[0] == -180);
+        CPPUNIT_ASSERT(gc2.d_lon[gc2.d_lon_length-1] == 179);        
+
+        GeoConstraint::Notation map_notation 
+                = gc2.categorize_notation(gc2.d_lon[0], gc2.d_lon[gc2.d_lon_length-1]);
+        CPPUNIT_ASSERT(map_notation == GeoConstraint::neg_pos);
+        
+        gc2.transform_longitude_to_pos_notation();
+
+        CPPUNIT_ASSERT(gc2.d_lon[0] == 0);
+        CPPUNIT_ASSERT(gc2.d_lon[gc2.d_lon_length-1] == 359);
+        
+        }
+        catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"transform_map_to_pos_notation_test() failed");
+        }
+    }
+    
+    void find_longitude_indeces_test() {
+        Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
+        CPPUNIT_ASSERT(g);
+        GeoConstraint gc1(g, *geo_dds);
+        
+        int left_i, right_i;
+        gc1.find_longitude_indeces(40.0, 200.0, left_i, right_i);
+        CPPUNIT_ASSERT(left_i == 1);
+        CPPUNIT_ASSERT(right_i == 5);
+
+        g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
+        CPPUNIT_ASSERT(g);
+        GeoConstraint gc2(g, *geo_dds);
+        
+        gc2.find_longitude_indeces(200, 40.0, left_i, right_i);
+        CPPUNIT_ASSERT(left_i == 5);
+        CPPUNIT_ASSERT(right_i == 1);
+    }
+    
+    void set_array_using_double_test() {
+        try {
+        Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
+        Array *lon = dynamic_cast<Array*>(*g->map_begin());
+        double ten_values[10] = {-1,1,2,3,4,5,6,7,8,9};
+        set_array_using_double(lon, ten_values, 10);
+        CPPUNIT_ASSERT(extract_double_value(lon->var(0)) == ten_values[0]);
+        CPPUNIT_ASSERT(extract_double_value(lon->var(9)) == ten_values[9]);
+
+        Array *a = new Array;
+        Int32 *i = new Int32;
+        a->add_var(i);
+        a->append_dim(10);
+        int dummy_values[10] = {10,11,12,13,14,15,16,17,18,19};
+        a->val2buf((void*)dummy_values);
+        a->set_read_p(true);
+        CPPUNIT_ASSERT(extract_double_value(a->var(0)) == 10.0);
+        CPPUNIT_ASSERT(extract_double_value(a->var(9)) == 19.0);
+        set_array_using_double(a, ten_values, 10);
+        CPPUNIT_ASSERT(extract_double_value(a->var(0)) == ten_values[0]);
+        CPPUNIT_ASSERT(extract_double_value(a->var(9)) == ten_values[9]);
+        }
+        catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error in set_array_using_double_test.");
+        }
+    }
+    
+    void set_bounding_box_test1() {
+        try {
+        // SST1 uses pos notation; constraint uses pos
+        Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
+        CPPUNIT_ASSERT(g);
+        GeoConstraint gc1(g, *geo_dds);
+        // This should be lon 1 to 5 and lat 5 to 8
+        gc1.set_bounding_box(40.0, 10.0, 200.0, 40.0);
+        Array &a = dynamic_cast<Array&>(*(gc1.d_grid->array_var()));
+        for (Array::Dim_iter d = a.dim_begin(); d != a.dim_end(); ++d) {
+            if (a.dimension_name(d) == "lon") {
+                CPPUNIT_ASSERT(a.dimension_start(d) == 1);
+                CPPUNIT_ASSERT(a.dimension_stop(d) == 5);
+            }
+#if 0
+            if (a.dimension_name(d) == "lat") {
+                CPPUNIT_ASSERT(a.dimension_start(d) == 5);
+                CPPUNIT_ASSERT(a.dimension_stop(d) == 8);
+            }
+#endif
+        }
+        Array::Dim_iter d = gc1.d_longitude->dim_begin();
+        CPPUNIT_ASSERT(gc1.d_longitude->dimension_start(d) == 1);
+        CPPUNIT_ASSERT(gc1.d_longitude->dimension_stop(d) == 5);
+        CPPUNIT_ASSERT(extract_double_value(gc1.d_longitude->var(1)) == 40.0);
+        CPPUNIT_ASSERT(extract_double_value(gc1.d_longitude->var(5)) == 200.0);
+        d = gc1.d_latitude->dim_begin();
+#if 0
+        CPPUNIT_ASSERT(gc1.d_latitude->dimension_start(d) == 5);
+        CPPUNIT_ASSERT(gc1.d_latitude->dimension_stop(d) == 8);
+#endif
+     }
+        catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error in set_bounding_box_test.");
+        }
+    }
+    
+     void set_bounding_box_test2() {
+        try {
+        Grid *g2 = dynamic_cast<Grid*>(geo_dds->var("SST1"));
+        CPPUNIT_ASSERT(g2);
+        GeoConstraint gc2(g2, *geo_dds);
+        // SST1 with a constraint that uses neg_pos notation for lon
+        gc2.set_bounding_box(-140.0, 10.0, 20.0, 40.0);
+        Array &a = dynamic_cast<Array&>(*(gc2.d_grid->array_var()));
+        for (Array::Dim_iter d = a.dim_begin(); d != a.dim_end(); ++d) {
+            if (a.dimension_name(d) == "lon") {
+                CPPUNIT_ASSERT(a.dimension_start(d) == 1);
+                CPPUNIT_ASSERT(a.dimension_stop(d) == 5);
+            }
+#if 0
+            if (a.dimension_name(d) == "lat") {
+                CPPUNIT_ASSERT(a.dimension_start(d) == 5);
+                CPPUNIT_ASSERT(a.dimension_stop(d) == 8);
+            }
+#endif
+        }
+        Array::Dim_iter d = gc2.d_longitude->dim_begin();
+        CPPUNIT_ASSERT(gc2.d_longitude->dimension_start(d) == 1);
+        CPPUNIT_ASSERT(gc2.d_longitude->dimension_stop(d) == 5);
+        CPPUNIT_ASSERT(extract_double_value(gc2.d_longitude->var(1)) == -140.0);
+        CPPUNIT_ASSERT(extract_double_value(gc2.d_longitude->var(5)) == 20.0);
+        d = gc2.d_latitude->dim_begin();
+#if 0
+        CPPUNIT_ASSERT(gc2.d_latitude->dimension_start(d) == 5);
+        CPPUNIT_ASSERT(gc2.d_latitude->dimension_stop(d) == 8);
+#endif        
+        }
+        catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error in set_bounding_box_test.");
+        }
+    }   
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(CEFunctionsTest);

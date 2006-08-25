@@ -49,8 +49,8 @@
 class GeoConstraint {
 private:
     /** The longitude extents of the constraint bounding box can be expressed
-        two ways: using a 0/360 notation and using a -180/180 notation. I call
-        the 0/360 notation 'pos' and the -180/180 noation 'neg_pos'. */
+        two ways: using a 0/359 notation and using a -180/179 notation. I call
+        the 0/359 notation 'pos' and the -180/179 noation 'neg_pos'. */
     enum Notation {
         pos,
         neg_pos
@@ -62,6 +62,15 @@ private:
     Array *d_latitude;
     Array *d_longitude;
     
+    double *d_lat;
+    double *d_lon;
+    int d_lat_length;
+    int d_lon_length;
+    Array::Dim_iter d_lat_grid_dim;
+    Array::Dim_iter d_lon_grid_dim;
+    
+    bool d_bounding_box_set;
+    
     set<string> d_coards_lat_units;
     set<string> d_coards_lon_units;
 
@@ -70,11 +79,15 @@ private:
     GeoConstraint(const GeoConstraint &param); // Hide
     GeoConstraint &operator=(GeoConstraint &rhs); // Hide
     
-    bool find_lat_lon_maps(); // modifies d_longitude and d_latitude
+    bool find_lat_lon_maps();
     Notation categorize_notation(double left, double right) const;
     void transform_constraint_to_pos_notation(double &left, double &right) const;
-    void transform_map_to_pos_notation();       //modifies d_grid, et c.
-    
+    void transform_longitude_to_pos_notation();
+    void transform_longitude_to_neg_pos_notation();
+    void find_longitude_indeces(double left, double right, 
+                                int &longitude_index_left, 
+                                int &longitude_index_right) const;
+                                
     friend class CEFunctionsTest; // Unit tests
     
 public:

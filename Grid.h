@@ -151,6 +151,8 @@ public:
     virtual int components(bool constrained = false);
 
     virtual bool projection_yields_grid();
+    
+    virtual void clear_constraint();
 
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
                            DDS &dds, XDR *sink, bool ce_eval = true);
