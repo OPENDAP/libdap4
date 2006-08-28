@@ -267,52 +267,28 @@ GeoConstraint::find_longitude_indeces(double left, double right,
         --i;
     longitude_index_right = i;
 }
-                                      
-/** @brief Initialize GeoConstraint with a Grid.
-    @param grid Set the GeoConstraint to use this Grid variable. It is the 
-    caller's responsibility to ensure that the value \e grid is a valid Grid 
-    variable.
-    @param dds Use this DDS to get global attributes.  
- */
-GeoConstraint::GeoConstraint(Grid *grid, const DDS &dds) throw (Error)
-   : d_grid(grid), d_dds(dds), d_latitude(0), d_longitude(0), d_lat(0),
-     d_lon(0), d_bounding_box_set(false)
-{
-    // Build sets of attribute values for easy searching. Maybe overkill???
-    d_coards_lat_units.insert("degrees_north");
-    d_coards_lat_units.insert("degree_north");
-    d_coards_lat_units.insert("degree_N");
-    d_coards_lat_units.insert("degrees_N");
 
-    d_coards_lon_units.insert("degrees_east");
-    d_coards_lon_units.insert("degree_east");
-    d_coards_lon_units.insert("degrees_E");
-    d_coards_lon_units.insert("degree_E");
+void
+GeoConstraint::find_latitude_indeces(double top, double bottom, 
+                                     int &latitude_index_top, 
+                                     int &latitude_index_bottom) const
+{
+    // Scan from the top down
+    int i = 0;
+    while (i < d_lat_length && d_lat[i] < top)
+        ++i;
+    latitude_index_top = i;
     
-    // Is this Grid a geo-referenced grid? Throw Error if not.
-    if (!find_lat_lon_maps())
-        throw Error(string("The grid '") + d_grid->name() 
-            + "' does not have identifiable latitude/longitude map vectors."); 
+    // and from the bottom up
+    i = d_lat_length -1;
+    while (i > -1 && d_lat[i] > bottom)
+        --i;
+    latitude_index_bottom = i;
 }
 
 void
-GeoConstraint::set_bounding_box(double left, double top, 
-                                double right, double bottom) throw (Error)
+GeoConstraint::set_bounding_box_longitude(double left, double right) throw(Error)
 {
-#if 0
-    // Clear an existing constraint. This means that set_bounding_box() can
-    // be called more than once with different values. 
-
-    // This sets the array lengths to -1 which breaks code later.
-    d_grid->clear_constraint();
-#endif
-
-    if (d_bounding_box_set)
-        throw Error("It is not possible to register more than one geo constraint on a grid.");
-        
-    // Ensure this method is called only once.
-    d_bounding_box_set = true;
-    
     // Categorize the notation used by the bounding box (0/359 or -180/179).
     Notation constraint_notation = categorize_notation(left, right);
     
@@ -361,6 +337,74 @@ GeoConstraint::set_bounding_box(double left, double top,
                                                               longitude_index_left, 
                                                               1, 
                                                               longitude_index_right);
+}
+
+void
+GeoConstraint::set_bounding_box_latitude(double top, double bottom) throw(Error)
+{
+    // This is simpler than the longitude case because there's no need to test
+    // for several notations, no need to accommodate them in the return, no
+    // modulo arithmetic in the axis and no need to account for a constraint with
+    // two disconnected parts to be joined.
+    int latitude_index_top, latitude_index_bottom;
+    find_latitude_indeces(top, bottom, latitude_index_top, latitude_index_bottom);
+    
+    // Apply constraint, stride is always one and maps only have one dimension
+    Array::Dim_iter fd = d_latitude->dim_begin() ;
+    d_latitude->add_constraint(fd, latitude_index_top, 1, latitude_index_bottom);
+    dynamic_cast<Array&>(*d_grid->array_var()).add_constraint(d_lat_grid_dim, 
+                                                              latitude_index_top, 
+                                                              1, 
+                                                              latitude_index_bottom);
+}
+                                 
+/** @brief Initialize GeoConstraint with a Grid.
+    @param grid Set the GeoConstraint to use this Grid variable. It is the 
+    caller's responsibility to ensure that the value \e grid is a valid Grid 
+    variable.
+    @param dds Use this DDS to get global attributes.  
+ */
+GeoConstraint::GeoConstraint(Grid *grid, const DDS &dds) throw (Error)
+   : d_grid(grid), d_dds(dds), d_latitude(0), d_longitude(0), d_lat(0),
+     d_lon(0), d_bounding_box_set(false)
+{
+    // Build sets of attribute values for easy searching. Maybe overkill???
+    d_coards_lat_units.insert("degrees_north");
+    d_coards_lat_units.insert("degree_north");
+    d_coards_lat_units.insert("degree_N");
+    d_coards_lat_units.insert("degrees_N");
+
+    d_coards_lon_units.insert("degrees_east");
+    d_coards_lon_units.insert("degree_east");
+    d_coards_lon_units.insert("degrees_E");
+    d_coards_lon_units.insert("degree_E");
+    
+    // Is this Grid a geo-referenced grid? Throw Error if not.
+    if (!find_lat_lon_maps())
+        throw Error(string("The grid '") + d_grid->name() 
+            + "' does not have identifiable latitude/longitude map vectors."); 
+}
+
+void
+GeoConstraint::set_bounding_box(double left, double top, 
+                                double right, double bottom) throw (Error)
+{
+#if 0
+    // Clear an existing constraint. This means that set_bounding_box() can
+    // be called more than once with different values. 
+
+    // This sets the array lengths to -1 which breaks code later.
+    d_grid->clear_constraint();
+#endif
+
+    // Ensure this method is called only once. What about pthreads?
+    if (d_bounding_box_set)
+        throw Error("It is not possible to register more than one geo constraint on a grid.");
+    d_bounding_box_set = true;
+    
+    set_bounding_box_longitude(left, right);
+    
+    set_bounding_box_latitude(top, bottom);
 }
 
 

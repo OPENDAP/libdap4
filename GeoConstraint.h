@@ -87,7 +87,12 @@ private:
     void find_longitude_indeces(double left, double right, 
                                 int &longitude_index_left, 
                                 int &longitude_index_right) const;
-                                
+    void find_latitude_indeces(double top, double bottom, 
+                                int &latitude_index_top, 
+                                int &latitude_index_bottom) const;                                
+    void set_bounding_box_longitude(double left, double right) throw(Error);
+    void set_bounding_box_latitude(double top, double bottom) throw(Error);
+                              
     friend class CEFunctionsTest; // Unit tests
     
 public:
