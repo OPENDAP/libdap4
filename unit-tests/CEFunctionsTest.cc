@@ -25,6 +25,13 @@
  
 // Tests for the AISResources class.
 
+#if 0
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <iterator>
+#endif
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -173,6 +180,7 @@ class CEFunctionsTest:public TestFixture {
     CPPUNIT_TEST(transform_longitude_to_pos_notation_test);
     CPPUNIT_TEST(find_longitude_indeces_test);
     CPPUNIT_TEST(set_array_using_double_test);
+    CPPUNIT_TEST(reorder_longitude_map_test);
     CPPUNIT_TEST(set_bounding_box_test1);        
     CPPUNIT_TEST(set_bounding_box_test2);        
     
@@ -478,6 +486,28 @@ class CEFunctionsTest:public TestFixture {
         }
     }
     
+    void reorder_longitude_map_test() {
+        Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
+        CPPUNIT_ASSERT(g);
+        GeoConstraint gc1(g, *geo_dds);
+        // Longitude map: { 0, 40, 80, 120, 160, 200, 240, 280, 320, 359 }
+        cerr << "d_lon: ";
+        for (int i = 0; i < gc1.d_lon_length; ++i)
+            cerr << gc1.d_lon[i] << endl;
+        
+        gc1.reorder_longitude_map(7);
+        
+        cerr << "d_lon: ";
+        for (int i = 0; i < gc1.d_lon_length; ++i)
+            cerr << gc1.d_lon[i] << endl;
+        
+        CPPUNIT_ASSERT(gc1.d_lon[0] == 280);
+        CPPUNIT_ASSERT(gc1.d_lon[2] == 359);
+        CPPUNIT_ASSERT(gc1.d_lon[3] == 0);
+        CPPUNIT_ASSERT(gc1.d_lon[6] == 120);
+        CPPUNIT_ASSERT(gc1.d_lon[9] == 240);
+    }
+    
     void set_bounding_box_test1() {
         try {
         // SST1 uses pos notation; constraint uses pos
@@ -492,12 +522,10 @@ class CEFunctionsTest:public TestFixture {
                 CPPUNIT_ASSERT(a.dimension_start(d) == 1);
                 CPPUNIT_ASSERT(a.dimension_stop(d) == 5);
             }
-#if 0
             if (a.dimension_name(d) == "lat") {
                 CPPUNIT_ASSERT(a.dimension_start(d) == 5);
                 CPPUNIT_ASSERT(a.dimension_stop(d) == 8);
             }
-#endif
         }
         Array::Dim_iter d = gc1.d_longitude->dim_begin();
         CPPUNIT_ASSERT(gc1.d_longitude->dimension_start(d) == 1);
@@ -505,10 +533,11 @@ class CEFunctionsTest:public TestFixture {
         CPPUNIT_ASSERT(extract_double_value(gc1.d_longitude->var(1)) == 40.0);
         CPPUNIT_ASSERT(extract_double_value(gc1.d_longitude->var(5)) == 200.0);
         d = gc1.d_latitude->dim_begin();
-#if 0
         CPPUNIT_ASSERT(gc1.d_latitude->dimension_start(d) == 5);
         CPPUNIT_ASSERT(gc1.d_latitude->dimension_stop(d) == 8);
-#endif
+        CPPUNIT_ASSERT(extract_double_value(gc1.d_latitude->var(5)) == 10.0);
+        CPPUNIT_ASSERT(extract_double_value(gc1.d_latitude->var(8)) == 40.0);
+
      }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
@@ -529,12 +558,10 @@ class CEFunctionsTest:public TestFixture {
                 CPPUNIT_ASSERT(a.dimension_start(d) == 1);
                 CPPUNIT_ASSERT(a.dimension_stop(d) == 5);
             }
-#if 0
             if (a.dimension_name(d) == "lat") {
                 CPPUNIT_ASSERT(a.dimension_start(d) == 5);
                 CPPUNIT_ASSERT(a.dimension_stop(d) == 8);
             }
-#endif
         }
         Array::Dim_iter d = gc2.d_longitude->dim_begin();
         CPPUNIT_ASSERT(gc2.d_longitude->dimension_start(d) == 1);
@@ -542,10 +569,10 @@ class CEFunctionsTest:public TestFixture {
         CPPUNIT_ASSERT(extract_double_value(gc2.d_longitude->var(1)) == -140.0);
         CPPUNIT_ASSERT(extract_double_value(gc2.d_longitude->var(5)) == 20.0);
         d = gc2.d_latitude->dim_begin();
-#if 0
         CPPUNIT_ASSERT(gc2.d_latitude->dimension_start(d) == 5);
         CPPUNIT_ASSERT(gc2.d_latitude->dimension_stop(d) == 8);
-#endif        
+        CPPUNIT_ASSERT(extract_double_value(gc2.d_latitude->var(5)) == 10.0);
+        CPPUNIT_ASSERT(extract_double_value(gc2.d_latitude->var(8)) == 40.0);
         }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
