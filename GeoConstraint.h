@@ -92,7 +92,10 @@ private:
                                 int &latitude_index_bottom) const;                                
     void set_bounding_box_longitude(double left, double right) throw(Error);
     void set_bounding_box_latitude(double top, double bottom) throw(Error);
-                              
+    void reorder_longitude_map(int longitude_index_left);
+    void reorder_data_longitude_axis(int longitude_index_left,
+                                     int longitude_index_right);
+                                                                                             
     friend class CEFunctionsTest; // Unit tests
     
 public:

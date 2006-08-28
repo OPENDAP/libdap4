@@ -37,9 +37,12 @@
 static char id[] not_used = {"$Id$"};
 
 #include <math.h>
+#include <string.h>
 
 #include <iostream>
 #include <sstream>
+
+#define DODS_DEBUG
 
 #include "debug.h"
 #include "dods-datatypes.h"
@@ -268,6 +271,16 @@ GeoConstraint::find_longitude_indeces(double left, double right,
     longitude_index_right = i;
 }
 
+/** Scan from the top to the bottom, and the bottom to the top, looking
+    for the top and bottom bounding box edges, respectively. 
+    
+    @param top The top edge of the bounding box
+    @param bottom The bottom edge
+    @param latitude_index_top Value-result parameter that holds the index
+    in the grid's latitude map of the top bounding box edge. Uses a closed
+    interval for the test.
+    @param  latitude_index_bottom Value-result parameter for the bottom edge
+    index. */
 void
 GeoConstraint::find_latitude_indeces(double top, double bottom, 
                                      int &latitude_index_top, 
@@ -286,6 +299,153 @@ GeoConstraint::find_latitude_indeces(double top, double bottom,
     latitude_index_bottom = i;
 }
 
+static void
+swap_vector_ends(char *dest, char *src, int len, int index, int elem_sz)
+{
+    int j = 0;
+    int i = index;
+#if 0
+    while (i < len) {
+        DBG(cerr << "dest[" << j << "] = src[" << i << "]: " << src[i] << endl);
+        dest[j++] = src[i++];
+    }
+#else
+    DBG(cerr << "index * sizeof(double): " << index * sizeof(double)
+        << endl);
+    DBG(cerr << "(len - index) * sizeof(double): " << (len - index) * sizeof(double)
+        << endl);
+
+    memcpy(dest, 
+           src + index * elem_sz, 
+           (len - index) * elem_sz );
+           
+    cerr << "src: " << src << ", src + index: " << src + index * sizeof(double) << endl;
+           
+    i = 0;
+    while (i < len) {
+        cerr << "dest[" << i << "] = " << dest[i] << endl;
+        cerr << "src[" << i << "] = " << src[i] << ", " << &src[i]<< endl;
+        ++i;
+    }
+          
+    j = 2;
+#endif
+       
+    i = 0;
+#if 0
+    while (i < index) {
+        DBG(cerr << "dest[" << j << "] = src[" << i << "]: " << src[i] << endl);
+        dest[j++] = src[i++];
+    }
+#else           
+    memcpy(dest + (len - index) * elem_sz, 
+           src, 
+           index * elem_sz );
+#endif
+    
+}
+        
+/** Reorder the elements in the longitude maps (both the data map used within
+    this class and the map tht's part of the Grid (if applicable) so that the 
+    longitude constraint no longer crosses the edge of the map's storage. This
+    resolves the problem of constraints which span the edge of the map/data
+    thus making 'two halves.' The constraint looks like:
+    <pre>
+       0.0       180.0       360.0 (longitude, in degrees)
+        +----------------------+
+        |                      |
+        -----+            +-----
+        |    |            |    |
+        | R  |            | L  |
+        |    |            |    |
+        -----+            +-----
+        |                      |
+        +----------------------+
+    </pre>
+    Where L and R are the left and right side of the constraint (given be the 
+    client). For example, suppose the client provides a bounding box that starts
+    at 200 degrees and ends at 80. This method will first copy the Left part
+    to new storage and then copy the right part, thus 'stitching together' the 
+    two halves of the constraint. The result looks like:
+    <pre>
+     80.0  360.0/0.0  180.0  ~200.0 (longitude, in degrees)
+        +----------------------+
+        |                      |
+        -----++-----           |
+        |    ||    |           |
+        | L  || R  |           |
+        |    ||    |           |
+        -----++-----           |
+        |                      |
+        +----------------------+
+    </pre>
+    
+    */
+void
+GeoConstraint::reorder_longitude_map(int longitude_index_left)
+{
+    double *tmp_lon = new double[d_lon_length];
+    
+    swap_vector_ends((char*)tmp_lon, (char*)d_lon, d_lon_length, longitude_index_left, sizeof(double));
+
+    memcpy(d_lon, tmp_lon, d_lon_length * sizeof(double));
+}
+ 
+/** Reorder the data values relative to the longitude axis so that the
+    reordered longitude map (see GeoConstraint::reorder_longitude_map()) 
+    and the data values match.
+    
+    @note First read the entire array into temporary storage. Then use a
+    temporary vector to reorder each row of that copy of the array. Finally,
+    copy the data back into the array and delete the temporary array and 
+    vector. Once this works, optimize.
+    */ 
+void
+GeoConstraint::reorder_data_longitude_axis(int longitude_index_left,
+                                           int longitude_index_right)
+{
+    Array &a = dynamic_cast<Array&>( *(d_grid->array_var()) );
+    int element_size = a.var()->width();
+    
+    // Use d_lon_length and d_lat_length to find the size of the array to
+    // save some steps.
+    char *tmp_data_row = new char[d_lon_length * element_size];
+    char *tmp_data_array = 0;
+    a.buf2val((void**)&tmp_data_array);
+    
+    int row = 0;
+    while (row < d_lat_length) {
+        char *row_data = tmp_data_array + (row  * element_size * d_lon_length); 
+
+        memcpy( tmp_data_row, 
+                row_data + longitude_index_left * element_size, 
+                (d_lon_length - longitude_index_left) * element_size );
+        memcpy( tmp_data_row + (d_lon_length - longitude_index_left) * element_size, 
+                row_data, 
+                longitude_index_left * element_size );
+           
+        memcpy( row_data, tmp_data_row, d_lon_length * element_size );
+
+        ++row;
+    }
+    
+    a.val2buf(tmp_data_array);
+    
+    delete [] tmp_data_array;
+    delete tmp_data_row;
+}
+
+/** Given the left and right sides of the bounding box, use the Grid or Array
+    longitude information to constrain the data to that bounding box. This
+    method takes into account the two different notations commonly used to 
+    specify longitude (0/359 and -180/179) and that the longitude axis is
+    cyclic so that 360 == 0 (== 720, ...).
+    
+    @todo Make this method correctly reorder the Grid/Array when the longitude
+    constraint crosses the edge of the data's storage.
+    
+    @param left The left side of the bounding box, in degress
+    @param right The right side */
 void
 GeoConstraint::set_bounding_box_longitude(double left, double right) throw(Error)
 {
@@ -311,7 +471,12 @@ GeoConstraint::set_bounding_box_longitude(double left, double right) throw(Error
     // Does the longitude constraint cross the edge of the longitude vector?
     // If so, ...
     if (longitude_index_left > longitude_index_right) {
-        throw Error("GeoConstraint::set_bounding_box() need work.");
+        reorder_longitude_map(longitude_index_left);
+        // *** Optimize this be combinig with the call that follows below
+        // if possible.
+        set_array_using_double(d_longitude, d_lon, d_lon_length);
+        // reorder_data_longitude_axis(longitude_index_left, longitude_index_right);
+        // alter the indices
     }
         
     // If the constraint used the -180/179 (neg_pos) notation, transform
@@ -339,6 +504,11 @@ GeoConstraint::set_bounding_box_longitude(double left, double right) throw(Error
                                                               longitude_index_right);
 }
 
+/** Given the top and bottom sides of the bounding box, use the Grid or Array
+    latitude information to constrain the data to that bounding box. 
+    
+    @param top The top side of the bounding box, in degress
+    @param bottom The bottom side */
 void
 GeoConstraint::set_bounding_box_latitude(double top, double bottom) throw(Error)
 {
@@ -385,18 +555,18 @@ GeoConstraint::GeoConstraint(Grid *grid, const DDS &dds) throw (Error)
             + "' does not have identifiable latitude/longitude map vectors."); 
 }
 
+/** Set the bounding box for this constraint. After calling this method the
+    Grid or Array variable passed to this object will be constrained by
+    the given longitude/latitude box.
+    
+    @param left The left side of the bounding box.
+    @param right The right side
+    @param top The top
+    @param bottom The bottom */
 void
 GeoConstraint::set_bounding_box(double left, double top, 
                                 double right, double bottom) throw (Error)
 {
-#if 0
-    // Clear an existing constraint. This means that set_bounding_box() can
-    // be called more than once with different values. 
-
-    // This sets the array lengths to -1 which breaks code later.
-    d_grid->clear_constraint();
-#endif
-
     // Ensure this method is called only once. What about pthreads?
     if (d_bounding_box_set)
         throw Error("It is not possible to register more than one geo constraint on a grid.");
