@@ -302,83 +302,13 @@ GeoConstraint::find_latitude_indeces(double top, double bottom,
 static void
 swap_vector_ends(char *dest, char *src, int len, int index, int elem_sz)
 {
-    int j = 0;
-    int i = index;
-#if 0
-    while (i < len) {
-        DBG(cerr << "dest[" << j << "] = src[" << i << "]: " << src[i] << endl);
-        dest[j++] = src[i++];
-    }
-#else
-    DBG(cerr << "index * sizeof(double): " << index * sizeof(double)
-        << endl);
-    DBG(cerr << "(len - index) * sizeof(double): " << (len - index) * sizeof(double)
-        << endl);
-
-    memcpy(dest, 
-           src + index * elem_sz, 
-           (len - index) * elem_sz );
+    memcpy(dest, src + index * elem_sz, (len - index) * elem_sz );
            
-    cerr << "src: " << src << ", src + index: " << src + index * sizeof(double) << endl;
-           
-    i = 0;
-    while (i < len) {
-        cerr << "dest[" << i << "] = " << dest[i] << endl;
-        cerr << "src[" << i << "] = " << src[i] << ", " << &src[i]<< endl;
-        ++i;
-    }
-          
-    j = 2;
-#endif
-       
-    i = 0;
-#if 0
-    while (i < index) {
-        DBG(cerr << "dest[" << j << "] = src[" << i << "]: " << src[i] << endl);
-        dest[j++] = src[i++];
-    }
-#else           
-    memcpy(dest + (len - index) * elem_sz, 
-           src, 
-           index * elem_sz );
-#endif
-    
+    memcpy(dest + (len - index) * elem_sz, src, index * elem_sz );
 }
         
-/** Reorder the elements in the longitude maps (both the data map used within
-    this class and the map tht's part of the Grid (if applicable) so that the 
-    longitude constraint no longer crosses the edge of the map's storage. This
-    resolves the problem of constraints which span the edge of the map/data
-    thus making 'two halves.' The constraint looks like:
-    <pre>
-       0.0       180.0       360.0 (longitude, in degrees)
-        +----------------------+
-        |                      |
-        -----+            +-----
-        |    |            |    |
-        | R  |            | L  |
-        |    |            |    |
-        -----+            +-----
-        |                      |
-        +----------------------+
-    </pre>
-    Where L and R are the left and right side of the constraint (given be the 
-    client). For example, suppose the client provides a bounding box that starts
-    at 200 degrees and ends at 80. This method will first copy the Left part
-    to new storage and then copy the right part, thus 'stitching together' the 
-    two halves of the constraint. The result looks like:
-    <pre>
-     80.0  360.0/0.0  180.0  ~200.0 (longitude, in degrees)
-        +----------------------+
-        |                      |
-        -----++-----           |
-        |    ||    |           |
-        | L  || R  |           |
-        |    ||    |           |
-        -----++-----           |
-        |                      |
-        +----------------------+
-    </pre>
+/** Reorder the elements in the longitude map so that the longitude constraint no 
+    longer crosses the edge of the map's storage. 
     
     */
 void
@@ -386,9 +316,12 @@ GeoConstraint::reorder_longitude_map(int longitude_index_left)
 {
     double *tmp_lon = new double[d_lon_length];
     
-    swap_vector_ends((char*)tmp_lon, (char*)d_lon, d_lon_length, longitude_index_left, sizeof(double));
+    swap_vector_ends((char*)tmp_lon, (char*)d_lon, d_lon_length, 
+                     longitude_index_left, sizeof(double));
 
     memcpy(d_lon, tmp_lon, d_lon_length * sizeof(double));
+    
+    delete[] tmp_lon;
 }
  
 /** Reorder the data values relative to the longitude axis so that the
@@ -401,8 +334,7 @@ GeoConstraint::reorder_longitude_map(int longitude_index_left)
     vector. Once this works, optimize.
     */ 
 void
-GeoConstraint::reorder_data_longitude_axis(int longitude_index_left,
-                                           int longitude_index_right)
+GeoConstraint::reorder_data_longitude_axis(int longitude_index_left)
 {
     Array &a = dynamic_cast<Array&>( *(d_grid->array_var()) );
     int element_size = a.var()->width();
@@ -417,14 +349,10 @@ GeoConstraint::reorder_data_longitude_axis(int longitude_index_left,
     while (row < d_lat_length) {
         char *row_data = tmp_data_array + (row  * element_size * d_lon_length); 
 
-        memcpy( tmp_data_row, 
-                row_data + longitude_index_left * element_size, 
-                (d_lon_length - longitude_index_left) * element_size );
-        memcpy( tmp_data_row + (d_lon_length - longitude_index_left) * element_size, 
-                row_data, 
-                longitude_index_left * element_size );
-           
-        memcpy( row_data, tmp_data_row, d_lon_length * element_size );
+        swap_vector_ends(tmp_data_row, row_data, d_lon_length, 
+                         longitude_index_left, element_size);
+
+        memcpy(row_data, tmp_data_row, d_lon_length * element_size);
 
         ++row;
     }
@@ -468,15 +396,24 @@ GeoConstraint::set_bounding_box_longitude(double left, double right) throw(Error
     int longitude_index_left, longitude_index_right;
     find_longitude_indeces(left, right, longitude_index_left, longitude_index_right);
 
+    // This boolean is used for a simple optimization: If the d_lon vector is
+    // modified, it's values need to be copied back into the d_longitude map
+    // vector. There are two ways its values might be modified, either because the
+    // constraint results in two rectangles that must be joined or because the 
+    // notation must be switched. Record either of these and then perform the reload
+    // process only once (if nedded).
+    bool longitude_values_modified = false;
     // Does the longitude constraint cross the edge of the longitude vector?
     // If so, ...
     if (longitude_index_left > longitude_index_right) {
         reorder_longitude_map(longitude_index_left);
-        // *** Optimize this be combinig with the call that follows below
-        // if possible.
-        set_array_using_double(d_longitude, d_lon, d_lon_length);
-        // reorder_data_longitude_axis(longitude_index_left, longitude_index_right);
-        // alter the indices
+        longitude_values_modified = true;
+        
+        reorder_data_longitude_axis(longitude_index_left);
+        // alter the indices; the left index has now been moved to 0, and the right
+        // index is now at lon_vector_length-left+right.
+        longitude_index_right = d_lon_length - 1 - longitude_index_left + longitude_index_right;
+        longitude_index_left = 0;
     }
         
     // If the constraint used the -180/179 (neg_pos) notation, transform
@@ -492,9 +429,13 @@ GeoConstraint::set_bounding_box_longitude(double left, double right) throw(Error
     // that would gain much).
     if (constraint_notation == neg_pos) {
         transform_longitude_to_neg_pos_notation();
-        set_array_using_double(d_longitude, d_lon, d_lon_length);
+        longitude_values_modified = true;
     }
 
+    // See the note above about this optimization.
+    if (longitude_values_modified)
+        set_array_using_double(d_longitude, d_lon, d_lon_length);
+        
     // Apply constraint, stride is always one and maps only have one dimension
     Array::Dim_iter fd = d_longitude->dim_begin() ;
     d_longitude->add_constraint(fd, longitude_index_left, 1, longitude_index_right);

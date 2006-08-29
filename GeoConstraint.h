@@ -43,7 +43,51 @@
 #include "Grid.h"
 #endif
 
-/** 
+/** Encapsilate the logic needed to handle geographical constraints when they are
+    applied to DAP Grid (and some Array) variables. 
+    
+    This class will apply a longitude/latitude bounding box to a Grid that is
+    a 'georeferenced' Grid. That is, it follows the COARDS/CF conventions. This 
+    may be relaxed...
+    
+    If the longitude range of the constraint corsses the boundry of the data arry
+    so that the constraint creates two separate rectangles, this class will arrange 
+    to return the result as a single Grid. It will do this by rearranging the data
+    before control is passed onto the constraint evaluator and serialization
+    logic. Here's a diagram of how it works:
+    
+    Suppose a constraint for the longitude BB starts at the left edge of L and goes
+    to the right edge of R:
+    <pre>
+       0.0       180.0       360.0 (longitude, in degrees)
+        +----------------------+
+        |xxxxxyyyyyyyyyyyyzzzzz|
+        -----+            +-----
+        |    |            |    |
+        | R  |            | L  |
+        |    |            |    |
+        -----+            +-----
+        |                      |
+        +----------------------+
+    </pre>
+    For example, suppose the client provides a bounding box that starts
+    at 200 degrees and ends at 80. This class will first copy the Left part
+    to new storage and then copy the right part, thus 'stitching together' the 
+    two halves of the constraint. The result looks like:
+    <pre>
+     80.0  360.0/0.0  180.0  ~200.0 (longitude, in degrees)
+        +----------------------+
+        |zzzzzxxxxxxyyyyyyyyyyy|
+        -----++-----           |
+        |    ||    |           |
+        | L  || R  |           |
+        |    ||    |           |
+        -----++-----           |
+        |                      |
+        +----------------------+
+    </pre>
+    The changes are made in the Grid variable itself, so once this is done the 
+    Grid should not be re-read by the CE or serialization code.
     @author James Gallagher */
 
 class GeoConstraint {
@@ -93,8 +137,7 @@ private:
     void set_bounding_box_longitude(double left, double right) throw(Error);
     void set_bounding_box_latitude(double top, double bottom) throw(Error);
     void reorder_longitude_map(int longitude_index_left);
-    void reorder_data_longitude_axis(int longitude_index_left,
-                                     int longitude_index_right);
+    void reorder_data_longitude_axis(int longitude_index_left);
                                                                                              
     friend class CEFunctionsTest; // Unit tests
     
