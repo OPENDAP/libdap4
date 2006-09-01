@@ -525,19 +525,6 @@ selection_function_geogrid(int argc, BaseType *argv[], DDS &dds) throw(Error)
     double bottom = extract_double_value(argv[4]);
     gc.set_bounding_box(left, top, right, bottom);
 
-#if 0    
-    // Modify argv[] so that it can be passed to projection_function_grid()
-    // to handle any remaining 'relational expressions.'
-    
-    // Reject if any of the expressions name the lat or lon maps.
-    BaseType **argv2 = new BaseType*[argc-4];
-    argv2[0]= argv[0];
-    for (int i = 1; i < argc-4; ++i)
-        argv2[i] = argv2[i+4];
-        
-    projection_function_grid(argc-4, argv2, dds, ce);
-#endif
-
     // Apply the constraint so that the  data in all parts of the Grid for
     // which read_p() is true are fully set so that serialize() will work.
     gc.apply_constraint_to_data();
@@ -594,6 +581,22 @@ projection_function_geogrid(int argc, BaseType *argv[], DDS &dds,
     if (!dds.mark(grid->name(), true))
         throw Error("Could not find the variable: " + grid->name());
         
+    // Build a GeoConstraint object. If there are no longitude/latitude maps
+    // then this constructor throws an Error.
+    GeoConstraint gc(grid, dds.get_dataset_name(), dds);
+    
+    // This sets the bounding box and modifies the maps to match the notation
+    // of the box (0/359 or -180/179)
+    double left = extract_double_value(argv[1]); 
+    double top = extract_double_value(argv[2]);
+    double right = extract_double_value(argv[3]);
+    double bottom = extract_double_value(argv[4]);
+    gc.set_bounding_box(left, top, right, bottom);
+
+    // Apply the constraint so that the  data in all parts of the Grid for
+    // which read_p() is true are fully set so that serialize() will work.
+    gc.apply_constraint_to_data();
+    
     // Because the geogrid() reads the Grid data itself, set the read_p() 
     // property to true. This will prevent the serialze() method from calling
     // read(). Just after that point, serialize() will eval the selection
@@ -605,12 +608,14 @@ projection_function_geogrid(int argc, BaseType *argv[], DDS &dds,
     // data handler which is specific to the API/data-format.
     argv[0]->set_read_p(true); 
 
+#if 0
     // Add the selection function to the CE, this will the actual work.     
     rvalue_list *args = new rvalue_list;
     for (int i = 0; i < argc; ++i)
         append_rvalue_list(args, new rvalue(argv[i]));
         
     ce.append_clause(selection_function_geogrid, args);
+#endif
 }
 
 void
