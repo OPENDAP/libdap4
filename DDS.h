@@ -209,14 +209,14 @@ public:
 
     virtual void transfer_attributes(DAS *das);
 
-    string get_dataset_name();
+    string get_dataset_name() const;
     void set_dataset_name(const string &n);
 
     /** Return the factory which makes instances of the Byte, ..., Grid
         type classes. Specialize BaseTypeFactory so that a DDS will be 
         populated with your client or server's specialized types.
         @return An instance of BaseTypeFactory. */
-    BaseTypeFactory *get_factory() { return d_factory; }
+    BaseTypeFactory *get_factory() const { return d_factory; }
     
     /** Set the factory class used to instantiate variables during the
         parse of a DDS. 

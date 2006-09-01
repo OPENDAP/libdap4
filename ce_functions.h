@@ -36,14 +36,27 @@
 #ifndef _ce_functions_h
 #define _ce_functions_h
 
-string extract_string_argument(BaseType *arg);
-double extract_double_value(BaseType *arg);
-double *extract_double_array(Array *a) throw(Error);
-void set_array_using_double(Array *dest, double *src, int src_len);
+#include "BaseType.h"
+#include "Array.h"
+#include "Error.h"
+#include "ConstraintEvaluator.h"
 
+namespace libdap {
+    string extract_string_argument(BaseType *arg) throw(Error);
+    double extract_double_value(BaseType *arg) throw(Error);
+    double *extract_double_array(Array *a) throw(Error);
+    void set_array_using_double(Array *dest, double *src, int src_len) throw(Error);
+
+    void projection_function_grid(int argc, BaseType *argv[], DDS &dds,
+                                  ConstraintEvaluator &) throw(Error);
+    void projection_function_geogrid(int argc, BaseType *argv[], DDS &dds,
+                                     ConstraintEvaluator &) throw(Error);
+    void register_functions(ConstraintEvaluator &ce);
+}
+
+#if 0
+// These are out of date. jhrg 8/31/06
 BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
-
-void projection_function_grid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &);
-void projection_function_geogrid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &);
+#endif
 
 #endif // _ce_functions_h

@@ -64,6 +64,9 @@ typedef std::vector<rvalue *> rvalue_list;
 typedef std::vector<rvalue *>::const_iterator rvalue_list_citer ;
 typedef std::vector<rvalue *>::iterator rvalue_list_iter ;
 
+rvalue_list *make_rvalue_list(rvalue *rv);
+rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
+
 BaseType **build_btp_args(rvalue_list *args, DDS &dds);
 
 #endif // _rvalue_h

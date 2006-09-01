@@ -42,15 +42,19 @@ static char rcsid[] not_used = {"$Id$"};
 #include <vector>
 #include <algorithm>
 
+#define DODS_DEBUG
+
 #include "BaseType.h"
 #include "Array.h"
 #include "Sequence.h"
 #include "Grid.h"
 #include "Error.h"
+#include "RValue.h"
 
 #include "GSEClause.h"
 #include "GeoConstraint.h"
 
+#include "ce_functions.h"
 #include "gse_parser.h"
 #include "gse.tab.h"
 #include "debug.h"
@@ -70,6 +74,8 @@ void gse_switch_to_buffer(void *new_buffer);
 void gse_delete_buffer(void * buffer);
 void *gse_string(const char *yy_str);
 
+namespace libdap {
+        
 /** Given a BaseType pointer, extract the string value it contains and return
     it. 
     
@@ -78,7 +84,7 @@ void *gse_string(const char *yy_str);
     @exception Error thrown if the referenced BaseType object does not contain
     a DAP String. */ 
 string
-extract_string_argument(BaseType *arg)
+extract_string_argument(BaseType *arg) throw(Error)
 {
     if (arg->type() != dods_str_c)
 	throw Error(malformed_expr, 
@@ -100,7 +106,7 @@ extract_string_argument(BaseType *arg)
 
 template<class T> 
 static void
-set_array_using_double_helper(Array *a, double *src, int src_len)
+set_array_using_double_helper(Array *a, double *src, int src_len) throw(Error)
 {
     T *values = new T[src_len];
     for (int i = 0; i < src_len; ++i)
@@ -127,7 +133,7 @@ set_array_using_double_helper(Array *a, double *src, int src_len)
     Float64) or if the number of elements in \e src does not match the number
     is \e dest. */
 void
-set_array_using_double(Array *dest, double *src, int src_len)
+set_array_using_double(Array *dest, double *src, int src_len) throw(Error)
 {
     // Simple types are Byte, ..., Float64, String and Url.
     if ( dest->type() == dods_array_c
@@ -182,7 +188,7 @@ set_array_using_double(Array *dest, double *src, int src_len)
 
 template<class T> 
 static double *
-extract_double_array_helper(Array * a)
+extract_double_array_helper(Array * a) throw(Error)
 {
     int length = a->length();
     double *dest = new double[length];
@@ -246,7 +252,7 @@ extract_double_array(Array *a) throw(Error)
     @exception Error thrown if the referenced BaseType object does not contain
     a DAP numeric value. */ 
 double
-extract_double_value(BaseType *arg)
+extract_double_value(BaseType *arg) throw(Error)
 {
     // Simple types are Byte, ..., Float64, String and Url.
     if ( !arg->is_simple_type() 
@@ -314,9 +320,10 @@ extract_double_value(BaseType *arg)
     }
 }
 
+#if 0
 // In reality no server implements this; it _should_ be removed. 03/28/05 jhrg
 BaseType *
-func_length(int argc, BaseType *argv[], DDS &dds)
+func_length(int argc, BaseType *argv[], DDS &dds) throw(Error)
 {
     if (argc != 1) {
 	throw Error("Wrong number of arguments to length().");
@@ -344,9 +351,10 @@ func_length(int argc, BaseType *argv[], DDS &dds)
 
     return 0;
 }
+#endif
 
 static void
-parse_gse_expression(gse_arg *arg, BaseType *expr)
+parse_gse_expression(gse_arg *arg, BaseType *expr) throw(Error)
 {
     gse_restart(0);		// Restart the scanner.
     void *cls = gse_string(extract_string_argument(expr).c_str());
@@ -392,7 +400,8 @@ parse_gse_expression(gse_arg *arg, BaseType *expr)
     @see geogrid() (func_geogrid_select) A function which has logic specific 
     to longitude/latitude selection. */
 void 
-projection_function_grid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &)
+projection_function_grid(int argc, BaseType *argv[], DDS &dds,
+                         ConstraintEvaluator &) throw(Error)
 {
     DBG(cerr << "Entering func_grid_select..." << endl);
 
@@ -467,13 +476,9 @@ projection_function_grid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluat
                     ostringstream msg;
                     msg 
 << "The expresions passed to grid() do not result in an inclusive \n"
-
 << "subset of '" << gsec->get_map_name() << "'. The map's values range "
 << "from " << gsec->get_map_min_value() << " to " << gsec->get_map_max_value()
-<< ". The values \n"
-
-<< "supplied selected a range starting at element " << start 
-<< " and an ending at element " << stop << ".";
+<< ".";
 		    throw Error(msg.str());
 		}
 		// This map is constrained, set read_p so that during
@@ -496,6 +501,49 @@ projection_function_grid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluat
     grid_array->set_read_p(false);
 
     DBG(cerr << "Exiting func_grid_select." << endl);
+}
+
+/** This performs the work of the geogrid(). 
+    @see projection_function_geogrid */
+bool
+selection_function_geogrid(int argc, BaseType *argv[], DDS &dds) throw(Error)
+{
+    DBG(cerr << "Entering selection_function_geogrid" << endl);
+    Grid *grid = dynamic_cast<Grid*>(argv[0]);
+    if (!grid)
+        throw Error("The first argument to geogrid() must be a Grid variable!");
+
+    // Build a GeoConstraint object. If there are no longitude/latitude maps
+    // then this constructor throws an Error.
+    GeoConstraint gc(grid, dds.get_dataset_name(), dds);
+    
+    // This sets the bounding box and modifies the maps to match the notation
+    // of the box (0/359 or -180/179)
+    double left = extract_double_value(argv[1]); 
+    double top = extract_double_value(argv[2]);
+    double right = extract_double_value(argv[3]);
+    double bottom = extract_double_value(argv[4]);
+    gc.set_bounding_box(left, top, right, bottom);
+
+#if 0    
+    // Modify argv[] so that it can be passed to projection_function_grid()
+    // to handle any remaining 'relational expressions.'
+    
+    // Reject if any of the expressions name the lat or lon maps.
+    BaseType **argv2 = new BaseType*[argc-4];
+    argv2[0]= argv[0];
+    for (int i = 1; i < argc-4; ++i)
+        argv2[i] = argv2[i+4];
+        
+    projection_function_grid(argc-4, argv2, dds, ce);
+#endif
+
+    // Apply the constraint so that the  data in all parts of the Grid for
+    // which read_p() is true are fully set so that serialize() will work.
+    gc.apply_constraint_to_data();
+    
+    // Indicate the data should be sent
+    return true;
 }
 
 /** The geogrid function returns the part of a Grid which includes a 
@@ -531,7 +579,8 @@ projection_function_grid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluat
     attributes.
     @param ce The ConstraintEvaluator to use. */
 void 
-projection_function_geogrid(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
+projection_function_geogrid(int argc, BaseType *argv[], DDS &dds,
+                            ConstraintEvaluator &ce) throw(Error)
 {
     if (argc < 5)
         throw Error("Wrong number of arguments to geogrid(), there must be at least five arguments,\n\
@@ -545,26 +594,30 @@ projection_function_geogrid(int argc, BaseType *argv[], DDS &dds, ConstraintEval
     if (!dds.mark(grid->name(), true))
         throw Error("Could not find the variable: " + grid->name());
         
-    double left = extract_double_value(argv[1]); 
-    double top = extract_double_value(argv[2]);
-    double right = extract_double_value(argv[3]);
-    double bottom = extract_double_value(argv[4]);
-    
-    // Build a GeoConstraint object. If there are no longitude/latitude maps
-    // then this constructor throws an Error.
-    GeoConstraint gc(grid, dds);
-    
-    // This sets the bounding box, applies the constraint and modifies the
-    // maps to match the notation of the box (0/359 or -180/179)
-    gc.set_bounding_box(left, top, right, bottom);
-    
-    // Modify argv[] so that it can be passed to projection_function_grid()
-    // to handle any remaining 'relational expressions.'
-    BaseType **argv2 = new BaseType*[argc-4];
-    argv2[0]= argv[0];
-    for (int i = 1; i < argc-4; ++i)
-        argv2[i] = argv2[i+4];
+    // Because the geogrid() reads the Grid data itself, set the read_p() 
+    // property to true. This will prevent the serialze() method from calling
+    // read(). Just after that point, serialize() will eval the selection
+    // clauses runnning selection_function_geogrid() which will read the data
+    // using a 'projection' that's the result of 'selection'. This is key
+    // because we want to use Vector::read() to read the Grid's array data
+    // so that we don't have to handle complex cases where the array has more
+    // than two dimensions. Use read() generally equates to using code in the
+    // data handler which is specific to the API/data-format.
+    argv[0]->set_read_p(true); 
+
+    // Add the selection function to the CE, this will the actual work.     
+    rvalue_list *args = new rvalue_list;
+    for (int i = 0; i < argc; ++i)
+        append_rvalue_list(args, new rvalue(argv[i]));
         
-    projection_function_grid(argc-4, argv2, dds, ce);
+    ce.append_clause(selection_function_geogrid, args);
 }
 
+void
+register_functions(ConstraintEvaluator &ce)
+{
+    ce.add_function("grid", projection_function_grid);
+    ce.add_function("geogrid", projection_function_geogrid);
+}
+
+} // namespace libdap

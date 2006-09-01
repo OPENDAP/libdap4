@@ -49,6 +49,32 @@ static char rcsid[] not_used = {"$Id$"};
 
 using namespace std;
 
+rvalue_list *
+make_rvalue_list(rvalue *rv)
+{
+    assert(rv);
+
+    rvalue_list *rvals = new rvalue_list;
+
+    return append_rvalue_list(rvals, rv);
+}
+
+// Given a rvalue_list pointer RVALS and a value pointer VAL, make a variable
+// to hold VAL and append that variable to the list RVALS.
+//
+// Returns: A pointer to the updated rvalue_list.
+
+rvalue_list *
+append_rvalue_list(rvalue_list *rvals, rvalue *rv)
+{
+    assert(rvals);
+    assert(rv);
+
+    rvals->push_back(rv);
+
+    return rvals;
+}
+
 rvalue::rvalue(BaseType *bt): value(bt), func(0), args(0)
 {
 }

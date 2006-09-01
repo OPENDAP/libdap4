@@ -104,12 +104,17 @@ bool process_array_indices(BaseType *variable, int_list_list *indices);
 bool process_grid_indices(BaseType *variable, int_list_list *indices); 
 bool process_sequence_indices(BaseType *variable, int_list_list *indices);
 
+/* Replace these with method calls. jhrg 8/31/06 */
 bool is_array_t(BaseType *variable);
 bool is_grid_t(BaseType *variable);
 bool is_sequence_t(BaseType *variable);
 
+#if 0
+/* Moved to RValue jhrg 8/31/06 */
+
 rvalue_list *make_rvalue_list(rvalue *rv);
 rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
+#endif
 
 BaseType *make_variable(DDS &table, ConstraintEvaluator &eval, const value &val);
 bool_func get_function(const ConstraintEvaluator &eval, const char *name);
@@ -945,9 +950,12 @@ process_sequence_indices(BaseType *variable, int_list_list *indices)
     return status;
 }
 
+#if 0
 // Create a list of r values and add VAL to the list.
 //
 // Returns: A pointer to the updated rvalue_list.
+
+/* Moved to RValue. jhrg 8/31/06 */
 
 rvalue_list *
 make_rvalue_list(rvalue *rv)
@@ -974,6 +982,7 @@ append_rvalue_list(rvalue_list *rvals, rvalue *rv)
 
     return rvals;
 }
+#endif
 
 // Given a string which is a URL, dereference it and return the data it
 // points to.

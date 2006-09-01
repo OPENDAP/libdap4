@@ -126,15 +126,15 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	PassiveFloat32.cc PassiveArray.cc PassiveStructure.cc		 \
 	BaseTypeFactory.cc SignalHandler.cc Error.cc InternalErr.cc	 \
 	util.cc xdrutil_ppc.c parser-util.cc escaping.cc		 \
-	Clause.cc RValue.cc ConstraintEvaluator.cc		 	 \
-	$(GRAM_SRC)
+	$(GRAM_SRC) ce_functions.cc GSEClause.cc \
+	lex.gse_.cc gse.tab.cc GeoConstraint.cc \
+	Clause.cc RValue.cc ConstraintEvaluator.cc
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 	AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc  \
 	util_mit.cc ResponseTooBigErr.cc
 
-SERVER_SRC = DODSFilter.cc cgi_util.cc ce_functions.cc GSEClause.cc \
-	lex.gse_.cc gse.tab.cc OPeNDAPFile.cc OPeNDAPDir.cc GeoConstraint.cc
+SERVER_SRC = DODSFilter.cc cgi_util.cc OPeNDAPFile.cc OPeNDAPDir.cc 
 
 DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	BaseType.h Byte.h Int32.h Float64.h Str.h Url.h Vector.h Array.h   \
@@ -145,9 +145,11 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	PassiveFloat32.h PassiveArray.h PassiveStructure.h		   \
 	DODSResponseObject.h BaseTypeFactory.h ObjectType.h EncodingType.h \
 	SignalHandler.h Operators.h Error.h InternalErr.h		   \
-	util.h escaping.h parser.h debug.h dods-limits.h dods-datatypes.h  \
+	util.h escaping.h parser.h debug.h dods-limits.h dods-datatypes.h \
+	GeoConstraint.h 				\
+	ce_functions.h  gse_parser.h GSEClause.h util_mit.h \
 	expr.h Clause.h RValue.h ConstraintEvaluator.h ce_parser.h
-
+	
 CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		 \
 	Response.h HTTPResponse.h HTTPCacheResponse.h  PipeResponse.h	 \
@@ -155,9 +157,8 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h	 \
 	AISResources.h Resource.h
 
-SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h			\
-	OPeNDAPFile.h OPeNDAPDir.h	GeoConstraint.h 				\
-	ce_functions.h  gse_parser.h GSEClause.h cgi_util.h util_mit.h 
+SERVER_HDR = DODSFilter.h cgi_util.h AlarmHandler.h EventHandler.h			\
+	OPeNDAPFile.h OPeNDAPDir.h	
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support

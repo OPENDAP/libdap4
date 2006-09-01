@@ -71,7 +71,7 @@ public:
     typedef std::vector<function>::const_iterator Functions_citer ;
     typedef std::vector<function>::iterator Functions_iter ;
 
-    ConstraintEvaluator() { /*register_functions();*/ }
+    ConstraintEvaluator();
     virtual ~ConstraintEvaluator();
 
     void add_function(const string &name, bool_func f);

@@ -26,7 +26,6 @@
 #ifndef _geo_constraint_h
 #define _geo_constraint_h 1
 
-
 #include <string>
 #include <sstream>
 #include <set>
@@ -100,20 +99,30 @@ private:
         neg_pos
     };
     
-    Grid *d_grid;
+    Grid *d_grid;               //< Constraint this Grid
     const DDS &d_dds;
+    const string &d_dataset;
     
-    Array *d_latitude;
-    Array *d_longitude;
+    char *d_grid_array_data;    //< Holds the Grid's data values
+    int d_grid_array_data_size;
     
-    double *d_lat;
-    double *d_lon;
+    Array *d_latitude;          //< A pointer to the Grid's latitude map
+    Array *d_longitude;         //< A pointer to the Grid's longitude map
+    
+    double *d_lat;              //< Holds the latitude values
+    double *d_lon;              //< Holds the longitude values
     int d_lat_length;
     int d_lon_length;
+    int d_latitude_index_top;
+    int d_latitude_index_bottom;
+    int d_longitude_index_left;
+    int d_longitude_index_right;
     Array::Dim_iter d_lat_grid_dim;
     Array::Dim_iter d_lon_grid_dim;
     
     bool d_bounding_box_set;
+    bool d_latitude_constraint_set;
+    bool d_longitude_constraint_set;
     
     set<string> d_coards_lat_units;
     set<string> d_coards_lon_units;
@@ -123,7 +132,7 @@ private:
     GeoConstraint(const GeoConstraint &param); // Hide
     GeoConstraint &operator=(GeoConstraint &rhs); // Hide
     
-    bool find_lat_lon_maps();
+    bool find_lat_lon_maps() throw(Error);
     Notation categorize_notation(double left, double right) const;
     void transform_constraint_to_pos_notation(double &left, double &right) const;
     void transform_longitude_to_pos_notation();
@@ -137,18 +146,32 @@ private:
     void set_bounding_box_longitude(double left, double right) throw(Error);
     void set_bounding_box_latitude(double top, double bottom) throw(Error);
     void reorder_longitude_map(int longitude_index_left);
-    void reorder_data_longitude_axis(int longitude_index_left);
+    void reorder_data_longitude_axis() throw(Error);
                                                                                              
     friend class CEFunctionsTest; // Unit tests
     
 public:
     /** @name Constructors */
     //@{
-    GeoConstraint(Grid *grid, const DDS &dds) throw (Error);
+    GeoConstraint(Grid *grid, const string &ds_name, const DDS &dds) 
+        throw (Error);
     //@}
     
+    virtual ~GeoConstraint() {
+#if 1
+        delete [] d_grid_array_data;
+        delete [] d_lat;
+        delete [] d_lon;
+#endif
+    }
+        
     void set_bounding_box(double left, double top, double right, double bottom)
         throw (Error);
+        
+    void evaluate_grid_selection_expressions() throw(Error);
+        
+    void apply_constraint_to_data() throw(Error);
+    
 };
 
 #endif // _geo_constraint_h

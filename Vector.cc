@@ -650,6 +650,11 @@ the network connection.");
     type to fill the array. For an array of a cardinal type the
     memory is simply copied in whole into the Vector buffer.  
     
+    If the variable has already been constrained, this method will load only
+    number of values/bytes specified by that constraint and will load them
+    into the 'front' of the object's internal buffer. This is where serialize()
+    expects to find the data.
+    
     For a Vector of Str (OPeNDAP Strings), this assumes \e val points to an
     array of C++ strings.
     
@@ -690,7 +695,8 @@ Vector::val2buf(void *val, bool reuse)
       case dods_uint32_c:
       case dods_float32_c:
       case dods_float64_c: {
-	  unsigned int array_wid = width();
+	  unsigned int array_wid = width();    // width() is the size given
+                                               // the current constraint
 
 	  if (_buf && !reuse) {
 	      delete[] _buf; _buf = 0;
@@ -732,6 +738,13 @@ Vector::val2buf(void *val, bool reuse)
     objects. Never call this method for constructor types Structure,
     Sequence or Grid.
 
+    When reading data out of a variable that has been constrained, this method
+    assumes the N values/bytes of constrained data start at the begining
+    of the object's internal buffer. For example, do not load an entire
+    Vector's data using val2buf(), constrain and then use this method to
+    get the data. Unless your constraint starts with the [0]th element, the
+    result will not be the correct values.
+    
     In the case of a Vector of Str objects, this method will return an array
     of C++ std::string objects.
     
@@ -757,7 +770,10 @@ Vector::buf2val(void **val)
     if (!val)
 	throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
     
-    int wid = width();
+    int wid = width();  // This is the width computed using length(). The
+                        // length() property is changed when a projection
+                        // constraint is applied. Thus this is the number of
+                        // bytes in the buffer given the current constraint.
 
     switch (_var->type()) {
       case dods_byte_c:

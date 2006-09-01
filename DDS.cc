@@ -539,7 +539,7 @@ DDS::new_transfer_attributes(DAS * das)
       
 /** Returns the dataset's name. */
 string 
-DDS::get_dataset_name()
+DDS::get_dataset_name() const
 { 
     return name; 
 }

@@ -49,11 +49,12 @@ static char id[] not_used = {"$Id$"};
 #include "GeoConstraint.h"
 #include "Float64.h"
 
-#include "ce_functions.h"
 #include "Error.h"
 #include "InternalErr.h"
+#include "ce_functions.h"
 
 using namespace std;
+using namespace libdap;
 
 /** If an attribute value is quoted, remove the quotes.
     
@@ -72,9 +73,12 @@ remove_quotes(string &value)
     return;
 }
 
-/** A private method call by the constructor that searches for latitude
+/** A private method called by the constructor that searches for latitude
     and longitude map vectors. This method returns false if either map
-    cannot be found. It assume that the d_grid and d_dds fields are set.
+    cannot be found. It assumes that the d_grid and d_dds fields are set.
+    
+    The d_longitude, d_lon, d_lon_length and d_lon_grid_dim (and matching
+    lat) fields are modified. 
     
     @note Rules used to find Maps:<ul>
     <li>Latitude: If the Map has a units attribute of "degrees_north", 
@@ -85,7 +89,7 @@ remove_quotes(string &value)
     
     @return True if the maps are found, otherwise False */
 bool
-GeoConstraint::find_lat_lon_maps()
+GeoConstraint::find_lat_lon_maps() throw(Error)
 {
     Grid::Map_iter m = d_grid->map_begin();
     // Assume that a Grid is correct and thus has exactly as many maps at its
@@ -107,8 +111,11 @@ GeoConstraint::find_lat_lon_maps()
             // (which also has to be constrained).
             d_latitude = dynamic_cast<Array*>(*m);
 
-            d_lat = extract_double_array(dynamic_cast<Array*>(*m));
-            d_lat_length = dynamic_cast<Array*>(*m)->length();
+            if (!d_latitude->read_p())
+                throw InternalErr(__FILE__, __LINE__, "Grid latitude map not read.");
+
+            d_lat = extract_double_array(d_latitude); // throws Error
+            d_lat_length = d_latitude->length();
             
             d_lat_grid_dim = d;
         }
@@ -118,8 +125,11 @@ GeoConstraint::find_lat_lon_maps()
 
             d_longitude = dynamic_cast<Array*>(*m);
 
-            d_lon = extract_double_array(dynamic_cast<Array*>(*m));
-            d_lon_length = dynamic_cast<Array*>(*m)->length();
+            if (!d_longitude->read_p())
+                throw InternalErr(__FILE__, __LINE__, "Grid longitude map not read.");
+
+            d_lon = extract_double_array(d_longitude);
+            d_lon_length = d_longitude->length();
             
             d_lon_grid_dim = d;
         }
@@ -162,57 +172,6 @@ GeoConstraint::transform_constraint_to_pos_notation(double &left, double &right)
     }
 }
 
-#if 0
-template<class T>
-static void
-add_to_vector(void *data, int length, int value)
-{
-    for (int i = 0; i < length; ++i) {
-        static_cast<T*>(data)[i] += value;
-    }
-}
-
-/** Add a constant value to an Array of numeric types.
-    @param array Array to modify
-    @param value Add this to each element of \e array. */
-static void
-add_to_array(Array *array, int value)
-{
-    char *data = 0;
-    array->buf2val((void**)&data);
-    int length = array->length();
-    
-    switch (array->var()->type()) {
-        case dods_byte_c:
-            add_to_vector<dods_byte>((void*)data, length, value);
-            break;
-        case dods_uint16_c:
-            add_to_vector<dods_uint16>((void*)data, length, value);
-            break;
-        case dods_int16_c:
-            add_to_vector<dods_int16>((void*)data, length, value);
-            break;
-        case dods_uint32_c:
-            add_to_vector<dods_uint32>((void*)data, length, value);
-            break;
-        case dods_int32_c:
-            add_to_vector<dods_int32>((void*)data, length, value);
-            break;
-        case dods_float32_c:
-            add_to_vector<dods_float32>((void*)data, length, value);
-            break;
-        case dods_float64_c:
-            add_to_vector<dods_float64>((void*)data, length, value);
-            break;
-        default:
-            throw Error("Not a recognized numeric type");
-    }
-    
-    array->val2buf(data, true);     // reuse true
-    
-    delete[] data;
-}
-#endif
 
 /** Given that the Grid has a longitude map that uses the 'neg_pos' notation,
     transform it to the 'pos' notation. This method modifies the d_longitude
@@ -242,10 +201,10 @@ GeoConstraint::transform_longitude_to_neg_pos_notation()
     
     @param left The left edge of the bounding box
     @param right The right edge
-    @param longitude_index_left Value-result parameter that holds the index
+    @param d_longitude_index_left Value-result parameter that holds the index
     in the grid's longitude map of the left bounding box edge. Uses a closed
     interval for the test.
-    @param  longitude_index_right Value-result parameter for the right edge
+    @param  d_longitude_index_right Value-result parameter for the right edge
     index. */
 void
 GeoConstraint::find_longitude_indeces(double left, double right, 
@@ -299,6 +258,33 @@ GeoConstraint::find_latitude_indeces(double top, double bottom,
     latitude_index_bottom = i;
 }
 
+/** Given the top and bottom sides of the bounding box, use the Grid or Array
+    latitude information to constrain the data to that bounding box. 
+    
+    @note Make \e sure to call this before set_bounding_box_longitude().
+    
+    @param top The top side of the bounding box, in degress
+    @param bottom The bottom side */
+void
+GeoConstraint::set_bounding_box_latitude(double top, double bottom) throw(Error)
+{
+    // This is simpler than the longitude case because there's no need to test
+    // for several notations, no need to accommodate them in the return, no
+    // modulo arithmetic in the axis and no need to account for a constraint with
+    // two disconnected parts to be joined.
+    find_latitude_indeces(top, bottom, d_latitude_index_top, d_latitude_index_bottom);
+    
+    // Apply constraint, stride is always one and maps only have one dimension
+    Array::Dim_iter fd = d_latitude->dim_begin() ;
+    d_latitude->add_constraint(fd, d_latitude_index_top, 1, d_latitude_index_bottom);
+    dynamic_cast<Array&>(*d_grid->array_var()).add_constraint(d_lat_grid_dim, 
+                                                              d_latitude_index_top, 
+                                                              1, 
+                                                              d_latitude_index_bottom);
+
+    d_latitude_constraint_set = true;
+}
+                                 
 static void
 swap_vector_ends(char *dest, char *src, int len, int index, int elem_sz)
 {
@@ -308,9 +294,13 @@ swap_vector_ends(char *dest, char *src, int len, int index, int elem_sz)
 }
         
 /** Reorder the elements in the longitude map so that the longitude constraint no 
-    longer crosses the edge of the map's storage. 
+    longer crosses the edge of the map's storage. The d_lon field is
+    modified.
     
-    */
+    @note The d_lon vector always has double values regardless of the type
+    of d_longitude.
+    
+    @param d_longitude_index_left The left edge of the bounding box. */
 void
 GeoConstraint::reorder_longitude_map(int longitude_index_left)
 {
@@ -328,39 +318,92 @@ GeoConstraint::reorder_longitude_map(int longitude_index_left)
     reordered longitude map (see GeoConstraint::reorder_longitude_map()) 
     and the data values match.
     
-    @note First read the entire array into temporary storage. Then use a
+    @todo First read the entire array into temporary storage. Then use a
     temporary vector to reorder each row of that copy of the array. Finally,
     copy the data back into the array and delete the temporary array and 
     vector. Once this works, optimize.
-    */ 
-void
-GeoConstraint::reorder_data_longitude_axis(int longitude_index_left)
-{
-    Array &a = dynamic_cast<Array&>( *(d_grid->array_var()) );
-    int element_size = a.var()->width();
     
+    @param d_longitude_index_left The left edge of the bounding box. */ 
+void
+GeoConstraint::reorder_data_longitude_axis() throw(Error)
+{
+    // Read the two parts of the Grid's Array using the read() method.
+    // Then combine them into one lump of data stored in the GeoConstraint
+    // object.
+    
+    // Make a constraint for the 'left' part, which goes from the left index
+    // to the right side of the array. Use read() to get the data.
+    Array &a = dynamic_cast<Array&>(*d_grid->array_var()); 
+
+    a.add_constraint(d_lon_grid_dim, d_longitude_index_left, 1, d_lon_length);
+    a.set_read_p(false);
+    a.read(d_dataset);
+    char *left_data = 0;
+    int left_size = a.buf2val((void**)&left_data);
+
+    // Build a constraint for the 'right' part, which 
+    // goes from the left edge of the array to the right index and read those
+    // data.
+    a.add_constraint(d_lon_grid_dim, 0, 1, d_longitude_index_right);
+    a.set_read_p(false);
+    a.read(d_dataset);
+    char *right_data = 0;
+    int right_size = a.buf2val((void**)&right_data);
+    
+    // Make one big lump O'data, combine the left_ and right_data blobs and
+    // record the result in this object
+    d_grid_array_data_size = left_size + right_size;
+    d_grid_array_data = new char[d_grid_array_data_size];
+    int left = 0;
+    int right = 0;
+    int i = 0;
+    // Interleve the left and right_data vectors. This works for 2 and 3
+    // dimensions. Not sure about 4, 5, ... jhrg 8/31/06
+    while(i < d_grid_array_data_size) {
+        d_grid_array_data[i++] = left_data[left++];
+        d_grid_array_data[i++] = right_data[right++];
+    }
+
+    delete [] left_data;
+    delete [] right_data;
+    
+#if 0
+    Array &a = dynamic_cast<Array&>( *(d_grid->array_var()) );
+
+    // make sure the data are present before doing this!
+    if (!a.read_p())
+        throw InternalErr(__FILE__, __LINE__, "Grid  Array not read.");
+
     // Use d_lon_length and d_lat_length to find the size of the array to
     // save some steps.
+    int element_size = a.var()->width();
+    
     char *tmp_data_row = new char[d_lon_length * element_size];
-    char *tmp_data_array = 0;
-    a.buf2val((void**)&tmp_data_array);
+#if 0
+    a.buf2val((void**)&d_grid_array_data); // Allocates storage using new []
+#endif
     
     int row = 0;
     while (row < d_lat_length) {
-        char *row_data = tmp_data_array + (row  * element_size * d_lon_length); 
-
+        // row_data points to the start of 'row' within d_grid_array_data
+        char *row_data = d_grid_array_data + (row  * element_size * d_lon_length); 
+        // Treat each row like a vector and swap left and right bounding box
+        // edges; put the result in a temporary storage
         swap_vector_ends(tmp_data_row, row_data, d_lon_length, 
                          longitude_index_left, element_size);
-
+        // Copy the result back to d_grid_array_data using 'row_data'
         memcpy(row_data, tmp_data_row, d_lon_length * element_size);
 
         ++row;
     }
     
-    a.val2buf(tmp_data_array);
+    a.val2buf(d_grid_array_data, true);    // true == reuse the array's mem
     
+#if 0
     delete [] tmp_data_array;
+#endif
     delete tmp_data_row;
+#endif
 }
 
 /** Given the left and right sides of the bounding box, use the Grid or Array
@@ -393,29 +436,35 @@ GeoConstraint::set_bounding_box_longitude(double left, double right) throw(Error
         transform_longitude_to_pos_notation();
         
     // Find the longitude map indeces that correspond to the bounding box.
-    int longitude_index_left, longitude_index_right;
-    find_longitude_indeces(left, right, longitude_index_left, longitude_index_right);
+    find_longitude_indeces(left, right, d_longitude_index_left, d_longitude_index_right);
 
-    // This boolean is used for a simple optimization: If the d_lon vector is
-    // modified, it's values need to be copied back into the d_longitude map
-    // vector. There are two ways its values might be modified, either because the
-    // constraint results in two rectangles that must be joined or because the 
-    // notation must be switched. Record either of these and then perform the reload
-    // process only once (if nedded).
-    bool longitude_values_modified = false;
     // Does the longitude constraint cross the edge of the longitude vector?
-    // If so, ...
-    if (longitude_index_left > longitude_index_right) {
-        reorder_longitude_map(longitude_index_left);
-        longitude_values_modified = true;
+    // If so, reorder the grid's data (array), longitude map vector and the 
+    // local vector of longitude data used for computation.
+    if (d_longitude_index_left > d_longitude_index_right) {
+        reorder_longitude_map(d_longitude_index_left);
         
-        reorder_data_longitude_axis(longitude_index_left);
+        // If the longitude constraint is 'split', join the two parts, reload
+        // the data into the Grid's Array and make sure the Array is marked as
+        // already read. This should be true for the whole Grid, but if some
+        // future modification changes that, the array will be covered here.
+        // Note that the following method only reads the data out and stores
+        // it in this object after joining the two parts. The method
+        // apply_constraint_to_data() transfers the data back from the this
+        // objet to the DAP Grid variable.
+        reorder_data_longitude_axis();
+        d_grid->array_var()->set_read_p(true);
+        
         // alter the indices; the left index has now been moved to 0, and the right
         // index is now at lon_vector_length-left+right.
-        longitude_index_right = d_lon_length - 1 - longitude_index_left + longitude_index_right;
-        longitude_index_left = 0;
+        d_longitude_index_right = d_lon_length - 1 - d_longitude_index_left + d_longitude_index_right;
+        d_longitude_index_left = 0;
     }
-        
+    else {
+        // If the longitude constraint is not split, let serialize() and read()
+        // handle getting the data.
+        d_grid->array_var()->set_read_p(false);
+    }
     // If the constraint used the -180/179 (neg_pos) notation, transform
     // the longitude map s it uses the -180/179 notation. Note that at this
     // point, d_longitude always uses the pos notation because of the earlier
@@ -425,59 +474,37 @@ GeoConstraint::set_bounding_box_longitude(double left, double right) throw(Error
     // tests the array length using Vector::length() and that method returns 
     // the length _as constrained_. We want to move all of the longitude 
     // values from d_lon back into the map, not just the number that will be
-    // sent (although an optimization misght do this, it's hard to imagine 
-    // that would gain much).
+    // sent (although an optimization might do this, it's hard to imagine 
+    // it would gain much).
     if (constraint_notation == neg_pos) {
         transform_longitude_to_neg_pos_notation();
-        longitude_values_modified = true;
     }
-
-    // See the note above about this optimization.
-    if (longitude_values_modified)
-        set_array_using_double(d_longitude, d_lon, d_lon_length);
         
     // Apply constraint, stride is always one and maps only have one dimension
-    Array::Dim_iter fd = d_longitude->dim_begin() ;
-    d_longitude->add_constraint(fd, longitude_index_left, 1, longitude_index_right);
+    Array::Dim_iter fd = d_longitude->dim_begin();
+    d_longitude->add_constraint(fd, d_longitude_index_left, 1, d_longitude_index_right);
+
     dynamic_cast<Array&>(*d_grid->array_var()).add_constraint(d_lon_grid_dim, 
-                                                              longitude_index_left, 
+                                                              d_longitude_index_left, 
                                                               1, 
-                                                              longitude_index_right);
+                                                              d_longitude_index_right);
+    d_longitude_constraint_set = true;
 }
 
-/** Given the top and bottom sides of the bounding box, use the Grid or Array
-    latitude information to constrain the data to that bounding box. 
-    
-    @param top The top side of the bounding box, in degress
-    @param bottom The bottom side */
-void
-GeoConstraint::set_bounding_box_latitude(double top, double bottom) throw(Error)
-{
-    // This is simpler than the longitude case because there's no need to test
-    // for several notations, no need to accommodate them in the return, no
-    // modulo arithmetic in the axis and no need to account for a constraint with
-    // two disconnected parts to be joined.
-    int latitude_index_top, latitude_index_bottom;
-    find_latitude_indeces(top, bottom, latitude_index_top, latitude_index_bottom);
-    
-    // Apply constraint, stride is always one and maps only have one dimension
-    Array::Dim_iter fd = d_latitude->dim_begin() ;
-    d_latitude->add_constraint(fd, latitude_index_top, 1, latitude_index_bottom);
-    dynamic_cast<Array&>(*d_grid->array_var()).add_constraint(d_lat_grid_dim, 
-                                                              latitude_index_top, 
-                                                              1, 
-                                                              latitude_index_bottom);
-}
-                                 
 /** @brief Initialize GeoConstraint with a Grid.
     @param grid Set the GeoConstraint to use this Grid variable. It is the 
     caller's responsibility to ensure that the value \e grid is a valid Grid 
     variable.
+    @param ds_name The name of the dataset. Passed to BaseType::read().
     @param dds Use this DDS to get global attributes.  
  */
-GeoConstraint::GeoConstraint(Grid *grid, const DDS &dds) throw (Error)
-   : d_grid(grid), d_dds(dds), d_latitude(0), d_longitude(0), d_lat(0),
-     d_lon(0), d_bounding_box_set(false)
+GeoConstraint::GeoConstraint(Grid *grid, const string &ds_name, const DDS &dds) 
+    throw (Error)
+   : d_grid(grid), d_dataset(ds_name), d_dds(dds), 
+     d_grid_array_data(0), d_grid_array_data_size(0),
+     d_latitude(0), d_longitude(0), d_lat(0), d_lon(0), 
+     d_bounding_box_set(false), d_latitude_constraint_set(false),
+     d_longitude_constraint_set(false)
 {
     // Build sets of attribute values for easy searching. Maybe overkill???
     d_coards_lat_units.insert("degrees_north");
@@ -489,16 +516,28 @@ GeoConstraint::GeoConstraint(Grid *grid, const DDS &dds) throw (Error)
     d_coards_lon_units.insert("degree_east");
     d_coards_lon_units.insert("degrees_E");
     d_coards_lon_units.insert("degree_E");
-    
+
     // Is this Grid a geo-referenced grid? Throw Error if not.
     if (!find_lat_lon_maps())
         throw Error(string("The grid '") + d_grid->name() 
-            + "' does not have identifiable latitude/longitude map vectors."); 
+            + "' does not have identifiable latitude/longitude map vectors.");
+#if 0
+    // If we have a valid Grid, then slurp the data into this object's 
+    // d_grid_array_data field. This is done here because the data are already
+    // in the Grid (since the CE parser reads the Grid when it builds the 
+    // argument list passed to the function) so there's no real loss of
+    // efficiency. Maybe someday there will be a smarter data reader that 
+    // reads just the constrained part of the Grid's array... jhrg 8/30/06
+    d_grid->array_var()->buf2val((void**)&d_grid_array_data);
+#endif
 }
 
 /** Set the bounding box for this constraint. After calling this method the
     Grid or Array variable passed to this object will be constrained by
-    the given longitude/latitude box.
+    the given longitude/latitude box. This will read the grid's array data
+    using Array::read() if the longitude constraint crosses the right edge
+    of the Grid's array boundry (i.e. the constraint is split across the 
+    edge of the array.
     
     @param left The left side of the bounding box.
     @param right The right side
@@ -509,13 +548,146 @@ GeoConstraint::set_bounding_box(double left, double top,
                                 double right, double bottom) throw (Error)
 {
     // Ensure this method is called only once. What about pthreads?
+    // The method Array::reset_constraint() might make this so it could be
+    // called more than once. jhrg 8/30/06
     if (d_bounding_box_set)
-        throw Error("It is not possible to register more than one geo constraint on a grid.");
+        throw InternalErr("It is not possible to register more than one geo constraint on a grid.");
     d_bounding_box_set = true;
     
-    set_bounding_box_longitude(left, right);
-    
     set_bounding_box_latitude(top, bottom);
+    set_bounding_box_longitude(left, right);
 }
 
+/** Once the bounding box is set use this method to apply the constraint. This
+    modifies the data values in the Grid so that the software in 
+    Vector::serialize() will work correctly. Vector::serialize() assumes that
+    the BaseType::read() method is called \e after the projection is applied to
+    the data. That is, the projectionis applied, then data are read. but
+    geogrid() first reads all the data values and then computes the projection.
+    To make Vector::serialize() work, this method uses the projection
+    information recorded in the Grid by set_bounding_box() to arrange data so
+    that the information to be sent is all that is held by the Grid. Call this
+    after applying any 'Grid selection expressions' of the sort that can be 
+    passed to the grid() function. 
+    
+    @note Why do this here? The grid() function uses the standard logic in
+    Vector and elsewhere to read data that's to be sent. The problem is that
+    the data values need to be reordered using information only this object
+    has. If this were implemented as a 'selection function' (i.e., if the code
+    was run by ConstraintExpression::eval() then we might e able to better
+    optimize how data are read, but in this case we have read all the data
+    and may have alredy reorganized it. Set up the internal buffers so they
+    hold the correct values and mark the Grid's array and lat/lon maps as
+    read. */
+     
+void
+GeoConstraint::apply_constraint_to_data() throw(Error)
+{
+    if (!d_latitude_constraint_set || !d_longitude_constraint_set)
+        throw InternalErr("The Latitude and Longitude constraints must be set before calling apply_constraint_to_data().");
+
+    // transfer data from this object back into the Grid; first for the 
+    // latitude and longitude maps...
+    set_array_using_double(d_latitude, &d_lat[d_latitude_index_top], 
+                           d_latitude_index_bottom - d_latitude_index_top + 1);
+                           
+    set_array_using_double(d_longitude, &d_lon[d_longitude_index_left], 
+                           d_longitude_index_right - d_longitude_index_left + 1);
+                           
+    // ... and then the Grid's array if it has been read. If the data do not 
+    // need to be manipulated here, postpone the read until serialize() is
+    // called.
+    if (d_grid_array_data) {
+        int size = d_grid->array_var()->val2buf(&d_grid_array_data);
+        if (size == d_grid_array_data_size)
+            throw InternalErr("Expected data size not copied to the Grid's buffer.");
+    }
+    
+#if 0
+    // Use d_lon_length and d_lat_length to find the size of the array to
+    // save some steps. This looks like a bug ...
+    int element_size = d_grid->array_var()->var()->width();
+    
+    int lon_length = d_longitude_index_right - d_longitude_index_left + 1;
+    int lat_length = d_latitude_index_bottom - d_latitude_index_top + 1;
+    
+    char *constrained_data = new char[lat_length * lon_length * element_size];
+    
+    int source_row = d_latitude_index_top;
+    int dest_row = 0;
+    while (dest_row < lat_length) {
+        // row_data points to the start of 'row' within d_grid_array_data
+        char *row_data = d_grid_array_data 
+                                + (source_row  * element_size * d_lon_length)
+                                + d_longitude_index_left; 
+        char *constrained_row_data = constrained_data
+                                + (dest_row * lon_length * element_size);
+                                
+        memcpy(constrained_row_data, row_data, lon_length * element_size);
+
+        ++source_row;
+        ++dest_row;
+    }
+    
+    d_grid->array_var()->val2buf((void*)constrained_data);
+    
+    delete [] constrained_data;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////
+//
+// left over. might use??
+
+#if 0
+template<class T>
+static void
+add_to_vector(void *data, int length, int value)
+{
+    for (int i = 0; i < length; ++i) {
+        static_cast<T*>(data)[i] += value;
+    }
+}
+
+/** Add a constant value to an Array of numeric types.
+    @param array Array to modify
+    @param value Add this to each element of \e array. */
+static void
+add_to_array(Array *array, int value)
+{
+    char *data = 0;
+    array->buf2val((void**)&data);
+    int length = array->length();
+    
+    switch (array->var()->type()) {
+        case dods_byte_c:
+            add_to_vector<dods_byte>((void*)data, length, value);
+            break;
+        case dods_uint16_c:
+            add_to_vector<dods_uint16>((void*)data, length, value);
+            break;
+        case dods_int16_c:
+            add_to_vector<dods_int16>((void*)data, length, value);
+            break;
+        case dods_uint32_c:
+            add_to_vector<dods_uint32>((void*)data, length, value);
+            break;
+        case dods_int32_c:
+            add_to_vector<dods_int32>((void*)data, length, value);
+            break;
+        case dods_float32_c:
+            add_to_vector<dods_float32>((void*)data, length, value);
+            break;
+        case dods_float64_c:
+            add_to_vector<dods_float64>((void*)data, length, value);
+            break;
+        default:
+            throw Error("Not a recognized numeric type");
+    }
+    
+    array->val2buf(data, true);     // reuse true
+    
+    delete[] data;
+}
+#endif
 

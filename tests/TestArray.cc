@@ -93,15 +93,20 @@ TestArray::operator=(const TestArray &rhs)
 
 // This read mfunc does some strange things to get a value - a real program
 // would never get values this way. For testing this is OK.
+//
+// To make arrays vary, and do so with predictability, use the 'series_values'
+// property of TestCommon to trigger array values that start a 1 for the 0th
+// element and increase by one for each subsequent element. For a constrained
+// 
 
 bool
 TestArray::read(const string &dataset)
 {
     if (read_p())
-		return true;
+	return true;
 
     if (test_variable_sleep_interval > 0)
-		sleep(test_variable_sleep_interval);
+	sleep(test_variable_sleep_interval);
 
     unsigned i;
 
@@ -121,23 +126,18 @@ TestArray::read(const string &dataset)
       case dods_str_c:
       case dods_url_c: {
 
-	// String and Url are grouped with dods_byte, ... because val2buf works
-	// for these types.
-
+        char *tmp = new char[width()];
+        
+        // This code builds an array with whatever value is in the template
+        // variable
 	unsigned int elem_wid = var()->width(); // size of an element
-
-	char *tmp = new char[width()];
-	// elem_val was a void pointer; delete complained. 6/4/2001 jhrg
-	char *elem_val = 0;	// NULL init gets read_val() to alloc space
-
-	// Added cast as temporary fix. 6/4/2001 jhrg
+	char *elem_val = 0;            // Null forces buf2val to allocate memory
 	var()->buf2val((void **)&elem_val); // internal buffer to ELEM_VAL
 
 	for (i = 0; i < array_len; ++i)
 	    memcpy(tmp + i * elem_wid, elem_val, elem_wid);
 
-
-	val2buf(tmp);
+ 	val2buf(tmp);
 
 	delete elem_val; elem_val = 0; // alloced in buf2val()
 	delete[] tmp; tmp = 0;	// alloced above
