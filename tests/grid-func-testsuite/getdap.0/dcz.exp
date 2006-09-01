@@ -1,0 +1,41 @@
+
+# Copy this file and change the host name and/or the test_dir names to test
+# servers on other hosts or other versions of the servers.
+
+global comp_output		# contains output from das-test_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+global host
+
+source common_tests.exp
+
+# Server machine name
+set host "test.opendap.org"
+# CGI directory on $host
+set test_dir "opendap"
+
+source "grid-func-testsuite/getdap.0/urls.tcl"
+
+set test_name "test.opendap.org"
+
+# The `1' in compare_stdout means call xfail if the test fails.
+
+getdap_start "-D" "${bears}?grid(bears)"
+compare_stdout "grid-func-testsuite/bears.1.data" "${test_name}: NetCDF/bears"
+
+getdap_start "-D" "${bears}?grid(bears,\"i<=20\",\"j<=4\",\"l<=9\")"
+compare_stdout "grid-func-testsuite/bears.2.data" "${test_name}: NetCDF/bears"
+
+getdap_start "-D" "${bears}?grid(bears,\"i=20\",\"j=4\",\"l=9\")"
+compare_stdout "grid-func-testsuite/bears.3.data" "${test_name}:NetCDF/bears" 1
+
+getdap_start "-D" "${bears}?grid(bears,\"i>=20\",\"j>=4\",\"l>=9\")"
+compare_stdout "grid-func-testsuite/bears.4.data" "${test_name}: NetCDF/bears"
+
+
+#  geturl_start "-D" "${fnoc1}?${fnoc1_ce}"
+#  compare_stdout "grid-func-testsuite/fnoc1.data" "$test_name: NetCDF/fnoc1"
+
+#  geturl_start "-D" "${nscat_hdf}?${nscat_hdf_ce}"
+#  compare_stdout "server-testsuite/nscat_hdf.data" "$test_name: HDF"
+
