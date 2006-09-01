@@ -100,8 +100,10 @@ GeoConstraint::find_lat_lon_maps() throw(Error)
     while ( m != d_grid->map_end() && (!d_latitude || !d_longitude) ) {
         string units_value = (*m)->get_attr_table().get_attr("units");
         remove_quotes(units_value);
-        if (!d_latitude && !units_value.empty() 
-            && d_coards_lat_units.find(units_value) != d_coards_lat_units.end()) {
+        string map_name = (*m)->name();
+        if (!d_latitude // && !units_value.empty() 
+            && (d_coards_lat_units.find(units_value) != d_coards_lat_units.end()
+                || map_name == "COADSY") ) { //cheat! jhrg 9/1/06
 
             // Set both d_latitude (a pointer to the real map vector) and
             // d_lat, a vector of the values represented as doubles. It's easier
@@ -120,8 +122,9 @@ GeoConstraint::find_lat_lon_maps() throw(Error)
             d_lat_grid_dim = d;
         }
             
-        if (!d_longitude && !units_value.empty() 
-            && d_coards_lon_units.find(units_value) != d_coards_lon_units.end()) {
+        if (!d_longitude // && !units_value.empty() 
+            && (d_coards_lon_units.find(units_value) != d_coards_lon_units.end()
+                || map_name == "COADSX") ) {
 
             d_longitude = dynamic_cast<Array*>(*m);
 
@@ -366,44 +369,6 @@ GeoConstraint::reorder_data_longitude_axis() throw(Error)
 
     delete [] left_data;
     delete [] right_data;
-    
-#if 0
-    Array &a = dynamic_cast<Array&>( *(d_grid->array_var()) );
-
-    // make sure the data are present before doing this!
-    if (!a.read_p())
-        throw InternalErr(__FILE__, __LINE__, "Grid  Array not read.");
-
-    // Use d_lon_length and d_lat_length to find the size of the array to
-    // save some steps.
-    int element_size = a.var()->width();
-    
-    char *tmp_data_row = new char[d_lon_length * element_size];
-#if 0
-    a.buf2val((void**)&d_grid_array_data); // Allocates storage using new []
-#endif
-    
-    int row = 0;
-    while (row < d_lat_length) {
-        // row_data points to the start of 'row' within d_grid_array_data
-        char *row_data = d_grid_array_data + (row  * element_size * d_lon_length); 
-        // Treat each row like a vector and swap left and right bounding box
-        // edges; put the result in a temporary storage
-        swap_vector_ends(tmp_data_row, row_data, d_lon_length, 
-                         longitude_index_left, element_size);
-        // Copy the result back to d_grid_array_data using 'row_data'
-        memcpy(row_data, tmp_data_row, d_lon_length * element_size);
-
-        ++row;
-    }
-    
-    a.val2buf(d_grid_array_data, true);    // true == reuse the array's mem
-    
-#if 0
-    delete [] tmp_data_array;
-#endif
-    delete tmp_data_row;
-#endif
 }
 
 /** Given the left and right sides of the bounding box, use the Grid or Array
@@ -521,15 +486,6 @@ GeoConstraint::GeoConstraint(Grid *grid, const string &ds_name, const DDS &dds)
     if (!find_lat_lon_maps())
         throw Error(string("The grid '") + d_grid->name() 
             + "' does not have identifiable latitude/longitude map vectors.");
-#if 0
-    // If we have a valid Grid, then slurp the data into this object's 
-    // d_grid_array_data field. This is done here because the data are already
-    // in the Grid (since the CE parser reads the Grid when it builds the 
-    // argument list passed to the function) so there's no real loss of
-    // efficiency. Maybe someday there will be a smarter data reader that 
-    // reads just the constrained part of the Grid's array... jhrg 8/30/06
-    d_grid->array_var()->buf2val((void**)&d_grid_array_data);
-#endif
 }
 
 /** Set the bounding box for this constraint. After calling this method the
@@ -556,6 +512,23 @@ GeoConstraint::set_bounding_box(double left, double top,
     
     set_bounding_box_latitude(top, bottom);
     set_bounding_box_longitude(left, right);
+}
+
+void
+GeoConstraint::evaluate_grid_selection_expressions() throw(Error)
+{
+#if 0    
+    // Modify argv[] so that it can be passed to projection_function_grid()
+    // to handle any remaining 'relational expressions.'
+    
+    // Reject if any of the expressions name the lat or lon maps.
+    BaseType **argv2 = new BaseType*[argc-4];
+    argv2[0]= argv[0];
+    for (int i = 1; i < argc-4; ++i)
+        argv2[i] = argv2[i+4];
+        
+    projection_function_grid(argc-4, argv2, dds, ce);
+#endif
 }
 
 /** Once the bounding box is set use this method to apply the constraint. This
@@ -602,92 +575,4 @@ GeoConstraint::apply_constraint_to_data() throw(Error)
         if (size == d_grid_array_data_size)
             throw InternalErr("Expected data size not copied to the Grid's buffer.");
     }
-    
-#if 0
-    // Use d_lon_length and d_lat_length to find the size of the array to
-    // save some steps. This looks like a bug ...
-    int element_size = d_grid->array_var()->var()->width();
-    
-    int lon_length = d_longitude_index_right - d_longitude_index_left + 1;
-    int lat_length = d_latitude_index_bottom - d_latitude_index_top + 1;
-    
-    char *constrained_data = new char[lat_length * lon_length * element_size];
-    
-    int source_row = d_latitude_index_top;
-    int dest_row = 0;
-    while (dest_row < lat_length) {
-        // row_data points to the start of 'row' within d_grid_array_data
-        char *row_data = d_grid_array_data 
-                                + (source_row  * element_size * d_lon_length)
-                                + d_longitude_index_left; 
-        char *constrained_row_data = constrained_data
-                                + (dest_row * lon_length * element_size);
-                                
-        memcpy(constrained_row_data, row_data, lon_length * element_size);
-
-        ++source_row;
-        ++dest_row;
-    }
-    
-    d_grid->array_var()->val2buf((void*)constrained_data);
-    
-    delete [] constrained_data;
-#endif
 }
-
-////////////////////////////////////////////////////////////////////////
-//
-// left over. might use??
-
-#if 0
-template<class T>
-static void
-add_to_vector(void *data, int length, int value)
-{
-    for (int i = 0; i < length; ++i) {
-        static_cast<T*>(data)[i] += value;
-    }
-}
-
-/** Add a constant value to an Array of numeric types.
-    @param array Array to modify
-    @param value Add this to each element of \e array. */
-static void
-add_to_array(Array *array, int value)
-{
-    char *data = 0;
-    array->buf2val((void**)&data);
-    int length = array->length();
-    
-    switch (array->var()->type()) {
-        case dods_byte_c:
-            add_to_vector<dods_byte>((void*)data, length, value);
-            break;
-        case dods_uint16_c:
-            add_to_vector<dods_uint16>((void*)data, length, value);
-            break;
-        case dods_int16_c:
-            add_to_vector<dods_int16>((void*)data, length, value);
-            break;
-        case dods_uint32_c:
-            add_to_vector<dods_uint32>((void*)data, length, value);
-            break;
-        case dods_int32_c:
-            add_to_vector<dods_int32>((void*)data, length, value);
-            break;
-        case dods_float32_c:
-            add_to_vector<dods_float32>((void*)data, length, value);
-            break;
-        case dods_float64_c:
-            add_to_vector<dods_float64>((void*)data, length, value);
-            break;
-        default:
-            throw Error("Not a recognized numeric type");
-    }
-    
-    array->val2buf(data, true);     // reuse true
-    
-    delete[] data;
-}
-#endif
-
