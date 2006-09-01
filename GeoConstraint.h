@@ -158,11 +158,9 @@ public:
     //@}
     
     virtual ~GeoConstraint() {
-#if 1
         delete [] d_grid_array_data;
         delete [] d_lat;
         delete [] d_lon;
-#endif
     }
         
     void set_bounding_box(double left, double top, double right, double bottom)
@@ -171,7 +169,6 @@ public:
     void evaluate_grid_selection_expressions() throw(Error);
         
     void apply_constraint_to_data() throw(Error);
-    
 };
 
 #endif // _geo_constraint_h
