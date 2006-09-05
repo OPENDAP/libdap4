@@ -562,19 +562,16 @@ BaseType::var(const string &, btp_stack &)
     classes. For constructors with more than one variable, the variables
     appear in the same order in which they were added (i.e., the order in
     which add_var() was called). Since this method is only for use by Vectors
-    and Constructors, the BaseType implementation does nothing.
+    and Constructors, the BaseType implementation throws InternalErr.
 
-    @note Implementation of this method in Structure, Sequence, et c., first
-    copy \e bt and then insert the copy. If \e bt is itself a constructor
+    @note For the implementation of this method in Structure, Sequence, et c.,
+    first copy \e bt and then insert the copy. If \e bt is itself a constructor
     type you must either use the var() method to get a pointer to the actual
     instance added to \c *this or you must first add all of <em>bt</em>'s
-    children to it before adding it to \c *this. The implementations use
+    children to it before adding it to \c *this. The implementations should use
     _duplicate() to perform a deep copy of \e bt.
 
     @brief Add a variable.
-
-    @todo The BaseType implementation of this method should throw an
-    InternalErr.
 
     @todo We should get rid of the Part parameter and adopt the convention
     that the first variable is the Array and all subsequent ones are Maps
@@ -592,6 +589,7 @@ BaseType::var(const string &, btp_stack &)
 void
 BaseType::add_var(BaseType *, Part)
 {
+    throw InternalErr(__FILE__, __LINE__, "BaseType::add_var unimplemented");
 }
 
 /** This method should be implemented for each of the data type classes (Byte,
