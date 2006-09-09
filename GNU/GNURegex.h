@@ -43,7 +43,7 @@
 class Regex
 {
 private:
-    regex_t d_preg;
+    regex_t *d_preg;
     void init(const char *t) throw(Error);
     
 public:

@@ -30,19 +30,19 @@
 #include <stdexcept>
 
 #include <GNURegex.h>
-// #include <Error.h>
 
 using namespace std;
 
 void
 Regex::init(const char *t) throw(Error)
 {
-    int result = regcomp(&d_preg, t, REG_EXTENDED);
+    d_preg = new regex_t;
+    int result = regcomp(d_preg, t, REG_EXTENDED);
 
     if  (result != 0) {
-        size_t msg_len = regerror(result, &d_preg, (char *)NULL, (size_t)0);
+        size_t msg_len = regerror(result, d_preg, (char *)NULL, (size_t)0);
         char *msg = new char[msg_len+1];
-        regerror(result, &d_preg, msg, msg_len);
+        regerror(result, d_preg, msg, msg_len);
         Error e(string("Regex error: ") + string(msg));
         delete[] msg;
         throw e;
@@ -51,7 +51,9 @@ Regex::init(const char *t) throw(Error)
 
 Regex::~Regex()
 {
-    regfree(&d_preg);
+    regfree(d_preg);
+    delete d_preg; d_preg = 0;
+
 }
 
 /** Initialize a POSIX regular expression (using the 'extended' features).
@@ -70,8 +72,7 @@ Regex::Regex(const char* t, int) throw(Error)
 }
 
 /** Does the regular expression match the string? 
-    <p><b> We Need To Fix A Bug in This Code That is Held At Bay By A Workaround
-    In The Code. See In Line Comments For More Detail.</b></p>
+
     @param s The string
     @param len The length of string to consider
     @param pos Start looking at this position in the string
@@ -82,7 +83,7 @@ Regex::match(const char*s, int len, int pos)
     regmatch_t pmatch[1];
     string ss = s;
     
-    int result = regexec(&d_preg, ss.substr(pos, len).c_str(), 1, pmatch, 0);
+    int result = regexec(d_preg, ss.substr(pos, len).c_str(), 1, pmatch, 0);
     if (result == REG_NOMATCH)
         return -1;
 
@@ -91,6 +92,7 @@ Regex::match(const char*s, int len, int pos)
 }
 
 /** Does the regular expression match the string? 
+
     @param s The string
     @param len The length of string to consider
     @param matchlen Return the length of the matched portion in this 
@@ -106,7 +108,7 @@ Regex::search(const char* s, int len, int& matchlen, int pos)
     regmatch_t *pmatch = new regmatch_t[len];
     string ss = s;
      
-    int result = regexec(&d_preg, ss.substr(pos, len).c_str(), len, pmatch, 0);
+    int result = regexec(d_preg, ss.substr(pos, len).c_str(), len, pmatch, 0);
     if (result == REG_NOMATCH) {
         delete[] pmatch; pmatch = 0;
         return -1;
