@@ -91,7 +91,7 @@ RCReaderTest_SOURCES = RCReaderTest.cc
 RCReaderTest_LDADD = -lcppunit ../libdap.la ../libdapclient.la
 
 SequenceTest_SOURCES = SequenceTest.cc
-SequenceTest_LDADD = -lcppunit ../libdap.la
+SequenceTest_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a
 
 SignalHandlerTest_SOURCES = SignalHandlerTest.cc
 SignalHandlerTest_LDADD = -lcppunit ../libdap.la

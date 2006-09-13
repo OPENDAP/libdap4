@@ -195,13 +195,24 @@ private:
 
     bool is_end_of_rows(int i);
 
-    bool serialize_parent_part_one(const string &dataset, DDS &dds, 
+    virtual bool serialize_parent_part_one(const string &dataset, DDS &dds, 
                                    ConstraintEvaluator &eval, XDR *sink);
-    void serialize_parent_part_two(const string &dataset, DDS &dds, 
+    virtual void serialize_parent_part_two(const string &dataset, DDS &dds, 
                                    ConstraintEvaluator &eval, XDR *sink);
-    bool serialize_leaf(const string &dataset, DDS &dds, 
+    virtual bool serialize_leaf(const string &dataset, DDS &dds, 
                         ConstraintEvaluator &eval, XDR *sink, bool ce_eval);
 
+#if 1
+    virtual bool transfer_data_parent_part_one(const string &dataset, DDS &dds, 
+                                    ConstraintEvaluator &eval);
+                                    
+    virtual void transfer_data_parent_part_two(const string &dataset, DDS &dds, 
+                                    ConstraintEvaluator &eval);
+#endif                                    
+    virtual bool transfer_data_for_leaf(const string &dataset, DDS &dds, 
+                                ConstraintEvaluator &eval, bool ce_eval);
+                                
+    friend class SequenceTest;
 public:
 
     Sequence(const string &n = "");
@@ -219,7 +230,7 @@ public:
     virtual int element_count(bool leaves = false);
 
     virtual bool is_linear();
-public:
+
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
     virtual void set_in_selection(bool state);
@@ -236,6 +247,9 @@ public:
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
                            DDS &dds, XDR *sink, bool ce_eval = true);
 
+    virtual bool transfer_data(const string &dataset, ConstraintEvaluator &eval,
+                               DDS &dds, bool ce_eval = true);
+                                    
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     /// Rest the row number counter
@@ -258,7 +272,9 @@ public:
     // Move me!
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
-
+    
+    virtual void set_values(BaseTypeRow *row);
+    
     virtual BaseType *var(const string &name, bool exact_match = true,
 			  btp_stack *s = 0);
     virtual BaseType *var(const string &n, btp_stack &s);

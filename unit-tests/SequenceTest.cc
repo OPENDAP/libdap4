@@ -29,16 +29,22 @@
 
 #include <string>
 
-#include "GNURegex.h"
-
 // #define DODS_DEBUG
-#include "Sequence.h"
-#include "Int32.h"
-#include "Str.h"
+#include "DDS.h"
+#include "ConstraintEvaluator.h"
+
+#include "../tests/TestTypeFactory.h"
+#include "../tests/TestSequence.h"
+#include "../tests/TestInt32.h"
+#include "../tests/TestStr.h"
+
+#include "GNURegex.h"
 #include "debug.h"
 
 using namespace CppUnit;
 using namespace std;
+
+int test_variable_sleep_interval;
 
 //  Note: MS VC++ won't tolerate the embedded newlines in strings, hence the \n
 //  is explicit.
@@ -81,7 +87,8 @@ static Regex s_regex(s_as_string);
 
 class SequenceTest : public TestFixture {
 private:
-    Sequence *s, *ss, *ps, *sss, *ts, *tts;
+    DDS *dds;
+    TestSequence *s, *ss, *ps, *sss, *ts, *tts;
 
 public:
     SequenceTest() {}
@@ -89,33 +96,39 @@ public:
 
     void setUp() { 
 	// Set up a simple sequence. Used to test ctor, assigment, et cetera.
-	s = new Sequence("s");
-	s->add_var(new Int32("i1"));
-	s->add_var(new Str("str1"));
-	s->add_var(new Int32("i2"));
+	s = new TestSequence("s");
+	s->add_var(new TestInt32("i1"));
+	s->add_var(new TestStr("str1"));
+	s->add_var(new TestInt32("i2"));
+        s->set_series_values(true);        
 
         // Set ss, a two level sequence
-        ss = new Sequence("ss");
-        ss->add_var(new Int32("i1"));
+        ss = new TestSequence("ss");
+        ss->add_var(new TestInt32("i1"));
         
-        ps = new Sequence("child_of_ss");
-        ps->add_var(new Int32("i2"));
+        ps = new TestSequence("child_of_ss");
+        ps->add_var(new TestInt32("i2"));
         
         ss->add_var(ps);
         
 	// Set up sss, used to test multi-level sequences
-	sss = new Sequence("sss");
-	sss->add_var(new Int32("i1"));
+	sss = new TestSequence("sss");
+	sss->add_var(new TestInt32("i1"));
 	
-	ts = new Sequence("child_of_sss");
-	ts->add_var(new Str("str1"));
+	ts = new TestSequence("child_of_sss");
+	ts->add_var(new TestStr("str1"));
 	
-	tts = new Sequence("child_of_child_of_sss");
-	tts->add_var(new Int32("i2"));
+	tts = new TestSequence("child_of_child_of_sss");
+	tts->add_var(new TestInt32("i2"));
 	ts->add_var(tts);
 
 	sss->add_var(ts);	// This has to be here because add_var adds
 				// copies of its argument.
+        TestTypeFactory ttf;
+        dds = new DDS(&ttf);
+        dds->add_var(s);
+        dds->add_var(ss);
+        dds->add_var(sss);
     } 
 
     void tearDown() { 
@@ -125,6 +138,7 @@ public:
 	delete sss; sss = 0;
 	delete ts; ts = 0;
 	delete tts; tts = 0;
+        delete dds; dds = 0;
     }
 
     bool re_match(Regex &r, const char *s) {
@@ -142,10 +156,36 @@ public:
     CPPUNIT_TEST(test_set_leaf_sequence);
     CPPUNIT_TEST(test_set_leaf_sequence2);
     CPPUNIT_TEST(test_set_leaf_sequence3);
+    
+    CPPUNIT_TEST(transfer_data_for_leaf_test);
 
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
+    void transfer_data_for_leaf_test() {
+        ConstraintEvaluator ce;
+        s->set_send_p(true);
+        try {
+            s->transfer_data_for_leaf("dummy", *dds, ce, true);
+            BaseType *btp;
+            
+            // Test the first value in the first four rows
+            btp = s->var_value(0, 0);
+            CPPUNIT_ASSERT(dynamic_cast<Int32&>(*btp).value() == 32);
+            btp = s->var_value(1, 0);
+            CPPUNIT_ASSERT(dynamic_cast<Int32&>(*btp).value() == 1024);
+            btp = s->var_value(2, 0);
+            CPPUNIT_ASSERT(dynamic_cast<Int32&>(*btp).value() == 32768);
+            btp = s->var_value(3, 0);
+            CPPUNIT_ASSERT(dynamic_cast<Int32&>(*btp).value() == 1048576);
+            DBG(s->print_val(stdout));
+        }
+        catch (Error &e) {
+            cerr << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error in transfer_data_for_leaf_test()");
+        }
+    }
+    
     void test_set_leaf_sequence3() {
         // Test for the rejection of a Sequence with two sequences in it.
         sss->add_var(ss);

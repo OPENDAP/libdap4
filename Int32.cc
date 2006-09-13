@@ -167,6 +167,12 @@ Int32::buf2val(void **val)
   return width();
 }
 
+dods_int32
+Int32::value()
+{
+    return _buf;
+}
+
 void 
 Int32::print_val(FILE *out, string space, bool print_decl_p)
 {
