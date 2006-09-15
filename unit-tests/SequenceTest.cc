@@ -29,7 +29,8 @@
 
 #include <string>
 
-// #define DODS_DEBUG
+//#define DODS_DEBUG
+
 #include "DDS.h"
 #include "ConstraintEvaluator.h"
 
@@ -105,9 +106,11 @@ public:
         // Set ss, a two level sequence
         ss = new TestSequence("ss");
         ss->add_var(new TestInt32("i1"));
+        ss->set_series_values(true);
         
         ps = new TestSequence("child_of_ss");
         ps->add_var(new TestInt32("i2"));
+        ps->set_series_values(true);
         
         ss->add_var(ps);
         
@@ -124,6 +127,8 @@ public:
 
 	sss->add_var(ts);	// This has to be here because add_var adds
 				// copies of its argument.
+        sss->set_series_values(true);
+        
         TestTypeFactory ttf;
         dds = new DDS(&ttf);
         dds->add_var(s);
@@ -138,6 +143,7 @@ public:
 	delete sss; sss = 0;
 	delete ts; ts = 0;
 	delete tts; tts = 0;
+        
         delete dds; dds = 0;
     }
 
@@ -156,21 +162,148 @@ public:
     CPPUNIT_TEST(test_set_leaf_sequence);
     CPPUNIT_TEST(test_set_leaf_sequence2);
     CPPUNIT_TEST(test_set_leaf_sequence3);
-    
     CPPUNIT_TEST(transfer_data_for_leaf_test);
+    CPPUNIT_TEST(transfer_data_test1);
+    CPPUNIT_TEST(transfer_data_test2);
+    CPPUNIT_TEST(transfer_data_test3);
 
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
+    void transfer_data_test1() {
+        ConstraintEvaluator ce;
+        s->set_send_p(true);
+        s->set_leaf_sequence();
+        try {
+            s->transfer_data("dummy", ce, *dds);
+            
+            // Test the first value in the first four rows
+            BaseType *btp = s->var_value(0, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32);
+            btp = s->var_value(1, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1024);
+            btp = s->var_value(2, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32768);
+            btp = s->var_value(3, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1048576);
+            DBG(s->print_val(stdout));
+        }
+        catch (Error &e) {
+            cerr << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error in transfer_data_for_leaf_test1()");
+        }
+    }
+    
+    void transfer_data_test2() {
+        ConstraintEvaluator ce;
+        ss->set_send_p(true);
+        ss->set_leaf_sequence();
+        try {
+            ss->transfer_data("dummy", ce, *dds);
+            DBG(ss->print_val(stdout));
+            
+            // Test the first value in the first four rows
+            BaseType *btp = ss->var_value(0, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32);
+            btp = ss->var_value(1, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1024);
+            btp = ss->var_value(2, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32768);
+            btp = ss->var_value(3, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1048576);
+            
+            // Look at some values in the inner sequence
+            Sequence *sp = dynamic_cast<Sequence*>(ss->var_value(0, 1));
+            CPPUNIT_ASSERT(sp);
+            btp = sp->var_value(0, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32);
+            btp = sp->var_value(1, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1024);
+            btp = sp->var_value(2, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32768);
+            btp = sp->var_value(3, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1048576);
+            
+            sp = dynamic_cast<Sequence*>(ss->var_value(3, 1));
+            CPPUNIT_ASSERT(sp);
+            btp = sp->var_value(0, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32);
+            btp = sp->var_value(1, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1024);
+            btp = sp->var_value(2, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32768);
+            btp = sp->var_value(3, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1048576);
+        }
+        catch (Error &e) {
+            cerr << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error in transfer_data_test2()");
+        }
+    }
+    
+    void transfer_data_test3() {
+        ConstraintEvaluator ce;
+        sss->set_send_p(true);
+        sss->set_leaf_sequence();
+        try {
+            sss->transfer_data("dummy", ce, *dds);
+            DBG(sss->print_val_by_rows(stdout, "", true, true));
+            // Test the first value in the first four rows
+            BaseType *btp = sss->var_value(0, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32);
+            btp = sss->var_value(1, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1024);
+            btp = sss->var_value(2, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32768);
+            btp = sss->var_value(3, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1048576);
+            
+            // Look at some values in the inner-most sequence (skip the middle
+            // sequence since I don't have a value() accessor for that yet.
+            Sequence *sp = dynamic_cast<Sequence*>(sss->var_value(0, 1));
+            CPPUNIT_ASSERT(sp);
+            Sequence *ssp = dynamic_cast<Sequence*>(sp->var_value(0, 1));
+            CPPUNIT_ASSERT(ssp);
+            
+            btp = ssp->var_value(0, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32);
+            btp = ssp->var_value(1, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1024);
+            btp = ssp->var_value(2, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32768);
+            btp = ssp->var_value(3, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1048576);
+            
+            sp = dynamic_cast<Sequence*>(sss->var_value(3, 1));
+            CPPUNIT_ASSERT(sp);
+            ssp = dynamic_cast<Sequence*>(sp->var_value(3, 1));
+            CPPUNIT_ASSERT(ssp);
+            
+            btp = ssp->var_value(0, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32);
+            btp = ssp->var_value(1, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1024);
+            btp = ssp->var_value(2, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32768);
+            btp = ssp->var_value(3, 0);
+            CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1048576);
+        }
+        catch (Error &e) {
+            cerr << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error in transfer_data_test3()");
+        }
+    }
+    
     void transfer_data_for_leaf_test() {
         ConstraintEvaluator ce;
         s->set_send_p(true);
         try {
-            s->transfer_data_for_leaf("dummy", *dds, ce, true);
-            BaseType *btp;
+            Sequence::sequence_values_stack_t sequence_values_stack;
+            sequence_values_stack.push_back(&s->d_values);
+            s->transfer_data_for_leaf("dummy", *dds, ce, sequence_values_stack);
             
             // Test the first value in the first four rows
-            btp = s->var_value(0, 0);
+            BaseType *btp = s->var_value(0, 0);
             CPPUNIT_ASSERT(dynamic_cast<Int32&>(*btp).value() == 32);
             btp = s->var_value(1, 0);
             CPPUNIT_ASSERT(dynamic_cast<Int32&>(*btp).value() == 1024);
