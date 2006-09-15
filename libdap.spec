@@ -1,9 +1,8 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP
-Version: 3.7.1
+Version: 3.7.2
 Release: 1
 
-#Source0: http://www.opendap.org/pub/3.5/source/libdap-%{version}.tar.gz
 Source0: ftp://ftp.unidata.ucar.edu/pub/opendap/source/libdap-%{version}.tar.gz
 URL: http://www.opendap.org/
 
@@ -11,7 +10,7 @@ Group: Development/Libraries
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 License: LGPL/W3C
 # Mandrake
-#BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
+# BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
 # fedora
 BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
 
@@ -32,7 +31,7 @@ Summary: Static libraries and header files from libdap
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 Requires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
-#
+
 %description devel
 This package contains all the files needed to develop applications that
 will use libdap.
@@ -73,6 +72,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/aclocal/*
 
 %changelog
+* Mon Spe 15 2006 James Gallagher <jgallagher@opendap.org> - 3.7.2
+- Update to 3.7.2
+
 * Mon Aug 21 2006 James Gallagher <jgallagher@opendap.org> - 3.7.1
 - Update to 3.7.1
 

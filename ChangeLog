@@ -1,3 +1,162 @@
+2006-09-15  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnectTest: Fixed most, but not all, of the failures. See
+	ticket 552 for more info.
+
+2006-09-15  James Gallagher <jgallagher@opendap.org>
+
+	test.f.exp: The change to TestStr so that the number included in the
+	string increments broke this test. Fixed.
+
+2006-09-15  James Gallagher <jgallagher@opendap.org>
+
+	Sequence: Doxygen was complaining about the types used in the
+	new transfer_data_*() methods because they were not exactly the
+	same string (vector<Sequence*> versus sequence_values_stack_t).
+	I made them the same.
+
+2006-09-15  James Gallagher <jgallagher@opendap.org>
+
+	doxy.conf: Now the method listings are in alphbetical order.
+
+2006-09-14  James Gallagher <jgallagher@opendap.org>
+
+	SequenceTest.cc: Now tests the new transfer_data() method.
+
+2006-09-14  James Gallagher <jgallagher@opendap.org>
+
+	Added the transfer_data() method to Sequence. This method reads
+	data using the read() method and loads values into the local object's
+	d_values field. Values can then be used by methods like print_val()
+	which expect to see information stored in the Sequence objects
+	as if the object was part of a client and had read the data off of
+	the wire. I also modified the print_vals_by_row so that nested
+	Sequences values are indented by four spaces.
+
+2006-09-14  James Gallagher <jgallagher@opendap.org>
+
+	TestStr.cc: Modified the string so that the value of count
+	increments by one for each instance.
+
+2006-09-14  James Gallagher <jgallagher@opendap.org>
+
+	TestInt32.cc: Modified so that on 64-bit machines the overflow of the
+	'* 32' operation does not reset the value of _buf to zero, but instead
+	_buf cycles back to 32.
+
+2006-09-13  James Gallagher <jgallagher@opendap.org>
+
+	Sequence: Added transfer_data and related methods. These are used
+	to move data on the server-side from a data source into the
+	d_values field, loading the variables in the sequence with data in
+	a way that is very similar to the operation of all the other
+	variables. This provides a way to pass a DDS to other code which
+	is loaded with data. SequenceTest.cc and Makefile.am in
+	unit-tests: Test the transfer_data method. Int32: I added a
+	value() method similar to those added to Float32/64 a while back.
+	This simplifies testing so much... configure.ac: Bumped up the
+	revision number of the library.
+
+2006-09-08  James Gallagher <jgallagher@opendap.org>
+
+	GNURegex: I change the regex_t field from a regular variable to a
+	pointer. Seems to fix the problem, although I don't know why. Not
+	the most reassuring feeling...
+
+2006-09-05  James Gallagher <jgallagher@opendap.org>
+
+	BaseType.cc: Modified add_var() so that it now throws an InternalErr
+	and fixed up the documentation so it reads correctly.
+
+2006-09-02  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-09-01  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: geogrid() no longer uses the projection/selection
+	function model. Now it's a pure projection function.
+
+2006-09-01  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint: removed old code and modified find_lon_lat_maps()
+	so that I can test with the COADS dataset. Tests not working...
+
+2006-09-01  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint: removed old code and modified find_lon_lat_maps()
+	so that I can test with the COADS dataset. Tests not working...
+
+2006-09-01  James Gallagher <jgallagher@opendap.org>
+
+	checkpoint: GeoConstraint/geogrid() nearly working Changes in
+	DDS, ConstraintEvaluator, ce_functions (now uses the new libdap
+	namespace), RValue, various tests.
+
+2006-09-01  James Gallagher <jgallagher@opendap.org>
+
+	Updates/Changes to the grid() testsuite that uses remote servers.
+	I changed the tests so they now run using servers on test.opendap.org
+	and use getdap (the tests were originally written to use geturl).
+
+2006-08-29  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint: Changed code to do the data translation for split
+	constraints so that it uses memcpy(). Untested.
+
+2006-08-28  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint: Added some of the code needed to swap parts of a 'split'
+	longitude constraint.
+
+2006-08-28  James Gallagher <jgallagher@opendap.org>
+
+	CEFunctionsTest.cc: Added unit tests for vector swapping coode.
+
+2006-08-28  James Gallagher <jgallagher@opendap.org>
+
+	Added separate lon/lat bounding box marking code to GeoConstraint.
+
+2006-08-25  James Gallagher <jgallagher@opendap.org>
+
+	More work on geogrid().
+	M    ce_functions.h
+	M    GeoConstraint.h
+	M    Grid.h
+	M    Vector.cc
+	M    ce_functions.cc
+	M    Grid.cc
+	M    unit-tests/CEFunctionsTest.cc
+	M    GeoConstraint.cc
+
+2006-08-25  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-08-24  James Gallagher <jgallagher@opendap.org>
+
+	Progress on the geogrid() server-side function. Changed/Added files:
+	M    RValue.cc
+	M    ce_functions.h
+	M    GeoConstraint.h
+	M    Makefile.am
+	M    gse-test.cc
+	M    ce_functions.cc
+	A    unit-tests/ce-functions-testsuite
+	A    unit-tests/ce-functions-testsuite/two_grid.dds
+	A    unit-tests/ce-functions-testsuite/geo_grid.dds
+	M    unit-tests/CEFunctionsTest.cc
+	M    Clause.cc
+	M    GeoConstraint.cc
+
+2006-08-22  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	Updated release files for the 3.7.1 source release.
+
 2006-08-21  James Gallagher <jgallagher@opendap.org>
 
 	ce_functions.cc, DDS.cc, CEFunctionsTest.cc, docs/html.tar.gz:

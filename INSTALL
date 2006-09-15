@@ -29,7 +29,7 @@ BUILDING THE SOFTWARE
      software, then 'cd unit-tests; make check' will build and run the unit
      tests.
 
-  3. Type `make install' to install the DAP 3.1 library. The libraries
+  3. Type `make install' to install the DAP 3.7.2 library. The libraries
      (libdap.a. libdapclient.a and libdapserver.a), its header files and the
      getdap and dap-config utilities install under /usr/local/ in lib,
      include/libdap and bin by default. The deflate utility is installed in

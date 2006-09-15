@@ -1,6 +1,25 @@
 
 $Id$
 
+News for version 3.7.2
+
+Fixed a persistent bug in the GNURegex code. (ticket 389)
+
+Fixed a problem in HTTPConnect where the change from newline to cr/nl line
+terminators was not accommodated (no ticket, but part of the issues behind
+ticket 552).
+
+Added Sequence::transfer_data(). This method uses the read() method to read
+data and follows the same logic used by serialize to determine which data is
+'sent' but instead records the data in the d_values field. Thus a Sequence
+can transfer data to itself. The locally stored data apes the ability of the
+other classes to store a complete response and is the basis for the new ASCII
+response code (in dap-server/asciival) which Server4 uses.
+
+There's a fair amount of the geogrid() code now in place, although the
+function does not work, I have added a GeoConstraint class which is close to
+complete. The CEFunctionsTest unit tests fail.
+
 News for version 3.7.1
 
 Fixed bug #480. Attributes from the HDF4 server were not being handled in a

@@ -1,6 +1,15 @@
 
 $Id$
 
+Notes for version 3.7.2
+
+This version of libdap is required for the 9/15/06 alpha release of Server4.
+The library now contains software which enables Server4 to build the ASCII
+data response for all types of variables, including Sequence and nested
+Sequence variables. These features are additions to the API, so older code
+will work just fine with the new library. See NEWS for more specific info
+about bug fixes.
+
 Notes for version 3.7.1
 
 This is a bug fix release (mostly) made for users of the netcdf client
