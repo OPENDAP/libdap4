@@ -35,6 +35,7 @@
 
 
 #include "config.h"
+
 #ifndef WIN32
 #include <unistd.h>
 #else
@@ -43,7 +44,10 @@
 #include <process.h>
 #endif
 
+//#define DODS_DEBUG 
+
 #include "TestInt32.h"
+#include "debug.h"
 
 extern int test_variable_sleep_interval;
 
@@ -85,6 +89,7 @@ TestInt32::ptr_duplicate()
 bool
 TestInt32::read(const string &)
 {
+    DBG(cerr << "Entering TestInt32::read for " << name() << endl);
     if (read_p())
 	return true;
 
@@ -93,6 +98,9 @@ TestInt32::read(const string &)
 
     if (get_series_values()) {
         _buf = 32 * _buf;
+        if (!_buf)
+            _buf = 32;
+        DBG(cerr << "In TestInt32::read, _buf = " << _buf << endl);
     }
     else {
         _buf = 123456789;
