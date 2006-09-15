@@ -97,7 +97,7 @@ TestStr::read(const string &)
     if (test_variable_sleep_interval > 0)
 	sleep(test_variable_sleep_interval);
 
-    string dods_str_test = "Silly test string: " + long_to_string(count);
+    string dods_str_test = "Silly test string: " + long_to_string(++count);
     (void) val2buf(&dods_str_test);
 
     set_read_p(true);
