@@ -32,7 +32,7 @@
 #include <algorithm>
 
 #include "GNURegex.h"
-
+//#define DODS_DEBUG
 #include "HTTPConnect.h"
 #include "RCReader.h"
 #include "debug.h"
@@ -87,10 +87,13 @@ public:
     CPPUNIT_TEST(get_response_headers_test);
     CPPUNIT_TEST(server_version_test);
     CPPUNIT_TEST(type_test);
+
     CPPUNIT_TEST(cache_test);
+
     CPPUNIT_TEST(set_accept_deflate_test);
     CPPUNIT_TEST(read_url_password_test);
     CPPUNIT_TEST(read_url_password_test2);
+
 #if 0
     CPPUNIT_TEST(read_url_password_proxy_test);
 #endif
@@ -202,17 +205,25 @@ public:
 		     ostream_iterator<string>(cerr, "\n")));
 
 	    // Should get five or six headers back.
-	    Regex header("XDODS-Server: DAP/.*");
+	    Regex header("XDODS-Server: DAP[0-4]?/.*");
+            DBG(cerr << "get_response_headers_test(), (*h)[0]: "
+                     << (*h)[0] << endl);
 	    CPPUNIT_ASSERT(re_match(header, (*h)[0].c_str()));
+
             Regex protocol_header("XDAP: .*");
             unsigned int num_headers;
-            if (re_match(protocol_header, (*h)[1].c_str()))
+            if (re_match(protocol_header, (*h)[2].c_str()))
                 num_headers = 7;
             else
                 num_headers = 5;
-	    CPPUNIT_ASSERT((*h)[4] == "Content-Description: dods_das");
-	    CPPUNIT_ASSERT(h->size() == num_headers);
 
+            DBG(cerr << "num_headers: " << num_headers << endl);
+            DBG(cerr << "h->size(): " << h->size() << endl);
+            DBG(cerr << "(*h)[num_headers-1]: " << (*h)[num_headers-1] << endl);
+	    CPPUNIT_ASSERT((*h)[num_headers-1] == "Content-Description: dods_das");
+#if 0
+	    CPPUNIT_ASSERT(h->size() == num_headers);
+#endif
 	    delete r; r = 0;
 	}
 	catch (InternalErr &e) {
@@ -223,8 +234,11 @@ public:
 
     void server_version_test() {
 	Response *r = http->fetch_url(netcdf_das_url);
-	Regex version("dap/[0-9]+\\.[0-9]+\\.[0-9]+");
+	Regex version("dap[0-4]?/[0-9]+\\.[0-9]+\\.[0-9]+");
 	try {
+            DBG(cerr << "r->get_version().c_str(): "
+                     << r->get_version().c_str() << endl);
+                     
 	    CPPUNIT_ASSERT(re_match(version, r->get_version().c_str()));
 	    delete r; r = 0;
 	}
