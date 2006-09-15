@@ -62,6 +62,9 @@
     instance of Sequence. Values are stored in instances of BaseType. */
 typedef vector<BaseType *> BaseTypeRow;
 
+/** This type holds all of the values of a Sequence. */
+typedef std::vector<BaseTypeRow *> SequenceValues;
+
 /** This is the interface for the class Sequence. A sequence contains
     a single set of variables, all at the same lexical level just like
     a Structure.  Like a Structure, a Sequence may contain other
@@ -158,7 +161,7 @@ class Sequence: public Constructor {
 private:
     // This holds the values read off the wire. Values are stored in
     // instances of BaseType objects.
-    std::vector<BaseTypeRow *> d_values;
+    SequenceValues d_values;
 
     // The number of the row that has just been deserialized. Before
     // deserialized has been called, this member is -1. 
@@ -195,6 +198,12 @@ private:
 
     bool is_end_of_rows(int i);
 
+    friend class SequenceTest;
+
+protected:
+
+    typedef vector<SequenceValues*> sequence_values_stack_t;
+     
     virtual bool serialize_parent_part_one(const string &dataset, DDS &dds, 
                                    ConstraintEvaluator &eval, XDR *sink);
     virtual void serialize_parent_part_two(const string &dataset, DDS &dds, 
@@ -202,17 +211,22 @@ private:
     virtual bool serialize_leaf(const string &dataset, DDS &dds, 
                         ConstraintEvaluator &eval, XDR *sink, bool ce_eval);
 
-#if 1
-    virtual bool transfer_data_parent_part_one(const string &dataset, DDS &dds, 
-                                    ConstraintEvaluator &eval);
+    virtual void transfer_data_private(const string &dataset, 
+                                       ConstraintEvaluator &eval, 
+                                       DDS &dds, 
+                                       sequence_values_stack_t &sequence_values_stack);
+    virtual void transfer_data_for_leaf(const string &dataset, DDS &dds, 
+                                        ConstraintEvaluator &eval, 
+                                        sequence_values_stack_t &sequence_values_stack);
+                                       
+    virtual void transfer_data_parent_part_one(const string &dataset, DDS &dds, 
+                                               ConstraintEvaluator &eval,
+                                               sequence_values_stack_t &sequence_values_stack);
                                     
     virtual void transfer_data_parent_part_two(const string &dataset, DDS &dds, 
-                                    ConstraintEvaluator &eval);
-#endif                                    
-    virtual bool transfer_data_for_leaf(const string &dataset, DDS &dds, 
-                                ConstraintEvaluator &eval, bool ce_eval);
-                                
-    friend class SequenceTest;
+                                               ConstraintEvaluator &eval,
+                                               sequence_values_stack_t &sequence_values_stack);
+
 public:
 
     Sequence(const string &n = "");
@@ -247,8 +261,8 @@ public:
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
                            DDS &dds, XDR *sink, bool ce_eval = true);
 
-    virtual bool transfer_data(const string &dataset, ConstraintEvaluator &eval,
-                               DDS &dds, bool ce_eval = true);
+    virtual void transfer_data(const string &dataset, ConstraintEvaluator &eval,
+                               DDS &dds);
                                     
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
@@ -273,7 +287,8 @@ public:
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
     
-    virtual void set_values(BaseTypeRow *row);
+    virtual void set_value(SequenceValues &values);
+    virtual SequenceValues value();
     
     virtual BaseType *var(const string &name, bool exact_match = true,
 			  btp_stack *s = 0);
