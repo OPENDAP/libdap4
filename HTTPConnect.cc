@@ -215,7 +215,7 @@ save_raw_http_headers(void *ptr, size_t size, size_t nmemb, void *resp_hdrs)
     vector<string> *hdrs = static_cast<vector<string> *>(resp_hdrs);
 
     // Grab the header, minus the trailing newline.
-    string complete_line(static_cast<char *>(ptr), size * nmemb - 1);
+    string complete_line(static_cast<char *>(ptr), size * nmemb - 2);
 
     // Store all non-empty headers that are not HTTP status codes
     if (complete_line != "" && complete_line.find("HTTP") == string::npos) {
