@@ -905,8 +905,7 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds,
     
     @param dataset The name of the data set
     @param eval Use this contraint evaluator
-    @param dds This DDS holds the variables for the data source
-    @param ce_eval If true, evaluate the constraint expression. */
+    @param dds This DDS holds the variables for the data source */
 void
 Sequence::transfer_data(const string &dataset, 
                         ConstraintEvaluator &eval, 
@@ -984,7 +983,7 @@ Sequence::transfer_data_for_leaf(const string &dataset, DDS &dds,
 void
 Sequence::transfer_data_parent_part_one(const string &dataset, DDS &dds, 
                                         ConstraintEvaluator &eval,
-                                        vector<SequenceValues*> &sequence_values_stack)
+                                        sequence_values_stack_t &sequence_values_stack)
 {
     DBG(cerr << "Entering transfer_data_parent_part_one for " << name() << endl);
     
@@ -1017,7 +1016,7 @@ Sequence::transfer_data_parent_part_one(const string &dataset, DDS &dds,
 void
 Sequence::transfer_data_parent_part_two(const string &dataset, DDS &dds, 
                                         ConstraintEvaluator &eval,
-                                        vector<SequenceValues*> &sequence_values_stack)
+                                        sequence_values_stack_t &sequence_values_stack)
 {
     DBG(cerr << "Entering transfer_data_parent_part_two for " << name() << endl);
     
