@@ -60,6 +60,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/getdap
 %{_sbindir}/deflate
 %{_libdir}/libdap.so.*
+%{_libdir}/libdapclient.so.*
+%{_libdir}/libdapserver.so.*
 %doc README NEWS COPYING COPYRIGHT_URI README.AIS README.dodsrc
 %doc COPYRIGHT_W3C
 
@@ -67,12 +69,16 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_libdir}/libdap.a
 %{_libdir}/libdap.so
+%{_libdir}/libdapclient.so
+%{_libdir}/libdapclient.a
+%{_libdir}/libdapserver.so
+%{_libdir}/libdapserver.a
 %{_bindir}/dap-config
 %{_includedir}/libdap/
 %{_datadir}/aclocal/*
 
 %changelog
-* Mon Spe 15 2006 James Gallagher <jgallagher@opendap.org> - 3.7.2
+* Mon Spe 15 2006 James Gallagher <jgallagher@opendap.org> - 3.7.2-1
 - Update to 3.7.2
 
 * Mon Aug 21 2006 James Gallagher <jgallagher@opendap.org> - 3.7.1
@@ -99,7 +105,7 @@ rm -rf $RPM_BUILD_ROOT
 - Removed version numbers from .a and includes directory.
 
 * Tue May 10 2005 James Gallagher <jimg@zoey.opendap.org> 
-- Mostly works. Problems: Not sure if the %post script stuff works.
+- Mostly works. Problems: Not sure if the %%post script stuff works.
 - Must also address the RHEL3 package deps issue (curl 7.12.0 isn't available;
   not sure about xml2 2.5.7). At least the deps fail when they are not present!
 
