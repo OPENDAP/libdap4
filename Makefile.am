@@ -38,9 +38,11 @@ libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_LIBADD = gl/libgnu.la
 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
+libdapclient_la_LIBADD = libdap.la
 #libdapclient_la_LIBADD = gl/libgnu.la
 
 libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
+libdapserver_la_LIBADD = libdap.la
 #libdapserver_la_LIBADD = gl/libgnu.la
 
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
@@ -70,7 +72,7 @@ CLEANFILES = *.log *.output
 
 .PHONY: docs
 docs:
-	doxygen doxy.conf
+	doxygen $(srcdir)/doxy.conf
 	(cd docs && tar -czf html.tar.gz html)
 
 grammarclean: clean
