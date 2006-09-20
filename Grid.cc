@@ -195,6 +195,10 @@ Grid::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
                 XDR *sink, bool ce_eval)
 {
     dds.timeout_on();
+    
+    // Re ticket 560: Get an object from eval that describes how to sample
+    // and rearrange the data, then perform those actions. Alternative: 
+    // implement this as a selection function.
 
     if (!read_p())
 	read(dataset);		// read() throws Error and InternalErr

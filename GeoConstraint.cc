@@ -146,12 +146,14 @@ GeoConstraint::find_lat_lon_maps() throw(Error)
 
 /** A private method that determines if the longitude part of the bounding
     box uses 0/359 or -180/179 notation. This class only supports latitude
-    constriants which use 90/-90 notation.
+    constriants which use 90/-90 notation, so there's no need to figure out
+    what sort of notation they use.
     
-    @note There's no real way to tell if the user is thinking in term of the 
-    -180/179 notation and the ask for 30 degrees to 50 degress (or 50 to 30,
-    for that matter). This function assumes that if one of the two values is
-    negative, then the notation is or the -180/179 form, otherwise not.
+    @note This function assumes that if one of the two values is
+    negative, then the notation is or the -180/179 form, otherwise not. 
+    If the user asks for 30 degrees to 50 degress (or 50 to 30,
+    for that matter), there's no real way to tell which notation they are 
+    using. 
     
     @param left The left side of the bounding box, in degrees
     @param right The right side of the boubding box
@@ -273,7 +275,7 @@ GeoConstraint::set_bounding_box_latitude(double top, double bottom) throw(Error)
 {
     // This is simpler than the longitude case because there's no need to test
     // for several notations, no need to accommodate them in the return, no
-    // modulo arithmetic in the axis and no need to account for a constraint with
+    // modulo arithmetic for the axis and no need to account for a constraint with
     // two disconnected parts to be joined.
     find_latitude_indeces(top, bottom, d_latitude_index_top, d_latitude_index_bottom);
     
@@ -490,10 +492,13 @@ GeoConstraint::GeoConstraint(Grid *grid, const string &ds_name, const DDS &dds)
 
 /** Set the bounding box for this constraint. After calling this method the
     Grid or Array variable passed to this object will be constrained by
-    the given longitude/latitude box. This will read the grid's array data
+    the given longitude/latitude box. This may read the grid's array data
     using Array::read() if the longitude constraint crosses the right edge
     of the Grid's array boundry (i.e. the constraint is split across the 
-    edge of the array.
+    edge of the array) because this will rearrange those parts to make a single 
+    array and reorder the longitude map to match that change. It's easier to 
+    read the data inside set_bounding_box_longitude() because that's where
+    it's easiest to reorder the longitude map and Grid Array data.
     
     @param left The left side of the bounding box.
     @param right The right side
@@ -535,7 +540,7 @@ GeoConstraint::evaluate_grid_selection_expressions() throw(Error)
     modifies the data values in the Grid so that the software in 
     Vector::serialize() will work correctly. Vector::serialize() assumes that
     the BaseType::read() method is called \e after the projection is applied to
-    the data. That is, the projectionis applied, then data are read. but
+    the data. That is, the projection is applied, then data are read. but
     geogrid() first reads all the data values and then computes the projection.
     To make Vector::serialize() work, this method uses the projection
     information recorded in the Grid by set_bounding_box() to arrange data so
@@ -547,7 +552,7 @@ GeoConstraint::evaluate_grid_selection_expressions() throw(Error)
     Vector and elsewhere to read data that's to be sent. The problem is that
     the data values need to be reordered using information only this object
     has. If this were implemented as a 'selection function' (i.e., if the code
-    was run by ConstraintExpression::eval() then we might e able to better
+    was run by ConstraintExpression::eval() then we might be able to better
     optimize how data are read, but in this case we have read all the data
     and may have alredy reorganized it. Set up the internal buffers so they
     hold the correct values and mark the Grid's array and lat/lon maps as

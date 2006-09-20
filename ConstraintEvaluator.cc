@@ -320,7 +320,7 @@ ConstraintEvaluator::eval_selection(DDS &dds, const string &dataset)
 
 /** @brief Parse the constraint expression given the current DDS. 
 
-    Evaluate the constraint expression; return the value of the expression.
+    Parse the constraint expression.
     As a side effect, mark the DDS so that BaseType's mfuncs can be used to
     correctly read the variable's value and send it to the client.
 

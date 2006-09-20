@@ -8,9 +8,11 @@ URL: http://www.opendap.org/
 
 Group: Development/Libraries
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-License: LGPL/W3C
+# the deflate program is covered by the W3C licence
+License: LGPL
+
 # Mandrake
-# BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
+#BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
 # fedora
 BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
 
@@ -40,7 +42,7 @@ will use libdap.
 %setup -q
 
 %build
-%configure
+%configure --disable-dependency-tracking
 make %{?_smp_mflags}
 
 %install
@@ -87,13 +89,13 @@ rm -rf $RPM_BUILD_ROOT
 * Mon Feb 27 2006 James Gallagher <jgallagher@opendap.org> - 3.6.0-1
 - Update to 3.6.0
 
-* Mon Nov 21 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.3-2
+* Mon Nov 21 2005 Patrice Dumas <pertusus@free.fr> - 3.5.3-2
 - fix Source0
 
-* Tue Aug 30 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.2-3
+* Tue Aug 30 2005 Patrice Dumas <pertusus@free.fr> - 3.5.2-3
 - Add missing Requires
 
-* Sat Jul  2 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.1-2
+* Sat Jul  2 2005 Patrice Dumas <pertusus@free.fr> - 3.5.1-2
 - Support for shared libraries
 - Add COPYING
 - Update with fedora template
