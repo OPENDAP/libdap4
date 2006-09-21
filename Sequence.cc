@@ -106,8 +106,6 @@ Sequence::_duplicate(const Sequence &s)
     }
 }
 
-// Protected member functions
-
 static void
 write_end_of_sequence(XDR *sink)
 {

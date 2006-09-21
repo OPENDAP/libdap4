@@ -290,7 +290,13 @@ ConstraintEvaluator::boolean_expression()
 }
 
 
-/** @brief Evaluate a boolean-valued constraint expression. */
+/** @brief Evaluate a boolean-valued constraint expression. 
+    This is main method for the evaluator ans is called by the
+    BaseType::serialize() methods. 
+
+    @param dds Use these variables when evaluating the expressions.
+    @param dataset This string is passed to the read() methods. 
+    @return True if the expression is true, false otherwise. */
 bool
 ConstraintEvaluator::eval_selection(DDS &dds, const string &dataset)
 {
@@ -320,7 +326,7 @@ ConstraintEvaluator::eval_selection(DDS &dds, const string &dataset)
 
 /** @brief Parse the constraint expression given the current DDS. 
 
-    Parse the constraint expression.
+    Evaluate the constraint expression; return the value of the expression.
     As a side effect, mark the DDS so that BaseType's mfuncs can be used to
     correctly read the variable's value and send it to the client.
 

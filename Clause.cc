@@ -139,7 +139,15 @@ Clause::value_clause()
     return (_bt_func != 0);
 }
 
-/** @brief Evaluate a clause which returns a boolean value */
+/** @brief Evaluate a clause which returns a boolean value
+    This method must only be evaluated for clauses with relational
+    expressions or boolean functions.
+    @param dataset This is passed to the rvalue::bvalue() method.
+    @param dds Use variables from this DDS when evaluating the
+    expression
+    @return True if the clause is true, false otherwise.
+    @exception InternalErr if called for a clause that returns a
+    BaseType pointer. */
 bool 
 Clause::value(const string &dataset, DDS &dds) 
 {
@@ -174,15 +182,22 @@ Clause::value(const string &dataset, DDS &dds)
 	return result;
     }
     else {
-	cerr << "Internal error: " << endl
-	     << "The constraint expression parser built an invalid clause."
-	     << endl
-	     << "Please report this error." << endl;
-	return false;
+	throw InternalErr(__FILE__, __LINE__, 
+                "A selection expression must contain only boolean clauses.");
     }
 }
 
-/** @brief Evaluate a clause that returns a value via a BaseType pointer. */
+/** @brief Evaluate a clause that returns a value via a BaseType
+    pointer.
+    This method must only be evaluated for clauses with relational
+    expressions or boolean functions.
+    @param dataset This is passed to the rvalue::bvalue() method.
+    @param dds Use variables from this DDS when evaluating the
+    expression
+    @return True if the the BaseType pointer is not null, false otherwise.
+    @exception InternalErr if called for a clause that returns a
+    boolean value. Not that this method itself \e does return a
+    boolean value. */
 bool 
 Clause::value(const string &, DDS &dds, BaseType **value) 
 {
@@ -190,7 +205,7 @@ Clause::value(const string &, DDS &dds, BaseType **value)
     assert(_bt_func);
 
     if (_bt_func) {
-        // build_btp_args() is a function defiend in RValue.cc. It reads
+        // build_btp_args() is a function defined in RValue.cc. It reads
         // (using BaseType::read()) values as it builds the arguments.
 	BaseType **argv = build_btp_args(_args, dds);
 
@@ -208,11 +223,8 @@ Clause::value(const string &, DDS &dds, BaseType **value)
 	}
     }
     else {
-	cerr << "Internal error:" << endl
-	    << "The constraint expression parser built an invalid clause."
-	    << endl
-	    << "Please report this error." << endl;
-	return false;
+	throw InternalErr(__FILE__, __LINE__, 
+                "Claue::value() was called in a context expecting a BaseType pointer return, but the Clause was boolean-valued instead.");
     }
 }
 

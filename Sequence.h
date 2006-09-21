@@ -150,6 +150,12 @@ typedef std::vector<BaseTypeRow *> SequenceValues;
     called ``shoe_size'', you can refer to Tom's shoe size as
     ``Tom.shoe_size''.
     
+    @note This class contains the 'logic' for both the server- and client-side
+    behavior. The field \e d_values is used by the client-side methods to store
+    the entire Sequence. On the server-side, the read() method uses an underlying
+    data system to read one row of data values which are then serialized using the
+    serialize() methods of each varaible.
+    
     @todo Refactor along with Structure moving methods up into Constructor.
     
     @todo Add an isEmpty() method which returns true if the Sequence is
@@ -189,7 +195,7 @@ private:
     // This signals whether the sequence is a leaf or parent.
     bool d_leaf_sequence;
 
-    // In a hierarchy of sequences, is the the top most?
+    // In a hierarchy of sequences, is this the top most?
     bool d_top_most;
     
     void _duplicate(const Sequence &s);

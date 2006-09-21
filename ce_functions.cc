@@ -533,7 +533,50 @@ selection_function_geogrid(int argc, BaseType *argv[], DDS &dds) throw(Error)
     return true;
 }
 
-/** The geogrid function returns the part of a Grid which includes a 
+/** New idea for the implementation of geogrid(). First use a
+    projection function to mark the Grid as read (set_read_p(true))
+    and then insert a selection function to do the work. It's
+    necessary to set the read_p property so that the read() call in
+    serialize will not blindly read all the data.
+
+    The selection function will be called after the 'if (read_p()) read()'
+    statement in serialize(), but before data are written. The
+    selection function will know that read_p was set before any data
+    were actually read, it can clear the property, build the
+    GeoConstraint instance, do the reads and rearrange data. 
+
+    Version 1.1 will add the grid() selection expressions to the
+    geogrid() args. These will be evaluated by grid() itself which will
+    read those maps and set the appropriate constraint for the array.
+
+    Issues: This is ugly; how can the expression evaluator be changed
+    so that we don't have to have functions adding what are basically
+    callbacks to the list of Clause objects? Maybe run the evaluator
+    before the read() or have the evaluator always perform the read.
+    Pass the evaluator the name of the variable currently being
+    serialized. It could then use that information to control which
+    variables were read. For example, geogrid() could not do anything
+    for Grid B when the variable beign serialized was Grid A. This
+    could also be leveraged by the Sequence code I think.
+
+    Should grid() become a selection function? 
+
+    How would the call look if the above change were made? 
+    SST&geogrid(SST,10,20,30,40,"9<TIME,12")
+
+    Also SST[0:1024][0:1024][3]&geogrid(SST,10,20,30,40)
+
+    Still another approach: Implement geogrid() as a function which
+    returns a BaseType (the grid) These bypass the normal calls to
+    read(), serialize(), et c., and instead just run the function and
+    return the DDS. The limitation is that only one Grid can be
+    returned per call. Probably not that big a deal because this would
+    not require any modifications to libdap's API (thus the FreeForm
+    server's functions could all stay as they are).
+
+    ---------------------- old info below ----------------------
+
+    The geogrid function returns the part of a Grid which includes a 
     geographically specified rectangle. The arguments to the function are
     the name of a Grid, the left-top and right-bottom points of the rectable
     and zero or more relational expressions of the sort that the grid frunction
