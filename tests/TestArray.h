@@ -54,6 +54,9 @@ public:
     virtual BaseType *ptr_duplicate();
 
     virtual bool read(const string &dataset);
+    virtual bool name_is_special();
+    virtual void build_special_values();    
+    
     void set_series_values(bool);
     bool get_series_values() { return d_series_values; }
 };

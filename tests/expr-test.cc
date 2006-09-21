@@ -67,6 +67,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "DDS.h"
 #include "DataDDS.h"
 #include "ConstraintEvaluator.h"
+#include "Error.h"
 
 #include "TestSequence.h"
 #include "TestCommon.h"
@@ -94,7 +95,7 @@ void test_parser(ConstraintEvaluator &eval, DDS &table, const string &dds_name,
 bool read_table(DDS &table, const string &name, bool print);
 void evaluate_dds(DDS &table, bool print_constrained);
 bool loopback_pipe(FILE **pout, FILE **pin);
-bool constrained_trans(const string &dds_name, const bool constraint_expr,
+void constrained_trans(const string &dds_name, const bool constraint_expr,
 		       const string &ce, const bool series_values);
 
 int ce_exprlex();			// exprlex() uses the global ce_exprlval
@@ -240,8 +241,13 @@ main(int argc, char *argv[])
         }
 
     }
+    catch(Error &e) {
+        fprintf(stderr, "%s\n", e.get_error_message().c_str());
+        exit(1);
+    } 
     catch(exception & e) {
         fprintf(stderr, "Caught exception: %s\n", e.what());
+        exit(1);
     }
 
     exit(0);
@@ -536,16 +542,13 @@ set_series_values(DDS &dds, bool state)
 // to the output stream. After that, the marker `Data:' is written to the
 // output stream, followed by the binary data.
 
-bool
+void
 constrained_trans(const string &dds_name, const bool constraint_expr, 
-		  const string &constraint, const bool series_values) 
+		  const string &constraint, const bool series_values)
 {
     FILE *pin, *pout;
-    bool status = loopback_pipe(&pout, &pin);
-    if (!status) {
-	fprintf( stderr, "Could not create the loopback streams\n" ) ;
-	return false;
-    }
+    if (!loopback_pipe(&pout, &pin))
+	throw InternalErr(__FILE__, __LINE__, "Could not create the loopback streams\n" ) ;
 
     // If the CE was not passed in, read it from the command line.
     string ce;
@@ -554,16 +557,15 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 	char c[256];
 	cin.getline(c, 256);
 	if (!cin) {
-	    fprintf( stderr, "Could nore read the constraint expression\n" ) ;
-	    exit(1);
+            throw InternalErr(__FILE__, __LINE__, "Could nore read the constraint expression\n" ) ;
 	}
 	ce = c;
     }
     else
 	ce = constraint;
-
+#if 0
     string dataset = "";
-    
+#endif    
     TestTypeFactory ttf;
     DDS server(&ttf);
     ConstraintEvaluator eval;
@@ -576,11 +578,38 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
     // 01/14/05 jhrg
     set_series_values(server, series_values);
 
-    try {
-        eval.parse_constraint(ce, server);        // Throws Error if the ce doesn't parse.
+    eval.parse_constraint(ce, server); // Throws Error if the ce doesn't parse.
 
-        server.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
+    server.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
+    if (eval.functional_expression()) {
+        BaseType *var = eval.eval_function(server, dds_name);
+        if (!var)
+            throw Error(unknown_error, "Error calling the CE function.");
+
+        fprintf(pout, "Dataset {\n");
+        var->print_decl(pout, "    ", true, false, true);
+        fprintf(pout, "} function_value;\n");
+        fprintf(pout, "Data:\n");
+
+        fflush(pout);
+      
+        XDR *xdr_sink = new_xdrstdio(pout, XDR_ENCODE);
+
+        try {
+            // In the following call to serialize, suppress CE evaluation.
+            var->serialize(dds_name, eval, server, xdr_sink, false);
+            delete_xdrstdio(xdr_sink);
+        }
+        catch (Error &e) {
+            delete_xdrstdio(xdr_sink);
+            delete var; var = 0;
+            throw;
+        }
+
+        delete var; var = 0;
+    }
+    else {
         // send constrained DDS         
         server.print_constrained(pout);
         fprintf(pout, "Data:\n");
@@ -593,15 +622,10 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
         for (DDS::Vars_iter i = server.var_begin(); i != server.var_end(); i++)
             if ((*i)->send_p()) {
                 DBG(cerr << "Sending " << (*i)->name() << endl);
-                (*i)->serialize(dataset, eval, server, xdr_sink, true);
+                (*i)->serialize(dds_name, eval, server, xdr_sink, true);
             }
 
         delete_xdrstdio(xdr_sink);
-    }
-    catch(Error &e) {
-        cerr << e.get_error_message() << endl;
-	fclose(pout);
-	return false;
     }
 
     fclose(pout);		// close pout to read from pin. Why?
@@ -611,7 +635,7 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
     // First read the DDS into a new object (using a file to store the DDS
     // temporarily - the parser/scanner won't stop reading until an EOF is
     // found, this fixes that problem).
-    try {
+
 	// I use the default BaseTypeFactory since we're just printing the
 	// values here.
         BaseTypeFactory factory;
@@ -634,12 +658,5 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 	}
 
 	delete_xdrstdio(source);
-    }
-    catch (Error &e) {
-        cerr << e.get_error_message() << endl;
-	return false;
-    }
-	
-    return true;
 }
 

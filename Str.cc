@@ -196,6 +196,27 @@ Str::val2buf(void *val, bool)
     return sizeof(string*);
 }
 
+/** Set the value of this instance.
+    @param value The value
+    @return Always returns true; the return type of bool is for compatibility 
+    with the Passive* subclasses written by HAO. */
+bool
+Str::set_value(const string &value)
+{
+    _buf = value;
+    set_read_p(true);
+    
+    return true;
+}
+
+/** Get the value of this instance.
+    @return The value. */
+string
+Str::value() const
+{
+    return _buf;
+}
+
 void 
 Str::print_val(FILE *out, string space, bool print_decl_p)
 {

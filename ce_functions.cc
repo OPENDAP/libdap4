@@ -353,6 +353,17 @@ func_length(int argc, BaseType *argv[], DDS &dds) throw(Error)
 }
 #endif
 
+/** This server-side function returns 1. 
+    This function is mostly for testing purposes. */
+BaseType *
+func_one(int argc, BaseType *argv[], DDS &dds) throw(Error)
+{
+    Byte *one = new Byte("one");
+    (void) one->set_value(1);
+    return one;
+}
+
+
 static void
 parse_gse_expression(gse_arg *arg, BaseType *expr) throw(Error)
 {
@@ -403,7 +414,7 @@ void
 projection_function_grid(int argc, BaseType *argv[], DDS &dds,
                          ConstraintEvaluator &) throw(Error)
 {
-    DBG(cerr << "Entering func_grid_select..." << endl);
+    DBG(cerr << "Entering projection_function_grid..." << endl);
 
     if (argc < 1)
 	throw Error("Wrong number of arguments to grid(), there must be at least one argument.");
@@ -472,7 +483,6 @@ projection_function_grid(int argc, BaseType *argv[], DDS &dds,
                 stop = min(stop, gsec->get_stop());
                 
 		if (start > stop) {
-                    // Change this to a message about inclusive ranges only.
                     ostringstream msg;
                     msg 
 << "The expresions passed to grid() do not result in an inclusive \n"
@@ -500,9 +510,36 @@ projection_function_grid(int argc, BaseType *argv[], DDS &dds,
     // Make sure we reread the grid's array, too. 9/24/2001 jhrg
     grid_array->set_read_p(false);
 
-    DBG(cerr << "Exiting func_grid_select." << endl);
+    DBG(cerr << "Exiting projection_function_grid." << endl);
 }
 
+#if 0
+void 
+projection_function_grid(int argc, BaseType *argv[], DDS &dds,
+                         ConstraintEvaluator &) throw(Error)
+{
+    DBG(cerr << "Entering projection_function_grid..." << endl);
+
+    if (argc < 1)
+        throw Error("Wrong number of arguments to grid(), there must be at least one argument.");
+
+    Grid *grid = dynamic_cast<Grid*>(argv[0]);
+    if (!grid)
+        throw Error("The first argument to grid() must be a Grid variable!");
+
+    // Mark this grid as part of the current projection.
+    if (!dds.mark(grid->name(), true))
+        throw Error("Could not find the variable: " + grid->name());
+
+    evaluate_grid_selection_expressions(gid, argc, argv, dds);
+}
+
+BaseType *
+function_grid(int argc, BaseType *argv[], DDS &dds) throw(Error)
+{
+}
+#endif
+#if 0
 /** This performs the work of the geogrid(). 
     @see projection_function_geogrid */
 bool
@@ -532,7 +569,7 @@ selection_function_geogrid(int argc, BaseType *argv[], DDS &dds) throw(Error)
     // Indicate the data should be sent
     return true;
 }
-
+#endif
 /** New idea for the implementation of geogrid(). First use a
     projection function to mark the Grid as read (set_read_p(true))
     and then insert a selection function to do the work. It's
@@ -660,12 +697,54 @@ projection_function_geogrid(int argc, BaseType *argv[], DDS &dds,
     ce.append_clause(selection_function_geogrid, args);
 #endif
 }
+/** The geogrid() function implemented as a BaseType function. */
+BaseType *
+function_geogrid(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc < 5)
+        throw Error("Wrong number of arguments to geogrid(), there must be at least five arguments,\n\
+        A Grid followed by the left-top and right-bottom points of a longitude-latitude bounding box.");
+
+    Grid *grid = dynamic_cast<Grid*>(argv[0]);
+    if (!grid)
+        throw Error("The first argument to geogrid() must be a Grid variable!");
+
+    // Mark this grid as part of the current projection.
+    if (!dds.mark(grid->name(), true))
+        throw Error("Could not find the variable: " + grid->name());
+        
+    // dup the grid before reading
+    Grid *l_grid = dynamic_cast<Grid*>(grid->ptr_duplicate());
+    if (!l_grid)
+        throw InternalErr(__FILE__, __LINE__, "Expected a Grid.");
+        
+    // Build a GeoConstraint object. If there are no longitude/latitude maps
+    // then this constructor throws an Error.
+    GeoConstraint gc(l_grid, dds.get_dataset_name(), dds);
+    
+    // This sets the bounding box and modifies the maps to match the notation
+    // of the box (0/359 or -180/179)
+    double left = extract_double_value(argv[1]); 
+    double top = extract_double_value(argv[2]);
+    double right = extract_double_value(argv[3]);
+    double bottom = extract_double_value(argv[4]);
+    gc.set_bounding_box(left, top, right, bottom);
+        
+    gc.apply_constraint_to_data();
+     
+    l_grid->read(dds.get_dataset_name());
+    return l_grid;        
+}
 
 void
 register_functions(ConstraintEvaluator &ce)
 {
     ce.add_function("grid", projection_function_grid);
+#if 0
     ce.add_function("geogrid", projection_function_geogrid);
+#endif
+    ce.add_function("geogrid", function_geogrid);
+    ce.add_function("one", func_one);    
 }
 
 } // namespace libdap

@@ -127,6 +127,9 @@ private:
     set<string> d_coards_lat_units;
     set<string> d_coards_lon_units;
 
+    set<string> d_lat_names;
+    set<string> d_lon_names;
+
     GeoConstraint();                // Hidden default constructor.
 
     GeoConstraint(const GeoConstraint &param); // Hide

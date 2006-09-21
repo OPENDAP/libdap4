@@ -188,6 +188,27 @@ Byte::buf2val(void **val)
     return width();
 }
 
+/** Set the value of this instance.
+    @param value The value
+    @return Always returns true; the return type of bool is for compatibility 
+    with the Passive* subclasses written by HAO. */
+bool
+Byte::set_value(dods_byte value)
+{
+    _buf = value;
+    set_read_p(true);
+    
+    return true;
+}
+
+/** Get the value of this instance.
+    @return The value. */
+dods_byte
+Byte::value() const
+{
+    return _buf;
+}
+
 void 
 Byte::print_val(FILE *out, string space, bool print_decl_p)
 {

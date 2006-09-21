@@ -91,6 +91,9 @@ public:
   virtual unsigned int val2buf(void *val, bool reuse = false);
   virtual unsigned int buf2val(void **val);
   
+    virtual bool set_value(const dods_byte value);
+    virtual dods_byte value() const;
+    
     virtual void print_val(FILE *out, string space = "", 
 			   bool print_decl_p = true);
 

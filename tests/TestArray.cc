@@ -43,6 +43,7 @@
 #include <process.h>
 #endif
 
+#include "ce_functions.h"
 #include "TestArray.h"
 #include "TestCommon.h"
 
@@ -91,14 +92,40 @@ TestArray::operator=(const TestArray &rhs)
     return *this;
 }
 
-// This read mfunc does some strange things to get a value - a real program
-// would never get values this way. For testing this is OK.
-//
-// To make arrays vary, and do so with predictability, use the 'series_values'
-// property of TestCommon to trigger array values that start a 1 for the 0th
-// element and increase by one for each subsequent element. For a constrained
-// 
+/** Special names are ones that start with 'lat' or 'lon'. These indicate 
+    that the vector (this is only for vectors) is a vector of latitude or 
+    longitude values. */
+bool
+TestArray::name_is_special()
+{
+    return name().find("lat") != string::npos 
+           || name().find("lon") != string::npos; 
+}
 
+void
+TestArray::build_special_values()
+{
+    if (name().find("lat") != string::npos) {
+        int array_len = length();
+        double *lat_data = new double[array_len];
+        for (int i = 0; i < array_len; ++i) {
+            lat_data[i] = -89 + (180/array_len) * (i+1);
+        }
+        libdap::set_array_using_double(this, lat_data, array_len);
+    }
+    else if (name().find("lon") != string::npos) {
+        int array_len = length();
+        double *lon_data = new double[array_len];
+        for (int i = 0; i < array_len; ++i) {
+            lon_data[i] = -179 + (360/array_len) * (i+1);
+        }
+        libdap::set_array_using_double(this, lon_data, array_len);
+    }
+    else {
+        throw InternalErr(__FILE__, __LINE__, "Unrecognized name");
+    }
+}
+ 
 bool
 TestArray::read(const string &dataset)
 {
@@ -108,12 +135,6 @@ TestArray::read(const string &dataset)
     if (test_variable_sleep_interval > 0)
 	sleep(test_variable_sleep_interval);
 
-    unsigned i;
-
-    // run read() on the contained variable to get, via the read() mfuncs
-    // defined in the other Test classes, a value in the *contained* object.
-    var()->read(dataset);
-
     unsigned int array_len = length(); // elements in the array
 
     switch (var()->type()) {
@@ -122,27 +143,75 @@ TestArray::read(const string &dataset)
       case dods_uint16_c:
       case dods_int32_c:
       case dods_uint32_c:
-      case dods_float64_c:
-      case dods_str_c:
-      case dods_url_c: {
+      case dods_float32_c:
+      case dods_float64_c: {
 
         char *tmp = new char[width()];
+        unsigned int elem_wid = var()->width(); // size of an element
+        char *elem_val = 0;       // Null forces buf2val to allocate memory
         
-        // This code builds an array with whatever value is in the template
-        // variable
-	unsigned int elem_wid = var()->width(); // size of an element
-	char *elem_val = 0;            // Null forces buf2val to allocate memory
-	var()->buf2val((void **)&elem_val); // internal buffer to ELEM_VAL
+        if (get_series_values()) {
+            // Special case code for vectors that have specific names.
+            // This is used to test code that works with lat/lon data.
+            if (name_is_special()) {
+                build_special_values();
+            }
+            else {
+                for (int i = 0; i < array_len; ++i) {
+                    var()->read(dataset);
+                    var()->buf2val((void **)&elem_val); // internal buffer to ELEM_VAL
+                    memcpy(tmp + i * elem_wid, elem_val, elem_wid);
+                    var()->set_read_p(false); // pick up the next value
+                 }
+                 val2buf(tmp);
+            }
+        }
+        else {
+            var()->read(dataset);
+	    var()->buf2val((void **)&elem_val);
 
-	for (i = 0; i < array_len; ++i)
-	    memcpy(tmp + i * elem_wid, elem_val, elem_wid);
-
- 	val2buf(tmp);
-
+	    for (int i = 0; i < array_len; ++i) {
+	        memcpy(tmp + i * elem_wid, elem_val, elem_wid);
+            }
+            
+            val2buf(tmp);            
+        }
+        
 	delete elem_val; elem_val = 0; // alloced in buf2val()
 	delete[] tmp; tmp = 0;	// alloced above
 
 	break;
+      }
+
+      case dods_str_c:
+      case dods_url_c: {
+        char *tmp = new char[width()];
+        unsigned int elem_wid = var()->width(); // size of an element
+        char *elem_val = 0;       // Null forces buf2val to allocate memory
+        
+        if (get_series_values()) {
+                for (int i = 0; i < array_len; ++i) {
+                    var()->read(dataset);
+                    var()->buf2val((void **)&elem_val); // internal buffer to ELEM_VAL
+                    memcpy(tmp + i * elem_wid, elem_val, elem_wid);
+                    var()->set_read_p(false); // pick up the next value
+                 }
+        }
+        else {
+            var()->read(dataset);
+            var()->buf2val((void **)&elem_val);
+
+            for (int i = 0; i < array_len; ++i) {
+                memcpy(tmp + i * elem_wid, elem_val, elem_wid);
+            }
+        }
+        
+        val2buf(tmp);
+
+        delete elem_val; elem_val = 0; // alloced in buf2val()
+        delete[] tmp; tmp = 0;  // alloced above
+
+        break;
       }
 
       case dods_structure_c:
@@ -157,7 +226,7 @@ TestArray::read(const string &dataset)
 	// are represented using C++ objects they are *not* represented using
 	// objects defined by DODS, while Structure, etc. are.
 
-	for (i = 0; i < array_len; ++i) {
+	for (int i = 0; i < array_len; ++i) {
 
 	    // Create a new object that is a copy of `var()' (whatever that
 	    // is). The copy will have the value read in by the read() mfunc
@@ -179,7 +248,7 @@ TestArray::read(const string &dataset)
       case dods_array_c:
       case dods_null_c:
       default:
-	throw InternalErr(__FILE__, __LINE__, "Bad DODS data type");
+	throw InternalErr(__FILE__, __LINE__, "Bad data type");
 	break;
     }
 

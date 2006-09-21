@@ -103,7 +103,7 @@ GeoConstraint::find_lat_lon_maps() throw(Error)
         string map_name = (*m)->name();
         if (!d_latitude // && !units_value.empty() 
             && (d_coards_lat_units.find(units_value) != d_coards_lat_units.end()
-                || map_name == "COADSY") ) { //cheat! jhrg 9/1/06
+                || d_lat_names.find(map_name) != d_lat_names.end() ) ) { //cheat! jhrg 9/1/06
 
             // Set both d_latitude (a pointer to the real map vector) and
             // d_lat, a vector of the values represented as doubles. It's easier
@@ -124,7 +124,7 @@ GeoConstraint::find_lat_lon_maps() throw(Error)
             
         if (!d_longitude // && !units_value.empty() 
             && (d_coards_lon_units.find(units_value) != d_coards_lon_units.end()
-                || map_name == "COADSX") ) {
+                || d_lon_names.find(map_name) != d_lon_names.end() ) ) { 
 
             d_longitude = dynamic_cast<Array*>(*m);
 
@@ -278,7 +278,8 @@ GeoConstraint::set_bounding_box_latitude(double top, double bottom) throw(Error)
     // modulo arithmetic for the axis and no need to account for a constraint with
     // two disconnected parts to be joined.
     find_latitude_indeces(top, bottom, d_latitude_index_top, d_latitude_index_bottom);
-    
+    cerr << "d_latitude_index_top: " << d_latitude_index_top << endl;
+    cerr << "d_latitude_index_bottom: " << d_latitude_index_bottom << endl;
     // Apply constraint, stride is always one and maps only have one dimension
     Array::Dim_iter fd = d_latitude->dim_begin() ;
     d_latitude->add_constraint(fd, d_latitude_index_top, 1, d_latitude_index_bottom);
@@ -394,7 +395,7 @@ GeoConstraint::set_bounding_box_longitude(double left, double right) throw(Error
     if (constraint_notation == neg_pos)
         transform_constraint_to_pos_notation(left, right);
     
-    // If the grid uses -180/179, transform it to 0/359 as well. This will
+    // If the grid uses -180/179, transform it to 0/359 as well. This will make
     // subsequent logic easier and adds only a few extra operations, even with
     // large maps.
     Notation longitude_notation = categorize_notation(d_lon[0], d_lon[d_lon_length-1]);
@@ -483,6 +484,12 @@ GeoConstraint::GeoConstraint(Grid *grid, const string &ds_name, const DDS &dds)
     d_coards_lon_units.insert("degree_east");
     d_coards_lon_units.insert("degrees_E");
     d_coards_lon_units.insert("degree_E");
+    
+    d_lat_names.insert("COADSY");
+    d_lat_names.insert("lat");
+
+    d_lon_names.insert("COADSX");
+    d_lon_names.insert("lon");
 
     // Is this Grid a geo-referenced grid? Throw Error if not.
     if (!find_lat_lon_maps())
@@ -565,7 +572,7 @@ GeoConstraint::apply_constraint_to_data() throw(Error)
         throw InternalErr("The Latitude and Longitude constraints must be set before calling apply_constraint_to_data().");
 
     // transfer data from this object back into the Grid; first for the 
-    // latitude and longitude maps...
+    // latitude and longitude maps... These set read_p to true.
     set_array_using_double(d_latitude, &d_lat[d_latitude_index_top], 
                            d_latitude_index_bottom - d_latitude_index_top + 1);
                            
@@ -577,7 +584,8 @@ GeoConstraint::apply_constraint_to_data() throw(Error)
     // called.
     if (d_grid_array_data) {
         int size = d_grid->array_var()->val2buf(&d_grid_array_data);
-        if (size == d_grid_array_data_size)
+        if (size != d_grid_array_data_size)
             throw InternalErr("Expected data size not copied to the Grid's buffer.");
+        d_grid->set_read_p(true);
     }
 }
