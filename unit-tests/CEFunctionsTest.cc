@@ -153,7 +153,7 @@ class CEFunctionsTest:public TestFixture {
         
             Array & lat3 = dynamic_cast < Array & >(**(sst3.map_begin() + 1));
             dods_float64 tmp_lat3[10] =
-                { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
+                { 40, 30, 20, 10, 0, -10, -20, -30, -40, -50 };
             lat3.val2buf(tmp_lat3);
             lat3.set_read_p(true);
 
@@ -193,6 +193,7 @@ class CEFunctionsTest:public TestFixture {
     CPPUNIT_TEST(geoconstraint_find_lat_lon_maps_test);
     CPPUNIT_TEST(transform_longitude_to_pos_notation_test);
     CPPUNIT_TEST(find_longitude_indeces_test);
+    CPPUNIT_TEST(find_latitude_indeces_test);
     CPPUNIT_TEST(set_array_using_double_test);
     CPPUNIT_TEST(reorder_longitude_map_test);
 #if 0
@@ -201,7 +202,7 @@ class CEFunctionsTest:public TestFixture {
     CPPUNIT_TEST(set_bounding_box_test1);        
     CPPUNIT_TEST(set_bounding_box_test2);        
     CPPUNIT_TEST(apply_constriant_to_data_test);
-    
+
     CPPUNIT_TEST_SUITE_END();
         
     void no_arguments_test() {
@@ -476,6 +477,29 @@ class CEFunctionsTest:public TestFixture {
         CPPUNIT_ASSERT(right_i == 1);
     }
     
+    void find_latitude_indeces_test() {
+        // SST1 lat: { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
+        Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
+        CPPUNIT_ASSERT(g);
+        GeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
+        
+        int top_i, bottom_i;
+        gc1.find_latitude_indeces(20, -20, GeoConstraint::inverted, top_i, bottom_i);
+        DBG(cerr << "SST1, top: " << top_i << ", bottom: " << bottom_i << endl);
+        CPPUNIT_ASSERT(top_i == 6);
+        CPPUNIT_ASSERT(bottom_i == 2);
+
+        // SST3 lat: { 40, 30, 20, 10, 0, -10, -20, -30, -40, -50 };
+        g = dynamic_cast<Grid*>(geo_dds->var("SST3"));
+        CPPUNIT_ASSERT(g);
+        GeoConstraint gc2(g, geo_dds->get_dataset_name(), *geo_dds);
+        
+        gc2.find_latitude_indeces(20, -20, GeoConstraint::normal, top_i, bottom_i);
+        DBG(cerr << "SST3, top: " << top_i << ", bottom: " << bottom_i << endl);
+        CPPUNIT_ASSERT(top_i == 2);
+        CPPUNIT_ASSERT(bottom_i == 6);
+    }
+
     void set_array_using_double_test() {
         try {
         Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));

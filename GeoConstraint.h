@@ -99,6 +99,14 @@ private:
         neg_pos
     };
     
+    /** Most of the time, latitude starts at the top of an arry with positive values
+        and ends up at the bottom with negative ones. But sometimes... the world
+        is upside down. */
+    enum LatitudeSense {
+        normal,
+        inverted
+    };
+    
     Grid *d_grid;               //< Constraint this Grid
     const DDS &d_dds;
     const string &d_dataset;
@@ -124,6 +132,8 @@ private:
     bool d_latitude_constraint_set;
     bool d_longitude_constraint_set;
     
+    LatitudeSense d_latitude_sense;
+    
     set<string> d_coards_lat_units;
     set<string> d_coards_lon_units;
 
@@ -143,10 +153,11 @@ private:
     void find_longitude_indeces(double left, double right, 
                                 int &longitude_index_left, 
                                 int &longitude_index_right) const;
-    void find_latitude_indeces(double top, double bottom, 
+    void find_latitude_indeces(double top, double bottom, LatitudeSense sense, 
                                 int &latitude_index_top, 
                                 int &latitude_index_bottom) const;                                
     void set_bounding_box_longitude(double left, double right) throw(Error);
+    LatitudeSense categorize_latitude();
     void set_bounding_box_latitude(double top, double bottom) throw(Error);
     void reorder_longitude_map(int longitude_index_left);
     void reorder_data_longitude_axis() throw(Error);

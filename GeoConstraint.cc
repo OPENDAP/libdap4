@@ -247,20 +247,53 @@ GeoConstraint::find_longitude_indeces(double left, double right,
     index. */
 void
 GeoConstraint::find_latitude_indeces(double top, double bottom, 
+                                     LatitudeSense sense,
                                      int &latitude_index_top, 
                                      int &latitude_index_bottom) const
 {
     // Scan from the top down
     int i = 0;
-    while (i < d_lat_length && d_lat[i] < top)
-        ++i;
+
+#if 0
+    cerr << "top: " << top << endl;
+    int p = 0;
+    while(p < d_lat_length)
+        cerr << "d_lat[" << p << "]: " << d_lat[p++] << endl;
+#endif    
+    if (sense == normal)
+        while (i < d_lat_length && d_lat[i] > top )
+            ++i;
+    else
+        while (i < d_lat_length && d_lat[i] < top )
+            ++i;
+
     latitude_index_top = i;
     
     // and from the bottom up
     i = d_lat_length -1;
-    while (i > -1 && d_lat[i] > bottom)
-        --i;
+#if 0
+    cerr << "bottom: " << bottom << endl;
+    p = d_lat_length -1 ;
+    while(p > 0)
+        cerr << "d_lat[" << p << "]: " << d_lat[p--] << endl;
+#endif
+    if (sense == normal)
+        while (i > 0 && d_lat[i] < bottom)
+            --i;
+    else
+        while (i > 0 && d_lat[i] > bottom)
+            --i;
+
     latitude_index_bottom = i;
+}
+
+/** Take a look at the latitude vector values and record whether the world is 
+    normal or upside down.
+    @return normal or inverted. */
+GeoConstraint::LatitudeSense
+GeoConstraint::categorize_latitude()
+{
+    d_lat[0] >= d_lat[d_lat_length - 1] ? normal: inverted;
 }
 
 /** Given the top and bottom sides of the bounding box, use the Grid or Array
@@ -273,11 +306,15 @@ GeoConstraint::find_latitude_indeces(double top, double bottom,
 void
 GeoConstraint::set_bounding_box_latitude(double top, double bottom) throw(Error)
 {
+    d_latitude_sense = categorize_latitude();
+    
     // This is simpler than the longitude case because there's no need to test
     // for several notations, no need to accommodate them in the return, no
     // modulo arithmetic for the axis and no need to account for a constraint with
     // two disconnected parts to be joined.
-    find_latitude_indeces(top, bottom, d_latitude_index_top, d_latitude_index_bottom);
+    find_latitude_indeces(top, bottom, d_latitude_sense, 
+                          d_latitude_index_top, d_latitude_index_bottom);
+                          
     cerr << "d_latitude_index_top: " << d_latitude_index_top << endl;
     cerr << "d_latitude_index_bottom: " << d_latitude_index_bottom << endl;
     // Apply constraint, stride is always one and maps only have one dimension
@@ -323,6 +360,15 @@ GeoConstraint::reorder_longitude_map(int longitude_index_left)
 /** Reorder the data values relative to the longitude axis so that the
     reordered longitude map (see GeoConstraint::reorder_longitude_map()) 
     and the data values match.
+    
+    @todo First set all the other constraints, including the latitude and
+    then make this call. Other constraints, besides latitude, will be simple
+    range constraints. Latitude might require that values be inverted, but
+    that can be done _after_ the longitude reordering takes place. The latitude
+    constraint can be imposed by inverting the top and bottom indices if the 
+    sense of the grid is inverted, before data are read in this method. 
+    Then apply the longitude constraint, then invert the result of the merge, if
+    needed.
     
     @todo First read the entire array into temporary storage. Then use a
     temporary vector to reorder each row of that copy of the array. Finally,
@@ -472,7 +518,7 @@ GeoConstraint::GeoConstraint(Grid *grid, const string &ds_name, const DDS &dds)
      d_grid_array_data(0), d_grid_array_data_size(0),
      d_latitude(0), d_longitude(0), d_lat(0), d_lon(0), 
      d_bounding_box_set(false), d_latitude_constraint_set(false),
-     d_longitude_constraint_set(false)
+     d_longitude_constraint_set(false), d_latitude_sense(normal)
 {
     // Build sets of attribute values for easy searching. Maybe overkill???
     d_coards_lat_units.insert("degrees_north");
