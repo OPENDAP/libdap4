@@ -83,7 +83,7 @@ TestGrid::read(const string &dataset)
     if (read_p())
 	return true;
 
-    array_var()->read(dataset);
+    get_array()->read(dataset);
 
     for (Map_iter i = map_begin(); i != map_end(); i++)
     {

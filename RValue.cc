@@ -121,9 +121,10 @@ BaseType *
 rvalue::bvalue(const string &dataset, DDS &dds) 
 {
     if (value) {        // i.e., if this RValue is a BaseType
+#if 0
 	if (!value->read_p())
 	    value->read(dataset);
-
+#endif
 	return value;
     }
     else if (func) {

@@ -129,8 +129,10 @@ private:
     Array::Dim_iter d_lon_grid_dim;
     
     bool d_bounding_box_set;
-    bool d_latitude_constraint_set;
-    bool d_longitude_constraint_set;
+    bool d_latitude_bb_set;
+    bool d_longitude_bb_set;
+    
+    Notation d_longitude_notation;
     
     LatitudeSense d_latitude_sense;
     

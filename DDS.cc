@@ -249,9 +249,9 @@ DDS::transfer_attr_table(DAS *das, AttrTable *at, Constructor *c,
 
 	  case dods_grid_c: {
 	      Grid *g = dynamic_cast<Grid*>(c);
-	      if (n == g->array_var()->name()) { // found match
+	      if (n == g->get_array()->name()) { // found match
 		  found = true;
-		  transfer_attr(das, ep, g->array_var(), sub_table);
+		  transfer_attr(das, ep, g->get_array(), sub_table);
 	      }
 	      
 	      for (Grid::Map_iter j = g->map_begin(); j!=g->map_end(); ++j) {
@@ -478,9 +478,9 @@ DDS::transfer_attr_to_constructor(Constructor *cp, AttrTable *at, DAS *das)
     }
     else { // it's a grid, first special case for the Array
         Grid *g = dynamic_cast<Grid*>(cp);
-        AttrTable *ptable = search_for_attributes(g->array_var()->name(), at, das);
+        AttrTable *ptable = search_for_attributes(g->get_array()->name(), at, das);
         if (ptable)
-            g->array_var()->set_attr_table(*ptable);  // Performs a deep copy
+            g->get_array()->set_attr_table(*ptable);  // Performs a deep copy
         // Look at each map in the
         for(Grid::Map_iter i = g->map_begin(); i != g->map_end(); ++i) {
             AttrTable *ptable = search_for_attributes((*i)->name(), at, das);

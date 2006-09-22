@@ -94,22 +94,30 @@ TestArray::operator=(const TestArray &rhs)
 
 /** Special names are ones that start with 'lat' or 'lon'. These indicate 
     that the vector (this is only for vectors) is a vector of latitude or 
-    longitude values. */
+    longitude values. Only true for vectors.*/
 bool
 TestArray::name_is_special()
 {
-    return name().find("lat") != string::npos 
-           || name().find("lon") != string::npos; 
+    return dimensions() == 1 
+           && ( name().find("lat") != string::npos 
+                || name().find("lon") != string::npos ); 
 }
 
 void
 TestArray::build_special_values()
 {
-    if (name().find("lat") != string::npos) {
+    if (name().find("lat_reversed") != string::npos) {
         int array_len = length();
         double *lat_data = new double[array_len];
         for (int i = 0; i < array_len; ++i) {
             lat_data[i] = -89 + (180/array_len) * (i+1);
+        }
+        libdap::set_array_using_double(this, lat_data, array_len);
+    } else if (name().find("lat") != string::npos) {
+        int array_len = length();
+        double *lat_data = new double[array_len];
+        for (int i = 0; i < array_len; ++i) {
+            lat_data[i] = 90 - (180/array_len) * (i+1);
         }
         libdap::set_array_using_double(this, lat_data, array_len);
     }
@@ -123,6 +131,50 @@ TestArray::build_special_values()
     }
     else {
         throw InternalErr(__FILE__, __LINE__, "Unrecognized name");
+    }
+}
+
+/** Only call this method for a two dimensional array */
+void
+TestArray::constrained_matrix(const string &dataset, char *constrained_array)
+{
+    int unconstrained_size = 1;
+    Dim_iter d = dim_begin();
+    while (d != dim_end())
+        unconstrained_size *= dimension_size(d++, false);
+
+    char *whole_array = new char[unconstrained_size * width()];
+    int elem_width = var()->width();      // size of an element
+    char *elem_val = new char[elem_width];
+
+    for (int i = 0; i < unconstrained_size; ++i) {
+        var()->read(dataset);
+        var()->buf2val((void **) &elem_val);    // internal buffer to ELEM_VAL
+        memcpy(whole_array + i * elem_width, elem_val, elem_width);
+        var()->set_read_p(false);       // pick up the next value
+    }
+    
+    int constrained_size = 1;
+    d = dim_begin();
+    while (d != dim_end())
+        constrained_size *= dimension_size(d++);
+    
+    Dim_iter X = dim_begin();    // X dimension
+    Dim_iter Y = X+1;
+
+    cerr << "dimension_start(Y): " << dimension_start(Y) << endl;
+    cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl;
+    cerr << "dimension_start(X): " << dimension_start(X) << endl;
+    cerr << "dimension_stop(X): " << dimension_stop(X) << endl;
+    
+    int y, j;
+    for( y = dimension_start(Y), j = 0; y < dimension_stop(Y); y += dimension_stride(Y), ++j ) {
+        int x, i;
+        for( int x = dimension_start(X), i  = 0; x < dimension_stop(X); x += dimension_stride(X), ++i ) {
+            cerr << "c array[" << j << "][" << i << "]: = whole[" << y << "][" << x << "]: "
+                 << *(whole_array+(y*dimension_size(Y, false))+x) << endl;
+            *(constrained_array+(j*dimension_size(Y))+i) = *(whole_array+(y*dimension_size(Y, false))+x);
+        }
     }
 }
  
@@ -155,6 +207,10 @@ TestArray::read(const string &dataset)
             // This is used to test code that works with lat/lon data.
             if (name_is_special()) {
                 build_special_values();
+            } 
+            else if (dimensions() == 2) {
+                constrained_matrix(dataset, tmp);
+                val2buf(tmp);
             }
             else {
                 for (int i = 0; i < array_len; ++i) {

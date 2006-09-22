@@ -828,7 +828,7 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
     if (!g)
 	throw Error(unknown_error, "Expected a Grid variable");
 
-    Array *a = dynamic_cast<Array *>(g->array_var());
+    Array *a = g->get_array();
     if (!a)
 	throw InternalErr(__FILE__, __LINE__, "Malformed Grid variable");
     if (a->dimensions(true) != (unsigned)indices->size())

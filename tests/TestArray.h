@@ -56,6 +56,7 @@ public:
     virtual bool read(const string &dataset);
     virtual bool name_is_special();
     virtual void build_special_values();    
+    virtual void constrained_matrix(const string &dataset, char *constrained_array);
     
     void set_series_values(bool);
     bool get_series_values() { return d_series_values; }

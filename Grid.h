@@ -48,6 +48,10 @@
 #include "BaseType.h"
 #endif
 
+#ifndef _array_h
+#include "Array.h"
+#endif
+
 #ifndef _constructor_h
 #include "Constructor.h"
 #endif
@@ -98,7 +102,7 @@
     The Grid data type has two parts: an Array, and a singly-linked
     list of Map vectors to describe the Array.  The access functions
     for this class include a function to return the Array
-    (<tt>array_var()</tt>), and a set of functions for cycling through the
+    (<tt>get_array()</tt>), and a set of functions for cycling through the
     list of Map vectors.
 
     @todo Move, in some sense, the _map_vars up to Constructor. Look at using
@@ -145,7 +149,8 @@ public:
     virtual void add_var(BaseType *bt, Part part);
 
     BaseType *array_var();
-
+    Array *get_array();
+    
     virtual unsigned int width();
 
     virtual int components(bool constrained = false);

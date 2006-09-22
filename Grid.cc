@@ -134,7 +134,7 @@ Grid::element_count(bool leaves)
 	    j += (*j)->element_count(leaves);
 	}
 
-	i += array_var()->element_count(leaves);
+	i += get_array()->element_count(leaves);
 	return i;
     }
 }
@@ -337,11 +337,22 @@ Grid::add_var(BaseType *bt, Part part)
     }
 }    
 
-/** @brief Returns the Grid Array. */
+/** @brief Returns the Grid Array. 
+    @deprecated 
+    @see get_array() */
 BaseType *
 Grid::array_var()
 {
     return _array_var;
+}
+
+/** @brief Returns the Grid Array. 
+    This method returns the array using an Array*, so no cast is required.
+    @return A pointer to the Grid's (dependent) data array */
+Array *
+Grid::get_array()
+{
+    return dynamic_cast<Array*>(_array_var);
 }
 
 /** @brief Returns an iterator referencing the first Map vector. */
@@ -578,7 +589,7 @@ Grid::print_xml(FILE *out, string space, bool constrained)
 
     get_attr_table().print_xml(out, space + "    ", constrained);
 
-    array_var()->print_xml(out, space + "    ", constrained);
+    get_array()->print_xml(out, space + "    ", constrained);
 
     for_each(map_begin(), map_end(),
 	     PrintMapField(out, space + "    ", constrained));

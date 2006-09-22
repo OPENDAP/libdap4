@@ -443,7 +443,7 @@ projection_function_grid(int argc, BaseType *argv[], DDS &dds,
     // dimensions at the same time and set the grid's array's constraint to
     // match that of the map vectors. Maybe we need an interface in Grid to
     // do this? 9/21/2001 jhrg
-    Array *grid_array = dynamic_cast<Array *>(grid->array_var());
+    Array *grid_array = grid->get_array();
 
     // Basic plan: For each map, look at each clause and set start and stop
     // to be the intersection of the ranges in those clauses.
@@ -708,6 +708,9 @@ function_geogrid(int argc, BaseType *argv[], DDS &dds)
     Grid *grid = dynamic_cast<Grid*>(argv[0]);
     if (!grid)
         throw Error("The first argument to geogrid() must be a Grid variable!");
+        
+    if (grid->get_array()->dimensions() > 3)
+        throw Error("The geogrid() function works only with Grids of one to three dimensions.");
 
     // Mark this grid as part of the current projection.
     if (!dds.mark(grid->name(), true))
