@@ -159,21 +159,18 @@ TestArray::constrained_matrix(const string &dataset, char *constrained_array)
     while (d != dim_end())
         constrained_size *= dimension_size(d++);
     
-    Dim_iter X = dim_begin();    // X dimension
-    Dim_iter Y = X+1;
+    Dim_iter Y = dim_begin();    // X dimension
+    Dim_iter X = Y+1;
 
     cerr << "dimension_start(Y): " << dimension_start(Y) << endl;
     cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl;
     cerr << "dimension_start(X): " << dimension_start(X) << endl;
     cerr << "dimension_stop(X): " << dimension_stop(X) << endl;
     
-    int y, j;
-    for( y = dimension_start(Y), j = 0; y < dimension_stop(Y); y += dimension_stride(Y), ++j ) {
-        int x, i;
-        for( int x = dimension_start(X), i  = 0; x < dimension_stop(X); x += dimension_stride(X), ++i ) {
-            cerr << "c array[" << j << "][" << i << "]: = whole[" << y << "][" << x << "]: "
-                 << *(whole_array+(y*dimension_size(Y, false))+x) << endl;
-            *(constrained_array+(j*dimension_size(Y))+i) = *(whole_array+(y*dimension_size(Y, false))+x);
+    for( int y = dimension_start(Y); y <= dimension_stop(Y); y += dimension_stride(Y) ) {
+        for( int x = dimension_start(X); x <= dimension_stop(X); x += dimension_stride(X) ) {
+            cerr << "whole[" << y << "][" << x << "]: " << y*dimension_size(Y, false)+x << endl;
+            *constrained_array++ = *(whole_array + (y*dimension_size(Y, false)) + x);
         }
     }
 }
