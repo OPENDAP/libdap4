@@ -376,61 +376,79 @@ parse_gse_expression(gse_arg *arg, BaseType *expr) throw(Error)
 	throw Error(malformed_expr, "Error parsing grid selection.");
 }
 
-#if 0
-void 
-projection_function_grid(int argc, BaseType *argv[], DDS &dds,
-                         ConstraintEvaluator &) throw(Error)
+static void
+apply_grid_selection_expr(Grid * grid, GSEClause * clause)
 {
-    DBG(cerr << "Entering projection_function_grid..." << endl);
+    // Basic plan: For each map, look at each clause and set start and stop
+    // to be the intersection of the ranges in those clauses.
+    Grid::Map_iter map_i = grid->map_begin();
+    while (map_i != grid->map_end()
+           && (*map_i)->name() != clause->get_map_name())
+        ++map_i;
 
-    if (argc < 1)
-	throw Error("Wrong number of arguments to grid(), there must be at least one argument.");
+    if (map_i == grid->map_end())
+        throw Error("The map vector '" + clause->get_map_name()
+                    + "' is not in the grid '" + grid->name() + "'.");
 
-    Grid *grid = dynamic_cast<Grid*>(argv[0]);
-    if (!grid)
-	throw Error("The first argument to grid() must be a Grid variable!");
+    // Use pointer arith & the rule that map order must match array dim order
+    Array::Dim_iter grid_dim = (grid->get_array()->dim_begin()
+                                + (map_i - grid->map_begin()));
 
-    // Mark this grid as part of the current projection.
-    if (!dds.mark(grid->name(), true))
-	throw Error("Could not find the variable: " + grid->name());
+    Array *map = dynamic_cast < Array * >((*map_i));
+    int start =
+        max(map->dimension_start(map->dim_begin()), clause->get_start());
+    int stop =
+        min(map->dimension_stop(map->dim_begin()), clause->get_stop());
 
-    // argv[1..n] holds strings; each are little expressions to be parsed.
-    // When each expression is parsed, the parser makes a new instance of
-    // GSEClause. GSEClause checks to make sure the named map really exists
-    // in the Grid and that the range of values given makes sense.
-    vector<GSEClause *> clauses;
-    gse_arg *arg = new gse_arg(grid);
-    for (int i = 1; i < argc; ++i) {
-	parse_gse_expression(arg, argv[i]);
-	clauses.push_back(arg->get_gsec());
+    if (start > stop) {
+        ostringstream msg;
+        msg <<
+            "The expresions passed to grid() do not result in an inclusive \n"
+            << "subset of '" << clause->get_map_name() 
+            << "'. The map's values range " << "from " <<
+            clause->get_map_min_value() << " to " 
+            << clause->get_map_max_value() << ".";
+        throw Error(msg.str());
     }
-    delete arg; arg = 0;
 
-    // In this loop we have to iterate over the map vectors and the grid
-    // dimensions at the same time and set the grid's array's constraint to
-    // match that of the map vectors. Maybe we need an interface in Grid to
-    // do this? 9/21/2001 jhrg
-    Array *grid_array = grid->get_array();
+    DBG(cerr << "Setting constraint on " << map->name()
+        << "[" << start << ":" << stop << "]" << endl);
 
+    // Stride is always one.
+    map->add_constraint(map->dim_begin(), start, 1, stop);
+    grid->get_array()->add_constraint(grid_dim, start, 1, stop);
+}
+
+static void
+apply_grid_selection_expressions(Grid *grid, vector<GSEClause *> clauses)
+{
+    vector<GSEClause*>::iterator clause_i = clauses.begin();
+    while( clause_i != clauses.end() )
+        apply_grid_selection_expr(grid, *clause_i++);
+        
+    grid->set_read_p(false);
+}
+
+#if 0
+static void
+apply_grid_selection_expressions(Grid *grid, vector<GSEClause *> clauses)
+{
     // Basic plan: For each map, look at each clause and set start and stop
     // to be the intersection of the ranges in those clauses.
     Grid::Map_iter piter = grid->map_begin() ;
-    Array::Dim_iter grid_dim = grid_array->dim_begin() ;
+    Array::Dim_iter grid_dim = grid->get_array()->dim_begin() ;
     for (; piter != grid->map_end(); piter++, grid_dim++)
     {
         Array *map = dynamic_cast<Array *>((*piter)) ;
-	string map_name = map->name();
+        string map_name = map->name();
 
-	// a valid Grid Map is a vector.
-	Array::Dim_iter qiter = map->dim_begin();
-
-	int start = map->dimension_start(qiter);
-	int stop = map->dimension_stop(qiter);
-
-	vector<GSEClause*>::iterator cs_iter;
-	for (cs_iter = clauses.begin(); cs_iter != clauses.end(); cs_iter++) {
-	    GSEClause *gsec = *cs_iter;
-	    if (gsec->get_map_name() == map_name) {
+        int start = map->dimension_start(map->dim_begin());
+        int stop = map->dimension_stop(map->dim_begin());
+        
+        vector<GSEClause*>::iterator cs_iter;
+        for (cs_iter = clauses.begin(); cs_iter != clauses.end(); cs_iter++) {
+            GSEClause *gsec = *cs_iter;
+            if (gsec->get_map_name() == map_name) {
                 DBG(cerr << "map_name: " << map_name << endl);
                 DBG(cerr << "Map starts at: " << start << endl);
                 DBG(cerr << "GSE Clause start: " << gsec->get_start() << endl);
@@ -449,38 +467,34 @@ projection_function_grid(int argc, BaseType *argv[], DDS &dds,
 
                 stop = min(stop, gsec->get_stop());
                 
-		if (start > stop) {
+                if (start > stop) {
                     ostringstream msg;
                     msg 
 << "The expresions passed to grid() do not result in an inclusive \n"
 << "subset of '" << gsec->get_map_name() << "'. The map's values range "
 << "from " << gsec->get_map_min_value() << " to " << gsec->get_map_max_value()
 << ".";
-		    throw Error(msg.str());
-		}
-		// This map is constrained, set read_p so that during
-		// serialization new values will be read according to the
-		// constraint set here. 9/21/2001 jhrg
-		map->set_read_p(false);
-	    }
-	}
-                    		
-	DBG(cerr << "Setting constraint on " << map->name() \
-	    << "[" << start << ":" << stop << "]" << endl);
+                    throw Error(msg.str());
+                }
+            }
+        }
+                                
+        DBG(cerr << "Setting constraint on " << map->name() \
+            << "[" << start << ":" << stop << "]" << endl);
 
-	// Stride is always one.
-	Array::Dim_iter fd = map->dim_begin() ;
-	map->add_constraint(fd, start, 1, stop);
-	grid_array->add_constraint(grid_dim, start, 1, stop);
+        // Stride is always one.
+        Array::Dim_iter fd = map->dim_begin() ;
+        map->add_constraint(fd, start, 1, stop);
+        grid->get_array()->add_constraint(grid_dim, start, 1, stop);
+        
+        DBG(cerr << "Constraint set." << endl);
     }
+    grid->set_read_p(false);
     
-    // Make sure we reread the grid's array, too. 9/24/2001 jhrg
-    grid_array->set_read_p(false);
-
-    DBG(cerr << "Exiting projection_function_grid." << endl);
+    DBG(cerr << "Exiting function_grid." << endl);
 }
 #endif
-
+        
 /** The grid function uses a set of relational expressions to form a selection
     within a Grid variable based on the values in the Grid's map vectors.
     Thus, if a Grid has a 'temperature' map which ranges from 0.0 to 32.0
@@ -527,16 +541,13 @@ function_grid(int argc, BaseType *argv[], DDS &dds) throw(Error)
     if (!original_grid)
         throw Error("The first argument to grid() must be a Grid variable!");
 
-#if 1
-    // Mark this grid as part of the current projection.
-    if (!dds.mark(original_grid->name(), true))
-        throw Error("Could not find the variable: " + original_grid->name());
-#endif
-    // Duplicate the grid; DODSFilter::send_data() will delete the variable 
+   // Duplicate the grid; DODSFilter::send_data() will delete the variable 
     // after serializing it.
     Grid *l_grid = dynamic_cast<Grid*>(original_grid->ptr_duplicate());
 
-    // Read the maps
+    // Read the maps. Do this before calling parse_gse_expression(). Avoid
+    // reading the array until the constraints have been applied because it
+    // might be really large.
     Grid::Map_iter i = l_grid->map_begin();
     while (i != l_grid->map_end())
         (*i++)->read(dds.get_dataset_name());
@@ -553,82 +564,10 @@ function_grid(int argc, BaseType *argv[], DDS &dds) throw(Error)
     }
     delete arg; arg = 0;
 
-    // In this loop we have to iterate over the map vectors and the grid
-    // dimensions at the same time and set the grid's array's constraint to
-    // match that of the map vectors. Maybe we need an interface in Grid to
-    // do this? 9/21/2001 jhrg
-    Array *grid_array = l_grid->get_array();
-
-    // Basic plan: For each map, look at each clause and set start and stop
-    // to be the intersection of the ranges in those clauses.
-    Grid::Map_iter piter = l_grid->map_begin() ;
-    Array::Dim_iter grid_dim = grid_array->dim_begin() ;
-    for (; piter != l_grid->map_end(); piter++, grid_dim++)
-    {
-        Array *map = dynamic_cast<Array *>((*piter)) ;
-        string map_name = map->name();
-
-        // a valid Grid Map is a vector.
-        Array::Dim_iter qiter = map->dim_begin();
-
-        int start = map->dimension_start(qiter);
-        int stop = map->dimension_stop(qiter);
-
-        vector<GSEClause*>::iterator cs_iter;
-        for (cs_iter = clauses.begin(); cs_iter != clauses.end(); cs_iter++) {
-            GSEClause *gsec = *cs_iter;
-            if (gsec->get_map_name() == map_name) {
-                DBG(cerr << "map_name: " << map_name << endl);
-                DBG(cerr << "Map starts at: " << start << endl);
-                DBG(cerr << "GSE Clause start: " << gsec->get_start() << endl);
-                // Set start to the maximum of either its current value or the
-                // value in current clause. At the end of this loop, start
-                // should be the max value of any of the (matching) clause's
-                // start values. This is necesary because one map may be named
-                // in several clauses such as 'first>3' and 'first<7'. When the
-                // second expression is evaluated the clause will have a start
-                // value of 0 while the array will have a starting value 4 
-                // (assume first = {0,1,2,...,9}). Note that the stop and start
-                // values are the Map indices, not the values in the Maps, so
-                // it makes sense to think of the start always being smaller 
-                // than the stop and the indices monotonically increasing.
-                start = max(start, gsec->get_start());
-
-                stop = min(stop, gsec->get_stop());
-                
-                if (start > stop) {
-                    ostringstream msg;
-                    msg 
-<< "The expresions passed to grid() do not result in an inclusive \n"
-<< "subset of '" << gsec->get_map_name() << "'. The map's values range "
-<< "from " << gsec->get_map_min_value() << " to " << gsec->get_map_max_value()
-<< ".";
-                    throw Error(msg.str());
-                }
-                // This map is constrained, set read_p so that during
-                // serialization new values will be read according to the
-                // constraint set here. 9/21/2001 jhrg
-                map->set_read_p(false);
-            }
-        }
-                                
-        DBG(cerr << "Setting constraint on " << map->name() \
-            << "[" << start << ":" << stop << "]" << endl);
-
-        // Stride is always one.
-        Array::Dim_iter fd = map->dim_begin() ;
-        map->add_constraint(fd, start, 1, stop);
-        grid_array->add_constraint(grid_dim, start, 1, stop);
-        
-        DBG(cerr << "Constraint set." << endl);
-    }
+    apply_grid_selection_expressions(l_grid, clauses);
     
-    // Make sure we reread the grid's array, too. 9/24/2001 jhrg
-    grid_array->set_read_p(false);
-
-    DBG(cerr << "Exiting function_grid." << endl);
     l_grid->read(dds.get_dataset_name());
-        
+    
     return l_grid;
 }
 
@@ -681,11 +620,11 @@ function_geogrid(int argc, BaseType *argv[], DDS &dds) throw(Error)
         
     if (grid->get_array()->dimensions() < 2 || grid->get_array()->dimensions() > 3)
         throw Error("The geogrid() function works only with Grids of two or three dimensions.");
-
+#if 0
     // Mark this grid as part of the current projection.
     if (!dds.mark(grid->name(), true))
         throw Error("Could not find the variable: " + grid->name());
-        
+#endif        
     // dup the grid before reading; DODSFilter::send_data() will free the variable
     // once it's done serializing.
     Grid *l_grid = dynamic_cast<Grid*>(grid->ptr_duplicate());
