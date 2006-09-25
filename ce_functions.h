@@ -46,11 +46,14 @@ namespace libdap {
     double extract_double_value(BaseType *arg) throw(Error);
     double *extract_double_array(Array *a) throw(Error);
     void set_array_using_double(Array *dest, double *src, int src_len) throw(Error);
-
+#if 0
     void projection_function_grid(int argc, BaseType *argv[], DDS &dds,
                                   ConstraintEvaluator &) throw(Error);
-    void projection_function_geogrid(int argc, BaseType *argv[], DDS &dds,
-                                     ConstraintEvaluator &) throw(Error);
+#endif                                  
+    BaseType *func_one(int argc, BaseType *argv[], DDS &dds) throw(Error);                             
+    BaseType *function_grid(int argc, BaseType *argv[], DDS &dds) throw(Error);
+    BaseType *function_geogrid(int argc, BaseType *argv[], DDS &dds) throw(Error);
+    
     void register_functions(ConstraintEvaluator &ce);
 }
 

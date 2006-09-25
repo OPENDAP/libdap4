@@ -220,7 +220,7 @@ class CEFunctionsTest:public TestFixture {
         
     void no_arguments_test() {
         try {
-            projection_function_grid(0, 0, *dds, ce);
+            function_grid(0, 0, *dds);
             CPPUNIT_ASSERT(!"no_arguments_test() should have failed");
         }
         catch (Error &e) {
@@ -234,7 +234,7 @@ class CEFunctionsTest:public TestFixture {
             BaseType *argv[1];
             argv[0] = dds->var("a");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this");
-            projection_function_grid(1, argv, *dds, ce);
+            function_grid(1, argv, *dds);
             CPPUNIT_ASSERT("one_argument_not_a_grid_test() should work");
         }
         catch (Error &e) {
@@ -248,7 +248,7 @@ class CEFunctionsTest:public TestFixture {
             BaseType *argv[1];
             argv[0] = dds->var("lat");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this, although it is not a grid");
-            projection_function_grid(1, argv, *dds, ce);
+            function_grid(1, argv, *dds);
             CPPUNIT_ASSERT(!"one_argument_not_a_grid_test() should have failed");
         }
         catch (Error &e) {
@@ -266,7 +266,7 @@ class CEFunctionsTest:public TestFixture {
             string expression = "3<second<=7";
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
-            projection_function_grid(2, argv, *dds, ce);
+            function_grid(2, argv, *dds);
             CPPUNIT_ASSERT(!"map_not_in_grid_test() should have failed");
         }
         catch (Error &e) {
@@ -285,9 +285,9 @@ class CEFunctionsTest:public TestFixture {
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
             
-            projection_function_grid(2, argv, *dds, ce);
+            Grid &g = dynamic_cast<Grid&>(*function_grid(2, argv, *dds));
             
-            Grid &g = dynamic_cast<Grid&>(*argv[0]);
+            //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
             CPPUNIT_ASSERT(m.dimension_start(m.dim_begin(), true) == 4);
             CPPUNIT_ASSERT(m.dimension_stop(m.dim_begin(), true) == 7);
@@ -314,9 +314,9 @@ class CEFunctionsTest:public TestFixture {
             dynamic_cast<Str*>(argv[2])->val2buf(&expression);
             dynamic_cast<Str*>(argv[2])->set_read_p(true);
 
-            projection_function_grid(3, argv, *dds, ce);
-            
-            Grid &g = dynamic_cast<Grid&>(*argv[0]);
+            //function_grid(3, argv, *dds);
+            Grid &g = dynamic_cast<Grid&>(*function_grid(3, argv, *dds));
+            //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
             CPPUNIT_ASSERT(m.dimension_start(m.dim_begin(), true) == 4);
             CPPUNIT_ASSERT(m.dimension_stop(m.dim_begin(), true) == 7);
@@ -337,9 +337,9 @@ class CEFunctionsTest:public TestFixture {
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
             
-            projection_function_grid(2, argv, *dds, ce);
-
-            Grid &g = dynamic_cast<Grid&>(*argv[0]);
+            //function_grid(2, argv, *dds);
+            Grid &g = dynamic_cast<Grid&>(*function_grid(2, argv, *dds));
+            //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
             CPPUNIT_ASSERT(m.dimension_start(m.dim_begin(), true) == 2);
             CPPUNIT_ASSERT(m.dimension_stop(m.dim_begin(), true) == 5);
@@ -366,9 +366,9 @@ class CEFunctionsTest:public TestFixture {
             dynamic_cast<Str*>(argv[2])->val2buf(&expression);
             dynamic_cast<Str*>(argv[2])->set_read_p(true);
 
-            projection_function_grid(3, argv, *dds, ce);
-
-            Grid &g = dynamic_cast<Grid&>(*argv[0]);
+            //function_grid(3, argv, *dds);
+            Grid &g = dynamic_cast<Grid&>(*function_grid(3, argv, *dds));
+            //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
             CPPUNIT_ASSERT(m.dimension_start(m.dim_begin(), true) == 2);
             CPPUNIT_ASSERT(m.dimension_stop(m.dim_begin(), true) == 5);
@@ -389,7 +389,7 @@ class CEFunctionsTest:public TestFixture {
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
             
-            projection_function_grid(2, argv, *dds, ce);
+            function_grid(2, argv, *dds);
 
             CPPUNIT_ASSERT(!"one_dim_grid_noninclusive_values_test() should not have worked");
         }
@@ -410,7 +410,7 @@ class CEFunctionsTest:public TestFixture {
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
             
-            projection_function_grid(2, argv, *dds, ce);
+            function_grid(2, argv, *dds);
 
             CPPUNIT_ASSERT(!"values_outside_map_range_test() should not have worked");
         }
