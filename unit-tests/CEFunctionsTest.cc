@@ -41,16 +41,21 @@
 #include "DAS.h"
 #include "GeoConstraint.h"
 #include "ce_functions.h"
+
+#include "../tests/TestTypeFactory.h"
+
 #include "debug.h"
 
 using namespace CppUnit;
 using namespace libdap;
 using namespace std;
 
+int test_variable_sleep_interval = 0;
+
 class CEFunctionsTest:public TestFixture {
   private:
     DDS * dds;
-    BaseTypeFactory btf;
+    TestTypeFactory btf;
     ConstraintEvaluator ce;
 
     DDS *geo_dds;
@@ -204,6 +209,7 @@ class CEFunctionsTest:public TestFixture {
     CPPUNIT_TEST(set_array_using_double_test);
     CPPUNIT_TEST(reorder_longitude_map_test);
 #if 0
+    // See the comment at the function...
     CPPUNIT_TEST(reorder_data_longitude_axis_test);
 #endif
     CPPUNIT_TEST(set_bounding_box_test1);        
@@ -567,6 +573,7 @@ class CEFunctionsTest:public TestFixture {
         CPPUNIT_ASSERT(g);
         GeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
         // Longitude map: { 0, 40, 80, 120, 160, 200, 240, 280, 320, 359 }
+        
         gc1.reorder_longitude_map(7);
         
         CPPUNIT_ASSERT(gc1.d_lon[0] == 280);
@@ -575,8 +582,13 @@ class CEFunctionsTest:public TestFixture {
         CPPUNIT_ASSERT(gc1.d_lon[6] == 120);
         CPPUNIT_ASSERT(gc1.d_lon[9] == 240);
     }
-#if 0    
+#if 0
+    // This test is broken because reorder...() uses read and I haven't worked
+    // out how to get the data used here into the grid so that read() called 
+    // elsewhere will return it. Might try using the series_values property to
+    // create a predicable set of values... 
     void reorder_data_longitude_axis_test() {
+        try{
         Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
         CPPUNIT_ASSERT(g);
         GeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
@@ -592,9 +604,12 @@ class CEFunctionsTest:public TestFixture {
                   { 80,81,82,83,84,85,86,87,88,89},
                   { 90,91,92,93,94,95,96,97,98,99} };
         */
-        d_longitude_index_left = 5;
-        d_longitude_index_right = 1
+        gc1.d_longitude_index_left = 5;
+        gc1.d_longitude_index_right = 1;
+        
+        cerr << "Before gc1.reorder_data_longitude_axis();" << endl;
         gc1.reorder_data_longitude_axis();
+        cerr << "past gc1.reorder_data_longitude_axis();" << endl;
 
         // Read the data out into local storage
         dods_byte *tmp_data2=0;
@@ -602,11 +617,17 @@ class CEFunctionsTest:public TestFixture {
         int size = g->get_array()->buf2val((void**)tmp_data2_ptr);
         cerr << "size = " << size << endl;
         
-        CPPUNIT_ASSERT(tmp_data2[0] == 7);
-        CPPUNIT_ASSERT(tmp_data2[9] == 6);
-        CPPUNIT_ASSERT(tmp_data2[10] == 17);
-        CPPUNIT_ASSERT(tmp_data2[90] == 97);
-        CPPUNIT_ASSERT(tmp_data2[99] == 96);
+        cerr << "tmp_data2[0]: " << (int)tmp_data2[0] << endl;
+        CPPUNIT_ASSERT(tmp_data2[0] == 5);
+        CPPUNIT_ASSERT(tmp_data2[9] == 4);
+        CPPUNIT_ASSERT(tmp_data2[10] == 15);
+        CPPUNIT_ASSERT(tmp_data2[90] == 95);
+        CPPUNIT_ASSERT(tmp_data2[99] == 94);
+        }
+        catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error in reorder_data_longitude_axis_test.");
+        }
      }
 #endif    
     void set_bounding_box_test1() {
@@ -618,24 +639,13 @@ class CEFunctionsTest:public TestFixture {
         // lat: { 40, 30, 20, 10, 0, -10, -20, -30, -40, -50 };
         // This should be lon 1 to 5 and lat 0 to 3
         gc1.set_bounding_box(40.0, 40.0, 200.0, 10.0);
-        Array &a = *gc1.d_grid->get_array();
-        for (Array::Dim_iter d = a.dim_begin(); d != a.dim_end(); ++d) {
-            if (a.dimension_name(d) == "lon") {
-                CPPUNIT_ASSERT(a.dimension_start(d) == 1);
-                CPPUNIT_ASSERT(a.dimension_stop(d) == 5);
-            }
-            if (a.dimension_name(d) == "lat") {
-                CPPUNIT_ASSERT(a.dimension_start(d) == 0);
-                CPPUNIT_ASSERT(a.dimension_stop(d) == 3);
-            }
-        }
-        Array::Dim_iter d = gc1.d_longitude->dim_begin();
-        CPPUNIT_ASSERT(gc1.d_longitude->dimension_start(d) == 1);
-        CPPUNIT_ASSERT(gc1.d_longitude->dimension_stop(d) == 5);
 
-        d = gc1.d_latitude->dim_begin();
-        CPPUNIT_ASSERT(gc1.d_latitude->dimension_start(d) == 0);
-        CPPUNIT_ASSERT(gc1.d_latitude->dimension_stop(d) == 3);
+        CPPUNIT_ASSERT(gc1.d_longitude_index_left == 1);
+        CPPUNIT_ASSERT(gc1.d_longitude_index_right == 5);
+
+        CPPUNIT_ASSERT(gc1.d_latitude_index_top == 0);
+        CPPUNIT_ASSERT(gc1.d_latitude_index_bottom == 3);
+
      }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
@@ -650,24 +660,12 @@ class CEFunctionsTest:public TestFixture {
         GeoConstraint gc2(g2, geo_dds->get_dataset_name(), *geo_dds);
         // SST1 with a constraint that uses neg_pos notation for lon
         gc2.set_bounding_box(-140.0, 40.0, 20.0, 10.0);
-        Array &a = *gc2.d_grid->get_array();
-        for (Array::Dim_iter d = a.dim_begin(); d != a.dim_end(); ++d) {
-            if (a.dimension_name(d) == "lon") {
-                CPPUNIT_ASSERT(a.dimension_start(d) == 1);
-                CPPUNIT_ASSERT(a.dimension_stop(d) == 5);
-            }
-            if (a.dimension_name(d) == "lat") {
-                CPPUNIT_ASSERT(a.dimension_start(d) == 0);
-                CPPUNIT_ASSERT(a.dimension_stop(d) == 3);
-            }
-        }
-        Array::Dim_iter d = gc2.d_longitude->dim_begin();
-        CPPUNIT_ASSERT(gc2.d_longitude->dimension_start(d) == 1);
-        CPPUNIT_ASSERT(gc2.d_longitude->dimension_stop(d) == 5);
+        CPPUNIT_ASSERT(gc2.d_longitude_index_left == 1);
+        CPPUNIT_ASSERT(gc2.d_longitude_index_right == 5);
 
-        d = gc2.d_latitude->dim_begin();
-        CPPUNIT_ASSERT(gc2.d_latitude->dimension_start(d) == 0);
-        CPPUNIT_ASSERT(gc2.d_latitude->dimension_stop(d) == 3);
+        CPPUNIT_ASSERT(gc2.d_latitude_index_top == 0);
+        CPPUNIT_ASSERT(gc2.d_latitude_index_bottom == 3);
+
         }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
@@ -699,10 +697,11 @@ class CEFunctionsTest:public TestFixture {
                   { 80,81,82,83,84,85,86,87,88,89},
                   { 90,91,92,93,94,95,96,97,98,99} };
         */
-        CPPUNIT_ASSERT(gc2.d_latitude->length() == 4);
-        CPPUNIT_ASSERT(gc2.d_longitude->length() == 5);
         
         gc2.apply_constraint_to_data();
+
+        CPPUNIT_ASSERT(gc2.d_latitude->length() == 4);
+        CPPUNIT_ASSERT(gc2.d_longitude->length() == 5);
 
         double *lats = 0;
         double **lats_ptr = &lats;

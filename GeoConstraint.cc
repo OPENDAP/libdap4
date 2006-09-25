@@ -424,7 +424,10 @@ void GeoConstraint::reorder_data_longitude_axis() throw(Error)
     // to the right side of the array. Use read() to get the data.
     Array & a = *d_grid->get_array();
 
+    cerr << "d_longitude_index_left: " << d_longitude_index_left << endl
+         << "d_lon_length: " << d_lon_length << endl;
     a.add_constraint(d_lon_grid_dim, d_longitude_index_left, 1, d_lon_length);
+    cerr << "After first constraint" << endl;
     a.set_read_p(false);
     a.read(d_dataset);
     char *left_data = 0;
@@ -434,6 +437,7 @@ void GeoConstraint::reorder_data_longitude_axis() throw(Error)
     // goes from the left edge of the array to the right index and read those
     // data.
     a.add_constraint(d_lon_grid_dim, 0, 1, d_longitude_index_right);
+    cerr << "After second constraint." << endl;
     a.set_read_p(false);
     a.read(d_dataset);
     char *right_data = 0;
@@ -473,10 +477,10 @@ void GeoConstraint::reorder_data_longitude_axis() throw(Error)
 void GeoConstraint::set_bounding_box_longitude(double left,
                                                double right) throw(Error)
 {
-#if 1
+#if 0
     if (!d_latitude_bb_set)
         throw InternalErr(__FILE__, __LINE__, "Must call set the latitude BB before longitude.");
-#endif         
+#endif
     // Categorize the notation used by the bounding box (0/359 or -180/179).
     d_longitude_notation = categorize_notation(left, right);
 
@@ -737,9 +741,7 @@ GeoConstraint::apply_constraint_to_data() throw(Error)
     if (d_grid_array_data) {
         int size = d_grid->get_array()->val2buf(&d_grid_array_data);
         if (size != d_grid_array_data_size)
-            throw
-                InternalErr
-                ("Expected data size not copied to the Grid's buffer.");
+            throw InternalErr("Expected data size not copied to the Grid's buffer.");
         d_grid->set_read_p(true);
     }
     else 

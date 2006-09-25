@@ -112,5 +112,5 @@ ddsT_SOURCES = ddsT.cc
 ddsT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a
 
 CEFunctionsTest_SOURCES = CEFunctionsTest.cc
-CEFunctionsTest_LDADD = -lcppunit ../libdap.la ../libdapserver.la
+CEFunctionsTest_LDADD = -lcppunit ../libdap.la ../libdapserver.la ../tests/libtest-types.a
 

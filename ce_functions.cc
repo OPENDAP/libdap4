@@ -513,123 +513,28 @@ projection_function_grid(int argc, BaseType *argv[], DDS &dds,
     DBG(cerr << "Exiting projection_function_grid." << endl);
 }
 
-#if 0
-void 
-projection_function_grid(int argc, BaseType *argv[], DDS &dds,
-                         ConstraintEvaluator &) throw(Error)
-{
-    DBG(cerr << "Entering projection_function_grid..." << endl);
-
-    if (argc < 1)
-        throw Error("Wrong number of arguments to grid(), there must be at least one argument.");
-
-    Grid *grid = dynamic_cast<Grid*>(argv[0]);
-    if (!grid)
-        throw Error("The first argument to grid() must be a Grid variable!");
-
-    // Mark this grid as part of the current projection.
-    if (!dds.mark(grid->name(), true))
-        throw Error("Could not find the variable: " + grid->name());
-
-    evaluate_grid_selection_expressions(gid, argc, argv, dds);
-}
-
 BaseType *
 function_grid(int argc, BaseType *argv[], DDS &dds) throw(Error)
 {
 }
-#endif
-#if 0
-/** This performs the work of the geogrid(). 
-    @see projection_function_geogrid */
-bool
-selection_function_geogrid(int argc, BaseType *argv[], DDS &dds) throw(Error)
-{
-    DBG(cerr << "Entering selection_function_geogrid" << endl);
-    Grid *grid = dynamic_cast<Grid*>(argv[0]);
-    if (!grid)
-        throw Error("The first argument to geogrid() must be a Grid variable!");
 
-    // Build a GeoConstraint object. If there are no longitude/latitude maps
-    // then this constructor throws an Error.
-    GeoConstraint gc(grid, dds.get_dataset_name(), dds);
-    
-    // This sets the bounding box and modifies the maps to match the notation
-    // of the box (0/359 or -180/179)
-    double left = extract_double_value(argv[1]); 
-    double top = extract_double_value(argv[2]);
-    double right = extract_double_value(argv[3]);
-    double bottom = extract_double_value(argv[4]);
-    gc.set_bounding_box(left, top, right, bottom);
-
-    // Apply the constraint so that the  data in all parts of the Grid for
-    // which read_p() is true are fully set so that serialize() will work.
-    gc.apply_constraint_to_data();
-    
-    // Indicate the data should be sent
-    return true;
-}
-#endif
-/** New idea for the implementation of geogrid(). First use a
-    projection function to mark the Grid as read (set_read_p(true))
-    and then insert a selection function to do the work. It's
-    necessary to set the read_p property so that the read() call in
-    serialize will not blindly read all the data.
-
-    The selection function will be called after the 'if (read_p()) read()'
-    statement in serialize(), but before data are written. The
-    selection function will know that read_p was set before any data
-    were actually read, it can clear the property, build the
-    GeoConstraint instance, do the reads and rearrange data. 
-
-    Version 1.1 will add the grid() selection expressions to the
-    geogrid() args. These will be evaluated by grid() itself which will
-    read those maps and set the appropriate constraint for the array.
-
-    Issues: This is ugly; how can the expression evaluator be changed
-    so that we don't have to have functions adding what are basically
-    callbacks to the list of Clause objects? Maybe run the evaluator
-    before the read() or have the evaluator always perform the read.
-    Pass the evaluator the name of the variable currently being
-    serialized. It could then use that information to control which
-    variables were read. For example, geogrid() could not do anything
-    for Grid B when the variable beign serialized was Grid A. This
-    could also be leveraged by the Sequence code I think.
-
-    Should grid() become a selection function? 
-
-    How would the call look if the above change were made? 
-    SST&geogrid(SST,10,20,30,40,"9<TIME,12")
-
-    Also SST[0:1024][0:1024][3]&geogrid(SST,10,20,30,40)
-
-    Still another approach: Implement geogrid() as a function which
-    returns a BaseType (the grid) These bypass the normal calls to
-    read(), serialize(), et c., and instead just run the function and
-    return the DDS. The limitation is that only one Grid can be
-    returned per call. Probably not that big a deal because this would
-    not require any modifications to libdap's API (thus the FreeForm
-    server's functions could all stay as they are).
-
-    ---------------------- old info below ----------------------
-
-    The geogrid function returns the part of a Grid which includes a 
+/** The geogrid function returns the part of a Grid which includes a 
     geographically specified rectangle. The arguments to the function are
     the name of a Grid, the left-top and right-bottom points of the rectable
     and zero or more relational expressions of the sort that the grid frunction
     accepts. The constraints on the arguments are:<ul>
-    <li>The Grid must have Latitude and Longitude map verctors. Those are 
-    discovered by looking for data sources which satisfy enough of any one of
+    <li>The Grid must have Latitude and Longitude map vectors. Those are 
+    discovered by looking for map vectors which satisfy enough of any one of
     a set of conventions to make the identification of those map vectors 
     positive or by guessing which maps are which. The set of conventions
     supported is: COARDS, CF 1.0, GDT and CSC (see 
     http://www.unidata.ucar.edu/software/netcdf/conventions.html). If the 
     geogrid guesses at the maps, it adds an attribute (geogrid_warning) which
-    says so.</li>
+    says so. (in version 1.1)</li>
     <li>The rectangle corner points are in Longitude-Latitude. Longitude may be
     given using -180 to 180 or 0 to 360. For data sources with global coverage,
     geogrid assumes that the Longitude axis is circular. For requests made using
-    0/359 notation, it assumes it is module 360. Requests made using -180/179
+    0/359 notation, it assumes it is modulus 360. Requests made using -180/179
     notation cannot use values outside that range.</li>
     <li>The notation used to specify the rectangular region determines the
     notation used in the longitude/latitude map vectors of the Grid returned by
@@ -638,66 +543,17 @@ selection_function_geogrid(int argc, BaseType *argv[], DDS &dds) throw(Error)
     for the grid() (see func_grid_select()) function.</li>
     </ul>
     
+    @note The geogrid() function is implemented as a 'BaseType function' which
+    means that there can be only one function per request and no other variables
+    may be named in the request.
+    
     @param argc The number of values in argv.
     @param argv An array of BaseType pointers which hold the arguments to be
     passed to geogrid. The arguments may be Strings, Integers, or Reals, subject
     to the above constraints.
     @param dds The DDS which holds the Grid. This DDS \e must include
     attributes.
-    @param ce The ConstraintEvaluator to use. */
-void 
-projection_function_geogrid(int argc, BaseType *argv[], DDS &dds,
-                            ConstraintEvaluator &ce) throw(Error)
-{
-    if (argc < 5)
-        throw Error("Wrong number of arguments to geogrid(), there must be at least five arguments,\n\
-        A Grid followed by the left-top and right-bottom points of a longitude-latitude bounding box.");
-
-    Grid *grid = dynamic_cast<Grid*>(argv[0]);
-    if (!grid)
-        throw Error("The first argument to geogrid() must be a Grid variable!");
-
-    // Mark this grid as part of the current projection.
-    if (!dds.mark(grid->name(), true))
-        throw Error("Could not find the variable: " + grid->name());
-        
-    // Build a GeoConstraint object. If there are no longitude/latitude maps
-    // then this constructor throws an Error.
-    GeoConstraint gc(grid, dds.get_dataset_name(), dds);
-    
-    // This sets the bounding box and modifies the maps to match the notation
-    // of the box (0/359 or -180/179)
-    double left = extract_double_value(argv[1]); 
-    double top = extract_double_value(argv[2]);
-    double right = extract_double_value(argv[3]);
-    double bottom = extract_double_value(argv[4]);
-    gc.set_bounding_box(left, top, right, bottom);
-
-    // Apply the constraint so that the  data in all parts of the Grid for
-    // which read_p() is true are fully set so that serialize() will work.
-    gc.apply_constraint_to_data();
-    
-    // Because the geogrid() reads the Grid data itself, set the read_p() 
-    // property to true. This will prevent the serialze() method from calling
-    // read(). Just after that point, serialize() will eval the selection
-    // clauses runnning selection_function_geogrid() which will read the data
-    // using a 'projection' that's the result of 'selection'. This is key
-    // because we want to use Vector::read() to read the Grid's array data
-    // so that we don't have to handle complex cases where the array has more
-    // than two dimensions. Use read() generally equates to using code in the
-    // data handler which is specific to the API/data-format.
-    argv[0]->set_read_p(true); 
-
-#if 0
-    // Add the selection function to the CE, this will the actual work.     
-    rvalue_list *args = new rvalue_list;
-    for (int i = 0; i < argc; ++i)
-        append_rvalue_list(args, new rvalue(argv[i]));
-        
-    ce.append_clause(selection_function_geogrid, args);
-#endif
-}
-/** The geogrid() function implemented as a BaseType function. */
+    @return The constrained and read Grid, ready to be sent. */
 BaseType *
 function_geogrid(int argc, BaseType *argv[], DDS &dds)
 {
@@ -734,8 +590,9 @@ function_geogrid(int argc, BaseType *argv[], DDS &dds)
     gc.set_bounding_box(left, top, right, bottom);
         
     gc.apply_constraint_to_data();
-     
+#if 0     
     l_grid->read(dds.get_dataset_name());
+#endif
     return l_grid;        
 }
 
@@ -743,9 +600,6 @@ void
 register_functions(ConstraintEvaluator &ce)
 {
     ce.add_function("grid", projection_function_grid);
-#if 0
-    ce.add_function("geogrid", projection_function_geogrid);
-#endif
     ce.add_function("geogrid", function_geogrid);
     ce.add_function("one", func_one);    
 }
