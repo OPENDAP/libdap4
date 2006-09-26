@@ -59,6 +59,8 @@ class CEFunctionsTest:public TestFixture {
     ConstraintEvaluator ce;
 
     DDS *geo_dds;
+    DDS *geo_dds_3d;
+    DDS *geo_dds_coads_lon;
 
   public:
      CEFunctionsTest() {
@@ -112,9 +114,6 @@ class CEFunctionsTest:public TestFixture {
             Array & lat1 = dynamic_cast < Array & >(**(sst1.map_begin() + 1));
             dods_float64 tmp_lat1[10] =
                 { 40, 30, 20, 10, 0, -10, -20, -30, -40, -50 };
-#if 0
-                { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
-#endif
             lat1.val2buf(tmp_lat1);
             lat1.set_read_p(true);
         
@@ -145,9 +144,6 @@ class CEFunctionsTest:public TestFixture {
             Array & lat2 = dynamic_cast < Array & >(**(sst2.map_begin() + 1));
             dods_float64 tmp_lat2[10] =
                 { 40, 30, 20, 10, 0, -10, -20, -30, -40, -50 };
-#if 0
-                { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
-#endif
             lat2.val2buf(tmp_lat2);
             lat2.set_read_p(true);
         
@@ -170,6 +166,85 @@ class CEFunctionsTest:public TestFixture {
 
             sst3.get_array()->val2buf((void*)tmp_data);
             sst3.get_array()->set_read_p(true);
+            
+            // Build the three dimensional grid
+            geo_dds_3d = new DDS(&btf);
+            geo_dds_3d->parse("unit-tests/ce-functions-testsuite/geo_grid_3d.dds");
+            // Load values into the grid variables
+            Grid & sst4 = dynamic_cast < Grid & >(*geo_dds_3d->var("SST4"));
+            
+            Array & time = dynamic_cast<Array&>(**sst4.map_begin());
+            dods_int32 tmp_time[3] = { 0, 1, 2 };
+            time.val2buf(tmp_time);
+            time.set_read_p(true);
+            
+            Array & lon4 = dynamic_cast < Array & >(**(sst4.map_begin()+1));
+            dods_float64 tmp_lon4[5] = { 160, 200, 240, 280, 320 };
+            lon4.val2buf(tmp_lon4);
+            lon4.set_read_p(true);
+        
+            Array & lat4 = dynamic_cast < Array & >(**(sst4.map_begin()+2));
+            dods_float64 tmp_lat4[5] = { 40, 30, 20, 10, 0 };
+            lat4.val2buf(tmp_lat4);
+            lat4.set_read_p(true);
+        
+            dods_byte tmp_data4[3][5][5] =
+                {
+                  { { 0, 1, 2, 3, 4},
+                    { 10,11,12,13,14},
+                    { 20,21,22,23,24},
+                    { 30,31,32,33,34}, 
+                    { 40,41,42,43,44}  },
+                  { { 100, 101, 102, 103, 104},
+                    { 110, 111, 112, 113, 114},
+                    { 120, 121, 122, 123, 124},
+                    { 130, 131, 132, 133, 134}, 
+                    { 140, 141, 142, 143, 144}  },  
+                  { { 200, 201, 202, 203, 204},
+                    { 210, 211, 212, 213, 214},
+                    { 220, 221, 222, 223, 224},
+                    { 230, 231, 232, 233, 234}, 
+                    { 240, 241, 242, 243, 244}  }  
+                };
+            sst4.get_array()->val2buf((void*)tmp_data4);
+            sst4.get_array()->set_read_p(true);
+            
+            DBG2(sst4.print_val(stderr));
+#if 1
+            geo_dds_coads_lon = new DDS(&btf);
+            geo_dds_coads_lon->parse("unit-tests/ce-functions-testsuite/geo_grid_coads_lon.dds");
+            Grid & sst5 = dynamic_cast < Grid & >(*geo_dds_coads_lon->var("SST5"));
+            Array & lon5 = dynamic_cast < Array & >(**sst5.map_begin());
+            dods_float64 tmp_lon5[15] =
+                { 41, 81, 121, 161, 201, 241, 281, 321, 361, 365, 370, 375, 380, 385, 390 };
+            lon5.val2buf(tmp_lon5);
+            lon5.set_read_p(true);
+        
+            Array & lat5 = dynamic_cast < Array & >(**(sst5.map_begin() + 1));
+            dods_float64 tmp_lat5[5] = { 20, 10, 0, -10, -20 };
+            lat5.val2buf(tmp_lat5);
+            lat5.set_read_p(true);
+        
+            dods_byte tmp_data5[15][5] =
+                  { { 0, 1, 2, 3, 4},
+                    { 10,11,12,13,14},
+                    { 20,21,22,23,24},
+                    { 30,31,32,33,34}, 
+                    { 40,41,42,43,44},
+                    { 100, 101, 102, 103, 104},
+                    { 110, 111, 112, 113, 114},
+                    { 120, 121, 122, 123, 124},
+                    { 130, 131, 132, 133, 134}, 
+                    { 140, 141, 142, 143, 144},  
+                    { 200, 201, 202, 203, 204},
+                    { 210, 211, 212, 213, 214},
+                    { 220, 221, 222, 223, 224},
+                    { 230, 231, 232, 233, 234}, 
+                    { 240, 241, 242, 243, 244}  } ;
+            sst5.get_array()->val2buf((void*)tmp_data5);
+            sst5.get_array()->set_read_p(true);
+            DBG2(sst5.print_val(stderr));
+#endif
         }
         
         catch(Error & e)
@@ -212,15 +287,17 @@ class CEFunctionsTest:public TestFixture {
     // See the comment at the function...
     CPPUNIT_TEST(reorder_data_longitude_axis_test);
 #endif
-    CPPUNIT_TEST(set_bounding_box_test1);        
-    CPPUNIT_TEST(set_bounding_box_test2);        
+    CPPUNIT_TEST(set_bounding_box_test1);
+    CPPUNIT_TEST(set_bounding_box_test2);
+    CPPUNIT_TEST(set_bounding_box_test3);
     CPPUNIT_TEST(apply_constriant_to_data_test);
+    CPPUNIT_TEST(apply_constriant_to_data_test2);
 
     CPPUNIT_TEST_SUITE_END();
         
     void no_arguments_test() {
         try {
-            function_grid(0, 0, *dds);
+            function_grid(0, 0, *dds, "");
             CPPUNIT_ASSERT(!"no_arguments_test() should have failed");
         }
         catch (Error &e) {
@@ -234,7 +311,7 @@ class CEFunctionsTest:public TestFixture {
             BaseType *argv[1];
             argv[0] = dds->var("a");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this");
-            function_grid(1, argv, *dds);
+            function_grid(1, argv, *dds, "");
             CPPUNIT_ASSERT("one_argument_not_a_grid_test() should work");
         }
         catch (Error &e) {
@@ -248,7 +325,7 @@ class CEFunctionsTest:public TestFixture {
             BaseType *argv[1];
             argv[0] = dds->var("lat");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this, although it is not a grid");
-            function_grid(1, argv, *dds);
+            function_grid(1, argv, *dds, "");
             CPPUNIT_ASSERT(!"one_argument_not_a_grid_test() should have failed");
         }
         catch (Error &e) {
@@ -266,7 +343,7 @@ class CEFunctionsTest:public TestFixture {
             string expression = "3<second<=7";
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
-            function_grid(2, argv, *dds);
+            function_grid(2, argv, *dds, "");
             CPPUNIT_ASSERT(!"map_not_in_grid_test() should have failed");
         }
         catch (Error &e) {
@@ -285,7 +362,7 @@ class CEFunctionsTest:public TestFixture {
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
             
-            Grid &g = dynamic_cast<Grid&>(*function_grid(2, argv, *dds));
+            Grid &g = dynamic_cast<Grid&>(*function_grid(2, argv, *dds, ""));
             
             //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
@@ -315,7 +392,7 @@ class CEFunctionsTest:public TestFixture {
             dynamic_cast<Str*>(argv[2])->set_read_p(true);
 
             //function_grid(3, argv, *dds);
-            Grid &g = dynamic_cast<Grid&>(*function_grid(3, argv, *dds));
+            Grid &g = dynamic_cast<Grid&>(*function_grid(3, argv, *dds, ""));
             //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
             CPPUNIT_ASSERT(m.dimension_start(m.dim_begin(), true) == 4);
@@ -338,7 +415,7 @@ class CEFunctionsTest:public TestFixture {
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
             
             //function_grid(2, argv, *dds);
-            Grid &g = dynamic_cast<Grid&>(*function_grid(2, argv, *dds));
+            Grid &g = dynamic_cast<Grid&>(*function_grid(2, argv, *dds, ""));
             //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
             CPPUNIT_ASSERT(m.dimension_start(m.dim_begin(), true) == 2);
@@ -367,7 +444,7 @@ class CEFunctionsTest:public TestFixture {
             dynamic_cast<Str*>(argv[2])->set_read_p(true);
 
             //function_grid(3, argv, *dds);
-            Grid &g = dynamic_cast<Grid&>(*function_grid(3, argv, *dds));
+            Grid &g = dynamic_cast<Grid&>(*function_grid(3, argv, *dds, ""));
             //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
             CPPUNIT_ASSERT(m.dimension_start(m.dim_begin(), true) == 2);
@@ -389,7 +466,7 @@ class CEFunctionsTest:public TestFixture {
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
             
-            function_grid(2, argv, *dds);
+            function_grid(2, argv, *dds, "");
 
             CPPUNIT_ASSERT(!"one_dim_grid_noninclusive_values_test() should not have worked");
         }
@@ -410,7 +487,7 @@ class CEFunctionsTest:public TestFixture {
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
             
-            function_grid(2, argv, *dds);
+            function_grid(2, argv, *dds, "");
 
             CPPUNIT_ASSERT(!"values_outside_map_range_test() should not have worked");
         }
@@ -438,6 +515,13 @@ class CEFunctionsTest:public TestFixture {
         CPPUNIT_ASSERT(g);
         GeoConstraint gc3(g, geo_dds->get_dataset_name(), *geo_dds);
         CPPUNIT_ASSERT(gc3.find_lat_lon_maps());
+        
+        g = dynamic_cast<Grid*>(geo_dds_3d->var("SST4"));
+        CPPUNIT_ASSERT(g);
+        GeoConstraint gc4(g, geo_dds_3d->get_dataset_name(), *geo_dds_3d);
+        CPPUNIT_ASSERT(gc4.find_lat_lon_maps());
+        CPPUNIT_ASSERT(gc4.d_latitude == *(g->map_begin()+2));
+        CPPUNIT_ASSERT(gc4.d_longitude == *(g->map_begin()+1));
         }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
@@ -487,6 +571,16 @@ class CEFunctionsTest:public TestFixture {
         
         gc2.find_longitude_indeces(200, 40.0, left_i, right_i);
         CPPUNIT_ASSERT(left_i == 5);
+        CPPUNIT_ASSERT(right_i == 1);
+
+        g = dynamic_cast<Grid*>(geo_dds_coads_lon->var("SST5"));
+        CPPUNIT_ASSERT(g);
+        GeoConstraint gc5(g, geo_dds_coads_lon->get_dataset_name(), *geo_dds_coads_lon);
+        
+        gc5.find_longitude_indeces(5.0, 81.0, left_i, right_i);
+        DBG(cerr << "left_i: " << left_i << endl);
+        DBG(cerr << "right_i: " << right_i << endl);
+        CPPUNIT_ASSERT(left_i == 9);
         CPPUNIT_ASSERT(right_i == 1);
     }
     
@@ -673,6 +767,26 @@ class CEFunctionsTest:public TestFixture {
         }
     }
     
+     void set_bounding_box_test3() {
+        try {
+        Grid *g3 = dynamic_cast<Grid*>(geo_dds_3d->var("SST4"));
+        CPPUNIT_ASSERT(g3);
+        GeoConstraint gc3(g3, geo_dds_3d->get_dataset_name(), *geo_dds_3d);
+        // SST1 with a constraint that uses neg_pos notation for lon
+        gc3.set_bounding_box(200.0, 30.0, 280.0, 20.0);
+        CPPUNIT_ASSERT(gc3.d_longitude_index_left == 1);
+        CPPUNIT_ASSERT(gc3.d_longitude_index_right == 3);
+
+        CPPUNIT_ASSERT(gc3.d_latitude_index_top == 1);
+        CPPUNIT_ASSERT(gc3.d_latitude_index_bottom == 2);
+
+        }
+        catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error in set_bounding_box_test.");
+        }
+    }
+    
     void apply_constriant_to_data_test() {
         try{
         Grid *g2 = dynamic_cast<Grid*>(geo_dds->var("SST1"));
@@ -720,6 +834,63 @@ class CEFunctionsTest:public TestFixture {
             CPPUNIT_ASSERT(!"apply_constriant_to_data_test caught Error");
         }          
     }
+    
+    void apply_constriant_to_data_test2() {
+        try{
+        Grid *g = dynamic_cast<Grid*>(geo_dds_3d->var("SST4"));
+        CPPUNIT_ASSERT(g);
+        GeoConstraint gc(g, geo_dds_3d->get_dataset_name(), *geo_dds_3d);
+        // SST1 with a constraint that uses neg_pos notation for lon
+        // This should result in a constraint from lon 1 to 5 and lat from
+        // 5 to 8
+        gc.set_bounding_box(200.0, 30.0, 280.0, 20.0);
+        
+        /* time[3] = { 0, 1, 2 };
+           lon4[5] = { 160, 200, 240, 280, 320 };
+           lat4[5] = { 40, 30, 20, 10, 0 };
+            dods_byte tmp_data4[3][5][5] =
+                {
+                  { { 0, 1, 2, 3, 4},
+                    { 10,11,12,13,14},
+                    { 20,21,22,23,24},
+                    { 30,31,32,33,34}, 
+                    { 40,41,42,43,44}  },
+                  { { 100, 101, 102, 103, 104},
+                    { 110, 111, 112, 113, 114},
+                    { 120, 121, 122, 123, 124},
+                    { 130, 131, 132, 133, 134}, 
+                    { 140, 141, 142, 143, 144}  },  
+                  { { 200, 201, 202, 203, 204},
+                    { 210, 211, 212, 213, 214},
+                    { 220, 221, 222, 223, 224},
+                    { 230, 231, 232, 233, 234}, 
+                    { 240, 241, 242, 243, 244}  }  
+                };
+        */
+        
+        gc.apply_constraint_to_data();
+
+        CPPUNIT_ASSERT(gc.d_latitude->length() == 2);
+        CPPUNIT_ASSERT(gc.d_longitude->length() == 3);
+
+        double *lats = 0;
+        double **lats_ptr = &lats;
+        gc.d_latitude->buf2val((void**)lats_ptr);
+        CPPUNIT_ASSERT(lats[0] == 30.0);
+        CPPUNIT_ASSERT(lats[1] == 20.0);
+        
+        double *lons = 0;
+        double **lons_ptr = &lons;
+        gc.d_longitude->buf2val((void**)lons_ptr);
+        CPPUNIT_ASSERT(lons[0] == 200.0);
+        CPPUNIT_ASSERT(lons[2] == 280.0);
+        }
+        catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"apply_constriant_to_data_test caught Error");
+        }          
+    }
+    
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(CEFunctionsTest);

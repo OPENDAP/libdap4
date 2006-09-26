@@ -65,7 +65,7 @@ typedef struct {
 // Try to make a single `selection function' type.
 
 typedef bool (*bool_func)(int argc, BaseType *argv[], DDS &dds);
-typedef BaseType *(*btp_func)(int argc, BaseType *argv[], DDS &dds);
+typedef BaseType *(*btp_func)(int argc, BaseType *argv[], DDS &dds, const string &dataset);
 typedef void (*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce);
 
 // INT_LIST and INT_LIST_LIST are used by the parser to store the array

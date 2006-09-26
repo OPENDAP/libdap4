@@ -129,8 +129,6 @@ private:
     Array::Dim_iter d_lon_grid_dim;
     
     bool d_bounding_box_set;
-    bool d_latitude_bb_set;
-    bool d_longitude_bb_set;
     
     Notation d_longitude_notation;
     
@@ -142,12 +140,13 @@ private:
     set<string> d_lat_names;
     set<string> d_lon_names;
 
-    GeoConstraint();                // Hidden default constructor.
-
-    GeoConstraint(const GeoConstraint &param); // Hide
-    GeoConstraint &operator=(GeoConstraint &rhs); // Hide
+    // Hide these three automatically provided methods
+    GeoConstraint();
+    GeoConstraint(const GeoConstraint &param);
+    GeoConstraint &operator=(GeoConstraint &rhs);
     
     bool find_lat_lon_maps() throw(Error);
+    
     Notation categorize_notation(double left, double right) const;
     void transform_constraint_to_pos_notation(double &left, double &right) const;
     void transform_longitude_to_pos_notation();
@@ -155,14 +154,15 @@ private:
     void find_longitude_indeces(double left, double right, 
                                 int &longitude_index_left, 
                                 int &longitude_index_right) const;
+    void set_bounding_box_longitude(double left, double right) throw(Error);
+    void reorder_longitude_map(int longitude_index_left);
+    void reorder_data_longitude_axis() throw(Error);
+                                
+    LatitudeSense categorize_latitude();
     void find_latitude_indeces(double top, double bottom, LatitudeSense sense, 
                                 int &latitude_index_top, 
                                 int &latitude_index_bottom) const;                                
-    void set_bounding_box_longitude(double left, double right) throw(Error);
-    LatitudeSense categorize_latitude();
     void set_bounding_box_latitude(double top, double bottom) throw(Error);
-    void reorder_longitude_map(int longitude_index_left);
-    void reorder_data_longitude_axis() throw(Error);
                                                                                              
     friend class CEFunctionsTest; // Unit tests
     
@@ -181,8 +181,6 @@ public:
         
     void set_bounding_box(double left, double top, double right, double bottom)
         throw (Error);
-        
-    void evaluate_grid_selection_expressions() throw(Error);
         
     void apply_constraint_to_data() throw(Error);
 };

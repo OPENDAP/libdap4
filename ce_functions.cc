@@ -42,7 +42,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include <vector>
 #include <algorithm>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Array.h"
@@ -356,7 +356,7 @@ func_length(int argc, BaseType *argv[], DDS &dds) throw(Error)
 /** This server-side function returns 1. 
     This function is mostly for testing purposes. */
 BaseType *
-func_one(int argc, BaseType *argv[], DDS &dds) throw(Error)
+func_one(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw(Error)
 {
     Byte *one = new Byte("one");
     (void) one->set_value(1);
@@ -530,7 +530,7 @@ apply_grid_selection_expressions(Grid *grid, vector<GSEClause *> clauses)
     @see geogrid() (func_geogrid_select) A function which has logic specific 
     to longitude/latitude selection. */
 BaseType *
-function_grid(int argc, BaseType *argv[], DDS &dds) throw(Error)
+function_grid(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw(Error)
 {
     DBG(cerr << "Entering function_grid..." << endl);
 
@@ -550,7 +550,7 @@ function_grid(int argc, BaseType *argv[], DDS &dds) throw(Error)
     // might be really large.
     Grid::Map_iter i = l_grid->map_begin();
     while (i != l_grid->map_end())
-        (*i++)->read(dds.get_dataset_name());
+        (*i++)->read(dataset);
 
     // argv[1..n] holds strings; each are little expressions to be parsed.
     // When each expression is parsed, the parser makes a new instance of
@@ -566,7 +566,7 @@ function_grid(int argc, BaseType *argv[], DDS &dds) throw(Error)
 
     apply_grid_selection_expressions(l_grid, clauses);
     
-    l_grid->read(dds.get_dataset_name());
+    l_grid->read(dataset);
     
     return l_grid;
 }
@@ -608,47 +608,71 @@ function_grid(int argc, BaseType *argv[], DDS &dds) throw(Error)
     attributes.
     @return The constrained and read Grid, ready to be sent. */
 BaseType *
-function_geogrid(int argc, BaseType *argv[], DDS &dds) throw(Error)
+function_geogrid(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw(Error)
 {
     if (argc < 5)
-        throw Error("Wrong number of arguments to geogrid(), there must be at least five arguments,\n\
+        throw
+            Error
+            ("Wrong number of arguments to geogrid(), there must be at least five arguments,\n\
         A Grid followed by the left-top and right-bottom points of a longitude-latitude bounding box.");
 
-    Grid *grid = dynamic_cast<Grid*>(argv[0]);
+    Grid *grid = dynamic_cast < Grid * >(argv[0]);
     if (!grid)
-        throw Error("The first argument to geogrid() must be a Grid variable!");
-        
-    if (grid->get_array()->dimensions() < 2 || grid->get_array()->dimensions() > 3)
-        throw Error("The geogrid() function works only with Grids of two or three dimensions.");
-#if 0
-    // Mark this grid as part of the current projection.
-    if (!dds.mark(grid->name(), true))
-        throw Error("Could not find the variable: " + grid->name());
-#endif        
+        throw
+            Error
+            ("The first argument to geogrid() must be a Grid variable!");
+
+    if (grid->get_array()->dimensions() < 2
+        || grid->get_array()->dimensions() > 3)
+        throw
+            Error
+            ("The geogrid() function works only with Grids of two or three dimensions.");
+
     // dup the grid before reading; DODSFilter::send_data() will free the variable
     // once it's done serializing.
-    Grid *l_grid = dynamic_cast<Grid*>(grid->ptr_duplicate());
+    Grid *l_grid = dynamic_cast < Grid * >(grid->ptr_duplicate());
     if (!l_grid)
         throw InternalErr(__FILE__, __LINE__, "Expected a Grid.");
-        
+
+    // Look for Grid Selection Expressions tacked onto the end of the BB
+    // specification. If there are any, evaluate them before evaluating the BB.
+    if (argc > 5) {
+        // Read the maps. Do this before calling parse_gse_expression(). Avoid
+        // reading the array until the constraints have been applied because it
+        // might be really large.
+        Grid::Map_iter i = l_grid->map_begin();
+        while (i != l_grid->map_end())
+            (*i++)->read(dataset);
+
+        // argv[5..n] holds strings; each are little Grid Selection Expressions 
+        // to be parsed and evaluated.
+        vector < GSEClause * >clauses;
+        gse_arg *arg = new gse_arg(l_grid);
+        for (int i = 5; i < argc; ++i) {
+            parse_gse_expression(arg, argv[i]);
+            clauses.push_back(arg->get_gsec());
+        }
+        delete arg;
+        arg = 0;
+
+        apply_grid_selection_expressions(l_grid, clauses);
+    }
     // Build a GeoConstraint object. If there are no longitude/latitude maps
-    // then this constructor throws an Error.
-    GeoConstraint gc(l_grid, dds.get_dataset_name(), dds);
-    
+    // then this constructor throws Error.
+    GeoConstraint gc(l_grid, dataset, dds);
+
     // This sets the bounding box and modifies the maps to match the notation
     // of the box (0/359 or -180/179)
-    double left = extract_double_value(argv[1]); 
+    double left = extract_double_value(argv[1]);
     double top = extract_double_value(argv[2]);
     double right = extract_double_value(argv[3]);
     double bottom = extract_double_value(argv[4]);
     gc.set_bounding_box(left, top, right, bottom);
-        
+
     // This also reads all of the data into the grid variable
     gc.apply_constraint_to_data();
-#if 0     
-    l_grid->read(dds.get_dataset_name());
-#endif
-    return l_grid;        
+
+    return l_grid;
 }
 
 void

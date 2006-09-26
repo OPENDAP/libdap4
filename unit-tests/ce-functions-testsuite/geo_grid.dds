@@ -25,6 +25,4 @@ Dataset {
         Float64 lon[10];
         Float64 lat[10];
     } SST3;
-    
-    
 } geo_grid;

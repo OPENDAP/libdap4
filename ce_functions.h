@@ -50,9 +50,9 @@ namespace libdap {
     void projection_function_grid(int argc, BaseType *argv[], DDS &dds,
                                   ConstraintEvaluator &) throw(Error);
 #endif                                  
-    BaseType *func_one(int argc, BaseType *argv[], DDS &dds) throw(Error);                             
-    BaseType *function_grid(int argc, BaseType *argv[], DDS &dds) throw(Error);
-    BaseType *function_geogrid(int argc, BaseType *argv[], DDS &dds) throw(Error);
+    BaseType *func_one(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw(Error);                             
+    BaseType *function_grid(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw(Error);
+    BaseType *function_geogrid(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw(Error);
     
     void register_functions(ConstraintEvaluator &ce);
 }

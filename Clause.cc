@@ -191,7 +191,7 @@ Clause::value(const string &dataset, DDS &dds)
     pointer.
     This method must only be evaluated for clauses with relational
     expressions or boolean functions.
-    @param dataset This is passed to the rvalue::bvalue() method.
+    @param dataset This is passed to the function.
     @param dds Use variables from this DDS when evaluating the
     expression
     @return True if the the BaseType pointer is not null, false otherwise.
@@ -199,22 +199,28 @@ Clause::value(const string &dataset, DDS &dds)
     boolean value. Not that this method itself \e does return a
     boolean value. */
 bool 
-Clause::value(const string &, DDS &dds, BaseType **value) 
+Clause::value(const string &dataset, DDS &dds, BaseType **value) 
 {
     assert(OK());
     assert(_bt_func);
 
     if (_bt_func) {
-        // build_btp_args() is a function defined in RValue.cc. It reads
-        // (using BaseType::read()) values as it builds the arguments.
+        // build_btp_args() is a function defined in RValue.cc. It no longer 
+        // reads the values as it builds the arguments, that is no left up
+        // to the functions themselves. 9/25/06 jhrg
 	BaseType **argv = build_btp_args(_args, dds);
 
-	*value = (*_bt_func)(_argc, argv, dds);
+	*value = (*_bt_func)(_argc, argv, dds, dataset);
 	delete[] argv;		// Cache me!
 	argv = 0;
 
 	if (*value) {
+#if 0
+            // This was removed because the older version of the evaluator
+            // did read all of the variables. The newer version (see the
+            // comment in RValue.cc) only those parts that are needed.
 	    (*value)->set_read_p(true);
+#endif
 	    (*value)->set_send_p(true);
 	    return true;
 	}

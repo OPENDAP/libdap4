@@ -44,6 +44,8 @@
 #endif
 
 #include "ce_functions.h"
+#include "debug.h"
+
 #include "TestArray.h"
 #include "TestCommon.h"
 
@@ -162,14 +164,14 @@ TestArray::constrained_matrix(const string &dataset, char *constrained_array)
     Dim_iter Y = dim_begin();    // X dimension
     Dim_iter X = Y+1;
 
-    cerr << "dimension_start(Y): " << dimension_start(Y) << endl;
-    cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl;
-    cerr << "dimension_start(X): " << dimension_start(X) << endl;
-    cerr << "dimension_stop(X): " << dimension_stop(X) << endl;
+    DBG(cerr << "dimension_start(Y): " << dimension_start(Y) << endl);
+    DBG(cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl);
+    DBG(cerr << "dimension_start(X): " << dimension_start(X) << endl);
+    DBG(cerr << "dimension_stop(X): " << dimension_stop(X) << endl);
     
     for( int y = dimension_start(Y); y <= dimension_stop(Y); y += dimension_stride(Y) ) {
         for( int x = dimension_start(X); x <= dimension_stop(X); x += dimension_stride(X) ) {
-            cerr << "whole[" << y << "][" << x << "]: " << y*dimension_size(Y, false)+x << endl;
+            DBG(cerr << "whole[" << y << "][" << x << "]: " << y*dimension_size(Y, false)+x << endl);
             *constrained_array++ = *(whole_array + (y*dimension_size(Y, false)) + x);
         }
     }

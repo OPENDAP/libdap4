@@ -131,7 +131,7 @@ rvalue::bvalue(const string &dataset, DDS &dds)
 	// If func is true, then args must be set. See the constructor.
 	// 12/23/04 jhrg
 	BaseType **argv = build_btp_args(args, dds);
-	BaseType *ret_val = (*func)(args->size(), argv, dds);
+	BaseType *ret_val = (*func)(args->size(), argv, dds, dataset);
 	delete[] argv;
 	return ret_val;
     }

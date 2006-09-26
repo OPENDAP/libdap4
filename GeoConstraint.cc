@@ -65,7 +65,8 @@ using namespace libdap;
     @param value A value-result parameter. */
 static void remove_quotes(string & value)
 {
-    if (!value.empty() && value[0] == '"' && value[value.length() - 1] == '"') {
+    if (!value.empty() && value[0] == '"'
+        && value[value.length() - 1] == '"') {
         value.erase(0, 1);
         value.erase(value.length() - 1);
     }
@@ -77,8 +78,8 @@ class is_prefix {
   private:
     string s;
   public:
-    is_prefix(const string &in) : s(in) {}
-    bool operator()(const string &prefix) {
+    is_prefix(const string & in):s(in) {
+    } bool operator() (const string & prefix) {
         return s.find(prefix) != string::npos;
     }
 };
@@ -92,13 +93,14 @@ class is_prefix {
     @param var_units The value of the 'units' attribute for this variable.
     @param var_name The name of the variable.
     @return True if the units_value matches any of the accepted attributes
-    exactly or if the name_value starts with any of the accepted prefixes */ 
+    exactly or if the name_value starts with any of the accepted prefixes */
 static bool
-unit_or_name_match(set<string> units, set<string> names, 
-                   const string &var_units, const string &var_name)
+unit_or_name_match(set < string > units, set < string > names,
+                   const string & var_units, const string & var_name)
 {
-    return ( units.find(var_units) != units.end()
-             || find_if(names.begin(), names.end(), is_prefix(var_name)) != names.end() );
+    return (units.find(var_units) != units.end()
+            || find_if(names.begin(), names.end(),
+                       is_prefix(var_name)) != names.end());
 }
 
 /** A private method called by the constructor that searches for latitude
@@ -128,11 +130,12 @@ bool GeoConstraint::find_lat_lon_maps()throw(Error)
         string units_value = (*m)->get_attr_table().get_attr("units");
         remove_quotes(units_value);
         string map_name = (*m)->name();
-        
+
         // The 'units' attribute must match exactly; the name only needs to
         // match a prefix.
-        if (!d_latitude 
-            && unit_or_name_match(d_coards_lat_units, d_lat_names, units_value, map_name)) {
+        if (!d_latitude
+            && unit_or_name_match(d_coards_lat_units, d_lat_names,
+                                  units_value, map_name)) {
 
             // Set both d_latitude (a pointer to the real map vector) and
             // d_lat, a vector of the values represented as doubles. It's easier
@@ -143,10 +146,7 @@ bool GeoConstraint::find_lat_lon_maps()throw(Error)
             d_latitude = dynamic_cast < Array * >(*m);
             if (!d_latitude->read_p())
                 d_latitude->read(d_dataset);
-#if 0
-                throw InternalErr(__FILE__, __LINE__,
-                                  "Grid latitude map not read.");
-#endif
+
             d_lat = extract_double_array(d_latitude);   // throws Error
             d_lat_length = d_latitude->length();
 
@@ -154,15 +154,13 @@ bool GeoConstraint::find_lat_lon_maps()throw(Error)
         }
 
         if (!d_longitude        // && !units_value.empty() 
-            && unit_or_name_match(d_coards_lon_units, d_lon_names, units_value, map_name)) {
+            && unit_or_name_match(d_coards_lon_units, d_lon_names,
+                                  units_value, map_name)) {
 
             d_longitude = dynamic_cast < Array * >(*m);
             if (!d_longitude->read_p())
                 d_longitude->read(d_dataset);
-#if 0
-                throw InternalErr(__FILE__, __LINE__,
-                                  "Grid longitude map not read.");
-#endif
+
             d_lon = extract_double_array(d_longitude);
             d_lon_length = d_longitude->length();
 
@@ -191,7 +189,8 @@ bool GeoConstraint::find_lat_lon_maps()throw(Error)
     @param right The right side of the boubding box
     @return The notation (pos or neg_pos) */
 GeoConstraint::Notation
-    GeoConstraint::categorize_notation(double left, double right) const
+    GeoConstraint::categorize_notation(double left,
+                                       double right) const
 {
     return (left < 0 || right < 0) ? neg_pos : pos;
 }
@@ -201,7 +200,8 @@ GeoConstraint::Notation
    @param left Value-result parameter; the left side of the bounding box
    @parm right Value-result parameter; the right side of the bounding box */
 void
-GeoConstraint::transform_constraint_to_pos_notation(double &left, double &right) const 
+GeoConstraint::transform_constraint_to_pos_notation(double &left,
+                                                    double &right) const
 {
     if (left < 0 || right < 0) {        // double check
         left += 180;
@@ -211,9 +211,8 @@ GeoConstraint::transform_constraint_to_pos_notation(double &left, double &right)
 
 /** Given that the Grid has a longitude map that uses the 'neg_pos' notation,
     transform it to the 'pos' notation. This method modifies the d_longitude
-    Array. */ 
-void
-GeoConstraint::transform_longitude_to_pos_notation()
+    Array. */
+void GeoConstraint::transform_longitude_to_pos_notation()
 {
     // Assume earlier logic is correct (since the test is expensive)
     // for each value, add 180
@@ -243,25 +242,86 @@ void GeoConstraint::transform_longitude_to_neg_pos_notation()
     index. */
 void GeoConstraint::find_longitude_indeces(double left, double right,
                                            int &longitude_index_left,
-                                           int &longitude_index_right) const
+                                           int &longitude_index_right)
+    const
 {
     // Use all values 'modulo 360' to take into account the cases where the 
     // constraint and/or the longitude vector are given using values greater
     // than 360 (i.e., when 380 is used to mean 20).
     double t_left = fmod(left, 360.0);
     double t_right = fmod(right, 360.0);
-
-    // Scan from the left 
+#if 1
+    // Find the place where 'longitude starts.' That is, what value of the
+    // index 'i' corresponds to the smallest value of d_lon.
     int i = 0;
-    while (i < d_lon_length && fmod(d_lon[i], 360.0) < t_left)
+    int smallest_lon_index = 0;
+    double smallest_lon = fmod(d_lon[smallest_lon_index], 360.0);
+    while (i < d_lon_length - 1) {
+        if (smallest_lon > fmod(d_lon[i], 360.0)) {
+            smallest_lon_index = i;
+            smallest_lon = fmod(d_lon[smallest_lon_index], 360.0);
+        }
         ++i;
+    }
+    DBG(cerr << "smallest_lon_index: " << smallest_lon_index << endl);
+#endif
+
+    // Scan from the index of the smallest value looking for the place where
+    // the value is greater than or equal to the left most point of the bounding
+    // box.
+    i = smallest_lon_index;
+    bool done = false;
+    DBG(cerr << "fmod(d_lon[" << i << "], 360.0) < t_left: " << fmod(d_lon[i], 360.0)
+             << " < " << t_left << endl);
+    while (!done && fmod(d_lon[i], 360.0) < t_left) {
+        DBG(cerr << "fmod(d_lon[" << i << "], 360.0) < t_left: " << fmod(d_lon[i], 360.0)
+                 << " < " << t_left << endl);
+        i = ++i % d_lon_length;
+        if (i == smallest_lon_index)
+            done = true;
+    }
+    longitude_index_left = i;
+
+    // Assume the vector is cirular --> the largest value is next to the 
+    // smallest.
+    int largest_lon_index = (smallest_lon_index-1 + d_lon_length) % d_lon_length;
+    i = largest_lon_index;
+    done = false;
+    DBG(cerr << "fmod(d_lon[" << i << "], 360.0) > t_right: " << fmod(d_lon[i], 360.0)
+             << " > " << t_right << endl);
+    while (!done && fmod(d_lon[i], 360.0) > t_right) {
+        DBG(cerr << "fmod(d_lon[" << i << "], 360.0) < t_left: " << fmod(d_lon[i], 360.0)
+                 << " < " << t_left << endl);
+        i = --i % d_lon_length;
+        if (i == largest_lon_index)
+            done = true;
+    }
+    longitude_index_right = i;
+    
+#if 0        
+    // Scan from the left 
+    i = 0;
+    DBG(cerr << "fmod(d_lon[" << i << "], 360.0) < t_left: " << fmod(d_lon[i], 360.0)
+             << " < " << t_left << endl);
+             
+    while (i < d_lon_length - 1 && fmod(d_lon[i], 360.0) < t_left) {
+        DBG(cerr << "fmod(d_lon[" << i << "], 360.0) < t_left: " << fmod(d_lon[i], 360.0)
+                 << " < " << t_left << endl);
+        ++i;
+    }
     longitude_index_left = i;
 
     // and from the right
     i = d_lon_length - 1;
-    while (i > -1 && fmod(d_lon[i], 360) > t_right)
+    DBG(cerr << "fmod(d_lon[" << i << "], 360.0) > t_right: " << fmod(d_lon[i], 360.0)
+             << " > " << t_right << endl);
+    while (i > -1 && fmod(d_lon[i], 360) > t_right) {
+        DBG(cerr << "fmod(d_lon[" << i << "], 360.0) > t_right: " << fmod(d_lon[i], 360.0)
+                 << " > " << t_right << endl);
         --i;
+    }
     longitude_index_right = i;
+#endif
 }
 
 /** Scan from the top to the bottom, and the bottom to the top, looking
@@ -281,36 +341,23 @@ void GeoConstraint::find_latitude_indeces(double top, double bottom,
 {
     // Scan from the top down
     int i = 0;
-
-#if 0
-    cerr << "top: " << top << endl;
-    int p = 0;
-    while (p < d_lat_length)
-        cerr << "d_lat[" << p << "]: " << d_lat[p++] << endl;
-#endif
     if (sense == normal)
-        while (i < d_lat_length && d_lat[i] > top)
+        while (i < d_lat_length-1 && d_lat[i] > top)
             ++i;
     else
-        while (i < d_lat_length && d_lat[i] < top)
+        while (i < d_lat_length-1 && d_lat[i] < top)
             ++i;
 
     latitude_index_top = i;
 
     // and from the bottom up
     i = d_lat_length - 1;
-#if 0
-    cerr << "bottom: " << bottom << endl;
-    p = d_lat_length - 1;
-    while (p > 0)
-        cerr << "d_lat[" << p << "]: " << d_lat[p--] << endl;
-#endif
     if (sense == normal)
         while (i > 0 && d_lat[i] < bottom)
-           --i;
+            --i;
     else
         while (i > 0 && d_lat[i] > bottom)
-           --i;
+            --i;
 
     latitude_index_bottom = i;
 }
@@ -318,8 +365,7 @@ void GeoConstraint::find_latitude_indeces(double top, double bottom,
 /** Take a look at the latitude vector values and record whether the world is 
     normal or upside down.
     @return normal or inverted. */
-GeoConstraint::LatitudeSense 
-GeoConstraint::categorize_latitude()
+GeoConstraint::LatitudeSense GeoConstraint::categorize_latitude()
 {
     return d_lat[0] >= d_lat[d_lat_length - 1] ? normal : inverted;
 }
@@ -331,8 +377,8 @@ GeoConstraint::categorize_latitude()
     
     @param top The top side of the bounding box, in degress
     @param bottom The bottom side */
-void 
-GeoConstraint::set_bounding_box_latitude(double top, double bottom) throw(Error)
+void GeoConstraint::set_bounding_box_latitude(double top,
+                                              double bottom) throw(Error)
 {
     // Record the 'sense' of the latitude for use here and later on.
     d_latitude_sense = categorize_latitude();
@@ -345,28 +391,8 @@ GeoConstraint::set_bounding_box_latitude(double top, double bottom) throw(Error)
                           d_latitude_index_top, d_latitude_index_bottom);
 
     DBG(cerr << "d_latitude_index_top: " << d_latitude_index_top << endl);
-    DBG(cerr << "d_latitude_index_bottom: " << d_latitude_index_bottom << endl);
-    
-    d_latitude_bb_set = true;
-#if 0
-    // Apply constraint, stride is always one and maps only have one dimension
-    Array::Dim_iter fd = d_latitude->dim_begin();
-    if (d_latitude_sense == normal) {
-        d_latitude->add_constraint(fd, d_latitude_index_top, 1,
-                                   d_latitude_index_bottom);
-        d_grid->get_array()->add_constraint(d_lat_grid_dim,
-                                                           d_latitude_index_top,
-                                                           1,
-                                                           d_latitude_index_bottom);
-    } else {                    // inverted
-        d_latitude->add_constraint(fd, d_latitude_index_bottom, 1,
-                                   d_latitude_index_top);
-        d_grid->get_array()->add_constraint(d_lat_grid_dim,
-                                                           d_latitude_index_bottom,
-                                                           1,
-                                                           d_latitude_index_top);
-    }
-#endif
+    DBG(cerr << "d_latitude_index_bottom: " << d_latitude_index_bottom <<
+        endl);
 }
 
 static void
@@ -424,10 +450,8 @@ void GeoConstraint::reorder_data_longitude_axis() throw(Error)
     // to the right side of the array. Use read() to get the data.
     Array & a = *d_grid->get_array();
 
-    cerr << "d_longitude_index_left: " << d_longitude_index_left << endl
-         << "d_lon_length: " << d_lon_length << endl;
-    a.add_constraint(d_lon_grid_dim, d_longitude_index_left, 1, d_lon_length);
-    cerr << "After first constraint" << endl;
+    a.add_constraint(d_lon_grid_dim, d_longitude_index_left, 1,
+                     d_lon_length);
     a.set_read_p(false);
     a.read(d_dataset);
     char *left_data = 0;
@@ -437,7 +461,6 @@ void GeoConstraint::reorder_data_longitude_axis() throw(Error)
     // goes from the left edge of the array to the right index and read those
     // data.
     a.add_constraint(d_lon_grid_dim, 0, 1, d_longitude_index_right);
-    cerr << "After second constraint." << endl;
     a.set_read_p(false);
     a.read(d_dataset);
     char *right_data = 0;
@@ -477,10 +500,6 @@ void GeoConstraint::reorder_data_longitude_axis() throw(Error)
 void GeoConstraint::set_bounding_box_longitude(double left,
                                                double right) throw(Error)
 {
-#if 0
-    if (!d_latitude_bb_set)
-        throw InternalErr(__FILE__, __LINE__, "Must call set the latitude BB before longitude.");
-#endif
     // Categorize the notation used by the bounding box (0/359 or -180/179).
     d_longitude_notation = categorize_notation(left, right);
 
@@ -498,61 +517,8 @@ void GeoConstraint::set_bounding_box_longitude(double left,
         transform_longitude_to_pos_notation();
 
     // Find the longitude map indeces that correspond to the bounding box.
-    find_longitude_indeces(left, right, d_longitude_index_left, d_longitude_index_right);
-
-#if 0 
-    // Does the longitude constraint cross the edge of the longitude vector?
-    // If so, reorder the grid's data (array), longitude map vector and the 
-    // local vector of longitude data used for computation.
-    if (d_longitude_index_left > d_longitude_index_right) {
-        reorder_longitude_map(d_longitude_index_left);
-
-        // If the longitude constraint is 'split', join the two parts, reload
-        // the data into the Grid's Array and make sure the Array is marked as
-        // already read. This should be true for the whole Grid, but if some
-        // future modification changes that, the array will be covered here.
-        // Note that the following method only reads the data out and stores
-        // it in this object after joining the two parts. The method
-        // apply_constraint_to_data() transfers the data back from the this
-        // objet to the DAP Grid variable.
-        reorder_data_longitude_axis();
-        d_grid->get_array()->set_read_p(true);
-
-        // alter the indices; the left index has now been moved to 0, and the right
-        // index is now at lon_vector_length-left+right.
-        d_longitude_index_right =
-            d_lon_length - 1 - d_longitude_index_left + d_longitude_index_right;
-        d_longitude_index_left = 0;
-    } else {
-        // If the longitude constraint is not split, let serialize() and read()
-        // handle getting the data.
-        d_grid->get_array()->set_read_p(false);
-    }
-    // If the constraint used the -180/179 (neg_pos) notation, transform
-    // the longitude map s it uses the -180/179 notation. Note that at this
-    // point, d_longitude always uses the pos notation because of the earlier
-    // conditional transforamtion. 
-
-    // Do this _before_ applying the constraint since set_array_using_double()
-    // tests the array length using Vector::length() and that method returns 
-    // the length _as constrained_. We want to move all of the longitude 
-    // values from d_lon back into the map, not just the number that will be
-    // sent (although an optimization might do this, it's hard to imagine 
-    // it would gain much).
-    if (d_longitude_notation == neg_pos) {
-        transform_longitude_to_neg_pos_notation();
-    }
-    // Apply constraint, stride is always one and maps only have one dimension
-    Array::Dim_iter fd = d_longitude->dim_begin();
-    d_longitude->add_constraint(fd, d_longitude_index_left, 1,
-                                d_longitude_index_right);
-
-    d_grid->get_array()->add_constraint(d_lon_grid_dim,
-                                                       d_longitude_index_left,
-                                                       1,
-                                                       d_longitude_index_right);
-#endif
-    d_longitude_bb_set = true;
+    find_longitude_indeces(left, right, d_longitude_index_left,
+                           d_longitude_index_right);
 }
 
 /** @brief Initialize GeoConstraint with a Grid.
@@ -565,9 +531,9 @@ void GeoConstraint::set_bounding_box_longitude(double left,
 GeoConstraint::GeoConstraint(Grid * grid, const string & ds_name,
                              const DDS & dds) throw(Error)
 :d_grid(grid), d_dataset(ds_name), d_dds(dds), d_grid_array_data(0),
-d_grid_array_data_size(0), d_latitude(0), d_longitude(0), d_lat(0), d_lon(0),
-d_bounding_box_set(false), d_latitude_bb_set(false),
-d_longitude_bb_set(false), d_latitude_sense(normal), d_longitude_notation(pos)
+d_grid_array_data_size(0), d_latitude(0), d_longitude(0), d_lat(0),
+d_lon(0), d_bounding_box_set(false), d_latitude_sense(normal),
+d_longitude_notation(pos)
 {
     // Build sets of attribute values for easy searching. Maybe overkill???
     d_coards_lat_units.insert("degrees_north");
@@ -593,22 +559,6 @@ d_longitude_bb_set(false), d_latitude_sense(normal), d_longitude_notation(pos)
                     "' does not have identifiable latitude/longitude map vectors.");
 }
 
-void GeoConstraint::evaluate_grid_selection_expressions() throw(Error)
-{
-#if 0
-    // Modify argv[] so that it can be passed to projection_function_grid()
-    // to handle any remaining 'relational expressions.'
-
-    // Reject if any of the expressions name the lat or lon maps.
-    BaseType **argv2 = new BaseType *[argc - 4];
-    argv2[0] = argv[0];
-    for (int i = 1; i < argc - 4; ++i)
-        argv2[i] = argv2[i + 4];
-
-    projection_function_grid(argc - 4, argv2, dds, ce);
-#endif
-}
-
 /** Set the bounding box for this constraint. After calling this method the
     Grid or Array variable passed to this object will be constrained by
     the given longitude/latitude box. This may read the grid's array data
@@ -624,17 +574,25 @@ void GeoConstraint::evaluate_grid_selection_expressions() throw(Error)
     @param top The top
     @param bottom The bottom */
 void GeoConstraint::set_bounding_box(double left, double top,
-                                     double right, double bottom) throw(Error)
+                                     double right,
+                                     double bottom) throw(Error)
 {
     // Ensure this method is called only once. What about pthreads?
     // The method Array::reset_constraint() might make this so it could be
     // called more than once. jhrg 8/30/06
     if (d_bounding_box_set)
-        throw InternalErr("It is not possible to register more than one geo constraint on a grid.");
+        throw
+            InternalErr
+            ("It is not possible to register more than one geo constraint on a grid.");
 
     set_bounding_box_latitude(top, bottom);
     set_bounding_box_longitude(left, right);
     
+    DBG(cerr << "Bounding box (tlbr): " << d_latitude_index_top << ", " 
+             << d_longitude_index_left << ", " 
+             << d_latitude_index_bottom << ", "
+             << d_longitude_index_right << endl);
+
     d_bounding_box_set = true;
 }
 
@@ -660,11 +618,12 @@ void GeoConstraint::set_bounding_box(double left, double top,
     hold the correct values and mark the Grid's array and lat/lon maps as
     read. */
 
-void
-GeoConstraint::apply_constraint_to_data() throw(Error)
+void GeoConstraint::apply_constraint_to_data() throw(Error)
 {
-    if( !(d_latitude_bb_set && d_longitude_bb_set) )
-        throw InternalErr("The Latitude and Longitude constraints must be set before calling apply_constraint_to_data().");
+    if (!d_bounding_box_set)
+        throw
+            InternalErr
+            ("The Latitude and Longitude constraints must be set before calling apply_constraint_to_data().");
 
     Array::Dim_iter fd = d_latitude->dim_begin();
     if (d_latitude_sense == inverted) {
@@ -672,14 +631,13 @@ GeoConstraint::apply_constraint_to_data() throw(Error)
         d_latitude_index_top = d_latitude_index_bottom;
         d_latitude_index_bottom = tmp;
     }
-
-    // Constraint the lat vector and lat dim of the array
+    // Constrain the lat vector and lat dim of the array
     d_latitude->add_constraint(fd, d_latitude_index_top, 1,
                                d_latitude_index_bottom);
     d_grid->get_array()->add_constraint(d_lat_grid_dim,
                                         d_latitude_index_top, 1,
                                         d_latitude_index_bottom);
-#if 1
+
     // Does the longitude constraint cross the edge of the longitude vector?
     // If so, reorder the grid's data (array), longitude map vector and the 
     // local vector of longitude data used for computation.
@@ -695,15 +653,16 @@ GeoConstraint::apply_constraint_to_data() throw(Error)
         // apply_constraint_to_data() transfers the data back from the this
         // objet to the DAP Grid variable.
         reorder_data_longitude_axis();
-        
+
         // Now the data are all in local storage
 
         // alter the indices; the left index has now been moved to 0, and the right
         // index is now at lon_vector_length-left+right.
-        d_longitude_index_right = d_lon_length - 1 - d_longitude_index_left + d_longitude_index_right;
+        d_longitude_index_right =
+            d_lon_length - 1 - d_longitude_index_left +
+            d_longitude_index_right;
         d_longitude_index_left = 0;
-    } 
-    
+    }
     // If the constraint used the -180/179 (neg_pos) notation, transform
     // the longitude map s it uses the -180/179 notation. Note that at this
     // point, d_longitude always uses the pos notation because of the earlier
@@ -718,32 +677,33 @@ GeoConstraint::apply_constraint_to_data() throw(Error)
     if (d_longitude_notation == neg_pos) {
         transform_longitude_to_neg_pos_notation();
     }
-    // Apply constraint, stride is always one and maps only have one dimension
-    /*Array::Dim_iter*/ fd = d_longitude->dim_begin();
+    // Apply constraint; stride is always one and maps only have one dimension
+    fd = d_longitude->dim_begin();
     d_longitude->add_constraint(fd, d_longitude_index_left, 1,
                                 d_longitude_index_right);
 
     d_grid->get_array()->add_constraint(d_lon_grid_dim,
                                         d_longitude_index_left,
-                                        1,
-                                        d_longitude_index_right);
-#endif
+                                        1, d_longitude_index_right);
+
     // Transfer values from the local lat vector to the Grid's                                   
     set_array_using_double(d_latitude, &d_lat[d_latitude_index_top],
-                           d_latitude_index_bottom - d_latitude_index_top + 1);
+                           d_latitude_index_bottom - d_latitude_index_top +
+                           1);
 
 
     set_array_using_double(d_longitude, &d_lon[d_longitude_index_left],
-                           d_longitude_index_right - d_longitude_index_left +
-                           1);
+                           d_longitude_index_right -
+                           d_longitude_index_left + 1);
 
     // ... and then the Grid's array if it has been read.
     if (d_grid_array_data) {
         int size = d_grid->get_array()->val2buf(&d_grid_array_data);
         if (size != d_grid_array_data_size)
-            throw InternalErr("Expected data size not copied to the Grid's buffer.");
+            throw
+                InternalErr
+                ("Expected data size not copied to the Grid's buffer.");
         d_grid->set_read_p(true);
-    }
-    else 
+    } else
         d_grid->get_array()->read(d_dataset);
 }
