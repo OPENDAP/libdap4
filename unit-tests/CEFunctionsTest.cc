@@ -29,7 +29,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#define DODS_DEBUG 
+//#define DODS_DEBUG 
 
 #include "BaseType.h"
 #include "Int32.h"
@@ -210,7 +210,7 @@ class CEFunctionsTest:public TestFixture {
             sst4.get_array()->set_read_p(true);
             
             DBG2(sst4.print_val(stderr));
-#if 1
+
             geo_dds_coads_lon = new DDS(&btf);
             geo_dds_coads_lon->parse("unit-tests/ce-functions-testsuite/geo_grid_coads_lon.dds");
             Grid & sst5 = dynamic_cast < Grid & >(*geo_dds_coads_lon->var("SST5"));
@@ -244,7 +244,6 @@ class CEFunctionsTest:public TestFixture {
             sst5.get_array()->val2buf((void*)tmp_data5);
             sst5.get_array()->set_read_p(true);
             DBG2(sst5.print_val(stderr));
-#endif
         }
         
         catch(Error & e)

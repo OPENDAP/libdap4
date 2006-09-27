@@ -43,7 +43,7 @@ static char id[] not_used =
 #include <iostream>
 #include <sstream>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "debug.h"
 #include "dods-datatypes.h"
@@ -242,17 +242,18 @@ void GeoConstraint::transform_longitude_to_neg_pos_notation()
     index. */
 void GeoConstraint::find_longitude_indeces(double left, double right,
                                            int &longitude_index_left,
-                                           int &longitude_index_right)
-    const
+                                           int &longitude_index_right) const
 {
     // Use all values 'modulo 360' to take into account the cases where the 
     // constraint and/or the longitude vector are given using values greater
     // than 360 (i.e., when 380 is used to mean 20).
     double t_left = fmod(left, 360.0);
     double t_right = fmod(right, 360.0);
-#if 1
+
     // Find the place where 'longitude starts.' That is, what value of the
-    // index 'i' corresponds to the smallest value of d_lon.
+    // index 'i' corresponds to the smallest value of d_lon. Why we do this:
+    // Some data sources use offset longitude axes so that the 'seam' is
+    // shifted to a place other than the date line.
     int i = 0;
     int smallest_lon_index = 0;
     double smallest_lon = fmod(d_lon[smallest_lon_index], 360.0);
@@ -263,18 +264,17 @@ void GeoConstraint::find_longitude_indeces(double left, double right,
         }
         ++i;
     }
-    DBG(cerr << "smallest_lon_index: " << smallest_lon_index << endl);
-#endif
+    DBG2(cerr << "smallest_lon_index: " << smallest_lon_index << endl);
 
     // Scan from the index of the smallest value looking for the place where
     // the value is greater than or equal to the left most point of the bounding
     // box.
     i = smallest_lon_index;
     bool done = false;
-    DBG(cerr << "fmod(d_lon[" << i << "], 360.0) < t_left: " << fmod(d_lon[i], 360.0)
+    DBG2(cerr << "fmod(d_lon[" << i << "], 360.0) < t_left: " << fmod(d_lon[i], 360.0)
              << " < " << t_left << endl);
     while (!done && fmod(d_lon[i], 360.0) < t_left) {
-        DBG(cerr << "fmod(d_lon[" << i << "], 360.0) < t_left: " << fmod(d_lon[i], 360.0)
+        DBG2(cerr << "fmod(d_lon[" << i << "], 360.0) < t_left: " << fmod(d_lon[i], 360.0)
                  << " < " << t_left << endl);
         i = ++i % d_lon_length;
         if (i == smallest_lon_index)
@@ -285,43 +285,20 @@ void GeoConstraint::find_longitude_indeces(double left, double right,
     // Assume the vector is cirular --> the largest value is next to the 
     // smallest.
     int largest_lon_index = (smallest_lon_index-1 + d_lon_length) % d_lon_length;
+    DBG2(cerr << "largest_lon_index: " << largest_lon_index << endl);
     i = largest_lon_index;
     done = false;
-    DBG(cerr << "fmod(d_lon[" << i << "], 360.0) > t_right: " << fmod(d_lon[i], 360.0)
+    DBG2(cerr << "fmod(d_lon[" << i << "], 360.0) > t_right: " << fmod(d_lon[i], 360.0)
              << " > " << t_right << endl);
     while (!done && fmod(d_lon[i], 360.0) > t_right) {
-        DBG(cerr << "fmod(d_lon[" << i << "], 360.0) < t_left: " << fmod(d_lon[i], 360.0)
-                 << " < " << t_left << endl);
-        i = --i % d_lon_length;
+        DBG2(cerr << "fmod(d_lon[" << i << "], 360.0) > t_right: " << fmod(d_lon[i], 360.0)
+                 << " > " << t_right << endl);
+        // This is like modulus but for 'counting down'
+        i = (i == 0) ? d_lon_length - 1 : i - 1;
         if (i == largest_lon_index)
             done = true;
     }
     longitude_index_right = i;
-    
-#if 0        
-    // Scan from the left 
-    i = 0;
-    DBG(cerr << "fmod(d_lon[" << i << "], 360.0) < t_left: " << fmod(d_lon[i], 360.0)
-             << " < " << t_left << endl);
-             
-    while (i < d_lon_length - 1 && fmod(d_lon[i], 360.0) < t_left) {
-        DBG(cerr << "fmod(d_lon[" << i << "], 360.0) < t_left: " << fmod(d_lon[i], 360.0)
-                 << " < " << t_left << endl);
-        ++i;
-    }
-    longitude_index_left = i;
-
-    // and from the right
-    i = d_lon_length - 1;
-    DBG(cerr << "fmod(d_lon[" << i << "], 360.0) > t_right: " << fmod(d_lon[i], 360.0)
-             << " > " << t_right << endl);
-    while (i > -1 && fmod(d_lon[i], 360) > t_right) {
-        DBG(cerr << "fmod(d_lon[" << i << "], 360.0) > t_right: " << fmod(d_lon[i], 360.0)
-                 << " > " << t_right << endl);
-        --i;
-    }
-    longitude_index_right = i;
-#endif
 }
 
 /** Scan from the top to the bottom, and the bottom to the top, looking
@@ -395,6 +372,8 @@ void GeoConstraint::set_bounding_box_latitude(double top,
         endl);
 }
 
+// Use 'index' as the pivot point. Move the behind index to the front of
+// the vector and those points in front of and at index to the rear.
 static void
 swap_vector_ends(char *dest, char *src, int len, int index, int elem_sz)
 {
@@ -421,6 +400,16 @@ void GeoConstraint::reorder_longitude_map(int longitude_index_left)
     memcpy(d_lon, tmp_lon, d_lon_length * sizeof(double));
 
     delete[]tmp_lon;
+}
+
+static int
+count_dimensions_except_longitude(Array &a)
+{
+    int size = 1;
+    for (Array::Dim_iter i = a.dim_begin(); (i + 1) != a.dim_end(); ++i)
+        size *= a.dimension_size(i, true);
+        
+    return size;
 }
 
 /** Reorder the data values relative to the longitude axis so that the
@@ -450,34 +439,55 @@ void GeoConstraint::reorder_data_longitude_axis() throw(Error)
     // to the right side of the array. Use read() to get the data.
     Array & a = *d_grid->get_array();
 
+    //a.clear_constraint();
+
+    DBG(cerr << "Constraint for the left half: " << d_longitude_index_left
+             << ", " << d_lon_length-1 << endl);
+             
     a.add_constraint(d_lon_grid_dim, d_longitude_index_left, 1,
-                     d_lon_length);
+                     d_lon_length-1);
     a.set_read_p(false);
     a.read(d_dataset);
+    DBG(a.print_val(stderr));
     char *left_data = 0;
     int left_size = a.buf2val((void **) &left_data);
 
     // Build a constraint for the 'right' part, which 
     // goes from the left edge of the array to the right index and read those
     // data.
+    //a.clear_constraint();
+
+    DBG(cerr << "Constraint for the right half: " << 0
+             << ", " << d_longitude_index_right << endl);
+             
     a.add_constraint(d_lon_grid_dim, 0, 1, d_longitude_index_right);
     a.set_read_p(false);
     a.read(d_dataset);
+    DBG(a.print_val(stderr));
     char *right_data = 0;
     int right_size = a.buf2val((void **) &right_data);
 
-    // Make one big lump O'data, combine the left_ and right_data blobs and
-    // record the result in this object
+    // Make one big lump O'data
     d_grid_array_data_size = left_size + right_size;
     d_grid_array_data = new char[d_grid_array_data_size];
-    int left = 0;
-    int right = 0;
-    int i = 0;
-    // Interleve the left and right_data vectors. This works for 2 and 3
-    // dimensions. Not sure about 4, 5, ... jhrg 8/31/06
-    while (i < d_grid_array_data_size) {
-        d_grid_array_data[i++] = left_data[left++];
-        d_grid_array_data[i++] = right_data[right++];
+    
+    // Assume COARDS convensions are being followed: lon varies fastest.
+    // These *_elements variables are actually elements * bytes/element since
+    // memcpy() uses bytes.
+    int elem_width = a.var()->width();
+    int left_elements = (d_lon_length - d_longitude_index_left) * elem_width;
+    int right_elements = (d_longitude_index_right + 1) * elem_width;
+    int total_elements_per_row = left_elements + right_elements;
+    
+    // Interleve the left and right_data vectors. jhrg 8/31/06
+    int rows_to_copy = count_dimensions_except_longitude(a);
+    for (int i = 0; i < rows_to_copy; ++i) {
+        memcpy(d_grid_array_data + (total_elements_per_row * i),
+               left_data + (left_elements * i),
+               left_elements);
+        memcpy(d_grid_array_data + left_elements + (total_elements_per_row * i),
+               right_data + (right_elements * i),
+               right_elements);
     }
 
     delete[]left_data;
@@ -658,10 +668,12 @@ void GeoConstraint::apply_constraint_to_data() throw(Error)
 
         // alter the indices; the left index has now been moved to 0, and the right
         // index is now at lon_vector_length-left+right.
+        DBG(cerr << "lon index left and right: " << d_longitude_index_left << ", " << d_longitude_index_right << endl);
         d_longitude_index_right =
-            d_lon_length - 1 - d_longitude_index_left +
-            d_longitude_index_right;
+            d_lon_length - d_longitude_index_left + d_longitude_index_right;
         d_longitude_index_left = 0;
+        
+        DBG(cerr << "lon index left and right: " << d_longitude_index_left << ", " << d_longitude_index_right << endl);
     }
     // If the constraint used the -180/179 (neg_pos) notation, transform
     // the longitude map s it uses the -180/179 notation. Note that at this
@@ -698,7 +710,10 @@ void GeoConstraint::apply_constraint_to_data() throw(Error)
 
     // ... and then the Grid's array if it has been read.
     if (d_grid_array_data) {
-        int size = d_grid->get_array()->val2buf(&d_grid_array_data);
+        DBG(cerr << "grid_data[0]: " << *(float*)d_grid_array_data << endl);
+        DBG(cerr << "grid_data[1]: " << *(float*)(d_grid_array_data+sizeof(float)) << endl);
+  
+        int size = d_grid->get_array()->val2buf(d_grid_array_data);
         if (size != d_grid_array_data_size)
             throw
                 InternalErr
