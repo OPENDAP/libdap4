@@ -38,6 +38,7 @@
 
 static char rcsid[] not_used = {"$Id$"};
 
+//#define DODS_DEBUG
 
 #include <algorithm>
 
@@ -117,7 +118,7 @@ Vector::Vector(const string &n, BaseType *v, const Type &t)
     if (v)
         add_var(v);
         
-    DBG(cerr << "Entering Vector ctor for object: " << this << endl);
+    DBG2(cerr << "Entering Vector ctor for object: " << this << endl);
     if (_var)
         _var->set_parent(this);
 }
@@ -125,15 +126,15 @@ Vector::Vector(const string &n, BaseType *v, const Type &t)
 /** The Vector copy constructor. */
 Vector::Vector(const Vector &rhs) : BaseType(rhs)
 {
-    DBG(cerr << "Entering Vector const ctor for object: " << this << endl);
-    DBG(cerr << "RHS: " << &rhs << endl);
+    DBG2(cerr << "Entering Vector const ctor for object: " << this << endl);
+    DBG2(cerr << "RHS: " << &rhs << endl);
 
     _duplicate(rhs);
 }
 
 Vector::~Vector()
 {
-    DBG(cerr << "Entering ~Vector (" << this << ")" << endl);
+    DBG2(cerr << "Entering ~Vector (" << this << ")" << endl);
 
     delete _var; _var = 0;
 
@@ -146,7 +147,7 @@ Vector::~Vector()
     	}
     }
 
-    DBG(cerr << "Exiting ~Vector" << endl);
+    DBG2(cerr << "Exiting ~Vector" << endl);
 }
 
 Vector &
@@ -705,9 +706,12 @@ Vector::val2buf(void *val, bool reuse)
 	  if (!_buf) {		// First time or no reuse (free'd above)
 	      _buf = new char[array_wid];
 	      memcpy(_buf, val, array_wid);
+              DBG(cerr << "!_buf " << *(float*)_buf << ", " << *(float*)(_buf+sizeof(float)) << endl);
+              
 	  }
 	  else { 
 	      memcpy(_buf, val, array_wid);
+              DBG(cerr << *(float*)_buf << ", " << *(float*)(_buf+sizeof(float)) << endl);
 	  }
 
 	  break;
