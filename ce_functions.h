@@ -42,17 +42,17 @@
 #include "ConstraintEvaluator.h"
 
 namespace libdap {
-    string extract_string_argument(BaseType *arg) throw(Error);
-    double extract_double_value(BaseType *arg) throw(Error);
-    double *extract_double_array(Array *a) throw(Error);
-    void set_array_using_double(Array *dest, double *src, int src_len) throw(Error);
+    string extract_string_argument(BaseType *arg) ;
+    double extract_double_value(BaseType *arg) ;
+    double *extract_double_array(Array *a) ;
+    void set_array_using_double(Array *dest, double *src, int src_len) ;
 #if 0
     void projection_function_grid(int argc, BaseType *argv[], DDS &dds,
-                                  ConstraintEvaluator &) throw(Error);
+                                  ConstraintEvaluator &) ;
 #endif                                  
-    BaseType *func_one(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw(Error);                             
-    BaseType *function_grid(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw(Error);
-    BaseType *function_geogrid(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw(Error);
+    BaseType *func_one(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;                             
+    BaseType *function_grid(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
+    BaseType *function_geogrid(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
     
     void register_functions(ConstraintEvaluator &ce);
 }
