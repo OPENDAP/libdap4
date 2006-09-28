@@ -84,7 +84,7 @@ namespace libdap {
     @exception Error thrown if the referenced BaseType object does not contain
     a DAP String. */ 
 string
-extract_string_argument(BaseType *arg) throw(Error)
+extract_string_argument(BaseType *arg)
 {
     if (arg->type() != dods_str_c)
 	throw Error(malformed_expr, 
@@ -133,7 +133,7 @@ set_array_using_double_helper(Array *a, double *src, int src_len) throw(Error)
     Float64) or if the number of elements in \e src does not match the number
     is \e dest. */
 void
-set_array_using_double(Array *dest, double *src, int src_len) throw(Error)
+set_array_using_double(Array *dest, double *src, int src_len)
 {
     // Simple types are Byte, ..., Float64, String and Url.
     if ( dest->type() == dods_array_c
@@ -149,7 +149,9 @@ set_array_using_double(Array *dest, double *src, int src_len) throw(Error)
     // which in turn uses length(). 
     if (dest->length() != src_len)
         throw InternalErr(__FILE__, __LINE__,
-            "The source and destination array sizes don't match."); 
+            "The source and destination array sizes don't match (" 
+            + long_to_string(src_len) + " versus " 
+            + long_to_string(dest->length()) + ")."); 
                 
     // The types of arguments that the CE Parser will build for numeric 
     // constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
@@ -188,7 +190,7 @@ set_array_using_double(Array *dest, double *src, int src_len) throw(Error)
 
 template<class T> 
 static double *
-extract_double_array_helper(Array * a) throw(Error)
+extract_double_array_helper(Array * a)
 {
     int length = a->length();
     double *dest = new double[length];
@@ -205,7 +207,7 @@ extract_double_array_helper(Array * a) throw(Error)
     array using 'new double[n]' so delete[] can be used when you are done
     the data. */
 double *
-extract_double_array(Array *a) throw(Error)
+extract_double_array(Array *a)
 {
     // Simple types are Byte, ..., Float64, String and Url.
     if ( a->type() == dods_array_c
@@ -252,7 +254,7 @@ extract_double_array(Array *a) throw(Error)
     @exception Error thrown if the referenced BaseType object does not contain
     a DAP numeric value. */ 
 double
-extract_double_value(BaseType *arg) throw(Error)
+extract_double_value(BaseType *arg)
 {
     // Simple types are Byte, ..., Float64, String and Url.
     if ( !arg->is_simple_type() 
@@ -323,7 +325,7 @@ extract_double_value(BaseType *arg) throw(Error)
 #if 0
 // In reality no server implements this; it _should_ be removed. 03/28/05 jhrg
 BaseType *
-func_length(int argc, BaseType *argv[], DDS &dds) throw(Error)
+func_length(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc != 1) {
 	throw Error("Wrong number of arguments to length().");
@@ -356,7 +358,7 @@ func_length(int argc, BaseType *argv[], DDS &dds) throw(Error)
 /** This server-side function returns 1. 
     This function is mostly for testing purposes. */
 BaseType *
-func_one(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw(Error)
+func_one(int argc, BaseType *argv[], DDS &dds, const string &dataset)
 {
     Byte *one = new Byte("one");
     (void) one->set_value(1);
@@ -365,7 +367,7 @@ func_one(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw(Erro
 
 
 static void
-parse_gse_expression(gse_arg *arg, BaseType *expr) throw(Error)
+parse_gse_expression(gse_arg *arg, BaseType *expr)
 {
     gse_restart(0);		// Restart the scanner.
     void *cls = gse_string(extract_string_argument(expr).c_str());
@@ -530,7 +532,7 @@ apply_grid_selection_expressions(Grid *grid, vector<GSEClause *> clauses)
     @see geogrid() (func_geogrid_select) A function which has logic specific 
     to longitude/latitude selection. */
 BaseType *
-function_grid(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw(Error)
+function_grid(int argc, BaseType *argv[], DDS &dds, const string &dataset)
 {
     DBG(cerr << "Entering function_grid..." << endl);
 
@@ -608,7 +610,7 @@ function_grid(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw
     attributes.
     @return The constrained and read Grid, ready to be sent. */
 BaseType *
-function_geogrid(int argc, BaseType *argv[], DDS &dds, const string &dataset) throw(Error)
+function_geogrid(int argc, BaseType *argv[], DDS &dds, const string &dataset)
 {
     if (argc < 5)
         throw
@@ -657,6 +659,8 @@ function_geogrid(int argc, BaseType *argv[], DDS &dds, const string &dataset) th
 
         apply_grid_selection_expressions(l_grid, clauses);
     }
+    
+    try {
     // Build a GeoConstraint object. If there are no longitude/latitude maps
     // then this constructor throws Error.
     GeoConstraint gc(l_grid, dataset, dds);
@@ -671,7 +675,16 @@ function_geogrid(int argc, BaseType *argv[], DDS &dds, const string &dataset) th
 
     // This also reads all of the data into the grid variable
     gc.apply_constraint_to_data();
+    }
+    catch (Error &e) {
+        throw;
+    }
+    catch (exception &e) {
+        throw InternalErr(string("A C++ exception was thrown from inside geogrid(): ")
+                          + e.what());
 
+    }
+    
     return l_grid;
 }
 
