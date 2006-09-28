@@ -206,7 +206,7 @@ Clause::value(const string &dataset, DDS &dds, BaseType **value)
 
     if (_bt_func) {
         // build_btp_args() is a function defined in RValue.cc. It no longer 
-        // reads the values as it builds the arguments, that is no left up
+        // reads the values as it builds the arguments, that is now left up
         // to the functions themselves. 9/25/06 jhrg
 	BaseType **argv = build_btp_args(_args, dds);
 
@@ -218,7 +218,7 @@ Clause::value(const string &dataset, DDS &dds, BaseType **value)
 #if 0
             // This was removed because the older version of the evaluator
             // did read all of the variables. The newer version (see the
-            // comment in RValue.cc) only those parts that are needed.
+            // comment in RValue.cc) does not call read.
 	    (*value)->set_read_p(true);
 #endif
 	    (*value)->set_send_p(true);
