@@ -895,37 +895,46 @@ DODSFilter::send_data(DDS &dds, ConstraintEvaluator &eval, FILE *data_stream,
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
     // Start sending the response... 
-    bool compress = d_comp && deflate_exists();
-    if (with_mime_headers)
-        set_mime_binary(data_stream, dods_data, d_cgi_ver,
-		        (compress) ? deflate : x_plain, data_lmt);
-    fflush(data_stream);
 
-    int childpid;
-    if (compress)
-	data_stream = compressor(data_stream, childpid);
+    bool compress = d_comp && deflate_exists();
+ 
     // Handle *functional* constraint expressions specially 
     if (eval.functional_expression()) {
-	BaseType *var = eval.eval_function(dds, d_dataset);
-	if (!var)
-	    throw Error(unknown_error, "Error calling the CE function.");
+        // Get the result and then start sending the headers. This provides a
+        // way to send errors back to the client w/o colliding with the 
+        // normal response headers. There's some duplication of code with this
+        // and the else-clause.
+        BaseType *var = eval.eval_function(dds, d_dataset);
+        if (!var)
+            throw Error(unknown_error, "Error calling the CE function.");
+
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, d_cgi_ver,
+                            (compress) ? deflate : x_plain, data_lmt);
+        fflush(data_stream);
+
+        int childpid;
+        if (compress)
+            data_stream = compressor(data_stream, childpid);
+
 
 	functional_constraint(*var, dds, eval, data_stream);
         delete var; var = 0;
     }
-    else
+    else {
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, d_cgi_ver,
+                            (compress) ? deflate : x_plain, data_lmt);
+        fflush(data_stream);
+
+        int childpid;
+        if (compress)
+            data_stream = compressor(data_stream, childpid);
+
 	dataset_constraint(dds, eval, data_stream);
+    }
     
     fflush(data_stream);
-#if 0
-    // This call seems to be why requests for data in the browser hang for so
-    // long. I think it might have been added to fix a problem that was then
-    // really fixed by calling fflush() (which was added by Patrick West). 
-    // jhrg 3/10/06
-    if (compress) {
-	WAITPID(childpid);
-    }
-#endif
 }
 
 /** Send the DDX response. The DDX never contains data, instead it holds a
