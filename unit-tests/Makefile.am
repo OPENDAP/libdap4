@@ -36,7 +36,7 @@ UNIT_TESTS = arrayT attrTableT structT sequenceT ddsT RegexTest	\
 	AttrTableTest ByteTest cgiUtilTest DASTest DDSTest		\
 	DDXParserTest DODSFilterTest generalUtilTest HTTPCacheTest	\
 	HTTPConnectTest parserUtilTest RCReaderTest SequenceTest	\
-	SignalHandlerTest CEFunctionsTest
+	SignalHandlerTest CEFunctionsTest GeoConstraintTest
 
 
 RegexTest_SOURCES = RegexTest.cc
@@ -113,4 +113,7 @@ ddsT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a
 
 CEFunctionsTest_SOURCES = CEFunctionsTest.cc
 CEFunctionsTest_LDADD = -lcppunit ../libdap.la ../libdapserver.la ../tests/libtest-types.a
+
+GeoConstraintTest_SOURCES = GeoConstraintTest.cc
+GeoConstraintTest_LDADD = -lcppunit ../libdap.la ../libdapserver.la ../tests/libtest-types.a
 
