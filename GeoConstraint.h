@@ -129,6 +129,7 @@ private:
     Array::Dim_iter d_lon_grid_dim;
     
     bool d_bounding_box_set;
+    bool d_longitude_rightmost;
     
     Notation d_longitude_notation;
     
@@ -146,6 +147,7 @@ private:
     GeoConstraint &operator=(GeoConstraint &rhs);
     
     bool find_lat_lon_maps() ;
+    bool lat_lon_dimensions_ok();
     
     Notation categorize_notation(double left, double right) const;
     void transform_constraint_to_pos_notation(double &left, double &right) const;
@@ -158,13 +160,14 @@ private:
     void reorder_longitude_map(int longitude_index_left);
     void reorder_data_longitude_axis() ;
                                 
-    LatitudeSense categorize_latitude();
+    LatitudeSense categorize_latitude() const;
     void find_latitude_indeces(double top, double bottom, LatitudeSense sense, 
                                 int &latitude_index_top, 
                                 int &latitude_index_bottom) const;                                
     void set_bounding_box_latitude(double top, double bottom) ;
                                                                                              
     friend class CEFunctionsTest; // Unit tests
+    friend class GeoConstraintTest; // Unit tests
     
 public:
     /** @name Constructors */
@@ -177,6 +180,8 @@ public:
         delete [] d_lat;
         delete [] d_lon;
     }
+    
+    bool get_longitude_rightmost() { return d_longitude_rightmost; }
         
     void set_bounding_box(double left, double top, double right, double bottom);
         

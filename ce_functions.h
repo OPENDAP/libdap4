@@ -53,7 +53,7 @@ namespace libdap {
     BaseType *func_one(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;                             
     BaseType *function_grid(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
     BaseType *function_geogrid(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
-    
+    BaseType *function_linear_scale(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
     void register_functions(ConstraintEvaluator &ce);
 }
 
