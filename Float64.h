@@ -89,7 +89,8 @@ public:
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual dods_float64 value();
+    virtual dods_float64 value() const;
+    virtual bool set_value(dods_float64 val);
 
     virtual void print_val(FILE *out, string space = "", 
 			   bool print_decl_p = true);

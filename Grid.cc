@@ -370,6 +370,21 @@ Grid::map_end()
     return _map_vars.end() ;
 }
 
+/** @brief Returns an iterator referencing the first Map vector. */
+Grid::Map_riter
+Grid::map_rbegin()
+{
+    return _map_vars.rbegin() ;
+}
+
+/** Returns an iterator referencing the end of the list of Map vectors.
+    It does not reference the last Map vector */
+Grid::Map_riter
+Grid::map_rend()
+{
+    return _map_vars.rend() ;
+}
+
 /** Return the iterator for the \e ith map.
     @param i the index
     @return The corresponding  Vars_iter */

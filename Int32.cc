@@ -168,9 +168,18 @@ Int32::buf2val(void **val)
 }
 
 dods_int32
-Int32::value()
+Int32::value() const
 {
     return _buf;
+}
+
+bool
+Int32::set_value(dods_int32 i)
+{
+    _buf = i;
+    set_read_p(true);
+    
+    return true;
 }
 
 void 

@@ -170,9 +170,16 @@ Float64::buf2val(void **val)
 
     @return The dods_float32 value. */
 dods_float64
-Float64::value()
+Float64::value() const
 {
     return _buf;
+}
+
+bool
+Float64::set_value(dods_float64 val)
+{
+    _buf = val;
+    set_read_p(true);
 }
 
 void

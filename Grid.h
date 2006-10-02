@@ -130,6 +130,7 @@ public:
 
     typedef std::vector<BaseType *>::const_iterator Map_citer ;
     typedef std::vector<BaseType *>::iterator Map_iter ;
+    typedef std::vector<BaseType *>::reverse_iterator Map_riter ;
 
     
     Grid &operator=(const Grid &rhs);
@@ -181,10 +182,9 @@ public:
     virtual bool check_semantics(string &msg, bool all = false);
     
     Map_iter map_begin() ;
-
-    
     Map_iter map_end() ;
-
+    Map_riter map_rbegin() ;
+    Map_riter map_rend() ;
     Map_iter get_map_iter(int i);
 };
 
