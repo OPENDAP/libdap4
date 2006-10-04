@@ -487,27 +487,35 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS & dds,
     DBG(cerr << "Entering function_grid..." << endl);
 
     if (argc < 1)
-        throw
-        Error
-        ("Wrong number of arguments to grid(), there must be at least one argument.");
+        throw Error(
+"Wrong number of arguments to grid(), there must be at least one argument.");
 
     Grid *original_grid = dynamic_cast < Grid * >(argv[0]);
     if (!original_grid)
-        throw
-        Error
-        ("The first argument to grid() must be a Grid variable!");
+        throw Error("The first argument to grid() must be a Grid variable!");
 
     // Duplicate the grid; DODSFilter::send_data() will delete the variable
     // after serializing it.
     Grid *l_grid =
         dynamic_cast < Grid * >(original_grid->ptr_duplicate());
+    
+    DBG(cerr << "grid: past initialization code" << endl);
 
     // Read the maps. Do this before calling parse_gse_expression(). Avoid
     // reading the array until the constraints have been applied because it
     // might be really large.
+    
+    Grid::Map_iter i = l_grid->map_begin();
+    while (i != l_grid->map_end())
+        (*i++)->set_send_p(true);
+    l_grid->read(dataset);
+    
+#if 0
     Grid::Map_iter i = l_grid->map_begin();
     while (i != l_grid->map_end())
         (*i++)->read(dataset);
+#endif
+    DBG(cerr << "grid: past map read" << endl);
 
     // argv[1..n] holds strings; each are little expressions to be parsed.
     // When each expression is parsed, the parser makes a new instance of
@@ -524,44 +532,46 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS & dds,
 
     apply_grid_selection_expressions(l_grid, clauses);
 
+    DBG(cerr << "grid: past gse application" << endl);
+    
+    l_grid->get_array()->set_send_p(true);
+
     l_grid->read(dataset);
 
     return l_grid;
 }
 
 /** The geogrid function returns the part of a Grid which includes a
-    geographically specified rectangle. The arguments to the function are
-    the name of a Grid, the left-top and right-bottom points of the rectable
-    and zero or more relational expressions of the sort that the grid frunction
-    accepts. The constraints on the arguments are:<ul>
-    <li>The Grid must have Latitude and Longitude map vectors. Those are
-    discovered by looking for map vectors which satisfy enough of any one of
-    a set of conventions to make the identification of those map vectors
-    positive or by guessing which maps are which. The set of conventions
-    supported is: COARDS, CF 1.0, GDT and CSC (see
+    geographically specified rectangle. The arguments to the function are the
+    name of a Grid, the left-top and right-bottom points of the rectable and
+    zero or more relational expressions of the sort that the grid frunction
+    accepts. The constraints on the arguments are:<ul> <li>The Grid must have
+    Latitude and Longitude map vectors. Those are discovered by looking for
+    map vectors which satisfy enough of any one of a set of conventions to
+    make the identification of those map vectors positive or by guessing
+    which maps are which. The set of conventions supported is: COARDS, CF
+    1.0, GDT and CSC (see
     http://www.unidata.ucar.edu/software/netcdf/conventions.html). If the
     geogrid guesses at the maps, it adds an attribute (geogrid_warning) which
-    says so. (in version 1.1)</li>
-    <li>The rectangle corner points are in Longitude-Latitude. Longitude may be
-    given using -180 to 180 or 0 to 360. For data sources with global coverage,
-    geogrid assumes that the Longitude axis is circular. For requests made using
-    0/359 notation, it assumes it is modulus 360. Requests made using -180/179
-    notation cannot use values outside that range.</li>
-    <li>The notation used to specify the rectangular region determines the
-    notation used in the longitude/latitude map vectors of the Grid returned by
-    the function.</li>
-    <li>There are no restrictions on the relational expressions beyond those
-    for the grid() (see func_grid_select()) function.</li>
-    </ul>
+    says so. (in version 1.1)</li> <li>The rectangle corner points are in
+    Longitude-Latitude. Longitude may be given using -180 to 180 or 0 to 360.
+    For data sources with global coverage, geogrid assumes that the Longitude
+    axis is circular. For requests made using 0/359 notation, it assumes it
+    is modulus 360. Requests made using -180/179 notation cannot use values
+    outside that range.</li> <li>The notation used to specify the rectangular
+    region determines the notation used in the longitude/latitude map vectors
+    of the Grid returned by the function.</li> <li>There are no restrictions
+    on the relational expressions beyond those for the grid() (see
+    func_grid_select()) function.</li> </ul>
 
-    @note The geogrid() function is implemented as a 'BaseType function' which
-    means that there can be only one function per request and no other variables
-    may be named in the request.
+    @note The geogrid() function is implemented as a 'BaseType function'
+    which means that there can be only one function per request and no other
+    variables may be named in the request.
 
     @param argc The number of values in argv.
     @param argv An array of BaseType pointers which hold the arguments to be
-    passed to geogrid. The arguments may be Strings, Integers, or Reals, subject
-    to the above constraints.
+    passed to geogrid. The arguments may be Strings, Integers, or Reals,
+    subject to the above constraints.
     @param dds The DDS which holds the Grid. This DDS \e must include
     attributes.
     @return The constrained and read Grid, ready to be sent. */
@@ -570,38 +580,48 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS & dds,
 {
     if (argc < 5)
         throw
-        Error
-        ("Wrong number of arguments to geogrid(), there must be at least five arguments,\n\
-         A Grid followed by the left-top and right-bottom points of a longitude-latitude bounding box.");
+            Error
+            ("Wrong number of arguments to geogrid(), there must be at least five\n\
+arguments, A Grid followed by the left-top and right-bottom points of a\n\
+longitude-latitude bounding box.");
 
     Grid *grid = dynamic_cast < Grid * >(argv[0]);
     if (!grid)
         throw
-        Error
-        ("The first argument to geogrid() must be a Grid variable!");
+            Error
+            ("The first argument to geogrid() must be a Grid variable!");
 
     if (grid->get_array()->dimensions() < 2
         || grid->get_array()->dimensions() > 3)
         throw
-        Error
-        ("The geogrid() function works only with Grids of two or three dimensions.");
+            Error
+            ("The geogrid() function works only with Grids of two or three dimensions.");
 
-    // dup the grid before reading; DODSFilter::send_data() will free the variable
-    // once it's done serializing.
+    // dup the grid before reading; DODSFilter::send_data() will free the
+    // variable once it's done serializing.
     Grid *l_grid = dynamic_cast < Grid * >(grid->ptr_duplicate());
     if (!l_grid)
         throw InternalErr(__FILE__, __LINE__, "Expected a Grid.");
 
+    // Read the maps. Do this before calling parse_gse_expression(). Avoid
+    // reading the array until the constraints have been applied because it
+    // might be really large.
+    //
+    // Trick: Some handlers builds Grids from a combination of Array
+    // variables and attributes. Those handlers (e.g., hdf4) use the send_p
+    // property to determine which parts of the Grid to read *but they can
+    // only read the maps from within Grid::read(), not the map's read()*.
+    // Since the Grid's array does not have send_p set, it will not be read
+    // by the call below to Grid::read().
+    Grid::Map_iter i = l_grid->map_begin();
+    while (i != l_grid->map_end())
+        (*i++)->set_send_p(true);
+    l_grid->read(dataset);
+    DBG(cerr << "geogrid: past map read" << endl);
+
     // Look for Grid Selection Expressions tacked onto the end of the BB
     // specification. If there are any, evaluate them before evaluating the BB.
     if (argc > 5) {
-        // Read the maps. Do this before calling parse_gse_expression(). Avoid
-        // reading the array until the constraints have been applied because it
-        // might be really large.
-        Grid::Map_iter i = l_grid->map_begin();
-        while (i != l_grid->map_end())
-            (*i++)->read(dataset);
-
         // argv[5..n] holds strings; each are little Grid Selection Expressions
         // to be parsed and evaluated.
         vector < GSEClause * >clauses;
@@ -617,29 +637,31 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS & dds,
     }
 
     try {
-        // Build a GeoConstraint object. If there are no longitude/latitude maps
-        // then this constructor throws Error.
+        // Build a GeoConstraint object. If there are no longitude/latitude
+        // maps then this constructor throws Error.
         GeoConstraint gc(l_grid, dataset, dds);
 
-        // This sets the bounding box and modifies the maps to match the notation
-        // of the box (0/359 or -180/179)
+        // This sets the bounding box and modifies the maps to match the
+        // notation of the box (0/359 or -180/179)
         double left = extract_double_value(argv[1]);
         double top = extract_double_value(argv[2]);
         double right = extract_double_value(argv[3]);
         double bottom = extract_double_value(argv[4]);
         gc.set_bounding_box(left, top, right, bottom);
+        DBG(cerr << "geogrid: past bounding box set" << endl);
 
         // This also reads all of the data into the grid variable
         gc.apply_constraint_to_data();
+        DBG(cerr << "geogrid: past apply constraint" << endl);
     }
-    catch (Error & e) {
+    catch(Error & e) {
         throw;
     }
-    catch (exception & e) {
+    catch(exception & e) {
         throw
-        InternalErr(string
-                    ("A C++ exception was thrown from inside geogrid(): ")
-                    + e.what());
+            InternalErr(string
+                        ("A C++ exception was thrown from inside geogrid(): ")
+                        + e.what());
 
     }
 
@@ -714,11 +736,12 @@ BaseType *function_linear_scale(int argc, BaseType * argv[], DDS & dds,
     cerr << "argc = " << argc << endl;
     if ( !(argc == 1 || argc == 3) )
         throw Error(
-"Wrong number of arguments to linear_scale(). There must be either one or three\n\
-arguments. If one argument is given, it must be the name of a variable to\n\
-scale (COARDS attributes will be used to determine the slope and y-intercept).\n\
-If three arguments are given, then the second and third are assumed to be the\n\
-slope and y-intercept.");
+
+"Wrong number of arguments to linear_scale(). There must be either one or\n\
+three arguments. If one argument is given, it must be the name of a variable\n\
+to scale (COARDS attributes will be used to determine the slope and\n\
+y-intercept). If three arguments are given, then the second and third are\n\
+assumed to be the slope and y-intercept.");
 
     // Test for numeric types
         
@@ -788,6 +811,7 @@ void register_functions(ConstraintEvaluator & ce)
 {
     ce.add_function("grid", function_grid);
     ce.add_function("geogrid", function_geogrid);
+    ce.add_function("linear_scale", function_linear_scale);
     ce.add_function("one", func_one);
 }
 
