@@ -158,11 +158,29 @@ ConstraintEvaluator::append_constant(BaseType *btp)
     constants.push_back(btp);
 }
 
-/** Each DDS carries with it a list of external functions it can use to
-    evaluate a constraint expression. If a constraint contains any of
-    these functions, the entries in the list allow the parser to evaluate
-    it. The functions are of two types: those that return boolean values,
-    and those that return real (also called BaseType) values.
+class func_name_is {
+private:
+    const string d_name;
+    
+public:
+    func_name_is(const string &name): d_name(name) {}
+    bool operator() (const ConstraintEvaluator::function f) {
+        return f.name == d_name;
+    }
+};
+
+/** The Constraint Evaluator carries with it a list of external functions it 
+    can use while evaluate a constraint expression. If a constraint contains
+    any of these functions, the entries in the list allow the parser to evaluate
+    it. The functions are of three types: those that return boolean values,
+    those that return real (also called BaseType) values, and those that
+    are applied during evaluation of the project for side effect
+    
+    @note The add_function() methods will replace a function of the same name,
+    so it is possible to overwrite functions in specific handlers if the 
+    handler need special behavior to implement one of the standard functions.
+    
+    @see ce_functions for the standard functions
 
     These methods are used to manipulate this list of known
     external functions.
@@ -175,6 +193,7 @@ ConstraintEvaluator::append_constant(BaseType *btp)
 void
 ConstraintEvaluator::add_function(const string &name, bool_func f)
 {
+    functions.remove_if(func_name_is(name));
     function func(name, f);
     functions.push_back(func);
 }
@@ -183,6 +202,7 @@ ConstraintEvaluator::add_function(const string &name, bool_func f)
 void
 ConstraintEvaluator::add_function(const string &name, btp_func f)
 {
+    functions.remove_if(func_name_is(name));
     function func(name, f);
     functions.push_back(func);
 }
@@ -191,6 +211,7 @@ ConstraintEvaluator::add_function(const string &name, btp_func f)
 void
 ConstraintEvaluator::add_function(const string &name, proj_func f)
 {
+    functions.remove_if(func_name_is(name));
     function func(name, f);
     functions.push_back(func);
 }
