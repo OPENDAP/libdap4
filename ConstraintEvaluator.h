@@ -25,6 +25,8 @@
 #ifndef constraint_evaluator_h
 #define constraint_evaluator_h
 
+#include <list>
+
 #ifndef _clause_h
 #include "Clause.h"
 #endif
@@ -53,7 +55,7 @@ private:
 
     vector<BaseType *> constants;// List of temporary objects
 
-    vector<function> functions; // Known external functions
+    list<function> functions; // Known external functions
 
     // The default versions of these methods will break this class. Because
     // Clause does not support deep copies, that class will need to be modified
@@ -62,14 +64,18 @@ private:
     ConstraintEvaluator &operator=(const ConstraintEvaluator &)  { 
         throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
     }
+    
+    friend class func_name_is;
         
 public:
     typedef std::vector<Clause *>::const_iterator Clause_citer ;
     typedef std::vector<Clause *>::iterator Clause_iter ;
+    
     typedef std::vector<BaseType *>::const_iterator Constants_citer ;
     typedef std::vector<BaseType *>::iterator Constants_iter ;
-    typedef std::vector<function>::const_iterator Functions_citer ;
-    typedef std::vector<function>::iterator Functions_iter ;
+    
+    typedef std::list<function>::const_iterator Functions_citer ;
+    typedef std::list<function>::iterator Functions_iter ;
 
     ConstraintEvaluator();
     virtual ~ConstraintEvaluator();
