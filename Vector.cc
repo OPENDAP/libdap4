@@ -695,9 +695,8 @@ unsigned int Vector::val2buf(void *val, bool reuse)
     case dods_uint32_c:
     case dods_float32_c:
     case dods_float64_c:{
-            unsigned int array_wid = width();   // width() is the size given
-            // the current constraint
-
+            // width() returns the size given the constraint
+            unsigned int array_wid = width();
             if (_buf && !reuse) {
                 delete[]_buf;
                 _buf = 0;
@@ -705,18 +704,11 @@ unsigned int Vector::val2buf(void *val, bool reuse)
 
             if (!_buf) {        // First time or no reuse (free'd above)
                 _buf = new char[array_wid];
-                memcpy(_buf, val, array_wid);
-                DBG(cerr << "!_buf " << *(float *) _buf << ", " <<
-                    *(float *) (_buf + sizeof(float)) << endl);
-
-            } else {
-                memcpy(_buf, val, array_wid);
-                DBG(cerr << *(float *) _buf << ", " <<
-                    *(float *) (_buf + sizeof(float)) << endl);
             }
-
+            
+            memcpy(_buf, val, array_wid);
             break;
-        }
+    }
 
     case dods_str_c:
     case dods_url_c:{
@@ -731,7 +723,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
 
     default:
         throw InternalErr(__FILE__, __LINE__, "Vector::val2buf: bad type");
-        return 0;
+
     }
 
     return width();
@@ -875,7 +867,8 @@ void Vector::add_var(BaseType * v, Part)
     // if 'v' is null, just set _var to null and exit.
     if (!v) {
         _var = 0;
-    } else {
+    } 
+    else {
         // Jose Garcia
         // By getting a copy of this object to be assigned to _var
         // we let the owner of 'v' to deallocate it as necessary.
