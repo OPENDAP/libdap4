@@ -180,6 +180,8 @@ Float64::set_value(dods_float64 val)
 {
     _buf = val;
     set_read_p(true);
+    
+    return true;
 }
 
 void

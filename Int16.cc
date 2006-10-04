@@ -154,6 +154,21 @@ Int16::buf2val(void **val)
     return width();
 }
 
+dods_int16
+Int16::value() const
+{
+    return _buf;
+}
+
+bool
+Int16::set_value(dods_int16 i)
+{
+    _buf = i;
+    set_read_p(true);
+    
+    return true;
+}
+
 void 
 Int16::print_val(FILE *out, string space, bool print_decl_p)
 {

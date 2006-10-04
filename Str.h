@@ -96,6 +96,7 @@ public:
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
+    
     virtual bool set_value(const string &value);
     virtual string value() const;
     

@@ -162,13 +162,22 @@ Float32::buf2val(void **val)
     return width();
 }
 
+bool
+Float32::set_value(dods_float32 f)
+{
+    _buf = f;
+    set_read_p(true);
+    
+    return true;
+}
+
 /** Return the value of the Float32 held by this instance. This is more
     convenient than the general interface provided by buf2val, but its use
     requires a downcase from BaseType to Float32.
 
     @return The dods_float32 value. */
 dods_float32 
-Float32::value()
+Float32::value() const
 {
     return _buf;
 }

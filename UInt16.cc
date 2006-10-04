@@ -158,6 +158,21 @@ UInt16::buf2val(void **val)
     return width();
 }
 
+dods_uint16
+UInt16::value() const
+{
+    return _buf;
+}
+
+bool
+UInt16::set_value(dods_uint16 i)
+{
+    _buf = i;
+    set_read_p(true);
+    
+    return true;
+}
+
 void 
 UInt16::print_val(FILE *out, string space, bool print_decl_p)
 {

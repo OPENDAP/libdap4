@@ -155,6 +155,21 @@ UInt32::buf2val(void **val)
     return width();
 }
 
+dods_uint32
+UInt32::value() const
+{
+    return _buf;
+}
+
+bool
+UInt32::set_value(dods_uint32 i)
+{
+    _buf = i;
+    set_read_p(true);
+    
+    return true;
+}
+
 void 
 UInt32::print_val(FILE *out, string space, bool print_decl_p)
 {
