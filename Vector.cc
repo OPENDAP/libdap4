@@ -54,8 +54,7 @@ static char rcsid[] not_used =
 using std::cerr;
 using std::endl;
 
-void
- Vector::_duplicate(const Vector & v)
+void Vector::_duplicate(const Vector & v)
 {
     _length = v._length;
 
@@ -705,10 +704,10 @@ unsigned int Vector::val2buf(void *val, bool reuse)
             if (!_buf) {        // First time or no reuse (free'd above)
                 _buf = new char[array_wid];
             }
-            
+
             memcpy(_buf, val, array_wid);
             break;
-    }
+        }
 
     case dods_str_c:
     case dods_url_c:{
@@ -867,8 +866,7 @@ void Vector::add_var(BaseType * v, Part)
     // if 'v' is null, just set _var to null and exit.
     if (!v) {
         _var = 0;
-    } 
-    else {
+    } else {
         // Jose Garcia
         // By getting a copy of this object to be assigned to _var
         // we let the owner of 'v' to deallocate it as necessary.
