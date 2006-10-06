@@ -129,12 +129,15 @@ private:
 
     // These are kind of silly...
     void set_state(DDXParser::ParseState state);
-    DDXParser::ParseState get_state();
+    DDXParser::ParseState get_state() const;
     void pop_state();
 
     // Glue for the BaseTypeFactory class.
     BaseType *factory(Type t, const string &name);
 
+    // Common cleanup code for intern() and intern_stream()
+    void cleanup_parse(xmlParserCtxtPtr &context) const;
+    
     /** @name Parser Actions
 
 	These methods are the 'actions' carried out by the start_element and
@@ -166,6 +169,8 @@ public:
 
     void intern(const string &document, DDS *dest_dds, string *blob)
 	throw(DDXParseFailed);
+    void intern_stream(FILE *in, DDS *dds, string *blob)
+        throw(DDXParseFailed, InternalErr);
 
     static void ddx_start_document(DDXParser *parser);
     static void ddx_end_document(DDXParser *parser);
