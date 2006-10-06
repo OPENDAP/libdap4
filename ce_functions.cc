@@ -479,6 +479,7 @@ apply_grid_selection_expressions(Grid * grid,
     passed to geogrid. The arguments may be Strings, Integers, or Reals, subject
     to the above constraints.
     @param dds The DDS which holds the Grid.
+    @param dataset Name of the dataset.
     @see geogrid() (func_geogrid_select) A function which has logic specific
     to longitude/latitude selection. */
 BaseType *function_grid(int argc, BaseType * argv[], DDS & dds,
@@ -574,6 +575,7 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS & dds,
     subject to the above constraints.
     @param dds The DDS which holds the Grid. This DDS \e must include
     attributes.
+    @param dataset Name of the dataset.
     @return The constrained and read Grid, ready to be sent. */
 BaseType *function_geogrid(int argc, BaseType * argv[], DDS & dds,
                            const string & dataset)

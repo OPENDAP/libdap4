@@ -194,6 +194,7 @@ Clause::value(const string &dataset, DDS &dds)
     @param dataset This is passed to the function.
     @param dds Use variables from this DDS when evaluating the
     expression
+    @param value A value-result parameter
     @return True if the the BaseType pointer is not null, false otherwise.
     @exception InternalErr if called for a clause that returns a
     boolean value. Not that this method itself \e does return a

@@ -348,8 +348,8 @@ unsigned int Vector::width()
 /** Returns the number of elements in the vector. Note that some
 child classes of Vector use the length of -1 as a flag value.
 
-@see Array::append_dim */
-int Vector::length()
+@see Vector::append_dim */
+int Vector::length() const
 {
     return _length;
 }
@@ -844,6 +844,217 @@ void Vector::set_vec(unsigned int i, BaseType * val)
         vec_resize(i + 10);
 
     _vec[i] = val->ptr_duplicate();
+}
+
+/** @brief set the value of a byte array */
+bool
+Vector::set_value( dods_byte *val, int sz )
+{
+    if( var()->type() == dods_byte_c && val )
+    {
+        _buf = reinterpret_cast<char*>(new dods_byte[sz]) ;
+        memcpy(_buf, val, sz * sizeof(dods_byte));
+        set_read_p(true);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/** @brief set the value of a int16 array */
+bool
+Vector::set_value( dods_int16 *val, int sz )
+{
+    if( var()->type() == dods_int16_c && val )
+    {
+        _buf = reinterpret_cast<char*>(new dods_int16[sz]) ;
+        memcpy(_buf, val, sz * sizeof(dods_int16));
+        set_read_p(true);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/** @brief set the value of a int32 array */
+bool
+Vector::set_value( dods_int32 *val, int sz )
+{
+    if( var()->type() == dods_int32_c && val )
+    {
+        _buf = reinterpret_cast<char*>(new dods_int32[sz]) ;
+        memcpy(_buf, val, sz * sizeof(dods_int32));
+        set_read_p(true);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/** @brief set the value of a uint16 array */
+bool
+Vector::set_value( dods_uint16 *val, int sz )
+{
+    if( var()->type() == dods_uint16_c && val )
+    {
+        _buf = reinterpret_cast<char*>(new dods_uint16[sz]) ;
+        memcpy(_buf, val, sz * sizeof(dods_uint16));
+        set_read_p(true);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/** @brief set the value of a uint32 array */
+bool
+Vector::set_value( dods_uint32 *val, int sz )
+{
+    if( var()->type() == dods_uint32_c && val )
+    {
+        _buf = reinterpret_cast<char*>(new dods_uint32[sz]) ;
+        memcpy(_buf, val, sz * sizeof(dods_uint32));
+        set_read_p(true);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/** @brief set the value of a float32 array */
+bool
+Vector::set_value( dods_float32 *val, int sz )
+{
+    if( var()->type() == dods_float32_c && val )
+    {
+        _buf = reinterpret_cast<char*>(new dods_float32[sz]) ;
+        memcpy(_buf, val, sz * sizeof(dods_float32));
+        set_read_p(true);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/** @brief set the value of a float64 array */
+bool
+Vector::set_value( dods_float64 *val, int sz )
+{
+    if ( !val )
+        return false;
+    
+    switch( var()->type() ) {
+    case dods_float64_c:
+        _buf = reinterpret_cast<char*>(new dods_float64[sz]) ;
+        memcpy(_buf, val, sz * sizeof(dods_float64));
+        set_read_p(true);
+        return true;
+    default:
+        return false;
+    }
+}
+
+/** @brief set the value of a string or url array */
+bool
+Vector::set_value( string *val, int sz )
+{
+    if( (var()->type() == dods_str_c || var()->type() == dods_url_c) && val )
+    {
+        d_str.resize(sz);
+        for( register int t = 0; t < sz; t++ )
+        {
+            d_str[t] = val[t] ;
+        }
+        set_length( sz ) ;
+        set_read_p(true);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/** @brief Get a copy of the pointer to the data held by this variable. */
+void Vector::value(dods_byte *b) const
+{
+    if( b && _var->type() == dods_byte_c )
+    {
+        memcpy( b, _buf, length() * sizeof(dods_byte) );
+    }
+}
+
+/** @brief Get a copy of the pointer to the data held by this variable. */
+void Vector::value(dods_uint16 *b) const
+{
+    if( b && _var->type() == dods_uint16_c )
+    {
+        memcpy( b, _buf, length() * sizeof(dods_uint16) );
+    }
+}
+
+/** @brief Get a copy of the pointer to the data held by this variable. */
+void Vector::value(dods_int16 *b) const
+{
+    if( b && _var->type() == dods_int16_c )
+    {
+        memcpy( b, _buf, length() * sizeof(dods_int16) );
+    }
+}
+
+/** @brief Get a copy of the pointer to the data held by this variable. */
+void Vector::value(dods_uint32 *b) const
+{
+    if( b && _var->type() == dods_uint32_c )
+    {
+        memcpy( b, _buf, length() * sizeof(dods_uint32) );
+    }
+}
+
+/** @brief Get a copy of the pointer to the data held by this variable. */
+void Vector::value(dods_int32 *b) const
+{
+    if( b && _var->type() == dods_int32_c )
+    {
+        memcpy( b, _buf, length() * sizeof(dods_int32) );
+    }
+}
+
+/** @brief Get a copy of the pointer to the data held by this variable. */
+void Vector::value(dods_float32 *b) const
+{
+    if( b && _var->type() == dods_float32_c )
+    {
+        memcpy( b, _buf, length() * sizeof(dods_float32) );
+    }
+}
+
+/** @brief Get a copy of the pointer to the data held by this variable. */
+void Vector::value(dods_float64 *b) const
+{
+    if( b && _var->type() == dods_float64_c )
+    {
+        memcpy( b, _buf, length() * sizeof(dods_float64) );
+    }
+}
+
+/** @brief Get a copy of the pointer to the data held by this variable. */
+void Vector::value(vector<string> &b) const
+{
+    if( _var->type() == dods_byte_c )
+        b = d_str;
 }
 
 /** @brief Add the BaseType pointer to this constructor type

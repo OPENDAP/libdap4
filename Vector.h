@@ -89,7 +89,7 @@ private:
 
     // _buf was a pointer to void; delete[] complained. 6/4/2001 jhrg
     char *_buf;			// array which holds cardinal data
-    vector<string> d_str;        // special storage for strings. jhrg 2/11/05
+    vector<string> d_str;       // special storage for strings. jhrg 2/11/05
     vector<BaseType *> _vec;	// array for other data
 
 protected:
@@ -113,7 +113,7 @@ public:
 
     virtual unsigned int width();
 
-    virtual int length();
+    virtual int length() const;
 
     virtual void set_length(int l);
 
@@ -129,15 +129,30 @@ public:
 
     void vec_resize(int l);
 
+    virtual bool set_value( dods_byte *val, int sz );
+    virtual bool set_value( dods_int16 *val, int sz );
+    virtual bool set_value( dods_uint16 *val, int sz );
+    virtual bool set_value( dods_int32 *val, int sz );
+    virtual bool set_value( dods_uint32 *val, int sz );
+    virtual bool set_value( dods_float32 *val, int sz );
+    virtual bool set_value( dods_float64 *val, int sz );
+    virtual bool set_value( string *val, int sz );
+
+    virtual void Vector::value(dods_byte *b) const;
+    virtual void Vector::value(dods_int16 *b) const;
+    virtual void Vector::value(dods_uint16 *b) const;
+    virtual void Vector::value(dods_int32 *b) const;
+    virtual void Vector::value(dods_uint32 *b) const;
+    virtual void Vector::value(dods_float32 *b) const;
+    virtual void Vector::value(dods_float64 *b) const;
+    virtual void Vector::value(vector<string> &b) const;
+    
     virtual BaseType *var(const string &name = "", bool exact_match = true,
               btp_stack *s = 0);
-
     virtual BaseType *var(const string &name, btp_stack &s);
-
     virtual BaseType *var(unsigned int i);
 
     virtual void add_var(BaseType *v, Part p = nil);
-
     virtual bool check_semantics(string &msg, bool all = false);
 };
 
