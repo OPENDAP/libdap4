@@ -346,7 +346,7 @@ int main(int argc, char *argv[])
                     BaseTypeFactory factory;
                     DDS dds(&factory);
                     try {
-                        url->request_dds(dds);
+                        url->request_ddx(dds);
                     }
                     catch(Error & e) {
                         cerr << e.get_error_message() << endl;
@@ -356,7 +356,7 @@ int main(int argc, char *argv[])
                     if (verbose) {
                         fprintf(stderr, "Server version: %s\n",
                                 url->get_version().c_str());
-                        fprintf(stderr, "DDS:\n");
+                        fprintf(stderr, "DDX:\n");
                     }
 
                     dds.print_xml(stdout, false, "geturl; no blob yet");

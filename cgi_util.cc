@@ -451,7 +451,7 @@ last_modified_time(string name)
 // not be started, true otherwise.
 
 static const char *descrip[]={"unknown", "dods_das", "dods_dds", "dods_data",
-			"dods_error", "web_error"};
+			"dods_error", "web_error", "dap4_ddx"};
 static const char *encoding[]={"unknown", "deflate", "x-plain"};
 
 /** Generate an HTTP 1.0 response header for a text document. This is used
@@ -479,7 +479,7 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
         fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
         fprintf( out, "XOPeNDAP-Server: %s%s", ver.c_str(), CRLF ) ;
     }
-   fprintf( out, "XDAP: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
+    fprintf( out, "XDAP: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
 
     const time_t t = time(0);
     fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
@@ -490,7 +490,11 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
     else 
 	fprintf( out, "%s%s", rfc822_date(t).c_str(), CRLF ) ;
 
-    fprintf( out, "Content-Type: text/plain%s", CRLF ) ;
+    if ( type = dap4_ddx )
+        fprintf( out, "Content-Type: text/xml%s", CRLF ) ;
+    else
+        fprintf( out, "Content-Type: text/plain%s", CRLF ) ;
+
     // Note that Content-Description is from RFC 2045 (MIME, pt 1), not 2616.
     // jhrg 12/23/05
     fprintf( out, "Content-Description: %s%s", descrip[type], CRLF ) ;

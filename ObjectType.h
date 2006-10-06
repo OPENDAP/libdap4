@@ -39,7 +39,8 @@
        dods_dds,
        dods_data,
        dods_error,
-       web_error
+       web_error,
+       dap4_ddx
      };
      </pre>
 
@@ -52,7 +53,8 @@ enum ObjectType {
     dods_dds,
     dods_data,
     dods_error,
-    web_error
+    web_error,
+    dap4_ddx
 };
 
 #endif

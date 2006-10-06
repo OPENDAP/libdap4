@@ -203,6 +203,9 @@ public:
     virtual void request_dds_url(DDS &dds) 
 	throw(Error, InternalErr);
 
+    virtual void request_ddx(DDS &dds, string expr = "") throw(Error, InternalErr);
+    virtual void request_ddx_url(DDS &dds) throw(Error, InternalErr);
+
     virtual void request_data(DataDDS &data, string expr = "") 
 	throw(Error, InternalErr);
     virtual void request_data_url(DataDDS &data) 

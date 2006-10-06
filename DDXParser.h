@@ -119,7 +119,7 @@ private:
 
     // The results of the parse operation are stored in these fields.
     DDS *dds;			// dump DDX here
-    string *blob_href;		// put URL to blob here
+    string *blob_href;		// put href to blob here
 
     // These hold temporary values read during the parse.
     string dods_attr_name;	// DAP2 attributes, not XML attributes

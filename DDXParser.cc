@@ -255,9 +255,9 @@ DDXParser::check_required_attribute(const string &attr)
     return found;
 }
 
-/** Given that an \t Attribute tag has just been read, determine whether the
-    element is a container or a simple type, set the state and, for a sumple
-    type record the type and name for use when \t value elements are found.
+/** Given that an \c Attribute tag has just been read, determine whether the
+    element is a container or a simple type, set the state and, for a simple
+    type record the type and name for use when \c value elements are found.
 
     @param attrs The array of XML attribute values */
 void
@@ -288,7 +288,7 @@ DDXParser::process_attribute_element(const char **attrs)
     }
 }
 
-/** Given that an \t Alias tag has just been read, set the state and process
+/** Given that an \c Alias tag has just been read, set the state and process
     the alias.
     @param attrs The XML attribute array */
 void
@@ -328,9 +328,9 @@ DDXParser::process_variable(Type t, ParseState s, const char **attrs)
     at_stack.push(&btp->get_attr_table());
 }
 
-/** Given that a \t dimension tag has just been read, add that information to
+/** Given that a \c dimension tag has just been read, add that information to
     the array on the top of the BaseType stack.
-    @param attrs The XML attributes included in the \t dimension tag */
+    @param attrs The XML attributes included in the \c dimension tag */
 void
 DDXParser::process_dimension(const char **attrs)
 {
@@ -343,7 +343,7 @@ DDXParser::process_dimension(const char **attrs)
     }
 }
 
-/** Given that a \t dataBLOB tag has just been read, extract and save the URL
+/** Given that a \c dataBLOB tag has just been read, extract and save the URL
     included in the element. 
     
     @param attrs The XML attributes */
@@ -357,12 +357,12 @@ DDXParser::process_blob(const char **attrs)
    }
 }
 
-/** Check to see if the current tag is either an \t Attribute or an \t Alias
+/** Check to see if the current tag is either an \c Attribute or an \c Alias
     start tag. This method is a glorified macro...
 
     @param name The start tag name
     @param attrs The tag's XML attributes
-    @return True if the tag was an \t Attribute or \t Alias tag */
+    @return True if the tag was an \c Attribute or \c Alias tag */
 inline bool
 DDXParser::is_attribute_or_alias(const char *name, const char **attrs)
 {
@@ -887,7 +887,8 @@ DDXParser::cleanup_parse(xmlParserCtxtPtr &context) const
     xmlFreeParserCtxt(context);
 }
 
-
+/** @brief Read the DDX from a stream instead of a file.
+    @see DDXParser::intern(). */
 void
 DDXParser::intern_stream(FILE *in, DDS *dest_dds, string *blob) 
         throw(DDXParseFailed, InternalErr)

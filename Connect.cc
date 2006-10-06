@@ -53,6 +53,7 @@ static char rcsid[] not_used =
 #include "Connect.h"
 #include "escaping.h"
 #include "RCReader.h"
+#include "DDXParser.h"
 
 using std::cerr;
 using std::endl;
@@ -618,6 +619,155 @@ Connect::request_dds_url(DDS &dds) throw(Error, InternalErr)
 	    throw e;
 	}
 	break;
+    }
+
+    delete rs; rs = 0;
+}
+
+/** Reads the DDX corresponding to the dataset in the Connect object's URL.
+    If present in the Connect object's instance, a CE will be escaped,
+    combined with \c expr and passed as the query string of the request.
+
+    @note A DDX is represented as XML on the wire but in memory libdap uses a
+    DDS object with variables that hold their own attributes (the DDS itself holds
+    the global attributes).
+
+    @brief Get the DDX from a server.
+    @param dds Result.
+    @param expr Send this constraint expression to the server. */
+void
+Connect::request_ddx(DDS &dds, string expr) throw(Error, InternalErr)
+{
+    string proj, sel;
+    string::size_type dotpos = expr.find('&');
+    if (dotpos != expr.npos) {
+        proj = expr.substr(0, dotpos);
+        sel = expr.substr(dotpos);
+    } else {
+        proj = expr;
+        sel = "";
+    }
+
+    string ddx_url = _URL + ".ddx" + "?" 
+        + id2www_ce(_proj + proj + _sel + sel);
+
+    Response *rs = 0;
+    try {
+        rs = d_http->fetch_url(ddx_url);
+    }
+    catch (Error &e) {
+        delete rs; rs = 0;
+        throw e;
+    }
+
+    d_version = rs->get_version();
+    d_protocol = rs->get_protocol();
+    
+    switch (rs->get_type()) {
+      case dods_error: {
+        Error e;
+          if (!e.parse(rs->get_stream())) {
+              throw InternalErr(__FILE__, __LINE__, 
+                        "Could not parse error returned from server.");
+              break;
+          }
+          throw e;
+          break;
+      }
+
+      case web_error:
+        // We should never get here; a web error should be picked up read_url
+        // (called by fetch_url) and result in a thrown Error object.
+        break;
+
+      case dap4_ddx:
+      default:
+        // DDS::prase throws an exception on error.
+        try {
+            string blob;
+            DDXParser ddxp(dds.get_factory());
+            ddxp.intern_stream(rs->get_stream(), &dds, &blob);
+#if 0
+            dds.parse(rs->get_stream()); // read and parse the dds from a file 
+#endif
+        }
+        catch (Error &e) {
+            delete rs; rs = 0;
+            throw e;
+        }
+        break;
+
+#if 0
+        // See the comment in process_data() and bug 706. 03/22/04 jhrg
+      default:
+        throw Error(
+"The site did not return a valid response (it lacked the\n\
+expected content description header value of 'dods_ddx').\n\
+This may indicate that the server at the site is not correctly\n\
+configured, or that the URL has changed.");
+#endif
+    }
+
+    delete rs; rs = 0;
+}
+
+/** @brief The 'url' version of request_ddx
+    @see Connect::request_ddx. */
+void
+Connect::request_ddx_url(DDS &dds) throw(Error, InternalErr)
+{
+    string use_url = _URL + "?" + _proj + _sel ;
+
+    Response *rs = 0;
+    try {
+        rs = d_http->fetch_url(use_url);
+    }
+    catch (Error &e) {
+        delete rs; rs = 0;
+        throw e;
+    }
+
+    d_version = rs->get_version();
+    d_protocol = rs->get_protocol();
+    
+    switch (rs->get_type()) {
+      case dods_error: {
+        Error e;
+          if (!e.parse(rs->get_stream())) {
+              throw InternalErr(__FILE__, __LINE__, 
+                        "Could not parse error returned from server.");
+              break;
+          }
+          throw e;
+          break;
+      }
+
+      case web_error:
+        // We should never get here; a web error should be picked up read_url
+        // (called by fetch_url) and result in a thrown Error object.
+        break;
+
+      case dap4_ddx:
+      default:
+        // DDS::prase throws an exception on error.
+        try {
+            dds.parse(rs->get_stream()); // read and parse the dds from a file 
+        }
+        catch (Error &e) {
+            delete rs; rs = 0;
+            throw e;
+        }
+        break;
+
+#if 0
+        // See the comment in process_data() and bug 706. 03/22/04 jhrg
+      default:
+        throw Error(
+"The site did not return a valid response (it lacked the\n\
+expected content description header value of 'dods_ddx').\n\
+This may indicate that the server at the site is not correctly\n\
+configured, or that the URL has changed.");
+#endif
     }
 
     delete rs; rs = 0;

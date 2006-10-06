@@ -76,6 +76,7 @@ public:
     CPPUNIT_TEST(structure_test);
     CPPUNIT_TEST(sequence_test);
     CPPUNIT_TEST(grid_test);
+    CPPUNIT_TEST(intern_stream_test);
 
     // Error tests
 
@@ -84,6 +85,7 @@ public:
     CPPUNIT_TEST(unknown_end_tag_test);
     CPPUNIT_TEST(variable_in_attribtue_container_test);
     CPPUNIT_TEST(array_missing_dimension_test);
+    CPPUNIT_TEST(array_missing_dimension_stream_read_test);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -225,6 +227,19 @@ public:
 	}
     }
 
+    void intern_stream_test() {
+        try {
+            FILE *in = fopen("ddx-testsuite/test.0b.ddx", "r");
+            ddx_parser->intern_stream(in, dds, &blob);
+            CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
+            DBG(dds->print_xml(stdout, false, "    "));
+        }
+        catch (DDXParseFailed &e) {
+            DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_ASSERT(!"test.0b.ddx failed.");
+        }
+    }
+
     // Error tests start here. 
 
     void unknown_tag_test() {
@@ -276,6 +291,18 @@ public:
 	    DBG(cerr << "Error: " << e.get_error_message() << endl);
 	}
     }
+    
+    void array_missing_dimension_stream_read_test() {
+        try {
+            FILE *in = fopen("ddx-testsuite/error.05.ddx", "r");
+            ddx_parser->intern_stream(in, dds, &blob);
+            CPPUNIT_ASSERT(!"error.05.ddx should fail!");
+        }
+        catch (DDXParseFailed &e) {
+            DBG(cerr << "Error: " << e.get_error_message() << endl);
+        }
+    }
+
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DDXParserTest);

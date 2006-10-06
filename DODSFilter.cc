@@ -955,20 +955,21 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
     if (!d_ce.empty())
 	eval.parse_constraint(d_ce, dds);
 
-    time_t data_lmt = get_data_last_modified_time(d_anc_dir);
+    time_t dds_lmt = get_dds_last_modified_time(d_anc_dir);
 
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
     // response. 
-    if (is_conditional()
-	&& data_lmt <= get_request_if_modified_since()
+    if (is_conditional() && dds_lmt <= get_request_if_modified_since()
         && with_mime_headers) {
 	set_mime_not_modified(out);
 	return;
     }
-
-    // Send the DDX.	
-    dds.print_xml(out, !d_ce.empty(), d_url + ".blob?" + d_ce);
+    else {
+        if (with_mime_headers)
+            set_mime_text(out, dap4_ddx, d_cgi_ver, x_plain, dds_lmt);
+        dds.print_xml(out, !d_ce.empty(), d_url + ".blob?" + d_ce);
+    }
 }
 
 /** Write the BLOB response to the client.
