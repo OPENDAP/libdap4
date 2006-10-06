@@ -206,7 +206,7 @@ DDXParser::set_state(DDXParser::ParseState state)
 }
 
 DDXParser::ParseState
-DDXParser::get_state()
+DDXParser::get_state() const
 {
     return s.top();
 }
@@ -814,7 +814,7 @@ DDXParser::ddx_fatal_error(DDXParser *parser, const char *msg, ...)
     vsnprintf(str, 1024, msg, args);
     va_end(args);
 
-    int line = getLineNumber(parser->ctxt);
+    int line = xmlSAX2GetLineNumber(parser->ctxt);
     parser->error_msg += "At line " + long_to_string(line) + ": ";
     parser->error_msg += string(str) + string("\n");
 }
@@ -862,6 +862,91 @@ static xmlSAXHandler ddx_sax_parser = {
 #endif
 };
 
+void
+DDXParser::cleanup_parse(xmlParserCtxtPtr &context) const
+{       
+    if (!context->wellFormed) {
+        context->sax = NULL;
+        xmlFreeParserCtxt(context);
+        throw DDXParseFailed(string("\nThe DDX is not a well formed XML document.\n") + error_msg);
+    }
+
+    if (!context->valid) {
+        context->sax = NULL;
+        xmlFreeParserCtxt(context);
+        throw DDXParseFailed(string("\nThe DDX is not a valid document.\n") + error_msg);
+    }
+
+    if (get_state() == parser_error) {
+        context->sax = NULL;
+        xmlFreeParserCtxt(context);
+        throw DDXParseFailed(string("\nError parsing DDX response.\n") + error_msg);
+    }
+
+    context->sax = NULL;
+    xmlFreeParserCtxt(context);
+}
+
+
+void
+DDXParser::intern_stream(FILE *in, DDS *dest_dds, string *blob) 
+        throw(DDXParseFailed, InternalErr)
+{
+// Code example from libxml2 docs re: read from a stream.
+
+    if (!in || feof(in) || ferror(in))
+         throw InternalErr(__FILE__, __LINE__, "Input stream not open or read error");
+    
+    dds = dest_dds;             // dump values here
+    blob_href = blob;           // blob goes here
+
+    int size = 1024;
+    char chars[1024];
+
+    int res = fread(chars, 1, 4, in);
+    if (res > 0) {
+        xmlParserCtxtPtr context= xmlCreatePushParserCtxt(NULL, NULL, chars, res, 
+                                                          "stream");
+        
+        ctxt = context;             // need ctxt for error messages
+
+        context->sax = &ddx_sax_parser;
+        context->userData = this;
+        context->validate = true;
+        
+        while ((res = fread(chars, 1, size, in)) > 0) {
+            xmlParseChunk(ctxt, chars, res, 0);
+        }
+        xmlParseChunk(ctxt, chars, 0, 1);
+        
+        cleanup_parse(context);
+    }
+}
+#if 0   
+        if (!context->wellFormed) {
+            context->sax = NULL;
+            xmlFreeParserCtxt(context);
+            throw DDXParseFailed(string("\nThe DDX is not a well formed XML document.\n") + error_msg);
+        }
+
+    if (!context->valid) {
+        context->sax = NULL;
+        xmlFreeParserCtxt(context);
+        throw DDXParseFailed(string("\nThe DDX is not a valid document.\n") + error_msg);
+    }
+
+    if (get_state() == parser_error) {
+        context->sax = NULL;
+        xmlFreeParserCtxt(context);
+        throw DDXParseFailed(string("\nError parsing DDX response.\n") + error_msg);
+    }
+
+    context->sax = NULL;
+    xmlFreeParserCtxt(context);
+    }
+#endif
+
+
 /** Parse a DDX document stored in a file. The XML in the doucument is parsed
     and a binary DDX is built. This implementation stores the result in a DDS
     object where each instance of BaseType can hold an AttrTable object.
@@ -897,8 +982,10 @@ DDXParser::intern(const string &document, DDS *dest_dds, string *blob)
     context->validate = true;
 
     xmlParseDocument(context);
-	
-    // use getLineNumber and getColumnNumber to make the error messages better.
+
+    cleanup_parse(context);
+}
+#if 0
     if (!context->wellFormed) {
 	context->sax = NULL;
 	xmlFreeParserCtxt(context);
@@ -919,5 +1006,6 @@ DDXParser::intern(const string &document, DDS *dest_dds, string *blob)
 
     context->sax = NULL;
     xmlFreeParserCtxt(context);
-}
+#endif
+
 
