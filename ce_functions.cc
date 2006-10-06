@@ -762,6 +762,8 @@ assumed to be the slope and y-intercept.");
     if (argv[0]->type() == dods_grid_c) {
         Grid &grid = dynamic_cast<Grid&>(*argv[0]);
         Array &source = *grid.get_array();
+        source.set_send_p(true);
+        grid.read(dataset);
         data = extract_double_array(&source);
         int length = source.length();
         int i = 0;
@@ -778,6 +780,13 @@ assumed to be the slope and y-intercept.");
     }
     else if (argv[0]->is_vector_type()) {
         Array &source = dynamic_cast<Array&>(*argv[0]);
+        source.set_send_p(true);
+        // If the array is really a map, make sure to read using the Grid 
+        // because of the HDF4 handler's odd behavior WRT dimensions.
+        if (source.get_parent()->type() == dods_grid_c)
+            source.get_parent()->read(dataset);
+        else
+            source.read(dataset);        
         data = extract_double_array(&source);
         int length = source.length();
         int i = 0;
