@@ -75,15 +75,50 @@ append_rvalue_list(rvalue_list *rvals, rvalue *rv)
     return rvals;
 }
 
-rvalue::rvalue(BaseType *bt): value(bt), func(0), args(0)
+
+/** Build an argument list suitable for calling a \c btp_func,
+    \c bool_func, and so on. Since this takes an rvalue_list and
+    not an rvalue, it is a function rather than a class
+    member. 
+
+    This function performs a common task but does not fit within the RValue
+    class well. It is used by Clause and ce_expr.y.
+    
+    @param args A list of RValue objects
+    @param dds Use this DDS when evaluating functions
+    @param dataset Use this when evaluating functions. */
+BaseType **
+build_btp_args(rvalue_list *args, DDS &dds, const string &dataset)
+{
+    int argc = 0;
+
+    if (args)
+        argc = args->size();
+
+    // Add space for a null terminator
+    BaseType **argv = new BaseType *[argc + 1];
+
+    int index = 0;
+    if (argc) {
+        for (rvalue::Args_iter i = args->begin(); i != args->end(); i++) {
+            argv[index++] = (*i)->bvalue(dataset, dds);
+        }
+    }
+
+    argv[index] = 0;            // Add the null terminator.
+
+    return argv;
+}
+
+rvalue::rvalue(BaseType *bt): d_value(bt), d_func(0), d_args(0)
 {
 }
 
-rvalue::rvalue(btp_func f, vector<rvalue *> *a) : value(0), func(f), args(a)
+rvalue::rvalue(btp_func f, vector<rvalue *> *a) : d_value(0), d_func(f), d_args(a)
 {
 }
 
-rvalue::rvalue(): value(0), func(0), args(0)
+rvalue::rvalue(): d_value(0), d_func(0), d_args(0)
 {
 }
 
@@ -92,46 +127,37 @@ rvalue::~rvalue()
     // Deleting the BaseType pointers in value and args is a bad idea since
     // those might be variables in the dataset. The DDS dtor will take care
     // of deleting them. The constants wrapped in BaseType objects should be
-    // pushed on the list of CE-allocated temp objects which the DDS also
-    // frees. 
+    // pushed on the list of CE-allocated temp objects which the CE frees. 
 }
 
 string
 rvalue::value_name()
 {
-    assert(value);
+    assert(d_value);
 
-    return value->name();
+    return d_value->name();
 }
 
-/** Return the BaseType * that contains a value for a given rvalue. If the
-    rvalue is a BaseType *, ensures that the read mfunc has been called. If
+/** Return the BaseType * for a given rvalue. If 
     the rvalue is a func_rvalue, evaluates the func_rvalue and returns the
     result. The functions referenced by func_rvalues must encapsulate their
     return values in BaseType *s. 
-
-    @note If the BaseType pointer is a Sequence, calling read loads the first
-    value; because the read_p property is set code that iteratively reads
-    rows of the Sequence will work *if* it first checks read_p. In other
-    words, all code that reads rows of Sequences should check read_p. If that
-    property is true, then the code should assume that one rows worth of data
-    has already been read. 
+    
+    @param dataset The dataset name to pass to a function (which may call
+    BaseType::read() using that arguemnt).
+    @param dds The dds to pass to a function.
 */
 BaseType *
 rvalue::bvalue(const string &dataset, DDS &dds) 
 {
-    if (value) {        // i.e., if this RValue is a BaseType
-#if 0
-	if (!value->read_p())
-	    value->read(dataset);
-#endif
-	return value;
+    if (d_value) {        // i.e., if this RValue is a BaseType
+	return d_value;
     }
-    else if (func) {
+    else if (d_func) {
 	// If func is true, then args must be set. See the constructor.
 	// 12/23/04 jhrg
-	BaseType **argv = build_btp_args(args, dds);
-	BaseType *ret_val = (*func)(args->size(), argv, dds, dataset);
+	BaseType **argv = build_btp_args(d_args, dds, dataset);
+	BaseType *ret_val = (*d_func)(d_args->size(), argv, dds, dataset);
 	delete[] argv;
 	return ret_val;
     }
@@ -140,35 +166,3 @@ rvalue::bvalue(const string &dataset, DDS &dds)
     }
 }
 
-
-/** Build an argument list suitable for calling a <tt>btp_func</tt>,
-    <tt>bool_func</tt>, and so on. Since this takes an <tt>rvalue_list</tt> and
-    not an rvalue, it is a function rather than a class
-    member. 
-
-    This function performs a common task but does not fit within the RValue
-    class well. It is used by Clause and ce_expr.y. */
-BaseType **
-build_btp_args(rvalue_list *args, DDS &dds)
-{
-    int argc = 0;
-
-    if (args)
-	argc = args->size();
-
-    // Add space for a null terminator
-    BaseType **argv = new BaseType *[argc + 1];
-
-    string dataset = dds.filename();
-		
-    int index = 0;
-    if (argc) {
-	for (rvalue::Args_iter i = args->begin(); i != args->end(); i++) {
-	    argv[index++] = (*i)->bvalue(dataset, dds);
-	}
-    }
-
-    argv[index] = 0;		// Add the null terminator.
-
-    return argv;
-}

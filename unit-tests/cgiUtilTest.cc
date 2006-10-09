@@ -40,6 +40,8 @@
 #include <string>
 #include <sstream>
 
+//#define DODS_DEBUG
+
 #include "GNURegex.h"
 
 #include "cgi_util.h"
@@ -125,7 +127,8 @@ Content-Description: dods_das\r\n\
 \r\n.*");
         string oss;
         FILE2string(oss, tmp, set_mime_text(tmp, dods_das, "dods-test/0.00"));
-	CPPUNIT_ASSERT(re_match(r1, oss));
+        DBG(cerr << "DODS DAS" << endl << oss);
+      	CPPUNIT_ASSERT(re_match(r1, oss));
 
 	Regex r2("HTTP/1.0 200 OK\r\n\
 XDODS-Server: dods-test/0.00\r\n\

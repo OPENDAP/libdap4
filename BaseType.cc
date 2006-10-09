@@ -595,7 +595,11 @@ BaseType::add_var(BaseType *, Part)
 /** This method should be implemented for each of the data type classes (Byte,
     ..., Grid) when using the DAP class library to build a server. This
     method is only for DAP servers. The library provides a default
-    definition here which throws an InternalErr exception.
+    definition here which throws an InternalErr exception \e unless the read_p
+    property has been set. In that case it returns false, indicating that all
+    the data have been read. The latter case can happen when building a
+    constant value that needs to be passed to a function. The variable/constant
+    is loaded with a value when it is created. 
 
     When implementing a new DAP server, the Byte, ..., Grid data type classes
     are usually specialized. In each of those specializations read() should
@@ -649,7 +653,7 @@ BaseType::add_var(BaseType *, Part)
     @return The return value of this method for all types except Sequence 
     should always be false. Sequences should return true to indicate more
     values remain in the Sequence, false to indicate no more values remain.
-    (see Sequence::serialize() and Sequence::read_row()).
+    (see Sequence::serialize() and Sequence::read_row()). 
 
     @param dataset A string naming the dataset from which the data is to
     be read. The meaning of this string will vary among different types of
@@ -661,6 +665,9 @@ BaseType::add_var(BaseType *, Part)
 bool 
 BaseType::read(const string &)
 {
+    if ( _read_p )
+        return false;
+        
     throw InternalErr("Unimplemented BaseType::read() method called.");
 }
 

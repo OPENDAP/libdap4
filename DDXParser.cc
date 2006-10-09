@@ -923,29 +923,6 @@ DDXParser::intern_stream(FILE *in, DDS *dest_dds, string *blob)
         cleanup_parse(context);
     }
 }
-#if 0   
-        if (!context->wellFormed) {
-            context->sax = NULL;
-            xmlFreeParserCtxt(context);
-            throw DDXParseFailed(string("\nThe DDX is not a well formed XML document.\n") + error_msg);
-        }
-
-    if (!context->valid) {
-        context->sax = NULL;
-        xmlFreeParserCtxt(context);
-        throw DDXParseFailed(string("\nThe DDX is not a valid document.\n") + error_msg);
-    }
-
-    if (get_state() == parser_error) {
-        context->sax = NULL;
-        xmlFreeParserCtxt(context);
-        throw DDXParseFailed(string("\nError parsing DDX response.\n") + error_msg);
-    }
-
-    context->sax = NULL;
-    xmlFreeParserCtxt(context);
-    }
-#endif
 
 
 /** Parse a DDX document stored in a file. The XML in the doucument is parsed
@@ -986,27 +963,3 @@ DDXParser::intern(const string &document, DDS *dest_dds, string *blob)
 
     cleanup_parse(context);
 }
-#if 0
-    if (!context->wellFormed) {
-	context->sax = NULL;
-	xmlFreeParserCtxt(context);
-	throw DDXParseFailed(string("\nThe DDX is not a well formed XML document.\n") + error_msg);
-    }
-
-    if (!context->valid) {
-	context->sax = NULL;
-	xmlFreeParserCtxt(context);
-	throw DDXParseFailed(string("\nThe DDX is not a valid document.\n") + error_msg);
-    }
-
-    if (get_state() == parser_error) {
-	context->sax = NULL;
-	xmlFreeParserCtxt(context);
-	throw DDXParseFailed(string("\nError parsing DDX response.\n") + error_msg);
-    }
-
-    context->sax = NULL;
-    xmlFreeParserCtxt(context);
-#endif
-
-

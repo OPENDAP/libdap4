@@ -400,9 +400,9 @@ static const yysigned_char yyrhs[] =
 static const unsigned short int yyrline[] =
 {
        0,   166,   166,   171,   173,   173,   177,   183,   184,   190,
-     202,   206,   212,   232,   233,   239,   248,   259,   265,   278,
-     289,   301,   308,   317,   322,   327,   358,   365,   375,   379,
-     385,   397,   415,   441,   442,   443,   444,   445,   446,   447
+     202,   206,   212,   233,   234,   240,   249,   260,   266,   279,
+     290,   302,   309,   318,   323,   328,   359,   366,   376,   380,
+     386,   398,   416,   442,   443,   444,   445,   446,   447,   448
 };
 #endif
 
@@ -1241,8 +1241,9 @@ yyreduce:
 			(yyval.boolean) = true;
 		    }
 		    else if ((p_f = get_proj_function(*(EVALUATOR(arg)), (yyvsp[-3].id)))) {
-			BaseType **args = build_btp_args((yyvsp[-1].r_val_l_ptr), *(DDS(arg)));
-			(*p_f)(((yyvsp[-1].r_val_l_ptr)) ? (yyvsp[-1].r_val_l_ptr)->size():0, args, *(DDS(arg)), *(EVALUATOR(arg)));
+		        DDS &dds = dynamic_cast<DDS&>(*(DDS(arg)));
+			BaseType **args = build_btp_args( (yyvsp[-1].r_val_l_ptr), dds, dds.get_dataset_name() );
+			(*p_f)(((yyvsp[-1].r_val_l_ptr)) ? (yyvsp[-1].r_val_l_ptr)->size():0, args, dds, *(EVALUATOR(arg)));
 			(yyval.boolean) = true;
 		    }
 		    else {
@@ -1252,14 +1253,14 @@ yyreduce:
     break;
 
   case 14:
-#line 234 "ce_expr.y"
+#line 235 "ce_expr.y"
     {
 		    (yyval.boolean) = (yyvsp[-2].boolean) && (yyvsp[0].boolean);
 		;}
     break;
 
   case 15:
-#line 240 "ce_expr.y"
+#line 241 "ce_expr.y"
     {
 		    if ((yyvsp[-4].rval_ptr)) {
 			EVALUATOR(arg)->append_clause((yyvsp[-3].op), (yyvsp[-4].rval_ptr), (yyvsp[-1].r_val_l_ptr));
@@ -1271,7 +1272,7 @@ yyreduce:
     break;
 
   case 16:
-#line 249 "ce_expr.y"
+#line 250 "ce_expr.y"
     {
 		    if ((yyvsp[-2].rval_ptr)) {
 			rvalue_list *rv = new rvalue_list;
@@ -1285,14 +1286,14 @@ yyreduce:
     break;
 
   case 17:
-#line 260 "ce_expr.y"
+#line 261 "ce_expr.y"
     {
 		    (yyval.boolean) = (yyvsp[0].boolean);
 		;}
     break;
 
   case 18:
-#line 266 "ce_expr.y"
+#line 267 "ce_expr.y"
     {
 		   bool_func b_func = get_function((*EVALUATOR(arg)), (yyvsp[-3].id));
 		   if (!b_func) {
@@ -1306,7 +1307,7 @@ yyreduce:
     break;
 
   case 20:
-#line 290 "ce_expr.y"
+#line 291 "ce_expr.y"
     {
 		    btp_func func = get_btp_function((*EVALUATOR(arg)), (yyvsp[-3].id));
 		    if (func) {
@@ -1319,7 +1320,7 @@ yyreduce:
     break;
 
   case 21:
-#line 302 "ce_expr.y"
+#line 303 "ce_expr.y"
     {
 		    if ((yyvsp[0].rval_ptr))
 			(yyval.r_val_l_ptr) = make_rvalue_list((yyvsp[0].rval_ptr));
@@ -1329,7 +1330,7 @@ yyreduce:
     break;
 
   case 22:
-#line 309 "ce_expr.y"
+#line 310 "ce_expr.y"
     {
 		    if ((yyvsp[-2].r_val_l_ptr) && (yyvsp[0].rval_ptr))
 			(yyval.r_val_l_ptr) = append_rvalue_list((yyvsp[-2].r_val_l_ptr), (yyvsp[0].rval_ptr));
@@ -1339,21 +1340,21 @@ yyreduce:
     break;
 
   case 23:
-#line 318 "ce_expr.y"
+#line 319 "ce_expr.y"
     {  
 		  (yyval.r_val_l_ptr) = (yyvsp[0].r_val_l_ptr);
 	      ;}
     break;
 
   case 24:
-#line 322 "ce_expr.y"
+#line 323 "ce_expr.y"
     { 
 		  (yyval.r_val_l_ptr) = 0; 
 	      ;}
     break;
 
   case 25:
-#line 328 "ce_expr.y"
+#line 329 "ce_expr.y"
     { 
 		    BaseType *btp = DDS(arg)->var(www2id(string((yyvsp[0].id))));
 		    if (!btp) {
@@ -1387,7 +1388,7 @@ yyreduce:
     break;
 
   case 26:
-#line 359 "ce_expr.y"
+#line 360 "ce_expr.y"
     { 
 		    BaseType *btp = make_variable((*DDS(arg)), (*EVALUATOR(arg)), (yyvsp[0].val)); 
 		    (yyval.rval_ptr) = new rvalue(btp);
@@ -1395,7 +1396,7 @@ yyreduce:
     break;
 
   case 27:
-#line 366 "ce_expr.y"
+#line 367 "ce_expr.y"
     {
 		  if (!bracket_projection((*DDS(arg)), (yyvsp[-1].id), (yyvsp[0].int_ll_ptr)))
 		    // no_such_ident throws an exception.
@@ -1406,21 +1407,21 @@ yyreduce:
     break;
 
   case 28:
-#line 376 "ce_expr.y"
+#line 377 "ce_expr.y"
     {
 		    (yyval.int_ll_ptr) = make_array_indices((yyvsp[0].int_l_ptr));
 		;}
     break;
 
   case 29:
-#line 380 "ce_expr.y"
+#line 381 "ce_expr.y"
     {
 		    (yyval.int_ll_ptr) = append_array_index((yyvsp[-1].int_ll_ptr), (yyvsp[0].int_l_ptr));
 		;}
     break;
 
   case 30:
-#line 386 "ce_expr.y"
+#line 387 "ce_expr.y"
     {
 		    if (!check_uint32((yyvsp[-1].id))) {
 			string msg = "The word `";
@@ -1435,7 +1436,7 @@ yyreduce:
     break;
 
   case 31:
-#line 398 "ce_expr.y"
+#line 399 "ce_expr.y"
     {
 		    if (!check_uint32((yyvsp[-3].id))) {
 			string msg = "The word `";
@@ -1456,7 +1457,7 @@ yyreduce:
     break;
 
   case 32:
-#line 416 "ce_expr.y"
+#line 417 "ce_expr.y"
     {
 		    if (!check_uint32((yyvsp[-5].id))) {
 			string msg = "The word `";
@@ -1486,7 +1487,7 @@ yyreduce:
     }
 
 /* Line 1037 of yacc.c.  */
-#line 1490 "ce_expr.tab.c"
+#line 1491 "ce_expr.tab.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1714,7 +1715,7 @@ yyreturn:
 }
 
 
-#line 450 "ce_expr.y"
+#line 451 "ce_expr.y"
 
 
 // All these error reporting function now throw instnaces of Error. The expr

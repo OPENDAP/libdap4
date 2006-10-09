@@ -172,8 +172,7 @@ Clause::value(const string &dataset, DDS &dds)
 	return result;
     }
     else if (_b_func) {		// ...A bool function?
-        // build_btp_args() calls read for BaseTypes
-	BaseType **argv = build_btp_args(_args, dds);
+	BaseType **argv = build_btp_args(_args, dds, dataset);
 
 	bool result = (*_b_func)(_argc, argv, dds);
 	delete[] argv;		// Cache me!
@@ -209,19 +208,13 @@ Clause::value(const string &dataset, DDS &dds, BaseType **value)
         // build_btp_args() is a function defined in RValue.cc. It no longer 
         // reads the values as it builds the arguments, that is now left up
         // to the functions themselves. 9/25/06 jhrg
-	BaseType **argv = build_btp_args(_args, dds);
+	BaseType **argv = build_btp_args(_args, dds, dataset);
 
 	*value = (*_bt_func)(_argc, argv, dds, dataset);
 	delete[] argv;		// Cache me!
 	argv = 0;
 
 	if (*value) {
-#if 0
-            // This was removed because the older version of the evaluator
-            // did read all of the variables. The newer version (see the
-            // comment in RValue.cc) does not call read.
-	    (*value)->set_read_p(true);
-#endif
 	    (*value)->set_send_p(true);
 	    return true;
 	}

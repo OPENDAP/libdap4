@@ -40,9 +40,9 @@
 
 class rvalue {
 private:
-    BaseType *value;
-    btp_func func;		// pointer to a function returning BaseType *
-    std::vector<rvalue *> *args;		// arguments to the function
+    BaseType *d_value;
+    btp_func d_func;		// pointer to a function returning BaseType *
+    std::vector<rvalue *> *d_args;		// arguments to the function
 
 public:
     typedef std::vector<rvalue *>::iterator Args_iter ;
@@ -67,6 +67,6 @@ typedef std::vector<rvalue *>::iterator rvalue_list_iter ;
 rvalue_list *make_rvalue_list(rvalue *rv);
 rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
 
-BaseType **build_btp_args(rvalue_list *args, DDS &dds);
+BaseType **build_btp_args(rvalue_list *args, DDS &dds, const string &dataset);
 
 #endif // _rvalue_h
