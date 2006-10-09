@@ -273,7 +273,7 @@ AISDatabaseParser::aisWarning(AISParserState *state, const char *msg, ...)
     vsnprintf(str, 1024, msg, args);
     va_end(args);
 
-    int line = getLineNumber(state->ctxt);
+    int line = xmlSAX2GetLineNumber(state->ctxt);
     state->error_msg += "At line: " + long_to_string(line) + ": ";
     state->error_msg += string(str) + string("\n");
 }
