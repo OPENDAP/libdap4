@@ -29,7 +29,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Int32.h"
@@ -45,6 +45,14 @@
 #include "../tests/TestTypeFactory.h"
 
 #include "debug.h"
+
+#if 1
+#define TWO_GRID_DDS "ce-functions-testsuite/two_grid.dds"
+#define TWO_GRID_DAS "ce-functions-testsuite/two_grid.das"
+#else
+#define TWO_GRID_DDS "unit-tests/ce-functions-testsuite/two_grid.dds"
+#define TWO_GRID_DAS "unit-tests/ce-functions-testsuite/two_grid.das"
+#endif
 
 using namespace CppUnit;
 using namespace libdap;
@@ -68,9 +76,9 @@ public:
     {
         try {
             dds = new DDS(&btf);
-            dds->parse("unit-tests/ce-functions-testsuite/two_grid.dds");
+            dds->parse(TWO_GRID_DDS);
             DAS das;
-            das.parse("unit-tests/ce-functions-testsuite/two_grid.das");
+            das.parse(TWO_GRID_DAS);
             dds->transfer_attributes(&das);
             DBG(dds->print_xml(stderr, false, "noBlob"));
             // Load values into the grid variables
