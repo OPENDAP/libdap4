@@ -490,7 +490,7 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
     else 
 	fprintf( out, "%s%s", rfc822_date(t).c_str(), CRLF ) ;
 
-    if ( type = dap4_ddx )
+    if ( type == dap4_ddx )
         fprintf( out, "Content-Type: text/xml%s", CRLF ) ;
     else
         fprintf( out, "Content-Type: text/plain%s", CRLF ) ;
