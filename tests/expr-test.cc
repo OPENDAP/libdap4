@@ -22,7 +22,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1995-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -37,7 +37,8 @@
 
 //#define DODS_DEBUG 0
 
-static char rcsid[] not_used = {"$Id$"};
+static char rcsid[] not_used =
+    { "$Id$" };
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,35 +82,35 @@ static char rcsid[] not_used = {"$Id$"};
 
 using namespace std;
 
-int test_variable_sleep_interval = 0; // Used in Test* classes for testing
-				      // timeouts. 
+int test_variable_sleep_interval = 0;   // Used in Test* classes for testing
+                                      // timeouts. 
 
-#define CRLF "\r\n"                   // Change this here and in cgi_util.cc
+#define CRLF "\r\n"             // Change this here and in cgi_util.cc
 #define DODS_DDS_PRX "dods_dds"
 #define YY_BUFFER_STATE (void *)
 
-void test_scanner(const string &str);
+void test_scanner(const string & str);
 void test_scanner(bool show_prompt);
-void test_parser(ConstraintEvaluator &eval, DDS &table, const string &dds_name,
-                 const string &constraint);
-bool read_table(DDS &table, const string &name, bool print);
-void evaluate_dds(DDS &table, bool print_constrained);
-bool loopback_pipe(FILE **pout, FILE **pin);
-void constrained_trans(const string &dds_name, const bool constraint_expr,
-		       const string &ce, const bool series_values);
+void test_parser(ConstraintEvaluator & eval, DDS & table,
+                 const string & dds_name, const string & constraint);
+bool read_table(DDS & table, const string & name, bool print);
+void evaluate_dds(DDS & table, bool print_constrained);
+bool loopback_pipe(FILE ** pout, FILE ** pin);
+void constrained_trans(const string & dds_name, const bool constraint_expr,
+                       const string & ce, const bool series_values);
 
-int ce_exprlex();			// exprlex() uses the global ce_exprlval
+int ce_exprlex();               // exprlex() uses the global ce_exprlval
 int ce_exprparse(void *arg);
-void ce_exprrestart(FILE *in);
+void ce_exprrestart(FILE * in);
 
 // Glue routines declared in expr.lex
 void ce_expr_switch_to_buffer(void *new_buffer);
-void ce_expr_delete_buffer(void * buffer);
+void ce_expr_delete_buffer(void *buffer);
 void *ce_expr_string(const char *yy_str);
 
 extern int ce_exprdebug;
 
-static int keep_temps = 0;	// MT-safe; test code.
+static int keep_temps = 0;      // MT-safe; test code.
 
 const string version = "version 1.12";
 const string prompt = "expr-test: ";
@@ -140,8 +141,7 @@ const string usage = "\
 \n      -k: A constraint expression to use with the data. Works with -p,\
 \n          -e, -t and -w";
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     GetOpt getopt(argc, argv, options.c_str());
     int option_char;
@@ -241,10 +241,10 @@ main(int argc, char *argv[])
         }
 
     }
-    catch(Error &e) {
+    catch(Error & e) {
         fprintf(stderr, "%s\n", e.get_error_message().c_str());
         exit(1);
-    } 
+    }
     catch(exception & e) {
         fprintf(stderr, "Caught exception: %s\n", e.what());
         exit(1);
@@ -256,8 +256,7 @@ main(int argc, char *argv[])
 // Instead of reading the tokens from stdin, read them from a string.
 
 
-void
-test_scanner(const string &str)
+void test_scanner(const string & str)
 {
     ce_exprrestart(0);
     void *buffer = ce_expr_string(str.c_str());
@@ -268,80 +267,79 @@ test_scanner(const string &str)
     ce_expr_delete_buffer(buffer);
 }
 
-void
-test_scanner(bool show_prompt)
+void test_scanner(bool show_prompt)
 {
-    if (show_prompt) 
-	fprintf( stdout, "%s", prompt.c_str() )	; // first prompt
+    if (show_prompt)
+        fprintf(stdout, "%s", prompt.c_str());  // first prompt
 
     int tok;
     while ((tok = ce_exprlex())) {
-	switch (tok) {
-	  case SCAN_WORD:
-	    fprintf( stdout, "WORD: %s\n", ce_exprlval.id ) ;
-	    break;
-	  case SCAN_STR:
-	    fprintf( stdout, "STR: %s\n", ce_exprlval.val.v.s->c_str() ) ;
-	    break;
-	  case SCAN_EQUAL:
-	    fprintf( stdout, "EQUAL: %d\n", ce_exprlval.op ) ;
-	    break;
-	  case SCAN_NOT_EQUAL:
-	    fprintf( stdout, "NOT_EQUAL: %d\n", ce_exprlval.op ) ;
-	    break;
-	  case SCAN_GREATER:
-	    fprintf( stdout, "GREATER: %d\n", ce_exprlval.op ) ;
-	    break;
-	  case SCAN_GREATER_EQL:
-	    fprintf( stdout, "GREATER_EQL: %d\n", ce_exprlval.op ) ;
-	    break;
-	  case SCAN_LESS:
-	    fprintf( stdout, "LESS: %d\n", ce_exprlval.op ) ;
-	    break;
-	  case SCAN_LESS_EQL:
-	    fprintf( stdout, "LESS_EQL: %d\n", ce_exprlval.op ) ;
-	    break;
-	  case SCAN_REGEXP:
-	    fprintf( stdout, "REGEXP: %d\n", ce_exprlval.op ) ;
-	    break;
-	  case '*':
-	    fprintf( stdout, "Dereference\n" ) ;
-	    break;
-	  case '.':
-	    fprintf( stdout, "Field Selector\n" ) ;
-	    break;
-	  case ',':
-	    fprintf( stdout, "List Element Separator\n" ) ;
-	    break;
-	  case '[':
-	    fprintf( stdout, "Left Bracket\n" ) ;
-	    break;
-	  case ']':
-	    fprintf( stdout, "Right Bracket\n" ) ;
-	    break;
-	  case '(':
-	    fprintf( stdout, "Left Paren\n" ) ;
-	    break;
-	  case ')':
-	    fprintf( stdout, "Right Paren\n" ) ;
-	    break;
-	  case '{':
-	    fprintf( stdout, "Left Brace\n" ) ;
-	    break;
-	  case '}':
-	    fprintf( stdout, "Right Brace\n" ) ;
-	    break;
-	  case ':':
-	    fprintf( stdout, "Colon\n" ) ;
-	    break;
-	  case '&':
-	    fprintf( stdout, "Ampersand\n" ) ;
-	    break;
-	  default:
-	    fprintf( stdout, "Error: Unrecognized input\n" ) ;
-	}
-	fprintf( stdout, "%s", prompt.c_str() ) ; // print prompt after output
-	fflush( stdout ) ;
+        switch (tok) {
+        case SCAN_WORD:
+            fprintf(stdout, "WORD: %s\n", ce_exprlval.id);
+            break;
+        case SCAN_STR:
+            fprintf(stdout, "STR: %s\n", ce_exprlval.val.v.s->c_str());
+            break;
+        case SCAN_EQUAL:
+            fprintf(stdout, "EQUAL: %d\n", ce_exprlval.op);
+            break;
+        case SCAN_NOT_EQUAL:
+            fprintf(stdout, "NOT_EQUAL: %d\n", ce_exprlval.op);
+            break;
+        case SCAN_GREATER:
+            fprintf(stdout, "GREATER: %d\n", ce_exprlval.op);
+            break;
+        case SCAN_GREATER_EQL:
+            fprintf(stdout, "GREATER_EQL: %d\n", ce_exprlval.op);
+            break;
+        case SCAN_LESS:
+            fprintf(stdout, "LESS: %d\n", ce_exprlval.op);
+            break;
+        case SCAN_LESS_EQL:
+            fprintf(stdout, "LESS_EQL: %d\n", ce_exprlval.op);
+            break;
+        case SCAN_REGEXP:
+            fprintf(stdout, "REGEXP: %d\n", ce_exprlval.op);
+            break;
+        case '*':
+            fprintf(stdout, "Dereference\n");
+            break;
+        case '.':
+            fprintf(stdout, "Field Selector\n");
+            break;
+        case ',':
+            fprintf(stdout, "List Element Separator\n");
+            break;
+        case '[':
+            fprintf(stdout, "Left Bracket\n");
+            break;
+        case ']':
+            fprintf(stdout, "Right Bracket\n");
+            break;
+        case '(':
+            fprintf(stdout, "Left Paren\n");
+            break;
+        case ')':
+            fprintf(stdout, "Right Paren\n");
+            break;
+        case '{':
+            fprintf(stdout, "Left Brace\n");
+            break;
+        case '}':
+            fprintf(stdout, "Right Brace\n");
+            break;
+        case ':':
+            fprintf(stdout, "Colon\n");
+            break;
+        case '&':
+            fprintf(stdout, "Ampersand\n");
+            break;
+        default:
+            fprintf(stdout, "Error: Unrecognized input\n");
+        }
+        fprintf(stdout, "%s", prompt.c_str());  // print prompt after output
+        fflush(stdout);
     }
 }
 
@@ -350,25 +348,24 @@ test_scanner(bool show_prompt)
 // stdin and thus the expr scanner exits immediately.
 
 void
-test_parser(ConstraintEvaluator &eval, DDS &dds, const string &dds_name,
-            const string &constraint)
+test_parser(ConstraintEvaluator & eval, DDS & dds, const string & dds_name,
+            const string & constraint)
 {
     try {
-	read_table(dds, dds_name, true);
+        read_table(dds, dds_name, true);
 
-	if (constraint != "") {
-	    eval.parse_constraint(constraint, dds);
-	}
-	else {
-	    ce_exprrestart(stdin);
-	    fprintf( stdout, "%s", prompt.c_str() ) ;
-	    parser_arg arg(&eval);
-	    ce_exprparse((void *)&arg);
-	}
+        if (constraint != "") {
+            eval.parse_constraint(constraint, dds);
+        } else {
+            ce_exprrestart(stdin);
+            fprintf(stdout, "%s", prompt.c_str());
+            parser_arg arg(&eval);
+            ce_exprparse((void *) &arg);
+        }
 
-	fprintf( stdout, "Input parsed\n" ) ;	// Parser throws on failure.
+        fprintf(stdout, "Input parsed\n");      // Parser throws on failure.
     }
-    catch (Error &e) {
+    catch(Error & e) {
         cerr << e.get_error_message() << endl;
     }
 }
@@ -380,43 +377,41 @@ test_parser(ConstraintEvaluator &eval, DDS &dds, const string &dds_name,
 // Returns: true iff that DDS pasted the semantic_check() mfunc, otherwise
 // false.
 
-bool
-read_table(DDS &table, const string &name, bool print)
+bool read_table(DDS & table, const string & name, bool print)
 {
     table.parse(name);
-    
+
     if (print)
-	table.print( stdout );
+        table.print(stdout);
 
     if (table.check_semantics(true))
-	return true;
+        return true;
     else {
-	fprintf( stdout, "Input did not pass semantic checks\n" ) ;
-	return false;
+        fprintf(stdout, "Input did not pass semantic checks\n");
+        return false;
     }
 }
 
-void
-evaluate_dds(DDS &table, bool print_constrained)
+void evaluate_dds(DDS & table, bool print_constrained)
 {
     if (print_constrained)
-	table.print_constrained( stdout );
+        table.print_constrained(stdout);
     else
-	for (DDS::Vars_iter p = table.var_begin(); p != table.var_end(); p++)
-	    (*p)->print_decl(stdout, "", true, true);
+        for (DDS::Vars_iter p = table.var_begin(); p != table.var_end();
+             p++)
+            (*p)->print_decl(stdout, "", true, true);
 }
 
 // create a pipe for the caller's process which can be used by the DODS
 // software to write to and read from itself.
 
-bool
-loopback_pipe(FILE **pout, FILE **pin)
+bool loopback_pipe(FILE ** pout, FILE ** pin)
 {
 #ifdef WIN32
     int fd[2];
     if (_pipe(fd, 1024, _O_BINARY) < 0) {
-	fprintf( stderr, "Could not open pipe\n" ) ;
-	return false;
+        fprintf(stderr, "Could not open pipe\n");
+        return false;
     }
 
     *pout = fdopen(fd[1], "w+b");
@@ -424,8 +419,8 @@ loopback_pipe(FILE **pout, FILE **pin)
 #else
     int fd[2];
     if (pipe(fd) < 0) {
-	fprintf( stderr, "Could not open pipe\n" ) ;
-	return false;
+        fprintf(stderr, "Could not open pipe\n");
+        return false;
     }
 
     *pout = fdopen(fd[1], "w");
@@ -446,53 +441,52 @@ loopback_pipe(FILE **pout, FILE **pin)
 //
 // Returns: a FILE * which contains the DDS describing the binary information
 // in IF.
-FILE *
-move_dds(FILE *in)
+FILE *move_dds(FILE * in)
 {
-    char c[] = {"dodsXXXXXX"};
+    char c[] = { "dodsXXXXXX" };
 #ifdef WIN32
     char *result = _mktemp(c);
 
     if (result == NULL) {
-        fprintf( stderr, "Could not create unique tempoary file name\n");
+        fprintf(stderr, "Could not create unique tempoary file name\n");
         return NULL;
-        }
-        FILE *fp = fopen(_mktemp(c), "w+b");
+    }
+    FILE *fp = fopen(_mktemp(c), "w+b");
 #else
     int fd = mkstemp(c);
     if (fd == -1) {
-        fprintf( stderr, "Could not create temporary file name %s\n",
-                   strerror(errno) ) ;
+        fprintf(stderr, "Could not create temporary file name %s\n",
+                strerror(errno));
         return NULL;
     }
 
     FILE *fp = fdopen(fd, "w+b");
 #endif
     if (!keep_temps)
-	unlink(c);
+        unlink(c);
     if (!fp) {
-	fprintf( stderr, "Could not open anonymous temporary file: %s\n",
-			 strerror(errno) ) ;
-	return NULL;
+        fprintf(stderr, "Could not open anonymous temporary file: %s\n",
+                strerror(errno));
+        return NULL;
     }
-	    
+
     int data = FALSE;
     char s[256], *sp;
-    
+
     sp = &s[0];
     while (!feof(in) && !data) {
-	sp = fgets(s, 255, in);
-	if (strcmp(s, "Data:\n") == 0)
-	    data = TRUE;
-	else
-	    fputs(s, fp);
+        sp = fgets(s, 255, in);
+        if (strcmp(s, "Data:\n") == 0)
+            data = TRUE;
+        else
+            fputs(s, fp);
     }
 
     fflush(fp);
     if (fseek(fp, 0L, 0) < 0) {
-	fprintf( stderr, "Could not rewind data DDS stream: %s\n",
-		 strerror(errno) ) ;
-	return NULL;
+        fprintf(stderr, "Could not rewind data DDS stream: %s\n",
+                strerror(errno));
+        return NULL;
     }
 
     return fp;
@@ -508,22 +502,20 @@ move_dds(FILE *in)
 // header generation is not buried in the core software. This code simply
 // reads until the end of the header is found. 3/25/98 jhrg
 
-void
-parse_mime(FILE *data_source)
+void parse_mime(FILE * data_source)
 {
     char line[256];
 
     fgets(line, 256, data_source);
-    
+
     while (strncmp(line, CRLF, 2) != 0)
-	fgets(line, 256, data_source);
+        fgets(line, 256, data_source);
 }
 
-void
-set_series_values(DDS &dds, bool state)
+void set_series_values(DDS & dds, bool state)
 {
     for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
-	dynamic_cast<TestCommon&>(**q).set_series_values(state);
+        dynamic_cast < TestCommon & >(**q).set_series_values(state);
     }
 }
 
@@ -543,34 +535,35 @@ set_series_values(DDS &dds, bool state)
 // output stream, followed by the binary data.
 
 void
-constrained_trans(const string &dds_name, const bool constraint_expr, 
-		  const string &constraint, const bool series_values)
+constrained_trans(const string & dds_name, const bool constraint_expr,
+                  const string & constraint, const bool series_values)
 {
     FILE *pin, *pout;
     if (!loopback_pipe(&pout, &pin))
-	throw InternalErr(__FILE__, __LINE__, "Could not create the loopback streams\n" ) ;
+        throw InternalErr(__FILE__, __LINE__,
+                          "Could not create the loopback streams\n");
 
     // If the CE was not passed in, read it from the command line.
     string ce;
     if (!constraint_expr) {
-	fprintf( stdout, "Constraint:" ) ;
-	char c[256];
-	cin.getline(c, 256);
-	if (!cin) {
-            throw InternalErr(__FILE__, __LINE__, "Could nore read the constraint expression\n" ) ;
-	}
-	ce = c;
-    }
-    else
-	ce = constraint;
+        fprintf(stdout, "Constraint:");
+        char c[256];
+        cin.getline(c, 256);
+        if (!cin) {
+            throw InternalErr(__FILE__, __LINE__,
+                              "Could nore read the constraint expression\n");
+        }
+        ce = c;
+    } else
+        ce = constraint;
 #if 0
     string dataset = "";
-#endif    
+#endif
     TestTypeFactory ttf;
     DDS server(&ttf);
     ConstraintEvaluator eval;
 
-    fprintf( stdout, "The complete DDS:\n" ) ;
+    fprintf(stdout, "The complete DDS:\n");
     read_table(server, dds_name, true);
 
     // by default this is false (to get the old-style values that are
@@ -578,9 +571,9 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
     // 01/14/05 jhrg
     set_series_values(server, series_values);
 
-    eval.parse_constraint(ce, server); // Throws Error if the ce doesn't parse.
+    eval.parse_constraint(ce, server);  // Throws Error if the ce doesn't parse.
 
-    server.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
+    server.tag_nested_sequences();      // Tag Sequences as Parent or Leaf node.
 
     if (eval.functional_expression()) {
         BaseType *var = eval.eval_function(server, dds_name);
@@ -593,7 +586,7 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
         fprintf(pout, "Data:\n");
 
         fflush(pout);
-      
+
         XDR *xdr_sink = new_xdrstdio(pout, XDR_ENCODE);
 
         try {
@@ -601,15 +594,16 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
             var->serialize(dds_name, eval, server, xdr_sink, false);
             delete_xdrstdio(xdr_sink);
         }
-        catch (Error &e) {
+        catch(Error & e) {
             delete_xdrstdio(xdr_sink);
-            delete var; var = 0;
+            delete var;
+            var = 0;
             throw;
         }
 
-        delete var; var = 0;
-    }
-    else {
+        delete var;
+        var = 0;
+    } else {
         // send constrained DDS         
         server.print_constrained(pout);
         fprintf(pout, "Data:\n");
@@ -619,7 +613,8 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
         XDR *xdr_sink = new_xdrstdio(pout, XDR_ENCODE);
 
         // Send all variables in the current projection (send_p())
-        for (DDS::Vars_iter i = server.var_begin(); i != server.var_end(); i++)
+        for (DDS::Vars_iter i = server.var_begin(); i != server.var_end();
+             i++)
             if ((*i)->send_p()) {
                 DBG(cerr << "Sending " << (*i)->name() << endl);
                 (*i)->serialize(dds_name, eval, server, xdr_sink, true);
@@ -628,35 +623,33 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
         delete_xdrstdio(xdr_sink);
     }
 
-    fclose(pout);		// close pout to read from pin. Why?
-    
+    fclose(pout);               // close pout to read from pin. Why?
+
     // Now do what Connect::request_data() does:
 
     // First read the DDS into a new object (using a file to store the DDS
     // temporarily - the parser/scanner won't stop reading until an EOF is
     // found, this fixes that problem).
 
-	// I use the default BaseTypeFactory since we're just printing the
-	// values here.
-        BaseTypeFactory factory;
-	DataDDS dds(&factory, "Test_data", "DAP/3.1"); // Must use DataDDS on receving end
-	FILE *dds_fp = move_dds(pin);
-	DBG( fprintf( stderr, "Moved the DDS to a temp file\n" ) ) ;
-	dds.parse(dds_fp);
-	fclose(dds_fp);
+    // I use the default BaseTypeFactory since we're just printing the
+    // values here.
+    BaseTypeFactory factory;
+    DataDDS dds(&factory, "Test_data", "DAP/3.1");      // Must use DataDDS on receving end
+    FILE *dds_fp = move_dds(pin);
+    DBG(fprintf(stderr, "Moved the DDS to a temp file\n"));
+    dds.parse(dds_fp);
+    fclose(dds_fp);
 
-	XDR *source = new_xdrstdio(pin, XDR_DECODE);
+    XDR *source = new_xdrstdio(pin, XDR_DECODE);
 
-	// Back on the client side; deserialize the data *using the newly
-	// generated DDS* (the one sent with the data).
+    // Back on the client side; deserialize the data *using the newly
+    // generated DDS* (the one sent with the data).
 
-	fprintf( stdout, "The data:\n" ) ;
-	for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++)
-	{
-	    (*q)->deserialize(source, &dds);
-	    (*q)->print_val(stdout);
-	}
+    fprintf(stdout, "The data:\n");
+    for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
+        (*q)->deserialize(source, &dds);
+        (*q)->print_val(stdout);
+    }
 
-	delete_xdrstdio(source);
+    delete_xdrstdio(source);
 }
-
