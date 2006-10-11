@@ -1,12 +1,9 @@
-# -*- C++ -*-
-#
-
 Dataset {
    Grid {
      ARRAY:
-       Byte SST[lat = 13][lon = 11];
+       Byte SST[lon = 11][lat = 13];
      MAPS:
-       Float32 lat[13];
        Float32 lon[11];
+       Float32 lat[13];
    } SST;
 } SST_grid;

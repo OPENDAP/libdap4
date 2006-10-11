@@ -4,9 +4,9 @@
 Dataset {
    Grid {
      ARRAY:
-       Byte SST[lon = 11][lat_reversed = 13];
+       Byte SST[lat_reversed = 13][lon = 11];
      MAPS:
-       Float32 lon[11];
        Float32 lat_reversed[13];
+       Float32 lon[11];
    } SST;
 } SST_grid;
