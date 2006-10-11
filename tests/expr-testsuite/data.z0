@@ -1,0 +1,13 @@
+The complete DDS:
+Dataset {
+    Grid {
+      Array:
+        Byte SST[lon = 11][lat = 13];
+      Maps:
+        Float32 lon[11];
+        Float32 lat[13];
+    } SST;
+} SST_grid;
+Wrong number of arguments to geogrid(), there must be at least five
+arguments, A Grid followed by the left-top and right-bottom points of a
+longitude-latitude bounding box.
