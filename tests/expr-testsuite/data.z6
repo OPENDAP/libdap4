@@ -2,17 +2,17 @@ The complete DDS:
 Dataset {
     Grid {
       Array:
-        Byte SST[lat = 11][lon = 13];
+        Byte SST[lon = 11][lat = 13];
       Maps:
-        Float32 lat[11];
-        Float32 lon[13];
+        Float32 lon[11];
+        Float32 lat[13];
     } SST;
 } SST_grid;
 The data:
 Grid {
   Array:
-    Byte SST[lat = 2][lon = 1];
+    Byte SST[lon = 2][lat = 2];
   Maps:
+    Float32 lon[2];
     Float32 lat[2];
-    Float32 lon[1];
-} SST = {  Array: {{0},{1}}  Maps: {58, 42}, {-44} };
+} SST = {  Array: {{0, 1},{2, 3}}  Maps: {-51, -19}, {51, 38} };

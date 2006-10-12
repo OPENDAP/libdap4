@@ -619,7 +619,8 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
                 DBG(cerr << "Sending " << (*i)->name() << endl);
                 (*i)->serialize(dds_name, eval, server, xdr_sink, true);
             }
-
+	
+	fflush(pout);
         delete_xdrstdio(xdr_sink);
     }
 

@@ -53,7 +53,6 @@ set test_out "The complete DDS:
 Dataset {
     Int32 i;
     Int32 j;
-    List Int32 l;
 } test1;
 The data:"
 

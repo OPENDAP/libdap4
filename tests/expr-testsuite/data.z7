@@ -1,21 +1,20 @@
-[jimg@zoe tests]$  ./expr-test -w expr-testsuite/test.c4 -b -k 'geogrid(SST,-51,61,-19,38,"time=1024")'
 The complete DDS:
 Dataset {
     Grid {
       Array:
-        Byte SST[time = 3][lat = 11][lon = 13];
+        Byte SST[time = 3][lon = 11][lat = 13];
       Maps:
         Int32 time[3];
-        Float32 lat[11];
-        Float32 lon[13];
+        Float32 lon[11];
+        Float32 lat[13];
     } SST;
 } SST_grid;
 The data:
 Grid {
   Array:
-    Byte SST[time = 1][lat = 2][lon = 1];
+    Byte SST[time = 1][lon = 2][lat = 2];
   Maps:
     Int32 time[1];
+    Float32 lon[2];
     Float32 lat[2];
-    Float32 lon[1];
-} SST = {  Array: {{{4},{5}}}  Maps: {1024}, {58, 42}, {-44} };
+} SST = {  Array: {{{173, 174},{175, 176}}}  Maps: {1048576}, {-51, -19}, {51, 38} };

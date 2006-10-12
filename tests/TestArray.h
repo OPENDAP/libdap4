@@ -42,6 +42,7 @@
 class TestArray: public Array, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestArray &ts);
+    int m_offset(int y, Dim_iter Y, int x);
 
 public:
     TestArray(const string &n = "", BaseType *v = 0);

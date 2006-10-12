@@ -2,10 +2,10 @@ The complete DDS:
 Dataset {
     Grid {
       Array:
-        Byte SST[lon = 11][lat = 13];
+        Byte SST[lat = 13][lon = 11];
       Maps:
-        Float32 lon[11];
         Float32 lat[13];
+        Float32 lon[11];
     } SST;
 } SST_grid;
 Wrong number of arguments to geogrid(), there must be at least five
