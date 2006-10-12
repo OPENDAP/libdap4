@@ -10,7 +10,7 @@ global srcdir
 # The variable `test_file' is the name of the das input file for this test.
 
 set test_name test.wb
-set test_file test.10
+set test_file test.a
 
 # The variable test_equation is the equation to test.
 
