@@ -2030,7 +2030,7 @@ HTTPCache::update_response(const string &url, time_t request_time,
     response. This method should be used to determine if a cached response
     requires validation.
 
-    This method locks the class' interface and on a locked cache entry.
+    This method locks the class' interface and the cache entry.
 
     @param url Find the cached response associated with this URL.
     @return True indicates that the response can be used, False indicates
