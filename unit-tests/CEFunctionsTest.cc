@@ -39,7 +39,7 @@
 #include "Grid.h"
 #include "DDS.h"
 #include "DAS.h"
-#include "GeoConstraint.h"
+//#include "GeoConstraint.h"
 #include "ce_functions.h"
 
 #include "../tests/TestTypeFactory.h"

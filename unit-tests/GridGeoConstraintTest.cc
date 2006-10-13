@@ -39,7 +39,7 @@
 #include "Grid.h"
 #include "DDS.h"
 #include "DAS.h"
-#include "GeoConstraint.h"
+#include "GridGeoConstraint.h"
 #include "ce_functions.h"
 
 #include "../tests/TestTypeFactory.h"
@@ -52,7 +52,7 @@ using namespace std;
 
 int test_variable_sleep_interval = 0;
 
-class GeoConstraintTest:public TestFixture
+class GridGeoConstraintTest:public TestFixture
 {
 private:
     TestTypeFactory btf;
@@ -63,9 +63,9 @@ private:
     DDS *geo_dds_coads_lon;
 
 public:
-    GeoConstraintTest()
+    GridGeoConstraintTest()
     {}
-    ~GeoConstraintTest()
+    ~GridGeoConstraintTest()
     {}
 
     void setUp()
@@ -237,7 +237,7 @@ public:
         
     }
 
-    CPPUNIT_TEST_SUITE( GeoConstraintTest );
+    CPPUNIT_TEST_SUITE( GridGeoConstraintTest );
 
     CPPUNIT_TEST(geoconstraint_find_lat_lon_maps_test);
     CPPUNIT_TEST(lat_lon_dimensions_ok_test);
@@ -264,22 +264,22 @@ public:
         try {
             Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
             CPPUNIT_ASSERT(g);
-            GeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
+            GridGeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
             CPPUNIT_ASSERT(gc1.find_lat_lon_maps());
 
             g = dynamic_cast<Grid*>(geo_dds->var("SST2"));
             CPPUNIT_ASSERT(g);
-            GeoConstraint gc2(g, geo_dds->get_dataset_name(), *geo_dds);
+            GridGeoConstraint gc2(g, geo_dds->get_dataset_name(), *geo_dds);
             CPPUNIT_ASSERT(gc2.find_lat_lon_maps());
 
             g = dynamic_cast<Grid*>(geo_dds->var("SST3"));
             CPPUNIT_ASSERT(g);
-            GeoConstraint gc3(g, geo_dds->get_dataset_name(), *geo_dds);
+            GridGeoConstraint gc3(g, geo_dds->get_dataset_name(), *geo_dds);
             CPPUNIT_ASSERT(gc3.find_lat_lon_maps());
 
             g = dynamic_cast<Grid*>(geo_dds_3d->var("SST4"));
             CPPUNIT_ASSERT(g);
-            GeoConstraint gc4(g, geo_dds_3d->get_dataset_name(), *geo_dds_3d);
+            GridGeoConstraint gc4(g, geo_dds_3d->get_dataset_name(), *geo_dds_3d);
             CPPUNIT_ASSERT(gc4.find_lat_lon_maps());
             CPPUNIT_ASSERT(gc4.d_latitude == *(g->map_begin()+2));
             CPPUNIT_ASSERT(gc4.d_longitude == *(g->map_begin()+1));
@@ -295,17 +295,17 @@ public:
         try {
             Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
             CPPUNIT_ASSERT(g);
-            GeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
+            GridGeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
             CPPUNIT_ASSERT(gc1.find_lat_lon_maps());
             CPPUNIT_ASSERT(gc1.lat_lon_dimensions_ok());
-            CPPUNIT_ASSERT(gc1.d_longitude_rightmost == false);
+            CPPUNIT_ASSERT(gc1.get_longitude_rightmost() == false);
 
             Grid *g3 = dynamic_cast<Grid*>(geo_dds->var("SST3"));
             CPPUNIT_ASSERT(g3);
-            GeoConstraint gc3(g3, geo_dds->get_dataset_name(), *geo_dds);
+            GridGeoConstraint gc3(g3, geo_dds->get_dataset_name(), *geo_dds);
             CPPUNIT_ASSERT(gc3.find_lat_lon_maps());
             CPPUNIT_ASSERT(gc3.lat_lon_dimensions_ok());
-            CPPUNIT_ASSERT(gc3.d_longitude_rightmost == true);
+            CPPUNIT_ASSERT(gc3.get_longitude_rightmost() == true);
         }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
@@ -318,7 +318,7 @@ public:
         try {
             Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST2"));
             CPPUNIT_ASSERT(g);
-            GeoConstraint gc2(g, geo_dds->get_dataset_name(), *geo_dds);
+            GridGeoConstraint gc2(g, geo_dds->get_dataset_name(), *geo_dds);
             CPPUNIT_ASSERT(gc2.find_lat_lon_maps());
 
             CPPUNIT_ASSERT(gc2.d_lon[0] == -180);
@@ -344,7 +344,7 @@ public:
     {
         Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
         CPPUNIT_ASSERT(g);
-        GeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
+        GridGeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
 
         int left_i, right_i;
         gc1.find_longitude_indeces(40.0, 200.0, left_i, right_i);
@@ -353,7 +353,7 @@ public:
 
         g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
         CPPUNIT_ASSERT(g);
-        GeoConstraint gc2(g, geo_dds->get_dataset_name(), *geo_dds);
+        GridGeoConstraint gc2(g, geo_dds->get_dataset_name(), *geo_dds);
 
         gc2.find_longitude_indeces(200, 40.0, left_i, right_i);
         CPPUNIT_ASSERT(left_i == 5);
@@ -361,7 +361,7 @@ public:
 
         g = dynamic_cast<Grid*>(geo_dds_coads_lon->var("SST5"));
         CPPUNIT_ASSERT(g);
-        GeoConstraint gc5(g, geo_dds_coads_lon->get_dataset_name(), *geo_dds_coads_lon);
+        GridGeoConstraint gc5(g, geo_dds_coads_lon->get_dataset_name(), *geo_dds_coads_lon);
 
         gc5.find_longitude_indeces(5.0, 81.0, left_i, right_i);
         DBG(cerr << "left_i: " << left_i << endl);
@@ -374,13 +374,13 @@ public:
     {
         Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
         CPPUNIT_ASSERT(g);
-        GeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
+        GridGeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
 
         CPPUNIT_ASSERT(gc1.categorize_latitude() == GeoConstraint::normal);
 
         Grid *g3 = dynamic_cast<Grid*>(geo_dds->var("SST3"));
         CPPUNIT_ASSERT(g3);
-        GeoConstraint gc3(g3, geo_dds->get_dataset_name(), *geo_dds);
+        GridGeoConstraint gc3(g3, geo_dds->get_dataset_name(), *geo_dds);
 
         CPPUNIT_ASSERT(gc3.categorize_latitude() == GeoConstraint::inverted);
     }
@@ -390,7 +390,7 @@ public:
         // SST1 lat: { 40, 30, 20, 10, 0, -10, -20, -30, -40, -50 };
         Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
         CPPUNIT_ASSERT(g);
-        GeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
+        GridGeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
 
         int top_i, bottom_i;
         gc1.find_latitude_indeces(20, -20, GeoConstraint::normal, top_i, bottom_i);
@@ -401,7 +401,7 @@ public:
         // SST3 lat: { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
         g = dynamic_cast<Grid*>(geo_dds->var("SST3"));
         CPPUNIT_ASSERT(g);
-        GeoConstraint gc2(g, geo_dds->get_dataset_name(), *geo_dds);
+        GridGeoConstraint gc2(g, geo_dds->get_dataset_name(), *geo_dds);
 
         gc2.find_latitude_indeces(20, -20, GeoConstraint::inverted, top_i, bottom_i);
         DBG(cerr << "SST3, top: " << top_i << ", bottom: " << bottom_i << endl);
@@ -411,7 +411,7 @@ public:
         // SST3 lat: { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
         g = dynamic_cast<Grid*>(geo_dds->var("SST3"));
         CPPUNIT_ASSERT(g);
-        GeoConstraint gc3(g, geo_dds->get_dataset_name(), *geo_dds);
+        GridGeoConstraint gc3(g, geo_dds->get_dataset_name(), *geo_dds);
 
         gc3.find_latitude_indeces(25, -25, GeoConstraint::inverted, top_i, bottom_i);
         DBG(cerr << "SST3, top: " << top_i << ", bottom: " << bottom_i << endl);
@@ -455,7 +455,7 @@ public:
     {
         Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
         CPPUNIT_ASSERT(g);
-        GeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
+        GridGeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
         // Longitude map: { 0, 40, 80, 120, 160, 200, 240, 280, 320, 359 }
 
         gc1.reorder_longitude_map(7);
@@ -476,7 +476,7 @@ public:
         try {
             Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
             CPPUNIT_ASSERT(g);
-            GeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
+            GridGeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
             /* Data values for Grid SST1:
                     { { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
                       { 10,11,12,13,14,15,16,17,18,19},
@@ -521,7 +521,7 @@ public:
             // SST1 uses pos notation; constraint uses pos
             Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
             CPPUNIT_ASSERT(g);
-            GeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
+            GridGeoConstraint gc1(g, geo_dds->get_dataset_name(), *geo_dds);
             // lat: { 40, 30, 20, 10, 0, -10, -20, -30, -40, -50 };
             // This should be lon 1 to 5 and lat 0 to 3
             gc1.set_bounding_box(40.0, 40.0, 200.0, 10.0);
@@ -544,7 +544,7 @@ public:
         try {
             Grid *g2 = dynamic_cast<Grid*>(geo_dds->var("SST1"));
             CPPUNIT_ASSERT(g2);
-            GeoConstraint gc2(g2, geo_dds->get_dataset_name(), *geo_dds);
+            GridGeoConstraint gc2(g2, geo_dds->get_dataset_name(), *geo_dds);
             // SST1 with a constraint that uses neg_pos notation for lon
             gc2.set_bounding_box(-140.0, 40.0, 20.0, 10.0);
             CPPUNIT_ASSERT(gc2.d_longitude_index_left == 1);
@@ -565,7 +565,7 @@ public:
         try {
             Grid *g3 = dynamic_cast<Grid*>(geo_dds_3d->var("SST4"));
             CPPUNIT_ASSERT(g3);
-            GeoConstraint gc3(g3, geo_dds_3d->get_dataset_name(), *geo_dds_3d);
+            GridGeoConstraint gc3(g3, geo_dds_3d->get_dataset_name(), *geo_dds_3d);
             // SST1 with a constraint that uses neg_pos notation for lon
             gc3.set_bounding_box(200.0, 30.0, 280.0, 20.0);
             CPPUNIT_ASSERT(gc3.d_longitude_index_left == 1);
@@ -586,7 +586,7 @@ public:
         try {
             Grid *g2 = dynamic_cast<Grid*>(geo_dds->var("SST1"));
             CPPUNIT_ASSERT(g2);
-            GeoConstraint gc2(g2, geo_dds->get_dataset_name(), *geo_dds);
+            GridGeoConstraint gc2(g2, geo_dds->get_dataset_name(), *geo_dds);
             // SST1 with a constraint that uses neg_pos notation for lon
             // This should result in a constraint from lon 1 to 5 and lat from
             // 5 to 8
@@ -635,7 +635,7 @@ public:
         try {
             Grid *g = dynamic_cast<Grid*>(geo_dds_3d->var("SST4"));
             CPPUNIT_ASSERT(g);
-            GeoConstraint gc(g, geo_dds_3d->get_dataset_name(), *geo_dds_3d);
+            GridGeoConstraint gc(g, geo_dds_3d->get_dataset_name(), *geo_dds_3d);
             // SST1 with a constraint that uses neg_pos notation for lon
             // This should result in a constraint from lon 1 to 5 and lat from
             // 5 to 8
@@ -689,7 +689,7 @@ public:
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(GeoConstraintTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(GridGeoConstraintTest);
 
 int
 main( int, char** )

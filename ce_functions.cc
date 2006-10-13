@@ -37,8 +37,7 @@
 #include "config.h"
 
 static char rcsid[] not_used =
-    { "$Id$"
-    };
+    { "$Id$" };
 
 #include <errno.h>      // used by strtod()
 #include <limits.h>
@@ -58,7 +57,7 @@ static char rcsid[] not_used =
 #include "RValue.h"
 
 #include "GSEClause.h"
-#include "GeoConstraint.h"
+#include "GridGeoConstraint.h"
 
 #include "ce_functions.h"
 #include "gse_parser.h"
@@ -512,6 +511,7 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS & dds,
     l_grid->read(dataset);
     
 #if 0
+    // Old, pre-hdf_handler compatible version.
     Grid::Map_iter i = l_grid->map_begin();
     while (i != l_grid->map_end())
         (*i++)->read(dataset);
@@ -641,7 +641,7 @@ longitude-latitude bounding box.");
     try {
         // Build a GeoConstraint object. If there are no longitude/latitude
         // maps then this constructor throws Error.
-        GeoConstraint gc(l_grid, dataset, dds);
+        GridGeoConstraint gc(l_grid, dataset, dds);
 
         // This sets the bounding box and modifies the maps to match the
         // notation of the box (0/359 or -180/179)
@@ -655,6 +655,10 @@ longitude-latitude bounding box.");
         // This also reads all of the data into the grid variable
         gc.apply_constraint_to_data();
         DBG(cerr << "geogrid: past apply constraint" << endl);
+
+        // In this function the l_grid pointer is the same as the pointer returned
+        // by this call. The caller of the function must free the pointer.
+        return gc.get_constrained_grid();
     }
     catch(Error & e) {
         throw;
@@ -666,8 +670,6 @@ longitude-latitude bounding box.");
                         + e.what());
 
     }
-
-    return l_grid;
 }
 
 // These static functions could be moved to a class that provides a more
@@ -731,11 +733,23 @@ get_slope(BaseType *var)
     return get_attribute_double_value(var, "scale_factor");
 }
 
-BaseType *function_linear_scale(int argc, BaseType * argv[], DDS & dds,
-                                const string & dataset)
+/** Given a BaseType, scale it using 'y = mx + b'. Either provide the 
+    constants 'm' and 'b' or the function will look for the COARDS attributes
+    'scale_factor' and 'add_offset'.
+    
+    @param argc
+    @param argv
+    @param dds
+    @param dataset
+    @return The scaled variable, represented using Float64
+    @exception Error Thrown if either constants are not given and COARDS 
+    attributes for them cannot be found OR if the source variable is not a
+    numeric scalar, Array or Grid. */
+BaseType *
+function_linear_scale(int argc, BaseType * argv[], DDS & dds, const string & dataset)
 {
     // Check for 1 or 3 arguments: 1 --> use attributes; 3 --> m & b supplied
-    cerr << "argc = " << argc << endl;
+    DBG(cerr << "argc = " << argc << endl);
     if ( !(argc == 1 || argc == 3) )
         throw Error(
 
@@ -745,8 +759,6 @@ to scale (COARDS attributes will be used to determine the slope and\n\
 y-intercept). If three arguments are given, then the second and third are\n\
 assumed to be the slope and y-intercept.");
 
-    // Test for numeric types
-        
     // Get m & b
     double m, b;
     if (argc == 3) {
@@ -818,11 +830,54 @@ assumed to be the slope and y-intercept.");
     return dest;
 }
 
+/** Perform a selection on the array using geographical coordinates. This 
+    function takes several groups of arguments. 
+    <ul>
+    <li>geoarray(var, left, top, right, bottom)</li>
+    <li>geoarray(var, left, top, right, bottom, var_left, v_top, v_right, v_bottom)</li>
+    <li>geoarray(var, left, top, right, bottom, var_left, v_top, v_right, v_bottom,projection,datum)</li>
+    </ul>
+    
+    @note Only the plat-carre projection and WGS84 datum are currently
+    supported.
+    @param argc
+    @param argv
+    @param dds
+    @param dataset
+    @return The Array, constrained by the selection
+    @exception Error Thrown if thins go awry. */
+BaseType *
+function_geoarray(int argc, BaseType * argv[], DDS & dds, const string & dataset)
+{
+    // Check for 1 or 3 arguments: 1 --> use attributes; 3 --> m & b supplied
+    DBG(cerr << "argc = " << argc << endl);
+    if ( !(argc == 5 || argc == 9 || argc == 11) )
+        throw Error(
+
+"Wrong number of arguments to geoarray(). The geoarray() function supports\n\
+three different sets of arguments:\n\
+\n\
+geoarray(var,left,top,right,bottom)\n\
+geoarray(var,left,top,right,bottom,var_left,var_top,var_right,var_bottom)\n\
+geoarray(var,left,top,right,bottom,var_left,var_top,var_right,var_bottom,projection,datum)\n\
+\n\
+In the first version 'var' is the target of the selection and 'left', 'top',\n\
+'right' and 'bottom' are the corners of a longitude-latitude box that defines\n\
+the selection. In the second version the 'var_left', ..., parameters give the\n\
+longitude and latitude extent of the entire array. The projection and dataum are\n\
+assumed to be Plat-Carre and WSG84. In the last version the the projection and\n\
+datum of the image are also provided.");
+
+    Array *l_array = 0;
+    return l_array;
+}
+
 void register_functions(ConstraintEvaluator & ce)
 {
     ce.add_function("grid", function_grid);
     ce.add_function("geogrid", function_geogrid);
     ce.add_function("linear_scale", function_linear_scale);
+    ce.add_function("geoarray", function_geoarray);
     ce.add_function("one", func_one);
 }
 

@@ -90,7 +90,7 @@
     @author James Gallagher */
 
 class GeoConstraint {
-private:
+public:
     /** The longitude extents of the constraint bounding box can be expressed
         two ways: using a 0/359 notation and using a -180/179 notation. I call
         the 0/359 notation 'pos' and the -180/179 noation 'neg_pos'. */
@@ -107,34 +107,29 @@ private:
         inverted
     };
     
-    Grid *d_grid;               //< Constraint this Grid
+private:
     const DDS &d_dds;
     const string &d_dataset;
-    
-    char *d_grid_array_data;    //< Holds the Grid's data values
-    int d_grid_array_data_size;
-    
-    Array *d_latitude;          //< A pointer to the Grid's latitude map
-    Array *d_longitude;         //< A pointer to the Grid's longitude map
-    
+
     double *d_lat;              //< Holds the latitude values
     double *d_lon;              //< Holds the longitude values
-    int d_lat_length;
-    int d_lon_length;
+    int d_lat_length;           //< How long is the latitude vector
+    int d_lon_length;           //< ... longitude vector
+
+    // These four are indeces of the constraint
     int d_latitude_index_top;
     int d_latitude_index_bottom;
     int d_longitude_index_left;
     int d_longitude_index_right;
-    Array::Dim_iter d_lat_grid_dim;
-    Array::Dim_iter d_lon_grid_dim;
     
-    bool d_bounding_box_set;
-    bool d_longitude_rightmost;
+    bool d_bounding_box_set;    //< Has the bounding box been set?
+    bool d_longitude_rightmost; //< Is longitude the rightmost dimension? 
     
     Notation d_longitude_notation;
     
     LatitudeSense d_latitude_sense;
-    
+   
+    // Sets of string values used to find stuff in attributes 
     set<string> d_coards_lat_units;
     set<string> d_coards_lon_units;
 
@@ -145,9 +140,51 @@ private:
     GeoConstraint();
     GeoConstraint(const GeoConstraint &param);
     GeoConstraint &operator=(GeoConstraint &rhs);
+
+protected:
+/** A private method called by the constructor that searches for latitude
+    and longitude map vectors. This method returns false if either map
+    cannot be found. It assumes that the d_grid and d_dds fields are set.
+
+    The d_longitude, d_lon, d_lon_length and d_lon_grid_dim (and matching
+    lat) fields are modified.
+
+    @note Rules used to find Maps:<ul>
+    <li>Latitude: If the Map has a units attribute of "degrees_north",
+    "degree_north", "degree_N", or "degrees_N"</li>
+    <li>Longitude: If the map has a units attribute of "degrees_east"
+    (eastward positive), "degree_east", "degree_E", or "degrees_E"</li>
+    </ul>
+
+    @return True if the maps are found, otherwise False */
+    virtual bool find_lat_lon_maps() = 0;
     
-    bool find_lat_lon_maps() ;
-    bool lat_lon_dimensions_ok();
+    /** Are the latitude and longitude dimentions ordered so that this class can
+    properly constrain the data? This method throws Error if lat and lon are
+    not to two 'fastest-varying' (or 'rightmost) dimensions. It sets the 
+    internal property \e longitude_rightmost if that's true. 
+    
+    @note Called by the constructor once find_lat_lon_maps() has returned. 
+    
+    @return True if the lat/lon maps are the two rightmost maps,
+    false otherwise*/
+    virtual bool lat_lon_dimensions_ok() = 0;
+    
+    /** Reorder the data values relative to the longitude axis so that the
+    reordered longitude map (see GeoConstraint::reorder_longitude_map())
+    and the data values match.
+
+    @note First set all the other constraints, including the latitude and
+    then make this call. Other constraints, besides latitude, will be simple
+    range constraints. Latitude might require that values be inverted, but
+    that can be done _after_ the longitude reordering takes place. The latitude
+    constraint can be imposed by inverting the top and bottom indices if the
+    sense of the grid is inverted, before data are read in this method.
+    Then apply the longitude constraint, then invert the result of the merge, if
+    needed.
+
+    @todo Fix this code so that it works with latitude as the rightmost map */
+    virtual void reorder_data_longitude_axis() = 0;
     
     Notation categorize_notation(double left, double right) const;
     void transform_constraint_to_pos_notation(double &left, double &right) const;
@@ -158,34 +195,99 @@ private:
                                 int &longitude_index_right) const;
     void set_bounding_box_longitude(double left, double right) ;
     void reorder_longitude_map(int longitude_index_left);
-    void reorder_data_longitude_axis() ;
-                                
+
     LatitudeSense categorize_latitude() const;
     void find_latitude_indeces(double top, double bottom, LatitudeSense sense, 
                                 int &latitude_index_top, 
                                 int &latitude_index_bottom) const;                                
     void set_bounding_box_latitude(double top, double bottom) ;
                                                                                              
-    friend class CEFunctionsTest; // Unit tests
-    friend class GeoConstraintTest; // Unit tests
+    friend class GridGeoConstraintTest; // Unit tests
     
 public:
     /** @name Constructors */
     //@{
-    GeoConstraint(Grid *grid, const string &ds_name, const DDS &dds) ;
+    GeoConstraint(const string &ds_name, const DDS &dds) ;
+#if 0
+    GeoConstraint(Array *array, const string &ds_name, const DDS &dds) ;
+    GeoConstraint(Array *array, const GeoExtent extent, 
+                  const string &ds_name, const DDS &dds) ;
+    GeoConstraint(Array *array, const GeoExtent extent, 
+                  const Projection projection, 
+                  const string &ds_name, const DDS &dds) ;
+#endif
     //@}
     
     virtual ~GeoConstraint() {
-        delete [] d_grid_array_data;
         delete [] d_lat;
         delete [] d_lon;
     }
+
+    /** @name Accessors/Mutators */
+    //@{
+    const DDS &get_dds() const { return d_dds; }
+    string get_dataset() const { return d_dataset; }
     
-    bool get_longitude_rightmost() { return d_longitude_rightmost; }
-        
+    double *get_lat() const {return d_lat;}
+    double *get_lon() const {return d_lon;}
+    void set_lat(double *lat) {d_lat = lat;}
+    void set_lon(double *lon) {d_lon = lon;}
+    
+    int get_lat_length() const {return d_lat_length;}
+    int get_lon_length() const {return d_lon_length;}
+    int set_lat_length(int len) {d_lat_length = len;}
+    int set_lon_length(int len) {d_lon_length = len;}
+
+    // These four are indeces of the constraint
+    int get_latitude_index_top() const {return d_latitude_index_top;}
+    int get_latitude_index_bottom() const {return d_latitude_index_bottom;}
+    void set_latitude_index_top(int top) { d_latitude_index_top = top;}
+    void set_latitude_index_bottom(int bottom) { d_latitude_index_bottom = bottom;}
+    
+    int get_longitude_index_left() const {return d_longitude_index_left;}
+    int get_longitude_index_right() const {return d_longitude_index_right;}
+    void set_longitude_index_left(int left) { d_longitude_index_left = left;}
+    void set_longitude_index_right(int right) { d_longitude_index_right = right;}
+    
+    bool get_bounding_box_set() const {return d_bounding_box_set;}
+    bool get_longitude_rightmost() const {return d_longitude_rightmost;}
+    void set_longitude_rightmost(bool state) {d_longitude_rightmost = state;}
+     
+    Notation get_longitude_notation() const {return d_longitude_notation;}
+    
+    LatitudeSense get_latitude_sense() const {return d_latitude_sense;}
+
+    set<string> get_coards_lat_units() const {return d_coards_lat_units;}
+    set<string> get_coards_lon_units() const {return d_coards_lon_units;}
+
+    set<string> get_lat_names() const {return d_lat_names;}
+    set<string> get_lon_names() const {return d_lon_names;}
+    //@}
+    
     void set_bounding_box(double left, double top, double right, double bottom);
-        
-    void apply_constraint_to_data() ;
+    
+    /** Once the bounding box is set use this method to apply the constraint. This
+    modifies the data values in the Grid so that the software in
+    Vector::serialize() will work correctly. Vector::serialize() assumes that
+    the BaseType::read() method is called \e after the projection is applied to
+    the data. That is, the projection is applied, then data are read. but
+    geogrid() first reads all the data values and then computes the projection.
+    To make Vector::serialize() work, this method uses the projection
+    information recorded in the Grid by set_bounding_box() to arrange data so
+    that the information to be sent is all that is held by the Grid. Call this
+    after applying any 'Grid selection expressions' of the sort that can be
+    passed to the grid() function.
+
+    @note Why do this here? The grid() function uses the standard logic in
+    Vector and elsewhere to read data that's to be sent. The problem is that
+    the data values need to be reordered using information only this object
+    has. If this were implemented as a 'selection function' (i.e., if the code
+    was run by ConstraintExpression::eval() then we might be able to better
+    optimize how data are read, but in this case we have read all the data
+    and may have alredy reorganized it. Set up the internal buffers so they
+    hold the correct values and mark the Grid's array and lat/lon maps as
+    read. */  
+    virtual void apply_constraint_to_data() = 0; //Grid +
 };
 
 #endif // _geo_constraint_h

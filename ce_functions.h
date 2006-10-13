@@ -42,24 +42,19 @@
 #include "ConstraintEvaluator.h"
 
 namespace libdap {
+    // Thess functions are use by the code in GeoConstraint
     string extract_string_argument(BaseType *arg) ;
     double extract_double_value(BaseType *arg) ;
     double *extract_double_array(Array *a) ;
     void set_array_using_double(Array *dest, double *src, int src_len) ;
-#if 0
-    void projection_function_grid(int argc, BaseType *argv[], DDS &dds,
-                                  ConstraintEvaluator &) ;
-#endif                                  
+
     BaseType *func_one(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;                             
     BaseType *function_grid(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
     BaseType *function_geogrid(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
     BaseType *function_linear_scale(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
+    BaseType *function_geoarray(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
+    
     void register_functions(ConstraintEvaluator &ce);
 }
-
-#if 0
-// These are out of date. jhrg 8/31/06
-BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
-#endif
 
 #endif // _ce_functions_h
