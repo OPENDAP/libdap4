@@ -108,7 +108,9 @@ public:
     };
     
 private:
+#if 0
     const DDS &d_dds;
+#endif
     const string &d_dataset;
 
     double *d_lat;              //< Holds the latitude values
@@ -142,12 +144,11 @@ private:
     GeoConstraint &operator=(GeoConstraint &rhs);
 
 protected:
-/** A private method called by the constructor that searches for latitude
+/** A protected method that searches for latitude
     and longitude map vectors. This method returns false if either map
-    cannot be found. It assumes that the d_grid and d_dds fields are set.
+    cannot be found.
 
-    The d_longitude, d_lon, d_lon_length and d_lon_grid_dim (and matching
-    lat) fields are modified.
+    The d_lon, d_lon_length (and matching lat) fields are modified.
 
     @note Rules used to find Maps:<ul>
     <li>Latitude: If the Map has a units attribute of "degrees_north",
@@ -207,7 +208,7 @@ protected:
 public:
     /** @name Constructors */
     //@{
-    GeoConstraint(const string &ds_name, const DDS &dds) ;
+    GeoConstraint(const string &ds_name/*, const DDS &dds*/) ;
 #if 0
     GeoConstraint(Array *array, const string &ds_name, const DDS &dds) ;
     GeoConstraint(Array *array, const GeoExtent extent, 
@@ -225,7 +226,9 @@ public:
 
     /** @name Accessors/Mutators */
     //@{
+#if 0
     const DDS &get_dds() const { return d_dds; }
+#endif
     string get_dataset() const { return d_dataset; }
     
     double *get_lat() const {return d_lat;}
@@ -287,7 +290,7 @@ public:
     and may have alredy reorganized it. Set up the internal buffers so they
     hold the correct values and mark the Grid's array and lat/lon maps as
     read. */  
-    virtual void apply_constraint_to_data() = 0; //Grid +
+    virtual void apply_constraint_to_data() = 0;
 };
 
 #endif // _geo_constraint_h

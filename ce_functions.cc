@@ -641,7 +641,7 @@ longitude-latitude bounding box.");
     try {
         // Build a GeoConstraint object. If there are no longitude/latitude
         // maps then this constructor throws Error.
-        GridGeoConstraint gc(l_grid, dataset, dds);
+        GridGeoConstraint gc(l_grid, dataset/*, dds*/);
 
         // This sets the bounding box and modifies the maps to match the
         // notation of the box (0/359 or -180/179)

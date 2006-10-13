@@ -375,8 +375,8 @@ void GeoConstraint::set_bounding_box_longitude(double left,
     @param ds_name The name of the dataset. Passed to BaseType::read().
     @param dds Use this DDS to get global attributes.
  */
-GeoConstraint::GeoConstraint(const string &ds_name, const DDS & dds)
-        :d_dataset(ds_name), d_dds(dds), d_lat(0), d_lon(0),
+GeoConstraint::GeoConstraint(const string &ds_name/*, const DDS & dds*/)
+        :d_dataset(ds_name), /*d_dds(dds),*/ d_lat(0), d_lon(0),
         d_bounding_box_set(false), d_latitude_sense(normal),
         d_longitude_notation(pos)
 {
