@@ -29,7 +29,7 @@
 #include "config.h"
 
 static char id[] not_used =
-    { "$Id: GeoConstraint.cc 14749 2006-10-02 22:13:27Z jimg $"
+    { "$Id$"
     };
 
 #include <math.h>
