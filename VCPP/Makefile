@@ -79,35 +79,35 @@ all:	setup
 
 modelMT: setup
 	@-md $(OBJDIR)\MT\libdap
-	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(DAP_MTLFLAGS)" LIBS="$(DAP_MTLIBS)" OBJDIR=$(OBJDIR)\MT\libdap libdapMT.lib
-	nmake installMTdap
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(DAP_MTLFLAGS)" LIBS="$(DAP_MTLIBS)" OBJDIR=$(OBJDIR)\MT\libdap libdapMT.lib
+	@nmake /NOLOGO installMTdap
 
 	@-md $(OBJDIR)\MT\libdapclient
-	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(CLIENT_MTLFLAGS)" LIBS="$(CLIENT_MTLIBS)" OBJDIR=$(OBJDIR)\MT\libdapclient libdapclientMT.lib
-	nmake installMTclient
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(CLIENT_MTLFLAGS)" LIBS="$(CLIENT_MTLIBS)" OBJDIR=$(OBJDIR)\MT\libdapclient libdapclientMT.lib
+	@nmake /NOLOGO installMTclient
 
 	@-md $(OBJDIR)\MT\libdapserver
-	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(SERVER_MTLFLAGS)" LIBS="$(SERVER_MTLIBS)" OBJDIR=$(OBJDIR)\MT\libdapserver libdapserverMT.lib
-	nmake installMTserver
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(SERVER_MTLFLAGS)" LIBS="$(SERVER_MTLIBS)" OBJDIR=$(OBJDIR)\MT\libdapserver libdapserverMT.lib
+	@nmake /NOLOGO installMTserver
 
-	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT getdap
-	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT deflate
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT getdap
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT deflate
 
 modelMD: setup
 	@-md $(OBJDIR)\MD\libdap
-	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(DAP_MDLFLAGS)" LIBS="$(DAP_MDLIBS)" OBJDIR=$(OBJDIR)\MD\libdap libdapMD.dll
-	nmake installMDdap
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(DAP_MDLFLAGS)" LIBS="$(DAP_MDLIBS)" OBJDIR=$(OBJDIR)\MD\libdap libdapMD.dll
+	@nmake /NOLOGO installMDdap
 
 	@-md $(OBJDIR)\MD\libdapclient
-	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(CLIENT_MDLFLAGS)" LIBS="$(CLIENT_MDLIBS)" OBJDIR=$(OBJDIR)\MD\libdapclient libdapclientMD.dll
-	nmake installMDclient
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(CLIENT_MDLFLAGS)" LIBS="$(CLIENT_MDLIBS)" OBJDIR=$(OBJDIR)\MD\libdapclient libdapclientMD.dll
+	@nmake /NOLOGO installMDclient
 
 	@-md $(OBJDIR)\MD\libdapserver
-	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(SERVER_MDLFLAGS)" LIBS="$(SERVER_MDLIBS)" OBJDIR=$(OBJDIR)\MD\libdapserver libdapserverMD.dll
-	nmake installMDserver
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(SERVER_MDLFLAGS)" LIBS="$(SERVER_MDLIBS)" OBJDIR=$(OBJDIR)\MD\libdapserver libdapserverMD.dll
+	@nmake /NOLOGO installMDserver
 
-	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD getdap
-	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD deflate
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD getdap
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD deflate
 
 # Clear built-in rules and set new ones
 .SUFFIXES :
@@ -115,14 +115,14 @@ modelMD: setup
 
 # Rules for library objects, both the .c and .cc's are C++
 {$(SRCDIR)}.c{$(OBJDIR)}.obj:
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $<
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $<
 
 {$(SRCDIR)}.cc{$(OBJDIR)}.obj:
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $<
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $<
 
 # Rule for linking executables
 {$(OBJDIR)}.obj{$(OBJDIR)}.exe:
-	$(LINK) $(LFLAGS) /out:$@ $< $(LIBS)
+	@$(LINK) $(LFLAGS) /out:$@ $< $(LIBS)
 
 GNU_OBJS = $(OBJDIR)\GetOpt.obj \
 		$(OBJDIR)\GNURegex.obj \
@@ -149,6 +149,7 @@ DAP_OBJS = $(GRAM_OBJS) \
 		$(OBJDIR)\DDXParser.obj \
 		$(OBJDIR)\BaseType.obj \
 		$(OBJDIR)\Byte.obj \
+		$(OBJDIR)\Error.obj \
 		$(OBJDIR)\Int32.obj \
 		$(OBJDIR)\Float64.obj \
 		$(OBJDIR)\Str.obj \
@@ -162,6 +163,8 @@ DAP_OBJS = $(GRAM_OBJS) \
 		$(OBJDIR)\Int16.obj \
 		$(OBJDIR)\UInt16.obj \
 		$(OBJDIR)\Float32.obj \
+		$(OBJDIR)\GeoConstraint.obj \
+		$(OBJDIR)\GridGeoConstraint.obj \
 		$(OBJDIR)\Constructor.obj \
 		$(OBJDIR)\PassiveByte.obj \
 		$(OBJDIR)\PassiveInt32.obj \
@@ -176,14 +179,17 @@ DAP_OBJS = $(GRAM_OBJS) \
 		$(OBJDIR)\PassiveStructure.obj \
 		$(OBJDIR)\BaseTypeFactory.obj \
 		$(OBJDIR)\SignalHandler.obj \
-		$(OBJDIR)\Error.obj \
 		$(OBJDIR)\InternalErr.obj \
 		$(OBJDIR)\util.obj \
 		$(OBJDIR)\xdrutil_ppc.obj \
 		$(OBJDIR)\parser-util.obj \
 		$(OBJDIR)\escaping.obj \
 		$(OBJDIR)\Clause.obj \
-		$(OBJDIR)\RValue.obj
+		$(OBJDIR)\RValue.obj \
+		$(OBJDIR)\gse.tab.obj \
+		$(OBJDIR)\ce_functions.obj \
+		$(OBJDIR)\GSEClause.obj \
+		$(OBJDIR)\lex.gse_.obj \
 
 CLIENT_OBJS = $(OBJDIR)\RCReader.obj \
 		$(OBJDIR)\Connect.obj \
@@ -197,10 +203,6 @@ CLIENT_OBJS = $(OBJDIR)\RCReader.obj \
 		$(OBJDIR)\ResponseTooBigErr.obj
 
 SERVER_OBJS = $(OBJDIR)\DODSFilter.obj \
-		$(OBJDIR)\gse.tab.obj \
-		$(OBJDIR)\ce_functions.obj \
-		$(OBJDIR)\GSEClause.obj \
-		$(OBJDIR)\lex.gse_.obj \
 		$(OBJDIR)\OPeNDAPFile.obj \
 		$(OBJDIR)\OPeNDAPDir.obj \
 		$(OBJDIR)\cgi_util.obj
@@ -218,22 +220,22 @@ deflate:	$(OBJDIR)\deflate.exe
 
 # Link the libraries
 $(OBJDIR)\libdapMT.lib: $(DAP_OBJS) $(GNU_OBJS)
-	$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
+	@$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
 
 $(OBJDIR)\libdapMD.dll: $(DAP_OBJS) $(GNU_OBJS)
-	$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
+	@$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
 
 $(OBJDIR)\libdapclientMT.lib: $(CLIENT_OBJS)
-	$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
+	@$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
 
 $(OBJDIR)\libdapclientMD.dll: $(CLIENT_OBJS)
-	$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
+	@$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
 
 $(OBJDIR)\libdapserverMT.lib: $(SERVER_OBJS)
-	$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
+	@$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
 
 $(OBJDIR)\libdapserverMD.dll: $(SERVER_OBJS)
-	$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
+	@$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
 
 # Libdap with the gram objs
 $(OBJDIR)\lex.das.obj		: $(SRCDIR)\lex.das.cc
@@ -243,6 +245,7 @@ $(OBJDIR)\dds.tab.obj		: $(SRCDIR)\dds.tab.cc
 $(OBJDIR)\lex.ce_expr.obj	: $(SRCDIR)\lex.ce_expr.cc
 $(OBJDIR)\ce_expr.tab.obj	: $(SRCDIR)\ce_expr.tab.cc
 $(OBJDIR)\lex.Error.obj		: $(SRCDIR)\lex.Error.cc
+$(OBJDIR)\Error.obj			: $(SRCDIR)\Error.cc
 $(OBJDIR)\Error.tab.obj		: $(SRCDIR)\Error.tab.cc
 $(OBJDIR)\AttrTable.obj		: $(SRCDIR)\AttrTable.cc
 $(OBJDIR)\ConstraintEvaluator.obj : $(SRCDIR)\ConstraintEvaluator.cc
@@ -254,6 +257,8 @@ $(OBJDIR)\BaseType.obj		: $(SRCDIR)\BaseType.cc
 $(OBJDIR)\Byte.obj		: $(SRCDIR)\Byte.cc
 $(OBJDIR)\Int32.obj		: $(SRCDIR)\Int32.cc
 $(OBJDIR)\Float64.obj		: $(SRCDIR)\Float64.cc
+$(OBJDIR)\GeoConstraint.obj		: $(SRCDIR)\GeoConstraint.cc
+$(OBJDIR)\GridGeoConstraint.obj		: $(SRCDIR)\GridGeoConstraint.cc
 $(OBJDIR)\Str.obj		: $(SRCDIR)\Str.cc
 $(OBJDIR)\Url.obj		: $(SRCDIR)\Url.cc
 $(OBJDIR)\Vector.obj		: $(SRCDIR)\Vector.cc
@@ -279,7 +284,6 @@ $(OBJDIR)\PassiveArray.obj	: $(SRCDIR)\PassiveArray.cc
 $(OBJDIR)\PassiveStructure.obj	: $(SRCDIR)\PassiveStructure.cc
 $(OBJDIR)\BaseTypeFactory.obj	: $(SRCDIR)\BaseTypeFactory.cc
 $(OBJDIR)\SignalHandler.obj	: $(SRCDIR)\SignalHandler.cc
-$(OBJDIR)\Error.obj		: $(SRCDIR)\Error.cc
 $(OBJDIR)\InternalErr.obj	: $(SRCDIR)\InternalErr.cc
 $(OBJDIR)\util.obj		: $(SRCDIR)\util.cc
 $(OBJDIR)\xdrutil_ppc.obj	: $(SRCDIR)\Xdrutil_ppc.c
@@ -287,6 +291,10 @@ $(OBJDIR)\parser-util.obj	: $(SRCDIR)\parser-util.cc
 $(OBJDIR)\escaping.obj		: $(SRCDIR)\escaping.cc
 $(OBJDIR)\Clause.obj		: $(SRCDIR)\Clause.cc
 $(OBJDIR)\RValue.obj		: $(SRCDIR)\RValue.cc
+$(OBJDIR)\gse.tab.obj		: $(SRCDIR)\gse.tab.cc
+$(OBJDIR)\ce_functions.obj	: $(SRCDIR)\ce_functions.cc
+$(OBJDIR)\GSEClause.obj		: $(SRCDIR)\GSEClause.cc
+$(OBJDIR)\lex.gse_.obj		: $(SRCDIR)\lex.gse_.cc
 
 # Libdap client
 $(OBJDIR)\RCReader.obj		: $(SRCDIR)\RCReader.cc
@@ -302,10 +310,6 @@ $(OBJDIR)\ResponseTooBigErr.obj	: $(SRCDIR)\ResponseTooBigErr.cc
 
 # libdap server
 $(OBJDIR)\DODSFilter.obj	: $(SRCDIR)\DODSFilter.cc
-$(OBJDIR)\gse.tab.obj		: $(SRCDIR)\gse.tab.cc
-$(OBJDIR)\ce_functions.obj	: $(SRCDIR)\ce_functions.cc
-$(OBJDIR)\GSEClause.obj		: $(SRCDIR)\GSEClause.cc
-$(OBJDIR)\lex.gse_.obj		: $(SRCDIR)\lex.gse_.cc
 $(OBJDIR)\OPeNDAPFile.obj	: $(SRCDIR)\OPeNDAPFile.cc
 $(OBJDIR)\OPeNDAPDir.obj	: $(SRCDIR)\OPeNDAPDir.cc
 $(OBJDIR)\cgi_util.obj		: $(SRCDIR)\cgi_util.cc
@@ -326,54 +330,54 @@ $(OBJDIR)\strnlen1.obj	: $(SRCDIR)\gl\strnlen1.c
 
 # Source generated by compiler tools
 $(SRCDIR)\lex.das.cc:	$(SRCDIR)\das.lex $(SRCDIR)\das.tab.cc $(SRCDIR)\das.tab.h
-	$(LEX) -Pdas $(SRCDIR)\das.lex
-	copy lex.das.c $(SRCDIR)\lex.das.cc
-	del lex.das.c
+	@$(LEX) -Pdas $(SRCDIR)\das.lex
+	@copy lex.das.c $(SRCDIR)\lex.das.cc
+	@del lex.das.c
 
 $(SRCDIR)\das.tab.cc $(SRCDIR)\das.tab.h: $(SRCDIR)\das.y $(SRCDIR)\DAS.h
-	$(YACC) $(YACCFLAGS) -p das $(SRCDIR)\das.y
-	copy $(SRCDIR)\das.tab.c $(SRCDIR)\das.tab.cc
-	del $(SRCDIR)\das.tab.c
+	@$(YACC) $(YACCFLAGS) -p das $(SRCDIR)\das.y
+	@copy $(SRCDIR)\das.tab.c $(SRCDIR)\das.tab.cc
+	@del $(SRCDIR)\das.tab.c
 
 $(SRCDIR)\lex.dds.cc:	$(SRCDIR)\dds.lex $(SRCDIR)\dds.tab.cc $(SRCDIR)\dds.tab.h
-	$(LEX) -Pdds $(SRCDIR)\dds.lex
-	copy lex.dds.c $(SRCDIR)\lex.dds.cc
-	del lex.dds.c
+	@$(LEX) -Pdds $(SRCDIR)\dds.lex
+	@copy lex.dds.c $(SRCDIR)\lex.dds.cc
+	@del lex.dds.c
 
 $(SRCDIR)\dds.tab.cc $(SRCDIR)\dds.tab.h: $(SRCDIR)\dds.y
-	$(YACC) $(YACCFLAGS) -p dds $(SRCDIR)\dds.y
-	copy $(SRCDIR)\dds.tab.c $(SRCDIR)\dds.tab.cc
-	del $(SRCDIR)\dds.tab.c
+	@$(YACC) $(YACCFLAGS) -p dds $(SRCDIR)\dds.y
+	@copy $(SRCDIR)\dds.tab.c $(SRCDIR)\dds.tab.cc
+	@del $(SRCDIR)\dds.tab.c
 
 $(SRCDIR)\lex.ce_expr.cc: $(SRCDIR)\ce_expr.lex $(SRCDIR)\ce_expr.tab.cc $(SRCDIR)\ce_expr.tab.h
-	$(LEX) -Pce_expr $(SRCDIR)\ce_expr.lex
-	copy lex.ce_expr.c $(SRCDIR)\lex.ce_expr.cc
-	del lex.ce_expr.c
+	@$(LEX) -Pce_expr $(SRCDIR)\ce_expr.lex
+	@copy lex.ce_expr.c $(SRCDIR)\lex.ce_expr.cc
+	@del lex.ce_expr.c
 
 $(SRCDIR)\ce_expr.tab.cc $(SRCDIR)\ce_expr.tab.h: $(SRCDIR)\ce_expr.y
-	$(YACC) $(YACCFLAGS) -p ce_expr $(SRCDIR)\ce_expr.y
-	copy $(SRCDIR)\ce_expr.tab.c $(SRCDIR)\ce_expr.tab.cc
-	del $(SRCDIR)\ce_expr.tab.c
+	@$(YACC) $(YACCFLAGS) -p ce_expr $(SRCDIR)\ce_expr.y
+	@copy $(SRCDIR)\ce_expr.tab.c $(SRCDIR)\ce_expr.tab.cc
+	@del $(SRCDIR)\ce_expr.tab.c
 
 $(SRCDIR)\lex.Error.cc:	$(SRCDIR)\Error.lex $(SRCDIR)\Error.tab.cc $(SRCDIR)\Error.tab.h
-	$(LEX) -PError $(SRCDIR)\Error.lex
-	copy lex.Error.c $(SRCDIR)\lex.Error.cc
-	del lex.Error.c
+	@$(LEX) -PError $(SRCDIR)\Error.lex
+	@copy lex.Error.c $(SRCDIR)\lex.Error.cc
+	@del lex.Error.c
 
 $(SRCDIR)\Error.tab.cc $(SRCDIR)\Error.tab.h: $(SRCDIR)\Error.y
-	$(YACC) $(YACCFLAGS) -p Error $(SRCDIR)\Error.y
-	copy $(SRCDIR)\Error.tab.c $(SRCDIR)\Error.tab.cc
-	del $(SRCDIR)\Error.tab.c
+	@$(YACC) $(YACCFLAGS) -p Error $(SRCDIR)\Error.y
+	@copy $(SRCDIR)\Error.tab.c $(SRCDIR)\Error.tab.cc
+	@del $(SRCDIR)\Error.tab.c
 
 $(SRCDIR)\lex.gse_.cc:	$(SRCDIR)\gse.lex $(SRCDIR)\gse.tab.cc $(SRCDIR)\gse.tab.h
-	$(LEX) -Pgse_ $(SRCDIR)\gse.lex
-	copy lex.gse_.c $(SRCDIR)\lex.gse_.cc
-	del lex.gse_.c
+	@$(LEX) -Pgse_ $(SRCDIR)\gse.lex
+	@copy lex.gse_.c $(SRCDIR)\lex.gse_.cc
+	@del lex.gse_.c
 
 $(SRCDIR)\gse.tab.cc $(SRCDIR)\gse.tab.h: $(SRCDIR)\gse.y
-	$(YACC) $(YACCFLAGS) -p gse_ $(SRCDIR)\gse.y
-	copy $(SRCDIR)\gse.tab.c $(SRCDIR)\gse.tab.cc
-	del $(SRCDIR)\gse.tab.c
+	@$(YACC) $(YACCFLAGS) -p gse_ $(SRCDIR)\gse.y
+	@copy $(SRCDIR)\gse.tab.c $(SRCDIR)\gse.tab.cc
+	@del $(SRCDIR)\gse.tab.c
 
 $(OBJDIR)\getdap.exe: $(OBJDIR)\getdap.obj
 
