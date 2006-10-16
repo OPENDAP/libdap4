@@ -238,8 +238,8 @@ public:
     
     int get_lat_length() const {return d_lat_length;}
     int get_lon_length() const {return d_lon_length;}
-    int set_lat_length(int len) {d_lat_length = len;}
-    int set_lon_length(int len) {d_lon_length = len;}
+    void set_lat_length(int len) {d_lat_length = len; }
+    void set_lon_length(int len) {d_lon_length = len; }
 
     // These four are indeces of the constraint
     int get_latitude_index_top() const {return d_latitude_index_top;}
