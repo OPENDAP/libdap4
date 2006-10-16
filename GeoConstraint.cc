@@ -37,6 +37,9 @@ static char id[] not_used =
 
 #include <iostream>
 #include <sstream>
+#ifdef WIN32
+#include <algorithm>  //  for find_if
+#endif
 
 //#define DODS_DEBUG
 
