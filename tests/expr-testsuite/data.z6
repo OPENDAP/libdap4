@@ -11,8 +11,8 @@ Dataset {
 The data:
 Grid {
   Array:
-    Byte SST[lon = 2][lat = 2];
+    Byte SST[lon = 3][lat = 3];
   Maps:
-    Float32 lon[2];
-    Float32 lat[2];
-} SST = {  Array: {{0, 1},{2, 3}}  Maps: {-51, -19}, {51, 38} };
+    Float32 lon[3];
+    Float32 lat[3];
+} SST = {  Array: {{0, 1, 2},{3, 4, 5},{6, 7, 8}}  Maps: {-83, -51, -19}, {64, 51, 38} };

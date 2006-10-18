@@ -12,9 +12,9 @@ Dataset {
 The data:
 Grid {
   Array:
-    Byte SST[time = 1][lon = 2][lat = 2];
+    Byte SST[time = 1][lon = 3][lat = 3];
   Maps:
     Int32 time[1];
-    Float32 lon[2];
-    Float32 lat[2];
-} SST = {  Array: {{{173, 174},{175, 176}}}  Maps: {1048576}, {-51, -19}, {51, 38} };
+    Float32 lon[3];
+    Float32 lat[3];
+} SST = {  Array: {{{173, 174, 175},{176, 177, 178},{179, 180, 181}}}  Maps: {1048576}, {-83, -51, -19}, {64, 51, 38} };
