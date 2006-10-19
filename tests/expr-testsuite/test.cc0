@@ -1,0 +1,6 @@
+# -*- C++ -*-
+#
+
+Dataset {
+   Byte SST[lat = 13][lon = 11];
+} SST_Array;
