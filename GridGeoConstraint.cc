@@ -60,19 +60,24 @@ using namespace libdap;
     @param ds_name The name of the dataset. Passed to BaseType::read().
     @param dds Use this DDS to get global attributes.
  */
-GridGeoConstraint::GridGeoConstraint(Grid *grid, const string &ds_name/*, const DDS &dds*/) 
-        : GeoConstraint(ds_name/*, dds*/), d_grid(grid), d_grid_array_data(0),
-        d_grid_array_data_size(0), d_latitude(0), d_longitude(0)
+GridGeoConstraint::GridGeoConstraint(Grid *grid, const string &ds_name) 
+        : GeoConstraint(ds_name), d_grid(grid), d_latitude(0), d_longitude(0)
 {
+    if (d_grid->get_array()->dimensions() < 2
+        || d_grid->get_array()->dimensions() > 3)
+        throw Error(
+"The geogrid() function works only with Grids of two or three dimensions.");
 
     // Is this Grid a geo-referenced grid? Throw Error if not.
-    if (!find_lat_lon_maps())
+    if (!build_lat_lon_maps())
         throw Error(string("The grid '") + d_grid->name()
                     +
                     "' does not have identifiable latitude/longitude map vectors.");
                     
     if (!lat_lon_dimensions_ok())
-        throw Error("The geogrid() function will only work when the Grid's Longitude and Latitude maps are the rightmost dimensions.");
+        throw Error(
+"The geogrid() function will only work when the Grid's Longitude and Latitude\n\
+maps are the rightmost dimensions.");
 }  
 
 /** A private method called by the constructor that searches for latitude
@@ -90,7 +95,7 @@ GridGeoConstraint::GridGeoConstraint(Grid *grid, const string &ds_name/*, const 
     </ul>
 
     @return True if the maps are found, otherwise False */
-bool GridGeoConstraint::find_lat_lon_maps()
+bool GridGeoConstraint::build_lat_lon_maps()
 {
     Grid::Map_iter m = d_grid->map_begin();
     // Assume that a Grid is correct and thus has exactly as many maps at its
@@ -122,7 +127,7 @@ bool GridGeoConstraint::find_lat_lon_maps()
             set_lat(extract_double_array(d_latitude));   // throws Error
             set_lat_length(d_latitude->length());
 
-            d_lat_grid_dim = d;
+            set_lat_dim(d);
         }
 
         if (!d_longitude        // && !units_value.empty()
@@ -136,7 +141,7 @@ bool GridGeoConstraint::find_lat_lon_maps()
             set_lon(extract_double_array(d_longitude));
             set_lon_length(d_longitude->length());
 
-            d_lon_grid_dim = d;
+            set_lon_dim(d);
         }
 
         ++m;
@@ -151,7 +156,7 @@ bool GridGeoConstraint::find_lat_lon_maps()
     not to two 'fastest-varying' (or 'rightmost) dimensions. It sets the 
     internal property \e longitude_rightmost if that's true. 
     
-    @note Called by the constructor once find_lat_lon_maps() has returned. 
+    @note Called by the constructor once build_lat_lon_maps() has returned. 
     
     @return True if the lat/lon maps are the two rightmost maps,
     false otherwise*/
@@ -171,102 +176,6 @@ GridGeoConstraint::lat_lon_dimensions_ok()
         
     return true;
 }
-
-static int
-count_dimensions_except_longitude(Array &a)
-{
-    int size = 1;
-    for (Array::Dim_iter i = a.dim_begin(); (i + 1) != a.dim_end(); ++i)
-        size *= a.dimension_size(i, true);
-
-    return size;
-}
-
-/** Reorder the data values relative to the longitude axis so that the
-    reordered longitude map (see GeoConstraint::reorder_longitude_map())
-    and the data values match.
-
-    @note First set all the other constraints, including the latitude and
-    then make this call. Other constraints, besides latitude, will be simple
-    range constraints. Latitude might require that values be inverted, but
-    that can be done _after_ the longitude reordering takes place. The latitude
-    constraint can be imposed by inverting the top and bottom indices if the
-    sense of the grid is inverted, before data are read in this method.
-    Then apply the longitude constraint, then invert the result of the merge, if
-    needed.
-
-    @todo Fix this code so that it works with latitude as the rightmost map */
-void GridGeoConstraint::reorder_data_longitude_axis()
-{
-        
-    if (!get_longitude_rightmost())
-        throw Error(
-"This grid does not have Longitude as its rightmost dimension, the geogrid()\n\
-does not support constraints that wrap around the edges of this type of grid.");
-
-    // Read the two parts of the Grid's Array using the read() method.
-    // Then combine them into one lump of data stored in the GeoConstraint
-    // object.
-
-    // Make a constraint for the 'left' part, which goes from the left index
-    // to the right side of the array. Use read() to get the data.
-    Array & a = *d_grid->get_array();
-
-    //a.clear_constraint();
-
-    DBG(cerr << "Constraint for the left half: " << get_longitude_index_left()
-        << ", " << get_lon_length()-1 << endl);
-
-    a.add_constraint(d_lon_grid_dim, get_longitude_index_left(), 1,
-                     get_lon_length()-1);
-    a.set_read_p(false);
-    a.read(get_dataset());
-    DBG2(a.print_val(stderr));
-    char *left_data = 0;
-    int left_size = a.buf2val((void **) &left_data);
-
-    // Build a constraint for the 'right' part, which
-    // goes from the left edge of the array to the right index and read those
-    // data.
-    //a.clear_constraint();
-
-    DBG(cerr << "Constraint for the right half: " << 0
-        << ", " << get_longitude_index_right() << endl);
-
-    a.add_constraint(d_lon_grid_dim, 0, 1, get_longitude_index_right());
-    a.set_read_p(false);
-    a.read(get_dataset());
-    DBG2(a.print_val(stderr));
-    char *right_data = 0;
-    int right_size = a.buf2val((void **) &right_data);
-
-    // Make one big lump O'data
-    d_grid_array_data_size = left_size + right_size;
-    d_grid_array_data = new char[d_grid_array_data_size];
-
-    // Assume COARDS convensions are being followed: lon varies fastest.
-    // These *_elements variables are actually elements * bytes/element since
-    // memcpy() uses bytes.
-    int elem_width = a.var()->width();
-    int left_elements = (get_lon_length() - get_longitude_index_left()) * elem_width;
-    int right_elements = (get_longitude_index_right() + 1) * elem_width;
-    int total_elements_per_row = left_elements + right_elements;
-
-    // Interleve the left and right_data vectors. jhrg 8/31/06
-    int rows_to_copy = count_dimensions_except_longitude(a);
-    for (int i = 0; i < rows_to_copy; ++i) {
-        memcpy(d_grid_array_data + (total_elements_per_row * i),
-               left_data + (left_elements * i),
-               left_elements);
-        memcpy(d_grid_array_data + left_elements + (total_elements_per_row * i),
-               right_data + (right_elements * i),
-               right_elements);
-    }
-
-    delete[]left_data;
-    delete[]right_data;
-}
-
 
 /** Once the bounding box is set use this method to apply the constraint. This
     modifies the data values in the Grid so that the software in
@@ -311,7 +220,7 @@ void GridGeoConstraint::apply_constraint_to_data()
     // Constrain the lat vector and lat dim of the array
     d_latitude->add_constraint(fd, get_latitude_index_top(), 1,
                                get_latitude_index_bottom());
-    d_grid->get_array()->add_constraint(d_lat_grid_dim,
+    d_grid->get_array()->add_constraint(get_lat_dim(),
                                         get_latitude_index_top(), 1,
                                         get_latitude_index_bottom());
 
@@ -329,7 +238,7 @@ void GridGeoConstraint::apply_constraint_to_data()
         // it in this object after joining the two parts. The method
         // apply_constraint_to_data() transfers the data back from the this
         // objet to the DAP Grid variable.
-        reorder_data_longitude_axis();
+        reorder_data_longitude_axis(*d_grid->get_array());
 
         // Now the data are all in local storage
 
@@ -358,7 +267,7 @@ void GridGeoConstraint::apply_constraint_to_data()
     d_longitude->add_constraint(fd, get_longitude_index_left(), 1,
                                 get_longitude_index_right());
 
-    d_grid->get_array()->add_constraint(d_lon_grid_dim,
+    d_grid->get_array()->add_constraint(get_lon_dim(),
                                         get_longitude_index_left(),
                                         1, get_longitude_index_right());
 
@@ -370,9 +279,9 @@ void GridGeoConstraint::apply_constraint_to_data()
                            get_longitude_index_right() - get_longitude_index_left() + 1);
 
     // ... and then the Grid's array if it has been read.
-    if (d_grid_array_data) {
-        int size = d_grid->get_array()->val2buf(d_grid_array_data);
-        if (size != d_grid_array_data_size)
+    if (get_array_data()) {
+        int size = d_grid->get_array()->val2buf(get_array_data());
+        if (size != get_array_data_size())
             throw
             InternalErr
             ("Expected data size not copied to the Grid's buffer.");

@@ -48,19 +48,12 @@ private:
     // Specific to a Grid
     Grid *d_grid;               //< Constrain this Grid
     
-    char *d_grid_array_data;    //< Holds the Grid's data values
-    int d_grid_array_data_size;
-    
     Array *d_latitude;          //< A pointer to the Grid's latitude map
     Array *d_longitude;         //< A pointer to the Grid's longitude map
-    Array::Dim_iter d_lat_grid_dim; //< Easy access to the Grid lat dimension
-    Array::Dim_iter d_lon_grid_dim; //< Easy access to the Grid lon dimension
 
-    bool find_lat_lon_maps() ;
+    bool build_lat_lon_maps();
     bool lat_lon_dimensions_ok();
 
-    void reorder_data_longitude_axis() ;
-                                                                                             
     friend class GridGeoConstraintTest; // Unit tests
 
 public:
@@ -70,7 +63,6 @@ public:
     //@}
     
     virtual ~GridGeoConstraint() {
-        delete [] d_grid_array_data; d_grid_array_data = 0;
     }
 
     virtual void apply_constraint_to_data() ;

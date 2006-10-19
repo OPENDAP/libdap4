@@ -58,6 +58,7 @@ static char rcsid[] not_used =
 
 #include "GSEClause.h"
 #include "GridGeoConstraint.h"
+#include "ArrayGeoConstraint.h"
 
 #include "ce_functions.h"
 #include "gse_parser.h"
@@ -587,24 +588,31 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS & dds,
 arguments, A Grid followed by the left-top and right-bottom points of a\n\
 longitude-latitude bounding box.");
 
+    Grid *l_grid = dynamic_cast < Grid * >(argv[0]->ptr_duplicate());
+    if (!l_grid)
+        throw Error(
+"The first argument to geogrid() must be a Grid variable!");
+
+#if 0
     Grid *grid = dynamic_cast < Grid * >(argv[0]);
     if (!grid)
         throw
             Error
             ("The first argument to geogrid() must be a Grid variable!");
-
+#if 0
     if (grid->get_array()->dimensions() < 2
         || grid->get_array()->dimensions() > 3)
         throw
             Error
             ("The geogrid() function works only with Grids of two or three dimensions.");
+#endif
 
     // dup the grid before reading; DODSFilter::send_data() will free the
     // variable once it's done serializing.
     Grid *l_grid = dynamic_cast < Grid * >(grid->ptr_duplicate());
     if (!l_grid)
         throw InternalErr(__FILE__, __LINE__, "Expected a Grid.");
-
+#endif
     // Read the maps. Do this before calling parse_gse_expression(). Avoid
     // reading the array until the constraints have been applied because it
     // might be really large.
@@ -838,7 +846,7 @@ assumed to be the slope and y-intercept.");
     <li>geoarray(var, left, top, right, bottom, var_left, v_top, v_right, v_bottom,projection,datum)</li>
     </ul>
     
-    @note Only the plat-carre projection and WGS84 datum are currently
+    @note Only the plat-carre projection and wgs84 datum are currently
     supported.
     @param argc
     @param argv
@@ -865,11 +873,72 @@ In the first version 'var' is the target of the selection and 'left', 'top',\n\
 'right' and 'bottom' are the corners of a longitude-latitude box that defines\n\
 the selection. In the second version the 'var_left', ..., parameters give the\n\
 longitude and latitude extent of the entire array. The projection and dataum are\n\
-assumed to be Plat-Carre and WSG84. In the last version the the projection and\n\
+assumed to be Plat-Carre and wgs84. In the last version the the projection and\n\
 datum of the image are also provided.");
 
-    Array *l_array = 0;
-    return l_array;
+    // Check the Array (and dup because the caller will free the variable).
+    Array *l_array = dynamic_cast < Array * >(argv[0]->ptr_duplicate());
+    if (!l_array)
+        throw Error(
+"The first argument to geoarray() must be an Array variable!");
+
+    try {
+        
+    // Read the bounding box and variable extents from the params
+    double bb_left = extract_double_value(argv[1]);
+    double bb_top = extract_double_value(argv[2]);
+    double bb_right = extract_double_value(argv[3]);
+    double bb_bottom = extract_double_value(argv[4]);
+    
+    ArrayGeoConstraint *agc = 0;
+    switch (argc) {
+        case 5:
+            agc = new ArrayGeoConstraint(l_array, dataset);
+            break;
+        case 9: {
+            double var_left = extract_double_value(argv[5]);
+            double var_top = extract_double_value(argv[6]);
+            double var_right = extract_double_value(argv[7]);
+            double var_bottom = extract_double_value(argv[8]);
+            agc = new ArrayGeoConstraint(l_array, dataset,
+                                         var_left, var_top, var_right, var_bottom);
+            break;
+        }
+        case 11: {
+            double var_left = extract_double_value(argv[5]);
+            double var_top = extract_double_value(argv[6]);
+            double var_right = extract_double_value(argv[7]);
+            double var_bottom = extract_double_value(argv[8]);
+            string projection = extract_string_argument(argv[9]);
+            string datum = extract_string_argument(argv[10]);
+            agc = new ArrayGeoConstraint(l_array, dataset,
+                                         var_left, var_top, var_right, var_bottom,
+                                         projection, datum);
+            break;
+        }
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Wrong number of args to geoarray.");
+    }
+
+        agc->set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
+
+        // This also reads all of the data into the grid variable
+        agc->apply_constraint_to_data();
+
+        // In this function the l_grid pointer is the same as the pointer returned
+        // by this call. The caller of the function must free the pointer.
+        return agc->get_constrained_array();
+    }
+    catch(Error & e) {
+        throw;
+    }
+    catch(exception & e) {
+        throw
+            InternalErr(string
+                        ("A C++ exception was thrown from inside geoarray(): ")
+                        + e.what());
+
+    }
 }
 
 void register_functions(ConstraintEvaluator & ce)
