@@ -371,16 +371,39 @@ BaseType *func_length(int argc, BaseType * argv[], DDS & dds)
 }
 #endif
 
-/** This server-side function returns 1.
-    This function is mostly for testing purposes. */
-BaseType *func_one(int argc, BaseType * argv[], DDS & dds,
+/** This server-side function returns version information for the server-side
+    functions. */
+BaseType *function_version(int argc, BaseType * argv[], DDS & dds,
                    const string & dataset)
 {
-    Byte *one = new Byte("one");
-    (void) one->set_value(1);
-    return one;
-}
+    string help = "\
+Usage: version() returns plain text information about the available functions.\
+       version(\"xml\") returns the informationin an XML 1.0 document.\
+       version(\"help\") returns this text.";
 
+    string value = "\
+Function set: version 1.0, grid 1.0, geogrid 1.0b2, geoarray 0.9b1, linear_scale 1.0b1";
+
+    string xml_value = "<?xml version=\"1.0\"?>\
+    <functions>\
+    <function name=\"version\" version=\"1.0\"/>\
+    <function name=\"grid\" version=\"1.0\"/>\
+    <function name=\"geogrid\" version=\"1.0\"/>\
+    <function name=\"geoarray\" version=\"1.0\"/>\
+    <function name=\"linear_scale\" version=\"1.0\"/>\
+    </functions>";
+
+    Str *response = new Str("version");
+    
+    if (argc == 1 && extract_string_argument(argv[0]) == "help")
+        response->set_value(help);
+    else if (argc == 1 && extract_string_argument(argv[0]) == "xml")
+        response->set_value(xml_value);
+    else
+        response->set_value(value);
+        
+    return response;
+}
 
 static void parse_gse_expression(gse_arg * arg, BaseType * expr)
 {
@@ -927,7 +950,7 @@ void register_functions(ConstraintEvaluator & ce)
     ce.add_function("geogrid", function_geogrid);
     ce.add_function("linear_scale", function_linear_scale);
     ce.add_function("geoarray", function_geoarray);
-    ce.add_function("one", func_one);
+    ce.add_function("version", function_version);
 }
 
 }                               // namespace libdap

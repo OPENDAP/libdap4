@@ -101,7 +101,7 @@ compare(T elem, relop op, double value)
     }
 }
 
-
+// These values are used in error messages, hence the strings.
 template<class T>
 void
 GSEClause::set_map_min_max_value(T min, T max)
