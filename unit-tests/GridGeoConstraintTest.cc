@@ -238,15 +238,13 @@ public:
     }
 
     CPPUNIT_TEST_SUITE( GridGeoConstraintTest );
-#if 0
+
     CPPUNIT_TEST(geoconstraint_build_lat_lon_maps_test);
     CPPUNIT_TEST(lat_lon_dimensions_ok_test);
     CPPUNIT_TEST(transform_longitude_to_pos_notation_test);
     CPPUNIT_TEST(find_longitude_indeces_test);
     CPPUNIT_TEST(categorize_latitude_test);
-#endif
     CPPUNIT_TEST(find_latitude_indeces_test);
-#if 0
     CPPUNIT_TEST(set_array_using_double_test);
     CPPUNIT_TEST(reorder_longitude_map_test);
 #if 0
@@ -256,9 +254,13 @@ public:
     CPPUNIT_TEST(set_bounding_box_test1);
     CPPUNIT_TEST(set_bounding_box_test2);
     CPPUNIT_TEST(set_bounding_box_test3);
+    CPPUNIT_TEST(set_bounding_box_test4);
+    CPPUNIT_TEST(set_bounding_box_test5);
+    CPPUNIT_TEST(set_bounding_box_test6);
+    CPPUNIT_TEST(set_bounding_box_test7);
     CPPUNIT_TEST(apply_constriant_to_data_test);
     CPPUNIT_TEST(apply_constriant_to_data_test2);
-#endif
+
     CPPUNIT_TEST_SUITE_END();
 
     void geoconstraint_build_lat_lon_maps_test()
@@ -593,6 +595,82 @@ public:
         }
     }
 
+    void set_bounding_box_test4()
+    {
+        // lon: { 160, 200, 240, 280, 320 }
+        // lat: { 40, 30, 20, 10, 0 }
+        try {
+            Grid *g3 = dynamic_cast<Grid*>(geo_dds_3d->var("SST4"));
+            CPPUNIT_ASSERT(g3);
+            GridGeoConstraint gc3(g3, geo_dds_3d->get_dataset_name());
+            // SST1 with a constraint that uses neg_pos notation for lon
+            gc3.set_bounding_box(0, 30.0, 150, 20.0);
+            CPPUNIT_ASSERT(!"Should fail since the BB box contains no data");
+
+        }
+        catch (Error &e) {
+            DBG(cerr << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_ASSERT("Caught Error.");
+        }
+    }
+
+    void set_bounding_box_test5()
+    {
+        // lon: { 160, 200, 240, 280, 320 }
+        // lat: { 40, 30, 20, 10, 0 }
+        try {
+            Grid *g3 = dynamic_cast<Grid*>(geo_dds_3d->var("SST4"));
+            CPPUNIT_ASSERT(g3);
+            GridGeoConstraint gc3(g3, geo_dds_3d->get_dataset_name());
+            // SST1 with a constraint that uses neg_pos notation for lon
+            gc3.set_bounding_box(0, 30.0, 170, 20.0);
+            CPPUNIT_ASSERT("Should not fail since the BB box contains data");
+
+        }
+        catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Should not throw Error.");
+        }
+    }
+    
+    void set_bounding_box_test6()
+    {
+        // lon: { 160, 200, 240, 280, 320 }
+        // lat: { 40, 30, 20, 10, 0 }
+        try {
+            Grid *g3 = dynamic_cast<Grid*>(geo_dds_3d->var("SST4"));
+            CPPUNIT_ASSERT(g3);
+            GridGeoConstraint gc3(g3, geo_dds_3d->get_dataset_name());
+            // SST1 with a constraint that uses neg_pos notation for lon
+            gc3.set_bounding_box(170, 60.0, 270, 50.0);
+            CPPUNIT_ASSERT(!"Should fail since the BB box contains no data");
+
+        }
+        catch (Error &e) {
+            DBG(cerr << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_ASSERT("Cought Error.");
+        }
+    }
+
+    void set_bounding_box_test7()
+    {
+        // lon: 20 --> 359
+        // lat: { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
+        try {
+            Grid *g3 = dynamic_cast<Grid*>(geo_dds->var("SST3"));
+            CPPUNIT_ASSERT(g3);
+            GridGeoConstraint gc3(g3, geo_dds_3d->get_dataset_name());
+            // SST1 with a constraint that uses neg_pos notation for lon
+            gc3.set_bounding_box(170, 70.0, 270, 60.0);
+            CPPUNIT_ASSERT(!"Should fail since the BB box contains no data");
+
+        }
+        catch (Error &e) {
+            DBG(cerr << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_ASSERT("Cought Error.");
+        }
+    }
+        
     void apply_constriant_to_data_test()
     {
         try {

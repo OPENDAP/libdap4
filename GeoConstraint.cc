@@ -51,6 +51,7 @@ static char id[] not_used =
 #include "Error.h"
 #include "InternalErr.h"
 #include "ce_functions.h"
+#include "util.h"
 
 using namespace std;
 using namespace libdap;
@@ -75,16 +76,14 @@ void remove_quotes(string & value)
 /** This is used with find_if(). The GeoConstraint class holds a set of strings
     which are prefixes for variable names. Using the regular find() locates
     only the exact matches, using find_if() with this functor makes is easy
-    to treat those set<string> objects as collections of prefixes. Sort of...
-    this code really tests for the presence of the 'prefix' anywhere in the
-    target string. */
+    to treat those set<string> objects as collections of prefixes. */
 class is_prefix {
   private:
     string s;
   public:
     is_prefix(const string & in):s(in) {
     } bool operator() (const string & prefix) {
-        return s.find(prefix) != string::npos;
+        return s.find(prefix) == 0;
     }
 };
 
@@ -161,6 +160,28 @@ void GeoConstraint::transform_longitude_to_neg_pos_notation()
 {
     for (int i = 0; i < d_lon_length; ++i)
         d_lon[i] -= 180;
+}
+
+bool GeoConstraint::is_bounding_box_valid(double left, double top, 
+                                          double right, double bottom) const
+{
+    if ( (left < d_lon[0] && right < d_lon[0])
+         || (left > d_lon[d_lon_length-1] && right > d_lon[d_lon_length-1]))
+        return false;
+        
+    if (d_latitude_sense == normal) {
+        // When sense is normal, the largest values are at the origin.
+        if ( (top > d_lat[0] && bottom > d_lat[0])
+             || (top < d_lat[d_lat_length-1] && bottom < d_lat[d_lat_length-1]))
+            return false;
+    }
+    else {
+        if ( (top < d_lat[0] && bottom < d_lat[0])
+             || (top > d_lat[d_lat_length-1] && bottom > d_lat[d_lat_length-1]))
+            return false;
+    }
+    
+    return true;
 }
 
 /** Scan from the left to the right, and the right to the left, looking
@@ -279,7 +300,7 @@ void GeoConstraint::find_latitude_indeces(double top, double bottom,
     else {
         while (i < d_lat_length - 1 && d_lat[i] < top)
             ++i;
-       latitude_index_top = i;
+        latitude_index_top = i;
     }
 
 
@@ -309,6 +330,7 @@ GeoConstraint::LatitudeSense GeoConstraint::categorize_latitude() const
     return d_lat[0] >= d_lat[d_lat_length - 1] ? normal : inverted;
 }
 
+#if 0
 /** Given the top and bottom sides of the bounding box, use the Grid or Array
     latitude information to constrain the data to that bounding box.
 
@@ -328,6 +350,7 @@ void GeoConstraint::set_bounding_box_latitude(double top, double bottom)
     find_latitude_indeces(top, bottom, d_latitude_sense,
                           d_latitude_index_top, d_latitude_index_bottom);
 }
+#endif
 
 // Use 'index' as the pivot point. Move the behind index to the front of
 // the vector and those points in front of and at index to the rear.
@@ -448,6 +471,7 @@ does not support constraints that wrap around the edges of this type of grid.");
     delete[]right_data;
 }
 
+#if 0
 /** Given the left and right sides of the bounding box, use the Grid or Array
     longitude information to constrain the data to that bounding box. This
     method takes into account the two different notations commonly used to
@@ -483,6 +507,7 @@ void GeoConstraint::set_bounding_box_longitude(double left, double right)
     find_longitude_indeces(left, right, d_longitude_index_left,
                            d_longitude_index_right);
 }
+#endif
 
 /** @brief Initialize GeoConstraint with a Grid.
     @param grid Set the GeoConstraint to use this Grid variable. It is the
@@ -510,9 +535,13 @@ GeoConstraint::GeoConstraint(const string & ds_name)
 
     d_lat_names.insert("COADSY");
     d_lat_names.insert("lat");
+    d_lat_names.insert("Lat");
+    d_lat_names.insert("LAT");
 
     d_lon_names.insert("COADSX");
     d_lon_names.insert("lon");
+    d_lon_names.insert("Lon");
+    d_lon_names.insert("LON");
 }
 
 /** Set the bounding box for this constraint. After calling this method the
@@ -540,8 +569,46 @@ void GeoConstraint::set_bounding_box(double left, double top,
             InternalErr
             ("It is not possible to register more than one geographical constraint on a variable.");
 
-    set_bounding_box_latitude(top, bottom);
-    set_bounding_box_longitude(left, right);
+    // Record the 'sense' of the latitude for use here and later on.
+    d_latitude_sense = categorize_latitude();
+
+    // Categorize the notation used by the bounding box (0/359 or -180/179).
+    d_longitude_notation = categorize_notation(left, right);
+
+    // If the notation uses -180/179, transform the request to 0/359 notation.
+    if (d_longitude_notation == neg_pos)
+        transform_constraint_to_pos_notation(left, right);
+
+    // If the grid uses -180/179, transform it to 0/359 as well. This will make
+    // subsequent logic easier and adds only a few extra operations, even with
+    // large maps.
+    Notation longitude_notation =
+        categorize_notation(d_lon[0], d_lon[d_lon_length - 1]);
+
+    if (longitude_notation == neg_pos)
+        transform_longitude_to_pos_notation();
+
+    if (!is_bounding_box_valid(left, top, right, bottom))
+        throw Error(
+"The bounding box does not intersect any data within this Grid or Array. The\n\
+geographical extent of these data are from latitude "\
++ double_to_string(d_lat[0]) + " to " + double_to_string(d_lat[d_lat_length-1]) + "\n\
+and longitude " + double_to_string(d_lon[0]) + " to " + double_to_string(d_lon[d_lon_length-1])
++ " while the bounding box provided was latitude "\
++ double_to_string(top) + " to " + double_to_string(bottom) + "\n\
+and longitude " + double_to_string(left) + " to " + double_to_string(right));
+
+    // This is simpler than the longitude case because there's no need to test
+    // for several notations, no need to accommodate them in the return, no
+    // modulo arithmetic for the axis and no need to account for a constraint with
+    // two disconnected parts to be joined.
+    find_latitude_indeces(top, bottom, d_latitude_sense,
+                          d_latitude_index_top, d_latitude_index_bottom);
+
+
+    // Find the longitude map indeces that correspond to the bounding box.
+    find_longitude_indeces(left, right, d_longitude_index_left,
+                           d_longitude_index_right);
 
     DBG(cerr << "Bounding box (tlbr): " << d_latitude_index_top << ", "
         << d_longitude_index_left << ", "

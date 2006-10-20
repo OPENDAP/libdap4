@@ -593,26 +593,6 @@ longitude-latitude bounding box.");
         throw Error(
 "The first argument to geogrid() must be a Grid variable!");
 
-#if 0
-    Grid *grid = dynamic_cast < Grid * >(argv[0]);
-    if (!grid)
-        throw
-            Error
-            ("The first argument to geogrid() must be a Grid variable!");
-#if 0
-    if (grid->get_array()->dimensions() < 2
-        || grid->get_array()->dimensions() > 3)
-        throw
-            Error
-            ("The geogrid() function works only with Grids of two or three dimensions.");
-#endif
-
-    // dup the grid before reading; DODSFilter::send_data() will free the
-    // variable once it's done serializing.
-    Grid *l_grid = dynamic_cast < Grid * >(grid->ptr_duplicate());
-    if (!l_grid)
-        throw InternalErr(__FILE__, __LINE__, "Expected a Grid.");
-#endif
     // Read the maps. Do this before calling parse_gse_expression(). Avoid
     // reading the array until the constraints have been applied because it
     // might be really large.
@@ -649,14 +629,14 @@ longitude-latitude bounding box.");
     try {
         // Build a GeoConstraint object. If there are no longitude/latitude
         // maps then this constructor throws Error.
-        GridGeoConstraint gc(l_grid, dataset/*, dds*/);
+        GridGeoConstraint gc(l_grid, dataset);
 
         // This sets the bounding box and modifies the maps to match the
         // notation of the box (0/359 or -180/179)
-        double left = extract_double_value(argv[1]);
-        double top = extract_double_value(argv[2]);
-        double right = extract_double_value(argv[3]);
-        double bottom = extract_double_value(argv[4]);
+        double top = extract_double_value(argv[1]);
+        double left = extract_double_value(argv[2]);
+        double bottom = extract_double_value(argv[3]);
+        double right = extract_double_value(argv[4]);
         gc.set_bounding_box(left, top, right, bottom);
         DBG(cerr << "geogrid: past bounding box set" << endl);
 
@@ -841,9 +821,9 @@ assumed to be the slope and y-intercept.");
 /** Perform a selection on the array using geographical coordinates. This 
     function takes several groups of arguments. 
     <ul>
-    <li>geoarray(var, left, top, right, bottom)</li>
-    <li>geoarray(var, left, top, right, bottom, var_left, v_top, v_right, v_bottom)</li>
-    <li>geoarray(var, left, top, right, bottom, var_left, v_top, v_right, v_bottom,projection,datum)</li>
+    <li>geoarray(var, top, left, bottom, right)</li>
+    <li>geoarray(var, top, left, bottom, right, var_top, v_left, v_bottom, v_right)</li>
+    <li>geoarray(var, top, left, bottom, right, var_top, v_left, v_bottom, v_right, projection, datum)</li>
     </ul>
     
     @note Only the plat-carre projection and wgs84 datum are currently
@@ -885,10 +865,10 @@ datum of the image are also provided.");
     try {
         
     // Read the bounding box and variable extents from the params
-    double bb_left = extract_double_value(argv[1]);
-    double bb_top = extract_double_value(argv[2]);
-    double bb_right = extract_double_value(argv[3]);
-    double bb_bottom = extract_double_value(argv[4]);
+    double bb_top = extract_double_value(argv[1]);
+    double bb_left = extract_double_value(argv[2]);
+    double bb_bottom = extract_double_value(argv[3]);
+    double bb_right = extract_double_value(argv[4]);
     
     ArrayGeoConstraint *agc = 0;
     switch (argc) {
@@ -896,19 +876,19 @@ datum of the image are also provided.");
             agc = new ArrayGeoConstraint(l_array, dataset);
             break;
         case 9: {
-            double var_left = extract_double_value(argv[5]);
-            double var_top = extract_double_value(argv[6]);
-            double var_right = extract_double_value(argv[7]);
-            double var_bottom = extract_double_value(argv[8]);
+            double var_top = extract_double_value(argv[5]);
+            double var_left = extract_double_value(argv[6]);
+            double var_bottom = extract_double_value(argv[7]);
+            double var_right = extract_double_value(argv[8]);
             agc = new ArrayGeoConstraint(l_array, dataset,
                                          var_left, var_top, var_right, var_bottom);
             break;
         }
         case 11: {
-            double var_left = extract_double_value(argv[5]);
-            double var_top = extract_double_value(argv[6]);
-            double var_right = extract_double_value(argv[7]);
-            double var_bottom = extract_double_value(argv[8]);
+            double var_top = extract_double_value(argv[5]);
+            double var_left = extract_double_value(argv[6]);
+            double var_bottom = extract_double_value(argv[7]);
+            double var_right = extract_double_value(argv[8]);
             string projection = extract_string_argument(argv[9]);
             string datum = extract_string_argument(argv[10]);
             agc = new ArrayGeoConstraint(l_array, dataset,
