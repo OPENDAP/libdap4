@@ -814,7 +814,12 @@ DDXParser::ddx_fatal_error(DDXParser *parser, const char *msg, ...)
     vsnprintf(str, 1024, msg, args);
     va_end(args);
 
+#ifdef LIBXML2_6_16
+    // Defined if libxml2 >= 2.6.16
     int line = xmlSAX2GetLineNumber(parser->ctxt);
+#else
+    int line = getLineNumber(parser->ctxt);
+#endif
     parser->error_msg += "At line " + long_to_string(line) + ": ";
     parser->error_msg += string(str) + string("\n");
 }
