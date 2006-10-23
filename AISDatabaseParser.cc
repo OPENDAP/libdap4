@@ -275,9 +275,9 @@ AISDatabaseParser::aisWarning(AISParserState *state, const char *msg, ...)
 
 #ifdef LIBXML2_6_16
     // Defined if libxml2 >= 2.6.16
-    int line = xmlSAX2GetLineNumber(parser->ctxt);
+    int line = xmlSAX2GetLineNumber(state->ctxt);
 #else
-    int line = getLineNumber(parser->ctxt);
+    int line = getLineNumber(state->ctxt);
 #endif
     state->error_msg += "At line: " + long_to_string(line) + ": ";
     state->error_msg += string(str) + string("\n");
@@ -301,9 +301,9 @@ AISDatabaseParser::aisError(AISParserState *state, const char *msg, ...)
 
 #ifdef LIBXML2_6_16
     // Defined if libxml2 >= 2.6.16
-    int line = xmlSAX2GetLineNumber(parser->ctxt);
+    int line = xmlSAX2GetLineNumber(state->ctxt);
 #else
-    int line = getLineNumber(parser->ctxt);
+    int line = getLineNumber(state->ctxt);
 #endif
     state->error_msg += "At line: " + long_to_string(line) + ": ";
     state->error_msg += string(str) + string("\n");
@@ -326,9 +326,9 @@ AISDatabaseParser::aisFatalError(AISParserState *state, const char *msg, ...)
 
 #ifdef LIBXML2_6_16
     // Defined if libxml2 >= 2.6.16
-    int line = xmlSAX2GetLineNumber(parser->ctxt);
+    int line = xmlSAX2GetLineNumber(state->ctxt);
 #else
-    int line = getLineNumber(parser->ctxt);
+    int line = getLineNumber(state->ctxt);
 #endif
     state->error_msg += "At line: " + long_to_string(line) + ": ";
     state->error_msg += string(str) + string("\n");
