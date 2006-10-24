@@ -61,10 +61,10 @@ bool do_version(const string &script_ver, const string &dataset_ver);
 bool do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
 		      const string &dataset, const string &constraint);
 
-string find_ancillary_file(string pathname, string ext, string dir, 
-			   string file);
+string find_ancillary_file(const string &pathname, const string &ext, 
+                           const string &dir, const string &file);
 
-string find_group_ancillary_file(string pathname, string ext);
+string find_group_ancillary_file(const string &pathname, const string &ext);
 
 void ErrMsgT(const string &Msgt);
 
@@ -72,7 +72,7 @@ string name_path(const string &path);
 
 string rfc822_date(const time_t t);
 
-time_t last_modified_time(string name);
+time_t last_modified_time(const string &name);
 //@}
 
 /** These functions are used to create the MIME headers for a message

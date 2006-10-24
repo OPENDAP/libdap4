@@ -168,7 +168,8 @@ do_version(const string &script_ver, const string &dataset_ver)
     null string is returned.
 */
 string
-find_ancillary_file(string pathname, string ext, string dir, string file)
+find_ancillary_file(const string &pathname, const string &ext, 
+                    const string &dir, const string &file)
 {
     string::size_type slash = pathname.rfind('/') + 1;
     string directory = pathname.substr(0, slash);
@@ -234,7 +235,7 @@ find_ancillary_file(string pathname, string ext, string dir, string file)
     @return The pathname to the group's ancillary file if found, otherwise
     the empty string (""). */
 string
-find_group_ancillary_file(string name, string ext)
+find_group_ancillary_file(const string &name, const string &ext)
 {
     // Given /usr/local/data/stuff.01.nc
     // pathname = /usr/local/data, filename = stuff.01.nc and
@@ -429,12 +430,11 @@ rfc822_date(const time_t t)
     @param name The name of a file.
     @return The last modified time or the current time. */
 time_t
-last_modified_time(string name)
+last_modified_time(const string &name)
 {
     struct stat m;
 
-	if (stat(name.c_str(), &m) == 0 && (S_IFREG & m.st_mode))
-
+    if (stat(name.c_str(), &m) == 0 && (S_IFREG & m.st_mode))
 	return m.st_mtime;
     else
 	return time(0);

@@ -114,9 +114,9 @@ protected:
     time_t d_if_modified_since;	// Time from a conditional request.
 
     void initialize();
-    void initialize(int argc, char *argv[]) throw(Error);
+    void initialize(int argc, char *argv[]);
 
-    virtual int process_options(int argc, char *argv[]) throw(Error);
+    virtual int process_options(int argc, char *argv[]);
 
 public:
     /** Make an empty instance. Use the set_*() methods to load with needed
@@ -131,79 +131,79 @@ public:
 
     virtual ~DODSFilter();
 
-    virtual bool is_conditional();
+    virtual bool is_conditional() const;
 
-    virtual string get_cgi_version();
+    virtual string get_cgi_version() const;
     virtual void set_cgi_version(string version);
 
-    virtual string get_ce();
+    virtual string get_ce() const;
     virtual void set_ce(string _ce);
 
-    virtual string get_dataset_name();
+    virtual string get_dataset_name() const;
     virtual void set_dataset_name(const string _dataset);
 
-    virtual string get_URL();
-    virtual void set_URL(const string &url) throw(Error);
+    virtual string get_URL() const;
+    virtual void set_URL(const string &url);
 
-    virtual string get_dataset_version();
+    virtual string get_dataset_version() const;
 
-    virtual Response get_response();
-    virtual string get_action();
-    virtual void set_response(const string &r) throw(Error);
+    virtual Response get_response() const;
+    virtual string get_action() const;
+    virtual void set_response(const string &r);
 
-    virtual time_t get_dataset_last_modified_time();
+    virtual time_t get_dataset_last_modified_time() const;
 
-    virtual time_t get_das_last_modified_time(const string &anc_location="");
+    virtual time_t get_das_last_modified_time(const string &anc_location="") const;
 
-    virtual time_t get_dds_last_modified_time(const string &anc_location="");
+    virtual time_t get_dds_last_modified_time(const string &anc_location="") const;
 
-    virtual time_t get_data_last_modified_time(const string &anc_location="");
+    virtual time_t get_data_last_modified_time(const string &anc_location="") const;
 
-    virtual time_t get_request_if_modified_since();
+    virtual time_t get_request_if_modified_since() const;
 
-    virtual string get_cache_dir();
+    virtual string get_cache_dir() const;
 
     void set_timeout(int timeout = 0);
 
     int get_timeout() const;
 
-    virtual void establish_timeout(FILE *stream);
+    virtual void establish_timeout(FILE *stream) const;
 
-    virtual void read_ancillary_das(DAS &das, string anc_location = "");
+    virtual void read_ancillary_das(DAS &das, const string &anc_location = "") const;
 
-    virtual void read_ancillary_dds(DDS &dds, string anc_location = "");
+    virtual void read_ancillary_dds(DDS &dds, const string &anc_location = "") const;
 
-    virtual void print_usage() throw(Error);
+    virtual void print_usage() const;
 
-    virtual void send_version_info();
+    virtual void send_version_info() const;
 
     virtual void send_das(DAS &das, const string &anc_location = "",
-                          bool with_mime_headers = true);
+                          bool with_mime_headers = true) const;
     virtual void send_das(FILE *out, DAS &das, const string &anc_location="",
-                          bool with_mime_headers = true);
+                          bool with_mime_headers = true) const;
 
     virtual void send_dds(DDS &dds, ConstraintEvaluator &eval,
                           bool constrained = false,
 			  const string &anc_location = "",
-                          bool with_mime_headers = true);
+                          bool with_mime_headers = true) const;
     virtual void send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
                           bool constrained = false,
 			  const string &anc_location = "",
-                          bool with_mime_headers = true);
+                          bool with_mime_headers = true) const;
 
     virtual void functional_constraint(BaseType &var, DDS &dds, 
-                                       ConstraintEvaluator &eval, FILE *out)
-	throw(Error);
+                                       ConstraintEvaluator &eval, FILE *out) 
+                                       const;
     virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval, 
-                                    FILE *out) throw(Error);
+                                    FILE *out) const;
 
     virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
                            FILE *data_stream,
 			   const string &anc_location = "",
-                           bool with_mime_headers = true);
+                           bool with_mime_headers = true) const;
 
     virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
-                          bool with_mime_headers = true);
+                          bool with_mime_headers = true) const;
     
     // Broken. 4/5/06 jhrg
     virtual void send_blob(DDS &dds, FILE *out, bool with_mime_headers = true);

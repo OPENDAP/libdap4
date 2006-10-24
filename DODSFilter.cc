@@ -227,7 +227,7 @@ DODSFilter::initialize()
     @param argc The argument count
     @param argv The vector of char * argument strings. */
 void
-DODSFilter::initialize(int argc, char *argv[]) throw(Error)
+DODSFilter::initialize(int argc, char *argv[])
 {
     initialize();
 
@@ -256,7 +256,7 @@ DODSFilter::initialize(int argc, char *argv[]) throw(Error)
     identifier passed to the filter program that identifies the data source.
     It's often a file name. */
 int
-DODSFilter::process_options(int argc, char *argv[]) throw(Error)
+DODSFilter::process_options(int argc, char *argv[])
 {
     DBG(cerr << "Entering process_options... ");
 
@@ -293,7 +293,7 @@ DODSFilter::process_options(int argc, char *argv[]) throw(Error)
     @return True if the request is conditional.
     @see get_request_if_modified_since(). */
 bool
-DODSFilter::is_conditional()
+DODSFilter::is_conditional() const
 {
     return d_conditional_request;
 }
@@ -323,7 +323,7 @@ DODSFilter::set_cgi_version(string version)
 
     @return The version string supplied at initialization. */
 string
-DODSFilter::get_cgi_version()
+DODSFilter::get_cgi_version() const
 {
     return d_cgi_ver;
 }
@@ -335,7 +335,7 @@ DODSFilter::get_cgi_version()
     @brief Get the constraint expression. 
     @return A string object that contains the constraint expression. */
 string
-DODSFilter::get_ce()
+DODSFilter::get_ce() const
 {
     return d_ce;
 }
@@ -355,7 +355,7 @@ DODSFilter::set_ce(string _ce)
     @brief Get the dataset name. 
     @return A string object that contains the name of the dataset. */
 string
-DODSFilter::get_dataset_name()
+DODSFilter::get_dataset_name() const
 {
     return d_dataset;
 }
@@ -370,7 +370,7 @@ DODSFilter::set_dataset_name(const string ds)
     to the server.
     @return The URL. */
 string
-DODSFilter::get_URL()
+DODSFilter::get_URL() const
 {
     return d_url;
 }
@@ -378,7 +378,7 @@ DODSFilter::get_URL()
 /** Set the URL. Set the URL sent to the server. 
     @param url The URL, minus the constraint. */
 void
-DODSFilter::set_URL(const string &url) throw(Error)
+DODSFilter::set_URL(const string &url)
 {
     if (url.find('?') != url.npos)
 	print_usage();		// Throws Error
@@ -394,7 +394,7 @@ DODSFilter::set_URL(const string &url) throw(Error)
     @return A string object that contains the dataset version
     information.  */ 
 string
-DODSFilter::get_dataset_version()
+DODSFilter::get_dataset_version() const
 {
     return "";
 }
@@ -406,7 +406,7 @@ DODSFilter::get_dataset_version()
     @exception InternalErr Thrown if the response is not one of the valid
     names. */
 void 
-DODSFilter::set_response(const string &r) throw(Error)
+DODSFilter::set_response(const string &r)
 {
     if (r == "DAS" || r == "das")
     {
@@ -439,13 +439,13 @@ DODSFilter::set_response(const string &r) throw(Error)
 
 /** Get the enum name of the response to be returned. */
 DODSFilter::Response 
-DODSFilter::get_response()
+DODSFilter::get_response() const
 {
     return d_response;
 }
 
 /** Get the string name of the response to be returned. */
-string DODSFilter::get_action()
+string DODSFilter::get_action() const
 {
     return d_action;
 }
@@ -471,7 +471,7 @@ string DODSFilter::get_action()
     @see get_das_last_modified_time()
     @see get_dds_last_modified_time() */
 time_t
-DODSFilter::get_dataset_last_modified_time()
+DODSFilter::get_dataset_last_modified_time() const
 {
     return last_modified_time(d_dataset);
 }
@@ -486,7 +486,7 @@ DODSFilter::get_dataset_last_modified_time()
     @see get_dataset_last_modified_time()
     @see get_dds_last_modified_time() */
 time_t
-DODSFilter::get_das_last_modified_time(const string &anc_location)
+DODSFilter::get_das_last_modified_time(const string &anc_location) const
 {
     DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location=" 
 	<< anc_location << "call faf(das) d_dataset=" << d_dataset
@@ -509,7 +509,7 @@ DODSFilter::get_das_last_modified_time(const string &anc_location)
     @see get_dataset_last_modified_time()
     @see get_dds_last_modified_time() */
 time_t
-DODSFilter::get_dds_last_modified_time(const string &anc_location)
+DODSFilter::get_dds_last_modified_time(const string &anc_location) const
 {
     DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location="
 	<< anc_location << "call faf(dds) d_dataset=" << d_dataset 
@@ -538,7 +538,7 @@ DODSFilter::get_dds_last_modified_time(const string &anc_location)
     @see get_das_last_modified_time()
     @see get_dds_last_modified_time() */
 time_t
-DODSFilter::get_data_last_modified_time(const string &anc_location)
+DODSFilter::get_data_last_modified_time(const string &anc_location) const
 {
     DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location="
 	<< anc_location << "call faf(both) d_dataset=" << d_dataset 
@@ -569,7 +569,7 @@ DODSFilter::get_data_last_modified_time(const string &anc_location)
 
     @return If-Modified-Since time from a condition GET request. */
 time_t
-DODSFilter::get_request_if_modified_since()
+DODSFilter::get_request_if_modified_since() const
 {
     return d_if_modified_since;
 }
@@ -581,7 +581,7 @@ DODSFilter::get_request_if_modified_since()
     @brief Get the cache directory.
     @return A string object that contains the cache file directory.  */
 string
-DODSFilter::get_cache_dir()
+DODSFilter::get_cache_dir() const
 {
   return d_cache_dir;
 }
@@ -615,7 +615,7 @@ DODSFilter::get_timeout() const
     clients will never get the Error object... */
 
 void
-DODSFilter::establish_timeout(FILE *stream)
+DODSFilter::establish_timeout(FILE *stream) const
 {
 #ifndef WIN32
     if (d_timeout > 0) {
@@ -637,7 +637,7 @@ DODSFilter::establish_timeout(FILE *stream)
     @return void
     @see DAS */
 void
-DODSFilter::read_ancillary_das(DAS &das, string anc_location)
+DODSFilter::read_ancillary_das(DAS &das, const string &anc_location) const
 {
     string name = find_ancillary_file(d_dataset, "das", 
 			      (anc_location == "") ? d_anc_dir : anc_location, 
@@ -663,7 +663,7 @@ DODSFilter::read_ancillary_das(DAS &das, string anc_location)
     @return void
     @see DDS */
 void
-DODSFilter::read_ancillary_dds(DDS &dds, string anc_location)
+DODSFilter::read_ancillary_dds(DDS &dds, const string &anc_location) const
 {
     string name = find_ancillary_file(d_dataset, "dds", 
 			      (anc_location == "") ? d_anc_dir : anc_location, 
@@ -692,7 +692,7 @@ maintainer, or to support@unidata.ucar.edu.";
 
     @brief Print usage information for a filter program. */
 void 
-DODSFilter::print_usage() throw(Error)
+DODSFilter::print_usage() const
 {
     // Write a message to the WWW server error log file.
     ErrMsgT(usage.c_str());
@@ -706,7 +706,7 @@ DODSFilter::print_usage() throw(Error)
 
     @brief Send version information back to the client program. */ 
 void 
-DODSFilter::send_version_info()
+DODSFilter::send_version_info() const
 {
     do_version(d_cgi_ver, get_dataset_version());
 }
@@ -724,7 +724,7 @@ DODSFilter::send_version_info()
     @see DAS */
 void
 DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location,
-                     bool with_mime_headers)
+                     bool with_mime_headers) const
 {
     time_t das_lmt = get_das_last_modified_time(anc_location);
     if (is_conditional()
@@ -742,7 +742,7 @@ DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location,
 
 void
 DODSFilter::send_das(DAS &das, const string &anc_location,
-                     bool with_mime_headers)
+                     bool with_mime_headers) const
 {
     send_das(stdout, das, anc_location, with_mime_headers);
 }
@@ -767,12 +767,17 @@ void
 DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval, 
                      bool constrained,
 		     const string &anc_location,
-                     bool with_mime_headers)
+                     bool with_mime_headers) const
 {
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (constrained)
 	eval.parse_constraint(d_ce, dds);
 
+    if (eval.functional_expression())
+        throw Error(
+"Function calls can only be used with data requests. To see the structure\n\
+of the underlying data source, reissue the URL without the function.");
+ 
     time_t dds_lmt = get_dds_last_modified_time(anc_location);
     if (is_conditional() 
 	&& dds_lmt <= get_request_if_modified_since()
@@ -794,7 +799,7 @@ DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
 void
 DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval, 
                      bool constrained, const string &anc_location,
-                     bool with_mime_headers)
+                     bool with_mime_headers) const
 {
     send_dds(stdout, dds, eval, constrained, anc_location, with_mime_headers);
 }
@@ -804,7 +809,7 @@ DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval,
 void
 DODSFilter::functional_constraint(BaseType &var, DDS &dds, 
                                   ConstraintEvaluator &eval, FILE *out)
-    throw(Error)
+    const
 {
     fprintf(out, "Dataset {\n");
     var.print_decl(out, "    ", true, false, true);
@@ -829,7 +834,7 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
 
 void
 DODSFilter::dataset_constraint(DDS &dds, ConstraintEvaluator &eval, FILE *out) 
-    throw(Error)
+    const
 {
     // send constrained DDS	    
     dds.print_constrained(out);
@@ -873,7 +878,7 @@ DODSFilter::dataset_constraint(DDS &dds, ConstraintEvaluator &eval, FILE *out)
     @return void */
 void
 DODSFilter::send_data(DDS &dds, ConstraintEvaluator &eval, FILE *data_stream,
-                      const string &anc_location, bool with_mime_headers)
+                      const string &anc_location, bool with_mime_headers) const
 {
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
@@ -949,7 +954,7 @@ DODSFilter::send_data(DDS &dds, ConstraintEvaluator &eval, FILE *data_stream,
     Defaults to true. */
 void
 DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
-                     bool with_mime_headers)
+                     bool with_mime_headers) const
 {
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (!d_ce.empty())
