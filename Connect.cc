@@ -65,8 +65,7 @@ extern ObjectType get_type(const string &value);
 /** This private method process data from both local and remote sources. It
     exists to eliminate duplication of code. */
 void
-Connect::process_data(DataDDS &data, Response *rs) 
-    throw(Error, InternalErr)
+Connect::process_data(DataDDS &data, Response *rs)
 {
     DBG(cerr << "Entering Connect::process_data" <<endl);
     
@@ -293,7 +292,7 @@ Connect::~Connect()
     @return The DAP version string.
     @see request_protocol() */
 string
-Connect::request_version() throw(Error, InternalErr)
+Connect::request_version()
 {
     string version_url = _URL + ".ver";
     if (_proj.length() + _sel.length())
@@ -323,7 +322,7 @@ Connect::request_version() throw(Error, InternalErr)
 
     @return The DAP protocol version string. */
 string
-Connect::request_protocol() throw(Error, InternalErr)
+Connect::request_protocol()
 {
     string version_url = _URL + ".ver";
     if (_proj.length() + _sel.length())
@@ -353,7 +352,7 @@ Connect::request_protocol() throw(Error, InternalErr)
     @brief Get the DAS from a server.
     @param das Result. */
 void
-Connect::request_das(DAS &das) throw(Error, InternalErr)
+Connect::request_das(DAS &das)
 {
     string das_url = _URL + ".das";
     if (_proj.length() + _sel.length())
@@ -426,7 +425,7 @@ configured, or that the URL has changed.");
     @brief Get the DAS from a server.
     @param das Result. */
 void
-Connect::request_das_url(DAS &das) throw(Error, InternalErr)
+Connect::request_das_url(DAS &das)
 {
     string use_url = _URL + "?" + _proj + _sel ;
     Response *rs = 0;
@@ -489,7 +488,7 @@ Connect::request_das_url(DAS &das) throw(Error, InternalErr)
     @param dds Result.
     @param expr Send this constraint expression to the server. */
 void
-Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
+Connect::request_dds(DDS &dds, string expr)
 {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
@@ -576,7 +575,7 @@ configured, or that the URL has changed.");
     @brief Get the DDS from a server.
     @param dds Result. */
 void
-Connect::request_dds_url(DDS &dds) throw(Error, InternalErr)
+Connect::request_dds_url(DDS &dds)
 {
     string use_url = _URL + "?" + _proj + _sel ;
     Response *rs = 0;
@@ -636,7 +635,7 @@ Connect::request_dds_url(DDS &dds) throw(Error, InternalErr)
     @param dds Result.
     @param expr Send this constraint expression to the server. */
 void
-Connect::request_ddx(DDS &dds, string expr) throw(Error, InternalErr)
+Connect::request_ddx(DDS &dds, string expr)
 {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
@@ -714,7 +713,7 @@ configured, or that the URL has changed.");
 /** @brief The 'url' version of request_ddx
     @see Connect::request_ddx. */
 void
-Connect::request_ddx_url(DDS &dds) throw(Error, InternalErr)
+Connect::request_ddx_url(DDS &dds)
 {
     string use_url = _URL + "?" + _proj + _sel ;
 
@@ -789,7 +788,7 @@ configured, or that the URL has changed.");
     @param data Result.
     @param expr Send this constraint expression to the server. */
 void
-Connect::request_data(DataDDS &data, string expr) throw(Error, InternalErr)
+Connect::request_data(DataDDS &data, string expr)
 {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
@@ -838,7 +837,7 @@ Connect::request_data(DataDDS &data, string expr) throw(Error, InternalErr)
     @brief Get the DAS from a server.
     @param data Result. */
 void
-Connect::request_data_url(DataDDS &data) throw(Error, InternalErr)
+Connect::request_data_url(DataDDS &data)
 {
     string use_url = _URL + "?" + _proj + _sel ;
     Response *rs = 0;
@@ -875,7 +874,7 @@ Connect::request_data_url(DataDDS &data) throw(Error, InternalErr)
     @param rs Read from this Response object. */
 
 void
-Connect::read_data(DataDDS &data, Response *rs) throw(Error, InternalErr)
+Connect::read_data(DataDDS &data, Response *rs)
 {
     if (!rs)
         throw InternalErr(__FILE__, __LINE__, "Response object is null.");
@@ -895,8 +894,7 @@ Connect::read_data(DataDDS &data, Response *rs) throw(Error, InternalErr)
     @param data Result.
     @param rs Read from this Response object. */
 void
-Connect::read_data_no_mime(DataDDS &data, Response *rs) 
-        throw(Error, InternalErr)
+Connect::read_data_no_mime(DataDDS &data, Response *rs)
 {
     d_version = rs->get_version();
     d_protocol = rs->get_protocol();

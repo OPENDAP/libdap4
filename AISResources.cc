@@ -207,7 +207,6 @@ AISResources::has_resource(const string &primary) const
     not present in the current mapping. */
 ResourceVector
 AISResources::get_resource(const string &primary)
-    throw(NoSuchPrimaryResource)
 {
     ResourceVector rv;
     const ResourceMapIter &i = d_db.find(primary);
@@ -237,7 +236,6 @@ AISResources::get_resource(const string &primary)
     read. */
 void 
 AISResources::read_database(const string &database) 
-    throw(AISDatabaseReadFailed)
 {
     AISDatabaseParser parser;
 
@@ -254,7 +252,6 @@ AISResources::read_database(const string &database)
     written. */
 void 
 AISResources::write_database(const string &filename)
-    throw(AISDatabaseWriteFailed)
 {
     ofstream fos;
     fos.open(filename.c_str());

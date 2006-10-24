@@ -108,8 +108,7 @@ private:
     };
     
 public:
-    void intern(const string &database, AISResources *ais)
-	throw(AISDatabaseReadFailed);
+    void intern(const string &database, AISResources *ais);
 
     static void aisStartDocument(AISParserState *state);
     static void aisEndDocument(AISParserState *state);

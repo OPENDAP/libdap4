@@ -44,6 +44,9 @@ static char rcsid[] not_used =
 #include <sstream>
 #include <iterator>
 
+#define DODS_DEBUG
+#define DODS_DEBUG2
+
 #include "debug.h"
 #include "GNURegex.h"
 #include "HTTPCache.h"
@@ -214,9 +217,13 @@ save_raw_http_headers(void *ptr, size_t size, size_t nmemb, void *resp_hdrs)
     DBG2(cerr << "Inside the header parser." << endl);
     vector<string> *hdrs = static_cast<vector<string> *>(resp_hdrs);
 
-    // Grab the header, minus the trailing newline.
-    string complete_line(static_cast<char *>(ptr), size * nmemb - 2);
-
+    // Grab the header, minus the trailing newline. Or \r\n pair.
+    string complete_line;
+    if (*(static_cast<char*>(ptr) + size * (nmemb-1)) == '\r')
+        complete_line.assign(static_cast<char *>(ptr), size * nmemb - 2);
+    else
+        complete_line.assign(static_cast<char *>(ptr), size * nmemb - 1);
+        
     // Store all non-empty headers that are not HTTP status codes
     if (complete_line != "" && complete_line.find("HTTP") == string::npos) {
 	DBG(cerr << "Header line: " << complete_line << endl);
@@ -263,7 +270,7 @@ curl_debug(CURL *, curl_infotype info, char *msg, size_t size, void  *)
     the HTTP requests made through this instance. */ 
 
 void 
-HTTPConnect::www_lib_init() throw(Error, InternalErr)
+HTTPConnect::www_lib_init()
 {
     d_curl = curl_easy_init();
     if (!d_curl)
@@ -352,7 +359,7 @@ public:
 long
 HTTPConnect::read_url(const string &url, FILE *stream, 
 		      vector<string> *resp_hdrs,
-		      const vector<string> *headers) throw(Error)
+		      const vector<string> *headers)
 {
     curl_easy_setopt(d_curl, CURLOPT_URL, url.c_str());
 
@@ -522,7 +529,7 @@ HTTPConnect::~HTTPConnect()
     could not be opened. */
 
 HTTPResponse *
-HTTPConnect::fetch_url(const string &url) throw(Error, InternalErr)
+HTTPConnect::fetch_url(const string &url)
 {
     HTTPResponse *stream;
 
@@ -620,7 +627,7 @@ close_temp(FILE *s, const string &name)
     could not be opened. */
 
 HTTPResponse *
-HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
+HTTPConnect::caching_fetch_url(const string &url)
 {
     DBG(cerr << "Is this URL (" << url << ") in the cache?... ");
 
@@ -726,7 +733,7 @@ HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
     could not be opened. */
 
 HTTPResponse *
-HTTPConnect::plain_fetch_url(const string &url) throw(Error, InternalErr)
+HTTPConnect::plain_fetch_url(const string &url)
 {
     DBG(cerr << "Getting URL: " << url << endl);
     FILE *stream = 0;
@@ -802,8 +809,7 @@ HTTPConnect::set_accept_deflate(bool deflate)
     @see extract_auth_info() */
 
 void 
-HTTPConnect::set_credentials(const string &u, const string &p) 
-    throw(InternalErr)
+HTTPConnect::set_credentials(const string &u, const string &p)
 {
     if (u.empty())
 	return;

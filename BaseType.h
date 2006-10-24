@@ -262,7 +262,7 @@ public:
 
     xdrproc_t xdr_coder();
 
-    virtual void set_parent(BaseType *parent) throw(InternalErr);
+    virtual void set_parent(BaseType *parent);
     virtual BaseType *get_parent();
 
     // I put this comment here because the version in BaseType.cc does not 

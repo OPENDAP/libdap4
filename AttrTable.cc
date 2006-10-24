@@ -211,7 +211,7 @@ AttrTable::set_name(const string &n)
     @param attribute The value to add to the attribute table. */
 unsigned int
 AttrTable::append_attr(const string &name, const string &type, 
-		       const string &attribute) throw (Error)
+		       const string &attribute)
 {
     string lname = www2id(name);
 
@@ -263,7 +263,7 @@ AttrTable::append_attr(const string &name, const string &type,
     @param values A vector of values. */
 unsigned int
 AttrTable::append_attr(const string &name, const string &type, 
-                       vector<string> *values) throw (Error)
+                       vector<string> *values)
 {
     string lname = www2id(name);
 
@@ -308,7 +308,7 @@ AttrTable::append_attr(const string &name, const string &type,
 */
 
 AttrTable *
-AttrTable::append_container(const string &name) throw (Error)
+AttrTable::append_container(const string &name)
 {
     AttrTable *new_at = new AttrTable ;
     AttrTable *ret = NULL ;
@@ -338,7 +338,7 @@ AttrTable::append_container(const string &name) throw (Error)
     @return A pointer to the new AttrTable object. 
 */
 AttrTable *
-AttrTable::append_container(AttrTable *at, const string &name) throw (Error)
+AttrTable::append_container(AttrTable *at, const string &name)
 {
     string lname = www2id(name);
 
@@ -785,8 +785,7 @@ AttrTable::get_attr_vector(Attr_iter iter)
     @exception Error if an attribute, container or alias called
     <tt>name</tt> already exists in this attribute table. */
 void
-AttrTable::add_container_alias(const string &name, AttrTable *src) 
-    throw (Error)
+AttrTable::add_container_alias(const string &name, AttrTable *src)
 {
     string lname = www2id(name);
 
@@ -819,7 +818,7 @@ AttrTable::add_container_alias(const string &name, AttrTable *src)
     attribute called <tt>source</tt> does not exist. */
 void
 AttrTable::add_value_alias(AttrTable *das, const string &name, 
-			   const string &source) throw (Error)
+			   const string &source)
 {
     string lname = www2id(name);
     string lsource = www2id(source);

@@ -74,7 +74,7 @@ AISConnect::~AISConnect()
     @exception InternalErr Thrown if either the DAS request or the AIS merge
     request fails. */
 void
-AISConnect::request_das(DAS &das) throw(Error, InternalErr)
+AISConnect::request_das(DAS &das)
 {
     Connect::request_das(das);
 

@@ -102,7 +102,7 @@ public:
     virtual ~SignalHandler() {}
 
     EventHandler *register_handler(int signum, EventHandler *eh, 
-				   bool override = false) throw(InternalErr);
+				   bool override = false);
 
     EventHandler *remove_handler(int signum);
 };

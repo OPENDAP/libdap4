@@ -107,20 +107,20 @@ private:
   
     // File I/O methods
     bool write_rc_file(const string &pathname);
-    bool read_rc_file(const string &pathname) throw(Error);
+    bool read_rc_file(const string &pathname);
 
     // Look for the RC file
     string check_env_var(const string &variable_name);
     string check_string(string env_var);
 
-    static void initialize_instance() throw(Error);
+    static void initialize_instance();
     static void delete_instance();
 
     friend class RCReaderTest;
     friend class HTTPConnectTest;
 
 public:
-    static RCReader* instance() throw(Error);
+    static RCReader* instance();
   
     // GET METHODS
     const string get_dods_cache_root() {return d_cache_root;}

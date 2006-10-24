@@ -251,13 +251,12 @@ public:
     }
 
     unsigned int append_attr(const string &name, const string &type, 
-                             const string &value) throw (Error);
+                             const string &value);
     unsigned int append_attr(const string &name, const string &type, 
-                             vector<string> *values) throw (Error);
+                             vector<string> *values);
     
-    AttrTable *append_container(const string &name) throw (Error);
-    AttrTable *append_container(AttrTable *at, const string &name) 
-	throw (Error);
+    AttrTable *append_container(const string &name);
+    AttrTable *append_container(AttrTable *at, const string &name);
 
     void find(const string &target, AttrTable **at, Attr_iter *iter);
     AttrTable *find_container(const string &target);
@@ -284,10 +283,9 @@ public:
     string get_attr(Attr_iter iter, unsigned int i = 0);
     std::vector<string> *get_attr_vector(Attr_iter iter);
 
-    void add_container_alias(const string &name, AttrTable *src) 
-	throw (Error);
+    void add_container_alias(const string &name, AttrTable *src);
     void add_value_alias(AttrTable *das, const string &name, 
-			 const string &source) throw (Error);
+			 const string &source);
     bool attr_alias(const string &alias, AttrTable *at, const string &name);
     bool attr_alias(const string &alias, const string &name);
 

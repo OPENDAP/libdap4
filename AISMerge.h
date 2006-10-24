@@ -77,11 +77,9 @@ public:
     virtual ~AISMerge() {}
 
     // Change this when HTTPConnect/HTTPCache are changed.
-    virtual Response *get_ais_resource(const string &res) 
-	throw(Error, InternalErr);
+    virtual Response *get_ais_resource(const string &res);
 
-    virtual void merge(const string &primary, DAS &das) 
-	throw(Error, InternalErr);
+    virtual void merge(const string &primary, DAS &das);
 };
 
 #endif // ais_merge_h

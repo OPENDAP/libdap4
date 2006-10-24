@@ -141,8 +141,7 @@ private:
     string d_version;           // Server implementation information
     string d_protocol;          // DAP protocol from the server
 
-    void process_data(DataDDS &data, Response *rs) 
-	throw(Error, InternalErr);
+    void process_data(DataDDS &data, Response *rs);
     
     // Use when you cannot use libwww/libcurl. Reads HTTP response. 
     void parse_mime(Response *rs);
@@ -192,30 +191,23 @@ public:
     string get_protocol() { return d_protocol; }
 
     
-    virtual string request_version() throw(Error, InternalErr);
-    virtual string request_protocol() throw(Error, InternalErr);
+    virtual string request_version();
+    virtual string request_protocol();
 
-    virtual void request_das(DAS &das) throw(Error, InternalErr);
-    virtual void request_das_url(DAS &das) throw(Error, InternalErr);
+    virtual void request_das(DAS &das);
+    virtual void request_das_url(DAS &das);
 
-    virtual void request_dds(DDS &dds, string expr = "") 
-	throw(Error, InternalErr);
-    virtual void request_dds_url(DDS &dds) 
-	throw(Error, InternalErr);
+    virtual void request_dds(DDS &dds, string expr = "");
+    virtual void request_dds_url(DDS &dds);
 
-    virtual void request_ddx(DDS &dds, string expr = "") throw(Error, InternalErr);
-    virtual void request_ddx_url(DDS &dds) throw(Error, InternalErr);
+    virtual void request_ddx(DDS &dds, string expr = "");
+    virtual void request_ddx_url(DDS &dds);
 
-    virtual void request_data(DataDDS &data, string expr = "") 
-	throw(Error, InternalErr);
-    virtual void request_data_url(DataDDS &data) 
-	throw(Error, InternalErr);
+    virtual void request_data(DataDDS &data, string expr = "");
+    virtual void request_data_url(DataDDS &data);
 
-    virtual void read_data(DataDDS &data, Response *rs)
-        throw(Error, InternalErr);
-    virtual void read_data_no_mime(DataDDS &data, Response *rs) 
-        throw(Error, InternalErr);
-        
+    virtual void read_data(DataDDS &data, Response *rs);
+    virtual void read_data_no_mime(DataDDS &data, Response *rs);
 };
 
 #endif // _connect_h

@@ -385,7 +385,6 @@ static xmlSAXHandler aisSAXParser = {
     read or parsed. */
 void
 AISDatabaseParser::intern(const string &database, AISResources *ais)
-    throw(AISDatabaseReadFailed)
 {
     xmlParserCtxtPtr ctxt;
     AISParserState state;

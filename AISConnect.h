@@ -57,7 +57,7 @@ public:
 
     virtual ~AISConnect();
 
-    virtual void request_das(DAS &das) throw(Error, InternalErr);
+    virtual void request_das(DAS &das);
 };
 
 #endif // ais_connect_h 

@@ -105,7 +105,7 @@ struct parser_arg {
 void parse_error(parser_arg *arg, const char *s, const int line_num = 0,
 		 const char *context = 0);
 void parse_error(const string &msg, const int line_num, 
-		 const char *context = 0) throw (Error);
+		 const char *context = 0);
 //@}
 
 /** Given a string (<tt>const char *src</tt>), save it to the
@@ -122,7 +122,7 @@ void parse_error(const string &msg, const int line_num,
     @brief Save a string to a temporary variable during the parse.
     */
 
-void save_str(char *dst, const char *src, const int line_num) throw (Error);
+void save_str(char *dst, const char *src, const int line_num);
 void save_str(string &dst, const char *src, const int);
 
 bool is_keyword(string id, const string &keyword);

@@ -227,7 +227,6 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
 
 HTTPCache *
 HTTPCache::instance(const string &cache_root, bool force)
-    throw(SignalHandlerRegisteredErr)
 {
     LOCK(&instance_mutex);
     DBG(cerr << "Entering instance(); (" << hex << _instance << dec << ")"
@@ -508,7 +507,7 @@ public:
     @note The HTTPCache destructor calls this method and silently ignores
     this exception. */
 void
-HTTPCache::cache_index_write() throw(Error)
+HTTPCache::cache_index_write()
 {
     DBG(cerr << "Cache Index. Writing index " << d_cache_index << endl);
 
@@ -588,7 +587,7 @@ HTTPCache::startGC() const
     @exception InternalErr Thrown if \c entry is in use. */
 
 void
-HTTPCache::remove_cache_entry(CacheEntry *entry) throw(InternalErr)
+HTTPCache::remove_cache_entry(CacheEntry *entry)
 {
     // This should never happen; all calls to this method are protected by
     // the caller, hence the InternalErr.
@@ -844,7 +843,7 @@ public:
     @exception InternalErr Thrown if the CacheEntry for \c url is locked. */
 
 void
-HTTPCache::remove_entry_from_cache_table(const string &url) throw(InternalErr)
+HTTPCache::remove_entry_from_cache_table(const string &url)
 {
     int hash = get_hash(url);
     if (d_cache_table[hash]) {
@@ -878,7 +877,7 @@ HTTPCache::get_entry_from_cache_table(const string &url) const
     @exception Error Thrown if the given pathname cannot be created. */
 
 void
-HTTPCache::create_cache_root(const string &cache_root) throw(Error)
+HTTPCache::create_cache_root(const string &cache_root)
 {
     struct stat stat_info;
     string::size_type cur = 0;
@@ -918,7 +917,7 @@ HTTPCache::create_cache_root(const string &cache_root) throw(Error)
     @exception Error Thrown if the path can neither be deduced nor created. */
 
 void
-HTTPCache::set_cache_root(const string &root) throw(Error)
+HTTPCache::set_cache_root(const string &root)
 {
     if (root != "") {
 	d_cache_root = root;
@@ -1315,7 +1314,7 @@ HTTPCache::get_always_validate() const
     start with 'Cache-Control: '. */
 
 void 
-HTTPCache::set_cache_control(const vector<string> &cc) throw(InternalErr)
+HTTPCache::set_cache_control(const vector<string> &cc)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
@@ -1389,7 +1388,7 @@ HTTPCache::get_cache_control()
     @exception Error Thrown if the directory cannot be created.*/
 
 string 
-HTTPCache::create_hash_directory(int hash) throw(Error)
+HTTPCache::create_hash_directory(int hash)
 {
     struct stat stat_info;
     ostringstream path;
@@ -1426,7 +1425,7 @@ HTTPCache::create_hash_directory(int hash) throw(Error)
     @exception Error If the file for the response's body cannot be created. */
 
 void
-HTTPCache::create_location(CacheEntry *entry) throw(Error)
+HTTPCache::create_location(CacheEntry *entry)
 {
     string hash_dir = create_hash_directory(entry->hash);
 #ifdef WIN32
@@ -1605,9 +1604,7 @@ is_hop_by_hop_header(const string &header)
     @exception InternalErr Thrown if the file cannot be opened. */
 
 void
-HTTPCache::write_metadata(const string &cachename, 
-			  const vector<string> &headers) 
-    throw(InternalErr)
+HTTPCache::write_metadata(const string &cachename, const vector<string> &headers)
 {
     string fname = cachename + CACHE_META;
     d_open_files.push_back(fname);
@@ -1646,8 +1643,7 @@ HTTPCache::write_metadata(const string &cachename,
     @exception InternalErr Thrown if the file cannot be opened. */
 
 void
-HTTPCache::read_metadata(const string &cachename, vector<string> &headers) 
-    const throw(InternalErr)
+HTTPCache::read_metadata(const string &cachename, vector<string> &headers)
 {
     FILE *md = fopen(string(cachename + CACHE_META).c_str(), "r");
     if (!md) {
@@ -1690,8 +1686,7 @@ HTTPCache::read_metadata(const string &cachename, vector<string> &headers)
     jhrg */
 
 int
-HTTPCache::write_body(const string &cachename, const FILE *src) 
-    throw(InternalErr, ResponseTooBigErr)
+HTTPCache::write_body(const string &cachename, const FILE *src)
 {
     d_open_files.push_back(cachename);
 
@@ -1750,7 +1745,7 @@ HTTPCache::write_body(const string &cachename, const FILE *src)
     @exception InternalErr Thrown if the file cannot be opened. */
 
 FILE *
-HTTPCache::open_body(const string &cachename) const throw(InternalErr)
+HTTPCache::open_body(const string &cachename)
 {
     FILE *src = fopen(cachename.c_str(), "r+b");
     if (!src) {
@@ -1788,8 +1783,7 @@ HTTPCache::open_body(const string &cachename) const throw(InternalErr)
 
 bool
 HTTPCache::cache_response(const string &url, time_t request_time,
-			  const vector<string> &headers, const FILE *body) 
-    throw(Error, InternalErr)
+			  const vector<string> &headers, const FILE *body)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
@@ -1890,8 +1884,7 @@ HTTPCache::cache_response(const string &url, time_t request_time,
     @exception Error Thrown if the \e url is not in the cache. */
 
 vector<string>
-HTTPCache::get_conditional_request_headers(const string &url) 
-    throw(Error)
+HTTPCache::get_conditional_request_headers(const string &url)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
@@ -1962,7 +1955,7 @@ struct HeaderLess: binary_function<const string&, const string&, bool> {
 
 void
 HTTPCache::update_response(const string &url, time_t request_time,
-			   const vector<string> &headers) throw(Error)
+			   const vector<string> &headers)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
@@ -2038,7 +2031,7 @@ HTTPCache::update_response(const string &url, time_t request_time,
     @exception Error Thrown if the URL's response is not in the cache. */
 
 bool
-HTTPCache::is_url_valid(const string &url) throw(Error)
+HTTPCache::is_url_valid(const string &url)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
@@ -2146,7 +2139,6 @@ HTTPCache::is_url_valid(const string &url) throw(Error)
 
 FILE *
 HTTPCache::get_cached_response(const string &url, vector<string> &headers)
-    throw(Error, InternalErr)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
@@ -2210,7 +2202,6 @@ HTTPCache::get_cached_response(const string &url, vector<string> &headers)
 
 FILE *
 HTTPCache::get_cached_response_body(const string &url) 
-    throw(Error, InternalErr)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
@@ -2264,7 +2255,7 @@ HTTPCache::get_cached_response_body(const string &url)
     cache or if the entry was already released. */ 
 
 void
-HTTPCache::release_cached_response(FILE *body) throw(Error)
+HTTPCache::release_cached_response(FILE *body)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
@@ -2325,7 +2316,7 @@ public:
     an entry is still in use. */
 
 void
-HTTPCache::purge_cache() throw(Error)
+HTTPCache::purge_cache()
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);

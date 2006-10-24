@@ -139,7 +139,6 @@ SignalHandler::instance()
     @return A pointer to the old EventHandler or null. */
 EventHandler *
 SignalHandler::register_handler(int signum, EventHandler *eh, bool override) 
-    throw(InternalErr)
 {
     // Check first for improper use.
     switch (signum) {

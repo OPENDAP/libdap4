@@ -45,8 +45,7 @@
     resource could not be opened. This method does not throw an exception for
     resources that cannot be opened because that can happen for a number of
     reasons which are hardly 'exceptional.' */
-Response *AISMerge::get_ais_resource(const string & res) throw(Error,
-							       InternalErr)
+Response *AISMerge::get_ais_resource(const string & res)
 {
     if (res.find("http:") == 0
 	|| res.find("file:") == 0 || res.find("https:") == 0) {
@@ -73,8 +72,7 @@ Response *AISMerge::get_ais_resource(const string & res) throw(Error,
     @param primary The URL of the primary resource.
     @param das The target of the merge operation. This must already contain
     the DAS for \e primary. */
-void AISMerge::merge(const string & primary, DAS & das) 
-        throw(Error, InternalErr)
+void AISMerge::merge(const string & primary, DAS & das)
 {
     if (!d_ais_db.has_resource(primary))
 	return;

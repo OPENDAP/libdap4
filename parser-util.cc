@@ -95,7 +95,6 @@ parse_error(parser_arg * arg, const char *msg, const int line_num,
 
 void
 parse_error(const char *msg, const int line_num, const char *context)
-throw(Error)
 {
     // Jose Garcia
     // This assert(s) is (are) only for developing purposes
@@ -124,12 +123,11 @@ throw(Error)
 // parsers change dramatically.
 void
 parse_error(const string & msg, const int line_num, const char *context)
-throw(Error)
 {
     parse_error(msg.c_str(), line_num, context);
 }
 
-void save_str(char *dst, const char *src, const int line_num) throw(Error)
+void save_str(char *dst, const char *src, const int line_num)
 {
     if (strlen(src) >= ID_MAX)
         parse_error(string("The word `") + string(src)

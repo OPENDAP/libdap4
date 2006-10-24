@@ -122,14 +122,11 @@ public:
 
     virtual bool has_resource(const string &primary) const;
 
-    virtual ResourceVector get_resource(const string &primary)
-	throw(NoSuchPrimaryResource);
+    virtual ResourceVector get_resource(const string &primary);
 
-    virtual void read_database(const string &database) 
-	throw(AISDatabaseReadFailed);
+    virtual void read_database(const string &database);
     
-    virtual void write_database(const string &filename) 
-	throw(AISDatabaseWriteFailed);
+    virtual void write_database(const string &filename);
 };
 
 #endif // ais_resources_h

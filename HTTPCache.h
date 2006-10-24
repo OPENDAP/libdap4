@@ -190,7 +190,7 @@ public:
     // 01/23/04 jhrg
     unsigned long d_max_entry_size;	// Max individual entry size.
 
-    void remove_cache_entry(CacheEntry *entry) throw(InternalErr);
+    void remove_cache_entry(CacheEntry *entry);
     bool stopGC() const;
 #endif
 
@@ -284,17 +284,17 @@ private:
     bool cache_index_read();
     bool cache_index_delete();
 
-    void set_cache_root(const string &root = "") throw(Error);
+    void set_cache_root(const string &root = "");
 
     bool get_single_user_lock(bool force = false);
     void release_single_user_lock();
 
     void add_entry_to_cache_table(CacheEntry *e);
-    void remove_entry_from_cache_table(const string &url) throw(InternalErr);
+    void remove_entry_from_cache_table(const string &url);
     void parse_headers(CacheEntry *entry, const vector<string> &headers);
     void calculate_time (CacheEntry *entry, time_t request_time);
 #ifndef WIN32  //  Declared public above for win32
-    void remove_cache_entry(CacheEntry *entry) throw(InternalErr);
+    void remove_cache_entry(CacheEntry *entry);
 #endif
     CacheEntry *get_entry_from_cache_table(const string &url) const;
     CacheEntry *get_entry_from_cache_table(int hash, const string &url) const;
@@ -302,33 +302,29 @@ private:
     // I made these four methods so they could be tested by HTTPCacheTest.
     // Otherwise they would be static functions in HTTPCache.cc. 10/01/02
     // jhrg
-    void write_metadata(const string &cachename, const vector<string> &headers)
-	throw(InternalErr);
-    void read_metadata(const string &cachename, vector<string> &headers) 
-	const throw(InternalErr);
-    int write_body(const string &cachename, const FILE *src) 
-	throw(InternalErr, ResponseTooBigErr);
-    FILE *open_body(const string &cachename) const throw(InternalErr);
+    void write_metadata(const string &cachename, const vector<string> &headers);
+    void read_metadata(const string &cachename, vector<string> &headers);
+    int write_body(const string &cachename, const FILE *src);
+    FILE *open_body(const string &cachename);
 
-    void create_cache_root(const string &cache_root) throw(Error);
+    void create_cache_root(const string &cache_root);
 
-    string create_hash_directory(int hash) throw(Error);
-    void create_location(CacheEntry *entry) throw(Error);
+    string create_hash_directory(int hash);
+    void create_location(CacheEntry *entry);
 
 #ifndef WIN32  //  Declared public above for win32
     bool stopGC() const;
 #endif
     bool startGC() const;
 
-    void cache_index_write() throw(Error);
+    void cache_index_write();
 
     void perform_garbage_collection();
     void expired_gc();
     void hits_gc();
 
 public:
-    static HTTPCache *instance(const string &cache_root, bool force = false)
-	throw(SignalHandlerRegisteredErr);
+    static HTTPCache *instance(const string &cache_root, bool force = false);
     virtual ~HTTPCache();
 
     string get_cache_root() const;
@@ -357,26 +353,22 @@ public:
     void set_always_validate(bool validate);
     bool get_always_validate() const;
 
-    void set_cache_control(const vector<string> &cc) throw(InternalErr);
+    void set_cache_control(const vector<string> &cc);
     vector<string> get_cache_control();
 
     bool cache_response(const string &url, time_t request_time,
-			const vector<string> &headers, const FILE *body)
-	throw(Error, InternalErr);
-    vector<string> get_conditional_request_headers(const string &url)
-	throw(Error);
+			const vector<string> &headers, const FILE *body);
+    vector<string> get_conditional_request_headers(const string &url);
     void update_response(const string &url, time_t request_time,
-			 const vector<string> &headers) throw(Error);
+			 const vector<string> &headers);
 
     bool is_url_in_cache(const string &url);
-    bool is_url_valid(const string &url) throw(Error);
-    FILE *get_cached_response(const string &url, vector<string> &headers)
-	throw(Error, InternalErr);
-    FILE *get_cached_response_body(const string &url) 
-	throw(Error, InternalErr);
-    void release_cached_response(FILE *response) throw(Error);
+    bool is_url_valid(const string &url);
+    FILE *get_cached_response(const string &url, vector<string> &headers);
+    FILE *get_cached_response_body(const string &url);
+    void release_cached_response(FILE *response);
 
-    void purge_cache() throw(Error);
+    void purge_cache();
 };
 
 #endif // _http_cache_h

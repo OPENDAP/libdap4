@@ -503,7 +503,7 @@ BaseType::set_in_selection(bool state)
     @exception InternalErr thrown if called with anything other than a
     Constructor or Vector. */
 void
-BaseType::set_parent(BaseType *parent) throw(InternalErr)
+BaseType::set_parent(BaseType *parent)
 {
     if (!dynamic_cast<Constructor *>(parent)
 	&& !dynamic_cast<Vector *>(parent))

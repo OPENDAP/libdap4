@@ -120,7 +120,7 @@ string extract_string_argument(BaseType * arg)
 template < class T >
 static void
 set_array_using_double_helper(Array * a, double *src,
-                              int src_len) throw(Error)
+                              int src_len)
 {
     T *values = new T[src_len];
     for (int i = 0; i < src_len; ++i)

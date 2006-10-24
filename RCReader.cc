@@ -131,7 +131,7 @@ RCReader::write_rc_file(const string &pathname)
 }
 
 bool
-RCReader::read_rc_file(const string &pathname) throw(Error)
+RCReader::read_rc_file(const string &pathname)
 {
     DBG(cerr << "Reading the RC file from " << pathname << endl);
 
@@ -386,7 +386,7 @@ RCReader::delete_instance()
 
 /** Static void private method. */
 void
-RCReader::initialize_instance() throw(Error)
+RCReader::initialize_instance()
 {
     DBG(cerr << "RCReader::initialize_instance() ... ");
 
@@ -397,7 +397,7 @@ RCReader::initialize_instance() throw(Error)
 }
 
 RCReader* 
-RCReader::instance() throw(Error)
+RCReader::instance()
 {
     // The instance_control variable is defined at the top of this file.
     // 08/07/02 jhrg

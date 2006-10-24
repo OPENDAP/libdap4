@@ -94,14 +94,12 @@ private:
 
     vector<string> d_request_headers; // Request headers
 
-    void www_lib_init() throw(Error, InternalErr);
+    void www_lib_init();
     long read_url(const string &url, FILE *stream, vector<string> *resp_hdrs,
-		  const vector<string> *headers = 0) throw(Error);
+		  const vector<string> *headers = 0);
     // string get_temp_file(FILE *&stream) throw(InternalErr);
-    HTTPResponse *plain_fetch_url(const string &url) 
-	throw(Error, InternalErr);
-    HTTPResponse *caching_fetch_url(const string &url) 
-	throw(Error, InternalErr);
+    HTTPResponse *plain_fetch_url(const string &url);
+    HTTPResponse *caching_fetch_url(const string &url);
 
     bool url_uses_proxy_for(const string &url) throw();
     bool url_uses_no_proxy_for(const string &url) throw();
@@ -133,7 +131,7 @@ public:
 
     virtual ~HTTPConnect();
 
-    void set_credentials(const string &u, const string &p) throw(InternalErr);
+    void set_credentials(const string &u, const string &p);
     void set_accept_deflate(bool defalte);
 
     /** Set the state of the HTTP cache. By default, the HTTP cache is
@@ -151,7 +149,7 @@ public:
 	return (d_http_cache) ? d_http_cache->is_cache_enabled() : false; 
     }
 
-    HTTPResponse *fetch_url(const string &url) throw(Error, InternalErr);
+    HTTPResponse *fetch_url(const string &url);
 };
 
 #endif // _httpconnect_h

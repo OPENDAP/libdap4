@@ -167,10 +167,8 @@ private:
 public:
     DDXParser(BaseTypeFactory *factory) : d_factory(factory) {}
 
-    void intern(const string &document, DDS *dest_dds, string *blob)
-	throw(DDXParseFailed);
-    void intern_stream(FILE *in, DDS *dds, string *blob)
-        throw(DDXParseFailed, InternalErr);
+    void intern(const string &document, DDS *dest_dds, string *blob);
+    void intern_stream(FILE *in, DDS *dds, string *blob);
 
     static void ddx_start_document(DDXParser *parser);
     static void ddx_end_document(DDXParser *parser);

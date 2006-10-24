@@ -422,9 +422,14 @@ int main(int argc, char *argv[])
             url = 0;
         }
     }
-    catch(Error & e) {
+    catch(Error &e) {
         cerr << e.get_error_message() << endl;
+        return 1;
     }
-
+    catch(exception &e) {
+        cerr << "C++ library exception: " << e.what() << endl;
+        return 1;
+    }
+    
     return 0;
 }

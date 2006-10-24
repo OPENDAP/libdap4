@@ -51,7 +51,7 @@ int test_variable_sleep_interval = 0;
 const string cgi_version = "DODS/3.4, server_handler"; //DODS_SERVER_VERSION;
 
 static void
-read_table(DDS &table, const string &name) throw(Error)
+read_table(DDS &table, const string &name)
 {
     table.parse(name);
     
