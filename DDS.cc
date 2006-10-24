@@ -51,6 +51,8 @@ static char rcsid[] not_used = {"$Id$"};
 #include <algorithm>
 #include <functional>
 
+//#define DODS_DEBUG
+
 #include "GNURegex.h"
 
 #include "DAS.h"
@@ -157,7 +159,10 @@ DDS::transfer_attr(DAS *das, const AttrTable::entry *ep, BaseType *btp,
 	    dest.add_value_alias(das, ep->name /*+ sub_table*/, ep->aliased_to);
     }
     else if (ep->type == Attr_container) {
-        ep->attributes->set_name(ep->name);//use sub_table here to make the new stuff a 'sub table'.
+        DBG(cerr << "ep-type == container, ep-<name: " << ep->name << endl);
+        //use sub_table here to make the new stuff a 'sub table'. I think this 
+        // is wrong. jhrg 10/24/06
+        ep->attributes->set_name(ep->name);
 	Constructor *c = dynamic_cast<Constructor*>(btp);
 	if (c)
 	    transfer_attr_table(das, ep->attributes, c, sub_table);
@@ -195,7 +200,7 @@ void
 DDS::transfer_attr_table(DAS *das, AttrTable *at, BaseType *btp, 
                          const string &sub_table)
 {
-    DBG(cerr << "DDS::transfer_attr_table: sub_table: " << sub_table << endl);
+    DBG(cerr << "DDS::transfer_attr_table (BseType): sub_table: " << sub_table << endl);
     
     if (at->get_name() == btp->name()) {
         // If the name matches and sub_table is not null, make a new table
@@ -228,7 +233,8 @@ void
 DDS::transfer_attr_table(DAS *das, AttrTable *at, Constructor *c,
                          const string &sub_table)
 {
-    DBG(cerr << "sub_table: " << sub_table << endl);
+    DBG(cerr << "DDS::transfer_attr_table: (Constructor) sub_table: " 
+        << sub_table << endl);
     for (AttrTable::Attr_iter i = at->attr_begin(); i != at->attr_end(); ++i) {
 	AttrTable::entry *ep = *i;
 	string n = ep->name;
@@ -267,8 +273,11 @@ DDS::transfer_attr_table(DAS *das, AttrTable *at, Constructor *c,
 	    throw InternalErr(__FILE__, __LINE__, "Unknown type.");
 	}
 
-	if (!found)
+	if (!found) {
+            DBG(cerr << "Could not find a place in a constructor for " << sub_table
+                << ", calling transfer_attr() without it." << endl);
 	    transfer_attr(das, ep, c);
+        }
     }
 }
 
@@ -304,13 +313,16 @@ DDS::transfer_attributes(DAS * das)
         // into 'dim_0' containers within the <name> container. Let specific
         // clients handle the nested attributes however they want to. See
         // ticket #480. 
+#if 0
         string::size_type dim_pos = (*i)->name.find("_dim_");
+#endif
         string sub_table = "";
+#if 0
         if (dim_pos != string::npos) {
             sub_table = (*i)->name.substr(dim_pos);
             (*i)->name = (*i)->name.substr(0, dim_pos);
         }
-        
+#endif        
         DBG(cerr << "DDS::transfer_attributes(DAS * das): sub table: " 
                 << sub_table << endl);
                 

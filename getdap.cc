@@ -97,6 +97,7 @@ void usage(string name)
     cerr <<
         "        x: For each URL, get the DDX object. Does not get data."
         << endl;
+    cerr << "        X: Build a DDX in getdap using the DDS and DAS." << endl;
     cerr << "        B: <AIS xml dataBase>. Overrides .dodsrc." << endl;
     cerr << "        v: Verbose." << endl;
     cerr << "        V: Version." << endl;
@@ -144,13 +145,14 @@ static void print_data(DDS & dds, bool print_rows = false)
 
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "idaDxAVvkB:c:m:zsh?");
+    GetOpt getopt(argc, argv, "idaDxXAVvkB:c:m:zsh?");
     int option_char;
 
     bool get_das = false;
     bool get_dds = false;
     bool get_data = false;
     bool get_ddx = false;
+    bool build_ddx = false;
     bool get_version = false;
     bool cexpr = false;
     bool verbose = false;
@@ -179,6 +181,9 @@ int main(int argc, char *argv[])
             break;
         case 'x':
             get_ddx = true;
+            break;
+        case 'X':
+            build_ddx = true;
             break;
         case 'A':
             use_ais = true;
@@ -357,6 +362,31 @@ int main(int argc, char *argv[])
                         fprintf(stderr, "Server version: %s\n",
                                 url->get_version().c_str());
                         fprintf(stderr, "DDX:\n");
+                    }
+
+                    dds.print_xml(stdout, false, "geturl; no blob yet");
+                }
+            }
+            
+            else if (build_ddx) {
+                for (int j = 0; j < times; ++j) {
+                    BaseTypeFactory factory;
+                    DDS dds(&factory);
+                    try {
+                        url->request_dds(dds);
+                        DAS das;
+                        url->request_das(das);
+                        dds.transfer_attributes(&das);
+                    }
+                    catch(Error & e) {
+                        cerr << e.get_error_message() << endl;
+                        continue;       // Goto the next URL or exit the loop.
+                    }
+
+                    if (verbose) {
+                        fprintf(stderr, "Server version: %s\n",
+                                url->get_version().c_str());
+                        fprintf(stderr, "Client-built DDX:\n");
                     }
 
                     dds.print_xml(stdout, false, "geturl; no blob yet");
