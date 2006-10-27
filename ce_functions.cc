@@ -373,8 +373,8 @@ BaseType *func_length(int argc, BaseType * argv[], DDS & dds)
 
 /** This server-side function returns version information for the server-side
     functions. */
-BaseType *function_version(int argc, BaseType * argv[], DDS & dds,
-                   const string & dataset)
+BaseType *function_version(int argc, BaseType * argv[], DDS &,
+                   const string &)
 {
     string help = "\
 Usage: version() returns plain text information about the available functions.\
@@ -505,7 +505,7 @@ apply_grid_selection_expressions(Grid * grid,
     @param dataset Name of the dataset.
     @see geogrid() (func_geogrid_select) A function which has logic specific
     to longitude/latitude selection. */
-BaseType *function_grid(int argc, BaseType * argv[], DDS & dds,
+BaseType *function_grid(int argc, BaseType * argv[], DDS &,
                         const string & dataset)
 {
     DBG(cerr << "Entering function_grid..." << endl);
@@ -601,7 +601,7 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS & dds,
     attributes.
     @param dataset Name of the dataset.
     @return The constrained and read Grid, ready to be sent. */
-BaseType *function_geogrid(int argc, BaseType * argv[], DDS & dds,
+BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
                            const string & dataset)
 {
     if (argc < 5)
@@ -757,7 +757,7 @@ get_slope(BaseType *var)
     attributes for them cannot be found OR if the source variable is not a
     numeric scalar, Array or Grid. */
 BaseType *
-function_linear_scale(int argc, BaseType * argv[], DDS & dds, const string & dataset)
+function_linear_scale(int argc, BaseType * argv[], DDS &, const string & dataset)
 {
     // Check for 1 or 3 arguments: 1 --> use attributes; 3 --> m & b supplied
     DBG(cerr << "argc = " << argc << endl);
@@ -858,7 +858,7 @@ assumed to be the slope and y-intercept.");
     @return The Array, constrained by the selection
     @exception Error Thrown if thins go awry. */
 BaseType *
-function_geoarray(int argc, BaseType * argv[], DDS & dds, const string & dataset)
+function_geoarray(int argc, BaseType * argv[], DDS &, const string & dataset)
 {
     // Check for 1 or 3 arguments: 1 --> use attributes; 3 --> m & b supplied
     DBG(cerr << "argc = " << argc << endl);
