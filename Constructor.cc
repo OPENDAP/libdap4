@@ -36,11 +36,10 @@
 #include <algorithm>
 #include <functional>
 
-#define DODS_DEBUG 
+//#define DODS_DEBUG 
 
 #include "Constructor.h"
 #include "Grid.h"
-//#include "BTIterAdapter.h"
 
 #include "debug.h"
 #include "escaping.h"
