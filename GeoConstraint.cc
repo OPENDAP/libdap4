@@ -235,7 +235,8 @@ void GeoConstraint::find_longitude_indeces(double left, double right,
         DBG2(cerr << "fmod(d_lon[" << i << "], 360.0) < t_left: "
              << fmod(d_lon[i], 360.0) << " < " << t_left << endl);
 
-        i = ++i % d_lon_length;
+        ++i;
+        i = i % d_lon_length;
         if (i == smallest_lon_index)
             done = true;
     }
@@ -519,8 +520,9 @@ void GeoConstraint::set_bounding_box_longitude(double left, double right)
 GeoConstraint::GeoConstraint(const string & ds_name)
     :d_dataset(ds_name), d_array_data(0), d_array_data_size(0), 
      d_lat(0), d_lon(0),
-     d_bounding_box_set(false), d_latitude_sense(unknown_sense),
-     d_longitude_notation(unknown_notation)
+     d_bounding_box_set(false),
+     d_longitude_notation(unknown_notation),
+     d_latitude_sense(unknown_sense)
 {
     // Build sets of attribute values for easy searching. Maybe overkill???
     d_coards_lat_units.insert("degrees_north");
