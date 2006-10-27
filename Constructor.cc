@@ -36,7 +36,10 @@
 #include <algorithm>
 #include <functional>
 
+#define DODS_DEBUG 
+
 #include "Constructor.h"
+#include "Grid.h"
 //#include "BTIterAdapter.h"
 
 #include "debug.h"
@@ -87,6 +90,145 @@ Constructor::Vars_iter
 Constructor::var_begin()
 {
     return _vars.begin() ;
+}
+
+/** @brief Look for the parent of an HDF4 dimension attribute
+
+    If this attribute container's name ends in the '_dim_?' suffix, look
+    for the variable to which it's attributes should be bound: For an array,
+    they should be held in a sub-table of the array; for a Structure or
+    Sequence, I don't think the HDF4 handler ever makes these (since those
+    types don't have 'dimension' in hdf-land);  and for a Grid, the attributes
+    belong with the map variables.
+    
+    @note This method does check that the \e source really is an hdf4 dimension
+    attribute.
+    
+    @param source The attribute container, an AttrTable::entry instance.
+    @return the BaseType to which these attributes belong or null if none
+    was found. */
+BaseType *
+Constructor::find_hdf4_dimension_attribute_home(AttrTable::entry *source)
+{
+    BaseType *btp;
+    string::size_type i = source->name.find("_dim_");
+    if (i != string::npos && (btp = var(source->name.substr(0, i)))) {
+        if (btp->is_vector_type()) {
+             return btp;
+        }
+        else if (btp->type() == dods_grid_c) {
+            // For a Grid, the hdf4 handler uses _dim_n for the n-th Map
+            // i+5 points to the character holding 'n'
+            int n = atoi(source->name.substr(i+5).c_str());
+            DBG(cerr << "Found a Grid (" << btp->name() << ") and "
+                << source->name.substr(i) << ", extracted n: " << n << endl);
+            return *(dynamic_cast<Grid&>(*btp).map_begin() + n);
+        }
+    }
+
+    return 0;
+}
+
+/** Given an attribute container from a table, find or make a destination
+    for its contents in the current constructor variable. */
+AttrTable *
+Constructor::find_matching_container(AttrTable::entry *source,
+                                     BaseType **dest_variable)
+{
+    // The attribute entry 'source' must be a container
+    if (source->type != Attr_container)
+        throw InternalErr(__FILE__, __LINE__, "Constructor::find_matching_container");
+        
+    // Use the name of the attribute container 'source' to figure out where
+    // to put its contents.
+    BaseType *btp;
+    if ((btp = var(source->name))) {
+        // ... matches a variable name? Use var's table
+        *dest_variable = btp;
+        return &btp->get_attr_table();
+    }
+    // As more special-case attribute containers come to light, add clauses
+    // here.
+    else if ((btp = find_hdf4_dimension_attribute_home(source))) {
+        // ... hdf4 dimension attribute? Make a sub table and use that.
+        // btp can only be an Array or a Grid Map (which is an array)
+        if (btp->get_parent()->type() == dods_grid_c) {
+            DBG(cerr << "Found a Grid" << endl);
+            *dest_variable = btp;
+            return &btp->get_attr_table();
+        }
+        else { // must ba a plain Array
+            string::size_type i = source->name.find("_dim_");
+            string ext = source->name.substr(i+1);
+            *dest_variable = btp;
+            return btp->get_attr_table().append_container(ext);
+        }
+    }
+    else {
+        // ... otherwise assume it's a global attribute. 
+        AttrTable *at = get_attr_table().find_container(source->name);
+        if (!at) {
+            at = new AttrTable();       // Make a new global table if needed
+            get_attr_table().append_container(at, source->name);
+        }
+        
+        *dest_variable = 0;
+        return at;
+    }
+}
+
+/** Given an Attribute entry, scavenge attributes from it and load them into
+    this object and the variables it contains. Assume that the caller has
+    determined the table holds attributes pertinent to only this variable.
+    
+    @note This method is technically \e unnecessary because a server (or
+    client) can easily add attributes directly using the DDS::get_attr_table
+    or BaseType::get_attr_table methods and then poke values in using any
+    of the methods AttrTable provides. This method exists to ease the
+    transition to DDS objects which contain attribute information for the
+    existing servers (Since they all make DAS objects separately from the
+    DDS). They could be modified to use the same AttrTable methods but
+    operate on the AttrTable instances in a DDS/BaseType instead of those in
+    a DAS.
+
+    @param at Get attribute information from this Attribute table. */
+void
+Constructor::transfer_attributes(AttrTable::entry * entry)
+{
+    DBG(cerr << "Constructor::transfer_attributes, variable: " << name() <<
+        endl);
+    DBG(cerr << "Working on the '" << entry->
+        name << "' container." << endl);
+    if (entry->type != Attr_container)
+        throw InternalErr(__FILE__, __LINE__,
+                          "Constructor::transfer_attributes");
+
+    AttrTable *source = entry->attributes;
+    BaseType *dest_variable = 0;
+    AttrTable *dest = find_matching_container(entry, &dest_variable);
+
+    // foreach source attribute in the das_i container
+    AttrTable::Attr_iter source_p = source->attr_begin();
+    while (source_p != source->attr_end()) {
+        DBG(cerr << "Working on the '" << (*source_p)->
+            name << "' attribute" << endl);
+
+        if ((*source_p)->type == Attr_container) {
+            if (dest_variable && dest_variable->is_constructor_type()) {
+                dynamic_cast <Constructor & >(*dest_variable).transfer_attributes(*source_p);
+            } 
+            else {
+                dest->append_container(new AttrTable(*(*source_p)->attributes),
+                                       (*source_p)->name);
+            }
+        } else {
+            dest->append_attr(source->get_name(source_p),
+                              source->get_type(source_p),
+                              source->get_attr_vector(source_p));
+        }
+
+        ++source_p;
+    }
 }
 
 /** Returns an iterator referencing the end of the list of structure
