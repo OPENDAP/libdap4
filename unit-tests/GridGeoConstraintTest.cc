@@ -115,7 +115,7 @@ public:
                 { -180, -120, -80, -40, 0, 40, 80, 120, 160, 179 };
             lon2.val2buf(tmp_lon2);
             lon2.set_read_p(true);
-            BaseType *btp = lon2.var(0);
+            //unused BaseType *btp = lon2.var(0);
             DBG2(cerr << "lon2[0]: " << dynamic_cast<Float64*>(btp)->value() << endl);
 
             Array & lat2 = dynamic_cast < Array & >(**(sst2.map_begin() + 1));

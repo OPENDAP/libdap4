@@ -441,8 +441,8 @@ public:
             CPPUNIT_ASSERT(g);
             BaseType *argv[1];
             argv[0] = g;
-            BaseType *scaled = function_linear_scale(1, argv, *dds, "linear_scale_args_test");
-            CPPUNIT_ASSERT(!"Should not get here; no params passed and no attributes set for grid 'b'");
+            (void)function_linear_scale(1, argv, *dds, "linear_scale_args_test");
+            CPPUNIT_FAIL("Should not get here; no params passed and no attributes set for grid 'b'");
         }
         catch (Error &e) {
             DBG(cerr << e.get_error_message() << endl);

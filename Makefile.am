@@ -8,7 +8,7 @@ aclocaldir=$(datadir)/aclocal
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)/gl
-AM_CXXFLAGS = -I$(top_srcdir)/GNU
+AM_CXXFLAGS = -I$(top_srcdir)/GNU $(CXXFLAGS_DEBUG)
 AM_YFLAGS = -d -v
 AM_LFLAGS = -8
 
@@ -66,7 +66,7 @@ EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 
 dist_aclocal_DATA = conf/libdap.m4
 
-CLEANFILES = *.log *.output
+CLEANFILES = *.log *.output *.gcda *.gcno
 
 # MAINTAINERCLEANFILES = $(LEX_YACC_FILES)
 
@@ -100,6 +100,19 @@ pkg:
 	./configure --prefix=`pwd`/mac_osx
 	make clean install
 	mv dap-config.macosx mac_osx/bin/dap-config
+	
+# Note that the gcov options -f and -b are useful but sometimes make looking
+# at the results of coverage analysis a little taxing. -b reports on all
+# branched and -f reports on all functions. The -l -o options summarize on a
+# per-file basis. 3/27/98 jhrg
+collect-coverage-data:
+        (cd test-coverage; \
+         cov_dat="coverage-data-`date +%m.%d.%y`"; \
+         touch $$cov_dat; \
+         for f in $(ALLSRCS); do \
+            echo "\n*** Coverage data for $$f ***\n" >> $$cov_dat; \
+            gcov -l -o ../ $$f >> $$cov_dat; \
+         done)
 
 #############################################################################
 # Library sources
