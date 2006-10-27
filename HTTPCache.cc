@@ -54,7 +54,9 @@ using namespace std;
 // other mutexes used by this class are fields. 10/09/02 jhrg
 // Gcc (4.0.0) now complains about this saying that there are missing member
 // initializers for __kind, et cetera. jhrg 2/23/06
-static pthread_mutex_t instance_mutex = PTHREAD_MUTEX_INITIALIZER;
+// Now initialized in once_init_routice() called from the ctor.
+static pthread_mutex_t instance_mutex; //  = PTHREAD_MUTEX_INITIALIZER;
+static pthread_once_t once_block = PTHREAD_ONCE_INIT;
 
 #define LOCK(m) pthread_mutex_lock((m))
 #define TRYLOCK(m) pthread_mutex_trylock((m))
@@ -124,6 +126,16 @@ get_hash(const string &url)
     return hash;
 }
 
+static void
+once_init_routine()
+{
+    int status;
+    status = INIT(&instance_mutex);
+    
+    if (status != 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
+}
+
 /** Create an instance of the HTTP 1.1 compliant cache. This initializes the
     both the cache root and the path to the index file. It then reads the
     cache index file if one is present.
@@ -157,7 +169,11 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
     d_new_entries(0)
 {
     DBG(cerr << "Entering the constructor for " << this << "... ");
-
+    
+    int status = pthread_once(&once_block, once_init_routine);
+    if (status != 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
+        
     INIT(&d_cache_mutex);
 
     // Initialize the cache table.
