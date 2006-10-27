@@ -7,7 +7,7 @@ AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/tests
-AM_CXXFLAGS = -I$(top_srcdir)/GNU
+AM_CXXFLAGS = -I$(top_srcdir)/GNU $(CXXFLAGS_DEBUG)
 
 # These are not used by automake but are often useful for certain types of
 # debugging. Set CXXFLAGS to this in the nightly build using export ...
@@ -25,7 +25,7 @@ DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite ais_testsuite \
 
 EXTRA_DIST = $(DIRS_EXTRA) 
 
-CLEANFILES = testout .dodsrc
+CLEANFILES = testout .dodsrc  *.gcda *.gcno
 
 ############################################################################
 # Unit Tests
