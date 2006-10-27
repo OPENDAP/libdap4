@@ -1,0 +1,6 @@
+#
+# Test identifiers with `#' in them. 6/22/2001 jhrg
+
+Dataset {
+   Int32 a;
+} test.19c;

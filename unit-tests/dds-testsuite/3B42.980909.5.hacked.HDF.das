@@ -12,11 +12,6 @@ Attributes {
             String Data_Location PGE;
             String Mandatory FALSE;
         }
-#        TMIRolloverCoef {
-#            String Value "(-9999.9,-9999.9,-9999.9,-9999.9,-9999.9,-9999.9,-9999.9,-9999.9,-9999.9,-9999.9,-9999.9,-9999.9,-9999.9,-9999.9,-9999.9,-9999.9,-9999.9,-9999.9)";
-#            String Data_Location PGE;
-#            String Mandatory FALSE;
-#        }
     }
     percipitate_dim_0 {
         String name "scan";
