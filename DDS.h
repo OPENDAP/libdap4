@@ -174,9 +174,11 @@ private:
     AttrTable d_attr;           // Global attributes.
 
     vector<BaseType *> vars;	// Variables at the top level 
-
+#if 0
     bool is_global_attr(string name);
     void add_global_attribute(AttrTable::entry *entry);
+#endif
+    BaseType *find_hdf4_dimension_attribute_home(AttrTable::entry *source);
 
     int d_timeout;		// alarm time in seconds. If greater than
 				// zero, raise the alarm signal if more than
@@ -187,13 +189,16 @@ protected:
     void duplicate(const DDS &dds);
     BaseType *leaf_match(const string &name, btp_stack *s = 0);
     BaseType *exact_match(const string &name, btp_stack *s = 0);
-
+#if 0
     void transfer_attr(DAS *das, const AttrTable::entry *ep, BaseType *btp,
                        const string &suffix = "");
     void transfer_attr_table(DAS *das, AttrTable *at, BaseType *btp,
                              const string &suffix = "");
     void transfer_attr_table(DAS *das, AttrTable *at, Constructor *c,
                              const string &suffix = "");
+#endif    
+    virtual AttrTable *find_matching_container(AttrTable::entry *source,
+                                               BaseType **dest_variable);
     
 public:
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
