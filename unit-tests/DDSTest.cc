@@ -456,7 +456,7 @@ public:
 
         dds2->transfer_attributes(&das);
 
-        AttrTable &at2 = dds2->var("c%20d")->get_attr_table();
+        DBG(AttrTable &at2 = dds2->var("c%20d")->get_attr_table());
         DBG(at2.print(stderr));
 
 
@@ -504,7 +504,7 @@ public:
             CPPUNIT_FAIL("Error exception");
         }
 
-        AttrTable &at2 = dds2->var("huh")->get_attr_table();
+        DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table());
         DBG(at2.print(stderr));
 
 
@@ -555,7 +555,7 @@ public:
             CPPUNIT_FAIL("Error exception");
         }
 
-        AttrTable &at2 = dds2->var("huh")->get_attr_table();
+        DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table());
         DBG(at2.print(stderr));
 
 
@@ -684,7 +684,7 @@ public:
             CPPUNIT_FAIL("Error exception");
         }
 
-        AttrTable &at2 = dds2->var("huh")->get_attr_table();
+        DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table());
         DBG(at2.print(stderr));
 
 
