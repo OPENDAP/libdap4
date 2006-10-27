@@ -38,11 +38,14 @@
 class Constructor: public BaseType {
 private:
     Constructor();		// No default ctor.
+    BaseType *find_hdf4_dimension_attribute_home(AttrTable::entry *source);
 
 protected:
     std::vector<BaseType *> _vars;
 
     void _duplicate(const Constructor &s);
+    virtual AttrTable *find_matching_container(AttrTable::entry *source,
+                                               BaseType **dest_variable);
 
 public:
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
@@ -55,6 +58,8 @@ public:
     virtual ~Constructor();
 
     Constructor &operator=(const Constructor &rhs);
+    virtual void transfer_attributes(AttrTable::entry *entry);
+
     Vars_iter var_begin();
     Vars_iter var_end();
     Vars_riter var_rbegin();
