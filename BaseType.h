@@ -228,9 +228,10 @@ public:
 
     /** Clone this instance. Allocate a new instance and copy \c *this into
 	it. This method must perform a deep copy.
-
+        @note This method should \e not copy data values, but must copy all
+        other fields in the object.
 	@return A newly allocated copy of \c this. */
-    virtual BaseType *ptr_duplicate() = 0; // alloc new instance and dup THIS.
+    virtual BaseType *ptr_duplicate() = 0;
 
     string name() const;
     virtual void set_name(const string &n);
