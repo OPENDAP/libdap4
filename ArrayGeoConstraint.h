@@ -98,7 +98,7 @@ geoarray().");
 public:
     /** @name Constructors */
     //@{
-    ArrayGeoConstraint(Array *array, const string &ds_name) 
+    ArrayGeoConstraint(Array *, const string &ds_name) 
         : GeoConstraint(ds_name) {
         throw Error(
 "Bummer. The five-argument version of geoarray() is not currently implemented.");
