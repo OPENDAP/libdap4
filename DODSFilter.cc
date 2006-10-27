@@ -982,7 +982,7 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
     @param out Dump the response to this FILE pointer.
     @param with_mime_headers If true (the default) send MIME headers. */
 void
-DODSFilter::send_blob(DDS &dds, FILE *out, bool with_mime_headers)
+DODSFilter::send_blob(DDS &, FILE *, bool)
 {
 #if 0
     // Broken. jhrg 4/3/06
