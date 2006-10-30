@@ -9,6 +9,6 @@ global srcdir
 
 source "common_tests.exp"
 
-expr-test_start w ${srcdir}/test.cc0 "geoarray(SST,135,45,225,-45,0,90,359,-90)"
+expr-test_start w ${srcdir}/test.cc0 "geoarray(SST,45,135,-45,225,90,0,-90,359)"
 
 compare_stdout ${srcdir}/data.zz2 "test.zz2.exp: Chunk of data"
