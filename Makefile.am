@@ -158,7 +158,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	PassiveByte.h PassiveInt32.h PassiveFloat64.h PassiveStr.h	   \
 	PassiveUrl.h PassiveUInt32.h PassiveInt16.h PassiveUInt16.h	   \
 	PassiveFloat32.h PassiveArray.h PassiveStructure.h		   \
-	DODSResponseObject.h BaseTypeFactory.h ObjectType.h EncodingType.h \
+	BaseTypeFactory.h ObjectType.h EncodingType.h \
 	SignalHandler.h Operators.h Error.h InternalErr.h		   \
 	util.h escaping.h parser.h debug.h dods-limits.h dods-datatypes.h \
 	GeoConstraint.h GridGeoConstraint.h	ArrayGeoConstraint.h \
@@ -172,7 +172,7 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h	 \
 	AISResources.h Resource.h
 
-SERVER_HDR = DODSFilter.h cgi_util.h AlarmHandler.h EventHandler.h			\
+SERVER_HDR = DODSFilter.h cgi_util.h AlarmHandler.h EventHandler.h	\
 	OPeNDAPFile.h OPeNDAPDir.h	
 
 ############################################################################
