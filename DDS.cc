@@ -107,7 +107,7 @@ DDS::DDS(BaseTypeFactory *factory, const string &n)
 }
 
 /** The DDS copy constructor. */
-DDS::DDS(const DDS &rhs) : DODSResponseObject(rhs)
+DDS::DDS(const DDS &rhs)
 {
     duplicate(rhs);
 }

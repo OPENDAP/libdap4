@@ -49,8 +49,6 @@
 #include "AttrTable.h"
 #endif
 
-#include "DODSResponseObject.h"
-
 using std::cout;
 
 /** @brief Hold attribute data for a DAP2 dataset.
@@ -120,7 +118,7 @@ using std::cout;
 
     @see DDS 
     @see AttrTable */
-class DAS : public AttrTable, public DODSResponseObject {
+class DAS : public AttrTable {
 private:
 protected:
     AttrTable *das_find(string name);

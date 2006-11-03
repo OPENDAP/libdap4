@@ -160,7 +160,7 @@ using std::cout;
     @see BaseType
     @see DAS */
 
-class DDS : public DODSResponseObject {
+class DDS {
 private:
     BaseTypeFactory *d_factory;
 
