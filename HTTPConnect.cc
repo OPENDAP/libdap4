@@ -483,7 +483,7 @@ HTTPConnect::HTTPConnect(RCReader *rcr) throw(Error, InternalErr)
 	+ string("/") + string(CVER);
     d_request_headers.push_back(user_agent);
     if (d_accept_deflate)
-	d_request_headers.push_back(string("Accept-Encoding: deflate"));
+	d_request_headers.push_back(string("Accept-Encoding: deflate, gzip, compress"));
 
     // HTTPCache::instance returns a valid ptr or 0.
     if (d_rcr->get_use_cache())
@@ -779,8 +779,8 @@ HTTPConnect::set_accept_deflate(bool deflate)
 
     if (d_accept_deflate) {
 	if (find(d_request_headers.begin(), d_request_headers.end(), 
-		 "Accept-Encoding: deflate") == d_request_headers.end())
-	    d_request_headers.push_back(string("Accept-Encoding: deflate"));
+		 "Accept-Encoding: deflate, gzip, compress") == d_request_headers.end())
+	    d_request_headers.push_back(string("Accept-Encoding: deflate, gzip, compress"));
 	DBG(copy(d_request_headers.begin(), d_request_headers.end(),
 		 ostream_iterator<string>(cerr, "\n")));
     }
@@ -788,7 +788,7 @@ HTTPConnect::set_accept_deflate(bool deflate)
 	vector<string>::iterator i;
 	i = remove_if(d_request_headers.begin(), d_request_headers.end(),
 		      bind2nd(equal_to<string>(), 
-			      string("Accept-Encoding: deflate")));
+			      string("Accept-Encoding: deflate, gzip, compress")));
 	d_request_headers.erase(i, d_request_headers.end());
     }
 }
