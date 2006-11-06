@@ -1,0 +1,19 @@
+# OPeNDAP client configuation file. See the OPeNDAP
+# users guide for information.
+USE_CACHE=0
+# Cache and object size are given in megabytes (20 ==> 20Mb).
+MAX_CACHE_SIZE=20
+MAX_CACHED_OBJ=5
+IGNORE_EXPIRES=0
+CACHE_ROOT=/home/jimg/.dods_cache/
+DEFAULT_EXPIRES=86400
+ALWAYS_VALIDATE=0
+# Request servers compress responses if possible?
+# 1 (yes) or 0 (false).
+DEFLATE=0
+# blah
+VALIDATE_SSL=0
+# Proxy configuration:
+# PROXY_SERVER=<protocol>,<[username:password@]host[:port]>
+# NO_PROXY_FOR=<protocol>,<host|domain>
+# AIS_DATABASE=<file or url>
