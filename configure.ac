@@ -5,6 +5,9 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
 AC_INIT(libdap, 3.7.2, dods-tech@unidata.ucar.edu)
+AC_DEFINE(DAP_PROTOCOL_VERSION, "3.1", [What DAP version is supported?])
+AC_SUBST(DAP_PROTOCOL_VERSION)
+
 AC_CONFIG_SRCDIR([AISConnect.cc])
 AC_CONFIG_AUX_DIR(conf)
 AM_CONFIG_HEADER([config.h dods-datatypes.h])
@@ -16,8 +19,6 @@ AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
 AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and vesion combined])
 AC_SUBST(DVR)
 AC_MSG_RESULT([DVR is $DVR])
-AC_DEFINE(DAP_PROTOCOL_VERSION, "3.1", [What DAP version is supported?])
-AC_SUBST(DAP_PROTOCOL_VERSION)
 
 dnl flags for the compilers and linkers - set these before locating the
 dnl actual tools since some of the AC_PROG macros set these `flag variables'
