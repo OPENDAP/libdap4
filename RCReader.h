@@ -80,6 +80,9 @@ private:
     string d_dods_proxy_server_host;
     int d_dods_proxy_server_port;
     string d_dods_proxy_server_userpw;
+    
+    // Should libcurl validate SSL hosts/certificates"
+    int d_validate_ssl;
 
     string _dods_proxy_server_host_url;	// deprecated
 
@@ -130,6 +133,7 @@ public:
     const int get_ignore_expires() throw()  {return _dods_ign_expires;}
     const int get_default_expires() throw() {return _dods_default_expires;}
     const int get_always_validate() throw() {return _dods_always_validate;}
+    int get_validate_ssl() const throw() {return d_validate_ssl;}
 
     const bool get_deflate() throw()   {return _dods_deflate;}
 
@@ -185,7 +189,8 @@ public:
     void set_ignore_expires(int i) throw() {_dods_ign_expires=i;}
     void set_default_expires(int i) throw() { _dods_default_expires=i;}
     void set_always_validate(int i) throw() {_dods_always_validate=i;}
-
+    void set_validate_ssl(int i) throw() {d_validate_ssl = i;}
+    
     void set_deflate(bool b) throw() {_dods_deflate=b;}
 
     void set_proxy_server_protocol(const string &s) throw() {d_dods_proxy_server_protocol=s;}

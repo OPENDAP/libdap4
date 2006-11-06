@@ -132,28 +132,28 @@ public:
     ParseHeader() :type(unknown_type), server("dods/0.0"), protocol("2.0") { }
 
     void operator()(const string &header) {
-	std::istringstream line(header);
-
-	string name;
-	line >> name;
-	downcase(name);
-	if (name == "content-description:") {
-	    string value; 
-	    line >> value;
-	    downcase(value);
-	    DBG2(cout << name << ": " << value << endl);
-	    type = get_type(value);
-	}
+    	std::istringstream line(header);
+    
+    	string name;
+    	line >> name;
+    	downcase(name);
+    	if (name == "content-description:") {
+    	    string value; 
+    	    line >> value;
+    	    downcase(value);
+    	    DBG2(cout << name << ": " << value << endl);
+    	    type = get_type(value);
+    	}
         // The second test (== "dods/0.0") tests if xopendap-server has already
         // been seen. If so, use that header in preference to the old
         // XDODS-Server header. jhrg 2/7/06
-	else if (name == "xdods-server:" && server == "dods/0.0") {
-	    string value; 
-	    line >> value;
-	    downcase(value);
-	    DBG2(cout << name << ": " << value << endl);
-	    server = value;
-	}
+    	else if (name == "xdods-server:" && server == "dods/0.0") {
+    	    string value; 
+    	    line >> value;
+    	    downcase(value);
+    	    DBG2(cout << name << ": " << value << endl);
+    	    server = value;
+    	}
         else if (name == "xopendap-server:") {
             string value; 
             line >> value;
@@ -168,26 +168,26 @@ public:
             DBG2(cout << name << ": " << value << endl);
             protocol = value;
         }
-	else if (server == "dods/0.0" && name == "server:") {
-	    string value; 
-	    line >> value;
-	    downcase(value);
-	    DBG2(cout << name << ": " << value << endl);
-	    server = value;
-	}
-	else if (type == unknown_type && name == "content-type:" 
-		 && line.str().find("text/html") != string::npos) {
-	    DBG2(cout << name << ": text/html..." << endl);
-	    type = web_error;
-	}
+    	else if (server == "dods/0.0" && name == "server:") {
+    	    string value; 
+    	    line >> value;
+    	    downcase(value);
+    	    DBG2(cout << name << ": " << value << endl);
+    	    server = value;
+    	}
+    	else if (type == unknown_type && name == "content-type:" 
+    		 && line.str().find("text/html") != string::npos) {
+    	    DBG2(cout << name << ": text/html..." << endl);
+    	    type = web_error;
+    	}
     }
 
     ObjectType get_object_type() {
-	return type;
+	   return type;
     }
     
     string get_server() {
-	return server;
+	   return server;
     }
 
     string get_protocol() {
@@ -241,27 +241,27 @@ curl_debug(CURL *, curl_infotype info, char *msg, size_t size, void  *)
 
     switch (info) {
       case CURLINFO_TEXT:
-	cerr << "Text: " << message; break;
+	   cerr << "Text: " << message; break;
       case CURLINFO_HEADER_IN:
-	cerr << "Header in: " << message; break;
+	   cerr << "Header in: " << message; break;
       case CURLINFO_HEADER_OUT:
-	cerr << "Header out: " << message; break;
+	   cerr << "Header out: " << message; break;
       case CURLINFO_DATA_IN:
-	cerr << "Data in: " << message; break;
+	   cerr << "Data in: " << message; break;
       case CURLINFO_DATA_OUT:
-	cerr << "Data out: " << message; break;
+	   cerr << "Data out: " << message; break;
       case CURLINFO_END:
-	cerr << "End: " << message; break;
+	   cerr << "End: " << message; break;
 #ifdef CURLINFO_SSL_DATA_IN
       case CURLINFO_SSL_DATA_IN:
-	cerr << "SSL Data in: " << message; break;
+	   cerr << "SSL Data in: " << message; break;
 #endif
 #ifdef CURLINFO_SSL_DATA_OUT
       case CURLINFO_SSL_DATA_OUT:
-	cerr << "SSL Data out: " << message; break;
+	   cerr << "SSL Data out: " << message; break;
 #endif
       default:
-	cerr << "Curl info: " << message; break;
+	   cerr << "Curl info: " << message; break;
     }
     return 0;
 }
@@ -274,28 +274,28 @@ HTTPConnect::www_lib_init()
 {
     d_curl = curl_easy_init();
     if (!d_curl)
-	throw InternalErr(__FILE__, __LINE__, "Could not initialize libcurl.");
+	   throw InternalErr(__FILE__, __LINE__, "Could not initialize libcurl.");
 
     // Now set options that will remain constant for the duration of this
     // CURL object.
 
     // Set the proxy host.
     if (!d_rcr->get_proxy_server_host().empty()) {
-	DBG(cerr << "Setting up a proxy server." << endl);
-	DBG(cerr << "Proxy host: " << d_rcr->get_proxy_server_host()
-	    << endl);
-	DBG(cerr << "Proxy port: " << d_rcr->get_proxy_server_port()
-	    << endl);
-	DBG(cerr << "Proxy pwd : " << d_rcr->get_proxy_server_userpw()
-	    << endl);
-	curl_easy_setopt(d_curl, CURLOPT_PROXY, 
-			 d_rcr->get_proxy_server_host().c_str());
-	curl_easy_setopt(d_curl, CURLOPT_PROXYPORT,
-			 d_rcr->get_proxy_server_port());
-	// Password might not be required. 06/21/04 jhrg
-	if (!d_rcr->get_proxy_server_userpw().empty())
-	    curl_easy_setopt(d_curl, CURLOPT_PROXYUSERPWD, 
-			     d_rcr->get_proxy_server_userpw().c_str());
+    	DBG(cerr << "Setting up a proxy server." << endl);
+    	DBG(cerr << "Proxy host: " << d_rcr->get_proxy_server_host()
+    	    << endl);
+    	DBG(cerr << "Proxy port: " << d_rcr->get_proxy_server_port()
+    	    << endl);
+    	DBG(cerr << "Proxy pwd : " << d_rcr->get_proxy_server_userpw()
+    	    << endl);
+    	curl_easy_setopt(d_curl, CURLOPT_PROXY, 
+    			 d_rcr->get_proxy_server_host().c_str());
+    	curl_easy_setopt(d_curl, CURLOPT_PROXYPORT,
+    			 d_rcr->get_proxy_server_port());
+    	// Password might not be required. 06/21/04 jhrg
+    	if (!d_rcr->get_proxy_server_userpw().empty())
+    	    curl_easy_setopt(d_curl, CURLOPT_PROXYUSERPWD, 
+    			     d_rcr->get_proxy_server_userpw().c_str());
     }
 
     curl_easy_setopt(d_curl, CURLOPT_ERRORBUFFER, d_error_buffer);
@@ -314,12 +314,17 @@ HTTPConnect::www_lib_init()
     // In read_url a call to CURLOPT_WRITEHEADER is used to set the fourth
     // param of save_raw_http_headers to a vector<string> object. 
 
-    if (www_trace) {
-	cerr << "Curl version: " << curl_version() << endl;
-	curl_easy_setopt(d_curl, CURLOPT_VERBOSE, 1);
-	curl_easy_setopt(d_curl, CURLOPT_DEBUGFUNCTION, curl_debug);
+    // If the user turns off SSL validation...
+    if (!d_rcr->get_validate_ssl() == 0) {
+        curl_easy_setopt(d_curl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_easy_setopt(d_curl, CURLOPT_SSL_VERIFYHOST, 0);
     }
-	
+    
+    if (www_trace) {
+    	cerr << "Curl version: " << curl_version() << endl;
+    	curl_easy_setopt(d_curl, CURLOPT_VERBOSE, 1);
+    	curl_easy_setopt(d_curl, CURLOPT_DEBUGFUNCTION, curl_debug);
+    }
 }
 
 /** Functor to add a single string to a curl_slist. This is used to transfer

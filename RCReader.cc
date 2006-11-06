@@ -102,6 +102,10 @@ RCReader::write_rc_file(const string &pathname)
 	fpo << "# Request servers compress responses if possible?" << endl;
 	fpo << "# 1 (yes) or 0 (false)." << endl;
 	fpo << "DEFLATE=" << _dods_deflate << endl;
+    
+    fpo << "# Should SSL certificates and hosts be validated? SSL" << endl;
+    fpo << "# will only work with signed certificates." << endl;
+    fpo << "VALIDATE_SSL=" << d_validate_ssl;
 
 	fpo << "# Proxy configuration:" << endl;
 	fpo << "# PROXY_SERVER=<protocol>,<[username:password@]host[:port]>"
@@ -181,6 +185,9 @@ RCReader::read_rc_file(const string &pathname)
 	    } else if ((strncmp(tempstr, "ALWAYS_VALIDATE", 15) == 0)
 		       && tokenlength == 15) {
 		_dods_always_validate = atoi(value);
+        } else if ((strncmp(tempstr, "VALIDATE_SSL", 12) == 0)
+               && tokenlength == 12) {
+            d_validate_ssl = atoi(value);
 	    } else if (strncmp(tempstr, "AIS_DATABASE", 12) == 0 
 		     && tokenlength == 12) {
 		d_ais_database = value;
@@ -326,6 +333,7 @@ RCReader::RCReader() throw(Error)
     _dods_always_validate=0;
 
     _dods_deflate=0;
+    d_validate_ssl = 1;
 
     //flags for PROXY_SERVER=<protocol>,<host url>
     d_dods_proxy_server_protocol = "";

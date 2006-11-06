@@ -4,7 +4,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Copyright (c) 2002,2003,2006 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -67,7 +67,8 @@ public:
     CPPUNIT_TEST(proxy_test1);
     CPPUNIT_TEST(proxy_test2);
     CPPUNIT_TEST(proxy_test3);
-
+    CPPUNIT_TEST(validate_ssl_test);
+    
     CPPUNIT_TEST_SUITE_END();
 
     void check_env_var_test1() {
@@ -227,6 +228,38 @@ public:
 	    DBG(cerr << e.get_error_message() << endl);
 	    CPPUNIT_ASSERT(e.get_error_message() != "");
 	}
+    }
+    
+    // This simple test checks to see that the VALIDATE_SSL parameter is 
+    // read correctly.
+    void validate_ssl_test() {
+        string validate_ssl_1 = "DODS_CONF=rcreader-testsuite/dodsrc_ssl_1";
+        char s[1024];
+        strncpy(s, validate_ssl_1.c_str(), validate_ssl_1.length());
+        putenv(s);
+        RCReader::delete_instance();
+        RCReader::initialize_instance();
+        RCReader *reader = RCReader::instance();
+        // No param set in file
+        CPPUNIT_ASSERT(reader->get_validate_ssl() == 1);
+        // Param set in file
+        string validate_ssl_2 = "DODS_CONF=rcreader-testsuite/dodsrc_ssl_2";
+
+        strncpy(s, validate_ssl_2.c_str(), validate_ssl_2.length());
+        putenv(s);
+        RCReader::delete_instance();
+        RCReader::initialize_instance();
+        reader = RCReader::instance();
+        CPPUNIT_ASSERT(rcr->get_validate_ssl() == 1);
+        // Param cleared in file 
+        string validate_ssl_3 = "DODS_CONF=rcreader-testsuite/dodsrc_ssl_3";
+
+        strncpy(s, validate_ssl_3.c_str(), validate_ssl_3.length());
+        putenv(s);
+        RCReader::delete_instance();
+        RCReader::initialize_instance();
+        reader = RCReader::instance();
+        CPPUNIT_ASSERT(rcr->get_validate_ssl() == 0);
     }
 };
 
