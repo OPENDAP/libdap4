@@ -287,7 +287,8 @@ int main(int argc, char *argv[])
                 }
 
                 if (verbose)
-                    fprintf(stderr, "Server version: %s\n",
+                    fprintf(stderr, "DAP version: %s, Server version: %s\n",
+			    url->get_protocol().c_str(),
                             url->get_version().c_str());
 
                 print_data(dds, print_rows);
@@ -295,8 +296,9 @@ int main(int argc, char *argv[])
             }
 
             else if (get_version) {
-                fprintf(stderr, "Server version: %s\n",
-                        url->request_version().c_str());
+                    fprintf(stderr, "DAP version: %s, Server version: %s\n",
+			    url->request_protocol().c_str(),
+                            url->get_version().c_str());
             }
 
             else if (get_das) {
@@ -313,8 +315,10 @@ int main(int argc, char *argv[])
                     }
 
                     if (verbose) {
-                        fprintf(stderr, "Server version: %s\n",
-                                url->get_version().c_str());
+			fprintf(stderr, "DAP version: %s, Server version: %s\n",
+				url->get_protocol().c_str(),
+				url->get_version().c_str());
+
                         fprintf(stderr, "DAS:\n");
                     }
 
@@ -337,8 +341,10 @@ int main(int argc, char *argv[])
                     }
 
                     if (verbose) {
-                        fprintf(stderr, "Server version: %s\n",
-                                url->get_version().c_str());
+			fprintf(stderr, "DAP version: %s, Server version: %s\n",
+				url->get_protocol().c_str(),
+				url->get_version().c_str());
+
                         fprintf(stderr, "DDS:\n");
                     }
 
@@ -359,8 +365,10 @@ int main(int argc, char *argv[])
                     }
 
                     if (verbose) {
-                        fprintf(stderr, "Server version: %s\n",
-                                url->get_version().c_str());
+			fprintf(stderr, "DAP version: %s, Server version: %s\n",
+				url->get_protocol().c_str(),
+				url->get_version().c_str());
+
                         fprintf(stderr, "DDX:\n");
                     }
 
@@ -384,8 +392,10 @@ int main(int argc, char *argv[])
                     }
 
                     if (verbose) {
-                        fprintf(stderr, "Server version: %s\n",
-                                url->get_version().c_str());
+			fprintf(stderr, "DAP version: %s, Server version: %s\n",
+				url->get_protocol().c_str(),
+				url->get_version().c_str());
+
                         fprintf(stderr, "Client-built DDX:\n");
                     }
 
@@ -406,8 +416,9 @@ int main(int argc, char *argv[])
                         url->request_data(dds, expr);
 
                         if (verbose)
-                            fprintf(stderr, "Server version: %s\n",
-                                    url->get_version().c_str());
+			    fprintf(stderr, "DAP version: %s, Server version: %s\n",
+				    url->get_protocol().c_str(),
+				    url->get_version().c_str());
 
                         print_data(dds, print_rows);
                     }
