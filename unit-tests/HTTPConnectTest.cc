@@ -31,7 +31,7 @@
 #include <string>
 #include <algorithm>
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "GNURegex.h"
 #include "HTTPConnect.h"
@@ -227,7 +227,7 @@ class HTTPConnectTest:public TestFixture {
                      ostream_iterator < string > (cerr, "\n")));
 
             // Should get five or six headers back.
-            Regex header("XDODS-Server: DAP[0-4]?/.*");
+            Regex header("X.*-Server: .*/.*");
             DBG(cerr << "get_response_headers_test(), (*h)[0]: "
                 << (*h)[0] << endl);
             CPPUNIT_ASSERT(re_match(header, (*h)[0].c_str()));
@@ -245,7 +245,7 @@ class HTTPConnectTest:public TestFixture {
                 endl);
             CPPUNIT_ASSERT((*h)[num_headers - 1] ==
                            "Content-Description: dods_das");
-#if 0
+#if 1
             CPPUNIT_ASSERT(h->size() == num_headers);
 #endif
             delete r;
@@ -342,22 +342,22 @@ class HTTPConnectTest:public TestFixture {
         http->set_accept_deflate(false);
         CPPUNIT_ASSERT(count(http->d_request_headers.begin(),
                              http->d_request_headers.end(),
-                             "Accept-Encoding: deflate") == 0);
+                             "Accept-Encoding: deflate, gzip, compress") == 0);
 
         http->set_accept_deflate(true);
         CPPUNIT_ASSERT(count(http->d_request_headers.begin(),
                              http->d_request_headers.end(),
-                             "Accept-Encoding: deflate") == 1);
+                             "Accept-Encoding: deflate, gzip, compress") == 1);
 
         http->set_accept_deflate(true);
         CPPUNIT_ASSERT(count(http->d_request_headers.begin(),
                              http->d_request_headers.end(),
-                             "Accept-Encoding: deflate") == 1);
+                             "Accept-Encoding: deflate, gzip, compress") == 1);
 
         http->set_accept_deflate(false);
         CPPUNIT_ASSERT(count(http->d_request_headers.begin(),
                              http->d_request_headers.end(),
-                             "Accept-Encoding: deflate") == 0);
+                             "Accept-Encoding: deflate, gzip, compress") == 0);
     }
 
     void read_url_password_test() {
