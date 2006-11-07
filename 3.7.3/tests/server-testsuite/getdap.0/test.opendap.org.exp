@@ -1,0 +1,61 @@
+
+# Copy this file and change the host name and/or the test_dir names to test
+# servers on other hosts or other versions of the servers.
+
+global comp_output		# contains output from das-test_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+global host
+
+source common_tests.exp
+
+# Server machine name
+set host "test.opendap.org"
+# set host "localhost"
+# CGI directory on $host
+set test_dir "opendap"
+
+source "server-testsuite/getdap.0/urls.tcl"
+
+set test_name "dodedev"
+
+# The `1' in compare_stdout means call xfail if the test fails.
+
+getdap_start "-D" "${bears}?${bears_ce}"
+compare_stdout "server-testsuite/bears.data" "${test_name}: NetCDF/bears"
+
+getdap_start "-D" "${fnoc1}?${fnoc1_ce}"
+compare_stdout "server-testsuite/fnoc1.data" "$test_name: NetCDF/fnoc1"
+
+# getdap_start "-D" "${dsp_1}?${dsp_1_ce}"
+# compare_stdout "server-testsuite/dsp_1.data" "$test_name: DSP"
+
+# getdap_start "-D" "${nscat_s2}?${nscat_s2_ce}"
+# compare_stdout "server-testsuite/nscat_s2.data" "$test_name: Matlab"
+
+getdap_start "-D" "${nscat_hdf}?${nscat_hdf_ce}"
+compare_stdout "server-testsuite/nscat_hdf.data" "$test_name: HDF"
+
+# getdap_start "-D" "${jg_test}?${jg_test_ce}"
+# compare_stdout "server-testsuite/jg_test.data" "$test_name: JGOFS"
+
+getdap_start "-d" "${ff_test1}"
+compare_stdout $ff_test1_dds "$test_name: FF DDS check"
+
+getdap_start "-D" "${ff_test1}?${ff_test1_ce1}"
+compare_stdout "server-testsuite/ff_test1_ce1.data" "$test_name: FF"
+
+getdap_start "-D" "${ff_test1}?${ff_test1_ce2}"
+compare_stdout "server-testsuite/ff_test1_ce2.data" "$test_name: FF, compund name"
+
+getdap_start "-d" "${ff_test2}"
+compare_stdout $ff_test2_dds "$test_name: FF DDS check"
+
+getdap_start "-D" "${ff_test2}?${ff_test2_ce1}"
+compare_stdout "server-testsuite/ff_test2_ce1.data" "$test_name: FF"
+
+getdap_start "-D" "${ff_test2}?${ff_test2_ce2}"
+compare_stdout "server-testsuite/ff_test2_ce2.data" "$test_name: FF, compund name, with escaped space"
+
+getdap_start "-D" "\"${ff_test2}?${ff_test2_ce3}\""
+compare_stdout "server-testsuite/ff_test2_ce3.data" "$test_name: FF, compund name, with unescaped space"

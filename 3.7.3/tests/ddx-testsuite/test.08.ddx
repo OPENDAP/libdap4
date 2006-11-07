@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset name="testdata"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.dods.org/ns/DODS"
+xsi:schemaLocation="http://www.dods.org/ns/DODS  http://dods.coas.oregonstate.edu:8080/dods/dods.xsd" >
+
+	<Attribute name="stuff" type="String">
+		<value>&quot;Stuff about this stuff&quot;</value>
+		<value>Silly</value>
+		<value>Repitious</value>
+		<value>&quot;testing of stuff&quot;</value>
+	</Attribute>
+	<Attribute name="stuff2" type="String">
+		<value>&quot;More Stuff about this stuff&quot;</value>
+	</Attribute>
+
+	<Array name="somearray">
+		<Attribute name="PrincipleInvestigator" type="Container">
+			<Attribute name="Title" type="String">
+				<value>Dr.</value>
+			</Attribute>
+			<Attribute name="FirstName" type="String">
+				<value>Mark</value>
+			</Attribute>
+			<Attribute name="LastName" type="String">
+				<value>Abbott</value>
+			</Attribute>
+		</Attribute>
+		<Attribute name="CruiseNumber" type="String">
+			<value>WE030702</value>
+		</Attribute>
+		<Byte/>
+		<dimension name="bytes" size="1024"/>
+		<dimension name="bits" size="8"/>
+		<dimension size="256"/>
+	</Array>
+
+	<dataBLOB href="http://dods.coas.oregonstate.edu:8080/dods/dts/d3.blob"/>
+</Dataset>

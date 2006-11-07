@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset name="testdata"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.dods.org/ns/DODS"
+xsi:schemaLocation="http://www.dods.org/ns/DODS  http://dods.coas.oregonstate.edu:8080/dods/dods.xsd" >
+
+	<Array name="structarray">
+		<Structure>
+			<Float64 name="amp"/>
+			<Float32 name="damp"/>
+			<Float64 name="clamp"/>
+		</Structure>
+		<dimension name="twizzle" size="41024"/>
+		<dimension name="dizzle" size="25211"/>
+	</Array>
+	<Structure name="bunghole">
+	    <Attribute name="leaf04a" type="Float64">
+		<value>1451.87567</value>
+	    </Attribute>
+	    <Attribute name="leaf04b" type="Float64">
+		<value>141.87567</value>
+	    </Attribute>
+	    <Array name="amp">
+		<Float32/>
+		<dimension name="x" size="256"/>
+		<dimension name="y" size="256"/>
+	    </Array>
+	    <Float32 name="JulianDay"/>
+	    <Int16 name="InstrumentNumber"/>
+	    <Structure name="foo">
+		<Float64 name="arf"/>
+		<Array name="barf">
+		    <Attribute name="jimmy" type="Int16">
+		        <value>154</value>
+		    </Attribute>
+		    <Float64/>
+		    <dimension size="2222"/>
+		</Array>
+	    </Structure>
+	</Structure>
+	<Structure name="ragtop">
+	    <Attribute name="Thumping" type="Container">
+		<Attribute name="John" type="String">
+		    <value>&quot;Has Too Much Fun&quot;</value>
+		</Attribute>
+		<Attribute name="Sally" type="String">
+		    <value>&quot;Has No Fun&quot;</value>
+		</Attribute>
+	    </Attribute>
+	    <Byte name="diggle"/>
+	    <Byte name="piggle"/>
+	    <Byte name="wiggle"/>
+	    <Byte name="doo"/>
+	</Structure>
+
+	<dataBLOB href="http://dods.coas.oregonstate.edu:8080/dods/dts/d3.blob"/>
+</Dataset>

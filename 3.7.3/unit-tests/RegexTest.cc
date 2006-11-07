@@ -1,0 +1,136 @@
+
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2005 OPeNDAP, Inc.
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
+ 
+#include <cppunit/TextTestRunner.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/extensions/HelperMacros.h>
+
+#include <string>
+
+#include "GNURegex.h"
+#include "debug.h"
+
+using namespace CppUnit;
+
+class RegexTest: public TestFixture {
+private:
+
+public:
+    RegexTest() {}
+    ~RegexTest() {}
+
+    void setUp() { 
+    } 
+
+    void tearDown() { 
+    }
+
+    CPPUNIT_TEST_SUITE( RegexTest );
+
+    CPPUNIT_TEST(ctor_test);
+    CPPUNIT_TEST(match_test);
+    CPPUNIT_TEST(search_test);
+
+    CPPUNIT_TEST_SUITE_END();
+
+    void ctor_test() {
+        try {
+            Regex r("abc");
+            CPPUNIT_ASSERT(1);
+        }
+        catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error building object");
+        }
+
+        try {
+            Regex r("");
+            CPPUNIT_ASSERT(1);
+        }
+        catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error building object");
+        }
+
+        try {
+            Regex r(".*");
+            CPPUNIT_ASSERT(1);
+        }
+        catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error building object");
+        }
+    }
+    
+    void match_test() {
+        Regex simple("abc");
+        string s1 = "123abcdef";
+        CPPUNIT_ASSERT(simple.match(s1.c_str(), s1.length()) == 3);
+        CPPUNIT_ASSERT(simple.match(s1.c_str(), s1.length(), 4) == -1);
+        
+        Regex pattern("3.b");
+        CPPUNIT_ASSERT(pattern.match(s1.c_str(), s1.length()) == 3);
+        string s2 = "123acd";        
+        CPPUNIT_ASSERT(pattern.match(s2.c_str(), s2.length()) == -1);
+
+        Regex exclusion("[^123]+");
+        CPPUNIT_ASSERT(exclusion.match(s1.c_str(), s1.length()) == 6);
+        
+        Regex exclusion_range("[^0-9]+");
+        CPPUNIT_ASSERT(exclusion_range.match(s1.c_str(), s1.length()) == 6);
+    }    
+
+    void search_test() {
+        int matchlen;
+        
+        Regex simple("abc");
+        string s1 = "123abcdef";
+        CPPUNIT_ASSERT(simple.search(s1.c_str(), s1.length(), matchlen, 0) == 3);
+        CPPUNIT_ASSERT(matchlen == 3);
+        CPPUNIT_ASSERT(simple.search(s1.c_str(), s1.length(), matchlen, 4) == -1);
+        
+        Regex pattern("[a-z]+");
+        CPPUNIT_ASSERT(pattern.search(s1.c_str(), s1.length(), matchlen) == 3);
+        CPPUNIT_ASSERT(matchlen == 6);
+       
+        string s2 = "123abc123abcd";        
+        CPPUNIT_ASSERT(pattern.search(s2.c_str(), s2.length(), matchlen) == 3);
+        CPPUNIT_ASSERT(matchlen == 3);
+    }
+
+};
+
+CPPUNIT_TEST_SUITE_REGISTRATION(RegexTest);
+
+int 
+main( int, char** )
+{
+    CppUnit::TextTestRunner runner;
+    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+
+    bool wasSuccessful = runner.run( "", false ) ;
+
+    return wasSuccessful ? 0 : 1;
+}

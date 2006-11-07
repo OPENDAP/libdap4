@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset name="SimpleTypes">
+
+	<Attribute name="PrincipleInvestigator" type="String">
+	    <value>&quot;Mark Abbott&quot;</value>
+	    <value>&quot;Ph.D&quot;</value>
+	</Attribute>
+	<Attribute name="DataCenter" type="String">
+	    <value>&quot;COAS Environmental Computer Facility&quot;</value>
+	</Attribute>
+	<Attribute name="DrifterType" type="String">
+	    <value>&quot;MetOcean WOCE/OCM&quot;</value>
+	</Attribute>
+
+    <dataBLOB href="test.01.ddx"/>
+</Dataset>

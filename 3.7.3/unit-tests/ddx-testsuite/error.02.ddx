@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset name="SimpleTypes">
+
+    <Byte name="b1">
+        <Attribute name="test" type="Byte">
+	    <value>2</value>
+    </Byte>
+
+    <dataBLOB href="huh.blob"/>
+</Dataset>

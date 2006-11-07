@@ -1,0 +1,106 @@
+# expect/tcl code to test the das parser and scanner
+# jhrg
+#
+# $Log: test.7.exp,v $
+# Revision 1.10  2003/12/11 01:08:38  jimg
+# More fixes after resolving conflicts. This code still fails some tests.
+#
+# Revision 1.9.10.1  2003/10/03 16:26:30  jimg
+# Fixed tests; I changed the text of das-test just a little and so these
+# had to be updated. I wanted to be sure that the error message was from
+# an exception and not just a write to stderr.
+#
+# Revision 1.9  2000/09/22 02:52:59  jimg
+# Fixes to the tests to recognize some of the new error messages. Also,
+# the test drivers were modified to catch the exceptions now thrown by
+# some of the parsers.
+#
+# Revision 1.8  2000/06/16 18:15:01  jimg
+# Merged with 3.1.7
+#
+# Revision 1.7.10.1  2000/06/15 02:24:57  jimg
+# Fixed the tests: problems with PATH, etc. broke the tests on my new machine
+#
+# Revision 1.7  1999/03/24 23:42:23  jimg
+# Added or updated for the new simple types (Int16, UInt16 and Float32)
+#
+# Revision 1.6  1997/05/13 23:29:30  jimg
+# *** empty log message ***
+#
+# Revision 1.5  1997/03/27 18:20:02  jimg
+# Update for version 2.13
+#
+# Revision 1.4  1996/11/13 19:23:47  jimg
+# *** empty log message ***
+#
+# Revision 1.3  1996/08/12 22:22:21  jimg
+# Changed for the new error message text from the parser.
+#
+# Revision 1.2  1996/05/14 15:40:54  jimg
+# These changes have already been checked in once before. However, I
+# corrupted the source repository and restored it from a 5/9/96 backup
+# tape. The previous version's log entry should cover the changes.
+#
+# Revision 1.1  1995/02/16  15:34:53  jimg
+# Added these tests. See comments in files in parent directory.
+#
+
+global comp_output		# contains output from das-test_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+# The variable `test_name' is the name of the das input file for this test.
+
+set test_name test.7
+
+# The variable `test_out' is a string that contains the text that should be
+# stored in comp_output by das-test_start. The two strings should match
+# exactly.
+
+set test_out "Caught Error object:
+Error parsing the text on line 10 at or near: my_test
+Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,
+Float64, String or Url) followed by a name and value."
+
+das-test_start p $srcdir/$test_name
+
+set comp_output [string trim $comp_output]
+
+if ![string compare $test_out $comp_output] { # check comp_output
+    pass "$test_name"
+} else {
+    set tlen [string length $test_out]
+    set clen [string length $comp_output]
+
+    set len $tlen;			# used by for loop below
+
+    if {$clen < $tlen} {
+	set len $clen;			# set if needed
+
+	set size [expr $tlen - $clen]
+	send_user "comp_output is smaller (by $size chars) than expected!\n"
+	send_user "Here's the excess: '"
+	send_user [string range $test_out [expr $clen -1] end]
+ 	send_user "'\n"
+    } elseif {$tlen < $clen} {
+	set size [expr $clen - $tlen]
+	send_user "comp_output is larger (by $size chars) than expected!\n"
+	send_user "Here's the excess: '"
+	send_user [string range $comp_output [expr $tlen -1] end]
+	send_user "'\n"
+    }
+
+    # $len is set to the smallest of $tlen or $clen to avoid running off the
+    # end either of the strings.
+    for {set i 0} {$i < $len} {incr i} {
+	set c [string index $comp_output $i]
+	set t [string index $test_out $i]
+	if {$t != $c} {
+	    send_user "comp_output ($c) and test_out ($t) differ at $i.\n"
+	}
+    }
+    
+    fail "$test_name"
+}
+
+

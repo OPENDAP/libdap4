@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset name="testdata"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.dods.org/ns/DODS"
+xsi:schemaLocation="http://www.dods.org/ns/DODS  http://dods.coas.oregonstate.edu:8080/dods/dods.xsd" >
+
+	<Grid  name="sst">
+		<Array name="sst">
+			<Float64/>
+			<dimension name="latitude" size="1024"/>
+			<dimension name="longitude" size="1024"/>
+		</Array>
+		<Map name="latitude">
+			<Float64/>
+			<dimension size="1024"/>
+		</Map>
+		<Map name="longitude">
+			<Float64/>
+			<dimension size="1024"/>
+		</Map>
+	</Grid>
+	<Grid  name="sst2">
+		<Attribute name="Thumping" type="Container">
+			<Attribute name="John" type="String">
+				<value>&quot;Has Too Much Fun&quot;</value>
+			</Attribute>
+			<Attribute name="Sally" type="String">
+				<value>&quot;Has No Fun&quot;</value>
+			</Attribute>
+		</Attribute>
+		<Array name="sst">
+			<Float64/>
+			<dimension name="latitude" size="1024"/>
+			<dimension name="longitude" size="1024"/>
+		</Array>
+		<Map name="latitude">
+			<Float64/>
+			<dimension size="1024"/>
+		</Map>
+		<Map name="longitude">
+			<Float64/>
+			<dimension size="1024"/>
+		</Map>
+	</Grid>
+
+	<dataBLOB href="http://dods.coas.oregonstate.edu:8080/dods/dts/d3.blob"/>
+</Dataset>

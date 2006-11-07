@@ -1,0 +1,10 @@
+Attributes {
+    var1 {
+        Int32 y#z 15;
+        component1 {
+	    inner%20component {
+	        String tag "xyz123";
+	    }
+        }
+    }
+}

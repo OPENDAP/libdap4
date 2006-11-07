@@ -1,0 +1,6 @@
+The complete DDS:
+Dataset {
+    Int32 i[4][5];
+} test61;
+The data:
+Int32 i[2][3] = {{1073741824, 32, 1024},{33554432, 1073741824, 32}};

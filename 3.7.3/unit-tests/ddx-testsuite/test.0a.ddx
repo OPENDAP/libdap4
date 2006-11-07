@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset name="testdata"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.dods.org/ns/DODS"
+xsi:schemaLocation="http://www.dods.org/ns/DODS  http://dods.coas.oregonstate.edu:8080/dods/dods.xsd" >
+
+	<Sequence name="testSeq">
+		<Float64 name="jday">
+		</Float64>
+		<Float32 name="latitude"/>
+		<Float32 name="longitude"/>
+		<Float32 name="SurfaceIrradiance"/>
+		<Structure name="point">
+		    <Int32 name="x"/>
+		    <Int32 name="y"/>
+		</Structure>
+		<Array name="times">
+		    <String/>
+		    <dimension size="1024"/>
+		</Array>
+		<Sequence name="CTDProfile">
+			<Float64 name="depth"/>
+			<Float64 name="temperature"/>
+			<Float64 name="conductivity"/>
+			<Float64 name="fluoresence"/>
+		</Sequence>
+	</Sequence>
+
+	<dataBLOB href="http://dods.coas.oregonstate.edu:8080/dods/dts/d3.blob"/>
+</Dataset>

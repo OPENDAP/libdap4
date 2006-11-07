@@ -1,0 +1,10 @@
+#
+# -*- C++ -*-
+#
+
+# Test projections: multiple dimension arrays.
+
+dataset {
+    Int32 i[4][5];
+} test61;
+

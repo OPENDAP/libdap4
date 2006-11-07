@@ -1,0 +1,133 @@
+$Id$
+
+The libdap client-side configuration file (.dodsrc) is used to configure how
+clients cache responses and how they interact with proxy servers. By default
+the configuration file resides in a users home directory and is called
+`.dodsrc'. This can be changed by creating the environment variable
+DODS_CONF and setting it to the full pathname of the configuration file.
+
+New feature added with libdap version 3.7.3 (7 Nov 2006)
+
+The configuration file can now be used to control client-side behavior when
+accessing servers using SSL. By default, certificates must be signed by a
+certificate authority. The libcurl package recognizes a large set of 
+CAs; you can sign your own certificates as well (but see the OpenSSL
+documentation for more information). In addition, server hosts must identify
+themselves using the same name as is used in the certificate.
+
+To disable these features, set the configuration parameter VALIDATE_SSL to
+zero. By default, these features are now enabled following the defaults for
+libcurl.
+
+If a DODS client starts and cannot find the configuration file, then one with
+default parameters will be created in the user's home directory. By default
+caching will be enabled with a maximum cache size of 20M and a default
+expiration time of 24 hours. By default no proxy server is configured and SSL
+hosts and certificates are validated. Also by default, compression is not
+activated.
+
+A sample configuration file looks like (the line numbers are not part of the
+file; they've been added to make the description clearer):
+
+0   # Comments start with a `#' in the first column.
+1	USE_CACHE=1
+2	MAX_CACHE_SIZE=20
+3	MAX_CACHED_OBJ=5
+4	IGNORE_EXPIRES=0
+5	CACHE_ROOT=/home/jimg/.dods_cache/
+6	DEFAULT_EXPIRES=86400
+7   DEFLATE=0
+8   VALIDATE_SSL=1
+9	PROXY_SERVER=http,http://jimg:password@dcz.dods.org/
+10	NO_PROXY_FOR=http,dcz.dods.org
+11	AIS_DATABASE=.ais_sst_database
+    
+COMMENTS 
+Starting a line with a `#' makes that line a comment. 
+
+CACHING 
+
+The parameters on lines 1 through 6 determine how the DAP++ library will use
+its HTTP 1.1 cache. If the value of USE_CACHE is 1, the cache is active. A
+value of 0 turns off the cache. Make sure you use zero (0) and not the letter
+`O'.
+
+The value of MAX_CACHE_SIZE sets the maximum size of the cache in megabytes.
+Once the cache reaches this size, caching more objects will cause cache
+garbage collection. The algorithm used is to first purge the cache of any
+stale entries and then remove remaining entries starting with those that have
+the lowest hit count. Garbage collection stops when 90% of the cache has been
+purged.
+
+The value of MAX_CACHED_OBJ sets the maximum size of any individual object in
+the cache in megabytes. Objects received from a server larger than this value
+will not be cached even if there's room for them without purging other
+objects.
+
+The parameter CACHE_ROOT contains the pathname to the cache's top directory.
+If two or more users want to share a cache, then they must both have read and
+write permissions to the cache root.
+
+If the value of IGNORE_EXPIRES is 1, then Expires: headers in response
+documents will be ignored. The value of DEFAULT_EXPIRES sets the expiration
+time for any response that does not include either an Expires or
+Last-Modified header. The value is given in seconds; 86,400 is 24 hours. In
+general you should *not* ignore the Expires header; the server probably had a
+good reason to send it along with the response. This parameter is here for
+unusual situations.
+
+Note: If a Last-Modified header is returned with the response, and there's
+*no* Expires header, the expiration time is is 10% of the difference between
+the current time and the LM time or 48 hours, whichever is smaller. Note that
+libdap ignores the DEFAULT_EXPIRES time in this case. Any request made before
+the expiration time will use the cached response without validation. Any
+request made after the expiration time will use a conditional GET. Servers
+that have been upgraded to 3.2 or greater will return a 304 response if the
+cached response is still valid or a new response if it is not valid.
+
+If the value of ALWAYS_VALIDATE is 1, then all accesses will be validated with
+the origin server. A value of 0 causes libwww to use the more complex
+expiration and validate algorithm.
+
+CONTROLLING DATA COMPRESSION
+
+If the DEFLATE parameter is set to one (DEFLATE=1) then clients will request 
+that servers compress data transmissions. Servers may or may not honor this
+request depending on their abilities.
+
+SSL VALIDATION
+
+Set VALIDATE_SSL to zero to turn off SSL server host and certificate
+validation. By default, SSL hosts and certificates are now validated. If
+you're using your own certificates and don't want to pay to have them signed
+by a CA or to run your own authorization site, use this to defeat SSL
+validation. The old libdap default behavior was to _not_ perform validation
+(because that was the old libcurl default) and we've included this option so
+that you can get that old behavior.
+
+PROXY SERVERS
+
+Note that the parameters PROXY_SERVER and NO_PROXY_FOR may be repeated
+to add multiple proxy servers, suppress proxy access for several hosts, etc.
+
+Lines 9 and 10 contain the parameters used to configure a proxy server.
+The parameter PROXY_SERVER configures a default proxy server. The format is
+
+    PROXY_SERVER=<protocol>,<proxy host url>
+
+The only supported protocols are http, https, and ftp.
+<proxy host url> must be a full URL to the host running the proxy server. If a
+password is used to access the proxy server, include it in the URL using the
+<user:password@host> syntax as shown in the example.
+
+The NO_PROXY parameter provides a simple way to say that access to a certain
+host should never go through a proxy. The syntax of NO_PROXY is:
+
+    NO_PROXY=<protocol>,<hostname>
+
+where <protocol> is as for PROXY_SERVER
+<hostname> is the name of the host, not a url.
+
+The Ancillary Information Service
+
+See README.AIS for more information about the AIS.

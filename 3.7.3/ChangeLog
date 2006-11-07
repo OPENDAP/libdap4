@@ -1,0 +1,4037 @@
+2006-11-07  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnectTest.cc: Turned off debugging
+
+2006-11-07  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnectTest.cc: Fixed up the tests for headers once again...
+
+2006-11-07  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-11-06  James Gallagher <jgallagher@opendap.org>
+
+	configure.ac: I moved the DAP Protocol setting up where
+	it's likely to be updated and not glossed over.
+
+2006-11-06  James Gallagher <jgallagher@opendap.org>
+
+	getdap.cc: getdap now reports the protocol version in addition
+	to the server version.
+
+2006-11-06  James Gallagher <jgallagher@opendap.org>
+
+	Added tests for the new parameter VALIDATE_SSL
+
+2006-11-06  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnect.cc, RCReader: The .dodsrc file now supports a
+	VALIDATE_SSL option which controls libcurl's validation of SSL
+	hosts and certificates. If this is set (the default), certificates
+	must be signed by a recognized Certificate Authority and hosts
+	must be properly named. Clear (set to zero) to get the old
+	behavior from libcurl which does not perform this validation.
+
+2006-11-03  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnect.cc: Modified so that gzip and compress are also
+	accepted encodings.
+
+2006-11-02  Patrick West <pwest@ucar.edu>
+
+	Removed DODSResponseObject from the Makefile after removing the
+	file from libdap. DAS and DDS no longer inherit from
+	DODSResponseObject. New classes representing DAS, DDS and DataDDS
+	were created in BES. M Makefile.am
+
+2006-11-02  Patrick West <pwest@ucar.edu>
+
+	Moved DODSResponseObject.h to the BES, naming it
+	BESResponseObject. Created in BES three classes to represent DAS,
+	DDS, and DataDDS. D DODSResponseObject.h M DAS.h M DDS.h M DDS.cc
+
+2006-10-30  James Gallagher <jgallagher@opendap.org>
+
+	expr-tests for geogrid() and geoarray(): Fixed the tests so they
+	work using the new notation which passed geo points using lat,lon
+	as opposed to lon,lat.
+
+2006-10-30  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Removed the debug flags from AM_CXXFLAGS. -Werror
+	really breaks the builds because of issues in the bison/flex
+	code.
+
+2006-10-28  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	Constructor.cc, ArrayGeoConstructor.cc: Removed DODS_DEBUG
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	DDSTest.cc: Removed compiler warnings.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnect.cc: Fixed a bug in save_raw_http_headers() where the
+	test for the \r\n line terminator was broken (tested nmemb-1 instead
+	of nmemb-2.
+	Makefile.am: added a target for test coverage and added the debugging
+	options to CXXFLAGS by default. Make sure to back this out before
+	release
+	Unit Tests: Fixed up warnings in the unit tests
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	DDS.h: Added declarations for the new transfer_attributes()
+	methods
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	Constructor.h: Added declarations for the new transfer_attributes()
+	methods.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	BaseType.h: Added a little text to the ptr_duplicate() documentation.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	HTTPCache.cc: Changed the way the mutex which is used to protect
+	the various methods is initialized.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint.cc: Fixed two warnings, one about using a prefix
+	operator with modulus and assignment back to the same variable and
+	the other about field initialization order.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	DODSFilter.cc: Fixed the broken definition of send_blob(),
+	not that it matters...
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	DDS.cc: I removed the second attempt at transfer_attributes and
+	started on a third. This one seems to work much better; see the
+	tests in DDSTest.cc. This version takes the _dim attributes from
+	the hdf4 server and bundles them with a Grid Map or puts them in
+	a sub-container for an Array. This should not break libnc-dap while
+	still preserving all the attribute data.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	Constructor: Added code to merge attributes into a constructor.
+	This method is called from DDS.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Removed unused parameters.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	ArrayGeoConstraint: Fixed a warning where one version of the
+	constructor was not using all of its parameters.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	ArrayGeoConstraintTest: added
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	DDSTest.cc, Makefile.am: Updated with tests for
+	DDS::transfer_attributes.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	Added test data for DDS::transfer_attributes new new version.
+
+2006-10-24  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnect.cc: Removed debugging.
+
+2006-10-24  James Gallagher <jgallagher@opendap.org>
+
+	DDS.cc: Removed the 'sub table' code from transfer_attributes().
+	getdap.cc: Added -X option to build the DDX on the client to simplify
+	debugging (e.g., ticket 480)
+
+2006-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Massive removal of exception qualifiers/declarations. I've left
+	only the exception declarations in RCReader (which declare that
+	no exceptions are thrown) and those for constructors. In
+	HTTPConnect.cc:save_raw_http_headers() fixed a bug where headers
+	were assumed to have \r\n terminators. That is true only for new
+	servers. See ticket #631 for more information.
+
+2006-10-24  James Gallagher <jgallagher@opendap.org>
+
+	cgi_util, DODSFilter: Made many params & methods const
+
+2006-10-23  James Gallagher <jgallagher@opendap.org>
+
+	Fixed AISDatabaseParser.cc
+
+2006-10-23  James Gallagher <jgallagher@opendap.org>
+
+	AISDatabaseParser.cc: Replaced calls to getLineNumber and
+	xmlSAX2GetLineNumber with calls to one or the other depending on
+	the library version. In some places the SAX2 API was used
+	exclusively, in others the old API was used. The changes mean the
+	new API will always be used OR the old API will always be used,
+	depending on library version.
+
+2006-10-23  James Gallagher <jgallagher@opendap.org>
+
+	DDXParser.cc: I put the call to xml2's getLinNumber() Back in the
+	code since older distros don't have the newer library.
+
+2006-10-20  James Gallagher <jgallagher@opendap.org>
+
+	Closed some tickets for the server-side functions and added
+	the version function.
+
+2006-10-20  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for ticket 616: I added code to GeoConstraint that checks
+	the bounding box to make sure it includes data and returns an
+	Error if it does not. Also, the order of the bounding box lat and
+	lon were switched to fit more with practice. The GeoConstraint
+	method arguments were no changes, only the order of lat and lon
+	passed to the geogrid() and geoarray() functions.
+
+2006-10-20  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	Data for geoarray tests added.
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	Baseline data for geoarray tests added.
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	Tests for geoarray: Added
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	Added geoarray() which required changes to GeoConstraint and
+	GridGeoConstraint (I created GridGeoConstraint and made
+	GeoConstraint abstract). ce_functions.cc was also modified.
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	ArrayGeoConstraint.cc: Added
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	ArrayGeoConstraint.h: Added
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-18  James Gallagher <jgallagher@opendap.org>
+
+	Updated baseline for text.z3.exp (data.z3) after fixing
+	GeoConstraint::find_latitude_indeces().
+
+2006-10-18  James Gallagher <jgallagher@opendap.org>
+
+	Added data.61a-d
+
+2006-10-18  James Gallagher <jgallagher@opendap.org>
+
+	GridGeoConstraintTest: Updated with a new test for
+	find_latitude_indeces.
+
+2006-10-18  James Gallagher <jgallagher@opendap.org>
+
+	Updated the data.z? files given that the range selection behavior in
+	GeoConstraint has been changed.
+
+2006-10-16  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Update win32 module export definitions for latest libdap*.
+
+2006-10-16  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Provide header for find_if under win32
+
+2006-10-16  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Change funcs that return nothing to be declared so
+
+2006-10-14  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-13  James Gallagher <jgallagher@opendap.org>
+
+	GridGeoConstraint: Fixed the calls so that they no longer use the
+	dds argument
+
+2006-10-13  James Gallagher <jgallagher@opendap.org>
+
+	GridGeoConstraint: Added
+
+2006-10-13  James Gallagher <jgallagher@opendap.org>
+
+	Removed DDS from GeoConstraint.
+
+2006-10-13  James Gallagher <jgallagher@opendap.org>
+
+	HTTPCache.cc: Minor change to a comment.
+
+2006-10-13  James Gallagher <jgallagher@opendap.org>
+
+	Refactored GeoConstraint so that all the Grid-specific code is now
+	in GridGeoConstraint (created/added GridGeoConstraint). Modified
+	ce_functions so that geogrid uses the new object. Updated the unit
+	tests. Added the new class to the Makefile.am
+
+2006-10-13  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-12  James Gallagher <jgallagher@opendap.org>
+
+	Added tests.
+
+2006-10-12  James Gallagher <jgallagher@opendap.org>
+
+	Test baseline data for the geogrid() function
+
+2006-10-12  James Gallagher <jgallagher@opendap.org>
+
+	Changes test.10 to test.a
+
+2006-10-12  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-11  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2006-10-11  James Gallagher <jgallagher@opendap.org>
+
+	Added tests to expr-testsuite for geogrid. Somewhat dubious
+	at the moment.
+
+2006-10-10  James Gallagher <jgallagher@opendap.org>
+
+	expr-test.cc: reformatted
+
+2006-10-09  James Gallagher <jgallagher@opendap.org>
+
+	BaseType, RValue, et c.: Closed ticket regarding optimization
+	of build_btp_args. Args are always BaseTypes and before they
+	were always read. This could cause huge Grid/Array variables to
+	be read when those were arguments to functions, even if the
+	running the function would result in only a small part of the
+	Grid/Array being returned. Now arguments are not read. If functions
+	need values for the arguments, they must read them themselves.
+
+2006-10-09  James Gallagher <jgallagher@opendap.org>
+
+	cgi_util.cc: Fixed a bug in set_mime_text where the wrong 'type'
+	was returned. The type was always set to dap4_ddx.
+
+2006-10-09  James Gallagher <jgallagher@opendap.org>
+
+	CEFunctionsTest: Paths easy to set for debugger.
+
+2006-10-09  James Gallagher <jgallagher@opendap.org>
+
+	DDXParserTest: Turned off debug
+
+2006-10-09  James Gallagher <jgallagher@opendap.org>
+
+	AISDatabaseParser: Replaced old xml getLineNumber with the newer
+	SAX2 api call.
+
+2006-10-06  James Gallagher <jgallagher@opendap.org>
+
+	Vector: Added set_value() and value() methods.
+	Updated docs
+
+2006-10-06  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Now the linear_scale function will work for
+	Grid Maps in the hdf4 handler.
+
+2006-10-06  James Gallagher <jgallagher@opendap.org>
+
+	Check point: I've modified Connect, getdap and ObjectType so they
+	support a Connect::request_ddx() method. I've added a stream
+	reader to DDXParser and am in the process of figuring out where
+	the attributes are going!
+
+2006-10-05  James Gallagher <jgallagher@opendap.org>
+
+	DDXParser.h: Added an intern_stream() method to read from a stream and
+	updated the code (one function) to use the new SAX2 API from libxml2.
+
+2006-10-05  James Gallagher <jgallagher@opendap.org>
+
+	DDXParser.cc: Added an intern_stream() method to read from a stream and
+	updated the code (one function) to use the new SAX2 API from libxml2.
+
+2006-10-05  James Gallagher <jgallagher@opendap.org>
+
+	Vector.cc: Ran indent
+
+2006-10-04  James Gallagher <jgallagher@opendap.org>
+
+	ConstraintEvaluator: Now uses a list to store the list of functions
+	and the add_function() methods now overwrite functions with the
+	same names so it's possible to provide specializations of the
+	standard functions in ce_functions.
+
+2006-10-04  James Gallagher <jgallagher@opendap.org>
+
+	Added value()/set_value() methods to Float32/64, Int16/32,
+	UInt16/32 and Str.
+
+2006-10-04  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Both grid and geogrid now use a little hack to
+	read the map vectors of a Grid. The HDF handler cannot read the
+	Grid Maps directly (maps on HDF are not really variables but are
+	attributes instead). This hack involves setting send_p for the
+	just the maps and then calling the Grid's read() method.
+
+2006-10-04  James Gallagher <jgallagher@opendap.org>
+
+	ConstraintEvaluator: Now uses a list to store the list of functions
+	and the add_function() methods now overwrite functions with the
+	same names so it's possible to provide specializations of the
+	standard functions in ce_functions.
+
+2006-10-04  James Gallagher <jgallagher@opendap.org>
+
+	Vector.cc: Simplified the code in val2buf()
+
+2006-10-03  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-02  James Gallagher <jgallagher@opendap.org>
+
+	Float64, Int32: Added value/set_value() methods
+	Grid: Added an reverse iterator typedef and rbegin/rend
+	methods. This provides an easy way to access the 'rightmost'
+	map vectors (used by geogrid()).
+
+2006-10-02  James Gallagher <jgallagher@opendap.org>
+
+	Vector.cc: Ran through astyle indent utility.
+
+2006-10-02  James Gallagher <jgallagher@opendap.org>
+
+	parser-util.cc: Ran through astyle indent utility.
+
+2006-10-02  James Gallagher <jgallagher@opendap.org>
+
+	CEFunctionsTest: Added tests for linear_scale().
+
+2006-10-02  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions: Added linear_scale function.
+	CEFunctionsTest: Added tests for linear_scale().
+
+2006-09-30  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-09-29  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Added GEOConstraintTest
+
+2006-09-29  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraintTest: Extracted from CEFunctionsTest and added to
+	svn.
+
+2006-09-28  James Gallagher <jgallagher@opendap.org>
+
+	Clause.cc: Fixed up some comments.
+
+2006-09-28  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint.cc: Turned off instrumentation; removed throw()
+	from declarations, fixed a problem with bad latitude constraint
+	information that caused a fatal error (now it sends a message
+	indicating how to fix the problem).
+
+2006-09-28  James Gallagher <jgallagher@opendap.org>
+
+	DODSFilter.cc: Modified send_data() so that errors thrown by
+	BaseType functions will be returned to clients correctly.
+
+2006-09-28  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc, GeoConstraint.h: Removed 'throw(Error)' from
+	declarations since C++ calls abort() when/if another type of
+	excpetion is thrown, even if there's a catch() clause for it.
+
+2006-09-28  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.h: Removed 'throw(Error)' from declarations since C++
+	calls abort() when/if another type of excpetion is thrown, even if
+	there's a catch() clause for it.
+
+2006-09-27  James Gallagher <jgallagher@opendap.org>
+
+	Vector.cc: I made the instrumentation in the ctor and dtor
+	'level two' statements so that the output would be less cluttered.
+
+2006-09-27  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint.cc: reorder_data_longitude_axis() now works.
+	CEFunctionsTest.cc: Turned off debugging.
+
+2006-09-26  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint: Checkpoint; passes unit tests but still fails with
+	a real dataset (COADS_CLIMATOLOGY). Problem with circular
+	longitude axis.
+
+2006-09-25  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: The grid() function is now implemented so that
+	geogrid() can use it to evaluate GSEs (ticket 569)
+
+2006-09-25  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc/h: The grid() function is now a BaseType* function.
+	CEFunctionsTests: Work with the new grid() implementation changes.
+
+2006-09-24  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Removed old code that was getting in the way.
+
+	GeoConstraint.cc: Fixed a buf in reorder_data_longitude_axis():
+	off-by-one error when applying the first constraint (used
+	d_lon_length instead of d_lon_length-1 for the end point).
+
+	CEFunctionsTest: Added code to use TestTypes from the 'test'
+	directory and generally fixed up the tests so they work with the
+	new BaseType function version of geogrid().
+
+2006-09-23  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-09-22  James Gallagher <jgallagher@opendap.org>
+
+	Modified TestArray so that it's possible to see that arrays really
+	are subsampled. That is, if a constraint is set on an array,
+	TestArray::read() will first allocate the whole array and then
+	sample it, simulating a read() method that's interacting with an
+	API that knows how to sample an array. Works only for two dims.
+
+2006-09-22  James Gallagher <jgallagher@opendap.org>
+
+	test.c{0,1}: Added
+
+2006-09-22  James Gallagher <jgallagher@opendap.org>
+
+	Grid: Added get_array() which returns an Array* so the cast that
+	was needed when using array_var() can be removed. I changed all
+	the calls to array_var() to get_array() (DDS, ce_expr, ce_functions).
+
+	RValue.cc: I removed the read() call when build_btp_args() builds
+	an argument list. This change may break client software, but it means
+	that variables are not complete read when they are passed to CE
+	functions, which should be a big boost in efficiency when working
+	with EOS Grids in geogrid().
+
+	Added code in TestArray to make arrays with constrained values.
+	GeoConstraint: Updates; almost complete.
+
+2006-09-22  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint: Added a new method and an enum to record the 'sense' of
+	the latitude map (normal or inverted).
+	Added tests for the find_latitude_indeces() method to the unit tests
+
+2006-09-21  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint/geogrid checkpoint.
+	Byte,Str: Added value() and set_value() methods
+	TestArray: Improved the read() method so it uses the series_values
+	property and so it returns reasonable values for lat/lon vectors
+	expr-test.cc: Now can be used to test BaseType functions
+
+2006-09-20  James Gallagher <jgallagher@opendap.org>
+
+	Another GeoConstraint checkpoint
+
+2006-09-20  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint checkpoint
+
+2006-09-19  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Patch from Patrice Dumas regarding the libdapserver
+	and libdapclient libraries.
+
+2006-09-19  James Gallagher <jgallagher@opendap.org>
+
+	libdap.spec: Patch from Patrice Dumas regarding the libdapserver
+	and libdapclient libraries.
+
+2006-09-19  James Gallagher <jgallagher@opendap.org>
+
+	dap-config.in: Changed the semantics of --libs so that it matches
+	the old behavior.
+
+2006-09-15  James Gallagher <jgallagher@opendap.org>
+
+	Updated the version to 3.7.2 and the associated ChangeLog,
+	configure.ac, et c., files. The docs have also been updated
+	(docs/html.tar.gz).
+
+2006-09-15  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnect.cc: Changed the way headers are parsed. Now the code
+	assumes that each header is terminated by a \r\n pair (previously
+	the code assumed the line terminator was a \n character only).
+
+2006-09-15  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnectTest: Fixed most, but not all, of the failures. See
+	ticket 552 for more info.
+
+2006-09-15  James Gallagher <jgallagher@opendap.org>
+
+	test.f.exp: The change to TestStr so that the number included in the
+	string increments broke this test. Fixed.
+
+2006-09-15  James Gallagher <jgallagher@opendap.org>
+
+	Sequence: Doxygen was complaining about the types used in the
+	new transfer_data_*() methods because they were not exactly the
+	same string (vector<Sequence*> versus sequence_values_stack_t).
+	I made them the same.
+
+2006-09-15  James Gallagher <jgallagher@opendap.org>
+
+	doxy.conf: Now the method listings are in alphabetical order.
+
+2006-09-14  James Gallagher <jgallagher@opendap.org>
+
+	SequenceTest.cc: Now tests the new transfer_data() method.
+
+2006-09-14  James Gallagher <jgallagher@opendap.org>
+
+	Added the transfer_data() method to Sequence. This method reads
+	data using the read() method and loads values into the local object's
+	d_values field. Values can then be used by methods like print_val()
+	which expect to see information stored in the Sequence objects
+	as if the object was part of a client and had read the data off of
+	the wire. I also modified the print_vals_by_row so that nested
+	Sequences values are indented by four spaces.
+
+2006-09-14  James Gallagher <jgallagher@opendap.org>
+
+	TestStr.cc: Modified the string so that the value of count
+	increments by one for each instance.
+
+2006-09-14  James Gallagher <jgallagher@opendap.org>
+
+	TestInt32.cc: Modified so that on 64-bit machines the overflow of the
+	'* 32' operation does not reset the value of _buf to zero, but instead
+	_buf cycles back to 32.
+
+2006-09-13  James Gallagher <jgallagher@opendap.org>
+
+	Sequence: Added transfer_data and related methods. These are used
+	to move data on the server-side from a data source into the
+	d_values field, loading the variables in the sequence with data in
+	a way that is very similar to the operation of all the other
+	variables. This provides a way to pass a DDS to other code which
+	is loaded with data. SequenceTest.cc and Makefile.am in
+	unit-tests: Test the transfer_data method. Int32: I added a
+	value() method similar to those added to Float32/64 a while back.
+	This simplifies testing so much... configure.ac: Bumped up the
+	revision number of the library.
+
+2006-09-08  James Gallagher <jgallagher@opendap.org>
+
+	GNURegex: I change the regex_t field from a regular variable to a
+	pointer. Seems to fix the problem, although I don't know why. Not
+	the most reassuring feeling...
+
+2006-09-05  James Gallagher <jgallagher@opendap.org>
+
+	BaseType.cc: Modified add_var() so that it now throws an InternalErr
+	and fixed up the documentation so it reads correctly.
+
+2006-09-02  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-09-01  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: geogrid() no longer uses the projection/selection
+	function model. Now it's a pure projection function.
+
+2006-09-01  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint: removed old code and modified find_lon_lat_maps()
+	so that I can test with the COADS dataset. Tests not working...
+
+2006-09-01  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint: removed old code and modified find_lon_lat_maps()
+	so that I can test with the COADS dataset. Tests not working...
+
+2006-09-01  James Gallagher <jgallagher@opendap.org>
+
+	checkpoint: GeoConstraint/geogrid() nearly working Changes in
+	DDS, ConstraintEvaluator, ce_functions (now uses the new libdap
+	namespace), RValue, various tests.
+
+2006-09-01  James Gallagher <jgallagher@opendap.org>
+
+	Updates/Changes to the grid() testsuite that uses remote servers.
+	I changed the tests so they now run using servers on test.opendap.org
+	and use getdap (the tests were originally written to use geturl).
+
+2006-08-29  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint: Changed code to do the data translation for split
+	constraints so that it uses memcpy(). Untested.
+
+2006-08-28  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint: Added some of the code needed to swap parts of a 'split'
+	longitude constraint.
+
+2006-08-28  James Gallagher <jgallagher@opendap.org>
+
+	CEFunctionsTest.cc: Added unit tests for vector swapping coode.
+
+2006-08-28  James Gallagher <jgallagher@opendap.org>
+
+	Added separate lon/lat bounding box marking code to GeoConstraint.
+
+2006-08-25  James Gallagher <jgallagher@opendap.org>
+
+	More work on geogrid().
+	M    ce_functions.h
+	M    GeoConstraint.h
+	M    Grid.h
+	M    Vector.cc
+	M    ce_functions.cc
+	M    Grid.cc
+	M    unit-tests/CEFunctionsTest.cc
+	M    GeoConstraint.cc
+
+2006-08-25  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-08-24  James Gallagher <jgallagher@opendap.org>
+
+	Progress on the geogrid() server-side function. Changed/Added files:
+	M    RValue.cc
+	M    ce_functions.h
+	M    GeoConstraint.h
+	M    Makefile.am
+	M    gse-test.cc
+	M    ce_functions.cc
+	A    unit-tests/ce-functions-testsuite
+	A    unit-tests/ce-functions-testsuite/two_grid.dds
+	A    unit-tests/ce-functions-testsuite/geo_grid.dds
+	M    unit-tests/CEFunctionsTest.cc
+	M    Clause.cc
+	M    GeoConstraint.cc
+
+2006-08-22  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	Updated release files for the 3.7.1 source release.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc, DDS.cc, CEFunctionsTest.cc, docs/html.tar.gz:
+	Updates for documentation. For CEFunctionsTest.cc: Added tests
+	for the new grid() and nascent geogrid() code.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint.cc: Added
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	DDS.cc: Fixed tcket 480. The transfer_attributes() method
+	was not handling the HDF4 *_dim_? attribute containers
+	correctly, at least as far as the libnc-dap was concerned.
+	Now those attribute containers are made subtables of the
+	associated variable. That is, if there's a variable <var>
+	and a container <var>_dim_0, then the attribute table
+	<var> will have a subtable 'dim_0'.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Added stuff for gwogrid() (which still doesn't
+	work).
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	BaseType.cc: Updates to comments.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	Grid.h: Comment fixes, moved some doxygen comments into
+	Grid.cc.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint.h: Added. Currently does nothing.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.h: changed the name of func_grid_select() to
+	projection_function_grid(). Added projection _function_geogrid().
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	AttrTableTest.cc: Added a test for the new append_attr() method.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	DDSTest.cc: Added a test for ticket 480 (transfer_attributes()).
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	S2000415.HDF.test1.das: Added for more DDS::transfer_attributes()
+	tests.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	Mkaefile.am: GetConstraint.cc Added.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	RValue.cc: Fixes for some comments.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	Grid.cc: Fixes for some comments.
+
+2006-08-21  James Gallagher <jgallagher@opendap.org>
+
+	DAS.cc: Removed the 'char*' versions of the methods. These have not
+	been needed since we stopped using the GNU String class.
+
+2006-08-17  James Gallagher <jgallagher@opendap.org>
+
+	BaseType.h: Reformatted a doc comment for var().
+
+2006-08-17  James Gallagher <jgallagher@opendap.org>
+
+	AttrTable: Added append_attr() method that takes a vector of values
+	so that client code does not have to call the single value version
+	in a loop.
+
+2006-08-17  James Gallagher <jgallagher@opendap.org>
+
+	AttrTable: Added append_attr() method that takes a vector of values
+	so that client code does not have to call the single value version
+	in a loop.
+
+2006-08-15  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-08-14  James Gallagher <jgallagher@opendap.org>
+
+	das.tab.cc: Updated (edits to das.y).
+
+2006-08-14  James Gallagher <jgallagher@opendap.org>
+
+	das.y: config_dap.h --> config.h
+
+2006-08-14  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am, CEFunctionsTest.cc: Added unit tests for the the
+	grid() ce function.
+
+2006-08-14  James Gallagher <jgallagher@opendap.org>
+
+	Str.cc: No longer includes an extern declaration for escattr() since
+	that function is not called by this code.
+
+2006-08-14  James Gallagher <jgallagher@opendap.org>
+
+	GSEClause.cc: Added the word 'map' to the error messages about
+	missing map variables.
+
+2006-08-11  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Modified so that the errors returned match those
+	in the design.
+
+2006-08-01  James Gallagher <jgallagher@opendap.org>
+
+	DDS.cc, DDXParser.cc/h, tests/ddx-testsuite/*.ddx: Changed the name
+	of the dodsBLOB element to dataBLOB and the attribute from URL to href.
+	See ticket #454.
+
+2006-08-01  James Gallagher <jgallagher@opendap.org>
+
+	DDSTest.cc: Changed expected name to dataBLOB from dodsBLOB and
+	attribute of that element to href from URL.
+
+2006-08-01  James Gallagher <jgallagher@opendap.org>
+
+	html.tar.gz: Updated build of reference docs.
+
+2006-08-01  James Gallagher <jgallagher@opendap.org>
+
+	generalUtilTest.cc: Fixed test for the new id2www/www2id behavior
+	which escapes the percent sign.
+
+2006-08-01  James Gallagher <jgallagher@opendap.org>
+
+	BaseType.h, ConstraintEvaluator.cc, DODSFilter.cc, escaping.cc/.h,
+	Sequence.cc: Updated comments.
+
+2006-08-01  James Gallagher <jgallagher@opendap.org>
+
+	libdap.m4: Applied Patrice Dumas' patch which checks for the newer
+	dap-config and uses it's options for the three library setup.
+
+2006-07-31  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-07-30  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	w32 Makefile rewrite & export def's for 3-lib split-up of libdap
+
+2006-07-09  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Tweeks for win32 porting effort
+
+2006-07-09  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	New makefile for win32 libdap version to accomodate 3-library split
+
+2006-07-07  James Gallagher <jgallagher@opendap.org>
+
+	docs/html.tar.gz, escaping.cc: Updated/corrected documentation.
+
+2006-07-07  James Gallagher <jgallagher@opendap.org>
+
+	cgi_util.cc, configure.ac: Fixed bug 437. When a handler is not passed
+	a version number, it will now use the library's version number set at
+	compile time.
+
+2006-07-03  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Patch core to use libcurl as a dll without crashing
+
+2006-06-14  James Gallagher <jgallagher@opendap.org>
+
+	Removed GNU error and builtin from Makefile.am (they were already
+	removed from the directry GNU.
+
+2006-06-14  James Gallagher <jgallagher@opendap.org>
+
+	Updates to ChangeLog, README, INSTALL, NEWS, libdap.spec,
+	Makefile.am and html.tar.gz for the beta releae 3.7.0.
+
+2006-06-13  James Gallagher <jgallagher@opendap.org>
+
+	lex.gse_.cc: Comments
+
+2006-06-13  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc, gse.lex: fixed comments
+
+2006-06-09  James Gallagher <jgallagher@opendap.org>
+
+	INSTALL.AIX: Added newer comments from Dan S.
+
+2006-06-09  James Gallagher <jgallagher@opendap.org>
+
+	INSTALL: Updated by adding a reference to the INSTALL.AIX file.
+
+2006-06-06  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-06-05  James Gallagher <jgallagher@opendap.org>
+
+	GNURegex: Added Error thows back into the code
+
+2006-06-05  James Gallagher <jgallagher@opendap.org>
+
+	In GNU: Removed some now-unused files and fixed a bug in
+	GNURegex.cc where config.h was not included when it must be. This
+	caused a failure on OS/X because the rpl_regexec(), ..., symbols
+	were not defined.
+
+2006-06-02  James Gallagher <jgallagher@opendap.org>
+
+	regex_test.cc: Added
+
+2006-06-01  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-05-31  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	GNURegex.cc: kludge! Added a workaround patch to
+	GNURegex.cc:match() to avoid a illegal memory access segmentation
+	fault under OS-X 10.4.6. Inline comments provide greater detail.
+	(ndp)
+
+2006-05-31  James Gallagher <jgallagher@opendap.org>
+
+	ssize_t.m4: Added during most recent update.
+
+2006-05-30  James Gallagher <jgallagher@opendap.org>
+
+	In gl/: Update to the gnulib code. This may fix a problem on OS/X
+	where the gnulib regexec function appears to corrupt the stack.
+
+2006-05-19  James Gallagher <jgallagher@opendap.org>
+
+	Various types (Int16, et c.): Removed include of ce_expr.tab.h since
+	that header is included by Operators.h
+
+2006-05-19  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Removed include of libgnu from libdapclient and
+	libdapserver. This should fix the multiple define error at link time.
+
+2006-05-19  James Gallagher <jgallagher@opendap.org>
+
+	ce_expr.y: fixed multiple use of the variable name 'table' in
+	declarations.
+
+2006-05-18  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: reordered libraries and added ce_parser.h to DAP_HDR
+
+2006-05-10  James Gallagher <jgallagher@opendap.org>
+
+	AISDatabaseParser.h, AISResources.cc, AISResources.h, Resource.cc:
+	Updates to doxygen comments.
+
+2006-05-08  James Gallagher <jgallagher@opendap.org>
+
+	Operators.h: Made dods_max() inline. This should improve performance
+	and also fix a problem introduced by the recently applied AIX patch
+	where dods_max() was multiply defined.
+
+2006-05-04  James Gallagher <jgallagher@opendap.org>
+
+	INSTALL.AIX: Updated the information from Dan Stromberg and Martin
+	Peschke.
+
+2006-05-04  James Gallagher <jgallagher@opendap.org>
+
+	Operators.h, RValue.cc, deflate.c: Applied patches from Dan Stromberg
+	which fix problems found during a port to the native AIX compiler.
+
+2006-05-01  James Gallagher <jgallagher@opendap.org>
+
+	libdap.m4: Added DAP_CLIENT_LIBS and DAP_SERVER_LIBS to symbols
+	that are written out.
+
+2006-04-20  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-04-19  James Gallagher <jgallagher@opendap.org>
+
+	ce_expr.y: The expression parser now passes the ConstraintEvaluator
+	object to projection functions.
+
+2006-04-19  James Gallagher <jgallagher@opendap.org>
+
+	ConstraintEvaluator: Removed some code that was commented out.
+
+2006-04-19  James Gallagher <jgallagher@opendap.org>
+
+	expr.h: The projection function typedef now includes a fourth
+	argument so that the ConstraintEvaluator can be passed to the
+	projection function. This provides a way for the proj_function to
+	register the matching selection function.
+
+2006-04-19  James Gallagher <jgallagher@opendap.org>
+
+	ce_parser.h: Added. Used to pass both the DDS and ConstraintEvaluator
+	to the CE Parser.
+
+2006-04-19  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	configure.ac, dap-config.in, conf/libdap.m4: bumped up the revision
+	number to 3.7.0 (which will be the next revision), added options to
+	dap-config --server-libs and --client-libs and updated the libdap.m4
+	macro to match the new three-library organization of libdap.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	expr.lex, expr.y, lex.expr.cc, expr.tab.cc: Removed/Replaced with
+	ce_expr...
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	Removed_functions.txt: Updated for the latest changes.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	lex.ce_expr.cc: Added
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	expr-test.cc, tests/Makefile.am: Tests updated for changes in DDS,
+	DODSFilter, et cetera.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	DODSFilter: Modified so that this class now takes a ConstraintEvaluator
+	object in the places where needed.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	DDS: Removed the constraint evaluator and the send() method.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	BaseType.h and it's child classes: Now the serialize() method
+	takes not only a DDS but also a ConstraintEvaluator object.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	ce_expr.lex, ce_expr.y, ce_expr.tab.{cc,h}: Added files that
+	contains a modified ce parser. This parser takes two objects as
+	input: ConstraintEvaluator and DDS. The old parser took only the
+	DDS.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	ConstraintEvaluator: Added this class. Now the ce evaluator is separate
+	from the DDS object.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	Clause.h: Added private methods for the const ctor and operator=
+	so that default versions would not get called by accident.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	cgi_util.cc: Removed the do_data_transfer() function. Use DODSFilter.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Minor change to the func_length code. It no
+	longer uses the 'constants' vector in DDS to store the BaseType
+	used for the return value. The caller can easily free the storage.
+	Also, this function is never used!
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	INSTALL.AIX: Fixed spelling and added a note about not bugging
+	Martin or assuming he's going to guarantee the steps will work.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Now builds the ce_expr parser in place of the expr
+	parser. There's no real difference in the grammar accepted by the
+	new parser, but ce_expr takes both the ConstraintEvaluator and
+	DDS objects, where the old one took only the DDS.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	Operators.h: Now uses the ce_expr parser header.
+
+2006-04-18  James Gallagher <jgallagher@opendap.org>
+
+	parser.h: Removed the GSEClause include that I'd commented out earlier.
+
+2006-04-16  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Rename, add dirs and prune as appropriate for VC++ port
+
+2006-04-04  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-04-03  James Gallagher <jgallagher@opendap.org>
+
+	gse_parser.h: Added. This holds parser info used by the grid() ce
+	function. The contents of this file were originally in parser.h, which
+	holds definitions for the DAP parsers. Moving the info about grid()
+	here maens that the grid() code can be part of the dapserver library.
+
+2006-04-03  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Edit 'scalar deleting destructors' out of win32 module def's
+
+2006-03-31  James Gallagher <jgallagher@opendap.org>
+
+	For ticket 307 I modified the build so that three libraries are
+	made instead of just one. The libdap library now contains only
+	classes used for the DAP2 implementation. The client and server
+	support code is now in libdapclient and libdapserver. Many files
+	were modified since I trimmed the includes so that classes in
+	libdapclient don't include headers in libdapserver and vice versa.
+
+2006-03-31  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-03-30  James Gallagher <jgallagher@opendap.org>
+
+	Added INSTALL.AIX
+
+2006-03-27  James Gallagher <jgallagher@opendap.org>
+
+	Massive propset on libdap to get svn to ignore many things so
+	eclipse will work more smoothly
+
+2006-03-24  James Gallagher <jgallagher@opendap.org>
+
+	Updated svn:ignore for some files.
+
+2006-03-21  James Gallagher <jgallagher@opendap.org>
+
+	Build of docs/html.tar.gz for 3.6.2 on 3/21/06
+
+2006-03-21  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-03-20  James Gallagher <jgallagher@opendap.org>
+
+	Moved tests/expr-testsuite/test.a to tests/expr-testsuite/test.10.
+
+2006-03-20  James Gallagher <jgallagher@opendap.org>
+
+	test.c.exp: Removed log
+
+2006-03-19  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Win32 libnc-dods requires core's regex.h installed.  None stock on
+	windows. 
+
+2006-03-19  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Update export module definitions per recent core changes
+
+2006-03-16  James Gallagher <jgallagher@opendap.org>
+
+	NEWS: Spelling... one more time
+
+2006-03-16  James Gallagher <jgallagher@opendap.org>
+
+	NEWS: Spelling...
+
+2006-03-14  James Gallagher <jgallagher@opendap.org>
+
+	Updated ChangeLog, configure.ac, libdap.spec and NEWS for version
+	3.6.2
+
+2006-03-14  James Gallagher <jgallagher@opendap.org>
+
+	I changed the way DODSFilter handles the compression sub-process.
+	The class was caling waitpid on the child process which was blocking
+	even after the child had exited. I found that calling fflush on
+	the FILE* where teh server is writing the response is sufficient
+	to guarantee that all the data from the compressor is written w/o
+	using waitpod. This is a fix for ticket #335
+
+2006-03-10  James Gallagher <jgallagher@opendap.org>
+
+	Added a new public method to Connect read_data_no_mime() which can
+	be used to read from a file. This method read a DAP2 data object
+	from a file but does not try to parse MIME headers before reading
+	the data. I modified getdap.cc so that it uses this when reading
+	from a file that's not stdin.
+
+2006-03-10  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Updated for 3.6.1
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Bumped up the version to 3.6.1. Files affected: configure.ac libdap.spec,
+	INSTALL, README, NEWS.
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Updated tests/expr-testsuite/expr-test.0/test.c by changing its name to
+	test.d so that Eclipse's indexer won't gag on it.
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	removed unused test directories expr-testsuite and grid-func-testsuite
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Added -t option to DODSFilter.cc. This was left out by mistake.
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Changed tests from dodsdev to test.opendap.org
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Bumped up the version to 3.6.1. Files affected: configure.ac libdap.spec,
+	INSTALL, README, NEWS.
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Updated tests/expr-testsuite/expr-test.0/test.c by changing its name to
+	test.d so that Eclipse's indexer won't gag on it.
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	removed unused test directories expr-testsuite and grid-func-testsuite
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Added -t option to DODSFilter.cc. This was left out by mistake.
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Changed tests from dodsdev to test.opendap.org
+
+2006-03-08  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the C++-style comment in deflate.c from a bug reprot
+	from Jim Davis at Nasa.
+
+2006-03-06  James Gallagher <jgallagher@opendap.org>
+
+	Updated for 3.6.0-2
+
+2006-03-06  James Gallagher <jgallagher@opendap.org>
+
+	Increased the release number to two.
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
+2006-03-06  James Gallagher <jgallagher@opendap.org>
+
+	Increased the release number to two.
+
+2006-03-05  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Trivial change in comment in win32 libdap makefile
+
+2006-03-05  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Redo recently clobbered changes from gl/ refresh
+
+2006-03-01  James Gallagher <jgallagher@opendap.org>
+
+	Updated the OSX_Resources/Readme.txt file for 3.6.0.
+
+2006-02-28  James Gallagher <jgallagher@opendap.org>
+
+	Updated grammar files and added rpm and OS/X package targets to Makefile.am
+
+2006-02-28  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-02-27  James Gallagher <jgallagher@opendap.org>
+
+	Updated NEWS.
+
+2006-02-27  James Gallagher <jgallagher@opendap.org>
+
+	Updated the Mac/OSX project file for 3.6.0
+
+2006-02-27  James Gallagher <jgallagher@opendap.org>
+
+	Added unit-tests/testFile.cc: This provides a way to link the FILE*
+	output code with C++ strings so that unit tests can work their magic.
+
+2006-02-27  James Gallagher <jgallagher@opendap.org>
+
+	Updated documentation files (README, NEWS, ChangeLog), version information
+	(configure.ac, libdap.spec) and removed two unused unit test files.
+
+2006-02-27  James Gallagher <jgallagher@opendap.org>
+
+	Imported the latest gnulib code (see the Makefile.am in gl for the
+	gnulib-tool arguments).
+
+2006-02-25  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-02-24  James Gallagher <jgallagher@opendap.org>
+
+	Removed lines in Makefile.am that were commented out.
+
+2006-02-24  James Gallagher <jgallagher@opendap.org>
+
+	Removed html.tar.z and added html.tar.gz
+
+2006-02-24  James Gallagher <jgallagher@opendap.org>
+
+	Removed docs.tar.gz
+
+2006-02-24  James Gallagher <jgallagher@opendap.org>
+
+	Added docs and docs/html.tar.gz
+
+2006-02-24  James Gallagher <jgallagher@opendap.org>
+
+	Fixed up the regression tests so that they don't use deprecated
+	Error methods.
+
+2006-02-24  James Gallagher <jgallagher@opendap.org>
+
+	Removed LongIterAdapter.cc from tests
+
+2006-02-24  James Gallagher <jgallagher@opendap.org>
+
+	Removed files no longer needed. Removed depreacted methods. Updated
+	documentation.
+
+2006-02-23  James Gallagher <jgallagher@opendap.org>
+
+	Removed most $Log$ entries since they are not supported by
+	Subversion. Will do the rest tomorrow...
+
+2006-02-23  James Gallagher <jgallagher@opendap.org>
+
+	Removed all the method overloads that used const char *
+	parameters. Those methods were added so that the Pix objects,
+	which were passed as void*, would not get called with character
+	strings by mistake. Since the Pix methods are gone, these are no
+	longer needed.
+
+2006-02-21  James Gallagher <jgallagher@opendap.org>
+
+	I fixed the constructors for both PipeResource and StdinResource
+	so that the parent class and fields were initialized in the
+	correct order. I also fixed up the documentation for
+	DODSResponseObject.
+
+2006-02-20  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Tweek linker settings for libdap dll
+
+2006-02-20  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Sync win32 makefile with unix version, rewrite
+
+2006-02-20  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Update module definitions for dll version of libdap
+
+2006-02-20  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Tweek for win32 port
+
+2006-02-15  Patrick West <pwest@ucar.edu>
+
+	fixed indentation
+
+2006-02-15  Patrick West <pwest@ucar.edu>
+
+	commented out DataDDS constructor that doesn't take BaseTypeFactory
+
+2006-02-15  James Gallagher <jgallagher@opendap.org>
+
+	DataDDS.cc: Added a call to protocol_string_to_numbers in the
+	constructor. This sets the internal protocol version numbers so
+	that calls to Sequence:: deserialize() work (they now use the
+	protcol version number to select the correct algorithm for reading
+	from the stream instead of the server version).
+
+2006-02-15  James Gallagher <jgallagher@opendap.org>
+
+	AttrTable.cc: Corrected a problem in add_value_alias where looking
+	for attributes could cause a segmentation fault. The problem was
+	that AttrTable::find() was setting the return iterator to
+	attr_end() for the AttrTable object it returned as a value-result
+	parameter (so the test to see if the iterator was pointing to the
+	end needed to be done using that table and not the calling object.
+
+2006-02-14  James Gallagher <jgallagher@opendap.org>
+
+	NEWS and ChangeLog both updated.
+
+2006-02-14  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-02-13  James Gallagher <jgallagher@opendap.org>
+
+	Modified the print_xml method in Constructor and grid. It no
+	longer prints anything for variables that are not part of the
+	current projection when printing the constrained ddx. This works
+	because the DDS::mark method marks the parents of projected
+	variables.
+
+2006-02-13  James Gallagher <jgallagher@opendap.org>
+
+	Added PipeResponse.h and StdinResponse.h; changed getdap and
+	Connect to use them.
+
+2006-02-13  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Flush weekend win32 porting work back to trunk
+
+2006-02-10  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Removed xdr routines from win32 subdir under libdap. Code now in
+	base tools used to build under win32.
+
+2006-02-09  James Gallagher <jgallagher@opendap.org>
+
+	empty comment
+
+2006-02-09  James Gallagher <jgallagher@opendap.org>
+
+	Removed all deprecated methods as per ticket 248. This includes
+	Pix methods, ostream I/O methods used by servers and various junk
+	in Connect.
+
+2006-01-25  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-01-24  James Gallagher <jgallagher@opendap.org>
+
+	Added Removed_functions.txt: This file contains the type
+	signitures of methods/functions recently (version 3.6 and later)
+	removed.
+
+2006-01-24  James Gallagher <jgallagher@opendap.org>
+
+	The ostream I/O was removed and many files were modified. The code
+	is still present inside #if 0 ... #endif preprocessor lines.
+
+2006-01-23  James Gallagher <jgallagher@opendap.org>
+
+	All unit tests updated to work after removing the iostream
+	functions/methods.
+
+2006-01-19  James Gallagher <jgallagher@opendap.org>
+
+	Added protocol version to the library. The version number is set
+	in the configure.ac file. I've modified the unit tests so that
+	they work. I've also removed (#if 0 ... #endif) all of the MIME
+	header functions which used the C++ iostream stuff (which is part
+	of the task to remove deprecated code).
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	Updated ChangLog
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	DDS.cc: transfer_attributes used odd logic and an unneeded
+	variable. Fixed.
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	expr-test.cc: changed new exception code to use fprintf() (it was
+	using cerr).
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	GSEClause: Removed the old, unimplemented, methods that were
+	supposed to take the grid() function subexpressions. Fixed up some
+	comments in the class as well.
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	cgi_util.cc: In remove_mime_header() \n was used as the MIME
+	header separator when CRLF should have been used. Since the rest
+	of the code was fixed for 3.5.3, remove_mime_header() didn't find
+	the separator. This broke the HTML form response.
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	DDS.cc: transfer_attributes used odd logic and an unneeded
+	variable. Fixed.
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	expr-test.cc: changed new exception code to use fprintf() (it was
+	using cerr).
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	GSEClause: Removed the old, unimplemented, methods that were
+	supposed to take the grid() function subexpressions. Fixed up some
+	comments in the class as well.
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	cgi_util.cc: In remove_mime_header() \n was used as the MIME
+	header separator when CRLF should have been used. Since the rest
+	of the code was fixed for 3.5.3, remove_mime_header() didn't find
+	the separator. This broke the HTML form response.
+
+2005-12-30  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Work toward accomodating gcc under mingw
+
+2005-12-27  James Gallagher <jgallagher@opendap.org>
+
+	Installed GNU indent code formatter to eclipse and used it on
+	expr-test.cc
+
+2005-12-27  James Gallagher <jgallagher@opendap.org>
+
+	In expr-test, the function parse_mime() did not test for the new
+	CRLF line terminator. This caused an infinite loop. Fixed. I also
+	added a comment to cgi-util.cc noting that if the CRLF constant is
+	changed, then the one in expr-test.cc should be changed too. Since
+	the test code is, well, test code, it doesn't seem like the
+	constant should be moved out into one of the header files. The
+	CRLF constant is really used only by the cgi-util code.
+
+2005-12-27  James Gallagher <jgallagher@opendap.org>
+
+	Removed regex.loT
+
+2005-12-23  James Gallagher <jgallagher@opendap.org>
+
+	Removed extra qualtification on the private method Regex::init in
+	GNURegex.h.
+
+2005-12-23  James Gallagher <jgallagher@opendap.org>
+
+	Removed the send version method body and replaced it with a call
+	to do_version() in cgi_util.cc. This consolodates the code that
+	writes HTTP headers to one file.
+
+2005-12-23  James Gallagher <jgallagher@opendap.org>
+
+	Changed all calls to fprintf that write parts of the HTTP resonse
+	header so that they terminate lines using CRLF pairs and not just
+	LF (\n or 0x0a). I also fixed the spelling of Content-Type (the
+	'T' in 'Type' was not capitalized).
+
+2005-12-12  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Missing colon in switch from recent porting tweeks.
+
+2005-12-11  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	ifdef profoundly-non-portable signal handling code. Windows has
+	few signals.
+
+2005-12-11  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Hardcode blocksize on win32
+
+2005-12-11  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Reverse ancient VC++ 6.0 template hacks. Microsoft has come toward
+	the standard.
+
+2005-12-05  James Gallagher <jgallagher@opendap.org>
+
+	Updated
+
+2005-11-22  James Gallagher <jgallagher@opendap.org>
+
+	Made docs a PHONY target
+
+2005-11-22  James Gallagher <jgallagher@opendap.org>
+
+	Fixed source0 using Patrice's patch
+
+2005-11-16  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-11-15  James Gallagher <jgallagher@opendap.org>
+
+	Added commentary
+
+2005-11-15  James Gallagher <jgallagher@opendap.org>
+
+	Added/Hacked
+
+2005-11-11  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-11-10  James Gallagher <jgallagher@opendap.org>
+
+	Added note about dejagnu not working on some systems unless
+	config.guess is linked here or at the top.
+
+2005-11-09  James Gallagher <jgallagher@opendap.org>
+
+	The XML schema site has chamged to xml.opendap.org. I stopped
+	testing these values because that's not really what the DDS class
+	unit tests should be looking at.
+
+2005-11-09  James Gallagher <jgallagher@opendap.org>
+
+	The set of chars allowed in an identifier was enlarged to include
+	%. The secind test was altered to fit that.
+
+2005-10-31  James Gallagher <jgallagher@opendap.org>
+
+	Hacked up the pkg target so that the dap-config script has the
+	correct values for the places where the osx package will be
+	installed, not where the build dumps it prior to packaging.
+
+2005-10-25  Patrick West <pwest@ucar.edu>
+
+	added function to access the libdap name from PACKAGE_NAME
+
+2005-10-25  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-10-18  James Gallagher <jgallagher@opendap.org>
+
+	Update from build after failed attempt to remove Pix.h
+
+2005-10-18  James Gallagher <jgallagher@opendap.org>
+
+	Fixed som grammatical problems with the DDX response.
+
+2005-10-12  James Gallagher <jgallagher@opendap.org>
+
+	Updates to the documentation files.
+
+2005-10-07  James Gallagher <jgallagher@opendap.org>
+
+	escattr() no longer uses Regex.
+
+2005-10-07  James Gallagher <jgallagher@opendap.org>
+
+	Updated to match the new libdap behavior for escaping.
+
+2005-10-05  James Gallagher <jgallagher@opendap.org>
+
+	I made the standard print representation of a Grid use Array and
+	Maps instead of ARRAY and MAPS. So I fixed the tests too.
+
+2005-10-05  James Gallagher <jgallagher@opendap.org>
+
+	Don't have these in svn.
+
+2005-10-05  James Gallagher <jgallagher@opendap.org>
+
+	Don't have these in svn.
+
+2005-10-05  James Gallagher <jgallagher@opendap.org>
+
+	Fix for ticket #44 (which was filed under the hdf4 handler). I
+	made the set of characters not escaped by id2www and id2www_ce the
+	same as those that dds.les and expr.lex expect in an id. Actually
+	the asterisk is escaped even though dds.lex will parse it,
+
+2005-10-05  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-10-04  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the background one last time
+
+2005-10-04  James Gallagher <jgallagher@opendap.org>
+
+	Added a background image to the osx installer
+
+2005-10-04  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-10-04  James Gallagher <jgallagher@opendap.org>
+
+	Updates for the OS/X packages stuff.
+
+2005-10-03  James Gallagher <jgallagher@opendap.org>
+
+	Nodified cleanup to not copy the svn parts of dods_cahce_init when
+	it makes dods_cache. This will help keep Eclipse's svn module from
+	being confused.
+
+2005-10-03  James Gallagher <jgallagher@opendap.org>
+
+	Build improvements from Patrice Dumas.
+
+2005-10-03  Patrick West <pwest@ucar.edu>
+
+	calling fflush rather that fclose in send_data
+
+2005-10-01  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-09-30  James Gallagher <jgallagher@opendap.org>
+
+	Updated NEWS with info about regex.
+
+2005-09-30  James Gallagher <jgallagher@opendap.org>
+
+	Updated for the changes to Regex.
+
+2005-09-30  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-09-29  James Gallagher <jgallagher@opendap.org>
+
+	Removed regex from esc2undescore.
+
+2005-09-29  James Gallagher <jgallagher@opendap.org>
+
+	Fixed an error in char2ASCII.
+
+2005-09-29  James Gallagher <jgallagher@opendap.org>
+
+	Grammar update
+
+2005-09-29  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for gnulib regex code.
+
+2005-09-28  Yuan Ho <yuanho@ucar.edu>
+
+	adding install include dir
+
+2005-09-28  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-09-27  Yuan Ho <yuanho@ucar.edu>
+
+	adding install script
+
+2005-09-27  James Gallagher <jgallagher@opendap.org>
+
+	New libtool
+
+2005-09-27  James Gallagher <jgallagher@opendap.org>
+
+	Comment about the hack...
+
+2005-09-27  James Gallagher <jgallagher@opendap.org>
+
+	New grammar generated files and some temporary fixes in gl/m4/regex.m4
+
+2005-09-27  James Gallagher <jgallagher@opendap.org>
+
+	Fixed an error where a signed and unsigned were compared.
+
+2005-09-27  James Gallagher <jgallagher@opendap.org>
+
+	Added new copy.
+
+2005-09-27  James Gallagher <jgallagher@opendap.org>
+
+	New gnulib changes; first half, removing the old gl code. I don't
+	think this was necessary, but it's hard to tell.
+
+2005-09-23  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-09-22  James Gallagher <jgallagher@opendap.org>
+
+	Fixed install-sh; it was left out of the earlier mv
+
+2005-09-22  James Gallagher <jgallagher@opendap.org>
+
+	Moved the configuration files into 'conf.'
+
+2005-09-22  James Gallagher <jgallagher@opendap.org>
+
+	Changed the das lexer error message to include a character code.
+
+2005-09-19  Patrick West <pwest@ucar.edu>
+
+	missing declaration of BaseType
+
+2005-09-16  James Gallagher <jgallagher@opendap.org>
+
+	Added code to DODSFilter so support its use in something other
+	than a Unix command line filter program. In the process I found a
+	bug in escaping.cc:escattr() (ticket 210) which I fixed.
+
+2005-09-08  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a bug where _REENTRANT is defined and HAVE_STRFTIME is not.
+	This shows up on FC3/4 but not RHEL3 or OS/X.
+
+2005-09-08  James Gallagher <jgallagher@opendap.org>
+
+	Removed
+
+2005-09-08  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-09-07  James Gallagher <jgallagher@opendap.org>
+
+	Build update
+
+2005-09-07  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-09-06  James Gallagher <jgallagher@opendap.org>
+
+	Added alloc to gl_MODULES; for the os/x build.
+
+2005-09-06  James Gallagher <jgallagher@opendap.org>
+
+	Added the new gl directory.
+
+2005-09-06  James Gallagher <jgallagher@opendap.org>
+
+	Clean up.
+
+2005-09-06  James Gallagher <jgallagher@opendap.org>
+
+	Midway through resetting gl to only use the regex code.
+
+2005-09-03  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-08-19  James Gallagher <jgallagher@opendap.org>
+
+	Updated libdap.spec so that it now requires libcurl 7.10.6 (a
+	downgrade from 7.12.0 so that we can build RPMs on RHEL3). This
+	seems to work just fine. Also fixed up the HTPPCacheTest unit test
+	so that it works the first time with a new check out.
+
+2005-08-19  James Gallagher <jgallagher@opendap.org>
+
+	downgrade to libcurl-7.10.6. This seems to work but needs more testing
+
+2005-08-17  James Gallagher <jgallagher@opendap.org>
+
+	Another shot at getting the build to work...
+
+2005-08-17  James Gallagher <jgallagher@opendap.org>
+
+	Build fixes; rpms now split into plain and -devel; fix for
+	libdap.m4 macro
+
+2005-08-16  James Gallagher <jgallagher@opendap.org>
+
+	Patched libdap.m4 (from Patrice) and added text the README
+	describing the macro.
+
+2005-08-16  James Gallagher <jgallagher@opendap.org>
+
+	Commented out the set of CFLAGS/CXXFLAGS (which was a left-over
+	from the non-automake build).
+
+2005-08-15  James Gallagher <jgallagher@opendap.org>
+
+	Updated for the release of 3.5.2.
+
+2005-08-12  James Gallagher <jgallagher@opendap.org>
+
+	Added back.
+
+2005-08-12  James Gallagher <jgallagher@opendap.org>
+
+	Test delete
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	config_dap.h --> config.h; also removed TRACE_NEW, #pragma
+	interface/impl. in test and unit-tests.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Removed trace_new.h; use valgrind instead.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Removed #pragma interface/implementation
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	So, I added IteratorAdapter.cc back in again.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Hmmm... Eclipse still doesn't seem to get the deletes quite right.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Tests updated for new float32 and 64 value computation.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Changed how sequential values are generated. The values should be
+	the same on 32 and 64-bit machines.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Updated...
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	I removed the DODS_GTAR and DODS_PERL calls; Added AC_DEFINE for
+	two version sof libxml2 and stripped away some code that was
+	commented out months ago.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Resolved conflicts & added some comments about the state of the
+	test driver.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Clarified commentary.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Added conditional compilation of the XML SAX callback struct. The
+	code now uses the library version number to determine which fields
+	should be included since later version have additional fields.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Removed unused params in methods as reported by gcc 3.4. This may
+	break gcc 3.2, we will see...
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Removed unused params in methods as reported by gcc 3.4. This may
+	break gcc 3.2, we will see...
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Changed comparison in set_max_size() so that it uses ULONG_MAX
+	(since the method uses a long) and does not test for negative
+	sizes (since size is unsigned).
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Moved debug options from AM_CXXFLAGS. Set the CXXFLAGS environment
+	variable (sample values are assigned to CXXFLAGS_DEBUG).
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	commented out #define DODS_DEBUG 1
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Reverted to previous version (which uses long instead of int). The
+	change breaks the unit tests (which otherwise work on both 32- and
+	64-bit machines.
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Latest and greatest eclipse/cdt settings...
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Addressed various warnings from gcc (compiled using -Wall -W
+	-Wcast-align) as part of making the code 64-bit clean.
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Added default init of TestCommon in the copy ctors for the
+	TestByte, ... classes.
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Added proper error return to all unit tests.
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Now GNURegex uses exceptions (std::invalid_argument and domain_error)
+	to signal problems. Controlled using USE_EXCEPTIONS. If this passes
+	on the nightly builds, then remove GNUerror.cc and builtin.h.
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Fixed read() method: It did not include the 16-bit int types int
+	he switch statement.
+
+2005-08-08  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a leak where a specialization of BaseTypeFactory was used
+	but not deleted.
+
+2005-08-08  root
+
+	Auto reset of Subversion properties
+
+2005-07-28  James Gallagher <jgallagher@opendap.org>
+
+	Changes for the OS/X build. Particularly for the regex code in gl.
+
+2005-07-25  James Gallagher <jgallagher@opendap.org>
+
+	Fixed; the macro was using ifelse and m4_syscmd/m4_sysval but
+	these didn't seem to be working. Also replaced obsolete AC_TRY_TUN
+	with AC_RUN_IFELSE().
+
+2005-07-23  James Gallagher <jgallagher@opendap.org>
+
+	Added libdap.m4: A macro that other packages can use to check for
+	the library. From Patrice Dumas.
+
+2005-07-22  James Gallagher <jgallagher@opendap.org>
+
+	Updated requirements for automake, et cetera.
+
+2005-07-22  James Gallagher <jgallagher@opendap.org>
+
+	Updated for automake 1.9.6.
+
+2005-07-21  James Gallagher <jgallagher@opendap.org>
+
+	Removed calls to OK() in the set_error_code() and
+	set_error_message() methods since these are called by the parser
+	on partially built objects.
+
+2005-07-20  James Gallagher <jgallagher@opendap.org>
+
+	Improved the documentation of BaseTypeFactory; removed
+	DEFAULT_BASETYPE_FACTORY from Makefile.am; added a note to
+	util.cc:prune_spaces questioning if that function is still needed;
+	added a test of prune_spaces to generalUtilTest.
+
+2005-07-20  James Gallagher <jgallagher@opendap.org>
+
+	Removed DEFAULT_BASETYPE_FACTORY switch. Updated build files using
+	autoreconf --install --force (using automake 1.9.2 from FC3).
+
+2005-07-19  James Gallagher <jgallagher@opendap.org>
+
+	Updated cdtproject file. Should this be in SVN?
+
+2005-07-19  James Gallagher <jgallagher@opendap.org>
+
+	Added gl/m4 to EXTRA_DIST; needed to get the distcheck target workig
+	with automake 1.6.3. Newer versions of automake set this correctly
+	given that ACLOCAL_AMFLAGS is used.
+
+2005-07-18  James Gallagher <jgallagher@opendap.org>
+
+	Removed $(top_srcdir) from ACLOCAL_AMFLAGS since this breaks
+	autoreconf.
+
+2005-07-18  James Gallagher <jgallagher@opendap.org>
+
+	Changed ACLOCAL_AMFLAGS from '-I gl/m4' to '-I $(top_srcdir)/gl/m4' to
+	fix one last problem with distcheck.
+
+2005-07-18  James Gallagher <jgallagher@opendap.org>
+
+	Applied Patrice's patch for unit-tests; make distcheck should now work.
+
+2005-07-18  James Gallagher <jgallagher@opendap.org>
+
+	Changed the cache dirs with initial values to <cache>_init and use
+	the cleanup.sh script to cp -r <*>_init <*> to restore them. This
+	way the tests work w/o svn.
+
+2005-07-18  James Gallagher <jgallagher@opendap.org>
+
+	Added blurb about using autoreconf to (re)build the autotools stuff.
+
+2005-07-15  James Gallagher <jgallagher@opendap.org>
+
+	Updated Makefile.am and the README/INSTALL/NEWS files. The 'dist'
+	target now works for make (although 'distcheck' fails for an odd
+	reason).
+
+2005-07-15  James Gallagher <jgallagher@opendap.org>
+
+	Copied/added
+
+2005-07-15  James Gallagher <jgallagher@opendap.org>
+
+	Removed
+
+2005-07-15  James Gallagher <jgallagher@opendap.org>
+
+	Moved/Added
+
+2005-07-15  James Gallagher <jgallagher@opendap.org>
+
+	Moved the unit tests from 'tests' to 'unit-tests.' The unit tests
+	are now only run when you cd into unit-tests and use make check.
+	This change was made because those tests use network services
+	which might not be present on some hosts used to build the
+	package.
+
+2005-07-15  James Gallagher <jgallagher@opendap.org>
+
+	More fixes for the tests
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	Fixed again...
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	Removed extra line. This hosed the test since it causes the
+	HTTPCache class to think there's a second zero-size entry.
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	Updated
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	Updated
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	Updated
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	Changed URL; chages cache directory number
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	AISMergeTest now works (required files are now installed on
+	test.opendap.org). Also, applied Patrice Dumas' patch for the
+	Makefile.am.
+
+2005-07-13  James Gallagher <jgallagher@opendap.org>
+
+	Fixed HTTPConnectTest
+
+2005-07-13  James Gallagher <jgallagher@opendap.org>
+
+	Spec file now includes support for a separate devel package
+	(commented out). From Patrice Dumas.
+
+2005-07-13  James Gallagher <jgallagher@opendap.org>
+
+	expr-test tests x, xa, xc, y, ya, and yc now expect to fail (and
+	do on 64bit hosts).
+
+2005-07-13  James Gallagher <jgallagher@opendap.org>
+
+	The last fix for this file? I hope so...
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	Added data files for tests in DDSTest. Bug 112.
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	mistakenly removed alloca_.h from svn. Fixed tests/cache_testsuite.
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	Test updates: expr-test now works except that 6 tests fail on
+	64bit machines. Also, I updated the gnulib replacement functions
+	so that gnulib-tool can be used in the future to update. I moved
+	the gnulib functions into the 'gl' subdir and put the m4 macros in
+	there inside the subdir 'gl/m4.' There's a note about the
+	procedure to use to update the functions in INSTALL.
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	Added again...
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	removed
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	Removed
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	Removed.
+
+2005-07-11  James Gallagher <jgallagher@opendap.org>
+
+	My previous fix for the gnulib mktime bug was bogus since it left
+	a replacement copy of mktime in the library using that name (which
+	is reserved). I've stopped using the gnulib mktime for now since
+	it doesn't seems absolutely necessary.
+
+2005-07-11  James Gallagher <jgallagher@opendap.org>
+
+	Modification from Patrice, et al. These were part of an attempt to work
+	around a bug with using mktime but they did not work.
+
+2005-07-08  James Gallagher <jgallagher@opendap.org>
+
+	Moved all tests to the 'tests' subdirectory. There are some tests
+	that are broken; only expr-test seems broken now but was not
+	before. Most of the broken tests require a localhost web daemon
+	and specific test files for it to serve; configure
+	test.opendap.org for these instead.
+
+2005-07-08  James Gallagher <jgallagher@opendap.org>
+
+	Removed use of the GPL regex-0.12 code and switched to gnulib
+	(which provides regex and other functions which are covered by
+	LGPL). These turned out to be fairly massive changes. The work was
+	done by Patrice Dumas (Thanks!). I removed a AC_DEFINE macro in
+	m4/mktime.m4 to work around a compilation problem when using
+	gnulib's mktime.c replacement function.
+
+2005-07-06  Patrick West <pwest@ucar.edu>
+
+	Added methods to Connect class to connect with the given URL
+	instead of building the URL to connect with, such as adding .das,
+	.dds, etc...
+
+2005-07-05  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Set eol-style to native on all text file in the trunk
+
+2005-07-05  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the library version numbers. The order was backwards for the
+	last two digits.
+
+2005-07-04  James Gallagher <jgallagher@opendap.org>
+
+	Added Patrice Dumas' patches for libtool, et cetera.
+
+2005-07-01  James Gallagher <jgallagher@opendap.org>
+
+	Moved the unit tests into the tests subdirectory.
+
+2005-07-01  James Gallagher <jgallagher@opendap.org>
+
+	After adding libtool support, I ran autoreconf --force --install
+	which in turn ran libtoolize. this updated a number of the support
+	code for the build. Added ltmain.sh.
+
+2005-07-01  James Gallagher <jgallagher@opendap.org>
+
+	Added. These generated files should be in svn.
+
+2005-07-01  James Gallagher <jgallagher@opendap.org>
+
+	Added support for libtool using a patch from Patrice Dumas.
+
+2005-07-01  James Gallagher <jgallagher@opendap.org>
+
+	Set exec
+
+2005-07-01  James Gallagher <jgallagher@opendap.org>
+
+	ModifiedMakefile.am so that the dejagnu_driver.sh script now works.
+
+2005-06-30  James Gallagher <jgallagher@opendap.org>
+
+	Automake changes; these work and build the tests. the DejaGNU test
+	support has not been tested yet but the unit tests all run and the
+	dejagnu drivers all build.
+
+2005-06-30  James Gallagher <jgallagher@opendap.org>
+
+	Switched to automake. Not complete but functional.
+
+2005-06-30  James Gallagher <jgallagher@opendap.org>
+
+	Applied patch from Patrice Dumas for the automake build.
+
+2005-06-22  James Gallagher <jgallagher@opendap.org>
+
+	Added for automake build
+
+2005-06-22  James Gallagher <jgallagher@opendap.org>
+
+	Started work on an automake file for this code; only partly done.
+	The library builds but nothing else is in place. The grammars are
+	in progress. They build but the way gse is handled is the the way
+	they all should be unless I can get automake's lex/yacc rules to
+	work. See Makefile.am.in_progress and configure.ac.for_am. Also
+	included in this check in is a patch to libdap.spec from Patrice
+	Dumas.
+
+2005-06-22  James Gallagher <jgallagher@opendap.org>
+
+	Remove the attempts to utilize automake's support for bison/flex
+	introduced in the past 9 revisions.
+
+2005-06-21  James Gallagher <jgallagher@opendap.org>
+
+	moved...
+
+2005-06-21  James Gallagher <jgallagher@opendap.org>
+
+	checkpoint
+
+2005-06-21  James Gallagher <jgallagher@opendap.org>
+
+	moved from *.lex files for automake
+
+2005-06-21  James Gallagher <jgallagher@opendap.org>
+
+	Moved from gse.lex for automake
+
+2005-06-20  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the source path.
+
+2005-06-20  James Gallagher <jgallagher@opendap.org>
+
+	Commented out the Patch: and %patch lines since the patched code is
+	now in svn.
+
+2005-06-20  James Gallagher <jgallagher@opendap.org>
+
+	Accepted patches from Patrice Dumas <pertusus@free.fr> which
+	improve the build by using the system's regex library if found.
+	Also included in the patches were improvements to the rpm spec
+	file; the file now uses the fedora template and includes a fix for
+	Mandrake ('Tue' --> 'Tues' in the change log.
+
+2005-06-15  James Gallagher <jgallagher@opendap.org>
+
+	Fixed configure so that it does not include -gstabs on OS/X.
+
+2005-06-15  James Gallagher <jgallagher@opendap.org>
+
+	Changed eol-style, mime-type, other properties. Removed generated
+	files from svn. Modified configure.ac so that it tests for bison
+	and does not use bison -y.
+
+2005-06-15  James Gallagher <jgallagher@opendap.org>
+
+	Generated... Should these even be in SCM?
+
+2005-05-23  James Gallagher <jgallagher@opendap.org>
+
+	Removed cast to int at tokenlength = ... to avoid a warning about
+	differring pointer and int sizes on x86 64-bit CPUs.
+
+2005-05-23  James Gallagher <jgallagher@opendap.org>
+
+	Now uses local common-tests.exp and test.opendap.org.
+
+2005-05-23  James Gallagher <jgallagher@opendap.org>
+
+	Tests now use the local copy of common-tests.exp.
+
+2005-05-23  James Gallagher <jgallagher@opendap.org>
+
+	Reformat using indent and indent-eclipse plugin.
+
+2005-05-17  Patrick West <pwest@ucar.edu>
+
+	updated dap_version using libdap_version
+
+2005-05-13  James Gallagher <jgallagher@opendap.org>
+
+	3.5.1
+
+2005-05-13  James Gallagher <jgallagher@opendap.org>
+
+	3.5.1
+
+2005-05-13  James Gallagher <jgallagher@opendap.org>
+
+	checkpoint
+
+2005-05-12  James Gallagher <jgallagher@opendap.org>
+
+	moved
+
+2005-05-12  James Gallagher <jgallagher@opendap.org>
+
+	Renamed libdap-config to dap-config to fall in line more with what
+	other projects are doing.
+
+2005-05-12  James Gallagher <jgallagher@opendap.org>
+
+	05/12/05 jhrg
+
+2005-05-12  James Gallagher <jgallagher@opendap.org>
+
+	Modified install so that it no longer appends a version number to the
+	static library or includes. When we build a dynamic lib, look into the
+	version number thing then.
+
+2005-05-11  James Gallagher <jgallagher@opendap.org>
+
+	5/11/05
+
+2005-05-10  James Gallagher <jgallagher@opendap.org>
+
+	Changed to work with rpm. Don't alter the values of variables like
+	$includedir because values for these are passed into make by
+	rpmbuild, overriding the values set by the here. This was
+	happening with $includedir which had the string '/libdap' appended
+	early on in the Makefile and then @PACKAGE_VERSION@ appended in
+	the install-header target. When 'make' was run from the command
+	line, this worked OK, but not when rpmbuild passed in a new value
+	for $includedir.
+
+2005-05-10  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-05-10  James Gallagher <jgallagher@opendap.org>
+
+	5/10/2005
+
+2005-05-10  James Gallagher  <jimg@zoey.opendap.org>
+
+	* libdap.spec (Prefix): Built spec file; tested. Some problems
+	remain, mostly that the curl and xml2 packages are not part of
+	the RHEL3 dist! I'll have to sort that out before this dist
+	mechanism becomes a reality.
+
+2005-04-15  James Gallagher  <jimg@comet.opendap.org>
+
+	* Removed include of config_dap.h from HTTPCache.h. This is the
+	only header file in the library that includes the config header.
+	Removing the include means that users of the library never see the
+	library's internal configuration. There's a potential problem with
+	this, however, in that users of the library must now use
+	opendap-config --cflags when building _or_ define HAVE_PTHREADS_H
+	themselves. I can make this last requirement go away if pthreads
+	becomes required for libdap++ (then the code won't need the
+	compile time symbol).
+
+2005-02-08  James Gallagher  <jimg@comet.dods.org>
+
+	* Merged with release-3-4-10
+
+2005-02-08  James Gallagher  <jimg@comet.dods.org>
+
+	* bumped the version up to 3.4.10; tagged.
+
+	* System upgrade to FC3/gcc-3.4; minor fixes for the build.
+
+2005-01-28  James Gallagher  <jimg@comet.dods.org>
+
+	* Merged with release-3-4-9.
+
+2005-01-27  James Gallagher  <jimg@comet.dods.org>
+
+	* Added code to Test* classes so that Sequences are easier to
+	test. These classes now return values similar to Nathan's DTS code
+	on the Java module (although not exactly the same).
+
+	* Fixed the way Sequence CEs are handled when Sequences are
+	nested. Tested to three levels deep. The serialization code in
+	Sequence is nw quite complex.
+
+	* Incremented version to 3.4.9; I've made some changes since the
+	last version and I need these in the trunk to test.
+
+2004-07-07  James Gallagher  <jimg@comet.dods.org>
+
+	* Merged with release-3-4-8FCS.
+
+2004-07-06  James Gallagher  <jimg@comet.dods.org>
+
+	* Bumped the version to 3.4.8.
+
+2004-07-02  James Gallagher  <jimg@comet.dods.org>
+
+	* I removed (commented) the pragma interface/implementation lines.
+	This increases the size of the library by ~1MB, which seems pretty
+	insignificant at this point. The change means that the code will
+	compile on HP/UX with gcc 3.2. It _may_ be that gcc 3.4 fixes this
+	problem, but it seems that the pragmas cause more headaches than
+	they are worth. It should be easy to 'add them back in' if we
+	decide to do that, since they are just commented out. 
+
+2004-03-11  James Gallagher  <jimg@comet.dods.org>
+
+	* Bumped the version to 3.4.7.
+
+	* I fixed a problem in SignalHandler and RCReader. Both od=f these
+	class had code that re-initialized a pthread_once_t mutex in their
+	delete_instance() method. This was used by some unit tests to make
+	a delete instances of these two singleton classes. The problem is
+	that while this runs (sort of, we had some reports of
+	crash-on-exit behavior) on Linux, it fails outright on Solaris. As
+	Rob M points out, it's a non-standard use of pthreads. I removed
+	the re-init and changed the unit tests. 
+
+2004-02-18  James Gallagher  <jimg@comet.dods.org>
+
+	* Merge release-3-4-2FCS.
+
+2004-02-16  James Gallagher  <jimg@comet.dods.org>
+
+	* Other fixes:
+	The DBG() macros now include namespace std declarations.
+	Used valgrind to isolate some memory leaks; others remain and this
+	will be an on-going process.
+	Made sure all calls to delete also set the pointer to null; this
+	fixes some dual-delete bugs.
+	Some of the doxygen comments have been improved.
+	Fixed places were the switch from strstream to stringstream was
+	botched. 
+
+	* Fixed the following bugs since version 3.4.5:
+	696: Infinite loop in the HDF4 server (w/character variables).
+	698: libdap++ now returns better error messages when the httpd
+	reports an error.
+	692: The info response now works.
+	695: The client-side cache is more robust. It does not leave cruft
+	around when a user interrupts a program.
+	691: Error responses were not parsed/processed correctly when
+	received by clients in some circumstances. Now they are.
+
+2004-01-30  James Gallagher  <jimg@comet.dods.org>
+
+	* usage.cc: Fixed bug 692. Only one global attribute and one
+	variable were output. The cause: ends operators left over from the
+	strstream code...
+
+2004-01-22  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added namespace std declarations to some files. The DBG() macro
+	uses cerr and thus the std namespace or std::cerr must be declared
+	for newer compilers.
+
+2003-12-08  Yuan Ho  <yuanho@ucar.edu>
+
+        * Merge release-3-4 into trunk.
+
+2003-11-10  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added the methods Float32::value() and Float64::value(). I think
+	the DAP should have a suite of methods which return values w/o
+	using the awkward void pointer scheme. These methods (will) require
+	a downcast unlike the void pointer methods. But they wind up being
+	much easier to use in situations where you know the type of the
+	BaseType object (which seems to be most of the time, in practice).
+
+2003-10-03  James Gallagher  <jimg@dcz.dods.org>
+
+	* I changed Connect's request_das, ..., methods so that they now
+	treat a response that lacks a Content-Description header
+	identifying the response as one of ours as a fatal error.
+
+	* I Fixed what seems like, in hindsight, a bug. The scanners were
+	treating illegal characters as non-fatal errors and writing
+	messages on stderr. In reality the scanners should have been
+	flagging those responses as bogus. Also, the scanners were using
+	exit(1) when they found a fatal error; I changed that so they now
+	throw an Error object.
+
+2003-09-19  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed bug #655. Here's how the DAP library looks for the RC
+	file: First it checks the env variable DODS_CONF, then HOME. If
+	neither is set it uses default values and disables the cache.
+	Here's how DODS_CONF is used: If it is the name of a file that
+	exists, use that as the RC file. If DODS_CONF names a directory,
+	look in that directory for a file called '.dodsrc'. If that file
+	exists, it uses it, otherwise try to create it using default
+	values *except* that the value of CACHE_ROOT is the directory part
+	of DODS_CONF with '.dods_cache/' appended. If DODS_CONF is not set
+	to any value, the code looks at HOME and applies the same rules as
+	for DODS_CONF (except that HOME should never be the name of a file
+	so some of the rules don't really apply). We may need to tune this
+	code for WIN32.
+
+	Note that caching is off by default and a .dodsrc created by the
+	library will have USE_CACHE set to zero. Users must actively turn
+	caching on by editing the RC file.
+
+2003-09-08  James Gallagher  <jimg@dcz.dods.org>
+
+	* HTTPConnect.cc (fetch_url): Fixed bug #661.
+
+2003-08-29  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added a new property to BaseType which can be used to
+	differentiate between variables that must be read by a server
+	because they are in the projection and those which must be read
+	because they are used in a selection clause or as a function
+	argument. Previously we were using the send_p property for both
+	these and it was causing problems when CEs contained both
+	projected variables and functions (see bug #657). The new property
+	is called 'in_selection' and is true if the variable is part of
+	the current CE's selection or is used in any type of CE function.
+	Servers should ensure that if their read() method implementation
+	test send_p before reading data they also test in_selection. Data
+	values should be read it *either* property is true. This fixes bug
+	#657.
+
+2003-07-28  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added support for Digest authentication. There's also potential
+	support for NTLM and GSS-Negotiate authentication, but I don't
+	have any way to test those. 
+
+2003-07-24  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added a new test driver called server_handler. It's much more
+	like a server's handler executable; combine it with geturl reading
+	from stdin to make tests. See also sh-testsuite. Nascent but still
+	useful. 
+
+	* DDS:send() has been incorporated into DODSFilter::send_data() as
+	part of a refactoring of DDS.
+
+	* Timeouts are now smart.
+
+2003-07-23  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added a timeout mechanism to the server and modified the Test*
+	classes so this is easier to test. Right now it's a pretty
+	rudimentary thing. However, the timeout can be set in the newly
+	expanded dods.rc configuration file. In the future when we have
+	reliable Error delivery this code will send an Error object that
+	explains that there was a time out, et cetera. Check out the
+	ChangeLog in DODS/etc for information about the expanded dods.rc file.
+
+2003-05-15  James Gallagher  <jimg@dcz.dods.org>
+
+	* Removed the List class/datatype. We've talked about this for
+	months (years). Done.
+
+2003-05-13  James Gallagher  <jimg@dcz.dods.org>
+
+	* Modified DODSFilter so that it takes a new switch, -o, which can
+	be used to tell a handler which object is to be returned. Handlers
+	can now be built which return all of the responses; the
+	DODS_Dispatch CGI module tells the hander which response to
+	generate. 
+
+2003-04-21  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged release-3-3-1.
+
+	* The RCReader class now supports using the environment variable
+	DODS_CONF to point toward a dodsrc file. The value of the envar
+	supersedes the default ~/.odsrc.
+
+	* In HTTPCache: changed catch(...) clauses so that they explicitly
+	name exceptions. The code was catching and re-throwing exceptions
+	and in methods where the types of exceptions were caught this
+	caused abort to be called, even when the re-thrown exception was
+	one of the declared types.
+
+	* Several bugs in the grid() function were fixed. First, the
+	function was not checking to make sure that map vectors using in
+	the selection sub-expressions passed to grid() actually existed.
+	Also, the mechanism used to read values of variables used as
+	arguments to CE functions was broken; constructor types were not
+	completely read but *were* marked as though they were. Look in
+	RValue for the latter fix.
+
+	* Some of the unit tests included code that wouldn't compile with
+	gcc 3.2.x; fixed. I'm now using gcc 3.2.2 for development (but
+	nightly builds also continue with 2.95.3 and VC++ as well).
+
+	* Added methods to DAS, AttrTable and DDS so that an integer index
+	can be used to access variables and attributes. This was done so
+	that the idl command-line client could iterate over instances
+	without actually having to work with C++ iterator objects.
+
+	* IteratorAdapter is no longer templated. This change was made to
+	accommodate the MS VC++ compiler. Also, doxygen comments have been
+	added to the code.
+
+2003-01-23    <jimg@dcz.dods.org>
+
+	* Made release 3.3.0. Not merged since there were very, very few
+	changes. 
+
+2003-01-22    <jimg@dcz.dods.org>
+
+	* I changed the source files so that they are clearly covered by
+	the GNU Lesser GPL.
+
+2003-01-10    <jimg@dcz.dods.org>
+
+	* NEWS: Added.
+
+	* Merged with changes tagged release-3-2-10 (from the release-3-2
+	branch). 
+
+2002-08-08    <jimg@dcz.dods.org>
+
+	* I Replaced the single VirtualCtors.cc file, which had a virtual
+	constructor for each of the data type classes in it (see Meyers
+	for a discussion of virtual ctors), with a set of files with one
+	virtual ctor per file. The old VirtualCtors.o file was *not*
+	included in the libdap++ library because of link-time problems it
+	would introduce. The new files *are* included. For any of the
+	data type classes you specialize, you must provide a virtual ctor
+	that returns an instance of your specialization. For any of the
+	data types you do *not* specialize, the library will use the
+	default virtual ctor.
+
+	* The library libdap++.a is now `apartment thread safe.' The
+	phrase comes from Microsoft's documentation; it means that the
+	library can be used in a limited sense with MT software. The limit
+	is that objects created using the library cannot be shared by
+	threads. A MT program can create several instances of Connect, for
+	example, but each instance can only be used by a single thread.
+
+2002-06-21    <jimg@dcz.dods.org>
+
+	* Connect.cc: Fairly extensive additions to Connect's interface.
+	The old interface is still supported, but its use is deprecated.
+
+	* VirtualCtors.cc: Added this file. It can be linked with clients
+	so that they don't have to provide definitions for the NewByte(),
+	..., NewGrid() 'virutal constructor' functions. This will work
+	only for those clients that don't need to subclass the various
+	types. There maybe a better way to do this; either use a real
+	factory class passed to DDS or by putting each of the New*()
+	virtual ctors in its own file and adding those to the library.
+	That way the linker will only extract them if they are needed. 
+
+2002-06-11    <jimg@dcz.dods.org>
+
+	* expr.y (process_array_indices): Arrays and Grids can no longer
+	be partially constrained (those constraints didn't work).
+
+2002-06-10    <jimg@dcz.dods.org>
+
+	* das.lex: Added '*' to the set of chars allowed in a WORD. Same
+	for dds.lex.
+
+2002-06-05    <jimg@dcz.dods.org>
+
+	* usage.cc: Modified so that option inforamtion passed in by
+	DODS_Dispatch.pm gets passed onto the filter programs (see bug 453).
+
+
+
+2002-06-03    <jimg@dcz.dods.org>
+
+	* Sequence.cc (print_all_vals): Removed Sequence::level and
+	set_level() methods and the private _level field.
+
+	* dods-limits.h (DODS_ULONG_MAX): Added U suffix to unsigned
+	numerical constants.
+
+2002-05-31    <jimg@dcz.dods.org>
+
+	* das.y: Bug 450; The reserved word attributes can now be used as
+	an attribute name.
+
+2002-05-28    <jimg@dcz.dods.org>
+
+	* Makefile.in: Geturl is no linked without the Test* classes. This
+	demonstrates that libdap++ can be used without subclassing. Look
+	at geturl.cc for an example. Of course, there are limitations on
+	what you can do without subclassing the data types...
+
+	* geturl.cc: Geturl no longer links with the Test* classes. It was
+	modified so that it can use the versions of the classes that are
+	part of libdap++.a (which is a recent change to the library). The
+	geturl.cc file now contains the `virtual ctors' used by the
+	library to instantiate the instances of the various variables.
+
+2002-05-26    <jimg@dcz.dods.org>
+
+	* Connect.h: Removed code specific to the GUI-based progress
+	indicator. 
+
+	* Error.h: Removed code specific to the GUI-based progress indicator.
+
+2002-05-22    <jimg@dcz.dods.org>
+
+	* Byte.h, Byte.cc, ..., Grid.h, Grid.cc: It is no longer necessary
+	to subclass the data type classes when building a client.
+
+2002-05-10    <jimg@dcz.dods.org>
+
+	* Connect.cc (www_lib_init): Joe Sirott found and fixed a bug when
+	making (many) multiple requests.
+
+2002-05-09    <jimg@dcz.dods.org>
+
+	* BaseType.cc (read): This method is not longer abstract.
+
+	* usage.cc (main): Fixed a bug triggered when PATH lacks `.'
+	
+2002-04-30    <jimg@dcz.dods.org>
+
+	* Merged with release-3-2-9
+
+2002-04-03    <jimg@dcz.dods.org>
+
+	* Makefile.in (binary-tar): Fixed binary-tar target.
+
+	* BaseType.cc: Added using std::endl and ::ends
+
+2002-04-02    <jimg@dcz.dods.org>
+
+	* DDS.cc: Fixed broken use of using std::strstream.
+
+	* Connect.cc (server_handler): Fixed bug 416.
+
+2002-03-27    <jimg@dcz.dods.org>
+
+	* usage.cc (write_global_attributes): Fixed usage's output of
+	nested attributes.
+
+2002-03-12    <jimg@dcz.dods.org>
+
+	* Bug 400 fixed.
+
+	* Servers now should recognize that a file called `das' in a
+	directory with data files is an ancillary DAS for any of those
+	files. If an ancillary DAS exists that has a more speciific name,
+	that file will be used instead of the directory-wide DAS.
+
+2001-10-13  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with release-3-2-8.
+
+	* Various bug fixes.
+
+	* Connect now uses exceptions to signal errors for all network I/O.
+
+2001-10-01  James Gallagher  <jimg@dcz.dods.org>
+
+	* Changed serialize and deserialize so that they use exceptions to
+	signal errors. The return values can be ignored. For backward
+	compatibility serialize always returns true and deserialize always
+	returns false (even though that's counter intuitive, that's the
+	old behavior for `no more data to read').
+
+2001-09-28  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with release 3.2.7. The next merge should use
+	release-3-2-7 -j release-3-2.
+
+2001-09-26  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed a bug in the progress indicator's cancel button that
+	caused a crash.
+
+	* Fixed the grid() server-side function. This function can be used
+	in constraint expressions to *select* parts of Grid variables
+	based on the values of their map vectors. Here's an example using
+	the COADS dataset: The dataset can be found at:
+	http://dcz.dods.org/dods-3.2/nph-dods/data/nc/coads_climatology.nc.
+	Look at the DDS and at the Grid SST:
+	    Dataset {
+		Float64 COADSX[COADSX = 180];
+		Float64 COADSY[COADSY = 90];
+		Float64 TIME[TIME = 12];
+		Grid {
+		 ARRAY:
+		    Float32 SST[TIME = 12][COADSY = 90][COADSX = 180];
+		 MAPS:
+		    Float64 TIME[TIME = 12];
+		    Float64 COADSY[COADSY = 90];
+		    Float64 COADSX[COADSX = 180];
+		} SST;
+		...
+	    } coads_climatology;
+	From the attribute object you can find out about the map vector's
+	ranges: 
+            Attributes {
+		COADSX {
+		    String units "degrees_east";
+		    String modulo " ";
+		    String point_spacing "even";
+		}
+		COADSY {
+		    String units "degrees_north";
+		    String point_spacing "even";
+		}
+	    ...
+	Using the grid function you can ask for the part of SST that falls
+	between 30 and 50 degrees east and greater than 20 degrees north
+	using: grid(SST,"30<COADSX<50","20<=COADSY") as the constraint
+	expression. Note that two different styles of mini-expressions are
+	supported by the function. Requests outside the range of the map
+	vectors returns a message indicating their extent.
+
+2001-09-06  James Gallagher  <jimg@dcz.dods.org>
+
+	* Sequence::deserialize(...) now reads all the sequence values at
+	once. Its call semantics are the same as the other classes'
+	versions. Values are stored in the Sequence object using a
+	vector<BaseType *> for each row (those are themselves held in a
+	vector). Three new accessor methods have been added to Sequence
+	(row_value() and two versions of var_value()).
+	BaseType::deserialize(...) now always returns true. This matches
+	with the expectations of most client code (the seqeunce version
+	returned false when it was done reading, but all the calls for
+	sequences must be changed anyway). If an XDR error is found,
+	deserialize throws InternalErr. This fixes bug 258.
+
+
+2001-08-21  James Gallagher  <jimg@dcz.dods.org>
+
+	* After running tests for asciival, I decided to allow some more
+	characters in the CE part of a URL. I created id2www_ce which
+	allows all the characters in id2www plus [], {}, :, &, <>, = and
+	, (comma).
+
+2001-07-27  James Gallagher  <jimg@dcz.dods.org>
+
+	* New escaping semantics. The DAP library now supports escaping
+	names. Servers (and clients) no longer need to escaping characters
+	themselves. The functions used to escape characters have been
+	changed, too. The old functions escaped chars that could not be
+	included in a DAP URL. The new function only escape chars that
+	cannot be present in a URI as defined by RFC 2396 (``Uniform
+	Resource Identifiers (URI): Generic Syntax''). The DAP's scanners
+	and parsers have been expanded so that many more characters are
+	now allowed. The regular expressions used to define IDs and NAMEs
+	are: 
+	    ID	 [a-zA-Z_/%.][-a-zA-Z0-9_/%.#:+\\]*
+	    NAME [a-zA-Z_/%.0-9][-a-zA-Z0-9_/%.#:+\\]*
+	These changes mean that datasets which contain IDs with spaces
+	will work. Note that a space is not allowed in a URI so it will be
+	escaped. If you're typing in a URL to a browser, you must supply
+	the %20 escape. However, Connect is smart enough to escape the
+	space if it's present in a CE. On the server-side, DODSFilter and
+	the type classes remove the escape.
+
+2001-07-10  James Gallagher  <jimg@dcz.dods.org>
+
+	* If the `read from a file or stdin' feature of geturl is used and
+	the input source cannot be opened, an error message is printed.
+	This fixes a bug where a null input data source pointer caused a
+	segmentation violation. I also added a throw to
+	Connect::read_data() so that other clients that don't test the
+	data source pointer (which is a FILE *) will get an exception (as
+	opposed to a core file).
+
+2001-06-22  James Gallagher  <jimg@dcz.dods.org>
+
+	* I added `#' to the set of characters allowed in IDs. See bug 179.
+
+	* I normalized the definitions of ID, FLOAT and NEVER in the four
+	main scanners in the DAP library. They now all share the same set
+	of characters except for a few odd outliers.
+
+2001-06-18  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed a bug that crept into the processing of the server's
+	version number information in the (client) class DataDDS. This
+	made it impossible for clients to process Sequences sent from
+	new servers because they we using the old (default)
+	deserialization scheme.
+
+2001-06-15  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with release-3-2-4. The next merge should use -j
+	release-3-2-4 -j release-3-2.
+
+2001-06-05  James Gallagher  <jimg@dcz.dods.org>
+
+	* das.y: Changed the way errors are handled. Many errors still
+	cause exceptions to be thrown. However, if an attribtue's value is
+	wrong (e.g., a floating point value that is out of range), rather
+	than throw an exception a note in the form of a container and
+	explanation are added to the attribute table where the error
+	occurred. This is particularly important for attributes like
+	numerical values since they are often machine-dependent. Here's an
+	example of a DAS which contains an error:
+	
+	Attributes {
+	    a {
+	        Byte size 7, 700;
+		Float64 type 6.02e400, 3.4;
+		Float64 type 6.02e400, 2.7, 10e-400;
+	    }
+        }
+
+	And here is how the DAS looks once it is processed by the
+	client-side software:
+
+	Attributes {
+	    a {
+		Byte size 7;
+		a_errors {
+		    Byte size 700;
+		    String size_explanation `700' is not a Byte value.;
+		    Float64 type 6.02e400, 6.02e400, 10e-400;
+		    String type_explanation `6.02e400' is not a Float64 value., `6.02e400' is not a Float64 value., `10e-400' is not a Float64 value.;
+		}
+		Float64 type 3.4, 2.7;
+	    }
+	}
+
+	* Makefile.in: Added a short script to the Makefile.in so that
+	when CppUnit stuff is not defined a message is printed. This is
+	only triggered for the unit_tests targets, so it's really a
+	reminder for the folks that are doing development.
+
+	* configure.in: Changed so that if CFLGAS/CXXFLAGS are defined
+	those values are used instead of the defaults. This simplifies
+	development and debugging because it is easier to get builds
+	without optimization and with optimal debugging without hand
+	editing the Makefile every time configure is run.
+
+2001-05-03  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added Cache-Control: no-cache header for error responses. This
+	will prevent internal server error responses (which look like
+	valid responses to the cache) from getting cached.
+
+	* Added support for conditional requests to the DODSFilter class,
+	the cgi_util functions and the DODS_Dispatch.pm Perl module.
+	Servers can now see conditional requests as such and respond
+	sensibly. If a server cannot use the modification time of a file,
+	then it should subclass DODSFilter and supply different versions
+	of the last modified time methods.
+
+2001-04-23  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed the unit test targets and variables. These are now
+	included in the Makefile.in but are commented out. You must
+	remove the comments to use the target. Also needed is the CppUnit
+	software which is in CVS in the CppUnit module.
+
+	* Added support for the Last-Modified MIME header. All DODS
+	servers which use the functions in cgi_util.cc and/or the class
+	DODSFilter can now easily include the Last-Modified header in
+	their responses. The only change that servers should make is to
+	pass the ancillary files location directory to
+	DODSFilter::send_data(). Use of the send_das() and send_dds()
+	methods should require no change. In addition, calling the
+	send_data() method without giving the ancillary files location
+	will work OK with the exception that ancillary files won't
+	contribute to the LM computation (as they will for the DAS and DDS
+	responses).
+
+	Currently the LM computation works only for file-based datasets.
+	Servers that provide access to other types of data should subclass
+	DODSFilter and provide alternate implementations of the relevant
+	methods. 
+	
+	* Fixed some warnings in Error.cc from g++.
+
+2001-02-13  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged authentication changes from the trunk (where that feature
+	was added) here so that it can be included in 3.2 without too much
+	confusion. 
+
+2001-02-09  James Gallagher  <jimg@dcz.dods.org>
+
+	* Substantial changes to Connect to support HTTP authentication.
+	libdap++ now support three ways of supplying credentials: via
+	Connect's ctor, in a URL (using Netscape's convention and via a
+	popup. 
+
+2001-01-26  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with release-3-2-3. The next merge should use -j
+	release-3-2-3 -j release-3-2.
+
+	* Tagged release-3-2-3
+
+2000-12-06  James Gallagher  <jimg@dcz.dods.org>
+
+	* There was an old problem with libwww which I patched in June or
+	July which fixed its caching of compressed responses. This patch
+	has not made it into the regular distribution, so when I upgraded
+	the patch was lost. I've re-applied the patch to the code in
+	src/packages/libwww. This, together with the .dodsrc bug fixed
+	below, fixes reported problems with the caching system (on unix at
+	least, I don't have any information about the problems on win32).
+
+	* Fixed .dodsrc file reading. Comments at the top of the file
+	caused the reader to stop processing the file and thus none of the
+	parameter values were being read.
+
+2000-12-04  James Gallagher  <jimg@dcz.dods.org>
+
+	* Note that the attribute table tests added are both unit tests
+	(look at the unit_tests target in the Makefile) and dejaGNU-type
+	tests. Take a look at AttrTableTest.cc to see how unit tests are
+	written for a class.
+
+2000-11-29  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed problems with attribute aliases. Added unit tests for
+	AttrTable. DAS is now a child of AttrTable, so the AttrTable
+	methods can be used at any level of the DAS object. The DAS
+	methods still work, but they are now implemented using AttrTable
+	methods. 
+
+2000-09-21  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged Jose Garcia's exception handling code. 
+
+	* Merging the exception software means that all definitions of the
+	read() method must change. See BaseType.h for details.
+
+	* Improved error messages returned by the parsers. The DAS and DDS
+	parsers now include a line number and, in many cases, context, for
+	each message. 
+
+	* Normalized all the #ifndef #endif guards in the header files so
+	they use the same naming scheme. Added guards around #include
+	lines for headers to speed compile times (see Lakos).
+
+	* Reorganized the source files so that the CVS logs appear at the
+	end rather than the start of each file. 
+
+2000-09-11  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added methods to Sequence to provide access to row number
+	constraint information. These methods (get_starting_row_number,
+	...) provide access to the indices given in a CE. Also added is a
+	method to set these values (until explicitly set the stating
+	and ending row numbers and the stride are -1). In addition there
+	is a method to get the current row number (useful when reading
+	row-by-row with read()) and a method to read the ith row into the
+	sequence. 
+
+	* Added Sequence row number selection. It is now possible to
+	request the first 10 rows of a sequence, or row 7 through 11 and
+	to do so using a stride. The notation is the same as for Arrays
+	and Grids; it uses the square brackets and colon separated
+	integers for start, stride and stop. 
+
+2000-08-31  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with 3.1.10. The next merge should use update -d -j
+	release-3-1-10 -j release-3-1.
+
+	* Fixed a bug in all the scanners (except the GSE scanner) where
+	\r characters in text sent from win32-hosted servers caused the
+	problems. The \r characters are either ignored or treated like
+	newlines when paired with \n (depending on the circumstances).
+
+2000-08-29  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with 3.1.9. The next merge should use update -d -j
+	release-3-1-9 -j release-3-1.
+
+2000-08-25  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed a bug in esc2underscore(). The function used a static
+	instance of Regex; whatever regular expression was passed in on
+	the first call would be used for all subsequent calls. The same
+	problem existed for other functions in the file.
+
+2000-08-02  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with 3.1.8. The next merge should use cvs update -j
+	release-3-1-8 -j release-3-1.
+
+2000-08-02  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed a config_dap.h goof. That header was included by some of
+	the DAP headers which might, in turn, be included by other
+	software. The HAVE_CONFIG_H symbol in config_dap.h was confusing
+	other code (e.g., the Cgicc library). I changed config_dap.h and
+	its use; the header is now only included by DAP .cc or .c files.
+	DAP header files which needed config_dap.h for the dods_int32,
+	etc., typedefs now get those from dods-datatypes.h. Headers which
+	used config_dap.h for the DVR symbol (which holds the dap version
+	information) have been rewritten.
+
+	This change means that code which now included config_dap.h should
+	be rewritten to use the dods-datatypes.h header or otherwise
+	changed so that config_dap.h is not used.
+
+2000-06-16  James Gallagher  <jimg@dcz.dods.org>
+
+	* Note: This release was made to patch a bug which shows up in the
+	version of loaddods that supports loading the DAS into a
+	structure (version 3.1.5 of loaddods). You need this code to build
+	that version of loaddods.
+
+	* Fixed the tests so they work on my machine (where I don't have
+	`.' in my PATH). I also added some `/'s in places where is *seems*
+	DejaGnu was supplying them before. If extras creep in that should
+	not e a problem.
+
+	* Fixed (by Ethan) the tar and binary-tar targets.
+
+	* Added a fair amount of instrumentation to the dtors of various
+	methods. 
+
+	* Fixed a bug in DDS. The del_var method must delete the BaseType
+	before deleting the list element. I also changes from a SLList to
+	a DLList to get a cleaner delete method.
+
+2000-06-07  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with version 3.1.6. Used cvs update -d -j release-3-1-5
+	-j release-3-1. The next merge should use -j release-3-1-6 -j
+	release-3-1. 
+
+	* Added code to Vector so that each element of vector<BaseType *>
+	_vec is explicitly copied and deleted.
+
+	* Fixed bugs in Grid, Structure and Sequence. The methods used to
+	get the Pix pointing to the first variable would segfault if there
+	were no variables. Now they return 0.
+
+	* DODSFilter now has a set_ce() method. This means that a server
+	can easily rewrite the CE it gets without loosing the other
+	features of DODSFilter.
+
+	* Connect.cc: Fixed bugs with local connections and the libwww and
+	Gui initializations. 
+
+	* Fixed a bug in AttrTable. Container attributes below the top
+	level were broken in the last release. Changed the get_attr_num()
+	method so that it returns a sensible value for both containers and
+	`plain' attributes. Added to struct entry so that it is more a
+	complete class. Added methods so that operator= and the copy-ctor
+	really work. The IFREMER server needs these fixes.
+
+	* Added to InternalErr a new ctor which makes it simpler to report
+	the file name and line number when an error is thrown.
+
+2000-06-06  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged changes from Rob's PC port. Used cvs update -j
+	pc-port-branch. I have done minimal testing on Linux (dejagnu is
+	not yet installed) and the code seems fine. 
+
+2000-04-17  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed two bugs in Connect.cc that caused client sessions which
+	mixed remote and local connections to fail.
+
+2000-04-06  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with Brent's gui2 code. This version of the progress
+	popup adds a cancel button. The software was checked in on the
+	gui2 branch and the point at which it was merged was tagged, on
+	that branch, as gui2-0. Future merges should use update -j gui2-0
+	-j gui2. 
+
+2000-03-31  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with release-3-1-5. The next merge should use -j
+	release-3-1-5 -j release.
+
+2000-03-28  James Gallagher  <jimg@dcz.dods.org>
+
+	* Look in the Makefile for this software to see the new support
+	library configure macros in action. These simplify getting the
+	right libraries on the link line without duplicates (which
+	lengthen link times). 
+
+	* Added libdap++-gui.a to the build/install/tar/binary-tar stuff.
+	This library is built with `GUI-enabled' versions of Connect and
+	Error. This is to support our progress indicator and cancel button.
+
+	* Added a new feature to the .dodsrc file and caching. Users can
+	set the default expiration time for a response using a parameter
+	in the RC file. By default the expiration time is 24 hours
+	(written in seconds).
+
+	* Fixed bugs in the caching software. Compressed responses now are
+	cached correctly and responses with several variables are also
+	correctly handled. 
+
+2000-03-31  James Gallagher  <jimg@dcz.dods.org>
+
+	* escaping.cc: Fixed a bug where an int was used to index into a
+	string object.
+
+	* parser-util.cc (check_float32): Float32, Float64 attributes no
+	longer check ranges.
+
+2000-03-20  James Gallagher  <jimg@dcz.dods.org>
+
+	* parser-util.cc (check_byte): Byte attributes can now be either
+	signed or not (i.e., their range is -128 to 255). This is to
+	support clients that assume bytes to be signed as well as those
+	that assume bytes to be unsigned.
+
+2000-01-26  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with release3-1-4. The next merge should use: update -j
+	release-3-1-4 -j release-3-1.
+
+2000-01-26  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixes for Red hat 6.x (from Ethan).
+
+	* Fixed the use of the stdc++ library's string::find() method. Its
+	return type was assigned to an unsigned int in many places. On 64
+	bit machines this caused problems. The type now used is
+	string::size_type (although size_t also works).
+
+2000-01-24  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed a bug in the DAS and DDS parsers (das.y, dds.y). These
+	parsers used static global C++ objects which require that their
+	constructors run before main(). However, when the dap library is
+	linked by a linker that is not aware of this (e.g., Sun's ld, when
+	using GNU C++) those constructors are never called and accessing
+	those objects causes a segmentation fault. Fixing this problem
+	might fix undiscovered bugs in netCDF clients and definitely fixes
+	problems with the nascent loaddods rewrite (where loaddods gets
+	rewritten in C++).
+
+1999-12-31  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added Gui (progress indicator) code back into the core. The
+	interpreter is now embedded in DODS. 
+
+1999-12-14  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed a bug in Connect where once the Cache was closed it would
+	never be opened again. 
+
+	* Fixes/improvements for the caching code. The code now correctly
+	handles the case where many URLs are opened using Connect objects
+	created both sequentially and in an interleaved fashion. The Cache
+	index is now updated after each URL request. The Cache is now
+	closed only after all connect objects are destroyed.
+
+	* Connect.h: Added static members to track use of Connect objects
+	in conjunction with the new caching code.
+
+1999-11-04  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged: cvs update -j release-3-1-2 -j release-3-1, the next
+	merge command should use -j release-3-1-3 -j release-3-1.
+
+1999-11-03  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed the usage filter (nothing to do with the comment about a
+	function of the same name in cgi_utils.cc). The filter was slurping
+	entire datasets because it failed to append the .html suffix when
+	looking for user-defined documentation about a dataset.
+
+	* DDS::send now catches exceptions thrown by the expression
+	evaluator. This means more reliable handling of errors from within
+	server-side function. However, this is only a stop-gap solution to
+	the general problem of poor error processing within the library.
+	Look for a *real* solution to this problem in about 2 months.
+
+	* Fixed a range-check bug for unsigned 16-bit integers. The values
+	were being tested as if they were signed.
+
+	* Removed usage() from cgi_utils.cc since it was not used and was
+	causing conflicts with servers which defined a function with the
+	same name.
+
+	* Documentation updates.
+
+	* Substantial changes to the Makefile.in. See the top level ChangeLog.
+
+1999-08-27  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed the value of DODS_SHRT_MIN in dods-limits.h
+
+	* Now compiles with gcc 2.95
+
+1999-05-27  James Gallagher  <jimg@dcz.dods.org>
+
+	* Misc bug fixes.
+
+	* Error and InternalErr objects now are better behaved and DDS
+	throws them more predictably (although there's still a lot of work
+	to do there).
+
+	* Fixes merged from the alpha-3-0-0 branch.
+
+1999-05-24  James Gallagher  <jimg@dcz.dods.org>
+
+	* The DODS support address is now correct in all the places in the
+	dap. 
+
+	* Fixed some bugs that arose because C and C++ I/O streams may no
+	longer be synchronized.
+
+	* Dan removed the old GUI code. See the comments in Connect.cc.
+
+1999-05-19  James Gallagher  <jimg@dcz.dods.org>
+
+	* The dap++ library now builds using -fPIC (position independent
+	code) so sharable libraries should be easier to make.
+
+	* In DODS_Dispatch.pm, variables are checked for odd characters
+	that might be used to embed shell commands.
+
+	* Fixed security holes in the DODS_Dispatch.pm code. It now
+	returns the command as elements of an array which can be passed to
+	the exec() thus by passing the shell.
+
+	* Fixed all occurrences of the support email address to be the new
+	address. 
+
+1999-05-04  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added to DODSFilter and DODS_Dispatch.pm so that server version
+	number information can be passed from the CGI script to the core
+	software. Now when you ask for the version of a server, you will
+	get the server's version information in addition to the core's. In
+	addition, the XDODS-Server header that is returned with every
+	response will now contain the server's version number. This
+	assumes that the server's dispatch script initializes
+	DODS_Dispatch correctly.
+
+	* Added InternalErr class. This class should be thrown by any code
+	that finds an internal error (i.e., the sort of thing that might
+	otherwise be trapped by an assert).
+
+	* Committed changes that form the base of version 3. This combines
+	the new simple types with a reduced dependence on the old libg++
+	code and misc. fixes. 
+
+1999-04-21  James Gallagher  <jimg@dcz.dods.org>
+
+	* Small fix in prune_spaces(). This fixed a problem in the mexcdf
+	client (and presumably other netcdf or matlab programs to).
+
+1999-04-14  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed a bug in Connection::del_connect() where an assert tested
+	false for a valid condition. It is OK for the conns[i] element to
+	be NULL when this method is run.
+
+	* Fixed a bug in Connect where the member _tv would be deleted
+	without being first allocated when local files are accessed. This
+	member is no longer needed (it was used by libwww 5.0).
+
+1999-04-09  James Gallagher  <jimg@dcz.dods.org>
+
+	* This release is a special ferret-only release. It is a stable
+	alpha version of what will be DODS 3.0 once some more features are
+	added. 
+
+1999-03-24  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added support for the new Int16, UInt16 and Float32 types.
+
+1999-03-22  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added the Int16, UInt16 and Float32 datatypes to attributes. See
+	the tests numbered test.18--20.
+
+1999-03-19  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added a call to setprecision(15) in geturl. This makes it so
+	that floating point numbers will print with the full range or
+	precision. It might be that I have to move this when 32 bit floats
+	are added because they have lower precision (8). However, setting
+	the precision at this level (once, before the calls to print_val()
+	start) is probably more efficient.
+
+1999-03-17  James Gallagher  <jimg@dcz.dods.org>
+
+	* Changed cgi_util.cc:find_ancillary_file() so that it looks for
+	<pathname>.ext in addition to <basename>.ext and the other
+	variations. This means that the current convention of naming
+	ancillary DAS files <filename>.das will work for both the
+	DODS_Date(), etc., functions (whose Factory classes were using
+	this convention) and the regular DAS filter program. 
+
+1999-02-24  James Gallagher  <jimg@dcz.dods.org>
+
+	* An interim revision changed the way incoming data documents were
+	processed so that the DDS contained in the data document did not
+	have to copied to a separate file before being processed. However,
+	this broken programs that read data docs with a pipe. This problem
+	has been fixed. The document's DDS still is not copied, but
+	programs like asciival that read from stdin via a pipe now work.
+
+1999-01-21  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added the Grid Selection function. Grid variable may now be
+	`selected' based on the values of the Map vectors (since this a
+	constraint that returns data based on those data's values, I'm
+	calling it a selection operation). The syntax looks like:
+	grid(<grid var name>, <expression 0>, <expr 1>, ..., <expr n>). An
+	example: grid(dsp_band_1, "29.7 < lat <= 34.8", "lon > -70.9", "
+	-60 < lon"). This deliberately shows different forms the
+	`expressions' can take. Note that these expressions can only name
+	the grid's map vectors; they are not general expressions. Also
+	note that the function appears in the projection part of a CE.
+
+1999-01-15  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Changed the way the expression and DDS parsers work. Now the
+	expression scanner/parser can process strings directly. This means
+	that expression parsing is cleaner, somewhat faster and more
+	reliable since a temporary file is no longer created as part of
+	the parse process. Similarly, the DDS parser no longer requires
+	that a temporary file be created to parse the DDS bound to a data
+	document. 
+
+1998-11-23  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed a bug in DAS where the destructor would free memory that
+	was just garbage. I replaced the old genclass-based DASVHMap code
+	with an SLList of structs.
+
+1998-11-11  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixes for various memory leaks found while working on the FF
+	server.
+
+1998-11-05  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed error messages for CEs involving arrays. When an array
+	name was misspelled in a CE you got no error message, now you do.
+
+1998-10-21  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added projection functions to the CE syntax. These functions are
+	executed *during* the parse of the projection clause. They can be
+	used to add new (synthetic) variables to the DDS.
+
+1998-10-14  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* expr.y: Added parse of single array indeces to the projection
+	list in a CE. i[3] asks for the fourth element of the array i. The
+	old syntax i[3:3] still works.
+
+1998-09-17  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* The release (version 2.18) is the last that will use String.h.
+	  WRONG! 11/11/98 jhrg
+	
+1998-09-03  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Feature: CEs no longer require fully-qualified names for fileds
+	of ctor types.
+
+	* Makefile.in (clean): Added GNU to the list of directories
+	cleaned. This prevents sending out .o files with the source code.
+
+1998-04-07  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed Connect: leading spaces in a URL and/or CE caused either a
+	crash or other problem.
+
+1998-04-03  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added patches from Jake Hamby which fix various problems with
+	Sequences. 
+
+1998-03-27  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added targets for test coverage analysis.
+
+	* Added fix from Jake Hamby.
+
+	* Makefile.in (GNUHDRS): Added String.h & String.cc to the
+	distributions. 
+
+1998-03-19  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added error messages when array indices are out of range.
+
+	* Fixed yesterday's fix... Error objects are no longer compressed.
+	I moved compression into DDS::send (from DODSFilter::send_data)
+	and structured send() so that the mime header generators no longer
+	use a hack to write themselves without compression. Previously
+	set_mime_*() used to `write past' the compressor process and this
+	caused synchronization problems - which I tried to fix yesterday.
+	Now the headers are written and then the compressor is opened. 
+
+1998-03-18  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed an ugly bug where Error objects were compressed (sometimes
+	they still are) but the return MIME document header didn't say so.
+	Now the return document header says if the Error object is
+	compressed. Note that compressing Error objects is not going to
+	save any (real) space but once the compressing data sink is set up
+	*whatever* gets written to it will be compressed...
+
+1998-03-17  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added the ASCII filter to the set of things that comprise a DODS
+	server. Use .ascii or .asc as a URL suffix to get comma-separated
+	ASCII data back from a DODS server.
+
+	* Added boolean member functions is_simple_type(),
+	is_vector_type() and is_constructor_type(). This reduce the size
+	of various parts of the code (but I have not gone through and
+	replaced all the old code yet).
+
+	* Added some new mfuncs to the core. element_count() returns the
+	number of elements in a constructor type (one for a simple type).
+
+1998-03-09  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Removed the -fno-rtti flag from the DAP library build. The
+	library needs RTTI so that software written using exceptions can
+	catch derived exception classes.
+
+1998-02-11  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added the DODS_Cache.pm class (which was in the hdf-dods server
+	code only). This Perl module is not installed as part of the
+	default stuff in DODS_ROOT/etc.
+
+	* Added support for compression. Servers recognize the
+	Accept-Encoding header in a request document. when the value of
+	that header is `deflate' the zlib LZW algorithm is used to
+	compress data. Clients automatically respond to document that
+	contain the header Content-Encoding: deflate by un compressing the
+	data (a new feature of libwww 5.1). The new servers are compatible
+	with old clients and the new clients are compatible with old
+	servers (although neither combination can use compression).
+
+	* Added a help option to the servers (via an addition in
+	DODS_Dispatch.pm). Use this with the `file name' /help or the
+	extension .help.
+
+Tue Dec 16 00:32:31 1997  James Gallagher  <jimg@localhost>
+
+	* Added DODS_Dispatch.pm perl class. This class centralizes a lot
+	of the code that used to be replicated in each of the perl scripts
+	used to dispatch the various `methods' of a DODS server.
+
+Mon Dec 15 17:26:37 1997  James Gallagher  <jimg@localhost>
+
+	* Many small bug fixes that were fixed before being added to the
+	TODO list.
+
+	* Added DataDDS class which makes the version number read by
+	Connect available to any member function that can access a DDS
+	pointer (since DDS *s can reference DataDDS objects).
+
+	* Added the DODSFilter class to simplify writing servers that
+	conform to a set of standards Re: the placement and naming of
+	ancillary files, version numbers, etc.
+
+	* Added new Sequence processing code along with backward
+	compatibility. Nested sequences are sent more efficiently. In
+	addition, sequences may be followed by other variables in a Data
+	object (an old bug).
+
+	* Added new characters to those allowed in DDS NAME lexeme. This
+	means that a file with _ and . in the name will parse.
+
+Wed Aug 20 14:12:54 1997  James Gallagher  <jimg@localhost>
+
+	* Added newline after data in process_data() in geturl.cc.
+
+Thu Jun  5 16:08:10 1997  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* See TODO for a list of reported bugs fixed and outstanding.
+
+	* Changed the way request_data works so that Connect can now be
+	used to create clients that read not only from the network but
+	also from standard input.
+
+	* Wrote DODS_Dispatch.pm Perl `class' that can be used to write
+	the nph-* dispatch scripts. This should simplify maintenance of
+	those scripts since they was a lot of replication of code from one
+	script to another. Now must of the real functionality is
+	concentrated in the one file.
+
+	* When projections on Grids result in an object that is no longer
+	a `true' Grid (no longer satisfies Grid::check_semantics()) then
+	send the resulting variables as a Structure of Arrays or a simple
+	array (the latter if only one array remains after applying the
+	projection to the Grid.
+
+	* Changed the way servers report the version number of the core
+	software. The message is now generated by the *_dods data filter
+	program using its -v option (all the data filter programs
+	support this option). This gets rid of the dods-core-version perl
+	script. 
+
+	* Changed geturl so that it can read from stdin (similar to
+	writeval). 
+
+	* Fixed bugs in util.cc.
+
+Wed May 21 22:25:41 1997  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* See the TODO list for information on bugs found and fixed.
+
+	* Added DAS aliases and hierarchies.
+
+Sun Mar 23 17:01:12 1997  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed the nasty decompression bug where child process exit
+	status was never caught. This caused process tables to fill, etc.
+
+Thu Mar  6 21:14:38 1997  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* See TODO list for bugs fixed.
+
+Sun Feb  9 18:40:25 1997  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* See TODO for a list of bugs fixed.
+
+Thu Feb  6 16:17:06 1997  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Changed the return type of request_data() from DDS & to DDS *.
+	Also changed the return types of append_constraint() and
+	constraint_dds() from DDS & to DDS *. When request_data()
+	encounters an error it no longer exits; now it returns NULL.
+
+Wed Dec 18 11:18:05 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Version 2.10 prepared
+
+Wed Dec 11 20:15:10 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Created the Usage server.
+
+	* Fixed bugs in cgi_util.cc - error Content-Description items were
+	not processed.
+
+Tue Dec  3 09:43:02 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added to DDS::parse_constraint() two new variables: ostream os
+	and bool server. These are used to control processing of error
+	messages that are returned from the CE parser. Rather than have
+	the CE parser write all its error messages to stderr, the parser
+	now returns an error object. The new code in parse_constraint()
+	ensures that an `error' header is written to OS and that the error
+	object is serialized if the member function is run from within a
+	server. Since parse_constraint() is called from within
+	DDS::send(), users of the library don't need to do anything
+	different unless they have coded their own versions of send().
+
+	* Added code to ensure that variables can be used in the selection
+	part of a constraint expression without having to be also in the
+	projection part. This means that a CE can be used to request a
+	single variable (e.g., the sequence `s') but select by comparing
+	to other variables in the data set.
+
+Mon Dec  2 11:50:29 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added three new versions of int_ops to process all the possible
+	permutations of signed and unsigned integer operands. Ignore the
+	warnings in util.cc about comparisons between signed and unsigned.
+
+	* Added cases for unsigned integer variables in the Vector, Byte,
+	Int and Float classes. Also added cases in BaseType and some of
+	the Test* classes. This fixes problems with the processing of
+	this type.
+
+Wed Nov 27 11:02:44 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added DDS as a third argument to the user-defined functions in
+	the CE evaluator. This means that a function (which may be server
+	specific) may look at the value of any variable in the dataset,
+	not just those values passed as parameters. This will facilitate
+	creation of functions which use implicit relations between
+	variables when computing values or performing selections (e.g.,
+	when geo-location information depends on the implicit relation
+	between two or more arrays).
+
+	* Changed the way Makefile dependencies are processed so that
+	Makefile (re)generation is faster (since dependencies rarely
+	change). 
+
+Sun Nov 24 19:45:22 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Tested the library code in a number of situations and fixed many
+	little bugs.
+
+	* The asynchronous mode for data transfers is broken and is never
+	used. 
+
+	* Significantly improved processing of errors - web errors are now
+	handled correctly for the DAS and DDS - alas the data will still
+	exit when an error is encountered. Note that to fix this problem
+	I'll need to use exceptions *or* change the return type of the
+	request_data() member function to DDS * (from DDS &). Either one
+	will break everyone's code...
+
+	* Fixed the lame-looking progress indicator.
+
+	* dods_root is no longer a global variable that depends on run
+	time initialization from g++; now it is a function. This ensures
+	that the core software can be linked to program core using linkers
+	other than g++.
+
+	* Added better compressor function - look at jg_dods.cc to see how
+	it is used.
+
+	* Fixed broken decompression.
+
+Wed Nov 13 10:43:56 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added error MIME headers to the set that can be generated by
+	helper functions in cgi_util.cc. The error headers are necessary
+	since DODS now must generate all its own MIME headers (see the
+	section on NPH CGIs in the CGI spec). MIME error headers should be
+	used when an http or www error has been detected - don't use the
+	DODS error objects in those cases.
+
+	* Made changes in the Int data types so that expressions with
+	UInt32s should work. 
+
+	* Fixed some problems with the GUI. It should work more reliably
+	but I doubt that all the problems have been fixed. Needs testing.
+
+	* Now reports most www/http errors, although some clients still
+	can't seem to get the GUI to work (e.g., writeval) even though
+	geturl can.
+
+	* Now requires version 5.0a of the WWW Library.
+
+	* Many changes based on feedback from the initial version 2.09
+	distribution. 
+
+Tue Oct 29 08:23:30 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added UInt32 (32 bit unsigned integers) to the DAP. This
+	includes both using them in the DDS and the DAS. When an UInt32 is
+	used as an operand in a CE, the other operand is cast to unsigned
+	for the comparison operation.
+
+Fri Oct 18 09:35:07 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed various errors in the new Unsigned int classes.
+
+	* Changed the operation of Connect::request_das() and
+	request_dds(). They now pass any initial constraint along to the
+	respective servers. An initial constraint is one which is supplied
+	along with the URL at the time the Connect object is made.
+
+	* The functions set_mine_{text,binary} now produce complete
+	HTTP/MIME headers. Thus DODS servers can now be invoked using the
+	`nph' feature of CGI 1.1 (done by naming the DODS server dispatch
+	script `nph-*'). This solve two problems which appeared with large
+	data transfers: Transfers were cut-off before completion when a
+	server-determined timeout period elapsed and 2) Some large
+	transmissions had an extra byte added into the data stream.
+
+Tue Oct  8 09:23:57 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Modified geturl so that CEs can be passed in using ? in the URL
+	in addition to the program's -c option.
+
+	* Added `%' to the set of characters allowable in identifiers.
+
+	* Added code so that a constraint expression appended to a URL is
+ 	properly handled. The CE is stored in in the Connect object. When
+	a CE is passed to the request_data member function, Connect
+	correctly combines the projection and selection parts of that CE
+	with the matching parts of any initial CE. 
+
+	* Fixed up the grammar files for Bison 1.25
+
+Thu Sep 12 14:05:49 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added a new option to geturl; -D which can be used to get data. 
+
+	* Fixed Array::print_array; used indirectly by the new option to
+	geturl. 
+
+Mon Aug 26 13:18:21 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed various configure.in files so that the different size ints
+	are defined properly.
+
+	* Fixed up the config_dap.h problem in the jg-dods directory.
+
+	* Added classes for 32 bit floats, 32 bit unsigned ints and 16 bit
+	signed and unsigned ints. These are *not* built by default - I'll
+	let the various users have a chance to include these new classes in
+	their software before they are added to the build (and thus must
+	be sub-classed by users of the DAP).
+
+Fri Aug 16 09:34:00 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed configure tests for sem.h prototypes and the semctl union.
+	A new test which scans the sem.h header is in aclocal.m4 (in etc)
+	and the configure script uses that test.
+
+Tue Aug 13 10:54:02 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed bugs in Grid: bad constraint expressions would cause core
+	dumps and a bug on the SGI (maybe others) where valid Grids would
+	not parse.
+
+	* Added to the Error class so that its methods are more useful
+	for correcting errors and displaying messages (see Error.cc).
+
+	* Switched to parser_arg object on all the parsers. parser_arg is
+	a simple object used to pass values to and from the bison gnerated
+	parsers. You need bison 1.24 or newer.
+
+	* Added _unused_ to config_dap.h; this macro expands to gcc's
+	__attribute__((__unused__)) thing. I then tacked `__unused__' on the
+	char rcsid[] arrays to suppress warnings from gcc -Wall (and
+	highlite the warnings that should be fixed!)
+
+	* Fixed a bug in Clause where non-existent functions were
+	evaluated - this caused a core dump.
+
+Fri Aug  9 10:21:06 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed bug in Connect where local accesses were not correctly
+	detected. Also modified geturl to print a diagnostic when supplied
+	with a local file name (or, more to the point, a name without
+	`http'). 
+
+Wed Jul 17 15:04:01 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added expr-check target in Makefile.
+
+	* Added new tests for das, dds objects. Added tests for expr-test
+	driver. 
+
+Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Gui.cc: Added compile-time switch HAVE_EXPECT which is used to
+	control use/requirement of expect and tcl. When defined as 1 Expect
+	and Tcl are used to communicate with a GUI subprocess. When 0,
+	Expect and Tcl are not used (thus the libraries are not required).
+	Note that without Expect the GUI used for the transmission
+	progress indicator and error reporting is not available.
+
+$Id$
+

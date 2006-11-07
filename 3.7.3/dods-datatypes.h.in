@@ -1,0 +1,67 @@
+
+/*
+  Determine at compile-time the sizes of various datatypes. This uses symbols
+  defined by configure (See configure.in).
+  jhrg 10/24/94
+
+  This header is included by all of the DODS DAP library header files which
+  make use of the dods_* typedefs. C or C++ files can either include
+  config_dap.h, use their own configure script which defines SIZEOF_LONG,
+  _INT, _CHAR and _DOUBLE or set these preprocessor symbols themselves in a
+  Makefile, etc.
+
+  This used to be part of the config_dap.h header, but including that in the
+  DAP library headers introduced problems when the DAP was used in conjunction
+  with other libraries. 8/1/2000 jhrg
+*/
+
+#ifndef __DODS_DATATYPES__
+#define __DODS_DATATYPES__
+
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock2.h>
+#include <xdr.h>
+#else
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
+#endif
+
+/* The typedefs are done using a preprocessor symbol so that autoconf's
+   `CONFIG_HEADER' can be used. The configure script will then only modify
+   the dods-datatypes.h header when its contents change. This saves on
+   compilation since that header is used by many files in the dap++ library.
+   The downside is that the typedefs are so ugly... 2/14/2001 jhrg */
+
+#undef DINT32
+typedef DINT32 dods_int32;
+
+#undef DUINT32
+typedef DUINT32 dods_uint32;
+
+#undef XDR_INT32
+#undef XDR_UINT32
+
+#undef DINT16
+typedef DINT16 dods_int16;
+
+#undef DUINT16
+typedef DUINT16 dods_uint16;
+
+#undef XDR_INT16
+#undef XDR_UINT16
+
+#undef DBYTE
+typedef DBYTE dods_byte;
+
+#undef DFLOAT64
+typedef DFLOAT64 dods_float64;
+
+#undef DFLOAT32
+typedef DFLOAT32 dods_float32;		
+
+#undef XDR_FLOAT64
+#undef XDR_FLOAT32
+
+#endif /* __DODS_DATATYPES__ */

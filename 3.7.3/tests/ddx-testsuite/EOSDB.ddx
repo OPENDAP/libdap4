@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset name="EOSDB"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.dods.org/ns/DODS"
+xsi:schemaLocation="http://www.dods.org/ns/DODS  http://dods.coas.oregonstate.edu:8080/dods/dods.xsd" >
+
+	<Attribute name="Facility" type="Container">
+		<Attribute name="PrincipleInvestigator" type="String">
+			<value>&quot;Mark Abbott&quot;</value>
+		</Attribute>
+		<Attribute name="DataCenter" type="String">
+			<value>&quot;COAS Environmental Computer Facility&quot;</value>
+		</Attribute>
+	</Attribute>
+	<Attribute name="LON" type="Container">
+		<Attribute name="units" type="String">
+			<value>&quot;degrees_east&quot;</value>
+		</Attribute>
+		<Attribute name="modulo" type="String">
+			<value>&quot; &quot;</value>
+		</Attribute>
+		<Attribute name="point_spacing" type="String">
+			<value>&quot;even&quot;</value>
+		</Attribute>
+	</Attribute>
+	<Attribute name="LAT" type="Container">
+		<Attribute name="units" type="String">
+			<value>&quot;degrees_north&quot;</value>
+		</Attribute>
+		<Attribute name="point_spacing" type="String">
+			<value>&quot;even&quot;</value>
+		</Attribute>
+	</Attribute>
+	<Attribute name="TIME" type="Container">
+		<Attribute name="units" type="String">
+			<value>&quot;days since 1700-01-01 00:00:00&quot;</value>
+		</Attribute>
+		<Attribute name="time_origin" type="String">
+			<value>&quot;1-JAN-1700&quot;</value>
+		</Attribute>
+		<Attribute name="point_spacing" type="String">
+			<value>&quot;uneven&quot;</value>
+		</Attribute>
+		<Attribute name="edges" type="String">
+			<value>&quot;TIMEedges&quot;</value>
+		</Attribute>
+	</Attribute>
+	<Attribute name="TIMEedges" type="Container">
+		<Attribute name="edges" type="String">
+			<value>&quot; &quot;</value>
+		</Attribute>
+	</Attribute>
+	<Attribute name="SST" type="Container">
+		<Attribute name="missing_value" type="Float64">
+			<value>-9.9999998e+33</value>
+		</Attribute>
+		<Attribute name="_FillValue" type="Float64">
+			<value>-9.9999998e+33</value>
+		</Attribute>
+		<Attribute name="long_name" type="String">
+			<value>&quot;Sea Surface Temperature&quot;</value>
+		</Attribute>
+		<Attribute name="history" type="String">
+			<value>&quot;From all_coads_grid&quot;</value>
+		</Attribute>
+		<Attribute name="units" type="String">
+			<value>&quot;deg C&quot;</value>
+		</Attribute>
+	</Attribute>
+	<Attribute name="NC_GLOBAL" type="Container">
+		<Attribute name="history" type="String">
+			<value>&quot;FERRET V4.11 (debug/no GUI) 19-Nov-95FERRET V4.20 (debug/no GUI) 12-Mar-96&quot;</value>
+		</Attribute>
+		<Attribute name="title" type="String">
+			<value>&quot;COADS Surface Marine Observations (1854-1993)&quot;</value>
+		</Attribute>
+	</Attribute>
+
+	<Sequence name="Abbott_Image_Data">
+		<String name="Image_Name"/>
+		<String name="Date_Sampled"/>
+		<Float64 name="North_Latitude"/>
+		<Float64 name="South_Latitude"/>
+		<Float64 name="West_Longitude"/>
+		<Float64 name="East_Longitude"/>
+		<String name="Version"/>
+		<Int32 name="Julian_Date"/>
+		<String name="PI"/>
+		<String name="Algorithm_Code"/>
+		<String name="Project"/>
+		<String name="Comments"/>
+	</Sequence>
+	<Sequence name="Sat_Images">
+		<String name="Image_Name"/>
+		<String name="Date_Sampled"/>
+		<Float64 name="North_Latitude"/>
+		<Float64 name="South_Latitude"/>
+		<Float64 name="West_Longitude"/>
+		<Float64 name="East_Longintude"/>
+		<String name="Version"/>
+		<String name="Satellite"/>
+		<String name="Instrument"/>
+		<String name="Channel"/>
+		<String name="Resolution"/>
+		<Int32 name="Image_Size"/>
+		<String name="Image_Type"/>
+		<Int32 name="Image_Bits_Per_Pixel"/>
+		<Int32 name="Image_Width"/>
+		<Int32 name="Image_Height"/>
+		<Array name="Image">
+			<Byte/>
+			<dimension size="1000"/>
+		</Array>
+		<Int32 name="Raw_Image_Size"/>
+		<Array name="Raw_Image_Data">
+			<Byte/>
+			<dimension size="1000"/>
+		</Array>
+		<Int32 name="Year"/>
+		<String name="Month"/>
+		<Int32 name="Day"/>
+		<Int32 name="Hour"/>
+	</Sequence>
+	<Sequence name="Drifters">
+		<String name="Instrument_ID"/>
+		<Float64 name="Battery"/>
+		<Float64 name="Checksum"/>
+		<Float64 name="Date_Age"/>
+		<Float64 name="Ed490"/>
+		<Float64 name="Ed490_stdev"/>
+		<Float64 name="Latitude"/>
+		<Float64 name="Longitude"/>
+		<Float64 name="Lu412"/>
+		<Float64 name="Lu412_stdev"/>
+		<Float64 name="Lu443"/>
+		<Float64 name="Lu443_stdev"/>
+		<Float64 name="Lu490"/>
+		<Float64 name="Lu490_stdev"/>
+		<Float64 name="Lu510"/>
+		<Float64 name="Lu510_stdev"/>
+		<Float64 name="Lu555"/>
+		<Float64 name="Lu555_stdev"/>
+		<Float64 name="Lu670"/>
+		<Float64 name="Lu670_stdev"/>
+		<Float64 name="Lu683"/>
+		<Float64 name="Lu683_stdev"/>
+		<Float64 name="Max_Depth"/>
+		<Float64 name="Night_Len"/>
+		<Float64 name="Number_Samples"/>
+		<Float64 name="Num_Aves"/>
+		<Float64 name="Press_Volts"/>
+		<Float64 name="Sea_Surface_Temperature"/>
+		<Float64 name="Sub_Wait"/>
+		<Float64 name="Surf_Volts"/>
+		<Float64 name="Surface_Average"/>
+		<Float64 name="Surface_Percent"/>
+		<Float64 name="Julian_Greenwich"/>
+		<Float64 name="Sun_Angle"/>
+		<Int32 name="Optical_Flag"/>
+		<Int32 name="Sampling_Flag"/>
+		<Int32 name="Tracking_Flag"/>
+		<Int32 name="Hand_Checked_Flag"/>
+		<Float64 name="Julian_Local_Time"/>
+		<String name="Date_Greenwich"/>
+		<String name="Date_Local_Time"/>
+		<String name="DateStamp"/>
+		<String name="algo_code"/>
+		<Int32 name="GPS_hour"/>
+		<Float64 name="GPS_lat"/>
+		<Float64 name="GPS_lon"/>
+		<Float64 name="rel1_lat"/>
+		<Float64 name="rel1_lon"/>
+		<Float64 name="rel2_lat"/>
+		<Float64 name="rel2_lon"/>
+		<Int32 name="time_to_1st_fix"/>
+		<Int32 name="message_ID"/>
+		<Int32 name="max_GPS_volt"/>
+	</Sequence>
+	<Sequence name="Instrument">
+		<String name="Instrument_ID"/>
+		<String name="Instrument_Type"/>
+		<String name="Sensor_Platform_ID"/>
+		<String name="Comment"/>
+	</Sequence>
+
+	<dataBLOB href="http://dods.coas.oregonstate.edu:8080/dods/dts/EOSDB.blob"/>
+</Dataset>

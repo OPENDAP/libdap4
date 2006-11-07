@@ -1,0 +1,16 @@
+# DODS client configuation file. See the DODS
+# users guide for information.
+#
+# This is a special dodsrc file used by HTTPConnectTest. That code turns on
+# caching after first running tests with it off (that's why USE_CACHE is set
+# ot zero here). 10/17/02 jhrg
+USE_CACHE=0
+MAX_CACHE_SIZE=20
+MAX_CACHED_OBJ=5
+IGNORE_EXPIRES=0
+CACHE_ROOT=cache-testsuite/http_connect_cache/
+DEFAULT_EXPIRES=86400
+ALWAYS_VALIDATE=0
+# PROXY_SERVER=<protocol>,<host url>
+# PROXY_FOR=<regex>,<proxy host url>,<flags>
+# NO_PROXY_FOR=<protocol>,<host>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset name="MultiDimensionalSimpleArrays"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.dods.org/ns/DODS"
+xsi:schemaLocation="http://www.dods.org/ns/DODS  http://dods.coas.oregonstate.edu:8080/dods/dods.xsd" >
+
+
+	<Array name="b">
+		<Byte/>
+		<dimension size="2"/>
+		<dimension size="3"/>
+		<dimension size="4"/>
+	</Array>
+	<Array name="b2">
+		<Byte/>
+		<dimension size="2"/>
+		<dimension size="3"/>
+	</Array>
+	<Array name="i32">
+		<Int32/>
+		<dimension size="2"/>
+		<dimension size="3"/>
+		<dimension size="4"/>
+	</Array>
+	<Array name="ui32">
+		<UInt32/>
+		<dimension size="2"/>
+		<dimension size="3"/>
+		<dimension size="4"/>
+		<dimension size="3"/>
+		<dimension size="2"/>
+	</Array>
+	<Array name="i16">
+		<Int16/>
+		<dimension size="2"/>
+		<dimension size="2"/>
+		<dimension size="2"/>
+	</Array>
+	<Array name="ui16">
+		<UInt16/>
+		<dimension size="2"/>
+		<dimension size="2"/>
+		<dimension size="2"/>
+	</Array>
+	<Array name="f32">
+		<Float32/>
+		<dimension size="2"/>
+		<dimension size="2"/>
+		<dimension size="2"/>
+	</Array>
+	<Array name="f64">
+		<Float64/>
+		<dimension size="2"/>
+		<dimension size="2"/>
+		<dimension size="2"/>
+	</Array>
+	<Array name="s0">
+		<String/>
+		<dimension size="4"/>
+		<dimension size="5"/>
+		<dimension size="6"/>
+	</Array>
+	<Array name="s1">
+		<String/>
+		<dimension size="10"/>
+		<dimension size="10"/>
+		<dimension size="10"/>
+	</Array>
+	<Array name="u">
+		<Url/>
+		<dimension size="10"/>
+		<dimension size="10"/>
+		<dimension size="10"/>
+	</Array>
+
+	<dataBLOB href="http://dods.coas.oregonstate.edu:8080/dods/dts/test.03.blob"/>
+</Dataset>

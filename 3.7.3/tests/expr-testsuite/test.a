@@ -1,0 +1,8 @@
+# Test Sequences
+
+dataset {
+	Sequence {
+		Int32 i;
+		Int32 j;
+	} s;
+} testa;

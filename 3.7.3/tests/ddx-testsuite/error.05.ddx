@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset name="OneDimensionalSimpleArrays"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.dods.org/ns/DODS"
+xsi:schemaLocation="http://www.dods.org/ns/DODS  http://dods.coas.oregonstate.edu:8080/dods/dods.xsd" >
+
+	<Array name="b">
+		<Byte/>
+	</Array>
+
+	<dataBLOB href="http://dods.coas.oregonstate.edu:8080/dods/dts/test.02.blob"/>
+</Dataset>

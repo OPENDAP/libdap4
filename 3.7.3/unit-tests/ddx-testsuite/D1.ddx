@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset name="EOSDB.DBO"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.dods.org/ns/DODS"
+xsi:schemaLocation="http://www.dods.org/ns/DODS  http://dods.coas.oregonstate.edu:8080/dods/dods.xsd" >
+
+	<Attribute name="_location" type="Container">
+		<Attribute name="Description" type="String">
+			<value>&quot;String describing general location (southern ocean,oregon coast, etc.) of drifter deployment.&quot;</value>
+		</Attribute>
+	</Attribute>
+
+	<Sequence name="Drifters">
+		<String name="instrument_id"/>
+		<String name="location"/>
+		<Float64 name="latitude"/>
+		<Float64 name="longitude"/>
+	</Sequence>
+
+	<dataBLOB href="http://dods.coas.oregonstate.edu:8080/dods/dts/D1.blob"/>
+</Dataset>

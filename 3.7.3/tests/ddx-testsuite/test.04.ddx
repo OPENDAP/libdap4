@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset name="SimpleTypes"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.dods.org/ns/DODS"
+xsi:schemaLocation="http://www.dods.org/ns/DODS  http://dods.coas.oregonstate.edu:8080/dods/dods.xsd" >
+
+	<Byte name="b"/>
+	<Int32 name="i32"/>
+	<UInt32 name="ui32"/>
+	<Int16 name="i16"/>
+	<UInt16 name="ui16"/>
+	<Float32 name="f32"/>
+	<Float64 name="f64"/>
+	<String name="s"/>
+	<Url name="u"/>
+
+	<dataBLOB href="http://dods.coas.oregonstate.edu:8080/dods/dts/test.01.blob"/>
+</Dataset>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="US-ASCII" standalone="no"?>
+<!DOCTYPE ais_database SYSTEM "ais_database.dtd">
+
+<ais>
+<entry>
+<primary/>
+<ancillary url="http://dodsdev.gso.uri.edu/ais/fnoc1.nc.das"/>
+</entry>
+
+</ais>

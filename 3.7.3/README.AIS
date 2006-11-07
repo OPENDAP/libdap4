@@ -1,0 +1,100 @@
+Notes for the prototype AIS implementation:
+
+How to use the AIS. These notes correspond to the prototype AIS developed in
+March 2003. This version of the AIS works for DAS objects only.
+
+The AIS uses a configuration file which holds the mappings between a primary
+data source (aka a DODS server) and one or more AIS resources. The
+configuration file to use is named in the .dodsrc file using the AIS_DATABASE
+property.
+
+The AIS configuration file is described by src/dap/ais_database.dtd. A short
+file looks like:
+
+    <?xml version="1.0" encoding="US-ASCII" standalone="no"?>
+    <!DOCTYPE ais SYSTEM "http://www.opendap.org/ais/ais_database.dtd">
+
+    <ais xmlns="http://xml.opendap.org/ais">
+
+    <entry>
+    <primary url="http://localhost/dods-test/nph-dods/data/nc/fnoc1.nc"/>
+    <ancillary url="http://localhost/ais/fnoc1.nc.das"/>
+    </entry>
+
+    <entry>
+    <primary url="http://localhost/dods-test/nph-dods/data/nc/fnoc2.nc"/>
+    <ancillary rule="replace" url="ais_testsuite/fnoc2_replace.das"/>
+    </entry>
+
+    </ais>
+
+Each entry must have one <primary> element and may have one or more
+<ancillary> elements. The <ancillary> elements are applied in the order they
+are listed. The 'rule' attribute of <ancillary> determines how each AIS
+resource is combined with the primary resource. By default, attributes in the
+AIS resource are combined so that they overwrite existing attributes. If
+there's no conflict, the new attribute is added. This applies to containers
+as well as single attributes. The replace rule causes the AIS resource
+attributes to completely replace those of the primary resource. If the
+fallback rule is specified, the AIS resource's attributes are used only if
+the primary resource has *no* attributes.
+
+How to use the AIS: 
+
+Keep in mind that this is a prototype and is far, far from
+'feature-complete.'
+
+There are two ways to use the AIS right now. First you can use geturl's new
+-A option. This option tells geturl that when it gets a DAS object, it should
+merge into that object any AIS resources listed for the URL in the current
+AIS database (found in the .dodsrc file).
+
+Second you can program with the AIS. The class AISConnect can be used as a
+replacement for Connect. This class subclasses Connect and adds the capacity
+to use the AIS subsystem I've built. The AIS itself is contained in the
+classes AISMerge, AISDatabaseParser and AISResources.
+
+*****************************************************************************
+
+Here are some notes I made while I wrote the code:
+
+* AISConnect does not implement clones for Connect's deprecated methods.
+  Should it? Maybe it's time to let those go...
+
+* What happens when the same primary (data) source is listed more than once
+  in the database?
+
+* What about primary sources that are regular expressions? Right now lookup
+  is ln(N) where N is the number of entries. Regexps make this linear in N.
+  Bummer. I can use two databases, et c. but it gets messy very fast. So are
+  wild cards important (it doesn't have to be regexps, those are just really
+  easy to implement...)?
+
+* I've changed the meaning of 'fallback' so that it works for a whole group
+  of attributes rather than each individual attribute. My guess is that this
+  will be really unpopular. But it was easy to code and I'm not convinced
+  that fallback resources really make that much sense in practice.
+
+* I think that for client-side AIS stuff, the code should be able to read
+  from a remote XML file to get the database. Not hard to code. But I wonder
+  how useful it would be? It might be cool because a client could get the
+  benefit of a remote server but do all the work locally. That would
+  'distribute the AIS processing/network load.'
+
+* How will we handle multiple AIS databases? I think this could be really
+  important. I like the AIS-in-the-configuration-file less and less, until I
+  think about trying to get people to buy into enveloped URLs...
+
+* Is the database file simple enough for people to write by hand? (and one
+  look and you can see why we're going to need wildcards... imagine 20K
+  URLs).
+
+* I still need to write a bunch more tests.
+
+* I need to hack some code to do the AIS-in-the-URL thing. I figured out how
+  to handle that without doing the entire ex pr parse on the client, at least
+  for the DAS version ... haven't thought about the DDS & DataDDS much.
+
+* I need to code some serious integration tests. Most of the AIS-specific
+  code has unit tests (except for AISConnect, which is barely different from
+  the AISMerge Test unit tests).

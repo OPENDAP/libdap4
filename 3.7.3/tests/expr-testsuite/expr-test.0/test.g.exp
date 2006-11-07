@@ -1,0 +1,76 @@
+
+# expect/tcl code to test the expression parser and scanner
+# jhrg
+#
+# $Log: test.g.exp,v $
+# Revision 1.8  2001/09/28 17:50:08  jimg
+# Merged with 3.2.7.
+#
+# Revision 1.7.4.1  2001/09/07 00:28:40  jimg
+# Tests 6 and g no longer work. Scalars with selections that return no
+# values are not handled properly. Sequences that return no values are,
+# but these tests don't cover that case...
+#
+# Revision 1.7  2000/10/03 22:18:04  jimg
+# Fixes to the tests to accomodate debugging fixes in DDS.cc
+#
+# Revision 1.6  2000/09/22 02:53:00  jimg
+# Fixes to the tests to recognize some of the new error messages. Also,
+# the test drivers were modified to catch the exceptions now thrown by
+# some of the parsers.
+#
+# Revision 1.5  2000/06/16 18:15:02  jimg
+# Merged with 3.1.7
+#
+# Revision 1.4.6.1  2000/06/15 02:24:58  jimg
+# Fixed the tests: problems with PATH, etc. broke the tests on my new machine
+#
+# Revision 1.4  1999/04/29 02:29:40  jimg
+# Merge of no-gnu branch
+#
+# Revision 1.3  1998/11/10 01:12:06  jimg
+# *** empty log message ***
+#
+# Revision 1.2  1997/06/05 22:52:33  jimg
+# *** empty log message ***
+#
+# Revision 1.1  1996/11/27 21:06:22  jimg
+# Expect this test to fail because of problems passing double quotes through
+# Tcl/Expect.
+#
+
+global comp_output		# contains output from das-test_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+# The variable `test_file' is the name of the das input file for this test.
+
+set test_name test.g
+set test_file test.4
+
+# The variable test_equation is the equation to test.
+
+set test_equation {"s&s=~\"Very\""}
+
+# The variable `test_out' is a string that contains the text that should be
+# stored in comp_output by das-test_start. The two strings should match
+# exactly.
+
+set test_out "The complete DDS:
+Dataset {
+    Int32 i\[20\];
+    String s;
+    Int32 j;
+    List Int32 l;
+} test1;
+The data:"
+
+expr-test_start p ${srcdir}/${test_file} ${test_equation}
+
+if ![string compare $test_out $comp_output] { # check comp_output
+    pass "$test_name"
+} else {
+    xfail "$test_name"
+}
+
+

@@ -1,0 +1,94 @@
+# expect/tcl code to test the das parser and scanner
+# jhrg
+#
+
+global comp_output		# contains output from das-test_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+# The variable `test_name' is the name of the das input file for this test.
+
+set test_name test.6
+
+# The variable `test_out' is a string that contains the text that should be
+# stored in comp_output by das-test_start. The two strings should match
+# exactly.
+
+set test_out "Caught Error object:
+Error *"
+
+das-test_start p $srcdir/$test_name
+
+if [string match $test_out $comp_output] { # check comp_output
+    pass "$test_name"
+} else {
+    fail "$test_name"
+}
+
+# $Log: test.6.exp,v $
+# Revision 1.15  2003/12/11 01:08:38  jimg
+# More fixes after resolving conflicts. This code still fails some tests.
+#
+# Revision 1.14.4.1  2003/10/03 16:26:30  jimg
+# Fixed tests; I changed the text of das-test just a little and so these
+# had to be updated. I wanted to be sure that the error message was from
+# an exception and not just a write to stderr.
+#
+# Revision 1.14  2003/01/10 07:15:53  jimg
+# resolved conflicts from the merge with release-3-2-10.
+#
+# Revision 1.13  2001/08/24 17:46:23  jimg
+# Resolved conflicts from the merge of release 3.2.6
+#
+# Revision 1.12.4.1  2001/06/23 00:52:32  jimg
+# Added tests for `#' in IDs.
+#
+# Revision 1.12.4.2  2002/06/11 00:31:20  jimg
+# Fixed this test. It's better to test just for the Error word at the start of
+# the das-test program's output. That way the same test can keep on working as
+# long as the error message continues to start with that word. I also moved the
+# log file to end of the file.
+#
+# Revision 1.12  2000/09/22 02:52:59  jimg
+# Fixes to the tests to recognize some of the new error messages. Also,
+# the test drivers were modified to catch the exceptions now thrown by
+# some of the parsers.
+#
+# Revision 1.11  2000/06/16 18:15:01  jimg
+# Merged with 3.1.7
+#
+# Revision 1.10.10.1  2000/06/15 02:24:57  jimg
+# Fixed the tests: problems with PATH, etc. broke the tests on my new machine
+#
+# Revision 1.10  1999/03/24 23:42:23  jimg
+# Added or updated for the new simple types (Int16, UInt16 and Float32)
+#
+# Revision 1.9  1997/05/13 23:29:28  jimg
+# *** empty log message ***
+#
+# Revision 1.8  1997/03/27 18:20:00  jimg
+# Update for version 2.13
+#
+# Revision 1.7  1996/11/13 19:23:46  jimg
+# *** empty log message ***
+#
+# Revision 1.6  1996/08/12 22:22:20  jimg
+# Changed for the new error message text from the parser.
+#
+# Revision 1.5  1996/05/14 15:40:53  jimg
+# These changes have already been checked in once before. However, I
+# corrupted the source repository and restored it from a 5/9/96 backup
+# tape. The previous version's log entry should cover the changes.
+#
+# Revision 1.4  1995/02/10  03:31:16  jimg
+# Modified test cases for type checking.
+#
+# Revision 1.3  1994/12/09  21:45:51  jimg
+# Modified for new unix.exp.
+#
+# Revision 1.2  1994/09/09  16:15:26  jimg
+# Fixed namign of the test (was given as $srcdir//$test_name, should have been
+# $srcdir$test_name).
+#
+# Revision 1.1  1994/08/29  19:57:24  jimg
+# Test procedures for the DAS parser, scanner and C++ class.

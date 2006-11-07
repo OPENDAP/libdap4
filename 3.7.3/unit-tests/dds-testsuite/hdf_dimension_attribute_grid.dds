@@ -1,0 +1,11 @@
+# Used for the find_hdf4_dimension_attribute_home unit tests.
+
+dataset {
+    Grid {
+      array:
+        Byte xy[x=12][y=12];
+      maps:
+        Float64 x[12];
+	Float64 y[12];
+    } g;
+} ascii_output_test;

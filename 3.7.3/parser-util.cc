@@ -1,0 +1,329 @@
+
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
+
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT_URI.
+//
+// Authors:
+//      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
+
+// These functions are utility functions used by the various DAP parsers (the
+// DAS, DDS and constraint expression parsers). 
+// jhrg 9/7/95
+
+#include "config.h"
+
+static char rcsid[] not_used =
+    { "$Id$" };
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <math.h>
+#include <errno.h>
+
+#include <iostream>
+#include <sstream>
+
+//  We wrap VC++ 6.x strtod() to account for a short comming
+//  in that function in regards to "NaN".
+#ifdef WIN32
+#include <limits>
+double w32strtod(const char *, char **);
+#endif
+
+#include "debug.h"
+#include "parser.h"             // defines constants such as ID_MAX
+#include "dods-limits.h"
+#include "util.h"               // Jose Garcia: for append_long_to_string.
+
+using std::cerr;
+using std::endl;
+
+// Deprecated, but still used by the HDF4 EOS server code. 
+void
+parse_error(parser_arg * arg, const char *msg, const int line_num,
+            const char *context)
+{
+    // Jose Garcia
+    // This assert(s) is (are) only for developing purposes
+    // For production servers remove it by compiling with NDEBUG
+    assert(arg);
+    assert(msg);
+
+    arg->set_status(FALSE);
+
+    string oss = "";
+
+    if (line_num != 0) {
+        oss += "Error parsing the text on line ";
+        append_long_to_string(line_num, 10, oss);
+    } else {
+        oss += "Parse error.";
+    }
+
+    if (context)
+        oss += (string) " at or near: " + context + (string) "\n" + msg
+            + (string) "\n";
+    else
+        oss += (string) "\n" + msg + (string) "\n";
+
+    arg->set_error(new Error(unknown_error, oss.c_str()));
+}
+
+void
+parse_error(const char *msg, const int line_num, const char *context)
+{
+    // Jose Garcia
+    // This assert(s) is (are) only for developing purposes
+    // For production servers remove it by compiling with NDEBUG
+    assert(msg);
+
+    string oss = "";
+
+    if (line_num != 0) {
+        oss += "Error parsing the text on line ";
+        append_long_to_string(line_num, 10, oss);
+    } else {
+        oss += "Parse error.";
+    }
+
+    if (context)
+        oss += (string) " at or near: " + context + (string) "\n" + msg
+            + (string) "\n";
+    else
+        oss += (string) "\n" + msg + (string) "\n";
+
+    throw Error(oss);
+}
+
+// context comes from the parser and will always be a char * unless the
+// parsers change dramatically.
+void
+parse_error(const string & msg, const int line_num, const char *context)
+{
+    parse_error(msg.c_str(), line_num, context);
+}
+
+void save_str(char *dst, const char *src, const int line_num)
+{
+    if (strlen(src) >= ID_MAX)
+        parse_error(string("The word `") + string(src)
+                    + string("' is too long (it should be no longer than ")
+                    + long_to_string(ID_MAX) + string(")."), line_num);
+
+    strncpy(dst, src, ID_MAX);
+    dst[ID_MAX - 1] = '\0';     /* in case ... */
+}
+
+void save_str(string & dst, const char *src, const int)
+{
+    dst = src;
+}
+
+bool is_keyword(string id, const string & keyword)
+{
+    downcase(id);
+    id = prune_spaces(id);
+    DBG(cerr << "is_keyword: " << keyword << " = " << id << endl);
+    return id == keyword;
+}
+
+int check_byte(const char *val)
+{
+    char *ptr;
+    long v = strtol(val, &ptr, 0);
+
+    if ((v == 0 && val == ptr) || *ptr != '\0') {
+        return FALSE;
+    }
+
+    DBG(cerr << "v: " << v << endl);
+
+    // We're very liberal here with values. Anything that can fit into 8 bits
+    // is allowed through. Clients will have to deal with the fact that the
+    // ASCII representation for the value might need to be tweaked. This is
+    // especially the case for Java clients where Byte datatypes are
+    // signed. 3/20/2000 jhrg
+    if ((v < 0 && v < DODS_SCHAR_MIN)
+        || v > 0 && static_cast < unsigned long >(v) > DODS_UCHAR_MAX)
+        return FALSE;
+
+    return TRUE;
+}
+
+// This version of check_int will pass base 8, 10 and 16 numbers when they
+// use the ANSI standard for string representation of those number bases.
+
+int check_int16(const char *val)
+{
+    char *ptr;
+    long v = strtol(val, &ptr, 0);      // `0' --> use val to determine base
+
+    if ((v == 0 && val == ptr) || *ptr != '\0') {
+        return FALSE;
+    }
+    // Don't use the constant from limits.h, use the ones in dods-limits.h
+    if (v > DODS_SHRT_MAX || v < DODS_SHRT_MIN) {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+int check_uint16(const char *val)
+{
+    char *ptr;
+    unsigned long v = strtol(val, &ptr, 0);
+
+    if ((v == 0 && val == ptr) || *ptr != '\0') {
+        return FALSE;
+    }
+
+    if (v > DODS_USHRT_MAX) {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+int check_int32(const char *val)
+{
+    char *ptr;
+    long v = strtol(val, &ptr, 0);      // `0' --> use val to determine base
+
+    if ((v == 0 && val == ptr) || *ptr != '\0') {
+        return FALSE;
+    }
+
+    if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+int check_uint32(const char *val)
+{
+    char *ptr;
+    unsigned long v = strtol(val, &ptr, 0);
+
+    if ((v == 0 && val == ptr) || *ptr != '\0') {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+// Check first for system errors (like numbers so small they convert
+// (erroneously) to zero. Then make sure that the value is within
+// limits. 
+
+int check_float32(const char *val)
+{
+    char *ptr;
+    errno = 0;                  // Clear previous value. Fix for the 64bit
+    // IRIX from Rob Morris. 5/21/2001 jhrg
+
+#ifdef WIN32
+    double v = w32strtod(val, &ptr);
+#else
+    double v = strtod(val, &ptr);
+#endif
+
+    DBG(cerr << "v: " << v << ", ptr: " << ptr
+        << ", errno: " << errno << ", val==ptr: " << (val == ptr) << endl);
+    if ((v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE))
+        || *ptr != '\0') {
+        return FALSE;
+    }
+
+    DBG(cerr << "fabs(" << val << ") = " << fabs(v) << endl);
+    double abs_val = fabs(v);
+    if (abs_val > DODS_FLT_MAX
+        || (abs_val != 0.0 && abs_val < DODS_FLT_MIN))
+        return FALSE;
+
+    return TRUE;
+}
+
+int check_float64(const char *val)
+{
+    DBG(cerr << "val: " << val << endl);
+    char *ptr;
+    errno = 0;                  // Clear previous value. 5/21/2001 jhrg
+
+#ifdef WIN32
+    double v = w32strtod(val, &ptr);
+#else
+    double v = strtod(val, &ptr);
+#endif
+
+    DBG(cerr << "v: " << v << ", ptr: " << ptr
+        << ", errno: " << errno << ", val==ptr: " << (val == ptr) << endl);
+
+    if ((v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE))
+        || *ptr != '\0') {
+        return FALSE;
+    }
+
+    DBG(cerr << "fabs(" << val << ") = " << fabs(v) << endl);
+    double abs_val = fabs(v);
+    if (abs_val > DODS_DBL_MAX
+        || (abs_val != 0.0 && abs_val < DODS_DBL_MIN))
+        return FALSE;
+
+    return TRUE;
+}
+
+#ifdef WIN32
+//  VC++ 6.x strtod() doesn't recognize "NaN".  Account for it
+//  by wrapping it around a check for the Nan string.
+double w32strtod(const char *val, char **ptr)
+{
+    //  Convert the two char arrays to compare to strings.
+    string *sval = new string(val);
+    string *snan = new string("NaN");
+
+    //  If val doesn't contain "NaN|Nan|nan|etc", use strtod as
+    //  provided.
+    if (stricmp(sval->c_str(), snan->c_str()) != 0)
+        return (strtod(val, ptr));
+
+    //  But if it does, return the bit pattern for Nan and point
+    //  the parsing ptr arg at the trailing '\0'.
+    *ptr = (char *) val + strlen(val);
+    return (std::numeric_limits < double >::quiet_NaN());
+}
+#endif
+
+/*
+  Maybe someday we will really check the Urls to see if they are valid...
+*/
+
+int check_url(const char *)
+{
+    return TRUE;
+}
