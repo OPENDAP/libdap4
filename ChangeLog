@@ -1,3 +1,614 @@
+2006-11-07  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnectTest.cc: Turned off debugging
+
+2006-11-07  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnectTest.cc: Fixed up the tests for headers once again...
+
+2006-11-07  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-11-06  James Gallagher <jgallagher@opendap.org>
+
+	configure.ac: I moved the DAP Protocol setting up where
+	it's likely to be updated and not glossed over.
+
+2006-11-06  James Gallagher <jgallagher@opendap.org>
+
+	getdap.cc: getdap now reports the protocol version in addition
+	to the server version.
+
+2006-11-06  James Gallagher <jgallagher@opendap.org>
+
+	Added tests for the new parameter VALIDATE_SSL
+
+2006-11-06  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnect.cc, RCReader: The .dodsrc file now supports a
+	VALIDATE_SSL option which controls libcurl's validation of SSL
+	hosts and certificates. If this is set (the default), certificates
+	must be signed by a recognized Certificate Authority and hosts
+	must be properly named. Clear (set to zero) to get the old
+	behavior from libcurl which does not perform this validation.
+
+2006-11-03  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnect.cc: Modified so that gzip and compress are also
+	accepted encodings.
+
+2006-11-02  Patrick West <pwest@ucar.edu>
+
+	Removed DODSResponseObject from the Makefile after removing the
+	file from libdap. DAS and DDS no longer inherit from
+	DODSResponseObject. New classes representing DAS, DDS and DataDDS
+	were created in BES. M Makefile.am
+
+2006-11-02  Patrick West <pwest@ucar.edu>
+
+	Moved DODSResponseObject.h to the BES, naming it
+	BESResponseObject. Created in BES three classes to represent DAS,
+	DDS, and DataDDS. D DODSResponseObject.h M DAS.h M DDS.h M DDS.cc
+
+2006-10-30  James Gallagher <jgallagher@opendap.org>
+
+	expr-tests for geogrid() and geoarray(): Fixed the tests so they
+	work using the new notation which passed geo points using lat,lon
+	as opposed to lon,lat.
+
+2006-10-30  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Removed the debug flags from AM_CXXFLAGS. -Werror
+	really breaks the builds because of issues in the bison/flex
+	code.
+
+2006-10-28  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	Constructor.cc, ArrayGeoConstructor.cc: Removed DODS_DEBUG
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	DDSTest.cc: Removed compiler warnings.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnect.cc: Fixed a bug in save_raw_http_headers() where the
+	test for the \r\n line terminator was broken (tested nmemb-1 instead
+	of nmemb-2.
+	Makefile.am: added a target for test coverage and added the debugging
+	options to CXXFLAGS by default. Make sure to back this out before
+	release
+	Unit Tests: Fixed up warnings in the unit tests
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	DDS.h: Added declarations for the new transfer_attributes()
+	methods
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	Constructor.h: Added declarations for the new transfer_attributes()
+	methods.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	BaseType.h: Added a little text to the ptr_duplicate() documentation.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	HTTPCache.cc: Changed the way the mutex which is used to protect
+	the various methods is initialized.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint.cc: Fixed two warnings, one about using a prefix
+	operator with modulus and assignment back to the same variable and
+	the other about field initialization order.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	DODSFilter.cc: Fixed the broken definition of send_blob(),
+	not that it matters...
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	DDS.cc: I removed the second attempt at transfer_attributes and
+	started on a third. This one seems to work much better; see the
+	tests in DDSTest.cc. This version takes the _dim attributes from
+	the hdf4 server and bundles them with a Grid Map or puts them in
+	a sub-container for an Array. This should not break libnc-dap while
+	still preserving all the attribute data.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	Constructor: Added code to merge attributes into a constructor.
+	This method is called from DDS.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Removed unused parameters.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	ArrayGeoConstraint: Fixed a warning where one version of the
+	constructor was not using all of its parameters.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	ArrayGeoConstraintTest: added
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	DDSTest.cc, Makefile.am: Updated with tests for
+	DDS::transfer_attributes.
+
+2006-10-27  James Gallagher <jgallagher@opendap.org>
+
+	Added test data for DDS::transfer_attributes new new version.
+
+2006-10-24  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnect.cc: Removed debugging.
+
+2006-10-24  James Gallagher <jgallagher@opendap.org>
+
+	DDS.cc: Removed the 'sub table' code from transfer_attributes().
+	getdap.cc: Added -X option to build the DDX on the client to simplify
+	debugging (e.g., ticket 480)
+
+2006-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Massive removal of exception qualifiers/declarations. I've left
+	only the exception declarations in RCReader (which declare that
+	no exceptions are thrown) and those for constructors. In
+	HTTPConnect.cc:save_raw_http_headers() fixed a bug where headers
+	were assumed to have \r\n terminators. That is true only for new
+	servers. See ticket #631 for more information.
+
+2006-10-24  James Gallagher <jgallagher@opendap.org>
+
+	cgi_util, DODSFilter: Made many params & methods const
+
+2006-10-23  James Gallagher <jgallagher@opendap.org>
+
+	Fixed AISDatabaseParser.cc
+
+2006-10-23  James Gallagher <jgallagher@opendap.org>
+
+	AISDatabaseParser.cc: Replaced calls to getLineNumber and
+	xmlSAX2GetLineNumber with calls to one or the other depending on
+	the library version. In some places the SAX2 API was used
+	exclusively, in others the old API was used. The changes mean the
+	new API will always be used OR the old API will always be used,
+	depending on library version.
+
+2006-10-23  James Gallagher <jgallagher@opendap.org>
+
+	DDXParser.cc: I put the call to xml2's getLinNumber() Back in the
+	code since older distros don't have the newer library.
+
+2006-10-20  James Gallagher <jgallagher@opendap.org>
+
+	Closed some tickets for the server-side functions and added
+	the version function.
+
+2006-10-20  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for ticket 616: I added code to GeoConstraint that checks
+	the bounding box to make sure it includes data and returns an
+	Error if it does not. Also, the order of the bounding box lat and
+	lon were switched to fit more with practice. The GeoConstraint
+	method arguments were no changes, only the order of lat and lon
+	passed to the geogrid() and geoarray() functions.
+
+2006-10-20  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	Data for geoarray tests added.
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	Baseline data for geoarray tests added.
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	Tests for geoarray: Added
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	Added geoarray() which required changes to GeoConstraint and
+	GridGeoConstraint (I created GridGeoConstraint and made
+	GeoConstraint abstract). ce_functions.cc was also modified.
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	ArrayGeoConstraint.cc: Added
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	ArrayGeoConstraint.h: Added
+
+2006-10-19  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-18  James Gallagher <jgallagher@opendap.org>
+
+	Updated baseline for text.z3.exp (data.z3) after fixing
+	GeoConstraint::find_latitude_indeces().
+
+2006-10-18  James Gallagher <jgallagher@opendap.org>
+
+	Added data.61a-d
+
+2006-10-18  James Gallagher <jgallagher@opendap.org>
+
+	GridGeoConstraintTest: Updated with a new test for
+	find_latitude_indeces.
+
+2006-10-18  James Gallagher <jgallagher@opendap.org>
+
+	Updated the data.z? files given that the range selection behavior in
+	GeoConstraint has been changed.
+
+2006-10-16  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Update win32 module export definitions for latest libdap*.
+
+2006-10-16  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Provide header for find_if under win32
+
+2006-10-16  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Change funcs that return nothing to be declared so
+
+2006-10-14  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-13  James Gallagher <jgallagher@opendap.org>
+
+	GridGeoConstraint: Fixed the calls so that they no longer use the
+	dds argument
+
+2006-10-13  James Gallagher <jgallagher@opendap.org>
+
+	GridGeoConstraint: Added
+
+2006-10-13  James Gallagher <jgallagher@opendap.org>
+
+	Removed DDS from GeoConstraint.
+
+2006-10-13  James Gallagher <jgallagher@opendap.org>
+
+	HTTPCache.cc: Minor change to a comment.
+
+2006-10-13  James Gallagher <jgallagher@opendap.org>
+
+	Refactored GeoConstraint so that all the Grid-specific code is now
+	in GridGeoConstraint (created/added GridGeoConstraint). Modified
+	ce_functions so that geogrid uses the new object. Updated the unit
+	tests. Added the new class to the Makefile.am
+
+2006-10-13  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-12  James Gallagher <jgallagher@opendap.org>
+
+	Added tests.
+
+2006-10-12  James Gallagher <jgallagher@opendap.org>
+
+	Test baseline data for the geogrid() function
+
+2006-10-12  James Gallagher <jgallagher@opendap.org>
+
+	Changes test.10 to test.a
+
+2006-10-12  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-11  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2006-10-11  James Gallagher <jgallagher@opendap.org>
+
+	Added tests to expr-testsuite for geogrid. Somewhat dubious
+	at the moment.
+
+2006-10-10  James Gallagher <jgallagher@opendap.org>
+
+	expr-test.cc: reformatted
+
+2006-10-09  James Gallagher <jgallagher@opendap.org>
+
+	BaseType, RValue, et c.: Closed ticket regarding optimization
+	of build_btp_args. Args are always BaseTypes and before they
+	were always read. This could cause huge Grid/Array variables to
+	be read when those were arguments to functions, even if the
+	running the function would result in only a small part of the
+	Grid/Array being returned. Now arguments are not read. If functions
+	need values for the arguments, they must read them themselves.
+
+2006-10-09  James Gallagher <jgallagher@opendap.org>
+
+	cgi_util.cc: Fixed a bug in set_mime_text where the wrong 'type'
+	was returned. The type was always set to dap4_ddx.
+
+2006-10-09  James Gallagher <jgallagher@opendap.org>
+
+	CEFunctionsTest: Paths easy to set for debugger.
+
+2006-10-09  James Gallagher <jgallagher@opendap.org>
+
+	DDXParserTest: Turned off debug
+
+2006-10-09  James Gallagher <jgallagher@opendap.org>
+
+	AISDatabaseParser: Replaced old xml getLineNumber with the newer
+	SAX2 api call.
+
+2006-10-06  James Gallagher <jgallagher@opendap.org>
+
+	Vector: Added set_value() and value() methods.
+	Updated docs
+
+2006-10-06  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Now the linear_scale function will work for
+	Grid Maps in the hdf4 handler.
+
+2006-10-06  James Gallagher <jgallagher@opendap.org>
+
+	Check point: I've modified Connect, getdap and ObjectType so they
+	support a Connect::request_ddx() method. I've added a stream
+	reader to DDXParser and am in the process of figuring out where
+	the attributes are going!
+
+2006-10-05  James Gallagher <jgallagher@opendap.org>
+
+	DDXParser.h: Added an intern_stream() method to read from a stream and
+	updated the code (one function) to use the new SAX2 API from libxml2.
+
+2006-10-05  James Gallagher <jgallagher@opendap.org>
+
+	DDXParser.cc: Added an intern_stream() method to read from a stream and
+	updated the code (one function) to use the new SAX2 API from libxml2.
+
+2006-10-05  James Gallagher <jgallagher@opendap.org>
+
+	Vector.cc: Ran indent
+
+2006-10-04  James Gallagher <jgallagher@opendap.org>
+
+	ConstraintEvaluator: Now uses a list to store the list of functions
+	and the add_function() methods now overwrite functions with the
+	same names so it's possible to provide specializations of the
+	standard functions in ce_functions.
+
+2006-10-04  James Gallagher <jgallagher@opendap.org>
+
+	Added value()/set_value() methods to Float32/64, Int16/32,
+	UInt16/32 and Str.
+
+2006-10-04  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Both grid and geogrid now use a little hack to
+	read the map vectors of a Grid. The HDF handler cannot read the
+	Grid Maps directly (maps on HDF are not really variables but are
+	attributes instead). This hack involves setting send_p for the
+	just the maps and then calling the Grid's read() method.
+
+2006-10-04  James Gallagher <jgallagher@opendap.org>
+
+	ConstraintEvaluator: Now uses a list to store the list of functions
+	and the add_function() methods now overwrite functions with the
+	same names so it's possible to provide specializations of the
+	standard functions in ce_functions.
+
+2006-10-04  James Gallagher <jgallagher@opendap.org>
+
+	Vector.cc: Simplified the code in val2buf()
+
+2006-10-03  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-10-02  James Gallagher <jgallagher@opendap.org>
+
+	Float64, Int32: Added value/set_value() methods
+	Grid: Added an reverse iterator typedef and rbegin/rend
+	methods. This provides an easy way to access the 'rightmost'
+	map vectors (used by geogrid()).
+
+2006-10-02  James Gallagher <jgallagher@opendap.org>
+
+	Vector.cc: Ran through astyle indent utility.
+
+2006-10-02  James Gallagher <jgallagher@opendap.org>
+
+	parser-util.cc: Ran through astyle indent utility.
+
+2006-10-02  James Gallagher <jgallagher@opendap.org>
+
+	CEFunctionsTest: Added tests for linear_scale().
+
+2006-10-02  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions: Added linear_scale function.
+	CEFunctionsTest: Added tests for linear_scale().
+
+2006-09-30  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-09-29  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Added GEOConstraintTest
+
+2006-09-29  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraintTest: Extracted from CEFunctionsTest and added to
+	svn.
+
+2006-09-28  James Gallagher <jgallagher@opendap.org>
+
+	Clause.cc: Fixed up some comments.
+
+2006-09-28  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint.cc: Turned off instrumentation; removed throw()
+	from declarations, fixed a problem with bad latitude constraint
+	information that caused a fatal error (now it sends a message
+	indicating how to fix the problem).
+
+2006-09-28  James Gallagher <jgallagher@opendap.org>
+
+	DODSFilter.cc: Modified send_data() so that errors thrown by
+	BaseType functions will be returned to clients correctly.
+
+2006-09-28  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc, GeoConstraint.h: Removed 'throw(Error)' from
+	declarations since C++ calls abort() when/if another type of
+	excpetion is thrown, even if there's a catch() clause for it.
+
+2006-09-28  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.h: Removed 'throw(Error)' from declarations since C++
+	calls abort() when/if another type of excpetion is thrown, even if
+	there's a catch() clause for it.
+
+2006-09-27  James Gallagher <jgallagher@opendap.org>
+
+	Vector.cc: I made the instrumentation in the ctor and dtor
+	'level two' statements so that the output would be less cluttered.
+
+2006-09-27  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint.cc: reorder_data_longitude_axis() now works.
+	CEFunctionsTest.cc: Turned off debugging.
+
+2006-09-26  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint: Checkpoint; passes unit tests but still fails with
+	a real dataset (COADS_CLIMATOLOGY). Problem with circular
+	longitude axis.
+
+2006-09-25  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: The grid() function is now implemented so that
+	geogrid() can use it to evaluate GSEs (ticket 569)
+
+2006-09-25  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc/h: The grid() function is now a BaseType* function.
+	CEFunctionsTests: Work with the new grid() implementation changes.
+
+2006-09-24  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Removed old code that was getting in the way.
+
+	GeoConstraint.cc: Fixed a buf in reorder_data_longitude_axis():
+	off-by-one error when applying the first constraint (used
+	d_lon_length instead of d_lon_length-1 for the end point).
+
+	CEFunctionsTest: Added code to use TestTypes from the 'test'
+	directory and generally fixed up the tests so they work with the
+	new BaseType function version of geogrid().
+
+2006-09-23  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-09-22  James Gallagher <jgallagher@opendap.org>
+
+	Modified TestArray so that it's possible to see that arrays really
+	are subsampled. That is, if a constraint is set on an array,
+	TestArray::read() will first allocate the whole array and then
+	sample it, simulating a read() method that's interacting with an
+	API that knows how to sample an array. Works only for two dims.
+
+2006-09-22  James Gallagher <jgallagher@opendap.org>
+
+	test.c{0,1}: Added
+
+2006-09-22  James Gallagher <jgallagher@opendap.org>
+
+	Grid: Added get_array() which returns an Array* so the cast that
+	was needed when using array_var() can be removed. I changed all
+	the calls to array_var() to get_array() (DDS, ce_expr, ce_functions).
+
+	RValue.cc: I removed the read() call when build_btp_args() builds
+	an argument list. This change may break client software, but it means
+	that variables are not complete read when they are passed to CE
+	functions, which should be a big boost in efficiency when working
+	with EOS Grids in geogrid().
+
+	Added code in TestArray to make arrays with constrained values.
+	GeoConstraint: Updates; almost complete.
+
+2006-09-22  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint: Added a new method and an enum to record the 'sense' of
+	the latitude map (normal or inverted).
+	Added tests for the find_latitude_indeces() method to the unit tests
+
+2006-09-21  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint/geogrid checkpoint.
+	Byte,Str: Added value() and set_value() methods
+	TestArray: Improved the read() method so it uses the series_values
+	property and so it returns reasonable values for lat/lon vectors
+	expr-test.cc: Now can be used to test BaseType functions
+
+2006-09-20  James Gallagher <jgallagher@opendap.org>
+
+	Another GeoConstraint checkpoint
+
+2006-09-20  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint checkpoint
+
+2006-09-19  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Patch from Patrice Dumas regarding the libdapserver
+	and libdapclient libraries.
+
+2006-09-19  James Gallagher <jgallagher@opendap.org>
+
+	libdap.spec: Patch from Patrice Dumas regarding the libdapserver
+	and libdapclient libraries.
+
+2006-09-19  James Gallagher <jgallagher@opendap.org>
+
+	dap-config.in: Changed the semantics of --libs so that it matches
+	the old behavior.
+
+2006-09-15  James Gallagher <jgallagher@opendap.org>
+
+	Updated the version to 3.7.2 and the associated ChangeLog,
+	configure.ac, et c., files. The docs have also been updated
+	(docs/html.tar.gz).
+
+2006-09-15  James Gallagher <jgallagher@opendap.org>
+
+	HTTPConnect.cc: Changed the way headers are parsed. Now the code
+	assumes that each header is terminated by a \r\n pair (previously
+	the code assumed the line terminator was a \n character only).
+
 2006-09-15  James Gallagher <jgallagher@opendap.org>
 
 	HTTPConnectTest: Fixed most, but not all, of the failures. See
@@ -17,7 +628,7 @@
 
 2006-09-15  James Gallagher <jgallagher@opendap.org>
 
-	doxy.conf: Now the method listings are in alphbetical order.
+	doxy.conf: Now the method listings are in alphabetical order.
 
 2006-09-14  James Gallagher <jgallagher@opendap.org>
 

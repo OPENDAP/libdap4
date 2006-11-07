@@ -1,6 +1,41 @@
 
 $Id$
 
+News for version 3.7.3, 7 Nov 2006
+
+Fixed a number of bugs including: Problems with the DDS::transfer_attributes()
+method which broke libnc-dap; Added a new configuration parameter to .dodsrc
+so that SSL validation can be suppressed; Fixed problems with the change from
+\n to \r\n line terminators for MIME headers which slipped through the cracks
+the first time; and add gzip and compress to the set of accepted compression
+types supported by the client side.
+
+Added Connect::request_ddx() which asks a server for the DDX response. 
+Previously, it was possible to use getdap to print the DDX, but that object
+was actually built using the DAS and DDS from a server. Now the server is asked
+for the DDX. Servers should support this response to be compliant with DAP 3.1.
+
+In the ConstraintEvaluator class, the add_function() method now allows a server
+to override a function from libdap with a new definition of the same name.
+
+I added a new interface for the scalar types: value() and set_value() can be
+used to get and set values. These are much simple to use than the older
+val2buf() and buf2val() methods. This idea was copied from copied from the 
+PassiveByte, ..., classes.
+
+New server-side functions for geographical constraints have been added. These
+functions provide a way to select parts of Grid or Array variables using
+Latitude and Longitude. Also added is a version() function which can be used
+by clients to figure out which version of functions is present. The version
+function has two forms, one which returns the information as plain text and
+one which returns the information in a small XML document. libdap 3.7.3 is a
+beta release of these functions. Note that these are _server-side_ functions
+so before they can be used, servers need to be built using this library and
+installed.
+
+The dap-config script has been fixed so that it behaves more like other 
+such scripts.
+
 News for version 3.7.2
 
 Fixed a persistent bug in the GNURegex code. (ticket 389)
