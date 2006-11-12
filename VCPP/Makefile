@@ -13,7 +13,7 @@ INCLUDEDIR	= ..\..\prepkg\include
 
 # Compiler, Linker
 CC		= cl
-LINK		= link
+LINK	= link
 
 # Compiler tools
 LEX	= flex
@@ -190,6 +190,7 @@ DAP_OBJS = $(GRAM_OBJS) \
 		$(OBJDIR)\ce_functions.obj \
 		$(OBJDIR)\GSEClause.obj \
 		$(OBJDIR)\lex.gse_.obj \
+		$(OBJDIR)\ArrayGeoConstraint.obj
 
 CLIENT_OBJS = $(OBJDIR)\RCReader.obj \
 		$(OBJDIR)\Connect.obj \
@@ -238,81 +239,82 @@ $(OBJDIR)\libdapserverMD.dll: $(SERVER_OBJS)
 	@$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
 
 # Libdap with the gram objs
-$(OBJDIR)\lex.das.obj		: $(SRCDIR)\lex.das.cc
-$(OBJDIR)\das.tab.obj		: $(SRCDIR)\das.tab.cc
-$(OBJDIR)\lex.dds.obj		: $(SRCDIR)\lex.dds.cc
-$(OBJDIR)\dds.tab.obj		: $(SRCDIR)\dds.tab.cc
-$(OBJDIR)\lex.ce_expr.obj	: $(SRCDIR)\lex.ce_expr.cc
-$(OBJDIR)\ce_expr.tab.obj	: $(SRCDIR)\ce_expr.tab.cc
-$(OBJDIR)\lex.Error.obj		: $(SRCDIR)\lex.Error.cc
-$(OBJDIR)\Error.obj			: $(SRCDIR)\Error.cc
-$(OBJDIR)\Error.tab.obj		: $(SRCDIR)\Error.tab.cc
-$(OBJDIR)\AttrTable.obj		: $(SRCDIR)\AttrTable.cc
-$(OBJDIR)\ConstraintEvaluator.obj : $(SRCDIR)\ConstraintEvaluator.cc
-$(OBJDIR)\DAS.obj		: $(SRCDIR)\DAS.cc
-$(OBJDIR)\DDS.obj		: $(SRCDIR)\DDS.cc
-$(OBJDIR)\DataDDS.obj		: $(SRCDIR)\DataDDS.cc
-$(OBJDIR)\DDXParser.obj		: $(SRCDIR)\DDXParser.cc
-$(OBJDIR)\BaseType.obj		: $(SRCDIR)\BaseType.cc
-$(OBJDIR)\Byte.obj		: $(SRCDIR)\Byte.cc
-$(OBJDIR)\Int32.obj		: $(SRCDIR)\Int32.cc
-$(OBJDIR)\Float64.obj		: $(SRCDIR)\Float64.cc
-$(OBJDIR)\GeoConstraint.obj		: $(SRCDIR)\GeoConstraint.cc
-$(OBJDIR)\GridGeoConstraint.obj		: $(SRCDIR)\GridGeoConstraint.cc
-$(OBJDIR)\Str.obj		: $(SRCDIR)\Str.cc
-$(OBJDIR)\Url.obj		: $(SRCDIR)\Url.cc
-$(OBJDIR)\Vector.obj		: $(SRCDIR)\Vector.cc
-$(OBJDIR)\Array.obj		: $(SRCDIR)\Array.cc
-$(OBJDIR)\Structure.obj		: $(SRCDIR)\Structure.cc
-$(OBJDIR)\Sequence.obj		: $(SRCDIR)\Sequence.cc
-$(OBJDIR)\Grid.obj		: $(SRCDIR)\Grid.cc
-$(OBJDIR)\UInt32.obj		: $(SRCDIR)\UInt32.cc
-$(OBJDIR)\Int16.obj		: $(SRCDIR)\Int16.cc
-$(OBJDIR)\UInt16.obj		: $(SRCDIR)\UInt16.cc
-$(OBJDIR)\Float32.obj		: $(SRCDIR)\Float32.cc
-$(OBJDIR)\Constructor.obj	: $(SRCDIR)\Constructor.cc
-$(OBJDIR)\PassiveByte.obj	: $(SRCDIR)\PassiveByte.cc
-$(OBJDIR)\PassiveInt32.obj	: $(SRCDIR)\PassiveInt32.cc
-$(OBJDIR)\PassiveFloat64.obj	: $(SRCDIR)\PassiveFloat64.cc
-$(OBJDIR)\PassiveStr.obj	: $(SRCDIR)\PassiveStr.cc
-$(OBJDIR)\PassiveUrl.obj	: $(SRCDIR)\PassiveUrl.cc
-$(OBJDIR)\PassiveUInt32.obj	: $(SRCDIR)\PassiveUInt32.cc
-$(OBJDIR)\PassiveInt16.obj	: $(SRCDIR)\PassiveInt16.cc
-$(OBJDIR)\PassiveUInt16.obj	: $(SRCDIR)\PassiveUInt16.cc
-$(OBJDIR)\PassiveFloat32.obj	: $(SRCDIR)\PassiveFloat32.cc
-$(OBJDIR)\PassiveArray.obj	: $(SRCDIR)\PassiveArray.cc
-$(OBJDIR)\PassiveStructure.obj	: $(SRCDIR)\PassiveStructure.cc
-$(OBJDIR)\BaseTypeFactory.obj	: $(SRCDIR)\BaseTypeFactory.cc
-$(OBJDIR)\SignalHandler.obj	: $(SRCDIR)\SignalHandler.cc
-$(OBJDIR)\InternalErr.obj	: $(SRCDIR)\InternalErr.cc
-$(OBJDIR)\util.obj		: $(SRCDIR)\util.cc
-$(OBJDIR)\xdrutil_ppc.obj	: $(SRCDIR)\Xdrutil_ppc.c
-$(OBJDIR)\parser-util.obj	: $(SRCDIR)\parser-util.cc
-$(OBJDIR)\escaping.obj		: $(SRCDIR)\escaping.cc
-$(OBJDIR)\Clause.obj		: $(SRCDIR)\Clause.cc
-$(OBJDIR)\RValue.obj		: $(SRCDIR)\RValue.cc
-$(OBJDIR)\gse.tab.obj		: $(SRCDIR)\gse.tab.cc
-$(OBJDIR)\ce_functions.obj	: $(SRCDIR)\ce_functions.cc
-$(OBJDIR)\GSEClause.obj		: $(SRCDIR)\GSEClause.cc
-$(OBJDIR)\lex.gse_.obj		: $(SRCDIR)\lex.gse_.cc
+$(OBJDIR)\lex.das.obj					: $(SRCDIR)\lex.das.cc
+$(OBJDIR)\das.tab.obj					: $(SRCDIR)\das.tab.cc
+$(OBJDIR)\lex.dds.obj					: $(SRCDIR)\lex.dds.cc
+$(OBJDIR)\dds.tab.obj					: $(SRCDIR)\dds.tab.cc
+$(OBJDIR)\lex.ce_expr.obj				: $(SRCDIR)\lex.ce_expr.cc
+$(OBJDIR)\ce_expr.tab.obj				: $(SRCDIR)\ce_expr.tab.cc
+$(OBJDIR)\lex.Error.obj					: $(SRCDIR)\lex.Error.cc
+$(OBJDIR)\Error.obj						: $(SRCDIR)\Error.cc
+$(OBJDIR)\Error.tab.obj					: $(SRCDIR)\Error.tab.cc
+$(OBJDIR)\AttrTable.obj					: $(SRCDIR)\AttrTable.cc
+$(OBJDIR)\ConstraintEvaluator.obj 		: $(SRCDIR)\ConstraintEvaluator.cc
+$(OBJDIR)\DAS.obj						: $(SRCDIR)\DAS.cc
+$(OBJDIR)\DDS.obj						: $(SRCDIR)\DDS.cc
+$(OBJDIR)\DataDDS.obj					: $(SRCDIR)\DataDDS.cc
+$(OBJDIR)\DDXParser.obj					: $(SRCDIR)\DDXParser.cc
+$(OBJDIR)\BaseType.obj					: $(SRCDIR)\BaseType.cc
+$(OBJDIR)\Byte.obj						: $(SRCDIR)\Byte.cc
+$(OBJDIR)\Int32.obj						: $(SRCDIR)\Int32.cc
+$(OBJDIR)\Float64.obj					: $(SRCDIR)\Float64.cc
+$(OBJDIR)\GeoConstraint.obj				: $(SRCDIR)\GeoConstraint.cc
+$(OBJDIR)\GridGeoConstraint.obj			: $(SRCDIR)\GridGeoConstraint.cc
+$(OBJDIR)\Str.obj						: $(SRCDIR)\Str.cc
+$(OBJDIR)\Url.obj						: $(SRCDIR)\Url.cc
+$(OBJDIR)\Vector.obj					: $(SRCDIR)\Vector.cc
+$(OBJDIR)\Array.obj						: $(SRCDIR)\Array.cc
+$(OBJDIR)\Structure.obj					: $(SRCDIR)\Structure.cc
+$(OBJDIR)\Sequence.obj					: $(SRCDIR)\Sequence.cc
+$(OBJDIR)\Grid.obj						: $(SRCDIR)\Grid.cc
+$(OBJDIR)\UInt32.obj					: $(SRCDIR)\UInt32.cc
+$(OBJDIR)\Int16.obj						: $(SRCDIR)\Int16.cc
+$(OBJDIR)\UInt16.obj					: $(SRCDIR)\UInt16.cc
+$(OBJDIR)\Float32.obj					: $(SRCDIR)\Float32.cc
+$(OBJDIR)\Constructor.obj				: $(SRCDIR)\Constructor.cc
+$(OBJDIR)\PassiveByte.obj				: $(SRCDIR)\PassiveByte.cc
+$(OBJDIR)\PassiveInt32.obj				: $(SRCDIR)\PassiveInt32.cc
+$(OBJDIR)\PassiveFloat64.obj			: $(SRCDIR)\PassiveFloat64.cc
+$(OBJDIR)\PassiveStr.obj				: $(SRCDIR)\PassiveStr.cc
+$(OBJDIR)\PassiveUrl.obj				: $(SRCDIR)\PassiveUrl.cc
+$(OBJDIR)\PassiveUInt32.obj				: $(SRCDIR)\PassiveUInt32.cc
+$(OBJDIR)\PassiveInt16.obj				: $(SRCDIR)\PassiveInt16.cc
+$(OBJDIR)\PassiveUInt16.obj				: $(SRCDIR)\PassiveUInt16.cc
+$(OBJDIR)\PassiveFloat32.obj			: $(SRCDIR)\PassiveFloat32.cc
+$(OBJDIR)\PassiveArray.obj				: $(SRCDIR)\PassiveArray.cc
+$(OBJDIR)\PassiveStructure.obj			: $(SRCDIR)\PassiveStructure.cc
+$(OBJDIR)\BaseTypeFactory.obj			: $(SRCDIR)\BaseTypeFactory.cc
+$(OBJDIR)\SignalHandler.obj				: $(SRCDIR)\SignalHandler.cc
+$(OBJDIR)\InternalErr.obj				: $(SRCDIR)\InternalErr.cc
+$(OBJDIR)\util.obj						: $(SRCDIR)\util.cc
+$(OBJDIR)\xdrutil_ppc.obj				: $(SRCDIR)\Xdrutil_ppc.c
+$(OBJDIR)\parser-util.obj				: $(SRCDIR)\parser-util.cc
+$(OBJDIR)\escaping.obj					: $(SRCDIR)\escaping.cc
+$(OBJDIR)\Clause.obj					: $(SRCDIR)\Clause.cc
+$(OBJDIR)\RValue.obj					: $(SRCDIR)\RValue.cc
+$(OBJDIR)\gse.tab.obj					: $(SRCDIR)\gse.tab.cc
+$(OBJDIR)\ce_functions.obj				: $(SRCDIR)\ce_functions.cc
+$(OBJDIR)\GSEClause.obj					: $(SRCDIR)\GSEClause.cc
+$(OBJDIR)\lex.gse_.obj					: $(SRCDIR)\lex.gse_.cc
+$(OBJDIR)\ArrayGeoConstraint.obj		: $(SRCDIR)\ArrayGeoConstraint.cc
 
 # Libdap client
-$(OBJDIR)\RCReader.obj		: $(SRCDIR)\RCReader.cc
-$(OBJDIR)\Connect.obj		: $(SRCDIR)\Connect.cc
-$(OBJDIR)\HTTPConnect.obj	: $(SRCDIR)\HTTPConnect.cc
-$(OBJDIR)\HTTPCache.obj		: $(SRCDIR)\HTTPCache.cc
-$(OBJDIR)\AISResources.obj	: $(SRCDIR)\AISResources.cc
-$(OBJDIR)\AISDatabaseParser.obj	: $(SRCDIR)\AISDatabaseParser.cc
-$(OBJDIR)\AISMerge.obj		: $(SRCDIR)\AISMerge.cc
-$(OBJDIR)\AISConnect.obj	: $(SRCDIR)\AISConnect.cc
-$(OBJDIR)\util_mit.obj		: $(SRCDIR)\util_mit.cc
-$(OBJDIR)\ResponseTooBigErr.obj	: $(SRCDIR)\ResponseTooBigErr.cc
+$(OBJDIR)\RCReader.obj					: $(SRCDIR)\RCReader.cc
+$(OBJDIR)\Connect.obj					: $(SRCDIR)\Connect.cc
+$(OBJDIR)\HTTPConnect.obj				: $(SRCDIR)\HTTPConnect.cc
+$(OBJDIR)\HTTPCache.obj					: $(SRCDIR)\HTTPCache.cc
+$(OBJDIR)\AISResources.obj				: $(SRCDIR)\AISResources.cc
+$(OBJDIR)\AISDatabaseParser.obj			: $(SRCDIR)\AISDatabaseParser.cc
+$(OBJDIR)\AISMerge.obj					: $(SRCDIR)\AISMerge.cc
+$(OBJDIR)\AISConnect.obj				: $(SRCDIR)\AISConnect.cc
+$(OBJDIR)\util_mit.obj					: $(SRCDIR)\util_mit.cc
+$(OBJDIR)\ResponseTooBigErr.obj			: $(SRCDIR)\ResponseTooBigErr.cc
 
 # libdap server
-$(OBJDIR)\DODSFilter.obj	: $(SRCDIR)\DODSFilter.cc
-$(OBJDIR)\OPeNDAPFile.obj	: $(SRCDIR)\OPeNDAPFile.cc
-$(OBJDIR)\OPeNDAPDir.obj	: $(SRCDIR)\OPeNDAPDir.cc
-$(OBJDIR)\cgi_util.obj		: $(SRCDIR)\cgi_util.cc
+$(OBJDIR)\DODSFilter.obj				: $(SRCDIR)\DODSFilter.cc
+$(OBJDIR)\OPeNDAPFile.obj				: $(SRCDIR)\OPeNDAPFile.cc
+$(OBJDIR)\OPeNDAPDir.obj				: $(SRCDIR)\OPeNDAPDir.cc
+$(OBJDIR)\cgi_util.obj					: $(SRCDIR)\cgi_util.cc
 
 # Regular expression code
 $(OBJDIR)\GetOpt.obj		: $(SRCDIR)\GNU\GetOpt.cc

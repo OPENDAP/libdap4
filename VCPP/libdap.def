@@ -211,7 +211,6 @@ EXPORTS
 	?add_function@ConstraintEvaluator@@QAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@P6APAVBaseType@@HQAPAV4@AAVDDS@@0@Z@Z
 	?add_function@ConstraintEvaluator@@QAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@P6AXHQAPAVBaseType@@AAVDDS@@AAV1@@Z@Z
 	?add_function@ConstraintEvaluator@@QAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@P6A_NHQAPAVBaseType@@AAVDDS@@@Z@Z
-	?add_global_attribute@DDS@@AAEXPAUentry@AttrTable@@@Z
 	?add_table@DAS@@QAEPAVAttrTable@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAV2@@Z
 	?add_value_alias@AttrTable@@QAEXPAV1@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@1@Z
 	?add_var@Array@@UAEXPAVBaseType@@W4Part@@@Z
@@ -326,7 +325,6 @@ EXPORTS
 	?capacity@?$vector@PAVrvalue@@V?$allocator@PAVrvalue@@@std@@@std@@QBEIXZ
 	?capacity@?$vector@Udimension@Array@@V?$allocator@Udimension@Array@@@std@@@std@@QBEIXZ
 	?capacity@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBEIXZ
-	?categorize_latitude@GeoConstraint@@IBE?AW4LatitudeSense@1@XZ
 	?categorize_notation@GeoConstraint@@IBE?AW4Notation@1@NN@Z
 	?ce_expr_create_buffer@@YAPAUyy_buffer_state@@PAU_iobuf@@H@Z
 	?ce_expr_delete_buffer@@YAXPAUyy_buffer_state@@@Z
@@ -654,15 +652,14 @@ EXPORTS
 	?find_function@ConstraintEvaluator@@QBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAP6APAVBaseType@@HQAPAV4@AAVDDS@@0@Z@Z
 	?find_function@ConstraintEvaluator@@QBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAP6AXHQAPAVBaseType@@AAVDDS@@AAV1@@Z@Z
 	?find_function@ConstraintEvaluator@@QBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAP6A_NHQAPAVBaseType@@AAVDDS@@@Z@Z
-	?find_lat_lon_maps@GridGeoConstraint@@EAE_NXZ
 	?find_latitude_indeces@GeoConstraint@@IBEXNNW4LatitudeSense@1@AAH1@Z
+	?find_matching_container@DDS@@MAEPAVAttrTable@@PAUentry@2@PAPAVBaseType@@@Z
 	?find_longitude_indeces@GeoConstraint@@IBEXNNAAH0@Z
 	?finish_variable@DDXParser@@AAEXPBDW4Type@@0@Z
 	?first_nonopt@GetOpt@@0HA
 	?fixed@?$_Iosb@H@std@@2W4_Fmtflags@12@B
 	?floatfield@?$_Iosb@H@std@@2W4_Fmtflags@12@B
 	?flush_stream@@YAXV?$basic_iostream@DU?$char_traits@D@std@@@std@@PAU_iobuf@@@Z
-	?func_one@libdap@@YAPAVBaseType@@HQAPAV2@AAVDDS@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?function_geoarray@libdap@@YAPAVBaseType@@HQAPAV2@AAVDDS@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?function_geogrid@libdap@@YAPAVBaseType@@HQAPAV2@AAVDDS@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?function_grid@libdap@@YAPAVBaseType@@HQAPAV2@AAVDDS@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
@@ -899,7 +896,6 @@ EXPORTS
 	?is_constructor_type@BaseType@@UAE_NXZ
 	?is_container@AttrTable@@QAE_NV?$_Vector_iterator@PAUentry@AttrTable@@V?$allocator@PAUentry@AttrTable@@@std@@@std@@@Z
 	?is_end_of_rows@Sequence@@AAE_NH@Z
-	?is_global_attr@DDS@@AAE_NV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?is_grid_t@@YA_NPAVBaseType@@@Z
 	?is_in_selection@BaseType@@UAE_NXZ
 	?is_keyword@@YA_NV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV12@@Z
@@ -1331,8 +1327,6 @@ EXPORTS
 	?remove_handler@SignalHandler@@QAEPAVEventHandler@@H@Z
 	?remove_quotes@@YAXAAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?rend@?$vector@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@QAE?AV?$reverse_iterator@V?$_Vector_iterator@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@@2@XZ
-	?reorder_data_longitude_axis@GridGeoConstraint@@EAEXXZ
-	?reorder_longitude_map@GeoConstraint@@IAEXH@Z
 	?reset_constraint@Array@@QAEXXZ
 	?reset_row_number@Sequence@@QAEXXZ
 	?resize@?$vector@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@QAEXI@Z
@@ -1364,8 +1358,6 @@ EXPORTS
 	?set_array_using_double@libdap@@YAXPAVArray@@PANH@Z
 	?set_attr_table@BaseType@@UAEXABVAttrTable@@@Z
 	?set_bounding_box@GeoConstraint@@QAEXNNNN@Z
-	?set_bounding_box_latitude@GeoConstraint@@IAEXNN@Z
-	?set_bounding_box_longitude@GeoConstraint@@IAEXNN@Z
 	?set_dataset_name@DDS@@QAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?set_error@parser_arg@@QAEXPAVError@@@Z
 	?set_error_code@Error@@QAEXH@Z
@@ -1481,9 +1473,6 @@ EXPORTS
 	?top@?$stack@PAVAttrTable@@V?$deque@PAVAttrTable@@V?$allocator@PAVAttrTable@@@std@@@std@@@std@@QAEAAPAVAttrTable@@XZ
 	?top@?$stack@PAVBaseType@@V?$deque@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@@std@@QAEAAPAVBaseType@@XZ
 	?top@?$stack@W4ParseState@DDXParser@@V?$deque@W4ParseState@DDXParser@@V?$allocator@W4ParseState@DDXParser@@@std@@@std@@@std@@QBEABW4ParseState@DDXParser@@XZ
-	?transfer_attr@DDS@@IAEXPAVDAS@@PBUentry@AttrTable@@PAVBaseType@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-	?transfer_attr_table@DDS@@IAEXPAVDAS@@PAVAttrTable@@PAVBaseType@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-	?transfer_attr_table@DDS@@IAEXPAVDAS@@PAVAttrTable@@PAVConstructor@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?transfer_attributes@DDS@@UAEXPAVDAS@@@Z
 	?transfer_attrs@DDXParser@@AAEXPAPBD@Z
 	?transfer_data@Sequence@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAVConstraintEvaluator@@AAVDDS@@@Z
@@ -1492,8 +1481,6 @@ EXPORTS
 	?transfer_data_parent_part_two@Sequence@@MAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAVDDS@@AAVConstraintEvaluator@@AAV?$vector@PAV?$vector@PAV?$vector@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@V?$allocator@PAV?$vector@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@@2@@std@@V?$allocator@PAV?$vector@PAV?$vector@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@V?$allocator@PAV?$vector@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@@2@@std@@@2@@3@@Z
 	?transfer_data_private@Sequence@@MAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAVConstraintEvaluator@@AAVDDS@@AAV?$vector@PAV?$vector@PAV?$vector@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@V?$allocator@PAV?$vector@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@@2@@std@@V?$allocator@PAV?$vector@PAV?$vector@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@V?$allocator@PAV?$vector@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@@2@@std@@@2@@3@@Z
 	?transform_constraint_to_pos_notation@GeoConstraint@@IBEXAAN0@Z
-	?transform_longitude_to_neg_pos_notation@GeoConstraint@@IAEXXZ
-	?transform_longitude_to_pos_notation@GeoConstraint@@IAEXXZ
 	?trunc@?$_Iosb@H@std@@2W4_Openmode@12@B
 	?type@BaseType@@QBE?AW4Type@@XZ
 	?type_name@BaseType@@QBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ

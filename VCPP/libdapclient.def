@@ -391,7 +391,6 @@ EXPORTS
 	?none@?$_Locbase@H@std@@2HB
 	?numeric@?$_Locbase@H@std@@2HB
 	?oct@?$_Iosb@H@std@@2W4_Fmtflags@12@B
-	?open_body@HTTPCache@@ABEPAU_iobuf@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?out@?$_Iosb@H@std@@2W4_Openmode@12@B
 	?parse_headers@HTTPCache@@AAEXPAUCacheEntry@1@ABV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@Z
 	?parse_mime@Connect@@AAEXPAVResponse@@@Z
@@ -412,7 +411,6 @@ EXPORTS
 	?read_data@Connect@@UAEXAAVDataDDS@@PAVResponse@@@Z
 	?read_data_no_mime@Connect@@UAEXAAVDataDDS@@PAVResponse@@@Z
 	?read_database@AISResources@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-	?read_metadata@HTTPCache@@ABEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@3@@Z
 	?read_rc_file@RCReader@@AAE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?read_url@HTTPConnect@@AAEJABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAU_iobuf@@PAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@3@PBV53@@Z
 	?release_cached_response@HTTPCache@@QAEXPAU_iobuf@@@Z

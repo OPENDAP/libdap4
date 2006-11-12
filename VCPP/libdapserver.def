@@ -50,7 +50,6 @@ EXPORTS
 	?construct@?$allocator@VOPeNDAPFile@@@std@@QAEXPAVOPeNDAPFile@@ABV3@@Z
 	?ctype@?$_Locbase@H@std@@2HB
 	?cur@?$_Iosb@H@std@@2W4_Seekdir@12@B
-	?dataset_constraint@DODSFilter@@UAEXAAVDDS@@AAVConstraintEvaluator@@PAU_iobuf@@@Z
 	?deallocate@?$allocator@U_Node@?$_List_nod@VOPeNDAPDir@@V?$allocator@VOPeNDAPDir@@@std@@@std@@@std@@QAEXPAU_Node@?$_List_nod@VOPeNDAPDir@@V?$allocator@VOPeNDAPDir@@@std@@@2@I@Z
 	?deallocate@?$allocator@U_Node@?$_List_nod@VOPeNDAPFile@@V?$allocator@VOPeNDAPFile@@@std@@@std@@@std@@QAEXPAU_Node@?$_List_nod@VOPeNDAPFile@@V?$allocator@VOPeNDAPFile@@@std@@@2@I@Z
 	?dec@?$_Iosb@H@std@@2W4_Fmtflags@12@B
@@ -65,33 +64,16 @@ EXPORTS
 	?endOfDirList@OPeNDAPDir@@UAE?AV?$_Iterator@$00@?$list@VOPeNDAPDir@@V?$allocator@VOPeNDAPDir@@@std@@@std@@XZ
 	?endOfFileList@OPeNDAPDir@@UAE?AV?$_Iterator@$00@?$list@VOPeNDAPFile@@V?$allocator@VOPeNDAPFile@@@std@@@std@@XZ
 	?eofbit@?$_Iosb@H@std@@2W4_Iostate@12@B
-	?establish_timeout@DODSFilter@@UAEXPAU_iobuf@@@Z
 	?failbit@?$_Iosb@H@std@@2W4_Iostate@12@B
-	?find_ancillary_file@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@000@Z
-	?find_group_ancillary_file@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@0@Z
 	?fixed@?$_Iosb@H@std@@2W4_Fmtflags@12@B
 	?floatfield@?$_Iosb@H@std@@2W4_Fmtflags@12@B
 	?found_override@@YA_NV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAV12@@Z
-	?functional_constraint@DODSFilter@@UAEXAAVBaseType@@AAVDDS@@AAVConstraintEvaluator@@PAU_iobuf@@@Z
 	?getBaseName@OPeNDAPFile@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
 	?getDirName@OPeNDAPDir@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
 	?getDirName@OPeNDAPFile@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
 	?getExtension@OPeNDAPFile@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
 	?getFileName@OPeNDAPFile@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
 	?getFullPath@OPeNDAPFile@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
-	?get_URL@DODSFilter@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
-	?get_action@DODSFilter@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
-	?get_cache_dir@DODSFilter@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
-	?get_ce@DODSFilter@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
-	?get_cgi_version@DODSFilter@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
-	?get_das_last_modified_time@DODSFilter@@UAE_JABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-	?get_data_last_modified_time@DODSFilter@@UAE_JABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-	?get_dataset_last_modified_time@DODSFilter@@UAE_JXZ
-	?get_dataset_name@DODSFilter@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
-	?get_dataset_version@DODSFilter@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
-	?get_dds_last_modified_time@DODSFilter@@UAE_JABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-	?get_request_if_modified_since@DODSFilter@@UAE_JXZ
-	?get_response@DODSFilter@@UAE?AW4Response@1@XZ
 	?get_timeout@DODSFilter@@QBEHXZ
 	?get_user_supplied_docs@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@0@Z
 	?goodbit@?$_Iosb@H@std@@2W4_Iostate@12@B
@@ -100,8 +82,6 @@ EXPORTS
 	?initialize@DODSFilter@@IAEXHQAPAD@Z
 	?initialize@DODSFilter@@IAEXXZ
 	?internal@?$_Iosb@H@std@@2W4_Fmtflags@12@B
-	?is_conditional@DODSFilter@@UAE_NXZ
-	?last_modified_time@@YA_JV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?left@?$_Iosb@H@std@@2W4_Fmtflags@12@B
 	?loadDir@OPeNDAPDir@@AAEXXZ
 	?max_size@?$allocator@VOPeNDAPDir@@@std@@QBEIXZ
@@ -115,24 +95,14 @@ EXPORTS
 	?numeric@?$_Locbase@H@std@@2HB
 	?oct@?$_Iosb@H@std@@2W4_Fmtflags@12@B
 	?out@?$_Iosb@H@std@@2W4_Openmode@12@B
-	?print_usage@DODSFilter@@UAEXXZ
 	?process_options@DODSFilter@@MAEHHQAPAD@Z
 	?push_back@?$list@VOPeNDAPDir@@V?$allocator@VOPeNDAPDir@@@std@@@std@@QAEXABVOPeNDAPDir@@@Z
 	?push_back@?$list@VOPeNDAPFile@@V?$allocator@VOPeNDAPFile@@@std@@@std@@QAEXABVOPeNDAPFile@@@Z
-	?read_ancillary_das@DODSFilter@@UAEXAAVDAS@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-	?read_ancillary_dds@DODSFilter@@UAEXAAVDDS@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?remove_mime_header@@YA_NPAU_iobuf@@@Z
 	?rfc822_date@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_J@Z
 	?right@?$_Iosb@H@std@@2W4_Fmtflags@12@B
 	?scientific@?$_Iosb@H@std@@2W4_Fmtflags@12@B
 	?send_blob@DODSFilter@@UAEXAAVDDS@@PAU_iobuf@@_N@Z
-	?send_das@DODSFilter@@UAEXAAVDAS@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z
-	?send_das@DODSFilter@@UAEXPAU_iobuf@@AAVDAS@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z
-	?send_data@DODSFilter@@UAEXAAVDDS@@AAVConstraintEvaluator@@PAU_iobuf@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z
-	?send_dds@DODSFilter@@UAEXAAVDDS@@AAVConstraintEvaluator@@_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@2@Z
-	?send_dds@DODSFilter@@UAEXPAU_iobuf@@AAVDDS@@AAVConstraintEvaluator@@_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@3@Z
-	?send_ddx@DODSFilter@@UAEXAAVDDS@@AAVConstraintEvaluator@@PAU_iobuf@@_N@Z
-	?send_version_info@DODSFilter@@UAEXXZ
 	?set_URL@DODSFilter@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?set_ce@DODSFilter@@UAEXV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?set_cgi_version@DODSFilter@@UAEXV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
