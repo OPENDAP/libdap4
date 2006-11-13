@@ -3,13 +3,14 @@
 # Setup some preliminary directories
 OBJDIR		= .\objects
 SRCDIR		= ..
-INSTALLLIBDIR	= ..\..\prepkg\lib
-INSTALLDLLDIR	= ..\..\prepkg\dll
-INSTALLBINDIR	= ..\..\prepkg\bin
-INSTALLETCDIR	= ..\..\prepkg\etc
-INSTALLINCDIR	= ..\..\prepkg\include
+ROOTINSTALLDIR	= ..\..\prepkg
+INSTALLLIBDIR	= $(ROOTINSTALLDIR)\lib
+INSTALLDLLDIR	= $(ROOTINSTALLDIR)\dll
+INSTALLBINDIR	= $(ROOTINSTALLDIR)\bin
+INSTALLETCDIR	= $(ROOTINSTALLDIR)\etc
+INSTALLINCDIR	= $(ROOTINSTALLDIR)\include
 
-INCLUDEDIR	= ..\..\prepkg\include
+INCLUDEDIR	= $(ROOTINSTALLDIR)\include
 
 # Compiler, Linker
 CC		= cl
@@ -73,9 +74,7 @@ default:
 	@echo "or"
 	@echo "usage: nmake model<MT|MD>; nmake install<MT|MD>"
 
-all:	setup
-	nmake modelMT
-	nmake modelMD
+all:	setup modelMT modelMD
 
 modelMT: setup
 	@-md $(OBJDIR)\MT\libdap
