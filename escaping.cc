@@ -114,6 +114,8 @@ unoctstring(string s)
     istringstream ss(s);
     ss >> oct >> val;
 
+    DBG(cerr << "unoctstring: " << val << endl);
+
     char tmp_str[2];
     tmp_str[0] = static_cast<char>(val);
     tmp_str[1] = '\0';
@@ -314,13 +316,14 @@ escattr(string s) {
     while ( (ind = s.find_first_not_of(printable, ind)) != s.npos)
         s.replace(ind, 1, ESC + octstring(s[ind]));
 
-    // escape " with backslash
+    // escape \ with a second backslash
     ind = 0;
     while ( (ind = s.find(ESC, ind)) != s.npos) {
 	s.replace(ind, 1, DOUBLE_ESC);
 	ind += DOUBLE_ESC.length();
     }
 
+    // escape " with backslash
     ind = 0;
     while ( (ind = s.find(QUOTE, ind)) != s.npos) {
 	s.replace(ind, 1, ESCQUOTE);
@@ -340,39 +343,42 @@ escattr(string s) {
     @param s The escaped attribute. @return The unescaped attribute. */
 string 
 unescattr(string s) {
-    Regex escregx("\\\\[01][0-7][0-7]");  // matches 4 characters
-    Regex escquoteregex("[^\\\\]\\\\\"");  // matches 3 characters
-    Regex escescregex("\\\\\\\\");      // matches 2 characters
+    Regex octal("\\\\[0-3][0-7][0-7]");  // matches 4 characters
+    Regex esc_quote("\\\\\"");  // matches 3 characters
+    Regex esc_esc("\\\\\\\\");      // matches 2 characters
     const string ESC = "\\";
     const string QUOTE = "\"";
-    const string ESCQUOTE = ESC + QUOTE;
-
-    // unescape any octal-escaped ASCII characters
     int matchlen;
-    unsigned int index = 0;
-    index = escregx.search(s.c_str(), s.size(), matchlen, index);
-    while (index < s.length()) {
-	s.replace(index,4, unoctstring(s.substr(index+1,3)));
-	index += 3;
-	index = escregx.search(s.c_str(), s.size(), matchlen, index);
-    }
+    unsigned int index;
 
-    // unescape any escaped quotes
-    index = 0;
-    index = escquoteregex.search(s.c_str(), s.size(), matchlen, index);
-    while (index < s.length()) {
-	s.replace(index+1, 2, QUOTE);
-	index = escquoteregex.search(s.c_str(), s.size(), matchlen, ++index);
-    }
-
+    DBG(cerr << "0XX" << s << "XXX" << endl);
     // unescape any escaped backslashes
     index = 0;
-    index = escescregex.search(s.c_str(), s.size(), matchlen, index);
+    index = esc_esc.search(s.c_str(), s.size(), matchlen, 0);
     while (index < s.length()) {
+	DBG(cerr << "1aXX" << s << "XXX index: " << index << endl);
 	s.replace(index, 2, ESC);
-	index = escescregex.search(s.c_str(), s.size(), matchlen, ++index);
+	DBG(cerr << "1bXX" << s << "XXX index: " << index << endl);
+	index = esc_esc.search(s.c_str(), s.size(), matchlen, 0);
     }
 
+    // unescape any escaped double quote characters
+    index = esc_quote.search(s.c_str(), s.size(), matchlen, 0);
+    while (index < s.length()) {
+	s.replace(index, 2, QUOTE);
+	DBG(cerr << "2XX" << s << "XXX index: " << index << endl);
+	index = esc_quote.search(s.c_str(), s.size(), matchlen, 0);
+    }
+
+    // unescape octal characters
+    index = octal.search(s.c_str(), s.size(), matchlen, 0);
+    while (index < s.length()) {
+	s.replace(index, 4, unoctstring(s.substr(index+1,3)));
+	DBG(cerr << "3XX" << s << "XXX index: " << index << endl);
+	index = octal.search(s.c_str(), s.size(), matchlen, 0);
+    }
+
+    DBG(cerr << "4XX" << s << "XXX" << endl);
     return s;
 }
 

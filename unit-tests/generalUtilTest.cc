@@ -63,7 +63,6 @@ public:
 
     CPPUNIT_TEST_SUITE(generalUtilTest);
 
-#if 1
     CPPUNIT_TEST(prune_spaces_test);
     CPPUNIT_TEST(path_to_filename_test);
     CPPUNIT_TEST(hexstring_test);
@@ -71,14 +70,13 @@ public:
     CPPUNIT_TEST(id2www_test);
     CPPUNIT_TEST(www2id_test);
     CPPUNIT_TEST(ce_string_parse_test);
-#endif
     CPPUNIT_TEST(escattr_test);
-#if 1
+    CPPUNIT_TEST(unescattr_test);
     CPPUNIT_TEST(munge_error_message_test);
     CPPUNIT_TEST(get_tempfile_template_test);
     CPPUNIT_TEST(id2xml_test);
     CPPUNIT_TEST(xml2id_test);
-#endif
+
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
@@ -192,6 +190,27 @@ public:
 	str = "this_contains a backslash (\\)";
 	str1 = "this_contains a backslash (\\\\)";
 	CPPUNIT_ASSERT(escattr(str) == str1);
+    }
+
+    void unescattr_test() {
+	CPPUNIT_ASSERT(unescattr("attr") == "attr");
+
+	CPPUNIT_ASSERT(unescattr("\\\\attr") == "\\attr");
+
+	DBG(cerr << "XXX" << unescattr("\\\"attr") << "XXX" << endl);
+	CPPUNIT_ASSERT(unescattr("\\\"attr") == "\"attr");
+
+	char A_200_177[4] = { 128, 127, 'A', '\0'};
+	DBG(cerr << "XXX" << unescattr("\\200\\177A") << "XXX" << endl);
+	CPPUNIT_ASSERT(unescattr("\\200\\177A") == string(A_200_177));
+
+	DBG(cerr << "XXX" << unescattr("\\\\200\\\\177A") << "XXX" << endl);
+	CPPUNIT_ASSERT(unescattr("\\\\200\\\\177A") == string(A_200_177));
+	
+	
+	DBG(cerr << "XXX" << unescattr("\\\\200\\\\177AZ$&") << "XXX" << endl);
+	
+	DBG(cerr << "XXX" << unescattr("\\\\200") << "XXX" << endl);
     }
 
     void munge_error_message_test() {
