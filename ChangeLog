@@ -1,3 +1,23 @@
+2006-11-21  James Gallagher <jgallagher@opendap.org>
+
+	Fixed unescattr() in escaping.cc. Now the code works when there
+	are several escaped characters or when the escapes are escaped.
+	That is, this version can be used by the libnc-dap library and the
+	result is code that passes all the nc_test tests for char and text
+	attributes.
+
+2006-11-12  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Make win32 pkging dir locaton slightly more flexible
+
+2006-11-12  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Update module export definitions for dll versions of the Core
+
+2006-11-11  James Gallagher <jgallagher@opendap.org>
+
+	Removed errant 3.7.3 sub directory.
+
 2006-11-07  James Gallagher <jgallagher@opendap.org>
 
 	HTTPConnectTest.cc: Turned off debugging
