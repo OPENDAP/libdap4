@@ -1,3 +1,12 @@
+2006-11-24  James Gallagher <jgallagher@opendap.org>
+
+	AISMergeTest.cc: UPdated baseline to account for new fnoc1.das
+	file in data/nc.
+
+2006-11-22  James Gallagher <jgallagher@opendap.org>
+
+	Updated ChangeLog
+
 2006-11-21  James Gallagher <jgallagher@opendap.org>
 
 	Fixed unescattr() in escaping.cc. Now the code works when there

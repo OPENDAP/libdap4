@@ -1,7 +1,7 @@
 
 	$Id$
 
-Updated for version 3.7.1 of the OPeNDAP DAP 3.1 library software.
+Updated for version 3.7.3 of the OPeNDAP DAP 3.1 library software.
 
 Installing the DAP2 library
 
@@ -29,9 +29,9 @@ BUILDING THE SOFTWARE
      software, then 'cd unit-tests; make check' will build and run the unit
      tests.
 
-  3. Type `make install' to install the DAP 3.7.2 library. The libraries
-     (libdap.a. libdapclient.a and libdapserver.a), its header files and the
-     getdap and dap-config utilities install under /usr/local/ in lib,
+  3. Type `make install' to install the DAP 3.7.3 library. The libraries
+     (libdap.a. libdapclient.a and libdapserver.a), their header files and
+     the getdap and dap-config utilities install under /usr/local/ in lib,
      include/libdap and bin by default. The deflate utility is installed in
      /usr/local/sbin by default. Use the --prefix option to specify a
      different root directory. For example, './configure
@@ -43,7 +43,7 @@ Building from Our SVN Repository
   If you are building from a SVN checkout, run 'autoreconf --verbose' before
   './configure; make'. If you try to run autoconf, et c., by hand and wind up
   with build files that don't work, use 'autoreconf --force --verbose' and
-  then './configure;make'.
+  then './configure; make'.
 
   To get new functions from gnulib, run:
   ../gnulib/gnulib-tool --import --lgpl --source-base=gl --m4-base=gl/m4 \
@@ -51,8 +51,8 @@ Building from Our SVN Repository
 
 REQUIREMENTS
 
-  o To build from a fresh SVN checkout, you'll need automake 1.9.2, autoconf
-    2.57 and libtool 1.5.6. Earlier versions may work, but may cause
+  o To build from a fresh SVN checkout, you'll need automake 1.9.6, autoconf
+    2.59 and libtool 1.5.18. Earlier versions may work, but may cause
     problems, particularly with the 'distcheck' target for make. Given those
     requirements, use 'autoreconf --force --verbose' and then build as
     described above.

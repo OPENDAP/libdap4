@@ -1,7 +1,11 @@
 
 $Id$
 
-News for version 3.7.3, 7 Nov 2006
+News for version 3.7.3, 24 Nov 2006
+
+Fixed unescattr() so that it works!
+
+Rob added improvements to the win32 build.
 
 Fixed a number of bugs including: Problems with the DDS::transfer_attributes()
 method which broke libnc-dap; Added a new configuration parameter to .dodsrc

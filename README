@@ -1,7 +1,7 @@
 
 $Id$
 
-Notes for version 3.7.3 (7 Nov 2006)
+Notes for version 3.7.3 (24 Nov 2006)
 
 This version of libdap contains a beta release of the server-side functions
 geogrid(), geoarray(), linear_scale() and version(). These can be used to

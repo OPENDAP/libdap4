@@ -80,7 +80,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/aclocal/*
 
 %changelog
-* Mon Spe 15 2006 James Gallagher <jgallagher@opendap.org> - 3.7.2-1
+* Fri Nov 24 2006 James Gallagher <jimg@zoe.opendap.org> - 3.7.3-1
+- Update for 3.7.3-1
+
+* Mon Sep 15 2006 James Gallagher <jgallagher@opendap.org> - 3.7.2-1
 - Update to 3.7.2
 
 * Mon Aug 21 2006 James Gallagher <jgallagher@opendap.org> - 3.7.1
