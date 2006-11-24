@@ -22,12 +22,14 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // Tests for the AISMerge class.
 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+
+//#define DODS_DEBUG 1
 
 #include "Connect.h"
 #include "AISMerge.h"
@@ -38,8 +40,8 @@
 using namespace CppUnit;
 
 class AISMergeTest:public TestFixture {
-private:
-    AISMerge *ais_merge;
+  private:
+    AISMerge * ais_merge;
 
     static string fnoc1, fnoc2, fnoc3, bears, coads, three_fnoc;
     static string fnoc1_ais, fnoc2_ais, digit_ais, fnoc3_das;
@@ -48,28 +50,30 @@ private:
     static string fnoc1_merge_ais, fnoc2_merge_ais, fnoc3_merge_ais;
     static string three_fnoc_merge_ais, starts_with_number_ais_string;
 
-    string dump2string(FILE *res) {
-	string stuff = "";
-	char line[256];
-	while(!feof(res) && !ferror(res) && fgets(&line[0], 256, res) != 0)
-	    stuff += line;
+    string dump2string(FILE * res) {
+        string stuff = "";
+        char line[256];
+        while (!feof(res) && !ferror(res)
+               && fgets(&line[0], 256, res) != 0)
+             stuff += line;
 
-	return stuff;
+         return stuff;
+  } public:
+     AISMergeTest() {
     }
-
-public:
-    AISMergeTest() {} 
-    ~AISMergeTest() {} 
+    ~AISMergeTest() {
+    }
 
     void setUp() {
-	ais_merge = new AISMerge("ais_testsuite/ais_database.xml");
-    } 
-
-    void tearDown() { 
-	delete ais_merge; ais_merge = 0;
+        ais_merge = new AISMerge("ais_testsuite/ais_database.xml");
     }
 
-    CPPUNIT_TEST_SUITE( AISMergeTest );
+    void tearDown() {
+        delete ais_merge;
+        ais_merge = 0;
+    }
+
+    CPPUNIT_TEST_SUITE(AISMergeTest);
 
     CPPUNIT_TEST(get_ais_resource_test);
     CPPUNIT_TEST(merge_test);
@@ -77,97 +81,108 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
     void get_ais_resource_test() {
-	try {
-	    ResourceVector rv = ais_merge->d_ais_db.get_resource(fnoc1);
-	    Response *res = ais_merge->get_ais_resource(rv[0].get_url());
-	    string stuff = dump2string(res->get_stream());
-	    DBG(cerr << "AIS Resource: " << stuff << endl);
-	    CPPUNIT_ASSERT(stuff.find(fnoc1_ais_string) 
-			   != string::npos);
+        try {
+            ResourceVector rv = ais_merge->d_ais_db.get_resource(fnoc1);
+            Response *res = ais_merge->get_ais_resource(rv[0].get_url());
+            string stuff = dump2string(res->get_stream());
+            DBG(cerr << "AIS Resource: " << stuff << endl);
+            CPPUNIT_ASSERT(stuff.find(fnoc1_ais_string)
+                           != string::npos);
 
-	    rv = ais_merge->d_ais_db.get_resource(coads);
-	    res = ais_merge->get_ais_resource(rv[0].get_url());
-	    CPPUNIT_ASSERT(dump2string(res->get_stream()).find(coads_ais_string) 
-			   != string::npos);
+            rv = ais_merge->d_ais_db.get_resource(coads);
+            res = ais_merge->get_ais_resource(rv[0].get_url());
+            CPPUNIT_ASSERT(dump2string(res->get_stream()).
+                           find(coads_ais_string)
+                           != string::npos);
 
-	    rv = ais_merge->d_ais_db.get_resource(three_fnoc);
-	    res = ais_merge->get_ais_resource(rv[0].get_url());
-	    CPPUNIT_ASSERT(dump2string(res->get_stream()).find(starts_with_number_ais_string) 
-			   != string::npos);
-	}
-	catch (Error &e) {
-	    cerr << "Error: " << e.get_error_message() << endl;
-	    // If the exception is Not Found then this is not an error; there
-	    // are many reasons why the resource might not be found... 
-	    if (e.get_error_message().find("Not Found:") == string::npos)
-		CPPUNIT_ASSERT(!"Error");
-	}
+            rv = ais_merge->d_ais_db.get_resource(three_fnoc);
+            res = ais_merge->get_ais_resource(rv[0].get_url());
+            CPPUNIT_ASSERT(dump2string(res->get_stream()).
+                           find(starts_with_number_ais_string)
+                           != string::npos);
+        }
+        catch(Error & e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            // If the exception is Not Found then this is not an error; there
+            // are many reasons why the resource might not be found... 
+            if (e.get_error_message().find("Not Found:") == string::npos)
+                CPPUNIT_ASSERT(!"Error");
+        }
     }
 
     void merge_test() {
-	try {
-	    Connect *conn;
-	    DAS das;
+        try {
+            Connect *conn;
+            DAS das;
             string sof;
-            
-	    conn = new Connect(fnoc1); // test overwrite (default)
-	    conn->request_das(das);
-	    ais_merge->merge(fnoc1, das);
-	    FILE2string(sof, of, das.print(of));
-	    DBG(cerr << "Merged fnoc1 DAS: " << sof << endl);
-	    CPPUNIT_ASSERT(sof.find(fnoc1_merge_ais) != string::npos);
 
-	    delete conn; conn = 0;
-	    das.erase();
+            conn = new Connect(fnoc1);  // test overwrite (default)
+            conn->request_das(das);
+            ais_merge->merge(fnoc1, das);
+            FILE2string(sof, of, das.print(of));
+            DBG(cerr << "Merged fnoc1 DAS: " << sof << endl);
+            CPPUNIT_ASSERT(sof.find(fnoc1_merge_ais) != string::npos);
 
-	    conn = new Connect(fnoc2); // test replace
-	    conn->request_das(das);
-	    ais_merge->merge(fnoc2, das);
-	    FILE2string(sof, of, das.print(of));
-	    CPPUNIT_ASSERT(sof.find(fnoc2_merge_ais) != string::npos);
+            delete conn;
+            conn = 0;
+            das.erase();
 
-	    delete conn; conn = 0;
-	    das.erase();
-	    
-	    conn = new Connect(fnoc3); // test fallback
-	    conn->request_das(das); // with a non-empty das, nothing happens
-	    ais_merge->merge(fnoc3, das);
-	    FILE2string(sof, of, das.print(of));
-	    CPPUNIT_ASSERT(sof.find(fnoc3_das) != string::npos);
+            conn = new Connect(fnoc2);  // test replace
+            conn->request_das(das);
+            ais_merge->merge(fnoc2, das);
+            FILE2string(sof, of, das.print(of));
+            CPPUNIT_ASSERT(sof.find(fnoc2_merge_ais) != string::npos);
 
-	    das.erase(); // empty das, should add attributes
-	    ais_merge->merge(fnoc3, das);
-	    FILE2string(sof, of, das.print(of));
-	    CPPUNIT_ASSERT(sof.find(fnoc3_merge_ais) != string::npos);
+            delete conn;
+            conn = 0;
+            das.erase();
 
-	    conn = new Connect(three_fnoc); // test regexp
-	    conn->request_das(das); // with a non-empty das, nothing happens
-	    ais_merge->merge(three_fnoc, das);
-	    FILE2string(sof, of, das.print(of));
-	    CPPUNIT_ASSERT(sof.find(three_fnoc_merge_ais) 
-			   != string::npos);
-	}
-	catch (Error &e) {
-	    cerr << "Error: " << e.get_error_message() << endl;
-	    if (e.get_error_message().find("Not Found:") == string::npos)
-		CPPUNIT_ASSERT(!"Error");
-	}
+            conn = new Connect(fnoc3);  // test fallback
+            conn->request_das(das);     // with a non-empty das, nothing happens
+            ais_merge->merge(fnoc3, das);
+            FILE2string(sof, of, das.print(of));
+            CPPUNIT_ASSERT(sof.find(fnoc3_das) != string::npos);
+
+            das.erase();        // empty das, should add attributes
+            ais_merge->merge(fnoc3, das);
+            FILE2string(sof, of, das.print(of));
+            CPPUNIT_ASSERT(sof.find(fnoc3_merge_ais) != string::npos);
+
+            conn = new Connect(three_fnoc);     // test regexp
+            conn->request_das(das);     // with a non-empty das, nothing happens
+            ais_merge->merge(three_fnoc, das);
+            FILE2string(sof, of, das.print(of));
+            CPPUNIT_ASSERT(sof.find(three_fnoc_merge_ais)
+                           != string::npos);
+        }
+        catch(Error & e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            if (e.get_error_message().find("Not Found:") == string::npos)
+                CPPUNIT_ASSERT(!"Error");
+        }
     }
 };
 
-string AISMergeTest::fnoc1 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc1.nc";
-string AISMergeTest::fnoc2 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc2.nc";
-string AISMergeTest::fnoc3 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc3.nc";
-string AISMergeTest::bears = "http://test.opendap.org/opendap/nph-dods/data/nc/bears.nc";
-string AISMergeTest::coads = "http://test.opendap.org/opendap/nph-dods/data/nc/coads_climatology.nc";
-string AISMergeTest::three_fnoc = "http://test.opendap.org/opendap/nph-dods/data/nc/3fnoc.nc";
+string AISMergeTest::fnoc1 =
+    "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc1.nc";
+string AISMergeTest::fnoc2 =
+    "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc2.nc";
+string AISMergeTest::fnoc3 =
+    "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc3.nc";
+string AISMergeTest::bears =
+    "http://test.opendap.org/opendap/nph-dods/data/nc/bears.nc";
+string AISMergeTest::coads =
+    "http://test.opendap.org/opendap/nph-dods/data/nc/coads_climatology.nc";
+string AISMergeTest::three_fnoc =
+    "http://test.opendap.org/opendap/nph-dods/data/nc/3fnoc.nc";
 
-string AISMergeTest::fnoc1_ais = "http://test.opendap.org/ais/fnoc1.nc.das";
-string AISMergeTest::fnoc2_ais = "http://test.opendap.org/ais/fnoc2.nc.das";
+string AISMergeTest::fnoc1_ais =
+    "http://test.opendap.org/ais/fnoc1.nc.das";
+string AISMergeTest::fnoc2_ais =
+    "http://test.opendap.org/ais/fnoc2.nc.das";
 string AISMergeTest::digit_ais = "ais_testsuite/starts_with_number.das";
 
-string AISMergeTest::fnoc1_ais_string = 
-"Attributes {\n\
+string AISMergeTest::fnoc1_ais_string = "Attributes {\n\
     u {\n\
 	String DODS_Name \"UWind\";\n\
     }\n\
@@ -176,29 +191,25 @@ string AISMergeTest::fnoc1_ais_string =
     }\n\
 }";
 
-string AISMergeTest::bears_1_ais_string =
-"Attributes {\n\
+string AISMergeTest::bears_1_ais_string = "Attributes {\n\
     bears {\n\
 	String longname \"Test data\";\n\
     }\n\
 }";
 
-string AISMergeTest::coads_ais_string =
-"Attributes {\n\
+string AISMergeTest::coads_ais_string = "Attributes {\n\
     COADSX {\n\
         String long_name \"Longitude\";\n\
     }\n\
 }";
 
-string AISMergeTest::starts_with_number_ais_string =
-"Attributes {\n\
+string AISMergeTest::starts_with_number_ais_string = "Attributes {\n\
     NC_GLOBAL {\n\
         String AIS_Test_info \"This dataset's name starts with a digit.\";\n\
     }\n\
 }";
 
-string AISMergeTest::fnoc3_das =
-"Attributes {\n\
+string AISMergeTest::fnoc3_das = "Attributes {\n\
     u {\n\
         String units \"meter per second\";\n\
         String long_name \"Vector wind eastward component\";\n\
@@ -229,14 +240,16 @@ string AISMergeTest::fnoc3_das =
     }\n\
 }";
 
-string AISMergeTest::fnoc1_merge_ais = 
-"Attributes {\n\
+string AISMergeTest::fnoc1_merge_ais = "Attributes {\n\
     u {\n\
         String units \"meter per second\";\n\
         String long_name \"Vector wind eastward component\";\n\
         String missing_value \"-32767\";\n\
         String scale_factor \"0.005\";\n\
         String DODS_Name \"UWind\", \"UWind\";\n\
+        Byte b 128;\n\
+        Int32 i 32000;\n\
+        Url WOA01 \"http://localhost/junk\";\n\
     }\n\
     v {\n\
         String units \"meter per second\";\n\
@@ -263,8 +276,7 @@ string AISMergeTest::fnoc1_merge_ais =
     }\n\
 }";
 
-string AISMergeTest::fnoc2_merge_ais =
-"Attributes {\n\
+string AISMergeTest::fnoc2_merge_ais = "Attributes {\n\
     u {\n\
         String units \"meter per second\";\n\
         String long_name \"UWind\";\n\
@@ -289,8 +301,7 @@ string AISMergeTest::fnoc2_merge_ais =
     }\n\
 }";
 
-string AISMergeTest::fnoc3_merge_ais =
-"Attributes {\n\
+string AISMergeTest::fnoc3_merge_ais = "Attributes {\n\
     u {\n\
         String long_name \"UWind\";\n\
     }\n\
@@ -305,8 +316,7 @@ string AISMergeTest::fnoc3_merge_ais =
     }\n\
 }";
 
-string AISMergeTest::three_fnoc_merge_ais =
-"Attributes {\n\
+string AISMergeTest::three_fnoc_merge_ais = "Attributes {\n\
     u {\n\
         String long_name \"UWind\", \"Vector wind eastward component\";\n\
         String units \"meter per second\";\n\
@@ -342,13 +352,12 @@ string AISMergeTest::three_fnoc_merge_ais =
 
 CPPUNIT_TEST_SUITE_REGISTRATION(AISMergeTest);
 
-int 
-main( int, char** )
+int main(int, char **)
 {
     CppUnit::TextTestRunner runner;
-    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run( "", false ) ;
+    bool wasSuccessful = runner.run("", false);
 
     return wasSuccessful ? 0 : 1;
 }
