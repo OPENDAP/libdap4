@@ -1,6 +1,186 @@
 
 $Id$
 
+Notes for version 3.7.3 (24 Nov 2006)
+
+This version of libdap contains a beta release of the
+server-side functions geogrid(), geoarray(), linear_scale()
+and version(). These can be used to select parts of Grids
+and Arrays using latitude and longitude values instead of
+array position indexes. The linear_scale() function can be
+used to scale variables (including those return by other
+function) using 'y = mx + b'. The version() function can be
+used to find out which versions of the functions are
+installed.
+
+EXAMPLES
+
+To get version information use the 'version()'
+function. Currently, version() can only be called when
+asking for data, and you must give the name of a data
+source, although in the default version of version() the
+data source is not used. The version function takes one
+optional argument which may be the strings 'help' or
+'xml'. Use 'help' to get help on using the function; use
+'xml' to get version information encoded using XML instead
+of plain text:
+
+<<< I formated these so they are more readable >>>
+
+[jimg@zoe libdap]$ url=http://test.opendap.org/dap/data/nc/coads_climatology.nc
+[jimg@zoe libdap]$ ./getdap -D "$url?version()"
+The data:
+String version = "Function set: version 1.0, grid 1.0, geogrid 1.0b2, 
+		          geoarray 0.9b1, linear_scale 1.0b1";
+
+[jimg@zoe libdap]$ ./getdap -D "$url?version(help)"
+The data:
+String version = "Usage: version() returns plain text information about ...
+
+[jimg@zoe libdap]$ ./getdap -D "$url?version(xml)"
+The data:
+String version = "<?xml version=\"1.0\"?>
+    <functions>
+        <function name=\"version\" version=\"1.0\"/>
+        <function name=\"grid\" version=\"1.0\"/>
+        <function name=\"geogrid\" version=\"1.0\"/>
+        <function name=\"geoarray\" version=\"1.0\"/>
+        <function name=\"linear_scale\" version=\"1.0\"/>
+    </functions>";
+
+The geogrid function can only be used with variables that
+are Grids:
+
+[jimg@zoe libdap]$ getdap -d "$url"
+Dataset {
+    Float64 COADSX[COADSX = 180];
+    Float64 COADSY[COADSY = 90];
+    Float64 TIME[TIME = 12];
+    Grid {
+      Array:
+        Float32 SST[TIME = 12][COADSY = 90][COADSX = 180];
+      Maps:
+        Float64 TIME[TIME = 12];
+        Float64 COADSY[COADSY = 90];
+        Float64 COADSX[COADSX = 180];
+    } SST;
+    Grid {
+    .
+    .
+    .
+    
+Pass the name of the Grid variable and the upper-left and
+lower-right corners of the lat/lon rectangle to
+geogrid. Optionally, pass one or more relational expressions
+to select parts of dimensions that are not lat/lon.
+
+Note: in libdap 3.7.3 calling geogrid with a constraint on
+each dimension may return incorrect values that indicate
+missing data even though data should have been returned.
+
+[jimg@zoe libdap]$ getdap -D "$url?geogrid(SST,30,-60,20,-60,\"TIME=366\")"
+The data:
+Grid {
+  Array:
+    Float32 SST[TIME = 1][COADSY = 7][COADSX = 2];
+  Maps:
+    Float64 TIME[TIME = 1];
+    Float64 COADSY[COADSY = 7];
+    Float64 COADSX[COADSX = 2];
+} SST = {  Array: {{{24.4364, 25.0923},{23.7465, 24.4146},{19.843, 23.6033},
+{16.8464, 17.7756},{16.65, 16.818},{-1e+34, 15.3656},{18.7214, 13.1286}}}  
+Maps: {366}, {19, 21, 23, 25, 27, 29, 31}, {-61, -59} };
+
+The geoarray() function works like geogrid() except that
+it's used to select from an Array variable and not a
+Grid. In addition to the four lat/lon values for selection
+rectangle, the caller must supply the data's corner
+points. A subsequent release of libdap will include a
+version that reads the data extent from the data source when
+possible so caller's won't normally have to know the data's
+extent ahead of time.
+
+The linear_scale() function take either one or three
+arguments. The first (only) argument is the name of a
+variable or the return from another function. This variable
+will be scaled using the 'y = mx + b' equation where 'x' is
+the value(s) of the input variable and 'm' and 'b' are read
+from the data source using the values of attributes name
+'scale_factor' and 'add_offset.' If these are not present,
+or to over ride their values, m and b can be supplied using
+the second and third arguments.
+
+Note that there are still some problems with linear_scale()
+in this release.
+
+See NEWS and ChangeLog for information about other changes
+
+Notes for version 3.7.2
+
+This version of libdap is required for the 9/15/06 alpha
+release of Server4.  The library now contains software which
+enables Server4 to build the ASCII data response for all
+types of variables, including Sequence and nested Sequence
+variables. These features are additions to the API, so older
+code will work just fine with the new library. See NEWS for
+more specific info about bug fixes.
+
+Notes for version 3.7.1
+
+This is a bug fix release (mostly) made for users of the
+netcdf client library who need a fix for a problem dealing
+with attributes from the HDF4 server.
+
+NOTES for version 3.7.0
+
+This version includes new features and an implementation
+change.
+
+This version of libdap now returns the DAP protocol version
+number, 3.1, in an HTTP response header. Use this to
+determine which protocol version the library implements. The
+inclusion of a protocol version number is the sole official
+new feature of DAP 3.1. Use Connect::get_protocol() to get
+the version number. Clients can use this to determine the
+features supported by a server. The Connect::get_version()
+method can still be used to get our server's implementation
+version. The distinction is that as more groups provide
+their own implementations of the DAP, the protocol version
+will provide a way for clients to determine capabilities
+independently of implementation.
+
+The libdap library now contains an implementation of the DDX
+object/response, although this is an alpha implementation
+and it's actually been part of the library for some time
+now. The implementation contained in this version of the
+library is close enough to the version we intend for DAP4
+that developers can start to use it. Most of the server
+handlers will return DDXs when asked.
+
+The DDX combines the information previously held by the DDS
+and DAS objects, making it much easier to associate
+attributes to variables. As the name suggests, the DDX uses
+XML rather than curly-braces. You can drop the DDX into your
+favorite XML parser and get a DOM tree; no need to use our
+parsers.  However, libdap contains a nice SAX parser that
+will build the libdap objects directly from the XML DDX
+object/response. Also included in libdap are methods to
+build a DDX using a DDS and DAS, so there's an easy
+migration path for both servers and clients.
+
+Finally, the library contains two structural changes. First,
+the library named 'libdap' now holds the DAP implementation
+while two new libraries, 'libdapclient' and 'libdapserver',
+now hold the client and server helper classes which are not
+strictly part of the DAP. Secondly, the DDS/DDX object now
+takes the constraint evaluator as a parameter. The class
+ConstraintEvaluator holds our default evaluator, but it's
+now possible to use your own evaluator .
+
+NOTES for version 3.6.1
+
+Version 3.6.1 is bug fix release.
+
 Updated for 3.6.0
 
 NOTE: This version of libdap++ cannot be used to build
