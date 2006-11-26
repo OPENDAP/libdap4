@@ -33,16 +33,16 @@ MDCFLAGS	= /MD /D HAVE_PTHREAD_H
 CFLAGS		= /nologo /W0 /GR /EHsc /c
 
 # Setup linker flags for libdap
-DAP_MTLFLAGS	= -lib /nologo -libpath:$(INSTALLLIBDIR)
-DAP_MDLFLAGS	= -libpath:$(INSTALLLIBDIR) /dll /def:libdap.def /map /fixed:NO /base:0x06000000 /NODEFAULTLIB:LIBCMT.lib
+DAP_MTLFLAGS	= -lib /nologo -libpath:$(OBJDIR)\MT
+DAP_MDLFLAGS	= -libpath:$(OBJDIR)\MD /dll /def:libdap.def /map /fixed:NO /base:0x06000000 /NODEFAULTLIB:LIBCMT.lib
 
 # Setup linker flags for libdapclient
-CLIENT_MTLFLAGS	= -lib /nologo -libpath:$(INSTALLLIBDIR)
-CLIENT_MDLFLAGS	= -libpath:$(INSTALLLIBDIR) /dll /def:libdapclient.def /map /fixed:NO /base:0x07000000 /NODEFAULTLIB:LIBCMT.lib
+CLIENT_MTLFLAGS	= -lib /nologo -libpath:$(OBJDIR)\MT
+CLIENT_MDLFLAGS	= -libpath:$(OBJDIR)\MD /dll /def:libdapclient.def /map /fixed:NO /base:0x07000000 /NODEFAULTLIB:LIBCMT.lib
 
 # Setup linker flags for libdapserver
-SERVER_MTLFLAGS	= -lib /nologo -libpath:$(INSTALLLIBDIR)
-SERVER_MDLFLAGS	= -libpath:$(INSTALLLIBDIR) /dll /def:libdapserver.def /map /fixed:NO /base:0x08000000 /NODEFAULTLIB:LIBCMT.lib
+SERVER_MTLFLAGS	= -lib /nologo -libpath:$(OBJDIR)\MT
+SERVER_MDLFLAGS	= -libpath:$(OBJDIR)\MD /dll /def:libdapserver.def /map /fixed:NO /base:0x08000000 /NODEFAULTLIB:LIBCMT.lib
 
 # Setup link libraries for libdap
 DAP_MTLIBS		=
@@ -57,8 +57,8 @@ SERVER_MTLIBS		=
 SERVER_MDLIBS		= libdapMD.lib libdirent.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
 
 # Setup linker flags for executables
-EMTLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR) /NODEFAULTLIB:MSVCRT.lib
-EMDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
+EMTLFLAGS	= /nologo /libpath:$(OBJDIR)\MT /NODEFAULTLIB:MSVCRT.lib
+EMDLFLAGS	= /nologo /libpath:$(OBJDIR)\MD
 
 # Setup link libraries for executables
 EMTLLIBS	= libdapclientMT.lib libdapserverMT.lib libdapMT.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
@@ -77,33 +77,21 @@ default:
 all:	setup modelMT modelMD
 
 modelMT: setup
-	@-md $(OBJDIR)\MT\libdap
-	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(DAP_MTLFLAGS)" LIBS="$(DAP_MTLIBS)" OBJDIR=$(OBJDIR)\MT\libdap libdapMT.lib
-	@nmake /NOLOGO installMTdap
-
-	@-md $(OBJDIR)\MT\libdapclient
-	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(CLIENT_MTLFLAGS)" LIBS="$(CLIENT_MTLIBS)" OBJDIR=$(OBJDIR)\MT\libdapclient libdapclientMT.lib
-	@nmake /NOLOGO installMTclient
-
-	@-md $(OBJDIR)\MT\libdapserver
-	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(SERVER_MTLFLAGS)" LIBS="$(SERVER_MTLIBS)" OBJDIR=$(OBJDIR)\MT\libdapserver libdapserverMT.lib
-	@nmake /NOLOGO installMTserver
+	@-md $(OBJDIR)\MT
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(DAP_MTLFLAGS)" LIBS="$(DAP_MTLIBS)" OBJDIR=$(OBJDIR)\MT libdapMT.lib
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(CLIENT_MTLFLAGS)" LIBS="$(CLIENT_MTLIBS)" OBJDIR=$(OBJDIR)\MT libdapclientMT.lib
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(SERVER_MTLFLAGS)" LIBS="$(SERVER_MTLIBS)" OBJDIR=$(OBJDIR)\MT libdapserverMT.lib
+	@nmake /NOLOGO installMT
 
 	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT getdap
 	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT deflate
 
 modelMD: setup
-	@-md $(OBJDIR)\MD\libdap
-	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(DAP_MDLFLAGS)" LIBS="$(DAP_MDLIBS)" OBJDIR=$(OBJDIR)\MD\libdap libdapMD.dll
-	@nmake /NOLOGO installMDdap
-
-	@-md $(OBJDIR)\MD\libdapclient
-	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(CLIENT_MDLFLAGS)" LIBS="$(CLIENT_MDLIBS)" OBJDIR=$(OBJDIR)\MD\libdapclient libdapclientMD.dll
-	@nmake /NOLOGO installMDclient
-
-	@-md $(OBJDIR)\MD\libdapserver
-	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(SERVER_MDLFLAGS)" LIBS="$(SERVER_MDLIBS)" OBJDIR=$(OBJDIR)\MD\libdapserver libdapserverMD.dll
-	@nmake /NOLOGO installMDserver
+	@-md $(OBJDIR)\MD
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(DAP_MDLFLAGS)" LIBS="$(DAP_MDLIBS)" OBJDIR=$(OBJDIR)\MD libdapMD.dll	
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(CLIENT_MDLFLAGS)" LIBS="$(CLIENT_MDLIBS)" OBJDIR=$(OBJDIR)\MD libdapclientMD.dll
+	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(SERVER_MDLFLAGS)" LIBS="$(SERVER_MDLIBS)" OBJDIR=$(OBJDIR)\MD libdapserverMD.dll
+	@nmake installMD
 
 	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD getdap
 	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD deflate
@@ -220,22 +208,89 @@ deflate:	$(OBJDIR)\deflate.exe
 
 # Link the libraries
 $(OBJDIR)\libdapMT.lib: $(DAP_OBJS) $(GNU_OBJS)
-	@$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
 
-$(OBJDIR)\libdapMD.dll: $(DAP_OBJS) $(GNU_OBJS)
-	@$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
+$(OBJDIR)\libdapMD.dll: $(DAP_OBJS) $(GNU_OBJS) libdap.def
+	$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
 
 $(OBJDIR)\libdapclientMT.lib: $(CLIENT_OBJS)
-	@$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
 
-$(OBJDIR)\libdapclientMD.dll: $(CLIENT_OBJS)
-	@$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
+$(OBJDIR)\libdapclientMD.dll: $(CLIENT_OBJS) libdapclient.def
+	$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
 
 $(OBJDIR)\libdapserverMT.lib: $(SERVER_OBJS)
-	@$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
 
-$(OBJDIR)\libdapserverMD.dll: $(SERVER_OBJS)
-	@$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
+$(OBJDIR)\libdapserverMD.dll: $(SERVER_OBJS) libdapserver.def
+	$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
+	
+# Here's another way to do that mess below, but it also has
+# the dependancy on MinGW's libtool, so is less desirable
+# as we are looking to automate this completely in the future
+# and the sole remaining dependancy on 'sed' fostered by
+# replacing the use of 'dlltool' with MS utils is more desirable. 
+#	@dlltool -z $@ --export-all-symbols $(DAP_OBJS) $(GNU_OBJS)
+#	@rename $@ tmp.def
+#	@sed --nocr -e '/^.[\?][\?]_.*/ d' \
+#		-e '/^._CTA.*/ d' \
+#		-e '/^._TI.*/ d' \
+#		-e '/^._real.*/ d' tmp.def > $@
+#	@del tmp.def
+#
+
+# This isn't exposed in the usage statement as it isn't intended
+# for general users.  Rebuilding the .def's depends upon the installation
+# of MinGW (or at least an acceptable win32 'sed').
+exports: setup libdap.def libdapclient.def libdapserver.def
+
+# Explainations for patterns to sed
+# -e arg1   # Find the methods we intend to expose
+# -e arg2   # Remove 'deleting destructors'
+# -e arg3   # Move spaces to a tab
+# -e arg4-7 # Remove things just _referenced_ from 3rd-party tools
+# -e arg8   # Get rid of leading spaces
+libdap.def: $(DAP_OBJS) $(GNU_OBJS)
+	@lib /NOLOGO /out:$@.tmp $(DAP_OBJS) $(GNU_OBJS)
+	@dumpbin /out:tmp.def /linkermember:2 $@.tmp
+	@echo EXPORTS > $@
+	@sed --nocr -n -e '/[0-9a-zA-Z] [_\?]/ !d' \
+		-e '/^.[\?][\?]_.*/ d' \
+		-e '/^_libdap_/ d' \
+		-e '/^_re_/ d' \
+		-e '/^_reg/ d' \
+		-e '/^_str/ d' \
+		-e '/^_xdr_/ d' \
+		-e 's/..........// p' < tmp.def >> $@
+	@del $@.tmp tmp.def
+
+libdapclient.def: $(CLIENT_OBJS)
+	@lib /NOLOGO /out:$@.tmp $(CLIENT_OBJS)
+	@dumpbin /out:tmp.def /linkermember:2 $@.tmp
+	@echo EXPORTS > $@
+	@sed --nocr -n -e '/[0-9a-zA-Z] [_\?]/ !d' \
+		-e '/^.[\?][\?]_.*/ d' \
+		-e '/^_libdap_/ d' \
+		-e '/^_re_/ d' \
+		-e '/^_reg/ d' \
+		-e '/^_str/ d' \
+		-e '/^_xdr_/ d' \
+		-e 's/..........// p' < tmp.def >> $@
+	@del $@.tmp tmp.def
+
+libdapserver.def: $(SERVER_OBJS)
+	@lib /NOLOGO /out:$@.tmp $(SERVER_OBJS)
+	@dumpbin /out:tmp.def /linkermember:2 $@.tmp
+	@echo EXPORTS > $@
+	@sed --nocr -n -e '/[0-9a-zA-Z] [_\?]/ !d' \
+		-e '/^.[\?][\?]_.*/ d' \
+		-e '/^_libdap_/ d' \
+		-e '/^_re_/ d' \
+		-e '/^_reg/ d' \
+		-e '/^_str/ d' \
+		-e '/^_xdr_/ d' \
+		-e 's/..........// p' < tmp.def >> $@
+	@del $@.tmp tmp.def
 
 # Libdap with the gram objs
 $(OBJDIR)\lex.das.obj					: $(SRCDIR)\lex.das.cc
@@ -421,30 +476,18 @@ install: installMT installMD
 	copy $(SRCDIR)\GNU\*.h $(INSTALLINCDIR)\GNU
 	copy $(SRCDIR)\gl\regex.h $(INSTALLINCDIR)
 
-installMT: installMTdap installMTclient installMTserver
-
-installMD: installMDdap installMDclient installMDserver
-
-installMTdap:
-	@-copy $(OBJDIR)\MT\libdap\libdapMT.lib $(INSTALLLIBDIR)
-
-installMTclient:
-	@-copy $(OBJDIR)\MT\libdapclient\libdapclientMT.lib $(INSTALLLIBDIR)
-
-installMTserver:
-	@-copy $(OBJDIR)\MT\libdapserver\libdapserverMT.lib $(INSTALLLIBDIR)
-
-installMDdap:
-	@-copy $(OBJDIR)\MD\libdap\libdapMD.lib $(INSTALLLIBDIR)
-	@-copy $(OBJDIR)\MD\libdap\libdapMD.dll $(INSTALLDLLDIR)
-
-installMDclient:
-	@-copy $(OBJDIR)\MD\libdapclient\libdapclientMD.lib $(INSTALLLIBDIR)
-	@-copy $(OBJDIR)\MD\libdapclient\libdapclientMD.dll $(INSTALLDLLDIR)
-
-installMDserver:
-	@-copy $(OBJDIR)\MD\libdapserver\libdapserverMD.lib $(INSTALLLIBDIR)
-	@-copy $(OBJDIR)\MD\libdapserver\libdapserverMD.dll $(INSTALLDLLDIR)
+installMT:
+	@-copy $(OBJDIR)\MT\libdapMT.lib $(INSTALLLIBDIR)
+	@-copy $(OBJDIR)\MT\libdapclientMT.lib $(INSTALLLIBDIR)
+	@-copy $(OBJDIR)\MT\libdapserverMT.lib $(INSTALLLIBDIR)
+	
+installMD:
+	@-copy $(OBJDIR)\MD\libdapMD.lib $(INSTALLLIBDIR)
+	@-copy $(OBJDIR)\MD\libdapMD.dll $(INSTALLDLLDIR)
+	@-copy $(OBJDIR)\MD\libdapclientMD.lib $(INSTALLLIBDIR)
+	@-copy $(OBJDIR)\MD\libdapclientMD.dll $(INSTALLDLLDIR)
+	@-copy $(OBJDIR)\MD\libdapserverMD.lib $(INSTALLLIBDIR)
+	@-copy $(OBJDIR)\MD\libdapserverMD.dll $(INSTALLDLLDIR)
 
 clean:
 	@-rd /Q /S $(OBJDIR)
