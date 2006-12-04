@@ -1,8 +1,8 @@
 # Makefile for libdap (under VC++ on win32)
 
 # Setup some preliminary directories
-OBJDIR		= .\objects
-SRCDIR		= ..
+OBJDIR			= .\objects
+SRCDIR			= ..
 ROOTINSTALLDIR	= ..\..\prepkg
 INSTALLLIBDIR	= $(ROOTINSTALLDIR)\lib
 INSTALLDLLDIR	= $(ROOTINSTALLDIR)\dll
@@ -66,7 +66,7 @@ EMDLLIBS	= libdapclientMD.lib libdapserverMD.lib libdapMD.lib libxml2.lib libcur
 
 # Setup compiler includes and defines
 INCS		= /I . /I .. /I ..\GNU /I ..\gl /I $(INCLUDEDIR)
-DEFS		= /D WIN32 /D WIN32_LEAN_AND_MEAN /D DVR=\"DODS/3.7.3\"
+DEFS		= /D WIN32 /D WIN32_LEAN_AND_MEAN /D HAVE_CONFIG_H
 CPPFLAGS	= $(DEFS) $(INCS)
 
 default:
@@ -199,10 +199,10 @@ SERVER_OBJS = $(OBJDIR)\DODSFilter.obj \
 
 # Convenience dependancies
 libdapMT.lib:		$(OBJDIR)\libdapMT.lib
-libdapMD.dll:		$(OBJDIR)\libdapMD.dll
 libdapclientMT.lib:	$(OBJDIR)\libdapclientMT.lib
-libdapclientMD.dll:	$(OBJDIR)\libdapclientMD.dll
 libdapserverMT.lib:	$(OBJDIR)\libdapserverMT.lib
+libdapMD.dll:		$(OBJDIR)\libdapMD.dll
+libdapclientMD.dll:	$(OBJDIR)\libdapclientMD.dll
 libdapserverMD.dll:	$(OBJDIR)\libdapserverMD.dll
 
 getdap:		$(OBJDIR)\getdap.exe
@@ -210,13 +210,13 @@ deflate:	$(OBJDIR)\deflate.exe
 
 # Build the static-link core libraries
 $(OBJDIR)\libdapMT.lib: $(DAP_OBJS) $(GNU_OBJS)
-	$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $** $(LIBS)
 	
 $(OBJDIR)\libdapserverMT.lib: $(SERVER_OBJS)
-	$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $** $(LIBS)
 
 $(OBJDIR)\libdapclientMT.lib: $(CLIENT_OBJS)
-	$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $** $(LIBS)
 	
 ############################################################################
 # The song and dances before the link lines below are to get a legitimate
@@ -236,29 +236,28 @@ $(OBJDIR)\libdapclientMT.lib: $(CLIENT_OBJS)
 	
 # Build the dynamic-link core libraries
 $(OBJDIR)\libdapMD.dll: $(DAP_OBJS) $(GNU_OBJS)
-	@lib /NOLOGO /out:$(OBJDIR)\tmp.lib $(DAP_OBJS) $(GNU_OBJS) > $(OBJDIR)\devnull
+	@lib /NOLOGO /out:$(OBJDIR)\tmp.lib $** > $(OBJDIR)\devnull
 	@dumpbin /OUT:$(OBJDIR)\tmp.def /linkermember:2 $(OBJDIR)\tmp.lib > $(OBJDIR)\devnull
 	@echo EXPORTS > libdap.def
 	@gawk "{ if ($$2 ~ /^[\?].*/ && $$2 !~ /^\?\?_.*/) print $$2 }" < $(OBJDIR)\tmp.def >> libdap.def
-	@del $(OBJDIR)\tmp.lib $(OBJDIR)\tmp.def $(OBJDIR)\devnull
-	$(LINK) $(LFLAGS) /out:$@ $(DAP_OBJS) $(GNU_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $** $(LIBS)
+	@del libdap.def $(OBJDIR)\tmp.lib $(OBJDIR)\tmp.def $(OBJDIR)\devnull
 
 $(OBJDIR)\libdapclientMD.dll: $(CLIENT_OBJS)
-	@lib /NOLOGO /out:$(OBJDIR)\tmp.lib $(CLIENT_OBJS) > $(OBJDIR)\devnull
+	@lib /NOLOGO /out:$(OBJDIR)\tmp.lib $** > $(OBJDIR)\devnull
 	@dumpbin /OUT:$(OBJDIR)\tmp.def /linkermember:2 $(OBJDIR)\tmp.lib > $(OBJDIR)\devnull
 	@echo EXPORTS > libdapclient.def
 	@gawk "{ if ($$2 ~ /^[\?].*/ && $$2 !~ /^\?\?_.*/) print $$2 }" < $(OBJDIR)\tmp.def >> libdapclient.def
-	@del $(OBJDIR)\tmp.lib $(OBJDIR)\tmp.def $(OBJDIR)\devnull
-	$(LINK) $(LFLAGS) /out:$@ $(CLIENT_OBJS) $(LIBS)
+	$(LINK) $(LFLAGS) /out:$@ $** $(LIBS)
+	@del libdapclient.def $(OBJDIR)\tmp.lib $(OBJDIR)\tmp.def $(OBJDIR)\devnull
 
 $(OBJDIR)\libdapserverMD.dll: $(SERVER_OBJS)
-	@lib /NOLOGO /out:$(OBJDIR)\tmp.lib $(SERVER_OBJS) > $(OBJDIR)\devnull
+	@lib /NOLOGO /out:$(OBJDIR)\tmp.lib $** > $(OBJDIR)\devnull
 	@dumpbin /OUT:$(OBJDIR)\tmp.def /linkermember:2 $(OBJDIR)\tmp.lib > $(OBJDIR)\devnull
 	@echo EXPORTS > libdapserver.def
 	@gawk "{ if ($$2 ~ /^[\?].*/ && $$2 !~ /^\?\?_.*/) print $$2 }" < $(OBJDIR)\tmp.def >> libdapserver.def
-	@del $(OBJDIR)\tmp.lib $(OBJDIR)\tmp.def $(OBJDIR)\devnull
-	$(LINK) $(LFLAGS) /out:$@ $(SERVER_OBJS) $(LIBS)
-
+	$(LINK) $(LFLAGS) /out:$@ $** $(LIBS)
+	@del libdapserver.def $(OBJDIR)\tmp.lib $(OBJDIR)\tmp.def $(OBJDIR)\devnull
 
 # Libdap with the gram objs
 $(OBJDIR)\lex.das.obj					: $(SRCDIR)\lex.das.cc
@@ -437,20 +436,19 @@ setup:
 # Win32 libnc-dap requires the gl\regex.h.  Under unix builds, it is simply
 # assumed to be on the machine already.
 install: installMT installMD
-	copy $(OBJDIR)\MT\getdap.exe $(INSTALLBINDIR)
-	copy $(OBJDIR)\MT\deflate.exe $(INSTALLETCDIR)
+	copy $(OBJDIR)\MD\getdap.exe $(INSTALLBINDIR)
+	copy $(OBJDIR)\MD\deflate.exe $(INSTALLETCDIR)
 	copy dods-datatypes.h $(INSTALLINCDIR)
 	copy $(SRCDIR)\*.h $(INSTALLINCDIR)
 	copy $(SRCDIR)\GNU\*.h $(INSTALLINCDIR)\GNU
 	copy $(SRCDIR)\gl\regex.h $(INSTALLINCDIR)
 
 installMT:
-	@-copy $(OBJDIR)\MT\libdap*.lib $(INSTALLLIBDIR)
+	copy $(OBJDIR)\MT\libdap*.lib $(INSTALLLIBDIR)
 	
 installMD:
-	@-copy $(OBJDIR)\MD\libdap*.lib $(INSTALLLIBDIR)
-	@-copy $(OBJDIR)\MD\libdap*.dll $(INSTALLDLLDIR)
-	@-copy libdap*.def $(INSTALLLIBDIR)
+	copy $(OBJDIR)\MD\libdap*.lib $(INSTALLLIBDIR)
+	copy $(OBJDIR)\MD\libdap*.dll $(INSTALLDLLDIR)
 
 clean:
 	@-rd /Q /S $(OBJDIR)
