@@ -438,6 +438,8 @@ setup:
 install: installMT installMD
 	copy $(OBJDIR)\MD\getdap.exe $(INSTALLBINDIR)
 	copy $(OBJDIR)\MD\deflate.exe $(INSTALLETCDIR)
+	copy $(OBJDIR)\MD\getdap.exe.manifest $(INSTALLBINDIR)
+	copy $(OBJDIR)\MD\deflate.exe.manifest $(INSTALLETCDIR)
 	copy dods-datatypes.h $(INSTALLINCDIR)
 	copy $(SRCDIR)\*.h $(INSTALLINCDIR)
 	copy $(SRCDIR)\GNU\*.h $(INSTALLINCDIR)\GNU
