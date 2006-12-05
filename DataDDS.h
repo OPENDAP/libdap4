@@ -48,6 +48,11 @@
 /** This class adds some useful state information to the DDS
     structure.  It is for use on the client side of the connection. 
     
+    @note Make sure to pass a valid pointer to the DDS constructor or use
+    the set_factory() method before actually using the DDS. Also make sure
+    that the Factory's lifetime thereafter is the same as the DDS's. Never
+    delete the factory until you're done using the DDS.
+
     @note Update: I removed the DEFAULT_BASETYPE_FACTORY switch because it
     caused more confusion than it avoided. See Trac #130.
 

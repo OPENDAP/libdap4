@@ -118,7 +118,9 @@ DataDDS::m_protocol_string_to_numbers()
     A DataDDS instance is a DDS with aditional information about the version
     of the server from which the data came. 
     @param factory Use this BaseTypeFactory to instantiate the variables.
-    Caller must free; can also be set using the set_factory() method.
+    Caller must free; can also be set using the set_factory() method. Never
+    delete until just before deleting the DDS istelf unless you intend to 
+    replace the factory with a new instance. 
     @param n The name of the dataset. Can also be set using the
     set_dataset_name() method.
     @param v The server version.

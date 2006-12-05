@@ -98,7 +98,9 @@ DDS::duplicate(const DDS &dds)
     set_dataset_name() method. 
     @param factory BaseTypeFactory which instantiates Byte, ..., Grid. The
     caller is responsible for freeing the object \e after deleting this DDS.
-    Can also be set using set_factory().
+    Can also be set using set_factory(). Never delete until just before
+    deleting the DDS itself unless you intend to replace the factory with a 
+    new instance. 
     @param n The name of the data set. Can also be set using
     set_dataset_name(). */
 DDS::DDS(BaseTypeFactory *factory, const string &n)
