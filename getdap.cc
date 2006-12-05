@@ -331,7 +331,7 @@ int main(int argc, char *argv[])
                     BaseTypeFactory factory;
                     DDS dds(&factory);
                     try {
-                        url->request_dds(dds);
+                        url->request_dds(dds, expr);
                     }
                     catch(Error & e) {
                         cerr << e.get_error_message() << endl;
@@ -357,7 +357,7 @@ int main(int argc, char *argv[])
                     BaseTypeFactory factory;
                     DDS dds(&factory);
                     try {
-                        url->request_ddx(dds);
+                        url->request_ddx(dds, expr);
                     }
                     catch(Error & e) {
                         cerr << e.get_error_message() << endl;
@@ -404,9 +404,10 @@ int main(int argc, char *argv[])
             }
 
             else if (get_data) {
+#if 0
                 if (expr.empty() && name.find('?') == string::npos)
                     expr = "";
-
+#endif
                 for (int j = 0; j < times; ++j) {
                     BaseTypeFactory factory;
                     DataDDS dds(&factory);
@@ -431,11 +432,12 @@ int main(int argc, char *argv[])
                 }
             }
 
-            else {              // if (!get_das && !get_dds && !get_data)
-                // This code uses HTTPConnect::fetch_url which cannot be
-                // accessed using an instance of Connect. So some of the
-                // options supported by other URLs won't work here (e.g., the
-                // verbose option doesn't show the server version number).
+            else {
+                // if (!get_das && !get_dds && !get_data) This code uses
+                // HTTPConnect::fetch_url which cannot be accessed using an
+                // instance of Connect. So some of the options supported by
+                // other URLs won't work here (e.g., the verbose option
+                // doesn't show the server version number).
                 HTTPConnect http(RCReader::instance());
 
                 // This overrides the value set in the .dodsrc file.
