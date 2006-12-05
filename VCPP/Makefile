@@ -58,7 +58,7 @@ SERVER_MDLIBS		= libdapMD.lib libdirent.lib libxml2.lib libcurl.lib zlib.lib lib
 
 # Setup linker flags for executables
 EMTLFLAGS	= /nologo /libpath:$(OBJDIR)\MT /NODEFAULTLIB:MSVCRT.lib
-EMDLFLAGS	= /nologo /libpath:$(OBJDIR)\MD
+EMDLFLAGS	= /nologo /libpath:$(OBJDIR)\MD /NODEFAULTLIB:LIBCMT.lib
 
 # Setup link libraries for executables
 EMTLLIBS	= libdapclientMT.lib libdapserverMT.lib libdapMT.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
