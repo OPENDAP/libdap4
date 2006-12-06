@@ -41,7 +41,7 @@
 #define XDR_UINT32 xdr_u_long
 
 #ifndef LIBDAP_ROOT
-#define LIBDAP_ROOT "C:/opendap/libdap"
+#define LIBDAP_ROOT "C:/opendap"
 #endif
 
 #undef LIBXML_ICONV_ENABLED
