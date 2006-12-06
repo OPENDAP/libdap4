@@ -434,23 +434,33 @@ setup:
 	@-echo #include "io.h" >> unistd.h
 
 # Win32 libnc-dap requires the gl\regex.h.  Under unix builds, it is simply
-# assumed to be on the machine already.
+# assumed to be on the machine already.  The mt command embeds the manifest
+# in the executable
 install: installMT installMD
+	@mt -nologo -manifest $(OBJDIR)\MD\getdap.exe.manifest -outputresource:$(OBJDIR)\MD\getdap.exe;1
+	@mt -nologo -manifest $(OBJDIR)\MD\deflate.exe.manifest -outputresource:$(OBJDIR)\MD\deflate.exe;1
 	copy $(OBJDIR)\MD\getdap.exe $(INSTALLBINDIR)
 	copy $(OBJDIR)\MD\deflate.exe $(INSTALLETCDIR)
-	copy $(OBJDIR)\MD\getdap.exe.manifest $(INSTALLBINDIR)
-	copy $(OBJDIR)\MD\deflate.exe.manifest $(INSTALLETCDIR)
 	copy dods-datatypes.h $(INSTALLINCDIR)
 	copy $(SRCDIR)\*.h $(INSTALLINCDIR)
 	copy $(SRCDIR)\GNU\*.h $(INSTALLINCDIR)\GNU
 	copy $(SRCDIR)\gl\regex.h $(INSTALLINCDIR)
 
 installMT:
-	copy $(OBJDIR)\MT\libdap*.lib $(INSTALLLIBDIR)
+	copy $(OBJDIR)\MT\libdapMT.lib $(INSTALLLIBDIR)
+	copy $(OBJDIR)\MT\libdapclientMT.lib $(INSTALLLIBDIR)
+	copy $(OBJDIR)\MT\libdapserverMT.lib $(INSTALLLIBDIR)
 	
 installMD:
-	copy $(OBJDIR)\MD\libdap*.lib $(INSTALLLIBDIR)
-	copy $(OBJDIR)\MD\libdap*.dll $(INSTALLDLLDIR)
+	@mt -nologo -manifest $(OBJDIR)\MD\libdapMD.dll.manifest -outputresource:$(OBJDIR)\MD\libdapMD.dll;2
+	@mt -nologo -manifest $(OBJDIR)\MD\libdapclientMD.dll.manifest -outputresource:$(OBJDIR)\MD\libdapclientMD.dll;2
+	@mt -nologo -manifest $(OBJDIR)\MD\libdapserverMD.dll.manifest -outputresource:$(OBJDIR)\MD\libdapserverMD.dll;2
+	copy $(OBJDIR)\MD\libdapMD.dll $(INSTALLDLLDIR)
+	copy $(OBJDIR)\MD\libdapMD.lib $(INSTALLLIBDIR)
+	copy $(OBJDIR)\MD\libdapclientMD.dll $(INSTALLDLLDIR)
+	copy $(OBJDIR)\MD\libdapclientMD.lib $(INSTALLLIBDIR)
+	copy $(OBJDIR)\MD\libdapserverMD.dll $(INSTALLDLLDIR)
+	copy $(OBJDIR)\MD\libdapserverMD.lib $(INSTALLLIBDIR)
 
 clean:
 	@-rd /Q /S $(OBJDIR)
