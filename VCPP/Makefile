@@ -3,7 +3,7 @@
 # Setup some preliminary directories
 OBJDIR			= .\objects
 SRCDIR			= ..
-ROOTINSTALLDIR	= ..\..\prepkg
+ROOTINSTALLDIR	= ..\..
 INSTALLLIBDIR	= $(ROOTINSTALLDIR)\lib
 INSTALLDLLDIR	= $(ROOTINSTALLDIR)\dll
 INSTALLBINDIR	= $(ROOTINSTALLDIR)\bin
