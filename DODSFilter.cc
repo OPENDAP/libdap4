@@ -833,10 +833,10 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
 }
 
 void
-DODSFilter::dataset_constraint(DDS &dds, ConstraintEvaluator &eval, FILE *out) 
-    const
+ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
+                                FILE * out) const
 {
-    // send constrained DDS	    
+    // send constrained DDS         
     dds.print_constrained(out);
     fprintf(out, "Data:\n");
     fflush(out);
@@ -845,18 +845,18 @@ DODSFilter::dataset_constraint(DDS &dds, ConstraintEvaluator &eval, FILE *out)
     XDR *xdr_sink = new_xdrstdio(out, XDR_ENCODE);
 
     try {
-	// Send all variables in the current projection (send_p())
-	for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
-	    if ((*i)->send_p()) {
-		DBG(cerr << "Sending " << (*i)->name() << endl);
-		(*i)->serialize(d_dataset, eval, dds, xdr_sink, true);
-	    }
+        // Send all variables in the current projection (send_p())
+        for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
+            if ((*i)->send_p()) {
+                DBG(cerr << "Sending " << (*i)->name() << endl);
+                (*i)->serialize(d_dataset, eval, dds, xdr_sink, true);
+            }
 
-	delete_xdrstdio(xdr_sink);
+        delete_xdrstdio(xdr_sink);
     }
-    catch (Error &e) {
-	delete_xdrstdio(xdr_sink);
-	throw;
+    catch(Error & e) {
+        delete_xdrstdio(xdr_sink);
+        throw;
     }
 }
 
@@ -877,32 +877,32 @@ DODSFilter::dataset_constraint(DDS &dds, ConstraintEvaluator &eval, FILE *out)
     Defaults to true.
     @return void */
 void
-DODSFilter::send_data(DDS &dds, ConstraintEvaluator &eval, FILE *data_stream,
-                      const string &anc_location, bool with_mime_headers) const
+ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
+                       FILE * data_stream, const string & anc_location,
+                       bool with_mime_headers) const
 {
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
     // response. 
     time_t data_lmt = get_data_last_modified_time(anc_location);
     if (is_conditional()
-	&& data_lmt <= get_request_if_modified_since()
+        && data_lmt <= get_request_if_modified_since()
         && with_mime_headers) {
-	set_mime_not_modified(data_stream);
-	return;
+        set_mime_not_modified(data_stream);
+        return;
     }
-
     // Set up the alarm.
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
-    eval.parse_constraint(d_ce, dds);	// Throws Error if the ce doesn't parse.
+    eval.parse_constraint(d_ce, dds);   // Throws Error if the ce doesn't parse.
 
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
     // Start sending the response... 
 
     bool compress = d_comp && deflate_exists();
- 
+
     // Handle *functional* constraint expressions specially 
     if (eval.functional_expression()) {
         // Get the result and then start sending the headers. This provides a
@@ -923,10 +923,10 @@ DODSFilter::send_data(DDS &dds, ConstraintEvaluator &eval, FILE *data_stream,
             data_stream = compressor(data_stream, childpid);
 
 
-	functional_constraint(*var, dds, eval, data_stream);
-        delete var; var = 0;
-    }
-    else {
+        functional_constraint(*var, dds, eval, data_stream);
+        delete var;
+        var = 0;
+    } else {
         if (with_mime_headers)
             set_mime_binary(data_stream, dods_data, d_cgi_ver,
                             (compress) ? deflate : x_plain, data_lmt);
@@ -936,9 +936,9 @@ DODSFilter::send_data(DDS &dds, ConstraintEvaluator &eval, FILE *data_stream,
         if (compress)
             data_stream = compressor(data_stream, childpid);
 
-	dataset_constraint(dds, eval, data_stream);
+        dataset_constraint(dds, eval, data_stream);
     }
-    
+
     fflush(data_stream);
 }
 
