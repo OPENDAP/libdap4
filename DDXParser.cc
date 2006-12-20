@@ -899,7 +899,7 @@ static xmlSAXHandler ddx_sax_parser = {
 #endif
 };
 
-void DDXParser::cleanup_parse(xmlParserCtxtPtr & context) const const
+void DDXParser::cleanup_parse(xmlParserCtxtPtr & context) const
 {
     if (!context->wellFormed) {
         context->sax = NULL;
