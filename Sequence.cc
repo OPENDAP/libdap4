@@ -979,36 +979,60 @@ Sequence::transfer_data_for_leaf(const string &dataset, DDS &dds,
 
 
 void
-Sequence::transfer_data_parent_part_one(const string &dataset, DDS &dds, 
-                                        ConstraintEvaluator &eval,
-                                        sequence_values_stack_t &sequence_values_stack)
+ Sequence::transfer_data_parent_part_one(const string & dataset, DDS & dds,
+                                         ConstraintEvaluator & eval,
+                                         sequence_values_stack_t &
+                                         sequence_values_stack)
 {
-    DBG(cerr << "Entering transfer_data_parent_part_one for " << name() << endl);
-    
-    int i = (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
+    DBG(cerr << "Entering transfer_data_parent_part_one for " << name() <<
+        endl);
+
+    int i =
+        (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
 
     // read_row returns true if valid data was read, false if the EOF was
     // found. 6/1/2001 jhrg
     // Since this is a parent sequence, read the row ignoring the CE (all of
     // the CE clauses will be evaluated by the leaf sequence).
     bool status = read_row(i, dataset, dds, eval, false);
-    
-    while ( status && (get_ending_row_number() == -1 || i <= get_ending_row_number()) ) {
+
+    while (status
+           && (get_ending_row_number() == -1
+               || i <= get_ending_row_number())) {
         i += get_row_stride();
         for (Vars_iter iter = var_begin(); iter != var_end(); iter++) {
-            if ((*iter)->send_p() && (*iter)->type() == dods_sequence_c)
-                dynamic_cast<Sequence&>(**iter).transfer_data_private(dataset, eval, dds, sequence_values_stack);
+            if ((*iter)->send_p()) {
+                switch ((*iter)->type()) {
+                case dods_sequence_c:
+                    dynamic_cast <
+                        Sequence & >(**iter).transfer_data_private(dataset,
+                                                                   eval,
+                                                                   dds,
+                                                                   sequence_values_stack);
+                    break;
+
+                case dods_structure_c:
+                    dynamic_cast <
+                        Structure & >(**iter).transfer_data(dataset, eval, dds);
+                    break;
+
+                default:
+                    (*iter)->read(dataset);
+                    break;
+                }
+            }
         }
 
         set_read_p(false);      // ...so this will read the next instance
 
         status = read_row(i, dataset, dds, eval, false);
     }
-    
+
     // Reset current row number for next nested sequence element.
     reset_row_number();
     sequence_values_stack.pop_back();
-    DBG(cerr << "In td_fparent_part_one, Poping the top of the stack" << endl);;
+    DBG(cerr << "In td_fparent_part_one, Poping the top of the stack" <<
+        endl);;
 }
 
 void

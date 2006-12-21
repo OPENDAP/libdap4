@@ -122,6 +122,8 @@ public:
     
     virtual unsigned int width();
 
+    virtual void transfer_data(const string & dataset,
+                               ConstraintEvaluator & eval, DDS & dds);
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
                            DDS &dds, XDR *sink, bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);

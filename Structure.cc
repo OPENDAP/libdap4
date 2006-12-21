@@ -239,6 +239,34 @@ Structure::width()
     return sz;
 }
 
+void
+ Structure::transfer_data(const string & dataset,
+                          ConstraintEvaluator & eval, DDS & dds)
+{
+    if (!read_p())
+        read(dataset);          // read() throws Error and InternalErr
+
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+        if ((*i)->send_p()) {
+            switch ((*i)->type()) {
+            case dods_sequence_c:
+                dynamic_cast <Sequence & >(**i).transfer_data(dataset,
+                                                              eval, dds);
+            break;
+
+            case dods_structure_c:            
+                dynamic_cast <Structure & >(**i).transfer_data(dataset,
+                                                              eval, dds);
+            break;
+            
+            default:
+                (*i)->read(dataset);
+            break;
+            }
+        }
+    }
+}
+
 // Returns: false if an error was detected, true otherwise. 
 // NB: this means that serialize() returns true when the CE evaluates to
 // false. This bug might be fixed using exceptions.
