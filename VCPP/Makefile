@@ -1,16 +1,30 @@
 # Makefile for libdap (under VC++ on win32)
 
-# Setup some preliminary directories
+# Source code and target build areas
 OBJDIR			= .\objects
 SRCDIR			= ..
-ROOTINSTALLDIR	= ..\..
-INSTALLLIBDIR	= $(ROOTINSTALLDIR)\lib
-INSTALLDLLDIR	= $(ROOTINSTALLDIR)\dll
-INSTALLBINDIR	= $(ROOTINSTALLDIR)\bin
-INSTALLETCDIR	= $(ROOTINSTALLDIR)\etc
-INSTALLINCDIR	= $(ROOTINSTALLDIR)\include
 
-INCLUDEDIR	= $(ROOTINSTALLDIR)\include
+# This is the prepackaging area.  Contents should never be on the build path.
+PKGDIR			= ..\..\prepkg\libdap
+PKGLIBDIR		= $(PKGDIR)\lib
+PKGDLLDIR		= $(PKGDIR)\dll
+PKGBINDIR		= $(PKGDIR)\bin
+PKGETCDIR		= $(PKGDIR)\etc
+PKGINCDIR		= $(PKGDIR)\include
+
+# This is the installation area.  It should never be on the build path either
+# (except when building other, non-core components).
+INSTALLDIR		= ..\..
+INSTALLLIBDIR	= $(INSTALLDIR)\lib
+INSTALLDLLDIR	= $(INSTALLDIR)\dll
+INSTALLBINDIR	= $(INSTALLDIR)\bin
+INSTALLETCDIR	= $(INSTALLDIR)\etc
+INSTALLINCDIR	= $(INSTALLDIR)\include
+
+# Headers only come from the source distribution itself.  Neither the
+# Prepackaging or installation areas should be on any path for building
+# the OPeNDAP Core.
+INCLUDEDIR		= $(SRCDIR)
 
 # Compiler, Linker
 CC		= cl
@@ -49,20 +63,20 @@ DAP_MTLIBS		=
 DAP_MDLIBS		= libdirent.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
 
 # Setup link libraries for libdapclient
-CLIENT_MTLIBS		=
-CLIENT_MDLIBS		= libdapMD.lib libdirent.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
+CLIENT_MTLIBS	=
+CLIENT_MDLIBS	= libdapMD.lib libdirent.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
 
 # Setup link libraries for libdapserver
-SERVER_MTLIBS		=
-SERVER_MDLIBS		= libdapMD.lib libdirent.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
+SERVER_MTLIBS	=
+SERVER_MDLIBS	= libdapMD.lib libdirent.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
 
 # Setup linker flags for executables
-EMTLFLAGS	= /nologo /libpath:$(OBJDIR)\MT /NODEFAULTLIB:MSVCRT.lib
-EMDLFLAGS	= /nologo /libpath:$(OBJDIR)\MD /NODEFAULTLIB:LIBCMT.lib
+EMTLFLAGS		= /nologo /libpath:$(OBJDIR)\MT /NODEFAULTLIB:MSVCRT.lib
+EMDLFLAGS		= /nologo /libpath:$(OBJDIR)\MD /NODEFAULTLIB:LIBCMT.lib
 
 # Setup link libraries for executables
-EMTLLIBS	= libdapclientMT.lib libdapserverMT.lib libdapMT.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
-EMDLLIBS	= libdapclientMD.lib libdapserverMD.lib libdapMD.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
+EMTLLIBS		= libdapclientMT.lib libdapserverMT.lib libdapMT.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
+EMDLLIBS		= libdapclientMD.lib libdapserverMD.lib libdapMD.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
 
 # Setup compiler includes and defines
 INCS		= /I . /I .. /I ..\GNU /I ..\gl /I $(INCLUDEDIR)
@@ -70,13 +84,11 @@ DEFS		= /D WIN32 /D WIN32_LEAN_AND_MEAN /D HAVE_CONFIG_H
 CPPFLAGS	= $(DEFS) $(INCS)
 
 default:
-	@echo "usage: nmake all; nmake install"
-	@echo "or"
-	@echo "usage: nmake model<MT|MD>; nmake install<MT|MD>"
+	@echo "usage: nmake all; nmake install; nmake package"
 
 all:	setup modelMT modelMD
 
-modelMT: setup
+modelMT:
 	@-md $(OBJDIR)\MT
 	@echo "Building MT model libraries for the Core"
 	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(DAP_MTLFLAGS)" LIBS="$(DAP_MTLIBS)" OBJDIR=$(OBJDIR)\MT libdapMT.lib
@@ -87,7 +99,7 @@ modelMT: setup
 	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT deflate
 	@echo "MT model libraries for the Core are complete"
 
-modelMD: setup
+modelMD:
 	@-md $(OBJDIR)\MD
 	@echo "Building MD model libraries for the Core"
 	@nmake /NOLOGO CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(DAP_MDLFLAGS)" LIBS="$(DAP_MDLIBS)" OBJDIR=$(OBJDIR)\MD libdapMD.dll	
@@ -223,7 +235,7 @@ $(OBJDIR)\libdapclientMT.lib: $(CLIENT_OBJS)
 # module export definition (.def) for the dll's.  We use lib, dumpbin and
 # a 3rd-party awk to do this automatically in a rather round-about way.
 #
-# The $$ reduces to just $ as make evaluates that.  The \? to awk tell it
+# The $$ reduces to just $ as make evaluates that.  The \? to awk tells it
 # to be looking for a literal "?".  A textual description of the awk command
 # is as follows: "Find all second fields (2nd whitespace delimited groups of
 # characters) in the text lines that begin with ? and do not begin with ??_
@@ -413,63 +425,102 @@ $(OBJDIR)\getdap.obj    : $(SRCDIR)\getdap.cc
 $(OBJDIR)\deflate.obj    : $(SRCDIR)\deflate.c
 	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tc $(SRCDIR)\deflate.c
 
-# Preliminary setup.  Create the install and intermediate file directories
-# if they don't exist.  We also have to create a temporary unistd.h because
-# bison and/or flex create source that includes that - even though
+# We have to create a temporary unistd.h because bison
+# and/or flex create source that includes that - even though
 # there is no such header under win32 and it is unnecessary there
 # (that is, even though these utils can run under win32 - by definition
 # they generate output for the UNIX world).  This stupid pet trick
 # also properly defines isatty() for the generated source under win32.
 setup:
-	@-md $(OBJDIR)
-	@-md $(INSTALLLIBDIR)
-	@-md $(INSTALLBINDIR)
-	@-md $(INSTALLETCDIR)
-	@-md $(INSTALLDLLDIR)
-	@-md $(INSTALLINCDIR)
-	@-md $(INSTALLINCDIR)\GNU
 	@-echo /*  Dummy patch header to get win32 flex/bison generated  */ > unistd.h
 	@-echo /*  source code to compile under win32.  If you see this  */ >> unistd.h
 	@-echo /*  temp file, feel free to scratch it.                   */ >> unistd.h
 	@-echo #include "io.h" >> unistd.h
 
 # Win32 libnc-dap requires the gl\regex.h.  Under unix builds, it is simply
-# assumed to be on the machine already.  The mt command embeds the manifest
-# in the executable
-install: installMT installMD
-	@mt -nologo -manifest $(OBJDIR)\MD\getdap.exe.manifest -outputresource:$(OBJDIR)\MD\getdap.exe;1
-	@mt -nologo -manifest $(OBJDIR)\MD\deflate.exe.manifest -outputresource:$(OBJDIR)\MD\deflate.exe;1
-	copy $(OBJDIR)\MD\getdap.exe $(INSTALLBINDIR)
-	copy $(OBJDIR)\MD\deflate.exe $(INSTALLETCDIR)
+# assumed to be on the machine already.
+install: mkinstdirs
+	copy $(OBJDIR)\MT\libdapMT.lib $(INSTALLLIBDIR)
+	copy $(OBJDIR)\MT\libdapclientMT.lib $(INSTALLLIBDIR)
+	copy $(OBJDIR)\MT\libdapserverMT.lib $(INSTALLLIBDIR)
+
+	copy $(OBJDIR)\MD\libdapMD.dll* $(INSTALLDLLDIR)
+	mt -nologo -manifest $(INSTALLDLLDIR)\libdapMD.dll.manifest -outputresource:$(INSTALLDLLDIR)\libdapMD.dll;2
+	del $(INSTALLDLLDIR)\libdapMD.dll.manifest
+	copy $(OBJDIR)\MD\libdapMD.lib $(INSTALLLIBDIR)
+	copy $(OBJDIR)\MD\libdapclientMD.dll* $(INSTALLDLLDIR)
+	mt -nologo -manifest $(INSTALLDLLDIR)\libdapclientMD.dll.manifest -outputresource:$(INSTALLDLLDIR)\libdapclientMD.dll;2
+	del $(INSTALLDLLDIR)\libdapclientMD.dll.manifest
+	copy $(OBJDIR)\MD\libdapclientMD.lib $(INSTALLLIBDIR)
+	copy $(OBJDIR)\MD\libdapserverMD.dll* $(INSTALLDLLDIR)
+	mt -nologo -manifest $(INSTALLDLLDIR)\libdapserverMD.dll.manifest -outputresource:$(INSTALLDLLDIR)\libdapserverMD.dll;2
+	del $(INSTALLDLLDIR)\libdapserverMD.dll.manifest
+	copy $(OBJDIR)\MD\libdapserverMD.lib $(INSTALLLIBDIR)
+
+	copy $(OBJDIR)\MD\getdap.exe* $(INSTALLBINDIR)
+	mt -nologo -manifest $(INSTALLBINDIR)\getdap.exe.manifest -outputresource:$(INSTALLBINDIR)\getdap.exe;1
+	del $(INSTALLBINDIR)\getdap.exe.manifest
+	copy $(OBJDIR)\MD\deflate.exe* $(INSTALLETCDIR)
+	mt -nologo -manifest $(INSTALLETCDIR)\deflate.exe.manifest -outputresource:$(INSTALLETCDIR)\deflate.exe;1
+	del $(INSTALLETCDIR)\deflate.exe.manifest
 	copy dods-datatypes.h $(INSTALLINCDIR)
 	copy $(SRCDIR)\*.h $(INSTALLINCDIR)
 	copy $(SRCDIR)\GNU\*.h $(INSTALLINCDIR)\GNU
 	copy $(SRCDIR)\gl\regex.h $(INSTALLINCDIR)
-
-installMT:
-	copy $(OBJDIR)\MT\libdapMT.lib $(INSTALLLIBDIR)
-	copy $(OBJDIR)\MT\libdapclientMT.lib $(INSTALLLIBDIR)
-	copy $(OBJDIR)\MT\libdapserverMT.lib $(INSTALLLIBDIR)
 	
-installMD:
-	@mt -nologo -manifest $(OBJDIR)\MD\libdapMD.dll.manifest -outputresource:$(OBJDIR)\MD\libdapMD.dll;2
-	@mt -nologo -manifest $(OBJDIR)\MD\libdapclientMD.dll.manifest -outputresource:$(OBJDIR)\MD\libdapclientMD.dll;2
-	@mt -nologo -manifest $(OBJDIR)\MD\libdapserverMD.dll.manifest -outputresource:$(OBJDIR)\MD\libdapserverMD.dll;2
-	copy $(OBJDIR)\MD\libdapMD.dll $(INSTALLDLLDIR)
-	copy $(OBJDIR)\MD\libdapMD.lib $(INSTALLLIBDIR)
-	copy $(OBJDIR)\MD\libdapclientMD.dll $(INSTALLDLLDIR)
-	copy $(OBJDIR)\MD\libdapclientMD.lib $(INSTALLLIBDIR)
-	copy $(OBJDIR)\MD\libdapserverMD.dll $(INSTALLDLLDIR)
-	copy $(OBJDIR)\MD\libdapserverMD.lib $(INSTALLLIBDIR)
+package: mkpkgdirs
+	copy $(OBJDIR)\MT\libdapMT.lib $(PKGLIBDIR)
+	copy $(OBJDIR)\MT\libdapclientMT.lib $(PKGLIBDIR)
+	copy $(OBJDIR)\MT\libdapserverMT.lib $(PKGLIBDIR)
+
+	copy $(OBJDIR)\MD\libdapMD.dll* $(PKGDLLDIR)
+	mt -nologo -manifest $(PKGDLLDIR)\libdapMD.dll.manifest -outputresource:$(PKGDLLDIR)\libdapMD.dll;2
+	del $(PKGDLLDIR)\libdapMD.dll.manifest
+	copy $(OBJDIR)\MD\libdapMD.lib $(PKGLIBDIR)
+	copy $(OBJDIR)\MD\libdapclientMD.dll* $(PKGDLLDIR)
+	mt -nologo -manifest $(PKGDLLDIR)\libdapclientMD.dll.manifest -outputresource:$(PKGDLLDIR)\libdapclientMD.dll;2
+	del $(PKGDLLDIR)\libdapclientMD.dll.manifest
+	copy $(OBJDIR)\MD\libdapclientMD.lib $(PKGLIBDIR)
+	copy $(OBJDIR)\MD\libdapserverMD.dll* $(PKGDLLDIR)
+	mt -nologo -manifest $(PKGDLLDIR)\libdapserverMD.dll.manifest -outputresource:$(PKGDLLDIR)\libdapserverMD.dll;2
+	del $(PKGDLLDIR)\libdapserverMD.dll.manifest
+	copy $(OBJDIR)\MD\libdapserverMD.lib $(PKGLIBDIR)
+
+	copy $(OBJDIR)\MD\getdap.exe* $(PKGBINDIR)
+	mt -nologo -manifest $(PKGBINDIR)\getdap.exe.manifest -outputresource:$(PKGBINDIR)\getdap.exe;1
+	del $(PKGBINDIR)\getdap.exe.manifest
+	copy $(OBJDIR)\MD\deflate.exe* $(PKGETCDIR)
+	mt -nologo -manifest $(PKGETCDIR)\deflate.exe.manifest -outputresource:$(PKGETCDIR)\deflate.exe;1
+	del $(PKGETCDIR)\deflate.exe.manifest
+	copy dods-datatypes.h $(PKGINCDIR)
+	copy $(SRCDIR)\*.h $(PKGINCDIR)
+	copy $(SRCDIR)\GNU\*.h $(PKGINCDIR)\GNU
+	copy $(SRCDIR)\gl\regex.h $(PKGINCDIR)
+
+mkinstdirs:	
+	@-md $(INSTALLLIBDIR)
+	@-md $(INSTALLBINDIR)
+	@-md $(INSTALLETCDIR)
+	@-md $(INSTALLDLLDIR)
+	@-md $(INSTALLINCDIR)
+	@-md $(INSTALLINCDIR)\GNU
+	
+mkpkgdirs:	
+	@-md $(PKGLIBDIR)
+	@-md $(PKGBINDIR)
+	@-md $(PKGETCDIR)
+	@-md $(PKGDLLDIR)
+	@-md $(PKGINCDIR)
+	@-md $(PKGINCDIR)\GNU
 
 clean:
-	@-rd /Q /S $(OBJDIR)
+	@-rd /Q /S $(OBJDIR) $(PKGDIR)
 	@-del unistd.h
 
 grammarclean: clean
-	@-del ..\*.tab.cc
-	@-del ..\*.tab.h
-	@-del ..\lex.*.cc
+	@-del $(SRCDIR)\*.tab.cc
+	@-del $(SRCDIR)\*.tab.h
+	@-del $(SRCDIR)\lex.*.cc
 
 !INCLUDE "dependancies"
 
