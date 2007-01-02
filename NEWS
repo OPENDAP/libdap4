@@ -1,6 +1,10 @@
 
 $Id$
 
+News for version 3.7.4, 02 Jan 2007
+
+Build enhancements and bug fixes. See ChangeLog for specifics.
+
 News for version 3.7.3, 24 Nov 2006
 
 Fixed unescattr() so that it works!

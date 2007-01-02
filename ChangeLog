@@ -1,3 +1,89 @@
+;; Local Variables:
+;; coding: utf-8
+;; End:
+2006-12-31  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Synchronize select win32 Makefiles to build/pkg the same way
+
+2006-12-20  James Gallagher <jgallagher@opendap.org>
+
+	Added Structure::transfer_data() so that a handler can simulate the
+	actions of serialize() without actually sending the data.
+	M    Structure.h
+	M    Structure.cc
+	M    Sequence.cc
+
+2006-12-20  James Gallagher <jgallagher@opendap.org>
+
+	DDXParser.cc: Fixed an error introduced by the Eclipse
+	code formatter.
+
+2006-12-19  James Gallagher <jgallagher@opendap.org>
+
+	DDXParser.cc, DODSFilter.cc: Formatting changes
+
+2006-12-13  James Gallagher <jgallagher@opendap.org>
+
+	Updated libdap.pmproj to/for version 3.7.3
+
+2006-12-10  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Change of pkging location simplifies user builds
+
+2006-12-06  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Set LIBDAP_ROOT appropriately in the MS Windows case
+
+2006-12-06  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Remove external .manifest as an issue by internalizing into binaries
+
+2006-12-05  James Gallagher <jgallagher@opendap.org>
+
+	getdap.cc: Fixed a bug where the constraint expression passed
+	in using -c was not used when getting either a DDS or a DDX
+	(but it was used when getting data).
+
+2006-12-05  James Gallagher <jgallagher@opendap.org>
+
+	Added comments to DDS and DataDDS about when it's OK
+	to delete their type factories (only when you're done
+	using the DDS or if you're about to switch to a new
+	factory).
+
+2006-12-05  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Require *.exe.manifest to accompany .exe's if they are to run.  I
+	guess I don't yet know why these are generated
+
+2006-12-05  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Improve win32 exe linking
+
+2006-12-03  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Just libdap for win32 makefile tweeks
+
+2006-12-02  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	New Makefile code to gen exports for dll's automatically
+
+2006-12-02  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Module export def's no longer required.  Constructed at build time.
+
+2006-11-25  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Automate module export definition regeneration for dll's (hard)
+
+2006-11-24  James Gallagher <jgallagher@opendap.org>
+
+	Updated OSX ReadME.txt for 3.7.3
+
+2006-11-24  James Gallagher <jgallagher@opendap.org>
+
+	Documentation and build file update for the 3.7.3 release.
+
 2006-11-24  James Gallagher <jgallagher@opendap.org>
 
 	AISMergeTest.cc: UPdated baseline to account for new fnoc1.das
