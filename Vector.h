@@ -138,14 +138,14 @@ public:
     virtual bool set_value( dods_float64 *val, int sz );
     virtual bool set_value( string *val, int sz );
 
-    virtual void Vector::value(dods_byte *b) const;
-    virtual void Vector::value(dods_int16 *b) const;
-    virtual void Vector::value(dods_uint16 *b) const;
-    virtual void Vector::value(dods_int32 *b) const;
-    virtual void Vector::value(dods_uint32 *b) const;
-    virtual void Vector::value(dods_float32 *b) const;
-    virtual void Vector::value(dods_float64 *b) const;
-    virtual void Vector::value(vector<string> &b) const;
+    virtual void value(dods_byte *b) const;
+    virtual void value(dods_int16 *b) const;
+    virtual void value(dods_uint16 *b) const;
+    virtual void value(dods_int32 *b) const;
+    virtual void value(dods_uint32 *b) const;
+    virtual void value(dods_float32 *b) const;
+    virtual void value(dods_float64 *b) const;
+    virtual void value(vector<string> &b) const;
     
     virtual BaseType *var(const string &name = "", bool exact_match = true,
               btp_stack *s = 0);
