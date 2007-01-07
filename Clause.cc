@@ -44,9 +44,6 @@
 
 using std::cerr;
 using std::endl;
-#if defined(_MSC_VER) && (_MSC_VER == 1200)  //  VC++ 6.0 only
-using std::for_each;
-#endif
 
 Clause::Clause(const int oper, rvalue *a1, rvalue_list *rv)
     : _op(oper), _b_func(0), _bt_func(0), _arg1(a1), _args(rv) 

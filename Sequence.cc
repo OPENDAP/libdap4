@@ -53,12 +53,6 @@
 
 using namespace std;
 
-// I don't know if this is needed given the namespace declaration above...
-// 02/18/04 jhrg
-#if defined(_MSC_VER) && (_MSC_VER == 1200)  //  VC++ 6.0 only
-using std::vector<BaseTypeRow *>;
-#endif
-
 static const unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
 static const unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
 

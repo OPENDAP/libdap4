@@ -300,7 +300,10 @@ int check_float64(const char *val)
 
 #ifdef WIN32
 //  VC++ 6.x strtod() doesn't recognize "NaN".  Account for it
-//  by wrapping it around a check for the Nan string.
+//  by wrapping it around a check for the Nan string.  Use of
+//  the product is obsolete as of 1/2007, but it is unknown if
+//  the issue is still there in later releases of that product.
+//  ROM - 01/2007
 double w32strtod(const char *val, char **ptr)
 {
     //  Convert the two char arrays to compare to strings.

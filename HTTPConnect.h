@@ -56,11 +56,7 @@
 #endif
 
 using std::string;
-#if defined(_MSC_VER) && (_MSC_VER == 1200)  //  VC++ 6.0 only
-using std::vector<string>;
-#else
 using std::vector;
-#endif
 
 // This is defined in Connect.cc. ObjectType should be its own class.
 // 6/17/2002 jhrg

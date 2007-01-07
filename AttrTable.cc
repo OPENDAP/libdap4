@@ -49,12 +49,7 @@ static char rcsid[] not_used ="$Id$";
 using std::cerr;
 using std::string;
 using std::endl;
-
-#if defined(_MSC_VER) && (_MSC_VER == 1200)  //  VC++ 6.0 only
-using std::vector<string>;
-#else
 using std::vector;
-#endif
 
 /** Convert an AttrType to it's string representation. 
     @param at The Attribute Type.

@@ -66,18 +66,15 @@ static char rcsid[] not_used =
 #include "debug.h"
 #include "util.h"
 
-//  We wrap VC++ 6.x strtod() to account for a short comming
-//  in that function in regards to "NaN".
+//  We wrapped VC++ 6.x strtod() to account for a short comming
+//  in that function in regards to "NaN".  I don't know if this
+//  still applies in more recent versions of that product.
+//  ROM - 12/2007
 #ifdef WIN32
 #include <limits>
 double w32strtod(const char *,char **);
 #endif
-
-#if defined(_MSC_VER) && (_MSC_VER == 1200)     //  VC++ 6.0 only
-using std::vector < GSEClause * >;
-#else
 using std::vector;
-#endif
 
 int gse_parse(void *arg);
 void gse_restart(FILE * in);
