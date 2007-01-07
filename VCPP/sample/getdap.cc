@@ -36,7 +36,7 @@
 #define not_used
 
 static char rcsid[] not_used =
-    { "$Id: getdap.cc 13420 2006-03-10 20:47:43Z jimg $" };
+    { "$Id$" };
 
 #include <stdio.h>
 #ifdef WIN32
@@ -54,7 +54,7 @@ static char rcsid[] not_used =
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 13420 $";
+const char *version = "$Revision$";
 
 extern int dods_keep_temps;     // defined in HTTPResponse.h
 
