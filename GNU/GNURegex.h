@@ -34,7 +34,7 @@
 #include <sys/types.h>
 #include <regex.h>
 
-#include "Error.h"
+#include <Error.h>
 
 
 /** a C++ interface to POSIX regular expression functions.
