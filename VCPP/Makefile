@@ -1,16 +1,23 @@
 # Makefile for libdap (under VC++ on win32)
 
-# Source code and target build areas
+# Source code, samples, docs and target build areas
 OBJDIR			= .\objects
 SRCDIR			= ..
+DOCDIR			= .\doc
+SAMPLEDIR		= .\sample
 
 # This is the prepackaging area.  Contents should never be on the build path.
-PKGDIR			= ..\..\prepkg\libdap
+# Fill in the VERSION (e.g., "= 3.7.3") to generate a final, version stamped
+# release of the product.
+PRODUCT			= libdap
+VERSION			=
+PKGDIR			= ..\..\prepkg\opendap\$(PRODUCT)$(VERSION)
 PKGLIBDIR		= $(PKGDIR)\lib
 PKGDLLDIR		= $(PKGDIR)\dll
 PKGBINDIR		= $(PKGDIR)\bin
 PKGETCDIR		= $(PKGDIR)\etc
 PKGINCDIR		= $(PKGDIR)\include
+PKGSAMPLEDIR	= $(PKGDIR)\sample
 
 # This is the installation area.  It should never be on the build path either
 # (except when building other, non-core components).
@@ -439,7 +446,7 @@ setup:
 
 # Win32 libnc-dap requires the gl\regex.h.  Under unix builds, it is simply
 # assumed to be on the machine already.
-install: mkinstdirs
+install: all mkinstdirs
 	copy $(OBJDIR)\MT\libdapMT.lib $(INSTALLLIBDIR)
 	copy $(OBJDIR)\MT\libdapclientMT.lib $(INSTALLLIBDIR)
 	copy $(OBJDIR)\MT\libdapserverMT.lib $(INSTALLLIBDIR)
@@ -468,7 +475,7 @@ install: mkinstdirs
 	copy $(SRCDIR)\GNU\*.h $(INSTALLINCDIR)\GNU
 	copy $(SRCDIR)\gl\regex.h $(INSTALLINCDIR)
 	
-package: mkpkgdirs
+package: all mkpkgdirs document
 	copy $(OBJDIR)\MT\libdapMT.lib $(PKGLIBDIR)
 	copy $(OBJDIR)\MT\libdapclientMT.lib $(PKGLIBDIR)
 	copy $(OBJDIR)\MT\libdapserverMT.lib $(PKGLIBDIR)
@@ -496,7 +503,7 @@ package: mkpkgdirs
 	copy $(SRCDIR)\*.h $(PKGINCDIR)
 	copy $(SRCDIR)\GNU\*.h $(PKGINCDIR)\GNU
 	copy $(SRCDIR)\gl\regex.h $(PKGINCDIR)
-
+	
 mkinstdirs:	
 	@-md $(INSTALLLIBDIR)
 	@-md $(INSTALLBINDIR)
@@ -512,6 +519,11 @@ mkpkgdirs:
 	@-md $(PKGDLLDIR)
 	@-md $(PKGINCDIR)
 	@-md $(PKGINCDIR)\GNU
+	
+document:
+	@-md $(PKGSAMPLEDIR)
+	copy $(SAMPLEDIR)\* $(PKGSAMPLEDIR)
+	copy $(DOCDIR)\readme.txt $(PKGDIR)
 
 clean:
 	@-rd /Q /S $(OBJDIR) $(PKGDIR)
