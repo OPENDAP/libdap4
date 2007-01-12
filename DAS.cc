@@ -279,3 +279,21 @@ DAS::print(FILE *out, bool dereference)
 
     fprintf( out, "}\n" ) ;
 }
+
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and then calls parent dump
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+DAS::dump( ostream &strm ) const
+{
+    strm << DapIndent::LMarg << "DAS::dump - ("
+			      << (void *)this << ")" << endl ;
+    DapIndent::Indent() ;
+    AttrTable::dump( strm ) ;
+    DapIndent::UnIndent() ;
+}
+

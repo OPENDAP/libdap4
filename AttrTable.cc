@@ -1029,3 +1029,77 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
     }
 }
 
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and all attributes stored
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+AttrTable::dump( ostream &strm ) const
+{
+    strm << DapIndent::LMarg << "AttrTable::dump - ("
+			      << (void *)this << ")" << endl ;
+    DapIndent::Indent() ;
+    strm << DapIndent::LMarg << "table name: " << d_name << endl ;
+    if( attr_map.size() )
+    {
+	strm << DapIndent::LMarg << "attributes: " << endl ;
+	DapIndent::Indent() ;
+	Attr_citer i = attr_map.begin() ;
+	Attr_citer ie = attr_map.end() ;
+	for( ; i != ie; i++ )
+	{
+	    entry *e = (*i) ;
+	    string type = AttrType_to_String( e->type ) ;
+	    if( e->is_alias )
+	    {
+		strm << DapIndent::LMarg << "alias: " << e->name
+		                          << " aliased to: " << e->aliased_to
+					  << endl ;
+	    }
+	    else if( e->type == Attr_container )
+	    {
+		strm << DapIndent::LMarg << "attr: " << e->name
+					  << " of type " << type
+					  << endl ;
+		DapIndent::Indent() ;
+		e->attributes->dump( strm ) ;
+		DapIndent::UnIndent() ;
+	    }
+	    else
+	    {
+		strm << DapIndent::LMarg << "attr: " << e->name
+					  << " of type " << type
+					  << endl ;
+		DapIndent::Indent() ;
+		strm << DapIndent::LMarg ;
+		vector<string>::const_iterator iter = e->attr->begin() ;
+		vector<string>::const_iterator last = e->attr->end()-1 ;
+		for( ; iter != last; iter++ )
+		{
+		    strm << (*iter) << ", " ;
+		}
+		strm << (*(e->attr->end()-1)) << endl ;
+		DapIndent::UnIndent() ;
+	    }
+	}
+	DapIndent::UnIndent() ;
+    }
+    else
+    {
+	strm << DapIndent::LMarg << "attributes: empty" << endl ;
+    }
+    if( d_parent )
+    {
+	strm << DapIndent::LMarg << "parent table:"
+	     << d_name << ":" << (void *)d_parent << endl ;
+    }
+    else
+    {
+	strm << DapIndent::LMarg << "parent table: none" << d_name << endl ;
+    }
+    DapIndent::UnIndent() ;
+}
+

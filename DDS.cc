@@ -865,6 +865,50 @@ DDS::mark_all(bool state)
 	(*i)->set_send_p(state);
 }
 
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and then calls parent dump
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+DDS::dump( ostream &strm ) const
+{
+    strm << DapIndent::LMarg << "DDS::dump - ("
+			      << (void *)this << ")" << endl ;
+    DapIndent::Indent() ;
+    strm << DapIndent::LMarg << "name: " << name << endl ;
+    strm << DapIndent::LMarg << "filename: " << _filename << endl ;
+    strm << DapIndent::LMarg << "protocol major: " << d_protocol_major << endl;
+    strm << DapIndent::LMarg << "protocol minor: " << d_protocol_minor << endl;
+    strm << DapIndent::LMarg << "factory: " << (void *)d_factory << endl ;
+
+    strm << DapIndent::LMarg << "global attributes:" << endl ;
+    DapIndent::Indent() ;
+    d_attr.dump( strm ) ;
+    DapIndent::UnIndent() ;
+    
+    if( vars.size() )
+    {
+	strm << DapIndent::LMarg << "vars:" << endl ;
+	DapIndent::Indent() ;
+	Vars_citer i = vars.begin() ;
+	Vars_citer ie = vars.end() ;
+	for( ; i != ie; i++ )
+	{
+	    (*i)->dump( strm ) ;
+	}
+	DapIndent::UnIndent() ;
+    }
+    else
+    {
+	strm << DapIndent::LMarg << "vars: none" << endl ;
+    }
+
+    DapIndent::UnIndent() ;
+}
+
 ///////// bone yard for old transfer attributes code /////////
 
 

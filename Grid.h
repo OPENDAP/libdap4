@@ -186,6 +186,8 @@ public:
     Map_riter map_rbegin() ;
     Map_riter map_rend() ;
     Map_iter get_map_iter(int i);
+
+    virtual void dump( ostream &strm ) const ;
 };
 
 #endif // _grid_h

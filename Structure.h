@@ -159,6 +159,8 @@ public:
 				string space = "", bool print_decl_p = true);
 
     virtual bool check_semantics(string &msg, bool all = false);
+
+    virtual void dump( ostream &strm ) const ;
 };
 
 #endif // _structure_h

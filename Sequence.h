@@ -324,6 +324,8 @@ public:
     virtual bool is_leaf_sequence();
     
     virtual void set_leaf_sequence(int lvl=1);
+
+    virtual void dump( ostream &strm ) const ;
 };
 
 #endif //_sequence_h

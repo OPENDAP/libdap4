@@ -61,6 +61,10 @@
 #include "DAS.h"
 #endif
 
+#ifndef A_DapObj_h
+#include "DapObj.h"
+#endif
+
 using std::cout;
 
 /** The DAP2 Data Descriptor Object (DDS) is a data structure used by
@@ -165,7 +169,7 @@ using std::cout;
     @see BaseType
     @see DAS */
 
-class DDS {
+class DDS : public DapObj {
 private:
     BaseTypeFactory *d_factory;
 
@@ -289,6 +293,8 @@ public:
     bool check_semantics(bool all = false);
 
     void tag_nested_sequences();
+
+    virtual void dump( ostream &strm ) const ;
 };
 
 #endif // _dds_h

@@ -246,3 +246,22 @@ Float32::ops(BaseType *b, int op, const string &dataset)
     }
 }
 
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and information about this
+ * instance.
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+Float32::dump( ostream &strm ) const
+{
+    strm << DapIndent::LMarg << "Float32::dump - ("
+			      << (void *)this << ")" << endl ;
+    DapIndent::Indent() ;
+    BaseType::dump( strm ) ;
+    strm << DapIndent::LMarg << "value: " << _buf << endl ;
+    DapIndent::UnIndent() ;
+}
+

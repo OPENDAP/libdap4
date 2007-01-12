@@ -113,6 +113,8 @@ public:
     string get_protocol() const { return d_protocol_version; }
     int get_protocol_major() const { return d_server_protocol_major; }
     int get_protocol_minor() const { return d_server_protocol_minor; }
+
+    virtual void dump( ostream &strm ) const ;
 };
 
 #endif // _datadds_h

@@ -98,6 +98,8 @@ public:
 			   bool print_decl_p = true);
 
     virtual bool ops(BaseType *b, int op, const string &dataset);
+
+    virtual void dump( ostream &strm ) const ;
 };
 
 #endif // _byte_h

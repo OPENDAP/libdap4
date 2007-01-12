@@ -71,6 +71,10 @@
 #include "dods-datatypes.h"
 #endif
 
+#ifndef A_DapObj_h
+#include "DapObj.h"
+#endif
+
 using namespace std;
 
 class BaseType;			// Forward declarations
@@ -189,7 +193,7 @@ enum Type {
 
     @brief The basic data type for the DODS DAP types.  */
 
-class BaseType {
+class BaseType : public DapObj {
 private:
     string _name;		// name of the instance
     Type _type;			// instance's type
@@ -223,6 +227,8 @@ public:
     virtual ~BaseType();
 
     virtual string toString();
+
+    virtual void dump( ostream &strm ) const ;
 
     BaseType &operator=(const BaseType &rhs);
 

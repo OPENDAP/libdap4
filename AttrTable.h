@@ -46,6 +46,10 @@ using std::vector;
 using std::string;
 using std::vector;
 
+#ifndef A_DapObj_h
+#include "DapObj.h"
+#endif
+
 /** <b>AttrType</b> identifies the data types which may appear in an
     attribute table object. 
 
@@ -134,7 +138,7 @@ AttrType String_to_AttrType(const string &s);
     @brief Contains the attributes for a dataset.
     @see DAS
     @see AttrType */
-class AttrTable {
+class AttrTable : public DapObj {
     // entry needs to be made public to make up for issues with this class'
     // design. It should probably be moved to it's own class. 05/22/03 jhrg
 public:
@@ -292,6 +296,8 @@ public:
     void print(FILE *out, string pad = "    ", bool dereference = false);
 
     void print_xml(FILE *out, string pad = "    ", bool constrained = false);
+
+    virtual void dump( ostream &strm ) const ;
 };
 
 #endif // _attrtable_h

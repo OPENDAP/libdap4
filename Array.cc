@@ -720,3 +720,41 @@ Array::check_semantics(string &msg, bool)
     return sem;
 }
 
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and information about this
+ * instance.
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+Array::dump( ostream &strm ) const
+{
+    strm << DapIndent::LMarg << "Array::dump - ("
+			      << (void *)this << ")" << endl ;
+    DapIndent::Indent() ;
+    Vector::dump( strm ) ;
+    strm << DapIndent::LMarg << "shape:" << endl ;
+    DapIndent::Indent() ;
+    Dim_citer i = _shape.begin() ;
+    Dim_citer ie = _shape.end() ;
+    unsigned int dim_num = 0 ;
+    for( ; i != ie; i++ )
+    {
+	strm << DapIndent::LMarg << "dimension " << dim_num++ << ":" << endl ;
+	DapIndent::Indent() ;
+	strm << DapIndent::LMarg << "name: " << (*i).name << endl ;
+	strm << DapIndent::LMarg << "size: " << (*i).size << endl ;
+	strm << DapIndent::LMarg << "start: " << (*i).start << endl ;
+	strm << DapIndent::LMarg << "stop: " << (*i).stop << endl ;
+	strm << DapIndent::LMarg << "stride: " << (*i).stride << endl ;
+	strm << DapIndent::LMarg << "constrained size: " << (*i).c_size
+	                          << endl ;
+	strm << DapIndent::LMarg << "selected: " << (*i).selected << endl ;
+	DapIndent::UnIndent() ;
+    }
+    DapIndent::UnIndent() ;
+    DapIndent::UnIndent() ;
+}
+

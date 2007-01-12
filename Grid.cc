@@ -746,3 +746,42 @@ Grid::check_semantics(string &msg, bool all)
 
     return true;
 }
+
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and information about this
+ * instance.
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+Grid::dump( ostream &strm ) const
+{
+    strm << DapIndent::LMarg << "Grid::dump - ("
+			      << (void *)this << ")" << endl ;
+    DapIndent::Indent() ;
+    Constructor::dump( strm ) ;
+    if( _array_var )
+    {
+	strm << DapIndent::LMarg << "array var: " << endl ;
+	DapIndent::Indent() ;
+	_array_var->dump( strm ) ;
+	DapIndent::UnIndent() ;
+    }
+    else
+    {
+	strm << DapIndent::LMarg << "array var: null" << endl ;
+    }
+    strm << DapIndent::LMarg << "map var: " << endl ;
+    DapIndent::Indent() ;
+    Map_citer i = _map_vars.begin() ;
+    Map_citer ie = _map_vars.end() ;
+    for( ; i != ie; i++ )
+    {
+	(*i)->dump( strm ) ;
+    }
+    DapIndent::UnIndent() ;
+    DapIndent::UnIndent() ;
+}
+

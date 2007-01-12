@@ -148,6 +148,35 @@ BaseType::toString()
     return oss.str();
 }
 
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and then displays information
+ * about this base type.
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+BaseType::dump( ostream &strm ) const
+{
+    strm << DapIndent::LMarg << "BaseType::dump - ("
+			      << (void *)this << ")" << endl ;
+    DapIndent::Indent() ;
+
+    strm << DapIndent::LMarg << "name: " << _name << endl ;
+    strm << DapIndent::LMarg << "type: " << type_name() << endl ;
+    strm << DapIndent::LMarg << "read_p: " << _read_p << endl ;
+    strm << DapIndent::LMarg << "send_p: " << _send_p << endl ;
+    strm << DapIndent::LMarg << "synthesized_p: " << _synthesized_p << endl ;
+    strm << DapIndent::LMarg << "parent: " << (void *)d_parent << endl ;
+    strm << DapIndent::LMarg << "attributes: " << endl ;
+    DapIndent::Indent() ;
+    d_attr.dump( strm ) ;
+    DapIndent::UnIndent() ;
+
+    DapIndent::UnIndent() ;
+}
+
 /** @brief Returns the name of the class instance. 
  */
 string 

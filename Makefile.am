@@ -143,7 +143,8 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	util.cc xdrutil_ppc.c parser-util.cc escaping.cc		 \
 	$(GRAM_SRC) ce_functions.cc GSEClause.cc \
 	lex.gse_.cc gse.tab.cc GeoConstraint.cc GridGeoConstraint.cc \
-	Clause.cc RValue.cc ConstraintEvaluator.cc ArrayGeoConstraint.cc
+	Clause.cc RValue.cc ConstraintEvaluator.cc ArrayGeoConstraint.cc \
+	DapIndent.cc
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 	AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc  \
@@ -163,7 +164,8 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	util.h escaping.h parser.h debug.h dods-limits.h dods-datatypes.h \
 	GeoConstraint.h GridGeoConstraint.h	ArrayGeoConstraint.h \
 	ce_functions.h  gse_parser.h GSEClause.h util_mit.h \
-	expr.h Clause.h RValue.h ConstraintEvaluator.h ce_parser.h
+	expr.h Clause.h RValue.h ConstraintEvaluator.h ce_parser.h \
+	DapIndent.h DapObj.h
 	
 CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		 \

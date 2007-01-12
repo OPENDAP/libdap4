@@ -472,3 +472,22 @@ Structure::check_semantics(string &msg, bool all)
  exit:
     return status;
 }
+
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and information about this
+ * instance.
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+Structure::dump( ostream &strm ) const
+{
+    strm << DapIndent::LMarg << "Structure::dump - ("
+			      << (void *)this << ")" << endl ;
+    DapIndent::Indent() ;
+    Constructor::dump( strm ) ;
+    DapIndent::UnIndent() ;
+}
+

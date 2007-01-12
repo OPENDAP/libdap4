@@ -112,6 +112,35 @@ DataDDS::m_protocol_string_to_numbers()
         << d_server_version_minor << endl);
 }
 
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and then calls parent dump
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+DataDDS::dump( ostream &strm ) const
+{
+    strm << DapIndent::LMarg << "DataDDS::dump - ("
+			      << (void *)this << ")" << endl ;
+    DapIndent::Indent() ;
+    DDS::dump( strm ) ;
+    strm << DapIndent::LMarg << "server version: " << d_server_version
+                              << endl ;
+    strm << DapIndent::LMarg << "version major: " << d_server_version_major
+                              << endl ;
+    strm << DapIndent::LMarg << "version minor: " << d_server_version_minor
+                              << endl ;
+    strm << DapIndent::LMarg << "protocol version: " << d_protocol_version
+                              << endl ;
+    strm << DapIndent::LMarg << "protocol major: " << d_server_protocol_major
+                              << endl ;
+    strm << DapIndent::LMarg << "protocol minor: " << d_server_protocol_minor
+                              << endl ;
+    DapIndent::UnIndent() ;
+}
+
 // public
 
 /** @brief Make an instance of DataDDS

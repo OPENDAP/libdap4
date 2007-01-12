@@ -356,3 +356,31 @@ Constructor::is_linear()
 {
     return false;
 }
+
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and information about this
+ * instance.
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+Constructor::dump( ostream &strm ) const
+{
+    strm << DapIndent::LMarg << "Constructor::dump - ("
+			      << (void *)this << ")" << endl ;
+    DapIndent::Indent() ;
+    BaseType::dump( strm ) ;
+    strm << DapIndent::LMarg << "vars: " << endl ;
+    DapIndent::Indent() ;
+    Vars_citer i = _vars.begin() ;
+    Vars_citer ie = _vars.end() ;
+    for( ; i != ie; i++ )
+    {
+	(*i)->dump( strm ) ;
+    }
+    DapIndent::UnIndent() ;
+    DapIndent::UnIndent() ;
+}
+

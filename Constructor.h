@@ -76,6 +76,8 @@ public:
 
     virtual void print_xml(FILE *out, string space = "    ", 
 			   bool constrained =false);
+
+    virtual void dump( ostream &strm ) const ;
 };
 
 #endif // _constructor_h 

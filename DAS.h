@@ -149,6 +149,8 @@ public:
     void parse(int fd);
     void parse(FILE *in=stdin);
     void print(FILE *out, bool dereference = false);
+
+    virtual void dump( ostream &strm ) const ;
 };
 
 #endif // _das_h

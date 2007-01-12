@@ -1400,3 +1400,39 @@ Sequence::set_leaf_sequence(int lvl)
     
     DBG2(cerr << "is_leaf_sequence(): " << is_leaf_sequence() << " (" << name() << ")" << endl);    
 }
+
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and information about this
+ * instance.
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+Sequence::dump( ostream &strm ) const
+{
+    strm << DapIndent::LMarg << "Sequence::dump - ("
+			      << (void *)this << ")" << endl ;
+    DapIndent::Indent() ;
+    Constructor::dump( strm ) ;
+    strm << DapIndent::LMarg << "# rows deserialized: " << d_row_number
+                              << endl ;
+    strm << DapIndent::LMarg << "bracket notation information:" << endl ;
+    DapIndent::Indent() ;
+    strm << DapIndent::LMarg << "starting row #: " << d_starting_row_number
+                              << endl ;
+    strm << DapIndent::LMarg << "row stride: " << d_row_stride << endl ;
+    strm << DapIndent::LMarg << "ending row #: " << d_ending_row_number
+                              << endl ;
+    DapIndent::UnIndent() ;
+
+    strm << DapIndent::LMarg << "data been sent? " << d_unsent_data << endl ;
+    strm << DapIndent::LMarg << "start of instance? " << d_wrote_soi << endl ;
+    strm << DapIndent::LMarg << "is leaf sequence? " << d_leaf_sequence
+                              << endl ;
+    strm << DapIndent::LMarg << "top most in hierarchy? " << d_top_most
+                              << endl ;
+    DapIndent::UnIndent() ;
+}
+

@@ -1102,3 +1102,52 @@ bool Vector::check_semantics(string & msg, bool)
 {
     return BaseType::check_semantics(msg);
 }
+
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and information about this
+ * instance.
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+Vector::dump( ostream &strm ) const
+{
+    strm << DapIndent::LMarg << "Vector::dump - ("
+			      << (void *)this << ")" << endl ;
+    DapIndent::Indent() ;
+    BaseType::dump( strm ) ;
+    strm << DapIndent::LMarg << "# elements in vector: " << _length << endl ;
+    if( _var )
+    {
+	strm << DapIndent::LMarg << "base type:" << endl ;
+	DapIndent::Indent() ;
+	_var->dump( strm ) ;
+	DapIndent::UnIndent() ;
+    }
+    else
+    {
+	strm << DapIndent::LMarg << "base type: not set" << endl ;
+    }
+    strm << DapIndent::LMarg << "vector contents:" << endl ;
+    DapIndent::Indent() ;
+    for( int i = 0; i < _vec.size(); ++i )
+    {
+	if( _vec[i] )
+	    _vec[i]->dump( strm ) ;
+	else
+	    strm << DapIndent::LMarg << "vec[" << i << "] is null" << endl ;
+    }
+    DapIndent::UnIndent() ;
+    strm << DapIndent::LMarg << "strings:" << endl ;
+    DapIndent::Indent() ;
+    for( int i = 0; i < d_str.size(); i++ )
+    {
+	strm << DapIndent::LMarg << d_str[i] << endl ;
+    }
+    DapIndent::UnIndent() ;
+    strm << DapIndent::LMarg << "_buf: " << (void *)_buf << endl ;
+    DapIndent::UnIndent() ;
+}
+

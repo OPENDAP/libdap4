@@ -154,6 +154,8 @@ public:
 
     virtual void add_var(BaseType *v, Part p = nil);
     virtual bool check_semantics(string &msg, bool all = false);
+
+    virtual void dump( ostream &strm ) const ;
 };
 
 #endif /* _vector_h */
