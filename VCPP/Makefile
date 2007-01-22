@@ -198,7 +198,8 @@ DAP_OBJS = $(GRAM_OBJS) \
 		$(OBJDIR)\ce_functions.obj \
 		$(OBJDIR)\GSEClause.obj \
 		$(OBJDIR)\lex.gse_.obj \
-		$(OBJDIR)\ArrayGeoConstraint.obj
+		$(OBJDIR)\ArrayGeoConstraint.obj \
+		$(OBJDIR)\DapIndent.obj
 
 CLIENT_OBJS = $(OBJDIR)\RCReader.obj \
 		$(OBJDIR)\Connect.obj \
@@ -290,6 +291,7 @@ $(OBJDIR)\Error.obj						: $(SRCDIR)\Error.cc
 $(OBJDIR)\Error.tab.obj					: $(SRCDIR)\Error.tab.cc
 $(OBJDIR)\AttrTable.obj					: $(SRCDIR)\AttrTable.cc
 $(OBJDIR)\ConstraintEvaluator.obj 		: $(SRCDIR)\ConstraintEvaluator.cc
+$(OBJDIR)\DapIndent.obj					: $(SRCDIR)\DapIndent.cc
 $(OBJDIR)\DAS.obj						: $(SRCDIR)\DAS.cc
 $(OBJDIR)\DDS.obj						: $(SRCDIR)\DDS.cc
 $(OBJDIR)\DataDDS.obj					: $(SRCDIR)\DataDDS.cc
