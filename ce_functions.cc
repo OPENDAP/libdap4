@@ -526,6 +526,8 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
     // reading the array until the constraints have been applied because it
     // might be really large.
     
+    // This version makes sure to set the send_p flags which is needed for
+    // the hdf4 handler (and is what should be done in general).
     Grid::Map_iter i = l_grid->map_begin();
     while (i != l_grid->map_end())
         (*i++)->set_send_p(true);
@@ -617,7 +619,7 @@ longitude-latitude bounding box.");
     // reading the array until the constraints have been applied because it
     // might be really large.
     //
-    // Trick: Some handlers builds Grids from a combination of Array
+    // Trick: Some handlers build Grids from a combination of Array
     // variables and attributes. Those handlers (e.g., hdf4) use the send_p
     // property to determine which parts of the Grid to read *but they can
     // only read the maps from within Grid::read(), not the map's read()*.
@@ -627,6 +629,10 @@ longitude-latitude bounding box.");
     while (i != l_grid->map_end())
         (*i++)->set_send_p(true);
     l_grid->read(dataset);
+    // Calling read() above sets the read_p flag for the entire grid; clear it
+    // for the grid's array so that later on the code will be sure to read it
+    // under all circumstances.
+    l_grid->get_array()->set_read_p(false);
     DBG(cerr << "geogrid: past map read" << endl);
 
     // Look for Grid Selection Expressions tacked onto the end of the BB
