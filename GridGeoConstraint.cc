@@ -153,13 +153,14 @@ bool GridGeoConstraint::build_lat_lon_maps()
 
 /** Are the latitude and longitude dimentions ordered so that this class can
     properly constrain the data? This method throws Error if lat and lon are
-    not to two 'fastest-varying' (or 'rightmost) dimensions. It sets the 
+    not to two 'fastest-varying' (or 'rightmost') dimensions. It also sets the 
     internal property \e longitude_rightmost if that's true. 
     
     @note Called by the constructor once build_lat_lon_maps() has returned. 
     
     @return True if the lat/lon maps are the two rightmost maps,
-    false otherwise*/
+    false otherwise; modifies the \e longitude_rightmost property as aside
+    effect. */
 bool
 GridGeoConstraint::lat_lon_dimensions_ok()
 {
