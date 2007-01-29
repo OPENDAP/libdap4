@@ -213,6 +213,7 @@ Clause::value(const string &dataset, DDS &dds, BaseType **value)
 
 	if (*value) {
 	    (*value)->set_send_p(true);
+        (*value)->set_read_p(true);
 	    return true;
 	}
 	else {
