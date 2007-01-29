@@ -82,7 +82,9 @@ class is_prefix {
     string s;
   public:
     is_prefix(const string & in):s(in) {
-    } bool operator() (const string & prefix) {
+    } 
+    
+    bool operator() (const string & prefix) {
         return s.find(prefix) == 0;
     }
 };
