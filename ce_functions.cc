@@ -716,6 +716,32 @@ string_to_double(const char *val)
 }
 
 static double
+get_attribute_double_value(BaseType *var, vector<string> &attributes)
+{
+    AttrTable &attr = var->get_attr_table();
+    string attribute_value = "";
+    string values = "";
+    vector<string>::iterator i = attributes.begin();
+    while (attribute_value == "" && i != attributes.end()) {
+        values += *i; if (!values.empty()) values += ", ";
+        attribute_value = attr.get_attr(*i++);
+    }
+    
+    // If the value string is empty, then look at the grid's array (if it's a
+    // grid or throw an Error.
+    if (attribute_value.empty()) {
+        if (var->type() == dods_grid_c)
+            return get_attribute_double_value(dynamic_cast<Grid&>(*var).get_array(), attributes);
+        else
+            throw Error(string("No COARDS '") + values
+                        + "' attribute was found for the variable '"
+                        + var->name() + "'.");
+    }
+                    
+    return string_to_double(attribute_value.c_str());    
+}
+
+static double
 get_attribute_double_value(BaseType *var, const string &attribute)
 {
     AttrTable &attr = var->get_attr_table();
@@ -738,7 +764,10 @@ get_attribute_double_value(BaseType *var, const string &attribute)
 static double
 get_y_intercept(BaseType *var)
 {
-    return get_attribute_double_value(var, "add_offset");
+    vector<string> attributes;
+    attributes.push_back("add_offset");
+    attributes.push_back("add_off");
+    return get_attribute_double_value(var, attributes);
 }
 
 static double
@@ -783,27 +812,32 @@ assumed to be the slope and y-intercept.");
         m = get_slope(argv[0]);
         b = get_y_intercept(argv[0]);
     }
+    
+    DBG(cerr << "m: " << m << ", b: " << b << endl);
+    
     // Read the data, scale and return the result. Must replace the new data
     // in a constructor (i.e., Array part of a Grid).
     BaseType *dest = 0;
     double *data;
     if (argv[0]->type() == dods_grid_c) {
-        Grid &grid = dynamic_cast<Grid&>(*argv[0]);
-        Array &source = *grid.get_array();
+        Array &source = *dynamic_cast<Grid&>(*argv[0]).get_array();
         source.set_send_p(true);
-        grid.read(dataset);
+        source.read(dataset);
         data = extract_double_array(&source);
         int length = source.length();
         int i = 0;
         while (i < length) {
+            DBG2(cerr << "data[" << i << "]: " << data[i] << endl);
             data[i] = data[i] * m + b;
+            DBG2(cerr << " >> data[" << i << "]: " << data[i] << endl);
             ++i;
         }
 
         // Vector::add_var will delete the existing 'template' variable
-        source.add_var(new Float64);
-        source.val2buf(static_cast<void*>(data));
-        
+        Float64 *temp_f = new Float64(source.name());
+        source.add_var(temp_f);
+        source.val2buf(static_cast<void*>(data), false);
+        delete temp_f;              // add_var copies and then adds.
         dest = argv[0];
     }
     else if (argv[0]->is_vector_type()) {
@@ -823,8 +857,10 @@ assumed to be the slope and y-intercept.");
             ++i;
         }
         
-        source.add_var(new Float64);
-        source.val2buf(static_cast<void*>(data));
+        Float64 *temp_f = new Float64(source.name());
+        source.add_var(temp_f);
+        source.val2buf(static_cast<void*>(data), false);
+        delete temp_f;              // add_var copies and then adds.
         
         dest = argv[0];
     }
