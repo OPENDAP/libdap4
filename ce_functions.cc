@@ -87,6 +87,13 @@ void *gse_string(const char *yy_str);
 namespace libdap
 {
 
+/** Is \e lhs equal to \e rhs? Use epsilon to determine equality. */
+inline bool
+double_eq(double lhs, double rhs, double epsilon = 1.0e-5)
+{
+    return fabs(lhs - rhs) < (fabs(lhs + rhs) / epsilon);
+}
+ 
 /** Given a BaseType pointer, extract the string value it contains and return
     it.
 
@@ -776,6 +783,12 @@ get_slope(BaseType *var)
     return get_attribute_double_value(var, "scale_factor");
 }
 
+static double
+get_missing_value(BaseType *var)
+{
+    return get_attribute_double_value(var, "missing_value");
+}
+
 /** Given a BaseType, scale it using 'y = mx + b'. Either provide the 
     constants 'm' and 'b' or the function will look for the COARDS attributes
     'scale_factor' and 'add_offset'.
@@ -793,7 +806,7 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, const string & dataset
 {
     // Check for 1 or 3 arguments: 1 --> use attributes; 3 --> m & b supplied
     DBG(cerr << "argc = " << argc << endl);
-    if ( !(argc == 1 || argc == 3) )
+    if ( !(argc == 1 || argc == 3 || argc == 4) )
         throw Error(
 
 "Wrong number of arguments to linear_scale(). There must be either one or\n\
@@ -803,17 +816,36 @@ y-intercept). If three arguments are given, then the second and third are\n\
 assumed to be the slope and y-intercept.");
 
     // Get m & b
-    double m, b;
-    if (argc == 3) {
+    bool use_missing;
+    double m, b, missing;
+    if (argc == 4) {
         m = extract_double_value(argv[1]);
         b = extract_double_value(argv[2]);
+        missing = extract_double_value(argv[3]);
+        use_missing = true;
+    }
+    else if (argc == 3) {
+        m = extract_double_value(argv[1]);
+        b = extract_double_value(argv[2]);
+        use_missing = false;
     }
     else {
         m = get_slope(argv[0]);
         b = get_y_intercept(argv[0]);
+        // This is not the best plan; the get_missing_value() function should
+        // do something other than throw, but to do that would require mayor
+        // surgery on get_attribute_double_value().
+        try {
+            missing = get_missing_value(argv[0]);
+            use_missing = true;
+        }
+        catch (Error &e) {
+            use_missing = false;
+        }
     }
     
     DBG(cerr << "m: " << m << ", b: " << b << endl);
+    DBG(cerr << "use_missing: " << use_missing << ", missing: " << missing << endl);
     
     // Read the data, scale and return the result. Must replace the new data
     // in a constructor (i.e., Array part of a Grid).
@@ -828,7 +860,8 @@ assumed to be the slope and y-intercept.");
         int i = 0;
         while (i < length) {
             DBG2(cerr << "data[" << i << "]: " << data[i] << endl);
-            data[i] = data[i] * m + b;
+            if (!use_missing || !double_eq(data[i], missing))
+                data[i] = data[i] * m + b;
             DBG2(cerr << " >> data[" << i << "]: " << data[i] << endl);
             ++i;
         }
@@ -853,7 +886,8 @@ assumed to be the slope and y-intercept.");
         int length = source.length();
         int i = 0;
         while (i < length) {
-            data[i] = data[i] * m + b;
+            if (!use_missing || !double_eq(data[i], missing))
+                data[i] = data[i] * m + b;
             ++i;
         }
         
@@ -868,7 +902,8 @@ assumed to be the slope and y-intercept.");
              && !(argv[0]->type() == dods_str_c 
                   || argv[0]->type() == dods_url_c)) {
         double data = extract_double_value(argv[0]);
-        data = data * m + b;
+        if (!use_missing || !double_eq(data, missing))
+            data = data * m + b;
         
         dest = new Float64(argv[0]->name());
         dest->val2buf(static_cast<void*>(&data));
