@@ -49,6 +49,22 @@ Building from Our SVN Repository
   ../gnulib/gnulib-tool --import --lgpl --source-base=gl --m4-base=gl/m4 \
   --aux-dir=conf --libtool --no-changelog regex
 
+AFTER INSTALLING
+
+  o Set PATH environment variable to include the bin directory of where
+  libdap was installed. For example, if using the default installation
+  directory, which is /usr/local, make sure that /usr/local/bin is on your
+  path.
+
+  o Set LD_LIBRARY_PATH environment variable to include the lib directory of
+  where libdap was installed. For example, if using the default installation
+  directory, which is /usr/local, make sure that /usr/local/lib is part of
+  LD_LIBRARY_PATH. You might want to add the following about LIBRARY PATH:
+  If you have set $prefix so that the libraries are installed in a directory
+  that's included in ld.so.conf (linux, other systems may use a slightly
+  different name) you don't have to use LD_LIBRARY_PATH but, if you don't,
+  make sure to re-run ldconfig.
+
 REQUIREMENTS
 
   o To build from a fresh SVN checkout, you'll need automake 1.9.6, autoconf
@@ -89,7 +105,7 @@ REQUIREMENTS
 NOTES
 
   o Check for other INSTALL.* files to see if there's information specific to
-    you OS (e.g., AIX).
+    your OS (e.g., AIX).
     
   o If you are building on a new platform (one for which we don't supply
     binaries), please run the tests and tell us about any failures. To do a
