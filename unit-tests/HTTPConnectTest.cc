@@ -30,8 +30,9 @@
 #include <iterator>
 #include <string>
 #include <algorithm>
+#include <functional>
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include "GNURegex.h"
 #include "HTTPConnect.h"
@@ -41,7 +42,7 @@
 using namespace CppUnit;
 using namespace std;
 
-class HTTPConnectTest:public TestFixture {
+class HTTPConnectTest: public TestFixture {
   private:
     HTTPConnect * http;
     string localhost_url, localhost_pw_url, localhost_digest_pw_url;
@@ -50,9 +51,21 @@ class HTTPConnectTest:public TestFixture {
     string netcdf_das_url;
     
   protected:
-     bool re_match(Regex & r, const char *s) {
+    bool re_match(Regex & r, const char *s) {
         return r.match(s, strlen(s)) == (int) strlen(s);
-  } public:
+    } 
+    
+    struct REMatch: public unary_function<const string &, bool> {
+        Regex &d_re;
+        REMatch(Regex &re) : d_re(re) {}
+        ~REMatch() {}
+        bool operator()(const string &str) {
+            const char *s = str.c_str();
+            return d_re.match(s, strlen(s)) == (int) strlen(s);
+        } 
+    };    
+
+  public:
      HTTPConnectTest() {
     }
     ~HTTPConnectTest() {
@@ -91,9 +104,7 @@ class HTTPConnectTest:public TestFixture {
     CPPUNIT_TEST(get_response_headers_test);
     CPPUNIT_TEST(server_version_test);
     CPPUNIT_TEST(type_test);
-
     CPPUNIT_TEST(cache_test);
-
     CPPUNIT_TEST(set_accept_deflate_test);
     CPPUNIT_TEST(read_url_password_test);
     CPPUNIT_TEST(read_url_password_test2);
@@ -118,11 +129,9 @@ class HTTPConnectTest:public TestFixture {
             request_h.push_back(string("If-Modified-Since: ") + lm);
             status =
                 http->read_url(localhost_url, dump, resp_h, &request_h);
-            DBG(cerr << "If modified since test, status: " << status <<
-                endl);
-            DBG(copy
-                (resp_h->begin(), resp_h->end(),
-                 ostream_iterator < string > (cerr, "\n")));
+            DBG(cerr << "If modified since test, status: " << status << endl);
+            DBG(copy(resp_h->begin(), resp_h->end(),
+                     ostream_iterator < string > (cerr, "\n")));
             CPPUNIT_ASSERT(status == 304);
 
             // Now test an etag
@@ -228,26 +237,14 @@ class HTTPConnectTest:public TestFixture {
 
             // Should get five or six headers back.
             Regex header("X.*-Server: .*/.*");
-            DBG(cerr << "get_response_headers_test(), (*h)[0]: "
-                << (*h)[0] << endl);
-            CPPUNIT_ASSERT(re_match(header, (*h)[0].c_str()));
+
+            CPPUNIT_ASSERT(find_if(h->begin(), h->end(), REMatch(header))
+                           != h->end());
 
             Regex protocol_header("XDAP: .*");
-            unsigned int num_headers;
-            if (re_match(protocol_header, (*h)[2].c_str()))
-                num_headers = 7;
-            else
-                num_headers = 5;
+            CPPUNIT_ASSERT(find_if(h->begin(), h->end(), REMatch(protocol_header))
+                           != h->end());
 
-            DBG(cerr << "num_headers: " << num_headers << endl);
-            DBG(cerr << "h->size(): " << h->size() << endl);
-            DBG(cerr << "(*h)[num_headers-1]: " << (*h)[num_headers - 1] <<
-                endl);
-            CPPUNIT_ASSERT((*h)[num_headers - 1] ==
-                           "Content-Description: dods_das");
-#if 1
-            CPPUNIT_ASSERT(h->size() == num_headers);
-#endif
             delete r;
             r = 0;
         }
@@ -264,12 +261,12 @@ class HTTPConnectTest:public TestFixture {
 
     void server_version_test() {
         Response *r = http->fetch_url(netcdf_das_url);
-        Regex version("dap[0-4]?/[0-9]+\\.[0-9]+\\.[0-9]+");
+        Regex protocol("^[0-9]+\\.[0-9]+$");
         try {
             DBG(cerr << "r->get_version().c_str(): "
-                << r->get_version().c_str() << endl);
+                << r->get_protocol().c_str() << endl);
 
-            CPPUNIT_ASSERT(re_match(version, r->get_version().c_str()));
+            CPPUNIT_ASSERT(re_match(protocol, r->get_protocol().c_str()));
             delete r;
             r = 0;
         }
