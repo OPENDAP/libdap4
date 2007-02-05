@@ -146,18 +146,13 @@ int TestArray::m_offset(int y, Dim_iter X, int x)
 void
 TestArray::constrained_matrix(const string &dataset, char *constrained_array)
 {
-#if 1
     int unconstrained_size = 1;
     Dim_iter d = dim_begin();
     while (d != dim_end())
         unconstrained_size *= dimension_size(d++, false);
     char *whole_array = new char[unconstrained_size * width()];
     DBG(cerr << "unconstrained size: " << unconstrained_size << endl);
-#endif
-#if 0
-    DBG(cerr << "Array width(): " << width() << endl);
-    char *whole_array = new char[width()];
-#endif
+
     int elem_width = var()->width();      // size of an element
     char *elem_val = new char[elem_width];
 
@@ -175,13 +170,6 @@ TestArray::constrained_matrix(const string &dataset, char *constrained_array)
     } 
     cerr << endl);
     
-#if 0
-    int constrained_size = 1;
-    Dim_iter d = dim_begin();
-    while (d != dim_end())
-        constrained_size *= dimension_size(d++, true);
-#endif
-
     Dim_iter Y = dim_begin();
     Dim_iter X = Y+1;
     char *dest = constrained_array;
@@ -195,31 +183,31 @@ TestArray::constrained_matrix(const string &dataset, char *constrained_array)
     int y = dimension_start(Y);
     while (y < dimension_stop(Y)+1) {
 
-	int x = dimension_start(X);
-	while (x < dimension_stop(X)+1) {
-
-            DBG2(cerr << "whole[" << y << "][" << x << "]: (" 
-		<< m_offset(y, Y, x) << ") " 
-		<< *(dods_byte*)(whole_array + m_offset(y, X, x)*elem_width)
-		<< endl);
-
-	    memcpy(dest,
-		   whole_array + m_offset(y, X, x)*elem_width,
-		   elem_width);
-
-	    dest += elem_width;
-	    x += dimension_stride(X);
-	    constrained_size++;
-	}
-	
-	y += dimension_stride(Y);
+    	int x = dimension_start(X);
+    	while (x < dimension_stop(X)+1) {
+    
+                DBG2(cerr << "whole[" << y << "][" << x << "]: (" 
+    		<< m_offset(y, Y, x) << ") " 
+    		<< *(dods_byte*)(whole_array + m_offset(y, X, x)*elem_width)
+    		<< endl);
+    
+    	    memcpy(dest,
+    		   whole_array + m_offset(y, X, x)*elem_width,
+    		   elem_width);
+    
+    	    dest += elem_width;
+    	    x += dimension_stride(X);
+    	    constrained_size++;
+    	}
+    	
+    	y += dimension_stride(Y);
     }
 
     DBG(cerr << "constrained size: " << constrained_size << endl);
     DBG(cerr << "constrained_array: ";
-    for (int i = 0; i < constrained_size; ++i) {
-	cerr << (int)*(dods_byte*)(constrained_array + (i * elem_width)) << ", ";
-    } 
+        for (int i = 0; i < constrained_size; ++i) {
+    	cerr << (int)*(dods_byte*)(constrained_array + (i * elem_width)) << ", ";
+        } 
     cerr << endl);
 }
  

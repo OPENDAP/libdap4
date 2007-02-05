@@ -568,7 +568,8 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
 
     // by default this is false (to get the old-style values that are
     // constant); set series_values to true for testing Sequence constraints.
-    // 01/14/05 jhrg
+    // 01/14/05 jhrg And Array constraints, although it's of limited 
+    // versatility 02/05/07 jhrg
     set_series_values(server, series_values);
 
     eval.parse_constraint(ce, server);  // Throws Error if the ce doesn't parse.
