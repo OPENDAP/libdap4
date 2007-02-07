@@ -198,8 +198,7 @@ bool GeoConstraint::is_bounding_box_valid(double left, double top,
     index. */
 void GeoConstraint::find_longitude_indeces(double left, double right,
                                            int &longitude_index_left,
-                                           int &longitude_index_right)
-    const
+                                           int &longitude_index_right) const
 {
     // Use all values 'modulo 360' to take into account the cases where the
     // constraint and/or the longitude vector are given using values greater

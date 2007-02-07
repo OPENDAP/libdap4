@@ -483,7 +483,8 @@ apply_grid_selection_expressions(Grid * grid,
     <li>The name of a Grid.</li>
     <li>Zero or more strings which hold relational expressions of the form:<ul>
         <li><code>&lt;map var&gt; &lt;relop&gt; &lt;constant&gt;</code></li>
-        <li><code>&lt;constant&gt; &lt;relop&gt; &lt;map var&gt; &lt;relop&gt; &lt;constant&gt;</code></li>
+        <li><code>&lt;constant&gt; &lt;relop&gt; &lt;map var&gt; &lt;relop&gt; 
+                  &lt;constant&gt;</code></li>
         </ul></li>
     </ul>
 
