@@ -1,6 +1,180 @@
-;; Local Variables:
-;; coding: utf-8
-;; End:
+2007-02-07  James Gallagher <jgallagher@opendap.org>
+
+	main_page.doxygen: Updated the version number to 3.7.5.
+
+2007-02-07  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc, GeoConstraint.cc, HTTPConnect.cc: Formatting
+	lex.dds,cc, les.gse_.cc: Regenerated.
+
+2007-02-05  James Gallagher <jgallagher@opendap.org>
+
+	data.z2-7: updated the data values for two and three
+	dimensional arrays given the new code in GeoConstraint.
+
+2007-02-05  James Gallagher <jgallagher@opendap.org>
+
+	expr-test.cc, TestArray.cc: formatting changes
+
+2007-02-05  James Gallagher <jgallagher@opendap.org>
+
+	AISMergeTest.cc, HTTPConnectTest.cc: Fixed errors that have
+	cropped upover time, esp. as Server4 has become the default.
+
+2007-02-02  Patrick West <pwest@ucar.edu>
+
+	Added information about PATH and LD_LIBRARY_PATH.
+	M    INSTALL
+
+2007-01-30  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Added support for missing values to linear_scale.
+	Now, if missing_value is present (in the attributes or given as a
+	parameter) values which match will not be scaled.
+
+2007-01-29  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Added a new version of get
+	get_attribute_double_value() that takes a vector of strings
+	and returns the value of the first attribute found in that
+	vector. Also cleaned up the memory use in the linear_scale
+	function so that function no longer leaks the new template
+	variable. This was part of the fix for #660 (See also the
+	checkin for Clause.cc from today).
+
+2007-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Clause.cc: Added a call to set_read_p(true) in Clause::value
+	so that handlers' read() methods will not try to 'read over'
+	the values inserted to the variables by a CE function.
+
+2007-01-29  James Gallagher <jgallagher@opendap.org>
+
+	GeoConstraint.cc: Minor formatting fix.
+
+2007-01-26  James Gallagher <jgallagher@opendap.org>
+
+	Updates to comments.
+
+2007-01-26  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.cc: Fixed ticket 659 where array data was not
+	read when a relational constraint was not used. The bug
+	crept in while making another fix (for the HDF4 handler).
+	The problem was that Grid::read() was used to read the maps
+	(bit not the Array) and as a side effect read_p was set for
+	the entire Grid, not just the maps. I reset the Array read_p
+	value; see ce_functions.cc
+
+2007-01-21  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Synch win32 Makefile wrt recent libdap code changes
+
+2007-01-12  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-01-11  Patrick West <pwest@ucar.edu>
+
+	comment headers updated with correct information and Copyright.
+	M    DapObj.h
+	M    DapIndent.h
+	M    DapIndent.cc
+
+2007-01-11  Patrick West <pwest@ucar.edu>
+
+	Added dump method to the BaseType classes, DAS, DDS, DataDDS. To
+	do this, created a DapObj base class for all of these to inherit
+	from (directly or indirectly) and in the DapObj class is the
+	operator<< method. This will aid in debugging. Created an
+	indentation classes to help with dumping objects.
+
+	M    Int16.cc
+	M    Int32.h
+	M    Structure.h
+	M    Sequence.h
+	M    Str.h
+	M    Int16.h
+	M    DAS.h
+	M    DDS.cc
+	M    BaseType.h
+	M    Array.cc
+	M    Float64.h
+	M    UInt16.cc
+	M    Byte.cc
+	M    Byte.h
+	M    DataDDS.h
+	M    BaseType.cc
+	M    DDS.h
+	M    Makefile.am
+	M    Constructor.h
+	M    Int32.cc
+	A    DapObj.h
+	M    DataDDS.cc
+	A    DapIndent.h
+	M    Float32.cc
+	M    AttrTable.cc
+	M    Grid.h
+	M    Structure.cc
+	M    Vector.cc
+	M    Str.cc
+	M    Sequence.cc
+	M    Float32.h
+	M    AttrTable.h
+	M    Constructor.cc
+	M    UInt32.h
+	M    Vector.h
+	M    DAS.cc
+	M    Float64.cc
+	M    UInt32.cc
+	M    Grid.cc
+	A    DapIndent.cc
+	M    Array.h
+	M    UInt16.h
+
+2007-01-08  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-01-07  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Last Makefile tweeks to automate pkging for win32
+
+2007-01-07  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Add doc's that accompany win32 libdap releases to the repository
+
+2007-01-07  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-01-06  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Prevent "error.h" from getting picked up during ml-structs build
+	under win32 (that's error.h with a little "e").
+
+2007-01-06  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Removed VC++-6.x-specific ifdefs.  6.x not supported any longer anyway
+	as some old template-related hacks are no longer in the code.
+
+2007-01-06  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Add sample code for compiling/linking with libdap under win32
+
+2007-01-03  James Gallagher <jgallagher@opendap.org>
+
+	Vector.h: Removed 'Vector::' prefix in a bunch on accessors; these
+	caused g++ 4.1.1 to gag. Fix from Rob Cermak.
+
+2007-01-02  Patrick West <pwest@ucar.edu>
+
+	3.7.4 release
+	M    configure.ac
+	M    ChangeLog
+	M    libdap.spec
+	M    NEWS
+
 2006-12-31  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
 
 	Synchronize select win32 Makefiles to build/pkg the same way

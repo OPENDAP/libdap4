@@ -1,7 +1,7 @@
 
 	$Id$
 
-Updated for version 3.7.3 of the OPeNDAP DAP 3.1 library software.
+Updated for version 3.7.5 of the OPeNDAP DAP 3.2 library software.
 
 Installing the DAP2 library
 
@@ -29,7 +29,7 @@ BUILDING THE SOFTWARE
      software, then 'cd unit-tests; make check' will build and run the unit
      tests.
 
-  3. Type `make install' to install the DAP 3.7.3 library. The libraries
+  3. Type `make install' to install the DAP 3.7.5 library. The libraries
      (libdap.a. libdapclient.a and libdapserver.a), their header files and
      the getdap and dap-config utilities install under /usr/local/ in lib,
      include/libdap and bin by default. The deflate utility is installed in
@@ -51,19 +51,22 @@ Building from Our SVN Repository
 
 AFTER INSTALLING
 
-  o Set PATH environment variable to include the bin directory of where
-  libdap was installed. For example, if using the default installation
-  directory, which is /usr/local, make sure that /usr/local/bin is on your
-  path.
+  o Set PATH environment variable to include the bin directory of
+    where libdap was installed. For example, if using the default
+    installation directory, which is /usr/local, make sure that
+    /usr/local/bin is on your path. This is important because often
+    libdap is built so that some other software can then be built, but
+    without setting PATH, those other packages might use older
+    versions of libdap that are still lingering on you system.
 
-  o Set LD_LIBRARY_PATH environment variable to include the lib directory of
-  where libdap was installed. For example, if using the default installation
-  directory, which is /usr/local, make sure that /usr/local/lib is part of
-  LD_LIBRARY_PATH. You might want to add the following about LIBRARY PATH:
-  If you have set $prefix so that the libraries are installed in a directory
-  that's included in ld.so.conf (linux, other systems may use a slightly
-  different name) you don't have to use LD_LIBRARY_PATH but, if you don't,
-  make sure to re-run ldconfig.
+  o Set LD_LIBRARY_PATH environment variable to include the lib
+    directory of where libdap was installed. For example, if using the
+    default installation directory, which is /usr/local, make sure
+    that /usr/local/lib is part of LD_LIBRARY_PATH. If you have set
+    $prefix so that the libraries are installed in a directory that's
+    included in ld.so.conf (on linux; other systems may use a slightly
+    different name) you don't have to use LD_LIBRARY_PATH but, but if
+    you don't use LD_LIBRARY_PATH, make sure to re-run ldconfig.
 
 REQUIREMENTS
 

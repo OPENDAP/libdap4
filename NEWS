@@ -1,6 +1,24 @@
 
 $Id$
 
+News for version 3.7.5, 7 Feb 2007
+
+Many bug fixes for the Server-Side functions linear_scale(), grid(),
+geogrid() and geoarray().
+
+Added dump method to the BaseType classes, DAS, DDS, DataDDS. To do
+this, created a DapObj base class for all of these to inherit from
+(directly or indirectly) and in the DapObj class is the operator<<
+method. This will aid in debugging. Created an indentation classes to
+help with dumping objects.
+
+Win32 port fixes. The Win32 build is closer to the Unix build. Our
+hope is to get teh two to be almost identical so that we can all build
+on Win32 and thus get away from having the win32 releases lag behind the
+Unix releases.
+
+Fix in Vector for gcc 4.1
+
 News for version 3.7.4, 02 Jan 2007
 
 Build enhancements and bug fixes. See ChangeLog for specifics.
