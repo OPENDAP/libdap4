@@ -34,9 +34,6 @@
 #include <sys/types.h>
 #include <regex.h>
 
-#include <Error.h>
-
-
 /** a C++ interface to POSIX regular expression functions.
 
     @author James Gallagher <jgallagher@opendap.org> */
@@ -44,11 +41,11 @@ class Regex
 {
 private:
     regex_t *d_preg;
-    void init(const char *t) throw(Error);
+    void init(const char *t);
     
 public:
-    Regex(const char *t)  throw(Error);
-    Regex(const char *t, int dummy)  throw(Error);
+    Regex(const char *t);
+    Regex(const char *t, int dummy);
     ~Regex();
 
     /// Does the pattern match.

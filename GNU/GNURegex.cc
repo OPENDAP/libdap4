@@ -29,12 +29,13 @@
 #include <string>
 #include <stdexcept>
 
-#include <GNURegex.h>
+#include "GNURegex.h"
+#include "Error.h"
 
 using namespace std;
 
 void
-Regex::init(const char *t) throw(Error)
+Regex::init(const char *t)
 {
     d_preg = new regex_t;
     int result = regcomp(d_preg, t, REG_EXTENDED);
@@ -59,14 +60,14 @@ Regex::~Regex()
 /** Initialize a POSIX regular expression (using the 'extended' features).
 
     @param t The regular expression pattern. */
-Regex::Regex(const char* t) throw(Error)
+Regex::Regex(const char* t)
 {
     init(t);
 }
 
 /** Compatability ctor.
     @see Regex::Regex(const char* t) */
-Regex::Regex(const char* t, int) throw(Error)
+Regex::Regex(const char* t, int)
 {
     init(t);
 }
