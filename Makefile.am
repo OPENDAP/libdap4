@@ -100,7 +100,7 @@ pkg:
 	./configure --prefix=`pwd`/mac_osx
 	make clean install
 	mv dap-config.macosx mac_osx/bin/dap-config
-	
+
 # Note that the gcov options -f and -b are useful but sometimes make looking
 # at the results of coverage analysis a little taxing. -b reports on all
 # branched and -f reports on all functions. The -l -o options summarize on a
@@ -166,7 +166,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	ce_functions.h  gse_parser.h GSEClause.h util_mit.h \
 	expr.h Clause.h RValue.h ConstraintEvaluator.h ce_parser.h \
 	DapIndent.h DapObj.h
-	
+
 CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		 \
 	Response.h HTTPResponse.h HTTPCacheResponse.h  PipeResponse.h	 \
