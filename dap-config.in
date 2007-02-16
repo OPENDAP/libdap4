@@ -14,15 +14,15 @@ Usage: dap-config [OPTION]
 
 Available values for OPTION include:
 
-  --help      display this help message and exit
-  --cc        C compiler
-  --cxx       C++ compiler
-  --cflags    pre-processor and compiler flags
-  --libs      library linking information for libdap (both clients and servers)
-  --server    libraries for servers
-  --client    libraries for clients
-  --prefix    OPeNDAP install prefix
-  --version   Library version
+  --help      	display this help message and exit
+  --cc        	C compiler
+  --cxx       	C++ compiler
+  --cflags    	pre-processor and compiler flags
+  --libs      	library linking information for libdap (both clients and servers)
+  --server-libs libraries for servers
+  --client-libs libraries for clients
+  --prefix    	OPeNDAP install prefix
+  --version   	Library version
 EOF
 
     exit $1
