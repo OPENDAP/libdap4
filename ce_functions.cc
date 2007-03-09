@@ -47,7 +47,7 @@ static char rcsid[] not_used =
 #include <vector>
 #include <algorithm>
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Array.h"
@@ -91,7 +91,10 @@ namespace libdap
 inline bool
 double_eq(double lhs, double rhs, double epsilon = 1.0e-5)
 {
-    return fabs(lhs - rhs) < (fabs(lhs + rhs) / epsilon);
+    if (lhs > rhs)
+        return (lhs - rhs) < ((lhs + rhs) / epsilon);
+    else
+        return (rhs - lhs) < ((lhs + rhs) / epsilon);
 }
  
 /** Given a BaseType pointer, extract the string value it contains and return
@@ -723,6 +726,18 @@ string_to_double(const char *val)
     return v;
 }
 
+static string
+remove_quotes(const string &s)
+{
+    if (s[0] == '\"' && s[s.length()-1] == '\"')
+        return s.substr(1, s.length()-2);
+    else
+        return s;
+}
+
+/** Look for any one of a series of attribute values in the attribute table
+    for \e var. 
+    @return The attribute value in a double. */
 static double
 get_attribute_double_value(BaseType *var, vector<string> &attributes)
 {
@@ -741,12 +756,12 @@ get_attribute_double_value(BaseType *var, vector<string> &attributes)
         if (var->type() == dods_grid_c)
             return get_attribute_double_value(dynamic_cast<Grid&>(*var).get_array(), attributes);
         else
-            throw Error(string("No COARDS '") + values
+            throw Error(string("No COARDS '") + values.substr(0, values.length()-2)
                         + "' attribute was found for the variable '"
                         + var->name() + "'.");
     }
                     
-    return string_to_double(attribute_value.c_str());    
+    return string_to_double(remove_quotes(attribute_value).c_str());    
 }
 
 static double
@@ -766,7 +781,7 @@ get_attribute_double_value(BaseType *var, const string &attribute)
                         + var->name() + "'.");
     }
                     
-    return string_to_double(attribute_value.c_str());    
+    return string_to_double(remove_quotes(attribute_value).c_str());    
 }
 
 static double
@@ -832,7 +847,17 @@ assumed to be the slope and y-intercept.");
     }
     else {
         m = get_slope(argv[0]);
-        b = get_y_intercept(argv[0]);
+
+        // This is really a hack; on a fair number of datasets, the y intercept
+        // is not given and is assumed to be 0. Here the function looks and 
+        // catches the error if a y intercept is not found.
+        try {
+            b = get_y_intercept(argv[0]);
+        }
+        catch (Error &e) {
+            b = 0.0;
+        }
+        
         // This is not the best plan; the get_missing_value() function should
         // do something other than throw, but to do that would require mayor
         // surgery on get_attribute_double_value().
@@ -879,10 +904,12 @@ assumed to be the slope and y-intercept.");
         source.set_send_p(true);
         // If the array is really a map, make sure to read using the Grid 
         // because of the HDF4 handler's odd behavior WRT dimensions.
-        if (source.get_parent()->type() == dods_grid_c)
+        if (source.get_parent()
+            && source.get_parent()->type() == dods_grid_c)
             source.get_parent()->read(dataset);
         else
-            source.read(dataset);        
+            source.read(dataset);   
+                 
         data = extract_double_array(&source);
         int length = source.length();
         int i = 0;
