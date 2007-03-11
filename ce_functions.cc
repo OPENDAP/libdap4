@@ -47,7 +47,7 @@ static char rcsid[] not_used =
 #include <vector>
 #include <algorithm>
 
-#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Array.h"
