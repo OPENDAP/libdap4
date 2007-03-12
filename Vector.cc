@@ -1132,7 +1132,7 @@ Vector::dump( ostream &strm ) const
     }
     strm << DapIndent::LMarg << "vector contents:" << endl ;
     DapIndent::Indent() ;
-    for( int i = 0; i < _vec.size(); ++i )
+    for( unsigned i = 0; i < _vec.size(); ++i )
     {
 	if( _vec[i] )
 	    _vec[i]->dump( strm ) ;
@@ -1142,7 +1142,7 @@ Vector::dump( ostream &strm ) const
     DapIndent::UnIndent() ;
     strm << DapIndent::LMarg << "strings:" << endl ;
     DapIndent::Indent() ;
-    for( int i = 0; i < d_str.size(); i++ )
+    for( unsigned i = 0; i < d_str.size(); i++ )
     {
 	strm << DapIndent::LMarg << d_str[i] << endl ;
     }
