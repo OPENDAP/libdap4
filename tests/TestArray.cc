@@ -246,7 +246,7 @@ TestArray::read(const string &dataset)
                 val2buf(tmp);
             }
             else {
-                for (int i = 0; i < array_len; ++i) {
+                for (unsigned i = 0; i < array_len; ++i) {
                     var()->read(dataset);
                     var()->buf2val((void **)&elem_val); // internal buffer to ELEM_VAL
                     memcpy(tmp + i * elem_wid, elem_val, elem_wid);
@@ -259,7 +259,7 @@ TestArray::read(const string &dataset)
             var()->read(dataset);
 	    var()->buf2val((void **)&elem_val);
 
-	    for (int i = 0; i < array_len; ++i) {
+	    for (unsigned i = 0; i < array_len; ++i) {
 	        memcpy(tmp + i * elem_wid, elem_val, elem_wid);
             }
             
@@ -279,7 +279,7 @@ TestArray::read(const string &dataset)
         char *elem_val = 0;       // Null forces buf2val to allocate memory
         
         if (get_series_values()) {
-                for (int i = 0; i < array_len; ++i) {
+                for (unsigned i = 0; i < array_len; ++i) {
                     var()->read(dataset);
                     var()->buf2val((void **)&elem_val); // internal buffer to ELEM_VAL
                     memcpy(tmp + i * elem_wid, elem_val, elem_wid);
@@ -290,7 +290,7 @@ TestArray::read(const string &dataset)
             var()->read(dataset);
             var()->buf2val((void **)&elem_val);
 
-            for (int i = 0; i < array_len; ++i) {
+            for (unsigned i = 0; i < array_len; ++i) {
                 memcpy(tmp + i * elem_wid, elem_val, elem_wid);
             }
         }
@@ -315,7 +315,7 @@ TestArray::read(const string &dataset)
 	// are represented using C++ objects they are *not* represented using
 	// objects defined by DODS, while Structure, etc. are.
 
-	for (int i = 0; i < array_len; ++i) {
+	for (unsigned i = 0; i < array_len; ++i) {
 
 	    // Create a new object that is a copy of `var()' (whatever that
 	    // is). The copy will have the value read in by the read() mfunc
