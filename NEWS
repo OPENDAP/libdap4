@@ -1,6 +1,14 @@
 
 $Id$
 
+News for version 3.7.6 12 March 2007
+
+Fixed a bug in the linear_scale() Constraint Expression function when that
+function was used with plain arrays.
+
+I fixed a build issue on linux for ml-structs caused by a bad/missing
+#include in GnuRegex.h.
+
 News for version 3.7.5, 7 Feb 2007
 
 Many bug fixes for the Server-Side functions linear_scale(), grid(),

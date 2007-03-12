@@ -1,3 +1,61 @@
+2007-03-12  James Gallagher <jgallagher@opendap.org>
+
+	Fixed some errors in the unit tests, one bug in the RCReader when
+	reading the VALIDATE_SSL keyword. Updated the parser stuff.
+
+	M    lex.dds.cc
+	M    RCReader.cc
+	M    lex.das.cc
+	M    das.tab.h
+	M    das.y
+	M    das.tab.cc
+	M    unit-tests/RegexTest.cc
+	M    unit-tests/RCReaderTest.cc
+
+2007-03-11  James Gallagher <jgallagher@opendap.org>
+
+	Removed DODS_DEBUG
+
+	M    ce_functions.cc
+
+2007-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Fixed ticket #857: The linear_scale function was crashing because
+	of a failure to test that a parent variable existed before getting
+	its type. I also fixed an unrelated problem where double quotes
+	around an attribute value broke the string --> double code and
+	added a new feature where files which omit the y intercept because
+	it's zero do not return an error but instead use 0.0 as a default.
+	Finally, the error message text was improved.
+
+	M ce_functions.cc
+
+2007-02-16  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: removed some errant tabs.
+
+2007-02-16  James Gallagher <jgallagher@opendap.org>
+
+	dap-config.in: fixed #816; --help was wrong.
+
+2007-02-16  James Gallagher <jgallagher@opendap.org>
+
+	I removed throw(Error) from the method declarations in the header
+	and impl. files. I removed the include of Error.h from the header.
+	I added the include using "" in the impl. This should fix the
+	ml-structs build error that started on 1/7/07 when Rob made some
+	changes for the win32 build.
+
+	M    GNU/GNURegex.cc
+	M    GNU/GNURegex.h
+
+2007-02-09  James Gallagher <jgallagher@opendap.org>
+
+	Updated for version 3.7.5
+
+	M    docs/html.tar.gz
+	M    libdap.spec
+
 2007-02-07  James Gallagher <jgallagher@opendap.org>
 
 	main_page.doxygen: Updated the version number to 3.7.5.

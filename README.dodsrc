@@ -1,5 +1,7 @@
 $Id$
 
+Current for version 3.7.6 (12 March 2007)
+
 The libdap client-side configuration file (.dodsrc) is used to configure how
 clients cache responses and how they interact with proxy servers. By default
 the configuration file resides in a users home directory and is called
@@ -36,8 +38,8 @@ file; they've been added to make the description clearer):
 4	IGNORE_EXPIRES=0
 5	CACHE_ROOT=/home/jimg/.dods_cache/
 6	DEFAULT_EXPIRES=86400
-7   DEFLATE=0
-8   VALIDATE_SSL=1
+7	DEFLATE=0
+8	VALIDATE_SSL=1
 9	PROXY_SERVER=http,http://jimg:password@dcz.dods.org/
 10	NO_PROXY_FOR=http,dcz.dods.org
 11	AIS_DATABASE=.ais_sst_database

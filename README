@@ -1,6 +1,15 @@
 
 $Id$
 
+Notes for version 3.7.6 (12 March 2007)
+
+Two bug fixes, both minor. Problems in the linear_scale() constraint
+expression function and a bad/missing #include in GNURegex.h were fixed.
+
+Ther was an error in the INSTALL file sent out in the previous release. It
+said this library implemented DAP version 3.2, but in fact it implements
+version 3.1. The version 3.2 release will be along soon (RSN).
+
 Notes for version 3.7.5 (7 Feb 2007)
 
 This version includes many fixes from teh first Server4 beta release

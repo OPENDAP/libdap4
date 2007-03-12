@@ -1,5 +1,7 @@
 Notes for the prototype AIS implementation:
 
+Current for version 3.7.6 (12 March 2007)
+
 How to use the AIS. These notes correspond to the prototype AIS developed in
 March 2003. This version of the AIS works for DAS objects only.
 
