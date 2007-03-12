@@ -178,19 +178,19 @@ static void add_bad_attribute(AttrTable *attr, const string &type,
    called). I had thought this was going to go away... 1/24/2000 jhrg */
 
 attr_start:
-                {
-		    name = new string();
-		    type = new string();
-		    attr_tab_stack = new vector<AttrTable *>;
-		    PUSH(DAS_OBJ(arg)); // push outermost AttrTable
-		}
-                attributes
-                {
-		    POP;	// pop the DAS/AttrTable before stack's dtor
-		    delete name;
-		    delete type;
-		    delete attr_tab_stack;
-		}
+	{
+		name = new string();
+		type = new string();
+		attr_tab_stack = new vector<AttrTable *>;
+		PUSH(DAS_OBJ(arg)); // push outermost AttrTable
+	}
+    attributes
+    {
+		POP;	// pop the DAS/AttrTable before stack's dtor
+		delete name;
+		delete type;
+		delete attr_tab_stack;
+	}
 ;
 
 attributes:     attribute

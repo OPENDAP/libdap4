@@ -30,6 +30,7 @@
 #include <string>
 
 #include "GNURegex.h"
+#include "Error.h"
 #include "debug.h"
 
 using namespace CppUnit;

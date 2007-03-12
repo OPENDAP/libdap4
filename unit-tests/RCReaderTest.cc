@@ -233,33 +233,35 @@ public:
     // This simple test checks to see that the VALIDATE_SSL parameter is 
     // read correctly.
     void validate_ssl_test() {
-        string validate_ssl_1 = "DODS_CONF=rcreader-testsuite/dodsrc_ssl_1";
-        char s[1024];
-        strncpy(s, validate_ssl_1.c_str(), validate_ssl_1.length());
-        putenv(s);
+
+        putenv("DODS_CONF=rcreader-testsuite/dodsrc_ssl_1");
         RCReader::delete_instance();
         RCReader::initialize_instance();
         RCReader *reader = RCReader::instance();
         // No param set in file
+        DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl()
+            << endl);
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 1);
+
         // Param set in file
-        string validate_ssl_2 = "DODS_CONF=rcreader-testsuite/dodsrc_ssl_2";
-
-        strncpy(s, validate_ssl_2.c_str(), validate_ssl_2.length());
-        putenv(s);
+        putenv("DODS_CONF=rcreader-testsuite/dodsrc_ssl_2");
         RCReader::delete_instance();
         RCReader::initialize_instance();
         reader = RCReader::instance();
-        CPPUNIT_ASSERT(rcr->get_validate_ssl() == 1);
+        DBG(cerr << "reader->check_env_var(\"DODS_CONF\"): " 
+            << reader->check_env_var("DODS_CONF") << endl);
+        DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl()
+            << endl);
+        CPPUNIT_ASSERT(reader->get_validate_ssl() == 1);
+
         // Param cleared in file 
-        string validate_ssl_3 = "DODS_CONF=rcreader-testsuite/dodsrc_ssl_3";
-
-        strncpy(s, validate_ssl_3.c_str(), validate_ssl_3.length());
-        putenv(s);
+        putenv("DODS_CONF=rcreader-testsuite/dodsrc_ssl_3");
         RCReader::delete_instance();
         RCReader::initialize_instance();
         reader = RCReader::instance();
-        CPPUNIT_ASSERT(rcr->get_validate_ssl() == 0);
+        DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl()
+            << endl);
+        CPPUNIT_ASSERT(reader->get_validate_ssl() == 0);
     }
 };
 

@@ -105,7 +105,7 @@ RCReader::write_rc_file(const string &pathname)
     
     fpo << "# Should SSL certificates and hosts be validated? SSL" << endl;
     fpo << "# will only work with signed certificates." << endl;
-    fpo << "VALIDATE_SSL=" << d_validate_ssl;
+    fpo << "VALIDATE_SSL=" << d_validate_ssl << endl;
 
 	fpo << "# Proxy configuration:" << endl;
 	fpo << "# PROXY_SERVER=<protocol>,<[username:password@]host[:port]>"
