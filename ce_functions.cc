@@ -380,34 +380,20 @@ BaseType *func_length(int argc, BaseType * argv[], DDS & dds)
 
 /** This server-side function returns version information for the server-side
     functions. */
-BaseType *function_version(int argc, BaseType * argv[], DDS &,
-                   const string &)
+BaseType *function_version(int, BaseType *[], DDS &, const string &)
 {
-    string help = "\
-Usage: version() returns plain text information about the available functions.\
-       version(\"xml\") returns the informationin an XML 1.0 document.\
-       version(\"help\") returns this text.";
-
-    string value = "\
-Function set: version 1.0, grid 1.0, geogrid 1.0b2, geoarray 0.9b1, linear_scale 1.0b1";
-
-    string xml_value = "<?xml version=\"1.0\"?>\
+    string xml_value = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
     <functions>\
     <function name=\"version\" version=\"1.0\"/>\
     <function name=\"grid\" version=\"1.0\"/>\
-    <function name=\"geogrid\" version=\"1.0\"/>\
-    <function name=\"geoarray\" version=\"1.0\"/>\
-    <function name=\"linear_scale\" version=\"1.0\"/>\
+    <function name=\"geogrid\" version=\"1.0b2\"/>\
+    <function name=\"geoarray\" version=\"0.9b1\"/>\
+    <function name=\"linear_scale\" version=\"1.0b1\"/>\
     </functions>";
 
     Str *response = new Str("version");
     
-    if (argc == 1 && extract_string_argument(argv[0]) == "help")
-        response->set_value(help);
-    else if (argc == 1 && extract_string_argument(argv[0]) == "xml")
-        response->set_value(xml_value);
-    else
-        response->set_value(value);
+    response->set_value(xml_value);
         
     return response;
 }
@@ -517,11 +503,26 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
                         const string & dataset)
 {
     DBG(cerr << "Entering function_grid..." << endl);
+    
+    string info =
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+    <function name=\"grid\" version=\"1.0\"/>\
+ The grid() function takes a grid variable and zero or more relational\
+ expressions. Each relational expression is applied to the grid using the\
+ server's constraint evaluator and the resulting grid is returned. The\
+ expressions may use constants and the grid's map vectors but may not use\
+ any other variables. Two forms of expression are provide: \"var relop const\"\
+ and \"const relop var relop const\". For example: grid(sst, \"10<=TIME<20\")\
+ and grid(sst, \"10<=TIME\", \"TIME<20\") are both legal and, in this case,\
+ also equivalent.\
+</function>";
 
-    if (argc < 1)
-        throw Error(
-"Wrong number of arguments to grid(), there must be at least one argument.");
-
+     if (argc == 0) {
+        Str *response = new Str("info");
+        response->set_value(info);
+        return response;
+    }
+    
     Grid *original_grid = dynamic_cast < Grid * >(argv[0]);
     if (!original_grid)
         throw Error("The first argument to grid() must be a Grid variable!");
@@ -614,17 +615,33 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
 BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
                            const string & dataset)
 {
+    string info =
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+    <function name=\"geogrid\" version=\"1.0b2\"/>\
+ geogrid() applies a constraint given in latitude and longitude to a\
+ DAP Grid variable. The arguments to the function are:\
+ geogrid(<grid variable>, <upper latitude>, <left longitide>,\
+ <lower latitude>, <right longitude> [selection expressions - see grid()])\
+ geogrid(\"version\") returns the version of the function.\
+ The function will always return a single Grid variable whose values\
+ completely cover the given region, although there may be cases when\
+ some additional data is also returned. If the longitude values 'wrap\
+ around' the right edge of the data, then the function will make two\
+ requests and return those joined together as a single Grid.\
+</function>";
+
+    if (argc == 0) {
+        Str *response = new Str("version");
+        response->set_value(info);
+        return response;
+    }
+    
     if (argc < 5)
-        throw
-            Error
-            ("Wrong number of arguments to geogrid(), there must be at least five\n\
-arguments, A Grid followed by the left-top and right-bottom points of a\n\
-longitude-latitude bounding box.");
+        throw Error("Wrong number of arguments to geogrid(). See geogrid() for more information.");
 
     Grid *l_grid = dynamic_cast < Grid * >(argv[0]->ptr_duplicate());
     if (!l_grid)
-        throw Error(
-"The first argument to geogrid() must be a Grid variable!");
+        throw Error("The first argument to geogrid() must be a Grid variable!");
 
     // Read the maps. Do this before calling parse_gse_expression(). Avoid
     // reading the array until the constraints have been applied because it
@@ -693,7 +710,6 @@ longitude-latitude bounding box.");
             InternalErr(string
                         ("A C++ exception was thrown from inside geogrid(): ")
                         + e.what());
-
     }
 }
 
@@ -814,22 +830,38 @@ get_missing_value(BaseType *var)
     @param dds
     @param dataset
     @return The scaled variable, represented using Float64
-    @exception Error Thrown if either constants are not given and COARDS 
-    attributes for them cannot be found OR if the source variable is not a
+    @exception Error Thrown if scale_factor is not given and the COARDS 
+    attributes cannot be found OR if the source variable is not a
     numeric scalar, Array or Grid. */
 BaseType *
 function_linear_scale(int argc, BaseType * argv[], DDS &, const string & dataset)
 {
+    string info =
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+    <function name=\"linear_scale\" version=\"1.0b1\">\
+ The linear_scale() function applies the familiar y=mx+b equation to data.\
+ If only the name of a variable is given, the function looks for the COARDS\
+ scale_factor, add_offset and missing_vlaue attributes. In the equation,\
+ 'm' is scale_factor, 'b' is add_offset and data values which match\
+ missing_value are not scaled. If add_offset cannot be found, it defaults to\
+ zero; if missing_value cannot be found, the test for it is not performed.\
+ The caller can also provide values for these and, if provided, those values\
+ are used and the dataset's attributes are ignored. If only scale_factor is\
+ provided, the defaults for 'b' and the missing value flag are used.\
+ Similarly, if only 'm' and 'b' are provided the missing value test is not\
+ performed. The values are always returned in a Float64 array.\
+</function>";
+
+    if (argc == 0) {
+        Str *response = new Str("info");
+        response->set_value(info);
+        return response;
+    }
+    
     // Check for 1 or 3 arguments: 1 --> use attributes; 3 --> m & b supplied
     DBG(cerr << "argc = " << argc << endl);
     if ( !(argc == 1 || argc == 3 || argc == 4) )
-        throw Error(
-
-"Wrong number of arguments to linear_scale(). There must be either one or\n\
-three arguments. If one argument is given, it must be the name of a variable\n\
-to scale (COARDS attributes will be used to determine the slope and\n\
-y-intercept). If three arguments are given, then the second and third are\n\
-assumed to be the slope and y-intercept.");
+        throw Error("Wrong number of arguments to linear_scale(). See linear_scale() for more information");
 
     // Get m & b
     bool use_missing;
@@ -962,30 +994,33 @@ assumed to be the slope and y-intercept.");
 BaseType *
 function_geoarray(int argc, BaseType * argv[], DDS &, const string & dataset)
 {
-    // Check for 1 or 3 arguments: 1 --> use attributes; 3 --> m & b supplied
+    string info =
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+    <function name=\"geoarray\" version=\"0.9b1\"/>\
+ The geoarray() function supports two different sets of arguments:\
+ geoarray(var,left,top,right,bottom)\
+ geoarray(var,left,top,right,bottom,var_left,var_top,var_right,var_bottom)\
+ In the first version 'var' is the target of the selection and 'left', 'top',\
+ 'right' and 'bottom' are the corners of a longitude-latitude box that defines\
+ the selection. In the second version the 'var_left', ..., parameters give the\
+ longitude and latitude extent of the entire array. The projection and dataum are\
+ assumed to be Plat-Carre and WGS84.\
+</function>";
+
+    if (argc == 0) {
+        Str *response = new Str("version");
+        response->set_value(info);
+        return response;
+    }
+    
     DBG(cerr << "argc = " << argc << endl);
     if ( !(argc == 5 || argc == 9 || argc == 11) )
-        throw Error(
-
-"Wrong number of arguments to geoarray(). The geoarray() function supports\n\
-three different sets of arguments:\n\
-\n\
-geoarray(var,left,top,right,bottom)\n\
-geoarray(var,left,top,right,bottom,var_left,var_top,var_right,var_bottom)\n\
-geoarray(var,left,top,right,bottom,var_left,var_top,var_right,var_bottom,projection,datum)\n\
-\n\
-In the first version 'var' is the target of the selection and 'left', 'top',\n\
-'right' and 'bottom' are the corners of a longitude-latitude box that defines\n\
-the selection. In the second version the 'var_left', ..., parameters give the\n\
-longitude and latitude extent of the entire array. The projection and dataum are\n\
-assumed to be Plat-Carre and wgs84. In the last version the the projection and\n\
-datum of the image are also provided.");
+        throw Error("Wrong number of arguments to geoarray(). See geoarray() for more information.");
 
     // Check the Array (and dup because the caller will free the variable).
     Array *l_array = dynamic_cast < Array * >(argv[0]->ptr_duplicate());
     if (!l_array)
-        throw Error(
-"The first argument to geoarray() must be an Array variable!");
+        throw Error("The first argument to geoarray() must be an Array variable!");
 
     try {
         

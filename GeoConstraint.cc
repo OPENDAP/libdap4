@@ -548,14 +548,10 @@ GeoConstraint::GeoConstraint(const string & ds_name)
 }
 
 /** Set the bounding box for this constraint. After calling this method the
-    Grid or Array variable passed to this object will be constrained by
-    the given longitude/latitude box. This may read the grid's array data
-    using Array::read() if the longitude constraint crosses the right edge
-    of the Grid's array boundry (i.e. the constraint is split across the
-    edge of the array) because this will rearrange those parts to make a single
-    array and reorder the longitude map to match that change. It's easier to
-    read the data inside set_bounding_box_longitude() because that's where
-    it's easiest to reorder the longitude map and Grid Array data.
+    object has values for the indexes for the latitude and longitude extent
+    as well as the sense of the latitude (south pole at the top or bottom of
+    the Array or Grid). These are used by the apply_constraint_to_data()
+    method to actually constrain the data.
 
     @param left The left side of the bounding box.
     @param right The right side
