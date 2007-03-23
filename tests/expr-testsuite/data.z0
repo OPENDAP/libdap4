@@ -8,6 +8,4 @@ Dataset {
         Float32 lon[11];
     } SST;
 } SST_grid;
-Wrong number of arguments to geogrid(), there must be at least five
-arguments, A Grid followed by the left-top and right-bottom points of a
-longitude-latitude bounding box.
+Wrong number of arguments to geogrid(). See geogrid() for more information.
