@@ -332,7 +332,7 @@ public:
         </Map>\n\
     </Grid>\n\
 \n\
-    <dataBLOB href=\"http://localhost/dods/test.xyz\"/>\n\
+    <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 	CPPUNIT_ASSERT(re_match(r, file_to_string(tmp)));
         
@@ -373,7 +373,7 @@ public:
 \n\
     <Int32 name=\"a\"/>\n\
 \n\
-    <dataBLOB href=\"http://localhost/dods/test.xyz\"/>\n\
+    <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
         CPPUNIT_ASSERT(re_match(r, output));
@@ -405,7 +405,7 @@ public:
         <dimension size=\"10\"/>\n\
     </Array>\n\
 \n\
-    <dataBLOB href=\"http://localhost/dods/test.xyz\"/>\n\
+    <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
         CPPUNIT_ASSERT(re_match(r, output));
@@ -442,7 +442,7 @@ public:
         <dimension size=\"10\"/>\n\
     </Array>\n\
 \n\
-    <dataBLOB href=\"http://localhost/dods/test.xyz\"/>\n\
+    <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
         CPPUNIT_ASSERT(re_match(r, output));
@@ -484,7 +484,7 @@ public:
         </Attribute>\n\
     </Float64>\n\
 \n\
-    <dataBLOB href=\"http://localhost/dods/test.xyz\"/>\n\
+    <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
         CPPUNIT_ASSERT(re_match(r, output));
@@ -535,7 +535,7 @@ public:
         </Map>\n\
     </Grid>\n\
 \n\
-    <dataBLOB href=\"http://localhost/dods/test.xyz\"/>\n\
+    <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
         CPPUNIT_ASSERT(re_match(r, output));
@@ -589,7 +589,7 @@ public:
         </Map>\n\
     </Grid>\n\
 \n\
-    <dataBLOB href=\"http://localhost/dods/test.xyz\"/>\n\
+    <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
         CPPUNIT_ASSERT(re_match(r, output));
@@ -664,7 +664,7 @@ public:
         </Map>\n\
     </Grid>\n\
 \n\
-    <dataBLOB href=\"http://localhost/dods/test.xyz\"/>\n\
+    <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
 	CPPUNIT_ASSERT(re_match(r, output));
@@ -732,7 +732,7 @@ public:
         </Grid>\n\
     </Structure>\n\
 \n\
-    <dataBLOB href=\"http://localhost/dods/test.xyz\"/>\n\
+    <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
         CPPUNIT_ASSERT(re_match(r, output));

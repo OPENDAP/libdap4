@@ -109,7 +109,7 @@ DDS::DDS(BaseTypeFactory *factory, const string &n)
 }
 
 /** The DDS copy constructor. */
-DDS::DDS(const DDS &rhs)
+DDS::DDS(const DDS &rhs) : DapObj()
 {
     duplicate(rhs);
 }
@@ -740,7 +740,7 @@ public:
     expression. 
     @param blob The dataBLOB href. */
 void
-DDS::print_xml(FILE *out, bool constrained, const string &blob)
+DDS::print_xml(FILE *out, bool constrained, const string &)
 {
     fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     
@@ -759,7 +759,7 @@ DDS::print_xml(FILE *out, bool constrained, const string &blob)
 	
     fprintf(out, "\n");
 
-    fprintf(out, "    <dataBLOB href=\"%s\"/>\n", blob.c_str());
+    fprintf(out, "    <dataBLOB href=\"\"/>\n");
 	
     fprintf(out, "</Dataset>\n");
 }
