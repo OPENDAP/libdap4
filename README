@@ -257,6 +257,16 @@ WHAT ELSE IS THERE?
   using the Ocapi are interoperable with both the Java and C++ DAP2
   libraries. Note that the Ocapi is in early beta and available only from CVS
   at this time (5 May 2005).
+  
+THREAD SAFTEY
+
+  We don't need to do this since the STL is also not thread safe. Users of 
+  libdap have to be sure that multiple threads never make simultaneous and/or
+  overlapping calls to a single copy of libdap. If several threads are part
+  of a program and each will make calls to libdap, either thos ethreads must
+  synchronize their calls or arrange to each use their own copy of libdap. 
+  Some aspects of the library ''are'' thread-safe: the singleton classes are 
+  all protected as is the HTTP cache (which uses the local file system).
 
 INSTALLATION INSTRUCTIONS
 
