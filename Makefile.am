@@ -22,7 +22,7 @@ TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 SUBDIRS = gl . tests 
 DIST_SUBDIRS = unit-tests gl tests
 
-lib_LTLIBRARIES = libdapclient.la libdapserver.la libdap.la
+lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 
 bin_SCRIPTS = dap-config
 
