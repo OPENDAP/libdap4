@@ -127,7 +127,7 @@ AttrTable::AttrTable() : d_name(""), d_parent(0)
 {
 }
 
-AttrTable::AttrTable(const AttrTable &rhs)
+AttrTable::AttrTable(const AttrTable &rhs) : DapObj()
 {
     clone(rhs);
 }

@@ -19,6 +19,12 @@ AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
 AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and vesion combined])
 AC_SUBST(DVR)
 
+AC_DEFINE(EVAL, 0, [Should all the classes run ConstraintEvaluator::eval()?])
+AC_SUBST(EVAL)
+
+AC_DEFINE(COMPRESSION_FOR_SERVER3, 0, [Should the subprocess compressor for Server3 be includes?])
+AC_SUBST(COMPRESSION_FOR_SERVER3)
+
 dnl flags for the compilers and linkers - set these before locating the
 dnl actual tools since some of the AC_PROG macros set these `flag variables'
 dnl to default values otherwise.

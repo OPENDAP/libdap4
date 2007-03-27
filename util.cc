@@ -268,6 +268,12 @@ libdap_name()
     return PACKAGE_NAME;
 }
 
+// Since Server4 can get compressed responses using Tomcat, bail on this
+// software (which complicates building under Win32). It can be turned on
+// for use with Server3 in configure.ac.
+
+#if COMPRESSION_FOR_SERVER3
+
 // Return true if the program deflate exists and is executable by user, group
 // and world. If this returns false the caller should assume that server
 // filter programs won't be able to find the deflate program and thus won't
@@ -422,6 +428,8 @@ compressor(FILE *output, int &childpid)
     return ret_file ;
 #endif
 }
+
+#endif // COMPRESSION_FOR_SERVER3
 
 // This function returns a pointer to the system time formated for an httpd
 // log file.

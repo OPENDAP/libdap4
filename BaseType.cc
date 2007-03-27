@@ -106,7 +106,7 @@ BaseType::BaseType(const string &n, const Type &t, xdrproc_t xdr)
 } 
 
 /** @brief The BaseType copy constructor. */
-BaseType::BaseType(const BaseType &copy_from)
+BaseType::BaseType(const BaseType &copy_from) : DapObj()
 {
     _duplicate(copy_from);
 }

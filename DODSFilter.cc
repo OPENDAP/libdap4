@@ -900,8 +900,9 @@ void
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
     // Start sending the response... 
-
+#if COMPRESSION_FOR_SERVER3
     bool compress = d_comp && deflate_exists();
+#endif
 
     // Handle *functional* constraint expressions specially 
     if (eval.functional_expression()) {
@@ -913,6 +914,7 @@ void
         if (!var)
             throw Error(unknown_error, "Error calling the CE function.");
 
+#if COMPRESSION_FOR_SERVER3
         if (with_mime_headers)
             set_mime_binary(data_stream, dods_data, d_cgi_ver,
                             (compress) ? deflate : x_plain, data_lmt);
@@ -921,12 +923,18 @@ void
         int childpid;
         if (compress)
             data_stream = compressor(data_stream, childpid);
+#endif
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
 
+        fflush(data_stream);
 
         functional_constraint(*var, dds, eval, data_stream);
         delete var;
         var = 0;
-    } else {
+    } 
+    else {
+#if COMPRESSION_FOR_SERVER3
         if (with_mime_headers)
             set_mime_binary(data_stream, dods_data, d_cgi_ver,
                             (compress) ? deflate : x_plain, data_lmt);
@@ -935,6 +943,9 @@ void
         int childpid;
         if (compress)
             data_stream = compressor(data_stream, childpid);
+#endif
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
 
         dataset_constraint(dds, eval, data_stream);
     }

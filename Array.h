@@ -98,9 +98,9 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
 class Array: public Vector {
 public:
     /** Information about a dimension. Each Array has one or more dimensions.
-	For each of an Array's dimensions, a cooresponding instance of this
-	struct holds the natural size, name, constraint information and
-	constrained size.
+    	For each of an Array's dimensions, a cooresponding instance of this
+    	struct holds the natural size, name, constraint information and
+    	constrained size.
 
         @note Instead of using this struct's fileds directly, use Array's
         dimension accessor methods.

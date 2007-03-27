@@ -115,8 +115,10 @@ Str::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
     if (!read_p())
       read(dataset);
 
+#if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset))
 	return true;
+#endif
 
     dds.timeout_off();
 
