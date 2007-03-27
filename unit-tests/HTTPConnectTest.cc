@@ -32,7 +32,7 @@
 #include <algorithm>
 #include <functional>
 
-// #define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "GNURegex.h"
 #include "HTTPConnect.h"
@@ -98,17 +98,19 @@ class HTTPConnectTest: public TestFixture {
     }
 
     CPPUNIT_TEST_SUITE(HTTPConnectTest);
-
+#if 1 
     CPPUNIT_TEST(read_url_test);
     CPPUNIT_TEST(fetch_url_test);
     CPPUNIT_TEST(get_response_headers_test);
     CPPUNIT_TEST(server_version_test);
     CPPUNIT_TEST(type_test);
+#endif
     CPPUNIT_TEST(cache_test);
+#if 1
     CPPUNIT_TEST(set_accept_deflate_test);
     CPPUNIT_TEST(read_url_password_test);
     CPPUNIT_TEST(read_url_password_test2);
-
+#endif
 #if 0
     CPPUNIT_TEST(read_url_password_proxy_test);
 #endif
@@ -238,12 +240,10 @@ class HTTPConnectTest: public TestFixture {
             // Should get five or six headers back.
             Regex header("X.*-Server: .*/.*");
 
-            CPPUNIT_ASSERT(find_if(h->begin(), h->end(), REMatch(header))
-                           != h->end());
+            CPPUNIT_ASSERT(find_if(h->begin(), h->end(), REMatch(header)) != h->end());
 
             Regex protocol_header("XDAP: .*");
-            CPPUNIT_ASSERT(find_if(h->begin(), h->end(), REMatch(protocol_header))
-                           != h->end());
+            CPPUNIT_ASSERT(find_if(h->begin(), h->end(), REMatch(protocol_header)) != h->end());
 
             delete r;
             r = 0;
@@ -323,8 +323,7 @@ class HTTPConnectTest: public TestFixture {
         // params are set up. It used to be that HTTPConnect had an option to
         // turn caching on, but that no longer is present. This hack enables
         // caching for this test. 06/18/04 jhrg
-        http->d_http_cache
-            =
+        http->d_http_cache =
             HTTPCache::instance(http->d_rcr->get_dods_cache_root(), false);
         CPPUNIT_ASSERT(http->d_http_cache != 0);
         http->d_http_cache->set_cache_enabled(true);
