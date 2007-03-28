@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -34,7 +34,9 @@
 
 #include "config.h"
 
-static char rcsid[] not_used = {"$Id$"};
+static char rcsid[] not_used =
+    {"$Id$"
+    };
 
 #include <stdio.h>
 
@@ -49,16 +51,16 @@ using std::ostringstream;
 
 InternalErr::InternalErr() : Error()
 {
-    _error_code=internal_error;
+    _error_code = internal_error;
 }
 
 InternalErr::InternalErr(const string &msg) : Error()
 {
-    _error_code=internal_error;
-    _error_message="";
-    _error_message+="An internal error was encountered:\n";
-    _error_message+=msg+"\n";
-    _error_message+="Please report this to support@unidata.ucar.edu\n";
+    _error_code = internal_error;
+    _error_message = "";
+    _error_message += "An internal error was encountered:\n";
+    _error_message += msg + "\n";
+    _error_message += "Please report this to support@unidata.ucar.edu\n";
 }
 
 
@@ -66,37 +68,35 @@ InternalErr::InternalErr(const string &msg) : Error()
 //    : Error(unknown_error, msg)
 InternalErr::InternalErr(const string &file, const int &line, const string &msg) : Error()
 {
-    _error_code=internal_error;
-    _error_message="";
-    _error_message+="An internal error was encountered in "+file+" at line ";
+    _error_code = internal_error;
+    _error_message = "";
+    _error_message += "An internal error was encountered in " + file + " at line ";
     // Jose Garcia. Next we append line to the string _error_code.
     // This function is defined in util.h
-    append_long_to_string(line,10,_error_message);
-    _error_message+=":\n";
-    _error_message+=msg+"\n";
-    _error_message+="Please report this to support@unidata.ucar.edu\n";
+    append_long_to_string(line, 10, _error_message);
+    _error_message += ":\n";
+    _error_message += msg + "\n";
+    _error_message += "Please report this to support@unidata.ucar.edu\n";
 }
 #if 0
 InternalErr::InternalErr(string msg, ProgramType pt, char *pgm)
-    : Error(unknown_error, msg, pt, pgm) 
+        : Error(unknown_error, msg, pt, pgm)
 {
     ostringstream oss;
     oss << "An internal error was encountered:" << endl
-	<< msg << endl
-	<< "Please report this to support@unidata.ucar.edu";
+    << msg << endl
+    << "Please report this to support@unidata.ucar.edu";
     _error_message  = oss.str();
 }
 #endif
 InternalErr::InternalErr(const InternalErr &copy_from)
-    : Error(copy_from)
-{
-}    
+        : Error(copy_from)
+{}
 
 InternalErr::~InternalErr()
-{
-}
+{}
 
-/** 
+/**
     @brief Is the InternalErr object valid?
     @return TRUE if the object is valid, FALSE otherwise. */
 bool

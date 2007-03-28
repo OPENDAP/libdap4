@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #ifndef event_handler_h
 #define event_handler_h
 
@@ -45,25 +45,29 @@ class EventHandler
 {
 public:
     /** Hook method for SignalHandler. If a concrete instance of this class
-	is registered with SignalHandler, this method will be called when \c
-	signum is received. */
-    virtual void handle_signal (int signum) = 0;
+    is registered with SignalHandler, this method will be called when \c
+    signum is received. */
+    virtual void handle_signal(int signum) = 0;
 
     /** We don't need a destructor, but including one might stave off an
-	error later on... */
-    virtual ~EventHandler() {}
+    error later on... */
+    virtual ~EventHandler()
+    {}
 };
 
 /** Test Handler. This is used with the SignalHandlerTest unit tests. */
-class TestHandler : public EventHandler {
+class TestHandler : public EventHandler
+{
 public:
     int flag;
 
-    TestHandler() : flag(0) {}
+    TestHandler() : flag(0)
+    {}
 
-    virtual void handle_signal(int signum) {
-	std::cerr << "Got signal: " << signum << std::endl;
-	flag = 1;
+    virtual void handle_signal(int signum)
+    {
+        std::cerr << "Got signal: " << signum << std::endl;
+        flag = 1;
     }
 };
 

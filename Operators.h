@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -36,9 +36,9 @@
 #ifndef _operators_h
 #define _operators_h
 
-#include "GNURegex.h"		// GNU Regex class used for string =~ op.
+#include "GNURegex.h"  // GNU Regex class used for string =~ op.
 
-#include "parser.h"		// for ID_MAX
+#include "parser.h"  // for ID_MAX
 #include "ce_expr.tab.h"
 
 using namespace std;
@@ -52,21 +52,41 @@ dods_max(int i1, int i2)
 /** Compare two numerical types, both of which are either signed or unsigned.
     This class is one implementation of the comparison policy used by
     rops.
-    
+
     @see rops
     @see USCmp
     @see SUCmp */
-template<class T1, class T2> class Cmp {
- public:
-    static bool eq(T1 v1, T2 v2) {return v1 == v2;}
-    static bool ne(T1 v1, T2 v2) {return v1 != v2;}
-    static bool gr(T1 v1, T2 v2) {return v1 > v2;}
-    static bool ge(T1 v1, T2 v2) {return v1 >= v2;}
-    static bool lt(T1 v1, T2 v2) {return v1 < v2;}
-    static bool le(T1 v1, T2 v2) {return v1 <= v2;}
-    static bool re(T1, T2) {
-	cerr << "Illegal operation" << endl;
-	return false;
+template<class T1, class T2> class Cmp
+{
+public:
+    static bool eq(T1 v1, T2 v2)
+    {
+        return v1 == v2;
+    }
+    static bool ne(T1 v1, T2 v2)
+    {
+        return v1 != v2;
+    }
+    static bool gr(T1 v1, T2 v2)
+    {
+        return v1 > v2;
+    }
+    static bool ge(T1 v1, T2 v2)
+    {
+        return v1 >= v2;
+    }
+    static bool lt(T1 v1, T2 v2)
+    {
+        return v1 < v2;
+    }
+    static bool le(T1 v1, T2 v2)
+    {
+        return v1 <= v2;
+    }
+    static bool re(T1, T2)
+    {
+        cerr << "Illegal operation" << endl;
+        return false;
     }
 };
 
@@ -78,19 +98,37 @@ template<class T1, class T2> class Cmp {
     @see rops
     @see SUCmp
     @see Cmp */
-template<class UT1, class T2> class USCmp {
- public:
-    static bool eq(UT1 v1, T2 v2) {return v1 == dods_max(0, v2);}
-    static bool ne(UT1 v1, T2 v2) {return v1 != dods_max(0, v2);}
-    static bool gr(UT1 v1, T2 v2) {return v1 > dods_max(0, v2);}
-    static bool ge(UT1 v1, T2 v2) {return v1 >= dods_max(0, v2);}
-    static bool lt(UT1 v1, T2 v2) {
-	return v1 < dods_max(0, v2);
+template<class UT1, class T2> class USCmp
+{
+public:
+    static bool eq(UT1 v1, T2 v2)
+    {
+        return v1 == dods_max(0, v2);
     }
-    static bool le(UT1 v1, T2 v2) {return v1 <= dods_max(0, v2);}
-    static bool re(UT1, T2) {
-	cerr << "Illegal operation" << endl;
-	return false;
+    static bool ne(UT1 v1, T2 v2)
+    {
+        return v1 != dods_max(0, v2);
+    }
+    static bool gr(UT1 v1, T2 v2)
+    {
+        return v1 > dods_max(0, v2);
+    }
+    static bool ge(UT1 v1, T2 v2)
+    {
+        return v1 >= dods_max(0, v2);
+    }
+    static bool lt(UT1 v1, T2 v2)
+    {
+        return v1 < dods_max(0, v2);
+    }
+    static bool le(UT1 v1, T2 v2)
+    {
+        return v1 <= dods_max(0, v2);
+    }
+    static bool re(UT1, T2)
+    {
+        cerr << "Illegal operation" << endl;
+        return false;
     }
 };
 
@@ -99,43 +137,83 @@ template<class UT1, class T2> class USCmp {
     comparison. This class is one implementation of the comparison policy
     used by rops. This class is here to make writing the Byte::ops, ...
     member functions simpler. It is not necessary since the functions could
-    twiddle the order of arguments to rops and use <tt>USCmp</tt>. Having 
+    twiddle the order of arguments to rops and use <tt>USCmp</tt>. Having
     this class make Byte:ops, ... simper to read and write.
 
     @see Byte::ops
     @see USCmp
     @see Cmp
     @see ops */
-template<class T1, class UT2> class SUCmp {
- public:
-    static bool eq(T1 v1, UT2 v2) {return dods_max(0, v1) == v2;}
-    static bool ne(T1 v1, UT2 v2) {return dods_max(0, v1) != v2;}
-    static bool gr(T1 v1, UT2 v2) {return dods_max(0, v1) > v2;}
-    static bool ge(T1 v1, UT2 v2) {return dods_max(0, v1) >= v2;}
-    static bool lt(T1 v1, UT2 v2) {return dods_max(0, v1) < v2;}
-    static bool le(T1 v1, UT2 v2) {return dods_max(0, v1) <= v2;}
-    static bool re(T1, UT2) {
-	cerr << "Illegal operation" << endl;
-	return false;
+template<class T1, class UT2> class SUCmp
+{
+public:
+    static bool eq(T1 v1, UT2 v2)
+    {
+        return dods_max(0, v1) == v2;
+    }
+    static bool ne(T1 v1, UT2 v2)
+    {
+        return dods_max(0, v1) != v2;
+    }
+    static bool gr(T1 v1, UT2 v2)
+    {
+        return dods_max(0, v1) > v2;
+    }
+    static bool ge(T1 v1, UT2 v2)
+    {
+        return dods_max(0, v1) >= v2;
+    }
+    static bool lt(T1 v1, UT2 v2)
+    {
+        return dods_max(0, v1) < v2;
+    }
+    static bool le(T1 v1, UT2 v2)
+    {
+        return dods_max(0, v1) <= v2;
+    }
+    static bool re(T1, UT2)
+    {
+        cerr << "Illegal operation" << endl;
+        return false;
     }
 };
 
 /** Compare two string types.
     This class is one implementation of the comparison policy used by
     rops.
-    
+
     @see rops */
-template<class T1, class T2> class StrCmp {
- public:
-    static bool eq(T1 v1, T2 v2) {return v1 == v2;}
-    static bool ne(T1 v1, T2 v2) {return v1 != v2;}
-    static bool gr(T1 v1, T2 v2) {return v1 > v2;}
-    static bool ge(T1 v1, T2 v2) {return v1 >= v2;}
-    static bool lt(T1 v1, T2 v2) {return v1 < v2;}
-    static bool le(T1 v1, T2 v2) {return v1 <= v2;}
-    static bool re(T1 v1, T2 v2) {
-	Regex r(v2.c_str());
-	return r.match(v1.c_str(), v1.length()) > 0;
+template<class T1, class T2> class StrCmp
+{
+public:
+    static bool eq(T1 v1, T2 v2)
+    {
+        return v1 == v2;
+    }
+    static bool ne(T1 v1, T2 v2)
+    {
+        return v1 != v2;
+    }
+    static bool gr(T1 v1, T2 v2)
+    {
+        return v1 > v2;
+    }
+    static bool ge(T1 v1, T2 v2)
+    {
+        return v1 >= v2;
+    }
+    static bool lt(T1 v1, T2 v2)
+    {
+        return v1 < v2;
+    }
+    static bool le(T1 v1, T2 v2)
+    {
+        return v1 <= v2;
+    }
+    static bool re(T1 v1, T2 v2)
+    {
+        Regex r(v2.c_str());
+        return r.match(v1.c_str(), v1.length()) > 0;
     }
 };
 
@@ -155,11 +233,11 @@ template<class T1, class T2> class StrCmp {
     we did not have unsigned types.
 
     T1 The type of <tt>a</tt>.
-    
+
     T2 The type of <tt>b</tt>.
-    
-    C A class which implements the policy used for comparing <tt>a</tt> 
-    and <tt>b</tt>. 
+
+    C A class which implements the policy used for comparing <tt>a</tt>
+    and <tt>b</tt>.
 
     @param a The first argument.
     @param b The second argument.
@@ -170,23 +248,23 @@ template<class T1, class T2, class C>
 bool rops(T1 a, T2 b, int op)
 {
     switch (op) {
-      case SCAN_EQUAL:
-	return C::eq(a, b);
-      case SCAN_NOT_EQUAL:
-	return C::ne(a, b);
-      case SCAN_GREATER:
-	return C::gr(a, b);
-      case SCAN_GREATER_EQL:
-	return C::ge(a, b);
-      case SCAN_LESS:
-	return C::lt(a, b);
-      case SCAN_LESS_EQL:
-	return C::le(a, b);
-      case SCAN_REGEXP:
-	return C::re(a, b);
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
+    case SCAN_EQUAL:
+        return C::eq(a, b);
+    case SCAN_NOT_EQUAL:
+        return C::ne(a, b);
+    case SCAN_GREATER:
+        return C::gr(a, b);
+    case SCAN_GREATER_EQL:
+        return C::ge(a, b);
+    case SCAN_LESS:
+        return C::lt(a, b);
+    case SCAN_LESS_EQL:
+        return C::le(a, b);
+    case SCAN_REGEXP:
+        return C::re(a, b);
+    default:
+        cerr << "Unknown operator" << endl;
+        return false;
     }
 }
 

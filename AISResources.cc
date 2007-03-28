@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -36,15 +36,15 @@
 using namespace std;
 
 /** Output the XML fragment for a Resource. This function is a friend of the
-    Resource class. 
+    Resource class.
     @see Resource. */
 ostream &
 operator<<(ostream &os, const Resource &r)
 {
     os << "<ancillary";
     if (r.d_rule != Resource::overwrite) {
-	os << " rule=\"";
-	(r.d_rule == Resource::fallback) ? os << "fallback\"": os << "replace\"";
+        os << " rule=\"";
+        (r.d_rule == Resource::fallback) ? os << "fallback\"" : os << "replace\"";
     }
     os << " url=\"" << r.d_url << "\"/>";
 
@@ -58,37 +58,37 @@ ostream &
 operator<<(ostream &os, const AISResources &ais_res)
 {
     os << "<?xml version=\"1.0\" encoding=\"US-ASCII\" standalone=\"yes\"?>"
-       << endl;
+    << endl;
     os << "<!DOCTYPE ais SYSTEM \"http://xml.opendap.org/ais/ais_database.dtd\">" << endl;
     os << "<ais xmlns=\"http://xml.opendap.org/ais\">" << endl;
 
-    for (AISResources::ResourceRegexpsCIter pos = ais_res.d_re.begin(); 
-	pos != ais_res.d_re.end(); ++pos) {
-	os << "<entry>" << endl;
-	// write primary
-	os << "<primary regexp=\"" << pos->first << "\"/>" << endl;
-	// write the vector of Resource objects
-	for (ResourceVectorCIter i = pos->second.begin(); 
-	     i != pos->second.end(); ++i) {
-	    os << *i << endl;
-	}
-	os << "</entry>" << endl;
+    for (AISResources::ResourceRegexpsCIter pos = ais_res.d_re.begin();
+         pos != ais_res.d_re.end(); ++pos) {
+        os << "<entry>" << endl;
+        // write primary
+        os << "<primary regexp=\"" << pos->first << "\"/>" << endl;
+        // write the vector of Resource objects
+        for (ResourceVectorCIter i = pos->second.begin();
+             i != pos->second.end(); ++i) {
+            os << *i << endl;
+        }
+        os << "</entry>" << endl;
     }
 
-	//  Under VC++ 6.x, 'pos' is twice tagged as twice in the
-	//  same scope (this method - not just within for blocks), so
-	//  I gave it another name.  ROM - 6/14/03
+    //  Under VC++ 6.x, 'pos' is twice tagged as twice in the
+    //  same scope (this method - not just within for blocks), so
+    //  I gave it another name.  ROM - 6/14/03
     for (AISResources::ResourceMapCIter pos2 = ais_res.d_db.begin();
-	 pos2 != ais_res.d_db.end(); ++pos2) {
-	os << "<entry>" << endl;
-	// write primary
-	os << "<primary url=\"" << pos2->first << "\"/>" << endl;
-	// write the vector of Resource objects
-	for (ResourceVectorCIter i = pos2->second.begin(); 
-	     i != pos2->second.end(); ++i) {
-	    os << *i << endl;
-	}
-	os << "</entry>" << endl;
+         pos2 != ais_res.d_db.end(); ++pos2) {
+        os << "<entry>" << endl;
+        // write primary
+        os << "<primary url=\"" << pos2->first << "\"/>" << endl;
+        // write the vector of Resource objects
+        for (ResourceVectorCIter i = pos2->second.begin();
+             i != pos2->second.end(); ++i) {
+            os << *i << endl;
+        }
+        os << "</entry>" << endl;
     }
 
     os << "</ais>" << endl;
@@ -96,7 +96,7 @@ operator<<(ostream &os, const AISResources &ais_res)
     return os;
 }
 
-/** Use an existing AIS database to build an instance. 
+/** Use an existing AIS database to build an instance.
     @param database Pathname of the database/document. */
 AISResources::AISResources(const string &database) throw(AISDatabaseReadFailed)
 {
@@ -106,10 +106,10 @@ AISResources::AISResources(const string &database) throw(AISDatabaseReadFailed)
 /** @name Methods used by the AISDatabaseParser class */
 /*@{*/
 /** Add the given ancillary resource to the in-memory collection of
-    mappings between primary and ancillary data sources. 
+    mappings between primary and ancillary data sources.
     @param url The target of the new mapping.
     @param ancillary Match this ancillary resource to the target (primary). */
-void 
+void
 AISResources::add_url_resource(const string &url, const Resource &ancillary)
 {
     add_url_resource(url, ResourceVector(1, ancillary));
@@ -120,25 +120,25 @@ AISResources::add_url_resource(const string &url, const Resource &ancillary)
     resources to those.
     @param url The target of the new mapping.
     @param rv Ancillary resources matched to this primary resource. */
-void 
+void
 AISResources::add_url_resource(const string &url, const ResourceVector &rv)
 {
     ResourceMapIter pos = d_db.find(url);
     if (pos == d_db.end()) {
-	d_db.insert(std::make_pair(url, rv));
+        d_db.insert(std::make_pair(url, rv));
     }
     else {
-	// There's already a ResourceVector, append to it.
-	for (ResourceVectorCIter i = rv.begin(); i != rv.end(); ++i)
-	    pos->second.push_back(*i);
+        // There's already a ResourceVector, append to it.
+        for (ResourceVectorCIter i = rv.begin(); i != rv.end(); ++i)
+            pos->second.push_back(*i);
     }
 }
 
 /** Add the given ancillary resource to the in-memory collection of
-    mappings between regular expressions and ancillary data sources. 
+    mappings between regular expressions and ancillary data sources.
     @param re The target of the new mapping. This is a regular expression.
     @param ancillary  Match this ancillary resource to the target (primary). */
-void 
+void
 AISResources::add_regexp_resource(const string &re, const Resource &ancillary)
 {
     add_regexp_resource(re, ResourceVector(1, ancillary));
@@ -150,18 +150,18 @@ AISResources::add_regexp_resource(const string &re, const Resource &ancillary)
 
     @param re The target of the new mapping.
     @param rv Ancillary resources matched to this primary resource. */
-void 
+void
 AISResources::add_regexp_resource(const string &re, const ResourceVector &rv)
 {
-    ResourceRegexpsIter pos = find_if(d_re.begin(), d_re.end(), 
-				      FindRegexp(re));
+    ResourceRegexpsIter pos = find_if(d_re.begin(), d_re.end(),
+                                      FindRegexp(re));
     if (pos == d_re.end()) {
-	d_re.push_back(std::make_pair(re, rv));
+        d_re.push_back(std::make_pair(re, rv));
     }
     else {
-	// There's already a ResourceVector, append to it.
-	for (ResourceVectorCIter i = rv.begin(); i != rv.end(); ++i)
-	    pos->second.push_back(*i);
+        // There's already a ResourceVector, append to it.
+        for (ResourceVectorCIter i = rv.begin(); i != rv.end(); ++i)
+            pos->second.push_back(*i);
     }
 }
 
@@ -170,10 +170,10 @@ AISResources::add_regexp_resource(const string &re, const ResourceVector &rv)
 /** Return True if the given primary resource is listed in the current
     set of AIS resource mappings. That is, return true if there are some
     AIS resources registered for the given primary resource.
-    @param primary The URL of the primary resource. That is, a Data Source 
+    @param primary The URL of the primary resource. That is, a Data Source
     URL.
     @return True if there are AIS resources for <code>primary</code>. */
-bool 
+bool
 AISResources::has_resource(const string &primary) const
 {
     // This code looks for the 'primary' in the AIS database (which is a STL
@@ -182,8 +182,8 @@ AISResources::has_resource(const string &primary) const
     // literal. If not, then it tries to match each regular expression in the
     // database.
     return ((d_db.find(primary) != d_db.end())
-	    || (find_if(d_re.begin(), d_re.end(), MatchRegexp(primary)) 
-		!= d_re.end()));
+            || (find_if(d_re.begin(), d_re.end(), MatchRegexp(primary))
+                != d_re.end()));
 
 }
 
@@ -191,7 +191,7 @@ AISResources::has_resource(const string &primary) const
     primary resource. If a given \c primary resource has both an explicit
     entry for itself \e and matches a regular expression, the AIS resources
     for both will be combined in one ResourceVector and returned.
-    
+
     Aside from reading the database, this is the main workhorse for this class.
     Once a database has been read, a client uses has_resource() to see if a
     Data URL has anthing in the database and then calls this method to get a
@@ -212,30 +212,30 @@ AISResources::get_resource(const string &primary)
     const ResourceMapIter &i = d_db.find(primary);
 
     if (i != d_db.end())
-	rv = i->second;
+        rv = i->second;
 
-    // Finds the first matching regular expression and returns a vector of 
+    // Finds the first matching regular expression and returns a vector of
     // AIS resources.
     const ResourceRegexpsIter &j = find_if(d_re.begin(), d_re.end(),
-					   MatchRegexp(primary));
+                                           MatchRegexp(primary));
     if (j != d_re.end())
-	copy(j->second.begin(), j->second.end(), inserter(rv, rv.begin()));
+        copy(j->second.begin(), j->second.end(), inserter(rv, rv.begin()));
 
     if (rv.size() == 0)
-	throw NoSuchPrimaryResource();
+        throw NoSuchPrimaryResource();
 
-    return rv;	
+    return rv;
 }
 
-/** Read the AIS database (an XML file) and internalize it. This method is 
-    almost always used to build an in-memory database that has_resource() and 
+/** Read the AIS database (an XML file) and internalize it. This method is
+    almost always used to build an in-memory database that has_resource() and
     get_resource() use.
-    
+
     @param database A file/pathname to the AIS database.
     @exception AISDatabaseReadFailed thrown if the database could not be
     read. */
-void 
-AISResources::read_database(const string &database) 
+void
+AISResources::read_database(const string &database)
 {
     AISDatabaseParser parser;
 
@@ -245,23 +245,23 @@ AISResources::read_database(const string &database)
 /** Write the current in-memory mapping of primary and ancillary
     resources to the named file so that the read_database() method can
     read them and recreate the in-memory mapping.
-    
+
     @param filename A local file; write the database to this file. Create
     if necessary.
     @exception AISDatabaseWriteFailed thrown if the database could not be
     written. */
-void 
+void
 AISResources::write_database(const string &filename)
 {
     ofstream fos;
     fos.open(filename.c_str());
 
     if (!fos)
-	throw AISDatabaseWriteFailed("Could not open file :" + filename);
+        throw AISDatabaseWriteFailed("Could not open file :" + filename);
 
     fos << *this << endl;
-    
+
     if (!fos)
-	throw AISDatabaseWriteFailed();
+        throw AISDatabaseWriteFailed();
 }
 

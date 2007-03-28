@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #ifndef _httpconnect_h
 #define _httpconnect_h
 
@@ -74,7 +74,8 @@ extern ObjectType get_type(const string &value);
 
     @author jhrg */
 
-class HTTPConnect {
+class HTTPConnect
+{
 private:
     CURL *d_curl;
     RCReader *d_rcr;
@@ -84,15 +85,15 @@ private:
 
     bool d_accept_deflate;
 
-    string d_username;		// extracted from URL
-    string d_password;		// extracted from URL
-    string d_upstring;		// used to pass info into curl
+    string d_username;  // extracted from URL
+    string d_password;  // extracted from URL
+    string d_upstring;  // used to pass info into curl
 
     vector<string> d_request_headers; // Request headers
 
     void www_lib_init();
     long read_url(const string &url, FILE *stream, vector<string> *resp_hdrs,
-		  const vector<string> *headers = 0);
+                  const vector<string> *headers = 0);
     // string get_temp_file(FILE *&stream) throw(InternalErr);
     HTTPResponse *plain_fetch_url(const string &url);
     HTTPResponse *caching_fetch_url(const string &url);
@@ -104,21 +105,24 @@ private:
 
     // bool cond_fetch_url(const string &url, const vector<string> &headers);
 
-    friend size_t save_raw_http_header(void *ptr, size_t size, size_t nmemb, 
-				       void *http_connect);
+    friend size_t save_raw_http_header(void *ptr, size_t size, size_t nmemb,
+                                       void *http_connect);
     friend class HTTPConnectTest;
     friend class ParseHeader;
 
 protected:
     /** @name Suppress default methods
-	These methods are not supported and are implmented here as protected
-	methods to suppress the C++-supplied default versions (which will
-	break this object). */
+    These methods are not supported and are implmented here as protected
+    methods to suppress the C++-supplied default versions (which will
+    break this object). */
     //@{
-    HTTPConnect() { }
-    HTTPConnect(const HTTPConnect &) { }
-    HTTPConnect &operator=(const HTTPConnect &) { 
-	throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
+    HTTPConnect()
+    { }
+    HTTPConnect(const HTTPConnect &)
+    { }
+    HTTPConnect &operator=(const HTTPConnect &)
+    {
+        throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
     }
     //@}
 
@@ -131,18 +135,20 @@ public:
     void set_accept_deflate(bool defalte);
 
     /** Set the state of the HTTP cache. By default, the HTTP cache is
-	enabled of disabled using the value of the \c USE_CACHE property in
-	the \c .dodsrc file. Use this method to set the state from within a
-	program. 
-	@param enabled True to use the cache, False to disable. */
-    void set_cache_enabled(bool enabled) { 
-	if (d_http_cache)
-	    d_http_cache->set_cache_enabled(enabled);
+    enabled of disabled using the value of the \c USE_CACHE property in
+    the \c .dodsrc file. Use this method to set the state from within a
+    program. 
+    @param enabled True to use the cache, False to disable. */
+    void set_cache_enabled(bool enabled)
+    {
+        if (d_http_cache)
+            d_http_cache->set_cache_enabled(enabled);
     }
 
     /** Return the current state of the HTTP cache. */
-    bool is_cache_enabled() { 
-	return (d_http_cache) ? d_http_cache->is_cache_enabled() : false; 
+    bool is_cache_enabled()
+    {
+        return (d_http_cache) ? d_http_cache->is_cache_enabled() : false;
     }
 
     HTTPResponse *fetch_url(const string &url);

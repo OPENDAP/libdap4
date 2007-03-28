@@ -37,7 +37,8 @@
 #include "config.h"
 
 static char rcsid[] not_used =
-    { "$Id$" };
+    { "$Id$"
+    };
 
 #include <errno.h>      // used by strtod()
 #include <limits.h>
@@ -72,7 +73,7 @@ static char rcsid[] not_used =
 //  ROM - 12/2007
 #ifdef WIN32
 #include <limits>
-double w32strtod(const char *,char **);
+double w32strtod(const char *, char **);
 #endif
 using std::vector;
 
@@ -96,7 +97,7 @@ double_eq(double lhs, double rhs, double epsilon = 1.0e-5)
     else
         return (rhs - lhs) < ((lhs + rhs) / epsilon);
 }
- 
+
 /** Given a BaseType pointer, extract the string value it contains and return
     it.
 
@@ -177,37 +178,37 @@ void set_array_using_double(Array * dest, double *src, int src_len)
     // Expanded to work for any numeric type so it can be used for more than
     // just arguments.
     switch (dest->var()->type()) {
-        case dods_byte_c:
-            set_array_using_double_helper < dods_byte > (dest, src,
-                    src_len);
-            break;
-        case dods_uint16_c:
-            set_array_using_double_helper < dods_uint16 > (dest, src,
-                    src_len);
-            break;
-        case dods_int16_c:
-            set_array_using_double_helper < dods_int16 > (dest, src,
-                    src_len);
-            break;
-        case dods_uint32_c:
-            set_array_using_double_helper < dods_uint32 > (dest, src,
-                    src_len);
-            break;
-        case dods_int32_c:
-            set_array_using_double_helper < dods_int32 > (dest, src,
-                    src_len);
-            break;
-        case dods_float32_c:
-            set_array_using_double_helper < dods_float32 > (dest, src,
-                    src_len);
-            break;
-        case dods_float64_c:
-            set_array_using_double_helper < dods_float64 > (dest, src,
-                    src_len);
-            break;
-        default:
-            throw InternalErr(__FILE__, __LINE__,
-                              "The argument list built by the CE parser contained an unsupported numeric type.");
+    case dods_byte_c:
+        set_array_using_double_helper < dods_byte > (dest, src,
+                src_len);
+        break;
+    case dods_uint16_c:
+        set_array_using_double_helper < dods_uint16 > (dest, src,
+                src_len);
+        break;
+    case dods_int16_c:
+        set_array_using_double_helper < dods_int16 > (dest, src,
+                src_len);
+        break;
+    case dods_uint32_c:
+        set_array_using_double_helper < dods_uint32 > (dest, src,
+                src_len);
+        break;
+    case dods_int32_c:
+        set_array_using_double_helper < dods_int32 > (dest, src,
+                src_len);
+        break;
+    case dods_float32_c:
+        set_array_using_double_helper < dods_float32 > (dest, src,
+                src_len);
+        break;
+    case dods_float64_c:
+        set_array_using_double_helper < dods_float64 > (dest, src,
+                src_len);
+        break;
+    default:
+        throw InternalErr(__FILE__, __LINE__,
+                          "The argument list built by the CE parser contained an unsupported numeric type.");
     }
 
     // Set the read_p property.
@@ -250,23 +251,23 @@ double *extract_double_array(Array * a)
     // Expanded to work for any numeric type so it can be used for more than
     // just arguments.
     switch (a->var()->type()) {
-        case dods_byte_c:
-            return extract_double_array_helper < dods_byte > (a);
-        case dods_uint16_c:
-            return extract_double_array_helper < dods_uint16 > (a);
-        case dods_int16_c:
-            return extract_double_array_helper < dods_int16 > (a);
-        case dods_uint32_c:
-            return extract_double_array_helper < dods_uint32 > (a);
-        case dods_int32_c:
-            return extract_double_array_helper < dods_int32 > (a);
-        case dods_float32_c:
-            return extract_double_array_helper < dods_float32 > (a);
-        case dods_float64_c:
-            return extract_double_array_helper < dods_float64 > (a);
-        default:
-            throw InternalErr(__FILE__, __LINE__,
-                              "The argument list built by the CE parser contained an unsupported numeric type.");
+    case dods_byte_c:
+        return extract_double_array_helper < dods_byte > (a);
+    case dods_uint16_c:
+        return extract_double_array_helper < dods_uint16 > (a);
+    case dods_int16_c:
+        return extract_double_array_helper < dods_int16 > (a);
+    case dods_uint32_c:
+        return extract_double_array_helper < dods_uint32 > (a);
+    case dods_int32_c:
+        return extract_double_array_helper < dods_int32 > (a);
+    case dods_float32_c:
+        return extract_double_array_helper < dods_float32 > (a);
+    case dods_float64_c:
+        return extract_double_array_helper < dods_float64 > (a);
+    default:
+        throw InternalErr(__FILE__, __LINE__,
+                          "The argument list built by the CE parser contained an unsupported numeric type.");
     }
 }
 
@@ -294,43 +295,43 @@ double extract_double_value(BaseType * arg)
     // Expanded to work for any numeric type so it can be used for more than
     // just arguments.
     switch (arg->type()) {
-        case dods_byte_c: {
+    case dods_byte_c: {
             dods_byte i;
             dods_byte *pi = &i;
             arg->buf2val((void **) &pi);
-            return (double) (i);
+            return (double)(i);
         }
-        case dods_uint16_c: {
+    case dods_uint16_c: {
             dods_uint16 i;
             dods_uint16 *pi = &i;
             arg->buf2val((void **) &pi);
-            return (double) (i);
+            return (double)(i);
         }
-        case dods_int16_c: {
+    case dods_int16_c: {
             dods_int16 i;
             dods_int16 *pi = &i;
             arg->buf2val((void **) &pi);
-            return (double) (i);
+            return (double)(i);
         }
-        case dods_uint32_c: {
+    case dods_uint32_c: {
             dods_uint32 i;
             dods_uint32 *pi = &i;
             arg->buf2val((void **) &pi);
-            return (double) (i);
+            return (double)(i);
         }
-        case dods_int32_c: {
+    case dods_int32_c: {
             dods_int32 i;
             dods_int32 *pi = &i;
             arg->buf2val((void **) &pi);
-            return (double) (i);
+            return (double)(i);
         }
-        case dods_float32_c: {
+    case dods_float32_c: {
             dods_float32 i;
             dods_float32 *pi = &i;
             arg->buf2val((void **) &pi);
             return (double) i;
         }
-        case dods_float64_c: {
+    case dods_float64_c: {
             DBG(cerr << "arg->value(): " << dynamic_cast <
                 Float64 * >(arg)->value() << endl);
             dods_float64 i;
@@ -339,9 +340,9 @@ double extract_double_value(BaseType * arg)
             DBG(cerr << "i: " << i << endl);
             return i;
         }
-        default:
-            throw InternalErr(__FILE__, __LINE__,
-                              "The argument list built by the CE parser contained an unsupported numeric type.");
+    default:
+        throw InternalErr(__FILE__, __LINE__,
+                          "The argument list built by the CE parser contained an unsupported numeric type.");
     }
 }
 
@@ -355,7 +356,7 @@ BaseType *func_length(int argc, BaseType * argv[], DDS & dds)
 
     switch (argv[0]->type()) {
 
-        case dods_sequence_c: {
+    case dods_sequence_c: {
             Sequence *var = dynamic_cast < Sequence * >(argv[0]);
             if (!var)
                 throw
@@ -370,8 +371,8 @@ BaseType *func_length(int argc, BaseType * argv[], DDS & dds)
             return ret;
         }
 
-        default:
-            throw Error("Wrong type argument to length()");
+    default:
+        throw Error("Wrong type argument to length()");
     }
 
     return 0;
@@ -383,18 +384,18 @@ BaseType *func_length(int argc, BaseType * argv[], DDS & dds)
 BaseType *function_version(int, BaseType *[], DDS &, const string &)
 {
     string xml_value = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
-    <functions>\
-    <function name=\"version\" version=\"1.0\"/>\
-    <function name=\"grid\" version=\"1.0\"/>\
-    <function name=\"geogrid\" version=\"1.0b2\"/>\
-    <function name=\"geoarray\" version=\"0.9b1\"/>\
-    <function name=\"linear_scale\" version=\"1.0b1\"/>\
-    </functions>";
+                       <functions>\
+                       <function name=\"version\" version=\"1.0\"/>\
+                       <function name=\"grid\" version=\"1.0\"/>\
+                       <function name=\"geogrid\" version=\"1.0b2\"/>\
+                       <function name=\"geoarray\" version=\"0.9b1\"/>\
+                       <function name=\"linear_scale\" version=\"1.0b1\"/>\
+                       </functions>";
 
     Str *response = new Str("version");
-    
+
     response->set_value(xml_value);
-        
+
     return response;
 }
 
@@ -472,7 +473,7 @@ apply_grid_selection_expressions(Grid * grid,
     <li>The name of a Grid.</li>
     <li>Zero or more strings which hold relational expressions of the form:<ul>
         <li><code>&lt;map var&gt; &lt;relop&gt; &lt;constant&gt;</code></li>
-        <li><code>&lt;constant&gt; &lt;relop&gt; &lt;map var&gt; &lt;relop&gt; 
+        <li><code>&lt;constant&gt; &lt;relop&gt; &lt;map var&gt; &lt;relop&gt;
                   &lt;constant&gt;</code></li>
         </ul></li>
     </ul>
@@ -503,26 +504,26 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
                         const string & dataset)
 {
     DBG(cerr << "Entering function_grid..." << endl);
-    
-    string info =
-"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
-    <function name=\"grid\" version=\"1.0\"/>\
- The grid() function takes a grid variable and zero or more relational\
- expressions. Each relational expression is applied to the grid using the\
- server's constraint evaluator and the resulting grid is returned. The\
- expressions may use constants and the grid's map vectors but may not use\
- any other variables. Two forms of expression are provide: \"var relop const\"\
- and \"const relop var relop const\". For example: grid(sst, \"10<=TIME<20\")\
- and grid(sst, \"10<=TIME\", \"TIME<20\") are both legal and, in this case,\
- also equivalent.\
-</function>";
 
-     if (argc == 0) {
+    string info =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+        <function name=\"grid\" version=\"1.0\"/>\
+        The grid() function takes a grid variable and zero or more relational\
+        expressions. Each relational expression is applied to the grid using the\
+        server's constraint evaluator and the resulting grid is returned. The\
+        expressions may use constants and the grid's map vectors but may not use\
+        any other variables. Two forms of expression are provide: \"var relop const\"\
+        and \"const relop var relop const\". For example: grid(sst, \"10<=TIME<20\")\
+        and grid(sst, \"10<=TIME\", \"TIME<20\") are both legal and, in this case,\
+        also equivalent.\
+        </function>";
+
+    if (argc == 0) {
         Str *response = new Str("info");
         response->set_value(info);
         return response;
     }
-    
+
     Grid *original_grid = dynamic_cast < Grid * >(argv[0]);
     if (!original_grid)
         throw Error("The first argument to grid() must be a Grid variable!");
@@ -531,20 +532,20 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
     // after serializing it.
     Grid *l_grid =
         dynamic_cast < Grid * >(original_grid->ptr_duplicate());
-    
+
     DBG(cerr << "grid: past initialization code" << endl);
 
     // Read the maps. Do this before calling parse_gse_expression(). Avoid
     // reading the array until the constraints have been applied because it
     // might be really large.
-    
+
     // This version makes sure to set the send_p flags which is needed for
     // the hdf4 handler (and is what should be done in general).
     Grid::Map_iter i = l_grid->map_begin();
     while (i != l_grid->map_end())
         (*i++)->set_send_p(true);
     l_grid->read(dataset);
-    
+
 #if 0
     // Old, pre-hdf_handler compatible version.
     Grid::Map_iter i = l_grid->map_begin();
@@ -569,7 +570,7 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
     apply_grid_selection_expressions(l_grid, clauses);
 
     DBG(cerr << "grid: past gse application" << endl);
-    
+
     l_grid->get_array()->set_send_p(true);
 
     l_grid->read(dataset);
@@ -616,26 +617,26 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
                            const string & dataset)
 {
     string info =
-"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
-    <function name=\"geogrid\" version=\"1.0b2\"/>\
- geogrid() applies a constraint given in latitude and longitude to a\
- DAP Grid variable. The arguments to the function are:\
- geogrid(<grid variable>, <upper latitude>, <left longitide>,\
- <lower latitude>, <right longitude> [selection expressions - see grid()])\
- geogrid(\"version\") returns the version of the function.\
- The function will always return a single Grid variable whose values\
- completely cover the given region, although there may be cases when\
- some additional data is also returned. If the longitude values 'wrap\
- around' the right edge of the data, then the function will make two\
- requests and return those joined together as a single Grid.\
-</function>";
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+        <function name=\"geogrid\" version=\"1.0b2\"/>\
+        geogrid() applies a constraint given in latitude and longitude to a\
+        DAP Grid variable. The arguments to the function are:\
+        geogrid(<grid variable>, <upper latitude>, <left longitide>,\
+        <lower latitude>, <right longitude> [selection expressions - see grid()])\
+        geogrid(\"version\") returns the version of the function.\
+        The function will always return a single Grid variable whose values\
+        completely cover the given region, although there may be cases when\
+        some additional data is also returned. If the longitude values 'wrap\
+        around' the right edge of the data, then the function will make two\
+        requests and return those joined together as a single Grid.\
+        </function>";
 
     if (argc == 0) {
         Str *response = new Str("version");
         response->set_value(info);
         return response;
     }
-    
+
     if (argc < 5)
         throw Error("Wrong number of arguments to geogrid(). See geogrid() for more information.");
 
@@ -702,14 +703,14 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
         // by this call. The caller of the function must free the pointer.
         return gc.get_constrained_grid();
     }
-    catch(Error & e) {
+    catch (Error & e) {
         throw;
     }
-    catch(exception & e) {
+    catch (exception & e) {
         throw
-            InternalErr(string
-                        ("A C++ exception was thrown from inside geogrid(): ")
-                        + e.what());
+        InternalErr(string
+                    ("A C++ exception was thrown from inside geogrid(): ")
+                    + e.what());
     }
 }
 
@@ -746,13 +747,13 @@ static string
 remove_quotes(const string &s)
 {
     if (s[0] == '\"' && s[s.length()-1] == '\"')
-        return s.substr(1, s.length()-2);
+        return s.substr(1, s.length() - 2);
     else
         return s;
 }
 
 /** Look for any one of a series of attribute values in the attribute table
-    for \e var. 
+    for \e var.
     @return The attribute value in a double. */
 static double
 get_attribute_double_value(BaseType *var, vector<string> &attributes)
@@ -765,19 +766,19 @@ get_attribute_double_value(BaseType *var, vector<string> &attributes)
         values += *i; if (!values.empty()) values += ", ";
         attribute_value = attr.get_attr(*i++);
     }
-    
+
     // If the value string is empty, then look at the grid's array (if it's a
     // grid or throw an Error.
     if (attribute_value.empty()) {
         if (var->type() == dods_grid_c)
             return get_attribute_double_value(dynamic_cast<Grid&>(*var).get_array(), attributes);
         else
-            throw Error(string("No COARDS '") + values.substr(0, values.length()-2)
+            throw Error(string("No COARDS '") + values.substr(0, values.length() - 2)
                         + "' attribute was found for the variable '"
                         + var->name() + "'.");
     }
-                    
-    return string_to_double(remove_quotes(attribute_value).c_str());    
+
+    return string_to_double(remove_quotes(attribute_value).c_str());
 }
 
 static double
@@ -785,19 +786,19 @@ get_attribute_double_value(BaseType *var, const string &attribute)
 {
     AttrTable &attr = var->get_attr_table();
     string attribute_value = attr.get_attr(attribute);
-    
+
     // If the value string is empty, then look at the grid's array (if it's a
     // grid or throw an Error.
     if (attribute_value.empty()) {
         if (var->type() == dods_grid_c)
             return get_attribute_double_value(dynamic_cast<Grid&>(*var).get_array(), attribute);
         else
-            throw Error(string("No COARDS '") + attribute 
+            throw Error(string("No COARDS '") + attribute
                         + "' attribute was found for the variable '"
                         + var->name() + "'.");
     }
-                    
-    return string_to_double(remove_quotes(attribute_value).c_str());    
+
+    return string_to_double(remove_quotes(attribute_value).c_str());
 }
 
 static double
@@ -821,46 +822,46 @@ get_missing_value(BaseType *var)
     return get_attribute_double_value(var, "missing_value");
 }
 
-/** Given a BaseType, scale it using 'y = mx + b'. Either provide the 
+/** Given a BaseType, scale it using 'y = mx + b'. Either provide the
     constants 'm' and 'b' or the function will look for the COARDS attributes
     'scale_factor' and 'add_offset'.
-    
+
     @param argc
     @param argv
     @param dds
     @param dataset
     @return The scaled variable, represented using Float64
-    @exception Error Thrown if scale_factor is not given and the COARDS 
+    @exception Error Thrown if scale_factor is not given and the COARDS
     attributes cannot be found OR if the source variable is not a
     numeric scalar, Array or Grid. */
 BaseType *
 function_linear_scale(int argc, BaseType * argv[], DDS &, const string & dataset)
 {
     string info =
-"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
-    <function name=\"linear_scale\" version=\"1.0b1\">\
- The linear_scale() function applies the familiar y=mx+b equation to data.\
- If only the name of a variable is given, the function looks for the COARDS\
- scale_factor, add_offset and missing_vlaue attributes. In the equation,\
- 'm' is scale_factor, 'b' is add_offset and data values which match\
- missing_value are not scaled. If add_offset cannot be found, it defaults to\
- zero; if missing_value cannot be found, the test for it is not performed.\
- The caller can also provide values for these and, if provided, those values\
- are used and the dataset's attributes are ignored. If only scale_factor is\
- provided, the defaults for 'b' and the missing value flag are used.\
- Similarly, if only 'm' and 'b' are provided the missing value test is not\
- performed. The values are always returned in a Float64 array.\
-</function>";
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+        <function name=\"linear_scale\" version=\"1.0b1\">\
+        The linear_scale() function applies the familiar y=mx+b equation to data.\
+        If only the name of a variable is given, the function looks for the COARDS\
+        scale_factor, add_offset and missing_vlaue attributes. In the equation,\
+        'm' is scale_factor, 'b' is add_offset and data values which match\
+        missing_value are not scaled. If add_offset cannot be found, it defaults to\
+        zero; if missing_value cannot be found, the test for it is not performed.\
+        The caller can also provide values for these and, if provided, those values\
+        are used and the dataset's attributes are ignored. If only scale_factor is\
+        provided, the defaults for 'b' and the missing value flag are used.\
+        Similarly, if only 'm' and 'b' are provided the missing value test is not\
+        performed. The values are always returned in a Float64 array.\
+        </function>";
 
     if (argc == 0) {
         Str *response = new Str("info");
         response->set_value(info);
         return response;
     }
-    
+
     // Check for 1 or 3 arguments: 1 --> use attributes; 3 --> m & b supplied
     DBG(cerr << "argc = " << argc << endl);
-    if ( !(argc == 1 || argc == 3 || argc == 4) )
+    if (!(argc == 1 || argc == 3 || argc == 4))
         throw Error("Wrong number of arguments to linear_scale(). See linear_scale() for more information");
 
     // Get m & b
@@ -881,7 +882,7 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, const string & dataset
         m = get_slope(argv[0]);
 
         // This is really a hack; on a fair number of datasets, the y intercept
-        // is not given and is assumed to be 0. Here the function looks and 
+        // is not given and is assumed to be 0. Here the function looks and
         // catches the error if a y intercept is not found.
         try {
             b = get_y_intercept(argv[0]);
@@ -889,7 +890,7 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, const string & dataset
         catch (Error &e) {
             b = 0.0;
         }
-        
+
         // This is not the best plan; the get_missing_value() function should
         // do something other than throw, but to do that would require mayor
         // surgery on get_attribute_double_value().
@@ -901,10 +902,10 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, const string & dataset
             use_missing = false;
         }
     }
-    
+
     DBG(cerr << "m: " << m << ", b: " << b << endl);
     DBG(cerr << "use_missing: " << use_missing << ", missing: " << missing << endl);
-    
+
     // Read the data, scale and return the result. Must replace the new data
     // in a constructor (i.e., Array part of a Grid).
     BaseType *dest = 0;
@@ -934,14 +935,14 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, const string & dataset
     else if (argv[0]->is_vector_type()) {
         Array &source = dynamic_cast<Array&>(*argv[0]);
         source.set_send_p(true);
-        // If the array is really a map, make sure to read using the Grid 
+        // If the array is really a map, make sure to read using the Grid
         // because of the HDF4 handler's odd behavior WRT dimensions.
         if (source.get_parent()
             && source.get_parent()->type() == dods_grid_c)
             source.get_parent()->read(dataset);
         else
-            source.read(dataset);   
-                 
+            source.read(dataset);
+
         data = extract_double_array(&source);
         int length = source.length();
         int i = 0;
@@ -950,39 +951,39 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, const string & dataset
                 data[i] = data[i] * m + b;
             ++i;
         }
-        
+
         Float64 *temp_f = new Float64(source.name());
         source.add_var(temp_f);
         source.val2buf(static_cast<void*>(data), false);
         delete temp_f;              // add_var copies and then adds.
-        
+
         dest = argv[0];
     }
     else if (argv[0]->is_simple_type()
-             && !(argv[0]->type() == dods_str_c 
+             && !(argv[0]->type() == dods_str_c
                   || argv[0]->type() == dods_url_c)) {
         double data = extract_double_value(argv[0]);
         if (!use_missing || !double_eq(data, missing))
             data = data * m + b;
-        
+
         dest = new Float64(argv[0]->name());
         dest->val2buf(static_cast<void*>(&data));
     }
     else {
-        throw Error("The linear_scale() function works only for numeric Grids, Arrays and scalars."); 
+        throw Error("The linear_scale() function works only for numeric Grids, Arrays and scalars.");
     }
-    
+
     return dest;
 }
 
-/** Perform a selection on the array using geographical coordinates. This 
-    function takes several groups of arguments. 
+/** Perform a selection on the array using geographical coordinates. This
+    function takes several groups of arguments.
     <ul>
     <li>geoarray(var, top, left, bottom, right)</li>
     <li>geoarray(var, top, left, bottom, right, var_top, v_left, v_bottom, v_right)</li>
     <li>geoarray(var, top, left, bottom, right, var_top, v_left, v_bottom, v_right, projection, datum)</li>
     </ul>
-    
+
     @note Only the plat-carre projection and wgs84 datum are currently
     supported.
     @param argc
@@ -995,26 +996,26 @@ BaseType *
 function_geoarray(int argc, BaseType * argv[], DDS &, const string & dataset)
 {
     string info =
-"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
-    <function name=\"geoarray\" version=\"0.9b1\"/>\
- The geoarray() function supports two different sets of arguments:\
- geoarray(var,left,top,right,bottom)\
- geoarray(var,left,top,right,bottom,var_left,var_top,var_right,var_bottom)\
- In the first version 'var' is the target of the selection and 'left', 'top',\
- 'right' and 'bottom' are the corners of a longitude-latitude box that defines\
- the selection. In the second version the 'var_left', ..., parameters give the\
- longitude and latitude extent of the entire array. The projection and dataum are\
- assumed to be Plat-Carre and WGS84.\
-</function>";
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+        <function name=\"geoarray\" version=\"0.9b1\"/>\
+        The geoarray() function supports two different sets of arguments:\
+        geoarray(var,left,top,right,bottom)\
+        geoarray(var,left,top,right,bottom,var_left,var_top,var_right,var_bottom)\
+        In the first version 'var' is the target of the selection and 'left', 'top',\
+        'right' and 'bottom' are the corners of a longitude-latitude box that defines\
+        the selection. In the second version the 'var_left', ..., parameters give the\
+        longitude and latitude extent of the entire array. The projection and dataum are\
+        assumed to be Plat-Carre and WGS84.\
+        </function>";
 
     if (argc == 0) {
         Str *response = new Str("version");
         response->set_value(info);
         return response;
     }
-    
+
     DBG(cerr << "argc = " << argc << endl);
-    if ( !(argc == 5 || argc == 9 || argc == 11) )
+    if (!(argc == 5 || argc == 9 || argc == 11))
         throw Error("Wrong number of arguments to geoarray(). See geoarray() for more information.");
 
     // Check the Array (and dup because the caller will free the variable).
@@ -1023,42 +1024,42 @@ function_geoarray(int argc, BaseType * argv[], DDS &, const string & dataset)
         throw Error("The first argument to geoarray() must be an Array variable!");
 
     try {
-        
-    // Read the bounding box and variable extents from the params
-    double bb_top = extract_double_value(argv[1]);
-    double bb_left = extract_double_value(argv[2]);
-    double bb_bottom = extract_double_value(argv[3]);
-    double bb_right = extract_double_value(argv[4]);
-    
-    ArrayGeoConstraint *agc = 0;
-    switch (argc) {
+
+        // Read the bounding box and variable extents from the params
+        double bb_top = extract_double_value(argv[1]);
+        double bb_left = extract_double_value(argv[2]);
+        double bb_bottom = extract_double_value(argv[3]);
+        double bb_right = extract_double_value(argv[4]);
+
+        ArrayGeoConstraint *agc = 0;
+        switch (argc) {
         case 5:
             agc = new ArrayGeoConstraint(l_array, dataset);
             break;
         case 9: {
-            double var_top = extract_double_value(argv[5]);
-            double var_left = extract_double_value(argv[6]);
-            double var_bottom = extract_double_value(argv[7]);
-            double var_right = extract_double_value(argv[8]);
-            agc = new ArrayGeoConstraint(l_array, dataset,
-                                         var_left, var_top, var_right, var_bottom);
-            break;
-        }
+                double var_top = extract_double_value(argv[5]);
+                double var_left = extract_double_value(argv[6]);
+                double var_bottom = extract_double_value(argv[7]);
+                double var_right = extract_double_value(argv[8]);
+                agc = new ArrayGeoConstraint(l_array, dataset,
+                                             var_left, var_top, var_right, var_bottom);
+                break;
+            }
         case 11: {
-            double var_top = extract_double_value(argv[5]);
-            double var_left = extract_double_value(argv[6]);
-            double var_bottom = extract_double_value(argv[7]);
-            double var_right = extract_double_value(argv[8]);
-            string projection = extract_string_argument(argv[9]);
-            string datum = extract_string_argument(argv[10]);
-            agc = new ArrayGeoConstraint(l_array, dataset,
-                                         var_left, var_top, var_right, var_bottom,
-                                         projection, datum);
-            break;
-        }
+                double var_top = extract_double_value(argv[5]);
+                double var_left = extract_double_value(argv[6]);
+                double var_bottom = extract_double_value(argv[7]);
+                double var_right = extract_double_value(argv[8]);
+                string projection = extract_string_argument(argv[9]);
+                string datum = extract_string_argument(argv[10]);
+                agc = new ArrayGeoConstraint(l_array, dataset,
+                                             var_left, var_top, var_right, var_bottom,
+                                             projection, datum);
+                break;
+            }
         default:
             throw InternalErr(__FILE__, __LINE__, "Wrong number of args to geoarray.");
-    }
+        }
 
         agc->set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
 
@@ -1069,14 +1070,14 @@ function_geoarray(int argc, BaseType * argv[], DDS &, const string & dataset)
         // by this call. The caller of the function must free the pointer.
         return agc->get_constrained_array();
     }
-    catch(Error & e) {
+    catch (Error & e) {
         throw;
     }
-    catch(exception & e) {
+    catch (exception & e) {
         throw
-            InternalErr(string
-                        ("A C++ exception was thrown from inside geoarray(): ")
-                        + e.what());
+        InternalErr(string
+                    ("A C++ exception was thrown from inside geoarray(): ")
+                    + e.what());
 
     }
 }

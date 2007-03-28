@@ -10,18 +10,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -95,8 +95,8 @@ using std::cout;
     DataDDS when data values are bound to the variables it defines.
 
     For a complete description of the DDS layout and protocol, please
-    refer to <i>The OPeNDAP User Guide</i>. 
-    
+    refer to <i>The OPeNDAP User Guide</i>.
+
     The DDS has an ASCII representation, which is what is transmitted
     from a DAP2 server to a client.  Here is the DDS representation of
     an entire dataset containing a time series of worldwide grids of
@@ -146,7 +146,7 @@ using std::cout;
 
     See the <i>The OPeNDAP User Guide</i>, or the documentation of the
     BaseType class for descriptions of the DAP2 data types.
-    
+
     @note Make sure to pass a valid pointer to the DDS constructor or use
     the set_factory() method before actually using the DDS. Also make sure
     that the Factory's lifetime thereafter is the same as the DDS's. Never
@@ -169,31 +169,32 @@ using std::cout;
     @see BaseType
     @see DAS */
 
-class DDS : public DapObj {
+class DDS : public DapObj
+{
 private:
     BaseTypeFactory *d_factory;
 
-    string name;		// The dataset name
+    string name;  // The dataset name
 
-    string _filename;		// File name (or other OS identifier) for
-				// dataset or part of dataset.
+    string _filename;  // File name (or other OS identifier) for
+    // dataset or part of dataset.
     int d_protocol_major;       // The protocol major version number
     int d_protocol_minor;       // ... and minor version number
-    
+
     AttrTable d_attr;           // Global attributes.
 
-    vector<BaseType *> vars;	// Variables at the top level 
+    vector<BaseType *> vars; // Variables at the top level
 #if 0
     bool is_global_attr(string name);
     void add_global_attribute(AttrTable::entry *entry);
 #endif
     BaseType *find_hdf4_dimension_attribute_home(AttrTable::entry *source);
 
-    int d_timeout;		// alarm time in seconds. If greater than
-				// zero, raise the alarm signal if more than
-				// d_timeout seconds are spent reading data.
+    int d_timeout;  // alarm time in seconds. If greater than
+    // zero, raise the alarm signal if more than
+    // d_timeout seconds are spent reading data.
     friend class DDSTest;
-    
+
 protected:
     void duplicate(const DDS &dds);
     BaseType *leaf_match(const string &name, btp_stack *s = 0);
@@ -205,10 +206,10 @@ protected:
                              const string &suffix = "");
     void transfer_attr_table(DAS *das, AttrTable *at, Constructor *c,
                              const string &suffix = "");
-#endif    
+#endif
     virtual AttrTable *find_matching_container(AttrTable::entry *source,
-                                               BaseType **dest_variable);
-    
+            BaseType **dest_variable);
+
 public:
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;
@@ -219,7 +220,7 @@ public:
 
     virtual ~DDS();
 
-    DDS & operator=(const DDS &rhs); 
+    DDS & operator=(const DDS &rhs);
 
     virtual void transfer_attributes(DAS *das);
 
@@ -230,24 +231,28 @@ public:
         type classes. Specialize BaseTypeFactory so that a DDS will be 
         populated with your client or server's specialized types.
         @return An instance of BaseTypeFactory. */
-    BaseTypeFactory *get_factory() const { return d_factory; }
-    
+    BaseTypeFactory *get_factory() const
+    {
+        return d_factory;
+    }
+
     /** Set the factory class used to instantiate variables during the
         parse of a DDS. 
         @param factory The factory this DDS should use. Caller must free
         factory when done with this DDS.
         @see BaseTypeFactory */
-    BaseTypeFactory *set_factory(BaseTypeFactory *factory) {
+    BaseTypeFactory *set_factory(BaseTypeFactory *factory)
+    {
         BaseTypeFactory *t = d_factory;
-	d_factory = factory;
+        d_factory = factory;
         return t;
     }
-    
+
     virtual AttrTable &get_attr_table();
 
     string filename();
     void filename(const string &fn);
-    
+
     void add_var(BaseType *bt);
 
     /// Removes a variable from the DDS.
@@ -259,7 +264,7 @@ public:
 
     /// Return an iteraor
     Vars_iter var_begin();
-    /// Return a reverse iterator 
+    /// Return a reverse iterator
     Vars_riter var_rbegin();
     /// Return an iterator
     Vars_iter var_end();
@@ -281,7 +286,7 @@ public:
 
     void parse(string fname);
     void parse(int fd);
-    void parse(FILE *in=stdin);
+    void parse(FILE *in = stdin);
 
     void print(FILE *out);
     void print_constrained(FILE *out);
@@ -294,7 +299,7 @@ public:
 
     void tag_nested_sequences();
 
-    virtual void dump( ostream &strm ) const ;
+    virtual void dump(ostream &strm) const ;
 };
 
 #endif // _dds_h

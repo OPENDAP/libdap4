@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1996
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -35,7 +35,9 @@
 
 #include "config.h"
 
-static char rcsid[] not_used = {"$Id$"};
+static char rcsid[] not_used =
+    {"$Id$"
+    };
 
 #include <assert.h>
 
@@ -67,54 +69,53 @@ int
 main(int argc, char *argv[])
 {
 #ifdef WIN32
-    GetOpt getopt (argc, argv, "spd");
+    GetOpt getopt(argc, argv, "spd");
 #else
-    GetOpt getopt (argc, argv, "spdo");
+    GetOpt getopt(argc, argv, "spdo");
 #endif
     int option_char;
     bool scanner_test = false, parser_test = false, object_test = false;
 
     // process options
 
-    while ((option_char = getopt ()) != EOF)
-	switch (option_char)
-	  {
-	    case 'd': 
-	      Errordebug = 1;
-	      break;
-	    case 's':
-	      scanner_test = true;
-	      break;
-	    case 'p':
-	      parser_test = true;
-	      break;
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+        case 'd':
+            Errordebug = 1;
+            break;
+        case 's':
+            scanner_test = true;
+            break;
+        case 'p':
+            parser_test = true;
+            break;
 #ifndef WIN32
-	    case 'o':
-	      parser_test = object_test = true;
-	      break;
+        case 'o':
+            parser_test = object_test = true;
+            break;
 #endif
-	    case '?': 
-	    default:
-	      usage();
-	  }
+        case '?':
+        default:
+            usage();
+        }
 
 #ifdef WIN32
-	if (!(scanner_test || parser_test))
+    if (!(scanner_test || parser_test))
 #else
     if (!(scanner_test || parser_test || object_test))
 #endif
-	usage();
+        usage();
 
     if (scanner_test)
-	test_scanner();
+        test_scanner();
 
     Error err;
     if (parser_test)
-	test_parser(err);
+        test_parser(err);
 
 #ifdef GUI
     if (object_test)
-	test_object(err);
+        test_object(err);
 #endif
 
 #ifdef WIN32
@@ -127,15 +128,15 @@ void
 usage()
 {
 #ifdef WIN32
-    fprintf( stderr, "usage: error-test: [d][sp] <  filename ...\n" ) ;
+    fprintf(stderr, "usage: error-test: [d][sp] <  filename ...\n") ;
 #else
-    fprintf( stderr, "usage: error-test: [d][spo] <  filename ...\n" ) ;
+    fprintf(stderr, "usage: error-test: [d][spo] <  filename ...\n") ;
 #endif
-    fprintf( stderr, "       d: extra parser debugging information\n" ) ;
-    fprintf( stderr, "       s: run the scanner\n" ) ;
-    fprintf( stderr, "       p: run the parser\n" ) ;
+    fprintf(stderr, "       d: extra parser debugging information\n") ;
+    fprintf(stderr, "       s: run the scanner\n") ;
+    fprintf(stderr, "       p: run the parser\n") ;
 #ifdef WIN32
-    fprintf( stderr, "       o: evaluate the object, runs the parser\n" ) ;
+    fprintf(stderr, "       o: evaluate the object, runs the parser\n") ;
 #endif
 }
 
@@ -144,48 +145,48 @@ test_scanner()
 {
     int tok;
 
-    fprintf( stdout, "%s", prompt ) ; // first prompt
-    fflush( stdout ) ;
+    fprintf(stdout, "%s", prompt) ;   // first prompt
+    fflush(stdout) ;
     while ((tok = Errorlex())) {
-	switch (tok) {
-	  case SCAN_ERROR:
-	    fprintf( stdout, "ERROR\n" ) ;
-	    break;
-	  case SCAN_CODE:
-	    fprintf( stdout, "CODE\n" ) ;
-	    break;
-	  case SCAN_PTYPE:
-	    fprintf( stdout, "PTYPE\n" ) ;
-	    break;
-	  case SCAN_MSG:
-	    fprintf( stdout, "MSG\n" ) ;
-	    break;
-	  case SCAN_PROGRAM:
-	    fprintf( stdout, "PROGRAM\n" ) ;
-	    break;
-	  case SCAN_STR:
-	    fprintf( stdout, "%s\n", Errorlval.string ) ;
-	    break;
-	  case SCAN_INT:
-	    fprintf( stdout, "%d\n", Errorlval.integer ) ;
-	    break;
-	  case '{':
-	    fprintf( stdout, "Left Brace\n" ) ;
-	    break;
-	  case '}':
-	    fprintf( stdout, "Right Brace\n" ) ;
-	    break;
-	  case ';':
-	    fprintf( stdout, "Semicolon\n" ) ;
-	    break;
-	  case '=':
-	    fprintf( stdout, "Assignment\n" ) ;
-	    break;
-	  default:
-	    fprintf( stdout, "Error: Unrecognized input\n" ) ;
-	}
-	fprintf( stdout, "%s", prompt ) ; // print prompt after output
-	fflush( stdout ) ;
+        switch (tok) {
+        case SCAN_ERROR:
+            fprintf(stdout, "ERROR\n") ;
+            break;
+        case SCAN_CODE:
+            fprintf(stdout, "CODE\n") ;
+            break;
+        case SCAN_PTYPE:
+            fprintf(stdout, "PTYPE\n") ;
+            break;
+        case SCAN_MSG:
+            fprintf(stdout, "MSG\n") ;
+            break;
+        case SCAN_PROGRAM:
+            fprintf(stdout, "PROGRAM\n") ;
+            break;
+        case SCAN_STR:
+            fprintf(stdout, "%s\n", Errorlval.string) ;
+            break;
+        case SCAN_INT:
+            fprintf(stdout, "%d\n", Errorlval.integer) ;
+            break;
+        case '{':
+            fprintf(stdout, "Left Brace\n") ;
+            break;
+        case '}':
+            fprintf(stdout, "Right Brace\n") ;
+            break;
+        case ';':
+            fprintf(stdout, "Semicolon\n") ;
+            break;
+        case '=':
+            fprintf(stdout, "Assignment\n") ;
+            break;
+        default:
+            fprintf(stdout, "Error: Unrecognized input\n") ;
+        }
+        fprintf(stdout, "%s", prompt) ;   // print prompt after output
+        fflush(stdout) ;
     }
 }
 
@@ -193,12 +194,12 @@ void
 test_parser(Error &err)
 {
     int status = err.parse(stdin);
-    fprintf( stdout, "Status from parser: %d\n", status ) ;
-    
+    fprintf(stdout, "Status from parser: %d\n", status) ;
+
     if (err.OK())
-	fprintf( stdout, "Error passed OK check\n" ) ;
-    else 
-	fprintf( stdout, "Error failed OK check\n" ) ;
+        fprintf(stdout, "Error passed OK check\n") ;
+    else
+        fprintf(stdout, "Error failed OK check\n") ;
 
     err.print(stdout);
 }

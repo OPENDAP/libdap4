@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -51,21 +51,21 @@ using std::vector;
 #endif
 
 /** <b>AttrType</b> identifies the data types which may appear in an
-    attribute table object. 
+    attribute table object.
 
     \code
     enum AttrType {
-	Attr_unknown,
-	Attr_container,
-	Attr_byte,
-	Attr_int16,
-	Attr_uint16,
-	Attr_int32,
-	Attr_uint32,
-	Attr_float32,
-	Attr_float64,
-	Attr_string,
-	Attr_url
+ Attr_unknown,
+ Attr_container,
+ Attr_byte,
+ Attr_int16,
+ Attr_uint16,
+ Attr_int32,
+ Attr_uint32,
+ Attr_float32,
+ Attr_float64,
+ Attr_string,
+ Attr_url
     };
     \endcode
 
@@ -121,7 +121,7 @@ AttrType String_to_AttrType(const string &s);
     \endverbatim
 
     Here, <tt>long_name</tt>, <tt>units</tt>, and
-    <tt>missing_value</tt> are simple 
+    <tt>missing_value</tt> are simple
     attributes, and <tt>actual_range</tt> and <tt>conversion_data</tt>
     are container attributes containing other attribute tables.
 
@@ -138,81 +138,89 @@ AttrType String_to_AttrType(const string &s);
     @brief Contains the attributes for a dataset.
     @see DAS
     @see AttrType */
-class AttrTable : public DapObj {
+class AttrTable : public DapObj
+{
     // entry needs to be made public to make up for issues with this class'
     // design. It should probably be moved to it's own class. 05/22/03 jhrg
 public:
     /** Each AttrTable has zero or more entries. Instead of accessing this
-	struct's members directly, use AttrTable methods.
+    struct's members directly, use AttrTable methods.
 
-	This struct is public because its type is used in public typedefs. */
-    struct entry {
-	string name;
-	AttrType type;
-	
-	bool is_alias;
+    This struct is public because its type is used in public typedefs. */
+    struct entry
+    {
+        string name;
+        AttrType type;
+
+        bool is_alias;
         string aliased_to;
 
-	// If type == Attr_container, use attributes to read the contained
-	// table, otherwise use attr to read the vector of values.
-	AttrTable *attributes;
-	std::vector<string> *attr;	// a vector of values. jhrg 12/5/94
+        // If type == Attr_container, use attributes to read the contained
+        // table, otherwise use attr to read the vector of values.
+        AttrTable *attributes;
+        std::vector<string> *attr; // a vector of values. jhrg 12/5/94
 
-	entry(): name(""), type(Attr_unknown), is_alias(false),
-		 aliased_to("") {
-	    attributes = 0;
-	    attr = 0;
-	}
+        entry(): name(""), type(Attr_unknown), is_alias(false),
+                aliased_to("")
+        {
+            attributes = 0;
+            attr = 0;
+        }
 
-	entry(const entry &rhs) {
-	    clone(rhs);
-	}
+        entry(const entry &rhs)
+        {
+            clone(rhs);
+        }
 
-	void delete_entry() {
-	    if (is_alias)	// alias copies the pointers.
-		return;
-	    if (type == Attr_container) {
-		delete attributes; attributes = 0;
-	    }
-	    else {
-		delete attr; attr = 0;
-	    }
-	}
+        void delete_entry()
+        {
+            if (is_alias) // alias copies the pointers.
+                return;
+            if (type == Attr_container) {
+                delete attributes; attributes = 0;
+            }
+            else {
+                delete attr; attr = 0;
+            }
+        }
 
-	virtual ~entry() {
-	    delete_entry();
-	}
-	
-	void clone(const entry &rhs) {
-	    name = rhs.name;
-	    type = rhs.type;
-	    is_alias = rhs.is_alias;
-	    aliased_to = rhs.aliased_to;
-	    switch (rhs.type) {
-	      case Attr_unknown:
-		break;
-	      case Attr_container: {
-		  AttrTable *src_atp = rhs.attributes;
-		  AttrTable *dest_atp = new AttrTable(*src_atp);
-		  attributes = dest_atp;
-		  break;
-	      }
-	      default: {
-		  std::vector<string> *src_attr = rhs.attr;
-		  std::vector<string> *dest_attr = new std::vector<string>(*src_attr);
-		  attr = dest_attr;
-		  break;
-	      }
-	    }
-	}
+        virtual ~entry()
+        {
+            delete_entry();
+        }
 
-	entry &operator=(const entry &rhs) {
-	    if (this != &rhs) {
-		delete_entry();
-		clone(rhs);
-	    }
-	    return *this;
-	}
+        void clone(const entry &rhs)
+        {
+            name = rhs.name;
+            type = rhs.type;
+            is_alias = rhs.is_alias;
+            aliased_to = rhs.aliased_to;
+            switch (rhs.type) {
+            case Attr_unknown:
+                break;
+            case Attr_container: {
+                    AttrTable *src_atp = rhs.attributes;
+                    AttrTable *dest_atp = new AttrTable(*src_atp);
+                    attributes = dest_atp;
+                    break;
+                }
+            default: {
+                    std::vector<string> *src_attr = rhs.attr;
+                    std::vector<string> *dest_attr = new std::vector<string>(*src_attr);
+                    attr = dest_attr;
+                    break;
+                }
+            }
+        }
+
+        entry &operator=(const entry &rhs)
+        {
+            if (this != &rhs) {
+                delete_entry();
+                clone(rhs);
+            }
+            return *this;
+        }
     };
 
     typedef std::vector<entry *>::const_iterator Attr_citer ;
@@ -222,7 +230,7 @@ private:
     string d_name;
     AttrTable *d_parent;
     std::vector<entry *> attr_map;
-    
+
     Attr_iter simple_find(const string &target);
     AttrTable *simple_find_container(const string &target);
 
@@ -234,7 +242,7 @@ protected:
     void clone(const AttrTable &at);
 
     void simple_print(FILE *out, string pad, Attr_iter i,
-		      bool dereference);
+                      bool dereference);
 
 public:
     AttrTable();
@@ -250,22 +258,23 @@ public:
     /** Return a pointer to the AttrTable which holds this table (aka, its
         parent. If this AttrTable has no parent, this returns null.
         @return A pointer to the parent AttrTable. */
-    AttrTable *get_parent() const {
+    AttrTable *get_parent() const
+    {
         return d_parent;
     }
 
-    unsigned int append_attr(const string &name, const string &type, 
+    unsigned int append_attr(const string &name, const string &type,
                              const string &value);
-    unsigned int append_attr(const string &name, const string &type, 
+    unsigned int append_attr(const string &name, const string &type,
                              vector<string> *values);
-    
+
     AttrTable *append_container(const string &name);
     AttrTable *append_container(AttrTable *at, const string &name);
 
     void find(const string &target, AttrTable **at, Attr_iter *iter);
     AttrTable *find_container(const string &target);
     AttrTable *recurrsive_find(const string &target, Attr_iter *location);
-    
+
     AttrTable *get_attr_table(const string &name);
     string get_type(const string &name);
     AttrType get_attr_type(const string &name);
@@ -288,8 +297,8 @@ public:
     std::vector<string> *get_attr_vector(Attr_iter iter);
 
     void add_container_alias(const string &name, AttrTable *src);
-    void add_value_alias(AttrTable *das, const string &name, 
-			 const string &source);
+    void add_value_alias(AttrTable *das, const string &name,
+                         const string &source);
     bool attr_alias(const string &alias, AttrTable *at, const string &name);
     bool attr_alias(const string &alias, const string &name);
 
@@ -297,7 +306,7 @@ public:
 
     void print_xml(FILE *out, string pad = "    ", bool constrained = false);
 
-    virtual void dump( ostream &strm ) const ;
+    virtual void dump(ostream &strm) const ;
 };
 
 #endif // _attrtable_h

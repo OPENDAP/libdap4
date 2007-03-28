@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -54,12 +54,13 @@
 @see BaseType
 */
 
-class Float64: public BaseType {
-    /** This class allows Byte, ..., Float32 access to <tt>_buf</tt> to 
-	simplify and speed up the relational operators.
+class Float64: public BaseType
+{
+    /** This class allows Byte, ..., Float32 access to <tt>_buf</tt> to
+    simplify and speed up the relational operators.
 
-	NB: According to Stroustrup it does not matter where (public, private
-	or protected) friend classes are declared. */
+    NB: According to Stroustrup it does not matter where (public, private
+    or protected) friend classes are declared. */
     friend class Byte;
     friend class Int16;
     friend class UInt16;
@@ -72,14 +73,15 @@ protected:
 
 public:
     Float64(const string &n = "");
-    virtual ~Float64() {}
+    virtual ~Float64()
+    {}
 
     Float64(const Float64 &copy_from);
 
     Float64 &operator=(const Float64 &rhs);
 
     virtual BaseType *ptr_duplicate();
-    
+
     virtual unsigned int width();
 
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
@@ -92,12 +94,12 @@ public:
     virtual dods_float64 value() const;
     virtual bool set_value(dods_float64 val);
 
-    virtual void print_val(FILE *out, string space = "", 
-			   bool print_decl_p = true);
+    virtual void print_val(FILE *out, string space = "",
+                           bool print_decl_p = true);
 
     virtual bool ops(BaseType *b, int op, const string &dataset);
 
-    virtual void dump( ostream &strm ) const ;
+    virtual void dump(ostream &strm) const ;
 };
 
 #endif // _float64_h

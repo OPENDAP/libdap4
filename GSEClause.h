@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -68,7 +68,8 @@ enum relop {
     @author James Gallagher
     @see GridSelectionExpr */
 
-class GSEClause {
+class GSEClause
+{
 private:
     Array *d_map;
     // _value1, 2 and _op1, 2 hold the first and second operators and
@@ -82,7 +83,7 @@ private:
 
     string d_map_min_value, d_map_max_value;
 
-    GSEClause();		// Hidden default constructor.
+    GSEClause();  // Hidden default constructor.
 
     GSEClause(const GSEClause &param); // Hide
     GSEClause &operator=(GSEClause &rhs); // Hide
@@ -93,40 +94,40 @@ private:
     void compute_indices();
 
 public:
-  /** @name Constructors */
-  //@{
-  GSEClause(Grid *grid, const string &map, const double value,
-	    const relop op);
+    /** @name Constructors */
+    //@{
+    GSEClause(Grid *grid, const string &map, const double value,
+              const relop op);
 
-  GSEClause(Grid *grid, const string &map, const double value1,
-	    const relop op1, const double value2, const relop op2);
-  //@}
-    
-  bool OK() const;
+    GSEClause(Grid *grid, const string &map, const double value1,
+              const relop op1, const double value2, const relop op2);
+    //@}
 
-  /** @name Accessors */
-  //@{
-  Array *get_map() const;
+    bool OK() const;
 
-  string get_map_name() const;
+    /** @name Accessors */
+    //@{
+    Array *get_map() const;
 
-  int get_start() const;
+    string get_map_name() const;
 
-  int get_stop() const;
+    int get_start() const;
 
-  string get_map_min_value() const;
+    int get_stop() const;
 
-  string get_map_max_value() const;
-  //@}
+    string get_map_min_value() const;
 
-  /** @name Mutators */
-  //@{
-  void set_map(Array *map);
+    string get_map_max_value() const;
+    //@}
 
-  void set_start(int start);
+    /** @name Mutators */
+    //@{
+    void set_map(Array *map);
 
-  void set_stop(int stop);
-  //@}
+    void set_start(int start);
+
+    void set_stop(int stop);
+    //@}
 };
 
 #endif // _gseclause_h

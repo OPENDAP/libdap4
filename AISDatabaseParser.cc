@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -39,16 +39,17 @@
 
 using namespace std;
 
-static const not_used char *states[] = {
-    "START",
-    "FINISH",
-    "AIS",
-    "ENTRY",
-    "PRIMARY",
-    "ANCILLARY",
-    "UNKNOWN",
-    "ERROR"
-};
+static const not_used char *states[] =
+    {
+        "START",
+        "FINISH",
+        "AIS",
+        "ENTRY",
+        "PRIMARY",
+        "ANCILLARY",
+        "UNKNOWN",
+        "ERROR"
+    };
 
 /** @name SAX Parser Callbacks
 
@@ -60,8 +61,8 @@ static const not_used char *states[] = {
 /** Initialize the SAX parser state object. This object is passed to each
     callback as a void pointer.
     @param state The SAX parser state. */
-void 
-AISDatabaseParser::aisStartDocument(AISParserState *state) 
+void
+AISDatabaseParser::aisStartDocument(AISParserState *state)
 {
     state->state = PARSER_START;
     state->unknown_depth = 0;
@@ -73,16 +74,16 @@ AISDatabaseParser::aisStartDocument(AISParserState *state)
 
 /** Clean up after finishing a parse.
     @param state The SAX parser state. */
-void 
-AISDatabaseParser::aisEndDocument(AISParserState *state) 
+void
+AISDatabaseParser::aisEndDocument(AISParserState *state)
 {
     DBG2(cerr << "Ending state == " << states[state->state] << endl);
 
     if (state->unknown_depth != 0) {
-	AISDatabaseParser::aisFatalError(state, "The document contained unbalanced tags.");
+        AISDatabaseParser::aisFatalError(state, "The document contained unbalanced tags.");
 
         DBG(cerr << "unknown_depth != 0 (" << state->unknown_depth << ")"
-	    << endl);
+            << endl);
     }
 }
 
@@ -94,175 +95,175 @@ AISDatabaseParser::aisEndDocument(AISParserState *state)
     @param name The name of the element.
     @param attrs The element's attributes; 0, 2, 4, ... are the attribute
     names, 1, 3, 5, ... are the values. */
-void 
-AISDatabaseParser::aisStartElement(AISParserState *state, const char *name, 
-				   const char **attrs)
+void
+AISDatabaseParser::aisStartElement(AISParserState *state, const char *name,
+                                   const char **attrs)
 {
     switch (state->state) {
-      case PARSER_START:
-	if (strcmp(name, "ais") != 0) {
+    case PARSER_START:
+        if (strcmp(name, "ais") != 0) {
             DBG(cerr << "Expecting ais.  Got " << name << endl);
-	}
-	state->state = AIS;
-	break;
+        }
+        state->state = AIS;
+        break;
 
-      case PARSER_FINISH:
-	break;
+    case PARSER_FINISH:
+        break;
 
-      case AIS:
+    case AIS:
         if (strcmp(name, "entry") == 0) {
-	    state->prev_state = state->state;
-	    state->state = ENTRY;
-        } 
-	else {
+            state->prev_state = state->state;
+            state->state = ENTRY;
+        }
+        else {
             state->prev_state = state->state;
             state->state = PARSER_UNKNOWN;
             state->unknown_depth++;
         }
         break;
 
-      case ENTRY:
-	if (strcmp(name, "primary") == 0) {
-	    state->prev_state = state->state;
-	    state->state = PRIMARY;
+    case ENTRY:
+        if (strcmp(name, "primary") == 0) {
+            state->prev_state = state->state;
+            state->state = PRIMARY;
 
-	    if (attrs) {
-		if (strcmp(attrs[0], "url") == 0) {
-		    state->regexp = false;
-		    state->primary = attrs[1];
-		}
-		else if (strcmp(attrs[0], "regexp") == 0) {
-		    state->regexp = true;
-		    state->primary = attrs[1];
-		}
-	    }
-	    else {
-		AISDatabaseParser::aisFatalError(state, "Required attribute 'url' or 'regexp' missing from element 'primary'.");
-		break;
-	    }
-	}
-	else if (strcmp(name, "ancillary") == 0) {
-	    state->prev_state = state->state;
-	    state->state = ANCILLARY;
+            if (attrs) {
+                if (strcmp(attrs[0], "url") == 0) {
+                    state->regexp = false;
+                    state->primary = attrs[1];
+                }
+                else if (strcmp(attrs[0], "regexp") == 0) {
+                    state->regexp = true;
+                    state->primary = attrs[1];
+                }
+            }
+            else {
+                AISDatabaseParser::aisFatalError(state, "Required attribute 'url' or 'regexp' missing from element 'primary'.");
+                break;
+            }
+        }
+        else if (strcmp(name, "ancillary") == 0) {
+            state->prev_state = state->state;
+            state->state = ANCILLARY;
 
-	    string url = "";	// set defaults, MUST have url
-	    string rule = "overwrite";
-	    for (int i = 0; attrs && attrs[i] != 0; i = i + 2) {
-		if (strcmp(attrs[i], "url") == 0)
-		    url = attrs[i+1];
-		else if (strcmp(attrs[i], "rule") == 0)
-		    rule = attrs[i+1];
-	    }
+            string url = ""; // set defaults, MUST have url
+            string rule = "overwrite";
+            for (int i = 0; attrs && attrs[i] != 0; i = i + 2) {
+                if (strcmp(attrs[i], "url") == 0)
+                    url = attrs[i+1];
+                else if (strcmp(attrs[i], "rule") == 0)
+                    rule = attrs[i+1];
+            }
 
-	    // If this parser validated the XML, these tests would be
-	    // unnecessary. 
-	    if (url == "") {
-		AISDatabaseParser::aisFatalError(state, "Required attribute 'url' missing from element 'ancillary'.");
-		break;
-	    }
+            // If this parser validated the XML, these tests would be
+            // unnecessary.
+            if (url == "") {
+                AISDatabaseParser::aisFatalError(state, "Required attribute 'url' missing from element 'ancillary'.");
+                break;
+            }
 
-	    if (rule != "overwrite" && rule != "replace" && rule != "fallback") {
-		string msg = string("Optional attribute 'rule' in element 'ancillary' has a bad value: ") + rule + "\nIt should be one of 'overwrite', 'replace' or 'fallback'.";
-		AISDatabaseParser::aisFatalError(state, msg.c_str());
-		break;
-	    }
+            if (rule != "overwrite" && rule != "replace" && rule != "fallback") {
+                string msg = string("Optional attribute 'rule' in element 'ancillary' has a bad value: ") + rule + "\nIt should be one of 'overwrite', 'replace' or 'fallback'.";
+                AISDatabaseParser::aisFatalError(state, msg.c_str());
+                break;
+            }
 
-	    Resource r(url, rule);
-	    state->rv.push_back(r);
-	}
-	else {
+            Resource r(url, rule);
+            state->rv.push_back(r);
+        }
+        else {
             state->prev_state = state->state;
             state->state = PARSER_UNKNOWN;
             state->unknown_depth++;
         }
         break;
 
-      case PRIMARY:
-	break;
+    case PRIMARY:
+        break;
 
-      case ANCILLARY:
-	break;
+    case ANCILLARY:
+        break;
 
-      case PARSER_UNKNOWN:
-	state->unknown_depth++;
-	break;
+    case PARSER_UNKNOWN:
+        state->unknown_depth++;
+        break;
 
-      case PARSER_ERROR:
-	break;
+    case PARSER_ERROR:
+        break;
     }
 
-    DBG2(cerr << "Start element " << name << " (state " 
-	 << states[state->state] << ")" << endl);
+    DBG2(cerr << "Start element " << name << " (state "
+         << states[state->state] << ")" << endl);
 }
 
 /** Process an end element tag. This is where values are added to the
     AISResources object that's held by \c state.
-    @param state The SAX parser state. 
+    @param state The SAX parser state.
     @param name The name of the element; used only for code instrumentation. */
-void 
-AISDatabaseParser::aisEndElement(AISParserState *state, const char *) 
+void
+AISDatabaseParser::aisEndElement(AISParserState *state, const char *)
 {
-    DBG2(cerr << "End element " << name << " (state " << states[state->state] 
-	 << ")" << endl);
+    DBG2(cerr << "End element " << name << " (state " << states[state->state]
+         << ")" << endl);
 
     switch (state->state) {
-      case AIS:
-	state->prev_state = state->state;
-	state->state = PARSER_FINISH;
-	break;
+    case AIS:
+        state->prev_state = state->state;
+        state->state = PARSER_FINISH;
+        break;
 
-      case ENTRY:
-	state->prev_state = state->state;
-	state->state = AIS;
+    case ENTRY:
+        state->prev_state = state->state;
+        state->state = AIS;
 
-	// record 'primary' and 'rv'
-	if (state->regexp)
-	    state->ais->add_regexp_resource(state->primary, state->rv);
-	else
-	    state->ais->add_url_resource(state->primary, state->rv);
+        // record 'primary' and 'rv'
+        if (state->regexp)
+            state->ais->add_regexp_resource(state->primary, state->rv);
+        else
+            state->ais->add_url_resource(state->primary, state->rv);
 
-	// empty rv for the next set of ancillary resources.
-	state->rv.erase(state->rv.begin(), state->rv.end());
-	break;
+        // empty rv for the next set of ancillary resources.
+        state->rv.erase(state->rv.begin(), state->rv.end());
+        break;
 
-      case PRIMARY:
-	state->prev_state = state->state;
-	state->state = ENTRY;
-	break;
+    case PRIMARY:
+        state->prev_state = state->state;
+        state->state = ENTRY;
+        break;
 
-      case ANCILLARY:
-	state->prev_state = state->state;
-	state->state = ENTRY;
-	break;
+    case ANCILLARY:
+        state->prev_state = state->state;
+        state->state = ENTRY;
+        break;
 
-      case PARSER_UNKNOWN:
-	// Leave the state and prev_state alone.
-	state->unknown_depth--;
-	break;
+    case PARSER_UNKNOWN:
+        // Leave the state and prev_state alone.
+        state->unknown_depth--;
+        break;
 
-      case PARSER_ERROR:
-	break;
+    case PARSER_ERROR:
+        break;
 
-      default:
-	break;
+    default:
+        break;
     }
 }
 
 /** Handle the standard XML entities.
-    @param state The SAX parser state. 
+    @param state The SAX parser state.
     @param name The XML entity. */
 xmlEntityPtr
-AISDatabaseParser::aisGetEntity(AISParserState *, const xmlChar *name) 
+AISDatabaseParser::aisGetEntity(AISParserState *, const xmlChar *name)
 {
     return xmlGetPredefinedEntity(name);
 }
 
 /** Process an XML warning. This is treated as a fatal error since there's no
     easy way for libdap++ to signal warning to users.
-    @param state The SAX parser state. 
+    @param state The SAX parser state.
     @param msg A printf-style format string. */
-void 
-AISDatabaseParser::aisWarning(AISParserState *state, const char *msg, ...) 
+void
+AISDatabaseParser::aisWarning(AISParserState *state, const char *msg, ...)
 {
     va_list args;
 
@@ -285,9 +286,9 @@ AISDatabaseParser::aisWarning(AISParserState *state, const char *msg, ...)
 
 /** Process an XML error. This is treated as a fatal error since there's no
     easy way for libdap++ to signal warning to users.
-    @param state The SAX parser state. 
+    @param state The SAX parser state.
     @param msg A printf-style format string. */
-void 
+void
 AISDatabaseParser::aisError(AISParserState *state, const char *msg, ...)
 {
     va_list args;
@@ -309,10 +310,10 @@ AISDatabaseParser::aisError(AISParserState *state, const char *msg, ...)
     state->error_msg += string(str) + string("\n");
 }
 
-/** Process an XML fatal error. 
-    @param state The SAX parser state. 
+/** Process an XML fatal error.
+    @param state The SAX parser state.
     @param msg A printf-style format string. */
-void 
+void
 AISDatabaseParser::aisFatalError(AISParserState *state, const char *msg, ...)
 {
     va_list args;
@@ -338,47 +339,48 @@ AISDatabaseParser::aisFatalError(AISParserState *state, const char *msg, ...)
 
 /** This local variable holds pointers to the callback <i>functions</i> which
     comprise the SAX parser. */
-static xmlSAXHandler aisSAXParser = {
-    0, // internalSubset 
-    0, // isStandalone 
-    0, // hasInternalSubset 
-    0, // hasExternalSubset 
-    0, // resolveEntity 
-    (getEntitySAXFunc)AISDatabaseParser::aisGetEntity, // getEntity 
-    0, // entityDecl 
-    0, // notationDecl 
-    0, // attributeDecl 
-    0, // elementDecl 
-    0, // unparsedEntityDecl 
-    0, // setDocumentLocator 
-    (startDocumentSAXFunc)AISDatabaseParser::aisStartDocument, // startDocument
-    (endDocumentSAXFunc)AISDatabaseParser::aisEndDocument,  // endDocument 
-    (startElementSAXFunc)AISDatabaseParser::aisStartElement,  // startElement 
-    (endElementSAXFunc)AISDatabaseParser::aisEndElement,  // endElement 
-    0, // reference 
-    0, // (charactersSAXFunc)gladeCharacters,  characters 
-    0, // ignorableWhitespace 
-    0, // processingInstruction 
-    0, // (commentSAXFunc)gladeComment,  comment 
-    (warningSAXFunc)AISDatabaseParser::aisWarning, // warning 
-    (errorSAXFunc)AISDatabaseParser::aisError, // error 
-    (fatalErrorSAXFunc)AISDatabaseParser::aisFatalError, // fatalError
+static xmlSAXHandler aisSAXParser =
+    {
+        0, // internalSubset
+        0, // isStandalone
+        0, // hasInternalSubset
+        0, // hasExternalSubset
+        0, // resolveEntity
+        (getEntitySAXFunc)AISDatabaseParser::aisGetEntity, // getEntity
+        0, // entityDecl
+        0, // notationDecl
+        0, // attributeDecl
+        0, // elementDecl
+        0, // unparsedEntityDecl
+        0, // setDocumentLocator
+        (startDocumentSAXFunc)AISDatabaseParser::aisStartDocument, // startDocument
+        (endDocumentSAXFunc)AISDatabaseParser::aisEndDocument,  // endDocument
+        (startElementSAXFunc)AISDatabaseParser::aisStartElement,  // startElement
+        (endElementSAXFunc)AISDatabaseParser::aisEndElement,  // endElement
+        0, // reference
+        0, // (charactersSAXFunc)gladeCharacters,  characters
+        0, // ignorableWhitespace
+        0, // processingInstruction
+        0, // (commentSAXFunc)gladeComment,  comment
+        (warningSAXFunc)AISDatabaseParser::aisWarning, // warning
+        (errorSAXFunc)AISDatabaseParser::aisError, // error
+        (fatalErrorSAXFunc)AISDatabaseParser::aisFatalError, // fatalError
 #ifdef LIBXML2_5_10
-    0, // getParameterEntity
-    0, // cdataBlock
-    0, // externalSubset
-    0, // initialized
+        0, // getParameterEntity
+        0, // cdataBlock
+        0, // externalSubset
+        0, // initialized
 #endif
 #ifdef LIBXML2_6_16
-    0, // _private
-    0, // endElementNs
-    0, // serror
-    0 // startElementNs
+        0, // _private
+        0, // endElementNs
+        0, // serror
+        0 // startElementNs
 #endif
-};
+    };
 
 /** Parse an AIS database encoded in XML. The information in the XML document
-    is loaded into an instance of AISResources. 
+    is loaded into an instance of AISResources.
     @param database Read from this XML file.
     @param ais Load information into this instance of AISResources.
     @exception AISDatabaseReadFailed Thrown if the XML document could not be
@@ -388,37 +390,37 @@ AISDatabaseParser::intern(const string &database, AISResources *ais)
 {
     xmlParserCtxtPtr ctxt;
     AISParserState state;
-	
-    ctxt = xmlCreateFileParserCtxt(database.c_str());
-    if (!ctxt) 
-	return;
 
-    state.ais = ais;		// dump values here
-    state.ctxt = ctxt;		// need ctxt for error messages
+    ctxt = xmlCreateFileParserCtxt(database.c_str());
+    if (!ctxt)
+        return;
+
+    state.ais = ais;  // dump values here
+    state.ctxt = ctxt;  // need ctxt for error messages
 
     ctxt->sax = &aisSAXParser;
     ctxt->userData = &state;
     ctxt->validate = true;
 
     xmlParseDocument(ctxt);
-	
+
     // use getLineNumber and getColumnNumber to make the error messages better.
     if (!ctxt->wellFormed) {
-	ctxt->sax = NULL;
-	xmlFreeParserCtxt(ctxt);
-	throw AISDatabaseReadFailed(string("\nThe database is not a well formed XML document.\n") + state.error_msg);
+        ctxt->sax = NULL;
+        xmlFreeParserCtxt(ctxt);
+        throw AISDatabaseReadFailed(string("\nThe database is not a well formed XML document.\n") + state.error_msg);
     }
 
     if (!ctxt->valid) {
-	ctxt->sax = NULL;
-	xmlFreeParserCtxt(ctxt);
-	throw AISDatabaseReadFailed(string("\nThe database is not a valid document.\n") + state.error_msg);
+        ctxt->sax = NULL;
+        xmlFreeParserCtxt(ctxt);
+        throw AISDatabaseReadFailed(string("\nThe database is not a valid document.\n") + state.error_msg);
     }
 
     if (state.state == PARSER_ERROR) {
-	ctxt->sax = NULL;
-	xmlFreeParserCtxt(ctxt);
-	throw AISDatabaseReadFailed(string("\nError parsing AIS resources.\n") + state.error_msg);
+        ctxt->sax = NULL;
+        xmlFreeParserCtxt(ctxt);
+        throw AISDatabaseReadFailed(string("\nError parsing AIS resources.\n") + state.error_msg);
     }
 
     ctxt->sax = NULL;

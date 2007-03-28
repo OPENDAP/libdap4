@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #include "config.h"
 
 #include "AISConnect.h"
@@ -30,31 +30,31 @@
 /** Build an AISConnect. This calls Connect's constructor with \c name and
     accepts its default values for the other parameters. The AIS database to
     use is read from the configuration file <code>~/.dodsrc</code>.
-    
+
     @param name Create a virtual, AIS-enhanced, connection for this OPeNDAP
     data source.
     @exception AISDatabaseReadFailed Thrown if the AIS database listed in the
     <code>~/.dodsrc</code> file could not be opened. */
 AISConnect::AISConnect(const string &name) throw(AISDatabaseReadFailed)
-    : Connect(name), d_ais_merge(0)
+        : Connect(name), d_ais_merge(0)
 {
     const string &ais_db = RCReader::instance()->get_ais_database();
     if (ais_db != "")
-	d_ais_merge = new AISMerge(ais_db);
+        d_ais_merge = new AISMerge(ais_db);
 }
 
 /** Build an AISConnect. This calls Connect's constructor with \c name and
     accepts its default values for the other parameters. The AIS is
     initialized to use the database named by \c ais.
-    
+
     @param name Create a virtual, AIS-enhanced, connection for this OPeNDAP
     data source.
     @param ais Read the AIS information from this XML file.
     @exception AISDatabaseReadFailed Thrown if the AIS database listed in the
     <code>~/.dodsrc</code> file could not be opened. */
-AISConnect::AISConnect(const string &name, const string &ais) 
-    throw(AISDatabaseReadFailed)
-    : Connect(name), d_ais_merge(0)
+AISConnect::AISConnect(const string &name, const string &ais)
+throw(AISDatabaseReadFailed)
+        : Connect(name), d_ais_merge(0)
 {
     d_ais_merge = new AISMerge(ais);
 }
@@ -79,5 +79,5 @@ AISConnect::request_das(DAS &das)
     Connect::request_das(das);
 
     if (d_ais_merge)
-	    d_ais_merge->merge(URL(false), das); // URL(false) --> URL w/o CE
+        d_ais_merge->merge(URL(false), das); // URL(false) --> URL w/o CE
 }

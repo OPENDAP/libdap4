@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -36,33 +36,34 @@
 #include "util.h"
 #include "debug.h"
 
-static const not_used char *states[] = {
-    "start",
+static const not_used char *states[] =
+    {
+        "start",
 
-    "dataset",
+        "dataset",
 
-    "attribute_container",
-    "attribute",
-    "attribute_value",
+        "attribute_container",
+        "attribute",
+        "attribute_value",
 
-    "alias",
+        "alias",
 
-    "simple_type",
+        "simple_type",
 
-    "array",
-    "dimension",
+        "array",
+        "dimension",
 
-    "grid",
-    "map",
+        "grid",
+        "map",
 
-    "structure",
-    "sequence",
+        "structure",
+        "sequence",
 
-    "blob href",
+        "blob href",
 
-    "unknown",
-    "error"
-};
+        "unknown",
+        "error"
+    };
 
 // Glue the BaseTypeFactory to the enum-based factory defined statically
 // here.
@@ -211,7 +212,7 @@ void DDXParser::pop_state()
 }
 
 /** Dump XML attributes to local store so they can be easily manipulated.
-    Attribute names are always folded to lower case. 
+    Attribute names are always folded to lower case.
     @param attrs The XML attribtue array */
 void DDXParser::transfer_attrs(const char **attrs)
 {
@@ -227,7 +228,7 @@ void DDXParser::transfer_attrs(const char **attrs)
     }
 }
 
-/** Is an attribute present? Attribute names are always lowercase. 
+/** Is an attribute present? Attribute names are always lowercase.
     To use this method, first call transfer_attrs.
     @param attr The XML attribute
     @return True if the XML attribtue was present in the last tag */
@@ -269,7 +270,8 @@ void DDXParser::process_attribute_element(const char **attrs)
         child = parent->append_container(attributes["name"]);
         at_stack.push(child);   // save.
         DBG2(cerr << "Pushing at" << endl);
-    } else {
+    }
+    else {
         set_state(inside_attribute);
 
         dods_attr_name = attributes["name"];
@@ -333,8 +335,8 @@ void DDXParser::process_dimension(const char **attrs)
 }
 
 /** Given that a \c dataBLOB tag has just been read, extract and save the URL
-    included in the element. 
-    
+    included in the element.
+
     @param attrs The XML attributes */
 void DDXParser::process_blob(const char **attrs)
 {
@@ -352,13 +354,14 @@ void DDXParser::process_blob(const char **attrs)
     @param attrs The tag's XML attributes
     @return True if the tag was an \c Attribute or \c Alias tag */
 inline bool
-    DDXParser::is_attribute_or_alias(const char *name, const char **attrs)
+DDXParser::is_attribute_or_alias(const char *name, const char **attrs)
 {
     if (strcmp(name, "Attribute") == 0) {
         process_attribute_element(attrs);
         // next state: inside_attribtue or inside_attribute_container
         return true;
-    } else if (strcmp(name, "Alias") == 0) {
+    }
+    else if (strcmp(name, "Alias") == 0) {
         process_attribute_alias(attrs);
         // next state: inside_alias
         return true;
@@ -378,16 +381,20 @@ inline bool DDXParser::is_variable(const char *name, const char **attrs)
     if ((t = is_simple_type(name)) != dods_null_c) {
         process_variable(t, inside_simple_type, attrs);
         return true;
-    } else if (strcmp(name, "Array") == 0) {
+    }
+    else if (strcmp(name, "Array") == 0) {
         process_variable(dods_array_c, inside_array, attrs);
         return true;
-    } else if (strcmp(name, "Structure") == 0) {
+    }
+    else if (strcmp(name, "Structure") == 0) {
         process_variable(dods_structure_c, inside_structure, attrs);
         return true;
-    } else if (strcmp(name, "Sequence") == 0) {
+    }
+    else if (strcmp(name, "Sequence") == 0) {
         process_variable(dods_sequence_c, inside_sequence, attrs);
         return true;
-    } else if (strcmp(name, "Grid") == 0) {
+    }
+    else if (strcmp(name, "Grid") == 0) {
         process_variable(dods_grid_c, inside_grid, attrs);
         return true;
     }
@@ -487,7 +494,7 @@ void DDXParser::ddx_end_document(DDXParser * parser)
         return;
 
     // Pop the temporary Structure off the stack and transfer its variables
-    // to the DDS. 
+    // to the DDS.
     Constructor *cp =
         dynamic_cast < Constructor * >(parser->bt_stack.top());
     for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end();
@@ -518,7 +525,8 @@ void DDXParser::ddx_start_element(DDXParser * parser, const char *name,
             parser->transfer_attrs(attrs);
             if (parser->check_required_attribute(string("name")))
                 parser->dds->set_dataset_name(parser->attributes["name"]);
-        } else
+        }
+        else
             DDXParser::ddx_fatal_error(parser,
                                        "Expected response to start with a Dataset element; found '%s' instead.",
                                        name);
@@ -532,7 +540,8 @@ void DDXParser::ddx_start_element(DDXParser * parser, const char *name,
         else if (strcmp(name, "dataBLOB") == 0) {
             parser->process_blob(attrs);
             // next state: inside_data_blob
-        } else
+        }
+        else
             DDXParser::ddx_fatal_error(parser,
                                        "Expected an Attribute, Alias or variable element; found '%s' instead.",
                                        name);
@@ -587,7 +596,8 @@ void DDXParser::ddx_start_element(DDXParser * parser, const char *name,
         else if (strcmp(name, "dimension") == 0) {
             parser->process_dimension(attrs);
             // next state: inside_dimension
-        } else
+        }
+        else
             ddx_fatal_error(parser,
                             "Expected an 'Attribute' or 'Alias' element; found '%s' instead.",
                             name);
@@ -644,7 +654,8 @@ void DDXParser::ddx_start_element(DDXParser * parser, const char *name,
         else if (strcmp(name, "dimension") == 0) {
             parser->process_dimension(attrs);
             // next state: inside_dimension
-        } else
+        }
+        else
             ddx_fatal_error(parser,
                             "Expected an 'Attribute', 'Alias', variable or 'dimension' element; found '%s' instead.",
                             name);
@@ -697,7 +708,8 @@ void DDXParser::ddx_end_element(DDXParser * parser, const char *name)
         if (strcmp(name, "Attribute") == 0) {
             parser->pop_state();
             parser->at_stack.pop();     // pop when leaving a container.
-        } else
+        }
+        else
             DDXParser::ddx_fatal_error(parser,
                                        "Expected an end Attribute tag; found '%s' instead.",
                                        name);
@@ -719,7 +731,8 @@ void DDXParser::ddx_end_element(DDXParser * parser, const char *name)
             atp->append_attr(parser->dods_attr_name,
                              parser->dods_attr_type, parser->char_data);
             parser->char_data = "";     // Null this after use.
-        } else
+        }
+        else
             DDXParser::ddx_fatal_error(parser,
                                        "Expected an end value tag; found '%s' instead.",
                                        name);
@@ -750,7 +763,8 @@ void DDXParser::ddx_end_element(DDXParser * parser, const char *name)
                                            type_name().c_str(),
                                            parser->bt_stack.top()->name().
                                            c_str());
-        } else
+        }
+        else
             DDXParser::ddx_fatal_error(parser,
                                        "Expected an end tag for a simple type; found '%s' instead.",
                                        name);
@@ -810,7 +824,7 @@ void DDXParser::characters(DDXParser * parser, const xmlChar * ch, int len)
 {
     switch (parser->get_state()) {
     case inside_attribute_value:
-        parser->char_data.append((const char *) (ch), len);
+        parser->char_data.append((const char *)(ch), len);
         DBG2(cerr << "Characters: '" << parser->char_data << "'" << endl);
         break;
 
@@ -821,7 +835,7 @@ void DDXParser::characters(DDXParser * parser, const xmlChar * ch, int len)
 
 /** Handle the standard XML entities.
 
-    @param parser The SAX parser  
+    @param parser The SAX parser
     @param name The XML entity. */
 xmlEntityPtr DDXParser::ddx_get_entity(DDXParser *, const xmlChar * name)
 {
@@ -833,7 +847,7 @@ xmlEntityPtr DDXParser::ddx_get_entity(DDXParser *, const xmlChar * name)
     typically no way to tell a user about the error since there's often no
     user interface for this software.
 
-    @param parser The SAX parser  
+    @param parser The SAX parser
     @param msg A printf-style format string. */
 void DDXParser::ddx_fatal_error(DDXParser * parser, const char *msg, ...)
 {
@@ -860,44 +874,45 @@ void DDXParser::ddx_fatal_error(DDXParser * parser, const char *msg, ...)
 
 /** This local variable holds pointers to the callback <i>functions</i> which
     comprise the SAX parser. */
-static xmlSAXHandler ddx_sax_parser = {
-    0,                          // internalSubset 
-    0,                          // isStandalone 
-    0,                          // hasInternalSubset 
-    0,                          // hasExternalSubset 
-    0,                          // resolveEntity 
-    (getEntitySAXFunc) DDXParser::ddx_get_entity,       // getEntity 
-    0,                          // entityDecl 
-    0,                          // notationDecl 
-    0,                          // attributeDecl 
-    0,                          // elementDecl 
-    0,                          // unparsedEntityDecl 
-    0,                          // setDocumentLocator 
-    (startDocumentSAXFunc) DDXParser::ddx_start_document,       // startDocument
-    (endDocumentSAXFunc) DDXParser::ddx_end_document,   // endDocument 
-    (startElementSAXFunc) DDXParser::ddx_start_element, // startElement 
-    (endElementSAXFunc) DDXParser::ddx_end_element,     // endElement 
-    0,                          // reference 
-    (charactersSAXFunc) DDXParser::characters,
-    0,                          // ignorableWhitespace 
-    0,                          // processingInstruction 
-    0,                          // (commentSAXFunc)gladeComment,  comment 
-    (warningSAXFunc) DDXParser::ddx_fatal_error,        // warning 
-    (errorSAXFunc) DDXParser::ddx_fatal_error,  // error 
-    (fatalErrorSAXFunc) DDXParser::ddx_fatal_error,     // fatalError
+static xmlSAXHandler ddx_sax_parser =
+    {
+        0,                          // internalSubset
+        0,                          // isStandalone
+        0,                          // hasInternalSubset
+        0,                          // hasExternalSubset
+        0,                          // resolveEntity
+        (getEntitySAXFunc) DDXParser::ddx_get_entity,       // getEntity
+        0,                          // entityDecl
+        0,                          // notationDecl
+        0,                          // attributeDecl
+        0,                          // elementDecl
+        0,                          // unparsedEntityDecl
+        0,                          // setDocumentLocator
+        (startDocumentSAXFunc) DDXParser::ddx_start_document,       // startDocument
+        (endDocumentSAXFunc) DDXParser::ddx_end_document,   // endDocument
+        (startElementSAXFunc) DDXParser::ddx_start_element, // startElement
+        (endElementSAXFunc) DDXParser::ddx_end_element,     // endElement
+        0,                          // reference
+        (charactersSAXFunc) DDXParser::characters,
+        0,                          // ignorableWhitespace
+        0,                          // processingInstruction
+        0,                          // (commentSAXFunc)gladeComment,  comment
+        (warningSAXFunc) DDXParser::ddx_fatal_error,        // warning
+        (errorSAXFunc) DDXParser::ddx_fatal_error,  // error
+        (fatalErrorSAXFunc) DDXParser::ddx_fatal_error,     // fatalError
 #ifdef LIBXML2_5_10
-    0,                          // getParameterEntity
-    0,                          // cdataBlock
-    0,                          // externalSubset
-    0,                          // initialized
+        0,                          // getParameterEntity
+        0,                          // cdataBlock
+        0,                          // externalSubset
+        0,                          // initialized
 #endif
 #ifdef LIBXML2_6_16
-    0,                          // _private
-    0,                          // endElementNs
-    0,                          // serror
-    0                           // startElementNs
+        0,                          // _private
+        0,                          // endElementNs
+        0,                          // serror
+        0                           // startElementNs
 #endif
-};
+    };
 
 void DDXParser::cleanup_parse(xmlParserCtxtPtr & context) const
 {
@@ -905,9 +920,9 @@ void DDXParser::cleanup_parse(xmlParserCtxtPtr & context) const
         context->sax = NULL;
         xmlFreeParserCtxt(context);
         throw
-            DDXParseFailed(string
-                           ("\nThe DDX is not a well formed XML document.\n")
-                           + error_msg);
+        DDXParseFailed(string
+                       ("\nThe DDX is not a well formed XML document.\n")
+                       + error_msg);
     }
 
     if (!context->valid) {
@@ -972,9 +987,9 @@ void DDXParser::intern_stream(FILE * in, DDS * dest_dds, string * blob)
 
     @param document Read the DDX from this file.
     @param dest_dds Value/result parameter; dumps the inforamtion to this DDS
-    instance.  
+    instance.
     @param blob Value/result parameter; puts the href which references the \c
-    dataBLOB document here. 
+    dataBLOB document here.
     @exception DDXParseFailed Thrown if the XML document could not be
     read or parsed. */
 void DDXParser::intern(const string & document, DDS * dest_dds,
@@ -990,9 +1005,9 @@ void DDXParser::intern(const string & document, DDS * dest_dds,
     xmlParserCtxtPtr context = xmlCreateFileParserCtxt(document.c_str());
     if (!context)
         throw
-            DDXParseFailed(string
-                           ("Could not initialize the parser with the file: '")
-                           + document + string("'."));
+        DDXParseFailed(string
+                       ("Could not initialize the parser with the file: '")
+                       + document + string("'."));
 
     dds = dest_dds;             // dump values here
     blob_href = blob;           // blob goes here

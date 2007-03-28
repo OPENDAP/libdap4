@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -35,7 +35,9 @@
 
 #include "config.h"
 
-static char rcsid[] not_used = {"$Id$"};
+static char rcsid[] not_used =
+    {"$Id$"
+    };
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,23 +90,23 @@ using namespace std;
     libwww to libcurl and the latter may not need to have spaces removed.
     @param name The URL to process
     @return Returns a new string object that contains the pruned URL. */
-string 
+string
 prune_spaces(const string &name)
 {
     // If the URL does not even have white space return.
     if (name.find_first_of(' ') == name.npos)
-	return name;
+        return name;
     else {
-	// Strip leading spaces from http://...
-	unsigned int i = name.find_first_not_of(' ');
-	string tmp_name = name.substr(i);
-	
-	// Strip leading spaces from constraint part (following `?').
-	unsigned int j = tmp_name.find('?') + 1;
-	i = tmp_name.find_first_not_of(' ', j);
-	tmp_name.erase(j, i-j);
+        // Strip leading spaces from http://...
+        unsigned int i = name.find_first_not_of(' ');
+        string tmp_name = name.substr(i);
 
-	return tmp_name;
+        // Strip leading spaces from constraint part (following `?').
+        unsigned int j = tmp_name.find('?') + 1;
+        i = tmp_name.find_first_not_of(' ', j);
+        tmp_name.erase(j, i - j);
+
+        return tmp_name;
     }
 }
 
@@ -112,51 +114,49 @@ prune_spaces(const string &name)
 // no duplicate elements, otherwise return false.
 
 bool
-unique_names(vector<BaseType *> l, const string &var_name, 
-	     const string &type_name, string &msg)
+unique_names(vector<BaseType *> l, const string &var_name,
+             const string &type_name, string &msg)
 {
     // copy the identifier names to a vector
     vector<string> names(l.size());
 
     int nelem = 0;
     typedef std::vector<BaseType *>::const_iterator citer ;
-    for (citer i = l.begin(); i != l.end(); i++)
-    {
-	assert(*i);
-	names[nelem++] = (*i)->name();
-	DBG(cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
+    for (citer i = l.begin(); i != l.end(); i++) {
+        assert(*i);
+        names[nelem++] = (*i)->name();
+        DBG(cerr << "NAMES[" << nelem - 1 << "]=" << names[nelem-1] << endl);
     }
-    
-    // sort the array of names
-    sort(names.begin(), names.end());
-	
-#ifdef DODS_DEBUG2
-    cout << "unique:" << endl;
-    for (int ii = 0; ii < nelem; ++ii)
-	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
-#endif
-    
-    // sort the array of names
-    sort(names.begin(), names.end());
-	
-#ifdef DODS_DEBUG2
-    cout << "unique:" << endl;
-    for (int ii = 0; ii < nelem; ++ii)
-	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
-#endif
-    
-    // look for any instance of consecutive names that are ==
-    for (int j = 1; j < nelem; ++j)
-    {
-	if (names[j-1] == names[j]) {
-	    ostringstream oss;
-	    oss << "The variable `" << names[j] 
-		 << "' is used more than once in " << type_name << " `"
-		 << var_name << "'";
-	    msg = oss.str();
 
-	    return false;
-	}
+    // sort the array of names
+    sort(names.begin(), names.end());
+
+#ifdef DODS_DEBUG2
+    cout << "unique:" << endl;
+    for (int ii = 0; ii < nelem; ++ii)
+        cout << "NAMES[" << ii << "]=" << names[ii] << endl;
+#endif
+
+    // sort the array of names
+    sort(names.begin(), names.end());
+
+#ifdef DODS_DEBUG2
+    cout << "unique:" << endl;
+    for (int ii = 0; ii < nelem; ++ii)
+        cout << "NAMES[" << ii << "]=" << names[ii] << endl;
+#endif
+
+    // look for any instance of consecutive names that are ==
+    for (int j = 1; j < nelem; ++j) {
+        if (names[j-1] == names[j]) {
+            ostringstream oss;
+            oss << "The variable `" << names[j]
+            << "' is used more than once in " << type_name << " `"
+            << var_name << "'";
+            msg = oss.str();
+
+            return false;
+        }
     }
 
     return true;
@@ -170,13 +170,13 @@ unique_names(vector<BaseType *> l, const string &var_name,
 
 //  These func's moved to xdrutil_ppc.* under the PPC as explained there
 #ifndef __POWERPC__
-XDR *               
+XDR *
 new_xdrstdio(FILE *stream, enum xdr_op xop)
 {
     XDR *xdr = new XDR;
-    
+
     xdrstdio_create(xdr, stream, xop);
-    
+
     return xdr;
 }
 
@@ -184,7 +184,7 @@ XDR *
 set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop)
 {
     xdrstdio_create(xdr, stream, xop);
-    
+
     return xdr;
 }
 
@@ -216,34 +216,34 @@ delete_xdrstdio(XDR *xdr)
 // otherwise. The formal parameter BUF is modified as a side effect.
 
 extern "C" bool_t
-xdr_str(XDR *xdrs, string &buf)
+    xdr_str(XDR *xdrs, string &buf)
 {
     DBG(cerr << "In xdr_str, xdrs: " << xdrs << endl);
 
     switch (xdrs->x_op) {
-      case XDR_ENCODE: {	// BUF is a pointer to a (string *)
-	const char *out_tmp = buf.c_str();
+    case XDR_ENCODE: { // BUF is a pointer to a (string *)
+            const char *out_tmp = buf.c_str();
 
-	return xdr_string(xdrs, (char **)&out_tmp, max_str_len);
-      }
+            return xdr_string(xdrs, (char **)&out_tmp, max_str_len);
+        }
 
-      case XDR_DECODE: {
-	char *in_tmp = NULL;
+    case XDR_DECODE: {
+            char *in_tmp = NULL;
 
-	bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
-	if (!stat)
-	    return stat;
+            bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
+            if (!stat)
+                return stat;
 
-	buf = in_tmp;
+            buf = in_tmp;
 
-	free(in_tmp);
-	
-	return stat;
-      }
-	
-      default:
-	assert(false);
-	return 0;
+            free(in_tmp);
+
+            return stat;
+        }
+
+    default:
+        assert(false);
+        return 0;
     }
 }
 
@@ -255,15 +255,15 @@ libdap_root()
 }
 
 extern "C"
-const char *
-libdap_version()
+    const char *
+    libdap_version()
 {
     return PACKAGE_VERSION;
 }
 
 extern "C"
-const char *
-libdap_name()
+    const char *
+    libdap_name()
 {
     return PACKAGE_NAME;
 }
@@ -277,7 +277,7 @@ libdap_name()
 // Return true if the program deflate exists and is executable by user, group
 // and world. If this returns false the caller should assume that server
 // filter programs won't be able to find the deflate program and thus won't
-// be able to compress the return document. 
+// be able to compress the return document.
 // NB: this works because this function uses the same rules as compressor()
 // (which follows) to look for deflate. 2/11/98 jhrg
 
@@ -302,9 +302,9 @@ deflate_exists()
     // and other server components. 2/11/98 jhrg
     status = (stat(deflate.c_str(), &buf) == 0)
 #ifdef WIN32
-	|| (stat(".\\deflate", &buf) == 0);
+             || (stat(".\\deflate", &buf) == 0);
 #else
-	|| (stat("./deflate", &buf) == 0);
+             || (stat("./deflate", &buf) == 0);
 #endif
 
     // and that it can be executed.
@@ -325,12 +325,12 @@ compressor(FILE *output, int &childpid)
     //  we have to juggle handles more aggressively. This code hasn't been
     //  tested and shown to work as of 07/2000.
     int pid, data[2];
-    int hStdIn,hStdOut;
+    int hStdIn, hStdOut;
 
-    if(_pipe(data, 512, O_BINARY | O_NOINHERIT) < 0) {
-	cerr << "Could not create IPC channel for compressor process" 
-	     << endl;
-	return NULL;
+    if (_pipe(data, 512, O_BINARY | O_NOINHERIT) < 0) {
+        cerr << "Could not create IPC channel for compressor process"
+        << endl;
+        return NULL;
     }
 
 
@@ -338,36 +338,36 @@ compressor(FILE *output, int &childpid)
     // parent after the spawn takes place.
 
     // Store stdin, stdout so we have something to restore to
-    hStdIn  = _dup(_fileno(stdin));  
+    hStdIn  = _dup(_fileno(stdin));
     hStdOut = _dup(_fileno(stdout));
 
     // Child is to read from read end of pipe
-    if(_dup2(data[0], _fileno(stdin)) != 0) {
-	cerr << "dup of child stdin failed" << endl;
-	return NULL;
+    if (_dup2(data[0], _fileno(stdin)) != 0) {
+        cerr << "dup of child stdin failed" << endl;
+        return NULL;
     }
     // Child is to write its's stdout to file
-    if(_dup2(_fileno(output), _fileno(stdout)) != 0) {
-	cerr << "dup of child stdout failed" << endl;
-	return NULL;
+    if (_dup2(_fileno(output), _fileno(stdout)) != 0) {
+        cerr << "dup of child stdout failed" << endl;
+        return NULL;
     }
-	
+
     // Spawn child process
     string deflate = "deflate.exe";
-    if((pid = _spawnlp(_P_NOWAIT, deflate.c_str(), deflate.c_str(), 
-		       "-c", "5", "-s", NULL)) < 0) {
-	cerr << "Could not spawn to create compressor process" << endl;
-	return NULL;
+    if ((pid = _spawnlp(_P_NOWAIT, deflate.c_str(), deflate.c_str(),
+                        "-c", "5", "-s", NULL)) < 0) {
+        cerr << "Could not spawn to create compressor process" << endl;
+        return NULL;
     }
 
     // Restore stdin, stdout for parent and close duplicate copies
-    if(_dup2(hStdIn, _fileno(stdin)) != 0) {
-	cerr << "dup of stdin failed" << endl;
-	return NULL;
+    if (_dup2(hStdIn, _fileno(stdin)) != 0) {
+        cerr << "dup of stdin failed" << endl;
+        return NULL;
     }
-    if(_dup2(hStdOut, _fileno(stdout)) != 0) {
-	cerr << "dup of stdout failed" << endl;
-	return NULL;
+    if (_dup2(hStdOut, _fileno(stdout)) != 0) {
+        cerr << "dup of stdout failed" << endl;
+        return NULL;
     }
     close(hStdIn);
     close(hStdOut);
@@ -386,43 +386,43 @@ compressor(FILE *output, int &childpid)
     int pid, data[2];
 
     if (pipe(data) < 0) {
-	cerr << "Could not create IPC channel for compressor process" 
-	     << endl;
-	return NULL;
+        cerr << "Could not create IPC channel for compressor process"
+        << endl;
+        return NULL;
     }
-    
+
     if ((pid = fork()) < 0) {
-	cerr << "Could not fork to create compressor process" << endl;
-	return NULL;
+        cerr << "Could not fork to create compressor process" << endl;
+        return NULL;
     }
 
     // The parent process closes the write end of the Pipe, and creates a
     // FILE * using fdopen(). The FILE * is used by the calling program to
     // access the read end of the Pipe.
 
-    if (pid > 0) { 		// Parent, pid is that of the child
-	close(data[0]);
-	ret_file = fdopen(data[1], "w");
-	setbuf(ret_file, 0);
-	childpid = pid;
+    if (pid > 0) {   // Parent, pid is that of the child
+        close(data[0]);
+        ret_file = fdopen(data[1], "w");
+        setbuf(ret_file, 0);
+        childpid = pid;
     }
-    else {			// Child
-	close(data[1]);
-	dup2(data[0], 0);	// Read from the pipe...
-	dup2(fileno(output), 1); // Write to the FILE *output.
+    else {   // Child
+        close(data[1]);
+        dup2(data[0], 0); // Read from the pipe...
+        dup2(fileno(output), 1); // Write to the FILE *output.
 
-	DBG(cerr << "Opening compression stream." << endl);
+        DBG(cerr << "Opening compression stream." << endl);
 
-	// First try to run deflate using DODS_ROOT (the value read from the
-	// DODS_ROOT environment variable takes precedence over the value set
-	// at build time. If that fails, try the CWD.
-	string deflate = (string)libdap_root() + "/sbin/deflate";
-	(void) execl(deflate.c_str(), "deflate", "-c",  "5", "-s", NULL);
-	(void) execl("./deflate", "deflate", "-c",  "5", "-s", NULL);
-	cerr << "Warning: Could not start compressor!" << endl;
-	cerr << "defalte should be in DODS_ROOT/etc or in the CWD!" 
-	     << endl;
-	_exit(127);		// Only here if an error occurred.
+        // First try to run deflate using DODS_ROOT (the value read from the
+        // DODS_ROOT environment variable takes precedence over the value set
+        // at build time. If that fails, try the CWD.
+        string deflate = (string)libdap_root() + "/sbin/deflate";
+        (void) execl(deflate.c_str(), "deflate", "-c",  "5", "-s", NULL);
+        (void) execl("./deflate", "deflate", "-c",  "5", "-s", NULL);
+        cerr << "Warning: Could not start compressor!" << endl;
+        cerr << "defalte should be in DODS_ROOT/etc or in the CWD!"
+        << endl;
+        _exit(127);  // Only here if an error occurred.
     }
 
     return ret_file ;
@@ -439,19 +439,19 @@ systime()
 {
     time_t TimBin;
 
-    if (time(&TimBin) == (time_t)-1)
-	return string("time() error");
+    if (time(&TimBin) == (time_t) - 1)
+        return string("time() error");
     else {
-	string TimStr = ctime(&TimBin);
-	return TimStr.substr(0, TimStr.size() - 2); // remove the \n 
+        string TimStr = ctime(&TimBin);
+        return TimStr.substr(0, TimStr.size() - 2); // remove the \n
     }
 }
 
-void 
-downcase(string &s) 
+void
+downcase(string &s)
 {
-    for(unsigned int i=0; i<s.length(); i++)
-	s[i] = tolower(s[i]);
+    for (unsigned int i = 0; i < s.length(); i++)
+        s[i] = tolower(s[i]);
 }
 
 #ifdef WIN32
@@ -465,43 +465,43 @@ void flush_stream(iostream ios, FILE *out)
     int nbytes;
     char buffer[512];
 
-    ios.get(buffer,512,NULL);
-    while((nbytes = ios.gcount()) > 0) {
-	fwrite(buffer, 1, nbytes, out);
-	ios.get(buffer,512,NULL);
+    ios.get(buffer, 512, NULL);
+    while ((nbytes = ios.gcount()) > 0) {
+        fwrite(buffer, 1, nbytes, out);
+        ios.get(buffer, 512, NULL);
     }
 
-    return;	
+    return;
 }
 #endif
 
 // Jose Garcia
-void 
-append_long_to_string(long val, int base, string &str_val) 
+void
+append_long_to_string(long val, int base, string &str_val)
 {
-    // The array digits contains 36 elements which are the 
+    // The array digits contains 36 elements which are the
     // posible valid digits for out bases in the range
     // [2,36]
-    char digits[]="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    // result of val / base  
-    ldiv_t r;                                
-  
+    char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    // result of val / base
+    ldiv_t r;
+
     if (base > 36 || base < 2) {
-	// no conversion if wrong base 
-	std::invalid_argument ex("The parameter base has an invalid value.");
-	throw ex;
+        // no conversion if wrong base
+        std::invalid_argument ex("The parameter base has an invalid value.");
+        throw ex;
     }
     if (val < 0)
-	str_val+= '-';
-    r = ldiv (labs(val), base);
+        str_val += '-';
+    r = ldiv(labs(val), base);
 
-    // output digits of val/base first 
+    // output digits of val/base first
     if (r.quot > 0)
-	append_long_to_string (r.quot, base, str_val);
-  
-    // output last digit 
-  
-    str_val+= digits[(int)r.rem];
+        append_long_to_string(r.quot, base, str_val);
+
+    // output last digit
+
+    str_val += digits[(int)r.rem];
 }
 
 // base defaults to 10
@@ -534,7 +534,7 @@ double_to_string(const double &num)
 
 // Get the version number of the core software. Defining this means that
 // clients of the DAP don't have to rely on config.h for the version
-// number. 
+// number.
 string
 dap_version()
 {
@@ -548,16 +548,20 @@ dap_version()
 // MT-safe. 08/05/02 jhrg
 
 #ifdef WIN32
-static const char path_sep[]={"\\"};
+static const char path_sep[] =
+    {"\\"
+    };
 #else
-static const char path_sep[]={"/"};
+static const char path_sep[] =
+    {"/"
+    };
 #endif
 
 string
 path_to_filename(string path)
 {
     string::size_type pos = path.rfind(path_sep);
-  
+
     return (pos == string::npos) ? path : path.substr(++pos);
 }
 
@@ -567,26 +571,26 @@ path_to_filename(string path)
 // defined in stdio.h. If both come up empty, then use `./'.
 //
 // This function allocates storage using new. The caller must delete the char
-// array. 
+// array.
 char *
 get_tempfile_template(char *file_template)
 {
     char *c;
 #ifdef WIN32
     if (getenv("TEMP") && (access(getenv("TEMP"), 6) == 0))
-	c = getenv("TEMP");
+        c = getenv("TEMP");
     else if (getenv("TMP"))
-	c = getenv("TMP");
+        c = getenv("TMP");
 #else
-    if (getenv("TMPDIR") && (access(getenv("TMPDIR"), W_OK|R_OK) == 0)) 
-	c = getenv("TMPDIR");
+    if (getenv("TMPDIR") && (access(getenv("TMPDIR"), W_OK | R_OK) == 0))
+        c = getenv("TMPDIR");
 #ifdef P_tmpdir
-    else if (access(P_tmpdir, W_OK|R_OK) == 0)
-	c = P_tmpdir;
+    else if (access(P_tmpdir, W_OK | R_OK) == 0)
+        c = P_tmpdir;
 #endif
 #endif
-    else 
-	c = ".";
+    else
+        c = ".";
 
     char *temp = new char[strlen(c) + strlen(file_template) + 2];
     strcpy(temp, c);
@@ -608,7 +612,7 @@ get_temp_file(char *temp)
 {
     int fd = mkstemp(temp);
     if (fd < 0)
-	return 0;
+        return 0;
     FILE *tmp = fdopen(fd, "a+");
     return tmp;
 }
@@ -625,6 +629,6 @@ file_to_string(FILE *fp)
     ostringstream oss;
     char c;
     while (fread(&c, 1, 1, fp))
-	oss << c;
+        oss << c;
     return oss.str();
 }

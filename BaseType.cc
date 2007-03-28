@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -36,7 +36,7 @@
 
 #include "config.h"
 
-#include <stdio.h>		// for stdin and stdout
+#include <stdio.h>  // for stdin and stdout
 
 #include <sstream>
 #include <string>
@@ -57,8 +57,8 @@ using namespace std;
 
 /** Perform a deep copy. Copies the values of \e bt into \c *this. Pointers
     are dereferenced and their values are copied into a newly allocated
-    instance. 
-    
+    instance.
+
     @brief Perform a deep copy.
     @param bt The source object. */
 void
@@ -66,15 +66,15 @@ BaseType::_duplicate(const BaseType &bt)
 {
     _name = bt._name;
     _type = bt._type;
-    _read_p = bt._read_p;	// added, reza
-    _send_p = bt._send_p;	// added, reza
+    _read_p = bt._read_p; // added, reza
+    _send_p = bt._send_p; // added, reza
     d_in_selection = bt.d_in_selection;
     _synthesized_p = bt._synthesized_p; // 5/11/2001 jhrg
-    _xdr_coder = bt._xdr_coder;	// just copy this function pointer
+    _xdr_coder = bt._xdr_coder; // just copy this function pointer
 
-    d_parent = bt.d_parent;	// copy pointers 6/4/2001 jhrg
+    d_parent = bt.d_parent; // copy pointers 6/4/2001 jhrg
 
-    d_attr = bt.d_attr;		// Deep copy.
+    d_attr = bt.d_attr;  // Deep copy.
 }
 
 // Public mfuncs
@@ -83,7 +83,7 @@ BaseType::_duplicate(const BaseType &bt)
     an XDR filter.  The BaseType class exists to provide data to
     type classes that inherit from it.  The constructors of those
     classes call the BaseType constructor; it is never called
-    directly. 
+    directly.
 
     Note that the constructor (as well as the copy constructor via
     _duplicate) open/initialize the (XDRS *)s XDRIN and XDROUT to
@@ -100,17 +100,16 @@ BaseType::_duplicate(const BaseType &bt)
     data in this variable to a client DODS process.
     @see Type */
 BaseType::BaseType(const string &n, const Type &t, xdrproc_t xdr)
-    : _name(n), _type(t), _xdr_coder(xdr), _read_p(false), _send_p(false),
-      d_in_selection(false), _synthesized_p(false), d_parent(0)
-{
-} 
+        : _name(n), _type(t), _xdr_coder(xdr), _read_p(false), _send_p(false),
+        d_in_selection(false), _synthesized_p(false), d_parent(0)
+{}
 
 /** @brief The BaseType copy constructor. */
 BaseType::BaseType(const BaseType &copy_from) : DapObj()
 {
     _duplicate(copy_from);
 }
-    
+
 BaseType::~BaseType()
 {
     DBG(cerr << "Entering ~BaseType (" << this << ")" << endl);
@@ -121,7 +120,7 @@ BaseType &
 BaseType::operator=(const BaseType &rhs)
 {
     if (this == &rhs)
-	    return *this;
+        return *this;
 
     _duplicate(rhs);
 
@@ -137,13 +136,13 @@ BaseType::toString()
 {
     ostringstream oss;
     oss << "BaseType (" << this << "):" << endl
-	<< "          _name: " << _name << endl
-	<< "          _type: " << type_name() << endl
-	<< "          _read_p: " << _read_p << endl
-	<< "          _send_p: " << _send_p << endl
-	<< "          _synthesized_p: " << _synthesized_p << endl 
-	<< "          d_parent: " << d_parent << endl
-	<< "          d_attr: " << hex << &d_attr << dec << endl;
+    << "          _name: " << _name << endl
+    << "          _type: " << type_name() << endl
+    << "          _read_p: " << _read_p << endl
+    << "          _send_p: " << _send_p << endl
+    << "          _synthesized_p: " << _synthesized_p << endl
+    << "          d_parent: " << d_parent << endl
+    << "          d_attr: " << hex << &d_attr << dec << endl;
 
     return oss.str();
 }
@@ -157,10 +156,10 @@ BaseType::toString()
  * @return void
  */
 void
-BaseType::dump( ostream &strm ) const
+BaseType::dump(ostream &strm) const
 {
     strm << DapIndent::LMarg << "BaseType::dump - ("
-			      << (void *)this << ")" << endl ;
+    << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
 
     strm << DapIndent::LMarg << "name: " << _name << endl ;
@@ -171,26 +170,26 @@ BaseType::dump( ostream &strm ) const
     strm << DapIndent::LMarg << "parent: " << (void *)d_parent << endl ;
     strm << DapIndent::LMarg << "attributes: " << endl ;
     DapIndent::Indent() ;
-    d_attr.dump( strm ) ;
+    d_attr.dump(strm) ;
     DapIndent::UnIndent() ;
 
     DapIndent::UnIndent() ;
 }
 
-/** @brief Returns the name of the class instance. 
+/** @brief Returns the name of the class instance.
  */
-string 
+string
 BaseType::name() const
 {
-    return _name; 
+    return _name;
 }
 
 /** @brief Sets the name of the class instance. */
-void 
+void
 BaseType::set_name(const string &n)
-{ 
+{
     string name = n;
-    _name = www2id(name);	// www2id writes into its param.
+    _name = www2id(name); // www2id writes into its param.
 }
 
 /** @brief Returns the type of the class instance. */
@@ -211,38 +210,38 @@ BaseType::set_type(const Type &t)
 string
 BaseType::type_name() const
 {
-    switch(_type) {
-      case dods_null_c:
-	return string("Null");
-      case dods_byte_c:
-	return string("Byte");
-      case dods_int16_c:
-	return string("Int16");
-      case dods_uint16_c:
-	return string("UInt16");
-      case dods_int32_c:
-	return string("Int32");
-      case dods_uint32_c:
-	return string("UInt32");
-      case dods_float32_c:
-	return string("Float32");
-      case dods_float64_c:
-	return string("Float64");
-      case dods_str_c:
-	return string("String");
-      case dods_url_c:
-	return string("Url");
-      case dods_array_c:
-	return string("Array");
-      case dods_structure_c:
-	return string("Structure");
-      case dods_sequence_c:
-	return string("Sequence");
-      case dods_grid_c:
-	return string("Grid");
-      default:
-	cerr << "BaseType::type_name: Undefined type" << endl;
-	return string("");
+    switch (_type) {
+    case dods_null_c:
+        return string("Null");
+    case dods_byte_c:
+        return string("Byte");
+    case dods_int16_c:
+        return string("Int16");
+    case dods_uint16_c:
+        return string("UInt16");
+    case dods_int32_c:
+        return string("Int32");
+    case dods_uint32_c:
+        return string("UInt32");
+    case dods_float32_c:
+        return string("Float32");
+    case dods_float64_c:
+        return string("Float64");
+    case dods_str_c:
+        return string("String");
+    case dods_url_c:
+        return string("Url");
+    case dods_array_c:
+        return string("Array");
+    case dods_structure_c:
+        return string("Structure");
+    case dods_sequence_c:
+        return string("Sequence");
+    case dods_grid_c:
+        return string("Grid");
+    default:
+        cerr << "BaseType::type_name: Undefined type" << endl;
+        return string("");
     }
 }
 
@@ -252,23 +251,23 @@ bool
 BaseType::is_simple_type()
 {
     switch (type()) {
-      case dods_null_c:
-      case dods_byte_c:
-      case dods_int16_c:
-      case dods_uint16_c:
-      case dods_int32_c:
-      case dods_uint32_c:
-      case dods_float32_c:
-      case dods_float64_c:
-      case dods_str_c:
-      case dods_url_c:
-	return true;
+    case dods_null_c:
+    case dods_byte_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_float32_c:
+    case dods_float64_c:
+    case dods_str_c:
+    case dods_url_c:
+        return true;
 
-      case dods_array_c:
-      case dods_structure_c:
-      case dods_sequence_c:
-      case dods_grid_c:
-	return false;
+    case dods_array_c:
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+        return false;
     }
 
     return false;
@@ -279,27 +278,27 @@ bool
 BaseType::is_vector_type()
 {
     switch (type()) {
-      case dods_null_c:
-      case dods_byte_c:
-      case dods_int16_c:
-      case dods_uint16_c:
-      case dods_int32_c:
-      case dods_uint32_c:
-      case dods_float32_c:
-      case dods_float64_c:
-      case dods_str_c:
-      case dods_url_c:
-	return false;
+    case dods_null_c:
+    case dods_byte_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_float32_c:
+    case dods_float64_c:
+    case dods_str_c:
+    case dods_url_c:
+        return false;
 
-      case dods_array_c:
-	return true;
+    case dods_array_c:
+        return true;
 
-      case dods_structure_c:
-      case dods_sequence_c:
-      case dods_grid_c:
-	return false;
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+        return false;
     }
-    
+
     return false;
 }
 
@@ -309,23 +308,23 @@ bool
 BaseType::is_constructor_type()
 {
     switch (type()) {
-      case dods_null_c:
-      case dods_byte_c:
-      case dods_int16_c:
-      case dods_uint16_c:
-      case dods_int32_c:
-      case dods_uint32_c:
-      case dods_float32_c:
-      case dods_float64_c:
-      case dods_str_c:
-      case dods_url_c:
-      case dods_array_c:
-	return false;
+    case dods_null_c:
+    case dods_byte_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_float32_c:
+    case dods_float64_c:
+    case dods_str_c:
+    case dods_url_c:
+    case dods_array_c:
+        return false;
 
-      case dods_structure_c:
-      case dods_sequence_c:
-      case dods_grid_c:
-	return true;
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+        return true;
     }
 
     return false;
@@ -346,7 +345,7 @@ BaseType::is_constructor_type()
     in the subsidiary Structure).  Use the <i>leaves</i> parameter
     to control which kind of counting you desire.
 
-    @brief Count the members of constructor types. 
+    @brief Count the members of constructor types.
     @return Returns 1 for simple
     types.  For compound members, the count depends on the
     <i>leaves</i> argument.
@@ -374,7 +373,7 @@ BaseType::synthesized_p()
 /** Set the synthesized flag. Before setting this flag be sure to set the
     <tt>read_p()</tt> state. Once this flag is set you cannot
     alter the state of the <tt>read_p</tt> flag!
-	
+
     @see synthesized_p() */
 void
 BaseType::set_synthesized_p(bool state)
@@ -403,15 +402,15 @@ BaseType::read_p()
     value(s) of this variable has/have been read. An implementation of the
     read() method would typically use this to set the \c read_p property to
     true.
-    
+
     @note For most of the types the default implementation of this method is
-    fine. However, if you're building a server which must handle data 
+    fine. However, if you're building a server which must handle data
     represented using nested sequences, then you may need to provide a
     specialization of Sequence::set_read_p(). By default Sequence::set_read_()
     recursively sets the \e read_p property for all child variables to
     \e state. For servers where one Sequence reads an outer set of values
     and another reads an inner set, this is cumbersome. In such a case, it is
-    easier to specialize Sequence::set_read_p() so that it does \e not 
+    easier to specialize Sequence::set_read_p() so that it does \e not
     recursively set the \e read_p property for the inner Sequence. Be sure
     to see the documentation for the read() method!
 
@@ -419,7 +418,7 @@ BaseType::read_p()
     synthesized variable is added to a Sequence, the Sequence can iteratively
     reset the \e read_p property without affecting the value of that property
     for the synthesized variable. That's important since a synthesized
-    variable's value is calculated, not read. 
+    variable's value is calculated, not read.
 
     @todo Look at making synthesized variables easier to implement and at
     making them more integrated into the overall CE evaluation process.
@@ -436,8 +435,8 @@ void
 BaseType::set_read_p(bool state)
 {
     if (! _synthesized_p) {
-	DBG(cerr << "Changing read_p state of " << name() << endl);
-	_read_p = state;
+        DBG(cerr << "Changing read_p state of " << name() << endl);
+        _read_p = state;
     }
 }
 
@@ -464,18 +463,18 @@ BaseType::send_p()
 
     @param state The logical state to set the <tt>send_p</tt> flag.
 */
-void 
+void
 BaseType::set_send_p(bool state)
 {
-    DBG(cerr << "Calling BaseType::set_send_p() for: " << this->name() 
-	<< endl);
+    DBG(cerr << "Calling BaseType::set_send_p() for: " << this->name()
+        << endl);
     _send_p = state;
 }
 
 
 /** Get this variable's AttrTable. It's generally a bad idea to return a
     reference to a contained object, but in this case it seems that building
-    an interface inside BaseType is overkill. 
+    an interface inside BaseType is overkill.
 
     Use the AttrTable methods to manipulate the table. */
 AttrTable &
@@ -503,7 +502,7 @@ BaseType::set_attr_table(const AttrTable &at)
     See the grid (func_grid_select()) for an example.
     @see BaseType::read()
     @brief Is this variable part of the current selection? */
-bool 
+bool
 BaseType::is_in_selection()
 {
     return d_in_selection;
@@ -535,8 +534,8 @@ void
 BaseType::set_parent(BaseType *parent)
 {
     if (!dynamic_cast<Constructor *>(parent)
-	&& !dynamic_cast<Vector *>(parent))
-	throw InternalErr("Call to set_parent with incorrect variable type.");
+        && !dynamic_cast<Vector *>(parent))
+        throw InternalErr("Call to set_parent with incorrect variable type.");
 
     d_parent = parent;
 }
@@ -606,14 +605,14 @@ BaseType::var(const string &, btp_stack &)
     that the first variable is the Array and all subsequent ones are Maps
     (when dealing with a Grid, the only time Part matters). This would enable
     several methods to migrate from Structure, Sequence and Grid to
-    Constructor. 
+    Constructor.
 
     @param bt The variable to be added to this instance. The caller of this
     method <i>must</i> free memory it allocates for <tt>v</tt>. This method
     will make a deep copy of the object pointed to by <tt>v</tt>.
     @param part The part of the constructor data to be modified. Only
     meaningful for Grid variables.
-    
+
     @see Part */
 void
 BaseType::add_var(BaseType *, Part)
@@ -628,7 +627,7 @@ BaseType::add_var(BaseType *, Part)
     property has been set. In that case it returns false, indicating that all
     the data have been read. The latter case can happen when building a
     constant value that needs to be passed to a function. The variable/constant
-    is loaded with a value when it is created. 
+    is loaded with a value when it is created.
 
     When implementing a new DAP server, the Byte, ..., Grid data type classes
     are usually specialized. In each of those specializations read() should
@@ -638,23 +637,23 @@ BaseType::add_var(BaseType *, Part)
 
     <ul>
     <li> read() should throw Error if it encounters an error. The message
-	  should be verbose enough to be understood by someone running a
-	  client on a different machine.</li>
+   should be verbose enough to be understood by someone running a
+   client on a different machine.</li>
     <li> The value(s) should be read if and only if either send_p() or
           is_in_selection() return true. If neither of these return true, the
-	  value(s) should not be read. This is important when writing read()
-	  for a Constructor type such as Grid where a client may ask for only
-	  the map vectors (and thus reading the much larger Array part is not
-	  needed).</li>
+   value(s) should not be read. This is important when writing read()
+   for a Constructor type such as Grid where a client may ask for only
+   the map vectors (and thus reading the much larger Array part is not
+   needed).</li>
     <li> For each specialization of read(), the method should first test
           the value of the \c read_p property (using the read_p() method)
-          and read values only if the value of read_p() is false. Once the 
+          and read values only if the value of read_p() is false. Once the
           read() method reads data and stores it in the instance, it must
           set the value of the \c read_p property to true using set_read_p().
           If your read() methods fail to do this data may not serialize
           correctly.</li>
     <li> The Array::read() and Grid::read() methods should take into account
-	  any restrictions on Array sizes.</li>
+   any restrictions on Array sizes.</li>
     <li> If you are writing Sequence::read(), be sure to check the
           documentation for Sequence::read_row() and Sequence::serialize()
           so you understand how Sequence::read() is being called.</li>
@@ -667,7 +666,7 @@ BaseType::add_var(BaseType *, Part)
           counter must be reset (use Sequence::reset_row_counter()). Typically
           the correct time to set \c unsent_data to false and reset the row
           counter is the time when Sequence::read() return false indicating
-          that all the data for the Sequence have been read. Failure to 
+          that all the data for the Sequence have been read. Failure to
           handle these tasks will break serialization of nested Sequences. Note
           that when Sequence::read() returns with a result of true (indicting
           there is more data to send, the value of the \c unsent_data property
@@ -677,26 +676,26 @@ BaseType::add_var(BaseType *, Part)
           about subclassing set_read_p().</li>
     </ul>
 
-    @brief Read data into a local buffer. 
+    @brief Read data into a local buffer.
 
-    @return The return value of this method for all types except Sequence 
+    @return The return value of this method for all types except Sequence
     should always be false. Sequences should return true to indicate more
     values remain in the Sequence, false to indicate no more values remain.
-    (see Sequence::serialize() and Sequence::read_row()). 
+    (see Sequence::serialize() and Sequence::read_row()).
 
     @param dataset A string naming the dataset from which the data is to
     be read. The meaning of this string will vary among different types of
-    data sources. It \e may be the name of a data file or an identifier 
+    data sources. It \e may be the name of a data file or an identifier
     used to read data from a relational database.
 
     @see BaseType
     @see Sequence  */
-bool 
+bool
 BaseType::read(const string &)
 {
-    if ( _read_p )
+    if (_read_p)
         return false;
-        
+
     throw InternalErr("Unimplemented BaseType::read() method called.");
 }
 
@@ -711,7 +710,7 @@ BaseType::read(const string &)
     types.  The simple data types (Int, Float, and so on), are
     translated directly.
 
-    @brief Returns a function used to encode elements of an array. 
+    @brief Returns a function used to encode elements of an array.
     @return A C function used to encode data in the XDR format.
 */
 xdrproc_t
@@ -754,7 +753,7 @@ BaseType::xdr_coder()
     constraint information is to be printed with the declaration.
     If the value of this parameter is TRUE, <tt>print_decl()</tt> prints
     the value of the variable's <tt>send_p()</tt> flag after the
-    declaration. 
+    declaration.
     @param constrained If this boolean value is TRUE, the variable's
     declaration is only printed if is the <tt>send_p()</tt> flag is TRUE.
     If a constraint expression is in place, and this variable is not
@@ -763,27 +762,27 @@ BaseType::xdr_coder()
     @see DDS
     @see DDS::CE
 */
-void 
-BaseType::print_decl(FILE *out, string space, bool print_semi, 
-		     bool constraint_info, bool constrained)
+void
+BaseType::print_decl(FILE *out, string space, bool print_semi,
+                     bool constraint_info, bool constrained)
 {
     // if printing the constrained declaration, exit if this variable was not
-    // selected. 
+    // selected.
     if (constrained && !send_p())
-	return;
+        return;
 
-    fprintf( out, "%s%s %s", space.c_str(), type_name().c_str(),
-	     id2www(_name).c_str() ) ;
+    fprintf(out, "%s%s %s", space.c_str(), type_name().c_str(),
+            id2www(_name).c_str()) ;
 
     if (constraint_info) {
-	if (send_p())
-	    fprintf( stdout, ": Send True" ) ;
-	else
-	    fprintf( stdout, ": Send False" ) ;
+        if (send_p())
+            fprintf(stdout, ": Send True") ;
+        else
+            fprintf(stdout, ": Send False") ;
     }
 
     if (print_semi)
-	fprintf( out, ";\n" ) ;
+        fprintf(out, ";\n") ;
 }
 
 /** Write the XML representation of this variable. This method is used to
@@ -796,20 +795,20 @@ void
 BaseType::print_xml(FILE *out, string space, bool constrained)
 {
     if (constrained && !send_p())
-	return;
+        return;
 
     fprintf(out, "%s<%s", space.c_str(), type_name().c_str());
     if (!_name.empty())
-	fprintf(out, " name=\"%s\"", id2xml(_name).c_str());
+        fprintf(out, " name=\"%s\"", id2xml(_name).c_str());
 
     if (get_attr_table().get_size() > 0) {
-	fprintf(out, ">\n");	// close the varaible's tag
-	get_attr_table().print_xml(out, space + "    ", constrained);
-	// After attributes, print closing tag
-	fprintf(out, "%s</%s>\n", space.c_str(), type_name().c_str());
+        fprintf(out, ">\n"); // close the varaible's tag
+        get_attr_table().print_xml(out, space + "    ", constrained);
+        // After attributes, print closing tag
+        fprintf(out, "%s</%s>\n", space.c_str(), type_name().c_str());
     }
     else {
-	fprintf(out, "/>\n");	// no attributes; just close tag.
+        fprintf(out, "/>\n"); // no attributes; just close tag.
     }
 }
 
@@ -843,22 +842,22 @@ BaseType::print_xml(FILE *out, string space, bool constrained)
     type.
     @return Returns FALSE when the current state violates some
     aspect of the type semantics, TRUE otherwise.
-  
+
     @param msg A returned string, containing a message indicating
     the source of any problem.
     @param all For complex constructor types (Grid,
     Sequence, Structure), this flag indicates whether to check the
     sematics of the member variables, too.
 
-    @see DDS::check_semantics 
+    @see DDS::check_semantics
 */
 bool
 BaseType::check_semantics(string &msg, bool)
 {
     bool sem = (_type != dods_null_c && _name.length());
 
-    if (!sem) 
-	msg = "Every variable must have both a name and a type\n";
+    if (!sem)
+        msg = "Every variable must have both a name and a type\n";
 
     return sem;
 }
@@ -895,11 +894,11 @@ BaseType::check_semantics(string &msg, bool)
     @param op An integer index indicating which relational operator
     is implied. Choose one from the following: <tt>EQUAL</tt>,
     <tt>NOT_EQUAL</tt>, <tt>GREATER</tt>, <tt>GREATER_EQL</tt>,
-    <tt>LESS</tt>, <tt>LESS_EQL</tt>, and <tt>REGEXP</tt>. 
+    <tt>LESS</tt>, <tt>LESS_EQL</tt>, and <tt>REGEXP</tt>.
     @param dataset The name of the dataset from which the instance's
     data has come (or is to come).
     @return The boolean value of the comparison. */
-bool 
+bool
 BaseType::ops(BaseType *, int, const string &)
 {
     // Even though ops is a public method, it can never be called because

@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1997-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -32,7 +32,7 @@
 // Specialize DDS for returned data. This currently means adding version
 // information about the source of the data. Was it from a version 1, 2 or
 // later server?
-// 
+//
 // jhrg 9/19/97
 
 #ifndef _datadds_h
@@ -46,8 +46,8 @@
 #endif
 
 /** This class adds some useful state information to the DDS
-    structure.  It is for use on the client side of the connection. 
-    
+    structure.  It is for use on the client side of the connection.
+
     @note Make sure to pass a valid pointer to the DDS constructor or use
     the set_factory() method before actually using the DDS. Also make sure
     that the Factory's lifetime thereafter is the same as the DDS's. Never
@@ -71,7 +71,8 @@
     @see Connect
     */
 
-class DataDDS : public DDS {
+class DataDDS : public DDS
+{
 private:
     string d_server_version;
     int d_server_version_major;
@@ -86,35 +87,56 @@ private:
 
 public:
     DataDDS(BaseTypeFactory *factory, const string &n = "",
-	    const string &v = "", const string &p = "");
+            const string &v = "", const string &p = "");
     // #ifdef DEFAULT_BASETYPE_FACTORY
     // DataDDS(const string &n = "", const string &v = "");
     // #endif
-    virtual ~DataDDS() {}
+    virtual ~DataDDS()
+    {}
 
     /** Sets the version string.  This typically looks something like:
     <tt>DODS/2.15</tt>, where ``2'' is the major version number, and ``15''
     the minor number. */
-    void set_version(const string &v) {
+    void set_version(const string &v)
+    {
         d_server_version = v;
         m_version_string_to_numbers();
     }
     /** @brief Get the server version string, unparsed. */
-    string get_version() const { return d_server_version; }
+    string get_version() const
+    {
+        return d_server_version;
+    }
     /** @brief Returns the major version number. */
-    int get_version_major() const { return d_server_version_major; }
+    int get_version_major() const
+    {
+        return d_server_version_major;
+    }
     /** @brief Returns the minor version number. */
-    int get_version_minor() const { return d_server_version_minor; }
+    int get_version_minor() const
+    {
+        return d_server_version_minor;
+    }
 
-    void set_protocol(const string &p) {
+    void set_protocol(const string &p)
+    {
         d_protocol_version = p;
         m_protocol_string_to_numbers();
     }
-    string get_protocol() const { return d_protocol_version; }
-    int get_protocol_major() const { return d_server_protocol_major; }
-    int get_protocol_minor() const { return d_server_protocol_minor; }
+    string get_protocol() const
+    {
+        return d_protocol_version;
+    }
+    int get_protocol_major() const
+    {
+        return d_server_protocol_major;
+    }
+    int get_protocol_minor() const
+    {
+        return d_server_protocol_minor;
+    }
 
-    virtual void dump( ostream &strm ) const ;
+    virtual void dump(ostream &strm) const ;
 };
 
 #endif // _datadds_h

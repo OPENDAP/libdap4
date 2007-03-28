@@ -574,6 +574,10 @@ static char rcsid[] not_used ={"$Id$"};
 #include "debug.h"
 #include "parser.h"
 
+#ifndef YY_PROTO
+#define YY_PROTO(proto) proto
+#endif
+
 /* These defines must precede the das.tab.h include. */
 #define YYSTYPE char *
 #define YY_DECL int daslex YY_PROTO(( void ))
@@ -598,7 +602,7 @@ static int start_line;		/* used in quote and comment error handlers */
    parens and colons while the DDS and expr scanners don't. It's too hard to
    disambiguate functions when IDs have parens in them and adding colons
    makes parsing the array projections hard. 10/31/2001 jhrg */
-#line 602 "lex.das.c"
+#line 606 "lex.das.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -749,10 +753,10 @@ YY_DECL
 	register char *yy_cp = NULL, *yy_bp = NULL;
 	register int yy_act;
 
-#line 116 "das.lex"
+#line 120 "das.lex"
 
 
-#line 756 "lex.das.c"
+#line 760 "lex.das.c"
 
 	if ( yy_init )
 		{
@@ -843,62 +847,62 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 118 "das.lex"
+#line 122 "das.lex"
 daslval = yytext; return SCAN_ATTR;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 120 "das.lex"
+#line 124 "das.lex"
 daslval = yytext; return SCAN_ALIAS;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 121 "das.lex"
+#line 125 "das.lex"
 daslval = yytext; return SCAN_BYTE;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 122 "das.lex"
+#line 126 "das.lex"
 daslval = yytext; return SCAN_INT16;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 123 "das.lex"
+#line 127 "das.lex"
 daslval = yytext; return SCAN_UINT16;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 124 "das.lex"
+#line 128 "das.lex"
 daslval = yytext; return SCAN_INT32;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 125 "das.lex"
+#line 129 "das.lex"
 daslval = yytext; return SCAN_UINT32;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 126 "das.lex"
+#line 130 "das.lex"
 daslval = yytext; return SCAN_FLOAT32;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 127 "das.lex"
+#line 131 "das.lex"
 daslval = yytext; return SCAN_FLOAT64;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 128 "das.lex"
+#line 132 "das.lex"
 daslval = yytext; return SCAN_STRING;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 129 "das.lex"
+#line 133 "das.lex"
 daslval = yytext; return SCAN_URL;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 131 "das.lex"
+#line 135 "das.lex"
 {
 			    daslval = yytext; 
 			    DBG(cerr << "WORD: " << yytext << endl); 
@@ -907,90 +911,90 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 137 "das.lex"
+#line 141 "das.lex"
 return (int)*yytext;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 138 "das.lex"
+#line 142 "das.lex"
 return (int)*yytext;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 139 "das.lex"
+#line 143 "das.lex"
 return (int)*yytext;
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 140 "das.lex"
+#line 144 "das.lex"
 return (int)*yytext;
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 142 "das.lex"
+#line 146 "das.lex"
 
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 143 "das.lex"
+#line 147 "das.lex"
 ++das_line_num;
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 144 "das.lex"
+#line 148 "das.lex"
 yy_init = 1; das_line_num = 1; yyterminate();
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 146 "das.lex"
+#line 150 "das.lex"
 BEGIN(comment);
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 147 "das.lex"
+#line 151 "das.lex"
 
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 148 "das.lex"
+#line 152 "das.lex"
 ++das_line_num; BEGIN(INITIAL);
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 149 "das.lex"
+#line 153 "das.lex"
 ++das_line_num; BEGIN(INITIAL);
 	YY_BREAK
 case YY_STATE_EOF(comment):
-#line 150 "das.lex"
+#line 154 "das.lex"
 yy_init = 1; das_line_num = 1; yyterminate();
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 152 "das.lex"
+#line 156 "das.lex"
 BEGIN(quote); start_line = das_line_num; yymore();
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 153 "das.lex"
+#line 157 "das.lex"
 yymore();
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 154 "das.lex"
+#line 158 "das.lex"
 yymore(); ++das_line_num;
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 155 "das.lex"
+#line 159 "das.lex"
 yymore(); ++das_line_num;
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 156 "das.lex"
+#line 160 "das.lex"
 yymore();
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 157 "das.lex"
+#line 161 "das.lex"
 { 
     			  BEGIN(INITIAL); 
 
@@ -1000,7 +1004,7 @@ YY_RULE_SETUP
                         }
 	YY_BREAK
 case YY_STATE_EOF(quote):
-#line 164 "das.lex"
+#line 168 "das.lex"
 {
                           char msg[256];
 			  sprintf(msg,
@@ -1011,7 +1015,7 @@ case YY_STATE_EOF(quote):
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 172 "das.lex"
+#line 176 "das.lex"
 {
                           if (yytext) {
                             fprintf(stderr, "Character '%c' (%d) is not",
@@ -1022,10 +1026,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 179 "das.lex"
+#line 183 "das.lex"
 ECHO;
 	YY_BREAK
-#line 1029 "lex.das.c"
+#line 1033 "lex.das.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1905,7 +1909,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 179 "das.lex"
+#line 183 "das.lex"
 
 
 // These three glue routines enable DDS to reclaim the memory used to parse a

@@ -13,31 +13,31 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999,2001,2002
 // Please first read the full copyright statement in the file COPYRIGHT_URI.
 //
 // Authors:
-//	jhrg,jimg	James Gallagher <jgallagher@gso.uri.edu>
-//	dan		Dan Holloway <dholloway@gso.uri.edu>
-//	reza		Reza Nekovei <rnekovei@ieee.org>
+// jhrg,jimg James Gallagher <jgallagher@gso.uri.edu>
+// dan  Dan Holloway <dholloway@gso.uri.edu>
+// reza  Reza Nekovei <rnekovei@ieee.org>
 
 // Connect objects are used as containers for information pertaining to a
 // connection that a user program makes to a dataset. The dataset may be
 // either local (i.e., a file on the user's own computer) or a remote
 // dataset. In the later case a DAP2 URL will be used to reference the
-// dataset. 
+// dataset.
 //
 // Connect contains methods which can be used to read the DOS DAS and DDS
 // objects from the remote dataset as well as reading reading data. The class
@@ -97,7 +97,7 @@ using std::string;
     be used to reference the dataset, instead of a filename.
 
     Connect contains methods which can be used to read the DAP2 DAS and
-    DDS objects from the remote dataset as well as reading 
+    DDS objects from the remote dataset as well as reading
     data. The class understands in a rudimentary way how DAP2
     constraint expressions are formed and how to manage them.
 
@@ -129,36 +129,40 @@ using std::string;
     @see Error
     @author jhrg */
 
-class Connect {
+class Connect
+{
 private:
-    bool _local;		// Is this a local connection?
+    bool _local;  // Is this a local connection?
 
     HTTPConnect *d_http;
-    string _URL;		// URL to remote dataset (minus CE)
-    string _proj;		// Projection part of initial CE.
-    string _sel;		// Selection of initial CE
+    string _URL;  // URL to remote dataset (minus CE)
+    string _proj;  // Projection part of initial CE.
+    string _sel;  // Selection of initial CE
 
     string d_version;           // Server implementation information
     string d_protocol;          // DAP protocol from the server
 
     void process_data(DataDDS &data, Response *rs);
-    
-    // Use when you cannot use libwww/libcurl. Reads HTTP response. 
+
+    // Use when you cannot use libwww/libcurl. Reads HTTP response.
     void parse_mime(Response *rs);
 
 protected:
     /** @name Suppress the C++ defaults for these. */
     //@{
-    Connect() { }
-    Connect(const Connect &) { }
-    Connect &operator=(const Connect &) {
-	throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
+    Connect()
+    { }
+    Connect(const Connect &)
+    { }
+    Connect &operator=(const Connect &)
+    {
+        throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
     }
     //@}
 
 public:
-    Connect(const string &name, string uname = "", string password = "") 
-	throw (Error, InternalErr); 
+    Connect(const string &name, string uname = "", string password = "")
+    throw(Error, InternalErr);
 
     virtual ~Connect();
 
@@ -167,7 +171,7 @@ public:
     // *** Add get_* versions of accessors. 02/27/03 jhrg
     virtual string URL(bool CE = true);
     virtual string CE();
-    
+
     void set_credentials(string u, string p);
     void set_accept_deflate(bool deflate);
 
@@ -175,22 +179,28 @@ public:
     bool is_cache_enabled();
 
     /** Return the protocol/implementation version of the most recent
-	response. This is a poorly designed method, but it returns
-	information that is useful when used correctly. Before a response is
-	made, this contains the string "unknown." This should ultimately hold
-	the \e protocol version; it currently holds the \e implementation
-	version. 
+    response. This is a poorly designed method, but it returns
+    information that is useful when used correctly. Before a response is
+    made, this contains the string "unknown." This should ultimately hold
+    the \e protocol version; it currently holds the \e implementation
+    version. 
         
         @see get_protocol()
         @deprecated */
-    string get_version() { return d_version; }
+    string get_version()
+    {
+        return d_version;
+    }
 
     /** Return the DAP protocol version of the most recent
         response. Before a response is made, this contains the string "2.0."
         */
-    string get_protocol() { return d_protocol; }
+    string get_protocol()
+    {
+        return d_protocol;
+    }
 
-    
+
     virtual string request_version();
     virtual string request_protocol();
 

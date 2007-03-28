@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -41,45 +41,52 @@
 // Defined in GeoConstraint; maybe move to util.cc/h?
 extern void remove_quotes(string & value);
 extern bool unit_or_name_match(set < string > units, set < string > names,
-                       const string & var_units, const string & var_name);
-                       
+                                       const string & var_units, const string & var_name);
+
 /** Geographical constraint applied to an Array.
- 
-    @note This class assumes that the Longitude dimension varies fastest, as 
+
+    @note This class assumes that the Longitude dimension varies fastest, as
     does the COARDS convensions.
-     
+
     @author James Gallagher */
 
-class ArrayGeoConstraint : public GeoConstraint {
+class ArrayGeoConstraint : public GeoConstraint
+{
 
 private:
-    struct Extent {
+    struct Extent
+    {
         double d_left;
         double d_top;
         double d_right;
         double d_bottom;
-        
-        Extent() {}
-        Extent(double l, double t, double r, double b) 
-            : d_left(l), d_top(t), d_right(r), d_bottom(b) {}
+
+        Extent()
+        {}
+        Extent(double l, double t, double r, double b)
+                : d_left(l), d_top(t), d_right(r), d_bottom(b)
+        {}
     };
-    
-    struct Projection {
+
+    struct Projection
+    {
         string d_name;
         string d_datum;
-        
-        Projection() {}
+
+        Projection()
+        {}
         Projection(const string &n, const string &d)
-            : d_name(n), d_datum(d) {
+                : d_name(n), d_datum(d)
+        {
             downcase(d_name);
             if (d_name != "plat-carre")
                 throw Error(
-"geoarray(): Only the Plat-Carre projection is supported by this version of\n\
-geoarray().");
+                    "geoarray(): Only the Plat-Carre projection is supported by this version of\n\
+                    geoarray().");
             downcase(d_datum);
             if (d_datum != "wgs84")
                 throw Error(
-"geoarray(): Only the wgs84 datum is supported by this version of geoarray().");
+                    "geoarray(): Only the wgs84 datum is supported by this version of geoarray().");
         }
     };
 
@@ -87,7 +94,7 @@ geoarray().");
 
     Extent d_extent;
     Projection d_projection;
-    
+
     bool build_lat_lon_maps();
     bool lat_lon_dimensions_ok();
 
@@ -98,25 +105,30 @@ geoarray().");
 public:
     /** @name Constructors */
     //@{
-    ArrayGeoConstraint(Array *, const string &ds_name) 
-        : GeoConstraint(ds_name) {
+    ArrayGeoConstraint(Array *, const string &ds_name)
+            : GeoConstraint(ds_name)
+    {
         throw Error(
-"Bummer. The five-argument version of geoarray() is not currently implemented.");
+            "Bummer. The five-argument version of geoarray() is not currently implemented.");
     }
-    
+
     ArrayGeoConstraint(Array *array, const string &ds_name,
                        double left, double top, double right, double bottom);
 
-    ArrayGeoConstraint(Array *array, const string &ds_name, 
+    ArrayGeoConstraint(Array *array, const string &ds_name,
                        double left, double top, double right, double bottom,
                        const string &projection, const string &datum);
     //@}
-    
-    virtual ~ArrayGeoConstraint() {}
+
+    virtual ~ArrayGeoConstraint()
+    {}
 
     virtual void apply_constraint_to_data();
 
-    virtual Array *get_constrained_array() const { return d_array; }
+    virtual Array *get_constrained_array() const
+    {
+        return d_array;
+    }
 };
 
 #endif // _array_geo_constraint_h

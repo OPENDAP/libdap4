@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -38,35 +38,41 @@
 
 /** Encapsulate a response. Instead of directly returning the FILE pointer
     from which a response is read, return an instance of this object. */
-class HTTPCacheResponse : public HTTPResponse {
+class HTTPCacheResponse : public HTTPResponse
+{
 private:
-    HTTPCache *d_cache;		// pointer to singleton instance
+    HTTPCache *d_cache;  // pointer to singleton instance
 
 protected:
     /** @name Suppressed default methods */
     //@{
-    HTTPCacheResponse() {}
-    HTTPCacheResponse(const HTTPCacheResponse &rs) : HTTPResponse(rs) {}
-    HTTPCacheResponse &operator=(const HTTPCacheResponse &) {
-	throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
+    HTTPCacheResponse()
+    {}
+    HTTPCacheResponse(const HTTPCacheResponse &rs) : HTTPResponse(rs)
+    {}
+    HTTPCacheResponse &operator=(const HTTPCacheResponse &)
+    {
+        throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
     }
     //@}
 
 public:
     /** Build a Response object. Instances of this class are used to
-	represent responses from a local HTTP/1.1 cache. The stream and
-	headers pointer are passed to the parent (HTTPResponse); there's no
-	temporary file for the parent to manage since the body is read from a
-	file managed by the cache subsystem. This class releases the lock on
-	the cache entry when the destructor is called. */
-    HTTPCacheResponse(FILE *s, vector<string> *headers, HTTPCache *c) 
-	: HTTPResponse(s, headers, ""), d_cache(c) {}
+    represent responses from a local HTTP/1.1 cache. The stream and
+    headers pointer are passed to the parent (HTTPResponse); there's no
+    temporary file for the parent to manage since the body is read from a
+    file managed by the cache subsystem. This class releases the lock on
+    the cache entry when the destructor is called. */
+    HTTPCacheResponse(FILE *s, vector<string> *headers, HTTPCache *c)
+            : HTTPResponse(s, headers, ""), d_cache(c)
+    {}
 
     /** Free the cache entry lock. Call the parent's destructor. */
-    virtual ~HTTPCacheResponse() {
-	DBG(cerr << "Freeing HTTPCache respources... ");
-	d_cache->release_cached_response(get_stream());
-	DBGN(cerr << endl);
+    virtual ~HTTPCacheResponse()
+    {
+        DBG(cerr << "Freeing HTTPCache respources... ");
+        d_cache->release_cached_response(get_stream());
+        DBGN(cerr << endl);
     }
 };
 

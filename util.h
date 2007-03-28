@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT.
 //
@@ -99,7 +99,7 @@ using std::iostream;
 
 string prune_spaces(const string &);
 bool unique_names(vector<BaseType *> l, const string &var, const string &type,
-		  string &msg);
+                  string &msg);
 //  These func's moved to xdrutil_ppc.* under the PPC as explained there
 #ifdef __POWERPC__
 extern "C" XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
@@ -149,7 +149,7 @@ void downcase(string &s);
 
    @param str_val This is the string that will hold the textual
    representation of 'val'. The string <tt>str_val</tt> should be
-   pre-set to an empty 
+   pre-set to an empty
    string ("") otherwise the output of this function will just append the
    textual representation of val to whatever data is there; these feature may
    be useful if you wish to append a long value to a string s1 (just like
@@ -187,7 +187,7 @@ string dap_version();
 
 /** Get the filename part from a path. This function can be used to return a
     string that has the directory compnents stripped from a path. This is
-    useful when building error message strings. 
+    useful when building error message strings.
 
     If WIN32 is defined, use '\' as the path separator, otherwise use '/' as
     the path separator.
@@ -202,7 +202,7 @@ string path_to_filename(string path);
     defined in stdio.h. If both come up empty, then use `./'.
 
     This function allocates storage using new. The caller must delete the
-    char array. 
+    char array.
 
     @param file_template A template suitable for use with mkstemp (so it has
     to have six extra chars at its end. This is combined with the path to

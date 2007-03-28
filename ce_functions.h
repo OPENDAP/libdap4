@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -41,20 +41,21 @@
 #include "Error.h"
 #include "ConstraintEvaluator.h"
 
-namespace libdap {
-    // Thess functions are use by the code in GeoConstraint
-    string extract_string_argument(BaseType *arg) ;
-    double extract_double_value(BaseType *arg) ;
-    double *extract_double_array(Array *a) ;
-    void set_array_using_double(Array *dest, double *src, int src_len) ;
+namespace libdap
+{
+// Thess functions are use by the code in GeoConstraint
+string extract_string_argument(BaseType *arg) ;
+double extract_double_value(BaseType *arg) ;
+double *extract_double_array(Array *a) ;
+void set_array_using_double(Array *dest, double *src, int src_len) ;
 
-    BaseType *func_one(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;                             
-    BaseType *function_grid(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
-    BaseType *function_geogrid(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
-    BaseType *function_linear_scale(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
-    BaseType *function_geoarray(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
-    
-    void register_functions(ConstraintEvaluator &ce);
+BaseType *func_one(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
+BaseType *function_grid(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
+BaseType *function_geogrid(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
+BaseType *function_linear_scale(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
+BaseType *function_geoarray(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
+
+void register_functions(ConstraintEvaluator &ce);
 }
 
 #endif // _ce_functions_h

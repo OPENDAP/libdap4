@@ -10,12 +10,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -39,19 +39,41 @@
 
 /** Argument to the GSE parser. Assumes all errors will be signalled by
     throws; Error objects are not returned. */
-struct gse_arg {
+struct gse_arg
+{
     GSEClause *_gsec;           // The gse parsed.
     Grid *_grid;                // The Grid being constrained.
     int _status;                // The parser's status.
 
-    gse_arg(): _gsec(0), _grid(0), _status(1) {}
-    gse_arg(Grid *g): _gsec(0), _grid(g), _status(1) {}
-    virtual ~gse_arg() {}
+    gse_arg(): _gsec(0), _grid(0), _status(1)
+    {}
+    gse_arg(Grid *g): _gsec(0), _grid(g), _status(1)
+    {}
+    virtual ~gse_arg()
+    {}
 
-    void set_gsec(GSEClause *gsec) { _gsec = gsec; }
-    GSEClause *get_gsec() { return _gsec; }
-    void set_grid(Grid *g) { _grid = g; }
-    Grid *get_grid() { return _grid; }
-    void set_status(int stat) { _status = stat; }
-    int get_status() { return _status; }
+    void set_gsec(GSEClause *gsec)
+    {
+        _gsec = gsec;
+    }
+    GSEClause *get_gsec()
+    {
+        return _gsec;
+    }
+    void set_grid(Grid *g)
+    {
+        _grid = g;
+    }
+    Grid *get_grid()
+    {
+        return _grid;
+    }
+    void set_status(int stat)
+    {
+        _status = stat;
+    }
+    int get_status()
+    {
+        return _status;
+    }
 };

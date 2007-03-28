@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #ifndef signal_handler_h
 #define signal_handler_h
 
@@ -31,7 +31,7 @@
 #include "EventHandler.h"
 #include "InternalErr.h"
 
-typedef void Sigfunc(int);	// Plauger, 1992
+typedef void Sigfunc(int); // Plauger, 1992
 
 /** Singleton to handle signals. This class adapts the C-style function call
     interface to one suited for C++. This class records a signal's old
@@ -40,7 +40,7 @@ typedef void Sigfunc(int);	// Plauger, 1992
     action/handler is performed. This ensures that when libdap++ is embedded
     in code which has a handler for a signal such as SIGINT which does
     something other than the default, that thing, whatever it may be, gets
-    done. 
+    done.
 
     This class treats signals it registers (using the EventHandler abstract
     class) differently than ones registered using the \c signal() or \c
@@ -60,10 +60,12 @@ typedef void Sigfunc(int);	// Plauger, 1992
 
     @see EvenHandler
     @author James Gallagher <jgallagher@opendap.org> */
-class SignalHandler {
+class SignalHandler
+{
 private:
     // Ensure we're a Singleton.
-    SignalHandler() {}
+    SignalHandler()
+    {}
 
     // Singleton pointer.
     static SignalHandler *d_instance;
@@ -71,7 +73,7 @@ private:
     // Table of pointers to instances of EventHandlers. Since EventHandler is
     // abstract, the pointers will actually reference instances that are
     // children of EventHandler. NSIG is defined in signal.h but this may be
-    // a portability issue. 
+    // a portability issue.
     static EventHandler *d_signal_handlers[NSIG];
 
     // This array holds the old signal handlers. Once the handler in
@@ -99,10 +101,11 @@ public:
     static SignalHandler *instance();
 
     ///
-    virtual ~SignalHandler() {}
+    virtual ~SignalHandler()
+    {}
 
-    EventHandler *register_handler(int signum, EventHandler *eh, 
-				   bool override = false);
+    EventHandler *register_handler(int signum, EventHandler *eh,
+                                   bool override = false);
 
     EventHandler *remove_handler(int signum);
 };

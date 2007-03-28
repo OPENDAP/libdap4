@@ -4,25 +4,25 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002 OPeNDAP, Inc. 
+// Copyright (c) 2002 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #ifndef _http_cache_h
 #define _http_cache_h
 
@@ -32,7 +32,7 @@
 #include <sys/stat.h>
 
 #ifdef WIN32
-#include <io.h>			// stat for win32? 09/05/02 jhrg
+#include <io.h>   // stat for win32? 09/05/02 jhrg
 #else
 #include <unistd.h>
 #endif
@@ -128,55 +128,57 @@ using namespace std;
     MT-safety. 02/06/03 jhrg
 
     @author James Gallagher <jgallagher@gso.uri.edu> */
-class HTTPCache {
+class HTTPCache
+{
 public:
     /** A struct used to store information about responses in the
-	cache's volatile memory. 
+    cache's volatile memory. 
 
-	About entry locking: An entry is locked using both a mutex and a
-	counter. The counter keeps track of how many clients are accessing a
-	given entry while the mutex provides a guarantee that updates to the
-	counter are MT-safe. In addition, the HTTPCache object maintains a
-	map which binds the FILE* returned to a client with a given entry.
-	This way the client can tell the HTTPCache object that it is done
-	with <code>FILE *response</code> and the class can arrange to update
-	the lock counter and mutex. */
-    struct CacheEntry {
-	string url;		// Location
-	int hash;
-	int hits;		// Hit counts
+    About entry locking: An entry is locked using both a mutex and a
+    counter. The counter keeps track of how many clients are accessing a
+    given entry while the mutex provides a guarantee that updates to the
+    counter are MT-safe. In addition, the HTTPCache object maintains a
+    map which binds the FILE* returned to a client with a given entry.
+    This way the client can tell the HTTPCache object that it is done
+    with <code>FILE *response</code> and the class can arrange to update
+    the lock counter and mutex. */
+    struct CacheEntry
+    {
+        string url;  // Location
+        int hash;
+        int hits;  // Hit counts
 
-	string cachename;
+        string cachename;
 
-	string etag;
-	time_t lm;		// Last modified
-	time_t expires;
-	time_t date;		// From the response header.
-	time_t age;
-	time_t max_age;		// From Cache-Control
+        string etag;
+        time_t lm;  // Last modified
+        time_t expires;
+        time_t date;  // From the response header.
+        time_t age;
+        time_t max_age;  // From Cache-Control
 
-	unsigned long size;	// Size of cached entity body
-	bool range;		// Range is not currently supported. 10/02/02
-				// jhrg 
+        unsigned long size; // Size of cached entity body
+        bool range;  // Range is not currently supported. 10/02/02
+        // jhrg
 
-	time_t freshness_lifetime;
-	time_t response_time;
-	time_t corrected_initial_age;
+        time_t freshness_lifetime;
+        time_t response_time;
+        time_t corrected_initial_age;
 
-	bool must_revalidate;
-	bool no_cache;		// This field is not saved in the index.
-	
-	int locked;
-	pthread_mutex_t lock;
+        bool must_revalidate;
+        bool no_cache;  // This field is not saved in the index.
 
-	CacheEntry() : url(""), hash(-1), hits(0), cachename(""), 
-		       etag(""), lm(-1),
-		       expires(-1), date(-1), age(-1), max_age(-1), size(0),
-		       range(false), freshness_lifetime(0), response_time(0),
-		       corrected_initial_age(0), must_revalidate(false),
-		       no_cache(false), locked(0)
-	{}
-   };
+        int locked;
+        pthread_mutex_t lock ;
+
+    CacheEntry() : url(""), hash(-1), hits(0), cachename(""),
+                etag(""), lm(-1),
+                expires(-1), date(-1), age(-1), max_age(-1), size(0),
+                range(false), freshness_lifetime(0), response_time(0),
+                corrected_initial_age(0), must_revalidate(false),
+                no_cache(false), locked(0)
+    {}
+    };
 
 #ifdef WIN32
     //  Declared private below for gcc.  There appears to be a
@@ -188,7 +190,7 @@ public:
     // they can access private stuff). We should not need this any longer,
     // but I'm hesitant to remove it since I cannot easily test with VC++.
     // 01/23/04 jhrg
-    unsigned long d_max_entry_size;	// Max individual entry size.
+    unsigned long d_max_entry_size; // Max individual entry size.
 
     void remove_cache_entry(CacheEntry *entry);
     bool stopGC() const;
@@ -197,7 +199,7 @@ public:
 private:
     string d_cache_root;
     string d_cache_index;
-    FILE *d_locked_open_file;	// Lock for single process use.
+    FILE *d_locked_open_file; // Lock for single process use.
 
     bool d_cache_enabled;
     bool d_cache_protected;
@@ -205,15 +207,15 @@ private:
     bool d_expire_ignored;
     bool d_always_validate;
 
-    unsigned long d_total_size;	// How much can we store?
+    unsigned long d_total_size; // How much can we store?
     unsigned long d_folder_size; // How much of that is meta data?
-    unsigned long d_gc_buffer;	// How much memory needed as buffer?
+    unsigned long d_gc_buffer; // How much memory needed as buffer?
 #ifndef WIN32  //  Declared public above for win32
-    unsigned long d_max_entry_size;	// Max individual entry size.
+    unsigned long d_max_entry_size; // Max individual entry size.
 #endif
     unsigned long d_current_size;
     int d_default_expiration;
-    unsigned int d_block_size;	// File block size.
+    unsigned int d_block_size; // File block size.
 
     vector<string> d_cache_control;
     // these are values read from a request-directive Cache-Control header.
@@ -221,10 +223,10 @@ private:
     // response (e.g., CacheEntry has a max_age field, too). These fields are
     // set when the set_cache_control method is called.
     time_t d_max_age;
-    time_t d_max_stale;		// -1: not set, 0:any response, >0 max time.
+    time_t d_max_stale;  // -1: not set, 0:any response, >0 max time.
     time_t d_min_fresh;
 
-    int d_new_entries;		// How many entries since index write?
+    int d_new_entries;  // How many entries since index write?
 
     // Lock non-const methods (also ones that use the STL).
     pthread_mutex_t d_cache_mutex;
@@ -249,7 +251,7 @@ private:
 
     static HTTPCache *_instance;
 
-    friend class HTTPCacheTest;	// Unit tests
+    friend class HTTPCacheTest; // Unit tests
     friend class HTTPCacheInterruptHandler;
 
     // Functors used with STL algorithms
@@ -262,20 +264,24 @@ private:
 
     // Private methods
 
-    void clone(const HTTPCache &) {}
+    void clone(const HTTPCache &)
+    {}
 
-    HTTPCache(const HTTPCache &cache) { 
-	clone(cache); 
+    HTTPCache(const HTTPCache &cache)
+    {
+        clone(cache);
     }
-    
-    HTTPCache() {}
+
+    HTTPCache()
+    {}
 
     HTTPCache(string cache_root, bool force) throw(Error);
 
-    HTTPCache &operator=(const HTTPCache &rhs) { 
-	if (this != &rhs)
-	    clone(rhs);
-	return *this;
+    HTTPCache &operator=(const HTTPCache &rhs)
+    {
+        if (this != &rhs)
+            clone(rhs);
+        return *this;
     }
 
     static void delete_instance(); // Run by atexit (hence static)
@@ -292,7 +298,7 @@ private:
     void add_entry_to_cache_table(CacheEntry *e);
     void remove_entry_from_cache_table(const string &url);
     void parse_headers(CacheEntry *entry, const vector<string> &headers);
-    void calculate_time (CacheEntry *entry, time_t request_time);
+    void calculate_time(CacheEntry *entry, time_t request_time);
 #ifndef WIN32  //  Declared public above for win32
     void remove_cache_entry(CacheEntry *entry);
 #endif
@@ -357,10 +363,10 @@ public:
     vector<string> get_cache_control();
 
     bool cache_response(const string &url, time_t request_time,
-			const vector<string> &headers, const FILE *body);
+                        const vector<string> &headers, const FILE *body);
     vector<string> get_conditional_request_headers(const string &url);
     void update_response(const string &url, time_t request_time,
-			 const vector<string> &headers);
+                         const vector<string> &headers);
 
     bool is_url_in_cache(const string &url);
     bool is_url_valid(const string &url);

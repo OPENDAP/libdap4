@@ -10,12 +10,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -32,23 +32,29 @@
 #endif
 
 /** @brief Evaluate a constraint expression */
-class ConstraintEvaluator {
+class ConstraintEvaluator
+{
 private:
     // This struct is used to hold all the known `user defined' functions
-    // (including those that are `built-in'). 
-    struct function {
+    // (including those that are `built-in').
+    struct function
+    {
         string name;
         bool_func b_func;
         btp_func bt_func;
         proj_func p_func;
 
         function(const string &n, const bool_func f)
-            : name(n), b_func(f), bt_func(0), p_func(0) {}
+                : name(n), b_func(f), bt_func(0), p_func(0)
+        {}
         function(const string &n, const btp_func f)
-            : name(n), b_func(0), bt_func(f), p_func(0) {}
+                : name(n), b_func(0), bt_func(f), p_func(0)
+        {}
         function(const string &n, const proj_func f)
-            : name(n), b_func(0), bt_func(0), p_func(f) {}
-        function(): name(""), b_func(0), bt_func(0), p_func(0) {}
+                : name(n), b_func(0), bt_func(0), p_func(f)
+        {}
+        function(): name(""), b_func(0), bt_func(0), p_func(0)
+        {}
     };
 
     vector<Clause *> expr;      // List of CE Clauses
@@ -60,20 +66,22 @@ private:
     // The default versions of these methods will break this class. Because
     // Clause does not support deep copies, that class will need to be modified
     // before these can be properly implemented. jhrg 4/3/06
-    ConstraintEvaluator(const ConstraintEvaluator &) {}
-    ConstraintEvaluator &operator=(const ConstraintEvaluator &)  { 
+    ConstraintEvaluator(const ConstraintEvaluator &)
+    {}
+    ConstraintEvaluator &operator=(const ConstraintEvaluator &)
+    {
         throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
     }
-    
+
     friend class func_name_is;
-        
+
 public:
     typedef std::vector<Clause *>::const_iterator Clause_citer ;
     typedef std::vector<Clause *>::iterator Clause_iter ;
-    
+
     typedef std::vector<BaseType *>::const_iterator Constants_citer ;
     typedef std::vector<BaseType *>::iterator Constants_iter ;
-    
+
     typedef std::list<function>::const_iterator Functions_citer ;
     typedef std::list<function>::iterator Functions_iter ;
 

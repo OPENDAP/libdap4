@@ -51,6 +51,10 @@ static char rcsid[] not_used = {"$Id$"};
 
 #include "Error.h"
 
+#ifndef YY_PROTO
+#define YY_PROTO(proto) proto
+#endif
+
 #define YY_DECL int gse_lex YY_PROTO(( void ))
 #define ID_MAX 256
 #define YY_NO_UNPUT 1

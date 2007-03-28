@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #ifndef http_cache_interrupt_handler_h
 #define http_cache_interrupt_handler_h
 
@@ -46,40 +46,44 @@ unlink_file(const string &f)
     sent SIGINT, we must make sure that the cache is left in a consistent
     state. This includes removing the lock file, updating the index file and
     making sure no partially written data or meta data files exist.
-    
+
     @see EventHandler
     @see SignalHandler
     @see HTTPCache
     @author James Gallagher <jgallagher@opendap.org> */
-class HTTPCacheInterruptHandler : public EventHandler {
+class HTTPCacheInterruptHandler : public EventHandler
+{
 private:
 
 public:
     ///
-    HTTPCacheInterruptHandler() {}
+    HTTPCacheInterruptHandler()
+    {}
 
     ///
-    virtual ~HTTPCacheInterruptHandler() {}
+    virtual ~HTTPCacheInterruptHandler()
+    {}
 
     /** Handle SIGINT. This handler first deletes any files opened but not
-	added to the cache index files and then calls
-	HTTPCache::delete_instance().
+    added to the cache index files and then calls
+    HTTPCache::delete_instance().
 
-	@param signum We know it is SIGINT; included here as a check and only
-	when NDEBUG is not defined.
-	@return Never returns. */
-    virtual void handle_signal(int signum) {
-	assert(signum == SIGINT);
-	DBG(cerr << "Inside the HTTPCacheInterruptHandler." << endl);
+    @param signum We know it is SIGINT; included here as a check and only
+    when NDEBUG is not defined.
+    @return Never returns. */
+    virtual void handle_signal(int signum)
+    {
+        assert(signum == SIGINT);
+        DBG(cerr << "Inside the HTTPCacheInterruptHandler." << endl);
 
-	vector<string> *of = &HTTPCache::_instance->d_open_files;
+        vector<string> *of = &HTTPCache::_instance->d_open_files;
 
-	DBG(copy(of->begin(), of->end(), 
-		 ostream_iterator<string>(cerr, "\n")));
+        DBG(copy(of->begin(), of->end(),
+                 ostream_iterator<string>(cerr, "\n")));
 
-	for_each(of->begin(), of->end(), unlink_file);
+        for_each(of->begin(), of->end(), unlink_file);
 
-	HTTPCache::delete_instance();
+        HTTPCache::delete_instance();
     }
 };
 

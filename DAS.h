@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -111,20 +111,21 @@ using std::cout;
 
     Data attribute information is an important part of the the data
     provided to a DAP2 client by a server, and the DAS is how this
-    data is packaged for sending (and how it is received). 
+    data is packaged for sending (and how it is received).
 
     The DAS class is simply a sequence of attribute tables and names.
     It may be thought of as the top level of the attribute hierarchy.
 
-    @see DDS 
+    @see DDS
     @see AttrTable */
-class DAS : public AttrTable {
+class DAS : public AttrTable
+{
 private:
 protected:
     AttrTable *das_find(string name);
 
 public:
-    DAS(AttrTable *dflt=(AttrTable *)NULL, unsigned int sz=0);
+    DAS(AttrTable *dflt = (AttrTable *)NULL, unsigned int sz = 0);
 
     DAS(AttrTable *attr_table, string name);
 
@@ -132,7 +133,7 @@ public:
     /** Returns a reference to the first attribute table. */
     AttrTable::Attr_iter var_begin() ;
 
-    /** Returns a reference to the end of the attribute table. Does not 
+    /** Returns a reference to the end of the attribute table. Does not
         point to an attribute. */
     AttrTable::Attr_iter var_end() ;
 
@@ -147,10 +148,10 @@ public:
     AttrTable *add_table(const string &name, AttrTable *at);
     void parse(string fname);
     void parse(int fd);
-    void parse(FILE *in=stdin);
+    void parse(FILE *in = stdin);
     void print(FILE *out, bool dereference = false);
 
-    virtual void dump( ostream &strm ) const ;
+    virtual void dump(ostream &strm) const ;
 };
 
 #endif // _das_h

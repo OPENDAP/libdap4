@@ -11,23 +11,24 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 
 #include "config.h"
 
 static char rcsid[] not_used =
-    { "$Id$" };
+    { "$Id$"
+    };
 
 #include <stdio.h>
 
@@ -70,39 +71,41 @@ int dods_keep_temps = 0;
 
 #define CLIENT_ERR_MIN 400
 #define CLIENT_ERR_MAX 417
-static char *http_client_errors[CLIENT_ERR_MAX - CLIENT_ERR_MIN +1] = {
-    "Bad Request:",
-    "Unauthorized: Contact the server administrator.",
-    "Payment Required.",
-    "Forbidden: Contact the server administrator.",
-    "Not Found: The data source or server could not be found.\n\
-Often this means that the OPeNDAP server is missing or needs attention;\n\
-Please contact the server administrator.",
-    "Method Not Allowed.",
-    "Not Acceptable.",
-    "Proxy Authentication Required.",
-    "Request Time-out.",
-    "Conflict.",
-    "Gone:.",
-    "Length Required.",
-    "Precondition Failed.",
-    "Request Entity Too Large.",
-    "Request URI Too Large.",
-    "Unsupported Media Type.",
-    "Requested Range Not Satisfiable.",
-    "Expectation Failed."
-};
+static char *http_client_errors[CLIENT_ERR_MAX - CLIENT_ERR_MIN +1] =
+    {
+        "Bad Request:",
+        "Unauthorized: Contact the server administrator.",
+        "Payment Required.",
+        "Forbidden: Contact the server administrator.",
+        "Not Found: The data source or server could not be found.\n\
+        Often this means that the OPeNDAP server is missing or needs attention;\n\
+        Please contact the server administrator.",
+        "Method Not Allowed.",
+        "Not Acceptable.",
+        "Proxy Authentication Required.",
+        "Request Time-out.",
+        "Conflict.",
+        "Gone:.",
+        "Length Required.",
+        "Precondition Failed.",
+        "Request Entity Too Large.",
+        "Request URI Too Large.",
+        "Unsupported Media Type.",
+        "Requested Range Not Satisfiable.",
+        "Expectation Failed."
+    };
 
 #define SERVER_ERR_MIN 500
 #define SERVER_ERR_MAX 505
-static char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN +1] = {
-    "Internal Server Error.",
-    "Not Implemented.",
-    "Bad Gateway.",
-    "Service Unavailable.",
-    "Gateway Time-out.",
-    "HTTP Version Not Supported."
-};
+static char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN +1] =
+    {
+        "Internal Server Error.",
+        "Not Implemented.",
+        "Bad Gateway.",
+        "Service Unavailable.",
+        "Gateway Time-out.",
+        "HTTP Version Not Supported."
+    };
 
 /** This function translates the HTTP status codes into error messages. It
     works for those code greater than or equal to 400. */
@@ -110,87 +113,91 @@ static string
 http_status_to_string(int status)
 {
     if (status >= CLIENT_ERR_MIN && status <= CLIENT_ERR_MAX)
-	return string(http_client_errors[status - CLIENT_ERR_MIN]);
+        return string(http_client_errors[status - CLIENT_ERR_MIN]);
     else if (status >= SERVER_ERR_MIN && status <= SERVER_ERR_MAX)
-	return string(http_server_errors[status - SERVER_ERR_MIN]);
-    else 
-	return string(
-"Unknown Error: This indicates a problem with libdap++.\n\
-Please report this to support@unidata.ucar.edu.");
+        return string(http_server_errors[status - SERVER_ERR_MIN]);
+    else
+        return string("Unknown Error: This indicates a problem with libdap++.\nPlease report this to support@unidata.ucar.edu.");
 }
 
 /** Functor to parse the headers in the d_headers field. After the headers
     have been read off the wire and written into the d_headers field, scan
     them and set special fields for certain headers special to the DAP. */
 
-class ParseHeader : public unary_function<const string &, void> {
-    ObjectType type;		// What type of object is in the stream?
-    string server;		// Server's version string.
+class ParseHeader : public unary_function<const string &, void>
+{
+    ObjectType type;  // What type of object is in the stream?
+    string server;  // Server's version string.
     string protocol;            // Server's protocol version.
 
 public:
-    ParseHeader() :type(unknown_type), server("dods/0.0"), protocol("2.0") { }
+    ParseHeader() : type(unknown_type), server("dods/0.0"), protocol("2.0")
+    { }
 
-    void operator()(const string &header) {
-    	std::istringstream line(header);
-    
-    	string name;
-    	line >> name;
-    	downcase(name);
-    	if (name == "content-description:") {
-    	    string value; 
-    	    line >> value;
-    	    downcase(value);
-    	    DBG2(cout << name << ": " << value << endl);
-    	    type = get_type(value);
-    	}
+    void operator()(const string &header)
+    {
+        std::istringstream line(header);
+
+        string name;
+        line >> name;
+        downcase(name);
+        if (name == "content-description:") {
+            string value;
+            line >> value;
+            downcase(value);
+            DBG2(cout << name << ": " << value << endl);
+            type = get_type(value);
+        }
         // The second test (== "dods/0.0") tests if xopendap-server has already
         // been seen. If so, use that header in preference to the old
         // XDODS-Server header. jhrg 2/7/06
-    	else if (name == "xdods-server:" && server == "dods/0.0") {
-    	    string value; 
-    	    line >> value;
-    	    downcase(value);
-    	    DBG2(cout << name << ": " << value << endl);
-    	    server = value;
-    	}
+        else if (name == "xdods-server:" && server == "dods/0.0") {
+            string value;
+            line >> value;
+            downcase(value);
+            DBG2(cout << name << ": " << value << endl);
+            server = value;
+        }
         else if (name == "xopendap-server:") {
-            string value; 
+            string value;
             line >> value;
             downcase(value);
             DBG2(cout << name << ": " << value << endl);
             server = value;
         }
         else if (name == "xdap:") {
-            string value; 
+            string value;
             line >> value;
             downcase(value);
             DBG2(cout << name << ": " << value << endl);
             protocol = value;
         }
-    	else if (server == "dods/0.0" && name == "server:") {
-    	    string value; 
-    	    line >> value;
-    	    downcase(value);
-    	    DBG2(cout << name << ": " << value << endl);
-    	    server = value;
-    	}
-    	else if (type == unknown_type && name == "content-type:" 
-    		 && line.str().find("text/html") != string::npos) {
-    	    DBG2(cout << name << ": text/html..." << endl);
-    	    type = web_error;
-    	}
+        else if (server == "dods/0.0" && name == "server:") {
+            string value;
+            line >> value;
+            downcase(value);
+            DBG2(cout << name << ": " << value << endl);
+            server = value;
+        }
+        else if (type == unknown_type && name == "content-type:"
+                 && line.str().find("text/html") != string::npos) {
+            DBG2(cout << name << ": text/html..." << endl);
+            type = web_error;
+        }
     }
 
-    ObjectType get_object_type() {
-	   return type;
-    }
-    
-    string get_server() {
-	   return server;
+    ObjectType get_object_type()
+    {
+        return type;
     }
 
-    string get_protocol() {
+    string get_server()
+    {
+        return server;
+    }
+
+    string get_protocol()
+    {
         return protocol;
     }
 };
@@ -202,8 +209,8 @@ public:
     HTTPConnect that initiated the HTTP request so that there's some place to
     dump the headers. Note that this function just saves the headers in a
     vector of strings. Later on the code (see fetch_url()) parses the headers
-    special to the DAP. 
-    
+    special to the DAP.
+
     @param ptr A pointer to one line of character data; one header.
     @param size Size of each character (nominally one byte).
     @param nmemb Number of bytes.
@@ -211,19 +218,19 @@ public:
     @return The number of bytes processed. Must be equal to size * nmemb or
     libcurl will report an error. */
 
-static size_t 
+static size_t
 save_raw_http_headers(void *ptr, size_t size, size_t nmemb, void *resp_hdrs)
 {
     DBG2(cerr << "Inside the header parser." << endl);
-    vector<string> *hdrs = static_cast<vector<string> *>(resp_hdrs);
+    vector<string> *hdrs = static_cast<vector<string> * >(resp_hdrs);
 
     // Grab the header, minus the trailing newline. Or \r\n pair.
     string complete_line;
-    if (*(static_cast<char*>(ptr) + size * (nmemb-2)) == '\r')
+    if (*(static_cast<char*>(ptr) + size *(nmemb - 2)) == '\r')
         complete_line.assign(static_cast<char *>(ptr), size * nmemb - 2);
     else
         complete_line.assign(static_cast<char *>(ptr), size * nmemb - 1);
-        
+
     // Store all non-empty headers that are not HTTP status codes
     if (complete_line != "" && complete_line.find("HTTP") == string::npos) {
         DBG(cerr << "Header line: " << complete_line << endl);
@@ -240,62 +247,62 @@ curl_debug(CURL *, curl_infotype info, char *msg, size_t size, void  *)
     string message(msg, size);
 
     switch (info) {
-      case CURLINFO_TEXT:
-	   cerr << "Text: " << message; break;
-      case CURLINFO_HEADER_IN:
-	   cerr << "Header in: " << message; break;
-      case CURLINFO_HEADER_OUT:
-	   cerr << "Header out: " << message; break;
-      case CURLINFO_DATA_IN:
-	   cerr << "Data in: " << message; break;
-      case CURLINFO_DATA_OUT:
-	   cerr << "Data out: " << message; break;
-      case CURLINFO_END:
-	   cerr << "End: " << message; break;
+    case CURLINFO_TEXT:
+        cerr << "Text: " << message; break;
+    case CURLINFO_HEADER_IN:
+        cerr << "Header in: " << message; break;
+    case CURLINFO_HEADER_OUT:
+        cerr << "Header out: " << message; break;
+    case CURLINFO_DATA_IN:
+        cerr << "Data in: " << message; break;
+    case CURLINFO_DATA_OUT:
+        cerr << "Data out: " << message; break;
+    case CURLINFO_END:
+        cerr << "End: " << message; break;
 #ifdef CURLINFO_SSL_DATA_IN
-      case CURLINFO_SSL_DATA_IN:
-	   cerr << "SSL Data in: " << message; break;
+    case CURLINFO_SSL_DATA_IN:
+        cerr << "SSL Data in: " << message; break;
 #endif
 #ifdef CURLINFO_SSL_DATA_OUT
-      case CURLINFO_SSL_DATA_OUT:
-	   cerr << "SSL Data out: " << message; break;
+    case CURLINFO_SSL_DATA_OUT:
+        cerr << "SSL Data out: " << message; break;
 #endif
-      default:
-	   cerr << "Curl info: " << message; break;
+    default:
+        cerr << "Curl info: " << message; break;
     }
     return 0;
 }
 
 /** Initialize libcurl. Create a libcurl handle that can be used for all of
-    the HTTP requests made through this instance. */ 
+    the HTTP requests made through this instance. */
 
-void 
+void
 HTTPConnect::www_lib_init()
 {
     d_curl = curl_easy_init();
     if (!d_curl)
-	   throw InternalErr(__FILE__, __LINE__, "Could not initialize libcurl.");
+        throw InternalErr(__FILE__, __LINE__, "Could not initialize libcurl.");
 
     // Now set options that will remain constant for the duration of this
     // CURL object.
 
     // Set the proxy host.
     if (!d_rcr->get_proxy_server_host().empty()) {
-    	DBG(cerr << "Setting up a proxy server." << endl);
-    	DBG(cerr << "Proxy host: " << d_rcr->get_proxy_server_host()
-    	    << endl);
-    	DBG(cerr << "Proxy port: " << d_rcr->get_proxy_server_port()
-    	    << endl);
-    	DBG(cerr << "Proxy pwd : " << d_rcr->get_proxy_server_userpw()
-    	    << endl);
-    	curl_easy_setopt(d_curl, CURLOPT_PROXY, 
-    			 d_rcr->get_proxy_server_host().c_str());
-    	curl_easy_setopt(d_curl, CURLOPT_PROXYPORT,
-    			 d_rcr->get_proxy_server_port());
-    	// Password might not be required. 06/21/04 jhrg
-    	if (!d_rcr->get_proxy_server_userpw().empty())
-    	    curl_easy_setopt(d_curl, CURLOPT_PROXYUSERPWD, 
-    			     d_rcr->get_proxy_server_userpw().c_str());
+        DBG(cerr << "Setting up a proxy server." << endl);
+        DBG(cerr << "Proxy host: " << d_rcr->get_proxy_server_host()
+            << endl);
+        DBG(cerr << "Proxy port: " << d_rcr->get_proxy_server_port()
+            << endl);
+        DBG(cerr << "Proxy pwd : " << d_rcr->get_proxy_server_userpw()
+            << endl);
+        curl_easy_setopt(d_curl, CURLOPT_PROXY,
+                         d_rcr->get_proxy_server_host().c_str());
+        curl_easy_setopt(d_curl, CURLOPT_PROXYPORT,
+                         d_rcr->get_proxy_server_port());
+        // Password might not be required. 06/21/04 jhrg
+        if (!d_rcr->get_proxy_server_userpw().empty())
+            curl_easy_setopt(d_curl, CURLOPT_PROXYUSERPWD,
+                             d_rcr->get_proxy_server_userpw().c_str());
     }
 
     curl_easy_setopt(d_curl, CURLOPT_ERRORBUFFER, d_error_buffer);
@@ -312,38 +319,42 @@ HTTPConnect::www_lib_init()
     curl_easy_setopt(d_curl, CURLOPT_NOSIGNAL, 1);
     curl_easy_setopt(d_curl, CURLOPT_HEADERFUNCTION, save_raw_http_headers);
     // In read_url a call to CURLOPT_WRITEHEADER is used to set the fourth
-    // param of save_raw_http_headers to a vector<string> object. 
+    // param of save_raw_http_headers to a vector<string> object.
 
     // If the user turns off SSL validation...
     if (!d_rcr->get_validate_ssl() == 0) {
         curl_easy_setopt(d_curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_easy_setopt(d_curl, CURLOPT_SSL_VERIFYHOST, 0);
     }
-    
+
     if (www_trace) {
-    	cerr << "Curl version: " << curl_version() << endl;
-    	curl_easy_setopt(d_curl, CURLOPT_VERBOSE, 1);
-    	curl_easy_setopt(d_curl, CURLOPT_DEBUGFUNCTION, curl_debug);
+        cerr << "Curl version: " << curl_version() << endl;
+        curl_easy_setopt(d_curl, CURLOPT_VERBOSE, 1);
+        curl_easy_setopt(d_curl, CURLOPT_DEBUGFUNCTION, curl_debug);
     }
 }
 
 /** Functor to add a single string to a curl_slist. This is used to transfer
     a list of headers from a vector<string> object to a curl_slist. */
 
-class BuildHeaders : public unary_function<const string &, void> {
+class BuildHeaders : public unary_function<const string &, void>
+{
     struct curl_slist *d_cl;
 
 public:
-    BuildHeaders() : d_cl(0) {}
+    BuildHeaders() : d_cl(0)
+    {}
 
-    void operator()(const string &header) {
-	DBG(cerr << "Adding '" << header.c_str() << "' to the header list." 
-	    << endl);
-	d_cl = curl_slist_append(d_cl, header.c_str());
+    void operator()(const string &header)
+    {
+        DBG(cerr << "Adding '" << header.c_str() << "' to the header list."
+            << endl);
+        d_cl = curl_slist_append(d_cl, header.c_str());
     }
 
-    struct curl_slist *get_headers() {
-	return d_cl;
+    struct curl_slist *get_headers()
+    {
+        return d_cl;
     }
 };
 
@@ -362,9 +373,9 @@ public:
     error message is stuffed into the Error object. */
 
 long
-HTTPConnect::read_url(const string &url, FILE *stream, 
-		      vector<string> *resp_hdrs,
-		      const vector<string> *headers)
+HTTPConnect::read_url(const string &url, FILE *stream,
+                      vector<string> *resp_hdrs,
+                      const vector<string> *headers)
 {
     curl_easy_setopt(d_curl, CURLOPT_URL, url.c_str());
 
@@ -383,23 +394,23 @@ HTTPConnect::read_url(const string &url, FILE *stream,
 #endif
 
     DBG(copy(d_request_headers.begin(), d_request_headers.end(),
-	     ostream_iterator<string>(cerr, "\n")));
+             ostream_iterator<string>(cerr, "\n")));
 
     BuildHeaders req_hdrs;
     req_hdrs = for_each(d_request_headers.begin(), d_request_headers.end(),
-			 req_hdrs);
+                        req_hdrs);
     if (headers)
-	req_hdrs = for_each(headers->begin(), headers->end(), req_hdrs);
+        req_hdrs = for_each(headers->begin(), headers->end(), req_hdrs);
     curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, req_hdrs.get_headers());
 
     if (d_accept_deflate)
-	curl_easy_setopt(d_curl, CURLOPT_ENCODING, "deflate");
+        curl_easy_setopt(d_curl, CURLOPT_ENCODING, "deflate");
 
     // Turn off the proxy for this URL?
     bool temporary_proxy = false;
     if ((temporary_proxy = url_uses_no_proxy_for(url))) {
-	DBG(cerr << "Suppress proxy for url: " << url << endl);
-	curl_easy_setopt(d_curl, CURLOPT_PROXY, 0);
+        DBG(cerr << "Suppress proxy for url: " << url << endl);
+        curl_easy_setopt(d_curl, CURLOPT_PROXY, 0);
     }
 
     string::size_type at_sign = url.find('@');
@@ -407,10 +418,10 @@ HTTPConnect::read_url(const string &url, FILE *stream,
     // HTTPConnect, after all. 7 is position after "http://"; the second arg
     // to substr() is the sub string length.
     if (at_sign != url.npos)
-	d_upstring = url.substr(7, at_sign-7);
+        d_upstring = url.substr(7, at_sign - 7);
 
     if (!d_upstring.empty())
-	curl_easy_setopt(d_curl, CURLOPT_USERPWD, d_upstring.c_str());
+        curl_easy_setopt(d_curl, CURLOPT_USERPWD, d_upstring.c_str());
 
     // Pass save_raw_http_headers() a pointer to the vector<string> where the
     // response headers may be stored. Callers can use the resp_hdrs
@@ -425,16 +436,16 @@ HTTPConnect::read_url(const string &url, FILE *stream,
 
     // Reset the proxy?
     if (temporary_proxy && !d_rcr->get_proxy_server_host().empty())
-	curl_easy_setopt(d_curl, CURLOPT_PROXY,
-			 d_rcr->get_proxy_server_host().c_str());
-	
+        curl_easy_setopt(d_curl, CURLOPT_PROXY,
+                         d_rcr->get_proxy_server_host().c_str());
+
     if (res != 0)
-	throw Error(d_error_buffer);
+        throw Error(d_error_buffer);
 
     long status;
     res = curl_easy_getinfo(d_curl, CURLINFO_HTTP_CODE, &status);
     if (res != 0)
-	throw Error(d_error_buffer);
+        throw Error(d_error_buffer);
 
     return status;
 }
@@ -446,13 +457,13 @@ bool
 HTTPConnect::url_uses_proxy_for(const string &url) throw()
 {
     if (d_rcr->is_proxy_for_used()) {
-	Regex host_regex(d_rcr->get_proxy_for_regexp().c_str());
-	int index=0, matchlen;
-	return host_regex.search(url.c_str(), url.size(), matchlen, index)
-	    != -1;
+        Regex host_regex(d_rcr->get_proxy_for_regexp().c_str());
+        int index = 0, matchlen;
+        return host_regex.search(url.c_str(), url.size(), matchlen, index)
+               != -1;
     }
-    
-    return false;	
+
+    return false;
 }
 
 /** If the NO_PROXY option is used in the dodsrc file, does this URL match
@@ -462,19 +473,19 @@ bool
 HTTPConnect::url_uses_no_proxy_for(const string &url) throw()
 {
     return d_rcr->is_no_proxy_for_used()
-	&& url.find(d_rcr->get_no_proxy_for_host()) != string::npos;
+           && url.find(d_rcr->get_no_proxy_for_host()) != string::npos;
 }
 
 // Public methods. Mostly...
 
 /** Build a virtual connection to a remote data source that will be
-    accessed using HTTP. 
+    accessed using HTTP.
 
     @param rcr A pointer to the RCReader object which holds configuration
     file information to be used by this virtual connection. */
 
 HTTPConnect::HTTPConnect(RCReader *rcr) throw(Error, InternalErr)
-    : d_username(""), d_password("")
+        : d_username(""), d_password("")
 {
     d_accept_deflate = rcr->get_deflate();
     d_rcr = rcr;
@@ -485,31 +496,31 @@ HTTPConnect::HTTPConnect(RCReader *rcr) throw(Error, InternalErr)
     // make server logs more readable. 05/05/03 jhrg
     d_request_headers.push_back(string("Pragma:"));
     string user_agent = string("User-Agent: ") + string(CNAME)
-	+ string("/") + string(CVER);
+                        + string("/") + string(CVER);
     d_request_headers.push_back(user_agent);
     if (d_accept_deflate)
-	d_request_headers.push_back(string("Accept-Encoding: deflate, gzip, compress"));
+        d_request_headers.push_back(string("Accept-Encoding: deflate, gzip, compress"));
 
     // HTTPCache::instance returns a valid ptr or 0.
     if (d_rcr->get_use_cache())
-	d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root(),
-					   false);
+        d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root(),
+                                           false);
     else
-	d_http_cache = 0;
+        d_http_cache = 0;
 
     DBG2(cerr << "Cache object created (" << hex << d_http_cache << dec
-	 << ")" << endl);
+         << ")" << endl);
 
     if (d_http_cache) {
-	d_http_cache->set_cache_enabled(d_rcr->get_use_cache());
-	d_http_cache->set_expire_ignored(d_rcr->get_ignore_expires() != 0);
-	d_http_cache->set_max_size(d_rcr->get_max_cache_size());
-	d_http_cache->set_max_entry_size(d_rcr->get_max_cached_obj());
-	d_http_cache->set_default_expiration(d_rcr->get_default_expires());
-	d_http_cache->set_always_validate(d_rcr->get_always_validate() != 0);
+        d_http_cache->set_cache_enabled(d_rcr->get_use_cache());
+        d_http_cache->set_expire_ignored(d_rcr->get_ignore_expires() != 0);
+        d_http_cache->set_max_size(d_rcr->get_max_cache_size());
+        d_http_cache->set_max_entry_size(d_rcr->get_max_cached_obj());
+        d_http_cache->set_default_expiration(d_rcr->get_default_expires());
+        d_http_cache->set_always_validate(d_rcr->get_always_validate() != 0);
     }
-    
-    www_lib_init();		// This may throw either Error or InternalErr
+
+    www_lib_init();  // This may throw either Error or InternalErr
 }
 
 HTTPConnect::~HTTPConnect()
@@ -539,21 +550,21 @@ HTTPConnect::fetch_url(const string &url)
     HTTPResponse *stream;
 
     if (d_http_cache && d_http_cache->is_cache_enabled()) {
-	   stream = caching_fetch_url(url);
+        stream = caching_fetch_url(url);
     }
     else {
-	   stream = plain_fetch_url(url);
+        stream = plain_fetch_url(url);
     }
-    
+
     ParseHeader parser;
 
-    parser = for_each(stream->get_headers()->begin(), 
-		      stream->get_headers()->end(), ParseHeader());
+    parser = for_each(stream->get_headers()->begin(),
+                      stream->get_headers()->end(), ParseHeader());
 
     stream->set_type(parser.get_object_type());
     stream->set_version(parser.get_server());
     stream->set_protocol(parser.get_protocol());
-    
+
     return stream;
 }
 
@@ -589,7 +600,7 @@ get_temp_file(FILE *&stream) throw(InternalErr)
 #endif
 
     if (!stream)
-	throw InternalErr("I/O Error: Failed to open a temporary file for the data values.");
+        throw InternalErr("I/O Error: Failed to open a temporary file for the data values.");
 
     string dods_temp_s = dods_temp;
     delete[] dods_temp; dods_temp = 0;
@@ -603,8 +614,8 @@ close_temp(FILE *s, const string &name)
 {
     int res = fclose(s);
     if (res)
-	DBG(cerr << "Failed to close " << (void *)s << endl);
-	
+        DBG(cerr << "Failed to close " << (void *)s << endl);
+
     unlink(name.c_str());
 }
 
@@ -613,8 +624,8 @@ close_temp(FILE *s, const string &name)
     may validate a response in the cache and/or update the response from the
     cache or it may get a new response from the network. In any of those
     cases, the information returned by dereferencing the URL will be stored
-    in the cache. 
-    
+    in the cache.
+
     Return a Response pointer to fetch_url() which, in turn, uses
     ParseHeaders to read stuff from d_headers and fills in the Response
     version and type fields. Thus this method and plain_fetch_url() only have
@@ -635,89 +646,89 @@ HTTPConnect::caching_fetch_url(const string &url)
     DBG(cerr << "Is this URL (" << url << ") in the cache?... ");
 
     if (d_http_cache->is_url_in_cache(url)) { // url in cache
-	DBGN(cerr << "yes... ");
+        DBGN(cerr << "yes... ");
 
-	if (d_http_cache->is_url_valid(url)) { // url in cache and valid
-	    DBGN(cerr << "and it's valid; using cached response." << endl);
+        if (d_http_cache->is_url_valid(url)) { // url in cache and valid
+            DBGN(cerr << "and it's valid; using cached response." << endl);
 
-	    vector<string> *headers = new vector<string>;;
-	    FILE *s = d_http_cache->get_cached_response(url, *headers);
-	    HTTPCacheResponse *crs = new HTTPCacheResponse(s, headers, d_http_cache);
-	    
-	    return crs;
-	}
-	else {			// url in cache but not valid; validate
-	    DBGN(cerr << "but it's not valid; validating... ");
+            vector<string> *headers = new vector<string>;;
+            FILE *s = d_http_cache->get_cached_response(url, *headers);
+            HTTPCacheResponse *crs = new HTTPCacheResponse(s, headers, d_http_cache);
 
-	    // *** auto_ptr??? resp_hdrs not deleted! 10/10/03 jhrg 
-	    vector<string> *resp_hdrs = new vector<string>;
-	    vector<string> cond_hdrs 
-		= d_http_cache->get_conditional_request_headers(url);
-	    FILE *body = 0;
-	    string dods_temp = get_temp_file(body);
-	    time_t now = time(0); // When was the request made (now).
-	    long http_status;
+            return crs;
+        }
+        else {   // url in cache but not valid; validate
+            DBGN(cerr << "but it's not valid; validating... ");
 
-	    try {
-		http_status = read_url(url, body, resp_hdrs, &cond_hdrs);
-		rewind(body);
-	    }
-	    catch(Error &e) {
-		close_temp(body, dods_temp);
-		throw;
-	    }
+            // *** auto_ptr??? resp_hdrs not deleted! 10/10/03 jhrg
+            vector<string> *resp_hdrs = new vector<string>;
+            vector<string> cond_hdrs
+            = d_http_cache->get_conditional_request_headers(url);
+            FILE *body = 0;
+            string dods_temp = get_temp_file(body);
+            time_t now = time(0); // When was the request made (now).
+            long http_status;
 
-	    switch (http_status) {
-	      case 200: {		// New headers and new body
-		    DBGN(cerr << "read a new response; caching." << endl);
+            try {
+                http_status = read_url(url, body, resp_hdrs, &cond_hdrs);
+                rewind(body);
+            }
+            catch (Error &e) {
+                close_temp(body, dods_temp);
+                throw;
+            }
 
-		    d_http_cache->cache_response(url, now, *resp_hdrs, body);
-		    HTTPResponse *rs = new HTTPResponse(body, resp_hdrs,
-							dods_temp);
+            switch (http_status) {
+            case 200: {  // New headers and new body
+                    DBGN(cerr << "read a new response; caching." << endl);
 
-		    return rs;
-		}
-		break;
+                    d_http_cache->cache_response(url, now, *resp_hdrs, body);
+                    HTTPResponse *rs = new HTTPResponse(body, resp_hdrs,
+                                                        dods_temp);
 
-	      case 304: {		// Just new headers, use cached body
-		    DBGN(cerr << "cached response valid; updating." << endl);
+                    return rs;
+                }
+                break;
 
-		    close_temp(body, dods_temp);
-		    d_http_cache->update_response(url, now, *resp_hdrs);
+            case 304: {  // Just new headers, use cached body
+                    DBGN(cerr << "cached response valid; updating." << endl);
 
-		    vector<string> *headers = new vector<string>;;
-		    FILE *s = d_http_cache->get_cached_response(url, *headers);
-		    HTTPCacheResponse *crs 
-			= new HTTPCacheResponse(s, headers, d_http_cache);
-		    return crs;
-		}
-		break;
+                    close_temp(body, dods_temp);
+                    d_http_cache->update_response(url, now, *resp_hdrs);
 
-	      default: {		// Oops.
-		  close_temp(body, dods_temp);
-		  if (http_status >= 400) {
-		      string msg = "Error while reading the URL: ";
-		      msg += url;
-		      msg += ".\nThe OPeNDAP server returned the following message:\n";
-		      msg += http_status_to_string(http_status);
-		      throw Error(msg);
-		  }
-		  else 
-		      throw InternalErr(__FILE__, __LINE__,
-"Bad response from the HTTP server: " + long_to_string(http_status));
-		}
-		break;
-	    }
-	}
+                    vector<string> *headers = new vector<string>;;
+                    FILE *s = d_http_cache->get_cached_response(url, *headers);
+                    HTTPCacheResponse *crs
+                    = new HTTPCacheResponse(s, headers, d_http_cache);
+                    return crs;
+                }
+                break;
+
+            default: {  // Oops.
+                    close_temp(body, dods_temp);
+                    if (http_status >= 400) {
+                        string msg = "Error while reading the URL: ";
+                        msg += url;
+                        msg += ".\nThe OPeNDAP server returned the following message:\n";
+                        msg += http_status_to_string(http_status);
+                        throw Error(msg);
+                    }
+                    else
+                        throw InternalErr(__FILE__, __LINE__,
+                                          "Bad response from the HTTP server: " + long_to_string(http_status));
+                }
+                break;
+            }
+        }
     }
-    else {			// url not in cache; get it and cache it
-	DBGN(cerr << "no; getting response and caching." << endl);
-	time_t now = time(0);
-	HTTPResponse *rs = plain_fetch_url(url);
-	d_http_cache->cache_response(url, now, *(rs->get_headers()), 
-				     rs->get_stream());
-	
-	return rs;
+    else {   // url not in cache; get it and cache it
+        DBGN(cerr << "no; getting response and caching." << endl);
+        time_t now = time(0);
+        HTTPResponse *rs = plain_fetch_url(url);
+        d_http_cache->cache_response(url, now, *(rs->get_headers()),
+                                     rs->get_stream());
+
+        return rs;
     }
 
     throw InternalErr(__FILE__, __LINE__, "Unexpected cache response.");
@@ -744,19 +755,19 @@ HTTPConnect::plain_fetch_url(const string &url)
     vector<string> *resp_hdrs = new vector<string>;
 
     try {
-	int status = read_url(url, stream, resp_hdrs);	// Throws Error.
-	if (status >= 400) {
-	    string msg = "Error while reading the URL: ";
-	    msg += url;
-	    msg += ".\nThe OPeNDAP server returned the following message:\n";
-	    msg += http_status_to_string(status);
-	    throw Error(msg);
-	}
+        int status = read_url(url, stream, resp_hdrs); // Throws Error.
+        if (status >= 400) {
+            string msg = "Error while reading the URL: ";
+            msg += url;
+            msg += ".\nThe OPeNDAP server returned the following message:\n";
+            msg += http_status_to_string(status);
+            throw Error(msg);
+        }
     }
 
-    catch(Error &e) {
-	close_temp(stream, dods_temp);
-	throw e;
+    catch (Error &e) {
+        close_temp(stream, dods_temp);
+        throw e;
     }
 
     rewind(stream);
@@ -781,18 +792,18 @@ HTTPConnect::set_accept_deflate(bool deflate)
     d_accept_deflate = deflate;
 
     if (d_accept_deflate) {
-	if (find(d_request_headers.begin(), d_request_headers.end(), 
-		 "Accept-Encoding: deflate, gzip, compress") == d_request_headers.end())
-	    d_request_headers.push_back(string("Accept-Encoding: deflate, gzip, compress"));
-	DBG(copy(d_request_headers.begin(), d_request_headers.end(),
-		 ostream_iterator<string>(cerr, "\n")));
+        if (find(d_request_headers.begin(), d_request_headers.end(),
+                 "Accept-Encoding: deflate, gzip, compress") == d_request_headers.end())
+            d_request_headers.push_back(string("Accept-Encoding: deflate, gzip, compress"));
+        DBG(copy(d_request_headers.begin(), d_request_headers.end(),
+                 ostream_iterator<string>(cerr, "\n")));
     }
     else {
-	vector<string>::iterator i;
-	i = remove_if(d_request_headers.begin(), d_request_headers.end(),
-		      bind2nd(equal_to<string>(), 
-			      string("Accept-Encoding: deflate, gzip, compress")));
-	d_request_headers.erase(i, d_request_headers.end());
+        vector<string>::iterator i;
+        i = remove_if(d_request_headers.begin(), d_request_headers.end(),
+                      bind2nd(equal_to<string>(),
+                              string("Accept-Encoding: deflate, gzip, compress")));
+        d_request_headers.erase(i, d_request_headers.end());
     }
 }
 
@@ -804,18 +815,18 @@ HTTPConnect::set_accept_deflate(bool deflate)
     is part of the URL standard.
 
     This method does nothing if \c u, the username, is empty.
-	
+
     @param u The username.
-    @param p The password. 
+    @param p The password.
     @exception InternalErr The credentials could not be registered with
-    libcurl. 
+    libcurl.
     @see extract_auth_info() */
 
-void 
+void
 HTTPConnect::set_credentials(const string &u, const string &p)
 {
     if (u.empty())
-	return;
+        return;
 
     // Store the credentials locally.
     d_username = u;

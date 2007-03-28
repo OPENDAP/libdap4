@@ -11,25 +11,25 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
-// Constants, types and function prototypes for use with the DAP parsers. 
+// Constants, types and function prototypes for use with the DAP parsers.
 //
 // jhrg 2/3/96
 
@@ -57,30 +57,52 @@
     process. If <tt>status()</tt> is false, then the <tt>error()</tt>
     returns a pointer to an Error object.
 
-    Note that the <tt>object()</tt> mfunc returns a void pointer. 
+    Note that the <tt>object()</tt> mfunc returns a void pointer.
     @brief Pass parameters by reference to a parser.
     @brief Pass parameters by reference to a parser.
     */
 
-struct parser_arg {
-    void *_object;		// nominally a pointer to an object
-    Error *_error;		// a pointer to an Error object
-    int _status;		// parser status
+struct parser_arg
+{
+    void *_object;  // nominally a pointer to an object
+    Error *_error;  // a pointer to an Error object
+    int _status;  // parser status
 
-    parser_arg() : _object(0), _error(0), _status(1) {}
-    parser_arg(void *obj) : _object(obj), _error(0), _status(1) {}
-    virtual ~parser_arg() {
-	if (_error) {
-	    delete _error; _error = 0;
-	}
+    parser_arg() : _object(0), _error(0), _status(1)
+    {}
+    parser_arg(void *obj) : _object(obj), _error(0), _status(1)
+    {}
+    virtual ~parser_arg()
+    {
+        if (_error) {
+            delete _error; _error = 0;
+        }
     }
 
-    void *object() { return _object; }
-    void set_object(void *obj) { _object = obj; }
-    Error *error() { return _error; }
-    void set_error(Error *obj) { _error = obj; }
-    int status() { return _status; }
-    void set_status(int val = 0) { _status = val; }
+    void *object()
+    {
+        return _object;
+    }
+    void set_object(void *obj)
+    {
+        _object = obj;
+    }
+    Error *error()
+    {
+        return _error;
+    }
+    void set_error(Error *obj)
+    {
+        _error = obj;
+    }
+    int status()
+    {
+        return _status;
+    }
+    void set_status(int val = 0)
+    {
+        _status = val;
+    }
 };
 
 /** <tt>parser_error()</tt> generates error messages for the various
@@ -95,17 +117,17 @@ struct parser_arg {
     \note{The second version of this function also accepts a third parameter
     (<tt>const char *context</tt>) which can be used to provide an
     additional line of information beyond what is in the string
-    <tt>message</tt>.} 
+    <tt>message</tt>.}
 
     @name parse_error
-    @return void 
+    @return void
     @brief Generate error messages for the various parsers.
     */
 //@{
 void parse_error(parser_arg *arg, const char *s, const int line_num = 0,
-		 const char *context = 0);
-void parse_error(const string &msg, const int line_num, 
-		 const char *context = 0);
+                 const char *context = 0);
+void parse_error(const string &msg, const int line_num,
+                 const char *context = 0);
 //@}
 
 /** Given a string (<tt>const char *src</tt>), save it to the
@@ -118,7 +140,7 @@ void parse_error(const string &msg, const int line_num,
     argument calls the version of <tt>parser_error()</tt> which
     generates and Error object.
 
-    @return void 
+    @return void
     @brief Save a string to a temporary variable during the parse.
     */
 
@@ -134,14 +156,14 @@ bool is_keyword(string id, const string &keyword);
     one which calls <tt>parser_error()</tt> and generates and Error
     object.
 
-    @return Returns: True if <i>val</i> is a byte value, False otherwise. 
+    @return Returns: True if <i>val</i> is a byte value, False otherwise.
     @brief Is the value a valid byte?
     */
 
 int check_byte(const char *val);
 
 /** Like <tt>check_byte()</tt> but for 32-bit integers
-    (<tt>check_uint()</tt> is for unsigned integers). 
+    (<tt>check_uint()</tt> is for unsigned integers).
 
 
     @brief Is the value a valid integer?
@@ -166,4 +188,4 @@ int check_float64(const char *val);
 int check_url(const char *val);
 
 #endif // _parser_h
- 
+

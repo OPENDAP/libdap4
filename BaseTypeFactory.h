@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -49,17 +49,17 @@ class BaseType;
 /** A factory to create instances of the leaf nodes of BaseType (Byte, ...
     Grid). Clients of libdap++ which require special behavior for the types
     should subclass this factory and provide an implementation which creates
-    instances of those specializations. Make sure to pass a reference to the 
+    instances of those specializations. Make sure to pass a reference to the
     new factory to DDS's constructor since by default it uses this factory.
-    
-    To define and use your own factory, first make sure that you are not 
+
+    To define and use your own factory, first make sure that you are not
     using the compile time constant 'DEFAULT_BASETYPE_FACTORY.' Then pass a
     pointer to an instance of your factory to the DDS/DataDDS constructors.
     When the parser is used to build a DDS from a DAP response, the factory
-    will be used to instantiate the different variable-type classes.  
-    
+    will be used to instantiate the different variable-type classes.
+
     @note The easiest way to subclass this is to follow the pattern of using
-    a separate class declaration and implementation. It's possible to use one 
+    a separate class declaration and implementation. It's possible to use one
     file to hold
     both, but that is complicated somewhat because DDS.h, which includes this
     class, also includes many of the type classes (Array.h, ..., Grid.h) and
@@ -71,10 +71,13 @@ class BaseType;
 
     @author James Gallagher
     @see DDS */
-class BaseTypeFactory {
+class BaseTypeFactory
+{
 public:
-    BaseTypeFactory() {} 
-    virtual ~BaseTypeFactory() {}
+    BaseTypeFactory()
+    {}
+    virtual ~BaseTypeFactory()
+    {}
 
     virtual Byte *NewByte(const string &n = "") const;
     virtual Int16 *NewInt16(const string &n = "") const;

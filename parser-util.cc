@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -30,13 +30,14 @@
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
 // These functions are utility functions used by the various DAP parsers (the
-// DAS, DDS and constraint expression parsers). 
+// DAS, DDS and constraint expression parsers).
 // jhrg 9/7/95
 
 #include "config.h"
 
 static char rcsid[] not_used =
-    { "$Id$" };
+    { "$Id$"
+    };
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,7 +63,7 @@ double w32strtod(const char *, char **);
 using std::cerr;
 using std::endl;
 
-// Deprecated, but still used by the HDF4 EOS server code. 
+// Deprecated, but still used by the HDF4 EOS server code.
 void
 parse_error(parser_arg * arg, const char *msg, const int line_num,
             const char *context)
@@ -80,13 +81,14 @@ parse_error(parser_arg * arg, const char *msg, const int line_num,
     if (line_num != 0) {
         oss += "Error parsing the text on line ";
         append_long_to_string(line_num, 10, oss);
-    } else {
+    }
+    else {
         oss += "Parse error.";
     }
 
     if (context)
         oss += (string) " at or near: " + context + (string) "\n" + msg
-            + (string) "\n";
+               + (string) "\n";
     else
         oss += (string) "\n" + msg + (string) "\n";
 
@@ -106,13 +108,14 @@ parse_error(const char *msg, const int line_num, const char *context)
     if (line_num != 0) {
         oss += "Error parsing the text on line ";
         append_long_to_string(line_num, 10, oss);
-    } else {
+    }
+    else {
         oss += "Parse error.";
     }
 
     if (context)
         oss += (string) " at or near: " + context + (string) "\n" + msg
-            + (string) "\n";
+               + (string) "\n";
     else
         oss += (string) "\n" + msg + (string) "\n";
 
@@ -239,7 +242,7 @@ int check_uint32(const char *val)
 
 // Check first for system errors (like numbers so small they convert
 // (erroneously) to zero. Then make sure that the value is within
-// limits. 
+// limits.
 
 int check_float32(const char *val)
 {

@@ -60,25 +60,22 @@ using namespace libdap;
     @param ds_name The name of the dataset. Passed to BaseType::read().
     @param dds Use this DDS to get global attributes.
  */
-GridGeoConstraint::GridGeoConstraint(Grid *grid, const string &ds_name) 
+GridGeoConstraint::GridGeoConstraint(Grid *grid, const string &ds_name)
         : GeoConstraint(ds_name), d_grid(grid), d_latitude(0), d_longitude(0)
 {
     if (d_grid->get_array()->dimensions() < 2
         || d_grid->get_array()->dimensions() > 3)
-        throw Error(
-"The geogrid() function works only with Grids of two or three dimensions.");
+        throw Error("The geogrid() function works only with Grids of two or three dimensions.");
 
     // Is this Grid a geo-referenced grid? Throw Error if not.
     if (!build_lat_lon_maps())
         throw Error(string("The grid '") + d_grid->name()
                     +
                     "' does not have identifiable latitude/longitude map vectors.");
-                    
+
     if (!lat_lon_dimensions_ok())
-        throw Error(
-"The geogrid() function will only work when the Grid's Longitude and Latitude\n\
-maps are the rightmost dimensions.");
-}  
+        throw Error("The geogrid() function will only work when the Grid's Longitude and Latitude\nmaps are the rightmost dimensions.");
+}
 
 /** A private method called by the constructor that searches for latitude
     and longitude map vectors. This method returns false if either map
@@ -153,11 +150,11 @@ bool GridGeoConstraint::build_lat_lon_maps()
 
 /** Are the latitude and longitude dimentions ordered so that this class can
     properly constrain the data? This method throws Error if lat and lon are
-    not to two 'fastest-varying' (or 'rightmost') dimensions. It also sets the 
-    internal property \e longitude_rightmost if that's true. 
-    
-    @note Called by the constructor once build_lat_lon_maps() has returned. 
-    
+    not to two 'fastest-varying' (or 'rightmost') dimensions. It also sets the
+    internal property \e longitude_rightmost if that's true.
+
+    @note Called by the constructor once build_lat_lon_maps() has returned.
+
     @return True if the lat/lon maps are the two rightmost maps,
     false otherwise; modifies the \e longitude_rightmost property as aside
     effect. */
@@ -167,14 +164,14 @@ GridGeoConstraint::lat_lon_dimensions_ok()
     // get the last two map iterators
     Grid::Map_riter rightmost = d_grid->map_rbegin();
     Grid::Map_riter next_rightmost = rightmost + 1;
-    
+
     if (*rightmost == d_longitude && *next_rightmost == d_latitude)
         set_longitude_rightmost(true);
     else if (*rightmost == d_latitude && *next_rightmost == d_longitude)
         set_longitude_rightmost(false);
     else
         return false;
-        
+
     return true;
 }
 
@@ -215,7 +212,7 @@ void GridGeoConstraint::apply_constraint_to_data()
 
     // It's esy to flip the Latitude values; if the bottom index value
     // is before/above the top index, return an error explaining that.
-    if ( get_latitude_index_top() > get_latitude_index_bottom() )
+    if (get_latitude_index_top() > get_latitude_index_bottom())
         throw Error("The upper and lower latitude indices appear to be reversed. Please provide the latitude bounding box numbers giving the northern-most latitude first.");
 
     // Constrain the lat vector and lat dim of the array

@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -78,7 +78,7 @@
     To locate this Array in the real world, we could note the location
     of one corner of the grid, and the grid spacing.  This would allow
     us to calculate the location of any of the other points of the
-    Array. 
+    Array.
 
     This approach will not work, however, unless the grid spacing is
     precisely regular.  If the distance between Row 1 and Row 2 is not
@@ -97,7 +97,7 @@
 
     The real location of the point in the first row and column of the
     array is now exactly fixed at (0,0), and the point in the last row
-    and last column is at (8,27). 
+    and last column is at (8,27).
 
     The Grid data type has two parts: an Array, and a singly-linked
     list of Map vectors to describe the Array.  The access functions
@@ -115,11 +115,12 @@
     @see Array
     */
 
-class Grid: public Constructor {
+class Grid: public Constructor
+{
 private:
     BaseType *_array_var;
     std::vector<BaseType *> _map_vars;
-    
+
     void _duplicate(const Grid &s);
 
 public:
@@ -132,7 +133,7 @@ public:
     typedef std::vector<BaseType *>::iterator Map_iter ;
     typedef std::vector<BaseType *>::reverse_iterator Map_riter ;
 
-    
+
     Grid &operator=(const Grid &rhs);
     virtual BaseType *ptr_duplicate();
 
@@ -143,7 +144,7 @@ public:
     virtual void set_in_selection(bool state);
 
     virtual BaseType *var(const string &n, bool exact = true,
-			  btp_stack *s = 0);
+                          btp_stack *s = 0);
 
     virtual BaseType *var(const string &n, btp_stack &s);
 
@@ -151,13 +152,13 @@ public:
 
     BaseType *array_var();
     Array *get_array();
-    
+
     virtual unsigned int width();
 
     virtual int components(bool constrained = false);
 
     virtual bool projection_yields_grid();
-    
+
     virtual void clear_constraint();
 
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
@@ -169,25 +170,25 @@ public:
     virtual unsigned int buf2val(void **val);
 
     virtual void print_decl(FILE *out, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
+                            bool print_semi = true,
+                            bool constraint_info = false,
+                            bool constrained = false);
 
-    virtual void print_xml(FILE *out, string space = "    ", 
-			   bool constrained =false);
+    virtual void print_xml(FILE *out, string space = "    ",
+                           bool constrained = false);
 
     virtual void print_val(FILE *out, string space = "",
-			   bool print_decl_p = true);
+                           bool print_decl_p = true);
 
     virtual bool check_semantics(string &msg, bool all = false);
-    
+
     Map_iter map_begin() ;
     Map_iter map_end() ;
     Map_riter map_rbegin() ;
     Map_riter map_rend() ;
     Map_iter get_map_iter(int i);
 
-    virtual void dump( ostream &strm ) const ;
+    virtual void dump(ostream &strm) const ;
 };
 
 #endif // _grid_h

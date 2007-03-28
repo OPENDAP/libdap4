@@ -39,7 +39,6 @@
 #include "Grid.h"
 #include "DDS.h"
 #include "DAS.h"
-//#include "GeoConstraint.h"
 #include "ce_functions.h"
 
 #include "../tests/TestTypeFactory.h"
@@ -144,11 +143,11 @@ public:
     {
         try {
             function_grid(0, 0, *dds, "");
-            CPPUNIT_ASSERT(!"no_arguments_test() should have failed");
+            CPPUNIT_ASSERT(true);
         }
         catch (Error &e) {
             DBG(cerr << e.get_error_message() << endl);
-            CPPUNIT_ASSERT(true);
+            CPPUNIT_ASSERT(!"no_arguments_test() should not have failed");
         }
     }
 
@@ -356,11 +355,11 @@ public:
     void linear_scale_args_test() {
         try {
             function_linear_scale(0, 0, *dds, "linear_scale_args_test");
-            CPPUNIT_ASSERT(!"linear_scale_args_test: should throw Error");
+            CPPUNIT_ASSERT(true);
         }
         catch (Error &e) {
             DBG(cerr << e.get_error_message() << endl);
-            CPPUNIT_ASSERT(true);
+            CPPUNIT_ASSERT(!"linear_scale_args_test: should not throw Error");
         }
     }
     

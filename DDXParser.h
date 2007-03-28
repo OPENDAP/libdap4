@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -73,59 +73,60 @@
     operator.
 
     @see DDS */
-class DDXParser {
+class DDXParser
+{
 private:
     /** States used by DDXParserState. These are the states of the SAX parser
-	state-machine. */ 
+    state-machine. */
     enum ParseState {
-	parser_start,
+        parser_start,
 
-	inside_dataset,
+        inside_dataset,
 
-	inside_attribute_container,
-	inside_attribute,
-	inside_attribute_value,
+        inside_attribute_container,
+        inside_attribute,
+        inside_attribute_value,
 
-	inside_alias,
+        inside_alias,
 
-	// This covers Byte, ..., Url.
-	inside_simple_type,
+        // This covers Byte, ..., Url.
+        inside_simple_type,
 
-	inside_array,
-	inside_dimension,
+        inside_array,
+        inside_dimension,
 
-	inside_grid,
-	inside_map,
+        inside_grid,
+        inside_map,
 
-	inside_structure,
-	inside_sequence,
+        inside_structure,
+        inside_sequence,
 
-	inside_blob_href,
+        inside_blob_href,
 
-	parser_unknown,
-	parser_error
+        parser_unknown,
+        parser_error
     };
 
     BaseTypeFactory *d_factory;
 
     // These stacks hold the state of the parse as it progresses.
-    stack<ParseState> s;	// Current parse state
-    stack<BaseType*> bt_stack;	// current variable(s)
+    stack<ParseState> s; // Current parse state
+    stack<BaseType*> bt_stack; // current variable(s)
     stack<AttrTable*> at_stack; // current attribute table
 
     // These are used for processing errors.
-    string error_msg;		// Error message(s), if any.
-    xmlParserCtxtPtr ctxt;	// used for error msg line numbers
+    string error_msg;  // Error message(s), if any.
+    xmlParserCtxtPtr ctxt; // used for error msg line numbers
 
     // The results of the parse operation are stored in these fields.
-    DDS *dds;			// dump DDX here
-    string *blob_href;		// put href to blob here
+    DDS *dds;   // dump DDX here
+    string *blob_href;  // put href to blob here
 
     // These hold temporary values read during the parse.
-    string dods_attr_name;	// DAP2 attributes, not XML attributes
-    string dods_attr_type;	// ... not XML ...
-    string char_data;		// char data in value elements; null after use
-    map<string,string> attributes; // dump XML attributes here
+    string dods_attr_name; // DAP2 attributes, not XML attributes
+    string dods_attr_type; // ... not XML ...
+    string char_data;  // char data in value elements; null after use
+    map<string, string> attributes; // dump XML attributes here
 
     // These are kind of silly...
     void set_state(DDXParser::ParseState state);
@@ -137,12 +138,12 @@ private:
 
     // Common cleanup code for intern() and intern_stream()
     void cleanup_parse(xmlParserCtxtPtr &context) const;
-    
+
     /** @name Parser Actions
 
-	These methods are the 'actions' carried out by the start_element and
-	end_element callbacks. Most of what takes place in those has been
-	factored out to this set of functions. */
+    These methods are the 'actions' carried out by the start_element and
+    end_element callbacks. Most of what takes place in those has been
+    factored out to this set of functions. */
     //@{
     void transfer_attrs(const char **attrs);
     bool check_required_attribute(const string &attr);
@@ -162,22 +163,24 @@ private:
     //@}
 
     /// Define the default ctor here to prevent its use.
-    DDXParser() {}
+    DDXParser()
+    {}
 
 public:
-    DDXParser(BaseTypeFactory *factory) : d_factory(factory) {}
+    DDXParser(BaseTypeFactory *factory) : d_factory(factory)
+    {}
 
     void intern(const string &document, DDS *dest_dds, string *blob);
     void intern_stream(FILE *in, DDS *dds, string *blob);
 
     static void ddx_start_document(DDXParser *parser);
     static void ddx_end_document(DDXParser *parser);
-    static void ddx_start_element(DDXParser *parser, const char *name, 
-				const char **attrs);
+    static void ddx_start_element(DDXParser *parser, const char *name,
+                                  const char **attrs);
     static void ddx_end_element(DDXParser *parser, const char *name);
     static void characters(DDXParser *parser, const xmlChar *ch, int len);
     static xmlEntityPtr ddx_get_entity(DDXParser *parser,
-				     const xmlChar *name);
+                                       const xmlChar *name);
     static void ddx_fatal_error(DDXParser *parser, const char *msg, ...);
 };
 

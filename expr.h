@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1995-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -46,15 +46,17 @@
 // VALUE is used to return constant values from the scanner to the parser.
 // Constants are packaged in BaseType *s for evaluation by the parser.
 
-typedef struct {
-    Type type;			// Type is an enum defined in BaseType.h
+typedef struct
+{
+    Type type;   // Type is an enum defined in BaseType.h
     union {
-	unsigned int ui;
-	int i;
-	double f;
-	string *s;
+        unsigned int ui;
+        int i;
+        double f;
+        string *s;
     } v;
-} value;
+}
+value;
 
 // Syntactic sugar for `pointer to function returning boolean' (bool_func)
 // and `pointer to function returning BaseType *' (btp_func). Both function
@@ -64,9 +66,9 @@ typedef struct {
 
 // Try to make a single `selection function' type.
 
-typedef bool (*bool_func)(int argc, BaseType *argv[], DDS &dds);
+typedef bool(*bool_func)(int argc, BaseType *argv[], DDS &dds);
 typedef BaseType *(*btp_func)(int argc, BaseType *argv[], DDS &dds, const string &dataset);
-typedef void (*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce);
+typedef void(*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce);
 
 // INT_LIST and INT_LIST_LIST are used by the parser to store the array
 // indices.

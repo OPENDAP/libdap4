@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1995-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -36,7 +36,7 @@
 #include <algorithm>
 #include <functional>
 
-//#define DODS_DEBUG 
+//#define DODS_DEBUG
 
 #include "Constructor.h"
 #include "Grid.h"
@@ -53,29 +53,25 @@ using namespace std;
 
 void
 Constructor::_duplicate(const Constructor &)
-{
-}
+{}
 
 // Public member functions
 
-Constructor::Constructor(const string &n, const Type &t) 
-    : BaseType(n, t)
-{
-}
+Constructor::Constructor(const string &n, const Type &t)
+        : BaseType(n, t)
+{}
 
 Constructor::Constructor(const Constructor &rhs) : BaseType(rhs)
-{
-}
+{}
 
 Constructor::~Constructor()
-{
-}
+{}
 
 Constructor &
 Constructor::operator=(const Constructor &rhs)
 {
     if (this == &rhs)
-	return *this;
+        return *this;
 
     dynamic_cast<BaseType &>(*this) = rhs; // run BaseType=
 
@@ -99,10 +95,10 @@ Constructor::var_begin()
     Sequence, I don't think the HDF4 handler ever makes these (since those
     types don't have 'dimension' in hdf-land);  and for a Grid, the attributes
     belong with the map variables.
-    
+
     @note This method does check that the \e source really is an hdf4 dimension
     attribute.
-    
+
     @param source The attribute container, an AttrTable::entry instance.
     @return the BaseType to which these attributes belong or null if none
     was found. */
@@ -113,12 +109,12 @@ Constructor::find_hdf4_dimension_attribute_home(AttrTable::entry *source)
     string::size_type i = source->name.find("_dim_");
     if (i != string::npos && (btp = var(source->name.substr(0, i)))) {
         if (btp->is_vector_type()) {
-             return btp;
+            return btp;
         }
         else if (btp->type() == dods_grid_c) {
             // For a Grid, the hdf4 handler uses _dim_n for the n-th Map
             // i+5 points to the character holding 'n'
-            int n = atoi(source->name.substr(i+5).c_str());
+            int n = atoi(source->name.substr(i + 5).c_str());
             DBG(cerr << "Found a Grid (" << btp->name() << ") and "
                 << source->name.substr(i) << ", extracted n: " << n << endl);
             return *(dynamic_cast<Grid&>(*btp).map_begin() + n);
@@ -137,7 +133,7 @@ Constructor::find_matching_container(AttrTable::entry *source,
     // The attribute entry 'source' must be a container
     if (source->type != Attr_container)
         throw InternalErr(__FILE__, __LINE__, "Constructor::find_matching_container");
-        
+
     // Use the name of the attribute container 'source' to figure out where
     // to put its contents.
     BaseType *btp;
@@ -158,19 +154,19 @@ Constructor::find_matching_container(AttrTable::entry *source,
         }
         else { // must ba a plain Array
             string::size_type i = source->name.find("_dim_");
-            string ext = source->name.substr(i+1);
+            string ext = source->name.substr(i + 1);
             *dest_variable = btp;
             return btp->get_attr_table().append_container(ext);
         }
     }
     else {
-        // ... otherwise assume it's a global attribute. 
+        // ... otherwise assume it's a global attribute.
         AttrTable *at = get_attr_table().find_container(source->name);
         if (!at) {
             at = new AttrTable();       // Make a new global table if needed
             get_attr_table().append_container(at, source->name);
         }
-        
+
         *dest_variable = 0;
         return at;
     }
@@ -179,7 +175,7 @@ Constructor::find_matching_container(AttrTable::entry *source,
 /** Given an Attribute entry, scavenge attributes from it and load them into
     this object and the variables it contains. Assume that the caller has
     determined the table holds attributes pertinent to only this variable.
-    
+
     @note This method is technically \e unnecessary because a server (or
     client) can easily add attributes directly using the DDS::get_attr_table
     or BaseType::get_attr_table methods and then poke values in using any
@@ -215,12 +211,13 @@ Constructor::transfer_attributes(AttrTable::entry * entry)
         if ((*source_p)->type == Attr_container) {
             if (dest_variable && dest_variable->is_constructor_type()) {
                 dynamic_cast <Constructor & >(*dest_variable).transfer_attributes(*source_p);
-            } 
+            }
             else {
                 dest->append_container(new AttrTable(*(*source_p)->attributes),
                                        (*source_p)->name);
             }
-        } else {
+        }
+        else {
             dest->append_attr(source->get_name(source_p),
                               source->get_type(source_p),
                               source->get_attr_vector(source_p));
@@ -274,43 +271,45 @@ Constructor::get_var_index(int i)
 
 void
 Constructor::print_decl(FILE *out, string space, bool print_semi,
-			bool constraint_info, bool constrained)
+                        bool constraint_info, bool constrained)
 {
     if (constrained && !send_p())
-	return;
+        return;
 
-    fprintf( out, "%s%s {\n", space.c_str(), type_name().c_str() ) ;
-    for (Vars_citer i = _vars.begin(); i != _vars.end(); i++)
-    {
-	(*i)->print_decl(out, space + "    ", true,
-			 constraint_info, constrained);
+    fprintf(out, "%s%s {\n", space.c_str(), type_name().c_str()) ;
+    for (Vars_citer i = _vars.begin(); i != _vars.end(); i++) {
+        (*i)->print_decl(out, space + "    ", true,
+                         constraint_info, constrained);
     }
-    fprintf( out, "%s} %s", space.c_str(), id2www( name() ).c_str() ) ;
+    fprintf(out, "%s} %s", space.c_str(), id2www(name()).c_str()) ;
 
-    if (constraint_info) {	// Used by test drivers only.
-	if (send_p())
-	    cout << ": Send True";
-	else
-	    cout << ": Send False";
+    if (constraint_info) { // Used by test drivers only.
+        if (send_p())
+            cout << ": Send True";
+        else
+            cout << ": Send False";
     }
 
     if (print_semi)
-	fprintf( out, ";\n" ) ;
+        fprintf(out, ";\n") ;
 }
 
-class PrintField : public unary_function<BaseType *, void> {
+class PrintField : public unary_function<BaseType *, void>
+{
     FILE *d_out;
     string d_space;
     bool d_constrained;
 public:
-    PrintField(FILE *o, string s, bool c) 
-	: d_out(o), d_space(s), d_constrained(c) {}
+    PrintField(FILE *o, string s, bool c)
+            : d_out(o), d_space(s), d_constrained(c)
+    {}
 
-    void operator()(BaseType *btp) {
-	btp->print_xml(d_out, d_space, d_constrained);
+    void operator()(BaseType *btp)
+    {
+        btp->print_xml(d_out, d_space, d_constrained);
     }
 };
-	
+
 void
 Constructor::print_xml(FILE *out, string space, bool constrained)
 {
@@ -322,20 +321,20 @@ Constructor::print_xml(FILE *out, string space, bool constrained)
 
     fprintf(out, "%s<%s", space.c_str(), type_name().c_str());
     if (!name().empty())
-	fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
-    
+        fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
+
     if (has_attributes || has_variables) {
-	fprintf(out, ">\n");
+        fprintf(out, ">\n");
 
-	get_attr_table().print_xml(out, space + "    ", constrained);
+        get_attr_table().print_xml(out, space + "    ", constrained);
 
-	for_each(var_begin(), var_end(),
-		 PrintField(out, space + "    ", constrained));
-	
-	fprintf(out, "%s</%s>\n", space.c_str(), type_name().c_str());
+        for_each(var_begin(), var_end(),
+                 PrintField(out, space + "    ", constrained));
+
+        fprintf(out, "%s</%s>\n", space.c_str(), type_name().c_str());
     }
     else {
-	fprintf(out, "/>\n");
+        fprintf(out, "/>\n");
     }
 }
 
@@ -366,19 +365,18 @@ Constructor::is_linear()
  * @return void
  */
 void
-Constructor::dump( ostream &strm ) const
+Constructor::dump(ostream &strm) const
 {
     strm << DapIndent::LMarg << "Constructor::dump - ("
-			      << (void *)this << ")" << endl ;
+    << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
-    BaseType::dump( strm ) ;
+    BaseType::dump(strm) ;
     strm << DapIndent::LMarg << "vars: " << endl ;
     DapIndent::Indent() ;
     Vars_citer i = _vars.begin() ;
     Vars_citer ie = _vars.end() ;
-    for( ; i != ie; i++ )
-    {
-	(*i)->dump( strm ) ;
+    for (; i != ie; i++) {
+        (*i)->dump(strm) ;
     }
     DapIndent::UnIndent() ;
     DapIndent::UnIndent() ;

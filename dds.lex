@@ -63,6 +63,10 @@ static char rcsid[] not_used = {"$Id$"};
 #include "dds.tab.h"
 #include "escaping.h"
 
+#ifndef YY_PROTO
+#define YY_PROTO(proto) proto
+#endif
+
 #define YY_DECL int ddslex YY_PROTO(( void ))
 #define YY_INPUT(buf,result,max_size) { \
     fgets((buf), (max_size), yyin); \

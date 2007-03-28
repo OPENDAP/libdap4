@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-2002
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -32,7 +32,8 @@
 #include "config.h"
 
 static char rcsid[] not_used =
-    { "$Id$" };
+    { "$Id$"
+    };
 
 #include <signal.h>
 
@@ -63,17 +64,17 @@ SignalHandler::initialize_instance()
 }
 
 /// Private static void method.
-void 
+void
 SignalHandler::delete_instance()
 {
     if (SignalHandler::d_instance) {
-	for (int i = 0; i < NSIG; ++i) {
-	    d_signal_handlers[i] = 0;
-	    d_old_handlers[i] = 0;
-	}
+        for (int i = 0; i < NSIG; ++i) {
+            d_signal_handlers[i] = 0;
+            d_old_handlers[i] = 0;
+        }
 
-	delete SignalHandler::d_instance; 
-	SignalHandler::d_instance = 0;
+        delete SignalHandler::d_instance;
+        SignalHandler::d_instance = 0;
     }
 }
 
@@ -83,41 +84,41 @@ SignalHandler::delete_instance()
     handle_signal method.
 
     @param signum The number of the signal. */
-void 
+void
 SignalHandler::dispatcher(int signum)
 {
     // Perform a sanity check...
     if (SignalHandler::d_signal_handlers[signum] != 0)
-	// Dispatch the handler's hook method.
-	SignalHandler::d_signal_handlers[signum]->handle_signal(signum);
-    
+        // Dispatch the handler's hook method.
+        SignalHandler::d_signal_handlers[signum]->handle_signal(signum);
+
     Sigfunc *old_handler = SignalHandler::d_old_handlers[signum];
     if (old_handler == SIG_IGN || old_handler == SIG_ERR)
-	return;
+        return;
     else if (old_handler == SIG_DFL) {
-	switch (signum) {
+        switch (signum) {
 #ifndef WIN32
-	  case SIGHUP:
-	  case SIGKILL:
-	  case SIGUSR1:
-	  case SIGUSR2:
-	  case SIGPIPE:
-	  case SIGALRM:
+        case SIGHUP:
+        case SIGKILL:
+        case SIGUSR1:
+        case SIGUSR2:
+        case SIGPIPE:
+        case SIGALRM:
 #endif
-	  case SIGINT:
-	  case SIGTERM: _exit(EXIT_FAILURE);
+        case SIGINT:
+        case SIGTERM: _exit(EXIT_FAILURE);
 
-	    // register_handler() should never allow any fiddling with
-	    // signals other than those listed above.
-	  default: abort();
-	}
+            // register_handler() should never allow any fiddling with
+            // signals other than those listed above.
+        default: abort();
+        }
     }
     else
-	old_handler(signum);
+        old_handler(signum);
 }
 
 /** Get a pointer to the single instance of SignalHandler. */
-SignalHandler* 
+SignalHandler*
 SignalHandler::instance()
 {
     pthread_once(&instance_control, initialize_instance);
@@ -138,31 +139,31 @@ SignalHandler::instance()
     SIG_IGN. Default is false.
     @return A pointer to the old EventHandler or null. */
 EventHandler *
-SignalHandler::register_handler(int signum, EventHandler *eh, bool override) 
+SignalHandler::register_handler(int signum, EventHandler *eh, bool override)
 {
     // Check first for improper use.
     switch (signum) {
 #ifndef WIN32
-      case SIGHUP:
-      case SIGKILL:
-      case SIGUSR1:
-      case SIGUSR2:
-      case SIGPIPE:
-      case SIGALRM:
+    case SIGHUP:
+    case SIGKILL:
+    case SIGUSR1:
+    case SIGUSR2:
+    case SIGPIPE:
+    case SIGALRM:
 #endif
-      case SIGINT:
-      case SIGTERM: break;
+    case SIGINT:
+    case SIGTERM: break;
 
-      default: throw InternalErr(__FILE__, __LINE__,
-		  string("Call to register_handler with unsupported signal (")
-		  + long_to_string(signum) + string(")."));
+    default: throw InternalErr(__FILE__, __LINE__,
+                                   string("Call to register_handler with unsupported signal (")
+                                   + long_to_string(signum) + string(")."));
     }
 
     // Save the old EventHandler
     EventHandler *old_eh = SignalHandler::d_signal_handlers[signum];
 
     SignalHandler::d_signal_handlers[signum] = eh;
- 
+
     // Register the dispatcher to handle this signal. See Stevens, Advanced
     // Programming in the UNIX Environment, p.298.
 #ifndef WIN32
@@ -176,35 +177,35 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool override)
     // jhrg
     if (signum == SIGALRM) {
 #ifdef SA_INTERUPT
-	sa.sa_flags |= SA_INTERUPT;
+        sa.sa_flags |= SA_INTERUPT;
 #endif
     }
     else {
 #ifdef SA_RESTART
-	sa.sa_flags |= SA_RESTART;
+        sa.sa_flags |= SA_RESTART;
 #endif
     }
 
-    struct sigaction osa;	// extract the old handler/action
+    struct sigaction osa; // extract the old handler/action
 
     if (sigaction(signum, &sa, &osa) < 0)
-	throw InternalErr(__FILE__, __LINE__, "Could not register a signal handler.");
+        throw InternalErr(__FILE__, __LINE__, "Could not register a signal handler.");
 
     // Take care of the case where this interface is used to register a
     // handler more than once. We want to make sure that the dispatcher is
     // not installed as the 'old handler' because that results in an infinite
     // loop. 02/10/04 jhrg
     if (override)
-	SignalHandler::d_old_handlers[signum] = SIG_IGN;
+        SignalHandler::d_old_handlers[signum] = SIG_IGN;
     else if (osa.sa_handler != dispatcher)
-	SignalHandler::d_old_handlers[signum] = osa.sa_handler;
+        SignalHandler::d_old_handlers[signum] = osa.sa_handler;
 #endif
 
     return old_eh;
 }
 
 /** Remove the event hander.
-    @param signum The signal number of the handler to remove. 
+    @param signum The signal number of the handler to remove.
     @return The old event handler */
 EventHandler *
 SignalHandler::remove_handler(int signum)

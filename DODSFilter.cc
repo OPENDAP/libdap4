@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1997-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -36,7 +36,9 @@
 
 #include "config.h"
 
-static char rcsid[] not_used = {"$Id$"};
+static char rcsid[] not_used =
+    {"$Id$"
+    };
 
 #include <signal.h>
 
@@ -48,7 +50,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include <fcntl.h>
 #include <process.h>
 #endif
- 
+
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -71,21 +73,21 @@ static char rcsid[] not_used = {"$Id$"};
 
 using namespace std;
 
-const string usage = 
-"Usage: <handler name> -o <response> -u <url> [options ...] [data set]\n\
-\n\
-options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
-         -u <url>: The complete URL minus the CE (required for DDX)\n\
-         -c: Compress the response using the deflate algorithm.\n\
-         -e <expr>: When returning a DataDDS, use <expr> as the constraint.\n\
-         -v <version>: Use <version> as the version number\n\
-         -d <dir>: Look for ancillary file in <dir> (deprecated).\n\
-         -f <file>: Look for ancillary data in <file> (deprecated).\n\
-         -r <dir>: Use <dir> as a cache directory\n\
-         -l <time>: Conditional request; if data source is unchanged since\n\
-                    <time>, return an HTTP 304 response.\n\
-         -t <seconds>: Timeout the handler after <seconds>.\n\
-";
+const string usage =
+    "Usage: <handler name> -o <response> -u <url> [options ...] [data set]\n\
+    \n\
+    options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
+    -u <url>: The complete URL minus the CE (required for DDX)\n\
+    -c: Compress the response using the deflate algorithm.\n\
+    -e <expr>: When returning a DataDDS, use <expr> as the constraint.\n\
+    -v <version>: Use <version> as the version number\n\
+    -d <dir>: Look for ancillary file in <dir> (deprecated).\n\
+    -f <file>: Look for ancillary data in <file> (deprecated).\n\
+    -r <dir>: Use <dir> as a cache directory\n\
+    -l <time>: Conditional request; if data source is unchanged since\n\
+    <time>, return an HTTP 304 response.\n\
+    -t <seconds>: Timeout the handler after <seconds>.\n\
+    ";
 
 #if 0
 // Removed the call to waitpid in send_data() because I think calling fflush
@@ -99,68 +101,68 @@ options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
 #endif
 
 /** Create an instance of DODSFilter using the command line
-    arguments passed by the CGI (or other) program.  The default
-    constructor is private; this and the copy constructor (which is
-    just the default copy constructor) are the only way to create an
-    instance of DODSFilter.
+arguments passed by the CGI (or other) program.  The default
+constructor is private; this and the copy constructor (which is
+just the default copy constructor) are the only way to create an
+instance of DODSFilter.
 
-    These are the valid options:
+These are the valid options:
 
-    <dl>
-    <dt><i>filename</i><dd>
-    The name of the file on which the filter is to operate.  Usually
-    this would be the file whose data has been requested. In fact, this class
-    can be specialized and <i>any meaning</i> can be associated to this
-    string. It could be the name of a database, for example.
+<dl>
+<dt><i>filename</i><dd>
+The name of the file on which the filter is to operate.  Usually
+this would be the file whose data has been requested. In fact, this class
+can be specialized and <i>any meaning</i> can be associated to this
+string. It could be the name of a database, for example.
 
-    <dt><tt>-o</tt> <i>response</i><dd> 
+<dt><tt>-o</tt> <i>response</i><dd>
 
-    Specifies the type of response desired. The \e response is a string 
-    and must be one of \c DAS, \c DDS, \c DataDDS or \c Version. Note 
-    that \c Version returns version information in the body of the response
-    and is useful for debugging, et cetera. Each response returns version
-    information in an HTTP header for internal use by a client.
+Specifies the type of response desired. The \e response is a string
+and must be one of \c DAS, \c DDS, \c DataDDS or \c Version. Note
+that \c Version returns version information in the body of the response
+and is useful for debugging, et cetera. Each response returns version
+information in an HTTP header for internal use by a client.
 
-    <dt><tt>-c</tt><dd>
-    Send compressed data. Data are compressed using the deflate program.
+<dt><tt>-c</tt><dd>
+Send compressed data. Data are compressed using the deflate program.
 
-    <dt><tt>-e</tt> <i>expression</i><dd>
-    This option specifies a non-blank constraint expression used to
-    subsample a dataset.
+<dt><tt>-e</tt> <i>expression</i><dd>
+This option specifies a non-blank constraint expression used to
+subsample a dataset.
 
-    <dt><tt>-v</tt> <i>cgi-version</i><dd> Set the CGI/Server version to
-    <tt>cgi-version</tt>. This is a way for the caller to set version
-    information passed back to the client either as the response to a
-    version request of in the response headers.
+<dt><tt>-v</tt> <i>cgi-version</i><dd> Set the CGI/Server version to
+<tt>cgi-version</tt>. This is a way for the caller to set version
+information passed back to the client either as the response to a
+version request of in the response headers.
 
-    <dt><tt>-d</tt> <i>ancdir</i><dd>
-    Specifies that ancillary data be sought in the <i>ancdir</i>
-    directory. <i>ancdir</i> must end in '/'.
+<dt><tt>-d</tt> <i>ancdir</i><dd>
+Specifies that ancillary data be sought in the <i>ancdir</i>
+directory. <i>ancdir</i> must end in '/'.
 
-    <dt><tt>-f</tt> <i>ancfile</i><dd>
-    Specifies that ancillary data may be found in a file called 
-    <i>ancfile</i>.
+<dt><tt>-f</tt> <i>ancfile</i><dd>
+Specifies that ancillary data may be found in a file called
+<i>ancfile</i>.
 
-    <dt><tt>-r</tt> <i>cache directory</i><dd>
-    Specify a directory to use if/when files are to be cached. Not all
-    handlers support caching and each uses its own rules tailored to a
-    specific file or data type.
+<dt><tt>-r</tt> <i>cache directory</i><dd>
+Specify a directory to use if/when files are to be cached. Not all
+handlers support caching and each uses its own rules tailored to a
+specific file or data type.
 
-    <dt><tt>-t</tt> <i>timeout</i><dd> Specifies a a timeout value in
-    seconds. If the server runs longer than \e timeout seconds, an Error is
-    returned to the client explaining that the request has timed out. 
+<dt><tt>-t</tt> <i>timeout</i><dd> Specifies a a timeout value in
+seconds. If the server runs longer than \e timeout seconds, an Error is
+returned to the client explaining that the request has timed out.
 
-    <dt><tt>-l</tt> <i>time</i><dd> Indicates that the request is a
-    conditional request; send a complete response if and only if the data has
-    changed since <i>time</i>. If it has not changed since <i>time</i>, then
-    send a 304 (Not Modified) response. The <i>time</i> parameter is the
-    <tt>Last-Modified</tt> time from an If-Modified-Since condition GET
-    request. It is given in seconds since the start of the Unix epoch
-    (Midnight, 1 Jan 1970).
+<dt><tt>-l</tt> <i>time</i><dd> Indicates that the request is a
+conditional request; send a complete response if and only if the data has
+changed since <i>time</i>. If it has not changed since <i>time</i>, then
+send a 304 (Not Modified) response. The <i>time</i> parameter is the
+<tt>Last-Modified</tt> time from an If-Modified-Since condition GET
+request. It is given in seconds since the start of the Unix epoch
+(Midnight, 1 Jan 1970).
 
-    </dl>
+</dl>
 
-    @brief DODSFilter constructor. */
+@brief DODSFilter constructor. */
 
 DODSFilter::DODSFilter(int argc, char *argv[]) throw(Error)
 {
@@ -184,14 +186,14 @@ DODSFilter::~DODSFilter()
 }
 
 /** Called when initializing a DODSFilter that's not going to be passed a
-    command line arguments. */
+command line arguments. */
 void
 DODSFilter::initialize()
 {
     // Set default values. Don't use the C++ constructor initialization so
     // that a subclass can have more control over this process.
     d_comp = false;
-    d_bad_options = false; 
+    d_bad_options = false;
     d_conditional_request = false;
     d_dataset = "";
     d_ce = "";
@@ -200,7 +202,7 @@ DODSFilter::initialize()
     d_anc_file = "";
     d_cache_dir = "";
     d_response = Unknown_Response;;
-    d_anc_das_lmt = 0; 
+    d_anc_das_lmt = 0;
     d_anc_dds_lmt = 0;
     d_if_modified_since = -1;
     d_url = "";
@@ -208,24 +210,24 @@ DODSFilter::initialize()
     d_timeout = 0;
 
 #ifdef WIN32
-        //  We want serving from win32 to behave in a manner
-        //  similiar to the UNIX way - no CR->NL terminated lines
-        //  in files. Hence stdout goes to binary mode.
-        _setmode(_fileno(stdout), _O_BINARY);
+    //  We want serving from win32 to behave in a manner
+    //  similiar to the UNIX way - no CR->NL terminated lines
+    //  in files. Hence stdout goes to binary mode.
+    _setmode(_fileno(stdout), _O_BINARY);
 #endif
 }
 
 /** Initialialize. Specializations can call this once an empty DODSFilter has
-    been created using the default constructor. Using a method such as this
-    provides a way to specialize the process_options() method and then have
-    that specialization called by the subclass' constructor. 
+been created using the default constructor. Using a method such as this
+provides a way to specialize the process_options() method and then have
+that specialization called by the subclass' constructor.
 
-    This class and any class that specializes it should call this method in
-    its constructor. Note that when this method is called, the object is \e
-    not fully constructed. 
+This class and any class that specializes it should call this method in
+its constructor. Note that when this method is called, the object is \e
+not fully constructed.
 
-    @param argc The argument count
-    @param argv The vector of char * argument strings. */
+@param argc The argument count
+@param argv The vector of char * argument strings. */
 void
 DODSFilter::initialize(int argc, char *argv[])
 {
@@ -240,58 +242,58 @@ DODSFilter::initialize(int argc, char *argv[])
     // there MUST be a dataset name OR the caller is asking for version
     // information. If neither is true, then the options are bad.
     if (next_arg < argc) {
-	d_dataset = argv[next_arg];
+        d_dataset = argv[next_arg];
         d_dataset = www2id(d_dataset, "%", "%20");
     }
-    else if (get_response() != Version_Response)		
-	print_usage(); 		// Throws Error
+    else if (get_response() != Version_Response)
+        print_usage();   // Throws Error
 }
 
 /** Processing the command line options passed to the filter is handled by
-    this method so that specializations can change the options easily. 
-    
-    @param argc The argument count
-    @param argv The vector of char * argument strings. 
-    @return The index of the next, unprocessed, argument. This must be the
-    identifier passed to the filter program that identifies the data source.
-    It's often a file name. */
+this method so that specializations can change the options easily.
+
+@param argc The argument count
+@param argv The vector of char * argument strings.
+@return The index of the next, unprocessed, argument. This must be the
+identifier passed to the filter program that identifies the data source.
+It's often a file name. */
 int
 DODSFilter::process_options(int argc, char *argv[])
 {
     DBG(cerr << "Entering process_options... ");
 
     int option_char;
-    GetOpt getopt (argc, argv, "ce:v:d:f:r:l:o:u:t:");
+    GetOpt getopt (argc, argv, "ce: v: d: f: r: l: o: u: t: ");
 
     while ((option_char = getopt()) != EOF) {
-	switch (option_char) {
-	  case 'c': d_comp = true; break;
-	  case 'e': set_ce(getopt.optarg); break;
-	  case 'v': set_cgi_version(getopt.optarg); break;
-	  case 'd': d_anc_dir = getopt.optarg; break;
-	  case 'f': d_anc_file = getopt.optarg; break;
-	  case 'r': d_cache_dir = getopt.optarg; break;
-	  case 'o': set_response(getopt.optarg); break;
-	  case 'u': set_URL(getopt.optarg); break;
-	  case 't': d_timeout = atoi(getopt.optarg); break;
-	  case 'l': 
-	    d_conditional_request = true;
-	    d_if_modified_since 
-		= static_cast<time_t>(strtol(getopt.optarg, NULL, 10));
-	    break;
-	  default: print_usage(); // Throws Error
-	}
+        switch (option_char) {
+        case 'c': d_comp = true; break;
+        case 'e': set_ce(getopt.optarg); break;
+        case 'v': set_cgi_version(getopt.optarg); break;
+        case 'd': d_anc_dir = getopt.optarg; break;
+        case 'f': d_anc_file = getopt.optarg; break;
+        case 'r': d_cache_dir = getopt.optarg; break;
+        case 'o': set_response(getopt.optarg); break;
+        case 'u': set_URL(getopt.optarg); break;
+        case 't': d_timeout = atoi(getopt.optarg); break;
+        case 'l':
+            d_conditional_request = true;
+            d_if_modified_since
+            = static_cast<time_t>(strtol(getopt.optarg, NULL, 10));
+            break;
+        default: print_usage(); // Throws Error
+        }
     }
 
     DBGN(cerr << "exiting." << endl);
 
-    return getopt.optind;	// return the index of the next argument
+    return getopt.optind; // return the index of the next argument
 }
 
-/** @brief Is this request conditional? 
+/** @brief Is this request conditional?
 
-    @return True if the request is conditional.
-    @see get_request_if_modified_since(). */
+@return True if the request is conditional.
+@see get_request_if_modified_since(). */
 bool
 DODSFilter::is_conditional() const
 {
@@ -299,18 +301,18 @@ DODSFilter::is_conditional() const
 }
 
 /** Set the CGI/Server version number. Servers use this when answering
-    requests for version information. The vesion `number' should include
-    both the name of the server (e.g., <tt>ff_dods</tt>) as well
-    as the version 
-    number. Since this information is typically divined by configure,
-    it's up to the executable to poke the correct value in using this
-    method.
+requests for version information. The vesion `number' should include
+both the name of the server (e.g., <tt>ff_dods</tt>) as well
+as the version
+number. Since this information is typically divined by configure,
+it's up to the executable to poke the correct value in using this
+method.
 
-    Note that the -v switch that this class understands is deprecated
-    since it is usually called by Perl code. It makes more sense to have
-    the actual C++ software set the version string. 
+Note that the -v switch that this class understands is deprecated
+since it is usually called by Perl code. It makes more sense to have
+the actual C++ software set the version string.
 
-    @param version A version string for this server. */
+@param version A version string for this server. */
 void
 DODSFilter::set_cgi_version(string version)
 {
@@ -318,10 +320,10 @@ DODSFilter::set_cgi_version(string version)
 }
 
 /** Return the version information passed to the instance when it was
-    created. This string is passed to the DODSFilter ctor using the -v
-    option.
+created. This string is passed to the DODSFilter ctor using the -v
+option.
 
-    @return The version string supplied at initialization. */
+@return The version string supplied at initialization. */
 string
 DODSFilter::get_cgi_version() const
 {
@@ -329,11 +331,11 @@ DODSFilter::get_cgi_version() const
 }
 
 /** Return the entire constraint expression in a string.  This
-    includes both the projection and selection clauses, but not the
-    question mark.
+includes both the projection and selection clauses, but not the
+question mark.
 
-    @brief Get the constraint expression. 
-    @return A string object that contains the constraint expression. */
+@brief Get the constraint expression.
+@return A string object that contains the constraint expression. */
 string
 DODSFilter::get_ce() const
 {
@@ -347,13 +349,13 @@ DODSFilter::set_ce(string _ce)
 }
 
 /** The ``dataset name'' is the filename or other string that the
-    filter program will use to access the data. In some cases this
-    will indicate a disk file containing the data.  In others, it
-    may represent a database query or some other exotic data
-    access method. 
+filter program will use to access the data. In some cases this
+will indicate a disk file containing the data.  In others, it
+may represent a database query or some other exotic data
+access method.
 
-    @brief Get the dataset name. 
-    @return A string object that contains the name of the dataset. */
+@brief Get the dataset name.
+@return A string object that contains the name of the dataset. */
 string
 DODSFilter::get_dataset_name() const
 {
@@ -363,36 +365,36 @@ DODSFilter::get_dataset_name() const
 void
 DODSFilter::set_dataset_name(const string ds)
 {
-  d_dataset = www2id(ds, "%", "%20");
+    d_dataset = www2id(ds, "%", "%20");
 }
 
 /** Get the URL. This returns the URL, minus the constraint originally sent
-    to the server.
-    @return The URL. */
+to the server.
+@return The URL. */
 string
 DODSFilter::get_URL() const
 {
     return d_url;
 }
 
-/** Set the URL. Set the URL sent to the server. 
-    @param url The URL, minus the constraint. */
+/** Set the URL. Set the URL sent to the server.
+@param url The URL, minus the constraint. */
 void
 DODSFilter::set_URL(const string &url)
 {
     if (url.find('?') != url.npos)
-	print_usage();		// Throws Error
+        print_usage();  // Throws Error
 
     d_url = url;
 }
 
 /** To read version information that is specific to a certain
-    dataset, override this method with an implementation that does
-    what you want. By default, this returns an empty string.
+dataset, override this method with an implementation that does
+what you want. By default, this returns an empty string.
 
-    @brief Get the version information for the dataset.  
-    @return A string object that contains the dataset version
-    information.  */ 
+@brief Get the version information for the dataset.
+@return A string object that contains the dataset version
+information.  */
 string
 DODSFilter::get_dataset_version() const
 {
@@ -400,45 +402,39 @@ DODSFilter::get_dataset_version() const
 }
 
 /** Set the response to be returned. Valid response names are "DAS", "DDS",
-    "DataDDS, "Version".
- 
-    @param r The name of the object. 
-    @exception InternalErr Thrown if the response is not one of the valid
-    names. */
-void 
-DODSFilter::set_response(const string &r)
+"DataDDS, "Version".
+
+@param r The name of the object.
+@exception InternalErr Thrown if the response is not one of the valid
+names. */
+void DODSFilter::set_response(const string &r)
 {
-    if (r == "DAS" || r == "das")
-    {
+    if (r == "DAS" || r == "das") {
 	d_response = DAS_Response;
 	d_action = "das" ;
     }
-    else if (r == "DDS" || r == "dds")
-    {
+    else if (r == "DDS" || r == "dds") {
 	d_response = DDS_Response;
 	d_action = "dds" ;
     }
-    else if (r == "DataDDS" || r == "dods")
-    {
+    else if (r == "DataDDS" || r == "dods") {
 	d_response = DataDDS_Response;
 	d_action = "dods" ;
     }
-    else if (r == "DDX" || r == "ddx")
-    {
+    else if (r == "DDX" || r == "ddx") {
 	d_response = DDX_Response;
 	d_action = "ddx" ;
     }
-    else if (r == "Version")
-    {
+    else if (r == "Version") {
 	d_response = Version_Response;
 	d_action = "version" ;
     }
     else
-	print_usage(); 		// Throws Error
+	print_usage();   // Throws Error
 }
 
 /** Get the enum name of the response to be returned. */
-DODSFilter::Response 
+DODSFilter::Response
 DODSFilter::get_response() const
 {
     return d_response;
@@ -464,9 +460,9 @@ string DODSFilter::get_action() const
 
     From the stat(2) man page: ``Traditionally, <tt>st_mtime</tt>
     is changed by mknod(2), utime(2), and write(2). The
-    <tt>st_mtime</tt> is not changed for 
+    <tt>st_mtime</tt> is not changed for
     changes in owner, group, hard link count, or mode.''
-	
+
     @return Time of the last modification in seconds since the epoch.
     @see get_das_last_modified_time()
     @see get_dds_last_modified_time() */
@@ -488,17 +484,17 @@ DODSFilter::get_dataset_last_modified_time() const
 time_t
 DODSFilter::get_das_last_modified_time(const string &anc_location) const
 {
-    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location=" 
-	<< anc_location << "call faf(das) d_dataset=" << d_dataset
-	<< " d_anc_file=" << d_anc_file << endl);
+    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location="
+        << anc_location << "call faf(das) d_dataset=" << d_dataset
+        << " d_anc_file=" << d_anc_file << endl);
 
-    string name 
-	= find_ancillary_file(d_dataset, "das", 
-			      (anc_location == "") ? d_anc_dir : anc_location, 
-			      d_anc_file);
+    string name
+    = find_ancillary_file(d_dataset, "das",
+                          (anc_location == "") ? d_anc_dir : anc_location,
+                          d_anc_file);
 
     return max((name != "") ? last_modified_time(name) : 0,
-	       get_dataset_last_modified_time()); 
+               get_dataset_last_modified_time());
 }
 
 /** Get the last modified time for the dataset's DDS. This time, given in
@@ -512,16 +508,16 @@ time_t
 DODSFilter::get_dds_last_modified_time(const string &anc_location) const
 {
     DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location="
-	<< anc_location << "call faf(dds) d_dataset=" << d_dataset 
-	<< " d_anc_file=" << d_anc_file << endl);
+        << anc_location << "call faf(dds) d_dataset=" << d_dataset
+        << " d_anc_file=" << d_anc_file << endl);
 
-    string name 
-	= find_ancillary_file(d_dataset, "dds",
-			      (anc_location == "") ? d_anc_dir : anc_location, 
-			      d_anc_file);
+    string name
+    = find_ancillary_file(d_dataset, "dds",
+                          (anc_location == "") ? d_anc_dir : anc_location,
+                          d_anc_file);
 
     return max((name != "") ? last_modified_time(name) : 0,
-	       get_dataset_last_modified_time()); 
+               get_dataset_last_modified_time());
 }
 
 /** Get the last modified time to be used for a particular data request.
@@ -541,24 +537,24 @@ time_t
 DODSFilter::get_data_last_modified_time(const string &anc_location) const
 {
     DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location="
-	<< anc_location << "call faf(both) d_dataset=" << d_dataset 
-	<< " d_anc_file=" << d_anc_file << endl);
+        << anc_location << "call faf(both) d_dataset=" << d_dataset
+        << " d_anc_file=" << d_anc_file << endl);
 
-    string dds_name 
-	= find_ancillary_file(d_dataset, "dds",
-			      (anc_location == "") ? d_anc_dir : anc_location, 
-			      d_anc_file);
+    string dds_name
+    = find_ancillary_file(d_dataset, "dds",
+                          (anc_location == "") ? d_anc_dir : anc_location,
+                          d_anc_file);
     string das_name
-	= find_ancillary_file(d_dataset, "das",
-			      (anc_location == "") ? d_anc_dir : anc_location, 
-			      d_anc_file);
+    = find_ancillary_file(d_dataset, "das",
+                          (anc_location == "") ? d_anc_dir : anc_location,
+                          d_anc_file);
 
     time_t m = max((das_name != "") ? last_modified_time(das_name) : (time_t)0,
-		   (dds_name != "") ? last_modified_time(dds_name) : (time_t)0);
+                   (dds_name != "") ? last_modified_time(dds_name) : (time_t)0);
     // Note that this is a call to get_dataset_... not get_data_...
     time_t n = get_dataset_last_modified_time();
 
-    return max(m, n); 
+    return max(m, n);
 }
 
 /** Get the value of a conditional request's If-Modified-Since header.
@@ -583,14 +579,14 @@ DODSFilter::get_request_if_modified_since() const
 string
 DODSFilter::get_cache_dir() const
 {
-  return d_cache_dir;
+    return d_cache_dir;
 }
 
 /** Set the server's timeout value. A value of zero (the default) means no
     timeout.
 
     @param t Server timeout in seconds. Default is zero (no timeout). */
-void 
+void
 DODSFilter::set_timeout(int t)
 {
     d_timeout = t;
@@ -604,7 +600,7 @@ DODSFilter::get_timeout() const
 }
 
 /** Use values of this instance to establish a timeout alarm for the server.
-    If the timeout value is zero, do nothing. 
+    If the timeout value is zero, do nothing.
 
     @todo When the alarm handler is called, two CRLF pairs are dumped to the
     stream and then an Error object is sent. No attempt is made to write the
@@ -619,9 +615,9 @@ DODSFilter::establish_timeout(FILE *stream) const
 {
 #ifndef WIN32
     if (d_timeout > 0) {
-	SignalHandler *sh = SignalHandler::instance();
-	sh->register_handler(SIGALRM, new AlarmHandler(stream));
-	alarm(d_timeout);
+        SignalHandler *sh = SignalHandler::instance();
+        sh->register_handler(SIGALRM, new AlarmHandler(stream));
+        alarm(d_timeout);
     }
 #endif
 }
@@ -639,22 +635,22 @@ DODSFilter::establish_timeout(FILE *stream) const
 void
 DODSFilter::read_ancillary_das(DAS &das, const string &anc_location) const
 {
-    string name = find_ancillary_file(d_dataset, "das", 
-			      (anc_location == "") ? d_anc_dir : anc_location, 
-				      d_anc_file);
+    string name = find_ancillary_file(d_dataset, "das",
+                                      (anc_location == "") ? d_anc_dir : anc_location,
+                                      d_anc_file);
 
     FILE *in = fopen(name.c_str(), "r");
     if (in) {
-	das.parse(in);
-	int res = fclose( in ) ;
-	if( res ) {
-	    DBG(cerr << "DODSFilter::read_ancillary_das - Failed to close file " << (void *)in << endl ;) ;
-	}
+        das.parse(in);
+        int res = fclose(in) ;
+        if (res) {
+            DBG(cerr << "DODSFilter::read_ancillary_das - Failed to close file " << (void *)in << endl ;) ;
+        }
     }
 }
 
 /** Read the ancillary DDS information and merge it into the input
-    DDS object. 
+    DDS object.
 
     @brief Test if ancillary data must be read.
     @param dds A DDS object that will be augmented with the
@@ -665,22 +661,20 @@ DODSFilter::read_ancillary_das(DAS &das, const string &anc_location) const
 void
 DODSFilter::read_ancillary_dds(DDS &dds, const string &anc_location) const
 {
-    string name = find_ancillary_file(d_dataset, "dds", 
-			      (anc_location == "") ? d_anc_dir : anc_location, 
-				      d_anc_file);
+    string name = find_ancillary_file(d_dataset, "dds",
+                                      (anc_location == "") ? d_anc_dir : anc_location,
+                                      d_anc_file);
     FILE *in = fopen(name.c_str(), "r");
     if (in) {
-	dds.parse(in);
-	int res = fclose( in ) ;
-	if( res ) {
-	    DBG(cerr << "DODSFilter::read_ancillary_dds - Failed to close " << (void *)in << endl ;) ;
-	}
+        dds.parse(in);
+        int res = fclose(in) ;
+        if (res) {
+            DBG(cerr << "DODSFilter::read_ancillary_dds - Failed to close " << (void *)in << endl ;) ;
+        }
     }
 }
 
-static const char *emessage = \
-"DODS internal server error; usage error. Please report this to the dataset \
-maintainer, or to support@unidata.ucar.edu.";
+static const char *emessage = "DODS internal server error; usage error. Please report this to the dataset maintainer, or to support@unidata.ucar.edu.";
 
 /** This message is printed when the filter program is incorrectly
     invoked by the dispatch CGI.  This is an error in the server
@@ -688,10 +682,10 @@ maintainer, or to support@unidata.ucar.edu.";
     written to stderr instead of stdout.  A server's stderr messages
     show up in the httpd log file. In addition, an error object is
     sent back to the client program telling them that the server is
-    broken. 
+    broken.
 
     @brief Print usage information for a filter program. */
-void 
+void
 DODSFilter::print_usage() const
 {
     // Write a message to the WWW server error log file.
@@ -704,8 +698,8 @@ DODSFilter::print_usage() const
     information from the httpd server, the server dispatch scripts,
     the DODS core software, and (optionally) the dataset.
 
-    @brief Send version information back to the client program. */ 
-void 
+    @brief Send version information back to the client program. */
+void
 DODSFilter::send_version_info() const
 {
     do_version(d_cgi_ver, get_dataset_version());
@@ -719,7 +713,7 @@ DODSFilter::send_version_info() const
     @param out The output stream to which the DAS is to be sent.
     @param das The DAS object to be sent.
     @param anc_location The directory in which the external DAS file resides.
-    @param with_mime_headers If true (the default) send MIME headers. 
+    @param with_mime_headers If true (the default) send MIME headers.
     @return void
     @see DAS */
 void
@@ -728,16 +722,16 @@ DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location,
 {
     time_t das_lmt = get_das_last_modified_time(anc_location);
     if (is_conditional()
-	&& das_lmt <= get_request_if_modified_since()
+        && das_lmt <= get_request_if_modified_since()
         && with_mime_headers) {
-	set_mime_not_modified(out);
+        set_mime_not_modified(out);
     }
     else {
         if (with_mime_headers)
-	    set_mime_text(out, dods_das, d_cgi_ver, x_plain, das_lmt);
-	das.print(out);
+            set_mime_text(out, dods_das, d_cgi_ver, x_plain, das_lmt);
+        das.print(out);
     }
-    fflush( out ) ;
+    fflush(out) ;
 }
 
 void
@@ -758,46 +752,44 @@ DODSFilter::send_das(DAS &das, const string &anc_location,
     @param eval A reference to the ConstraintEvaluator to use.
     @param constrained If this argument is true, evaluate the
     current constraint expression and send the `constrained DDS'
-    back to the client. 
+    back to the client.
     @param anc_location The directory in which the external DAS file resides.
-    @param with_mime_headers If true (the default) send MIME headers. 
+    @param with_mime_headers If true (the default) send MIME headers.
     @return void
     @see DDS */
 void
-DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval, 
+DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
                      bool constrained,
-		     const string &anc_location,
+                     const string &anc_location,
                      bool with_mime_headers) const
 {
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (constrained)
-	eval.parse_constraint(d_ce, dds);
+        eval.parse_constraint(d_ce, dds);
 
     if (eval.functional_expression())
-        throw Error(
-"Function calls can only be used with data requests. To see the structure\n\
-of the underlying data source, reissue the URL without the function.");
- 
+        throw Error("Function calls can only be used with data requests. To see the structure\nof the underlying data source, reissue the URL without the function.");
+
     time_t dds_lmt = get_dds_last_modified_time(anc_location);
-    if (is_conditional() 
-	&& dds_lmt <= get_request_if_modified_since()
+    if (is_conditional()
+        && dds_lmt <= get_request_if_modified_since()
         && with_mime_headers) {
-	set_mime_not_modified(out);
+        set_mime_not_modified(out);
     }
     else {
         if (with_mime_headers)
-	    set_mime_text(out, dods_dds, d_cgi_ver, x_plain, dds_lmt);
-	if (constrained)
-	    dds.print_constrained(out);
-	else
-	    dds.print(out);
+            set_mime_text(out, dods_dds, d_cgi_ver, x_plain, dds_lmt);
+        if (constrained)
+            dds.print_constrained(out);
+        else
+            dds.print(out);
     }
 
-    fflush( out ) ;
+    fflush(out) ;
 }
 
 void
-DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval, 
+DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval,
                      bool constrained, const string &anc_location,
                      bool with_mime_headers) const
 {
@@ -807,9 +799,9 @@ DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval,
 // 'lmt' unused. Should it be used to supply a LMT or removed from the
 // method? jhrg 8/9/05
 void
-DODSFilter::functional_constraint(BaseType &var, DDS &dds, 
+DODSFilter::functional_constraint(BaseType &var, DDS &dds,
                                   ConstraintEvaluator &eval, FILE *out)
-    const
+const
 {
     fprintf(out, "Dataset {\n");
     var.print_decl(out, "    ", true, false, true);
@@ -817,26 +809,26 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
     fprintf(out, "Data:\n");
 
     fflush(out);
-      
+
     // Grab a stream encodes using XDR.
     XDR *xdr_sink = new_xdrstdio(out, XDR_ENCODE);
 
     try {
-	// In the following call to serialize, suppress CE evaluation.
-	var.serialize(d_dataset, eval, dds, xdr_sink, false);
-	delete_xdrstdio(xdr_sink);
+        // In the following call to serialize, suppress CE evaluation.
+        var.serialize(d_dataset, eval, dds, xdr_sink, false);
+        delete_xdrstdio(xdr_sink);
     }
     catch (Error &e) {
-	delete_xdrstdio(xdr_sink);
-	throw;
+        delete_xdrstdio(xdr_sink);
+        throw;
     }
 }
 
 void
- DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
-                                FILE * out) const
+DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
+                               FILE * out) const
 {
-    // send constrained DDS         
+    // send constrained DDS
     dds.print_constrained(out);
     fprintf(out, "Data:\n");
     fflush(out);
@@ -854,7 +846,7 @@ void
 
         delete_xdrstdio(xdr_sink);
     }
-    catch(Error & e) {
+    catch (Error & e) {
         delete_xdrstdio(xdr_sink);
         throw;
     }
@@ -868,22 +860,22 @@ void
 
     @brief Transmit data.
     @param dds A DDS object containing the data to be sent.
-    @param eval A reference to the ConstraintEvaluator to use.    
+    @param eval A reference to the ConstraintEvaluator to use.
     @param data_stream Write the response to this stream.
     @param anc_location A directory to search for ancillary files (in
-    addition to the CWD).  This is used in a call to 
-    get_data_last_modified_time(). 
+    addition to the CWD).  This is used in a call to
+    get_data_last_modified_time().
     @param with_mime_headers If true, include the MIME headers in the response.
     Defaults to true.
     @return void */
 void
- DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
-                       FILE * data_stream, const string & anc_location,
-                       bool with_mime_headers) const
+DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
+                      FILE * data_stream, const string & anc_location,
+                      bool with_mime_headers) const
 {
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
-    // response. 
+    // response.
     time_t data_lmt = get_data_last_modified_time(anc_location);
     if (is_conditional()
         && data_lmt <= get_request_if_modified_since()
@@ -895,19 +887,20 @@ void
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
-    eval.parse_constraint(d_ce, dds);   // Throws Error if the ce doesn't parse.
+    eval.parse_constraint(d_ce, dds);   // Throws Error if the ce doesn't
+					// parse. 
 
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
-    // Start sending the response... 
+    // Start sending the response...
 #if COMPRESSION_FOR_SERVER3
     bool compress = d_comp && deflate_exists();
 #endif
 
-    // Handle *functional* constraint expressions specially 
+    // Handle *functional* constraint expressions specially
     if (eval.functional_expression()) {
         // Get the result and then start sending the headers. This provides a
-        // way to send errors back to the client w/o colliding with the 
+        // way to send errors back to the client w/o colliding with the
         // normal response headers. There's some duplication of code with this
         // and the else-clause.
         BaseType *var = eval.eval_function(dds, d_dataset);
@@ -932,7 +925,7 @@ void
         functional_constraint(*var, dds, eval, data_stream);
         delete var;
         var = 0;
-    } 
+    }
     else {
 #if COMPRESSION_FOR_SERVER3
         if (with_mime_headers)
@@ -956,10 +949,10 @@ void
 /** Send the DDX response. The DDX never contains data, instead it holds a
     reference to a Blob response which is used to get the data values. The
     DDS and DAS objects are built using code that already exists in the
-    servers. 
+    servers.
 
     @param dds The dataset's DDS \e with attributes in the variables.
-    @param eval A reference to the ConstraintEvaluator to use.    
+    @param eval A reference to the ConstraintEvaluator to use.
     @param out Destination
     @param with_mime_headers If true, include the MIME headers in the response.
     Defaults to true. */
@@ -969,17 +962,17 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
 {
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (!d_ce.empty())
-	eval.parse_constraint(d_ce, dds);
+        eval.parse_constraint(d_ce, dds);
 
     time_t dds_lmt = get_dds_last_modified_time(d_anc_dir);
 
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
-    // response. 
+    // response.
     if (is_conditional() && dds_lmt <= get_request_if_modified_since()
         && with_mime_headers) {
-	set_mime_not_modified(out);
-	return;
+        set_mime_not_modified(out);
+        return;
     }
     else {
         if (with_mime_headers)
@@ -1002,51 +995,51 @@ DODSFilter::send_blob(DDS &, FILE *, bool)
 
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
-    // response. 
+    // response.
     if (is_conditional() && data_lmt <= get_request_if_modified_since()
         && with_mime_headers) {
-	set_mime_not_modified(out);
-	return;
+        set_mime_not_modified(out);
+        return;
     }
 
     dds.parse_constraint(d_ce);
-  
-    // Handle *functional* constraint expressions specially 
+
+    // Handle *functional* constraint expressions specially
     if (dds.functional_expression()) {
-	BaseType *var = dds.eval_function(d_dataset);
-	if (!var)
-	    throw Error("Error calling the CE function.");
+        BaseType *var = dds.eval_function(d_dataset);
+        if (!var)
+            throw Error("Error calling the CE function.");
 
         if (with_mime_headers)
-	    set_mime_binary(out, dods_data, d_cgi_ver,
-			    (compress) ? deflate : x_plain, data_lmt);
-      
-	FILE *comp_sink;
-	XDR *xdr_sink;
-	int childpid = get_sinks(out, compress, &comp_sink, &xdr_sink);
-      
-	// In the following call to serialize, suppress CE evaluation.
-	if (!var->serialize(d_dataset, dds, xdr_sink, false))
-	    throw Error("Could not send the function result.");
-      
-	clean_sinks(childpid, compress, xdr_sink, comp_sink);
+            set_mime_binary(out, dods_data, d_cgi_ver,
+                            (compress) ? deflate : x_plain, data_lmt);
+
+        FILE *comp_sink;
+        XDR *xdr_sink;
+        int childpid = get_sinks(out, compress, &comp_sink, &xdr_sink);
+
+        // In the following call to serialize, suppress CE evaluation.
+        if (!var->serialize(d_dataset, dds, xdr_sink, false))
+            throw Error("Could not send the function result.");
+
+        clean_sinks(childpid, compress, xdr_sink, comp_sink);
     }
     else {
         if (with_mime_headers)
-	    set_mime_binary(out, dods_data, d_cgi_ver,
-			    (compress) ? deflate : x_plain, data_lmt);
-    
-	FILE *comp_sink;
-	XDR *xdr_sink;
-	int childpid = get_sinks(out, compress, &comp_sink, &xdr_sink);
+            set_mime_binary(out, dods_data, d_cgi_ver,
+                            (compress) ? deflate : x_plain, data_lmt);
 
-	for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
-	    if ((*i)->send_p()) // only process projected variables
-		if (!(*i)->serialize(d_dataset, dds, xdr_sink, true))
-		    throw Error(string("Could not serialize variable '")
-				+ (*i)->name() + string("'."));
-    
-	clean_sinks(childpid, compress, xdr_sink, comp_sink);
+        FILE *comp_sink;
+        XDR *xdr_sink;
+        int childpid = get_sinks(out, compress, &comp_sink, &xdr_sink);
+
+        for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
+            if ((*i)->send_p()) // only process projected variables
+                if (!(*i)->serialize(d_dataset, dds, xdr_sink, true))
+                    throw Error(string("Could not serialize variable '")
+                                + (*i)->name() + string("'."));
+
+        clean_sinks(childpid, compress, xdr_sink, comp_sink);
     }
 #endif
 }

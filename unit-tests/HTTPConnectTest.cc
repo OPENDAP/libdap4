@@ -32,7 +32,7 @@
 #include <algorithm>
 #include <functional>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "GNURegex.h"
 #include "HTTPConnect.h"

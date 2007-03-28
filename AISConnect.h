@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -39,25 +39,28 @@
 #endif
 
 /** Provide seemless client-side AIS services. */
-class AISConnect: public Connect {
+class AISConnect: public Connect
+{
 private:
     AISMerge *d_ais_merge;
 
 protected:
     /** @name Suppress the C++ defaults for these. */
     //@{
-    AISConnect() {}
-    AISConnect(const AISConnect &ac) : Connect(ac) {}
+    AISConnect()
+    {}
+    AISConnect(const AISConnect &ac) : Connect(ac)
+    {}
     //@}
 
 public:
     AISConnect(const string &name) throw(AISDatabaseReadFailed);
-    AISConnect(const string &name, const string &ais_db) 
-	throw(AISDatabaseReadFailed);
+    AISConnect(const string &name, const string &ais_db)
+    throw(AISDatabaseReadFailed);
 
     virtual ~AISConnect();
 
     virtual void request_das(DAS &das);
 };
 
-#endif // ais_connect_h 
+#endif // ais_connect_h

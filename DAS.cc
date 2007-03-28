@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -36,7 +36,9 @@
 
 #include "config.h"
 
-static char rcsid[] not_used ={"$Id$"};
+static char rcsid[] not_used =
+    {"$Id$"
+    };
 
 
 #include <stdio.h>
@@ -49,7 +51,7 @@ static char rcsid[] not_used ={"$Id$"};
 #include <iostream>
 #include <string>
 
-#include "DAS.h"		// follows pragma since DAS.h is interface
+#include "DAS.h"  // follows pragma since DAS.h is interface
 #include "Error.h"
 #include "InternalErr.h"
 #include "parser.h"
@@ -73,7 +75,7 @@ DAS::das_find(string name)
     return find_container(name); // Only containers at the top level.
 }
 
-/** Create a DAS from a single attribute table.  
+/** Create a DAS from a single attribute table.
 
     \note In an older version of this class, <tt>dflt</tt> and <tt>sz</tt>
     initialized a hash table. That is no longer used and these
@@ -87,14 +89,13 @@ DAS::das_find(string name)
     because the VHMap class had bugs I didn't want to fix. 11/23/98
     jhrg  */
 DAS::DAS(AttrTable *, unsigned int)
-{
-}
+{}
 
 /** Create a DAS object with one attribute table. Use <tt>append_attr()</tt>
     to add additional attributes.
 
     @see append_attr()
-    @param attr The initial AttrTable. 
+    @param attr The initial AttrTable.
     @param name The name of the DAS parent structure.
 */
 
@@ -107,12 +108,11 @@ DAS::DAS(AttrTable *attr, string name)
 // makes copies of those things when its copy ctor is called, so DAS can do a
 // simple member-wise copy. Similarly, we don't need to define our own op=.
 
-// This deletes the pointers to AttrTables allocated during the parse (and at 
+// This deletes the pointers to AttrTables allocated during the parse (and at
 // other times). jhrg 7/29/94
 
 DAS::~DAS()
-{
-}
+{}
 
 AttrTable::Attr_iter
 DAS::var_begin()
@@ -140,7 +140,7 @@ DAS::get_table(Attr_iter &i)
     return AttrTable::get_attr_table(i);
 }
 
-/** @brief Returns the attribute table with the given name. 
+/** @brief Returns the attribute table with the given name.
 */
 AttrTable *
 DAS::get_table(const string &name)
@@ -153,7 +153,7 @@ DAS::get_table(const string &name)
 /** @brief Adds an attribute table to the DAS.
     @name add_table()
 */
-  //@{
+//@{
 
 /** @brief Adds an attribute table to the DAS. */
 AttrTable *
@@ -165,14 +165,14 @@ DAS::add_table(const string &name, AttrTable *at)
 
 //@}
 
-/** @brief Reads a DAS in from an external source. 
+/** @brief Reads a DAS in from an external source.
 
     @name parse()
 */
-    //@{
+//@{
 
 
-/** @brief Reads a DAS from the named file. 
+/** @brief Reads a DAS from the named file.
 
     Read attributes from a file. Returns false if unable to open
     the file, otherwise returns the result of the mfunc parse. */
@@ -182,26 +182,26 @@ DAS::parse(string fname)
     FILE *in = fopen(fname.c_str(), "r");
 
     if (!in) {
-      throw Error(can_not_read_file, "Could not open: " + fname);
+        throw Error(can_not_read_file, "Could not open: " + fname);
     }
 
     parse(in);
 
     int res = fclose(in);
-    if( res ) {
-	DBG(cerr << "DAS::parse - Failed to close file " << (void *)in << endl ;) ;
+    if (res) {
+        DBG(cerr << "DAS::parse - Failed to close file " << (void *)in << endl ;) ;
     }
 }
 
-/** @brief Read attributes from a file descriptor. 
+/** @brief Read attributes from a file descriptor.
 
     If the file descriptor cannot be fdopen'd, return false, otherwise
-    return the status of the mfunc parse. 
+    return the status of the mfunc parse.
 
     \note Added call to dup() within fdopen so that once the FILE * is
     closed the decriptor fd will not also be closed (instead the
     duplicate descriptor will be closed). Thus further information can
-    be read from the descriptor fd. 
+    be read from the descriptor fd.
 */
 void
 DAS::parse(int fd)
@@ -213,30 +213,30 @@ DAS::parse(int fd)
 #endif
 
     if (!in) {
-	throw InternalErr(__FILE__, __LINE__, "Could not access file.");
+        throw InternalErr(__FILE__, __LINE__, "Could not access file.");
     }
 
     parse(in);
 
     int res = fclose(in);
-    if( res ) {
-	DBG(cerr << "DAS::parse(fd) - Failed to close " << (void *)in << endl ;) ;
+    if (res) {
+        DBG(cerr << "DAS::parse(fd) - Failed to close " << (void *)in << endl ;) ;
     }
 }
 
-    
 
-/** @brief Reads a DAS from an open file descriptor. 
+
+/** @brief Reads a DAS from an open file descriptor.
 
     Read attributes from in (which defaults to stdin). If
     dasrestart() fails, return false, otherwise return the status
-    of dasparse(). 
+    of dasparse().
 */
 void
 DAS::parse(FILE *in)
 {
     if (!in) {
-	throw InternalErr(__FILE__, __LINE__, "Null input stream.");
+        throw InternalErr(__FILE__, __LINE__, "Null input stream.");
     }
 
     void *buffer = das_buffer(in);
@@ -244,15 +244,15 @@ DAS::parse(FILE *in)
 
     parser_arg arg(this);
 
-    bool status = dasparse((void *)&arg) == 0;
+    bool status = dasparse((void *) & arg) == 0;
 
     das_delete_buffer(buffer);
 
     //  STATUS is the result of the parser function; if a recoverable error
     //  was found it will be true but arg.status() will be false.
     if (!status || !arg.status()) {// Check parse result
-	if (arg.error())
-	  throw *arg.error();
+        if (arg.error())
+            throw *arg.error();
     }
 }
 
@@ -264,7 +264,7 @@ DAS::parse(FILE *in)
     When an identifier contains a character that contains
     characters that cannot be present in a URL (e.g., a space)
     AttrTable::print replaces those characters with WWW
-    escape codes. 7/13/2001 jhrg 
+    escape codes. 7/13/2001 jhrg
 
     @param out output FILE on which to print the DAS
     @param dereference If true, follow aliases. Default is false.
@@ -273,11 +273,11 @@ DAS::parse(FILE *in)
 void
 DAS::print(FILE *out, bool dereference)
 {
-    fprintf( out, "Attributes {\n" ) ;
+    fprintf(out, "Attributes {\n") ;
 
     AttrTable::print(out, "    ", dereference);
 
-    fprintf( out, "}\n" ) ;
+    fprintf(out, "}\n") ;
 }
 
 /** @brief dumps information about this object
@@ -288,12 +288,12 @@ DAS::print(FILE *out, bool dereference)
  * @return void
  */
 void
-DAS::dump( ostream &strm ) const
+DAS::dump(ostream &strm) const
 {
     strm << DapIndent::LMarg << "DAS::dump - ("
-			      << (void *)this << ")" << endl ;
+    << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
-    AttrTable::dump( strm ) ;
+    AttrTable::dump(strm) ;
     DapIndent::UnIndent() ;
 }
 

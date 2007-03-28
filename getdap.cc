@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -36,7 +36,8 @@
 #include "config.h"
 
 static char rcsid[] not_used =
-    { "$Id$" };
+    { "$Id$"
+    };
 
 #include <stdio.h>
 #ifdef WIN32
@@ -62,30 +63,30 @@ void usage(string name)
 {
     cerr << "Usage: " << name << endl;
     cerr <<
-        " [idDaxAVvks] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]" <<
-        endl;
+    " [idDaxAVvks] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]" <<
+    endl;
     cerr << " [Vvks] <file> [<file> ...]" << endl;
     cerr << endl;
     cerr << "In the first form of the command, dereference the URL and"
-        << endl;
+    << endl;
     cerr << "perform the requested operations. This includes routing" <<
-        endl;
+    endl;
     cerr << "the returned information through the DAP processing" << endl;
     cerr << "library (parsing the returned objects, et c.). If none" <<
-        endl;
+    endl;
     cerr << "of a, d, or D are used with a URL, then the DAP library" <<
-        endl;
+    endl;
     cerr << "routines are NOT used and the URLs contents are dumped" <<
-        endl;
+    endl;
     cerr << "to standard output." << endl;
     cerr << endl;
     cerr << "In the second form of the command, assume the files are" <<
-        endl;
+    endl;
     cerr << "DataDDS objects (stored in files or read from pipes)" << endl;
     cerr << "and process them as if -D were given. In this case the" <<
-        endl;
+    endl;
     cerr << "information *must* contain valid MIME header in order" <<
-        endl;
+    endl;
     cerr << "to be processed." << endl;
     cerr << endl;
     cerr << "Options:" << endl;
@@ -95,17 +96,17 @@ void usage(string name)
     cerr << "        A: Use the AIS for DAS objects." << endl;
     cerr << "        D: For each URL, get the the DataDDS." << endl;
     cerr <<
-        "        x: For each URL, get the DDX object. Does not get data."
-        << endl;
+    "        x: For each URL, get the DDX object. Does not get data."
+    << endl;
     cerr << "        X: Build a DDX in getdap using the DDS and DAS." << endl;
     cerr << "        B: <AIS xml dataBase>. Overrides .dodsrc." << endl;
     cerr << "        v: Verbose." << endl;
     cerr << "        V: Version." << endl;
     cerr << "        c: <expr> is a contraint expression. Used with -D." <<
-        endl;
+    endl;
     cerr << "           NB: You can use a `?' for the CE also." << endl;
     cerr << "        k: Keep temporary files created by libdap core\n" <<
-        endl;
+    endl;
     cerr << "        m: Request the same URL <num> times." << endl;
     cerr << "        z: Ask the server to compress data." << endl;
     cerr << "        s: Print Sequences using numbered rows." << endl;
@@ -122,7 +123,7 @@ bool read_data(FILE * fp)
     // transfers. fread() will handle both.
     char c;
     while (fp && !feof(fp) && fread(&c, 1, 1, fp))
-        printf("%c", c);        // stick with stdio 
+        printf("%c", c);        // stick with stdio
 
     return true;
 }
@@ -240,7 +241,8 @@ int main(int argc, char *argv[])
                     url = new AISConnect(name, ais_db);
                 else
                     url = new AISConnect(name);
-            } else {
+            }
+            else {
                 url = new Connect(name);
             }
 
@@ -251,7 +253,7 @@ int main(int argc, char *argv[])
             if (url->is_local()) {
                 if (verbose) {
                     fprintf(stderr,
-"Assuming that the argument %s is a file that contains a DAP2 data object; decoding.\n", argv[i]);
+                            "Assuming that the argument %s is a file that contains a DAP2 data object; decoding.\n", argv[i]);
                 }
 
                 Response *r = 0;
@@ -266,7 +268,8 @@ int main(int argc, char *argv[])
                             throw Error("Could not open standard input.");
 
                         url->read_data(dds, r);
-                    } else {
+                    }
+                    else {
                         r = new Response(fopen(argv[i], "r"));
 
                         if (!r->get_stream())
@@ -277,7 +280,7 @@ int main(int argc, char *argv[])
                         url->read_data_no_mime(dds, r);
                     }
                 }
-                catch(Error & e) {
+                catch (Error & e) {
                     cerr << e.get_error_message() << endl;
                     delete r;
                     r = 0;
@@ -288,7 +291,7 @@ int main(int argc, char *argv[])
 
                 if (verbose)
                     fprintf(stderr, "DAP version: %s, Server version: %s\n",
-			    url->get_protocol().c_str(),
+                            url->get_protocol().c_str(),
                             url->get_version().c_str());
 
                 print_data(dds, print_rows);
@@ -296,9 +299,9 @@ int main(int argc, char *argv[])
             }
 
             else if (get_version) {
-                    fprintf(stderr, "DAP version: %s, Server version: %s\n",
-			    url->request_protocol().c_str(),
-                            url->get_version().c_str());
+                fprintf(stderr, "DAP version: %s, Server version: %s\n",
+                        url->request_protocol().c_str(),
+                        url->get_version().c_str());
             }
 
             else if (get_das) {
@@ -307,7 +310,7 @@ int main(int argc, char *argv[])
                     try {
                         url->request_das(das);
                     }
-                    catch(Error & e) {
+                    catch (Error & e) {
                         cerr << e.get_error_message() << endl;
                         delete url;
                         url = 0;
@@ -315,9 +318,9 @@ int main(int argc, char *argv[])
                     }
 
                     if (verbose) {
-			fprintf(stderr, "DAP version: %s, Server version: %s\n",
-				url->get_protocol().c_str(),
-				url->get_version().c_str());
+                        fprintf(stderr, "DAP version: %s, Server version: %s\n",
+                                url->get_protocol().c_str(),
+                                url->get_version().c_str());
 
                         fprintf(stderr, "DAS:\n");
                     }
@@ -333,7 +336,7 @@ int main(int argc, char *argv[])
                     try {
                         url->request_dds(dds, expr);
                     }
-                    catch(Error & e) {
+                    catch (Error & e) {
                         cerr << e.get_error_message() << endl;
                         delete url;
                         url = 0;
@@ -341,9 +344,9 @@ int main(int argc, char *argv[])
                     }
 
                     if (verbose) {
-			fprintf(stderr, "DAP version: %s, Server version: %s\n",
-				url->get_protocol().c_str(),
-				url->get_version().c_str());
+                        fprintf(stderr, "DAP version: %s, Server version: %s\n",
+                                url->get_protocol().c_str(),
+                                url->get_version().c_str());
 
                         fprintf(stderr, "DDS:\n");
                     }
@@ -359,15 +362,15 @@ int main(int argc, char *argv[])
                     try {
                         url->request_ddx(dds, expr);
                     }
-                    catch(Error & e) {
+                    catch (Error & e) {
                         cerr << e.get_error_message() << endl;
                         continue;       // Goto the next URL or exit the loop.
                     }
 
                     if (verbose) {
-			fprintf(stderr, "DAP version: %s, Server version: %s\n",
-				url->get_protocol().c_str(),
-				url->get_version().c_str());
+                        fprintf(stderr, "DAP version: %s, Server version: %s\n",
+                                url->get_protocol().c_str(),
+                                url->get_version().c_str());
 
                         fprintf(stderr, "DDX:\n");
                     }
@@ -375,7 +378,7 @@ int main(int argc, char *argv[])
                     dds.print_xml(stdout, false, "geturl; no blob yet");
                 }
             }
-            
+
             else if (build_ddx) {
                 for (int j = 0; j < times; ++j) {
                     BaseTypeFactory factory;
@@ -386,15 +389,15 @@ int main(int argc, char *argv[])
                         url->request_das(das);
                         dds.transfer_attributes(&das);
                     }
-                    catch(Error & e) {
+                    catch (Error & e) {
                         cerr << e.get_error_message() << endl;
                         continue;       // Goto the next URL or exit the loop.
                     }
 
                     if (verbose) {
-			fprintf(stderr, "DAP version: %s, Server version: %s\n",
-				url->get_protocol().c_str(),
-				url->get_version().c_str());
+                        fprintf(stderr, "DAP version: %s, Server version: %s\n",
+                                url->get_protocol().c_str(),
+                                url->get_version().c_str());
 
                         fprintf(stderr, "Client-built DDX:\n");
                     }
@@ -417,13 +420,13 @@ int main(int argc, char *argv[])
                         url->request_data(dds, expr);
 
                         if (verbose)
-			    fprintf(stderr, "DAP version: %s, Server version: %s\n",
-				    url->get_protocol().c_str(),
-				    url->get_version().c_str());
+                            fprintf(stderr, "DAP version: %s, Server version: %s\n",
+                                    url->get_protocol().c_str(),
+                                    url->get_version().c_str());
 
                         print_data(dds, print_rows);
                     }
-                    catch(Error & e) {
+                    catch (Error & e) {
                         cerr << e.get_error_message() << endl;
                         delete url;
                         url = 0;
@@ -454,7 +457,7 @@ int main(int argc, char *argv[])
                         delete r;
                         r = 0;
                     }
-                    catch(Error & e) {
+                    catch (Error & e) {
                         cerr << e.get_error_message() << endl;
                         continue;
                     }
@@ -465,14 +468,14 @@ int main(int argc, char *argv[])
             url = 0;
         }
     }
-    catch(Error &e) {
+    catch (Error &e) {
         cerr << e.get_error_message() << endl;
         return 1;
     }
-    catch(exception &e) {
+    catch (exception &e) {
         cerr << "C++ library exception: " << e.what() << endl;
         return 1;
     }
-    
+
     return 0;
 }

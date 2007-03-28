@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -37,17 +37,18 @@
 // Defined in GeoConstraint; maybe move to util.cc/h?
 extern void remove_quotes(string & value);
 extern bool unit_or_name_match(set < string > units, set < string > names,
-                       const string & var_units, const string & var_name);
-                       
-/** Geographical constraint applied to a grid. 
+                                       const string & var_units, const string & var_name);
+
+/** Geographical constraint applied to a grid.
     @author James Gallagher */
 
-class GridGeoConstraint : public GeoConstraint {
+class GridGeoConstraint : public GeoConstraint
+{
 
 private:
     // Specific to a Grid
     Grid *d_grid;               //< Constrain this Grid
-    
+
     Array *d_latitude;          //< A pointer to the Grid's latitude map
     Array *d_longitude;         //< A pointer to the Grid's longitude map
 
@@ -61,13 +62,16 @@ public:
     //@{
     GridGeoConstraint(Grid *grid, const string &ds_name/*, const DDS &dds*/);
     //@}
-    
-    virtual ~GridGeoConstraint() {
-    }
+
+    virtual ~GridGeoConstraint()
+    {}
 
     virtual void apply_constraint_to_data() ;
 
-    virtual Grid *get_constrained_grid() const { return d_grid; }
+    virtual Grid *get_constrained_grid() const
+    {
+        return d_grid;
+    }
 };
 
 #endif // _grid_geo_constraint_h

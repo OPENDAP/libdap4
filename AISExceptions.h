@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -32,25 +32,33 @@
 
 /** Thrown when a client asks for the AIS resources for an unknown primary
     resource. */
-class NoSuchPrimaryResource :public Error {
+class NoSuchPrimaryResource : public Error
+{
 public:
-    NoSuchPrimaryResource(): Error("The primary resource given has no matching entry in the AIS database.") {}
+    NoSuchPrimaryResource(): Error("The primary resource given has no matching entry in the AIS database.")
+    {}
 };
 
 /** Thrown when the AIS database/document cannot be read. */
-class AISDatabaseReadFailed :public Error {
+class AISDatabaseReadFailed : public Error
+{
 public:
-    AISDatabaseReadFailed() : Error("The AIS database read failed.") {}
-    AISDatabaseReadFailed(const string &msg) : 
-	Error(string("The AIS database read failed: ") + msg) {}
+    AISDatabaseReadFailed() : Error("The AIS database read failed.")
+    {}
+    AISDatabaseReadFailed(const string &msg) :
+            Error(string("The AIS database read failed: ") + msg)
+    {}
 };
 
 /** Thrown when the AIS database/document cannot be written. */
-class AISDatabaseWriteFailed :public Error {
+class AISDatabaseWriteFailed : public Error
+{
 public:
-    AISDatabaseWriteFailed() : Error("The AIS database write failed.") {}
-    AISDatabaseWriteFailed(const string &msg) : 
-	Error(string("The AIS database write failed: ") + msg) {}
+    AISDatabaseWriteFailed() : Error("The AIS database write failed.")
+    {}
+    AISDatabaseWriteFailed(const string &msg) :
+            Error(string("The AIS database write failed: ") + msg)
+    {}
 };
 
 #endif // ais_exceptions_h

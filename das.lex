@@ -69,6 +69,10 @@ static char rcsid[] not_used ={"$Id$"};
 #include "debug.h"
 #include "parser.h"
 
+#ifndef YY_PROTO
+#define YY_PROTO(proto) proto
+#endif
+
 /* These defines must precede the das.tab.h include. */
 #define YYSTYPE char *
 #define YY_DECL int daslex YY_PROTO(( void ))

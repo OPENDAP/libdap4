@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1995-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -66,7 +66,7 @@
 /** This data type is used to hold a collection of related data types,
     in a manner roughly corresponding to a C structure.  The member
     types can be simple or compound types, and can include other
-    Structures. 
+    Structures.
 
     The DAP2 structure is defined as a singly-linked list.  This means
     that Structure elements can be accessed either by name, with the
@@ -75,10 +75,10 @@
     <tt>first_var()</tt> and <tt>next_var()</tt> functions.
 
     The <tt>val2buf()</tt> and <tt>buf2val()</tt> functions only
-    return the size of 
+    return the size of
     the structure.  To read parts of a DAP2 Structure into an
     application program, use the <tt>buf2val()</tt> function of the element
-    of the Structure in question. 
+    of the Structure in question.
 
     Note that the predicate-setting functions <tt>set_send_p()</tt> and
     <tt>set_read_p()</tt> set their flags for the Structure as well as for
@@ -88,15 +88,16 @@
     with a ``.'' notation.  For example, if the Structure has a member
     Structure called ``Tom'' and Tom has a member Float32 called
     ``shoe_size'', then you can refer to Tom's shoe size as
-    ``Tom.shoe_size''. 
-    
+    ``Tom.shoe_size''.
+
     @todo Refactor with Sequence moving methods up into Constructor.
 
     @brief Holds a structure (aggregate) type.
 */
 
-class Structure: public Constructor {
-private:    
+class Structure: public Constructor
+{
+private:
     BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
     BaseType *m_exact_match(const string &name, btp_stack *s = 0);
 
@@ -119,7 +120,7 @@ public:
     virtual void set_read_p(bool state);
     virtual void set_in_selection(bool state);
     virtual void set_leaf_sequence(int level = 1);
-    
+
     virtual unsigned int width();
 
     virtual void transfer_data(const string & dataset,
@@ -135,32 +136,32 @@ public:
     virtual unsigned int buf2val(void **val);
 
     virtual BaseType *var(const string &name, bool exact_match = true,
-			  btp_stack *s = 0);
+                          btp_stack *s = 0);
 
     virtual BaseType *var(const string &n, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part = nil);
 
     virtual void print_val(FILE *out, string space = "",
-			   bool print_decl_p = true);
+                           bool print_decl_p = true);
 
     /** Prints the Structure and all elements of any Sequences contained
-	within. 
+    within. 
 
-	@deprecated This method was needed when Sequence::deserialize had
-	different semantics than BaseType::deserialize (which was a really
-	odd design because the Sequence is a descendant of the later...). But
-	Sequence now deserializes in one call in this implementation so
-	print() works as expected. 
+    @deprecated This method was needed when Sequence::deserialize had
+    different semantics than BaseType::deserialize (which was a really
+    odd design because the Sequence is a descendant of the later...). But
+    Sequence now deserializes in one call in this implementation so
+    print() works as expected. 
 
-	@see Sequence::print_all_vals
+    @see Sequence::print_all_vals
     */
     virtual void print_all_vals(FILE *out, XDR *src, DDS *dds,
-				string space = "", bool print_decl_p = true);
+                                string space = "", bool print_decl_p = true);
 
     virtual bool check_semantics(string &msg, bool all = false);
 
-    virtual void dump( ostream &strm ) const ;
+    virtual void dump(ostream &strm) const ;
 };
 
 #endif // _structure_h

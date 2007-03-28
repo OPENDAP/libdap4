@@ -576,6 +576,10 @@ static char rcsid[] not_used = {"$Id$"};
 #include "dds.tab.h"
 #include "escaping.h"
 
+#ifndef YY_PROTO
+#define YY_PROTO(proto) proto
+#endif
+
 #define YY_DECL int ddslex YY_PROTO(( void ))
 #define YY_INPUT(buf,result,max_size) { \
     fgets((buf), (max_size), yyin); \
@@ -595,7 +599,7 @@ static void store_word();
 
 /* See das.lex for comments about the characters allowed in a WORD.
    10/31/2001 jhrg */
-#line 599 "lex.dds.c"
+#line 603 "lex.dds.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -746,10 +750,10 @@ YY_DECL
 	register char *yy_cp = NULL, *yy_bp = NULL;
 	register int yy_act;
 
-#line 108 "dds.lex"
+#line 112 "dds.lex"
 
 
-#line 753 "lex.dds.c"
+#line 757 "lex.dds.c"
 
 	if ( yy_init )
 		{
@@ -834,160 +838,160 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 110 "dds.lex"
+#line 114 "dds.lex"
 return (int)*yytext;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 111 "dds.lex"
+#line 115 "dds.lex"
 return (int)*yytext;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 112 "dds.lex"
+#line 116 "dds.lex"
 return (int)*yytext;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 113 "dds.lex"
+#line 117 "dds.lex"
 return (int)*yytext;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 114 "dds.lex"
+#line 118 "dds.lex"
 return (int)*yytext;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 115 "dds.lex"
+#line 119 "dds.lex"
 return (int)*yytext;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 116 "dds.lex"
+#line 120 "dds.lex"
 return (int)*yytext;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 118 "dds.lex"
+#line 122 "dds.lex"
 store_word(); return SCAN_DATASET;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 119 "dds.lex"
+#line 123 "dds.lex"
 store_word(); return SCAN_LIST;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 120 "dds.lex"
+#line 124 "dds.lex"
 store_word(); return SCAN_SEQUENCE;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 121 "dds.lex"
+#line 125 "dds.lex"
 store_word(); return SCAN_STRUCTURE;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 122 "dds.lex"
+#line 126 "dds.lex"
 store_word(); return SCAN_GRID;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 123 "dds.lex"
+#line 127 "dds.lex"
 store_word(); return SCAN_BYTE;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 124 "dds.lex"
+#line 128 "dds.lex"
 store_word(); return SCAN_INT16;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 125 "dds.lex"
+#line 129 "dds.lex"
 store_word(); return SCAN_UINT16;
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 126 "dds.lex"
+#line 130 "dds.lex"
 store_word(); return SCAN_INT32;
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 127 "dds.lex"
+#line 131 "dds.lex"
 store_word(); return SCAN_UINT32;
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 128 "dds.lex"
+#line 132 "dds.lex"
 store_word(); return SCAN_FLOAT32;
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 129 "dds.lex"
+#line 133 "dds.lex"
 store_word(); return SCAN_FLOAT64;
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 130 "dds.lex"
+#line 134 "dds.lex"
 store_word(); return SCAN_STRING;
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 131 "dds.lex"
+#line 135 "dds.lex"
 store_word(); return SCAN_URL;
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 133 "dds.lex"
+#line 137 "dds.lex"
 store_word(); return SCAN_WORD;
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 135 "dds.lex"
+#line 139 "dds.lex"
 
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 136 "dds.lex"
+#line 140 "dds.lex"
 ++dds_line_num;
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 137 "dds.lex"
+#line 141 "dds.lex"
 yy_init = 1; dds_line_num = 1; yyterminate();
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 139 "dds.lex"
+#line 143 "dds.lex"
 BEGIN(comment);
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 140 "dds.lex"
+#line 144 "dds.lex"
 
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 141 "dds.lex"
+#line 145 "dds.lex"
 ++dds_line_num; BEGIN(INITIAL);
 	YY_BREAK
 case YY_STATE_EOF(comment):
-#line 142 "dds.lex"
+#line 146 "dds.lex"
 yy_init = 1; dds_line_num = 1; yyterminate();
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 144 "dds.lex"
+#line 148 "dds.lex"
 yyterminate();
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 145 "dds.lex"
+#line 149 "dds.lex"
 yyterminate();
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 147 "dds.lex"
+#line 151 "dds.lex"
 {
                           if (yytext) {	/* suppress msgs about `' chars */
                             fprintf(stderr, "Character `%c' is not", *yytext);
@@ -997,10 +1001,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 153 "dds.lex"
+#line 157 "dds.lex"
 ECHO;
 	YY_BREAK
-#line 1004 "lex.dds.c"
+#line 1008 "lex.dds.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1880,7 +1884,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 153 "dds.lex"
+#line 157 "dds.lex"
 
 
 // These three glue routines enable DDS to reclaim the memory used to parse a

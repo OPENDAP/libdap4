@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // This is a dummy server which currently assumes a data request (as opposed
 // to a das or dds request). An executable is built using the Test* classes
 // so this will return data values. All output is dumped to stdout except for
@@ -32,7 +32,9 @@
 
 #include "config.h"
 
-static char not_used rcsid[]={"$Id$"};
+static char not_used rcsid[] =
+    {"$Id$"
+    };
 
 #include <iostream>
 #include <string>
@@ -54,53 +56,53 @@ static void
 read_table(DDS &table, const string &name)
 {
     table.parse(name);
-    
+
     if (!table.check_semantics(true))
-	throw Error("DDS Failed semantic check.");
+        throw Error("DDS Failed semantic check.");
 }
 
-int 
+int
 main(int argc, char *argv[])
 {
-    try { 
-	DODSFilter df(argc, argv);
-	if (df.get_cgi_version() == "")
-	    df.set_cgi_version(cgi_version);
+    try {
+        DODSFilter df(argc, argv);
+        if (df.get_cgi_version() == "")
+            df.set_cgi_version(cgi_version);
 
-	DDS dds;
-	DAS das;
+        DDS dds;
+        DAS das;
 
-	dds.filename(df.get_dataset_name());
-	read_table(dds, df.get_dataset_name());
-	
-	// Don't name test dataset DDS file XXX.dds...
-	df.read_ancillary_dds(dds);
-	df.read_ancillary_das(das);
+        dds.filename(df.get_dataset_name());
+        read_table(dds, df.get_dataset_name());
 
-	DBG(dds.print(stderr));
-	// DBG(das.print(stderr));
+        // Don't name test dataset DDS file XXX.dds...
+        df.read_ancillary_dds(dds);
+        df.read_ancillary_das(das);
 
-	// Extract params. This provides a way to configure 'datasets' for
-	// special tests. It's pretty crude. Maybe it would be better to use
-	// command line options?...
-	AttrTable *sh_attr = das.get_table("server_handler");
-	if (sh_attr) {
-	    int timeout = atoi(sh_attr->get_attr("timeout").c_str());
-	    int sleep_interval = atoi(sh_attr->get_attr("sleep").c_str());
+        DBG(dds.print(stderr));
+        // DBG(das.print(stderr));
 
-	    df.set_timeout(timeout);
-	    // This global causes the read() methods of the Test* classes to
-	    // sleep for sleep_interval seconds, simulating a long, complex
-	    // variable access operation.
-	    test_variable_sleep_interval = sleep_interval;
-	}
+        // Extract params. This provides a way to configure 'datasets' for
+        // special tests. It's pretty crude. Maybe it would be better to use
+        // command line options?...
+        AttrTable *sh_attr = das.get_table("server_handler");
+        if (sh_attr) {
+            int timeout = atoi(sh_attr->get_attr("timeout").c_str());
+            int sleep_interval = atoi(sh_attr->get_attr("sleep").c_str());
 
-	df.send_data(dds, stdout);
+            df.set_timeout(timeout);
+            // This global causes the read() methods of the Test* classes to
+            // sleep for sleep_interval seconds, simulating a long, complex
+            // variable access operation.
+            test_variable_sleep_interval = sleep_interval;
+        }
+
+        df.send_data(dds, stdout);
     }
     catch (Error &e) {
-	set_mime_text(cout, dods_error, cgi_version);
-	e.print(cout);
-	return 1;
+        set_mime_text(cout, dods_error, cgi_version);
+        e.print(cout);
+        return 1;
     }
 
     return 0;

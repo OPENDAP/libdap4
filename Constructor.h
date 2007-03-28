@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #ifndef _constructor_h
 #define _constructor_h 1
 
@@ -35,9 +35,10 @@
 #endif
 
 /** Common methods for all constructor types. */
-class Constructor: public BaseType {
+class Constructor: public BaseType
+{
 private:
-    Constructor();		// No default ctor.
+    Constructor();  // No default ctor.
     BaseType *find_hdf4_dimension_attribute_home(AttrTable::entry *source);
 
 protected:
@@ -45,7 +46,7 @@ protected:
 
     void _duplicate(const Constructor &s);
     virtual AttrTable *find_matching_container(AttrTable::entry *source,
-                                               BaseType **dest_variable);
+            BaseType **dest_variable);
 
 public:
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
@@ -70,14 +71,14 @@ public:
     virtual bool is_linear();
 
     virtual void print_decl(FILE *out, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
+                            bool print_semi = true,
+                            bool constraint_info = false,
+                            bool constrained = false);
 
-    virtual void print_xml(FILE *out, string space = "    ", 
-			   bool constrained =false);
+    virtual void print_xml(FILE *out, string space = "    ",
+                           bool constrained = false);
 
-    virtual void dump( ostream &strm ) const ;
+    virtual void dump(ostream &strm) const ;
 };
 
-#endif // _constructor_h 
+#endif // _constructor_h

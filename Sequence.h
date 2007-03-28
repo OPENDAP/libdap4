@@ -10,18 +10,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -78,9 +78,9 @@ typedef std::vector<BaseTypeRow *> SequenceValues;
 
     <pre>
     Sequence {
-      String name; 
-      Int32 age; 
-    } person; 
+      String name;
+      Int32 age;
+    } person;
     </pre>
 
     This represents a Sequence of ``person'' records, each instance of
@@ -90,7 +90,7 @@ typedef std::vector<BaseTypeRow *> SequenceValues;
     Fred       34
     Ralph      23
     Andrea     29
-    ...      
+    ...
     </pre>
 
     A Sequence can be arbitrarily long, which is to say that its
@@ -99,12 +99,12 @@ typedef std::vector<BaseTypeRow *> SequenceValues;
 
     <pre>
     Sequence {
-      String name;       
-      Int32 age; 
+      String name;
+      Int32 age;
       Sequence {
         String friend;
       } friend_list;
-    } person; 
+    } person;
     </pre>
 
     This is still represented as a single table, but each row contains
@@ -149,32 +149,33 @@ typedef std::vector<BaseTypeRow *> SequenceValues;
     a member Sequence called ``Tom'' and Tom has a member Float32
     called ``shoe_size'', you can refer to Tom's shoe size as
     ``Tom.shoe_size''.
-    
+
     @note This class contains the 'logic' for both the server- and client-side
     behavior. The field \e d_values is used by the client-side methods to store
     the entire Sequence. On the server-side, the read() method uses an underlying
     data system to read one row of data values which are then serialized using the
     serialize() methods of each varaible.
-    
+
     @todo Refactor along with Structure moving methods up into Constructor.
-    
+
     @todo Add an isEmpty() method which returns true if the Sequence is
     empty. This should work before and after calling deserialize().
 
     @brief Holds a sequence. */
 
-class Sequence: public Constructor {
+class Sequence: public Constructor
+{
 private:
     // This holds the values read off the wire. Values are stored in
     // instances of BaseType objects.
     SequenceValues d_values;
 
     // The number of the row that has just been deserialized. Before
-    // deserialized has been called, this member is -1. 
+    // deserialized has been called, this member is -1.
     int d_row_number;
 
     // If a client asks for certain rows of a sequence using the bracket
-    // notation (<tt>[<start>:<stride>:<stop>]</tt>) primarily intended for 
+    // notation (<tt>[<start>:<stride>:<stop>]</tt>) primarily intended for
     // arrays
     // and grids, record that information in the next three members. This
     // information can be used by the translation software. s.a. the accessor
@@ -186,18 +187,18 @@ private:
 
     // Used to track if data has not already been sent.
     bool d_unsent_data;
-    
-    // Track if the Start Of Instance marker has been written. Needed to 
-    // properly send EOS for only the outer Sequence when a selection 
+
+    // Track if the Start Of Instance marker has been written. Needed to
+    // properly send EOS for only the outer Sequence when a selection
     // returns an empty Sequence.
     bool d_wrote_soi;
-    
+
     // This signals whether the sequence is a leaf or parent.
     bool d_leaf_sequence;
 
     // In a hierarchy of sequences, is this the top most?
     bool d_top_most;
-    
+
     void _duplicate(const Sequence &s);
     BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
     BaseType *m_exact_match(const string &name, btp_stack *s = 0);
@@ -209,29 +210,29 @@ private:
 protected:
 
     typedef vector<SequenceValues*> sequence_values_stack_t;
-     
-    virtual bool serialize_parent_part_one(const string &dataset, DDS &dds, 
-                                   ConstraintEvaluator &eval, XDR *sink);
-    virtual void serialize_parent_part_two(const string &dataset, DDS &dds, 
-                                   ConstraintEvaluator &eval, XDR *sink);
-    virtual bool serialize_leaf(const string &dataset, DDS &dds, 
-                        ConstraintEvaluator &eval, XDR *sink, bool ce_eval);
 
-    virtual void transfer_data_private(const string &dataset, 
-                                       ConstraintEvaluator &eval, 
-                                       DDS &dds, 
+    virtual bool serialize_parent_part_one(const string &dataset, DDS &dds,
+                                           ConstraintEvaluator &eval, XDR *sink);
+    virtual void serialize_parent_part_two(const string &dataset, DDS &dds,
+                                           ConstraintEvaluator &eval, XDR *sink);
+    virtual bool serialize_leaf(const string &dataset, DDS &dds,
+                                ConstraintEvaluator &eval, XDR *sink, bool ce_eval);
+
+    virtual void transfer_data_private(const string &dataset,
+                                       ConstraintEvaluator &eval,
+                                       DDS &dds,
                                        sequence_values_stack_t &sequence_values_stack);
-    virtual void transfer_data_for_leaf(const string &dataset, DDS &dds, 
-                                        ConstraintEvaluator &eval, 
+    virtual void transfer_data_for_leaf(const string &dataset, DDS &dds,
+                                        ConstraintEvaluator &eval,
                                         sequence_values_stack_t &sequence_values_stack);
-                                       
-    virtual void transfer_data_parent_part_one(const string &dataset, DDS &dds, 
-                                               ConstraintEvaluator &eval,
-                                               sequence_values_stack_t &sequence_values_stack);
-                                    
-    virtual void transfer_data_parent_part_two(const string &dataset, DDS &dds, 
-                                               ConstraintEvaluator &eval,
-                                               sequence_values_stack_t &sequence_values_stack);
+
+    virtual void transfer_data_parent_part_one(const string &dataset, DDS &dds,
+            ConstraintEvaluator &eval,
+            sequence_values_stack_t &sequence_values_stack);
+
+    virtual void transfer_data_parent_part_two(const string &dataset, DDS &dds,
+            ConstraintEvaluator &eval,
+            sequence_values_stack_t &sequence_values_stack);
 
 public:
 
@@ -258,23 +259,23 @@ public:
     virtual unsigned int width();
 
     virtual int length();
-    
+
     virtual int number_of_rows();
 
-    virtual bool read_row(int row, const string &dataset, DDS &dds, 
-			  ConstraintEvaluator &eval, bool ce_eval = true);
+    virtual bool read_row(int row, const string &dataset, DDS &dds,
+                          ConstraintEvaluator &eval, bool ce_eval = true);
 
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
                            DDS &dds, XDR *sink, bool ce_eval = true);
 
     virtual void transfer_data(const string &dataset, ConstraintEvaluator &eval,
                                DDS &dds);
-                                    
+
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     /// Rest the row number counter
     void reset_row_number();
-    
+
     int get_starting_row_number();
 
     virtual int get_row_stride();
@@ -284,20 +285,26 @@ public:
     virtual void set_row_number_constraint(int start, int stop, int stride = 1);
 
     /// Get the unsent data property
-    bool get_unsent_data() { return d_unsent_data; }
-    
+    bool get_unsent_data()
+    {
+        return d_unsent_data;
+    }
+
     /// Set the unsent data property
-    void set_unsent_data(bool usd) { d_unsent_data = usd; }
-    
+    void set_unsent_data(bool usd)
+    {
+        d_unsent_data = usd;
+    }
+
     // Move me!
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
-    
+
     virtual void set_value(SequenceValues &values);
     virtual SequenceValues value();
-    
+
     virtual BaseType *var(const string &name, bool exact_match = true,
-			  btp_stack *s = 0);
+                          btp_stack *s = 0);
     virtual BaseType *var(const string &n, btp_stack &s);
 
     virtual BaseType *var_value(size_t row, const string &name);
@@ -308,24 +315,24 @@ public:
 
     virtual void add_var(BaseType *, Part part = nil);
     virtual void print_one_row(FILE *out, int row, string space,
-			       bool print_row_num = false);
+                               bool print_row_num = false);
     virtual void print_val_by_rows(FILE *out, string space = "",
-				   bool print_decl_p = true,
-				   bool print_row_numbers = true);
+                                   bool print_decl_p = true,
+                                   bool print_row_numbers = true);
     virtual void print_val(FILE *out, string space = "",
-			   bool print_decl_p = true);
-    virtual void print_all_vals(FILE *out, XDR *src, DDS *dds, 
-				string space = "", bool print_decl_p = true);
+                           bool print_decl_p = true);
+    virtual void print_all_vals(FILE *out, XDR *src, DDS *dds,
+                                string space = "", bool print_decl_p = true);
 
     virtual bool check_semantics(string &msg, bool all = false);
 
     virtual void set_leaf_p(bool state);
 
     virtual bool is_leaf_sequence();
-    
-    virtual void set_leaf_sequence(int lvl=1);
 
-    virtual void dump( ostream &strm ) const ;
+    virtual void set_leaf_sequence(int lvl = 1);
+
+    virtual void dump(ostream &strm) const ;
 };
 
 #endif //_sequence_h

@@ -38,7 +38,7 @@
 
 static char rcsid[] not_used =
     { "$Id$"
-};
+    };
 
 //#define DODS_DEBUG
 
@@ -63,7 +63,8 @@ void Vector::_duplicate(const Vector & v)
     if (v._var) {
         _var = v._var->ptr_duplicate(); // use ptr_duplicate()
         _var->set_parent(this); // ptr_duplicate does not set d_parent.
-    } else {
+    }
+    else {
         _var = 0;
     }
 
@@ -73,7 +74,8 @@ void Vector::_duplicate(const Vector & v)
     // holds numeric values.
     if (v._vec.empty()) {
         _vec = v._vec;
-    } else {
+    }
+    else {
         // Failure to set the size will make the [] operator barf on the LHS
         // of the assignment inside the loop.
         _vec.resize(_length);
@@ -112,7 +114,7 @@ void Vector::_duplicate(const Vector & v)
     @see Type
     @brief The Vector constructor.  */
 Vector::Vector(const string & n, BaseType * v, const Type & t)
-:BaseType(n, t), _length(-1), _var(0), _buf(0), _vec(0)
+        : BaseType(n, t), _length(-1), _var(0), _buf(0), _vec(0)
 {
     if (v)
         add_var(v);
@@ -123,7 +125,7 @@ Vector::Vector(const string & n, BaseType * v, const Type & t)
 }
 
 /** The Vector copy constructor. */
-Vector::Vector(const Vector & rhs):BaseType(rhs)
+Vector::Vector(const Vector & rhs): BaseType(rhs)
 {
     DBG2(cerr << "Entering Vector const ctor for object: " << this <<
          endl);
@@ -142,7 +144,8 @@ Vector::~Vector()
     if (_buf) {
         delete[]_buf;
         _buf = 0;
-    } else {
+    }
+    else {
         for (unsigned int i = 0; i < _vec.size(); ++i) {
             delete _vec[i];
             _vec[i] = 0;
@@ -230,7 +233,8 @@ BaseType *Vector::var(const string & n, bool exact, btp_stack * s)
             return _var;
         else
             return _var->var(name, exact, s);
-    } else
+    }
+    else
         return _var;
 }
 
@@ -290,7 +294,7 @@ BaseType *Vector::var(unsigned int i)
     case dods_int32_c:
     case dods_uint32_c:
     case dods_float32_c:
-    case dods_float64_c:{
+    case dods_float64_c: {
             // Transfer the ith value to the BaseType *_var; There are more
             // efficient ways to get a whole array using buf2val() but this is
             // an OK way to get a single value or several non-contiguous values.
@@ -426,28 +430,22 @@ bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
                               "Buffer pointer is not set.");
 
         if ((0 == xdr_int(sink, (int *) &num))) // send vector length
-            throw
-                Error
-                ("Network I/O Error. This may be due to a bug in libdap or a\n\
-                    problem with the network connection.");
+            throw Error("Network I/O Error. This may be due to a bug in libdap or a\nproblem with the network connection.");
 
         // Note that xdr_bytes and xdr_array both send the length themselves,
         // so the length is actually sent twice. 12/31/99 jhrg
         bool status;
         if (_var->type() == dods_byte_c)
-            status = (0 != xdr_bytes(sink, (char **) &_buf,
-                                     (unsigned int *) &num,
+            status = (0 != xdr_bytes(sink, (char **) & _buf,
+                                     (unsigned int *) & num,
                                      DODS_MAX_ARRAY));
         else
-            status = (0 != xdr_array(sink, (char **) &_buf,
-                                     (unsigned int *) &num,
+            status = (0 != xdr_array(sink, (char **) & _buf,
+                                     (unsigned int *) & num,
                                      DODS_MAX_ARRAY, _var->width(),
-                                     (xdrproc_t) (_var->xdr_coder())));
+                                     (xdrproc_t)(_var->xdr_coder())));
         if (!status)
-            throw
-                Error
-                ("Network I/O Error. This may be due to a bug in libdap or a\n\
-                    problem with the network connection.");
+            throw Error("Network I/O Error. This may be due to a bug in libdap or a\nproblem with the network connection.");
 
         break;
 
@@ -458,18 +456,11 @@ bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
                               "The capacity of the string vector is 0");
 
         if ((0 == xdr_int(sink, (int *) &num)))
-            throw
-                Error
-                ("Network I/O Error. This may be due to a bug in libdap or a\n\
-                    problem with the network connection.");
+            throw Error("Network I/O Error. This may be due to a bug in libdap or a\nproblem with the network connection.");
 
         for (i = 0; i < num; ++i)
             if (!xdr_str(sink, d_str[i]))
-                throw
-                    Error
-                    ("Network I/O Error. Could not send string data.\n\
-                        This may be due to a bug in libdap, on the server or a\n\
-                        problem with the network connection.");
+                throw Error("Network I/O Error. Could not send string data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
 
         break;
 
@@ -484,10 +475,7 @@ bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
                               "The capacity of *this* vector is 0.");
 
         if ((0 == xdr_int(sink, (int *) &num)))
-            throw
-                Error
-                ("Network I/O Error. This may be due to a bug in libdap or a\n\
-                    problem with the network connection.");
+            throw Error("Network I/O Error. This may be due to a bug in libdap or a\nproblem with the network connection.");
 
         for (i = 0; i < num; ++i)
             _vec[i]->serialize(dataset, eval, dds, sink, false);
@@ -538,11 +526,7 @@ bool Vector::deserialize(XDR * source, DDS * dds, bool reuse)
         _buf = 0;
 
         if ((0 == xdr_int(source, (int *) &num)))
-            throw
-                Error
-                ("Network I/O error. Could not read the array length.\n\
-                    This may be due to a bug in libdap or a problem with\n\
-                    the network connection.");
+            throw Error("Network I/O error. Could not read the array length.\nThis may be due to a bug in libdap or a problem with\nthe network connection.");
 
         DBG(cerr << "Vector::deserialize: num = " << num << endl);
         DBG(cerr << "Vector::deserialize: length = " << length() << endl);
@@ -551,8 +535,7 @@ bool Vector::deserialize(XDR * source, DDS * dds, bool reuse)
             set_length(num);
 
         if (num != (unsigned int) length())
-            throw InternalErr(__FILE__, __LINE__,
-                              "The server sent declarations and data with mismatched sizes.");
+            throw InternalErr(__FILE__, __LINE__, "The server sent declarations and data with mismatched sizes.");
 
         if (!_buf) {
             _buf = new char[width()];   // we always do the allocation!
@@ -562,19 +545,15 @@ bool Vector::deserialize(XDR * source, DDS * dds, bool reuse)
         }
 
         if (_var->type() == dods_byte_c)
-            status = (0 != xdr_bytes(source, (char **) &_buf, &num,
+            status = (0 != xdr_bytes(source, (char **) & _buf, &num,
                                      DODS_MAX_ARRAY));
         else
-            status = (0 != xdr_array(source, (char **) &_buf, &num,
+            status = (0 != xdr_array(source, (char **) & _buf, &num,
                                      DODS_MAX_ARRAY, _var->width(),
-                                     (xdrproc_t) (_var->xdr_coder())));
+                                     (xdrproc_t)(_var->xdr_coder())));
 
         if (!status)
-            throw
-                Error
-                ("Network I/O error. Could not read packed array data.\n\
-                    This may be due to a bug in libdap or a problem with\n\
-                    the network connection.");
+            throw Error("Network I/O error. Could not read packed array data.\nThis may be due to a bug in libdap or a problem with\nthe network connection.");
 
         DBG(cerr << "Vector::deserialize: read " << num << " elements\n");
 
@@ -583,11 +562,7 @@ bool Vector::deserialize(XDR * source, DDS * dds, bool reuse)
     case dods_str_c:
     case dods_url_c:
         if ((0 == xdr_int(source, (int *) &num)))
-            throw
-                Error
-                ("Network I/O error. Could not read the array length.\n\
-                    This may be due to a bug in libdap or a problem with\n\
-                    the network connection.");
+            throw Error("Network I/O error. Could not read the array length.\nThis may be due to a bug in libdap or a problem with\nthe network connection.");
 
         if (length() == -1)
             set_length(num);
@@ -601,10 +576,7 @@ bool Vector::deserialize(XDR * source, DDS * dds, bool reuse)
         for (i = 0; i < num; ++i) {
             string str;
             if (!xdr_str(source, str))
-                throw
-                    Error
-                    ("Network I/O Error. Could not read string data. This may be due to a\n\
-                        bug in libdap or a problem with the network connection.");
+                throw Error("Network I/O Error. Could not read string data. This may be due to a\nbug in libdap or a problem with the network connection.");
             d_str[i] = str;
 
         }
@@ -616,18 +588,13 @@ bool Vector::deserialize(XDR * source, DDS * dds, bool reuse)
     case dods_sequence_c:
     case dods_grid_c:
         if ((0 == xdr_int(source, (int *) &num)))
-            throw
-                Error
-                ("Network I/O error. Could not read the array length.\n\
-                    This may be due to a bug in libdap or a problem with\n\
-                    the network connection.");
+            throw Error("Network I/O error. Could not read the array length.\nThis may be due to a bug in libdap or a problem with\nthe network connection.");
 
         if (length() == -1)
             set_length(num);
 
         if (num != (unsigned int) length())
-            throw InternalErr(__FILE__, __LINE__,
-                              "The client sent declarations and data with mismatched sizes.");
+            throw InternalErr(__FILE__, __LINE__, "The client sent declarations and data with mismatched sizes.");
 
         vec_resize(num);
 
@@ -695,7 +662,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
     case dods_int32_c:
     case dods_uint32_c:
     case dods_float32_c:
-    case dods_float64_c:{
+    case dods_float64_c: {
             // width() returns the size given the constraint
             unsigned int array_wid = width();
             if (_buf && !reuse) {
@@ -712,7 +679,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
         }
 
     case dods_str_c:
-    case dods_url_c:{
+    case dods_url_c: {
             // Assume val points to an array of C++ string objects. Copy
             // them into the vector<string> field of this object.
             d_str.resize(_length);
@@ -788,7 +755,7 @@ unsigned int Vector::buf2val(void **val)
         break;
 
     case dods_str_c:
-    case dods_url_c:{
+    case dods_url_c: {
             if (!*val)
                 *val = new string[_length];
 
@@ -850,114 +817,102 @@ void Vector::set_vec(unsigned int i, BaseType * val)
 
 /** @brief set the value of a byte array */
 bool
-Vector::set_value( dods_byte *val, int sz )
+Vector::set_value(dods_byte *val, int sz)
 {
-    if( var()->type() == dods_byte_c && val )
-    {
+    if (var()->type() == dods_byte_c && val) {
         _buf = reinterpret_cast<char*>(new dods_byte[sz]) ;
         memcpy(_buf, val, sz * sizeof(dods_byte));
         set_read_p(true);
         return true;
     }
-    else
-    {
+    else {
         return false;
     }
 }
 
 /** @brief set the value of a int16 array */
 bool
-Vector::set_value( dods_int16 *val, int sz )
+Vector::set_value(dods_int16 *val, int sz)
 {
-    if( var()->type() == dods_int16_c && val )
-    {
+    if (var()->type() == dods_int16_c && val) {
         _buf = reinterpret_cast<char*>(new dods_int16[sz]) ;
         memcpy(_buf, val, sz * sizeof(dods_int16));
         set_read_p(true);
         return true;
     }
-    else
-    {
+    else {
         return false;
     }
 }
 
 /** @brief set the value of a int32 array */
 bool
-Vector::set_value( dods_int32 *val, int sz )
+Vector::set_value(dods_int32 *val, int sz)
 {
-    if( var()->type() == dods_int32_c && val )
-    {
+    if (var()->type() == dods_int32_c && val) {
         _buf = reinterpret_cast<char*>(new dods_int32[sz]) ;
         memcpy(_buf, val, sz * sizeof(dods_int32));
         set_read_p(true);
         return true;
     }
-    else
-    {
+    else {
         return false;
     }
 }
 
 /** @brief set the value of a uint16 array */
 bool
-Vector::set_value( dods_uint16 *val, int sz )
+Vector::set_value(dods_uint16 *val, int sz)
 {
-    if( var()->type() == dods_uint16_c && val )
-    {
+    if (var()->type() == dods_uint16_c && val) {
         _buf = reinterpret_cast<char*>(new dods_uint16[sz]) ;
         memcpy(_buf, val, sz * sizeof(dods_uint16));
         set_read_p(true);
         return true;
     }
-    else
-    {
+    else {
         return false;
     }
 }
 
 /** @brief set the value of a uint32 array */
 bool
-Vector::set_value( dods_uint32 *val, int sz )
+Vector::set_value(dods_uint32 *val, int sz)
 {
-    if( var()->type() == dods_uint32_c && val )
-    {
+    if (var()->type() == dods_uint32_c && val) {
         _buf = reinterpret_cast<char*>(new dods_uint32[sz]) ;
         memcpy(_buf, val, sz * sizeof(dods_uint32));
         set_read_p(true);
         return true;
     }
-    else
-    {
+    else {
         return false;
     }
 }
 
 /** @brief set the value of a float32 array */
 bool
-Vector::set_value( dods_float32 *val, int sz )
+Vector::set_value(dods_float32 *val, int sz)
 {
-    if( var()->type() == dods_float32_c && val )
-    {
+    if (var()->type() == dods_float32_c && val) {
         _buf = reinterpret_cast<char*>(new dods_float32[sz]) ;
         memcpy(_buf, val, sz * sizeof(dods_float32));
         set_read_p(true);
         return true;
     }
-    else
-    {
+    else {
         return false;
     }
 }
 
 /** @brief set the value of a float64 array */
 bool
-Vector::set_value( dods_float64 *val, int sz )
+Vector::set_value(dods_float64 *val, int sz)
 {
-    if ( !val )
+    if (!val)
         return false;
-    
-    switch( var()->type() ) {
+
+    switch (var()->type()) {
     case dods_float64_c:
         _buf = reinterpret_cast<char*>(new dods_float64[sz]) ;
         memcpy(_buf, val, sz * sizeof(dods_float64));
@@ -970,21 +925,18 @@ Vector::set_value( dods_float64 *val, int sz )
 
 /** @brief set the value of a string or url array */
 bool
-Vector::set_value( string *val, int sz )
+Vector::set_value(string *val, int sz)
 {
-    if( (var()->type() == dods_str_c || var()->type() == dods_url_c) && val )
-    {
+    if ((var()->type() == dods_str_c || var()->type() == dods_url_c) && val) {
         d_str.resize(sz);
-        for( register int t = 0; t < sz; t++ )
-        {
+        for (register int t = 0; t < sz; t++) {
             d_str[t] = val[t] ;
         }
-        set_length( sz ) ;
+        set_length(sz) ;
         set_read_p(true);
         return true;
     }
-    else
-    {
+    else {
         return false;
     }
 }
@@ -992,70 +944,63 @@ Vector::set_value( string *val, int sz )
 /** @brief Get a copy of the pointer to the data held by this variable. */
 void Vector::value(dods_byte *b) const
 {
-    if( b && _var->type() == dods_byte_c )
-    {
-        memcpy( b, _buf, length() * sizeof(dods_byte) );
+    if (b && _var->type() == dods_byte_c) {
+        memcpy(b, _buf, length() * sizeof(dods_byte));
     }
 }
 
 /** @brief Get a copy of the pointer to the data held by this variable. */
 void Vector::value(dods_uint16 *b) const
 {
-    if( b && _var->type() == dods_uint16_c )
-    {
-        memcpy( b, _buf, length() * sizeof(dods_uint16) );
+    if (b && _var->type() == dods_uint16_c) {
+        memcpy(b, _buf, length() * sizeof(dods_uint16));
     }
 }
 
 /** @brief Get a copy of the pointer to the data held by this variable. */
 void Vector::value(dods_int16 *b) const
 {
-    if( b && _var->type() == dods_int16_c )
-    {
-        memcpy( b, _buf, length() * sizeof(dods_int16) );
+    if (b && _var->type() == dods_int16_c) {
+        memcpy(b, _buf, length() * sizeof(dods_int16));
     }
 }
 
 /** @brief Get a copy of the pointer to the data held by this variable. */
 void Vector::value(dods_uint32 *b) const
 {
-    if( b && _var->type() == dods_uint32_c )
-    {
-        memcpy( b, _buf, length() * sizeof(dods_uint32) );
+    if (b && _var->type() == dods_uint32_c) {
+        memcpy(b, _buf, length() * sizeof(dods_uint32));
     }
 }
 
 /** @brief Get a copy of the pointer to the data held by this variable. */
 void Vector::value(dods_int32 *b) const
 {
-    if( b && _var->type() == dods_int32_c )
-    {
-        memcpy( b, _buf, length() * sizeof(dods_int32) );
+    if (b && _var->type() == dods_int32_c) {
+        memcpy(b, _buf, length() * sizeof(dods_int32));
     }
 }
 
 /** @brief Get a copy of the pointer to the data held by this variable. */
 void Vector::value(dods_float32 *b) const
 {
-    if( b && _var->type() == dods_float32_c )
-    {
-        memcpy( b, _buf, length() * sizeof(dods_float32) );
+    if (b && _var->type() == dods_float32_c) {
+        memcpy(b, _buf, length() * sizeof(dods_float32));
     }
 }
 
 /** @brief Get a copy of the pointer to the data held by this variable. */
 void Vector::value(dods_float64 *b) const
 {
-    if( b && _var->type() == dods_float64_c )
-    {
-        memcpy( b, _buf, length() * sizeof(dods_float64) );
+    if (b && _var->type() == dods_float64_c) {
+        memcpy(b, _buf, length() * sizeof(dods_float64));
     }
 }
 
 /** @brief Get a copy of the pointer to the data held by this variable. */
 void Vector::value(vector<string> &b) const
 {
-    if( _var->type() == dods_byte_c )
+    if (_var->type() == dods_byte_c)
         b = d_str;
 }
 
@@ -1079,7 +1024,8 @@ void Vector::add_var(BaseType * v, Part)
     // if 'v' is null, just set _var to null and exit.
     if (!v) {
         _var = 0;
-    } else {
+    }
+    else {
         // Jose Garcia
         // By getting a copy of this object to be assigned to _var
         // we let the owner of 'v' to deallocate it as necessary.
@@ -1114,39 +1060,35 @@ bool Vector::check_semantics(string & msg, bool)
  * @return void
  */
 void
-Vector::dump( ostream &strm ) const
+Vector::dump(ostream &strm) const
 {
     strm << DapIndent::LMarg << "Vector::dump - ("
-			      << (void *)this << ")" << endl ;
+    << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
-    BaseType::dump( strm ) ;
+    BaseType::dump(strm) ;
     strm << DapIndent::LMarg << "# elements in vector: " << _length << endl ;
-    if( _var )
-    {
-	strm << DapIndent::LMarg << "base type:" << endl ;
-	DapIndent::Indent() ;
-	_var->dump( strm ) ;
-	DapIndent::UnIndent() ;
+    if (_var) {
+        strm << DapIndent::LMarg << "base type:" << endl ;
+        DapIndent::Indent() ;
+        _var->dump(strm) ;
+        DapIndent::UnIndent() ;
     }
-    else
-    {
-	strm << DapIndent::LMarg << "base type: not set" << endl ;
+    else {
+        strm << DapIndent::LMarg << "base type: not set" << endl ;
     }
     strm << DapIndent::LMarg << "vector contents:" << endl ;
     DapIndent::Indent() ;
-    for( unsigned i = 0; i < _vec.size(); ++i )
-    {
-	if( _vec[i] )
-	    _vec[i]->dump( strm ) ;
-	else
-	    strm << DapIndent::LMarg << "vec[" << i << "] is null" << endl ;
+    for (unsigned i = 0; i < _vec.size(); ++i) {
+        if (_vec[i])
+            _vec[i]->dump(strm) ;
+        else
+            strm << DapIndent::LMarg << "vec[" << i << "] is null" << endl ;
     }
     DapIndent::UnIndent() ;
     strm << DapIndent::LMarg << "strings:" << endl ;
     DapIndent::Indent() ;
-    for( unsigned i = 0; i < d_str.size(); i++ )
-    {
-	strm << DapIndent::LMarg << d_str[i] << endl ;
+    for (unsigned i = 0; i < d_str.size(); i++) {
+        strm << DapIndent::LMarg << d_str[i] << endl ;
     }
     DapIndent::UnIndent() ;
     strm << DapIndent::LMarg << "_buf: " << (void *)_buf << endl ;

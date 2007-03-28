@@ -11,26 +11,26 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 2001,2002
-// Please read the full copyright statement in the file COPYRIGHT_URI.  
+// Please read the full copyright statement in the file COPYRIGHT_URI.
 //
 // Authors:
-//	jose	Jose Garcia <jgarcia@ucar.edu>
+// jose Jose Garcia <jgarcia@ucar.edu>
 
 /** A singleton which reads and parses the .dodsrc file. This code was
-    extracted from Connect (which has since changed considerably). 
+    extracted from Connect (which has since changed considerably).
 
     @author: jose */
 
@@ -86,51 +86,51 @@ RCReader::write_rc_file(const string &pathname)
     // the program will simply use the defaults.
 
     if (fpo) {
-	// This means we just created the file.  We will now save
-	// the defaults in it for future use.       
-	fpo << "# OPeNDAP client configuation file. See the OPeNDAP" << endl;
-	fpo << "# users guide for information." << endl;
-	fpo << "USE_CACHE=" << _dods_use_cache << endl;
-	fpo << "# Cache and object size are given in megabytes (20 ==> 20Mb)." 
-	    << endl;
-	fpo << "MAX_CACHE_SIZE=" <<_dods_cache_max  << endl;
-	fpo << "MAX_CACHED_OBJ=" << _dods_cached_obj << endl;
-	fpo << "IGNORE_EXPIRES=" << _dods_ign_expires  << endl;
-	fpo << "CACHE_ROOT=" << d_cache_root << endl;
-	fpo << "DEFAULT_EXPIRES=" <<_dods_default_expires << endl;
-	fpo << "ALWAYS_VALIDATE=" << _dods_always_validate << endl;
-	fpo << "# Request servers compress responses if possible?" << endl;
-	fpo << "# 1 (yes) or 0 (false)." << endl;
-	fpo << "DEFLATE=" << _dods_deflate << endl;
-    
-    fpo << "# Should SSL certificates and hosts be validated? SSL" << endl;
-    fpo << "# will only work with signed certificates." << endl;
-    fpo << "VALIDATE_SSL=" << d_validate_ssl << endl;
+        // This means we just created the file.  We will now save
+        // the defaults in it for future use.
+        fpo << "# OPeNDAP client configuation file. See the OPeNDAP" << endl;
+        fpo << "# users guide for information." << endl;
+        fpo << "USE_CACHE=" << _dods_use_cache << endl;
+        fpo << "# Cache and object size are given in megabytes (20 ==> 20Mb)."
+        << endl;
+        fpo << "MAX_CACHE_SIZE=" << _dods_cache_max  << endl;
+        fpo << "MAX_CACHED_OBJ=" << _dods_cached_obj << endl;
+        fpo << "IGNORE_EXPIRES=" << _dods_ign_expires  << endl;
+        fpo << "CACHE_ROOT=" << d_cache_root << endl;
+        fpo << "DEFAULT_EXPIRES=" << _dods_default_expires << endl;
+        fpo << "ALWAYS_VALIDATE=" << _dods_always_validate << endl;
+        fpo << "# Request servers compress responses if possible?" << endl;
+        fpo << "# 1 (yes) or 0 (false)." << endl;
+        fpo << "DEFLATE=" << _dods_deflate << endl;
 
-	fpo << "# Proxy configuration:" << endl;
-	fpo << "# PROXY_SERVER=<protocol>,<[username:password@]host[:port]>"
-	    << endl;
-	if (!d_dods_proxy_server_host.empty()) {
-	    fpo << "PROXY_SERVER=" <<  d_dods_proxy_server_protocol << ","
-		<< (d_dods_proxy_server_userpw.empty()
-		    ? "" 
-		    : d_dods_proxy_server_userpw + "@")
-		+ d_dods_proxy_server_host 
-		+ ":" + long_to_string(d_dods_proxy_server_port) << endl;
-	}
+        fpo << "# Should SSL certificates and hosts be validated? SSL" << endl;
+        fpo << "# will only work with signed certificates." << endl;
+        fpo << "VALIDATE_SSL=" << d_validate_ssl << endl;
 
-	fpo << "# NO_PROXY_FOR=<protocol>,<host|domain>" << endl;
-	if (!d_dods_no_proxy_for_host.empty()) {
-	    fpo << "NO_PROXY_FOR=" << d_dods_no_proxy_for_protocol << ","
-		<< d_dods_no_proxy_for_host << endl;
-	}
+        fpo << "# Proxy configuration:" << endl;
+        fpo << "# PROXY_SERVER=<protocol>,<[username:password@]host[:port]>"
+        << endl;
+        if (!d_dods_proxy_server_host.empty()) {
+            fpo << "PROXY_SERVER=" <<  d_dods_proxy_server_protocol << ","
+            << (d_dods_proxy_server_userpw.empty()
+                ? ""
+                : d_dods_proxy_server_userpw + "@")
+            + d_dods_proxy_server_host
+            + ":" + long_to_string(d_dods_proxy_server_port) << endl;
+        }
 
-	fpo << "# AIS_DATABASE=<file or url>" << endl;
-	fpo.close();
+        fpo << "# NO_PROXY_FOR=<protocol>,<host|domain>" << endl;
+        if (!d_dods_no_proxy_for_host.empty()) {
+            fpo << "NO_PROXY_FOR=" << d_dods_no_proxy_for_protocol << ","
+            << d_dods_no_proxy_for_host << endl;
+        }
 
-	return true;
+        fpo << "# AIS_DATABASE=<file or url>" << endl;
+        fpo.close();
+
+        return true;
     }
-    
+
     return false;
 }
 
@@ -141,119 +141,130 @@ RCReader::read_rc_file(const string &pathname)
 
     ifstream fpi(pathname.c_str());
     if (fpi) {
-	// The file exists and we may now begin to parse it.  
-	// Defaults are already stored in the variables, if the correct
-	// tokens are found in the file then those defaults will be 
-	// overwritten. 
-	char *value;
-	char *tempstr = new char[1024];;
-	int tokenlength;
-	while (true) {
-	    fpi.getline(tempstr, 1023);
-	    if (!fpi.good())
-		break;
+        // The file exists and we may now begin to parse it.
+        // Defaults are already stored in the variables, if the correct
+        // tokens are found in the file then those defaults will be
+        // overwritten.
+        char *value;
+        char *tempstr = new char[1024];;
+        int tokenlength;
+        while (true) {
+            fpi.getline(tempstr, 1023);
+            if (!fpi.good())
+                break;
 
-	    value = strchr(tempstr, '=');
-	    if (!value)
-		continue;
-	    tokenlength = value - tempstr;
-	    value++;
+            value = strchr(tempstr, '=');
+            if (!value)
+                continue;
+            tokenlength = value - tempstr;
+            value++;
 
-	    if ((strncmp(tempstr, "USE_CACHE", 9) == 0)
-		    && tokenlength == 9) {
-		_dods_use_cache= atoi(value) ? true : false;
-	    } else if ((strncmp(tempstr, "MAX_CACHE_SIZE", 14) == 0)
-		       && tokenlength == 14) {
-		_dods_cache_max = atoi(value);
-	    } else if ((strncmp(tempstr, "MAX_CACHED_OBJ", 14) == 0)
-		       && tokenlength == 14) {
-		_dods_cached_obj = atoi(value);
-	    } else if ((strncmp(tempstr, "IGNORE_EXPIRES", 14) == 0)
-		       && tokenlength == 14) {
-		_dods_ign_expires= atoi(value);
-	    } else if ((strncmp(tempstr, "DEFLATE", 7) == 0)
-		       && tokenlength == 7) {
-		_dods_deflate= atoi(value) ? true : false;
-	    } else if ((strncmp(tempstr, "CACHE_ROOT", 10) == 0)
-		       && tokenlength == 10) {
-		d_cache_root = value;
-		if (d_cache_root[d_cache_root.length() - 1] != DIR_SEP_CHAR) 
-		    d_cache_root += string(DIR_SEP_STRING);
-	    } else if ((strncmp(tempstr, "DEFAULT_EXPIRES", 15) == 0)
-		       && tokenlength == 15) {
-		_dods_default_expires= atoi(value);
-	    } else if ((strncmp(tempstr, "ALWAYS_VALIDATE", 15) == 0)
-		       && tokenlength == 15) {
-		_dods_always_validate = atoi(value);
-        } else if ((strncmp(tempstr, "VALIDATE_SSL", 12) == 0)
-               && tokenlength == 12) {
-            d_validate_ssl = atoi(value);
-	    } else if (strncmp(tempstr, "AIS_DATABASE", 12) == 0 
-		     && tokenlength == 12) {
-		d_ais_database = value;
-	    } else if ((strncmp(tempstr, "PROXY_SERVER", 12) == 0)
-		     && tokenlength == 12) {
-		// Setup a proxy server for all requests.
-		string proxy = value;
-		string::size_type comma = proxy.find(',');
+            if ((strncmp(tempstr, "USE_CACHE", 9) == 0)
+                && tokenlength == 9) {
+                _dods_use_cache = atoi(value) ? true : false;
+            }
+            else if ((strncmp(tempstr, "MAX_CACHE_SIZE", 14) == 0)
+                     && tokenlength == 14) {
+                _dods_cache_max = atoi(value);
+            }
+            else if ((strncmp(tempstr, "MAX_CACHED_OBJ", 14) == 0)
+                     && tokenlength == 14) {
+                _dods_cached_obj = atoi(value);
+            }
+            else if ((strncmp(tempstr, "IGNORE_EXPIRES", 14) == 0)
+                     && tokenlength == 14) {
+                _dods_ign_expires = atoi(value);
+            }
+            else if ((strncmp(tempstr, "DEFLATE", 7) == 0)
+                     && tokenlength == 7) {
+                _dods_deflate = atoi(value) ? true : false;
+            }
+            else if ((strncmp(tempstr, "CACHE_ROOT", 10) == 0)
+                     && tokenlength == 10) {
+                d_cache_root = value;
+                if (d_cache_root[d_cache_root.length() - 1] != DIR_SEP_CHAR)
+                    d_cache_root += string(DIR_SEP_STRING);
+            }
+            else if ((strncmp(tempstr, "DEFAULT_EXPIRES", 15) == 0)
+                     && tokenlength == 15) {
+                _dods_default_expires = atoi(value);
+            }
+            else if ((strncmp(tempstr, "ALWAYS_VALIDATE", 15) == 0)
+                     && tokenlength == 15) {
+                _dods_always_validate = atoi(value);
+            }
+            else if ((strncmp(tempstr, "VALIDATE_SSL", 12) == 0)
+                     && tokenlength == 12) {
+                d_validate_ssl = atoi(value);
+            }
+            else if (strncmp(tempstr, "AIS_DATABASE", 12) == 0
+                     && tokenlength == 12) {
+                d_ais_database = value;
+            }
+            else if ((strncmp(tempstr, "PROXY_SERVER", 12) == 0)
+                     && tokenlength == 12) {
+                // Setup a proxy server for all requests.
+                string proxy = value;
+                string::size_type comma = proxy.find(',');
 
-		// Since the protocol is required, the comma *must* be
-		// present. We could throw an Error on the malformed line...
-		if (comma == string::npos)
-		    continue;
-		d_dods_proxy_server_protocol = proxy.substr(0, comma);
-		proxy = proxy.substr(comma + 1);
+                // Since the protocol is required, the comma *must* be
+                // present. We could throw an Error on the malformed line...
+                if (comma == string::npos)
+                    continue;
+                d_dods_proxy_server_protocol = proxy.substr(0, comma);
+                proxy = proxy.substr(comma + 1);
 
-		// Break apart into userpw, host and port.
-		string::size_type at_sign = proxy.find('@');
-		if (at_sign != string::npos) { // has userpw
-		    d_dods_proxy_server_userpw = proxy.substr(0, at_sign);
-		    proxy = proxy.substr(at_sign + 1);
-		}
-		else
-		    d_dods_proxy_server_userpw = "";
+                // Break apart into userpw, host and port.
+                string::size_type at_sign = proxy.find('@');
+                if (at_sign != string::npos) { // has userpw
+                    d_dods_proxy_server_userpw = proxy.substr(0, at_sign);
+                    proxy = proxy.substr(at_sign + 1);
+                }
+                else
+                    d_dods_proxy_server_userpw = "";
 
-		// Get host and look for a port number
-		string::size_type colon = proxy.find(':');
-		if (colon != string::npos) {
-		    d_dods_proxy_server_host = proxy.substr(0, colon);
-		    d_dods_proxy_server_port 
-			= strtol(proxy.substr(colon + 1).c_str(), 0, 0);
-		}
-		else {
-		    d_dods_proxy_server_host = proxy;
-		    // No port given, look at protocol or throw
-		    if (d_dods_proxy_server_protocol == "http")
-			d_dods_proxy_server_port = 80;
-		    else if (d_dods_proxy_server_protocol == "https")
-			d_dods_proxy_server_port = 443;
-		    else if (d_dods_proxy_server_protocol == "ftp")
-			d_dods_proxy_server_port = 21;
-		    else throw Error("Could not determine the port to use for proxy '"
-				     + d_dods_proxy_server_host 
-				     + ".' Please check your .dodsrc file.");
-		}
-	    } else if ((strncmp(tempstr, "NO_PROXY_FOR", 12) == 0)
-		       && tokenlength == 12) {
-		// Setup a proxy server for all requests.
-		string no_proxy = value;
-		string::size_type comma = no_proxy.find(',');
+                // Get host and look for a port number
+                string::size_type colon = proxy.find(':');
+                if (colon != string::npos) {
+                    d_dods_proxy_server_host = proxy.substr(0, colon);
+                    d_dods_proxy_server_port
+                    = strtol(proxy.substr(colon + 1).c_str(), 0, 0);
+                }
+                else {
+                    d_dods_proxy_server_host = proxy;
+                    // No port given, look at protocol or throw
+                    if (d_dods_proxy_server_protocol == "http")
+                        d_dods_proxy_server_port = 80;
+                    else if (d_dods_proxy_server_protocol == "https")
+                        d_dods_proxy_server_port = 443;
+                    else if (d_dods_proxy_server_protocol == "ftp")
+                        d_dods_proxy_server_port = 21;
+                    else throw Error("Could not determine the port to use for proxy '"
+                                         + d_dods_proxy_server_host
+                                         + ".' Please check your .dodsrc file.");
+                }
+            }
+            else if ((strncmp(tempstr, "NO_PROXY_FOR", 12) == 0)
+                     && tokenlength == 12) {
+                // Setup a proxy server for all requests.
+                string no_proxy = value;
+                string::size_type comma = no_proxy.find(',');
 
-		// Since the protocol is required, the comma *must* be
-		// present. We could throw an Error on the malformed line...
-		if (comma == string::npos)
-		    continue;
-		d_dods_no_proxy_for_protocol = no_proxy.substr(0, comma);
-		d_dods_no_proxy_for_host = no_proxy.substr(comma + 1);
-		d_dods_no_proxy_for = true;
-	    }
-	}
-    
-	delete [] tempstr; tempstr = 0;
-    
-	fpi.close();	// Close the .dodsrc file. 12/14/99 jhrg
-	
-	return true;
+                // Since the protocol is required, the comma *must* be
+                // present. We could throw an Error on the malformed line...
+                if (comma == string::npos)
+                    continue;
+                d_dods_no_proxy_for_protocol = no_proxy.substr(0, comma);
+                d_dods_no_proxy_for_host = no_proxy.substr(comma + 1);
+                d_dods_no_proxy_for = true;
+            }
+        }
+
+        delete [] tempstr; tempstr = 0;
+
+        fpi.close(); // Close the .dodsrc file. 12/14/99 jhrg
+
+        return true;
     }  // End of cache file parsing.
 
     return false;
@@ -261,38 +272,38 @@ RCReader::read_rc_file(const string &pathname)
 
 // Helper for check_env_var(). This is its main logic, separated out for the
 // cases under WIN32 where we don't use an environment variable.  09/19/03
-// jhrg 
+// jhrg
 string
 RCReader::check_string(string env_var)
 {
     struct stat stat_info;
 
     if (stat(env_var.c_str(), &stat_info) != 0)
-	return "";		// ENV VAR not a file or dir, bail
+        return "";  // ENV VAR not a file or dir, bail
 
     if (S_ISREG(stat_info.st_mode))
-	return env_var;		// ENV VAR is a file, use it
+        return env_var;  // ENV VAR is a file, use it
 
     // ENV VAR is a directory, does it contain .dodsrc? Can we create
     // .dodsrc if it's not there?
     if (S_ISDIR(stat_info.st_mode)) {
-	if (*env_var.rbegin() != DIR_SEP_CHAR)	// Add trailing / if missing
-	    env_var += DIR_SEP_STRING;
-	// Trick: set d_cache_root here in case we're going to create the
-	// .dodsrc later on. If the .dodsrc file exists, its value will
-	// overwrite this value, if not write_rc_file() will use the correct
-	// value. 09/19/03 jhrg
-	d_cache_root = env_var + string(".dods_cache") + DIR_SEP_STRING;
-	env_var += ".dodsrc";
-	if (stat(env_var.c_str(), &stat_info) == 0 &&
-	    S_ISREG(stat_info.st_mode))
-	    return env_var; // Found .dodsrc in ENV VAR
+        if (*env_var.rbegin() != DIR_SEP_CHAR) // Add trailing / if missing
+            env_var += DIR_SEP_STRING;
+        // Trick: set d_cache_root here in case we're going to create the
+        // .dodsrc later on. If the .dodsrc file exists, its value will
+        // overwrite this value, if not write_rc_file() will use the correct
+        // value. 09/19/03 jhrg
+        d_cache_root = env_var + string(".dods_cache") + DIR_SEP_STRING;
+        env_var += ".dodsrc";
+        if (stat(env_var.c_str(), &stat_info) == 0 &&
+            S_ISREG(stat_info.st_mode))
+            return env_var; // Found .dodsrc in ENV VAR
 
-	// Didn't find .dodsrc in ENV VAR and ENV VAR is a directory; try to
-	// create it. Note write_rc_file uses d_cache_root (set above) when
-	// it creates the RC file's contents.
-	if (write_rc_file(env_var))
-	    return env_var;
+        // Didn't find .dodsrc in ENV VAR and ENV VAR is a directory; try to
+        // create it. Note write_rc_file uses d_cache_root (set above) when
+        // it creates the RC file's contents.
+        if (write_rc_file(env_var))
+            return env_var;
     }
 
     // If we're here, then we've not found or created the RC file.
@@ -308,13 +319,13 @@ RCReader::check_string(string env_var)
 
     @return The pathname to the RC file or "" if another variable/method
     should be used to find/create the RC file. */
-string 
-RCReader::check_env_var(const string &variable_name) 
-{ 
+string
+RCReader::check_env_var(const string &variable_name)
+{
     char *ev = getenv(variable_name.c_str());
     if (!ev || strlen(ev) == 0)
-	return "";
-    
+        return "";
+
     return check_string(ev);
 }
 
@@ -325,14 +336,14 @@ RCReader::RCReader() throw(Error)
 
     // ** Set default values **
     // Users must explicitly turn caching on.
-    _dods_use_cache=false;
-    _dods_cache_max=20;
-    _dods_cached_obj=5;
-    _dods_ign_expires=0;
-    _dods_default_expires= 86400;
-    _dods_always_validate=0;
+    _dods_use_cache = false;
+    _dods_cache_max = 20;
+    _dods_cached_obj = 5;
+    _dods_ign_expires = 0;
+    _dods_default_expires = 86400;
+    _dods_always_validate = 0;
 
-    _dods_deflate=0;
+    _dods_deflate = 0;
     d_validate_ssl = 1;
 
     //flags for PROXY_SERVER=<protocol>,<host url>
@@ -344,7 +355,7 @@ RCReader::RCReader() throw(Error)
     _dods_proxy_server_host_url = ""; // deprecated
 
     // flags for PROXY_FOR=<regex>,<proxy host url>,<flags>
-    _dods_proxy_for = false;	// true if proxy_for is used.
+    _dods_proxy_for = false; // true if proxy_for is used.
     _dods_proxy_for_regexp = "";
     _dods_proxy_for_proxy_host_url = "";
     _dods_proxy_for_regexp_flags = 0;
@@ -356,39 +367,38 @@ RCReader::RCReader() throw(Error)
     // default to port 0 if not specified. This means all ports. Using 80
     // will fail when the URL does not contain the port number. That's
     // probably a bug in libwww. 10/23/2000 jhrg
-    _dods_no_proxy_for_port=0;
+    _dods_no_proxy_for_port = 0;
 
 #ifdef WIN32
     string homedir = string("C:") + string(DIR_SEP_STRING) + string("Dods");
     d_rc_file_path = check_string(homedir);
     //  Normally, I'd prefer this for WinNT-based systems.
     if (d_rc_file_path.empty())
-	d_rc_file_path = check_env_var("APPDATA");
+        d_rc_file_path = check_env_var("APPDATA");
     if (d_rc_file_path.empty())
-	d_rc_file_path = check_env_var("TEMP");
+        d_rc_file_path = check_env_var("TEMP");
     if (d_rc_file_path.empty())
-	d_rc_file_path = check_env_var("TMP");
+        d_rc_file_path = check_env_var("TMP");
 #else
     d_rc_file_path = check_env_var("DODS_CONF");
     if (d_rc_file_path.empty())
-	d_rc_file_path = check_env_var("HOME");
+        d_rc_file_path = check_env_var("HOME");
 #endif
 
     if (!d_rc_file_path.empty())
-	read_rc_file(d_rc_file_path);
+        read_rc_file(d_rc_file_path);
 }
 
 RCReader::~RCReader()
-{
-}
+{}
 
 /** Static void private method. */
-void  
+void
 RCReader::delete_instance()
 {
     if (RCReader::_instance) {
-	delete RCReader::_instance; 
-	RCReader::_instance = 0;
+        delete RCReader::_instance;
+        RCReader::_instance = 0;
     }
 }
 
@@ -404,7 +414,7 @@ RCReader::initialize_instance()
     DBGN(cerr << "exiting." << endl);
 }
 
-RCReader* 
+RCReader*
 RCReader::instance()
 {
     // The instance_control variable is defined at the top of this file.

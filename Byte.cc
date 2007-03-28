@@ -129,9 +129,7 @@ bool Byte::serialize(const string & dataset, ConstraintEvaluator & eval,
     dds.timeout_off();
 
     if (!xdr_char(sink, (char *) &_buf))
-        throw Error("Network I/O Error. Could not send byte data.\n\
-                    This may be due to a bug in DODS, on the server or a\n\
-                    problem with the network connection.");
+        throw Error("Network I/O Error. Could not send byte data.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
     return true;
 }
@@ -142,10 +140,7 @@ bool Byte::serialize(const string & dataset, ConstraintEvaluator & eval,
 bool Byte::deserialize(XDR * source, DDS *, bool)
 {
     if (!xdr_char(source, (char *) &_buf))
-        throw
-        Error
-        ("Network I/O Error. Could not read byte data. This may be due to a\n\
-         bug in DODS or a problem with the network connection.");
+        throw Error("Network I/O Error. Could not read byte data. This may be due to a\nbug in DODS or a problem with the network connection.");
 
     return false;
 }
@@ -162,8 +157,7 @@ unsigned int Byte::val2buf(void *val, bool)
     // to be use by read which must be implemented on the surrogated library,
     // thus if the pointer val is NULL, is an Internal Error.
     if (!val)
-        throw
-        InternalErr("the incoming pointer does not contain any data.");
+        throw InternalErr("the incoming pointer does not contain any data.");
 
     _buf = *(dods_byte *) val;
 
