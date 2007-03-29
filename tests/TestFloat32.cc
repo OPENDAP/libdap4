@@ -50,6 +50,13 @@
 
 extern int test_variable_sleep_interval;
 
+#if ( defined(__sun__) && ( HOST_SOLARIS < 10 ))
+double trunc(double x)
+{
+       return x < 0 ? -floor(-x) : floor(x);
+}
+#endif
+
 void
 TestFloat32::_duplicate(const TestFloat32 &ts)
 {
