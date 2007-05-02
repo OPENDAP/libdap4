@@ -1,3 +1,86 @@
+2007-03-29  James Gallagher <jgallagher@opendap.org>
+
+	Added definition of trunc() for Solaris < 10.
+
+2007-03-28  James Gallagher <jgallagher@opendap.org>
+
+	All files (.cc and .h) formatted using astyle. I found one
+	introduced error and one issue with the strings passed to the
+	Error exceptions.
+
+2007-03-27  James Gallagher <jgallagher@opendap.org>
+
+	Minor formatting changes.
+
+	M    Byte.cc
+	M    unit-tests/HTTPConnectTest.cc
+
+2007-03-27  James Gallagher <jgallagher@opendap.org>
+
+	Wrapped the calls to ConstraitEvaluator::eval() in a compile-time
+	constant (EVAL) which defaults to zero (so the calls are not made
+	for non-sequence types). Also wrapped the server-side compression
+	code in a compile-time constant COMPRESSION_FOR_SERVER3 which
+	is also zero by default. Lastly, added DapObj constructor init
+	for BAS, DDS and BaseTyep constructors.
+
+2007-03-26  James Gallagher <jgallagher@opendap.org>
+
+	DDS.cc, unit-tests/DDSTest.cc: Fixed ticket # 708. The dataBLOB
+	element now gets an empty href attribute.
+
+2007-03-26  James Gallagher <jgallagher@opendap.org>
+
+	README: Added a note about thread-saftey.
+
+2007-03-26  James Gallagher <jgallagher@opendap.org>
+
+	Patch from Patrice Dumas: Fix the order of library builds! This
+	closes #880.
+
+2007-03-23  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the help/version/args messages for the server-side functions
+	so that they are somewhat rational. There is a ticket to develop a
+	'capabilities' response for Hyrax and that should replace these
+	messages.
+
+	M    ce_functions.cc
+	M    GeoConstraint.cc
+
+2007-03-23  James Gallagher <jgallagher@opendap.org>
+
+	Updated test for changes to the 'wrong number of args" messages
+	from the first set of server-side functions.
+
+	M    tests/expr-testsuite/data.zz0
+	M    tests/expr-testsuite/data.z0
+
+2007-03-12  James Gallagher <jgallagher@opendap.org>
+
+	Resolved signed/unsigned compares
+
+	M    Vector.cc
+
+2007-03-12  James Gallagher <jgallagher@opendap.org>
+
+	Removed some int/unsigned compares
+
+	M    tests/TestArray.cc
+
+2007-03-12  James Gallagher <jgallagher@opendap.org>
+
+	Updated notes and version information for 3.7.6.
+
+	M    configure.ac
+	M    README.AIS
+	M    ChangeLog
+	M    INSTALL
+	M    README.dodsrc
+	M    libdap.spec
+	M    README
+	M    NEWS
+
 2007-03-12  James Gallagher <jgallagher@opendap.org>
 
 	Fixed some errors in the unit tests, one bug in the RCReader when

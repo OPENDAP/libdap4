@@ -1,6 +1,11 @@
 
 $Id$
 
+Notes for version 3.7.7 (2 May 2007)
+
+The major fix here is to he source build. We've fixed the issue where source
+builds failed to make teh dapserver and dapclient libraries.
+
 Notes for version 3.7.6 (12 March 2007)
 
 Two bug fixes, both minor. Problems in the linear_scale() constraint

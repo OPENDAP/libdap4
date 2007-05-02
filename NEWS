@@ -1,6 +1,17 @@
 
 $Id$
 
+News for version 3.7.7 2 May 2007
+
+Fixed a bug where the build was not installing the dapserver and dapclient
+libraries. 
+
+Fixed a handful of platform-specific build issues.
+
+There are some minor performance improvements to the constraint evaluator.
+
+Repaired some problems with the server-side functions.
+
 News for version 3.7.6 12 March 2007
 
 Fixed a bug in the linear_scale() Constraint Expression function when that
