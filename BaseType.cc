@@ -33,7 +33,6 @@
 //
 // jhrg 9/6/94
 
-
 #include "config.h"
 
 #include <stdio.h>  // for stdin and stdout
@@ -385,7 +384,7 @@ BaseType::set_synthesized_p(bool state)
 // read (and is in memory) false otherwise).
 
 /** Returns true if the value(s) for this variable have been read from the
-    data source, oterwise returns false. This method is used to determine
+    data source, otherwise returns false. This method is used to determine
     when values need to be read using the read() method. When read_p()
     returns true, this library assumes that buf2val() (and other methods
     such as get_vec()) can be used to access the value(s) of a variable.
@@ -484,7 +483,7 @@ BaseType::get_attr_table()
 }
 
 /** Set this variable's attribute table.
-    @param at Source of the attribtues. */
+    @param at Source of the attributes. */
 void
 BaseType::set_attr_table(const AttrTable &at)
 {
@@ -668,7 +667,7 @@ BaseType::add_var(BaseType *, Part)
           counter is the time when Sequence::read() return false indicating
           that all the data for the Sequence have been read. Failure to
           handle these tasks will break serialization of nested Sequences. Note
-          that when Sequence::read() returns with a result of true (indicting
+          that when Sequence::read() returns with a result of true (indicating
           there is more data to send, the value of the \c unsent_data property
           should be true.
 
@@ -802,7 +801,7 @@ BaseType::print_xml(FILE *out, string space, bool constrained)
         fprintf(out, " name=\"%s\"", id2xml(_name).c_str());
 
     if (get_attr_table().get_size() > 0) {
-        fprintf(out, ">\n"); // close the varaible's tag
+        fprintf(out, ">\n"); // close the variable's tag
         get_attr_table().print_xml(out, space + "    ", constrained);
         // After attributes, print closing tag
         fprintf(out, "%s</%s>\n", space.c_str(), type_name().c_str());
@@ -838,7 +837,7 @@ BaseType::print_xml(FILE *out, string space, bool constrained)
     variable must pass this test before it is sent, but there may be
     many other stages in a retrieve operation where it would fail.
 
-    @brief Compare an object's current state with the sematics of its
+    @brief Compare an object's current state with the semantics of its
     type.
     @return Returns FALSE when the current state violates some
     aspect of the type semantics, TRUE otherwise.
@@ -847,7 +846,7 @@ BaseType::print_xml(FILE *out, string space, bool constrained)
     the source of any problem.
     @param all For complex constructor types (Grid,
     Sequence, Structure), this flag indicates whether to check the
-    sematics of the member variables, too.
+    semantics of the member variables, too.
 
     @see DDS::check_semantics
 */
@@ -890,7 +889,7 @@ BaseType::check_semantics(string &msg, bool)
     This function is used by the constraint expression evaluator.
 
     @brief Evaluate relational operators.
-    @param b Comare the value of this instance with \e b.
+    @param b Compare the value of this instance with \e b.
     @param op An integer index indicating which relational operator
     is implied. Choose one from the following: <tt>EQUAL</tt>,
     <tt>NOT_EQUAL</tt>, <tt>GREATER</tt>, <tt>GREATER_EQL</tt>,

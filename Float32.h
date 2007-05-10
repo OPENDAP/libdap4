@@ -31,7 +31,7 @@
 
 // Interface for Float32 type.
 //
-// 3/22/9 jhrg9
+// 3/22/99 jhrg
 
 #ifndef _float32_h
 #define _float32_h 1
@@ -55,12 +55,9 @@
     */
 class Float32: public BaseType
 {
-    /** This class allows Byte, ..., Float64 access to <tt>_buf</tt> to
-    simplify and
-    speed up the relational operators.
+    /** This class allows Byte, ..., Float64 access to <tt>_buf</tt>
+	to simplify and speed up the relational operators. */
 
-    NB: According to Stroustrup it does not matter where (public, private
-    or protected) friend classes are declared. */
     friend class Byte;
     friend class Int16;
     friend class UInt16;

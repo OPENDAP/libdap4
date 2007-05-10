@@ -38,7 +38,7 @@
 #include "AISExceptions.h"
 #endif
 
-/** Provide seemless client-side AIS services. */
+/** Provide seamless client-side AIS services. */
 class AISConnect: public Connect
 {
 private:

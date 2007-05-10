@@ -31,7 +31,7 @@
 
 // Implementation for Float32.
 //
-// 3/22/9 jhrg9
+// 3/22/99 jhrg
 
 
 #include "config.h"
@@ -54,13 +54,12 @@ static char rcsid[] not_used =
 using std::cerr;
 using std::endl;
 
-/** The Float32 constructor requires only the name of the variable
-    to be created.  The name may be omitted, which will create a
-    nameless variable.  This may be adequate for some applications.
+/** The Float32 constructor accepts only the name of the variable. The
+    name may be omitted, which will create a nameless variable. This
+    may be adequate for some applications.
 
     @param n A string containing the name of the variable to be
     created.
-
 */
 Float32::Float32(const string &n)
         : BaseType(n, dods_float32_c, (xdrproc_t)XDR_FLOAT32)
@@ -130,10 +129,11 @@ Float32::deserialize(XDR *source, DDS *, bool)
 unsigned int
 Float32::val2buf(void *val, bool)
 {
-    // Jose Garcia
-    // This method is public therefore and I believe it has being designed
-    // to be use by read which must be implemented on the surrogated library,
-    // thus if the pointer val is NULL, is an Internal Error.
+    // Jose Garcia This method is public I believe it has been
+    // designed to be used by read which must be implemented in a
+    // subclass, thus if the pointer val is NULL, is an Internal
+    // Error.
+    // Changed to InternalErr. jhrg
     if (!val)
         throw InternalErr(__FILE__, __LINE__,
                           "The incoming pointer does not contain any data.");
@@ -170,7 +170,7 @@ Float32::set_value(dods_float32 f)
 
 /** Return the value of the Float32 held by this instance. This is more
     convenient than the general interface provided by buf2val, but its use
-    requires a downcase from BaseType to Float32.
+    requires a cast from BaseType to Float32.
 
     @return The dods_float32 value. */
 dods_float32
@@ -196,23 +196,17 @@ Float32::print_val(FILE *out, string space, bool print_decl_p)
 bool
 Float32::ops(BaseType *b, int op, const string &dataset)
 {
-    // Extract the Byte arg's value.
+    // Get this instance's value
     if (!read_p() && !read(dataset)) {
-        // Jose Garcia
-        // Since the read method is virtual and implemented outside
-        // libdap++ if we can not read the data that is the problem
-        // of the user or of whoever wrote the surrogate library
-        // implemeting read therefore it is an internal error.
+        // Jose Garcia Since the read method is virtual and
+        // implemented outside libdap++ if we can not read the data
+        // that is the problem of whomever wrote the implementation of
+        // read and therefore it is an internal error.
         throw InternalErr(__FILE__, __LINE__, "This value not read!");
     }
 
     // Extract the second arg's value.
     if (!b->read_p() && !b->read(dataset)) {
-        // Jose Garcia
-        // Since the read method is virtual and implemented outside
-        // libdap++ if we can not read the data that is the problem
-        // of the user or of whoever wrote the surrogate library
-        // implemeting read therefore it is an internal error.
         throw InternalErr(__FILE__, __LINE__, "This value not read!");
     }
 
@@ -244,18 +238,18 @@ Float32::ops(BaseType *b, int op, const string &dataset)
 }
 
 /** @brief dumps information about this object
- *
- * Displays the pointer value of this instance and information about this
- * instance.
- *
- * @param strm C++ i/o stream to dump the information to
- * @return void
+
+   Displays the pointer value of this instance and information about this
+   instance.
+
+   @param strm C++ i/o stream to dump the information to
+   @return void
  */
 void
 Float32::dump(ostream &strm) const
 {
-    strm << DapIndent::LMarg << "Float32::dump - ("
-    << (void *)this << ")" << endl ;
+    strm << DapIndent::LMarg << "Float32::dump - (" << (void *)this << ")"
+	 << endl ;
     DapIndent::Indent() ;
     BaseType::dump(strm) ;
     strm << DapIndent::LMarg << "value: " << _buf << endl ;

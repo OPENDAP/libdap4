@@ -45,15 +45,15 @@
 /** Parse the XML database/configuration file which lists a collection of AIS
     resources.
 
-    Static methods are used as callbacks for the SAX parser. They do not
-    throw exceptions because exceptions from within callbacks are not
-    reliable or portable (and exceptions themselves are not 100%
-    portable...). To signal errors, the methods record information in the
-    AISParserState object. Once any of the error handlers (aisWarning,
-    aisError or aisFatalError) is called, construction of an AISResources
-    object ends even though the SAX parser still calls the various callback
-    functions. The parse method throws an AISDatabaseReadFailed exception if
-    an error was found.
+    Static methods are used as callbacks for the SAX parser. They do
+    not throw exceptions because exceptions from within callbacks are
+    not reliable or portable. To signal errors, the methods record
+    information in the AISParserState object. Once any of the error
+    handlers (aisWarning, aisError or aisFatalError) is called,
+    construction of an AISResources object ends even though the SAX
+    parser still calls the various callback functions. The parse
+    method throws an AISDatabaseReadFailed exception if an error was
+    found.
 
     Note that this class uses the C++-supplied default definitions for the
     default and copy constructors as well as the destructor and assignment
@@ -79,17 +79,18 @@ private:
         PARSER_ERROR
     };
 
-    /** This holds the state information for the SAX parser that is used to
-    intern the XML AIS database. The parser is designed to ignore unknown
-    tags and attributes, so long as the input is well-formed. Note that a
-    pointer to an AISResources object is part of the SAX parser state. As
-    the XML input document is parsed, information is added to that
-    object. Also note that an AISParserState object holds a pointer to
-    the xmlParserCtxt which, in turn, holds a pointer to AISParserState
-    (via its \c userData field). This cirular referencing is done because
-    libxml2's SAX parser invokes the callbacks using just the
-    AISParserState instance but we need the whole xmlParserCtxt for some
-    of the callbacks. 
+    /** This holds the state information for the SAX parser that is
+	used to intern the XML AIS database. The parser is designed to
+	ignore unknown tags and attributes, so long as the input is
+	well-formed. Note that a pointer to an AISResources object is
+	part of the SAX parser state. As the XML input document is
+	parsed, information is added to that object. Also note that an
+	AISParserState object holds a pointer to the xmlParserCtxt
+	which, in turn, holds a pointer to AISParserState (via its \c
+	userData field). This circular referencing is done because
+	libxml2's SAX parser invokes the callbacks using just the
+	AISParserState instance but we need the whole xmlParserCtxt
+	for some of the callbacks.
 
     @see aisWarning. */
     struct AISParserState

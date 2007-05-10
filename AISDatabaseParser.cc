@@ -259,7 +259,7 @@ AISDatabaseParser::aisGetEntity(AISParserState *, const xmlChar *name)
 }
 
 /** Process an XML warning. This is treated as a fatal error since there's no
-    easy way for libdap++ to signal warning to users.
+    easy way for libdap++ to signal a warning to users.
     @param state The SAX parser state.
     @param msg A printf-style format string. */
 void
@@ -285,7 +285,7 @@ AISDatabaseParser::aisWarning(AISParserState *state, const char *msg, ...)
 }
 
 /** Process an XML error. This is treated as a fatal error since there's no
-    easy way for libdap++ to signal warning to users.
+    easy way for libdap++ to signal a warning to users.
     @param state The SAX parser state.
     @param msg A printf-style format string. */
 void
@@ -338,7 +338,7 @@ AISDatabaseParser::aisFatalError(AISParserState *state, const char *msg, ...)
 //@}
 
 /** This local variable holds pointers to the callback <i>functions</i> which
-    comprise the SAX parser. */
+    make up the SAX parser. */
 static xmlSAXHandler aisSAXParser =
     {
         0, // internalSubset
@@ -426,4 +426,3 @@ AISDatabaseParser::intern(const string &database, AISResources *ais)
     ctxt->sax = NULL;
     xmlFreeParserCtxt(ctxt);
 }
-
