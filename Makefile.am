@@ -5,6 +5,7 @@ AUTOMAKE_OPTIONS = foreign check-news
 ACLOCAL_AMFLAGS = -I conf -I gl/m4
 
 aclocaldir=$(datadir)/aclocal
+pkgconfigdir=$(libdir)/pkgconfig
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)/gl
@@ -35,10 +36,12 @@ libdapclient_la_SOURCES = $(CLIENT_SRC)
 libdapserver_la_SOURCES = $(SERVER_SRC)
 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
-libdap_la_LIBADD = gl/libgnu.la
+libdap_la_CPPFLAGS = $(XML2_CFLAGS)
+libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la
 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
-libdapclient_la_LIBADD = libdap.la
+libdapclient_la_CPPFLAGS = $(CURL_CFLAGS) $(XML2_CFLAGS)
+libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
 #libdapclient_la_LIBADD = gl/libgnu.la
 
 libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
@@ -49,9 +52,12 @@ pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR)
 noinst_HEADERS = config_dap.h
 
 getdap_SOURCES = getdap.cc
-getdap_LDADD = libdapclient.la libdap.la
+getdap_LDADD = libdapclient.la libdap.la 
 
 deflate_SOURCES = deflate.c
+deflate_LDADD = $(ZLIB_LIBS)
+deflate_CPPFLAGS = $(ZLIB_CFLAGS)
+deflate_LDFLAGS = $(ZLIB_LDFLAGS)
 
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex gse.y \
 	Error.lex Error.y
@@ -65,6 +71,7 @@ EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	VCPP $(LEX_YACC_EXTRA) $(LEX_YACC_FILES)
 
 dist_aclocal_DATA = conf/libdap.m4
+pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
 CLEANFILES = *.log *.output *.gcda *.gcno
 
@@ -128,7 +135,7 @@ GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h
 GRAM_SRC = lex.das.cc das.tab.cc das.tab.h \
 	lex.dds.cc dds.tab.cc dds.tab.h \
 	lex.ce_expr.cc ce_expr.tab.cc ce_expr.tab.h \
-	lex.Error.cc Error.tab.cc Error.tab.h
+	lex.Error.cc Error.tab.cc Error.tab.h gse.tab.h
 
 # lex.expr.cc expr.tab.cc 
 

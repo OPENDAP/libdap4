@@ -15,6 +15,9 @@ License: LGPL
 #BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
 # fedora
 BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
+# deflate depends directly on zlib
+BuildRequires: zlib-devel
+BuildRequires: pkgconfig
 
 # This package could be relocatable. In that case uncomment the following
 # line
@@ -33,6 +36,9 @@ Summary: Static libraries and header files from libdap
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 Requires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
+Requires: pkgconfig
+# for the /usr/share/aclocal directory ownership
+Requires: automake
 
 %description devel
 This package contains all the files needed to develop applications that
@@ -75,6 +81,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libdapclient.a
 %{_libdir}/libdapserver.so
 %{_libdir}/libdapserver.a
+%{_libdir}/pkgconfig/libdap*.pc
 %{_bindir}/dap-config
 %{_includedir}/libdap/
 %{_datadir}/aclocal/*

@@ -47,19 +47,12 @@
 using std::cerr;
 using std::endl;
 
-// Jose Garcia 1/26/2000
-// Note: all asserts of nature
-// for (Pix p = _vars.first(); p; _vars.next(p)) {
-//  assert(_vars(p));
-// had been commented out, later when we get sure
-// we do not need then we can remove them all.
-
 void
 Structure::_duplicate(const Structure &s)
 {
     Structure &cs = const_cast<Structure &>(s);
 
-    DBG(cerr << "Copying strucutre: " << name() << endl);
+    DBG(cerr << "Copying structure: " << name() << endl);
 
     for (Vars_iter i = cs._vars.begin(); i != cs._vars.end(); i++) {
         DBG(cerr << "Copying field: " << cs.name() << endl);
@@ -75,8 +68,8 @@ Structure::_duplicate(const Structure &s)
 }
 
 /** The Structure constructor requires only the name of the variable
-    to be created.  The name may be omitted, which will create a
-    nameless variable.  This may be adequate for some applications.
+    to be created. The name may be omitted, which will create a
+    nameless variable. This may be adequate for some applications.
 
     @param n A string containing the name of the variable to be
     created.
@@ -149,7 +142,6 @@ void
 Structure::set_send_p(bool state)
 {
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
-        //assert(*i);
         (*i)->set_send_p(state);
     }
 
@@ -160,7 +152,6 @@ void
 Structure::set_read_p(bool state)
 {
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
-        //assert(*i);
         (*i)->set_read_p(state);
     }
 
@@ -194,12 +185,10 @@ Structure::set_leaf_sequence(int level)
     }
 }
 
-// NB: Part defaults to nil for this class
-
 /** Adds an element to a Structure.
 
     @param bt A pointer to the DAP2 type variable to add to this Structure.
-    @param part defaults to nil */
+    @param part Not used by this class, defaults to nil */
 void
 Structure::add_var(BaseType *bt, Part)
 {
@@ -211,7 +200,7 @@ Structure::add_var(BaseType *bt, Part)
 
     // Jose Garcia
     // Now we add a copy of bt so the external user is able to destroy bt as
-    // he/she whishes. The policy is: "If it is allocated outside, it is
+    // he/she wishes. The policy is: "If it is allocated outside, it is
     // deallocated outside, if it is allocated inside, it is deallocated
     // inside"
     BaseType *btp = bt->ptr_duplicate();
@@ -259,10 +248,6 @@ Structure::transfer_data(const string & dataset,
     }
 }
 
-// Returns: false if an error was detected, true otherwise.
-// NB: this means that serialize() returns true when the CE evaluates to
-// false. This bug might be fixed using exceptions.
-
 bool
 Structure::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
                      XDR *sink, bool ce_eval)
@@ -297,8 +282,14 @@ Structure::deserialize(XDR *source, DDS *dds, bool reuse)
     return false;
 }
 
-/**  This function assumes that val contains values for all the elements of the
-     structure in the order those elements are declared.
+/**  @brief Never call this
+
+     This method cannot be used to change values of a Structure since
+     the values of a Constructor type must be set using methods in
+     Constructor. See the Constructor::var_begin() and related
+     methods.
+
+     @todo Make this throw an exception
      @return Returns the size of the structure. */
 unsigned int
 Structure::val2buf(void *, bool)
@@ -306,17 +297,15 @@ Structure::val2buf(void *, bool)
     return sizeof(Structure);
 }
 
-/** Returns the size of the structure. */
+/** @brief Never call this
+    @see val2buf()
+    @return Returns the size of the structure. */
 unsigned int
 Structure::buf2val(void **)
 {
     return sizeof(Structure);
 }
 
-// If EXACT is true, then use breadth-first search and assume that NAME is
-// the path to a variable where a dot (.) separates the ctor variable(s) from
-// the variable to be found. If S is not null, push the path to NAME on the
-// statck.
 BaseType *
 Structure::var(const string &name, bool exact_match, btp_stack *s)
 {
@@ -328,8 +317,7 @@ Structure::var(const string &name, bool exact_match, btp_stack *s)
         return m_leaf_match(n, s);
 }
 
-// Get rid of this method ASAP.
-// A depth-first search for leaf nodes matching NAME.
+/** @deprecated See comment in BaseType */
 BaseType *
 Structure::var(const string &n, btp_stack &s)
 {
@@ -342,8 +330,8 @@ Structure::var(const string &n, btp_stack &s)
     return m_leaf_match(name, &s);
 }
 
-// If S is not null, push the path of the depth-first search for a
-// leaf-node called NAME onto S.
+// Private method to find a variable using the shorthand name. This
+// should be moved to Constructor.
 BaseType *
 Structure::m_leaf_match(const string &name, btp_stack *s)
 {
@@ -370,7 +358,7 @@ Structure::m_leaf_match(const string &name, btp_stack *s)
     return 0;
 }
 
-/** Breadth-first search for NAME. If NAME contains one or more dots (.) */
+// Breadth-first search for NAME. If NAME contains one or more dots (.) 
 BaseType *
 Structure::m_exact_match(const string &name, btp_stack *s)
 {

@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libdapserver
+Description: Server side of the OPeNDAP C++ implementation of the Data Access Protocol
+Version: @VERSION@
+Requires: libdap
+Libs: -L${libdir} -ldapserver
+Cflags: -I${includedir}/libdap
+

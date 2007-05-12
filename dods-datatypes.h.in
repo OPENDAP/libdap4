@@ -31,7 +31,7 @@
 /* The typedefs are done using a preprocessor symbol so that autoconf's
    `CONFIG_HEADER' can be used. The configure script will then only modify
    the dods-datatypes.h header when its contents change. This saves on
-   compilation since that header is used by many files in the dap++ library.
+   compilation since the header is used by many files in the dap++ library.
    The downside is that the typedefs are so ugly... 2/14/2001 jhrg */
 
 #undef DINT32

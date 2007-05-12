@@ -1,0 +1,13 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: @PACKAGE@
+Description: Common items for the OPeNDAP C++ implementation of the Data Access Protocol
+Version: @VERSION@
+Libs: -L${libdir} -ldap
+Libs.private:  @xmlprivatelibs@ -lpthread
+Requires.private: @xmlprivatereq@
+Cflags: -I${includedir}/libdap
+

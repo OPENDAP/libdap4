@@ -552,10 +552,7 @@ BaseType::get_parent()
     return d_parent;
 }
 
-// Defined by constructor types (Array, ...)
-//
-// Return a pointer to the contained variable in a ctor class.
-
+// Documented in the header file.
 BaseType *
 BaseType::var(const string &/*name*/, bool /*exact_match*/, btp_stack */*s*/)
 {
@@ -564,10 +561,10 @@ BaseType::var(const string &/*name*/, bool /*exact_match*/, btp_stack */*s*/)
 
 /** This version of var(...) searches for <i>name</i> and returns a
     pointer to the BaseType object if found. It uses the same search
-    algorithm as above when <i>exact_match</i> is false. In addition to
-    returning a pointer to the variable, it pushes onto <i>s</i> a
-    BaseType pointer to each constructor type that ultimately contains
-    <i>name</i>.
+    algorithm as BaseType::var(const string &, bool, btp_stack *) when
+    <i>exact_match</i> is false. In addition to returning a pointer to
+    the variable, it pushes onto <i>s</i> a BaseType pointer to each
+    constructor type that ultimately contains <i>name</i>.
 
     @note The BaseType implementation always returns null. There are no default
     values for the parameters. If var() is called w/o any params, the three

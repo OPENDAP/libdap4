@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.7.7, dods-tech@unidata.ucar.edu)
+AC_INIT(libdap, 3.7.7, opendap-tech@unidata.ucar.edu)
 AC_DEFINE(DAP_PROTOCOL_VERSION, "3.1", [What DAP version is supported?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
@@ -130,8 +130,20 @@ gl_INIT
 
 dnl I wrote these checks because we need the *-config scripts to build, so 
 dnl the AC_CHECK_LIB macro is not needed.
+
+curlprivatereq=
+curlprivatelibs=
+libdap_pkgconfig_libcurl=yes
+libdap_libcurl_module='libcurl >= 7.10.6'
+PKG_CHECK_MODULES([CURL],[$libdap_libcurl_module],,
+  [libdap_pkgconfig_libcurl=no])
 AC_MSG_CHECKING([for libcurl])
-if curl-config --version > /dev/null 2>&1
+if test $libdap_pkgconfig_libcurl = 'yes'
+then
+	curlprivatereq=$libdap_libcurl_module
+	CURL_STATIC_LIBS="`$PKG_CONFIG --static --libs libcurl`"
+	AC_MSG_RESULT([yes])
+elif curl-config --version > /dev/null 2>&1
 then
 	version_libcurl=`curl-config --version`
 	version_major=`echo $version_libcurl | sed 's@^libcurl \([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
@@ -141,15 +153,33 @@ then
 		AC_MSG_ERROR([must have libcurl 7.10.6 or greater, found $version_libcurl])
 	fi
 
-	LIBS="$LIBS `curl-config --libs`"
-	CPPFLAGS="$CPPFLAGS `curl-config --cflags`"
+	CURL_LIBS="`curl-config --libs`"
+	CURL_STATIC_LIBS=$CURL_LIBS
+	curlprivatelibs="`curl-config --libs`"
+	CURL_CFLAGS="`curl-config --cflags`"
 	AC_MSG_RESULT([yes])
 else
 	AC_MSG_ERROR([I could not find libcurl])
 fi
+AC_SUBST([curlprivatereq])
+AC_SUBST([curlprivatelibs])
+AC_SUBST([CURL_LIBS])
+AC_SUBST([CURL_STATIC_LIBS])
+AC_SUBST([CURL_CFLAGS])
 
+xmlprivatereq=
+xmlprivatelibs=
+libdap_pkgconfig_libxml2=yes
+libdap_libxml2_module='libxml-2.0 >= 2.6.16'
+PKG_CHECK_MODULES([XML2],[$libdap_libxml2_module],,
+  [libdap_pkgconfig_libxml2=no])
 AC_MSG_CHECKING([for libxml2])
-if xml2-config --version > /dev/null 2>&1
+if test $libdap_pkgconfig_libxml2 = 'yes'
+then
+	xmlprivatereq=$libdap_libxml2_module
+	XML2_STATIC_LIBS="`$PKG_CONFIG --static --libs libxml-2.0`"
+	AC_MSG_RESULT([yes])
+elif xml2-config --version > /dev/null 2>&1
 then
 	version_libxml2=`xml2-config --version`
 	version_M=`echo $version_libxml2 | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
@@ -177,16 +207,26 @@ then
 		AC_DEFINE(LIBXML2_6_16, [1], [define if you have xml2 2.6.16 or greater])
 	fi
 
-	LIBS="$LIBS `xml2-config --libs`"
-	CPPFLAGS="$CPPFLAGS `xml2-config --cflags`"
+	XML2_LIBS="`xml2-config --libs`"
+	XML2_STATIC_LIBS=$XML2_LIBS
+	XML2_CFLAGS="`xml2-config --cflags`"
+	xmlprivatelibs="`xml2-config --libs`"
 	AC_MSG_RESULT([yes])
 else
 	AC_MSG_ERROR([I could not find libxml2])
 fi
+AC_SUBST([xmlprivatereq])
+AC_SUBST([xmlprivatelibs])
+AC_SUBST([XML2_LIBS])
+AC_SUBST([XML2_STATIC_LIBS])
+AC_SUBST([XML2_CFLAGS])
+
+DAP_CHECK_ZLIB
 
 AC_CHECK_LIB([pthread], [pthread_kill], 
-	[LIBS="$LIBS -lpthread"],
+	[PTHREAD_LIBS="-lpthread"],
 	[AC_MSG_ERROR([I could not find pthreads])])
+AC_SUBST([PTHREAD_LIBS])
 
 DODS_DEBUG_OPTION
 
@@ -214,6 +254,9 @@ AH_BOTTOM([/* Shorthand for gcc's unused attribute feature */
 #endif /* _config_h */])
 
 AC_CONFIG_FILES([Makefile
+                 libdap.pc
+                 libdapclient.pc
+                 libdapserver.pc
                  gl/Makefile
                  tests/Makefile
                  unit-tests/Makefile

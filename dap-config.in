@@ -59,15 +59,15 @@ while test $# -gt 0; do
 	;;
 
     --libs)
-       	echo "-L${libdir} -ldap -ldapserver -ldapclient @LIBS@"
+       	echo "-L${libdir} -ldap -ldapserver -ldapclient @CURL_STATIC_LIBS@ @XML2_STATIC_LIBS@ @PTHREAD_LIBS@ @LIBS@"
        	;;
 
     --server-libs)
-       	echo "-L${libdir} -ldap -ldapserver @LIBS@"
+       	echo "-L${libdir} -ldap -ldapserver @XML2_STATIC_LIBS@ @PTHREAD_LIBS@ @LIBS@"
        	;;
 
     --client-libs)
-       	echo "-L${libdir} -ldap -ldapclient @LIBS@"
+       	echo "-L${libdir} -ldap -ldapclient @CURL_STATIC_LIBS@ @XML2_STATIC_LIBS@ @PTHREAD_LIBS@ @LIBS@"
        	;;
 
     --prefix)
