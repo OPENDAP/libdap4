@@ -50,6 +50,7 @@ libdapserver_la_LIBADD = libdap.la
 
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
 noinst_HEADERS = config_dap.h
+BUILT_SOURCES = dods-datatypes.h
 
 getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la 
@@ -68,7 +69,7 @@ LEX_YACC_FILES = das.tab.h das.tab.cc lex.das.cc dds.tab.h dds.tab.cc \
 
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
-	VCPP $(LEX_YACC_EXTRA) $(LEX_YACC_FILES)
+	VCPP dods-datatypes-static.h $(LEX_YACC_EXTRA) $(LEX_YACC_FILES)
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
@@ -113,7 +114,7 @@ pkg:
 # branched and -f reports on all functions. The -l -o options summarize on a
 # per-file basis. 3/27/98 jhrg
 collect-coverage-data:
-        (cd test-coverage; \
+	(cd test-coverage; \
          cov_dat="coverage-data-`date +%m.%d.%y`"; \
          touch $$cov_dat; \
          for f in $(ALLSRCS); do \
@@ -173,6 +174,13 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	ce_functions.h  gse_parser.h GSEClause.h util_mit.h \
 	expr.h Clause.h RValue.h ConstraintEvaluator.h ce_parser.h \
 	DapIndent.h DapObj.h
+
+if USE_C99_TYPES
+dods-datatypes.h: dods-datatypes-static.h
+else
+dods-datatypes.h: dods-datatypes-config.h
+endif
+	cp -p $< dods-datatypes.h
 
 CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		 \

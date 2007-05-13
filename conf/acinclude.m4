@@ -482,17 +482,46 @@ AC_DEFUN([DODS_CHECK_SIZES], [dnl
     AC_CHECK_SIZEOF(char)
     AC_CHECK_SIZEOF(double)
     AC_CHECK_SIZEOF(float)
+   
+    # check for C99 types, headers and functions
+    AC_CHECK_HEADER([inttypes.h],[dap_inttypes_header=yes],,) 
+    # DINT32 4
+    AC_CHECK_SIZEOF([int32_t])
+    # DUINT32 
+    AC_CHECK_SIZEOF([uint32_t])
+    # DINT16 short
+    AC_CHECK_SIZEOF([int16_t])
+    # DUINT16 unsigned short
+    AC_CHECK_SIZEOF([uint16_t])
+    # DBYTE 1
+    AC_CHECK_SIZEOF([uint8_t])
+    # XDR_INT32 XDR_UINT32 XDR_INT16 XDR_UINT16
+    AC_CHECK_FUNCS([xdr_int32_t xdr_uint32_t xdr_int16_t xdr_uint16_t],,[dap_xdr_c99_functions=no])
+    if test x"$dap_inttypes_header" = x'yes' -a x"$dap_xdr_c99_functions" != 'xno' -a $ac_cv_sizeof_int32_t -eq 4 -a $ac_cv_sizeof_int16_t -eq 2 -a $ac_cv_sizeof_uint8_t -eq 1 -a $ac_cv_sizeof_double -eq 8; then
+        dap_use_c99_types=yes
+    fi
+    AM_CONDITIONAL([USE_C99_TYPES],[test x"$dap_use_c99_types" = 'xyes'])
 
-    # Now generate symbols that define the dods_int32, ..., types
-    # based on this machine's notion of an int, etc. See dods-datatypes.h.in.
-    # I've separated the typedefs from the config_dap.h header because other
+    # I've separated the typedefs from the config.h header because other
     # projects which use the DAP were getting conflicts with their includes,
-    # or the includes of still other libraries, and config_dap.h. The 
-    # config_dap.h header is now included only by .cc and .c files and headers
-    # that need the typedefs use dods-datatypes.h. The code below makes 
-    # dods-datatypes.h stand on its own. 8/2/2000 jhrg
+    # or the includes of still other libraries, and config.h. The 
+    # config.h header is now included only by .cc and .c files and headers
+    # that need the typedefs use dods-datatypes.h. 
+    # there are 2 possibilities for the definition of dods_int32, ..., 
+    # types. First possibility is that the C99 types are used and 
+    # dods-datatypes-static.h is copied. In that case the following 
+    # definitions are not really usefull. In case the C99 types are 
+    # not available, dods-datatypes-config.h.in is used to generate
+    # dods-datatypes.h.
+    # The code below makes dods-datatypes-config.h stand on its own. 
+    # 8/2/2000 jhrg
 
-    if test $ac_cv_sizeof_long -eq 4 
+    if test x"$dap_use_c99_types" = 'xyes'; then
+        DODS_INT32=int32_t
+        DODS_UINT32=uint32_t
+	XDR_INT32=xdr_int32_t
+	XDR_UINT32=xdr_uint32_t
+    elif test $ac_cv_sizeof_long -eq 4 
     then
 	DODS_INT32=long
 	DODS_UINT32="unsigned long"
@@ -515,17 +544,26 @@ AC_DEFUN([DODS_CHECK_SIZES], [dnl
     AC_DEFINE_UNQUOTED(XDR_INT32, $XDR_INT32, [xdr int32])
     AC_DEFINE_UNQUOTED(XDR_UINT32, $XDR_UINT32, [xdr uint32])
 
+    if test x"$dap_use_c99_types" = 'xyes'; then
+        DODS_INT16=int16_t
+        DODS_UINT16=uint16_t
+        XDR_INT16=xdr_int16_t
+        XDR_UINT16=xdr_uint16_t
+    else 
     # Assume nobody's hosed the 16-bit types...
-    DODS_INT16=short
-    DODS_UINT16="unsigned short"
-    XDR_INT16=xdr_short
-    XDR_UINT16=xdr_u_short
+        DODS_INT16=short
+        DODS_UINT16="unsigned short"
+        XDR_INT16=xdr_short
+        XDR_UINT16=xdr_u_short
+    fi
     AC_DEFINE_UNQUOTED(DINT16, $DODS_INT16, [dint16])
     AC_DEFINE_UNQUOTED(DUINT16, $DODS_UINT16, [uint16])
     AC_DEFINE_UNQUOTED(XDR_INT16, $XDR_INT16, [xdr int16])
     AC_DEFINE_UNQUOTED(XDR_UINT16, $XDR_UINT16, [xdr uint16])
 
-    if test $ac_cv_sizeof_char -eq 1
+    if test x"$dap_use_c99_types" = 'xyes'; then
+        DODS_BYTE=uint8_t
+    elif test $ac_cv_sizeof_char -eq 1
     then
 	DODS_BYTE="unsigned char"
     else
