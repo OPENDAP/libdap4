@@ -15,6 +15,7 @@ License: LGPL
 #BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
 # fedora
 BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
+BuildRequires: doxygen graphviz
 # deflate depends directly on zlib
 BuildRequires: zlib-devel
 BuildRequires: pkgconfig
@@ -44,24 +45,46 @@ Requires: automake
 This package contains all the files needed to develop applications that
 will use libdap.
 
+
+%package doc
+Summary: Documentation of the libdap library
+Group: Documentation
+
+%description doc
+Documentation of the libdap library.
+
+
 %prep
 %setup -q
 
 %build
-%configure --disable-dependency-tracking
+%configure --disable-static --disable-dependency-tracking
 make %{?_smp_mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make install DESTDIR=$RPM_BUILD_ROOT
-rm -f $RPM_BUILD_ROOT/%{_libdir}/*.la
+make install DESTDIR=$RPM_BUILD_ROOT INSTALL="%{__install} -p"
+rm $RPM_BUILD_ROOT/%{_libdir}/*.la
+
+make docs
+
+rm -rf __fedora_docs
+cp -pr docs __fedora_docs
+# those .map and .md5 are of dubious use, remove them
+rm -f __fedora_docs/html/*.map __fedora_docs/html/*.md5
+# use the ChangeLog timestamp to have the same timestamps for the doc files 
+# for all arches
+touch -r ChangeLog __fedora_docs/html/*
+
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
+
 
 %files
 %defattr(-,root,root,-)
@@ -75,16 +98,18 @@ rm -rf $RPM_BUILD_ROOT
 
 %files devel
 %defattr(-,root,root,-)
-%{_libdir}/libdap.a
 %{_libdir}/libdap.so
 %{_libdir}/libdapclient.so
-%{_libdir}/libdapclient.a
 %{_libdir}/libdapserver.so
-%{_libdir}/libdapserver.a
 %{_libdir}/pkgconfig/libdap*.pc
 %{_bindir}/dap-config
 %{_includedir}/libdap/
 %{_datadir}/aclocal/*
+
+%files doc
+%defattr(-,root,root,-)
+%doc __fedora_docs/html/
+
 
 %changelog
 * Thu Feb  8 2007 James Gallagher <jgallagher@opendap.org> - 3.7.7-1
