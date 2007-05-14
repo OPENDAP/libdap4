@@ -67,7 +67,7 @@ class AISDatabaseParser
 {
 private:
     /** States used by AISParserState. These are the states of the SAX parser
-    state-machine. */
+	state-machine. */
     enum ParseState {
         PARSER_START,
         PARSER_FINISH,
@@ -92,7 +92,7 @@ private:
 	AISParserState instance but we need the whole xmlParserCtxt
 	for some of the callbacks.
 
-    @see aisWarning. */
+	@see aisWarning. */
     struct AISParserState
     {
         ParseState state; // current state

@@ -429,8 +429,8 @@ bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
             throw InternalErr(__FILE__, __LINE__,
                               "Buffer pointer is not set.");
 
-        if ((0 == xdr_int(sink, (int *) &num))) // send vector length
-            throw Error("Network I/O Error. This may be due to a bug in libdap or a\nproblem with the network connection.");
+        if ((0 == xdr_int(sink,  &num))) // send vector length
+            throw Error("Network I/O Error(1). This may be due to a bug in libdap or a\nproblem with the network connection.");
 
         // Note that xdr_bytes and xdr_array both send the length themselves,
         // so the length is actually sent twice. 12/31/99 jhrg
@@ -445,7 +445,7 @@ bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
                                      DODS_MAX_ARRAY, _var->width(),
                                      (xdrproc_t)(_var->xdr_coder())));
         if (!status)
-            throw Error("Network I/O Error. This may be due to a bug in libdap or a\nproblem with the network connection.");
+            throw Error("Network I/O Error(2). This may be due to a bug in libdap or a\nproblem with the network connection.");
 
         break;
 
@@ -456,11 +456,11 @@ bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
                               "The capacity of the string vector is 0");
 
         if ((0 == xdr_int(sink, (int *) &num)))
-            throw Error("Network I/O Error. This may be due to a bug in libdap or a\nproblem with the network connection.");
+            throw Error("Network I/O Error(3). This may be due to a bug in libdap or a\nproblem with the network connection.");
 
         for (i = 0; i < num; ++i)
             if (!xdr_str(sink, d_str[i]))
-                throw Error("Network I/O Error. Could not send string data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+                throw Error("Network I/O Error(4). Could not send string data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
 
         break;
 
@@ -474,7 +474,7 @@ bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
             throw InternalErr(__FILE__, __LINE__,
                               "The capacity of *this* vector is 0.");
 
-        if ((0 == xdr_int(sink, (int *) &num)))
+        if ((0 == xdr_int(sink, &num)))
             throw Error("Network I/O Error. This may be due to a bug in libdap or a\nproblem with the network connection.");
 
         for (i = 0; i < num; ++i)

@@ -19,7 +19,7 @@ AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
 AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and vesion combined])
 AC_SUBST(DVR)
 
-AC_DEFINE(EVAL, 0, [Should all the classes run ConstraintEvaluator::eval()?])
+AC_DEFINE(EVAL, 1, [Should all the classes run ConstraintEvaluator::eval()?])
 AC_SUBST(EVAL)
 
 AC_DEFINE(COMPRESSION_FOR_SERVER3, 0, [Should the subprocess compressor for Server3 be includes?])

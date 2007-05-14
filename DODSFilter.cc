@@ -87,12 +87,12 @@ const string usage =
     -l <time>: Conditional request; if data source is unchanged since\n\
     <time>, return an HTTP 304 response.\n\
     -t <seconds>: Timeout the handler after <seconds>.\n\
-    ";
+    -h: This message.";
 
 #if 0
-// Removed the call to waitpid in send_data() because I think calling fflush
-// addresses the problem wait() was supposed to solve and I think calling
-// wait() is the root of ticket #335. jheg 3/10/06
+// Removed the call to waitpid in send_data() because calling fflush
+// addresses the problem wait() was supposed to solve and calling wait() is
+// the root of ticket #335. jhrg 3/10/06
 #ifdef WIN32
 #define WAITPID(pid) while(_cwait(NULL, pid, NULL) > 0)
 #else
@@ -211,13 +211,13 @@ DODSFilter::initialize()
 
 #ifdef WIN32
     //  We want serving from win32 to behave in a manner
-    //  similiar to the UNIX way - no CR->NL terminated lines
+    //  similar to the UNIX way - no CR->NL terminated lines
     //  in files. Hence stdout goes to binary mode.
     _setmode(_fileno(stdout), _O_BINARY);
 #endif
 }
 
-/** Initialialize. Specializations can call this once an empty DODSFilter has
+/** Initialize. Specializations can call this once an empty DODSFilter has
 been created using the default constructor. Using a method such as this
 provides a way to specialize the process_options() method and then have
 that specialization called by the subclass' constructor.
@@ -281,6 +281,7 @@ DODSFilter::process_options(int argc, char *argv[])
             d_if_modified_since
             = static_cast<time_t>(strtol(getopt.optarg, NULL, 10));
             break;
+        case 'h': print_usage(); exit(1);
         default: print_usage(); // Throws Error
         }
     }
@@ -301,7 +302,7 @@ DODSFilter::is_conditional() const
 }
 
 /** Set the CGI/Server version number. Servers use this when answering
-requests for version information. The vesion `number' should include
+requests for version information. The version `number' should include
 both the name of the server (e.g., <tt>ff_dods</tt>) as well
 as the version
 number. Since this information is typically divined by configure,
@@ -521,7 +522,7 @@ DODSFilter::get_dds_last_modified_time(const string &anc_location) const
 }
 
 /** Get the last modified time to be used for a particular data request.
-    This method should look at both the contraint expression and any
+    This method should look at both the constraint expression and any
     ancillary files for this dataset. The implementation provided here
     returns the latest time returned by the <tt>get_dataset</tt>...(),
     <tt>get_das</tt>...() and <tt>get_dds</tt>...() methods and
@@ -763,7 +764,7 @@ DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
                      const string &anc_location,
                      bool with_mime_headers) const
 {
-    // If constrained, parse the constriant. Throws Error or InternalErr.
+    // If constrained, parse the constraint. Throws Error or InternalErr.
     if (constrained)
         eval.parse_constraint(d_ce, dds);
 
@@ -960,7 +961,7 @@ void
 DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
                      bool with_mime_headers) const
 {
-    // If constrained, parse the constriant. Throws Error or InternalErr.
+    // If constrained, parse the constraint. Throws Error or InternalErr.
     if (!d_ce.empty())
         eval.parse_constraint(d_ce, dds);
 

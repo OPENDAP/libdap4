@@ -27,7 +27,8 @@ BUILDING THE SOFTWARE
   2. Type `make' to build the library, `make check' to run the tests. You
      must have DejaGNU to run `make check.' If you have the CppUnit unit-test
      software, then 'cd unit-tests; make check' will build and run the unit
-     tests.
+     tests. On a manrake/mandriva system, you need to copy or link 
+     conf/config.guess into the 'tests' directory and then run the tests.
 
   3. Type `make install' to install the library files. The libraries
      (libdap.a. libdapclient.a and libdapserver.a), their header files and

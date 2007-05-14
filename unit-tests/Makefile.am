@@ -7,7 +7,7 @@ AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/tests
-AM_CXXFLAGS = -I$(top_srcdir)/GNU $(CXXFLAGS_DEBUG)
+AM_CXXFLAGS = -I$(top_srcdir)/GNU
 
 # These are not used by automake but are often useful for certain types of
 # debugging. Set CXXFLAGS to this in the nightly build using export ...
