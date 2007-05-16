@@ -14,10 +14,10 @@ AM_CXXFLAGS = -I$(top_srcdir)/GNU
 CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
+# This determines what gets built by make check
 check_PROGRAMS = $(UNIT_TESTS)
 
-# This determines what gets run by 'make check.' The dejagnu_driver.sh 
-# runs all the dejagnu test drivers by calling runtest 'by hand.'
+# This determines what gets run by 'make check.'
 TESTS = $(UNIT_TESTS)
 
 DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite ais_testsuite \

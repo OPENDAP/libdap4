@@ -42,11 +42,9 @@ libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
 libdapclient_la_CPPFLAGS = $(CURL_CFLAGS) $(XML2_CFLAGS)
 libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
-#libdapclient_la_LIBADD = gl/libgnu.la
 
 libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
 libdapserver_la_LIBADD = libdap.la
-#libdapserver_la_LIBADD = gl/libgnu.la
 
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
 noinst_HEADERS = config_dap.h
