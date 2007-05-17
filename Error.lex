@@ -30,7 +30,7 @@
 /*
   Scanner for the Error object. It recognizes the five keywords in the
   persistent representation of the Error object plus some syntactic sugar
-  (`=', `{', ...). The object's persistant representation uses a keyword =
+  (`=', `{', ...). The object's persistent representation uses a keyword =
   value notation, where the values are quoted strings or integers.
 
   The scanner is not reentrant, but can share name spaces with other

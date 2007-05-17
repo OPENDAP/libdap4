@@ -450,7 +450,7 @@ rel_op:		SCAN_EQUAL
 
 %%
 
-// All these error reporting function now throw instnaces of Error. The expr
+// All these error reporting function now throw instances of Error. The expr
 // parser no longer returns an error code to indicate and error. 2/16/2000
 // jhrg.
 
@@ -511,7 +511,7 @@ no_such_func(char *name)
 /* If we're calling this, assume var is not a Sequence. But assume that the
    name contains a dot and it's a separator. Look for the rightmost dot and
    then look to see if the name to the left is a sequence. Return a pointer
-   to the sequence if it is otherwise return null. Uses tail-recurrsion to
+   to the sequence if it is otherwise return null. Uses tail-recursion to
    'walk' back from right to left looking at each dot. This way the sequence
    will be found even if there are structures between the field and the
    Sequence. */
@@ -757,16 +757,16 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 		   
     if (a->dimensions(true) != (unsigned)indices->size())
 	throw Error(malformed_expr, 
-	   string("Error: The number of dimenstions in the constraint for ")
+	   string("Error: The number of dimensions in the constraint for ")
 		    + variable->name() 
 		    + " must match the number in the array.");
 		   
-    DBG(cerr << "Before clear_costraint:" << endl);
+    DBG(cerr << "Before clear_constraint:" << endl);
     DBG(a->print_decl(stderr, "", true, false, true));
 
     a->clear_constraint();	// each projection erases the previous one
 
-    DBG(cerr << "After clear_costraint:" << endl);
+    DBG(cerr << "After clear_constraint:" << endl);
     DBG(a->print_decl(stderr, "", true, false, true));
 
     assert(indices);
@@ -834,7 +834,7 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	throw InternalErr(__FILE__, __LINE__, "Malformed Grid variable");
     if (a->dimensions(true) != (unsigned)indices->size())
 	throw Error(malformed_expr, 
-	   string("Error: The number of dimenstions in the constraint for ")
+	   string("Error: The number of dimensions in the constraint for ")
 		    + variable->name() 
 		    + " must match the number in the grid.");
 		   
@@ -844,7 +844,7 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
     // Now process the maps.
     Grid::Map_iter r = g->map_begin() ;
 
-    // Supress all maps by default.
+    // Suppress all maps by default.
     for (; r != g->map_end(); r++)
     {
 	(*r)->set_send_p(false);
@@ -1096,7 +1096,7 @@ make_variable(DDS &table, ConstraintEvaluator &eval, const value &val)
 // to see if a function by that name exists. 
 // NB: function arguments are type-checked at run-time.
 //
-// Returns: A poitner to the function or NULL if not such function exists.
+// Returns: A pointer to the function or NULL if not such function exists.
 
 bool_func
 get_function(const ConstraintEvaluator &eval, const char *name)

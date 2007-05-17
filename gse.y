@@ -137,7 +137,7 @@ gse_error(const char *)
 {
     throw Error(
 "An expression passed to the grid() function could not be parsed.\n\
-Exmples of expressions that will work are: \"i>=10.0\" or \"23.6<i<56.0\"\n\
+Examples of expressions that will work are: \"i>=10.0\" or \"23.6<i<56.0\"\n\
 where \"i\" is the name of one of the Grid's map vectors.");
 }
 

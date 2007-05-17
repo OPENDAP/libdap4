@@ -62,7 +62,7 @@ static char rcsid[] not_used = {"$Id$"};
 #define YY_DECL int ce_exprlex YY_PROTO(( void ))
 #define YY_FATAL_ERROR(msg) {\
     throw(Error(string("Error scanning constraint expression text: ") + string(msg))); \
-    yy_fatal_error(msg); /* 'Used' here to suppres warning */ \
+    yy_fatal_error(msg); /* 'Used' here to suppress warning */ \
 }
 
 #include "Error.h"

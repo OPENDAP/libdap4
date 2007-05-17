@@ -68,7 +68,7 @@ using namespace std;
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
-// passed in to the parser within a strucutre (which itself is passed as a
+// passed in to the parser within a structure (which itself is passed as a
 // pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
 // The parser now throws an exception when it encounters an error. 5/23/2002
 // jhrg 
@@ -258,7 +258,7 @@ attr_tuple:	alias
 			    at = TOP_OF_STACK->append_container($1);
 			}
 			catch (Error &e) {
-			    // rethrow with line number info
+			    // re-throw with line number info
 			    parse_error(e.get_error_message().c_str(), 
 					das_line_num);
 			}
@@ -271,7 +271,7 @@ attr_tuple:	alias
 		'{' attr_list 
                 {
 		    /* pop top of stack; store in attr_tab */
-		    DBG(cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
+		    DBG(cerr << " Popped attr_tab: " << TOP_OF_STACK << endl);
 		    POP;
 		}
 		'}'
@@ -447,7 +447,7 @@ add_attribute(const string &type, const string &name, const string &value,
 	TOP_OF_STACK->append_attr(name, type, value);
     }
     catch (Error &e) {
-	// rethrow with line number
+	// re-throw with line number
 	parse_error(e.get_error_message().c_str(), das_line_num);
     }
 }

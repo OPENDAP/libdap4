@@ -75,7 +75,7 @@ static char rcsid[] not_used = {"$Id$"};
 }
 #define YY_FATAL_ERROR(msg) {\
     throw(Error(string("Error scanning DDS object text: ") + string(msg))); \
-    yy_fatal_error(msg); /* 'Used' here to suppres warning */ \
+    yy_fatal_error(msg); /* 'Used' here to suppress warning */ \
 }
 
 int dds_line_num = 1;

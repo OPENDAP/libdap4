@@ -51,7 +51,7 @@ using namespace std;
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
-// passed in to the parser within a strucutre (which itself is passed as a
+// passed in to the parser within a structure (which itself is passed as a
 // pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
 
 #define ERROR_OBJ(arg) ((Error *)((parser_arg *)(arg))->_object)
@@ -90,7 +90,7 @@ void Errorerror(char *s);	// gotta love automatically generated names...
 // The parser is called through a function named ERRORPARSE which takes a
 // pointer to a structure and returns a boolean. The structure contains a
 // pointer to an Error object which is empty and an integer which contains
-// status information. In addition the parser_arg strucuture contains a
+// status information. In addition the parser_arg structure contains a
 // pointer to an error object. However, the `error' member of parser_arg is
 // not yet used here.
 
