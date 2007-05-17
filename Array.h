@@ -67,7 +67,7 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
     vectors, holding the actual values for that column of the array.
 
     Each array dimension carries with it its own projection information. The
-    projection inforamtion takes the form of three integers: the start, stop,
+    projection information takes the form of three integers: the start, stop,
     and stride values. This is clearest with an example. Consider a
     one-dimensional array 10 elements long. If the start value of the
     dimension constraint is 3, then the constrained array appears to be seven
@@ -99,20 +99,20 @@ class Array: public Vector
 {
 public:
     /** Information about a dimension. Each Array has one or more dimensions.
-     For each of an Array's dimensions, a cooresponding instance of this
+     For each of an Array's dimensions, a corresponding instance of this
      struct holds the natural size, name, constraint information and
      constrained size.
 
-        @note Instead of using this struct's fileds directly, use Array's
+        @note Instead of using this struct's fields directly, use Array's
         dimension accessor methods.
 
-        @note This sturct is public because its type is used in public
+        @note This struct is public because its type is used in public
         typedefs. */
     struct dimension
     {
         int size;  ///< The unconstrained dimension size.
         string name;    ///< The name of this dimension.
-        int start;  ///< The constriant start index
+        int start;  ///< The constraint start index
         int stop;  ///< The constraint end index
         int stride;  ///< The constraint stride
         int c_size;  ///< Size of dimension once constrained

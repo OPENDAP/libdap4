@@ -60,7 +60,7 @@ using std::endl;
 #endif
 
 /** The purpose of DODS_DEBUG1 is to look at only a handful of the DBG()
-    macros by changing them to DBG1() macros and definging DODS_DEBUG1. */
+    macros by changing them to DBG1() macros and defining DODS_DEBUG1. */
 #ifdef DODS_DEBUG1
 #define DBG1(x) FILE_N_LINE; x
 #else

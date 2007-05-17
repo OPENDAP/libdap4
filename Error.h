@@ -121,7 +121,7 @@ public:
 
     /// Class invariant
     bool OK() const;
-    /// Deserailze object from the wire.
+    /// Deserialize object from the wire.
     bool parse(FILE *fp);
     /// Print the Error object on the given output stream.
     void print(FILE *out) const;

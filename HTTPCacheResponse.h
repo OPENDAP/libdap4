@@ -70,7 +70,7 @@ public:
     /** Free the cache entry lock. Call the parent's destructor. */
     virtual ~HTTPCacheResponse()
     {
-        DBG(cerr << "Freeing HTTPCache respources... ");
+        DBG(cerr << "Freeing HTTPCache resources... ");
         d_cache->release_cached_response(get_stream());
         DBGN(cerr << endl);
     }

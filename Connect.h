@@ -103,7 +103,7 @@ using std::string;
 
     Connect also provides additional services such as automatic
     decompression of compressed data, transmission progress reports
-    and error processing.  Refer to the Gui and Error classes for more
+    and error processing.  Refer to the GUI and Error classes for more
     information about these features. See the DODSFilter class for
     information on servers that compress data.
 

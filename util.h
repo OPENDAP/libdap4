@@ -130,7 +130,7 @@ extern "C" bool_t xdr_str(XDR *xdrs, string &buf);
 
 void downcase(string &s);
 // Jose Garcia
-/** @name Interger to string conversion functions
+/** @name Integer to string conversion functions
    Fast, safe conversions from long to a character representation which gets
    appended to a string. This method will take a long value 'val' and it will
    recursively divide it by 'base' in order to "extract" one by one the
@@ -186,7 +186,7 @@ string double_to_string(const double &num);
 string dap_version();
 
 /** Get the filename part from a path. This function can be used to return a
-    string that has the directory compnents stripped from a path. This is
+    string that has the directory components stripped from a path. This is
     useful when building error message strings.
 
     If WIN32 is defined, use '\' as the path separator, otherwise use '/' as
@@ -197,7 +197,7 @@ string path_to_filename(string path);
 
 /** Build a template for a temporary file suitable for use with mkstemp.
     Look around for a reasonable place to put a temporary file. Check first
-    the value of the TMPDIR env var. If that does not yeild a path that's
+    the value of the TMPDIR env var. If that does not yield a path that's
     writable (as defined by access(..., W_OK|R_OK)) then look at P_tmpdir (as
     defined in stdio.h. If both come up empty, then use `./'.
 

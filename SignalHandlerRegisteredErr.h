@@ -46,7 +46,7 @@ public:
     {
         _error_code = unknown_error;
         _error_message = "";
-        _error_message += "A caching error was encounterd:\n";
+        _error_message += "A caching error was encountered:\n";
         _error_message += msg + "\n";
     }
 

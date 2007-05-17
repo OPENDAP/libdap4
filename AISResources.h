@@ -67,10 +67,10 @@ typedef ResourceVector::const_iterator ResourceVectorCIter;
 class AISResources
 {
 private:
-    // The AIS database is broken into two parts. The entires where the primary
+    // The AIS database is broken into two parts. The entries where the primary
     // resource is a URL are stored in a map<> while the primaries that are
     // regular expressions are stored in a vector of pairs. The latter is
-    // seached using the MatchRegexp struct.
+    // searched using the MatchRegexp struct.
     typedef map<string, ResourceVector> ResourceMap;
     typedef ResourceMap::iterator ResourceMapIter;
     typedef ResourceMap::const_iterator ResourceMapCIter;

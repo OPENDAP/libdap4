@@ -23,7 +23,7 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// (c) COPRIGHT URI/MIT 1995-1999
+// (c) COPYRIGHT URI/MIT 1995-1999
 // Please first read the full copyright statement in the file COPYRIGHT_URI.
 //
 // Authors:

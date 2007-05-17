@@ -39,9 +39,11 @@
 using namespace std;
 
 /** @brief Encapsulate a response read from stdin.
-    This class holds stdin and provides an interface from which Connect can
-    read DAP2 information from standard input. Unlike the other Reponse classes,
-    StdinResponse does \e not close the input stream when it's done reading. */
+
+    This class holds stdin and provides an interface from which
+    Connect can read DAP2 information from standard input. Unlike the
+    other Response classes, StdinResponse does \e not close the input
+    stream when it's done reading. */
 class StdinResponse: public Response
 {
 private:

@@ -109,7 +109,7 @@
     Constructor's _var field for these.
     @todo Along the same lines as the previous item, consider removing the
     Part enum and adopting the convention that the first variable added is
-    the array and any subsequenct variables are maps.
+    the array and any subsequent variables are maps.
 
     @brief Holds the Grid data type.
     @see Array

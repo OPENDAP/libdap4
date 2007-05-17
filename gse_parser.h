@@ -37,7 +37,7 @@
 #define FALSE 0
 #endif
 
-/** Argument to the GSE parser. Assumes all errors will be signalled by
+/** Argument to the GSE parser. Assumes all errors will be signaled by
     throws; Error objects are not returned. */
 struct gse_arg
 {

@@ -46,7 +46,7 @@ extern bool unit_or_name_match(set < string > units, set < string > names,
 /** Geographical constraint applied to an Array.
 
     @note This class assumes that the Longitude dimension varies fastest, as
-    does the COARDS convensions.
+    does the COARDS conventions.
 
     @author James Gallagher */
 
@@ -132,4 +132,3 @@ public:
 };
 
 #endif // _array_geo_constraint_h
-

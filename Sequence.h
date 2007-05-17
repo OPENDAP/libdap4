@@ -29,12 +29,12 @@
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
 // Interface for the class Sequence. A sequence contains a single set
-// of variables, all at the same lexical level just like a strucuture
+// of variables, all at the same lexical level just like a structure
 // (and like a structure, it may contain other ctor types...). Unlike
 // a structure, a sequence defines a pattern that is repeated N times
 // for a sequence of N elements. Thus, Sequence { String name; Int32
 // age; } person; means a sequence of N persons where each contain a
-// name and age. The sequence can be arbitraily long (i.e., you don't
+// name and age. The sequence can be arbitrarily long (i.e., you don't
 // know N by looking at the sequence declaration.
 //
 // jhrg 9/14/94
@@ -154,7 +154,7 @@ typedef std::vector<BaseTypeRow *> SequenceValues;
     behavior. The field \e d_values is used by the client-side methods to store
     the entire Sequence. On the server-side, the read() method uses an underlying
     data system to read one row of data values which are then serialized using the
-    serialize() methods of each varaible.
+    serialize() methods of each variable.
 
     @todo Refactor along with Structure moving methods up into Constructor.
 

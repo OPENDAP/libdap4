@@ -51,10 +51,10 @@ protected:
 public:
     /** @brief Initialize with a stream returned by popen().
       
-        Create an instance initialized to a stream returned by popen().
-    By default get_type() and get_version() return default values of
-    unknown_type and "dods/0.0", respectively. Note that this class
-        closes the stream.
+        Create an instance initialized to a stream returned by
+	popen(). By default get_type() and get_version() return
+	default values of unknown_type and "dods/0.0", respectively.
+	Note that this class closes the stream.
         
         @note Since Unix provides no easy way to differentiate between a 
         FILE* returned by fopen() or popen(), you're on your own here. Make

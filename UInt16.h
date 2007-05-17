@@ -49,7 +49,7 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-/** @brief Holds an unisigned 16-bit integer. */
+/** @brief Holds an unsigned 16-bit integer. */
 
 class UInt16: public BaseType
 {

@@ -112,7 +112,7 @@ private:
 
 protected:
     /** @name Suppress default methods
-    These methods are not supported and are implmented here as protected
+    These methods are not supported and are implemented here as protected
     methods to suppress the C++-supplied default versions (which will
     break this object). */
     //@{

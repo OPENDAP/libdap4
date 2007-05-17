@@ -262,7 +262,7 @@ public:
     BaseType *var(const string &n, btp_stack *s = 0);
     int num_var();
 
-    /// Return an iteraor
+    /// Return an iterator
     Vars_iter var_begin();
     /// Return a reverse iterator
     Vars_riter var_rbegin();
@@ -272,7 +272,7 @@ public:
     Vars_riter var_rend();
     /// Get an iterator
     Vars_iter get_vars_iter(int i);
-    /// Get a variablue
+    /// Get a variable
     BaseType *get_var_index(int i);
     /// Removes a variable from the DDS.
     void del_var(Vars_iter i);

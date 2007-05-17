@@ -46,7 +46,7 @@ typedef void Sigfunc(int); // Plauger, 1992
     class) differently than ones registered using the \c signal() or \c
     sigaction() system interfaces. If the register_handler() method is called
     and an instance of EventHandler is already bound to \e signum, then the
-    old EventHandler is returned. However, if there's an exisitng handler
+    old EventHandler is returned. However, if there's an existing handler
     that was set up with \c sigaction(), ..., it won't be returned. Instead
     it will either be run after the newly registered EventHandler or ignored,
     depending on register_handler()'s \e override parameter. This feature may
@@ -58,7 +58,7 @@ typedef void Sigfunc(int); // Plauger, 1992
     Douglas C. Schmidt, 1998,
     http://www.cs.wustl.edu/~schmidt/signal-patterns.html.
 
-    @see EvenHandler
+    @see EventHandler
     @author James Gallagher <jgallagher@opendap.org> */
 class SignalHandler
 {

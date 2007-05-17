@@ -42,21 +42,23 @@
 #include "Grid.h"
 #endif
 
-/** Encapsilate the logic needed to handle geographical constraints when they are
-    applied to DAP Grid (and some Array) variables.
+/** Encapsulate the logic needed to handle geographical constraints
+    when they are applied to DAP Grid (and some Array) variables.
 
-    This class will apply a longitude/latitude bounding box to a Grid that is
-    a 'georeferenced' Grid. That is, it follows the COARDS/CF conventions. This
-    may be relaxed...
+    This class will apply a longitude/latitude bounding box to a Grid
+    that is a 'geo-referenced' Grid. That is, it follows the COARDS/CF
+    conventions. This may be relaxed...
 
-    If the longitude range of the constraint corsses the boundry of the data arry
-    so that the constraint creates two separate rectangles, this class will arrange
-    to return the result as a single Grid. It will do this by rearranging the data
-    before control is passed onto the constraint evaluator and serialization
+    If the longitude range of the constraint crosses the boundary of
+    the data array so that the constraint creates two separate
+    rectangles, this class will arrange to return the result as a
+    single Grid. It will do this by rearranging the data before
+    control is passed onto the constraint evaluator and serialization
     logic. Here's a diagram of how it works:
 
-    Suppose a constraint for the longitude BB starts at the left edge of L and goes
-    to the right edge of R:
+    Suppose a constraint for the longitude BB starts at the left edge
+    of L and goes to the right edge of R:
+
     <pre>
        0.0       180.0       360.0 (longitude, in degrees)
         +----------------------+
@@ -69,10 +71,13 @@
         |                      |
         +----------------------+
     </pre>
-    For example, suppose the client provides a bounding box that starts
-    at 200 degrees and ends at 80. This class will first copy the Left part
-    to new storage and then copy the right part, thus 'stitching together' the
-    two halves of the constraint. The result looks like:
+
+    For example, suppose the client provides a bounding box that
+    starts at 200 degrees and ends at 80. This class will first copy
+    the Left part to new storage and then copy the right part, thus
+    'stitching together' the two halves of the constraint. The result
+    looks like:
+
     <pre>
      80.0  360.0/0.0  180.0  ~200.0 (longitude, in degrees)
         +----------------------+
@@ -85,8 +90,11 @@
         |                      |
         +----------------------+
     </pre>
-    The changes are made in the Grid variable itself, so once this is done the
-    Grid should not be re-read by the CE or serialization code.
+
+    The changes are made in the Grid variable itself, so once this is
+    done the Grid should not be re-read by the CE or serialization
+    code.
+
     @author James Gallagher */
 
 class GeoConstraint
@@ -94,16 +102,16 @@ class GeoConstraint
 public:
     /** The longitude extents of the constraint bounding box can be expressed
         two ways: using a 0/359 notation and using a -180/179 notation. I call
-        the 0/359 notation 'pos' and the -180/179 noation 'neg_pos'. */
+        the 0/359 notation 'pos' and the -180/179 notation 'neg_pos'. */
     enum Notation {
         unknown_notation,
         pos,
         neg_pos
     };
 
-    /** Most of the time, latitude starts at the top of an arry with positive values
-        and ends up at the bottom with negative ones. But sometimes... the world
-        is upside down. */
+    /** Most of the time, latitude starts at the top of an array with
+        positive values and ends up at the bottom with negative ones.
+        But sometimes... the world is upside down. */
     enum LatitudeSense {
         unknown_sense,
         normal,
@@ -121,7 +129,7 @@ private:
     int d_lat_length;           //< How long is the latitude vector
     int d_lon_length;           //< ... longitude vector
 
-    // These four are indeces of the constraint
+    // These four are indices of the constraint
     int d_latitude_index_top;
     int d_latitude_index_bottom;
     int d_longitude_index_left;
@@ -149,25 +157,26 @@ private:
     GeoConstraint &operator=(GeoConstraint &rhs);
 
 protected:
-    /** A protected method that searches for latitude and longitude map vectors
-        and sets six key internal fields. This method returns false if either map
-        cannot be found.
+    /** A protected method that searches for latitude and longitude
+        map vectors and sets six key internal fields. This method
+        returns false if either map cannot be found.
 
-        The d_lon, d_lon_length and d_lon_dim (and matching lat) fields <em>must
-        be set</em> by this method.
+        The d_lon, d_lon_length and d_lon_dim (and matching lat)
+        fields <em>must be set</em> by this method.
 
         @return True if the maps are found, otherwise False */
     virtual bool build_lat_lon_maps() = 0;
 
-    /** Are the latitude and longitude dimentions ordered so that this class can
-    properly constrain the data? This method throws Error if lat and lon are
-    not to two 'fastest-varying' (or 'rightmost) dimensions. It sets the 
-    internal property \e longitude_rightmost if that's true. 
+    /** Are the latitude and longitude dimensions ordered so that this
+	class can properly constrain the data? This method throws
+	Error if lat and lon are not to two 'fastest-varying' (or
+	'rightmost) dimensions. It sets the internal property \e
+	longitude_rightmost if that's true.
 
-    @note Called by the constructor once build_lat_lon_maps() has returned. 
+	@note Called by the constructor once build_lat_lon_maps() has returned. 
 
-    @return True if the lat/lon maps are the two rightmost maps,
-    false otherwise*/
+	@return True if the lat/lon maps are the two rightmost maps,
+	false otherwise*/
     virtual bool lat_lon_dimensions_ok() = 0;
 
     Notation categorize_notation(double left, double right) const;
@@ -277,7 +286,7 @@ public:
         d_lat_dim = lat;
     }
 
-    // These four are indeces of the constraint
+    // These four are indices of the constraint
     int get_latitude_index_top() const
     {
         return d_latitude_index_top;
@@ -363,10 +372,8 @@ public:
 
     void set_bounding_box(double left, double top, double right, double bottom);
 
-    /** @brief Once the bounding box is set use this method to apply the
-        constraint. 
-        
-        */
+    /** @brief Once the bounding box is set use this method to apply
+        the constraint. */
     virtual void apply_constraint_to_data() = 0;
 };
 

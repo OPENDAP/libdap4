@@ -53,7 +53,7 @@
 
 const unsigned int max_url_len = 255;
 
-/** @brief Holds an internet address (URL).
+/** @brief Holds an Internet address (URL).
 
     @see BaseType
     @see Str */

@@ -41,7 +41,7 @@
 #include "dods-limits.h"
 #include <string>
 
-/** @brief Holds an internet address (URL).
+/** @brief Holds an Internet address (URL).
 
     @see BaseType
     @see Str */

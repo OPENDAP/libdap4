@@ -52,7 +52,7 @@
     the DDX object. In the current implementation, the DDX is held by an
     instance of the class DDS which in turn holds variables which include
     attributes. That is, the binary \e implementation of a DDX uses the old
-    DDS, BseType and AttrTable classes, albeit arranged in a slightly new
+    DDS, BaseType and AttrTable classes, albeit arranged in a slightly new
     way.
 
     This parser for the DDX \e document uses the SAX interface of \c libxml2.

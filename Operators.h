@@ -138,7 +138,7 @@ public:
     used by rops. This class is here to make writing the Byte::ops, ...
     member functions simpler. It is not necessary since the functions could
     twiddle the order of arguments to rops and use <tt>USCmp</tt>. Having
-    this class make Byte:ops, ... simper to read and write.
+    this class make Byte:ops, ... simpler to read and write.
 
     @see Byte::ops
     @see USCmp
