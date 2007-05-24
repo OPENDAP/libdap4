@@ -100,7 +100,7 @@ rpm: dist
 # are there so that the values built into dap-config will match the mac
 # osx install dirs and not the temp directory used to build the packages
 
-PACKAGEMAKER=/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker*
+PACKAGEMAKER=/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker*
 
 pkg:
 	rm -rf mac_osx @PACKAGE@-@PACKAGE_VERSION@.pkg
