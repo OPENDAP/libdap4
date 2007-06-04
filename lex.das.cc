@@ -562,7 +562,7 @@ char *yytext;
    jhrg 7/12/94 
 
    NB: We don't remove the \'s or ending quotes any more -- that way the
-   printed das can be reparsed. 9/28/94. 
+   printed das can be re-parsed. 9/28/94. 
 */
 #line 63 "das.lex"
 #include "config_dap.h"
@@ -583,7 +583,7 @@ static char rcsid[] not_used ={"$Id$"};
 #define YY_DECL int daslex YY_PROTO(( void ))
 #define YY_FATAL_ERROR(msg) {\
     throw(Error(string("Error scanning DAS object text: ") + string(msg))); \
-    yy_fatal_error(msg); /* 'Used' here to suppres warning */ \
+    yy_fatal_error(msg); /* 'Used' here to suppress warning */ \
 }
 
 #include "das.tab.h"

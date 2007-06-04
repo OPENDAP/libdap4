@@ -142,7 +142,7 @@ if test $libdap_pkgconfig_libcurl = 'yes'
 then
 	curlprivatereq=$libdap_libcurl_module
 	CURL_STATIC_LIBS="`$PKG_CONFIG --static --libs libcurl`"
-	AC_MSG_RESULT([yes])
+	AC_MSG_RESULT([yes; used pkg-config])
 elif curl-config --version > /dev/null 2>&1
 then
 	version_libcurl=`curl-config --version`
@@ -157,7 +157,7 @@ then
 	CURL_STATIC_LIBS=$CURL_LIBS
 	curlprivatelibs="`curl-config --libs`"
 	CURL_CFLAGS="`curl-config --cflags`"
-	AC_MSG_RESULT([yes])
+	AC_MSG_RESULT([yes; used curl-config])
 else
 	AC_MSG_ERROR([I could not find libcurl])
 fi
@@ -178,7 +178,7 @@ if test $libdap_pkgconfig_libxml2 = 'yes'
 then
 	xmlprivatereq=$libdap_libxml2_module
 	XML2_STATIC_LIBS="`$PKG_CONFIG --static --libs libxml-2.0`"
-	AC_MSG_RESULT([yes])
+	AC_MSG_RESULT([yes; used pkg-config])
 elif xml2-config --version > /dev/null 2>&1
 then
 	version_libxml2=`xml2-config --version`
@@ -211,7 +211,7 @@ then
 	XML2_STATIC_LIBS=$XML2_LIBS
 	XML2_CFLAGS="`xml2-config --cflags`"
 	xmlprivatelibs="`xml2-config --libs`"
-	AC_MSG_RESULT([yes])
+	AC_MSG_RESULT([yes; used xml2-config])
 else
 	AC_MSG_ERROR([I could not find libxml2])
 fi

@@ -1,3 +1,78 @@
+2007-05-14  James Gallagher <jgallagher@opendap.org>
+
+	Removed the html docs from svn; RPM now builds a 'doc' package.
+
+	D    docs/html.tar.gz
+	M    libdap.spec
+
+2007-05-14  James Gallagher <jgallagher@opendap.org>
+
+	Resolved conflicted state of AISDatabaseParser.h
+
+2007-05-14  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-05-13  James Gallagher <jgallagher@opendap.org>
+
+	Patrice Dumas' changes to dods-datatypes.h - Now the header uses
+	the C99 types unless th stdint.h header is not present.
+
+	D    dods-datatypes.h.in
+	M    configure.ac
+	A    dods-datatypes-static.h
+	M    conf/acinclude.m4
+	M    Makefile.am
+	A    dods-datatypes-config.h.in
+
+2007-05-13  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-05-12  James Gallagher <jgallagher@opendap.org>
+
+	Added Patrice Dumas' pkgconf patches
+
+	M    dods-datatypes.h.in
+	M    configure.ac
+	AM   conf/compile
+	M    conf/libdap.m4
+	A    conf/check_zlib.m4
+	M    libdap.spec
+	M    BaseType.cc
+	M    Makefile.am
+	M    Structure.cc
+	A    libdapclient.pc.in
+	A    libdap.pc.in
+	A    libdapserver.pc.in
+	M    dap-config.in
+
+2007-05-10  James Gallagher <jgallagher@opendap.org>
+
+	Comments & Strings
+
+	M    BaseType.h
+	M    BaseType.cc
+	M    Float32.cc
+	M    AISDatabaseParser.h
+	M    Float32.h
+	M    AISDatabaseParser.cc
+	M    AISConnect.h
+
+2007-05-02  James Gallagher <jgallagher@opendap.org>
+
+	Updates for 3.7.7
+
+	M    configure.ac
+	M    ChangeLog
+	M    libdap.spec
+	M    README
+	M    NEWS
+
+2007-03-29  James Gallagher <jgallagher@opendap.org>
+
+	Added definition of trunc() for Solaris < 10.
+
 2007-03-29  James Gallagher <jgallagher@opendap.org>
 
 	Added definition of trunc() for Solaris < 10.

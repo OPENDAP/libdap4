@@ -220,7 +220,7 @@ find_ancillary_file(const string &pathname, const string &ext,
 // ancillary file that describes a group of datafiles of which this datafile
 // is a member. Assume that groups follow a simple naming convention where
 // files use either leading or trailing digits and a common basename to name
-// group memebrs. For example, 00stuff.hdf, 01stuff.hdf, 02stuff.hdf, ..., is
+// group members. For example, 00stuff.hdf, 01stuff.hdf, 02stuff.hdf, ..., is
 // a group and is has `stuff' as its basename.
 
 /** Assume that <tt>name</tt> refers to a file that is one of a
@@ -277,7 +277,7 @@ find_group_ancillary_file(const string &name, const string &ext)
         string new_name = dirname;
         new_name.append("/");
         // I used reverse iters to scan rootname backwards. To avoid
-        // reversing the fragement between end_riter and riter, pass append
+        // reversing the fragment between end_riter and riter, pass append
         // regular iters obtained using reverse_iterator::base(). See Meyers
         // p. 123. 1/22/2002 jhrg
         new_name.append(rootname_end_riter.base(), rootname_riter.base());
@@ -609,10 +609,10 @@ set_mime_binary(FILE *out, ObjectType type, const string &ver,
 }
 
 
-/** Generate an HTTP 1.0 reponse header for an Error object.
+/** Generate an HTTP 1.0 response header for an Error object.
     @param out Write the MIME header to this FILE pointer.
     @param code HTTP 1.0 response code. Should be 400, ... 500, ...
-    @param reason Reason string of the HTTP 1.0 reponse header.
+    @param reason Reason string of the HTTP 1.0 response header.
     @param version The version string; denotes the DAP spec and implementation
     version. */
 void
@@ -637,7 +637,7 @@ set_mime_error(FILE *out, int code, const string &reason,
 }
 
 
-/** Use this function to create a response signalling that the target of a
+/** Use this function to create a response signaling that the target of a
     conditional get has not been modified relative to the condition given in
     the request. This will have to be a date until the servers support ETags.
 

@@ -120,7 +120,7 @@ bool ArrayGeoConstraint::build_lat_lon_maps()
     return get_lat() && get_lon();
 }
 
-/** Are the latitude and longitude dimentions ordered so that this class can
+/** Are the latitude and longitude dimensions ordered so that this class can
     properly constrain the data?
 
     @note This version always returns true because geoarray() assumes the
@@ -160,10 +160,10 @@ void ArrayGeoConstraint::apply_constraint_to_data()
         set_latitude_index_bottom(tmp);
     }
 
-    // It's esy to flip the Latitude values; if the bottom index value
+    // It's easy to flip the Latitude values; if the bottom index value
     // is before/above the top index, return an error explaining that.
     if (get_latitude_index_top() > get_latitude_index_bottom())
-        throw Error("The upper and lower latitude indices appear to be reversed. Please provide\nthe latitude bounding box numbers giving the northern-most latitude first.");
+        throw Error("The upper and lower latitude indexes appear to be reversed. Please provide\nthe latitude bounding box numbers giving the northern-most latitude first.");
 
     d_array->add_constraint(get_lat_dim(),
                             get_latitude_index_top(), 1,
@@ -176,7 +176,7 @@ void ArrayGeoConstraint::apply_constraint_to_data()
 
         // Now the data are all in local storage
 
-        // alter the indices; the left index has now been moved to 0, and the right
+        // alter the indexes; the left index has now been moved to 0, and the right
         // index is now at lon_vector_length-left+right.
         set_longitude_index_right(get_lon_length() - get_longitude_index_left()
                                   + get_longitude_index_right());
@@ -185,7 +185,7 @@ void ArrayGeoConstraint::apply_constraint_to_data()
     // If the constraint used the -180/179 (neg_pos) notation, transform
     // the longitude map s it uses the -180/179 notation. Note that at this
     // point, d_longitude always uses the pos notation because of the earlier
-    // conditional transforamtion.
+    // conditional transformation.
 
     // Apply constraint; stride is always one
     d_array->add_constraint(get_lon_dim(),

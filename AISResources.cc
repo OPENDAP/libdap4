@@ -194,7 +194,7 @@ AISResources::has_resource(const string &primary) const
 
     Aside from reading the database, this is the main workhorse for this class.
     Once a database has been read, a client uses has_resource() to see if a
-    Data URL has anthing in the database and then calls this method to get a
+    Data URL has anything in the database and then calls this method to get a
     vector of those things.
 
     @todo Make this return an empty ResourceVector is no matching resources

@@ -363,7 +363,7 @@ AttrTable::append_container(AttrTable *at, const string &name)
     container to find.
     @param at A value-result used to return the attribute container in
     which \c target was found. Null if \c target was not found.
-    @param iter The itereator which will reference the attribute found.
+    @param iter The iterator which will reference the attribute found.
     Can be used to access \c target from within \c at. References
     dim_end() within \c at if the attribute or container does not exist. */
 void
@@ -384,7 +384,7 @@ AttrTable::find(const string &target, AttrTable **at, Attr_iter *iter)
     }
     else {
 #if 0
-        // Replaced this call to simple_find with the call to recurrsive_find
+        // Replaced this call to simple_find with the call to recursive_find
         // so that older code that assumes that attribute names will not need
         // to be FQNs works. jhrg 2/9/06
         *at = this;
@@ -394,7 +394,7 @@ AttrTable::find(const string &target, AttrTable **at, Attr_iter *iter)
     }
 }
 
-/** This method scans for attributes using recurrsion to look inside containers
+/** This method scans for attributes using recursion to look inside containers
     even when the name of the attribute is not fully qualified. It starts
     looking in itself and descends into its children depth first. It will find
     attributes and attribute containers.
@@ -809,7 +809,7 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
     string lsource = www2id(source);
 
     // find the container that holds source and its (sources's) iterator
-    // within that container. Search at the uppermost level of the attribtue
+    // within that container. Search at the uppermost level of the attribute
     // object to find values defined `above' the current container.
     AttrTable *at;
     Attr_iter iter;
@@ -968,7 +968,7 @@ AttrTable::print(FILE *out, string pad, bool dereference)
 /** Print the attribute table in XML.
     @param out Destination
     @param pad Indent lines of text/xml this much. Default is four spaces.
-    @param constrained The DDX contains attribute inforamtion; is this DDX
+    @param constrained The DDX contains attribute information; is this DDX
     'constrained?' */
 void
 AttrTable::print_xml(FILE *out, string pad, bool constrained)

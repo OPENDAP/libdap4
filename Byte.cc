@@ -154,7 +154,7 @@ unsigned int Byte::val2buf(void *val, bool)
 {
     // Jose Garcia
     // This method is public therefore and I believe it has being designed
-    // to be use by read which must be implemented on the surrogated library,
+    // to be use by read which must be implemented on the surrogate library,
     // thus if the pointer val is NULL, is an Internal Error.
     if (!val)
         throw InternalErr("the incoming pointer does not contain any data.");
@@ -218,7 +218,7 @@ bool Byte::ops(BaseType * b, int op, const string & dataset)
         // Since the read method is virtual and implemented outside
         // libdap++ if we can not read the data that is the problem
         // of the user or of whoever wrote the surrogate library
-        // implemeting read therefore it is an internal error.
+        // implementing read therefore it is an internal error.
         throw InternalErr("This value not read!");
     }
     // Extract the second arg's value.
@@ -228,7 +228,7 @@ bool Byte::ops(BaseType * b, int op, const string & dataset)
         // Since the read method is virtual and implemented outside
         // libdap++ if we can not read the data that is the problem
         // of the user or of whoever wrote the surrogate library
-        // implemeting read therefore it is an internal error.
+        // implementing read therefore it is an internal error.
         throw InternalErr("This value not read!");
     }
 

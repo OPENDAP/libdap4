@@ -23,7 +23,7 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// (c) COPRIGHT URI/MIT 1996,1998,1999
+// (c) COPYRIGHT URI/MIT 1996,1998,1999
 // Please first read the full copyright statement in the file COPYRIGHT_URI.
 //
 // Authors:
@@ -223,4 +223,3 @@ Clause::value(const string &dataset, DDS &dds, BaseType **value)
                           "Claue::value() was called in a context expecting a BaseType pointer return, but the Clause was boolean-valued instead.");
     }
 }
-

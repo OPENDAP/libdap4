@@ -152,7 +152,7 @@ Constructor::find_matching_container(AttrTable::entry *source,
             *dest_variable = btp;
             return &btp->get_attr_table();
         }
-        else { // must ba a plain Array
+        else { // must be a plain Array
             string::size_type i = source->name.find("_dim_");
             string ext = source->name.substr(i + 1);
             *dest_variable = btp;

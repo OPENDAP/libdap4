@@ -332,7 +332,7 @@ ConstraintEvaluator::eval_selection(DDS &dds, const string &dataset)
 
     // A CE is made up of zero or more clauses, each of which has a boolean
     // value. The value of the CE is the logical AND of the clause
-    // values. See ConstraintEvaluator::clause::value(...) for inforamtion on logical ORs in
+    // values. See ConstraintEvaluator::clause::value(...) for information on logical ORs in
     // CEs.
     bool result = true;
     for (Clause_iter i = expr.begin(); i != expr.end() && result; i++) {

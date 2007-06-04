@@ -67,7 +67,7 @@ static char rcsid[] not_used =
 #include "debug.h"
 #include "util.h"
 
-//  We wrapped VC++ 6.x strtod() to account for a short comming
+//  We wrapped VC++ 6.x strtod() to account for a short coming
 //  in that function in regards to "NaN".  I don't know if this
 //  still applies in more recent versions of that product.
 //  ROM - 12/2007
@@ -437,7 +437,7 @@ static void apply_grid_selection_expr(Grid * grid, GSEClause * clause)
     if (start > stop) {
         ostringstream msg;
         msg <<
-        "The expresions passed to grid() do not result in an inclusive \n"
+        "The expressions passed to grid() do not result in an inclusive \n"
         << "subset of '" << clause->get_map_name()
         << "'. The map's values range " << "from " <<
         clause->get_map_min_value() << " to "
@@ -467,8 +467,8 @@ apply_grid_selection_expressions(Grid * grid,
 /** The grid function uses a set of relational expressions to form a selection
     within a Grid variable based on the values in the Grid's map vectors.
     Thus, if a Grid has a 'temperature' map which ranges from 0.0 to 32.0
-    degrees, it's possible to request the vlaues of the Grid that fall between
-    10.5 and 12.5 degrees without knowing to which array indeces those values
+    degrees, it's possible to request the values of the Grid that fall between
+    10.5 and 12.5 degrees without knowing to which array indexes those values
     correspond. The function takes one or more arguments:<ul>
     <li>The name of a Grid.</li>
     <li>Zero or more strings which hold relational expressions of the form:<ul>
@@ -481,7 +481,7 @@ apply_grid_selection_expressions(Grid * grid,
     Each of the relation expressions is applied to the Grid and the result is
     returned.
 
-    @note Since this is a funcion and one of the arguments is the grid, the
+    @note Since this is a function and one of the arguments is the grid, the
     grid is read (using the Grid::read() method) at the time the argument list
     is built.
 
@@ -489,7 +489,7 @@ apply_grid_selection_expressions(Grid * grid,
     so that the maps and array are not re-read by the serialize() method. It
     might also be a good idea to change from the '?grid(SST,"10<time<20")'
     syntax in a URL to '?SST&grid(SST,"10<time<20")' even though it's more
-    verbose in the URL, it would make the function a true 'secection operator'
+    verbose in the URL, it would make the function a true 'selection operator'
     and allow several grids to be returned with selections in one request.
 
     @param argc The number of values in argv.
@@ -580,8 +580,8 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
 
 /** The geogrid function returns the part of a Grid which includes a
     geographically specified rectangle. The arguments to the function are the
-    name of a Grid, the left-top and right-bottom points of the rectable and
-    zero or more relational expressions of the sort that the grid frunction
+    name of a Grid, the left-top and right-bottom points of the rectangle and
+    zero or more relational expressions of the sort that the grid function
     accepts. The constraints on the arguments are:<ul> <li>The Grid must have
     Latitude and Longitude map vectors. Those are discovered by looking for
     map vectors which satisfy enough of any one of a set of conventions to
@@ -621,7 +621,7 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
         <function name=\"geogrid\" version=\"1.0b2\"/>\
         geogrid() applies a constraint given in latitude and longitude to a\
         DAP Grid variable. The arguments to the function are:\
-        geogrid(<grid variable>, <upper latitude>, <left longitide>,\
+        geogrid(<grid variable>, <upper latitude>, <left longitude>,\
         <lower latitude>, <right longitude> [selection expressions - see grid()])\
         geogrid(\"version\") returns the version of the function.\
         The function will always return a single Grid variable whose values\
@@ -842,7 +842,7 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, const string & dataset
         <function name=\"linear_scale\" version=\"1.0b1\">\
         The linear_scale() function applies the familiar y=mx+b equation to data.\
         If only the name of a variable is given, the function looks for the COARDS\
-        scale_factor, add_offset and missing_vlaue attributes. In the equation,\
+        scale_factor, add_offset and missing_value attributes. In the equation,\
         'm' is scale_factor, 'b' is add_offset and data values which match\
         missing_value are not scaled. If add_offset cannot be found, it defaults to\
         zero; if missing_value cannot be found, the test for it is not performed.\
@@ -1004,7 +1004,7 @@ function_geoarray(int argc, BaseType * argv[], DDS &, const string & dataset)
         In the first version 'var' is the target of the selection and 'left', 'top',\
         'right' and 'bottom' are the corners of a longitude-latitude box that defines\
         the selection. In the second version the 'var_left', ..., parameters give the\
-        longitude and latitude extent of the entire array. The projection and dataum are\
+        longitude and latitude extent of the entire array. The projection and datum are\
         assumed to be Plat-Carre and WGS84.\
         </function>";
 

@@ -70,7 +70,7 @@ Connect::process_data(DataDDS &data, Response *rs)
 {
     DBG(cerr << "Entering Connect::process_data" << endl);
 
-    // Use the implementation and protocol versions from teh Response object
+    // Use the implementation and protocol versions from the Response object
     // since the copies in Connect might go away. Regardless, we must keep the
     // Response object alive until we no longer need the stream, since
     // destroying it will close the stream. So, might as well use it for the
@@ -78,7 +78,7 @@ Connect::process_data(DataDDS &data, Response *rs)
     data.set_version(rs->get_version());
     data.set_protocol(rs->get_protocol());
 
-    DBG(cerr << "Entring process_data: d_stream = " << rs << endl);
+    DBG(cerr << "Entering process_data: d_stream = " << rs << endl);
     switch (rs->get_type()) {
     case dods_error: {
             Error e;
@@ -180,7 +180,7 @@ Connect::parse_mime(/*FILE *data_source, */Response *rs)
 
     int slen = strlen(line);
     line[slen - 1] = '\0'; // remove the newline
-    if (line[slen - 2] == '\r') // ...and the preceding carriage retrurn
+    if (line[slen - 2] == '\r') // ...and the preceding carriage return
         line[slen - 2] = '\0';
 
     while (line[0] != '\0') {
@@ -228,7 +228,7 @@ Connect::parse_mime(/*FILE *data_source, */Response *rs)
 
     @param n The URL for the virtual connection.
     @param uname Use this username for authentication. Null by default.
-    @param password Passwrod to use for authentication. Null by default.
+    @param password Password to use for authentication. Null by default.
     @brief Create an instance of Connect. */
 Connect::Connect(const string &n, string uname, string password)
 throw(Error, InternalErr)
@@ -348,7 +348,7 @@ Connect::request_protocol()
 }
 
 /** Reads the DAS corresponding to the dataset in the Connect
-    object's URL. Although DAP does not support usig CEs with DAS
+    object's URL. Although DAP does not support using CEs with DAS
     requests, if present in the Connect object's instance, they will be
     escaped and passed as the query string of the request.
 
@@ -414,7 +414,7 @@ Connect::request_das(DAS &das)
 }
 
 /** Reads the DAS corresponding to the dataset in the Connect
-    object's URL. Although DAP does not support usig CEs with DAS
+    object's URL. Although DAP does not support using CEs with DAS
     requests, if present in the Connect object's instance, they will be
     escaped and passed as the query string of the request.
 
@@ -958,7 +958,7 @@ Connect::set_credentials(string u, string p)
 }
 
 /** Set the \e accept deflate property.
-    @param deflate True if the client can accept compressed responses, Flase
+    @param deflate True if the client can accept compressed responses, False
     otherwise. */
 void
 Connect::set_accept_deflate(bool deflate)

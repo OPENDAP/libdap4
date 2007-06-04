@@ -252,7 +252,7 @@ Array::clear_constraint()
     set_length(-1);
 }
 
-// the start and stop indices are inclusive.
+// the start and stop indexes are inclusive.
 
 // Note: MS VC++ won't tolerate embedded newlines in strings, hence the \n
 // is explicit.
