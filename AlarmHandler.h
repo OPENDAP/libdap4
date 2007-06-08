@@ -65,7 +65,7 @@ public:
     the stream and then send an Error object explaining that a timeout
     has been reached. 
 
-    Because this is a signal handler, it should call only reentrant
+    Because this is a signal handler, it should call only re-entrant
     system services, functions, et cetera. Generally that eliminates
     stdio functions but I'm using them anyway. This handler never returns
     to the code that was running when the alarm signal was raised.

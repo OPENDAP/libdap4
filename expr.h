@@ -71,7 +71,7 @@ typedef BaseType *(*btp_func)(int argc, BaseType *argv[], DDS &dds, const string
 typedef void(*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce);
 
 // INT_LIST and INT_LIST_LIST are used by the parser to store the array
-// indices.
+// indexes.
 
 typedef std::vector<int> int_list;
 typedef std::vector<int>::const_iterator int_citer ;

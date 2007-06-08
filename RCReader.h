@@ -194,7 +194,7 @@ public:
     }
 
     // The whole regex/proxy-for implementation needs reworking. We really
-    // need a vector of structs which hold the information on a set of regexs
+    // need a vector of structs which hold the information on a set of regexes
     // and matching proxies. Then in the code that derefs a URL, we should
     // check to see if the URL matches any of the regexs, et cetera. I'm
     // going to disable the entire feature and see if anyone complains. If

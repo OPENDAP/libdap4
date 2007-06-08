@@ -129,7 +129,7 @@ private:
     int d_lat_length;           //< How long is the latitude vector
     int d_lon_length;           //< ... longitude vector
 
-    // These four are indices of the constraint
+    // These four are indexes of the constraint
     int d_latitude_index_top;
     int d_latitude_index_bottom;
     int d_longitude_index_left;
@@ -286,7 +286,7 @@ public:
         d_lat_dim = lat;
     }
 
-    // These four are indices of the constraint
+    // These four are indexes of the constraint
     int get_latitude_index_top() const
     {
         return d_latitude_index_top;
