@@ -226,10 +226,10 @@ save_raw_http_headers(void *ptr, size_t size, size_t nmemb, void *resp_hdrs)
 
     // Grab the header, minus the trailing newline. Or \r\n pair.
     string complete_line;
-    if (*(static_cast<char*>(ptr) + size *(nmemb - 2)) == '\r')
-        complete_line.assign(static_cast<char *>(ptr), size * nmemb - 2);
+    if (nmemb > 1 && *(static_cast<char*>(ptr) + size * (nmemb - 2)) == '\r')
+        complete_line.assign(static_cast<char *>(ptr), size * (nmemb - 2));
     else
-        complete_line.assign(static_cast<char *>(ptr), size * nmemb - 1);
+        complete_line.assign(static_cast<char *>(ptr), size * (nmemb - 1));
 
     // Store all non-empty headers that are not HTTP status codes
     if (complete_line != "" && complete_line.find("HTTP") == string::npos) {
