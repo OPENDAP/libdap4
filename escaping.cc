@@ -365,7 +365,7 @@ unescattr(string s)
     }
 
     // unescape any escaped double quote characters
-    index = esc_quote.search(s.c_str(), s.size(), matchlen, 0);
+    index = esc_quote.search(s.c_str(), s.length(), matchlen, 0);
     while (index < s.length()) {
         s.replace(index, 2, QUOTE);
         DBG(cerr << "2XX" << s << "XXX index: " << index << endl);
