@@ -725,7 +725,7 @@ AttrTable::get_attr_num(Attr_iter iter)
     program.
 
     @param iter Reference to an attribute
-    @param i The attribute value index, zero-based.
+    @param i The attribute value index, zero-based. Default value: 0
     @return If the indicated attribute is a container, this function
     returns the string ``None''. If using a name to refer to the attribute
     and the named attribute does not exist, return the empty string. */
@@ -733,7 +733,23 @@ string
 AttrTable::get_attr(Attr_iter iter, unsigned int i)
 {
     assert(iter != attr_map.end());
+#if 1
     return (*iter)->type == Attr_container ? (string)"None" : (*(*iter)->attr)[i];
+#else
+    if ((*iter)->type == Attr_container) {
+	return "None";
+    }
+    else {
+	cerr << "(*iter)->attr: " << (*iter)->attr << endl;
+	cerr << "(*iter)->name: " << (*iter)->name << endl;
+	cerr << "(*iter)->type: " << (*iter)->type << endl;
+	//cerr << "get_attr: return value: [" << i << "]: " << (*(*iter)->attr)[i]<< endl;
+	if ((*iter)->name == "SIS_ID")
+	    return "SIS_ID_value";
+	else
+	    return (*(*iter)->attr)[i];
+    }
+#endif
 }
 
 string
