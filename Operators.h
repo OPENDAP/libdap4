@@ -36,8 +36,8 @@
 #ifndef _operators_h
 #define _operators_h
 
-#include "GNURegex.h"  // GNU Regex class used for string =~ op.
 
+#include "GNURegex.h"  // GNU Regex class used for string =~ op.
 #include "parser.h"  // for ID_MAX
 #include "ce_expr.tab.h"
 

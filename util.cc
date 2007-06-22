@@ -72,7 +72,6 @@ static char rcsid[] not_used =
 #include "Sequence.h"
 #include "Error.h"
 #include "parser.h"
-//#include "expr.tab.h"
 #include "util.h"
 #include "debug.h"
 
@@ -216,7 +215,7 @@ delete_xdrstdio(XDR *xdr)
 // otherwise. The formal parameter BUF is modified as a side effect.
 
 extern "C" bool_t
-    xdr_str(XDR *xdrs, string &buf)
+xdr_str(XDR *xdrs, string &buf)
 {
     DBG(cerr << "In xdr_str, xdrs: " << xdrs << endl);
 

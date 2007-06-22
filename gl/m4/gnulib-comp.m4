@@ -1,4 +1,5 @@
-# Copyright (C) 2004-2006 Free Software Foundation, Inc.
+# DO NOT EDIT! GENERATED AUTOMATICALLY!
+# Copyright (C) 2004-2007 Free Software Foundation, Inc.
 #
 # This file is free software, distributed under the terms of the GNU
 # General Public License.  As a special exception to the GNU General
@@ -19,6 +20,10 @@
 # any checks for libraries, header files, types and library functions.
 AC_DEFUN([gl_EARLY],
 [
+  m4_pattern_forbid([^gl_[A-Z]])dnl the gnulib macro namespace
+  m4_pattern_allow([^gl_ES$])dnl a valid locale name
+  m4_pattern_allow([^gl_LIBOBJS$])dnl a variable
+  m4_pattern_allow([^gl_LTLIBOBJS$])dnl a variable
   AC_REQUIRE([AC_PROG_RANLIB])
   AC_REQUIRE([AC_GNU_SOURCE])
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
@@ -28,35 +33,73 @@ AC_DEFUN([gl_EARLY],
 # "Check for header files, types and library functions".
 AC_DEFUN([gl_INIT],
 [
+  m4_pushdef([AC_LIBOBJ], m4_defn([gl_LIBOBJ]))
+  m4_pushdef([AC_REPLACE_FUNCS], m4_defn([gl_REPLACE_FUNCS]))
+  m4_pushdef([AC_LIBSOURCES], m4_defn([gl_LIBSOURCES]))
   AM_CONDITIONAL([GL_COND_LIBTOOL], [true])
+  gl_cond_libtool=true
+  gl_source_base='gl'
 changequote(,)dnl
 LTALLOCA=`echo "$ALLOCA" | sed 's/\.[^.]* /.lo /g;s/\.[^.]*$/.lo/'`
 changequote([, ])dnl
 AC_SUBST([LTALLOCA])
   gl_FUNC_ALLOCA
-  dnl gl_USE_SYSTEM_EXTENSIONS must be added quite early to configure.ac.
+  AC_SUBST([LIBINTL])
+  AC_SUBST([LTLIBINTL])
+  gl_LOCALCHARSET
   AC_FUNC_MALLOC
-  gl_MBCHAR
-  gl_MBITER
-  gl_FUNC_MEMCHR
   gl_REGEX
-  gl_C_RESTRICT
   gt_TYPE_SSIZE_T
   AM_STDBOOL_H
-  gl_STRCASE
+  gl_STDINT_H
+  gl_WCHAR_H
+  gl_WCTYPE_H
+  m4_popdef([AC_LIBSOURCES])
+  m4_popdef([AC_REPLACE_FUNCS])
+  m4_popdef([AC_LIBOBJ])
+  AC_CONFIG_COMMANDS_PRE([
+    gl_libobjs=
+    gl_ltlibobjs=
+    if test -n "$gl_LIBOBJS"; then
+      # Remove the extension.
+      sed_drop_objext='s/\.o$//;s/\.obj$//'
+      for i in `for i in $gl_LIBOBJS; do echo "$i"; done | sed "$sed_drop_objext" | sort | uniq`; do
+        gl_libobjs="$gl_libobjs $i.$ac_objext"
+        gl_ltlibobjs="$gl_ltlibobjs $i.lo"
+      done
+    fi
+    AC_SUBST([gl_LIBOBJS], [$gl_libobjs])
+    AC_SUBST([gl_LTLIBOBJS], [$gl_ltlibobjs])
+  ])
 ])
+
+# Like AC_LIBOBJ, except that the module name goes
+# into gl_LIBOBJS instead of into LIBOBJS.
+AC_DEFUN([gl_LIBOBJ],
+  [gl_LIBOBJS="$gl_LIBOBJS $1.$ac_objext"])
+
+# Like AC_REPLACE_FUNCS, except that the module name goes
+# into gl_LIBOBJS instead of into LIBOBJS.
+AC_DEFUN([gl_REPLACE_FUNCS],
+  [AC_CHECK_FUNCS([$1], , [gl_LIBOBJ($ac_func)])])
+
+# Like AC_LIBSOURCES, except that it does nothing.
+# We rely on EXTRA_lib..._SOURCES instead.
+AC_DEFUN([gl_LIBSOURCES],
+  [])
 
 # This macro records the list of files which have been installed by
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
   lib/alloca.c
   lib/alloca_.h
+  lib/config.charset
   lib/gettext.h
+  lib/localcharset.c
+  lib/localcharset.h
   lib/malloc.c
-  lib/mbchar.c
-  lib/mbchar.h
-  lib/mbuiter.h
-  lib/memchr.c
+  lib/ref-add.sin
+  lib/ref-del.sin
   lib/regcomp.c
   lib/regex.c
   lib/regex.h
@@ -64,22 +107,24 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/regex_internal.h
   lib/regexec.c
   lib/stdbool_.h
-  lib/strcase.h
-  lib/strcasecmp.c
-  lib/strncasecmp.c
-  lib/strnlen1.c
-  lib/strnlen1.h
+  lib/stdint_.h
+  lib/wchar_.h
+  lib/wctype_.h
   m4/alloca.m4
   m4/codeset.m4
   m4/extensions.m4
-  m4/mbchar.m4
-  m4/mbiter.m4
-  m4/mbrtowc.m4
-  m4/memchr.m4
+  m4/glibc21.m4
+  m4/gnulib-common.m4
+  m4/include_next.m4
+  m4/localcharset.m4
+  m4/longlong.m4
   m4/onceonly_2_57.m4
   m4/regex.m4
-  m4/restrict.m4
   m4/ssize_t.m4
   m4/stdbool.m4
-  m4/strcase.m4
+  m4/stdint.m4
+  m4/ulonglong.m4
+  m4/wchar.m4
+  m4/wctype.m4
+  m4/wint_t.m4
 ])

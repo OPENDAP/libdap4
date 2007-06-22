@@ -8,8 +8,8 @@ aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir)/gl
-AM_CXXFLAGS = -I$(top_srcdir)/GNU -Wall -W -Wcast-align
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU
+AM_CXXFLAGS = -Wall -W -Wcast-align
 AM_YFLAGS = -d -v
 AM_LFLAGS = -8
 
@@ -36,11 +36,11 @@ libdapclient_la_SOURCES = $(CLIENT_SRC)
 libdapserver_la_SOURCES = $(SERVER_SRC)
 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
-libdap_la_CPPFLAGS = $(XML2_CFLAGS)
+libdap_la_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la
 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
-libdapclient_la_CPPFLAGS = $(CURL_CFLAGS) $(XML2_CFLAGS)
+libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS) $(XML2_CFLAGS)
 libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
 
 libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
@@ -154,7 +154,10 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	$(GRAM_SRC) ce_functions.cc GSEClause.cc \
 	lex.gse_.cc gse.tab.cc GeoConstraint.cc GridGeoConstraint.cc \
 	Clause.cc RValue.cc ConstraintEvaluator.cc ArrayGeoConstraint.cc \
-	DapIndent.cc
+	DapIndent.cc Operators.h
+	
+# Operators.h is included in with the source to prevent it from bing installed
+# with the other headers. It includes one of the built grammar file headers.
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 	AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc  \
@@ -170,9 +173,9 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	PassiveUrl.h PassiveUInt32.h PassiveInt16.h PassiveUInt16.h	   \
 	PassiveFloat32.h PassiveArray.h PassiveStructure.h		   \
 	BaseTypeFactory.h ObjectType.h EncodingType.h \
-	SignalHandler.h Operators.h Error.h InternalErr.h		   \
+	SignalHandler.h Error.h InternalErr.h		   \
 	util.h escaping.h parser.h debug.h dods-limits.h dods-datatypes.h \
-	GeoConstraint.h GridGeoConstraint.h	ArrayGeoConstraint.h \
+	GeoConstraint.h GridGeoConstraint.h ArrayGeoConstraint.h \
 	ce_functions.h  gse_parser.h GSEClause.h util_mit.h \
 	expr.h Clause.h RValue.h ConstraintEvaluator.h ce_parser.h \
 	DapIndent.h DapObj.h

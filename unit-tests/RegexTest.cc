@@ -22,7 +22,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -52,7 +52,9 @@ public:
 
     CPPUNIT_TEST(ctor_test);
     CPPUNIT_TEST(match_test);
+#if 1
     CPPUNIT_TEST(search_test);
+#endif
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -88,15 +90,24 @@ public:
     void match_test() {
         Regex simple("abc");
         string s1 = "123abcdef";
+	DBG(cerr << "simple.match(s1.c_str(), s1.length()): "
+	     << simple.match(s1.c_str(), s1.length()) << endl);
+
         CPPUNIT_ASSERT(simple.match(s1.c_str(), s1.length()) == 3);
         CPPUNIT_ASSERT(simple.match(s1.c_str(), s1.length(), 4) == -1);
         
         Regex pattern("3.b");
+	DBG(cerr << "pattern.match(s1.c_str(), s1.length()): "
+	     << pattern.match(s1.c_str(), s1.length()) << endl);
+
         CPPUNIT_ASSERT(pattern.match(s1.c_str(), s1.length()) == 3);
         string s2 = "123acd";        
         CPPUNIT_ASSERT(pattern.match(s2.c_str(), s2.length()) == -1);
 
         Regex exclusion("[^123]+");
+	DBG(cerr << "exclusion.match(s1.c_str(), s1.length()): "
+	     << exclusion.match(s1.c_str(), s1.length()) << endl);
+
         CPPUNIT_ASSERT(exclusion.match(s1.c_str(), s1.length()) == 6);
         
         Regex exclusion_range("[^0-9]+");

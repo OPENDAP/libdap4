@@ -25,6 +25,14 @@
 
 #include <config.h>
 
+#ifndef WIN32
+#include <alloca.h>
+#endif
+#include <stdlib.h>
+ 
+#include <sys/types.h>
+#include <regex.h>
+
 #include <new>
 #include <string>
 #include <stdexcept>
@@ -37,13 +45,15 @@ using namespace std;
 void
 Regex::init(const char *t)
 {
-    d_preg = new regex_t;
-    int result = regcomp(d_preg, t, REG_EXTENDED);
+    d_preg = static_cast<void*>(new regex_t);
+    int result = regcomp(static_cast<regex_t*>(d_preg), t, REG_EXTENDED);
 
     if  (result != 0) {
-        size_t msg_len = regerror(result, d_preg, (char *)NULL, (size_t)0);
+        size_t msg_len = regerror(result, static_cast<regex_t*>(d_preg),
+                                  static_cast<char*>(NULL),
+                                  static_cast<size_t>(0));
         char *msg = new char[msg_len+1];
-        regerror(result, d_preg, msg, msg_len);
+        regerror(result, static_cast<regex_t*>(d_preg), msg, msg_len);
         Error e(string("Regex error: ") + string(msg));
         delete[] msg;
         throw e;
@@ -52,8 +62,8 @@ Regex::init(const char *t)
 
 Regex::~Regex()
 {
-    regfree(d_preg);
-    delete d_preg; d_preg = 0;
+    regfree(static_cast<regex_t*>(d_preg));
+    delete static_cast<regex_t*>(d_preg); d_preg = 0;
 
 }
 
@@ -79,16 +89,16 @@ Regex::Regex(const char* t, int)
     @param pos Start looking at this position in the string
     @return The number of characters that match, -1 if there's no match. */
 int 
-Regex::match(const char*s, int len, int pos)
+Regex::match(const char* s, int len, int pos)
 {
-    regmatch_t pmatch[1];
+    regmatch_t pmatch[len];
     string ss = s;
-    
-    int result = regexec(d_preg, ss.substr(pos, len).c_str(), 1, pmatch, 0);
+
+    int result = regexec(static_cast<regex_t*>(d_preg), 
+                         ss.substr(pos, len-pos).c_str(), len, pmatch, 0);
     if (result == REG_NOMATCH)
         return -1;
 
-    
     return pmatch[0].rm_eo - pmatch[0].rm_so;
 }
 
@@ -106,10 +116,11 @@ int
 Regex::search(const char* s, int len, int& matchlen, int pos)
 {
     // alloc space for len matches, which is theoretical max.
-    regmatch_t *pmatch = new regmatch_t[len];
+    regmatch_t *pmatch = new regmatch_t[len+1];
     string ss = s;
      
-    int result = regexec(d_preg, ss.substr(pos, len).c_str(), len, pmatch, 0);
+    int result = regexec(static_cast<regex_t*>(d_preg),
+                         ss.substr(pos, len-pos).c_str(), len, pmatch, 0);
     if (result == REG_NOMATCH) {
         delete[] pmatch; pmatch = 0;
         return -1;

@@ -37,12 +37,6 @@ extern "C" {
 # define __USE_GNU_REGEX 1
 #endif
 
-#ifdef __VMS
-/* VMS doesn't have `size_t' in <sys/types.h>, even though POSIX says it
-   should be there.  */
-# include <stddef.h>
-#endif
-
 #ifdef _REGEX_LARGE_OFFSETS
 
 /* Use types and values that are wide enough to represent signed and
@@ -631,37 +625,45 @@ extern int re_exec (const char *);
 #endif
 
 /* GCC 2.95 and later have "__restrict"; C99 compilers have
-   "restrict", and "configure" may have defined "restrict".  */
-#ifndef __restrict
-# if ! (2 < __GNUC__ || (2 == __GNUC__ && 95 <= __GNUC_MINOR__))
-#  if defined restrict || 199901L <= __STDC_VERSION__
-#   define __restrict restrict
-#  else
-#   define __restrict
-#  endif
+   "restrict", and "configure" may have defined "restrict".
+   Other compilers use __restrict, __restrict__, and _Restrict, and
+   'configure' might #define 'restrict' to those words, so pick a
+   different name.  */
+#ifndef _Restrict_
+# if 199901L <= __STDC_VERSION__
+#  define _Restrict_ restrict
+# elif 2 < __GNUC__ || (2 == __GNUC__ && 95 <= __GNUC_MINOR__)
+#  define _Restrict_ __restrict
+# else
+#  define _Restrict_
 # endif
 #endif
-/* gcc 3.1 and up support the [restrict] syntax, but g++ doesn't.  */
-#ifndef __restrict_arr
-# if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1)) && !defined __cplusplus
-#  define __restrict_arr __restrict
+/* gcc 3.1 and up support the [restrict] syntax.  Don't trust
+   sys/cdefs.h's definition of __restrict_arr, though, as it
+   mishandles gcc -ansi -pedantic.  */
+#ifndef _Restrict_arr_
+# if ((199901L <= __STDC_VERSION__					\
+       || ((3 < __GNUC__ || (3 == __GNUC__ && 1 <= __GNUC_MINOR__))	\
+	   && !__STRICT_ANSI__))					\
+      && !defined __GNUG__)
+#  define _Restrict_arr_ _Restrict_
 # else
-#  define __restrict_arr
+#  define _Restrict_arr_
 # endif
 #endif
 
 /* POSIX compatibility.  */
-extern int regcomp (regex_t *__restrict __preg,
-		    const char *__restrict __pattern,
+extern int regcomp (regex_t *_Restrict_ __preg,
+		    const char *_Restrict_ __pattern,
 		    int __cflags);
 
-extern int regexec (const regex_t *__restrict __preg,
-		    const char *__restrict __string, size_t __nmatch,
-		    regmatch_t __pmatch[__restrict_arr],
+extern int regexec (const regex_t *_Restrict_ __preg,
+		    const char *_Restrict_ __string, size_t __nmatch,
+		    regmatch_t __pmatch[_Restrict_arr_],
 		    int __eflags);
 
-extern size_t regerror (int __errcode, const regex_t *__restrict __preg,
-			char *__restrict __errbuf, size_t __errbuf_size);
+extern size_t regerror (int __errcode, const regex_t *_Restrict_ __preg,
+			char *_Restrict_ __errbuf, size_t __errbuf_size);
 
 extern void regfree (regex_t *__preg);
 

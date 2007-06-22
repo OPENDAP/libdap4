@@ -1,7 +1,7 @@
-#serial 36
+#serial 47
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005,
-# 2006 Free Software Foundation, Inc.
+# 2006, 2007 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -14,30 +14,33 @@ AC_PREREQ([2.50])
 
 AC_DEFUN([gl_REGEX],
 [
-  AC_LIBSOURCES(
-    [regcomp.c, regex.c, regex.h,
-     regex_internal.c, regex_internal.h, regexec.c])
+  AC_CHECK_HEADERS_ONCE([locale.h])
 
   AC_ARG_WITH([included-regex],
     [AC_HELP_STRING([--without-included-regex],
-		    [don't compile regex; this is the default on
+		    [don't compile regex; this is the default on 32-bit
 		     systems with recent-enough versions of the GNU C
-		     Library (use with caution on other systems)])])
+		     Library (use with caution on other systems).
+		     On systems with 64-bit ptrdiff_t and 32-bit int,
+		     --with-included-regex is the default, in case
+		     regex functions operate on very long strings (>2GB)])])
 
   case $with_included_regex in #(
   yes|no) ac_use_included_regex=$with_included_regex
 	;;
   '')
-    # If the system regex support is good enough that it passes the the
+    # If the system regex support is good enough that it passes the
     # following run test, then default to *not* using the included regex.c.
     # If cross compiling, assume the test would fail and use the included
-    # regex.c.  The first failing regular expression is from `Spencer ere
-    # test #75' in grep-2.3.
+    # regex.c.
     AC_CACHE_CHECK([for working re_compile_pattern],
 		   [gl_cv_func_re_compile_pattern_working],
       [AC_RUN_IFELSE(
 	[AC_LANG_PROGRAM(
 	  [AC_INCLUDES_DEFAULT
+	   #if HAVE_LOCALE_H
+	    #include <locale.h>
+	   #endif
 	   #include <limits.h>
 	   #include <regex.h>
 	   ],
@@ -46,68 +49,118 @@ AC_DEFUN([gl_REGEX],
 	    int i;
 	    const char *s;
 	    struct re_registers regs;
+
+	    #if HAVE_LOCALE_H
+	      /* http://sourceware.org/ml/libc-hacker/2006-09/msg00008.html
+		 This test needs valgrind to catch the bug on Debian
+		 GNU/Linux 3.1 x86, but it might catch the bug better
+		 on other platforms and it shouldn't hurt to try the
+		 test here.  */
+	      if (setlocale (LC_ALL, "en_US.UTF-8"))
+		{
+		  static char const pat[] = "insert into";
+		  static char const data[] =
+		    "\xFF\0\x12\xA2\xAA\xC4\xB1,K\x12\xC4\xB1*\xACK";
+		  re_set_syntax (RE_SYNTAX_GREP | RE_HAT_LISTS_NOT_NEWLINE
+				 | RE_ICASE);
+		  memset (&regex, 0, sizeof regex);
+		  s = re_compile_pattern (pat, sizeof pat - 1, &regex);
+		  if (s)
+		    return 1;
+		  if (re_search (&regex, data, sizeof data - 1,
+				 0, sizeof data - 1, &regs)
+		      != -1)
+		    return 1;
+		  if (! setlocale (LC_ALL, "C"))
+		    return 1;
+		}
+	    #endif
+
+	    /* This test is from glibc bug 3957, reported by Andrew Mackey.  */
+	    re_set_syntax (RE_SYNTAX_EGREP | RE_HAT_LISTS_NOT_NEWLINE);
+	    memset (&regex, 0, sizeof regex);
+	    s = re_compile_pattern ("a[^x]b", 6, &regex);
+	    if (s)
+	      return 1;
+
+	    /* This should fail, but succeeds for glibc-2.5.  */
+	    if (re_search (&regex, "a\nb", 3, 0, 3, &regs) != -1)
+	      return 1;
+
+	    /* This regular expression is from Spencer ere test number 75
+	       in grep-2.3.  */
 	    re_set_syntax (RE_SYNTAX_POSIX_EGREP);
-	    memset (&regex, 0, sizeof (regex));
+	    memset (&regex, 0, sizeof regex);
 	    for (i = 0; i <= UCHAR_MAX; i++)
 	      folded_chars[i] = i;
 	    regex.translate = folded_chars;
 	    s = re_compile_pattern ("a[[:@:>@:]]b\n", 11, &regex);
 	    /* This should fail with _Invalid character class name_ error.  */
 	    if (!s)
-	      exit (1);
+	      return 1;
 
-	    /* This should succeed, but does not for e.g. glibc-2.1.3.  */
-	    memset (&regex, 0, sizeof (regex));
+	    /* This should succeed, but does not for glibc-2.1.3.  */
+	    memset (&regex, 0, sizeof regex);
 	    s = re_compile_pattern ("{1", 2, &regex);
 
 	    if (s)
-	      exit (1);
+	      return 1;
 
 	    /* The following example is derived from a problem report
 	       against gawk from Jorge Stolfi <stolfi@ic.unicamp.br>.  */
-	    memset (&regex, 0, sizeof (regex));
+	    memset (&regex, 0, sizeof regex);
 	    s = re_compile_pattern ("[an\371]*n", 7, &regex);
 	    if (s)
-	      exit (1);
+	      return 1;
 
-	    /* This should match, but does not for e.g. glibc-2.2.1.  */
+	    /* This should match, but does not for glibc-2.2.1.  */
 	    if (re_match (&regex, "an", 2, 0, &regs) != 2)
-	      exit (1);
+	      return 1;
 
-	    memset (&regex, 0, sizeof (regex));
+	    memset (&regex, 0, sizeof regex);
 	    s = re_compile_pattern ("x", 1, &regex);
 	    if (s)
-	      exit (1);
+	      return 1;
 
-	    /* The version of regex.c in e.g. GNU libc-2.2.93 did not
-	       work with a negative RANGE argument.  */
+	    /* glibc-2.2.93 does not work with a negative RANGE argument.  */
 	    if (re_search (&regex, "wxy", 3, 2, -2, &regs) != 1)
-	      exit (1);
+	      return 1;
 
 	    /* The version of regex.c in older versions of gnulib
 	       ignored RE_ICASE.  Detect that problem too.  */
-	    memset (&regex, 0, sizeof (regex));
 	    re_set_syntax (RE_SYNTAX_EMACS | RE_ICASE);
+	    memset (&regex, 0, sizeof regex);
 	    s = re_compile_pattern ("x", 1, &regex);
 	    if (s)
-	      exit (1);
+	      return 1;
 
 	    if (re_search (&regex, "WXY", 3, 0, 3, &regs) < 0)
-	      exit (1);
+	      return 1;
+
+	    /* Catch a bug reported by Vin Shelton in
+	       http://lists.gnu.org/archive/html/bug-coreutils/2007-06/msg00089.html
+	       */
+	    re_set_syntax (RE_SYNTAX_POSIX_BASIC
+			   & ~RE_CONTEXT_INVALID_DUP
+			   & ~RE_NO_EMPTY_RANGES);
+	    memset (&regex, 0, sizeof regex);
+	    s = re_compile_pattern ("[[:alnum:]_-]\\\\+$", 16, &regex);
+	    if (s)
+	      return 1;
 
 	    /* REG_STARTEND was added to glibc on 2004-01-15.
 	       Reject older versions.  */
 	    if (! REG_STARTEND)
-	      exit (1);
+	      return 1;
 
 	    /* Reject hosts whose regoff_t values are too narrow.
 	       These include glibc 2.3.5 on hosts with 64-bit ptrdiff_t
 	       and 32-bit int.  */
 	    if (sizeof (regoff_t) < sizeof (ptrdiff_t)
 		|| sizeof (regoff_t) < sizeof (ssize_t))
-	      exit (1);
+	      return 1;
 
-	    exit (0);]])],
+	    return 0;]])],
        [gl_cv_func_re_compile_pattern_working=yes],
        [gl_cv_func_re_compile_pattern_working=no],
        dnl When crosscompiling, assume it is not working.
@@ -163,8 +216,7 @@ AC_DEFUN([gl_REGEX],
 AC_DEFUN([gl_PREREQ_REGEX],
 [
   AC_REQUIRE([AC_GNU_SOURCE])
-  AC_REQUIRE([gl_C_RESTRICT])
-  AC_REQUIRE([AM_LANGINFO_CODESET])
-  AC_CHECK_HEADERS_ONCE([locale.h wchar.h wctype.h])
-  AC_CHECK_FUNCS_ONCE([isblank mbrtowc mempcpy wcrtomb wcscoll])
+  AC_REQUIRE([AC_C_RESTRICT])
+  AC_CHECK_FUNCS_ONCE([isblank iswctype mbrtowc wcrtomb wcscoll])
+  AC_CHECK_DECLS([isblank], [], [], [#include <ctype.h>])
 ])

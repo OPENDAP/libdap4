@@ -5,9 +5,10 @@ SUBDIRS = cache-testsuite
 
 AUTOMAKE_OPTIONS = foreign
 
-# Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/tests
-AM_CXXFLAGS = -I$(top_srcdir)/GNU
+# Headers in 'tests' are used by the arrayT unit tests.
+
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU -I$(top_srcdir)/tests
+AM_CXXFLAGS = 
 
 # These are not used by automake but are often useful for certain types of
 # debugging. Set CXXFLAGS to this in the nightly build using export ...
@@ -44,6 +45,7 @@ RegexTest_SOURCES = RegexTest.cc
 RegexTest_LDADD = -lcppunit ../libdap.la
 
 AISDatabaseParserTest_SOURCES = AISDatabaseParserTest.cc
+AISDatabaseParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 AISDatabaseParserTest_LDADD = -lcppunit ../libdap.la ../libdapclient.la
 
 AISMergeTest_SOURCES = AISMergeTest.cc
@@ -71,6 +73,7 @@ DDSTest_SOURCES = DDSTest.cc
 DDSTest_LDADD = -lcppunit ../libdap.la
 
 DDXParserTest_SOURCES = DDXParserTest.cc
+DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 DDXParserTest_LDADD = -lcppunit ../libdap.la
 
 DODSFilterTest_SOURCES = DODSFilterTest.cc

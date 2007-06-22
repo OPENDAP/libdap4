@@ -26,21 +26,19 @@
 #ifndef _Regex_h
 #define _Regex_h 1
 
-#ifndef WIN32
-#include <alloca.h>
-#endif
-#include <stdlib.h>
- 
-#include <sys/types.h>
-#include <regex.h>
-
 /** a C++ interface to POSIX regular expression functions.
 
     @author James Gallagher <jgallagher@opendap.org> */
 class Regex
 {
 private:
-    regex_t *d_preg;
+    // d_preg was a regex_t* but I needed to include both regex.h and config.h
+    // to make the gnulib code work. Because this header is installed (and is
+    // used by other libraries) it cannot include config.h, so I moved the 
+    // regex.h and config.h (among other) includes to the implementation. It
+    // would be cleaner to use a special class, but for one field that seems
+    // like overkill.
+    void *d_preg;
     void init(const char *t);
     
 public:

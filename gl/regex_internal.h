@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -22,46 +22,33 @@
 
 #include <assert.h>
 #include <ctype.h>
-#ifdef WIN32
-#include <stdbool_.h>
-#define inline
-#else
 #include <stdbool.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef _LIBC
-# include "strcase.h"
-#endif
-
-#if defined HAVE_LANGINFO_H || defined HAVE_LANGINFO_CODESET || defined _LIBC
+#ifdef _LIBC
 # include <langinfo.h>
+#else
+# include "localcharset.h"
 #endif
 #if defined HAVE_LOCALE_H || defined _LIBC
 # include <locale.h>
 #endif
-#if defined HAVE_WCHAR_H || defined _LIBC
-# include <wchar.h>
-#endif /* HAVE_WCHAR_H || _LIBC */
-#if defined HAVE_WCTYPE_H || defined _LIBC
-# include <wctype.h>
-#endif /* HAVE_WCTYPE_H || _LIBC */
-#if defined HAVE_STDINT_H || defined _LIBC
-# include <stdint.h>
-#endif /* HAVE_STDINT_H || _LIBC */
+
+#include <wchar.h>
+#include <wctype.h>
+#include <stdint.h>
 #if defined _LIBC
 # include <bits/libc-lock.h>
 #else
-# define __libc_lock_define(CLASS,NAME)
 # define __libc_lock_init(NAME) do { } while (0)
 # define __libc_lock_lock(NAME) do { } while (0)
 # define __libc_lock_unlock(NAME) do { } while (0)
 #endif
 
 /* In case that the system doesn't have isblank().  */
-#if !defined _LIBC && !defined HAVE_ISBLANK && !defined isblank
+#if !defined _LIBC && ! (defined isblank || (HAVE_ISBLANK && HAVE_DECL_ISBLANK))
 # define isblank(ch) ((ch) == ' ' || (ch) == '\t')
 #endif
 
@@ -97,7 +84,7 @@
 # define SIZE_MAX ((size_t) -1)
 #endif
 
-#if (defined MB_CUR_MAX && HAVE_LOCALE_H && HAVE_WCTYPE_H && HAVE_WCHAR_H && HAVE_WCRTOMB && HAVE_MBRTOWC && HAVE_WCSCOLL) || _LIBC
+#if (defined MB_CUR_MAX && HAVE_LOCALE_H && HAVE_WCTYPE_H && HAVE_ISWCTYPE && HAVE_WCRTOMB && HAVE_MBRTOWC && HAVE_WCSCOLL) || _LIBC
 # define RE_ENABLE_I18N
 #endif
 
@@ -127,9 +114,6 @@
 # define __wctype wctype
 # define __iswctype iswctype
 # define __btowc btowc
-# ifndef __mempcpy
-#  define __mempcpy mempcpy
-# endif
 # define __wcrtomb wcrtomb
 # define __regfree regfree
 # define attribute_hidden
@@ -356,7 +340,7 @@ typedef struct
     Idx idx;			/* for BACK_REF */
     re_context_type ctx_type;	/* for ANCHOR */
   } opr;
-#if __GNUC__ >= 2
+#if __GNUC__ >= 2 && !__STRICT_ANSI__
   re_token_type_t type : 8;
 #else
   re_token_type_t type;
@@ -474,11 +458,7 @@ static unsigned int re_string_context_at (const re_string_t *input, Idx idx,
 #define re_string_skip_bytes(pstr,idx) ((pstr)->cur_idx += (idx))
 #define re_string_set_index(pstr,idx) ((pstr)->cur_idx = (idx))
 
-#ifdef WIN32
-#include <alloca_.h>
-#else
 #include <alloca.h>
-#endif
 
 #ifndef _LIBC
 # if HAVE_ALLOCA
@@ -720,7 +700,9 @@ struct re_dfa_t
 #ifdef DEBUG
   char* re_str;
 #endif
+#ifdef _LIBC
   __libc_lock_define (, lock)
+#endif
 };
 
 #define re_node_set_init_empty(set) memset (set, '\0', sizeof (re_node_set))

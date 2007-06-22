@@ -4,8 +4,8 @@
 AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir)
-AM_CXXFLAGS = -I$(top_srcdir)/GNU 
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU
+AM_CXXFLAGS =  
 
 # These are not used by automake but are often useful for certain types of
 # debugging. 
@@ -19,7 +19,7 @@ check_PROGRAMS = $(DEJAGNU_TESTS)
 TESTS = dejagnu_driver.sh
 
 # Build the dejagnu test drivers as check programs; when automake fixes
-# support for dejagnu so it can handle multiple drivers, add 'dejagnu to
+# support for dejagnu so it can handle multiple drivers, add 'dejagnu' to
 # the automake options at the top of this file. See the section on dejagnu
 # tests below. jhrg 7/6/05
 dist_check_SCRIPTS = dejagnu_driver.sh
