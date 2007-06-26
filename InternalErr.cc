@@ -60,7 +60,7 @@ InternalErr::InternalErr(const string &msg) : Error()
     _error_message = "";
     _error_message += "An internal error was encountered:\n";
     _error_message += msg + "\n";
-    _error_message += "Please report this to support@unidata.ucar.edu\n";
+    _error_message += "Please report this to support@opendap.org\n";
 }
 
 
@@ -76,7 +76,7 @@ InternalErr::InternalErr(const string &file, const int &line, const string &msg)
     append_long_to_string(line, 10, _error_message);
     _error_message += ":\n";
     _error_message += msg + "\n";
-    _error_message += "Please report this to support@unidata.ucar.edu\n";
+    _error_message += "Please report this to support@opendap.org\n";
 }
 #if 0
 InternalErr::InternalErr(string msg, ProgramType pt, char *pgm)
@@ -85,7 +85,7 @@ InternalErr::InternalErr(string msg, ProgramType pt, char *pgm)
     ostringstream oss;
     oss << "An internal error was encountered:" << endl
     << msg << endl
-    << "Please report this to support@unidata.ucar.edu";
+    << "Please report this to support@opendap.org";
     _error_message  = oss.str();
 }
 #endif

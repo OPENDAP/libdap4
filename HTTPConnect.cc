@@ -117,7 +117,7 @@ http_status_to_string(int status)
     else if (status >= SERVER_ERR_MIN && status <= SERVER_ERR_MAX)
         return string(http_server_errors[status - SERVER_ERR_MIN]);
     else
-        return string("Unknown Error: This indicates a problem with libdap++.\nPlease report this to support@unidata.ucar.edu.");
+        return string("Unknown Error: This indicates a problem with libdap++.\nPlease report this to support@opendap.org.");
 }
 
 /** Functor to parse the headers in the d_headers field. After the headers
