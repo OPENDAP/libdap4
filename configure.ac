@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.7.7, opendap-tech@unidata.ucar.edu)
+AC_INIT(libdap, 3.7.8, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, "3.1", [What DAP version is supported?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
@@ -36,7 +36,7 @@ dnl library versionning: Update these when the interface changes. Generally,
 dnl assume that the interface tracks the major and minor release numbers.
 DAPLIB_CURRENT=7
 DAPLIB_AGE=1
-DAPLIB_REVISION=2
+DAPLIB_REVISION=3
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)
 AC_SUBST(DAPLIB_REVISION)
@@ -56,7 +56,7 @@ AC_SUBST(CLIENTLIB_VERSION)
 
 SERVERLIB_CURRENT=3
 SERVERLIB_AGE=0
-SERVERLIB_REVISION=2
+SERVERLIB_REVISION=3
 AC_SUBST(SERVERLIB_CURRENT)
 AC_SUBST(SERVERLIB_AGE)
 AC_SUBST(SERVERLIB_REVISION)
@@ -178,6 +178,10 @@ if test $libdap_pkgconfig_libxml2 = 'yes'
 then
 	xmlprivatereq=$libdap_libxml2_module
 	XML2_STATIC_LIBS="`$PKG_CONFIG --static --libs libxml-2.0`"
+	AC_DEFINE(LIBXML2_5_10, [1],
+		  [define if you have xml2 2.5.10 or greater])
+	AC_DEFINE(LIBXML2_6_16, [1],
+		  [define if you have xml2 2.6.16 or greater])
 	AC_MSG_RESULT([yes; used pkg-config])
 elif xml2-config --version > /dev/null 2>&1
 then

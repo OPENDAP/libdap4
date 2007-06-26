@@ -1,3 +1,232 @@
+2007-06-26  James Gallagher <jgallagher@opendap.org>
+
+	Replaced unidata support email with the opendap-tech list address.
+
+2007-06-26  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-06-25  James Gallagher <jgallagher@opendap.org>
+
+	Added.
+
+	AM   gl/config.charset
+
+2007-06-25  James Gallagher <jgallagher@opendap.org>
+
+	Added files from the gnulib update.
+
+	A    gl/m4/wint_t.m4
+	A    gl/m4/wchar.m4
+	A    gl/m4/localcharset.m4
+	A    gl/m4/ulonglong.m4
+	A    gl/m4/stdint.m4
+	A    gl/m4/gnulib-common.m4
+	A    gl/m4/wctype.m4
+	A    gl/m4/longlong.m4
+	A    gl/m4/include_next.m4
+	A    gl/m4/glibc21.m4
+	AM   gl/localcharset.c
+	A    gl/ref-del.sed
+	AM   gl/localcharset.h
+	A    gl/ref-del.sin
+	A    gl/ref-add.sed
+	AM   gl/wchar_.h
+	A    gl/ref-add.sin
+	AM   gl/stdint_.h
+	AM   gl/wctype_.h
+
+2007-06-22  James Gallagher <jgallagher@opendap.org>
+
+	Updated gnulib and fixed a memory problem in the GNURegex class
+	(which should really be renamed to DAPRegex, but that would break
+	other code). The problem was that to use the gnulib regex code the
+	config.h header has to be included and the gl subdir must be
+	searched. I moved the declaration of the regex_t field of Regex
+	into the implementation file to avoid having config.h in a header
+	that is installed in <prefix>/include. This fixes ticket #953
+	which first showed up in libnc-dap.
+
+	M    tests/Makefile.am
+	M    GNU/GNURegex.cc
+	M    GNU/GNURegex.h
+	M    Makefile.am
+	M    regex_test.cc
+	M    gl/alloca_.h
+	M    gl/m4/regex.m4
+	M    gl/m4/gnulib-comp.m4
+	M    gl/m4/ssize_t.m4
+	M    gl/m4/gnulib-cache.m4
+	M    gl/m4/onceonly_2_57.m4
+	M    gl/m4/codeset.m4
+	M    gl/m4/alloca.m4
+	M    gl/m4/extensions.m4
+	M    gl/regex_internal.c
+	M    gl/malloc.c
+	M    gl/stdbool_.h
+	M    gl/regex.c
+	M    gl/regex_internal.h
+	M    gl/regex.h
+	M    gl/regexec.c
+	M    gl/Makefile.am
+	M    gl/gettext.h
+	M    gl/alloca.c
+	M    gl/regcomp.c
+	M    util.cc
+	M    Operators.h
+	M    unit-tests/RegexTest.cc
+	M    unit-tests/Makefile.am
+
+2007-06-21  James Gallagher <jgallagher@opendap.org>
+
+	Reverted to the old version of get_attr() for release.
+
+	M    AttrTable.cc
+
+2007-06-21  James Gallagher <jgallagher@opendap.org>
+
+	escaping.cc: one last call to size replaced.
+
+2007-06-21  James Gallagher <jgallagher@opendap.org>
+
+	escaping.cc: Replaced calls to string::size() with ones to
+	string::length(). They return the same information, but it's
+	cleaner to use the same method everywhere
+
+2007-06-19  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a problem in save_raw_http_header() where a header from an
+	old server (terminated by a newline but no return) caused a read
+	violation when the header was empty.
+
+	M    HTTPConnect.cc
+
+2007-06-08  James Gallagher <jgallagher@opendap.org>
+
+	Spelling in comments and strings
+
+	M    AlarmHandler.h
+	M    GeoConstraint.h
+	M    expr.h
+	M    RCReader.h
+
+2007-06-04  James Gallagher <jgallagher@opendap.org>
+
+	Updated comments.
+
+	M    lex.gse_.cc
+	M    AISResources.cc
+	M    configure.ac
+	M    cgi_util.cc
+	M    lex.dds.cc
+	M    ChangeLog
+	M    ConstraintEvaluator.cc
+	M    Array.cc
+	M    ce_expr.tab.cc
+	M    Byte.cc
+	M    lex.Error.cc
+	M    ce_expr.tab.h
+	M    Error.tab.h
+	M    AttrTable.cc
+	M    lex.das.cc
+	M    lex.ce_expr.cc
+	M    das.tab.h
+	M    ce_functions.cc
+	M    Constructor.cc
+	M    das.tab.cc
+	M    ArrayGeoConstraint.cc
+	M    Connect.cc
+	M    Error.tab.cc
+	M    Clause.cc
+	M    doxy.conf
+	M    gse.tab.cc
+	M    gse.tab.h
+
+2007-05-25  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-05-24  Patrick West <pwest@ucar.edu>
+
+	Standard location of PackageMaker command line app.
+	
+	M    Makefile.am
+
+2007-05-24  Patrick West <pwest@ucar.edu>
+
+	Ability to build .pkg file from the Makefile instead of running
+	PackageMaker GUI.
+	
+	A    OSX_Resources/Info.plist
+	A    OSX_Resources/Description.plist
+	M    Makefile.am
+
+2007-05-18  James Gallagher <jgallagher@opendap.org>
+
+	Updated pkg.m4 macros
+
+	M    pkg.m4
+
+2007-05-17  James Gallagher <jgallagher@opendap.org>
+
+	Fixed typos in grammar files.
+
+	M    Error.lex
+	M    gse.lex
+	M    gse.y
+	M    ce_expr.y
+	M    Error.y
+	M    dds.lex
+	M    das.lex
+	M    das.y
+	M    ce_expr.lex
+
+2007-05-17  James Gallagher <jgallagher@opendap.org>
+
+	Fixed typos in libdap headers.
+
+	M    DDXParser.h
+	M    Sequence.h
+	M    SignalHandler.h
+	M    debug.h
+	M    escaping.h
+	M    Connect.h
+	M    ce_functions.h
+	M    SignalHandlerRegisteredErr.h
+	M    gse_parser.h
+	M    DDS.h
+	M    ArrayGeoConstraint.h
+	M    GeoConstraint.h
+	M    HTTPCacheResponse.h
+	M    Error.h
+	M    AISResources.h
+	M    PipeResponse.h
+	M    util.h
+	M    Grid.h
+	M    AttrTable.h
+	M    PassiveUrl.h
+	M    Url.h
+	M    Clause.h
+	M    Operators.h
+	M    HTTPConnect.h
+	M    StdinResponse.h
+	M    Array.h
+	M    UInt16.h
+
+2007-05-17  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-05-16  James Gallagher <jgallagher@opendap.org>
+
+	Added pkg.m4 to conf so build from svn will work on machines w/o
+	pkg-config. Updated comments.
+
+	A    conf/pkg.m4
+	M    Makefile.am
+	M    Constructor.h
+	M    unit-tests/Makefile.am
+
 2007-05-14  James Gallagher <jgallagher@opendap.org>
 
 	Removed the html docs from svn; RPM now builds a 'doc' package.
@@ -16,7 +245,7 @@
 2007-05-13  James Gallagher <jgallagher@opendap.org>
 
 	Patrice Dumas' changes to dods-datatypes.h - Now the header uses
-	the C99 types unless th stdint.h header is not present.
+	the C99 types unless the stdint.h header is not present.
 
 	D    dods-datatypes.h.in
 	M    configure.ac

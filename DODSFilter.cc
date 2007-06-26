@@ -675,7 +675,7 @@ DODSFilter::read_ancillary_dds(DDS &dds, const string &anc_location) const
     }
 }
 
-static const char *emessage = "DODS internal server error; usage error. Please report this to the dataset maintainer, or to the opendap-tech@unidata.ucar.edu mailing list.";
+static const char *emessage = "DODS internal server error; usage error. Please report this to the dataset maintainer, or to the opendap-tech@opendap.org mailing list.";
 
 /** This message is printed when the filter program is incorrectly
     invoked by the dispatch CGI.  This is an error in the server

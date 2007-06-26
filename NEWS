@@ -1,7 +1,34 @@
 
 $Id$
 
-News for version 3.7.7 2 May 2007
+News for version 3.7.8, 26 June 2007
+
+Updated the email address for support to support at opendap.org and changed
+the tech email list address to opendap-tech at opendap.org. This is part of
+the plan to shift support services to OPeNDAP and to use the tech email list
+as part of that plan.
+
+Updated to the latest gnulib software.
+
+Memory errors fixed: 
+
+    In the HTTP processing code for clients which was triggered when a client
+    read from an older server (older servers had malformed HTTP headers).
+
+    An error in the regular expression class (Regex) where the build
+    generated flawed code on a 64-bit machine.
+
+OSX Build improvements.
+
+Patrice Dumas' changes to dods-datatypes.h - Now the header uses the C99
+types unless the stdint.h header is not present.
+
+pkg-config support. From a patch by Patrice Dumas.
+
+General improvements to comments, strings and error messages throughout the
+libraries. 
+
+News for version 3.7.7, 2 May 2007
 
 Fixed a bug where the build was not installing the dapserver and dapclient
 libraries. 
@@ -12,7 +39,7 @@ There are some minor performance improvements to the constraint evaluator.
 
 Repaired some problems with the server-side functions.
 
-News for version 3.7.6 12 March 2007
+News for version 3.7.6, 12 March 2007
 
 Fixed a bug in the linear_scale() Constraint Expression function when that
 function was used with plain arrays.

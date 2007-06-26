@@ -1,6 +1,6 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP
-Version: 3.7.7
+Version: 3.7.8
 Release: 1
 
 Source0: ftp://ftp.unidata.ucar.edu/pub/opendap/source/libdap-%{version}.tar.gz
@@ -8,11 +8,10 @@ URL: http://www.opendap.org/
 
 Group: Development/Libraries
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-# the deflate program is covered by the W3C licence
 License: LGPL
 
 # Mandrake
-#BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
+# BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
 # fedora
 BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
 BuildRequires: doxygen graphviz
@@ -112,6 +111,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Jun 26 2007 James Gallagher <jgallagher@opendap.org> - 3.7.8-1
+- Update for 3.7.8
+
 * Thu Feb  8 2007 James Gallagher <jgallagher@opendap.org> - 3.7.7-1
 - Update for 3.7.7
 
