@@ -59,7 +59,7 @@ method. This will aid in debugging. Created an indentation classes to
 help with dumping objects.
 
 Win32 port fixes. The Win32 build is closer to the Unix build. Our
-hope is to get teh two to be almost identical so that we can all build
+hope is to get the two to be almost identical so that we can all build
 on Win32 and thus get away from having the win32 releases lag behind the
 Unix releases.
 
@@ -182,7 +182,7 @@ This version includes two bug fixes.
 
 1. The library can now correctly reads binary data objects saved using the web
 interface. Before, this was very hard to do. The utility getdap has been
-modified so that it can docode these saved '.dods' files.
+modified so that it can decode these saved '.dods' files.
 
 2. The DODSFilter class used to build all of our data handlers no longer 
 blocks when returning a data object to a web browser. This fixes a problem
@@ -196,7 +196,7 @@ Fixed a bug in deflate.c: Some comments used the C++ style comments and gcc
 rejected that.
 
 Data server filters built with the 3.6.0 library were not compatible with the
-dap-server 3.6.0 software because the DODSFilter class did not recofnize the
+dap-server 3.6.0 software because the DODSFilter class did not recognize the
 -t option (which is used to pass the handler a timeout value).
 
 News for version 3.6.0
@@ -213,12 +213,12 @@ container for this AttrTable.
 I removed the old iostream methods from the library. These methods should not
 be used because in many cases since other parts of the library use the C/stdio 
 functions for I/O. In older versions of gcc, it was possible to mix the
-two types of I/O systems, but not now (and not in otehr compielrs). To change
+two types of I/O systems, but not now (and not in other compilers). To change
 your code, look in the file Removed_functions.txt to see the functions/methods
 that have been removed. In all cases there is a version that takes a FILE *
 in place of the ostream &. Use the FILE* version. If you're performing I/O
 that relies on operator<<() to do type conversions, use an ostringstream 
-in your code and then write the string to stdout (or whereever) using fprintf
+in your code and then write the string to stdout (or wherever) using fprintf
 like: fprintf(stdout, "%s", oss.str().c_str()). Ugly, but easier in some
 cases than replacing lots of tested C++ I/O with fprintf calls.
 
@@ -227,7 +227,7 @@ a year. See Removed_functions.txt
 
 I removed the old Pix methods. See removed_functions.txt.
 
-I removed the const char * overloads added to prevent collissions between
+I removed the const char * overloads added to prevent collisions between
 the Pix and String (not string, but GNU's old libg String class) methods.
 
 Added protocol version number header to responses which use the set_mime...()
@@ -271,10 +271,10 @@ file for use with Mac's PackageMaker.
 News for Release 3.5.2
 
 Fixed a bug where malformed Error objects from servers caused an exception.
-This caused the original error messageto be lost, not very helpful.
+This caused the original error message to be lost, not very helpful.
 
-The libray used a compile-time switch to control use of the factory class for
-creation of objects at runtime. This was causing more trouble than it was
+The library used a compile-time switch to control use of the factory class for
+creation of objects at run-time. This was causing more trouble than it was
 preventing, so I removed it. Code should switch from the 'virtual
 constructors' to the factory class now.
 
@@ -289,12 +289,12 @@ Revamped the build to use automake.
 Regression tests and the test classes are now in the subdir 'tests.'
 
 The unit tests are now in the subdir 'unit-tests' and are not built or run by
-default. Some of these tests require access to the internet to work and I
+default. Some of these tests require access to the Internet to work and I
 decided to make then not run using the make check target from the top level
 (the regression tests in 'tests' do run using the top-level check target) so
 that the build would work w/o access to the net.
 
-The rpm spec file has been updated. See INSTALL for information aboutl
+The rpm spec file has been updated. See INSTALL for information about
 building rpm distributions.
 
 Thanks to Patrice Dumas for help on the autoconf/make, with gnulib and the
@@ -343,7 +343,7 @@ Changes in the way the software is organized:
   library linked to $prefix/lib/libdap++.a and some other stuff. Use
   dap-config --help for a listing of all the options. Finally, the deflate
   program, which is used by some servers to provide compressed responses and
-  is called by the library is not stored in $prefix/sbin (excpet on win32
+  is called by the library is not stored in $prefix/sbin (except on win32
   where it's stored in $prefix/bin).
 
   The usage program is not currently installed; once we complete the
@@ -366,9 +366,9 @@ Other changes to libdap++:
 
   For applications which don't specialize the type classes, the default
   factory should be fine. To avoid using the new DDS constructor (which
-  requies that a pointer to an instance of BaseTypeFactory be suppiled), your
+  requires that a pointer to an instance of BaseTypeFactory be supplied), your
   code must #define the symbol DEFAULT_BASETYPE_FACTORY. If this symbol is
-  not defined (at compile time) then various compile-time errors will ocurr
+  not defined (at compile time) then various compile-time errors will occur
   (the idea being this will prevent software from building and silently
   ignoring specializations of the type classes). If defined, this use the
   default factory class.
@@ -377,14 +377,14 @@ Other changes to libdap++:
 
 * The library contains support for the DDX object. The DDX will become the
   foundation of the DAP3 protocol. It uses XML to describe the information
-  currently represented using our 'curly-breace' notation and also bundles
+  currently represented using our 'curly-brace' notation and also bundles
   the attributes along with the variables they describe. This will simplify
   many processing tasks for clients. The software provided simplifies
   generating the DDX by building it from existing DAS and DDS objects.
 
-* There has also been some significant refactoring in DDS and DAS: The
+* There has also been some significant re-factoring in DDS and DAS: The
   DDS:send() method has been copied over to DODSFilter and the version in DDS
-  has been deprecated and will be removed in afuture version of the library.
+  has been deprecated and will be removed in a future version of the library.
   The library uses STL iterators almost exclusively and the next version will
   eliminate the ancient Pix class.
 

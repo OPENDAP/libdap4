@@ -1,7 +1,7 @@
 
 	$Id$
 
-Updated for version 3.7.6 of the OPeNDAP DAP 3.1 library software.
+Updated for version 3.7.8 of the OPeNDAP DAP 3.1 library software.
 
 Installing the DAP2 library
 
@@ -27,7 +27,7 @@ BUILDING THE SOFTWARE
   2. Type `make' to build the library, `make check' to run the tests. You
      must have DejaGNU to run `make check.' If you have the CppUnit unit-test
      software, then 'cd unit-tests; make check' will build and run the unit
-     tests. On a manrake/mandriva system, you need to copy or link 
+     tests. On a Mandrake/Mandriva system, you need to copy or link 
      conf/config.guess into the 'tests' directory and then run the tests.
 
   3. Type `make install' to install the library files. The libraries
@@ -48,22 +48,21 @@ Building from Our SVN Repository
 
 AFTER INSTALLING
 
-  o Set PATH environment variable to include the bin directory of
+  o Set the PATH environment variable to include the bin directory where
+    libdap was installed. For example, if using the default installation
+    directory, which is /usr/local, make sure that /usr/local/bin is on your
+    path. This is important because often libdap is built so that some other
+    software can then be built, but without setting PATH, those other
+    packages might not detect the newly installed libdap.
+
+  o Set the LD_LIBRARY_PATH environment variable to include the lib directory
     where libdap was installed. For example, if using the default
     installation directory, which is /usr/local, make sure that
-    /usr/local/bin is on your path. This is important because often
-    libdap is built so that some other software can then be built, but
-    without setting PATH, those other packages might use older
-    versions of libdap that are still lingering on you system.
-
-  o Set LD_LIBRARY_PATH environment variable to include the lib
-    directory of where libdap was installed. For example, if using the
-    default installation directory, which is /usr/local, make sure
-    that /usr/local/lib is part of LD_LIBRARY_PATH. If you have set
-    $prefix so that the libraries are installed in a directory that's
-    included in ld.so.conf (on linux; other systems may use a slightly
-    different name) you don't have to use LD_LIBRARY_PATH but, but if
-    you don't use LD_LIBRARY_PATH, make sure to re-run ldconfig.
+    /usr/local/lib is part of LD_LIBRARY_PATH. If you have set $prefix so
+    that the libraries are installed in a directory that's included in
+    ld.so.conf (on linux; other systems may use a slightly different name)
+    you don't have to use LD_LIBRARY_PATH but, but if you don't use
+    LD_LIBRARY_PATH, make sure to re-run ldconfig.
 
 REQUIREMENTS
 
@@ -78,7 +77,8 @@ REQUIREMENTS
     library. You must have libcurl version 7.10.6 or newer and libxml2 2.5.7
     or newer. We provide source versions of the packages on the web site; the
     web pages for these projects are: http://curl.haxx.se/ and
-    http://xmlsoft.org/.
+    http://xmlsoft.org/. Modern Linux and recent OS/X distributions include
+    these libraries.
 
   o If you are concerned about introducing problems with your OS's package
     system, build and install curl, et c., into a special directory (e.g.,
@@ -114,9 +114,9 @@ NOTES
     DejaGNU and the CppUnit unit testing package. It is very simple to
     install these and we're very willing to help, so don't be shy!
 
-  o If you are developing code that uses the DAP, get autoconf and SVN. We
-    maintain a SVN-managed source tree that people outside the group may
-    access. See http://scm.opendap.org:8090/trac/
+  o If you are developing code that uses the DAP, get autoconf and subversion
+    (SVN). We maintain a SVN-managed source tree that people outside the
+    group may access. See http://scm.opendap.org:8090/trac/
 
   o The gnulib software is used to provide replacement functions when
     autoconf detects that is necessary. To update the gnulib, check it out
@@ -127,18 +127,21 @@ NOTES
 
   o To build a rpm file for a source or binary distribution use 'make rpm' or 
     'make srpm'. These targets should run 'make dist' to build the required
-    tar.gz file first. You may need root privleges for these targets to work.
+    tar.gz file first. You may need root privileges for these targets to work.
     
-  o To build a Mac OS/X package, use the 'pkg' target of the Makfile
-    and then start PackageMaker and open libdap_osx_package.pmsp.
-    Make sure to update Welcome.html, ReadMe.txt and License.txt. Note
-    that those files can be edited fairly easily in emacs using
-    set-fill-column 55 (if they are wider than 55 columns they look
-    awful). Since a .pkg file is really a directory (aka bundle) you'll
-    need to put the in either a tar.gz file or a disk image. To make a
-    disk image use DiskUtility and choose 'New Image.' Make the disk
-    image 300k bigger then the size of the package. Once created, copy
-    the package to the image.
+  o To build a Mac OS/X package, use the 'pkg' target. Read over the target
+    to get a feel for how it works. Then edit the Welcome.html, ReadMe.txt
+    and License.txt if needed. Start PackageMaker and check that all the
+    paths are set correctly. Exit PackageMaker and use the 'pkg' target to
+    build the package. Note that the .txt files look best when the text uses
+    newlines to separate paragraphs only (and not line ends). Since a .pkg
+    file is really a directory (aka bundle) you'll need to put the in either
+    a tar.gz file or a disk image. To make a disk image, use DiskUtility and
+    choose 'New Image' or use the DropDMG application available from the web.
+    If using DiskUtility, make the disk image 300k bigger then the size of
+    the package. Once created, copy the package to the image. Include copies
+    of the README, INSTALL, NEWS, et c., files in the disk image so that
+    people do not have to use the installer to read them.
 
   o DEBUGGING AIDS
 

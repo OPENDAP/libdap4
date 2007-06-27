@@ -1,23 +1,32 @@
 
 $Id$
 
+Updated for version 3.7.8 (26 June 2007)
+
+The major fixes in this version are memory errors found and fixed in the
+Regex class and HTTP header processing software. This version also supports
+pkg-config on hosts that have that installed.
+
+See NEWS for more information about changes for this version and ChangeLog
+for the gory details.
+
 Notes for version 3.7.7 (2 May 2007)
 
-The major fix here is to he source build. We've fixed the issue where source
-builds failed to make teh dapserver and dapclient libraries.
+The major fix here is to the source build. We've fixed the issue where source
+builds failed to make the dapserver and dapclient libraries.
 
 Notes for version 3.7.6 (12 March 2007)
 
 Two bug fixes, both minor. Problems in the linear_scale() constraint
 expression function and a bad/missing #include in GNURegex.h were fixed.
 
-Ther was an error in the INSTALL file sent out in the previous release. It
+There was an error in the INSTALL file sent out in the previous release. It
 said this library implemented DAP version 3.2, but in fact it implements
 version 3.1. The version 3.2 release will be along soon (RSN).
 
 Notes for version 3.7.5 (7 Feb 2007)
 
-This version includes many fixes from teh first Server4 beta release
+This version includes many fixes from the first Server4 beta release
 plus fixes for the server-side functions. It also includes a smoother
 Win32 build.
 
@@ -44,7 +53,7 @@ used. The version function takes one optional argument which may be the strings
 'help' or 'xml'. Use 'help' to get help on using the function; use 'xml' to get
 version information encoded using XML instead of plain text:
 
-<<< I formated these so they are more readable >>>
+<<< I formatted these so they are more readable >>>
 
 [jimg@zoe libdap]$ url=http://test.opendap.org/dap/data/nc/coads_climatology.nc
 [jimg@zoe libdap]$ ./getdap -D "$url?version()"
@@ -187,10 +196,10 @@ Version 3.6.1 is bug fix release.
 NOTES for version 3.6.0
 
 This version of the library may not work older source code. Many of the 
-depracated methods have been removed. 
+deprecated methods have been removed. 
 
 Added are headers which send information about the version of the DAP protocol
-that the library implements (in contrast to the implementation of the libray
+that the library implements (in contrast to the implementation of the library
 itself). A new header named XOPeNDAP-Server is used to send information about
 the implementation of servers.
 
@@ -254,7 +263,7 @@ WHAT ELSE IS THERE?
   package which uses autoconf for its builds. See the file for more
   information.
 
-  We also have Java and C versions of the DAP2 library which interoperate
+  We also have Java and C versions of the DAP2 library which inter-operate
   with software which uses this library. In other words, client programs
   built with the Java DAP2 implementation can communicate with servers built
   with this (C++) implementation of the DAP2. The C DAP2 library, called the
@@ -263,12 +272,12 @@ WHAT ELSE IS THERE?
   libraries. Note that the Ocapi is in early beta and available only from CVS
   at this time (5 May 2005).
   
-THREAD SAFTEY
+THREAD SAFETY
 
   We don't need to do this since the STL is also not thread safe. Users of 
   libdap have to be sure that multiple threads never make simultaneous and/or
   overlapping calls to a single copy of libdap. If several threads are part
-  of a program and each will make calls to libdap, either thos ethreads must
+  of a program and each will make calls to libdap, either those threads must
   synchronize their calls or arrange to each use their own copy of libdap. 
   Some aspects of the library ''are'' thread-safe: the singleton classes are 
   all protected as is the HTTP cache (which uses the local file system).
