@@ -7,7 +7,7 @@ AUTOMAKE_OPTIONS = foreign
 
 # Headers in 'tests' are used by the arrayT unit tests.
 
-AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU -I$(top_srcdir)/tests
+AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests
 AM_CXXFLAGS = 
 
 # These are not used by automake but are often useful for certain types of
