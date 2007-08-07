@@ -163,7 +163,7 @@ CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 	AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc  \
 	util_mit.cc ResponseTooBigErr.cc
 
-SERVER_SRC = DODSFilter.cc cgi_util.cc OPeNDAPFile.cc OPeNDAPDir.cc 
+SERVER_SRC = DODSFilter.cc cgi_util.cc
 
 DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	BaseType.h Byte.h Int32.h Float64.h Str.h Url.h Vector.h Array.h   \
@@ -194,8 +194,7 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h	 \
 	AISResources.h Resource.h
 
-SERVER_HDR = DODSFilter.h cgi_util.h AlarmHandler.h EventHandler.h	\
-	OPeNDAPFile.h OPeNDAPDir.h	
+SERVER_HDR = DODSFilter.h cgi_util.h AlarmHandler.h EventHandler.h
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support
