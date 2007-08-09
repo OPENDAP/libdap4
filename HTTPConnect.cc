@@ -129,6 +129,7 @@ class ParseHeader : public unary_function<const string &, void>
     ObjectType type;  // What type of object is in the stream?
     string server;  // Server's version string.
     string protocol;            // Server's protocol version.
+    string location;            // Url returned by server
 
 public:
     ParseHeader() : type(unknown_type), server("dods/0.0"), protocol("2.0")
@@ -179,6 +180,12 @@ public:
             DBG2(cout << name << ": " << value << endl);
             server = value;
         }
+       	else if (name == "location:") {
+       	    string value; 
+       	    line >> value;
+       	    DBG2(cout << name << ": " << value << endl);
+       	    location = value;
+        }
         else if (type == unknown_type && name == "content-type:"
                  && line.str().find("text/html") != string::npos) {
             DBG2(cout << name << ": text/html..." << endl);
@@ -199,6 +206,10 @@ public:
     string get_protocol()
     {
         return protocol;
+    }
+
+    string get_location() {
+	   return location;
     }
 };
 
@@ -560,6 +571,12 @@ HTTPConnect::fetch_url(const string &url)
 
     parser = for_each(stream->get_headers()->begin(),
                       stream->get_headers()->end(), ParseHeader());
+
+    // handle redirection case (2007-04-27, gaffigan@sfos.uaf.edu)
+    if (parser.get_location() != "" &&
+	url.substr(0,url.find("?",0)).compare(parser.get_location().substr(0,url.find("?",0))) != 0) {
+           return fetch_url(parser.get_location());
+    }
 
     stream->set_type(parser.get_object_type());
     stream->set_version(parser.get_server());
