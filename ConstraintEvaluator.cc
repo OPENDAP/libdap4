@@ -153,7 +153,7 @@ ConstraintEvaluator::append_clause(btp_func func, rvalue_list *args)
     these constants are never accessed from the list. The list is simply
     a convenient way to make sure the constants are disposed of properly.
 
-    the constraint expression parser. */
+    @todo Update this comment (ConstraintEvaluator, not DDS. */
 void
 ConstraintEvaluator::append_constant(BaseType *btp)
 {

@@ -56,17 +56,23 @@ extern void *Error_buffer(FILE *fp);
 extern void Errorrestart(FILE *yyin); // defined in Error.tab.c
 extern int Errorparse(void *arg);
 
-static const char *err_messages[] =
-    {"Unknown error", "No such file",
-     "No such variable", "Malformed expression",
-     "No authorization", "Cannot read file"
-    };
+// There are two entries for 'cannot read file' because of an error made 
+// when the message was first added to this class. 
+static const char *err_messages[] = {
+    "Undefined error",
+    "Unknown error",
+    "Internal error",
+    "No such file",
+    "No such variable",
+    "Malformed expression",
+    "No authorization",
+    "Cannot read file",
+    "Cannot read file"
+};
 
 /** Specializations of Error should use this to set the error code and
     message. */
-Error::Error()
-        : _error_code(undefined_error), _error_message(""),
-        _program_type(undefined_prog_type), _program(0)
+Error::Error() : _error_code(undefined_error), _error_message("")
 {}
 
 /** Create an instance with a specific code and message string. This ctor
@@ -79,8 +85,7 @@ Error::Error()
     @param ec The error code
     @param msg The error message string. */
 Error::Error(ErrorCode ec, string msg)
-        : _error_code(ec), _error_message(msg),
-        _program_type(undefined_prog_type), _program(0)
+        : _error_code(ec), _error_message(msg)
 {}
 
 /** Create an instance with a specific message. The error code is set to \c
@@ -89,33 +94,17 @@ Error::Error(ErrorCode ec, string msg)
     @param msg The error message.
     @see ErrorCode */
 Error::Error(string msg)
-        : _error_code(unknown_error), _error_message(msg),
-        _program_type(undefined_prog_type), _program(0)
+        : _error_code(unknown_error), _error_message(msg)
 {}
-#if 0
-/** @deprecated The error-correction program feature is deprecated. */
-Error::Error(ErrorCode ec, string msg, ProgramType pt, char *pgm)
-        : _error_code(ec), _error_message(msg),
-        _program_type(pt), _program(0)
-{
-    _program = new char[strlen(pgm) + 1];
-    strcpy(_program, pgm);
-}
-#endif
+
 Error::Error(const Error &copy_from)
         : _error_code(copy_from._error_code),
-        _error_message(copy_from._error_message),
-        _program_type(copy_from._program_type), _program(0)
+        _error_message(copy_from._error_message)
 {
-    if (copy_from._program) {
-        _program = new char[strlen(copy_from._program) + 1];
-        strcpy(_program, copy_from._program);
-    }
 }
 
 Error::~Error()
 {
-    delete _program; _program = 0;
 }
 
 Error &
@@ -128,13 +117,6 @@ Error::operator=(const Error &rhs)
     else {
         _error_code = rhs._error_code;
         _error_message = rhs._error_message;
-        _program_type = rhs._program_type;
-
-        delete[] _program; _program = 0;
-        if (rhs._program) {
-            _program = new char[strlen(rhs._program) + 1];
-            strcpy(_program, rhs._program);
-        }
 
         assert(this->OK());
 
@@ -228,35 +210,16 @@ Error::print(FILE *out) const
         fprintf(out, "    message = %s;\n", _error_message.c_str()) ;
     else
         fprintf(out, "    message = \"%s\";\n", _error_message.c_str()) ;
-
+#if 0
     if (_program_type != undefined_prog_type) {
         fprintf(out, "    program_type = %d;\n",
                 static_cast<int>(_program_type)) ;
         fprintf(out, "    program = %s;\n", _program) ;
     }
-
+#endif
     fprintf(out, "};\n") ;
 }
-#if 0
-/** @deprecated Use the set/get methods instead. */
-ErrorCode
-Error::error_code(ErrorCode ec)
-{
-    assert(OK());
-    if (ec == undefined_error)
-        return _error_code;
-    else {
-        _error_code = ec;
-        // Added check to make sure that messages is not accessed beyond its
-        // bounds. 02/02/04 jhrg
-        if (_error_message == ""
-            && ec > undefined_error && ec <= cannot_read_file)
-            _error_message = err_messages[ec - undefined_error - 1];
 
-        return _error_code;
-    }
-}
-#endif
 /** Get the ErrorCode for this instance. */
 ErrorCode
 Error::get_error_code() const
@@ -278,22 +241,14 @@ Error::set_error_code(ErrorCode ec)
     // Added check to make sure that messages is not accessed beyond its
     // bounds. 02/02/04 jhrg
     if (_error_message.empty()
-        && ec > undefined_error && ec <= cannot_read_file)
-        _error_message = err_messages[ec - undefined_error - 1];
-}
-#if 0
-/** @deprecated Use the set/get methods instead. */
-string
-Error::error_message(string msg)
-{
-    if (msg == "")
-        return string(_error_message);
+        && ec > undefined_error && ec <= cannot_read_file) {
+        _error_message = err_messages[ec - undefined_error];
+    }
     else {
-        _error_message = msg;
-        return string(_error_message);
+        _error_message = err_messages[undefined_error];
     }
 }
-#endif
+
 /** Return the current error message. */
 string
 Error::get_error_message() const
@@ -309,81 +264,3 @@ Error::set_error_message(string msg)
 {
     _error_message = msg;
 }
-#if 0
-/** @deprecated Use get_error_message() instead. */
-void
-Error::display_message(void *) const
-{
-    assert(OK());
-    cerr << _error_message << endl;
-}
-
-/** @deprecated The error-correction program feature is deprecated. */
-ProgramType
-Error::program_type(ProgramType pt)
-{
-    assert(OK());
-    if (pt == undefined_prog_type)
-        return _program_type;
-    else {
-        _program_type = pt;
-        return _program_type;
-    }
-}
-
-/** @deprecated The error-correction program feature is deprecated. */
-ProgramType
-Error::get_program_type() const
-{
-    assert(OK());
-
-    return _program_type;
-}
-
-/** @deprecated The error-correction program feature is deprecated. */
-void
-Error::set_program_type(ProgramType pt)
-{
-    _program_type = pt;
-}
-
-/** @deprecated The error-correction program feature is deprecated. */
-char *
-Error::program(char *pgm)
-{
-    if (pgm == 0)
-        return _program;
-    else {
-        _program = new char[strlen(pgm) + 1];
-        strcpy(_program, pgm);
-        return _program;
-    }
-}
-
-/** @deprecated The error-correction program feature is deprecated. */
-const char *
-Error::get_program() const
-{
-    return _program;
-}
-
-/** @deprecated The error-correction program feature is deprecated. */
-void
-Error::set_program(char *pgm)
-{
-    _program = new char[strlen(pgm) + 1];
-    strcpy(_program, pgm);
-}
-
-/** @deprecated The error-correction program feature is deprecated. */
-string
-Error::correct_error(void *) const
-{
-    assert(OK());
-    if (!OK())
-        return string("");
-
-    display_message(NULL);
-    return string("");
-}
-#endif

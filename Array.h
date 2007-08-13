@@ -37,9 +37,7 @@
 #ifndef _array_h
 #define _array_h 1
 
-
 #include <string>
-
 #include <vector>
 
 #ifndef _dods_limits_h
@@ -99,9 +97,9 @@ class Array: public Vector
 {
 public:
     /** Information about a dimension. Each Array has one or more dimensions.
-     For each of an Array's dimensions, a corresponding instance of this
-     struct holds the natural size, name, constraint information and
-     constrained size.
+        For each of an Array's dimensions, a corresponding instance of this
+        struct holds the natural size, name, constraint information and
+        constrained size.
 
         @note Instead of using this struct's fields directly, use Array's
         dimension accessor methods.
@@ -116,7 +114,9 @@ public:
         int stop;  ///< The constraint end index
         int stride;  ///< The constraint stride
         int c_size;  ///< Size of dimension once constrained
+#if array_selected
         bool selected; ///< \c True if a constraint has been applied to this dimension.
+#endif
     };
 
 private:
@@ -132,17 +132,17 @@ protected:
 
 public:
     /** A constant iterator used to access the various dimensions of an
-    Array. 
+        Array. 
 
         @see dim_begin()
-    @see dim_end() */
+        @see dim_end() */
     typedef std::vector<dimension>::const_iterator Dim_citer ;
     /** An iterator used to access the various dimensions of an
-    Array. Most of the methods that access various properties of a
-    dimension use an instance of Dim_iter.
+        Array. Most of the methods that access various properties of a
+        dimension use an instance of Dim_iter.
 
         @see dim_begin()
-    @see dim_end() */
+        @see dim_end() */
     typedef std::vector<dimension>::iterator Dim_iter ;
 
     Array(const string &n = "", BaseType *v = 0);

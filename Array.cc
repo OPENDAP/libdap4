@@ -41,11 +41,9 @@
 #include "debug.h"
 #include "InternalErr.h"
 #include "escaping.h"
-//#include "ArrayIterAdapter.h"
 
 #include <algorithm>
 #include <functional>
-
 
 using namespace std;
 
@@ -82,15 +80,13 @@ Array::update_length(int)
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new - The dtor for Vector will delete this object.
 
-/** The Array constructor requires the name of the variable to be
-    created, and the type of data the Array is to hold.  The name
-    may be omitted, which will create a nameless variable.  The
-    template pointer may also be omitted.  Note that if the template
-    pointer is omitted when the Array is created, it <i>must</i> be
-    added (with <tt>add_var()</tt>) before <tt>read()</tt> or
-    <tt>deserialize()</tt> is called.
+/** Build an array with a name and an element type. The name may be omitted,
+    which will create a nameless variable. The template (element type) pointer
+    may also be omitted, but if it is omitted when the Array is created, it 
+    \e must be added (with \cadd_var()) before \c read() or \c deserialize()
+    is called.
 
-    @note Force the Array::add_var() method to be used to add \e v.
+    @todo Force the Array::add_var() method to be used to add \e v.
     This version of add_var() calls Vector::add_var().
 
     @param n A string containing the name of the variable to be
@@ -101,7 +97,7 @@ Array::update_length(int)
 */
 Array::Array(const string &n, BaseType *v) : Vector(n, 0, dods_array_c)
 {
-    add_var(v);
+    add_var(v); // Vector::add_var() stores null is v is null
 }
 
 /** @brief The Array copy constructor. */
@@ -198,8 +194,9 @@ Array::append_dim(int size, string name)
     d.stop = size - 1;
     d.stride = 1;
     d.c_size = size;
+#if 0
     d.selected = true;  // assume all dims selected.
-
+#endif
     _shape.push_back(d);
 
     update_length(size);
@@ -221,26 +218,28 @@ Array::reset_constraint()
         (*i).stop = (*i).size - 1;
         (*i).stride = 1;
         (*i).c_size = (*i).size;
-
+#if 0
         (*i).selected = true;
-
+#endif
         update_length((*i).size);
     }
 }
 
 
 /** Tell the Array object to clear the constraint information about
-    dimensions. Do this <i>once</i> before calling
-    <tt>add_constraint()</tt> for each new constraint expression. Only
-    the dimensions explicitly selected using <tt>add_constraint()</tt>
-    will be sent.
+    dimensions. Do this <i>once</i> before calling <tt>add_constraint()</tt> 
+    for each new constraint expression. Only the dimensions explicitly 
+    selected using <tt>add_constraint()</tt> will be sent.
 
+    @deprecated This should never be used. 
     @brief Clears the projection; add each projected dimension explicitly using
     <tt>add_constraint</tt>.
 */
 void
 Array::clear_constraint()
 {
+    reset_constraint();
+#if 0
     for (Dim_iter i = _shape.begin(); i != _shape.end(); i++) {
         (*i).start = 0;
         (*i).stop = 0;
@@ -250,15 +249,14 @@ Array::clear_constraint()
     }
 
     set_length(-1);
+#endif
 }
-
-// the start and stop indexes are inclusive.
 
 // Note: MS VC++ won't tolerate embedded newlines in strings, hence the \n
 // is explicit.
 static const char *array_sss = \
-                               "Invalid constraint parameters: At least one of the start, stride or stop \n\
-                               specified do not match the array variable.";
+"Invalid constraint parameters: At least one of the start, stride or stop \n\
+specified do not match the array variable.";
 
 /** Once a dimension has been created (see append_dim()), it can
     be constrained.  This will make the array appear to the rest
@@ -301,9 +299,9 @@ Array::add_constraint(Dim_iter i, int start, int stride, int stop)
     d.c_size = (stop - start) / stride + 1;
 
     DBG(cerr << "add_constraint: c_size = " << d.c_size << endl);
-
+#if 0
     d.selected = true;
-
+#endif
     update_length(d.c_size);
 }
 
@@ -331,10 +329,12 @@ Array::dim_end()
 */
 
 unsigned int
-Array::dimensions(bool constrained)
+Array::dimensions(bool /*constrained*/)
 {
     unsigned int dim = 0;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
+        dim++;
+#if 0
         if (constrained) {
             if ((*i).selected)
                 dim++;
@@ -342,6 +342,7 @@ Array::dimensions(bool constrained)
         else {
             dim++;
         }
+#endif
     }
 
     return dim;
@@ -369,7 +370,14 @@ Array::dimension_size(Dim_iter i, bool constrained)
 {
     int size = 0;
 
-    if (!_shape.empty())
+    if (!_shape.empty()) {
+        if (constrained)
+            size = (*i).c_size;
+        else
+            size = (*i).size;
+    }
+    
+#if 0    
         if (constrained) {
             if ((*i).selected)
                 size = (*i).c_size;
@@ -378,6 +386,7 @@ Array::dimension_size(Dim_iter i, bool constrained)
         }
         else
             size = (*i).size;
+#endif
 
     return size;
 }
@@ -401,11 +410,17 @@ Array::dimension_size(Dim_iter i, bool constrained)
     @return The desired start index.
 */
 int
-Array::dimension_start(Dim_iter i, bool constrained)
+Array::dimension_start(Dim_iter i, bool /*constrained*/)
 {
+    return (!_shape.empty()) ? (*i).start : 0;
+    
+#if 0
     int start = 0;
 
     if (!_shape.empty())
+        start = (*i).start;
+        
+#if array_selected
         if (constrained) {
             if ((*i).selected)
                 start = (*i).start;
@@ -414,8 +429,10 @@ Array::dimension_start(Dim_iter i, bool constrained)
         }
         else
             start = (*i).start;
+#endif
 
     return start;
+#endif
 }
 
 /** Use this function to return the stop index of an array
@@ -437,11 +454,17 @@ Array::dimension_start(Dim_iter i, bool constrained)
     @return The desired stop index.
 */
 int
-Array::dimension_stop(Dim_iter i, bool constrained)
+Array::dimension_stop(Dim_iter i, bool /*constrained*/)
 {
+    return (!_shape.empty()) ? (*i).stop : 0;
+    
+#if 0
     int stop = 0;
 
     if (!_shape.empty())
+        stop = (*i).stop;
+    
+#if array_selected
         if (constrained) {
             if ((*i).selected)
                 stop = (*i).stop;
@@ -450,8 +473,10 @@ Array::dimension_stop(Dim_iter i, bool constrained)
         }
         else
             stop = (*i).stop;
+#endif
 
     return stop;
+#endif
 }
 
 /** Use this function to return the stride value of an array
@@ -474,11 +499,17 @@ Array::dimension_stop(Dim_iter i, bool constrained)
     is TRUE and the dimension is not selected.
 */
 int
-Array::dimension_stride(Dim_iter i, bool constrained)
+Array::dimension_stride(Dim_iter i, bool /*constrained*/)
 {
+    return (!_shape.empty()) ? (*i).stride : 0;
+    
+#if 0
     int stride = 0;
 
     if (!_shape.empty())
+        stride = (*i).stride;
+    
+#if array_selected
         if (constrained) {
             if ((*i).selected)
                 stride = (*i).stride;
@@ -487,8 +518,10 @@ Array::dimension_stride(Dim_iter i, bool constrained)
         }
         else
             stride = (*i).stride;
+#endif
 
     return stride;
+#endif
 }
 
 /** This function returns the name of the dimension indicated with
@@ -543,8 +576,10 @@ Array::print_decl(FILE *out, string space, bool print_semi,
     var()->print_decl(out, space, false, constraint_info, constrained);
 
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
+#if 0
         if (constrained && !((*i).selected))
             continue;
+#endif
         fprintf(out, "[") ;
         if ((*i).name != "") {
             fprintf(out, "%s = ", id2www((*i).name).c_str()) ;
@@ -679,7 +714,7 @@ Array::print_val(FILE *out, string space, bool print_decl_p)
         fprintf(out, " = ") ;
     }
 
-    unsigned int dims = dimensions(true);
+    unsigned int dims = _shape.size(); // dimensions(true);
     unsigned int *shape = new unsigned int[dims];
     unsigned int index = 0;
     for (Dim_iter i = _shape.begin(); i != _shape.end(); i++)
@@ -743,7 +778,9 @@ Array::dump(ostream &strm) const
         strm << DapIndent::LMarg << "stride: " << (*i).stride << endl ;
         strm << DapIndent::LMarg << "constrained size: " << (*i).c_size
         << endl ;
+#if 0
         strm << DapIndent::LMarg << "selected: " << (*i).selected << endl ;
+#endif
         DapIndent::UnIndent() ;
     }
     DapIndent::UnIndent() ;

@@ -182,7 +182,7 @@ DAS::parse(string fname)
     FILE *in = fopen(fname.c_str(), "r");
 
     if (!in) {
-        throw Error(can_not_read_file, "Could not open: " + fname);
+        throw Error(cannot_read_file, "Could not open: " + fname);
     }
 
     parse(in);

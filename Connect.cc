@@ -48,6 +48,7 @@ static char rcsid[] not_used =
 #endif
 
 #include <fstream>
+#include <algorithm>
 
 #include "debug.h"
 #include "DataDDS.h"
@@ -60,6 +61,7 @@ using std::cerr;
 using std::endl;
 using std::ifstream;
 using std::ofstream;
+using std::min;
 
 extern ObjectType get_type(const string &value);
 
@@ -179,6 +181,7 @@ Connect::parse_mime(/*FILE *data_source, */Response *rs)
     fgets(line, 255, data_source);
 
     int slen = strlen(line);
+    slen = min(slen, 256); // use min to limit slen to 256 (fortify)
     line[slen - 1] = '\0'; // remove the newline
     if (line[slen - 2] == '\r') // ...and the preceding carriage return
         line[slen - 2] = '\0';
@@ -215,6 +218,7 @@ Connect::parse_mime(/*FILE *data_source, */Response *rs)
 
         fgets(line, 255, data_source);
         slen = strlen(line);
+        slen = min(slen, 256); // use min to limit slen to 256
         line[slen - 1] = '\0';
         if (line[slen - 2] == '\r')
             line[slen - 2] = '\0';

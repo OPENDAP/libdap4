@@ -315,7 +315,11 @@ ErrMsgT(const string &Msgt)
         strcpy(TimStr, ctime(&TimBin));
         TimStr[TimLen - 2] = '\0'; // overwrite the \n
     }
-
+    
+#if 0
+	// This was removed because writing these values out 'leaks' system information.
+	// Since we're not going to write out the script or host, I also removed the 
+	// calls to getenv(). jhrg 8/7/2007
     const char *host_or_addr = getenv("REMOTE_HOST") ? getenv("REMOTE_HOST") :
                                getenv("REMOTE_ADDR") ? getenv("REMOTE_ADDR") : "local (a non-CGI run)";
     const char *script = getenv("SCRIPT_NAME") ? getenv("SCRIPT_NAME") :
@@ -323,6 +327,8 @@ ErrMsgT(const string &Msgt)
 
     cerr << "[" << TimStr << "] CGI: " << script << " failed for "
     << host_or_addr << ": " << Msgt << endl;
+#endif
+    cerr << "[" << TimStr << "] DAP server error: " << Msgt << endl;
 }
 
 // Given a pathname, return just the filename component with any extension
@@ -420,11 +426,6 @@ rfc822_date(const time_t t)
 
     sprintf(d, "%s, %02d %s %4d %02d:%02d:%02d GMT", days[stm->tm_wday],
             stm->tm_mday, months[stm->tm_mon],
-#if 0
-            // On Solaris 2.7 this tm_year is years since 1900. 3/17/2000
-            // jhrg
-            stm->tm_year < 100 ? 1900 + stm->tm_year : stm->tm_year,
-#endif
             1900 + stm->tm_year,
             stm->tm_hour, stm->tm_min, stm->tm_sec);
     return string(d);

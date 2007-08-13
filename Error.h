@@ -36,7 +36,6 @@
 #ifndef _error_h
 #define _error_h
 
-
 #include <stdio.h>  // For FILE *
 
 #include <iostream>
@@ -61,17 +60,10 @@ typedef int ErrorCode; //using standard errno+netCDF error codes from server
 #define    no_such_variable  1004
 #define    malformed_expr    1005
 #define    no_authorization  1006
-#define    can_not_read_file 1007
-#define    cannot_read_file  1008
-//@}
+#define    cannot_read_file  1007
+#define    dummy_message     1008 // Dumplicate of 1007; see Error.cc
 
-/** @deprecated Use of the error-correction program feature is deprecated. */
-enum ProgramType {
-    undefined_prog_type = -1,
-    no_program,   // if there is no program
-    java,
-    tcl
-};
+//@}
 
 /** The Error class is used to transport error information from the server to
     the client within libdap. This class is also the base class for all the
@@ -97,18 +89,12 @@ class Error
 protected:
     ErrorCode _error_code;
     string _error_message;
-    ProgramType _program_type; ///< deprecated; don't use
-    char *_program;  ///< deprecated; don't use
 
 public:
     /// Create an instance with an error code and a message
     Error(ErrorCode ec, string msg);
     /// Create an instance with the unknown_error code.
     Error(string msg);
-#if 0
-    /// Deprecated.
-    Error(ErrorCode ec, string msg, ProgramType pt, char *pgm);
-#endif
     /// Create a default Error object.
     Error();
 
@@ -133,28 +119,6 @@ public:
     void set_error_code(ErrorCode ec = undefined_error);
     /// Set the error message.
     void set_error_message(string msg = "");
-#if 0
-    /// Deprecated
-    ProgramType get_program_type() const;
-    /// Deprecated
-    const char *get_program() const;
-    /// Deprecated
-    void set_program_type(ProgramType pt = undefined_prog_type);
-    /// Deprecated
-    void set_program(char *program);
-    /// Deprecated
-    void display_message(void *gui = 0) const;
-    /// Deprecated
-    string correct_error(void *gui) const;
-    /// Deprecated
-    string error_message(string msg = "");
-    /// Deprecated
-    ProgramType program_type(ProgramType pt = undefined_prog_type);
-    /// Deprecated
-    char *program(char *program = 0);
-    /// Deprecated
-    ErrorCode error_code(ErrorCode ec = undefined_error);
-#endif
 };
 
 #endif // _error_h

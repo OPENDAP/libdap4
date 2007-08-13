@@ -73,6 +73,7 @@ static char rcsid[] not_used =
 #include "Error.h"
 #include "parser.h"
 #include "util.h"
+#include "GNURegex.h"
 #include "debug.h"
 
 
@@ -575,22 +576,38 @@ char *
 get_tempfile_template(char *file_template)
 {
     char *c;
+    
 #ifdef WIN32
-    if (getenv("TEMP") && (access(getenv("TEMP"), 6) == 0))
-        c = getenv("TEMP");
-    else if (getenv("TMP"))
-        c = getenv("TMP");
-#else
-    if (getenv("TMPDIR") && (access(getenv("TMPDIR"), W_OK | R_OK) == 0))
-        c = getenv("TMPDIR");
-#ifdef P_tmpdir
-    else if (access(P_tmpdir, W_OK | R_OK) == 0)
-        c = P_tmpdir;
-#endif
-#endif
-    else
-        c = ".";
+	// whitelist for a WIN32 directory
+	Regex directory("[-a-zA-Z0-9_\]*");
+	
+	c = getenv("TEMP");
+    if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0)
+    	goto valid_temp_directory;
 
+    c= getenv("TMP");
+    if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0)
+    	goto valid_temp_directory;
+#else
+	// whitelist for a directory
+	Regex directory("[-a-zA-Z0-9_//]*");
+	
+	c = getenv("TMPDIR");
+	if (c && directory.match(c, strlen(c)) && (access(c, W_OK | R_OK) == 0))
+    	goto valid_temp_directory;
+
+#ifdef P_tmpdir
+	if (access(P_tmpdir, W_OK | R_OK) == 0) {
+        c = P_tmpdir;
+        goto valid_temp_directory;
+	}
+#endif
+
+#endif  // WIN32
+
+    c = ".";
+    
+valid_temp_directory:
     char *temp = new char[strlen(c) + strlen(file_template) + 2];
     strcpy(temp, c);
     strcat(temp, "/");

@@ -110,14 +110,13 @@ SCAN_LESS	<
 SCAN_LESS_EQL	<=
 SCAN_REGEXP	=~
 
-NEVER		[^\-+a-zA-Z0-9_/%.\\#:;,(){}[\]*&<>=~]
+NEVER		[^\-+a-zA-Z0-9_/%.\\#:,(){}[\]&<>=~]
 
 %%
 
 "["    	    	return (int)*yytext;
 "]"    	    	return (int)*yytext;
 ":"    	    	return (int)*yytext;
-"*"		return (int)*yytext;
 ","		return (int)*yytext;
 "&"		return (int)*yytext;
 "("		return (int)*yytext;

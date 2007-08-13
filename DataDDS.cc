@@ -40,6 +40,7 @@ static char rcsid[] not_used =
 
 
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <string>
 

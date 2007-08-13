@@ -86,6 +86,17 @@ grammarclean: clean
 
 ###########################################################################
 
+# Fortify targets
+
+.PHONY: fortify
+fortify:
+	sourceanalyzer -b libdap $(MAKE)
+	sourceanalyzer -b libdap -scan -f libdap.fpr
+	@echo
+	@echo "Use auditwokbench to view the results"
+
+###########################################################################
+
 # Build linux RPMs
 
 srpm: dist
@@ -155,7 +166,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	lex.gse_.cc gse.tab.cc GeoConstraint.cc GridGeoConstraint.cc \
 	Clause.cc RValue.cc ConstraintEvaluator.cc ArrayGeoConstraint.cc \
 	DapIndent.cc Operators.h
-	
+
 # Operators.h is included in with the source to prevent it from bing installed
 # with the other headers. It includes one of the built grammar file headers.
 

@@ -62,6 +62,7 @@
 #define DODS_FLT_MAX 3.402823466E+38F  /* max decimal value of a "float" */
 #define DODS_FLT_MIN 1.175494351E-38F  /* min decimal value of a "float" */
 
+/* This constant should not be used. */
 #define DODS_MB_LEN_MAX 4
 
 #endif // _dods_limits_h

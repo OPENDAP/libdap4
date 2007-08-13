@@ -1684,7 +1684,7 @@ HTTPCache::read_metadata(const string &cachename, vector<string> &headers)
 
     char line[1024];
     while (!feof(md) && fgets(line, 1024, md)) {
-        line[strlen(line)-1] = '\0'; // erase newline
+        line[min(1024, static_cast<int>(strlen(line)))-1] = '\0'; // erase newline
         headers.push_back(string(line));
     }
 

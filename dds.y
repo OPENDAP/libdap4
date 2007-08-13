@@ -193,7 +193,8 @@ declaration:  base_type var ';'
 		      error_exit_cleanup();
 		      YYABORT;
 		    }
-                    strcpy($$,$2);
+                    strncpy($$,$2,ID_MAX);
+                    $$[ID_MAX-1] = '\0';
 		}
 
 		| structure  '{' declarations '}' 
@@ -212,7 +213,8 @@ declaration:  base_type var ';'
 		      error_exit_cleanup();
 		      YYABORT;
 		    }
-                    strcpy($$,$6);
+                    strncpy($$,$6,ID_MAX);
+                    $$[ID_MAX-1] = '\0';
 		}
 
 		| sequence '{' declarations '}' 
@@ -231,7 +233,8 @@ declaration:  base_type var ';'
 		      error_exit_cleanup();
 		      YYABORT;
 		    }
-                    strcpy($$,$6);
+                    strncpy($$,$6,ID_MAX);
+                    $$[ID_MAX-1] = '\0';
 		}
 
 		| grid '{' SCAN_WORD ':'
@@ -276,7 +279,8 @@ declaration:  base_type var ';'
 		      error_exit_cleanup();
 		      YYABORT;
 		    }
-                    strcpy($$,$13);
+                    strncpy($$,$13,ID_MAX);
+                    $$[ID_MAX-1] = '\0';
 		}
 
                 | error 
