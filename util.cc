@@ -608,7 +608,12 @@ get_tempfile_template(char *file_template)
     c = ".";
     
 valid_temp_directory:
-    char *temp = new char[strlen(c) + strlen(file_template) + 2];
+	// Sanitize allocation
+	int size = strlen(c) + strlen(file_template) + 2;
+	if (!size_ok(1, size))
+		throw Error("Bad temporary file name.");
+		
+    char *temp = new char[size];
     strcpy(temp, c);
     strcat(temp, "/");
 

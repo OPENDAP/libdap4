@@ -170,8 +170,8 @@ Error::parse(FILE *fp)
         Error_delete_buffer(buffer);
     }
     catch (Error &e) {
-        throw InternalErr(__FILE__, __LINE__, e.get_error_message());
         Error_delete_buffer(buffer);
+        throw InternalErr(__FILE__, __LINE__, e.get_error_message());
     }
 
     // STATUS is the result of the parser function; if a recoverable error

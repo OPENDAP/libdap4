@@ -86,16 +86,16 @@ grammarclean: clean
 
 ###########################################################################
 
-# Fortify targets
+# Fortify targets. These 
 
 .PHONY: fortify_gl
-fortify_gl:
+fortify_gl: dods-datatypes.h
 	(cd gl && sourceanalyzer -b libdap_gl -clean $(MAKE) )
 	$(MAKE) 
 	sourceanalyzer -b libdap_gl -scan -f libdap_gl.fpr
 
 .PHONY: fortify
-fortify:
+fortify: dods-datatypes.h
 	(cd gl && $(MAKE) )
 	sourceanalyzer -b libdap_server $(MAKE) libdap.la libdapserver.la
 	sourceanalyzer -b libdap_server -scan -f libdap_server.fpr

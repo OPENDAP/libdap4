@@ -49,6 +49,7 @@ static char rcsid[] not_used =
 #include "RValue.h"
 #include "DDS.h"
 #include "dods-limits.h"
+#include "util.h"
 
 using namespace std;
 
@@ -98,9 +99,9 @@ build_btp_args(rvalue_list *args, DDS &dds, const string &dataset)
     if (args)
         argc = args->size();
         
-    // Limit argc to avoid an integer overflow.
-    if (argc < 0 || argc >= DODS_INT_MAX)
-    	throw Error(malformed_expr, "Too many argument to the function");
+    // Sanitize allocation size
+    if (!size_ok(sizeof(BaseType*), argc+1))
+    	throw Error(malformed_expr, "Malformed arguments to the function");
 
     // Add space for a null terminator
     BaseType **argv = new BaseType *[argc + 1];

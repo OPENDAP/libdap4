@@ -703,11 +703,10 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
         // by this call. The caller of the function must free the pointer.
         return gc.get_constrained_grid();
     }
-    catch (Error & e) {
-        throw;
+    catch (Error &e) {
+        throw e;
     }
     catch (exception & e) {
-        throw
         InternalErr(string
                     ("A C++ exception was thrown from inside geogrid(): ")
                     + e.what());
@@ -1071,10 +1070,9 @@ function_geoarray(int argc, BaseType * argv[], DDS &, const string & dataset)
         return agc->get_constrained_array();
     }
     catch (Error & e) {
-        throw;
+        throw e;
     }
     catch (exception & e) {
-        throw
         InternalErr(string
                     ("A C++ exception was thrown from inside geoarray(): ")
                     + e.what());
