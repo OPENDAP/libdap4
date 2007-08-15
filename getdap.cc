@@ -29,7 +29,7 @@
 // Authors:
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
-// This is the source to `geturl'; a simple tool to exercise the Connect
+// This is the source to `getdap'; a simple tool to exercise the Connect
 // class. It can be used to get naked URLs as well as the DAP2 DAS and DDS
 // objects.  jhrg.
 
@@ -55,7 +55,7 @@ static char rcsid[] not_used =
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision$";
+const char *version = CVER " (" DVR " DAP/" DAP_PROTOCOL_VERSION ")";
 
 extern int dods_keep_temps;     // defined in HTTPResponse.h
 
@@ -115,7 +115,7 @@ void usage(string name)
 bool read_data(FILE * fp)
 {
     if (!fp) {
-        fprintf(stderr, "geturl: Whoa!!! Null stream pointer.\n");
+        fprintf(stderr, "getdap: Whoa!!! Null stream pointer.\n");
         return false;
     }
     // Changed from a loop that used getc() to one that uses fread(). getc()
@@ -146,7 +146,7 @@ static void print_data(DDS & dds, bool print_rows = false)
 
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "idaDxXAVvkB:c:m:zsh?");
+    GetOpt getopt(argc, argv, "idaDxXAVvkB:c:m:zsh?H");
     int option_char;
 
     bool get_das = false;
@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
             use_ais = true;
             break;
         case 'V':
-            fprintf(stderr, "geturl version: %s\n", version);
+            fprintf(stderr, "getdap version: %s\n", version);
             exit(0);
         case 'i':
             get_version = true;
@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
                         url->read_data(dds, r);
                     }
                     else {
-                        r = new Response(fopen(argv[i], "r"));
+                        r = new Response(fopen(argv[i], "r"), 0);
 
                         if (!r->get_stream())
                             throw Error(string("The input source: ")
@@ -375,7 +375,7 @@ int main(int argc, char *argv[])
                         fprintf(stderr, "DDX:\n");
                     }
 
-                    dds.print_xml(stdout, false, "geturl; no blob yet");
+                    dds.print_xml(stdout, false, "getdap; no blob yet");
                 }
             }
 
@@ -402,7 +402,7 @@ int main(int argc, char *argv[])
                         fprintf(stderr, "Client-built DDX:\n");
                     }
 
-                    dds.print_xml(stdout, false, "geturl; no blob yet");
+                    dds.print_xml(stdout, false, "getdap; no blob yet");
                 }
             }
 

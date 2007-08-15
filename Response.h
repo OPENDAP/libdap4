@@ -76,13 +76,15 @@ protected:
 
 public:
     /** Initialize with a stream. Create an instance initialized to a stream.
-    by default get_type() and get_version() return default values of
-    unknown_type and "dods/0.0", respectively. Specializations (see
-    HTTPResponse and HTTPConnect) may fill these fields in with other
-    values. */
-    Response(FILE *s) : d_stream(s), d_type(unknown_type),
+	by default get_type() and get_version() return default values of
+	unknown_type and "dods/0.0", respectively. Specializations (see
+	HTTPResponse and HTTPConnect) may fill these fields in with other
+	values. 
+        @param s Read data from this stream.
+        @param status The HTTP response status code.*/
+    Response(FILE *s, int status) : d_stream(s), d_type(unknown_type),
             d_version("dods/0.0"), d_protocol("2.0"),
-            d_status(0)
+            d_status(status)
     { }
 
     /** Close the stream. */

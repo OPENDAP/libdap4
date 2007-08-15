@@ -56,7 +56,7 @@ Response *AISMerge::get_ais_resource(const string & res)
         if (!s)
             throw Error("I could not open local AIS resource '"
                         + res + "'.");
-        return new Response(s);
+        return new Response(s, 0);
     }
 }
 

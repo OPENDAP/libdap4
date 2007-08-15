@@ -558,6 +558,10 @@ HTTPConnect::~HTTPConnect()
 HTTPResponse *
 HTTPConnect::fetch_url(const string &url)
 {
+#ifdef HTTP_TRACE
+    cout << "GET " << url << " HTTP/1.0" << endl;
+#endif
+
     HTTPResponse *stream;
 
     if (d_http_cache && d_http_cache->is_cache_enabled()) {
@@ -567,10 +571,23 @@ HTTPConnect::fetch_url(const string &url)
         stream = plain_fetch_url(url);
     }
 
+#ifdef HTTP_TRACE
+    stringstream ss;
+    ss << "HTTP/1.0 " << stream->get_status() << " -" << endl;
+    for (size_t i = 0; i < stream->get_headers()->size(); i++) {
+	ss << stream->get_headers()->at(i) << endl;
+    }
+    cout << ss.str();
+#endif
+
     ParseHeader parser;
 
     parser = for_each(stream->get_headers()->begin(),
                       stream->get_headers()->end(), ParseHeader());
+
+#ifdef HTTP_TRACE
+    cout << endl << endl;
+#endif
 
     // handle redirection case (2007-04-27, gaffigan@sfos.uaf.edu)
     if (parser.get_location() != "" &&
@@ -670,7 +687,7 @@ HTTPConnect::caching_fetch_url(const string &url)
 
             vector<string> *headers = new vector<string>;;
             FILE *s = d_http_cache->get_cached_response(url, *headers);
-            HTTPCacheResponse *crs = new HTTPCacheResponse(s, headers, d_http_cache);
+            HTTPCacheResponse *crs = new HTTPCacheResponse(s, 200, headers, d_http_cache);
 
             return crs;
         }
@@ -700,7 +717,7 @@ HTTPConnect::caching_fetch_url(const string &url)
                     DBGN(cerr << "read a new response; caching." << endl);
 
                     d_http_cache->cache_response(url, now, *resp_hdrs, body);
-                    HTTPResponse *rs = new HTTPResponse(body, resp_hdrs,
+                    HTTPResponse *rs = new HTTPResponse(body, http_status, resp_hdrs,
                                                         dods_temp);
 
                     return rs;
@@ -716,7 +733,7 @@ HTTPConnect::caching_fetch_url(const string &url)
                     vector<string> *headers = new vector<string>;;
                     FILE *s = d_http_cache->get_cached_response(url, *headers);
                     HTTPCacheResponse *crs
-                    = new HTTPCacheResponse(s, headers, d_http_cache);
+                    = new HTTPCacheResponse(s, 304, headers, d_http_cache);
                     return crs;
                 }
                 break;
@@ -771,8 +788,9 @@ HTTPConnect::plain_fetch_url(const string &url)
     string dods_temp = get_temp_file(stream);
     vector<string> *resp_hdrs = new vector<string>;
 
+    int status = -1;
     try {
-        int status = read_url(url, stream, resp_hdrs); // Throws Error.
+        status = read_url(url, stream, resp_hdrs); // Throws Error.
         if (status >= 400) {
             string msg = "Error while reading the URL: ";
             msg += url;
@@ -789,7 +807,7 @@ HTTPConnect::plain_fetch_url(const string &url)
 
     rewind(stream);
 
-    return new HTTPResponse(stream, resp_hdrs, dods_temp);
+    return new HTTPResponse(stream, status, resp_hdrs, dods_temp);
 }
 
 /** Set the <em>accept deflate</em> property. If true, the DAP client

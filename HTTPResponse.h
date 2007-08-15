@@ -85,8 +85,8 @@ public:
     the instance that contains it is destroyed.
     @param temp_file Name a the temporary file that holds the response
     body; this file is deleted when this instance is deleted. */
-    HTTPResponse(FILE *s, vector<string> *h, const string &temp_file)
-            : Response(s), d_headers(h), d_file(temp_file)
+    HTTPResponse(FILE *s, int status, vector<string> *h, const string &temp_file)
+            : Response(s, status), d_headers(h), d_file(temp_file)
     {
         DBG(cerr << "Headers: " << endl);
         DBGN(copy(d_headers->begin(), d_headers->end(),

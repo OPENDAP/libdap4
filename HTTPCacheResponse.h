@@ -63,8 +63,8 @@ public:
     temporary file for the parent to manage since the body is read from a
     file managed by the cache subsystem. This class releases the lock on
     the cache entry when the destructor is called. */
-    HTTPCacheResponse(FILE *s, vector<string> *headers, HTTPCache *c)
-            : HTTPResponse(s, headers, ""), d_cache(c)
+    HTTPCacheResponse(FILE *s, int status_code, vector<string> *headers, HTTPCache *c)
+            : HTTPResponse(s, status_code, headers, ""), d_cache(c)
     {}
 
     /** Free the cache entry lock. Call the parent's destructor. */
