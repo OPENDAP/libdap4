@@ -356,7 +356,7 @@ void GeoConstraint::set_bounding_box_latitude(double top, double bottom)
 }
 #endif
 
-// Use 'index' as the pivot point. Move the behind index to the front of
+// Use 'index' as the pivot point. Move the points behind index to the front of
 // the vector and those points in front of and at index to the rear.
 static void
 swap_vector_ends(char *dest, char *src, int len, int index, int elem_sz)

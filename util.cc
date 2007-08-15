@@ -648,3 +648,18 @@ file_to_string(FILE *fp)
         oss << c;
     return oss.str();
 }
+
+/** @name Security functions */
+//@{
+
+/** @brief sanitize the size of an array.
+    @param nelem Number of elements.
+    @param sz size of each element.
+    @return True if the \c nelem elements of \sz size will overflow an array. */
+bool
+size_ok(uint sz, uint nelem)
+{
+    return (sz > 0 && nelem >= UINT_MAX / sz);
+}
+
+//@}

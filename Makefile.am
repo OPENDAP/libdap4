@@ -88,12 +88,17 @@ grammarclean: clean
 
 # Fortify targets
 
+.PHONY: fortify_gl
+fortify_gl:
+	(cd gl && sourceanalyzer -b libdap_gl -clean $(MAKE) )
+	$(MAKE) 
+	sourceanalyzer -b libdap_gl -scan -f libdap_gl.fpr
+
 .PHONY: fortify
 fortify:
-	sourceanalyzer -b libdap $(MAKE)
-	sourceanalyzer -b libdap -scan -f libdap.fpr
-	@echo
-	@echo "Use auditwokbench to view the results"
+	(cd gl && $(MAKE) )
+	sourceanalyzer -b libdap_server $(MAKE) libdap.la libdapserver.la
+	sourceanalyzer -b libdap_server -scan -f libdap_server.fpr
 
 ###########################################################################
 
