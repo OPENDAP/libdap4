@@ -9,7 +9,7 @@ pkgconfigdir=$(libdir)/pkgconfig
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU
-AM_CXXFLAGS = -Wall -W -Wcast-align
+AM_CXXFLAGS = -Wall
 AM_YFLAGS = -d -v
 AM_LFLAGS = -8
 
@@ -77,6 +77,11 @@ pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 CLEANFILES = *.log *.output *.gcda *.gcno $(LEX_YACC_FILES)
 
 # MAINTAINERCLEANFILES = $(LEX_YACC_FILES)
+
+# Copy the generated grammar files to the 'grammarfiles' directory.
+.PHONY: grammarfiles
+grammarfiles: $(GRAM_SRC)
+	for f in $(GRAM_SRC); do cp $$f grammarfiles; done
 
 .PHONY: docs
 docs:

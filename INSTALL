@@ -70,7 +70,9 @@ REQUIREMENTS
     2.59 and libtool 1.5.18. Earlier versions may work, but may cause
     problems, particularly with the 'distcheck' target for make. Given those
     requirements, use 'autoreconf --force --verbose' and then build as
-    described above.
+    described above. You also need bison and flex as of version 3.7.9. If you
+    don't have these tools, you can try the copies of the generated files
+    in the 'grammarfiles' directory.
 
   o The library uses libcurl and libxml2. You will need these libraries
     installed on your system to successfully run configure and build the
