@@ -39,6 +39,7 @@
 
 #include "GNURegex.h"
 #include "Error.h"
+#include "util.h"
 
 using namespace std;
 
@@ -115,6 +116,10 @@ Regex::match(const char* s, int len, int pos)
 int 
 Regex::search(const char* s, int len, int& matchlen, int pos)
 {
+	// sanitize allocation
+    if (!size_ok(sizeof(regmatch_t), len+1))
+    	return -1;
+    	
     // alloc space for len matches, which is theoretical max.
     regmatch_t *pmatch = new regmatch_t[len+1];
     string ss = s;

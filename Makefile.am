@@ -31,6 +31,8 @@ bin_PROGRAMS = getdap
 
 sbin_PROGRAMS = deflate
 
+# BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h
+
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
 libdapserver_la_SOURCES = $(SERVER_SRC)
@@ -58,8 +60,8 @@ deflate_LDADD = $(ZLIB_LIBS)
 deflate_CPPFLAGS = $(ZLIB_CFLAGS)
 deflate_LDFLAGS = $(ZLIB_LDFLAGS)
 
-LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex gse.y \
-	Error.lex Error.y
+LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex \
+	gse.y Error.lex Error.y
 
 LEX_YACC_FILES = das.tab.h das.tab.cc lex.das.cc dds.tab.h dds.tab.cc \
 	lex.dds.cc ce_expr.tab.h ce_expr.tab.cc lex.ce_expr.cc Error.tab.h \
@@ -72,7 +74,7 @@ EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
-CLEANFILES = *.log *.output *.gcda *.gcno
+CLEANFILES = *.log *.output *.gcda *.gcno $(LEX_YACC_FILES)
 
 # MAINTAINERCLEANFILES = $(LEX_YACC_FILES)
 
@@ -80,9 +82,6 @@ CLEANFILES = *.log *.output *.gcda *.gcno
 docs:
 	doxygen $(srcdir)/doxy.conf
 	(cd docs && tar -czf html.tar.gz html)
-
-grammarclean: clean
-	-rm *.tab.cc *.tab.h lex.*.cc
 
 ###########################################################################
 
@@ -148,15 +147,10 @@ GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc
 
 GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h
 
-# Roughly divide the source into DAP, Client and Server groups. In the
-# future, make three different libraries. jhrg 
-
 GRAM_SRC = lex.das.cc das.tab.cc das.tab.h \
 	lex.dds.cc dds.tab.cc dds.tab.h \
 	lex.ce_expr.cc ce_expr.tab.cc ce_expr.tab.h \
 	lex.Error.cc Error.tab.cc Error.tab.h gse.tab.h
-
-# lex.expr.cc expr.tab.cc 
 
 DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	Byte.cc Int32.cc Float64.cc Str.cc Url.cc Vector.cc Array.cc	 \
@@ -171,6 +165,8 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	lex.gse_.cc gse.tab.cc GeoConstraint.cc GridGeoConstraint.cc \
 	Clause.cc RValue.cc ConstraintEvaluator.cc ArrayGeoConstraint.cc \
 	DapIndent.cc Operators.h
+
+Operators.h: ce_expr.tab.h
 
 # Operators.h is included in with the source to prevent it from bing installed
 # with the other headers. It includes one of the built grammar file headers.
