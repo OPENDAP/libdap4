@@ -31,7 +31,7 @@ bin_PROGRAMS = getdap
 
 sbin_PROGRAMS = deflate
 
-# BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h
+BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
@@ -50,7 +50,7 @@ libdapserver_la_LIBADD = libdap.la
 
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
 noinst_HEADERS = config_dap.h
-BUILT_SOURCES = dods-datatypes.h
+#BUILT_SOURCES = dods-datatypes.h
 
 getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la 
@@ -63,20 +63,16 @@ deflate_LDFLAGS = $(ZLIB_LDFLAGS)
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex \
 	gse.y Error.lex Error.y
 
-LEX_YACC_FILES = das.tab.h das.tab.cc lex.das.cc dds.tab.h dds.tab.cc \
-	lex.dds.cc ce_expr.tab.h ce_expr.tab.cc lex.ce_expr.cc Error.tab.h \
-	Error.tab.cc lex.Error.cc gse.tab.h gse.tab.cc lex.gse_.cc
-
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
-	VCPP dods-datatypes-static.h $(LEX_YACC_EXTRA) $(LEX_YACC_FILES)
+	VCPP dods-datatypes-static.h $(LEX_YACC_EXTRA) $(GRAM_SRC)
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
-CLEANFILES = *.log *.output *.gcda *.gcno $(LEX_YACC_FILES)
+CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC)
 
-# MAINTAINERCLEANFILES = $(LEX_YACC_FILES)
+# MAINTAINERCLEANFILES = $(GRAM_SRC)
 
 # Copy the generated grammar files to the 'grammarfiles' directory.
 .PHONY: grammarfiles
@@ -155,7 +151,8 @@ GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h
 GRAM_SRC = lex.das.cc das.tab.cc das.tab.h \
 	lex.dds.cc dds.tab.cc dds.tab.h \
 	lex.ce_expr.cc ce_expr.tab.cc ce_expr.tab.h \
-	lex.Error.cc Error.tab.cc Error.tab.h gse.tab.h
+	lex.Error.cc Error.tab.cc Error.tab.h gse.tab.h gse.tab.cc \
+	lex.gse_.cc
 
 DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	Byte.cc Int32.cc Float64.cc Str.cc Url.cc Vector.cc Array.cc	 \
@@ -167,7 +164,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	BaseTypeFactory.cc SignalHandler.cc Error.cc InternalErr.cc	 \
 	util.cc xdrutil_ppc.c parser-util.cc escaping.cc		 \
 	$(GRAM_SRC) ce_functions.cc GSEClause.cc \
-	lex.gse_.cc gse.tab.cc GeoConstraint.cc GridGeoConstraint.cc \
+	GeoConstraint.cc GridGeoConstraint.cc \
 	Clause.cc RValue.cc ConstraintEvaluator.cc ArrayGeoConstraint.cc \
 	DapIndent.cc Operators.h
 

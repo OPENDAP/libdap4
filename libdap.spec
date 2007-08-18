@@ -3,12 +3,13 @@ Summary: The C++ DAP2 library from OPeNDAP
 Version: 3.7.8
 Release: 1
 
-Source0: ftp://ftp.unidata.ucar.edu/pub/opendap/source/libdap-%{version}.tar.gz
+Source0: http://www.opendap.org/pub/source/libdap-%{version}.tar.gz
 URL: http://www.opendap.org/
 
 Group: Development/Libraries
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-License: LGPL
+# the deflate program is covered by the W3C license
+License: LGPLv2+ and W3C
 
 # Mandrake
 # BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
@@ -23,6 +24,7 @@ BuildRequires: pkgconfig
 # line
 Prefix: %{_prefix}
 
+
 %description
 The libdap++ library contains an implementation of DAP2. This package
 contains the library, dap-config, getdap and deflate. The script dap-config
@@ -31,8 +33,9 @@ simple command-line tool to read from DAP2 servers. It is built using the
 library and demonstrates simple uses of it. The deflate utility is used by
 the library when it returns compressed responses.
 
+
 %package devel
-Summary: Static libraries and header files from libdap
+Summary: Development and header files from libdap
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 Requires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
@@ -56,16 +59,18 @@ Documentation of the libdap library.
 %prep
 %setup -q
 
+
 %build
 %configure --disable-static --disable-dependency-tracking
 make %{?_smp_mflags}
+
+make docs
+
 
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT INSTALL="%{__install} -p"
 rm $RPM_BUILD_ROOT/%{_libdir}/*.la
-
-make docs
 
 rm -rf __fedora_docs
 cp -pr docs __fedora_docs
