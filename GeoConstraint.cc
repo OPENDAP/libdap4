@@ -430,9 +430,13 @@ void GeoConstraint::reorder_data_longitude_axis(Array &a)
     a.set_read_p(false);
     a.read(get_dataset());
     DBG2(a.print_val(stderr));
+#if 0
     char *left_data = 0;
     int left_size = a.buf2val((void **) & left_data);
-
+#endif
+    char *left_data = (char*)a.value();
+    int left_size = a.length();
+    
     // Build a constraint for the 'right' part, which
     // goes from the left edge of the array to the right index and read those
     // data.
@@ -445,8 +449,12 @@ void GeoConstraint::reorder_data_longitude_axis(Array &a)
     a.set_read_p(false);
     a.read(get_dataset());
     DBG2(a.print_val(stderr));
+#if 0
     char *right_data = 0;
     int right_size = a.buf2val((void **) & right_data);
+#endif
+    char *right_data = (char*)a.value();
+    int right_size = a.length();
 
     // Make one big lump O'data
     d_array_data_size = left_size + right_size;

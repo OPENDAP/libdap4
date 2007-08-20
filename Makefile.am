@@ -9,7 +9,7 @@ pkgconfigdir=$(libdir)/pkgconfig
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU
-AM_CXXFLAGS = -Wall
+AM_CXXFLAGS = -Wall -Werror
 AM_YFLAGS = -d -v
 AM_LFLAGS = -8
 
@@ -154,19 +154,20 @@ GRAM_SRC = lex.das.cc das.tab.cc das.tab.h \
 	lex.Error.cc Error.tab.cc Error.tab.h gse.tab.h gse.tab.cc \
 	lex.gse_.cc
 
+PASSIVE_SRC = PassiveByte.cc PassiveInt32.cc PassiveFloat64.cc PassiveStr.cc \
+	PassiveUrl.cc PassiveUInt32.cc PassiveInt16.cc PassiveUInt16.cc	 \
+	PassiveFloat32.cc PassiveArray.cc PassiveStructure.cc
+
 DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	Byte.cc Int32.cc Float64.cc Str.cc Url.cc Vector.cc Array.cc	 \
 	Structure.cc Sequence.cc Grid.cc UInt32.cc Int16.cc UInt16.cc	 \
 	Float32.cc Constructor.cc					 \
-	PassiveByte.cc PassiveInt32.cc PassiveFloat64.cc PassiveStr.cc	 \
-	PassiveUrl.cc PassiveUInt32.cc PassiveInt16.cc PassiveUInt16.cc	 \
-	PassiveFloat32.cc PassiveArray.cc PassiveStructure.cc		 \
 	BaseTypeFactory.cc SignalHandler.cc Error.cc InternalErr.cc	 \
 	util.cc xdrutil_ppc.c parser-util.cc escaping.cc		 \
 	$(GRAM_SRC) ce_functions.cc GSEClause.cc \
 	GeoConstraint.cc GridGeoConstraint.cc \
 	Clause.cc RValue.cc ConstraintEvaluator.cc ArrayGeoConstraint.cc \
-	DapIndent.cc Operators.h
+	DapIndent.cc Operators.h $(PASSIVE_SRC)
 
 Operators.h: ce_expr.tab.h
 
@@ -179,20 +180,21 @@ CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 
 SERVER_SRC = DODSFilter.cc cgi_util.cc
 
+PASSIVE_HDR = PassiveByte.h PassiveInt32.h PassiveFloat64.h PassiveStr.h   \
+	PassiveUrl.h PassiveUInt32.h PassiveInt16.h PassiveUInt16.h	   \
+	PassiveFloat32.h PassiveArray.h PassiveStructure.h
+
 DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	BaseType.h Byte.h Int32.h Float64.h Str.h Url.h Vector.h Array.h   \
 	Constructor.h Structure.h Sequence.h Grid.h UInt32.h Int16.h	   \
 	UInt16.h Float32.h						   \
-	PassiveByte.h PassiveInt32.h PassiveFloat64.h PassiveStr.h	   \
-	PassiveUrl.h PassiveUInt32.h PassiveInt16.h PassiveUInt16.h	   \
-	PassiveFloat32.h PassiveArray.h PassiveStructure.h		   \
 	BaseTypeFactory.h ObjectType.h EncodingType.h \
 	SignalHandler.h Error.h InternalErr.h		   \
 	util.h escaping.h parser.h debug.h dods-limits.h dods-datatypes.h \
 	GeoConstraint.h GridGeoConstraint.h ArrayGeoConstraint.h \
 	ce_functions.h  gse_parser.h GSEClause.h util_mit.h \
 	expr.h Clause.h RValue.h ConstraintEvaluator.h ce_parser.h \
-	DapIndent.h DapObj.h
+	DapIndent.h DapObj.h $(PASSIVE_HDR)
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h

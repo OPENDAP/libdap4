@@ -350,9 +350,9 @@ unsigned int Vector::width()
 // Returns: the number of elements in the vector.
 
 /** Returns the number of elements in the vector. Note that some
-child classes of Vector use the length of -1 as a flag value.
+    child classes of Vector use the length of -1 as a flag value.
 
-@see Vector::append_dim */
+    @see Vector::append_dim */
 int Vector::length() const
 {
     return _length;
@@ -1013,6 +1013,17 @@ void Vector::value(vector<string> &b) const
 {
     if (_var->type() == dods_byte_c)
         b = d_str;
+}
+
+/** Allocated memory and copy data into the new buffer. Return the new 
+    buffer's pointer. The caller must delete the storage. */
+void *Vector::value()
+{
+    void *buffer = new char[width()];
+
+    memcpy(buffer, _buf, width());
+    
+    return buffer;
 }
 //@}
 

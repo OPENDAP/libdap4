@@ -124,8 +124,12 @@ void
 GSEClause::set_start_stop()
 {
     // Read the map array, scan, set start and stop.
+#if 0
     T *vals = 0;
     d_map->buf2val((void **)&vals);
+#endif
+    T *vals = new T[d_map->length()];
+    d_map->value(vals);
 
     // Set the map's max and min values for use in error messages (it's a lot
     // easier to do here, now, than later... 9/20/2001 jhrg)

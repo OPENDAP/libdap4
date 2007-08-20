@@ -148,6 +148,8 @@ public:
     virtual void value(dods_float64 *b) const;
     virtual void value(vector<string> &b) const;
 
+    virtual void *value();
+
     virtual BaseType *var(const string &name = "", bool exact_match = true,
                           btp_stack *s = 0);
     virtual BaseType *var(const string &name, btp_stack &s);
