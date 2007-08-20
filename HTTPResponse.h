@@ -80,7 +80,8 @@ public:
     memory), the temp file should be set to "".
 
     @param s FILE * to the response. Read the response body from this
-    stream. 
+    stream.
+    @param status The HTTP response status code.
     @param h Response headers. This class will delete the pointer when
     the instance that contains it is destroyed.
     @param temp_file Name a the temporary file that holds the response

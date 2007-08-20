@@ -193,10 +193,10 @@ bool GeoConstraint::is_bounding_box_valid(double left, double top,
 
     @param left The left edge of the bounding box
     @param right The right edge
-    @param d_longitude_index_left Value-result parameter that holds the index
+    @param longitude_index_left Value-result parameter that holds the index
     in the grid's longitude map of the left bounding box edge. Uses a closed
     interval for the test.
-    @param  d_longitude_index_right Value-result parameter for the right edge
+    @param  longitude_index_right Value-result parameter for the right edge
     index. */
 void GeoConstraint::find_longitude_indeces(double left, double right,
         int &longitude_index_left,
@@ -281,6 +281,8 @@ void GeoConstraint::find_longitude_indeces(double left, double right,
 
     @param top The top edge of the bounding box
     @param bottom The bottom edge
+    @param sense Does the array/grid store data with larger latitudes at 
+    the starting indices or are the latitude 'upside down?' 
     @param latitude_index_top Value-result parameter that holds the index
     in the grid's latitude map of the top bounding box edge. Uses a closed
     interval for the test.
@@ -373,7 +375,7 @@ swap_vector_ends(char *dest, char *src, int len, int index, int elem_sz)
     @note The d_lon vector always has double values regardless of the type
     of d_longitude.
 
-    @param d_longitude_index_left The left edge of the bounding box. */
+    @param longitude_index_left The left edge of the bounding box. */
 void GeoConstraint::reorder_longitude_map(int longitude_index_left)
 {
     double *tmp_lon = new double[d_lon_length];
@@ -511,12 +513,9 @@ void GeoConstraint::set_bounding_box_longitude(double left, double right)
 }
 #endif
 
-/** @brief Initialize GeoConstraint with a Grid.
-    @param grid Set the GeoConstraint to use this Grid variable. It is the
-    caller's responsibility to ensure that the value \e grid is a valid Grid
-    variable.
+/** @brief Initialize GeoConstraint.
+
     @param ds_name The name of the dataset. Passed to BaseType::read().
-    @param dds Use this DDS to get global attributes.
  */
 GeoConstraint::GeoConstraint(const string & ds_name)
         : d_dataset(ds_name), d_array_data(0), d_array_data_size(0),

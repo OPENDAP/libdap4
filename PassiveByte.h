@@ -61,7 +61,7 @@ public:
 
     virtual bool read(const string &dataset) ;
 
-    virtual bool set_value(dods_byte val) ;
+    virtual bool set_value(dods_byte value) ;
 };
 
 #endif // _passivebyte_h

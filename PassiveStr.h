@@ -61,7 +61,7 @@ public:
 
     virtual bool read(const string &dataset) ;
 
-    virtual bool set_value(const string &val) ;
+    virtual bool set_value(const string &value) ;
 };
 
 #endif // _passivestr_h

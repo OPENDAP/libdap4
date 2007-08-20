@@ -83,7 +83,7 @@ Array::update_length(int)
 /** Build an array with a name and an element type. The name may be omitted,
     which will create a nameless variable. The template (element type) pointer
     may also be omitted, but if it is omitted when the Array is created, it 
-    \e must be added (with \cadd_var()) before \c read() or \c deserialize()
+    \e must be added (with \c add_var()) before \c read() or \c deserialize()
     is called.
 
     @todo Force the Array::add_var() method to be used to add \e v.

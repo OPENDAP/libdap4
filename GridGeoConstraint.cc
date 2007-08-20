@@ -58,7 +58,6 @@ using namespace libdap;
     caller's responsibility to ensure that the value \e grid is a valid Grid
     variable.
     @param ds_name The name of the dataset. Passed to BaseType::read().
-    @param dds Use this DDS to get global attributes.
  */
 GridGeoConstraint::GridGeoConstraint(Grid *grid, const string &ds_name)
         : GeoConstraint(ds_name), d_grid(grid), d_latitude(0), d_longitude(0)

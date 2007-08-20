@@ -660,7 +660,7 @@ file_to_string(FILE *fp)
 /** @brief sanitize the size of an array.
     @param nelem Number of elements.
     @param sz size of each element.
-    @return True if the \c nelem elements of \sz size will overflow an array. */
+    @return True if the \c nelem elements of \c sz size will overflow an array. */
 bool
 size_ok(uint sz, uint nelem)
 {

@@ -815,6 +815,8 @@ void Vector::set_vec(unsigned int i, BaseType * val)
     _vec[i] = val->ptr_duplicate();
 }
 
+
+//@{
 /** @brief set the value of a byte array */
 bool
 Vector::set_value(dods_byte *val, int sz)
@@ -940,8 +942,17 @@ Vector::set_value(string *val, int sz)
         return false;
     }
 }
+//@}
 
-/** @brief Get a copy of the pointer to the data held by this variable. */
+
+//@{
+/** @brief Get a copy of the data held by this variable. 
+    Read data from this variable's internal storage and load it into the 
+    memory referenced by \c b. The argument \c b must point to enough memory
+    to hold length() Bytes.
+    
+    @param b A pointer to the memory to hold the data; must be at least
+    length() * sizeof(dods_byte) in size.*/
 void Vector::value(dods_byte *b) const
 {
     if (b && _var->type() == dods_byte_c) {
@@ -949,7 +960,7 @@ void Vector::value(dods_byte *b) const
     }
 }
 
-/** @brief Get a copy of the pointer to the data held by this variable. */
+/** @brief Get a copy of the data held by this variable. */
 void Vector::value(dods_uint16 *b) const
 {
     if (b && _var->type() == dods_uint16_c) {
@@ -957,7 +968,7 @@ void Vector::value(dods_uint16 *b) const
     }
 }
 
-/** @brief Get a copy of the pointer to the data held by this variable. */
+/** @brief Get a copy of the data held by this variable. */
 void Vector::value(dods_int16 *b) const
 {
     if (b && _var->type() == dods_int16_c) {
@@ -965,7 +976,7 @@ void Vector::value(dods_int16 *b) const
     }
 }
 
-/** @brief Get a copy of the pointer to the data held by this variable. */
+/** @brief Get a copy of the data held by this variable. */
 void Vector::value(dods_uint32 *b) const
 {
     if (b && _var->type() == dods_uint32_c) {
@@ -973,7 +984,7 @@ void Vector::value(dods_uint32 *b) const
     }
 }
 
-/** @brief Get a copy of the pointer to the data held by this variable. */
+/** @brief Get a copy of the data held by this variable. */
 void Vector::value(dods_int32 *b) const
 {
     if (b && _var->type() == dods_int32_c) {
@@ -981,7 +992,7 @@ void Vector::value(dods_int32 *b) const
     }
 }
 
-/** @brief Get a copy of the pointer to the data held by this variable. */
+/** @brief Get a copy of the data held by this variable. */
 void Vector::value(dods_float32 *b) const
 {
     if (b && _var->type() == dods_float32_c) {
@@ -989,7 +1000,7 @@ void Vector::value(dods_float32 *b) const
     }
 }
 
-/** @brief Get a copy of the pointer to the data held by this variable. */
+/** @brief Get a copy of the data held by this variable. */
 void Vector::value(dods_float64 *b) const
 {
     if (b && _var->type() == dods_float64_c) {
@@ -997,12 +1008,13 @@ void Vector::value(dods_float64 *b) const
     }
 }
 
-/** @brief Get a copy of the pointer to the data held by this variable. */
+/** @brief Get a copy of the data held by this variable. */
 void Vector::value(vector<string> &b) const
 {
     if (_var->type() == dods_byte_c)
         b = d_str;
 }
+//@}
 
 /** @brief Add the BaseType pointer to this constructor type
     instance.

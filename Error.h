@@ -91,33 +91,22 @@ protected:
     string _error_message;
 
 public:
-    /// Create an instance with an error code and a message
     Error(ErrorCode ec, string msg);
-    /// Create an instance with the unknown_error code.
     Error(string msg);
-    /// Create a default Error object.
     Error();
 
-    /// Copy constructor
     Error(const Error &copy_from);
 
     virtual ~Error();
 
     Error &operator=(const Error &rhs);
 
-    /// Class invariant
     bool OK() const;
-    /// Deserialize object from the wire.
     bool parse(FILE *fp);
-    /// Print the Error object on the given output stream.
     void print(FILE *out) const;
-    /// Get the error code.
     ErrorCode get_error_code() const;
-    /// Get the error message.
     string get_error_message() const;
-    /// Set the error code.
     void set_error_code(ErrorCode ec = undefined_error);
-    /// Set the error message.
     void set_error_message(string msg = "");
 };
 

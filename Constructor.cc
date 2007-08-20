@@ -186,7 +186,9 @@ Constructor::find_matching_container(AttrTable::entry *source,
     operate on the AttrTable instances in a DDS/BaseType instead of those in
     a DAS.
 
-    @param at Get attribute information from this Attribute table. */
+    @param entry Get attribute information from this Attribute table. Note
+    that even though the type of the argument is an AttrTable::entry, the
+    entry \e must be an attribute container.*/
 void
 Constructor::transfer_attributes(AttrTable::entry * entry)
 {
