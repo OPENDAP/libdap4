@@ -210,13 +210,7 @@ Error::print(FILE *out) const
         fprintf(out, "    message = %s;\n", _error_message.c_str()) ;
     else
         fprintf(out, "    message = \"%s\";\n", _error_message.c_str()) ;
-#if 0
-    if (_program_type != undefined_prog_type) {
-        fprintf(out, "    program_type = %d;\n",
-                static_cast<int>(_program_type)) ;
-        fprintf(out, "    program = %s;\n", _program) ;
-    }
-#endif
+
     fprintf(out, "};\n") ;
 }
 
@@ -238,14 +232,14 @@ void
 Error::set_error_code(ErrorCode ec)
 {
     _error_code = ec;
-    // Added check to make sure that messages is not accessed beyond its
+    // Added check to make sure that err_messages is not accessed beyond its
     // bounds. 02/02/04 jhrg
     if (_error_message.empty()
         && ec > undefined_error && ec <= cannot_read_file) {
         _error_message = err_messages[ec - undefined_error];
     }
     else {
-        _error_message = err_messages[undefined_error];
+        _error_message = err_messages[0];
     }
 }
 

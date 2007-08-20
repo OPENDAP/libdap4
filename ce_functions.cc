@@ -109,17 +109,13 @@ string extract_string_argument(BaseType * arg)
 {
     if (arg->type() != dods_str_c)
         throw Error(malformed_expr,
-                    "The function requires a DAP string-type argument.");
+                    "The function requires a DAP string argument.");
 
     if (!arg->read_p())
         throw InternalErr(__FILE__, __LINE__,
                           "The CE Evaluator built an argument list where some constants held no values.");
 
-    string *sp = 0;
-    arg->buf2val((void **) &sp);
-    string s = *sp;
-    delete sp;
-    sp = 0;
+    string s = dynamic_cast<Str&>(*arg).value();
 
     DBG(cerr << "s: " << s << endl);
 
@@ -219,12 +215,15 @@ template < class T >
 static double *extract_double_array_helper(Array * a)
 {
     int length = a->length();
-    double *dest = new double[length];
+
     T *b = new T[length];
-    a->buf2val((void **) &b);
+    a->value(b);
+
+    double *dest = new double[length];
     for (int i = 0; i < length; ++i)
         dest[i] = (double) b[i];
     delete[]b;
+
     return dest;
 }
 
@@ -295,89 +294,26 @@ double extract_double_value(BaseType * arg)
     // Expanded to work for any numeric type so it can be used for more than
     // just arguments.
     switch (arg->type()) {
-    case dods_byte_c: {
-            dods_byte i;
-            dods_byte *pi = &i;
-            arg->buf2val((void **) &pi);
-            return (double)(i);
-        }
-    case dods_uint16_c: {
-            dods_uint16 i;
-            dods_uint16 *pi = &i;
-            arg->buf2val((void **) &pi);
-            return (double)(i);
-        }
-    case dods_int16_c: {
-            dods_int16 i;
-            dods_int16 *pi = &i;
-            arg->buf2val((void **) &pi);
-            return (double)(i);
-        }
-    case dods_uint32_c: {
-            dods_uint32 i;
-            dods_uint32 *pi = &i;
-            arg->buf2val((void **) &pi);
-            return (double)(i);
-        }
-    case dods_int32_c: {
-            dods_int32 i;
-            dods_int32 *pi = &i;
-            arg->buf2val((void **) &pi);
-            return (double)(i);
-        }
-    case dods_float32_c: {
-            dods_float32 i;
-            dods_float32 *pi = &i;
-            arg->buf2val((void **) &pi);
-            return (double) i;
-        }
-    case dods_float64_c: {
-            DBG(cerr << "arg->value(): " << dynamic_cast <
-                Float64 * >(arg)->value() << endl);
-            dods_float64 i;
-            dods_float64 *pi = &i;
-            arg->buf2val((void **) &pi);
-            DBG(cerr << "i: " << i << endl);
-            return i;
-        }
+    case dods_byte_c: 
+        return (double)(dynamic_cast<Byte&>(*arg).value());
+    case dods_uint16_c: 
+        return (double)(dynamic_cast<UInt16&>(*arg).value());
+    case dods_int16_c: 
+        return (double)(dynamic_cast<Int16&>(*arg).value());
+    case dods_uint32_c: 
+        return (double)(dynamic_cast<UInt32&>(*arg).value());
+    case dods_int32_c: 
+        return (double)(dynamic_cast<Int32&>(*arg).value());
+    case dods_float32_c: 
+        return (double)(dynamic_cast<Float32&>(*arg).value());
+    case dods_float64_c: 
+        return dynamic_cast<Float64&>(*arg).value();
     default:
         throw InternalErr(__FILE__, __LINE__,
                           "The argument list built by the CE parser contained an unsupported numeric type.");
     }
 }
 
-#if 0
-// In reality no server implements this; it _should_ be removed. 03/28/05 jhrg
-BaseType *func_length(int argc, BaseType * argv[], DDS & dds)
-{
-    if (argc != 1) {
-        throw Error("Wrong number of arguments to length().");
-    }
-
-    switch (argv[0]->type()) {
-
-    case dods_sequence_c: {
-            Sequence *var = dynamic_cast < Sequence * >(argv[0]);
-            if (!var)
-                throw
-                Error("Expected a Sequence variable in length()");
-            dods_int32 result = var->length();
-
-            BaseType *ret = dds.get_factory()->NewInt32("constant");
-            ret->val2buf(&result);
-            ret->set_read_p(true);
-            ret->set_send_p(true);
-
-            return ret;
-        }
-
-    default:
-        throw Error("Wrong type argument to length()");
-    }
-
-    return 0;
-}
-#endif
 
 /** This server-side function returns version information for the server-side
     functions. */
@@ -546,12 +482,6 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
         (*i++)->set_send_p(true);
     l_grid->read(dataset);
 
-#if 0
-    // Old, pre-hdf_handler compatible version.
-    Grid::Map_iter i = l_grid->map_begin();
-    while (i != l_grid->map_end())
-        (*i++)->read(dataset);
-#endif
     DBG(cerr << "grid: past map read" << endl);
 
     // argv[1..n] holds strings; each are little expressions to be parsed.
@@ -707,6 +637,7 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
         throw e;
     }
     catch (exception & e) {
+        throw
         InternalErr(string
                     ("A C++ exception was thrown from inside geogrid(): ")
                     + e.what());
@@ -864,8 +795,8 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, const string & dataset
         throw Error("Wrong number of arguments to linear_scale(). See linear_scale() for more information");
 
     // Get m & b
-    bool use_missing;
-    double m, b, missing;
+    bool use_missing = false;
+    double m, b, missing = 0.0;
     if (argc == 4) {
         m = extract_double_value(argv[1]);
         b = extract_double_value(argv[2]);
@@ -1073,6 +1004,7 @@ function_geoarray(int argc, BaseType * argv[], DDS &, const string & dataset)
         throw e;
     }
     catch (exception & e) {
+        throw
         InternalErr(string
                     ("A C++ exception was thrown from inside geoarray(): ")
                     + e.what());

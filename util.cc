@@ -664,7 +664,7 @@ file_to_string(FILE *fp)
 bool
 size_ok(uint sz, uint nelem)
 {
-    return (sz > 0 && nelem >= UINT_MAX / sz);
+    return (sz > 0 && nelem < UINT_MAX / sz);
 }
 
 //@}

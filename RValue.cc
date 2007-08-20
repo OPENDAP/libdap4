@@ -101,7 +101,10 @@ build_btp_args(rvalue_list *args, DDS &dds, const string &dataset)
         
     // Sanitize allocation size
     if (!size_ok(sizeof(BaseType*), argc+1))
-    	throw Error(malformed_expr, "Malformed arguments to the function");
+    	throw Error(malformed_expr, 
+                string("Malformed argument list (") 
+                + long_to_string(argc)  
+                + string(")."));
 
     // Add space for a null terminator
     BaseType **argv = new BaseType *[argc + 1];
