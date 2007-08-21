@@ -9,7 +9,7 @@ pkgconfigdir=$(libdir)/pkgconfig
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU
-AM_CXXFLAGS = -Wall -Werror
+AM_CXXFLAGS = -Wall -W -Wcast-align
 AM_YFLAGS = -d -v
 AM_LFLAGS = -8
 
