@@ -61,7 +61,7 @@ public:
         
         @param s Pointer to standard input.
         */
-    StdinResponse(FILE *s) : Response(0,0), d_stdin(s)
+    StdinResponse(FILE *s) : Response(0), d_stdin(s)
     {}
 
     /** Destructor. Does not close standard input. */

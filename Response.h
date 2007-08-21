@@ -82,7 +82,7 @@ public:
 	values. 
         @param s Read data from this stream.
         @param status The HTTP response status code.*/
-    Response(FILE *s, int status) : d_stream(s), d_type(unknown_type),
+    Response(FILE *s, int status = 0) : d_stream(s), d_type(unknown_type),
             d_version("dods/0.0"), d_protocol("2.0"),
             d_status(status)
     { }
