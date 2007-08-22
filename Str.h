@@ -60,7 +60,7 @@
 // term solution is to fix libdap, but strings should not routinely be > 32k
 // for the time being... jhrg 4/30/97
 
-const unsigned int max_str_len = 32767; // DODS_UINT_MAX-1;
+const unsigned int max_str_len = DODS_USHRT_MAX - 1;
 
 /** @brief Holds character string data.
 
