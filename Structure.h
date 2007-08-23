@@ -142,6 +142,8 @@ public:
 
     virtual void add_var(BaseType *bt, Part part = nil);
 
+    virtual bool read(const string &dataset) ;
+
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
 

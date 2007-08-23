@@ -131,13 +131,21 @@ public:
     void vec_resize(int l);
 
     virtual bool set_value(dods_byte *val, int sz);
+    virtual bool set_value(vector<dods_byte> &val, int sz);
     virtual bool set_value(dods_int16 *val, int sz);
+    virtual bool set_value(vector<dods_int16> &val, int sz);
     virtual bool set_value(dods_uint16 *val, int sz);
+    virtual bool set_value(vector<dods_uint16> &val, int sz);
     virtual bool set_value(dods_int32 *val, int sz);
+    virtual bool set_value(vector<dods_int32> &val, int sz);
     virtual bool set_value(dods_uint32 *val, int sz);
+    virtual bool set_value(vector<dods_uint32> &val, int sz);
     virtual bool set_value(dods_float32 *val, int sz);
+    virtual bool set_value(vector<dods_float32> &val, int sz);
     virtual bool set_value(dods_float64 *val, int sz);
+    virtual bool set_value(vector<dods_float64> &val, int sz);
     virtual bool set_value(string *val, int sz);
+    virtual bool set_value(vector<string> &val, int sz);
 
     virtual void value(dods_byte *b) const;
     virtual void value(dods_int16 *b) const;

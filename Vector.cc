@@ -832,6 +832,24 @@ Vector::set_value(dods_byte *val, int sz)
     }
 }
 
+/** @brief set the value of a byte array */
+bool
+Vector::set_value(vector<dods_byte> &val, int sz)
+{
+    if (var()->type() == dods_byte_c) {
+	dods_byte *tmp_buf = new dods_byte[sz] ;
+        _buf = reinterpret_cast<char*>(tmp_buf) ;
+        for (register int t = 0; t < sz; t++) {
+            tmp_buf[t] = val[t] ;
+        }
+        set_read_p(true);
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 /** @brief set the value of a int16 array */
 bool
 Vector::set_value(dods_int16 *val, int sz)
@@ -839,6 +857,24 @@ Vector::set_value(dods_int16 *val, int sz)
     if (var()->type() == dods_int16_c && val) {
         _buf = reinterpret_cast<char*>(new dods_int16[sz]) ;
         memcpy(_buf, val, sz * sizeof(dods_int16));
+        set_read_p(true);
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+/** @brief set the value of a int16 array */
+bool
+Vector::set_value(vector<dods_int16> &val, int sz)
+{
+    if (var()->type() == dods_int16_c) {
+	dods_int16 *tmp_buf = new dods_int16[sz] ;
+        _buf = reinterpret_cast<char*>(tmp_buf) ;
+        for (register int t = 0; t < sz; t++) {
+            tmp_buf[t] = val[t] ;
+        }
         set_read_p(true);
         return true;
     }
@@ -862,6 +898,24 @@ Vector::set_value(dods_int32 *val, int sz)
     }
 }
 
+/** @brief set the value of a int32 array */
+bool
+Vector::set_value(vector<dods_int32> &val, int sz)
+{
+    if (var()->type() == dods_int32_c) {
+	dods_int32 *tmp_buf = new dods_int32[sz] ;
+        _buf = reinterpret_cast<char*>(tmp_buf) ;
+        for (register int t = 0; t < sz; t++) {
+            tmp_buf[t] = val[t] ;
+        }
+        set_read_p(true);
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 /** @brief set the value of a uint16 array */
 bool
 Vector::set_value(dods_uint16 *val, int sz)
@@ -869,6 +923,24 @@ Vector::set_value(dods_uint16 *val, int sz)
     if (var()->type() == dods_uint16_c && val) {
         _buf = reinterpret_cast<char*>(new dods_uint16[sz]) ;
         memcpy(_buf, val, sz * sizeof(dods_uint16));
+        set_read_p(true);
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+/** @brief set the value of a uint16 array */
+bool
+Vector::set_value(vector<dods_uint16> &val, int sz)
+{
+    if (var()->type() == dods_uint16_c) {
+	dods_uint16 *tmp_buf = new dods_uint16[sz] ;
+        _buf = reinterpret_cast<char*>(tmp_buf) ;
+        for (register int t = 0; t < sz; t++) {
+            tmp_buf[t] = val[t] ;
+        }
         set_read_p(true);
         return true;
     }
@@ -892,6 +964,24 @@ Vector::set_value(dods_uint32 *val, int sz)
     }
 }
 
+/** @brief set the value of a uint32 array */
+bool
+Vector::set_value(vector<dods_uint32> &val, int sz)
+{
+    if (var()->type() == dods_uint32_c) {
+	dods_uint32 *tmp_buf = new dods_uint32[sz] ;
+        _buf = reinterpret_cast<char*>(tmp_buf) ;
+        for (register int t = 0; t < sz; t++) {
+            tmp_buf[t] = val[t] ;
+        }
+        set_read_p(true);
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 /** @brief set the value of a float32 array */
 bool
 Vector::set_value(dods_float32 *val, int sz)
@@ -899,6 +989,24 @@ Vector::set_value(dods_float32 *val, int sz)
     if (var()->type() == dods_float32_c && val) {
         _buf = reinterpret_cast<char*>(new dods_float32[sz]) ;
         memcpy(_buf, val, sz * sizeof(dods_float32));
+        set_read_p(true);
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+/** @brief set the value of a float32 array */
+bool
+Vector::set_value(vector<dods_float32> &val, int sz)
+{
+    if (var()->type() == dods_float32_c) {
+	dods_float32 *tmp_buf = new dods_float32[sz] ;
+        _buf = reinterpret_cast<char*>(tmp_buf) ;
+        for (register int t = 0; t < sz; t++) {
+            tmp_buf[t] = val[t] ;
+        }
         set_read_p(true);
         return true;
     }
@@ -925,6 +1033,24 @@ Vector::set_value(dods_float64 *val, int sz)
     }
 }
 
+/** @brief set the value of a float64 array */
+bool
+Vector::set_value(vector<dods_float64> &val, int sz)
+{
+    if (var()->type() == dods_float64_c) {
+	dods_float64 *tmp_buf = new dods_float64[sz] ;
+        _buf = reinterpret_cast<char*>(tmp_buf) ;
+        for (register int t = 0; t < sz; t++) {
+            tmp_buf[t] = val[t] ;
+        }
+        set_read_p(true);
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 /** @brief set the value of a string or url array */
 bool
 Vector::set_value(string *val, int sz)
@@ -942,8 +1068,25 @@ Vector::set_value(string *val, int sz)
         return false;
     }
 }
-//@}
 
+/** @brief set the value of a string or url array */
+bool
+Vector::set_value(vector<string> &val, int sz)
+{
+    if (var()->type() == dods_str_c || var()->type() == dods_url_c) {
+        d_str.resize(sz);
+        for (register int t = 0; t < sz; t++) {
+            d_str[t] = val[t] ;
+        }
+        set_length(sz) ;
+        set_read_p(true);
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+//@}
 
 //@{
 /** @brief Get a copy of the data held by this variable. 

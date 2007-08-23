@@ -208,6 +208,29 @@ Structure::add_var(BaseType *bt, Part)
     _vars.push_back(btp);
 }
 
+/** @brief simple implementation of reat that iterates through vars
+ *  and calls read on them
+ *
+ * @param dataset A string naming the dataset from which the data is to
+ * be read. The meaning of this string will vary among different types of
+ * data sources. It \e may be the name of a data file or an identifier
+ * used to read data from a relational database.
+ * @return returns false to signify all has been read
+ */
+bool
+Structure::read(const string &dataset)
+{
+    if( !read_p() )
+    {
+	for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+	    (*i)->read(dataset) ;
+	}
+	set_read_p(true) ;
+    }
+
+    return false ;
+}
+
 unsigned int
 Structure::width()
 {
