@@ -86,19 +86,19 @@ docs:
 
 ###########################################################################
 
-# Fortify targets. These 
-
-.PHONY: fortify_gl
-fortify_gl: dods-datatypes.h
-	(cd gl && sourceanalyzer -b libdap_gl -clean $(MAKE) )
-	$(MAKE) 
-	sourceanalyzer -b libdap_gl -scan -f libdap_gl.fpr
+# Fortify targets.
 
 .PHONY: fortify
 fortify: dods-datatypes.h
-	(cd gl && $(MAKE) )
-	sourceanalyzer -b libdap_server $(MAKE) libdap.la libdapserver.la
-	sourceanalyzer -b libdap_server -scan -f libdap_server.fpr
+	(cd gl && sourceanalyzer -b @PACKAGE@ $(MAKE) )
+	sourceanalyzer -b @PACKAGE@ $(MAKE) libdap.la libdapserver.la
+	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
+
+# Use this to clean the fortify project.
+.PHONY: fortifyclean
+fortifyclean:
+	(cd gl && sourceanalyzer -b @PACKAGE@ -clean )
+	sourceanalyzer -b @PACKAGE@ -clean
 
 ###########################################################################
 
