@@ -123,12 +123,15 @@ private:
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
     unsigned int print_array(FILE *out, unsigned int index,
                              unsigned int dims, unsigned int shape[]);
+    unsigned int print_array(ostream &out, unsigned int index,
+                             unsigned int dims, unsigned int shape[]);
 
     friend class ArrayTest;
 
 protected:
     void _duplicate(const Array &a);
     void print_xml_core(FILE *out, string space, bool constrained, string tag);
+    void print_xml_core(ostream &out, string space, bool constrained, string tag);
 
 public:
     /** A constant iterator used to access the various dimensions of an
@@ -178,14 +181,24 @@ public:
                             bool print_semi = true,
                             bool constraint_info = false,
                             bool constrained = false);
+    virtual void print_decl(ostream &out, string space = "    ",
+                            bool print_semi = true,
+                            bool constraint_info = false,
+                            bool constrained = false);
 
     virtual void print_xml(FILE *out, string space = "    ",
+                           bool constrained = false);
+    virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
 
     virtual void print_as_map_xml(FILE *out, string space = "    ",
                                   bool constrained = false);
+    virtual void print_as_map_xml(ostream &out, string space = "    ",
+                                  bool constrained = false);
 
     virtual void print_val(FILE *out, string space = "",
+                           bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 
     virtual bool check_semantics(string &msg, bool all = false);

@@ -60,10 +60,6 @@ using std::endl;
     to be created.  The name may be omitted, which will create a
     nameless variable.  This may be adequate for some applications.
 
-    \note Even though Byte is a cardinal type, xdr_char is <i>not</i>
-    used to transport Byte arrays over the network. Instead, Byte is
-    a special case handled in Array.
-
     @brief The Byte constructor.
     @param n A string containing the name of the variable to be
     created.
@@ -107,14 +103,11 @@ unsigned int Byte::width()
     the current constraint expression; only send data if the CE
     evaluates to true.
 
-    @note See the comment in BaseType about why we don't use XDR_CODER
-    here.
-
     @return False if a failure to read, send or flush is detected, true
     otherwise.
 */
 bool Byte::serialize(const string & dataset, ConstraintEvaluator & eval,
-                     DDS & dds, XDR * sink, bool ce_eval)
+                     DDS & dds, Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
@@ -128,8 +121,7 @@ bool Byte::serialize(const string & dataset, ConstraintEvaluator & eval,
 
     dds.timeout_off();
 
-    if (!xdr_char(sink, (char *) &_buf))
-        throw Error("Network I/O Error. Could not send byte data.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+    m.put_byte( _buf ) ;
 
     return true;
 }
@@ -137,10 +129,9 @@ bool Byte::serialize(const string & dataset, ConstraintEvaluator & eval,
 /** @brief Deserialize the char on stdin and put the result in
     <tt>_BUF</tt>.
 */
-bool Byte::deserialize(XDR * source, DDS *, bool)
+bool Byte::deserialize(UnMarshaller &um, DDS *, bool)
 {
-    if (!xdr_char(source, (char *) &_buf))
-        throw Error("Network I/O Error. Could not read byte data. This may be due to a\nbug in DODS or a problem with the network connection.");
+    um.get_byte( _buf ) ;
 
     return false;
 }
@@ -206,6 +197,16 @@ void Byte::print_val(FILE * out, string space, bool print_decl_p)
     }
     else
         fprintf(out, "%d", (int) _buf);
+}
+
+void Byte::print_val(ostream &out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+        print_decl(out, space, false);
+	out << " = " << (int)_buf << ";\n" ;
+    }
+    else
+	out << (int)_buf ;
 }
 
 bool Byte::ops(BaseType * b, int op, const string & dataset)

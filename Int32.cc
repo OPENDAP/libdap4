@@ -64,7 +64,7 @@ using std::endl;
     created.
 */
 Int32::Int32(const string &n)
-        : BaseType(n, dods_int32_c, (xdrproc_t)XDR_INT32)
+        : BaseType(n, dods_int32_c)
 {}
 
 Int32::Int32(const Int32 &copy_from) : BaseType(copy_from)
@@ -104,7 +104,7 @@ Int32::width()
 
 bool
 Int32::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
-                 XDR *sink, bool ce_eval)
+                 Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
@@ -118,17 +118,15 @@ Int32::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
 
     dds.timeout_off();
 
-    if (!XDR_INT32(sink, &_buf))
-        throw Error("Network I/O Error. Culd not read int 32 data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+    m.put_int32( _buf ) ;
 
     return true;
 }
 
 bool
-Int32::deserialize(XDR *source, DDS *, bool)
+Int32::deserialize(UnMarshaller &um, DDS *, bool)
 {
-    if (!XDR_INT32(source, &_buf))
-        throw Error("Network I/O Error. Could not send int 32 data. This may be due to a\nbug in libdap or a problem with the network connection.");
+    um.get_int32( _buf ) ;
 
     return false;
 }
@@ -189,6 +187,17 @@ Int32::print_val(FILE *out, string space, bool print_decl_p)
     }
     else
         fprintf(out, "%d", (int)_buf) ;
+}
+
+void
+Int32::print_val(ostream &out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+        print_decl(out, space, false);
+	out << " = " << (int)_buf << ";\n" ;
+    }
+    else
+	out << (int)_buf ;
 }
 
 bool

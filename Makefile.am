@@ -31,7 +31,7 @@ bin_PROGRAMS = getdap
 
 sbin_PROGRAMS = deflate
 
-BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h
+BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
@@ -50,7 +50,6 @@ libdapserver_la_LIBADD = libdap.la
 
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
 noinst_HEADERS = config_dap.h
-#BUILT_SOURCES = dods-datatypes.h
 
 getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la 
@@ -65,7 +64,8 @@ LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex \
 
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
-	VCPP dods-datatypes-static.h $(LEX_YACC_EXTRA) $(GRAM_SRC)
+	VCPP dods-datatypes-static.h xdr-datatypes-static.h \
+	$(LEX_YACC_EXTRA) $(LEX_YACC_FILES)
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
@@ -163,7 +163,9 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	$(GRAM_SRC) ce_functions.cc GSEClause.cc \
 	GeoConstraint.cc GridGeoConstraint.cc \
 	Clause.cc RValue.cc ConstraintEvaluator.cc ArrayGeoConstraint.cc \
-	DapIndent.cc Operators.h
+	DapIndent.cc Operators.h					 \
+	XDRUtils.cc XDRFileMarshaller.cc XDRFileUnMarshaller.cc		 \
+	XDRStreamMarshaller.cc
 
 Operators.h: ce_expr.tab.h
 
@@ -183,10 +185,12 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	BaseTypeFactory.h ObjectType.h EncodingType.h \
 	SignalHandler.h Error.h InternalErr.h		   \
 	util.h escaping.h parser.h debug.h dods-limits.h dods-datatypes.h \
-	GeoConstraint.h GridGeoConstraint.h ArrayGeoConstraint.h \
-	ce_functions.h  gse_parser.h GSEClause.h util_mit.h \
-	expr.h Clause.h RValue.h ConstraintEvaluator.h ce_parser.h \
-	DapIndent.h DapObj.h
+	GeoConstraint.h GridGeoConstraint.h ArrayGeoConstraint.h	  \
+	ce_functions.h  gse_parser.h GSEClause.h util_mit.h		  \
+	expr.h Clause.h RValue.h ConstraintEvaluator.h ce_parser.h	  \
+	DapIndent.h DapObj.h XDRFileMarshaller.h Marshaller.h		  \
+	XDRFileUnMarshaller.h UnMarshaller.h XDRStreamMarshaller.h	  \
+	XDRUtils.h xdr-datatypes.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h
@@ -194,6 +198,13 @@ else
 dods-datatypes.h: dods-datatypes-config.h
 endif
 	cp -p $< dods-datatypes.h
+
+if USE_C99_TYPES
+xdr-datatypes.h: xdr-datatypes-static.h
+else
+xdr-datatypes.h: xdr-datatypes-config.h
+endif
+	cp -p $< xdr-datatypes.h
 
 CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		 \

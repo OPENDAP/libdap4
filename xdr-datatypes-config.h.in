@@ -1,0 +1,36 @@
+
+/*
+  Determine at compile-time the sizes of various XDR datatypes. This uses symbols
+  defined by configure (See configure.in).
+  pcw 08/13/07
+*/
+
+#ifndef __XDR_DATATYPES__
+#define __XDR_DATATYPES__
+
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock2.h>
+#include <xdr.h>
+#else
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
+#endif
+
+/* The typedefs are done using a preprocessor symbol so that autoconf's
+   `CONFIG_HEADER' can be used. The configure script will then only modify
+   the dods-datatypes.h header when its contents change. This saves on
+   compilation since the header is used by many files in the dap++ library.
+   The downside is that the typedefs are so ugly... 2/14/2001 jhrg */
+
+#undef XDR_INT32
+#undef XDR_UINT32
+
+#undef XDR_INT16
+#undef XDR_UINT16
+
+#undef XDR_FLOAT64
+#undef XDR_FLOAT32
+
+#endif /* __XDR_DATATYPES__ */

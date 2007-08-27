@@ -273,7 +273,7 @@ Structure::transfer_data(const string & dataset,
 
 bool
 Structure::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
-                     XDR *sink, bool ce_eval)
+                     Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
@@ -288,7 +288,7 @@ Structure::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
 
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
         if ((*i)->send_p()) {
-            (*i)->serialize(dataset, eval, dds, sink, false);
+            (*i)->serialize(dataset, eval, dds, m, false);
         }
     }
 
@@ -296,10 +296,10 @@ Structure::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
 }
 
 bool
-Structure::deserialize(XDR *source, DDS *dds, bool reuse)
+Structure::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 {
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
-        (*i)->deserialize(source, dds, reuse);
+        (*i)->deserialize(um, dds, reuse);
     }
 
     return false;
@@ -441,9 +441,23 @@ Structure::print_val(FILE *out, string space, bool print_decl_p)
 }
 
 void
-Structure::print_all_vals(FILE *out, XDR *, DDS *, string space, bool print_decl_p)
+Structure::print_val(ostream &out, string space, bool print_decl_p)
 {
-    print_val(out, space, print_decl_p);
+    if (print_decl_p) {
+        print_decl(out, space, false);
+	out << " = " ;
+    }
+
+    out << "{ " ;
+    for (Vars_citer i = _vars.begin(); i != _vars.end();
+         i++, (void)(i != _vars.end() && out << ", ")) {
+        (*i)->print_val(out, "", false);
+    }
+
+    out << " }" ;
+
+    if (print_decl_p)
+	out << ";\n" ;
 }
 
 bool

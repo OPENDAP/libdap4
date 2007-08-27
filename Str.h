@@ -36,22 +36,10 @@
 #ifndef _str_h
 #define _str_h 1
 
-
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock2.h>
-#include <xdr.h>
-#else
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif
-
 #include <string>
 
 #include "dods-limits.h"
 #include "BaseType.h"
-
 
 // max_str_len should be large since we always send strings with length bytes
 // as a prefix (so xdr_string will always know how much memory to malloc) but
@@ -93,8 +81,8 @@ public:
     unsigned int length();
 
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, XDR *sink, bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+                           DDS &dds, Marshaller &m, bool ce_eval = true);
+    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
@@ -103,6 +91,8 @@ public:
     virtual string value() const;
 
     virtual void print_val(FILE *out, string space = "",
+                           bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 
     virtual bool ops(BaseType *b, int op, const string &dataset);

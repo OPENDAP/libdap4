@@ -384,10 +384,10 @@ void Vector::vec_resize(int l)
 
 /** @brief Serialize a Vector.
 
-    This uses the BaseType member xdr_coder to encode each element of
-    a cardinal array. See Sun's XDR manual. For Arrays of Str and Url
-    types, send the element count over as a prefix to the data so that
-    deserialize will know how many elements to read.
+    This uses the Marshaller class to encode each element of a cardinal
+    array. For Arrays of Str and Url types, send the element count over
+    as a prefix to the data so that deserialize will know how many elements
+    to read.
 
     NB: Arrays of cardinal types must already be in BUF (in the local machine's
     representation) <i>before</i> this call is made.
@@ -395,7 +395,7 @@ void Vector::vec_resize(int l)
 
 
 bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
-                       DDS & dds, XDR * sink, bool ce_eval)
+                       DDS & dds, Marshaller &m, bool ce_eval)
 {
     int i = 0;
 
@@ -416,37 +416,15 @@ bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
 
     switch (_var->type()) {
     case dods_byte_c:
+	m.put_vector( _buf, num, *this ) ;
+	break ;
     case dods_int16_c:
     case dods_uint16_c:
     case dods_int32_c:
     case dods_uint32_c:
     case dods_float32_c:
     case dods_float64_c:
-        // Jose Garcia
-        // If we are trying to serialize data and the internal buffer is
-        // unset, then the read method failed to do its job.
-        if (!_buf)
-            throw InternalErr(__FILE__, __LINE__,
-                              "Buffer pointer is not set.");
-
-        if ((0 == xdr_int(sink,  &num))) // send vector length
-            throw Error("Network I/O Error(1). This may be due to a bug in libdap or a\nproblem with the network connection.");
-
-        // Note that xdr_bytes and xdr_array both send the length themselves,
-        // so the length is actually sent twice. 12/31/99 jhrg
-        bool status;
-        if (_var->type() == dods_byte_c)
-            status = (0 != xdr_bytes(sink, (char **) & _buf,
-                                     (unsigned int *) & num,
-                                     DODS_MAX_ARRAY));
-        else
-            status = (0 != xdr_array(sink, (char **) & _buf,
-                                     (unsigned int *) & num,
-                                     DODS_MAX_ARRAY, _var->width(),
-                                     (xdrproc_t)(_var->xdr_coder())));
-        if (!status)
-            throw Error("Network I/O Error(2). This may be due to a bug in libdap or a\nproblem with the network connection.");
-
+	m.put_vector( _buf, num, _var->width(), *this ) ;
         break;
 
     case dods_str_c:
@@ -455,12 +433,10 @@ bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
             throw InternalErr(__FILE__, __LINE__,
                               "The capacity of the string vector is 0");
 
-        if ((0 == xdr_int(sink, (int *) &num)))
-            throw Error("Network I/O Error(3). This may be due to a bug in libdap or a\nproblem with the network connection.");
+	m.put_int( num ) ;
 
         for (i = 0; i < num; ++i)
-            if (!xdr_str(sink, d_str[i]))
-                throw Error("Network I/O Error(4). Could not send string data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+	    m.put_str( d_str[i] ) ;
 
         break;
 
@@ -474,11 +450,10 @@ bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
             throw InternalErr(__FILE__, __LINE__,
                               "The capacity of *this* vector is 0.");
 
-        if ((0 == xdr_int(sink, &num)))
-            throw Error("Network I/O Error. This may be due to a bug in libdap or a\nproblem with the network connection.");
+	m.put_int( num ) ;
 
         for (i = 0; i < num; ++i)
-            _vec[i]->serialize(dataset, eval, dds, sink, false);
+            _vec[i]->serialize(dataset, eval, dds, m, false);
 
         break;
 
@@ -507,7 +482,7 @@ bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
 //
 // Returns: True is successful, false otherwise.
 
-bool Vector::deserialize(XDR * source, DDS * dds, bool reuse)
+bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
 {
     bool status;
     unsigned int num;
@@ -525,8 +500,7 @@ bool Vector::deserialize(XDR * source, DDS * dds, bool reuse)
             delete[]_buf;
         _buf = 0;
 
-        if ((0 == xdr_int(source, (int *) &num)))
-            throw Error("Network I/O error. Could not read the array length.\nThis may be due to a bug in libdap or a problem with\nthe network connection.");
+	um.get_int( (int &)num ) ;
 
         DBG(cerr << "Vector::deserialize: num = " << num << endl);
         DBG(cerr << "Vector::deserialize: length = " << length() << endl);
@@ -545,15 +519,9 @@ bool Vector::deserialize(XDR * source, DDS * dds, bool reuse)
         }
 
         if (_var->type() == dods_byte_c)
-            status = (0 != xdr_bytes(source, (char **) & _buf, &num,
-                                     DODS_MAX_ARRAY));
+	    um.get_vector( (char **)&_buf, num, *this ) ;
         else
-            status = (0 != xdr_array(source, (char **) & _buf, &num,
-                                     DODS_MAX_ARRAY, _var->width(),
-                                     (xdrproc_t)(_var->xdr_coder())));
-
-        if (!status)
-            throw Error("Network I/O error. Could not read packed array data.\nThis may be due to a bug in libdap or a problem with\nthe network connection.");
+	    um.get_vector( (char **)&_buf, num, _var->width(), *this ) ;
 
         DBG(cerr << "Vector::deserialize: read " << num << " elements\n");
 
@@ -561,8 +529,7 @@ bool Vector::deserialize(XDR * source, DDS * dds, bool reuse)
 
     case dods_str_c:
     case dods_url_c:
-        if ((0 == xdr_int(source, (int *) &num)))
-            throw Error("Network I/O error. Could not read the array length.\nThis may be due to a bug in libdap or a problem with\nthe network connection.");
+	um.get_int( (int &)num ) ;
 
         if (length() == -1)
             set_length(num);
@@ -575,8 +542,7 @@ bool Vector::deserialize(XDR * source, DDS * dds, bool reuse)
 
         for (i = 0; i < num; ++i) {
             string str;
-            if (!xdr_str(source, str))
-                throw Error("Network I/O Error. Could not read string data. This may be due to a\nbug in libdap or a problem with the network connection.");
+	    um.get_str( str ) ;
             d_str[i] = str;
 
         }
@@ -587,8 +553,7 @@ bool Vector::deserialize(XDR * source, DDS * dds, bool reuse)
     case dods_structure_c:
     case dods_sequence_c:
     case dods_grid_c:
-        if ((0 == xdr_int(source, (int *) &num)))
-            throw Error("Network I/O error. Could not read the array length.\nThis may be due to a bug in libdap or a problem with\nthe network connection.");
+	um.get_int( (int &)num ) ;
 
         if (length() == -1)
             set_length(num);
@@ -600,7 +565,7 @@ bool Vector::deserialize(XDR * source, DDS * dds, bool reuse)
 
         for (i = 0; i < num; ++i) {
             _vec[i] = _var->ptr_duplicate();
-            _vec[i]->deserialize(source, dds);
+            _vec[i]->deserialize(um, dds);
         }
 
         break;

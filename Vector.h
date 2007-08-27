@@ -35,16 +35,6 @@
 #ifndef _vector_h
 #define _vector_h 1
 
-
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock2.h>
-#else
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif
-
 #ifndef _basetype_h
 #include "BaseType.h"
 #endif
@@ -119,8 +109,8 @@ public:
     virtual void set_length(int l);
 
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, XDR *sink, bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+                           DDS &dds, Marshaller &m, bool ce_eval = true);
+    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
 

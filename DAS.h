@@ -150,6 +150,7 @@ public:
     void parse(int fd);
     void parse(FILE *in = stdin);
     void print(FILE *out, bool dereference = false);
+    void print(ostream &out, bool dereference = false);
 
     virtual void dump(ostream &strm) const ;
 };

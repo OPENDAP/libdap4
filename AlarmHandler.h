@@ -42,22 +42,27 @@
 class AlarmHandler : public EventHandler
 {
 private:
-    FILE *d_stream;  // Sink for the Error object.
+    FILE *d_file;  // Sink for the Error object.
+    ostream &d_stream;
     string d_version;
 
     // Ensure that d_stream gets initialized...
-    AlarmHandler()
+    AlarmHandler() : d_file( 0 ), d_stream( cout )
     {}
 
 public:
     /** Store information to be used by the handler.
     @param s Write to this stream. */
-    AlarmHandler(FILE *s) : d_stream(s)
+    AlarmHandler(FILE *s) : d_file(s), d_stream( cout )
+    {}
+
+    AlarmHandler(ostream &out) : d_file(0), d_stream( out )
     {}
 
     virtual ~AlarmHandler()
     {
-        fclose(d_stream);
+	if( d_file )
+	    fclose( d_file ) ;
     }
 
     /** Handle an alarm signal. When one of our servers gets an alarm, that
@@ -78,12 +83,20 @@ public:
             fprintf(stderr, "SIGALRM handler caught another signal!\n");
 #if 0
         // Use this code, or a variant, once we have reliable error delivery.
-        fprintf(d_stream, "\n\n\n\n");
+	if( d_file )
+	    fprintf(d_file, "\n\n\n\n");
+	else
+	    d_stream << "\n\n\n\n";
+
         Error e("The server has timed out. This happens when a request\n\
                 takes longer to process than the server's preset time-out value.\n\
                 Try making a request for a smaller amount of data. You can also contact\n\
                 the server's administrator and request that the time-out value be increased.");
-        e.print(d_stream);
+
+	if( d_file )
+	    e.print(d_file);
+	else
+	    e.print(d_stream);
 #endif
         exit(1);
     }

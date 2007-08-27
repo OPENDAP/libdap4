@@ -83,8 +83,8 @@ public:
     virtual unsigned int width();
 
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, XDR *sink, bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+                           DDS &dds, Marshaller &m, bool ce_eval = true);
+    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
@@ -93,6 +93,8 @@ public:
     virtual bool set_value(dods_float32 f);
 
     virtual void print_val(FILE *out, string space = "",
+                           bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 
     virtual bool ops(BaseType *b, int op, const string &dataset);

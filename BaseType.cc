@@ -69,7 +69,6 @@ BaseType::_duplicate(const BaseType &bt)
     _send_p = bt._send_p; // added, reza
     d_in_selection = bt.d_in_selection;
     _synthesized_p = bt._synthesized_p; // 5/11/2001 jhrg
-    _xdr_coder = bt._xdr_coder; // just copy this function pointer
 
     d_parent = bt.d_parent; // copy pointers 6/4/2001 jhrg
 
@@ -78,28 +77,19 @@ BaseType::_duplicate(const BaseType &bt)
 
 // Public mfuncs
 
-/** The BaseType constructor needs a name, a type, and the name of
-    an XDR filter.  The BaseType class exists to provide data to
+/** The BaseType constructor needs a name  and a type.
+    The BaseType class exists to provide data to
     type classes that inherit from it.  The constructors of those
     classes call the BaseType constructor; it is never called
     directly.
 
-    Note that the constructor (as well as the copy constructor via
-    _duplicate) open/initialize the (XDRS *)s XDRIN and XDROUT to
-    reference sdtin and stdout. This means that writing to
-    std{in,out} must work correctly, and probably means that is
-    must be OK to mix calls to cout/cin with calls that write to
-    std{out,in} (it is for g++ with libg++ at version 2.6 or
-    greater).
-
     @brief The BaseType constructor.
     @param n A string containing the name of the new variable.
     @param t The type of the variable.
-    @param xdr A pointer to an XDR filter to use to transmit the
     data in this variable to a client DODS process.
     @see Type */
-BaseType::BaseType(const string &n, const Type &t, xdrproc_t xdr)
-        : _name(n), _type(t), _xdr_coder(xdr), _read_p(false), _send_p(false),
+BaseType::BaseType(const string &n, const Type &t)
+        : _name(n), _type(t), _read_p(false), _send_p(false),
         d_in_selection(false), _synthesized_p(false), d_parent(0)
 {}
 
@@ -695,27 +685,6 @@ BaseType::read(const string &)
     throw InternalErr("Unimplemented BaseType::read() method called.");
 }
 
-/** The <tt>xdr_coder</tt> function (also "filter primitive") is used to
-    encode and decode each element in a multiple element data
-    structure.  These functions are used to convert data to and from
-    its local representation to the XDR representation, which is
-    used to transmit and receive the data.  See <tt>man xdr</tt> for more
-    information about the available XDR filter primitives.
-
-    Note that this class data is only used for multiple element data
-    types.  The simple data types (Int, Float, and so on), are
-    translated directly.
-
-    @brief Returns a function used to encode elements of an array.
-    @return A C function used to encode data in the XDR format.
-*/
-xdrproc_t
-BaseType::xdr_coder()
-{
-    return _xdr_coder;
-}
-
-
 /** Write the variable's declaration in a C-style syntax. This
     function is used to create textual representation of the Data
     Descriptor Structure (DDS).  See <i>The DODS User Manual</i> for
@@ -772,13 +741,77 @@ BaseType::print_decl(FILE *out, string space, bool print_semi,
 
     if (constraint_info) {
         if (send_p())
-            fprintf(stdout, ": Send True") ;
+            fprintf(out, ": Send True") ;
         else
-            fprintf(stdout, ": Send False") ;
+            fprintf(out, ": Send False") ;
     }
 
     if (print_semi)
         fprintf(out, ";\n") ;
+}
+
+/** Write the variable's declaration in a C-style syntax. This
+    function is used to create textual representation of the Data
+    Descriptor Structure (DDS).  See <i>The DODS User Manual</i> for
+    information about this structure.
+
+    A simple array declaration might look like this:
+    \verbatim
+    Float64 lat[lat = 180];
+    \endverbatim
+    While a more complex declaration (for a Grid, in this case),
+    would look like this:
+    \verbatim
+    Grid {
+    ARRAY:
+    Int32 sst[time = 404][lat = 180][lon = 360];
+    MAPS:
+    Float64 time[time = 404];
+    Float64 lat[lat = 180];
+    Float64 lon[lon = 360];
+    } sst;
+    \endverbatim
+
+    @brief Print an ASCII representation of the variable structure.
+    @param out The output stream on which to print the
+    declaration.
+    @param space Each line of the declaration will begin with the
+    characters in this string.  Usually used for leading spaces.
+    @param print_semi A boolean value indicating whether to print a
+    semicolon at the end of the declaration.
+    @param constraint_info A boolean value indicating whether
+    constraint information is to be printed with the declaration.
+    If the value of this parameter is TRUE, <tt>print_decl()</tt> prints
+    the value of the variable's <tt>send_p()</tt> flag after the
+    declaration.
+    @param constrained If this boolean value is TRUE, the variable's
+    declaration is only printed if is the <tt>send_p()</tt> flag is TRUE.
+    If a constraint expression is in place, and this variable is not
+    requested, the <tt>send_p()</tt> flag is FALSE.
+
+    @see DDS
+    @see DDS::CE
+*/
+void
+BaseType::print_decl(ostream &out, string space, bool print_semi,
+                     bool constraint_info, bool constrained)
+{
+    // if printing the constrained declaration, exit if this variable was not
+    // selected.
+    if (constrained && !send_p())
+        return;
+
+    out << space << type_name() << " " << id2www(_name) ;
+
+    if (constraint_info) {
+        if (send_p())
+            out << ": Send True" ;
+        else
+            out << ": Send False" ;
+    }
+
+    if (print_semi)
+	out << ";\n" ;
 }
 
 /** Write the XML representation of this variable. This method is used to
@@ -805,6 +838,33 @@ BaseType::print_xml(FILE *out, string space, bool constrained)
     }
     else {
         fprintf(out, "/>\n"); // no attributes; just close tag.
+    }
+}
+
+/** Write the XML representation of this variable. This method is used to
+    build the DDX XML response.
+    @param out Destination output stream
+    @param space Use this to indent child declarations. Default is "".
+    @param constrained If true, only print this if it's part part of the
+    current projection. Default is False. */
+void
+BaseType::print_xml(ostream &out, string space, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    out << space << "<" << type_name() ;
+    if (!_name.empty())
+	out << " name=\"" << id2xml(_name) << "\"" ;
+
+    if (get_attr_table().get_size() > 0) {
+	out << ">\n" ;
+        get_attr_table().print_xml(out, space + "    ", constrained);
+        // After attributes, print closing tag
+	out << space << "</" << type_name() << ">\n" ;
+    }
+    else {
+	out << "/>\n" ;
     }
 }
 

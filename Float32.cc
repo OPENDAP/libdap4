@@ -34,6 +34,8 @@
 // 3/22/99 jhrg
 
 
+#include <iomanip>
+
 #include "config.h"
 
 static char rcsid[] not_used =
@@ -62,7 +64,7 @@ using std::endl;
     created.
 */
 Float32::Float32(const string &n)
-        : BaseType(n, dods_float32_c, (xdrproc_t)XDR_FLOAT32)
+        : BaseType(n, dods_float32_c)
 {}
 
 Float32::Float32(const Float32 &copy_from) : BaseType(copy_from)
@@ -97,7 +99,7 @@ Float32::width()
 
 bool
 Float32::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
-                   XDR *sink, bool ce_eval)
+                   Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
@@ -111,17 +113,15 @@ Float32::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
 
     dds.timeout_off();
 
-    if (!xdr_float(sink, &_buf))
-        throw Error("Network I/O Error. Could not send float 32 data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+    m.put_float32( _buf ) ;
 
     return true;
 }
 
 bool
-Float32::deserialize(XDR *source, DDS *, bool)
+Float32::deserialize(UnMarshaller &um, DDS *, bool)
 {
-    if (!xdr_float(source, &_buf))
-        throw Error("Network I/O Error. Could not read float 32 data. This may be due to a\nbug in libdap or a problem with the network connection.");
+    um.get_float32( _buf ) ;
 
     return false;
 }
@@ -191,6 +191,20 @@ Float32::print_val(FILE *out, string space, bool print_decl_p)
     }
     else
         fprintf(out, "%.6g", _buf) ;
+}
+
+void
+Float32::print_val(ostream &out, string space, bool print_decl_p)
+{
+    // FIX: need to set precision in the printing somehow.
+    // os.precision(DODS_FLT_DIG);
+
+    if (print_decl_p) {
+        print_decl(out, space, false);
+	out << " = " << std::setprecision( 6 ) << _buf << ";\n" ;
+    }
+    else
+	out << std::setprecision( 6 ) << _buf ;
 }
 
 bool

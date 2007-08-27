@@ -89,16 +89,29 @@ time_t last_modified_time(const string &name);
 void set_mime_text(FILE *out, ObjectType type = unknown_type,
                    const string &version = "", EncodingType enc = x_plain,
                    const time_t last_modified = 0);
+void set_mime_text(ostream &out, ObjectType type = unknown_type,
+                   const string &version = "", EncodingType enc = x_plain,
+                   const time_t last_modified = 0);
 void set_mime_html(FILE *out, ObjectType type = unknown_type,
+                   const string &version = "", EncodingType enc = x_plain,
+                   const time_t last_modified = 0);
+void set_mime_html(ostream &out, ObjectType type = unknown_type,
                    const string &version = "", EncodingType enc = x_plain,
                    const time_t last_modified = 0);
 void set_mime_binary(FILE *out, ObjectType type = unknown_type,
                      const string &version = "", EncodingType enc = x_plain,
                      const time_t last_modified = 0);
+void set_mime_binary(ostream &out, ObjectType type = unknown_type,
+                     const string &version = "", EncodingType enc = x_plain,
+                     const time_t last_modified = 0);
 void set_mime_error(FILE *out, int code = 404,
                     const string &reason = "Dataset not found",
                     const string &version = "");
+void set_mime_error(ostream &out, int code = 404,
+                    const string &reason = "Dataset not found",
+                    const string &version = "");
 void set_mime_not_modified(FILE *out);
+void set_mime_not_modified(ostream &out);
 
 //@}
 

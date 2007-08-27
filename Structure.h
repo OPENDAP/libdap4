@@ -61,6 +61,8 @@
 #include "ConstraintEvaluator.h"
 #endif
 
+// FIXME
+#include "XDRUtils.h"
 
 
 /** This data type is used to hold a collection of related data types,
@@ -126,8 +128,8 @@ public:
     virtual void transfer_data(const string & dataset,
                                ConstraintEvaluator & eval, DDS & dds);
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, XDR *sink, bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+                           DDS &dds, Marshaller &m, bool ce_eval = true);
+    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     // Do not store values in memory as for C; force users to work with the
     // C++ objects as defined by the DAP.
@@ -146,20 +148,8 @@ public:
 
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
-
-    /** Prints the Structure and all elements of any Sequences contained
-    within. 
-
-    @deprecated This method was needed when Sequence::deserialize had
-    different semantics than BaseType::deserialize (which was a really
-    odd design because the Sequence is a descendant of the later...). But
-    Sequence now deserializes in one call in this implementation so
-    print() works as expected. 
-
-    @see Sequence::print_all_vals
-    */
-    virtual void print_all_vals(FILE *out, XDR *src, DDS *dds,
-                                string space = "", bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "",
+                           bool print_decl_p = true);
 
     virtual bool check_semantics(string &msg, bool all = false);
 

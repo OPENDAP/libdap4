@@ -597,6 +597,55 @@ Array::print_decl(FILE *out, string space, bool print_semi,
     }
 }
 
+/** Prints a declaration for the Array.  This is what appears in a
+    DDS.  If the Array is constrained, the declaration will reflect
+    the size of the Array once the constraint is applied.
+
+    @brief Prints a DDS entry for the Array.
+
+    @param out Write the output to this ostream.
+    @param space A string containing spaces to precede the
+    declaration.
+    @param print_semi A boolean indicating whether to print a
+    semi-colon after the declaration.  (TRUE means ``print a
+    semi-colon.'')
+    @param constraint_info A boolean value.  See
+    <tt>BaseType::print_decl()</tt>.
+    @param constrained This argument should be TRUE if the Array is
+    constrained, and FALSE otherwise.
+*/
+void
+Array::print_decl(ostream &out, string space, bool print_semi,
+                  bool constraint_info, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    // print it, but w/o semicolon
+    var()->print_decl(out, space, false, constraint_info, constrained);
+
+    for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
+#if 0
+        if (constrained && !((*i).selected))
+            continue;
+#endif
+	out << "[" ;
+        if ((*i).name != "") {
+	    out << id2www((*i).name) << " = " ;
+        }
+        if (constrained) {
+	    out << (*i).c_size << "]" ;
+        }
+        else {
+	    out << (*i).size << "]" ;
+        }
+    }
+
+    if (print_semi) {
+	out << ";\n" ;
+    }
+}
+
 void
 Array::print_xml(FILE *out, string space, bool constrained)
 {
@@ -604,7 +653,19 @@ Array::print_xml(FILE *out, string space, bool constrained)
 }
 
 void
+Array::print_xml(ostream &out, string space, bool constrained)
+{
+    print_xml_core(out, space, constrained, "Array");
+}
+
+void
 Array::print_as_map_xml(FILE *out, string space, bool constrained)
+{
+    print_xml_core(out, space, constrained, "Map");
+}
+
+void
+Array::print_as_map_xml(ostream &out, string space, bool constrained)
 {
     print_xml_core(out, space, constrained, "Map");
 }
@@ -656,6 +717,52 @@ Array::print_xml_core(FILE *out, string space, bool constrained, string tag)
     fprintf(out, "%s</%s>\n", space.c_str(), tag.c_str());
 }
 
+class PrintArrayDimStrm : public unary_function<Array::dimension&, void>
+{
+    ostream &d_out;
+    string d_space;
+    bool d_constrained;
+public:
+    PrintArrayDimStrm(ostream &o, string s, bool c)
+            : d_out(o), d_space(s), d_constrained(c)
+    {}
+
+    void operator()(Array::dimension &d)
+    {
+        int size = d_constrained ? d.c_size : d.size;
+        if (d.name.empty())
+	    d_out << d_space << "<dimension size=\"" << size << "\"/>\n" ;
+        else
+	    d_out << d_space << "<dimension name=\"" << id2xml(d.name)
+	          << "\" size=\"" << size << "\"/>\n" ;
+    }
+};
+
+void
+Array::print_xml_core(ostream &out, string space, bool constrained, string tag)
+{
+    if (constrained && !send_p())
+        return;
+
+    out << space << "<" << tag ;
+    if (!name().empty())
+	out << " name=\"" << id2xml(name()) << "\"" ;
+    out << ">\n" ;
+
+    get_attr_table().print_xml(out, space + "    ", constrained);
+
+    BaseType *btp = var();
+    string tmp_name = btp->name();
+    btp->set_name("");
+    btp->print_xml(out, space + "    ", constrained);
+    btp->set_name(tmp_name);
+
+    for_each(dim_begin(), dim_end(),
+             PrintArrayDimStrm(out, space + "    ", constrained));
+
+    out << space << "</" << tag << ">\n" ;
+}
+
 /** Prints the values in ASCII of the entire (constrained) array. This method
     Attempts to make an aesthetically pleasing display. However, it is
     primarily intended for debugging purposes.
@@ -700,6 +807,50 @@ Array::print_array(FILE *out, unsigned int index, unsigned int dims,
     }
 }
 
+/** Prints the values in ASCII of the entire (constrained) array. This method
+    Attempts to make an aesthetically pleasing display. However, it is
+    primarily intended for debugging purposes.
+
+    @param out Write the output to this ostream
+    @param space The space to use in printing.
+    @param print_decl_p A boolean value indicating whether you want
+    the Array declaration to precede the Array value.
+    @brief Print the value given the current constraint.
+*/
+unsigned int
+Array::print_array(ostream &out, unsigned int index, unsigned int dims,
+                   unsigned int shape[])
+{
+    if (dims == 1) {
+	out << "{" ;
+        for (unsigned i = 0; i < shape[0] - 1; ++i) {
+            var(index++)->print_val(out, "", false);
+	    out << ", " ;
+        }
+        var(index++)->print_val(out, "", false);
+	out << "}" ;
+
+        return index;
+    }
+    else {
+	out << "{" ;
+        // Fixed an off-by-one error in the following loop. Since the array
+        // length is shape[dims-1]-1 *and* since we want one less dimension
+        // than that, the correct limit on this loop is shape[dims-2]-1. From
+        // Todd Karakasian.
+        // The saga continues; the loop test should be `i < shape[0]-1'. jhrg
+        // 9/12/96.
+        for (unsigned i = 0; i < shape[0] - 1; ++i) {
+            index = print_array(out, index, dims - 1, shape + 1);
+	    out << "," ;
+        }
+        index = print_array(out, index, dims - 1, shape + 1);
+	out << "}" ;
+
+        return index;
+    }
+}
+
 void
 Array::print_val(FILE *out, string space, bool print_decl_p)
 {
@@ -725,6 +876,34 @@ Array::print_val(FILE *out, string space, bool print_decl_p)
 
     if (print_decl_p) {
         fprintf(out, ";\n") ;
+    }
+}
+
+void
+Array::print_val(ostream &out, string space, bool print_decl_p)
+{
+    // print the declaration if print decl is true.
+    // for each dimension,
+    //   for each element,
+    //     print the array given its shape, number of dimensions.
+    // Add the `;'
+
+    if (print_decl_p) {
+        print_decl(out, space, false, false, false);
+	out << " = " ;
+    }
+
+    unsigned int dims = dimensions(true);
+    unsigned int *shape = new unsigned int[dims];
+    unsigned int index = 0;
+    for (Dim_iter i = _shape.begin(); i != _shape.end(); i++)
+        shape[index++] = dimension_size(i, true);
+
+    print_array(out, 0, dims, shape);
+    delete [] shape; shape = 0;
+
+    if (print_decl_p) {
+	out << ";\n" ;
     }
 }
 
@@ -769,7 +948,8 @@ Array::dump(ostream &strm) const
     Dim_citer ie = _shape.end() ;
     unsigned int dim_num = 0 ;
     for (; i != ie; i++) {
-        strm << DapIndent::LMarg << "dimension " << dim_num++ << ":" << endl ;
+        strm << DapIndent::LMarg << "dimension " << dim_num++ << ":"
+	     << endl ;
         DapIndent::Indent() ;
         strm << DapIndent::LMarg << "name: " << (*i).name << endl ;
         strm << DapIndent::LMarg << "size: " << (*i).size << endl ;
@@ -777,7 +957,7 @@ Array::dump(ostream &strm) const
         strm << DapIndent::LMarg << "stop: " << (*i).stop << endl ;
         strm << DapIndent::LMarg << "stride: " << (*i).stride << endl ;
         strm << DapIndent::LMarg << "constrained size: " << (*i).c_size
-        << endl ;
+             << endl ;
 #if 0
         strm << DapIndent::LMarg << "selected: " << (*i).selected << endl ;
 #endif

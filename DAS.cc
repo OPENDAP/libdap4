@@ -280,6 +280,28 @@ DAS::print(FILE *out, bool dereference)
     fprintf(out, "}\n") ;
 }
 
+/** Creates an ASCII representation of a DAS on the given output
+    stream.
+
+    When an identifier contains a character that contains
+    characters that cannot be present in a URL (e.g., a space)
+    AttrTable::print replaces those characters with WWW
+    escape codes. 7/13/2001 jhrg
+
+    @param out output ostream on which to print the DAS
+    @param dereference If true, follow aliases. Default is false.
+*/
+
+void
+DAS::print(ostream &out, bool dereference)
+{
+    out << "Attributes {\n" ;
+
+    AttrTable::print(out, "    ", dereference);
+
+    out << "}\n" ;
+}
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and then calls parent dump
@@ -291,7 +313,7 @@ void
 DAS::dump(ostream &strm) const
 {
     strm << DapIndent::LMarg << "DAS::dump - ("
-    << (void *)this << ")" << endl ;
+         << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
     AttrTable::dump(strm) ;
     DapIndent::UnIndent() ;

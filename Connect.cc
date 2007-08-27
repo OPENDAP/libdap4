@@ -56,6 +56,7 @@ static char rcsid[] not_used =
 #include "escaping.h"
 #include "RCReader.h"
 #include "DDXParser.h"
+#include "XDRFileUnMarshaller.h"
 
 using std::cerr;
 using std::endl;
@@ -99,21 +100,19 @@ Connect::process_data(DataDDS &data, Response *rs)
     default: {
             // Parse the DDS; throw an exception on error.
             data.parse(rs->get_stream());
-            XDR *xdr_stream = new_xdrstdio(rs->get_stream(), XDR_DECODE);
+	    XDRFileUnMarshaller um( rs->get_stream() ) ;
 
             // Load the DDS with data.
             try {
                 for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
                      i++) {
-                    (*i)->deserialize(xdr_stream, &data);
+                    (*i)->deserialize(um, &data);
                 }
             }
             catch (Error &e) {
-                delete_xdrstdio(xdr_stream);
                 throw e;
             }
 
-            delete_xdrstdio(xdr_stream);
             return;
         }
 

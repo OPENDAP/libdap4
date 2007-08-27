@@ -16,10 +16,18 @@
   with other libraries. 8/1/2000 jhrg
 */
 
-#ifndef __DODS_DATATYPES__
-#define __DODS_DATATYPES__
+#ifndef __XDR_DATATYPES__
+#define __XDR_DATATYPES__
 
-#include <inttypes.h>
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock2.h>
+#include <xdr.h>
+#else
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
+#endif
 
 /* The typedefs are done using a preprocessor symbol so that autoconf's
    `CONFIG_HEADER' can be used. The configure script will then only modify
@@ -27,18 +35,14 @@
    compilation since the header is used by many files in the dap++ library.
    The downside is that the typedefs are so ugly... 2/14/2001 jhrg */
 
-typedef int32_t dods_int32;
+#define XDR_INT32 xdr_int32_t
+#define XDR_UINT32 xdr_uint32_t
 
-typedef uint32_t dods_uint32;
+#define XDR_INT16 xdr_int16_t
+#define XDR_UINT16 xdr_uint16_t
 
-typedef int16_t dods_int16;
+#define XDR_FLOAT64 xdr_double
+#define XDR_FLOAT32 xdr_float
 
-typedef uint16_t dods_uint16;
+#endif /* __XDR_DATATYPES__ */
 
-typedef uint8_t dods_byte;
-
-typedef double dods_float64;
-
-typedef float dods_float32;		
-
-#endif /* __DODS_DATATYPES__ */

@@ -296,6 +296,31 @@ Constructor::print_decl(FILE *out, string space, bool print_semi,
         fprintf(out, ";\n") ;
 }
 
+void
+Constructor::print_decl(ostream &out, string space, bool print_semi,
+                        bool constraint_info, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    out << space << type_name() << " {\n" ;
+    for (Vars_citer i = _vars.begin(); i != _vars.end(); i++) {
+        (*i)->print_decl(out, space + "    ", true,
+                         constraint_info, constrained);
+    }
+    out << space << "} " << id2www(name()) ;
+
+    if (constraint_info) { // Used by test drivers only.
+        if (send_p())
+            out << ": Send True";
+        else
+            out << ": Send False";
+    }
+
+    if (print_semi)
+	out << ";\n" ;
+}
+
 class PrintField : public unary_function<BaseType *, void>
 {
     FILE *d_out;
@@ -337,6 +362,50 @@ Constructor::print_xml(FILE *out, string space, bool constrained)
     }
     else {
         fprintf(out, "/>\n");
+    }
+}
+
+class PrintFieldStrm : public unary_function<BaseType *, void>
+{
+    ostream &d_out;
+    string d_space;
+    bool d_constrained;
+public:
+    PrintFieldStrm(ostream &o, string s, bool c)
+            : d_out(o), d_space(s), d_constrained(c)
+    {}
+
+    void operator()(BaseType *btp)
+    {
+        btp->print_xml(d_out, d_space, d_constrained);
+    }
+};
+
+void
+Constructor::print_xml(ostream &out, string space, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    bool has_attributes = false; // *** fix me
+    bool has_variables = (var_begin() != var_end());
+
+    out << space << "<" << type_name() ;
+    if (!name().empty())
+	out << " name=\"" << id2xml(name()) << "\"" ;
+
+    if (has_attributes || has_variables) {
+	out << ">\n" ;
+
+        get_attr_table().print_xml(out, space + "    ", constrained);
+
+        for_each(var_begin(), var_end(),
+                 PrintFieldStrm(out, space + "    ", constrained));
+
+	out << space << "</" << type_name() << ">\n" ;
+    }
+    else {
+	out << "/>\n" ;
     }
 }
 

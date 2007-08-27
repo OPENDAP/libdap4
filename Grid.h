@@ -162,8 +162,8 @@ public:
     virtual void clear_constraint();
 
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, XDR *sink, bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+                           DDS &dds, Marshaller &m, bool ce_eval = true);
+    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     virtual unsigned int val2buf(void *buf, bool reuse = false);
 
@@ -173,11 +173,19 @@ public:
                             bool print_semi = true,
                             bool constraint_info = false,
                             bool constrained = false);
+    virtual void print_decl(ostream &out, string space = "    ",
+                            bool print_semi = true,
+                            bool constraint_info = false,
+                            bool constrained = false);
 
     virtual void print_xml(FILE *out, string space = "    ",
                            bool constrained = false);
+    virtual void print_xml(ostream &out, string space = "    ",
+                           bool constrained = false);
 
     virtual void print_val(FILE *out, string space = "",
+                           bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 
     virtual bool check_semantics(string &msg, bool all = false);

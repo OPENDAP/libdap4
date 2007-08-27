@@ -100,22 +100,22 @@ Sequence::_duplicate(const Sequence &s)
 }
 
 static void
-write_end_of_sequence(XDR *sink)
+write_end_of_sequence(Marshaller &m)
 {
-    xdr_opaque(sink, (char *)&end_of_sequence, 1);
+    m.put_opaque( (char *)&end_of_sequence, 1 ) ;
 }
 
 static void
-write_start_of_instance(XDR *sink)
+write_start_of_instance(Marshaller &m)
 {
-    xdr_opaque(sink, (char *)&start_of_instance, 1);
+    m.put_opaque( (char *)&start_of_instance, 1 ) ;
 }
 
 static unsigned char
-read_marker(XDR *source)
+read_marker(UnMarshaller &um)
 {
     unsigned char marker;
-    xdr_opaque(source, (char *)&marker, 1);
+    um.get_opaque( (char *)&marker, 1 ) ;
 
     return marker;
 }
@@ -683,15 +683,15 @@ Sequence::is_end_of_rows(int i)
 */
 bool
 Sequence::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
-                    XDR *sink, bool ce_eval)
+                    Marshaller &m, bool ce_eval)
 {
     DBG2(cerr << "Entering Sequence::serialize for " << name() << endl);
 
     // Special case leaf sequences!
     if (is_leaf_sequence())
-        return serialize_leaf(dataset, dds, eval, sink, ce_eval);
+        return serialize_leaf(dataset, dds, eval, m, ce_eval);
     else
-        return serialize_parent_part_one(dataset, dds, eval, sink);
+        return serialize_parent_part_one(dataset, dds, eval, m);
 }
 
 // We know this is not a leaf Sequence. That means that this Sequence holds
@@ -700,7 +700,7 @@ Sequence::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
 
 bool
 Sequence::serialize_parent_part_one(const string &dataset, DDS &dds,
-                                    ConstraintEvaluator &eval, XDR *sink)
+                                    ConstraintEvaluator &eval, Marshaller &m)
 {
     DBG2(cerr << "Entering serialize_parent_part_one for " << name() << endl);
 
@@ -731,7 +731,7 @@ Sequence::serialize_parent_part_one(const string &dataset, DDS &dds,
             // sequence must be the lowest level sequence with values whose send_p
             // property is true.
             if ((*iter)->send_p() && (*iter)->type() == dods_sequence_c)
-                (*iter)->serialize(dataset, eval, dds, sink);
+                (*iter)->serialize(dataset, eval, dds, m);
         }
 
         set_read_p(false); // ...so this will read the next instance
@@ -747,7 +747,7 @@ Sequence::serialize_parent_part_one(const string &dataset, DDS &dds,
     // a return value of only the EOS marker for the outermost sequence.
     if (d_top_most || d_wrote_soi) {
         DBG(cerr << "Writing End of Sequence marker" << endl);
-        write_end_of_sequence(sink);
+        write_end_of_sequence(m);
         d_wrote_soi = false;
     }
 
@@ -766,19 +766,19 @@ Sequence::serialize_parent_part_one(const string &dataset, DDS &dds,
 // variables.
 void
 Sequence::serialize_parent_part_two(const string &dataset, DDS &dds,
-                                    ConstraintEvaluator &eval, XDR *sink)
+                                    ConstraintEvaluator &eval, Marshaller &m)
 {
     DBG(cerr << "Entering serialize_parent_part_two for " << name() << endl);
 
     BaseType *btp = get_parent();
     if (btp && btp->type() == dods_sequence_c)
         dynamic_cast<Sequence&>(*btp).serialize_parent_part_two(dataset, dds,
-                eval, sink);
+                eval, m);
 
     if (d_unsent_data) {
         DBG(cerr << "Writing Start of Instance marker" << endl);
         d_wrote_soi = true;
-        write_start_of_instance(sink);
+        write_start_of_instance(m);
 
         // In this loop serialize will signal an error with an exception.
         for (Vars_iter iter = _vars.begin(); iter != _vars.end(); iter++) {
@@ -787,7 +787,7 @@ Sequence::serialize_parent_part_two(const string &dataset, DDS &dds,
                 << (*iter)->name() << endl);
             if ((*iter)->send_p() && (*iter)->type() != dods_sequence_c) {
                 DBG(cerr << "Send P is true, sending " << (*iter)->name() << endl);
-                (*iter)->serialize(dataset, eval, dds, sink, false);
+                (*iter)->serialize(dataset, eval, dds, m, false);
             }
         }
 
@@ -799,7 +799,7 @@ Sequence::serialize_parent_part_two(const string &dataset, DDS &dds,
 // is also a leaf sequence.
 bool
 Sequence::serialize_leaf(const string &dataset, DDS &dds,
-                         ConstraintEvaluator &eval, XDR *sink, bool ce_eval)
+                         ConstraintEvaluator &eval, Marshaller &m, bool ce_eval)
 {
     DBG(cerr << "Entering Sequence::serialize_leaf for " << name() << endl);
     int i = (d_starting_row_number != -1) ? d_starting_row_number : 0;
@@ -825,8 +825,7 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds,
         BaseType *btp = get_parent();
         if (btp && btp->type() == dods_sequence_c)
             dynamic_cast<Sequence&>(*btp).serialize_parent_part_two(dataset,
-                    dds, eval,
-                    sink);
+                    dds, eval, m);
     }
 
     d_wrote_soi = false;
@@ -835,7 +834,7 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds,
 
         DBG(cerr << "Writing Start of Instance marker" << endl);
         d_wrote_soi = true;
-        write_start_of_instance(sink);
+        write_start_of_instance(m);
 
         // In this loop serialize will signal an error with an exception.
         for (Vars_iter iter = _vars.begin(); iter != _vars.end(); iter++) {
@@ -843,7 +842,7 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds,
                 << (*iter)->name() << endl);
             if ((*iter)->send_p()) {
                 DBG(cerr << "Send P is true, sending " << (*iter)->name() << endl);
-                (*iter)->serialize(dataset, eval, dds, sink, false);
+                (*iter)->serialize(dataset, eval, dds, m, false);
             }
         }
 
@@ -857,7 +856,7 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds,
     // Marker in the stream.
     if (d_wrote_soi || d_top_most) {
         DBG(cerr << "Writing End of Sequence marker" << endl);
-        write_end_of_sequence(sink);
+        write_end_of_sequence(m);
     }
 
     return true;  // Signal errors with exceptions.
@@ -1065,7 +1064,7 @@ Sequence::transfer_data_parent_part_two(const string &dataset, DDS &dds,
     was completely read. Now it simply returns false. This might seem odd,
     but making this method return true breaks existing software the least.
 
-    @param source An XDR stream.
+    @param um An UnMarshaller that knows how to deserialize data
     @param dds A DataDDS from which to read.
     @param reuse Passed to child objects when they are deserialized.
     @exception Error if a sequence stream marker cannot be read.
@@ -1075,7 +1074,7 @@ Sequence::transfer_data_parent_part_two(const string &dataset, DDS &dds,
     that there are more rows to be read.
 */
 bool
-Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
+Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 {
     DataDDS *dd = dynamic_cast<DataDDS *>(dds);
     if (!dd)
@@ -1093,7 +1092,7 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
 
     while (true) {
         // Grab the sequence stream's marker.
-        unsigned char marker = read_marker(source);
+        unsigned char marker = read_marker(um);
         if (is_end_of_sequence(marker))
             break;  // EXIT the while loop here!!!
         else if (is_start_of_instance(marker)) {
@@ -1104,7 +1103,7 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
             // Read the instance's values, building up the row
             for (Vars_iter iter = _vars.begin(); iter != _vars.end(); iter++) {
                 BaseType *bt_ptr = (*iter)->ptr_duplicate();
-                bt_ptr->deserialize(source, dds, reuse);
+                bt_ptr->deserialize(um, dds, reuse);
                 DBG2(cerr << "Deserialized " << bt_ptr->name() << " ("
                      << bt_ptr << ") = ");
                 DBG2(bt_ptr->print_val(stderr, ""));
@@ -1250,6 +1249,44 @@ Sequence::print_one_row(FILE *out, int row, string space,
 }
 
 void
+Sequence::print_one_row(ostream &out, int row, string space,
+                        bool print_row_num)
+{
+    if (print_row_num)
+	out << "\n" << space << row << ": " ;
+
+    out << "{ " ;
+
+    int elements = element_count() - 1;
+    int j;
+    BaseType *bt_ptr;
+    // Print first N-1 elements of the row.
+    for (j = 0; j < elements; ++j) {
+        bt_ptr = var_value(row, j);
+        if (bt_ptr) {  // data
+            if (bt_ptr->type() == dods_sequence_c)
+                dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
+                (out, space + "    ", false, print_row_num);
+            else
+                bt_ptr->print_val(out, space, false);
+	    out << ", " ;
+        }
+    }
+
+    // Print Nth element; end with a `}.'
+    bt_ptr = var_value(row, j);
+    if (bt_ptr) {  // data
+        if (bt_ptr->type() == dods_sequence_c)
+            dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
+            (out, space + "    ", false, print_row_num);
+        else
+            bt_ptr->print_val(out, space, false);
+    }
+
+    out << " }" ;
+}
+
+void
 Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
                             bool print_row_numbers)
 {
@@ -1275,24 +1312,42 @@ Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
 }
 
 void
+Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p,
+                            bool print_row_numbers)
+{
+    if (print_decl_p) {
+        print_decl(out, space, false);
+	out << " = " ;
+    }
+
+    out << "{ " ;
+
+    int rows = number_of_rows() - 1;
+    int i;
+    for (i = 0; i < rows; ++i) {
+        print_one_row(out, i, space, print_row_numbers);
+	out << ", " ;
+    }
+    print_one_row(out, i, space, print_row_numbers);
+
+    out << " }" ;
+
+    if (print_decl_p)
+	out << ";\n" ;
+}
+
+void
 Sequence::print_val(FILE *out, string space, bool print_decl_p)
 {
     print_val_by_rows(out, space, print_decl_p, false);
 }
 
-
-// print_all_vals is from Todd Karakasian.
-// We need to integrate this into print_val somehow, maybe by adding an XDR *
-// to Sequence? This can wait since print_val is mostly used for debugging...
-//
-// Deprecated. No longer needed since print_vals does its job.
-
 void
-Sequence::print_all_vals(FILE *out, XDR *, DDS *, string space,
-                         bool print_decl_p)
+Sequence::print_val(ostream &out, string space, bool print_decl_p)
 {
-    print_val(out, space, print_decl_p);
+    print_val_by_rows(out, space, print_decl_p, false);
 }
+
 
 bool
 Sequence::check_semantics(string &msg, bool all)
@@ -1400,22 +1455,22 @@ Sequence::dump(ostream &strm) const
     DapIndent::Indent() ;
     Constructor::dump(strm) ;
     strm << DapIndent::LMarg << "# rows deserialized: " << d_row_number
-    << endl ;
+         << endl ;
     strm << DapIndent::LMarg << "bracket notation information:" << endl ;
     DapIndent::Indent() ;
     strm << DapIndent::LMarg << "starting row #: " << d_starting_row_number
-    << endl ;
+         << endl ;
     strm << DapIndent::LMarg << "row stride: " << d_row_stride << endl ;
     strm << DapIndent::LMarg << "ending row #: " << d_ending_row_number
-    << endl ;
+         << endl ;
     DapIndent::UnIndent() ;
 
     strm << DapIndent::LMarg << "data been sent? " << d_unsent_data << endl ;
     strm << DapIndent::LMarg << "start of instance? " << d_wrote_soi << endl ;
     strm << DapIndent::LMarg << "is leaf sequence? " << d_leaf_sequence
-    << endl ;
+         << endl ;
     strm << DapIndent::LMarg << "top most in hierarchy? " << d_top_most
-    << endl ;
+         << endl ;
     DapIndent::UnIndent() ;
 }
 

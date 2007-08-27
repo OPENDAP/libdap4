@@ -43,6 +43,7 @@
 
 using std::cout;
 using std::string;
+using std::ostream;
 
 /** The most common errors within DAP2 have special codes so that they
     can be spotted easily by the client software. Any error
@@ -104,6 +105,7 @@ public:
     bool OK() const;
     bool parse(FILE *fp);
     void print(FILE *out) const;
+    void print(ostream &out) const;
     ErrorCode get_error_code() const;
     string get_error_message() const;
     void set_error_code(ErrorCode ec = undefined_error);

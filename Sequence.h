@@ -58,6 +58,9 @@
 #include "ConstraintEvaluator.h"
 #endif
 
+// FIXME
+#include "XDRUtils.h"
+
 /** The type BaseTypeRow is used to store single rows of values in an
     instance of Sequence. Values are stored in instances of BaseType. */
 typedef vector<BaseType *> BaseTypeRow;
@@ -212,11 +215,14 @@ protected:
     typedef vector<SequenceValues*> sequence_values_stack_t;
 
     virtual bool serialize_parent_part_one(const string &dataset, DDS &dds,
-                                           ConstraintEvaluator &eval, XDR *sink);
+                                           ConstraintEvaluator &eval,
+					   Marshaller &m);
     virtual void serialize_parent_part_two(const string &dataset, DDS &dds,
-                                           ConstraintEvaluator &eval, XDR *sink);
+                                           ConstraintEvaluator &eval,
+					   Marshaller &m);
     virtual bool serialize_leaf(const string &dataset, DDS &dds,
-                                ConstraintEvaluator &eval, XDR *sink, bool ce_eval);
+                                ConstraintEvaluator &eval,
+				Marshaller &m, bool ce_eval);
 
     virtual void transfer_data_private(const string &dataset,
                                        ConstraintEvaluator &eval,
@@ -266,12 +272,12 @@ public:
                           ConstraintEvaluator &eval, bool ce_eval = true);
 
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, XDR *sink, bool ce_eval = true);
+                           DDS &dds, Marshaller &m, bool ce_eval = true);
 
     virtual void transfer_data(const string &dataset, ConstraintEvaluator &eval,
                                DDS &dds);
 
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     /// Rest the row number counter
     void reset_row_number();
@@ -316,13 +322,18 @@ public:
     virtual void add_var(BaseType *, Part part = nil);
     virtual void print_one_row(FILE *out, int row, string space,
                                bool print_row_num = false);
+    virtual void print_one_row(ostream &out, int row, string space,
+                               bool print_row_num = false);
     virtual void print_val_by_rows(FILE *out, string space = "",
+                                   bool print_decl_p = true,
+                                   bool print_row_numbers = true);
+    virtual void print_val_by_rows(ostream &out, string space = "",
                                    bool print_decl_p = true,
                                    bool print_row_numbers = true);
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
-    virtual void print_all_vals(FILE *out, XDR *src, DDS *dds,
-                                string space = "", bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "",
+                           bool print_decl_p = true);
 
     virtual bool check_semantics(string &msg, bool all = false);
 

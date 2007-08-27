@@ -43,17 +43,6 @@
 #define _basetype_h 1
 
 
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock2.h>
-#include <xdr.h>
-#define xdr_proc_t int *
-#else
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif
-
 #include <vector>
 #include <stack>
 #include <iostream>
@@ -74,6 +63,9 @@
 #ifndef A_DapObj_h
 #include "DapObj.h"
 #endif
+
+#include "Marshaller.h"
+#include "UnMarshaller.h"
 
 using namespace std;
 
@@ -199,11 +191,6 @@ private:
     string _name;  // name of the instance
     Type _type;   // instance's type
 
-    // xdr_coder is used as an argument to xdr procedures that encode groups
-    // of things (e.g., xdr_array()). Each leaf class's constructor must set
-    // this.
-    xdrproc_t _xdr_coder;
-
     bool _read_p;  // true if the value has been read
     bool _send_p;  // Is the variable in the projection?
     bool d_in_selection; // Is the variable in the selection?
@@ -221,8 +208,7 @@ protected:
     void _duplicate(const BaseType &bt);
 
 public:
-    BaseType(const string &n = "", const Type &t = dods_null_c,
-             xdrproc_t xdr = NULL);
+    BaseType(const string &n = "", const Type &t = dods_null_c);
 
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();
@@ -268,8 +254,6 @@ public:
 
     virtual bool is_in_selection();
     virtual void set_in_selection(bool state);
-
-    xdrproc_t xdr_coder();
 
     virtual void set_parent(BaseType *parent);
     virtual BaseType *get_parent();
@@ -325,7 +309,15 @@ public:
                             bool constraint_info = false,
                             bool constrained = false);
 
+    virtual void print_decl(ostream &out, string space = "    ",
+                            bool print_semi = true,
+                            bool constraint_info = false,
+                            bool constrained = false);
+
     virtual void print_xml(FILE *out, string space = "    ",
+                           bool constrained = false);
+
+    virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
 
     /** @name Abstract Methods */
@@ -411,9 +403,7 @@ public:
 	@param dds The Data Descriptor Structure object corresponding
 	to this dataset. See <i>The DODS User Manual</i> for
 	information about this structure.
-	@param sink A valid XDR pointer generally created with a call
-	to <tt>new_xdrstdio()</tt>. This typically routes data to a
-	TCP/IP socket.
+	@param m A marshaller used to serialize data types
 	@param ce_eval A boolean value indicating whether to evaluate
 	the DODS constraint expression that may accompany this
 	dataset. The constraint expression is stored in <i>dds</i>.
@@ -424,7 +414,7 @@ public:
 	@exception Error.
 	@see DDS */
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, XDR *sink, bool ce_eval = true) = 0;
+                           DDS &dds, Marshaller &m, bool ce_eval = true) = 0;
 
     /** Receives data from the network connection identified by the
 	<tt>source</tt> parameter. The data is put into the class data
@@ -435,9 +425,7 @@ public:
 
 	@brief Receive data from the net.
 
-	@param source A valid XDR pointer to the process connection to
-	the net. This is generally created with a call to
-	<tt>new_xdrstdio()</tt>.
+	@param um An UnMarshaller that knows how to deserialize data types
 	@param dds The Data Descriptor Structure object corresponding
 	to this dataset. See <i>The DODS User Manual</i> for
 	information about this structure. This would have been
@@ -449,10 +437,10 @@ public:
 	FALSE, new storage is allocated. If the internal buffer has
 	not been allocated at all, this argument has no effect.
 	@return Always returns TRUE.
-	@exception Error when a problem reading from the XDR stream is
+	@exception Error when a problem reading from the UnMarshaller is
 	found.
 	@see DDS */
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false) = 0;
+    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) = 0;
 
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS
@@ -469,6 +457,23 @@ public:
 	@param print_decl_p A boolean value controlling whether the
 	variable declaration is printed as well as the value. */
     virtual void print_val(FILE *out, string space = "",
+                           bool print_decl_p = true) = 0;
+
+    /** Prints the value of the variable, with its declaration. This
+	function is primarily intended for debugging DODS
+	applications. However, it can be overloaded and used to do
+	some useful things. Take a look at the asciival and writeval
+	clients, both of which overload this to output the values of
+	variables in different ways.
+
+	@brief Prints the value of the variable.
+
+	@param out The output ostream on which to print the value.
+	@param space This value is passed to the print_decl()
+	function, and controls the leading spaces of the output.
+	@param print_decl_p A boolean value controlling whether the
+	variable declaration is printed as well as the value. */
+    virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true) = 0;
     //@}
 };

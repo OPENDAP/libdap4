@@ -243,6 +243,8 @@ protected:
 
     void simple_print(FILE *out, string pad, Attr_iter i,
                       bool dereference);
+    void simple_print(ostream &out, string pad, Attr_iter i,
+                      bool dereference);
 
 public:
     AttrTable();
@@ -303,8 +305,10 @@ public:
     bool attr_alias(const string &alias, const string &name);
 
     void print(FILE *out, string pad = "    ", bool dereference = false);
+    void print(ostream &out, string pad = "    ", bool dereference = false);
 
     void print_xml(FILE *out, string pad = "    ", bool constrained = false);
+    void print_xml(ostream &out, string pad = "    ", bool constrained = false);
 
     virtual void dump(ostream &strm) const ;
 };

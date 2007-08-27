@@ -73,8 +73,14 @@ public:
                             bool print_semi = true,
                             bool constraint_info = false,
                             bool constrained = false);
+    virtual void print_decl(ostream &out, string space = "    ",
+                            bool print_semi = true,
+                            bool constraint_info = false,
+                            bool constrained = false);
 
     virtual void print_xml(FILE *out, string space = "    ",
+                           bool constrained = false);
+    virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
 
     virtual void dump(ostream &strm) const ;

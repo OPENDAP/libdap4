@@ -48,17 +48,8 @@ static char rcsid[] not_used =
 #include <string.h>
 #include <errno.h>
 
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock2.h>
-#include <xdr.h>
-#include <io.h>
-#include <fcntl.h>
-#else
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif
+#include "XDRFileMarshaller.h"
+#include "XDRFileUnMarshaller.h"
 
 #include <GetOpt.h>
 
@@ -588,15 +579,13 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
 
         fflush(pout);
 
-        XDR *xdr_sink = new_xdrstdio(pout, XDR_ENCODE);
+	XDRFileMarshaller m( pout ) ;
 
         try {
             // In the following call to serialize, suppress CE evaluation.
-            var->serialize(dds_name, eval, server, xdr_sink, false);
-            delete_xdrstdio(xdr_sink);
+            var->serialize(dds_name, eval, server, m, false);
         }
         catch(Error & e) {
-            delete_xdrstdio(xdr_sink);
             delete var;
             var = 0;
             throw;
@@ -611,18 +600,17 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
         fflush(pout);
 
         // Grab a stream that encodes using XDR.
-        XDR *xdr_sink = new_xdrstdio(pout, XDR_ENCODE);
+	XDRFileMarshaller m( pout ) ;
 
         // Send all variables in the current projection (send_p())
         for (DDS::Vars_iter i = server.var_begin(); i != server.var_end();
              i++)
             if ((*i)->send_p()) {
                 DBG(cerr << "Sending " << (*i)->name() << endl);
-                (*i)->serialize(dds_name, eval, server, xdr_sink, true);
+                (*i)->serialize(dds_name, eval, server, m, true);
             }
 	
 	fflush(pout);
-        delete_xdrstdio(xdr_sink);
     }
 
     fclose(pout);               // close pout to read from pin. Why?
@@ -642,16 +630,14 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     dds.parse(dds_fp);
     fclose(dds_fp);
 
-    XDR *source = new_xdrstdio(pin, XDR_DECODE);
+    XDRFileUnMarshaller um( pin ) ;
 
     // Back on the client side; deserialize the data *using the newly
     // generated DDS* (the one sent with the data).
 
     fprintf(stdout, "The data:\n");
     for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
-        (*q)->deserialize(source, &dds);
+        (*q)->deserialize(um, &dds);
         (*q)->print_val(stdout);
     }
-
-    delete_xdrstdio(source);
 }

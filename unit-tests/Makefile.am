@@ -7,7 +7,7 @@ AUTOMAKE_OPTIONS = foreign
 
 # Headers in 'tests' are used by the arrayT unit tests.
 
-AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests
+AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests -I/opt/local/include
 AM_CXXFLAGS = 
 
 # These are not used by automake but are often useful for certain types of
@@ -32,13 +32,14 @@ CLEANFILES = testout .dodsrc  *.gcda *.gcno
 # Unit Tests
 #
 
-UNIT_TESTS = arrayT attrTableT structT sequenceT ddsT RegexTest	\
-	AISDatabaseParserTest AISMergeTest AISResourcesTest ArrayTest	\
-	AttrTableTest ByteTest cgiUtilTest DASTest DDSTest		\
-	DDXParserTest DODSFilterTest generalUtilTest HTTPCacheTest	\
-	HTTPConnectTest parserUtilTest RCReaderTest SequenceTest	\
-	SignalHandlerTest CEFunctionsTest GridGeoConstraintTest \
-	ArrayGeoConstraintTest
+UNIT_TESTS = marshT
+#UNIT_TESTS = arrayT attrTableT structT sequenceT ddsT RegexTest	\
+#	AISDatabaseParserTest AISMergeTest AISResourcesTest ArrayTest	\
+#	AttrTableTest ByteTest cgiUtilTest DASTest DDSTest		\
+#	DDXParserTest DODSFilterTest generalUtilTest HTTPCacheTest	\
+#	HTTPConnectTest parserUtilTest RCReaderTest SequenceTest	\
+#	SignalHandlerTest CEFunctionsTest GridGeoConstraintTest \
+#	ArrayGeoConstraintTest
 
 
 RegexTest_SOURCES = RegexTest.cc
@@ -102,6 +103,9 @@ SignalHandlerTest_LDADD = -lcppunit ../libdap.la
 
 arrayT_SOURCES = arrayT.cc
 arrayT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a
+
+marshT_SOURCES = marshT.cc
+marshT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a
 
 attrTableT_SOURCES = attrTableT.cc
 attrTableT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a

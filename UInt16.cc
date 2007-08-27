@@ -52,16 +52,11 @@ static char rcsid[] not_used =
 #include "debug.h"
 #include "InternalErr.h"
 
-
-#ifdef WIN32
-#include <xdr.h>
-#endif
-
 using std::cerr;
 using std::endl;
 
 UInt16::UInt16(const string &n)
-        : BaseType(n, dods_uint16_c, (xdrproc_t)XDR_UINT16)
+        : BaseType(n, dods_uint16_c)
 {}
 
 UInt16::UInt16(const UInt16 &copy_from) : BaseType(copy_from)
@@ -96,7 +91,7 @@ UInt16::width()
 
 bool
 UInt16::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
-                  XDR *sink, bool ce_eval)
+                  Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
@@ -110,17 +105,15 @@ UInt16::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
 
     dds.timeout_off();
 
-    if (!XDR_UINT16(sink, &_buf))
-        throw Error("Network I/O Error. Could not send uint 16 data. This may be due to a\nbug in libdap or a problem with the network connection.");
+    m.put_uint16( _buf ) ;
 
     return true;
 }
 
 bool
-UInt16::deserialize(XDR *source, DDS *, bool)
+UInt16::deserialize(UnMarshaller &um, DDS *, bool)
 {
-    if (!XDR_UINT16(source, &_buf))
-        throw Error("Network I/O Error. Could not read uint 16 data. This may be due to a\nbug in libdap or a problem with the network connection.");
+    um.get_uint16( _buf ) ;
 
     return false;
 }
@@ -181,6 +174,17 @@ UInt16::print_val(FILE *out, string space, bool print_decl_p)
     }
     else
         fprintf(out, "%u", (unsigned int)_buf) ;
+}
+
+void
+UInt16::print_val(ostream &out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+        print_decl(out, space, false);
+	out << " = " << (unsigned int)_buf << ";\n" ;
+    }
+    else
+	out << (unsigned int)_buf ;
 }
 
 bool

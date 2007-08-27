@@ -214,6 +214,35 @@ Error::print(FILE *out) const
     fprintf(out, "};\n") ;
 }
 
+/** Creates a printable representation of the Error object. It is suitable
+    for framing, and also for printing and sending over a network.
+
+    The printed representation produced by this function can be parsed by the
+    parse() member function. Thus parse and print form a symmetrical pair
+    that can be used to send and receive an Error object over the network in
+    a MIME document.
+
+    @param out A reference to the output stream on which the Error object is to
+    be rendered. */
+void
+Error::print(ostream &strm) const
+{
+    assert(OK());
+
+    strm << "Error {\n" ;
+
+    strm << "    code = " << static_cast<int>(_error_code) << ";\n" ;
+
+    // If the error message is wrapped in double quotes, print it, else, add
+    // wrapping double quotes.
+    if (*_error_message.begin() == '"' && *(_error_message.end() - 1) == '"')
+        strm << "    message = " << _error_message.c_str() << ";\n" ;
+    else
+        strm << "    message = \"" << _error_message.c_str() << "\";\n"  ;
+
+    strm << "};\n" ;
+}
+
 /** Get the ErrorCode for this instance. */
 ErrorCode
 Error::get_error_code() const

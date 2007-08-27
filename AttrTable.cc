@@ -950,6 +950,36 @@ AttrTable::simple_print(FILE *out, string pad, Attr_iter i,
     }
 }
 
+/** A simple printer that does nothing fancy with aliases.
+    Protected. */
+void
+AttrTable::simple_print(ostream &out, string pad, Attr_iter i,
+                        bool dereference)
+{
+    switch ((*i)->type) {
+    case Attr_container:
+	out << pad << id2www(get_name(i)) << " {\n" ;
+
+        (*i)->attributes->print(out, pad + "    ", dereference);
+
+	out << pad << "}\n" ;
+        break;
+
+    default: {
+	    out << pad << get_type(i) << " " << id2www(get_name(i)) << " " ;
+
+            vector<string> *sxp = (*i)->attr;
+
+            vector<string>::iterator last = sxp->end() - 1;
+            for (vector<string>::iterator i = sxp->begin(); i != last; ++i)
+		out << (*i) << ", " ;
+
+	    out << (*(sxp->end() - 1)) << ";\n" ;
+        }
+        break;
+    }
+}
+
 /** Prints an ASCII representation of the attribute table to the
     indicated FILE pointer. The \c pad argument is prefixed to each
     line of the output to provide control of indentation.
@@ -973,6 +1003,35 @@ AttrTable::print(FILE *out, string pad, bool dereference)
                         pad.c_str(),
                         id2www(get_name(i)).c_str(),
                         id2www((*i)->aliased_to).c_str()) ;
+            }
+        }
+        else {
+            simple_print(out, pad, i, dereference);
+        }
+    }
+}
+
+/** Prints an ASCII representation of the attribute table to the
+    indicated output stream. The \c pad argument is prefixed to each
+    line of the output to provide control of indentation.
+
+    @brief Prints the attribute table.
+    @param out Print to the given output stream.
+    @param pad Indent elements of a table using this string of spaces. By
+    default this is a string of four spaces
+    @param dereference If true, follow aliases. Default is false. */
+
+void
+AttrTable::print(ostream &out, string pad, bool dereference)
+{
+    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++) {
+        if ((*i)->is_alias) {
+            if (dereference) {
+                simple_print(out, pad, i, dereference);
+            }
+            else {
+		out << pad << "Alias " << id2www(get_name(i))
+		    << " " << id2www((*i)->aliased_to) << ";\n" ;
             }
         }
         else {
@@ -1029,6 +1088,55 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
             }
 
             fprintf(out, "%s</Attribute>\n", pad.c_str());
+        }
+    }
+}
+
+/** Print the attribute table in XML.
+    @param out Destination stream
+    @param pad Indent lines of text/xml this much. Default is four spaces.
+    @param constrained The DDX contains attribute information; is this DDX
+    'constrained?' */
+void
+AttrTable::print_xml(ostream &out, string pad, bool constrained)
+{
+    // Why this works: AttrTable is really a hacked class that used to
+    // implement a single level, not nested, set of attributes. Containers
+    // were added several years later by dropping in the 'entry' structure.
+    // It's not a class in its own right; instead accessors from AttrTable
+    // are used to access information from entry. So... the loop below
+    // actually iterates over the entries of *this* (which is an instance of
+    // AttrTable). A container is an entry whose sole value is an AttrTable
+    // instance. 05/19/03 jhrg
+    for (Attr_iter i = attr_begin(); i != attr_end(); ++i) {
+        // To handle aliases, if constrained, check to see if the aliased
+        // variable is part of the current projection. If so, then the
+        // target is going to be sent so just write out the <Alias ...> tag.
+        // If not, don't write the alias (we should write out the complete
+        // target AttrTable, but that's not what the Java code does)
+        if ((*i)->is_alias) {
+            out << pad << "<Alias name=\"" << id2xml(get_name(i))
+	        << "\" Attribute=\"" << (*i)->aliased_to << "\">\n" ;
+
+        }
+        else if (is_container(i)) {
+            out << pad << "<Attribute name=\"" << id2xml(get_name(i))
+	        << "\" type=\"" << get_type(i) << "\">\n" ;
+
+            get_attr_table(i)->print_xml(out, pad + "    ", constrained);
+
+	    out << pad << "</Attribute>\n" ;
+        }
+        else {
+            out << pad << "<Attribute name=\"" << id2xml(get_name(i))
+	        << "\" type=\"" << get_type(i) << "\">\n" ;
+
+            string value_pad = pad + "    ";
+            for (unsigned j = 0; j < get_attr_num(i); ++j) {
+		out << value_pad << "<value>" << id2xml(get_attr(i, j)) << "</value>\n" ;
+            }
+
+            out << pad << "</Attribute>\n" ;
         }
     }
 }

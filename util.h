@@ -100,16 +100,6 @@ using std::iostream;
 string prune_spaces(const string &);
 bool unique_names(vector<BaseType *> l, const string &var, const string &type,
                   string &msg);
-//  These func's moved to xdrutil_ppc.* under the PPC as explained there
-#ifdef __POWERPC__
-extern "C" XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
-extern "C" XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
-extern "C" void delete_xdrstdio(XDR *xdr);
-#else
-XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
-XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
-void delete_xdrstdio(XDR *xdr);
-#endif
 FILE *text_to_temp(string text);
 string systime();
 FILE *compressor(FILE *output, int &childpid);
@@ -125,8 +115,6 @@ const char *dods_progress();
 #ifdef WIN32
 void flush_stream(iostream ios, FILE *out);
 #endif
-
-extern "C" bool_t xdr_str(XDR *xdrs, string &buf);
 
 void downcase(string &s);
 // Jose Garcia

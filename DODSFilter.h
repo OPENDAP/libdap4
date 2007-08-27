@@ -172,6 +172,7 @@ public:
     int get_timeout() const;
 
     virtual void establish_timeout(FILE *stream) const;
+    virtual void establish_timeout(ostream &stream) const;
 
     virtual void read_ancillary_das(DAS &das, const string &anc_location = "") const;
 
@@ -185,6 +186,8 @@ public:
                           bool with_mime_headers = true) const;
     virtual void send_das(FILE *out, DAS &das, const string &anc_location = "",
                           bool with_mime_headers = true) const;
+    virtual void send_das(ostream &out, DAS &das, const string &anc_location = "",
+                          bool with_mime_headers = true) const;
 
     virtual void send_dds(DDS &dds, ConstraintEvaluator &eval,
                           bool constrained = false,
@@ -194,19 +197,32 @@ public:
                           bool constrained = false,
                           const string &anc_location = "",
                           bool with_mime_headers = true) const;
+    virtual void send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
+                          bool constrained = false,
+                          const string &anc_location = "",
+                          bool with_mime_headers = true) const;
 
     virtual void functional_constraint(BaseType &var, DDS &dds,
-                                       ConstraintEvaluator &eval, FILE *out)
-    const;
+                                       ConstraintEvaluator &eval, FILE *out) const;
+    virtual void functional_constraint(BaseType &var, DDS &dds,
+                                       ConstraintEvaluator &eval, ostream &out) const;
     virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
                                     FILE *out) const;
+    virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
+                                    ostream &out) const;
 
     virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
                            FILE *data_stream,
                            const string &anc_location = "",
                            bool with_mime_headers = true) const;
+    virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
+                           ostream &data_stream,
+                           const string &anc_location = "",
+                           bool with_mime_headers = true) const;
 
     virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
+                          bool with_mime_headers = true) const;
+    virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
                           bool with_mime_headers = true) const;
 
     // Broken. 4/5/06 jhrg

@@ -326,7 +326,7 @@ ErrMsgT(const string &Msgt)
                          "OPeNDAP server";
 
     cerr << "[" << TimStr << "] CGI: " << script << " failed for "
-    << host_or_addr << ": " << Msgt << endl;
+         << host_or_addr << ": " << Msgt << endl;
 #endif
     cerr << "[" << TimStr << "] DAP server error: " << Msgt << endl;
 }
@@ -518,6 +518,59 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
     fprintf(out, CRLF) ;
 }
 
+/** Generate an HTTP 1.0 response header for a text document. This is used
+    when returning a serialized DAS or DDS object.
+
+    @param strm Write the MIME header to this stream.
+    @param type The type of this this response. Defaults to
+    application/octet-stream.
+    @param ver The version string; denotes the libdap implementation
+    version.
+    @param enc How is this response encoded? Can be plain or deflate or the
+    x_... versions of those. Default is x_plain.
+    @param last_modified The time to use for the Last-Modified header value.
+    Default is zero which means use the current time. */
+void
+set_mime_text(ostream &strm, ObjectType type, const string &ver,
+              EncodingType enc, const time_t last_modified)
+{
+    strm << "HTTP/1.0 200 OK" << CRLF ;
+    if (ver == "") {
+        strm << "XDODS-Server: " << DVR << CRLF ;
+        strm << "XOPeNDAP-Server: " << DVR << CRLF ;
+    }
+    else {
+        strm << "XDODS-Server: " << ver.c_str() << CRLF ;
+        strm << "XOPeNDAP-Server: " << ver.c_str() << CRLF ;
+    }
+    strm << "XDAP: " << DAP_PROTOCOL_VERSION << CRLF ;
+
+    const time_t t = time(0);
+    strm << "Date: " << rfc822_date(t).c_str() << CRLF ;
+
+    strm << "Last-Modified: " ;
+    if (last_modified > 0)
+        strm << rfc822_date(last_modified).c_str() << CRLF ;
+    else
+        strm << rfc822_date(t).c_str() << CRLF ;
+
+    if (type == dap4_ddx)
+        strm << "Content-Type: text/xml" << CRLF ;
+    else
+        strm << "Content-Type: text/plain" << CRLF ;
+
+    // Note that Content-Description is from RFC 2045 (MIME, pt 1), not 2616.
+    // jhrg 12/23/05
+    strm << "Content-Description: " << descrip[type] << CRLF ;
+    if (type == dods_error) // don't cache our error responses.
+        strm << "Cache-Control: no-cache" << CRLF ;
+    // Don't write a Content-Encoding header for x-plain since that breaks
+    // Netscape on NT. jhrg 3/23/97
+    if (enc != x_plain)
+        strm << "Content-Encoding: " << encoding[enc] << CRLF ;
+    strm << CRLF ;
+}
+
 /** Generate an HTTP 1.0 response header for a html document.
 
     @param out Write the MIME header to this FILE pointer.
@@ -562,6 +615,52 @@ set_mime_html(FILE *out, ObjectType type, const string &ver,
     if (enc != x_plain)
         fprintf(out, "Content-Encoding: %s%s", encoding[enc], CRLF) ;
     fprintf(out, CRLF) ;
+}
+
+/** Generate an HTTP 1.0 response header for a html document.
+
+    @param strm Write the MIME header to this stream.
+    @param type The type of this this response.
+    @param ver The version string; denotes the libdap implementation
+    version.
+    @param enc How is this response encoded? Can be plain or deflate or the
+    x_... versions of those. Default is x_plain.
+    @param last_modified The time to use for the Last-Modified header value.
+    Default is zero which means use the current time. */
+void
+set_mime_html(ostream &strm, ObjectType type, const string &ver,
+              EncodingType enc, const time_t last_modified)
+{
+    strm << "HTTP/1.0 200 OK" << CRLF ;
+    if (ver == "") {
+        strm << "XDODS-Server: " << DVR << CRLF ;
+        strm << "XOPeNDAP-Server: " << DVR << CRLF ;
+    }
+    else {
+        strm << "XDODS-Server: " << ver.c_str() << CRLF ;
+        strm << "XOPeNDAP-Server: " << ver.c_str() << CRLF ;
+    }
+    strm << "XDAP: " << DAP_PROTOCOL_VERSION << CRLF ;
+
+    const time_t t = time(0);
+    strm << "Date: " << rfc822_date(t).c_str() << CRLF ;
+
+    strm << "Last-Modified: " ;
+    if (last_modified > 0)
+        strm << rfc822_date(last_modified).c_str() << CRLF ;
+    else
+        strm << rfc822_date(t).c_str() << CRLF ;
+
+    strm << "Content-type: text/html" << CRLF ;
+    // See note above about Content-Description header. jhrg 12/23/05
+    strm << "Content-Description: " << descrip[type] << CRLF ;
+    if (type == dods_error) // don't cache our error responses.
+        strm << "Cache-Control: no-cache" << CRLF ;
+    // Don't write a Content-Encoding header for x-plain since that breaks
+    // Netscape on NT. jhrg 3/23/97
+    if (enc != x_plain)
+        strm << "Content-Encoding: " << encoding[enc] << CRLF ;
+    strm << CRLF ;
 }
 
 /** Write an HTTP 1.0 response header for our binary response document (i.e.,
@@ -609,6 +708,51 @@ set_mime_binary(FILE *out, ObjectType type, const string &ver,
     fprintf(out, CRLF) ;
 }
 
+/** Write an HTTP 1.0 response header for our binary response document (i.e.,
+    the DataDDS object).
+
+    @param strm Write the MIME header to this stream.
+    @param type The type of this this response. Defaults to
+    application/octet-stream.
+    @param ver The version string; denotes the libdap implementation
+    version.
+    @param enc How is this response encoded? Can be plain or deflate or the
+    x_... versions of those. Default is x_plain.
+    @param last_modified The time to use for the Last-Modified header value.
+    Default is zero which means use the current time.
+ */
+void
+set_mime_binary(ostream &strm, ObjectType type, const string &ver,
+                EncodingType enc, const time_t last_modified)
+{
+    strm << "HTTP/1.0 200 OK" << CRLF ;
+    if (ver == "") {
+        strm << "XDODS-Server: " << DVR << CRLF ;
+        strm << "XOPeNDAP-Server: " << DVR << CRLF ;
+    }
+    else {
+        strm << "XDODS-Server: " << ver.c_str() << CRLF ;
+        strm << "XOPeNDAP-Server: " << ver.c_str() << CRLF ;
+    }
+    strm << "XDAP: " << DAP_PROTOCOL_VERSION << CRLF ;
+
+    const time_t t = time(0);
+    strm << "Date: " << rfc822_date(t).c_str() << CRLF ;
+
+    strm << "Last-Modified: " ;
+    if (last_modified > 0)
+        strm << rfc822_date(last_modified).c_str() << CRLF ;
+    else
+        strm << rfc822_date(t).c_str() << CRLF ;
+
+    strm << "Content-Type: application/octet-stream" << CRLF ;
+    strm << "Content-Description: " << descrip[type] << CRLF ;
+    if (enc != x_plain)
+        strm << "Content-Encoding: " << encoding[enc] << CRLF ;
+
+    strm << CRLF ;
+}
+
 
 /** Generate an HTTP 1.0 response header for an Error object.
     @param out Write the MIME header to this FILE pointer.
@@ -637,6 +781,33 @@ set_mime_error(FILE *out, int code, const string &reason,
     fprintf(out, CRLF) ;
 }
 
+/** Generate an HTTP 1.0 response header for an Error object.
+    @param strm Write the MIME header to this stream.
+    @param code HTTP 1.0 response code. Should be 400, ... 500, ...
+    @param reason Reason string of the HTTP 1.0 response header.
+    @param version The version string; denotes the DAP spec and implementation
+    version. */
+void
+set_mime_error(ostream &strm, int code, const string &reason,
+               const string &version)
+{
+    strm << "HTTP/1.0 " << code << " " << reason.c_str() << CRLF ;
+    if (version == "") {
+        strm << "XDODS-Server: " << DVR << CRLF ;
+        strm << "XOPeNDAP-Server: " << DVR << CRLF ;
+    }
+    else {
+        strm << "XDODS-Server: " << version.c_str() << CRLF ;
+        strm << "XOPeNDAP-Server: " << version.c_str() << CRLF ;
+    }
+    strm << "XDAP: " << DAP_PROTOCOL_VERSION << CRLF ;
+
+    const time_t t = time(0);
+    strm << "Date: " << rfc822_date(t).c_str() << CRLF ;
+    strm << "Cache-Control: no-cache" << CRLF ;
+    strm << CRLF ;
+}
+
 
 /** Use this function to create a response signaling that the target of a
     conditional get has not been modified relative to the condition given in
@@ -651,6 +822,21 @@ set_mime_not_modified(FILE *out)
     const time_t t = time(0);
     fprintf(out, "Date: %s%s", rfc822_date(t).c_str(), CRLF) ;
     fprintf(out, CRLF) ;
+}
+
+/** Use this function to create a response signaling that the target of a
+    conditional get has not been modified relative to the condition given in
+    the request. This will have to be a date until the servers support ETags.
+
+    @brief Send a `Not Modified' response.
+    @param strm Write the response to this stream. */
+void
+set_mime_not_modified(ostream &strm)
+{
+    strm << "HTTP/1.0 304 NOT MODIFIED" << CRLF ;
+    const time_t t = time(0);
+    strm << "Date: " << rfc822_date(t).c_str() << CRLF ;
+    strm << CRLF ;
 }
 
 /** Look for the override file by taking the dataset name and

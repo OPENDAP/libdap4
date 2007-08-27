@@ -57,7 +57,7 @@ using std::cerr;
 using std::endl;
 
 UInt32::UInt32(const string &n)
-        : BaseType(n, dods_uint32_c, (xdrproc_t)XDR_UINT32)
+        : BaseType(n, dods_uint32_c)
 {}
 
 UInt32::UInt32(const UInt32 &copy_from) : BaseType(copy_from)
@@ -92,7 +92,7 @@ UInt32::width()
 
 bool
 UInt32::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
-                  XDR *sink, bool ce_eval)
+                  Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
@@ -106,17 +106,15 @@ UInt32::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
 
     dds.timeout_off();
 
-    if (!XDR_UINT32(sink, &_buf))
-        throw Error("Network I/O Error. Could not send uint 32 data. This may be due to a\nbug in libdap or a problem with the network connection.");
+    m.put_uint32( _buf ) ;
 
     return true;
 }
 
 bool
-UInt32::deserialize(XDR *source, DDS *, bool)
+UInt32::deserialize(UnMarshaller &um, DDS *, bool)
 {
-    if (!XDR_UINT32(source, &_buf))
-        throw Error("Network I/O Error. Could not read uint 32 data. This may be due to a\nbug in libdap or a problem with the network connection.");
+    um.get_uint32( _buf ) ;
 
     return false;
 }
@@ -178,6 +176,17 @@ UInt32::print_val(FILE *out, string space, bool print_decl_p)
     }
     else
         fprintf(out, "%u", (unsigned int)_buf) ;
+}
+
+void
+UInt32::print_val(ostream &out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+        print_decl(out, space, false);
+	out << " = " << (unsigned int)_buf << ";\n" ;
+    }
+    else
+	out << (unsigned int)_buf ;
 }
 
 bool

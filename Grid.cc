@@ -184,7 +184,7 @@ Grid::width()
 
 bool
 Grid::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
-                XDR *sink, bool ce_eval)
+                Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
@@ -203,11 +203,11 @@ Grid::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
     dds.timeout_off();
 
     if (_array_var->send_p())
-        _array_var->serialize(dataset, eval, dds, sink, false);
+        _array_var->serialize(dataset, eval, dds, m, false);
 
     for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++) {
         if ((*i)->send_p()) {
-            (*i)->serialize(dataset, eval, dds, sink, false);
+            (*i)->serialize(dataset, eval, dds, m, false);
         }
     }
 
@@ -215,12 +215,12 @@ Grid::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
 }
 
 bool
-Grid::deserialize(XDR *source, DDS *dds, bool reuse)
+Grid::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 {
-    _array_var->deserialize(source, dds, reuse);
+    _array_var->deserialize(um, dds, reuse);
 
     for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++) {
-        (*i)->deserialize(source, dds, reuse);
+        (*i)->deserialize(um, dds, reuse);
     }
 
     return false;
@@ -544,13 +544,82 @@ Grid::print_decl(FILE *out, string space, bool print_semi,
 
     if (constraint_info) {
         if (send_p())
-            cout << ": Send True";
+            fprintf( out, ": Send True");
         else
-            cout << ": Send False";
+            fprintf( out, ": Send False");
     }
 
     if (print_semi)
         fprintf(out, ";\n") ;
+
+    // If sending just one comp, skip sending the terminal semicolon, etc.
+exit:
+    return;
+}
+
+void
+Grid::print_decl(ostream &out, string space, bool print_semi,
+                 bool constraint_info, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    // If we are printing the declaration of a constrained Grid then check for
+    // the case where the projection removes all but one component; the
+    // resulting object is a simple array.
+    int projection = components(true);
+    if (constrained && projection == 1) {
+        _array_var->print_decl(out, space, true, constraint_info,
+                               constrained);
+        for (Map_citer i = _map_vars.begin(); i != _map_vars.end(); i++) {
+            (*i)->print_decl(out, space, true, constraint_info, constrained);
+        }
+        goto exit;  // Skip end material.
+    }
+    // If there are M (< N) componets (Array and Maps combined) in a N
+    // component Grid, send the M components as elements of a Struture.
+    // This will preserve the grouping without violating the rules for a
+    // Grid.
+    else if (constrained && !projection_yields_grid()) {
+	out << space << "Structure {\n" ;
+
+        _array_var->print_decl(out, space + "    ", true, constraint_info,
+                               constrained);
+
+        for (Map_citer i = _map_vars.begin(); i != _map_vars.end(); i++) {
+            (*i)->print_decl(out, space + "    ", true,
+                             constraint_info, constrained);
+        }
+
+	out << space << "} " << id2www(name()) ;
+    }
+    else {
+        // The number of elements in the (projected) Grid must be such that
+        // we have a valid Grid object; send it as such.
+	out << space << type_name() << " {\n" ;
+
+	out << space << "  Array:\n" ;
+        _array_var->print_decl(out, space + "    ", true, constraint_info,
+                               constrained);
+
+	out << space << "  Maps:\n" ;
+        for (Map_citer i = _map_vars.begin(); i != _map_vars.end(); i++) {
+            (*i)->print_decl(out, space + "    ", true,
+                             constraint_info, constrained);
+        }
+
+	out << space << "} " << id2www(name()) ;
+    }
+
+    if (constraint_info) {
+        if (send_p())
+            out << ": Send True";
+        else
+            out << ": Send False";
+    }
+
+    if (print_semi)
+	out << ";\n" ;
 
     // If sending just one comp, skip sending the terminal semicolon, etc.
 exit:
@@ -598,6 +667,47 @@ Grid::print_xml(FILE *out, string space, bool constrained)
     fprintf(out, "%s</Grid>\n", space.c_str());
 }
 
+class PrintMapFieldStrm : public unary_function<BaseType *, void>
+{
+    ostream &d_out;
+    string d_space;
+    bool d_constrained;
+public:
+    PrintMapFieldStrm(ostream &o, string s, bool c)
+            : d_out(o), d_space(s), d_constrained(c)
+    {}
+
+    void operator()(BaseType *btp)
+    {
+        Array *a = dynamic_cast<Array*>(btp);
+        if (!a)
+            throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
+        a->print_as_map_xml(d_out, d_space, d_constrained);
+    }
+};
+
+void
+Grid::print_xml(ostream &out, string space, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    out << space << "<Grid" ;
+    if (!name().empty())
+	out << " name=\"" << id2xml(name()) << "\"" ;
+
+    out << ">\n" ;
+
+    get_attr_table().print_xml(out, space + "    ", constrained);
+
+    get_array()->print_xml(out, space + "    ", constrained);
+
+    for_each(map_begin(), map_end(),
+             PrintMapFieldStrm(out, space + "    ", constrained));
+
+    out << space << "</Grid>\n" ;
+}
+
 void
 Grid::print_val(FILE *out, string space, bool print_decl_p)
 {
@@ -626,6 +736,36 @@ Grid::print_val(FILE *out, string space, bool print_decl_p)
 
     if (print_decl_p)
         fprintf(out, ";\n") ;
+}
+
+void
+Grid::print_val(ostream &out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+        print_decl(out, space, false);
+	out << " = " ;
+    }
+
+    // If we are printing a value on the client-side, projection_yields_grid
+    // should not be called since we don't *have* a projection without a
+    // contraint. I think that if we are here and send_p() is not true, then
+    // the value of this function should be ignored. 4/6/2000 jhrg
+    bool pyg = projection_yields_grid(); // hack 12/1/99 jhrg
+    if (pyg || !send_p())
+	out << "{  Array: " ;
+    else
+	out << "{" ;
+    _array_var->print_val(out, "", false);
+    if (pyg || !send_p())
+	out << "  Maps: " ;
+    for (Map_citer i = _map_vars.begin(); i != _map_vars.end();
+         i++, (void)(i != _map_vars.end() && out << ", ")) {
+        (*i)->print_val(out, "", false);
+    }
+    out << " }" ;
+
+    if (print_decl_p)
+	out << ";\n" ;
 }
 
 // Grids have ugly semantics.

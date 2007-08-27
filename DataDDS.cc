@@ -130,17 +130,17 @@ DataDDS::dump(ostream &strm) const
     DapIndent::Indent() ;
     DDS::dump(strm) ;
     strm << DapIndent::LMarg << "server version: " << d_server_version
-    << endl ;
+         << endl ;
     strm << DapIndent::LMarg << "version major: " << d_server_version_major
-    << endl ;
+         << endl ;
     strm << DapIndent::LMarg << "version minor: " << d_server_version_minor
-    << endl ;
+         << endl ;
     strm << DapIndent::LMarg << "protocol version: " << d_protocol_version
-    << endl ;
+         << endl ;
     strm << DapIndent::LMarg << "protocol major: " << d_server_protocol_major
-    << endl ;
+         << endl ;
     strm << DapIndent::LMarg << "protocol minor: " << d_server_protocol_minor
-    << endl ;
+         << endl ;
     DapIndent::UnIndent() ;
 }
 

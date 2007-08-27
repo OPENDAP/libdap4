@@ -64,6 +64,8 @@ static char rcsid[] not_used =
 #include "util.h"
 #include "escaping.h"
 #include "DODSFilter.h"
+#include "XDRFileMarshaller.h"
+#include "XDRStreamMarshaller.h"
 #include "InternalErr.h"
 #ifndef WIN32
 #include "SignalHandler.h"
@@ -623,6 +625,19 @@ DODSFilter::establish_timeout(FILE *stream) const
 #endif
 }
 
+// FIXME
+void
+DODSFilter::establish_timeout(ostream &stream) const
+{
+#ifndef WIN32
+    if (d_timeout > 0) {
+        SignalHandler *sh = SignalHandler::instance();
+        sh->register_handler(SIGALRM, new AlarmHandler(stream));
+        alarm(d_timeout);
+    }
+#endif
+}
+
 
 /** Read the ancillary DAS information and merge it into the input
     DAS object.
@@ -711,7 +726,7 @@ DODSFilter::send_version_info() const
     back to the client program.
 
     @brief Transmit a DAS.
-    @param out The output stream to which the DAS is to be sent.
+    @param out The output FILE to which the DAS is to be sent.
     @param das The DAS object to be sent.
     @param anc_location The directory in which the external DAS file resides.
     @param with_mime_headers If true (the default) send MIME headers.
@@ -735,6 +750,35 @@ DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location,
     fflush(out) ;
 }
 
+/** This function formats and prints an ASCII representation of a
+    DAS on stdout.  This has the effect of sending the DAS object
+    back to the client program.
+
+    @brief Transmit a DAS.
+    @param out The output stream to which the DAS is to be sent.
+    @param das The DAS object to be sent.
+    @param anc_location The directory in which the external DAS file resides.
+    @param with_mime_headers If true (the default) send MIME headers.
+    @return void
+    @see DAS */
+void
+DODSFilter::send_das(ostream &out, DAS &das, const string &anc_location,
+                     bool with_mime_headers) const
+{
+    time_t das_lmt = get_das_last_modified_time(anc_location);
+    if (is_conditional()
+        && das_lmt <= get_request_if_modified_since()
+        && with_mime_headers) {
+        set_mime_not_modified(out);
+    }
+    else {
+        if (with_mime_headers)
+            set_mime_text(out, dods_das, d_cgi_ver, x_plain, das_lmt);
+        das.print(out);
+    }
+    out << flush ;
+}
+
 void
 DODSFilter::send_das(DAS &das, const string &anc_location,
                      bool with_mime_headers) const
@@ -748,7 +792,7 @@ DODSFilter::send_das(DAS &das, const string &anc_location,
     program. Either an entire DDS or a constrained DDS may be sent.
 
     @brief Transmit a DDS.
-    @param out The output stream to which the DAS is to be sent.
+    @param out The output FILE to which the DAS is to be sent.
     @param dds The DDS to send back to a client.
     @param eval A reference to the ConstraintEvaluator to use.
     @param constrained If this argument is true, evaluate the
@@ -789,6 +833,53 @@ DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
     fflush(out) ;
 }
 
+/** This function formats and prints an ASCII representation of a
+    DDS on stdout.  When called by a CGI program, this has the
+    effect of sending a DDS object back to the client
+    program. Either an entire DDS or a constrained DDS may be sent.
+
+    @brief Transmit a DDS.
+    @param out The output stream to which the DAS is to be sent.
+    @param dds The DDS to send back to a client.
+    @param eval A reference to the ConstraintEvaluator to use.
+    @param constrained If this argument is true, evaluate the
+    current constraint expression and send the `constrained DDS'
+    back to the client.
+    @param anc_location The directory in which the external DAS file resides.
+    @param with_mime_headers If true (the default) send MIME headers.
+    @return void
+    @see DDS */
+void
+DODSFilter::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
+                     bool constrained,
+                     const string &anc_location,
+                     bool with_mime_headers) const
+{
+    // If constrained, parse the constraint. Throws Error or InternalErr.
+    if (constrained)
+        eval.parse_constraint(d_ce, dds);
+
+    if (eval.functional_expression())
+        throw Error("Function calls can only be used with data requests. To see the structure\nof the underlying data source, reissue the URL without the function.");
+
+    time_t dds_lmt = get_dds_last_modified_time(anc_location);
+    if (is_conditional()
+        && dds_lmt <= get_request_if_modified_since()
+        && with_mime_headers) {
+        set_mime_not_modified(out);
+    }
+    else {
+        if (with_mime_headers)
+            set_mime_text(out, dods_dds, d_cgi_ver, x_plain, dds_lmt);
+        if (constrained)
+            dds.print_constrained(out);
+        else
+            dds.print(out);
+    }
+
+    out << flush ;
+}
+
 void
 DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval,
                      bool constrained, const string &anc_location,
@@ -801,8 +892,7 @@ DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval,
 // method? jhrg 8/9/05
 void
 DODSFilter::functional_constraint(BaseType &var, DDS &dds,
-                                  ConstraintEvaluator &eval, FILE *out)
-const
+                                  ConstraintEvaluator &eval, FILE *out) const
 {
     fprintf(out, "Dataset {\n");
     var.print_decl(out, "    ", true, false, true);
@@ -812,15 +902,38 @@ const
     fflush(out);
 
     // Grab a stream encodes using XDR.
-    XDR *xdr_sink = new_xdrstdio(out, XDR_ENCODE);
+    XDRFileMarshaller m( out ) ;
 
     try {
         // In the following call to serialize, suppress CE evaluation.
-        var.serialize(d_dataset, eval, dds, xdr_sink, false);
-        delete_xdrstdio(xdr_sink);
+        var.serialize(d_dataset, eval, dds, m, false);
     }
     catch (Error &e) {
-        delete_xdrstdio(xdr_sink);
+        throw;
+    }
+}
+
+// 'lmt' unused. Should it be used to supply a LMT or removed from the
+// method? jhrg 8/9/05
+void
+DODSFilter::functional_constraint(BaseType &var, DDS &dds,
+                                  ConstraintEvaluator &eval, ostream &out) const
+{
+    out << "Dataset {\n" ;
+    var.print_decl(out, "    ", true, false, true);
+    out << "} function_value;\n" ;
+    out << "Data:\n" ;
+
+    out << flush ;
+
+    // Grab a stream encodes using XDR.
+    XDRStreamMarshaller m( out ) ;
+
+    try {
+        // In the following call to serialize, suppress CE evaluation.
+        var.serialize(d_dataset, eval, dds, m, false);
+    }
+    catch (Error &e) {
         throw;
     }
 }
@@ -835,26 +948,48 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
     fflush(out);
 
     // Grab a stream that encodes using XDR.
-    XDR *xdr_sink = new_xdrstdio(out, XDR_ENCODE);
+    XDRFileMarshaller m( out ) ;
 
     try {
         // Send all variables in the current projection (send_p())
         for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
             if ((*i)->send_p()) {
                 DBG(cerr << "Sending " << (*i)->name() << endl);
-                (*i)->serialize(d_dataset, eval, dds, xdr_sink, true);
+                (*i)->serialize(d_dataset, eval, dds, m, true);
             }
-
-        delete_xdrstdio(xdr_sink);
     }
     catch (Error & e) {
-        delete_xdrstdio(xdr_sink);
+        throw;
+    }
+}
+
+void
+DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
+                               ostream &out) const
+{
+    // send constrained DDS
+    dds.print_constrained(out);
+    out << "Data:\n" ;
+    out << flush ;
+
+    // Grab a stream that encodes using XDR.
+    XDRStreamMarshaller m( out ) ;
+
+    try {
+        // Send all variables in the current projection (send_p())
+        for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
+            if ((*i)->send_p()) {
+                DBG(cerr << "Sending " << (*i)->name() << endl);
+                (*i)->serialize(d_dataset, eval, dds, m, true);
+            }
+    }
+    catch (Error & e) {
         throw;
     }
 }
 
 /** Send the data in the DDS object back to the client program. The data is
-    encoded in XDR format, and enclosed in a MIME document which is all sent
+    encoded using a Marshaller, and enclosed in a MIME document which is all sent
     to \c data_stream. If this is being called from a CGI, \c data_stream is
     probably \c stdout and writing to it has the effect of sending the
     response back to the client.
@@ -862,7 +997,7 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
     @brief Transmit data.
     @param dds A DDS object containing the data to be sent.
     @param eval A reference to the ConstraintEvaluator to use.
-    @param data_stream Write the response to this stream.
+    @param data_stream Write the response to this FILE.
     @param anc_location A directory to search for ancillary files (in
     addition to the CWD).  This is used in a call to
     get_data_last_modified_time().
@@ -947,6 +1082,100 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     fflush(data_stream);
 }
 
+/** Send the data in the DDS object back to the client program. The data is
+    encoded using a Marshaller, and enclosed in a MIME document which is all sent
+    to \c data_stream. If this is being called from a CGI, \c data_stream is
+    probably \c stdout and writing to it has the effect of sending the
+    response back to the client.
+
+    @brief Transmit data.
+    @param dds A DDS object containing the data to be sent.
+    @param eval A reference to the ConstraintEvaluator to use.
+    @param data_stream Write the response to this stream.
+    @param anc_location A directory to search for ancillary files (in
+    addition to the CWD).  This is used in a call to
+    get_data_last_modified_time().
+    @param with_mime_headers If true, include the MIME headers in the response.
+    Defaults to true.
+    @return void */
+void
+DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
+                      ostream & data_stream, const string & anc_location,
+                      bool with_mime_headers) const
+{
+    // If this is a conditional request and the server should send a 304
+    // response, do that and exit. Otherwise, continue on and send the full
+    // response.
+    time_t data_lmt = get_data_last_modified_time(anc_location);
+    if (is_conditional()
+        && data_lmt <= get_request_if_modified_since()
+        && with_mime_headers) {
+        set_mime_not_modified(data_stream);
+        return;
+    }
+    // Set up the alarm.
+    establish_timeout(data_stream);
+    dds.set_timeout(d_timeout);
+
+    eval.parse_constraint(d_ce, dds);   // Throws Error if the ce doesn't
+					// parse. 
+
+    dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
+
+    // Start sending the response...
+#if COMPRESSION_FOR_SERVER3
+    bool compress = d_comp && deflate_exists();
+#endif
+
+    // Handle *functional* constraint expressions specially
+    if (eval.functional_expression()) {
+        // Get the result and then start sending the headers. This provides a
+        // way to send errors back to the client w/o colliding with the
+        // normal response headers. There's some duplication of code with this
+        // and the else-clause.
+        BaseType *var = eval.eval_function(dds, d_dataset);
+        if (!var)
+            throw Error(unknown_error, "Error calling the CE function.");
+
+#if COMPRESSION_FOR_SERVER3
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, d_cgi_ver,
+                            (compress) ? deflate : x_plain, data_lmt);
+	data_stream << flush ;
+
+        int childpid;
+        if (compress)
+            data_stream = compressor(data_stream, childpid);
+#endif
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
+
+	data_stream << flush ;
+
+        functional_constraint(*var, dds, eval, data_stream);
+        delete var;
+        var = 0;
+    }
+    else {
+#if COMPRESSION_FOR_SERVER3
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, d_cgi_ver,
+                            (compress) ? deflate : x_plain, data_lmt);
+	data_stream << flush ;
+
+        int childpid;
+        if (compress)
+            data_stream = compressor(data_stream, childpid);
+#endif
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
+
+        dataset_constraint(dds, eval, data_stream);
+    }
+
+    data_stream << flush ;
+}
+
 /** Send the DDX response. The DDX never contains data, instead it holds a
     reference to a Blob response which is used to get the data values. The
     DDS and DAS objects are built using code that already exists in the
@@ -959,6 +1188,41 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     Defaults to true. */
 void
 DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
+                     bool with_mime_headers) const
+{
+    // If constrained, parse the constraint. Throws Error or InternalErr.
+    if (!d_ce.empty())
+        eval.parse_constraint(d_ce, dds);
+
+    time_t dds_lmt = get_dds_last_modified_time(d_anc_dir);
+
+    // If this is a conditional request and the server should send a 304
+    // response, do that and exit. Otherwise, continue on and send the full
+    // response.
+    if (is_conditional() && dds_lmt <= get_request_if_modified_since()
+        && with_mime_headers) {
+        set_mime_not_modified(out);
+        return;
+    }
+    else {
+        if (with_mime_headers)
+            set_mime_text(out, dap4_ddx, d_cgi_ver, x_plain, dds_lmt);
+        dds.print_xml(out, !d_ce.empty(), d_url + ".blob?" + d_ce);
+    }
+}
+
+/** Send the DDX response. The DDX never contains data, instead it holds a
+    reference to a Blob response which is used to get the data values. The
+    DDS and DAS objects are built using code that already exists in the
+    servers.
+
+    @param dds The dataset's DDS \e with attributes in the variables.
+    @param eval A reference to the ConstraintEvaluator to use.
+    @param out Destination
+    @param with_mime_headers If true, include the MIME headers in the response.
+    Defaults to true. */
+void
+DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
                      bool with_mime_headers) const
 {
     // If constrained, parse the constraint. Throws Error or InternalErr.

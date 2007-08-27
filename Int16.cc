@@ -56,7 +56,7 @@ static char rcsid[] not_used =
 using std::cerr;
 using std::endl;
 
-Int16::Int16(const string &n) : BaseType(n, dods_int16_c, (xdrproc_t)XDR_INT16)
+Int16::Int16(const string &n) : BaseType(n, dods_int16_c)
 {}
 
 Int16::Int16(const Int16 &copy_from) : BaseType(copy_from)
@@ -91,7 +91,7 @@ Int16::width()
 
 bool
 Int16::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
-                 XDR *sink, bool ce_eval)
+                 Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
@@ -105,17 +105,15 @@ Int16::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
 
     dds.timeout_off();
 
-    if (!XDR_INT16(sink, &_buf))
-        throw Error("Network I/O Error. Could not send int 16 data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+    m.put_int16( _buf ) ;
 
     return true;
 }
 
 bool
-Int16::deserialize(XDR *source, DDS *, bool)
+Int16::deserialize(UnMarshaller &um, DDS *, bool)
 {
-    if (!XDR_INT16(source, &_buf))
-        throw Error("Network I/O Error. Could not read int 16 data. This may be due to a\nbug in libdap or a problem with the network connection.");
+    um.get_int16( _buf ) ;
 
     return false;
 }
@@ -176,6 +174,17 @@ Int16::print_val(FILE *out, string space, bool print_decl_p)
     }
     else
         fprintf(out, "%d", _buf) ;
+}
+
+void
+Int16::print_val(ostream &out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+        print_decl(out, space, false);
+	out << " = " << _buf << ";\n" ;
+    }
+    else
+	out << _buf ;
 }
 
 bool

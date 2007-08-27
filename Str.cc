@@ -106,7 +106,7 @@ Str::width()
 
 bool
 Str::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
-               XDR *sink, bool ce_eval)
+               Marshaller &m, bool ce_eval)
 {
 
     DBG(cerr << "Entering (" << this->name() << " [" << this << "])" << endl);
@@ -123,8 +123,7 @@ Str::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
 
     dds.timeout_off();
 
-    if (!xdr_str(sink, _buf))
-        throw Error("Network I/O Error. Could not send string data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+    m.put_str( _buf ) ;
 
     DBG(cerr << "Exiting: buf = " << _buf << endl);
 
@@ -134,10 +133,9 @@ Str::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
 // deserialize the string on stdin and put the result in BUF.
 
 bool
-Str::deserialize(XDR *source, DDS *, bool)
+Str::deserialize(UnMarshaller &um, DDS *, bool)
 {
-    if (xdr_str(source, _buf) != 1)
-        throw Error("Network I/O Error. Could not read string data. This may be due to a\nbug in libdap or a problem with the network connection.");
+    um.get_str( _buf ) ;
 
     return false;
 }
@@ -224,6 +222,17 @@ Str::print_val(FILE *out, string space, bool print_decl_p)
     }
     else
         fprintf(out, "\"%s\"", escattr(_buf).c_str()) ;
+}
+
+void
+Str::print_val(ostream &out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+        print_decl(out, space, false);
+	out << " = \"" << escattr(_buf) << "\";\n" ;
+    }
+    else
+	out << "\"" << escattr(_buf) << "\"" ;
 }
 
 bool
