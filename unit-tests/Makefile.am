@@ -32,15 +32,13 @@ CLEANFILES = testout .dodsrc  *.gcda *.gcno
 # Unit Tests
 #
 
-UNIT_TESTS = marshT
-#UNIT_TESTS = arrayT attrTableT structT sequenceT ddsT RegexTest	\
-#	AISDatabaseParserTest AISMergeTest AISResourcesTest ArrayTest	\
-#	AttrTableTest ByteTest cgiUtilTest DASTest DDSTest		\
-#	DDXParserTest DODSFilterTest generalUtilTest HTTPCacheTest	\
-#	HTTPConnectTest parserUtilTest RCReaderTest SequenceTest	\
-#	SignalHandlerTest CEFunctionsTest GridGeoConstraintTest \
-#	ArrayGeoConstraintTest
-
+UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT RegexTest	\
+	AISDatabaseParserTest AISMergeTest AISResourcesTest ArrayTest	\
+	AttrTableTest ByteTest cgiUtilTest DASTest DDSTest		\
+	DDXParserTest DODSFilterTest generalUtilTest HTTPCacheTest	\
+	HTTPConnectTest parserUtilTest RCReaderTest SequenceTest	\
+	SignalHandlerTest CEFunctionsTest GridGeoConstraintTest         \
+	ArrayGeoConstraintTest
 
 RegexTest_SOURCES = RegexTest.cc
 RegexTest_LDADD = -lcppunit ../libdap.la
