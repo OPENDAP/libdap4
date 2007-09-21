@@ -865,13 +865,13 @@ Array::print_val(FILE *out, string space, bool print_decl_p)
         fprintf(out, " = ") ;
     }
 
-    unsigned int dims = _shape.size(); // dimensions(true);
-    unsigned int *shape = new unsigned int[dims];
+    unsigned int *shape = new unsigned int[_shape.size()];
     unsigned int index = 0;
-    for (Dim_iter i = _shape.begin(); i != _shape.end(); i++)
+    for (Dim_iter i = _shape.begin(); i != _shape.end() && index < _shape.size(); i++)
         shape[index++] = dimension_size(i, true);
 
-    print_array(out, 0, dims, shape);
+    print_array(out, 0, _shape.size(), shape);
+    
     delete [] shape; shape = 0;
 
     if (print_decl_p) {
@@ -890,20 +890,20 @@ Array::print_val(ostream &out, string space, bool print_decl_p)
 
     if (print_decl_p) {
         print_decl(out, space, false, false, false);
-	out << " = " ;
+	    out << " = " ;
     }
 
-    unsigned int dims = dimensions(true);
-    unsigned int *shape = new unsigned int[dims];
+    unsigned int *shape = new unsigned int[dimensions(true)];
     unsigned int index = 0;
-    for (Dim_iter i = _shape.begin(); i != _shape.end(); i++)
+    for (Dim_iter i = _shape.begin(); i != _shape.end() && index < dimensions(true); ++i)
         shape[index++] = dimension_size(i, true);
 
-    print_array(out, 0, dims, shape);
+    print_array(out, 0, dimensions(true), shape);
+    
     delete [] shape; shape = 0;
 
     if (print_decl_p) {
-	out << ";\n" ;
+	    out << ";\n" ;
     }
 }
 

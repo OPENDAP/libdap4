@@ -49,7 +49,7 @@ double extract_double_value(BaseType *arg) ;
 double *extract_double_array(Array *a) ;
 void set_array_using_double(Array *dest, double *src, int src_len) ;
 
-BaseType *func_one(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
+BaseType *func_version(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
 BaseType *function_grid(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
 BaseType *function_geogrid(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
 BaseType *function_linear_scale(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;

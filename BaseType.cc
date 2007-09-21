@@ -234,8 +234,11 @@ BaseType::type_name() const
     }
 }
 
-/** @brief Returns true if the instance is a numeric. string or URL
-    type variable. */
+/** @brief Returns true if the instance is a numeric, string or URL
+    type variable. 
+    @return True if the instance is a scalar numeric, String or URL variable,
+    False otherwise. Arrays (even of simple types) return False.
+    @see is_vector_type() */
 bool
 BaseType::is_simple_type()
 {
@@ -262,7 +265,9 @@ BaseType::is_simple_type()
     return false;
 }
 
-/** @brief Returns true if the instance is a vector (i.e., array) type variable. */
+/** @brief Returns true if the instance is a vector (i.e., array) type 
+    variable. 
+    @return True if the instance is an Array, False otherwise. */
 bool
 BaseType::is_vector_type()
 {
@@ -292,7 +297,9 @@ BaseType::is_vector_type()
 }
 
 /** @brief Returns true if the instance is a constructor (i.e., Structure,
-    Sequence or Grid) type variable. */
+    Sequence or Grid) type variable. 
+    @return True if the instance is a Structure, Sequence or Grid, False
+    otherwise. */
 bool
 BaseType::is_constructor_type()
 {

@@ -107,15 +107,18 @@ build_btp_args(rvalue_list *args, DDS &dds, const string &dataset)
                 + string(")."));
 
     // Add space for a null terminator
-    BaseType **argv = new BaseType *[argc + 1];
+    BaseType **argv = new BaseType*[argc + 1];
 
     int index = 0;
     if (argv && argc) {
-        for (rvalue::Args_iter i = args->begin(); i != args->end(); i++) {
+        for (rvalue::Args_iter i = args->begin(); i != args->end() && index < argc+1; ++i) {
             argv[index++] = (*i)->bvalue(dataset, dds);
         }
     }
 
+	if (index > argc)
+		throw InternalErr(__FILE__, __LINE__, "index out of range.");
+		
     argv[index] = 0;            // Add the null terminator.
 
     return argv;

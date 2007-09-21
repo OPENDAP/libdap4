@@ -310,9 +310,9 @@ ErrMsgT(const string &Msgt)
     char TimStr[TimLen];
 
     if (time(&TimBin) == (time_t) - 1)
-        strcpy(TimStr, "time() error           ");
+        strncpy(TimStr, "time() error           ", TimLen-1);
     else {
-        strcpy(TimStr, ctime(&TimBin));
+        strncpy(TimStr, ctime(&TimBin), TimLen-1);
         TimStr[TimLen - 2] = '\0'; // overwrite the \n
     }
     
@@ -424,10 +424,11 @@ rfc822_date(const time_t t)
     struct tm *stm = gmtime(&t);
     char d[256];
 
-    sprintf(d, "%s, %02d %s %4d %02d:%02d:%02d GMT", days[stm->tm_wday],
+    snprintf(d, 255, "%s, %02d %s %4d %02d:%02d:%02d GMT", days[stm->tm_wday],
             stm->tm_mday, months[stm->tm_mon],
             1900 + stm->tm_year,
             stm->tm_hour, stm->tm_min, stm->tm_sec);
+    d[255] = '\0';
     return string(d);
 }
 
