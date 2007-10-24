@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "Fetching: %s\n", argv[i]);
 
             string name = argv[i];
-            Connect *url = 0;;
+            Connect *url = 0;
             if (use_ais) {
                 if (!ais_db.empty())
                     url = new AISConnect(name, ais_db);
