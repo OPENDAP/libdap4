@@ -165,8 +165,15 @@ unique_names(vector<BaseType *> l, const string &var_name,
 const char *
 libdap_root()
 {
+    return LIBDAP_ROOT;
+#if 0
+    // I've changed this because this could be used to get the library to
+    // use a different compression function when it builds compressed 
+    // responses. The use of 'deflate' to compress responses should be
+    // removed since Hyrax now uses Tomcat to perform this function.
     char *libdap_root = 0;
     return ((libdap_root = getenv("LIBDAP_ROOT")) ? libdap_root : LIBDAP_ROOT);
+#endif
 }
 
 extern "C"
@@ -487,16 +494,22 @@ path_to_filename(string path)
 //
 // This function allocates storage using new. The caller must delete the char
 // array.
+
+// Change this to a version that either returns a string or an open file
+// descriptor. Use information from https://buildsecurityin.us-cert.gov/
+// (see open()) to make it more secure. Ideal solution: get deserialize()
+// methods to read from a stream returned by libcurl, not from a temporary
+// file. 9/21/07 jhrg
 char *
 get_tempfile_template(char *file_template)
 {
     char *c;
     
 #ifdef WIN32
-	// whitelist for a WIN32 directory
-	Regex directory("[-a-zA-Z0-9_\]*");
+    // whitelist for a WIN32 directory
+    Regex directory("[-a-zA-Z0-9_\\]*");
 	
-	c = getenv("TEMP");
+    c = getenv("TEMP");
     if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0)
     	goto valid_temp_directory;
 
@@ -505,7 +518,7 @@ get_tempfile_template(char *file_template)
     	goto valid_temp_directory;
 #else
 	// whitelist for a directory
-	Regex directory("[-a-zA-Z0-9_//]*");
+	Regex directory("[-a-zA-Z0-9_/]*");
 	
 	c = getenv("TMPDIR");
 	if (c && directory.match(c, strlen(c)) && (access(c, W_OK | R_OK) == 0))
@@ -529,7 +542,7 @@ valid_temp_directory:
 		throw Error("Bad temporary file name.");
 		
     char *temp = new char[size];
-    strcpy(temp, c);
+    strncpy(temp, c, size-2);
     strcat(temp, "/");
 
     strcat(temp, file_template);
@@ -573,6 +586,7 @@ file_to_string(FILE *fp)
 //@{
 
 /** @brief sanitize the size of an array.
+    Test for integer overflow when dynamically allocating an array.
     @param nelem Number of elements.
     @param sz size of each element.
     @return True if the \c nelem elements of \c sz size will overflow an array. */
@@ -580,6 +594,38 @@ bool
 size_ok(uint sz, uint nelem)
 {
     return (sz > 0 && nelem < UINT_MAX / sz);
+}
+
+/** @brief Does the string name a potentailly valid pathname?
+    Test the given pathname to verfiy that it is a valid name. We define this 
+    as: Contains only printable characters; and Is less then 256 characters.
+    If \e strict is true, test that the pathname consists of only letters, 
+    digits, and underscore, dash and dot characters instead of the more general
+    case where a pathname can be composed of any printable characters.
+    
+    @note Using this function does not guarentee that the path is valid, only
+    that the path \e could be valid. The intent is foil attacks where an
+    exploit is encoded in a string then passed to a library function. This code
+    does not address whether the pathname references a valid resource.
+    
+    @param path The pathname to test
+    @param strict Apply more restrictive tests (true by default) 
+    @return true if the pathname consists of legal characters and is of legal
+    size, false otherwise. */
+bool
+pathname_ok(const string &path, bool strict)
+{
+    if (path.length() > 255)
+        return false;
+    
+    Regex name("[0-9A-z_./-]+");
+    if (!strict)
+        name = "[:print:]+";
+        
+    if (!name.match(path.c_str(), path.length()))
+        return false;
+ 
+    return true;
 }
 
 //@}
