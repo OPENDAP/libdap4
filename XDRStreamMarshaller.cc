@@ -13,6 +13,9 @@ XDRStreamMarshaller::XDRStreamMarshaller( ostream &out )
 {
     if( !_buf )
 	_buf = (char *)malloc( DODS_MAX_ARRAY ) ;
+    if ( !_buf )
+        throw Error("Failed to allocate memory for data serialization.");
+        
     _sink = new XDR ;
     xdrmem_create( _sink, _buf, DODS_MAX_ARRAY, XDR_ENCODE ) ;
 }

@@ -205,5 +205,6 @@ string file_to_string(FILE *fp);
 time_t parse_time(const char * str, bool expand);
 
 bool size_ok(uint sz, uint nelem);
+bool pathname_ok(const string &path, bool strict = true);
 
 #endif
