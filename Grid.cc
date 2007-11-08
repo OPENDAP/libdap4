@@ -182,6 +182,26 @@ Grid::width()
     return sz;
 }
 
+void
+Grid::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds)
+{
+    dds.timeout_on();
+
+    if (!read_p())
+        read(dataset);  // read() throws Error and InternalErr
+
+    dds.timeout_off();
+
+    if (_array_var->send_p())
+        _array_var->intern_data(dataset, eval, dds);
+
+    for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++) {
+        if ((*i)->send_p()) {
+            (*i)->intern_data(dataset, eval, dds);
+        }
+    }
+}
+
 bool
 Grid::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
                 Marshaller &m, bool ce_eval)

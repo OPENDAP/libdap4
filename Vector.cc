@@ -382,6 +382,75 @@ void Vector::vec_resize(int l)
     _vec.resize((l > 0) ? l : 0, 0);    // Fill with NULLs
 }
 
+/** @brief read data into a variable for later use
+ 
+    Most uses of a variable are to either serialize its data to a stream of
+    some sort or to read values from some stream and intern those in the
+    variable for later use. These operations are perform by serialize()
+    and deserialize() which follow. This function performs essentially both
+    of these operations without actually using a stream device. The data are
+    read using the read() method(s) and loaded into the variables directly.
+    
+    This method is intended to be used by objects which transform DAP objects
+    like the DataDDS into an ASCII CSV representation.
+    
+    @param dataset A string passed to read() so data values can be read from
+    the data source.
+    @param eval A reference to a constraint evaluator
+    @param dds The complete DDS to which this variable belongs */
+void
+Vector::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds)
+{
+    if (!read_p())
+        read(dataset);          // read() throws Error and InternalErr
+
+    // length() is not capacity; it must be set explicitly in read().
+    int num = length();
+
+    switch (_var->type()) {
+    case dods_byte_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_float32_c:
+    case dods_float64_c:
+        // For these cases, read() puts the data into _buf, which is what we
+        // need to do 'stuff' with the data.
+        break;
+        
+    case dods_str_c:
+    case dods_url_c:
+        // For these cases, read() will put the data into d_str[], which is 
+        // what the transformation classes need.
+        break;
+
+    case dods_array_c:
+        // I think this is an error since there can never be an Array of 
+        // Array.
+        throw InternalErr(__FILE__, __LINE__, "Array of Array not supported.");
+        break;
+        
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+        // For these cases, we need to call read() for each of the 'num' 
+        // elements in the '_vec[]' array of BaseType object pointers.
+        if (_vec.capacity() == 0)
+            throw InternalErr(__FILE__, __LINE__,
+                              "The capacity of *this* vector is 0.");
+
+        for (int i = 0; i < num; ++i)
+            _vec[i]->intern_data(dataset, eval, dds);
+
+        break;
+
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
+        break;
+    }
+}
+
 /** @brief Serialize a Vector.
 
     This uses the Marshaller class to encode each element of a cardinal

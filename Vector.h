@@ -108,12 +108,13 @@ public:
 
     virtual void set_length(int l);
 
+    virtual void intern_data(const string &dataset, ConstraintEvaluator &eval,
+                             DDS &dds);
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
                            DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
-
     virtual unsigned int buf2val(void **val);
 
     void set_vec(unsigned int i, BaseType *val);

@@ -509,7 +509,7 @@ public:
 	    CPPUNIT_ASSERT(pc->is_url_in_cache(localhost_url));
 	    delete rs; rs = 0;
 
-	    string expired = "http://dodsdev.gso.uri.edu/cgi-bin/expires.sh";
+	    string expired = "http://test.opendap.org/cgi-bin/expires.sh";
 	    now = time(0);
 	    rs = http_conn->fetch_url(expired);
 	    pc->cache_response(expired, now, *(rs->get_headers()), 
@@ -711,7 +711,7 @@ public:
     void interrupt_test() {
 	try {
 	    HTTPCache *c = new HTTPCache("cache-testsuite/singleton_cache", true);
-	    string coads = "http://test.opendap.org/data/nc/coads_climatology.nc";
+	    string coads = "http://test.opendap.org/dap/data/nc/coads_climatology.nc";
 	    if (!c->is_url_in_cache(coads)) {
 		HTTPResponse *rs = http_conn->fetch_url(coads);
 		cerr << "In interrupt test, hit ctrl-c now... ";

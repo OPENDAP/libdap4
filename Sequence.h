@@ -271,12 +271,10 @@ public:
     virtual bool read_row(int row, const string &dataset, DDS &dds,
                           ConstraintEvaluator &eval, bool ce_eval = true);
 
+    virtual void intern_data(const string &dataset, ConstraintEvaluator &eval,
+                             DDS &dds);
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
                            DDS &dds, Marshaller &m, bool ce_eval = true);
-
-    virtual void transfer_data(const string &dataset, ConstraintEvaluator &eval,
-                               DDS &dds);
-
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     /// Rest the row number counter

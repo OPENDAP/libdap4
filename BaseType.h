@@ -344,6 +344,8 @@ public:
 	caller is responsible for deallocating that memory. Array and
 	values for simple types are stored as C would store an array.
 
+        @deprecated Use value() in the leaf classes.
+         
 	@brief Reads the class data. 
 
 	@param val A pointer to a pointer to the memory into which the
@@ -366,6 +368,8 @@ public:
 	put data into more complex constructor types, use the
 	functions provided by that class.
 
+        @deprecated Use set_value() in the leaf classes.
+         
 	@brief Loads class data.
 
 	@param val A pointer to the data to be inserted into the class
@@ -384,6 +388,22 @@ public:
 	@see Grid
 	@see Vector::val2buf */
     virtual unsigned int val2buf(void *val, bool reuse = false) = 0;
+
+    /** Similar to using serialize() and deserialize() together in one object. 
+        Data are read as for serialize and those values are stored in the 
+        objects as deserialize() does but does not write and then read data
+        to/from a stream.
+        
+        This method is defined by the various data type classes. It calls the 
+        read() abstract method.
+        
+        @param dataset The (local) name of dataset to be read.
+        @param eval Use this as the constraint expression evaluator.
+        @param dds The Data Descriptor Structure object corresponding
+        to this dataset. See <i>The DODS User Manual</i> for
+        information about this structure. */
+    virtual void intern_data(const string &dataset, ConstraintEvaluator &eval,
+                             DDS &dds);
 
     /** Sends the data from the indicated (local) dataset through the
 	connection identified by the <i>sink</i> parameter. If the

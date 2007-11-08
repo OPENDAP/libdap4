@@ -886,9 +886,7 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds,
     @param eval Use this contraint evaluator
     @param dds This DDS holds the variables for the data source */
 void
-Sequence::transfer_data(const string &dataset,
-                        ConstraintEvaluator &eval,
-                        DDS &dds)
+Sequence::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds)
 {
     DBG(cerr << "Entering Sequence::transfer_data for " << name() << endl);
 
@@ -993,8 +991,7 @@ Sequence::transfer_data_parent_part_one(const string & dataset, DDS & dds,
                     break;
 
                 case dods_structure_c:
-                    dynamic_cast <
-                    Structure & >(**iter).transfer_data(dataset, eval, dds);
+                    dynamic_cast <Structure & >(**iter).intern_data(dataset, eval, dds);
                     break;
 
                 default:

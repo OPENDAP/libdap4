@@ -125,8 +125,8 @@ public:
 
     virtual unsigned int width();
 
-    virtual void transfer_data(const string & dataset,
-                               ConstraintEvaluator & eval, DDS & dds);
+    virtual void intern_data(const string &dataset, ConstraintEvaluator &eval,
+                             DDS &dds);
     virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
                            DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);

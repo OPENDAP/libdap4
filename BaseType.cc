@@ -453,9 +453,10 @@ BaseType::send_p()
 }
 
 /** Sets the value of the <tt>send_p</tt> flag.  This
-    function is meant to be called from <tt>serialize()</tt>.  Data is
-    ready to be sent when <i>both</i> the <tt>_send_p</tt> and
-    <tt>_read_p</tt> flags are set to TRUE.
+    function is meant to be called from within the constraint evaluator of
+    other code which determines that this variable should be returned to the 
+    client.  Data are ready to be sent when <i>both</i> the <tt>_send_p</tt>
+    and <tt>_read_p</tt> flags are set to TRUE.
 
     @param state The logical state to set the <tt>send_p</tt> flag.
 */
@@ -690,6 +691,17 @@ BaseType::read(const string &)
         return false;
 
     throw InternalErr("Unimplemented BaseType::read() method called.");
+}
+
+void
+BaseType::intern_data(const string &dataset, ConstraintEvaluator &, DDS &dds)
+{
+    dds.timeout_on();
+
+    if (!read_p())
+        read(dataset);          // read() throws Error and InternalErr
+
+    dds.timeout_off();
 }
 
 /** Write the variable's declaration in a C-style syntax. This

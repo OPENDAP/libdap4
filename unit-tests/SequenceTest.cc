@@ -163,19 +163,19 @@ public:
     CPPUNIT_TEST(test_set_leaf_sequence2);
     CPPUNIT_TEST(test_set_leaf_sequence3);
     CPPUNIT_TEST(transfer_data_for_leaf_test);
-    CPPUNIT_TEST(transfer_data_test1);
-    CPPUNIT_TEST(transfer_data_test2);
-    CPPUNIT_TEST(transfer_data_test3);
+    CPPUNIT_TEST(intern_data_test1);
+    CPPUNIT_TEST(intern_data_test2);
+    CPPUNIT_TEST(intern_data_test3);
 
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
-    void transfer_data_test1() {
+    void intern_data_test1() {
         ConstraintEvaluator ce;
         s->set_send_p(true);
         s->set_leaf_sequence();
         try {
-            s->transfer_data("dummy", ce, *dds);
+            s->intern_data("dummy", ce, *dds);
             
             // Test the first value in the first four rows
             BaseType *btp = s->var_value(0, 0);
@@ -194,12 +194,12 @@ public:
         }
     }
     
-    void transfer_data_test2() {
+    void intern_data_test2() {
         ConstraintEvaluator ce;
         ss->set_send_p(true);
         ss->set_leaf_sequence();
         try {
-            ss->transfer_data("dummy", ce, *dds);
+            ss->intern_data("dummy", ce, *dds);
             DBG(ss->print_val(stdout));
             
             // Test the first value in the first four rows
@@ -241,12 +241,12 @@ public:
         }
     }
     
-    void transfer_data_test3() {
+    void intern_data_test3() {
         ConstraintEvaluator ce;
         sss->set_send_p(true);
         sss->set_leaf_sequence();
         try {
-            sss->transfer_data("dummy", ce, *dds);
+            sss->intern_data("dummy", ce, *dds);
             DBG(sss->print_val_by_rows(stdout, "", true, true));
             // Test the first value in the first four rows
             BaseType *btp = sss->var_value(0, 0);
