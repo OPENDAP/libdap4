@@ -622,7 +622,9 @@ pathname_ok(const string &path, bool strict)
     if (!strict)
         name = "[:print:]+";
         
-    if (!name.match(path.c_str(), path.length()))
+    string::size_type len = path.length();
+    int result = name.match(path.c_str(), len);
+    if (result != len)
         return false;
  
     return true;
