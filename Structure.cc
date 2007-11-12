@@ -255,24 +255,6 @@ Structure::intern_data(const string & dataset, ConstraintEvaluator & eval, DDS &
         }
     }
 }
-#if 0
-            switch ((*i)->type()) {
-            case dods_sequence_c:
-                dynamic_cast <Sequence & >(**i).intern_data(dataset, eval, dds);
-                break;
-
-            case dods_structure_c:
-                dynamic_cast <Structure & >(**i).intern_data(dataset, eval, dds);
-                break;
-
-            default:
-                (*i)->read(dataset);
-                break;
-            }
-        }
-    }
-}
-#endif
 
 bool
 Structure::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,

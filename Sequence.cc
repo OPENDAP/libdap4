@@ -966,8 +966,7 @@ Sequence::transfer_data_parent_part_one(const string & dataset, DDS & dds,
     DBG(cerr << "Entering transfer_data_parent_part_one for " << name() <<
         endl);
 
-    int i =
-        (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
+    int i = (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
 
     // read_row returns true if valid data was read, false if the EOF was
     // found. 6/1/2001 jhrg
@@ -983,19 +982,12 @@ Sequence::transfer_data_parent_part_one(const string & dataset, DDS & dds,
             if ((*iter)->send_p()) {
                 switch ((*iter)->type()) {
                 case dods_sequence_c:
-                    dynamic_cast <
-                    Sequence & >(**iter).transfer_data_private(dataset,
-                            eval,
-                            dds,
-                            sequence_values_stack);
-                    break;
-
-                case dods_structure_c:
-                    dynamic_cast <Structure & >(**iter).intern_data(dataset, eval, dds);
+                    dynamic_cast<Sequence&>(**iter).transfer_data_private(dataset,
+                            eval, dds, sequence_values_stack);
                     break;
 
                 default:
-                    (*iter)->read(dataset);
+                    (*iter)->intern_data(dataset, eval, dds);
                     break;
                 }
             }
@@ -1022,7 +1014,8 @@ Sequence::transfer_data_parent_part_two(const string &dataset, DDS &dds,
 
     BaseType *btp = get_parent();
     if (btp && btp->type() == dods_sequence_c) {
-        dynamic_cast<Sequence&>(*btp).transfer_data_parent_part_two(dataset, dds, eval, sequence_values_stack);
+        dynamic_cast<Sequence&>(*btp).transfer_data_parent_part_two(dataset, 
+                                      dds, eval, sequence_values_stack);
     }
 
     SequenceValues *values = sequence_values_stack.back();
@@ -1037,7 +1030,7 @@ Sequence::transfer_data_parent_part_two(const string &dataset, DDS &dds,
             if ((*iter)->send_p() && (*iter)->type() != dods_sequence_c) {
                 row_data->push_back((*iter)->ptr_duplicate());
             }
-            else if ((*iter)->send_p()) { //Sequence, and it must be last the variable
+            else if ((*iter)->send_p()) { //Sequence; must be the last variable
                 Sequence *tmp = dynamic_cast<Sequence*>((*iter)->ptr_duplicate());
                 row_data->push_back(tmp);
                 DBG(cerr << "In td_parent_part_two, pushing values = "
@@ -1254,6 +1247,42 @@ Sequence::print_one_row(ostream &out, int row, string space,
 
     out << "{ " ;
 
+    int elements = element_count();
+    int j = 0;
+    BaseType *bt_ptr = 0;
+    
+    // This version of print_one_row() works for both data read with 
+    // deserialize(), where each variable is assumed to have valid data, and
+    // intern_data(), where some/many variables do not. Because of that, it's
+    // not correct to assume that all of the elements will be printed, which 
+    // is what the old code did.
+    // Print the first value
+    while (j < elements && !bt_ptr) {
+        bt_ptr = var_value(row, j++);
+        if (bt_ptr) {  // data
+            if (bt_ptr->type() == dods_sequence_c)
+                dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
+                     (out, space + "    ", false, print_row_num);
+            else
+                bt_ptr->print_val(out, space, false);
+        }
+    }
+
+    // Print the remaining values
+    while (j < elements) {
+        bt_ptr = var_value(row, j++);
+        if (bt_ptr) {  // data
+            out << ", ";
+            if (bt_ptr->type() == dods_sequence_c)
+                dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
+                        (out, space + "    ", false, print_row_num);
+            else
+                bt_ptr->print_val(out, space, false);
+        }
+    }
+    
+#if 0
+    // old version
     int elements = element_count() - 1;
     int j;
     BaseType *bt_ptr;
@@ -1263,7 +1292,7 @@ Sequence::print_one_row(ostream &out, int row, string space,
         if (bt_ptr) {  // data
             if (bt_ptr->type() == dods_sequence_c)
                 dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
-                (out, space + "    ", false, print_row_num);
+                     (out, space + "    ", false, print_row_num);
             else
                 bt_ptr->print_val(out, space, false);
 	    out << ", " ;
@@ -1279,6 +1308,7 @@ Sequence::print_one_row(ostream &out, int row, string space,
         else
             bt_ptr->print_val(out, space, false);
     }
+#endif
 
     out << " }" ;
 }

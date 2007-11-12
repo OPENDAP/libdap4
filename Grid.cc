@@ -520,11 +520,12 @@ Grid::print_decl(FILE *out, string space, bool print_semi,
     // resulting object is a simple array.
     int projection = components(true);
     if (constrained && projection == 1) {
-        _array_var->print_decl(out, space, true, constraint_info,
+        _array_var->print_decl(out, space, print_semi /*true*/, constraint_info,
                                constrained);
         for (Map_citer i = _map_vars.begin(); i != _map_vars.end(); i++) {
-            (*i)->print_decl(out, space, true, constraint_info, constrained);
+            (*i)->print_decl(out, space, print_semi /*true*/, constraint_info, constrained);
         }
+
         goto exit;  // Skip end material.
     }
     // If there are M (< N) componets (Array and Maps combined) in a N
@@ -587,13 +588,18 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
     // If we are printing the declaration of a constrained Grid then check for
     // the case where the projection removes all but one component; the
     // resulting object is a simple array.
+    //
+    // I replaced the 'true' with the value of 'print_semi' passed in by the 
+    // caller. This fixes an issue with the intern_data tests and does not
+    // seem to break anything else. jhrg 11/9/07
     int projection = components(true);
     if (constrained && projection == 1) {
-        _array_var->print_decl(out, space, true, constraint_info,
+        _array_var->print_decl(out, space, print_semi /*true*/, constraint_info,
                                constrained);
         for (Map_citer i = _map_vars.begin(); i != _map_vars.end(); i++) {
-            (*i)->print_decl(out, space, true, constraint_info, constrained);
+            (*i)->print_decl(out, space, print_semi /*true*/, constraint_info, constrained);
         }
+
         goto exit;  // Skip end material.
     }
     // If there are M (< N) componets (Array and Maps combined) in a N

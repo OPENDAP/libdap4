@@ -44,7 +44,6 @@
 
 
 #include <vector>
-//#include "Pix.h"
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -66,7 +65,7 @@
 typedef vector<BaseType *> BaseTypeRow;
 
 /** This type holds all of the values of a Sequence. */
-typedef std::vector<BaseTypeRow *> SequenceValues;
+typedef vector<BaseTypeRow *> SequenceValues;
 
 /** This is the interface for the class Sequence. A sequence contains
     a single set of variables, all at the same lexical level just like
