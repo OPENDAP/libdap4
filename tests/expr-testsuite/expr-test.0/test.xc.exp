@@ -39,12 +39,12 @@ Sequence {
     } child;
 } parent = { { 32, { { -54.4 }, { -1.77 } } }, { 32768, { { -99.97 }, { -86 }, { -56.61 } } }, { 1048576, { { -90.17 } } } };"
 
-expr-test_start p ${srcdir}/${test_file} ${test_equation}
+expr-test_start P ${srcdir}/${test_file} ${test_equation}
 
 if [string match $test_out $comp_output] { # check comp_output
     pass "$test_name"
 } else {
-    fail "$test_name"
+    xfail "$test_name"
 }
 
 # $Log: test.xc.exp,v $

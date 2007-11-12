@@ -52,7 +52,7 @@ UInt16 y = 64000;
 Float64 data%20name\[10\] = {99.999, 99.999, 99.999, 99.999, 99.999, 99.999, 99.999, 99.999, 99.999, 99.999};
 "
 
-expr-test_start p ${srcdir}/${test_file} ${test_equation} 
+expr-test_start P ${srcdir}/${test_file} ${test_equation} 
 
 compare_stdout $test_out "projection with `%20' in id name."
 

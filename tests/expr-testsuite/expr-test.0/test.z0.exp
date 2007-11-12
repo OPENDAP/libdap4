@@ -9,6 +9,6 @@ global srcdir
 
 source "common_tests.exp"
 
-expr-test_start w ${srcdir}/test.c0 "geogrid(SST)"
+expr-test_start W ${srcdir}/test.c0 "geogrid(SST)"
 
 compare_stdout ${srcdir}/data.z0 "test.z0.exp: Bad args"

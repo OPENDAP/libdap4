@@ -33,7 +33,7 @@ Sequence {
     Int32 j;
 } s = { { 32, 32 }, { 1024, 1024 }, { 32768, 32768 }, { 1048576, 1048576 } };"
 
-expr-test_start p ${srcdir}/${test_file} ${test_equation}
+expr-test_start P ${srcdir}/${test_file} ${test_equation}
 
 if [string match $test_out $comp_output] { # check comp_output
     pass "$test_name"

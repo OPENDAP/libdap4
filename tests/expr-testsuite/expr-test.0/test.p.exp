@@ -50,7 +50,7 @@ Dataset {
 The data:
 Int32 data%23i\[5\]\[3\] = {{123456789, 123456789, 123456789},{123456789, 123456789, 123456789},{123456789, 123456789, 123456789},{123456789, 123456789, 123456789},{123456789, 123456789, 123456789}};"
 
-expr-test_start p ${srcdir}/${test_file} ${test_equation}
+expr-test_start P ${srcdir}/${test_file} ${test_equation}
 
 compare_stdout $test_out "Array projection with `#' in id name."
 

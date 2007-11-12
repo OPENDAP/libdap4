@@ -9,7 +9,7 @@ global srcdir
 
 source "common_tests.exp"
 
-# expr-test_start w ${srcdir}/test.cc0 "geoarray(SST,0,90,359,-90,0,90,359,-90)"
-expr-test_start w ${srcdir}/test.cc0 "geoarray(SST,90,0,-90,359,90,0,-90,359)"
+# expr-test_start W ${srcdir}/test.cc0 "geoarray(SST,0,90,359,-90,0,90,359,-90)"
+expr-test_start W ${srcdir}/test.cc0 "geoarray(SST,90,0,-90,359,90,0,-90,359)"
 
 compare_stdout ${srcdir}/data.zz1 "test.zz1.exp: Whole array"

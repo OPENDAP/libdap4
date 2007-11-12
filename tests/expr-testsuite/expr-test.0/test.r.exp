@@ -51,7 +51,7 @@ The data:
 Int16 x%23y = 32000;
 UInt16 y = 64000;"
 
-expr-test_start p ${srcdir}/${test_file} ${test_equation}
+expr-test_start P ${srcdir}/${test_file} ${test_equation}
 
 compare_stdout $test_out "projection with `#' in id name."
 

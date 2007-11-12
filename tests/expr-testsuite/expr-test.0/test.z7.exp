@@ -9,6 +9,6 @@ global srcdir
 
 source "common_tests.exp"
 
-expr-test_start w ${srcdir}/test.c4 "geogrid(SST,61,-82,38,-19,\"time=1024\")"
+expr-test_start W ${srcdir}/test.c4 "geogrid(SST,61,-82,38,-19,\"time=1024\")"
 
 compare_stdout ${srcdir}/data.z7 "test.z7.exp: Three dimensions, Longitude rightmost"

@@ -63,7 +63,7 @@ Structure {
 } Data-Set-2 = { {99.999, 99.999, 99.999, 99.999}, {99.999, 99.999, 99.999, 99.999} };
 "
 
-expr-test_start p ${srcdir}/${test_file} ${test_equation} 
+expr-test_start P ${srcdir}/${test_file} ${test_equation} 
 
 compare_stdout $test_out "projection with `%2d' in id name." 1
 

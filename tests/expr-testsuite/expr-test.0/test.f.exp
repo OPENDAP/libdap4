@@ -29,7 +29,7 @@ Dataset {
 The data:
 String s = \"Silly test string: 1\";"
 
-expr-test_start p ${srcdir}/${test_file} ${test_equation}
+expr-test_start P ${srcdir}/${test_file} ${test_equation}
 
 if [string match $test_out $comp_output] { # check comp_output
     pass "$test_name"

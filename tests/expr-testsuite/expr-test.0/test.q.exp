@@ -61,7 +61,7 @@ Int16 x = 32000;
 UInt16 y = 64000;
 Float32 f = 99.999;"
 
-expr-test_start p ${srcdir}/${test_file} ${test_equation}
+expr-test_start P ${srcdir}/${test_file} ${test_equation}
 
 if [string match $test_out $comp_output] { # check comp_output
     pass "$test_name"

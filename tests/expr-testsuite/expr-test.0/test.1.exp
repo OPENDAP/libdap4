@@ -51,7 +51,7 @@ Dataset {
 The data:
 Int32 i = 123456789;"
 
-expr-test_start p ${srcdir}/${test_name} ${test_equation}
+expr-test_start P ${srcdir}/${test_name} ${test_equation}
 
 if [string match $test_out $comp_output] { # check comp_output
     pass "$test_name"

@@ -65,7 +65,7 @@ Dataset {
 } test1;
 The data:"
 
-expr-test_start p ${srcdir}/${test_file} ${test_equation}
+expr-test_start P ${srcdir}/${test_file} ${test_equation}
 
 if ![string compare $test_out $comp_output] { # check comp_output
     pass "$test_name"
