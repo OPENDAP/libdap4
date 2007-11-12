@@ -20,7 +20,9 @@ proc expr-test_start { options {ifile ""} {eqn ""} {file "dummy"}} {
     if {$verbose >= 1} {
         switch $options {
 	    p {verbose "Starting $EXPRTEST -w $ifile -k $eqn -f $file \n"}
+	    P {verbose "Starting $EXPRTEST -W $ifile -k $eqn -f $file \n"}
 	    w {verbose "Starting $EXPRTEST -b -w $ifile -k $eqn -f $file \n"}
+	    W {verbose "Starting $EXPRTEST -b -W $ifile -k $eqn -f $file \n"}
 	    s {verbose "Starting $EXPRTEST -s}
         }
 	exp_internal 1
@@ -28,14 +30,18 @@ proc expr-test_start { options {ifile ""} {eqn ""} {file "dummy"}} {
 
     switch $options {
 	p {catch "exec $EXPRTEST -w $ifile -k $eqn -f $file" comp_output}
+	P {catch "exec $EXPRTEST -W $ifile -k $eqn -f $file" comp_output}
 	w {catch "exec $EXPRTEST -b -w $ifile -k $eqn -f $file" comp_output}
+	W {catch "exec $EXPRTEST -b -W $ifile -k $eqn -f $file" comp_output}
 	s {spawn $EXPRTEST -s}
     }
 
     if {$verbose >= 1} {
 	switch $options {
 	    p {send_user "Comp output:\n$comp_output\n"}
+	    P {send_user "Comp output:\n$comp_output\n"}
 	    w {send_user "Comp output:\n$comp_output\n"}
+	    W {send_user "Comp output:\n$comp_output\n"}
 	    s {send_user "Program running: spawn_id=$spawn_id\n"}
 	}
     }
@@ -49,5 +55,5 @@ proc expr-test_exit {} {
 }
 
 proc expr-test_version {} {
-    send_user "Expression testsuite version 1.0\n"
+    send_user "Expression testsuite version 2.0\n"
 }

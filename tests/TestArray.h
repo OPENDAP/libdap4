@@ -59,6 +59,8 @@ public:
     virtual void build_special_values();    
     virtual void constrained_matrix(const string &dataset, char *constrained_array);
     
+    virtual void output_values(std::ostream &out);
+
     void set_series_values(bool);
     bool get_series_values() { return d_series_values; }
 };

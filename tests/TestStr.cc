@@ -86,6 +86,12 @@ TestStr::ptr_duplicate()
     return new TestStr(*this);
 }
 
+void 
+TestStr::output_values(std::ostream &out)
+{
+    print_val(out, "", false);
+}
+
 bool
 TestStr::read(const string &)
 {

@@ -86,6 +86,12 @@ TestInt32::ptr_duplicate()
     return new TestInt32(*this);
 }
 
+void 
+TestInt32::output_values(std::ostream &out)
+{
+    print_val(out, "", false);
+}
+
 bool
 TestInt32::read(const string &)
 {

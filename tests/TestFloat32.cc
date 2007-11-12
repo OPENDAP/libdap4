@@ -92,6 +92,12 @@ TestFloat32::ptr_duplicate()
     return new TestFloat32(*this); // Copy ctor calls duplicate to do the work
 }
  
+void 
+TestFloat32::output_values(std::ostream &out)
+{
+    print_val(out, "", false);
+}
+
 bool
 TestFloat32::read(const string &)
 {

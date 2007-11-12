@@ -28,6 +28,9 @@
 #ifndef _test_common_h
 #define _test_common_h 1
 
+#include <stdio.h>
+#include <iostream>
+
 /** Get the value of the series_value property. If true, the TestByte, ...,
     classes should produce values that vary in a fashion similar to the DTS.
     If false, they should exhibit the old behavior where the values are static.
@@ -38,6 +41,25 @@ class TestCommon {
 public:
     TestCommon();
     virtual ~TestCommon();
+    
+    virtual void output_values(FILE *out);
+    
+    /** Write out values first testing send_p() to ensure the variable has data.
+        This method is to be used when the intern_data() method is used to read 
+        data into variables after the CE is evaluated. In most cases variables
+        will be used on eitehr the server- or client-side but not both. However,
+        in some cases the same variables are used on both sides. The intern_data()
+        method is then used to read data into the variables (usually serialize()
+        is used to read the data int a variable and send it to a client, then 
+        deserialize() is used to read those values from a network. The intern_data()
+        method combines those operations.
+    
+        @note This method is used to test the reault of calling intern_data(). The
+        print_val() method does not know to check the send_p() flag and thue is
+        not usful for testing intern_data() 
+    
+        @param out Where to write the values */
+    virtual void output_values(std::ostream &out) = 0;
 
     virtual void set_series_values(bool);
     virtual bool get_series_values();

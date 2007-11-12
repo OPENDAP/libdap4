@@ -84,6 +84,12 @@ TestInt16::ptr_duplicate()
     return new TestInt16(*this);
 }
 
+void 
+TestInt16::output_values(std::ostream &out)
+{
+    print_val(out, "", false);
+}
+
 bool
 TestInt16::read(const string &)
 {

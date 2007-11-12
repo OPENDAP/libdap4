@@ -55,6 +55,9 @@ public:
     virtual BaseType *ptr_duplicate();
     
     virtual bool read(const string &dataset);
+    
+    virtual void output_values(std::ostream &out);
+
     virtual void set_series_values(bool sv) { d_series_values = sv; }
     virtual bool get_series_values() { return d_series_values; }
 };

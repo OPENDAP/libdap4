@@ -107,6 +107,16 @@ TestByte::operator=(const TestByte &rhs)
 
     return *this;
 }
+#if 1
+void 
+TestByte::output_values(std::ostream &out)
+{
+    // value is a method where each return value is a different type so we have
+    // to make calls to it from objects/methods where the type is statically 
+    // known.
+    print_val(out, "", false);
+}
+#endif
 
 bool
 TestByte::read(const string &)

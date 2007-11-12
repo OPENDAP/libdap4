@@ -48,9 +48,6 @@ static char rcsid[] not_used =
 #include <string.h>
 #include <errno.h>
 
-#include "XDRFileMarshaller.h"
-#include "XDRFileUnMarshaller.h"
-
 #include <GetOpt.h>
 
 #include <string>
@@ -59,6 +56,8 @@ static char rcsid[] not_used =
 #include "DDS.h"
 #include "DataDDS.h"
 #include "ConstraintEvaluator.h"
+#include "XDRFileMarshaller.h"
+#include "XDRFileUnMarshaller.h"
 #include "Error.h"
 
 #include "TestSequence.h"
@@ -89,6 +88,8 @@ void evaluate_dds(DDS & table, bool print_constrained);
 bool loopback_pipe(FILE ** pout, FILE ** pin);
 void constrained_trans(const string & dds_name, const bool constraint_expr,
                        const string & ce, const bool series_values);
+void intern_data_test(const string & dds_name, const bool constraint_expr,
+                 const string & ce, const bool series_values);
 
 int ce_exprlex();               // exprlex() uses the global ce_exprlval
 int ce_exprparse(void *arg);
@@ -105,10 +106,10 @@ static int keep_temps = 0;      // MT-safe; test code.
 
 const string version = "version 1.12";
 const string prompt = "expr-test: ";
-const string options = "sS:bdecvp:w:f:k:v";
+const string options = "sS:bdecvp:w:W:f:k:v";
 const string usage = "\
 \nexpr-test [-s [-S string] -d -c -v [-p dds-file]\
-\n[-e expr] [-w dds-file] [-f data-file] [-k expr]]\
+\n[-e expr] [-w|-W dds-file] [-f data-file] [-k expr]]\
 \nTest the expression evaluation software.\
 \nOptions:\
 \n	-s: Feed the input stream directly into the expression scanner, does\
@@ -127,7 +128,9 @@ const string usage = "\
 \n          This prompts for the constraint expression and the optional\
 \n          data file name. NOTE: The CE parser Error objects do not print\
 \n          with this option.\
-\n      -b: Use periodic/cyclic/chaning values. For testing Sequence CEs.\
+\n      -W: Similar to -w but uses the new (11/2007) intern_data() methods\
+\n          in place of the serialize()/deserialize() combination.\
+\n      -b: Use periodic/cyclic/changing values. For testing Sequence CEs.\
 \n      -f: A file to use for data. Currently only used by -w for sequences.\
 \n      -k: A constraint expression to use with the data. Works with -p,\
 \n          -e, -t and -w";
@@ -135,10 +138,12 @@ const string usage = "\
 int main(int argc, char *argv[])
 {
     GetOpt getopt(argc, argv, options.c_str());
+    
     int option_char;
     bool scanner_test = false, parser_test = false, evaluate_test = false;
     bool print_constrained = false;
     bool whole_enchalada = false, constraint_expr = false;
+    bool whole_intern_enchalada = false;
     bool scan_string = false;
     bool verbose = false;
     bool series_values = false;
@@ -181,6 +186,10 @@ int main(int argc, char *argv[])
             whole_enchalada = true;
             dds_file_name = getopt.optarg;
             break;
+        case 'W':
+            whole_intern_enchalada = true;
+            dds_file_name = getopt.optarg;
+            break;
         case 'k':
             constraint_expr = true;
             constraint = getopt.optarg;
@@ -203,7 +212,7 @@ int main(int argc, char *argv[])
 
     try {
         if (!scanner_test && !parser_test && !evaluate_test
-            && !whole_enchalada) {
+            && !whole_enchalada && !whole_intern_enchalada) {
             fprintf(stderr, "%s\n", usage.c_str());
             exit(1);
         }
@@ -230,7 +239,10 @@ int main(int argc, char *argv[])
             constrained_trans(dds_file_name, constraint_expr, constraint,
                               series_values);
         }
-
+        if (whole_intern_enchalada) {
+            intern_data_test(dds_file_name, constraint_expr, constraint,
+                             series_values);
+        }
     }
     catch(Error & e) {
         fprintf(stderr, "%s\n", e.get_error_message().c_str());
@@ -422,7 +434,7 @@ bool loopback_pipe(FILE ** pout, FILE ** pin)
 }
 
 
-// Originally in netexec.c (part of the netio library).
+// Originally in netexec.c (part of the long-gone netio library).
 // Read the DDS from the data stream. Leave the binary information behind. The
 // DDS is moved, without parsing it, into a file and a pointer to that FILE is
 // returned. The argument IN (the input FILE stream) is positioned so that the
@@ -639,5 +651,80 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
         (*q)->deserialize(um, &dds);
         (*q)->print_val(stdout);
+    }
+}
+
+/** This function does what constrained_trans() does but does not use the
+    serialize()/deserialize() methods. Instead it uses the new (11/2007)
+    intern_data() methods. 
+    
+    @param dds_name
+    @param constraint_expr True is one was given, else false
+    @param constraint The constraint expression if \c constraint_expr is
+    true.
+    @param series_values True if TestTypes should generate 'series values'
+    like teh DTS. Flase selects the old-style values. */
+void
+intern_data_test(const string & dds_name, const bool constraint_expr,
+                 const string & constraint, const bool series_values)
+{
+    // If the CE was not passed in, read it from the command line.
+    string ce;
+    if (!constraint_expr) {
+        fprintf(stdout, "Constraint:");
+        char c[256];
+        cin.getline(c, 256);
+        if (!cin) {
+            throw InternalErr(__FILE__, __LINE__,
+                              "Could nore read the constraint expression\n");
+        }
+        ce = c;
+    } 
+    else {
+        ce = constraint;
+    }
+    
+    TestTypeFactory ttf;
+    DDS server(&ttf);
+    ConstraintEvaluator eval;
+
+    cout << "The complete DDS:\n";
+    read_table(server, dds_name, true);
+
+    // by default this is false (to get the old-style values that are
+    // constant); set series_values to true for testing Sequence constraints.
+    // 01/14/05 jhrg And Array constraints, although it's of limited 
+    // versatility 02/05/07 jhrg
+    set_series_values(server, series_values);
+
+    eval.parse_constraint(ce, server);  // Throws Error if the ce doesn't parse.
+
+    server.tag_nested_sequences();      // Tag Sequences as Parent or Leaf node.
+
+    if (eval.functional_expression()) {
+        BaseType *var = eval.eval_function(server, dds_name);
+        if (!var)
+            throw Error(unknown_error, "Error calling the CE function.");
+
+        var->intern_data(dds_name, eval, server);
+            
+        var->set_send_p(true);
+        server.add_var(var);
+    }
+    else {
+        for (DDS::Vars_iter i = server.var_begin(); i != server.var_end(); i++)
+            if ((*i)->send_p())
+                (*i)->intern_data(dds_name, eval, server);
+    }
+
+    cout << "The data:\n";
+
+    for (DDS::Vars_iter q = server.var_begin(); q != server.var_end(); q++) {
+        if ((*q)->send_p()) {
+            (*q)->print_decl(cout, "", false, false, true);
+            cout << " = ";
+            dynamic_cast<TestCommon&>(**q).output_values(cout);
+            cout << ";\n";
+        }
     }
 }

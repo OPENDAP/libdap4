@@ -84,6 +84,12 @@ TestUrl::ptr_duplicate()
     return new TestUrl(*this);
 }
 
+void 
+TestUrl::output_values(std::ostream &out)
+{
+    print_val(out, "", false);
+}
+
 bool
 TestUrl::read(const string &)
 {

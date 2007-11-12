@@ -4,3 +4,16 @@ not be found. If that happens, create a symbolic link from ../conf/config.guess
 to either this directory or the libdap-* directory (one level up). The check 
 target should now work.
 
+Tests that are known/expected to fail
+
+There are four tests that are know to fail: expr-test.0/test.1.exp,
+test.6.exp and the expr-test.1 versions. These tests check to see if a CE
+with a selection works when applied to a non-relational data type. It does
+not work and that behavior was never defined by DAP 2.0.
+
+Tests expr-test.1/test.xc.exp and test.yc.exp also fail because of the
+situation described in ticket #995 - a nested sequence is not correctly
+processed by the intern_data() methods. This problem will show up in the JGOFS
+handler when ASCII responses are requested, but will not affect other
+Sequence data sets such as the file servers' data.
+

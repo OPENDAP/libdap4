@@ -55,6 +55,54 @@ TestGrid::TestGrid(const TestGrid &rhs) : Grid(rhs), TestCommon(rhs)
     _duplicate(rhs);
 }
 
+void 
+TestGrid::output_values(std::ostream &out)
+{
+    // value_written controls comma printing
+    bool value_written = false;
+    bool pyg = projection_yields_grid();
+    if (pyg)
+        out << "{  Array: " ;
+    else if (components(true) > 1)
+        out << "{ " ;
+
+    if (array_var()->send_p()) {
+        array_var()->print_val(out, "", false);
+        value_written = true;
+    }
+        
+    if (pyg) {
+        out << "  Maps: " ;
+        // No comma needed if the 'Maps:' separator is written out
+        value_written = false;
+    }
+
+    Map_citer i = map_begin();
+    // Write the first (and maybe only) value.
+    while(i != map_end() && !value_written) {
+        if ((*i)->send_p()) {
+            (*i++)->print_val(out, "", false);
+            value_written = true;
+        }
+        else {
+            ++i;
+        }
+    }
+    // Each subsequent value will be preceded by a comma
+    while(i != map_end()) {
+        if ((*i)->send_p()) {
+            out << ", ";
+            (*i++)->print_val(out, "", false);
+        }
+        else {
+            ++i;
+        }
+    }
+
+    if (pyg || components(true) > 1) 
+        out << " }" ;
+}
+
 TestGrid &
 TestGrid::operator=(const TestGrid &rhs)
 {

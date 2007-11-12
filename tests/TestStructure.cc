@@ -75,6 +75,38 @@ TestStructure::~TestStructure()
 {
 }
 
+void 
+TestStructure::output_values(std::ostream &out)
+{
+    out << "{ " ;
+    
+    bool value_written = false;
+    Vars_citer i = var_begin();
+    
+    // Write the first (and maybe only) value.
+    while(i != var_end() && ! value_written) {
+        if ((*i)->send_p()) {
+            (*i++)->print_val(out, "", false);
+            value_written = true;
+        }
+        else {
+            ++i;
+        }
+    }
+    // Each subsequent value will be preceded by a comma
+    while(i != var_end()) {
+        if ((*i)->send_p()) {
+            out << ", ";
+            (*i++)->print_val(out, "", false);
+        }
+        else {
+            ++i;
+        }
+    }
+
+    out << " }" ;
+}
+
 // For this `Test' class, run the read mfunc for each of variables which
 // comprise the structure. 
 

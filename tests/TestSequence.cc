@@ -83,6 +83,12 @@ TestSequence::operator=(const TestSequence &rhs)
     return *this;
 }
 
+void
+TestSequence::output_values(std::ostream &out)
+{
+    print_val(out, "", false);
+}
+
 // Read values from text files. Sequence instances are stored on separate
 // lines. Line can be no more than 255 characters long.
 

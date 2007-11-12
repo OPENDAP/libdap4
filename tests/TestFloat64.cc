@@ -91,7 +91,13 @@ TestFloat64::ptr_duplicate()
 {
     return new TestFloat64(*this); // Copy ctor calls duplicate to do the work
 }
- 
+
+void 
+TestFloat64::output_values(std::ostream &out)
+{
+    print_val(out, "", false);
+}
+
 bool
 TestFloat64::read(const string &)
 {

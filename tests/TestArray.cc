@@ -210,7 +210,13 @@ TestArray::constrained_matrix(const string &dataset, char *constrained_array)
         } 
     cerr << endl);
 }
- 
+
+void 
+TestArray::output_values(std::ostream &out)
+{
+    print_val(out, "", false);
+}
+
 bool
 TestArray::read(const string &dataset)
 {
