@@ -1,6 +1,39 @@
 
 $Id$
 
+News for version 3.7.9, 13 November 2007
+
+The transfer_data() method defined for Sequence and Structure has been
+generalized and implemented for all classes. In the process, so issues with
+the way nested sequences were handled have been fixed. I renamed the method
+to intern_data() since it is now a part of libdap (and not just two classes).
+The method uses the read() methods defined for the type classes (Byte, ...,
+Grid) to read data into variables in a DDS as if they were read in using
+deserialize(). This is used by the ASCII response generator and might be used
+by other 'formatted output' generators.
+
+Generated files (like the grammar files) are now shipped with the source
+distributions. (From Patrice Dumas)
+
+Methods which write output using the C++ iostream system have been added back
+into the library and are going to replace the FILE* versions of those
+methods. We have also added an 'Un/Marshaller' set of classes so that we can
+release a version of Hyrax (slated to be 1.4) that will improve BES/OLFS
+communication efficiency.
+
+The functionality of the Passive* type classes was subsumed by their parent
+classes and they were removed from the library to cut down on 'hierarchy
+clutter.' Some other unneeded files were also removed.
+
+The maximum size of a Str object was changes to 65535 (DODS_USHORT_INT-1) to
+accommodate HDF5 strings. 
+
+Checkouts from subversion now have no (?) generated files. We are keeping a
+copy of the grammars in subdirectory named 'grammarfiles.'
+
+HTTP response codes are now available in libdap HTTPResponse objects. From
+Darren Hardy.
+
 News for version 3.7.8, 26 June 2007
 
 Updated the email address for support to support at opendap.org and changed

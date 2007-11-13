@@ -1,7 +1,7 @@
 
 	$Id$
 
-Updated for version 3.7.8 of the OPeNDAP DAP 3.1 library software.
+Updated for version 3.7.9 of the OPeNDAP DAP 3.1 library software.
 
 Installing the DAP2 library
 
@@ -62,7 +62,7 @@ AFTER INSTALLING
     that the libraries are installed in a directory that's included in
     ld.so.conf (on linux; other systems may use a slightly different name)
     you don't have to use LD_LIBRARY_PATH but, but if you don't use
-    LD_LIBRARY_PATH, make sure to re-run ldconfig.
+    LD_LIBRARY_PATH, **make sure to re-run ldconfig**.
 
 REQUIREMENTS
 

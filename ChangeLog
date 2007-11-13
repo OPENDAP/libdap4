@@ -1,3 +1,582 @@
+2007-11-13  James Gallagher <jgallagher@opendap.org>
+
+	Fixeed ticket #995. The problem was in intern_data_for_leaf.
+	This problem was fixed by changing the way intern_data_for_leaf()
+	worked, slightly. It was always popping the stack of `d_values`
+	object pointers regardless of the return value of read_row().
+	However, if no values are read then the call to
+	intern_data_for_parent_part_two() would never be called and the
+	d_values field of the child sequence wouldn't be pushed onto the stack.
+	Hence the pop should not happen - because there's no child there to
+	pop. I fixed this with a slight change in the code. The method now
+	skips the while loop and subsequent pop operation if the first call
+	to read_row() returns false. The while loop won't be run anyway,
+	so the actual change is minor and eliminates an unnecessary test
+	in the case where read_row does return false initially.
+
+	All of the tests that are expected to pass now do.
+
+2007-11-12  James Gallagher <jgallagher@opendap.org>
+
+	Grid.cc: Changed the way the declarataion is printed by print_val()
+	so that intern_data can use this too and work with the expr-test
+	test driver.
+	Sequence.cc: transfer_data_part_two() now uses intern_data() when
+	it should in place of read(). Also, print_one_row() is now more
+	flexible in the way it prints rows. Before it expected that the
+	first row would alway be printed (because it assume that the row
+	had been read by deserialize()). Now it checks to see if the row
+	should be printed because it knows that intern_data() might be
+	run and that method is working with local data - the first row
+	might not satisfy the CE.
+	Sequence.h: Formatting
+	Structure.cc: Switched from transfer_data to intern_data.
+
+2007-11-12  James Gallagher <jgallagher@opendap.org>
+
+	Fixed this test. The error message changed and the test failed
+	for that reason, not that error went undetected.
+
+	M dds-testsuite/dds-test.0/test.17.exp
+
+2007-11-12  James Gallagher <jgallagher@opendap.org>
+
+	Copied and munged these so that they call the expr-test_start
+	procedure and test intern_data() in libdap.
+
+	M    test.9.exp
+	M    test.ya.exp
+	M    test.yb.exp
+	M    test.yc.exp
+	M    test.yd.exp
+	M    test.ye.exp
+	M    test.yf.exp
+	M    test.yg.exp
+	M    test.a.exp
+	M    test.b.exp
+	M    test.c.exp
+	M    test.d.exp
+	M    test.zz0.exp
+	M    test.e.exp
+	M    test.zz1.exp
+	M    test.zz2.exp
+	M    test.f.exp
+	M    test.zz3.exp
+	M    test.g.exp
+	M    test.zz4.exp
+	M    test.61a.exp
+	M    test.h.exp
+	M    test.zz5.exp
+	M    test.61b.exp
+	M    test.i.exp
+	M    test.61c.exp
+	M    test.j.exp
+	M    test.61d.exp
+	M    test.k.exp
+	M    test.l.exp
+	M    test.m.exp
+	M    test.n.exp
+	M    test.o.exp
+	M    test.p.exp
+	M    test.q.exp
+	M    test.r.exp
+	M    test.s.exp
+	M    test.t.exp
+	M    test.u.exp
+	M    test.v.exp
+	M    test.w.exp
+	M    test.wa.exp
+	M    test.x.exp
+	M    test.wb.exp
+	M    test.y.exp
+	M    test.wc.exp
+	M    test.xa.exp
+	M    test.xb.exp
+	M    test.xc.exp
+	M    test.xd.exp
+	M    test.xe.exp
+	M    test.z0.exp
+	M    test.z1.exp
+	M    test.z2.exp
+	M    test.z3.exp
+	M    test.z4.exp
+	M    test.z5.exp
+	M    test.z6.exp
+	M    test.1.exp
+	M    test.z7.exp
+	M    test.2.exp
+	M    test.5.exp
+	M    test.6.exp
+
+2007-11-12  James Gallagher <jgallagher@opendap.org>
+
+	Updated test code so that the new intern_data() method is tested.
+
+	M    tests/TestInt32.cc
+	M    tests/TestInt32.h
+	M    tests/TestInt16.cc
+	M    tests/TestStructure.h
+	M    tests/TestInt16.h
+	M    tests/TestUrl.h
+	M    tests/TestStr.h
+	M    tests/TestSequence.h
+	M    tests/TestFloat32.cc
+	M    tests/TestArray.cc
+	M    tests/TestFloat64.cc
+	M    tests/expr-testsuite/config/unix.exp
+	M    tests/TestFloat64.h
+	M    tests/TestUInt32.cc
+	M    tests/TestGrid.cc
+	M    tests/TestUInt16.cc
+	M    tests/TestGrid.h
+	M    tests/TestCommon.h
+	M    tests/expr-test.cc
+	M    tests/TestStructure.cc
+	M    tests/TestUrl.cc
+	M    tests/TestByte.cc
+	M    tests/TestByte.h
+	M    tests/TestSequence.cc
+	M    tests/TestStr.cc
+	M    tests/README
+	M    tests/TestFloat32.h
+	M    tests/TestArray.h
+	M    tests/TestUInt32.h
+	M    tests/TestUInt16.h
+	M    tests/TestCommon.cc
+
+2007-11-08  James Gallagher <jgallagher@opendap.org>
+
+	Added the intern_data() method as a replacement and fix for/to
+	transfer_data(). This method should correctly handle the types
+	presented by HDF5 like Array of Structure
+
+	M    Structure.h
+	M    Sequence.h
+	M    BaseType.h
+	M    BaseType.cc
+	M    Grid.h
+	M    Structure.cc
+	M    Vector.cc
+	M    Sequence.cc
+	M    Vector.h
+	M    Grid.cc
+	M    unit-tests/HTTPCacheTest.cc
+	M    unit-tests/SequenceTest.cc
+
+2007-11-08  Patrick West <pwest@ucar.edu>
+
+	All characters in the pathname need to match the regular
+	expression. So need to compare the result of the match call in
+	pathname_ok to the length of the path being matched. If not all
+	characters match, then return false. 
+
+	M util.cc
+
+2007-10-31  James Gallagher <jgallagher@opendap.org>
+
+	Added pathname_ok() prototype to util.h and added malloc
+	check to XDRStreamMarshaller.cc
+
+2007-10-30  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a parse error in the pathname sanitizer function.
+
+	M util.cc
+
+2007-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Formatting
+
+2007-09-27  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-09-26  Patrick West <pwest@ucar.edu>
+
+	marshaller test
+	
+	A    unit-tests/marshT.cc
+
+2007-09-24  James Gallagher <jgallagher@opendap.org>
+
+	Applied patch from Patrice to package/ship generated
+	files with source dists.
+
+	M Makefile.am
+
+2007-09-21  James Gallagher <jgallagher@opendap.org>
+
+	Fixed various issues.
+
+2007-08-28  James Gallagher <jgallagher@opendap.org>
+
+	Modified because issues show up in the nightly builds.
+
+	M    XDRUtils.cc
+	M    Vector.cc
+
+2007-08-28  James Gallagher <jgallagher@opendap.org>
+
+	unit-test/Makefile.am: Removed comments that shadowed various
+	unit tests since I think that was checked in by mistake.
+
+2007-08-28  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-08-27  Patrick West <pwest@ucar.edu>
+
+	Added methods to be able to send dap objects to iostream in
+	addition to the methods to send to FILE pointers. Created
+	Marshaller and UnMarshaller classes to pass to serialize and
+	deserialize methods (respectively) to separate out that code from
+	BaseType classes. Created XDRFileMarshaller to serialize into XDR
+	using FILE pointer. Created XDRStreamMarshaller to serialize into
+	XDR using ostream (XDR memory buffer). Created XDRFileUnMarshaller
+	to read from XDR using FILE pointer. Did NOT create
+	XDRStreamUnmarshaller as it didn't seem to be needed. Separated
+	out anything to do with XDR into separate header files and utility
+	class XDRUtils.
+	
+	M    DODSFilter.cc
+	M    Int16.cc
+	M    Int32.h
+	M    Structure.h
+	M    Sequence.h
+	M    Str.h
+	M    configure.ac
+	A    XDRUtils.h
+	A    xdr-datatypes-static.h
+	M    cgi_util.cc
+	A    xdr-datatypes-config.h.in
+	M    dods-datatypes-static.h
+	M    Error.cc
+	A    UnMarshaller.h
+	M    Int16.h
+	M    DAS.h
+	M    DDS.cc
+	A    XDRFileMarshaller.h
+	M    tests/expr-test.cc
+	M    Array.cc
+	M    BaseType.h
+	M    Float64.h
+	M    UInt16.cc
+	M    AlarmHandler.h
+	A    Marshaller.h
+	M    Byte.cc
+	M    Byte.h
+	M    DDS.h
+	M    BaseType.cc
+	A    XDRUtils.cc
+	M    Makefile.am
+	M    Constructor.h
+	M    Error.h
+	M    Int32.cc
+	M    DODSFilter.h
+	M    DataDDS.cc
+	M    Float32.cc
+	M    util.h
+	M    AttrTable.cc
+	M    Grid.h
+	M    Structure.cc
+	M    cgi_util.h
+	M    Vector.cc
+	M    Str.cc
+	M    Sequence.cc
+	A    XDRFileUnMarshaller.cc
+	M    Float32.h
+	A    XDRFileUnMarshaller.h
+	M    AttrTable.h
+	M    Constructor.cc
+	M    UInt32.h
+	A    XDRStreamMarshaller.h
+	M    dods-datatypes-config.h.in
+	M    Vector.h
+	M    DAS.cc
+	M    util.cc
+	M    Float64.cc
+	M    UInt32.cc
+	A    XDRStreamMarshaller.cc
+	M    Grid.cc
+	M    Connect.cc
+	M    unit-tests/Makefile.am
+	A    XDRFileMarshaller.cc
+	M    Array.h
+	M    UInt16.h
+
+2007-08-24  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Updated fortify targets
+
+2007-08-22  Patrick West <pwest@ucar.edu>
+
+	Functionality of Passive classes was passed to their parent
+	classes. Added set_value(vector<type>) methods to Vector. Added
+	default read method to Structure that iterates through vars and
+	calls read, just as PassiveStructure did. Removed Passive classes
+	from Makefile.
+	
+	D    PassiveUrl.cc
+	D    PassiveInt16.h
+	M    Structure.h
+	D    PassiveStr.cc
+	D    PassiveStr.h
+	D    PassiveUInt16.h
+	D    PassiveInt16.cc
+	D    PassiveByte.cc
+	D    PassiveFloat32.h
+	D    PassiveStructure.cc
+	D    PassiveStructure.h
+	D    PassiveUInt32.cc
+	D    PassiveFloat32.cc
+	D    PassiveArray.cc
+	M    Makefile.am
+	D    PassiveInt32.cc
+	M    Structure.cc
+	M    Vector.cc
+	D    PassiveFloat64.cc
+	D    PassiveArray.h
+	D    PassiveInt32.h
+	D    PassiveUrl.h
+	D    PassiveByte.h
+	M    Vector.h
+	D    PassiveFloat64.h
+	D    PassiveUInt32.h
+	D    PassiveUInt16.cc
+
+2007-08-22  James Gallagher <jgallagher@opendap.org>
+
+	Str.h: Changed the size of max_str_len from 32767 to 65535
+	(DODS_USHORT_INT-1) because 32k was not big enough for the
+	AURA HDF5 data files. See ticket 962 and 956.
+
+2007-08-21  James Gallagher <jgallagher@opendap.org>
+
+	Response.h: Made the new 'status' parameter have a default
+	value of '0' so that specializations do not need modification
+	if they know nothing about the new param. This change was
+	made for PipeResponse.h - arguably something that should be
+	removed, but it's there as long as we support the CGI server.
+	StdinResponse.h: Removed the second param to teh ctor since
+	it is no longer needed.
+
+2007-08-21  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Removed -Werror since on OS/X and RHEL3
+	the grammar files generate warnings about unused
+	variables.
+
+2007-08-20  James Gallagher <jgallagher@opendap.org>
+
+	Removed warnings about strict aliasing rules by adding
+	Vector::void *value() and replacing calls to buf2_val()
+	with it. See ticket #941.
+
+2007-08-20  James Gallagher <jgallagher@opendap.org>
+
+	Updates to a number of the doxygen comments.
+
+2007-08-20  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a problem in util.cc where the sense of size_ok()
+	was backwards! Also rewrote parts of ce_functions.cc so
+	that value() was used in place of buf2val() which is far
+	better from a type-safety standpoint and removes a number
+	of warnings about strict aliasing of types. Also fixed
+	error in Error.cc where 'undefined_error' was used where
+	zero (0) should have been used. Modified RValue"build_btp_args()
+	so that the size of the arg list is added to the malformed
+	args message.
+
+2007-08-18  James Gallagher <jgallagher@opendap.org>
+
+	Patch from Patrice Dumas that fixes the distclean target and
+	repairs the spec file now that the generated grammar files are no
+	longer included checked into subversion.
+
+	M    libdap.spec
+	M    Makefile.am
+
+2007-08-17  James Gallagher <jgallagher@opendap.org>
+
+	Added a target so that the generated grammar files are copied to a
+	directory so that they don't _have_ to be built using bison/flex.
+
+	M    INSTALL
+	M    Makefile.am
+
+2007-08-17  James Gallagher <jgallagher@opendap.org>
+
+	I removed the generated grammar files from svn (but put copies in
+	the new 'grammarfile' subdirectory). Now, svn checkouts need bison
+	and flex to build.
+
+	D    lex.gse_.cc
+	D    lex.dds.cc
+	D    expr.tab.h
+	D    dds.tab.h
+	D    ce_expr.tab.cc
+	M    GNU/GNURegex.cc
+	D    lex.Error.cc
+	M    Makefile.am
+	D    ce_expr.tab.h
+	D    Error.tab.h
+	A    grammarfiles
+	A    grammarfiles/ce_expr.tab.h
+	A    grammarfiles/lex.das.cc
+	A    grammarfiles/Error.tab.cc
+	A    grammarfiles/Error.tab.h
+	A    grammarfiles/lex.dds.cc
+	A    grammarfiles/lex.gse_.cc
+	A    grammarfiles/lex.ce_expr.cc
+	A    grammarfiles/das.tab.cc
+	A    grammarfiles/das.tab.h
+	A    grammarfiles/dds.tab.cc
+	A    grammarfiles/lex.Error.cc
+	A    grammarfiles/dds.tab.h
+	A    grammarfiles/gse.tab.cc
+	A    grammarfiles/gse.tab.h
+	A    grammarfiles/expr.tab.h
+	A    grammarfiles/ce_expr.tab.cc
+	D    lex.das.cc
+	D    lex.ce_expr.cc
+	D    das.tab.h
+	D    das.tab.cc
+	D    dds.tab.cc
+	D    Error.tab.cc
+	D    gse.tab.cc
+	D    gse.tab.h
+
+2007-08-15  James Gallagher <jgallagher@opendap.org>
+
+	Fixes
+
+2007-08-15  James Gallagher <jgallagher@opendap.org>
+
+	Fixes
+
+	M    lex.gse_.cc
+	M    lex.dds.cc
+	M    dds.tab.h
+	M    lex.Error.cc
+	M    Makefile.am
+	M    util.h
+	M    lex.das.cc
+	M    lex.ce_expr.cc
+	M    util.cc
+	M    dds.tab.cc
+	M    GeoConstraint.cc
+
+2007-08-15  James Gallagher <jgallagher@opendap.org>
+
+	Patch to add HTTP response status to the Response object and to fix the
+	spelling of getdap (it was geturl in places). From Darren Hardy.
+
+	M    HTTPResponse.h
+	M    lex.gse_.cc
+	M    lex.dds.cc
+	M    Response.h
+	M    dds.tab.h
+	M    lex.Error.cc
+	M    HTTPCacheResponse.h
+	M    HTTPConnect.cc
+	M    lex.das.cc
+	M    getdap.cc
+	M    lex.ce_expr.cc
+	M    AISMerge.cc
+	M    dds.tab.cc
+	M    StdinResponse.h
+
+2007-08-13  James Gallagher <jgallagher@opendap.org>
+
+	Modified as part of refactoring.
+
+	M    RValue.cc
+	M    cgi_util.cc
+	M    Error.cc
+	M    ConstraintEvaluator.cc
+	M    DDS.cc
+	M    Array.cc
+	M    Makefile.am
+	M    Error.h
+	M    HTTPCache.cc
+	M    DataDDS.cc
+	M    dds.lex
+	M    DAS.cc
+	M    util.cc
+	M    Connect.cc
+	M    dods-limits.h
+	M    dds.y
+	M    Array.h
+	M    ce_expr.lex
+
+2007-08-09  James Gallagher <jgallagher@opendap.org>
+
+	Applied the hyrex_redirect patch from NASA. This code now detects and
+	records the value of a Location: HTTP header.
+
+	M    HTTPConnect.cc
+
+2007-08-07  Patrick West <pwest@ucar.edu>
+
+	OPeNDAPDir and OPeNDAPFile not needed in libdap, specific to cedar
+	project. M Makefile.am
+
+2007-08-07  Patrick West <pwest@ucar.edu>
+
+	Not needed in libdap, specific to cedar project.
+	
+	A    http://scm.opendap.org:8090/svn/trunk/cedar-handler/OPeNDAPFile.h
+	D    http://scm.opendap.org:8090/svn/trunk/libdap/OPeNDAPFile.h
+
+2007-08-07  Patrick West <pwest@ucar.edu>
+
+	Not needed in libdap, specific to cedar project.
+	
+	A    http://scm.opendap.org:8090/svn/trunk/cedar-handler/OPeNDAPFile.cc
+	D    http://scm.opendap.org:8090/svn/trunk/libdap/OPeNDAPFile.cc
+
+2007-08-07  Patrick West <pwest@ucar.edu>
+
+	Not needed in libdap, specific to cedar project.
+	
+	A    http://scm.opendap.org:8090/svn/trunk/cedar-handler/OPeNDAPDir.cc
+	D    http://scm.opendap.org:8090/svn/trunk/libdap/OPeNDAPDir.cc
+
+2007-08-07  Patrick West <pwest@ucar.edu>
+
+	Not needed in libdap, specific to cedar project.
+	A    http://scm.opendap.org:8090/svn/trunk/cedar-handler/OPeNDAPDir.h
+	D    http://scm.opendap.org:8090/svn/trunk/libdap/OPeNDAPDir.h
+
+2007-06-27  James Gallagher <jgallagher@opendap.org>
+
+	unit-tests/Makefile.am: Added -I$(topsrcdir) to the CPPFLAGS for
+	distcheck.
+
+2007-06-27  James Gallagher <jgallagher@opendap.org>
+
+	tests/Makefile.am: Added -I$(topsrcdir) to the CPPFLAGS for
+	distcheck.
+
+2007-06-27  James Gallagher <jgallagher@opendap.org>
+
+	Updated for version 3.7.8
+
+	M    INSTALL
+	M    README
+	M    NEWS
+
+2007-06-26  James Gallagher <jgallagher@opendap.org>
+
+	Updates for version 3.7.8 - still need to do README and INSTALL.
+
+	M    DODSFilter.cc
+	M    configure.ac
+	M    ChangeLog
+	M    libdap.spec
+	M    NEWS
+
 2007-06-26  James Gallagher <jgallagher@opendap.org>
 
 	Replaced unidata support email with the opendap-tech list address.

@@ -1,6 +1,15 @@
 
 $Id$
 
+Updated for Version 3.7.9 (13 Novenber 2007)
+
+This release is a bug fix and refactoring release. Old classes which were no
+longer used have been removed, the FILE* output methods are slated to be
+replaced with ones which will use iostream and will support a chucked
+transfer 'Marshaller,' and the transfer_data() methods have been made a
+formal part of the library, implemented for all classes, fixed and renamed to
+intern_data(). Many bugs int eh library were also fixed.
+
 Updated for version 3.7.8 (26 June 2007)
 
 The major fixes in this version are memory errors found and fixed in the
