@@ -40,6 +40,7 @@
 #include <sstream>
 
 //#define DODS_DEBUG
+//#define DODS_DEBUG2
 
 #include "debug.h"
 #include "Error.h"
@@ -308,17 +309,11 @@ Sequence::add_var(BaseType *bt, Part)
         throw InternalErr(__FILE__, __LINE__,
                           "Cannot add variable: NULL pointer");
     // Jose Garcia
-    // We append a copy of bt so the owner
-    // of bt is free to deallocate as he wishes.
-    DBG2(cerr << "In Sequence::add_var(), bt: " << bt << endl);
-    DBG2(cerr << bt->toString() << endl);
+    // We append a copy of bt so the owner of bt is free to deallocate
 
     BaseType *bt_copy = bt->ptr_duplicate();
     bt_copy->set_parent(this);
     _vars.push_back(bt_copy);
-
-    DBG2(cerr << "In Sequence::add_var(), bt_copy: " << bt_copy << endl);
-    DBG2(cerr << bt_copy->toString() << endl);
 }
 
 // Deprecated
@@ -555,6 +550,15 @@ Sequence::reset_row_number()
 
     @note The first row is row number zero. A Sequence with 100 rows will
     have row numbers 0 to 99.
+    
+    @todo This code ignores the main reason for nesting the sequences, that
+    if the outer Sequence's current instance fails the CE, there's no need to
+    look at the values of the inner Sequence. But in the code that calls this
+    method (serialize() and intern_data()) the CE is not evaluated until the
+    inner-most Sequence (i.e., the leaf Sequence) is read. That means that
+    each instance of the inner Sequence is read and the CE evaluated for each
+    of those reads. To fix this, and the overall problem of complexity here,
+    we need to re-think Sequences and how they behave. 11/13/2007 jhrg
 
     @return A boolean value, with TRUE indicating that read_row
     should be called again because there's more data to be read.
@@ -633,9 +637,9 @@ Sequence::is_end_of_rows(int i)
     <pre>
     Dataset {
         Sequence {
-     Int x;
-     Int y;
- } flat;
+            Int x;
+            Int y;
+        } flat;
     } case_1;
     </pre>
 
@@ -648,11 +652,11 @@ Sequence::is_end_of_rows(int i)
     <pre>
     Dataset {
         Sequence {
-     Int t;
-     Sequence {
-         Int z;
-     } inner;
- } outer;
+            Int t;
+            Sequence {
+                Int z;
+            } inner;
+        } outer;
     } case_2;
     </pre>
 
@@ -663,7 +667,7 @@ Sequence::is_end_of_rows(int i)
     SOI marker and values for outer [serialize_parent_part_two], then write
     the SOI and values for the first row of inner. Continue to read and send
     rows of inner until the last row has been read. Send EOS for inner
-    [serialize_leaf]. Now read the next row of outer and repeat. Once outer\
+    [serialize_leaf]. Now read the next row of outer and repeat. Once outer
     is completely read, send its EOS marker.</li>
     </ol>
 
@@ -888,82 +892,42 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds,
 void
 Sequence::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds)
 {
-    DBG(cerr << "Entering Sequence::transfer_data for " << name() << endl);
+    DBG(cerr << "Entering intern_data for " << name() << endl);
+    DBG2(cerr << "    intern_data, values: " << &d_values << endl);
 
-    DBG(cerr << "Sequence::transfer_data, values: " << &d_values << endl);
-
+    // Why use a stack instead of return values? We need the stack because
+    // Sequences neted three of more levels deep will loose the middle
+    // instances when the intern_data_parent_part_two() code is run.
     sequence_values_stack_t sequence_values_stack;
-    sequence_values_stack.push_back(&d_values);
+    
+    DBG2(cerr << "    pushing d_values (" << &d_values
+         << ") on stack; size: " << sequence_values_stack.size() << endl);
+    sequence_values_stack.push(&d_values);
 
-    transfer_data_private(dataset, eval, dds, sequence_values_stack);
+    intern_data_private(dataset, eval, dds, sequence_values_stack);
 }
 
 void
-Sequence::transfer_data_private(const string &dataset,
+Sequence::intern_data_private(const string &dataset,
                                 ConstraintEvaluator &eval,
                                 DDS &dds,
                                 sequence_values_stack_t &sequence_values_stack)
 {
-    DBG(cerr << "Entering Sequence::transfer_data_private for " << name() << endl);
+    DBG(cerr << "Entering intern_data_private for " << name() << endl);
 
-    if (is_leaf_sequence()) {
-        transfer_data_for_leaf(dataset, dds, eval, sequence_values_stack);
-    }
-    else {
-        transfer_data_parent_part_one(dataset, dds, eval, sequence_values_stack);
-    }
+    if (is_leaf_sequence())
+        intern_data_for_leaf(dataset, dds, eval, sequence_values_stack);
+    else
+        intern_data_parent_part_one(dataset, dds, eval, sequence_values_stack);
 }
 
 void
-Sequence::transfer_data_for_leaf(const string &dataset, DDS &dds,
-                                 ConstraintEvaluator &eval,
-                                 sequence_values_stack_t &sequence_values_stack)
-{
-    int i = (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
-
-    bool status = read_row(i, dataset, dds, eval, true);
-
-    if (status && (get_ending_row_number() == -1 || i <= get_ending_row_number())) {
-        BaseType *btp = get_parent();
-        if (btp && btp->type() == dods_sequence_c) {
-            dynamic_cast<Sequence&>(*btp).transfer_data_parent_part_two(dataset, dds, eval, sequence_values_stack);
-        }
-    }
-
-    SequenceValues *values = sequence_values_stack.back();
-    DBG(cerr << "In td_for_leaf, using values = " << values << endl);
-
-    while (status && (get_ending_row_number() == -1 || i <= get_ending_row_number())) {
-        i += get_row_stride();
-
-        BaseTypeRow *row_data = new BaseTypeRow;
-
-        // In this loop serialize will signal an error with an exception.
-        for (Vars_iter iter = var_begin(); iter != var_end(); iter++) {
-            if ((*iter)->send_p()) {
-                row_data->push_back((*iter)->ptr_duplicate());
-            }
-        }
-
-        DBG(cerr << "Pushing values for " << name() << " to " << values << endl);
-        // Save the row_data to the values().
-        values->push_back(row_data);
-        set_read_p(false);      // ...so this will read the next instance
-        status = read_row(i, dataset, dds, eval, true);
-    }
-
-    sequence_values_stack.pop_back();
-    DBG(cerr << "In td_for_leaf, Poping the top of the stack" << endl);;
-}
-
-
-void
-Sequence::transfer_data_parent_part_one(const string & dataset, DDS & dds,
+Sequence::intern_data_parent_part_one(const string & dataset, DDS & dds,
                                         ConstraintEvaluator & eval,
                                         sequence_values_stack_t &
                                         sequence_values_stack)
 {
-    DBG(cerr << "Entering transfer_data_parent_part_one for " << name() <<
+    DBG(cerr << "Entering intern_data_parent_part_one for " << name() <<
         endl);
 
     int i = (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
@@ -982,7 +946,7 @@ Sequence::transfer_data_parent_part_one(const string & dataset, DDS & dds,
             if ((*iter)->send_p()) {
                 switch ((*iter)->type()) {
                 case dods_sequence_c:
-                    dynamic_cast<Sequence&>(**iter).transfer_data_private(dataset,
+                    dynamic_cast<Sequence&>(**iter).intern_data_private(dataset,
                             eval, dds, sequence_values_stack);
                     break;
 
@@ -1000,26 +964,27 @@ Sequence::transfer_data_parent_part_one(const string & dataset, DDS & dds,
 
     // Reset current row number for next nested sequence element.
     reset_row_number();
-    sequence_values_stack.pop_back();
-    DBG(cerr << "In td_fparent_part_one, Poping the top of the stack" <<
-        endl);;
+    DBG2(cerr << "    popping d_values (" << sequence_values_stack.top()
+         << ") off stack; size: " << sequence_values_stack.size() << endl);
+    sequence_values_stack.pop();
 }
 
 void
-Sequence::transfer_data_parent_part_two(const string &dataset, DDS &dds,
-                                        ConstraintEvaluator &eval,
-                                        sequence_values_stack_t &sequence_values_stack)
+Sequence::intern_data_parent_part_two(const string &dataset, DDS &dds,
+                                      ConstraintEvaluator &eval,
+                                      sequence_values_stack_t &sequence_values_stack)
 {
-    DBG(cerr << "Entering transfer_data_parent_part_two for " << name() << endl);
+    DBG(cerr << "Entering intern_data_parent_part_two for " << name() << endl);
 
     BaseType *btp = get_parent();
     if (btp && btp->type() == dods_sequence_c) {
-        dynamic_cast<Sequence&>(*btp).transfer_data_parent_part_two(dataset, 
+        dynamic_cast<Sequence&>(*btp).intern_data_parent_part_two(dataset, 
                                       dds, eval, sequence_values_stack);
     }
 
-    SequenceValues *values = sequence_values_stack.back();
-    DBG(cerr << "In td_parent_part_two, using values = " << values << endl);
+    DBG2(cerr << "    stack size: " << sequence_values_stack.size() << endl);
+    SequenceValues *values = sequence_values_stack.top();
+    DBG2(cerr << "    using values = " << values << endl);
 
     if (get_unsent_data()) {
         BaseTypeRow *row_data = new BaseTypeRow;
@@ -1033,18 +998,76 @@ Sequence::transfer_data_parent_part_two(const string &dataset, DDS &dds,
             else if ((*iter)->send_p()) { //Sequence; must be the last variable
                 Sequence *tmp = dynamic_cast<Sequence*>((*iter)->ptr_duplicate());
                 row_data->push_back(tmp);
-                DBG(cerr << "In td_parent_part_two, pushing values = "
-                    << &(dynamic_cast<Sequence&>(*tmp).d_values) << endl);
-                sequence_values_stack.push_back(&(dynamic_cast<Sequence&>(*tmp).d_values));
+                DBG2(cerr << "    pushing d_values (" << &(dynamic_cast<Sequence&>(*tmp).d_values)
+                     << ") on stack; size: " << sequence_values_stack.size() << endl);
+                // This pushes the d_values field of the newly created leaf 
+                // Sequence onto the stack. The code then returns to intern
+                // _data_for_leaf() where this value will be used.
+                sequence_values_stack.push(&(dynamic_cast<Sequence&>(*tmp).d_values));
             }
         }
 
-        DBG(cerr << "Pushing values for " << name() << " to " << values << endl);
+        DBG2(cerr << "    pushing values for " << name() << " to " << values << endl);
         values->push_back(row_data);
         set_unsent_data(false);
     }
 }
 
+void
+Sequence::intern_data_for_leaf(const string &dataset, DDS &dds,
+                               ConstraintEvaluator &eval,
+                               sequence_values_stack_t &sequence_values_stack)
+{
+    DBG(cerr << "Entering intern_data_for_leaf for " << name() << endl);
+    
+    int i = (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
+
+    DBG2(cerr << "    reading row " << i << endl);
+    bool status = read_row(i, dataset, dds, eval, true);
+    DBG2(cerr << "    status: " << status << endl);
+    
+    if (status && (get_ending_row_number() == -1 || i <= get_ending_row_number())) {
+        BaseType *btp = get_parent();
+        if (btp && btp->type() == dods_sequence_c) {
+            // This call will read the values for the parent sequences and 
+            // then allocate a new instance for the leaf and push that onto
+            // the stack.
+            dynamic_cast<Sequence&>(*btp).intern_data_parent_part_two(dataset,
+                dds, eval, sequence_values_stack);
+        }
+
+        // intern_data_parent_part_two pushes the d_values field of the leaf
+        // onto the stack, so this operation grabs that value and then loads
+        // data into it.
+        SequenceValues *values = sequence_values_stack.top();
+        DBG2(cerr << "    using values = " << values << endl);
+
+        while (status && (get_ending_row_number() == -1 
+                          || i <= get_ending_row_number())) {
+            i += get_row_stride();
+
+            // Copy data from the object's fields to this new BaeTypeRow instance
+            BaseTypeRow *row_data = new BaseTypeRow;
+            for (Vars_iter iter = var_begin(); iter != var_end(); iter++) {
+                if ((*iter)->send_p()) {
+                    row_data->push_back((*iter)->ptr_duplicate());
+                }
+            }
+
+            DBG2(cerr << "    pushing values for " << name() << " to " << values << endl);
+            // Save the row_data to values().
+            values->push_back(row_data);
+            
+            set_read_p(false);      // ...so this will read the next instance
+            // Read the ith row into this object's fields
+            status = read_row(i, dataset, dds, eval, true);
+        }
+
+        DBG2(cerr << "    popping d_values (" << sequence_values_stack.top()
+             << ") off stack; size: " << sequence_values_stack.size() << endl);
+        sequence_values_stack.pop();
+    }
+}
 
 /** @brief Deserialize (read from the network) the entire Sequence.
 
@@ -1052,16 +1075,19 @@ Sequence::transfer_data_parent_part_two(const string &dataset, DDS &dds,
     sequence is read at once. The method used to return True to indicate
     that more data needed to be deserialized and False when the sequence
     was completely read. Now it simply returns false. This might seem odd,
-    but making this method return true breaks existing software the least.
+    but making this method return false breaks existing software the least.
 
     @param um An UnMarshaller that knows how to deserialize data
     @param dds A DataDDS from which to read.
-    @param reuse Passed to child objects when they are deserialized.
+    @param reuse Passed to child objects when they are deserialized. Some 
+    implementations of derialize() use this to determine if new storage should
+    be allocated or existing storage reused.
     @exception Error if a sequence stream marker cannot be read.
     @exception InternalErr if the <tt>dds</tt> param is not a DataDDS.
     @return A return value of false indicates that an EOS ("end of
     Sequence") marker was found, while a value of true indicates
-    that there are more rows to be read.
+    that there are more rows to be read. This version always reads the 
+    entire sequence, so it always returns false.
 */
 bool
 Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse)

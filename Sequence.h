@@ -43,7 +43,7 @@
 #define _sequence_h 1
 
 
-#include <vector>
+#include <stack>
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -169,17 +169,17 @@ class Sequence: public Constructor
 {
 private:
     // This holds the values read off the wire. Values are stored in
-    // instances of BaseType objects.
+    // instances of BaseTypeRow objects which hold instances of BaseType.
     SequenceValues d_values;
 
     // The number of the row that has just been deserialized. Before
-    // deserialized has been called, this member is -1.
+    // deserialized has been called, this field is -1.
     int d_row_number;
 
     // If a client asks for certain rows of a sequence using the bracket
     // notation (<tt>[<start>:<stride>:<stop>]</tt>) primarily intended for
     // arrays
-    // and grids, record that information in the next three members. This
+    // and grids, record that information in the next three fields. This
     // information can be used by the translation software. s.a. the accessor
     // and mutator methods for these members. Values of -1 indicate that
     // these have not yet been set.
@@ -211,7 +211,7 @@ private:
 
 protected:
 
-    typedef vector<SequenceValues*> sequence_values_stack_t;
+    typedef stack<SequenceValues*> sequence_values_stack_t;
 
     virtual bool serialize_parent_part_one(const string &dataset, DDS &dds,
                                            ConstraintEvaluator &eval,
@@ -223,19 +223,19 @@ protected:
                                 ConstraintEvaluator &eval,
 				Marshaller &m, bool ce_eval);
 
-    virtual void transfer_data_private(const string &dataset,
+    virtual void intern_data_private(const string &dataset,
                                        ConstraintEvaluator &eval,
                                        DDS &dds,
                                        sequence_values_stack_t &sequence_values_stack);
-    virtual void transfer_data_for_leaf(const string &dataset, DDS &dds,
+    virtual void intern_data_for_leaf(const string &dataset, DDS &dds,
                                         ConstraintEvaluator &eval,
                                         sequence_values_stack_t &sequence_values_stack);
 
-    virtual void transfer_data_parent_part_one(const string &dataset, DDS &dds,
+    virtual void intern_data_parent_part_one(const string &dataset, DDS &dds,
             ConstraintEvaluator &eval,
             sequence_values_stack_t &sequence_values_stack);
 
-    virtual void transfer_data_parent_part_two(const string &dataset, DDS &dds,
+    virtual void intern_data_parent_part_two(const string &dataset, DDS &dds,
             ConstraintEvaluator &eval,
             sequence_values_stack_t &sequence_values_stack);
 

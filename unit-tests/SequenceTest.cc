@@ -162,7 +162,7 @@ public:
     CPPUNIT_TEST(test_set_leaf_sequence);
     CPPUNIT_TEST(test_set_leaf_sequence2);
     CPPUNIT_TEST(test_set_leaf_sequence3);
-    CPPUNIT_TEST(transfer_data_for_leaf_test);
+    CPPUNIT_TEST(intern_data_for_leaf_test);
     CPPUNIT_TEST(intern_data_test1);
     CPPUNIT_TEST(intern_data_test2);
     CPPUNIT_TEST(intern_data_test3);
@@ -294,13 +294,13 @@ public:
         }
     }
     
-    void transfer_data_for_leaf_test() {
+    void intern_data_for_leaf_test() {
         ConstraintEvaluator ce;
         s->set_send_p(true);
         try {
             Sequence::sequence_values_stack_t sequence_values_stack;
-            sequence_values_stack.push_back(&s->d_values);
-            s->transfer_data_for_leaf("dummy", *dds, ce, sequence_values_stack);
+            sequence_values_stack.push(&s->d_values);
+            s->intern_data_for_leaf("dummy", *dds, ce, sequence_values_stack);
             
             // Test the first value in the first four rows
             BaseType *btp = s->var_value(0, 0);
