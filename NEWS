@@ -1,7 +1,10 @@
 
 $Id$
 
-News for version 3.7.9, 13 November 2007
+News for version 3.7.9, 21 November 2007
+
+Bumped up the soname version numbers for libdaoclient and libdapserver due
+to changes in the HTTPResponse and AlarmHandler interfaces.
 
 The transfer_data() method defined for Sequence and Structure has been
 generalized and implemented for all classes. In the process, so issues with

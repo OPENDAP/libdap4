@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+# This file is part of libdap, A C++ implementation of the OPeNDAP Data
 # Access Protocol.
 
 # Copyright (c) 2002,2003 OPeNDAP, Inc.
@@ -89,8 +89,8 @@ then
     if test $truncate = "0"
     then
 	# build the new Makefile in a tmp directory using the existing 
-	# makefile: first copy everything upto the dependencies using awk,
-	# then compoute and append the dependencies of the files (which are
+	# makefile: first copy everything up to the dependencies using awk,
+	# then compute and append the dependencies of the files (which are
 	# the remaining arguments). 
 	awk 'BEGIN {found = 0}
 	    /DO NOT DELETE/ {found = 1; print $0}

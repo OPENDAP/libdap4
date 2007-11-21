@@ -16,13 +16,13 @@ AM_INIT_AUTOMAKE
 
 AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])
 AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
-AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and vesion combined])
+AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and version combined])
 AC_SUBST(DVR)
 
 AC_DEFINE(EVAL, 1, [Should all the classes run ConstraintEvaluator::eval()?])
 AC_SUBST(EVAL)
 
-AC_DEFINE(COMPRESSION_FOR_SERVER3, 0, [Should the subprocess compressor for Server3 be includes?])
+AC_DEFINE(COMPRESSION_FOR_SERVER3, 0, [Should the subprocess compression for Server3 be includes?])
 AC_SUBST(COMPRESSION_FOR_SERVER3)
 
 dnl flags for the compilers and linkers - set these before locating the
@@ -32,7 +32,7 @@ dnl to default values otherwise.
 AC_CANONICAL_HOST
 AC_SUBST(host)
 
-dnl library versionning: Update these when the interface changes. Generally,
+dnl library version: Update these when the interface changes. Generally,
 dnl assume that the interface tracks the major and minor release numbers.
 DAPLIB_CURRENT=8
 DAPLIB_AGE=0
@@ -44,9 +44,9 @@ AC_SUBST(DAPLIB_REVISION)
 LIBDAP_VERSION="$DAPLIB_CURRENT:$DAPLIB_REVISION:$DAPLIB_AGE"
 AC_SUBST(LIBDAP_VERSION)
 
-CLIENTLIB_CURRENT=1
+CLIENTLIB_CURRENT=2
 CLIENTLIB_AGE=0
-CLIENTLIB_REVISION=3
+CLIENTLIB_REVISION=0
 AC_SUBST(CLIENTLIB_CURRENT)
 AC_SUBST(CLIENTLIB_AGE)
 AC_SUBST(CLIENTLIB_REVISION)
@@ -54,9 +54,9 @@ AC_SUBST(CLIENTLIB_REVISION)
 CLIENTLIB_VERSION="$CLIENTLIB_CURRENT:$CLIENTLIB_REVISION:$CLIENTLIB_AGE"
 AC_SUBST(CLIENTLIB_VERSION)
 
-SERVERLIB_CURRENT=3
+SERVERLIB_CURRENT=4
 SERVERLIB_AGE=0
-SERVERLIB_REVISION=3
+SERVERLIB_REVISION=0
 AC_SUBST(SERVERLIB_CURRENT)
 AC_SUBST(SERVERLIB_AGE)
 AC_SUBST(SERVERLIB_REVISION)
@@ -79,7 +79,7 @@ AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 
 dnl We really need bison and not yacc. If you use AC_PROG_YACC, the resulting 
-dnl Makfile will call bison -y which doesn't know how to make the parsers 
+dnl Makefile will call bison -y which doesn't know how to make the parsers 
 dnl we require. jhrg 6/15/05
 AC_CHECK_PROG(YACC,[bison],[bison])
 

@@ -8,7 +8,6 @@ URL: http://www.opendap.org/
 
 Group: Development/Libraries
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-# the deflate program is covered by the W3C license
 License: LGPLv2+ and W3C
 
 # Mandrake
@@ -16,7 +15,6 @@ License: LGPLv2+ and W3C
 # fedora
 BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
 BuildRequires: doxygen graphviz
-# deflate depends directly on zlib
 BuildRequires: zlib-devel
 BuildRequires: pkgconfig
 
