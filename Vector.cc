@@ -1222,7 +1222,11 @@ void *Vector::value()
 void Vector::add_var(BaseType * v, Part)
 {
     // Delete the current template variable
-    delete _var;
+    if( _var )
+    {
+	delete _var;
+	_var = 0 ;
+    }
 
     // if 'v' is null, just set _var to null and exit.
     if (!v) {
