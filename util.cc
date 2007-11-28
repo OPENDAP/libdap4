@@ -624,7 +624,9 @@ pathname_ok(const string &path, bool strict)
         
     string::size_type len = path.length();
     int result = name.match(path.c_str(), len);
-    if (result != len)
+    // Protect against casting too big an uint to int
+    // if LEN is bigger than the max int32, the second test can't work
+    if (len > INT_MAX || result != static_cast<int>(len))
         return false;
  
     return true;

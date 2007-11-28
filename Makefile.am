@@ -226,6 +226,8 @@ SERVER_HDR = DODSFilter.h cgi_util.h AlarmHandler.h EventHandler.h
 lex.das.cc: das.lex das.tab.cc das.tab.h
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pdas $<
 	mv lex.das.c lex.das.cc
+	sed 's/lex\.das\.c/lex\.das\.cc/g' < lex.das.cc > tmp
+	mv tmp lex.das.cc
 
 das.tab.cc das.tab.h: das.y DAS.h
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p das $<
@@ -236,14 +238,21 @@ das.tab.cc das.tab.h: das.y DAS.h
 lex.dds.cc: dds.lex dds.tab.cc dds.tab.h
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pdds $<
 	mv lex.dds.c lex.dds.cc
+	sed 's/lex\.dds\.c/lex\.dds\.cc/g' < lex.dds.cc > tmp
+	mv tmp lex.dds.cc
+
 
 dds.tab.cc dds.tab.h: dds.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p dds $<
 	mv dds.tab.c dds.tab.cc
 
+# CE
+
 lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.h
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pce_expr $<
 	mv lex.ce_expr.c lex.ce_expr.cc
+	sed 's/lex\.ce_expr\.c/lex\.ce_expr\.cc/g' < lex.ce_expr.cc > tmp
+	mv tmp lex.ce_expr.cc
 
 ce_expr.tab.cc ce_expr.tab.h: ce_expr.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p ce_expr $<
@@ -254,6 +263,8 @@ ce_expr.tab.cc ce_expr.tab.h: ce_expr.y
 lex.gse_.cc: gse.lex gse.tab.cc gse.tab.h
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pgse_ $<
 	mv lex.gse_.c lex.gse_.cc
+	sed 's/lex\.gse_\.c/lex\.gse_\.cc/g' < lex.gse_.cc > tmp
+	mv tmp lex.gse_.cc
 
 gse.tab.cc gse.tab.h: gse.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p gse_ $<
@@ -264,6 +275,8 @@ gse.tab.cc gse.tab.h: gse.y
 lex.Error.cc: Error.lex Error.tab.cc Error.tab.h
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) -PError $<
 	mv lex.Error.c lex.Error.cc
+	sed 's/lex\.Error\.c/lex\.Error\.cc/g' < lex.Error.cc > tmp
+	mv tmp lex.Error.cc
 
 Error.tab.cc Error.tab.h: Error.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p Error $<

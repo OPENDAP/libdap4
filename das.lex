@@ -90,7 +90,7 @@ static int start_line;		/* used in quote and comment error handlers */
 
 %}
     
-%option noyywrap
+%option noyywrap 
 %x quote
 %x comment
 

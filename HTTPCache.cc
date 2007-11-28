@@ -1919,7 +1919,7 @@ HTTPCache::get_conditional_request_headers(const string &url)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
-    CacheEntry *entry;
+    CacheEntry *entry = 0;
     vector<string> headers;
 
     DBG(cerr << "Getting conditional request headers for " << url << endl);
@@ -1945,19 +1945,20 @@ HTTPCache::get_conditional_request_headers(const string &url)
         else if (entry->expires > 0)
             headers.push_back(string("If-Modified-Since: ")
                               + date_time_str(&entry->expires));
+
+	UNLOCK(&entry->lock);
+	DBGN(cerr << "Unlocking entry" << endl);
+	UNLOCK(&d_cache_mutex);
+	DBGN(cerr << "Unlocking interface." << endl);
     }
     catch (Error &e) {
         UNLOCK(&d_cache_mutex);
         DBGN(cerr << "Unlocking interface." << endl);
-        UNLOCK(&entry->lock);
+	if (entry)
+	    UNLOCK(&entry->lock);
         DBGN(cerr << "Unlocking entry." << endl);
         throw e;
     }
-
-    UNLOCK(&entry->lock);
-    DBGN(cerr << "Unlocking entry" << endl);
-    UNLOCK(&d_cache_mutex);
-    DBGN(cerr << "Unlocking interface." << endl);
 
     return headers;
 }
@@ -1992,7 +1993,7 @@ HTTPCache::update_response(const string &url, time_t request_time,
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
-    CacheEntry *entry;
+    CacheEntry *entry = 0;
 
     DBG(cerr << "Updating the response headers for: " << url << endl);
 
@@ -2039,7 +2040,8 @@ HTTPCache::update_response(const string &url, time_t request_time,
         write_metadata(entry->cachename, result);
     }
     catch (Error &e) {
-        UNLOCK(&entry->lock);
+        if (entry)
+            UNLOCK(&entry->lock);
         DBGN(cerr << "Unlocking entry." << endl);
         UNLOCK(&d_cache_mutex);
         DBGN(cerr << "Unlocking interface." << endl);
@@ -2176,7 +2178,7 @@ HTTPCache::get_cached_response(const string &url, vector<string> &headers)
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
     FILE *body;
-    CacheEntry *entry;
+    CacheEntry *entry = 0;
 
     DBG(cerr << "Getting the cached response for " << url << endl);
 
@@ -2200,7 +2202,8 @@ HTTPCache::get_cached_response(const string &url, vector<string> &headers)
         TRYLOCK(&entry->lock); // Needed for blocking lock; locked counts
     }
     catch (Error &e) {
-        UNLOCK(&entry->lock);
+        if (entry)
+            UNLOCK(&entry->lock);
         DBGN(cerr << "Unlocking entry." << endl);
         UNLOCK(&d_cache_mutex);
         DBGN(cerr << "Unlocking interface." << endl);
@@ -2239,7 +2242,7 @@ HTTPCache::get_cached_response_body(const string &url)
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
     FILE *body;
-    CacheEntry *entry;
+    CacheEntry *entry = 0;
 
     try {
         entry = get_entry_from_cache_table(url);
@@ -2262,7 +2265,8 @@ HTTPCache::get_cached_response_body(const string &url)
         TRYLOCK(&entry->lock);
     }
     catch (Error &e) {
-        UNLOCK(&entry->lock);
+        if (entry)
+            UNLOCK(&entry->lock);
         DBGN(cerr << "Unlocking entry." << endl);
         UNLOCK(&d_cache_mutex);
         DBGN(cerr << "Unlocking interface." << endl);
@@ -2292,7 +2296,7 @@ HTTPCache::release_cached_response(FILE *body)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
-    CacheEntry *entry;
+    CacheEntry *entry = 0;
 
     try {
         entry = d_locked_entries[body];
