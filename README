@@ -1,6 +1,10 @@
 
 $Id$
 
+Updated for Version 3.7.10 (28 November 2007)
+
+A bug fix release. See NEWS.
+
 Updated for Version 3.7.9 (13 Novenber 2007)
 
 This release is a bug fix and refactoring release. Old classes which were no

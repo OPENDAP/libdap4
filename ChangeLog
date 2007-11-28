@@ -1,3 +1,65 @@
+2007-11-28  James Gallagher <jgallagher@opendap.org>
+
+	Fixed warnings about potentially uninitialized uses of ENTRY in
+	HTTPCache.cc
+
+2007-11-28  Patrick West <pwest@ucar.edu>
+
+	Added private default constructor, copy constructor, and operator=
+	to the classes, all through InternalErr. Added copyright
+	information as well.
+	
+	M    XDRUtils.h
+	M    UnMarshaller.h
+	M    XDRFileMarshaller.h
+	M    Marshaller.h
+	M    XDRUtils.cc
+	M    XDRFileUnMarshaller.cc
+	M    XDRFileUnMarshaller.h
+	M    XDRStreamMarshaller.h
+	M    XDRStreamMarshaller.cc
+	M    XDRFileMarshaller.cc
+
+2007-11-26  Patrick West <pwest@ucar.edu>
+
+	In Vector.cc, checking if _var is null before attempting delete.
+	Didn't appear to be an issue, but seemed to be a needed test.
+
+	In XDRStreamMarshaller, not allocating such a large buffer.
+	Allocating only what is needed in put_str and both put_vector
+	calls. The other methods are using the static buffer so we don't
+	have to allocate each time. Prettied up the code, added more
+	comments, and corrected some exception messages.
+	
+	M    Vector.cc
+	M    XDRStreamMarshaller.cc
+
+2007-11-21  James Gallagher <jgallagher@opendap.org>
+
+	libdapclient and libdapserver library versions bumped up.
+
+	M    configure.ac
+	M    depend.sh
+	M    libdap.spec
+	M    NEWS
+
+2007-11-14  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the LIBDAP CHECK macro
+
+	M    conf/libdap.m4
+
+2007-11-13  James Gallagher <jgallagher@opendap.org>
+
+	Updated for version 3.7.9
+
+	M    configure.ac
+	M    ChangeLog
+	M    INSTALL
+	M    libdap.spec
+	M    README
+	M    NEWS
+
 2007-11-13  James Gallagher <jgallagher@opendap.org>
 
 	Fixeed ticket #995. The problem was in intern_data_for_leaf.

@@ -1,6 +1,11 @@
 
 $Id$
 
+News for version 3.7.10, 28 November 2007
+
+Fixed XDRStreamMarshaller so that it no longer allocates a huge buffer. This
+fixes a bug where the BES fails to start on smaller machines.
+
 News for version 3.7.9, 21 November 2007
 
 Bumped up the soname version numbers for libdaoclient and libdapserver due
