@@ -122,9 +122,15 @@ pkg:
 	rm -rf mac_osx @PACKAGE@-@PACKAGE_VERSION@.pkg
 	./configure --prefix=/usr $(PKG_CONFIGURE_FLAGS)
 	cp dap-config dap-config.macosx
+	cp libdap.pc libdap.pc.macosx
+	cp libdapclient.pc libdapclient.pc.macosx
+	cp libdapserver.pc libdapserver.pc.macosx
 	./configure --prefix=`pwd`/mac_osx $(PKG_CONFIGURE_FLAGS)
 	make clean install
 	mv dap-config.macosx mac_osx/bin/dap-config
+	mv libdap.pc.macosx mac_osx/lib/pkgconfig/libdap.pc
+	mv libdapclient.pc.macosx mac_osx/lib/pkgconfig/libdapclient.pc
+	mv libdapserver.pc.macosx mac_osx/lib/pkgconfig/libdapserver.pc
 	${PACKAGEMAKER} -build -p @PACKAGE@-@PACKAGE_VERSION@.pkg -f mac_osx -ds -r OSX_Resources -i OSX_Resources/Info.plist -d OSX_Resources/Description.plist
 
 # Note that the gcov options -f and -b are useful but sometimes make looking
