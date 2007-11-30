@@ -62,10 +62,12 @@ deflate_LDFLAGS = $(ZLIB_LDFLAGS)
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex \
 	gse.y Error.lex Error.y
 
+MACOSX_RESOURCES_EXTRA =  INSTALL_MacOSX.rtf README_MacOSX.rtf OSX_Resources
+
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
 	VCPP dods-datatypes-static.h xdr-datatypes-static.h \
-	$(LEX_YACC_EXTRA) $(GRAM_SRC)
+	$(LEX_YACC_EXTRA) $(GRAM_SRC) $(MACOSX_RESOURCES_EXTRA)
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
@@ -121,17 +123,9 @@ PACKAGEMAKER=/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/P
 pkg:
 	rm -rf mac_osx @PACKAGE@-@PACKAGE_VERSION@.pkg
 	./configure --prefix=/usr $(PKG_CONFIGURE_FLAGS)
-	cp dap-config dap-config.macosx
-	cp libdap.pc libdap.pc.macosx
-	cp libdapclient.pc libdapclient.pc.macosx
-	cp libdapserver.pc libdapserver.pc.macosx
-	./configure --prefix=`pwd`/mac_osx $(PKG_CONFIGURE_FLAGS)
-	make clean install
-	mv dap-config.macosx mac_osx/bin/dap-config
-	mv libdap.pc.macosx mac_osx/lib/pkgconfig/libdap.pc
-	mv libdapclient.pc.macosx mac_osx/lib/pkgconfig/libdapclient.pc
-	mv libdapserver.pc.macosx mac_osx/lib/pkgconfig/libdapserver.pc
-	${PACKAGEMAKER} -build -p @PACKAGE@-@PACKAGE_VERSION@.pkg -f mac_osx -ds -r OSX_Resources -i OSX_Resources/Info.plist -d OSX_Resources/Description.plist
+	make clean all
+	DESTDIR=${PWD}/mac_osx make install
+	${PACKAGEMAKER} -build -p @PACKAGE@-@PACKAGE_VERSION@.pkg -f mac_osx/usr -ds -r OSX_Resources -i OSX_Resources/Info.plist -d OSX_Resources/Description.plist
 
 # Note that the gcov options -f and -b are useful but sometimes make looking
 # at the results of coverage analysis a little taxing. -b reports on all
