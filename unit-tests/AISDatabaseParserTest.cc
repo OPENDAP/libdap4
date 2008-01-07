@@ -47,14 +47,14 @@ public:
     ~AISDatabaseParserTest() {} 
 
     void setUp() {
-	fnoc1 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc1.nc";
-	fnoc2 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc2.nc";
-	fnoc3 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc3.nc";
+	fnoc1 = "http://test.opendap.org/opendap/data/nc/fnoc1.nc";
+	fnoc2 = "http://test.opendap.org/opendap/data/nc/fnoc2.nc";
+	fnoc3 = "http://test.opendap.org/opendap/data/nc/fnoc3.nc";
 	// number is the regular expression that will be in the
 	// ais_database.xml file.
-	number = "http://test.opendap.org/opendap/nph-dods/data/nc/[0-9]+.*\\.nc";
-	bears = "http://test.opendap.org/opendap/nph-dods/data/nc/123bears.nc";
-	three_fnoc = "http://test.opendap.org/opendap/nph-dods/data/nc/3fnoc.nc";
+	number = "http://test.opendap.org/opendap/data/nc/[0-9]+.*\\.nc";
+	bears = "http://test.opendap.org/opendap/data/nc/123bears.nc";
+	three_fnoc = "http://test.opendap.org/opendap/data/nc/3fnoc.nc";
 
 	fnoc1_ais = "http://test.opendap.org/ais/fnoc1.nc.das";
 	fnoc2_ais = "ais_testsuite/fnoc2_replace.das";

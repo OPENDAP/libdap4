@@ -3,17 +3,17 @@
 
 <ais xmlns="http://xml.opendap.org/ais">
 <entry>
-<primary url="http://test.opendap.org/opendap/nph-dods/data/nc/fnoc1.nc"/>
+<primary url="http://test.opendap.org/opendap/data/nc/fnoc1.nc"/>
 <ancillary url="http://test.opendap.org/ais/fnoc1.nc.das"/>
 </entry>
 
 <entry>
-<primary url="http://test.opendap.org/opendap/nph-dods/data/nc/fnoc2.nc"/>
+<primary url="http://test.opendap.org/opendap/data/nc/fnoc2.nc"/>
 <ancillary rule="replace" url="ais_testsuite/fnoc2_replace.das"/>
 </entry>
 
 <entry>
-<primary url="http://test.opendap.org/opendap/nph-dods/data/nc/fnoc3.nc"/>
+<primary url="http://test.opendap.org/opendap/data/nc/fnoc3.nc"/>
 <!-- <ancillary url="http://test.opendap.org/ais/fnoc1.nc.das"/> -->
 <ancillary rule="fallback" url="http://test.opendap.org/ais/fnoc3_fallback.das"/>
 </entry>
@@ -21,22 +21,22 @@
 <!-- The file:// URL works only with absolute paths. Maybe a bug? jhrg -->
 <!-- 7/14/05 -->
 <entry>
-<primary url="http://test.opendap.org/opendap/nph-dods/data/nc/bears.nc"/>
+<primary url="http://test.opendap.org/opendap/data/nc/bears.nc"/>
 <ancillary url="file:///home/jimg/libdap/tests/ais_testsuite/bears_1.nc.das"/>
 </entry>
 
 <entry>
-<primary url="http://test.opendap.org/opendap/nph-dods/data/nc/coads_climatology.nc"/>
+<primary url="http://test.opendap.org/opendap/data/nc/coads_climatology.nc"/>
 <ancillary url="ais_testsuite/coads.das"/>
 </entry>
 
 <entry>
-<primary url="http://test.opendap.org/opendap/nph-dods/data/nc/123.nc"/>
+<primary url="http://test.opendap.org/opendap/data/nc/123.nc"/>
 <ancillary url="ais_testsuite/123.das"/>
 </entry>
 
 <entry>
-<primary regexp="http://test.opendap.org/opendap/nph-dods/data/nc/[0-9]+.*\.nc"/>
+<primary regexp="http://test.opendap.org/opendap/data/nc/[0-9]+.*\.nc"/>
 <ancillary url="ais_testsuite/starts_with_number.das"/>
 </entry>
 </ais>
