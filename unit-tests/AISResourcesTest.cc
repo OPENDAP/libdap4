@@ -50,14 +50,14 @@ public:
     ~AISResourcesTest() {} 
 
     void setUp() {
-	fnoc1 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc1.nc";
-	fnoc2 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc2.nc";
-	fnoc3 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc3.nc";
+	fnoc1 = "http://test.opendap.org/opendap/data/nc/fnoc1.nc";
+	fnoc2 = "http://test.opendap.org/opendap/data/nc/fnoc2.nc";
+	fnoc3 = "http://test.opendap.org/opendap/data/nc/fnoc3.nc";
 
-	regexp = "http://test.opendap.org/opendap/nph-dods/data/nc/[0-9]+.*\\.nc";
-	bears = "http://test.opendap.org/opendap/nph-dods/data/nc/123bears.nc";
-	three_fnoc = "http://test.opendap.org/opendap/nph-dods/data/nc/3fnoc.nc";
-	one_2_3 = "http://test.opendap.org/opendap/nph-dods/data/nc/123.nc";
+	regexp = "http://test.opendap.org/opendap/data/nc/[0-9]+.*\\.nc";
+	bears = "http://test.opendap.org/opendap/data/nc/123bears.nc";
+	three_fnoc = "http://test.opendap.org/opendap/data/nc/3fnoc.nc";
+	one_2_3 = "http://test.opendap.org/opendap/data/nc/123.nc";
 
 
 	fnoc1_ais = "http://test.opendap.org/ais/fnoc1.nc.das";

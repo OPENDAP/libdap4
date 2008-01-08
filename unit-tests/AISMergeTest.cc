@@ -164,17 +164,17 @@ class AISMergeTest:public TestFixture {
 };
 
 string AISMergeTest::fnoc1 =
-    "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc1.nc";
+    "http://test.opendap.org/opendap/data/nc/fnoc1.nc";
 string AISMergeTest::fnoc2 =
-    "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc2.nc";
+    "http://test.opendap.org/opendap/data/nc/fnoc2.nc";
 string AISMergeTest::fnoc3 =
-    "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc3.nc";
+    "http://test.opendap.org/opendap/data/nc/fnoc3.nc";
 string AISMergeTest::bears =
-    "http://test.opendap.org/opendap/nph-dods/data/nc/bears.nc";
+    "http://test.opendap.org/opendap/data/nc/bears.nc";
 string AISMergeTest::coads =
-    "http://test.opendap.org/opendap/nph-dods/data/nc/coads_climatology.nc";
+    "http://test.opendap.org/opendap/data/nc/coads_climatology.nc";
 string AISMergeTest::three_fnoc =
-    "http://test.opendap.org/opendap/nph-dods/data/nc/3fnoc.nc";
+    "http://test.opendap.org/opendap/data/nc/3fnoc.nc";
 
 string AISMergeTest::fnoc1_ais =
     "http://test.opendap.org/ais/fnoc1.nc.das";
