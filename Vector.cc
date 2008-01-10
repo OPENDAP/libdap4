@@ -1298,7 +1298,28 @@ Vector::dump(ostream &strm) const
         strm << DapIndent::LMarg << d_str[i] << endl ;
     }
     DapIndent::UnIndent() ;
-    strm << DapIndent::LMarg << "_buf: " << (void *)_buf << endl ;
+    if( _buf )
+    {
+	switch( _var->type() )
+	{
+	    case dods_byte_c:
+	    {
+		strm << DapIndent::LMarg << "_buf: " ;
+		strm.write( _buf, _length ) ;
+		strm << endl ;
+	    }
+	    break ;
+	    default:
+	    {
+		strm << DapIndent::LMarg << "_buf: " << (void *)_buf << endl ;
+	    }
+	    break ;
+	}
+    }
+    else
+    {
+	strm << DapIndent::LMarg << "_buf: EMPTY" << endl ;
+    }
     DapIndent::UnIndent() ;
 }
 

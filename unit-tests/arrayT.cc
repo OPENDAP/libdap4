@@ -169,6 +169,8 @@ public:
 	bool is_read = ar.read( "dataset" ) ;
 	CPPUNIT_ASSERT( is_read == true ) ;
 
+	cout << ar << endl ;
+
 	/* ar.print_val( stdout ) ; */
 
 	delete bt ;

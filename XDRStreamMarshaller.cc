@@ -273,19 +273,22 @@ XDRStreamMarshaller::put_vector( char *val, int num, Vector & )
     // write the number of members of the array being written and then set the position to 0
     put_int( num ) ;
 
-    char *byte_buf = (char *)malloc( num + 4 ) ;
+    // this is the word boundary for writing xdr bytes in a vector.
+    unsigned int add_to = 8 ;
+
+    char *byte_buf = (char *)malloc( num + add_to ) ;
     if ( !byte_buf )
         throw Error("Failed to allocate memory for byte vector data serialization.");
         
     XDR *byte_sink = new XDR ;
-    xdrmem_create( byte_sink, byte_buf, num + 4, XDR_ENCODE ) ;
+    xdrmem_create( byte_sink, byte_buf, num + add_to, XDR_ENCODE ) ;
 
     if( !xdr_setpos( byte_sink, 0 ) )
         throw Error("Network I/O Error. Could not send byte vector data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
     if( !xdr_bytes( byte_sink, (char **)&val,
 		    (unsigned int *) &num,
-		    num + 4 ) )
+		    num + add_to ) )
     {
 	throw Error("Network I/O Error(2). Could not send byte vector data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
     }

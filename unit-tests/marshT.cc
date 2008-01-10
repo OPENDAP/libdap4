@@ -64,7 +64,7 @@ public:
 	TestByte ab( "ab" ) ;
 
 	TestArray arr( "arr", &ab ) ;
-	arr.append_dim( 4, "dim1" ) ;
+	arr.append_dim( 5, "dim1" ) ;
 	arr.append_dim( 3, "dim2" ) ;
 
 	TestStructure s( "s" ) ;
@@ -127,6 +127,8 @@ public:
 	    string err = "failed:" + e.get_error_message() ;
 	    CPPUNIT_FAIL( err.c_str() ) ;
 	}
+
+	cout << s << endl ;
 
 	try
 	{
@@ -229,7 +231,7 @@ public:
 	    fs.add_var( &fsstr ) ;
 	    TestByte fsab( "fsab" ) ;
 	    TestArray fsarr( "fsarr", &fsab ) ;
-	    fsarr.append_dim( 4, "dim1" ) ;
+	    fsarr.append_dim( 5, "dim1" ) ;
 	    fsarr.append_dim( 3, "dim2" ) ;
 	    fs.add_var( &fsarr ) ;
 	    fs.deserialize( um, &dds, false ) ;
@@ -256,7 +258,7 @@ public:
 	    cout << " file array" << endl ;
 	    TestByte fab( "ab" ) ;
 	    TestArray farr( "arr", &fab ) ;
-	    farr.append_dim( 4, "dim1" ) ;
+	    farr.append_dim( 5, "dim1" ) ;
 	    farr.append_dim( 3, "dim2" ) ;
 	    farr.deserialize( um, &dds, false ) ;
 	    farr.value( fdb ) ;
@@ -367,7 +369,7 @@ public:
 	    ss.add_var( &ssstr ) ;
 	    TestByte ssab( "ssab" ) ;
 	    TestArray ssarr( "ssarr", &ssab ) ;
-	    ssarr.append_dim( 4, "dim1" ) ;
+	    ssarr.append_dim( 5, "dim1" ) ;
 	    ssarr.append_dim( 3, "dim2" ) ;
 	    ss.add_var( &ssarr ) ;
 	    ss.deserialize( um, &dds, false ) ;
@@ -394,7 +396,7 @@ public:
 	    cout << " stream array" << endl ;
 	    TestByte sab( "ab" ) ;
 	    TestArray sarr( "arr", &sab ) ;
-	    sarr.append_dim( 4, "dim1" ) ;
+	    sarr.append_dim( 5, "dim1" ) ;
 	    sarr.append_dim( 3, "dim2" ) ;
 	    sarr.deserialize( um, &dds, false ) ;
 	    sarr.value( sdb ) ;
