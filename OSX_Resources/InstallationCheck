@@ -3,13 +3,37 @@
 # Check to make sure the computer is running 10.3 or later.
 
 version=`uname -a | sed 's/.*Darwin Kernel Version \([0-9.]*\):.*/\1/'`
-major=`echo $version | sed 's/\([0-9]\)\.\([0-9]\)\.\([0-9]\)/\1/'`
-minor=`echo $version | sed 's/\([0-9]\)\.\([0-9]\)\.\([0-9]\)/\2/'`
+major=`echo $version | sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1/'`
+minor=`echo $version | sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2/'`
 
 if test $major -lt 7 -o $major -eq 7 -a $minor -lt 9
 then
-    # Warn and display message 16
+    # Warn and display message 16 (the string displayed will be read from 
+    # InstallationCheck.strings using the exit code minus 32 to select the
+    # specific string).
     exit 48
+fi
+
+# we need libcurl 7.10.6 according to configure.ac
+version=`curl-config --version | sed 's/libcurl \([0-9.]*\).*/\1/'`
+major=`echo $version | sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1/'`
+minor=`echo $version | sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2/'`
+
+if test $major -lt 7 -o $major -eq 7 -a $minor -lt 10
+then
+    # Fail and display message 80
+    exit 112
+fi
+
+# we need libxml2 2.6.16 according to configure.ac
+version=`xml2-config --version | sed 's/\([0-9.]*\).*/\1/'`
+major=`echo $version | sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1/'`
+minor=`echo $version | sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2/'`
+
+if test $major -lt 2 -o $major -eq 2 -a $minor -lt 6
+then
+    # Fail and display message 81
+    exit 113
 fi
 
 exit 0

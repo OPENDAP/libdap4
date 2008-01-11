@@ -1,2 +1,4 @@
 "16" = "This software has not been tested with Mac OS/X versions prior to Panther. Even though the installer says you cannot install the software, you can go ahead and give it a try...";
+"80" = "This software requires the Curl library, vesion 7.10.x or greater";
+"81" = "This software requires the XML2 library, version 2.2.x or greater";
 
