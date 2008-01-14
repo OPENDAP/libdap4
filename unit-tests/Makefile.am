@@ -24,7 +24,7 @@ TESTS = $(UNIT_TESTS)
 DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite ais_testsuite \
 	rcreader-testsuite server-testsuite cgi-util-tests
 
-EXTRA_DIST = $(DIRS_EXTRA) 
+EXTRA_DIST = $(DIRS_EXTRA) testFile.cc
 
 CLEANFILES = testout .dodsrc  *.gcda *.gcno
 

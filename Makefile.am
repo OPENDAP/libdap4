@@ -25,7 +25,7 @@ DIST_SUBDIRS = unit-tests gl tests
 
 lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 
-bin_SCRIPTS = dap-config
+bin_SCRIPTS = dap-config dap-config-pkgconfig
 
 bin_PROGRAMS = getdap
 
@@ -67,6 +67,7 @@ MACOSX_RESOURCES_EXTRA =  INSTALL_MacOSX.rtf README_MacOSX.rtf OSX_Resources
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
 	VCPP dods-datatypes-static.h xdr-datatypes-static.h \
+	dap-config-pkgconfig \
 	$(LEX_YACC_EXTRA) $(GRAM_SRC) $(MACOSX_RESOURCES_EXTRA)
 
 dist_aclocal_DATA = conf/libdap.m4

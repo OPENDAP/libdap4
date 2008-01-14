@@ -1,4 +1,5 @@
 #include <fstream>
+#include <sstream>
 #include <debug.h>
 
 using namespace std;

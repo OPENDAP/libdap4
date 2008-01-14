@@ -3,18 +3,20 @@ Summary: The C++ DAP2 library from OPeNDAP
 Version: 3.7.10
 Release: 1
 
-Source0: http://www.opendap.org/pub/source/libdap-%{version}.tar.gz
-URL: http://www.opendap.org/
-
-Group: Development/Libraries
-BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+# the deflate program is covered by the W3C license
 License: LGPLv2+ and W3C
+Group: Development/Libraries
+URL: http://www.opendap.org/
+Source0: http://www.opendap.org/pub/source/libdap-%{version}.tar.gz
+
+BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 # Mandrake
 # BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
 # fedora
 BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
 BuildRequires: doxygen graphviz
+# deflate depends directly on zlib
 BuildRequires: zlib-devel
 BuildRequires: pkgconfig
 
@@ -56,6 +58,9 @@ Documentation of the libdap library.
 
 %prep
 %setup -q
+iconv -f latin1 -t utf8 < COPYRIGHT_W3C > COPYRIGHT_W3C.utf8
+touch -r COPYRIGHT_W3C COPYRIGHT_W3C.utf8
+mv COPYRIGHT_W3C.utf8 COPYRIGHT_W3C
 
 
 %build
@@ -68,15 +73,16 @@ make docs
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT INSTALL="%{__install} -p"
-rm $RPM_BUILD_ROOT/%{_libdir}/*.la
+rm $RPM_BUILD_ROOT%{_libdir}/*.la
+mv $RPM_BUILD_ROOT%{_bindir}/dap-config-pkgconfig $RPM_BUILD_ROOT%{_bindir}/dap-config
 
-rm -rf __fedora_docs
-cp -pr docs __fedora_docs
+rm -rf __dist_docs
+cp -pr docs __dist_docs
 # those .map and .md5 are of dubious use, remove them
-rm -f __fedora_docs/html/*.map __fedora_docs/html/*.md5
+rm -f __dist_docs/html/*.map __dist_docs/html/*.md5
 # use the ChangeLog timestamp to have the same timestamps for the doc files 
 # for all arches
-touch -r ChangeLog __fedora_docs/html/*
+touch -r ChangeLog __dist_docs/html/*
 
 
 %clean
@@ -110,7 +116,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files doc
 %defattr(-,root,root,-)
-%doc __fedora_docs/html/
+%doc __dist_docs/html/
 
 
 %changelog
