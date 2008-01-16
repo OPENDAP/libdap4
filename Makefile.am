@@ -115,7 +115,7 @@ rpm: dist
 
 ###########################################################################
 
-# Build OS/X Packages. The strange operations with configure and dap-config
+# Build OS/X Packages. The strange operations with configure and make
 # are there so that the values built into dap-config will match the mac
 # osx install dirs and not the temp directory used to build the packages
 
