@@ -5,13 +5,9 @@
 	<key>CFBundleGetInfoString</key>
 	<string>3.7.10, OPeNDAP</string>
 	<key>CFBundleIdentifier</key>
-	<string>opendap.libdap</string>
+	<string>org.opendap.libdap</string>
 	<key>CFBundleShortVersionString</key>
 	<string>3.7.10</string>
-	<key>IFMajorVersion</key>
-	<integer>3</integer>
-	<key>IFMinorVersion</key>
-	<integer>7</integer>
 	<key>IFPkgFlagAllowBackRev</key>
 	<false/>
 	<key>IFPkgFlagAuthorizationAction</key>
