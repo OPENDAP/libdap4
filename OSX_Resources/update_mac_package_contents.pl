@@ -4,12 +4,14 @@
 use strict 'vars';
 my $debug = 0;
 
-unix2mac("README", "OSX_Resources/ReadMe.txt");
+my $readme = $ARGV[0];
+
+unix2mac($readme, "OSX_Resources/ReadMe.txt");
 
 my $version_number = get_version_number();
 print "version number: $version_number\n" if $debug ge 1;
 
-my $package_size = get_package_size("mac_osx/usr");
+my $package_size = get_package_size("toolbox");
 print "Package_size: $package_size\n" if $debug ge 1;
 
 substitute_values("OSX_Resources/Info.plist", $version_number, $package_size);
@@ -71,13 +73,13 @@ sub get_package_size {
 
 # Look for the version number of libdap in configure.ac
 sub get_version_number {
-  my $infile_name = "configure.ac";
+  my $infile_name = "Makefile";
   my $version_number = "0.0.0";
 
   open IN, $infile_name or die("Could not open $infile_name\n");
 
   while (<IN>) {
-    if ( /AC_INIT\(libdap, *([0-9.]+)/ ) {
+    if ( /PACKAGE_VERSION=([0-9.ab]+)/ ) {
       $version_number = $1;
     }
   }
@@ -109,10 +111,11 @@ sub unix2mac {
     } elsif ( /^\s*$/ ) {
       print OUT "\n\n" ;	# Blank line
     } else {
-      chomp $_ ; print OUT $_ ; # Character line
+      chomp $_ ; tr/[\015]/ / ; print OUT $_ ; # Character line
     }
   }
 
   close IN;
   close OUT;
 }
+
