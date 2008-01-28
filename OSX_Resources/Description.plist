@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>IFPkgDescriptionDescription</key>
-	<string></string>
+	<string>The libdap library package contains the DAP implementation from OPeNDAP. This software is installed under /usr in the lib, include and bin directories there. This package is not relocatable - even when it is included in other packages that are relocatable.</string>
 	<key>IFPkgDescriptionTitle</key>
 	<string>OPeNDAP libdap Package</string>
 </dict>

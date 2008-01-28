@@ -121,19 +121,30 @@ rpm: dist
 
 PACKAGEMAKER=/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker*
 
+UNIV_ARCH=-arch ppc -arch i386
+MAC_SYSROOT=Developer/SDKs/MacOSX10.4u.sdk
+
+PKG_CONF_FLAGS=CXXFLAGS="$(CXXFLAGS) $(UNIV_ARCH) -isysroot /$(MAC_SYSROOT)" \
+CFLAGS="$(CFLAGS) $(UNIV_ARCH) -isysroot /$(MAC_SYSROOT)" \
+LDFLAGS="$(LDFLAGS) $(UNIV_ARCH) -syslibroot /usr/include/$(MAC_SYSROOT)"
+
+# LDFLAGS="$(LDFLAGS) $(UNIV_ARCH) -Wl,-syslibroot,$(MAC_SYSROOT)"
+
 clean-pkg:
 	-rm -rf mac_osx @PACKAGE@-@PACKAGE_VERSION@.pkg
 	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
 
 pkg-build:
-	./configure --prefix=/usr $(PKG_CONFIGURE_FLAGS)
+	./configure --prefix=/usr --disable-dependency-tracking $(PKG_CONF_FLAGS)
 	make clean all
 	DESTDIR=${PWD}/mac_osx make install
 
 pkg-main:
 	./OSX_Resources/update_mac_package_contents.pl
-	${PACKAGEMAKER} -build -p @PACKAGE@-@PACKAGE_VERSION@.pkg -f mac_osx/usr \
-		-ds -r OSX_Resources -i OSX_Resources/Info.plist \
+	${PACKAGEMAKER} -build -p @PACKAGE@-@PACKAGE_VERSION@.pkg \
+		-f mac_osx/usr \
+		-ds -r OSX_Resources \
+		-i OSX_Resources/Info.plist \
 		-d OSX_Resources/Description.plist
 
 pkg-dmg:
