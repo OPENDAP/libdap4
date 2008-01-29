@@ -124,9 +124,10 @@ PACKAGEMAKER=/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/P
 UNIV_ARCH=-arch ppc -arch i386
 MAC_SYSROOT=Developer/SDKs/MacOSX10.4u.sdk
 
-PKG_CONF_FLAGS=CXXFLAGS="$(CXXFLAGS) $(UNIV_ARCH) -isysroot /$(MAC_SYSROOT)" \
-CFLAGS="$(CFLAGS) $(UNIV_ARCH) -isysroot /$(MAC_SYSROOT)" \
-LDFLAGS="$(LDFLAGS) $(UNIV_ARCH) -syslibroot /usr/include/$(MAC_SYSROOT)"
+PKG_CONF_FLAGS=
+#CXXFLAGS="$(CXXFLAGS) $(UNIV_ARCH) -isysroot /$(MAC_SYSROOT)" \
+#CFLAGS="$(CFLAGS) $(UNIV_ARCH) -isysroot /$(MAC_SYSROOT)" \
+#LDFLAGS="$(LDFLAGS) $(UNIV_ARCH) -Wl,-syslibroot,/$(MAC_SYSROOT)"
 
 # LDFLAGS="$(LDFLAGS) $(UNIV_ARCH) -Wl,-syslibroot,$(MAC_SYSROOT)"
 
