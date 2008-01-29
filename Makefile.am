@@ -133,7 +133,6 @@ PKG_CONF_FLAGS=
 
 clean-pkg:
 	-rm -rf mac_osx @PACKAGE@-@PACKAGE_VERSION@.pkg
-	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
 
 pkg-build:
 	./configure --prefix=/usr --disable-dependency-tracking $(PKG_CONF_FLAGS)
@@ -141,7 +140,7 @@ pkg-build:
 	DESTDIR=${PWD}/mac_osx make install
 
 pkg-main:
-	./OSX_Resources/update_mac_package_contents.pl
+	./OSX_Resources/update_mac_package_contents.pl README "configure.ac" "mac_osx/usr"
 	${PACKAGEMAKER} -build -p @PACKAGE@-@PACKAGE_VERSION@.pkg \
 		-f mac_osx/usr \
 		-ds -r OSX_Resources \
@@ -149,6 +148,8 @@ pkg-main:
 		-d OSX_Resources/Description.plist
 
 pkg-dmg:
+	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
+	-rm -rf @PACKAGE@-@PACKAGE_VERSION@.dmg
 	mkdir @PACKAGE@-@PACKAGE_VERSION@
 	mv @PACKAGE@-@PACKAGE_VERSION@.pkg @PACKAGE@-@PACKAGE_VERSION@
 	cp README README.* NEWS @PACKAGE@-@PACKAGE_VERSION@
