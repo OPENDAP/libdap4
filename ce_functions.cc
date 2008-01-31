@@ -340,7 +340,7 @@ static void apply_grid_selection_expr(Grid * grid, GSEClause * clause)
         ++map_i;
 
     if (map_i == grid->map_end())
-        throw Error("The map vector '" + clause->get_map_name()
+        throw Error(malformed_expr,"The map vector '" + clause->get_map_name()
                 + "' is not in the grid '" + grid->name() + "'.");
 
     // Use pointer arith & the rule that map order must match array dim order
@@ -358,7 +358,7 @@ static void apply_grid_selection_expr(Grid * grid, GSEClause * clause)
                 << "'. The map's values range " << "from "
                 << clause->get_map_min_value() << " to "
                 << clause->get_map_max_value() << ".";
-        throw Error(msg.str());
+        throw Error(malformed_expr,msg.str());
     }
 
     DBG(cerr << "Setting constraint on " << map->name()
@@ -442,7 +442,7 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
 
     Grid *original_grid = dynamic_cast < Grid * >(argv[0]);
     if (!original_grid)
-        throw Error("The first argument to grid() must be a Grid variable!");
+        throw Error(malformed_expr,"The first argument to grid() must be a Grid variable!");
 
     // Duplicate the grid; DODSFilter::send_data() will delete the variable
     // after serializing it.
@@ -548,11 +548,11 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
     }
 
     if (argc < 5)
-        throw Error("Wrong number of arguments to geogrid(). See geogrid() for more information.");
+        throw Error(malformed_expr,"Wrong number of arguments to geogrid(). See geogrid() for more information.");
 
     Grid *l_grid = dynamic_cast < Grid * >(argv[0]->ptr_duplicate());
     if (!l_grid)
-        throw Error("The first argument to geogrid() must be a Grid variable!");
+        throw Error(malformed_expr,"The first argument to geogrid() must be a Grid variable!");
 
     // Read the maps. Do this before calling parse_gse_expression(). Avoid
     // reading the array until the constraints have been applied because it
@@ -642,12 +642,12 @@ static double string_to_double(const char *val)
 
     if ((v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE))
             || *ptr != '\0') {
-        throw Error(string("Could not convert the string '") + val + "' to a double.");
+        throw Error(malformed_expr,string("Could not convert the string '") + val + "' to a double.");
     }
 
     double abs_val = fabs(v);
     if (abs_val > DODS_DBL_MAX || (abs_val != 0.0 && abs_val < DODS_DBL_MIN))
-        throw Error(string("Could not convert the string '") + val + "' to a double.");
+        throw Error(malformed_expr,string("Could not convert the string '") + val + "' to a double.");
 
     return v;
 }
@@ -683,7 +683,7 @@ static double get_attribute_double_value(BaseType *var,
         if (var->type() == dods_grid_c)
             return get_attribute_double_value(dynamic_cast<Grid&>(*var).get_array(), attributes);
         else
-            throw Error(string("No COARDS '") + values.substr(0, values.length() - 2)
+            throw Error(malformed_expr,string("No COARDS '") + values.substr(0, values.length() - 2)
                     + "' attribute was found for the variable '"
                     + var->name() + "'.");
     }
@@ -702,7 +702,7 @@ static double get_attribute_double_value(BaseType *var, const string &attribute)
         if (var->type() == dods_grid_c)
             return get_attribute_double_value(dynamic_cast<Grid&>(*var).get_array(), attribute);
         else
-            throw Error(string("No COARDS '") + attribute
+            throw Error(malformed_expr,string("No COARDS '") + attribute
                     + "' attribute was found for the variable '"
                     + var->name() + "'.");
     }
@@ -769,7 +769,7 @@ BaseType * function_linear_scale(int argc, BaseType * argv[], DDS &,
     // Check for 1 or 3 arguments: 1 --> use attributes; 3 --> m & b supplied
     DBG(cerr << "argc = " << argc << endl);
     if (!(argc == 1 || argc == 3 || argc == 4))
-        throw Error("Wrong number of arguments to linear_scale(). See linear_scale() for more information");
+        throw Error(malformed_expr,"Wrong number of arguments to linear_scale(). See linear_scale() for more information");
 
     // Get m & b
     bool use_missing = false;
@@ -869,7 +869,7 @@ BaseType * function_linear_scale(int argc, BaseType * argv[], DDS &,
         dest = new Float64(argv[0]->name());
         dest->val2buf(static_cast<void*>(&data));
     } else {
-        throw Error("The linear_scale() function works only for numeric Grids, Arrays and scalars.");
+        throw Error(malformed_expr,"The linear_scale() function works only for numeric Grids, Arrays and scalars.");
     }
 
     return dest;
@@ -916,12 +916,12 @@ BaseType * function_geoarray(int argc, BaseType * argv[], DDS &,
 
     DBG(cerr << "argc = " << argc << endl);
     if (!(argc == 5 || argc == 9 || argc == 11))
-        throw Error("Wrong number of arguments to geoarray(). See geoarray() for more information.");
+        throw Error(malformed_expr,"Wrong number of arguments to geoarray(). See geoarray() for more information.");
 
     // Check the Array (and dup because the caller will free the variable).
     Array *l_array = dynamic_cast < Array * >(argv[0]->ptr_duplicate());
     if (!l_array)
-        throw Error("The first argument to geoarray() must be an Array variable!");
+        throw Error(malformed_expr,"The first argument to geoarray() must be an Array variable!");
 
     try {
 
