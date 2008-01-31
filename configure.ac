@@ -99,6 +99,16 @@ AC_STRUCT_TM
 AC_C_VOLATILE
 DODS_CHECK_SIZES
 
+echo "CC = $CC"
+if test "$CC" = "gcc"
+then
+	echo "COMPILER IS GCC true"
+    AM_CONDITIONAL([COMPILER_IS_GCC],[true])
+else
+	echo "COMPILER IS GCC false"
+    AM_CONDITIONAL([COMPILER_IS_GCC],[false])
+fi
+
 # Checks for library functions.
 
 # These, at least some of them, cannot be used along with gnulib without
