@@ -34,10 +34,13 @@
 #include "GeoConstraint.h"
 #endif
 
+namespace libdap
+{
+
 // Defined in GeoConstraint; maybe move to util.cc/h?
-extern void remove_quotes(string & value);
 extern bool unit_or_name_match(set < string > units, set < string > names,
-                                       const string & var_units, const string & var_name);
+			       const string & var_units,
+			       const string & var_name);
 
 /** Geographical constraint applied to a grid.
     @author James Gallagher */
@@ -73,6 +76,8 @@ public:
         return d_grid;
     }
 };
+
+} // namespace libdap
 
 #endif // _grid_geo_constraint_h
 

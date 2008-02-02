@@ -49,6 +49,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "das.tab.h"
 #include "Error.h"
 
+using namespace libdap ;
 
 void plain_driver(DAS &das, bool deref_alias);
 void load_attr_table(AttrTable at);

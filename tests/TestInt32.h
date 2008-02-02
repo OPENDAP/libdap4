@@ -40,6 +40,8 @@
 #include "Int32.h"
 #include "TestCommon.h"
 
+using namespace libdap ;
+
 class TestInt32: public Int32, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestInt32 &ts);

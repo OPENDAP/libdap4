@@ -30,6 +30,7 @@
 #include "parser.h"
 
 using namespace CppUnit;
+using namespace libdap;
 
 class parserUtilTest : public TestFixture {
 private:

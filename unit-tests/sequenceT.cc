@@ -17,6 +17,8 @@
 using std::cerr ;
 using std::endl ;
 
+using namespace libdap ;
+
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 				      // timeouts. 
 class sequenceT : public CppUnit::TestFixture {
@@ -64,7 +66,7 @@ public:
 	bt = s.var( "Age", false ) ;
 	CPPUNIT_ASSERT( bt->name( ) == "Age" ) ;
 
-	btp_stack btps ;
+	BaseType::btp_stack btps ;
 	bt = s.var( "Friends.Age", btps ) ;
 	CPPUNIT_ASSERT( bt->name( ) == "Age" ) ;
 	CPPUNIT_ASSERT( btps.size( ) == 2 ) ;

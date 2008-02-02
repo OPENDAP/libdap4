@@ -42,6 +42,9 @@
 using namespace CppUnit;
 using namespace std;
 
+namespace libdap
+{
+
 class HTTPConnectTest: public TestFixture {
   private:
     HTTPConnect * http;
@@ -413,6 +416,8 @@ dods_test." << endl;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(HTTPConnectTest);
+
+}
 
 int main(int, char **)
 {

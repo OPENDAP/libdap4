@@ -35,6 +35,8 @@
 #include "Vector.h"
 #include "util.h"
 
+namespace libdap {
+
 char *XDRStreamMarshaller::_buf = 0 ;
 
 #define XDR_DAP_BUFF_SIZE 256
@@ -360,4 +362,6 @@ XDRStreamMarshaller::dump(ostream &strm) const
     strm << DapIndent::LMarg << "XDRStreamMarshaller::dump - ("
          << (void *)this << ")" << endl ;
 }
+
+} // namespace libdap
 

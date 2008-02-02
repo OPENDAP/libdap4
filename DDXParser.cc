@@ -36,6 +36,8 @@
 #include "util.h"
 #include "debug.h"
 
+namespace libdap {
+
 static const not_used char *states[] =
     {
         "start",
@@ -1021,3 +1023,5 @@ void DDXParser::intern(const string & document, DDS * dest_dds,
 
     cleanup_parse(context);
 }
+
+} // namespace libdap

@@ -39,6 +39,9 @@
 
 using namespace CppUnit;
 
+namespace libdap
+{
+
 class AISMergeTest:public TestFixture {
   private:
     AISMerge * ais_merge;
@@ -349,6 +352,8 @@ string AISMergeTest::three_fnoc_merge_ais = "Attributes {\n\
 
 CPPUNIT_TEST_SUITE_REGISTRATION(AISMergeTest);
 
+} // namespace libdap
+
 int main(int, char **)
 {
     CppUnit::TextTestRunner runner;
@@ -358,3 +363,4 @@ int main(int, char **)
 
     return wasSuccessful ? 0 : 1;
 }
+

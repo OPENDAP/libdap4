@@ -33,6 +33,7 @@
 #include "debug.h"
 
 using namespace CppUnit;
+using namespace libdap;
 
 class DASTest: public TestFixture {
 private:

@@ -42,6 +42,9 @@
 #include "AISResources.h"
 #endif
 
+namespace libdap
+{
+
 /** Parse the XML database/configuration file which lists a collection of AIS
     resources.
 
@@ -124,5 +127,7 @@ public:
     static void aisError(AISParserState *state, const char *msg, ...);
     static void aisFatalError(AISParserState *state, const char *msg, ...);
 };
+
+} // namespace libdap
 
 #endif // ais_database_parser_h

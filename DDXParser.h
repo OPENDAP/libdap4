@@ -48,6 +48,9 @@
 #include "BaseTypeFactory.h"
 #endif
 
+namespace libdap
+{
+
 /** Parse the XML text which encodes the network/persistent representation of
     the DDX object. In the current implementation, the DDX is held by an
     instance of the class DDS which in turn holds variables which include
@@ -183,5 +186,7 @@ public:
                                        const xmlChar *name);
     static void ddx_fatal_error(DDXParser *parser, const char *msg, ...);
 };
+
+} // namespace libdap
 
 #endif // ddx_parser_h

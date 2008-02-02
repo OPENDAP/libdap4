@@ -40,6 +40,8 @@
 #include "Int16.h"
 #include "TestCommon.h"
 
+using namespace libdap ;
+
 class TestInt16: public Int16, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestInt16 &ts);

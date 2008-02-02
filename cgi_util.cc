@@ -86,6 +86,8 @@ static char rcsid[] not_used =
 
 using namespace std;
 
+namespace libdap {
+
 static const int TimLen = 26; // length of string from asctime()
 static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
 
@@ -951,4 +953,6 @@ get_user_supplied_docs(string name, string cgi)
 
     return oss.str();
 }
+
+} // namespace libdap
 

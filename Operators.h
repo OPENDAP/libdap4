@@ -43,6 +43,9 @@
 
 using namespace std;
 
+namespace libdap
+{
+
 inline unsigned
 dods_max(int i1, int i2)
 {
@@ -267,5 +270,7 @@ bool rops(T1 a, T2 b, int op)
         return false;
     }
 }
+
+} // namespace libdap
 
 #endif // _operators_h

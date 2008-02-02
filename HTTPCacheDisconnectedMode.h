@@ -26,6 +26,9 @@
 #ifndef _http_cache_disconnected_mode_h
 #define _http_cache_disconnected_mode_h
 
+namespace libdap
+{
+
 /** Disconnected Operation
 
     The cache can be set to handle disconnected operation where it does not
@@ -46,5 +49,7 @@ typedef enum {
     DISCONNECT_NORMAL   = 1,
     DISCONNECT_EXTERNAL = 2
 } CacheDisconnectedMode;
+
+} // namespace libdap
 
 #endif // _http_cache_disconnected_mode_h

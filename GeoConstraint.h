@@ -42,6 +42,9 @@
 #include "Grid.h"
 #endif
 
+namespace libdap
+{
+
 /** Encapsulate the logic needed to handle geographical constraints
     when they are applied to DAP Grid (and some Array) variables.
 
@@ -376,6 +379,8 @@ public:
         the constraint. */
     virtual void apply_constraint_to_data() = 0;
 };
+
+} // namespace libdap
 
 #endif // _geo_constraint_h
 

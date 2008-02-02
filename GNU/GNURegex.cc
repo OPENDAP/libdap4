@@ -43,6 +43,8 @@
 
 using namespace std;
 
+namespace libdap {
+
 void
 Regex::init(const char *t)
 {
@@ -143,4 +145,6 @@ Regex::search(const char* s, int len, int& matchlen, int pos)
     delete[] pmatch; pmatch = 0;
     return matchpos;
 }
+
+} // namespace libdap
 

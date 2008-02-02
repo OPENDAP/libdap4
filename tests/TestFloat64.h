@@ -40,6 +40,8 @@
 #include "Float64.h"
 #include "TestCommon.h"
 
+using namespace libdap ;
+
 class TestFloat64: public Float64, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestFloat64 &ts);

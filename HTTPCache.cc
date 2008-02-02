@@ -46,9 +46,11 @@
 #include "util_mit.h"
 #include "debug.h"
 
-HTTPCache *HTTPCache::_instance = 0;
-
 using namespace std;
+
+namespace libdap {
+
+HTTPCache *HTTPCache::_instance = 0;
 
 // instance_mutex is used to ensure that only one instance is created. The
 // other mutexes used by this class are fields. 10/09/02 jhrg
@@ -2392,3 +2394,5 @@ HTTPCache::purge_cache()
     UNLOCK(&d_cache_mutex);
     DBGN(cerr << "Unlocking interface." << endl);
 }
+
+} // namespace libdap

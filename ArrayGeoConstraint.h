@@ -38,10 +38,12 @@
 #include "util.h"
 #endif
 
-// Defined in GeoConstraint; maybe move to util.cc/h?
-extern void remove_quotes(string & value);
+namespace libdap
+{
+
 extern bool unit_or_name_match(set < string > units, set < string > names,
-                                       const string & var_units, const string & var_name);
+			       const string & var_units,
+			       const string & var_name);
 
 /** Geographical constraint applied to an Array.
 
@@ -130,5 +132,7 @@ public:
         return d_array;
     }
 };
+
+} // namespace libdap
 
 #endif // _array_geo_constraint_h

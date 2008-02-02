@@ -36,6 +36,12 @@
 #include "UnMarshaller.h"
 #include "XDRUtils.h"
 
+namespace libdap
+{
+
+/** @brief unmarshaller that knows how to unmarshall/deserialize dap objects
+ * using XDR from a file
+ */
 class XDRFileUnMarshaller : public UnMarshaller
 {
 private:
@@ -71,6 +77,8 @@ public:
 
     virtual void		dump(ostream &strm) const ;
 } ;
+
+} // namespace libdap
 
 #endif // I_XDRFileUnMarshaller_h
 

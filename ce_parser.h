@@ -1,3 +1,6 @@
+namespace libdap
+{
+
 struct ce_parser_arg
 {
     ConstraintEvaluator *eval;
@@ -28,4 +31,6 @@ struct ce_parser_arg
         dds = obj;
     }
 };
+
+} // namespace libdap
 

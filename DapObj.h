@@ -43,9 +43,12 @@ using std::endl ;
 
 #include "DapIndent.h"
 
-/** @brief Dap object for bes objects
+namespace libdap
+{
+
+/** @brief libdap base object for common functionality of libdap objects
  *
- * A base object for any BES objects in bes to use. Provides simple
+ * A base object for any libdap objects to use. Provides simple
  * methods for dumping the contents of the object.
  */
 
@@ -76,6 +79,8 @@ public:
     virtual void dump(ostream &strm) const = 0 ;
 } ;
 
+} // namespace libdap
+
 /** @brief dump the contents of the specified object to the specified ostream
  *
  * This inline method uses the dump method of the DapObj instance passed
@@ -95,7 +100,7 @@ public:
  * @param obj The DapObj to dump
  */
 inline ostream &
-operator<<(ostream &strm, const DapObj &obj)
+operator<<(ostream &strm, const libdap::DapObj &obj)
 {
     obj.dump(strm) ;
     return strm ;

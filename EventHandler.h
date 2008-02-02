@@ -33,6 +33,9 @@
 //#include "Error.h"
 //#include "cgi_util.h"
 
+namespace libdap
+{
+
 /** An abstract class which provides a hook method used by SignalHandler.
 
     Based on "Applying Design Patterns to Simplify Signal Handling", Douglas
@@ -70,5 +73,7 @@ public:
         flag = 1;
     }
 };
+
+} // namespace libdap
 
 #endif // event_handler_h

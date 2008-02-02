@@ -32,6 +32,8 @@
 #include "Error.h"
 #endif
 
+namespace libdap
+{
 
 /** SignalHandlerRegisteredErr is thrown by HTTPCache::instance() if a signal
     handler is already registered.
@@ -55,5 +57,7 @@ public:
         _error_code = unknown_error;
     }
 };
+
+} // namespace libdap
 
 #endif // _signal_handler_registered_err_h

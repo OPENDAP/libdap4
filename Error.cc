@@ -56,6 +56,8 @@ extern void *Error_buffer(FILE *fp);
 extern void Errorrestart(FILE *yyin); // defined in Error.tab.c
 extern int Errorparse(void *arg);
 
+namespace libdap {
+
 // There are two entries for 'cannot read file' because of an error made 
 // when the message was first added to this class. 
 static const char *err_messages[] = {
@@ -287,3 +289,5 @@ Error::set_error_message(string msg)
 {
     _error_message = msg;
 }
+
+} // namespace libdap

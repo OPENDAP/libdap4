@@ -90,6 +90,9 @@
 
 using std::string;
 
+namespace libdap
+{
+
 /** Connect objects are used as containers for information pertaining
     to the connection a user program makes to a dataset. The
     dataset may be either local (for example, a file on the user's own
@@ -219,5 +222,7 @@ public:
     virtual void read_data(DataDDS &data, Response *rs);
     virtual void read_data_no_mime(DataDDS &data, Response *rs);
 };
+
+} // namespace libdap
 
 #endif // _connect_h

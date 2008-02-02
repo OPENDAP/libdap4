@@ -46,6 +46,8 @@ static char rcsid[] not_used =
 #include "SignalHandler.h"
 #include "util.h"
 
+namespace libdap {
+
 EventHandler *SignalHandler::d_signal_handlers[NSIG];
 Sigfunc *SignalHandler::d_old_handlers[NSIG];
 SignalHandler *SignalHandler::d_instance = 0;
@@ -216,3 +218,5 @@ SignalHandler::remove_handler(int signum)
 
     return old_eh;
 }
+
+} // namespace libdap

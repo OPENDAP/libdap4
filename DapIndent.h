@@ -42,6 +42,12 @@
 using std::string ;
 using std::ostream ;
 
+namespace libdap
+{
+
+/** @brief class with static methods to help with indentation of debug
+ * information.
+ */
 class DapIndent
 {
 private:
@@ -54,6 +60,8 @@ public:
     static void   SetIndent(const string &indent) ;
     static ostream &  LMarg(ostream &strm) ;
 } ;
+
+} // namespace libdap
 
 #endif // I_DapIndent_h
 

@@ -41,12 +41,8 @@ using std::cerr;
 using std::endl;
 using std::string;
 
-string hexstring(unsigned char val); // originally declared static
-string unhexstring(string s);
-
 using namespace CppUnit;
-using std::cerr ;
-using std::endl ;
+using namespace libdap;
 
 class generalUtilTest : public TestFixture {
 private:

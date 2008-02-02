@@ -54,6 +54,9 @@ using namespace std;
 
 int test_variable_sleep_interval = 0;
 
+namespace libdap
+{
+
 class ArrayGeoConstraintTest:public TestFixture
 {
 private:
@@ -209,6 +212,8 @@ public:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ArrayGeoConstraintTest);
+
+} // namespace libdap
 
 int
 main( int, char** )

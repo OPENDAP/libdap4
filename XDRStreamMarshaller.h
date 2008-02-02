@@ -41,6 +41,12 @@ using std::cout ;
 #include "Marshaller.h"
 #include "XDRUtils.h"
 
+namespace libdap
+{
+
+/** @brief marshaller that knows how to marshall/serialize dap data objects
+ * to a C++ iostream using XDR
+ */
 class XDRStreamMarshaller : public Marshaller
 {
 private:
@@ -79,6 +85,8 @@ public:
 
     virtual void		dump(ostream &strm) const ;
 } ;
+
+} // namespace libdap
 
 #endif // I_XDRStreamMarshaller_h
 

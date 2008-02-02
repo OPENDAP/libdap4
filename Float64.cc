@@ -58,6 +58,8 @@ static char rcsid[] not_used =
 using std::cerr;
 using std::endl;
 
+namespace libdap {
+
 /** The Float64 constructor requires only the name of the variable
     to be created.  The name may be omitted, which will create a
     nameless variable.  This may be adequate for some applications.
@@ -277,4 +279,6 @@ Float64::dump(ostream &strm) const
     strm << DapIndent::LMarg << "value: " << _buf << endl ;
     DapIndent::UnIndent() ;
 }
+
+} // namespace libdap
 

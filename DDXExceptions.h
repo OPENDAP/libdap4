@@ -30,6 +30,9 @@
 #include "Error.h"
 #endif
 
+namespace libdap
+{
+
 /** Thrown when the DDX response cannot be parsed.. */
 class DDXParseFailed : public Error
 {
@@ -40,5 +43,7 @@ public:
             Error(string("The DDX response document parse failed: ") + msg)
     {}
 };
+
+} // namespace libdap
 
 #endif // ddx_exceptions_h

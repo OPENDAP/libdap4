@@ -49,6 +49,9 @@
 #include "ConstraintEvaluator.h"
 #endif
 
+namespace libdap
+{
+
 /** This class is used to hold eight bits of information.  No sign
     information is implied in its value.
 
@@ -105,6 +108,8 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // _byte_h
 

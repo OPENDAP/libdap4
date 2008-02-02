@@ -49,6 +49,9 @@
 #include "ConstraintEvaluator.h"
 #endif
 
+namespace libdap
+{
+
 /** @brief Holds an unsigned 16-bit integer. */
 
 class UInt16: public BaseType
@@ -100,6 +103,8 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // _uint16_h
 

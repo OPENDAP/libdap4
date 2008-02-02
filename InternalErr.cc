@@ -49,6 +49,8 @@ static char rcsid[] not_used =
 using std::endl;
 using std::ostringstream;
 
+namespace libdap {
+
 InternalErr::InternalErr() : Error()
 {
     _error_code = internal_error;
@@ -104,3 +106,5 @@ InternalErr::OK()
 {
     return Error::OK();
 }
+
+} // namespace libdap

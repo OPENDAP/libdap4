@@ -39,6 +39,8 @@
 #include "Structure.h"
 #include "TestCommon.h"
 
+using namespace libdap ;
+
 class TestStructure: public Structure, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestStructure &ts);

@@ -31,6 +31,9 @@
 #include "EventHandler.h"
 #include "InternalErr.h"
 
+namespace libdap
+{
+
 typedef void Sigfunc(int); // Plauger, 1992
 
 /** Singleton to handle signals. This class adapts the C-style function call
@@ -109,5 +112,7 @@ public:
 
     EventHandler *remove_handler(int signum);
 };
+
+} // namespace libdap
 
 #endif // signal_handler_h

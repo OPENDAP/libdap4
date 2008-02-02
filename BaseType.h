@@ -69,11 +69,11 @@
 
 using namespace std;
 
-class BaseType;   // Forward declarations
+namespace libdap
+{
+
 class DDS;
 class ConstraintEvaluator;
-
-typedef stack<BaseType *> btp_stack;
 
 /** <b>Part</b> names the parts of multi-section constructor types.
     For example, the <b>Grid</b> class has an <i>array</i> and
@@ -208,6 +208,8 @@ protected:
     void _duplicate(const BaseType &bt);
 
 public:
+    typedef stack<BaseType *> btp_stack;
+
     BaseType(const string &n = "", const Type &t = dods_null_c);
 
     BaseType(const BaseType &copy_from);
@@ -497,5 +499,7 @@ public:
                            bool print_decl_p = true) = 0;
     //@}
 };
+
+} // namespace libdap
 
 #endif // _basetype_h

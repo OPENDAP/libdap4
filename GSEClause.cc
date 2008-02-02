@@ -60,6 +60,8 @@ void gse_switch_to_buffer(void *new_buffer);
 void gse_delete_buffer(void * buffer);
 void *gse_string(const char *yy_str);
 
+namespace libdap {
+
 // Private methods
 
 GSEClause::GSEClause()
@@ -347,4 +349,6 @@ GSEClause::get_map_max_value() const
 {
     return d_map_max_value;
 }
+
+} // namespace libdap
 

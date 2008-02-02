@@ -58,9 +58,8 @@
 using std::string;
 using std::vector;
 
-// This is defined in Connect.cc. ObjectType should be its own class.
-// 6/17/2002 jhrg
-extern ObjectType get_type(const string &value);
+namespace libdap
+{
 
 /** Use the CURL library to dereference a HTTP URL. Scan the response for
     headers used by the DAP 2.0 and extract their values. The body of the
@@ -153,5 +152,7 @@ public:
 
     HTTPResponse *fetch_url(const string &url);
 };
+
+} // namespace libdap
 
 #endif // _httpconnect_h

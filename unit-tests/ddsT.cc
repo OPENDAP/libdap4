@@ -25,6 +25,7 @@
 #include "testFile.cc"
 
 using namespace std;
+using namespace libdap;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 				      // timeouts. 
@@ -314,7 +315,7 @@ public:
 	}
 
 	find_var = "var10" ;
-	btp_stack btps ;
+	BaseType::btp_stack btps ;
 	bt = dds.var( find_var, &btps ) ;
 	CPPUNIT_ASSERT( bt ) ;
 	if( bt )

@@ -48,6 +48,9 @@
 #include "Vector.h"
 #endif
 
+namespace libdap
+{
+
 const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
 /** This class is used to hold arrays of data. The elements of the array can
@@ -205,5 +208,7 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // _array_h

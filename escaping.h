@@ -38,6 +38,9 @@
 
 using std::string;
 
+namespace libdap
+{
+
 string hexstring(unsigned char val);
 string unhexstring(string s);
 string octstring(unsigned char val);
@@ -72,6 +75,8 @@ string escattr(string s);
 string unescattr(string s);
 
 string munge_error_message(string msg);
+
+} // namespace libdap
 
 #endif // _escaping_h
 

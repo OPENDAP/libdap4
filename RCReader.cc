@@ -65,6 +65,8 @@
 
 using namespace std;
 
+namespace libdap {
+
 RCReader* RCReader::_instance = 0;
 
 // This variable (instance_control) is used to ensure that in a MT
@@ -423,3 +425,5 @@ RCReader::instance()
 
     return _instance;
 }
+
+} // namespace libdap

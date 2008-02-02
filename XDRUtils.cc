@@ -34,6 +34,8 @@
 #include "debug.h"
 #include "Str.h"
 
+using namespace libdap ;
+
 // This function is used to allocate memory for, and initialize, a new XDR
 // pointer. It sets the stream associated with the (XDR *) to STREAM.
 //
@@ -121,6 +123,8 @@ xdr_str(XDR *xdrs, string &buf)
     }
 }
 
+namespace libdap {
+
 /** The <tt>xdr_coder</tt> function (also "filter primitive") is used to
     encode and decode each element in a multiple element data
     structure.  These functions are used to convert data to and from
@@ -174,4 +178,6 @@ XDRUtils::xdr_coder( const Type &t )
 	    break ;
     }
 }
+
+} // namespace libdap
 

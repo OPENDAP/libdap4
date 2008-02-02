@@ -33,6 +33,8 @@
 #include "AISExceptions.h"
 #include "Response.h"
 
+namespace libdap {
+
 /** Access an AIS resource. The resource may be a local file or a URL. Assume
     all resource URIs have no leading spaces. This method is public so that a
     client of libdap++ can specialize its behavior. This implementation
@@ -107,3 +109,5 @@ void AISMerge::merge(const string & primary, DAS & das)
                     + e.get_error_message() + string("\n"));
     }
 }
+
+} // namespace libdap

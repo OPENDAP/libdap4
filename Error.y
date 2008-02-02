@@ -48,6 +48,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "util.h"
 
 using namespace std;
+using namespace libdap;
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are

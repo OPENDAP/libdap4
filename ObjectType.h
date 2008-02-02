@@ -26,6 +26,9 @@
 #ifndef _object_type_h
 #define _object_type_h
 
+namespace libdap
+{
+
 /** When a version 2.x or greater DAP data server sends an object, it uses
     the Content-Description header of the response to indicate the type of
     object contained in the response. During the parse of the header a member
@@ -56,5 +59,25 @@ enum ObjectType {
     web_error,
     dap4_ddx
 };
+
+// This function returns the ObjectType value that matches the given string.
+static ObjectType
+get_type(const string &value)
+{
+    if (value == "dods_das")
+        return dods_das;
+    else if (value == "dods_dds")
+        return dods_dds;
+    else if (value == "dods_data")
+        return dods_data;
+    else if (value == "dods_error")
+        return dods_error;
+    else if (value == "web_error")
+        return web_error;
+    else
+        return unknown_type;
+}
+
+} // namespace libdap
 
 #endif

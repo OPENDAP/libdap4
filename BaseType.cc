@@ -52,6 +52,8 @@
 
 using namespace std;
 
+namespace libdap {
+
 // Protected copy mfunc
 
 /** Perform a deep copy. Copies the values of \e bt into \c *this. Pointers
@@ -982,3 +984,5 @@ BaseType::ops(BaseType *, int, const string &)
     // so this is an internal error. Jose Garcia
     throw InternalErr(__FILE__, __LINE__, "Unimplemented operator.");
 }
+
+} // namespace libdap

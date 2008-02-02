@@ -49,6 +49,8 @@ static char rcsid[] not_used =
 
 using namespace std;
 
+namespace libdap {
+
 // private
 
 /** Parse the version string. A string that does not parse causes the
@@ -165,4 +167,6 @@ DataDDS::DataDDS(BaseTypeFactory *factory, const string &n, const string &v,
     m_version_string_to_numbers();
     m_protocol_string_to_numbers();
 }
+
+} // namespace libdap
 

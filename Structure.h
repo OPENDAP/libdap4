@@ -64,6 +64,8 @@
 // FIXME
 #include "XDRUtils.h"
 
+namespace libdap
+{
 
 /** This data type is used to hold a collection of related data types,
     in a manner roughly corresponding to a C structure.  The member
@@ -155,5 +157,7 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // _structure_h

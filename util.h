@@ -97,6 +97,9 @@
 
 using std::iostream;
 
+namespace libdap
+{
+
 string prune_spaces(const string &);
 bool unique_names(vector<BaseType *> l, const string &var, const string &type,
                   string &msg);
@@ -117,6 +120,8 @@ void flush_stream(iostream ios, FILE *out);
 #endif
 
 void downcase(string &s);
+string remove_quotes(const string &s);
+
 // Jose Garcia
 /** @name Integer to string conversion functions
    Fast, safe conversions from long to a character representation which gets
@@ -206,5 +211,7 @@ time_t parse_time(const char * str, bool expand);
 
 bool size_ok(uint sz, uint nelem);
 bool pathname_ok(const string &path, bool strict = true);
+
+} // namespace libdap
 
 #endif

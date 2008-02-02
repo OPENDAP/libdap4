@@ -34,6 +34,9 @@
 
 using namespace std;
 
+namespace libdap
+{
+
 /** Encapsulate a response. Instead of directly returning the FILE pointer
     from which a response is read, return an instance of this object. For a
     simple system where all that needs to be done to free the stream and its
@@ -142,5 +145,7 @@ public:
     }
     //@}
 };
+
+} // namespace libdap
 
 #endif // response_h

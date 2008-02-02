@@ -53,6 +53,8 @@ static char rcsid[] not_used =
 
 using namespace std;
 
+namespace libdap {
+
 rvalue_list *
 make_rvalue_list(rvalue *rv)
 {
@@ -176,4 +178,6 @@ rvalue::bvalue(const string &dataset, DDS &dds)
         return 0;
     }
 }
+
+} // namespace libdap
 

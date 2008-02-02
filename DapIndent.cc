@@ -35,6 +35,8 @@
 
 #include "DapIndent.h"
 
+namespace libdap {
+
 string DapIndent::_indent ;
 
 void
@@ -78,4 +80,6 @@ DapIndent::LMarg(ostream &strm)
     strm << _indent ;
     return strm ;
 }
+
+} // namespace libdap
 

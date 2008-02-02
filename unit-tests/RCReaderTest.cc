@@ -42,6 +42,9 @@
 using namespace CppUnit;
 using namespace std;
 
+namespace libdap
+{
+
 class RCReaderTest : public TestFixture {
 private:
     RCReader *rcr;
@@ -266,6 +269,8 @@ public:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RCReaderTest);
+
+} // namespace libdap
 
 int 
 main( int, char** )

@@ -32,6 +32,9 @@
 #ifndef _rvalue_h
 #define _rvalue_h
 
+namespace libdap
+{
+
 /** Holds the rvalues for the parser, Clause objects and evaluator.
 
     @see Clause.h
@@ -70,4 +73,5 @@ rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
 
 BaseType **build_btp_args(rvalue_list *args, DDS &dds, const string &dataset);
 
+} // namespace libdap
 #endif // _rvalue_h

@@ -38,6 +38,9 @@
 #include "AISExceptions.h"
 #endif
 
+namespace libdap
+{
+
 /** Provide seamless client-side AIS services. */
 class AISConnect: public Connect
 {
@@ -62,5 +65,7 @@ public:
 
     virtual void request_das(DAS &das);
 };
+
+} // namespace libdap
 
 #endif // ais_connect_h

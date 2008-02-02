@@ -57,6 +57,8 @@ using std::string;
 
 #include "debug.h"
 
+namespace libdap {
+
 static char * months[12] =
     {
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -361,3 +363,5 @@ string date_time_str(time_t *calendar, bool local)
 #endif
     return string(buf);
 }
+
+} // namespace libdap

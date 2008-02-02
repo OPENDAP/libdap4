@@ -44,6 +44,8 @@ class TestStructure;
 class TestSequence;
 class TestGrid;
 
+using namespace libdap ;
+
 /** A factory for the TestByte, ..., TestGrid types.
     @author James Gallagher */
 class TestTypeFactory : public BaseTypeFactory {

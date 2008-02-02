@@ -35,6 +35,8 @@
 
 using namespace std;
 
+namespace libdap {
+
 /** Output the XML fragment for a Resource. This function is a friend of the
     Resource class.
     @see Resource. */
@@ -265,3 +267,4 @@ AISResources::write_database(const string &filename)
         throw AISDatabaseWriteFailed();
 }
 
+} // namespace libdap

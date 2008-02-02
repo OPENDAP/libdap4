@@ -32,6 +32,9 @@
 
 #include "EventHandler.h"
 
+namespace libdap
+{
+
 /** Handle the time out alarm. When an OPeNDAP server runs until the time out
     alarm is triggered, this class provides the concrete implementation of
     EventHandler::handle_signal().
@@ -102,5 +105,7 @@ public:
     }
 
 };
+
+} // namespace libdap
 
 #endif

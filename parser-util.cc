@@ -63,6 +63,8 @@ double w32strtod(const char *, char **);
 using std::cerr;
 using std::endl;
 
+namespace libdap {
+
 // Deprecated, but still used by the HDF4 EOS server code.
 void
 parse_error(parser_arg * arg, const char *msg, const int line_num,
@@ -333,3 +335,5 @@ int check_url(const char *)
 {
     return TRUE;
 }
+
+} // namespace libdap

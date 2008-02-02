@@ -55,9 +55,11 @@ static char rcsid[] not_used =
 using std::cerr;
 using std::endl;
 
+using namespace libdap ;
+
 const char *version = CVER " (" DVR " DAP/" DAP_PROTOCOL_VERSION ")";
 
-extern int dods_keep_temps;     // defined in HTTPResponse.h
+extern int libdap::dods_keep_temps;     // defined in HTTPResponse.h
 
 void usage(string name)
 {

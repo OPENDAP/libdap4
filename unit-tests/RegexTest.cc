@@ -34,6 +34,7 @@
 #include "debug.h"
 
 using namespace CppUnit;
+using namespace libdap;
 
 class RegexTest: public TestFixture {
 private:

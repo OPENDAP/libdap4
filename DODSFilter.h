@@ -51,6 +51,9 @@
 #include "ConstraintEvaluator.h"
 #endif
 
+namespace libdap
+{
+
 /** When a DODS server receives a request from a DODS client, the
     server CGI script dispatches the request to one of several
     ``filter'' programs.  Each filter is responsible for returning a
@@ -228,5 +231,7 @@ public:
     // Broken. 4/5/06 jhrg
     virtual void send_blob(DDS &dds, FILE *out, bool with_mime_headers = true);
 };
+
+} // namespace libdap
 
 #endif // _dodsfilter_h

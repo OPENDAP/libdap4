@@ -40,6 +40,9 @@
 using namespace CppUnit;
 using namespace std;
 
+namespace libdap
+{
+
 class DDSTest : public TestFixture {
 private:
     DDS *dds1, *dds2;
@@ -743,6 +746,8 @@ public:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DDSTest);
+
+}
 
 int 
 main( int, char** )

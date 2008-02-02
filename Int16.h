@@ -49,6 +49,9 @@
 #include "ConstraintEvaluator.h"
 #endif
 
+namespace libdap
+{
+
 /** @brief Holds a 16-bit signed integer value. */
 
 class Int16: public BaseType
@@ -100,6 +103,8 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // _int16_h
 

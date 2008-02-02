@@ -40,6 +40,8 @@
 #include "Float32.h"
 #include "TestCommon.h"
 
+using namespace libdap ;
+
 class TestFloat32: public Float32, public TestCommon {
     bool d_series_values;
     

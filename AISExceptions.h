@@ -30,6 +30,9 @@
 #include "Error.h"
 #endif
 
+namespace libdap
+{
+
 /** Thrown when a client asks for the AIS resources for an unknown primary
     resource. */
 class NoSuchPrimaryResource : public Error
@@ -60,5 +63,7 @@ public:
             Error(string("The AIS database write failed: ") + msg)
     {}
 };
+
+} // namespace libdap
 
 #endif // ais_exceptions_h

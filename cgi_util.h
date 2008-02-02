@@ -44,6 +44,9 @@
 #include "ObjectType.h"
 #include "EncodingType.h"
 
+namespace libdap
+{
+
 /** The CGI utilities include a variety of functions useful to
     programmers developing OPeNDAP CGI filter programs. However, before jumping
     in and using these, look at the class DODSFilter. Always choose to use
@@ -120,5 +123,7 @@ string get_user_supplied_docs(string name, string cgi);
 bool remove_mime_header(FILE *in);
 
 bool found_override(string name, string &doc);
+
+} // namespace libdap
 
 #endif // _cgi_util_h

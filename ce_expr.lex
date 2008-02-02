@@ -72,6 +72,8 @@ static char rcsid[] not_used = {"$Id$"};
 #include "ce_expr.tab.h"
 #include "escaping.h"
 
+using namespace libdap ;
+
 static void store_id();
 static void store_str();
 static void store_op(int op);
@@ -212,3 +214,4 @@ store_op(int op)
 {
     ce_exprlval.op = op;
 }
+

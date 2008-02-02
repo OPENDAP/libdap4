@@ -46,6 +46,7 @@ static char rcsid[] not_used = {"$Id$"};
 
 using std::cerr;
 using std::endl;
+using namespace libdap;
 
 // This macro is used to access the instance of a gse_arg class which is
 // passed to the parser through a void *. See parser.h.

@@ -66,8 +66,12 @@ static char rcsid[] not_used ={"$Id$"};
 
 #include <string.h>
 
+using namespace std;
+
 #include "debug.h"
 #include "parser.h"
+
+using namespace libdap ;
 
 #ifndef YY_PROTO
 #define YY_PROTO(proto) proto
@@ -82,8 +86,6 @@ static char rcsid[] not_used ={"$Id$"};
 }
 
 #include "das.tab.h"
-
-using namespace std;
 
 int das_line_num = 1;
 static int start_line;		/* used in quote and comment error handlers */
@@ -203,3 +205,4 @@ das_delete_buffer(void *buf)
 {
     das_delete_buffer((YY_BUFFER_STATE)buf);
 }
+

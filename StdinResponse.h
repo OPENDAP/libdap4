@@ -38,6 +38,9 @@
 
 using namespace std;
 
+namespace libdap
+{
+
 /** @brief Encapsulate a response read from stdin.
 
     This class holds stdin and provides an interface from which
@@ -77,5 +80,7 @@ public:
         d_stdin = s;
     }
 };
+
+} // namespace libdap
 
 #endif // pipe_response_h

@@ -41,6 +41,9 @@
 using namespace CppUnit;
 using namespace std;
 
+namespace libdap
+{
+
 class ArrayTest : public TestFixture {
 private:
     Array *d_cardinal, *d_string, *d_structure;
@@ -215,6 +218,8 @@ public:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ArrayTest);
+
+} // namespace libdap
 
 int 
 main( int, char** )

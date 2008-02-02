@@ -45,6 +45,9 @@
 #include "DDS.h"
 #endif
 
+namespace libdap
+{
+
 /** This class adds some useful state information to the DDS
     structure.  It is for use on the client side of the connection.
 
@@ -138,5 +141,7 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // _datadds_h

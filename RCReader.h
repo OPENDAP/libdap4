@@ -40,6 +40,9 @@
 
 using namespace std;
 
+namespace libdap
+{
+
 /** Read the .dodsrc file. By default the file ~/.dodsrc is read. If the
     environment variable DODS_CONF is set, use that value as the pathname to
     the configuration file. Else, if the environment variable DODS_CACHE_INIT
@@ -344,5 +347,7 @@ public:
         d_ais_database = db;
     }
 };
+
+} // namespace libdap
 
 #endif // _RCReader_h_

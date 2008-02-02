@@ -51,6 +51,9 @@
 #define FALSE 0
 #endif
 
+namespace libdap
+{
+
 /** <tt>parser_arg</tt> is used to pass parameters to the bison parsers and get
     error codes and objects in return. If <tt>status()</tt> is true, then the
     <tt>object()</tt> returns a pointer to the object built during the parse
@@ -186,6 +189,8 @@ int check_float64(const char *val);
     @brief Is the value a valid URL? */
 
 int check_url(const char *val);
+
+} // namespace libdap
 
 #endif // _parser_h
 

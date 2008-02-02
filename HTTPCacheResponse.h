@@ -36,6 +36,9 @@
 #include "debug.h"
 #endif
 
+namespace libdap
+{
+
 /** Encapsulate a response. Instead of directly returning the FILE pointer
     from which a response is read, return an instance of this object. */
 class HTTPCacheResponse : public HTTPResponse
@@ -75,5 +78,7 @@ public:
         DBGN(cerr << endl);
     }
 };
+
+} // namespace libdap
 
 #endif // cache_http_response_h

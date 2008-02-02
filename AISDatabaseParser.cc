@@ -39,6 +39,8 @@
 
 using namespace std;
 
+namespace libdap {
+
 static const not_used char *states[] =
     {
         "START",
@@ -426,3 +428,5 @@ AISDatabaseParser::intern(const string &database, AISResources *ais)
     ctxt->sax = NULL;
     xmlFreeParserCtxt(ctxt);
 }
+
+} // namespace libdap

@@ -49,6 +49,8 @@
 
 using namespace std;
 
+namespace libdap {
+
 // Private member functions
 
 void
@@ -452,4 +454,6 @@ Constructor::dump(ostream &strm) const
     DapIndent::UnIndent() ;
     DapIndent::UnIndent() ;
 }
+
+} // namespace libdap
 

@@ -33,6 +33,9 @@
 #include "BaseType.h"
 #endif
 
+namespace libdap
+{
+
 /** Common methods for all constructor types. */
 class Constructor: public BaseType
 {
@@ -85,5 +88,7 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // _constructor_h

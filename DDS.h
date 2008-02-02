@@ -67,6 +67,9 @@
 
 using std::cout;
 
+namespace libdap
+{
+
 /** The DAP2 Data Descriptor Object (DDS) is a data structure used by
     the DAP2 software to describe datasets and subsets of those
     datasets.  The DDS may be thought of as the declarations for the
@@ -197,8 +200,8 @@ private:
 
 protected:
     void duplicate(const DDS &dds);
-    BaseType *leaf_match(const string &name, btp_stack *s = 0);
-    BaseType *exact_match(const string &name, btp_stack *s = 0);
+    BaseType *leaf_match(const string &name, BaseType::btp_stack *s = 0);
+    BaseType *exact_match(const string &name, BaseType::btp_stack *s = 0);
 #if 0
     void transfer_attr(DAS *das, const AttrTable::entry *ep, BaseType *btp,
                        const string &suffix = "");
@@ -258,8 +261,8 @@ public:
     /// Removes a variable from the DDS.
     void del_var(const string &n);
 
-    BaseType *var(const string &n, btp_stack &s);
-    BaseType *var(const string &n, btp_stack *s = 0);
+    BaseType *var(const string &n, BaseType::btp_stack &s);
+    BaseType *var(const string &n, BaseType::btp_stack *s = 0);
     int num_var();
 
     /// Return an iterator
@@ -304,5 +307,7 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // _dds_h

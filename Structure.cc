@@ -47,6 +47,8 @@
 using std::cerr;
 using std::endl;
 
+namespace libdap {
+
 void
 Structure::_duplicate(const Structure &s)
 {
@@ -488,4 +490,6 @@ Structure::dump(ostream &strm) const
     Constructor::dump(strm) ;
     DapIndent::UnIndent() ;
 }
+
+} // namespace libdap
 

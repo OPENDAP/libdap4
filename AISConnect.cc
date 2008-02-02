@@ -27,6 +27,8 @@
 
 #include "AISConnect.h"
 
+namespace libdap {
+
 /** Build an AISConnect. This calls Connect's constructor with \c name and
     accepts its default values for the other parameters. The AIS database to
     use is read from the configuration file <code>~/.dodsrc</code>.
@@ -81,3 +83,5 @@ AISConnect::request_das(DAS &das)
     if (d_ais_merge)
         d_ais_merge->merge(URL(false), das); // URL(false) --> URL w/o CE
 }
+
+} // namespace libdap

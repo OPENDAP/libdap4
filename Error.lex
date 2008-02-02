@@ -160,3 +160,4 @@ store_string()
 {
     Errorlval.string = yytext;
 }
+

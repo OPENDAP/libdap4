@@ -51,6 +51,9 @@
 #include "Str.h"
 #endif
 
+namespace libdap
+{
+
 const unsigned int max_url_len = 255;
 
 /** @brief Holds an Internet address (URL).
@@ -73,6 +76,8 @@ public:
 
     virtual BaseType *ptr_duplicate();
 };
+
+} // namespace libdap
 
 #endif // _url_h
 

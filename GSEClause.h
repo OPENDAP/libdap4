@@ -50,6 +50,9 @@
 #include "Grid.h"
 #endif
 
+namespace libdap
+{
+
 enum relop {
     dods_nop_op,
     dods_greater_op,
@@ -129,6 +132,8 @@ public:
     void set_stop(int stop);
     //@}
 };
+
+} // namespace libdap
 
 #endif // _gseclause_h
 

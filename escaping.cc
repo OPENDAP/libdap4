@@ -70,6 +70,8 @@
 
 using namespace std;
 
+namespace libdap {
+
 // The next four functions were originally defined static, but I removed that
 // to make testing them (see generalUtilTest.cc) easier to write. 5/7/2001
 // jhrg
@@ -401,4 +403,6 @@ munge_error_message(string msg)
 
     return msg;
 }
+
+} // namespace libdap
 

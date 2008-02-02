@@ -39,6 +39,8 @@
 #include "Sequence.h"
 #include "TestCommon.h"
 
+using namespace libdap ;
+
 class TestSequence: public Sequence, public TestCommon {
 private:
     int d_len;

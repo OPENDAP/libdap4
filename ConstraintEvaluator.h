@@ -31,6 +31,9 @@
 #include "Clause.h"
 #endif
 
+namespace libdap
+{
+
 /** @brief Evaluate a constraint expression */
 class ConstraintEvaluator
 {
@@ -114,5 +117,7 @@ public:
     void append_constant(BaseType *btp);
 
 };
+
+} // namespace libdap
 
 #endif // constraint_evaluator_h

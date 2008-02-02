@@ -38,6 +38,7 @@
 
 using namespace CppUnit;
 using namespace std;
+using namespace libdap;
 
 static string
 build_fqn(AttrTable *at, string fqn)
@@ -49,6 +50,9 @@ build_fqn(AttrTable *at, string fqn)
     else
         return build_fqn(at->get_parent(), at->get_name() + string(".") + fqn);
 }
+
+namespace libdap
+{
 
 class AttrTableTest:public TestFixture {
 private:
@@ -357,6 +361,8 @@ String longer%20name \"second test\";";
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(AttrTableTest);
+
+} // namespace libdap
 
 int 
 main( int, char** )

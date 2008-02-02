@@ -43,8 +43,13 @@ using std::vector ;
 
 #include "dods-datatypes.h"
 
+namespace libdap
+{
+
 class Vector ;
 
+/** @brief abstract base class used to marshall/serialize dap data objects
+ */
 class Marshaller : public DapObj
 {
 public:
@@ -72,6 +77,8 @@ public:
 
     virtual void		dump(ostream &strm) const = 0 ;
 } ;
+
+} // namespace libdap
 
 #endif // A_Marshaller_h
 

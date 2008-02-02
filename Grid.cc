@@ -49,6 +49,8 @@
 
 using namespace std;
 
+namespace libdap {
+
 void
 Grid::_duplicate(const Grid &s)
 {
@@ -928,4 +930,6 @@ Grid::dump(ostream &strm) const
     DapIndent::UnIndent() ;
     DapIndent::UnIndent() ;
 }
+
+} // namespace libdap
 

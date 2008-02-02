@@ -43,6 +43,9 @@
 #include "RValue.h"
 #endif
 
+namespace libdap
+{
+
 /** The selection part of a a DAP constraint expression may contain one or
     more clauses, separated by ampersands (\&). This is modeled in the DDS
     class structure as a singly-linked list of Clause objects. In addition, a
@@ -125,5 +128,7 @@ public:
 
     bool value(const string &dataset, DDS &dds, BaseType **value);
 };
+
+} // namespace libdap
 
 #endif // _clause_h

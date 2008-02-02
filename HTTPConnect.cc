@@ -58,6 +58,8 @@ static char rcsid[] not_used =
 
 using namespace std;
 
+namespace libdap {
+
 // These global variables are not MT-Safe, but I'm leaving them as is because
 // they are used only for debugging (set them in a debugger like gdb or ddd).
 // They are not static because I *believe* that many debuggers cannot access
@@ -869,3 +871,5 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 
     d_upstring = u + ":" + p;
 }
+
+} // namespace libdap

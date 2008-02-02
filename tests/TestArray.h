@@ -39,6 +39,8 @@
 #include "Array.h"
 #include "TestCommon.h"
 
+using namespace libdap ;
+
 class TestArray: public Array, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestArray &ts);
@@ -66,5 +68,4 @@ public:
 };
 
 #endif // _testarray_h
-
 

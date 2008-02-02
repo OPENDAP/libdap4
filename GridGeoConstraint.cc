@@ -48,9 +48,11 @@ static char id[] not_used =
 #include "Error.h"
 #include "InternalErr.h"
 #include "ce_functions.h"
+#include "util.h"
 
 using namespace std;
-using namespace libdap;
+
+namespace libdap {
 
 
 /** @brief Initialize GeoConstraint with a Grid.
@@ -101,7 +103,7 @@ bool GridGeoConstraint::build_lat_lon_maps()
     // The fields d_latitude and d_longitude are initialized to null
     while (m != d_grid->map_end() && (!d_latitude || !d_longitude)) {
         string units_value = (*m)->get_attr_table().get_attr("units");
-        remove_quotes(units_value);
+        units_value = remove_quotes(units_value);
         string map_name = (*m)->name();
 
         // The 'units' attribute must match exactly; the name only needs to
@@ -288,3 +290,5 @@ void GridGeoConstraint::apply_constraint_to_data()
         d_grid->get_array()->read(get_dataset());
     }
 }
+
+} // namespace libdap

@@ -47,6 +47,9 @@
 #include "ConstraintEvaluator.h"
 #endif
 
+namespace libdap
+{
+
 /** Holds a one-dimensional array of DAP2 data types.  This class
     takes two forms, depending on whether the elements of the vector
     are themselves simple or compound objects. This class contains
@@ -159,5 +162,7 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif /* _vector_h */

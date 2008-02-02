@@ -652,14 +652,6 @@ static double string_to_double(const char *val)
     return v;
 }
 
-static string remove_quotes(const string &s)
-{
-    if (s[0] == '\"' && s[s.length()-1] == '\"')
-        return s.substr(1, s.length() - 2);
-    else
-        return s;
-}
-
 /** Look for any one of a series of attribute values in the attribute table
  for \e var.
  @return The attribute value in a double. */

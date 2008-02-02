@@ -52,7 +52,8 @@ static char id[] not_used =
 #include "util.h"
 
 using namespace std;
-using namespace libdap;
+
+namespace libdap {
 
 /** If an attribute value is quoted, remove the quotes.
 
@@ -60,6 +61,7 @@ using namespace libdap;
     present.
 
     @param value A value-result parameter. */
+/* FIXME: There is one defined in ce_functions
 void remove_quotes(string & value)
 {
     if (!value.empty() && value[0] == '"'
@@ -70,6 +72,7 @@ void remove_quotes(string & value)
 
     return;
 }
+*/
 
 /** This is used with find_if(). The GeoConstraint class holds a set of strings
     which are prefixes for variable names. Using the regular find() locates
@@ -623,3 +626,5 @@ void GeoConstraint::set_bounding_box(double left, double top,
 
     d_bounding_box_set = true;
 }
+
+} // namespace libdap

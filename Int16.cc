@@ -52,9 +52,10 @@ static char rcsid[] not_used =
 #include "debug.h"
 #include "InternalErr.h"
 
-
 using std::cerr;
 using std::endl;
+
+namespace libdap {
 
 Int16::Int16(const string &n) : BaseType(n, dods_int16_c)
 {}
@@ -256,4 +257,6 @@ Int16::dump(ostream &strm) const
     strm << DapIndent::LMarg << "value: " << _buf << endl ;
     DapIndent::UnIndent() ;
 }
+
+} // namespace libdap
 

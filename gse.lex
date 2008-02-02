@@ -67,6 +67,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "gse.tab.h"
 
 using namespace std;
+using namespace libdap;
 
 static void store_int32();
 static void store_float64();

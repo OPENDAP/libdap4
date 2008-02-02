@@ -80,6 +80,8 @@ void dds_switch_to_buffer(void *new_buffer);
 void dds_delete_buffer(void * buffer);
 void *dds_buffer(FILE *fp);
 
+namespace libdap {
+
 void
 DDS::duplicate(const DDS &dds)
 {
@@ -416,7 +418,7 @@ DDS::del_var(Vars_iter i1, Vars_iter i2)
     @return A BaseType pointer to the variable <i>n</i> or 0 if <i>n</i>
     could not be found. */
 BaseType *
-DDS::var(const string &n, btp_stack &s)
+DDS::var(const string &n, BaseType::btp_stack &s)
 {
     return var(n, &s);
 }
@@ -440,7 +442,7 @@ DDS::var(const string &n, btp_stack &s)
     \e n.
     @return A BaseType pointer to the variable or null if not found. */
 BaseType *
-DDS::var(const string &n, btp_stack *s)
+DDS::var(const string &n, BaseType::btp_stack *s)
 {
     string name = www2id(n);
     BaseType *v = exact_match(name, s);
@@ -451,7 +453,7 @@ DDS::var(const string &n, btp_stack *s)
 }
 
 BaseType *
-DDS::leaf_match(const string &n, btp_stack *s)
+DDS::leaf_match(const string &n, BaseType::btp_stack *s)
 {
     for (Vars_iter i = vars.begin(); i != vars.end(); i++) {
         BaseType *btp = *i;
@@ -470,7 +472,7 @@ DDS::leaf_match(const string &n, btp_stack *s)
 }
 
 BaseType *
-DDS::exact_match(const string &name, btp_stack *s)
+DDS::exact_match(const string &name, BaseType::btp_stack *s)
 {
     for (Vars_iter i = vars.begin(); i != vars.end(); i++) {
         BaseType *btp = *i;
@@ -916,7 +918,7 @@ DDS::check_semantics(bool all)
 bool
 DDS::mark(const string &n, bool state)
 {
-    btp_stack *s = new btp_stack;
+    BaseType::btp_stack *s = new BaseType::btp_stack;
 
     DBG2(cerr << "Looking for " << n << endl);
 
@@ -1387,3 +1389,5 @@ DDS::new_transfer_attributes(DAS * das)
     }
 }
 #endif
+
+} // namespace libdap

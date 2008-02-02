@@ -69,6 +69,8 @@ extern void *das_buffer(FILE *fp);
 extern void dasrestart(FILE *yyin);
 extern int dasparse(void *arg); // defined in das.tab.c
 
+namespace libdap {
+
 AttrTable *
 DAS::das_find(string name)
 {
@@ -318,4 +320,6 @@ DAS::dump(ostream &strm) const
     AttrTable::dump(strm) ;
     DapIndent::UnIndent() ;
 }
+
+} // namespace libdap
 

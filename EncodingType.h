@@ -26,6 +26,9 @@
 #ifndef _encodingtype_h
 #define _encodingtype_h
 
+namespace libdap
+{
+
 /** libdap understands two types of encoding: x-plain and deflate, which
     correspond to plain uncompressed data and data compressed with zlib's LZW
     algorithm respectively.
@@ -45,5 +48,7 @@ enum EncodingType {
     deflate,
     x_plain
 };
+
+} // namespace libdap
 
 #endif

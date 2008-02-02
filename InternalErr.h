@@ -45,6 +45,9 @@
 #include "Error.h"
 #endif
 
+namespace libdap
+{
+
 
 /** The InternalErr class is used to signal that somewhere inside libdap a
     software fault was found. This class wraps the message text in some
@@ -90,5 +93,7 @@ public:
 
     bool OK();
 };
+
+} // namespace libdap
 
 #endif // _internalerr_h

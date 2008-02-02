@@ -52,7 +52,6 @@ static char rcsid[] not_used =
 #include "dods-limits.h"
 #include "InternalErr.h"
 
-
 using std::cerr;
 using std::endl;
 
@@ -65,6 +64,8 @@ using std::endl;
     created.
 
 */
+
+namespace libdap {
 
 Byte::Byte(const string & n): BaseType(n, dods_byte_c)
 {}
@@ -279,3 +280,5 @@ void Byte::dump(ostream & strm) const
     strm << DapIndent::LMarg << "value: " << _buf << endl;
     DapIndent::UnIndent();
 }
+
+} // namespace libdap

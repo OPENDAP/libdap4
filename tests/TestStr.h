@@ -43,6 +43,8 @@
 #include "Str.h"
 #include "TestCommon.h"
 
+using namespace libdap ;
+
 class TestStr: public Str, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestStr &ts);

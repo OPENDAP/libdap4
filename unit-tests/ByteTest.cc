@@ -37,6 +37,7 @@
 
 using namespace CppUnit;
 using namespace std;
+using namespace libdap;
 
 class ByteTest:public TestFixture {
   private:

@@ -47,6 +47,8 @@ static char rcsid[] not_used = {"$Id$"};
 #include "util.h"
 #include "Error.h"
 
+using namespace libdap ;
+
 void test_scanner();
 void test_parser();
 void test_class();

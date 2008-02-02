@@ -72,6 +72,7 @@ static char rcsid[] not_used = {"$Id$"};
 
 using std::cerr;
 using std::endl;
+using namespace libdap ;
 
 #define EVALUATOR(arg) (static_cast<ce_parser_arg*>(arg)->get_eval())
 #define DDS(arg) (static_cast<ce_parser_arg*>(arg)->get_dds())
@@ -128,16 +129,16 @@ proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
     int op;
     char id[ID_MAX];
 
-    value val;
+    libdap::value val;
 
-    bool_func b_func;
-    btp_func bt_func;
+    libdap::bool_func b_func;
+    libdap::btp_func bt_func;
 
-    int_list *int_l_ptr;
-    int_list_list *int_ll_ptr;
+    libdap::int_list *int_l_ptr;
+    libdap::int_list_list *int_ll_ptr;
     
-    rvalue *rval_ptr;
-    rvalue_list *r_val_l_ptr;
+    libdap::rvalue *rval_ptr;
+    libdap::rvalue_list *r_val_l_ptr;
 }
 
 %token <val> SCAN_STR
@@ -1130,3 +1131,4 @@ get_proj_function(const ConstraintEvaluator &eval, const char *name)
     else
 	return 0;
 }
+

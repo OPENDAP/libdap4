@@ -50,8 +50,8 @@ static char id[] not_used =
 #include "ce_functions.h"
 
 using namespace std;
-using namespace libdap;
 
+namespace libdap {
 
 /** Private initialization code. */
 void ArrayGeoConstraint::m_init()
@@ -205,4 +205,6 @@ void ArrayGeoConstraint::apply_constraint_to_data()
         d_array->read(get_dataset());
     }
 }
+
+} // namespace libdap
 

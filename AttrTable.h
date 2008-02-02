@@ -50,6 +50,9 @@ using std::vector;
 #include "DapObj.h"
 #endif
 
+namespace libdap
+{
+
 /** <b>AttrType</b> identifies the data types which may appear in an
     attribute table object.
 
@@ -312,5 +315,7 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // _attrtable_h

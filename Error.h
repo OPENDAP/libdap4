@@ -45,6 +45,9 @@ using std::cout;
 using std::string;
 using std::ostream;
 
+namespace libdap
+{
+
 /** The most common errors within DAP2 have special codes so that they
     can be spotted easily by the client software. Any error
     without a matching code gets the <tt>unknown_error</tt> code.
@@ -111,5 +114,7 @@ public:
     void set_error_code(ErrorCode ec = undefined_error);
     void set_error_message(string msg = "");
 };
+
+} // namespace libdap
 
 #endif // _error_h

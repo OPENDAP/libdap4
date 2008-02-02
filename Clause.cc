@@ -45,6 +45,8 @@
 using std::cerr;
 using std::endl;
 
+namespace libdap {
+
 Clause::Clause(const int oper, rvalue *a1, rvalue_list *rv)
         : _op(oper), _b_func(0), _bt_func(0), _arg1(a1), _args(rv)
 {
@@ -223,3 +225,5 @@ Clause::value(const string &dataset, DDS &dds, BaseType **value)
                           "Claue::value() was called in a context expecting a BaseType pointer return, but the Clause was boolean-valued instead.");
     }
 }
+
+} // namespace libdap

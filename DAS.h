@@ -51,6 +51,9 @@
 
 using std::cout;
 
+namespace libdap
+{
+
 /** @brief Hold attribute data for a DAP2 dataset.
 
     The Data Attribute Structure is a set of name-value pairs used to
@@ -154,5 +157,7 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // _das_h

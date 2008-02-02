@@ -36,6 +36,9 @@
 #include "EventHandler.h"
 #include "debug.h"
 
+namespace libdap
+{
+
 static void
 unlink_file(const string &f)
 {
@@ -86,5 +89,7 @@ public:
         HTTPCache::delete_instance();
     }
 };
+
+} // namespace libdap
 
 #endif // http_cache_interrupt_handler_h

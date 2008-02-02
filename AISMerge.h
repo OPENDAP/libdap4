@@ -50,6 +50,9 @@
 #include "Response.h"
 #endif
 
+namespace libdap
+{
+
 /** Manage a single AIS database. Open an AIS database and handle merging DAP
     objects with the ancillary resources it references. This class uses
     AISResources to actually open the AIS database and locate AIS resources
@@ -84,5 +87,7 @@ public:
 
     virtual void merge(const string &primary, DAS &das);
 };
+
+} // namespace libdap
 
 #endif // ais_merge_h

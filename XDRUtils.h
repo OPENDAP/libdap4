@@ -52,6 +52,9 @@ void delete_xdrstdio(XDR *xdr);
 
 extern "C" bool_t xdr_str(XDR *xdrs, string &buf);
 
+namespace libdap
+{
+
 class XDRUtils
 {
 private:			XDRUtils() {}
@@ -61,6 +64,8 @@ public:
     // this.
     static xdrproc_t		xdr_coder( const Type &t ) ;
 } ;
+
+} // namespace libdap
 
 #endif // S_XDRUtils_h
 

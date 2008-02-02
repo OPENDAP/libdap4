@@ -60,6 +60,9 @@
 // FIXME
 #include "XDRUtils.h"
 
+namespace libdap
+{
+
 /** The type BaseTypeRow is used to store single rows of values in an
     instance of Sequence. Values are stored in instances of BaseType. */
 typedef vector<BaseType *> BaseTypeRow;
@@ -342,5 +345,7 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif //_sequence_h

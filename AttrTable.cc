@@ -49,6 +49,8 @@ using std::string;
 using std::endl;
 using std::vector;
 
+namespace libdap {
+
 /** Convert an AttrType to it's string representation.
     @param at The Attribute Type.
     @return The type's string representation */
@@ -1205,4 +1207,6 @@ AttrTable::dump(ostream &strm) const
     }
     DapIndent::UnIndent() ;
 }
+
+} // namespace libdap
 

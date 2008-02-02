@@ -26,6 +26,9 @@
 #ifndef _Regex_h
 #define _Regex_h 1
 
+namespace libdap
+{
+
 /** a C++ interface to POSIX regular expression functions.
 
     @author James Gallagher <jgallagher@opendap.org> */
@@ -51,5 +54,7 @@ public:
     /// How much of the string does the pattern matche.
     int search(const char* s, int len, int& matchlen, int pos = 0);
 };
+
+} // namespace libdap
 
 #endif

@@ -41,6 +41,9 @@
 #include "dods-limits.h"
 #include "BaseType.h"
 
+namespace libdap
+{
+
 // max_str_len should be large since we always send strings with length bytes
 // as a prefix (so xdr_string will always know how much memory to malloc) but
 // if deserialize gets confused and thinks a ctor (in particular) is a string
@@ -99,6 +102,8 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // _str_h
 

@@ -86,6 +86,9 @@ BaseType \\(0x.*\\):\n\
 
 static Regex s_regex(s_as_string);
 
+namespace libdap
+{
+
 class SequenceTest : public TestFixture {
 private:
     DDS *dds;
@@ -405,6 +408,8 @@ public:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SequenceTest);
+
+}
 
 int 
 main( int, char** )

@@ -50,9 +50,10 @@ static char rcsid[] not_used =
 #include "debug.h"
 #include "InternalErr.h"
 
-
 using std::cerr;
 using std::endl;
+
+namespace libdap {
 
 void Vector::_duplicate(const Vector & v)
 {
@@ -1322,4 +1323,6 @@ Vector::dump(ostream &strm) const
     }
     DapIndent::UnIndent() ;
 }
+
+} // namespace libdap
 

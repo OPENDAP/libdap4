@@ -60,6 +60,9 @@
 #include "ConstraintEvaluator.h"
 #endif
 
+namespace libdap
+{
+
 /** The Grid data type is a collection of an Array and a set of ``Map''
     vectors.  The Map vectors are one-dimensional arrays corresponding
     to each dimension of the central Array.  Using this scheme, a Grid
@@ -200,6 +203,8 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // _grid_h
 

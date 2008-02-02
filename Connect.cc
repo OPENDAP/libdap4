@@ -64,7 +64,7 @@ using std::ifstream;
 using std::ofstream;
 using std::min;
 
-extern ObjectType get_type(const string &value);
+namespace libdap {
 
 /** This private method process data from both local and remote sources. It
     exists to eliminate duplication of code. */
@@ -125,24 +125,6 @@ Connect::process_data(DataDDS &data, Response *rs)
         throw Error("The site did not return a valid response (it lacked the\nexpected content description header value of 'dods_data').\nThis may indicate that the server at the site is not correctly\nconfigured, or that the URL has changed.");
 #endif
     }
-}
-
-// This function returns the ObjectType value that matches the given string.
-ObjectType
-get_type(const string &value)
-{
-    if (value == "dods_das")
-        return dods_das;
-    else if (value == "dods_dds")
-        return dods_dds;
-    else if (value == "dods_data")
-        return dods_data;
-    else if (value == "dods_error")
-        return dods_error;
-    else if (value == "web_error")
-        return web_error;
-    else
-        return unknown_type;
 }
 
 // Barely a parser... This is used when reading from local sources of DODS
@@ -993,3 +975,5 @@ Connect::is_cache_enabled()
     DBGN(cerr << "exiting" << endl);
     return status;
 }
+
+} // namespace libdap

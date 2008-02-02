@@ -79,6 +79,8 @@ static char rcsid[] not_used =
 
 using namespace std;
 
+namespace libdap {
+
 // Remove spaces from the start of a URL and from the start of any constraint
 // expression it contains. 4/7/98 jhrg
 
@@ -376,6 +378,15 @@ downcase(string &s)
         s[i] = tolower(s[i]);
 }
 
+string
+remove_quotes(const string &s)
+{
+    if (!s.empty() && s[0] == '\"' && s[s.length()-1] == '\"')
+        return s.substr(1, s.length() - 2);
+    else
+        return s;
+}
+
 #ifdef WIN32
 //  Sometimes need to buffer within an iostream under win32 when
 //  we want the output to go to a FILE *.  This is because
@@ -633,3 +644,6 @@ pathname_ok(const string &path, bool strict)
 }
 
 //@}
+
+} // namespace libdap
+

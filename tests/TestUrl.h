@@ -40,6 +40,8 @@
 #include "Url.h"
 #include "TestCommon.h"
 
+using namespace libdap ;
+
 class TestUrl: public Url, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestUrl &ts);

@@ -15,6 +15,8 @@ using std::cerr ;
 using std::endl ;
 using std::vector ;
 
+using namespace libdap ;
+
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 				      // timeouts. 
 

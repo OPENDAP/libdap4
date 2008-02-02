@@ -75,6 +75,8 @@ static char rcsid[] not_used =
 
 using namespace std;
 
+namespace libdap {
+
 const string usage =
     "Usage: <handler name> -o <response> -u <url> [options ...] [data set]\n\
     \n\
@@ -1308,4 +1310,6 @@ DODSFilter::send_blob(DDS &, FILE *, bool)
     }
 #endif
 }
+
+} // namespace libdap
 

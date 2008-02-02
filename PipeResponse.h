@@ -38,6 +38,9 @@
 
 using namespace std;
 
+namespace libdap
+{
+
 /** @brief Encapsulate a response.
     This class provides special treatment for 'stream pipes.' It arranges
     to close them using pclose() instead of fclose(). */
@@ -83,5 +86,7 @@ public:
         d_pstream = s;
     }
 };
+
+} // namespace libdap
 
 #endif // pipe_response_h

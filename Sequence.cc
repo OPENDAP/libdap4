@@ -54,6 +54,8 @@
 
 using namespace std;
 
+namespace libdap {
+
 static const unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
 static const unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
 
@@ -1526,4 +1528,6 @@ Sequence::dump(ostream &strm) const
          << endl ;
     DapIndent::UnIndent() ;
 }
+
+} // namespace libdap
 

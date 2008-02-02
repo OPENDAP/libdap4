@@ -31,6 +31,9 @@
 // Class declarations; Make sure to include the corresponding headers in the
 // implementation file.
 
+namespace libdap
+{
+
 class Byte;
 class Int16;
 class UInt16;
@@ -95,5 +98,7 @@ public:
     virtual Sequence *NewSequence(const string &n = "") const;
     virtual Grid *NewGrid(const string &n = "") const;
 };
+
+} // namespace libdap
 
 #endif // base_type_factory_h

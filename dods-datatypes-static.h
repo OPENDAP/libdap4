@@ -21,6 +21,9 @@
 
 #include <inttypes.h>
 
+namespace libdap
+{
+
 /* The typedefs are done using a preprocessor symbol so that autoconf's
    `CONFIG_HEADER' can be used. The configure script will then only modify
    the dods-datatypes.h header when its contents change. This saves on
@@ -40,5 +43,7 @@ typedef uint8_t dods_byte;
 typedef double dods_float64;
 
 typedef float dods_float32;		
+
+} // namespace libdap
 
 #endif /* __DODS_DATATYPES__ */

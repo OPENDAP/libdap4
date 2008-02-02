@@ -1,6 +1,8 @@
 #include "TestCommon.h"
 #include "InternalErr.h"
 
+using namespace libdap ;
+
 TestCommon::TestCommon()
 {
 }

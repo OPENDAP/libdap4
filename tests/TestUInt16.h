@@ -40,6 +40,8 @@
 #include "UInt16.h"
 #include "TestCommon.h"
 
+using namespace libdap ;
+
 class TestUInt16: public UInt16, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestUInt16 &ts);

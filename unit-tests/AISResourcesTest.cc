@@ -39,6 +39,9 @@
 
 using namespace CppUnit;
 
+namespace libdap
+{
+
 class AISResourcesTest:public TestFixture {
 private:
     AISResources *ais;
@@ -303,6 +306,8 @@ public:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(AISResourcesTest);
+
+} // namespace libdap
 
 int 
 main( int, char** )

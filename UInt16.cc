@@ -55,6 +55,8 @@ static char rcsid[] not_used =
 using std::cerr;
 using std::endl;
 
+namespace libdap {
+
 UInt16::UInt16(const string &n)
         : BaseType(n, dods_uint16_c)
 {}
@@ -255,4 +257,6 @@ UInt16::dump(ostream &strm) const
     strm << DapIndent::LMarg << "value: " << _buf << endl ;
     DapIndent::UnIndent() ;
 }
+
+} // namespace libdap
 

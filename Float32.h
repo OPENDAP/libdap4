@@ -49,6 +49,9 @@
 #include "ConstraintEvaluator.h"
 #endif
 
+namespace libdap
+{
+
 /** @brief Holds a 32-bit floating point value.
 
     @see BaseType
@@ -101,6 +104,8 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // _float32_h
 

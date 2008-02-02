@@ -43,6 +43,9 @@
 
 using namespace std;
 
+namespace libdap
+{
+
 typedef vector<Resource> ResourceVector;
 typedef ResourceVector::iterator ResourceVectorIter;
 typedef ResourceVector::const_iterator ResourceVectorCIter;
@@ -139,5 +142,7 @@ public:
 
     virtual void write_database(const string &filename);
 };
+
+} // namespace libdap
 
 #endif // ais_resources_h

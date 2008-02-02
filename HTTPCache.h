@@ -71,6 +71,9 @@ const int CACHE_TABLE_SIZE = 1499;
 
 using namespace std;
 
+namespace libdap
+{
+
 /** Implements a single-user MT-safe HTTP 1.1 compliant (mostly) cache.
 
     <i>Clients that run as users lacking a writable HOME directory MUST
@@ -376,5 +379,7 @@ public:
 
     void purge_cache();
 };
+
+} // namespace libdap
 
 #endif // _http_cache_h

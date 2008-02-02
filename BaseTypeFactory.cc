@@ -43,6 +43,8 @@
 #include "BaseTypeFactory.h"
 #include "debug.h"
 
+namespace libdap {
+
 Byte *
 BaseTypeFactory::NewByte(const string &n) const
 {
@@ -122,3 +124,5 @@ BaseTypeFactory::NewGrid(const string &n) const
 {
     return new Grid(n);
 }
+
+} // namespace libdap

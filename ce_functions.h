@@ -43,6 +43,7 @@
 
 namespace libdap
 {
+
 // These functions are use by the code in GeoConstraint
 string extract_string_argument(BaseType *arg) ;
 double extract_double_value(BaseType *arg) ;
@@ -56,6 +57,7 @@ BaseType *function_linear_scale(int argc, BaseType *argv[], DDS &dds, const stri
 BaseType *function_geoarray(int argc, BaseType *argv[], DDS &dds, const string &dataset) ;
 
 void register_functions(ConstraintEvaluator &ce);
-}
+
+} // namespace libdap
 
 #endif // _ce_functions_h

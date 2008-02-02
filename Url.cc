@@ -35,6 +35,9 @@
 
 
 #include "Url.h"
+
+namespace libdap {
+
 /** The URL constructor requires only the name of the variable
     to be created.  The name may be omitted, which will create a
     nameless variable.  This may be adequate for some applications.
@@ -54,3 +57,5 @@ Url::ptr_duplicate()
 {
     return new Url(*this);
 }
+
+} // namespace libdap

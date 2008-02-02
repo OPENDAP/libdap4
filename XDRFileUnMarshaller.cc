@@ -36,6 +36,8 @@
 #include "util.h"
 #include "InternalErr.h"
 
+namespace libdap {
+
 XDRFileUnMarshaller::XDRFileUnMarshaller( FILE *out )
     : _source( 0 )
 {
@@ -175,4 +177,6 @@ XDRFileUnMarshaller::dump(ostream &strm) const
     strm << DapIndent::LMarg << "XDRFileUnMarshaller::dump - ("
          << (void *)this << ")" << endl ;
 }
+
+} // namespace libdap
 

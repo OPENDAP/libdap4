@@ -40,6 +40,8 @@
 #include "Grid.h"
 #include "TestCommon.h"
 
+using namespace libdap ;
+
 class TestGrid: public Grid, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestGrid &ts);

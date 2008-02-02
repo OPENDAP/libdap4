@@ -36,6 +36,12 @@
 #include "Marshaller.h"
 #include "XDRUtils.h"
 
+namespace libdap
+{
+
+/** @brief marshaller that knows how to marshall/serialize dap data objects
+ * to a file using XDR
+ */
 class XDRFileMarshaller : public Marshaller
 {
 private:
@@ -70,6 +76,8 @@ public:
                                             Vector &vec ) ;
     virtual void		dump(ostream &strm) const ;
 } ;
+
+} // namespace libdap
 
 #endif // I_XDRFileMarshaller_h
 

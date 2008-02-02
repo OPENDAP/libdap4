@@ -57,6 +57,9 @@ using namespace std;
 #define W_OK 2
 #endif
 
+namespace libdap
+{
+
 inline static int
 file_size(string name)
 {
@@ -799,6 +802,8 @@ public:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(HTTPCacheTest);
+
+} // namespace libdap
 
 int 
 main( int, char** )

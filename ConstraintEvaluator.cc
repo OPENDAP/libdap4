@@ -35,8 +35,6 @@ static char rcsid[] not_used =
 #include "ce_parser.h"
 #include "debug.h"
 
-using namespace libdap;
-
 struct yy_buffer_state;
 yy_buffer_state *ce_expr_scan_string(const char *str);
 int ce_exprparse(void *arg);
@@ -45,6 +43,8 @@ int ce_exprparse(void *arg);
 void ce_expr_switch_to_buffer(void *new_buffer);
 void ce_expr_delete_buffer(void * buffer);
 void *ce_expr_string(const char *yy_str);
+
+namespace libdap {
 
 ConstraintEvaluator::ConstraintEvaluator()
 {
@@ -369,3 +369,5 @@ ConstraintEvaluator::parse_constraint(const string &constraint, DDS &dds)
 
     ce_expr_delete_buffer(buffer);
 }
+
+} // namespace libdap

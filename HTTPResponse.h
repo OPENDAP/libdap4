@@ -41,6 +41,9 @@
 #include "debug.h"
 #endif
 
+namespace libdap
+{
+
 extern int dods_keep_temps; // defined in HTTPConnect.cc
 extern void close_temp(FILE *s, const string &name);
 
@@ -127,5 +130,7 @@ public:
     }
     //@}
 };
+
+} // namespace libdap
 
 #endif // http_response_h

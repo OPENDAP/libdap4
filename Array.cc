@@ -47,6 +47,8 @@
 
 using namespace std;
 
+namespace libdap {
+
 void
 Array::_duplicate(const Array &a)
 {
@@ -966,4 +968,6 @@ Array::dump(ostream &strm) const
     DapIndent::UnIndent() ;
     DapIndent::UnIndent() ;
 }
+
+} // namespace libdap
 

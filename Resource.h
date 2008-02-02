@@ -35,6 +35,9 @@
 
 using namespace std;
 
+namespace libdap
+{
+
 /** Bind an ancillary resource with the rule that should be used when
     combining it with a primary resource. Ancillary resources are always
     specified using URLs. If an ancillary resource is a local file, use
@@ -147,5 +150,7 @@ private:
     string d_url;
     Resource::rule d_rule;
 };
+
+} // namespace libdap
 
 #endif // resource_h

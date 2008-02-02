@@ -65,6 +65,7 @@ static char rcsid[] not_used = {"$Id$"};
 #define yyerror daserror 
 
 using namespace std;
+using namespace libdap ;
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
@@ -504,3 +505,4 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 				"\"" + msg + "\"");
     }
 }
+

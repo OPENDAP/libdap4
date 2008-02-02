@@ -43,6 +43,9 @@
 #include "BaseType.h"
 #endif
 
+namespace libdap
+{
+
 // VALUE is used to return constant values from the scanner to the parser.
 // Constants are packaged in BaseType *s for evaluation by the parser.
 
@@ -79,5 +82,7 @@ typedef std::vector<int>::iterator int_iter ;
 typedef std::vector<int_list *> int_list_list;
 typedef std::vector<int_list *>::const_iterator int_list_citer ;
 typedef std::vector<int_list *>::iterator int_list_iter ;
+
+} // namespace libdap
 
 #endif /* _expr_h */

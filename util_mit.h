@@ -27,5 +27,10 @@
 
 using std::string;
 
+namespace libdap
+{
+
 time_t parse_time(const char * str, bool expand = true);
 string date_time_str(time_t *calendar, bool local = false);
+
+} // namespace libdap

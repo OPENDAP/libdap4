@@ -41,6 +41,9 @@
 using namespace CppUnit;
 using namespace std;
 
+namespace libdap
+{
+
 class SignalHandlerTest : public TestFixture {
 private:
     SignalHandler *sh;
@@ -91,6 +94,8 @@ public:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SignalHandlerTest);
+
+}
 
 int 
 main( int, char** )

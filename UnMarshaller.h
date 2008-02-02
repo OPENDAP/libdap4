@@ -43,8 +43,14 @@ using std::vector ;
 
 #include "dods-datatypes.h"
 
+namespace libdap
+{
+
 class Vector ;
 
+/** @brief abstract base class used to unmarshall/deserialize dap data
+ * objects
+ */
 class UnMarshaller : public DapObj
 {
 public:
@@ -72,6 +78,8 @@ public:
 
     virtual void		dump(ostream &strm) const = 0 ;
 } ;
+
+} // namespace libdap
 
 #endif // A_UnMarshaller_h
 
