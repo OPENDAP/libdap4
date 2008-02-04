@@ -699,7 +699,7 @@ HTTPConnect::caching_fetch_url(const string &url)
             // *** auto_ptr??? resp_hdrs not deleted! 10/10/03 jhrg
             vector<string> *resp_hdrs = new vector<string>;
             vector<string> cond_hdrs
-            = d_http_cache->get_conditional_request_headers(url);
+		= d_http_cache->get_conditional_request_headers(url);
             FILE *body = 0;
             string dods_temp = get_temp_file(body);
             time_t now = time(0); // When was the request made (now).

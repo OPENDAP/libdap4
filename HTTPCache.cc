@@ -1500,8 +1500,17 @@ HTTPCache::create_location(CacheEntry *entry)
 void
 HTTPCache::parse_headers(CacheEntry *entry, const vector<string> &headers)
 {
+    if( !entry ) cerr << "NO ENTRY" << endl ;
     vector<string>::const_iterator i;
     for (i = headers.begin(); i != headers.end(); ++i) {
+	// skip a blank header.
+	if( (*i).empty() ) continue ;
+
+	string::size_type colon = (*i).find(':');
+
+	// skip a header with no colon in it.
+	if( colon == string::npos ) continue ;
+
         string header = (*i).substr(0, (*i).find(':'));
         string value = (*i).substr((*i).find(": ") + 2);
         DBG2(cerr << "Header: " << header << endl);
@@ -2216,6 +2225,49 @@ HTTPCache::get_cached_response(const string &url, vector<string> &headers)
     DBGN(cerr << "Unlocking interface." << endl);
 
     return body;
+}
+
+/** Get information from the cache. For a given URL, get the headers and body
+    stored in the cache. Note that this method increments the hit counter for
+    <code>url</code>'s entry and \e locks that entry. To release the lock,
+    the method release_cached_response() \e must be called. Methods that
+    block on a locked entry are: get_conditional_request_headers(),
+    update_response() and is_url_valid(). In addition, purge_cache() throws
+    Error if it's called and any entries are locked. The garbage collection
+    system will not reclaim locked entries (but works fine when some entries
+    are locked).
+
+    This method locks the class' interface.
+
+    This method does \e not check to see that the response is valid, just
+    that it is in the cache. To see if a cached response is valid, use
+    is_url_valid(). The FILE* returned can be used for both reading and
+    writing. The latter allows a client to update the body of a cached
+    response without having to first dump it all to a separate file and then
+    copy it into the cache (using cache_response()).
+
+    @param url Get response information for this URL.
+    @param headers Return the response headers in this parameter
+    @param cacheName name of the cache file
+    @return A FILE * to the response body.
+    @exception Error Thrown if the URL's response is not in the cache.
+    @exception InternalErr Thrown if the persistent store cannot be opened. */
+
+FILE *
+HTTPCache::get_cached_response( const string &url, vector<string> &headers,
+				string &cacheName )
+{
+    FILE *body = get_cached_response( url, headers ) ;
+    if( body )
+    {
+	CacheEntry *entry = d_locked_entries[body];
+	if( entry )
+	{
+	    cacheName = entry->cachename ;
+	}
+    }
+
+    return body ;
 }
 
 /** Get a pointer to a cached response body. For a given URL, find the cached

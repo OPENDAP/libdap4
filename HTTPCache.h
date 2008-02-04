@@ -374,6 +374,8 @@ public:
     bool is_url_in_cache(const string &url);
     bool is_url_valid(const string &url);
     FILE *get_cached_response(const string &url, vector<string> &headers);
+    FILE *get_cached_response(const string &url, vector<string> &headers,
+			      string &cacheName);
     FILE *get_cached_response_body(const string &url);
     void release_cached_response(FILE *response);
 
