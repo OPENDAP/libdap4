@@ -6,6 +6,9 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/CompilerOutputter.h>
 
+#include <sys/types.h>
+#include <unistd.h>
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
