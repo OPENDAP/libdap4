@@ -270,6 +270,10 @@ public:
 	hc->create_cache_root("/tmp/silly/");
 	CPPUNIT_ASSERT(access("/tmp/silly/", F_OK) == 0);
 	remove("/tmp/silly");
+#if 0
+	// This test doesn't work on some machines where the build is 
+	// run as root or where /root is owned by some other user (as is
+	// the case with OS/X.
 	try {
 	    hc->create_cache_root("/root/very_silly/");
 	    access("/root/very_silly/", F_OK);
@@ -280,6 +284,7 @@ public:
 	    CPPUNIT_ASSERT("This is where we want to be");
 	    CPPUNIT_ASSERT(access("/root/very_silly/", F_OK) != 0);
 	}
+#endif
     }
 
     void set_cache_root_test() {
@@ -326,7 +331,10 @@ public:
 	CPPUNIT_ASSERT(hc->create_hash_directory(391)
 		       == "/tmp/dods_test_cache/391");
 	CPPUNIT_ASSERT(access("/tmp/dods_test_cache/391", W_OK) == 0);
-
+#if 0
+	// This test doesn't work on some machines where the build is 
+	// run as root or where /root is owned by some other user (as is
+	// the case with OS/X.
 	hc->set_cache_root("/root/");
 	try {
 	    hc->create_hash_directory(391);
@@ -334,7 +342,7 @@ public:
 	}
 	catch (Error &e) {
 	}
-
+#endif
 	remove("/tmp/dods_test_cache/391");
 
     }
