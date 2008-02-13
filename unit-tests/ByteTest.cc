@@ -23,6 +23,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -30,6 +32,9 @@
 // Tests for Byte. Tests features of BaseType, too. 7/19/2001 jhrg
 
 #include <sstream>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #include "Byte.h"
 

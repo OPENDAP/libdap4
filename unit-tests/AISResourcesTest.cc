@@ -25,7 +25,11 @@
  
 // Tests for the AISResources class.
 
+#include "config.h"
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 #include <algorithm>
 #include <stdexcept>
