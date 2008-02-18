@@ -815,7 +815,7 @@ DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
         eval.parse_constraint(d_ce, dds);
 
     if (eval.functional_expression())
-        throw Error("Function calls can only be used with data requests. To see the structure\nof the underlying data source, reissue the URL without the function.");
+        throw Error("Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
 
     time_t dds_lmt = get_dds_last_modified_time(anc_location);
     if (is_conditional()
@@ -862,7 +862,7 @@ DODSFilter::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
         eval.parse_constraint(d_ce, dds);
 
     if (eval.functional_expression())
-        throw Error("Function calls can only be used with data requests. To see the structure\nof the underlying data source, reissue the URL without the function.");
+        throw Error("Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
 
     time_t dds_lmt = get_dds_last_modified_time(anc_location);
     if (is_conditional()
@@ -1196,6 +1196,9 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
     if (!d_ce.empty())
         eval.parse_constraint(d_ce, dds);
 
+    if (eval.functional_expression())
+        throw Error("Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
+
     time_t dds_lmt = get_dds_last_modified_time(d_anc_dir);
 
     // If this is a conditional request and the server should send a 304
@@ -1230,6 +1233,9 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
     // If constrained, parse the constraint. Throws Error or InternalErr.
     if (!d_ce.empty())
         eval.parse_constraint(d_ce, dds);
+
+    if (eval.functional_expression())
+        throw Error("Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
 
     time_t dds_lmt = get_dds_last_modified_time(d_anc_dir);
 
