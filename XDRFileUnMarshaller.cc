@@ -88,7 +88,11 @@ XDRFileUnMarshaller::get_int16( dods_int16 &val )
 void
 XDRFileUnMarshaller::get_int32( dods_int32 &val )
 {
-    if( !XDR_INT32( _source, &val ) )
+#ifdef _MSC_VER
+    if( !XDR_INT32( _source, (int *)&val ) )
+#else
+	if( !XDR_INT32( _source, &val ) )
+#endif
         throw Error("Network I/O Error. Could not read int 32 data. This may be due to a\nbug in libdap or a problem with the network connection.");
 }
 
@@ -116,7 +120,11 @@ XDRFileUnMarshaller::get_uint16( dods_uint16 &val )
 void
 XDRFileUnMarshaller::get_uint32( dods_uint32 &val )
 {
-    if( !XDR_UINT32( _source, &val ) )
+#ifdef _MSC_VER
+    if( !XDR_UINT32( _source, (unsigned int *)&val ) )
+#else
+	if( !XDR_UINT32( _source, &val ) )
+#endif
         throw Error("Network I/O Error. Could not read uint 32 data. This may be due to a\nbug in libdap or a problem with the network connection.");
 }
 

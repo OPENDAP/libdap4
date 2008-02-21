@@ -31,6 +31,8 @@
    for the "fast" types and macros, which we recommend against using
    in public interfaces due to compiler differences.  */
 
+#ifndef _MSC_VER
+
 #if @HAVE_STDINT_H@
 # if defined __sgi && ! defined __c99
    /* Bypass IRIX's <stdint.h> if in C89 mode, since it merely annoys users

@@ -35,11 +35,11 @@
    compilation since the header is used by many files in the dap++ library.
    The downside is that the typedefs are so ugly... 2/14/2001 jhrg */
 
-#define XDR_INT32 xdr_int32_t
-#define XDR_UINT32 xdr_uint32_t
+#define XDR_INT32 xdr_long
+#define XDR_UINT32 xdr_u_long
 
-#define XDR_INT16 xdr_int16_t
-#define XDR_UINT16 xdr_uint16_t
+#define XDR_INT16 xdr_short
+#define XDR_UINT16 xdr_u_short
 
 #define XDR_FLOAT64 xdr_double
 #define XDR_FLOAT32 xdr_float
