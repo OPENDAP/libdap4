@@ -120,7 +120,11 @@ XDRFileMarshaller::put_uint16( dods_uint16 val )
 void
 XDRFileMarshaller::put_uint32( dods_uint32 val )
 {
-    if( !XDR_UINT32( _sink, &val ) )
+#ifdef _MSC_VER
+    if( !XDR_UINT32( _sink, (unsigned int *)&val ) )
+#else
+  	if( !XDR_UINT32( _sink, &val ) )
+#endif
         throw Error("Network I/O Error. Could not send uint 32 data. This may be due to a\nbug in libdap or a problem with the network connection.");
 }
 
