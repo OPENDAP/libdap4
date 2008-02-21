@@ -64,7 +64,11 @@
 
 static char rcsid[] not_used ={"$Id$"};
 
+#ifndef _MSC_VER
 #include <string.h>
+#else
+#include <string>
+#endif
 
 using namespace std;
 

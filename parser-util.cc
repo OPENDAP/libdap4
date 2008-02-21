@@ -63,6 +63,30 @@ double w32strtod(const char *, char **);
 using std::cerr;
 using std::endl;
 
+#ifdef WIN32
+//  VC++ 6.x strtod() doesn't recognize "NaN".  Account for it
+//  by wrapping it around a check for the Nan string.  Use of
+//  the product is obsolete as of 1/2007, but it is unknown if
+//  the issue is still there in later releases of that product.
+//  ROM - 01/2007
+double w32strtod(const char *val, char **ptr)
+{
+    //  Convert the two char arrays to compare to strings.
+    string *sval = new string(val);
+    string *snan = new string("NaN");
+
+    //  If val doesn't contain "NaN|Nan|nan|etc", use strtod as
+    //  provided.
+    if (stricmp(sval->c_str(), snan->c_str()) != 0)
+        return (strtod(val, ptr));
+
+    //  But if it does, return the bit pattern for Nan and point
+    //  the parsing ptr arg at the trailing '\0'.
+    *ptr = (char *) val + strlen(val);
+    return (std::numeric_limits < double >::quiet_NaN());
+}
+#endif
+
 namespace libdap {
 
 // Deprecated, but still used by the HDF4 EOS server code.
@@ -302,30 +326,6 @@ int check_float64(const char *val)
 
     return TRUE;
 }
-
-#ifdef WIN32
-//  VC++ 6.x strtod() doesn't recognize "NaN".  Account for it
-//  by wrapping it around a check for the Nan string.  Use of
-//  the product is obsolete as of 1/2007, but it is unknown if
-//  the issue is still there in later releases of that product.
-//  ROM - 01/2007
-double w32strtod(const char *val, char **ptr)
-{
-    //  Convert the two char arrays to compare to strings.
-    string *sval = new string(val);
-    string *snan = new string("NaN");
-
-    //  If val doesn't contain "NaN|Nan|nan|etc", use strtod as
-    //  provided.
-    if (stricmp(sval->c_str(), snan->c_str()) != 0)
-        return (strtod(val, ptr));
-
-    //  But if it does, return the bit pattern for Nan and point
-    //  the parsing ptr arg at the trailing '\0'.
-    *ptr = (char *) val + strlen(val);
-    return (std::numeric_limits < double >::quiet_NaN());
-}
-#endif
 
 /*
   Maybe someday we will really check the Urls to see if they are valid...

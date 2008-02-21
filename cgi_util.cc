@@ -412,6 +412,9 @@ static const char *months[] =
      "Aug", "Sep", "Oct", "Nov", "Dec"
     };
 
+#ifdef _MSC_VER
+#define snprintf sprintf_s
+#endif
 /** Given a constant pointer to a <tt>time_t</tt>, return a RFC
     822/1123 style date.
 

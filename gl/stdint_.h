@@ -46,6 +46,8 @@
 # @INCLUDE_NEXT@ @NEXT_STDINT_H@
 #endif
 
+#endif
+
 #if ! defined _GL_STDINT_H && ! defined _GL_JUST_INCLUDE_SYSTEM_STDINT_H
 #define _GL_STDINT_H
 
@@ -55,13 +57,16 @@
    MacOS X 10.4.6 <sys/types.h> includes <stdint.h> (which is us), but
    relies on the system <stdint.h> definitions, so include
    <sys/types.h> after @NEXT_STDINT_H@.  */
+#ifndef _MSC_VER
 #if @HAVE_SYS_TYPES_H@ && ! defined _AIX
 # include <sys/types.h>
+#endif
 #endif
 
 /* Get LONG_MIN, LONG_MAX, ULONG_MAX.  */
 #include <limits.h>
 
+#ifndef _MSC_VER
 #if @HAVE_INTTYPES_H@
   /* In OpenBSD 3.8, <inttypes.h> includes <machine/types.h>, which defines
      int{8,16,32,64}_t, uint{8,16,32,64}_t and __BIT_TYPES_DEFINED__.
@@ -80,6 +85,7 @@
      int{8,16,32,64}_t and __BIT_TYPES_DEFINED__.  In libc5 >= 5.2.2 it is
      included by <sys/types.h>.  */
 # include <sys/bitypes.h>
+#endif
 #endif
 
 #if ! defined __cplusplus || defined __STDC_CONSTANT_MACROS
@@ -230,6 +236,7 @@
    public header files. */
 
 #undef intmax_t
+#ifndef _MSC_VER
 #if @HAVE_LONG_LONG_INT@ && LONG_MAX >> 30 == 1
 # define intmax_t long long int
 #elif defined GL_INT64_T
@@ -237,12 +244,19 @@
 #else
 # define intmax_t long int
 #endif
+#else
+# define intmax_t long int
+#endif
 
 #undef uintmax_t
+#ifndef _MSC_VER
 #if @HAVE_UNSIGNED_LONG_LONG_INT@ && ULONG_MAX >> 31 == 1
 # define uintmax_t unsigned long long int
 #elif defined GL_UINT64_T
 # define uintmax_t uint64_t
+#else
+# define uintmax_t unsigned long int
+#endif
 #else
 # define uintmax_t unsigned long int
 #endif
@@ -419,8 +433,10 @@
 
 
 /* size_t limit */
+#ifndef _MSC_VER
 #undef SIZE_MAX
 #define SIZE_MAX  _STDINT_MAX (0, @BITSIZEOF_SIZE_T@, 0@SIZE_T_SUFFIX@)
+#endif
 
 /* wchar_t limits */
 #undef WCHAR_MIN
@@ -485,6 +501,7 @@
 /* 7.18.4.2. Macros for greatest-width integer constants */
 
 #undef INTMAX_C
+#ifndef _MSC_VER
 #if @HAVE_LONG_LONG_INT@ && LONG_MAX >> 30 == 1
 # define INTMAX_C(x)   x##LL
 #elif defined GL_INT64_T
@@ -492,12 +509,19 @@
 #else
 # define INTMAX_C(x)   x##L
 #endif
+#else
+# define INTMAX_C(x)   x##L
+#endif
 
 #undef UINTMAX_C
+#ifndef _MSC_VER
 #if @HAVE_UNSIGNED_LONG_LONG_INT@ && ULONG_MAX >> 31 == 1
 # define UINTMAX_C(x)  x##ULL
 #elif defined GL_UINT64_T
 # define UINTMAX_C(x)  UINT64_C(x)
+#else
+# define UINTMAX_C(x)  x##UL
+#endif
 #else
 # define UINTMAX_C(x)  x##UL
 #endif

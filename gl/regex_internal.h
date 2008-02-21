@@ -22,7 +22,11 @@
 
 #include <assert.h>
 #include <ctype.h>
+#ifndef _MSC_VER
 #include <stdbool.h>
+#else
+#include "stdbool_.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,9 +40,14 @@
 # include <locale.h>
 #endif
 
-#include <wchar.h>
 #include <wctype.h>
+#include <wchar.h>
+
+#ifndef _MSC_VER
 #include <stdint.h>
+#else
+#include "stdint_.h"
+#endif
 #if defined _LIBC
 # include <bits/libc-lock.h>
 #else
@@ -458,7 +467,11 @@ static unsigned int re_string_context_at (const re_string_t *input, Idx idx,
 #define re_string_skip_bytes(pstr,idx) ((pstr)->cur_idx += (idx))
 #define re_string_set_index(pstr,idx) ((pstr)->cur_idx = (idx))
 
+#ifdef _MSC_VER
+#include "alloca_.h"
+#else
 #include <alloca.h>
+#endif
 
 #ifndef _LIBC
 # if HAVE_ALLOCA
@@ -734,6 +747,10 @@ typedef struct
 
 
 /* Inline functions for bitset_t operation.  */
+
+#ifdef _MSC_VER
+#define inline _inline
+#endif
 
 static inline void
 bitset_set (bitset_t set, Idx i)

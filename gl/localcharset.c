@@ -65,8 +65,10 @@
 #endif
 
 /* Get LIBDIR.  */
+#ifndef WIN32
 #ifndef LIBDIR
 # include "configmake.h"
+#endif
 #endif
 
 #if defined _WIN32 || defined __WIN32__ || defined __CYGWIN__ || defined __EMX__ || defined __DJGPP__

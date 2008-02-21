@@ -95,6 +95,10 @@
 #include "Grid.h"
 #endif
 
+#ifdef _MSC_VER
+#define uint unsigned int
+#endif
+
 using std::iostream;
 
 namespace libdap

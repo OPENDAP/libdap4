@@ -521,11 +521,11 @@ get_tempfile_template(char *file_template)
     Regex directory("[-a-zA-Z0-9_\\]*");
 	
     c = getenv("TEMP");
-    if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0)
+    if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0))
     	goto valid_temp_directory;
 
     c= getenv("TMP");
-    if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0)
+    if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0))
     	goto valid_temp_directory;
 #else
 	// whitelist for a directory

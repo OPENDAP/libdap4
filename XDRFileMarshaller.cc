@@ -88,8 +88,12 @@ XDRFileMarshaller::put_int16( dods_int16 val )
 void
 XDRFileMarshaller::put_int32( dods_int32 val )
 {
+#ifdef _MSC_VER
+    if( !XDR_INT32( _sink, (int *)&val ) )
+#else
     if( !XDR_INT32( _sink, &val ) )
-        throw Error("Network I/O Error. Culd not read int 32 data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+#endif
+        throw Error("Network I/O Error. Could not read int 32 data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
 }
 
 void

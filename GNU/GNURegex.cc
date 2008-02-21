@@ -94,15 +94,20 @@ Regex::Regex(const char* t, int)
 int 
 Regex::match(const char* s, int len, int pos)
 {
-    regmatch_t pmatch[len];
+    regmatch_t *pmatch = new regmatch_t[len+1];
     string ss = s;
 
     int result = regexec(static_cast<regex_t*>(d_preg), 
                          ss.substr(pos, len-pos).c_str(), len, pmatch, 0);
+	int matchnum;
     if (result == REG_NOMATCH)
-        return -1;
+        matchnum = -1;
+	else
+		matchnum = pmatch[0].rm_eo - pmatch[0].rm_so;
+		
+	delete[] pmatch; pmatch = 0;
 
-    return pmatch[0].rm_eo - pmatch[0].rm_so;
+    return matchnum;
 }
 
 /** Does the regular expression match the string? 
