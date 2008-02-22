@@ -468,6 +468,7 @@ install: all mkinstdirs
 	mt -nologo -manifest $(INSTALLETCDIR)\deflate.exe.manifest -outputresource:$(INSTALLETCDIR)\deflate.exe;1
 	del $(INSTALLETCDIR)\deflate.exe.manifest
 	copy dods-datatypes.h $(INSTALLINCDIR)
+	copy xdr-datatypes.h $(INSTALLINCDIR)
 	copy $(SRCDIR)\*.h $(INSTALLINCDIR)
 	copy $(SRCDIR)\GNU\*.h $(INSTALLINCDIR)\GNU
 	copy $(SRCDIR)\gl\regex.h $(INSTALLINCDIR)
@@ -497,6 +498,7 @@ package: all mkpkgdirs document
 	mt -nologo -manifest $(PKGETCDIR)\deflate.exe.manifest -outputresource:$(PKGETCDIR)\deflate.exe;1
 	del $(PKGETCDIR)\deflate.exe.manifest
 	copy dods-datatypes.h $(PKGINCDIR)
+	copy xdr-datatypes.h $(PKGINCDIR)
 	copy $(SRCDIR)\*.h $(PKGINCDIR)
 	copy $(SRCDIR)\GNU\*.h $(PKGINCDIR)\GNU
 	copy $(SRCDIR)\gl\regex.h $(PKGINCDIR)
