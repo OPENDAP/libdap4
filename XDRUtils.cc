@@ -115,10 +115,6 @@ xdr_str(XDR *xdrs, string &buf)
         }
 
     default:
-#if 0
-        // Removed; build fails on FC6. jhrg 8/28/07
-        assert(false);
-#endif
         return 0;
     }
 }
