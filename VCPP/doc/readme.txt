@@ -1,4 +1,11 @@
 
+Note: This code was built on WIndows XP using libdap 3.7.10 in Feb 2008 with
+only minor modifications to the VCPP/Makefile. 
+
+James Gallagher
+22 Feb 2008
+--------------------------
+
 These are the instructions that accompany each Windows release of the OPeNDAP
 Core Library known as "libdap".
 
