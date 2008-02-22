@@ -150,6 +150,7 @@ pkg-main:
 		-ds -r OSX_Resources \
 		-i OSX_Resources/Info.plist \
 		-d OSX_Resources/Description.plist
+	-rm -rf mac_osx
 
 pkg-dmg:
 	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
@@ -158,6 +159,7 @@ pkg-dmg:
 	mv @PACKAGE@-@PACKAGE_VERSION@.pkg @PACKAGE@-@PACKAGE_VERSION@
 	cp README README.* NEWS @PACKAGE@-@PACKAGE_VERSION@
 	dropdmg -i --sanitize-for-servers --format zlib @PACKAGE@-@PACKAGE_VERSION@
+	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
 
 pkg: clean-pkg pkg-build pkg-main pkg-dmg
 
