@@ -456,7 +456,7 @@
 #define WINT_MAX  \
    _STDINT_MAX (@HAVE_SIGNED_WINT_T@, @BITSIZEOF_WINT_T@, 0@WINT_T_SUFFIX@)
 
-#endif /* !defined __cplusplus || defined __STDC_LIMIT_MACROS */
+#endif                          /* !defined __cplusplus || defined __STDC_LIMIT_MACROS */
 
 /* 7.18.4. Macros for integer constants */
 
@@ -528,7 +528,7 @@
 # define UINTMAX_C(x)  x##UL
 #endif
 
-#endif /* !defined __cplusplus || defined __STDC_CONSTANT_MACROS */
+#endif                          /* !defined __cplusplus || defined __STDC_CONSTANT_MACROS */
 
-#endif /* _GL_STDINT_H */
-#endif /* !defined _GL_STDINT_H && !defined _GL_JUST_INCLUDE_SYSTEM_STDINT_H */
+#endif                          /* _GL_STDINT_H */
+#endif                          /* !defined _GL_STDINT_H && !defined _GL_JUST_INCLUDE_SYSTEM_STDINT_H */

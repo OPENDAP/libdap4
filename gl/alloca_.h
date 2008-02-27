@@ -47,8 +47,8 @@
 #  ifdef  __cplusplus
 extern "C"
 #  endif
-void *alloca (size_t);
+void *alloca(size_t);
 # endif
 #endif
 
-#endif /* _GL_ALLOCA_H */
+#endif                          /* _GL_ALLOCA_H */

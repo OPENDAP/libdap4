@@ -38,68 +38,63 @@
    than S2.
    Note: This function may, in multibyte locales, return 0 for strings of
    different lengths!  */
-int
-strcasecmp (const char *s1, const char *s2)
+int strcasecmp(const char *s1, const char *s2)
 {
-  if (s1 == s2)
-    return 0;
+    if (s1 == s2)
+        return 0;
 
-  /* Be careful not to look at the entire extent of s1 or s2 until needed.
-     This is useful because when two strings differ, the difference is
-     most often already in the very few first characters.  */
+    /* Be careful not to look at the entire extent of s1 or s2 until needed.
+       This is useful because when two strings differ, the difference is
+       most often already in the very few first characters.  */
 #if HAVE_MBRTOWC
-  if (MB_CUR_MAX > 1)
-    {
-      mbui_iterator_t iter1;
-      mbui_iterator_t iter2;
+    if (MB_CUR_MAX > 1) {
+        mbui_iterator_t iter1;
+        mbui_iterator_t iter2;
 
-      mbui_init (iter1, s1);
-      mbui_init (iter2, s2);
+        mbui_init(iter1, s1);
+        mbui_init(iter2, s2);
 
-      while (mbui_avail (iter1) && mbui_avail (iter2))
-	{
-	  int cmp = mb_casecmp (mbui_cur (iter1), mbui_cur (iter2));
+        while (mbui_avail(iter1) && mbui_avail(iter2)) {
+            int cmp = mb_casecmp(mbui_cur(iter1), mbui_cur(iter2));
 
-	  if (cmp != 0)
-	    return cmp;
+            if (cmp != 0)
+                return cmp;
 
-	  mbui_advance (iter1);
-	  mbui_advance (iter2);
-	}
-      if (mbui_avail (iter1))
-	/* s2 terminated before s1.  */
-	return 1;
-      if (mbui_avail (iter2))
-	/* s1 terminated before s2.  */
-	return -1;
-      return 0;
-    }
-  else
+            mbui_advance(iter1);
+            mbui_advance(iter2);
+        }
+        if (mbui_avail(iter1))
+            /* s2 terminated before s1.  */
+            return 1;
+        if (mbui_avail(iter2))
+            /* s1 terminated before s2.  */
+            return -1;
+        return 0;
+    } else
 #endif
     {
-      const unsigned char *p1 = (const unsigned char *) s1;
-      const unsigned char *p2 = (const unsigned char *) s2;
-      unsigned char c1, c2;
+        const unsigned char *p1 = (const unsigned char *) s1;
+        const unsigned char *p2 = (const unsigned char *) s2;
+        unsigned char c1, c2;
 
-      do
-	{
-	  c1 = TOLOWER (*p1);
-	  c2 = TOLOWER (*p2);
+        do {
+            c1 = TOLOWER(*p1);
+            c2 = TOLOWER(*p2);
 
-	  if (c1 == '\0')
-	    break;
+            if (c1 == '\0')
+                break;
 
-	  ++p1;
-	  ++p2;
-	}
-      while (c1 == c2);
+            ++p1;
+            ++p2;
+        }
+        while (c1 == c2);
 
-      if (UCHAR_MAX <= INT_MAX)
-	return c1 - c2;
-      else
-	/* On machines where 'char' and 'int' are types of the same size, the
-	   difference of two 'unsigned char' values - including the sign bit -
-	   doesn't fit in an 'int'.  */
-	return (c1 > c2 ? 1 : c1 < c2 ? -1 : 0);
+        if (UCHAR_MAX <= INT_MAX)
+            return c1 - c2;
+        else
+            /* On machines where 'char' and 'int' are types of the same size, the
+               difference of two 'unsigned char' values - including the sign bit -
+               doesn't fit in an 'int'.  */
+            return (c1 > c2 ? 1 : c1 < c2 ? -1 : 0);
     }
 }

@@ -45,5 +45,5 @@
 #ifndef _GL_WCHAR_H
 #define _GL_WCHAR_H
 
-#endif /* _GL_WCHAR_H */
-#endif /* _GL_WCHAR_H */
+#endif                          /* _GL_WCHAR_H */
+#endif                          /* _GL_WCHAR_H */

@@ -30,12 +30,10 @@ extern "C" {
    The result must not be freed; it is statically allocated.
    If the canonical name cannot be determined, the result is a non-canonical
    name.  */
-extern const char * locale_charset (void);
+    extern const char *locale_charset(void);
 
 
 #ifdef __cplusplus
 }
 #endif
-
-
-#endif /* _LOCALCHARSET_H */
+#endif                          /* _LOCALCHARSET_H */

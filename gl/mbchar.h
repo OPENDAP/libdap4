@@ -160,13 +160,12 @@
 
 #define MBCHAR_BUF_SIZE 24
 
-struct mbchar
-{
-  const char *ptr;	/* pointer to current character */
-  size_t bytes;		/* number of bytes of current character, > 0 */
-  bool wc_valid;	/* true if wc is a valid wide character */
-  wchar_t wc;		/* if wc_valid: the current character */
-  char buf[MBCHAR_BUF_SIZE]; /* room for the bytes, used for file input only */
+struct mbchar {
+    const char *ptr;            /* pointer to current character */
+    size_t bytes;               /* number of bytes of current character, > 0 */
+    bool wc_valid;              /* true if wc is a valid wide character */
+    wchar_t wc;                 /* if wc_valid: the current character */
+    char buf[MBCHAR_BUF_SIZE];  /* room for the bytes, used for file input only */
 };
 
 /* EOF (not a real character) is represented with bytes = 0 and
@@ -237,13 +236,12 @@ typedef struct mbchar mbchar_t;
 /* Unprintable characters appear as a small box of width 1.  */
 #define MB_UNPRINTABLE_WIDTH 1
 
-static inline int
-mb_width_aux (wint_t wc)
+static inline int mb_width_aux(wint_t wc)
 {
-  int w = wcwidth (wc);
-  /* For unprintable characters, arbitrarily return 0 for control characters
-     and MB_UNPRINTABLE_WIDTH otherwise.  */
-  return (w >= 0 ? w : iswcntrl (wc) ? 0 : MB_UNPRINTABLE_WIDTH);
+    int w = wcwidth(wc);
+    /* For unprintable characters, arbitrarily return 0 for control characters
+       and MB_UNPRINTABLE_WIDTH otherwise.  */
+    return (w >= 0 ? w : iswcntrl(wc) ? 0 : MB_UNPRINTABLE_WIDTH);
 }
 
 #define mb_width(mbc) \
@@ -258,19 +256,16 @@ mb_width_aux (wint_t wc)
    (mbc)->wc = (mbc)->buf[0] = (sc))
 
 /* Copying a character.  */
-static inline void
-mb_copy (mbchar_t *new, const mbchar_t *old)
+static inline void mb_copy(mbchar_t * new, const mbchar_t * old)
 {
-  if (old->ptr == &old->buf[0])
-    {
-      memcpy (&new->buf[0], &old->buf[0], old->bytes);
-      new->ptr = &new->buf[0];
-    }
-  else
-    new->ptr = old->ptr;
-  new->bytes = old->bytes;
-  if ((new->wc_valid = old->wc_valid))
-    new->wc = old->wc;
+    if (old->ptr == &old->buf[0]) {
+        memcpy(&new->buf[0], &old->buf[0], old->bytes);
+        new->ptr = &new->buf[0];
+    } else
+        new->ptr = old->ptr;
+    new->bytes = old->bytes;
+    if ((new->wc_valid = old->wc_valid))
+        new->wc = old->wc;
 }
 
 
@@ -306,47 +301,119 @@ mb_copy (mbchar_t *new, const mbchar_t *old)
 
 extern unsigned int is_basic_table[];
 
-static inline bool
-is_basic (char c)
+static inline bool is_basic(char c)
 {
-  return (is_basic_table [(unsigned char) c >> 5] >> ((unsigned char) c & 31))
-	 & 1;
+    return (is_basic_table[(unsigned char) c >> 5] >>
+            ((unsigned char) c & 31))
+        & 1;
 }
 
 #else
 
-static inline bool
-is_basic (char c)
+static inline bool is_basic(char c)
 {
-  switch (c)
-    {
-    case '\t': case '\v': case '\f':
-    case ' ': case '!': case '"': case '#': case '%':
-    case '&': case '\'': case '(': case ')': case '*':
-    case '+': case ',': case '-': case '.': case '/':
-    case '0': case '1': case '2': case '3': case '4':
-    case '5': case '6': case '7': case '8': case '9':
-    case ':': case ';': case '<': case '=': case '>':
+    switch (c) {
+    case '\t':
+    case '\v':
+    case '\f':
+    case ' ':
+    case '!':
+    case '"':
+    case '#':
+    case '%':
+    case '&':
+    case '\'':
+    case '(':
+    case ')':
+    case '*':
+    case '+':
+    case ',':
+    case '-':
+    case '.':
+    case '/':
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case ':':
+    case ';':
+    case '<':
+    case '=':
+    case '>':
     case '?':
-    case 'A': case 'B': case 'C': case 'D': case 'E':
-    case 'F': case 'G': case 'H': case 'I': case 'J':
-    case 'K': case 'L': case 'M': case 'N': case 'O':
-    case 'P': case 'Q': case 'R': case 'S': case 'T':
-    case 'U': case 'V': case 'W': case 'X': case 'Y':
+    case 'A':
+    case 'B':
+    case 'C':
+    case 'D':
+    case 'E':
+    case 'F':
+    case 'G':
+    case 'H':
+    case 'I':
+    case 'J':
+    case 'K':
+    case 'L':
+    case 'M':
+    case 'N':
+    case 'O':
+    case 'P':
+    case 'Q':
+    case 'R':
+    case 'S':
+    case 'T':
+    case 'U':
+    case 'V':
+    case 'W':
+    case 'X':
+    case 'Y':
     case 'Z':
-    case '[': case '\\': case ']': case '^': case '_':
-    case 'a': case 'b': case 'c': case 'd': case 'e':
-    case 'f': case 'g': case 'h': case 'i': case 'j':
-    case 'k': case 'l': case 'm': case 'n': case 'o':
-    case 'p': case 'q': case 'r': case 's': case 't':
-    case 'u': case 'v': case 'w': case 'x': case 'y':
-    case 'z': case '{': case '|': case '}': case '~':
-      return 1;
+    case '[':
+    case '\\':
+    case ']':
+    case '^':
+    case '_':
+    case 'a':
+    case 'b':
+    case 'c':
+    case 'd':
+    case 'e':
+    case 'f':
+    case 'g':
+    case 'h':
+    case 'i':
+    case 'j':
+    case 'k':
+    case 'l':
+    case 'm':
+    case 'n':
+    case 'o':
+    case 'p':
+    case 'q':
+    case 'r':
+    case 's':
+    case 't':
+    case 'u':
+    case 'v':
+    case 'w':
+    case 'x':
+    case 'y':
+    case 'z':
+    case '{':
+    case '|':
+    case '}':
+    case '~':
+        return 1;
     default:
-      return 0;
+        return 0;
     }
 }
 
 #endif
 
-#endif /* _MBCHAR_H */
+#endif                          /* _MBCHAR_H */
