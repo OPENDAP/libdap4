@@ -25,12 +25,27 @@ check_PROGRAMS = $(UNIT_TESTS)
 # This determines what gets run by 'make check.'
 TESTS = $(UNIT_TESTS)
 
-DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite ais_testsuite \
-	rcreader-testsuite server-testsuite cgi-util-tests
+noinst_HEADERS = test_config.h
+noinst_SCRIPTS = ais_testsuite/ais_database.xml
 
-EXTRA_DIST = $(DIRS_EXTRA) testFile.cc
+DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
+	rcreader-testsuite server-testsuite cgi-util-tests	\
+	ce-functions-testsuite ais_testsuite
+
+EXTRA_DIST = $(DIRS_EXTRA) testFile.cc test_config.h.in		\
+	ais_testsuite/ais_database.xml.in
 
 CLEANFILES = testout .dodsrc  *.gcda *.gcno
+
+DISTCLEANFILES = test_config.h ais_testsuite/ais_database.xml
+
+test_config.h: test_config.h.in Makefile
+	sed -e "s%[@]srcdir[@]%${srcdir}%" $< > test_config.h
+
+ais_testsuite/ais_database.xml: ais_testsuite/ais_database.xml.in ../config.status
+	mkdir -p ais_testsuite
+	chmod +w ais_testsuite
+	sed -e "s%[@]srcdir[@]%${srcdir}%" $< > ais_testsuite/ais_database.xml
 
 ############################################################################
 # Unit Tests

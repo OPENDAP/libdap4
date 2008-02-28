@@ -30,6 +30,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "AISDatabaseParser.h"
+#include <test_config.h>
 #include "debug.h"
 
 using namespace CppUnit;
@@ -58,9 +59,9 @@ public:
 	three_fnoc = "http://test.opendap.org/opendap/data/nc/3fnoc.nc";
 
 	fnoc1_ais = "http://test.opendap.org/ais/fnoc1.nc.das";
-	fnoc2_ais = "ais_testsuite/fnoc2_replace.das";
+	fnoc2_ais = (string)TEST_SRC_DIR + "/ais_testsuite/fnoc2_replace.das";
 	fnoc3_ais = "http://test.opendap.org/ais/fnoc3_fallback.das";
-	number_ais = "ais_testsuite/starts_with_number.das";
+	number_ais = (string)TEST_SRC_DIR + "/ais_testsuite/starts_with_number.das";
 
 	ais = new AISResources;
 	ais_parser = new AISDatabaseParser();
@@ -110,7 +111,7 @@ public:
 
     void errant_database_test() {
 	try {
-	    ais_parser->intern("ais_testsuite/ais_error_1.xml", ais);
+	    ais_parser->intern((string)TEST_SRC_DIR + "/" + "ais_testsuite/ais_error_1.xml", ais);
 	    CPPUNIT_ASSERT(!"ais_error_1.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
@@ -118,7 +119,7 @@ public:
 	}
 
 	try {
-	    ais_parser->intern("ais_testsuite/ais_error_2.xml", ais);
+	    ais_parser->intern((string)TEST_SRC_DIR + "/" + "ais_testsuite/ais_error_2.xml", ais);
 	    CPPUNIT_ASSERT(!"ais_error_2.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
@@ -126,7 +127,7 @@ public:
 	}
 
 	try {
-	    ais_parser->intern("ais_testsuite/ais_error_3.xml", ais);
+	    ais_parser->intern((string)TEST_SRC_DIR + "/" + "ais_testsuite/ais_error_3.xml", ais);
 	    CPPUNIT_ASSERT(!"ais_error_3.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
@@ -134,7 +135,7 @@ public:
 	}
 
 	try {
-	    ais_parser->intern("ais_testsuite/ais_error_4.xml", ais);
+	    ais_parser->intern((string)TEST_SRC_DIR + "/" + "ais_testsuite/ais_error_4.xml", ais);
 	    CPPUNIT_ASSERT(!"ais_error_4.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
@@ -142,7 +143,7 @@ public:
 	}
 
 	try {
-	    ais_parser->intern("ais_testsuite/ais_error_5.xml", ais);
+	    ais_parser->intern((string)TEST_SRC_DIR + "/" + "ais_testsuite/ais_error_5.xml", ais);
 	    CPPUNIT_ASSERT(!"ais_error_5.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
@@ -150,7 +151,7 @@ public:
 	}
 
 	try {
-	    ais_parser->intern("ais_testsuite/ais_error_6.xml", ais);
+	    ais_parser->intern((string)TEST_SRC_DIR + "/" + "ais_testsuite/ais_error_6.xml", ais);
 	    CPPUNIT_ASSERT(!"ais_error_6.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {

@@ -40,6 +40,7 @@
 
 #include "AISResources.h"
 #include "debug.h"
+#include <test_config.h>
 
 using namespace CppUnit;
 
@@ -68,10 +69,10 @@ public:
 
 
 	fnoc1_ais = "http://test.opendap.org/ais/fnoc1.nc.das";
-	fnoc2_ais = "ais_testsuite/fnoc2_replace.das";
+	fnoc2_ais = (string)TEST_SRC_DIR + "/ais_testsuite/fnoc2_replace.das";
 	fnoc3_ais = "http://test.opendap.org/ais/fnoc3_fallback.das";
-	digit_ais = "ais_testsuite/starts_with_number.das";
-	one_2_3_ais = "ais_testsuite/123.das";
+	digit_ais = (string)TEST_SRC_DIR + "/ais_testsuite/starts_with_number.das";
+	one_2_3_ais = (string)TEST_SRC_DIR + "/ais_testsuite/123.das";
 
 	ais = new AISResources;
 

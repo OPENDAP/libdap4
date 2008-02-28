@@ -34,6 +34,7 @@
 #include "DDXParser.h"
 #include "BaseTypeFactory.h"
 #include "debug.h"
+#include <test_config.h>
 
 using namespace CppUnit;
 using namespace std;
@@ -92,7 +93,7 @@ public:
 
     void top_level_attribute_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/test.01.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.01.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
 
 	    DBG(dds->print_xml(stdout, false, "    "));
@@ -105,7 +106,7 @@ public:
 
     void top_level_attribute_container_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/test.02.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.02.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
 	    DBG(dds->print_xml(stdout, false, "    "));
 	}
@@ -118,7 +119,7 @@ public:
     // ALiases are broken *** 05/29/03 jhrg
     void top_level_attribute_alias_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/test.03.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.03.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
 	    DBG(dds->print_xml(stdout, false, "    "));
 	}
@@ -130,7 +131,7 @@ public:
 
     void top_level_simple_types_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/test.04.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.04.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
 	    DBG(dds->print_xml(stdout, false, "    "));
 	}
@@ -146,7 +147,7 @@ public:
 
     void top_level_simple_types_with_attributes_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/test.05.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.05.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
 	    DBG(dds->print_xml(stdout, false, "    "));
 	}
@@ -158,7 +159,7 @@ public:
 
     void simple_arrays_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/test.06.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.06.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "OneDimensionalSimpleArrays");
 	    DBG(dds->print_xml(stdout, false, "    "));
 	}
@@ -170,7 +171,7 @@ public:
 
     void simple_arrays_multi_dim_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/test.07.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.07.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "MultiDimensionalSimpleArrays");
 	    DBG(dds->print_xml(stdout, false, "    "));
 	}
@@ -182,7 +183,7 @@ public:
 
     void simple_arrays_attributes_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/test.08.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.08.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
 	    DBG(dds->print_xml(stdout, false, "    "));
 	}
@@ -194,7 +195,7 @@ public:
 
     void structure_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/test.09.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.09.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
 	    DBG(dds->print_xml(stdout, false, "    "));
 	}
@@ -206,7 +207,7 @@ public:
 
     void sequence_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/test.0a.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.0a.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
 	    DBG(dds->print_xml(stdout, false, "    "));
 	}
@@ -218,7 +219,7 @@ public:
 
     void grid_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/test.0b.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.0b.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
 	    DBG(dds->print_xml(stdout, false, "    "));
 	}
@@ -230,7 +231,8 @@ public:
 
     void intern_stream_test() {
         try {
-            FILE *in = fopen("ddx-testsuite/test.0b.ddx", "r");
+	    string file_name = (string)TEST_SRC_DIR + "/ddx-testsuite/test.0b.ddx";
+            FILE *in = fopen(file_name.c_str(), "r");
             ddx_parser->intern_stream(in, dds, &blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
             DBG(dds->print_xml(stdout, false, "    "));
@@ -245,7 +247,7 @@ public:
 
     void unknown_tag_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/error.01.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.01.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(!"error.01.ddx should fail!");
 	}
 	catch (DDXParseFailed &e) {
@@ -255,7 +257,7 @@ public:
 
     void bad_nesting_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/error.02.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.02.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(!"error.02.ddx should fail!");
 	}
 	catch (DDXParseFailed &e) {
@@ -265,7 +267,7 @@ public:
 
     void unknown_end_tag_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/error.03.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.03.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(!"error.03.ddx should fail!");
 	}
 	catch (DDXParseFailed &e) {
@@ -275,7 +277,7 @@ public:
 
     void variable_in_attribtue_container_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/error.04.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.04.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(!"error.04.ddx should fail!");
 	}
 	catch (DDXParseFailed &e) {
@@ -285,7 +287,7 @@ public:
 
     void array_missing_dimension_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/error.05.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.05.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(!"error.05.ddx should fail!");
 	}
 	catch (DDXParseFailed &e) {
@@ -295,7 +297,8 @@ public:
     
     void array_missing_dimension_stream_read_test() {
         try {
-            FILE *in = fopen("ddx-testsuite/error.05.ddx", "r");
+	    string file_name = (string)TEST_SRC_DIR + "/ddx-testsuite/error.05.ddx";
+            FILE *in = fopen(file_name.c_str(), "r");
             ddx_parser->intern_stream(in, dds, &blob);
             CPPUNIT_ASSERT(!"error.05.ddx should fail!");
         }

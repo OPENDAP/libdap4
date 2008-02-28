@@ -34,6 +34,7 @@
 #include "Connect.h"
 #include "AISMerge.h"
 #include "debug.h"
+#include <test_config.h>
 
 #include "testFile.cc"
 
@@ -183,7 +184,7 @@ string AISMergeTest::fnoc1_ais =
     "http://test.opendap.org/ais/fnoc1.nc.das";
 string AISMergeTest::fnoc2_ais =
     "http://test.opendap.org/ais/fnoc2.nc.das";
-string AISMergeTest::digit_ais = "ais_testsuite/starts_with_number.das";
+string AISMergeTest::digit_ais = (string)TEST_SRC_DIR + "/ais_testsuite/starts_with_number.das";
 
 string AISMergeTest::fnoc1_ais_string = "Attributes {\n\
     u {\n\

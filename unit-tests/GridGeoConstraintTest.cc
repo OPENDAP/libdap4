@@ -45,6 +45,7 @@
 #include "../tests/TestTypeFactory.h"
 
 #include "debug.h"
+#include <test_config.h>
 
 using namespace CppUnit;
 using namespace libdap;
@@ -76,9 +77,9 @@ public:
         // geo grid test data
         try {
             geo_dds = new DDS(&btf);
-            geo_dds->parse("ce-functions-testsuite/geo_grid.dds");
+            geo_dds->parse((string)TEST_SRC_DIR + "/ce-functions-testsuite/geo_grid.dds");
             DAS das;
-            das.parse("ce-functions-testsuite/geo_grid.das");
+            das.parse((string)TEST_SRC_DIR + "/ce-functions-testsuite/geo_grid.das");
             geo_dds->transfer_attributes(&das);
 
             DBG2(geo_dds->print_xml(stderr, false, "No blob"));
@@ -149,7 +150,7 @@ public:
 
             // Build the three dimensional grid
             geo_dds_3d = new DDS(&btf);
-            geo_dds_3d->parse("ce-functions-testsuite/geo_grid_3d.dds");
+            geo_dds_3d->parse((string)TEST_SRC_DIR + "/ce-functions-testsuite/geo_grid_3d.dds");
             // Load values into the grid variables
             Grid & sst4 = dynamic_cast < Grid & >(*geo_dds_3d->var("SST4"));
 
@@ -192,7 +193,7 @@ public:
             DBG2(sst4.print_val(stderr));
 
             geo_dds_coads_lon = new DDS(&btf);
-            geo_dds_coads_lon->parse("ce-functions-testsuite/geo_grid_coads_lon.dds");
+            geo_dds_coads_lon->parse((string)TEST_SRC_DIR + "/ce-functions-testsuite/geo_grid_coads_lon.dds");
             Grid & sst5 = dynamic_cast < Grid & >(*geo_dds_coads_lon->var("SST5"));
             Array & lon5 = dynamic_cast < Array & >(**sst5.map_begin());
             dods_float64 tmp_lon5[15] =

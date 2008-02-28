@@ -35,6 +35,7 @@
 #include "DAS.h"
 #include "GNURegex.h"
 #include "debug.h"
+#include <test_config.h>
 
 
 using namespace CppUnit;
@@ -64,7 +65,8 @@ public:
 
     void setUp() {
 	// Test pathname
-	char *argv_1[] = {"test_case", "server-testsuite/bears.data"};
+	string test_file = (string)TEST_SRC_DIR + "/server-testsuite/bears.data" ;
+	char *argv_1[] = {"test_case", (char *)test_file.c_str()};
 	df = new DODSFilter(2, argv_1);
 
 	// Test missing file
@@ -73,14 +75,15 @@ public:
 
 	// Test files in CWD. Note that the time is the GM time : Tue, 01 May
 	// 2001 01:08:14 -0700
-	argv_1[1] = "Makefile.in";
+	argv_1[1] = "test_config.h";
 	df2 = new DODSFilter(2, argv_1);
 
 	// This file has an ancillary DAS in the server-testsuite dir.
 	// df3 is also used to test escaping stuff in URLs. 5/4/2001 jhrg
 	char *argv_2[8];
 	argv_2[0] = "test_case";
-	argv_2[1] = "server-testsuite/coads.data";
+	test_file = (string)TEST_SRC_DIR + "/server-testsuite/coads.data";
+	argv_2[1] = (char *)test_file.c_str();
 	argv_2[2] = "-l";
 	argv_2[3] = &now_array[0];
 	argv_2[4] = "-e";
@@ -91,7 +94,8 @@ public:
 
 	// Go back to this data source to test w/o an ancillary DAS.
 	argv_2[0] = "test_case";
-	argv_2[1] = "server-testsuite/bears.data";
+	test_file = (string)TEST_SRC_DIR + "/server-testsuite/bears.data";
+	argv_2[1] = (char *)test_file.c_str();
 	argv_2[2] = "-l";
 	argv_2[3] = &now_array[0];
 	argv_2[4] = "-e";
@@ -158,24 +162,30 @@ public:
 	CPPUNIT_ASSERT(df1->get_dataset_last_modified_time() == t);
 
 	struct stat st;
-	stat("server-testsuite/bears.data", &st);
+	string test_file = (string)TEST_SRC_DIR
+	                   + "/server-testsuite/bears.data";
+	stat(test_file.c_str(), &st);
 	CPPUNIT_ASSERT(df->get_dataset_last_modified_time() == st.st_mtime);
 
-	stat("Makefile.in", &st);
+	stat("test_config.h", &st);
 	CPPUNIT_ASSERT(df2->get_dataset_last_modified_time() == st.st_mtime);
 
-	stat("server-testsuite/coads.data", &st);
+	test_file = (string)TEST_SRC_DIR + "/server-testsuite/coads.data";
+	stat(test_file.c_str(), &st);
 	CPPUNIT_ASSERT(df3->get_dataset_last_modified_time() == st.st_mtime);
     }
 
     void get_das_last_modified_time_test() {
 	// the dataset pointed to by df has no anc. DAS
 	struct stat st;
-	stat("server-testsuite/bears.data", &st);
+	string test_file = (string)TEST_SRC_DIR
+	                   + "/server-testsuite/bears.data";
+	stat(test_file.c_str(), &st);
 	CPPUNIT_ASSERT(df->get_das_last_modified_time() == st.st_mtime);
 
 	// the dataset pointed by df3 has an anc. DAS
-	stat("server-testsuite/coads.data.das", &st);
+	test_file = (string)TEST_SRC_DIR + "/server-testsuite/coads.data.das";
+	stat(test_file.c_str(), &st);
 	CPPUNIT_ASSERT(df3->get_das_last_modified_time() == st.st_mtime);
     }
 
@@ -239,7 +249,7 @@ Date: .*\r\n\
 	DBG(cerr << df3->get_dataset_name() << endl);
 	DBG(cerr << df3->get_ce() << endl);
 
-	CPPUNIT_ASSERT(df3->get_dataset_name() == "server-testsuite/coads.data");
+	CPPUNIT_ASSERT(df3->get_dataset_name() == (string)TEST_SRC_DIR + "/server-testsuite/coads.data");
 	CPPUNIT_ASSERT(df3->get_ce() == "u,x,z[0]&grid(u,\"lat<10.0\")");
 
 	// The DODSFIlter instance is feed escaped values; they should be

@@ -2,8 +2,10 @@
 #
 # remove stuff that accumulates between runs of the HTTPCacheTest unit tests.
 
+chmod -R +w dods_cache
 rm -rf dods_cache
-cp -r dods_cache_init dods_cache
+cp -r @srcdir@/dods_cache_init dods_cache
+chmod -R +w dods_cache
 rm -rf `find dods_cache -name .svn`
 #svn up dods_cache
 

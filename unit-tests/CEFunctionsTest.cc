@@ -40,6 +40,7 @@
 #include "DDS.h"
 #include "DAS.h"
 #include "ce_functions.h"
+#include <test_config.h>
 
 #include "../tests/TestTypeFactory.h"
 
@@ -75,9 +76,11 @@ public:
     {
         try {
             dds = new DDS(&btf);
-            dds->parse(TWO_GRID_DDS);
+	    string dds_file = (string)TEST_SRC_DIR + "/" + TWO_GRID_DDS ;
+            dds->parse(dds_file);
             DAS das;
-            das.parse(TWO_GRID_DAS);
+	    string das_file = (string)TEST_SRC_DIR + "/" + TWO_GRID_DAS ;
+            das.parse(das_file);
             dds->transfer_attributes(&das);
             DBG(dds->print_xml(stderr, false, "noBlob"));
             // Load values into the grid variables

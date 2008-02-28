@@ -38,6 +38,7 @@
 #include "HTTPConnect.h"
 #include "RCReader.h"
 #include "debug.h"
+#include <test_config.h>
 
 using namespace CppUnit;
 using namespace std;
@@ -202,7 +203,8 @@ class HTTPConnectTest: public TestFixture {
             delete stuff;
             stuff = 0;
 
-            stuff = http->fetch_url("file://HTTPConnectTest.cc");
+	    string url = (string)"file://test_config.h" ;
+            stuff = http->fetch_url(url);
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
                            && !ferror(stuff->get_stream())
                            && !feof(stuff->get_stream()));

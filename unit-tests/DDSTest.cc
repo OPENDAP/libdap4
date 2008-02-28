@@ -36,6 +36,7 @@
 #include "GNURegex.h"
 #include "util.h"
 #include "debug.h"
+#include <test_config.h>
 
 using namespace CppUnit;
 using namespace std;
@@ -96,9 +97,9 @@ public:
 
     void find_hdf4_dimension_attribute_home_test() {
         try {
-            dds1->parse("./dds-testsuite/3B42.980909.5.HDF.dds");
+            dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
             DAS das;
-            das.parse("./dds-testsuite/3B42.980909.5.hacked.HDF.das");
+            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.hacked.HDF.das");
             
             AttrTable::Attr_iter ei = das.get_attr_iter(2);
             CPPUNIT_ASSERT((*ei)->name == "percipitate_dim_0");
@@ -112,9 +113,9 @@ public:
             btp = dds1->find_hdf4_dimension_attribute_home(*ei);
             CPPUNIT_ASSERT(!btp);
 
-            dds2->parse("./dds-testsuite/hdf_dimension_attribute_grid.dds");
+            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/hdf_dimension_attribute_grid.dds");
             DAS das2;
-            das2.parse("./dds-testsuite/hdf_dimension_attribute_grid.das");
+            das2.parse((string)TEST_SRC_DIR + "/dds-testsuite/hdf_dimension_attribute_grid.das");
             ei = das2.get_attr_iter(1);
             CPPUNIT_ASSERT((*ei)->name == "g_dim_0");
             btp = dds2->find_hdf4_dimension_attribute_home(*ei);
@@ -136,9 +137,9 @@ public:
     
     void find_matching_container_test() {
         try {
-            dds1->parse("./dds-testsuite/fnoc1.nc.dds");
+            dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
             DAS das;
-            das.parse("./dds-testsuite/fnoc1.nc.das");
+            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
 
             AttrTable::Attr_iter i = das.attr_begin();
             while (i != das.attr_end()) {
@@ -165,9 +166,9 @@ public:
                 ++i;
             }
 
-            dds2->parse("./dds-testsuite/hdf_dimension_attribute_grid.dds");
+            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/hdf_dimension_attribute_grid.dds");
             DAS das2;
-            das2.parse("./dds-testsuite/hdf_dimension_attribute_grid.das");
+            das2.parse((string)TEST_SRC_DIR + "/dds-testsuite/hdf_dimension_attribute_grid.das");
 
             // There are three containers in the DAS and the _dim_0/1
             // containers should be bound to the Grid's map vectors.
@@ -212,7 +213,7 @@ public:
         AttrTable::Attr_iter i = das.attr_begin();
         CPPUNIT_ASSERT(i != das.attr_end());
         
-        dds1->parse("./dds-testsuite/test.1");
+        dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.1");
         dds1->add_global_attribute(*i);
         
         CPPUNIT_ASSERT(dds1->d_attr.get_size() == 1);
@@ -221,9 +222,9 @@ public:
 
     void transfer_attributes_test() {
         try {
-                dds1->parse("./dds-testsuite/fnoc1.nc.dds");
+                dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
                 DAS das;
-                das.parse("./dds-testsuite/fnoc1.nc.das");
+                das.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
                 dds1->transfer_attributes(&das);
                 
                 AttrTable &at = dds1->get_attr_table();
@@ -237,9 +238,9 @@ public:
         }
         
         try {
-                dds2->parse("./dds-testsuite/3B42.980909.5.HDF.dds");
+                dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
                 DAS das;
-                das.parse("./dds-testsuite/3B42.980909.5.hacked.HDF.das");
+                das.parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.hacked.HDF.das");
                 dds2->transfer_attributes(&das);
                 
                 AttrTable &at = dds2->get_attr_table();
@@ -255,9 +256,9 @@ public:
         try {
                 BaseTypeFactory factory;
                 DDS dds(&factory);
-                dds.parse("./dds-testsuite/S2000415.HDF.dds");
+                dds.parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.dds");
                 DAS das;
-                das.parse("./dds-testsuite/S2000415.HDF.das");
+                das.parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.das");
                 dds.transfer_attributes(&das);
                 
                 AttrTable &at = dds.get_attr_table();
@@ -274,9 +275,9 @@ public:
         try {
                 BaseTypeFactory factory;
                 DDS dds(&factory);
-                dds.parse("./dds-testsuite/S2000415.HDF.dds");
+                dds.parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.dds");
                 DAS das;
-                das.parse("./dds-testsuite/S2000415.HDF.test1.das");
+                das.parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.test1.das");
                 dds.transfer_attributes(&das);
                 
                 AttrTable &at2 = dds.var("WVC_Lat")->get_attr_table();
@@ -293,10 +294,10 @@ public:
     void symbol_name_test() {
 	try {
 	    // read a DDS.
-	    dds1->parse("./dds-testsuite/test.18");
+	    dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.18");
 	    CPPUNIT_ASSERT(dds1->var("oddTemp"));
 	
-	    dds2->parse("./dds-testsuite/test.19b");
+	    dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b");
 	    CPPUNIT_ASSERT(dds2->var("b#c"));
 	    CPPUNIT_ASSERT(dds2->var("b%23c"));
 	    CPPUNIT_ASSERT(dds2->var("huh.Image#data"));
@@ -310,7 +311,7 @@ public:
     }
 
     void print_xml_test() {
-	dds2->parse("./dds-testsuite/test.19b");
+	dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b");
 
 	char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
 	FILE *tmp = get_temp_file(DDSTemp);
@@ -344,9 +345,9 @@ public:
     }
 
     void print_xml_test2() {
-        dds2->parse("./dds-testsuite/test.19c");
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19c");
         DAS das;
-        das.parse("./dds-testsuite/test.19c.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19c.das");
 
         dds2->transfer_attributes(&das);
 
@@ -384,9 +385,9 @@ public:
     }
 
     void print_xml_test3() {
-        dds2->parse("./dds-testsuite/test.19d");
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d");
         DAS das;
-        das.parse("./dds-testsuite/test.19d.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d.das");
 
         dds2->transfer_attributes(&das);
 
@@ -416,9 +417,9 @@ public:
     }
 
     void print_xml_test3_1() {
-        dds2->parse("./dds-testsuite/test.19d");
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d");
         DAS das;
-        das.parse("./dds-testsuite/test.19d1.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d1.das");
 
         dds2->transfer_attributes(&das);
 
@@ -453,9 +454,9 @@ public:
     }
 
     void print_xml_test4() {
-        dds2->parse("./dds-testsuite/test.19e");
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19e");
         DAS das;
-        das.parse("./dds-testsuite/test.19e.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19e.das");
 
         dds2->transfer_attributes(&das);
 
@@ -495,9 +496,9 @@ public:
     }
 
     void print_xml_test5() {
-        dds2->parse("./dds-testsuite/test.19f");
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19f");
         DAS das;
-        das.parse("./dds-testsuite/test.19f.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19f.das");
 
         try {
             dds2->transfer_attributes(&das);
@@ -546,9 +547,9 @@ public:
     }
     
     void print_xml_test5_1() {
-        dds2->parse("./dds-testsuite/test.19f");
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19f");
         DAS das;
-        das.parse("./dds-testsuite/test.19f1.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19f1.das");
 
         try {
             dds2->transfer_attributes(&das);
@@ -600,9 +601,9 @@ public:
     }
     
     void print_xml_test6() {
-	dds2->parse("./dds-testsuite/test.19b");
+	dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b");
 	DAS das;
-	das.parse("./dds-testsuite/test.19b.das");
+	das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b.das");
 
 	dds2->transfer_attributes(&das);
 
@@ -675,9 +676,9 @@ public:
     }
     
     void print_xml_test7() {
-        dds2->parse("./dds-testsuite/test.19g");
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19g");
         DAS das;
-        das.parse("./dds-testsuite/test.19g.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19g.das");
 
         try {
             dds2->transfer_attributes(&das);

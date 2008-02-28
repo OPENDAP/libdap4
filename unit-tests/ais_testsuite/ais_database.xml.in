@@ -9,7 +9,7 @@
 
 <entry>
 <primary url="http://test.opendap.org/opendap/data/nc/fnoc2.nc"/>
-<ancillary rule="replace" url="ais_testsuite/fnoc2_replace.das"/>
+<ancillary rule="replace" url="@srcdir@/ais_testsuite/fnoc2_replace.das"/>
 </entry>
 
 <entry>
@@ -27,16 +27,16 @@
 
 <entry>
 <primary url="http://test.opendap.org/opendap/data/nc/coads_climatology.nc"/>
-<ancillary url="ais_testsuite/coads.das"/>
+<ancillary url="@srcdir@/ais_testsuite/coads.das"/>
 </entry>
 
 <entry>
 <primary url="http://test.opendap.org/opendap/data/nc/123.nc"/>
-<ancillary url="ais_testsuite/123.das"/>
+<ancillary url="@srcdir@/ais_testsuite/123.das"/>
 </entry>
 
 <entry>
 <primary regexp="http://test.opendap.org/opendap/data/nc/[0-9]+.*\.nc"/>
-<ancillary url="ais_testsuite/starts_with_number.das"/>
+<ancillary url="@srcdir@/ais_testsuite/starts_with_number.das"/>
 </entry>
 </ais>

@@ -38,6 +38,7 @@
 // #define DODS_DEBUG
 #include "RCReader.h"
 #include "debug.h"
+#include <test_config.h>
 
 using namespace CppUnit;
 using namespace std;
@@ -171,16 +172,16 @@ public:
 
     // Read the proxy info from rcreader-testsuite/test1.rc
     void proxy_test1() {
-	char rc[] = { "DODS_CONF=rcreader-testsuite/test1.rc" };
+	string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test1.rc" ;
 	DBG(cerr << "rc: " << rc << endl);
-	putenv(rc);
+	putenv((char *)rc.c_str());
 
 	RCReader::delete_instance();
 	RCReader::initialize_instance();
 	RCReader *reader = RCReader::instance();
 	DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
 	CPPUNIT_ASSERT(reader->d_rc_file_path 
-		       == "rcreader-testsuite/test1.rc");
+		       == (string)TEST_SRC_DIR + "/rcreader-testsuite/test1.rc");
 	CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
 
 	string proxy = reader->get_proxy_server_host_url();
@@ -196,16 +197,16 @@ public:
     }
 
     void proxy_test2() {
-	char rc[] = { "DODS_CONF=rcreader-testsuite/test2.rc" };
+	string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test2.rc" ;
 	DBG(cerr << "rc: " << rc << endl);
-	putenv(rc);
+	putenv((char *)rc.c_str());
 
 	RCReader::delete_instance();
 	RCReader::initialize_instance();
 	RCReader *reader = RCReader::instance();
 	DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
 	CPPUNIT_ASSERT(reader->d_rc_file_path 
-		       == "rcreader-testsuite/test2.rc");
+		       == (string)TEST_SRC_DIR + "/rcreader-testsuite/test2.rc");
 	CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
 
 	string proxy = reader->get_proxy_server_host_url();
@@ -218,9 +219,9 @@ public:
     }
 
     void proxy_test3() {
-	char rc[] = { "DODS_CONF=rcreader-testsuite/test3.rc" };
+	string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test3.rc" ;
 	DBG(cerr << "rc: " << rc << endl);
-	putenv(rc);
+	putenv((char *)rc.c_str());
 
 	try {
 	    RCReader::delete_instance();
@@ -236,8 +237,10 @@ public:
     // This simple test checks to see that the VALIDATE_SSL parameter is 
     // read correctly.
     void validate_ssl_test() {
+	string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_1" ;
+	DBG(cerr << "rc: " << rc << endl);
+	putenv((char *)rc.c_str());
 
-        putenv("DODS_CONF=rcreader-testsuite/dodsrc_ssl_1");
         RCReader::delete_instance();
         RCReader::initialize_instance();
         RCReader *reader = RCReader::instance();
@@ -247,7 +250,10 @@ public:
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 1);
 
         // Param set in file
-        putenv("DODS_CONF=rcreader-testsuite/dodsrc_ssl_2");
+	rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_2" ;
+	DBG(cerr << "rc: " << rc << endl);
+	putenv((char *)rc.c_str());
+
         RCReader::delete_instance();
         RCReader::initialize_instance();
         reader = RCReader::instance();
@@ -258,7 +264,10 @@ public:
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 1);
 
         // Param cleared in file 
-        putenv("DODS_CONF=rcreader-testsuite/dodsrc_ssl_3");
+	rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodsrc_ssl_3" ;
+	DBG(cerr << "rc: " << rc << endl);
+	putenv((char *)rc.c_str());
+
         RCReader::delete_instance();
         RCReader::initialize_instance();
         reader = RCReader::instance();

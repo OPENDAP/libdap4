@@ -1,4 +1,12 @@
-EXTRA_DIST = cleanup.sh dodsrc dot.index
+noinst_SCRIPTS = cleanup.sh
+
+EXTRA_DIST = cleanup.sh.in dodsrc dot.index dods_cache_init
+
+DISTCLEANFILES = cleanup.sh
+
+cleanup.sh: cleanup.sh.in ../../config.status
+	sed -e "s%[@]srcdir[@]%${srcdir}%" $< > cleanup.sh
+	chmod +x cleanup.sh
 
 clean-local:
 	sh $(srcdir)/cleanup.sh

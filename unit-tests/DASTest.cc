@@ -31,6 +31,7 @@
 
 #include "DAS.h"
 #include "debug.h"
+#include <test_config.h>
 
 using namespace CppUnit;
 using namespace libdap;
@@ -62,7 +63,7 @@ public:
 
     void error_values_test() {
 	try {
-	    das->parse("das-testsuite/bad_value_test.1");
+	    das->parse((string)TEST_SRC_DIR + "/das-testsuite/bad_value_test.1");
 	    DBG2(das->print(stderr));
 	}
 	catch (Error &e) {
@@ -72,7 +73,7 @@ public:
     }
 
     void symbol_name_test() {
-	das->parse("das-testsuite/test.34");
+	das->parse((string)TEST_SRC_DIR + "/das-testsuite/test.34");
 	CPPUNIT_ASSERT(das->get_table("var1")->get_attr("y#z", 0) == "15");
 
 	string s = das->get_table("var1.component1.inner component")->get_attr("tag");

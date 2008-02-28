@@ -46,6 +46,7 @@
 
 #include "cgi_util.h"
 #include "debug.h"
+#include <test_config.h>
 
 #include "testFile.cc"
 
@@ -83,24 +84,24 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
     void find_ancillary_file_test() {
-	CPPUNIT_ASSERT(find_ancillary_file("das-testsuite/test.1", "das", "", "") 
-		       == "das-testsuite/test.1.das");
-	CPPUNIT_ASSERT(find_ancillary_file("das-testsuite/special.test.hdf", "das", "", "") 
-		       == "das-testsuite/special.test.das");
-	CPPUNIT_ASSERT(find_ancillary_file("das-testsuite/test.2", "das", "", "") 
-		       == "das-testsuite/das");
-	CPPUNIT_ASSERT(find_ancillary_file("das-testsuite/test.1.gz", "das", "", "") 
-		       == "das-testsuite/test.1.das");
-	CPPUNIT_ASSERT(find_ancillary_file("das-testsuite/test.3.Z", "das", "", "") 
-		       == "das-testsuite/test.3.Z.das");
+	CPPUNIT_ASSERT(find_ancillary_file((string)TEST_SRC_DIR + "/das-testsuite/test.1", "das", "", "") 
+		       == (string)TEST_SRC_DIR + "/das-testsuite/test.1.das");
+	CPPUNIT_ASSERT(find_ancillary_file((string)TEST_SRC_DIR + "/das-testsuite/special.test.hdf", "das", "", "") 
+		       == (string)TEST_SRC_DIR + "/das-testsuite/special.test.das");
+	CPPUNIT_ASSERT(find_ancillary_file((string)TEST_SRC_DIR + "/das-testsuite/test.2", "das", "", "") 
+		       == (string)TEST_SRC_DIR + "/das-testsuite/das");
+	CPPUNIT_ASSERT(find_ancillary_file((string)TEST_SRC_DIR + "/das-testsuite/test.1.gz", "das", "", "") 
+		       == (string)TEST_SRC_DIR + "/das-testsuite/test.1.das");
+	CPPUNIT_ASSERT(find_ancillary_file((string)TEST_SRC_DIR + "/das-testsuite/test.3.Z", "das", "", "") 
+		       == (string)TEST_SRC_DIR + "/das-testsuite/test.3.Z.das");
     }
  
     void find_group_ancillary_file_test() {
-	CPPUNIT_ASSERT(find_group_ancillary_file("cgi-util-tests/02group.hdf", ".htm")
-		       == "cgi-util-tests/group.htm");
-	CPPUNIT_ASSERT(find_group_ancillary_file("cgi-util-tests/group01.hdf", ".htm")
-		       == "cgi-util-tests/group.htm");
-	CPPUNIT_ASSERT(find_group_ancillary_file("cgi-util-tests/group.hdf", ".htm")
+	CPPUNIT_ASSERT(find_group_ancillary_file((string)TEST_SRC_DIR + "/cgi-util-tests/02group.hdf", ".htm")
+		       == (string)TEST_SRC_DIR + "/cgi-util-tests/group.htm");
+	CPPUNIT_ASSERT(find_group_ancillary_file((string)TEST_SRC_DIR + "/cgi-util-tests/group01.hdf", ".htm")
+		       == (string)TEST_SRC_DIR + "/cgi-util-tests/group.htm");
+	CPPUNIT_ASSERT(find_group_ancillary_file((string)TEST_SRC_DIR + "/cgi-util-tests/group.hdf", ".htm")
 		       == "");
     }
 
@@ -175,8 +176,8 @@ Content-Description: dods_dds\r\n\
 	time_t t = time(0);
 	CPPUNIT_ASSERT(last_modified_time("no-such-file") == t);
 	struct stat st;
-	stat("Makefile.in", &st);
-	CPPUNIT_ASSERT(last_modified_time("Makefile.in") == st.st_mtime);
+	stat("test_config.h", &st);
+	CPPUNIT_ASSERT(last_modified_time("test_config.h") == st.st_mtime);
 	stat("/etc/passwd", &st);
 	CPPUNIT_ASSERT(last_modified_time("/etc/passwd") == st.st_mtime);
     }
