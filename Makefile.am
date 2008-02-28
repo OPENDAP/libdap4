@@ -66,13 +66,11 @@ deflate_LDFLAGS = $(ZLIB_LDFLAGS)
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex \
 	gse.y Error.lex Error.y
 
-MACOSX_RESOURCES_EXTRA =  INSTALL_MacOSX.rtf README_MacOSX.rtf OSX_Resources
-
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
 	VCPP dods-datatypes-static.h xdr-datatypes-static.h \
 	dap-config-pkgconfig \
-	$(LEX_YACC_EXTRA) $(GRAM_SRC) $(MACOSX_RESOURCES_EXTRA)
+	$(LEX_YACC_EXTRA) $(GRAM_SRC) OSX_Resources
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc

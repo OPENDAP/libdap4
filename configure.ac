@@ -242,6 +242,10 @@ AC_CHECK_LIB([pthread], [pthread_kill],
 	[AC_MSG_ERROR([I could not find pthreads])])
 AC_SUBST([PTHREAD_LIBS])
 
+AM_PATH_CPPUNIT(1.12.0,
+	[AM_CONDITIONAL([CPPUNIT], [true])],
+	[AM_CONDITIONAL([CPPUNIT], [false])])
+
 DODS_DEBUG_OPTION
 
 dnl Temporary hack; find a home for the deflate program; set it to
