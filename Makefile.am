@@ -75,7 +75,7 @@ EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
-CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC)
+CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
 
 # MAINTAINERCLEANFILES = $(GRAM_SRC)
 

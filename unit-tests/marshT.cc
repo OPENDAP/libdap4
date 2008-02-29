@@ -456,6 +456,9 @@ public:
 	    string err = "failed:" + e.get_error_message() ;
 	    CPPUNIT_FAIL( err.c_str() ) ;
 	}
+
+	unlink( "test.file" ) ;
+	unlink( "test.strm" ) ;
     }
 };
 

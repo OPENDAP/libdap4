@@ -9,5 +9,7 @@ cleanup.sh: cleanup.sh.in ../../config.status
 	chmod +x cleanup.sh
 
 clean-local:
-	sh $(srcdir)/cleanup.sh
+	sh ./cleanup.sh
 
+distclean-local:
+	rm -rf dods_cache

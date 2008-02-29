@@ -30,10 +30,17 @@ noinst_SCRIPTS = ais_testsuite/ais_database.xml
 
 DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
 	rcreader-testsuite server-testsuite cgi-util-tests	\
-	ce-functions-testsuite ais_testsuite
+	ce-functions-testsuite
 
-EXTRA_DIST = $(DIRS_EXTRA) testFile.cc test_config.h.in		\
-	ais_testsuite/ais_database.xml.in
+AIS_EXTRA = ais_testsuite/123.das ais_testsuite/ais_database.xml.in	\
+	ais_testsuite/ais_error_1.xml ais_testsuite/ais_error_2.xml	\
+	ais_testsuite/ais_error_3.xml ais_testsuite/ais_error_4.xml	\
+	ais_testsuite/ais_error_5.xml ais_testsuite/ais_error_6.xml	\
+	ais_testsuite/bears_1.nc.das ais_testsuite/coads.das		\
+	ais_testsuite/fnoc1.nc.das ais_testsuite/fnoc2_replace.das	\
+	ais_testsuite/fnoc3_fallback.das ais_testsuite/starts_with_number.das
+
+EXTRA_DIST = $(DIRS_EXTRA) testFile.cc test_config.h.in $(AIS_EXTRA)
 
 CLEANFILES = testout .dodsrc  *.gcda *.gcno
 
