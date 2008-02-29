@@ -8,7 +8,7 @@ cleanup.sh: cleanup.sh.in ../../config.status
 	sed -e "s%[@]srcdir[@]%${srcdir}%" $< > cleanup.sh
 	chmod +x cleanup.sh
 
-clean-local:
+clean-local: cleanup.sh
 	sh ./cleanup.sh
 
 distclean-local:
