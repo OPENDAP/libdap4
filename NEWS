@@ -1,6 +1,16 @@
 
 $Id$
 
+News for version 3.7.11, 29 February 2008
+
+HTTPCache updated to cache an entry, returning not only the FILE pointer but
+also the name of the file in the cache. This way, the cached item could be
+passed to a data handler, such as the netcdf_handler, and read.
+
+The pkg build for Mac OSX was updated to automate the creation of the
+ReadMe.txt file, add a README and NEWS file to the dmg and automatically
+create the dmg using DropDMG.
+
 News for version 3.7.10, 28 November 2007
 
 Fixed XDRStreamMarshaller so that it no longer allocates a huge buffer. This

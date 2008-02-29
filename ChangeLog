@@ -1,3 +1,589 @@
+2008-02-28  Patrick West <pwest@ucar.edu>
+
+	If cleanup.sh does not exist, then a make clean will error out.
+	clean-local depends on cleanup.sh.
+	M    cache-testsuite/Makefile.am
+
+2008-02-28  Patrick West <pwest@ucar.edu>
+
+	Added comment regarding ais_testsuite directory and how those files
+	are being distributed.
+	M    unit-tests/Makefile.am
+
+2008-02-28  Patrick West <pwest@ucar.edu>
+
+	Removing generated files from Makefile.am. Removing temporary files
+	in marshT created for writing marshalled data. cleanup script
+	cleaned up.  cache-testsuite makefile running local cleanup.sh since
+	cleanup.sh is generated, also added distclean-local to remove the
+	dods_cache directory.  unit-tests makefile adds individual
+	ais_testsuite files because there is the generated file there so
+	just adding the directory wasn't working.
+	M    Makefile.am
+	M    unit-tests/marshT.cc
+	M    unit-tests/cache-testsuite/cleanup.sh.in
+	M    unit-tests/cache-testsuite/Makefile.am
+	M    unit-tests/Makefile.am
+
+2008-02-28  Patrick West <pwest@ucar.edu>
+
+	Modified tests and configuration to get unit-tests to run during
+	distcheck.
+	M    unit-tests/AISMergeTest.cc
+	M    unit-tests/DODSFilterTest.cc
+	D    unit-tests/ais_testsuite/ais_database.xml
+	A    unit-tests/ais_testsuite/ais_database.xml.in
+	D    unit-tests/cache-testsuite/cleanup.sh
+	A    unit-tests/cache-testsuite/cleanup.sh.in
+	M    unit-tests/cache-testsuite/Makefile.am
+	M    unit-tests/DASTest.cc
+	M    unit-tests/AISResourcesTest.cc
+	M    unit-tests/DDSTest.cc
+	A    unit-tests/test_config.h.in
+	M    unit-tests/HTTPConnectTest.cc
+	M    unit-tests/DDXParserTest.cc
+	M    unit-tests/cgiUtilTest.cc
+	M    unit-tests/AISDatabaseParserTest.cc
+	M    unit-tests/CEFunctionsTest.cc
+	M    unit-tests/GridGeoConstraintTest.cc
+	M    unit-tests/Makefile.am
+	M    unit-tests/RCReaderTest.cc
+
+2008-02-27  Patrick West <pwest@ucar.edu>
+
+	Added check for cppunit in configure. If present, then the tests
+	will be built and run. if not then a message will appear saying that
+	can't run the tests without the library, but it's not an error.
+	M    configure.ac
+	A    conf/cppunit.m4
+	M    Makefile.am
+	M    unit-tests/Makefile.am
+
+2008-02-27  James Gallagher <jgallagher@opendap.org>
+
+	Updated indentation using "indent -kr"
+	M    gl/alloca_.h
+	M    gl/mbchar.h
+	M    gl/localcharset.c
+	M    gl/strcasecmp.c
+	M    gl/regex_internal.c
+	M    gl/strnlen1.c
+	M    gl/malloc.c
+	M    gl/wchar_.h
+	M    gl/localcharset.h
+	M    gl/stdint_.h
+	M    gl/strcase.h
+	M    gl/regex.c
+	M    gl/stdbool_.h
+	M    gl/memchr.c
+	M    gl/regex_internal.h
+	M    gl/strnlen1.h
+	M    gl/mbuiter.h
+	M    gl/regex.h
+	M    gl/wctype_.h
+	M    gl/regexec.c
+	M    gl/strncasecmp.c
+	M    gl/gettext.h
+	M    gl/alloca.c
+	M    gl/mbchar.c
+	M    gl/regcomp.c
+
+2008-02-26  Patrick West <pwest@ucar.edu>
+
+	No longer need the MacOSX specific readme and install files.
+	M    OSX_Resources/Info.plist
+	D    INSTALL_MacOSX.rtf
+	D    README_MacOSX.rtf
+
+2008-02-23  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2008-02-22  James Gallagher <jgallagher@opendap.org>
+
+	Updated
+
+2008-02-22  James Gallagher <jgallagher@opendap.org>
+
+	Fixed an error that crept into xdr-datatypes-static from the xp
+	port. I made the change in a new copy of the xdr-datatypes.h header
+	added to the VCPP directory.  Also, I removed some old code from the
+	XDRUtils.cc file.
+	M    xdr-datatypes-static.h
+	AM   VCPP/xdr-datatypes.h
+	M    XDRUtils.cc
+
+2008-02-21  Patrick West <pwest@ucar.edu>
+
+	Added remove of temporary directories when pkg build is done.
+	M    Makefile.am
+
+2008-02-21  James Gallagher <jgallagher@opendap.org>
+
+	Modified Makefile to install xdr-datatypes.h from VCPP
+
+2008-02-21  James Gallagher <jgallagher@opendap.org>
+
+	Removed a patch
+	M XDRStreamMarshaller.cc
+
+2008-02-21  James Gallagher <jgallagher@opendap.org>
+
+	Removed a patch
+	M XDRFileMarshaller.cc
+
+2008-02-21  James Gallagher <jgallagher@opendap.org>
+
+	Backed out some changes for my version of XP.
+	M XDRFileUnMarshaller.cc
+
+2008-02-21  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for the win32 build from Anna Nokolov - I turned her files
+	into a patch but there were some rejects.
+	M    xdr-datatypes-static.h
+	M    XDRFileUnMarshaller.cc
+	M    gl/stdint_.h
+	M    XDRStreamMarshaller.cc
+
+2008-02-21  James Gallagher <jgallagher@opendap.org>
+
+	Added patch from Anna Nokolov.
+	M XDRFileMarshaller.cc
+
+2008-02-21  James Gallagher <jgallagher@opendap.org>
+
+	Applied Win32 patches from Anna Nokolov.
+	M    cgi_util.cc
+	M    VCPP/Makefile
+	M    GNU/GNURegex.cc
+	M    parser-util.cc
+	M    util.h
+	M    das.lex
+	M    gl/localcharset.c
+	M    gl/stdint_.h
+	M    gl/regex_internal.h
+	M    util.cc
+	M    XDRFileMarshaller.cc
+
+2008-02-18  Patrick West <pwest@ucar.edu>
+
+	functional expressions were not being evaluated when building the
+	ddx.  Updated this and removed newline from error message if problem
+	with functional expressions.
+	M    DODSFilter.cc
+
+2008-02-14  Patrick West <pwest@ucar.edu>
+
+	Fixed sed issue with discovering version inormation in libdap.m4.
+	This one should be used by anyone who wants to use libdap.
+	M    conf/libdap.m4
+
+2008-02-13  James Gallagher <jgallagher@opendap.org>
+
+	Added unistd.h include.
+	M    unit-tests/AISResourcesTest.cc
+	M    unit-tests/ByteTest.cc
+	M    unit-tests/testFile.cc
+
+2008-02-13  James Gallagher <jgallagher@opendap.org>
+
+	Added config.h header include to AttrTableTest.cc
+
+2008-02-13  James Gallagher <jgallagher@opendap.org>
+
+	Added include of unistd.h to AttrTableTest.cc for RHEL3
+
+2008-02-05  James Gallagher <jgallagher@opendap.org>
+
+	Removed two tests that fail on machines where the tests are run as
+	root.
+	M HTTPCacheTest.cc
+
+2008-02-05  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2008-02-04  Patrick West <pwest@ucar.edu>
+
+	Added method to not only return the FILE pointer but also the cached
+	file name when getting the cached response. Also, when parsing
+	headers, taking into account a blank line and a malformed header.
+	M    HTTPCache.cc
+	M    HTTPCache.h
+	M    HTTPConnect.cc
+
+2008-02-04  Patrick West <pwest@ucar.edu>
+
+	Includes added for unlink function call
+	M    unit-tests/ddsT.cc
+
+2008-02-02  Patrick West <pwest@ucar.edu>
+
+	Added namespace libdap
+	M    Error.lex
+	M    RValue.cc
+	M    DDXParser.h
+	M    DODSFilter.cc
+	M    HTTPResponse.h
+	M    Int16.cc
+	M    Int32.h
+	M    Structure.h
+	M    AISResources.cc
+	M    Sequence.h
+	M    Str.h
+	M    ResponseTooBigErr.cc
+	M    SignalHandler.cc
+	M    ResponseTooBigErr.h
+	M    SignalHandler.h
+	M    XDRUtils.h
+	M    escaping.h
+	M    Connect.h
+	M    DDXParser.cc
+	M    cgi_util.cc
+	M    dods-datatypes-static.h
+	M    ce_functions.h
+	M    gse.lex
+	M    DDXExceptions.h
+	M    Resource.h
+	M    Error.cc
+	M    HTTPCacheDisconnectedMode.h
+	M    UnMarshaller.h
+	M    Response.h
+	M    Int16.h
+	M    SignalHandlerRegisteredErr.h
+	M    ce_parser.h
+	M    ConstraintEvaluator.cc
+	M    DAS.h
+	M    DDS.cc
+	M    XDRFileMarshaller.h
+	M    tests/TestInt32.h
+	M    tests/TestStructure.h
+	M    tests/TestInt16.h
+	M    tests/TestUrl.h
+	M    tests/TestSequence.h
+	M    tests/TestStr.h
+	M    tests/TestFloat64.h
+	M    tests/das-test.cc
+	M    tests/TestGrid.h
+	M    tests/TestByte.h
+	M    tests/TestTypeFactory.h
+	M    tests/TestFloat32.h
+	M    tests/TestArray.h
+	M    tests/TestUInt32.h
+	M    tests/dds-test.cc
+	M    tests/TestUInt16.h
+	M    tests/TestCommon.cc
+	M    Array.cc
+	M    BaseType.h
+	M    HTTPCacheInterruptHandler.h
+	M    EventHandler.h
+	M    Float64.h
+	M    AISConnect.cc
+	M    UInt16.cc
+	M    InternalErr.h
+	M    EncodingType.h
+	M    gse_parser.h
+	M    Marshaller.h
+	M    AlarmHandler.h
+	M    Byte.cc
+	M    GNU/GNURegex.cc
+	M    GNU/GNURegex.h
+	M    Byte.h
+	M    DataDDS.h
+	M    BaseType.cc
+	M    DDS.h
+	M    XDRUtils.cc
+	M    ArrayGeoConstraint.h
+	M    GeoConstraint.h
+	M    HTTPCacheResponse.h
+	M    RCReader.cc
+	M    GridGeoConstraint.h
+	M    Constructor.h
+	M    util_mit.h
+	M    Error.h
+	M    Int32.cc
+	M    DODSFilter.h
+	M    DapObj.h
+	M    gse.y
+	M    HTTPCache.cc
+	M    DataDDS.cc
+	M    HTTPCache.h
+	M    parser-util.cc
+	M    DapIndent.h
+	M    ce_expr.y
+	M    AISResources.h
+	M    ObjectType.h
+	M    Float32.cc
+	M    Error.y
+	M    dds.lex
+	M    PipeResponse.h
+	M    util.h
+	M    AISExceptions.h
+	M    AISDatabaseParser.h
+	M    AttrTable.cc
+	M    InternalErr.cc
+	M    Grid.h
+	M    HTTPConnect.cc
+	M    AISMerge.h
+	M    RValue.h
+	M    Structure.cc
+	M    cgi_util.h
+	M    Url.cc
+	M    Vector.cc
+	M    getdap.cc
+	M    BaseTypeFactory.h
+	M    Str.cc
+	M    Sequence.cc
+	M    das.lex
+	M    XDRFileUnMarshaller.cc
+	M    Float32.h
+	M    XDRFileUnMarshaller.h
+	M    ce_functions.cc
+	M    expr.h
+	M    AttrTable.h
+	M    GridGeoConstraint.cc
+	M    Constructor.cc
+	M    UInt32.h
+	M    XDRStreamMarshaller.h
+	M    das.y
+	M    AISMerge.cc
+	M    parser.h
+	M    BaseTypeFactory.cc
+	M    Url.h
+	M    Vector.h
+	M    DAS.cc
+	M    ConstraintEvaluator.h
+	M    GSEClause.cc
+	M    GSEClause.h
+	M    util.cc
+	M    Clause.h
+	M    ArrayGeoConstraint.cc
+	M    Float64.cc
+	M    Operators.h
+	M    UInt32.cc
+	M    XDRStreamMarshaller.cc
+	M    Grid.cc
+	M    util_mit.cc
+	M    Connect.cc
+	M    escaping.cc
+	M    unit-tests/AISMergeTest.cc
+	M    unit-tests/sequenceT.cc
+	M    unit-tests/DODSFilterTest.cc
+	M    unit-tests/HTTPCacheTest.cc
+	M    unit-tests/DASTest.cc
+	M    unit-tests/AISResourcesTest.cc
+	M    unit-tests/DDSTest.cc
+	M    unit-tests/SignalHandlerTest.cc
+	M    unit-tests/ArrayGeoConstraintTest.cc
+	M    unit-tests/ArrayTest.cc
+	M    unit-tests/AttrTableTest.cc
+	M    unit-tests/HTTPConnectTest.cc
+	M    unit-tests/DDXParserTest.cc
+	M    unit-tests/ddsT.cc
+	M    unit-tests/cgiUtilTest.cc
+	M    unit-tests/ByteTest.cc
+	M    unit-tests/attrTableT.cc
+	M    unit-tests/SequenceTest.cc
+	M    unit-tests/RegexTest.cc
+	M    unit-tests/generalUtilTest.cc
+	M    unit-tests/AISDatabaseParserTest.cc
+	M    unit-tests/GridGeoConstraintTest.cc
+	M    unit-tests/RCReaderTest.cc
+	M    unit-tests/parserUtilTest.cc
+	M    HTTPConnect.h
+	M    dds.y
+	M    StdinResponse.h
+	M    DapIndent.cc
+	M    XDRFileMarshaller.cc
+	M    Clause.cc
+	M    AISDatabaseParser.cc
+	M    GeoConstraint.cc
+	M    Array.h
+	M    AISConnect.h
+	M    UInt16.h
+	M    ce_expr.lex
+	M    RCReader.h
+
+2008-02-01  James Gallagher <jgallagher@opendap.org>
+
+	Added some file to svn:ignore
+
+	M gl
+
+2008-02-01  James Gallagher <jgallagher@opendap.org>
+
+	Added conditional set of the gcc -Wall, et c., flags.
+	M Makefile.am
+
+2008-01-31  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Changed Error handling in ce_functions.cc so that the errors
+	thrown appropriatley referenced an error code other than unknown
+
+2008-01-31  James Gallagher <jgallagher@opendap.org>
+
+	Added conditional set of the gcc -Wall, et c., flags.
+
+2008-01-30  James Gallagher <jgallagher@opendap.org>
+
+	Include <algorithm> for all builds, not just win32. This is a fix
+	for AIX and its native compiler.
+
+2008-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Update to the package target for OSX.
+	M    OSX_Resources/InstallationCheck
+	M    OSX_Resources/update_mac_package_contents.pl
+	M    OSX_Resources/InstallationCheck.strings
+	M    Makefile.am
+
+2008-01-28  James Gallagher <jgallagher@opendap.org>
+
+	It seems that universal binaries are not yet working - I commented
+	out that part of the Makefile.
+	M    Makefile.am
+
+2008-01-28  James Gallagher <jgallagher@opendap.org>
+
+	Hacked the Makefile.am so that the 'pkg' target makes a universal
+	binary - maybe. Fixed up the OSX resources' text.
+	M    OSX_Resources/Info.plist
+	M    OSX_Resources/Description.plist
+	M    Makefile.am
+
+2008-01-22  James Gallagher <jgallagher@opendap.org>
+
+	Added support to filter out ^M that's introduced by DOS editors.
+	M update_mac_package_contents.pl
+
+2008-01-16  James Gallagher <jgallagher@opendap.org>
+
+	Updated comments
+	M Makefile.am
+
+2008-01-16  James Gallagher <jgallagher@opendap.org>
+
+	Removed major and minor version.
+	M    OSX_Resources/Info.plist
+
+2008-01-14  James Gallagher <jgallagher@opendap.org>
+
+	Applied pkgconfig patch from Patrice.
+	M    libdap.spec
+	M    Makefile.am
+	M    libdapclient.pc.in
+	M    libdap.pc.in
+	M    unit-tests/testFile.cc
+	M    unit-tests/Makefile.am
+	M    libdapserver.pc.in
+	A    dap-config-pkgconfig
+
+2008-01-12  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2008-01-11  James Gallagher <jgallagher@opendap.org>
+
+	Added. These help automate the build process.
+	AM   OSX_Resources/macify_license_file.pl
+	AM   OSX_Resources/update_mac_package_contents.pl
+
+2008-01-11  James Gallagher <jgallagher@opendap.org>
+
+	Updates to the OS/X build so that it is more automatic. No more
+	pmproj file, either. I added <code> tags in the README so that the
+	perl script that updates the Mac version of that file will look
+	decent.
+	M    OSX_Resources/InstallationCheck
+	M    OSX_Resources/License.txt
+	M    OSX_Resources/Info.plist
+	M    OSX_Resources/InstallationCheck.strings
+	M    OSX_Resources/ReadMe.txt
+	M    OSX_Resources/Welcome.html
+	M    README
+	M    Makefile.am
+	D    mac_osx
+	D    libdap.pmproj
+
+2008-01-10  Patrick West <pwest@ucar.edu>
+
+	Certain size vector of bytes was failing when writing to the xdr
+	stream.  Changed the size of the buffer to add enough to cover the
+	word boundary.  Updated unit test to test for this.
+	M    Vector.cc
+	M    XDRStreamMarshaller.cc
+	M    unit-tests/marshT.cc
+	M    unit-tests/arrayT.cc
+
+2008-01-08  James Gallagher <jgallagher@opendap.org>
+
+	Removed leading spaces of the lines so that the file can be used
+	easily on the Mac where lines will wrap in the Installer.
+
+2008-01-08  James Gallagher <jgallagher@opendap.org>
+
+	Fixed up these two tests to match the changes in the ais database
+	they used.
+	M    unit-tests/AISMergeTest.cc
+	M    unit-tests/AISResourcesTest.cc
+
+2008-01-07  James Gallagher <jgallagher@opendap.org>
+
+	make check now runs the unit tests (ticket 1012)
+	M    Makefile.am
+
+2008-01-07  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the AIS database parser tests so they now use Hyrax and not
+	some kludge.
+	M    unit-tests/ais_testsuite/ais_database.xml
+	M    unit-tests/AISDatabaseParserTest.cc
+
+2007-12-01  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-11-30  Patrick West <pwest@ucar.edu>
+
+	MacOSX resources updated. Added a README and INSTALL file to be put
+	alongside the .pkg in the .dmg.
+	M    OSX_Resources/Info.plist
+	D    README_MaxOSX.rtf
+	M    Makefile.am
+	A    README_MacOSX.rtf
+
+2007-11-30  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-11-29  Patrick West <pwest@ucar.edu>
+
+	the .pc files needed to be dealt with during the pkg build so that
+	the prefix was set correctly.
+	M    Makefile.am
+
+2007-11-29  Patrick West <pwest@ucar.edu>
+
+	README and INSTALL files for a MacOSX installation. To be put into
+	the .dmg along with the .pkg.
+	A    README_MaxOSX.rtf
+	A    INSTALL_MacOSX.rtf
+
+2007-11-28  James Gallagher <jgallagher@opendap.org>
+
+	Updated for release 3.7.10
+
+	M    configure.ac
+	M    ChangeLog
+	M    INSTALL
+	M    libdap.spec
+	M    README
+	M    NEWS
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2007-11-28  James Gallagher <jgallagher@opendap.org>
 
 	Fixed warnings about potentially uninitialized uses of ENTRY in

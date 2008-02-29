@@ -25,10 +25,10 @@ BUILDING THE SOFTWARE
      to type `sh configure'.
 
   2. Type `make' to build the library, `make check' to run the tests. You
-     must have DejaGNU to run `make check.' If you have the CppUnit unit-test
-     software, then 'cd unit-tests; make check' will build and run the unit
-     tests. On a Mandrake/Mandriva system, you need to copy or link 
-     conf/config.guess into the 'tests' directory and then run the tests.
+     must have DejaGNU and CppUnit to run `make check.' CppUnit is optional,
+     but recommended. On a Mandrake/Mandriva system, you need to copy or
+     link conf/config.guess into the 'tests' directory and then run the
+     tests.
 
   3. Type `make install' to install the library files. The libraries
      (libdap.a. libdapclient.a and libdapserver.a), their header files and
@@ -132,18 +132,11 @@ NOTES
     tar.gz file first. You may need root privileges for these targets to work.
     
   o To build a Mac OS/X package, use the 'pkg' target. Read over the target
-    to get a feel for how it works. Then edit the Welcome.html, ReadMe.txt
-    and License.txt if needed. Start PackageMaker and check that all the
-    paths are set correctly. Exit PackageMaker and use the 'pkg' target to
-    build the package. Note that the .txt files look best when the text uses
-    newlines to separate paragraphs only (and not line ends). Since a .pkg
-    file is really a directory (aka bundle) you'll need to put the in either
-    a tar.gz file or a disk image. To make a disk image, use DiskUtility and
-    choose 'New Image' or use the DropDMG application available from the web.
-    If using DiskUtility, make the disk image 300k bigger then the size of
-    the package. Once created, copy the package to the image. Include copies
-    of the README, INSTALL, NEWS, et c., files in the disk image so that
-    people do not have to use the installer to read them.
+    to get a feel for how it works. You will need PackageMaker, which should
+    already be installed on your system, and you will need DropDMG, which
+    can be obtained at http://c-command.com/dropdmg/. The target has been
+    automated to generate a ReadMe.txt file, update the Info.plist file, run
+    PackageMaker and DropDMG.
 
   o DEBUGGING AIDS
 
