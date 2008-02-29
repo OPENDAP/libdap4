@@ -32,6 +32,9 @@ DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
 	rcreader-testsuite server-testsuite cgi-util-tests	\
 	ce-functions-testsuite
 
+# Defining this instead of just adding the directory because now there are
+# generated files in ais_testsuite. If just list the directory then it
+# copies the generated file as well, which we don't want.
 AIS_EXTRA = ais_testsuite/123.das ais_testsuite/ais_database.xml.in	\
 	ais_testsuite/ais_error_1.xml ais_testsuite/ais_error_2.xml	\
 	ais_testsuite/ais_error_3.xml ais_testsuite/ais_error_4.xml	\
