@@ -69,6 +69,10 @@ using namespace libdap ;
 #endif
 
 #define YY_DECL int ddslex YY_PROTO(( void ))
+
+// 1 selects the new way, 0 the old.
+// It appears the new way is not really working... 29 Feb 2008
+#if 0
 #define YY_INPUT(buf,result,max_size) \
     if ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \
         { \
@@ -98,10 +102,8 @@ using namespace libdap ;
             clearerr(ddsin); \
             } \
             if (strncmp(buf, "Data:\n", 6) == 0) result = YY_NULL; \
-        }\
-
-
-#if 0
+        }
+#else
 // Replaced with the above which does not trigger an issue in Fortify.
 #define YY_INPUT(buf,result,max_size) { \
     fgets((buf), (max_size), ddsin); \
@@ -109,6 +111,7 @@ using namespace libdap ;
              ? YY_NULL : strlen(buf); \
 }
 #endif
+
 #define YY_FATAL_ERROR(msg) {\
     throw(Error(string("Error scanning DDS object text: ") + string(msg))); \
     yy_fatal_error(msg); /* 'Used' here to suppress warning */ \
