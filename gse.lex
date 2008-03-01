@@ -64,7 +64,7 @@ static char rcsid[] not_used = {"$Id$"};
     yy_fatal_error(msg); /* 'Used' here to suppress warning */ \
 }
 
-#include "gse.tab.h"
+#include "gse.tab.hh"
 
 using namespace std;
 using namespace libdap;
@@ -77,6 +77,8 @@ static void store_op(int op);
 %}
 
 %option noyywrap
+%option prefix="gse_"
+%option outfile="lex.gse_.cc"
 
 NAN     [Nn][Aa][Nn]
 INF     [Ii][Nn][Ff]

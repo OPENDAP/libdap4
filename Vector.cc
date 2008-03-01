@@ -772,7 +772,8 @@ unsigned int Vector::buf2val(void **val)
     if (!val)
         throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
 
-    int wid = width();          // This is the width computed using length(). The
+    unsigned int wid = static_cast<unsigned int>(width());
+    // This is the width computed using length(). The
     // length() property is changed when a projection
     // constraint is applied. Thus this is the number of
     // bytes in the buffer given the current constraint.

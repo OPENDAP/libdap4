@@ -64,6 +64,8 @@ void store_string();
 %}
     
 %option noyywrap
+%option prefix="Error"
+%option outfile="lex.Error.cc"
 %x quote
 %x comment
 

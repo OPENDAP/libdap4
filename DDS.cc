@@ -925,6 +925,7 @@ DDS::mark(const string &n, bool state)
     BaseType *variable = var(n, s);
     if (!variable) {
         DBG2(cerr << "Could not find variable " << n << endl);
+        delete s; s = 0;
         return false;
     }
     variable->set_send_p(state);

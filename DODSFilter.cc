@@ -621,7 +621,8 @@ DODSFilter::establish_timeout(FILE *stream) const
 #ifndef WIN32
     if (d_timeout > 0) {
         SignalHandler *sh = SignalHandler::instance();
-        sh->register_handler(SIGALRM, new AlarmHandler(stream));
+        EventHandler *old_eh = sh->register_handler(SIGALRM, new AlarmHandler(stream));
+        delete old_eh;
         alarm(d_timeout);
     }
 #endif
@@ -634,7 +635,8 @@ DODSFilter::establish_timeout(ostream &stream) const
 #ifndef WIN32
     if (d_timeout > 0) {
         SignalHandler *sh = SignalHandler::instance();
-        sh->register_handler(SIGALRM, new AlarmHandler(stream));
+        EventHandler *old_eh = sh->register_handler(SIGALRM, new AlarmHandler(stream));
+        delete old_eh;
         alarm(d_timeout);
     }
 #endif

@@ -868,6 +868,7 @@ found_override(string name, string &doc)
         doc += tmp;
     }
 
+	ifs.close();
     return true;
 }
 

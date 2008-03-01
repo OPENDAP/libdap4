@@ -71,7 +71,11 @@ SignalHandler::delete_instance()
 {
     if (SignalHandler::d_instance) {
         for (int i = 0; i < NSIG; ++i) {
-            d_signal_handlers[i] = 0;
+        	// Fortify warns about a leak because the EventHandler objects
+        	// are not deleted, but that's OK - this is a singleton and
+        	// so the 'leak' is really just a constant amount of memory that
+        	// gets used.
+        	d_signal_handlers[i] = 0;
             d_old_handlers[i] = 0;
         }
 

@@ -498,6 +498,7 @@ path_to_filename(string path)
     return (pos == string::npos) ? path : path.substr(++pos);
 }
 
+#if 0
 // Look around for a reasonable place to put a temporary file. Check first
 // the value of the TMPDIR env var. If that does not yeild a path that's
 // writable (as defined by access(..., W_OK|R_OK)) then look at P_tmpdir (as
@@ -560,6 +561,7 @@ valid_temp_directory:
 
     return temp;
 }
+#endif
 
 /** Intended for testing, this may have other uses. The template should be
     the pathname of the temporary file ending in 'XXXXXX' (as for mkstemp)

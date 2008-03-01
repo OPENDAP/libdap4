@@ -89,14 +89,17 @@ using namespace libdap ;
     yy_fatal_error(msg); /* 'Used' here to suppress warning */ \
 }
 
-#include "das.tab.h"
+#include "das.tab.hh"
 
 int das_line_num = 1;
 static int start_line;		/* used in quote and comment error handlers */
 
 %}
     
-%option noyywrap 
+%option noyywrap
+%option prefix="das"
+%option outfile="lex.das.cc"
+ 
 %x quote
 %x comment
 

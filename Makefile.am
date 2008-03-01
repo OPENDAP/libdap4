@@ -99,6 +99,18 @@ fortify: dods-datatypes.h
 	sourceanalyzer -b @PACKAGE@ $(MAKE) libdap.la libdapserver.la
 	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
 
+# run fortify on only our code, not the gnulib code or the flex/bison code.
+# This does skip testing some of the functions we wrote in the *.lex/*.y
+# files but should eliminate the false positives from flex and bison, too.
+.PHONY: fortify-lite
+fortify-lite: dods-datatypes.h $(grammar_objects)
+	( cd gl && $(MAKE) )
+	sourceanalyzer -b @PACKAGE@ $(MAKE) libdap.la libdapserver.la
+	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
+
+grammar_objects = lex.das.o das.tab.o lex.dds.o dds.tab.o lex.ce_expr.o \
+ce_expr.tab.o lex.gse_.o gse.tab.o lex.Error.o Error.tab.o
+
 # Use this to clean the fortify project.
 .PHONY: fortifyclean
 fortifyclean:
@@ -182,10 +194,10 @@ GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc
 
 GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h
 
-GRAM_SRC = lex.das.cc das.tab.cc das.tab.h \
-	lex.dds.cc dds.tab.cc dds.tab.h \
-	lex.ce_expr.cc ce_expr.tab.cc ce_expr.tab.h \
-	lex.Error.cc Error.tab.cc Error.tab.h gse.tab.h gse.tab.cc \
+GRAM_SRC = lex.das.cc das.tab.cc das.tab.hh \
+	lex.dds.cc dds.tab.cc dds.tab.hh \
+	lex.ce_expr.cc ce_expr.tab.cc ce_expr.tab.hh \
+	lex.Error.cc Error.tab.cc Error.tab.hh gse.tab.hh gse.tab.cc \
 	lex.gse_.cc
 
 DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
@@ -201,7 +213,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	XDRUtils.cc XDRFileMarshaller.cc XDRFileUnMarshaller.cc		 \
 	XDRStreamMarshaller.cc
 
-Operators.h: ce_expr.tab.h
+Operators.h: ce_expr.tab.hh
 
 # Operators.h is included in with the source to prevent it from bing installed
 # with the other headers. It includes one of the built grammar file headers.
@@ -254,65 +266,66 @@ SERVER_HDR = DODSFilter.h cgi_util.h AlarmHandler.h EventHandler.h
 # but these grammars are so hacked that it was taking too much time. Maybe if
 # each grammar was converted one by one... jhrg 6/22/05
 # 
-
+# I switched to using flex options instead of sed and mv. jhrg 02/28/08
+#
 # Build the DAS scanner and parser
 
-lex.das.cc: das.lex das.tab.cc das.tab.h
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pdas $<
-	mv lex.das.c lex.das.cc
-	sed 's/lex\.das\.c/lex\.das\.cc/g' < lex.das.cc > tmp
-	mv tmp lex.das.cc
+lex.das.cc: das.lex das.tab.cc das.tab.hh
+	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+#	mv lex.das.c lex.das.cc
+#	sed 's/lex\.das\.c/lex\.das\.cc/g' < lex.das.cc > tmp
+#	mv tmp lex.das.cc
 
-das.tab.cc das.tab.h: das.y DAS.h
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p das $<
-	mv das.tab.c das.tab.cc
+das.tab.cc das.tab.hh: das.y DAS.h
+	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p das -o das.tab.cc $<
+#	mv das.tab.c das.tab.cc
 
 # DDS
 
-lex.dds.cc: dds.lex dds.tab.cc dds.tab.h
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pdds $<
-	mv lex.dds.c lex.dds.cc
-	sed 's/lex\.dds\.c/lex\.dds\.cc/g' < lex.dds.cc > tmp
-	mv tmp lex.dds.cc
+lex.dds.cc: dds.lex dds.tab.cc dds.tab.hh
+	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+#	mv lex.dds.c lex.dds.cc
+#	sed 's/lex\.dds\.c/lex\.dds\.cc/g' < lex.dds.cc > tmp
+#	mv tmp lex.dds.cc
 
 
-dds.tab.cc dds.tab.h: dds.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p dds $<
-	mv dds.tab.c dds.tab.cc
+dds.tab.cc dds.tab.hh: dds.y
+	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p dds -o dds.tab.cc $<
+#	mv dds.tab.c dds.tab.cc
 
 # CE
 
-lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.h
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pce_expr $<
-	mv lex.ce_expr.c lex.ce_expr.cc
-	sed 's/lex\.ce_expr\.c/lex\.ce_expr\.cc/g' < lex.ce_expr.cc > tmp
-	mv tmp lex.ce_expr.cc
+lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.hh
+	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+#	mv lex.ce_expr.c lex.ce_expr.cc
+#	sed 's/lex\.ce_expr\.c/lex\.ce_expr\.cc/g' < lex.ce_expr.cc > tmp
+#	mv tmp lex.ce_expr.cc
 
-ce_expr.tab.cc ce_expr.tab.h: ce_expr.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p ce_expr $<
-	mv ce_expr.tab.c ce_expr.tab.cc
+ce_expr.tab.cc ce_expr.tab.hh: ce_expr.y
+	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p ce_expr -o ce_expr.tab.cc $<
+#	mv ce_expr.tab.c ce_expr.tab.cc
 
 # Build the grid selection sub_expression scanner and parser
 
-lex.gse_.cc: gse.lex gse.tab.cc gse.tab.h
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pgse_ $<
-	mv lex.gse_.c lex.gse_.cc
-	sed 's/lex\.gse_\.c/lex\.gse_\.cc/g' < lex.gse_.cc > tmp
-	mv tmp lex.gse_.cc
+lex.gse_.cc: gse.lex gse.tab.cc gse.tab.hh
+	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+#	mv lex.gse_.c lex.gse_.cc
+#	sed 's/lex\.gse_\.c/lex\.gse_\.cc/g' < lex.gse_.cc > tmp
+#	mv tmp lex.gse_.cc
 
-gse.tab.cc gse.tab.h: gse.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p gse_ $<
-	mv gse.tab.c gse.tab.cc
+gse.tab.cc gse.tab.hh: gse.y
+	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p gse_ -o gse.tab.cc $<
+#	mv gse.tab.c gse.tab.cc
 
 # Errors
 
-lex.Error.cc: Error.lex Error.tab.cc Error.tab.h
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) -PError $<
-	mv lex.Error.c lex.Error.cc
-	sed 's/lex\.Error\.c/lex\.Error\.cc/g' < lex.Error.cc > tmp
-	mv tmp lex.Error.cc
+lex.Error.cc: Error.lex Error.tab.cc Error.tab.hh
+	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+#	mv lex.Error.c lex.Error.cc
+#	sed 's/lex\.Error\.c/lex\.Error\.cc/g' < lex.Error.cc > tmp
+#	mv tmp lex.Error.cc
 
-Error.tab.cc Error.tab.h: Error.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p Error $<
-	mv Error.tab.c Error.tab.cc
+Error.tab.cc Error.tab.hh: Error.y
+	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p Error -o Error.tab.cc $<
+#	mv Error.tab.c Error.tab.cc
 

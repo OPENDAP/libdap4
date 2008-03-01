@@ -3084,15 +3084,19 @@ static bin_tree_t *parse_bracket_exp(re_string_t * regexp, re_dfa_t * dfa,
     } else
 #endif                          /* not RE_ENABLE_I18N */
     {
-#ifdef RE_ENABLE_I18N
-        free_charset(mbcset);
-#endif
         /* Build a tree for simple bracket.  */
         br_token.type = SIMPLE_BRACKET;
         br_token.opr.sbcset = sbcset;
         work_tree = create_token_tree(dfa, NULL, NULL, &br_token);
         if (BE(work_tree == NULL, 0))
             goto parse_bracket_exp_espace;
+#ifdef RE_ENABLE_I18N
+		else
+        	free_charset(mbcset);
+        /* I moved the free here from the begining of this block because freeing
+         * unconditionally there results in a double free when work_tree is NULL.
+         * jhrg 2/28/08 */
+#endif
     }
     return work_tree;
 

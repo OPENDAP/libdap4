@@ -192,6 +192,8 @@ string dap_version();
     @return A string containing only the filename given a path. */
 string path_to_filename(string path);
 
+#if 0
+// Moved to HTTPConnect.cc - the only file where it's used.
 /** Build a template for a temporary file suitable for use with mkstemp.
     Look around for a reasonable place to put a temporary file. Check first
     the value of the TMPDIR env var. If that does not yield a path that's
@@ -207,7 +209,7 @@ string path_to_filename(string path);
     @return A writable char[] that holds the fully qualified
     filename/template to use with mkstemp. */
 char *get_tempfile_template(char *file_template);
-
+#endif
 FILE *get_temp_file(char *temp);
 string file_to_string(FILE *fp);
 

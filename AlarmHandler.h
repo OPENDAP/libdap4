@@ -64,8 +64,8 @@ public:
 
     virtual ~AlarmHandler()
     {
-	if( d_file )
-	    fclose( d_file ) ;
+    	if( d_file )
+    		fclose( d_file ) ;
     }
 
     /** Handle an alarm signal. When one of our servers gets an alarm, that

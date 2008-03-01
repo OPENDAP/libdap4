@@ -118,7 +118,7 @@ parse_error(parser_arg * arg, const char *msg, const int line_num,
     else
         oss += (string) "\n" + msg + (string) "\n";
 
-    arg->set_error(new Error(unknown_error, oss.c_str()));
+    arg->set_error(new Error(unknown_error, oss));
 }
 
 void

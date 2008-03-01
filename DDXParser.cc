@@ -330,7 +330,9 @@ void DDXParser::process_dimension(const char **attrs)
     if (check_required_attribute(string("size"))) {
         set_state(inside_dimension);
         Array *ap = dynamic_cast < Array * >(bt_stack.top());
-
+		if (!ap)
+			ddx_fatal_error(this, "Parse error: Expected an array variable.");
+			
         ap->append_dim(atoi(attributes["size"].c_str()),
                        attributes["name"]);
     }
@@ -499,6 +501,9 @@ void DDXParser::ddx_end_document(DDXParser * parser)
     // to the DDS.
     Constructor *cp =
         dynamic_cast < Constructor * >(parser->bt_stack.top());
+    if (!cp)
+    	ddx_fatal_error(parser, "Parse error: Expected a Structure, Sequence or Grid variable.");
+    	
     for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end();
          ++i)
         parser->dds->add_var(*i);

@@ -69,7 +69,10 @@ public:
     CPPUNIT_TEST(escattr_test);
     CPPUNIT_TEST(unescattr_test);
     CPPUNIT_TEST(munge_error_message_test);
+#if 0
+    // Moved function to HTTPConnect.cc
     CPPUNIT_TEST(get_tempfile_template_test);
+#endif
     CPPUNIT_TEST(id2xml_test);
     CPPUNIT_TEST(xml2id_test);
 
@@ -231,6 +234,8 @@ public:
 	CPPUNIT_ASSERT(munge_error_message(str) == str1);
     }
 
+#if 0
+    // Moved function to HTTPConect.
     void get_tempfile_template_test() {
 #ifdef WIN32
 	if (_putenv("TMPDIR=C:\\") == 0) {
@@ -258,7 +263,8 @@ public:
 			      tmplt.c_str()) == 0);
 #endif
     }
-
+#endif
+    
     void id2xml_test() {
 	CPPUNIT_ASSERT(id2xml("abcdef") == "abcdef");
 	CPPUNIT_ASSERT(id2xml("abc<def") == "abc&lt;def");

@@ -55,7 +55,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "Error.h"
 #include "debug.h"
 #include "parser.h"
-#include "das.tab.h"
+#include "das.tab.hh"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -441,7 +441,7 @@ add_attribute(const string &type, const string &name, const string &value,
     if (STACK_EMPTY) {
 	string msg = "Whoa! Attribute table stack empty when adding `" ;
 	msg += name + ".' ";
-	parse_error(msg.c_str(), das_line_num);
+	parse_error(msg, das_line_num);
     }
     
     try {

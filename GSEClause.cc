@@ -48,7 +48,7 @@ static char id[] not_used =
 #include "debug.h"
 #include "GSEClause.h"
 #include "parser.h"
-#include "gse.tab.h"
+#include "gse.tab.hh"
 
 using namespace std;
 
@@ -120,16 +120,11 @@ GSEClause::set_map_min_max_value(T min, T max)
     d_map_max_value = oss2.str();
 }
 
-
+// Read the map array, scan, set start and stop.
 template<class T>
 void
 GSEClause::set_start_stop()
 {
-    // Read the map array, scan, set start and stop.
-#if 0
-    T *vals = 0;
-    d_map->buf2val((void **)&vals);
-#endif
     T *vals = new T[d_map->length()];
     d_map->value(vals);
 

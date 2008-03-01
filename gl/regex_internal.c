@@ -620,11 +620,11 @@ re_string_reconstruct(re_string_t * pstr, Idx idx, int eflags)
                 pstr->tip_context = re_string_context_at(pstr, offset - 1,
                                                          eflags);
 #ifdef RE_ENABLE_I18N
-                if (pstr->mb_cur_max > 1)
+                if (pstr->mb_cur_max > 1 && pstr->valid_len > offset)
                     memmove(pstr->wcs, pstr->wcs + offset,
                             (pstr->valid_len - offset) * sizeof(wint_t));
 #endif                          /* RE_ENABLE_I18N */
-                if (BE(pstr->mbs_allocated, 0))
+                if ( BE(pstr->mbs_allocated, 0) && pstr->valid_len > offset)
                     memmove(pstr->mbs, pstr->mbs + offset,
                             pstr->valid_len - offset);
                 pstr->valid_len -= offset;
@@ -1197,7 +1197,6 @@ static bool
     /* Move the elements which follows the new element.  Test the
        first element separately to skip a check in the inner loop.  */
     if (elem < set->elems[0]) {
-        idx = 0;
         for (idx = set->nelem; idx > 0; idx--)
             set->elems[idx] = set->elems[idx - 1];
     } else {

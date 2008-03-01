@@ -194,7 +194,8 @@ static const char *get_charset_aliases(void)
             if (res_size == 0)
                 cp = "";
             else {
-                *(res_ptr + res_size) = '\0';
+            	if (res_ptr)
+                	*(res_ptr + res_size) = '\0';
                 cp = res_ptr;
             }
         }

@@ -73,9 +73,6 @@ make_rvalue_list(rvalue *rv)
 rvalue_list *
 append_rvalue_list(rvalue_list *rvals, rvalue *rv)
 {
-    assert(rvals);
-    assert(rv);
-
     rvals->push_back(rv);
 
     return rvals;
@@ -118,8 +115,10 @@ build_btp_args(rvalue_list *args, DDS &dds, const string &dataset)
         }
     }
 
-	if (index > argc)
+	if (index != argc) {
+		delete[] argv;
 		throw InternalErr(__FILE__, __LINE__, "index out of range.");
+	}
 		
     argv[index] = 0;            // Add the null terminator.
 

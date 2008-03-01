@@ -62,7 +62,7 @@ static char rcsid[]not_used =
 
 #include "ce_functions.h"
 #include "gse_parser.h"
-#include "gse.tab.h"
+#include "gse.tab.hh"
 #include "debug.h"
 #include "util.h"
 
@@ -825,6 +825,7 @@ BaseType * function_linear_scale(int argc, BaseType * argv[], DDS &,
         Float64 *temp_f = new Float64(source.name());
         source.add_var(temp_f);
         source.val2buf(static_cast<void*>(data), false);
+        delete [] data; // val2buf copies.
         delete temp_f; // add_var copies and then adds.
         dest = argv[0];
     } else if (argv[0]->is_vector_type()) {
@@ -849,6 +850,7 @@ BaseType * function_linear_scale(int argc, BaseType * argv[], DDS &,
         Float64 *temp_f = new Float64(source.name());
         source.add_var(temp_f);
         source.val2buf(static_cast<void*>(data), false);
+        delete [] data; // val2buf copies.
         delete temp_f; // add_var copies and then adds.
 
         dest = argv[0];
@@ -923,18 +925,28 @@ BaseType * function_geoarray(int argc, BaseType * argv[], DDS &,
         double bb_bottom = extract_double_value(argv[3]);
         double bb_right = extract_double_value(argv[4]);
 
-        ArrayGeoConstraint *agc = 0;
         switch (argc) {
-            case 5:
-            agc = new ArrayGeoConstraint(l_array, dataset);
-            break;
+            case 5: {
+            	ArrayGeoConstraint agc(l_array, dataset);
+         		
+         		agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
+				// This also reads all of the data into the grid variable
+        		agc.apply_constraint_to_data();
+        		return agc.get_constrained_array();
+            	break;
+            }
             case 9: {
                 double var_top = extract_double_value(argv[5]);
                 double var_left = extract_double_value(argv[6]);
                 double var_bottom = extract_double_value(argv[7]);
                 double var_right = extract_double_value(argv[8]);
-                agc = new ArrayGeoConstraint(l_array, dataset,
+                ArrayGeoConstraint agc (l_array, dataset,
                         var_left, var_top, var_right, var_bottom);
+                        
+        		agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
+				// This also reads all of the data into the grid variable
+        		agc.apply_constraint_to_data();
+        		return agc.get_constrained_array();
                 break;
             }
             case 11: {
@@ -944,23 +956,19 @@ BaseType * function_geoarray(int argc, BaseType * argv[], DDS &,
                 double var_right = extract_double_value(argv[8]);
                 string projection = extract_string_argument(argv[9]);
                 string datum = extract_string_argument(argv[10]);
-                agc = new ArrayGeoConstraint(l_array, dataset,
+                ArrayGeoConstraint agc(l_array, dataset,
                         var_left, var_top, var_right, var_bottom,
                         projection, datum);
+        
+        		agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
+				// This also reads all of the data into the grid variable
+        		agc.apply_constraint_to_data();
+        		return agc.get_constrained_array();
                 break;
             }
             default:
-            throw InternalErr(__FILE__, __LINE__, "Wrong number of args to geoarray.");
+            	throw InternalErr(__FILE__, __LINE__, "Wrong number of args to geoarray.");
         }
-
-        agc->set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
-
-        // This also reads all of the data into the grid variable
-        agc->apply_constraint_to_data();
-
-        // In this function the l_grid pointer is the same as the pointer returned
-        // by this call. The caller of the function must free the pointer.
-        return agc->get_constrained_array();
     }
     catch (Error & e) {
         throw e;
@@ -972,6 +980,8 @@ BaseType * function_geoarray(int argc, BaseType * argv[], DDS &,
                 + e.what());
 
     }
+    
+    throw InternalErr(__FILE__, __LINE__, "Impossible condition in geoarray.");
 }
 
 void register_functions(ConstraintEvaluator & ce)

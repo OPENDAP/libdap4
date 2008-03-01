@@ -604,6 +604,69 @@ HTTPConnect::fetch_url(const string &url)
     return stream;
 }
 
+// Look around for a reasonable place to put a temporary file. Check first
+// the value of the TMPDIR env var. If that does not yeild a path that's
+// writable (as defined by access(..., W_OK|R_OK)) then look at P_tmpdir (as
+// defined in stdio.h. If both come up empty, then use `./'.
+//
+// This function allocates storage using new. The caller must delete the char
+// array.
+
+// Change this to a version that either returns a string or an open file
+// descriptor. Use information from https://buildsecurityin.us-cert.gov/
+// (see open()) to make it more secure. Ideal solution: get deserialize()
+// methods to read from a stream returned by libcurl, not from a temporary
+// file. 9/21/07 jhrg
+static char *
+get_tempfile_template(char *file_template)
+{
+    char *c;
+    
+#ifdef WIN32
+    // whitelist for a WIN32 directory
+    Regex directory("[-a-zA-Z0-9_\\]*");
+	
+    c = getenv("TEMP");
+    if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0))
+    	goto valid_temp_directory;
+
+    c= getenv("TMP");
+    if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0))
+    	goto valid_temp_directory;
+#else
+	// whitelist for a directory
+	Regex directory("[-a-zA-Z0-9_/]*");
+	
+	c = getenv("TMPDIR");
+	if (c && directory.match(c, strlen(c)) && (access(c, W_OK | R_OK) == 0))
+    	goto valid_temp_directory;
+
+#ifdef P_tmpdir
+	if (access(P_tmpdir, W_OK | R_OK) == 0) {
+        c = P_tmpdir;
+        goto valid_temp_directory;
+	}
+#endif
+
+#endif  // WIN32
+
+    c = ".";
+    
+valid_temp_directory:
+	// Sanitize allocation
+	int size = strlen(c) + strlen(file_template) + 2;
+	if (!size_ok(1, size))
+		throw Error("Bad temporary file name.");
+		
+    char *temp = new char[size];
+    strncpy(temp, c, size-2);
+    strcat(temp, "/");
+
+    strcat(temp, file_template);
+
+    return temp;
+}
+
 /** Open a temporary file and return its name. This method opens a temporary
     file using get_tempfile_template(). The FILE* \c stream is opened for
     both reads and writes; if it already exists (highly unlikely), it is

@@ -46,7 +46,7 @@ static char rcsid[] not_used = {"$Id$"};
 #define YYSTYPE char *
 
 #include "DAS.h"
-#include "das.tab.h"
+#include "das.tab.hh"
 #include "Error.h"
 
 using namespace libdap ;

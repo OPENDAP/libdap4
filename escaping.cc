@@ -357,7 +357,6 @@ unescattr(string s)
 
     DBG(cerr << "0XX" << s << "XXX" << endl);
     // unescape any escaped backslashes
-    index = 0;
     index = esc_esc.search(s.c_str(), s.length(), matchlen, 0);
     while (index < s.length()) {
         DBG(cerr << "1aXX" << s << "XXX index: " << index << endl);

@@ -223,6 +223,7 @@ proj_function:  SCAN_WORD '(' arg_list ')'
 		        DDS &dds = dynamic_cast<DDS&>(*(DDS(arg)));
 			BaseType **args = build_btp_args( $3, dds, dds.get_dataset_name() );
 			(*p_f)(($3) ? $3->size():0, args, dds, *(EVALUATOR(arg)));
+			delete[] args;
 			$$ = true;
 		    }
 		    else {
@@ -608,12 +609,12 @@ bracket_projection(DDS &table, const char *name, int_list_list *indices)
 int_list *
 make_array_index(value &i1, value &i2, value &i3)
 {
-    int_list *index = new int_list;
-
     if (i1.type != dods_uint32_c
 	|| i2.type != dods_uint32_c
 	|| i3.type != dods_uint32_c)
 	return (int_list *)0;
+
+    int_list *index = new int_list;
 
     index->push_back((int)i1.v.i);
     index->push_back((int)i2.v.i);
@@ -630,11 +631,11 @@ make_array_index(value &i1, value &i2, value &i3)
 int_list *
 make_array_index(value &i1, value &i2)
 {
-    int_list *index = new int_list;
-
     if (i1.type != dods_uint32_c || i2.type != dods_uint32_c)
 	return (int_list *)0;
 
+    int_list *index = new int_list;
+ 
     index->push_back((int)i1.v.i);
     index->push_back(1);
     index->push_back((int)i2.v.i);
@@ -650,10 +651,10 @@ make_array_index(value &i1, value &i2)
 int_list *
 make_array_index(value &i1)
 {
-    int_list *index = new int_list;
-
     if (i1.type != dods_uint32_c)
 	return (int_list *)0;
+
+    int_list *index = new int_list;
 
     index->push_back((int)i1.v.i);
     index->push_back(1);

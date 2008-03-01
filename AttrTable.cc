@@ -846,7 +846,7 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
 
     // If we've got a value to alias and it's being added at the top level of
     // the DAS, that's an error.
-    if (!at->is_container(iter) && this == das)
+    if (at && !at->is_container(iter) && this == das)
         throw Error(string("A value cannot be aliased to the top level of the DAS;\nOnly containers may be present at that level of the DAS."));
 
     if (simple_find(lname) != attr_end())
@@ -858,7 +858,7 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
     e->is_alias = true;
     e->aliased_to = lsource;
     e->type = get_attr_type(iter);
-    if (e->type == Attr_container)
+    if (at && e->type == Attr_container)
         e->attributes = at->get_attr_table(iter);
     else
         e->attr = (*iter)->attr;

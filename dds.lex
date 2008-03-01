@@ -58,9 +58,8 @@ static char rcsid[] not_used = {"$Id$"};
 
 #include <string.h>
 
-// #include "Error.h"
 #include "parser.h"
-#include "dds.tab.h"
+#include "dds.tab.hh"
 #include "escaping.h"
 
 using namespace libdap ;
@@ -70,11 +69,46 @@ using namespace libdap ;
 #endif
 
 #define YY_DECL int ddslex YY_PROTO(( void ))
+#define YY_INPUT(buf,result,max_size) \
+    if ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \
+        { \
+        int c = '*'; \
+        size_t n; \
+        for ( n = 0; n < max_size && \
+                 (c = getc( ddsin )) != EOF && c != '\n'; ++n ) \
+            buf[n] = (char) c; \
+        if ( c == '\n' ) \
+            buf[n++] = (char) c; \
+        if ( c == EOF && ferror( ddsin ) ) \
+            YY_FATAL_ERROR( "input in flex scanner failed" ); \
+        result = n; \
+        if (strncmp(buf, "Data:\n", 6) == 0) result = YY_NULL; \
+        } \
+    else \
+        { \
+        errno=0; \
+        while ( (result = fread(buf, 1, max_size, ddsin))==0 && ferror(ddsin)) \
+            { \
+            if( errno != EINTR) \
+                { \
+                YY_FATAL_ERROR( "input in flex scanner failed" ); \
+                break; \
+                } \
+            errno=0; \
+            clearerr(ddsin); \
+            } \
+            if (strncmp(buf, "Data:\n", 6) == 0) result = YY_NULL; \
+        }\
+
+
+#if 0
+// Replaced with the above which does not trigger an issue in Fortify.
 #define YY_INPUT(buf,result,max_size) { \
-    fgets((buf), (max_size), yyin); \
-    result = (feof(yyin) || strcmp(buf, "Data:\n") == 0) \
+    fgets((buf), (max_size), ddsin); \
+    result = (feof(ddsin) || strncmp(buf, "Data:\n", 6) == 0) \
              ? YY_NULL : strlen(buf); \
 }
+#endif
 #define YY_FATAL_ERROR(msg) {\
     throw(Error(string("Error scanning DDS object text: ") + string(msg))); \
     yy_fatal_error(msg); /* 'Used' here to suppress warning */ \
@@ -87,6 +121,8 @@ static void store_word();
 %}
     
 %option noyywrap
+%option prefix="dds"
+%option outfile="lex.dds.cc"
 %x comment
 
 DATASET 	DATASET|Dataset|dataset 
@@ -107,18 +143,18 @@ URL 		URL|Url|url
 /* See das.lex for comments about the characters allowed in a WORD.
    10/31/2001 jhrg */
 
-WORD            [-+a-zA-Z0-9_/%.\\*][-+a-zA-Z0-9_/%.\\#*]*
+WORD        [-+a-zA-Z0-9_/%.\\*][-+a-zA-Z0-9_/%.\\#*]*
 
 NEVER		[^\-+a-zA-Z0-9_/%.\\#,(){}[\]]
 
 %%
 
-"{" 	    	    	return (int)*yytext;
-"}" 	    	    	return (int)*yytext;
+"{"         return (int)*yytext;
+"}" 	    return (int)*yytext;
 "["			return (int)*yytext;
 "]"			return (int)*yytext;
 ":"			return (int)*yytext;
-";" 	    	    	return (int)*yytext;
+";" 	    return (int)*yytext;
 "="			return (int)*yytext;
 
 {DATASET}		store_word(); return SCAN_DATASET;
@@ -136,25 +172,25 @@ NEVER		[^\-+a-zA-Z0-9_/%.\\#,(){}[\]]
 {STRING}		store_word(); return SCAN_STRING;
 {URL}			store_word(); return SCAN_URL;
 
-{WORD}                  store_word(); return SCAN_WORD;
+{WORD}      store_word(); return SCAN_WORD;
 
 [ \t\r]+
-\n	    	    	++dds_line_num;
-<INITIAL><<EOF>>    	yy_init = 1; dds_line_num = 1; yyterminate();
+\n	    	++dds_line_num;
+<INITIAL><<EOF>>    yy_init = 1; dds_line_num = 1; yyterminate();
 
-"#"	    	    	BEGIN(comment);
+"#"     BEGIN(comment);
 <comment>[^\n]*
 <comment>\n		++dds_line_num; BEGIN(INITIAL);
-<comment><<EOF>>        yy_init = 1; dds_line_num = 1; yyterminate();
+<comment><<EOF>>    yy_init = 1; dds_line_num = 1; yyterminate();
 
 "Data:\n"		yyterminate();
 "Data:\r\n"		yyterminate();
 
-{NEVER}                 {
-                          if (yytext) {	/* suppress msgs about `' chars */
-                            fprintf(stderr, "Character `%c' is not", *yytext);
-                            fprintf(stderr, " allowed and has been ignored\n");
-			  }
+{NEVER}     {
+                if (yytext) {	/* suppress msgs about `' chars */
+                    fprintf(stderr, "Character `%c' is not", *yytext);
+                    fprintf(stderr, " allowed and has been ignored\n");
+			     }
 			}
 %%
 

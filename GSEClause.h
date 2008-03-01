@@ -106,6 +106,10 @@ public:
               const relop op1, const double value2, const relop op2);
     //@}
 
+    virtual ~GSEClause() {
+    	delete d_map; d_map = 0;
+    }
+    
     bool OK() const;
 
     /** @name Accessors */

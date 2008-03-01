@@ -69,7 +69,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "parser.h"
 #include "expr.h"
 #include "RValue.h"
-#include "ce_expr.tab.h"
+#include "ce_expr.tab.hh"
 #include "escaping.h"
 
 using namespace libdap ;
@@ -81,6 +81,9 @@ static void store_op(int op);
 %}
 
 %option noyywrap
+%option prefix="ce_expr"
+%option outfile="lex.ce_expr.cc"
+
 %x quote
     
 /* In the DAS and DDS parsers I removed the INT and FLOAT lexemes. However,
