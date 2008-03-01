@@ -66,7 +66,7 @@ static char rcsid[] not_used =
 
 #include "parser.h"
 #include "expr.h"
-#include "ce_expr.tab.h"
+#include "ce_expr.tab.hh"
 #include "util.h"
 #include "debug.h"
 

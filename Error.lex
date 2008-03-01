@@ -53,7 +53,7 @@ static char rcsid[] not_used = {"$Id$"};
 #define YY_NO_UNPUT
 #define YY_DECL int Errorlex YY_PROTO(( void ))
 
-#include "Error.tab.h"
+#include "Error.tab.hh"
 
 int error_line_num = 1;
 static int start_line;		/* used in quote and comment error handlers */

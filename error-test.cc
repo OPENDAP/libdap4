@@ -45,7 +45,7 @@ static char rcsid[] not_used =
 
 #include "Error.h"
 #include "parser.h"
-#include "Error.tab.h"
+#include "Error.tab.hh"
 
 void test_scanner();
 void test_parser(Error &err);

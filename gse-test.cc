@@ -56,7 +56,7 @@ static char rcsid[] not_used =
 #include "DDS.h"
 #include "GSEClause.h"
 #include "parser.h"
-#include "gse.tab.h"
+#include "gse.tab.hh"
 #include "debug.h"
 
 #define YY_BUFFER_STATE (void *)
