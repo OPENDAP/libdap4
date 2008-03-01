@@ -1,4 +1,3 @@
-
 /*
  -*- mode: c++; c-basic-offset:4 -*-
 
@@ -104,12 +103,13 @@ using namespace libdap ;
             if (strncmp(buf, "Data:\n", 6) == 0) result = YY_NULL; \
         }
 #else
-// Replaced with the above which does not trigger an issue in Fortify.
+
 #define YY_INPUT(buf,result,max_size) { \
     fgets((buf), (max_size), ddsin); \
     result = (feof(ddsin) || strncmp(buf, "Data:\n", 6) == 0) \
              ? YY_NULL : strlen(buf); \
 }
+
 #endif
 
 #define YY_FATAL_ERROR(msg) {\
