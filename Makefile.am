@@ -276,8 +276,11 @@ lex.das.cc: das.lex das.tab.cc das.tab.hh
 #	sed 's/lex\.das\.c/lex\.das\.cc/g' < lex.das.cc > tmp
 #	mv tmp lex.das.cc
 
+# The funny if statment accommodates older versions of bison which treats
+# -o differently than the 2.x versions. jhrg 3/2/08
 das.tab.cc das.tab.hh: das.y DAS.h
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p das -o das.tab.cc $<
+	if test -e das.tab.cc.h; then mv das.tab.cc.h das.tab.hh; fi
 #	mv das.tab.c das.tab.cc
 
 # DDS
@@ -291,6 +294,7 @@ lex.dds.cc: dds.lex dds.tab.cc dds.tab.hh
 
 dds.tab.cc dds.tab.hh: dds.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p dds -o dds.tab.cc $<
+	if test -e dds.tab.cc.h; then mv dds.tab.cc.h dds.tab.hh; fi
 #	mv dds.tab.c dds.tab.cc
 
 # CE
@@ -303,6 +307,7 @@ lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.hh
 
 ce_expr.tab.cc ce_expr.tab.hh: ce_expr.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p ce_expr -o ce_expr.tab.cc $<
+	if test -e ce_expr.tab.cc.h; then mv ce_expr.tab.cc.h ce_expr.tab.hh; fi
 #	mv ce_expr.tab.c ce_expr.tab.cc
 
 # Build the grid selection sub_expression scanner and parser
@@ -315,6 +320,7 @@ lex.gse_.cc: gse.lex gse.tab.cc gse.tab.hh
 
 gse.tab.cc gse.tab.hh: gse.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p gse_ -o gse.tab.cc $<
+	if test -e gse.tab.cc.h; then mv gse.tab.cc.h gse.tab.hh; fi
 #	mv gse.tab.c gse.tab.cc
 
 # Errors
@@ -327,5 +333,6 @@ lex.Error.cc: Error.lex Error.tab.cc Error.tab.hh
 
 Error.tab.cc Error.tab.hh: Error.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p Error -o Error.tab.cc $<
+	if test -e Error.tab.cc.h; then mv Error.tab.cc.h Error.tab.hh; fi
 #	mv Error.tab.c Error.tab.cc
 
