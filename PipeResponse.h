@@ -26,7 +26,7 @@
 #ifndef pipe_response_h
 #define pipe_response_h
 
-#include <stdio.h>
+#include <cstdio>
 
 #ifndef response_h
 #include "Response.h"

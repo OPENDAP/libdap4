@@ -28,7 +28,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #ifndef WIN32
-#include <unistd.h>
+#include <unistd.h>  // for alarm sleep
 #else
 #include <io.h>
 #include <fcntl.h>

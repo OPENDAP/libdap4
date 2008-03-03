@@ -27,7 +27,7 @@
 
 #include "config.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "AISMerge.h"
 #include "AISExceptions.h"

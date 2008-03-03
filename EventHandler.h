@@ -26,8 +26,6 @@
 #ifndef event_handler_h
 #define event_handler_h
 
-#include <stdio.h>
-
 #include <iostream>
 
 //#include "Error.h"

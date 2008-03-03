@@ -39,10 +39,11 @@ static char rcsid[]not_used =
 {   "$Id$"
 };
 
-#include <errno.h>      // used by strtod()
 #include <limits.h>
-#include <math.h>
 
+#include <cstdlib>      // used by strtod()
+#include <cerrno>
+#include <cmath>
 #include <iostream>
 #include <vector>
 #include <algorithm>

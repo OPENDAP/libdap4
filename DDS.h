@@ -37,8 +37,7 @@
 #ifndef _dds_h
 #define _dds_h 1
 
-#include <stdio.h>
-
+#include <cstdio>
 #include <iostream>
 #include <string>
 #include <vector>

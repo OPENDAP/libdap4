@@ -41,8 +41,6 @@ static char rcsid[] not_used =
     {"$Id$"
     };
 
-#include <stdlib.h>
-
 #include <iomanip>
 
 #include "Float64.h"

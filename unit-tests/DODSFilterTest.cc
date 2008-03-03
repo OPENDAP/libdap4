@@ -27,6 +27,11 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>  // for stat
+
+#include <cstring>
 #include <sstream>
 
 //#define DODS_DEBUG

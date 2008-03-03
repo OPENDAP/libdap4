@@ -26,7 +26,7 @@
 #ifndef cache_http_response_h
 #define cache_http_response_h
 
-#include <stdio.h>
+#include <cstdio>
 
 #ifndef response_h
 #include "Response.h"

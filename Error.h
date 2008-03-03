@@ -36,8 +36,7 @@
 #ifndef _error_h
 #define _error_h
 
-#include <stdio.h>  // For FILE *
-
+#include <cstdio>  // For FILE *
 #include <iostream>
 #include <string>
 

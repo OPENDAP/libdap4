@@ -33,7 +33,7 @@
 #ifndef S_XDRUtils_h
 #define S_XDRUtils_h 1
 
-#include <stdio.h>
+#include <cstdio>
 #include "xdr-datatypes.h"
 #include "BaseType.h"
 

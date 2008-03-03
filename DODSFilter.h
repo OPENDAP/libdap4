@@ -32,11 +32,6 @@
 #ifndef _dodsfilter_h
 #define _dodsfilter_h
 
-
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #include <string>
 
 #ifndef _das_h

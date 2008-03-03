@@ -38,8 +38,7 @@
 #define _das_h 1
 
 
-#include <stdio.h>
-
+#include <cstdio>
 #include <string>
 #include <iostream>
 

@@ -27,6 +27,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <cstring>
 #include <string>
 
 #include "GNURegex.h"

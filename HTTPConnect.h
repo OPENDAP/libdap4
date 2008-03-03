@@ -27,8 +27,6 @@
 #define _httpconnect_h
 
 
-#include <stdio.h>
-
 #include <string>
 
 #include <curl/curl.h>

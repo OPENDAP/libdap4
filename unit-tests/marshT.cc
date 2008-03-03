@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cstring>
 
 #include "TestByte.h"
 #include "TestInt16.h"

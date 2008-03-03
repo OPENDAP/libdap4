@@ -50,9 +50,7 @@
 
 static char rcsid[] not_used = {"$Id$"};
 
-#include <string.h>
-#include <assert.h>
-
+#include <cstdio>
 #include <string>
 
 #ifndef YY_PROTO

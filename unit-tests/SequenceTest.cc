@@ -28,6 +28,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <string>
+#include <cstring>
 
 //#define DODS_DEBUG
 

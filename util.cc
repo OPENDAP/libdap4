@@ -39,9 +39,9 @@ static char rcsid[] not_used =
     {"$Id$"
     };
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include <cassert>
+#include <cstring>
+
 #include <ctype.h>
 #ifndef TM_IN_SYS_TIME
 #include <time.h>
@@ -50,7 +50,7 @@ static char rcsid[] not_used =
 #endif
 
 #ifndef WIN32
-#include <unistd.h>
+#include <unistd.h>    // for stat
 #else
 #include <io.h>
 #include <fcntl.h>

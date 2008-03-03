@@ -25,9 +25,7 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
+#include <cstring>
 
 #include "BaseType.h"
 #include "Constructor.h"

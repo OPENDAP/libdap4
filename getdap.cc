@@ -39,13 +39,13 @@ static char rcsid[] not_used =
     { "$Id$"
     };
 
-#include <stdio.h>
 #ifdef WIN32
 #include <io.h>
 #include <fcntl.h>
 #endif
 
 #include <GetOpt.h>
+#include <cstring>
 #include <string>
 
 #include "AISConnect.h"

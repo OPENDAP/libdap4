@@ -32,9 +32,8 @@ static char id[] not_used =
     { "$Id$"
     };
 
-#include <math.h>
-#include <string.h>
-
+#include <cstring>
+#include <cmath>
 #include <iostream>
 #include <sstream>
 #include <algorithm>  //  for find_if

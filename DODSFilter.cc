@@ -43,7 +43,7 @@ static char rcsid[] not_used =
 #include <signal.h>
 
 #ifndef WIN32
-#include <unistd.h>
+#include <unistd.h>   // for getopt
 #include <sys/wait.h>
 #else
 #include <io.h>
@@ -54,6 +54,7 @@ static char rcsid[] not_used =
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <cstdlib>
 
 #include <GetOpt.h>
 

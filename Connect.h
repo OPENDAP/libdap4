@@ -56,8 +56,6 @@
 #define _connect_h
 
 
-#include <stdio.h>
-
 #include <string>
 
 #ifndef _das_h

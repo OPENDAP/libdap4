@@ -36,8 +36,6 @@
 
 #include "config.h"
 
-#include <stdlib.h>
-
 #include "Structure.h"
 #include "util.h"
 #include "debug.h"

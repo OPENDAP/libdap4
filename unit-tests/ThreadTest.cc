@@ -24,9 +24,7 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
  
 #include <pthread.h>
-#include <stdio.h>
-#include <stdio.h>
-#include <assert.h>
+#include <cstdio>
 #ifdef WIN32
 #include <io.h>
 #endif

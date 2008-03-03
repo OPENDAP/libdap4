@@ -26,9 +26,9 @@
 #ifndef http_cache_interrupt_handler_h
 #define http_cache_interrupt_handler_h
 
-#include <assert.h>
 #include <signal.h>
 
+#include <cassert>
 #include <iostream>
 #include <algorithm>
 

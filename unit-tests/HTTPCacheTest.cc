@@ -23,9 +23,11 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
  
-#include <stdio.h>		// for create_cache_root_test
-#include <unistd.h>		// ditto
+#include <unistd.h>   // for access stat
+#include <sys/types.h>
+#include <sys/stat.h>
 
+#include <cstdio>     // for create_cache_root_test
 #include <string>
 #include <vector>
 #include <algorithm>

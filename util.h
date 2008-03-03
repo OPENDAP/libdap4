@@ -36,7 +36,7 @@
 #ifndef _util_h
 #define _util_h 1
 
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 
 #ifndef _basetype_h

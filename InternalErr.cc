@@ -38,8 +38,6 @@ static char rcsid[] not_used =
     {"$Id$"
     };
 
-#include <stdio.h>
-
 #include <string>
 #include <sstream>
 

@@ -42,11 +42,7 @@ static char rcsid[] not_used =
     { "$Id$"
     };
 
-#include <stdio.h>
-#ifndef WIN32
-#include <unistd.h>
-#endif
-
+#include <cstring>
 #include <fstream>
 #include <algorithm>
 

@@ -32,8 +32,7 @@ static char id[] not_used =
     { "$Id$"
     };
 
-#include <math.h>
-#include <string.h>
+#include <cmath>
 
 #include <iostream>
 #include <sstream>

@@ -37,7 +37,7 @@ static char rcsid[] not_used =
     {"$Id$"
     };
 
-#include <stdio.h>
+#include <cstdio>
 #include <sys/types.h>
 
 #ifdef WIN32
@@ -45,7 +45,7 @@ static char rcsid[] not_used =
 #include <process.h>
 #include <fstream>
 #else
-#include <unistd.h>
+#include <unistd.h>    // for alarm and dup
 #include <sys/wait.h>
 #endif
 

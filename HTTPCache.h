@@ -26,15 +26,10 @@
 #ifndef _http_cache_h
 #define _http_cache_h
 
-#include <stdio.h>
 #include <pthread.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #ifdef WIN32
 #include <io.h>   // stat for win32? 09/05/02 jhrg
-#else
-#include <unistd.h>
 #endif
 
 #include <string>

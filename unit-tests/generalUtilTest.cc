@@ -34,7 +34,8 @@
 #include "debug.h"
 #include "util.h"
 #include "escaping.h"
-#include <assert.h>
+
+#include <cstring>
 #include <string>
 
 using std::cerr;

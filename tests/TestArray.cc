@@ -35,8 +35,9 @@
 
 #include "config.h"
 
+#include <cstring>
+
 #ifndef WIN32
-#include <unistd.h>
 #else
 #include <io.h>
 #include <fcntl.h>

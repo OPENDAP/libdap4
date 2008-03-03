@@ -37,8 +37,6 @@
 #define _internalerr_h 1
 
 
-#include <stdio.h>  // For FILE *
-
 #include <string>
 
 #ifndef _error_h

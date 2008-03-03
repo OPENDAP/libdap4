@@ -36,12 +36,11 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstring>
 
+#include <unistd.h>  // for stat
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 #ifdef WIN32
 #define FALSE 0

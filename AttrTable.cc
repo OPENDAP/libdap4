@@ -35,7 +35,7 @@
 
 static char rcsid[] not_used = "$Id$";
 
-#include <assert.h>
+#include <cassert>
 
 #include "AttrTable.h"
 

@@ -34,8 +34,7 @@
 
 #include "config.h"
 
-#include <assert.h>
-
+#include <cassert>
 #include <algorithm>
 
 #include "expr.h"

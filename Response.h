@@ -26,7 +26,7 @@
 #ifndef response_h
 #define response_h
 
-#include <stdio.h>
+#include <cstdio>
 
 #ifndef _debug_h
 #include "debug.h"

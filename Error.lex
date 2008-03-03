@@ -43,8 +43,8 @@
 
 static char rcsid[] not_used = {"$Id$"};
 
-#include <string.h>
-#include <assert.h>
+#include <cstdlib>
+#include <cassert>
 
 #ifndef YY_PROTO
 #define YY_PROTO(proto) proto

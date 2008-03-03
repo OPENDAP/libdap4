@@ -41,11 +41,9 @@ static char rcsid[] not_used =
     };
 
 
-#include <stdio.h>
+#include <cstdio>
 #ifdef WIN32
 #include <io.h>
-#else
-#include <unistd.h>
 #endif
 
 #include <iostream>

@@ -26,7 +26,7 @@
 #ifndef alarm_handler_h
 #define alarm_handler_h
 
-#include <stdio.h>
+#include <cstdio>
 
 #include <string>
 

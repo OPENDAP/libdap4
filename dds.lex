@@ -53,6 +53,8 @@
 
 #include "config_dap.h"
 
+#include <cstdio>
+
 static char rcsid[] not_used = {"$Id$"};
 
 #include <string.h>

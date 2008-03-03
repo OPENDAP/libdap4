@@ -43,31 +43,31 @@ while test $# -gt 0; do
 	;;
 
     --cc)
-	echo "`pkg-config --variable ccompiler libdap`"
+	pkg-config --variable ccompiler libdap
 	;;
 
     --cxx)
-	echo "`pkg-config --variable cppcompiler libdap`"
+	pkg-config --variable cppcompiler libdap
 	;;
 
     --cflags)
-	echo "`pkg-config --cflags libdap`"
+	pkg-config --cflags libdap
 	;;
 
     --libs)
-       	echo "`pkg-config --libs libdapclient libdapserver`"
+       	pkg-config --libs libdapclient libdapserver
        	;;
 
     --server-libs)
-       	echo "`pkg-config --libs libdapserver`"
+       	pkg-config --libs libdapserver
        	;;
 
     --client-libs)
-       	echo "`pkg-config --libs libdapclient`"
+       	pkg-config --libs libdapclient
        	;;
 
     --prefix)
-       	echo "`pkg-config --variable prefix libdap`"
+       	pkg-config --variable prefix libdap
        	;;
 
     --version)

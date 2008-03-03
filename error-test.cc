@@ -39,8 +39,6 @@ static char rcsid[] not_used =
     {"$Id$"
     };
 
-#include <assert.h>
-
 #include <GetOpt.h>
 
 #include "Error.h"

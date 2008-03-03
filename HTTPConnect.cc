@@ -30,12 +30,8 @@ static char rcsid[] not_used =
     { "$Id$"
     };
 
-#include <stdio.h>
-
 #ifdef WIN32
 #include <io.h>
-#else
-#include <unistd.h>
 #endif
 
 #include <string>
@@ -44,6 +40,7 @@ static char rcsid[] not_used =
 #include <algorithm>
 #include <sstream>
 #include <iterator>
+#include <cstdlib>
 
 //#define DODS_DEBUG
 //#define DODS_DEBUG2

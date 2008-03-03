@@ -36,11 +36,6 @@ static char rcsid[] not_used =
     };
 
 #include <signal.h>
-
-#ifndef WIN32
-#include <unistd.h>
-#endif
-
 #include <pthread.h>
 
 #include "SignalHandler.h"

@@ -35,7 +35,7 @@
 
 #include "config.h"
 
-#include <stdio.h>  // for stdin and stdout
+#include <cstdio>  // for stdin and stdout
 
 #include <sstream>
 #include <string>

@@ -27,6 +27,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <cstring>
 #include <iterator>
 #include <string>
 #include <algorithm>
