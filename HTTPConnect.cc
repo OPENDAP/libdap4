@@ -30,6 +30,10 @@ static char rcsid[] not_used =
     { "$Id$"
     };
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #ifdef WIN32
 #include <io.h>
 #endif

@@ -42,6 +42,11 @@ static char rcsid[] not_used =
 
 
 #include <cstdio>
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #ifdef WIN32
 #include <io.h>
 #endif

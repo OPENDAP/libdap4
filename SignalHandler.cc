@@ -38,6 +38,10 @@ static char rcsid[] not_used =
 #include <signal.h>
 #include <pthread.h>
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #include "SignalHandler.h"
 #include "util.h"
 

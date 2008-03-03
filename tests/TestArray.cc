@@ -37,6 +37,10 @@
 
 #include <cstring>
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #ifndef WIN32
 #else
 #include <io.h>
