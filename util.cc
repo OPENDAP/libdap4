@@ -529,13 +529,16 @@ get_tempfile_template(char *file_template)
     if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0))
     	goto valid_temp_directory;
 #else
-	// whitelist for a directory
-	Regex directory("[-a-zA-Z0-9_/]*");
 	
 	c = getenv("TMPDIR");
-	if (c && directory.match(c, strlen(c)) && (access(c, W_OK | R_OK) == 0))
-    	goto valid_temp_directory;
-
+	// Changed this so that it uses the pathname_ok() method instead
+	// of using its own regex. jhrg 2/4/08
+	if (c) {
+	    string tmpdir = *c;
+	    if (pathname_ok(tmpdir) && (access(c, W_OK | R_OK) == 0))
+	        goto valid_temp_directory;
+	}
+	
 #ifdef P_tmpdir
 	if (access(P_tmpdir, W_OK | R_OK) == 0) {
         c = P_tmpdir;
@@ -631,7 +634,7 @@ pathname_ok(const string &path, bool strict)
     if (path.length() > 255)
         return false;
     
-    Regex name("[0-9A-z_./-]+");
+    Regex name("[-0-9A-z_./]+");
     if (!strict)
         name = "[:print:]+";
         
