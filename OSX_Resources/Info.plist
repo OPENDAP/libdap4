@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleGetInfoString</key>
-	<string>3.7.10, OPeNDAP</string>
+	<string>3.8.0, OPeNDAP</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.opendap.libdap</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.7.10</string>
+	<string>3.8.0</string>
 	<key>IFPkgFlagAllowBackRev</key>
 	<false/>
 	<key>IFPkgFlagAuthorizationAction</key>
@@ -23,7 +23,7 @@
 	<key>IFPkgFlagInstallFat</key>
 	<false/>
 	<key>IFPkgFlagInstalledSize</key>
-	<integer>32600</integer>
+	<integer>32620</integer>
 	<key>IFPkgFlagIsRequired</key>
 	<false/>
 	<key>IFPkgFlagOverwritePermissions</key>

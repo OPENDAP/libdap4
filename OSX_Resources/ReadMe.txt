@@ -2,13 +2,33 @@
 
 $Id$
 
+Updated for Version 3.8.0 (29 February 2008)
+
+The libdap classes and code are now inside of the libdap namespace. In orderto access any of the classes, for example, you will need to do one of thefollowing. After including the libdap headers you can:
+
+1. add a using statement for the entire libdap namespace:
+
+using namespace libdap ;
+
+2. add a using statement for the classes that you will be using:
+
+using libdap::DAS ;
+
+3. inside your code scope the use of libdap classes.
+
+libdap::DAS *das = code_to_get_das() ;
+
+Added method to HTTPCache to return not only the FILE pointer of a cachedresponse but also the name of the file in the cache, to allow for this filename to be passed to data handlers in the BES to be read.
+
+See NEWS for more information about changes for this version and ChangeLogfor the gory details.
+
 Updated for Version 3.7.10 (28 November 2007)
 
 A bug fix release. See NEWS.
 
 Updated for Version 3.7.9 (13 Novenber 2007)
 
-This release is a bug fix and refactoring release. Old classes which were nolonger used have been removed, the FILE* output methods are slated to bereplaced with ones which will use iostream and will support a chuckedtransfer 'Marshaller,' and the transfer_data() methods have been made aformal part of the library, implemented for all classes, fixed and renamed tointern_data(). Many bugs int eh library were also fixed.
+This release is a bug fix and refactoring release. Old classes which were nolonger used have been removed, the FILE* output methods are slated to bereplaced with ones which will use iostream and will support a chuckedtransfer 'Marshaller,' and the transfer_data() methods have been made aformal part of the library, implemented for all classes, fixed and renamed tointern_data(). Many bugs in the library were also fixed.
 
 Updated for version 3.7.8 (26 June 2007)
 

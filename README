@@ -1,7 +1,23 @@
 
 $Id$
 
-Updated for Version 3.7.11 (29 February 2008)
+Updated for Version 3.8.0 (29 February 2008)
+
+The libdap classes and code are now inside of the libdap namespace. In order
+to access any of the classes, for example, you will need to do one of the
+following. After including the libdap headers you can:
+
+1. add a using statement for the entire libdap namespace:
+
+using namespace libdap ;
+
+2. add a using statement for the classes that you will be using:
+
+using libdap::DAS ;
+
+3. inside your code scope the use of libdap classes.
+
+libdap::DAS *das = code_to_get_das() ;
 
 Added method to HTTPCache to return not only the FILE pointer of a cached
 response but also the name of the file in the cache, to allow for this file

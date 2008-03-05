@@ -1,3 +1,80 @@
+2008-03-03  James Gallagher <jgallagher@opendap.org>
+
+	Added conditional include of unistd.h for RHEL3 build.
+	M    SignalHandler.cc
+	M    tests/TestArray.cc
+	M    HTTPConnect.cc
+	M    DAS.cc
+
+2008-03-03  James Gallagher <jgallagher@opendap.org>
+
+	Header patch from Patrice Dumas.
+	Many files modified.
+
+2008-03-03  James Gallagher <jgallagher@opendap.org>
+
+	Directory regex --> pathname_ok() call. A minor change.
+	M Util.cc
+
+2008-03-02  James Gallagher <jgallagher@opendap.org>
+
+	Added shell commands so build works with bison 1.28. That
+	version treats the -o option differently than the 2.x version.
+	M Makefile.am
+
+2008-03-01  James Gallagher <jgallagher@opendap.org>
+
+	Tweaked the comments about the YY_INPUT macro.
+	M dds.lex
+
+2008-02-29  James Gallagher <jgallagher@opendap.org>
+
+	Switch back to the old YY_INPUT macro for now...
+	M    dds.lex
+
+2008-02-29  James Gallagher <jgallagher@opendap.org>
+
+	I found that a number of the places where a *.tab.h was included did
+	not get changed when I went to the .hh file names (which is how
+	bison does things when you tell it to make the output a *.tab.cc
+	file). Here are the fixes. the distcheck and rpm targets now work.
+	M    Error.lex
+	M    Int16.cc
+	M    error-test.cc
+	M    tests/expr-test.cc
+	M    tests/dds-test.cc
+	M    UInt16.cc
+	M    Int32.cc
+	M    gse-test.cc
+	M    Str.cc
+	M    Float64.cc
+	M    Operators.h
+	M    UInt32.cc
+
+2008-02-29  James Gallagher <jgallagher@opendap.org>
+
+	There are three changes in these files: 1. formatting;
+	2. Grammar builds; 3. Security fixes. For the formatting
+	changes some files just got messed up and I was sick of
+	looking at it. Grammar changes amount to simplifying the
+	builds of the lex and y files. Now the sed calls in the
+	Makefile have been removed - commented out to be completely
+	removed later. 3. Nothing major on the security front
+	but I made some changes all the same.
+
+2008-02-29  Patrick West <pwest@ucar.edu>
+
+	Updates for release of 3.7.11.
+	M    configure.ac
+	M    ChangeLog
+	M    INSTALL
+	M    libdap.spec
+	M    README
+	M    NEWS
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2008-02-28  Patrick West <pwest@ucar.edu>
 
 	If cleanup.sh does not exist, then a make clean will error out.
