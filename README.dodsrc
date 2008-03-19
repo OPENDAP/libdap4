@@ -8,6 +8,13 @@ the configuration file resides in a users home directory and is called
 `.dodsrc'. This can be changed by creating the environment variable
 DODS_CONF and setting it to the full pathname of the configuration file.
 
+About the Win32 builds:
+
+For Win32 (Windows XP and Vista) a client linked with libdapclient will look
+for the .dodsrc file in the following locations: C:\Dods; %APPDATA%; %TEMP%;
+and %TMP%. If no .dodsrc file is found, the library will create one in
+%APPDATA%.
+
 New feature added with libdap version 3.7.3 (7 Nov 2006)
 
 The configuration file can now be used to control client-side behavior when
