@@ -39,7 +39,7 @@ static char rcsid[] not_used =
 #include <pthread.h>
 
 #ifdef HAVE_UNISTD_H
-#include <unistd.h>
+#include <unistd.h> //for _exit
 #endif
 
 #include "SignalHandler.h"

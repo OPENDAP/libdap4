@@ -62,6 +62,8 @@
 %{
 #include "config_dap.h"
 
+#include <cstring>
+
 static char rcsid[] not_used ={"$Id$"};
 
 #ifndef _MSC_VER

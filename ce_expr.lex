@@ -52,6 +52,7 @@ static char rcsid[] not_used = {"$Id$"};
 
 #include <cstdio>
 #include <string>
+#include <cstring>
 
 #ifndef YY_PROTO
 #define YY_PROTO(proto) proto
