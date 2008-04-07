@@ -1481,7 +1481,7 @@ HTTPCache::create_location(CacheEntry *entry)
     // user." 09/19/02 jhrg
     int fd = MKSTEMP(templat); // fd mode is 666 or 600 (Unix)
     if (fd < 0) {
-        delete templat; templat = 0;
+        delete[] templat; templat = 0;
         close(fd);
         throw Error("The HTTP Cache could not create a file to hold the response; it will not be cached.");
     }
