@@ -336,6 +336,10 @@ HTTPConnect::www_lib_init()
     // In read_url a call to CURLOPT_WRITEHEADER is used to set the fourth
     // param of save_raw_http_headers to a vector<string> object.
 
+    // Follow 302 (redirect) responses
+    curl_easy_setopt(d_curl, CURLOPT_FOLLOWLOCATION, 1);
+    curl_easy_setopt(d_curl, CURLOPT_MAXREDIRS, 5);
+
     // If the user turns off SSL validation...
     if (!d_rcr->get_validate_ssl() == 0) {
         curl_easy_setopt(d_curl, CURLOPT_SSL_VERIFYPEER, 0);
