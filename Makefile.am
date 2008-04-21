@@ -276,7 +276,7 @@ lex.das.cc: das.lex das.tab.cc das.tab.hh
 #	sed 's/lex\.das\.c/lex\.das\.cc/g' < lex.das.cc > tmp
 #	mv tmp lex.das.cc
 
-# The funny if statment accommodates older versions of bison which treats
+# The funny if statment accommodates older versions of bison that treats
 # -o differently than the 2.x versions. jhrg 3/2/08
 das.tab.cc das.tab.hh: das.y DAS.h
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p das -o das.tab.cc $<

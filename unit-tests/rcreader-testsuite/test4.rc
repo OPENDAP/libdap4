@@ -1,0 +1,19 @@
+# Test DODS client configuation file.
+USE_CACHE=0
+MAX_CACHE_SIZE=20
+MAX_CACHED_OBJ=5
+IGNORE_EXPIRES=0
+CACHE_ROOT=/home/jimg/.dods_cache/
+DEFAULT_EXPIRES=86400
+ALWAYS_VALIDATE=0
+# Request servers compress responses if possible?
+# 1 (yes) or 0 (false).
+DEFLATE=1
+
+# Proxy configuration:
+# An alternative form of the PROXY_SERVER that's more intuitive is to not
+# have the protocol given using a comma-separated clause but to include it as
+# part of the host name. Here we test for a mixture of the notations. The new
+# syntax to support is [<protocol>,][http://][user:pw@]host[:port].
+PROXY_SERVER=jimg:test@proxy.local.org:3128
+

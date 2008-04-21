@@ -35,7 +35,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-// #define DODS_DEBUG
+#define DODS_DEBUG
 #include "RCReader.h"
 #include "debug.h"
 #include <test_config.h>
@@ -71,6 +71,8 @@ public:
     CPPUNIT_TEST(proxy_test1);
     CPPUNIT_TEST(proxy_test2);
     CPPUNIT_TEST(proxy_test3);
+    CPPUNIT_TEST(proxy_test4);
+    CPPUNIT_TEST(proxy_test5);
     CPPUNIT_TEST(validate_ssl_test);
     
     CPPUNIT_TEST_SUITE_END();
@@ -234,6 +236,63 @@ public:
 	}
     }
     
+    void proxy_test4() {
+	string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test4.rc" ;
+	DBG(cerr << "rc: " << rc << endl);
+	putenv((char *)rc.c_str());
+
+	try {
+	    RCReader::delete_instance();
+	    RCReader::initialize_instance();
+	    RCReader *reader = RCReader::instance();
+	    DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
+	    CPPUNIT_ASSERT(reader->d_rc_file_path 
+			   == (string)TEST_SRC_DIR + "/rcreader-testsuite/test4.rc");
+	    CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
+
+	    string proxy = reader->get_proxy_server_host_url();
+	    DBG(cerr << "get_proxy_server_host_url(): " << proxy << endl);
+	    CPPUNIT_ASSERT(proxy == "jimg:test@proxy.local.org:3128");
+
+	    CPPUNIT_ASSERT(reader->get_proxy_server_host() == "proxy.local.org");
+	    CPPUNIT_ASSERT(reader->get_proxy_server_port() == 3128);
+	    CPPUNIT_ASSERT(reader->get_proxy_server_userpw() == "jimg:test");
+	}
+	catch(Error &e) {
+	    DBG(cerr << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(e.get_error_message() != "");
+	}
+    }
+    
+    void proxy_test5() {
+	string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test5.rc" ;
+	DBG(cerr << "rc: " << rc << endl);
+	putenv((char *)rc.c_str());
+
+	try {
+	    RCReader::delete_instance();
+	    RCReader::initialize_instance();
+	    RCReader *reader = RCReader::instance();
+	    DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
+	    CPPUNIT_ASSERT(reader->d_rc_file_path 
+			   == (string)TEST_SRC_DIR + "/rcreader-testsuite/test5.rc");
+	    string proxy = reader->get_proxy_server_host_url();
+	    DBG(cerr << "get_proxy_server_host_url(): " << proxy << endl);
+	    CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
+
+	    CPPUNIT_ASSERT(proxy == "jimg:test@proxy.local.org:3128");
+
+	    CPPUNIT_ASSERT(reader->get_proxy_server_host() == "proxy.local.org");
+	    CPPUNIT_ASSERT(reader->get_proxy_server_port() == 3128);
+	    CPPUNIT_ASSERT(reader->get_proxy_server_userpw() == "jimg:test");
+	}
+	catch(Error &e) {
+	    DBG(cerr << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(e.get_error_message() != "");
+	}
+    }
+    
+
     // This simple test checks to see that the VALIDATE_SSL parameter is 
     // read correctly.
     void validate_ssl_test() {

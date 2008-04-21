@@ -89,7 +89,7 @@ RCReader::write_rc_file(const string &pathname)
     if (fpo) {
         // This means we just created the file.  We will now save
         // the defaults in it for future use.
-        fpo << "# OPeNDAP client configuation file. See the OPeNDAP" << endl;
+        fpo << "# OPeNDAP client configuration file. See the OPeNDAP" << endl;
         fpo << "# users guide for information." << endl;
         fpo << "USE_CACHE=" << _dods_use_cache << endl;
         fpo << "# Cache and object size are given in megabytes (20 ==> 20Mb)."
@@ -108,11 +108,15 @@ RCReader::write_rc_file(const string &pathname)
         fpo << "# will only work with signed certificates." << endl;
         fpo << "VALIDATE_SSL=" << d_validate_ssl << endl;
 
-        fpo << "# Proxy configuration:" << endl;
-        fpo << "# PROXY_SERVER=<protocol>,<[username:password@]host[:port]>"
+        fpo << "# Proxy configuration (optional parts in []s)." << endl;
+	fpo << "# You may also use the 'http_proxy' environment variable" 
+	    << endl;
+	fpo << "# but a value in this file will override that env variable."
+	    << endl;
+        fpo << "# PROXY_SERVER=[http://][username:password@]host[:port]"
         << endl;
         if (!d_dods_proxy_server_host.empty()) {
-            fpo << "PROXY_SERVER=" <<  d_dods_proxy_server_protocol << ","
+            fpo << "PROXY_SERVER=" <<  d_dods_proxy_server_protocol << "://"
             << (d_dods_proxy_server_userpw.empty()
                 ? ""
                 : d_dods_proxy_server_userpw + "@")
@@ -120,10 +124,9 @@ RCReader::write_rc_file(const string &pathname)
             + ":" + long_to_string(d_dods_proxy_server_port) << endl;
         }
 
-        fpo << "# NO_PROXY_FOR=<protocol>,<host|domain>" << endl;
+        fpo << "# NO_PROXY_FOR=<host|domain>" << endl;
         if (!d_dods_no_proxy_for_host.empty()) {
-            fpo << "NO_PROXY_FOR=" << d_dods_no_proxy_for_protocol << ","
-            << d_dods_no_proxy_for_host << endl;
+            fpo << "NO_PROXY_FOR=" << d_dods_no_proxy_for_host << endl;
         }
 
         fpo << "# AIS_DATABASE=<file or url>" << endl;
@@ -205,15 +208,32 @@ RCReader::read_rc_file(const string &pathname)
             else if ((strncmp(tempstr, "PROXY_SERVER", 12) == 0)
                      && tokenlength == 12) {
                 // Setup a proxy server for all requests.
+		// The original syntax was <protocol>,<machine> where the
+		// machine could also contain the user/pass and port info.
+		// Support that but also support machine prefixed by
+		// 'http://' with and without the '<protocol>,' prefix. jhrg
+		// 4/21/08 (see bug 1095).
                 string proxy = value;
                 string::size_type comma = proxy.find(',');
 
-                // Since the protocol is required, the comma *must* be
-                // present. We could throw an Error on the malformed line...
-                if (comma == string::npos)
-                    continue;
-                d_dods_proxy_server_protocol = proxy.substr(0, comma);
-                proxy = proxy.substr(comma + 1);
+                // Since the <protocol> is now optional, the comma might be
+                // here. If it is, check that the protocol given is http.
+                if (comma != string::npos) {
+		    d_dods_proxy_server_protocol = proxy.substr(0, comma);
+		    downcase(d_dods_proxy_server_protocol);
+		    if (d_dods_proxy_server_protocol != "http")
+			throw Error("The only supported protocol for a proxy server is \"HTTP\". Correct your \".dodsrc\" file.");
+		    proxy = proxy.substr(comma + 1);
+		}
+		else {
+		    d_dods_proxy_server_protocol = "http";
+		}
+
+		// Look for a 'protocol://' prefix; skip if found
+		string::size_type protocol = proxy.find("://");
+		if (protocol != string::npos) {
+		    proxy = proxy.substr(protocol + 3);
+		}
 
                 // Break apart into userpw, host and port.
                 string::size_type at_sign = proxy.find('@');
@@ -229,20 +249,11 @@ RCReader::read_rc_file(const string &pathname)
                 if (colon != string::npos) {
                     d_dods_proxy_server_host = proxy.substr(0, colon);
                     d_dods_proxy_server_port
-                    = strtol(proxy.substr(colon + 1).c_str(), 0, 0);
+			= strtol(proxy.substr(colon + 1).c_str(), 0, 0);
                 }
                 else {
                     d_dods_proxy_server_host = proxy;
-                    // No port given, look at protocol or throw
-                    if (d_dods_proxy_server_protocol == "http")
-                        d_dods_proxy_server_port = 80;
-                    else if (d_dods_proxy_server_protocol == "https")
-                        d_dods_proxy_server_port = 443;
-                    else if (d_dods_proxy_server_protocol == "ftp")
-                        d_dods_proxy_server_port = 21;
-                    else throw Error("Could not determine the port to use for proxy '"
-                                         + d_dods_proxy_server_host
-                                         + ".' Please check your .dodsrc file.");
+		    d_dods_proxy_server_port = 80;
                 }
             }
             else if ((strncmp(tempstr, "NO_PROXY_FOR", 12) == 0)
@@ -253,11 +264,16 @@ RCReader::read_rc_file(const string &pathname)
 
                 // Since the protocol is required, the comma *must* be
                 // present. We could throw an Error on the malformed line...
-                if (comma == string::npos)
-                    continue;
-                d_dods_no_proxy_for_protocol = no_proxy.substr(0, comma);
-                d_dods_no_proxy_for_host = no_proxy.substr(comma + 1);
-                d_dods_no_proxy_for = true;
+                if (comma == string::npos) {
+		    d_dods_no_proxy_for_protocol = "http";
+		    d_dods_no_proxy_for_host = no_proxy;
+		    d_dods_no_proxy_for = true;
+		}
+		else {
+		    d_dods_no_proxy_for_protocol = no_proxy.substr(0, comma);
+		    d_dods_no_proxy_for_host = no_proxy.substr(comma + 1);
+		    d_dods_no_proxy_for = true;
+		}
             }
         }
 
@@ -311,7 +327,7 @@ RCReader::check_string(string env_var)
     return "";
 }
 
-/** Examine an environment variable. If the env variable is set, then If
+/** Examine an environment variable. If the env variable is set, then if
     this is the name of a file, use that as the name of the RC file. If this
     is the name of a directory, look in that directory for a file called
     .dodsrc. If there's no such file, create it using default values for its

@@ -1,6 +1,16 @@
 
 $Id$
 
+News for version ...
+
+The syntax for PROXY_SERVER and NO_PROXY_FOR have been fixed so that they are
+easier to use. PROXY_SERVER now takes a value like
+'http://user:pw@squid.proxy.edu:3128' and uses it correctly. In that value,
+all parts but the host name (squid.proxy.edu) are optional and the old syntax,
+as well as several comman variants, are accepted. For the NO_PROXY_FOR entry,
+the '<protocol>,' is now optional. Only the HTTP protocol is supported or the
+proxy server.
+
 News for version 3.8.0, 29 February 2008
 
 The libdap classes and code are now inside of the libdap namespace. In order
