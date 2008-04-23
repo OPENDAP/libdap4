@@ -3,13 +3,13 @@
 #define _config_h
 
 #define CNAME "libdap"
-#define CVER "3.7.3"
-#define DAP_PROTOCOL_VERSION "3.1"
-#define DVR "libdap/3.7.3"
+#define CVER "3.8.1 svn"
+#define DAP_PROTOCOL_VERSION "3.2"
+#define DVR "libdap/3.8.1 svn"
 #define PACKAGE "libdap"
 #define PACKAGE_NAME "libdap"
-#define PACKAGE_STRING "libdap 3.7.3"
-#define PACKAGE_VERSION "3.7.3"
+#define PACKAGE_STRING "libdap 3.8.1 svn"
+#define PACKAGE_VERSION "3.8.1-svn"
 
 #define HAVE_ALLOCA 1
 #define HAVE_MKTIME 1

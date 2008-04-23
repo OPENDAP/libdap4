@@ -34,6 +34,7 @@
 
     @author: jose */
 
+// #define DODS_DEBUG
 #include "config.h"
 
 #include <cstring>
@@ -293,17 +294,23 @@ RCReader::read_rc_file(const string &pathname)
 string
 RCReader::check_string(string env_var)
 {
+	DBG(cerr << "Entering check_string... (" << env_var << ")" << endl);
     struct stat stat_info;
 
-    if (stat(env_var.c_str(), &stat_info) != 0)
+	if (stat(env_var.c_str(), &stat_info) != 0) {
+		DBG(cerr << "stat returned non-zero" << endl);
         return "";  // ENV VAR not a file or dir, bail
+	}
 
-    if (S_ISREG(stat_info.st_mode))
+	if (S_ISREG(stat_info.st_mode)) {
+		DBG(cerr << "S_ISREG: " << S_ISREG(stat_info.st_mode) << endl);
         return env_var;  // ENV VAR is a file, use it
+	}
 
     // ENV VAR is a directory, does it contain .dodsrc? Can we create
     // .dodsrc if it's not there?
     if (S_ISDIR(stat_info.st_mode)) {
+		DBG(cerr << "S_ISDIR: " << S_ISDIR(stat_info.st_mode) << endl);
         if (*env_var.rbegin() != DIR_SEP_CHAR) // Add trailing / if missing
             env_var += DIR_SEP_STRING;
         // Trick: set d_cache_root here in case we're going to create the
@@ -313,17 +320,22 @@ RCReader::check_string(string env_var)
         d_cache_root = env_var + string(".dods_cache") + DIR_SEP_STRING;
         env_var += ".dodsrc";
         if (stat(env_var.c_str(), &stat_info) == 0 &&
-            S_ISREG(stat_info.st_mode))
+			S_ISREG(stat_info.st_mode)) {
+			DBG(cerr << "Found .dodsrc in \"" << env_var << "\"" << endl);
             return env_var; // Found .dodsrc in ENV VAR
+		}
 
         // Didn't find .dodsrc in ENV VAR and ENV VAR is a directory; try to
         // create it. Note write_rc_file uses d_cache_root (set above) when
         // it creates the RC file's contents.
-        if (write_rc_file(env_var))
+		if (write_rc_file(env_var)) {
+			DBG(cerr << "Wrote .dodsrc in \"" << env_var << "\"" << endl);
             return env_var;
+		}
     }
 
     // If we're here, then we've not found or created the RC file.
+	DBG(cerr << "could neither find nor create a .dodsrc file" << endl);
     return "";
 }
 
@@ -401,6 +413,7 @@ RCReader::RCReader() throw(Error)
     if (d_rc_file_path.empty())
         d_rc_file_path = check_env_var("HOME");
 #endif
+	DBG(cerr << "Looking for .dodsrc in: " << d_rc_file_path << endl);
 
     if (!d_rc_file_path.empty())
         read_rc_file(d_rc_file_path);
@@ -423,21 +436,23 @@ RCReader::delete_instance()
 void
 RCReader::initialize_instance()
 {
-    DBG(cerr << "RCReader::initialize_instance() ... ");
+    DBGN(cerr << "RCReader::initialize_instance() ... ");
 
     RCReader::_instance = new RCReader;
     atexit(RCReader::delete_instance);
 
-    DBGN(cerr << "exiting." << endl);
+    DBG(cerr << "exiting." << endl);
 }
 
 RCReader*
 RCReader::instance()
 {
+	DBG(cerr << "Entring RCReader::instance" << endl);
     // The instance_control variable is defined at the top of this file.
     // 08/07/02 jhrg
     pthread_once(&instance_control, initialize_instance);
-
+	
+	DBG(cerr << "Instance value: " << hex << _instance << dec << endl);
     return _instance;
 }
 
