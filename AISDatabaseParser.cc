@@ -28,8 +28,10 @@
 #include <cstring>
 #include <stdarg.h>
 
+#if 0
 #ifdef WIN32
 #define vsnprintf _vsnprintf
+#endif
 #endif
 
 #include "AISDatabaseParser.h"
