@@ -334,7 +334,7 @@ RCReader::check_string(string env_var)
 		}
     }
 
-    // If we're here, then we've not found or created the RC file.
+    // If we're here, then we've neither found nor created the RC file.
 	DBG(cerr << "could neither find nor create a .dodsrc file" << endl);
     return "";
 }
@@ -376,6 +376,7 @@ RCReader::RCReader() throw(Error)
     d_validate_ssl = 1;
 
     //flags for PROXY_SERVER=<protocol>,<host url>
+    // New syntax PROXY_SERVER=[http://][user:pw@]host[:port]
     d_dods_proxy_server_protocol = "";
     d_dods_proxy_server_host = "";
     d_dods_proxy_server_port = 0;
@@ -383,6 +384,7 @@ RCReader::RCReader() throw(Error)
 
     _dods_proxy_server_host_url = ""; // deprecated
 
+    // PROXY_FOR is deprecated.
     // flags for PROXY_FOR=<regex>,<proxy host url>,<flags>
     _dods_proxy_for = false; // true if proxy_for is used.
     _dods_proxy_for_regexp = "";
@@ -390,13 +392,14 @@ RCReader::RCReader() throw(Error)
     _dods_proxy_for_regexp_flags = 0;
 
     //flags for NO_PROXY_FOR=<protocol>,<host>,<port>
+    // New syntax NO_PROXY_FOR=<host|domain>
     d_dods_no_proxy_for = false;
-    d_dods_no_proxy_for_protocol = "";
+    d_dods_no_proxy_for_protocol = ""; // deprecated
     d_dods_no_proxy_for_host = "";
     // default to port 0 if not specified. This means all ports. Using 80
     // will fail when the URL does not contain the port number. That's
     // probably a bug in libwww. 10/23/2000 jhrg
-    _dods_no_proxy_for_port = 0;
+    _dods_no_proxy_for_port = 0; // deprecated
 
 #ifdef WIN32
     string homedir = string("C:") + string(DIR_SEP_STRING) + string("Dods");

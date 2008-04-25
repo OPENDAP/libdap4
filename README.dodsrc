@@ -15,11 +15,13 @@ for the .dodsrc file in the following locations: C:\Dods; %APPDATA%; %TEMP%;
 and %TMP%. If no .dodsrc file is found, the library will create one in
 %APPDATA%. Note that on some Windows XP machines a user's 'Application Data'
 directory is hidden. To see and edit the .dodsrc file, open a file browser
-window from teh Start menu, go to your home directory and then type in 
+window from the Start menu, go to your home directory and then type in 
 'Application Data'. The .dodsrc file will be created by the first OPeNDAP
 client to run if there's not a copy already there.
 
-Another note about the Win32 builds and the .dodsrc file: It appears that client-side
+Another note about the Win32 builds and the .dodsrc file: It appears that
+client-side caching does not work in recent versions of the library, so until
+further notice, leave USE_CACHE set to zero.
 
 New feature added with libdap version 3.7.3 (7 Nov 2006)
 
