@@ -316,7 +316,9 @@ HTTPConnect::www_lib_init()
                          d_rcr->get_proxy_server_port());
 
 	// As of 4/21/08 only NTLM, Digest and Basic work.
+#ifdef CURLOPT_PROXYAUTH
         curl_easy_setopt(d_curl, CURLOPT_PROXYAUTH, (long)CURLAUTH_ANY);
+#endif
 
         // Password might not be required. 06/21/04 jhrg
         if (!d_rcr->get_proxy_server_userpw().empty())
