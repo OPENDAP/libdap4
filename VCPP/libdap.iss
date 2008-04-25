@@ -10,10 +10,10 @@
 AppName=OPeNDAP libdap
 AppVerName=OPeNDAP libdap 3.8.0
 AppPublisher=OPeNDAP
-DefaultDirName={pf}\opendap
+DefaultDirName={sd}\opendap
 DefaultGroupName=OPeNDAP libdap
 AllowNoIcons=yes
-;; InfoBeforeFile=BeforeInstall.txt
+InfoBeforeFile=BeforeInstall.txt
 OutputBaseFilename=libdap 3.8.0
 Compression=lzma/ultra
 SolidCompression=yes
@@ -31,8 +31,8 @@ Source: "..\..\prepkg\opendap\libdap\dll\*"; DestDir: "{sys}"; Flags: ignorevers
 
 ;; This gives the binary user the whole set of opendap tools which just includes a handful of source/header files
 ;; That they might not need, but then again they might.
-Source: "C:\Program Files\opendap-tools\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Program Files\opendap-tools\dll\*"; DestDir: "{sys}"; Flags: ignoreversion
+;;Source: "C:\Program Files\opendap-tools\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\opendap-tools\dll\*"; DestDir: "{sys}"; Flags: ignoreversion
 
 ;; This somewhat inscrutable code sets the 'Path' environment variable so users can run getdap, et c.,
 ;; In a shell (cmd.exe).
