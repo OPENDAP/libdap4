@@ -36,6 +36,10 @@
 #include <vector>
 #include <map>
 
+#ifndef _http_cache_table_h
+#include "HTTPCacheTable.h"
+#endif
+
 #ifndef _error_h
 #include "Error.h"
 #endif
@@ -62,7 +66,9 @@
 #include "SignalHandlerRegisteredErr.h"
 #endif
 
-const int CACHE_TABLE_SIZE = 1499;
+#if 0
+extern const int CACHE_TABLE_SIZE;
+#endif
 
 using namespace std;
 
@@ -129,6 +135,7 @@ namespace libdap
 class HTTPCache
 {
 public:
+#if 0
     /** A struct used to store information about responses in the
     cache's volatile memory. 
 
@@ -177,7 +184,8 @@ public:
                 no_cache(false), locked(0)
     {}
     };
-
+#endif
+    
 #ifdef WIN32
     //  Declared private below for gcc.  There appears to be a
     //  difference in public vs. private under gcc when objects
@@ -229,6 +237,7 @@ private:
     // Lock non-const methods (also ones that use the STL).
     pthread_mutex_t d_cache_mutex;
 
+#if 0
     // Typedefs for CacheTable. A CacheTable is a vector of vectors of
     // CacheEntries. The outer vector is accessed using the hash value.
     // Entries with matching hashes occupy successive positions in the inner
@@ -243,8 +252,11 @@ private:
     typedef CachePointers *CacheTable[CACHE_TABLE_SIZE];
 
     CacheTable d_cache_table;
-
-    map<FILE *, CacheEntry *> d_locked_entries;
+#endif
+    
+    HTTPCacheTable d_http_cache_table;
+    
+    map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
     vector<string> d_open_files;
 
     static HTTPCache *_instance;
@@ -284,7 +296,7 @@ private:
 
     static void delete_instance(); // Run by atexit (hence static)
 
-    CacheEntry *cache_index_parse_line(const char *line);
+    HTTPCacheTable::CacheEntry *cache_index_parse_line(const char *line);
     bool cache_index_read();
     bool cache_index_delete();
 
@@ -293,15 +305,15 @@ private:
     bool get_single_user_lock(bool force = false);
     void release_single_user_lock();
 
-    void add_entry_to_cache_table(CacheEntry *e);
+    void add_entry_to_cache_table(HTTPCacheTable::CacheEntry *e);
     void remove_entry_from_cache_table(const string &url);
-    void parse_headers(CacheEntry *entry, const vector<string> &headers);
-    void calculate_time(CacheEntry *entry, time_t request_time);
+    void parse_headers(HTTPCacheTable::CacheEntry *entry, const vector<string> &headers);
+    void calculate_time(HTTPCacheTable::CacheEntry *entry, time_t request_time);
 #ifndef WIN32  //  Declared public above for win32
-    void remove_cache_entry(CacheEntry *entry);
+    void remove_cache_entry(HTTPCacheTable::CacheEntry *entry);
 #endif
-    CacheEntry *get_entry_from_cache_table(const string &url) const;
-    CacheEntry *get_entry_from_cache_table(int hash, const string &url) const;
+    HTTPCacheTable::CacheEntry *get_entry_from_cache_table(const string &url) /*const*/;
+    HTTPCacheTable::CacheEntry *get_entry_from_cache_table(int hash, const string &url) /*const*/;
 
     // I made these four methods so they could be tested by HTTPCacheTest.
     // Otherwise they would be static functions in HTTPCache.cc. 10/01/02
@@ -314,7 +326,7 @@ private:
     void create_cache_root(const string &cache_root);
 
     string create_hash_directory(int hash);
-    void create_location(CacheEntry *entry);
+    void create_location(HTTPCacheTable::CacheEntry *entry);
 
 #ifndef WIN32  //  Declared public above for win32
     bool stopGC() const;

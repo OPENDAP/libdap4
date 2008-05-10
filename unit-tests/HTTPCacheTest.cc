@@ -71,7 +71,7 @@ file_size(string name)
 }
 
 inline static void 
-print_entry(HTTPCache *, HTTPCache::CacheEntry **e) 
+print_entry(HTTPCache *, HTTPCacheTable::CacheEntry **e) 
 {
     cerr << "Entry: " << (*e)->cachename << endl;
 }
@@ -190,14 +190,14 @@ public:
     void cache_index_read_test() {
 	CPPUNIT_ASSERT(hc->cache_index_read());
 
-	HTTPCache::CacheEntry *e = hc->get_entry_from_cache_table(localhost_url);
+	HTTPCacheTable::CacheEntry *e = hc->get_entry_from_cache_table(localhost_url);
 
 	CPPUNIT_ASSERT(e);
 	CPPUNIT_ASSERT(e->url == localhost_url);
     }
 
     void cache_index_parse_line_test() {
-	HTTPCache::CacheEntry *e = hc->cache_index_parse_line(index_file_line.c_str());
+	HTTPCacheTable::CacheEntry *e = hc->cache_index_parse_line(index_file_line.c_str());
 
 	CPPUNIT_ASSERT(e->url == localhost_url);
 	CPPUNIT_ASSERT(e->cachename 
@@ -217,19 +217,19 @@ public:
 
     // This will also test the add_entry_to_cache_table() method.
     void get_entry_from_cache_table_test() {
-	HTTPCache::CacheEntry *e 
+	HTTPCacheTable::CacheEntry *e 
 	    = hc->cache_index_parse_line(index_file_line.c_str());
 
 	// Test adding an entry and getting it back.
 	hc->add_entry_to_cache_table(e);
 
-	HTTPCache::CacheEntry *e2 
+	HTTPCacheTable::CacheEntry *e2 
 	    = hc->get_entry_from_cache_table(localhost_url);
 	CPPUNIT_ASSERT(e2);
 	CPPUNIT_ASSERT(e2->url == localhost_url);
 
 	// Now test what happens when two entries collide.
-	HTTPCache::CacheEntry *e3
+	HTTPCacheTable::CacheEntry *e3
 	    = hc->cache_index_parse_line(index_file_line.c_str());
 
 	// Change the url so we can tell the difference (the hash is the same)
@@ -240,7 +240,7 @@ public:
 	// Use the version of get_entry... that lets us pass in the hash
 	// value (as opposed to the normal version which calculates the hash
 	// from the url. 10/01/02 jhrg
-	HTTPCache::CacheEntry *g = hc->get_entry_from_cache_table(hash_value, e3->url);
+	HTTPCacheTable::CacheEntry *g = hc->get_entry_from_cache_table(hash_value, e3->url);
 	CPPUNIT_ASSERT(g);
 	CPPUNIT_ASSERT(g->url == e3->url);
 
@@ -259,7 +259,7 @@ public:
 	hc_4->d_cache_index = hc_3->d_cache_root + "test_index";
 	hc_4->cache_index_read();
 
-	HTTPCache::CacheEntry *e 
+	HTTPCacheTable::CacheEntry *e 
 	    = hc_4->get_entry_from_cache_table(localhost_url);
 	CPPUNIT_ASSERT(e);
 	CPPUNIT_ASSERT(e->url == localhost_url);
@@ -351,7 +351,7 @@ public:
 
     void create_location_test() {
 	hc->set_cache_root("/tmp/dods_test_cache");
-	HTTPCache::CacheEntry *e = new HTTPCache::CacheEntry;
+	HTTPCacheTable::CacheEntry *e = new HTTPCacheTable::CacheEntry;
 	e->url = localhost_url;
 	e->hash = hash_value;
 	try {
@@ -367,7 +367,7 @@ public:
     }
 
     void parse_headers_test() {
-	HTTPCache::CacheEntry *e = new HTTPCache::CacheEntry;
+	HTTPCacheTable::CacheEntry *e = new HTTPCacheTable::CacheEntry;
 	
 	hc->parse_headers(e, h);
 	CPPUNIT_ASSERT(e->lm == 784025377);
@@ -376,7 +376,7 @@ public:
     }
 
     void calculate_time_test() {
-	HTTPCache::CacheEntry *e = new HTTPCache::CacheEntry;
+	HTTPCacheTable::CacheEntry *e = new HTTPCacheTable::CacheEntry;
 	
 	hc->parse_headers(e, h);
 	hc->calculate_time(e, time(0));
@@ -388,7 +388,7 @@ public:
 
     void write_metadata_test() {
 	hc->set_cache_root("/tmp/dods_test_cache");
-	HTTPCache::CacheEntry *e = new HTTPCache::CacheEntry;
+	HTTPCacheTable::CacheEntry *e = new HTTPCacheTable::CacheEntry;
 	try {
 	    e->hash = 101;
 	    hc->create_location(e);
@@ -423,7 +423,7 @@ public:
 
 	    CPPUNIT_ASSERT(hc->is_url_in_cache(localhost_url));
 
-	    HTTPCache::CacheEntry *e = hc->get_entry_from_cache_table(localhost_url);
+	    HTTPCacheTable::CacheEntry *e = hc->get_entry_from_cache_table(localhost_url);
 	    CPPUNIT_ASSERT(file_size(e->cachename) == 343);
 	    delete rs; rs = 0;
 	}
@@ -531,8 +531,8 @@ public:
 	    CPPUNIT_ASSERT(pc->is_url_in_cache(expired));
 	    delete rs; rs = 0;
 
-	    HTTPCache::CacheEntry *e1 = pc->get_entry_from_cache_table(expired);
-	    HTTPCache::CacheEntry *e2 = pc->get_entry_from_cache_table(localhost_url);
+	    HTTPCacheTable::CacheEntry *e1 = pc->get_entry_from_cache_table(expired);
+	    HTTPCacheTable::CacheEntry *e2 = pc->get_entry_from_cache_table(localhost_url);
 	    string e1_file = e1->cachename;
 	    string e2_file = e2->cachename;
 
@@ -583,8 +583,8 @@ public:
 	    }
 	    CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
-	    HTTPCache::CacheEntry *e1 = c->get_entry_from_cache_table(expired);
-	    HTTPCache::CacheEntry *e2 = c->get_entry_from_cache_table(localhost_url);
+	    HTTPCacheTable::CacheEntry *e1 = c->get_entry_from_cache_table(expired);
+	    HTTPCacheTable::CacheEntry *e2 = c->get_entry_from_cache_table(localhost_url);
 	    string e1_file = e1->cachename;
 	    string e2_file = e2->cachename;
 
