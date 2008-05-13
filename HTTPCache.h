@@ -66,10 +66,6 @@
 #include "SignalHandlerRegisteredErr.h"
 #endif
 
-#if 0
-extern const int CACHE_TABLE_SIZE;
-#endif
-
 using namespace std;
 
 namespace libdap
@@ -185,7 +181,8 @@ public:
     {}
     };
 #endif
-    
+    // Try this now since we are using vc++ 9.0 (2008). jhrg
+#if 0   
 #ifdef WIN32
     //  Declared private below for gcc.  There appears to be a
     //  difference in public vs. private under gcc when objects
@@ -197,14 +194,18 @@ public:
     // but I'm hesitant to remove it since I cannot easily test with VC++.
     // 01/23/04 jhrg
     unsigned long d_max_entry_size; // Max individual entry size.
-
+#if 0
     void remove_cache_entry(CacheEntry *entry);
+#endif
     bool stopGC() const;
 #endif
-
+#endif
+    
 private:
     string d_cache_root;
+#if 0
     string d_cache_index;
+#endif
     FILE *d_locked_open_file; // Lock for single process use.
 
     bool d_cache_enabled;
@@ -216,13 +217,17 @@ private:
     unsigned long d_total_size; // How much can we store?
     unsigned long d_folder_size; // How much of that is meta data?
     unsigned long d_gc_buffer; // How much memory needed as buffer?
-#ifndef WIN32  //  Declared public above for win32
+//#ifndef WIN32  //  Declared public above for win32
     unsigned long d_max_entry_size; // Max individual entry size.
-#endif
-    unsigned long d_current_size;
-    int d_default_expiration;
-    unsigned int d_block_size; // File block size.
+//#endif
 
+#if 0
+    unsigned long d_current_size;
+#endif
+    int d_default_expiration;
+#if 0
+    unsigned int d_block_size; // File block size.
+#endif
     vector<string> d_cache_control;
     // these are values read from a request-directive Cache-Control header.
     // Not to be confused with values read from the response or a cached
@@ -231,9 +236,9 @@ private:
     time_t d_max_age;
     time_t d_max_stale;  // -1: not set, 0:any response, >0 max time.
     time_t d_min_fresh;
-
+#if 0
     int d_new_entries;  // How many entries since index write?
-
+#endif
     // Lock non-const methods (also ones that use the STL).
     pthread_mutex_t d_cache_mutex;
 
@@ -254,7 +259,7 @@ private:
     CacheTable d_cache_table;
 #endif
     
-    HTTPCacheTable d_http_cache_table;
+    HTTPCacheTable *d_http_cache_table;
     
     map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
     vector<string> d_open_files;
@@ -265,13 +270,13 @@ private:
     friend class HTTPCacheInterruptHandler;
 
     // Functors used with STL algorithms
-
+#if 0
     friend class DeleteExpired;
     friend class DeleteByHits;
     friend class DeleteCacheEntry;
     friend class DeleteUnlockedCacheEntry;
     friend class WriteOneCacheEntry;
-
+#endif
     // Private methods
 
     void clone(const HTTPCache &)
@@ -296,24 +301,31 @@ private:
 
     static void delete_instance(); // Run by atexit (hence static)
 
+#if 0
     HTTPCacheTable::CacheEntry *cache_index_parse_line(const char *line);
     bool cache_index_read();
     bool cache_index_delete();
-
+    void cache_index_write();
+#endif
+    
     void set_cache_root(const string &root = "");
 
+    // These will go away when the cache can be used by multiple processes.
     bool get_single_user_lock(bool force = false);
     void release_single_user_lock();
-
+    
+#if 0
     void add_entry_to_cache_table(HTTPCacheTable::CacheEntry *e);
     void remove_entry_from_cache_table(const string &url);
-    void parse_headers(HTTPCacheTable::CacheEntry *entry, const vector<string> &headers);
-    void calculate_time(HTTPCacheTable::CacheEntry *entry, time_t request_time);
+    HTTPCacheTable::CacheEntry *get_entry_from_cache_table(const string &url) /*const*/;
+    HTTPCacheTable::CacheEntry *get_entry_from_cache_table(int hash, const string &url) /*const*/;
 #ifndef WIN32  //  Declared public above for win32
     void remove_cache_entry(HTTPCacheTable::CacheEntry *entry);
 #endif
-    HTTPCacheTable::CacheEntry *get_entry_from_cache_table(const string &url) /*const*/;
-    HTTPCacheTable::CacheEntry *get_entry_from_cache_table(int hash, const string &url) /*const*/;
+#endif
+    
+    void parse_headers(HTTPCacheTable::CacheEntry *entry, const vector<string> &headers);
+    void calculate_time(HTTPCacheTable::CacheEntry *entry, time_t request_time);
 
     // I made these four methods so they could be tested by HTTPCacheTest.
     // Otherwise they would be static functions in HTTPCache.cc. 10/01/02
@@ -324,16 +336,17 @@ private:
     FILE *open_body(const string &cachename);
 
     void create_cache_root(const string &cache_root);
-
+#if 0
     string create_hash_directory(int hash);
     void create_location(HTTPCacheTable::CacheEntry *entry);
-
-#ifndef WIN32  //  Declared public above for win32
-    bool stopGC() const;
 #endif
+    
+    // Try this now since we are using vc++ 9.0 (2008)
+// #ifndef WIN32  //  Declared public above for win32
+    bool stopGC() const;
+// #endif
     bool startGC() const;
 
-    void cache_index_write();
 
     void perform_garbage_collection();
     void expired_gc();
@@ -347,10 +360,11 @@ public:
 
     void set_cache_enabled(bool mode);
     bool is_cache_enabled() const;
-
+#if 0
+    // I don't think this is evver used. 5/13/08 jhrg
     void set_cache_protected(bool mode);
     bool is_cache_protected() const;
-
+#endif
     void set_cache_disconnected(CacheDisconnectedMode mode);
     CacheDisconnectedMode get_cache_disconnected() const;
 
@@ -382,7 +396,7 @@ public:
     bool is_url_valid(const string &url);
     FILE *get_cached_response(const string &url, vector<string> &headers);
     FILE *get_cached_response(const string &url, vector<string> &headers,
-			      string &cacheName);
+			      			  string &cacheName);
     FILE *get_cached_response_body(const string &url);
     void release_cached_response(FILE *response);
 

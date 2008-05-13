@@ -118,10 +118,24 @@ public:
 	// HTTPCache.cc. The table is indexed by the various cache entries' hash
 	// code. 10/01/02 jhrg
 	typedef CachePointers *CacheTable[CACHE_TABLE_SIZE];
-
+	
+	friend class DeleteCacheEntry;
+    friend class WriteOneCacheEntry;
+    friend class DeleteExpired;
+    friend class DeleteByHits;
+    
+	friend class HTTPCacheTest;
+	
 private:
 	CacheTable d_cache_table;
-	
+    
+	string d_cache_root;
+    unsigned int d_block_size; // File block size.
+    unsigned long d_current_size;
+
+    string d_cache_index;
+    int d_new_entries;
+    
 	// Make these private to prevent use
 	HTTPCacheTable(const HTTPCacheTable &) {
 		throw InternalErr(__FILE__, __LINE__, "unimplemented");
@@ -131,11 +145,49 @@ private:
 		throw InternalErr(__FILE__, __LINE__, "unimplemented");
 	}
 	
+	HTTPCacheTable() {
+		throw InternalErr(__FILE__, __LINE__, "unimplemented");
+	}
+
 public:
-	HTTPCacheTable();
+	HTTPCacheTable(const string &cache_root, int block_size);
 	~HTTPCacheTable();
 	
+	//@{ @name Accessors/Mutators
 	CacheTable &get_cache_table() { return d_cache_table; }
+	
+	unsigned long get_current_size() const { return d_current_size; }
+	void set_current_size(unsigned long sz) { d_current_size = sz; }
+	
+	unsigned int get_block_size() const { return d_block_size; }
+	void set_block_size(unsigned int sz) { d_block_size = sz; }
+	
+	int get_new_entries() const { return d_new_entries; }
+	void increment_new_entries() { ++d_new_entries; }
+	
+	string get_cache_root() { return d_cache_root; }
+	void set_cache_root(const string &cr) { d_cache_root = cr; }
+	//@}
+	
+	int get_hash(const string &url);
+	void delete_expired_entries(time_t time = 0);
+	void delete_by_hits(int hits);
+	void delete_all_entries();
+	
+	bool cache_index_delete();
+	bool cache_index_read();
+	CacheEntry *cache_index_parse_line(const char *line);
+	void cache_index_write();
+	
+    string create_hash_directory(int hash);
+    void create_location(CacheEntry *entry);
+
+	void add_entry_to_cache_table(CacheEntry *entry);
+	CacheEntry *get_entry_from_cache_table(int hash, const string &url); /*const*/
+	void remove_entry_from_cache_table(const string &url);
+	CacheEntry *get_entry_from_cache_table(const string &url);
+	
+	void remove_cache_entry(HTTPCacheTable::CacheEntry *entry);
 };
 
 } // namespace libdap

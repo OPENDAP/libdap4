@@ -98,7 +98,7 @@ static pthread_once_t once_block = PTHREAD_ONCE_INIT;
 #define CACHE_INDEX ".index"
 #define CACHE_LOCK ".lock"
 #define CACHE_META ".meta"
-#define CACHE_EMPTY_ETAG "@cache@"
+//#define CACHE_EMPTY_ETAG "@cache@"
 
 #define NO_LM_EXPIRATION 24*3600 // 24 hours
 #define MAX_LM_EXPIRATION 48*3600 // Max expiration from LM
@@ -117,7 +117,7 @@ static pthread_once_t once_block = PTHREAD_ONCE_INIT;
 #define CACHE_GC_PCT 10  // 10% of cache size free after GC
 #define MIN_CACHE_TOTAL_SIZE 5 // 5M Min cache size
 #define MAX_CACHE_ENTRY_SIZE 3 // 3M Max size of single cached entry
-
+#if 0
 /** Compute the hash value for a URL.
     @param url
     @return An integer hash code between 0 and CACHE_TABLE_SIZE. */
@@ -132,7 +132,7 @@ get_hash(const string &url)
 
     return hash;
 }
-
+#endif
 static void
 once_init_routine()
 {
@@ -167,13 +167,21 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
         d_folder_size(CACHE_TOTAL_SIZE / CACHE_FOLDER_PCT),
         d_gc_buffer(CACHE_TOTAL_SIZE / CACHE_GC_PCT),
         d_max_entry_size(MAX_CACHE_ENTRY_SIZE * MEGA),
+#if 0
         d_current_size(0),
+#endif
         d_default_expiration(NO_LM_EXPIRATION),
+#if 0
         d_block_size(1),
+#endif
         d_max_age(-1),
         d_max_stale(-1),
         d_min_fresh(-1),
+        d_http_cache_table(0)
+#if 0
+        ,
         d_new_entries(0)
+#endif
 {
     DBG(cerr << "Entering the constructor for " << this << "... ");
 
@@ -183,13 +191,6 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
 
     INIT(&d_cache_mutex);
 
-#if 0
-    // Moved to HTTPCacheTable ctor
-    // Initialize the cache table.
-    for (int i = 0; i < CACHE_TABLE_SIZE; ++i)
-        d_cache_table[i] = 0;
-#endif
-    
     // This used to throw an Error object if we could not get the
     // single user lock. However, that results in an invalid object. It's
     // better to have an instance that has default values. If we cannot get
@@ -201,22 +202,32 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
     // set_cache_root(). 09/08/03 jhrg
 
     set_cache_root(cache_root);
-
+    int block_size;
+    
     if (get_single_user_lock(force)) {
 #ifdef WIN32
         //  Windows is unable to provide us this information.  4096 appears
         //  a best guess.  It is likely to be in the range [2048, 8192] on
         //  windows, but will the level of truth of that statement vary over
         //  time ?
-        d_block_size = 4096;
+#if 0
+    	d_http_cache_table->set_block_size(4096);
+#endif
+    	block_size = 4096;
 #else
         struct stat s;
         if (stat(cache_root.c_str(), &s) == 0)
-            d_block_size = s.st_blksize;
+#if 0
+        	d_http_cache_table->set_block_size(s.st_blksize);
+#endif
+        	block_size = s.st_blksize;
         else
             throw Error("Could not set file system block size.");
 #endif
-        cache_index_read();
+        d_http_cache_table = new HTTPCacheTable(d_cache_root, block_size);
+#if 0
+        d_http_cache_table->cache_index_read();
+#endif
         d_cache_enabled = true;
     }
 
@@ -330,6 +341,7 @@ HTTPCache::delete_instance()
     DBG(cerr << "Exiting delete_instance()" << endl);
 }
 
+#if 0
 /** Called by for_each inside ~HTTPCache().
     @param e The cache entry to delete. */
 
@@ -340,7 +352,7 @@ delete_cache_entry(HTTPCacheTable::CacheEntry *e)
     DESTROY(&e->lock);
     delete e;
 }
-
+#endif
 /** Destroy an instance of HTTPCache. This writes the cache index and frees
     the in-memory cache table structure. The persistent cache (the response
     headers and bodies and the index file) are not removed. To remove those,
@@ -361,7 +373,7 @@ HTTPCache::~HTTPCache()
         if (startGC())
             perform_garbage_collection();
 
-        cache_index_write();
+        d_http_cache_table->cache_index_write();
     }
     catch (Error &e) {
         // If the cache index cannot be written, we've got problems. However,
@@ -370,7 +382,7 @@ HTTPCache::~HTTPCache()
         // written?? 10/03/02 jhrg
         DBG(cerr << e.get_error_message() << endl);
     }
-
+#if 0
     // I don't see any code inside this try block that can throw an Error.
     // Nor do I see anything that can lock the interface. I'll leave this as
     // is, but I'm pretty sure this is left over from older code which called
@@ -378,14 +390,14 @@ HTTPCache::~HTTPCache()
     // cache_index_write(). 01/23/04 jhrg
     try {
         for (int i = 0; i < CACHE_TABLE_SIZE; ++i) {
-            HTTPCacheTable::CachePointers *cp = d_http_cache_table.get_cache_table()[i];
+            HTTPCacheTable::CachePointers *cp = d_http_cache_table->get_cache_table()[i];
             if (cp) {
                 // delete each entry
                 for_each(cp->begin(), cp->end(), delete_cache_entry);
                 // now delete the vector that held the entries
-                DBG2(cerr << "Deleting d_http_cache_table.get_cache_table()[" << i << "]: "
-                     << d_http_cache_table.get_cache_table()[i] << endl);
-                delete d_http_cache_table.get_cache_table()[i]; d_http_cache_table.get_cache_table()[i] = 0;
+                DBG2(cerr << "Deleting d_http_cache_table->get_cache_table()[" << i << "]: "
+                     << d_http_cache_table->get_cache_table()[i] << endl);
+                delete d_http_cache_table->get_cache_table()[i]; d_http_cache_table->get_cache_table()[i] = 0;
             }
         }
     }
@@ -395,13 +407,16 @@ HTTPCache::~HTTPCache()
         UNLOCK(&d_cache_mutex);
         throw e;
     }
-
+#endif
+    delete d_http_cache_table;
+    
     release_single_user_lock();
 
     DBGN(cerr << "exiting destructor." << endl);
     DESTROY(&d_cache_mutex);
 }
 
+#if 0
 /** @name Cache Index
 
     These methods manage the cache's index file. Each cache holds an index
@@ -441,7 +456,7 @@ HTTPCache::cache_index_read()
 
     char line[1024];
     while (!feof(fp) && fgets(line, 1024, fp)) {
-        add_entry_to_cache_table(cache_index_parse_line(line));
+    	d_http_cache_table->add_entry_to_cache_table(cache_index_parse_line(line));
         DBG2(cerr << line << endl);
     }
 
@@ -551,7 +566,7 @@ HTTPCache::cache_index_write()
     // simple as we keep it all in ASCII.
 
     for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
-        HTTPCacheTable::CachePointers *cp = d_http_cache_table.get_cache_table()[cnt];
+        HTTPCacheTable::CachePointers *cp = d_http_cache_table->get_cache_table()[cnt];
         if (cp)
             for_each(cp->begin(), cp->end(), WriteOneCacheEntry(fp));
     }
@@ -567,7 +582,9 @@ HTTPCache::cache_index_write()
 }
 
 //@} End of the cache index methods.
+#endif
 
+#if 1
 /** @name Garbage collection
     These private methods manage the garbage collection tasks for the cache. */
 //@{
@@ -589,7 +606,7 @@ entry_disk_space(int size, unsigned int block_size)
 bool
 HTTPCache::stopGC() const
 {
-    return (d_current_size + d_folder_size < d_total_size - d_gc_buffer);
+    return (d_http_cache_table->get_current_size() + d_folder_size < d_total_size - d_gc_buffer);
 }
 
 /** Is there too much in the cache. A private method.
@@ -601,10 +618,11 @@ HTTPCache::stopGC() const
 bool
 HTTPCache::startGC() const
 {
-    DBG(cerr << "startGC, current_size: " << d_current_size << endl);
-    return (d_current_size + d_folder_size > d_total_size);
+    DBG(cerr << "startGC, current_size: " << d_http_cache_table->get_current_size() << endl);
+    return (d_http_cache_table->get_current_size() + d_folder_size > d_total_size);
 }
 
+#if 0
 /** Remove a CacheEntry. This means delete the entry's files on disk and free
     the CacheEntry object. The caller should null the entry's pointer in the
     cache_table. The total size of the cache is decremented once the entry is
@@ -626,16 +644,18 @@ HTTPCache::remove_cache_entry(HTTPCacheTable::CacheEntry *entry)
     REMOVE(entry->cachename.c_str());
     REMOVE(string(entry->cachename + CACHE_META).c_str());
 
-    DBG(cerr << "remove_cache_entry, current_size: " << d_current_size << endl);
-    unsigned int esd = entry_disk_space(entry->size, d_block_size);
-    d_current_size = (esd > d_current_size) ? 0 : d_current_size - esd;
-
-    DBG(cerr << "remove_cache_entry, current_size: " << d_current_size << endl);
-    DBG2(cerr << "Current size (after decrement): " << d_current_size << endl);
+    DBG(cerr << "remove_cache_entry, current_size: " << d_http_cache_table->get_current_size() << endl);
+    unsigned int esd = entry_disk_space(entry->size, d_http_cache_table->get_block_size());
+    unsigned long sz = (esd > d_http_cache_table->get_current_size()) ? 0 : d_http_cache_table->get_current_size() - esd;
+    d_http_cache_table->set_current_size(sz);
+    
+    DBG(cerr << "remove_cache_entry, current_size: " << d_http_cache_table->get_current_size() << endl);
+    DBG2(cerr << "Current size (after decrement): " << d_http_cache_table->get_current_size() << endl);
 
     DBG2(cerr << "Deleting CacheEntry: " << entry << endl);
     delete entry; entry = 0;
 }
+#endif
 
 /** Perform garbage collection on the cache. First, all expired responses are
     removed. Then, if the size of the cache is still too large, the cache is
@@ -663,7 +683,7 @@ HTTPCache::perform_garbage_collection()
     // starting with zero hits, 1, ..., until stopGC() returns true.
     hits_gc();
 }
-
+#if 0
 /** Functor which deletes and nulls a single CacheEntry if it has expired.
     This functor is called by expired_gc which then uses the
     erase(remove(...) ...) idiom to really remove all the vector entries that
@@ -675,10 +695,10 @@ class DeleteExpired :
             public unary_function<HTTPCacheTable::CacheEntry *&, void>
 {
     time_t d_time;
-    HTTPCache *d_cache;
+    HTTPCache &d_cache;
 
 public:
-    DeleteExpired(HTTPCache *cache, time_t t) :
+    DeleteExpired(HTTPCache &cache, time_t t) :
             d_time(t), d_cache(cache)
     {}
 
@@ -688,12 +708,12 @@ public:
             && (e->freshness_lifetime
                 < (e->corrected_initial_age + (d_time - e->response_time)))) {
             DBG(cerr << "Deleting expired cache entry: " << e->url << endl);
-            d_cache->remove_cache_entry(e);
+            d_cache.d_http_cache_table->remove_cache_entry(e);
             e = 0;
         }
     }
 };
-
+#endif
 /** Scan the current cache table and remove anything that has expired. Don't
     remove locked entries.
 
@@ -703,21 +723,26 @@ void
 HTTPCache::expired_gc()
 {
     if (!d_expire_ignored) {
-        time_t now = time(0);
-
+#if 0
+    	time_t now = time(0);
+#endif
+    	
+        d_http_cache_table->delete_expired_entries();
+#if 0       
         // Walk through and delete all the expired entries.
         for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
-            HTTPCacheTable::CachePointers *slot = d_http_cache_table.get_cache_table()[cnt];
+            HTTPCacheTable::CachePointers *slot = d_http_cache_table->get_cache_table()[cnt];
             if (slot) {
-                for_each(slot->begin(), slot->end(), DeleteExpired(this, now));
+                for_each(slot->begin(), slot->end(), DeleteExpired(*this, now));
                 slot->erase(remove(slot->begin(), slot->end(),
                                    static_cast<HTTPCacheTable::CacheEntry *>(0)),
                             slot->end());
             }
         }
+#endif
     }
 }
-
+#if 0
 /** Functor which deletes and nulls a single CacheEntry which has less than
     or equal to \c hits hits or if it is larger than the cache's
     max_entry_size property.
@@ -727,26 +752,27 @@ HTTPCache::expired_gc()
 class DeleteByHits :
             public unary_function<HTTPCacheTable::CacheEntry *&, void>
 {
-    HTTPCache *d_cache;
+    HTTPCache &d_cache;
     int d_hits;
 
 public:
-    DeleteByHits(HTTPCache *cache, int hits) :
+    DeleteByHits(HTTPCache &cache, int hits) :
             d_cache(cache), d_hits(hits)
     {}
 
     void operator()(HTTPCacheTable::CacheEntry *&e)
     {
-        if (d_cache->stopGC())
+        if (d_cache.stopGC())
             return;
         if (e && !e->locked
-            && (e->size > d_cache->d_max_entry_size || e->hits <= d_hits)) {
+            && (e->size > d_cache.d_max_entry_size || e->hits <= d_hits)) {
             DBG(cerr << "Deleting cache entry: " << e->url << endl);
-            d_cache->remove_cache_entry(e);
+            d_cache.d_http_cache_table->remove_cache_entry(e);
             e = 0;
         }
     }
 };
+#endif
 
 /** Scan the cache for entires that are larger than max_entry_size. Also
     start removing entires with low hit counts. Start looking for entries
@@ -770,24 +796,27 @@ HTTPCache::hits_gc()
     int hits = 0;
 
     while (startGC()) {
+    	d_http_cache_table->delete_by_hits(hits);
+#if 0
         for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
-            if (d_http_cache_table.get_cache_table()[cnt]) {
-                HTTPCacheTable::CachePointers *slot = d_http_cache_table.get_cache_table()[cnt];
-                for_each(slot->begin(), slot->end(),
-                         DeleteByHits(this, hits));
+            if (d_http_cache_table->get_cache_table()[cnt]) {
+                HTTPCacheTable::CachePointers *slot = d_http_cache_table->get_cache_table()[cnt];
+                for_each(slot->begin(), slot->end(), DeleteByHits(*this, hits));
                 slot->erase(remove(slot->begin(), slot->end(),
                                    static_cast<HTTPCacheTable::CacheEntry*>(0)),
                             slot->end());
 
             }
         }
-
+#endif
         hits++;
     }
 }
 
 //@} End of the garbage collection methods.
+#endif 
 
+#if 0
 /** @name Methods to manipulate instances of CacheEntry. */
 
 //@{
@@ -805,14 +834,14 @@ HTTPCache::add_entry_to_cache_table(HTTPCacheTable::CacheEntry *entry)
 {
     int hash = entry->hash;
 
-    if (!d_http_cache_table.get_cache_table()[hash]) {
-        d_http_cache_table.get_cache_table()[hash] = new HTTPCacheTable::CachePointers;
-        DBG2(cerr << "Allocated d_http_cache_table.get_cache_table()[" << hash << "]: "
-             << d_http_cache_table.get_cache_table()[hash] << endl);
+    if (!d_http_cache_table->get_cache_table()[hash]) {
+        d_http_cache_table->get_cache_table()[hash] = new HTTPCacheTable::CachePointers;
+        DBG2(cerr << "Allocated d_http_cache_table->get_cache_table()[" << hash << "]: "
+             << d_http_cache_table->get_cache_table()[hash] << endl);
     }
 
-    d_http_cache_table.get_cache_table()[hash]->push_back(entry);
-    DBG2(cerr << "Pushing entry: " << entry << " onto d_http_cache_table.get_cache_table()["
+    d_http_cache_table->get_cache_table()[hash]->push_back(entry);
+    DBG2(cerr << "Pushing entry: " << entry << " onto d_http_cache_table->get_cache_table()["
          << hash << "]" << endl);
 
     DBG(cerr << "add_entry_to_cache_table, current_size: " << d_current_size
@@ -821,6 +850,7 @@ HTTPCache::add_entry_to_cache_table(HTTPCacheTable::CacheEntry *entry)
     DBG(cerr << "add_entry_to_cache_table, current_size: " << d_current_size << endl);
     DBG2(cerr << "Current size (after increment): " << d_current_size << endl);
 }
+
 
 /** Get a pointer to a CacheEntry from the cache table. Providing a way to
     pass the hash code into this method makes it easier to test for correct
@@ -835,8 +865,8 @@ HTTPCache::add_entry_to_cache_table(HTTPCacheTable::CacheEntry *entry)
 HTTPCacheTable::CacheEntry *
 HTTPCache::get_entry_from_cache_table(int hash, const string &url) /*const*/
 {
-    if (d_http_cache_table.get_cache_table()[hash]) {
-        HTTPCacheTable::CachePointers *cp = d_http_cache_table.get_cache_table()[hash];
+    if (d_http_cache_table->get_cache_table()[hash]) {
+        HTTPCacheTable::CachePointers *cp = d_http_cache_table->get_cache_table()[hash];
         for (HTTPCacheTable::CachePointersIter i = cp->begin(); i != cp->end(); ++i)
             // Must test *i because perform_garbage_collection may have
             // removed this entry; the CacheEntry will then be null.
@@ -882,8 +912,8 @@ void
 HTTPCache::remove_entry_from_cache_table(const string &url)
 {
     int hash = get_hash(url);
-    if (d_http_cache_table.get_cache_table()[hash]) {
-        HTTPCacheTable::CachePointers *cp = d_http_cache_table.get_cache_table()[hash];
+    if (d_http_cache_table->get_cache_table()[hash]) {
+        HTTPCacheTable::CachePointers *cp = d_http_cache_table->get_cache_table()[hash];
         for_each(cp->begin(), cp->end(), DeleteCacheEntry(this, url));
         cp->erase(remove(cp->begin(), cp->end(), static_cast<HTTPCacheTable::CacheEntry*>(0)),
                   cp->end());
@@ -903,6 +933,7 @@ HTTPCache::get_entry_from_cache_table(const string &url) /*const*/
 }
 
 //@} End of the CacheEntry methods.
+#endif
 
 /** Create the cache's root directory. This is the persistent store used by
     the cache. Paths must always end in DIR_SEPARATOR_CHAR.
@@ -976,8 +1007,13 @@ HTTPCache::set_cache_root(const string &root)
 
         d_cache_root += CACHE_ROOT;
     }
-
+    
+    if (d_http_cache_table)
+    	d_http_cache_table->set_cache_root(d_cache_root);
+    
+#if 0
     d_cache_index = d_cache_root + CACHE_INDEX;
+#endif
 }
 
 /** Lock the persistent store part of the cache. Return true if the cache lock
@@ -990,44 +1026,43 @@ HTTPCache::set_cache_root(const string &root)
     default.
     @return True if the cache was locked for our use, False otherwise. */
 
-bool
-HTTPCache::get_single_user_lock(bool force)
-{
-    if (!d_locked_open_file) {
-        FILE * fp = NULL;
+bool HTTPCache::get_single_user_lock(bool force) {
+	if (!d_locked_open_file) {
+		FILE * fp = NULL;
 
-        try {
-            // It's OK to call create_cache_root if the directory already
-            // exists.
-            create_cache_root(d_cache_root);
-        }
-        catch (Error &e) {
-            // We need to catch and return false because this method is
-            // called from a ctor and throwing at this point will result in a
-            // partially constructed object. 01/22/04 jhrg
-            return false;
-        }
+		try {
+			// It's OK to call create_cache_root if the directory already
+			// exists.
+			create_cache_root(d_cache_root);
+		}
+		catch (Error &e) {
+			// We need to catch and return false because this method is
+			// called from a ctor and throwing at this point will result in a
+			// partially constructed object. 01/22/04 jhrg
+			return false;
+		}
 
-        string lock = d_cache_root + CACHE_LOCK;
-    if ((fp = fopen(lock.c_str(), "r")) != NULL) {
-            int res = fclose(fp);
-            if (res) {
-                DBG(cerr << "HTTPCache::get_single_user_lock - Failed to close " << (void *)fp << endl ;) ;
-            }
-            if (force)
-                REMOVE(lock.c_str());
-            else
-                return false;
-        }
+		// Try to read the lock file. If we can open for reading, it exists.
+		string lock = d_cache_root + CACHE_LOCK;
+		if ((fp = fopen(lock.c_str(), "r")) != NULL) {
+			int res = fclose(fp);
+			if (res) {
+				DBG(cerr << "Failed to close " << (void *)fp << endl);
+			}
+			if (force)
+				REMOVE(lock.c_str());
+			else
+				return false;
+		}
 
-        if ((fp = fopen(lock.c_str(), "w")) == NULL)
-            return false;
+		if ((fp = fopen(lock.c_str(), "w")) == NULL)
+			return false;
 
-        d_locked_open_file = fp;
-        return true;
-    }
+		d_locked_open_file = fp;
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 /** Release the single user (process) lock. A private method. */
@@ -1038,13 +1073,13 @@ HTTPCache::release_single_user_lock()
     if (d_locked_open_file) {
         int res = fclose(d_locked_open_file);
         if (res) {
-            DBG(cerr << "HTTPCache::release_single_user_lock - Failed to close " << (void *)d_locked_open_file << endl ;) ;
+            DBG(cerr << "Failed to close " << (void *)d_locked_open_file << endl) ;
         }
         d_locked_open_file = 0;
     }
 
     string lock = d_cache_root + CACHE_LOCK;
-REMOVE(lock.c_str());
+    REMOVE(lock.c_str());
 }
 
 /** @name Accessors and Mutators for various properties. */
@@ -1092,6 +1127,7 @@ HTTPCache::is_cache_enabled() const
     return d_cache_enabled;
 }
 
+#if 0
 /** Should we cache protected responses? A protected response is one that
     comes from a server/site that requires authorization.
 
@@ -1112,15 +1148,15 @@ HTTPCache::set_cache_protected(bool mode)
     UNLOCK(&d_cache_mutex);
     DBGN(cerr << "Unlocking interface." << endl);
 }
-
+#endif
 /** Should we cache protected responses? */
-
+#if 0
 bool
 HTTPCache::is_cache_protected() const
 {
     return d_cache_protected;
 }
-
+#endif
 /** Set the cache's disconnected property. The cache can operate either
     disconnected from the network or using a proxy cache (but tell that proxy
     not to use the network).
@@ -1212,7 +1248,7 @@ HTTPCache::set_max_size(unsigned long size)
 
         if (new_size < old_size && startGC()) {
             perform_garbage_collection();
-            cache_index_write();
+            d_http_cache_table->cache_index_write();
         }
     }
     catch (Error &e) {
@@ -1259,7 +1295,7 @@ HTTPCache::set_max_entry_size(unsigned long size)
             d_max_entry_size = new_size;
             if (new_size < old_size && startGC()) {
                 perform_garbage_collection();
-                cache_index_write();
+                d_http_cache_table->cache_index_write();
             }
         }
     }
@@ -1400,8 +1436,6 @@ HTTPCache::set_cache_control(const vector<string> &cc)
 
 /** Get the Cache-Control headers.
 
-    This method locks the class' interface.
-
     @return A vector of strings, one string for each header. */
 
 vector<string>
@@ -1411,7 +1445,7 @@ HTTPCache::get_cache_control()
 }
 
 //@}
-
+#if 0
 /** Create the directory path for cache file. The cache uses a set of
     directories within d_cache_root to store individual responses. The name
     of the directory that holds a given response is the value returned by the
@@ -1492,6 +1526,7 @@ HTTPCache::create_location(HTTPCacheTable::CacheEntry *entry)
     delete[] templat; templat = 0;
     close(fd);
 }
+#endif
 
 /** Parse various headers from the vector (which can be retrieved from
     libcurl once a response is received) and load the CacheEntry object with
@@ -1618,7 +1653,7 @@ HTTPCache::is_url_in_cache(const string &url)
 {
     DBG(cerr << "Is this url in the cache? (" << url << ")" << endl);
 
-    return get_entry_from_cache_table(url) != 0;
+    return d_http_cache_table->get_entry_from_cache_table(url) != 0;
 }
 
 /** Is the header a hop by hop header? If so, we're not supposed to store it
@@ -1850,13 +1885,15 @@ HTTPCache::cache_response(const string &url, time_t request_time,
         // This does nothing if url is not already in the cache. It's
         // more efficient to do this than to first check and see if the entry
         // exists. 10/10/02 jhrg
-        remove_entry_from_cache_table(url);
+        d_http_cache_table->remove_entry_from_cache_table(url);
 
         HTTPCacheTable::CacheEntry *entry = new HTTPCacheTable::CacheEntry;
 
         INIT(&entry->lock);
         entry->url = url;
-        entry->hash = get_hash(url);
+        // Right here we should use a ctor to make a CacheEntry and hide the 
+        // call to get_hash(). jhrg 5/13/08
+        entry->hash = d_http_cache_table->get_hash(url);
         entry->hits = 0;
 
         try {
@@ -1873,7 +1910,7 @@ HTTPCache::cache_response(const string &url, time_t request_time,
             // corrected_initial_age, freshness_lifetime, response_time.
             calculate_time(entry, request_time);
 
-            create_location(entry); // cachename, cache_body_fd
+            d_http_cache_table->create_location(entry); // cachename, cache_body_fd
             entry->size = write_body(entry->cachename, body);
             write_metadata(entry->cachename, headers);
         }
@@ -1892,13 +1929,14 @@ HTTPCache::cache_response(const string &url, time_t request_time,
 
         entry->range = false; // not used. 10/02/02 jhrg
 
-        add_entry_to_cache_table(entry);
+        d_http_cache_table->add_entry_to_cache_table(entry);
 
-        if (++d_new_entries > DUMP_FREQUENCY) {
+        d_http_cache_table->increment_new_entries();
+        if (d_http_cache_table->get_new_entries() > DUMP_FREQUENCY) {
             if (startGC())
                 perform_garbage_collection();
 
-            cache_index_write(); // resets d_new_entries
+            d_http_cache_table->cache_index_write(); // resets d_new_entries
         }
     }
     catch (Error &e) {
@@ -1942,7 +1980,7 @@ HTTPCache::get_conditional_request_headers(const string &url)
     DBG(cerr << "Getting conditional request headers for " << url << endl);
 
     try {
-        entry = get_entry_from_cache_table(url);
+        entry = d_http_cache_table->get_entry_from_cache_table(url);
         if (!entry) {
             throw Error("There is no cache entry for the URL: " + url);
         }
@@ -2015,7 +2053,7 @@ HTTPCache::update_response(const string &url, time_t request_time,
     DBG(cerr << "Updating the response headers for: " << url << endl);
 
     try {
-        entry = get_entry_from_cache_table(url);
+        entry = d_http_cache_table->get_entry_from_cache_table(url);
         if (!entry)
             throw Error("There is no cache entry for the URL: " + url);
 
@@ -2099,7 +2137,7 @@ HTTPCache::is_url_valid(const string &url)
             return false;  // force re-validation.
         }
 
-        entry = get_entry_from_cache_table(url);
+        entry = d_http_cache_table->get_entry_from_cache_table(url);
         if (!entry) {
             UNLOCK(&d_cache_mutex);
             DBGN(cerr << "Unlocking interface." << endl);
@@ -2200,7 +2238,7 @@ HTTPCache::get_cached_response(const string &url, vector<string> &headers)
     DBG(cerr << "Getting the cached response for " << url << endl);
 
     try {
-        entry = get_entry_from_cache_table(url);
+        entry = d_http_cache_table->get_entry_from_cache_table(url);
         if (!entry)
             throw Error("There is no cache entry for the URL: " + url);
 
@@ -2254,26 +2292,22 @@ HTTPCache::get_cached_response(const string &url, vector<string> &headers)
 
     @param url Get response information for this URL.
     @param headers Return the response headers in this parameter
-    @param cacheName name of the cache file
+    @param cacheName A value-result parameter; the name of the cache file
     @return A FILE * to the response body.
     @exception Error Thrown if the URL's response is not in the cache.
     @exception InternalErr Thrown if the persistent store cannot be opened. */
 
-FILE *
-HTTPCache::get_cached_response( const string &url, vector<string> &headers,
-				string &cacheName )
-{
-    FILE *body = get_cached_response( url, headers ) ;
-    if( body )
-    {
-	HTTPCacheTable::CacheEntry *entry = d_locked_entries[body];
-	if( entry )
-	{
-	    cacheName = entry->cachename ;
+FILE * HTTPCache::get_cached_response(const string &url,
+		vector<string> &headers, string &cacheName) {
+	FILE *body = get_cached_response(url, headers) ;
+	if (body) {
+		HTTPCacheTable::CacheEntry *entry = d_locked_entries[body];
+		if (entry) {
+			cacheName = entry->cachename;
+		}
 	}
-    }
 
-    return body ;
+	return body;
 }
 
 /** Get a pointer to a cached response body. For a given URL, find the cached
@@ -2305,7 +2339,7 @@ HTTPCache::get_cached_response_body(const string &url)
     HTTPCacheTable::CacheEntry *entry = 0;
 
     try {
-        entry = get_entry_from_cache_table(url);
+        entry = d_http_cache_table->get_entry_from_cache_table(url);
 
         if (!entry) {
             UNLOCK(&d_cache_mutex);
@@ -2382,27 +2416,26 @@ HTTPCache::release_cached_response(FILE *body)
     UNLOCK(&d_cache_mutex);
     DBGN(cerr << "Unlocking interface." << endl);
 }
-
+#if 0
 /** Functor to delete and null all unlocked HTTPCacheTable::CacheEntry objects. */
 
 class DeleteUnlockedCacheEntry :
 	public unary_function<HTTPCacheTable::CacheEntry *&, void>
 {
-
-    HTTPCache *d_cache;
+	HTTPCache &d_cache;
 
 public:
-    DeleteUnlockedCacheEntry(HTTPCache *c) : d_cache(c)
+    DeleteUnlockedCacheEntry(HTTPCache &c) : d_cache(c)
     {}
     void operator()(HTTPCacheTable::CacheEntry *&e)
     {
         if (e) {
-            d_cache->remove_cache_entry(e);
+        	d_cache.d_http_cache_table->remove_cache_entry(e);
             e = 0;
         }
     }
 };
-
+#endif
 /** Purge both the in-memory cache table and the contents of the cache on
     disk. This method deletes every entry in the persistent store but leaves
     the structure intact. The client of HTTPCache is responsible for making
@@ -2426,22 +2459,25 @@ HTTPCache::purge_cache()
         if (!d_locked_entries.empty()) {
             throw Error("Attempt to purge the cache with entries in use.");
         }
-
+        
+        d_http_cache_table->delete_all_entries();
+        
+#if 0
         // Walk through the cache table and, for every entry in the cache, delete
         // it on disk and in the cache table.
         for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
-            HTTPCacheTable::CachePointers *slot = d_http_cache_table.get_cache_table()[cnt];
+            HTTPCacheTable::CachePointers *slot = d_http_cache_table->get_cache_table()[cnt];
             if (slot) {
                 for_each(slot->begin(), slot->end(),
-                         DeleteUnlockedCacheEntry(this));
+                         DeleteUnlockedCacheEntry(*this));
                 slot->erase(remove(slot->begin(), slot->end(),
                                    static_cast<HTTPCacheTable::CacheEntry *>(0)),
                             slot->end());
             }
         }
-
+#endif
         // Now delete the index itself.
-        cache_index_delete();
+        d_http_cache_table->cache_index_delete();
     }
     catch (Error &e) {
         UNLOCK(&d_cache_mutex);
