@@ -199,6 +199,7 @@ CLIENT_OBJS = $(OBJDIR)\RCReader.obj \
 		$(OBJDIR)\Connect.obj \
 		$(OBJDIR)\HTTPConnect.obj \
 		$(OBJDIR)\HTTPCache.obj \
+		$(OBJDIR)\HTTPCacheTable.obj \
 		$(OBJDIR)\AISResources.obj \
 		$(OBJDIR)\AISDatabaseParser.obj \
 		$(OBJDIR)\AISMerge.obj \
@@ -321,10 +322,10 @@ $(OBJDIR)\SignalHandler.obj				: $(SRCDIR)\SignalHandler.cc
 $(OBJDIR)\InternalErr.obj				: $(SRCDIR)\InternalErr.cc
 $(OBJDIR)\util.obj						: $(SRCDIR)\util.cc
 $(OBJDIR)\xdrutil_ppc.obj				: $(SRCDIR)\Xdrutil_ppc.c
-$(OBJDIR)\XDRUtils.obj				: $(SRCDIR)\XDRUtils.cc
-$(OBJDIR)\XDRFileMarshaller.obj				: $(SRCDIR)\XDRFileMarshaller.cc
-$(OBJDIR)\XDRFileUnMarshaller.obj				: $(SRCDIR)\XDRFileUnMarshaller.cc	
-$(OBJDIR)\XDRStreamMarshaller.obj				: $(SRCDIR)\XDRStreamMarshaller.cc
+$(OBJDIR)\XDRUtils.obj					: $(SRCDIR)\XDRUtils.cc
+$(OBJDIR)\XDRFileMarshaller.obj			: $(SRCDIR)\XDRFileMarshaller.cc
+$(OBJDIR)\XDRFileUnMarshaller.obj		: $(SRCDIR)\XDRFileUnMarshaller.cc	
+$(OBJDIR)\XDRStreamMarshaller.obj		: $(SRCDIR)\XDRStreamMarshaller.cc
 $(OBJDIR)\parser-util.obj				: $(SRCDIR)\parser-util.cc
 $(OBJDIR)\escaping.obj					: $(SRCDIR)\escaping.cc
 $(OBJDIR)\Clause.obj					: $(SRCDIR)\Clause.cc
@@ -340,6 +341,7 @@ $(OBJDIR)\RCReader.obj					: $(SRCDIR)\RCReader.cc
 $(OBJDIR)\Connect.obj					: $(SRCDIR)\Connect.cc
 $(OBJDIR)\HTTPConnect.obj				: $(SRCDIR)\HTTPConnect.cc
 $(OBJDIR)\HTTPCache.obj					: $(SRCDIR)\HTTPCache.cc
+$(OBJDIR)\HTTPCacheTable.obj			: $(SRCDIR)\HTTPCacheTable.cc
 $(OBJDIR)\AISResources.obj				: $(SRCDIR)\AISResources.cc
 $(OBJDIR)\AISDatabaseParser.obj			: $(SRCDIR)\AISDatabaseParser.cc
 $(OBJDIR)\AISMerge.obj					: $(SRCDIR)\AISMerge.cc
