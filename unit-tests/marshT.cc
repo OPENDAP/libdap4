@@ -5,6 +5,10 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/CompilerOutputter.h>
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #include <iostream>
 #include <fstream>
 #include <cstring>
