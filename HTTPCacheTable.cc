@@ -84,14 +84,6 @@
 #define LM_EXPIRATION(t) (min((MAX_LM_EXPIRATION), static_cast<int>((t) / 10)))
 #endif
 
-#if 0
-#define LOCK(m) pthread_mutex_lock((m))
-#define TRYLOCK(m) pthread_mutex_trylock((m))
-#define UNLOCK(m) pthread_mutex_unlock((m))
-
-#define INIT(m) pthread_mutex_init((m), 0)
-#define DESTROY(m) pthread_mutex_destroy((m))
-#endif
 const int CACHE_TABLE_SIZE = 1499;
 
 using namespace std;
@@ -351,9 +343,8 @@ HTTPCacheTable::cache_index_parse_line(const char *line)
     iss >> entry->lm;
     iss >> entry->expires;
     iss >> entry->size;
-#if 1
     iss >> entry->range; // range is not used. 10/02/02 jhrg
-#endif
+
     iss >> entry->hash;
     iss >> entry->hits;
     iss >> entry->freshness_lifetime;

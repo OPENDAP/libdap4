@@ -144,9 +144,8 @@ private:
     unsigned long d_folder_size; // How much of that is meta data?
     unsigned long d_gc_buffer; // How much memory needed as buffer?
     unsigned long d_max_entry_size; // Max individual entry size.
-#if 1
     int d_default_expiration;
-#endif
+
     vector<string> d_cache_control;
     // these are values read from a request-directive Cache-Control header.
     // Not to be confused with values read from the response or a cached
@@ -160,9 +159,7 @@ private:
     pthread_mutex_t d_cache_mutex;
     
     HTTPCacheTable *d_http_cache_table;
-#if 0    
-    map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
-#endif
+
     // d_open_files is used by the interrupt handler to clean up
     vector<string> d_open_files;
 
@@ -193,11 +190,6 @@ private:
     bool get_single_user_lock(bool force = false);
     void release_single_user_lock();
     
-#if 0
-    void parse_headers(HTTPCacheTable::CacheEntry *entry, const vector<string> &headers);
-    void calculate_time(HTTPCacheTable::CacheEntry *entry, time_t request_time);
-#endif
-    
     // I made these four methods so they could be tested by HTTPCacheTest.
     // Otherwise they would be static functions. jhrg 10/01/02
     void write_metadata(const string &cachename, const vector<string> &headers);
@@ -221,11 +213,7 @@ public:
 
     void set_cache_enabled(bool mode);
     bool is_cache_enabled() const;
-#if 0
-    // I don't think this is ever used. 5/13/08 jhrg
-    void set_cache_protected(bool mode);
-    bool is_cache_protected() const;
-#endif
+
     void set_cache_disconnected(CacheDisconnectedMode mode);
     CacheDisconnectedMode get_cache_disconnected() const;
 
@@ -237,10 +225,10 @@ public:
 
     void set_max_entry_size(unsigned long size);
     unsigned long get_max_entry_size() const;
-#if 1
+
     void set_default_expiration(int exp_time);
     int get_default_expiration() const;
-#endif
+
     void set_always_validate(bool validate);
     bool get_always_validate() const;
 

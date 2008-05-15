@@ -102,16 +102,6 @@ static pthread_once_t once_block = PTHREAD_ONCE_INIT;
 
 #define NO_LM_EXPIRATION 24*3600 // 24 hours
 
-#if 0
-#define MAX_LM_EXPIRATION 48*3600 // Max expiration from LM
-
-// If using LM to find the expiration then take 10% and no more than
-// MAX_LM_EXPIRATION.
-#ifndef LM_EXPIRATION
-#define LM_EXPIRATION(t) (min((MAX_LM_EXPIRATION), static_cast<int>((t) / 10)))
-#endif
-#endif
-
 #define DUMP_FREQUENCY 10 // Dump index every x loads
 
 #define MEGA 0x100000L
@@ -155,9 +145,7 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
         d_folder_size(CACHE_TOTAL_SIZE / CACHE_FOLDER_PCT),
         d_gc_buffer(CACHE_TOTAL_SIZE / CACHE_GC_PCT),
         d_max_entry_size(MAX_CACHE_ENTRY_SIZE * MEGA),
-#if 1
         d_default_expiration(NO_LM_EXPIRATION),
-#endif
         d_max_age(-1),
         d_max_stale(-1),
         d_min_fresh(-1),
@@ -354,18 +342,7 @@ HTTPCache::~HTTPCache()
 /** @name Garbage collection
     These private methods manage the garbage collection tasks for the cache. */
 //@{
-#if 0
-/** compute real disk space for an entry. */
-static inline int
-entry_disk_space(int size, unsigned int block_size)
-{
-    unsigned int num_of_blocks = (size + block_size) / block_size;
-    DBG(cerr << "size: " << size << ", block_size: " << block_size
-        << ", num_of_blocks: " << num_of_blocks << endl);
 
-    return num_of_blocks * block_size;
-}
-#endif
 /** Enough removed from cache? A private method.
     @return True if enough has been removed from the cache. */
 
@@ -459,13 +436,6 @@ HTTPCache::hits_gc()
 			hits++;
 		}
 	}
-#if 0
-    // This should be if startGC then while !stopGC ...
-    while (startGC()) {
-    	d_http_cache_table->delete_by_hits(hits);
-        hits++;
-    }
-#endif
 }
 
 /** Scan the current cache table and remove anything that has is too big. 
@@ -670,36 +640,6 @@ HTTPCache::is_cache_enabled() const
     return d_cache_enabled;
 }
 
-#if 0
-/** Should we cache protected responses? A protected response is one that
-    comes from a server/site that requires authorization.
-
-    Default: no
-
-    This method locks the class' interface.
-
-    @param mode True if protected responses should be cached. */
-
-void
-HTTPCache::set_cache_protected(bool mode)
-{
-    DBG(cerr << "Locking interface... ");
-    LOCK(&d_cache_mutex);
-
-    d_cache_protected = mode;
-
-    UNLOCK(&d_cache_mutex);
-    DBGN(cerr << "Unlocking interface." << endl);
-}
-
-/** Should we cache protected responses? */
-
-bool
-HTTPCache::is_cache_protected() const
-{
-    return d_cache_protected;
-}
-#endif
 /** Set the cache's disconnected property. The cache can operate either
     disconnected from the network or using a proxy cache (but tell that proxy
     not to use the network).
@@ -864,7 +804,7 @@ HTTPCache::get_max_entry_size() const
 {
     return d_max_entry_size / MEGA;
 }
-#if 1
+
 /** Set the default expiration time. Use the <i>default expiration</i>
     property to determine when a cached response becomes stale if the
     response lacks the information necessary to compute a specific value.
@@ -894,7 +834,7 @@ HTTPCache::get_default_expiration() const
 {
     return d_default_expiration;
 }
-#endif
+
 /** Should every cache entry be validated?
     @param validate True if every cache entry should be validated before
     being used. */
@@ -988,121 +928,6 @@ HTTPCache::get_cache_control()
 }
 
 //@}
-
-#if 0
-/** Parse various headers from the vector (which can be retrieved from
-    libcurl once a response is received) and load the CacheEntry object with
-    values. This method should only be called with headers from a response
-    (it should not be used to parse request headers).
-
-    A private method.
-
-    @param entry Store values from the headers here.
-    @param headers A vector of header lines. */
-
-void
-HTTPCache::parse_headers(HTTPCacheTable::CacheEntry *entry, const vector<string> &headers)
-{
-    if( !entry ) cerr << "NO ENTRY" << endl ;
-    vector<string>::const_iterator i;
-    for (i = headers.begin(); i != headers.end(); ++i) {
-	// skip a blank header.
-	if( (*i).empty() ) continue ;
-
-	string::size_type colon = (*i).find(':');
-
-	// skip a header with no colon in it.
-	if( colon == string::npos ) continue ;
-
-        string header = (*i).substr(0, (*i).find(':'));
-        string value = (*i).substr((*i).find(": ") + 2);
-        DBG2(cerr << "Header: " << header << endl);
-        DBG2(cerr << "Value: " << value << endl);
-
-        if (header == "ETag") {
-            entry->etag = value;
-        }
-        else if (header == "Last-Modified") {
-            entry->lm = parse_time(value.c_str());
-        }
-        else if (header == "Expires") {
-            entry->expires = parse_time(value.c_str());
-        }
-        else if (header == "Date") {
-            entry->date = parse_time(value.c_str());
-        }
-        else if (header == "Age") {
-            entry->age = parse_time(value.c_str());
-        }
-        else if (header == "Content-Length") {
-            unsigned long clength = strtoul(value.c_str(), 0, 0);
-            if (clength > d_max_entry_size)
-                entry->set_no_cache(true);
-        }
-        else if (header == "Cache-Control") {
-            // Ignored Cache-Control values: public, private, no-transform,
-            // proxy-revalidate, s-max-age. These are used by shared caches.
-            // See section 14.9 of RFC 2612. 10/02/02 jhrg
-            if (value == "no-cache" || value == "no-store")
-                // Note that we *can* store a 'no-store' response in volatile
-                // memory according to RFC 2616 (section 14.9.2) but those
-                // will be rare coming from DAP servers. 10/02/02 jhrg
-                entry->set_no_cache(true);
-            else if (value == "must-revalidate")
-                entry->must_revalidate = true;
-            else if (value.find("max-age") != string::npos) {
-                string max_age = value.substr(value.find("=" + 1));
-                entry->max_age = parse_time(max_age.c_str());
-            }
-        }
-    }
-}
-
-/** Calculate the corrected_initial_age of the object. We use the time when
-    this function is called as the response_time as this is when we have
-    received the complete response. This may cause a delay if the response
-    header is very big but should not cause any incorrect behavior.
-
-    A private method.
-
-    @param entry The CacheEntry object.
-    @param request_time When was the request made? I think this value must be
-    passed into the method that calls this method... */
-
-void
-HTTPCache::calculate_time(HTTPCacheTable::CacheEntry *entry, time_t request_time)
-{
-    entry->response_time = time(NULL);
-    time_t apparent_age
-    = max(0, static_cast<int>(entry->response_time - entry->date));
-    time_t corrected_received_age = max(apparent_age, entry->age);
-    time_t response_delay = entry->response_time - request_time;
-    entry->corrected_initial_age = corrected_received_age + response_delay;
-
-    // Estimate an expires time using the max-age and expires time. If we
-    // don't have an explicit expires time then set it to 10% of the LM date
-    // (although max 24 h). If no LM date is available then use 24 hours.
-    time_t freshness_lifetime = entry->max_age;
-    if (freshness_lifetime < 0) {
-        if (entry->expires < 0) {
-            if (entry->lm < 0) {
-                freshness_lifetime = NO_LM_EXPIRATION;
-            }
-            else {
-                freshness_lifetime = LM_EXPIRATION(entry->date - entry->lm);
-            }
-        }
-        else
-            freshness_lifetime = entry->expires - entry->date;
-    }
-
-    entry->freshness_lifetime = max(0, static_cast<int>(freshness_lifetime));
-
-    DBG2(cerr << "Cache....... Received Age " << entry->age
-         << ", corrected " << entry->corrected_initial_age
-         << ", freshness lifetime " << entry->freshness_lifetime << endl);
-}
-#endif
 
 /** Look in the cache for the given \c url. Is it in the cache table?
 
@@ -1250,12 +1075,6 @@ HTTPCache::write_body(const string &cachename, const FILE *src)
     while ((n = fread(line, 1, 1024, const_cast<FILE *>(src))) > 0) {
         total += fwrite(line, 1, n, dest);
         DBG2(sleep(3));
-#if 0
-        // See comment above. If this is uncommented, make sure to clean up
-        // the partially written file when ResponseTooBirErr is throw.
-        if (total > d_max_entry_size)
-            throw ResponseTooBigErr("This response is too big to cache.");
-#endif
     }
 
     if (ferror(const_cast<FILE *>(src)) || ferror(dest)) {
@@ -1351,14 +1170,7 @@ HTTPCache::cache_response(const string &url, time_t request_time,
         d_http_cache_table->remove_entry_from_cache_table(url);
 
         HTTPCacheTable::CacheEntry *entry = new HTTPCacheTable::CacheEntry(url);
-#if 0
-        INIT(&entry->get_lock());
-        entry->set_url(url);
-        // Right here we should use a ctor to make a CacheEntry and hide the 
-        // call to get_hash(). jhrg 5/13/08
-        entry->set_hash(d_http_cache_table->get_hash(url));
-        entry->set_hits(0);
-#endif
+
         try {
             d_http_cache_table->parse_headers(entry, d_max_entry_size, headers); // etag, lm, date, age, expires, max_age.
             if (entry->is_no_cache()) {
@@ -1389,9 +1201,7 @@ HTTPCache::cache_response(const string &url, time_t request_time,
             DBGN(cerr << "Unlocking interface." << endl);
             return false;
         }
-#if 0
-        entry->range = false; // not used. 10/02/02 jhrg
-#endif
+
         d_http_cache_table->add_entry_to_cache_table(entry);
 
         d_http_cache_table->increment_new_entries();
@@ -1698,51 +1508,6 @@ HTTPCache::get_cached_response(const string &url, vector<string> &headers)
 	return get_cached_response(url, headers, discard_name);
 }
 
-#if 0	
-	DBG(cerr << "Locking interface... ");
-    LOCK(&d_cache_mutex);
-    FILE *body;
-    HTTPCacheTable::CacheEntry *entry = 0;
-
-    DBG(cerr << "Getting the cached response for " << url << endl);
-
-    try {
-        entry = d_http_cache_table->get_entry_from_cache_table(url);
-        if (!entry)
-            throw Error("There is no cache entry for the URL: " + url);
-
-        read_metadata(entry->cachename, headers);
-        DBG(cerr << "Headers just read from cache: " << endl);
-        DBGN(copy(headers.begin(), headers.end(), ostream_iterator<string>(cerr, "\n")));
-
-        body = open_body(entry->cachename);
-
-        DBG(cerr << "Returning: " << url << " from the cache." << endl);
-#if 0
-        entry->hits++;  // Mark hit
-        entry->get_lock()ed++; // lock entry
-        d_locked_entries[body] = entry; // record lock, see release_cached_r...
-        DBG(cerr << "Locking entry (non-blocking lock)... ");
-        TRYLOCK(&entry->get_lock()); // Needed for blocking lock; locked counts
-#endif
-        d_http_cache_table->lock_entry(entry, body);
-   }
-    catch (...) {
-        if (entry)
-            UNLOCK(&entry->get_lock());
-        DBGN(cerr << "Unlocking entry." << endl);
-        UNLOCK(&d_cache_mutex);
-        DBGN(cerr << "Unlocking interface." << endl);
-        throw;
-    }
-
-    UNLOCK(&d_cache_mutex);
-    DBGN(cerr << "Unlocking interface." << endl);
-
-    return body;
-}
-#endif
-
 /** Get information from the cache. For a given URL, get the headers and body
     stored in the cache. Note that this method increments the hit counter for
     <code>url</code>'s entry and \e locks that entry. To release the lock,
@@ -1793,14 +1558,7 @@ FILE * HTTPCache::get_cached_response(const string &url,
         body = open_body(cacheName);
 
         DBG(cerr << "Returning: " << url << " from the cache." << endl);
-#if 0
-        entry->hits++;  // Mark hit
-        entry->get_lock()ed++; // lock entry
-        d_locked_entries[body] = entry; // record lock, see release_cached_r...
-        
-        DBG(cerr << "Locking entry (non-blocking lock)... ");
-        TRYLOCK(&entry->get_lock()); // Needed for blocking lock; locked counts
-#endif
+
         d_http_cache_table->lock_entry(entry, body);
     }
     catch (...) {
@@ -1857,13 +1615,6 @@ HTTPCache::get_cached_response_body(const string &url)
         DBG(cerr << "Returning body for: " << url << " from the cache."
             << endl);
 
-#if 0
-        entry->hits++;  // Mark hit
-        entry->get_lock()ed++; // lock entry
-        d_locked_entries[body] = entry; // record lock, see release_cached_r...
-        DBG(cerr << "Locking entry (non-blocking lock)... ");
-        TRYLOCK(&entry->get_lock());
-#endif
         d_http_cache_table->lock_entry(entry, body);
     }
     catch (...) {
@@ -1898,26 +1649,9 @@ HTTPCache::release_cached_response(FILE *body)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
-#if 0
-    HTTPCacheTable::CacheEntry *entry = 0;
-#endif
+
     try {
     	d_http_cache_table->unlock_entry(body);
-#if 0
-    	entry = d_locked_entries[body];
-        if (!entry)
-            throw InternalErr("There is no cache entry for the response given.");
-
-        entry->get_lock()ed--;
-        if (entry->get_lock()ed == 0) {
-            d_locked_entries.erase(body);
-            UNLOCK(&entry->get_lock());
-            DBG(cerr << "Unlocking entry " << hex << entry << dec << endl);
-        }
-
-        if (entry->get_lock()ed < 0)
-            throw InternalErr("An unlocked entry was released");
-#endif
     }
     catch (...) {
         UNLOCK(&d_cache_mutex);

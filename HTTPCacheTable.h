@@ -225,9 +225,7 @@ public:
 	string get_cache_root() { return d_cache_root; }
 	void set_cache_root(const string &cr) { d_cache_root = cr; }
 	//@}
-#if 0	
-	int get_hash(const string &url);
-#endif
+
 	void delete_expired_entries(time_t time = 0);
 	void delete_by_hits(int hits);
 	void delete_by_size(unsigned int size);

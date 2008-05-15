@@ -73,7 +73,7 @@ file_size(string name)
 inline static void 
 print_entry(HTTPCache *, HTTPCacheTable::CacheEntry **e) 
 {
-    cerr << "Entry: " << (*e)->cachename << endl;
+    cerr << "Entry: " << (*e)->get_cachename() << endl;
 }
 
 // Note that because this test class uses the fixture 'hc' we must always
