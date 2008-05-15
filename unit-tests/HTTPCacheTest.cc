@@ -118,7 +118,7 @@ public:
 	DBG2(cerr << "Entering the HTTPCacheTest dtor... ");
 	DBG2(cerr << "exiting." << endl);
     }
-     
+#if 0     
     static inline bool
     is_hop_by_hop_header(const string &header) {
 	return header.find("Connection") != string::npos
@@ -128,7 +128,7 @@ public:
 	    || header.find("Transfer-Encoding") != string::npos
 	    || header.find("Upgrade") != string::npos;
     }
-    
+#endif    
     void setUp () {
 	// Called before every test.
 	DBG2(cerr << "Entering HTTPCacheTest::setUp... " << endl);
@@ -191,10 +191,11 @@ public:
 		CPPUNIT_ASSERT(hc->d_http_cache_table->cache_index_read());
 
 		HTTPCacheTable::CacheEntry *e =
-				hc->d_http_cache_table->get_entry_from_cache_table(localhost_url);
+				hc->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 
 		CPPUNIT_ASSERT(e);
 		CPPUNIT_ASSERT(e->url == localhost_url);
+		e->unlock();
 	}
 
 	void cache_index_parse_line_test() {
@@ -227,9 +228,10 @@ public:
 		hc->d_http_cache_table->add_entry_to_cache_table(e);
 
 		HTTPCacheTable::CacheEntry *e2 =
-				hc->d_http_cache_table->get_entry_from_cache_table(localhost_url);
+				hc->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 		CPPUNIT_ASSERT(e2);
 		CPPUNIT_ASSERT(e2->url == localhost_url);
+		e2->unlock();
 
 		// Now test what happens when two entries collide.
 		HTTPCacheTable::CacheEntry *e3 =
@@ -243,12 +245,13 @@ public:
 		// Use the version of get_entry... that lets us pass in the hash
 		// value (as opposed to the normal version which calculates the hash
 		// from the url. 10/01/02 jhrg
-		HTTPCacheTable::CacheEntry *g = hc->d_http_cache_table->get_entry_from_cache_table(
+		HTTPCacheTable::CacheEntry *g = hc->d_http_cache_table->get_locked_entry_from_cache_table(
 				hash_value, e3->url);
 		CPPUNIT_ASSERT(g);
 		CPPUNIT_ASSERT(g->url == e3->url);
+		g->unlock();
 
-		g = hc->d_http_cache_table->get_entry_from_cache_table("http://not.in.table/never.x");
+		g = hc->d_http_cache_table->get_locked_entry_from_cache_table("http://not.in.table/never.x");
 		CPPUNIT_ASSERT(g == 0);
 	}
 
@@ -264,10 +267,11 @@ public:
 		hc_4->d_http_cache_table->cache_index_read();
 
 		HTTPCacheTable::CacheEntry *e =
-				hc_4->d_http_cache_table->get_entry_from_cache_table(localhost_url);
+				hc_4->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 		CPPUNIT_ASSERT(e);
 		CPPUNIT_ASSERT(e->url == localhost_url);
-
+		e->unlock();
+		
 		delete hc_3;
 		hc = 0;
 		delete hc_4;
@@ -432,8 +436,9 @@ public:
 
 			CPPUNIT_ASSERT(hc->is_url_in_cache(localhost_url));
 
-			HTTPCacheTable::CacheEntry *e = hc->d_http_cache_table->get_entry_from_cache_table(localhost_url);
+			HTTPCacheTable::CacheEntry *e = hc->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 			CPPUNIT_ASSERT(file_size(e->cachename) == 343);
+			e->unlock();
 			delete rs; rs = 0;
 		}
 		catch (Error &e) {
@@ -541,11 +546,13 @@ public:
 			CPPUNIT_ASSERT(pc->is_url_in_cache(expired));
 			delete rs; rs = 0;
 
-			HTTPCacheTable::CacheEntry *e1 = pc->d_http_cache_table->get_entry_from_cache_table(expired);
-			HTTPCacheTable::CacheEntry *e2 = pc->d_http_cache_table->get_entry_from_cache_table(localhost_url);
+			HTTPCacheTable::CacheEntry *e1 = pc->d_http_cache_table->get_locked_entry_from_cache_table(expired);
+			HTTPCacheTable::CacheEntry *e2 = pc->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 			string e1_file = e1->cachename;
 			string e2_file = e2->cachename;
-
+			e1->unlock();
+			e2->unlock();
+			
 			vector<string> headers;
 			FILE *b = pc->get_cached_response(expired, headers);
 
@@ -593,11 +600,13 @@ public:
 			}
 			CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
-			HTTPCacheTable::CacheEntry *e1 = c->d_http_cache_table->get_entry_from_cache_table(expired);
-			HTTPCacheTable::CacheEntry *e2 = c->d_http_cache_table->get_entry_from_cache_table(localhost_url);
+			HTTPCacheTable::CacheEntry *e1 = c->d_http_cache_table->get_locked_entry_from_cache_table(expired);
+			HTTPCacheTable::CacheEntry *e2 = c->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 			string e1_file = e1->cachename;
 			string e2_file = e2->cachename;
-
+			e1->unlock();
+			e2->unlock();
+			
 			c->purge_cache();
 
 			CPPUNIT_ASSERT(!c->is_url_in_cache(localhost_url));

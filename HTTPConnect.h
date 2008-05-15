@@ -113,18 +113,19 @@ protected:
     methods to suppress the C++-supplied default versions (which will
     break this object). */
     //@{
-    HTTPConnect()
-    { }
-    HTTPConnect(const HTTPConnect &)
-    { }
-    HTTPConnect &operator=(const HTTPConnect &)
-    {
-        throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
-    }
+    HTTPConnect() {
+		throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
+	}
+	HTTPConnect(const HTTPConnect &) {
+		throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
+	}
+	HTTPConnect &operator=(const HTTPConnect &) {
+		throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
+	}
     //@}
 
 public:
-    HTTPConnect(RCReader *rcr) throw(Error, InternalErr);
+    HTTPConnect(RCReader *rcr);
 
     virtual ~HTTPConnect();
 

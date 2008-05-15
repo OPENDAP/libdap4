@@ -44,10 +44,13 @@
 #include "InternalErr.h"
 #endif
 
+#ifndef _debug_h
+#include "debug.h"
+#endif
+
 #define LOCK(m) pthread_mutex_lock((m))
 #define TRYLOCK(m) pthread_mutex_trylock((m))
 #define UNLOCK(m) pthread_mutex_unlock((m))
-
 #define INIT(m) pthread_mutex_init((m), 0)
 #define DESTROY(m) pthread_mutex_destroy((m))
 
@@ -100,7 +103,7 @@ public:
 	    bool no_cache;  // This field is not saved in the index.
 
 	    int locked;
-	    pthread_mutex_t lock ;
+	    pthread_mutex_t d_lock;
 	    
 	    // Allow HTTPCacheTable methods access and the test class, too
 	    friend class HTTPCacheTable;
@@ -148,15 +151,26 @@ public:
 			no_cache = state;
 		}
 	    bool is_no_cache() { return no_cache; }
-	    pthread_mutex_t &get_lock() { return lock; }
-
+	    
+	    void lock() {
+	        DBGN(cerr << "Locking entry... ");
+	    	LOCK(&d_lock);
+	        DBG(cerr << "Done");
+	    }
+	    void unlock() {
+	        DBGN(cerr << "Unlocking entry... ");
+	    	UNLOCK(&d_lock);
+	        DBG(cerr << "Done");
+	    }
+	    pthread_mutex_t &get_lock() { return d_lock; }
+	    
 		CacheEntry() :
 			url(""), hash(-1), hits(0), cachename(""), etag(""), lm(-1),
 					expires(-1), date(-1), age(-1), max_age(-1), size(0),
 					range(false), freshness_lifetime(0), response_time(0),
 					corrected_initial_age(0), must_revalidate(false),
 					no_cache(false), locked(0) {
-			INIT(&lock);
+			INIT(&d_lock);
 		}
 		CacheEntry(const string &u) :
 			url(u), hash(-1), hits(0), cachename(""), etag(""), lm(-1),
@@ -164,7 +178,7 @@ public:
 					range(false), freshness_lifetime(0), response_time(0),
 					corrected_initial_age(0), must_revalidate(false),
 					no_cache(false), locked(0) {
-			INIT(&lock);
+			INIT(&d_lock);
 			hash = get_hash(url);
 		}
 	};
@@ -207,7 +221,8 @@ private:
 	}
 
 	CacheTable &get_cache_table() { return d_cache_table; }
-
+	CacheEntry *get_locked_entry_from_cache_table(int hash, const string &url); /*const*/
+	
 public:
 	HTTPCacheTable(const string &cache_root, int block_size);
 	~HTTPCacheTable();
@@ -240,17 +255,19 @@ public:
     void create_location(CacheEntry *entry);
 
 	void add_entry_to_cache_table(CacheEntry *entry);
-	CacheEntry *get_entry_from_cache_table(int hash, const string &url); /*const*/
+#if 0
+	CacheEntry *get_locked_entry_from_cache_table(int hash, const string &url); /*const*/
+#endif
 	void remove_entry_from_cache_table(const string &url);
-	CacheEntry *get_entry_from_cache_table(const string &url);
+	CacheEntry *get_locked_entry_from_cache_table(const string &url);
 	void calculate_time(HTTPCacheTable::CacheEntry *entry,
 			int default_expiration, time_t request_time);
 	void parse_headers(HTTPCacheTable::CacheEntry *entry, 
 			unsigned long max_entry_size, const vector<string> &headers);
 	
-	void lock_entry(CacheEntry *entry, FILE *body);
-	void unlock_entry(FILE *body);
-	bool is_locked_entries();
+	void lock_response(CacheEntry *entry, FILE *body);
+	void unlock_response(FILE *body);
+	bool is_locked_responses();
 	
 	void remove_cache_entry(HTTPCacheTable::CacheEntry *entry);
 };

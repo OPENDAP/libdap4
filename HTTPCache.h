@@ -48,6 +48,10 @@
 #include "InternalErr.h"
 #endif
 
+#ifndef _debug_h
+#include "debug.h"
+#endif
+
 // The private method HTTPCache::write_body() could, at one time, throw
 // ResponseTooBig to signal that while writing a response body it was found
 // to be bigger than the max_entry_size property. But I bagged that; the
@@ -66,10 +70,19 @@
 #include "SignalHandlerRegisteredErr.h"
 #endif
 
+#define LOCK(m) pthread_mutex_lock((m))
+#define TRYLOCK(m) pthread_mutex_trylock((m))
+#define UNLOCK(m) pthread_mutex_unlock((m))
+#define INIT(m) pthread_mutex_init((m), 0)
+#define DESTROY(m) pthread_mutex_destroy((m))
+
 using namespace std;
 
 namespace libdap
 {
+
+// This function is exported so the test code can use it too.
+bool is_hop_by_hop_header(const string &header);
 
 /** Implements a single-user MT-safe HTTP 1.1 compliant (mostly) cache.
 
@@ -179,7 +192,7 @@ private:
     	throw InternalErr(__FILE__, __LINE__, "Unimplemented");
     }
 
-    HTTPCache(string cache_root, bool force) throw(Error);
+    HTTPCache(string cache_root, bool force);
 
     static void delete_instance(); // Run by atexit (hence static)
     
@@ -235,6 +248,17 @@ public:
     void set_cache_control(const vector<string> &cc);
     vector<string> get_cache_control();
 
+    void lock_cache_interface() {
+    	DBGN(cerr << "Locking interface... " << endl);
+    	LOCK(&d_cache_mutex);
+    	DBG(cerr << "Done" << endl);
+    }    	
+    void unlock_cache_interface() {
+    	DBGN(cerr << "Unlocking interface... " << endl);
+    	UNLOCK(&d_cache_mutex);
+    	DBG(cerr << "Done" << endl);
+    }
+    
     bool cache_response(const string &url, time_t request_time,
                         const vector<string> &headers, const FILE *body);
     vector<string> get_conditional_request_headers(const string &url);
@@ -243,10 +267,14 @@ public:
 
     bool is_url_in_cache(const string &url);
     bool is_url_valid(const string &url);
-    FILE *get_cached_response(const string &url, vector<string> &headers);
+    
     FILE *get_cached_response(const string &url, vector<string> &headers,
 			      			  string &cacheName);
-    FILE *get_cached_response_body(const string &url);
+    FILE *get_cached_response(const string &url, vector<string> &headers);
+    FILE *get_cached_response(const string &url);
+#if 0
+    FILE *get_cached_response_body(const string &url); // deprecated
+#endif
     void release_cached_response(FILE *response);
 
     void purge_cache();

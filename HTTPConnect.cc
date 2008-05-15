@@ -509,8 +509,7 @@ HTTPConnect::url_uses_no_proxy_for(const string &url) throw()
     @param rcr A pointer to the RCReader object which holds configuration
     file information to be used by this virtual connection. */
 
-HTTPConnect::HTTPConnect(RCReader *rcr) throw(Error, InternalErr)
-        : d_username(""), d_password("")
+HTTPConnect::HTTPConnect(RCReader *rcr) : d_username(""), d_password("")
 {
     d_accept_deflate = rcr->get_deflate();
     d_rcr = rcr;
@@ -529,7 +528,7 @@ HTTPConnect::HTTPConnect(RCReader *rcr) throw(Error, InternalErr)
     // HTTPCache::instance returns a valid ptr or 0.
     if (d_rcr->get_use_cache())
         d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root(),
-                                           false);
+                                           true);
     else
         d_http_cache = 0;
 

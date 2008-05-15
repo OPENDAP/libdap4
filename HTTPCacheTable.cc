@@ -331,7 +331,7 @@ HTTPCacheTable::cache_index_parse_line(const char *line)
     // Read the line and create the cache object
 	HTTPCacheTable::CacheEntry *entry = new HTTPCacheTable::CacheEntry;
 
-    INIT(&entry->lock);
+    INIT(&entry->d_lock);
     istringstream iss(line);
     iss >> entry->url;
     iss >> entry->cachename;
@@ -558,9 +558,9 @@ HTTPCacheTable::add_entry_to_cache_table(CacheEntry *entry)
 
     @param url Look for this URL. */
 HTTPCacheTable::CacheEntry *
-HTTPCacheTable::get_entry_from_cache_table(const string &url) /*const*/
+HTTPCacheTable::get_locked_entry_from_cache_table(const string &url) /*const*/
 {
-    return get_entry_from_cache_table(get_hash(url), url);
+    return get_locked_entry_from_cache_table(get_hash(url), url);
 }
 
 /** Get a pointer to a CacheEntry from the cache table. Providing a way to
@@ -571,15 +571,20 @@ HTTPCacheTable::get_entry_from_cache_table(const string &url) /*const*/
     @param url Look for this URL.
     @return The matching CacheEntry instance or NULL if none was found. */
 HTTPCacheTable::CacheEntry *
-HTTPCacheTable::get_entry_from_cache_table(int hash, const string &url) /*const*/
+HTTPCacheTable::get_locked_entry_from_cache_table(int hash, const string &url) /*const*/
 {
     if (d_cache_table[hash]) {
         CacheEntries *cp = d_cache_table[hash];
-        for (CacheEntriesIter i = cp->begin(); i != cp->end(); ++i)
+        for (CacheEntriesIter i = cp->begin(); i != cp->end(); ++i) {
             // Must test *i because perform_garbage_collection may have
             // removed this entry; the CacheEntry will then be null.
-            if ((*i) && (*i)->url == url)
+            if ((*i) && (*i)->url == url) {
+            	// locking the entry is of no use now, but locking here will
+            	// be required once we have a multiprocess cache. jhrg 5/15/08
+            	(*i)->lock();
                 return *i;
+            }
+        }
     }
 
     return 0;
@@ -681,6 +686,8 @@ void HTTPCacheTable::delete_all_entries() {
 					    slot->end());
 		}
 	}
+	
+	cache_index_delete();
 }
 
 /** Calculate the corrected_initial_age of the object. We use the time when
@@ -798,15 +805,15 @@ HTTPCacheTable::parse_headers(HTTPCacheTable::CacheEntry *entry,
 
 //@} End of the CacheEntry methods.
 
-void HTTPCacheTable::lock_entry(HTTPCacheTable::CacheEntry *entry, FILE *body) {
+void HTTPCacheTable::lock_response(HTTPCacheTable::CacheEntry *entry, FILE *body) {
     entry->hits++;  // Mark hit
     entry->locked++; // lock entry
     d_locked_entries[body] = entry; // record lock, see release_cached_r...
     DBG(cerr << "Locking entry (non-blocking lock)... ");
-    TRYLOCK(&entry->lock);
+    TRYLOCK(&entry->d_lock);
 }
 
-void HTTPCacheTable::unlock_entry(FILE *body) {
+void HTTPCacheTable::unlock_response(FILE *body) {
 	HTTPCacheTable::CacheEntry *entry = d_locked_entries[body];
     if (!entry)
         throw InternalErr("There is no cache entry for the response given.");
@@ -814,7 +821,7 @@ void HTTPCacheTable::unlock_entry(FILE *body) {
     entry->locked--;
     if (entry->locked == 0) {
         d_locked_entries.erase(body);
-        UNLOCK(&entry->lock);
+        UNLOCK(&entry->d_lock);
         DBG(cerr << "Unlocking entry " << hex << entry << dec << endl);
     }
 
@@ -822,7 +829,7 @@ void HTTPCacheTable::unlock_entry(FILE *body) {
         throw InternalErr("An unlocked entry was released");
 }
 
-bool HTTPCacheTable::is_locked_entries() {
+bool HTTPCacheTable::is_locked_responses() {
 	return !d_locked_entries.empty();
 }
 
