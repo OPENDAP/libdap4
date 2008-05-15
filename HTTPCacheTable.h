@@ -44,13 +44,19 @@
 #include "InternalErr.h"
 #endif
 
-const int CACHE_TABLE_SIZE = 1499;
+#define LOCK(m) pthread_mutex_lock((m))
+#define TRYLOCK(m) pthread_mutex_trylock((m))
+#define UNLOCK(m) pthread_mutex_unlock((m))
+
+#define INIT(m) pthread_mutex_init((m), 0)
+#define DESTROY(m) pthread_mutex_destroy((m))
 
 using namespace std;
 
 namespace libdap
 {
 
+int get_hash(const string &url);
 
 /** The table of entires in the client-side cache.
     @todo This class needed to have the locking mechanism in place to work 
@@ -70,10 +76,10 @@ public:
 	the lock counter and mutex. */
 	struct CacheEntry
 	{
-	    string url;  // Location
+	private:
+		string url;  // Location
 	    int hash;
 	    int hits;  // Hit counts
-
 	    string cachename;
 
 	    string etag;
@@ -84,8 +90,7 @@ public:
 	    time_t max_age;  // From Cache-Control
 
 	    unsigned long size; // Size of cached entity body
-	    bool range;  // Range is not currently supported. 10/02/02
-	    // jhrg
+	    bool range;  // Range is not currently supported. 10/02/02 jhrg
 
 	    time_t freshness_lifetime;
 	    time_t response_time;
@@ -96,14 +101,72 @@ public:
 
 	    int locked;
 	    pthread_mutex_t lock ;
+	    
+	    // Allow HTTPCacheTable methods access and the test class, too
+	    friend class HTTPCacheTable;
+		friend class HTTPCacheTest;
+	    
+		// Allow access by the fucntors used in HTTPCacheTable
+		friend class DeleteCacheEntry;
+	    friend class WriteOneCacheEntry;
+	    friend class DeleteExpired;
+	    friend class DeleteByHits;
+	    friend class DeleteBySize;
 
-	CacheEntry() : url(""), hash(-1), hits(0), cachename(""),
-	            etag(""), lm(-1),
-	            expires(-1), date(-1), age(-1), max_age(-1), size(0),
-	            range(false), freshness_lifetime(0), response_time(0),
-	            corrected_initial_age(0), must_revalidate(false),
-	            no_cache(false), locked(0)
-	{}
+	public:
+		string get_cachename() {
+			return cachename;
+		}
+		string get_etag() {
+			return etag;
+		}
+		time_t get_lm() {
+			return lm;
+		}
+		time_t get_expires() {
+			return expires;
+		}
+		time_t get_max_age() {
+			return max_age;
+		}
+		void set_size(unsigned long sz) {
+			size = sz;
+		}
+		time_t get_freshness_lifetime() {
+			return freshness_lifetime;
+		}
+		time_t get_response_time() {
+			return response_time;
+		}
+		time_t get_corrected_initial_age() {
+			return corrected_initial_age;
+		}
+		bool get_must_revalidate() {
+			return must_revalidate;
+		}
+		void set_no_cache(bool state) {
+			no_cache = state;
+		}
+	    bool is_no_cache() { return no_cache; }
+	    pthread_mutex_t &get_lock() { return lock; }
+
+		CacheEntry() :
+			url(""), hash(-1), hits(0), cachename(""), etag(""), lm(-1),
+					expires(-1), date(-1), age(-1), max_age(-1), size(0),
+					range(false), freshness_lifetime(0), response_time(0),
+					corrected_initial_age(0), must_revalidate(false),
+					no_cache(false), locked(0) {
+			INIT(&lock);
+		}
+		CacheEntry(const string &u) :
+			url(u), hash(-1), hits(0), cachename(""), etag(""), lm(-1),
+					expires(-1), date(-1), age(-1), max_age(-1), size(0),
+					range(false), freshness_lifetime(0), response_time(0),
+					corrected_initial_age(0), must_revalidate(false),
+					no_cache(false), locked(0) {
+			INIT(&lock);
+			hash = get_hash(url);
+		}
 	};
 
 	// Typedefs for CacheTable. A CacheTable is a vector of vectors of
@@ -111,19 +174,11 @@ public:
 	// Entries with matching hashes occupy successive positions in the inner
 	// vector (that's how hash collisions are resolved). Search the inner
 	// vector for a specific match.
-	typedef vector<CacheEntry *> CachePointers;
-	typedef CachePointers::iterator CachePointersIter;
+	typedef vector<CacheEntry *> CacheEntries;
+	typedef CacheEntries::iterator CacheEntriesIter;
 
-	// CACHE_TABLE_SIZE is used by the static function get_hash defined in
-	// HTTPCache.cc. The table is indexed by the various cache entries' hash
-	// code. 10/01/02 jhrg
-	typedef CachePointers *CacheTable[CACHE_TABLE_SIZE];
-	
-	friend class DeleteCacheEntry;
-    friend class WriteOneCacheEntry;
-    friend class DeleteExpired;
-    friend class DeleteByHits;
-    
+	typedef CacheEntries **CacheTable;// Array of pointers to CacheEntries
+
 	friend class HTTPCacheTest;
 	
 private:
@@ -135,6 +190,8 @@ private:
 
     string d_cache_index;
     int d_new_entries;
+    
+    map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
     
 	// Make these private to prevent use
 	HTTPCacheTable(const HTTPCacheTable &) {
@@ -149,13 +206,13 @@ private:
 		throw InternalErr(__FILE__, __LINE__, "unimplemented");
 	}
 
+	CacheTable &get_cache_table() { return d_cache_table; }
+
 public:
 	HTTPCacheTable(const string &cache_root, int block_size);
 	~HTTPCacheTable();
 	
 	//@{ @name Accessors/Mutators
-	CacheTable &get_cache_table() { return d_cache_table; }
-	
 	unsigned long get_current_size() const { return d_current_size; }
 	void set_current_size(unsigned long sz) { d_current_size = sz; }
 	
@@ -168,10 +225,12 @@ public:
 	string get_cache_root() { return d_cache_root; }
 	void set_cache_root(const string &cr) { d_cache_root = cr; }
 	//@}
-	
+#if 0	
 	int get_hash(const string &url);
+#endif
 	void delete_expired_entries(time_t time = 0);
 	void delete_by_hits(int hits);
+	void delete_by_size(unsigned int size);
 	void delete_all_entries();
 	
 	bool cache_index_delete();
@@ -186,6 +245,14 @@ public:
 	CacheEntry *get_entry_from_cache_table(int hash, const string &url); /*const*/
 	void remove_entry_from_cache_table(const string &url);
 	CacheEntry *get_entry_from_cache_table(const string &url);
+	void calculate_time(HTTPCacheTable::CacheEntry *entry,
+			int default_expiration, time_t request_time);
+	void parse_headers(HTTPCacheTable::CacheEntry *entry, 
+			unsigned long max_entry_size, const vector<string> &headers);
+	
+	void lock_entry(CacheEntry *entry, FILE *body);
+	void unlock_entry(FILE *body);
+	bool is_locked_entries();
 	
 	void remove_cache_entry(HTTPCacheTable::CacheEntry *entry);
 };

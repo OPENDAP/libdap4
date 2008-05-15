@@ -130,82 +130,8 @@ namespace libdap
     @author James Gallagher <jgallagher@gso.uri.edu> */
 class HTTPCache
 {
-public:
-#if 0
-    /** A struct used to store information about responses in the
-    cache's volatile memory. 
-
-    About entry locking: An entry is locked using both a mutex and a
-    counter. The counter keeps track of how many clients are accessing a
-    given entry while the mutex provides a guarantee that updates to the
-    counter are MT-safe. In addition, the HTTPCache object maintains a
-    map which binds the FILE* returned to a client with a given entry.
-    This way the client can tell the HTTPCache object that it is done
-    with <code>FILE *response</code> and the class can arrange to update
-    the lock counter and mutex. */
-    struct CacheEntry
-    {
-        string url;  // Location
-        int hash;
-        int hits;  // Hit counts
-
-        string cachename;
-
-        string etag;
-        time_t lm;  // Last modified
-        time_t expires;
-        time_t date;  // From the response header.
-        time_t age;
-        time_t max_age;  // From Cache-Control
-
-        unsigned long size; // Size of cached entity body
-        bool range;  // Range is not currently supported. 10/02/02
-        // jhrg
-
-        time_t freshness_lifetime;
-        time_t response_time;
-        time_t corrected_initial_age;
-
-        bool must_revalidate;
-        bool no_cache;  // This field is not saved in the index.
-
-        int locked;
-        pthread_mutex_t lock ;
-
-    CacheEntry() : url(""), hash(-1), hits(0), cachename(""),
-                etag(""), lm(-1),
-                expires(-1), date(-1), age(-1), max_age(-1), size(0),
-                range(false), freshness_lifetime(0), response_time(0),
-                corrected_initial_age(0), must_revalidate(false),
-                no_cache(false), locked(0)
-    {}
-    };
-#endif
-    // Try this now since we are using vc++ 9.0 (2008). jhrg
-#if 0   
-#ifdef WIN32
-    //  Declared private below for gcc.  There appears to be a
-    //  difference in public vs. private under gcc when objects
-    //  share the same source file (??).
-    //
-    // My guess is that this was a bug in older versions of gcc. I've made
-    // the functors classes (they were structs) and made them friends (so
-    // they can access private stuff). We should not need this any longer,
-    // but I'm hesitant to remove it since I cannot easily test with VC++.
-    // 01/23/04 jhrg
-    unsigned long d_max_entry_size; // Max individual entry size.
-#if 0
-    void remove_cache_entry(CacheEntry *entry);
-#endif
-    bool stopGC() const;
-#endif
-#endif
-    
 private:
     string d_cache_root;
-#if 0
-    string d_cache_index;
-#endif
     FILE *d_locked_open_file; // Lock for single process use.
 
     bool d_cache_enabled;
@@ -217,16 +143,9 @@ private:
     unsigned long d_total_size; // How much can we store?
     unsigned long d_folder_size; // How much of that is meta data?
     unsigned long d_gc_buffer; // How much memory needed as buffer?
-//#ifndef WIN32  //  Declared public above for win32
     unsigned long d_max_entry_size; // Max individual entry size.
-//#endif
-
-#if 0
-    unsigned long d_current_size;
-#endif
+#if 1
     int d_default_expiration;
-#if 0
-    unsigned int d_block_size; // File block size.
 #endif
     vector<string> d_cache_control;
     // these are values read from a request-directive Cache-Control header.
@@ -236,32 +155,15 @@ private:
     time_t d_max_age;
     time_t d_max_stale;  // -1: not set, 0:any response, >0 max time.
     time_t d_min_fresh;
-#if 0
-    int d_new_entries;  // How many entries since index write?
-#endif
+
     // Lock non-const methods (also ones that use the STL).
     pthread_mutex_t d_cache_mutex;
-
-#if 0
-    // Typedefs for CacheTable. A CacheTable is a vector of vectors of
-    // CacheEntries. The outer vector is accessed using the hash value.
-    // Entries with matching hashes occupy successive positions in the inner
-    // vector (that's how hash collisions are resolved). Search the inner
-    // vector for a specific match.
-    typedef vector<CacheEntry *> CachePointers;
-    typedef CachePointers::iterator CachePointersIter;
-
-    // CACHE_TABLE_SIZE is used by the static function get_hash defined in
-    // HTTPCache.cc. The table is indexed by the various cache entries' hash
-    // code. 10/01/02 jhrg
-    typedef CachePointers *CacheTable[CACHE_TABLE_SIZE];
-
-    CacheTable d_cache_table;
-#endif
     
     HTTPCacheTable *d_http_cache_table;
-    
+#if 0    
     map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
+#endif
+    // d_open_files is used by the interrupt handler to clean up
     vector<string> d_open_files;
 
     static HTTPCache *_instance;
@@ -269,86 +171,45 @@ private:
     friend class HTTPCacheTest; // Unit tests
     friend class HTTPCacheInterruptHandler;
 
-    // Functors used with STL algorithms
-#if 0
-    friend class DeleteExpired;
-    friend class DeleteByHits;
-    friend class DeleteCacheEntry;
-    friend class DeleteUnlockedCacheEntry;
-    friend class WriteOneCacheEntry;
-#endif
     // Private methods
-
-    void clone(const HTTPCache &)
-    {}
-
-    HTTPCache(const HTTPCache &cache)
-    {
-        clone(cache);
+    HTTPCache(const HTTPCache &) {
+    	throw InternalErr(__FILE__, __LINE__, "Unimplemented");
     }
-
-    HTTPCache()
-    {}
+    HTTPCache() {
+    	throw InternalErr(__FILE__, __LINE__, "Unimplemented");
+    }
+    HTTPCache &operator=(const HTTPCache &) {
+    	throw InternalErr(__FILE__, __LINE__, "Unimplemented");
+    }
 
     HTTPCache(string cache_root, bool force) throw(Error);
 
-    HTTPCache &operator=(const HTTPCache &rhs)
-    {
-        if (this != &rhs)
-            clone(rhs);
-        return *this;
-    }
-
     static void delete_instance(); // Run by atexit (hence static)
-
-#if 0
-    HTTPCacheTable::CacheEntry *cache_index_parse_line(const char *line);
-    bool cache_index_read();
-    bool cache_index_delete();
-    void cache_index_write();
-#endif
     
     void set_cache_root(const string &root = "");
-
+    void create_cache_root(const string &cache_root);
+    
     // These will go away when the cache can be used by multiple processes.
     bool get_single_user_lock(bool force = false);
     void release_single_user_lock();
     
 #if 0
-    void add_entry_to_cache_table(HTTPCacheTable::CacheEntry *e);
-    void remove_entry_from_cache_table(const string &url);
-    HTTPCacheTable::CacheEntry *get_entry_from_cache_table(const string &url) /*const*/;
-    HTTPCacheTable::CacheEntry *get_entry_from_cache_table(int hash, const string &url) /*const*/;
-#ifndef WIN32  //  Declared public above for win32
-    void remove_cache_entry(HTTPCacheTable::CacheEntry *entry);
-#endif
-#endif
-    
     void parse_headers(HTTPCacheTable::CacheEntry *entry, const vector<string> &headers);
     void calculate_time(HTTPCacheTable::CacheEntry *entry, time_t request_time);
-
+#endif
+    
     // I made these four methods so they could be tested by HTTPCacheTest.
-    // Otherwise they would be static functions in HTTPCache.cc. 10/01/02
-    // jhrg
+    // Otherwise they would be static functions. jhrg 10/01/02
     void write_metadata(const string &cachename, const vector<string> &headers);
     void read_metadata(const string &cachename, vector<string> &headers);
     int write_body(const string &cachename, const FILE *src);
     FILE *open_body(const string &cachename);
 
-    void create_cache_root(const string &cache_root);
-#if 0
-    string create_hash_directory(int hash);
-    void create_location(HTTPCacheTable::CacheEntry *entry);
-#endif
-    
-    // Try this now since we are using vc++ 9.0 (2008)
-// #ifndef WIN32  //  Declared public above for win32
     bool stopGC() const;
-// #endif
     bool startGC() const;
 
-
     void perform_garbage_collection();
+    void too_big_gc();
     void expired_gc();
     void hits_gc();
 
@@ -361,7 +222,7 @@ public:
     void set_cache_enabled(bool mode);
     bool is_cache_enabled() const;
 #if 0
-    // I don't think this is evver used. 5/13/08 jhrg
+    // I don't think this is ever used. 5/13/08 jhrg
     void set_cache_protected(bool mode);
     bool is_cache_protected() const;
 #endif
@@ -376,10 +237,10 @@ public:
 
     void set_max_entry_size(unsigned long size);
     unsigned long get_max_entry_size() const;
-
+#if 1
     void set_default_expiration(int exp_time);
     int get_default_expiration() const;
-
+#endif
     void set_always_validate(bool validate);
     bool get_always_validate() const;
 

@@ -376,7 +376,7 @@ public:
 	void parse_headers_test() {
 		HTTPCacheTable::CacheEntry *e = new HTTPCacheTable::CacheEntry;
 
-		hc->parse_headers(e, h);
+		hc->d_http_cache_table->parse_headers(e, hc->d_max_entry_size, h);
 		CPPUNIT_ASSERT(e->lm == 784025377);
 
 		delete e;
@@ -386,8 +386,8 @@ public:
 	void calculate_time_test() {
 		HTTPCacheTable::CacheEntry *e = new HTTPCacheTable::CacheEntry;
 
-		hc->parse_headers(e, h);
-		hc->calculate_time(e, time(0));
+		hc->d_http_cache_table->parse_headers(e, hc->d_max_entry_size, h);
+		hc->d_http_cache_table->calculate_time(e, hc->d_default_expiration, time(0));
 		CPPUNIT_ASSERT(e->corrected_initial_age > 249300571);
 		CPPUNIT_ASSERT(e->freshness_lifetime == 86400);
 
