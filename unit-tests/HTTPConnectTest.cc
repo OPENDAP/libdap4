@@ -103,7 +103,7 @@ class HTTPConnectTest: public TestFixture {
     }
 
     CPPUNIT_TEST_SUITE(HTTPConnectTest);
-#if 1 
+#if 1
     CPPUNIT_TEST(read_url_test);
     CPPUNIT_TEST(fetch_url_test);
     CPPUNIT_TEST(get_response_headers_test);

@@ -26,6 +26,8 @@
 #ifndef _http_cache_table_h
 #define _http_cache_table_h
 
+#define DODS_DEBUG
+
 #include <pthread.h>
 
 #ifdef WIN32
@@ -102,7 +104,12 @@ public:
 	    bool must_revalidate;
 	    bool no_cache;  // This field is not saved in the index.
 
-	    int locked;
+	    int readers;
+	    pthread_mutex_t d_response_lock;	// set if being read
+	    pthread_mutex_t d_response_write_lock;			// set if being written
+	    
+	    // This lock prevents access to the fields of a CacheEntry. Might not
+	    // be needed.
 	    pthread_mutex_t d_lock;
 	    
 	    // Allow HTTPCacheTable methods access and the test class, too
@@ -153,23 +160,60 @@ public:
 	    bool is_no_cache() { return no_cache; }
 	    
 	    void lock() {
-	        DBGN(cerr << "Locking entry... ");
+	        DBG(cerr << "Locking entry... (" << hex << &d_lock << dec << ") ");
 	    	LOCK(&d_lock);
-	        DBG(cerr << "Done");
+	        DBGN(cerr << "Done" << endl);
 	    }
 	    void unlock() {
-	        DBGN(cerr << "Unlocking entry... ");
+	        DBG(cerr << "Unlocking entry... (" << hex << &d_lock << dec << ") ");
 	    	UNLOCK(&d_lock);
-	        DBG(cerr << "Done");
+	        DBGN(cerr << "Done" << endl);
 	    }
 	    pthread_mutex_t &get_lock() { return d_lock; }
 	    
-		CacheEntry() :
+	    void lock_read_response() {
+	        DBG(cerr << "Try locking read response... (" << hex << &d_response_lock << dec << ") ");
+	        int status = TRYLOCK(&d_response_lock);
+	        if (status != 0 /*&& status == EBUSY*/) {
+	    		// If locked, wait for any writers
+	    		LOCK(&d_response_write_lock);
+	    		UNLOCK(&d_response_write_lock);
+	    	}
+	        DBGN(cerr << "Done" << endl);
+	        readers++;			// REcord number of readers
+	    }
+	    
+	    void unlock_read_response() {
+			readers--;
+			if (readers == 0) {
+				DBG(cerr << "Unlocking read response... (" << hex << &d_response_lock << dec << ") ");
+				UNLOCK(&d_response_lock);
+				DBGN(cerr << "Done" << endl);
+			}
+		}
+	    
+	    void lock_write_response() {
+	        DBG(cerr << "locking write response... (" << hex << &d_response_lock << dec << ") ");
+	    	LOCK(&d_response_lock);
+	    	LOCK(&d_response_write_lock);
+	        DBGN(cerr << "Done" << endl);
+	    }
+	    
+	    void unlock_write_response() {
+	        DBG(cerr << "Unlocking write response... (" << hex << &d_response_lock << dec << ") ");
+    		UNLOCK(&d_response_write_lock);
+	    	UNLOCK(&d_response_lock);
+	        DBGN(cerr << "Done" << endl);
+	    }
+	    
+	    CacheEntry() :
 			url(""), hash(-1), hits(0), cachename(""), etag(""), lm(-1),
 					expires(-1), date(-1), age(-1), max_age(-1), size(0),
 					range(false), freshness_lifetime(0), response_time(0),
 					corrected_initial_age(0), must_revalidate(false),
-					no_cache(false), locked(0) {
+					no_cache(false), readers(0) {
+	    	INIT(&d_response_lock);
+	    	INIT(&d_response_write_lock);
 			INIT(&d_lock);
 		}
 		CacheEntry(const string &u) :
@@ -177,7 +221,9 @@ public:
 					expires(-1), date(-1), age(-1), max_age(-1), size(0),
 					range(false), freshness_lifetime(0), response_time(0),
 					corrected_initial_age(0), must_revalidate(false),
-					no_cache(false), locked(0) {
+					no_cache(false), readers(0) {
+	    	INIT(&d_response_lock);
+	    	INIT(&d_response_write_lock);
 			INIT(&d_lock);
 			hash = get_hash(url);
 		}
@@ -255,21 +301,21 @@ public:
     void create_location(CacheEntry *entry);
 
 	void add_entry_to_cache_table(CacheEntry *entry);
-#if 0
-	CacheEntry *get_locked_entry_from_cache_table(int hash, const string &url); /*const*/
-#endif
+	void remove_cache_entry(HTTPCacheTable::CacheEntry *entry);
+
 	void remove_entry_from_cache_table(const string &url);
 	CacheEntry *get_locked_entry_from_cache_table(const string &url);
+	CacheEntry *get_write_locked_entry_from_cache_table(const string &url);
+
 	void calculate_time(HTTPCacheTable::CacheEntry *entry,
 			int default_expiration, time_t request_time);
 	void parse_headers(HTTPCacheTable::CacheEntry *entry, 
 			unsigned long max_entry_size, const vector<string> &headers);
 	
-	void lock_response(CacheEntry *entry, FILE *body);
-	void unlock_response(FILE *body);
-	bool is_locked_responses();
-	
-	void remove_cache_entry(HTTPCacheTable::CacheEntry *entry);
+	// These should move back to HTTPCache
+	void bind_entry_to_data(CacheEntry *entry, FILE *body);
+	void uncouple_entry_from_data(FILE *body);
+	bool is_locked_read_responses();
 };
 
 } // namespace libdap

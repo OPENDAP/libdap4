@@ -4,7 +4,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002 OPeNDAP, Inc.
+// Copyright (c) 2002,2008 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -84,13 +84,13 @@ namespace libdap
 // This function is exported so the test code can use it too.
 bool is_hop_by_hop_header(const string &header);
 
-/** Implements a single-user MT-safe HTTP 1.1 compliant (mostly) cache.
+/** Implements a multi-process MT-safe HTTP 1.1 compliant (mostly) cache.
 
     <i>Clients that run as users lacking a writable HOME directory MUST
     disable this cache. Use Connect::set_cache_enable(false).</i>
 
-    The design of this class was taken from the W3C libwww software. That
-    code was originally written by Henrik Frystyk Nielsen, Copyright MIT
+    The original design of this class was taken from the W3C libwww software, 
+    written by Henrik Frystyk Nielsen, Copyright MIT
     1995. See the file MIT_COPYRIGHT. This software is a complete rewrite in
     C++ with additional features useful to the DODS and OPeNDAP projects.
 
@@ -113,7 +113,7 @@ bool is_hop_by_hop_header(const string &header);
     accessed, an extra locking mechanism is in place for `entries' which are
     accessed. If a thread accesses a entry, that response must be locked to
     prevent it from being updated until the thread tells the cache that it's
-    no longer using it. The methods get_cache_response() and
+    no longer using it. The method get_cache_response() and
     get_cache_response_body() both lock an entry; use
     release_cache_response() to release the lock. Entries are locked using a
     combination of a counter and a mutex. The following methods block when
@@ -124,23 +124,17 @@ bool is_hop_by_hop_header(const string &header);
     get_conditional_request_headers() would only lock when an entry is in use
     for writing. But I haven't done that.)
 
-    @todo Because is_url_in_cache() and is_url_valid() are discrete, an
-    interface that combines the two might be easier to use. Or maybe if
-    is_url_valid() threw a special exception if the entry was missing.
-    Something to help clients deal with URLs that are removed from the cache
-    in between calls to the two methods.
-
-    @todo Change the entry locking scheme to distinguish between entries
-    accessed for reading and for writing.
-
-    @todo Test in MT software. Is the entry locking scheme good enough? The
-    current software throws an exception if there's an attempt to modify an
-    entry that is locked by another thread. Maybe it should block instead?
-    Maybe we should provide a tests to see if an update would block (one that
-    returns right away and one that blocks). Note: Rob Morris added tests for
-    MT-safety. 02/06/03 jhrg
-
-    @author James Gallagher <jgallagher@gso.uri.edu> */
+	@todo Update documentation: get_cache_response() now also serves as 
+	is_url_in_cache() and is_url_valid() should only be called after a locked
+	cached response is accessed using get_cahced_response(). These lock the
+	cache for reading. The methods cache_response() and update_response()
+	lock an entry for writing.
+	
+	@todo Check that the lock-for-write and lock-for-read work together since
+	it's possible that an entry in use might have a stream of readers and never
+	free the 'read-lock' thus blocking a writer.
+	
+    @author James Gallagher <jgallagher@opendap.org> */
 class HTTPCache
 {
 private:
@@ -203,6 +197,8 @@ private:
     bool get_single_user_lock(bool force = false);
     void release_single_user_lock();
     
+    bool is_url_in_cache(const string &url);
+
     // I made these four methods so they could be tested by HTTPCacheTest.
     // Otherwise they would be static functions. jhrg 10/01/02
     void write_metadata(const string &cachename, const vector<string> &headers);
@@ -249,32 +245,34 @@ public:
     vector<string> get_cache_control();
 
     void lock_cache_interface() {
-    	DBGN(cerr << "Locking interface... " << endl);
+    	DBG(cerr << "Locking interface... ");
     	LOCK(&d_cache_mutex);
-    	DBG(cerr << "Done" << endl);
+    	DBGN(cerr << "Done" << endl);
     }    	
     void unlock_cache_interface() {
-    	DBGN(cerr << "Unlocking interface... " << endl);
+    	DBG(cerr << "Unlocking interface... " );
     	UNLOCK(&d_cache_mutex);
-    	DBG(cerr << "Done" << endl);
+    	DBGN(cerr << "Done" << endl);
     }
     
+    // This must lock for writing
     bool cache_response(const string &url, time_t request_time,
                         const vector<string> &headers, const FILE *body);
-    vector<string> get_conditional_request_headers(const string &url);
     void update_response(const string &url, time_t request_time,
                          const vector<string> &headers);
 
-    bool is_url_in_cache(const string &url);
+    // This is separate from get_cached_response() because often an invalid
+    // cache entry just needs a header update. That is best left to the HTTP
+    // Connection code.
     bool is_url_valid(const string &url);
     
+    // Lock these for reading
+    vector<string> get_conditional_request_headers(const string &url);
     FILE *get_cached_response(const string &url, vector<string> &headers,
 			      			  string &cacheName);
     FILE *get_cached_response(const string &url, vector<string> &headers);
     FILE *get_cached_response(const string &url);
-#if 0
-    FILE *get_cached_response_body(const string &url); // deprecated
-#endif
+
     void release_cached_response(FILE *response);
 
     void purge_cache();

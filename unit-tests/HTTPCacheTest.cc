@@ -144,7 +144,7 @@ public:
     }
 
     CPPUNIT_TEST_SUITE(HTTPCacheTest);
-
+#if 1
     CPPUNIT_TEST(constructor_test);
     CPPUNIT_TEST(cache_index_read_test);
     CPPUNIT_TEST(cache_index_parse_line_test);
@@ -165,21 +165,22 @@ public:
     CPPUNIT_TEST(is_url_valid_test);
     CPPUNIT_TEST(get_cached_response_test);
     CPPUNIT_TEST(perform_garbage_collection_test);
+#endif
     CPPUNIT_TEST(purge_cache_and_release_cached_response_test);
+#if 1
     CPPUNIT_TEST(instance_test);
     CPPUNIT_TEST(get_conditional_response_headers_test);
     CPPUNIT_TEST(update_response_test);
-
 #if 0
     CPPUNIT_TEST(interrupt_test);
 #endif
-
     CPPUNIT_TEST(cache_gc_test);
-
+#endif
+    
     CPPUNIT_TEST_SUITE_END();
 
     void constructor_test() {
-		DBG(cerr << "hc->cache_index: " << hc->d_cache_index << endl);
+		DBG(cerr << "hc->cache_index: " << hc->d_http_cache_table->d_cache_index << endl);
 		CPPUNIT_ASSERT(hc->d_http_cache_table->d_cache_index=="cache-testsuite/dods_cache/.index");
 		CPPUNIT_ASSERT(hc->d_cache_root == "cache-testsuite/dods_cache/");
 		DBG(cerr << "Current size: " << hc->d_http_cache_table->d_current_size << endl);
@@ -196,6 +197,7 @@ public:
 		CPPUNIT_ASSERT(e);
 		CPPUNIT_ASSERT(e->url == localhost_url);
 		e->unlock();
+		e->unlock_read_response();
 	}
 
 	void cache_index_parse_line_test() {
@@ -232,6 +234,7 @@ public:
 		CPPUNIT_ASSERT(e2);
 		CPPUNIT_ASSERT(e2->url == localhost_url);
 		e2->unlock();
+		e2->unlock_read_response();
 
 		// Now test what happens when two entries collide.
 		HTTPCacheTable::CacheEntry *e3 =
@@ -250,6 +253,7 @@ public:
 		CPPUNIT_ASSERT(g);
 		CPPUNIT_ASSERT(g->url == e3->url);
 		g->unlock();
+		g->unlock_read_response();
 
 		g = hc->d_http_cache_table->get_locked_entry_from_cache_table("http://not.in.table/never.x");
 		CPPUNIT_ASSERT(g == 0);
@@ -271,6 +275,7 @@ public:
 		CPPUNIT_ASSERT(e);
 		CPPUNIT_ASSERT(e->url == localhost_url);
 		e->unlock();
+		e->unlock_read_response();
 		
 		delete hc_3;
 		hc = 0;
@@ -439,6 +444,7 @@ public:
 			HTTPCacheTable::CacheEntry *e = hc->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 			CPPUNIT_ASSERT(file_size(e->cachename) == 343);
 			e->unlock();
+			e->unlock_read_response();
 			delete rs; rs = 0;
 		}
 		catch (Error &e) {
@@ -551,7 +557,9 @@ public:
 			string e1_file = e1->cachename;
 			string e2_file = e2->cachename;
 			e1->unlock();
+			e1->unlock_read_response();
 			e2->unlock();
+			e2->unlock_read_response();
 			
 			vector<string> headers;
 			FILE *b = pc->get_cached_response(expired, headers);
@@ -605,7 +613,9 @@ public:
 			string e1_file = e1->cachename;
 			string e2_file = e2->cachename;
 			e1->unlock();
+			e1->unlock_read_response();
 			e2->unlock();
+			e2->unlock_read_response();
 			
 			c->purge_cache();
 
