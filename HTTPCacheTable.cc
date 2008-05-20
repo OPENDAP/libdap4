@@ -582,10 +582,6 @@ HTTPCacheTable::get_locked_entry_from_cache_table(int hash, const string &url) /
             // removed this entry; the CacheEntry will then be null.
             if ((*i) && (*i)->url == url) {
             	(*i)->lock_read_response();	// Lock the response
-#if 0
-            	(*i)->hits++;  				// Mark hit
-            	(*i)->readers++; 				// record lock for reading
-#endif
             	(*i)->lock();
                 return *i;
             }
@@ -646,9 +642,6 @@ HTTPCacheTable::remove_cache_entry(HTTPCacheTable::CacheEntry *entry)
     set_current_size((eds > get_current_size()) ? 0 : get_current_size() - eds);
     
     DBG(cerr << "remove_cache_entry, current_size: " << get_current_size() << endl);
-#if 0
-    delete entry; entry = 0;
-#endif
 }
 
 /** Functor which deletes and nulls a CacheEntry if the given entry matches
@@ -835,17 +828,8 @@ void HTTPCacheTable::parse_headers(HTTPCacheTable::CacheEntry *entry,
 // @TODO Change name to record locked response
 void HTTPCacheTable::bind_entry_to_data(HTTPCacheTable::CacheEntry *entry, FILE *body) {
 	entry->hits++;  // Mark hit
-#if 0
-    entry->readers++; // lock entry
-#endif
     d_locked_entries[body] = entry; // record lock, see release_cached_r...
-#if 0
-    DBG(cerr << "Locking entry (non-blocking lock)... (" << hex << &entry->d_lock << dec << ") " << endl);
-    TRYLOCK(&entry->d_response_lock);
-#endif
-#if 0
-    entry->lock_read_response();	// Lock the response
-#endif
+
     entry->unlock();			// Unlock the entry object so others can read it
 }
 
@@ -857,17 +841,6 @@ void HTTPCacheTable::uncouple_entry_from_data(FILE *body) {
     d_locked_entries.erase(body);
     entry->unlock_read_response();
 
-#if 0
-    entry->readers--;
-    DBG(cerr << "entry->locked (" << hex << &entry->d_response_lock << dec << "): " << entry->readers << endl);
-    if (entry->readers == 0) {
-        d_locked_entries.erase(body);
-        entry->unlock_read_response();
-#if 0
-        entry->unlock();
-#endif
-    }
-#endif
     if (entry->readers < 0)
         throw InternalErr("An unlocked entry was released");
 }

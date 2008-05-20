@@ -66,13 +66,6 @@ HTTPCache *HTTPCache::_instance = 0;
 // made.
 static pthread_mutex_t instance_mutex;
 static pthread_once_t once_block = PTHREAD_ONCE_INIT;
-#if 0
-#define LOCK(m) pthread_mutex_lock((m))
-#define TRYLOCK(m) pthread_mutex_trylock((m))
-#define UNLOCK(m) pthread_mutex_unlock((m))
-#define INIT(m) pthread_mutex_init((m), 0)
-#define DESTROY(m) pthread_mutex_destroy((m))
-#endif
 
 #ifdef WIN32
 #include <direct.h>
@@ -1104,9 +1097,6 @@ HTTPCache::write_body(const string &cachename, const FILE *src)
 FILE *
 HTTPCache::open_body(const string &cachename)
 {
-#if 0
-	FILE *src = fopen(cachename.c_str(), "r+b");
-#endif
 	FILE *src = fopen(cachename.c_str(), "rb");		// Read only	
 	if (!src)
         throw InternalErr(__FILE__, __LINE__, "Could not open cache file.");
@@ -1197,11 +1187,6 @@ HTTPCache::cache_response(const string &url, time_t request_time,
             return false;
         }
 
-#if 0
-        d_http_cache_table->add_entry_to_cache_table(entry);
-        // Fold this into add_entry_to_cache_table
-        d_http_cache_table->increment_new_entries();
-#endif
         if (d_http_cache_table->get_new_entries() > DUMP_FREQUENCY) {
             if (startGC())
                 perform_garbage_collection();
@@ -1496,9 +1481,7 @@ FILE * HTTPCache::get_cached_response(const string &url,
         	unlock_cache_interface();
         	return 0;
         }
-#if 0
-        throw Error("There is no cache entry for the URL: " + url);
-#endif        
+
         cacheName = entry->get_cachename();
         read_metadata(entry->get_cachename(), headers);
 
@@ -1558,26 +1541,6 @@ HTTPCache::get_cached_response(const string &url)
 	return get_cached_response(url, discard_headers, discard_name);
 }
 
-#if 0
-/** Get a pointer to a cached response body. This is a convenience method that 
- 	calls the three parameter version of get_cache_response().
-  
-    This method locks the class' interface.
-
-    @param url Find the body associated with this URL.
-    @return A FILE* that points to the response body.
-    @exception Error Thrown if the URL is not in the cache.
-    @exception InternalErr Thrown if an I/O error is detected. 
-    @deprecated */
-
-FILE *
-HTTPCache::get_cached_response_body(const string &url)
-{
-	string discard_name;
-	vector<string> discard_headers;
-	return get_cached_response(url, discard_headers, discard_name);
-}
-#endif
 /** Call this method to inform the cache that a particular response is no
     longer in use. When a response is accessed using get_cached_response(), it
     is locked so that updates and removal (e.g., by the garbage collector)
