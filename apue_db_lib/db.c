@@ -1,9 +1,16 @@
-#include "apue.h"
+/*#include "apue.h"*/
 #include "apue_db.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <fcntl.h>		/* open & db_open flags */
 #include <stdarg.h>
+#include <stddef.h>		/* for offsetof */ 
+#include <string.h>		/* for convenience */
+#include <unistd.h>		/* for convenience */
 #include <errno.h>
 #include <sys/uio.h>	/* struct iovec */
+#include <sys/types.h>		/* some systems still require this */
+#include <sys/stat.h>
 
 /*
  * Internal index file constants.
@@ -61,6 +68,22 @@ typedef struct {
   COUNT  cnt_stor4;    /* store: DB_REPLACE, same len, overwrote */
   COUNT  cnt_storerr;  /* store error */
 } DB;
+
+int		lock_reg(int, int, int, off_t, int, off_t); /* {Prog lockreg} */
+void	err_dump(const char *, ...);		/* {App misc_source} */
+void	err_quit(const char *, ...);
+void	err_sys(const char *, ...);
+
+#define	read_lock(fd, offset, whence, len) \
+			lock_reg((fd), F_SETLK, F_RDLCK, (offset), (whence), (len))
+#define	readw_lock(fd, offset, whence, len) \
+			lock_reg((fd), F_SETLKW, F_RDLCK, (offset), (whence), (len))
+#define	write_lock(fd, offset, whence, len) \
+			lock_reg((fd), F_SETLK, F_WRLCK, (offset), (whence), (len))
+#define	writew_lock(fd, offset, whence, len) \
+			lock_reg((fd), F_SETLKW, F_WRLCK, (offset), (whence), (len))
+#define	un_lock(fd, offset, whence, len) \
+			lock_reg((fd), F_SETLK, F_UNLCK, (offset), (whence), (len))
 
 /*
  * Internal functions.
