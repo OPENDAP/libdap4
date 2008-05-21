@@ -276,6 +276,7 @@ AC_CONFIG_FILES([Makefile
                  libdapclient.pc
                  libdapserver.pc
                  gl/Makefile
+                 apue_db_lib/Makefile
                  tests/Makefile
                  unit-tests/Makefile
                  unit-tests/cache-testsuite/Makefile])

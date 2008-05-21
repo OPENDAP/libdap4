@@ -62,7 +62,7 @@
 %{
 #include "config_dap.h"
 
-#include <cstring>
+#include <cstdio>
 
 static char rcsid[] not_used ={"$Id$"};
 

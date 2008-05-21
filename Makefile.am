@@ -24,7 +24,7 @@ AM_LFLAGS = -8
 CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
-SUBDIRS = gl . tests unit-tests
+SUBDIRS = gl apue_db_lib . tests unit-tests
 DIST_SUBDIRS = unit-tests gl tests
 
 lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
