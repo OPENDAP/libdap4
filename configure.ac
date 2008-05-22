@@ -22,7 +22,7 @@ AC_SUBST(DVR)
 AC_DEFINE(EVAL, 1, [Should all the classes run ConstraintEvaluator::eval()?])
 AC_SUBST(EVAL)
 
-AC_DEFINE(COMPRESSION_FOR_SERVER3, 0, [Should the subprocess compression for Server3 be includes?])
+AC_DEFINE(COMPRESSION_FOR_SERVER3, 0, [Should the subprocess compression for Server3 be included?])
 AC_SUBST(COMPRESSION_FOR_SERVER3)
 
 dnl flags for the compilers and linkers - set these before locating the
@@ -103,10 +103,10 @@ echo "CC = $CC"
 if test "$CC" = "gcc"
 then
 	echo "COMPILER IS GCC true"
-    AM_CONDITIONAL([COMPILER_IS_GCC],[true])
+	AM_CONDITIONAL([COMPILER_IS_GCC],[true])
 else
 	echo "COMPILER IS GCC false"
-    AM_CONDITIONAL([COMPILER_IS_GCC],[false])
+	AM_CONDITIONAL([COMPILER_IS_GCC],[false])
 fi
 
 # Checks for library functions.

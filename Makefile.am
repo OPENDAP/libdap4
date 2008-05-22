@@ -1,4 +1,3 @@
-
 # Build libdap, libtest-types.a, getdap and deflate
 
 AUTOMAKE_OPTIONS = foreign check-news
