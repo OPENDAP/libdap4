@@ -64,7 +64,7 @@ ais_testsuite/ais_database.xml: ais_testsuite/ais_database.xml.in ../config.stat
 if CPPUNIT
 UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT RegexTest	\
 	AISDatabaseParserTest AISMergeTest AISResourcesTest ArrayTest	\
-	AttrTableTest ByteTest cgiUtilTest DASTest DDSTest		\
+	AttrTableTest ByteTest cgiUtilTest ancT DASTest DDSTest		\
 	DDXParserTest DODSFilterTest generalUtilTest HTTPCacheTest	\
 	HTTPConnectTest parserUtilTest RCReaderTest SequenceTest	\
 	SignalHandlerTest CEFunctionsTest GridGeoConstraintTest         \
@@ -105,6 +105,9 @@ ByteTest_LDADD = ../libdap.la $(AM_LDADD)
 
 cgiUtilTest_SOURCES = cgiUtilTest.cc
 cgiUtilTest_LDADD = ../libdap.la ../libdapserver.la $(AM_LDADD)
+
+ancT_SOURCES = ancT.cc
+ancT_LDADD = ../libdap.la ../libdapserver.la $(AM_LDADD)
 
 DASTest_SOURCES = DASTest.cc
 DASTest_LDADD = ../libdap.la $(AM_LDADD)

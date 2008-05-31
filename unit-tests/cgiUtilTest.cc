@@ -74,36 +74,12 @@ public:
 
     CPPUNIT_TEST_SUITE( cgiUtilTest );
 
-    CPPUNIT_TEST(find_ancillary_file_test);
-    CPPUNIT_TEST(find_group_ancillary_file_test);
     CPPUNIT_TEST(name_path_test);
     CPPUNIT_TEST(set_mime_text_test);
     CPPUNIT_TEST(rfc822_date_test);
     CPPUNIT_TEST(last_modified_time_test);
 
     CPPUNIT_TEST_SUITE_END();
-
-    void find_ancillary_file_test() {
-	CPPUNIT_ASSERT(find_ancillary_file((string)TEST_SRC_DIR + "/das-testsuite/test.1", "das", "", "") 
-		       == (string)TEST_SRC_DIR + "/das-testsuite/test.1.das");
-	CPPUNIT_ASSERT(find_ancillary_file((string)TEST_SRC_DIR + "/das-testsuite/special.test.hdf", "das", "", "") 
-		       == (string)TEST_SRC_DIR + "/das-testsuite/special.test.das");
-	CPPUNIT_ASSERT(find_ancillary_file((string)TEST_SRC_DIR + "/das-testsuite/test.2", "das", "", "") 
-		       == (string)TEST_SRC_DIR + "/das-testsuite/das");
-	CPPUNIT_ASSERT(find_ancillary_file((string)TEST_SRC_DIR + "/das-testsuite/test.1.gz", "das", "", "") 
-		       == (string)TEST_SRC_DIR + "/das-testsuite/test.1.das");
-	CPPUNIT_ASSERT(find_ancillary_file((string)TEST_SRC_DIR + "/das-testsuite/test.3.Z", "das", "", "") 
-		       == (string)TEST_SRC_DIR + "/das-testsuite/test.3.Z.das");
-    }
- 
-    void find_group_ancillary_file_test() {
-	CPPUNIT_ASSERT(find_group_ancillary_file((string)TEST_SRC_DIR + "/cgi-util-tests/02group.hdf", ".htm")
-		       == (string)TEST_SRC_DIR + "/cgi-util-tests/group.htm");
-	CPPUNIT_ASSERT(find_group_ancillary_file((string)TEST_SRC_DIR + "/cgi-util-tests/group01.hdf", ".htm")
-		       == (string)TEST_SRC_DIR + "/cgi-util-tests/group.htm");
-	CPPUNIT_ASSERT(find_group_ancillary_file((string)TEST_SRC_DIR + "/cgi-util-tests/group.hdf", ".htm")
-		       == "");
-    }
 
     void name_path_test() {
 	CPPUNIT_ASSERT(name_path(string("stuff")) == "stuff");

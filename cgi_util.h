@@ -64,11 +64,6 @@ bool do_version(const string &script_ver, const string &dataset_ver);
 bool do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
                       const string &dataset, const string &constraint);
 
-string find_ancillary_file(const string &pathname, const string &ext,
-                           const string &dir, const string &file);
-
-string find_group_ancillary_file(const string &pathname, const string &ext);
-
 void ErrMsgT(const string &Msgt);
 
 string name_path(const string &path);

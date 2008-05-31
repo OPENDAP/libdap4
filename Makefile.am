@@ -23,7 +23,7 @@ AM_LFLAGS = -8
 CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
-SUBDIRS = gl apue_db_lib . tests unit-tests
+SUBDIRS = gl . tests unit-tests
 DIST_SUBDIRS = unit-tests gl tests
 
 lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
@@ -221,7 +221,7 @@ CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 	AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc  \
 	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc
 
-SERVER_SRC = DODSFilter.cc cgi_util.cc
+SERVER_SRC = DODSFilter.cc cgi_util.cc Ancillary.cc
 
 DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	BaseType.h Byte.h Int32.h Float64.h Str.h Url.h Vector.h Array.h   \
@@ -258,7 +258,7 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h	 \
 	AISResources.h Resource.h HTTPCacheTable.h
 
-SERVER_HDR = DODSFilter.h cgi_util.h AlarmHandler.h EventHandler.h
+SERVER_HDR = DODSFilter.h cgi_util.h AlarmHandler.h EventHandler.h Ancillary.h
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support
