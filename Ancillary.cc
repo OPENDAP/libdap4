@@ -4,6 +4,10 @@
 #include "Ancillary.h"
 #include "debug.h"
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 namespace libdap {
 
 /** This function accepts a dataset path name, and searches for a
