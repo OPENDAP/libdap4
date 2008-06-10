@@ -26,7 +26,7 @@
 #ifndef _http_cache_table_h
 #define _http_cache_table_h
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include <pthread.h>
 

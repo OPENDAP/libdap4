@@ -37,14 +37,14 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-// #define DODS_DEBUG 1
-
 #include "HTTPCache.h"
 #include "HTTPConnect.h"	// Used to generate a response to cache.
 #ifndef WIN32			// Signals are exquisitely non-portable.
 #include "SignalHandler.h"	// Needed to clean up this singleton.
 #endif
 #include "RCReader.h"		// ditto
+
+//#define DODS_DEBUG 1
 #include "debug.h"
 
 #if defined(DODS_DEBUG) || defined(DODS_DEBUG2)
@@ -144,7 +144,7 @@ public:
     }
 
     CPPUNIT_TEST_SUITE(HTTPCacheTest);
-#if 1
+
     CPPUNIT_TEST(constructor_test);
     CPPUNIT_TEST(cache_index_read_test);
     CPPUNIT_TEST(cache_index_parse_line_test);
@@ -154,9 +154,7 @@ public:
     CPPUNIT_TEST(set_cache_root_test);
     CPPUNIT_TEST(get_single_user_lock_test);
     CPPUNIT_TEST(release_single_user_lock_test);
-
     CPPUNIT_TEST(create_hash_directory_test);
-
     CPPUNIT_TEST(create_location_test);
     CPPUNIT_TEST(parse_headers_test);
     CPPUNIT_TEST(calculate_time_test);
@@ -165,18 +163,16 @@ public:
     CPPUNIT_TEST(is_url_valid_test);
     CPPUNIT_TEST(get_cached_response_test);
     CPPUNIT_TEST(perform_garbage_collection_test);
-#endif
     CPPUNIT_TEST(purge_cache_and_release_cached_response_test);
-#if 1
     CPPUNIT_TEST(instance_test);
     CPPUNIT_TEST(get_conditional_response_headers_test);
     CPPUNIT_TEST(update_response_test);
+    CPPUNIT_TEST(cache_gc_test);
+    
 #if 0
     CPPUNIT_TEST(interrupt_test);
 #endif
-    CPPUNIT_TEST(cache_gc_test);
-#endif
-    
+
     CPPUNIT_TEST_SUITE_END();
 
     void constructor_test() {
@@ -196,7 +192,6 @@ public:
 
 		CPPUNIT_ASSERT(e);
 		CPPUNIT_ASSERT(e->url == localhost_url);
-		e->unlock();
 		e->unlock_read_response();
 	}
 
@@ -274,7 +269,6 @@ public:
 				hc_4->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 		CPPUNIT_ASSERT(e);
 		CPPUNIT_ASSERT(e->url == localhost_url);
-		e->unlock();
 		e->unlock_read_response();
 		
 		delete hc_3;
@@ -443,7 +437,6 @@ public:
 
 			HTTPCacheTable::CacheEntry *e = hc->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 			CPPUNIT_ASSERT(file_size(e->cachename) == 343);
-			e->unlock();
 			e->unlock_read_response();
 			delete rs; rs = 0;
 		}
