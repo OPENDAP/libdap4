@@ -926,7 +926,9 @@ HTTPCache::is_url_in_cache(const string &url)
     HTTPCacheTable::CacheEntry *entry = d_http_cache_table->get_locked_entry_from_cache_table(url);
     bool status = entry != 0;
     if (entry) {
+#if 0
     	entry->unlock();
+#endif
         entry->unlock_read_response();
     }
     return  status;
@@ -1255,16 +1257,19 @@ HTTPCache::get_conditional_request_headers(const string &url)
             headers.push_back(string("If-Modified-Since: ")
                               + date_time_str(&expires));
         }
-
+#if 0
 		entry->unlock();
+#endif
 		entry->unlock_read_response();
 	    unlock_cache_interface();
     }
     catch (...) {
 		unlock_cache_interface();
 		if (entry) {
+#if 0
 		    entry->unlock();
-			entry->unlock_read_response();
+#endif
+		    entry->unlock_read_response();
 		}
 		throw;
 	}
@@ -1341,15 +1346,18 @@ HTTPCache::update_response(const string &url, time_t request_time,
              back_inserter(result));
 
         write_metadata(entry->get_cachename(), result);
-        
+#if 0        
         entry->unlock();
+#endif
         entry->unlock_write_response();
 		unlock_cache_interface();
     }
     catch (...) {
         if (entry) {
-            entry->unlock();
-    		entry->unlock_read_response();
+#if 0
+        	entry->unlock();
+#endif
+        	entry->unlock_read_response();
         }
         unlock_cache_interface();
         throw;
@@ -1393,7 +1401,9 @@ HTTPCache::is_url_valid(const string &url)
         // In case this entry is of type "must-revalidate" then we consider it
         // invalid.
         if (entry->get_must_revalidate()) {
+#if 0        	
             entry->unlock();
+#endif
             entry->unlock_read_response();
             unlock_cache_interface();
             return false;
@@ -1406,7 +1416,9 @@ HTTPCache::is_url_valid(const string &url)
         // given in the request cache control header is followed.
         if (d_max_age >= 0 && current_age > d_max_age) {
             DBG(cerr << "Cache....... Max-age validation" << endl);
+#if 0            
             entry->unlock();
+#endif
             entry->unlock_read_response();
             unlock_cache_interface();
             return false;
@@ -1414,7 +1426,9 @@ HTTPCache::is_url_valid(const string &url)
         if (d_min_fresh >= 0
             && entry->get_freshness_lifetime() < current_age + d_min_fresh) {
             DBG(cerr << "Cache....... Min-fresh validation" << endl);
+#if 0            
             entry->unlock();
+#endif
             entry->unlock_read_response();            
             unlock_cache_interface();
             return false;
@@ -1422,15 +1436,18 @@ HTTPCache::is_url_valid(const string &url)
 
         freshness = (entry->get_freshness_lifetime()
                      + (d_max_stale >= 0 ? d_max_stale : 0) > current_age);
-
+#if 0
         entry->unlock();
+#endif        
         entry->unlock_read_response();
         unlock_cache_interface();
     }
     catch (...) {
     	if (entry) {
+#if 0
     		entry->unlock();
-            entry->unlock_read_response();
+#endif
+    		entry->unlock_read_response();
     	}
     	unlock_cache_interface();
         throw;
@@ -1496,7 +1513,9 @@ FILE * HTTPCache::get_cached_response(const string &url,
     }
     catch (...) {
         if (entry)
-            entry->unlock();
+#if 0        	
+        entry->unlock();
+#endif
         unlock_cache_interface();
         throw;
     }

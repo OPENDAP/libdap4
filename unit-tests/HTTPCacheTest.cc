@@ -44,7 +44,7 @@
 #endif
 #include "RCReader.h"		// ditto
 
-//#define DODS_DEBUG 1
+#define DODS_DEBUG 1
 #include "debug.h"
 
 #if defined(DODS_DEBUG) || defined(DODS_DEBUG2)
@@ -144,7 +144,7 @@ public:
     }
 
     CPPUNIT_TEST_SUITE(HTTPCacheTest);
-
+#if 1
     CPPUNIT_TEST(constructor_test);
     CPPUNIT_TEST(cache_index_read_test);
     CPPUNIT_TEST(cache_index_parse_line_test);
@@ -157,18 +157,23 @@ public:
     CPPUNIT_TEST(create_hash_directory_test);
     CPPUNIT_TEST(create_location_test);
     CPPUNIT_TEST(parse_headers_test);
+
     CPPUNIT_TEST(calculate_time_test);
     CPPUNIT_TEST(write_metadata_test);
     CPPUNIT_TEST(cache_response_test);
+#endif
+#if 1
     CPPUNIT_TEST(is_url_valid_test);
     CPPUNIT_TEST(get_cached_response_test);
+#endif
+#if 1
     CPPUNIT_TEST(perform_garbage_collection_test);
     CPPUNIT_TEST(purge_cache_and_release_cached_response_test);
     CPPUNIT_TEST(instance_test);
     CPPUNIT_TEST(get_conditional_response_headers_test);
     CPPUNIT_TEST(update_response_test);
     CPPUNIT_TEST(cache_gc_test);
-    
+#endif
 #if 0
     CPPUNIT_TEST(interrupt_test);
 #endif
@@ -228,7 +233,9 @@ public:
 				hc->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 		CPPUNIT_ASSERT(e2);
 		CPPUNIT_ASSERT(e2->url == localhost_url);
+#if 0		
 		e2->unlock();
+#endif
 		e2->unlock_read_response();
 
 		// Now test what happens when two entries collide.
@@ -247,7 +254,9 @@ public:
 				hash_value, e3->url);
 		CPPUNIT_ASSERT(g);
 		CPPUNIT_ASSERT(g->url == e3->url);
+#if 0		
 		g->unlock();
+#endif
 		g->unlock_read_response();
 
 		g = hc->d_http_cache_table->get_locked_entry_from_cache_table("http://not.in.table/never.x");
@@ -549,9 +558,13 @@ public:
 			HTTPCacheTable::CacheEntry *e2 = pc->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 			string e1_file = e1->cachename;
 			string e2_file = e2->cachename;
+#if 0			
 			e1->unlock();
+#endif
 			e1->unlock_read_response();
+#if 0
 			e2->unlock();
+#endif
 			e2->unlock_read_response();
 			
 			vector<string> headers;
@@ -605,9 +618,13 @@ public:
 			HTTPCacheTable::CacheEntry *e2 = c->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 			string e1_file = e1->cachename;
 			string e2_file = e2->cachename;
+#if 0			
 			e1->unlock();
+#endif
 			e1->unlock_read_response();
+#if 0
 			e2->unlock();
+#endif
 			e2->unlock_read_response();
 			
 			c->purge_cache();

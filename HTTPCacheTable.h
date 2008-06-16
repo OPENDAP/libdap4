@@ -63,9 +63,20 @@ namespace libdap
 
 int get_hash(const string &url);
 
-/** The table of entires in the client-side cache.
-    @todo This class needed to have the locking mechanism in place to work 
-    or it must become a singleton. */
+/** The table of entires in the client-side cache. This class maintains a table
+ 	of CacheEntries, and one instance of CacheEntry is made for 
+ 	each item in the cache. When an item is accessed it is either
+    locked for reading or writing. When locked for reading the entry is 
+    recorded on a list of read-locked entries. The called must explicitly 
+    free the entry for it to be removed from this list (which is the only
+    way it can be opended for writing). 
+    
+    @note The CacheEntry class used to contain a lock that was used to ensure
+    that the entry was locked during any changes to any of its fields. That
+    has been removed - its now the responsibility of the caller. This change
+    was made because it's likely the caller will need to lock all of the methods
+    that operate on a CacheEntry anyway, so the CacheEntry-specific lock was
+    redundant. */
 class HTTPCacheTable {
 public:
 	/** A struct used to store information about responses in the
@@ -107,11 +118,11 @@ public:
 	    int readers;
 	    pthread_mutex_t d_response_lock;	// set if being read
 	    pthread_mutex_t d_response_write_lock;			// set if being written
-	    
+#if 0	    
 	    // This lock prevents access to the fields of a CacheEntry. Might not
 	    // be needed.
 	    pthread_mutex_t d_lock;
-	    
+#endif	    
 	    // Allow HTTPCacheTable methods access and the test class, too
 	    friend class HTTPCacheTable;
 		friend class HTTPCacheTest;
@@ -158,7 +169,7 @@ public:
 			no_cache = state;
 		}
 	    bool is_no_cache() { return no_cache; }
-	    
+#if 0	    
 	    void lock() {
 	        DBG(cerr << "Locking entry... (" << hex << &d_lock << dec << ") ");
 	    	LOCK(&d_lock);
@@ -170,7 +181,7 @@ public:
 	        DBGN(cerr << "Done" << endl);
 	    }
 	    pthread_mutex_t &get_lock() { return d_lock; }
-	    
+#endif	    
 	    void lock_read_response() {
 	        DBG(cerr << "Try locking read response... (" << hex << &d_response_lock << dec << ") ");
 	        int status = TRYLOCK(&d_response_lock);
@@ -214,8 +225,10 @@ public:
 					no_cache(false), readers(0) {
 	    	INIT(&d_response_lock);
 	    	INIT(&d_response_write_lock);
-			INIT(&d_lock);
-		}
+#if 0
+	    	INIT(&d_lock);
+#endif
+	    }
 		CacheEntry(const string &u) :
 			url(u), hash(-1), hits(0), cachename(""), etag(""), lm(-1),
 					expires(-1), date(-1), age(-1), max_age(-1), size(0),
@@ -224,8 +237,10 @@ public:
 					no_cache(false), readers(0) {
 	    	INIT(&d_response_lock);
 	    	INIT(&d_response_write_lock);
-			INIT(&d_lock);
-			hash = get_hash(url);
+#if 0
+	    	INIT(&d_lock);
+#endif
+	    	hash = get_hash(url);
 		}
 	};
 

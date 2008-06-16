@@ -40,7 +40,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 #include "RCReader.h"
 #include "debug.h"
 #include <test_config.h>
