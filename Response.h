@@ -27,12 +27,16 @@
 #define response_h
 
 #include <cstdio>
+#include <string>
 
 #ifndef _debug_h
 #include "debug.h"
 #endif
 
 using namespace std;
+
+#include "ObjectType.h"
+#include "InternalErr.h"
 
 namespace libdap
 {

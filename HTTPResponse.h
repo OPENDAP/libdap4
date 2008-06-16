@@ -31,6 +31,9 @@
 #include <iostream>
 #include <algorithm>
 #include <iterator>
+#include <vector>
+
+using std::vector ;
 
 #ifndef response_h
 #include "Response.h"
@@ -118,6 +121,10 @@ public:
     virtual vector<string> *get_headers() const
     {
         return d_headers;
+    }
+    virtual string get_file() const
+    {
+        return d_file;
     }
     //@}
 
