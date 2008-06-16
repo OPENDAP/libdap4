@@ -8,13 +8,13 @@
 
 [Setup]
 AppName=OPeNDAP libdap
-AppVerName=OPeNDAP libdap 3.8.0
+AppVerName=OPeNDAP libdap 3.8.1
 AppPublisher=OPeNDAP
 DefaultDirName={sd}\opendap
 DefaultGroupName=OPeNDAP libdap
 AllowNoIcons=yes
 InfoBeforeFile=BeforeInstall.txt
-OutputBaseFilename=libdap-3.8.0
+OutputBaseFilename=libdap_3.8.1
 Compression=lzma/ultra
 SolidCompression=yes
 LicenseFile=License.txt
@@ -27,20 +27,20 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 ;; This grabs the newly built libdap code _assuming_ that the libdap.iss file is run from within libdap/VCPP and
 ;; that the 'nmake package' target has just been run.
 Source: "..\..\prepkg\opendap\libdap\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\..\prepkg\opendap\libdap\dll\*"; DestDir: "{sys}"; Flags: ignoreversion
+Source: "..\..\prepkg\opendap\libdap\dll\*"; DestDir: "{app}\dll"; Flags: ignoreversion
 
 ;; This gives the binary user the whole set of opendap tools which just includes a handful of source/header files
 ;; That they might not need, but then again they might.
 ;;Source: "C:\Program Files\opendap-tools\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\opendap-tools\dll\*"; DestDir: "{sys}"; Flags: ignoreversion
+Source: "C:\opendap-tools\dll\*"; DestDir: "{app}\dll"; Flags: ignoreversion
 
 ;; This somewhat inscrutable code sets the 'Path' environment variable so users can run getdap, et c.,
-;; In a shell (cmd.exe).
+;; in a shell (cmd.exe).
 [Registry]
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "Path"; ValueData: "{olddata};{app}\bin"
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "Path"; ValueData: "{olddata};{app}\bin;{app}\dll"
 
 [Icons]
-Name: "{group}\{cm:UninstallProgram,libdap 3.8.0}"; Filename: "{uninstallexe}"
+Name: "{group}\{cm:UninstallProgram,libdap 3.8.1}"; Filename: "{uninstallexe}"
 
 
 

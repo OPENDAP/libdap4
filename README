@@ -1,6 +1,11 @@
 
 $Id$
 
+Updated for version 3.8.1 (10 June 2008)
+
+The syntax for PROXY_SERVER in the .dodsrc file was relaxed. See the .dodsrc
+file for more information.
+
 Updated for Version 3.8.0 (29 February 2008)
 
 The libdap classes and code are now inside of the libdap namespace. In order
