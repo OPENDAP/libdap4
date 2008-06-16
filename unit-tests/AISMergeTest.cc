@@ -29,7 +29,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-//#define DODS_DEBUG 1
+#define DODS_DEBUG 1
 
 #include "Connect.h"
 #include "AISMerge.h"
@@ -250,14 +250,17 @@ string AISMergeTest::fnoc1_merge_ais = "Attributes {\n\
         String long_name \"Vector wind eastward component\";\n\
         String missing_value \"-32767\";\n\
         String scale_factor \"0.005\";\n\
-        String DODS_Name \"UWind\";\n\
+        String DODS_Name \"UWind\", \"UWind\";\n\
+        Byte b 128;\n\
+        Int32 i 32000;\n\
+        Url WOA01 \"http://localhost/junk\";\n\
     }\n\
     v {\n\
         String units \"meter per second\";\n\
         String long_name \"Vector wind northward component\";\n\
         String missing_value \"-32767\";\n\
         String scale_factor \"0.005\";\n\
-        String DODS_Name \"VWind\";\n\
+        String DODS_Name \"VWind\", \"VWind\";\n\
     }\n\
     lat {\n\
         String units \"degree North\";\n\
