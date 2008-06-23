@@ -482,12 +482,12 @@ AC_DEFUN([DODS_CHECK_SIZES], [dnl
     AC_CHECK_SIZEOF(char)
     AC_CHECK_SIZEOF(double)
     AC_CHECK_SIZEOF(float)
-   
+
     # check for C99 types, headers and functions
-    AC_CHECK_HEADER([inttypes.h],[dap_inttypes_header=yes],,) 
+    AC_CHECK_HEADER([inttypes.h],[dap_inttypes_header=yes],,)
     # DINT32 4
     AC_CHECK_SIZEOF([int32_t])
-    # DUINT32 
+    # DUINT32
     AC_CHECK_SIZEOF([uint32_t])
     # DINT16 short
     AC_CHECK_SIZEOF([int16_t])
@@ -495,94 +495,108 @@ AC_DEFUN([DODS_CHECK_SIZES], [dnl
     AC_CHECK_SIZEOF([uint16_t])
     # DBYTE 1
     AC_CHECK_SIZEOF([uint8_t])
-    # XDR_INT32 XDR_UINT32 XDR_INT16 XDR_UINT16
-    AC_CHECK_FUNCS([xdr_int32_t xdr_uint32_t xdr_int16_t xdr_uint16_t],,[dap_xdr_c99_functions=no])
-    if test x"$dap_inttypes_header" = x'yes' -a x"$dap_xdr_c99_functions" != 'xno' -a $ac_cv_sizeof_int32_t -eq 4 -a $ac_cv_sizeof_int16_t -eq 2 -a $ac_cv_sizeof_uint8_t -eq 1 -a $ac_cv_sizeof_double -eq 8; then
+    if test x"$dap_inttypes_header" = x'yes' -a $ac_cv_sizeof_int32_t -eq 4 -a $ac_cv_sizeof_int16_t -eq 2 -a $ac_cv_sizeof_uint8_t -eq 1 -a $ac_cv_sizeof_double -eq 8; then
         dap_use_c99_types=yes
     fi
     AM_CONDITIONAL([USE_C99_TYPES],[test x"$dap_use_c99_types" = 'xyes'])
 
     # I've separated the typedefs from the config.h header because other
     # projects which use the DAP were getting conflicts with their includes,
-    # or the includes of still other libraries, and config.h. The 
+    # or the includes of still other libraries, and config.h. The
     # config.h header is now included only by .cc and .c files and headers
-    # that need the typedefs use dods-datatypes.h. 
-    # there are 2 possibilities for the definition of dods_int32, ..., 
-    # types. First possibility is that the C99 types are used and 
-    # dods-datatypes-static.h is copied. In that case the following 
-    # definitions are not really usefull. In case the C99 types are 
+    # that need the typedefs use dods-datatypes.h.
+    # there are 2 possibilities for the definition of dods_int32, ...,
+    # types. First possibility is that the C99 types are used and
+    # dods-datatypes-static.h is copied. In that case the following
+    # definitions are not really usefull. In case the C99 types are
     # not available, dods-datatypes-config.h.in is used to generate
     # dods-datatypes.h.
-    # The code below makes dods-datatypes-config.h stand on its own. 
+    # The code below makes dods-datatypes-config.h stand on its own.
     # 8/2/2000 jhrg
 
+    # DMH: Divide into two sets of tests: one for DODS and one for XDR
     if test x"$dap_use_c99_types" = 'xyes'; then
         DODS_INT32=int32_t
         DODS_UINT32=uint32_t
-	XDR_INT32=xdr_int32_t
-	XDR_UINT32=xdr_uint32_t
-    elif test $ac_cv_sizeof_long -eq 4 
-    then
-	DODS_INT32=long
-	DODS_UINT32="unsigned long"
-	XDR_INT32=xdr_long
-	XDR_UINT32=xdr_u_long
-    elif test $ac_cv_sizeof_int -eq 4
-    then
+        DODS_INT16=int16_t
+        DODS_UINT16=uint16_t
+        DODS_BYTE=uint8_t
+    else
+        DODS_INT16=short
+        DODS_UINT16="unsigned short"
 	DODS_INT32=int
 	DODS_UINT32="unsigned int"
-	XDR_INT32=xdr_int
-	XDR_UINT32=xdr_u_int
-    else
-	AC_MSG_ERROR(How do I get a 32 bit integer on this machine?)
+	DODS_BYTE="unsigned char"
     fi
+    DODS_FLOAT64=double
+    DODS_FLOAT32=float
+
     # I'm using the three arg form of AC_DEFINE_UNQUOTED because autoheader
-    # needs the third argument (although I don't quite get the specifics... 
+    # needs the third argument (although I don't quite get the specifics...
     # 2/15/2001 jhrg
     AC_DEFINE_UNQUOTED(DINT32, $DODS_INT32, [int32])
     AC_DEFINE_UNQUOTED(DUINT32, $DODS_UINT32, [uint32])
-    AC_DEFINE_UNQUOTED(XDR_INT32, $XDR_INT32, [xdr int32])
-    AC_DEFINE_UNQUOTED(XDR_UINT32, $XDR_UINT32, [xdr uint32])
-
-    if test x"$dap_use_c99_types" = 'xyes'; then
-        DODS_INT16=int16_t
-        DODS_UINT16=uint16_t
-        XDR_INT16=xdr_int16_t
-        XDR_UINT16=xdr_uint16_t
-    else 
-    # Assume nobody's hosed the 16-bit types...
-        DODS_INT16=short
-        DODS_UINT16="unsigned short"
-        XDR_INT16=xdr_short
-        XDR_UINT16=xdr_u_short
-    fi
     AC_DEFINE_UNQUOTED(DINT16, $DODS_INT16, [dint16])
     AC_DEFINE_UNQUOTED(DUINT16, $DODS_UINT16, [uint16])
-    AC_DEFINE_UNQUOTED(XDR_INT16, $XDR_INT16, [xdr int16])
-    AC_DEFINE_UNQUOTED(XDR_UINT16, $XDR_UINT16, [xdr uint16])
-
-    if test x"$dap_use_c99_types" = 'xyes'; then
-        DODS_BYTE=uint8_t
-    elif test $ac_cv_sizeof_char -eq 1
-    then
-	DODS_BYTE="unsigned char"
-    else
-	AC_MSG_ERROR(How do I get an 8 bit unsigned integer on this machine?)
-    fi
-    AC_DEFINE_UNQUOTED(DBYTE, $DODS_BYTE, [dbyte])
-
-    if test $ac_cv_sizeof_double -eq 8
-    then
-	DODS_FLOAT64=double
-	DODS_FLOAT32=float
-	XDR_FLOAT64=xdr_double
-	XDR_FLOAT32=xdr_float
-    else
-	AC_MSG_ERROR(How do I get floating point types on this machine?)
-    fi
     AC_DEFINE_UNQUOTED(DFLOAT64, $DODS_FLOAT64, [dfloat64])
     AC_DEFINE_UNQUOTED(DFLOAT32, $DODS_FLOAT32, [dfloat32])
-    AC_DEFINE_UNQUOTED(XDR_FLOAT64, $XDR_FLOAT64, [xdr float64])
-    AC_DEFINE_UNQUOTED(XDR_FLOAT32, $XDR_FLOAT32, [xdr float32])])
+    AC_DEFINE_UNQUOTED(DBYTE, $DODS_BYTE, [dbyte])
 
+    # XDR INTEGER TYPES
+    # Unfortunately, there is little commonality about xdr
 
+    # First, we need to see if the xdr routines are in libc, librpc,
+    # or librpcsvc or libnsl
+    dap_xdrlib=
+    AC_SEARCH_LIBS([xdr_void],[c rpc nsl rpcsvc],[
+      dap_xdrlib=`echo $ac_res|sed -e 's/^-l//'`],[
+      AC_MSG_WARN(Cannot locate library containing xdr functions.)])
+    if test "$dap_xdrlib" = "none required" ; then dap_xdrlib=c; fi
+    if test "$dap_xdrlib" != "c" ; then
+       # Add to library list
+       AC_CHECK_LIB($dap_xdrlib,xdr_void)
+    fi
+    # Now figure out what integer functions to use
+    dap_xdrint=0
+    AC_CHECK_LIB($dap_xdrlib,[xdr_uint32_t],[dap_xdrint=1],[
+      AC_CHECK_LIB($dap_xdrlib,[xdr_u_int32_t],[dap_xdrint=2],[
+        AC_CHECK_LIB($dap_xdrlib,[xdr_uint],[dap_xdrint=3],[
+          AC_CHECK_LIB($dap_xdrlib,[xdr_u_int],[dap_xdrint=4],[])])])])
+    case "$dap_xdrint" in
+    1) # uint32_t
+	XDR_INT32=xdr_int32_t
+	XDR_UINT32=xdr_uint32_t
+        XDR_INT16=xdr_int16_t
+        XDR_UINT16=xdr_uint16_t
+        ;;
+    2) # u_int32_t
+	XDR_INT32=xdr_int32_t
+	XDR_UINT32=xdr_u_int32_t
+        XDR_INT16=xdr_int16_t
+        XDR_UINT16=xdr_u_int16_t
+        ;;
+    3) # uint
+	XDR_INT32=xdr_int
+	XDR_UINT32=xdr_uint
+        XDR_INT16=xdr_short
+        XDR_UINT16=xdr_ushort
+        ;;
+    4) # u_int
+	XDR_INT32=xdr_int
+	XDR_UINT32=xdr_u_int
+        XDR_INT16=xdr_short
+        XDR_UINT16=xdr_u_short
+        ;;
+    *)
+	AC_MSG_ERROR(Cannot determine DODS XDR integer sizes)
+        ;;
+    esac
+    XDR_FLOAT64=xdr_double
+    XDR_FLOAT32=xdr_float
+
+    AC_DEFINE_UNQUOTED([XDR_INT16], [$XDR_INT16], [xdr int16])
+    AC_DEFINE_UNQUOTED([XDR_UINT16], [$XDR_UINT16], [xdr uint16])
+    AC_DEFINE_UNQUOTED([XDR_INT32], [$XDR_INT32], [xdr int32])
+    AC_DEFINE_UNQUOTED([XDR_UINT32], [$XDR_UINT32], [xdr uint32])
+    AC_DEFINE_UNQUOTED([XDR_FLOAT64], [$XDR_FLOAT64], [xdr float64])
+    AC_DEFINE_UNQUOTED([XDR_FLOAT32], [$XDR_FLOAT32], [xdr float32])])
