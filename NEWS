@@ -1,6 +1,22 @@
 
 $Id$
 
+News for version 3.8.2
+
+Significant improvements to the HTTP cache. The cache software could return
+erroneous responses in some rare cases when using multi-threaded code. Fixed.
+Also the entire caching system is now much more robust since the 'table' that
+contains information about individual entries is encapsulated in it's own
+class. The HTTP cache is still both thread-safe and _not_ multi-process safe.
+However, it should be possible to modify the HTTPCacheTable class to use a
+database system like MySQL or SQLite to make it MP-safe.
+
+The 'ancillary information' functions have been moved to their own class
+(from DODSFilter and the file cgi_util.cc).
+
+I fixed the libdap win32 installer so that it does not install stuff in the
+win32 system directories anymore.
+
 News for version 3.8.1
 
 The syntax for PROXY_SERVER and NO_PROXY_FOR have been fixed so that they are

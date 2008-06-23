@@ -1,6 +1,12 @@
 
 $Id$
 
+Updated for version 3.8.2 (23 June 2008)
+
+HTTP Cache and win32 installer fixes (the latter are actually in the 3.8.1
+installer for winXP). API change: The functions used to merge ancillary data
+have been moved to their own class (Ancillary).
+
 Updated for version 3.8.1 (10 June 2008)
 
 The syntax for PROXY_SERVER in the .dodsrc file was relaxed. See the .dodsrc
