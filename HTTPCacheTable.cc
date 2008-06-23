@@ -93,7 +93,6 @@ namespace libdap {
 /** Compute the hash value for a URL.
     @param url
     @return An integer hash code between 0 and CACHE_TABLE_SIZE. */
-
 int
 get_hash(const string &url)
 {

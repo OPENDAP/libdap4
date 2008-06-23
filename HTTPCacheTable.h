@@ -4,7 +4,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002 OPeNDAP, Inc.
+// Copyright (c) 2008 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -67,9 +67,10 @@ int get_hash(const string &url);
  	of CacheEntries, and one instance of CacheEntry is made for 
  	each item in the cache. When an item is accessed it is either
     locked for reading or writing. When locked for reading the entry is 
-    recorded on a list of read-locked entries. The called must explicitly 
+    recorded on a list of read-locked entries. The caller must explicitly 
     free the entry for it to be removed from this list (which is the only
-    way it can be opended for writing). 
+    way it can be opended for writing). An entry can be accessed by multiple
+    readers but only one writer.
     
     @note The CacheEntry class used to contain a lock that was used to ensure
     that the entry was locked during any changes to any of its fields. That
@@ -85,9 +86,9 @@ public:
 	About entry locking: An entry is locked using both a mutex and a
 	counter. The counter keeps track of how many clients are accessing a
 	given entry while the mutex provides a guarantee that updates to the
-	counter are MT-safe. In addition, the HTTPCache object maintains a
+	counter are MT-safe. In addition, the HTTPCacheTable object maintains a
 	map which binds the FILE* returned to a client with a given entry.
-	This way the client can tell the HTTPCache object that it is done
+	This way the client can tell the HTTPCacheTable object that it is done
 	with <code>FILE *response</code> and the class can arrange to update
 	the lock counter and mutex. */
 	struct CacheEntry
