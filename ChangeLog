@@ -1,3 +1,133 @@
+
+2008-04-25  James Gallagher <jgallagher@opendap.org>
+
+	Wrapped CURL_PROXYAUTH in #ifdef #endif to accommodate older
+	versions of libcurl.
+
+	M HTTPConnect.cc
+
+2008-04-25  James Gallagher <jgallagher@opendap.org>
+
+	Spelling errors fixed.
+
+	M    VCPP/BeforeInstall.txt
+	M    README.dodsrc
+	M    RCReader.cc
+
+2008-04-25  James Gallagher <jgallagher@opendap.org>
+
+	Build tools no longer installed
+
+2008-04-24  James Gallagher <jgallagher@opendap.org>
+
+	Added installer setup file and License for the installer
+
+2008-04-23  James Gallagher <jgallagher@opendap.org>
+
+	Comments and strings modified as part of the win32 build of 3.8.1
+	from svn
+
+2008-04-23  James Gallagher <jgallagher@opendap.org>
+
+	Removed Win32 definition of vsnprintf() for VC 2008 compat - edit
+	for use with VC 2005
+
+2008-04-23  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for libdap 3.8.0
+
+2008-04-21  James Gallagher <jgallagher@opendap.org>
+
+	Ticket 1095: The proxy support in HTTPConnect baroque and caused
+	many people problems. I expanded on the syntax allowed (the old
+	syntax is still supported) so that it mirrors the syntax most
+	users expect. I updated the docs including the comments in the
+	.dodsrc file.
+
+	M    Makefile.am
+	M    RCReader.cc
+	M    NEWS
+	M    HTTPConnect.cc
+	M    unit-tests/RCReaderTest.cc
+	A    unit-tests/rcreader-testsuite/test4.rc
+	A    unit-tests/rcreader-testsuite/test5.rc
+
+2008-04-15  James Gallagher <jgallagher@opendap.org>
+
+	Added code to follow redirects in HTTPConnect.cc
+
+2008-04-07  Patrick West <pwest@ucar.edu>
+
+	Delete being called on array without [], as is being called below the
+	exception condition.
+	M    HTTPCache.cc
+
+2008-03-19  James Gallagher <jgallagher@opendap.org>
+
+	Added info about win32 locations for .dodsrc
+
+	M    README.dodsrc
+
+2008-03-19  James Gallagher <jgallagher@opendap.org>
+
+	Added Patrice Dumas' patch for <cstring>
+
+	M    SignalHandler.cc
+	M    gse.lex
+	M    dds.lex
+	M    HTTPConnect.cc
+	M    das.lex
+	M    ce_expr.lex
+
+2008-03-04  Patrick West <pwest@ucar.edu>
+
+	Now checks for which architecture the build is being run on and
+	updates the InstallationCheck script M
+	update_mac_package_contents.pl
+
+2008-03-04  Patrick West <pwest@ucar.edu>
+
+	3.8.0 release of libdap.
+	
+	M    configure.ac
+	M    ChangeLog
+	M    OSX_Resources/Info.plist
+	M    OSX_Resources/ReadMe.txt
+	M    libdap.spec
+	M    README
+	M    NEWS
+
+2008-03-03  James Gallagher <jgallagher@opendap.org>
+
+	Added conditional include of unistd.h for RHEL3 build.
+
+	M    SignalHandler.cc
+	M    tests/TestArray.cc
+	M    HTTPConnect.cc
+	M    DAS.cc
+
+2008-03-03  James Gallagher <jgallagher@opendap.org>
+
+	Header patch from Patrice Dumas.
+
+	Many files modified.
+
+2008-03-03  James Gallagher <jgallagher@opendap.org>
+
+	Directory regex --> pathname_ok() call. A minor change.
+
+	M Util.cc
+
+2008-03-02  James Gallagher <jgallagher@opendap.org>
+
+	Added shell commands so build works with bison 1.28. That
+	version treats the -o option differently than the 2.x version.
+
+	M Makefile.am
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2008-03-03  James Gallagher <jgallagher@opendap.org>
 
 	Added conditional include of unistd.h for RHEL3 build.
