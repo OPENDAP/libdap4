@@ -1,5 +1,15 @@
 2008-06-23  James Gallagher <jgallagher@opendap.org>
 
+	Removed apue_db. Updates to the documentation for 3.8.2
+
+	M    ChangeLog
+	D    apue_db
+	M    INSTALL
+	M    README
+	M    NEWS
+
+2008-06-23  James Gallagher <jgallagher@opendap.org>
+
 	Minor changes - comments & docs.
 
 	M    HTTPCacheTable.cc
