@@ -4,7 +4,7 @@
 
 # use "i386" or "ppc.*" - nake sure to use a regex for PPC!
 
-architecture="ppc.*" 
+architecture="i386.*"
 
 
 if arch | grep -v "$architecture"

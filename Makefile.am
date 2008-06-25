@@ -244,11 +244,17 @@ dods-datatypes.h: dods-datatypes-config.h
 endif
 	cp -p $< dods-datatypes.h
 
-if USE_C99_TYPES
-xdr-datatypes.h: xdr-datatypes-static.h
-else
+# I think that we should not be using a static header for the xdr
+# types - this is breain gon many platforms because although the c99
+# headers are present other type names are used for the xdr
+# types. jhrg 6/25/08
+
+# if USE_C99_TYPES
+# xdr-datatypes.h: xdr-datatypes-static.h
+#else
+#endif
+
 xdr-datatypes.h: xdr-datatypes-config.h
-endif
 	cp -p $< xdr-datatypes.h
 
 CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
