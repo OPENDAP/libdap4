@@ -39,6 +39,8 @@ namespace libdap {
 
 /** Output the XML fragment for a Resource. This function is a friend of the
     Resource class.
+    @param os output stream
+    @param r Resource to write out.
     @see Resource. */
 ostream &
 operator<<(ostream &os, const Resource &r)

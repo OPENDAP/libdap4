@@ -599,7 +599,6 @@ HTTPCacheTable::get_locked_entry_from_cache_table(int hash, const string &url) /
     pass the hash code into this method makes it easier to test for correct
     behavior when two entries collide. 10/07/02 jhrg
 
-    @param hash The hash code for \c url.
     @param url Look for this URL.
     @return The matching CacheEntry instance or NULL if none was found. */
 HTTPCacheTable::CacheEntry *
@@ -732,6 +731,8 @@ void HTTPCacheTable::delete_all_entries() {
     A private method.
 
     @param entry The CacheEntry object.
+    @param default_expiration The default value of the cached object's
+    expiration time.
     @param request_time When was the request made? I think this value must be
     passed into the method that calls this method... */
 
@@ -776,6 +777,7 @@ HTTPCacheTable::calculate_time(HTTPCacheTable::CacheEntry *entry, int default_ex
     A private method.
 
     @param entry Store values from the headers here.
+    @param max_entry_size DO not cache entries larger than this.
     @param headers A vector of header lines. */
 
 void HTTPCacheTable::parse_headers(HTTPCacheTable::CacheEntry *entry,

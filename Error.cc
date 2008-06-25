@@ -224,7 +224,7 @@ Error::print(FILE *out) const
     that can be used to send and receive an Error object over the network in
     a MIME document.
 
-    @param out A reference to the output stream on which the Error object is to
+    @param strm A reference to the output stream on which the Error object is to
     be rendered. */
 void
 Error::print(ostream &strm) const

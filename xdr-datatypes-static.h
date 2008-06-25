@@ -1,4 +1,3 @@
-/* dods-datatypes.h.  Generated from dods-datatypes.h.in by configure.  */
 
 /*
   Determine at compile-time the sizes of various datatypes. This uses symbols
@@ -29,20 +28,29 @@
 #include <rpc/xdr.h>
 #endif
 
-/* The typedefs are done using a preprocessor symbol so that autoconf's
-   `CONFIG_HEADER' can be used. The configure script will then only modify
-   the dods-datatypes.h header when its contents change. This saves on
-   compilation since the header is used by many files in the dap++ library.
-   The downside is that the typedefs are so ugly... 2/14/2001 jhrg */
-
+#ifndef XDR_INT32
 #define XDR_INT32 xdr_int32_t
+#endif
+
+#ifndef XDR_UINT32
 #define XDR_UINT32 xdr_uint32_t
+#endif
 
+#ifndef XDR_INT16
 #define XDR_INT16 xdr_int16_t
-#define XDR_UINT16 xdr_uint16_t
+#endif
 
+#ifndef XDR_UINT16
+#define XDR_UINT16 xdr_uint16_t
+#endif
+
+#ifndef XDR_FLOAT64
 #define XDR_FLOAT64 xdr_double
+#endif
+
+#ifndef XDR_FLOAT32
 #define XDR_FLOAT32 xdr_float
+#endif
 
 #endif /* __XDR_DATATYPES__ */
 

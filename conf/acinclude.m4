@@ -551,7 +551,11 @@ AC_DEFUN([DODS_CHECK_SIZES], [dnl
     AC_SEARCH_LIBS([xdr_void],[c rpc nsl rpcsvc],[
       dap_xdrlib=`echo $ac_res|sed -e 's/^-l//'`],[
       AC_MSG_WARN(Cannot locate library containing xdr functions.)])
+    # Added for autoconf 2.59 which appears to not use/set $ac_res. jhrg
+    if test -z "$dap_xdrlib" ; then dap_xdrlib=c; fi
     if test "$dap_xdrlib" = "none required" ; then dap_xdrlib=c; fi
+    # I don't think this is needed for autoconf 2.61 but I have no idea about
+    # 2.59 - it doesn't seem to be hurting anything with 2.61. jhrg
     if test "$dap_xdrlib" != "c" ; then
        # Add to library list
        AC_CHECK_LIB($dap_xdrlib,xdr_void)
