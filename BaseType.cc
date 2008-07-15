@@ -433,7 +433,8 @@ void
 BaseType::set_read_p(bool state)
 {
     if (! _synthesized_p) {
-        DBG(cerr << "Changing read_p state of " << name() << endl);
+        DBG(cerr << "Changing read_p state of " << name() << " to "
+	         << state << endl);
         _read_p = state;
     }
 }

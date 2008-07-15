@@ -47,6 +47,7 @@
 #endif
 
 #include "TestFloat32.h"
+#include "debug.h"
 
 extern int test_variable_sleep_interval;
 
@@ -101,6 +102,7 @@ TestFloat32::output_values(std::ostream &out)
 bool
 TestFloat32::read(const string &)
 {
+    DBG(cerr << "Entering TestFloat32::read for " << name() << endl);
     if (read_p())
 	return true;
 
@@ -110,6 +112,9 @@ TestFloat32::read(const string &)
     if (get_series_values()) {
         _buf += 10.0;
         _buf = (float)(trunc(10000 * sin(trunc(_buf))) / 100);
+	/*
+	_buf -= 0.11 ;
+	*/
     }
     else {
         _buf = (float)99.999;
@@ -117,5 +122,7 @@ TestFloat32::read(const string &)
     
     set_read_p(true);
 
+    DBG(cerr << "In TestFloat32::read, _buf = " << _buf << endl);
+    
     return true;
 }

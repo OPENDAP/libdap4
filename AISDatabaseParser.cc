@@ -203,9 +203,12 @@ AISDatabaseParser::aisStartElement(AISParserState *state, const char *name,
 /** Process an end element tag. This is where values are added to the
     AISResources object that's held by \c state.
     @param state The SAX parser state.
-    @param name The name of the element; used only for code instrumentation. */
+    @param name The name of the element; used only for code instrumentation.
+ */
+// Although not used in the method itself, name is used in the DBG2
+// statement, so we need the parameter name. - pcw 07/08/08
 void
-AISDatabaseParser::aisEndElement(AISParserState *state, const char *)
+AISDatabaseParser::aisEndElement(AISParserState *state, const char *name)
 {
     DBG2(cerr << "End element " << name << " (state " << states[state->state]
          << ")" << endl);

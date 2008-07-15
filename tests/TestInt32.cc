@@ -106,13 +106,14 @@ TestInt32::read(const string &)
         _buf = 32 * _buf;
         if (!_buf)
             _buf = 32;
-        DBG(cerr << "In TestInt32::read, _buf = " << _buf << endl);
     }
     else {
         _buf = 123456789;
     }
 
     set_read_p(true);
+
+    DBG(cerr << "In TestInt32::read, _buf = " << _buf << endl);
     
     return true;
 }

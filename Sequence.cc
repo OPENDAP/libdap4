@@ -580,10 +580,13 @@ Sequence::read_row(int row, const string &dataset, DDS &dds,
     if (row < d_row_number)
         throw InternalErr("Trying to back up inside a sequence!");
 
-    DBG2(cerr << "read_row: row number " << row << ", current row " << d_row_number
-         << endl);
+    DBG2(cerr << "read_row: row number " << row
+              << ", current row " << d_row_number << endl);
     if (row == d_row_number)
+    {
+	DBG2(cerr << "Leaving Sequence::read_row for " << name() << endl);
         return true;
+    }
 
     dds.timeout_on();
 
@@ -611,6 +614,8 @@ Sequence::read_row(int row, const string &dataset, DDS &dds,
     dds.timeout_off();
 
     // Return true if we have valid data, false if we've read to the EOF.
+    DBG2(cerr << "Leaving Sequence::read_row for " << name()
+              << " with " << (eof == 0) << endl);
     return eof == 0;
 }
 
@@ -894,7 +899,7 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds,
 void
 Sequence::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds)
 {
-    DBG(cerr << "Entering intern_data for " << name() << endl);
+    DBG(cerr << "Sequence::intern_data - for " << name() << endl);
     DBG2(cerr << "    intern_data, values: " << &d_values << endl);
 
     // Why use a stack instead of return values? We need the stack because
@@ -902,8 +907,8 @@ Sequence::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds
     // instances when the intern_data_parent_part_two() code is run.
     sequence_values_stack_t sequence_values_stack;
     
-    DBG2(cerr << "    pushing d_values (" << &d_values
-         << ") on stack; size: " << sequence_values_stack.size() << endl);
+    DBG2(cerr << "    pushing d_values of " << name() << " (" << &d_values
+              << ") on stack; size: " << sequence_values_stack.size() << endl);
     sequence_values_stack.push(&d_values);
 
     intern_data_private(dataset, eval, dds, sequence_values_stack);
@@ -929,8 +934,7 @@ Sequence::intern_data_parent_part_one(const string & dataset, DDS & dds,
                                         sequence_values_stack_t &
                                         sequence_values_stack)
 {
-    DBG(cerr << "Entering intern_data_parent_part_one for " << name() <<
-        endl);
+    DBG(cerr << "Entering intern_data_parent_part_one for " << name() << endl);
 
     int i = (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
 
@@ -940,9 +944,18 @@ Sequence::intern_data_parent_part_one(const string & dataset, DDS & dds,
     // the CE clauses will be evaluated by the leaf sequence).
     bool status = read_row(i, dataset, dds, eval, false);
 
+    // Grab the current size of the value stack. We do this because it is
+    // possible that no nested sequences for this row happened to be
+    // selected because of a constract evaluation or the last row is not
+    // selected because of a constraint evaluation. In either case, no
+    // nested sequence d_values are pused onto the stack, so there is
+    // nothing to pop at the end of this function. pcw 07/14/08
+    SequenceValues::size_type orig_stack_size = sequence_values_stack.size() ;
+
     while (status
            && (get_ending_row_number() == -1
-               || i <= get_ending_row_number())) {
+               || i <= get_ending_row_number()))
+    {
         i += get_row_stride();
         for (Vars_iter iter = var_begin(); iter != var_end(); iter++) {
             if ((*iter)->send_p()) {
@@ -966,15 +979,24 @@ Sequence::intern_data_parent_part_one(const string & dataset, DDS & dds,
 
     // Reset current row number for next nested sequence element.
     reset_row_number();
-    DBG2(cerr << "    popping d_values (" << sequence_values_stack.top()
-         << ") off stack; size: " << sequence_values_stack.size() << endl);
-    sequence_values_stack.pop();
+
+    // if the size of the stack is larger than the original size (retrieved
+    // above) then pop the top set of d_values from the stack. If it's the
+    // same, then no nested sequences, or possible the last nested sequence,
+    // were pushed onto the stack, so there is nothing to pop.
+    if( sequence_values_stack.size() > orig_stack_size )
+    {
+	DBG2(cerr << "    popping d_values (" << sequence_values_stack.top()
+	     << ") off stack; size: " << sequence_values_stack.size() << endl);
+	sequence_values_stack.pop();
+    }
+    DBG(cerr << "Leaving intern_data_parent_part_one for " << name() << endl);
 }
 
 void
 Sequence::intern_data_parent_part_two(const string &dataset, DDS &dds,
-                                      ConstraintEvaluator &eval,
-                                      sequence_values_stack_t &sequence_values_stack)
+			      ConstraintEvaluator &eval,
+			      sequence_values_stack_t &sequence_values_stack)
 {
     DBG(cerr << "Entering intern_data_parent_part_two for " << name() << endl);
 
@@ -986,7 +1008,7 @@ Sequence::intern_data_parent_part_two(const string &dataset, DDS &dds,
 
     DBG2(cerr << "    stack size: " << sequence_values_stack.size() << endl);
     SequenceValues *values = sequence_values_stack.top();
-    DBG2(cerr << "    using values = " << values << endl);
+    DBG2(cerr << "    using values = " << (void *)values << endl);
 
     if (get_unsent_data()) {
         BaseTypeRow *row_data = new BaseTypeRow;
@@ -1000,19 +1022,23 @@ Sequence::intern_data_parent_part_two(const string &dataset, DDS &dds,
             else if ((*iter)->send_p()) { //Sequence; must be the last variable
                 Sequence *tmp = dynamic_cast<Sequence*>((*iter)->ptr_duplicate());
                 row_data->push_back(tmp);
-                DBG2(cerr << "    pushing d_values (" << &(dynamic_cast<Sequence&>(*tmp).d_values)
-                     << ") on stack; size: " << sequence_values_stack.size() << endl);
+                DBG2(cerr << "    pushing d_values of " << tmp->name()
+		     << " (" << &(tmp->d_values)
+                     << ") on stack; size: " << sequence_values_stack.size()
+		     << endl);
                 // This pushes the d_values field of the newly created leaf 
                 // Sequence onto the stack. The code then returns to intern
                 // _data_for_leaf() where this value will be used.
-                sequence_values_stack.push(&(dynamic_cast<Sequence&>(*tmp).d_values));
+                sequence_values_stack.push(&(tmp->d_values));
             }
         }
 
-        DBG2(cerr << "    pushing values for " << name() << " to " << values << endl);
+        DBG2(cerr << "    pushing values for " << name()
+	          << " to " << values << endl);
         values->push_back(row_data);
         set_unsent_data(false);
     }
+    DBG(cerr << "Leaving intern_data_parent_part_two for " << name() << endl);
 }
 
 void
@@ -1027,6 +1053,7 @@ Sequence::intern_data_for_leaf(const string &dataset, DDS &dds,
     DBG2(cerr << "    reading row " << i << endl);
     bool status = read_row(i, dataset, dds, eval, true);
     DBG2(cerr << "    status: " << status << endl);
+    DBG2(cerr << "    ending row number: " << get_ending_row_number() << endl);
     
     if (status && (get_ending_row_number() == -1 || i <= get_ending_row_number())) {
         BaseType *btp = get_parent();
@@ -1056,7 +1083,8 @@ Sequence::intern_data_for_leaf(const string &dataset, DDS &dds,
                 }
             }
 
-            DBG2(cerr << "    pushing values for " << name() << " to " << values << endl);
+            DBG2(cerr << "    pushing values for " << name()
+	              << " to " << values << endl);
             // Save the row_data to values().
             values->push_back(row_data);
             
@@ -1069,6 +1097,7 @@ Sequence::intern_data_for_leaf(const string &dataset, DDS &dds,
              << ") off stack; size: " << sequence_values_stack.size() << endl);
         sequence_values_stack.pop();
     }
+    DBG(cerr << "Leaving intern_data_for_leaf for " << name() << endl);
 }
 
 /** @brief Deserialize (read from the network) the entire Sequence.

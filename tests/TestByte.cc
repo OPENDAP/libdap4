@@ -55,6 +55,7 @@
 #endif
 
 #include "TestByte.h"
+#include "debug.h"
 
 // The NewByte `helper function' creates a pointer to the a TestByte and
 // returns that pointer. It takes the same arguments as the class's ctor. If
@@ -121,6 +122,7 @@ TestByte::output_values(std::ostream &out)
 bool
 TestByte::read(const string &)
 {
+    DBG(cerr << "Entering TestByte::read for " << name() << endl);
     if (read_p())
 	return true;
 
@@ -135,6 +137,8 @@ TestByte::read(const string &)
     }
 
     set_read_p(true);
+    
+    DBG(cerr << "In TestByte::read, _buf = " << (int)_buf << endl);
     
     return true;
 }

@@ -40,6 +40,7 @@
 #include "TestSequence.h"
 #include "TestCommon.h"
 
+#include "config.h"
 #include "debug.h"
 
 void
@@ -95,7 +96,7 @@ TestSequence::output_values(std::ostream &out)
 bool 
 TestSequence::read(const string &dataset)
 {
-    DBG(cerr << "Entering TestSequence::read()" << endl);
+    DBG(cerr << "Entering TestSequence::read for " << name() << endl);
     
     if (read_p())
         return true;
@@ -105,6 +106,9 @@ TestSequence::read(const string &dataset)
     // that, in case this is an inner sequence, the next instance will be read
     // and the "Trying to back up in a Sequence" error won't be generated.
     if (++d_current > d_len) {
+	DBG(cerr << "Leaving TestSequence::read for " << name()
+	         << " because d_current(" << d_current
+		 << ") > d_len(" << d_len << ")" << endl);
         d_current = 0;                  // reset
         set_unsent_data(false);
         reset_row_number();
@@ -121,6 +125,7 @@ TestSequence::read(const string &dataset)
     }
     
     set_unsent_data(true);
+    DBG(cerr << "Leaving TestSequence::read for " << name() << endl);
     return true;
 }
 
