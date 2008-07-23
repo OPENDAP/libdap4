@@ -4,8 +4,16 @@
 #include "Ancillary.h"
 #include "debug.h"
 
+#ifndef WIN32
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#else
+#include <io.h>
+#include <fcntl.h>
+#include <process.h>
+// Win32 does not define this. 08/21/02 jhrg
+#define F_OK 0
 #endif
 
 namespace libdap {

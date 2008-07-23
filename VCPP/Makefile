@@ -208,6 +208,7 @@ CLIENT_OBJS = $(OBJDIR)\RCReader.obj \
 		$(OBJDIR)\ResponseTooBigErr.obj
 
 SERVER_OBJS = $(OBJDIR)\DODSFilter.obj \
+		$(OBJDIR)\Ancillary.obj \
 		$(OBJDIR)\cgi_util.obj
 
 # Convenience dependancies
@@ -351,6 +352,7 @@ $(OBJDIR)\ResponseTooBigErr.obj			: $(SRCDIR)\ResponseTooBigErr.cc
 
 # libdap server
 $(OBJDIR)\DODSFilter.obj				: $(SRCDIR)\DODSFilter.cc
+$(OBJDIR)\Ancillary.obj					: $(SRCDIR)\Ancillary.cc
 $(OBJDIR)\cgi_util.obj					: $(SRCDIR)\cgi_util.cc
 
 # Regular expression code
