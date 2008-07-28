@@ -1195,7 +1195,7 @@ void Vector::value(dods_float64 *b) const
 /** @brief Get a copy of the data held by this variable. */
 void Vector::value(vector<string> &b) const
 {
-    if (_var->type() == dods_byte_c)
+    if (_var->type() == dods_byte_c || _var->type() == dods_url_c)
         b = d_str;
 }
 
