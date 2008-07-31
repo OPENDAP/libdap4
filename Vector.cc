@@ -71,7 +71,7 @@ void Vector::_duplicate(const Vector & v)
         _var = 0;
     }
 
-    // _vec and _buf (futher down) hold the values of the Vector. The field
+    // _vec and _buf (further down) hold the values of the Vector. The field
     // _vec is used when the Vector holds non-numeric data (including strings
     // although it used to be that was not the case jhrg 2/10/05) while _buf
     // holds numeric values.
@@ -217,7 +217,7 @@ void Vector::set_read_p(bool state)
 
     Note that the parameter <i>exact_match</i> is not used by this mfunc.
 
-    @param n The name of the variabe to find.
+    @param n The name of the variable to find.
     @param exact Unused.
     @param s Pointer to a BaseType Pointer Stack. Use this stack to record
     the path to the variable. By default this pointer is null, in which case
@@ -264,19 +264,19 @@ BaseType *Vector::var(const string & n, btp_stack & s)
 }
 
 // Return a pointer the the BaseType object for element I. If the Vector is
-// of a cardinal type, store the Ith element's value in the BaseType
+// of a cardinal type, store the ith element's value in the BaseType
 // object. If it is a Vector of a non-cardinal type, then this mfunc returns
 // _vec[i].
 //
 // NB: I defaults to zero.
 //
-// Returns: A BaseType pointer to the Ith element of the Vector.
+// Returns: A BaseType pointer to the ith element of the Vector.
 
 /** Returns a pointer to the specified Vector element.  The return
     pointer will reference the element itself, so multiple calls to this
     method should save each value before making the next call.
 
-    @todo Is this method thread safe? If 'apartment threding' is used, I
+    @todo Is this method thread safe? If 'apartment threading' is used, I
     think so. But if the library is running in more than one thread, then
     this is not thread safe.
 
@@ -386,17 +386,17 @@ void Vector::vec_resize(int l)
 }
 
 /** @brief read data into a variable for later use
- 
+
     Most uses of a variable are to either serialize its data to a stream of
     some sort or to read values from some stream and intern those in the
     variable for later use. These operations are perform by serialize()
     and deserialize() which follow. This function performs essentially both
     of these operations without actually using a stream device. The data are
     read using the read() method(s) and loaded into the variables directly.
-    
+
     This method is intended to be used by objects which transform DAP objects
     like the DataDDS into an ASCII CSV representation.
-    
+
     @param dataset A string passed to read() so data values can be read from
     the data source.
     @param eval A reference to a constraint evaluator
@@ -421,23 +421,23 @@ Vector::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds)
         // For these cases, read() puts the data into _buf, which is what we
         // need to do 'stuff' with the data.
         break;
-        
+
     case dods_str_c:
     case dods_url_c:
-        // For these cases, read() will put the data into d_str[], which is 
+        // For these cases, read() will put the data into d_str[], which is
         // what the transformation classes need.
         break;
 
     case dods_array_c:
-        // I think this is an error since there can never be an Array of 
+        // I think this is an error since there can never be an Array of
         // Array.
         throw InternalErr(__FILE__, __LINE__, "Array of Array not supported.");
         break;
-        
+
     case dods_structure_c:
     case dods_sequence_c:
     case dods_grid_c:
-        // For these cases, we need to call read() for each of the 'num' 
+        // For these cases, we need to call read() for each of the 'num'
         // elements in the '_vec[]' array of BaseType object pointers.
         if (_vec.capacity() == 0)
             throw InternalErr(__FILE__, __LINE__,
@@ -456,7 +456,7 @@ Vector::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds)
 
 /** @brief Serialize a Vector.
 
-    This uses the Marshaller class to encode each element of a cardinal
+    This uses the Marshaler class to encode each element of a cardinal
     array. For Arrays of Str and Url types, send the element count over
     as a prefix to the data so that deserialize will know how many elements
     to read.
@@ -646,7 +646,7 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
         break;
 
     default:
-        throw InternalErr(__FILE__, __LINE__, "Unknow type!");
+        throw InternalErr(__FILE__, __LINE__, "Unknown type!");
         break;
     }
 
@@ -688,7 +688,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
     // is implemented in the surrogate library. Passing NULL as a pointer to
     // this method will be an error of the creator of the surrogate library.
     // Even though I recognize the fact that some methods inside libdap++ can
-    // call val2buf, I think by now no coding bugs such as missusing val2buf
+    // call val2buf, I think by now no coding bugs such as misusing val2buf
     // will be in libdap++, so it will be an internal error from the
     // surrogate library.
     if (!val)
@@ -744,7 +744,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
     Sequence or Grid.
 
     When reading data out of a variable that has been constrained, this method
-    assumes the N values/bytes of constrained data start at the begining
+    assumes the N values/bytes of constrained data start at the beginning
     of the object's internal buffer. For example, do not load an entire
     Vector's data using val2buf(), constrain and then use this method to
     get the data. Unless your constraint starts with the [0]th element, the
@@ -839,7 +839,7 @@ void Vector::set_vec(unsigned int i, BaseType * val)
     // Jose Garcia
     // This is a public method which allows users to set the elements
     // of *this* vector. Passing an invalid index, a NULL pointer or
-    // missmatching the vector type are internal errors.
+    // mismatching the vector type are internal errors.
     if (i >= static_cast < unsigned int >(_length))
         throw InternalErr(__FILE__, __LINE__,
                           "Invalid data: index too large.");
@@ -1130,11 +1130,11 @@ Vector::set_value(vector<string> &val, int sz)
 //@}
 
 //@{
-/** @brief Get a copy of the data held by this variable. 
-    Read data from this variable's internal storage and load it into the 
+/** @brief Get a copy of the data held by this variable.
+    Read data from this variable's internal storage and load it into the
     memory referenced by \c b. The argument \c b must point to enough memory
     to hold length() Bytes.
-    
+
     @param b A pointer to the memory to hold the data; must be at least
     length() * sizeof(dods_byte) in size.*/
 void Vector::value(dods_byte *b) const
@@ -1199,14 +1199,14 @@ void Vector::value(vector<string> &b) const
         b = d_str;
 }
 
-/** Allocated memory and copy data into the new buffer. Return the new 
+/** Allocated memory and copy data into the new buffer. Return the new
     buffer's pointer. The caller must delete the storage. */
 void *Vector::value()
 {
     void *buffer = new char[width()];
 
     memcpy(buffer, _buf, width());
-    
+
     return buffer;
 }
 //@}

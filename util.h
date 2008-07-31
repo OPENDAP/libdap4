@@ -124,6 +124,7 @@ void flush_stream(iostream ios, FILE *out);
 #endif
 
 void downcase(string &s);
+bool is_quoted(const string &s);
 string remove_quotes(const string &s);
 
 // Jose Garcia

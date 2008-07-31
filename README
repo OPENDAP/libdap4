@@ -1,6 +1,29 @@
 
 $Id$
 
+Behavior change for the DAS: In the past the format handlers added double
+quotes to the values of string attributes when they added those values to the
+AttrTable object. This meant that the value of the attribute in the C++
+object was actually not correct since it contained quotes not found in the
+original attribute value. I modified libdap so that if an attribute value in
+the C++ AttrTable object does not have quotes then those quotes are added
+when the value is output in a DAS response (but not a DDX since there's no
+need to quote the value in that response). This ensures that the text in the
+DAS wire representation will parse whether a handler has added quotes or not
+(paving the way for fixed handlers). At the same time I fixed all of our
+handlers so that they no longer add the erroneous quotes. This fixes a
+problem with the DDX where the quotes were showing up as part of the
+attribute value. The change to libdap is such that a broken handler will not
+be any more broken but a fixed handler will work for both DAS and DDX
+generation.
+
+If you have a handler and it's not adding quotes to the String attribute 
+values - good, don't change that! If your handler does add quotes, please
+modify it so the DDX will be correct.  
+
+Our handler's old, broken, behavior can be resurrected by removing the 
+ATTR_STRING_QUOTE FIX define in the appropriate files.
+
 Updated for version 3.8.2 (23 June 2008)
 
 HTTP Cache and win32 installer fixes (the latter are actually in the 3.8.1

@@ -921,32 +921,75 @@ AttrTable::erase()
 }
 
 
+const string double_quote = "\"";
+
+// This is here as a result of the problem described in ticket #1163 where
+// the data handlers are adding quotes to string attributes so the DAS will
+// be printed correctly. But that has the affect of adding the quoted to the
+// attribute's _value_ not just it's print representation. As part of the fix
+// I made the code here add the quotes if the handlers are fixed (but not if
+// handlers are still adding them). The other part of 1163 is to fix all of
+// the handlers... What this fix means is that attributes whose values really
+// do contain bracketing quotes might be misunderstood, since we're assuming
+// those quotes were added by the handlers as a hack to get the output
+// formatting correct for the DAS. jhrg 7/30/08
+static void
+write_string_attribute_for_das(ostream &out, const string &value, const string &term)
+{
+    if (is_quoted(value))
+        out << value << term;
+    else
+        out << double_quote << value << double_quote << term;
+}
+
+static void
+write_string_attribute_for_das(FILE *out, const string &value, const string &term)
+{
+    if (is_quoted(value))
+        fprintf(out, "%s%s", value.c_str(), term.c_str());
+    else
+        fprintf(out, "\"%s\"%s", value.c_str(), term.c_str());
+}
+
+
 /** A simple printer that does nothing fancy with aliases.
     Protected. */
 void
 AttrTable::simple_print(FILE *out, string pad, Attr_iter i,
-                        bool dereference)
+        bool dereference)
 {
     switch ((*i)->type) {
-    case Attr_container:
-        fprintf(out, "%s%s {\n", pad.c_str(), id2www(get_name(i)).c_str()) ;
+        case Attr_container:
+        fprintf(out, "%s%s {\n", pad.c_str(), id2www(get_name(i)).c_str());
 
         (*i)->attributes->print(out, pad + "    ", dereference);
 
-        fprintf(out, "%s}\n", pad.c_str()) ;
+        fprintf(out, "%s}\n", pad.c_str());
         break;
 
-    default: {
+        case Attr_string: {
             fprintf(out, "%s%s %s ", pad.c_str(), get_type(i).c_str(),
-                    id2www(get_name(i)).c_str()) ;
+                    id2www(get_name(i)).c_str());
 
             vector<string> *sxp = (*i)->attr;
-
             vector<string>::iterator last = sxp->end() - 1;
-            for (vector<string>::iterator i = sxp->begin(); i != last; ++i)
-                fprintf(out, "%s, ", (*i).c_str()) ;
+            for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
+                write_string_attribute_for_das(out, *i, ", ");
+            }
+            write_string_attribute_for_das(out, *last, ";\n");
+        }
+        break;
 
-            fprintf(out, "%s;\n", (*(sxp->end() - 1)).c_str()) ;
+        default: {
+            fprintf(out, "%s%s %s ", pad.c_str(), get_type(i).c_str(),
+                    id2www(get_name(i)).c_str());
+
+            vector<string> *sxp = (*i)->attr;
+            vector<string>::iterator last = sxp->end() - 1;
+            for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
+                fprintf(out, "%s%s", (*i).c_str(), ", ");
+            }
+            fprintf(out, "%s%s", (*last).c_str(), ";\n");
         }
         break;
     }
@@ -956,30 +999,41 @@ AttrTable::simple_print(FILE *out, string pad, Attr_iter i,
     Protected. */
 void
 AttrTable::simple_print(ostream &out, string pad, Attr_iter i,
-                        bool dereference)
+		bool dereference)
 {
-    switch ((*i)->type) {
-    case Attr_container:
-	out << pad << id2www(get_name(i)) << " {\n" ;
+	switch ((*i)->type) {
+		case Attr_container:
+		out << pad << id2www(get_name(i)) << " {\n";
 
-        (*i)->attributes->print(out, pad + "    ", dereference);
+		(*i)->attributes->print(out, pad + "    ", dereference);
 
-	out << pad << "}\n" ;
-        break;
+		out << pad << "}\n";
+		break;
 
-    default: {
-	    out << pad << get_type(i) << " " << id2www(get_name(i)) << " " ;
+		case Attr_string: {
+            out << pad << get_type(i) << " " << id2www(get_name(i)) << " ";
 
             vector<string> *sxp = (*i)->attr;
-
             vector<string>::iterator last = sxp->end() - 1;
-            for (vector<string>::iterator i = sxp->begin(); i != last; ++i)
-		out << (*i) << ", " ;
+            for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
+                write_string_attribute_for_das(out, *i, ", ");
+            }
+            write_string_attribute_for_das(out, *last, ";\n");
+		}
+		break;
 
-	    out << (*(sxp->end() - 1)) << ";\n" ;
-        }
-        break;
-    }
+		default: {
+			out << pad << get_type(i) << " " << id2www(get_name(i)) << " ";
+
+			vector<string> *sxp = (*i)->attr;
+			vector<string>::iterator last = sxp->end() - 1;
+			for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
+			    out << *i <<", ";
+			}
+            out << *last << ";\n";
+		}
+		break;
+	}
 }
 
 /** Prints an ASCII representation of the attribute table to the
@@ -1026,20 +1080,20 @@ AttrTable::print(FILE *out, string pad, bool dereference)
 void
 AttrTable::print(ostream &out, string pad, bool dereference)
 {
-    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++) {
-        if ((*i)->is_alias) {
-            if (dereference) {
-                simple_print(out, pad, i, dereference);
-            }
-            else {
-		out << pad << "Alias " << id2www(get_name(i))
-		    << " " << id2www((*i)->aliased_to) << ";\n" ;
-            }
-        }
-        else {
-            simple_print(out, pad, i, dereference);
-        }
-    }
+	for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++) {
+		if ((*i)->is_alias) {
+			if (dereference) {
+				simple_print(out, pad, i, dereference);
+			}
+			else {
+				out << pad << "Alias " << id2www(get_name(i))
+				<< " " << id2www((*i)->aliased_to) << ";\n";
+			}
+		}
+		else {
+			simple_print(out, pad, i, dereference);
+		}
+	}
 }
 
 /** Print the attribute table in XML.

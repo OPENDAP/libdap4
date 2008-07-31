@@ -40,6 +40,7 @@
 %{
 
 #define YYSTYPE char *
+#define ATTR_STRING_QUOTE_FIX
 
 #include "config.h"
 
@@ -499,8 +500,12 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 	    error_cont = attr->append_container(error_cont_name);
 
 	error_cont->append_attr(name, type, value);
-	error_cont->append_attr(name + "_explanation", "String",
-				"\"" + msg + "\"");
+#ifndef ATTR_STRING_QUOTE_FIX
+    error_cont->append_attr(name + "_explanation", "String",
+                "\"" + msg + "\"");
+#else
+       error_cont->append_attr(name + "_explanation", "String", msg);
+#endif
     }
 }
 

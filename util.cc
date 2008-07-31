@@ -1,4 +1,4 @@
- 
+
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -170,7 +170,7 @@ libdap_root()
     return LIBDAP_ROOT;
 #if 0
     // I've changed this because this could be used to get the library to
-    // use a different compression function when it builds compressed 
+    // use a different compression function when it builds compressed
     // responses. The use of 'deflate' to compress responses should be
     // removed since Hyrax now uses Tomcat to perform this function.
     char *libdap_root = 0;
@@ -378,10 +378,16 @@ downcase(string &s)
         s[i] = tolower(s[i]);
 }
 
+bool
+is_quoted(const string &s)
+{
+    return (!s.empty() && s[0] == '\"' && s[s.length()-1] == '\"');
+}
+
 string
 remove_quotes(const string &s)
 {
-    if (!s.empty() && s[0] == '\"' && s[s.length()-1] == '\"')
+    if (is_quoted(s))
         return s.substr(1, s.length() - 2);
     else
         return s;
@@ -516,11 +522,11 @@ char *
 get_tempfile_template(char *file_template)
 {
     char *c;
-    
+
 #ifdef WIN32
     // whitelist for a WIN32 directory
     Regex directory("[-a-zA-Z0-9_\\]*");
-	
+
     c = getenv("TEMP");
     if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0))
     	goto valid_temp_directory;
@@ -529,7 +535,7 @@ get_tempfile_template(char *file_template)
     if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0))
     	goto valid_temp_directory;
 #else
-	
+
 	c = getenv("TMPDIR");
 	// Changed this so that it uses the pathname_ok() method instead
 	// of using its own regex. jhrg 2/4/08
@@ -538,7 +544,7 @@ get_tempfile_template(char *file_template)
 	    if (pathname_ok(tmpdir) && (access(c, W_OK | R_OK) == 0))
 	        goto valid_temp_directory;
 	}
-	
+
 #ifdef P_tmpdir
 	if (access(P_tmpdir, W_OK | R_OK) == 0) {
         c = P_tmpdir;
@@ -549,13 +555,13 @@ get_tempfile_template(char *file_template)
 #endif  // WIN32
 
     c = ".";
-    
+
 valid_temp_directory:
 	// Sanitize allocation
 	int size = strlen(c) + strlen(file_template) + 2;
 	if (!size_ok(1, size))
 		throw Error("Bad temporary file name.");
-		
+
     char *temp = new char[size];
     strncpy(temp, c, size-2);
     strcat(temp, "/");
@@ -613,19 +619,19 @@ size_ok(uint sz, uint nelem)
 }
 
 /** @brief Does the string name a potentailly valid pathname?
-    Test the given pathname to verfiy that it is a valid name. We define this 
+    Test the given pathname to verfiy that it is a valid name. We define this
     as: Contains only printable characters; and Is less then 256 characters.
-    If \e strict is true, test that the pathname consists of only letters, 
+    If \e strict is true, test that the pathname consists of only letters,
     digits, and underscore, dash and dot characters instead of the more general
     case where a pathname can be composed of any printable characters.
-    
+
     @note Using this function does not guarentee that the path is valid, only
     that the path \e could be valid. The intent is foil attacks where an
     exploit is encoded in a string then passed to a library function. This code
     does not address whether the pathname references a valid resource.
-    
+
     @param path The pathname to test
-    @param strict Apply more restrictive tests (true by default) 
+    @param strict Apply more restrictive tests (true by default)
     @return true if the pathname consists of legal characters and is of legal
     size, false otherwise. */
 bool
@@ -633,18 +639,18 @@ pathname_ok(const string &path, bool strict)
 {
     if (path.length() > 255)
         return false;
-    
+
     Regex name("[-0-9A-z_./]+");
     if (!strict)
         name = "[:print:]+";
-        
+
     string::size_type len = path.length();
     int result = name.match(path.c_str(), len);
     // Protect against casting too big an uint to int
     // if LEN is bigger than the max int32, the second test can't work
     if (len > INT_MAX || result != static_cast<int>(len))
         return false;
- 
+
     return true;
 }
 
