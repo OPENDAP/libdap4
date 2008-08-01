@@ -9,6 +9,10 @@ global srcdir
 
 source "common_tests.exp"
 
+expr-test_start w ${srcdir}/test.cc0 "geoarray(SST)"
+
+compare_stdout ${srcdir}/data.zz0 "test.zz0.exp: Bad args"
+
 expr-test_start W ${srcdir}/test.cc0 "geoarray(SST)"
 
 compare_stdout ${srcdir}/data.zz0 "test.zz0.exp: Bad args"

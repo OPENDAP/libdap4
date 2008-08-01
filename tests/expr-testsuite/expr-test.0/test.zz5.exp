@@ -9,6 +9,10 @@ global srcdir
 
 source "common_tests.exp"
 
+expr-test_start w ${srcdir}/test.cc0 "geoarray(SST,45,-45,-45,45,90,-180,-90,179)"
+
+compare_stdout ${srcdir}/data.zz2 "test.zz5.exp: Chunk of data, both notations negative"
+
 expr-test_start W ${srcdir}/test.cc0 "geoarray(SST,45,-45,-45,45,90,-180,-90,179)"
 
 compare_stdout ${srcdir}/data.zz2 "test.zz5.exp: Chunk of data, both notations negative"

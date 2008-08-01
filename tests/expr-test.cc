@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -73,7 +73,7 @@ static char rcsid[] not_used =
 using namespace std;
 
 int test_variable_sleep_interval = 0;   // Used in Test* classes for testing
-                                      // timeouts. 
+                                      // timeouts.
 
 #define CRLF "\r\n"             // Change this here and in cgi_util.cc
 #define DODS_DDS_PRX "dods_dds"
@@ -138,7 +138,7 @@ const string usage = "\
 int main(int argc, char *argv[])
 {
     GetOpt getopt(argc, argv, options.c_str());
-    
+
     int option_char;
     bool scanner_test = false, parser_test = false, evaluate_test = false;
     bool print_constrained = false;
@@ -451,7 +451,7 @@ FILE *move_dds(FILE * in)
     char *result = _mktemp(c);
 
     if (result == NULL) {
-        fprintf(stderr, "Could not create unique tempoary file name\n");
+        fprintf(stderr, "Could not create unique temporary file name\n");
         return NULL;
     }
     FILE *fp = fopen(_mktemp(c), "w+b");
@@ -528,7 +528,7 @@ void set_series_values(DDS & dds, bool state)
 // read the DDS for the entire dataset and send it to the client. The client
 // would then respond to the server by asking for a variable given a
 // constraint.
-// 
+//
 // Once the constraint has been entered, it is evaluated in the context of
 // the DDS using DDS:eval_constraint() (this would happen on the server-side
 // in a real system). Once the evaluation is complete,
@@ -571,7 +571,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
 
     // by default this is false (to get the old-style values that are
     // constant); set series_values to true for testing Sequence constraints.
-    // 01/14/05 jhrg And Array constraints, although it's of limited 
+    // 01/14/05 jhrg And Array constraints, although it's of limited
     // versatility 02/05/07 jhrg
     set_series_values(server, series_values);
 
@@ -606,7 +606,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
         delete var;
         var = 0;
     } else {
-        // send constrained DDS         
+        // send constrained DDS
         server.print_constrained(pout);
         fprintf(pout, "Data:\n");
         fflush(pout);
@@ -621,7 +621,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
                 DBG(cerr << "Sending " << (*i)->name() << endl);
                 (*i)->serialize(dds_name, eval, server, m, true);
             }
-	
+
 	fflush(pout);
     }
 
@@ -636,11 +636,15 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     // I use the default BaseTypeFactory since we're just printing the
     // values here.
     BaseTypeFactory factory;
-    DataDDS dds(&factory, "Test_data", "DAP/3.1");      // Must use DataDDS on receving end
+    DataDDS dds(&factory, "Test_data", "DAP/3.1");      // Must use DataDDS on receiving end
+#if 0
     FILE *dds_fp = move_dds(pin);
     DBG(fprintf(stderr, "Moved the DDS to a temp file\n"));
     dds.parse(dds_fp);
     fclose(dds_fp);
+#else
+    dds.parse(pin);
+#endif
 
     XDRFileUnMarshaller um( pin ) ;
 
@@ -656,14 +660,14 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
 
 /** This function does what constrained_trans() does but does not use the
     serialize()/deserialize() methods. Instead it uses the new (11/2007)
-    intern_data() methods. 
-    
+    intern_data() methods.
+
     @param dds_name
     @param constraint_expr True is one was given, else false
     @param constraint The constraint expression if \c constraint_expr is
     true.
     @param series_values True if TestTypes should generate 'series values'
-    like teh DTS. Flase selects the old-style values. */
+    like the DTS. False selects the old-style values. */
 void
 intern_data_test(const string & dds_name, const bool constraint_expr,
                  const string & constraint, const bool series_values)
@@ -679,11 +683,11 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
                               "Could nore read the constraint expression\n");
         }
         ce = c;
-    } 
+    }
     else {
         ce = constraint;
     }
-    
+
     TestTypeFactory ttf;
     DDS server(&ttf);
     ConstraintEvaluator eval;
@@ -693,7 +697,7 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
 
     // by default this is false (to get the old-style values that are
     // constant); set series_values to true for testing Sequence constraints.
-    // 01/14/05 jhrg And Array constraints, although it's of limited 
+    // 01/14/05 jhrg And Array constraints, although it's of limited
     // versatility 02/05/07 jhrg
     set_series_values(server, series_values);
 
@@ -707,7 +711,7 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
             throw Error(unknown_error, "Error calling the CE function.");
 
         var->intern_data(dds_name, eval, server);
-            
+
         var->set_send_p(true);
         server.add_var(var);
     }

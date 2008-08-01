@@ -39,7 +39,7 @@ Sequence {
     } child;
 } parent = { { 32, { { -54.4 }, { -1.77 }, { 98.93 }, { 92.68 } } }, { 1024, { { 99.48 }, { 81.67 }, { 10.59 }, { 91.29 } } } };"
 
-expr-test_start P ${srcdir}/${test_file} ${test_equation}
+expr-test_start p ${srcdir}/${test_file} ${test_equation}
 
 if [string match $test_out $comp_output] { # check comp_output
     pass "$test_name"
@@ -47,10 +47,10 @@ if [string match $test_out $comp_output] { # check comp_output
     fail "$test_name"
 }
 
-# $Log: test.xb.exp,v $
-# Revision 1.2  2005/01/28 17:25:13  jimg
-# Resolved conflicts from merge with release-3-4-9
-#
-# Revision 1.1.2.1  2005/01/19 18:26:31  jimg
-# Added
-#
+expr-test_start P ${srcdir}/${test_file} ${test_equation}
+
+if [string match $test_out $comp_output] { # check comp_output
+    pass "$test_name"
+} else {
+    fail "$test_name"
+}

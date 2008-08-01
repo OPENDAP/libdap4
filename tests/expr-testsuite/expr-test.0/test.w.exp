@@ -33,6 +33,14 @@ Sequence {
     Int32 j;
 } s = { { 32, 32 }, { 1024, 1024 }, { 32768, 32768 }, { 1048576, 1048576 } };"
 
+expr-test_start p ${srcdir}/${test_file} ${test_equation}
+
+if [string match $test_out $comp_output] { # check comp_output
+    pass "$test_name"
+} else {
+    fail "$test_name"
+}
+
 expr-test_start P ${srcdir}/${test_file} ${test_equation}
 
 if [string match $test_out $comp_output] { # check comp_output
@@ -41,10 +49,3 @@ if [string match $test_out $comp_output] { # check comp_output
     fail "$test_name"
 }
 
-# $Log: test.w.exp,v $
-# Revision 1.2  2005/01/28 17:25:13  jimg
-# Resolved conflicts from merge with release-3-4-9
-#
-# Revision 1.1.2.1  2005/01/19 18:26:31  jimg
-# Added
-#
