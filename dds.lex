@@ -11,12 +11,12 @@
  modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
  version 2.1 of the License, or (at your option) any later version.
- 
+
  This library is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Lesser General Public License for more details.
- 
+
  You should have received a copy of the GNU Lesser General Public
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -25,7 +25,7 @@
 
  (c) COPYRIGHT URI/MIT 1994-1999
 
-*/ 
+*/
 
 /*
    Scanner for the DDS. This file works with gnu's flex scanner generator. It
@@ -39,14 +39,14 @@
 
    The scanner is not reentrant, but can share name spaces with other
    scanners.
-   
+
    Note:
    1) The `defines' file dds.tab.h is built using `bison -d'.
    2) Define YY_DECL such that the scanner is called `ddslex'.
    3) When bison builds the dds.tab.h file, it uses `dds' instead of `yy' for
    variable name prefixes (e.g., yylval --> ddslval).
-   
-   jhrg 8/29/94 
+
+   jhrg 8/29/94
 */
 
 %{
@@ -70,48 +70,13 @@ using namespace libdap ;
 
 #define YY_DECL int ddslex YY_PROTO(( void ))
 
-// 1 selects the new way, 0 the old.
-// It appears the new way is not really working... 29 Feb 2008
-#if 0
-#define YY_INPUT(buf,result,max_size) \
-    if ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \
-        { \
-        int c = '*'; \
-        size_t n; \
-        for ( n = 0; n < max_size && \
-                 (c = getc( ddsin )) != EOF && c != '\n'; ++n ) \
-            buf[n] = (char) c; \
-        if ( c == '\n' ) \
-            buf[n++] = (char) c; \
-        if ( c == EOF && ferror( ddsin ) ) \
-            YY_FATAL_ERROR( "input in flex scanner failed" ); \
-        result = n; \
-        if (strncmp(buf, "Data:\n", 6) == 0) result = YY_NULL; \
-        } \
-    else \
-        { \
-        errno=0; \
-        while ( (result = fread(buf, 1, max_size, ddsin))==0 && ferror(ddsin)) \
-            { \
-            if( errno != EINTR) \
-                { \
-                YY_FATAL_ERROR( "input in flex scanner failed" ); \
-                break; \
-                } \
-            errno=0; \
-            clearerr(ddsin); \
-            } \
-            if (strncmp(buf, "Data:\n", 6) == 0) result = YY_NULL; \
-        }
-#else
-
 #define YY_INPUT(buf,result,max_size) { \
-    fgets((buf), (max_size), ddsin); \
-    result = (feof(ddsin) || strncmp(buf, "Data:\n", 6) == 0) \
+    if (fgets((buf), (max_size), (ddsin)) == NULL) { \
+      *buf = '\0'; \
+    } \
+    result = (feof(ddsin) || *buf == '\0' || strncmp(buf, "Data:\n", 6) == 0) \
              ? YY_NULL : strlen(buf); \
 }
-
-#endif
 
 #define YY_FATAL_ERROR(msg) {\
     throw(Error(string("Error scanning DDS object text: ") + string(msg))); \
@@ -123,13 +88,13 @@ int dds_line_num = 1;
 static void store_word();
 
 %}
-    
+
 %option noyywrap
 %option prefix="dds"
 %option outfile="lex.dds.cc"
 %x comment
 
-DATASET 	DATASET|Dataset|dataset 
+DATASET 	DATASET|Dataset|dataset
 LIST 		LIST|List|list
 SEQUENCE 	SEQUENCE|Sequence|sequence
 STRUCTURE 	STRUCTURE|Structure|structure
