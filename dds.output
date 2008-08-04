@@ -1,0 +1,1155 @@
+Terminals which are not used
+
+   SCAN_FUNCTION
+
+
+State 8 conflicts: 13 shift/reduce
+State 31 conflicts: 13 shift/reduce
+State 32 conflicts: 13 shift/reduce
+State 81 conflicts: 13 shift/reduce
+
+
+Grammar
+
+    0 $accept: start $end
+
+    1 @1: /* empty */
+
+    2 start: @1 datasets
+
+    3 datasets: dataset
+    4         | datasets dataset
+
+    5 dataset: SCAN_DATASET '{' declarations '}' name ';'
+    6        | error
+
+    7 declarations: /* empty */
+    8             | declaration
+    9             | declarations declaration
+
+   10 declaration: base_type var ';'
+
+   11 @2: /* empty */
+
+   12 declaration: structure '{' declarations '}' @2 var ';'
+
+   13 @3: /* empty */
+
+   14 declaration: sequence '{' declarations '}' @3 var ';'
+
+   15 @4: /* empty */
+
+   16 @5: /* empty */
+
+   17 @6: /* empty */
+
+   18 declaration: grid '{' SCAN_WORD ':' @4 declaration SCAN_WORD ':' @5 declarations '}' @6 var ';'
+   19            | error
+
+   20 structure: SCAN_STRUCTURE
+
+   21 sequence: SCAN_SEQUENCE
+
+   22 grid: SCAN_GRID
+
+   23 base_type: SCAN_BYTE
+   24          | SCAN_INT16
+   25          | SCAN_UINT16
+   26          | SCAN_INT32
+   27          | SCAN_UINT32
+   28          | SCAN_FLOAT32
+   29          | SCAN_FLOAT64
+   30          | SCAN_STRING
+   31          | SCAN_URL
+
+   32 var: var_name
+   33    | var array_decl
+
+   34 var_name: SCAN_WORD
+   35         | SCAN_BYTE
+   36         | SCAN_INT16
+   37         | SCAN_INT32
+   38         | SCAN_UINT16
+   39         | SCAN_UINT32
+   40         | SCAN_FLOAT32
+   41         | SCAN_FLOAT64
+   42         | SCAN_STRING
+   43         | SCAN_URL
+   44         | SCAN_STRUCTURE
+   45         | SCAN_SEQUENCE
+   46         | SCAN_GRID
+   47         | SCAN_LIST
+
+   48 array_decl: '[' SCAN_WORD ']'
+
+   49 @7: /* empty */
+
+   50 @8: /* empty */
+
+   51 array_decl: '[' SCAN_WORD @7 '=' SCAN_WORD @8 ']'
+   52           | error
+
+   53 name: var_name
+   54     | SCAN_DATASET
+   55     | error
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+':' (58) 18
+';' (59) 5 10 12 14 18
+'=' (61) 51
+'[' (91) 48 51
+']' (93) 48 51
+'{' (123) 5 12 14 18
+'}' (125) 5 12 14 18
+error (256) 6 19 52 55
+SCAN_WORD (258) 18 34 48 51
+SCAN_DATASET (259) 5 54
+SCAN_LIST (260) 47
+SCAN_SEQUENCE (261) 21 45
+SCAN_STRUCTURE (262) 20 44
+SCAN_FUNCTION (263)
+SCAN_GRID (264) 22 46
+SCAN_BYTE (265) 23 35
+SCAN_INT16 (266) 24 36
+SCAN_UINT16 (267) 25 38
+SCAN_INT32 (268) 26 37
+SCAN_UINT32 (269) 27 39
+SCAN_FLOAT32 (270) 28 40
+SCAN_FLOAT64 (271) 29 41
+SCAN_STRING (272) 30 42
+SCAN_URL (273) 31 43
+
+
+Nonterminals, with rules where they appear
+
+$accept (26)
+    on left: 0
+start (27)
+    on left: 2, on right: 0
+@1 (28)
+    on left: 1, on right: 2
+datasets (29)
+    on left: 3 4, on right: 2 4
+dataset (30)
+    on left: 5 6, on right: 3 4
+declarations (31)
+    on left: 7 8 9, on right: 5 9 12 14 18
+declaration (32)
+    on left: 10 12 14 18 19, on right: 8 9 18
+@2 (33)
+    on left: 11, on right: 12
+@3 (34)
+    on left: 13, on right: 14
+@4 (35)
+    on left: 15, on right: 18
+@5 (36)
+    on left: 16, on right: 18
+@6 (37)
+    on left: 17, on right: 18
+structure (38)
+    on left: 20, on right: 12
+sequence (39)
+    on left: 21, on right: 14
+grid (40)
+    on left: 22, on right: 18
+base_type (41)
+    on left: 23 24 25 26 27 28 29 30 31, on right: 10
+var (42)
+    on left: 32 33, on right: 10 12 14 18 33
+var_name (43)
+    on left: 34 35 36 37 38 39 40 41 42 43 44 45 46 47,
+    on right: 32 53
+array_decl (44)
+    on left: 48 51 52, on right: 33
+@7 (45)
+    on left: 49, on right: 51
+@8 (46)
+    on left: 50, on right: 51
+name (47)
+    on left: 53 54 55, on right: 5
+
+
+state 0
+
+    0 $accept: . start $end
+
+    $default  reduce using rule 1 (@1)
+
+    start  go to state 1
+    @1     go to state 2
+
+
+state 1
+
+    0 $accept: start . $end
+
+    $end  shift, and go to state 3
+
+
+state 2
+
+    2 start: @1 . datasets
+
+    error         shift, and go to state 4
+    SCAN_DATASET  shift, and go to state 5
+
+    datasets  go to state 6
+    dataset   go to state 7
+
+
+state 3
+
+    0 $accept: start $end .
+
+    $default  accept
+
+
+state 4
+
+    6 dataset: error .
+
+    $default  reduce using rule 6 (dataset)
+
+
+state 5
+
+    5 dataset: SCAN_DATASET . '{' declarations '}' name ';'
+
+    '{'  shift, and go to state 8
+
+
+state 6
+
+    2 start: @1 datasets .
+    4 datasets: datasets . dataset
+
+    error         shift, and go to state 4
+    SCAN_DATASET  shift, and go to state 5
+
+    $end  reduce using rule 2 (start)
+
+    dataset  go to state 9
+
+
+state 7
+
+    3 datasets: dataset .
+
+    $default  reduce using rule 3 (datasets)
+
+
+state 8
+
+    5 dataset: SCAN_DATASET '{' . declarations '}' name ';'
+
+    error           shift, and go to state 10
+    SCAN_SEQUENCE   shift, and go to state 11
+    SCAN_STRUCTURE  shift, and go to state 12
+    SCAN_GRID       shift, and go to state 13
+    SCAN_BYTE       shift, and go to state 14
+    SCAN_INT16      shift, and go to state 15
+    SCAN_UINT16     shift, and go to state 16
+    SCAN_INT32      shift, and go to state 17
+    SCAN_UINT32     shift, and go to state 18
+    SCAN_FLOAT32    shift, and go to state 19
+    SCAN_FLOAT64    shift, and go to state 20
+    SCAN_STRING     shift, and go to state 21
+    SCAN_URL        shift, and go to state 22
+
+    error           [reduce using rule 7 (declarations)]
+    SCAN_SEQUENCE   [reduce using rule 7 (declarations)]
+    SCAN_STRUCTURE  [reduce using rule 7 (declarations)]
+    SCAN_GRID       [reduce using rule 7 (declarations)]
+    SCAN_BYTE       [reduce using rule 7 (declarations)]
+    SCAN_INT16      [reduce using rule 7 (declarations)]
+    SCAN_UINT16     [reduce using rule 7 (declarations)]
+    SCAN_INT32      [reduce using rule 7 (declarations)]
+    SCAN_UINT32     [reduce using rule 7 (declarations)]
+    SCAN_FLOAT32    [reduce using rule 7 (declarations)]
+    SCAN_FLOAT64    [reduce using rule 7 (declarations)]
+    SCAN_STRING     [reduce using rule 7 (declarations)]
+    SCAN_URL        [reduce using rule 7 (declarations)]
+    '}'             reduce using rule 7 (declarations)
+
+    declarations  go to state 23
+    declaration   go to state 24
+    structure     go to state 25
+    sequence      go to state 26
+    grid          go to state 27
+    base_type     go to state 28
+
+
+state 9
+
+    4 datasets: datasets dataset .
+
+    $default  reduce using rule 4 (datasets)
+
+
+state 10
+
+   19 declaration: error .
+
+    $default  reduce using rule 19 (declaration)
+
+
+state 11
+
+   21 sequence: SCAN_SEQUENCE .
+
+    $default  reduce using rule 21 (sequence)
+
+
+state 12
+
+   20 structure: SCAN_STRUCTURE .
+
+    $default  reduce using rule 20 (structure)
+
+
+state 13
+
+   22 grid: SCAN_GRID .
+
+    $default  reduce using rule 22 (grid)
+
+
+state 14
+
+   23 base_type: SCAN_BYTE .
+
+    $default  reduce using rule 23 (base_type)
+
+
+state 15
+
+   24 base_type: SCAN_INT16 .
+
+    $default  reduce using rule 24 (base_type)
+
+
+state 16
+
+   25 base_type: SCAN_UINT16 .
+
+    $default  reduce using rule 25 (base_type)
+
+
+state 17
+
+   26 base_type: SCAN_INT32 .
+
+    $default  reduce using rule 26 (base_type)
+
+
+state 18
+
+   27 base_type: SCAN_UINT32 .
+
+    $default  reduce using rule 27 (base_type)
+
+
+state 19
+
+   28 base_type: SCAN_FLOAT32 .
+
+    $default  reduce using rule 28 (base_type)
+
+
+state 20
+
+   29 base_type: SCAN_FLOAT64 .
+
+    $default  reduce using rule 29 (base_type)
+
+
+state 21
+
+   30 base_type: SCAN_STRING .
+
+    $default  reduce using rule 30 (base_type)
+
+
+state 22
+
+   31 base_type: SCAN_URL .
+
+    $default  reduce using rule 31 (base_type)
+
+
+state 23
+
+    5 dataset: SCAN_DATASET '{' declarations . '}' name ';'
+    9 declarations: declarations . declaration
+
+    error           shift, and go to state 10
+    SCAN_SEQUENCE   shift, and go to state 11
+    SCAN_STRUCTURE  shift, and go to state 12
+    SCAN_GRID       shift, and go to state 13
+    SCAN_BYTE       shift, and go to state 14
+    SCAN_INT16      shift, and go to state 15
+    SCAN_UINT16     shift, and go to state 16
+    SCAN_INT32      shift, and go to state 17
+    SCAN_UINT32     shift, and go to state 18
+    SCAN_FLOAT32    shift, and go to state 19
+    SCAN_FLOAT64    shift, and go to state 20
+    SCAN_STRING     shift, and go to state 21
+    SCAN_URL        shift, and go to state 22
+    '}'             shift, and go to state 29
+
+    declaration  go to state 30
+    structure    go to state 25
+    sequence     go to state 26
+    grid         go to state 27
+    base_type    go to state 28
+
+
+state 24
+
+    8 declarations: declaration .
+
+    $default  reduce using rule 8 (declarations)
+
+
+state 25
+
+   12 declaration: structure . '{' declarations '}' @2 var ';'
+
+    '{'  shift, and go to state 31
+
+
+state 26
+
+   14 declaration: sequence . '{' declarations '}' @3 var ';'
+
+    '{'  shift, and go to state 32
+
+
+state 27
+
+   18 declaration: grid . '{' SCAN_WORD ':' @4 declaration SCAN_WORD ':' @5 declarations '}' @6 var ';'
+
+    '{'  shift, and go to state 33
+
+
+state 28
+
+   10 declaration: base_type . var ';'
+
+    SCAN_WORD       shift, and go to state 34
+    SCAN_LIST       shift, and go to state 35
+    SCAN_SEQUENCE   shift, and go to state 36
+    SCAN_STRUCTURE  shift, and go to state 37
+    SCAN_GRID       shift, and go to state 38
+    SCAN_BYTE       shift, and go to state 39
+    SCAN_INT16      shift, and go to state 40
+    SCAN_UINT16     shift, and go to state 41
+    SCAN_INT32      shift, and go to state 42
+    SCAN_UINT32     shift, and go to state 43
+    SCAN_FLOAT32    shift, and go to state 44
+    SCAN_FLOAT64    shift, and go to state 45
+    SCAN_STRING     shift, and go to state 46
+    SCAN_URL        shift, and go to state 47
+
+    var       go to state 48
+    var_name  go to state 49
+
+
+state 29
+
+    5 dataset: SCAN_DATASET '{' declarations '}' . name ';'
+
+    error           shift, and go to state 50
+    SCAN_WORD       shift, and go to state 34
+    SCAN_DATASET    shift, and go to state 51
+    SCAN_LIST       shift, and go to state 35
+    SCAN_SEQUENCE   shift, and go to state 36
+    SCAN_STRUCTURE  shift, and go to state 37
+    SCAN_GRID       shift, and go to state 38
+    SCAN_BYTE       shift, and go to state 39
+    SCAN_INT16      shift, and go to state 40
+    SCAN_UINT16     shift, and go to state 41
+    SCAN_INT32      shift, and go to state 42
+    SCAN_UINT32     shift, and go to state 43
+    SCAN_FLOAT32    shift, and go to state 44
+    SCAN_FLOAT64    shift, and go to state 45
+    SCAN_STRING     shift, and go to state 46
+    SCAN_URL        shift, and go to state 47
+
+    var_name  go to state 52
+    name      go to state 53
+
+
+state 30
+
+    9 declarations: declarations declaration .
+
+    $default  reduce using rule 9 (declarations)
+
+
+state 31
+
+   12 declaration: structure '{' . declarations '}' @2 var ';'
+
+    error           shift, and go to state 10
+    SCAN_SEQUENCE   shift, and go to state 11
+    SCAN_STRUCTURE  shift, and go to state 12
+    SCAN_GRID       shift, and go to state 13
+    SCAN_BYTE       shift, and go to state 14
+    SCAN_INT16      shift, and go to state 15
+    SCAN_UINT16     shift, and go to state 16
+    SCAN_INT32      shift, and go to state 17
+    SCAN_UINT32     shift, and go to state 18
+    SCAN_FLOAT32    shift, and go to state 19
+    SCAN_FLOAT64    shift, and go to state 20
+    SCAN_STRING     shift, and go to state 21
+    SCAN_URL        shift, and go to state 22
+
+    error           [reduce using rule 7 (declarations)]
+    SCAN_SEQUENCE   [reduce using rule 7 (declarations)]
+    SCAN_STRUCTURE  [reduce using rule 7 (declarations)]
+    SCAN_GRID       [reduce using rule 7 (declarations)]
+    SCAN_BYTE       [reduce using rule 7 (declarations)]
+    SCAN_INT16      [reduce using rule 7 (declarations)]
+    SCAN_UINT16     [reduce using rule 7 (declarations)]
+    SCAN_INT32      [reduce using rule 7 (declarations)]
+    SCAN_UINT32     [reduce using rule 7 (declarations)]
+    SCAN_FLOAT32    [reduce using rule 7 (declarations)]
+    SCAN_FLOAT64    [reduce using rule 7 (declarations)]
+    SCAN_STRING     [reduce using rule 7 (declarations)]
+    SCAN_URL        [reduce using rule 7 (declarations)]
+    '}'             reduce using rule 7 (declarations)
+
+    declarations  go to state 54
+    declaration   go to state 24
+    structure     go to state 25
+    sequence      go to state 26
+    grid          go to state 27
+    base_type     go to state 28
+
+
+state 32
+
+   14 declaration: sequence '{' . declarations '}' @3 var ';'
+
+    error           shift, and go to state 10
+    SCAN_SEQUENCE   shift, and go to state 11
+    SCAN_STRUCTURE  shift, and go to state 12
+    SCAN_GRID       shift, and go to state 13
+    SCAN_BYTE       shift, and go to state 14
+    SCAN_INT16      shift, and go to state 15
+    SCAN_UINT16     shift, and go to state 16
+    SCAN_INT32      shift, and go to state 17
+    SCAN_UINT32     shift, and go to state 18
+    SCAN_FLOAT32    shift, and go to state 19
+    SCAN_FLOAT64    shift, and go to state 20
+    SCAN_STRING     shift, and go to state 21
+    SCAN_URL        shift, and go to state 22
+
+    error           [reduce using rule 7 (declarations)]
+    SCAN_SEQUENCE   [reduce using rule 7 (declarations)]
+    SCAN_STRUCTURE  [reduce using rule 7 (declarations)]
+    SCAN_GRID       [reduce using rule 7 (declarations)]
+    SCAN_BYTE       [reduce using rule 7 (declarations)]
+    SCAN_INT16      [reduce using rule 7 (declarations)]
+    SCAN_UINT16     [reduce using rule 7 (declarations)]
+    SCAN_INT32      [reduce using rule 7 (declarations)]
+    SCAN_UINT32     [reduce using rule 7 (declarations)]
+    SCAN_FLOAT32    [reduce using rule 7 (declarations)]
+    SCAN_FLOAT64    [reduce using rule 7 (declarations)]
+    SCAN_STRING     [reduce using rule 7 (declarations)]
+    SCAN_URL        [reduce using rule 7 (declarations)]
+    '}'             reduce using rule 7 (declarations)
+
+    declarations  go to state 55
+    declaration   go to state 24
+    structure     go to state 25
+    sequence      go to state 26
+    grid          go to state 27
+    base_type     go to state 28
+
+
+state 33
+
+   18 declaration: grid '{' . SCAN_WORD ':' @4 declaration SCAN_WORD ':' @5 declarations '}' @6 var ';'
+
+    SCAN_WORD  shift, and go to state 56
+
+
+state 34
+
+   34 var_name: SCAN_WORD .
+
+    $default  reduce using rule 34 (var_name)
+
+
+state 35
+
+   47 var_name: SCAN_LIST .
+
+    $default  reduce using rule 47 (var_name)
+
+
+state 36
+
+   45 var_name: SCAN_SEQUENCE .
+
+    $default  reduce using rule 45 (var_name)
+
+
+state 37
+
+   44 var_name: SCAN_STRUCTURE .
+
+    $default  reduce using rule 44 (var_name)
+
+
+state 38
+
+   46 var_name: SCAN_GRID .
+
+    $default  reduce using rule 46 (var_name)
+
+
+state 39
+
+   35 var_name: SCAN_BYTE .
+
+    $default  reduce using rule 35 (var_name)
+
+
+state 40
+
+   36 var_name: SCAN_INT16 .
+
+    $default  reduce using rule 36 (var_name)
+
+
+state 41
+
+   38 var_name: SCAN_UINT16 .
+
+    $default  reduce using rule 38 (var_name)
+
+
+state 42
+
+   37 var_name: SCAN_INT32 .
+
+    $default  reduce using rule 37 (var_name)
+
+
+state 43
+
+   39 var_name: SCAN_UINT32 .
+
+    $default  reduce using rule 39 (var_name)
+
+
+state 44
+
+   40 var_name: SCAN_FLOAT32 .
+
+    $default  reduce using rule 40 (var_name)
+
+
+state 45
+
+   41 var_name: SCAN_FLOAT64 .
+
+    $default  reduce using rule 41 (var_name)
+
+
+state 46
+
+   42 var_name: SCAN_STRING .
+
+    $default  reduce using rule 42 (var_name)
+
+
+state 47
+
+   43 var_name: SCAN_URL .
+
+    $default  reduce using rule 43 (var_name)
+
+
+state 48
+
+   10 declaration: base_type var . ';'
+   33 var: var . array_decl
+
+    error  shift, and go to state 57
+    ';'    shift, and go to state 58
+    '['    shift, and go to state 59
+
+    array_decl  go to state 60
+
+
+state 49
+
+   32 var: var_name .
+
+    $default  reduce using rule 32 (var)
+
+
+state 50
+
+   55 name: error .
+
+    $default  reduce using rule 55 (name)
+
+
+state 51
+
+   54 name: SCAN_DATASET .
+
+    $default  reduce using rule 54 (name)
+
+
+state 52
+
+   53 name: var_name .
+
+    $default  reduce using rule 53 (name)
+
+
+state 53
+
+    5 dataset: SCAN_DATASET '{' declarations '}' name . ';'
+
+    ';'  shift, and go to state 61
+
+
+state 54
+
+    9 declarations: declarations . declaration
+   12 declaration: structure '{' declarations . '}' @2 var ';'
+
+    error           shift, and go to state 10
+    SCAN_SEQUENCE   shift, and go to state 11
+    SCAN_STRUCTURE  shift, and go to state 12
+    SCAN_GRID       shift, and go to state 13
+    SCAN_BYTE       shift, and go to state 14
+    SCAN_INT16      shift, and go to state 15
+    SCAN_UINT16     shift, and go to state 16
+    SCAN_INT32      shift, and go to state 17
+    SCAN_UINT32     shift, and go to state 18
+    SCAN_FLOAT32    shift, and go to state 19
+    SCAN_FLOAT64    shift, and go to state 20
+    SCAN_STRING     shift, and go to state 21
+    SCAN_URL        shift, and go to state 22
+    '}'             shift, and go to state 62
+
+    declaration  go to state 30
+    structure    go to state 25
+    sequence     go to state 26
+    grid         go to state 27
+    base_type    go to state 28
+
+
+state 55
+
+    9 declarations: declarations . declaration
+   14 declaration: sequence '{' declarations . '}' @3 var ';'
+
+    error           shift, and go to state 10
+    SCAN_SEQUENCE   shift, and go to state 11
+    SCAN_STRUCTURE  shift, and go to state 12
+    SCAN_GRID       shift, and go to state 13
+    SCAN_BYTE       shift, and go to state 14
+    SCAN_INT16      shift, and go to state 15
+    SCAN_UINT16     shift, and go to state 16
+    SCAN_INT32      shift, and go to state 17
+    SCAN_UINT32     shift, and go to state 18
+    SCAN_FLOAT32    shift, and go to state 19
+    SCAN_FLOAT64    shift, and go to state 20
+    SCAN_STRING     shift, and go to state 21
+    SCAN_URL        shift, and go to state 22
+    '}'             shift, and go to state 63
+
+    declaration  go to state 30
+    structure    go to state 25
+    sequence     go to state 26
+    grid         go to state 27
+    base_type    go to state 28
+
+
+state 56
+
+   18 declaration: grid '{' SCAN_WORD . ':' @4 declaration SCAN_WORD ':' @5 declarations '}' @6 var ';'
+
+    ':'  shift, and go to state 64
+
+
+state 57
+
+   52 array_decl: error .
+
+    $default  reduce using rule 52 (array_decl)
+
+
+state 58
+
+   10 declaration: base_type var ';' .
+
+    $default  reduce using rule 10 (declaration)
+
+
+state 59
+
+   48 array_decl: '[' . SCAN_WORD ']'
+   51           | '[' . SCAN_WORD @7 '=' SCAN_WORD @8 ']'
+
+    SCAN_WORD  shift, and go to state 65
+
+
+state 60
+
+   33 var: var array_decl .
+
+    $default  reduce using rule 33 (var)
+
+
+state 61
+
+    5 dataset: SCAN_DATASET '{' declarations '}' name ';' .
+
+    $default  reduce using rule 5 (dataset)
+
+
+state 62
+
+   12 declaration: structure '{' declarations '}' . @2 var ';'
+
+    $default  reduce using rule 11 (@2)
+
+    @2  go to state 66
+
+
+state 63
+
+   14 declaration: sequence '{' declarations '}' . @3 var ';'
+
+    $default  reduce using rule 13 (@3)
+
+    @3  go to state 67
+
+
+state 64
+
+   18 declaration: grid '{' SCAN_WORD ':' . @4 declaration SCAN_WORD ':' @5 declarations '}' @6 var ';'
+
+    $default  reduce using rule 15 (@4)
+
+    @4  go to state 68
+
+
+state 65
+
+   48 array_decl: '[' SCAN_WORD . ']'
+   51           | '[' SCAN_WORD . @7 '=' SCAN_WORD @8 ']'
+
+    ']'  shift, and go to state 69
+
+    $default  reduce using rule 49 (@7)
+
+    @7  go to state 70
+
+
+state 66
+
+   12 declaration: structure '{' declarations '}' @2 . var ';'
+
+    SCAN_WORD       shift, and go to state 34
+    SCAN_LIST       shift, and go to state 35
+    SCAN_SEQUENCE   shift, and go to state 36
+    SCAN_STRUCTURE  shift, and go to state 37
+    SCAN_GRID       shift, and go to state 38
+    SCAN_BYTE       shift, and go to state 39
+    SCAN_INT16      shift, and go to state 40
+    SCAN_UINT16     shift, and go to state 41
+    SCAN_INT32      shift, and go to state 42
+    SCAN_UINT32     shift, and go to state 43
+    SCAN_FLOAT32    shift, and go to state 44
+    SCAN_FLOAT64    shift, and go to state 45
+    SCAN_STRING     shift, and go to state 46
+    SCAN_URL        shift, and go to state 47
+
+    var       go to state 71
+    var_name  go to state 49
+
+
+state 67
+
+   14 declaration: sequence '{' declarations '}' @3 . var ';'
+
+    SCAN_WORD       shift, and go to state 34
+    SCAN_LIST       shift, and go to state 35
+    SCAN_SEQUENCE   shift, and go to state 36
+    SCAN_STRUCTURE  shift, and go to state 37
+    SCAN_GRID       shift, and go to state 38
+    SCAN_BYTE       shift, and go to state 39
+    SCAN_INT16      shift, and go to state 40
+    SCAN_UINT16     shift, and go to state 41
+    SCAN_INT32      shift, and go to state 42
+    SCAN_UINT32     shift, and go to state 43
+    SCAN_FLOAT32    shift, and go to state 44
+    SCAN_FLOAT64    shift, and go to state 45
+    SCAN_STRING     shift, and go to state 46
+    SCAN_URL        shift, and go to state 47
+
+    var       go to state 72
+    var_name  go to state 49
+
+
+state 68
+
+   18 declaration: grid '{' SCAN_WORD ':' @4 . declaration SCAN_WORD ':' @5 declarations '}' @6 var ';'
+
+    error           shift, and go to state 10
+    SCAN_SEQUENCE   shift, and go to state 11
+    SCAN_STRUCTURE  shift, and go to state 12
+    SCAN_GRID       shift, and go to state 13
+    SCAN_BYTE       shift, and go to state 14
+    SCAN_INT16      shift, and go to state 15
+    SCAN_UINT16     shift, and go to state 16
+    SCAN_INT32      shift, and go to state 17
+    SCAN_UINT32     shift, and go to state 18
+    SCAN_FLOAT32    shift, and go to state 19
+    SCAN_FLOAT64    shift, and go to state 20
+    SCAN_STRING     shift, and go to state 21
+    SCAN_URL        shift, and go to state 22
+
+    declaration  go to state 73
+    structure    go to state 25
+    sequence     go to state 26
+    grid         go to state 27
+    base_type    go to state 28
+
+
+state 69
+
+   48 array_decl: '[' SCAN_WORD ']' .
+
+    $default  reduce using rule 48 (array_decl)
+
+
+state 70
+
+   51 array_decl: '[' SCAN_WORD @7 . '=' SCAN_WORD @8 ']'
+
+    '='  shift, and go to state 74
+
+
+state 71
+
+   12 declaration: structure '{' declarations '}' @2 var . ';'
+   33 var: var . array_decl
+
+    error  shift, and go to state 57
+    ';'    shift, and go to state 75
+    '['    shift, and go to state 59
+
+    array_decl  go to state 60
+
+
+state 72
+
+   14 declaration: sequence '{' declarations '}' @3 var . ';'
+   33 var: var . array_decl
+
+    error  shift, and go to state 57
+    ';'    shift, and go to state 76
+    '['    shift, and go to state 59
+
+    array_decl  go to state 60
+
+
+state 73
+
+   18 declaration: grid '{' SCAN_WORD ':' @4 declaration . SCAN_WORD ':' @5 declarations '}' @6 var ';'
+
+    SCAN_WORD  shift, and go to state 77
+
+
+state 74
+
+   51 array_decl: '[' SCAN_WORD @7 '=' . SCAN_WORD @8 ']'
+
+    SCAN_WORD  shift, and go to state 78
+
+
+state 75
+
+   12 declaration: structure '{' declarations '}' @2 var ';' .
+
+    $default  reduce using rule 12 (declaration)
+
+
+state 76
+
+   14 declaration: sequence '{' declarations '}' @3 var ';' .
+
+    $default  reduce using rule 14 (declaration)
+
+
+state 77
+
+   18 declaration: grid '{' SCAN_WORD ':' @4 declaration SCAN_WORD . ':' @5 declarations '}' @6 var ';'
+
+    ':'  shift, and go to state 79
+
+
+state 78
+
+   51 array_decl: '[' SCAN_WORD @7 '=' SCAN_WORD . @8 ']'
+
+    $default  reduce using rule 50 (@8)
+
+    @8  go to state 80
+
+
+state 79
+
+   18 declaration: grid '{' SCAN_WORD ':' @4 declaration SCAN_WORD ':' . @5 declarations '}' @6 var ';'
+
+    $default  reduce using rule 16 (@5)
+
+    @5  go to state 81
+
+
+state 80
+
+   51 array_decl: '[' SCAN_WORD @7 '=' SCAN_WORD @8 . ']'
+
+    ']'  shift, and go to state 82
+
+
+state 81
+
+   18 declaration: grid '{' SCAN_WORD ':' @4 declaration SCAN_WORD ':' @5 . declarations '}' @6 var ';'
+
+    error           shift, and go to state 10
+    SCAN_SEQUENCE   shift, and go to state 11
+    SCAN_STRUCTURE  shift, and go to state 12
+    SCAN_GRID       shift, and go to state 13
+    SCAN_BYTE       shift, and go to state 14
+    SCAN_INT16      shift, and go to state 15
+    SCAN_UINT16     shift, and go to state 16
+    SCAN_INT32      shift, and go to state 17
+    SCAN_UINT32     shift, and go to state 18
+    SCAN_FLOAT32    shift, and go to state 19
+    SCAN_FLOAT64    shift, and go to state 20
+    SCAN_STRING     shift, and go to state 21
+    SCAN_URL        shift, and go to state 22
+
+    error           [reduce using rule 7 (declarations)]
+    SCAN_SEQUENCE   [reduce using rule 7 (declarations)]
+    SCAN_STRUCTURE  [reduce using rule 7 (declarations)]
+    SCAN_GRID       [reduce using rule 7 (declarations)]
+    SCAN_BYTE       [reduce using rule 7 (declarations)]
+    SCAN_INT16      [reduce using rule 7 (declarations)]
+    SCAN_UINT16     [reduce using rule 7 (declarations)]
+    SCAN_INT32      [reduce using rule 7 (declarations)]
+    SCAN_UINT32     [reduce using rule 7 (declarations)]
+    SCAN_FLOAT32    [reduce using rule 7 (declarations)]
+    SCAN_FLOAT64    [reduce using rule 7 (declarations)]
+    SCAN_STRING     [reduce using rule 7 (declarations)]
+    SCAN_URL        [reduce using rule 7 (declarations)]
+    '}'             reduce using rule 7 (declarations)
+
+    declarations  go to state 83
+    declaration   go to state 24
+    structure     go to state 25
+    sequence      go to state 26
+    grid          go to state 27
+    base_type     go to state 28
+
+
+state 82
+
+   51 array_decl: '[' SCAN_WORD @7 '=' SCAN_WORD @8 ']' .
+
+    $default  reduce using rule 51 (array_decl)
+
+
+state 83
+
+    9 declarations: declarations . declaration
+   18 declaration: grid '{' SCAN_WORD ':' @4 declaration SCAN_WORD ':' @5 declarations . '}' @6 var ';'
+
+    error           shift, and go to state 10
+    SCAN_SEQUENCE   shift, and go to state 11
+    SCAN_STRUCTURE  shift, and go to state 12
+    SCAN_GRID       shift, and go to state 13
+    SCAN_BYTE       shift, and go to state 14
+    SCAN_INT16      shift, and go to state 15
+    SCAN_UINT16     shift, and go to state 16
+    SCAN_INT32      shift, and go to state 17
+    SCAN_UINT32     shift, and go to state 18
+    SCAN_FLOAT32    shift, and go to state 19
+    SCAN_FLOAT64    shift, and go to state 20
+    SCAN_STRING     shift, and go to state 21
+    SCAN_URL        shift, and go to state 22
+    '}'             shift, and go to state 84
+
+    declaration  go to state 30
+    structure    go to state 25
+    sequence     go to state 26
+    grid         go to state 27
+    base_type    go to state 28
+
+
+state 84
+
+   18 declaration: grid '{' SCAN_WORD ':' @4 declaration SCAN_WORD ':' @5 declarations '}' . @6 var ';'
+
+    $default  reduce using rule 17 (@6)
+
+    @6  go to state 85
+
+
+state 85
+
+   18 declaration: grid '{' SCAN_WORD ':' @4 declaration SCAN_WORD ':' @5 declarations '}' @6 . var ';'
+
+    SCAN_WORD       shift, and go to state 34
+    SCAN_LIST       shift, and go to state 35
+    SCAN_SEQUENCE   shift, and go to state 36
+    SCAN_STRUCTURE  shift, and go to state 37
+    SCAN_GRID       shift, and go to state 38
+    SCAN_BYTE       shift, and go to state 39
+    SCAN_INT16      shift, and go to state 40
+    SCAN_UINT16     shift, and go to state 41
+    SCAN_INT32      shift, and go to state 42
+    SCAN_UINT32     shift, and go to state 43
+    SCAN_FLOAT32    shift, and go to state 44
+    SCAN_FLOAT64    shift, and go to state 45
+    SCAN_STRING     shift, and go to state 46
+    SCAN_URL        shift, and go to state 47
+
+    var       go to state 86
+    var_name  go to state 49
+
+
+state 86
+
+   18 declaration: grid '{' SCAN_WORD ':' @4 declaration SCAN_WORD ':' @5 declarations '}' @6 var . ';'
+   33 var: var . array_decl
+
+    error  shift, and go to state 57
+    ';'    shift, and go to state 87
+    '['    shift, and go to state 59
+
+    array_decl  go to state 60
+
+
+state 87
+
+   18 declaration: grid '{' SCAN_WORD ':' @4 declaration SCAN_WORD ':' @5 declarations '}' @6 var ';' .
+
+    $default  reduce using rule 18 (declaration)

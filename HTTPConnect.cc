@@ -111,6 +111,63 @@ static char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN +1] =
         "HTTP Version Not Supported."
     };
 
+/** This function returns the ObjectType value that matches the given string.
+    Modified to include tests for the descriptions that use hyphens in addition
+    to underscores. 8/1/08 jhrg
+
+    @deprecated Use get_description_type instead - there are two other get_type()
+    functions in libdap.*/
+ObjectType
+get_type(const string &value)
+{
+    if (value == "dods_das" | value == "dods-das")
+        return dods_das;
+    else if (value == "dods_dds" | value == "dods-dds")
+        return dods_dds;
+    else if (value == "dods_data" | value == "dods-data")
+        return dods_data;
+    else if (value == "dods_error" | value == "dods-error")
+        return dods_error;
+    else if (value == "web_error" | value == "web-error")
+        return web_error;
+    else if (value == "dap4_ddx" | value == "dap4-ddx")
+        return dap4_ddx;
+    else if (value == "dap4_datax" | value == "dap4-datax")
+        return dap4_datax;
+    else if (value == "dap4_errorx" | value == "dap4-errorx")
+        return dap4_errorx;
+    else
+        return unknown_type;
+}
+
+/** This function returns the ObjectType value that matches the given string.
+    Modified to include tests for the descriptions that use hyphens in addition
+    to underscores. 8/1/08 jhrg
+
+    @param value Value from teh HTTP response header */
+ObjectType
+get_description_type(const string &value)
+{
+    if (value == "dods_das" | value == "dods-das")
+        return dods_das;
+    else if (value == "dods_dds" | value == "dods-dds")
+        return dods_dds;
+    else if (value == "dods_data" | value == "dods-data")
+        return dods_data;
+    else if (value == "dods_error" | value == "dods-error")
+        return dods_error;
+    else if (value == "web_error" | value == "web-error")
+        return web_error;
+    else if (value == "dap4_ddx" | value == "dap4-ddx")
+        return dap4_ddx;
+    else if (value == "dap4_datax" | value == "dap4-datax")
+        return dap4_datax;
+    else if (value == "dap4_errorx" | value == "dap4-errorx")
+        return dap4_errorx;
+    else
+        return unknown_type;
+}
+
 /** This function translates the HTTP status codes into error messages. It
     works for those code greater than or equal to 400. */
 static string
@@ -151,7 +208,7 @@ public:
             line >> value;
             downcase(value);
             DBG2(cout << name << ": " << value << endl);
-            type = get_type(value);
+            type = get_description_type(value);
         }
         // The second test (== "dods/0.0") tests if xopendap-server has already
         // been seen. If so, use that header in preference to the old
@@ -185,7 +242,7 @@ public:
             server = value;
         }
        	else if (name == "location:") {
-       	    string value; 
+       	    string value;
        	    line >> value;
        	    DBG2(cout << name << ": " << value << endl);
        	    location = value;
@@ -387,7 +444,7 @@ public:
     url into the file pointed to by \c stream.
 
     @param url The URL to dereference.
-    @param stream The distination for the data; the caller can assume that
+    @param stream The destination for the data; the caller can assume that
     the body of the response can be found by reading from this pointer. A
     value/result parameter
     @param resp_hdrs Value/result parameter for the HTTP Response Headers.
@@ -632,11 +689,11 @@ static char *
 get_tempfile_template(char *file_template)
 {
     char *c;
-    
+
 #ifdef WIN32
     // whitelist for a WIN32 directory
     Regex directory("[-a-zA-Z0-9_\\]*");
-	
+
     c = getenv("TEMP");
     if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0))
     	goto valid_temp_directory;
@@ -647,7 +704,7 @@ get_tempfile_template(char *file_template)
 #else
 	// whitelist for a directory
 	Regex directory("[-a-zA-Z0-9_/]*");
-	
+
 	c = getenv("TMPDIR");
 	if (c && directory.match(c, strlen(c)) && (access(c, W_OK | R_OK) == 0))
     	goto valid_temp_directory;
@@ -662,13 +719,13 @@ get_tempfile_template(char *file_template)
 #endif  // WIN32
 
     c = ".";
-    
+
 valid_temp_directory:
 	// Sanitize allocation
 	int size = strlen(c) + strlen(file_template) + 2;
 	if (!size_ok(1, size))
 		throw Error("Bad temporary file name.");
-		
+
     char *temp = new char[size];
     strncpy(temp, c, size-2);
     strcat(temp, "/");
@@ -772,7 +829,7 @@ HTTPResponse * HTTPConnect::caching_fetch_url(const string &url) {
 			DBGN(cerr << "and it's valid; using cached response." << endl);
 			HTTPCacheResponse *crs = new HTTPCacheResponse(s, 200, headers, d_http_cache);
 			return crs;
-		} 
+		}
 		else { // url in cache but not valid; validate
 			DBGN(cerr << "but it's not valid; validating... ");
 
@@ -836,7 +893,7 @@ HTTPResponse * HTTPConnect::caching_fetch_url(const string &url) {
 			}
 		}
 	}
-	
+
 	throw InternalErr(__FILE__, __LINE__, "Should never get here");
 }
 

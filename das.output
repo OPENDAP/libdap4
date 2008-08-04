@@ -1,0 +1,1450 @@
+State 8 conflicts: 12 shift/reduce
+State 40 conflicts: 12 shift/reduce
+
+
+Grammar
+
+    0 $accept: attr_start $end
+
+    1 @1: /* empty */
+
+    2 attr_start: @1 attributes
+
+    3 attributes: attribute
+    4           | attributes attribute
+
+    5 attribute: SCAN_ATTR '{' attr_list '}'
+    6          | error
+
+    7 attr_list: /* empty */
+    8          | attr_tuple
+    9          | attr_list attr_tuple
+
+   10 attr_tuple: alias
+
+   11 @2: /* empty */
+
+   12 @3: /* empty */
+
+   13 attr_tuple: SCAN_BYTE @2 name @3 bytes ';'
+
+   14 @4: /* empty */
+
+   15 @5: /* empty */
+
+   16 attr_tuple: SCAN_INT16 @4 name @5 int16 ';'
+
+   17 @6: /* empty */
+
+   18 @7: /* empty */
+
+   19 attr_tuple: SCAN_UINT16 @6 name @7 uint16 ';'
+
+   20 @8: /* empty */
+
+   21 @9: /* empty */
+
+   22 attr_tuple: SCAN_INT32 @8 name @9 int32 ';'
+
+   23 @10: /* empty */
+
+   24 @11: /* empty */
+
+   25 attr_tuple: SCAN_UINT32 @10 name @11 uint32 ';'
+
+   26 @12: /* empty */
+
+   27 @13: /* empty */
+
+   28 attr_tuple: SCAN_FLOAT32 @12 name @13 float32 ';'
+
+   29 @14: /* empty */
+
+   30 @15: /* empty */
+
+   31 attr_tuple: SCAN_FLOAT64 @14 name @15 float64 ';'
+
+   32 @16: /* empty */
+
+   33 @17: /* empty */
+
+   34 attr_tuple: SCAN_STRING @16 name @17 strs ';'
+
+   35 @18: /* empty */
+
+   36 @19: /* empty */
+
+   37 attr_tuple: SCAN_URL @18 name @19 urls ';'
+
+   38 @20: /* empty */
+
+   39 @21: /* empty */
+
+   40 attr_tuple: SCAN_WORD @20 '{' attr_list @21 '}'
+
+   41 @22: /* empty */
+
+   42 attr_tuple: error @22 ';'
+
+   43 bytes: SCAN_WORD
+   44      | bytes ',' SCAN_WORD
+
+   45 int16: SCAN_WORD
+   46      | int16 ',' SCAN_WORD
+
+   47 uint16: SCAN_WORD
+   48       | uint16 ',' SCAN_WORD
+
+   49 int32: SCAN_WORD
+   50      | int32 ',' SCAN_WORD
+
+   51 uint32: SCAN_WORD
+   52       | uint32 ',' SCAN_WORD
+
+   53 float32: float_or_int
+   54        | float32 ',' float_or_int
+
+   55 float64: float_or_int
+   56        | float64 ',' float_or_int
+
+   57 strs: str_or_id
+   58     | strs ',' str_or_id
+
+   59 urls: url
+   60     | urls ',' url
+
+   61 url: SCAN_WORD
+
+   62 str_or_id: SCAN_WORD
+
+   63 float_or_int: SCAN_WORD
+
+   64 name: SCAN_WORD
+   65     | SCAN_ATTR
+   66     | SCAN_ALIAS
+   67     | SCAN_BYTE
+   68     | SCAN_INT16
+   69     | SCAN_UINT16
+   70     | SCAN_INT32
+   71     | SCAN_UINT32
+   72     | SCAN_FLOAT32
+   73     | SCAN_FLOAT64
+   74     | SCAN_STRING
+   75     | SCAN_URL
+
+   76 @23: /* empty */
+
+   77 @24: /* empty */
+
+   78 alias: SCAN_ALIAS SCAN_WORD @23 SCAN_WORD @24 ';'
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+',' (44) 44 46 48 50 52 54 56 58 60
+';' (59) 13 16 19 22 25 28 31 34 37 42 78
+'{' (123) 5 40
+'}' (125) 5 40
+error (256) 6 42
+SCAN_ATTR (258) 5 65
+SCAN_WORD (259) 40 43 44 45 46 47 48 49 50 51 52 61 62 63 64 78
+SCAN_ALIAS (260) 66 78
+SCAN_BYTE (261) 13 67
+SCAN_INT16 (262) 16 68
+SCAN_UINT16 (263) 19 69
+SCAN_INT32 (264) 22 70
+SCAN_UINT32 (265) 25 71
+SCAN_FLOAT32 (266) 28 72
+SCAN_FLOAT64 (267) 31 73
+SCAN_STRING (268) 34 74
+SCAN_URL (269) 37 75
+
+
+Nonterminals, with rules where they appear
+
+$accept (19)
+    on left: 0
+attr_start (20)
+    on left: 2, on right: 0
+@1 (21)
+    on left: 1, on right: 2
+attributes (22)
+    on left: 3 4, on right: 2 4
+attribute (23)
+    on left: 5 6, on right: 3 4
+attr_list (24)
+    on left: 7 8 9, on right: 5 9 40
+attr_tuple (25)
+    on left: 10 13 16 19 22 25 28 31 34 37 40 42, on right: 8 9
+@2 (26)
+    on left: 11, on right: 13
+@3 (27)
+    on left: 12, on right: 13
+@4 (28)
+    on left: 14, on right: 16
+@5 (29)
+    on left: 15, on right: 16
+@6 (30)
+    on left: 17, on right: 19
+@7 (31)
+    on left: 18, on right: 19
+@8 (32)
+    on left: 20, on right: 22
+@9 (33)
+    on left: 21, on right: 22
+@10 (34)
+    on left: 23, on right: 25
+@11 (35)
+    on left: 24, on right: 25
+@12 (36)
+    on left: 26, on right: 28
+@13 (37)
+    on left: 27, on right: 28
+@14 (38)
+    on left: 29, on right: 31
+@15 (39)
+    on left: 30, on right: 31
+@16 (40)
+    on left: 32, on right: 34
+@17 (41)
+    on left: 33, on right: 34
+@18 (42)
+    on left: 35, on right: 37
+@19 (43)
+    on left: 36, on right: 37
+@20 (44)
+    on left: 38, on right: 40
+@21 (45)
+    on left: 39, on right: 40
+@22 (46)
+    on left: 41, on right: 42
+bytes (47)
+    on left: 43 44, on right: 13 44
+int16 (48)
+    on left: 45 46, on right: 16 46
+uint16 (49)
+    on left: 47 48, on right: 19 48
+int32 (50)
+    on left: 49 50, on right: 22 50
+uint32 (51)
+    on left: 51 52, on right: 25 52
+float32 (52)
+    on left: 53 54, on right: 28 54
+float64 (53)
+    on left: 55 56, on right: 31 56
+strs (54)
+    on left: 57 58, on right: 34 58
+urls (55)
+    on left: 59 60, on right: 37 60
+url (56)
+    on left: 61, on right: 59 60
+str_or_id (57)
+    on left: 62, on right: 57 58
+float_or_int (58)
+    on left: 63, on right: 53 54 55 56
+name (59)
+    on left: 64 65 66 67 68 69 70 71 72 73 74 75, on right: 13 16 19
+    22 25 28 31 34 37
+alias (60)
+    on left: 78, on right: 10
+@23 (61)
+    on left: 76, on right: 78
+@24 (62)
+    on left: 77, on right: 78
+
+
+state 0
+
+    0 $accept: . attr_start $end
+
+    $default  reduce using rule 1 (@1)
+
+    attr_start  go to state 1
+    @1          go to state 2
+
+
+state 1
+
+    0 $accept: attr_start . $end
+
+    $end  shift, and go to state 3
+
+
+state 2
+
+    2 attr_start: @1 . attributes
+
+    error      shift, and go to state 4
+    SCAN_ATTR  shift, and go to state 5
+
+    attributes  go to state 6
+    attribute   go to state 7
+
+
+state 3
+
+    0 $accept: attr_start $end .
+
+    $default  accept
+
+
+state 4
+
+    6 attribute: error .
+
+    $default  reduce using rule 6 (attribute)
+
+
+state 5
+
+    5 attribute: SCAN_ATTR . '{' attr_list '}'
+
+    '{'  shift, and go to state 8
+
+
+state 6
+
+    2 attr_start: @1 attributes .
+    4 attributes: attributes . attribute
+
+    error      shift, and go to state 4
+    SCAN_ATTR  shift, and go to state 5
+
+    $end  reduce using rule 2 (attr_start)
+
+    attribute  go to state 9
+
+
+state 7
+
+    3 attributes: attribute .
+
+    $default  reduce using rule 3 (attributes)
+
+
+state 8
+
+    5 attribute: SCAN_ATTR '{' . attr_list '}'
+
+    error         shift, and go to state 10
+    SCAN_WORD     shift, and go to state 11
+    SCAN_ALIAS    shift, and go to state 12
+    SCAN_BYTE     shift, and go to state 13
+    SCAN_INT16    shift, and go to state 14
+    SCAN_UINT16   shift, and go to state 15
+    SCAN_INT32    shift, and go to state 16
+    SCAN_UINT32   shift, and go to state 17
+    SCAN_FLOAT32  shift, and go to state 18
+    SCAN_FLOAT64  shift, and go to state 19
+    SCAN_STRING   shift, and go to state 20
+    SCAN_URL      shift, and go to state 21
+
+    error         [reduce using rule 7 (attr_list)]
+    SCAN_WORD     [reduce using rule 7 (attr_list)]
+    SCAN_ALIAS    [reduce using rule 7 (attr_list)]
+    SCAN_BYTE     [reduce using rule 7 (attr_list)]
+    SCAN_INT16    [reduce using rule 7 (attr_list)]
+    SCAN_UINT16   [reduce using rule 7 (attr_list)]
+    SCAN_INT32    [reduce using rule 7 (attr_list)]
+    SCAN_UINT32   [reduce using rule 7 (attr_list)]
+    SCAN_FLOAT32  [reduce using rule 7 (attr_list)]
+    SCAN_FLOAT64  [reduce using rule 7 (attr_list)]
+    SCAN_STRING   [reduce using rule 7 (attr_list)]
+    SCAN_URL      [reduce using rule 7 (attr_list)]
+    '}'           reduce using rule 7 (attr_list)
+
+    attr_list   go to state 22
+    attr_tuple  go to state 23
+    alias       go to state 24
+
+
+state 9
+
+    4 attributes: attributes attribute .
+
+    $default  reduce using rule 4 (attributes)
+
+
+state 10
+
+   42 attr_tuple: error . @22 ';'
+
+    $default  reduce using rule 41 (@22)
+
+    @22  go to state 25
+
+
+state 11
+
+   40 attr_tuple: SCAN_WORD . @20 '{' attr_list @21 '}'
+
+    $default  reduce using rule 38 (@20)
+
+    @20  go to state 26
+
+
+state 12
+
+   78 alias: SCAN_ALIAS . SCAN_WORD @23 SCAN_WORD @24 ';'
+
+    SCAN_WORD  shift, and go to state 27
+
+
+state 13
+
+   13 attr_tuple: SCAN_BYTE . @2 name @3 bytes ';'
+
+    $default  reduce using rule 11 (@2)
+
+    @2  go to state 28
+
+
+state 14
+
+   16 attr_tuple: SCAN_INT16 . @4 name @5 int16 ';'
+
+    $default  reduce using rule 14 (@4)
+
+    @4  go to state 29
+
+
+state 15
+
+   19 attr_tuple: SCAN_UINT16 . @6 name @7 uint16 ';'
+
+    $default  reduce using rule 17 (@6)
+
+    @6  go to state 30
+
+
+state 16
+
+   22 attr_tuple: SCAN_INT32 . @8 name @9 int32 ';'
+
+    $default  reduce using rule 20 (@8)
+
+    @8  go to state 31
+
+
+state 17
+
+   25 attr_tuple: SCAN_UINT32 . @10 name @11 uint32 ';'
+
+    $default  reduce using rule 23 (@10)
+
+    @10  go to state 32
+
+
+state 18
+
+   28 attr_tuple: SCAN_FLOAT32 . @12 name @13 float32 ';'
+
+    $default  reduce using rule 26 (@12)
+
+    @12  go to state 33
+
+
+state 19
+
+   31 attr_tuple: SCAN_FLOAT64 . @14 name @15 float64 ';'
+
+    $default  reduce using rule 29 (@14)
+
+    @14  go to state 34
+
+
+state 20
+
+   34 attr_tuple: SCAN_STRING . @16 name @17 strs ';'
+
+    $default  reduce using rule 32 (@16)
+
+    @16  go to state 35
+
+
+state 21
+
+   37 attr_tuple: SCAN_URL . @18 name @19 urls ';'
+
+    $default  reduce using rule 35 (@18)
+
+    @18  go to state 36
+
+
+state 22
+
+    5 attribute: SCAN_ATTR '{' attr_list . '}'
+    9 attr_list: attr_list . attr_tuple
+
+    error         shift, and go to state 10
+    SCAN_WORD     shift, and go to state 11
+    SCAN_ALIAS    shift, and go to state 12
+    SCAN_BYTE     shift, and go to state 13
+    SCAN_INT16    shift, and go to state 14
+    SCAN_UINT16   shift, and go to state 15
+    SCAN_INT32    shift, and go to state 16
+    SCAN_UINT32   shift, and go to state 17
+    SCAN_FLOAT32  shift, and go to state 18
+    SCAN_FLOAT64  shift, and go to state 19
+    SCAN_STRING   shift, and go to state 20
+    SCAN_URL      shift, and go to state 21
+    '}'           shift, and go to state 37
+
+    attr_tuple  go to state 38
+    alias       go to state 24
+
+
+state 23
+
+    8 attr_list: attr_tuple .
+
+    $default  reduce using rule 8 (attr_list)
+
+
+state 24
+
+   10 attr_tuple: alias .
+
+    $default  reduce using rule 10 (attr_tuple)
+
+
+state 25
+
+   42 attr_tuple: error @22 . ';'
+
+    ';'  shift, and go to state 39
+
+
+state 26
+
+   40 attr_tuple: SCAN_WORD @20 . '{' attr_list @21 '}'
+
+    '{'  shift, and go to state 40
+
+
+state 27
+
+   78 alias: SCAN_ALIAS SCAN_WORD . @23 SCAN_WORD @24 ';'
+
+    $default  reduce using rule 76 (@23)
+
+    @23  go to state 41
+
+
+state 28
+
+   13 attr_tuple: SCAN_BYTE @2 . name @3 bytes ';'
+
+    SCAN_ATTR     shift, and go to state 42
+    SCAN_WORD     shift, and go to state 43
+    SCAN_ALIAS    shift, and go to state 44
+    SCAN_BYTE     shift, and go to state 45
+    SCAN_INT16    shift, and go to state 46
+    SCAN_UINT16   shift, and go to state 47
+    SCAN_INT32    shift, and go to state 48
+    SCAN_UINT32   shift, and go to state 49
+    SCAN_FLOAT32  shift, and go to state 50
+    SCAN_FLOAT64  shift, and go to state 51
+    SCAN_STRING   shift, and go to state 52
+    SCAN_URL      shift, and go to state 53
+
+    name  go to state 54
+
+
+state 29
+
+   16 attr_tuple: SCAN_INT16 @4 . name @5 int16 ';'
+
+    SCAN_ATTR     shift, and go to state 42
+    SCAN_WORD     shift, and go to state 43
+    SCAN_ALIAS    shift, and go to state 44
+    SCAN_BYTE     shift, and go to state 45
+    SCAN_INT16    shift, and go to state 46
+    SCAN_UINT16   shift, and go to state 47
+    SCAN_INT32    shift, and go to state 48
+    SCAN_UINT32   shift, and go to state 49
+    SCAN_FLOAT32  shift, and go to state 50
+    SCAN_FLOAT64  shift, and go to state 51
+    SCAN_STRING   shift, and go to state 52
+    SCAN_URL      shift, and go to state 53
+
+    name  go to state 55
+
+
+state 30
+
+   19 attr_tuple: SCAN_UINT16 @6 . name @7 uint16 ';'
+
+    SCAN_ATTR     shift, and go to state 42
+    SCAN_WORD     shift, and go to state 43
+    SCAN_ALIAS    shift, and go to state 44
+    SCAN_BYTE     shift, and go to state 45
+    SCAN_INT16    shift, and go to state 46
+    SCAN_UINT16   shift, and go to state 47
+    SCAN_INT32    shift, and go to state 48
+    SCAN_UINT32   shift, and go to state 49
+    SCAN_FLOAT32  shift, and go to state 50
+    SCAN_FLOAT64  shift, and go to state 51
+    SCAN_STRING   shift, and go to state 52
+    SCAN_URL      shift, and go to state 53
+
+    name  go to state 56
+
+
+state 31
+
+   22 attr_tuple: SCAN_INT32 @8 . name @9 int32 ';'
+
+    SCAN_ATTR     shift, and go to state 42
+    SCAN_WORD     shift, and go to state 43
+    SCAN_ALIAS    shift, and go to state 44
+    SCAN_BYTE     shift, and go to state 45
+    SCAN_INT16    shift, and go to state 46
+    SCAN_UINT16   shift, and go to state 47
+    SCAN_INT32    shift, and go to state 48
+    SCAN_UINT32   shift, and go to state 49
+    SCAN_FLOAT32  shift, and go to state 50
+    SCAN_FLOAT64  shift, and go to state 51
+    SCAN_STRING   shift, and go to state 52
+    SCAN_URL      shift, and go to state 53
+
+    name  go to state 57
+
+
+state 32
+
+   25 attr_tuple: SCAN_UINT32 @10 . name @11 uint32 ';'
+
+    SCAN_ATTR     shift, and go to state 42
+    SCAN_WORD     shift, and go to state 43
+    SCAN_ALIAS    shift, and go to state 44
+    SCAN_BYTE     shift, and go to state 45
+    SCAN_INT16    shift, and go to state 46
+    SCAN_UINT16   shift, and go to state 47
+    SCAN_INT32    shift, and go to state 48
+    SCAN_UINT32   shift, and go to state 49
+    SCAN_FLOAT32  shift, and go to state 50
+    SCAN_FLOAT64  shift, and go to state 51
+    SCAN_STRING   shift, and go to state 52
+    SCAN_URL      shift, and go to state 53
+
+    name  go to state 58
+
+
+state 33
+
+   28 attr_tuple: SCAN_FLOAT32 @12 . name @13 float32 ';'
+
+    SCAN_ATTR     shift, and go to state 42
+    SCAN_WORD     shift, and go to state 43
+    SCAN_ALIAS    shift, and go to state 44
+    SCAN_BYTE     shift, and go to state 45
+    SCAN_INT16    shift, and go to state 46
+    SCAN_UINT16   shift, and go to state 47
+    SCAN_INT32    shift, and go to state 48
+    SCAN_UINT32   shift, and go to state 49
+    SCAN_FLOAT32  shift, and go to state 50
+    SCAN_FLOAT64  shift, and go to state 51
+    SCAN_STRING   shift, and go to state 52
+    SCAN_URL      shift, and go to state 53
+
+    name  go to state 59
+
+
+state 34
+
+   31 attr_tuple: SCAN_FLOAT64 @14 . name @15 float64 ';'
+
+    SCAN_ATTR     shift, and go to state 42
+    SCAN_WORD     shift, and go to state 43
+    SCAN_ALIAS    shift, and go to state 44
+    SCAN_BYTE     shift, and go to state 45
+    SCAN_INT16    shift, and go to state 46
+    SCAN_UINT16   shift, and go to state 47
+    SCAN_INT32    shift, and go to state 48
+    SCAN_UINT32   shift, and go to state 49
+    SCAN_FLOAT32  shift, and go to state 50
+    SCAN_FLOAT64  shift, and go to state 51
+    SCAN_STRING   shift, and go to state 52
+    SCAN_URL      shift, and go to state 53
+
+    name  go to state 60
+
+
+state 35
+
+   34 attr_tuple: SCAN_STRING @16 . name @17 strs ';'
+
+    SCAN_ATTR     shift, and go to state 42
+    SCAN_WORD     shift, and go to state 43
+    SCAN_ALIAS    shift, and go to state 44
+    SCAN_BYTE     shift, and go to state 45
+    SCAN_INT16    shift, and go to state 46
+    SCAN_UINT16   shift, and go to state 47
+    SCAN_INT32    shift, and go to state 48
+    SCAN_UINT32   shift, and go to state 49
+    SCAN_FLOAT32  shift, and go to state 50
+    SCAN_FLOAT64  shift, and go to state 51
+    SCAN_STRING   shift, and go to state 52
+    SCAN_URL      shift, and go to state 53
+
+    name  go to state 61
+
+
+state 36
+
+   37 attr_tuple: SCAN_URL @18 . name @19 urls ';'
+
+    SCAN_ATTR     shift, and go to state 42
+    SCAN_WORD     shift, and go to state 43
+    SCAN_ALIAS    shift, and go to state 44
+    SCAN_BYTE     shift, and go to state 45
+    SCAN_INT16    shift, and go to state 46
+    SCAN_UINT16   shift, and go to state 47
+    SCAN_INT32    shift, and go to state 48
+    SCAN_UINT32   shift, and go to state 49
+    SCAN_FLOAT32  shift, and go to state 50
+    SCAN_FLOAT64  shift, and go to state 51
+    SCAN_STRING   shift, and go to state 52
+    SCAN_URL      shift, and go to state 53
+
+    name  go to state 62
+
+
+state 37
+
+    5 attribute: SCAN_ATTR '{' attr_list '}' .
+
+    $default  reduce using rule 5 (attribute)
+
+
+state 38
+
+    9 attr_list: attr_list attr_tuple .
+
+    $default  reduce using rule 9 (attr_list)
+
+
+state 39
+
+   42 attr_tuple: error @22 ';' .
+
+    $default  reduce using rule 42 (attr_tuple)
+
+
+state 40
+
+   40 attr_tuple: SCAN_WORD @20 '{' . attr_list @21 '}'
+
+    error         shift, and go to state 10
+    SCAN_WORD     shift, and go to state 11
+    SCAN_ALIAS    shift, and go to state 12
+    SCAN_BYTE     shift, and go to state 13
+    SCAN_INT16    shift, and go to state 14
+    SCAN_UINT16   shift, and go to state 15
+    SCAN_INT32    shift, and go to state 16
+    SCAN_UINT32   shift, and go to state 17
+    SCAN_FLOAT32  shift, and go to state 18
+    SCAN_FLOAT64  shift, and go to state 19
+    SCAN_STRING   shift, and go to state 20
+    SCAN_URL      shift, and go to state 21
+
+    error         [reduce using rule 7 (attr_list)]
+    SCAN_WORD     [reduce using rule 7 (attr_list)]
+    SCAN_ALIAS    [reduce using rule 7 (attr_list)]
+    SCAN_BYTE     [reduce using rule 7 (attr_list)]
+    SCAN_INT16    [reduce using rule 7 (attr_list)]
+    SCAN_UINT16   [reduce using rule 7 (attr_list)]
+    SCAN_INT32    [reduce using rule 7 (attr_list)]
+    SCAN_UINT32   [reduce using rule 7 (attr_list)]
+    SCAN_FLOAT32  [reduce using rule 7 (attr_list)]
+    SCAN_FLOAT64  [reduce using rule 7 (attr_list)]
+    SCAN_STRING   [reduce using rule 7 (attr_list)]
+    SCAN_URL      [reduce using rule 7 (attr_list)]
+    '}'           reduce using rule 7 (attr_list)
+
+    attr_list   go to state 63
+    attr_tuple  go to state 23
+    alias       go to state 24
+
+
+state 41
+
+   78 alias: SCAN_ALIAS SCAN_WORD @23 . SCAN_WORD @24 ';'
+
+    SCAN_WORD  shift, and go to state 64
+
+
+state 42
+
+   65 name: SCAN_ATTR .
+
+    $default  reduce using rule 65 (name)
+
+
+state 43
+
+   64 name: SCAN_WORD .
+
+    $default  reduce using rule 64 (name)
+
+
+state 44
+
+   66 name: SCAN_ALIAS .
+
+    $default  reduce using rule 66 (name)
+
+
+state 45
+
+   67 name: SCAN_BYTE .
+
+    $default  reduce using rule 67 (name)
+
+
+state 46
+
+   68 name: SCAN_INT16 .
+
+    $default  reduce using rule 68 (name)
+
+
+state 47
+
+   69 name: SCAN_UINT16 .
+
+    $default  reduce using rule 69 (name)
+
+
+state 48
+
+   70 name: SCAN_INT32 .
+
+    $default  reduce using rule 70 (name)
+
+
+state 49
+
+   71 name: SCAN_UINT32 .
+
+    $default  reduce using rule 71 (name)
+
+
+state 50
+
+   72 name: SCAN_FLOAT32 .
+
+    $default  reduce using rule 72 (name)
+
+
+state 51
+
+   73 name: SCAN_FLOAT64 .
+
+    $default  reduce using rule 73 (name)
+
+
+state 52
+
+   74 name: SCAN_STRING .
+
+    $default  reduce using rule 74 (name)
+
+
+state 53
+
+   75 name: SCAN_URL .
+
+    $default  reduce using rule 75 (name)
+
+
+state 54
+
+   13 attr_tuple: SCAN_BYTE @2 name . @3 bytes ';'
+
+    $default  reduce using rule 12 (@3)
+
+    @3  go to state 65
+
+
+state 55
+
+   16 attr_tuple: SCAN_INT16 @4 name . @5 int16 ';'
+
+    $default  reduce using rule 15 (@5)
+
+    @5  go to state 66
+
+
+state 56
+
+   19 attr_tuple: SCAN_UINT16 @6 name . @7 uint16 ';'
+
+    $default  reduce using rule 18 (@7)
+
+    @7  go to state 67
+
+
+state 57
+
+   22 attr_tuple: SCAN_INT32 @8 name . @9 int32 ';'
+
+    $default  reduce using rule 21 (@9)
+
+    @9  go to state 68
+
+
+state 58
+
+   25 attr_tuple: SCAN_UINT32 @10 name . @11 uint32 ';'
+
+    $default  reduce using rule 24 (@11)
+
+    @11  go to state 69
+
+
+state 59
+
+   28 attr_tuple: SCAN_FLOAT32 @12 name . @13 float32 ';'
+
+    $default  reduce using rule 27 (@13)
+
+    @13  go to state 70
+
+
+state 60
+
+   31 attr_tuple: SCAN_FLOAT64 @14 name . @15 float64 ';'
+
+    $default  reduce using rule 30 (@15)
+
+    @15  go to state 71
+
+
+state 61
+
+   34 attr_tuple: SCAN_STRING @16 name . @17 strs ';'
+
+    $default  reduce using rule 33 (@17)
+
+    @17  go to state 72
+
+
+state 62
+
+   37 attr_tuple: SCAN_URL @18 name . @19 urls ';'
+
+    $default  reduce using rule 36 (@19)
+
+    @19  go to state 73
+
+
+state 63
+
+    9 attr_list: attr_list . attr_tuple
+   40 attr_tuple: SCAN_WORD @20 '{' attr_list . @21 '}'
+
+    error         shift, and go to state 10
+    SCAN_WORD     shift, and go to state 11
+    SCAN_ALIAS    shift, and go to state 12
+    SCAN_BYTE     shift, and go to state 13
+    SCAN_INT16    shift, and go to state 14
+    SCAN_UINT16   shift, and go to state 15
+    SCAN_INT32    shift, and go to state 16
+    SCAN_UINT32   shift, and go to state 17
+    SCAN_FLOAT32  shift, and go to state 18
+    SCAN_FLOAT64  shift, and go to state 19
+    SCAN_STRING   shift, and go to state 20
+    SCAN_URL      shift, and go to state 21
+
+    '}'  reduce using rule 39 (@21)
+
+    attr_tuple  go to state 38
+    @21         go to state 74
+    alias       go to state 24
+
+
+state 64
+
+   78 alias: SCAN_ALIAS SCAN_WORD @23 SCAN_WORD . @24 ';'
+
+    $default  reduce using rule 77 (@24)
+
+    @24  go to state 75
+
+
+state 65
+
+   13 attr_tuple: SCAN_BYTE @2 name @3 . bytes ';'
+
+    SCAN_WORD  shift, and go to state 76
+
+    bytes  go to state 77
+
+
+state 66
+
+   16 attr_tuple: SCAN_INT16 @4 name @5 . int16 ';'
+
+    SCAN_WORD  shift, and go to state 78
+
+    int16  go to state 79
+
+
+state 67
+
+   19 attr_tuple: SCAN_UINT16 @6 name @7 . uint16 ';'
+
+    SCAN_WORD  shift, and go to state 80
+
+    uint16  go to state 81
+
+
+state 68
+
+   22 attr_tuple: SCAN_INT32 @8 name @9 . int32 ';'
+
+    SCAN_WORD  shift, and go to state 82
+
+    int32  go to state 83
+
+
+state 69
+
+   25 attr_tuple: SCAN_UINT32 @10 name @11 . uint32 ';'
+
+    SCAN_WORD  shift, and go to state 84
+
+    uint32  go to state 85
+
+
+state 70
+
+   28 attr_tuple: SCAN_FLOAT32 @12 name @13 . float32 ';'
+
+    SCAN_WORD  shift, and go to state 86
+
+    float32       go to state 87
+    float_or_int  go to state 88
+
+
+state 71
+
+   31 attr_tuple: SCAN_FLOAT64 @14 name @15 . float64 ';'
+
+    SCAN_WORD  shift, and go to state 86
+
+    float64       go to state 89
+    float_or_int  go to state 90
+
+
+state 72
+
+   34 attr_tuple: SCAN_STRING @16 name @17 . strs ';'
+
+    SCAN_WORD  shift, and go to state 91
+
+    strs       go to state 92
+    str_or_id  go to state 93
+
+
+state 73
+
+   37 attr_tuple: SCAN_URL @18 name @19 . urls ';'
+
+    SCAN_WORD  shift, and go to state 94
+
+    urls  go to state 95
+    url   go to state 96
+
+
+state 74
+
+   40 attr_tuple: SCAN_WORD @20 '{' attr_list @21 . '}'
+
+    '}'  shift, and go to state 97
+
+
+state 75
+
+   78 alias: SCAN_ALIAS SCAN_WORD @23 SCAN_WORD @24 . ';'
+
+    ';'  shift, and go to state 98
+
+
+state 76
+
+   43 bytes: SCAN_WORD .
+
+    $default  reduce using rule 43 (bytes)
+
+
+state 77
+
+   13 attr_tuple: SCAN_BYTE @2 name @3 bytes . ';'
+   44 bytes: bytes . ',' SCAN_WORD
+
+    ';'  shift, and go to state 99
+    ','  shift, and go to state 100
+
+
+state 78
+
+   45 int16: SCAN_WORD .
+
+    $default  reduce using rule 45 (int16)
+
+
+state 79
+
+   16 attr_tuple: SCAN_INT16 @4 name @5 int16 . ';'
+   46 int16: int16 . ',' SCAN_WORD
+
+    ';'  shift, and go to state 101
+    ','  shift, and go to state 102
+
+
+state 80
+
+   47 uint16: SCAN_WORD .
+
+    $default  reduce using rule 47 (uint16)
+
+
+state 81
+
+   19 attr_tuple: SCAN_UINT16 @6 name @7 uint16 . ';'
+   48 uint16: uint16 . ',' SCAN_WORD
+
+    ';'  shift, and go to state 103
+    ','  shift, and go to state 104
+
+
+state 82
+
+   49 int32: SCAN_WORD .
+
+    $default  reduce using rule 49 (int32)
+
+
+state 83
+
+   22 attr_tuple: SCAN_INT32 @8 name @9 int32 . ';'
+   50 int32: int32 . ',' SCAN_WORD
+
+    ';'  shift, and go to state 105
+    ','  shift, and go to state 106
+
+
+state 84
+
+   51 uint32: SCAN_WORD .
+
+    $default  reduce using rule 51 (uint32)
+
+
+state 85
+
+   25 attr_tuple: SCAN_UINT32 @10 name @11 uint32 . ';'
+   52 uint32: uint32 . ',' SCAN_WORD
+
+    ';'  shift, and go to state 107
+    ','  shift, and go to state 108
+
+
+state 86
+
+   63 float_or_int: SCAN_WORD .
+
+    $default  reduce using rule 63 (float_or_int)
+
+
+state 87
+
+   28 attr_tuple: SCAN_FLOAT32 @12 name @13 float32 . ';'
+   54 float32: float32 . ',' float_or_int
+
+    ';'  shift, and go to state 109
+    ','  shift, and go to state 110
+
+
+state 88
+
+   53 float32: float_or_int .
+
+    $default  reduce using rule 53 (float32)
+
+
+state 89
+
+   31 attr_tuple: SCAN_FLOAT64 @14 name @15 float64 . ';'
+   56 float64: float64 . ',' float_or_int
+
+    ';'  shift, and go to state 111
+    ','  shift, and go to state 112
+
+
+state 90
+
+   55 float64: float_or_int .
+
+    $default  reduce using rule 55 (float64)
+
+
+state 91
+
+   62 str_or_id: SCAN_WORD .
+
+    $default  reduce using rule 62 (str_or_id)
+
+
+state 92
+
+   34 attr_tuple: SCAN_STRING @16 name @17 strs . ';'
+   58 strs: strs . ',' str_or_id
+
+    ';'  shift, and go to state 113
+    ','  shift, and go to state 114
+
+
+state 93
+
+   57 strs: str_or_id .
+
+    $default  reduce using rule 57 (strs)
+
+
+state 94
+
+   61 url: SCAN_WORD .
+
+    $default  reduce using rule 61 (url)
+
+
+state 95
+
+   37 attr_tuple: SCAN_URL @18 name @19 urls . ';'
+   60 urls: urls . ',' url
+
+    ';'  shift, and go to state 115
+    ','  shift, and go to state 116
+
+
+state 96
+
+   59 urls: url .
+
+    $default  reduce using rule 59 (urls)
+
+
+state 97
+
+   40 attr_tuple: SCAN_WORD @20 '{' attr_list @21 '}' .
+
+    $default  reduce using rule 40 (attr_tuple)
+
+
+state 98
+
+   78 alias: SCAN_ALIAS SCAN_WORD @23 SCAN_WORD @24 ';' .
+
+    $default  reduce using rule 78 (alias)
+
+
+state 99
+
+   13 attr_tuple: SCAN_BYTE @2 name @3 bytes ';' .
+
+    $default  reduce using rule 13 (attr_tuple)
+
+
+state 100
+
+   44 bytes: bytes ',' . SCAN_WORD
+
+    SCAN_WORD  shift, and go to state 117
+
+
+state 101
+
+   16 attr_tuple: SCAN_INT16 @4 name @5 int16 ';' .
+
+    $default  reduce using rule 16 (attr_tuple)
+
+
+state 102
+
+   46 int16: int16 ',' . SCAN_WORD
+
+    SCAN_WORD  shift, and go to state 118
+
+
+state 103
+
+   19 attr_tuple: SCAN_UINT16 @6 name @7 uint16 ';' .
+
+    $default  reduce using rule 19 (attr_tuple)
+
+
+state 104
+
+   48 uint16: uint16 ',' . SCAN_WORD
+
+    SCAN_WORD  shift, and go to state 119
+
+
+state 105
+
+   22 attr_tuple: SCAN_INT32 @8 name @9 int32 ';' .
+
+    $default  reduce using rule 22 (attr_tuple)
+
+
+state 106
+
+   50 int32: int32 ',' . SCAN_WORD
+
+    SCAN_WORD  shift, and go to state 120
+
+
+state 107
+
+   25 attr_tuple: SCAN_UINT32 @10 name @11 uint32 ';' .
+
+    $default  reduce using rule 25 (attr_tuple)
+
+
+state 108
+
+   52 uint32: uint32 ',' . SCAN_WORD
+
+    SCAN_WORD  shift, and go to state 121
+
+
+state 109
+
+   28 attr_tuple: SCAN_FLOAT32 @12 name @13 float32 ';' .
+
+    $default  reduce using rule 28 (attr_tuple)
+
+
+state 110
+
+   54 float32: float32 ',' . float_or_int
+
+    SCAN_WORD  shift, and go to state 86
+
+    float_or_int  go to state 122
+
+
+state 111
+
+   31 attr_tuple: SCAN_FLOAT64 @14 name @15 float64 ';' .
+
+    $default  reduce using rule 31 (attr_tuple)
+
+
+state 112
+
+   56 float64: float64 ',' . float_or_int
+
+    SCAN_WORD  shift, and go to state 86
+
+    float_or_int  go to state 123
+
+
+state 113
+
+   34 attr_tuple: SCAN_STRING @16 name @17 strs ';' .
+
+    $default  reduce using rule 34 (attr_tuple)
+
+
+state 114
+
+   58 strs: strs ',' . str_or_id
+
+    SCAN_WORD  shift, and go to state 91
+
+    str_or_id  go to state 124
+
+
+state 115
+
+   37 attr_tuple: SCAN_URL @18 name @19 urls ';' .
+
+    $default  reduce using rule 37 (attr_tuple)
+
+
+state 116
+
+   60 urls: urls ',' . url
+
+    SCAN_WORD  shift, and go to state 94
+
+    url  go to state 125
+
+
+state 117
+
+   44 bytes: bytes ',' SCAN_WORD .
+
+    $default  reduce using rule 44 (bytes)
+
+
+state 118
+
+   46 int16: int16 ',' SCAN_WORD .
+
+    $default  reduce using rule 46 (int16)
+
+
+state 119
+
+   48 uint16: uint16 ',' SCAN_WORD .
+
+    $default  reduce using rule 48 (uint16)
+
+
+state 120
+
+   50 int32: int32 ',' SCAN_WORD .
+
+    $default  reduce using rule 50 (int32)
+
+
+state 121
+
+   52 uint32: uint32 ',' SCAN_WORD .
+
+    $default  reduce using rule 52 (uint32)
+
+
+state 122
+
+   54 float32: float32 ',' float_or_int .
+
+    $default  reduce using rule 54 (float32)
+
+
+state 123
+
+   56 float64: float64 ',' float_or_int .
+
+    $default  reduce using rule 56 (float64)
+
+
+state 124
+
+   58 strs: strs ',' str_or_id .
+
+    $default  reduce using rule 58 (strs)
+
+
+state 125
+
+   60 urls: urls ',' url .
+
+    $default  reduce using rule 60 (urls)

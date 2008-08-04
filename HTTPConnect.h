@@ -135,7 +135,7 @@ public:
     /** Set the state of the HTTP cache. By default, the HTTP cache is
     enabled of disabled using the value of the \c USE_CACHE property in
     the \c .dodsrc file. Use this method to set the state from within a
-    program. 
+    program.
     @param enabled True to use the cache, False to disable. */
     void set_cache_enabled(bool enabled)
     {
@@ -151,6 +151,9 @@ public:
 
     HTTPResponse *fetch_url(const string &url);
 };
+
+ObjectType get_type(const string &value); // deprecated
+ObjectType get_description_type(const string &value);
 
 } // namespace libdap
 

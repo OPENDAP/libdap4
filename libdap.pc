@@ -1,0 +1,15 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+ccompiler=gcc
+cppcompiler=g++
+
+Name: libdap
+Description: Common items for the OPeNDAP C++ implementation of the Data Access Protocol
+Version: 3.8.2
+Libs: -L${libdir} -ldap
+Libs.private:   -lpthread
+Requires.private: libxml-2.0 >= 2.6.16
+Cflags: -I${includedir}/libdap
+

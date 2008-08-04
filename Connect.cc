@@ -173,7 +173,7 @@ Connect::parse_mime(/*FILE *data_source, */Response *rs)
 
         if (header == "content-description:") {
             DBG(cout << header << ": " << value << endl);
-            rs->set_type(get_type(value));
+            rs->set_type(get_description_type(value));
         }
         else if (header == "xdods-server:"
                  && rs->get_version() == "dods/0.0") {

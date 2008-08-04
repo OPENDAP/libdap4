@@ -35,8 +35,13 @@
 
 using namespace std;
 
+#ifndef _object_type_h
 #include "ObjectType.h"
+#endif
+
+#ifndef _internal_err_
 #include "InternalErr.h"
+#endif
 
 namespace libdap
 {
@@ -86,7 +91,7 @@ public:
 	by default get_type() and get_version() return default values of
 	unknown_type and "dods/0.0", respectively. Specializations (see
 	HTTPResponse and HTTPConnect) may fill these fields in with other
-	values. 
+	values.
         @param s Read data from this stream.
         @param status The HTTP response status code.*/
     Response(FILE *s, int status = 0) : d_stream(s), d_type(unknown_type),

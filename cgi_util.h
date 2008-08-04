@@ -41,8 +41,13 @@
 #include "DDS.h"
 #endif
 
+#ifndef _object_type_h
 #include "ObjectType.h"
+#endif
+
+#ifndef _encoding_type_h
 #include "EncodingType.h"
+#endif
 
 namespace libdap
 {

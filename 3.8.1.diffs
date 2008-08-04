@@ -1,0 +1,51 @@
+Only in .: 3.8.1.diffs
+Only in .: Ancillary.cc
+Only in .: Ancillary.h
+Only in .: apue_db
+Files ../libdap-3.8.1/autom4te.cache/output.0 and ./autom4te.cache/output.0 differ
+Files ../libdap-3.8.1/autom4te.cache/output.1 and ./autom4te.cache/output.1 differ
+Files ../libdap-3.8.1/autom4te.cache/traces.1 and ./autom4te.cache/traces.1 differ
+Only in .: cache-testsuite
+Files ../libdap-3.8.1/ce_functions.cc and ./ce_functions.cc differ
+Files ../libdap-3.8.1/cgi_util.cc and ./cgi_util.cc differ
+Files ../libdap-3.8.1/cgi_util.h and ./cgi_util.h differ
+Files ../libdap-3.8.1/ChangeLog and ./ChangeLog differ
+Files ../libdap-3.8.1/config.h.in and ./config.h.in differ
+Files ../libdap-3.8.1/configure and ./configure differ
+Files ../libdap-3.8.1/configure.ac and ./configure.ac differ
+Only in .: .cproject
+Files ../libdap-3.8.1/das.lex and ./das.lex differ
+Files ../libdap-3.8.1/DODSFilter.cc and ./DODSFilter.cc differ
+Files ../libdap-3.8.1/HTTPCache.cc and ./HTTPCache.cc differ
+Files ../libdap-3.8.1/HTTPCache.h and ./HTTPCache.h differ
+Only in .: HTTPCacheTable.cc
+Only in .: HTTPCacheTable.h
+Files ../libdap-3.8.1/HTTPConnect.cc and ./HTTPConnect.cc differ
+Files ../libdap-3.8.1/HTTPConnect.h and ./HTTPConnect.h differ
+Files ../libdap-3.8.1/HTTPResponse.h and ./HTTPResponse.h differ
+Only in ../libdap-3.8.1: libdap-3.8.1
+Only in ../libdap-3.8.1: libdap-3.8.1.tar.gz
+Files ../libdap-3.8.1/Makefile.am and ./Makefile.am differ
+Files ../libdap-3.8.1/Makefile.in and ./Makefile.in differ
+Files ../libdap-3.8.1/NEWS and ./NEWS differ
+Only in .: .project
+Files ../libdap-3.8.1/README and ./README differ
+Files ../libdap-3.8.1/Response.h and ./Response.h differ
+Only in .: .settings
+Only in ../libdap-3.8.1: svn-commit.2.tmp~
+Only in ../libdap-3.8.1: svn-commit.tmp
+Files ../libdap-3.8.1/svn-commit.tmp~ and ./svn-commit.tmp~ differ
+Files ../libdap-3.8.1/unit-tests/AISMergeTest.cc and ./unit-tests/AISMergeTest.cc differ
+Only in ./unit-tests: ancT.cc
+Only in ./unit-tests/cache-testsuite: http_connect_cache
+Files ../libdap-3.8.1/unit-tests/cgiUtilTest.cc and ./unit-tests/cgiUtilTest.cc differ
+Files ../libdap-3.8.1/unit-tests/HTTPCacheTest.cc and ./unit-tests/HTTPCacheTest.cc differ
+Files ../libdap-3.8.1/unit-tests/Makefile.am and ./unit-tests/Makefile.am differ
+Files ../libdap-3.8.1/unit-tests/Makefile.in and ./unit-tests/Makefile.in differ
+Files ../libdap-3.8.1/unit-tests/marshT.cc and ./unit-tests/marshT.cc differ
+Files ../libdap-3.8.1/unit-tests/RCReaderTest.cc and ./unit-tests/RCReaderTest.cc differ
+Files ../libdap-3.8.1/util.cc and ./util.cc differ
+Files ../libdap-3.8.1/VCPP/BeforeInstall.txt and ./VCPP/BeforeInstall.txt differ
+Files ../libdap-3.8.1/VCPP/libdap.iss and ./VCPP/libdap.iss differ
+Files ../libdap-3.8.1/VCPP/Makefile and ./VCPP/Makefile differ
+Only in ./VCPP: unistd.h

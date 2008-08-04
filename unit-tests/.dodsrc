@@ -1,0 +1,22 @@
+# OPeNDAP client configuration file. See the OPeNDAP
+# users guide for information.
+USE_CACHE=0
+# Cache and object size are given in megabytes (20 ==> 20Mb).
+MAX_CACHE_SIZE=20
+MAX_CACHED_OBJ=5
+IGNORE_EXPIRES=0
+CACHE_ROOT=/home/jimg/libdap/unit-tests/.dods_cache/
+DEFAULT_EXPIRES=86400
+ALWAYS_VALIDATE=0
+# Request servers compress responses if possible?
+# 1 (yes) or 0 (false).
+DEFLATE=0
+# Should SSL certificates and hosts be validated? SSL
+# will only work with signed certificates.
+VALIDATE_SSL=1
+# Proxy configuration (optional parts in []s).
+# You may also use the 'http_proxy' environment variable
+# but a value in this file will override that env variable.
+# PROXY_SERVER=[http://][username:password@]host[:port]
+# NO_PROXY_FOR=<host|domain>
+# AIS_DATABASE=<file or url>

@@ -149,10 +149,10 @@ ErrMsgT(const string &Msgt)
         strncpy(TimStr, ctime(&TimBin), TimLen-1);
         TimStr[TimLen - 2] = '\0'; // overwrite the \n
     }
-    
+
 #if 0
 	// This was removed because writing these values out 'leaks' system information.
-	// Since we're not going to write out the script or host, I also removed the 
+	// Since we're not going to write out the script or host, I also removed the
 	// calls to getenv(). jhrg 8/7/2007
     const char *host_or_addr = getenv("REMOTE_HOST") ? getenv("REMOTE_HOST") :
                                getenv("REMOTE_ADDR") ? getenv("REMOTE_ADDR") : "local (a non-CGI run)";
@@ -297,7 +297,7 @@ last_modified_time(const string &name)
 
 static const char *descrip[] =
     {"unknown", "dods_das", "dods_dds", "dods_data",
-     "dods_error", "web_error", "dap4_ddx"
+     "dods_error", "web_error", "dap4_ddx", "dap4_datax", "dap4_errorx"
     };
 static const char *encoding[] =
     {"unknown", "deflate", "x-plain"

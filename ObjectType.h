@@ -43,7 +43,9 @@ namespace libdap
        dods_data,
        dods_error,
        web_error,
-       dap4_ddx
+       dap4_ddx,
+       dap4_datax,
+       dap4_errorx
      };
      </pre>
 
@@ -57,26 +59,10 @@ enum ObjectType {
     dods_data,
     dods_error,
     web_error,
-    dap4_ddx
+    dap4_ddx,
+    dap4_datax,
+    dap4_errorx
 };
-
-// This function returns the ObjectType value that matches the given string.
-static ObjectType
-get_type(const string &value)
-{
-    if (value == "dods_das")
-        return dods_das;
-    else if (value == "dods_dds")
-        return dods_dds;
-    else if (value == "dods_data")
-        return dods_data;
-    else if (value == "dods_error")
-        return dods_error;
-    else if (value == "web_error")
-        return web_error;
-    else
-        return unknown_type;
-}
 
 } // namespace libdap
 

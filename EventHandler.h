@@ -28,9 +28,6 @@
 
 #include <iostream>
 
-//#include "Error.h"
-//#include "cgi_util.h"
-
 namespace libdap
 {
 
