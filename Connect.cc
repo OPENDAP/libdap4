@@ -829,7 +829,7 @@ Connect::request_data_url(DataDDS &data)
 
 
 /** @brief Read data which is preceded by MIME headers.
- *
+
     This is a place holder. A better implementation for reading objects from
     the local file store is to write FileConnect and have it support the same
     interface as HTTPConnect.

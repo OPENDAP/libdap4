@@ -67,7 +67,7 @@ void usage(string name)
     cerr <<
     " [idDaxAVvks] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]" <<
     endl;
-    cerr << " [Vvks] <file> [<file> ...]" << endl;
+    cerr << " [VvksM] <file> [<file> ...]" << endl;
     cerr << endl;
     cerr << "In the first form of the command, dereference the URL and"
     << endl;
@@ -104,14 +104,15 @@ void usage(string name)
     cerr << "        B: <AIS xml dataBase>. Overrides .dodsrc." << endl;
     cerr << "        v: Verbose." << endl;
     cerr << "        V: Version." << endl;
-    cerr << "        c: <expr> is a contraint expression. Used with -D." <<
+    cerr << "        c: <expr> is a constraint expression. Used with -D." <<
     endl;
     cerr << "           NB: You can use a `?' for the CE also." << endl;
-    cerr << "        k: Keep temporary files created by libdap core\n" <<
-    endl;
+    cerr << "        k: Keep temporary files created by libdap core" << endl;
     cerr << "        m: Request the same URL <num> times." << endl;
     cerr << "        z: Ask the server to compress data." << endl;
     cerr << "        s: Print Sequences using numbered rows." << endl;
+    cerr << "        M: Assume data read from a file has no MIME headers" << endl;
+    cerr << "           (the default is to assume the headers are present)." << endl;
 }
 
 bool read_data(FILE * fp)
@@ -148,7 +149,7 @@ static void print_data(DDS & dds, bool print_rows = false)
 
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "idaDxXAVvkB:c:m:zsh?H");
+    GetOpt getopt(argc, argv, "idaDxXAVvkB:c:m:zshM?H");
     int option_char;
 
     bool get_das = false;
@@ -163,6 +164,7 @@ int main(int argc, char *argv[])
     bool accept_deflate = false;
     bool print_rows = false;
     bool use_ais = false;
+    bool mime_headers = true;
     int times = 1;
     string expr = "";
     string ais_db = "";
@@ -221,6 +223,9 @@ int main(int argc, char *argv[])
         case 's':
             print_rows = true;
             break;
+        case 'M':
+            mime_headers = false;
+            break;
         case 'h':
         case '?':
         default:
@@ -269,7 +274,10 @@ int main(int argc, char *argv[])
                         if (!r->get_stream())
                             throw Error("Could not open standard input.");
 
-                        url->read_data(dds, r);
+                        if (mime_headers)
+                            url->read_data(dds, r); // The default case
+                        else
+                            url->read_data_no_mime(dds, r);
                     }
                     else {
                         r = new Response(fopen(argv[i], "r"), 0);

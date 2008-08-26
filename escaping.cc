@@ -198,7 +198,7 @@ id2www_ce(string in, const string &allowable)
      -# DODSFilter::set_dataset_name() same logic as the first case.
 
     @param in The string to modify.
-    @param escape The character used to signal the begining of an escape
+    @param escape The character used to signal the beginning of an escape
     sequence. default: "%"
     @param except If there is some escape code that should not be removed by
     this call (e.g., you might not want to remove spaces, %20) use this
