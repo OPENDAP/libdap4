@@ -67,9 +67,13 @@ static char rcsid[] not_used =
 #include "util.h"
 #include "escaping.h"
 
-const string default_schema_location = "http://xml.opendap.org/dap/dap2.xsd";
-const string dods_namespace = "http://xml.opendap.org/ns/DAP2";
+const string c_default_dap2_schema_location = "http://xml.opendap.org/dap/dap2.xsd";
 
+#ifdef DDX_3.1
+const string c_dap2_namespace = "http://xml.opendap.org/ns/DAP2";
+#else
+const string c_dap2_namespace = "http://xml.opendap.org/ns/DAP2#";
+#endif
 using namespace std;
 
 void ddsrestart(FILE *yyin); // Defined in dds.tab.c
@@ -837,9 +841,9 @@ DDS::print_xml(ostream &out, bool constrained, const string &)
     out << "<Dataset name=\"" << id2xml(name) << "\"\n" ;
 
     out << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" ;
-    out << "xmlns=\"" << dods_namespace << "\"\n" ;
-    out << "xsi:schemaLocation=\"" << dods_namespace
-        << "  " << default_schema_location << "\">\n\n" ;
+    out << "xmlns=\"" << c_dap2_namespace << "\"\n" ;
+    out << "xsi:schemaLocation=\"" << c_dap2_namespace
+        << "  " << c_default_dap2_schema_location << "\">\n\n" ;
 
     d_attr.print_xml(out, "    ", constrained);
 
@@ -848,9 +852,9 @@ DDS::print_xml(ostream &out, bool constrained, const string &)
     for_each(var_begin(), var_end(), VariablePrintXMLStrm(out, constrained));
 
     out << "\n" ;
-
+#ifdef DDX_3.1
     out << "    <dataBLOB href=\"\"/>\n" ;
-
+#endif
     out << "</Dataset>\n" ;
 }
 

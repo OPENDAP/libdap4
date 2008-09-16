@@ -330,7 +330,7 @@ void DDXParser::process_dimension(const char **attrs)
         Array *ap = dynamic_cast < Array * >(bt_stack.top());
 		if (!ap)
 			ddx_fatal_error(this, "Parse error: Expected an array variable.");
-			
+
         ap->append_dim(atoi(attributes["size"].c_str()),
                        attributes["name"]);
     }
@@ -501,7 +501,7 @@ void DDXParser::ddx_end_document(DDXParser * parser)
         dynamic_cast < Constructor * >(parser->bt_stack.top());
     if (!cp)
     	ddx_fatal_error(parser, "Parse error: Expected a Structure, Sequence or Grid variable.");
-    	
+
     for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end();
          ++i)
         parser->dds->add_var(*i);
@@ -986,12 +986,12 @@ void DDXParser::intern_stream(FILE * in, DDS * dest_dds, string * blob)
 }
 
 
-/** Parse a DDX document stored in a file. The XML in the doucument is parsed
+/** Parse a DDX document stored in a file. The XML in the document is parsed
     and a binary DDX is built. This implementation stores the result in a DDS
     object where each instance of BaseType can hold an AttrTable object.
 
     @param document Read the DDX from this file.
-    @param dest_dds Value/result parameter; dumps the inforamtion to this DDS
+    @param dest_dds Value/result parameter; dumps the information to this DDS
     instance.
     @param blob Value/result parameter; puts the href which references the \c
     dataBLOB document here.

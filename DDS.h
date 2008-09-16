@@ -42,8 +42,6 @@
 #include <string>
 #include <vector>
 
-//#include "Pix.h"
-
 #ifndef _basetype_h
 #include "BaseType.h"
 #endif
@@ -176,25 +174,25 @@ class DDS : public DapObj
 private:
     BaseTypeFactory *d_factory;
 
-    string name;  // The dataset name
+    string name;                // The dataset name
 
-    string _filename;  // File name (or other OS identifier) for
-    // dataset or part of dataset.
+    string _filename;   // File name (or other OS identifier) for
+                        // dataset or part of dataset.
     int d_protocol_major;       // The protocol major version number
     int d_protocol_minor;       // ... and minor version number
 
     AttrTable d_attr;           // Global attributes.
 
-    vector<BaseType *> vars; // Variables at the top level
+    vector<BaseType *> vars;    // Variables at the top level
 #if 0
     bool is_global_attr(string name);
     void add_global_attribute(AttrTable::entry *entry);
 #endif
     BaseType *find_hdf4_dimension_attribute_home(AttrTable::entry *source);
 
-    int d_timeout;  // alarm time in seconds. If greater than
-    // zero, raise the alarm signal if more than
-    // d_timeout seconds are spent reading data.
+    int d_timeout;              // alarm time in seconds. If greater than
+                                // zero, raise the alarm signal if more than
+                                // d_timeout seconds are spent reading data.
     friend class DDSTest;
 
 protected:
@@ -230,7 +228,7 @@ public:
     void set_dataset_name(const string &n);
 
     /** Return the factory which makes instances of the Byte, ..., Grid
-        type classes. Specialize BaseTypeFactory so that a DDS will be 
+        type classes. Specialize BaseTypeFactory so that a DDS will be
         populated with your client or server's specialized types.
         @return An instance of BaseTypeFactory. */
     BaseTypeFactory *get_factory() const
@@ -239,9 +237,10 @@ public:
     }
 
     /** Set the factory class used to instantiate variables during the
-        parse of a DDS. 
+        parse of a DDS.
         @param factory The factory this DDS should use. Caller must free
         factory when done with this DDS.
+        @return The old factory.
         @see BaseTypeFactory */
     BaseTypeFactory *set_factory(BaseTypeFactory *factory)
     {
@@ -264,7 +263,7 @@ public:
     BaseType *var(const string &n, BaseType::btp_stack *s = 0);
     int num_var();
 
-    /// Return an iterator
+    /// Return an iterator to the first variable
     Vars_iter var_begin();
     /// Return a reverse iterator
     Vars_riter var_rbegin();

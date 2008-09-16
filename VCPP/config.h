@@ -4,7 +4,7 @@
 
 #define CNAME "libdap"
 #define CVER "3.8.2"
-#define DAP_PROTOCOL_VERSION "3.2"
+#define DAP_PROTOCOL_VERSION "3.1"
 #define DVR "libdap/3.8.2"
 #define PACKAGE "libdap"
 #define PACKAGE_NAME "libdap"
