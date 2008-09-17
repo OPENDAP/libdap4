@@ -54,6 +54,7 @@ static const char *s_as_string = \
 "BaseType \\(0x.*\\):\n\
           _name: s\n\
           _type: Sequence\n\
+          _dataset: \n\
           _read_p: 0\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
@@ -62,6 +63,7 @@ static const char *s_as_string = \
 BaseType \\(0x.*\\):\n\
           _name: i1\n\
           _type: Int32\n\
+          _dataset: \n\
           _read_p: 0\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
@@ -70,6 +72,7 @@ BaseType \\(0x.*\\):\n\
 BaseType \\(0x.*\\):\n\
           _name: str1\n\
           _type: String\n\
+          _dataset: \n\
           _read_p: 0\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
@@ -78,6 +81,7 @@ BaseType \\(0x.*\\):\n\
 BaseType \\(0x.*\\):\n\
           _name: i2\n\
           _type: Int32\n\
+          _dataset: \n\
           _read_p: 0\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
@@ -179,7 +183,7 @@ public:
         s->set_send_p(true);
         s->set_leaf_sequence();
         try {
-            s->intern_data("dummy", ce, *dds);
+            s->intern_data(ce, *dds);
             
             // Test the first value in the first four rows
             BaseType *btp = s->var_value(0, 0);
@@ -203,7 +207,7 @@ public:
         ss->set_send_p(true);
         ss->set_leaf_sequence();
         try {
-            ss->intern_data("dummy", ce, *dds);
+            ss->intern_data(ce, *dds);
             DBG(ss->print_val(stdout));
             
             // Test the first value in the first four rows
@@ -250,7 +254,7 @@ public:
         sss->set_send_p(true);
         sss->set_leaf_sequence();
         try {
-            sss->intern_data("dummy", ce, *dds);
+            sss->intern_data(ce, *dds);
             DBG(sss->print_val_by_rows(stdout, "", true, true));
             // Test the first value in the first four rows
             BaseType *btp = sss->var_value(0, 0);
@@ -304,7 +308,7 @@ public:
         try {
             Sequence::sequence_values_stack_t sequence_values_stack;
             sequence_values_stack.push(&s->d_values);
-            s->intern_data_for_leaf("dummy", *dds, ce, sequence_values_stack);
+            s->intern_data_for_leaf(*dds, ce, sequence_values_stack);
             
             // Test the first value in the first four rows
             BaseType *btp = s->var_value(0, 0);
@@ -395,9 +399,7 @@ public:
     }
 
     void assignment() {
-	Sequence ts2;
-
-	ts2 = *s;
+	Sequence ts2 = *s;
 	DBG(cerr << "ts2: " << ts2.toString() << endl);
 	CPPUNIT_ASSERT(re_match(s_regex, ts2.toString().c_str()));
     }

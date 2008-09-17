@@ -119,7 +119,7 @@ bool GridGeoConstraint::build_lat_lon_maps()
             // (which also has to be constrained).
             d_latitude = dynamic_cast < Array * >(*m);
             if (!d_latitude->read_p())
-                d_latitude->read(get_dataset());
+                d_latitude->read();
 
             set_lat(extract_double_array(d_latitude));   // throws Error
             set_lat_length(d_latitude->length());
@@ -133,7 +133,7 @@ bool GridGeoConstraint::build_lat_lon_maps()
 
             d_longitude = dynamic_cast < Array * >(*m);
             if (!d_longitude->read_p())
-                d_longitude->read(get_dataset());
+                d_longitude->read();
 
             set_lon(extract_double_array(d_longitude));
             set_lon_length(d_longitude->length());
@@ -286,7 +286,7 @@ void GridGeoConstraint::apply_constraint_to_data()
         d_grid->set_read_p(true);
     }
     else {
-        d_grid->get_array()->read(get_dataset());
+        d_grid->get_array()->read();
     }
 }
 

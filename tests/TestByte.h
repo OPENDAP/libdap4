@@ -57,7 +57,8 @@ class TestByte: public Byte, public TestCommon {
     void _duplicate(const TestByte &ts);
 
 public:
-    TestByte(const string &n = "");
+    TestByte(const string &n);
+    TestByte(const string &n, const string &d);
     TestByte(const TestByte &rhs);
 
     virtual ~TestByte() {}
@@ -66,7 +67,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const string &dataset);
+    virtual bool read();
 #if 1
     virtual void output_values(std::ostream &out);
 #endif

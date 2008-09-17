@@ -290,6 +290,7 @@ String longer%20name \"second test\";";
 .*String long%20name \"first\";\n\
 .*Alias an%20alias long%20name;\n\
 \\}\n\n");
+		cout << sof << endl ;
                 CPPUNIT_ASSERT(re_match(r, sof.c_str()));
                 delete top; top = 0;
             }
@@ -337,11 +338,13 @@ String longer%20name \"second test\";";
                 cont_at2->append_attr("size", "Int32", "7");
                 cont_at2->append_attr("type", "String", "cars");
                 i = at2->attr_begin();
-                CPPUNIT_ASSERT(at2->get_name(i++) == "color");
+                CPPUNIT_ASSERT(at2->get_name(i) == "color");
+		i++ ;
                 CPPUNIT_ASSERT(at2->get_name(i) == "a");
                 at2->del_attr_table(i);
                 i = at2->attr_begin();
-                CPPUNIT_ASSERT(at2->get_name(i++) == "color");
+                CPPUNIT_ASSERT(at2->get_name(i) == "color");
+		i++ ;
                 CPPUNIT_ASSERT(i == at2->attr_end());
             }
             catch (Error &e) {

@@ -255,63 +255,71 @@ public:
     virtual ~AttrTable();
     AttrTable & operator=(const AttrTable &rhs);
 
-    void erase();
+    virtual void erase();
 
-    unsigned int get_size() const;
-    string get_name() const;
-    void set_name(const string &n);
+    virtual unsigned int get_size() const;
+    virtual string get_name() const;
+    virtual void set_name(const string &n);
+
     /** Return a pointer to the AttrTable which holds this table (aka, its
         parent. If this AttrTable has no parent, this returns null.
         @return A pointer to the parent AttrTable. */
-    AttrTable *get_parent() const
+    virtual AttrTable *get_parent() const
     {
         return d_parent;
     }
 
-    unsigned int append_attr(const string &name, const string &type,
-                             const string &value);
-    unsigned int append_attr(const string &name, const string &type,
-                             vector<string> *values);
+    virtual unsigned int append_attr(const string &name, const string &type,
+				     const string &value);
+    virtual unsigned int append_attr(const string &name, const string &type,
+				     vector<string> *values);
 
-    AttrTable *append_container(const string &name);
-    AttrTable *append_container(AttrTable *at, const string &name);
+    virtual AttrTable *append_container(const string &name);
+    virtual AttrTable *append_container(AttrTable *at, const string &name);
 
-    void find(const string &target, AttrTable **at, Attr_iter *iter);
-    AttrTable *find_container(const string &target);
-    AttrTable *recurrsive_find(const string &target, Attr_iter *location);
+    virtual void find(const string &target, AttrTable **at, Attr_iter *iter);
+    virtual AttrTable *find_container(const string &target);
+    virtual AttrTable *recurrsive_find(const string &target,
+				       Attr_iter *location);
 
-    AttrTable *get_attr_table(const string &name);
-    string get_type(const string &name);
-    AttrType get_attr_type(const string &name);
-    unsigned int get_attr_num(const string &name);
-    string get_attr(const string &name, unsigned int i = 0);
-    vector<string> *get_attr_vector(const string &name);
-    void del_attr(const string &name, int i = -1);
+    virtual AttrTable *get_attr_table(const string &name);
+    virtual string get_type(const string &name);
+    virtual AttrType get_attr_type(const string &name);
+    virtual unsigned int get_attr_num(const string &name);
+    virtual string get_attr(const string &name, unsigned int i = 0);
+    virtual vector<string> *get_attr_vector(const string &name);
+    virtual void del_attr(const string &name, int i = -1);
 
-    Attr_iter attr_begin();
-    Attr_iter attr_end();
-    Attr_iter get_attr_iter(int i);
-    string get_name(Attr_iter iter);
-    bool is_container(Attr_iter iter);
-    AttrTable *get_attr_table(Attr_iter iter);
-    Attr_iter del_attr_table(Attr_iter iter);
-    string get_type(Attr_iter iter);
-    AttrType get_attr_type(Attr_iter iter);
-    unsigned int get_attr_num(Attr_iter iter);
-    string get_attr(Attr_iter iter, unsigned int i = 0);
-    std::vector<string> *get_attr_vector(Attr_iter iter);
+    virtual Attr_iter attr_begin();
+    virtual Attr_iter attr_end();
+    virtual Attr_iter get_attr_iter(int i);
+    virtual string get_name(Attr_iter iter);
+    virtual bool is_container(Attr_iter iter);
+    virtual AttrTable *get_attr_table(Attr_iter iter);
+    virtual Attr_iter del_attr_table(Attr_iter iter);
+    virtual string get_type(Attr_iter iter);
+    virtual AttrType get_attr_type(Attr_iter iter);
+    virtual unsigned int get_attr_num(Attr_iter iter);
+    virtual string get_attr(Attr_iter iter, unsigned int i = 0);
+    virtual std::vector<string> *get_attr_vector(Attr_iter iter);
 
-    void add_container_alias(const string &name, AttrTable *src);
-    void add_value_alias(AttrTable *das, const string &name,
+    virtual void add_container_alias(const string &name, AttrTable *src);
+    virtual void add_value_alias(AttrTable *at, const string &name,
                          const string &source);
-    bool attr_alias(const string &alias, AttrTable *at, const string &name);
-    bool attr_alias(const string &alias, const string &name);
+    virtual bool attr_alias(const string &alias,
+			    AttrTable *at,
+			    const string &name);
+    virtual bool attr_alias(const string &alias, const string &name);
 
-    void print(FILE *out, string pad = "    ", bool dereference = false);
-    void print(ostream &out, string pad = "    ", bool dereference = false);
+    virtual void print(FILE *out, string pad = "    ",
+		       bool dereference = false);
+    virtual void print(ostream &out, string pad = "    ",
+		       bool dereference = false);
 
-    void print_xml(FILE *out, string pad = "    ", bool constrained = false);
-    void print_xml(ostream &out, string pad = "    ", bool constrained = false);
+    virtual void print_xml(FILE *out, string pad = "    ",
+			   bool constrained = false);
+    virtual void print_xml(ostream &out, string pad = "    ",
+			   bool constrained = false);
 
     virtual void dump(ostream &strm) const ;
 };

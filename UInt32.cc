@@ -54,8 +54,24 @@ using std::endl;
 
 namespace libdap {
 
+/** The UInt32 constructor accepts the name of the variable to be created.
+
+    @param n A string containing the name of the variable to be created.
+    variable is created
+*/
 UInt32::UInt32(const string &n)
         : BaseType(n, dods_uint32_c)
+{}
+
+/** The UInt32 server-side constructor accepts the name of the variable and
+    the dataset name from which this instance is created.
+
+    @param n A string containing the name of the variable to be created.
+    @param d A string containing the name of the dataset from which this
+    variable is created
+*/
+UInt32::UInt32(const string &n, const string &d)
+        : BaseType(n, d, dods_uint32_c)
 {}
 
 UInt32::UInt32(const UInt32 &copy_from) : BaseType(copy_from)
@@ -89,16 +105,16 @@ UInt32::width()
 }
 
 bool
-UInt32::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
+UInt32::serialize(ConstraintEvaluator &eval, DDS &dds,
                   Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
     if (!read_p())
-        read(dataset);  // read() throws Error and InternalErr
+        read();  // read() throws Error and InternalErr
 
 #if EVAL
-    if (ce_eval && !eval.eval_selection(dds, dataset))
+    if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
 #endif
 
@@ -188,10 +204,10 @@ UInt32::print_val(ostream &out, string space, bool print_decl_p)
 }
 
 bool
-UInt32::ops(BaseType *b, int op, const string &dataset)
+UInt32::ops(BaseType *b, int op)
 {
     // Extract the Byte arg's value.
-    if (!read_p() && !read(dataset)) {
+    if (!read_p() && !read()) {
         // Jose Garcia
         // Since the read method is virtual and implemented outside
         // libdap++ if we can not read the data that is the problem
@@ -201,7 +217,7 @@ UInt32::ops(BaseType *b, int op, const string &dataset)
     }
 
     // Extract the second arg's value.
-    if (!b->read_p() && !b->read(dataset)) {
+    if (!b->read_p() && !b->read()) {
         // Jose Garcia
         // Since the read method is virtual and implemented outside
         // libdap++ if we can not read the data that is the problem

@@ -53,6 +53,8 @@ static char rcsid[] not_used =
 using std::cerr;
 using std::endl;
 
+namespace libdap {
+
 /** The Byte constructor requires only the name of the variable
     to be created.  The name may be omitted, which will create a
     nameless variable.  This may be adequate for some applications.
@@ -62,10 +64,20 @@ using std::endl;
     created.
 
 */
-
-namespace libdap {
-
 Byte::Byte(const string & n): BaseType(n, dods_byte_c)
+{}
+
+/** This Byte constructor requires the name of the variable to be created
+    and the name of the dataset from which this variable is being created.
+    This constructor is used in server-side processing, loading structure in
+    from a dataset.
+
+    @brief The Byte server-side constructor.
+    @param n A string containing the name of the variable to be created.
+    @param d A string containing the name of the dataset from which the
+    variable is being created.
+*/
+Byte::Byte(const string &n, const string &d): BaseType(n, d, dods_byte_c)
 {}
 
 Byte::Byte(const Byte & copy_from): BaseType(copy_from)
@@ -105,16 +117,16 @@ unsigned int Byte::width()
     @return False if a failure to read, send or flush is detected, true
     otherwise.
 */
-bool Byte::serialize(const string & dataset, ConstraintEvaluator & eval,
-                     DDS & dds, Marshaller &m, bool ce_eval)
+bool Byte::serialize(ConstraintEvaluator & eval, DDS & dds,
+		     Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
     if (!read_p())
-        read(dataset);          // read() throws Error and InternalErr
+        read();          // read() throws Error and InternalErr
 
 #if EVAL
-    if (ce_eval && !eval.eval_selection(dds, dataset))
+    if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
 #endif
 
@@ -208,11 +220,11 @@ void Byte::print_val(ostream &out, string space, bool print_decl_p)
 	out << (int)_buf ;
 }
 
-bool Byte::ops(BaseType * b, int op, const string & dataset)
+bool Byte::ops(BaseType * b, int op)
 {
 
     // Extract the Byte arg's value.
-    if (!read_p() && !read(dataset)) {
+    if (!read_p() && !read()) {
         cerr << "This value not read!" << endl;
         // Jose Garcia
         // Since the read method is virtual and implemented outside
@@ -222,7 +234,7 @@ bool Byte::ops(BaseType * b, int op, const string & dataset)
         throw InternalErr("This value not read!");
     }
     // Extract the second arg's value.
-    if (!b->read_p() && !b->read(dataset)) {
+    if (!b->read_p() && !b->read()) {
         cerr << "This value not read!" << endl;
         // Jose Garcia
         // Since the read method is virtual and implemented outside

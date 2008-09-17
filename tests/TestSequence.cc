@@ -62,6 +62,11 @@ TestSequence::TestSequence(const string &n) : Sequence(n), d_len(4),
 {
 }
 
+TestSequence::TestSequence(const string &n, const string &d)
+    : Sequence(n, d), d_len(4), d_current(0), d_series_values(false)
+{
+}
+
 TestSequence::TestSequence(const TestSequence &rhs) : Sequence(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
@@ -94,7 +99,7 @@ TestSequence::output_values(std::ostream &out)
 // lines. Line can be no more than 255 characters long.
 
 bool 
-TestSequence::read(const string &dataset)
+TestSequence::read()
 {
     DBG(cerr << "Entering TestSequence::read for " << name() << endl);
     
@@ -119,7 +124,7 @@ TestSequence::read(const string &dataset)
     while (i != var_end()) {
         if ((*i)->send_p() || (*i)->is_in_selection()) {
             DBG(cerr << "Calling " << (*i)->name() << "->read()" << endl);
-            (*i)->read(dataset);
+            (*i)->read();
         }
         ++i;
     }

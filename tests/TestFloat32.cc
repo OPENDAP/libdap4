@@ -69,6 +69,12 @@ TestFloat32::TestFloat32(const string &n) : Float32(n), d_series_values(false)
     _buf = 0.0;
 }
 
+TestFloat32::TestFloat32(const string &n, const string &d)
+    : Float32(n, d), d_series_values(false)
+{
+    _buf = 0.0;
+}
+
 TestFloat32::TestFloat32(const TestFloat32 &rhs) : Float32(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
@@ -100,7 +106,7 @@ TestFloat32::output_values(std::ostream &out)
 }
 
 bool
-TestFloat32::read(const string &)
+TestFloat32::read()
 {
     DBG(cerr << "Entering TestFloat32::read for " << name() << endl);
     if (read_p())

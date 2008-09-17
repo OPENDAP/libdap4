@@ -101,28 +101,30 @@ public:
             DAS das;
             das.parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.hacked.HDF.das");
             
-            AttrTable::Attr_iter ei = das.get_attr_iter(2);
+	    AttrTable::Attr_iter eb = das.var_begin() ;
+            AttrTable::Attr_iter ei = eb + 2 ;
             CPPUNIT_ASSERT((*ei)->name == "percipitate_dim_0");
             BaseType *btp = dds1->find_hdf4_dimension_attribute_home(*ei);
             CPPUNIT_ASSERT(btp->name() == "percipitate" && btp->is_vector_type());
-            ei = das.get_attr_iter(4);
+            ei = eb + 4 ;
             btp = dds1->find_hdf4_dimension_attribute_home(*ei);                        
             CPPUNIT_ASSERT(btp->name() == "percipitate" && btp->is_vector_type());
 
-            ei = das.get_attr_iter(1);
+            ei = eb + 1 ;
             btp = dds1->find_hdf4_dimension_attribute_home(*ei);
             CPPUNIT_ASSERT(!btp);
 
             dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/hdf_dimension_attribute_grid.dds");
             DAS das2;
             das2.parse((string)TEST_SRC_DIR + "/dds-testsuite/hdf_dimension_attribute_grid.das");
-            ei = das2.get_attr_iter(1);
+	    eb = das2.var_begin() ;
+            ei = eb + 1 ;
             CPPUNIT_ASSERT((*ei)->name == "g_dim_0");
             btp = dds2->find_hdf4_dimension_attribute_home(*ei);
             CPPUNIT_ASSERT(btp->name() == "x" && btp->is_vector_type());
             CPPUNIT_ASSERT(btp->get_parent()->type() == dods_grid_c);
             
-            ei = das2.get_attr_iter(2);
+            ei = eb + 2 ;
             CPPUNIT_ASSERT((*ei)->name == "g_dim_1");
             btp = dds2->find_hdf4_dimension_attribute_home(*ei);                        
             CPPUNIT_ASSERT(btp->name() == "y" && btp->is_vector_type());           
@@ -141,8 +143,8 @@ public:
             DAS das;
             das.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
 
-            AttrTable::Attr_iter i = das.attr_begin();
-            while (i != das.attr_end()) {
+            AttrTable::Attr_iter i = das.var_begin();
+            while (i != das.var_end()) {
                 if ((*i)->type != Attr_container)
                    continue;
                 DBG(cerr << "looking for a destination for '" << (*i)->name
@@ -172,7 +174,7 @@ public:
 
             // There are three containers in the DAS and the _dim_0/1
             // containers should be bound to the Grid's map vectors.
-            i = das2.attr_begin();
+            i = das2.var_begin();
             DBG(cerr << "looking for a destination for '" << (*i)->name << "'"
                 << endl);
             BaseType *dest_var = 0;
@@ -210,7 +212,7 @@ public:
     void add_global_attribute_test() {
         DAS das;
         das.parse("./das-testsuite/test.1.das");
-        AttrTable::Attr_iter i = das.attr_begin();
+        AttrTable::Attr_iter i = das.var_begin();
         CPPUNIT_ASSERT(i != das.attr_end());
         
         dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.1");
@@ -288,7 +290,33 @@ public:
             cout << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Error thrown!");
         }
-        
+
+        try {
+                BaseTypeFactory factory;
+                DDS dds(&factory);
+                dds.parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.fnoc1.dds");
+                DAS das;
+                das.parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.fnoc1.das");
+		dds.container_name( "fnoc1" ) ;
+		das.container_name( "fnoc1" ) ;
+                dds.transfer_attributes(&das);
+		dds.container_name( "S2000415" ) ;
+		das.container_name( "S2000415" ) ;
+                dds.transfer_attributes(&das);
+                
+		dds.print(cout);
+		das.print(cout);
+		BaseType *bt = dds.var("WVC_Lat");
+		CPPUNIT_ASSERT(bt);
+                AttrTable &at2 = bt->get_attr_table();
+		at2.print(cout);
+                DBG2(at2.print(stderr));
+                CPPUNIT_ASSERT(at2.get_name(at2.attr_begin()) == "long_name");
+        }
+        catch (Error &e) {
+            cout << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_FAIL("Error thrown!");
+        }
     }
     
     void symbol_name_test() {

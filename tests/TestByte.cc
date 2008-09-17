@@ -85,6 +85,12 @@ TestByte::TestByte(const string &n) : Byte(n), d_series_values(false)
     _buf = 255;
 }
 
+TestByte::TestByte(const string &n, const string &d)
+    : Byte(n, d), d_series_values(false)
+{
+    _buf = 255;
+}
+
 BaseType *
 TestByte::ptr_duplicate()
 {
@@ -120,7 +126,7 @@ TestByte::output_values(std::ostream &out)
 #endif
 
 bool
-TestByte::read(const string &)
+TestByte::read()
 {
     DBG(cerr << "Entering TestByte::read for " << name() << endl);
     if (read_p())

@@ -121,21 +121,26 @@ TestGrid::TestGrid(const string &n) : Grid(n), d_series_values(false)
 {
 }
 
+TestGrid::TestGrid(const string &n, const string &d)
+    : Grid(n, d), d_series_values(false)
+{
+}
+
 TestGrid::~TestGrid()
 {
 }
 
 bool
-TestGrid::read(const string &dataset)
+TestGrid::read()
 {
     if (read_p())
 	return true;
 
-    get_array()->read(dataset);
+    get_array()->read();
 
     for (Map_iter i = map_begin(); i != map_end(); i++)
     {
-	if (!(*i)->read(dataset))
+	if (!(*i)->read())
 	{
 	    return false;
 	}

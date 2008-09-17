@@ -62,6 +62,12 @@ TestInt32::TestInt32(const string &n) : Int32(n), d_series_values(false)
     _buf = 1;
 }
 
+TestInt32::TestInt32(const string &n, const string &d)
+    : Int32(n), d_series_values(false)
+{
+    _buf = 1;
+}
+
 TestInt32::TestInt32(const TestInt32 &rhs) : Int32(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
@@ -93,7 +99,7 @@ TestInt32::output_values(std::ostream &out)
 }
 
 bool
-TestInt32::read(const string &)
+TestInt32::read()
 {
     DBG(cerr << "Entering TestInt32::read for " << name() << endl);
     if (read_p())

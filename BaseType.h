@@ -190,6 +190,7 @@ class BaseType : public DapObj
 private:
     string _name;  // name of the instance
     Type _type;   // instance's type
+    string _dataset; // name of the dataset used to create this BaseType
 
     bool _read_p;  // true if the value has been read
     bool _send_p;  // Is the variable in the projection?
@@ -210,7 +211,8 @@ protected:
 public:
     typedef stack<BaseType *> btp_stack;
 
-    BaseType(const string &n = "", const Type &t = dods_null_c);
+    BaseType(const string &n, const Type &t);
+    BaseType(const string &n, const string &d, const Type &t);
 
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();
@@ -235,6 +237,8 @@ public:
     Type type() const;
     void set_type(const Type &t);
     string type_name() const;
+
+    string dataset() const ;
 
     virtual bool is_simple_type();
     virtual bool is_vector_type();
@@ -300,11 +304,11 @@ public:
 
     virtual void add_var(BaseType *bt, Part part = nil);
 
-    virtual bool read(const string &dataset);
+    virtual bool read();
 
     virtual bool check_semantics(string &msg, bool all = false);
 
-    virtual bool ops(BaseType *b, int op, const string &dataset);
+    virtual bool ops(BaseType *b, int op);
 
     virtual void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,
@@ -399,13 +403,11 @@ public:
         This method is defined by the various data type classes. It calls the
         read() abstract method.
 
-        @param dataset The (local) name of dataset to be read.
         @param eval Use this as the constraint expression evaluator.
         @param dds The Data Descriptor Structure object corresponding
         to this dataset. See <i>The DODS User Manual</i> for
         information about this structure. */
-    virtual void intern_data(const string &dataset, ConstraintEvaluator &eval,
-                             DDS &dds);
+    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
 
     /** Sends the data from the indicated (local) dataset through the
 	connection identified by the <i>sink</i> parameter. If the
@@ -420,7 +422,6 @@ public:
 
 	@brief Move data to the net.
 
-	@param dataset The (local) name of dataset to be read.
         @param eval Use this as the constraint expression evaluator.
 	@param dds The Data Descriptor Structure object corresponding
 	to this dataset. See <i>The DODS User Manual</i> for
@@ -435,8 +436,8 @@ public:
 	@exception InternalErr.
 	@exception Error.
 	@see DDS */
-    virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, Marshaller &m, bool ce_eval = true) = 0;
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
+			   Marshaller &m, bool ce_eval = true) = 0;
 
     /** Receives data from the network connection identified by the
 	<tt>source</tt> parameter. The data is put into the class data

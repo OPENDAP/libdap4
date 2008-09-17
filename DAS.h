@@ -120,39 +120,60 @@ namespace libdap
 
     @see DDS
     @see AttrTable */
-class DAS : public AttrTable
+class DAS : public DapObj
 {
 private:
+    AttrTable *d_container ;
+    string _container_name ;
+    AttrTable d_attrs ;
+
 protected:
-    AttrTable *das_find(string name);
+    //AttrTable *das_find(string name);
 
 public:
-    DAS(AttrTable *dflt = (AttrTable *)NULL, unsigned int sz = 0);
-
-    DAS(AttrTable *attr_table, string name);
+    DAS();
+    //DAS(AttrTable *attr_table, string name);
 
     virtual ~DAS();
-    /** Returns a reference to the first attribute table. */
-    AttrTable::Attr_iter var_begin() ;
 
-    /** Returns a reference to the end of the attribute table. Does not
-        point to an attribute. */
+    virtual string container_name() ;
+    virtual void container_name( const string &cn ) ;
+    virtual AttrTable *container() ;
+
+    /** @brief Returns the top most set of attributes
+     *
+     * This could be the top most variable attribute tables, or it could be
+     * the top most dataset container attribute tables, if we have multiple
+     * datasets being used to construct this DAS
+     */
+    virtual AttrTable *get_top_level_attributes()
+    {
+	if( d_container ) return d_container ;
+	return &d_attrs ;
+    }
+
+    virtual void erase() ;
+
+    virtual unsigned int get_size() const ;
+
+    AttrTable::Attr_iter var_begin() ;
     AttrTable::Attr_iter var_end() ;
 
-    /** Returns the name of the referenced attribute table. */
-    string get_name(Attr_iter &i);
+    string get_name(AttrTable::Attr_iter &i);
+    AttrTable *get_table(AttrTable::Attr_iter &i);
 
-    /** Returns the referenced attribute table. */
-    AttrTable *get_table(Attr_iter &i);
+    virtual AttrTable *get_table(const string &name);
 
+    virtual AttrTable *add_table(const string &name, AttrTable *at);
 
-    AttrTable *get_table(const string &name);
-    AttrTable *add_table(const string &name, AttrTable *at);
-    void parse(string fname);
-    void parse(int fd);
-    void parse(FILE *in = stdin);
-    void print(FILE *out, bool dereference = false);
-    void print(ostream &out, bool dereference = false);
+    /** Read a DAS by parsing the specified file*/
+    virtual void parse(string fname);
+    virtual void parse(int fd);
+    virtual void parse(FILE *in = stdin);
+
+    /** Print the DAS */
+    virtual void print(FILE *out, bool dereference = false);
+    virtual void print(ostream &out, bool dereference = false);
 
     virtual void dump(ostream &strm) const ;
 };

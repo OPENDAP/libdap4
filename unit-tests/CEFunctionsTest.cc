@@ -190,7 +190,7 @@ public:
             BaseType *argv[2];
             argv[0] = dds->var("a");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this");
-            argv[1] = new Str;
+            argv[1] = new Str("");
             string expression = "3<second<=7";
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
@@ -209,7 +209,7 @@ public:
             BaseType *argv[2];
             argv[0] = dds->var("a");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this");
-            argv[1] = new Str;
+            argv[1] = new Str("");
             string expression = "3<first<=7";
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
@@ -234,12 +234,12 @@ public:
             argv[0] = dds->var("a");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this");
 
-            argv[1] = new Str;
+            argv[1] = new Str("");
             string expression = "first>3";
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
 
-            argv[2] = new Str;
+            argv[2] = new Str("");
             expression = "first<=7";
             dynamic_cast<Str*>(argv[2])->val2buf(&expression);
             dynamic_cast<Str*>(argv[2])->set_read_p(true);
@@ -263,7 +263,7 @@ public:
             BaseType *argv[2];
             argv[0] = dds->var("b");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this");
-            argv[1] = new Str;
+            argv[1] = new Str("");
             string expression = "3<first<=7";
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
@@ -288,12 +288,12 @@ public:
             argv[0] = dds->var("b");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this");
 
-            argv[1] = new Str;
+            argv[1] = new Str("");
             string expression = "first>3";
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
 
-            argv[2] = new Str;
+            argv[2] = new Str("");
             expression = "first<=7";
             dynamic_cast<Str*>(argv[2])->val2buf(&expression);
             dynamic_cast<Str*>(argv[2])->set_read_p(true);
@@ -317,7 +317,7 @@ public:
             BaseType *argv[2];
             argv[0] = dds->var("a");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this");
-            argv[1] = new Str;
+            argv[1] = new Str("");
             string expression = "7<first<=3";
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
@@ -339,7 +339,7 @@ public:
             BaseType *argv[2];
             argv[0] = dds->var("a");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this");
-            argv[1] = new Str;
+            argv[1] = new Str("");
             string expression = "3<=first<20";
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
@@ -372,9 +372,9 @@ public:
             CPPUNIT_ASSERT(a);
             BaseType *argv[3];
             argv[0] = a;
-            argv[1] = new Float64;
+            argv[1] = new Float64("");
             dynamic_cast<Float64*>(argv[1])->set_value(0.1);//m
-            argv[2] = new Float64;
+            argv[2] = new Float64("");
             dynamic_cast<Float64*>(argv[2])->set_value(10);//b
             BaseType *scaled = function_linear_scale(3, argv, *dds, "linear_scale_args_test");
             CPPUNIT_ASSERT(scaled->type() == dods_array_c 
@@ -396,9 +396,9 @@ public:
             CPPUNIT_ASSERT(g);
             BaseType *argv[3];
             argv[0] = g;
-            argv[1] = new Float64;
+            argv[1] = new Float64("");
             dynamic_cast<Float64*>(argv[1])->set_value(0.1);
-            argv[2] = new Float64;
+            argv[2] = new Float64("");
             dynamic_cast<Float64*>(argv[2])->set_value(10);
             BaseType *scaled = function_linear_scale(3, argv, *dds, "linear_scale_args_test");
             CPPUNIT_ASSERT(scaled->type() == dods_grid_c);
@@ -459,9 +459,9 @@ public:
             i->set_value(1);
             BaseType *argv[3];
             argv[0] = i;
-            argv[1] = new Float64;
+            argv[1] = new Float64("");
             dynamic_cast<Float64*>(argv[1])->set_value(0.1);//m
-            argv[2] = new Float64;
+            argv[2] = new Float64("");
             dynamic_cast<Float64*>(argv[2])->set_value(10);//b
             BaseType *scaled = function_linear_scale(3, argv, *dds, "linear_scale_args_test");
             CPPUNIT_ASSERT(scaled->type() == dods_float64_c); 

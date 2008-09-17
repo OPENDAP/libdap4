@@ -175,8 +175,7 @@ public:
             DBG(cerr << "s[" << i << "]: " << s[i] << endl);
         }
         
-        Array a;
-        a = *d_string;
+        Array a = *d_string;
         i = a.dim_begin();
         CPPUNIT_ASSERT(a.dimension_size(i) == 4);
         
@@ -202,8 +201,7 @@ public:
         }
         delete[] b; b = 0;
         
-        Array a;
-        a = *d_cardinal;
+        Array a = *d_cardinal;
         i = a.dim_begin();
         CPPUNIT_ASSERT(a.dimension_size(i) == 4);
         

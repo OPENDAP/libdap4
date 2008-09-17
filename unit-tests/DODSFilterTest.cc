@@ -121,7 +121,8 @@ public:
 	cont_a = new AttrTable;
 	cont_a->append_attr("size", "Int32", "7");
 	cont_a->append_attr("type", "String", "cars");
-	das = new DAS(cont_a, "a");
+	das = new DAS;
+	das->add_table( "a", cont_a ) ;
 
 	// This AttrTable looks like:
 	//      Attributes {

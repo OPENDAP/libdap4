@@ -47,7 +47,8 @@ class TestUInt16: public UInt16, public TestCommon {
     void _duplicate(const TestUInt16 &ts);
 
 public:
-    TestUInt16(const string &n = "");
+    TestUInt16(const string &n);
+    TestUInt16(const string &n, const string &d);
     TestUInt16(const TestUInt16 &rhs);
 
     virtual ~TestUInt16() {}
@@ -56,7 +57,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const string &dataset);
+    virtual bool read();
     
     virtual void output_values(std::ostream &out);
 

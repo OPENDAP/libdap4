@@ -68,6 +68,12 @@ TestFloat64::TestFloat64(const string &n) : Float64(n), d_series_values(false)
     _buf = 0.0;
 }
 
+TestFloat64::TestFloat64(const string &n, const string &d)
+    : Float64(n, d), d_series_values(false)
+{
+    _buf = 0.0;
+}
+
 TestFloat64::TestFloat64(const TestFloat64 &rhs) : Float64(rhs) , TestCommon(rhs)
 {
     _duplicate(rhs);
@@ -99,7 +105,7 @@ TestFloat64::output_values(std::ostream &out)
 }
 
 bool
-TestFloat64::read(const string &)
+TestFloat64::read()
 {
     if (read_p())
 	return true;

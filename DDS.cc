@@ -91,6 +91,7 @@ DDS::duplicate(const DDS &dds)
 {
     name = dds.name;
     d_factory = dds.d_factory;
+    d_container = dds.d_container;
 
     DDS &dds_tmp = const_cast<DDS &>(dds);
 
@@ -111,7 +112,7 @@ DDS::duplicate(const DDS &dds)
     @param n The name of the data set. Can also be set using
     set_dataset_name(). */
 DDS::DDS(BaseTypeFactory *factory, const string &n)
-        : d_factory(factory), name(n), d_timeout(0)
+        : d_factory(factory), name(n), d_container(0), d_timeout(0)
 {}
 
 /** The DDS copy constructor. */
@@ -247,11 +248,27 @@ DDS::find_matching_container(AttrTable::entry *source, BaseType **dest_variable)
 
     @param das Get attribute information from this DAS. */
 void
-DDS::transfer_attributes(DAS * das)
+DDS::transfer_attributes(DAS *das)
 {
+    // If there is a container set in the DDS then get the container from
+    // the DAS. If they are not the same container, then throw an exception
+    // (should be working on the same container). If the container does not
+    // exist in the DAS, then throw an exception
+    if( d_container )
+    {
+	if( das->container_name() != _container_name )
+	{
+	    string err = (string)"Error transferring attributes: "
+			 + "working on container in dds, but not das" ;
+	    throw InternalErr(__FILE__, __LINE__, err ) ;
+	}
+    }
+    AttrTable *top_level = das->get_top_level_attributes() ;
+
     // foreach container at the outer level
-    AttrTable::Attr_iter das_i = das->attr_begin();
-    while (das_i != das->attr_end()) {
+    AttrTable::Attr_iter das_i = top_level->attr_begin();
+    AttrTable::Attr_iter das_e = top_level->attr_end();
+    while (das_i != das_e) {
         DBG(cerr << "Working on the '" << (*das_i)->name << "' container."
             << endl);
 
@@ -346,6 +363,59 @@ DDS::filename(const string &fn)
 }
 //@}
 
+/** Get and set the current container. If there are multiple files being
+ * used to build this DDS, using a container will set a virtual structure
+ * for the current container.
+
+    @name Container Name Accessor
+    @see Dataset Name Accessors */
+
+//@{
+/** Gets the dataset file name. */
+string
+DDS::container_name()
+{
+    return _container_name;
+}
+
+/** Set the current container name and get or create a structure for that
+ * name. */
+void
+DDS::container_name(const string &cn)
+{
+    // we want to search the DDS for the top level structure with the given
+    // name. Set the container to null so that we don't search some previous
+    // container.
+    d_container = 0 ;
+    if( !cn.empty() )
+    {
+	d_container = dynamic_cast<Structure *>( var( cn ) ) ;
+	if( !d_container )
+	{
+	    // create a structure for this container. Calling add_var
+	    // while_container is null will add the new structure to DDS and
+	    // not some sub structure. Adding the new structure makes a copy
+	    // of it.  So after adding it, go get it and set d_container.
+	    Structure *s = new Structure( cn ) ;
+	    add_var( s ) ;
+	    delete s ;
+	    s = 0 ;
+	    d_container = dynamic_cast<Structure *>( var( cn ) ) ;
+	}
+    }
+    _container_name = cn;
+
+}
+
+/** Get the current container structure. */
+Structure *
+DDS::container()
+{
+    return d_container ;
+}
+
+//@}
+
 /** @brief Adds a copy of the variable to the DDS.
     Using the ptr_duplicate() method, perform a deep copy on the variable
     \e bt and adds the result to this DDS.
@@ -362,7 +432,14 @@ DDS::add_var(BaseType *bt)
 
     BaseType *btp = bt->ptr_duplicate();
     DBG2(cerr << "In DDS::add_var(), btp's address is: " << btp << endl);
-    vars.push_back(btp);
+    if( d_container )
+    {
+	d_container->add_var( bt ) ;
+    }
+    else
+    {
+	vars.push_back(btp);
+    }
 }
 
 /** Remove the named variable from the DDS. This method is not smart about
@@ -374,6 +451,12 @@ DDS::add_var(BaseType *bt)
 void
 DDS::del_var(const string &n)
 {
+    if( d_container )
+    {
+	d_container->del_var( n ) ;
+	return ;
+    }
+
     for (Vars_iter i = vars.begin(); i != vars.end(); i++) {
         if ((*i)->name() == n) {
             BaseType *bt = *i ;
@@ -449,9 +532,14 @@ BaseType *
 DDS::var(const string &n, BaseType::btp_stack *s)
 {
     string name = www2id(n);
-    BaseType *v = exact_match(name, s);
-    if (v)
-        return v;
+    BaseType *v = 0 ;
+    if( d_container )
+    {
+	return d_container->var( name, false, s ) ;
+    }
+
+    v = exact_match(name, s);
+    if (v) return v;
 
     return leaf_match(name, s);
 }

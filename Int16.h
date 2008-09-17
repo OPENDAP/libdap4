@@ -72,7 +72,8 @@ protected:
     dods_int16 _buf;
 
 public:
-    Int16(const string &n = "");
+    Int16(const string &n);
+    Int16(const string &n, const string &d);
     virtual ~Int16()
     {}
 
@@ -84,8 +85,8 @@ public:
 
     virtual unsigned int width();
 
-    virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, Marshaller &m, bool ce_eval = true);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
+			   Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
@@ -99,7 +100,7 @@ public:
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 
-    virtual bool ops(BaseType *b, int op, const string &dataset);
+    virtual bool ops(BaseType *b, int op);
 
     virtual void dump(ostream &strm) const ;
 };

@@ -62,7 +62,7 @@
 #endif
 
 // FIXME
-#include "XDRUtils.h"
+//#include "XDRUtils.h"
 
 namespace libdap
 {
@@ -109,7 +109,8 @@ protected:
     void _duplicate(const Structure &s);
 
 public:
-    Structure(const string &n = "");
+    Structure(const string &n);
+    Structure(const string &n, const string &d);
 
     Structure(const Structure &rhs);
     virtual ~Structure();
@@ -127,10 +128,9 @@ public:
 
     virtual unsigned int width();
 
-    virtual void intern_data(const string &dataset, ConstraintEvaluator &eval,
-                             DDS &dds);
-    virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, Marshaller &m, bool ce_eval = true);
+    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
+			   Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     // Do not store values in memory as for C; force users to work with the
@@ -145,8 +145,9 @@ public:
     virtual BaseType *var(const string &n, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part = nil);
+    virtual void del_var(const string &name); 
 
-    virtual bool read(const string &dataset) ;
+    virtual bool read() ;
 
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);

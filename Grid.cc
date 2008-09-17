@@ -78,6 +78,21 @@ Grid::_duplicate(const Grid &s)
 Grid::Grid(const string &n) : Constructor(n, dods_grid_c), _array_var(0)
 {}
 
+/** The Grid server-side constructor requires the name of the variable
+    to be created and the dataset name from which this variable is created.
+    Used when creating variables on the server side.
+
+    @param n A string containing the name of the variable to be
+    created.
+    @param d A string containing the name of the dataset from which this
+    variable is being created.
+
+    @brief The Grid constructor.
+*/
+Grid::Grid(const string &n, const string &d)
+    : Constructor(n, d, dods_grid_c), _array_var(0)
+{}
+
 /** @brief The Grid copy constructor. */
 Grid::Grid(const Grid &rhs) : Constructor(rhs)
 {
@@ -185,27 +200,27 @@ Grid::width()
 }
 
 void
-Grid::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds)
+Grid::intern_data(ConstraintEvaluator &eval, DDS &dds)
 {
     dds.timeout_on();
 
     if (!read_p())
-        read(dataset);  // read() throws Error and InternalErr
+        read();  // read() throws Error and InternalErr
 
     dds.timeout_off();
 
     if (_array_var->send_p())
-        _array_var->intern_data(dataset, eval, dds);
+        _array_var->intern_data(eval, dds);
 
     for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++) {
         if ((*i)->send_p()) {
-            (*i)->intern_data(dataset, eval, dds);
+            (*i)->intern_data(eval, dds);
         }
     }
 }
 
 bool
-Grid::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
+Grid::serialize(ConstraintEvaluator &eval, DDS &dds,
                 Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
@@ -215,21 +230,21 @@ Grid::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
     // implement this as a selection function.
 
     if (!read_p())
-        read(dataset);  // read() throws Error and InternalErr
+        read();  // read() throws Error and InternalErr
 
 #if EVAL
-    if (ce_eval && !eval.eval_selection(dds, dataset))
+    if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
 #endif
 
     dds.timeout_off();
 
     if (_array_var->send_p())
-        _array_var->serialize(dataset, eval, dds, m, false);
+        _array_var->serialize(eval, dds, m, false);
 
     for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++) {
         if ((*i)->send_p()) {
-            (*i)->serialize(dataset, eval, dds, m, false);
+            (*i)->serialize(eval, dds, m, false);
         }
     }
 

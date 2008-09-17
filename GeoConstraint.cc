@@ -428,7 +428,7 @@ void GeoConstraint::reorder_data_longitude_axis(Array &a)
     a.add_constraint(d_lon_dim, get_longitude_index_left(), 1,
                      get_lon_length() - 1);
     a.set_read_p(false);
-    a.read(get_dataset());
+    a.read();
     DBG2(a.print_val(stderr));
 #if 0
     char *left_data = 0;
@@ -447,7 +447,7 @@ void GeoConstraint::reorder_data_longitude_axis(Array &a)
 
     a.add_constraint(d_lon_dim, 0, 1, get_longitude_index_right());
     a.set_read_p(false);
-    a.read(get_dataset());
+    a.read();
     DBG2(a.print_val(stderr));
 #if 0
     char *right_data = 0;

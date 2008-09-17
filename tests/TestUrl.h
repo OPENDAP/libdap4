@@ -47,7 +47,8 @@ class TestUrl: public Url, public TestCommon {
     void _duplicate(const TestUrl &ts);
 
 public:
-    TestUrl(const string &n = "");
+    TestUrl(const string &n);
+    TestUrl(const string &n, const string &d);
     TestUrl(const TestUrl &rhs);
 
     virtual ~TestUrl() {}
@@ -56,7 +57,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const string &dataset);
+    virtual bool read();
     
     virtual void output_values(std::ostream &out);
 

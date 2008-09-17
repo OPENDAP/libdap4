@@ -895,7 +895,7 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
 
     try {
         // In the following call to serialize, suppress CE evaluation.
-        var.serialize(d_dataset, eval, dds, m, false);
+        var.serialize(eval, dds, m, false);
     }
     catch (Error &e) {
         throw;
@@ -920,7 +920,7 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
 
     try {
         // In the following call to serialize, suppress CE evaluation.
-        var.serialize(d_dataset, eval, dds, m, false);
+        var.serialize(eval, dds, m, false);
     }
     catch (Error &e) {
         throw;
@@ -944,7 +944,7 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
         for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
             if ((*i)->send_p()) {
                 DBG(cerr << "Sending " << (*i)->name() << endl);
-                (*i)->serialize(d_dataset, eval, dds, m, true);
+                (*i)->serialize(eval, dds, m, true);
             }
     }
     catch (Error & e) {
@@ -969,7 +969,7 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
         for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
             if ((*i)->send_p()) {
                 DBG(cerr << "Sending " << (*i)->name() << endl);
-                (*i)->serialize(d_dataset, eval, dds, m, true);
+                (*i)->serialize(eval, dds, m, true);
             }
     }
     catch (Error & e) {

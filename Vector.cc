@@ -127,6 +127,36 @@ Vector::Vector(const string & n, BaseType * v, const Type & t)
         _var->set_parent(this);
 }
 
+/** The Vector server-side constructor requires the name of the variable
+    to be created, the dataset name from which this Vector is created, and
+    a pointer to an object of the type the Vector is to hold.  The
+    name may be omitted, which will create a nameless variable. 
+    The template object may not be omitted.
+
+    @param n A string containing the name of the variable to be
+    created.
+    @param d A string containing the dataset name from which the variable is
+    being created.
+    @param v A pointer to a variable of the type to be included
+    in the Vector.
+    @param t The type of the resulting Vector object, from the Type
+    enum list.  There is no DAP2 Vector object, so all uses of this
+    method will be from the List or Array classes.  This defaults to
+    <tt>dods_null_c</tt>.
+
+    @see Type
+    @brief The Vector constructor.  */
+Vector::Vector(const string & n, const string &d, BaseType * v, const Type & t)
+        : BaseType(n, d, t), _length(-1), _var(0), _buf(0), _vec(0)
+{
+    if (v)
+        add_var(v);
+
+    DBG2(cerr << "Entering Vector ctor for object: " << this << endl);
+    if (_var)
+        _var->set_parent(this);
+}
+
 /** The Vector copy constructor. */
 Vector::Vector(const Vector & rhs): BaseType(rhs)
 {
@@ -397,15 +427,14 @@ void Vector::vec_resize(int l)
     This method is intended to be used by objects which transform DAP objects
     like the DataDDS into an ASCII CSV representation.
 
-    @param dataset A string passed to read() so data values can be read from
     the data source.
     @param eval A reference to a constraint evaluator
     @param dds The complete DDS to which this variable belongs */
 void
-Vector::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds)
+Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 {
     if (!read_p())
-        read(dataset);          // read() throws Error and InternalErr
+        read();          // read() throws Error and InternalErr
 
     // length() is not capacity; it must be set explicitly in read().
     int num = length();
@@ -444,7 +473,7 @@ Vector::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds)
                               "The capacity of *this* vector is 0.");
 
         for (int i = 0; i < num; ++i)
-            _vec[i]->intern_data(dataset, eval, dds);
+            _vec[i]->intern_data(eval, dds);
 
         break;
 
@@ -466,18 +495,18 @@ Vector::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds)
 */
 
 
-bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
-                       DDS & dds, Marshaller &m, bool ce_eval)
+bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds,
+		       Marshaller &m, bool ce_eval)
 {
     int i = 0;
 
     dds.timeout_on();
 
     if (!read_p())
-        read(dataset);          // read() throws Error and InternalErr
+        read();          // read() throws Error and InternalErr
 
 #if EVAL
-    if (ce_eval && !eval.eval_selection(dds, dataset))
+    if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
 #endif
 
@@ -525,7 +554,7 @@ bool Vector::serialize(const string & dataset, ConstraintEvaluator & eval,
 	m.put_int( num ) ;
 
         for (i = 0; i < num; ++i)
-            _vec[i]->serialize(dataset, eval, dds, m, false);
+            _vec[i]->serialize(eval, dds, m, false);
 
         break;
 

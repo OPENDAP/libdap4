@@ -50,14 +50,15 @@ protected:
     virtual AttrTable *find_matching_container(AttrTable::entry *source,
             BaseType **dest_variable);
 
+    Constructor(const string &n, const Type &t);
+    Constructor(const string &n, const string &d, const Type &t);
+
+    Constructor(const Constructor &copy_from);
 public:
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;
     typedef std::vector<BaseType *>::reverse_iterator Vars_riter ;
 
-    Constructor(const string &n, const Type &t);
-
-    Constructor(const Constructor &copy_from);
     virtual ~Constructor();
 
     Constructor &operator=(const Constructor &rhs);

@@ -151,7 +151,8 @@ public:
         @see dim_end() */
     typedef std::vector<dimension>::iterator Dim_iter ;
 
-    Array(const string &n = "", BaseType *v = 0);
+    Array(const string &n, BaseType *v);
+    Array(const string &n, const string &d, BaseType *v);
     Array(const Array &rhs);
     virtual ~Array();
 

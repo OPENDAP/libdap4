@@ -48,7 +48,8 @@ class TestFloat32: public Float32, public TestCommon {
     void _duplicate(const TestFloat32 &ts);
 
 public:
-    TestFloat32(const string &n = (char *)0);
+    TestFloat32(const string &n);
+    TestFloat32(const string &n, const string &d);
     TestFloat32(const TestFloat32 &rhs);
 
     virtual ~TestFloat32() {}
@@ -57,7 +58,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const string &dataset);
+    virtual bool read();
     
     virtual void output_values(std::ostream &out);
 

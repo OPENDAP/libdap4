@@ -47,7 +47,8 @@ class TestGrid: public Grid, public TestCommon {
     void _duplicate(const TestGrid &ts);
 
 public:
-    TestGrid(const string &n = "");
+    TestGrid(const string &n);
+    TestGrid(const string &n, const string &d);
     TestGrid(const TestGrid &rhs);
 
     virtual ~TestGrid();
@@ -56,7 +57,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const string &dataset);
+    virtual bool read();
     
     virtual void output_values(std::ostream &out);
 

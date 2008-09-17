@@ -200,7 +200,7 @@ void ArrayGeoConstraint::apply_constraint_to_data()
         d_array->set_read_p(true);
     }
     else {
-        d_array->read(get_dataset());
+        d_array->read();
     }
 }
 

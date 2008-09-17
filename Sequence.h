@@ -216,35 +216,35 @@ protected:
 
     typedef stack<SequenceValues*> sequence_values_stack_t;
 
-    virtual bool serialize_parent_part_one(const string &dataset, DDS &dds,
+    virtual bool serialize_parent_part_one(DDS &dds,
                                            ConstraintEvaluator &eval,
 					   Marshaller &m);
-    virtual void serialize_parent_part_two(const string &dataset, DDS &dds,
+    virtual void serialize_parent_part_two(DDS &dds,
                                            ConstraintEvaluator &eval,
 					   Marshaller &m);
-    virtual bool serialize_leaf(const string &dataset, DDS &dds,
+    virtual bool serialize_leaf(DDS &dds,
                                 ConstraintEvaluator &eval,
 				Marshaller &m, bool ce_eval);
 
-    virtual void intern_data_private(const string &dataset,
-                                       ConstraintEvaluator &eval,
-                                       DDS &dds,
-                                       sequence_values_stack_t &sequence_values_stack);
-    virtual void intern_data_for_leaf(const string &dataset, DDS &dds,
-                                        ConstraintEvaluator &eval,
-                                        sequence_values_stack_t &sequence_values_stack);
+    virtual void intern_data_private( ConstraintEvaluator &eval,
+                                      DDS &dds,
+                                      sequence_values_stack_t &sequence_values_stack);
+    virtual void intern_data_for_leaf(DDS &dds,
+                                      ConstraintEvaluator &eval,
+                                      sequence_values_stack_t &sequence_values_stack);
 
-    virtual void intern_data_parent_part_one(const string &dataset, DDS &dds,
+    virtual void intern_data_parent_part_one(DDS &dds,
             ConstraintEvaluator &eval,
             sequence_values_stack_t &sequence_values_stack);
 
-    virtual void intern_data_parent_part_two(const string &dataset, DDS &dds,
+    virtual void intern_data_parent_part_two(DDS &dds,
             ConstraintEvaluator &eval,
             sequence_values_stack_t &sequence_values_stack);
 
 public:
 
-    Sequence(const string &n = "");
+    Sequence(const string &n);
+    Sequence(const string &n, const string &d);
 
     Sequence(const Sequence &rhs);
 
@@ -270,13 +270,12 @@ public:
 
     virtual int number_of_rows();
 
-    virtual bool read_row(int row, const string &dataset, DDS &dds,
+    virtual bool read_row(int row, DDS &dds,
                           ConstraintEvaluator &eval, bool ce_eval = true);
 
-    virtual void intern_data(const string &dataset, ConstraintEvaluator &eval,
-                             DDS &dds);
-    virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, Marshaller &m, bool ce_eval = true);
+    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
+			   Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     /// Rest the row number counter

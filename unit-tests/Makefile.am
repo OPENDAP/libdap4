@@ -62,13 +62,14 @@ ais_testsuite/ais_database.xml: ais_testsuite/ais_database.xml.in ../config.stat
 #
 
 if CPPUNIT
-UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT RegexTest	\
-	AISDatabaseParserTest AISMergeTest AISResourcesTest ArrayTest	\
-	AttrTableTest ByteTest cgiUtilTest ancT DASTest DDSTest		\
-	DDXParserTest DODSFilterTest generalUtilTest HTTPCacheTest	\
-	HTTPConnectTest parserUtilTest RCReaderTest SequenceTest	\
-	SignalHandlerTest CEFunctionsTest GridGeoConstraintTest         \
-	ArrayGeoConstraintTest
+#UNIT_TESTS = AttrTableTest
+UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
+	RegexTest AISDatabaseParserTest AISMergeTest AISResourcesTest	\
+	ArrayTest AttrTableTest ByteTest cgiUtilTest ancT DASTest 	\
+	DDSTest	DDXParserTest DODSFilterTest generalUtilTest 		\
+	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest 	\
+	SequenceTest SignalHandlerTest CEFunctionsTest 			\
+	GridGeoConstraintTest ArrayGeoConstraintTest
 else
 UNIT_TESTS =
 
@@ -160,6 +161,9 @@ sequenceT_LDADD = ../libdap.la ../tests/libtest-types.a $(AM_LDADD)
 
 ddsT_SOURCES = ddsT.cc
 ddsT_LDADD = ../libdap.la ../tests/libtest-types.a $(AM_LDADD)
+
+dasT_SOURCES = dasT.cc
+dasT_LDADD = ../libdap.la ../tests/libtest-types.a $(AM_LDADD)
 
 CEFunctionsTest_SOURCES = CEFunctionsTest.cc
 CEFunctionsTest_LDADD = ../libdap.la ../libdapserver.la ../tests/libtest-types.a $(AM_LDADD)

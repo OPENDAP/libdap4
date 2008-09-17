@@ -70,7 +70,8 @@ private:
     friend class Str;
 
 public:
-    Url(const string &n = "");
+    Url(const string &n);
+    Url(const string &n, const string &d);
     virtual ~Url()
     {}
 

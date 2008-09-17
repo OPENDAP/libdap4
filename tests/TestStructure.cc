@@ -71,6 +71,11 @@ TestStructure::TestStructure(const string &n) : Structure(n),
 {
 }
 
+TestStructure::TestStructure(const string &n, const string &d)
+    : Structure(n, d), d_series_values(false)
+{
+}
+
 TestStructure::~TestStructure()
 {
 }
@@ -111,14 +116,14 @@ TestStructure::output_values(std::ostream &out)
 // comprise the structure. 
 
 bool
-TestStructure::read(const string &dataset)
+TestStructure::read()
 {
     if (read_p())
 	return true;
 
     for (Vars_iter i = var_begin(); i != var_end(); i++)
     {
-	if (!(*i)->read(dataset))
+	if (!(*i)->read())
 	{
 	    return false;
 	}

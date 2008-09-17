@@ -79,6 +79,12 @@ TestArray::TestArray(const string &n, BaseType *v) : Array(n, v),
 {
 }
 
+TestArray::TestArray(const string &n, const string &d, BaseType *v)
+    : Array(n, d, v),
+        d_series_values(false)
+{
+}
+
 TestArray::TestArray(const TestArray &rhs) : Array(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
@@ -149,7 +155,7 @@ int TestArray::m_offset(int y, Dim_iter X, int x)
 
 /** Only call this method for a two dimensional array */
 void
-TestArray::constrained_matrix(const string &dataset, char *constrained_array)
+TestArray::constrained_matrix(char *constrained_array)
 {
     int unconstrained_size = 1;
     Dim_iter d = dim_begin();
@@ -162,7 +168,7 @@ TestArray::constrained_matrix(const string &dataset, char *constrained_array)
     char *elem_val = new char[elem_width];
 
     for (int i = 0; i < unconstrained_size; ++i) {
-        var()->read(dataset);
+        var()->read();
         var()->buf2val((void **) &elem_val);
 
         memcpy(whole_array + i * elem_width, elem_val, elem_width);
@@ -223,7 +229,7 @@ TestArray::output_values(std::ostream &out)
 }
 
 bool
-TestArray::read(const string &dataset)
+TestArray::read()
 {
     if (read_p())
 	return true;
@@ -253,12 +259,12 @@ TestArray::read(const string &dataset)
                 build_special_values();
             } 
             else if (dimensions() == 2) {
-                constrained_matrix(dataset, tmp);
+                constrained_matrix(tmp);
                 val2buf(tmp);
             }
             else {
                 for (unsigned i = 0; i < array_len; ++i) {
-                    var()->read(dataset);
+                    var()->read();
                     var()->buf2val((void **)&elem_val); // internal buffer to ELEM_VAL
                     memcpy(tmp + i * elem_wid, elem_val, elem_wid);
                     var()->set_read_p(false); // pick up the next value
@@ -267,7 +273,7 @@ TestArray::read(const string &dataset)
             }
         }
         else {
-            var()->read(dataset);
+            var()->read();
 	    var()->buf2val((void **)&elem_val);
 
 	    for (unsigned i = 0; i < array_len; ++i) {
@@ -291,14 +297,14 @@ TestArray::read(const string &dataset)
         
         if (get_series_values()) {
                 for (unsigned i = 0; i < array_len; ++i) {
-                    var()->read(dataset);
+                    var()->read();
                     var()->buf2val((void **)&elem_val); // internal buffer to ELEM_VAL
                     memcpy(tmp + i * elem_wid, elem_val, elem_wid);
                     var()->set_read_p(false); // pick up the next value
                  }
         }
         else {
-            var()->read(dataset);
+            var()->read();
             var()->buf2val((void **)&elem_val);
 
             for (unsigned i = 0; i < array_len; ++i) {
@@ -336,7 +342,7 @@ TestArray::read(const string &dataset)
 
 	    // read values into the new instance.
 	    
-	    elem->read(dataset);
+	    elem->read();
 
 	    // now load the new instance in the array.
 

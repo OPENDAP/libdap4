@@ -47,7 +47,8 @@ class TestInt32: public Int32, public TestCommon {
     void _duplicate(const TestInt32 &ts);
 
 public:
-    TestInt32(const string &n = "");
+    TestInt32(const string &n);
+    TestInt32(const string &n, const string &d);
     TestInt32(const TestInt32 &rhs);
 
     virtual ~TestInt32() {}
@@ -56,7 +57,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const string &dataset);
+    virtual bool read();
     
     virtual void output_values(std::ostream &out);
 

@@ -76,7 +76,8 @@ protected:
     dods_byte _buf;
 
 public:
-    Byte(const string &n = "");
+    Byte(const string &n);
+    Byte(const string &n, const string &d);
 
     virtual ~Byte()
     {}
@@ -89,8 +90,8 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                   DDS &dds, Marshaller &m, bool ce_eval);
+    bool serialize(ConstraintEvaluator &eval, DDS &dds,
+		   Marshaller &m, bool ce_eval);
     bool deserialize(UnMarshaller &um, DDS *, bool);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
@@ -104,7 +105,7 @@ public:
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 
-    virtual bool ops(BaseType *b, int op, const string &dataset);
+    virtual bool ops(BaseType *b, int op);
 
     virtual void dump(ostream &strm) const ;
 };

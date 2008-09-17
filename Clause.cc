@@ -161,8 +161,7 @@ Clause::value(const string &dataset, DDS &dds)
         for (rvalue_list_iter i = _args->begin();
              i != _args->end() && !result;
              i++) {
-            result = result || btp->ops((*i)->bvalue(dataset, dds),
-                                        _op, dataset);
+            result = result || btp->ops((*i)->bvalue(dataset, dds), _op);
         }
 
         return result;

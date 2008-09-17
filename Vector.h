@@ -91,7 +91,8 @@ protected:
     void _duplicate(const Vector &v);
 
 public:
-    Vector(const string &n = "", BaseType *v = 0, const Type &t = dods_null_c);
+    Vector(const string &n, BaseType *v, const Type &t);
+    Vector(const string &n, const string &d, BaseType *v, const Type &t);
     Vector(const Vector &rhs);
 
     virtual ~Vector();
@@ -111,10 +112,9 @@ public:
 
     virtual void set_length(int l);
 
-    virtual void intern_data(const string &dataset, ConstraintEvaluator &eval,
-                             DDS &dds);
-    virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, Marshaller &m, bool ce_eval = true);
+    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
+			   Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);

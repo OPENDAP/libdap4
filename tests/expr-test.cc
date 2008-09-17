@@ -595,7 +595,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
 
         try {
             // In the following call to serialize, suppress CE evaluation.
-            var->serialize(dds_name, eval, server, m, false);
+            var->serialize(eval, server, m, false);
         }
         catch(Error & e) {
             delete var;
@@ -619,7 +619,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
              i++)
             if ((*i)->send_p()) {
                 DBG(cerr << "Sending " << (*i)->name() << endl);
-                (*i)->serialize(dds_name, eval, server, m, true);
+                (*i)->serialize(eval, server, m, true);
             }
 
 	fflush(pout);
@@ -710,7 +710,7 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
         if (!var)
             throw Error(unknown_error, "Error calling the CE function.");
 
-        var->intern_data(dds_name, eval, server);
+        var->intern_data(eval, server);
 
         var->set_send_p(true);
         server.add_var(var);
@@ -718,7 +718,7 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
     else {
         for (DDS::Vars_iter i = server.var_begin(); i != server.var_end(); i++)
             if ((*i)->send_p())
-                (*i)->intern_data(dds_name, eval, server);
+                (*i)->intern_data(eval, server);
     }
 
     cout << "The data:\n";

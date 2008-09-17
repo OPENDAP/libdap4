@@ -182,7 +182,9 @@ attr_start:
 		name = new string();
 		type = new string();
 		attr_tab_stack = new vector<AttrTable *>;
-		PUSH(DAS_OBJ(arg)); // push outermost AttrTable
+
+		// push outermost AttrTable
+		PUSH(DAS_OBJ(arg)->get_top_level_attributes());
 	}
     attributes
     {
@@ -392,7 +394,8 @@ alias:          SCAN_ALIAS SCAN_WORD
 		} 
                 SCAN_WORD
                 {
-		    add_alias(DAS_OBJ(arg), TOP_OF_STACK, *name, string($4))
+		    add_alias( DAS_OBJ(arg)->get_top_level_attributes(),
+		               TOP_OF_STACK, *name, string($4) ) ;
                 }
                 ';'
 ;

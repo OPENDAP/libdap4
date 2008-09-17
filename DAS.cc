@@ -54,7 +54,8 @@ static char rcsid[] not_used =
 #include <iostream>
 #include <string>
 
-#include "DAS.h"  // follows pragma since DAS.h is interface
+#include "DAS.h"
+#include "AttrTable.h"
 #include "Error.h"
 #include "InternalErr.h"
 #include "parser.h"
@@ -74,26 +75,9 @@ extern int dasparse(void *arg); // defined in das.tab.c
 
 namespace libdap {
 
-AttrTable *
-DAS::das_find(string name)
-{
-    return find_container(name); // Only containers at the top level.
-}
-
-/** Create a DAS from a single attribute table.
-
-    \note In an older version of this class, <tt>dflt</tt> and <tt>sz</tt>
-    initialized a hash table. That is no longer used and these
-    params should no longer matter. Note that this constructor is
-    effectively the empty constructor. 11/23/98 jhrg
-
-    @param dflt A pointer to a valid attribute table.
-    @param sz The number of entries in the table. This is unused. It
-    was part of the ctor when DAS used the old GNU VHMap class. I
-    switched from that to a SLList of struct toplevel_entry objects
-    because the VHMap class had bugs I didn't want to fix. 11/23/98
-    jhrg  */
-DAS::DAS(AttrTable *, unsigned int)
+/** Create an empty DAS
+ */
+DAS::DAS() : DapObj(), d_container( 0 )
 {}
 
 /** Create a DAS object with one attribute table. Use <tt>append_attr()</tt>
@@ -103,54 +87,157 @@ DAS::DAS(AttrTable *, unsigned int)
     @param attr The initial AttrTable.
     @param name The name of the DAS parent structure.
 */
-
+/*
 DAS::DAS(AttrTable *attr, string name)
 {
     append_container(attr, www2id(name));
 }
+*/
 
-// The class DASVHMap knows that it contains pointers to things and correctly
-// makes copies of those things when its copy ctor is called, so DAS can do a
-// simple member-wise copy. Similarly, we don't need to define our own op=.
+// FIXME: Need to create copy constructor and op=.
 
-// This deletes the pointers to AttrTables allocated during the parse (and at
-// other times). jhrg 7/29/94
-
+/** @brief This deletes the pointers to AttrTables allocated during the parse
+ * (and at other times). jhrg 7/29/94
+ */
 DAS::~DAS()
 {}
 
+/** @brief Returns the name of the current attribute container when multiple
+ * files used to build this DAS
+ */
+string
+DAS::container_name()
+{
+    return _container_name ;
+}
+
+/** @brief Sets the name of the current attribute container when multiple
+ * files used to build this DAS.
+ *
+ * @param cn container name
+ */
+void
+DAS::container_name( const string &cn )
+{
+    // We want to find a top level attribute table with the given name. So
+    // set d_container to null first so that we aren't searching some
+    // previous container
+    if( cn != _container_name )
+    {
+	d_container = 0 ;
+	if( !cn.empty() )
+	{
+	    d_container = get_table( cn ) ;
+	    if( !d_container )
+	    {
+		d_container = add_table( cn, new AttrTable ) ;
+	    }
+	}
+	_container_name = cn;
+    }
+}
+
+/** @brief Returns the current attribute container when multiple files
+ * used to build this DAS.
+ *
+ * @return current attribute table for current container
+ */
+AttrTable *
+DAS::container()
+{
+    return d_container ;
+}
+
+/** @brief Returns the number of attributes in the current attribute table
+ *
+ * If the there is a container set, then return the number of variable
+ * attribute tables for the current container. If not set then return the
+ * number of current attribute tables in the outermost attribute table.
+ */
+unsigned int
+DAS::get_size() const
+{
+    if( d_container )
+    {
+	return d_container->get_size() ;
+    }
+    return d_attrs.get_size() ;
+}
+
+/** @brief erase all attributes in this DAS
+ */
+void
+DAS::erase()
+{
+    if( d_container )
+    {
+	d_container->erase() ;
+    }
+    else
+    {
+	d_attrs.erase() ;
+    }
+}
+
+/** @brief Returns a reference to the attribute table for the first variable.
+ */
 AttrTable::Attr_iter
 DAS::var_begin()
 {
-    return AttrTable::attr_begin() ;
+    if( d_container )
+    {
+	return d_container->attr_begin() ;
+    }
+    return d_attrs.attr_begin() ;
 }
 
+/** Returns a reference to the end of the attribute table. Does not
+ *  point to an attribute table.
+ */
 AttrTable::Attr_iter
 DAS::var_end()
 {
-    return AttrTable::attr_end() ;
+    if( d_container )
+    {
+	return d_container->attr_end() ;
+    }
+    return d_attrs.attr_end() ;
 }
 
-
+/** @brief Returns the name of the referenced variable attribute table.
+ */
 string
-DAS::get_name(Attr_iter &i)
+DAS::get_name(AttrTable::Attr_iter &i)
 {
-    return AttrTable::get_name(i);
+    if( d_container )
+    {
+	return d_container->get_name( i ) ;
+    }
+    return d_attrs.get_name( i ) ;
 }
 
-/** @brief Returns the attribute table. */
+/** @brief Returns the referenced variable attribute table.
+ */
 AttrTable *
-DAS::get_table(Attr_iter &i)
+DAS::get_table(AttrTable::Attr_iter &i)
 {
-    return AttrTable::get_attr_table(i);
+    if( d_container )
+    {
+	return d_container->get_attr_table( i ) ;
+    }
+    return d_attrs.get_attr_table( i ) ;
 }
 
-/** @brief Returns the attribute table with the given name.
-*/
+/** @brief Returns the variable attribute table with the given name.
+ */
 AttrTable *
-DAS::get_table(const string &name)
+DAS::get_table( const string &name )
 {
-    return AttrTable::get_attr_table(name);
+    if( d_container )
+    {
+	return d_container->get_attr_table( name ) ;
+    }
+    return d_attrs.get_attr_table( name ) ;
 }
 
 //@}
@@ -160,12 +247,17 @@ DAS::get_table(const string &name)
 */
 //@{
 
-/** @brief Adds an attribute table to the DAS. */
+/** @brief Adds a variable attribute table to the DAS or the current
+ * dataset container attribute table.
+ */
 AttrTable *
-DAS::add_table(const string &name, AttrTable *at)
+DAS::add_table( const string &name, AttrTable *at )
 {
-    DBG(cerr << "Adding table: " << name << "(" << at << ")" << endl);
-    return AttrTable::append_container(at, name);
+    if( d_container )
+    {
+	return d_container->append_container( at, name ) ;
+    }
+    return d_attrs.append_container( at, name ) ;
 }
 
 //@}
@@ -280,7 +372,7 @@ DAS::print(FILE *out, bool dereference)
 {
     fprintf(out, "Attributes {\n") ;
 
-    AttrTable::print(out, "    ", dereference);
+    d_attrs.print(out, "    ", dereference);
 
     fprintf(out, "}\n") ;
 }
@@ -302,7 +394,7 @@ DAS::print(ostream &out, bool dereference)
 {
     out << "Attributes {\n" ;
 
-    AttrTable::print(out, "    ", dereference);
+    d_attrs.print(out, "    ", dereference);
 
     out << "}\n" ;
 }
@@ -320,7 +412,16 @@ DAS::dump(ostream &strm) const
     strm << DapIndent::LMarg << "DAS::dump - ("
          << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
-    AttrTable::dump(strm) ;
+    if( d_container )
+    {
+	strm << DapIndent::LMarg << "current container: " << _container_name
+	     << endl ;
+    }
+    else
+    {
+	strm << DapIndent::LMarg << "current container: NONE" << endl ;
+    }
+    d_attrs.dump(strm) ;
     DapIndent::UnIndent() ;
 }
 

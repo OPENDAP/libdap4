@@ -62,6 +62,11 @@ TestStr::TestStr(const string &n) : Str(n), d_series_values(false)
 {
 }
 
+TestStr::TestStr(const string &n, const string &d)
+    : Str(n, d), d_series_values(false)
+{
+}
+
 TestStr::TestStr(const TestStr &rhs) : Str(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
@@ -93,7 +98,7 @@ TestStr::output_values(std::ostream &out)
 }
 
 bool
-TestStr::read(const string &)
+TestStr::read()
 {
     static int count = 0;
     

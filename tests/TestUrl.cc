@@ -60,6 +60,11 @@ TestUrl::TestUrl(const string &n) : Url(n), d_series_values(false)
 {
 }
 
+TestUrl::TestUrl(const string &n, const string &d)
+    : Url(n), d_series_values(false)
+{
+}
+
 TestUrl::TestUrl(const TestUrl &rhs) : Url(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
@@ -91,7 +96,7 @@ TestUrl::output_values(std::ostream &out)
 }
 
 bool
-TestUrl::read(const string &)
+TestUrl::read()
 {
     if (read_p())
 	return true;

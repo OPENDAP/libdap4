@@ -67,6 +67,7 @@ BaseType::_duplicate(const BaseType &bt)
 {
     _name = bt._name;
     _type = bt._type;
+    _dataset = bt._dataset;
     _read_p = bt._read_p; // added, reza
     _send_p = bt._send_p; // added, reza
     d_in_selection = bt.d_in_selection;
@@ -91,7 +92,25 @@ BaseType::_duplicate(const BaseType &bt)
     data in this variable to a client DODS process.
     @see Type */
 BaseType::BaseType(const string &n, const Type &t)
-        : _name(n), _type(t), _read_p(false), _send_p(false),
+        : _name(n), _type(t), _dataset(""), _read_p(false), _send_p(false),
+        d_in_selection(false), _synthesized_p(false), d_parent(0)
+{}
+
+/** The BaseType constructor needs a name, a dataset, and a type.
+    The BaseType class exists to provide data to
+    type classes that inherit from it.  The constructors of those
+    classes call the BaseType constructor; it is never called
+    directly.
+
+    @brief The BaseType constructor.
+    @param n A string containing the name of the new variable.
+    @param d A string containing the dataset name from which this variable
+    is created
+    @param t The type of the variable.
+    data in this variable to a client DODS process.
+    @see Type */
+BaseType::BaseType(const string &n, const string &d, const Type &t)
+        : _name(n), _type(t), _dataset(d), _read_p(false), _send_p(false),
         d_in_selection(false), _synthesized_p(false), d_parent(0)
 {}
 
@@ -129,6 +148,7 @@ BaseType::toString()
     oss << "BaseType (" << this << "):" << endl
     << "          _name: " << _name << endl
     << "          _type: " << type_name() << endl
+    << "          _dataset: " << _dataset << endl
     << "          _read_p: " << _read_p << endl
     << "          _send_p: " << _send_p << endl
     << "          _synthesized_p: " << _synthesized_p << endl
@@ -155,6 +175,7 @@ BaseType::dump(ostream &strm) const
 
     strm << DapIndent::LMarg << "name: " << _name << endl ;
     strm << DapIndent::LMarg << "type: " << type_name() << endl ;
+    strm << DapIndent::LMarg << "dataset: " << _dataset << endl ;
     strm << DapIndent::LMarg << "read_p: " << _read_p << endl ;
     strm << DapIndent::LMarg << "send_p: " << _send_p << endl ;
     strm << DapIndent::LMarg << "synthesized_p: " << _synthesized_p << endl ;
@@ -181,6 +202,19 @@ BaseType::set_name(const string &n)
 {
     string name = n;
     _name = www2id(name); // www2id writes into its param.
+}
+
+/** @brief Returns the name of the dataset used to create this instance
+
+    A dataset from which the data is to be read. The meaning of this string
+    will vary among different types of data sources. It \e may be the name
+    of a data file or an identifier used to read data from a relational
+    database.
+ */
+string
+BaseType::dataset() const
+{
+    return _dataset;
 }
 
 /** @brief Returns the type of the class instance. */
@@ -680,15 +714,10 @@ BaseType::add_var(BaseType *, Part)
     values remain in the Sequence, false to indicate no more values remain.
     (see Sequence::serialize() and Sequence::read_row()).
 
-    @param dataset A string naming the dataset from which the data is to
-    be read. The meaning of this string will vary among different types of
-    data sources. It \e may be the name of a data file or an identifier
-    used to read data from a relational database.
-
     @see BaseType
     @see Sequence  */
 bool
-BaseType::read(const string &)
+BaseType::read()
 {
     if (_read_p)
         return false;
@@ -697,12 +726,12 @@ BaseType::read(const string &)
 }
 
 void
-BaseType::intern_data(const string &dataset, ConstraintEvaluator &, DDS &dds)
+BaseType::intern_data(ConstraintEvaluator &, DDS &dds)
 {
     dds.timeout_on();
 
     if (!read_p())
-        read(dataset);          // read() throws Error and InternalErr
+        read();          // read() throws Error and InternalErr
 
     dds.timeout_off();
 }
@@ -973,11 +1002,9 @@ BaseType::check_semantics(string &msg, bool)
     is implied. Choose one from the following: <tt>EQUAL</tt>,
     <tt>NOT_EQUAL</tt>, <tt>GREATER</tt>, <tt>GREATER_EQL</tt>,
     <tt>LESS</tt>, <tt>LESS_EQL</tt>, and <tt>REGEXP</tt>.
-    @param dataset The name of the dataset from which the instance's
-    data has come (or is to come).
     @return The boolean value of the comparison. */
 bool
-BaseType::ops(BaseType *, int, const string &)
+BaseType::ops(BaseType *, int)
 {
     // Even though ops is a public method, it can never be called because
     // they will never have a BaseType object since this class is abstract,

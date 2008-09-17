@@ -47,7 +47,8 @@ class TestInt16: public Int16, public TestCommon {
     void _duplicate(const TestInt16 &ts);
 
 public:
-    TestInt16(const string &n = "");
+    TestInt16(const string &n);
+    TestInt16(const string &n, const string &d);
     TestInt16(const TestInt16 &rhs);
 
     virtual ~TestInt16() {}
@@ -56,7 +57,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const string &dataset);
+    virtual bool read();
     
     virtual void output_values(std::ostream &out);
 

@@ -50,7 +50,8 @@ class TestStr: public Str, public TestCommon {
     void _duplicate(const TestStr &ts);
 
 public:
-    TestStr(const string &n = "");
+    TestStr(const string &n);
+    TestStr(const string &n, const string &d);
     TestStr(const TestStr &rhs);
 
     virtual ~TestStr() {}
@@ -59,7 +60,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const string &dataset);
+    virtual bool read();
     
     virtual void output_values(std::ostream &out);
 

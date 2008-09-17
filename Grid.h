@@ -128,7 +128,8 @@ private:
 
 public:
 
-    Grid(const string &n = "");
+    Grid(const string &n);
+    Grid(const string &n, const string &d);
     Grid(const Grid &rhs);
     virtual ~Grid();
 
@@ -164,10 +165,9 @@ public:
 
     virtual void clear_constraint();
 
-    virtual void intern_data(const string &dataset, ConstraintEvaluator &eval,
-                             DDS &dds);
-    virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, Marshaller &m, bool ce_eval = true);
+    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
+			   Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     virtual unsigned int val2buf(void *buf, bool reuse = false);

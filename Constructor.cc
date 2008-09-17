@@ -63,6 +63,20 @@ Constructor::Constructor(const string &n, const Type &t)
         : BaseType(n, t)
 {}
 
+/** Server-side constructor that takes the name of the variable to be
+ * created, the dataset name from which this variable is being created, and
+ * the type of data being stored in the Constructor. This is a protected
+ * constructor, available only to derived classes of Constructor
+ *
+ * @param n string containing the name of the variable to be created
+ * @param d string containing the name of the dataset from which this
+ * variable is being created
+ * @param t type of data being stored
+ */
+Constructor::Constructor(const string &n, const string &d, const Type &t)
+        : BaseType(n, d, t)
+{}
+
 Constructor::Constructor(const Constructor &rhs) : BaseType(rhs)
 {}
 

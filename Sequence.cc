@@ -152,6 +152,24 @@ Sequence::Sequence(const string &n) : Constructor(n, dods_sequence_c),
         d_leaf_sequence(false), d_top_most(false)
 {}
 
+/** The Sequence server-side constructor requires the name of the variable
+    to be created and the dataset name from which this variable is being
+    created.
+
+    @param n A string containing the name of the variable to be
+    created.
+    @param d A string containing the name of the dataset from which this
+    variable is being created.
+
+    @brief The Sequence server-side constructor. */
+Sequence::Sequence(const string &n, const string &d)
+    : Constructor(n, d, dods_sequence_c),
+      d_row_number(-1), d_starting_row_number(-1),
+      d_row_stride(1), d_ending_row_number(-1),
+      d_unsent_data(false), d_wrote_soi(false),
+      d_leaf_sequence(false), d_top_most(false)
+{}
+
 /** @brief The Sequence copy constructor. */
 Sequence::Sequence(const Sequence &rhs) : Constructor(rhs)
 {
@@ -566,14 +584,12 @@ Sequence::reset_row_number()
     should be called again because there's more data to be read.
     FALSE indicates the end of the Sequence.
     @param row The row number to read.
-    @param dataset A string, often a file name, used to refer to t he
-    dataset.
     @param dds A reference to the DDS for this dataset.
     @param eval Use this as the constraint expression evaluator.
     @param ce_eval If True, evaluate any CE, otherwise do not.
 */
 bool
-Sequence::read_row(int row, const string &dataset, DDS &dds,
+Sequence::read_row(int row, DDS &dds,
                    ConstraintEvaluator &eval, bool ce_eval)
 {
     DBG2(cerr << "Entering Sequence::read_row for " << name() << endl);
@@ -593,13 +609,13 @@ Sequence::read_row(int row, const string &dataset, DDS &dds,
     int eof = 0;  // Start out assuming EOF is false.
     while (!eof && d_row_number < row) {
         if (!read_p()) {
-            eof = (read(dataset) == false);
+            eof = (read() == false);
         }
 
         // Advance the row number if ce_eval is false (we're not supposed to
         // evaluate the selection) or both ce_eval and the selection are
         // true.
-        if (!eof && (!ce_eval || eval.eval_selection(dds, dataset)))
+        if (!eof && (!ce_eval || eval.eval_selection(dds, dataset())))
             d_row_number++;
 
         set_read_p(false); // ...so that the next instance will be read
@@ -693,16 +709,16 @@ Sequence::is_end_of_rows(int i)
     </ol>
 */
 bool
-Sequence::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
+Sequence::serialize(ConstraintEvaluator &eval, DDS &dds,
                     Marshaller &m, bool ce_eval)
 {
     DBG2(cerr << "Entering Sequence::serialize for " << name() << endl);
 
     // Special case leaf sequences!
     if (is_leaf_sequence())
-        return serialize_leaf(dataset, dds, eval, m, ce_eval);
+        return serialize_leaf(dds, eval, m, ce_eval);
     else
-        return serialize_parent_part_one(dataset, dds, eval, m);
+        return serialize_parent_part_one(dds, eval, m);
 }
 
 // We know this is not a leaf Sequence. That means that this Sequence holds
@@ -710,7 +726,7 @@ Sequence::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
 // the actual transmission of values.
 
 bool
-Sequence::serialize_parent_part_one(const string &dataset, DDS &dds,
+Sequence::serialize_parent_part_one(DDS &dds,
                                     ConstraintEvaluator &eval, Marshaller &m)
 {
     DBG2(cerr << "Entering serialize_parent_part_one for " << name() << endl);
@@ -721,7 +737,7 @@ Sequence::serialize_parent_part_one(const string &dataset, DDS &dds,
     // found. 6/1/2001 jhrg
     // Since this is a parent sequence, read the row ignoring the CE (all of
     // the CE clauses will be evaluated by the leaf sequence).
-    bool status = read_row(i, dataset, dds, eval, false);
+    bool status = read_row(i, dds, eval, false);
     DBG2(cerr << "Sequence::serialize_parent_part_one::read_row() status: " << status << endl);
 
     while (status && !is_end_of_rows(i)) {
@@ -742,12 +758,12 @@ Sequence::serialize_parent_part_one(const string &dataset, DDS &dds,
             // sequence must be the lowest level sequence with values whose send_p
             // property is true.
             if ((*iter)->send_p() && (*iter)->type() == dods_sequence_c)
-                (*iter)->serialize(dataset, eval, dds, m);
+                (*iter)->serialize(eval, dds, m);
         }
 
         set_read_p(false); // ...so this will read the next instance
 
-        status = read_row(i, dataset, dds, eval, false);
+        status = read_row(i, dds, eval, false);
         DBG(cerr << "Sequence::serialize_parent_part_one::read_row() status: " << status << endl);
     }
     // Reset current row number for next nested sequence element.
@@ -776,15 +792,14 @@ Sequence::serialize_parent_part_one(const string &dataset, DDS &dds,
 // NB: This code only works if the child sequences appear after all other
 // variables.
 void
-Sequence::serialize_parent_part_two(const string &dataset, DDS &dds,
+Sequence::serialize_parent_part_two(DDS &dds,
                                     ConstraintEvaluator &eval, Marshaller &m)
 {
     DBG(cerr << "Entering serialize_parent_part_two for " << name() << endl);
 
     BaseType *btp = get_parent();
     if (btp && btp->type() == dods_sequence_c)
-        dynamic_cast<Sequence&>(*btp).serialize_parent_part_two(dataset, dds,
-                eval, m);
+        dynamic_cast<Sequence&>(*btp).serialize_parent_part_two(dds, eval, m);
 
     if (d_unsent_data) {
         DBG(cerr << "Writing Start of Instance marker" << endl);
@@ -798,7 +813,7 @@ Sequence::serialize_parent_part_two(const string &dataset, DDS &dds,
                 << (*iter)->name() << endl);
             if ((*iter)->send_p() && (*iter)->type() != dods_sequence_c) {
                 DBG(cerr << "Send P is true, sending " << (*iter)->name() << endl);
-                (*iter)->serialize(dataset, eval, dds, m, false);
+                (*iter)->serialize(eval, dds, m, false);
             }
         }
 
@@ -809,7 +824,7 @@ Sequence::serialize_parent_part_two(const string &dataset, DDS &dds,
 // This code is only run by a leaf sequence. Note that a one level sequence
 // is also a leaf sequence.
 bool
-Sequence::serialize_leaf(const string &dataset, DDS &dds,
+Sequence::serialize_leaf(DDS &dds,
                          ConstraintEvaluator &eval, Marshaller &m, bool ce_eval)
 {
     DBG(cerr << "Entering Sequence::serialize_leaf for " << name() << endl);
@@ -817,7 +832,7 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds,
 
     // read_row returns true if valid data was read, false if the EOF was
     // found. 6/1/2001 jhrg
-    bool status = read_row(i, dataset, dds, eval, ce_eval);
+    bool status = read_row(i, dds, eval, ce_eval);
     DBG(cerr << "Sequence::serialize_leaf::read_row() status: " << status << endl);
 
     // Once the first valid (satisfies the CE) row of the leaf sequence has
@@ -835,8 +850,8 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds,
     if (status && !is_end_of_rows(i)) {
         BaseType *btp = get_parent();
         if (btp && btp->type() == dods_sequence_c)
-            dynamic_cast<Sequence&>(*btp).serialize_parent_part_two(dataset,
-                    dds, eval, m);
+            dynamic_cast<Sequence&>(*btp).serialize_parent_part_two(dds,
+								    eval, m);
     }
 
     d_wrote_soi = false;
@@ -853,13 +868,13 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds,
                 << (*iter)->name() << endl);
             if ((*iter)->send_p()) {
                 DBG(cerr << "Send P is true, sending " << (*iter)->name() << endl);
-                (*iter)->serialize(dataset, eval, dds, m, false);
+                (*iter)->serialize(eval, dds, m, false);
             }
         }
 
         set_read_p(false); // ...so this will read the next instance
 
-        status = read_row(i, dataset, dds, eval, ce_eval);
+        status = read_row(i, dds, eval, ce_eval);
         DBG(cerr << "Sequence::serialize_leaf::read_row() status: " << status << endl);
     }
 
@@ -893,11 +908,10 @@ Sequence::serialize_leaf(const string &dataset, DDS &dds,
     Sequences which have a parent (directly or indirectly) variable that is
     a Sequence.
 
-    @param dataset The name of the data set
     @param eval Use this contraint evaluator
     @param dds This DDS holds the variables for the data source */
 void
-Sequence::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds)
+Sequence::intern_data(ConstraintEvaluator &eval, DDS &dds)
 {
     DBG(cerr << "Sequence::intern_data - for " << name() << endl);
     DBG2(cerr << "    intern_data, values: " << &d_values << endl);
@@ -911,28 +925,27 @@ Sequence::intern_data(const string &dataset, ConstraintEvaluator &eval, DDS &dds
               << ") on stack; size: " << sequence_values_stack.size() << endl);
     sequence_values_stack.push(&d_values);
 
-    intern_data_private(dataset, eval, dds, sequence_values_stack);
+    intern_data_private(eval, dds, sequence_values_stack);
 }
 
 void
-Sequence::intern_data_private(const string &dataset,
-                                ConstraintEvaluator &eval,
-                                DDS &dds,
-                                sequence_values_stack_t &sequence_values_stack)
+Sequence::intern_data_private(ConstraintEvaluator &eval,
+                              DDS &dds,
+                              sequence_values_stack_t &sequence_values_stack)
 {
     DBG(cerr << "Entering intern_data_private for " << name() << endl);
 
     if (is_leaf_sequence())
-        intern_data_for_leaf(dataset, dds, eval, sequence_values_stack);
+        intern_data_for_leaf(dds, eval, sequence_values_stack);
     else
-        intern_data_parent_part_one(dataset, dds, eval, sequence_values_stack);
+        intern_data_parent_part_one(dds, eval, sequence_values_stack);
 }
 
 void
-Sequence::intern_data_parent_part_one(const string & dataset, DDS & dds,
-                                        ConstraintEvaluator & eval,
-                                        sequence_values_stack_t &
-                                        sequence_values_stack)
+Sequence::intern_data_parent_part_one(DDS & dds,
+                                      ConstraintEvaluator & eval,
+                                      sequence_values_stack_t &
+                                      sequence_values_stack)
 {
     DBG(cerr << "Entering intern_data_parent_part_one for " << name() << endl);
 
@@ -942,7 +955,7 @@ Sequence::intern_data_parent_part_one(const string & dataset, DDS & dds,
     // found. 6/1/2001 jhrg
     // Since this is a parent sequence, read the row ignoring the CE (all of
     // the CE clauses will be evaluated by the leaf sequence).
-    bool status = read_row(i, dataset, dds, eval, false);
+    bool status = read_row(i, dds, eval, false);
 
     // Grab the current size of the value stack. We do this because it is
     // possible that no nested sequences for this row happened to be
@@ -961,12 +974,12 @@ Sequence::intern_data_parent_part_one(const string & dataset, DDS & dds,
             if ((*iter)->send_p()) {
                 switch ((*iter)->type()) {
                 case dods_sequence_c:
-                    dynamic_cast<Sequence&>(**iter).intern_data_private(dataset,
+                    dynamic_cast<Sequence&>(**iter).intern_data_private(
                             eval, dds, sequence_values_stack);
                     break;
 
                 default:
-                    (*iter)->intern_data(dataset, eval, dds);
+                    (*iter)->intern_data(eval, dds);
                     break;
                 }
             }
@@ -974,7 +987,7 @@ Sequence::intern_data_parent_part_one(const string & dataset, DDS & dds,
 
         set_read_p(false);      // ...so this will read the next instance
 
-        status = read_row(i, dataset, dds, eval, false);
+        status = read_row(i, dds, eval, false);
     }
 
     // Reset current row number for next nested sequence element.
@@ -994,7 +1007,7 @@ Sequence::intern_data_parent_part_one(const string & dataset, DDS & dds,
 }
 
 void
-Sequence::intern_data_parent_part_two(const string &dataset, DDS &dds,
+Sequence::intern_data_parent_part_two(DDS &dds,
 			      ConstraintEvaluator &eval,
 			      sequence_values_stack_t &sequence_values_stack)
 {
@@ -1002,7 +1015,7 @@ Sequence::intern_data_parent_part_two(const string &dataset, DDS &dds,
 
     BaseType *btp = get_parent();
     if (btp && btp->type() == dods_sequence_c) {
-        dynamic_cast<Sequence&>(*btp).intern_data_parent_part_two(dataset, 
+        dynamic_cast<Sequence&>(*btp).intern_data_parent_part_two(
                                       dds, eval, sequence_values_stack);
     }
 
@@ -1042,7 +1055,7 @@ Sequence::intern_data_parent_part_two(const string &dataset, DDS &dds,
 }
 
 void
-Sequence::intern_data_for_leaf(const string &dataset, DDS &dds,
+Sequence::intern_data_for_leaf(DDS &dds,
                                ConstraintEvaluator &eval,
                                sequence_values_stack_t &sequence_values_stack)
 {
@@ -1051,7 +1064,7 @@ Sequence::intern_data_for_leaf(const string &dataset, DDS &dds,
     int i = (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
 
     DBG2(cerr << "    reading row " << i << endl);
-    bool status = read_row(i, dataset, dds, eval, true);
+    bool status = read_row(i, dds, eval, true);
     DBG2(cerr << "    status: " << status << endl);
     DBG2(cerr << "    ending row number: " << get_ending_row_number() << endl);
     
@@ -1061,8 +1074,8 @@ Sequence::intern_data_for_leaf(const string &dataset, DDS &dds,
             // This call will read the values for the parent sequences and 
             // then allocate a new instance for the leaf and push that onto
             // the stack.
-            dynamic_cast<Sequence&>(*btp).intern_data_parent_part_two(dataset,
-                dds, eval, sequence_values_stack);
+            dynamic_cast<Sequence&>(*btp).intern_data_parent_part_two(
+					    dds, eval, sequence_values_stack);
         }
 
         // intern_data_parent_part_two pushes the d_values field of the leaf
@@ -1090,7 +1103,7 @@ Sequence::intern_data_for_leaf(const string &dataset, DDS &dds,
             
             set_read_p(false);      // ...so this will read the next instance
             // Read the ith row into this object's fields
-            status = read_row(i, dataset, dds, eval, true);
+            status = read_row(i, dds, eval, true);
         }
 
         DBG2(cerr << "    popping d_values (" << sequence_values_stack.top()

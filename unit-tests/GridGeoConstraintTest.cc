@@ -450,9 +450,8 @@ public:
             CPPUNIT_ASSERT(extract_double_value(lon->var(0)) == ten_values[0]);
             CPPUNIT_ASSERT(extract_double_value(lon->var(9)) == ten_values[9]);
 
-            Array *a = new Array;
-            Int32 *i = new Int32;
-            a->add_var(i);
+            Int32 *i = new Int32("");
+            Array *a = new Array("", i);
             a->append_dim(10);
             int dummy_values[10] = {10,11,12,13,14,15,16,17,18,19};
             a->val2buf((void*)dummy_values);

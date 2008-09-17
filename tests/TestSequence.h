@@ -50,7 +50,8 @@ private:
     void _duplicate(const TestSequence &ts);
 
 public:
-    TestSequence(const string &n = "");
+    TestSequence(const string &n);
+    TestSequence(const string &n, const string &d);
     TestSequence(const TestSequence &rhs);
 
     virtual ~TestSequence();
@@ -58,7 +59,7 @@ public:
     TestSequence &operator=(const TestSequence &rhs);
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const string &dataset);
+    virtual bool read();
     
     virtual void output_values(std::ostream &out);
 

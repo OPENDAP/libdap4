@@ -174,10 +174,13 @@ class DDS : public DapObj
 private:
     BaseTypeFactory *d_factory;
 
-    string name;                // The dataset name
+    string name;		// The dataset name
 
-    string _filename;   // File name (or other OS identifier) for
-                        // dataset or part of dataset.
+    string _filename;		// File name (or other OS identifier) for
+    string _container_name;	// name of container structure
+    Structure *d_container;	// current container for container name
+				// dataset or part of dataset.
+
     int d_protocol_major;       // The protocol major version number
     int d_protocol_minor;       // ... and minor version number
 
@@ -253,6 +256,10 @@ public:
 
     string filename();
     void filename(const string &fn);
+
+    string container_name() ;
+    void container_name( const string &cn ) ;
+    Structure *container() ;
 
     void add_var(BaseType *bt);
 

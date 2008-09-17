@@ -66,7 +66,8 @@ protected:
     string _buf;
 
 public:
-    Str(const string &n = "");
+    Str(const string &n);
+    Str(const string &n, const string &d);
 
     virtual ~Str()
     {}
@@ -83,8 +84,8 @@ public:
     // stored in the instance's internal buffer.
     unsigned int length();
 
-    virtual bool serialize(const string &dataset, ConstraintEvaluator &eval,
-                           DDS &dds, Marshaller &m, bool ce_eval = true);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
+			   Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
@@ -98,7 +99,7 @@ public:
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 
-    virtual bool ops(BaseType *b, int op, const string &dataset);
+    virtual bool ops(BaseType *b, int op);
 
     virtual void dump(ostream &strm) const ;
 };

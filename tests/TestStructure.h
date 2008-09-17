@@ -46,7 +46,8 @@ class TestStructure: public Structure, public TestCommon {
     void _duplicate(const TestStructure &ts);
 
 public:
-    TestStructure(const string &n = "");
+    TestStructure(const string &n);
+    TestStructure(const string &n, const string &d);
     TestStructure(const TestStructure &rhs);
 
     virtual ~TestStructure();
@@ -55,7 +56,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const string &dataset);
+    virtual bool read();
     
     virtual void output_values(std::ostream &out);
 

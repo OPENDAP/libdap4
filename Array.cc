@@ -102,6 +102,25 @@ Array::Array(const string &n, BaseType *v) : Vector(n, 0, dods_array_c)
     add_var(v); // Vector::add_var() stores null is v is null
 }
 
+/** Build an array on the server-side with a name, a dataset name from which
+    this Array is being created, and an element type.
+
+    @todo Force the Array::add_var() method to be used to add \e v.
+    This version of add_var() calls Vector::add_var().
+
+    @param n A string containing the name of the variable to be created.
+    @param d A string containing the name of the dataset from which this
+    variable is being created.
+    @param v A pointer to a variable of the type to be included
+    in the Array.
+    @brief Array constructor
+*/
+Array::Array(const string &n, const string &d, BaseType *v)
+    : Vector(n, d, 0, dods_array_c)
+{
+    add_var(v); // Vector::add_var() stores null is v is null
+}
+
 /** @brief The Array copy constructor. */
 Array::Array(const Array &rhs) : Vector(rhs)
 {

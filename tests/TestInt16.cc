@@ -59,6 +59,12 @@ TestInt16::TestInt16(const string &n) : Int16(n), d_series_values(false)
     _buf = 1;
 }
 
+TestInt16::TestInt16(const string &n, const string &d)
+    : Int16(n, d), d_series_values(false)
+{
+    _buf = 1;
+}
+
 TestInt16::TestInt16(const TestInt16 &rhs) : Int16(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
@@ -91,7 +97,7 @@ TestInt16::output_values(std::ostream &out)
 }
 
 bool
-TestInt16::read(const string &)
+TestInt16::read()
 {
     if (read_p())
 	return true;

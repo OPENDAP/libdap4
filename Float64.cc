@@ -69,6 +69,17 @@ Float64::Float64(const string &n)
         : BaseType(n, dods_float64_c)
 {}
 
+/** The Float64 server-side constructor accepts the name of the variable and
+    the dataset name from which this instance is created.
+
+    @param n A string containing the name of the variable to be created.
+    @param d A string containing the name of the dataset from which this
+    variable is created
+*/
+Float64::Float64(const string &n, const string &d)
+        : BaseType(n, d, dods_float64_c)
+{}
+
 Float64::Float64(const Float64 &copy_from) : BaseType(copy_from)
 {
     _buf = copy_from._buf;
@@ -100,16 +111,16 @@ Float64::width()
 }
 
 bool
-Float64::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
+Float64::serialize(ConstraintEvaluator &eval, DDS &dds,
                    Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
     if (!read_p())
-        read(dataset);  // read() throws Error and InternalErr
+        read();  // read() throws Error and InternalErr
 
 #if EVAL
-    if (ce_eval && !eval.eval_selection(dds, dataset))
+    if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
 #endif
 
@@ -209,10 +220,10 @@ Float64::print_val(ostream &out, string space, bool print_decl_p)
 }
 
 bool
-Float64::ops(BaseType *b, int op, const string &dataset)
+Float64::ops(BaseType *b, int op)
 {
     // Extract the Byte arg's value.
-    if (!read_p() && !read(dataset)) {
+    if (!read_p() && !read()) {
         // Jose Garcia
         // Since the read method is virtual and implemented outside
         // libdap++ if we can not read the data that is the problem
@@ -222,7 +233,7 @@ Float64::ops(BaseType *b, int op, const string &dataset)
     }
 
     // Extract the second arg's value.
-    if (!b->read_p() && !b->read(dataset)) {
+    if (!b->read_p() && !b->read()) {
         // Jose Garcia
         // Since the read method is virtual and implemented outside
         // libdap++ if we can not read the data that is the problem

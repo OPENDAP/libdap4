@@ -77,6 +77,19 @@ Structure::_duplicate(const Structure &s)
 Structure::Structure(const string &n) : Constructor(n, dods_structure_c)
 {}
 
+/** The Structure server-side constructor requires the name of the variable
+    to be created and the dataset name from which this variable is being
+    created. Used on server-side handlers.
+
+    @param n A string containing the name of the variable to be
+    created.
+    @param d A string containing the name of the dataset from which this
+    variable is being created.
+*/
+Structure::Structure(const string &n, const string &d)
+    : Constructor(n, d, dods_structure_c)
+{}
+
 /** The Structure copy constructor. */
 Structure::Structure(const Structure &rhs) : Constructor(rhs)
 {
@@ -208,22 +221,34 @@ Structure::add_var(BaseType *bt, Part)
     _vars.push_back(btp);
 }
 
+/** Removed an element from a Structure.
+
+    @param n name of the variable to remove */
+void
+Structure::del_var(const string &n)
+{
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+        if ((*i)->name() == n) {
+            BaseType *bt = *i ;
+            _vars.erase(i) ;
+            delete bt ; bt = 0;
+            return;
+        }
+    }
+}
+
 /** @brief simple implementation of reat that iterates through vars
  *  and calls read on them
  *
- * @param dataset A string naming the dataset from which the data is to
- * be read. The meaning of this string will vary among different types of
- * data sources. It \e may be the name of a data file or an identifier
- * used to read data from a relational database.
  * @return returns false to signify all has been read
  */
 bool
-Structure::read(const string &dataset)
+Structure::read()
 {
     if( !read_p() )
     {
 	for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
-	    (*i)->read(dataset) ;
+	    (*i)->read() ;
 	}
 	set_read_p(true) ;
     }
@@ -244,29 +269,29 @@ Structure::width()
 }
 
 void
-Structure::intern_data(const string & dataset, ConstraintEvaluator & eval, DDS & dds)
+Structure::intern_data(ConstraintEvaluator & eval, DDS & dds)
 {
     if (!read_p())
-        read(dataset);          // read() throws Error and InternalErr
+        read();          // read() throws Error and InternalErr
 
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
         if ((*i)->send_p()) {
-            (*i)->intern_data(dataset, eval, dds);
+            (*i)->intern_data(eval, dds);
         }
     }
 }
 
 bool
-Structure::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
+Structure::serialize(ConstraintEvaluator &eval, DDS &dds,
                      Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
     if (!read_p())
-        read(dataset);  // read() throws Error and InternalErr
+        read();  // read() throws Error and InternalErr
 
 #if EVAL
-    if (ce_eval && !eval.eval_selection(dds, dataset))
+    if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
 #endif
 
@@ -274,7 +299,7 @@ Structure::serialize(const string &dataset, ConstraintEvaluator &eval, DDS &dds,
 
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
         if ((*i)->send_p()) {
-            (*i)->serialize(dataset, eval, dds, m, false);
+            (*i)->serialize(eval, dds, m, false);
         }
     }
 

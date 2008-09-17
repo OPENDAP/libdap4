@@ -60,6 +60,12 @@ TestUInt16::TestUInt16(const string &n) : UInt16(n), d_series_values(false)
     _buf = 1;
 }
 
+TestUInt16::TestUInt16(const string &n, const string &d)
+    : UInt16(n, d), d_series_values(false)
+{
+    _buf = 1;
+}
+
 TestUInt16::TestUInt16(const TestUInt16 &rhs) : UInt16(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
@@ -92,7 +98,7 @@ TestUInt16::output_values(std::ostream &out)
 }
 
 bool
-TestUInt16::read(const string &)
+TestUInt16::read()
 {
     if (read_p())
 	return true;

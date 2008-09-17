@@ -42,15 +42,11 @@ public:
 
     void arrayT_test()
     {
-	TestArray ar( "My Array" ) ;
+	BaseType *bt = factory->NewInt16() ;
+
+	TestArray ar( "My Array", bt ) ;
 
 	int l = ar.length() ;
-	CPPUNIT_ASSERT( l == -1 ) ;
-
-	BaseType *bt = factory->NewInt16() ;
-	ar.add_var( bt ) ;
-
-	l = ar.length() ;
 	CPPUNIT_ASSERT( l == -1 ) ;
 
 	try
@@ -166,7 +162,7 @@ public:
 	l = ar.length() ;
 	CPPUNIT_ASSERT( l == 24 ) ;
 
-	bool is_read = ar.read( "dataset" ) ;
+	bool is_read = ar.read() ;
 	CPPUNIT_ASSERT( is_read == true ) ;
 
 	cout << ar << endl ;

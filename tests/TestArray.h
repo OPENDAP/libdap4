@@ -47,7 +47,8 @@ class TestArray: public Array, public TestCommon {
     int m_offset(int y, Dim_iter Y, int x);
 
 public:
-    TestArray(const string &n = "", BaseType *v = 0);
+    TestArray(const string &n, BaseType *v);
+    TestArray(const string &n, const string &d, BaseType *v);
     TestArray(const TestArray &rhs);
 
     virtual ~TestArray();
@@ -56,10 +57,10 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const string &dataset);
+    virtual bool read();
     virtual bool name_is_special();
     virtual void build_special_values();    
-    virtual void constrained_matrix(const string &dataset, char *constrained_array);
+    virtual void constrained_matrix(char *constrained_array);
     
     virtual void output_values(std::ostream &out);
 

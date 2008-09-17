@@ -59,6 +59,9 @@ static char rcsid[] not_used = {"$Id$"};
 #include "Structure.h"
 #include "Sequence.h"
 #include "Grid.h"
+#include "Str.h"
+#include "Int32.h"
+#include "Float64.h"
 #include "Error.h"
 
 #include "util.h"
@@ -114,7 +117,7 @@ rvalue_list *make_rvalue_list(rvalue *rv);
 rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
 #endif
 
-BaseType *make_variable(DDS &table, ConstraintEvaluator &eval, const value &val);
+BaseType *make_variable(ConstraintEvaluator &eval, const value &val);
 bool_func get_function(const ConstraintEvaluator &eval, const char *name);
 btp_func get_btp_function(const ConstraintEvaluator &eval, const char *name);
 proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
@@ -345,7 +348,7 @@ id_or_const:    SCAN_WORD
 			    new_val.type = dods_str_c;
 			    new_val.v.s = new string($1);
 			}
-			BaseType *btp = make_variable((*DDS(arg)), (*EVALUATOR(arg)), new_val); 
+			BaseType *btp = make_variable((*EVALUATOR(arg)), new_val); 
 			// *** test for btp == null
 			// delete new_val.v.s; // Str::val2buf copies the value.
 			$$ = new rvalue(btp);
@@ -357,7 +360,7 @@ id_or_const:    SCAN_WORD
 		}
 		| SCAN_STR
                 { 
-		    BaseType *btp = make_variable((*DDS(arg)), (*EVALUATOR(arg)), $1); 
+		    BaseType *btp = make_variable((*EVALUATOR(arg)), $1); 
 		    $$ = new rvalue(btp);
 		}
 ;
@@ -1058,24 +1061,24 @@ dereference_variable(rvalue *rv, DDS &dds)
 // Given a value, wrap it up in a BaseType and return a pointer to the same.
 
 BaseType *
-make_variable(DDS &table, ConstraintEvaluator &eval, const value &val)
+make_variable(ConstraintEvaluator &eval, const value &val)
 {
     BaseType *var;
     switch (val.type) {
       case dods_int32_c: {
-	var = table.get_factory()->NewInt32("dummy");
+	var = new Int32("dummy");
 	var->val2buf((void *)&val.v.i);
 	break;
       }
 
       case dods_float64_c: {
-	var = table.get_factory()->NewFloat64("dummy");
+	var = new Float64("dummy");
 	var->val2buf((void *)&val.v.f);
 	break;
       }
 
       case dods_str_c: {
-	var = table.get_factory()->NewStr("dummy");
+	var = new Str("dummy");
 	var->val2buf((void *)val.v.s);
 	break;
       }

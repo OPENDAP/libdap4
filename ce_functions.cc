@@ -460,7 +460,7 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
     Grid::Map_iter i = l_grid->map_begin();
     while (i != l_grid->map_end())
         (*i++)->set_send_p(true);
-    l_grid->read(dataset);
+    l_grid->read();
 
     DBG(cerr << "grid: past map read" << endl);
 
@@ -483,7 +483,7 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
 
     l_grid->get_array()->set_send_p(true);
 
-    l_grid->read(dataset);
+    l_grid->read();
 
     return l_grid;
 }
@@ -568,7 +568,7 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
     Grid::Map_iter i = l_grid->map_begin();
     while (i != l_grid->map_end())
         (*i++)->set_send_p(true);
-    l_grid->read(dataset);
+    l_grid->read();
     // Calling read() above sets the read_p flag for the entire grid; clear it
     // for the grid's array so that later on the code will be sure to read it
     // under all circumstances.
@@ -810,7 +810,7 @@ BaseType * function_linear_scale(int argc, BaseType * argv[], DDS &,
     if (argv[0]->type() == dods_grid_c) {
         Array &source = *dynamic_cast<Grid&>(*argv[0]).get_array();
         source.set_send_p(true);
-        source.read(dataset);
+        source.read();
         data = extract_double_array(&source);
         int length = source.length();
         int i = 0;
@@ -835,9 +835,9 @@ BaseType * function_linear_scale(int argc, BaseType * argv[], DDS &,
         // If the array is really a map, make sure to read using the Grid
         // because of the HDF4 handler's odd behavior WRT dimensions.
         if (source.get_parent() && source.get_parent()->type() == dods_grid_c)
-            source.get_parent()->read(dataset);
+            source.get_parent()->read();
         else
-            source.read(dataset);
+            source.read();
 
         data = extract_double_array(&source);
         int length = source.length();

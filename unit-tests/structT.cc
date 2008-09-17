@@ -7,6 +7,7 @@
 #include <cppunit/CompilerOutputter.h>
 
 #include <iostream>
+#include <sstream>
 #include "TestStructure.h"
 #include "TestArray.h"
 #include "TestInt16.h"
@@ -17,9 +18,21 @@
 
 using std::cerr ;
 using std::endl ;
+using std::ostringstream ;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 				      // timeouts. 
+string ExpectedPrint1( "Structure {\n\
+    Int16 name_int16;\n\
+    String name_str;\n\
+    Int16 array_int[dim1 = 4][dim2 = 3][dim3 = 2];\n\
+} my_structure = { 32000, \"Silly test string: 1\", {{{32000, 32000},{32000, 32000},{32000, 32000}},{{32000, 32000},{32000, 32000},{32000, 32000}},{{32000, 32000},{32000, 32000},{32000, 32000}},{{32000, 32000},{32000, 32000},{32000, 32000}}} };\n") ;
+
+string ExpectedPrint2( "Structure {\n\
+    Int16 name_int16;\n\
+    Int16 array_int[dim1 = 4][dim2 = 3][dim3 = 2];\n\
+} my_structure = { 32000, {{{32000, 32000},{32000, 32000},{32000, 32000}},{{32000, 32000},{32000, 32000},{32000, 32000}},{{32000, 32000},{32000, 32000},{32000, 32000}},{{32000, 32000},{32000, 32000},{32000, 32000}}} };\n") ;
+
 class structT : public CppUnit::TestFixture {
 
 CPPUNIT_TEST_SUITE( structT ) ;
@@ -99,10 +112,26 @@ public:
 			   + 24*sizeof(dods_int16) ;
 	CPPUNIT_ASSERT( w == wsb ) ;
 
-	bool is_read = s.read( "dataset" ) ;
+	bool is_read = s.read() ;
 	CPPUNIT_ASSERT( is_read == true ) ;
 
-	//s.print_val( stdout ) ;
+	ostringstream sstrm1 ;
+	s.print_val( sstrm1 ) ;
+	CPPUNIT_ASSERT( sstrm1.str() == ExpectedPrint1 ) ;
+
+	s.del_var( "name_str" ) ;
+
+	bt = 0 ;
+	bt = s.var( "name_str", false ) ;
+	CPPUNIT_ASSERT( bt == 0 ) ;
+
+	w = s.width() ;
+	wsb = + sizeof(dods_int16) + 24*sizeof(dods_int16) ;
+	CPPUNIT_ASSERT( w == wsb ) ;
+
+	ostringstream sstrm2 ;
+	s.print_val( sstrm2 ) ;
+	CPPUNIT_ASSERT( sstrm2.str() == ExpectedPrint2 ) ;
     }
 };
 
