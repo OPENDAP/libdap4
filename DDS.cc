@@ -69,7 +69,7 @@ static char rcsid[] not_used =
 
 const string c_default_dap2_schema_location = "http://xml.opendap.org/dap/dap2.xsd";
 
-#ifdef DDX_3.1
+#ifdef DDX31
 const string c_dap2_namespace = "http://xml.opendap.org/ns/DAP2";
 #else
 const string c_dap2_namespace = "http://xml.opendap.org/ns/DAP2#";
@@ -880,9 +880,9 @@ DDS::print_xml(FILE *out, bool constrained, const string &)
     fprintf(out, "<Dataset name=\"%s\"\n", id2xml(name).c_str());
 
     fprintf(out, "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
-    fprintf(out, "xmlns=\"%s\"\n", dods_namespace.c_str());
+    fprintf(out, "xmlns=\"%s\"\n", c_dap2_namespace.c_str());
     fprintf(out, "xsi:schemaLocation=\"%s  %s\">\n\n",
-            dods_namespace.c_str(), default_schema_location.c_str());
+            c_dap2_namespace.c_str(), c_default_dap2_schema_location.c_str());
 
     d_attr.print_xml(out, "    ", constrained);
 
@@ -940,7 +940,7 @@ DDS::print_xml(ostream &out, bool constrained, const string &)
     for_each(var_begin(), var_end(), VariablePrintXMLStrm(out, constrained));
 
     out << "\n" ;
-#ifdef DDX_3.1
+#ifdef DDX31
     out << "    <dataBLOB href=\"\"/>\n" ;
 #endif
     out << "</Dataset>\n" ;

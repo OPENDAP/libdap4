@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -29,7 +29,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-//#define DODS_DEBUG 1
+// #define DODS_DEBUG
 
 #include "Connect.h"
 #include "AISMerge.h"
@@ -108,7 +108,7 @@ class AISMergeTest:public TestFixture {
         catch(Error & e) {
             cerr << "Error: " << e.get_error_message() << endl;
             // If the exception is Not Found then this is not an error; there
-            // are many reasons why the resource might not be found... 
+            // are many reasons why the resource might not be found...
             if (e.get_error_message().find("Not Found:") == string::npos)
                 CPPUNIT_ASSERT(!"Error");
         }
@@ -250,17 +250,14 @@ string AISMergeTest::fnoc1_merge_ais = "Attributes {\n\
         String long_name \"Vector wind eastward component\";\n\
         String missing_value \"-32767\";\n\
         String scale_factor \"0.005\";\n\
-        String DODS_Name \"UWind\", \"UWind\";\n\
-        Byte b 128;\n\
-        Int32 i 32000;\n\
-        Url WOA01 \"http://localhost/junk\";\n\
+        String DODS_Name \"UWind\";\n\
     }\n\
     v {\n\
         String units \"meter per second\";\n\
         String long_name \"Vector wind northward component\";\n\
         String missing_value \"-32767\";\n\
         String scale_factor \"0.005\";\n\
-        String DODS_Name \"VWind\", \"VWind\";\n\
+        String DODS_Name \"VWind\";\n\
     }\n\
     lat {\n\
         String units \"degree North\";\n\

@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -33,7 +33,7 @@
 #include <algorithm>
 #include <functional>
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include "GNURegex.h"
 #include "HTTPConnect.h"
@@ -54,12 +54,12 @@ class HTTPConnectTest: public TestFixture {
     string etag;
     string lm;
     string netcdf_das_url;
-    
+
   protected:
     bool re_match(Regex & r, const char *s) {
         return r.match(s, strlen(s)) == (int) strlen(s);
-    } 
-    
+    }
+
     struct REMatch: public unary_function<const string &, bool> {
         Regex &d_re;
         REMatch(Regex &re) : d_re(re) {}
@@ -67,8 +67,8 @@ class HTTPConnectTest: public TestFixture {
         bool operator()(const string &str) {
             const char *s = str.c_str();
             return d_re.match(s, strlen(s)) == (int) strlen(s);
-        } 
-    };    
+        }
+    };
 
   public:
      HTTPConnectTest() {
@@ -86,7 +86,7 @@ class HTTPConnectTest: public TestFixture {
         // above URL. The values below much match the etag and last-modified
         // time returned by the server. Run this test with DODS_DEBUG defined
         // to see the values it's returning.
-        etag = "\"928ec-157-139c2680\"";
+        etag = "\"5457a5-157-139c2680\"";
         lm = "Wed, 13 Jul 2005 19:32:26 GMT";
 
         localhost_pw_url =
@@ -103,19 +103,16 @@ class HTTPConnectTest: public TestFixture {
     }
 
     CPPUNIT_TEST_SUITE(HTTPConnectTest);
-#if 1
+
     CPPUNIT_TEST(read_url_test);
     CPPUNIT_TEST(fetch_url_test);
     CPPUNIT_TEST(get_response_headers_test);
     CPPUNIT_TEST(server_version_test);
     CPPUNIT_TEST(type_test);
-#endif
     CPPUNIT_TEST(cache_test);
-#if 1
     CPPUNIT_TEST(set_accept_deflate_test);
     CPPUNIT_TEST(read_url_password_test);
     CPPUNIT_TEST(read_url_password_test2);
-#endif
 #if 0
     CPPUNIT_TEST(read_url_password_proxy_test);
 #endif
@@ -399,7 +396,7 @@ dods_test." << endl;
 
         delete http;
         http = 0;               // get rid of the default object; build a
-        // special one. 
+        // special one.
         RCReader::delete_instance();
         // this dodsrc directs all access through a proxy server. The
         // localhost must be configured as such.
