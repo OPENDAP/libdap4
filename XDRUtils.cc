@@ -77,7 +77,7 @@ delete_xdrstdio(XDR *xdr)
 // This function is used to en/decode Str and Url type variables. It is
 // defined as extern C since it is passed via function pointers to routines
 // in the xdr library where it is executed. This function is defined so
-// that Str and Url have an en/decoder which takes exactly two argumnets: an
+// that Str and Url have an en/decoder which takes exactly two arguments: an
 // XDR * and a string reference.
 //
 // NB: this function is *not* used for arrays (i.e., it is not the function

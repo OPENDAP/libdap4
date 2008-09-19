@@ -534,7 +534,7 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
         DAP Grid variable. The arguments to the function are:\
         geogrid(<grid variable>, <upper latitude>, <left longitude>,\
         <lower latitude>, <right longitude> [selection expressions - see grid()])\
-        geogrid(\"version\") returns the version of the function.\
+        geogrid() returns the version of the function.\
         The function will always return a single Grid variable whose values\
         completely cover the given region, although there may be cases when\
         some additional data is also returned. If the longitude values 'wrap\
