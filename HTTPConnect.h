@@ -86,6 +86,8 @@ private:
     string d_password;  // extracted from URL
     string d_upstring;  // used to pass info into curl
 
+    string d_cookie_jar;
+
     vector<string> d_request_headers; // Request headers
 
     void www_lib_init();
@@ -131,6 +133,17 @@ public:
 
     void set_credentials(const string &u, const string &p);
     void set_accept_deflate(bool defalte);
+
+    /** Set the cookie jar. THis function sets the name of a file used to store 
+    cookies returned by servers. This will help with things like single 
+    sign on systems.
+
+    @param cookie_jar The pathname to the file that stores cookies. If this
+    is the empty string saving cookies is disabled. */
+    void set_cookie_jar(const string &cookie_jar)
+    {
+	d_cookie_jar = cookie_jar;
+    }
 
     /** Set the state of the HTTP cache. By default, the HTTP cache is
     enabled of disabled using the value of the \c USE_CACHE property in

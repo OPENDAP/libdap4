@@ -131,8 +131,21 @@ RCReader::write_rc_file(const string &pathname)
         }
 
         fpo << "# AIS_DATABASE=<file or url>" << endl;
-        fpo.close();
 
+	fpo << "# COOKIE_JAR=.dods_cookies" << endl;
+	fpo << "# The cookie jar is a file that holds cookies sent from"
+	    << endl;
+	fpo << "# servers such as single signon systems. Uncomment this"
+	    << endl;
+	fpo << "# option and provide a file name to activate this feature."
+	    << endl;
+	fpo << "# If the value is a filename, it will be created in this"
+	    << endl;
+	fpo << "# directory; a full pathname can be used to force a specific"
+	    << endl;
+	fpo << "# location." << endl;
+
+        fpo.close();
         return true;
     }
 
@@ -205,6 +218,19 @@ RCReader::read_rc_file(const string &pathname)
             else if (strncmp(tempstr, "AIS_DATABASE", 12) == 0
                      && tokenlength == 12) {
                 d_ais_database = value;
+	    }
+            else if (strncmp(tempstr, "COOKIE_JAR", 10) == 0
+                     && tokenlength == 10) {
+		// if the value of COOKIE_JAR starts with a slash, use it as
+		// is. However, if it does not start with a slash, prefix it
+		// with the directory that contains the .dodsrc file.
+		if (value[0] == '/') {
+		    d_cookie_jar = value;
+		}
+		else {
+		    d_cookie_jar = d_rc_file_path.substr(0, d_rc_file_path.find(".dodsrc")) + string(value);
+		}
+		DBG(cerr << "set cookie jar to: " << d_cookie_jar << endl);
             }
             else if ((strncmp(tempstr, "PROXY_SERVER", 12) == 0)
                      && tokenlength == 12) {
@@ -401,6 +427,8 @@ RCReader::RCReader() throw(Error)
     // probably a bug in libwww. 10/23/2000 jhrg
     _dods_no_proxy_for_port = 0; // deprecated
 
+    d_cookie_jar = "";
+
 #ifdef WIN32
     string homedir = string("C:") + string(DIR_SEP_STRING) + string("Dods");
     d_rc_file_path = check_string(homedir);
@@ -416,7 +444,7 @@ RCReader::RCReader() throw(Error)
     if (d_rc_file_path.empty())
         d_rc_file_path = check_env_var("HOME");
 #endif
-	DBG(cerr << "Looking for .dodsrc in: " << d_rc_file_path << endl);
+    DBG(cerr << "Looking for .dodsrc in: " << d_rc_file_path << endl);
 
     if (!d_rc_file_path.empty())
         read_rc_file(d_rc_file_path);
@@ -455,7 +483,8 @@ RCReader::instance()
     // 08/07/02 jhrg
     pthread_once(&instance_control, initialize_instance);
 	
-	DBG(cerr << "Instance value: " << hex << _instance << dec << endl);
+    DBG(cerr << "Instance value: " << hex << _instance << dec << endl);
+
     return _instance;
 }
 

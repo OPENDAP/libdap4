@@ -107,6 +107,8 @@ private:
     // jhrg
     string d_ais_database;
 
+    string d_cookie_jar;
+
     static RCReader* _instance;
 
     RCReader() throw(Error);
@@ -251,6 +253,11 @@ public:
     string get_ais_database() const throw()
     {
         return d_ais_database;
+    }
+
+    string get_cookie_jar() const throw()
+    {
+	return d_cookie_jar;
     }
 
     // SET METHODS

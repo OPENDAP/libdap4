@@ -409,6 +409,16 @@ HTTPConnect::www_lib_init()
         curl_easy_setopt(d_curl, CURLOPT_SSL_VERIFYHOST, 0);
     }
 
+    // Look to see if cookies are turned on in the .dodsrc file. If so,
+    // activate here. We honor 'session cookies' (cookies without an
+    // expiration date) here so that session-base SSO systems will work as
+    // expected.  
+    if (!d_cookie_jar.empty()) {
+	DBG(cerr << "Setting the cookie jar to: " << d_cookie_jar << endl);
+        curl_easy_setopt(d_curl, CURLOPT_COOKIEJAR, d_cookie_jar.c_str());
+        curl_easy_setopt(d_curl, CURLOPT_COOKIESESSION, 1);
+    }
+
     if (www_trace) {
         cerr << "Curl version: " << curl_version() << endl;
         curl_easy_setopt(d_curl, CURLOPT_VERBOSE, 1);
@@ -566,7 +576,8 @@ HTTPConnect::url_uses_no_proxy_for(const string &url) throw()
     @param rcr A pointer to the RCReader object which holds configuration
     file information to be used by this virtual connection. */
 
-HTTPConnect::HTTPConnect(RCReader *rcr) : d_username(""), d_password("")
+HTTPConnect::HTTPConnect(RCReader *rcr) : d_username(""), d_password(""),
+					  d_cookie_jar("")
 {
     d_accept_deflate = rcr->get_deflate();
     d_rcr = rcr;
@@ -600,6 +611,8 @@ HTTPConnect::HTTPConnect(RCReader *rcr) : d_username(""), d_password("")
         d_http_cache->set_default_expiration(d_rcr->get_default_expires());
         d_http_cache->set_always_validate(d_rcr->get_always_validate() != 0);
     }
+
+    d_cookie_jar = rcr->get_cookie_jar();
 
     www_lib_init();  // This may throw either Error or InternalErr
 }
