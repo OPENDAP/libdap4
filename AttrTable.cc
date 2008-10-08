@@ -1119,7 +1119,7 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
         // If not, don't write the alias (we should write out the complete
         // target AttrTable, but that's not what the Java code does)
         if ((*i)->is_alias) {
-            fprintf(out, "%s<Alias name=\"%s\" Attribute=\"%s\">\n",
+            fprintf(out, "%s<Alias name=\"%s\" Attribute=\"%s\"/>\n",
                     pad.c_str(), id2xml(get_name(i)).c_str(),
                     (*i)->aliased_to.c_str());
 
@@ -1172,7 +1172,7 @@ AttrTable::print_xml(ostream &out, string pad, bool constrained)
         // target AttrTable, but that's not what the Java code does)
         if ((*i)->is_alias) {
             out << pad << "<Alias name=\"" << id2xml(get_name(i))
-	        << "\" Attribute=\"" << (*i)->aliased_to << "\">\n" ;
+	        << "\" Attribute=\"" << (*i)->aliased_to << "\"/>\n" ;
 
         }
         else if (is_container(i)) {
