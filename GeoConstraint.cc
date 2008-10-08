@@ -54,25 +54,6 @@ using namespace std;
 
 namespace libdap {
 
-/** If an attribute value is quoted, remove the quotes.
-
-    This function only removes a starting and ending quote if both are
-    present.
-
-    @param value A value-result parameter. */
-/* FIXME: There is one defined in ce_functions
-void remove_quotes(string & value)
-{
-    if (!value.empty() && value[0] == '"'
-        && value[value.length() - 1] == '"') {
-        value.erase(0, 1);
-        value.erase(value.length() - 1);
-    }
-
-    return;
-}
-*/
-
 /** This is used with find_if(). The GeoConstraint class holds a set of strings
     which are prefixes for variable names. Using the regular find() locates
     only the exact matches, using find_if() with this functor makes is easy

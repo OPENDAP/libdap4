@@ -33,7 +33,7 @@ namespace libdap
 
     The cache can be set to handle disconnected operation where it does not
     use the network to validate entries and does not attempt to load new
-    documents. All requests that can not be fulfilled by the cache will be
+    documents. All requests that cannot be fulfilled by the cache will be
     returned with a "504 Gateway Timeout" response. There are two operational
     disconnected modes:
 

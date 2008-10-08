@@ -228,7 +228,7 @@ bool Byte::ops(BaseType * b, int op)
         cerr << "This value not read!" << endl;
         // Jose Garcia
         // Since the read method is virtual and implemented outside
-        // libdap++ if we can not read the data that is the problem
+        // libdap++ if we cannot read the data that is the problem
         // of the user or of whoever wrote the surrogate library
         // implementing read therefore it is an internal error.
         throw InternalErr("This value not read!");
@@ -238,7 +238,7 @@ bool Byte::ops(BaseType * b, int op)
         cerr << "This value not read!" << endl;
         // Jose Garcia
         // Since the read method is virtual and implemented outside
-        // libdap++ if we can not read the data that is the problem
+        // libdap++ if we cannot read the data that is the problem
         // of the user or of whoever wrote the surrogate library
         // implementing read therefore it is an internal error.
         throw InternalErr("This value not read!");

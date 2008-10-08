@@ -210,7 +210,7 @@ UInt32::ops(BaseType *b, int op)
     if (!read_p() && !read()) {
         // Jose Garcia
         // Since the read method is virtual and implemented outside
-        // libdap++ if we can not read the data that is the problem
+        // libdap++ if we cannot read the data that is the problem
         // of the user or of whoever wrote the surrogate library
         // implemeting read therefore it is an internal error.
         throw InternalErr(__FILE__, __LINE__, "This value was not read!");
@@ -220,7 +220,7 @@ UInt32::ops(BaseType *b, int op)
     if (!b->read_p() && !b->read()) {
         // Jose Garcia
         // Since the read method is virtual and implemented outside
-        // libdap++ if we can not read the data that is the problem
+        // libdap++ if we cannot read the data that is the problem
         // of the user or of whoever wrote the surrogate library
         // implemeting read therefore it is an internal error.
         throw InternalErr(__FILE__, __LINE__, "This value was not read!");
