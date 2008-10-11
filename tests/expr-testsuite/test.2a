@@ -1,0 +1,22 @@
+#
+# -*- C++ -*-
+#
+
+# Test projections: simple projections and shorthand names.
+
+dataset {
+    Structure {
+	Int32 j;
+	Int32 k;
+    } s1;
+    Structure {
+	Int32 l[100];
+	Int32 m[100];
+	Int32 p;
+    } s2[10];
+    Structure {
+	Int32 n;
+	Int32 o;
+    } s3;
+} test2;
+
