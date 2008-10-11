@@ -54,6 +54,7 @@ static char rcsid[] not_used =
 #include <functional>
 
 //#define DODS_DEBUG
+//#define DODS_DEBUG2
 
 #include "GNURegex.h"
 
@@ -514,7 +515,7 @@ DDS::var(const string &n, BaseType::btp_stack &s)
     Returns a pointer to the named variable. If the name contains one or
     more field separators then the function looks for a variable whose
     name matches exactly. If the name contains no field separators then
-    the funciton looks first in the top level and then in all subsequent
+    the function looks first in the top level and then in all subsequent
     levels and returns the first occurrence found. In general, this
     function searches constructor types in the order in which they appear
     in the DDS, but there is no requirement that it do so.
@@ -532,14 +533,12 @@ BaseType *
 DDS::var(const string &n, BaseType::btp_stack *s)
 {
     string name = www2id(n);
-    BaseType *v = 0 ;
     if( d_container )
-    {
-	return d_container->var( name, false, s ) ;
-    }
+        return d_container->var( name, false, s ) ;
 
-    v = exact_match(name, s);
-    if (v) return v;
+    BaseType *v = exact_match(name, s);
+    if (v)
+        return v;
 
     return leaf_match(name, s);
 }
@@ -547,17 +546,34 @@ DDS::var(const string &n, BaseType::btp_stack *s)
 BaseType *
 DDS::leaf_match(const string &n, BaseType::btp_stack *s)
 {
+    DBG(cerr << "DDS::leaf_match: Looking for " << n << endl);
+
     for (Vars_iter i = vars.begin(); i != vars.end(); i++) {
         BaseType *btp = *i;
-        DBG2(cerr << "Looking at " << n << " in: " << btp << endl);
+        DBG(cerr << "DDS::leaf_match: Looking for " << n << " in: " << btp->name() << endl);
         // Look for the name in the dataset's top-level
         if (btp->name() == n) {
-            DBG2(cerr << "Found " << n << " in: " << btp << endl);
+            DBG(cerr << "Found " << n << " in: " << btp->name() << endl);
             return btp;
         }
-        if (btp->is_constructor_type() && (btp = btp->var(n, false, s))) {
-            return btp;
+
+        if (btp->is_constructor_type()) {
+            BaseType *found = btp->var(n, false, s);
+            if (found) {
+                DBG(cerr << "Found " << n << " in: " << btp->name() << endl);
+                return found;
+            }
         }
+#if STRUCTURE_ARRAY_SYNTAX_OLD
+        if (btp->is_vector_type() && btp->var()->is_constructor_type()) {
+            s->push(btp);
+            BaseType *found = btp->var()->var(n, false, s);
+            if (found) {
+                DBG(cerr << "Found " << n << " in: " << btp->var()->name() << endl);
+                return found;
+            }
+        }
+#endif
     }
 
     return 0;   // It is not here.
@@ -1012,7 +1028,7 @@ DDS::mark(const string &n, bool state)
 {
     BaseType::btp_stack *s = new BaseType::btp_stack;
 
-    DBG2(cerr << "Looking for " << n << endl);
+    DBG2(cerr << "DDS::mark: Looking for " << n << endl);
 
     BaseType *variable = var(n, s);
     if (!variable) {
@@ -1021,13 +1037,23 @@ DDS::mark(const string &n, bool state)
         return false;
     }
     variable->set_send_p(state);
-    DBG2(cerr << "Set variable " << variable->name() << endl);
+
+    DBG2(cerr << "DDS::mark: Set variable " << variable->name()
+            << " (a " << variable->type_name() << ")" << endl);
 
     // Now check the btp_stack and run BaseType::set_send_p for every
-    // BaseType pointer on the stack.
+    // BaseType pointer on the stack. Using BaseType::set_send_p() will
+    // set the property for a Constructor but not its contained variables
+    // which preserves the semantics of projecting just one field.
     while (!s->empty()) {
         s->top()->BaseType::set_send_p(state);
-        DBG2(cerr << "Set variable " << s->top()->name() << endl);
+
+        DBG2(cerr << "DDS::mark: Set variable " << s->top()->name()
+                << " (a " << s->top()->type_name() << ")" << endl);
+        string parent_name = (s->top()->get_parent()) ? s->top()->get_parent()->name(): "none";
+        string parent_type = (s->top()->get_parent()) ? s->top()->get_parent()->type_name(): "none";
+        DBG2(cerr << "DDS::mark: Parent variable " << parent_name << " (a " << parent_type << ")" << endl);
+
         s->pop();
     }
 

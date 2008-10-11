@@ -130,7 +130,7 @@ Vector::Vector(const string & n, BaseType * v, const Type & t)
 /** The Vector server-side constructor requires the name of the variable
     to be created, the dataset name from which this Vector is created, and
     a pointer to an object of the type the Vector is to hold.  The
-    name may be omitted, which will create a nameless variable. 
+    name may be omitted, which will create a nameless variable.
     The template object may not be omitted.
 
     @param n A string containing the name of the variable to be
@@ -258,17 +258,26 @@ void Vector::set_read_p(bool state)
 BaseType *Vector::var(const string & n, bool exact, btp_stack * s)
 {
     string name = www2id(n);
+    DBG(cerr << "Vector::var: Looking for " << n << endl);
 
     // Make sure to check for the case where name is the default (the empty
     // string). 9/1/98 jhrg
     if (_var->is_constructor_type()) {
-        if (name == "" || _var->name() == name)
+        if (name == "" || _var->name() == name) {
+            if (s)
+                s->push(this);
             return _var;
-        else
-            return _var->var(name, exact, s);
+        }
+        else {
+            BaseType * result = _var->var(name, exact, s);
+            if (result && s)
+                s->push(this);
+            return result;
+        }
     }
-    else
-        return _var;
+    else {
+        return _var; // I don't see why this isn't return 0 *** jhrg 10/9/08
+    }
 }
 
 /** This version of var(...) searches for <i>name</i> and returns a

@@ -47,6 +47,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include <cassert>
 #include <cstdlib>
 #include <string>
+#include <stack>
 
 #include "debug.h"
 #include "escaping.h"
@@ -110,13 +111,6 @@ bool is_array_t(BaseType *variable);
 bool is_grid_t(BaseType *variable);
 bool is_sequence_t(BaseType *variable);
 
-#if 0
-/* Moved to RValue jhrg 8/31/06 */
-
-rvalue_list *make_rvalue_list(rvalue *rv);
-rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
-#endif
-
 BaseType *make_variable(ConstraintEvaluator &eval, const value &val);
 bool_func get_function(const ConstraintEvaluator &eval, const char *name);
 btp_func get_btp_function(const ConstraintEvaluator &eval, const char *name);
@@ -153,8 +147,9 @@ proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 %token <op> SCAN_LESS_EQL
 %token <op> SCAN_REGEXP
 
-%type <boolean> constraint_expr projection proj_clause proj_function array_proj
-%type <boolean> selection clause bool_function
+%type <boolean> constraint_expr projection proj_clause proj_function
+%type <boolean> array_projection selection clause bool_function
+%type <id> array_proj_clause
 %type <op> rel_op
 %type <int_l_ptr> array_index
 %type <int_ll_ptr> array_indices
@@ -204,7 +199,7 @@ proj_clause:	SCAN_WORD
                 {
 		    $$ = $1;
 		}
-		| array_proj
+		| array_projection
                 {
 		    $$ = $1;
 		}
@@ -365,14 +360,34 @@ id_or_const:    SCAN_WORD
 		}
 ;
 
-array_proj:	SCAN_WORD array_indices 
+array_projection : array_proj_clause
                 {
-		  if (!bracket_projection((*DDS(arg)), $1, $2))
-		    // no_such_ident throws an exception.
-		    no_such_ident($1, "array, grid or sequence");
-		  else
-		    $$ = true;
-		}
+                    $$ = (*DDS(arg)).mark($1, true);
+                }
+                
+array_proj_clause: SCAN_WORD array_indices
+                {
+                    if (!bracket_projection((*DDS(arg)), $1, $2))
+                      no_such_ident($1, "array, grid or sequence");
+
+                    strncpy($$, $1, ID_MAX-1);
+                    $$[ID_MAX-1] = '\0';
+                }
+                | array_proj_clause SCAN_WORD
+                {
+                    string name = string($1) + string ($2);
+                    strncpy($$, name.c_str(), ID_MAX-1);
+                    $$[ID_MAX-1] = '\0';
+                }
+                | array_proj_clause SCAN_WORD array_indices
+                {
+                    string name = string($1) + string ($2);
+                    if (!bracket_projection((*DDS(arg)), name.c_str(), $3))
+                      no_such_ident(name.c_str(), "array, grid or sequence");
+
+                    strncpy($$, name.c_str(), ID_MAX-1);
+                    $$[ID_MAX-1] = '\0';
+                }
 ;
 
 array_indices:  array_index
@@ -517,22 +532,22 @@ no_such_func(char *name)
    'walk' back from right to left looking at each dot. This way the sequence
    will be found even if there are structures between the field and the
    Sequence. */
-Sequence *
-parent_is_sequence(DDS &table, const char *name)
+static Sequence *
+parent_is_sequence(DDS &table, const string &n)
 {
-    string n = name;
     string::size_type dotpos = n.find_last_of('.');
     if (dotpos == string::npos)
 	return 0;
 
     string s = n.substr(0, dotpos);
+    
     // If the thing returned by table.var is not a Sequence, this cast
     // will yield null.
     Sequence *seq = dynamic_cast<Sequence*>(table.var(s));
     if (seq)
 	return seq;
     else
-	return parent_is_sequence(table, s.c_str());
+	return parent_is_sequence(table, s);
 }
 
 
@@ -541,8 +556,9 @@ bracket_projection(DDS &table, const char *name, int_list_list *indices)
 {
     bool status = true;
     BaseType *var = table.var(name);
-    Sequence *seq;		// used in last else if clause
-
+    Sequence *seq;		// used in last else-if clause
+    Array *array;
+    
     if (!var)
 	return false;
 	
@@ -553,7 +569,9 @@ bracket_projection(DDS &table, const char *name, int_list_list *indices)
 	   elements are projected using short names (Whew!)
 	   9/1/98 jhrg */
 	/* var->set_send_p(true); */
-	table.mark(name, true);
+	//table.mark(name, true);
+	// We don't call mark() here for an array. Instead it is called from
+	// within the parser. jhrg 10/10/08
 	status = process_array_indices(var, indices);
 	if (!status) {
 	    string msg = "The indices given for `";
@@ -583,6 +601,8 @@ bracket_projection(DDS &table, const char *name, int_list_list *indices)
 	}
 	delete_array_indices(indices);
     }
+    // This should go away once the Structure syntax is used for Sequence too
+    // *** jhrg 10/10/08
     else if ((seq = parent_is_sequence(table, name))) {
 	table.mark(name, true);
 	status = process_sequence_indices(seq, indices);
@@ -953,110 +973,6 @@ process_sequence_indices(BaseType *variable, int_list_list *indices)
     return status;
 }
 
-#if 0
-// Create a list of r values and add VAL to the list.
-//
-// Returns: A pointer to the updated rvalue_list.
-
-/* Moved to RValue. jhrg 8/31/06 */
-
-rvalue_list *
-make_rvalue_list(rvalue *rv)
-{
-    assert(rv);
-
-    rvalue_list *rvals = new rvalue_list;
-
-    return append_rvalue_list(rvals, rv);
-}
-
-// Given a rvalue_list pointer RVALS and a value pointer VAL, make a variable
-// to hold VAL and append that variable to the list RVALS.
-//
-// Returns: A pointer to the updated rvalue_list.
-
-rvalue_list *
-append_rvalue_list(rvalue_list *rvals, rvalue *rv)
-{
-    assert(rvals);
-    assert(rv);
-
-    rvals->push_back(rv);
-
-    return rvals;
-}
-#endif
-
-// Given a string which is a URL, dereference it and return the data it
-// points to.
-#if NO_DEREFERENCE_OP
-static rvalue *
-dereference_string(string &s)
-{
-    // FIX Once Connect/HTTPConnect settle down. ***
-    unsigned int qpos = s.find('?');
-    string url = s.substr(0, qpos);	// strip off CE
-    string ce = s.substr(qpos+1);	// yes, get the CE
-
-    Connect c(url); // make the virtual connection
-
-    // the initial URL must be a complete reference to data; thus no
-    // additional CE is needed. 
-    BaseTypeFactory *factory = new BaseTypeFactory;
-    DataDDS *d = new DataDDS(factory);
-    c.request_data(*d, ce); 
-
-    // By definition, the DDS `D' can have only one variable, so make sure
-    // that is true.
-    if (d->num_var() != 1) {
-	delete factory; factory = 0;
-	delete d; d = 0;
-	throw Error (malformed_expr,
-		     string("Too many variables in URL; use only single variable projections"));
-    }
-
-    // OK, we're here. The first_var() must be the only var, return it bound
-    // up in an rvalue struct. NB: the *object* must be copied since the one
-    // within DDS `D' will be deleted by D's dtor.
-    BaseType *btp = (*(d->var_begin()))->ptr_duplicate();
-    rvalue *rv = new rvalue(btp);
-
-    delete factory; factory = 0;
-    delete d; d = 0;
-
-    return rv;
-}
-
-rvalue *
-dereference_url(value &val)
-{
-    if (val.type != dods_str_c)
-	return 0;
-
-    return dereference_string(*val.v.s);
-}
-
-// Given a rvalue, get the BaseType that encapsulates its value, make sure it
-// is a string and, if all that works, dereference it.
-
-rvalue *
-dereference_variable(rvalue *rv, DDS &dds)
-{
-    assert(rv);
-    // the value will be read over the net
-    BaseType *btp = rv->bvalue("dummy", dds); 
-    if (btp->type() != dods_str_c && btp->type() != dods_url_c) {
-	throw Error(malformed_expr, string("The variable `") + btp->name() 
-		    + "' must be either a string or a url");
-    }
-
-    string s;
-    string  *sp = &s;
-    btp->buf2val((void **)&sp);
-    
-    return dereference_string(s);
-}
-#endif
 
 // Given a value, wrap it up in a BaseType and return a pointer to the same.
 
