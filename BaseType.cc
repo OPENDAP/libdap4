@@ -40,7 +40,7 @@
 #include <sstream>
 #include <string>
 
-// #define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "BaseType.h"
 #include "InternalErr.h"
@@ -65,6 +65,8 @@ namespace libdap {
 void
 BaseType::_duplicate(const BaseType &bt)
 {
+    DBG(cerr << "BaseType::_duplicate: " << bt._name << " send_p: "
+            << bt._send_p << endl);
     _name = bt._name;
     _type = bt._type;
     _dataset = bt._dataset;
@@ -271,7 +273,7 @@ BaseType::type_name() const
 }
 
 /** @brief Returns true if the instance is a numeric, string or URL
-    type variable. 
+    type variable.
     @return True if the instance is a scalar numeric, String or URL variable,
     False otherwise. Arrays (even of simple types) return False.
     @see is_vector_type() */
@@ -301,8 +303,8 @@ BaseType::is_simple_type()
     return false;
 }
 
-/** @brief Returns true if the instance is a vector (i.e., array) type 
-    variable. 
+/** @brief Returns true if the instance is a vector (i.e., array) type
+    variable.
     @return True if the instance is an Array, False otherwise. */
 bool
 BaseType::is_vector_type()
@@ -333,7 +335,7 @@ BaseType::is_vector_type()
 }
 
 /** @brief Returns true if the instance is a constructor (i.e., Structure,
-    Sequence or Grid) type variable. 
+    Sequence or Grid) type variable.
     @return True if the instance is a Structure, Sequence or Grid, False
     otherwise. */
 bool
@@ -491,7 +493,7 @@ BaseType::send_p()
 
 /** Sets the value of the <tt>send_p</tt> flag.  This
     function is meant to be called from within the constraint evaluator of
-    other code which determines that this variable should be returned to the 
+    other code which determines that this variable should be returned to the
     client.  Data are ready to be sent when <i>both</i> the <tt>_send_p</tt>
     and <tt>_read_p</tt> flags are set to TRUE.
 
@@ -729,7 +731,7 @@ void
 BaseType::intern_data(ConstraintEvaluator &, DDS &dds)
 {
     dds.timeout_on();
-
+    DBG(cerr << "BaseType::intern_data: " << name() << endl);
     if (!read_p())
         read();          // read() throws Error and InternalErr
 

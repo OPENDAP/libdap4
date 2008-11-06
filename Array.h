@@ -124,21 +124,21 @@ public:
 
 private:
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
-    unsigned int print_array(FILE *out, unsigned int index,
-                             unsigned int dims, unsigned int shape[]);
-    unsigned int print_array(ostream &out, unsigned int index,
-                             unsigned int dims, unsigned int shape[]);
-
     friend class ArrayTest;
 
 protected:
     void _duplicate(const Array &a);
-    void print_xml_core(FILE *out, string space, bool constrained, string tag);
-    void print_xml_core(ostream &out, string space, bool constrained, string tag);
+    virtual void print_xml_core(FILE *out, string space, bool constrained, string tag);
+    virtual void print_xml_core(ostream &out, string space, bool constrained, string tag);
+    virtual unsigned int print_array(FILE *out, unsigned int index,
+                             unsigned int dims, unsigned int shape[]);
+    virtual unsigned int print_array(ostream &out, unsigned int index,
+                             unsigned int dims, unsigned int shape[]);
+
 
 public:
     /** A constant iterator used to access the various dimensions of an
-        Array. 
+        Array.
 
         @see dim_begin()
         @see dim_end() */

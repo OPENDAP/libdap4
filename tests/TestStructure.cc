@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1995-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -33,13 +33,24 @@
 //
 // jhrg 1/12/95
 
+#define DODS_DEBUG
+
 #include "config.h"
 #include "TestStructure.h"
+#include "debug.h"
 
 void
 TestStructure::_duplicate(const TestStructure &ts)
 {
     d_series_values = ts.d_series_values;
+#if 0
+    TestStructure *tsp = const_cast<TestStructure *>(&ts);
+    for (Vars_iter i = tsp->var_begin(); i != tsp->var_end(); i++) {
+        DBG(cerr << "Copying field: " << (*i)->name() << endl);
+        if (!(*i)->send_p())
+            del_var((*i)->name());
+    }
+#endif
 }
 
 BaseType *
@@ -80,14 +91,14 @@ TestStructure::~TestStructure()
 {
 }
 
-void 
+void
 TestStructure::output_values(std::ostream &out)
 {
     out << "{ " ;
-    
+
     bool value_written = false;
     Vars_citer i = var_begin();
-    
+
     // Write the first (and maybe only) value.
     while(i != var_end() && ! value_written) {
         if ((*i)->send_p()) {
@@ -113,7 +124,7 @@ TestStructure::output_values(std::ostream &out)
 }
 
 // For this `Test' class, run the read mfunc for each of variables which
-// comprise the structure. 
+// comprise the structure.
 
 bool
 TestStructure::read()
@@ -142,6 +153,6 @@ TestStructure::set_series_values(bool sv)
         dynamic_cast<TestCommon&>(*(*i)).set_series_values(sv);
         ++i;
     }
-    
+
     d_series_values = sv;
 }

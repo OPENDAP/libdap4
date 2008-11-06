@@ -33,6 +33,7 @@
 //
 // jhrg 9/14/94
 
+//#define DODS_DEBUG
 
 #include "config.h"
 
@@ -55,7 +56,7 @@ Structure::_duplicate(const Structure &s)
     DBG(cerr << "Copying structure: " << name() << endl);
 
     for (Vars_iter i = cs._vars.begin(); i != cs._vars.end(); i++) {
-        DBG(cerr << "Copying field: " << cs.name() << endl);
+        DBG(cerr << "Copying field: " << (*i)->name() << endl);
         // Jose Garcia
         // I think this assert here is part of a debugging
         // process since it is going along with a DBG call
@@ -271,6 +272,7 @@ Structure::width()
 void
 Structure::intern_data(ConstraintEvaluator & eval, DDS & dds)
 {
+    DBG(cerr << "Structure::intern_data: " << name() << endl);
     if (!read_p())
         read();          // read() throws Error and InternalErr
 
@@ -392,7 +394,7 @@ Structure::m_leaf_match(const string &name, btp_stack *s)
     return 0;
 }
 
-// Breadth-first search for NAME. If NAME contains one or more dots (.) 
+// Breadth-first search for NAME. If NAME contains one or more dots (.)
 BaseType *
 Structure::m_exact_match(const string &name, btp_stack *s)
 {

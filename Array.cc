@@ -84,7 +84,7 @@ Array::update_length(int)
 
 /** Build an array with a name and an element type. The name may be omitted,
     which will create a nameless variable. The template (element type) pointer
-    may also be omitted, but if it is omitted when the Array is created, it 
+    may also be omitted, but if it is omitted when the Array is created, it
     \e must be added (with \c add_var()) before \c read() or \c deserialize()
     is called.
 
@@ -248,11 +248,11 @@ Array::reset_constraint()
 
 
 /** Tell the Array object to clear the constraint information about
-    dimensions. Do this <i>once</i> before calling <tt>add_constraint()</tt> 
-    for each new constraint expression. Only the dimensions explicitly 
+    dimensions. Do this <i>once</i> before calling <tt>add_constraint()</tt>
+    for each new constraint expression. Only the dimensions explicitly
     selected using <tt>add_constraint()</tt> will be sent.
 
-    @deprecated This should never be used. 
+    @deprecated This should never be used.
     @brief Clears the projection; add each projected dimension explicitly using
     <tt>add_constraint</tt>.
 */
@@ -397,8 +397,8 @@ Array::dimension_size(Dim_iter i, bool constrained)
         else
             size = (*i).size;
     }
-    
-#if 0    
+
+#if 0
         if (constrained) {
             if ((*i).selected)
                 size = (*i).c_size;
@@ -434,13 +434,13 @@ int
 Array::dimension_start(Dim_iter i, bool /*constrained*/)
 {
     return (!_shape.empty()) ? (*i).start : 0;
-    
+
 #if 0
     int start = 0;
 
     if (!_shape.empty())
         start = (*i).start;
-        
+
 #if array_selected
         if (constrained) {
             if ((*i).selected)
@@ -478,13 +478,13 @@ int
 Array::dimension_stop(Dim_iter i, bool /*constrained*/)
 {
     return (!_shape.empty()) ? (*i).stop : 0;
-    
+
 #if 0
     int stop = 0;
 
     if (!_shape.empty())
         stop = (*i).stop;
-    
+
 #if array_selected
         if (constrained) {
             if ((*i).selected)
@@ -523,13 +523,13 @@ int
 Array::dimension_stride(Dim_iter i, bool /*constrained*/)
 {
     return (!_shape.empty()) ? (*i).stride : 0;
-    
+
 #if 0
     int stride = 0;
 
     if (!_shape.empty())
         stride = (*i).stride;
-    
+
 #if array_selected
         if (constrained) {
             if ((*i).selected)
@@ -829,7 +829,7 @@ Array::print_array(FILE *out, unsigned int index, unsigned int dims,
 }
 
 /** Prints the values in ASCII of the entire (constrained) array. This method
-    Attempts to make an aesthetically pleasing display. However, it is
+    Attempts to make an anesthetically pleasing display. However, it is
     primarily intended for debugging purposes.
 
     @param out Write the output to this ostream
@@ -892,7 +892,7 @@ Array::print_val(FILE *out, string space, bool print_decl_p)
         shape[index++] = dimension_size(i, true);
 
     print_array(out, 0, _shape.size(), shape);
-    
+
     delete [] shape; shape = 0;
 
     if (print_decl_p) {
@@ -920,7 +920,7 @@ Array::print_val(ostream &out, string space, bool print_decl_p)
         shape[index++] = dimension_size(i, true);
 
     print_array(out, 0, dimensions(true), shape);
-    
+
     delete [] shape; shape = 0;
 
     if (print_decl_p) {

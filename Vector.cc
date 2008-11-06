@@ -442,6 +442,7 @@ void Vector::vec_resize(int l)
 void
 Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 {
+    DBG(cerr << "Vector::intern_data: " << name() << endl);
     if (!read_p())
         read();          // read() throws Error and InternalErr
 
@@ -475,6 +476,7 @@ Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
     case dods_structure_c:
     case dods_sequence_c:
     case dods_grid_c:
+        DBG(cerr << "Vector::intern_data: found ctor" << endl);
         // For these cases, we need to call read() for each of the 'num'
         // elements in the '_vec[]' array of BaseType object pointers.
         if (_vec.capacity() == 0)

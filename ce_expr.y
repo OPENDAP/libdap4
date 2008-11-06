@@ -566,7 +566,7 @@ bracket_projection(DDS &table, const char *name, int_list_list *indices)
 	/* calls to set_send_p should be replaced with
 	   calls to DDS::mark so that arrays of Structures,
 	   etc. will be processed correctly when individual
-	   elements are projected using short names (Whew!)
+	   elements are projected using short names.
 	   9/1/98 jhrg */
 	/* var->set_send_p(true); */
 	//table.mark(name, true);
@@ -818,6 +818,12 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 	DBG(cerr << "process_array_indices: Setting constraint on "\
 	    << a->name() << "[" << start << ":" << stop << "]" << endl);
 
+        // It's possible that an array will appear more than once in a CE
+        // (for example, if an array of structures is constrained so that
+        // only two fields are projected and there's an associated hyperslab).
+        // However, in this case the two hyperslabs must be equal; test for
+        // that here. But see clear_constraint above... 10/28/08 jhrg
+        
 	a->add_constraint(r, start, stride, stop);
 
 	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);

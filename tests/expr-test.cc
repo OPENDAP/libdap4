@@ -612,7 +612,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
         fflush(pout);
 
         // Grab a stream that encodes using XDR.
-	XDRFileMarshaller m( pout ) ;
+        XDRFileMarshaller m( pout ) ;
 
         // Send all variables in the current projection (send_p())
         for (DDS::Vars_iter i = server.var_begin(); i != server.var_end();
@@ -622,7 +622,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
                 (*i)->serialize(eval, server, m, true);
             }
 
-	fflush(pout);
+        fflush(pout);
     }
 
     fclose(pout);               // close pout to read from pin. Why?
@@ -637,14 +637,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     // values here.
     BaseTypeFactory factory;
     DataDDS dds(&factory, "Test_data", "DAP/3.1");      // Must use DataDDS on receiving end
-#if 0
-    FILE *dds_fp = move_dds(pin);
-    DBG(fprintf(stderr, "Moved the DDS to a temp file\n"));
-    dds.parse(dds_fp);
-    fclose(dds_fp);
-#else
     dds.parse(pin);
-#endif
 
     XDRFileUnMarshaller um( pin ) ;
 
@@ -675,12 +668,12 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
     // If the CE was not passed in, read it from the command line.
     string ce;
     if (!constraint_expr) {
-        fprintf(stdout, "Constraint:");
+        cout << "Constraint: ";
         char c[256];
         cin.getline(c, 256);
         if (!cin) {
             throw InternalErr(__FILE__, __LINE__,
-                              "Could nore read the constraint expression\n");
+                              "Could not read the constraint expression\n");
         }
         ce = c;
     }
