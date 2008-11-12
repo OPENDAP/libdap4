@@ -102,14 +102,12 @@ AC_STRUCT_TM
 AC_C_VOLATILE
 DODS_CHECK_SIZES
 
-echo "CC = $CC"
+dnl echo "CC = $CC"
 if test "$CC" = "gcc"
 then
-	echo "COMPILER IS GCC true"
-	AM_CONDITIONAL([COMPILER_IS_GCC],[true])
+    AM_CONDITIONAL([COMPILER_IS_GCC],[true])
 else
-	echo "COMPILER IS GCC false"
-	AM_CONDITIONAL([COMPILER_IS_GCC],[false])
+    AM_CONDITIONAL([COMPILER_IS_GCC],[false])
 fi
 
 # Checks for library functions.
@@ -158,10 +156,34 @@ then
 	AC_MSG_RESULT([yes; used pkg-config])
 elif curl-config --version > /dev/null 2>&1
 then
-	version_libcurl=`curl-config --version`
-	version_major=`echo $version_libcurl | sed 's@^libcurl \([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
-	version_minor=`echo $version_libcurl | sed 's@^libcurl \([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
-	if test $version_major -lt 7 || test $version_minor -lt 10 || test $version_minor -lt 6
+	version_libcurl=`curl-config --version | sed 's@libcurl \(.*\)@\1@'`
+
+	version_M=`echo $version_libcurl | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
+	version_m=`echo $version_libcurl | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
+	version_m_m=`echo $version_libcurl | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
+	
+	dnl echo "version_M: $version_M"
+	dnl echo "version_m: $version_m"
+	dnl echo "version_m_m: $version_m_m"
+
+	dnl Test for several different versions of libcurl. We can use 7.10.6
+	dnl or newer.
+	
+	if test $version_M -gt 7
+	then
+		libcurl_ok='yes'
+	elif test $version_M -eq 7 && test $version_m -gt 10
+	then
+		libcurl_ok='yes'
+	elif test $version_M -eq 7 && test $version_m -eq 10 && test $version_m_m -gt 5
+	then
+		libcurl_ok='yes'
+	else
+		libcurl_ok='no'
+	fi
+
+	dnl First test the minimum
+	if test $libcurl_ok = "no"
 	then
 		AC_MSG_ERROR([must have libcurl 7.10.6 or greater, found $version_libcurl])
 	fi
@@ -207,8 +229,21 @@ then
 	dnl or newer, but part of the SAX interface changes depending on the
 	dnl version.
 	
+	if test $version_M -gt 2
+	then
+		libxml2_ok='yes'
+	elif test $version_M -eq 2 && test $version_m -gt 5
+	then
+		libxml2_ok='yes'
+	elif test $version_M -eq 2 && test $version_m -eq 5 && test $version_m_m -gt 6
+	then
+		libxml2_ok='yes'
+	else
+		libxml2_ok='no'
+	fi
+
 	dnl First test the minimum
-	if test $version_M -lt 2 || test $version_m -lt 5 || test $version_m_m -lt 7
+	if test $libxml2_ok = "no"
 	then
 		AC_MSG_ERROR([must have libxml2 2.5.7 or greater, found $version_libxml2])
 	fi
