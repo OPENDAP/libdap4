@@ -570,7 +570,7 @@ Sequence::reset_row_number()
 
     @note The first row is row number zero. A Sequence with 100 rows will
     have row numbers 0 to 99.
-    
+
     @todo This code ignores the main reason for nesting the sequences, that
     if the outer Sequence's current instance fails the CE, there's no need to
     look at the values of the inner Sequence. But in the code that calls this
@@ -920,7 +920,7 @@ Sequence::intern_data(ConstraintEvaluator &eval, DDS &dds)
     // Sequences neted three of more levels deep will loose the middle
     // instances when the intern_data_parent_part_two() code is run.
     sequence_values_stack_t sequence_values_stack;
-    
+
     DBG2(cerr << "    pushing d_values of " << name() << " (" << &d_values
               << ") on stack; size: " << sequence_values_stack.size() << endl);
     sequence_values_stack.push(&d_values);
@@ -1039,7 +1039,7 @@ Sequence::intern_data_parent_part_two(DDS &dds,
 		     << " (" << &(tmp->d_values)
                      << ") on stack; size: " << sequence_values_stack.size()
 		     << endl);
-                // This pushes the d_values field of the newly created leaf 
+                // This pushes the d_values field of the newly created leaf
                 // Sequence onto the stack. The code then returns to intern
                 // _data_for_leaf() where this value will be used.
                 sequence_values_stack.push(&(tmp->d_values));
@@ -1060,18 +1060,18 @@ Sequence::intern_data_for_leaf(DDS &dds,
                                sequence_values_stack_t &sequence_values_stack)
 {
     DBG(cerr << "Entering intern_data_for_leaf for " << name() << endl);
-    
+
     int i = (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
 
     DBG2(cerr << "    reading row " << i << endl);
     bool status = read_row(i, dds, eval, true);
     DBG2(cerr << "    status: " << status << endl);
     DBG2(cerr << "    ending row number: " << get_ending_row_number() << endl);
-    
+
     if (status && (get_ending_row_number() == -1 || i <= get_ending_row_number())) {
         BaseType *btp = get_parent();
         if (btp && btp->type() == dods_sequence_c) {
-            // This call will read the values for the parent sequences and 
+            // This call will read the values for the parent sequences and
             // then allocate a new instance for the leaf and push that onto
             // the stack.
             dynamic_cast<Sequence&>(*btp).intern_data_parent_part_two(
@@ -1084,7 +1084,7 @@ Sequence::intern_data_for_leaf(DDS &dds,
         SequenceValues *values = sequence_values_stack.top();
         DBG2(cerr << "    using values = " << values << endl);
 
-        while (status && (get_ending_row_number() == -1 
+        while (status && (get_ending_row_number() == -1
                           || i <= get_ending_row_number())) {
             i += get_row_stride();
 
@@ -1100,7 +1100,7 @@ Sequence::intern_data_for_leaf(DDS &dds,
 	              << " to " << values << endl);
             // Save the row_data to values().
             values->push_back(row_data);
-            
+
             set_read_p(false);      // ...so this will read the next instance
             // Read the ith row into this object's fields
             status = read_row(i, dds, eval, true);
@@ -1123,14 +1123,14 @@ Sequence::intern_data_for_leaf(DDS &dds,
 
     @param um An UnMarshaller that knows how to deserialize data
     @param dds A DataDDS from which to read.
-    @param reuse Passed to child objects when they are deserialized. Some 
+    @param reuse Passed to child objects when they are deserialized. Some
     implementations of derialize() use this to determine if new storage should
     be allocated or existing storage reused.
     @exception Error if a sequence stream marker cannot be read.
     @exception InternalErr if the <tt>dds</tt> param is not a DataDDS.
     @return A return value of false indicates that an EOS ("end of
     Sequence") marker was found, while a value of true indicates
-    that there are more rows to be read. This version always reads the 
+    that there are more rows to be read. This version always reads the
     entire sequence, so it always returns false.
 */
 bool
@@ -1146,7 +1146,7 @@ Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 
     // Check for old servers.
     if (dd->get_protocol_major() < 2) {
-        throw Error(string("The protocl version (") + dd->get_protocol() 
+        throw Error(string("The protocl version (") + dd->get_protocol()
 		    + ") indicates that this\nis an old server which may not correctly transmit Sequence variables.\nContact the server administrator.");
     }
 
@@ -1269,7 +1269,7 @@ Sequence::buf2val(void **)
     throw InternalErr(__FILE__, __LINE__, "Use Sequence::var_value() or Sequence::row_value() in place of Sequence::buf2val()");
     return sizeof(Sequence);
 }
-
+#if FILE_METHODS
 void
 Sequence::print_one_row(FILE *out, int row, string space,
                         bool print_row_num)
@@ -1307,7 +1307,7 @@ Sequence::print_one_row(FILE *out, int row, string space,
 
     fprintf(out, " }") ;
 }
-
+#endif
 void
 Sequence::print_one_row(ostream &out, int row, string space,
                         bool print_row_num)
@@ -1320,11 +1320,11 @@ Sequence::print_one_row(ostream &out, int row, string space,
     int elements = element_count();
     int j = 0;
     BaseType *bt_ptr = 0;
-    
-    // This version of print_one_row() works for both data read with 
+
+    // This version of print_one_row() works for both data read with
     // deserialize(), where each variable is assumed to have valid data, and
     // intern_data(), where some/many variables do not. Because of that, it's
-    // not correct to assume that all of the elements will be printed, which 
+    // not correct to assume that all of the elements will be printed, which
     // is what the old code did.
     // Print the first value
     while (j < elements && !bt_ptr) {
@@ -1350,7 +1350,7 @@ Sequence::print_one_row(ostream &out, int row, string space,
                 bt_ptr->print_val(out, space, false);
         }
     }
-    
+
 #if 0
     // old version
     int elements = element_count() - 1;
@@ -1383,6 +1383,7 @@ Sequence::print_one_row(ostream &out, int row, string space,
     out << " }" ;
 }
 
+#if FILE_METHODS
 void
 Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
                             bool print_row_numbers)
@@ -1407,7 +1408,7 @@ Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
     if (print_decl_p)
         fprintf(out, ";\n") ;
 }
-
+#endif
 void
 Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p,
                             bool print_row_numbers)
@@ -1432,13 +1433,13 @@ Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p,
     if (print_decl_p)
 	out << ";\n" ;
 }
-
+#if FILE_METHODS
 void
 Sequence::print_val(FILE *out, string space, bool print_decl_p)
 {
     print_val_by_rows(out, space, print_decl_p, false);
 }
-
+#endif
 void
 Sequence::print_val(ostream &out, string space, bool print_decl_p)
 {

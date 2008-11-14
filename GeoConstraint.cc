@@ -262,8 +262,8 @@ void GeoConstraint::find_longitude_indeces(double left, double right,
 
     @param top The top edge of the bounding box
     @param bottom The bottom edge
-    @param sense Does the array/grid store data with larger latitudes at 
-    the starting indices or are the latitude 'upside down?' 
+    @param sense Does the array/grid store data with larger latitudes at
+    the starting indices or are the latitude 'upside down?'
     @param latitude_index_top Value-result parameter that holds the index
     in the grid's latitude map of the top bounding box edge. Uses a closed
     interval for the test.
@@ -417,7 +417,7 @@ void GeoConstraint::reorder_data_longitude_axis(Array &a)
 #endif
     char *left_data = (char*)a.value();
     int left_size = a.length();
-    
+
     // Build a constraint for the 'right' part, which
     // goes from the left edge of the array to the right index and read those
     // data.
@@ -441,7 +441,7 @@ void GeoConstraint::reorder_data_longitude_axis(Array &a)
     d_array_data_size = left_size + right_size;
     d_array_data = new char[d_array_data_size];
 
-    // Assume COARDS convensions are being followed: lon varies fastest.
+    // Assume COARDS conventions are being followed: lon varies fastest.
     // These *_elements variables are actually elements * bytes/element since
     // memcpy() uses bytes.
     int elem_width = a.var()->width();
@@ -449,7 +449,7 @@ void GeoConstraint::reorder_data_longitude_axis(Array &a)
     int right_elements = (get_longitude_index_right() + 1) * elem_width;
     int total_elements_per_row = left_elements + right_elements;
 
-    // Interleve the left and right_data vectors. jhrg 8/31/06
+    // Interleave the left and right_data vectors. jhrg 8/31/06
     int rows_to_copy = count_dimensions_except_longitude(a);
     for (int i = 0; i < rows_to_copy; ++i) {
         memcpy(d_array_data + (total_elements_per_row * i),
@@ -504,6 +504,7 @@ void GeoConstraint::set_bounding_box_longitude(double left, double right)
 
 /** @brief Initialize GeoConstraint.
 
+    @todo Remove ds_name. 10/02/08
     @param ds_name The name of the dataset. Passed to BaseType::read().
  */
 GeoConstraint::GeoConstraint(const string & ds_name)
@@ -577,14 +578,14 @@ void GeoConstraint::set_bounding_box(double left, double top,
 
     if (!is_bounding_box_valid(left, top, right, bottom))
         throw Error("The bounding box does not intersect any data within this Grid or Array. The\ngeographical extent of these data are from latitude "
-		    + double_to_string(d_lat[0]) + " to " 
-		    + double_to_string(d_lat[d_lat_length-1]) 
-		    + "\nand longitude " + double_to_string(d_lon[0]) 
+		    + double_to_string(d_lat[0]) + " to "
+		    + double_to_string(d_lat[d_lat_length-1])
+		    + "\nand longitude " + double_to_string(d_lon[0])
 		    + " to " + double_to_string(d_lon[d_lon_length-1])
 		    + " while the bounding box provided was latitude "
-		    + double_to_string(top) + " to " 
-		    + double_to_string(bottom) + "\nand longitude " 
-		    + double_to_string(left) + " to " 
+		    + double_to_string(top) + " to "
+		    + double_to_string(bottom) + "\nand longitude "
+		    + double_to_string(left) + " to "
 		    + double_to_string(right));
 
     // This is simpler than the longitude case because there's no need to

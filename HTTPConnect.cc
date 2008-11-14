@@ -577,7 +577,10 @@ HTTPConnect::url_uses_no_proxy_for(const string &url) throw()
     file information to be used by this virtual connection. */
 
 HTTPConnect::HTTPConnect(RCReader *rcr) : d_username(""), d_password(""),
-					  d_cookie_jar("")
+  					  d_cookie_jar(""),
+					  d_dap_client_protocol_major(2), 
+					  d_dap_client_protocol_minor(0)
+
 {
     d_accept_deflate = rcr->get_deflate();
     d_rcr = rcr;
@@ -820,186 +823,98 @@ close_temp(FILE *s, const string &name)
     @exception InternalErr Thrown if a temporary file to hold the response
     could not be opened. */
 
-HTTPResponse * HTTPConnect::caching_fetch_url(const string &url) {
-	DBG(cerr << "Is this URL (" << url << ") in the cache?... ");
+HTTPResponse *
+HTTPConnect::caching_fetch_url(const string &url)
+{
+    DBG(cerr << "Is this URL (" << url << ") in the cache?... ");
 
-	vector<string> *headers = new vector<string>;
-	FILE *s = d_http_cache->get_cached_response(url, *headers);
-	if (!s) {
-		// url not in cache; get it and cache it
-		DBGN(cerr << "no; getting response and caching." << endl);
-		time_t now = time(0);
-		HTTPResponse *rs = plain_fetch_url(url);
-		d_http_cache->cache_response(url, now, *(rs->get_headers()),
-				rs->get_stream());
+    vector<string> *headers = new vector<string> ;
+    FILE *s = d_http_cache->get_cached_response(url, *headers);
+    if (!s) {
+        // url not in cache; get it and cache it
+        DBGN(cerr << "no; getting response and caching." << endl);
+        time_t now = time(0);
+        HTTPResponse *rs = plain_fetch_url(url);
+        d_http_cache->cache_response(url, now, *(rs->get_headers()),
+                rs->get_stream());
 
-		return rs;
-	}
-	else { // url in cache
-		DBGN(cerr << "yes... ");
+        return rs;
+    }
+    else { // url in cache
+        DBGN(cerr << "yes... ");
 
-		if (d_http_cache->is_url_valid(url)) { // url in cache and valid
-			DBGN(cerr << "and it's valid; using cached response." << endl);
-			HTTPCacheResponse *crs = new HTTPCacheResponse(s, 200, headers, d_http_cache);
-			return crs;
-		}
-		else { // url in cache but not valid; validate
-			DBGN(cerr << "but it's not valid; validating... ");
+        if (d_http_cache->is_url_valid(url)) { // url in cache and valid
+            DBGN(cerr << "and it's valid; using cached response." << endl);
+            HTTPCacheResponse *crs =
+                    new HTTPCacheResponse(s, 200, headers, d_http_cache);
+            return crs;
+        }
+        else { // url in cache but not valid; validate
+            DBGN(cerr << "but it's not valid; validating... ");
 
-			d_http_cache->release_cached_response(s);
+            d_http_cache->release_cached_response(s);
 
-			vector<string> *resp_hdrs = new vector<string>;
-			vector<string> cond_hdrs =
-					d_http_cache->get_conditional_request_headers(url);
-			FILE *body = 0;
-			string dods_temp = get_temp_file(body);
-			time_t now = time(0); // When was the request made (now).
-			long http_status;
+            vector<string> *resp_hdrs = new vector<string> ;
+            vector<string> cond_hdrs =
+                    d_http_cache->get_conditional_request_headers(url);
+            FILE *body = 0;
+            string dods_temp = get_temp_file(body);
+            time_t now = time(0); // When was the request made (now).
+            long http_status;
 
-			try {
-				http_status = read_url(url, body, resp_hdrs, &cond_hdrs);
-				rewind(body);
-			}
-			catch (Error &e) {
-				close_temp(body, dods_temp);
-				throw;
-			}
+            try {
+                http_status = read_url(url, body, resp_hdrs, &cond_hdrs);
+                rewind(body);
+            }
+            catch (Error &e) {
+                close_temp(body, dods_temp);
+                throw ;
+            }
 
-			switch (http_status) {
-			case 200: { // New headers and new body
-				DBGN(cerr << "read a new response; caching." << endl);
+            switch (http_status) {
+                case 200: { // New headers and new body
+                    DBGN(cerr << "read a new response; caching." << endl);
 
-				d_http_cache->cache_response(url, now, *resp_hdrs, body);
-				HTTPResponse *rs = new HTTPResponse(body, http_status, resp_hdrs,
-						dods_temp);
+                    d_http_cache->cache_response(url, now, *resp_hdrs, body);
+                    HTTPResponse *rs = new HTTPResponse(body, http_status, resp_hdrs,
+                            dods_temp);
 
-				return rs;
-			}
+                    return rs;
+                }
 
-			case 304: { // Just new headers, use cached body
-				DBGN(cerr << "cached response valid; updating." << endl);
+                case 304: { // Just new headers, use cached body
+                    DBGN(cerr << "cached response valid; updating." << endl);
 
-				close_temp(body, dods_temp);
-				d_http_cache->update_response(url, now, *resp_hdrs);
+                    close_temp(body, dods_temp);
+                    d_http_cache->update_response(url, now, *resp_hdrs);
 
-				vector<string> *headers = new vector<string>;
-				FILE *hs = d_http_cache->get_cached_response(url, *headers);
-				HTTPCacheResponse *crs = new HTTPCacheResponse(hs, 304, headers, d_http_cache);
-				return crs;
-			}
+                    vector<string> *headers = new vector<string>;
+                    FILE *hs = d_http_cache->get_cached_response(url, *headers);
+                    HTTPCacheResponse *crs = new HTTPCacheResponse(hs, 304, headers, d_http_cache);
+                    return crs;
+                }
 
-			default: { // Oops.
-				close_temp(body, dods_temp);
-				if (http_status >= 400) {
-					string msg = "Error while reading the URL: ";
-					msg += url;
-					msg
-							+= ".\nThe OPeNDAP server returned the following message:\n";
-					msg += http_status_to_string(http_status);
-					throw Error(msg);
-				} else {
-					throw InternalErr(__FILE__, __LINE__,
-							"Bad response from the HTTP server: " + long_to_string(http_status));
-				}
-			}
+                default: { // Oops.
+                    close_temp(body, dods_temp);
+                    if (http_status >= 400) {
+                        string msg = "Error while reading the URL: ";
+                        msg += url;
+                        msg
+                        += ".\nThe OPeNDAP server returned the following message:\n";
+                        msg += http_status_to_string(http_status);
+                        throw Error(msg);
+                    }
+                    else {
+                        throw InternalErr(__FILE__, __LINE__,
+                                "Bad response from the HTTP server: " + long_to_string(http_status));
+                    }
+                }
+            }
+        }
+    }
 
-			}
-		}
-	}
-
-	throw InternalErr(__FILE__, __LINE__, "Should never get here");
+    throw InternalErr(__FILE__, __LINE__, "Should never get here");
 }
-
-#if 0
-HTTPResponse * HTTPConnect::caching_fetch_url(const string &url) {
-	DBG(cerr << "Is this URL (" << url << ") in the cache?... ");
-
-	if (d_http_cache->is_url_in_cache(url)) { // url in cache
-		DBGN(cerr << "yes... ");
-
-		if (d_http_cache->is_url_valid(url)) { // url in cache and valid
-			DBGN(cerr << "and it's valid; using cached response." << endl);
-
-			vector<string> *headers = new vector<string>;
-			FILE *s = d_http_cache->get_cached_response(url, *headers);
-			HTTPCacheResponse *crs = new HTTPCacheResponse(s, 200, headers, d_http_cache);
-
-			return crs;
-		} else { // url in cache but not valid; validate
-			DBGN(cerr << "but it's not valid; validating... ");
-
-			// *** auto_ptr??? resp_hdrs not deleted! 10/10/03 jhrg
-			vector<string> *resp_hdrs = new vector<string>;
-			vector<string> cond_hdrs =
-					d_http_cache->get_conditional_request_headers(url);
-			FILE *body = 0;
-			string dods_temp = get_temp_file(body);
-			time_t now = time(0); // When was the request made (now).
-			long http_status;
-
-			try {
-				http_status = read_url(url, body, resp_hdrs, &cond_hdrs);
-				rewind(body);
-			}
-			catch (Error &e) {
-				close_temp(body, dods_temp);
-				throw;
-			}
-
-			switch (http_status) {
-			case 200: { // New headers and new body
-				DBGN(cerr << "read a new response; caching." << endl);
-
-				d_http_cache->cache_response(url, now, *resp_hdrs, body);
-				HTTPResponse *rs = new HTTPResponse(body, http_status, resp_hdrs,
-						dods_temp);
-
-				return rs;
-			}
-				break;
-
-			case 304: { // Just new headers, use cached body
-				DBGN(cerr << "cached response valid; updating." << endl);
-
-				close_temp(body, dods_temp);
-				d_http_cache->update_response(url, now, *resp_hdrs);
-
-				vector<string> *headers = new vector<string>;
-				FILE *s = d_http_cache->get_cached_response(url, *headers);
-				HTTPCacheResponse *crs = new HTTPCacheResponse(s, 304, headers, d_http_cache);
-				return crs;
-			}
-				break;
-
-			default: { // Oops.
-				close_temp(body, dods_temp);
-				if (http_status >= 400) {
-					string msg = "Error while reading the URL: ";
-					msg += url;
-					msg += ".\nThe OPeNDAP server returned the following message:\n";
-					msg += http_status_to_string(http_status);
-					throw Error(msg);
-				} else {
-					throw InternalErr(__FILE__, __LINE__,
-							"Bad response from the HTTP server: " + long_to_string(http_status));
-				}
-			}
-				break;
-			}
-		}
-	} else { // url not in cache; get it and cache it
-		DBGN(cerr << "no; getting response and caching." << endl);
-		time_t now = time(0);
-		HTTPResponse *rs = plain_fetch_url(url);
-		d_http_cache->cache_response(url, now, *(rs->get_headers()),
-				rs->get_stream());
-
-		return rs;
-	}
-
-	throw InternalErr(__FILE__, __LINE__, "Unexpected cache response.");
-}
-#endif
 
 /** Dereference a URL and load its body into a temporary file. This
     method ignores the HTTP cache.
@@ -1072,6 +987,44 @@ HTTPConnect::set_accept_deflate(bool deflate)
                               string("Accept-Encoding: deflate, gzip, compress")));
         d_request_headers.erase(i, d_request_headers.end());
     }
+}
+
+/** Look for a certain header */
+class HeaderMatch : public unary_function<const string &, bool> {
+    const string &d_header;
+    public:
+        HeaderMatch(const string &header) : d_header(header) {}
+        bool operator()(const string &arg) { return arg.find(d_header) == 0; }
+};
+
+/** Set the <em>xdap_accept</em> property/HTTP-header. This sets the value
+    of the DAP which the client advertises to servers that it understands.
+    The information (client protocol major and minor versions) are recorded
+    in the instance and the information is sent to servers using the
+    XDAP-Accept HTTP request header.
+
+    @param major The dap client major protocol version
+    @param minor The dap client minor protocol version */
+void
+HTTPConnect::set_xdap_protocol(int major, int minor)
+{
+    // Look for, and remove if one exists, an XDAP-Accept header
+    vector<string>::iterator i;
+    i = find_if(d_request_headers.begin(), d_request_headers.end(),
+                HeaderMatch("XDAP-Accept:"));
+    if (i != d_request_headers.end())
+        d_request_headers.erase(i);
+
+    // Record and add the new header value
+    d_dap_client_protocol_major = major;
+    d_dap_client_protocol_minor = minor;
+    ostringstream xdap_accept;
+    xdap_accept << "XDAP-Accept: " << major << "." << minor;
+
+    d_request_headers.push_back(xdap_accept.str());
+
+    DBG(copy(d_request_headers.begin(), d_request_headers.end(),
+             ostream_iterator<string>(cerr, "\n")));
 }
 
 /** Set the credentials for responding to challenges while dereferencing

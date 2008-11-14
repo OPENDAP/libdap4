@@ -304,6 +304,10 @@ Connect::request_version()
     request_version() method returns the \e server's version number, not
     the DAP protocol version.
 
+    @note This method actually asks the server for the protocol version - use
+    get_protocol() to get the protocol information from the most recent
+    response (e.g., from the last DDX response returned by the server).
+
     @return The DAP protocol version string. */
 string
 Connect::request_protocol()
@@ -659,11 +663,13 @@ Connect::request_ddx(DDS &dds, string expr)
 
     case dap4_ddx:
     default:
-        // DDS::prase throws an exception on error.
+        // DDS::parse throws an exception on error.
         try {
+#if 0
             string blob;
+#endif
             DDXParser ddxp(dds.get_factory());
-            ddxp.intern_stream(rs->get_stream(), &dds, &blob);
+            ddxp.intern_stream(rs->get_stream(), &dds/*, &blob***/);
 #if 0
             dds.parse(rs->get_stream()); // read and parse the dds from a file
 #endif
@@ -900,7 +906,7 @@ Connect::URL(bool ce)
 {
     if (_local)
         throw InternalErr(__FILE__, __LINE__,
-                          "URL(): This call is only valid for a DAP2 data source.");
+                          "URL(): This call is only valid for a DAP data source.");
 
     if (ce)
         return _URL + "?" + _proj + _sel;
@@ -921,7 +927,7 @@ Connect::CE()
 {
     if (_local)
         throw InternalErr(__FILE__, __LINE__,
-                          "CE(): This call is only valid for a DAP2 data source.");
+                          "CE(): This call is only valid for a DAP data source.");
 
     return _proj + _sel;
 }
@@ -946,6 +952,18 @@ Connect::set_accept_deflate(bool deflate)
 {
     if (d_http)
         d_http->set_accept_deflate(deflate);
+}
+
+/** Set the \e XDAP-Accept property/header. This is used to send to a server
+    the (highest) DAP protocol version number that this client understands.
+
+    @param major The client dap protocol major version
+    @param minor The client dap protocol minor version */
+void
+Connect::set_xdap_protocol(int major, int minor)
+{
+    if (d_http)
+        d_http->set_xdap_protocol(major, minor);
 }
 
 /** Disable any further use of the client-side cache. In a future version

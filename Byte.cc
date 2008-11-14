@@ -199,7 +199,7 @@ dods_byte Byte::value() const
 {
     return _buf;
 }
-
+#if FILE_METHODS
 void Byte::print_val(FILE * out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
@@ -209,7 +209,7 @@ void Byte::print_val(FILE * out, string space, bool print_decl_p)
     else
         fprintf(out, "%d", (int) _buf);
 }
-
+#endif
 void Byte::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {

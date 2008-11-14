@@ -73,19 +73,22 @@ public:
 
     virtual bool is_linear();
 
-    virtual void print_decl(FILE *out, string space = "    ",
-                            bool print_semi = true,
-                            bool constraint_info = false,
-                            bool constrained = false);
     virtual void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
                             bool constrained = false);
 
-    virtual void print_xml(FILE *out, string space = "    ",
-                           bool constrained = false);
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
+
+#if FILE_METHODS
+    virtual void print_decl(FILE *out, string space = "    ",
+                            bool print_semi = true,
+                            bool constraint_info = false,
+                            bool constrained = false);
+    virtual void print_xml(FILE *out, string space = "    ",
+                           bool constrained = false);
+#endif
 
     virtual void dump(ostream &strm) const ;
 };

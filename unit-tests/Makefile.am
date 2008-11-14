@@ -50,12 +50,12 @@ CLEANFILES = testout .dodsrc  *.gcda *.gcno
 DISTCLEANFILES = test_config.h ais_testsuite/ais_database.xml
 
 test_config.h: test_config.h.in Makefile
-	sed -e "s%[@]srcdir[@]%${srcdir}%" $< > test_config.h
+	sed -e "s%[@]abs_srcdir[@]%${abs_srcdir}%" $< > test_config.h
 
 ais_testsuite/ais_database.xml: ais_testsuite/ais_database.xml.in ../config.status
 	mkdir -p ais_testsuite
 	chmod +w ais_testsuite
-	sed -e "s%[@]srcdir[@]%${srcdir}%" $< > ais_testsuite/ais_database.xml
+	sed -e "s%[@]abs_srcdir[@]%${abs_srcdir}%" $< > ais_testsuite/ais_database.xml
 
 ############################################################################
 # Unit Tests

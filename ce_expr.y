@@ -112,7 +112,9 @@ bool is_grid_t(BaseType *variable);
 bool is_sequence_t(BaseType *variable);
 
 BaseType *make_variable(ConstraintEvaluator &eval, const value &val);
+#if 1
 bool_func get_function(const ConstraintEvaluator &eval, const char *name);
+#endif
 btp_func get_btp_function(const ConstraintEvaluator &eval, const char *name);
 proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 
@@ -125,7 +127,9 @@ proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 
     libdap::value val;
 
+#if 1
     libdap::bool_func b_func;
+#endif
     libdap::btp_func bt_func;
 
     libdap::int_list *int_l_ptr;
@@ -216,7 +220,7 @@ proj_function:  SCAN_WORD '(' arg_list ')'
 		    }
 		    else if ((p_f = get_proj_function(*(EVALUATOR(arg)), $1))) {
 		        DDS &dds = dynamic_cast<DDS&>(*(DDS(arg)));
-			BaseType **args = build_btp_args( $3, dds, dds.get_dataset_name() );
+			BaseType **args = build_btp_args( $3, dds/*, dds.get_dataset_name()***/ );
 			(*p_f)(($3) ? $3->size():0, args, dds, *(EVALUATOR(arg)));
 			delete[] args;
 			$$ = true;
@@ -784,12 +788,12 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 		    + " must match the number in the array.");
 		   
     DBG(cerr << "Before clear_constraint:" << endl);
-    DBG(a->print_decl(stderr, "", true, false, true));
+    DBG(a->print_decl(cerr, "", true, false, true));
 
     a->clear_constraint();	// each projection erases the previous one
 
     DBG(cerr << "After clear_constraint:" << endl);
-    DBG(a->print_decl(stderr, "", true, false, true));
+    DBG(a->print_decl(cerr, "", true, false, true));
 
     assert(indices);
     int_list_citer p = indices->begin() ;
@@ -830,7 +834,7 @@ process_array_indices(BaseType *variable, int_list_list *indices)
     }
 
     DBG(cerr << "After processing loop:" << endl);
-    DBG(a->print_decl(stderr, "", true, false, true));
+    DBG(a->print_decl(cerr, "", true, false, true));
 
     DBG(cout << "Array Constraint: ";\
 	for (Array::Dim_iter dp = a->dim_begin(); dp != a->dim_end(); dp++)\
@@ -1021,7 +1025,7 @@ make_variable(ConstraintEvaluator &eval, const value &val)
 // NB: function arguments are type-checked at run-time.
 //
 // Returns: A pointer to the function or NULL if not such function exists.
-
+#if 1
 bool_func
 get_function(const ConstraintEvaluator &eval, const char *name)
 {
@@ -1032,6 +1036,7 @@ get_function(const ConstraintEvaluator &eval, const char *name)
     else
 	return 0;
 }
+#endif
 
 btp_func
 get_btp_function(const ConstraintEvaluator &eval, const char *name)

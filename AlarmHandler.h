@@ -45,40 +45,45 @@ namespace libdap
 class AlarmHandler : public EventHandler
 {
 private:
+#if FILE_METHODS
     FILE *d_file;  // Sink for the Error object.
+#endif
     ostream &d_stream;
     string d_version;
 
     // Ensure that d_stream gets initialized...
-    AlarmHandler() : d_file( 0 ), d_stream( cout )
+    AlarmHandler() : /*d_file( 0 ),*/ d_stream( cout )
     {}
 
 public:
     /** Store information to be used by the handler.
     @param s Write to this stream. */
+#if FILE_METHODS
     AlarmHandler(FILE *s) : d_file(s), d_stream( cout )
     {}
-
-    AlarmHandler(ostream &out) : d_file(0), d_stream( out )
+#endif
+    AlarmHandler(ostream &out) : /*d_file(0), */d_stream( out )
     {}
 
     virtual ~AlarmHandler()
     {
-    	if( d_file )
+#if FILE_METHODS
+        if( d_file )
     		fclose( d_file ) ;
+#endif
     }
 
     /** Handle an alarm signal. When one of our servers gets an alarm, that
     means it has hit its time out. We need to dump two CRLF pairs down
     the stream and then send an Error object explaining that a timeout
-    has been reached. 
+    has been reached.
 
-    Because this is a signal handler, it should call only re-entrant
+    Because this is a signal handler, it should call only reentrant
     system services, functions, et cetera. Generally that eliminates
     stdio functions but I'm using them anyway. This handler never returns
     to the code that was running when the alarm signal was raised.
 
-    @param signum We know it is SIGALRM; here as a check 
+    @param signum We know it is SIGALRM; here as a check
     @return Never returns; calls exit after sending the Error object. */
     virtual void handle_signal(int signum)
     {

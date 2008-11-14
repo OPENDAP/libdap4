@@ -90,18 +90,18 @@ append_rvalue_list(rvalue_list *rvals, rvalue *rv)
     @param dds Use this DDS when evaluating functions
     @param dataset Use this when evaluating functions. */
 BaseType **
-build_btp_args(rvalue_list *args, DDS &dds, const string &dataset)
+build_btp_args(rvalue_list *args, DDS &dds/*, const string &dataset***/)
 {
     int argc = 0;
 
     if (args)
         argc = args->size();
-        
+
     // Sanitize allocation size
     if (!size_ok(sizeof(BaseType*), argc+1))
-    	throw Error(malformed_expr, 
-                string("Malformed argument list (") 
-                + long_to_string(argc)  
+    	throw Error(malformed_expr,
+                string("Malformed argument list (")
+                + long_to_string(argc)
                 + string(")."));
 
     // Add space for a null terminator
@@ -110,7 +110,7 @@ build_btp_args(rvalue_list *args, DDS &dds, const string &dataset)
     int index = 0;
     if (argv && argc) {
         for (rvalue::Args_iter i = args->begin(); i != args->end() && index < argc+1; ++i) {
-            argv[index++] = (*i)->bvalue(dataset, dds);
+            argv[index++] = (*i)->bvalue(/*dataset,***/ dds);
         }
     }
 
@@ -118,7 +118,7 @@ build_btp_args(rvalue_list *args, DDS &dds, const string &dataset)
 		delete[] argv;
 		throw InternalErr(__FILE__, __LINE__, "index out of range.");
 	}
-		
+
     argv[index] = 0;            // Add the null terminator.
 
     return argv;
@@ -155,11 +155,11 @@ rvalue::value_name()
     return values in BaseType *s.
 
     @param dataset The dataset name to pass to a function (which may call
-    BaseType::read() using that arguemnt).
+    BaseType::read() using that argument).
     @param dds The dds to pass to a function.
 */
 BaseType *
-rvalue::bvalue(const string &dataset, DDS &dds)
+rvalue::bvalue(/*const string &dataset,*/ DDS &dds)
 {
     if (d_value) {        // i.e., if this RValue is a BaseType
         return d_value;
@@ -167,8 +167,12 @@ rvalue::bvalue(const string &dataset, DDS &dds)
     else if (d_func) {
         // If func is true, then args must be set. See the constructor.
         // 12/23/04 jhrg
-        BaseType **argv = build_btp_args(d_args, dds, dataset);
-        BaseType *ret_val = (*d_func)(d_args->size(), argv, dds, dataset);
+        BaseType **argv = build_btp_args(d_args, dds/*, dataset***/);
+#if 0
+        BaseType *ret_val = (*d_func)(d_args->size(), argv, dds/*, dataset***/);
+#endif
+        BaseType *ret_val;
+        (*d_func)(d_args->size(), argv, dds, &ret_val/*, dataset***/);
         delete[] argv;
         return ret_val;
     }

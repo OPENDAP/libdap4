@@ -61,7 +61,7 @@ namespace libdap
 class Byte: public BaseType
 {
     /** This class allows Int16, ..., Float64 access to <tt>_buf</tt> to
-    simplify and speed up the relational operators. 
+    simplify and speed up the relational operators.
 
     NB: According to Stroustrup it does not matter where (public, private
     or protected) friend classes are declared. */
@@ -99,9 +99,10 @@ public:
 
     virtual bool set_value(const dods_byte value);
     virtual dods_byte value() const;
-
+#if FILE_METHODS
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
+#endif
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 

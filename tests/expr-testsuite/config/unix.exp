@@ -8,6 +8,10 @@ if ![info exists EXPRTEST] then {
     set EXPRTEST [transform ./expr-test]
 }
 
+global skip_empty_sequence_tests
+
+set skip_empty_sequence_tests 1
+
 # The four required proc for expr-test.
 
 proc expr-test_start { options {ifile ""} {eqn ""} {file "dummy"}} {

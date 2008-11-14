@@ -175,17 +175,20 @@ public:
 
     void set_credentials(string u, string p);
     void set_accept_deflate(bool deflate);
+    void set_xdap_protocol(int major, int minor);
 
     void set_cache_enabled(bool enabled);
     bool is_cache_enabled();
+
+    void set_xdap_accept(int major, int minor);
 
     /** Return the protocol/implementation version of the most recent
     response. This is a poorly designed method, but it returns
     information that is useful when used correctly. Before a response is
     made, this contains the string "unknown." This should ultimately hold
     the \e protocol version; it currently holds the \e implementation
-    version. 
-        
+    version.
+
         @see get_protocol()
         @deprecated */
     string get_version()

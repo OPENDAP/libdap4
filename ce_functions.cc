@@ -126,7 +126,13 @@ template<class T> static void set_array_using_double_helper(Array * a,
     T *values = new T[src_len];
     for (int i = 0; i < src_len; ++i)
         values[i] = (T) src[i];
+
+#ifdef VAL2BUF
     a->val2buf(values, true);
+#else
+    a->set_value(values, src_len);
+#endif
+
     delete[]values;
 }
 
@@ -301,7 +307,8 @@ double extract_double_value(BaseType * arg)
 
 /** This server-side function returns version information for the server-side
  functions. */
-BaseType *function_version(int, BaseType *[], DDS &, const string &)
+void
+function_version(int, BaseType *[], DDS &, BaseType **btpp/*, const string &***/)
 {
     string
             xml_value =
@@ -317,8 +324,8 @@ BaseType *function_version(int, BaseType *[], DDS &, const string &)
     Str *response = new Str("version");
 
     response->set_value(xml_value);
-
-    return response;
+    *btpp = response;
+    return;
 }
 
 static void parse_gse_expression(gse_arg * arg, BaseType * expr)
@@ -416,8 +423,9 @@ static void apply_grid_selection_expressions(Grid * grid,
  @param dataset Name of the dataset.
  @see geogrid() (func_geogrid_select) A function which has logic specific
  to longitude/latitude selection. */
-BaseType *function_grid(int argc, BaseType * argv[], DDS &,
-        const string & dataset)
+void
+function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
+        const string & /*dataset****/)
 {
     DBG(cerr << "Entering function_grid..." << endl);
 
@@ -438,7 +446,8 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
     if (argc == 0) {
         Str *response = new Str("info");
         response->set_value(info);
-        return response;
+        *btpp = response;
+        return;
     }
 
     Grid *original_grid = dynamic_cast < Grid * >(argv[0]);
@@ -485,7 +494,8 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
 
     l_grid->read();
 
-    return l_grid;
+    *btpp = l_grid;
+    return;
 }
 
 /** The geogrid function returns the part of a Grid which includes a
@@ -523,8 +533,9 @@ BaseType *function_grid(int argc, BaseType * argv[], DDS &,
  attributes.
  @param dataset Name of the dataset.
  @return The constrained and read Grid, ready to be sent. */
-BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
-        const string & dataset)
+void
+function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
+        const string & /*dataset***/)
 {
     string
             info =
@@ -545,7 +556,8 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
     if (argc == 0) {
         Str *response = new Str("version");
         response->set_value(info);
-        return response;
+        *btpp = response;
+        return ;
     }
 
     if (argc < 5)
@@ -594,7 +606,7 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
     try {
         // Build a GeoConstraint object. If there are no longitude/latitude
         // maps then this constructor throws Error.
-        GridGeoConstraint gc(l_grid, dataset);
+        GridGeoConstraint gc(l_grid/*, dataset***/);
 
         // This sets the bounding box and modifies the maps to match the
         // notation of the box (0/359 or -180/179)
@@ -611,7 +623,8 @@ BaseType *function_geogrid(int argc, BaseType * argv[], DDS &,
 
         // In this function the l_grid pointer is the same as the pointer returned
         // by this call. The caller of the function must free the pointer.
-        return gc.get_constrained_grid();
+        *btpp = gc.get_constrained_grid();
+        return;
     }
     catch (Error &e) {
         throw e;
@@ -733,8 +746,9 @@ static double get_missing_value(BaseType *var)
  @exception Error Thrown if scale_factor is not given and the COARDS
  attributes cannot be found OR if the source variable is not a
  numeric scalar, Array or Grid. */
-BaseType * function_linear_scale(int argc, BaseType * argv[], DDS &,
-        const string & dataset)
+void
+function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
+        const string & /*dataset***/)
 {
     string
             info =
@@ -756,7 +770,8 @@ BaseType * function_linear_scale(int argc, BaseType * argv[], DDS &,
     if (argc == 0) {
         Str *response = new Str("info");
         response->set_value(info);
-        return response;
+        *btpp = response;
+        return;
     }
 
     // Check for 1 or 3 arguments: 1 --> use attributes; 3 --> m & b supplied
@@ -825,7 +840,11 @@ BaseType * function_linear_scale(int argc, BaseType * argv[], DDS &,
         // Vector::add_var will delete the existing 'template' variable
         Float64 *temp_f = new Float64(source.name());
         source.add_var(temp_f);
+#ifdef VAL2BUF
         source.val2buf(static_cast<void*>(data), false);
+#else
+        source.set_value(data, i);
+#endif
         delete [] data; // val2buf copies.
         delete temp_f; // add_var copies and then adds.
         dest = argv[0];
@@ -850,7 +869,9 @@ BaseType * function_linear_scale(int argc, BaseType * argv[], DDS &,
 
         Float64 *temp_f = new Float64(source.name());
         source.add_var(temp_f);
+
         source.val2buf(static_cast<void*>(data), false);
+
         delete [] data; // val2buf copies.
         delete temp_f; // add_var copies and then adds.
 
@@ -862,12 +883,15 @@ BaseType * function_linear_scale(int argc, BaseType * argv[], DDS &,
             data = data * m + b;
 
         dest = new Float64(argv[0]->name());
+
         dest->val2buf(static_cast<void*>(&data));
+
     } else {
         throw Error(malformed_expr,"The linear_scale() function works only for numeric Grids, Arrays and scalars.");
     }
 
-    return dest;
+    *btpp = dest;
+    return;
 }
 
 /** Perform a selection on the array using geographical coordinates. This
@@ -886,8 +910,9 @@ BaseType * function_linear_scale(int argc, BaseType * argv[], DDS &,
  @param dataset
  @return The Array, constrained by the selection
  @exception Error Thrown if thins go awry. */
-BaseType * function_geoarray(int argc, BaseType * argv[], DDS &,
-        const string & dataset)
+void
+function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
+        const string & /*dataset***/)
 {
     string
             info =
@@ -906,7 +931,8 @@ BaseType * function_geoarray(int argc, BaseType * argv[], DDS &,
     if (argc == 0) {
         Str *response = new Str("version");
         response->set_value(info);
-        return response;
+        *btpp = response;
+        return;
     }
 
     DBG(cerr << "argc = " << argc << endl);
@@ -928,12 +954,13 @@ BaseType * function_geoarray(int argc, BaseType * argv[], DDS &,
 
         switch (argc) {
             case 5: {
-            	ArrayGeoConstraint agc(l_array, dataset);
-         		
+            	ArrayGeoConstraint agc(l_array, ""/*dataset***/);
+
          		agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
 				// This also reads all of the data into the grid variable
         		agc.apply_constraint_to_data();
-        		return agc.get_constrained_array();
+        		*btpp = agc.get_constrained_array();
+        		return;
             	break;
             }
             case 9: {
@@ -941,13 +968,14 @@ BaseType * function_geoarray(int argc, BaseType * argv[], DDS &,
                 double var_left = extract_double_value(argv[6]);
                 double var_bottom = extract_double_value(argv[7]);
                 double var_right = extract_double_value(argv[8]);
-                ArrayGeoConstraint agc (l_array, dataset,
+                ArrayGeoConstraint agc (l_array, ""/*dataset***/,
                         var_left, var_top, var_right, var_bottom);
-                        
+
         		agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
 				// This also reads all of the data into the grid variable
         		agc.apply_constraint_to_data();
-        		return agc.get_constrained_array();
+        		*btpp =  agc.get_constrained_array();
+        		return;
                 break;
             }
             case 11: {
@@ -957,14 +985,15 @@ BaseType * function_geoarray(int argc, BaseType * argv[], DDS &,
                 double var_right = extract_double_value(argv[8]);
                 string projection = extract_string_argument(argv[9]);
                 string datum = extract_string_argument(argv[10]);
-                ArrayGeoConstraint agc(l_array, dataset,
+                ArrayGeoConstraint agc(l_array, ""/*dataset***/,
                         var_left, var_top, var_right, var_bottom,
                         projection, datum);
-        
+
         		agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
 				// This also reads all of the data into the grid variable
         		agc.apply_constraint_to_data();
-        		return agc.get_constrained_array();
+        		*btpp = agc.get_constrained_array();
+        		return;
                 break;
             }
             default:
@@ -981,7 +1010,7 @@ BaseType * function_geoarray(int argc, BaseType * argv[], DDS &,
                 + e.what());
 
     }
-    
+
     throw InternalErr(__FILE__, __LINE__, "Impossible condition in geoarray.");
 }
 

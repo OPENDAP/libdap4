@@ -28,6 +28,7 @@
 #include "config.h"
 
 #include <cstdio>
+#include <fstream>
 
 #include "AISMerge.h"
 #include "AISExceptions.h"
@@ -54,6 +55,9 @@ Response *AISMerge::get_ais_resource(const string & res)
         return d_http.fetch_url(res);
     }
     else {
+#if 0
+        ifstream s(res);
+#endif
         FILE *s = fopen(res.c_str(), "r");
         if (!s)
             throw Error("I could not open local AIS resource '"

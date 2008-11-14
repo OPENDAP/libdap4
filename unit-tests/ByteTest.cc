@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -89,18 +89,18 @@ class ByteTest:public TestFixture {
     }
 
     void decl_mangling_test() {
-        string sof;
-        FILE2string(sof, of, tb1->print_decl(of, "", false));
-        CPPUNIT_ASSERT(sof.find("Byte tb1") != string::npos);
+        ostringstream sof;
+        tb1->print_decl(sof, "", false);
+        CPPUNIT_ASSERT(sof.str().find("Byte tb1") != string::npos);
 
-        FILE2string(sof, of, tb2->print_decl(of, "", false));
-        CPPUNIT_ASSERT(sof.find("Byte tb2%20name%20with%20spaces") != string::npos);
+        tb2->print_decl(sof, "", false);
+        CPPUNIT_ASSERT(sof.str().find("Byte tb2%20name%20with%20spaces") != string::npos);
 
-        FILE2string(sof, of, tb3->print_decl(of, "", false));
-        CPPUNIT_ASSERT(sof.find("Byte tb3%20%") != string::npos);
+        tb3->print_decl(sof, "", false);
+        CPPUNIT_ASSERT(sof.str().find("Byte tb3%20%") != string::npos);
 
-        FILE2string(sof, of, tb4->print_decl(of, "", false));
-        CPPUNIT_ASSERT(sof.find("Byte tb4%20%23") != string::npos);
+        tb4->print_decl(sof, "", false);
+        CPPUNIT_ASSERT(sof.str().find("Byte tb4%20%23") != string::npos);
     }
 
 };

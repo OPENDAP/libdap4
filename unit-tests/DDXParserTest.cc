@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // Tests for the AISResources class.
 
 #include <cppunit/TextTestRunner.h>
@@ -45,17 +45,18 @@ private:
     BaseTypeFactory *factory;
     DDXParser *ddx_parser;
     DDS *dds;
+#if 0
     string blob;
-
+#endif
 public:
-    DDXParserTest() {} 
-    ~DDXParserTest() {} 
+    DDXParserTest() {}
+    ~DDXParserTest() {}
 
     void setUp() {
 	factory = new BaseTypeFactory;
 	ddx_parser = new DDXParser(factory);
 	dds = new DDS(factory);
-    } 
+    }
 
     void tearDown() {
 	delete ddx_parser; ddx_parser = 0;
@@ -64,7 +65,10 @@ public:
     }
 
     CPPUNIT_TEST_SUITE( DDXParserTest );
-
+#if 1
+    CPPUNIT_TEST(dap_version_test);
+    CPPUNIT_TEST(no_blob_version_32_test);
+    CPPUNIT_TEST(blob_in_version_32_test);
     CPPUNIT_TEST(top_level_attribute_test);
     CPPUNIT_TEST(top_level_attribute_container_test);
 #if 0
@@ -86,146 +90,192 @@ public:
     CPPUNIT_TEST(bad_nesting_test);
     CPPUNIT_TEST(unknown_end_tag_test);
     CPPUNIT_TEST(variable_in_attribtue_container_test);
+#endif
+    CPPUNIT_TEST(simple_type_missing_attribute_test);
+#if 1
     CPPUNIT_TEST(array_missing_dimension_test);
     CPPUNIT_TEST(array_missing_dimension_stream_read_test);
-
+#endif
     CPPUNIT_TEST_SUITE_END();
+
+    void dap_version_test() {
+    try {
+        ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.00.ddx", dds);
+        CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
+        CPPUNIT_ASSERT(dds->get_dap_major() == 3);
+        CPPUNIT_ASSERT(dds->get_dap_minor() == 2);
+
+        DBG(dds->print_xml(cout, false, "    "));
+    }
+    catch (DDXParseFailed &e) {
+        DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+        CPPUNIT_FAIL("test.00.ddx failed.");
+    }
+    }
+
+    void no_blob_version_32_test() {
+    try {
+        ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.0c.ddx", dds);
+        CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
+        CPPUNIT_ASSERT(dds->get_dap_major() == 3);
+        CPPUNIT_ASSERT(dds->get_dap_minor() == 2);
+
+        DBG(dds->print_xml(cout, false, "    "));
+    }
+    catch (DDXParseFailed &e) {
+        DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+        CPPUNIT_FAIL("test.0c.ddx failed.");
+    }
+    }
+
+    void blob_in_version_32_test() {
+    try {
+        ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.0d.ddx", dds);
+        CPPUNIT_FAIL("Parsing test.0d.ddx should fail since it's a DAP 3.2 doc with a dataBLOB tag.");
+
+        DBG(dds->print_xml(cout, false, "    "));
+    }
+    catch (DDXParseFailed &e) {
+        DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+        CPPUNIT_ASSERT("test.0d.ddx failed as expected.");
+    }
+    }
 
     void top_level_attribute_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.01.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.01.ddx", dds);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
 
-	    DBG(dds->print_xml(stdout, false, "    "));
+	    DBG(dds->print_xml(cout, false, "    "));
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-	    CPPUNIT_ASSERT(!"test.01.ddx failed.");
+	    CPPUNIT_FAIL("test.01.ddx failed.");
 	}
     }
 
     void top_level_attribute_container_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.02.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.02.ddx", dds);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
-	    DBG(dds->print_xml(stdout, false, "    "));
+	    DBG(dds->print_xml(cout, false, "    "));
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-	    CPPUNIT_ASSERT(!"test.02.ddx failed.");
+	    CPPUNIT_FAIL("test.02.ddx failed.");
 	}
     }
 
     // ALiases are broken *** 05/29/03 jhrg
     void top_level_attribute_alias_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.03.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.03.ddx", dds);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
-	    DBG(dds->print_xml(stdout, false, "    "));
+	    DBG(dds->print_xml(cout, false, "    "));
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-	    CPPUNIT_ASSERT(!"test.03.ddx failed.");
+	    CPPUNIT_FAIL("test.03.ddx failed.");
 	}
     }
 
     void top_level_simple_types_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.04.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.04.ddx", dds);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
-	    DBG(dds->print_xml(stdout, false, "    "));
+	    DBG(dds->print_xml(cout, false, "    "));
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << endl << "DDXParseFailed: " << e.get_error_message() << endl);
-	    CPPUNIT_ASSERT(!"test.04.ddx failed.");
+	    CPPUNIT_FAIL("test.04.ddx failed.");
 	}
         catch (Error &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-            CPPUNIT_ASSERT(!"test.04.ddx failed.");
+            CPPUNIT_FAIL("test.04.ddx failed.");
         }
     }
 
     void top_level_simple_types_with_attributes_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.05.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.05.ddx", dds);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
-	    DBG(dds->print_xml(stdout, false, "    "));
+	    DBG(dds->print_xml(cout, false, "    "));
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-	    CPPUNIT_ASSERT(!"test.05.ddx failed.");
+	    CPPUNIT_FAIL("test.05.ddx failed.");
 	}
     }
 
     void simple_arrays_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.06.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.06.ddx", dds);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "OneDimensionalSimpleArrays");
-	    DBG(dds->print_xml(stdout, false, "    "));
+	    DBG(dds->print_xml(cout, false, "    "));
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-	    CPPUNIT_ASSERT(!"test.06.ddx failed.");
+	    CPPUNIT_FAIL("test.06.ddx failed.");
 	}
     }
 
     void simple_arrays_multi_dim_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.07.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.07.ddx", dds);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "MultiDimensionalSimpleArrays");
-	    DBG(dds->print_xml(stdout, false, "    "));
+	    DBG(dds->print_xml(cout, false, "    "));
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-	    CPPUNIT_ASSERT(!"test.07.ddx failed.");
+	    CPPUNIT_FAIL("test.07.ddx failed.");
 	}
     }
 
     void simple_arrays_attributes_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.08.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.08.ddx", dds);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-	    DBG(dds->print_xml(stdout, false, "    "));
+	    DBG(dds->print_xml(cout, false, "    "));
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-	    CPPUNIT_ASSERT(!"test.08.ddx failed.");
+	    CPPUNIT_FAIL("test.08.ddx failed.");
 	}
     }
 
     void structure_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.09.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.09.ddx", dds);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-	    DBG(dds->print_xml(stdout, false, "    "));
+	    DBG(dds->print_xml(cout, false, "    "));
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-	    CPPUNIT_ASSERT(!"test.09.ddx failed.");
+	    CPPUNIT_FAIL("test.09.ddx failed.");
 	}
     }
 
     void sequence_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.0a.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.0a.ddx", dds);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-	    DBG(dds->print_xml(stdout, false, "    "));
+	    DBG(dds->print_xml(cout, false, "    "));
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-	    CPPUNIT_ASSERT(!"test.0a.ddx failed.");
+	    CPPUNIT_FAIL("test.0a.ddx failed.");
 	}
     }
 
     void grid_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.0b.ddx", dds, &blob);
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.0b.ddx", dds);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-	    DBG(dds->print_xml(stdout, false, "    "));
+	    DBG(dds->print_xml(cout, false, "    "));
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-	    CPPUNIT_ASSERT(!"test.0b.ddx failed.");
+	    CPPUNIT_FAIL("test.0b.ddx failed.");
 	}
     }
 
@@ -233,22 +283,22 @@ public:
         try {
 	    string file_name = (string)TEST_SRC_DIR + "/ddx-testsuite/test.0b.ddx";
             FILE *in = fopen(file_name.c_str(), "r");
-            ddx_parser->intern_stream(in, dds, &blob);
+            ddx_parser->intern_stream(in, dds);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-            DBG(dds->print_xml(stdout, false, "    "));
+            DBG(dds->print_xml(cout, false, "    "));
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-            CPPUNIT_ASSERT(!"test.0b.ddx failed.");
+            CPPUNIT_FAIL("test.0b.ddx failed.");
         }
     }
 
-    // Error tests start here. 
+    // Error tests start here.
 
     void unknown_tag_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.01.ddx", dds, &blob);
-	    CPPUNIT_ASSERT(!"error.01.ddx should fail!");
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.01.ddx", dds);
+	    CPPUNIT_FAIL("error.01.ddx should fail!");
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << "Error: " << e.get_error_message() << endl);
@@ -257,8 +307,8 @@ public:
 
     void bad_nesting_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.02.ddx", dds, &blob);
-	    CPPUNIT_ASSERT(!"error.02.ddx should fail!");
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.02.ddx", dds);
+	    CPPUNIT_FAIL("error.02.ddx should fail!");
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << "Error: " << e.get_error_message() << endl);
@@ -267,8 +317,8 @@ public:
 
     void unknown_end_tag_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.03.ddx", dds, &blob);
-	    CPPUNIT_ASSERT(!"error.03.ddx should fail!");
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.03.ddx", dds);
+	    CPPUNIT_FAIL("error.03.ddx should fail!");
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << "Error: " << e.get_error_message() << endl);
@@ -277,8 +327,8 @@ public:
 
     void variable_in_attribtue_container_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.04.ddx", dds, &blob);
-	    CPPUNIT_ASSERT(!"error.04.ddx should fail!");
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.04.ddx", dds);
+	    CPPUNIT_FAIL("error.04.ddx should fail!");
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << "Error: " << e.get_error_message() << endl);
@@ -287,20 +337,30 @@ public:
 
     void array_missing_dimension_test() {
 	try {
-	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.05.ddx", dds, &blob);
-	    CPPUNIT_ASSERT(!"error.05.ddx should fail!");
+	    ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.05.ddx", dds);
+	    CPPUNIT_FAIL("error.05.ddx should fail!");
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << "Error: " << e.get_error_message() << endl);
 	}
     }
-    
+
+    void simple_type_missing_attribute_test() {
+    try {
+        ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/error.06.ddx", dds);
+        CPPUNIT_FAIL("error.06.ddx should fail!");
+    }
+    catch (DDXParseFailed &e) {
+        DBG(cerr << "Error: " << e.get_error_message() << endl);
+    }
+    }
+
     void array_missing_dimension_stream_read_test() {
         try {
 	    string file_name = (string)TEST_SRC_DIR + "/ddx-testsuite/error.05.ddx";
             FILE *in = fopen(file_name.c_str(), "r");
-            ddx_parser->intern_stream(in, dds, &blob);
-            CPPUNIT_ASSERT(!"error.05.ddx should fail!");
+            ddx_parser->intern_stream(in, dds);
+            CPPUNIT_FAIL("error.05.ddx should fail!");
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << "Error: " << e.get_error_message() << endl);
@@ -311,7 +371,7 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DDXParserTest);
 
-int 
+int
 main( int, char** )
 {
     CppUnit::TextTestRunner runner;

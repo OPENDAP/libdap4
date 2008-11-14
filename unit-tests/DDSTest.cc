@@ -28,6 +28,8 @@
 
 #include <sstream>
 
+#include "config.h"
+
 //#define DODS_DEBUG
 
 #include "DDS.h"
@@ -35,7 +37,7 @@
 #include "GNURegex.h"
 #include "util.h"
 #include "debug.h"
-#include <test_config.h>
+#include "test_config.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -79,28 +81,27 @@ class DDSTest: public TestFixture {
             return match == static_cast<int> (s.length());
         }
 
-        CPPUNIT_TEST_SUITE( DDSTest )
-            ;
+        CPPUNIT_TEST_SUITE( DDSTest );
 
-            CPPUNIT_TEST(symbol_name_test);
-            CPPUNIT_TEST(print_xml_test);
-            CPPUNIT_TEST(find_hdf4_dimension_attribute_home_test);
-            CPPUNIT_TEST(find_matching_container_test);
-            CPPUNIT_TEST(transfer_attributes_test);
-            // These test both transfer_attributes() and print_xml()
-            CPPUNIT_TEST(print_xml_test2);
-            CPPUNIT_TEST(print_xml_test3);
-            CPPUNIT_TEST(print_xml_test3_1);
-            CPPUNIT_TEST(print_xml_test4);
-            CPPUNIT_TEST(print_xml_test5);
-            CPPUNIT_TEST(print_xml_test5_1);
+        CPPUNIT_TEST(symbol_name_test);
+        CPPUNIT_TEST(print_xml_test);
+        CPPUNIT_TEST(find_hdf4_dimension_attribute_home_test);
+        CPPUNIT_TEST(find_matching_container_test);
+        CPPUNIT_TEST(transfer_attributes_test);
+        // These test both transfer_attributes() and print_xml()
+        CPPUNIT_TEST(print_xml_test2);
+        CPPUNIT_TEST(print_xml_test3);
+        CPPUNIT_TEST(print_xml_test3_1);
+        CPPUNIT_TEST(print_xml_test4);
+        CPPUNIT_TEST(print_xml_test5);
+        CPPUNIT_TEST(print_xml_test5_1);
 
-            CPPUNIT_TEST(print_xml_test6);
-            CPPUNIT_TEST(print_xml_test7);
+        CPPUNIT_TEST(print_xml_test6);
+        CPPUNIT_TEST(print_xml_test7);
 
-            //CPPUNIT_TEST(add_global_attribute_test);
+        //CPPUNIT_TEST(add_global_attribute_test);
 
-CPPUNIT_TEST_SUITE_END        ();
+        CPPUNIT_TEST_SUITE_END();
 
         void find_hdf4_dimension_attribute_home_test() {
             try {
@@ -352,10 +353,12 @@ CPPUNIT_TEST_SUITE_END        ();
 
         void print_xml_test() {
             dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b");
-
+#if 0
             char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
             FILE *tmp = get_temp_file(DDSTemp);
-            dds2->print_xml(tmp, false, "http://localhost/dods/test.xyz");
+#endif
+            ostringstream oss;
+            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
             Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
 <Dataset name=\"test.19\"\n\
 .*\
@@ -378,11 +381,12 @@ CPPUNIT_TEST_SUITE_END        ();
 \n\
     <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
-            CPPUNIT_ASSERT(re_match(r, file_to_string(tmp)));
-
+            CPPUNIT_ASSERT(re_match(r, oss.str()));
+#if 0
             fclose(tmp);
             remove(DDSTemp);
-        }
+#endif
+            }
 
         void print_xml_test2() {
             dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19c");
@@ -391,12 +395,10 @@ CPPUNIT_TEST_SUITE_END        ();
 
             dds2->transfer_attributes(&das);
 
-            char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
-            FILE *tmp = get_temp_file(DDSTemp);
-            dds2->print_xml(tmp, false, "http://localhost/dods/test.xyz");
+            ostringstream oss;
+            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
 
-            string output = file_to_string(tmp);
-            DBG2(cerr << output << endl);
+            DBG2(cerr << oss.str() << endl);
 
             Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
 <Dataset name=\"test.19c\"\n\
@@ -420,8 +422,8 @@ CPPUNIT_TEST_SUITE_END        ();
     <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
-            CPPUNIT_ASSERT(re_match(r, output));
-            remove(DDSTemp);
+            CPPUNIT_ASSERT(re_match(r, oss.str()));
+
         }
 
         void print_xml_test3() {
@@ -431,12 +433,10 @@ CPPUNIT_TEST_SUITE_END        ();
 
             dds2->transfer_attributes(&das);
 
-            char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
-            FILE *tmp = get_temp_file(DDSTemp);
-            dds2->print_xml(tmp, false, "http://localhost/dods/test.xyz");
+            ostringstream oss;
+            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
 
-            string output = file_to_string(tmp);
-            DBG2(cerr << output << endl);
+            DBG2(cerr << oss.str() << endl);
 
             Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
 <Dataset name=\"test.19d\"\n\
@@ -452,8 +452,7 @@ CPPUNIT_TEST_SUITE_END        ();
     <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
-            CPPUNIT_ASSERT(re_match(r, output));
-            remove(DDSTemp);
+            CPPUNIT_ASSERT(re_match(r, oss.str()));
         }
 
         void print_xml_test3_1() {
@@ -463,12 +462,10 @@ CPPUNIT_TEST_SUITE_END        ();
 
             dds2->transfer_attributes(&das);
 
-            char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
-            FILE *tmp = get_temp_file(DDSTemp);
-            dds2->print_xml(tmp, false, "http://localhost/dods/test.xyz");
+            ostringstream oss;
+            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
 
-            string output = file_to_string(tmp);
-            DBG2(cerr << output << endl);
+            DBG2(cerr << oss.str() << endl);
 
             Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
 <Dataset name=\"test.19d\"\n\
@@ -489,8 +486,7 @@ CPPUNIT_TEST_SUITE_END        ();
     <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
-            CPPUNIT_ASSERT(re_match(r, output));
-            remove(DDSTemp);
+            CPPUNIT_ASSERT(re_match(r, oss.str()));
         }
 
         void print_xml_test4() {
@@ -503,12 +499,10 @@ CPPUNIT_TEST_SUITE_END        ();
             DBG(AttrTable &at2 = dds2->var("c%20d")->get_attr_table());
             DBG(at2.print(stderr));
 
-            char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
-            FILE *tmp = get_temp_file(DDSTemp);
-            dds2->print_xml(tmp, false, "http://localhost/dods/test.xyz");
+            ostringstream oss;
+            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
 
-            string output = file_to_string(tmp);
-            DBG(cerr << output << endl);
+            DBG(cerr << oss.str() << endl);
 
             Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
 <Dataset name=\"test.19e\"\n\
@@ -530,8 +524,7 @@ CPPUNIT_TEST_SUITE_END        ();
     <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
-            CPPUNIT_ASSERT(re_match(r, output));
-            remove(DDSTemp);
+            CPPUNIT_ASSERT(re_match(r, oss.str()));
         }
 
         void print_xml_test5() {
@@ -550,12 +543,10 @@ CPPUNIT_TEST_SUITE_END        ();
             DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table());
             DBG(at2.print(stderr));
 
-            char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
-            FILE *tmp = get_temp_file(DDSTemp);
-            dds2->print_xml(tmp, false, "http://localhost/dods/test.xyz");
+            ostringstream oss;
+            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
 
-            string output = file_to_string(tmp);
-            DBG(cerr << output << endl);
+            DBG(cerr << oss.str() << endl);
 
             Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
 <Dataset name=\"test.19f\"\n\
@@ -580,8 +571,7 @@ CPPUNIT_TEST_SUITE_END        ();
     <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
-            CPPUNIT_ASSERT(re_match(r, output));
-            remove(DDSTemp);
+            CPPUNIT_ASSERT(re_match(r, oss.str()));
         }
 
         void print_xml_test5_1() {
@@ -600,12 +590,10 @@ CPPUNIT_TEST_SUITE_END        ();
             DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table());
             DBG(at2.print(stderr));
 
-            char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
-            FILE *tmp = get_temp_file(DDSTemp);
-            dds2->print_xml(tmp, false, "http://localhost/dods/test.xyz");
+            ostringstream oss;
+            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
 
-            string output = file_to_string(tmp);
-            DBG(cerr << output << endl);
+            DBG(cerr << oss.str() << endl);
 
             Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
 <Dataset name=\"test.19f\"\n\
@@ -633,8 +621,7 @@ CPPUNIT_TEST_SUITE_END        ();
     <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
-            CPPUNIT_ASSERT(re_match(r, output));
-            remove(DDSTemp);
+            CPPUNIT_ASSERT(re_match(r, oss.str()));
         }
 
         void print_xml_test6() {
@@ -644,12 +631,10 @@ CPPUNIT_TEST_SUITE_END        ();
 
             dds2->transfer_attributes(&das);
 
-            char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
-            FILE *tmp = get_temp_file(DDSTemp);
-            dds2->print_xml(tmp, false, "http://localhost/dods/test.xyz");
+            ostringstream oss;
+            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
 
-            string output = file_to_string(tmp);
-            DBG(cerr << output << endl);
+            DBG(cerr << oss.str() << endl);
 
             Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
 <Dataset name=\"test.19\"\n\
@@ -708,8 +693,7 @@ CPPUNIT_TEST_SUITE_END        ();
     <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
-            CPPUNIT_ASSERT(re_match(r, output));
-            remove(DDSTemp);
+            CPPUNIT_ASSERT(re_match(r, oss.str()));
         }
 
         void print_xml_test7() {
@@ -728,12 +712,10 @@ CPPUNIT_TEST_SUITE_END        ();
             DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table());
             DBG(at2.print(stderr));
 
-            char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
-            FILE *tmp = get_temp_file(DDSTemp);
-            dds2->print_xml(tmp, false, "http://localhost/dods/test.xyz");
+            ostringstream oss;
+            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
 
-            string output = file_to_string(tmp);
-            DBG(cerr << output << endl);
+            DBG(cerr << oss.str() << endl);
 
             Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
 <Dataset name=\"test.19\"\n\
@@ -775,8 +757,7 @@ CPPUNIT_TEST_SUITE_END        ();
     <dataBLOB href=\"\"/>\n\
 </Dataset>\n");
 
-            CPPUNIT_ASSERT(re_match(r, output));
-            remove(DDSTemp);
+            CPPUNIT_ASSERT(re_match(r, oss.str()));
         }
 
     };

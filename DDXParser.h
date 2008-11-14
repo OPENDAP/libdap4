@@ -150,6 +150,7 @@ private:
     //@{
     void transfer_attrs(const char **attrs);
     bool check_required_attribute(const string &attr);
+    bool check_attribute(const string & attr);
 
     void process_attribute_element(const char **attrs);
     void process_attribute_alias(const char **attrs);
@@ -173,8 +174,8 @@ public:
     DDXParser(BaseTypeFactory *factory) : d_factory(factory)
     {}
 
-    void intern(const string &document, DDS *dest_dds, string *blob);
-    void intern_stream(FILE *in, DDS *dds, string *blob);
+    void intern(const string &document, DDS *dest_dds/*, string *blob = 0***/);
+    void intern_stream(FILE *in, DDS *dds/* , string *blob = 0 ***/);
 
     static void ddx_start_document(DDXParser *parser);
     static void ddx_end_document(DDXParser *parser);

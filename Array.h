@@ -124,17 +124,22 @@ public:
 
 private:
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
+
     friend class ArrayTest;
 
 protected:
     void _duplicate(const Array &a);
-    virtual void print_xml_core(FILE *out, string space, bool constrained, string tag);
-    virtual void print_xml_core(ostream &out, string space, bool constrained, string tag);
-    virtual unsigned int print_array(FILE *out, unsigned int index,
-                             unsigned int dims, unsigned int shape[]);
-    virtual unsigned int print_array(ostream &out, unsigned int index,
-                             unsigned int dims, unsigned int shape[]);
 
+#if FILE_METHODS
+    void print_xml_core(FILE *out, string space, bool constrained, string tag);
+#endif
+    void print_xml_core(ostream &out, string space, bool constrained, string tag);
+#if FILE_METHODS
+    unsigned int print_array(FILE *out, unsigned int index,
+                             unsigned int dims, unsigned int shape[]);
+#endif
+    unsigned int print_array(ostream &out, unsigned int index,
+                             unsigned int dims, unsigned int shape[]);
 
 public:
     /** A constant iterator used to access the various dimensions of an
@@ -181,29 +186,32 @@ public:
 
     unsigned int dimensions(bool constrained = false);
 
-    virtual void print_decl(FILE *out, string space = "    ",
-                            bool print_semi = true,
-                            bool constraint_info = false,
-                            bool constrained = false);
     virtual void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
                             bool constrained = false);
 
-    virtual void print_xml(FILE *out, string space = "    ",
-                           bool constrained = false);
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
 
-    virtual void print_as_map_xml(FILE *out, string space = "    ",
-                                  bool constrained = false);
     virtual void print_as_map_xml(ostream &out, string space = "    ",
                                   bool constrained = false);
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
+
+#if FILE_METHODS
+    virtual void print_xml(FILE *out, string space = "    ",
+                           bool constrained = false);
+    virtual void print_as_map_xml(FILE *out, string space = "    ",
+                                  bool constrained = false);
+    virtual void print_val(FILE *out, string space = "",
+                           bool print_decl_p = true);
+    virtual void print_decl(FILE *out, string space = "    ",
+                            bool print_semi = true,
+                            bool constraint_info = false,
+                            bool constrained = false);
+#endif
 
     virtual bool check_semantics(string &msg, bool all = false);
 

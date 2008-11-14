@@ -14,8 +14,7 @@ AM_CONFIG_HEADER([config.h dods-datatypes-config.h xdr-datatypes-config.h])
 
 AM_INIT_AUTOMAKE
 
-dnl Backward compatibility to DAP 3.1 (for the DDX)
-AC_DEFINE([DDX31], [1], [Return DDX compatible with the DAP 3.1 libdap])
+AC_DEFINE([FILE_METHODS], [0], [Define this to activate the old FILE * methods.])
 
 AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])
 AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])

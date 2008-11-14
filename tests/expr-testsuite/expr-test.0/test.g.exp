@@ -6,6 +6,7 @@
 global comp_output		# contains output from das-test_start
 global verbose			# this and srcdir are set by runtest.exp
 global srcdir
+global skip_empty_sequence_tests
 
 # The variable `test_file' is the name of the das input file for this test.
 
@@ -29,12 +30,14 @@ Dataset {
 } test1;
 The data:"
 
+if {$skip_empty_sequence_tests != 1} {
 expr-test_start p ${srcdir}/${test_file} ${test_equation}
 
 if ![string compare $test_out $comp_output] { # check comp_output
     pass "$test_name"
 } else {
     xfail "$test_name"
+}
 }
 
 expr-test_start P ${srcdir}/${test_file} ${test_equation}

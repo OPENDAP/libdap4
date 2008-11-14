@@ -94,7 +94,7 @@ public:
             dods_byte tmp_data[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
             a.get_array()->val2buf((void*)tmp_data);
             a.get_array()->set_read_p(true);
-            
+
             Grid & b = dynamic_cast < Grid & >(*dds->var("b"));
             Array & m2 = dynamic_cast < Array & >(**b.map_begin());
             dods_float64 first_b[10] = { 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
@@ -131,13 +131,13 @@ public:
     // grid() is not required to handle this case.
     CPPUNIT_TEST(values_outside_map_range_test);
 #endif
-    
+
     // Tests for linear_scale
     CPPUNIT_TEST(linear_scale_args_test);
     CPPUNIT_TEST(linear_scale_array_test);
     CPPUNIT_TEST(linear_scale_grid_test);
     CPPUNIT_TEST(linear_scale_grid_attributes_test);
-    CPPUNIT_TEST(linear_scale_grid_attributes_test2);    
+    CPPUNIT_TEST(linear_scale_grid_attributes_test2);
     CPPUNIT_TEST(linear_scale_scalar_test);
 
     CPPUNIT_TEST_SUITE_END();
@@ -145,7 +145,8 @@ public:
     void no_arguments_test()
     {
         try {
-            function_grid(0, 0, *dds, "");
+            BaseType *btp = 0;
+            function_grid(0, 0, *dds, &btp);
             CPPUNIT_ASSERT(true);
         }
         catch (Error &e) {
@@ -160,7 +161,8 @@ public:
             BaseType *argv[1];
             argv[0] = dds->var("a");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this");
-            function_grid(1, argv, *dds, "");
+            BaseType *btp = 0;
+            function_grid(1, argv, *dds, &btp);
             CPPUNIT_ASSERT("one_argument_not_a_grid_test() should work");
         }
         catch (Error &e) {
@@ -175,7 +177,8 @@ public:
             BaseType *argv[1];
             argv[0] = dds->var("lat");
             CPPUNIT_ASSERT(argv[0] && "dds->var should find this, although it is not a grid");
-            function_grid(1, argv, *dds, "");
+            BaseType *btp = 0;
+            function_grid(1, argv, *dds, &btp);
             CPPUNIT_ASSERT(!"one_argument_not_a_grid_test() should have failed");
         }
         catch (Error &e) {
@@ -194,7 +197,8 @@ public:
             string expression = "3<second<=7";
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
-            function_grid(2, argv, *dds, "");
+            BaseType *btp = 0;
+            function_grid(2, argv, *dds, &btp);
             CPPUNIT_ASSERT(!"map_not_in_grid_test() should have failed");
         }
         catch (Error &e) {
@@ -214,7 +218,9 @@ public:
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
 
-            Grid &g = dynamic_cast<Grid&>(*function_grid(2, argv, *dds, ""));
+            BaseType *btp = 0;
+            function_grid(2, argv, *dds, &btp);
+            Grid &g = dynamic_cast<Grid&>(*btp);
 
             //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
@@ -245,7 +251,11 @@ public:
             dynamic_cast<Str*>(argv[2])->set_read_p(true);
 
             //function_grid(3, argv, *dds);
-            Grid &g = dynamic_cast<Grid&>(*function_grid(3, argv, *dds, ""));
+            BaseType *btp = 0;
+            function_grid(3, argv, *dds, &btp);
+            Grid &g = dynamic_cast<Grid&>(*btp);
+
+            //Grid &g = dynamic_cast<Grid&>(*function_grid(3, argv, *dds));
             //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
             CPPUNIT_ASSERT(m.dimension_start(m.dim_begin(), true) == 4);
@@ -268,8 +278,12 @@ public:
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
 
+            BaseType *btp = 0;
+            function_grid(2, argv, *dds, &btp);
+            Grid &g = dynamic_cast<Grid&>(*btp);
+
             //function_grid(2, argv, *dds);
-            Grid &g = dynamic_cast<Grid&>(*function_grid(2, argv, *dds, ""));
+            //Grid &g = dynamic_cast<Grid&>(*function_grid(2, argv, *dds));
             //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
             CPPUNIT_ASSERT(m.dimension_start(m.dim_begin(), true) == 2);
@@ -298,8 +312,12 @@ public:
             dynamic_cast<Str*>(argv[2])->val2buf(&expression);
             dynamic_cast<Str*>(argv[2])->set_read_p(true);
 
+            BaseType *btp = 0;
+            function_grid(3, argv, *dds, &btp);
+            Grid &g = dynamic_cast<Grid&>(*btp);
+
             //function_grid(3, argv, *dds);
-            Grid &g = dynamic_cast<Grid&>(*function_grid(3, argv, *dds, ""));
+            //Grid &g = dynamic_cast<Grid&>(*function_grid(3, argv, *dds));
             //Grid &g = dynamic_cast<Grid&>(*argv[0]);
             Array &m = dynamic_cast<Array&>(**g.map_begin());
             CPPUNIT_ASSERT(m.dimension_start(m.dim_begin(), true) == 2);
@@ -322,7 +340,11 @@ public:
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
 
-            function_grid(2, argv, *dds, "");
+            BaseType *btp = 0;
+            function_grid(2, argv, *dds, &btp);
+            Grid &g = dynamic_cast<Grid&>(*btp);
+
+            // function_grid(2, argv, *dds);
 
             CPPUNIT_ASSERT(!"one_dim_grid_noninclusive_values_test() should not have worked");
         }
@@ -344,7 +366,11 @@ public:
             dynamic_cast<Str*>(argv[1])->val2buf(&expression);
             dynamic_cast<Str*>(argv[1])->set_read_p(true);
 
-            function_grid(2, argv, *dds, "");
+            BaseType *btp = 0;
+            function_grid(2, argv, *dds, &btp);
+            Grid &g = dynamic_cast<Grid&>(*btp);
+
+            // function_grid(2, argv, *dds);
 
             CPPUNIT_ASSERT(!"values_outside_map_range_test() should not have worked");
         }
@@ -353,11 +379,12 @@ public:
             CPPUNIT_ASSERT(true);
         }
     }
-    
+
     // linear_scale tests
     void linear_scale_args_test() {
         try {
-            function_linear_scale(0, 0, *dds, "linear_scale_args_test");
+            BaseType *btp = 0;
+            function_linear_scale(0, 0, *dds, &btp);
             CPPUNIT_ASSERT(true);
         }
         catch (Error &e) {
@@ -365,7 +392,7 @@ public:
             CPPUNIT_ASSERT(!"linear_scale_args_test: should not throw Error");
         }
     }
-    
+
     void linear_scale_array_test() {
         try {
             Array *a = dynamic_cast<Grid&>(*dds->var("a")).get_array();
@@ -376,8 +403,9 @@ public:
             dynamic_cast<Float64*>(argv[1])->set_value(0.1);//m
             argv[2] = new Float64("");
             dynamic_cast<Float64*>(argv[2])->set_value(10);//b
-            BaseType *scaled = function_linear_scale(3, argv, *dds, "linear_scale_args_test");
-            CPPUNIT_ASSERT(scaled->type() == dods_array_c 
+            BaseType *scaled = 0;
+            function_linear_scale(3, argv, *dds, &scaled);
+            CPPUNIT_ASSERT(scaled->type() == dods_array_c
                            && scaled->var()->type() == dods_float64_c);
             double *values = extract_double_array(dynamic_cast<Array*>(scaled));
             CPPUNIT_ASSERT(values[0] == 10);
@@ -389,7 +417,7 @@ public:
             CPPUNIT_ASSERT(!"Error in linear_scale_grid_test()");
         }
     }
-    
+
     void linear_scale_grid_test() {
         try {
             Grid *g = dynamic_cast<Grid*>(dds->var("a"));
@@ -400,7 +428,8 @@ public:
             dynamic_cast<Float64*>(argv[1])->set_value(0.1);
             argv[2] = new Float64("");
             dynamic_cast<Float64*>(argv[2])->set_value(10);
-            BaseType *scaled = function_linear_scale(3, argv, *dds, "linear_scale_args_test");
+            BaseType *scaled = 0;
+            function_linear_scale(3, argv, *dds, &scaled);
             CPPUNIT_ASSERT(scaled->type() == dods_grid_c);
             Grid *g_s = dynamic_cast<Grid*>(scaled);
             CPPUNIT_ASSERT(g_s->get_array()->var()->type() == dods_float64_c);
@@ -414,14 +443,15 @@ public:
             CPPUNIT_ASSERT(!"Error in linear_scale_grid_test()");
         }
     }
-    
+
     void linear_scale_grid_attributes_test() {
         try {
             Grid *g = dynamic_cast<Grid*>(dds->var("a"));
             CPPUNIT_ASSERT(g);
             BaseType *argv[1];
             argv[0] = g;
-            BaseType *scaled = function_linear_scale(1, argv, *dds, "linear_scale_args_test");
+            BaseType *scaled = 0;
+            function_linear_scale(1, argv, *dds, &scaled);
             CPPUNIT_ASSERT(scaled->type() == dods_grid_c);
             Grid *g_s = dynamic_cast<Grid*>(scaled);
             CPPUNIT_ASSERT(g_s->get_array()->var()->type() == dods_float64_c);
@@ -435,7 +465,7 @@ public:
             CPPUNIT_ASSERT(!"Error in linear_scale_grid_test()");
         }
     }
-    
+
     // This tests the case where attributes are not found
     void linear_scale_grid_attributes_test2() {
         try {
@@ -443,7 +473,8 @@ public:
             CPPUNIT_ASSERT(g);
             BaseType *argv[1];
             argv[0] = g;
-            (void)function_linear_scale(1, argv, *dds, "linear_scale_args_test");
+            BaseType *btp = 0;
+            function_linear_scale(1, argv, *dds, &btp);
             CPPUNIT_FAIL("Should not get here; no params passed and no attributes set for grid 'b'");
         }
         catch (Error &e) {
@@ -451,7 +482,7 @@ public:
             CPPUNIT_ASSERT("Caught exception");
         }
     }
-    
+
     void linear_scale_scalar_test() {
         try {
             Int32 *i = new Int32("linear_scale_test_int32");
@@ -463,8 +494,9 @@ public:
             dynamic_cast<Float64*>(argv[1])->set_value(0.1);//m
             argv[2] = new Float64("");
             dynamic_cast<Float64*>(argv[2])->set_value(10);//b
-            BaseType *scaled = function_linear_scale(3, argv, *dds, "linear_scale_args_test");
-            CPPUNIT_ASSERT(scaled->type() == dods_float64_c); 
+            BaseType *scaled = 0;
+            function_linear_scale(3, argv, *dds, &scaled);
+            CPPUNIT_ASSERT(scaled->type() == dods_float64_c);
 
             CPPUNIT_ASSERT(dynamic_cast<Float64*>(scaled)->value() == 10.1);
         }

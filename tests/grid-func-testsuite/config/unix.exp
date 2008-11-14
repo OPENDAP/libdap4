@@ -39,7 +39,7 @@ proc getdap_load {} {
 }
 
 proc getdap_exit {} {
-    send -raw ""
+    # send -raw ""
 }
 
 proc getdap_version {} {

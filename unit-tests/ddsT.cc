@@ -28,7 +28,7 @@ using namespace std;
 using namespace libdap;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
-				      // timeouts. 
+				      // timeouts.
 string cprint = "\
 Dataset {\n\
     Int16 var1;\n\
@@ -86,14 +86,14 @@ CPPUNIT_TEST_SUITE_END( ) ;
 private:
     /* TEST PRIVATE DATA */
     TestTypeFactory *factory;
-    
+
 public:
     void setUp()
     {
         factory = new TestTypeFactory;
     }
 
-    void tearDown() 
+    void tearDown()
     {
         delete factory; factory = 0;
     }
@@ -363,32 +363,32 @@ public:
 	}
 
 	{
-            string sof;
-            FILE2string(sof, of, dds.print( of ));
-            CPPUNIT_ASSERT(sof.find(cprint) != string::npos);
+            ostringstream sof;
+            dds.print( sof );
+            CPPUNIT_ASSERT(sof.str().find(cprint) != string::npos);
 	}
 
 	{
-            string sof;
-            FILE2string(sof, of, dds.print_constrained( of ));
-            CPPUNIT_ASSERT(sof.find(nprint) != string::npos);
+            ostringstream sof;
+            dds.print_constrained( sof );
+            CPPUNIT_ASSERT(sof.str().find(nprint) != string::npos);
 	}
 
 	dds.mark_all( true ) ;
 
 	{
-            string sof;
-            FILE2string(sof, of, dds.print_constrained( of ));
-            CPPUNIT_ASSERT(sof.find(cprint) != string::npos);
+            ostringstream sof;
+            dds.print_constrained( sof );
+            CPPUNIT_ASSERT(sof.str().find(cprint) != string::npos);
 	}
 
 	bool mark_ret = dds.mark( "var8", false ) ;
 	CPPUNIT_ASSERT( mark_ret == true ) ;
 
 	{
-            string sof;
-            FILE2string(sof, of, dds.print_constrained( of ));
-            CPPUNIT_ASSERT(sof.find(pprint) != string::npos);
+            ostringstream sof;
+            dds.print_constrained( sof );
+            CPPUNIT_ASSERT(sof.str().find(pprint) != string::npos);
 	}
     }
 
@@ -607,7 +607,7 @@ int main( int, char ** )
     CppUnit::TestFactoryRegistry &registry =
 	CppUnit::TestFactoryRegistry::getRegistry() ;
     runner.addTest( registry.makeTest() ) ;
-    runner.setOutputter( CppUnit::CompilerOutputter::defaultOutputter( 
+    runner.setOutputter( CppUnit::CompilerOutputter::defaultOutputter(
                                                         &runner.result(),
                                                         std::cerr ) );
     bool wasSuccessful = runner.run( "", false ) ;

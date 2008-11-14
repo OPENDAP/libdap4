@@ -55,6 +55,8 @@ namespace libdap {
 
 
 /** @brief Initialize GeoConstraint with a Grid.
+
+    @todo Remove ds_name. 10/2/08
     @param grid Set the GeoConstraint to use this Grid variable. It is the
     caller's responsibility to ensure that the value \e grid is a valid Grid
     variable.
@@ -249,7 +251,7 @@ void GridGeoConstraint::apply_constraint_to_data()
     // If the constraint used the -180/179 (neg_pos) notation, transform
     // the longitude map s it uses the -180/179 notation. Note that at this
     // point, d_longitude always uses the pos notation because of the earlier
-    // conditional transforamtion.
+    // conditional transformation.
 
     // Do this _before_ applying the constraint since set_array_using_double()
     // tests the array length using Vector::length() and that method returns
@@ -278,7 +280,9 @@ void GridGeoConstraint::apply_constraint_to_data()
 
     // ... and then the Grid's array if it has been read.
     if (get_array_data()) {
+/* ***/
         int size = d_grid->get_array()->val2buf(get_array_data());
+
         if (size != get_array_data_size())
             throw
             InternalErr

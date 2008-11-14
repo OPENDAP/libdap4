@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- DAP 3.2 response without the BLOB element -->
+
+<Dataset name="SimpleTypes" dap_version="3.2">
+
+        <Attribute name="PrincipleInvestigator" type="String">
+            <value>&quot;Mark Abbott&quot;</value>
+            <value>&quot;Ph.D&quot;</value>
+        </Attribute>
+
+</Dataset>

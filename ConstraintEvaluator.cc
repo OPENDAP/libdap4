@@ -84,13 +84,13 @@ ConstraintEvaluator::clause_end()
     expression. */
 bool
 ConstraintEvaluator::clause_value(Clause_iter &iter, DDS &dds,
-                                  const string &dataset)
+                                  const string &/*dataset***/)
 {
     if (expr.empty())
         throw InternalErr(__FILE__, __LINE__,
                           "There are no CE clauses for *this* DDS object.");
 
-    return (*iter)->value(dataset, dds);
+    return (*iter)->value(/*dataset,***/ dds);
 }
 
 /** @brief Add a clause to a constraint expression.
@@ -112,7 +112,7 @@ ConstraintEvaluator::append_clause(int op, rvalue *arg1, rvalue_list *arg2)
 
     expr.push_back(clause);
 }
-
+#if 1
 /** @brief Add a clause to a constraint expression.
 
     This function adds a boolean function clause to the constraint
@@ -129,7 +129,7 @@ ConstraintEvaluator::append_clause(bool_func func, rvalue_list *args)
 
     expr.push_back(clause);
 }
-
+#endif
 /** @brief Add a clause to a constraint expression.
 
     This function adds a real-valued (BaseType) function clause to
@@ -193,7 +193,7 @@ public:
     @name External Function Accessors
 */
 //@{
-
+#if 1
 /** @brief Add a boolean function to the list. */
 void
 ConstraintEvaluator::add_function(const string &name, bool_func f)
@@ -202,7 +202,7 @@ ConstraintEvaluator::add_function(const string &name, bool_func f)
     function func(name, f);
     functions.push_back(func);
 }
-
+#endif
 /** @brief Add a BaseType function to the list. */
 void
 ConstraintEvaluator::add_function(const string &name, btp_func f)
@@ -220,7 +220,7 @@ ConstraintEvaluator::add_function(const string &name, proj_func f)
     function func(name, f);
     functions.push_back(func);
 }
-
+#if 1
 /** @brief Find a Boolean function with a given name in the function list. */
 bool
 ConstraintEvaluator::find_function(const string &name, bool_func *f) const
@@ -236,7 +236,7 @@ ConstraintEvaluator::find_function(const string &name, bool_func *f) const
 
     return false;
 }
-
+#endif
 /** @brief Find a BaseType function with a given name in the function list. */
 bool
 ConstraintEvaluator::find_function(const string &name, btp_func *f) const
@@ -283,7 +283,7 @@ ConstraintEvaluator::functional_expression()
 
 /** @brief Evaluate a function-valued constraint expression. */
 BaseType *
-ConstraintEvaluator::eval_function(DDS &dds, const string &dataset)
+ConstraintEvaluator::eval_function(DDS &dds, const string &/*dataset***/)
 {
     if (expr.size() != 1)
         throw InternalErr(__FILE__, __LINE__,
@@ -291,7 +291,7 @@ ConstraintEvaluator::eval_function(DDS &dds, const string &dataset)
 
     Clause *cp = expr[0] ;
     BaseType *result;
-    if (cp->value(dataset, dds, &result))
+    if (cp->value(/*dataset,***/ dds, &result))
         return result;
     else
         return NULL;
@@ -321,7 +321,7 @@ ConstraintEvaluator::boolean_expression()
     @param dataset This string is passed to the read() methods.
     @return True if the expression is true, false otherwise. */
 bool
-ConstraintEvaluator::eval_selection(DDS &dds, const string &dataset)
+ConstraintEvaluator::eval_selection(DDS &dds, const string &/*dataset***/)
 {
     if (expr.empty()) {
         DBG(cerr << "No selection recorded" << endl);
@@ -340,7 +340,7 @@ ConstraintEvaluator::eval_selection(DDS &dds, const string &dataset)
         if (!((*i)->boolean_clause()))
             throw InternalErr(__FILE__, __LINE__,
                               "A selection expression must contain only boolean clauses.");
-        result = result && (*i)->value(dataset, dds);
+        result = result && (*i)->value(/*dataset,***/ dds);
     }
 
     return result;

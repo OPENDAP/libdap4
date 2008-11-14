@@ -286,7 +286,7 @@ Constructor::get_var_index(int i)
     return *(_vars.begin() + i);
 }
 
-
+#if FILE_METHODS
 void
 Constructor::print_decl(FILE *out, string space, bool print_semi,
                         bool constraint_info, bool constrained)
@@ -311,7 +311,7 @@ Constructor::print_decl(FILE *out, string space, bool print_semi,
     if (print_semi)
         fprintf(out, ";\n") ;
 }
-
+#endif
 void
 Constructor::print_decl(ostream &out, string space, bool print_semi,
                         bool constraint_info, bool constrained)
@@ -336,7 +336,7 @@ Constructor::print_decl(ostream &out, string space, bool print_semi,
     if (print_semi)
 	out << ";\n" ;
 }
-
+#if FILE_METHODS
 class PrintField : public unary_function<BaseType *, void>
 {
     FILE *d_out;
@@ -380,7 +380,7 @@ Constructor::print_xml(FILE *out, string space, bool constrained)
         fprintf(out, "/>\n");
     }
 }
-
+#endif
 class PrintFieldStrm : public unary_function<BaseType *, void>
 {
     ostream &d_out;

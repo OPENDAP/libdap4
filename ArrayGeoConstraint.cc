@@ -60,19 +60,21 @@ void ArrayGeoConstraint::m_init()
     build_lat_lon_maps();
 }
 
-ArrayGeoConstraint::ArrayGeoConstraint(Array *array, const string &ds_name,
+// In the other methods the ds_name parameter defaults to "" but that's not
+// possible here. Remove ds_name
+ArrayGeoConstraint::ArrayGeoConstraint(Array *array, const string &/*ds_name*/,
                                        double left, double top, double right, double bottom)
-        : GeoConstraint(ds_name), d_array(array),
+        : GeoConstraint(""), d_array(array),
         d_extent(left, top, right, bottom), d_projection("plat-carre", "wgs84")
 
 {
     m_init();
 }
 
-ArrayGeoConstraint::ArrayGeoConstraint(Array *array, const string &ds_name,
+ArrayGeoConstraint::ArrayGeoConstraint(Array *array, const string &/*ds_name*/,
                                        double left, double top, double right, double bottom,
                                        const string &projection, const string &datum)
-        : GeoConstraint(ds_name), d_array(array),
+        : GeoConstraint(""), d_array(array),
         d_extent(left, top, right, bottom), d_projection(projection, datum)
 
 {
@@ -193,7 +195,9 @@ void ArrayGeoConstraint::apply_constraint_to_data()
     // Load the array if it has been read, which will be the case if
     // reorder_data_longitude_axis() has been called.
     if (get_array_data()) {
+
         int size = d_array->val2buf(get_array_data());
+
         if (size != get_array_data_size())
             throw InternalErr
             ("Expected data size not copied to the Grid's buffer.");

@@ -524,7 +524,7 @@ Grid::clear_constraint()
     for (Map_iter m = map_begin(); m != map_end(); ++m)
         dynamic_cast<Array&>(*(*m)).clear_constraint();
 }
-
+#if FILE_METHODS
 void
 Grid::print_decl(FILE *out, string space, bool print_semi,
                  bool constraint_info, bool constrained)
@@ -594,7 +594,7 @@ Grid::print_decl(FILE *out, string space, bool print_semi,
 exit:
     return;
 }
-
+#endif
 void
 Grid::print_decl(ostream &out, string space, bool print_semi,
                  bool constraint_info, bool constrained)
@@ -606,7 +606,7 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
     // the case where the projection removes all but one component; the
     // resulting object is a simple array.
     //
-    // I replaced the 'true' with the value of 'print_semi' passed in by the 
+    // I replaced the 'true' with the value of 'print_semi' passed in by the
     // caller. This fixes an issue with the intern_data tests and does not
     // seem to break anything else. jhrg 11/9/07
     int projection = components(true);
@@ -668,7 +668,7 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
 exit:
     return;
 }
-
+#if FILE_METHODS
 class PrintMapField : public unary_function<BaseType *, void>
 {
     FILE *d_out;
@@ -709,7 +709,7 @@ Grid::print_xml(FILE *out, string space, bool constrained)
 
     fprintf(out, "%s</Grid>\n", space.c_str());
 }
-
+#endif
 class PrintMapFieldStrm : public unary_function<BaseType *, void>
 {
     ostream &d_out;
@@ -750,7 +750,7 @@ Grid::print_xml(ostream &out, string space, bool constrained)
 
     out << space << "</Grid>\n" ;
 }
-
+#if FILE_METHODS
 void
 Grid::print_val(FILE *out, string space, bool print_decl_p)
 {
@@ -780,7 +780,7 @@ Grid::print_val(FILE *out, string space, bool print_decl_p)
     if (print_decl_p)
         fprintf(out, ";\n") ;
 }
-
+#endif
 void
 Grid::print_val(ostream &out, string space, bool print_decl_p)
 {
@@ -791,7 +791,7 @@ Grid::print_val(ostream &out, string space, bool print_decl_p)
 
     // If we are printing a value on the client-side, projection_yields_grid
     // should not be called since we don't *have* a projection without a
-    // contraint. I think that if we are here and send_p() is not true, then
+    // Constraint. I think that if we are here and send_p() is not true, then
     // the value of this function should be ignored. 4/6/2000 jhrg
     bool pyg = projection_yields_grid(); // hack 12/1/99 jhrg
     if (pyg || !send_p())

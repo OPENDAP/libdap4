@@ -176,7 +176,7 @@ protected:
 	'rightmost) dimensions. It sets the internal property \e
 	longitude_rightmost if that's true.
 
-	@note Called by the constructor once build_lat_lon_maps() has returned. 
+	@note Called by the constructor once build_lat_lon_maps() has returned.
 
 	@return True if the lat/lon maps are the two rightmost maps,
 	false otherwise*/
@@ -211,7 +211,7 @@ protected:
 public:
     /** @name Constructors */
     //@{
-    GeoConstraint(const string &ds_name);
+    GeoConstraint(const string &ds_name = "");
     //@}
 
     virtual ~GeoConstraint()

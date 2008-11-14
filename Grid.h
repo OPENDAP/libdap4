@@ -174,24 +174,27 @@ public:
 
     virtual unsigned int buf2val(void **val);
 
-    virtual void print_decl(FILE *out, string space = "    ",
-                            bool print_semi = true,
-                            bool constraint_info = false,
-                            bool constrained = false);
     virtual void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
                             bool constrained = false);
 
-    virtual void print_xml(FILE *out, string space = "    ",
-                           bool constrained = false);
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
+
+#if FILE_METHODS
+    virtual void print_decl(FILE *out, string space = "    ",
+                            bool print_semi = true,
+                            bool constraint_info = false,
+                            bool constrained = false);
+    virtual void print_xml(FILE *out, string space = "    ",
+                           bool constrained = false);
+    virtual void print_val(FILE *out, string space = "",
+                           bool print_decl_p = true);
+#endif
 
     virtual bool check_semantics(string &msg, bool all = false);
 

@@ -174,15 +174,25 @@ class DDS : public DapObj
 private:
     BaseTypeFactory *d_factory;
 
-    string name;		// The dataset name
-
+    string name;                // The dataset name
     string _filename;		// File name (or other OS identifier) for
     string _container_name;	// name of container structure
     Structure *d_container;	// current container for container name
 				// dataset or part of dataset.
 
-    int d_protocol_major;       // The protocol major version number
-    int d_protocol_minor;       // ... and minor version number
+    // These are used on the client-side and correspond to the version of the
+    // response. The client_dap_major/minor fields hold information sent from
+    // a client describing what it would like.
+
+    int d_dap_major;       // The protocol major version number
+    int d_dap_minor;       // ... and minor version number
+
+    // These hold the major and minor versions of DAP that the client sent in
+    // the XDAP-Accept header. If the header is not sent, these default to 2.0
+    int d_client_dap_major;
+    int d_client_dap_minor;
+
+    string d_request_xml_base;
 
     AttrTable d_attr;           // Global attributes.
 
@@ -257,6 +267,36 @@ public:
     string filename();
     void filename(const string &fn);
 
+    /// Get the DAP major version as sent by the client
+    int get_dap_major() const { return d_dap_major; }
+    /// Get the DAP minor version as sent by the client
+    int get_dap_minor() const { return d_dap_minor; }
+
+    /// Set the DAP major version (typically using info from the client)
+    void set_dap_major(int p) { d_dap_major = p; }
+    /// Set the DAP minor version (typically using info from the client)
+    void set_dap_minor(int p) { d_dap_minor = p; }
+
+    void set_dap_version(const string &version_string);
+
+    /// Get the DAP major version as sent by the client
+    int get_client_dap_major() const { return d_client_dap_major; }
+    /// Get the DAP minor version as sent by the client
+    int get_client_dap_minor() const { return d_client_dap_minor; }
+
+    /// Set the DAP major version (typically using info from the client)
+    void set_client_dap_major(int p) { d_client_dap_major = p; }
+    /// Set the DAP minor version (typically using info from the client)
+    void set_client_dap_minor(int p) { d_client_dap_minor = p; }
+
+    void set_client_dap_version(const string &version_string);
+
+    /// Get the URL that will return this DDS/DDX/DataThing
+    string get_request_xml_base() const { return d_request_xml_base; }
+
+    /// @see get_request_xml_base
+    void set_request_xml_base(const string &xb) { d_request_xml_base = xb; }
+
     string container_name() ;
     void container_name( const string &cn ) ;
     Structure *container() ;
@@ -295,13 +335,17 @@ public:
     void parse(string fname);
     void parse(int fd);
     void parse(FILE *in = stdin);
-
+#if FILE_METHODS
     void print(FILE *out);
+#endif
     void print(ostream &out);
+#if FILE_METHODS
     void print_constrained(FILE *out);
+#endif
     void print_constrained(ostream &out);
-
+#if FILE_METHODS
     void print_xml(FILE *out, bool constrained, const string &blob);
+#endif
     void print_xml(ostream &out, bool constrained, const string &blob);
 
     void mark_all(bool state);

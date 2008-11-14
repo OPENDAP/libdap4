@@ -120,10 +120,10 @@ protected:
 public:
     /** Make an empty instance. Use the set_*() methods to load with needed
         values. You must call at least set_dataset_name() or be requesting
-        version information. 
+        version information.
 
         @todo Add methods to provide a way to set all of the parameters
-        this class contains. They can currently only be set using the 
+        this class contains. They can currently only be set using the
         argc/argv command line parameters. */
     DODSFilter()
     {
@@ -169,7 +169,6 @@ public:
 
     int get_timeout() const;
 
-    virtual void establish_timeout(FILE *stream) const;
     virtual void establish_timeout(ostream &stream) const;
 
     virtual void read_ancillary_das(DAS &das, const string &anc_location = "") const;
@@ -182,8 +181,6 @@ public:
 
     virtual void send_das(DAS &das, const string &anc_location = "",
                           bool with_mime_headers = true) const;
-    virtual void send_das(FILE *out, DAS &das, const string &anc_location = "",
-                          bool with_mime_headers = true) const;
     virtual void send_das(ostream &out, DAS &das, const string &anc_location = "",
                           bool with_mime_headers = true) const;
 
@@ -191,40 +188,42 @@ public:
                           bool constrained = false,
                           const string &anc_location = "",
                           bool with_mime_headers = true) const;
-    virtual void send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
-                          bool constrained = false,
-                          const string &anc_location = "",
-                          bool with_mime_headers = true) const;
     virtual void send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
                           bool constrained = false,
                           const string &anc_location = "",
                           bool with_mime_headers = true) const;
-
-    virtual void functional_constraint(BaseType &var, DDS &dds,
-                                       ConstraintEvaluator &eval, FILE *out) const;
     virtual void functional_constraint(BaseType &var, DDS &dds,
                                        ConstraintEvaluator &eval, ostream &out) const;
     virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
-                                    FILE *out) const;
-    virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
                                     ostream &out) const;
-
-    virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
-                           FILE *data_stream,
-                           const string &anc_location = "",
-                           bool with_mime_headers = true) const;
     virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
                            ostream &data_stream,
                            const string &anc_location = "",
                            bool with_mime_headers = true) const;
-
-    virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
-                          bool with_mime_headers = true) const;
     virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
                           bool with_mime_headers = true) const;
 
+#if FILE_METHODS
+    virtual void establish_timeout(FILE *stream) const;
+    virtual void send_das(FILE *out, DAS &das, const string &anc_location = "",
+                          bool with_mime_headers = true) const;
+    virtual void send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
+                          bool constrained = false,
+                          const string &anc_location = "",
+                          bool with_mime_headers = true) const;
+    virtual void functional_constraint(BaseType &var, DDS &dds,
+                                       ConstraintEvaluator &eval, FILE *out) const;
+    virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
+                                    FILE *out) const;
+    virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
+                           FILE *data_stream,
+                           const string &anc_location = "",
+                           bool with_mime_headers = true) const;
+    virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
+                          bool with_mime_headers = true) const;
     // Broken. 4/5/06 jhrg
     virtual void send_blob(DDS &dds, FILE *out, bool with_mime_headers = true);
+#endif
 };
 
 } // namespace libdap

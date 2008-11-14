@@ -90,6 +90,9 @@ private:
 
     vector<string> d_request_headers; // Request headers
 
+    int d_dap_client_protocol_major;
+    int d_dap_client_protocol_minor;
+
     void www_lib_init();
     long read_url(const string &url, FILE *stream, vector<string> *resp_hdrs,
                   const vector<string> *headers = 0);
@@ -101,8 +104,6 @@ private:
     bool url_uses_no_proxy_for(const string &url) throw();
 
     void extract_auth_info(string &url);
-
-    // bool cond_fetch_url(const string &url, const vector<string> &headers);
 
     friend size_t save_raw_http_header(void *ptr, size_t size, size_t nmemb,
                                        void *http_connect);
@@ -133,6 +134,7 @@ public:
 
     void set_credentials(const string &u, const string &p);
     void set_accept_deflate(bool defalte);
+    void set_xdap_protocol(int major, int minor);
 
     /** Set the cookie jar. THis function sets the name of a file used to store 
     cookies returned by servers. This will help with things like single 

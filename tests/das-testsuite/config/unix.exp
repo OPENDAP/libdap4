@@ -46,7 +46,7 @@ proc das-test_load {} {
 }
 
 proc das-test_exit {} {
-    send -raw ""
+# send -raw ""
 }
 
 proc das-test_version {} {

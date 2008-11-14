@@ -38,6 +38,11 @@
 #include <algorithm>
 
 #include "expr.h"
+#include "Byte.h"
+#include "Int16.h"
+#include "UInt16.h"
+#include "Int32.h"
+#include "UInt32.h"
 #include "DDS.h"
 #include "Clause.h"
 
@@ -51,7 +56,7 @@ Clause::Clause(const int oper, rvalue *a1, rvalue_list *rv)
 {
     assert(OK());
 }
-
+#if 1
 Clause::Clause(bool_func func, rvalue_list *rv)
         : _op(0), _b_func(func), _bt_func(0), _arg1(0), _args(rv)
 {
@@ -62,7 +67,7 @@ Clause::Clause(bool_func func, rvalue_list *rv)
     else
         _argc = 0;
 }
-
+#endif
 Clause::Clause(btp_func func, rvalue_list *rv)
         : _op(0), _b_func(0), _bt_func(func), _arg1(0), _args(rv)
 {
@@ -107,7 +112,9 @@ Clause::OK()
     //
     // But, a valid arg list might contain zero arguments! 10/16/98 jhrg
     bool relational = (_op && !_b_func && !_bt_func);
+#if 1
     bool boolean = (!_op && _b_func && !_bt_func);
+#endif
     bool basetype = (!_op && !_b_func && _bt_func);
 
     if (relational)
@@ -136,6 +143,33 @@ Clause::value_clause()
     return (_bt_func != 0);
 }
 
+static bool
+boolean_value(BaseType *btp)
+{
+    switch (btp->type()) {
+        case dods_byte_c:
+            return !dynamic_cast<Byte&>(*btp).value();
+        case dods_int16_c:
+            return !dynamic_cast<Int16&>(*btp).value();
+        case dods_uint16_c:
+            return !dynamic_cast<UInt16&>(*btp).value();
+        case dods_int32_c:
+            return !dynamic_cast<Int32&>(*btp).value();
+        case dods_uint32_c:
+            return !dynamic_cast<UInt32&>(*btp).value();
+        case dods_float32_c:
+        case dods_float64_c:
+        case dods_str_c:
+        case dods_url_c:
+        case dods_array_c:
+        case dods_structure_c:
+        case dods_sequence_c:
+        case dods_grid_c:
+        default:
+            throw Error(malformed_expr, "A Function returning something other than an integer was used in a boolean context.");
+    }
+}
+
 /** @brief Evaluate a clause which returns a boolean value
     This method must only be evaluated for clauses with relational
     expressions or boolean functions.
@@ -146,7 +180,7 @@ Clause::value_clause()
     @exception InternalErr if called for a clause that returns a
     BaseType pointer. */
 bool
-Clause::value(const string &dataset, DDS &dds)
+Clause::value(/*const string &dataset,***/ DDS &dds)
 {
     assert(OK());
     assert(_op || _b_func);
@@ -154,22 +188,23 @@ Clause::value(const string &dataset, DDS &dds)
     if (_op) {   // Is it a relational clause?
         // rvalue::bvalue(...) returns the rvalue encapsulated in a
         // BaseType *.
-        BaseType *btp = _arg1->bvalue(dataset, dds);
+        BaseType *btp = _arg1->bvalue(/*dataset,***/ dds);
         // The list of rvalues is an implicit logical OR, so assume
         // FALSE and return TRUE for the first TRUE subclause.
         bool result = false;
         for (rvalue_list_iter i = _args->begin();
              i != _args->end() && !result;
              i++) {
-            result = result || btp->ops((*i)->bvalue(dataset, dds), _op);
+            result = result || btp->ops((*i)->bvalue(/*dataset,***/ dds), _op);
         }
 
         return result;
     }
     else if (_b_func) {  // ...A bool function?
-        BaseType **argv = build_btp_args(_args, dds, dataset);
+        BaseType **argv = build_btp_args(_args, dds/*, dataset***/);
 
-        bool result = (*_b_func)(_argc, argv, dds);
+        bool result = false;
+        (*_b_func)(_argc, argv, dds, &result);
         delete[] argv;  // Cache me!
         argv = 0;
 
@@ -194,7 +229,7 @@ Clause::value(const string &dataset, DDS &dds)
     boolean value. Not that this method itself \e does return a
     boolean value. */
 bool
-Clause::value(const string &dataset, DDS &dds, BaseType **value)
+Clause::value(/*const string &dataset,***/ DDS &dds, BaseType **value)
 {
     assert(OK());
     assert(_bt_func);
@@ -203,9 +238,12 @@ Clause::value(const string &dataset, DDS &dds, BaseType **value)
         // build_btp_args() is a function defined in RValue.cc. It no longer
         // reads the values as it builds the arguments, that is now left up
         // to the functions themselves. 9/25/06 jhrg
-        BaseType **argv = build_btp_args(_args, dds, dataset);
+        BaseType **argv = build_btp_args(_args, dds/*, dataset***/);
 
-        *value = (*_bt_func)(_argc, argv, dds, dataset);
+#if 0
+        *value = (*_bt_func)(_argc, argv, dds/*, dataset***/);
+#endif
+        (*_bt_func)(_argc, argv, dds, value/*, dataset***/);
         delete[] argv;  // Cache me!
         argv = 0;
 

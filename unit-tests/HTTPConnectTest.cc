@@ -39,7 +39,8 @@
 #include "HTTPConnect.h"
 #include "RCReader.h"
 #include "debug.h"
-#include <test_config.h>
+
+#include "test_config.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -68,6 +69,15 @@ class HTTPConnectTest: public TestFixture {
             const char *s = str.c_str();
             return d_re.match(s, strlen(s)) == (int) strlen(s);
         }
+    };
+
+    // This is defined in HTTPConnect.cc but has to be defined here as well.
+    // Don't know why... jhrg
+    class HeaderMatch : public unary_function<const string &, bool> {
+        const string &d_header;
+        public:
+            HeaderMatch(const string &header) : d_header(header) {}
+            bool operator()(const string &arg) { return arg.find(d_header) == 0; }
     };
 
   public:
@@ -111,6 +121,7 @@ class HTTPConnectTest: public TestFixture {
     CPPUNIT_TEST(type_test);
     CPPUNIT_TEST(cache_test);
     CPPUNIT_TEST(set_accept_deflate_test);
+    CPPUNIT_TEST(set_xdap_protocol_test);
     CPPUNIT_TEST(read_url_password_test);
     CPPUNIT_TEST(read_url_password_test2);
 #if 0
@@ -357,6 +368,30 @@ class HTTPConnectTest: public TestFixture {
         CPPUNIT_ASSERT(count(http->d_request_headers.begin(),
                              http->d_request_headers.end(),
                              "Accept-Encoding: deflate, gzip, compress") == 0);
+    }
+
+    void set_xdap_protocol_test() {
+        // Initially there should be no header and the protocol should be 2.0
+        CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 2
+                       && http->d_dap_client_protocol_minor == 0);
+#if 1
+        CPPUNIT_ASSERT(count_if(http->d_request_headers.begin(),
+                             http->d_request_headers.end(),
+                             HeaderMatch("XDAP-Accept:")) == 0);
+#endif
+        http->set_xdap_protocol(8, 9);
+        CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 8
+                       && http->d_dap_client_protocol_minor == 9);
+        CPPUNIT_ASSERT(count(http->d_request_headers.begin(),
+                             http->d_request_headers.end(),
+                             "XDAP-Accept: 8.9") == 1);
+
+        http->set_xdap_protocol(3, 2);
+        CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 3
+                       && http->d_dap_client_protocol_minor == 2);
+        CPPUNIT_ASSERT(count(http->d_request_headers.begin(),
+                             http->d_request_headers.end(),
+                             "XDAP-Accept: 3.2") == 1);
     }
 
     void read_url_password_test() {

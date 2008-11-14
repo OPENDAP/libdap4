@@ -44,9 +44,11 @@ static char rcsid[] not_used =
 #include <fcntl.h>
 #endif
 
-#include <GetOpt.h>
 #include <cstring>
 #include <string>
+#include <sstream>
+
+#include "GetOpt.h"
 
 #include "AISConnect.h"
 #include "Response.h"
@@ -54,6 +56,7 @@ static char rcsid[] not_used =
 
 using std::cerr;
 using std::endl;
+using std::flush;
 
 using namespace libdap ;
 
@@ -133,23 +136,22 @@ bool read_data(FILE * fp)
 
 static void print_data(DDS & dds, bool print_rows = false)
 {
-    fprintf(stdout, "The data:\n");
+    cout << "The data:" << endl;
 
     for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++) {
         BaseType *v = *i;
         if (print_rows && (*i)->type() == dods_sequence_c)
-            dynamic_cast < Sequence * >(*i)->print_val_by_rows(stdout);
+            dynamic_cast < Sequence * >(*i)->print_val_by_rows(cout);
         else
-            v->print_val(stdout);
+            v->print_val(cout);
     }
 
-    fprintf(stdout, "\n");
-    fflush(stdout);
+    cout << endl << flush;
 }
 
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "idaDxXAVvkB:c:m:zshM?H");
+    GetOpt getopt(argc, argv, "idaDxXAVvkB:c:m:zshM?Hp:");
     int option_char;
 
     bool get_das = false;
@@ -166,6 +168,8 @@ int main(int argc, char *argv[])
     bool use_ais = false;
     bool mime_headers = true;
     int times = 1;
+    int dap_client_major = 2;
+    int dap_client_minor = 0;
     string expr = "";
     string ais_db = "";
 
@@ -226,6 +230,14 @@ int main(int argc, char *argv[])
         case 'M':
             mime_headers = false;
             break;
+        case 'p': {
+            istringstream iss(getopt.optarg);
+            char dot;
+            iss >> dap_client_major;
+            iss >> dot;
+            iss >> dap_client_minor;
+            break;
+        }
         case 'h':
         case '?':
         default:
@@ -256,6 +268,9 @@ int main(int argc, char *argv[])
             // This overrides the value set in the .dodsrc file.
             if (accept_deflate)
                 url->set_accept_deflate(accept_deflate);
+
+            if (dap_client_major > 2)
+                url->set_xdap_protocol(dap_client_major, dap_client_minor);
 
             if (url->is_local()) {
                 if (verbose) {
@@ -361,7 +376,7 @@ int main(int argc, char *argv[])
                         fprintf(stderr, "DDS:\n");
                     }
 
-                    dds.print(stdout);
+                    dds.print(cout);
                 }
             }
 
@@ -385,7 +400,7 @@ int main(int argc, char *argv[])
                         fprintf(stderr, "DDX:\n");
                     }
 
-                    dds.print_xml(stdout, false, "getdap; no blob yet");
+                    dds.print_xml(cout, false, "getdap; no blob yet");
                 }
             }
 
@@ -412,15 +427,11 @@ int main(int argc, char *argv[])
                         fprintf(stderr, "Client-built DDX:\n");
                     }
 
-                    dds.print_xml(stdout, false, "getdap; no blob yet");
+                    dds.print_xml(cout, false, "getdap; no blob yet");
                 }
             }
 
             else if (get_data) {
-#if 0
-                if (expr.empty() && name.find('?') == string::npos)
-                    expr = "";
-#endif
                 for (int j = 0; j < times; ++j) {
                     BaseTypeFactory factory;
                     DataDDS dds(&factory);
@@ -456,6 +467,9 @@ int main(int argc, char *argv[])
                 // This overrides the value set in the .dodsrc file.
                 if (accept_deflate)
                     http.set_accept_deflate(accept_deflate);
+
+                if (dap_client_major > 2)
+                    url->set_xdap_protocol(dap_client_major, dap_client_minor);
 
                 string url_string = argv[i];
                 for (int j = 0; j < times; ++j) {

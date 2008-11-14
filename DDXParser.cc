@@ -213,7 +213,7 @@ void DDXParser::pop_state()
 
 /** Dump XML attributes to local store so they can be easily manipulated.
     Attribute names are always folded to lower case.
-    @param attrs The XML attribtue array */
+    @param attrs The XML attribute array */
 void DDXParser::transfer_attrs(const char **attrs)
 {
     attributes.clear();         // erase old attributes
@@ -228,12 +228,13 @@ void DDXParser::transfer_attrs(const char **attrs)
     }
 }
 
-/** Is an attribute present? Attribute names are always lowercase.
-    To use this method, first call transfer_attrs.
+/** Is an attribute present? Attribute names are always lower case.
+    @note To use this method, first call transfer_attrs.
     @param attr The XML attribute
-    @return True if the XML attribtue was present in the last tag */
+    @return True if the XML attribute was present in the last tag */
 bool DDXParser::check_required_attribute(const string & attr)
 {
+#if 0
     bool found = false;
     map < string, string >::iterator i;
     for (i = attributes.begin(); i != attributes.end(); ++i)
@@ -241,10 +242,28 @@ bool DDXParser::check_required_attribute(const string & attr)
             found = true;
 
     if (!found)
+         ddx_fatal_error(this, "Required attribute '%s' not found.",
+                         attr.c_str());
+
+     return found;
+#endif
+#if 1
+    map < string, string >::iterator i = attributes.find(attr);
+    if (i == attributes.end())
         ddx_fatal_error(this, "Required attribute '%s' not found.",
                         attr.c_str());
+    return true;
+#endif
+}
 
-    return found;
+/** Is an attribute present? Attribute names are always lower case.
+    @note To use this method, first call transfer_attrs.
+    @param attr The XML attribute
+    @return True if the XML attribute was present in the last/current tag,
+    false otherwise. */
+bool DDXParser::check_attribute(const string & attr)
+{
+    return (attributes.find(attr) != attributes.end());
 }
 
 /** Given that an \c Attribute tag has just been read, determine whether the
@@ -293,9 +312,9 @@ void DDXParser::process_attribute_alias(const char **attrs)
     }
 }
 
-/** Given that a tag which opens a variable declarationhas just been read,
+/** Given that a tag which opens a variable declaration has just been read,
     create the variable. Once created, push the variable onto the stack of
-    variables, puch that variables attribute table onto the attribtue table
+    variables, push that variables attribute table onto the attribute table
     stack and update the state of the parser.
     @param t The type of variable to create.
     @param s The next state of the parser.
@@ -305,18 +324,22 @@ void DDXParser::process_variable(Type t, ParseState s, const char **attrs)
     transfer_attrs(attrs);
 
     set_state(s);
-    BaseType *btp = factory(t, attributes["name"]);
-    if (!btp)
-        ddx_fatal_error(this,
-                        "Internal parser error; could not instantiate the variable '%s'.",
-                        attributes["name"].c_str());
+    if (bt_stack.top()->type() == dods_array_c
+            || check_required_attribute("name")) { // throws on error/false
+        BaseType *btp = factory(t, attributes["name"]);
+        if (!btp)
+            ddx_fatal_error(
+                    this,
+                    "Internal parser error; could not instantiate the variable '%s'.",
+                    attributes["name"].c_str());
 
-    // Once we make the new variable, we not only load it on to the
-    // BaseType stack, we also load its AttrTable on the AttrTable stack.
-    // The attribute processing software always operates on the AttrTable
-    // at the top of the AttrTable stack (at_stack).
-    bt_stack.push(btp);
-    at_stack.push(&btp->get_attr_table());
+        // Once we make the new variable, we not only load it on to the
+        // BaseType stack, we also load its AttrTable on the AttrTable stack.
+        // The attribute processing software always operates on the AttrTable
+        // at the top of the AttrTable stack (at_stack).
+        bt_stack.push(btp);
+        at_stack.push(&btp->get_attr_table());
+    }
 }
 
 /** Given that a \c dimension tag has just been read, add that information to
@@ -339,13 +362,20 @@ void DDXParser::process_dimension(const char **attrs)
 /** Given that a \c dataBLOB tag has just been read, extract and save the URL
     included in the element.
 
+    @todo Remove this since we've junked the DODSBlob element. jhrg
     @param attrs The XML attributes */
 void DDXParser::process_blob(const char **attrs)
 {
+    if (dds->get_dap_major() > 2 && dds->get_dap_major() > 1)
+        ddx_fatal_error(this,
+                "Found a dataBLOB element in a 3.2 or greater response.");
+
     transfer_attrs(attrs);
     if (check_required_attribute(string("href"))) {
         set_state(inside_blob_href);
+#if 0
         *blob_href = attributes["href"];
+#endif
     }
 }
 
@@ -528,8 +558,12 @@ void DDXParser::ddx_start_element(DDXParser * parser, const char *name,
             parser->set_state(inside_dataset);
 
             parser->transfer_attrs(attrs);
+
             if (parser->check_required_attribute(string("name")))
                 parser->dds->set_dataset_name(parser->attributes["name"]);
+
+            if (parser->check_attribute("dap_version"))
+                parser->dds->set_dap_version(parser->attributes["dap_version"]);
         }
         else
             DDXParser::ddx_fatal_error(parser,
@@ -950,7 +984,7 @@ void DDXParser::cleanup_parse(xmlParserCtxtPtr & context) const
 
 /** @brief Read the DDX from a stream instead of a file.
     @see DDXParser::intern(). */
-void DDXParser::intern_stream(FILE * in, DDS * dest_dds, string * blob)
+void DDXParser::intern_stream(FILE * in, DDS * dest_dds/*, string ****/)
 {
 // Code example from libxml2 docs re: read from a stream.
 
@@ -959,8 +993,9 @@ void DDXParser::intern_stream(FILE * in, DDS * dest_dds, string * blob)
                           "Input stream not open or read error");
 
     dds = dest_dds;             // dump values here
+#if 0
     blob_href = blob;           // blob goes here
-
+#endif
     int size = 1024;
     char chars[1024];
 
@@ -994,11 +1029,12 @@ void DDXParser::intern_stream(FILE * in, DDS * dest_dds, string * blob)
     @param dest_dds Value/result parameter; dumps the information to this DDS
     instance.
     @param blob Value/result parameter; puts the href which references the \c
-    dataBLOB document here.
+    dataBLOB document here. If this is a DAP 3.2+ document then this will be
+    the null.
     @exception DDXParseFailed Thrown if the XML document could not be
     read or parsed. */
-void DDXParser::intern(const string & document, DDS * dest_dds,
-                       string * blob)
+void DDXParser::intern(const string & document, DDS * dest_dds/*,
+                       string ****/)
 {
     // Create the context pointer explicitly so that we can store a pointer
     // to it in the DDXParser instance. This provides a way to generate our
@@ -1015,7 +1051,9 @@ void DDXParser::intern(const string & document, DDS * dest_dds,
                        + document + string("'."));
 
     dds = dest_dds;             // dump values here
+#if 0
     blob_href = blob;           // blob goes here
+#endif
     ctxt = context;             // need ctxt for error messages
 
     context->sax = &ddx_sax_parser;

@@ -319,20 +319,23 @@ public:
     virtual BaseTypeRow *row_value(size_t row);
 
     virtual void add_var(BaseType *, Part part = nil);
-    virtual void print_one_row(FILE *out, int row, string space,
-                               bool print_row_num = false);
     virtual void print_one_row(ostream &out, int row, string space,
+                               bool print_row_num = false);
+    virtual void print_val_by_rows(ostream &out, string space = "",
+                                   bool print_decl_p = true,
+                                   bool print_row_numbers = true);
+    virtual void print_val(ostream &out, string space = "",
+                           bool print_decl_p = true);
+
+#if FILE_METHODS
+    virtual void print_one_row(FILE *out, int row, string space,
                                bool print_row_num = false);
     virtual void print_val_by_rows(FILE *out, string space = "",
                                    bool print_decl_p = true,
                                    bool print_row_numbers = true);
-    virtual void print_val_by_rows(ostream &out, string space = "",
-                                   bool print_decl_p = true,
-                                   bool print_row_numbers = true);
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+#endif
 
     virtual bool check_semantics(string &msg, bool all = false);
 

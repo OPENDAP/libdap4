@@ -198,14 +198,11 @@ Ancillary::read_ancillary_das( DAS &das,
     string name = find_ancillary_file( pathname, "das", dir, file ) ;
 
     FILE *in = fopen( name.c_str(), "r" ) ;
-    if( in )
-    {
+    if( in ) {
         das.parse( in ) ;
         int res = fclose( in ) ;
         if( res )
-	{
-            DBG(cerr << "DODSFilter::read_ancillary_das - Failed to close file " << (void *)in << endl ;) ;
-        }
+            DBG(cerr << "DODSFilter::read_ancillary_das - Failed to close file " << (void *)in << endl) ;
     }
 }
 
@@ -218,14 +215,11 @@ Ancillary::read_ancillary_dds( DDS &dds,
     string name = find_ancillary_file( pathname, "dds", dir, file ) ;
 
     FILE *in = fopen( name.c_str(), "r" ) ;
-    if( in )
-    {
+    if( in ) {
         dds.parse( in ) ;
         int res = fclose( in ) ;
         if( res )
-	{
-            DBG(cerr << "DODSFilter::read_ancillary_das - Failed to close file " << (void *)in << endl ;) ;
-        }
+            DBG(cerr << "DODSFilter::read_ancillary_das - Failed to close file " << (void *)in << endl) ;
     }
 }
 

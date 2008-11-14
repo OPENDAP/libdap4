@@ -309,20 +309,21 @@ public:
     virtual bool check_semantics(string &msg, bool all = false);
 
     virtual bool ops(BaseType *b, int op);
-
+#if FILE_METHODS
     virtual void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
                             bool constrained = false);
-
+#endif
     virtual void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
                             bool constrained = false);
 
+#if FILE_METHODS
     virtual void print_xml(FILE *out, string space = "    ",
                            bool constrained = false);
-
+#endif
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
 
@@ -465,6 +466,7 @@ public:
 	@see DDS */
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) = 0;
 
+#if FILE_METHODS
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS
 	applications. However, it can be overloaded and used to do
@@ -474,13 +476,15 @@ public:
 
 	@brief Prints the value of the variable.
 
-	@param out The output FILE on which to print the value.
+	@param out The output stream on which to print the value.
 	@param space This value is passed to the print_decl()
 	function, and controls the leading spaces of the output.
 	@param print_decl_p A boolean value controlling whether the
 	variable declaration is printed as well as the value. */
+
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true) = 0;
+#endif
 
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS
