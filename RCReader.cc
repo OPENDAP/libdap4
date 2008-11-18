@@ -110,7 +110,7 @@ RCReader::write_rc_file(const string &pathname)
         fpo << "VALIDATE_SSL=" << d_validate_ssl << endl;
 
         fpo << "# Proxy configuration (optional parts in []s)." << endl;
-	fpo << "# You may also use the 'http_proxy' environment variable" 
+	fpo << "# You may also use the 'http_proxy' environment variable"
 	    << endl;
 	fpo << "# but a value in this file will override that env variable."
 	    << endl;
@@ -432,6 +432,10 @@ RCReader::RCReader() throw(Error)
 #ifdef WIN32
     string homedir = string("C:") + string(DIR_SEP_STRING) + string("Dods");
     d_rc_file_path = check_string(homedir);
+    if d_rc_file_path.empty()) {
+	homedir = string("C:") + string(DIR_SEP_STRING) + string("opendap");
+	d_rc_file_path = check_string(homedir);
+    }
     //  Normally, I'd prefer this for WinNT-based systems.
     if (d_rc_file_path.empty())
         d_rc_file_path = check_env_var("APPDATA");
@@ -482,7 +486,7 @@ RCReader::instance()
     // The instance_control variable is defined at the top of this file.
     // 08/07/02 jhrg
     pthread_once(&instance_control, initialize_instance);
-	
+
     DBG(cerr << "Instance value: " << hex << _instance << dec << endl);
 
     return _instance;
