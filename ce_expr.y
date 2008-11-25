@@ -220,7 +220,7 @@ proj_function:  SCAN_WORD '(' arg_list ')'
 		    }
 		    else if ((p_f = get_proj_function(*(EVALUATOR(arg)), $1))) {
 		        DDS &dds = dynamic_cast<DDS&>(*(DDS(arg)));
-			BaseType **args = build_btp_args( $3, dds/*, dds.get_dataset_name()***/ );
+			BaseType **args = build_btp_args( $3, dds );
 			(*p_f)(($3) ? $3->size():0, args, dds, *(EVALUATOR(arg)));
 			delete[] args;
 			$$ = true;

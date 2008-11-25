@@ -62,8 +62,8 @@ namespace libdap {
     variable.
     @param ds_name The name of the dataset. Passed to BaseType::read().
  */
-GridGeoConstraint::GridGeoConstraint(Grid *grid, const string &ds_name)
-        : GeoConstraint(ds_name), d_grid(grid), d_latitude(0), d_longitude(0)
+GridGeoConstraint::GridGeoConstraint(Grid *grid)
+        : GeoConstraint(), d_grid(grid), d_latitude(0), d_longitude(0)
 {
     if (d_grid->get_array()->dimensions() < 2
         || d_grid->get_array()->dimensions() > 3)

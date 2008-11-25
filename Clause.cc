@@ -180,7 +180,7 @@ boolean_value(BaseType *btp)
     @exception InternalErr if called for a clause that returns a
     BaseType pointer. */
 bool
-Clause::value(/*const string &dataset,***/ DDS &dds)
+Clause::value(DDS &dds)
 {
     assert(OK());
     assert(_op || _b_func);
@@ -188,20 +188,20 @@ Clause::value(/*const string &dataset,***/ DDS &dds)
     if (_op) {   // Is it a relational clause?
         // rvalue::bvalue(...) returns the rvalue encapsulated in a
         // BaseType *.
-        BaseType *btp = _arg1->bvalue(/*dataset,***/ dds);
+        BaseType *btp = _arg1->bvalue(dds);
         // The list of rvalues is an implicit logical OR, so assume
         // FALSE and return TRUE for the first TRUE subclause.
         bool result = false;
         for (rvalue_list_iter i = _args->begin();
              i != _args->end() && !result;
              i++) {
-            result = result || btp->ops((*i)->bvalue(/*dataset,***/ dds), _op);
+            result = result || btp->ops((*i)->bvalue(dds), _op);
         }
 
         return result;
     }
     else if (_b_func) {  // ...A bool function?
-        BaseType **argv = build_btp_args(_args, dds/*, dataset***/);
+        BaseType **argv = build_btp_args(_args, dds);
 
         bool result = false;
         (*_b_func)(_argc, argv, dds, &result);
@@ -229,7 +229,7 @@ Clause::value(/*const string &dataset,***/ DDS &dds)
     boolean value. Not that this method itself \e does return a
     boolean value. */
 bool
-Clause::value(/*const string &dataset,***/ DDS &dds, BaseType **value)
+Clause::value(DDS &dds, BaseType **value)
 {
     assert(OK());
     assert(_bt_func);
@@ -238,12 +238,12 @@ Clause::value(/*const string &dataset,***/ DDS &dds, BaseType **value)
         // build_btp_args() is a function defined in RValue.cc. It no longer
         // reads the values as it builds the arguments, that is now left up
         // to the functions themselves. 9/25/06 jhrg
-        BaseType **argv = build_btp_args(_args, dds/*, dataset***/);
+        BaseType **argv = build_btp_args(_args, dds);
 
 #if 0
-        *value = (*_bt_func)(_argc, argv, dds/*, dataset***/);
+        *value = (*_bt_func)(_argc, argv, dds);
 #endif
-        (*_bt_func)(_argc, argv, dds, value/*, dataset***/);
+        (*_bt_func)(_argc, argv, dds, value);
         delete[] argv;  // Cache me!
         argv = 0;
 

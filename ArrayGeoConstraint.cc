@@ -62,19 +62,19 @@ void ArrayGeoConstraint::m_init()
 
 // In the other methods the ds_name parameter defaults to "" but that's not
 // possible here. Remove ds_name
-ArrayGeoConstraint::ArrayGeoConstraint(Array *array, const string &/*ds_name*/,
-                                       double left, double top, double right, double bottom)
-        : GeoConstraint(""), d_array(array),
+ArrayGeoConstraint::ArrayGeoConstraint(Array *array, double left, double top,
+        double right, double bottom)
+        : GeoConstraint(), d_array(array),
         d_extent(left, top, right, bottom), d_projection("plat-carre", "wgs84")
 
 {
     m_init();
 }
 
-ArrayGeoConstraint::ArrayGeoConstraint(Array *array, const string &/*ds_name*/,
+ArrayGeoConstraint::ArrayGeoConstraint(Array *array,
                                        double left, double top, double right, double bottom,
                                        const string &projection, const string &datum)
-        : GeoConstraint(""), d_array(array),
+        : GeoConstraint(), d_array(array),
         d_extent(left, top, right, bottom), d_projection(projection, datum)
 
 {

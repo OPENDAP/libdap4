@@ -63,7 +63,7 @@ private:
 public:
     /** @name Constructors */
     //@{
-    GridGeoConstraint(Grid *grid, const string &ds_name = ""/*, const DDS &dds*/);
+    GridGeoConstraint(Grid *grid);
     //@}
 
     virtual ~GridGeoConstraint()

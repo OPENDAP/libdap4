@@ -121,7 +121,7 @@ public:
         ta->append_dim(10);
 
         try {
-            ArrayGeoConstraint agc(ta, "test_data");
+            ArrayGeoConstraint agc(ta);
             CPPUNIT_ASSERT(!"Constructor should throw");
         }
         catch (Error &e) {
@@ -130,7 +130,7 @@ public:
         }
         
         try {
-            ArrayGeoConstraint agc(ta, "test_data", 10, 10, 89.9, 89);
+            ArrayGeoConstraint agc(ta, 10, 10, 89.9, 89);
             CPPUNIT_ASSERT(!"Constructor should throw");
         }
         catch (Error &e) {
@@ -140,7 +140,7 @@ public:
         
         ta->append_dim(20);
         try {
-            ArrayGeoConstraint agc(ta, "test_data", 10, 10, 89.9, 89);
+            ArrayGeoConstraint agc(ta, 10, 10, 89.9, 89);
             CPPUNIT_ASSERT(agc.d_extent.d_left == 10 
                            && agc.d_extent.d_top == 10
                            && agc.d_extent.d_right == 89.9
@@ -154,7 +154,7 @@ public:
         }
 
         try {
-            ArrayGeoConstraint agc(ta, "test_data", 10, 10, 89.9, 89,
+            ArrayGeoConstraint agc(ta, 10, 10, 89.9, 89,
                                    "plat-carre", "wgs84");
             CPPUNIT_ASSERT(agc.d_extent.d_left == 10 
                            && agc.d_extent.d_top == 10
@@ -169,7 +169,7 @@ public:
         }
         
         try {
-            ArrayGeoConstraint agc(ta, "test_data", 10, 10, 89.9, 89,
+            ArrayGeoConstraint agc(ta, 10, 10, 89.9, 89,
                                    "plat-carre", "huh?");
             CPPUNIT_ASSERT(!"Constructor should throw Error");
         }
@@ -181,7 +181,7 @@ public:
     
     void build_lat_lon_maps_test() {
         // build_lat_lon_maps() is called in the ctor
-        ArrayGeoConstraint agc(a1, "test", 10, 90, 89, -90);
+        ArrayGeoConstraint agc(a1, 10, 90, 89, -90);
 
         CPPUNIT_ASSERT(agc.get_lon()[0] == 10.0);
         DBG(cerr << "agc.get_lon()[9]: " << agc.get_lon()[9] << endl);
@@ -191,14 +191,14 @@ public:
     }
     
     void set_bounding_box_test() {
-        ArrayGeoConstraint agc1(a1, "test1", 10, 90, 89, -90);
+        ArrayGeoConstraint agc1(a1, 10, 90, 89, -90);
         agc1.set_bounding_box(10, 90,89, -90);
         CPPUNIT_ASSERT(agc1.get_longitude_index_left() == 0);
         CPPUNIT_ASSERT(agc1.get_longitude_index_right() == 9);
         CPPUNIT_ASSERT(agc1.get_latitude_index_top() == 0);
         CPPUNIT_ASSERT(agc1.get_latitude_index_bottom() == 20);
 
-        ArrayGeoConstraint agc2(a2, "test2", 0, 90, 359, -90);
+        ArrayGeoConstraint agc2(a2, 0, 90, 359, -90);
         agc2.set_bounding_box(10, 45, 89, -45);
         DBG(cerr << "agc2.get_longitude_index_left(): " << agc2.get_longitude_index_left() << endl);
         DBG(cerr << "agc2.get_longitude_index_right(): " << agc2.get_longitude_index_right() << endl);

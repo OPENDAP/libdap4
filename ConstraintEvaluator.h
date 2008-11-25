@@ -43,23 +43,20 @@ private:
     struct function
     {
         string name;
-#if 1
         bool_func b_func;
-#endif
         btp_func bt_func;
         proj_func p_func;
-#if 1
+
         function(const string &n, const bool_func f)
                 : name(n), b_func(f), bt_func(0), p_func(0)
         {}
-#endif
         function(const string &n, const btp_func f)
-                : name(n), /* b_func(0),***/ bt_func(f), p_func(0)
+                : name(n), bt_func(f), p_func(0)
         {}
         function(const string &n, const proj_func f)
-                : name(n), /*b_func(0),***/ bt_func(0), p_func(f)
+                : name(n), bt_func(0), p_func(f)
         {}
-        function(): name(""), /*b_func(0),***/ bt_func(0), p_func(0)
+        function(): name(""), bt_func(0), p_func(0)
         {}
     };
 
@@ -94,22 +91,16 @@ public:
     ConstraintEvaluator();
     virtual ~ConstraintEvaluator();
 
-#if 1
     void add_function(const string &name, bool_func f);
-#endif
     void add_function(const string &name, btp_func f);
     void add_function(const string &name, proj_func f);
 
-#if 1
     bool find_function(const string &name, bool_func *f) const;
-#endif
     bool find_function(const string &name, btp_func *f) const;
     bool find_function(const string &name, proj_func *f) const;
 
     void append_clause(int op, rvalue *arg1, rvalue_list *arg2);
-#if 1
     void append_clause(bool_func func, rvalue_list *args);
-#endif
     void append_clause(btp_func func, rvalue_list *args);
 
     bool functional_expression();
@@ -120,7 +111,7 @@ public:
 
     Clause_iter clause_begin();
     Clause_iter clause_end();
-    bool clause_value(Clause_iter &i, DDS &dds, const string &dataset);
+    bool clause_value(Clause_iter &i, DDS &dds/*, const string &dataset***/);
 
     void parse_constraint(const string &constraint, DDS &dds);
     void append_constant(BaseType *btp);

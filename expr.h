@@ -71,7 +71,7 @@ value;
 #if 1
 typedef void(*bool_func)(int argc, BaseType *argv[], DDS &dds, bool *result);
 #endif
-typedef void(*btp_func)(int argc, BaseType *argv[], DDS &dds, BaseType **btpp/*, const string &dataset***/);
+typedef void(*btp_func)(int argc, BaseType *argv[], DDS &dds, BaseType **btpp);
 typedef void(*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce);
 
 // INT_LIST and INT_LIST_LIST are used by the parser to store the array

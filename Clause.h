@@ -128,9 +128,9 @@ public:
 
     bool value_clause();
 
-    bool value(/*const string &dataset,***/ DDS &dds);
+    bool value(DDS &dds);
 
-    bool value(/*const string &dataset,***/ DDS &dds, BaseType **value);
+    bool value(DDS &dds, BaseType **value);
 };
 
 } // namespace libdap

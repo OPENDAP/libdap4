@@ -984,7 +984,7 @@ void DDXParser::cleanup_parse(xmlParserCtxtPtr & context) const
 
 /** @brief Read the DDX from a stream instead of a file.
     @see DDXParser::intern(). */
-void DDXParser::intern_stream(FILE * in, DDS * dest_dds/*, string ****/)
+void DDXParser::intern_stream(FILE * in, DDS * dest_dds)
 {
 // Code example from libxml2 docs re: read from a stream.
 
@@ -1033,8 +1033,7 @@ void DDXParser::intern_stream(FILE * in, DDS * dest_dds/*, string ****/)
     the null.
     @exception DDXParseFailed Thrown if the XML document could not be
     read or parsed. */
-void DDXParser::intern(const string & document, DDS * dest_dds/*,
-                       string ****/)
+void DDXParser::intern(const string & document, DDS * dest_dds)
 {
     // Create the context pointer explicitly so that we can store a pointer
     // to it in the DDXParser instance. This provides a way to generate our

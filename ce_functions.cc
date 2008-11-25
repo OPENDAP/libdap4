@@ -308,7 +308,7 @@ double extract_double_value(BaseType * arg)
 /** This server-side function returns version information for the server-side
  functions. */
 void
-function_version(int, BaseType *[], DDS &, BaseType **btpp/*, const string &***/)
+function_version(int, BaseType *[], DDS &, BaseType **btpp)
 {
     string
             xml_value =
@@ -424,8 +424,7 @@ static void apply_grid_selection_expressions(Grid * grid,
  @see geogrid() (func_geogrid_select) A function which has logic specific
  to longitude/latitude selection. */
 void
-function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
-        const string & /*dataset****/)
+function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
     DBG(cerr << "Entering function_grid..." << endl);
 
@@ -534,8 +533,7 @@ function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
  @param dataset Name of the dataset.
  @return The constrained and read Grid, ready to be sent. */
 void
-function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
-        const string & /*dataset***/)
+function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
     string
             info =
@@ -606,7 +604,7 @@ function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
     try {
         // Build a GeoConstraint object. If there are no longitude/latitude
         // maps then this constructor throws Error.
-        GridGeoConstraint gc(l_grid/*, dataset***/);
+        GridGeoConstraint gc(l_grid);
 
         // This sets the bounding box and modifies the maps to match the
         // notation of the box (0/359 or -180/179)
@@ -747,8 +745,7 @@ static double get_missing_value(BaseType *var)
  attributes cannot be found OR if the source variable is not a
  numeric scalar, Array or Grid. */
 void
-function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
-        const string & /*dataset***/)
+function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
     string
             info =
@@ -911,8 +908,7 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
  @return The Array, constrained by the selection
  @exception Error Thrown if thins go awry. */
 void
-function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
-        const string & /*dataset***/)
+function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
     string
             info =
@@ -954,7 +950,7 @@ function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
 
         switch (argc) {
             case 5: {
-            	ArrayGeoConstraint agc(l_array, ""/*dataset***/);
+            	ArrayGeoConstraint agc(l_array);
 
          		agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
 				// This also reads all of the data into the grid variable
@@ -968,8 +964,7 @@ function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
                 double var_left = extract_double_value(argv[6]);
                 double var_bottom = extract_double_value(argv[7]);
                 double var_right = extract_double_value(argv[8]);
-                ArrayGeoConstraint agc (l_array, ""/*dataset***/,
-                        var_left, var_top, var_right, var_bottom);
+                ArrayGeoConstraint agc (l_array, var_left, var_top, var_right, var_bottom);
 
         		agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
 				// This also reads all of the data into the grid variable
@@ -985,7 +980,7 @@ function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp/*,
                 double var_right = extract_double_value(argv[8]);
                 string projection = extract_string_argument(argv[9]);
                 string datum = extract_string_argument(argv[10]);
-                ArrayGeoConstraint agc(l_array, ""/*dataset***/,
+                ArrayGeoConstraint agc(l_array,
                         var_left, var_top, var_right, var_bottom,
                         projection, datum);
 

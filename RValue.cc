@@ -90,7 +90,7 @@ append_rvalue_list(rvalue_list *rvals, rvalue *rv)
     @param dds Use this DDS when evaluating functions
     @param dataset Use this when evaluating functions. */
 BaseType **
-build_btp_args(rvalue_list *args, DDS &dds/*, const string &dataset***/)
+build_btp_args(rvalue_list *args, DDS &dds)
 {
     int argc = 0;
 
@@ -110,7 +110,7 @@ build_btp_args(rvalue_list *args, DDS &dds/*, const string &dataset***/)
     int index = 0;
     if (argv && argc) {
         for (rvalue::Args_iter i = args->begin(); i != args->end() && index < argc+1; ++i) {
-            argv[index++] = (*i)->bvalue(/*dataset,***/ dds);
+            argv[index++] = (*i)->bvalue(dds);
         }
     }
 
@@ -167,12 +167,12 @@ rvalue::bvalue(/*const string &dataset,*/ DDS &dds)
     else if (d_func) {
         // If func is true, then args must be set. See the constructor.
         // 12/23/04 jhrg
-        BaseType **argv = build_btp_args(d_args, dds/*, dataset***/);
+        BaseType **argv = build_btp_args(d_args, dds);
 #if 0
-        BaseType *ret_val = (*d_func)(d_args->size(), argv, dds/*, dataset***/);
+        BaseType *ret_val = (*d_func)(d_args->size(), argv, dds);
 #endif
         BaseType *ret_val;
-        (*d_func)(d_args->size(), argv, dds, &ret_val/*, dataset***/);
+        (*d_func)(d_args->size(), argv, dds, &ret_val);
         delete[] argv;
         return ret_val;
     }

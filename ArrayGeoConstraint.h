@@ -107,17 +107,19 @@ private:
 public:
     /** @name Constructors */
     //@{
-    ArrayGeoConstraint(Array *, const string &ds_name)
-            : GeoConstraint(ds_name)
+    ArrayGeoConstraint(Array *)
+            : GeoConstraint()
     {
+        // See ce_finctions.cc:function_geoarray() to put this message in
+        // context.
         throw Error(
             "Bummer. The five-argument version of geoarray() is not currently implemented.");
     }
 
-    ArrayGeoConstraint(Array *array, const string &ds_name,
+    ArrayGeoConstraint(Array *array,
                        double left, double top, double right, double bottom);
 
-    ArrayGeoConstraint(Array *array, const string &ds_name,
+    ArrayGeoConstraint(Array *array,
                        double left, double top, double right, double bottom,
                        const string &projection, const string &datum);
     //@}

@@ -122,8 +122,6 @@ public:
     };
 
 private:
-    const string &d_dataset;
-
     char *d_array_data;    //< Holds the Grid's data values
     int d_array_data_size;
 
@@ -155,7 +153,6 @@ private:
     set<string> d_lon_names;
 
     // Hide these three automatically provided methods
-    GeoConstraint();
     GeoConstraint(const GeoConstraint &param);
     GeoConstraint &operator=(GeoConstraint &rhs);
 
@@ -211,7 +208,7 @@ protected:
 public:
     /** @name Constructors */
     //@{
-    GeoConstraint(const string &ds_name = "");
+    GeoConstraint();
     //@}
 
     virtual ~GeoConstraint()
@@ -223,11 +220,6 @@ public:
 
     /** @name Accessors/Mutators */
     //@{
-    string get_dataset() const
-    {
-        return d_dataset;
-    }
-
     // These are set in reorder_data_longitude_axis()
     char *get_array_data() const
     {

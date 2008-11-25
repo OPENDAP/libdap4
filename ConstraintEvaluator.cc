@@ -83,14 +83,13 @@ ConstraintEvaluator::clause_end()
 /** Returns the value of the indicated clause of a constraint
     expression. */
 bool
-ConstraintEvaluator::clause_value(Clause_iter &iter, DDS &dds,
-                                  const string &/*dataset***/)
+ConstraintEvaluator::clause_value(Clause_iter &iter, DDS &dds/*, const string &***/)
 {
     if (expr.empty())
         throw InternalErr(__FILE__, __LINE__,
                           "There are no CE clauses for *this* DDS object.");
 
-    return (*iter)->value(/*dataset,***/ dds);
+    return (*iter)->value(dds);
 }
 
 /** @brief Add a clause to a constraint expression.
@@ -112,7 +111,7 @@ ConstraintEvaluator::append_clause(int op, rvalue *arg1, rvalue_list *arg2)
 
     expr.push_back(clause);
 }
-#if 1
+
 /** @brief Add a clause to a constraint expression.
 
     This function adds a boolean function clause to the constraint
@@ -129,7 +128,7 @@ ConstraintEvaluator::append_clause(bool_func func, rvalue_list *args)
 
     expr.push_back(clause);
 }
-#endif
+
 /** @brief Add a clause to a constraint expression.
 
     This function adds a real-valued (BaseType) function clause to
@@ -283,7 +282,7 @@ ConstraintEvaluator::functional_expression()
 
 /** @brief Evaluate a function-valued constraint expression. */
 BaseType *
-ConstraintEvaluator::eval_function(DDS &dds, const string &/*dataset***/)
+ConstraintEvaluator::eval_function(DDS &dds, const string &)
 {
     if (expr.size() != 1)
         throw InternalErr(__FILE__, __LINE__,
@@ -291,7 +290,7 @@ ConstraintEvaluator::eval_function(DDS &dds, const string &/*dataset***/)
 
     Clause *cp = expr[0] ;
     BaseType *result;
-    if (cp->value(/*dataset,***/ dds, &result))
+    if (cp->value(dds, &result))
         return result;
     else
         return NULL;
@@ -321,7 +320,7 @@ ConstraintEvaluator::boolean_expression()
     @param dataset This string is passed to the read() methods.
     @return True if the expression is true, false otherwise. */
 bool
-ConstraintEvaluator::eval_selection(DDS &dds, const string &/*dataset***/)
+ConstraintEvaluator::eval_selection(DDS &dds, const string &)
 {
     if (expr.empty()) {
         DBG(cerr << "No selection recorded" << endl);
@@ -340,7 +339,7 @@ ConstraintEvaluator::eval_selection(DDS &dds, const string &/*dataset***/)
         if (!((*i)->boolean_clause()))
             throw InternalErr(__FILE__, __LINE__,
                               "A selection expression must contain only boolean clauses.");
-        result = result && (*i)->value(/*dataset,***/ dds);
+        result = result && (*i)->value(dds);
     }
 
     return result;

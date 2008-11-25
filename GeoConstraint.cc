@@ -507,8 +507,8 @@ void GeoConstraint::set_bounding_box_longitude(double left, double right)
     @todo Remove ds_name. 10/02/08
     @param ds_name The name of the dataset. Passed to BaseType::read().
  */
-GeoConstraint::GeoConstraint(const string & ds_name)
-        : d_dataset(ds_name), d_array_data(0), d_array_data_size(0),
+GeoConstraint::GeoConstraint()
+        : d_array_data(0), d_array_data_size(0),
         d_lat(0), d_lon(0),
         d_bounding_box_set(false),
         d_longitude_notation(unknown_notation),
