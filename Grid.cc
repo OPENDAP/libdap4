@@ -619,8 +619,8 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
 
         goto exit;  // Skip end material.
     }
-    // If there are M (< N) componets (Array and Maps combined) in a N
-    // component Grid, send the M components as elements of a Struture.
+    // If there are M (< N) components (Array and Maps combined) in a N
+    // component Grid, send the M components as elements of a Structure.
     // This will preserve the grouping without violating the rules for a
     // Grid.
     else if (constrained && !projection_yields_grid()) {
@@ -668,15 +668,17 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
 exit:
     return;
 }
+
 #if FILE_METHODS
 class PrintMapField : public unary_function<BaseType *, void>
 {
     FILE *d_out;
     string d_space;
     bool d_constrained;
+    string d_tag;
 public:
-    PrintMapField(FILE *o, string s, bool c)
-            : d_out(o), d_space(s), d_constrained(c)
+    PrintMapField(FILE *o, string s, bool c, const string &t = "Map")
+            : d_out(o), d_space(s), d_constrained(c), d_tag(t)
     {}
 
     void operator()(BaseType *btp)
@@ -684,7 +686,7 @@ public:
         Array *a = dynamic_cast<Array*>(btp);
         if (!a)
             throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
-        a->print_as_map_xml(d_out, d_space, d_constrained);
+        a->print_xml_core(d_out, d_space, d_constrained, d_tag);
     }
 };
 
@@ -692,32 +694,74 @@ void
 Grid::print_xml(FILE *out, string space, bool constrained)
 {
     if (constrained && !send_p())
-        return;
+         return;
 
-    fprintf(out, "%s<Grid", space.c_str());
-    if (!name().empty())
-        fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
+     // If we are printing the declaration of a constrained Grid then check for
+     // the case where the projection removes all but one component; the
+     // resulting object is a simple array.
+     //
+     // I replaced the 'true' with the value of 'print_semi' passed in by the
+     // caller. This fixes an issue with the intern_data tests and does not
+     // seem to break anything else. jhrg 11/9/07
+     int projection = components(true);
+     if (constrained && projection == 1) {
+         get_attr_table().print_xml(out, space + "    ", constrained);
 
-    fprintf(out, ">\n");
+         get_array()->print_xml(out, space + "    ", constrained);
 
-    get_attr_table().print_xml(out, space + "    ", constrained);
+         for_each(map_begin(), map_end(),
+                  PrintMapField(out, space + "    ", constrained, "Array"));
+     }
+     // If there are M (< N) components (Array and Maps combined) in a N
+     // component Grid, send the M components as elements of a Structure.
+     // This will preserve the grouping without violating the rules for a
+     // Grid.
+     else if (constrained && !projection_yields_grid()) {
+         fprintf(out, "%s<Structure", space.c_str());
+         if (!name().empty())
+             fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
 
-    get_array()->print_xml(out, space + "    ", constrained);
+         fprintf(out, ">\n");
 
-    for_each(map_begin(), map_end(),
-             PrintMapField(out, space + "    ", constrained));
+         get_attr_table().print_xml(out, space + "    ", constrained);
 
-    fprintf(out, "%s</Grid>\n", space.c_str());
+         get_array()->print_xml(out, space + "    ", constrained);
+
+         for_each(map_begin(), map_end(),
+                  PrintMapField(out, space + "    ", constrained, "Array"));
+
+         fprintf(out, "%s</Structure>\n", space.c_str());
+     }
+     else {
+         // The number of elements in the (projected) Grid must be such that
+         // we have a valid Grid object; send it as such.
+         fprintf(out, "%s<Grid", space.c_str());
+         if (!name().empty())
+             fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
+
+         fprintf(out, ">\n");
+
+         get_attr_table().print_xml(out, space + "    ", constrained);
+
+         get_array()->print_xml(out, space + "    ", constrained);
+
+         for_each(map_begin(), map_end(),
+                  PrintMapField(out, space + "    ", constrained));
+
+         fprintf(out, "%s</Grid>\n", space.c_str());
+     }
 }
 #endif
+
 class PrintMapFieldStrm : public unary_function<BaseType *, void>
 {
     ostream &d_out;
     string d_space;
     bool d_constrained;
+    string d_tag;
 public:
-    PrintMapFieldStrm(ostream &o, string s, bool c)
-            : d_out(o), d_space(s), d_constrained(c)
+    PrintMapFieldStrm(ostream &o, string s, bool c, const string &t = "Map")
+            : d_out(o), d_space(s), d_constrained(c), d_tag(t)
     {}
 
     void operator()(BaseType *btp)
@@ -725,7 +769,7 @@ public:
         Array *a = dynamic_cast<Array*>(btp);
         if (!a)
             throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
-        a->print_as_map_xml(d_out, d_space, d_constrained);
+        a->print_xml_core(d_out, d_space, d_constrained, d_tag);
     }
 };
 
@@ -735,21 +779,62 @@ Grid::print_xml(ostream &out, string space, bool constrained)
     if (constrained && !send_p())
         return;
 
-    out << space << "<Grid" ;
-    if (!name().empty())
-	out << " name=\"" << id2xml(name()) << "\"" ;
+    // If we are printing the declaration of a constrained Grid then check for
+    // the case where the projection removes all but one component; the
+    // resulting object is a simple array.
+    //
+    // I replaced the 'true' with the value of 'print_semi' passed in by the
+    // caller. This fixes an issue with the intern_data tests and does not
+    // seem to break anything else. jhrg 11/9/07
+    int projection = components(true);
+    if (constrained && projection == 1) {
+        get_attr_table().print_xml(out, space + "    ", constrained);
 
-    out << ">\n" ;
+        get_array()->print_xml(out, space + "    ", constrained);
 
-    get_attr_table().print_xml(out, space + "    ", constrained);
+        for_each(map_begin(), map_end(),
+                 PrintMapFieldStrm(out, space + "    ", constrained, "Array"));
+    }
+    // If there are M (< N) components (Array and Maps combined) in a N
+    // component Grid, send the M components as elements of a Structure.
+    // This will preserve the grouping without violating the rules for a
+    // Grid.
+    else if (constrained && !projection_yields_grid()) {
+        out << space << "<Structure" ;
+        if (!name().empty())
+            out << " name=\"" << id2xml(name()) << "\"" ;
 
-    get_array()->print_xml(out, space + "    ", constrained);
+        out << ">\n" ;
 
-    for_each(map_begin(), map_end(),
-             PrintMapFieldStrm(out, space + "    ", constrained));
+        get_attr_table().print_xml(out, space + "    ", constrained);
 
-    out << space << "</Grid>\n" ;
+        get_array()->print_xml(out, space + "    ", constrained);
+
+        for_each(map_begin(), map_end(),
+                 PrintMapFieldStrm(out, space + "    ", constrained, "Array"));
+
+        out << space << "</Structure>\n" ;
+    }
+    else {
+        // The number of elements in the (projected) Grid must be such that
+        // we have a valid Grid object; send it as such.
+        out << space << "<Grid" ;
+        if (!name().empty())
+            out << " name=\"" << id2xml(name()) << "\"" ;
+
+        out << ">\n" ;
+
+        get_attr_table().print_xml(out, space + "    ", constrained);
+
+        get_array()->print_xml(out, space + "    ", constrained);
+
+        for_each(map_begin(), map_end(),
+                 PrintMapFieldStrm(out, space + "    ", constrained));
+
+        out << space << "</Grid>\n" ;
+    }
 }
+
 #if FILE_METHODS
 void
 Grid::print_val(FILE *out, string space, bool print_decl_p)

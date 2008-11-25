@@ -145,7 +145,7 @@ Connect::process_data(DataDDS &data, Response *rs)
     @param rs Value/Result parameter. Dump version and type information here.
     */
 void
-Connect::parse_mime(/*FILE *data_source, */Response *rs)
+Connect::parse_mime(Response *rs)
 {
     rs->set_version("dods/0.0"); // initial value; for backward compat.
     rs->set_protocol("2.0");

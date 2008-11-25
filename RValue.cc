@@ -159,7 +159,7 @@ rvalue::value_name()
     @param dds The dds to pass to a function.
 */
 BaseType *
-rvalue::bvalue(/*const string &dataset,*/ DDS &dds)
+rvalue::bvalue(DDS &dds)
 {
     if (d_value) {        // i.e., if this RValue is a BaseType
         return d_value;

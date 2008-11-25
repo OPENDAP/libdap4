@@ -11,11 +11,14 @@ TestCommon::~TestCommon()
 {
 }
 
+#if 0
+// FILE_METHODS
 void 
 TestCommon::output_values(FILE *out)
 {
     throw InternalErr(__FILE__, __LINE__, "Not implemented.");
 }
+#endif
 
 #if 0
 void 

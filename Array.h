@@ -131,10 +131,6 @@ protected:
     void _duplicate(const Array &a);
 
 #if FILE_METHODS
-    void print_xml_core(FILE *out, string space, bool constrained, string tag);
-#endif
-    void print_xml_core(ostream &out, string space, bool constrained, string tag);
-#if FILE_METHODS
     unsigned int print_array(FILE *out, unsigned int index,
                              unsigned int dims, unsigned int shape[]);
 #endif
@@ -194,6 +190,12 @@ public:
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
 
+#if FILE_METHODS
+    virtual void print_xml_core(FILE *out, string space, bool constrained, string tag);
+#endif
+    virtual void print_xml_core(ostream &out, string space, bool constrained, string tag);
+
+    // not used (?)
     virtual void print_as_map_xml(ostream &out, string space = "    ",
                                   bool constrained = false);
 

@@ -125,7 +125,7 @@ public:
     CPPUNIT_TEST(duplicate_cardinal_test);
     CPPUNIT_TEST(duplicate_string_test);
     CPPUNIT_TEST(duplicate_structure_test);
-    
+
     CPPUNIT_TEST_SUITE_END();
     
     void duplicate_structure_test() {

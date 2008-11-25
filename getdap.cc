@@ -409,7 +409,7 @@ int main(int argc, char *argv[])
                     BaseTypeFactory factory;
                     DDS dds(&factory);
                     try {
-                        url->request_dds(dds);
+                        url->request_dds(dds, expr);
                         DAS das;
                         url->request_das(das);
                         dds.transfer_attributes(&das);

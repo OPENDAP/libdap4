@@ -13,7 +13,7 @@ CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 check_PROGRAMS = $(DEJAGNU_TESTS)
-noinst_PROGRAMS = io_test
+# noinst_PROGRAMS = io_test
 
 # This determines what gets run by 'make check.' The dejagnu_driver.sh 
 # runs all the dejagnu test drivers by calling runtest 'by hand.'
@@ -49,17 +49,17 @@ DEJAGNU_TESTS = das-test dds-test expr-test
 # DEJATOOL = $(DEJAGNU_TESTS)
 # RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir $${tool}suite
 
-io_test_SOURCES = io_test.cc
-io_test_LDADD = ../libdap.la
+# io_test_SOURCES = io_test.cc
+# io_test_LDADD = ../libdap.la
 
 das_test_SOURCES = das-test.cc
-das_test_LDADD =  ../libdap.la libtest-types.a
+das_test_LDADD =  libtest-types.a ../libdap.la 
 
 dds_test_SOURCES = dds-test.cc
-dds_test_LDADD = ../libdap.la libtest-types.a
+dds_test_LDADD = libtest-types.a ../libdap.la 
 
 expr_test_SOURCES = expr-test.cc
-expr_test_LDADD = ../libdap.la ../libdapserver.la libtest-types.a
+expr_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestSequence.cc		 \

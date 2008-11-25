@@ -539,7 +539,9 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     FILE *pin;
     fdostream *pout;
     /* Add error check ***/
-    loopback_pipe(&pout, &pin);
+    if (!loopback_pipe(&pout, &pin))
+	throw InternalErr(__FILE__, __LINE__,
+			  "Could not create the loopback pipe.");
 
     // If the CE was not passed in, read it from the command line.
     string ce;

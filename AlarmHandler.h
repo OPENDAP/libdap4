@@ -52,7 +52,11 @@ private:
     string d_version;
 
     // Ensure that d_stream gets initialized...
-    AlarmHandler() : /*d_file( 0 ),*/ d_stream( cout )
+    AlarmHandler() :
+#if FILE_METHODS
+        d_file( 0 ),
+#endif
+        d_stream( cout )
     {}
 
 public:
@@ -62,14 +66,18 @@ public:
     AlarmHandler(FILE *s) : d_file(s), d_stream( cout )
     {}
 #endif
-    AlarmHandler(ostream &out) : /*d_file(0), */d_stream( out )
+    AlarmHandler(ostream &out) :
+#if FILE_METHODS
+        d_file(0),
+#endif
+        d_stream( out )
     {}
 
     virtual ~AlarmHandler()
     {
 #if FILE_METHODS
         if( d_file )
-    		fclose( d_file ) ;
+            fclose( d_file ) ;
 #endif
     }
 
