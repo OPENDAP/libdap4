@@ -1269,7 +1269,7 @@ Sequence::buf2val(void **)
     throw InternalErr(__FILE__, __LINE__, "Use Sequence::var_value() or Sequence::row_value() in place of Sequence::buf2val()");
     return sizeof(Sequence);
 }
-#if FILE_METHODS
+//#if FILE_METHODS
 void
 Sequence::print_one_row(FILE *out, int row, string space,
                         bool print_row_num)
@@ -1307,7 +1307,7 @@ Sequence::print_one_row(FILE *out, int row, string space,
 
     fprintf(out, " }") ;
 }
-#endif
+//#endif
 void
 Sequence::print_one_row(ostream &out, int row, string space,
                         bool print_row_num)
@@ -1383,7 +1383,7 @@ Sequence::print_one_row(ostream &out, int row, string space,
     out << " }" ;
 }
 
-#if FILE_METHODS
+//#if FILE_METHODS
 void
 Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
                             bool print_row_numbers)
@@ -1408,7 +1408,7 @@ Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
     if (print_decl_p)
         fprintf(out, ";\n") ;
 }
-#endif
+//#endif
 void
 Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p,
                             bool print_row_numbers)
@@ -1433,13 +1433,13 @@ Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p,
     if (print_decl_p)
 	out << ";\n" ;
 }
-#if FILE_METHODS
+//#if FILE_METHODS
 void
 Sequence::print_val(FILE *out, string space, bool print_decl_p)
 {
     print_val_by_rows(out, space, print_decl_p, false);
 }
-#endif
+//#endif
 void
 Sequence::print_val(ostream &out, string space, bool print_decl_p)
 {

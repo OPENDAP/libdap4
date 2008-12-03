@@ -130,10 +130,10 @@ private:
 protected:
     void _duplicate(const Array &a);
 
-#if FILE_METHODS
+    //#if FILE_METHODS
     unsigned int print_array(FILE *out, unsigned int index,
                              unsigned int dims, unsigned int shape[]);
-#endif
+    //#endif
     unsigned int print_array(ostream &out, unsigned int index,
                              unsigned int dims, unsigned int shape[]);
 
@@ -190,9 +190,9 @@ public:
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
 
-#if FILE_METHODS
+    //#if FILE_METHODS
     virtual void print_xml_core(FILE *out, string space, bool constrained, string tag);
-#endif
+    //#endif
     virtual void print_xml_core(ostream &out, string space, bool constrained, string tag);
 
     // not used (?)
@@ -202,7 +202,7 @@ public:
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 
-#if FILE_METHODS
+    //#if FILE_METHODS
     virtual void print_xml(FILE *out, string space = "    ",
                            bool constrained = false);
     virtual void print_as_map_xml(FILE *out, string space = "    ",
@@ -213,7 +213,7 @@ public:
                             bool print_semi = true,
                             bool constraint_info = false,
                             bool constrained = false);
-#endif
+    //#endif
 
     virtual bool check_semantics(string &msg, bool all = false);
 

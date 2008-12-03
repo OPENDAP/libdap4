@@ -335,17 +335,17 @@ public:
     void parse(string fname);
     void parse(int fd);
     void parse(FILE *in = stdin);
-#if FILE_METHODS
+    //#if FILE_METHODS
     void print(FILE *out);
-#endif
+    //#endif
     void print(ostream &out);
-#if FILE_METHODS
+    //#if FILE_METHODS
     void print_constrained(FILE *out);
-#endif
+    //#endif
     void print_constrained(ostream &out);
-#if FILE_METHODS
+    //#if FILE_METHODS
     void print_xml(FILE *out, bool constrained, const string &blob);
-#endif
+    //#endif
     void print_xml(ostream &out, bool constrained, const string &blob);
 
     void mark_all(bool state);

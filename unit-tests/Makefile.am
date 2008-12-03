@@ -69,7 +69,7 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	DDSTest	DDXParserTest DODSFilterTest generalUtilTest 		\
 	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest 	\
 	SequenceTest SignalHandlerTest CEFunctionsTest 			\
-	GridGeoConstraintTest ArrayGeoConstraintTest
+	GridGeoConstraintTest ArrayGeoConstraintTest MarshallerTest
 else
 UNIT_TESTS =
 
@@ -146,6 +146,9 @@ SignalHandlerTest_LDADD = ../libdap.la $(AM_LDADD)
 
 arrayT_SOURCES = arrayT.cc
 arrayT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
+
+MarshallerTest_SOURCES = MarshallerTest.cc
+MarshallerTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
 marshT_SOURCES = marshT.cc
 marshT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)

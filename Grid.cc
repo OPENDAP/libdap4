@@ -524,7 +524,7 @@ Grid::clear_constraint()
     for (Map_iter m = map_begin(); m != map_end(); ++m)
         dynamic_cast<Array&>(*(*m)).clear_constraint();
 }
-#if FILE_METHODS
+//#if FILE_METHODS
 void
 Grid::print_decl(FILE *out, string space, bool print_semi,
                  bool constraint_info, bool constrained)
@@ -594,7 +594,7 @@ Grid::print_decl(FILE *out, string space, bool print_semi,
 exit:
     return;
 }
-#endif
+//#endif
 void
 Grid::print_decl(ostream &out, string space, bool print_semi,
                  bool constraint_info, bool constrained)
@@ -669,7 +669,7 @@ exit:
     return;
 }
 
-#if FILE_METHODS
+//#if FILE_METHODS
 class PrintMapField : public unary_function<BaseType *, void>
 {
     FILE *d_out;
@@ -751,7 +751,7 @@ Grid::print_xml(FILE *out, string space, bool constrained)
          fprintf(out, "%s</Grid>\n", space.c_str());
      }
 }
-#endif
+//#endif
 
 class PrintMapFieldStrm : public unary_function<BaseType *, void>
 {
@@ -835,7 +835,7 @@ Grid::print_xml(ostream &out, string space, bool constrained)
     }
 }
 
-#if FILE_METHODS
+//#if FILE_METHODS
 void
 Grid::print_val(FILE *out, string space, bool print_decl_p)
 {
@@ -865,7 +865,7 @@ Grid::print_val(FILE *out, string space, bool print_decl_p)
     if (print_decl_p)
         fprintf(out, ";\n") ;
 }
-#endif
+//#endif
 void
 Grid::print_val(ostream &out, string space, bool print_decl_p)
 {

@@ -45,40 +45,40 @@ namespace libdap
 class AlarmHandler : public EventHandler
 {
 private:
-#if FILE_METHODS
+    //#if FILE_METHODS
     FILE *d_file;  // Sink for the Error object.
-#endif
+    //#endif
     ostream &d_stream;
     string d_version;
 
     // Ensure that d_stream gets initialized...
     AlarmHandler() :
-#if FILE_METHODS
+	//#if FILE_METHODS
         d_file( 0 ),
-#endif
+	//#endif
         d_stream( cout )
     {}
 
 public:
     /** Store information to be used by the handler.
     @param s Write to this stream. */
-#if FILE_METHODS
+    //#if FILE_METHODS
     AlarmHandler(FILE *s) : d_file(s), d_stream( cout )
     {}
-#endif
+    //#endif
     AlarmHandler(ostream &out) :
-#if FILE_METHODS
+	//#if FILE_METHODS
         d_file(0),
-#endif
+	//#endif
         d_stream( out )
     {}
 
     virtual ~AlarmHandler()
     {
-#if FILE_METHODS
+	//#if FILE_METHODS
         if( d_file )
             fclose( d_file ) ;
-#endif
+	//#endif
     }
 
     /** Handle an alarm signal. When one of our servers gets an alarm, that

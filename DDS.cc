@@ -868,7 +868,7 @@ DDS::parse(FILE *in)
             throw *arg.error();
     }
 }
-#if FILE_METHODS
+//#if FILE_METHODS
 /** @brief Print the entire DDS to the specified file. */
 void
 DDS::print(FILE *out)
@@ -883,7 +883,7 @@ DDS::print(FILE *out)
 
     return ;
 }
-#endif
+//#endif
 /** @brief Print the entire DDS to the specified ostream. */
 void
 DDS::print(ostream &out)
@@ -898,7 +898,7 @@ DDS::print(ostream &out)
 
     return ;
 }
-#if FILE_METHODS
+//#if FILE_METHODS
 /** @brief Print a constrained DDS to the specified file.
 
     Print those parts (variables) of the DDS structure to OS that
@@ -925,7 +925,7 @@ DDS::print_constrained(FILE *out)
 
     return;
 }
-#endif
+//#endif
 /** @brief Print a constrained DDS to the specified ostream.
 
     Print those parts (variables) of the DDS structure to OS that
@@ -952,7 +952,7 @@ DDS::print_constrained(ostream &out)
 
     return;
 }
-#if FILE_METHODS
+//#if FILE_METHODS
 class VariablePrintXML : public unary_function<BaseType *, void>
 {
     FILE *d_out;
@@ -966,8 +966,8 @@ public:
         bt->print_xml(d_out, "    ", d_constrained);
     }
 };
-#endif
-#if FILE_METHODS
+//#endif
+//#if FILE_METHODS
 /** Print an XML representation of this DDS. This method is used to generate
     the part of the DDX response. The \c Dataset tag is \e not written by
     this code. The caller of this method must handle writing that and
@@ -1022,7 +1022,7 @@ DDS::print_xml(FILE *out, bool constrained, const string &)
 
     fprintf(out, "</Dataset>\n");
 }
-#endif
+//#endif
 
 class VariablePrintXMLStrm : public unary_function<BaseType *, void>
 {

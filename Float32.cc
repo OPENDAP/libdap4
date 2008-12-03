@@ -189,7 +189,7 @@ Float32::value() const
 {
     return _buf;
 }
-#if FILE_METHODS
+//#if FILE_METHODS
 void
 Float32::print_val(FILE *out, string space, bool print_decl_p)
 {
@@ -203,7 +203,7 @@ Float32::print_val(FILE *out, string space, bool print_decl_p)
     else
         fprintf(out, "%.6g", _buf) ;
 }
-#endif
+//#endif
 void
 Float32::print_val(ostream &out, string space, bool print_decl_p)
 {

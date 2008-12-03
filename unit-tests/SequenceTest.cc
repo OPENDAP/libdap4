@@ -167,6 +167,7 @@ public:
     CPPUNIT_TEST(ctor_test);
     CPPUNIT_TEST(assignment);
     CPPUNIT_TEST(copy_ctor);
+#if 0
     CPPUNIT_TEST(test_set_leaf_sequence);
     CPPUNIT_TEST(test_set_leaf_sequence2);
     CPPUNIT_TEST(test_set_leaf_sequence3);
@@ -174,6 +175,7 @@ public:
     CPPUNIT_TEST(intern_data_test1);
     CPPUNIT_TEST(intern_data_test2);
     CPPUNIT_TEST(intern_data_test3);
+#endif
 
     CPPUNIT_TEST_SUITE_END();
 
