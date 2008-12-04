@@ -58,6 +58,7 @@ outbuf_test_SOURCES = GNU/outbuf.cc
 
 getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la 
+getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 
 deflate_SOURCES = deflate.c
 deflate_LDADD = $(ZLIB_LIBS)
