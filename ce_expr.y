@@ -47,6 +47,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include <cassert>
 #include <cstdlib>
 #include <string>
+#include <cstring>
 #include <stack>
 
 #include "debug.h"

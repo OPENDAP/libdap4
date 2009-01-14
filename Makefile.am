@@ -252,7 +252,7 @@ endif
 	cp -p $< dods-datatypes.h
 
 # I think that we should not be using a static header for the xdr
-# types - this is breain gon many platforms because although the c99
+# types - this is breaking on many platforms because although the c99
 # headers are present other type names are used for the xdr
 # types. jhrg 6/25/08
 
