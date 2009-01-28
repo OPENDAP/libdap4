@@ -1,6 +1,63 @@
 
 $Id$
 
+News for version 3.9.0
+
+libdap now supports DAP 3.2. The evolving DAP 3.x protocol is described at
+http://docs.opendap.org/index.php/DAP3/4. The most important change from DAP
+3.1 to 3.2 is:
+
+  DAP 3.2 introduces the notion of protocol negotiation, similar to HTTP's
+  response type or encoding negotiation. The client MAY send an XDAP-Accept
+  header to tell the server the highest version of the protocol that the
+  client can understand. The server MUST then respond using only responses at
+  or below that version number of the protocol. Note that an Error response
+  (e.g., "The response you requested cannot be returned using the protocol
+  version you understand") can be understood by any client. If a client does
+  not send the XDAP-Accept header, then the server MUST assume a DAP 2.0/3.1
+  client. The only functional difference between DAP 2.0, 3.0 and 3.1 is
+  form/content of the version information returned in the HTTP response
+  header.
+
+  By allowing the server to respond with a lower version the protocol can
+  support old servers (since that's how they will respond) and enable newer
+  clients to treat the lower version responses as errors (because the newer
+  servers can be expected to discriminate between different server versions).
+
+  New servers SHOULD always return a response that conforms to the version
+  sent from the client in the XDAP-Accept header.
+
+  In addition to returning the DAP protocol version using the XDAP header
+  (which is a mechanism specific to HTTP), the protocol version will also be
+  returned in the DDX Dataset element using the XML attribute dap-version.
+  See DDX.
+
+With this version of libdap the DDX is slightly different for DAP 3.2 - it
+now includes DAP protocol version information and an xmlbase element.
+
+There was ambiguity regarding how an array of structures would be constrained.
+The web page of DAP 2 Errata has been updated with a clarification of this and
+the constraint expression parser has been updated to reflect that fix. See
+the DAP3/4 page and ticket 975 for the complete info. Short version: Suppose
+'s' is an array of structures and 'm' is an array that is a member of 's'.
+You can constraint 'm' like this: s2[0:4].m[2:7]
+
+Now the notion that a dataset identifier (e.g., a file name) is bound to the
+DDS has been  dropped and that identifier is bound to a variable. This lets
+the library be used in contexts where a DDS holds variables from several
+different places (e.g., files).
+
+String attribute values were always quoted (quotes were added if not present
+in the data set) and while this was OK for the DAS response, it broke the
+DDX. Now quotes are added to DAS response but not the values themselves. See
+ticket 1163.
+
+Nested Sequences were failing when the constraint forced one or more rows of
+the inner Sequence to be empty. Fixed.
+
+A number of build issues have been fixed in this version, see the ChangeLog
+file.
+
 News for version 3.8.2
 
 Significant improvements to the HTTP cache. The cache software could return

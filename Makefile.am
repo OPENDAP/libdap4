@@ -30,7 +30,7 @@ lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 
 bin_SCRIPTS = dap-config dap-config-pkgconfig
 
-bin_PROGRAMS = getdap outbuf_test
+bin_PROGRAMS = getdap # outbuf_test
 
 sbin_PROGRAMS = deflate
 
@@ -54,7 +54,7 @@ libdapserver_la_LIBADD = libdap.la
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR)
 noinst_HEADERS = config_dap.h
 
-outbuf_test_SOURCES = GNU/outbuf.cc
+# outbuf_test_SOURCES = GNU/outbuf.cc
 
 getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la 
@@ -191,9 +191,9 @@ collect-coverage-data:
 # Library sources
 # 
 
-GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc
+GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc GNU/outbuf.cc
 
-GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h
+GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h GNU/outbuf.h
 
 GRAM_SRC = lex.das.cc das.tab.cc das.tab.hh \
 	lex.dds.cc dds.tab.cc dds.tab.hh \
