@@ -351,6 +351,8 @@ array_decl:	'[' SCAN_WORD ']'
 			 if( current ) delete current ;
 			 current = a;
 		     }
+
+		     $$ = true;
 		 }
 
 		 | '[' SCAN_WORD 
@@ -381,6 +383,9 @@ array_decl:	'[' SCAN_WORD ']'
 		     delete id; id = 0;
 		 }
 		 ']'
+                 {
+		     $$ = true;
+		 }
 
 		 | error
                  {
