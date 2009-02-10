@@ -1,0 +1,13 @@
+DDS past semantic check
+DDS past full semantic check
+Dataset {
+    Int32 a;
+    Int32 b%23c[10];
+    Float64 c%23d;
+    Grid {
+      Array:
+        Byte Image%23data[512];
+      Maps:
+        String colors[512];
+    } huh;
+} test.19;

@@ -1,0 +1,4 @@
+Caught Error object:
+Error parsing the text on line 16
+A value cannot be aliased to the top level of the DAS;
+Only containers may be present at that level of the DAS.

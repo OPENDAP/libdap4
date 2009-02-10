@@ -1,0 +1,19 @@
+The complete DDS:
+Dataset {
+    Structure {
+        Int32 j;
+        Int32 k;
+    } s1;
+    Structure {
+        Int32 l;
+        Int32 m;
+    } s2[10];
+    Structure {
+        Int32 n;
+        Int32 o;
+    } s3;
+} test2;
+The data:
+Structure {
+    Int32 m;
+} s2[2] = {{ 123456789 }, { 123456789 }};

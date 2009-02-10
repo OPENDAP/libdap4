@@ -1,0 +1,11 @@
+DDS past semantic check
+DDS past full semantic check
+Dataset {
+    Int32 a;
+    Grid {
+      Array:
+        Byte Image%23data[size*10 = 512];
+      Maps:
+        String colors[size*10 = 512];
+    } huh;
+} test.20;

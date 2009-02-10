@@ -1,0 +1,19 @@
+Attributes {
+    bad_values {
+        bad_values_dods_errors {
+            Byte x 257;
+            String x_explanation "`257' is not a Byte value.";
+            Int16 y 60000;
+            String y_explanation "`60000' is not an Int16 value.";
+            UInt16 z 70000;
+            String z_explanation "`70000' is not an UInt16 value.";
+            Int32 a 2147483648;
+            String a_explanation "`2147483648' is not an Int32 value.";
+            Float32 c 3.5E+38;
+            String c_explanation "`3.5E+38' is not a Float32 value.";
+            Float64 d 1.8E+308;
+            String d_explanation "`1.8E+308' is not a Float64 value.";
+        }
+        UInt32 b 4294967296;
+    }
+}

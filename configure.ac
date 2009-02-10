@@ -4,8 +4,8 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.9.0, opendap-tech@opendap.org)
-AC_DEFINE(DAP_PROTOCOL_VERSION, "3.2", [Highest DAP version implemented?])
+AC_INIT(libdap, 3.8.2, opendap-tech@opendap.org)
+AC_DEFINE(DAP_PROTOCOL_VERSION, "3.1", [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
 AC_CONFIG_SRCDIR([AISConnect.cc])
@@ -13,6 +13,12 @@ AC_CONFIG_AUX_DIR(conf)
 AM_CONFIG_HEADER([config.h dods-datatypes-config.h xdr-datatypes-config.h])
 
 AM_INIT_AUTOMAKE
+# The second arg test autotest to look for the getocapi exec here, in the 
+# $top_srcdir since when relative paths are used with autotest it assumes 
+# they are relative to $top_srcdir. Without the second argument autotest
+# will use 'tests' as the value which breaks since the exec is not in the
+# Tests subdir. jhrg
+AC_CONFIG_TESTDIR(tests, [.])
 
 AC_DEFINE([FILE_METHODS], [1], [Define this to activate the old FILE * methods.])
 
@@ -314,6 +320,7 @@ AC_CONFIG_FILES([Makefile
                  libdapserver.pc
                  gl/Makefile
                  tests/Makefile
+                 tests/atlocal
                  unit-tests/Makefile
                  unit-tests/cache-testsuite/Makefile])
 AC_CONFIG_FILES([dap-config], [chmod +x dap-config]) 

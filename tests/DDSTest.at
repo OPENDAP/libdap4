@@ -1,0 +1,61 @@
+# Process with autom4te to create an -*- Autotest -*- test suite.
+
+
+# ------------------------------
+#
+
+AT_INIT([dds-test])
+# AT_COPYRIGHT([])
+
+#AT_TESTED([dds-test])
+
+# Usage: _AT_TEST_*(<dds source>, <baseline file>)
+
+m4_define([_AT_DDS_TEST],   
+[AT_BANNER([Test $1 $2])
+AT_SETUP([DDS $1])
+AT_KEYWORDS([dds])
+#Added || true because the $srcdir/dds-test -p < $1 needs to be true whether the
+#output is printed to stdout or stderr
+AT_CHECK([$srcdir/dds-test -p < $1 || true], [], [stdout], [stderr])
+#Need to compare either stdout or stderr because of the directory the above
+#AT_CHECK prints output to
+AT_CHECK([diff -b -B $2 stdout || diff -b -B $2 stderr], [], [ignore],[],[])
+AT_CLEANUP])
+
+m4_define([AT_DDS_RESPONSE_TEST],
+[AT_BANNER([DDS response for $1.])
+_AT_DDS_TEST([$srcdir/dds-testsuite/$1], [$srcdir/dds-testsuite/$1.base])
+])
+
+
+AT_DDS_RESPONSE_TEST([3B42.980909.5.hacked.HDF.das.dds])
+AT_DDS_RESPONSE_TEST([3B42.980909.5.HDF.das.dds])
+AT_DDS_RESPONSE_TEST([3B42.980909.5.HDF.dds])
+AT_DDS_RESPONSE_TEST([AsciiOutputTest1.dds])
+AT_DDS_RESPONSE_TEST([fnoc1.nc.das.dds])
+AT_DDS_RESPONSE_TEST([fnoc1.nc.dds])
+AT_DDS_RESPONSE_TEST([S2000415.HDF.das.dds])
+AT_DDS_RESPONSE_TEST([S2000415.HDF.dds])
+AT_DDS_RESPONSE_TEST([test.1.dds])
+AT_DDS_RESPONSE_TEST([test.10.dds])
+AT_DDS_RESPONSE_TEST([test.11.dds])
+AT_DDS_RESPONSE_TEST([test.12.dds])
+AT_DDS_RESPONSE_TEST([test.13.dds])
+AT_DDS_RESPONSE_TEST([test.14.dds])
+AT_DDS_RESPONSE_TEST([test.15.dds])
+AT_DDS_RESPONSE_TEST([test.16.dds])
+AT_DDS_RESPONSE_TEST([test.17.dds])
+AT_DDS_RESPONSE_TEST([test.18.dds])
+AT_DDS_RESPONSE_TEST([test.19.dds])
+AT_DDS_RESPONSE_TEST([test.19b.das.dds])
+AT_DDS_RESPONSE_TEST([test.19b.dds])
+AT_DDS_RESPONSE_TEST([test.2.dds])
+AT_DDS_RESPONSE_TEST([test.20.dds])
+AT_DDS_RESPONSE_TEST([test.3.dds])
+AT_DDS_RESPONSE_TEST([test.4.dds])
+AT_DDS_RESPONSE_TEST([test.6.dds])
+AT_DDS_RESPONSE_TEST([test.7.dds])
+AT_DDS_RESPONSE_TEST([test.8.dds])
+AT_DDS_RESPONSE_TEST([test.9.dds])
+

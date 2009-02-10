@@ -1,0 +1,6 @@
+Attributes {
+    test {
+        Float32 f 2.55;
+        Int16 x 6535;
+    }
+}

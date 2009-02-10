@@ -1,0 +1,4 @@
+Caught Error object:
+Error parsing the text on line 7 at or near: a
+Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,
+Float64, String or Url) followed by a name and value.

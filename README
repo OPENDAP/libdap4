@@ -1,11 +1,6 @@
 
 $Id$
 
-Now libdap supports DAP 3.2. You can read about the evolving DAP 3.x protocol
-at http://docs.opendap.org/index.php/DAP3/4. If your client sends the
-XDAP-Accept header witha value of 3.2 the DDX is different (it includes
-protocol information and also an xmlbase element).
-
 Behavior change for the DAS: In the past the format handlers added double
 quotes to the values of string attributes when they added those values to the
 AttrTable object. This meant that the value of the attribute in the C++

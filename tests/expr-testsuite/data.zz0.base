@@ -1,5 +1,1 @@
-The complete DDS:
-Dataset {
-    Byte SST[lat = 13][lon = 11];
-} SST_Array;
 Wrong number of arguments to geoarray(). See geoarray() for more information.

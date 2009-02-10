@@ -1,0 +1,24 @@
+DDS past semantic check
+DDS past full semantic check
+Dataset {
+    Sequence {
+        String name;
+        Int32 age;
+    } person;
+    Structure {
+        Int32 j;
+        Int32 i;
+        Structure {
+            Int32 i;
+            Float64 f[10];
+        } data;
+    } exp;
+    Grid {
+      Array:
+        Float64 g[10][10][10];
+      Maps:
+        Float64 lat[10];
+        Float64 lon[10];
+        Float64 weirdness[10];
+    } strange;
+} data6;

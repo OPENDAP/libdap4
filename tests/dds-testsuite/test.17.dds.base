@@ -1,0 +1,5 @@
+Error parsing the text on line 8 at or near: Map
+In the dataset descriptor object: Expected a variable declaration
+(e.g., Int32 i;). Make sure that the variable name is not the name
+of a datatype and that the Array: and Maps: sections of a Grid are
+labeled properly.

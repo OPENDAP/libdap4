@@ -20,7 +20,11 @@
 #include <iostream>
 #include <streambuf>
 #include <cstdio>
-
+#if 0
+extern "C" {
+   int write(int fd, const char *buf, int num);
+}
+#endif
 class fdoutbuf : public std::streambuf {
 protected:
     int fd;	// file descriptor

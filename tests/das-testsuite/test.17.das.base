@@ -1,0 +1,15 @@
+Attributes {
+    test {
+        test_dods_errors {
+            Byte b "this is not a byte";
+            String b_explanation "`"this is not a byte"' is not a Byte value.";
+            Byte c -256;
+            String c_explanation "`-256' is not a Byte value.";
+            Byte e 2550;
+            String e_explanation "`2550' is not a Byte value.";
+            Byte f 2.55;
+            String f_explanation "`2.55' is not a Byte value.";
+        }
+        Byte d 255;
+    }
+}

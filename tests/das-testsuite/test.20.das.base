@@ -1,0 +1,9 @@
+Attributes {
+    test {
+        Int32 x 70000;
+        test_dods_errors {
+            Int16 y 80000;
+            String y_explanation "`80000' is not an Int16 value.";
+        }
+    }
+}

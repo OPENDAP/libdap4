@@ -1,0 +1,10 @@
+The complete DDS:
+Dataset {
+    Int16 x%23y;
+    UInt16 y;
+    Int32 data%23i[20][10];
+    Float64 data%20name[10];
+} data8;
+The data:
+Int16 x%23y = 32000;
+UInt16 y = 64000;

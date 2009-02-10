@@ -1,0 +1,9 @@
+Attributes {
+    test {
+        Float64 f 2.55E-300;
+        test_dods_errors {
+            Float32 g 2.55E-300;
+            String g_explanation "`2.55E-300' is not a Float32 value.";
+        }
+    }
+}

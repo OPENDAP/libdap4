@@ -1,0 +1,26 @@
+Attributes {
+    var1 {
+        String name "bob";
+        String type "human";
+        Int32 age 19;
+    }
+    var2 {
+        String name "joe";
+        String type "dog";
+        Int32 age 8;
+    }
+    var3 {
+        Int32 size 8;
+        String color "red";
+        String type "art";
+    }
+    var4 {
+    }
+    var5 {
+        String height "5.0in.";
+        String units "inches";
+        Float64 max 5.0;
+        String weight "100lbs";
+        String color "red";
+    }
+}

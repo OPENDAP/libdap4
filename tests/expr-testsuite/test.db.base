@@ -1,0 +1,25 @@
+The complete DDS:
+Dataset {
+    Sequence {
+        Int32 i;
+        Int32 j;
+        Sequence {
+            Float32 f;
+            Float32 g;
+            Sequence {
+                Byte a;
+                Byte b;
+            } baby;
+        } child;
+    } parent;
+} testc;
+The data:
+Sequence {
+    Int32 i;
+    Sequence {
+        Float32 f;
+        Sequence {
+            Byte a;
+        } baby;
+    } child;
+} parent = { { 32, { { -54.4, { { 0 }, { 1 }, { 2 }, { 3 } } }, { -1.77, { { 4 }, { 5 }, { 6 }, { 7 } } }, { 98.93, { { 8 }, { 9 }, { 10 }, { 11 } } }, { 92.68, { { 12 }, { 13 }, { 14 }, { 15 } } } } }, { 1024, { { 99.48, { { 16 }, { 17 }, { 18 }, { 19 } } }, { 81.67, { { 20 }, { 21 }, { 22 }, { 23 } } }, { 10.59, { { 24 }, { 25 }, { 26 }, { 27 } } }, { 91.29, { { 28 }, { 29 }, { 30 }, { 31 } } } } } };

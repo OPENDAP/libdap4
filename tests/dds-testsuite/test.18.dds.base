@@ -1,0 +1,11 @@
+DDS past semantic check
+DDS past full semantic check
+Dataset {
+    Grid {
+      Array:
+        Byte temp[100][7];
+      Maps:
+        Float64 steps[100];
+        String colors[7];
+    } oddTemp;
+} 123;

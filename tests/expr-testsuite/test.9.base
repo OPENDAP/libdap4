@@ -1,0 +1,15 @@
+The complete DDS:
+Dataset {
+    Grid {
+      Array:
+        Float64 Data-Set-2[fakeDim0 = 72][fakeDim1 = 144];
+      Maps:
+        Float64 fakeDim0[72];
+        Float64 fakeDim1[144];
+    } Data-Set-2;
+} ftp%23data%23lim93%23msup%23L93rain.90daygrd_msu.hdf;
+The data:
+Structure {
+    Float64 fakeDim0[4];
+    Float64 fakeDim1[4];
+} Data-Set-2 = { {99.999, 99.999, 99.999, 99.999}, {99.999, 99.999, 99.999, 99.999} };

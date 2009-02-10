@@ -1,0 +1,8 @@
+Attributes {
+    var1 {
+        var1_dods_errors {
+            Float64 f1 3.0.0;
+            String f1_explanation "`3.0.0' is not a Float64 value.";
+        }
+    }
+}

@@ -1,0 +1,8 @@
+Attributes {
+    var1 {
+        var1_dods_errors {
+            Int32 i1 3.0;
+            String i1_explanation "`3.0' is not an Int32 value.";
+        }
+    }
+}

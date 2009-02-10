@@ -1,0 +1,5 @@
+# 
+# Empty file. Use this to customize shell variables, et c., passed to the 
+# autotest-generated script.
+# 
+# : ${path_to_exec=`pwd`}

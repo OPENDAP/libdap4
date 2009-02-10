@@ -1,0 +1,6 @@
+Attributes {
+    a {
+        String b "c";
+        String d "4";
+    }
+}

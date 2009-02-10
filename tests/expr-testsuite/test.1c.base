@@ -1,0 +1,6 @@
+The complete DDS:
+Dataset {
+    Int32 i;
+    Int32 j;
+} test1;
+The data:
