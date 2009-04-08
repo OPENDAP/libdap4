@@ -562,8 +562,9 @@ bracket_projection(DDS &table, const char *name, int_list_list *indices)
     bool status = true;
     BaseType *var = table.var(name);
     Sequence *seq;		// used in last else-if clause
+#if 0
     Array *array;
-    
+#endif    
     if (!var)
 	return false;
 	

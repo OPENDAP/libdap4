@@ -67,7 +67,7 @@ AFTER INSTALLING
 REQUIREMENTS
 
   o To build from a fresh SVN checkout, you'll need automake 1.9.6, autoconf
-    2.59 and libtool 1.5.18. Earlier versions may work, but may cause
+    2.63 and libtool 1.5.18. Earlier versions may work, but may cause
     problems, particularly with the 'distcheck' target for make. Given those
     requirements, use 'autoreconf --force --verbose' and then build as
     described above. You also need bison and flex as of version 3.7.9. If you

@@ -208,7 +208,7 @@ AISDatabaseParser::aisStartElement(AISParserState *state, const char *name,
 // Although not used in the method itself, name is used in the DBG2
 // statement, so we need the parameter name. - pcw 07/08/08
 void
-AISDatabaseParser::aisEndElement(AISParserState *state, const char *name)
+AISDatabaseParser::aisEndElement(AISParserState *state, const char */*name*/)
 {
     DBG2(cerr << "End element " << name << " (state " << states[state->state]
          << ")" << endl);

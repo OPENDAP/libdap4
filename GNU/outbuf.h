@@ -56,7 +56,7 @@ class fdostream : public std::ostream {
 protected:
     fdoutbuf buf;
 public:
-    fdostream (int fd) : buf(fd), std::ostream(&buf) {
+    fdostream (int fd) : std::ostream(&buf), buf(fd) {
     }
 };
 
