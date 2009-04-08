@@ -162,7 +162,7 @@ id2www(string in, const string &allowable)
 }
 
 /** Replace characters that are not allowed in WWW URLs using rules specific
-    to Constraint Expressions. This has canged over time and now the only
+    to Constraint Expressions. This has changed over time and now the only
     difference is that '*' is escaped by this function while it is not
     escaped by id2www().
 
@@ -178,12 +178,15 @@ id2www_ce(string in, const string &allowable)
 }
 
 /** Given a string that contains WWW escape sequences, translate those escape
-    sequences back into ASCII characters. Return the modified string.
+    sequences back into the ASCII characters they represent. Return the
+    modified string.
 
     -Places in the dap code where www2id() is called:
      -# Array::append_dim() the name is decoded before it is added
      -# AttrTable::set_name(), AttrTable::append_attr(),
-        AttrTable::append_container(), AttrTable?::del_attr(), AttrTable::add_container_alias(), AttrTable::add_value_alias() names are decoded before that are set/used.
+        AttrTable::append_container(), AttrTable?::del_attr(),
+        AttrTable::add_container_alias(), AttrTable::add_value_alias()
+        names are decoded before that are set/used.
      -# BaseType::set_name() Names are decoded before they are set
      -# When the constraint expression parser looks for a variable, the name is
         first decoded.
@@ -200,10 +203,11 @@ id2www_ce(string in, const string &allowable)
     @param in The string to modify.
     @param escape The character used to signal the beginning of an escape
     sequence. default: "%"
-    @param except If there is some escape code that should not be removed by
+    @param except If there are some escape codes that should not be removed by
     this call (e.g., you might not want to remove spaces, %20) use this
-    parameter to specify that code. The function will then transform all
-    escapes \e except that one. default: ""
+    parameter to specify those codes. The function will then transform all
+    escapes \e except those given. For example, to suppress translation of both
+    spaces and the ampersand, pass "%20%26" for 'except'. default: ""
     @return The modified string. */
 string
 www2id(const string &in, const string &escape, const string &except)
@@ -211,7 +215,7 @@ www2id(const string &in, const string &escape, const string &except)
     string::size_type i = 0;
     string res = in;
     while ((i = res.find_first_of(escape, i)) != string::npos) {
-        if (res.substr(i, 3) == except) {
+        if (except.find(res.substr(i, 3)) != string::npos) {
             i += 3;
             continue;
         }

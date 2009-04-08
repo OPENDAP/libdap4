@@ -215,9 +215,7 @@ Array::append_dim(int size, string name)
     d.stop = size - 1;
     d.stride = 1;
     d.c_size = size;
-#if 0
-    d.selected = true;  // assume all dims selected.
-#endif
+
     _shape.push_back(d);
 
     update_length(size);
@@ -239,9 +237,7 @@ Array::reset_constraint()
         (*i).stop = (*i).size - 1;
         (*i).stride = 1;
         (*i).c_size = (*i).size;
-#if 0
-        (*i).selected = true;
-#endif
+
         update_length((*i).size);
     }
 }
@@ -260,17 +256,6 @@ void
 Array::clear_constraint()
 {
     reset_constraint();
-#if 0
-    for (Dim_iter i = _shape.begin(); i != _shape.end(); i++) {
-        (*i).start = 0;
-        (*i).stop = 0;
-        (*i).stride = 0;
-        (*i).c_size = 0;
-        (*i).selected = false;
-    }
-
-    set_length(-1);
-#endif
 }
 
 // Note: MS VC++ won't tolerate embedded newlines in strings, hence the \n
@@ -320,9 +305,7 @@ Array::add_constraint(Dim_iter i, int start, int stride, int stop)
     d.c_size = (stop - start) / stride + 1;
 
     DBG(cerr << "add_constraint: c_size = " << d.c_size << endl);
-#if 0
-    d.selected = true;
-#endif
+
     update_length(d.c_size);
 }
 
@@ -346,7 +329,7 @@ Array::dim_end()
 
     @brief Return the total number of dimensions in the array.
     @param constrained A boolean flag to indicate whether the array is
-    constrained or not.  By default, constrained is FALSE.
+    constrained or not.  Ignored.
 */
 
 unsigned int
@@ -355,15 +338,6 @@ Array::dimensions(bool /*constrained*/)
     unsigned int dim = 0;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
         dim++;
-#if 0
-        if (constrained) {
-            if ((*i).selected)
-                dim++;
-        }
-        else {
-            dim++;
-        }
-#endif
     }
 
     return dim;
@@ -398,17 +372,6 @@ Array::dimension_size(Dim_iter i, bool constrained)
             size = (*i).size;
     }
 
-#if 0
-        if (constrained) {
-            if ((*i).selected)
-                size = (*i).c_size;
-            else
-                size = 0;
-        }
-        else
-            size = (*i).size;
-#endif
-
     return size;
 }
 
@@ -434,26 +397,6 @@ int
 Array::dimension_start(Dim_iter i, bool /*constrained*/)
 {
     return (!_shape.empty()) ? (*i).start : 0;
-
-#if 0
-    int start = 0;
-
-    if (!_shape.empty())
-        start = (*i).start;
-
-#if array_selected
-        if (constrained) {
-            if ((*i).selected)
-                start = (*i).start;
-            else
-                start = 0;
-        }
-        else
-            start = (*i).start;
-#endif
-
-    return start;
-#endif
 }
 
 /** Use this function to return the stop index of an array
@@ -478,26 +421,6 @@ int
 Array::dimension_stop(Dim_iter i, bool /*constrained*/)
 {
     return (!_shape.empty()) ? (*i).stop : 0;
-
-#if 0
-    int stop = 0;
-
-    if (!_shape.empty())
-        stop = (*i).stop;
-
-#if array_selected
-        if (constrained) {
-            if ((*i).selected)
-                stop = (*i).stop;
-            else
-                stop = 0;
-        }
-        else
-            stop = (*i).stop;
-#endif
-
-    return stop;
-#endif
 }
 
 /** Use this function to return the stride value of an array
@@ -523,26 +446,6 @@ int
 Array::dimension_stride(Dim_iter i, bool /*constrained*/)
 {
     return (!_shape.empty()) ? (*i).stride : 0;
-
-#if 0
-    int stride = 0;
-
-    if (!_shape.empty())
-        stride = (*i).stride;
-
-#if array_selected
-        if (constrained) {
-            if ((*i).selected)
-                stride = (*i).stride;
-            else
-                stride = 0;
-        }
-        else
-            stride = (*i).stride;
-#endif
-
-    return stride;
-#endif
 }
 
 /** This function returns the name of the dimension indicated with
@@ -597,10 +500,6 @@ Array::print_decl(FILE *out, string space, bool print_semi,
     var()->print_decl(out, space, false, constraint_info, constrained);
 
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
-#if 0
-        if (constrained && !((*i).selected))
-            continue;
-#endif
         fprintf(out, "[") ;
         if ((*i).name != "") {
             fprintf(out, "%s = ", id2www((*i).name).c_str()) ;
@@ -646,10 +545,6 @@ Array::print_decl(ostream &out, string space, bool print_semi,
     var()->print_decl(out, space, false, constraint_info, constrained);
 
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
-#if 0
-        if (constrained && !((*i).selected))
-            continue;
-#endif
 	out << "[" ;
         if ((*i).name != "") {
 	    out << id2www((*i).name) << " = " ;
@@ -979,9 +874,6 @@ Array::dump(ostream &strm) const
         strm << DapIndent::LMarg << "stride: " << (*i).stride << endl ;
         strm << DapIndent::LMarg << "constrained size: " << (*i).c_size
              << endl ;
-#if 0
-        strm << DapIndent::LMarg << "selected: " << (*i).selected << endl ;
-#endif
         DapIndent::UnIndent() ;
     }
     DapIndent::UnIndent() ;

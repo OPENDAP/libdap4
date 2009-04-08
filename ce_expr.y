@@ -103,9 +103,9 @@ void delete_array_indices(int_list_list *indices);
 bool bracket_projection(DDS &table, const char *name, 
 			int_list_list *indices);
 
-bool process_array_indices(BaseType *variable, int_list_list *indices); 
-bool process_grid_indices(BaseType *variable, int_list_list *indices); 
-bool process_sequence_indices(BaseType *variable, int_list_list *indices);
+void process_array_indices(BaseType *variable, int_list_list *indices); 
+void process_grid_indices(BaseType *variable, int_list_list *indices); 
+void process_sequence_indices(BaseType *variable, int_list_list *indices);
 
 /* Replace these with method calls. jhrg 8/31/06 */
 bool is_array_t(BaseType *variable);
@@ -113,9 +113,7 @@ bool is_grid_t(BaseType *variable);
 bool is_sequence_t(BaseType *variable);
 
 BaseType *make_variable(ConstraintEvaluator &eval, const value &val);
-#if 1
 bool_func get_function(const ConstraintEvaluator &eval, const char *name);
-#endif
 btp_func get_btp_function(const ConstraintEvaluator &eval, const char *name);
 proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 
@@ -126,11 +124,9 @@ proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
     int op;
     char id[ID_MAX];
 
-    libdap::value val;
+    libdap::value val;               // value is defined in expr.h
 
-#if 1
     libdap::bool_func b_func;
-#endif
     libdap::btp_func bt_func;
 
     libdap::int_list *int_l_ptr;
@@ -154,7 +150,7 @@ proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 
 %type <boolean> constraint_expr projection proj_clause proj_function
 %type <boolean> array_projection selection clause bool_function
-%type <id> array_proj_clause
+%type <id> array_proj_clause name
 %type <op> rel_op
 %type <int_l_ptr> array_index
 %type <int_ll_ptr> array_indices
@@ -188,7 +184,7 @@ projection:     proj_clause
 		}
 ;
 
-proj_clause:	SCAN_WORD 
+proj_clause:	name 
                 { 
 		    BaseType *var = DDS(arg)->var($1);
 		    if (var) {
@@ -200,6 +196,22 @@ proj_clause:	SCAN_WORD
 			no_such_ident($1, "identifier");
 		    }
 		}
+/*		| SCAN_STR
+                {
+                    if ($1.type != dods_str_c || $1.v.s == 0 || $1.v.s->empty())
+                        ce_exprerror("Malformed string", "");
+                        
+                    BaseType *var = DDS(arg)->var(*($1.v.s));
+                    if (var) {
+                        DBG(cerr << "Marking " << $1 << endl);
+                        $$ = DDS(arg)->mark(*($1.v.s), true);
+                        DBG(cerr << "result: " << $$ << endl);
+                    }
+                    else {
+                        no_such_ident(*($1.v.s), "identifier");
+                    }
+                }
+*/
                 | proj_function
                 {
 		    $$ = $1;
@@ -279,16 +291,6 @@ bool_function: SCAN_WORD '(' arg_list ')'
 ;
 
 r_value:        id_or_const
-		/* Removed. I have removed '*' from DAP2. 3/31/06 jhrg
-		| '*' id_or_const
-		{
-		    $$ = dereference_variable($2, *EVALUATOR(arg));
-		    if (!$$) {
-			exprerror("Could not dereference the URL", 
-				  ($2)->value_name());
-		    }
-		}
-		*/
 		| SCAN_WORD '(' arg_list ')'
 		{
 		    btp_func func = get_btp_function((*EVALUATOR(arg)), $1);
@@ -330,7 +332,11 @@ arg_list:     r_value_list
 id_or_const:    SCAN_WORD
 		{ 
 		    BaseType *btp = DDS(arg)->var(www2id(string($1)));
-		    if (!btp) {
+		    if (btp) {
+                        btp->set_in_selection(true);
+                        $$ = new rvalue(btp);
+		    }
+		    else {
 			value new_val;
 			if (check_int32($1)) {
 			    new_val.type = dods_int32_c;
@@ -353,16 +359,21 @@ id_or_const:    SCAN_WORD
 			// delete new_val.v.s; // Str::val2buf copies the value.
 			$$ = new rvalue(btp);
 		    }
-		    else {
-			btp->set_in_selection(true);
-			$$ = new rvalue(btp);
-		    }
 		}
-		| SCAN_STR
-                { 
-		    BaseType *btp = make_variable((*EVALUATOR(arg)), $1); 
-		    $$ = new rvalue(btp);
-		}
+                | SCAN_STR
+                {
+                    if ($1.type != dods_str_c || $1.v.s == 0 || $1.v.s->empty())
+                        ce_exprerror("Malformed string", "");
+                        
+                    BaseType *var = DDS(arg)->var(*($1.v.s));
+                    if (var) {
+                        $$ = new rvalue(var);
+                    }
+                    else {
+                        var = make_variable((*EVALUATOR(arg)), $1); 
+                        $$ = new rvalue(var);
+                    }
+                }
 ;
 
 array_projection : array_proj_clause
@@ -370,7 +381,7 @@ array_projection : array_proj_clause
                     $$ = (*DDS(arg)).mark($1, true);
                 }
                 
-array_proj_clause: SCAN_WORD array_indices
+array_proj_clause: name array_indices
                 {
                     if (!bracket_projection((*DDS(arg)), $1, $2))
                       no_such_ident($1, "array, grid or sequence");
@@ -378,13 +389,13 @@ array_proj_clause: SCAN_WORD array_indices
                     strncpy($$, $1, ID_MAX-1);
                     $$[ID_MAX-1] = '\0';
                 }
-                | array_proj_clause SCAN_WORD
+                | array_proj_clause name
                 {
                     string name = string($1) + string ($2);
                     strncpy($$, name.c_str(), ID_MAX-1);
                     $$[ID_MAX-1] = '\0';
                 }
-                | array_proj_clause SCAN_WORD array_indices
+                | array_proj_clause name array_indices
                 {
                     string name = string($1) + string ($2);
                     if (!bracket_projection((*DDS(arg)), name.c_str(), $3))
@@ -392,6 +403,29 @@ array_proj_clause: SCAN_WORD array_indices
 
                     strncpy($$, name.c_str(), ID_MAX-1);
                     $$[ID_MAX-1] = '\0';
+                }
+;
+
+name:           SCAN_WORD
+                | SCAN_STR
+                {
+                    if ($1.type != dods_str_c || $1.v.s == 0 || $1.v.s->empty())
+                        ce_exprerror("Malformed string", "");
+                        
+                    strncpy($$, www2id(*($1.v.s)).c_str(), ID_MAX-1);
+                    // delete the string? ***
+                    $$[ID_MAX-1] = '\0';
+/*
+                    BaseType *var = DDS(arg)->var(*($1.v.s));
+                    if (var) {
+                        DBG(cerr << "Marking " << $1 << endl);
+                        $$ = DDS(arg)->mark(*($1.v.s), true);
+                        DBG(cerr << "result: " << $$ << endl);
+                    }
+                    else {
+                        no_such_ident(*($1.v.s), "identifier");
+                    }
+*/
                 }
 ;
 
@@ -559,7 +593,6 @@ parent_is_sequence(DDS &table, const string &n)
 bool
 bracket_projection(DDS &table, const char *name, int_list_list *indices)
 {
-    bool status = true;
     BaseType *var = table.var(name);
     Sequence *seq;		// used in last else-if clause
 #if 0
@@ -578,52 +611,29 @@ bracket_projection(DDS &table, const char *name, int_list_list *indices)
 	//table.mark(name, true);
 	// We don't call mark() here for an array. Instead it is called from
 	// within the parser. jhrg 10/10/08
-	status = process_array_indices(var, indices);
-	if (!status) {
-	    string msg = "The indices given for `";
-	    msg += (string)name + (string)"' are out of range.";
-	    throw Error(malformed_expr, msg);
-	}
+	process_array_indices(var, indices);    // throws on error
 	delete_array_indices(indices);
     }
     else if (is_grid_t(var)) {
-	table.mark(name, true);
-	/* var->set_send_p(true); */
-	status = process_grid_indices(var, indices);
-	if (!status) {
-	    string msg = "The indices given for `";
-	    msg += (string)name + (string)"' are out of range.";
-	    throw Error(malformed_expr, msg);
-	}
+	process_grid_indices(var, indices);
+        table.mark(name, true);
 	delete_array_indices(indices);
     }
     else if (is_sequence_t(var)) {
 	table.mark(name, true);
-	status = process_sequence_indices(var, indices);
-	if (!status) {
-	    string msg = "The indices given for `";
-	    msg += (string)name + (string)"' are out of range.";
-	    throw Error(malformed_expr, msg);
-	}
+	process_sequence_indices(var, indices);
 	delete_array_indices(indices);
     }
-    // This should go away once the Structure syntax is used for Sequence too
-    // *** jhrg 10/10/08
     else if ((seq = parent_is_sequence(table, name))) {
-	table.mark(name, true);
-	status = process_sequence_indices(seq, indices);
-	if (!status) {
-	    string msg = "The indices given for `";
-	    msg += (string)name + (string)"' are out of range.";
-	    throw Error(malformed_expr, msg);
-	}
+	process_sequence_indices(seq, indices);
+        table.mark(name, true);
 	delete_array_indices(indices);
     }
     else {
-	status = false;
+	return false;
     }
   
-    return status;
+    return true;
 }
 
 // Given three values (I1, I2, I3), all of which must be integers, build an
@@ -770,11 +780,9 @@ is_sequence_t(BaseType *variable)
 	return true;
 }
 
-bool
+void
 process_array_indices(BaseType *variable, int_list_list *indices)
 {
-    bool status = true;
-
     assert(variable);
 
     Array *a = dynamic_cast<Array *>(variable); // replace with dynamic cast
@@ -792,9 +800,9 @@ process_array_indices(BaseType *variable, int_list_list *indices)
     DBG(cerr << "Before clear_constraint:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
-    a->clear_constraint();	// each projection erases the previous one
+    // a->reset_constraint();	// each projection erases the previous one
 
-    DBG(cerr << "After clear_constraint:" << endl);
+    DBG(cerr << "After reset_constraint:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
     assert(indices);
@@ -829,7 +837,15 @@ process_array_indices(BaseType *variable, int_list_list *indices)
         // only two fields are projected and there's an associated hyperslab).
         // However, in this case the two hyperslabs must be equal; test for
         // that here. But see clear_constraint above... 10/28/08 jhrg
-        
+
+        if (a->send_p()
+            && (a->dimension_start(r, true) != start
+                || a->dimension_stop(r, true) != stop
+                || a->dimension_stride(r, true) != stride))
+            throw Error(malformed_expr,
+                        string("The Array was already projected differently in the constraint expression: ")
+                    + a->name() + ".");
+                 
 	a->add_constraint(r, start, stride, stop);
 
 	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
@@ -848,15 +864,11 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 		    string("Too many indices in constraint for ")
 		    + a->name() + ".");
     }
-
-    return status;
 }
 
-bool
+void
 process_grid_indices(BaseType *variable, int_list_list *indices)
 {
-    bool status = true;
-
     assert(variable);
     assert(variable->type() == dods_grid_c);
     Grid *g = dynamic_cast<Grid *>(variable);
@@ -864,8 +876,11 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	throw Error(unknown_error, "Expected a Grid variable");
 
     Array *a = g->get_array();
+#if 0
+    // This test s now part of Grid::get_array(). jhrg 3/5/09
     if (!a)
 	throw InternalErr(__FILE__, __LINE__, "Malformed Grid variable");
+#endif
     if (a->dimensions(true) != (unsigned)indices->size())
 	throw Error(malformed_expr, 
 	   string("Error: The number of dimensions in the constraint for ")
@@ -908,7 +923,7 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	assert(btp->type() == dods_array_c);
 	Array *a = (Array *)btp;
 	a->set_send_p(true);
-	a->clear_constraint();
+	a->reset_constraint();
 
 	q++;
 	if (q!=index->end()) {
@@ -940,15 +955,11 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 		    string("Too many indices in constraint for ")
 		    + (*r)->name() + ".");
     }
-
-    return status;
 }
 
-bool
+void
 process_sequence_indices(BaseType *variable, int_list_list *indices)
 {
-    bool status = true;
-
     assert(variable);
     assert(variable->type() == dods_sequence_c);
     Sequence *s = dynamic_cast<Sequence *>(variable);
@@ -981,8 +992,6 @@ process_sequence_indices(BaseType *variable, int_list_list *indices)
 
 	s->set_row_number_constraint(start, stop, stride);
     }
-
-    return status;
 }
 
 
@@ -1027,7 +1036,7 @@ make_variable(ConstraintEvaluator &eval, const value &val)
 // NB: function arguments are type-checked at run-time.
 //
 // Returns: A pointer to the function or NULL if not such function exists.
-#if 1
+
 bool_func
 get_function(const ConstraintEvaluator &eval, const char *name)
 {
@@ -1038,7 +1047,6 @@ get_function(const ConstraintEvaluator &eval, const char *name)
     else
 	return 0;
 }
-#endif
 
 btp_func
 get_btp_function(const ConstraintEvaluator &eval, const char *name)

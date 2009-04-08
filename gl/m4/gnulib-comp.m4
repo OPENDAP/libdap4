@@ -48,10 +48,14 @@ AC_SUBST([LTALLOCA])
   AC_SUBST([LTLIBINTL])
   gl_LOCALCHARSET
   AC_FUNC_MALLOC
+  gl_FUNC_MALLOC_POSIX
+  gl_STDLIB_MODULE_INDICATOR([malloc-posix])
   gl_REGEX
   gt_TYPE_SSIZE_T
   AM_STDBOOL_H
   gl_STDINT_H
+  gl_STDLIB_H
+  gl_UNISTD_H
   gl_WCHAR_H
   gl_WCTYPE_H
   m4_popdef([AC_LIBSOURCES])
@@ -91,6 +95,7 @@ AC_DEFUN([gl_LIBSOURCES],
 # This macro records the list of files which have been installed by
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
+  build-aux/link-warning.h
   lib/alloca.c
   lib/alloca_.h
   lib/config.charset
@@ -108,8 +113,11 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/regexec.c
   lib/stdbool_.h
   lib/stdint_.h
+  lib/stdlib_.h
+  lib/unistd_.h
   lib/wchar_.h
   lib/wctype_.h
+  m4/absolute-header.m4
   m4/alloca.m4
   m4/codeset.m4
   m4/extensions.m4
@@ -118,12 +126,14 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/include_next.m4
   m4/localcharset.m4
   m4/longlong.m4
-  m4/onceonly_2_57.m4
+  m4/malloc.m4
   m4/regex.m4
   m4/ssize_t.m4
   m4/stdbool.m4
   m4/stdint.m4
+  m4/stdlib_h.m4
   m4/ulonglong.m4
+  m4/unistd_h.m4
   m4/wchar.m4
   m4/wctype.m4
   m4/wint_t.m4

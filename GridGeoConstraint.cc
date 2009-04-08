@@ -120,6 +120,8 @@ bool GridGeoConstraint::build_lat_lon_maps()
             // dimension iterator so that it's easier to set the Grid's Array
             // (which also has to be constrained).
             d_latitude = dynamic_cast < Array * >(*m);
+            if (!d_latitude)
+                throw InternalErr(__FILE__, __LINE__, "Expected an array.");
             if (!d_latitude->read_p())
                 d_latitude->read();
 
@@ -134,6 +136,8 @@ bool GridGeoConstraint::build_lat_lon_maps()
                                   units_value, map_name)) {
 
             d_longitude = dynamic_cast < Array * >(*m);
+            if (!d_longitude)
+                throw InternalErr(__FILE__, __LINE__, "Expected an array.");
             if (!d_longitude->read_p())
                 d_longitude->read();
 

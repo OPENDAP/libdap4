@@ -266,7 +266,7 @@ DDS::find_matching_container(AttrTable::entry *source, BaseType **dest_variable)
 /** Given a DAS object, scavenge attributes from it and load them into this
     object and the variables it contains.
 
-    If a DAS contans attributes from the current (8/2006) HDF4 server with
+    If a DAS contains attributes from the current (8/2006) HDF4 server with
     names like var_dim_0, var_dim_1, then make those attribute tables
     sub tables of the \e var table.
 
@@ -329,6 +329,16 @@ DDS::transfer_attributes(DAS *das)
                     dynamic_cast<Constructor&>(*dest_variable).transfer_attributes(*source_p);
                 }
                 else {
+#if 0
+                    // Trick:
+                    DBG(cerr << "Is current source aliased: "
+                            << (*source_p)->is_alias << endl);
+                    AttrTable &local = *(*source_p)->attributes;
+                    for (AttrTable::Attr_iter i = local.attr_begin();
+                         i != local.attr_end(); ++i) {
+                        cerr << "... or one of its entries: " << (*i)->is_alias << endl;
+                    }
+#endif
                     dest->append_container(new AttrTable(*(*source_p)->attributes),
                                            (*source_p)->name);
                 }
@@ -400,10 +410,10 @@ DDS::filename(const string &fn)
 }
 //@}
 
-/** Given the dap protocol version either from a mime header or from within
+/** Given the dap protocol version either from a MIME header or from within
     the DDX Dataset element, parse that string and set the DDS fields.
     @see set_dap_client_version()
-    @param version_string The version string from the MIME of XML docuemt.
+    @param version_string The version string from the MIME of XML document.
  */
 void
 DDS::set_dap_version(const string &version_string)
@@ -916,7 +926,7 @@ DDS::print_constrained(FILE *out)
 
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
         // for each variable, indent with four spaces, print a trailing
-        // semi-colon, do not print debugging information, print only
+        // semicolon, do not print debugging information, print only
         // variables in the current projection.
         (*i)->print_decl(out, "    ", true, false, true) ;
     }
@@ -943,7 +953,7 @@ DDS::print_constrained(ostream &out)
 
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
         // for each variable, indent with four spaces, print a trailing
-        // semi-colon, do not print debugging information, print only
+        // semicolon, do not print debugging information, print only
         // variables in the current projection.
         (*i)->print_decl(out, "    ", true, false, true) ;
     }

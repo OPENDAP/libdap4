@@ -210,8 +210,8 @@ string path_to_filename(string path);
     @return A writable char[] that holds the fully qualified
     filename/template to use with mkstemp. */
 char *get_tempfile_template(char *file_template);
-#endif
 FILE *get_temp_file(char *temp);
+#endif
 string file_to_string(FILE *fp);
 
 time_t parse_time(const char * str, bool expand);

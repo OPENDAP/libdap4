@@ -4,8 +4,8 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.8.2, opendap-tech@opendap.org)
-AC_DEFINE(DAP_PROTOCOL_VERSION, "3.1", [Highest DAP version implemented?])
+AC_INIT(libdap, 3.9.2, opendap-tech@opendap.org)
+AC_DEFINE(DAP_PROTOCOL_VERSION, "3.2", [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
 AC_CONFIG_SRCDIR([AISConnect.cc])
@@ -42,7 +42,7 @@ AC_SUBST(host)
 
 dnl library version: Update these when the interface changes. Generally,
 dnl assume that the interface tracks the major and minor release numbers.
-DAPLIB_CURRENT=9
+DAPLIB_CURRENT=10
 DAPLIB_AGE=0
 DAPLIB_REVISION=0
 AC_SUBST(DAPLIB_CURRENT)
@@ -62,7 +62,7 @@ AC_SUBST(CLIENTLIB_REVISION)
 CLIENTLIB_VERSION="$CLIENTLIB_CURRENT:$CLIENTLIB_REVISION:$CLIENTLIB_AGE"
 AC_SUBST(CLIENTLIB_VERSION)
 
-SERVERLIB_CURRENT=6
+SERVERLIB_CURRENT=7
 SERVERLIB_AGE=0
 SERVERLIB_REVISION=0
 AC_SUBST(SERVERLIB_CURRENT)

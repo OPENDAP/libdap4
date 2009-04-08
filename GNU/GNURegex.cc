@@ -128,6 +128,13 @@ Regex::search(const char* s, int len, int& matchlen, int pos)
     	return -1;
     	
     // alloc space for len matches, which is theoretical max.
+    // Problem: If somehow 'len' is very large - say the size of a 32-bit int,
+    // then len+1 is a an integer overflow and this might be exploited by
+    // an attacker. It's not likely there will be more than a handful of
+    // matches, so I am going to limit this value to 32766. jhrg 3/4/09
+    if (len > 32766)
+    	return -1;
+
     regmatch_t *pmatch = new regmatch_t[len+1];
     string ss = s;
      

@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #include <unistd.h>   // for access stat
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -70,8 +70,8 @@ file_size(string name)
     return s.st_size;
 }
 
-inline static void 
-print_entry(HTTPCache *, HTTPCacheTable::CacheEntry **e) 
+inline static void
+print_entry(HTTPCache *, HTTPCacheTable::CacheEntry **e)
 {
     cerr << "Entry: " << (*e)->get_cachename() << endl;
 }
@@ -113,12 +113,12 @@ public:
 	DBG2(cerr << "exiting." << endl);
     }
 
-    ~HTTPCacheTest() { 
+    ~HTTPCacheTest() {
 	delete http_conn; http_conn = 0;
 	DBG2(cerr << "Entering the HTTPCacheTest dtor... ");
 	DBG2(cerr << "exiting." << endl);
     }
-#if 0     
+#if 0
     static inline bool
     is_hop_by_hop_header(const string &header) {
 	return header.find("Connection") != string::npos
@@ -128,7 +128,7 @@ public:
 	    || header.find("Transfer-Encoding") != string::npos
 	    || header.find("Upgrade") != string::npos;
     }
-#endif    
+#endif
     void setUp () {
 	// Called before every test.
 	DBG2(cerr << "Entering HTTPCacheTest::setUp... " << endl);
@@ -144,7 +144,7 @@ public:
     }
 
     CPPUNIT_TEST_SUITE(HTTPCacheTest);
-
+#if 1
     CPPUNIT_TEST(constructor_test);
     CPPUNIT_TEST(cache_index_read_test);
     CPPUNIT_TEST(cache_index_parse_line_test);
@@ -152,7 +152,9 @@ public:
     CPPUNIT_TEST(cache_index_write_test);
     CPPUNIT_TEST(create_cache_root_test);
     CPPUNIT_TEST(set_cache_root_test);
+#endif
     CPPUNIT_TEST(get_single_user_lock_test);
+#if 1
     CPPUNIT_TEST(release_single_user_lock_test);
     CPPUNIT_TEST(create_hash_directory_test);
     CPPUNIT_TEST(create_location_test);
@@ -171,7 +173,7 @@ public:
     CPPUNIT_TEST(get_conditional_response_headers_test);
     CPPUNIT_TEST(update_response_test);
     CPPUNIT_TEST(cache_gc_test);
-
+#endif
 #if 0
     CPPUNIT_TEST(interrupt_test);
 #endif
@@ -231,7 +233,7 @@ public:
 				hc->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 		CPPUNIT_ASSERT(e2);
 		CPPUNIT_ASSERT(e2->url == localhost_url);
-#if 0		
+#if 0
 		e2->unlock();
 #endif
 		e2->unlock_read_response();
@@ -252,7 +254,7 @@ public:
 				hash_value, e3->url);
 		CPPUNIT_ASSERT(g);
 		CPPUNIT_ASSERT(g->url == e3->url);
-#if 0		
+#if 0
 		g->unlock();
 #endif
 		g->unlock_read_response();
@@ -277,7 +279,7 @@ public:
 		CPPUNIT_ASSERT(e);
 		CPPUNIT_ASSERT(e->url == localhost_url);
 		e->unlock_read_response();
-		
+
 		delete hc_3;
 		hc = 0;
 		delete hc_4;
@@ -289,7 +291,7 @@ public:
 		CPPUNIT_ASSERT(access("/tmp/silly/", F_OK) == 0);
 		remove("/tmp/silly");
 #if 0
-		// This test doesn't work on some machines where the build is 
+		// This test doesn't work on some machines where the build is
 		// run as root or where /root is owned by some other user (as is
 		// the case with OS/X.
 		try {
@@ -350,7 +352,7 @@ public:
 				== "/tmp/dods_test_cache/391");
 		CPPUNIT_ASSERT(access("/tmp/dods_test_cache/391", W_OK) == 0);
 #if 0
-		// This test doesn't work on some machines where the build is 
+		// This test doesn't work on some machines where the build is
 		// run as root or where /root is owned by some other user (as is
 		// the case with OS/X.
 		hc->set_cache_root("/root/");
@@ -556,7 +558,7 @@ public:
 			HTTPCacheTable::CacheEntry *e2 = pc->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 			string e1_file = e1->cachename;
 			string e2_file = e2->cachename;
-#if 0			
+#if 0
 			e1->unlock();
 #endif
 			e1->unlock_read_response();
@@ -564,7 +566,7 @@ public:
 			e2->unlock();
 #endif
 			e2->unlock_read_response();
-			
+
 			vector<string> headers;
 			FILE *b = pc->get_cached_response(expired, headers);
 
@@ -616,7 +618,7 @@ public:
 			HTTPCacheTable::CacheEntry *e2 = c->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
 			string e1_file = e1->cachename;
 			string e2_file = e2->cachename;
-#if 0			
+#if 0
 			e1->unlock();
 #endif
 			e1->unlock_read_response();
@@ -624,7 +626,7 @@ public:
 			e2->unlock();
 #endif
 			e2->unlock_read_response();
-			
+
 			c->purge_cache();
 
 			CPPUNIT_ASSERT(!c->is_url_in_cache(localhost_url));

@@ -202,17 +202,19 @@ public:
             case Attr_unknown:
                 break;
             case Attr_container: {
-                    AttrTable *src_atp = rhs.attributes;
-                    AttrTable *dest_atp = new AttrTable(*src_atp);
-                    attributes = dest_atp;
-                    break;
-                }
+                if (rhs.is_alias)
+                    attributes = rhs.attributes;
+                else
+                    attributes = new AttrTable(*rhs.attributes);
+                break;
+            }
             default: {
-                    std::vector<string> *src_attr = rhs.attr;
-                    std::vector<string> *dest_attr = new std::vector<string>(*src_attr);
-                    attr = dest_attr;
-                    break;
-                }
+                if (rhs.is_alias)
+                    attr = rhs.attr;
+                else
+                    attr = new std::vector<string>(*rhs.attr);
+                break;
+            }
             }
         }
 

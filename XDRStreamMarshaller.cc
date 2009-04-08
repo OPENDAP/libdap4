@@ -49,7 +49,7 @@ XDRStreamMarshaller::XDRStreamMarshaller( ostream &out )
 	_buf = (char *)malloc( XDR_DAP_BUFF_SIZE ) ;
     if ( !_buf )
         throw Error("Failed to allocate memory for data serialization.");
-        
+
     _sink = new XDR ;
     xdrmem_create( _sink, _buf, XDR_DAP_BUFF_SIZE, XDR_ENCODE ) ;
 }
@@ -74,7 +74,7 @@ XDRStreamMarshaller &
 XDRStreamMarshaller::operator=( const XDRStreamMarshaller & )
 {
     throw InternalErr( __FILE__, __LINE__, "Copy operator not implemented." ) ;
-    
+
     return *this ;
 }
 
@@ -202,32 +202,37 @@ XDRStreamMarshaller::put_str( const string &val )
 {
     int size = val.length() + 8 ;
     char *str_buf = (char *)malloc( size ) ;
-    
+
     if ( !str_buf ) {
+#if 0
     	free(str_buf);
+#endif
         throw Error("Failed to allocate memory for string data serialization.");
     }
-        
+
     XDR *str_sink = new XDR ;
     xdrmem_create( str_sink, str_buf, size, XDR_ENCODE ) ;
 
     if( !xdr_setpos( str_sink, 0 ) ) {
-    	delete_xdrstdio( str_sink ) ;    	
+    	delete_xdrstdio( str_sink ) ;
+        free( str_buf ) ;
         throw Error("Network I/O Error. Could not send string data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
     }
-    
+
     const char *out_tmp = val.c_str() ;
     if( !xdr_string( str_sink, (char **)&out_tmp, size ) ) {
-    	delete_xdrstdio( str_sink ) ;    	
+    	delete_xdrstdio( str_sink ) ;
+        free( str_buf ) ;
         throw Error("Network I/O Error. Could not send string data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
     }
-    
+
     unsigned int bytes_written = xdr_getpos( str_sink ) ;
     if( !bytes_written ) {
-    	delete_xdrstdio( str_sink ) ;    	
+    	delete_xdrstdio( str_sink ) ;
+        free( str_buf ) ;
         throw Error("Network I/O Error. Could not send string data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
     }
-    
+
     _out.write( str_buf, bytes_written ) ;
 
     delete_xdrstdio( str_sink ) ;
@@ -289,31 +294,36 @@ XDRStreamMarshaller::put_vector( char *val, int num, Vector & )
 
     char *byte_buf = (char *)malloc( num + add_to ) ;
     if ( !byte_buf ) {
+#if 0
     	free(byte_buf);
+#endif
         throw Error("Failed to allocate memory for byte vector data serialization.");
     }
-    
+
     XDR *byte_sink = new XDR ;
     xdrmem_create( byte_sink, byte_buf, num + add_to, XDR_ENCODE ) ;
 
     if( !xdr_setpos( byte_sink, 0 ) ) {
     	delete_xdrstdio( byte_sink ) ;
+        free(byte_buf);
         throw Error("Network I/O Error. Could not send byte vector data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
     }
-    
+
     if( !xdr_bytes( byte_sink, (char **)&val, (unsigned int *) &num,
 		    num + add_to ) )
     {
     	delete_xdrstdio( byte_sink ) ;
-		throw Error("Network I/O Error(2). Could not send byte vector data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
+        free(byte_buf);
+        throw Error("Network I/O Error(2). Could not send byte vector data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
     }
 
     unsigned int bytes_written = xdr_getpos( byte_sink ) ;
     if( !bytes_written ) {
     	delete_xdrstdio( byte_sink ) ;
+        free(byte_buf);
         throw Error("Network I/O Error. Could not send byte vector data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
     }
-    
+
     _out.write( byte_buf, bytes_written ) ;
 
     delete_xdrstdio( byte_sink ) ;
@@ -343,13 +353,14 @@ XDRStreamMarshaller::put_vector( char *val, int num, int width, Vector &vec )
     	free(vec_buf);
         throw Error("Failed to allocate memory for vector data serialization.");
     }
-    
+
     XDR *vec_sink = new XDR ;
     xdrmem_create( vec_sink, vec_buf, size, XDR_ENCODE ) ;
 
     // set the position of the sink to 0, we're starting at the beginning
     if( !xdr_setpos( vec_sink, 0 ) ) {
     	delete_xdrstdio( vec_sink ) ;
+        free(vec_buf);
         throw Error("Network I/O Error. Could not send vector data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
     }
 
@@ -362,16 +373,18 @@ XDRStreamMarshaller::put_vector( char *val, int num, int width, Vector &vec )
 		    XDRUtils::xdr_coder( var->type() ) ) )
     {
     	delete_xdrstdio( vec_sink ) ;
-		throw Error("Network I/O Error(2). Could not send vector data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
+        free(vec_buf);
+        throw Error("Network I/O Error(2). Could not send vector data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
     }
 
     // how much was written to the buffer
     unsigned int bytes_written = xdr_getpos( vec_sink ) ;
     if( !bytes_written ) {
     	delete_xdrstdio( vec_sink ) ;
+        free(vec_buf);
         throw Error("Network I/O Error. Could not send vector data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
     }
-    
+
     // write that much out to the output stream
     _out.write( vec_buf, bytes_written ) ;
 

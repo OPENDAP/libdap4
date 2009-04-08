@@ -234,7 +234,7 @@ bool Byte::ops(BaseType * b, int op)
         throw InternalErr("This value not read!");
     }
     // Extract the second arg's value.
-    if (!b->read_p() && !b->read()) {
+    if (!b || !b->read_p() && !b->read()) {
         cerr << "This value not read!" << endl;
         // Jose Garcia
         // Since the read method is virtual and implemented outside

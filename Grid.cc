@@ -146,6 +146,9 @@ Grid::element_count(bool leaves)
             j += (*j)->element_count(leaves);
         }
 
+		if (!get_array())
+			throw InternalErr(__FILE__, __LINE__, "No Grid arry!");
+
         i += get_array()->element_count(leaves);
         return i;
     }
@@ -380,7 +383,11 @@ Grid::array_var()
 Array *
 Grid::get_array()
 {
-    return dynamic_cast<Array*>(_array_var);
+    Array *a = dynamic_cast<Array*>(_array_var);
+    if (a)
+        return a;
+    else
+        throw InternalErr(__FILE__, __LINE__, "bad Cast");
 }
 
 /** @brief Returns an iterator referencing the first Map vector. */

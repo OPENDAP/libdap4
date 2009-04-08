@@ -148,7 +148,7 @@ void ce_exprerror(const char *s, const char *s2);
 void no_such_func(char *name);
 void no_such_ident(char *name, char *word);
 
-void ce_exprerror(const string &s); 
+void ce_exprerror(const string &s);
 void ce_exprerror(const string &s, const string &s2);
 void no_such_func(const string &name);
 void no_such_ident(const string &name, const string &word);
@@ -160,11 +160,11 @@ int_list_list *make_array_indices(int_list *index);
 int_list_list *append_array_index(int_list_list *indices, int_list *index);
 
 void delete_array_indices(int_list_list *indices);
-bool bracket_projection(DDS &table, const char *name, 
+bool bracket_projection(DDS &table, const char *name,
 			int_list_list *indices);
 
-bool process_array_indices(BaseType *variable, int_list_list *indices); 
-bool process_grid_indices(BaseType *variable, int_list_list *indices); 
+void process_array_indices(BaseType *variable, int_list_list *indices);
+bool process_grid_indices(BaseType *variable, int_list_list *indices);
 bool process_sequence_indices(BaseType *variable, int_list_list *indices);
 
 /* Replace these with method calls. jhrg 8/31/06 */
@@ -219,7 +219,7 @@ typedef union YYSTYPE
 
     int_list *int_l_ptr;
     int_list_list *int_ll_ptr;
-    
+
     rvalue *rval_ptr;
     rvalue_list *r_val_l_ptr;
 }
@@ -931,7 +931,7 @@ int yydebug;
 # define YYMAXDEPTH 10000
 #endif
 
-
+
 
 #if YYERROR_VERBOSE
 
@@ -1142,7 +1142,7 @@ yysyntax_error (char *yyresult, int yystate, int yychar)
     }
 }
 #endif /* YYERROR_VERBOSE */
-
+
 
 /*-----------------------------------------------.
 | Release the memory associated to this symbol.  |
@@ -1174,7 +1174,7 @@ yydestruct (yymsg, yytype, yyvaluep)
 	break;
     }
 }
-
+
 
 /* Prevent warnings from -Wmissing-prototypes.  */
 
@@ -1231,7 +1231,7 @@ yyparse ()
 #endif
 #endif
 {
-  
+
   int yystate;
   int yyn;
   int yyresult;
@@ -1490,7 +1490,7 @@ yyreduce:
 
   case 5:
 #line 174 "ce_expr.y"
-    { 
+    {
 		     (yyval.boolean) = (yyvsp[(3) - (3)].boolean);
 		 ;}
     break;
@@ -1511,7 +1511,7 @@ yyreduce:
 
   case 9:
 #line 191 "ce_expr.y"
-    { 
+    {
 		    BaseType *var = DDS(arg)->var((yyvsp[(1) - (1)].id));
 		    if (var) {
 			DBG(cerr << "Marking " << (yyvsp[(1) - (1)].id) << endl);
@@ -1620,8 +1620,8 @@ yyreduce:
 		    btp_func func = get_btp_function((*EVALUATOR(arg)), (yyvsp[(1) - (4)].id));
 		    if (func) {
 			(yyval.rval_ptr) = new rvalue(func, (yyvsp[(3) - (4)].r_val_l_ptr));
-		    } 
-		    else {  		
+		    }
+		    else {
 			no_such_func((yyvsp[(1) - (4)].id));
 		    }
 		;}
@@ -1649,21 +1649,21 @@ yyreduce:
 
   case 23:
 #line 319 "ce_expr.y"
-    {  
+    {
 		  (yyval.r_val_l_ptr) = (yyvsp[(1) - (1)].r_val_l_ptr);
 	      ;}
     break;
 
   case 24:
 #line 323 "ce_expr.y"
-    { 
-		  (yyval.r_val_l_ptr) = 0; 
+    {
+		  (yyval.r_val_l_ptr) = 0;
 	      ;}
     break;
 
   case 25:
 #line 329 "ce_expr.y"
-    { 
+    {
 		    BaseType *btp = DDS(arg)->var(www2id(string((yyvsp[(1) - (1)].id))));
 		    if (!btp) {
 			value new_val;
@@ -1683,7 +1683,7 @@ yyreduce:
 			    new_val.type = dods_str_c;
 			    new_val.v.s = new string((yyvsp[(1) - (1)].id));
 			}
-			BaseType *btp = make_variable((*DDS(arg)), (*EVALUATOR(arg)), new_val); 
+			BaseType *btp = make_variable((*DDS(arg)), (*EVALUATOR(arg)), new_val);
 			// *** test for btp == null
 			// delete new_val.v.s; // Str::val2buf copies the value.
 			(yyval.rval_ptr) = new rvalue(btp);
@@ -1697,8 +1697,8 @@ yyreduce:
 
   case 26:
 #line 360 "ce_expr.y"
-    { 
-		    BaseType *btp = make_variable((*DDS(arg)), (*EVALUATOR(arg)), (yyvsp[(1) - (1)].val)); 
+    {
+		    BaseType *btp = make_variable((*DDS(arg)), (*EVALUATOR(arg)), (yyvsp[(1) - (1)].val));
 		    (yyval.rval_ptr) = new rvalue(btp);
 		;}
     break;
@@ -2016,7 +2016,7 @@ yyreturn:
 
 void
 ce_exprerror(const string &s)
-{ 
+{
     ce_exprerror(s.c_str());
 }
 
@@ -2037,7 +2037,7 @@ ce_exprerror(const string &s, const string &s2)
 void
 ce_exprerror(const char *s, const char *s2)
 {
-    string msg = "Constraint expression parse error: " + (string)s + ": " 
+    string msg = "Constraint expression parse error: " + (string)s + ": "
 	+ (string)s2;
     throw Error(malformed_expr, msg);
 }
@@ -2103,7 +2103,7 @@ bracket_projection(DDS &table, const char *name, int_list_list *indices)
 
     if (!var)
 	return false;
-	
+
     if (is_array_t(var)) {
 	/* calls to set_send_p should be replaced with
 	   calls to DDS::mark so that arrays of Structures,
@@ -2112,12 +2112,7 @@ bracket_projection(DDS &table, const char *name, int_list_list *indices)
 	   9/1/98 jhrg */
 	/* var->set_send_p(true); */
 	table.mark(name, true);
-	status = process_array_indices(var, indices);
-	if (!status) {
-	    string msg = "The indices given for `";
-	    msg += (string)name + (string)"' are out of range.";
-	    throw Error(malformed_expr, msg);
-	}
+	process_array_indices(var, indices);
 	delete_array_indices(indices);
     }
     else if (is_grid_t(var)) {
@@ -2154,7 +2149,7 @@ bracket_projection(DDS &table, const char *name, int_list_list *indices)
     else {
 	status = false;
     }
-  
+
     return status;
 }
 
@@ -2253,7 +2248,7 @@ append_array_index(int_list_list *indices, int_list *index)
     return indices;
 }
 
-// Delete an array indices list. 
+// Delete an array indices list.
 
 void
 delete_array_indices(int_list_list *indices)
@@ -2302,7 +2297,7 @@ is_sequence_t(BaseType *variable)
 	return true;
 }
 
-bool
+void
 process_array_indices(BaseType *variable, int_list_list *indices)
 {
     bool status = true;
@@ -2311,16 +2306,16 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 
     Array *a = dynamic_cast<Array *>(variable); // replace with dynamic cast
     if (!a)
-	throw Error(malformed_expr, 
+	throw Error(malformed_expr,
 	   string("The constraint expression evaluator expected an array; ")
 		    + variable->name() + " is not an array.");
-		   
+
     if (a->dimensions(true) != (unsigned)indices->size())
-	throw Error(malformed_expr, 
+	throw Error(malformed_expr,
 	   string("Error: The number of dimensions in the constraint for ")
-		    + variable->name() 
+		    + variable->name()
 		    + " must match the number in the array.");
-		   
+
     DBG(cerr << "Before clear_constraint:" << endl);
     DBG(a->print_decl(stderr, "", true, false, true));
 
@@ -2336,13 +2331,13 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 	int_list *index = *p;
 	assert(index);
 
-	int_citer q = index->begin(); 
+	int_citer q = index->begin();
 	assert(q!=index->end());
 	int start = *q;
 
 	q++;
 	int stride = *q;
-	
+
 	q++;
 	int stop = *q;
 
@@ -2368,7 +2363,7 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 	for (Array::Dim_iter dp = a->dim_begin(); dp != a->dim_end(); dp++)\
 	    cout << a->dimension_size(dp, true) << " ";\
 	cout << endl);
-    
+
     if (p != indices->end() && r == a->dim_end()) {
 	throw Error(malformed_expr,
 		    string("Too many indices in constraint for ")
@@ -2393,11 +2388,11 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
     if (!a)
 	throw InternalErr(__FILE__, __LINE__, "Malformed Grid variable");
     if (a->dimensions(true) != (unsigned)indices->size())
-	throw Error(malformed_expr, 
+	throw Error(malformed_expr,
 	   string("Error: The number of dimensions in the constraint for ")
-		    + variable->name() 
+		    + variable->name()
 		    + " must match the number in the grid.");
-		   
+
     // First do the constraints on the ARRAY in the grid.
     process_array_indices(g->array_var(), indices);
 
@@ -2413,19 +2408,19 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
     // Add specified maps to the current projection.
     assert(indices);
     int_list_citer p = indices->begin();
-    r = g->map_begin(); 
+    r = g->map_begin();
     for (; p != indices->end() && r != g->map_end(); p++, r++)
     {
 	int_list *index = *p;
 	assert(index);
 
-	int_citer q = index->begin(); 
+	int_citer q = index->begin();
 	assert(q != index->end());
 	int start = *q;
 
 	q++;
 	int stride = *q;
-	
+
 	q++;
 	int stop = *q;
 
@@ -2460,7 +2455,7 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	     dp++)\
 	   cout << ((Array *)g->array_var())->dimension_size(dp, true) << " ";\
 	cout << endl);
-    
+
     if (p!=indices->end() && r==g->map_end()) {
 	throw Error(malformed_expr,
 		    string("Too many indices in constraint for ")
@@ -2488,19 +2483,19 @@ process_sequence_indices(BaseType *variable, int_list_list *indices)
 	int_list *index = *p;
 	assert(index);
 
-	int_citer q = index->begin(); 
+	int_citer q = index->begin();
 	assert(q!=index->end());
 	int start = *q;
 
 	q++;
 	int stride = *q;
-	
+
 	q++;
 	int stop = *q;
 
 	q++;
 	if (q!=index->end()) {
-	  throw Error(malformed_expr, 
+	  throw Error(malformed_expr,
 		      string("Too many values in index list for ")
 		      + s->name() + ".");
 	}
@@ -2559,10 +2554,10 @@ dereference_string(string &s)
     Connect c(url); // make the virtual connection
 
     // the initial URL must be a complete reference to data; thus no
-    // additional CE is needed. 
+    // additional CE is needed.
     BaseTypeFactory *factory = new BaseTypeFactory;
     DataDDS *d = new DataDDS(factory);
-    c.request_data(*d, ce); 
+    c.request_data(*d, ce);
 
     // By definition, the DDS `D' can have only one variable, so make sure
     // that is true.
@@ -2602,16 +2597,16 @@ dereference_variable(rvalue *rv, DDS &dds)
 {
     assert(rv);
     // the value will be read over the net
-    BaseType *btp = rv->bvalue("dummy", dds); 
+    BaseType *btp = rv->bvalue("dummy", dds);
     if (btp->type() != dods_str_c && btp->type() != dods_url_c) {
-	throw Error(malformed_expr, string("The variable `") + btp->name() 
+	throw Error(malformed_expr, string("The variable `") + btp->name()
 		    + "' must be either a string or a url");
     }
 
     string s;
     string  *sp = &s;
     btp->buf2val((void **)&sp);
-    
+
     return dereference_string(s);
 }
 #endif
@@ -2653,7 +2648,7 @@ make_variable(DDS &table, ConstraintEvaluator &eval, const value &val)
 }
 
 // Given a string (passed in VAL), consult the DDS CE function lookup table
-// to see if a function by that name exists. 
+// to see if a function by that name exists.
 // NB: function arguments are type-checked at run-time.
 //
 // Returns: A pointer to the function or NULL if not such function exists.

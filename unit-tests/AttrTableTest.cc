@@ -123,29 +123,38 @@ class AttrTableTest: public TestFixture {
             return r.match(s, strlen(s)) == (int) strlen(s);
         }
 
-        CPPUNIT_TEST_SUITE( AttrTableTest )
-            ;
+        CPPUNIT_TEST_SUITE( AttrTableTest );
 
-            CPPUNIT_TEST(find_container_test);
-            CPPUNIT_TEST(get_parent_test);
-            CPPUNIT_TEST(recurrsive_find_test);
-            CPPUNIT_TEST(find_test);
-            CPPUNIT_TEST(copy_ctor);
-            CPPUNIT_TEST(assignment);
-            CPPUNIT_TEST(erase_test);
-            CPPUNIT_TEST(names_with_spaces_test);
-            CPPUNIT_TEST(containers_with_spaces_test);
-            CPPUNIT_TEST(get_attr_iter_test);
-            CPPUNIT_TEST(del_attr_table_test);
-            CPPUNIT_TEST(append_attr_vector_test);
-
+        CPPUNIT_TEST(clone_test);
+#if 1
+        CPPUNIT_TEST(find_container_test);
+        CPPUNIT_TEST(get_parent_test);
+        CPPUNIT_TEST(recurrsive_find_test);
+        CPPUNIT_TEST(find_test);
+        CPPUNIT_TEST(copy_ctor);
+        CPPUNIT_TEST(assignment);
+        CPPUNIT_TEST(erase_test);
+        CPPUNIT_TEST(names_with_spaces_test);
+        CPPUNIT_TEST(containers_with_spaces_test);
+        CPPUNIT_TEST(get_attr_iter_test);
+        CPPUNIT_TEST(del_attr_table_test);
+        CPPUNIT_TEST(append_attr_vector_test);
+#endif
 #if 0
-            CPPUNIT_TEST(print_xml_test);
+        CPPUNIT_TEST(print_xml_test);
 #endif
 
-CPPUNIT_TEST_SUITE_END        ();
+        CPPUNIT_TEST_SUITE_END();
 
         // Tests for methods
+
+        // This is to test for leaks in the clone() method.
+        void clone_test() {
+            AttrTable *att = new AttrTable;
+            att->append_container(new AttrTable(*cont_a), "copy_of_a");
+            delete att;
+        }
+
         void recurrsive_find_test() {
             AttrTable::Attr_iter location;
             AttrTable *a = at1->recurrsive_find("color", &location);

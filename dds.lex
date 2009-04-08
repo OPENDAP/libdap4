@@ -155,12 +155,12 @@ NEVER		[^\-+a-zA-Z0-9_/%.\\#,(){}[\]]
 "Data:\n"		yyterminate();
 "Data:\r\n"		yyterminate();
 
-{NEVER}     {
-                if (yytext) {	/* suppress msgs about `' chars */
-                    fprintf(stderr, "Character `%c' is not", *yytext);
-                    fprintf(stderr, " allowed and has been ignored\n");
-			     }
-			}
+{NEVER} {
+            if (yytext) {	/* suppress msgs about `' chars */
+                fprintf(stderr, "Character `%c' is not", *yytext);
+                fprintf(stderr, " allowed and has been ignored\n");
+	    }
+	}
 %%
 
 // These three glue routines enable DDS to reclaim the memory used to parse a

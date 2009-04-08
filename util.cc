@@ -571,7 +571,7 @@ valid_temp_directory:
     return temp;
 }
 #endif
-
+#if 0
 /** Intended for testing, this may have other uses. The template should be
     the pathname of the temporary file ending in 'XXXXXX' (as for mkstemp)
     and will be modified.
@@ -588,7 +588,7 @@ get_temp_file(char *temp)
     return tmp;
 }
 #endif
-
+#endif
 /** Read stuff from a file and dump it into a string. This assumes the file
     holds character data only. Intended for testing...
     @param fp Read from this file

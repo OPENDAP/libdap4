@@ -355,6 +355,8 @@ static void apply_grid_selection_expr(Grid * grid, GSEClause * clause)
     Array::Dim_iter grid_dim = (grid->get_array()->dim_begin() + (map_i - grid->map_begin()));
 
     Array *map = dynamic_cast < Array * >((*map_i));
+    if (!map)
+        throw InternalErr(__FILE__, __LINE__, "Expected an Array");
     int start = max(map->dimension_start(map->dim_begin()), clause->get_start());
     int stop = min(map->dimension_stop(map->dim_begin()), clause->get_stop());
 
@@ -456,6 +458,8 @@ function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     // Duplicate the grid; DODSFilter::send_data() will delete the variable
     // after serializing it.
     Grid *l_grid = dynamic_cast < Grid * >(original_grid->ptr_duplicate());
+    if (!l_grid)
+        throw InternalErr(__FILE__, __LINE__, "Expected a Grid.");
 
     DBG(cerr << "grid: past initialization code" << endl);
 

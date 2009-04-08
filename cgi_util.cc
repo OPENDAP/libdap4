@@ -717,8 +717,8 @@ remove_mime_header(FILE *in)
 {
     char tmp[256];
     while (!feof(in)) {
-        fgets(tmp, 255, in);
-        if (strncmp(&tmp[0], CRLF, 2) == 0)
+        char *s = fgets(tmp, 255, in);
+        if (s && strncmp(s, CRLF, 2) == 0)
             return true;
     }
 

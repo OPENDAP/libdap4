@@ -1,9 +1,9 @@
 
 	$Id$
 
-Updated for version 3.8.2 of the OPeNDAP DAP 3.1 library software.
+Updated for version 3.9.2 of the OPeNDAP DAP 3.2 library software.
 
-Installing the DAP2 library
+Installing the DAP2/3.x library
 
 ---------------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ NOTES
 
 BUILDING THE SOFTWARE
 
-  To build the OPeNDAP DAP2 library and the getdap client program, follow
+  To build the OPeNDAP DAP2/3.x library and the getdap client program, follow
   these steps:
 
   0. Please skim REQUIREMENTS and NOTES sections of this file
@@ -66,8 +66,8 @@ AFTER INSTALLING
 
 REQUIREMENTS
 
-  o To build from a fresh SVN checkout, you'll need automake 1.9.6, autoconf
-    2.63 and libtool 1.5.18. Earlier versions may work, but may cause
+  o To build from a fresh SVN checkout, you'll need automake 1.10, autoconf
+    2.61 and libtool 1.5.24. Earlier versions may work, but may cause
     problems, particularly with the 'distcheck' target for make. Given those
     requirements, use 'autoreconf --force --verbose' and then build as
     described above. You also need bison and flex as of version 3.7.9. If you

@@ -192,7 +192,7 @@ ce_expr_delete_buffer(void *buf)
 static void
 store_id()
 {
-    strncpy(ce_exprlval.id, dods2id(string(yytext)).c_str(), ID_MAX-1);
+    strncpy(ce_exprlval.id, www2id(string(yytext)).c_str(), ID_MAX-1);
     ce_exprlval.id[ID_MAX-1] = '\0';
 }
 
@@ -200,7 +200,7 @@ static void
 store_str()
 {
     // transform %20 to a space. 7/11/2001 jhrg
-    string *s = new string(dods2id(string(yytext)));  // XXX memory leak?
+    string *s = new string(www2id(string(yytext)));  // XXX memory leak?
 
     if (*s->begin() == '\"' && *(s->end()-1) == '\"') {
 	s->erase(s->begin());

@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // Tests for the util functions in util.cc and escaping.cc
 
 #include <cppunit/TextTestRunner.h>
@@ -48,7 +48,7 @@ using namespace libdap;
 class generalUtilTest : public TestFixture {
 private:
 
-public: 
+public:
     generalUtilTest() {}
     ~generalUtilTest() {}
 
@@ -130,6 +130,7 @@ public:
 	CPPUNIT_ASSERT(id2www("This_is") == "This_is");
 	CPPUNIT_ASSERT(id2www("This/is") == "This/is");
 	CPPUNIT_ASSERT(id2www("This%is") == "This%25is");
+	CPPUNIT_ASSERT(id2www("This&is") == "This%26is");
     }
 
     void www2id_test() {
@@ -139,17 +140,24 @@ public:
 	CPPUNIT_ASSERT(www2id("%5d") == "]");
 	CPPUNIT_ASSERT(www2id("u%5b0%5d") == "u[0]");
 	CPPUNIT_ASSERT(www2id("WVC%20Lat") == "WVC Lat");
-	CPPUNIT_ASSERT(www2id("Grid.Data%20Fields[20][20]") 
+	CPPUNIT_ASSERT(www2id("Grid.Data%20Fields[20][20]")
 	       == "Grid.Data Fields[20][20]");
 
-	CPPUNIT_ASSERT(www2id("Grid.Data%3aFields[20][20]") 
+	CPPUNIT_ASSERT(www2id("Grid.Data%3aFields[20][20]")
 	       == "Grid.Data:Fields[20][20]");
 
-	CPPUNIT_ASSERT(www2id("Grid%3aData%20Fields%5b20%5d[20]", "%", "%20") 
+	CPPUNIT_ASSERT(www2id("Grid%3aData%20Fields%5b20%5d[20]", "%", "%20")
 	       == "Grid:Data%20Fields[20][20]");
+
+	CPPUNIT_ASSERT(www2id("Grid%20Data%26Fields[20][20]", "%", "%20")
+	        == "Grid%20Data&Fields[20][20]");
+
+	CPPUNIT_ASSERT(www2id("Grid%20Data%26Fields[20][20]", "%", "%20%26")
+	        == "Grid%20Data%26Fields[20][20]");
+
     }
 
-    // This is the code in expr.lex that removes emclosing double quotes and
+    // This is the code in expr.lex that removes enclosing double quotes and
     // %20 sequences from a string. I copied this here because that actual
     // function uses globals and would be hard to test. 7/11/2001 jhrg
     string *store_str(const char *text) {
@@ -206,10 +214,10 @@ public:
 
 	DBG(cerr << "XXX" << unescattr("\\\\200\\\\177A") << "XXX" << endl);
 	CPPUNIT_ASSERT(unescattr("\\\\200\\\\177A") == string(A_200_177));
-	
-	
+
+
 	DBG(cerr << "XXX" << unescattr("\\\\200\\\\177AZ$&") << "XXX" << endl);
-	
+
 	DBG(cerr << "XXX" << unescattr("\\\\200") << "XXX" << endl);
     }
 
@@ -260,12 +268,12 @@ public:
 	string tmplt = P_tmpdir;
 	tmplt.append("/"); tmplt.append("DODSXXXXXX");
 	putenv("TMPDIR=");
-	CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"), 
+	CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"),
 			      tmplt.c_str()) == 0);
 #endif
     }
 #endif
-    
+
     void id2xml_test() {
 	CPPUNIT_ASSERT(id2xml("abcdef") == "abcdef");
 	CPPUNIT_ASSERT(id2xml("abc<def") == "abc&lt;def");
@@ -297,7 +305,7 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(generalUtilTest);
 
-int 
+int
 main( int, char** )
 {
     CppUnit::TextTestRunner runner;

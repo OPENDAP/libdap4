@@ -142,6 +142,7 @@ Clause::value_clause()
 
     return (_bt_func != 0);
 }
+
 #if 0
 static bool
 boolean_value(BaseType *btp)
@@ -170,6 +171,7 @@ boolean_value(BaseType *btp)
     }
 }
 #endif
+
 /** @brief Evaluate a clause which returns a boolean value
     This method must only be evaluated for clauses with relational
     expressions or boolean functions.

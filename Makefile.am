@@ -30,7 +30,7 @@ lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 
 bin_SCRIPTS = dap-config dap-config-pkgconfig
 
-bin_PROGRAMS = getdap outbuf_test
+bin_PROGRAMS = getdap
 
 sbin_PROGRAMS = deflate
 
@@ -53,8 +53,6 @@ libdapserver_la_LIBADD = libdap.la
 
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(XSTREAM_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
 noinst_HEADERS = config_dap.h
-
-outbuf_test_SOURCES = GNU/outbuf.cc
 
 getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la 
@@ -96,17 +94,20 @@ docs:
 # Fortify targets.
 
 .PHONY: fortify
-fortify: dods-datatypes.h
-	(cd gl && sourceanalyzer -b @PACKAGE@ $(MAKE) )
+fortify: dods-datatypes.h xdr-datatypes.h
+	(cd gl && sourceanalyzer -b @PACKAGE@-gl $(MAKE) )
+	$(MAKE) $(grammar_objects)
 	sourceanalyzer -b @PACKAGE@ $(MAKE) libdap.la libdapserver.la
+	sourceanalyzer -b @PACKAGE@-gl -scan -f @PACKAGE@-gl-@PACKAGE_VERSION@.fpr
 	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
 
 # run fortify on only our code, not the gnulib code or the flex/bison code.
 # This does skip testing some of the functions we wrote in the *.lex/*.y
 # files but should eliminate the false positives from flex and bison, too.
 .PHONY: fortify-lite
-fortify-lite: dods-datatypes.h $(grammar_objects)
+fortify-lite: dods-datatypes.h xdr-datatypes.h
 	( cd gl && $(MAKE) )
+	$(MAKE) $(grammar_objects)
 	sourceanalyzer -b @PACKAGE@ $(MAKE) libdap.la libdapserver.la
 	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
 
@@ -116,7 +117,7 @@ ce_expr.tab.o lex.gse_.o gse.tab.o lex.Error.o Error.tab.o
 # Use this to clean the fortify project.
 .PHONY: fortifyclean
 fortifyclean:
-	(cd gl && sourceanalyzer -b @PACKAGE@ -clean )
+	(cd gl && sourceanalyzer -b @PACKAGE@-gl -clean )
 	sourceanalyzer -b @PACKAGE@ -clean
 
 ###########################################################################
@@ -284,67 +285,45 @@ SERVER_HDR = DODSFilter.h cgi_util.h AlarmHandler.h EventHandler.h Ancillary.h
 
 lex.das.cc: das.lex das.tab.cc das.tab.hh
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
-#	mv lex.das.c lex.das.cc
-#	sed 's/lex\.das\.c/lex\.das\.cc/g' < lex.das.cc > tmp
-#	mv tmp lex.das.cc
 
 # The funny if statment accommodates older versions of bison that treats
 # -o differently than the 2.x versions. jhrg 3/2/08
 das.tab.cc das.tab.hh: das.y DAS.h
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p das -o das.tab.cc $<
 	if test -e das.tab.cc.h; then mv das.tab.cc.h das.tab.hh; fi
-#	mv das.tab.c das.tab.cc
 
 # DDS
 
 lex.dds.cc: dds.lex dds.tab.cc dds.tab.hh
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
-#	mv lex.dds.c lex.dds.cc
-#	sed 's/lex\.dds\.c/lex\.dds\.cc/g' < lex.dds.cc > tmp
-#	mv tmp lex.dds.cc
-
 
 dds.tab.cc dds.tab.hh: dds.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p dds -o dds.tab.cc $<
 	if test -e dds.tab.cc.h; then mv dds.tab.cc.h dds.tab.hh; fi
-#	mv dds.tab.c dds.tab.cc
 
 # CE
 
 lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.hh
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
-#	mv lex.ce_expr.c lex.ce_expr.cc
-#	sed 's/lex\.ce_expr\.c/lex\.ce_expr\.cc/g' < lex.ce_expr.cc > tmp
-#	mv tmp lex.ce_expr.cc
 
 ce_expr.tab.cc ce_expr.tab.hh: ce_expr.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p ce_expr -o ce_expr.tab.cc $<
 	if test -e ce_expr.tab.cc.h; then mv ce_expr.tab.cc.h ce_expr.tab.hh; fi
-#	mv ce_expr.tab.c ce_expr.tab.cc
 
 # Build the grid selection sub_expression scanner and parser
 
 lex.gse_.cc: gse.lex gse.tab.cc gse.tab.hh
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
-#	mv lex.gse_.c lex.gse_.cc
-#	sed 's/lex\.gse_\.c/lex\.gse_\.cc/g' < lex.gse_.cc > tmp
-#	mv tmp lex.gse_.cc
 
 gse.tab.cc gse.tab.hh: gse.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p gse_ -o gse.tab.cc $<
 	if test -e gse.tab.cc.h; then mv gse.tab.cc.h gse.tab.hh; fi
-#	mv gse.tab.c gse.tab.cc
 
 # Errors
 
 lex.Error.cc: Error.lex Error.tab.cc Error.tab.hh
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
-#	mv lex.Error.c lex.Error.cc
-#	sed 's/lex\.Error\.c/lex\.Error\.cc/g' < lex.Error.cc > tmp
-#	mv tmp lex.Error.cc
 
 Error.tab.cc Error.tab.hh: Error.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p Error -o Error.tab.cc $<
 	if test -e Error.tab.cc.h; then mv Error.tab.cc.h Error.tab.hh; fi
-#	mv Error.tab.c Error.tab.cc
-

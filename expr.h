@@ -58,8 +58,7 @@ typedef struct
         double f;
         string *s;
     } v;
-}
-value;
+} value;
 
 // Syntactic sugar for `pointer to function returning boolean' (bool_func)
 // and `pointer to function returning BaseType *' (btp_func). Both function

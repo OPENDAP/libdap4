@@ -117,9 +117,6 @@ public:
         int stop;  ///< The constraint end index
         int stride;  ///< The constraint stride
         int c_size;  ///< Size of dimension once constrained
-#if array_selected
-        bool selected; ///< \c True if a constraint has been applied to this dimension.
-#endif
     };
 
 private:

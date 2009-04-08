@@ -31,8 +31,6 @@
    for the "fast" types and macros, which we recommend against using
    in public interfaces due to compiler differences.  */
 
-#ifndef _MSC_VER
-
 #if @HAVE_STDINT_H@
 # if defined __sgi && ! defined __c99
    /* Bypass IRIX's <stdint.h> if in C89 mode, since it merely annoys users
@@ -48,8 +46,6 @@
 # @INCLUDE_NEXT@ @NEXT_STDINT_H@
 #endif
 
-#endif
-
 #if ! defined _GL_STDINT_H && ! defined _GL_JUST_INCLUDE_SYSTEM_STDINT_H
 #define _GL_STDINT_H
 
@@ -59,23 +55,20 @@
    MacOS X 10.4.6 <sys/types.h> includes <stdint.h> (which is us), but
    relies on the system <stdint.h> definitions, so include
    <sys/types.h> after @NEXT_STDINT_H@.  */
-#ifndef _MSC_VER
 #if @HAVE_SYS_TYPES_H@ && ! defined _AIX
 # include <sys/types.h>
-#endif
 #endif
 
 /* Get LONG_MIN, LONG_MAX, ULONG_MAX.  */
 #include <limits.h>
 
-#ifndef _MSC_VER
 #if @HAVE_INTTYPES_H@
   /* In OpenBSD 3.8, <inttypes.h> includes <machine/types.h>, which defines
      int{8,16,32,64}_t, uint{8,16,32,64}_t and __BIT_TYPES_DEFINED__.
      <inttypes.h> also defines intptr_t and uintptr_t.  */
-# define _GL_JUST_INCLUDE_ABSOLUTE_INTTYPES_H
+# define _GL_JUST_INCLUDE_SYSTEM_INTTYPES_H
 # include <inttypes.h>
-# undef _GL_JUST_INCLUDE_ABSOLUTE_INTTYPES_H
+# undef _GL_JUST_INCLUDE_SYSTEM_INTTYPES_H
 #elif @HAVE_SYS_INTTYPES_H@
   /* Solaris 7 <sys/inttypes.h> has the types except the *_fast*_t types, and
      the macros except for *_FAST*_*, INTPTR_MIN, PTRDIFF_MIN, PTRDIFF_MAX.  */
@@ -87,7 +80,6 @@
      int{8,16,32,64}_t and __BIT_TYPES_DEFINED__.  In libc5 >= 5.2.2 it is
      included by <sys/types.h>.  */
 # include <sys/bitypes.h>
-#endif
 #endif
 
 #if ! defined __cplusplus || defined __STDC_CONSTANT_MACROS
@@ -238,7 +230,6 @@
    public header files. */
 
 #undef intmax_t
-#ifndef _MSC_VER
 #if @HAVE_LONG_LONG_INT@ && LONG_MAX >> 30 == 1
 # define intmax_t long long int
 #elif defined GL_INT64_T
@@ -246,19 +237,12 @@
 #else
 # define intmax_t long int
 #endif
-#else
-# define intmax_t long int
-#endif
 
 #undef uintmax_t
-#ifndef _MSC_VER
 #if @HAVE_UNSIGNED_LONG_LONG_INT@ && ULONG_MAX >> 31 == 1
 # define uintmax_t unsigned long long int
 #elif defined GL_UINT64_T
 # define uintmax_t uint64_t
-#else
-# define uintmax_t unsigned long int
-#endif
 #else
 # define uintmax_t unsigned long int
 #endif
@@ -435,10 +419,8 @@
 
 
 /* size_t limit */
-#ifndef _MSC_VER
 #undef SIZE_MAX
 #define SIZE_MAX  _STDINT_MAX (0, @BITSIZEOF_SIZE_T@, 0@SIZE_T_SUFFIX@)
-#endif
 
 /* wchar_t limits */
 #undef WCHAR_MIN
@@ -456,7 +438,7 @@
 #define WINT_MAX  \
    _STDINT_MAX (@HAVE_SIGNED_WINT_T@, @BITSIZEOF_WINT_T@, 0@WINT_T_SUFFIX@)
 
-#endif                          /* !defined __cplusplus || defined __STDC_LIMIT_MACROS */
+#endif /* !defined __cplusplus || defined __STDC_LIMIT_MACROS */
 
 /* 7.18.4. Macros for integer constants */
 
@@ -503,7 +485,6 @@
 /* 7.18.4.2. Macros for greatest-width integer constants */
 
 #undef INTMAX_C
-#ifndef _MSC_VER
 #if @HAVE_LONG_LONG_INT@ && LONG_MAX >> 30 == 1
 # define INTMAX_C(x)   x##LL
 #elif defined GL_INT64_T
@@ -511,12 +492,8 @@
 #else
 # define INTMAX_C(x)   x##L
 #endif
-#else
-# define INTMAX_C(x)   x##L
-#endif
 
 #undef UINTMAX_C
-#ifndef _MSC_VER
 #if @HAVE_UNSIGNED_LONG_LONG_INT@ && ULONG_MAX >> 31 == 1
 # define UINTMAX_C(x)  x##ULL
 #elif defined GL_UINT64_T
@@ -524,11 +501,8 @@
 #else
 # define UINTMAX_C(x)  x##UL
 #endif
-#else
-# define UINTMAX_C(x)  x##UL
-#endif
 
-#endif                          /* !defined __cplusplus || defined __STDC_CONSTANT_MACROS */
+#endif /* !defined __cplusplus || defined __STDC_CONSTANT_MACROS */
 
-#endif                          /* _GL_STDINT_H */
-#endif                          /* !defined _GL_STDINT_H && !defined _GL_JUST_INCLUDE_SYSTEM_STDINT_H */
+#endif /* _GL_STDINT_H */
+#endif /* !defined _GL_STDINT_H && !defined _GL_JUST_INCLUDE_SYSTEM_STDINT_H */

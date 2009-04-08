@@ -78,72 +78,84 @@ typedef int __wctype_wint_t;
 #  undef iswupper
 #  undef iswxdigit
 
-static inline int iswalnum(__wctype_wint_t wc)
+static inline int
+iswalnum (__wctype_wint_t wc)
 {
-    return ((wc >= '0' && wc <= '9')
-            || ((wc & ~0x20) >= 'A' && (wc & ~0x20) <= 'Z'));
+  return ((wc >= '0' && wc <= '9')
+	  || ((wc & ~0x20) >= 'A' && (wc & ~0x20) <= 'Z'));
 }
 
-static inline int iswalpha(__wctype_wint_t wc)
+static inline int
+iswalpha (__wctype_wint_t wc)
 {
-    return (wc & ~0x20) >= 'A' && (wc & ~0x20) <= 'Z';
+  return (wc & ~0x20) >= 'A' && (wc & ~0x20) <= 'Z';
 }
 
-static inline int iswblank(__wctype_wint_t wc)
+static inline int
+iswblank (__wctype_wint_t wc)
 {
-    return wc == ' ' || wc == '\t';
+  return wc == ' ' || wc == '\t';
 }
 
-static inline int iswcntrl(__wctype_wint_t wc)
+static inline int
+iswcntrl (__wctype_wint_t wc)
 {
-    return (wc & ~0x1f) == 0 || wc == 0x7f;
+  return (wc & ~0x1f) == 0 || wc == 0x7f;
 }
 
-static inline int iswdigit(__wctype_wint_t wc)
+static inline int
+iswdigit (__wctype_wint_t wc)
 {
-    return wc >= '0' && wc <= '9';
+  return wc >= '0' && wc <= '9';
 }
 
-static inline int iswgraph(__wctype_wint_t wc)
+static inline int
+iswgraph (__wctype_wint_t wc)
 {
-    return wc >= '!' && wc <= '~';
+  return wc >= '!' && wc <= '~';
 }
 
-static inline int iswlower(__wctype_wint_t wc)
+static inline int
+iswlower (__wctype_wint_t wc)
 {
-    return wc >= 'a' && wc <= 'z';
+  return wc >= 'a' && wc <= 'z';
 }
 
-static inline int iswprint(__wctype_wint_t wc)
+static inline int
+iswprint (__wctype_wint_t wc)
 {
-    return wc >= ' ' && wc <= '~';
+  return wc >= ' ' && wc <= '~';
 }
 
-static inline int iswpunct(__wctype_wint_t wc)
+static inline int
+iswpunct (__wctype_wint_t wc)
 {
-    return (wc >= '!' && wc <= '~' && !((wc >= '0' && wc <= '9')
-                                        || ((wc & ~0x20) >= 'A'
-                                            && (wc & ~0x20) <= 'Z')));
+  return (wc >= '!' && wc <= '~'
+	  && !((wc >= '0' && wc <= '9')
+	       || ((wc & ~0x20) >= 'A' && (wc & ~0x20) <= 'Z')));
 }
 
-static inline int iswspace(__wctype_wint_t wc)
+static inline int
+iswspace (__wctype_wint_t wc)
 {
-    return (wc == ' ' || wc == '\t'
-            || wc == '\n' || wc == '\v' || wc == '\f' || wc == '\r');
+  return (wc == ' ' || wc == '\t'
+	  || wc == '\n' || wc == '\v' || wc == '\f' || wc == '\r');
 }
 
-static inline int iswupper(__wctype_wint_t wc)
+static inline int
+iswupper (__wctype_wint_t wc)
 {
-    return wc >= 'A' && wc <= 'Z';
+  return wc >= 'A' && wc <= 'Z';
 }
 
-static inline int iswxdigit(__wctype_wint_t wc)
+static inline int
+iswxdigit (__wctype_wint_t wc)
 {
-    return ((wc >= '0' && wc <= '9')
-            || ((wc & ~0x20) >= 'A' && (wc & ~0x20) <= 'F'));
+  return ((wc >= '0' && wc <= '9')
+	  || ((wc & ~0x20) >= 'A' && (wc & ~0x20) <= 'F'));
 }
 
-# endif                         /* ! HAVE_ISWCNTRL */
+# endif /* ! HAVE_ISWCNTRL */
 
-#endif                          /* _GL_WCTYPE_H */
-#endif                          /* _GL_WCTYPE_H */
+#endif /* _GL_WCTYPE_H */
+#endif /* _GL_WCTYPE_H */

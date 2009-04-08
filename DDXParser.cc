@@ -350,12 +350,12 @@ void DDXParser::process_dimension(const char **attrs)
     transfer_attrs(attrs);
     if (check_required_attribute(string("size"))) {
         set_state(inside_dimension);
-        Array *ap = dynamic_cast < Array * >(bt_stack.top());
-		if (!ap)
-			ddx_fatal_error(this, "Parse error: Expected an array variable.");
-
-        ap->append_dim(atoi(attributes["size"].c_str()),
-                       attributes["name"]);
+        Array *ap = dynamic_cast<Array *> (bt_stack.top());
+        if (!ap)
+            ddx_fatal_error(this, "Parse error: Expected an array variable.");
+        else
+            ap->append_dim(atoi(attributes["size"].c_str()),
+                    attributes["name"]);
     }
 }
 
@@ -451,7 +451,7 @@ void DDXParser::finish_variable(const char *tag, Type t,
     bt_stack.pop();
     at_stack.pop();
 
-    if (btp->type() != t) {
+    if (btp && btp->type() != t) {
         DDXParser::ddx_fatal_error(this,
                                    "Internal error: Expected a %s variable.",
                                    expected);
@@ -527,17 +527,17 @@ void DDXParser::ddx_end_document(DDXParser * parser)
 
     // Pop the temporary Structure off the stack and transfer its variables
     // to the DDS.
-    Constructor *cp =
-        dynamic_cast < Constructor * >(parser->bt_stack.top());
+    Constructor *cp = dynamic_cast < Constructor * >(parser->bt_stack.top());
     if (!cp)
-    	ddx_fatal_error(parser, "Parse error: Expected a Structure, Sequence or Grid variable.");
+        ddx_fatal_error(parser,
+                "Parse error: Expected a Structure, Sequence or Grid variable.");
+    else {
+        for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end(); ++i)
+            parser->dds->add_var(*i);
 
-    for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end();
-         ++i)
-        parser->dds->add_var(*i);
-
-    parser->bt_stack.pop();
-    delete cp;
+        parser->bt_stack.pop();
+        delete cp;
+    }
 }
 
 /** Process a start element tag. Because the DDX schema uses attributes and

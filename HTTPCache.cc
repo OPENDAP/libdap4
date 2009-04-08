@@ -25,6 +25,9 @@
 
 #include "config.h"
 
+//#define DODS_DEBUG
+//#define DODS_DEBUG2
+
 #include <pthread.h>
 #include <limits.h>
 #include <unistd.h>   // for stat
@@ -57,12 +60,12 @@ namespace libdap {
 
 HTTPCache *HTTPCache::_instance = 0;
 
-// instance_mutex is used to ensure that only one instance is created. 
+// instance_mutex is used to ensure that only one instance is created.
 // That is, it protects the body of the HTTPCache::instance() method. This
-// mutex is initialized from within the static function once_init_routine() 
+// mutex is initialized from within the static function once_init_routine()
 // and the call to that takes place using pthread_once_init() where the mutex
 // once_block is used to protect that call. All of this ensures that no matter
-// how many threads call the instance() method, only one instance is ever 
+// how many threads call the instance() method, only one instance is ever
 // made.
 static pthread_mutex_t instance_mutex;
 static pthread_once_t once_block = PTHREAD_ONCE_INIT;
@@ -72,12 +75,14 @@ static pthread_once_t once_block = PTHREAD_ONCE_INIT;
 #include <time.h>
 #include <fcntl.h>
 #define MKDIR(a,b) _mkdir((a))
+#define UMASK(a) _umask((a))
 #define REMOVE(a) remove((a))
 #define MKSTEMP(a) _open(_mktemp((a)),_O_CREAT,_S_IREAD|_S_IWRITE)
 #define DIR_SEPARATOR_CHAR '\\'
 #define DIR_SEPARATOR_STR "\\"
 #else
 #define MKDIR(a,b) mkdir((a), (b))
+#define UMASK(a) umask((a))
 #define REMOVE(a) remove((a))
 #define MKSTEMP(a) mkstemp((a))
 #define DIR_SEPARATOR_CHAR '/'
@@ -328,7 +333,7 @@ HTTPCache::~HTTPCache()
     }
 
     delete d_http_cache_table;
-    
+
     release_single_user_lock();
 
     DBGN(cerr << "exiting destructor." << endl);
@@ -384,10 +389,10 @@ HTTPCache::perform_garbage_collection()
     // Remove all the expired responses.
     expired_gc();
 
-    // Remove entries larger than max_entry_size. 
+    // Remove entries larger than max_entry_size.
     too_big_gc();
-    
-    // Remove entries starting with zero hits, 1, ..., until stopGC() 
+
+    // Remove entries starting with zero hits, 1, ..., until stopGC()
     // returns true.
     hits_gc();
 }
@@ -400,7 +405,7 @@ HTTPCache::perform_garbage_collection()
 void
 HTTPCache::expired_gc()
 {
-    if (!d_expire_ignored) {    	
+    if (!d_expire_ignored) {
         d_http_cache_table->delete_expired_entries();
     }
 }
@@ -434,8 +439,8 @@ HTTPCache::hits_gc()
 	}
 }
 
-/** Scan the current cache table and remove anything that has is too big. 
- 	Don't remove locked entries. 
+/** Scan the current cache table and remove anything that has is too big.
+ 	Don't remove locked entries.
 
     A private method. */
 void HTTPCache::too_big_gc() {
@@ -547,10 +552,13 @@ HTTPCache::create_cache_root(const string &cache_root)
         string dir = cache_root.substr(0, cur);
         if (stat(dir.c_str(), &stat_info) == -1) {
             DBG2(cerr << "Cache....... Creating " << dir << endl);
+            mode_t mask = UMASK(0);
             if (MKDIR(dir.c_str(), 0777) < 0) {
                 DBG2(cerr << "Error: can't create." << endl);
+                UMASK(mask);
                 throw Error(string("Could not create the directory for the cache. Failed when building path at ") + dir + string("."));
             }
+            UMASK(mask);
         }
         else {
             DBG2(cerr << "Cache....... Found " << dir << endl);
@@ -596,7 +604,7 @@ HTTPCache::set_cache_root(const string &root)
 
         d_cache_root += CACHE_ROOT;
     }
-    
+
     // Test d_hhtp_cache_table because this method can be called before that
     // instance is created and also can be called later to cahnge the cache
     // root. jhrg 05.14.08
@@ -1099,7 +1107,7 @@ HTTPCache::write_body(const string &cachename, const FILE *src)
 FILE *
 HTTPCache::open_body(const string &cachename)
 {
-	FILE *src = fopen(cachename.c_str(), "rb");		// Read only	
+	FILE *src = fopen(cachename.c_str(), "rb");		// Read only
 	if (!src)
         throw InternalErr(__FILE__, __LINE__, "Could not open cache file.");
 
@@ -1154,7 +1162,7 @@ HTTPCache::cache_response(const string &url, time_t request_time,
 
         HTTPCacheTable::CacheEntry *entry = new HTTPCacheTable::CacheEntry(url);
         entry->lock_write_response();
-        
+
         try {
             d_http_cache_table->parse_headers(entry, d_max_entry_size, headers); // etag, lm, date, age, expires, max_age.
             if (entry->is_no_cache()) {
@@ -1346,7 +1354,7 @@ HTTPCache::update_response(const string &url, time_t request_time,
              back_inserter(result));
 
         write_metadata(entry->get_cachename(), result);
-#if 0        
+#if 0
         entry->unlock();
 #endif
         entry->unlock_write_response();
@@ -1401,7 +1409,7 @@ HTTPCache::is_url_valid(const string &url)
         // In case this entry is of type "must-revalidate" then we consider it
         // invalid.
         if (entry->get_must_revalidate()) {
-#if 0        	
+#if 0
             entry->unlock();
 #endif
             entry->unlock_read_response();
@@ -1416,7 +1424,7 @@ HTTPCache::is_url_valid(const string &url)
         // given in the request cache control header is followed.
         if (d_max_age >= 0 && current_age > d_max_age) {
             DBG(cerr << "Cache....... Max-age validation" << endl);
-#if 0            
+#if 0
             entry->unlock();
 #endif
             entry->unlock_read_response();
@@ -1426,10 +1434,10 @@ HTTPCache::is_url_valid(const string &url)
         if (d_min_fresh >= 0
             && entry->get_freshness_lifetime() < current_age + d_min_fresh) {
             DBG(cerr << "Cache....... Min-fresh validation" << endl);
-#if 0            
+#if 0
             entry->unlock();
 #endif
-            entry->unlock_read_response();            
+            entry->unlock_read_response();
             unlock_cache_interface();
             return false;
         }
@@ -1438,7 +1446,7 @@ HTTPCache::is_url_valid(const string &url)
                      + (d_max_stale >= 0 ? d_max_stale : 0) > current_age);
 #if 0
         entry->unlock();
-#endif        
+#endif
         entry->unlock_read_response();
         unlock_cache_interface();
     }
@@ -1513,7 +1521,7 @@ FILE * HTTPCache::get_cached_response(const string &url,
     }
     catch (...) {
         if (entry)
-#if 0        	
+#if 0
         entry->unlock();
 #endif
         unlock_cache_interface();
@@ -1542,9 +1550,9 @@ HTTPCache::get_cached_response(const string &url, vector<string> &headers)
 	return get_cached_response(url, headers, discard_name);
 }
 
-/** Get a pointer to a cached response body. This is a convenience method that 
+/** Get a pointer to a cached response body. This is a convenience method that
  	calls the three parameter version of get_cache_response().
-  
+
     This method locks the class' interface.
 
     @param url Find the body associated with this URL.
@@ -1608,7 +1616,7 @@ HTTPCache::purge_cache()
     try {
         if (d_http_cache_table->is_locked_read_responses())
             throw Error("Attempt to purge the cache with entries in use.");
-        
+
         d_http_cache_table->delete_all_entries();
     }
     catch (...) {
