@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG2
 
 #include "DDS.h"
 
@@ -82,14 +82,16 @@ class DDSTest: public TestFixture {
         }
 
         CPPUNIT_TEST_SUITE( DDSTest );
-
+#if 1
         CPPUNIT_TEST(symbol_name_test);
         CPPUNIT_TEST(print_xml_test);
         CPPUNIT_TEST(find_hdf4_dimension_attribute_home_test);
         CPPUNIT_TEST(find_matching_container_test);
         CPPUNIT_TEST(transfer_attributes_test);
         // These test both transfer_attributes() and print_xml()
+#endif
         CPPUNIT_TEST(print_xml_test2);
+#if 1
         CPPUNIT_TEST(print_xml_test3);
         CPPUNIT_TEST(print_xml_test3_1);
         CPPUNIT_TEST(print_xml_test4);
@@ -98,7 +100,7 @@ class DDSTest: public TestFixture {
 
         CPPUNIT_TEST(print_xml_test6);
         CPPUNIT_TEST(print_xml_test7);
-
+#endif
         //CPPUNIT_TEST(add_global_attribute_test);
 
         CPPUNIT_TEST_SUITE_END();
@@ -406,7 +408,7 @@ class DDSTest: public TestFixture {
 \n\
     <Attribute name=\"NC_GLOBAL\" type=\"Container\">\n\
         <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>&quot;Attribute merge test&quot;</value>\n\
+            <value>Attribute merge test</value>\n\
         </Attribute>\n\
         <Attribute name=\"primes\" type=\"Int32\">\n\
             <value>2</value>\n\
@@ -443,7 +445,7 @@ class DDSTest: public TestFixture {
 .*\
     <Array name=\"b#c\">\n\
         <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>&quot;b pound c&quot;</value>\n\
+            <value>b pound c</value>\n\
         </Attribute>\n\
         <Int32/>\n\
         <dimension size=\"10\"/>\n\
@@ -472,7 +474,7 @@ class DDSTest: public TestFixture {
 .*\
     <Array name=\"b#c\">\n\
         <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>&quot;b pound c&quot;</value>\n\
+            <value>b pound c</value>\n\
         </Attribute>\n\
         <Attribute name=\"dim_0\" type=\"Container\">\n\
             <Attribute name=\"add_offset\" type=\"Float64\">\n\
@@ -509,11 +511,11 @@ class DDSTest: public TestFixture {
 .*\
     <Float64 name=\"c d\">\n\
         <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>&quot;c d with a WWW escape sequence&quot;</value>\n\
+            <value>c d with a WWW escape sequence</value>\n\
         </Attribute>\n\
         <Attribute name=\"sub\" type=\"Container\">\n\
             <Attribute name=\"about\" type=\"String\">\n\
-                <value>&quot;Attributes inside attributes&quot;</value>\n\
+                <value>Attributes inside attributes</value>\n\
             </Attribute>\n\
             <Attribute name=\"pi\" type=\"Float64\">\n\
                 <value>3.1415</value>\n\
@@ -553,7 +555,7 @@ class DDSTest: public TestFixture {
 .*\
     <Grid name=\"huh\">\n\
         <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>&quot;The Grid huh&quot;</value>\n\
+            <value>The Grid huh</value>\n\
         </Attribute>\n\
         <Array name=\"Image#data\">\n\
             <Byte/>\n\
@@ -561,7 +563,7 @@ class DDSTest: public TestFixture {
         </Array>\n\
         <Map name=\"colors\">\n\
             <Attribute name=\"long_name2\" type=\"String\">\n\
-                <value>&quot;The color map vector&quot;</value>\n\
+                <value>The color map vector</value>\n\
             </Attribute>\n\
             <String/>\n\
             <dimension size=\"512\"/>\n\
@@ -600,7 +602,7 @@ class DDSTest: public TestFixture {
 .*\
     <Grid name=\"huh\">\n\
         <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>&quot;The Grid huh&quot;</value>\n\
+            <value>The Grid huh</value>\n\
         </Attribute>\n\
         <Array name=\"Image#data\">\n\
             <Byte/>\n\
@@ -608,10 +610,10 @@ class DDSTest: public TestFixture {
         </Array>\n\
         <Map name=\"colors\">\n\
             <Attribute name=\"long_name2\" type=\"String\">\n\
-                <value>&quot;The color map vector&quot;</value>\n\
+                <value>The color map vector</value>\n\
             </Attribute>\n\
             <Attribute name=\"units\" type=\"String\">\n\
-                <value>&quot;m/s&quot;</value>\n\
+                <value>m/s</value>\n\
             </Attribute>\n\
             <String/>\n\
             <dimension size=\"512\"/>\n\
@@ -641,7 +643,7 @@ class DDSTest: public TestFixture {
 .*\
     <Attribute name=\"NC_GLOBAL\" type=\"Container\">\n\
         <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>&quot;Attribute merge test&quot;</value>\n\
+            <value>Attribute merge test</value>\n\
         </Attribute>\n\
         <Attribute name=\"primes\" type=\"Int32\">\n\
             <value>2</value>\n\
@@ -655,18 +657,18 @@ class DDSTest: public TestFixture {
     <Int32 name=\"a\"/>\n\
     <Array name=\"b#c\">\n\
         <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>&quot;b pound c&quot;</value>\n\
+            <value>b pound c</value>\n\
         </Attribute>\n\
         <Int32/>\n\
         <dimension size=\"10\"/>\n\
     </Array>\n\
     <Float64 name=\"c d\">\n\
         <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>&quot;c d with a WWW escape sequence&quot;</value>\n\
+            <value>c d with a WWW escape sequence</value>\n\
         </Attribute>\n\
         <Attribute name=\"sub\" type=\"Container\">\n\
             <Attribute name=\"about\" type=\"String\">\n\
-                <value>&quot;Attributes inside attributes&quot;</value>\n\
+                <value>Attributes inside attributes</value>\n\
             </Attribute>\n\
             <Attribute name=\"pi\" type=\"Float64\">\n\
                 <value>3.1415</value>\n\
@@ -675,7 +677,7 @@ class DDSTest: public TestFixture {
     </Float64>\n\
     <Grid name=\"huh\">\n\
         <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>&quot;The Grid huh&quot;</value>\n\
+            <value>The Grid huh</value>\n\
         </Attribute>\n\
         <Array name=\"Image#data\">\n\
             <Byte/>\n\
@@ -683,7 +685,7 @@ class DDSTest: public TestFixture {
         </Array>\n\
         <Map name=\"colors\">\n\
             <Attribute name=\"long_name\" type=\"String\">\n\
-                <value>&quot;The color map vector&quot;</value>\n\
+                <value>The color map vector</value>\n\
             </Attribute>\n\
             <String/>\n\
             <dimension size=\"512\"/>\n\
@@ -723,7 +725,7 @@ class DDSTest: public TestFixture {
     <Structure name=\"s\">\n\
         <Array name=\"b#c\">\n\
             <Attribute name=\"long_name\" type=\"String\">\n\
-                <value>&quot;b pound c&quot;</value>\n\
+                <value>b pound c</value>\n\
             </Attribute>\n\
             <Attribute name=\"dim_0\" type=\"Container\">\n\
                 <Attribute name=\"add_offset\" type=\"Float64\">\n\
@@ -735,7 +737,7 @@ class DDSTest: public TestFixture {
         </Array>\n\
         <Grid name=\"huh\">\n\
             <Attribute name=\"long_name\" type=\"String\">\n\
-                <value>&quot;The Grid huh&quot;</value>\n\
+                <value>The Grid huh</value>\n\
             </Attribute>\n\
             <Array name=\"Image#data\">\n\
                 <Byte/>\n\
@@ -743,10 +745,10 @@ class DDSTest: public TestFixture {
             </Array>\n\
             <Map name=\"colors\">\n\
                 <Attribute name=\"long_name2\" type=\"String\">\n\
-                    <value>&quot;The color map vector&quot;</value>\n\
+                    <value>The color map vector</value>\n\
                 </Attribute>\n\
                 <Attribute name=\"units\" type=\"String\">\n\
-                    <value>&quot;m/s&quot;</value>\n\
+                    <value>m/s</value>\n\
                 </Attribute>\n\
                 <String/>\n\
                 <dimension size=\"512\"/>\n\

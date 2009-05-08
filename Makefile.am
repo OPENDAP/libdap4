@@ -54,6 +54,8 @@ libdapserver_la_LIBADD = libdap.la
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(XSTREAM_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
 noinst_HEADERS = config_dap.h
 
+# outbuf_test_SOURCES = GNU/outbuf.cc
+
 getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la 
 getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)

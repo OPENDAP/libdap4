@@ -54,6 +54,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "Error.h"
 #include "debug.h"
 #include "parser.h"
+#include "util.h"
 #include "das.tab.hh"
 
 #ifdef TRACE_NEW
@@ -356,11 +357,13 @@ float64:	float_or_int
 
 strs:		str_or_id
 		{
-		    add_attribute(*type, *name, $1, 0);
+		    string attr = remove_quotes($1);
+		    add_attribute(*type, *name, attr, 0);
 		}
 		| strs ',' str_or_id
 		{
-		    add_attribute(*type, *name, $3, 0);
+		    string attr = remove_quotes($3);
+		    add_attribute(*type, *name, attr, 0);
 		}
 ;
 
