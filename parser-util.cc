@@ -239,9 +239,18 @@ int check_uint16(const char *val)
 int check_int32(const char *val)
 {
     char *ptr;
+    errno = 0;
     long v = strtol(val, &ptr, 0);      // `0' --> use val to determine base
 
+
     if ((v == 0 && val == ptr) || *ptr != '\0') {
+        return FALSE;
+    }
+
+    // We need to check errno since strtol return clamps on overflow so the check
+    // against the DODS values below will always pass, even for out of bounds
+    // values in the string.  mjohnson 7/20/09
+    if (errno == ERANGE) {
         return FALSE;
     }
 
@@ -254,11 +263,33 @@ int check_int32(const char *val)
 
 int check_uint32(const char *val)
 {
+  // Eat whitespace and check for an initial '-' sign...
+  // strtoul allows an initial minus. mjohnson
+    const char* c = val;
+    while (c && isspace(*c)) {
+         c++;
+    }
+    if (c && (*c == '-')) {
+         return FALSE;
+    }
+
     char *ptr;
-    unsigned long v = strtol(val, &ptr, 0);
+    errno = 0;
+    unsigned long v = strtoul(val, &ptr, 0);
 
     if ((v == 0 && val == ptr) || *ptr != '\0') {
         return FALSE;
+    }
+
+    // check overflow first, or the below check is invalid due to
+    // clamping to the maximum value by strtoul
+    // maybe consider using long long for these checks? mjohnson
+    if (errno == ERANGE) {
+      return FALSE;
+    }
+
+    if (v > DODS_UINT_MAX) {
+      return FALSE;
     }
 
     return TRUE;
