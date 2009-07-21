@@ -665,8 +665,9 @@ AttrTable::get_attr_table(Attr_iter iter)
 }
 
 /** Delete the iterator.  Since AttrTable stores pointers to AttrTable
-    objects, the caller should be sure to delete the AttrTable itself.
-    This method does not take care of that operation.
+-   objects, the caller should be sure to delete the AttrTable itself.
+    The caller will gain control of the AttrTable* located at get_attr_table(iter)
+    prior to this call.
 
     @note calling this method <b>invalidates</b> the iterator \e iter.
     @param iter points to the entry to be deleted.
@@ -676,6 +677,13 @@ AttrTable::del_attr_table(Attr_iter iter)
 {
     if ((*iter)->type != Attr_container)
         return ++iter;
+
+    // the caller intends to delete/reuse the contained AttrTable,
+    // so zero it out so it doesn't get deleted before we delete the entry
+    // [mjohnson]
+    struct entry* e = *iter;
+    e->attributes = 0;
+    delete e;
 
     return attr_map.erase(iter);
 }
