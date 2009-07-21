@@ -682,6 +682,10 @@ AttrTable::del_attr_table(Attr_iter iter)
     // so zero it out so it doesn't get deleted before we delete the entry
     // [mjohnson]
     struct entry* e = *iter;
+    // container no longer has a parent.
+    if (e->attributes) {
+      e->attributes->d_parent = 0;
+    }
     e->attributes = 0;
     delete e;
 
