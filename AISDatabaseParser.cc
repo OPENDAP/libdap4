@@ -210,8 +210,7 @@ AISDatabaseParser::aisStartElement(AISParserState *state, const char *name,
 void
 AISDatabaseParser::aisEndElement(AISParserState *state, const char */*name*/)
 {
-    DBG2(cerr << "End element " << name << " (state " << states[state->state]
-         << ")" << endl);
+    DBG2(cerr << "End element: state " << states[state->state] << endl);
 
     switch (state->state) {
     case AIS:
