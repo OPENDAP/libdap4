@@ -33,9 +33,10 @@ static char rcsid[] not_used =
     {"$Id$"
     };
 
+#include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include <string>
+//#include <string>
 #include <ctype.h>
 
 #ifndef TM_IN_SYS_TIME
@@ -59,13 +60,13 @@ using std::string;
 
 namespace libdap {
 
-static char * months[12] =
+static const char * months[12] =
     {
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     };
 
 #ifndef HAVE_STRFTIME
-static char * wkdays[7] =
+static const char * wkdays[7] =
     {
         "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
     };

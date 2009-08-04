@@ -195,7 +195,7 @@ int check_byte(const char *val)
     // especially the case for Java clients where Byte datatypes are
     // signed. 3/20/2000 jhrg
     if ((v < 0 && v < DODS_SCHAR_MIN)
-        || v > 0 && static_cast < unsigned long >(v) > DODS_UCHAR_MAX)
+        || (v > 0 && static_cast < unsigned long >(v) > DODS_UCHAR_MAX))
         return FALSE;
 
     return TRUE;

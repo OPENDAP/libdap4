@@ -231,7 +231,7 @@ Float32::ops(BaseType *b, int op)
     }
 
     // Extract the second arg's value.
-    if (!b || !b->read_p() && !b->read()) {
+    if (!b || !(b->read_p() || b->read())) {
         throw InternalErr(__FILE__, __LINE__, "This value not read!");
     }
 

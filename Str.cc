@@ -259,7 +259,7 @@ Str::ops(BaseType *b, int op)
     }
 
     // Extract the second arg's value.
-    if (!b || !b->read_p() && !b->read()) {
+    if (!b || !(b->read_p() || b->read())) {
         // Jose Garcia
         // Since the read method is virtual and implemented outside
         // libdap++ if we cannot read the data that is the problem

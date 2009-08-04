@@ -132,31 +132,31 @@ public:
     static RCReader* instance();
 
     // GET METHODS
-    const string get_dods_cache_root()
+    string get_dods_cache_root() const throw()
     {
         return d_cache_root;
     }
-    const bool get_use_cache() throw()
+    bool get_use_cache() const throw()
     {
         return _dods_use_cache;
     }
-    const int get_max_cache_size()  throw()
+    int get_max_cache_size()  const throw()
     {
         return _dods_cache_max;
     }
-    const unsigned int get_max_cached_obj() throw()
+    unsigned int get_max_cached_obj() const throw()
     {
         return _dods_cached_obj;
     }
-    const int get_ignore_expires() throw()
+    int get_ignore_expires() const throw()
     {
         return _dods_ign_expires;
     }
-    const int get_default_expires() throw()
+    int get_default_expires() const throw()
     {
         return _dods_default_expires;
     }
-    const int get_always_validate() throw()
+    int get_always_validate() const throw()
     {
         return _dods_always_validate;
     }
@@ -165,33 +165,33 @@ public:
         return d_validate_ssl;
     }
 
-    const bool get_deflate() throw()
+    bool get_deflate() const throw()
     {
         return _dods_deflate;
     }
 
     /// Get the proxy server protocol
-    const string get_proxy_server_protocol() throw()
+    string get_proxy_server_protocol() const throw()
     {
         return d_dods_proxy_server_protocol;
     }
     /// Get the proxy host
-    const string get_proxy_server_host() throw()
+    string get_proxy_server_host() const throw()
     {
         return d_dods_proxy_server_host;
     }
     /// Get the proxy port
-    const int get_proxy_server_port() throw()
+    int get_proxy_server_port() const throw()
     {
         return d_dods_proxy_server_port;
     }
     /// Get the proxy username and password
-    const string get_proxy_server_userpw() throw()
+    string get_proxy_server_userpw() const throw()
     {
         return d_dods_proxy_server_userpw;
     }
     /// @deprecated
-    const string get_proxy_server_host_url()  throw()
+    string get_proxy_server_host_url() const throw()
     {
         return (d_dods_proxy_server_userpw.empty() ? "" : d_dods_proxy_server_userpw + "@")
                + d_dods_proxy_server_host
@@ -210,18 +210,18 @@ public:
         return _dods_proxy_for;
     }
     /// @deprecated
-    const string get_proxy_for_regexp() throw()
+    string get_proxy_for_regexp() const throw()
     {
         return _dods_proxy_for_regexp;
     }
     /// @deprecated
-    const string get_proxy_for_proxy_host_url() throw()
+    string get_proxy_for_proxy_host_url() const throw()
     {
         return _dods_proxy_for_proxy_host_url;
     }
 
     /// @deprecated
-    const int get_proxy_for_regexp_flags() throw()
+    int get_proxy_for_regexp_flags() const throw()
     {
         return _dods_proxy_for_regexp_flags;
     }
@@ -235,17 +235,17 @@ public:
     {
         return d_dods_no_proxy_for;
     }
-    const string get_no_proxy_for_protocol() throw()
+    string get_no_proxy_for_protocol() const throw()
     {
         return d_dods_no_proxy_for_protocol;
     }
-    const string get_no_proxy_for_host() throw()
+    string get_no_proxy_for_host() const throw()
     {
         return d_dods_no_proxy_for_host;
     }
 
     /// @deprecated
-    const int    get_no_proxy_for_port() throw()
+    int    get_no_proxy_for_port() const throw()
     {
         return _dods_no_proxy_for_port;
     }

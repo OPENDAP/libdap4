@@ -75,7 +75,7 @@ int dods_keep_temps = 0;
 
 #define CLIENT_ERR_MIN 400
 #define CLIENT_ERR_MAX 417
-static char *http_client_errors[CLIENT_ERR_MAX - CLIENT_ERR_MIN +1] =
+static const char *http_client_errors[CLIENT_ERR_MAX - CLIENT_ERR_MIN +1] =
     {
         "Bad Request:",
         "Unauthorized: Contact the server administrator.",
@@ -101,7 +101,7 @@ static char *http_client_errors[CLIENT_ERR_MAX - CLIENT_ERR_MIN +1] =
 
 #define SERVER_ERR_MIN 500
 #define SERVER_ERR_MAX 505
-static char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN +1] =
+static const char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN +1] =
     {
         "Internal Server Error.",
         "Not Implemented.",
@@ -120,21 +120,21 @@ static char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN +1] =
 ObjectType
 get_type(const string &value)
 {
-    if (value == "dods_das" | value == "dods-das")
+    if ((value == "dods_das") | (value == "dods-das"))
         return dods_das;
-    else if (value == "dods_dds" | value == "dods-dds")
+    else if ((value == "dods_dds") | (value == "dods-dds"))
         return dods_dds;
-    else if (value == "dods_data" | value == "dods-data")
+    else if ((value == "dods_data") | (value == "dods-data"))
         return dods_data;
-    else if (value == "dods_error" | value == "dods-error")
+    else if ((value == "dods_error") | (value == "dods-error"))
         return dods_error;
-    else if (value == "web_error" | value == "web-error")
+    else if ((value == "web_error") | (value == "web-error"))
         return web_error;
-    else if (value == "dap4_ddx" | value == "dap4-ddx")
+    else if ((value == "dap4_ddx") | (value == "dap4-ddx"))
         return dap4_ddx;
-    else if (value == "dap4_datax" | value == "dap4-datax")
+    else if ((value == "dap4_datax") | (value == "dap4-datax"))
         return dap4_datax;
-    else if (value == "dap4_errorx" | value == "dap4-errorx")
+    else if ((value == "dap4_errorx") | (value == "dap4-errorx"))
         return dap4_errorx;
     else
         return unknown_type;
@@ -148,21 +148,21 @@ get_type(const string &value)
 ObjectType
 get_description_type(const string &value)
 {
-    if (value == "dods_das" | value == "dods-das")
+    if ((value == "dods_das") | (value == "dods-das"))
         return dods_das;
-    else if (value == "dods_dds" | value == "dods-dds")
+    else if ((value == "dods_dds") | (value == "dods-dds"))
         return dods_dds;
-    else if (value == "dods_data" | value == "dods-data")
+    else if ((value == "dods_data") | (value == "dods-data"))
         return dods_data;
-    else if (value == "dods_error" | value == "dods-error")
+    else if ((value == "dods_error") | (value == "dods-error"))
         return dods_error;
-    else if (value == "web_error" | value == "web-error")
+    else if ((value == "web_error") | (value == "web-error"))
         return web_error;
-    else if (value == "dap4_ddx" | value == "dap4-ddx")
+    else if ((value == "dap4_ddx") | (value == "dap4-ddx"))
         return dap4_ddx;
-    else if (value == "dap4_datax" | value == "dap4-datax")
+    else if ((value == "dap4_datax") | (value == "dap4-datax"))
         return dap4_datax;
-    else if (value == "dap4_errorx" | value == "dap4-errorx")
+    else if ((value == "dap4_errorx") | (value == "dap4-errorx"))
         return dap4_errorx;
     else
         return unknown_type;
@@ -702,9 +702,9 @@ HTTPConnect::fetch_url(const string &url)
 // methods to read from a stream returned by libcurl, not from a temporary
 // file. 9/21/07 jhrg
 static char *
-get_tempfile_template(char *file_template)
+get_tempfile_template(const char *file_template)
 {
-    char *c;
+    const char *c;
 
 #ifdef WIN32
     // whitelist for a WIN32 directory
@@ -796,8 +796,9 @@ void
 close_temp(FILE *s, const string &name)
 {
     int res = fclose(s);
-    if (res)
-        DBG(cerr << "Failed to close " << (void *)s << endl);
+    if (res) {
+	DBG(cerr << "Counld not close the temporary file: " << name << endl);
+    }
 
     unlink(name.c_str());
 }

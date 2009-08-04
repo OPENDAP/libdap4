@@ -156,7 +156,9 @@ template<class T> static void set_array_using_double_helper(Array * a,
 void set_array_using_double(Array * dest, double *src, int src_len)
 {
     // Simple types are Byte, ..., Float64, String and Url.
-    if (dest->type() == dods_array_c && !dest->var()->is_simple_type() || dest->var()->type() == dods_str_c || dest->var()->type() == dods_url_c)
+    if ((dest->type() == dods_array_c && !dest->var()->is_simple_type()) 
+	|| dest->var()->type() == dods_str_c 
+	|| dest->var()->type() == dods_url_c)
         throw InternalErr(__FILE__, __LINE__,
                 "The function requires a DAP numeric-type array argument.");
 
@@ -227,7 +229,8 @@ template<class T> static double *extract_double_array_helper(Array * a)
 double *extract_double_array(Array * a)
 {
     // Simple types are Byte, ..., Float64, String and Url.
-    if (a->type() == dods_array_c && !a->var()->is_simple_type() || a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
+    if ((a->type() == dods_array_c && !a->var()->is_simple_type())
+	|| a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
         throw Error(malformed_expr,
                 "The function requires a DAP numeric-type array argument.");
 

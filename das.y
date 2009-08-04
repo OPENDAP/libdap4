@@ -98,10 +98,10 @@ static vector<AttrTable *> *attr_tab_stack;
 
 #define TYPE_NAME_VALUE(x) *type << " " << *name << " " << (x)
 
-static char *ATTR_TUPLE_MSG = 
+static const char *ATTR_TUPLE_MSG = 
 "Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,\n\
 Float64, String or Url) followed by a name and value.";
-static char *NO_DAS_MSG =
+static const char *NO_DAS_MSG =
 "The attribute object returned from the dataset was null\n\
 Check that the URL is correct.";
 

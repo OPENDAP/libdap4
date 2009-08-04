@@ -225,7 +225,9 @@ bool Byte::ops(BaseType * b, int op)
 
     // Extract the Byte arg's value.
     if (!read_p() && !read()) {
+#if 0
         cerr << "This value not read!" << endl;
+#endif
         // Jose Garcia
         // Since the read method is virtual and implemented outside
         // libdap++ if we cannot read the data that is the problem
@@ -234,8 +236,10 @@ bool Byte::ops(BaseType * b, int op)
         throw InternalErr("This value not read!");
     }
     // Extract the second arg's value.
-    if (!b || !b->read_p() && !b->read()) {
+    if (!b || !(b->read_p() || b->read())) {
+#if 0
         cerr << "This value not read!" << endl;
+#endif
         // Jose Garcia
         // Since the read method is virtual and implemented outside
         // libdap++ if we cannot read the data that is the problem

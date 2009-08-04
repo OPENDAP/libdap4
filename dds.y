@@ -83,11 +83,11 @@ static BaseType *current;
 static string *id;
 static Part part = nil;		/* Part is defined in BaseType */
 
-static char *NO_DDS_MSG =
+static const char *NO_DDS_MSG =
 "The descriptor object returned from the dataset was null.\n\
 Check that the URL is correct.";
 
-static char *BAD_DECLARATION =
+static const char *BAD_DECLARATION =
 "In the dataset descriptor object: Expected a variable declaration\n\
 (e.g., Int32 i;). Make sure that the variable name is not the name\n\
 of a datatype and that the Array: and Maps: sections of a Grid are\n\
