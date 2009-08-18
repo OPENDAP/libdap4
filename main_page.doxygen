@@ -14,13 +14,6 @@ includes classes and functions which implement DAP 2.0 as well as utilities
 which simpify building clients and servers for DAP 2.0. The library also
 contains a few new features which will eventually become part of DAP 4.0. 
 
-For an introduction to the use of the DAP, see the OPeNDAP Programmer's Guide.
-The Programmer's Guide may be found on-line at
-http://www.opendap.org/api/pguide-html/pguide.html. Also available on the
-OPeNDAP web site are tutorials which describe how to build clients 
-(http://www.opendap.org/api/wc-html/writing_client.html) and servers
-(http://www.opendap.org/api/ws-html/writing_server.html) using the library.
-
 \section conventions Doxygen Conventions
 
 This section lists some conventions used by the Doxygen comments
