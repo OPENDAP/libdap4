@@ -100,6 +100,8 @@ public:
     Vector &operator=(const Vector &rhs);
     virtual BaseType *ptr_duplicate() = 0;
 
+    virtual void set_name(const std::string& name);
+
     virtual int element_count(bool leaves);
 
     virtual void set_send_p(bool state);

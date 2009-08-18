@@ -200,6 +200,18 @@ Vector & Vector::operator=(const Vector & rhs)
     return *this;
 }
 
+void
+Vector::set_name(const std::string& name)
+{
+  BaseType::set_name(name);
+  // We need to set the template variable name as well since
+  // this is what gets output in the dds!  Otherwise, there's a mismatch.
+  if (_var)
+    {
+      _var->set_name(name);
+    }
+}
+
 int Vector::element_count(bool leaves)
 {
     if (!leaves)
