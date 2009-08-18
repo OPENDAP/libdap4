@@ -433,28 +433,27 @@ function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
     DBG(cerr << "Entering function_grid..." << endl);
 
-    string
-            info =
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<function name=\"grid\" version=\"1.0\">
-The grid() function takes a grid variable and zero or more relational
-expressions. Each relational expression is applied to the grid using
-the server's constraint evaluator and the resulting grid is
-returned. The expressions may use constants and the grid's map vectors
-but may not use any other variables. In particular, you cannot use the
-grid values themselves.
-
-Two forms of expression are provided: 
-
-  \"var relop const\"
-  \"const relop var relop const\". 
-
-'relop' stands for one of the relational operators, like `=` and '>'
-
-For example: grid(sst, \"20>TIME>=10\") and 
-grid(sst, \"20>TIME\",\"TIME>=10\") are both legal and, in this case, 
-also equivalent.
-</function>";
+    string info =
+    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
+    "<function name=\"grid\" version=\"1.0\">\n" +
+    "The grid() function takes a grid variable and zero or more relational\n" +
+    "expressions. Each relational expression is applied to the grid using\n" +
+    "the server's constraint evaluator and the resulting grid is\n" +
+    "returned. The expressions may use constants and the grid's map vectors\n" +
+    "but may not use any other variables. In particular, you cannot use the\n" +
+    "grid values themselves.\n" +
+    "\n" +
+    "Two forms of expression are provided:\n" +
+    "\n" +
+    "  \"var relop const\"\n" +
+    "  \"const relop var relop const\".\n" +
+    "\n" +
+    "'relop' stands for one of the relational operators, like `=` and '>'\n" +
+    "\n" +
+    "For example: grid(sst, \"20>TIME>=10\") and \n" +
+    "grid(sst, \"20>TIME\",\"TIME>=10\") are both legal and, in this case,\n" +
+    "also equivalent.\n" +
+    "</function>\n";
 
     if (argc == 0) {
         Str *response = new Str("info");
@@ -551,27 +550,26 @@ also equivalent.
 void
 function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
-    string
-            info =
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<function name=\"geogrid\" version=\"1.0b2\">
-The geogrid() function applies a constraint given in latitude and 
-longitude to a DAP Grid variable. The arguments to the function are:
-
-  geogrid(variable, top, left, bottom, right, expressions)
-
-The variable is the data type to be returned.  Top, left, bottom,
-right are the coordinates of the northwesterm and southeastern corners
-of the selection box.  The expressions consist of one or more quoted
-relational expressions.  See grid() for more information about
-selection expressions.
-
-The function will always return a single Grid variable whose values
-completely cover the given region, although there may be cases when
-some additional data is also returned. If the longitude values 'wrap
-around' the right edge of the data, then the function will make two
-requests and return those joined together as a single Grid.
-</function>";
+    string info =
+    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
+    "<function name=\"geogrid\" version=\"1.0b2\">\n" +
+    "The geogrid() function applies a constraint given in latitude and\n" +
+    "longitude to a DAP Grid variable. The arguments to the function are:\n" +
+    "\n" +
+    "  geogrid(variable, top, left, bottom, right, expressions)\n" +
+    "\n" +
+    "The variable is the data type to be returned.  Top, left, bottom,\n" +
+    "right are the coordinates of the northwesterm and southeastern corners\n" +
+    "of the selection box.  The expressions consist of one or more quoted\n" +
+    "relational expressions.  See grid() for more information about\n" +
+    "selection expressions.\n" +
+    "\n" +
+    "The function will always return a single Grid variable whose values\n" +
+    "completely cover the given region, although there may be cases when\n" +
+    "some additional data is also returned. If the longitude values 'wrap\n" +
+    "around' the right edge of the data, then the function will make two\n" +
+    "requests and return those joined together as a single Grid.\n" +
+    "</function>";
 
     if (argc == 0) {
         Str *response = new Str("version");
@@ -769,34 +767,34 @@ static double get_missing_value(BaseType *var)
 void
 function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
-    string
-            info =
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<function name=\"linear_scale\" version=\"1.0b1\">
-The linear_scale() function applies the familiar y=mx+b equation to data.  
-It has three forms:
-
-  linear_scale(var)
-
-If only the name of a variable is given, the function looks for the 
-COARDS scale_factor, add_offset and missing_value attributes in the DAS. 
-In the equation, 'm' is scale_factor, 'b' is add_offset and data values 
-that match missing_value are not scaled.  
-
-If add_offset cannot be found, it defaults to zero; if missing_value
-cannot be found, the test for it is not performed.
-
-You can also call this function like this:
-
-  linear_scale(var,scale_factor,add_offset)
-
-Or: 
-
-  linear_scale(var,scale_factor,add_offset,missing_value)
-
-If the given values conflict with the dataset's attributes, the given
-values override.  If the missing_value is missing, then the missing
-value test is not performed.</function>";
+    string info =
+    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
+    "<function name=\"linear_scale\" version=\"1.0b1\">\n" +
+    "The linear_scale() function applies the familiar y=mx+b equation to\n" + 
+    "data. It has three forms:\n" +
+    "\n" +
+    "  linear_scale(var)\n" +
+    "\n" +
+    "If only the name of a variable is given, the function looks for the\n" + 
+    "COARDS scale_factor, add_offset and missing_value attributes in the\n" + 
+    "DAS. In the equation, 'm' is scale_factor, 'b' is add_offset and data\n" + 
+    "values that match missing_value are not scaled.\n" +  
+    "\n" +
+    "If add_offset cannot be found, it defaults to zero; if missing_value\n" +
+    "cannot be found, the test for it is not performed.\n" +
+    "\n" +
+    "You can also call this function like this:\n" +
+    "\n" +
+    "  linear_scale(var,scale_factor,add_offset)\n" +
+    "\n" +
+    "Or:\n" + 
+    "\n" +
+    "  linear_scale(var,scale_factor,add_offset,missing_value)\n" +
+    "\n" +
+    "If the given values conflict with the dataset's attributes, the given\n" +
+    "values override.  If the missing_value is missing, then the missing\n" +
+    "value test is not performed.\n" +
+    "</function>";
 
     if (argc == 0) {
         Str *response = new Str("info");
@@ -944,26 +942,27 @@ value test is not performed.</function>";
 void
 function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
-    string
-            info =
-	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-        <function name=\"geoarray\" version=\"0.9b1\">
-The geoarray() function supports two different sets of arguments:
-
-  geoarray(var,left,top,right,bottom)
-
-In the first version 'var' is the target of the selection and 'left', 'top',
-'right' and 'bottom' are the corners of a longitude-latitude box that defines
-the selection. The array's position on the globe is defined by metadata that 
-appears in the dataset's DAS.
-
-  geoarray(var,left,top,right,bottom,var_left,var_top,var_right,var_bottom)
-
-In the second version the array's position on the globe is specified
-explicitly in the function argument list.  The 'var_left','var_top', and 
-similar parameters give the longitude and latitude extent of the entire 
-array. The projection and datum are assumed to be Plat-Carre and WGS84.
-</function>";
+    string info =
+    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
+    "<function name=\"geoarray\" version=\"0.9b1\">\n" +
+    "The geoarray() function supports two different sets of arguments:\n" +
+    "\n" +
+    "  geoarray(var,left,top,right,bottom)\n" +
+    "\n" +
+    "In the first version 'var' is the target of the selection and 'left',\n" +
+    "'top', 'right' and 'bottom' are the corners of a longitude-latitude\n" +
+    "box that defines the selection. The array's position on the globe is\n" + 
+    "defined by metadata that appears in the dataset's DAS.\n" +
+    "\n" +
+    "  geoarray(var,left,top,right,bottom,"+
+    "var_left,var_top,var_right,var_bottom)\n" +
+    "\n" +
+    "In the second version the array's position on the globe is specified\n" +
+    "explicitly in the function argument list.  The 'var_left','var_top',\n" + 
+    "and similar parameters give the longitude and latitude extent of the \n" + 
+    "entire array. The projection and datum are assumed to be Plat-Carre\n"+
+    "and WGS84.\n" +
+    "</function>";
 
     if (argc == 0) {
         Str *response = new Str("version");
