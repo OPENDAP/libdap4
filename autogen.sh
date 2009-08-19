@@ -10,8 +10,13 @@ else
     verbose=""
 fi
 
-aclocal --force -I conf -I gl/m4 $verbose
-libtoolize --force --copy  $verbose
-autoconf --force $verbose
-autoheader --force  $verbose
-automake --force-missing --copy --force-missing $verbose
+force=
+am_force=
+# force=--force
+# am_force=--force-missing
+
+aclocal -I conf -I gl/m4 $verbose $force
+libtoolize --copy --automake $verbose $force
+autoconf $verbose $force
+autoheader $verbose $force
+automake --copy --add-missing $verbose $force
