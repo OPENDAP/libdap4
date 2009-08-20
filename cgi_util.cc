@@ -83,7 +83,7 @@ static char rcsid[] not_used =
 #endif
 
 // ...not using a const string here to avoid global objects. jhrg 12/23/05
-#define CRLF "\r\n"             // Change here and in expr-test.cc.
+#define CRLF "\r\n"             // Change here, expr-test.cc and DODSFilter.cc
 
 using namespace std;
 
@@ -297,10 +297,11 @@ last_modified_time(const string &name)
 
 static const char *descrip[] =
     {"unknown", "dods_das", "dods_dds", "dods_data",
-     "dods_error", "web_error", "dap4_ddx", "dap4_datax", "dap4_errorx"
+     "dods_error", "web_error", "dap4-ddx", "dap4-data", "dap4-error",
+     "dap4-data-ddx"
     };
 static const char *encoding[] =
-    {"unknown", "deflate", "x-plain"
+    {"unknown", "deflate", "x-plain", "gzip", "binary"
     };
 
 /** Generate an HTTP 1.0 response header for a text document. This is used
@@ -591,6 +592,65 @@ set_mime_binary(ostream &strm, ObjectType type, const string &ver,
     strm << CRLF ;
 }
 
+void set_mime_multipart(ostream &strm, const string &boundary,
+	const string &start, ObjectType type,
+        const string &version, EncodingType enc,
+        const time_t last_modified)
+{
+    strm << "HTTP/1.0 200 OK" << CRLF ;
+    if (version == "") {
+        strm << "XDODS-Server: " << DVR << CRLF ;
+        strm << "XOPeNDAP-Server: " << DVR << CRLF ;
+    }
+    else {
+        strm << "XDODS-Server: " << version.c_str() << CRLF ;
+        strm << "XOPeNDAP-Server: " << version.c_str() << CRLF ;
+    }
+    strm << "XDAP: " << DAP_PROTOCOL_VERSION << CRLF ;
+
+    const time_t t = time(0);
+    strm << "Date: " << rfc822_date(t).c_str() << CRLF ;
+
+    strm << "Last-Modified: " ;
+    if (last_modified > 0)
+        strm << rfc822_date(last_modified).c_str() << CRLF ;
+    else
+        strm << rfc822_date(t).c_str() << CRLF ;
+
+    strm << "Content-Type: Multipart/Related; boundary=" << boundary
+	<< "; start=\"<" << start << ">\"; type=\"Text/xml\"" << CRLF ;
+    strm << "Content-Description: " << descrip[type] << CRLF ;
+    if (enc != x_plain)
+        strm << "Content-Encoding: " << encoding[enc] << CRLF ;
+
+    strm << CRLF ;
+}
+
+void set_mime_ddx_boundary(ostream &strm, const string &boundary,
+	const string &cid, ObjectType type, EncodingType enc)
+{
+    strm << "--" << boundary << CRLF;
+    strm << "Content-Type: Text/xml; charset=iso-8859-1" << CRLF;
+    strm << "Content-ID: <" << cid << ">" << CRLF;
+    strm << "Content-Description: " << descrip[type] << CRLF ;
+    if (enc != x_plain)
+         strm << "Content-Encoding: " << encoding[enc] << CRLF ;
+
+    strm << CRLF;
+}
+
+void set_mime_data_boundary(ostream &strm, const string &boundary,
+	const string &cid, ObjectType type, EncodingType enc)
+{
+    strm << "--" << boundary << CRLF;
+    strm << "Content-Type: application/octet-stream" << CRLF;
+    strm << "Content-ID: <" << cid << ">" << CRLF;
+    strm << "Content-Description: " << descrip[type] << CRLF ;
+    if (enc != x_plain)
+         strm << "Content-Encoding: " << encoding[enc] << CRLF ;
+
+    strm << CRLF;
+}
 
 /** Generate an HTTP 1.0 response header for an Error object.
     @param out Write the MIME header to this FILE pointer.

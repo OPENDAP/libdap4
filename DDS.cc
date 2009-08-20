@@ -1059,7 +1059,7 @@ public:
     expression.
     @param blob The dataBLOB href. */
 void
-DDS::print_xml(ostream &out, bool constrained, const string &)
+DDS::print_xml(ostream &out, bool constrained, const string &blob)
 {
     out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" ;
 
@@ -1080,11 +1080,12 @@ DDS::print_xml(ostream &out, bool constrained, const string &)
         out << "xmlns:dap=\"" << c_dap32_namespace << "\"\n" ;
 
         out << "dap_version=\"" << get_client_dap_major() << "."
-            << get_client_dap_minor() << "\"\n";
+            << get_client_dap_minor() << "\"";
 
         if (!get_request_xml_base().empty()) {
+            out << "\n";
             out << "xmlns:xml=\"" << c_xml_namespace << "\"\n";
-            out << "xml:base=\"" << get_request_xml_base() << "\"\n";
+            out << "xml:base=\"" << get_request_xml_base() << "\"";
         }
 
         // Close the Dataset element
@@ -1105,9 +1106,16 @@ DDS::print_xml(ostream &out, bool constrained, const string &)
     out << "\n" ;
 
     // Only print this for the 2.0, 3.0 and 3.1 versions - which are essentially
-    // the same. jhrg
+    // the same.
+    // For DAP 3.2 and greater, use the new syntax and value. The 'blob' is
+    // actually the CID of the MIME part that holds the data.
     if (get_client_dap_major() == 2 && get_client_dap_minor() == 0) {
         out << "    <dataBLOB href=\"\"/>\n" ;
+    }
+    else if (!blob.empty()
+	     && (get_client_dap_major() == 3 && get_client_dap_minor() >= 2)
+	     || get_client_dap_major() >= 4) {
+	out << "    <blob href=\"cid:" << blob << "\"/>\n";
     }
 
     out << "</Dataset>\n" ;

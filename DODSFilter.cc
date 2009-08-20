@@ -56,6 +56,8 @@ static char rcsid[] not_used =
 #include <algorithm>
 #include <cstdlib>
 
+#include <uuid/uuid.h>	// used to build CID header value for data ddx
+
 #include <GetOpt.h>
 
 #include "DAS.h"
@@ -74,6 +76,8 @@ static char rcsid[] not_used =
 #include "EventHandler.h"
 #include "AlarmHandler.h"
 #endif
+
+#define CRLF "\r\n"             // Change here, expr-test.cc and DODSFilter.cc
 
 using namespace std;
 
@@ -931,6 +935,7 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
         throw;
     }
 }
+
 //#if FILE_METHODS
 void
 DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
@@ -982,6 +987,87 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
         throw;
     }
 }
+
+void
+DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
+                               ostream &out, const string &boundary,
+                               const string &start) const
+{
+    // Write the MPM headers for the DDX (text/xml) part of the response
+    set_mime_ddx_boundary(out, boundary, start, dap4_ddx);
+
+    // Make cid
+    uuid_t uu;
+    uuid_generate(uu);
+    char uuid[37];
+    uuid_unparse(uu, &uuid[0]);
+    char domain[256];
+    if (getdomainname(domain, 255) != 0)
+	strncpy(domain, "getdomainname.failed", 255);
+
+    string cid = string(&uuid[0]) + "@" + string(&domain[0]);
+
+    // Send constrained DDX with a data blob reference
+    dds.print_xml(out, true, cid);
+
+    // Write the MPM headers for the data part of the response.
+    set_mime_data_boundary(out, boundary, cid, dap4_data, binary);
+
+    // Grab a stream that encodes using XDR.
+    XDRStreamMarshaller m( out ) ;
+
+    try {
+        // Send all variables in the current projection (send_p())
+        for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
+            if ((*i)->send_p()) {
+                DBG(cerr << "Sending " << (*i)->name() << endl);
+                (*i)->serialize(eval, dds, m, true);
+            }
+    }
+    catch (Error & e) {
+        throw;
+    }
+}
+#if 0
+void
+DODSFilter::functional_constraint_ddx(BaseType &var, DDS &dds,
+                                  ConstraintEvaluator &eval, ostream &out) const
+{
+    // Write the MPM headers for the DDX (text/xml) part of the response
+    set_mime_ddx_boundary(out, boundary, start, dap4_ddx);
+
+    // Make cid
+    uuid_t uu;
+    uuid_generate(uu);
+    char uuid[37];
+    uuid_unparse(uu, &uuid[0]);
+    char domain[256];
+    if (getdomainname(domain, 255) != 0)
+	strncpy(domain, "getdomainname.failed", 255);
+
+    string cid = string(&uuid[0]) + "@" + string(&domain[0]);
+
+    // Build a new DDS with just this variable in it
+    var.print(xml)
+    out << "Dataset {\n" ;
+    var.print_decl(out, "    ", true, false, true);
+    out << "} function_value;\n" ;
+    out << "Data:\n" ;
+
+    out << flush ;
+
+    // Grab a stream encodes using XDR.
+    XDRStreamMarshaller m( out ) ;
+
+    try {
+        // In the following call to serialize, suppress CE evaluation.
+        var.serialize(eval, dds, m, false);
+    }
+    catch (Error &e) {
+        throw;
+    }
+}
+#endif
 //#if FILE_METHODS
 /** Send the data in the DDS object back to the client program. The data is
     encoded using a Marshaller, and enclosed in a MIME document which is all sent
@@ -1206,7 +1292,7 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
     else {
         if (with_mime_headers)
             set_mime_text(out, dap4_ddx, d_cgi_ver, x_plain, dds_lmt);
-        dds.print_xml(out, !d_ce.empty(), d_url + ".blob?" + d_ce);
+        dds.print_xml(out, !d_ce.empty(), "");
     }
 }
 //#endif
@@ -1244,9 +1330,87 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
     else {
         if (with_mime_headers)
             set_mime_text(out, dap4_ddx, d_cgi_ver, x_plain, dds_lmt);
-        dds.print_xml(out, !d_ce.empty(), d_url + ".blob?" + d_ce);
+        dds.print_xml(out, !d_ce.empty(), "");
     }
 }
+
+/** Send the data in the DDS object back to the client program. The data is
+    encoded using a Marshaller, and enclosed in a MIME document which is all sent
+    to \c data_stream. If this is being called from a CGI, \c data_stream is
+    probably \c stdout and writing to it has the effect of sending the
+    response back to the client.
+
+    @brief Transmit data.
+    @param dds A DDS object containing the data to be sent.
+    @param eval A reference to the ConstraintEvaluator to use.
+    @param data_stream Write the response to this stream.
+    @param anc_location A directory to search for ancillary files (in
+    addition to the CWD).  This is used in a call to
+    get_data_last_modified_time().
+    @param with_mime_headers If true, include the MIME headers in the response.
+    Defaults to true.
+    @return void */
+void
+DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
+                      ostream & data_stream, const string &start,
+                      const string &boundary, const string & anc_location,
+                      bool with_mime_headers) const
+{
+    // If this is a conditional request and the server should send a 304
+    // response, do that and exit. Otherwise, continue on and send the full
+    // response.
+    time_t data_lmt = get_data_last_modified_time(anc_location);
+    if (is_conditional()
+        && data_lmt <= get_request_if_modified_since()
+        && with_mime_headers) {
+        set_mime_not_modified(data_stream);
+        return;
+    }
+    // Set up the alarm.
+    establish_timeout(data_stream);
+    dds.set_timeout(d_timeout);
+
+    eval.parse_constraint(d_ce, dds);   // Throws Error if the ce doesn't
+					// parse.
+
+    dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
+
+    // Start sending the response...
+
+    // Handle *functional* constraint expressions specially
+    if (eval.functional_expression()) {
+        BaseType *var = eval.eval_function(dds, d_dataset);
+        if (!var)
+            throw Error(unknown_error, "Error calling the CE function.");
+
+        if (with_mime_headers)
+            set_mime_multipart(data_stream, boundary, start, dap4_data_ddx,
+		d_cgi_ver, x_plain, data_lmt);
+	data_stream << flush ;
+	BaseTypeFactory btf;
+	DDS var_dds(&btf, var->name());
+	var->set_send_p(true);
+	var_dds.add_var(var);
+        dataset_constraint_ddx(var_dds, eval, data_stream, boundary, start);
+
+        // functional_constraint_ddx(*var, dds, eval, data_stream, boundary);
+        delete var;
+        var = 0;
+    }
+    else {
+        if (with_mime_headers)
+            set_mime_multipart(data_stream, boundary, start, dap4_data_ddx,
+        	    d_cgi_ver, x_plain, data_lmt);
+        data_stream << flush ;
+        dataset_constraint_ddx(dds, eval, data_stream, boundary, start);
+    }
+
+    data_stream << flush ;
+
+    if (with_mime_headers)
+	data_stream << CRLF << "--" << boundary << "--" << CRLF;
+}
+
 //#if FILE_METHODS
 /** Write the BLOB response to the client.
     @param dds Use the variables in this DDS to generate the BLOB response.

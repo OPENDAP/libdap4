@@ -44,8 +44,9 @@ namespace libdap
        dods_error,
        web_error,
        dap4_ddx,
-       dap4_datax,
-       dap4_errorx
+       dap4_data,
+       dap4_error,
+       dap4_data_ddx
      };
      </pre>
 
@@ -59,9 +60,10 @@ enum ObjectType {
     dods_data,
     dods_error,
     web_error,
-    dap4_ddx,
-    dap4_datax,
-    dap4_errorx
+    dap4_ddx,	// This describes the DDX part of the data_ddx response
+    dap4_data,	// The Data part of the data_ddx
+    dap4_error,
+    dap4_data_ddx	// This is the description for the whole data_ddx
 };
 
 } // namespace libdap

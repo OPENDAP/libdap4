@@ -107,6 +107,20 @@ void set_mime_binary(FILE *out, ObjectType type = unknown_type,
 void set_mime_binary(ostream &out, ObjectType type = unknown_type,
                      const string &version = "", EncodingType enc = x_plain,
                      const time_t last_modified = 0);
+
+void set_mime_multipart(ostream &out, const string &boundary,
+	const string &start, ObjectType type = unknown_type,
+        const string &version = "", EncodingType enc = x_plain,
+        const time_t last_modified = 0);
+
+void set_mime_ddx_boundary(ostream &out, const string &boundary,
+	const string &start, ObjectType type = unknown_type,
+        EncodingType enc = x_plain);
+
+void set_mime_data_boundary(ostream &out, const string &boundary,
+	const string &cid, ObjectType type = unknown_type,
+        EncodingType enc = x_plain);
+
 void set_mime_error(FILE *out, int code = 404,
                     const string &reason = "Dataset not found",
                     const string &version = "");
@@ -115,6 +129,7 @@ void set_mime_error(ostream &out, int code = 404,
                     const string &version = "");
 void set_mime_not_modified(FILE *out);
 void set_mime_not_modified(ostream &out);
+
 
 //@}
 

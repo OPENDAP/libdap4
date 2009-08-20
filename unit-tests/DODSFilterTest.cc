@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -38,8 +38,13 @@
 
 #include "DODSFilter.h"
 #include "DAS.h"
+#include "DDS.h"
 #include "GNURegex.h"
 #include "debug.h"
+
+#include "../tests/TestTypeFactory.h"
+#include "../tests/TestByte.h"
+
 #include <test_config.h>
 
 
@@ -47,17 +52,20 @@ using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
+int test_variable_sleep_interval = 0;
+
 class DODSFilterTest : public TestFixture {
 private:
-    DODSFilter *df, *df1, *df2, *df3, *df4, *df5, *df6;
+    DODSFilter *df, *df_conditional, *df1, *df2, *df3, *df4, *df5, *df6;
 
     AttrTable *cont_a;
     DAS *das;
+    DDS *dds;
     ostringstream oss;
     time_t now;
     char now_array[256];
 
-public: 
+public:
     DODSFilterTest() {
 	now = time(0);
 	ostringstream time_string;
@@ -73,6 +81,9 @@ public:
 	string test_file = (string)TEST_SRC_DIR + "/server-testsuite/bears.data" ;
 	char *argv_1[] = {"test_case", (char *)test_file.c_str()};
 	df = new DODSFilter(2, argv_1);
+
+	char *argv_1_1[] = {"test_case", (char *)test_file.c_str(), "-l", &now_array[0]};
+	df_conditional = new DODSFilter(4, argv_1_1);
 
 	// Test missing file
 	argv_1[1] = "no-such-file";
@@ -131,10 +142,20 @@ public:
 	//              String type cars;
 	//          }
 	//      }
+
+	TestTypeFactory ttf;
+	dds = new DDS(&ttf, "test");
+	TestByte a("a");
+	dds->add_var(&a);
+
+	dds->transfer_attributes(das);
+	dds->set_client_dap_major(3);
+	dds->set_client_dap_minor(2);
     }
 
     void tearDown() {
 	delete df; df = 0;
+	delete df_conditional; df_conditional = 0;
 	delete df1; df1 = 0;
 	delete df2; df2 = 0;
 	delete df3; df3 = 0;
@@ -145,10 +166,6 @@ public:
 	delete das; das = 0;
     }
 
-    void reset_oss() {
-	oss.str("");
-    }	
-
     bool re_match(Regex &r, const string &s) {
 	DBG(cerr << "s.length(): " << s.length() << endl);
 	int pos = r.match(s.c_str(), s.length());
@@ -156,6 +173,12 @@ public:
 	return pos > 0 && static_cast<unsigned>(pos) == s.length();
     }
 
+    bool re_match_binary(Regex &r, const string &s) {
+	DBG(cerr << "s.length(): " << s.length() << endl);
+	int pos = r.match(s.c_str(), s.length());
+	DBG(cerr << "r.match(s): " << pos << endl);
+	return pos > 0;
+    }
     // Tests for methods
     void read_ancillary_das_test() {
     }
@@ -195,49 +218,233 @@ public:
 	CPPUNIT_ASSERT(df3->get_das_last_modified_time() == st.st_mtime);
     }
 
-#if 0
     void send_das_test() {
-#if 0
-	// I'm pretty sure I've fixed this... It should always work now. I
-	// set the time in df3 to 'now' so that should always be later than
-	// whenever the das was pulled from cvs. 09/05/03 jhrg
-	cerr << endl
-	     << "Note: the send_das() tests depend, in part, on having data\r\n\
- sources written on a certain date. These work with my copies of the files,\r\n\
- but these tests probably will not work with files checked out of CVS."
-	     << endl;
-#endif
-
 	Regex r1("HTTP/1.0 200 OK\r\n\
-XDODS-Server:.*\r\n\
-XOPeNDAP-Server: dods-test/0.00\r\n\
-XDAP: .*\r\n\
-Date: .*\r\n\
-Last-Modified: .*\r\n\
-Content-type: text/plain\r\n\
+XDODS-Server: .*\
+XOPeNDAP-Server: .*\
+XDAP: .*\
+Date: .*\
+Last-Modified: .*\
+Content-Type: text/plain\r\n\
 Content-Description: dods_das\r\n\
 \r\n\
-Attributes \\{\r\n\
-    a \\{\r\n\
-        Int32 size 7;\r\n\
-        String type cars;\r\n\
-    \\}\r\n\
-\\}.*\n");
+Attributes \\{\n\
+    a \\{\n\
+        Int32 size 7;\n\
+        String type \"cars\";\n\
+    \\}\n\
+\\}\n");
+
 	df->send_das(oss, *das);
 
 	DBG(cerr << "DAS: " << oss.str() << endl);
 
 	CPPUNIT_ASSERT(re_match(r1, oss.str()));
-	reset_oss();
+	oss.str("");
 
 	Regex r2("HTTP/1.0 304 NOT MODIFIED\r\n\
 Date: .*\r\n\
-\r\n\
-");
-	df3->send_das(oss, *das);
+\r\n");
+
+	df_conditional->send_das(oss, *das);
 	CPPUNIT_ASSERT(re_match(r2, oss.str()));
-    }	
-#endif
+    }
+
+    void send_dds_test() {
+	Regex r1("HTTP/1.0 200 OK\r\n\
+XDODS-Server: .*\
+XOPeNDAP-Server: .*\
+XDAP: .*\
+Date: .*\
+Last-Modified: .*\
+Content-Type: text/plain\r\n\
+Content-Description: dods_dds\r\n\
+\r\n\
+Dataset \\{\n\
+    Byte a;\n\
+\\} test;\n");
+
+	ConstraintEvaluator ce;
+
+	df->send_dds(oss, *dds, ce);
+
+	DBG(cerr << "DDS: " << oss.str() << endl);
+
+	CPPUNIT_ASSERT(re_match(r1, oss.str()));
+	oss.str("");
+
+	Regex r2("HTTP/1.0 304 NOT MODIFIED\r\n\
+Date: .*\r\n\
+\r\n");
+
+	df_conditional->send_dds(oss, *dds, ce);
+	CPPUNIT_ASSERT(re_match(r2, oss.str()));
+    }
+
+    void send_ddx_test() {
+	Regex r1("HTTP/1.0 200 OK\r\n\
+XDODS-Server: .*\
+XOPeNDAP-Server: .*\
+XDAP: .*\
+Date: .*\
+Last-Modified: .*\
+Content-Type: text/xml\r\n\
+Content-Description: dap4-ddx\r\n\
+\r\n\
+<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>.*\
+<Dataset name=\"test\".*\
+.*\
+xmlns=\"http://xml.opendap.org/ns/DAP/3.2#\".*\
+xmlns:dap=\"http://xml.opendap.org/ns/DAP/3.2#\".*\
+dap_version=\"3.2\">.*\
+.*\
+<Byte name=\"a\">.*\
+    <Attribute name=\"size\" type=\"Int32\">.*\
+        <value>7</value>.*\
+    </Attribute>.*\
+    <Attribute name=\"type\" type=\"String\">.*\
+        <value>cars</value>.*\
+    </Attribute>.*\
+</Byte>.*\
+.*\
+</Dataset>.*");
+
+	ConstraintEvaluator ce;
+
+	try {
+	    df->send_ddx(*dds, ce, oss);
+
+	    DBG(cerr << "DDX: " << oss.str() << endl);
+
+	    CPPUNIT_ASSERT(re_match(r1, oss.str()));
+	    oss.str("");
+
+	    Regex r2("HTTP/1.0 304 NOT MODIFIED\r\n\
+Date: .*\r\n\
+\r\n");
+
+	    df_conditional->send_ddx(*dds, ce, oss);
+	    CPPUNIT_ASSERT(re_match(r2, oss.str()));
+	}
+	catch(Error &e) {
+	    cerr << "Error (line 306): " << e.get_error_message() << endl;
+	}
+    }
+
+    void send_data_ddx_test() {
+	Regex r1("HTTP/1.0 200 OK\r\n\
+.*\
+XDAP: 3.2\r\n\
+.*\
+Content-Type: Multipart/Related; boundary=boundary; start=\"<start@opendap.org>\"; type=\"Text/xml\"\r\n\
+Content-Description: dap4-data-ddx\r\n\
+\r\n\
+--boundary\r\n\
+Content-Type: Text/xml; charset=iso-8859-1\r\n\
+Content-ID: <start@opendap.org>\r\n\
+Content-Description: dap4-ddx\r\n\
+\r\n\
+<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>.*\
+<Dataset name=\"test\".*\
+.*\
+dap_version=\"3.2\">.*\
+.*\
+    <Byte name=\"a\">.*\
+        <Attribute name=\"size\" type=\"Int32\">.*\
+            <value>7</value>.*\
+        </Attribute>.*\
+        <Attribute name=\"type\" type=\"String\">.*\
+            <value>cars</value>.*\
+        </Attribute>.*\
+    </Byte>.*\
+.*\
+    <blob href=\"cid:.*@.*\"/>.*\
+</Dataset>.*\
+--boundary\r\n\
+Content-Type: application/octet-stream\r\n\
+Content-ID: <.*@.*>\r\n\
+Content-Description: dap4-data\r\n\
+Content-Encoding: binary\r\n\
+\r\n\
+.*");
+
+	// I do not look for the closing '--boundary' because the binary
+	// data breaks the regex functions in the c library WRT subsequent
+	// pattern matches. jhrg
+	//--boundary--\r\n");
+
+	ConstraintEvaluator ce;
+
+	try {
+	    df->send_data_ddx(*dds, ce, oss, "start@opendap.org", "boundary",
+		    "", true);
+
+	    DBG(cerr << "DataDDX: " << oss.str() << endl);
+
+	    CPPUNIT_ASSERT(re_match_binary(r1, oss.str()));
+	    oss.str("");
+
+	    Regex r2("HTTP/1.0 304 NOT MODIFIED\r\n\
+Date: .*\r\n\
+\r\n");
+
+	    df_conditional->send_data_ddx(*dds, ce, oss, "start@opendap.org",
+		    "boundary", "", true);
+	    CPPUNIT_ASSERT(re_match(r2, oss.str()));
+	}
+	catch(Error &e) {
+	    cerr << "Error (line 306): " << e.get_error_message() << endl;
+	}
+    }
+
+    void send_data_ddx_test2() {
+	Regex r1("--boundary\r\n\
+Content-Type: Text/xml; charset=iso-8859-1\r\n\
+Content-ID: <start@opendap.org>\r\n\
+Content-Description: dap4-ddx\r\n\
+\r\n\
+<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>.*\
+<Dataset name=\"test\".*\
+.*\
+dap_version=\"3.2\">.*\
+.*\
+    <Byte name=\"a\">.*\
+        <Attribute name=\"size\" type=\"Int32\">.*\
+            <value>7</value>.*\
+        </Attribute>.*\
+        <Attribute name=\"type\" type=\"String\">.*\
+            <value>cars</value>.*\
+        </Attribute>.*\
+    </Byte>.*\
+.*\
+    <blob href=\"cid:.*@.*\"/>.*\
+</Dataset>.*\
+--boundary\r\n\
+Content-Type: application/octet-stream\r\n\
+Content-ID: <.*@.*>\r\n\
+Content-Description: dap4-data\r\n\
+Content-Encoding: binary\r\n\
+\r\n\
+.*");
+
+	ConstraintEvaluator ce;
+
+	try {
+	    df->send_data_ddx(*dds, ce, oss, "start@opendap.org", "boundary",
+		    "", false);
+	    DBG(cerr << "DataDDX: " << oss.str() << endl);
+	    CPPUNIT_ASSERT(re_match_binary(r1, oss.str()));
+
+	    // Unlike the test where the full headers are generated, there's
+	    // no check for a conditional response here because that feature
+	    // of DODSFilter is only supported when MIME headers are built by
+	    // the class. In order to return a '304' response, headers must be
+	    // built.
+	}
+	catch(Error &e) {
+	    cerr << "Error (line 306): " << e.get_error_message() << endl;
+	}
+    }
 
     void is_conditional_test() {
 	CPPUNIT_ASSERT(df->is_conditional() == false);
@@ -290,11 +497,13 @@ Date: .*\r\n\
 
     CPPUNIT_TEST(get_dataset_last_modified_time_test);
     CPPUNIT_TEST(get_das_last_modified_time_test);
-    // Removed until I can figure out how to test using the FILE-based 
-    // methods. jhrg 1/18/06
-#if 0
+
     CPPUNIT_TEST(send_das_test);
-#endif
+    CPPUNIT_TEST(send_dds_test);
+    CPPUNIT_TEST(send_ddx_test);
+    CPPUNIT_TEST(send_data_ddx_test);
+    CPPUNIT_TEST(send_data_ddx_test2);
+
     CPPUNIT_TEST(is_conditional_test);
     CPPUNIT_TEST(get_request_if_modified_since_test);
     CPPUNIT_TEST(escape_code_test);
@@ -304,7 +513,7 @@ Date: .*\r\n\
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DODSFilterTest);
 
-int 
+int
 main( int, char** )
 {
     CppUnit::TextTestRunner runner;

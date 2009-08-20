@@ -121,7 +121,8 @@ DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 DDXParserTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DODSFilterTest_SOURCES = DODSFilterTest.cc
-DODSFilterTest_LDADD = ../libdapserver.la ../libdap.la $(AM_LDADD)
+DODSFilterTest_LDADD = ../libdapserver.la ../libdap.la \
+	../tests/libtest-types.a $(AM_LDADD)
 
 generalUtilTest_SOURCES = generalUtilTest.cc
 generalUtilTest_LDADD = ../libdap.la $(AM_LDADD)

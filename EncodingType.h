@@ -37,7 +37,9 @@ namespace libdap
      enum EncodingType {
        unknown_enc,
        deflate,
-       x_plain
+       x_plain,
+       gzip,
+       binary
      };
     </code>
 
@@ -46,7 +48,9 @@ namespace libdap
 enum EncodingType {
     unknown_enc,
     deflate,
-    x_plain
+    x_plain,
+    gzip,
+    binary
 };
 
 } // namespace libdap

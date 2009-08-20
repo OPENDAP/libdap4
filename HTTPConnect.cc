@@ -132,10 +132,12 @@ get_type(const string &value)
         return web_error;
     else if ((value == "dap4_ddx") | (value == "dap4-ddx"))
         return dap4_ddx;
-    else if ((value == "dap4_datax") | (value == "dap4-datax"))
-        return dap4_datax;
-    else if ((value == "dap4_errorx") | (value == "dap4-errorx"))
-        return dap4_errorx;
+    else if ((value == "dap4_data") | (value == "dap4-data"))
+        return dap4_data;
+    else if ((value == "dap4_error") | (value == "dap4-error"))
+        return dap4_error;
+    else if ((value == "dap4_data_ddx") | (value == "dap4-data-ddx"))
+        return dap4_data_ddx;
     else
         return unknown_type;
 }
@@ -160,10 +162,12 @@ get_description_type(const string &value)
         return web_error;
     else if ((value == "dap4_ddx") | (value == "dap4-ddx"))
         return dap4_ddx;
-    else if ((value == "dap4_datax") | (value == "dap4-datax"))
-        return dap4_datax;
-    else if ((value == "dap4_errorx") | (value == "dap4-errorx"))
-        return dap4_errorx;
+    else if ((value == "dap4_data") | (value == "dap4-data"))
+        return dap4_data;
+    else if ((value == "dap4_error") | (value == "dap4-error"))
+        return dap4_error;
+    else if ((value == "dap4_data_ddx") | (value == "dap4-data-ddx"))
+        return dap4_data_ddx;
     else
         return unknown_type;
 }
@@ -412,7 +416,7 @@ HTTPConnect::www_lib_init()
     // Look to see if cookies are turned on in the .dodsrc file. If so,
     // activate here. We honor 'session cookies' (cookies without an
     // expiration date) here so that session-base SSO systems will work as
-    // expected.  
+    // expected.
     if (!d_cookie_jar.empty()) {
 	DBG(cerr << "Setting the cookie jar to: " << d_cookie_jar << endl);
         curl_easy_setopt(d_curl, CURLOPT_COOKIEJAR, d_cookie_jar.c_str());
@@ -578,7 +582,7 @@ HTTPConnect::url_uses_no_proxy_for(const string &url) throw()
 
 HTTPConnect::HTTPConnect(RCReader *rcr) : d_username(""), d_password(""),
   					  d_cookie_jar(""),
-					  d_dap_client_protocol_major(2), 
+					  d_dap_client_protocol_major(2),
 					  d_dap_client_protocol_minor(0)
 
 {

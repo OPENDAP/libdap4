@@ -194,14 +194,28 @@ public:
                           bool with_mime_headers = true) const;
     virtual void functional_constraint(BaseType &var, DDS &dds,
                                        ConstraintEvaluator &eval, ostream &out) const;
+#if 0
+    virtual void functional_constraint_ddx(BaseType &var, DDS &dds,
+                                       ConstraintEvaluator &eval, ostream &out,
+                                       const string &boundary) const;
+#endif
     virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
                                     ostream &out) const;
+    virtual void dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
+                                   ostream &out, const string &boundary,
+                                   const string &start) const;
+
     virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
                            ostream &data_stream,
                            const string &anc_location = "",
                            bool with_mime_headers = true) const;
     virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
                           bool with_mime_headers = true) const;
+    virtual void send_data_ddx(DDS &dds, ConstraintEvaluator &eval,
+                           ostream &data_stream, const string &start,
+                           const string &boundary,
+                           const string &anc_location = "",
+                           bool with_mime_headers = true) const;
 
     //#if FILE_METHODS
     virtual void establish_timeout(FILE *stream) const;
