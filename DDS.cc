@@ -434,6 +434,9 @@ DDS::set_dap_version(const string &version_string)
     set_dap_major(major);
     set_dap_minor(minor);
 }
+#if 0
+
+// Having two dap versions is really confusing things... jhrg 8/21/09
 
 /** Given a version string passed to a server from a client in the XDAP-Accept
     MIME header, parse that string and record the major and minor protocol
@@ -462,7 +465,7 @@ DDS::set_client_dap_version(const string &version_string)
     set_client_dap_major(major);
     set_client_dap_minor(minor);
 }
-
+#endif
 /** Get and set the current container. If there are multiple files being
     used to build this DDS, using a container will set a virtual structure
     for the current container.
@@ -998,12 +1001,12 @@ DDS::print_xml(FILE *out, bool constrained, const string &)
     fprintf(out, "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
 
     fprintf(out,"method=\"FILE*\"\n");
-    fprintf(out, "dap_major=\"%d\"\n", get_client_dap_major());
-    fprintf(out, "dap_minor=\"%d\"\n", get_client_dap_minor());
+    fprintf(out, "dap_major=\"%d\"\n", get_dap_major());
+    fprintf(out, "dap_minor=\"%d\"\n", get_dap_minor());
 
     // Are we responding to a 3.2 or 2.0 client? We will have to improve on
     // this at some point... jhrg
-    if (get_client_dap_major() == 3 && get_client_dap_minor() == 2) {
+    if (get_dap_major() == 3 && get_dap_minor() == 2) {
     fprintf(out, "xmlns=\"%s\"\n", c_dap32_namespace.c_str());
 
     fprintf(out, "xsi:schemaLocation=\"%s  %s\">\n\n",
@@ -1026,7 +1029,7 @@ DDS::print_xml(FILE *out, bool constrained, const string &)
 
     // Only print this for the 2.0, 3.0 and 3.1 versions - which are essentially
     // the same. jhrg
-    if (get_client_dap_major() == 2 && get_client_dap_minor() == 0) {
+    if (get_dap_major() == 2 && get_dap_minor() == 0) {
         fprintf(out, "    <dataBLOB href=\"\"/>\n");
     }
 
@@ -1069,7 +1072,7 @@ DDS::print_xml(ostream &out, bool constrained, const string &blob)
 
     // Are we responding to a 3.2 or 2.0 client? We will have to improve on
     // this at some point... jhrg
-    if (get_client_dap_major() == 3 && get_client_dap_minor() == 2) {
+    if (get_dap_major() == 3 && get_dap_minor() == 2) {
         out << "xsi:schemaLocation=\"" << c_dap32_namespace
             << "  " << c_default_dap32_schema_location << "\"\n" ;
 
@@ -1079,8 +1082,8 @@ DDS::print_xml(ostream &out, bool constrained, const string &blob)
         out << "xmlns=\"" << c_dap32_namespace << "\"\n" ;
         out << "xmlns:dap=\"" << c_dap32_namespace << "\"\n" ;
 
-        out << "dap_version=\"" << get_client_dap_major() << "."
-            << get_client_dap_minor() << "\"";
+        out << "dap_version=\"" << get_dap_major() << "."
+            << get_dap_minor() << "\"";
 
         if (!get_request_xml_base().empty()) {
             out << "\n";
@@ -1109,12 +1112,12 @@ DDS::print_xml(ostream &out, bool constrained, const string &blob)
     // the same.
     // For DAP 3.2 and greater, use the new syntax and value. The 'blob' is
     // actually the CID of the MIME part that holds the data.
-    if (get_client_dap_major() == 2 && get_client_dap_minor() == 0) {
+    if (get_dap_major() == 2 && get_dap_minor() == 0) {
         out << "    <dataBLOB href=\"\"/>\n" ;
     }
     else if (!blob.empty()
-	     && (get_client_dap_major() == 3 && get_client_dap_minor() >= 2)
-	     || get_client_dap_major() >= 4) {
+	     && (get_dap_major() == 3 && get_dap_minor() >= 2)
+	     || get_dap_major() >= 4) {
 	out << "    <blob href=\"cid:" << blob << "\"/>\n";
     }
 

@@ -278,6 +278,9 @@ public:
     void set_dap_minor(int p) { d_dap_minor = p; }
 
     void set_dap_version(const string &version_string);
+#if 0
+    // These are confusing things because having two version numbers, even
+    // though the idea is good sounding, is breaking stuff.
 
     /// Get the DAP major version as sent by the client
     int get_client_dap_major() const { return d_client_dap_major; }
@@ -290,6 +293,7 @@ public:
     void set_client_dap_minor(int p) { d_client_dap_minor = p; }
 
     void set_client_dap_version(const string &version_string);
+#endif
 
     /// Get the URL that will return this DDS/DDX/DataThing
     string get_request_xml_base() const { return d_request_xml_base; }

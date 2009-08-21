@@ -631,7 +631,7 @@ void set_mime_ddx_boundary(ostream &strm, const string &boundary,
 {
     strm << "--" << boundary << CRLF;
     strm << "Content-Type: Text/xml; charset=iso-8859-1" << CRLF;
-    strm << "Content-ID: <" << cid << ">" << CRLF;
+    strm << "Content-Id: <" << cid << ">" << CRLF;
     strm << "Content-Description: " << descrip[type] << CRLF ;
     if (enc != x_plain)
          strm << "Content-Encoding: " << encoding[enc] << CRLF ;
@@ -644,7 +644,7 @@ void set_mime_data_boundary(ostream &strm, const string &boundary,
 {
     strm << "--" << boundary << CRLF;
     strm << "Content-Type: application/octet-stream" << CRLF;
-    strm << "Content-ID: <" << cid << ">" << CRLF;
+    strm << "Content-Id: <" << cid << ">" << CRLF;
     strm << "Content-Description: " << descrip[type] << CRLF ;
     if (enc != x_plain)
          strm << "Content-Encoding: " << encoding[enc] << CRLF ;
