@@ -1002,8 +1002,8 @@ DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
     char uuid[37];
     uuid_unparse(uu, &uuid[0]);
     char domain[256];
-    if (getdomainname(domain, 255) != 0)
-	strncpy(domain, "getdomainname.failed", 255);
+    if (getdomainname(domain, 255) != 0 || strlen(domain) == 0)
+	strncpy(domain, "opendap.org", 255);
 
     string cid = string(&uuid[0]) + "@" + string(&domain[0]);
 
