@@ -149,8 +149,8 @@ public:
 	dds->add_var(&a);
 
 	dds->transfer_attributes(das);
-	dds->set_client_dap_major(3);
-	dds->set_client_dap_minor(2);
+	dds->set_dap_major(3);
+	dds->set_dap_minor(2);
     }
 
     void tearDown() {
@@ -341,7 +341,7 @@ Content-Description: dap4-data-ddx\r\n\
 \r\n\
 --boundary\r\n\
 Content-Type: Text/xml; charset=iso-8859-1\r\n\
-Content-ID: <start@opendap.org>\r\n\
+Content-Id: <start@opendap.org>\r\n\
 Content-Description: dap4-ddx\r\n\
 \r\n\
 <\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>.*\
@@ -362,7 +362,7 @@ dap_version=\"3.2\">.*\
 </Dataset>.*\
 --boundary\r\n\
 Content-Type: application/octet-stream\r\n\
-Content-ID: <.*@.*>\r\n\
+Content-Id: <.*@.*>\r\n\
 Content-Description: dap4-data\r\n\
 Content-Encoding: binary\r\n\
 \r\n\
@@ -400,7 +400,7 @@ Date: .*\r\n\
     void send_data_ddx_test2() {
 	Regex r1("--boundary\r\n\
 Content-Type: Text/xml; charset=iso-8859-1\r\n\
-Content-ID: <start@opendap.org>\r\n\
+Content-Id: <start@opendap.org>\r\n\
 Content-Description: dap4-ddx\r\n\
 \r\n\
 <\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>.*\
@@ -421,7 +421,7 @@ dap_version=\"3.2\">.*\
 </Dataset>.*\
 --boundary\r\n\
 Content-Type: application/octet-stream\r\n\
-Content-ID: <.*@.*>\r\n\
+Content-Id: <.*@.*>\r\n\
 Content-Description: dap4-data\r\n\
 Content-Encoding: binary\r\n\
 \r\n\
