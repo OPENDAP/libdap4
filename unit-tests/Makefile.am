@@ -105,7 +105,8 @@ ByteTest_SOURCES = ByteTest.cc
 ByteTest_LDADD = ../libdap.la $(AM_LDADD)
 
 cgiUtilTest_SOURCES = cgiUtilTest.cc
-cgiUtilTest_LDADD = ../libdapserver.la ../libdap.la $(AM_LDADD)
+cgiUtilTest_LDADD = ../libdap.la $(AM_LDADD)
+#  ../libdapserver.la
 
 ancT_SOURCES = ancT.cc
 ancT_LDADD = ../libdapserver.la ../libdap.la $(AM_LDADD)
@@ -118,20 +119,24 @@ DDSTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DDXParserTest_SOURCES = DDXParserTest.cc
 DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
-DDXParserTest_LDADD = ../libdap.la ../libdapserver.la $(AM_LDADD)
+DDXParserTest_LDADD = ../libdap.la $(AM_LDADD)
+#  ../libdapserver.la 
 
 DODSFilterTest_SOURCES = DODSFilterTest.cc
 DODSFilterTest_LDADD = ../libdapserver.la ../libdap.la \
 	../tests/libtest-types.a $(AM_LDADD)
 
 generalUtilTest_SOURCES = generalUtilTest.cc
-generalUtilTest_LDADD = ../libdap.la ../libdapserver.la $(AM_LDADD)
+generalUtilTest_LDADD = ../libdap.la $(AM_LDADD)
+# ../libdapserver.la 
 
 HTTPCacheTest_SOURCES = HTTPCacheTest.cc
-HTTPCacheTest_LDADD = ../libdapclient.la ../libdap.la ../libdapserver.la $(AM_LDADD)
+HTTPCacheTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
+#  ../libdapserver.la
 
 HTTPConnectTest_SOURCES = HTTPConnectTest.cc
-HTTPConnectTest_LDADD = ../libdapclient.la ../libdap.la ../libdapserver.la $(AM_LDADD)
+HTTPConnectTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
+#  ../libdapserver.la
 
 parserUtilTest_SOURCES = parserUtilTest.cc
 parserUtilTest_LDADD = ../libdap.la $(AM_LDADD)
@@ -170,11 +175,13 @@ dasT_SOURCES = dasT.cc
 dasT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
 CEFunctionsTest_SOURCES = CEFunctionsTest.cc
-CEFunctionsTest_LDADD = ../tests/libtest-types.a ../libdapserver.la ../libdap.la $(AM_LDADD)
+CEFunctionsTest_LDADD = ../tests/libtest-types.a  ../libdap.la $(AM_LDADD)
+# ../libdapserver.la
 
 GridGeoConstraintTest_SOURCES = GridGeoConstraintTest.cc
-GridGeoConstraintTest_LDADD = ../tests/libtest-types.a ../libdapserver.la ../libdap.la $(AM_LDADD)
+GridGeoConstraintTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
+# ../libdapserver.la 
 
 ArrayGeoConstraintTest_SOURCES = ArrayGeoConstraintTest.cc
-ArrayGeoConstraintTest_LDADD = ../tests/libtest-types.a ../libdapserver.la ../libdap.la $(AM_LDADD)
-
+ArrayGeoConstraintTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
+# ../libdapserver.la 
