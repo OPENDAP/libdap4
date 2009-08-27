@@ -220,7 +220,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	Clause.cc RValue.cc ConstraintEvaluator.cc ArrayGeoConstraint.cc \
 	DapIndent.cc Operators.h					 \
 	XDRUtils.cc XDRFileMarshaller.cc XDRFileUnMarshaller.cc		 \
-	XDRStreamMarshaller.cc
+	XDRStreamMarshaller.cc mime_util.cc 
 
 Operators.h: ce_expr.tab.hh
 
@@ -231,7 +231,7 @@ CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 	AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc  \
 	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc
 
-SERVER_SRC = DODSFilter.cc mime_util.cc Ancillary.cc
+SERVER_SRC = DODSFilter.cc Ancillary.cc
 
 DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	BaseType.h Byte.h Int32.h Float64.h Str.h Url.h Vector.h Array.h   \
@@ -245,7 +245,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	expr.h Clause.h RValue.h ConstraintEvaluator.h ce_parser.h	  \
 	DapIndent.h DapObj.h XDRFileMarshaller.h Marshaller.h		  \
 	XDRFileUnMarshaller.h UnMarshaller.h XDRStreamMarshaller.h	  \
-	XDRUtils.h xdr-datatypes.h
+	XDRUtils.h xdr-datatypes.h mime_util.h cgi_util.h 
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h
@@ -274,8 +274,7 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h	 \
 	AISResources.h Resource.h HTTPCacheTable.h
 
-SERVER_HDR = DODSFilter.h mime_util.h cgi_util.h AlarmHandler.h \
-	EventHandler.h Ancillary.h
+SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support
