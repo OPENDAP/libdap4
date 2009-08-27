@@ -144,7 +144,9 @@ private:
     string d_protocol;          // DAP protocol from the server
 
     void process_data(DataDDS &data, Response *rs);
-
+#if 0
+    void process_data_ddx(DataDDS &data, Response *rs);
+#endif
     // Use when you cannot use libwww/libcurl. Reads HTTP response.
     void parse_mime(Response *rs);
 
@@ -204,7 +206,6 @@ public:
         return d_protocol;
     }
 
-
     virtual string request_version();
     virtual string request_protocol();
 
@@ -219,6 +220,9 @@ public:
 
     virtual void request_data(DataDDS &data, string expr = "");
     virtual void request_data_url(DataDDS &data);
+
+    virtual void request_data_ddx(DataDDS &data, string expr = "");
+    virtual void request_data_ddx_url(DataDDS &data);
 
     virtual void read_data(DataDDS &data, Response *rs);
     virtual void read_data_no_mime(DataDDS &data, Response *rs);

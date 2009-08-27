@@ -57,7 +57,7 @@ noinst_HEADERS = config_dap.h
 # outbuf_test_SOURCES = GNU/outbuf.cc
 
 getdap_SOURCES = getdap.cc
-getdap_LDADD = libdapclient.la libdap.la 
+getdap_LDADD = libdapclient.la libdap.la libdapserver.la
 getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 
 deflate_SOURCES = deflate.c
@@ -231,7 +231,7 @@ CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 	AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc  \
 	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc
 
-SERVER_SRC = DODSFilter.cc cgi_util.cc Ancillary.cc
+SERVER_SRC = DODSFilter.cc mime_util.cc Ancillary.cc
 
 DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	BaseType.h Byte.h Int32.h Float64.h Str.h Url.h Vector.h Array.h   \
@@ -274,7 +274,8 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h	 \
 	AISResources.h Resource.h HTTPCacheTable.h
 
-SERVER_HDR = DODSFilter.h cgi_util.h AlarmHandler.h EventHandler.h Ancillary.h
+SERVER_HDR = DODSFilter.h mime_util.h cgi_util.h AlarmHandler.h \
+	EventHandler.h Ancillary.h
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support

@@ -136,8 +136,8 @@ public:
     void set_accept_deflate(bool defalte);
     void set_xdap_protocol(int major, int minor);
 
-    /** Set the cookie jar. THis function sets the name of a file used to store 
-    cookies returned by servers. This will help with things like single 
+    /** Set the cookie jar. This function sets the name of a file used to store
+    cookies returned by servers. This will help with things like single
     sign on systems.
 
     @param cookie_jar The pathname to the file that stores cookies. If this
@@ -148,7 +148,7 @@ public:
     }
 
     /** Set the state of the HTTP cache. By default, the HTTP cache is
-    enabled of disabled using the value of the \c USE_CACHE property in
+    enabled or disabled using the value of the \c USE_CACHE property in
     the \c .dodsrc file. Use this method to set the state from within a
     program.
     @param enabled True to use the cache, False to disable. */
@@ -166,10 +166,10 @@ public:
 
     HTTPResponse *fetch_url(const string &url);
 };
-
+#if 0
 ObjectType get_type(const string &value); // deprecated
 ObjectType get_description_type(const string &value);
-
+#endif
 } // namespace libdap
 
 #endif // _httpconnect_h

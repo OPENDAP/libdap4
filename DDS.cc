@@ -992,7 +992,7 @@ public:
     expression.
     @param blob The dataBLOB href. */
 void
-DDS::print_xml(FILE *out, bool constrained, const string &)
+DDS::print_xml(FILE *out, bool constrained, const string &blob)
 {
     fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
@@ -1032,6 +1032,12 @@ DDS::print_xml(FILE *out, bool constrained, const string &)
     if (get_dap_major() == 2 && get_dap_minor() == 0) {
         fprintf(out, "    <dataBLOB href=\"\"/>\n");
     }
+    else if (!blob.empty()
+	     && (get_dap_major() == 3 && get_dap_minor() >= 2)
+	     || get_dap_major() >= 4) {
+	fprintf(out, "    <blob href=\"cid:%s\"/>\n", blob);
+    }
+
 
     fprintf(out, "</Dataset>\n");
 }

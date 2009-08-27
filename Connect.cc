@@ -54,6 +54,8 @@ static char rcsid[] not_used =
 #include "DDXParser.h"
 #include "XDRFileUnMarshaller.h"
 
+#include "mime_util.h"
+
 using std::cerr;
 using std::endl;
 using std::ifstream;
@@ -69,11 +71,6 @@ Connect::process_data(DataDDS &data, Response *rs)
 {
     DBG(cerr << "Entering Connect::process_data" << endl);
 
-    // Use the implementation and protocol versions from the Response object
-    // since the copies in Connect might go away. Regardless, we must keep the
-    // Response object alive until we no longer need the stream, since
-    // destroying it will close the stream. So, might as well use it for the
-    // version info too...
     data.set_version(rs->get_version());
     data.set_protocol(rs->get_protocol());
 
@@ -91,6 +88,44 @@ Connect::process_data(DataDDS &data, Response *rs)
         // Web errors (those reported in the return document's MIME header)
         // are processed by the WWW library.
         throw InternalErr(__FILE__, __LINE__, "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
+
+    case dap4_data_ddx: {
+            // Parse the DDX; throw an exception on error.
+	    DDXParser ddx_parser(data.get_factory());
+
+	    // Read the MPM boundary and then read the subsequent headers
+	    string boundary = read_multipart_boundary(rs->get_stream());
+	    DBG(cerr << "MPM Boundary: " << boundary << endl);
+	    read_multipart_headers(rs->get_stream(), "text/xml", dap4_ddx);
+
+	    // Parse the DDX, reading up to and including the next boundary.
+	    // Return the CID for the matching data part
+	    string data_cid;
+	    ddx_parser.intern(rs->get_stream(), &data, data_cid, boundary);
+
+	    // Munge the CID into something we can work with
+	    data_cid = cid_to_header_value(data_cid);
+	    DBG(cerr << "Data CID: " << data_cid << endl);
+
+	    // Read the data part's MPM part headers (boundary was read by
+	    // DDXParse::intern)
+	    read_multipart_headers(rs->get_stream(),
+		    "application/octet-stream", dap4_data, data_cid);
+
+	    // Now read the data
+	    XDRFileUnMarshaller um( rs->get_stream() ) ;
+            try {
+        	for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
+                     i++) {
+                    (*i)->deserialize(um, &data);
+                }
+            }
+            catch (Error &e) {
+                throw e;
+            }
+
+            return;
+        }
 
     case dods_data:
     default: {
@@ -123,6 +158,82 @@ Connect::process_data(DataDDS &data, Response *rs)
     }
 }
 
+#if 0
+/** This private method process the data ddx from both local and remote
+    sources. It exists to eliminate duplication of code and does for the DAP4
+    DataDDX what 'process_data()' does for the DAP2 DataDDS response/object. */
+void
+Connect::process_data_ddx(DataDDS &data, Response *rs)
+{
+    DBG(cerr << "Entering Connect::process_data_ddx" << endl);
+
+    data.set_version(rs->get_version());
+    data.set_protocol(rs->get_protocol());
+
+    DBG(cerr << "Entering process_data_ddx: d_stream = " << rs << endl);
+    switch (rs->get_type()) {
+    case dods_error: {
+	    // FIXME: Here we should be processing the ErrorX response. 8/25/09
+	    Error e;
+            if (!e.parse(rs->get_stream()))
+                throw InternalErr(__FILE__, __LINE__,
+                                  "Could not parse the Error object returned by the server!");
+            throw e;
+        }
+
+    case web_error:
+        // Web errors (those reported in the return document's MIME header)
+        // are processed by the WWW library.
+        throw InternalErr(__FILE__, __LINE__, "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
+
+    case dap4_data_ddx: {
+            // Parse the DDX; throw an exception on error.
+	    DDXParser ddx_parser(data.get_factory());
+
+	    // Read the MPM boundary and then read the subsequent headers
+	    string boundary = read_multipart_boundary(rs->get_stream());
+	    DBG(cerr << "MPM Boundary: " << boundary << endl);
+	    read_multipart_headers(rs->get_stream(), "text/xml", dap4_ddx);
+
+	    // Parse the DDX, reading up to and including the next boundary.
+	    // Return the CID for the matching data part
+	    string data_cid;
+	    ddx_parser.intern(rs->get_stream(), &data, data_cid, boundary);
+
+	    // Munge the CID into something we can work with
+	    data_cid = cid_to_header_value(data_cid);
+	    DBG(cerr << "Data CID: " << data_cid << endl);
+
+	    // Read the data part's MPM part headers (boundary was read by
+	    // DDXParse::intern)
+	    read_multipart_headers(rs->get_stream(),
+		    "application/octet-stream", dap4_data, data_cid);
+
+	    // Now read the data
+	    XDRFileUnMarshaller um( rs->get_stream() ) ;
+            try {
+        	for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
+                     i++) {
+                    (*i)->deserialize(um, &data);
+                }
+            }
+            catch (Error &e) {
+                throw e;
+            }
+
+            return;
+        }
+
+    default:
+        throw Error(\
+"The site did not return a valid response (it lacked the\n\
+expected content description header value of 'dap4_data_ddx').\n\
+This may indicate that the server at the site is not correctly\n\
+configured, or that the URL has changed.");
+    }
+}
+#endif
+
 // Barely a parser... This is used when reading from local sources of DODS
 // Data objects. It simulates the important actions of the libwww MIME header
 // parser. Those actions fill in certain fields in the Connect object. jhrg
@@ -147,13 +258,11 @@ Connect::process_data(DataDDS &data, Response *rs)
 void
 Connect::parse_mime(Response *rs)
 {
-    rs->set_version("dods/0.0"); // initial value; for backward compat.
+    rs->set_version("dods/0.0"); // initial value; for backward compatibility.
     rs->set_protocol("2.0");
 
-    // If the first line does not start with HTTP, XDODS or XDAP, assume
-    // there's no MIME header here and return without reading anymore
     FILE *data_source = rs->get_stream();
-
+#if 0
     char line[256];
     fgets(line, 255, data_source);
 
@@ -170,16 +279,24 @@ Connect::parse_mime(Response *rs)
         string value = v;
         downcase(header);
         downcase(value);
+#endif
+    string mime = get_next_mime_header(data_source);
+    while (!mime.empty()) {
+	string header, value;
+	parse_mime_header(mime, header, value);
 
+        // Note that this is an ordered list
         if (header == "content-description:") {
             DBG(cout << header << ": " << value << endl);
             rs->set_type(get_description_type(value));
         }
+        // Use the value of xdods-server only if no other value has been read
         else if (header == "xdods-server:"
                  && rs->get_version() == "dods/0.0") {
             DBG(cout << header << ": " << value << endl);
             rs->set_version(value);
         }
+        // This trumps 'xdods-server' and 'server'
         else if (header == "xopendap-server:") {
             DBG(cout << header << ": " << value << endl);
             rs->set_version(value);
@@ -188,17 +305,20 @@ Connect::parse_mime(Response *rs)
             DBG(cout << header << ": " << value << endl);
             rs->set_protocol(value);
         }
+        // Only look for 'server' if no other header supplies this info.
         else if (rs->get_version() == "dods/0.0" && header == "server:") {
             DBG(cout << header << ": " << value << endl);
             rs->set_version(value);
         }
-
+#if 0
         fgets(line, 255, data_source);
         slen = strlen(line);
         slen = min(slen, 256); // use min to limit slen to 256
         line[slen - 1] = '\0';
         if (line[slen - 2] == '\r')
             line[slen - 2] = '\0';
+#endif
+        mime = get_next_mime_header(data_source);
     }
 }
 
@@ -293,6 +413,7 @@ Connect::request_version()
 
     d_version = rs->get_version();
     d_protocol = rs->get_protocol();
+
     delete rs; rs = 0;
 
     return d_version;
@@ -327,6 +448,7 @@ Connect::request_protocol()
 
     d_version = rs->get_version();
     d_protocol = rs->get_protocol();
+
     delete rs; rs = 0;
 
     return d_protocol;
@@ -662,17 +784,12 @@ Connect::request_ddx(DDS &dds, string expr)
         break;
 
     case dap4_ddx:
-    default:
         // DDS::parse throws an exception on error.
         try {
-#if 0
             string blob;
-#endif
+
             DDXParser ddxp(dds.get_factory());
-            ddxp.intern_stream(rs->get_stream(), &dds/*, &blob***/);
-#if 0
-            dds.parse(rs->get_stream()); // read and parse the dds from a file
-#endif
+            ddxp.intern(rs->get_stream(), &dds, blob);
         }
         catch (Error &e) {
             delete rs; rs = 0;
@@ -680,11 +797,9 @@ Connect::request_ddx(DDS &dds, string expr)
         }
         break;
 
-#if 0
         // See the comment in process_data() and bug 706. 03/22/04 jhrg
     default:
-        throw Error("The site did not return a valid response (it lacked the\nexpected content description header value of 'dods_ddx').\nThis may indicate that the server at the site is not correctly\nconfigured, or that the URL has changed.");
-#endif
+        throw Error("The site did not return a valid response (it lacked the\nexpected content description header value of 'dap4-ddx').\nThis may indicate that the server at the site is not correctly\nconfigured, or that the URL has changed.");
     }
 
     delete rs; rs = 0;
@@ -784,6 +899,7 @@ Connect::request_data(DataDDS &data, string expr)
     // We need to catch Error exceptions to ensure calling close_output.
     try {
         rs = d_http->fetch_url(data_url);
+
         d_version = rs->get_version();
         d_protocol = rs->get_protocol();
 
@@ -821,6 +937,7 @@ Connect::request_data_url(DataDDS &data)
     // We need to catch Error exceptions to ensure calling close_output.
     try {
         rs = d_http->fetch_url(use_url);
+
         d_version = rs->get_version();
         d_protocol = rs->get_protocol();
 
@@ -833,12 +950,63 @@ Connect::request_data_url(DataDDS &data)
     }
 }
 
+void
+Connect::request_data_ddx(DataDDS &data, string expr)
+{
+    string proj, sel;
+    string::size_type dotpos = expr.find('&');
+    if (dotpos != expr.npos) {
+        proj = expr.substr(0, dotpos);
+        sel = expr.substr(dotpos);
+    }
+    else {
+        proj = expr;
+        sel = "";
+    }
+
+    string data_url = _URL + ".dap?"
+                      + id2www_ce(_proj + proj + _sel + sel);
+
+    Response *rs = 0;
+    // We need to catch Error exceptions to ensure calling close_output.
+    try {
+        rs = d_http->fetch_url(data_url);
+
+        d_version = rs->get_version();
+        d_protocol = rs->get_protocol();
+
+        process_data(data, rs);
+        delete rs; rs = 0;
+    }
+    catch (Error &e) {
+        delete rs; rs = 0;
+        throw e;
+    }
+}
+
+void
+Connect::request_data_ddx_url(DataDDS &data)
+{
+    string use_url = _URL + "?" + _proj + _sel ;
+    Response *rs = 0;
+    // We need to catch Error exceptions to ensure calling close_output.
+    try {
+        rs = d_http->fetch_url(use_url);
+
+        d_version = rs->get_version();
+        d_protocol = rs->get_protocol();
+
+        process_data(data, rs);
+        delete rs; rs = 0;
+    }
+    catch (Error &e) {
+        delete rs; rs = 0;
+        throw e;
+    }
+}
 
 /** @brief Read data which is preceded by MIME headers.
-
-    This is a place holder. A better implementation for reading objects from
-    the local file store is to write FileConnect and have it support the same
-    interface as HTTPConnect.
+    This method works for both data dds and data ddx responses.
 
     @note If you need the DataDDS to hold specializations of the type classes,
     be sure to include the factory class which will instantiate those
@@ -856,10 +1024,44 @@ Connect::read_data(DataDDS &data, Response *rs)
     if (!rs)
         throw InternalErr(__FILE__, __LINE__, "Response object is null.");
 
-    // Read from data_source and parse the MIME headers specific to DAP2.
+    // Read from data_source and parse the MIME headers specific to DAP2/4.
     parse_mime(rs);
 
     read_data_no_mime(data, rs);
+}
+
+// This function looks at the input stream and makes its best guess at what
+// lies in store for downstream processing code. Definitely heuristic.
+// Assumptions:
+// #1 The current file position is past any MIME headers (if they were present).
+// #2 We must reset the FILE* position to the start of the DDS or DDX headers
+static void
+divine_type_information(Response *rs)
+{
+    // Consume whitespace
+    char c = getc(rs->get_stream());
+    while (isspace(c)) {
+	c = getc(rs->get_stream());
+    }
+
+    // The heuristic here is that a DataDDX is a multipart MIME document and
+    // The first non space character found after the headers is the start of
+    // the first part which looks like '--<boundary>' while a DataDDS starts
+    // with a DDS (;Dataset {' ...). I take into account that our parsers have
+    // accepted both 'Dataset' and 'dataset' for a long time.
+    switch (c) {
+    case '-':
+	rs->set_type(dap4_data_ddx);
+	break;
+    case 'D':
+    case 'd':
+	rs->set_type(dods_data);
+	break;
+    default:
+	throw InternalErr(__FILE__, __LINE__, "Could not determine type of response object in stream.");
+    }
+
+    ungetc(c, rs->get_stream());
 }
 
 /** @brief Read data from a file which does not have response MIME headers.
@@ -868,15 +1070,35 @@ Connect::read_data(DataDDS &data, Response *rs)
     with a Response that does contain headers, it will throw an Error (and
     the message is likely to be inscrutable).
 
+    @note This method will use the 'type' information in the Response object
+    to choose between processing the response as a data dds or data ddx. If
+    there is no type information, it will attempt to figure it out.
+
     @param data Result.
     @param rs Read from this Response object. */
 void
 Connect::read_data_no_mime(DataDDS &data, Response *rs)
 {
-    d_version = rs->get_version();
-    d_protocol = rs->get_protocol();
+    if (rs->get_type() == unknown_type)
+	divine_type_information(rs);
 
-    process_data(data, rs);
+    switch (rs->get_type()) {
+    case dods_data:
+	d_version = rs->get_version();
+	d_protocol = rs->get_protocol();
+	process_data(data, rs);
+	break;
+    case dap4_data_ddx:
+#if 0
+	process_data_ddx(data, rs);
+#endif
+	process_data(data, rs);
+	d_version = rs->get_version();
+	d_protocol = data.get_protocol();
+	break;
+    default:
+	throw InternalErr(__FILE__, __LINE__, "Should have been a DataDDS or DataDDX.");
+    }
 }
 
 bool

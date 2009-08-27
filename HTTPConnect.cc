@@ -51,6 +51,7 @@ static char rcsid[] not_used =
 //#define DODS_DEBUG2
 
 #include "debug.h"
+#include "mime_util.h"
 #include "GNURegex.h"
 #include "HTTPCache.h"
 #include "HTTPConnect.h"
@@ -110,7 +111,7 @@ static const char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN +1] =
         "Gateway Time-out.",
         "HTTP Version Not Supported."
     };
-
+#if 0
 /** This function returns the ObjectType value that matches the given string.
     Modified to include tests for the descriptions that use hyphens in addition
     to underscores. 8/1/08 jhrg
@@ -146,7 +147,7 @@ get_type(const string &value)
     Modified to include tests for the descriptions that use hyphens in addition
     to underscores. 8/1/08 jhrg
 
-    @param value Value from teh HTTP response header */
+    @param value Value from the HTTP response header */
 ObjectType
 get_description_type(const string &value)
 {
@@ -171,7 +172,7 @@ get_description_type(const string &value)
     else
         return unknown_type;
 }
-
+#endif
 /** This function translates the HTTP status codes into error messages. It
     works for those code greater than or equal to 400. */
 static string
@@ -200,60 +201,76 @@ public:
     ParseHeader() : type(unknown_type), server("dods/0.0"), protocol("2.0")
     { }
 
-    void operator()(const string &header)
+    void operator()(const string &line)
     {
-        std::istringstream line(header);
+#if 0
+	std::istringstream line(header);
 
         string name;
         line >> name;
         downcase(name);
-        if (name == "content-description:") {
+#endif
+        string name, value;
+        parse_mime_header(line, name, value);
+        if (name == "content-description") {
+#if 0
             string value;
             line >> value;
             downcase(value);
-            DBG2(cout << name << ": " << value << endl);
+#endif
+            DBG2(cerr << name << ": " << value << endl);
             type = get_description_type(value);
         }
         // The second test (== "dods/0.0") tests if xopendap-server has already
         // been seen. If so, use that header in preference to the old
         // XDODS-Server header. jhrg 2/7/06
-        else if (name == "xdods-server:" && server == "dods/0.0") {
+        else if (name == "xdods-server" && server == "dods/0.0") {
+#if 0
             string value;
             line >> value;
             downcase(value);
-            DBG2(cout << name << ": " << value << endl);
+#endif
+            DBG2(cerr << name << ": " << value << endl);
             server = value;
         }
-        else if (name == "xopendap-server:") {
+        else if (name == "xopendap-server") {
+#if 0
             string value;
             line >> value;
             downcase(value);
-            DBG2(cout << name << ": " << value << endl);
+#endif
+            DBG2(cerr << name << ": " << value << endl);
             server = value;
         }
-        else if (name == "xdap:") {
+        else if (name == "xdap") {
+#if 0
             string value;
             line >> value;
             downcase(value);
-            DBG2(cout << name << ": " << value << endl);
+#endif
+            DBG2(cerr << name << ": " << value << endl);
             protocol = value;
         }
-        else if (server == "dods/0.0" && name == "server:") {
+        else if (server == "dods/0.0" && name == "server") {
+#if 0
             string value;
             line >> value;
             downcase(value);
-            DBG2(cout << name << ": " << value << endl);
+#endif
+            DBG2(cerr << name << ": " << value << endl);
             server = value;
         }
-       	else if (name == "location:") {
+       	else if (name == "location") {
+#if 0
        	    string value;
        	    line >> value;
-       	    DBG2(cout << name << ": " << value << endl);
+#endif
+       	    DBG2(cerr << name << ": " << value << endl);
        	    location = value;
         }
-        else if (type == unknown_type && name == "content-type:"
-                 && line.str().find("text/html") != string::npos) {
-            DBG2(cout << name << ": text/html..." << endl);
+        else if (type == unknown_type && name == "content-type"
+                 && line.find("text/html") != string::npos) {
+            DBG2(cerr << name << ": text/html..." << endl);
             type = web_error;
         }
     }

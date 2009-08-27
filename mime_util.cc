@@ -70,11 +70,10 @@ static char rcsid[] not_used =
 #include <fstream>
 #include <string>
 
-#include "cgi_util.h"
+#include "mime_util.h"
 #include "Ancillary.h"
 #include "util.h"  // This supplies flush_stream for WIN32.
 #include "debug.h"
-
 
 #ifdef WIN32
 #define FILE_DELIMITER '\\'
@@ -303,6 +302,67 @@ static const char *descrip[] =
 static const char *encoding[] =
     {"unknown", "deflate", "x-plain", "gzip", "binary"
     };
+
+/** This function returns the ObjectType value that matches the given string.
+    Modified to include tests for the descriptions that use hyphens in addition
+    to underscores. 8/1/08 jhrg
+
+    @deprecated Use get_description_type instead - there are two other get_type()
+    functions in libdap.*/
+ObjectType
+get_type(const string &value)
+{
+    if ((value == "dods_das") | (value == "dods-das"))
+        return dods_das;
+    else if ((value == "dods_dds") | (value == "dods-dds"))
+        return dods_dds;
+    else if ((value == "dods_data") | (value == "dods-data"))
+        return dods_data;
+    else if ((value == "dods_error") | (value == "dods-error"))
+        return dods_error;
+    else if ((value == "web_error") | (value == "web-error"))
+        return web_error;
+    else if ((value == "dap4_ddx") | (value == "dap4-ddx"))
+        return dap4_ddx;
+    else if ((value == "dap4_data") | (value == "dap4-data"))
+        return dap4_data;
+    else if ((value == "dap4_error") | (value == "dap4-error"))
+        return dap4_error;
+    else if ((value == "dap4_data_ddx") | (value == "dap4-data-ddx"))
+        return dap4_data_ddx;
+    else
+        return unknown_type;
+}
+
+/** This function returns the ObjectType value that matches the given string.
+    Modified to include tests for the descriptions that use hyphens in addition
+    to underscores. 8/1/08 jhrg
+
+    @param value Value from the HTTP response header */
+ObjectType
+get_description_type(const string &value)
+{
+    if ((value == "dods_das") | (value == "dods-das"))
+        return dods_das;
+    else if ((value == "dods_dds") | (value == "dods-dds"))
+        return dods_dds;
+    else if ((value == "dods_data") | (value == "dods-data"))
+        return dods_data;
+    else if ((value == "dods_error") | (value == "dods-error"))
+        return dods_error;
+    else if ((value == "web_error") | (value == "web-error"))
+        return web_error;
+    else if ((value == "dap4_ddx") | (value == "dap4-ddx"))
+        return dap4_ddx;
+    else if ((value == "dap4_data") | (value == "dap4-data"))
+        return dap4_data;
+    else if ((value == "dap4_error") | (value == "dap4-error"))
+        return dap4_error;
+    else if ((value == "dap4_data_ddx") | (value == "dap4-data-ddx"))
+        return dap4_data_ddx;
+    else
+        return unknown_type;
+}
 
 /** Generate an HTTP 1.0 response header for a text document. This is used
     when returning a serialized DAS or DDS object.
@@ -650,6 +710,186 @@ void set_mime_data_boundary(ostream &strm, const string &boundary,
          strm << "Content-Encoding: " << encoding[enc] << CRLF ;
 
     strm << CRLF;
+}
+
+const size_t line_length = 1024;
+
+/** Read the next MIME header from the input stream and return it in a string
+    object. This function consumes any leading whitespace before the next
+    header. It returns an empty string when the blank line that separates
+    the headers from the body is found. this function works for header and
+    separator lines that use either a CRLF pair (the correct line ending) or
+    just a newline (a common error).
+
+    @param in Read from this stream (FILE *)
+    @return A string that contains the next header line or is empty indicating
+    the separator has been read.
+    @exception Error is thrown if no header or separator is found.
+    @see parse_mime_header()
+ */
+string get_next_mime_header(FILE *in)
+{
+#if 0
+    // Consume whitespace
+    char c = getc(in);
+    while (isspace(c)) {
+	c = getc(in);
+    }
+    ungetc(c, in);
+#endif
+
+    // Get the header line and strip \r\n. Some headers end with just \n.
+    // If a blank line is found, return an empty string.
+    char line[line_length];
+    while (!feof(in)) {
+        if (fgets(line, line_length, in)
+        	&& (strncmp(line, CRLF, 2) == 0 || line[0] == '\n'))
+            return "";
+        else {
+            size_t slen = min(strlen(line), line_length); // Never > line_length
+            line[slen - 1] = '\0'; // remove the newline
+            if (line[slen - 2] == '\r') // ...and the preceding carriage return
+                line[slen - 2] = '\0';
+            return string(line);
+        }
+    }
+
+    throw Error("I expected to find a MIME header, but got EOF instead.");
+}
+
+/** Given a string that contains a MIME header line, parse it into the
+    the header (name) and its value. Both are downcased.
+
+    @param header The input line, striped of the ending crlf pair
+    @param name A value-result parameter that holds the header name
+    @param value A value-result parameter that holds the header's value.
+ */
+void parse_mime_header(const string &header, string &name, string &value)
+{
+    istringstream iss(header);
+    // Set downcase
+    char s[line_length];
+    iss.getline(s, 1023, ':');
+    name = s;
+
+    iss.ignore(1023, ' ');
+    iss.getline(s, 1023);
+    value = s;
+
+    downcase(name);
+    downcase(value);
+}
+
+/** Is this string the same as the MPM boundary value?
+    @param line The input to test
+    @param boundary The complete boundary line to test for, excluding
+    terminating characters.
+    @return true is line is a MPM boundary
+ */
+
+bool is_boundary(const char *line, const string &boundary)
+{
+    if (!(line[0] == '-' && line[1] == '-'))
+	return false;
+    else {
+	return strncmp(line, boundary.c_str(), boundary.length()) == 0;
+    }
+}
+
+/** Read the next line of input and test to see if it is a multipart MIME
+    boundary line. If the value of boundary is the default (an empty string)
+    then just test that the line starts with "--". In either case, return the
+    value of boundary just read.
+    @param boundary Value of the boundary to look for - optional
+    @return The value of teh boundary header read
+    @exception Error if no boundary was found.
+ */
+string read_multipart_boundary(FILE *in, const string &boundary)
+{
+    string boundary_line = get_next_mime_header(in);
+    // If the caller passed in a value for the boundary, test for that value,
+    // else just see that this line starts with '--'.
+    // The value of 'boundary_line' is returned by this function.
+    if ((!boundary.empty() && is_boundary(boundary_line.c_str(), boundary))
+	    || boundary_line.find("--") != 0)
+	throw Error(
+		"The DAP4 data response document is broken - missing or malformed boundary.");
+
+    return boundary_line;
+}
+
+/** Consume the Multipart MIME headers that prefix the DDX in a DataDDX
+    response. The stream pointer is advanced to the start of the DDX. It might
+    seem odd that this function both takes the value of the MPM boundary as
+    a parameter _and_ returns that value as a result, but this code can be
+    used in two different situations. In one case, it is called on a partial
+    document read from stdin and needs to return the value of boundary to the
+    downstream DDX parser to that code can sense the end of hte DDX. In the
+    other case, this function is told the value of boundary and tests for it
+    to ensure document correctness.
+
+    @param in Read from this stream
+    @param content_type The expected value of the Content-Type header
+    @param object_type The expected value of the Content-Description header
+    @param cid The expected value of the Content-Id header - optional.
+    @param boundary The expected value of the boundary - optional
+    @return The value of the MIME boundary
+    @exception Error if the boundary is not found or if any of the expected
+    header values don't match. The optional values are tested only if they
+    are given (the default values are not tested).
+ */
+void read_multipart_headers(FILE *in, const string &content_type,
+	const ObjectType object_type, const string &cid)
+{
+    bool ct = false, cd = false, ci = false;
+
+    string header = get_next_mime_header(in);
+    while (!header.empty()) {
+	string name, value;
+	parse_mime_header(header, name, value);
+
+	if (name =="content-type") {
+	    ct = true;
+	    if (value.find(content_type) == string::npos)
+		throw Error("Content-Type for this part of a DAP4 data response must be " + content_type + ".");
+	}
+	else if (name == "content-description") {
+	    cd = true;
+	    if (get_description_type(value) != object_type)
+		throw Error("Content-Description for this part of a DAP4 data response must be dap4-ddx or dap4-data-ddx");
+	}
+	else if (name == "content-id") {
+	    ci = true;
+	    if (!cid.empty() && value != cid)
+		throw Error("Content-Id mismatch. Expected: " + cid
+			+ ", but got: " + value);
+	}
+
+	header = get_next_mime_header(in);
+    }
+
+    if (!(ct && cd && ci))
+	throw Error("The DAP4 data response document is broken - missing header.");
+}
+/** Given a Content-Id read from the DDX, return the value to look for in a
+    MPM Content-Id header. This function downcases the CID to match the value
+    returned by parse_mime_header.
+    @param cid The Content-Id read from the DDX
+    @return The header value to look for.
+    @exception Error if the CID does not start with the string "cid:"
+ */
+string cid_to_header_value(const string &cid)
+{
+    string::size_type offset = cid.find("cid:");
+    if (offset != 0)
+	throw Error("expected CID to start with 'cid:'");
+
+    string value = "<";
+    value.append(cid.substr(offset + 4));
+    value.append(">");
+    downcase(value);
+
+    return value;
 }
 
 /** Generate an HTTP 1.0 response header for an Error object.

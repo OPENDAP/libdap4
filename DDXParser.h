@@ -174,8 +174,8 @@ public:
     DDXParser(BaseTypeFactory *factory) : d_factory(factory)
     {}
 
-    void intern(const string &document, DDS *dest_dds);
-    void intern_stream(FILE *in, DDS *dds);
+    void intern(const string &document, DDS *dest_dds, string &blob);
+    void intern(FILE *in, DDS *dest_dds, string &blob, const string &boundary = "");
 
     static void ddx_start_document(DDXParser *parser);
     static void ddx_end_document(DDXParser *parser);

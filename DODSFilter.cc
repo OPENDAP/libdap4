@@ -63,7 +63,7 @@ static char rcsid[] not_used =
 #include "DAS.h"
 #include "DDS.h"
 #include "debug.h"
-#include "cgi_util.h"
+#include "mime_util.h"
 #include "Ancillary.h"
 #include "util.h"
 #include "escaping.h"

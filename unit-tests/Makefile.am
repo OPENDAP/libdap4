@@ -118,20 +118,20 @@ DDSTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DDXParserTest_SOURCES = DDXParserTest.cc
 DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
-DDXParserTest_LDADD = ../libdap.la $(AM_LDADD)
+DDXParserTest_LDADD = ../libdap.la ../libdapserver.la $(AM_LDADD)
 
 DODSFilterTest_SOURCES = DODSFilterTest.cc
 DODSFilterTest_LDADD = ../libdapserver.la ../libdap.la \
 	../tests/libtest-types.a $(AM_LDADD)
 
 generalUtilTest_SOURCES = generalUtilTest.cc
-generalUtilTest_LDADD = ../libdap.la $(AM_LDADD)
+generalUtilTest_LDADD = ../libdap.la ../libdapserver.la $(AM_LDADD)
 
 HTTPCacheTest_SOURCES = HTTPCacheTest.cc
-HTTPCacheTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
+HTTPCacheTest_LDADD = ../libdapclient.la ../libdap.la ../libdapserver.la $(AM_LDADD)
 
 HTTPConnectTest_SOURCES = HTTPConnectTest.cc
-HTTPConnectTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
+HTTPConnectTest_LDADD = ../libdapclient.la ../libdap.la ../libdapserver.la $(AM_LDADD)
 
 parserUtilTest_SOURCES = parserUtilTest.cc
 parserUtilTest_LDADD = ../libdap.la $(AM_LDADD)

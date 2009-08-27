@@ -104,7 +104,7 @@ class HTTPConnectTest: public TestFixture {
         localhost_digest_pw_url =
             "http://jimg:dods_digest@test.opendap.org/digest/page.txt";
         netcdf_das_url =
-            "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc1.nc.das";
+            "http://test.opendap.org/dap/data/nc/fnoc1.nc.das";
     }
 
     void tearDown() {
@@ -124,6 +124,7 @@ class HTTPConnectTest: public TestFixture {
     CPPUNIT_TEST(set_xdap_protocol_test);
     CPPUNIT_TEST(read_url_password_test);
     CPPUNIT_TEST(read_url_password_test2);
+
 #if 0
     CPPUNIT_TEST(read_url_password_proxy_test);
 #endif
@@ -299,6 +300,7 @@ class HTTPConnectTest: public TestFixture {
     void type_test() {
         Response *r = http->fetch_url(netcdf_das_url);
         try {
+            DBG(cerr << "r->get_type(): " << r->get_type() << endl);
             CPPUNIT_ASSERT(r->get_type() == dods_das);
             delete r;
             r = 0;

@@ -31,8 +31,12 @@
 #include "Constructor.h"
 #include "DDXParser.h"
 
+//#define DODS_DEBUG 1
+//#define DODS_DEBUG2 1
+
 #include "util.h"
 #include "debug.h"
+#include "mime_util.h"
 
 namespace libdap {
 
@@ -359,23 +363,21 @@ void DDXParser::process_dimension(const char **attrs)
     }
 }
 
-/** Given that a \c dataBLOB tag has just been read, extract and save the URL
+/** Given that a \c blob tag has just been read, extract and save the URL
     included in the element.
 
-    @todo Remove this since we've junked the DODSBlob element. jhrg
-    @param attrs The XML attributes */
+        @param attrs The XML attributes */
 void DDXParser::process_blob(const char **attrs)
 {
+#if 0
     if (dds->get_dap_major() > 2 && dds->get_dap_major() > 1)
         ddx_fatal_error(this,
-                "Found a dataBLOB element in a 3.2 or greater response.");
-
+                "Found a blob element in a 3.2 or greater response.");
+#endif
     transfer_attrs(attrs);
     if (check_required_attribute(string("href"))) {
         set_state(inside_blob_href);
-#if 0
         *blob_href = attributes["href"];
-#endif
     }
 }
 
@@ -516,14 +518,14 @@ void DDXParser::ddx_end_document(DDXParser * parser)
     DBG2(cerr << "Ending state == " << states[parser->get_state()] <<
          endl);
 
-    if (parser->get_state() != parser_start)
-        DDXParser::ddx_fatal_error(parser,
-                                   "The document contained unbalanced tags.");
-
     // If we've found any sort of error, don't make the DDX; intern() will
     // take care of the error.
     if (parser->get_state() == parser_error)
         return;
+
+    if (parser->get_state() != parser_start)
+        DDXParser::ddx_fatal_error(parser,
+                                   "The document contained unbalanced tags.");
 
     // Pop the temporary Structure off the stack and transfer its variables
     // to the DDS.
@@ -576,9 +578,9 @@ void DDXParser::ddx_start_element(DDXParser * parser, const char *name,
             break;
         else if (parser->is_variable(name, attrs))
             break;
-        else if (strcmp(name, "dataBLOB") == 0) {
+        else if (strcmp(name, "blob") == 0 || strcmp(name, "dataBLOB") == 0) {
             parser->process_blob(attrs);
-            // next state: inside_data_blob
+            // next state: inside_blob_href
         }
         else
             DDXParser::ddx_fatal_error(parser,
@@ -735,8 +737,11 @@ void DDXParser::ddx_end_element(DDXParser * parser, const char *name)
         break;
 
     case inside_dataset:
-        if (strcmp(name, "Dataset") == 0)
+        if (strcmp(name, "Dataset") == 0) {
             parser->pop_state();
+            // If the state now on the top of the stack is 'parser_start', the
+            // parse is done. How to signal that?
+        }
         else
             DDXParser::ddx_fatal_error(parser,
                                        "Expected an end Dataset tag; found '%s' instead.",
@@ -839,11 +844,11 @@ void DDXParser::ddx_end_element(DDXParser * parser, const char *name)
         break;
 
     case inside_blob_href:
-        if (strcmp(name, "dataBLOB") == 0)
+        if (strcmp(name, "blob") == 0 || strcmp(name, "dataBLOB") == 0)
             parser->pop_state();
         else
             DDXParser::ddx_fatal_error(parser,
-                                       "Expected an end dataBLOB tag; found '%s' instead.",
+                                       "Expected an end blob tag; found '%s' instead.",
                                        name);
         break;
 
@@ -907,6 +912,8 @@ void DDXParser::ddx_fatal_error(DDXParser * parser, const char *msg, ...)
 #endif
     parser->error_msg += "At line " + long_to_string(line) + ": ";
     parser->error_msg += string(str) + string("\n");
+
+    DBG2(cerr << "Parser Error: " << parser->error_msg << endl);
 }
 
 //@}
@@ -983,41 +990,41 @@ void DDXParser::cleanup_parse(xmlParserCtxtPtr & context) const
 }
 
 /** @brief Read the DDX from a stream instead of a file.
+    @param in REad from this FILE* stream
+    @param boundary Stop reading/parsing when this Multipart MIME boundary is
+    found
+    @param dest_dds Build the DDS here
+    @param blob return the data blob CID in this value-result parameter.
     @see DDXParser::intern(). */
-void DDXParser::intern_stream(FILE * in, DDS * dest_dds)
+void DDXParser::intern(FILE * in, DDS * dest_dds, string &blob,
+	const string &boundary)
 {
-// Code example from libxml2 docs re: read from a stream.
+    // Code example from libxml2 docs re: read from a stream.
 
     if (!in || feof(in) || ferror(in))
-        throw InternalErr(__FILE__, __LINE__,
-                          "Input stream not open or read error");
+	throw InternalErr(__FILE__, __LINE__,
+		"Input stream not open or read error");
 
-    dds = dest_dds;             // dump values here
-#if 0
-    blob_href = blob;           // blob goes here
-#endif
-    int size = 1024;
-    char chars[1024];
+    dds = dest_dds; // dump values here
+    blob_href = &blob; // blob goes here
 
-    int res = fread(chars, 1, 4, in);
-    if (res > 0) {
-        xmlParserCtxtPtr context =
-            xmlCreatePushParserCtxt(NULL, NULL, chars, res,
-                                    "stream");
+    size_t size = 0;
+    char *line = 0;
+    xmlParserCtxtPtr context = xmlCreatePushParserCtxt(&ddx_sax_parser, this,
+	    line, size, "stream");
 
-        ctxt = context;         // need ctxt for error messages
+    ctxt = context; // need ctxt for error messages
+    context->validate = true;
 
-        context->sax = &ddx_sax_parser;
-        context->userData = this;
-        context->validate = true;
-
-        while ((res = fread(chars, 1, size, in)) > 0) {
-            xmlParseChunk(ctxt, chars, res, 0);
-        }
-        xmlParseChunk(ctxt, chars, 0, 1);
-
-        cleanup_parse(context);
+    while (((line = fgetln(in, &size)) > 0) && !is_boundary(line, boundary)) {
+	DBG(cerr << "line: " << line << endl);
+	xmlParseChunk(ctxt, line, size, 0);
     }
+    // This call ends the parse: The fourth argument of xmlParseChunk is
+    // the bool 'terminate.'
+    xmlParseChunk(ctxt, line, 0, 1);
+
+    cleanup_parse(context);
 }
 
 
@@ -1025,15 +1032,16 @@ void DDXParser::intern_stream(FILE * in, DDS * dest_dds)
     and a binary DDX is built. This implementation stores the result in a DDS
     object where each instance of BaseType can hold an AttrTable object.
 
-    @param document Read the DDX from this file.
+    @param document Read the DDX from this file. Assume that the document
+    contains _only_ a DDX.
     @param dest_dds Value/result parameter; dumps the information to this DDS
     instance.
     @param blob Value/result parameter; puts the href which references the \c
-    dataBLOB document here. If this is a DAP 3.2+ document then this will be
-    the null.
+    'blob' document here. If this is a DAP 3.2+ document then this will be
+    the Content-Id of the multipart MIME part that holds the data.
     @exception DDXParseFailed Thrown if the XML document could not be
     read or parsed. */
-void DDXParser::intern(const string & document, DDS * dest_dds)
+void DDXParser::intern(const string & document, DDS * dest_dds, string &blob)
 {
     // Create the context pointer explicitly so that we can store a pointer
     // to it in the DDXParser instance. This provides a way to generate our
@@ -1050,9 +1058,8 @@ void DDXParser::intern(const string & document, DDS * dest_dds)
                        + document + string("'."));
 
     dds = dest_dds;             // dump values here
-#if 0
-    blob_href = blob;           // blob goes here
-#endif
+    blob_href = &blob;           // blob goes here
+
     ctxt = context;             // need ctxt for error messages
 
     context->sax = &ddx_sax_parser;

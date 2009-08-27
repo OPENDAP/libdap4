@@ -81,7 +81,7 @@ using namespace std;
 int test_variable_sleep_interval = 0;   // Used in Test* classes for testing
                                       // timeouts.
 
-#define CRLF "\r\n"             // Change this here and in cgi_util.cc
+#define CRLF "\r\n"             // Change this here and in mime_util.cc
 #define DODS_DDS_PRX "dods_dds"
 #define YY_BUFFER_STATE (void *)
 

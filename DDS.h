@@ -348,9 +348,9 @@ public:
     //#endif
     void print_constrained(ostream &out);
     //#if FILE_METHODS
-    void print_xml(FILE *out, bool constrained, const string &blob);
+    void print_xml(FILE *out, bool constrained, const string &blob = "");
     //#endif
-    void print_xml(ostream &out, bool constrained, const string &blob);
+    void print_xml(ostream &out, bool constrained, const string &blob = "");
 
     void mark_all(bool state);
     bool mark(const string &name, bool state);
