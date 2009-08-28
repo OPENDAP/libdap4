@@ -68,11 +68,12 @@ deflate_LDFLAGS = $(ZLIB_LDFLAGS)
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex \
 	gse.y Error.lex Error.y
 
-EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
+EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
 	VCPP dods-datatypes-static.h xdr-datatypes-static.h xstream/README \
-	dap-config-pkgconfig \
-	$(LEX_YACC_EXTRA) $(GRAM_SRC) OSX_Resources
+	dap-config-pkgconfig $(LEX_YACC_EXTRA) $(GRAM_SRC) OSX_Resources
+
+# README.AIS 
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
@@ -228,8 +229,9 @@ Operators.h: ce_expr.tab.hh
 # with the other headers. It includes one of the built grammar file headers.
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
-	AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc  \
 	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc
+
+# AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc 
 
 SERVER_SRC = DODSFilter.cc Ancillary.cc
 
@@ -271,8 +273,9 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		 \
 	Response.h HTTPResponse.h HTTPCacheResponse.h  PipeResponse.h	 \
 	StdinResponse.h SignalHandlerRegisteredErr.h ResponseTooBigErr.h \
-	AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h	 \
-	AISResources.h Resource.h HTTPCacheTable.h
+	Resource.h HTTPCacheTable.h
+
+# AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h AISResources.h 	
 
 SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
 

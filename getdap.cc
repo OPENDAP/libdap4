@@ -50,7 +50,10 @@ static char rcsid[] not_used =
 
 #include "GetOpt.h"
 
+#if 0
 #include "AISConnect.h"
+#endif
+#include "Connect.h"
 #include "Response.h"
 #include "StdinResponse.h"
 
@@ -98,13 +101,17 @@ void usage(string name)
     cerr << "        i: For each URL, get the server version." << endl;
     cerr << "        d: For each URL, get the the DDS." << endl;
     cerr << "        a: For each URL, get the the DAS." << endl;
+#if 0
     cerr << "        A: Use the AIS for DAS objects." << endl;
+#endif
     cerr << "        D: For each URL, get the the DataDDS." << endl;
     cerr <<
     "        x: For each URL, get the DDX object. Does not get data."
     << endl;
     cerr << "        X: Build a DDX in getdap using the DDS and DAS." << endl;
+#if 0
     cerr << "        B: <AIS xml dataBase>. Overrides .dodsrc." << endl;
+#endif
     cerr << "        v: Verbose." << endl;
     cerr << "        V: Version." << endl;
     cerr << "        c: <expr> is a constraint expression. Used with -D." <<
@@ -165,13 +172,17 @@ int main(int argc, char *argv[])
     bool multi = false;
     bool accept_deflate = false;
     bool print_rows = false;
+#if 0
     bool use_ais = false;
+#endif
     bool mime_headers = true;
     int times = 1;
     int dap_client_major = 2;
     int dap_client_minor = 0;
     string expr = "";
+#if 0
     string ais_db = "";
+#endif
 
 #ifdef WIN32
     _setmode(_fileno(stdout), _O_BINARY);
@@ -194,9 +205,11 @@ int main(int argc, char *argv[])
         case 'X':
             build_ddx = true;
             break;
+#if 0
         case 'A':
             use_ais = true;
             break;
+#endif
         case 'V':
             fprintf(stderr, "getdap version: %s\n", version);
             exit(0);
@@ -217,10 +230,12 @@ int main(int argc, char *argv[])
             multi = true;
             times = atoi(getopt.optarg);
             break;
+#if 0
         case 'B':
             use_ais = true;
             ais_db = getopt.optarg;
             break;
+#endif
         case 'z':
             accept_deflate = true;
             break;
@@ -255,6 +270,7 @@ int main(int argc, char *argv[])
 
             string name = argv[i];
             Connect *url = 0;
+#if 0
             if (use_ais) {
                 if (!ais_db.empty())
                     url = new AISConnect(name, ais_db);
@@ -264,6 +280,9 @@ int main(int argc, char *argv[])
             else {
                 url = new Connect(name);
             }
+#endif
+
+            url = new Connect(name);
 
             // This overrides the value set in the .dodsrc file.
             if (accept_deflate)

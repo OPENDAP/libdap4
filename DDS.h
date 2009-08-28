@@ -175,8 +175,8 @@ private:
     BaseTypeFactory *d_factory;
 
     string name;                // The dataset name
-    string _filename;		// File name (or other OS identifier) for
-    string _container_name;	// name of container structure
+    string d_filename;		// File name (or other OS identifier) for
+    string d_container_name;	// name of container structure
     Structure *d_container;	// current container for container name
 				// dataset or part of dataset.
 

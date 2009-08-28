@@ -96,29 +96,15 @@ DDS::duplicate(const DDS &dds)
 {
     DBG(cerr << "Entering DDS::duplicate... " <<endl);
     name = dds.name;
+    d_filename = dds.d_filename;
+    d_container_name = dds.d_container_name;
+    d_timeout = dds.d_timeout;
+    d_attr = dds.d_attr;
+
     d_factory = dds.d_factory;
     d_container = dds.d_container;
-
-    d_client_dap_major = dds.d_client_dap_major;
-    d_client_dap_minor = dds.d_client_dap_minor;
-
-
-#if 0
-    //fields to copy
-    string _filename;       // File name (or other OS identifier) for
-    string _container_name; // name of container structure
-    int d_protocol_major;       // The protocol major version number
-    int d_protocol_minor;       // ... and minor version number
-
-    // These hold the major and minor versions of DAP that the client send in
-    // the XDAP-Accept header. If the header is not sent, these default to 2.0
-    int d_client_dap_major;
-    int d_client_dap_minor;
-
-    AttrTable d_attr;           // Global attributes.
-    int d_timeout;              // alarm time in seconds. If greater than
-
-#endif
+    d_dap_major = dds.d_dap_major;
+    d_dap_minor = dds.d_dap_minor;
 
     DDS &dds_tmp = const_cast<DDS &>(dds);
 
@@ -293,7 +279,7 @@ DDS::transfer_attributes(DAS *das)
     // exist in the DAS, then throw an exception
     if( d_container )
     {
-	if( das->container_name() != _container_name )
+	if( das->container_name() != d_container_name )
 	{
 	    string err = (string)"Error transferring attributes: "
 			 + "working on container in dds, but not das" ;
@@ -399,14 +385,14 @@ DDS::get_attr_table()
 string
 DDS::filename()
 {
-    return _filename;
+    return d_filename;
 }
 
 /** Set the dataset's filename. */
 void
 DDS::filename(const string &fn)
 {
-    _filename = fn;
+    d_filename = fn;
 }
 //@}
 
@@ -478,7 +464,7 @@ DDS::set_client_dap_version(const string &version_string)
 string
 DDS::container_name()
 {
-    return _container_name;
+    return d_container_name;
 }
 
 /** Set the current container name and get or create a structure for that
@@ -506,7 +492,7 @@ DDS::container_name(const string &cn)
 	    d_container = dynamic_cast<Structure *>( var( cn ) ) ;
 	}
     }
-    _container_name = cn;
+    d_container_name = cn;
 
 }
 
@@ -1035,7 +1021,7 @@ DDS::print_xml(FILE *out, bool constrained, const string &blob)
     else if (!blob.empty()
 	     && (get_dap_major() == 3 && get_dap_minor() >= 2)
 	     || get_dap_major() >= 4) {
-	fprintf(out, "    <blob href=\"cid:%s\"/>\n", blob);
+	fprintf(out, "    <blob href=\"cid:%s\"/>\n", blob.c_str());
     }
 
 
@@ -1256,7 +1242,7 @@ DDS::dump(ostream &strm) const
     << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
     strm << DapIndent::LMarg << "name: " << name << endl ;
-    strm << DapIndent::LMarg << "filename: " << _filename << endl ;
+    strm << DapIndent::LMarg << "filename: " << d_filename << endl ;
     strm << DapIndent::LMarg << "protocol major: " << d_dap_major << endl;
     strm << DapIndent::LMarg << "protocol minor: " << d_dap_minor << endl;
     strm << DapIndent::LMarg << "factory: " << (void *)d_factory << endl ;

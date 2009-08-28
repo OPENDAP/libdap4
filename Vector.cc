@@ -929,6 +929,8 @@ Vector::set_value(dods_byte *val, int sz)
 bool
 Vector::set_value(vector<dods_byte> &val, int sz)
 {
+    return set_value(&val[0], sz);
+#if 0
     if (var()->type() == dods_byte_c) {
 	dods_byte *tmp_buf = new dods_byte[sz] ;
         _buf = reinterpret_cast<char*>(tmp_buf) ;
@@ -941,6 +943,7 @@ Vector::set_value(vector<dods_byte> &val, int sz)
     else {
         return false;
     }
+#endif
 }
 
 /** @brief set the value of a int16 array */
@@ -962,6 +965,8 @@ Vector::set_value(dods_int16 *val, int sz)
 bool
 Vector::set_value(vector<dods_int16> &val, int sz)
 {
+    return set_value(&val[0], sz);
+#if 0
     if (var()->type() == dods_int16_c) {
 	dods_int16 *tmp_buf = new dods_int16[sz] ;
         _buf = reinterpret_cast<char*>(tmp_buf) ;
@@ -974,6 +979,7 @@ Vector::set_value(vector<dods_int16> &val, int sz)
     else {
         return false;
     }
+#endif
 }
 
 /** @brief set the value of a int32 array */
@@ -995,6 +1001,8 @@ Vector::set_value(dods_int32 *val, int sz)
 bool
 Vector::set_value(vector<dods_int32> &val, int sz)
 {
+    return set_value(&val[0], sz);
+#if 0
     if (var()->type() == dods_int32_c) {
 	dods_int32 *tmp_buf = new dods_int32[sz] ;
         _buf = reinterpret_cast<char*>(tmp_buf) ;
@@ -1007,6 +1015,7 @@ Vector::set_value(vector<dods_int32> &val, int sz)
     else {
         return false;
     }
+#endif
 }
 
 /** @brief set the value of a uint16 array */
@@ -1028,6 +1037,8 @@ Vector::set_value(dods_uint16 *val, int sz)
 bool
 Vector::set_value(vector<dods_uint16> &val, int sz)
 {
+    return set_value(&val[0], sz);
+#if 0
     if (var()->type() == dods_uint16_c) {
 	dods_uint16 *tmp_buf = new dods_uint16[sz] ;
         _buf = reinterpret_cast<char*>(tmp_buf) ;
@@ -1040,6 +1051,7 @@ Vector::set_value(vector<dods_uint16> &val, int sz)
     else {
         return false;
     }
+#endif
 }
 
 /** @brief set the value of a uint32 array */
@@ -1061,6 +1073,8 @@ Vector::set_value(dods_uint32 *val, int sz)
 bool
 Vector::set_value(vector<dods_uint32> &val, int sz)
 {
+    return set_value(&val[0], sz);
+#if 0
     if (var()->type() == dods_uint32_c) {
 	dods_uint32 *tmp_buf = new dods_uint32[sz] ;
         _buf = reinterpret_cast<char*>(tmp_buf) ;
@@ -1073,6 +1087,7 @@ Vector::set_value(vector<dods_uint32> &val, int sz)
     else {
         return false;
     }
+#endif
 }
 
 /** @brief set the value of a float32 array */
@@ -1094,6 +1109,8 @@ Vector::set_value(dods_float32 *val, int sz)
 bool
 Vector::set_value(vector<dods_float32> &val, int sz)
 {
+    return set_value(&val[0], sz);
+#if 0
     if (var()->type() == dods_float32_c) {
 	dods_float32 *tmp_buf = new dods_float32[sz] ;
         _buf = reinterpret_cast<char*>(tmp_buf) ;
@@ -1106,6 +1123,7 @@ Vector::set_value(vector<dods_float32> &val, int sz)
     else {
         return false;
     }
+#endif
 }
 
 /** @brief set the value of a float64 array */
@@ -1130,6 +1148,8 @@ Vector::set_value(dods_float64 *val, int sz)
 bool
 Vector::set_value(vector<dods_float64> &val, int sz)
 {
+    return set_value(&val[0], sz);
+#if 0
     if (var()->type() == dods_float64_c) {
 	dods_float64 *tmp_buf = new dods_float64[sz] ;
         _buf = reinterpret_cast<char*>(tmp_buf) ;
@@ -1142,6 +1162,7 @@ Vector::set_value(vector<dods_float64> &val, int sz)
     else {
         return false;
     }
+#endif
 }
 
 /** @brief set the value of a string or url array */

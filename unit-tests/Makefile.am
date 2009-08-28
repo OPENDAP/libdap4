@@ -26,7 +26,7 @@ check_PROGRAMS = $(UNIT_TESTS)
 TESTS = $(UNIT_TESTS)
 
 noinst_HEADERS = test_config.h
-noinst_SCRIPTS = ais_testsuite/ais_database.xml
+# noinst_SCRIPTS = ais_testsuite/ais_database.xml
 
 DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
 	rcreader-testsuite server-testsuite cgi-util-tests	\
@@ -35,6 +35,9 @@ DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
 # Defining this instead of just adding the directory because now there are
 # generated files in ais_testsuite. If just list the directory then it
 # copies the generated file as well, which we don't want.
+
+#### Remove
+
 AIS_EXTRA = ais_testsuite/123.das ais_testsuite/ais_database.xml.in	\
 	ais_testsuite/ais_error_1.xml ais_testsuite/ais_error_2.xml	\
 	ais_testsuite/ais_error_3.xml ais_testsuite/ais_error_4.xml	\
@@ -43,19 +46,29 @@ AIS_EXTRA = ais_testsuite/123.das ais_testsuite/ais_database.xml.in	\
 	ais_testsuite/fnoc1.nc.das ais_testsuite/fnoc2_replace.das	\
 	ais_testsuite/fnoc3_fallback.das ais_testsuite/starts_with_number.das
 
-EXTRA_DIST = $(DIRS_EXTRA) testFile.cc test_config.h.in $(AIS_EXTRA)
+####
+
+EXTRA_DIST = $(DIRS_EXTRA) testFile.cc test_config.h.in
+
+# $(AIS_EXTRA)
 
 CLEANFILES = testout .dodsrc  *.gcda *.gcno
 
-DISTCLEANFILES = test_config.h ais_testsuite/ais_database.xml
+DISTCLEANFILES = test_config.h
+
+# ais_testsuite/ais_database.xml
 
 test_config.h: test_config.h.in Makefile
 	sed -e "s%[@]abs_srcdir[@]%${abs_srcdir}%" $< > test_config.h
+
+#### Remove
 
 ais_testsuite/ais_database.xml: ais_testsuite/ais_database.xml.in ../config.status
 	mkdir -p ais_testsuite
 	chmod +w ais_testsuite
 	sed -e "s%[@]abs_srcdir[@]%${abs_srcdir}%" $< > ais_testsuite/ais_database.xml
+
+####
 
 ############################################################################
 # Unit Tests
@@ -64,12 +77,15 @@ ais_testsuite/ais_database.xml: ais_testsuite/ais_database.xml.in ../config.stat
 if CPPUNIT
 #UNIT_TESTS = AttrTableTest
 UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
-	RegexTest AISDatabaseParserTest AISMergeTest AISResourcesTest	\
+	RegexTest                                                       \
 	ArrayTest AttrTableTest ByteTest cgiUtilTest ancT DASTest 	\
 	DDSTest	DDXParserTest DODSFilterTest generalUtilTest 		\
 	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest 	\
 	SequenceTest SignalHandlerTest CEFunctionsTest 			\
 	GridGeoConstraintTest ArrayGeoConstraintTest MarshallerTest
+
+#  AISDatabaseParserTest AISMergeTest AISResourcesTest	
+
 else
 UNIT_TESTS =
 
@@ -85,15 +101,15 @@ endif
 RegexTest_SOURCES = RegexTest.cc
 RegexTest_LDADD = ../libdap.la $(AM_LDADD)
 
-AISDatabaseParserTest_SOURCES = AISDatabaseParserTest.cc
-AISDatabaseParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
-AISDatabaseParserTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
+# AISDatabaseParserTest_SOURCES = AISDatabaseParserTest.cc
+# AISDatabaseParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
+# AISDatabaseParserTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
 
-AISMergeTest_SOURCES = AISMergeTest.cc
-AISMergeTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
+# AISMergeTest_SOURCES = AISMergeTest.cc
+# AISMergeTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
 
-AISResourcesTest_SOURCES = AISResourcesTest.cc
-AISResourcesTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
+# AISResourcesTest_SOURCES = AISResourcesTest.cc
+# AISResourcesTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
 
 ArrayTest_SOURCES = ArrayTest.cc
 ArrayTest_LDADD = ../libdap.la $(AM_LDADD)

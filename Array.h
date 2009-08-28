@@ -163,21 +163,21 @@ public:
 
     void append_dim(int size, string name = "");
 
-    void add_constraint(Dim_iter i, int start, int stride, int stop);
-    void reset_constraint();
+    virtual void add_constraint(Dim_iter i, int start, int stride, int stop);
+    virtual void reset_constraint();
 
-    void clear_constraint();
+    virtual void clear_constraint();
 
     Dim_iter dim_begin() ;
     Dim_iter dim_end() ;
 
-    int dimension_size(Dim_iter i, bool constrained = false);
-    int dimension_start(Dim_iter i, bool constrained = false);
-    int dimension_stop(Dim_iter i, bool constrained = false);
-    int dimension_stride(Dim_iter i, bool constrained = false);
-    string dimension_name(Dim_iter i);
+    virtual int dimension_size(Dim_iter i, bool constrained = false);
+    virtual int dimension_start(Dim_iter i, bool constrained = false);
+    virtual int dimension_stop(Dim_iter i, bool constrained = false);
+    virtual int dimension_stride(Dim_iter i, bool constrained = false);
+    virtual string dimension_name(Dim_iter i);
 
-    unsigned int dimensions(bool constrained = false);
+    virtual unsigned int dimensions(bool constrained = false);
 
     virtual void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,
