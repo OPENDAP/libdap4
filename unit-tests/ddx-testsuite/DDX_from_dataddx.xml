@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset name="fnoc1.nc"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://xml.OPeNDAP.org/ns/DAP/3.2#
+http://xml.OPeNDAP.org/dap/dap/3.2.xsd"
+xmlns:grddl="http://www.w3.org/2003/g/data-view#"
+grddl:transformation="http://xml.OPeNDAP.org/transforms/ddxToRdfTriples.xsl"
+xmlns="http://xml.OPeNDAP.org/ns/DAP/3.2#"
+xmlns:dap="http://xml.OPeNDAP.org/ns/DAP/3.2#"
+dap_version="3.2">
+    <Attribute name="NC_GLOBAL" type="Container">
+        <Attribute name="base_time" type="String">
+            <value>88- 10-00:00:00</value>
+        </Attribute>
+        <Attribute name="title" type="String">
+            <value> FNOC UV wind components from 1988- 10 to 1988-
+13.</value>
+        </Attribute>
+    </Attribute>
+    <Attribute name="DODS_EXTRA" type="Container">
+        <Attribute name="Unlimited_Dimension" type="String">
+            <value>time_a</value>
+        </Attribute>
+    </Attribute>
+
+    <Structure name="c">
+        <Array name="lat">
+            <Attribute name="units" type="String">
+                <value>degree North</value>
+            </Attribute>
+            <Float32/>
+            <dimension name="lat" size="17"/>
+        </Array>
+    </Structure>
+
+    <blob href="cid:4E58F56D-A77E-444B-9528-586AA1309FD4@OPeNDAP.org"/>
+</Dataset>
