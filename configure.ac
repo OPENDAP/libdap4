@@ -4,11 +4,11 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.9.2, opendap-tech@opendap.org)
-AC_DEFINE(DAP_PROTOCOL_VERSION, "3.2", [Highest DAP version implemented?])
+AC_INIT(libdap, 3.10.0, opendap-tech@opendap.org)
+AC_DEFINE(DAP_PROTOCOL_VERSION, ["3.2"], [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
-AC_CONFIG_SRCDIR([AISConnect.cc])
+AC_CONFIG_SRCDIR([Connect.cc])
 AC_CONFIG_AUX_DIR(conf)
 AM_CONFIG_HEADER([config.h dods-datatypes-config.h xdr-datatypes-config.h])
 
