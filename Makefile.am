@@ -7,7 +7,8 @@ aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU -I$(top_srcdir)/xstream
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU 
+# -I$(top_srcdir)/xstream
 AM_CXXFLAGS = 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
@@ -36,7 +37,8 @@ sbin_PROGRAMS = deflate
 
 BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
 
-libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC) $(XSTREAM_SRC)
+libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC) 
+# $(XSTREAM_SRC)
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
 libdapserver_la_SOURCES = $(SERVER_SRC)
 
@@ -51,7 +53,8 @@ libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
 libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
 libdapserver_la_LIBADD = libdap.la
 
-pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(XSTREAM_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
+pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
+# $(XSTREAM_HDR) 
 noinst_HEADERS = config_dap.h
 
 # outbuf_test_SOURCES = GNU/outbuf.cc
@@ -70,10 +73,10 @@ LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex \
 
 EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
-	VCPP dods-datatypes-static.h xdr-datatypes-static.h xstream/README \
+	VCPP dods-datatypes-static.h xdr-datatypes-static.h \
 	dap-config-pkgconfig $(LEX_YACC_EXTRA) $(GRAM_SRC) OSX_Resources
 
-# README.AIS 
+# README.AIS xstream/README 
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
@@ -200,9 +203,9 @@ GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc
 
 GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h
 
-XSTREAM_SRC = xstream/posix.cpp xstream/fd.cpp xstream/common.cpp
+# XSTREAM_SRC = xstream/posix.cpp xstream/fd.cpp xstream/common.cpp
 
-XSTREAM_HDR = xstream/posix.h xstream/fd.h xstream/common.h 
+# XSTREAM_HDR = xstream/posix.h xstream/fd.h xstream/common.h 
 
 GRAM_SRC = lex.das.cc das.tab.cc das.tab.hh \
 	lex.dds.cc dds.tab.cc dds.tab.hh \

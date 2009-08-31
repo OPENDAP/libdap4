@@ -50,9 +50,11 @@ TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 	TestGrid.h TestInt16.h TestInt32.h TestSequence.h TestStr.h	      \
 	TestStructure.h TestTypeFactory.h TestUInt16.h TestUInt32.h TestUrl.h
 
-DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite ddx-testsuite	     \
-	grid-func-testsuite cache-testsuite ais_testsuite rcreader-testsuite \
-	server-testsuite cgi-util-tests
+DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite 
+
+# grid-func-testsuite cache-testsuite ais_testsuite rcreader-testsuite 
+# server-testsuite cgi-util-tests
+# ddx-testsuite	  
 
 EXTRA_DIST = DASTest.at  $(DASTESTSUITE) DDSTest.at  $(DDSTESTSUITE) \
 	atlocal.in $(srcdir)/package.m4 \

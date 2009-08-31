@@ -41,11 +41,15 @@ BUILDING THE SOFTWARE
 
 Building from Our SVN Repository
 
-  If you are building from a SVN checkout, run './autogen.sh' before
-  './configure; make'. Using ./autogen.sh -v (verbose) might be useful if
-  there are errors running configure. If you try to run autoconf, et c., by
-  hand and wind up with build files that don't work, use 'autoreconf --force
-  --verbose --install' and then './configure; make'.
+  If you are building from a SVN checkout, run 'autoreconf --install'
+  before './configure; make'. Using --verbose might be useful if there
+  are errors running configure. If you try to run autoconf, et c., by
+  hand and wind up with build files that don't work, use 'autoreconf
+  --force --verbose --install' and then './configure; make'. Also
+  included in SVN is a script which runs the auto* tools one by one
+  called autogen.sh. At one time this seemed to be a better way to do
+  things, but now autoreconf seems the most reliable tool for
+  bootstrapping the auto tools.
 
 AFTER INSTALLING
 
