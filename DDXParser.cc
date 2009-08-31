@@ -1009,16 +1009,24 @@ void DDXParser::intern(FILE * in, DDS * dest_dds, string &blob,
     blob_href = &blob; // blob goes here
 
     size_t size = 0;
-    char *line = 0;
+    char line[1024];
     xmlParserCtxtPtr context = xmlCreatePushParserCtxt(&ddx_sax_parser, this,
 	    line, size, "stream");
 
     ctxt = context; // need ctxt for error messages
     context->validate = true;
 
+#if 0
+    char *line = 0;
     while (((line = fgetln(in, &size)) > 0) && !is_boundary(line, boundary)) {
 	DBG(cerr << "line: " << line << endl);
 	xmlParseChunk(ctxt, line, size, 0);
+    }
+#endif
+
+    while ((fgets(line, 1024, in) > 0) && !is_boundary(line, boundary)) {
+	DBG(cerr << "line: " << line << endl);
+	xmlParseChunk(ctxt, line, strlen(line), 0);
     }
     // This call ends the parse: The fourth argument of xmlParseChunk is
     // the bool 'terminate.'
