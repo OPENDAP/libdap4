@@ -1,0 +1,6 @@
+--my_boundary
+Content-Type: Text/xml; charset=iso-8859-1
+Content-Description: dap4-ddx
+Content-Id: <1234@opendap.org>
+
+<?xml version="1.0">
