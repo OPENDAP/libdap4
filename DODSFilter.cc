@@ -55,6 +55,7 @@ static char rcsid[] not_used =
 #include <string>
 #include <algorithm>
 #include <cstdlib>
+#include <cstring>
 
 #include <uuid/uuid.h>	// used to build CID header value for data ddx
 

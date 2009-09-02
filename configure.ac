@@ -11,6 +11,7 @@ AC_SUBST(DAP_PROTOCOL_VERSION)
 AC_CONFIG_SRCDIR([Connect.cc])
 AC_CONFIG_AUX_DIR(conf)
 AM_CONFIG_HEADER([config.h dods-datatypes-config.h xdr-datatypes-config.h])
+AC_CONFIG_MACRO_DIR([conf])
 
 AM_INIT_AUTOMAKE
 # The second arg test autotest to look for the getocapi exec here, in the 
@@ -284,6 +285,11 @@ AC_CHECK_LIB([pthread], [pthread_kill],
 	[PTHREAD_LIBS="-lpthread"],
 	[AC_MSG_ERROR([I could not find pthreads])])
 AC_SUBST([PTHREAD_LIBS])
+
+AC_CHECK_LIB([uuid], [uuid_generate], 
+	[UUID_LIBS="-luuid"],
+	[AC_MSG_ERROR([I could not find the uuid library])])
+AC_SUBST([UUID_LIBS])
 
 AM_PATH_CPPUNIT(1.12.0,
 	[AM_CONDITIONAL([CPPUNIT], [true])],

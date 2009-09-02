@@ -33,10 +33,10 @@ libtest_types_a_SOURCES = $(TESTSRCS) $(TEST_HDR)
 # io_test_LDADD = ../libdap.la
 
 das_test_SOURCES = das-test.cc
-das_test_LDADD =  libtest-types.a ../libdap.la 
+das_test_LDADD =  libtest-types.a ../libdapserver.la ../libdap.la 
 
 dds_test_SOURCES = dds-test.cc
-dds_test_LDADD = libtest-types.a ../libdap.la 
+dds_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la 
 
 expr_test_SOURCES = expr-test.cc
 expr_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la

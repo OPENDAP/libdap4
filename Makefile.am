@@ -51,7 +51,7 @@ libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS) $(XML2_CFLAGS)
 libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
 
 libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
-libdapserver_la_LIBADD = libdap.la
+libdapserver_la_LIBADD = libdap.la $(UUID_LIBS)
 
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
 # $(XSTREAM_HDR) 
