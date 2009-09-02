@@ -288,7 +288,7 @@ AC_SUBST([PTHREAD_LIBS])
 
 AC_CHECK_LIB([uuid], [uuid_generate], 
 	[UUID_LIBS="-luuid"],
-	[AC_MSG_ERROR([I could not find the uuid library])])
+	[UUID_LIBS=""])
 AC_SUBST([UUID_LIBS])
 
 AM_PATH_CPPUNIT(1.12.0,
