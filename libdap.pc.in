@@ -9,7 +9,7 @@ Name: @PACKAGE@
 Description: Common items for the OPeNDAP C++ implementation of the Data Access Protocol
 Version: @VERSION@
 Libs: -L${libdir} -ldap
-Libs.private:  @xmlprivatelibs@ -lpthread
+Libs.private:  @xmlprivatelibs@ @PTHREAD_LIBS@
 Requires.private: @xmlprivatereq@
 Cflags: -I${includedir}/libdap
 
