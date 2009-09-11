@@ -54,8 +54,12 @@ namespace libdap {
 void
 Grid::_duplicate(const Grid &s)
 {
+    // Clear out any spurious vars in Constructor::_vars
+    _vars.clear(); // [mjohnson 10 Sep 2009]
+
     _array_var = s._array_var->ptr_duplicate();
     _array_var->set_parent(this);
+    _vars.push_back(_array_var); // so the Constructor::Vars_Iter sees it [mjohnson 10 Sep 2009]
 
     Grid &cs = const_cast<Grid &>(s);
 
@@ -63,7 +67,9 @@ Grid::_duplicate(const Grid &s)
         BaseType *btp = (*i)->ptr_duplicate();
         btp->set_parent(this);
         _map_vars.push_back(btp);
+        _vars.push_back(btp); // push all map vectors as weak refs into super::_vars which won't delete them [mjohnson 10 Sep 2009]
     }
+
 }
 
 /** The Grid constructor requires only the name of the variable
@@ -128,8 +134,10 @@ Grid::operator=(const Grid &rhs)
         delete btp ;
     }
 
+    // this doesn't copy Constructor::_vars so...
     dynamic_cast<Constructor &>(*this) = rhs;
 
+    // we do it in here...
     _duplicate(rhs);
 
     return *this;
@@ -338,6 +346,10 @@ Grid::add_var(BaseType *bt, Part part)
     if (!bt)
         throw InternalErr(__FILE__, __LINE__,
                           "Passing NULL pointer as variable to be added.");
+
+    // mjohnson 10 Sep 2009
+    // Add it to the superclass _vars list so we can iterate on superclass vars
+    _vars.push_back(bt);
 
     // Jose Garcia
     // Now we get a copy of the maps or of the array

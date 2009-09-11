@@ -254,7 +254,7 @@ AttrTable::append_attr(const string &name, const string &type,
     @return Returns the length of the added attribute value.
     @param name The name of the attribute to add or modify.
     @param type The type of the attribute to add or modify.
-    @param values A vector of values. */
+    @param values A vector of values. Note: The vector is COPIED, not stored. */
 unsigned int
 AttrTable::append_attr(const string &name, const string &type,
                        vector<string> *values)
