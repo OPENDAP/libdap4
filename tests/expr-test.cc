@@ -58,9 +58,6 @@ static char rcsid[] not_used =
 #include "DDS.h"
 #include "DataDDS.h"
 #include "ConstraintEvaluator.h"
-#if 0
-#include "XDRFileMarshaller.h"
-#endif
 #include "XDRFileUnMarshaller.h"
 #include "XDRStreamMarshaller.h"
 #include "Error.h"
@@ -73,7 +70,7 @@ static char rcsid[] not_used =
 #include "expr.h"
 #include "ce_expr.tab.hh"
 #include "util.h"
-#include "GNU/outbuf.h"
+#include "GNU/fdiostream.h"
 #include "debug.h"
 
 using namespace std;
@@ -91,9 +88,6 @@ void test_parser(ConstraintEvaluator & eval, DDS & table,
                  const string & dds_name, const string & constraint);
 bool read_table(DDS & table, const string & name, bool print);
 void evaluate_dds(DDS & table, bool print_constrained);
-#if 0
-bool loopback_pipe(FILE ** pout, FILE ** pin);
-#endif
 void constrained_trans(const string & dds_name, const bool constraint_expr,
                        const string & ce, const bool series_values);
 void intern_data_test(const string & dds_name, const bool constraint_expr,
@@ -419,60 +413,11 @@ void evaluate_dds(DDS & table, bool print_constrained)
 
 // create a pipe for the caller's process which can be used by the DODS
 // software to write to and read from itself.
-#if 0
-bool loopback_pipe(FILE ** pout, FILE ** pin)
-{
-#ifdef WIN32
-    int fd[2];
-    if (_pipe(fd, 1024, _O_BINARY) < 0) {
-        fprintf(stderr, "Could not open pipe\n");
-        return false;
-    }
-
-    *pout = fdopen(fd[1], "w+b");
-    *pin = fdopen(fd[0], "r+b");
-#else
-    int fd[2];
-    if (pipe(fd) < 0) {
-        fprintf(stderr, "Could not open pipe\n");
-        return false;
-    }
-
-    *pout = fdopen(fd[1], "w");
-    *pin = fdopen(fd[0], "r");
-#endif
-
-    return true;
-}
-
-#include "xstream/fd.h"
-
-bool loopback_pipe(ostream pout, istream pin)
-{
-    int fd[2];
-    if (pipe(fd) < 0) {
-        fprintf(stderr, "Could not open pipe\n");
-        return false;
-    }
-
-    xstream::fd::streambuf out(fd[1],true);
-    xstream::fd::streambuf in(fd[0],true);
-
-    pout = std::ostream(&out);
-    pin = std::istream(&in);
-
-    return true;
-}
-#endif
-
-#if 1
 
 #ifndef WIN32
 #define PIPE(x) pipe((x))
 #else
 #define PIPE(x) _pipe((x), 1024, _O_BINARY)
-#endif
-
 #endif
 
 bool
@@ -491,7 +436,7 @@ loopback_pipe(fdostream **pout, FILE **pin)
 }
 
 
-// Gobble up the mime header. At one time the MIME Headers were output from
+// Gobble up the MIME header. At one time the MIME Headers were output from
 // the server filter programs (not the core software) so we could call
 // DDS::send() from this test code and not have to parse the MIME header. But
 // in order to get errors to work more reliably the header generation was
