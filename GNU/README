@@ -1,9 +1,11 @@
 
 	$Id$
 
-These files are from the GNU libg++ software package. If you'd like the
-complete library it may be obtained from ftp.gnu.org or by asking one of the
-DODS project technical people for a copy.
+The files GetOpt.{cc,h} are from the GNU libg++ software package. If you'd
+like the complete library it may be obtained from ftp.gnu.org.
+
+The files GNURegex.{cc,h} were originally from teh GNU libg++ package, but 
+I rewrote them to use the Unix regex library some time ago. 
 
 The files outbuf.h and .cc are from Nicolai Josuttis' "The C++ Standard
 Library" and are not part part of libg++. I use these to build a pipe that 
