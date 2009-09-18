@@ -31,7 +31,7 @@ lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 
 bin_SCRIPTS = dap-config dap-config-pkgconfig
 
-bin_PROGRAMS = getdap
+bin_PROGRAMS = getdap fdiostream_test
 
 sbin_PROGRAMS = deflate
 
@@ -57,7 +57,7 @@ pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR)
 # $(XSTREAM_HDR) 
 noinst_HEADERS = config_dap.h
 
-# outbuf_test_SOURCES = GNU/outbuf.cc
+fdiostream_test_SOURCES = GNU/fdiostream_test.cc
 
 getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la libdapserver.la
@@ -224,7 +224,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
 	Clause.cc RValue.cc ConstraintEvaluator.cc ArrayGeoConstraint.cc \
 	DapIndent.cc Operators.h					 \
 	XDRUtils.cc XDRFileMarshaller.cc XDRFileUnMarshaller.cc		 \
-	XDRStreamMarshaller.cc mime_util.cc 
+	XDRStreamMarshaller.cc XDRStreamUnMarshaller.cc mime_util.cc 
 
 Operators.h: ce_expr.tab.hh
 
@@ -250,7 +250,8 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
 	expr.h Clause.h RValue.h ConstraintEvaluator.h ce_parser.h	  \
 	DapIndent.h DapObj.h XDRFileMarshaller.h Marshaller.h		  \
 	XDRFileUnMarshaller.h UnMarshaller.h XDRStreamMarshaller.h	  \
-	XDRUtils.h xdr-datatypes.h mime_util.h cgi_util.h 
+	XDRUtils.h xdr-datatypes.h mime_util.h cgi_util.h                 \
+	XDRStreamUnMarshaller.h 
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h
