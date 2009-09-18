@@ -7,7 +7,7 @@
 
 
 #include <iostream>
-#include "outbuf.h"
+#include "fdiostream.h"
 
 int main()
 {
