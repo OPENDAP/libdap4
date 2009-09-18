@@ -44,7 +44,7 @@ using std::cout ;
 namespace libdap
 {
 
-/** @brief marshaller that knows how to marshall/serialize dap data objects
+/** @brief marshaller that knows how to marshal/serialize dap data objects
  * to a C++ iostream using XDR
  */
 class XDRStreamMarshaller : public Marshaller

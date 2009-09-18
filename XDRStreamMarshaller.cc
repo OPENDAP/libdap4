@@ -204,9 +204,6 @@ XDRStreamMarshaller::put_str( const string &val )
     char *str_buf = (char *)malloc( size ) ;
 
     if ( !str_buf ) {
-#if 0
-    	free(str_buf);
-#endif
         throw Error("Failed to allocate memory for string data serialization.");
     }
 
@@ -294,9 +291,6 @@ XDRStreamMarshaller::put_vector( char *val, int num, Vector & )
 
     char *byte_buf = (char *)malloc( num + add_to ) ;
     if ( !byte_buf ) {
-#if 0
-    	free(byte_buf);
-#endif
         throw Error("Failed to allocate memory for byte vector data serialization.");
     }
 
