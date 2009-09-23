@@ -22,6 +22,9 @@
 #include <algorithm>
 #include <cstdio>
 
+#define DODS_DEBUG
+#include "debug.h"
+
 class fdoutbuf : public std::streambuf {
 protected:
     int fd;	// file descriptor
@@ -85,16 +88,15 @@ class fdostream : public std::ostream {
 protected:
     fdoutbuf buf;
 public:
-    fdostream (int fd) : std::ostream(&buf), buf(fd) {
-    }
+    fdostream (int fd) : std::ostream(&buf), buf(fd) { }
 };
-
-#define PUT_BACK 128
 
 class fdinbuf : public std::streambuf {
 protected:
     int fd;	// file descriptor
+    bool d_close;
     static const int bufferSize = 4096; // Size of the data buffer
+    static const int putBack = 128;
     // Odd, but this does not work when defined in the class... used #define
     //static const int putBack = 256; // Allow characters to be putback
     char buffer[bufferSize];	// data buffer
@@ -102,40 +104,47 @@ protected:
 public:
     /** constructor
      *  Initialize and empty data buffer*/
-    fdinbuf(int _fd) : fd(_fd) {
-	setg(buffer + PUT_BACK, // beginning of put back area
-		buffer + PUT_BACK, // read position
-		buffer + PUT_BACK); // end position
+    fdinbuf(int _fd, bool close = false) : fd(_fd), d_close(close) {
+	setg(buffer + putBack, // beginning of put back area
+		buffer + putBack, // read position
+		buffer + putBack); // end position
     }
 
     /** Destructor */
     virtual ~fdinbuf() {
+	if (d_close)
+	    close(fd);
     }
 
 protected:
     /** Insert new characters into the buffer */
     virtual int underflow() {
 	if (gptr() < egptr()) {
+	    DBG(std::cerr << "underflow, no read" << std::endl);
 	    return *gptr();
 	}
-	// process size of PUT_BACK area
-	// use the number of characters read, but a maximum of PUT_BACK
-	int numPutBack = std::min(gptr() - eback(), PUT_BACK);
+
+	// process size of putBack area
+	// use the number of characters read, but a maximum of putBack
+	int numPutBack = gptr() - eback();
+	if (numPutBack > putBack)
+	    numPutBack = putBack;
 
 	// copy characters previously read into the put back area of the
 	// buffer.
-	memcpy(buffer + (PUT_BACK-numPutBack), gptr() - numPutBack, numPutBack);
+	memcpy(buffer + (putBack-numPutBack), gptr() - numPutBack, numPutBack);
 
 	// read new characters
-	int num = read(fd, buffer + PUT_BACK, bufferSize - PUT_BACK);
-	if (num < 0) {
-	    // Error or EOF
+	int num = read(fd, buffer + putBack, bufferSize - putBack);
+	DBG(std::cerr << "underflow, read returns: " << num << std::endl);
+	if (num <= 0) {
+	    // Error or EOF; error < 0; EOF == 0
 	    return EOF;
 	}
 
-	setg(buffer + (PUT_BACK-numPutBack), // beginning of put back area
-		buffer + PUT_BACK,	    // read positon
-		buffer + PUT_BACK + num);    // end of buffer
+	setg(buffer + (putBack-numPutBack), // beginning of put back area
+		buffer + putBack,	    // read position
+		buffer + putBack + num);    // end of buffer
 
 	// return next character
 	return *gptr();
@@ -146,7 +155,75 @@ class fdistream : public std::istream {
 protected:
     fdinbuf buf;
 public:
-    fdistream (int fd) : std::istream(&buf), buf(fd) {
+    fdistream (int fd, bool close = false)
+	: std::istream(&buf), buf(fd, close) { }
+};
+
+class fpinbuf : public std::streambuf {
+protected:
+    FILE *fp;	// FILE *
+    bool close;
+    static const int bufferSize = 4096; // Size of the data buffer
+    static const int putBack = 128;
+    // Odd, but this does not work when defined in the class... used #define
+    //static const int putBack = 256; // Allow characters to be putback
+    char buffer[bufferSize];	// data buffer
+
+public:
+    /** constructor
+     *  Initialize and empty data buffer*/
+    fpinbuf(FILE *_fp, bool _close = false) : fp(_fp), close(_close) {
+	setg(buffer + putBack, // beginning of put back area
+		buffer + putBack, // read position
+		buffer + putBack); // end position
     }
+
+    /** Destructor */
+    virtual ~fpinbuf() {
+	if (close)
+	    fclose(fp);
+    }
+
+protected:
+    /** Insert new characters into the buffer */
+    virtual int underflow() {
+	if (gptr() < egptr()) {
+	    DBG(std::cerr << "underflow, no read" << std::endl);
+	    return *gptr();
+	}
+
+	// process size of putBack area
+	// use the number of characters read, but a maximum of putBack
+	int numPutBack = gptr() - eback();
+	if (numPutBack > putBack)
+	    numPutBack = putBack;
+
+	// copy characters previously read into the put back area of the
+	// buffer.
+	memcpy(buffer + (putBack-numPutBack), gptr() - numPutBack, numPutBack);
+
+	// read new characters
+	int num = fread(buffer + putBack, 1, bufferSize - putBack, fp);
+	DBG(std::cerr << "underflow, read returns: " << num << std::endl);
+	if (num == 0) {
+	    // Error or EOF; use feof() or ferror() to test
+	    return EOF;
+	}
+
+	setg(buffer + (putBack-numPutBack), // beginning of put back area
+		buffer + putBack,	    // read position
+		buffer + putBack + num);    // end of buffer
+
+	// return next character
+	return *gptr();
+    }
+};
+
+class fpistream : public std::istream {
+protected:
+    fpinbuf buf;
+public:
+    fpistream (FILE *fp, bool close = false)
+	: std::istream(&buf), buf(fp, close) { }
 };
 
