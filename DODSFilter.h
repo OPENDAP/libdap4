@@ -171,11 +171,11 @@ public:
     int get_timeout() const;
 
     virtual void establish_timeout(ostream &stream) const;
-
+#if 0
     virtual void read_ancillary_das(DAS &das, const string &anc_location = "") const;
 
     virtual void read_ancillary_dds(DDS &dds, const string &anc_location = "") const;
-
+#endif
     virtual void print_usage() const;
 
     virtual void send_version_info() const;

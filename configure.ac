@@ -31,8 +31,10 @@ AC_SUBST(DVR)
 AC_DEFINE(EVAL, 1, [Should all the classes run ConstraintEvaluator::eval()?])
 AC_SUBST(EVAL)
 
-AC_DEFINE(COMPRESSION_FOR_SERVER3, 0, [Should the subprocess compression for Server3 be included?])
-AC_SUBST(COMPRESSION_FOR_SERVER3)
+# As of 9/25/09 we're dropping support for Server3
+# 
+# AC_DEFINE(COMPRESSION_FOR_SERVER3, 0, [Should the subprocess compression for Server3 be included?])
+# AC_SUBST(COMPRESSION_FOR_SERVER3)
 
 dnl flags for the compilers and linkers - set these before locating the
 dnl actual tools since some of the AC_PROG macros set these `flag variables'

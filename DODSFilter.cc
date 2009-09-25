@@ -657,7 +657,7 @@ DODSFilter::establish_timeout(ostream &stream) const
 #endif
 }
 
-
+#if 0
 /** Read the ancillary DAS information and merge it into the input
     DAS object.
 
@@ -691,7 +691,7 @@ DODSFilter::read_ancillary_dds(DDS &dds, const string &anc_location) const
 			       (anc_location == "") ? d_anc_dir : anc_location,
 			       d_anc_file);
 }
-
+#endif
 static const char *emessage = "DODS internal server error; usage error. Please report this to the dataset maintainer, or to the opendap-tech@opendap.org mailing list.";
 
 /** This message is printed when the filter program is incorrectly
@@ -1176,9 +1176,6 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
     // Start sending the response...
-#if COMPRESSION_FOR_SERVER3
-    bool compress = d_comp && deflate_exists();
-#endif
 
     // Handle *functional* constraint expressions specially
     if (eval.functional_expression()) {
@@ -1190,17 +1187,7 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
         if (!var)
             throw Error(unknown_error, "Error calling the CE function.");
 
-#if COMPRESSION_FOR_SERVER3
-        if (with_mime_headers)
-            set_mime_binary(data_stream, dods_data, d_cgi_ver,
-                            (compress) ? deflate : x_plain, data_lmt);
-	data_stream << flush ;
-
-        int childpid;
-        if (compress)
-            data_stream = compressor(data_stream, childpid);
-#endif
-        if (with_mime_headers)
+       if (with_mime_headers)
             set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
 
 	data_stream << flush ;
@@ -1210,16 +1197,6 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
         var = 0;
     }
     else {
-#if COMPRESSION_FOR_SERVER3
-        if (with_mime_headers)
-            set_mime_binary(data_stream, dods_data, d_cgi_ver,
-                            (compress) ? deflate : x_plain, data_lmt);
-	data_stream << flush ;
-
-        int childpid;
-        if (compress)
-            data_stream = compressor(data_stream, childpid);
-#endif
         if (with_mime_headers)
             set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
 

@@ -295,7 +295,7 @@ XDRStreamUnMarshaller::get_vector( char **val, unsigned int &num, int width, Vec
     get_int( i ) ; // This leaves the XDR encoded value in _buf; used later
     DBG(std::cerr << "i: " << i << std::endl);
 
-    width += width&3
+    width += width&3;
     DBG(std::cerr << "width: " << width << std::endl);
 
     char *buf = 0;

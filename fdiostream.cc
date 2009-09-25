@@ -29,7 +29,7 @@
 
 #include "fdiostream.h"
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 #include "debug.h"
 
 namespace libdap {

@@ -36,6 +36,7 @@
 // ReZa 9/30/94
 
 #include "config.h"
+#undef FILE_METHODS
 
 static char rcsid[] not_used =
     {"$Id$"
@@ -364,6 +365,7 @@ get_description_type(const string &value)
         return unknown_type;
 }
 
+#if FILE_METHODS
 /** Generate an HTTP 1.0 response header for a text document. This is used
     when returning a serialized DAS or DDS object.
 
@@ -416,6 +418,7 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
         fprintf(out, "Content-Encoding: %s%s", encoding[enc], CRLF) ;
     fprintf(out, CRLF) ;
 }
+#endif
 
 /** Generate an HTTP 1.0 response header for a text document. This is used
     when returning a serialized DAS or DDS object.
@@ -470,6 +473,7 @@ set_mime_text(ostream &strm, ObjectType type, const string &ver,
     strm << CRLF ;
 }
 
+#if FILE_METHODS
 /** Generate an HTTP 1.0 response header for a html document.
 
     @param out Write the MIME header to this FILE pointer.
@@ -515,6 +519,7 @@ set_mime_html(FILE *out, ObjectType type, const string &ver,
         fprintf(out, "Content-Encoding: %s%s", encoding[enc], CRLF) ;
     fprintf(out, CRLF) ;
 }
+#endif
 
 /** Generate an HTTP 1.0 response header for a html document.
 
@@ -562,6 +567,7 @@ set_mime_html(ostream &strm, ObjectType type, const string &ver,
     strm << CRLF ;
 }
 
+#if FILE_METHODS
 /** Write an HTTP 1.0 response header for our binary response document (i.e.,
     the DataDDS object).
 
@@ -606,6 +612,7 @@ set_mime_binary(FILE *out, ObjectType type, const string &ver,
 
     fprintf(out, CRLF) ;
 }
+#endif
 
 /** Write an HTTP 1.0 response header for our binary response document (i.e.,
     the DataDDS object).
@@ -729,15 +736,6 @@ const size_t line_length = 1024;
  */
 string get_next_mime_header(FILE *in)
 {
-#if 0
-    // Consume whitespace
-    char c = getc(in);
-    while (isspace(c)) {
-	c = getc(in);
-    }
-    ungetc(c, in);
-#endif
-
     // Get the header line and strip \r\n. Some headers end with just \n.
     // If a blank line is found, return an empty string.
     char line[line_length];
@@ -892,6 +890,7 @@ string cid_to_header_value(const string &cid)
     return value;
 }
 
+#if FILE_METHODS
 /** Generate an HTTP 1.0 response header for an Error object.
     @param out Write the MIME header to this FILE pointer.
     @param code HTTP 1.0 response code. Should be 400, ... 500, ...
@@ -918,6 +917,7 @@ set_mime_error(FILE *out, int code, const string &reason,
     fprintf(out, "Cache-Control: no-cache%s", CRLF) ;
     fprintf(out, CRLF) ;
 }
+#endif
 
 /** Generate an HTTP 1.0 response header for an Error object.
     @param strm Write the MIME header to this stream.
@@ -946,7 +946,7 @@ set_mime_error(ostream &strm, int code, const string &reason,
     strm << CRLF ;
 }
 
-
+#if FILE_METHODS
 /** Use this function to create a response signaling that the target of a
     conditional get has not been modified relative to the condition given in
     the request. This will have to be a date until the servers support ETags.
@@ -961,6 +961,7 @@ set_mime_not_modified(FILE *out)
     fprintf(out, "Date: %s%s", rfc822_date(t).c_str(), CRLF) ;
     fprintf(out, CRLF) ;
 }
+#endif
 
 /** Use this function to create a response signaling that the target of a
     conditional get has not been modified relative to the condition given in
@@ -1025,7 +1026,7 @@ remove_mime_header(FILE *in)
     return false;
 }
 
-
+#if 0
 /** Look in the CGI directory (given by \c cgi) for a per-cgi HTML* file.
     Also look for a dataset-specific HTML* document. Catenate the documents
     and return them in a single String variable.
@@ -1089,6 +1090,6 @@ get_user_supplied_docs(string name, string cgi)
 
     return oss.str();
 }
-
+#endif
 } // namespace libdap
 

@@ -179,13 +179,14 @@ public:
 	DBG(cerr << "r.match(s): " << pos << endl);
 	return pos > 0;
     }
+#if 0
     // Tests for methods
     void read_ancillary_das_test() {
     }
 
     void read_ancillary_dds_test() {
     }
-
+#endif
     void get_dataset_last_modified_time_test() {
 	time_t t = time(0);
 	CPPUNIT_ASSERT(df1->get_dataset_last_modified_time() == t);

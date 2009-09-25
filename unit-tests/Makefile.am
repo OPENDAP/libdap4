@@ -78,7 +78,7 @@ if CPPUNIT
 #UNIT_TESTS = AttrTableTest
 UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	RegexTest                                                       \
-	ArrayTest AttrTableTest ByteTest cgiUtilTest ancT DASTest 	\
+	ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest 	\
 	DDSTest	DDXParserTest DODSFilterTest generalUtilTest 		\
 	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest 	\
 	SequenceTest SignalHandlerTest CEFunctionsTest 			\
@@ -121,8 +121,8 @@ AttrTableTest_LDADD = ../libdap.la $(AM_LDADD)
 ByteTest_SOURCES = ByteTest.cc
 ByteTest_LDADD = ../libdap.la $(AM_LDADD)
 
-cgiUtilTest_SOURCES = cgiUtilTest.cc
-cgiUtilTest_LDADD = ../libdap.la $(AM_LDADD)
+MIMEUtilTest_SOURCES = MIMEUtilTest.cc
+MIMEUtilTest_LDADD = ../libdap.la $(AM_LDADD)
 #  ../libdapserver.la
 
 ancT_SOURCES = ancT.cc

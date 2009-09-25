@@ -46,7 +46,7 @@
 #include "debug.h"
 #include <test_config.h>
 
-#include "testFile.cc"
+//#include "testFile.cc"
 
 using namespace CppUnit;
 using namespace std;
@@ -117,9 +117,10 @@ Last-Modified: \\1\r\n\
 Content-Type: text/plain\r\n\
 Content-Description: dods_das\r\n\
 \r\n.*");
-	string oss;
-	FILE2string(oss, tmp, set_mime_text(tmp, dods_das, "dods-test/0.00")); DBG(cerr << "DODS DAS" << endl << oss);
-	CPPUNIT_ASSERT(re_match(r1, oss));
+	ostringstream oss;
+	set_mime_text(oss, dods_das, "dods-test/0.00");
+	DBG(cerr << "DODS DAS" << endl << oss.str());
+	CPPUNIT_ASSERT(re_match(r1, oss.str()));
 
 	Regex
 		r2(
@@ -132,8 +133,11 @@ Last-Modified: \\1\r\n\
 Content-Type: text/plain\r\n\
 Content-Description: dods_dds\r\n\
 \r\n.*");
-	FILE2string(oss, tmp, set_mime_text(tmp, dods_dds, "dods-test/0.00")); DBG(cerr << "DODS DDS" << endl << oss);
-	CPPUNIT_ASSERT(re_match(r2, oss));
+
+	oss.str("");
+	set_mime_text(oss, dods_dds, "dods-test/0.00");
+	DBG(cerr << "DODS DDS" << endl << oss);
+	CPPUNIT_ASSERT(re_match(r2, oss.str()));
 
 	struct tm tm = { 0, 0, 0, 1, 0, 100, 0, 0, 0, 0, 0 }; // 1 Jan 2000
 	time_t t = mktime(&tm);
@@ -148,9 +152,10 @@ Last-Modified: Sat, 01 Jan 2000 ..:00:00 GMT\r\n\
 Content-Type: text/plain\r\n\
 Content-Description: dods_dds\r\n\
 \r\n.*");
-	FILE2string(oss, tmp,
-		set_mime_text(tmp, dods_dds, "dods-test/0.00", x_plain, t));
-	CPPUNIT_ASSERT(re_match(r3, oss));
+
+	oss.str("");
+	set_mime_text(oss, dods_dds, "dods-test/0.00", x_plain, t);
+	CPPUNIT_ASSERT(re_match(r3, oss.str()));
     }
 
     void rfc822_date_test()
