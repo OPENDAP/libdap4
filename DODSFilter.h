@@ -85,6 +85,7 @@ public:
         DDS_Response,
         DataDDS_Response,
         DDX_Response,
+        DataDDX_Response,
         BLOB_Response,
         Version_Response
     };
@@ -217,7 +218,7 @@ public:
                            const string &anc_location = "",
                            bool with_mime_headers = true) const;
 
-    //#if FILE_METHODS
+#if FILE_METHODS
     virtual void establish_timeout(FILE *stream) const;
     virtual void send_das(FILE *out, DAS &das, const string &anc_location = "",
                           bool with_mime_headers = true) const;
@@ -236,8 +237,10 @@ public:
     virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
                           bool with_mime_headers = true) const;
     // Broken. 4/5/06 jhrg
+#if 0
     virtual void send_blob(DDS &dds, FILE *out, bool with_mime_headers = true);
-    //#endif
+#endif
+#endif
 };
 
 } // namespace libdap

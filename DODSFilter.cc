@@ -36,6 +36,8 @@
 
 #include "config.h"
 
+#undef FILE_METHODS
+
 static char rcsid[] not_used =
     {"$Id$"
     };
@@ -437,6 +439,10 @@ void DODSFilter::set_response(const string &r)
 	d_response = DDX_Response;
 	d_action = "ddx" ;
     }
+    else if (r == "DataDDX" || r == "dataddx") {
+	d_response = DataDDX_Response;
+	d_action = "dataddx" ;
+    }
     else if (r == "Version") {
 	d_response = Version_Response;
 	d_action = "version" ;
@@ -611,7 +617,7 @@ DODSFilter::get_timeout() const
     return d_timeout;
 }
 
-//#if FILE_METHODS
+#if FILE_METHODS
 /** Use values of this instance to establish a timeout alarm for the server.
     If the timeout value is zero, do nothing.
 
@@ -635,7 +641,7 @@ DODSFilter::establish_timeout(FILE *stream) const
     }
 #endif
 }
-//#endif
+#endif
 
 // FIXME
 void
@@ -717,7 +723,7 @@ DODSFilter::send_version_info() const
     do_version(d_cgi_ver, get_dataset_version());
 }
 
-//#if FILE_METHODS
+#if FILE_METHODS
 /** This function formats and prints an ASCII representation of a
     DAS on stdout.  This has the effect of sending the DAS object
     back to the client program.
@@ -746,7 +752,8 @@ DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location,
     }
     fflush(out) ;
 }
-//#endif
+#endif
+
 /** This function formats and prints an ASCII representation of a
     DAS on stdout.  This has the effect of sending the DAS object
     back to the client program.
@@ -783,7 +790,7 @@ DODSFilter::send_das(DAS &das, const string &anc_location,
     send_das(cout, das, anc_location, with_mime_headers);
 }
 
-//#if FILE_METHODS
+#if FILE_METHODS
 /** This function formats and prints an ASCII representation of a
     DDS on stdout.  When called by a CGI program, this has the
     effect of sending a DDS object back to the client
@@ -830,7 +837,8 @@ DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
 
     fflush(out) ;
 }
-//#endif
+#endif
+
 /** This function formats and prints an ASCII representation of a
     DDS on stdout.  When called by a CGI program, this has the
     effect of sending a DDS object back to the client
@@ -886,7 +894,7 @@ DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval,
     send_dds(cout, dds, eval, constrained, anc_location, with_mime_headers);
 }
 
-//#if FILE_METHODS
+#if FILE_METHODS
 // 'lmt' unused. Should it be used to supply a LMT or removed from the
 // method? jhrg 8/9/05
 void
@@ -911,7 +919,8 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
         throw;
     }
 }
-//#endif
+#endif
+
 // 'lmt' unused. Should it be used to supply a LMT or removed from the
 // method? jhrg 8/9/05
 void
@@ -937,7 +946,7 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
     }
 }
 
-//#if FILE_METHODS
+#if FILE_METHODS
 void
 DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
                                FILE * out) const
@@ -962,7 +971,7 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
         throw;
     }
 }
-//#endif
+#endif
 
 void
 DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
@@ -1029,47 +1038,8 @@ DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
         throw;
     }
 }
-#if 0
-void
-DODSFilter::functional_constraint_ddx(BaseType &var, DDS &dds,
-                                  ConstraintEvaluator &eval, ostream &out) const
-{
-    // Write the MPM headers for the DDX (text/xml) part of the response
-    set_mime_ddx_boundary(out, boundary, start, dap4_ddx);
 
-    // Make cid
-    uuid_t uu;
-    uuid_generate(uu);
-    char uuid[37];
-    uuid_unparse(uu, &uuid[0]);
-    char domain[256];
-    if (getdomainname(domain, 255) != 0)
-	strncpy(domain, "getdomainname.failed", 255);
-
-    string cid = string(&uuid[0]) + "@" + string(&domain[0]);
-
-    // Build a new DDS with just this variable in it
-    var.print(xml)
-    out << "Dataset {\n" ;
-    var.print_decl(out, "    ", true, false, true);
-    out << "} function_value;\n" ;
-    out << "Data:\n" ;
-
-    out << flush ;
-
-    // Grab a stream encodes using XDR.
-    XDRStreamMarshaller m( out ) ;
-
-    try {
-        // In the following call to serialize, suppress CE evaluation.
-        var.serialize(eval, dds, m, false);
-    }
-    catch (Error &e) {
-        throw;
-    }
-}
-#endif
-//#if FILE_METHODS
+#if FILE_METHODS
 /** Send the data in the DDS object back to the client program. The data is
     encoded using a Marshaller, and enclosed in a MIME document which is all sent
     to \c data_stream. If this is being called from a CGI, \c data_stream is
@@ -1163,7 +1133,8 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
 
     fflush(data_stream);
 }
-//#endif
+#endif
+
 /** Send the data in the DDS object back to the client program. The data is
     encoded using a Marshaller, and enclosed in a MIME document which is all sent
     to \c data_stream. If this is being called from a CGI, \c data_stream is
@@ -1258,7 +1229,7 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     data_stream << flush ;
 }
 
-//#if FILE_METHODS
+#if FILE_METHODS
 /** Send the DDX response. The DDX never contains data, instead it holds a
     reference to a Blob response which is used to get the data values. The
     DDS and DAS objects are built using code that already exists in the
@@ -1296,7 +1267,8 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
         dds.print_xml(out, !d_ce.empty(), "");
     }
 }
-//#endif
+#endif
+
 /** Send the DDX response. The DDX never contains data, instead it holds a
     reference to a Blob response which is used to get the data values. The
     DDS and DAS objects are built using code that already exists in the
@@ -1412,7 +1384,8 @@ DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
 	data_stream << CRLF << "--" << boundary << "--" << CRLF;
 }
 
-//#if FILE_METHODS
+#if 0
+#if FILE_METHODS
 /** Write the BLOB response to the client.
     @param dds Use the variables in this DDS to generate the BLOB response.
     @param out Dump the response to this FILE pointer.
@@ -1475,6 +1448,7 @@ DODSFilter::send_blob(DDS &, FILE *, bool)
     }
 #endif
 }
-//#endif
+#endif
+#endif
 } // namespace libdap
 

@@ -48,7 +48,7 @@ namespace libdap
 
 class Vector ;
 
-/** @brief abstract base class used to marshall/serialize dap data objects
+/** @brief abstract base class used to marshal/serialize dap data objects
  */
 class Marshaller : public DapObj
 {

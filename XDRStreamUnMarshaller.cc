@@ -32,6 +32,10 @@
 
 #include "XDRStreamUnMarshaller.h"
 
+#include <string>
+#include <sstream>
+
+#define DODS_DEBUG2 1
 #define DODS_DEBUG 1
 
 #include "Vector.h"
@@ -85,11 +89,28 @@ XDRStreamUnMarshaller::~XDRStreamUnMarshaller( )
 void
 XDRStreamUnMarshaller::get_byte( dods_byte &val )
 {
-    xdr_setpos( _source, 0 );
-    _in.read( _buf, 4 );
+    if (xdr_setpos( _source, 0 ) < 0)
+	throw Error("Failed to reposition input stream");
+    if (!(_in.read( _buf, 4 ))) {
+	if (_in.eof())
+	    throw Error("Premature EOF in input stream");
+	else {
+	    ostringstream ss("Error reading from input stream: ");
+	    ss << _in.rdstate();
+	    throw Error(ss.str());
+	}
+    }
+
+    DBG2( std::cerr << "_in.gcount(): " << _in.gcount() << std::endl );
+    DBG2( std::cerr << "_in.tellg(): " << _in.tellg() << std::endl );
+    DBG2( std::cerr << "_buf[0]: " << hex << _buf[0] << "; _buf[1]: " << _buf[1]
+             << "; _buf[2]: " << _buf[2] << "; _buf[3]: " << _buf[3]
+             << dec << std::endl );
 
     if( !xdr_char( _source, (char *)&val ) )
         throw Error("Network I/O Error. Could not read byte data.");
+
+    DBG2(std::cerr << "get_byte: " << val << std::endl );
 }
 
 void
@@ -205,8 +226,9 @@ XDRStreamUnMarshaller::get_opaque( char *val, unsigned int len )
 {
     xdr_setpos( _source, 0 );
 
-    // Round len up to the next multiple of 4
-    len = ( ( len + 3 ) / 4 ) * 4;
+    // Round len up to the next multiple of 4. There is also the RNDUP()
+    // macro in xdr.h, at least on OS/X.
+    len += len&3;
     if ( len > XDR_DAP_BUFF_SIZE )
 	throw Error("Network I/O Error. Length of opaque data larger than allowed");
 
@@ -235,7 +257,7 @@ XDRStreamUnMarshaller::get_vector( char **val, unsigned int &num, Vector & )
     DBG(std::cerr << "i: " << i << std::endl);
 
     // Must round up string size to next 4
-    i = ( ( i + 3 ) / 4 ) * 4;
+    i += i&3;
     DBG(std::cerr << "i: " << i << std::endl);
 
     char *buf = 0;
@@ -248,6 +270,7 @@ XDRStreamUnMarshaller::get_vector( char **val, unsigned int &num, Vector & )
 	memcpy( buf, _buf, 4 );
 
 	_in.read( buf + 4, i );
+	DBG2(cerr << "bytes read: " << _in.gcount() << endl);
 
 	xdr_setpos( source, 0 );
 	if( !xdr_bytes( _source, val, &num, DODS_MAX_ARRAY) )
@@ -257,6 +280,7 @@ XDRStreamUnMarshaller::get_vector( char **val, unsigned int &num, Vector & )
     }
     else {
 	_in.read( _buf + 4, i );
+	DBG2(cerr << "bytes read: " << _in.gcount() << endl);
 
 	xdr_setpos( _source, 0 );
 	if( !xdr_bytes( _source, val, &num, DODS_MAX_ARRAY) )
@@ -271,23 +295,24 @@ XDRStreamUnMarshaller::get_vector( char **val, unsigned int &num, int width, Vec
     get_int( i ) ; // This leaves the XDR encoded value in _buf; used later
     DBG(std::cerr << "i: " << i << std::endl);
 
-    // Round up width
-    width = ((width + 3) / 4) * 4;
-    DBG(std::cerr << "width: " << i << std::endl);
+    width += width&3
+    DBG(std::cerr << "width: " << width << std::endl);
 
     char *buf = 0;
     XDR *source = 0;
-    int size = i * width ;
+    int size = i * width + 4; // '+ 4' to hold the int already read
     BaseType *var = vec.var();
 
     // Must address the case where the string is larger than the buffer
-    if (size + 4 > XDR_DAP_BUFF_SIZE) {
+    if (size > XDR_DAP_BUFF_SIZE) {
 	source = new XDR;
-	buf = (char *) malloc( size + 4 );
+	buf = (char *) malloc( size );
 	xdrmem_create(source, buf, size, XDR_DECODE);
+	DBG2(cerr << "size: " << size << endl);
 	memcpy(buf, _buf, 4);
 
-	_in.read(buf + 4, size );
+	_in.read(buf + 4, size ); // +4 for the int already read
+	DBG2(cerr << "bytes read: " << _in.gcount() << endl);
 
 	xdr_setpos( source, 0 );
 	if (!xdr_array( source, val, &num, DODS_MAX_ARRAY, width,
@@ -298,6 +323,7 @@ XDRStreamUnMarshaller::get_vector( char **val, unsigned int &num, int width, Vec
     }
     else {
 	_in.read(_buf + 4, size);
+	DBG2(cerr << "bytes read: " << _in.gcount() << endl);
 
 	xdr_setpos( _source, 0 );
 	if (!xdr_array( _source, val, &num, DODS_MAX_ARRAY, width,

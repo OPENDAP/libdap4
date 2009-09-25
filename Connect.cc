@@ -52,7 +52,11 @@ static char rcsid[] not_used =
 #include "escaping.h"
 #include "RCReader.h"
 #include "DDXParser.h"
+#if FILE_METHODS
 #include "XDRFileUnMarshaller.h"
+#endif
+#include "fdiostream.h"
+#include "XDRStreamUnMarshaller.h"
 
 #include "mime_util.h"
 
@@ -113,8 +117,13 @@ Connect::process_data(DataDDS &data, Response *rs)
 		    "application/octet-stream", dap4_data, data_cid);
 
 	    // Now read the data
+#if FILE_METHODS
 	    XDRFileUnMarshaller um( rs->get_stream() ) ;
-            try {
+#else
+            fpistream in ( rs->get_stream() );
+	    XDRStreamUnMarshaller um( in ) ;
+#endif
+	    try {
         	for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
                      i++) {
                     (*i)->deserialize(um, &data);
@@ -131,8 +140,12 @@ Connect::process_data(DataDDS &data, Response *rs)
     default: {
             // Parse the DDS; throw an exception on error.
             data.parse(rs->get_stream());
-	    XDRFileUnMarshaller um( rs->get_stream() ) ;
-
+#if FILE_METHODS
+            XDRFileUnMarshaller um( rs->get_stream() ) ;
+#else
+            fpistream in ( rs->get_stream() );
+	    XDRStreamUnMarshaller um( in ) ;
+#endif
             // Load the DDS with data.
             try {
                 for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
@@ -262,24 +275,6 @@ Connect::parse_mime(Response *rs)
     rs->set_protocol("2.0");
 
     FILE *data_source = rs->get_stream();
-#if 0
-    char line[256];
-    fgets(line, 255, data_source);
-
-    int slen = strlen(line);
-    slen = min(slen, 256); // use min to limit slen to 256 (fortify)
-    line[slen - 1] = '\0'; // remove the newline
-    if (line[slen - 2] == '\r') // ...and the preceding carriage return
-        line[slen - 2] = '\0';
-
-    while (line[0] != '\0') {
-        char h[256], v[256];
-        sscanf(line, "%s %s\n", h, v);
-        string header = h;
-        string value = v;
-        downcase(header);
-        downcase(value);
-#endif
     string mime = get_next_mime_header(data_source);
     while (!mime.empty()) {
 	string header, value;
@@ -310,14 +305,7 @@ Connect::parse_mime(Response *rs)
             DBG(cout << header << ": " << value << endl);
             rs->set_version(value);
         }
-#if 0
-        fgets(line, 255, data_source);
-        slen = strlen(line);
-        slen = min(slen, 256); // use min to limit slen to 256
-        line[slen - 1] = '\0';
-        if (line[slen - 2] == '\r')
-            line[slen - 2] = '\0';
-#endif
+
         mime = get_next_mime_header(data_source);
     }
 }
@@ -843,7 +831,7 @@ Connect::request_ddx_url(DDS &dds)
 
     case dap4_ddx:
     default:
-        // DDS::prase throws an exception on error.
+        // DDS::parse throws an exception on error.
         try {
             dds.parse(rs->get_stream()); // read and parse the dds from a file
         }

@@ -1,4 +1,3 @@
-
 # Tests
 
 AUTOMAKE_OPTIONS = foreign
@@ -39,7 +38,7 @@ dds_test_SOURCES = dds-test.cc
 dds_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la 
 
 expr_test_SOURCES = expr-test.cc
-expr_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la
+expr_test_LDADD = libtest-types.a ../libdapserver.la ../libdapclient.la ../libdap.la
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestSequence.cc		 \

@@ -35,7 +35,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 static char rcsid[] not_used =
     { "$Id$" };
@@ -50,6 +50,7 @@ static char rcsid[] not_used =
 
 
 #include <iostream>
+#include <fstream>
 #include <string>
 
 #include "GetOpt.h"
@@ -59,7 +60,11 @@ static char rcsid[] not_used =
 #include "DataDDS.h"
 #include "ConstraintEvaluator.h"
 #include "XDRFileUnMarshaller.h"
+#include "XDRStreamUnMarshaller.h"
 #include "XDRStreamMarshaller.h"
+#include "DODSFilter.h"
+#include "Response.h"
+#include "Connect.h"
 #include "Error.h"
 
 #include "TestSequence.h"
@@ -70,7 +75,7 @@ static char rcsid[] not_used =
 #include "expr.h"
 #include "ce_expr.tab.hh"
 #include "util.h"
-#include "GNU/fdiostream.h"
+#include "fdiostream.h"
 #include "debug.h"
 
 using namespace std;
@@ -238,12 +243,8 @@ int main(int argc, char *argv[])
         }
 
         if (whole_enchalada) {
-#if 1
-            // Broken until we can fix the loopback pipe code to work
-            // with C++ streams
             constrained_trans(dds_file_name, constraint_expr, constraint,
                               series_values);
-#endif
         }
         if (whole_intern_enchalada) {
             intern_data_test(dds_file_name, constraint_expr, constraint,
@@ -413,13 +414,28 @@ void evaluate_dds(DDS & table, bool print_constrained)
 
 // create a pipe for the caller's process which can be used by the DODS
 // software to write to and read from itself.
-
+#if 0
 #ifndef WIN32
 #define PIPE(x) pipe((x))
 #else
 #define PIPE(x) _pipe((x), 1024, _O_BINARY)
 #endif
+#if 0
+bool
+loopback_pipe(fdostream **pout, fdistream **pin)
+{
+    int fd[2];
+    if (pipe(fd) < 0) {
+        fprintf(stderr, "Could not open pipe\n");
+        return false;
+    }
 
+    *pin = new fdistream(fd[0]);
+    *pout = new fdostream(fd[1]);
+
+    return true;
+}
+#else
 bool
 loopback_pipe(fdostream **pout, FILE **pin)
 {
@@ -434,8 +450,8 @@ loopback_pipe(fdostream **pout, FILE **pin)
 
     return true;
 }
-
-
+#endif
+#endif
 // Gobble up the MIME header. At one time the MIME Headers were output from
 // the server filter programs (not the core software) so we could call
 // DDS::send() from this test code and not have to parse the MIME header. But
@@ -481,12 +497,18 @@ void
 constrained_trans(const string & dds_name, const bool constraint_expr,
                   const string & constraint, const bool series_values)
 {
+#if 0
+#if 1
     FILE *pin;
+#else
+    fdistream *pin;
+#endif
     fdostream *pout;
     /* Add error check ***/
     if (!loopback_pipe(&pout, &pin))
 	throw InternalErr(__FILE__, __LINE__,
 			  "Could not create the loopback pipe.");
+#endif
 
     // If the CE was not passed in, read it from the command line.
     string ce;
@@ -517,6 +539,17 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     // versatility 02/05/07 jhrg
     set_series_values(server, series_values);
 
+    DODSFilter df;
+    df.set_ce(ce);
+    df.set_dataset_name(dds_name);
+    df.set_URL("test://test");
+    df.set_response("DataDDS");
+
+    ofstream out("expr-test-data.bin", ios::out|ios::trunc|ios::binary);
+    df.send_data(server, eval, out, "", false);
+    out.close();
+
+#if 0
     eval.parse_constraint(ce, server);  // Throws Error if the ce doesn't parse.
 
     server.tag_nested_sequences();      // Tag Sequences as Parent or Leaf node.
@@ -569,8 +602,27 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     }
 
     delete pout;
+#endif
     // Now do what Connect::request_data() does:
+    FILE *fp = fopen("expr-test-data.bin", "r");
 
+    Response r(fp, 400);
+    r.set_type(dods_data);
+    r.set_protocol("3.2");
+
+    Connect c("http://dummy_argument");
+
+    BaseTypeFactory factory;
+    DataDDS dds(&factory, "Test_data", "DAP/3.1");      // Must use DataDDS on receiving end
+
+    c.read_data_no_mime(dds, &r);
+
+    cout << "The data:" << endl;
+    for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
+        (*q)->print_val(cout);
+    }
+
+#if 0
     // First read the DDS into a new object (using a file to store the DDS
     // temporarily - the parser/scanner won't stop reading until an EOF is
     // found, this fixes that problem).
@@ -582,9 +634,17 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     DBG(cerr << "pin: " << pin << endl);
     dds.parse(pin);
 
+#if 0
     XDRFileUnMarshaller um( pin ) ;
-
-    // Back on the client side; deserialize the data *using the newly
+#else
+    int pos = ftell( pin );
+    int fd = fileno( pin );
+    if ( lseek( fd, pos, SEEK_SET ) < 0 )
+	throw Error(string("I could not initialize the fdistream object (lseek to ") + long_to_string(pos) + ").");
+    fdistream sin( fd );
+    XDRStreamUnMarshaller um( sin ) ;
+#endif
+  // Back on the client side; deserialize the data *using the newly
     // generated DDS* (the one sent with the data).
 
     cout << "The data:" << endl;
@@ -592,6 +652,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
         (*q)->deserialize(um, &dds);
         (*q)->print_val(cout);
     }
+#endif
 }
 
 /** This function does what constrained_trans() does but does not use the

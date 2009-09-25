@@ -9,6 +9,7 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#include <fcntl.h>
 
 //#define DODS_DEBUG 1
 
@@ -36,20 +37,23 @@
 #include "XDRFileMarshaller.h"
 #include "XDRStreamMarshaller.h"
 #include "XDRFileUnMarshaller.h"
+#include "XDRStreamUnMarshaller.h"
+#include "fdiostream.h"
 #include "debug.h"
 
 using std::cerr ;
 using std::cout ;
 using std::endl ;
 using std::ofstream ;
+using std::ifstream ;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
-				      // timeouts. 
+				      // timeouts.
 
 class MarshallerTest : public CppUnit::TestFixture {
 
     CPPUNIT_TEST_SUITE( MarshallerTest ) ;
-
+#if 1
     CPPUNIT_TEST( simple_types_file_serialize_test ) ;
     CPPUNIT_TEST( array_file_serialize_test ) ;
     CPPUNIT_TEST( structure_file_serialize_test ) ;
@@ -67,15 +71,17 @@ class MarshallerTest : public CppUnit::TestFixture {
     CPPUNIT_TEST( structure_stream_serialize_test ) ;
     CPPUNIT_TEST( grid_stream_serialize_test ) ;
     CPPUNIT_TEST( sequence_stream_serialize_test ) ;
-
+#endif
+#if 0
+    CPPUNIT_TEST( simple_types_fdistream_deserialize_test ) ;
+#endif
+#if 1
     CPPUNIT_TEST( simple_types_stream_deserialize_test ) ;
     CPPUNIT_TEST( array_stream_deserialize_test ) ;
     CPPUNIT_TEST( structure_stream_deserialize_test ) ;
     CPPUNIT_TEST( grid_stream_deserialize_test ) ;
     CPPUNIT_TEST( sequence_stream_deserialize_test ) ;
-
-    //    CPPUNIT_TEST( marshT_test ) ;
-
+#endif
     CPPUNIT_TEST_SUITE_END( ) ;
 
     TestByte b;
@@ -102,7 +108,7 @@ class MarshallerTest : public CppUnit::TestFixture {
 
     dods_byte *db;
 public:
-    MarshallerTest() : b( "byte" ), 
+    MarshallerTest() : b( "byte" ),
 	       i16( "i16" ) ,
 	       i32( "i32" ) ,
 	       ui16( "ui16" ) ,
@@ -147,7 +153,7 @@ public:
     {
     }
 
-    void tearDown() 
+    void tearDown()
     {
     }
 
@@ -324,7 +330,7 @@ public:
 
 	    Str *fsstr_p = dynamic_cast<Str *>(fs.var( "fsstr" )) ;
 	    CPPUNIT_ASSERT( fsstr_p ) ;
-	    DBG(cerr << "fsstr_p->value(): " << fsstr_p->value() << endl);
+	    DBG2(cerr << "fsstr_p->value(): " << fsstr_p->value() << endl);
 	    CPPUNIT_ASSERT( fsstr_p->value().find("Silly test string:") != string::npos ) ;
 
 	    BaseType *bt = fs.var( "fsab" ) ;
@@ -486,7 +492,7 @@ public:
 		CPPUNIT_ASSERT( arr_p ) ;
 		arr_p->value( fdb ) ;
 		CPPUNIT_ASSERT( arr_p->length() == arr.length() ) ;
-		CPPUNIT_ASSERT( !memcmp( (void *)fdb, (void *)db, 
+		CPPUNIT_ASSERT( !memcmp( (void *)fdb, (void *)db,
 					 arr_p->length() * sizeof( dods_byte ) ) ) ;
 		Sequence *seq_p = dynamic_cast<Sequence *>((*row)[2]) ;
 		CPPUNIT_ASSERT( seq_p ) ;
@@ -514,6 +520,8 @@ public:
 	    CPPUNIT_FAIL( err.c_str() ) ;
 	}
     }
+
+    // Stream tests from here on
 
     void simple_types_stream_serialize_test() {
 	try
@@ -551,9 +559,13 @@ public:
     void simple_types_stream_deserialize_test() {
 	try
 	{
+#if 0
+	    ifstream strm( "st_test.strm", ios::in ) ;
+	    XDRStreamUnMarshaller um( strm ) ;
+#else
 	    FILE *sf = fopen( "st_test.strm", "r" ) ;
 	    XDRFileUnMarshaller um( sf ) ;
-
+#endif
 	    Byte fb( "fb" ) ;
 	    fb.deserialize( um, &dds, false ) ;
 	    CPPUNIT_ASSERT( fb.value() == b.value() ) ;
@@ -590,8 +602,68 @@ public:
 	    Url furl( "url" ) ;
 	    furl.deserialize( um, &dds, false ) ;
 	    CPPUNIT_ASSERT( furl.value() == url_value ) ;
+	}
+	catch( Error &e )
+	{
+	    string err = "failed:" + e.get_error_message() ;
+	    CPPUNIT_FAIL( err.c_str() ) ;
+	}
+    }
 
-	    // fclose( sf ) ;
+    // Not currently run...
+    void simple_types_fdistream_deserialize_test() {
+	try
+	{
+#if 1
+	    int in = open( "st_test.strm", O_RDONLY );
+	    if (in < 0)
+		throw Error("Could not open file.");
+	    fdistream sin( in );
+#else
+	    FILE *in = fopen("st_test.strm", "r");
+	    if (!in)
+		throw Error("Could not open the file");
+	    fpistream sin(in);
+#endif
+	    XDRStreamUnMarshaller um( sin ) ;
+
+	    Byte fb( "fb" ) ;
+	    fb.deserialize( um, &dds, false ) ;
+	    DBG(std::cerr << "expected: '" << b.value() << "' ; actual: '" << fb.value() << "'" << std::endl);
+	    CPPUNIT_ASSERT( fb.value() == b.value() ) ;
+
+	    Int16 fi16( "i16" ) ;
+	    fi16.deserialize( um, &dds, false ) ;
+	    CPPUNIT_ASSERT( fi16.value() == i16.value() ) ;
+
+	    Int32 fi32( "i32" ) ;
+	    fi32.deserialize( um, &dds, false ) ;
+	    CPPUNIT_ASSERT( fi32.value() == i32.value() ) ;
+
+	    UInt16 fui16( "ui16" ) ;
+	    fui16.deserialize( um, &dds, false ) ;
+	    CPPUNIT_ASSERT( fui16.value() == ui16.value() ) ;
+
+	    UInt32 fui32( "ui32" ) ;
+	    fui32.deserialize( um, &dds, false ) ;
+	    CPPUNIT_ASSERT( fui32.value() == ui32.value() ) ;
+
+	    Float32 ff32( "f32" ) ;
+	    ff32.deserialize( um, &dds, false ) ;
+	    CPPUNIT_ASSERT( ff32.value() == f32.value() ) ;
+
+	    Float64 ff64( "f64" ) ;
+	    ff64.deserialize( um, &dds, false ) ;
+	    CPPUNIT_ASSERT( ff64.value() == f64.value() ) ;
+
+	    Str fstr( "str" ) ;
+	    fstr.deserialize( um, &dds, false ) ;
+	    DBG(cerr << "fstr.value(): " << fstr.value() << endl);
+	    CPPUNIT_ASSERT( fstr.value().find("Silly test string:") != string::npos ) ;
+
+	    Url furl( "url" ) ;
+	    furl.deserialize( um, &dds, false ) ;
+	    CPPUNIT_ASSERT( furl.value() == url_value ) ;
 	}
 	catch( Error &e )
 	{
@@ -620,11 +692,13 @@ public:
     void array_stream_deserialize_test() {
 	try
 	{
+#if 0
+	    ifstream strm( "a_test.strm", ios::in ) ;
+	    XDRStreamUnMarshaller um( strm ) ;
+#else
 	    FILE *sf = fopen( "a_test.strm", "r" ) ;
 	    XDRFileUnMarshaller um( sf ) ;
-
-
-
+#endif
 	    TestByte fab( "ab" ) ;
 	    TestArray farr( "arr", &fab ) ;
 	    farr.append_dim( 5, "dim1" ) ;
@@ -672,9 +746,13 @@ public:
     void structure_stream_deserialize_test() {
 	try
 	{
+#if 0
+	    ifstream strm( "struct_test.strm", ios::in ) ;
+	    XDRStreamUnMarshaller um( strm ) ;
+#else
 	    FILE *sf = fopen( "struct_test.strm", "r" ) ;
 	    XDRFileUnMarshaller um( sf ) ;
-
+#endif
 	    TestStructure fs( "fs" ) ;
 	    TestInt32 fsi32( "fsi32" ) ;
 	    fs.add_var( &fsi32 ) ;
@@ -755,9 +833,13 @@ public:
     void grid_stream_deserialize_test() {
 	try
 	{
+#if 0
+	    ifstream strm( "g_test.strm", ios::in ) ;
+	    XDRStreamUnMarshaller um( strm ) ;
+#else
 	    FILE *sf = fopen( "g_test.strm", "r" ) ;
 	    XDRFileUnMarshaller um( sf ) ;
-
+#endif
 	    TestGrid tg( "grid1" );
 	    TestArray arr2( "arr2", &ab ) ;
 	    arr2.append_dim( 5, "dim1" ) ;
@@ -824,9 +906,13 @@ public:
     void sequence_stream_deserialize_test() {
 	try
 	{
+#if 0
+	    ifstream strm( "seq_test.strm", ios::in ) ;
+	    XDRStreamUnMarshaller um( strm ) ;
+#else
 	    FILE *sf = fopen( "seq_test.strm", "r" ) ;
 	    XDRFileUnMarshaller um( sf ) ;
-
+#endif
 	    dods_byte fdb[arr.length() * sizeof(dods_byte)] ;
 
 	    TestSequence seq( "seq" ) ;
@@ -857,7 +943,7 @@ public:
 		CPPUNIT_ASSERT( arr_p ) ;
 		arr_p->value( fdb ) ;
 		CPPUNIT_ASSERT( arr_p->length() == arr.length() ) ;
-		CPPUNIT_ASSERT( !memcmp( (void *)fdb, (void *)db, 
+		CPPUNIT_ASSERT( !memcmp( (void *)fdb, (void *)db,
 					 arr_p->length() * sizeof( dods_byte ) ) ) ;
 		Sequence *seq_p = dynamic_cast<Sequence *>((*row)[2]) ;
 		CPPUNIT_ASSERT( seq_p ) ;
@@ -895,7 +981,7 @@ int main(int, char **)
     CppUnit::TestFactoryRegistry &registry =
 	CppUnit::TestFactoryRegistry::getRegistry() ;
     runner.addTest( registry.makeTest() ) ;
-    runner.setOutputter( CppUnit::CompilerOutputter::defaultOutputter( 
+    runner.setOutputter( CppUnit::CompilerOutputter::defaultOutputter(
                                                         &runner.result(),
                                                         std::cerr ) );
     bool wasSuccessful = runner.run( "", false ) ;

@@ -1,4 +1,4 @@
-# Build libdap, libtest-types.a, getdap and deflate
+# Build libdap, libtest-types.a, getdap
 
 AUTOMAKE_OPTIONS = foreign check-news
 ACLOCAL_AMFLAGS = -I conf -I gl/m4
@@ -31,9 +31,10 @@ lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 
 bin_SCRIPTS = dap-config dap-config-pkgconfig
 
-bin_PROGRAMS = getdap fdiostream_test
+bin_PROGRAMS = getdap
+# fdiostream_test
 
-sbin_PROGRAMS = deflate
+# sbin_PROGRAMS = deflate
 
 BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
 
@@ -57,16 +58,16 @@ pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR)
 # $(XSTREAM_HDR) 
 noinst_HEADERS = config_dap.h
 
-fdiostream_test_SOURCES = GNU/fdiostream_test.cc
+# fdiostream_test_SOURCES = GNU/fdiostream_test.cc
 
 getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la libdapserver.la
 getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 
-deflate_SOURCES = deflate.c
-deflate_LDADD = $(ZLIB_LIBS)
-deflate_CPPFLAGS = $(ZLIB_CFLAGS)
-deflate_LDFLAGS = $(ZLIB_LDFLAGS)
+# deflate_SOURCES = deflate.c
+#deflate_LDADD = $(ZLIB_LIBS)
+#deflate_CPPFLAGS = $(ZLIB_CFLAGS)
+#deflate_LDFLAGS = $(ZLIB_LDFLAGS)
 
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex \
 	gse.y Error.lex Error.y
@@ -232,7 +233,7 @@ Operators.h: ce_expr.tab.hh
 # with the other headers. It includes one of the built grammar file headers.
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
-	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc
+	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc fdiostream.cc
 
 # AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc 
 
@@ -277,7 +278,7 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		 \
 	Response.h HTTPResponse.h HTTPCacheResponse.h  PipeResponse.h	 \
 	StdinResponse.h SignalHandlerRegisteredErr.h ResponseTooBigErr.h \
-	Resource.h HTTPCacheTable.h
+	Resource.h HTTPCacheTable.h fdiostream.h
 
 # AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h AISResources.h 	
 

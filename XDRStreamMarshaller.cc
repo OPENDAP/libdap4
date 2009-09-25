@@ -32,8 +32,11 @@
 
 #include "XDRStreamMarshaller.h"
 
+//#define DODS_DEBUG 1
+
 #include "Vector.h"
 #include "util.h"
+#include "debug.h"
 
 namespace libdap {
 
@@ -88,6 +91,7 @@ XDRStreamMarshaller::~XDRStreamMarshaller( )
 void
 XDRStreamMarshaller::put_byte( dods_byte val )
 {
+    DBG( std::cerr << "put_byte: " << val << std::endl );
     if( !xdr_setpos( _sink, 0 ) )
         throw Error("Network I/O Error. Could not send byte data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
