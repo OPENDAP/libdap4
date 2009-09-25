@@ -71,7 +71,9 @@ static char rcsid[] not_used =
 #include "util.h"
 #include "escaping.h"
 #include "DODSFilter.h"
+#if 0
 #include "XDRFileMarshaller.h"
+#endif
 #include "XDRStreamMarshaller.h"
 #include "InternalErr.h"
 #ifndef WIN32
