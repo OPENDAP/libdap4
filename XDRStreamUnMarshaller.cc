@@ -38,7 +38,9 @@
 #define DODS_DEBUG2 1
 #define DODS_DEBUG 1
 
+#include "Str.h"
 #include "Vector.h"
+#include "Array.h"
 #include "util.h"
 #include "InternalErr.h"
 #include "debug.h"

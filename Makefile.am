@@ -214,7 +214,7 @@ GRAM_SRC = lex.das.cc das.tab.cc das.tab.hh \
 	lex.Error.cc Error.tab.cc Error.tab.hh gse.tab.hh gse.tab.cc \
 	lex.gse_.cc
 
-DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParser.cc BaseType.cc \
+DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc BaseType.cc \
 	Byte.cc Int32.cc Float64.cc Str.cc Url.cc Vector.cc Array.cc	 \
 	Structure.cc Sequence.cc Grid.cc UInt32.cc Int16.cc UInt16.cc	 \
 	Float32.cc Constructor.cc					 \
@@ -239,7 +239,7 @@ CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 
 SERVER_SRC = DODSFilter.cc Ancillary.cc
 
-DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParser.h DDXExceptions.h	   \
+DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h DDXExceptions.h	\
 	BaseType.h Byte.h Int32.h Float64.h Str.h Url.h Vector.h Array.h   \
 	Constructor.h Structure.h Sequence.h Grid.h UInt32.h Int16.h	   \
 	UInt16.h Float32.h						   \

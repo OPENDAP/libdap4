@@ -204,10 +204,11 @@ int fdinbuf::underflow()
 	    buffer + putBack + num); // end of buffer
 
     // return next character
+#ifdef DODS_DEBUG
     char c = *gptr();
     DBG(std::cerr << "returning :" << c << std::endl);
     return c;
-#if 0
+#else
     return *gptr();
 #endif
 }

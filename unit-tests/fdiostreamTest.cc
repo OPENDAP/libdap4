@@ -71,13 +71,14 @@ public:
     CPPUNIT_TEST(readsome_test);
     CPPUNIT_TEST(readsome_test2);
     CPPUNIT_TEST(read_strings);
+#if 1
     CPPUNIT_TEST(read_test_file_ptr);
     CPPUNIT_TEST(read_test_file_ptr_2);
     CPPUNIT_TEST(read_test_unget_file_descriptor);
     CPPUNIT_TEST(read_test_unget_file_ptr);
     CPPUNIT_TEST(large_read_test);
     CPPUNIT_TEST(large_read_test_file_pointer);
-
+#endif
     CPPUNIT_TEST_SUITE_END();
 
     void write_file()

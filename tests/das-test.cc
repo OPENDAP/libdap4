@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -55,40 +55,42 @@ using namespace libdap ;
 void plain_driver(DAS &das, bool deref_alias);
 void load_attr_table(AttrTable at);
 void load_attr_table_ptr(AttrTable *atp);
-void parser_driver(DAS &das, bool deref_alias);
+void parser_driver(DAS &das, bool deref_alias, bool as_xml);
 void test_scanner();
 
 int daslex();
 
 extern int dasdebug;
 const char *prompt = "das-test: ";
-const char *version = "version 1.18";
+const char *version = "version 1.19";
 
 using namespace std;
 
 void
 usage(string name)
 {
-    fprintf( stderr, "usage: %s %s\n %s\n %s\n %s\n %s\n %s\n %s\n",
+    fprintf( stderr, "usage: %s %s\n %s\n %s\n %s\n %s\n %s\n %s\n %s\n",
 		     name.c_str(),
-		     "[-v] [-s] [-d] [-c] [-p] {< in-file > out-file}",
+		     "[-v] [-s] [-d] [-c] [-p] [rx] {< in-file > out-file}",
 		     "s: Test the DAS scanner.",
 		     "p: Scan and parse from <in-file>; print to <out-file>.",
 		     "c: Test building the DAS from C++ code.",
 		     "v: Print the version of das-test and exit.",
 		     "d: Print parser debugging information.",
-		     "r: Print the DAS with aliases deReferenced." ) ;
+		     "r: Print the DAS with aliases deReferenced.",
+		     "x: Print as xml.") ;
 }
 
 int main(int argc, char *argv[])
 {
 
-    GetOpt getopt (argc, argv, "scpvdr");
+    GetOpt getopt (argc, argv, "scpvdrx");
     int option_char;
     bool parser_test = false;
     bool scanner_test = false;
     bool code_test = false;
     bool deref_alias = false;
+    bool as_xml = false;
     while ((option_char = getopt ()) != EOF)
 	switch (option_char)
 	  {
@@ -110,7 +112,10 @@ int main(int argc, char *argv[])
 	    case 'r':
 	      deref_alias = true;
 	      break;
-	    case '?': 
+	    case 'x':
+	        as_xml = true;
+	        break;
+	    case '?':
 	    default:
 	      usage(argv[0]);
 	      exit(1);
@@ -122,10 +127,10 @@ int main(int argc, char *argv[])
 	usage(argv[0]);
 	exit(1);
     }
-	
+
     try {
       if (parser_test)
-	parser_driver(das, deref_alias);
+	parser_driver(das, deref_alias, as_xml);
 
       if (scanner_test)
 	test_scanner();
@@ -185,9 +190,13 @@ test_scanner()
 	  case SCAN_STRING:
 	    fprintf( stdout, "STRING\n" ) ;
 	    break;
-	  case SCAN_URL:
-	    fprintf( stdout, "URL\n" ) ;
-	    break;
+          case SCAN_URL:
+            fprintf( stdout, "URL\n" ) ;
+            break;
+
+          case SCAN_XML:
+            fprintf( stdout, "OtherXML\n" ) ;
+            break;
 
 	  case '{':
 	    fprintf( stdout, "Left Brace\n" ) ;
@@ -212,11 +221,15 @@ test_scanner()
 
 
 void
-parser_driver(DAS &das, bool deref_alias)
+parser_driver(DAS &das, bool deref_alias, bool as_xml)
 {
     das.parse();
 
-    das.print(stdout, deref_alias);
+    if (as_xml) {
+        das.get_top_level_attributes()->print_xml(stdout, "    ");
+    }
+    else
+        das.print(stdout, deref_alias);
 }
 
 // Given a DAS, add some stuff to it.
@@ -256,7 +269,7 @@ load_attr_table(AttrTable at)
     at.append_attr("Date", "Int32", "12345");
     at.append_attr("day", "Int32", "01");
     at.append_attr("Time", "Float64", "3.1415");
-    
+
     fprintf( stdout, "Using the iterator:\n" ) ;
     for (AttrTable::Attr_iter p2 = at.attr_begin(); p2 != at.attr_end(); p2++)
     {
@@ -355,7 +368,7 @@ load_attr_table_ptr(AttrTable *at)
     fprintf( stdout, "After print:\n" ) ;
     for (AttrTable::Attr_iter p4 = at->attr_begin(); p4 !=at->attr_end(); p4++)
     {
-		fprintf( stdout, "%s %s ", at->get_name(p4).c_str(), 
+		fprintf( stdout, "%s %s ", at->get_name(p4).c_str(),
 			at->get_type(p4).c_str() ) ;
 		for (unsigned i = 0; i < at->get_attr_num(p4); ++i)
 			fprintf( stdout, "%s ", at->get_attr(p4, i).c_str() ) ;

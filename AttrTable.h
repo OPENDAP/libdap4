@@ -68,7 +68,8 @@ namespace libdap
  Attr_float32,
  Attr_float64,
  Attr_string,
- Attr_url
+ Attr_url,
+ Attr_other_xml
     };
     \endcode
 
@@ -84,7 +85,8 @@ enum AttrType {
     Attr_float32,
     Attr_float64,
     Attr_string,
-    Attr_url
+    Attr_url,
+    Attr_other_xml
 };
 
 string AttrType_to_String(const AttrType at);
@@ -164,12 +166,13 @@ public:
         std::vector<string> *attr; // a vector of values. jhrg 12/5/94
 
         entry(): name(""), type(Attr_unknown), is_alias(false),
-                aliased_to("")
+                aliased_to(""), attributes(0), attr(0) {}
+#if 0
         {
             attributes = 0;
             attr = 0;
         }
-
+#endif
         entry(const entry &rhs)
         {
             clone(rhs);

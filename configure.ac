@@ -221,10 +221,6 @@ if test $libdap_pkgconfig_libxml2 = 'yes'
 then
 	xmlprivatereq=$libdap_libxml2_module
 	XML2_STATIC_LIBS="`$PKG_CONFIG --static --libs libxml-2.0`"
-	AC_DEFINE(LIBXML2_5_10, [1],
-		  [define if you have xml2 2.5.10 or greater])
-	AC_DEFINE(LIBXML2_6_16, [1],
-		  [define if you have xml2 2.6.16 or greater])
 	AC_MSG_RESULT([yes; used pkg-config])
 elif xml2-config --version > /dev/null 2>&1
 then
@@ -233,38 +229,12 @@ then
 	version_m=`echo $version_libxml2 | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
 	version_m_m=`echo $version_libxml2 | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
 	
-	dnl Test for several different versions of libxml2. We can use 2.5.7 
-	dnl or newer, but part of the SAX interface changes depending on the
-	dnl version.
-	
 	if test $version_M -gt 2
 	then
 		libxml2_ok='yes'
-	elif test $version_M -eq 2 && test $version_m -gt 5
+	elif test $version_M -eq 2 && test $version_m -eq 6 && test $version_m_m -ge 16
 	then
-		libxml2_ok='yes'
-	elif test $version_M -eq 2 && test $version_m -eq 5 && test $version_m_m -gt 6
-	then
-		libxml2_ok='yes'
-	else
-		libxml2_ok='no'
-	fi
-
-	dnl First test the minimum
-	if test $libxml2_ok = "no"
-	then
-		AC_MSG_ERROR([must have libxml2 2.5.7 or greater, found $version_libxml2])
-	fi
-	
-	dnl Sort out the particular variant
-	if test $version_M -eq 2 && test $version_m -eq 5 && test $version_m_m -ge 10
-	then
-		AC_DEFINE(LIBXML2_5_10, [1], [define if you have xml2 2.5.10 or greater])
-	fi
-	if test $version_M -eq 2 && test $version_m -eq 6 && test $version_m_m -ge 16
-	then
-		AC_DEFINE(LIBXML2_5_10, [1], [define if you have xml2 2.5.10 or greater])
-		AC_DEFINE(LIBXML2_6_16, [1], [define if you have xml2 2.6.16 or greater])
+                libxml2_ok='yes'
 	fi
 
 	XML2_LIBS="`xml2-config --libs`"
@@ -273,7 +243,7 @@ then
 	xmlprivatelibs="`xml2-config --libs`"
 	AC_MSG_RESULT([yes; used xml2-config])
 else
-	AC_MSG_ERROR([I could not find libxml2])
+	AC_MSG_ERROR([I could not find libxml2 2.6.16 or newer])
 fi
 AC_SUBST([xmlprivatereq])
 AC_SUBST([xmlprivatelibs])

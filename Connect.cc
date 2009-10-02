@@ -51,7 +51,7 @@ static char rcsid[] not_used =
 #include "Connect.h"
 #include "escaping.h"
 #include "RCReader.h"
-#include "DDXParser.h"
+#include "DDXParserSAX2.h"
 #if FILE_METHODS
 #include "XDRFileUnMarshaller.h"
 #endif
@@ -105,7 +105,7 @@ Connect::process_data(DataDDS &data, Response *rs)
 	    // Parse the DDX, reading up to and including the next boundary.
 	    // Return the CID for the matching data part
 	    string data_cid;
-	    ddx_parser.intern(rs->get_stream(), &data, data_cid, boundary);
+	    ddx_parser.intern_stream(rs->get_stream(), &data, data_cid, boundary);
 
 	    // Munge the CID into something we can work with
 	    data_cid = cid_to_header_value(data_cid);
@@ -777,7 +777,7 @@ Connect::request_ddx(DDS &dds, string expr)
             string blob;
 
             DDXParser ddxp(dds.get_factory());
-            ddxp.intern(rs->get_stream(), &dds, blob);
+            ddxp.intern_stream(rs->get_stream(), &dds, blob);
         }
         catch (Error &e) {
             delete rs; rs = 0;

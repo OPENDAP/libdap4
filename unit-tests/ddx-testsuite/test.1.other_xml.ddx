@@ -1,0 +1,15 @@
+<Dataset name="200803061600_HFRadar_USEGC_6km_rtv_SIO.nc"
+    xmlns="http://xml.opendap.org/ns/DAP/3.3#"
+    xmlns:dap="http://xml.opendap.org/ns/DAP/3.3#"
+    dap_version="3.3"
+    xmlns:xml="http://www.w3.org/XML/1998/namespace"
+    xml:base="http://localhost:8080/opendap/coverage/200803061600_HFRadar_USEGC_6km_rtv_SIO.nc.ddx">
+
+
+        <Attribute name="wcsStuff" type="OtherXML" relationship="is-a">
+            <CoverageDescription xmlns="http://www.opengis.net/wcs/1.1" xmlns:ows="http://www.opengis.net/ows/1.1"
+                                 xmlns:owcs="http://www.opengis.net/wcs/1.1/ows"
+                                 xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink">
+            </CoverageDescription>
+        </Attribute>
+</Dataset>

@@ -31,7 +31,8 @@
 
 //#define DODS_DEBUG 1
 
-#include "DDXParser.h"
+#include "DDXParserSAX2.h"
+//#include "DDXParser.h"
 #include "BaseTypeFactory.h"
 #include "ObjectType.h"
 #include "mime_util.h"
@@ -43,7 +44,9 @@ using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
-class DDXParserTest:public TestFixture {
+namespace libdap {
+
+class DDXParserTest : public TestFixture {
 private:
     BaseTypeFactory *factory;
     DDXParser *ddx_parser;
@@ -67,6 +70,9 @@ public:
 
     CPPUNIT_TEST_SUITE( DDXParserTest );
 
+    CPPUNIT_TEST(other_xml_parse_test1);
+    CPPUNIT_TEST(other_xml_parse_test2);
+    CPPUNIT_TEST(other_xml_parse_test3);
     CPPUNIT_TEST(dap_version_test);
     CPPUNIT_TEST(no_blob_version_32_test);
     CPPUNIT_TEST(blob_in_version_32_test);
@@ -95,22 +101,68 @@ public:
 
     CPPUNIT_TEST_SUITE_END();
 
-    void dap_version_test()
-    {
-	FILE *in;
-	try {
-	    string blob;
-	    ddx_parser->intern((string) TEST_SRC_DIR
-		    + "/ddx-testsuite/test.00.ddx", dds, blob);
-	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
-	    CPPUNIT_ASSERT(dds->get_dap_major() == 3);
-	    CPPUNIT_ASSERT(dds->get_dap_minor() == 2);
+    void other_xml_parse_test1() {
+        try {
+            string cid;
+            ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.1.other_xml.ddx", dds, cid);
+            DBG(dds->print_xml(cout, false, "    "));
+            CPPUNIT_ASSERT(dds->get_dataset_name() == "200803061600_HFRadar_USEGC_6km_rtv_SIO.nc");
+            CPPUNIT_ASSERT(dds->get_dap_major() == 3);
+            CPPUNIT_ASSERT(dds->get_dap_minor() == 3);
+        }
+        catch (DDXParseFailed &e) {
+            DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_FAIL("test.00.ddx failed.");
+        }
+    }
+
+    void other_xml_parse_test2() {
+        try {
+            string cid;
+            ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.2.other_xml.ddx", dds, cid);
+            DBG(dds->print_xml(cout, false, "    "));
+            CPPUNIT_ASSERT(dds->get_dataset_name() == "200803061600_HFRadar_USEGC_6km_rtv_SIO.nc");
+            CPPUNIT_ASSERT(dds->get_dap_major() == 3);
+            CPPUNIT_ASSERT(dds->get_dap_minor() == 3);
+        }
+        catch (DDXParseFailed &e) {
+            DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_FAIL("test.00.ddx failed.");
+        }
+    }
+
+    void other_xml_parse_test3() {
+        try {
+            string cid;
+            ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.3.other_xml.ddx", dds, cid);
+            DBG(dds->print_xml(cout, false, "    "));
+            CPPUNIT_ASSERT(dds->get_dataset_name() == "200803061600_HFRadar_USEGC_6km_rtv_SIO.nc");
+            CPPUNIT_ASSERT(dds->get_dap_major() == 3);
+            CPPUNIT_ASSERT(dds->get_dap_minor() == 3);
+        }
+        catch (DDXParseFailed &e) {
+            DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_FAIL("test.00.ddx failed.");
+        }
+    }
+
+    void dap_version_test() {
+    	FILE *in;
+    	try {
+    	    string blob;
+    	    ddx_parser->intern((string) TEST_SRC_DIR
+    		    + "/ddx-testsuite/test.00.ddx", dds, blob);
+    	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
+    	    CPPUNIT_ASSERT(dds->get_dap_major() == 3);
+    	    CPPUNIT_ASSERT(dds->get_dap_minor() == 2);
 
 	    DBG(dds->print_xml(cout, false));
 
 	    string name = string(TEST_SRC_DIR) + "/ddx-testsuite/test.00.ddx";
 	    in = fopen(name.c_str(), "r");
-	    ddx_parser->intern(in, dds, blob);
+
+	    ddx_parser->intern_stream(in, dds, blob);
+
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
 	    CPPUNIT_ASSERT(dds->get_dap_major() == 3);
 	    CPPUNIT_ASSERT(dds->get_dap_minor() == 2);
@@ -168,8 +220,7 @@ public:
 	    ddx_parser->intern((string) TEST_SRC_DIR
 		    + "/ddx-testsuite/DDX_from_dataddx.xml", dds, blob);
 	    CPPUNIT_ASSERT(true);
-	    DBG(dds->print_xml(cout, false))
-	    ;
+	    DBG(dds->print_xml(cout, false));
 	}
 	catch (DDXParseFailed &e) {
 	    CPPUNIT_FAIL(e.get_error_message());
@@ -366,7 +417,7 @@ public:
 		    + "/ddx-testsuite/test.0b.ddx";
 	    FILE *in = fopen(file_name.c_str(), "r");
 	    string blob;
-	    ddx_parser->intern(in, dds, blob);
+	    ddx_parser->intern_stream(in, dds, blob);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
 	    DBG(dds->print_xml(cout, false))
 	    ;
@@ -470,7 +521,7 @@ public:
 		    + "/ddx-testsuite/error.05.ddx";
 	    FILE *in = fopen(file_name.c_str(), "r");
 	    string blob;
-	    ddx_parser->intern(in, dds, blob);
+	    ddx_parser->intern_stream(in, dds, blob);
 	    CPPUNIT_FAIL("error.05.ddx should fail!");
 	}
 	catch (DDXParseFailed &e) {
@@ -490,7 +541,7 @@ public:
 	    read_multipart_headers(in, "text/xml", dap4_ddx);
 
 	    string blob;
-	    ddx_parser->intern(in, dds, blob, "--boundary-string-1");
+	    ddx_parser->intern_stream(in, dds, blob, "--boundary-string-1");
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "fnoc1.nc");
 
 	    DBG(dds->print_xml(cout, false));
@@ -501,7 +552,9 @@ public:
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(DDXParserTest);
+}
+
+CPPUNIT_TEST_SUITE_REGISTRATION( DDXParserTest );
 
 int
 main( int, char** )

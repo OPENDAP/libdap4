@@ -43,6 +43,7 @@
 #include "BaseType.h"
 #endif
 
+#if 0
 #ifndef _byte_h
 #include "Byte.h"
 #endif
@@ -94,9 +95,6 @@
 #ifndef _grid_h
 #include "Grid.h"
 #endif
-
-#ifdef _MSC_VER
-#define uint unsigned int
 #endif
 
 using std::iostream;
@@ -216,7 +214,7 @@ string file_to_string(FILE *fp);
 
 time_t parse_time(const char * str, bool expand);
 
-bool size_ok(uint sz, uint nelem);
+bool size_ok(unsigned int sz, unsigned int nelem);
 bool pathname_ok(const string &path, bool strict = true);
 
 } // namespace libdap

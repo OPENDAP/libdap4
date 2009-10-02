@@ -52,6 +52,8 @@ static char rcsid[] not_used = {"$Id$"};
 
 #include "DAS.h"
 #include "Error.h"
+#include "util.h"
+#include "escaping.h"
 #include "debug.h"
 #include "parser.h"
 #include "util.h"
@@ -119,7 +121,7 @@ static void add_bad_attribute(AttrTable *attr, const string &type,
 
 %}
 
-%expect 24
+%expect 26
 
 %token SCAN_ATTR
 
@@ -136,6 +138,7 @@ static void add_bad_attribute(AttrTable *attr, const string &type,
 %token SCAN_FLOAT64
 %token SCAN_STRING
 %token SCAN_URL
+%token SCAN_XML
 
 %%
 
@@ -187,8 +190,8 @@ attr_start:
 		// push outermost AttrTable
 		PUSH(DAS_OBJ(arg)->get_top_level_attributes());
 	}
-    attributes
-    {
+        attributes
+        {
 		POP;	// pop the DAS/AttrTable before stack's dtor
 		delete name;
 		delete type;
@@ -247,9 +250,13 @@ attr_tuple:	alias
                 name { *name = $3; } 
 		strs ';'
 
-		| SCAN_URL { *type = "Url"; } 
+                | SCAN_URL { *type = "Url"; } 
                 name { *name = $3; } 
-		urls ';'
+                urls ';'
+
+                | SCAN_XML { *type = "OtherXML"; } 
+                name { *name = $3; } 
+                xml ';'
 
 		| SCAN_WORD
                 {
@@ -367,14 +374,30 @@ strs:		str_or_id
 		}
 ;
 
-urls:		url
-		{
-		    add_attribute(*type, *name, $1, &check_url);
-		}
-		| urls ',' url
-		{
-		    add_attribute(*type, *name, $3, &check_url);
-		}
+urls:           url
+                {
+                    add_attribute(*type, *name, $1, &check_url);
+                }
+                | urls ',' url
+                {
+                    add_attribute(*type, *name, $3, &check_url);
+                }
+;
+
+xml:            SCAN_WORD
+                {
+                    // XML must be quoted in the DAS but the quotes are an
+                    // artifact of the DAS syntax so they are not part of the
+                    // value.
+                    cerr << "Attr value as read: " << $1 << endl;
+                    string xml = unescape_double_quotes($1);
+                    cerr << "w/o quotes: " << remove_quotes(xml) << endl;
+                    
+                    if (is_quoted(xml))
+                        add_attribute(*type, *name, remove_quotes(xml), 0);
+                    else
+                        add_attribute(*type, *name, xml, 0);
+                }
 ;
 
 url:		SCAN_WORD
@@ -388,7 +411,7 @@ float_or_int:   SCAN_WORD
 
 name:           SCAN_WORD | SCAN_ATTR | SCAN_ALIAS | SCAN_BYTE | SCAN_INT16 
                 | SCAN_UINT16 | SCAN_INT32 | SCAN_UINT32 | SCAN_FLOAT32 
-                | SCAN_FLOAT64 | SCAN_STRING | SCAN_URL
+                | SCAN_FLOAT64 | SCAN_STRING | SCAN_URL | SCAN_XML
 ;
 
 alias:          SCAN_ALIAS SCAN_WORD
@@ -450,7 +473,14 @@ add_attribute(const string &type, const string &name, const string &value,
     }
     
     try {
-	TOP_OF_STACK->append_attr(name, type, value);
+#if 0
+        // Special treatment for XML: remove the double quotes that were 
+        // included in the value by this parser.
+        if (type == OtherXML && is_quoted(value))
+            TOP_OF_STACK->append_attr(name, type, value.substr(1, value.size()-2));
+        else    
+#endif
+	    TOP_OF_STACK->append_attr(name, type, value);
     }
     catch (Error &e) {
 	// re-throw with line number

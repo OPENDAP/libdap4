@@ -104,6 +104,7 @@ static int start_line;		/* used in quote and comment error handlers */
  
 %x quote
 %x comment
+%x xml
 
 ATTR 	attributes|Attributes|ATTRIBUTES
 
@@ -117,6 +118,7 @@ FLOAT32 FLOAT32|Float32|float32
 FLOAT64 FLOAT64|Float64|float64
 STRING  STRING|String|string
 URL	URL|Url|url
+XML     OTHERXML|OtherXML|OtherXml|otherxml
 
 /* Comment chars (#) are treated specially. Lets hope nobody wants to start
    A variable name with one... Note that the DAS allows Identifiers to have 
@@ -142,6 +144,7 @@ NEVER   [^\-+a-zA-Z0-9_/%.:\\()#{};,[\]]
 {FLOAT64}               daslval = yytext; return SCAN_FLOAT64;
 {STRING}                daslval = yytext; return SCAN_STRING;
 {URL}                   daslval = yytext; return SCAN_URL;
+{XML}                   daslval = yytext; return SCAN_XML;
 
 {WORD}	    	    	{
 			    daslval = yytext; 
@@ -164,24 +167,24 @@ NEVER   [^\-+a-zA-Z0-9_/%.:\\()#{};,[\]]
 <comment>\r\n		++das_line_num; BEGIN(INITIAL);
 <comment><<EOF>>        yy_init = 1; das_line_num = 1; yyterminate();
 
-\"			BEGIN(quote); start_line = das_line_num; yymore();
-<quote>[^"\r\n\\]*	yymore();
-<quote>[^"\r\n\\]*\n	yymore(); ++das_line_num;
-<quote>[^"\r\n\\]*\r\n	yymore(); ++das_line_num;
-<quote>\\.		yymore();
-<quote>\"		{ 
-    			  BEGIN(INITIAL); 
+\"                      BEGIN(quote); start_line = das_line_num; yymore();
+<quote>[^"\r\n\\]*      yymore();
+<quote>[^"\r\n\\]*\n    yymore(); ++das_line_num;
+<quote>[^"\r\n\\]*\r\n  yymore(); ++das_line_num;
+<quote>\\.              yymore();
+<quote>\"               { 
+                          BEGIN(INITIAL); 
 
-			  daslval = yytext;
+                          daslval = yytext;
 
-			  return SCAN_WORD;
+                          return SCAN_WORD;
                         }
-<quote><<EOF>>		{
+<quote><<EOF>>          {
                           char msg[256];
-			  sprintf(msg,
-				  "Unterminated quote (starts on line %d)\n",
-				  start_line);
-			  YY_FATAL_ERROR(msg);
+                          sprintf(msg,
+                                  "Unterminated quote (starts on line %d)\n",
+                                  start_line);
+                          YY_FATAL_ERROR(msg);
                         }
 
 {NEVER}                 {

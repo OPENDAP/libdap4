@@ -53,6 +53,7 @@ static char rcsid[] not_used =
 #if 0
 #include "AISConnect.h"
 #endif
+#include "Sequence.h"
 #include "Connect.h"
 #include "Response.h"
 #include "StdinResponse.h"

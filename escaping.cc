@@ -239,6 +239,21 @@ entity(char c)
     }
 }
 
+// Assumption: There are always exactly two octal digits in the input
+// and two hex digits in the result.
+string
+octal_to_hex(const string &octal_digits)
+{
+    int val;
+
+    istringstream ss(octal_digits);
+    ss >> oct >> val;
+
+    ostringstream ds;
+    ds << hex << setw(2) << setfill('0') << val;
+    return ds.str();
+}
+
 /** Replace characters that are not allowed in XML
 
     @param in The string in which to replace characters.
@@ -252,7 +267,33 @@ id2xml(string in, const string &not_allowed)
 
     while ((i = in.find_first_of(not_allowed, i)) != string::npos) {
         in.replace(i, 1, entity(in[i]));
-        i++;
+        ++i;
+    }
+
+    // OK, now scan for octal escape sequences like \\012 (where the '\'
+    // is itself escaped). This type of attribute value comes from the netCDF
+    // handler and maybe others. Assumption: The '\' will always appear as
+    // in its escaped form: '\\'. NB: Both backslashes must be escaped in the
+    // C++ string.
+    string octal_escape = "\\\\";
+    i = 0;
+    string::size_type length = in.length();
+    while ((i = in.find(octal_escape, i)) != string::npos) {
+        // Get the three octal digits following the '\\0'
+        string::size_type j = i + 2;
+        if (j + 1 >= length)  // Check that we're not past the end
+            break;
+        string octal_digits = in.substr(j, 3);
+        // convert to a &#xdd; XML escape
+        string hex_escape = string("&#x");
+        hex_escape.append(octal_to_hex(octal_digits));
+        hex_escape.append(string(";"));
+
+        // replace the octal escape with an XML/hex escape
+        in.replace(i, 5, hex_escape);
+
+        // increment i
+        i += 6;
     }
 
     return in;
@@ -405,6 +446,39 @@ munge_error_message(string msg)
             miter = msg.insert(miter, '\\');
 
     return msg;
+}
+
+/** Rip through a string and replace all the double quotes with \" sequences.
+    @param source
+    @return result
+ */
+string
+escape_double_quotes(string source)
+{
+    string::size_type idx = 0;
+    while((idx = source.find('\"', idx)) != string::npos) {
+        source.replace(idx, 1, "\\\""); // a backslash and a double quote
+        idx += 2;
+    }
+
+    return source;
+}
+
+/** Rip through a string and replace all the escaped double quotes with
+    regular double quotes.
+    @param source
+    @return result
+ */
+string
+unescape_double_quotes(string source)
+{
+    string::size_type idx = 0;
+    while((idx = source.find("\\\"", idx)) != string::npos) {
+        source.replace(idx, 2, "\""); // a backslash and a double quote
+        ++idx;
+    }
+
+    return source;
 }
 
 } // namespace libdap

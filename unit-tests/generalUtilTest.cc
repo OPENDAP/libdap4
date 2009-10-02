@@ -60,6 +60,7 @@ public:
 
     CPPUNIT_TEST_SUITE(generalUtilTest);
 
+    CPPUNIT_TEST(octal_to_hex_test);
     CPPUNIT_TEST(prune_spaces_test);
     CPPUNIT_TEST(path_to_filename_test);
     CPPUNIT_TEST(hexstring_test);
@@ -70,16 +71,24 @@ public:
     CPPUNIT_TEST(escattr_test);
     CPPUNIT_TEST(unescattr_test);
     CPPUNIT_TEST(munge_error_message_test);
-#if 0
-    // Moved function to HTTPConnect.cc
-    CPPUNIT_TEST(get_tempfile_template_test);
-#endif
     CPPUNIT_TEST(id2xml_test);
     CPPUNIT_TEST(xml2id_test);
 
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
+    void octal_to_hex_test() {
+        string hex;
+        hex = octal_to_hex("000");
+        CPPUNIT_ASSERT(hex == "00");
+
+        hex = octal_to_hex("012");
+        CPPUNIT_ASSERT(hex == "0a");
+
+        hex = octal_to_hex("077");
+        CPPUNIT_ASSERT(hex == "3f");
+    }
+
     void prune_spaces_test() {
 	string test_server = "http://test.opendap.org";
 	CPPUNIT_ASSERT(prune_spaces(test_server) == test_server);
@@ -243,6 +252,7 @@ public:
 	CPPUNIT_ASSERT(munge_error_message(str) == str1);
     }
 
+
 #if 0
     // Moved function to HTTPConect.
     void get_tempfile_template_test() {
@@ -286,6 +296,9 @@ public:
 	CPPUNIT_ASSERT(id2xml("abc&def&") == "abc&amp;def&amp;");
 	CPPUNIT_ASSERT(id2xml("'abc'def") == "&apos;abc&apos;def");
 	CPPUNIT_ASSERT(id2xml("\"abc\"def\"") == "&quot;abc&quot;def&quot;");
+	// To get '\\' in a string both the backslashes must be escaped.
+	cerr << id2xml("octal escape: \\\\012") << endl;
+	CPPUNIT_ASSERT(id2xml("octal escape: \\\\012") == "octal escape: &#x0a;");
     }
 
     void xml2id_test() {

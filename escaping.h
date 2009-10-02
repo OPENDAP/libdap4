@@ -66,6 +66,8 @@ string www2id(const string &in, const string &escape = "%",
 #define id2dods id2www
 #define dods2id www2id
 
+string octal_to_hex(const string &octal_digits);
+
 string id2xml(string in, const string &not_allowed = "><&'\"");
 string xml2id(string in);
 
@@ -75,6 +77,9 @@ string escattr(string s);
 string unescattr(string s);
 
 string munge_error_message(string msg);
+
+string unescape_double_quotes(string source);
+string escape_double_quotes(string source);
 
 } // namespace libdap
 

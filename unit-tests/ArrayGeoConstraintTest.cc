@@ -32,6 +32,8 @@
 //#define DODS_DEBUG
 
 #include "BaseType.h"
+
+#include "Byte.h"
 #include "Int32.h"
 #include "Float64.h"
 #include "Str.h"
@@ -62,9 +64,9 @@ class ArrayGeoConstraintTest:public TestFixture
 private:
     TestTypeFactory btf;
     ConstraintEvaluator ce;
-    
+
     TestArray *a1, *a2, *a3;
-    
+
 public:
     ArrayGeoConstraintTest()
     {}
@@ -76,11 +78,11 @@ public:
         a1 = new TestArray("test1", new Int32("test1"));
         a1->append_dim(21); // latitude
         a1->append_dim(10); // longitude
-        
+
         a2 = new TestArray("test2", new Int32("test2"));
         a2->append_dim(21); // latitude
         a2->append_dim(10); // longitude
-        
+
         a3 = new TestArray("test3", new Byte("test3"));
         a3->append_dim(10); // latitude
         a3->append_dim(10); // longitude
@@ -97,8 +99,8 @@ public:
                   { 90,91,92,93,94,95,96,97,98,99} };
         a3->val2buf((void*)tmp_data);
         a3->set_read_p(true);
-        
-        
+
+
     }
 
     void tearDown()
@@ -113,7 +115,7 @@ public:
     CPPUNIT_TEST(constructor_test);
     CPPUNIT_TEST(build_lat_lon_maps_test);
     CPPUNIT_TEST(set_bounding_box_test);
-    
+
     CPPUNIT_TEST_SUITE_END();
 
     void constructor_test() {
@@ -128,7 +130,7 @@ public:
             DBG(cerr << "Error: " << e.get_error_message() << endl);
             CPPUNIT_ASSERT("Caught Error");
         }
-        
+
         try {
             ArrayGeoConstraint agc(ta, 10, 10, 89.9, 89);
             CPPUNIT_ASSERT(!"Constructor should throw");
@@ -137,11 +139,11 @@ public:
             DBG(cerr << "Error: " << e.get_error_message() << endl);
             CPPUNIT_ASSERT("Caught Error");
         }
-        
+
         ta->append_dim(20);
         try {
             ArrayGeoConstraint agc(ta, 10, 10, 89.9, 89);
-            CPPUNIT_ASSERT(agc.d_extent.d_left == 10 
+            CPPUNIT_ASSERT(agc.d_extent.d_left == 10
                            && agc.d_extent.d_top == 10
                            && agc.d_extent.d_right == 89.9
                            && agc.d_extent.d_bottom == 89);
@@ -156,7 +158,7 @@ public:
         try {
             ArrayGeoConstraint agc(ta, 10, 10, 89.9, 89,
                                    "plat-carre", "wgs84");
-            CPPUNIT_ASSERT(agc.d_extent.d_left == 10 
+            CPPUNIT_ASSERT(agc.d_extent.d_left == 10
                            && agc.d_extent.d_top == 10
                            && agc.d_extent.d_right == 89.9
                            && agc.d_extent.d_bottom == 89);
@@ -167,7 +169,7 @@ public:
             DBG(cerr << "Error: " << e.get_error_message() << endl);
             CPPUNIT_ASSERT(!"Constructor should not throw");
         }
-        
+
         try {
             ArrayGeoConstraint agc(ta, 10, 10, 89.9, 89,
                                    "plat-carre", "huh?");
@@ -178,7 +180,7 @@ public:
             CPPUNIT_ASSERT("Caught Error");
         }
     }
-    
+
     void build_lat_lon_maps_test() {
         // build_lat_lon_maps() is called in the ctor
         ArrayGeoConstraint agc(a1, 10, 90, 89, -90);
@@ -189,7 +191,7 @@ public:
         CPPUNIT_ASSERT(agc.get_lat()[0] == 90.0);
         CPPUNIT_ASSERT(agc.get_lat()[20] == -90.0);
     }
-    
+
     void set_bounding_box_test() {
         ArrayGeoConstraint agc1(a1, 10, 90, 89, -90);
         agc1.set_bounding_box(10, 90,89, -90);
