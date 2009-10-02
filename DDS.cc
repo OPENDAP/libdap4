@@ -67,6 +67,21 @@ static char rcsid[] not_used =
 #include "parser.h"
 #include "debug.h"
 #include "util.h"
+
+#include "Byte.h"
+#include "Int16.h"
+#include "UInt16.h"
+#include "Int32.h"
+#include "UInt32.h"
+#include "Float32.h"
+#include "Float64.h"
+#include "Str.h"
+#include "Url.h"
+#include "Array.h"
+#include "Structure.h"
+#include "Sequence.h"
+#include "Grid.h"
+
 #include "escaping.h"
 
 const string c_default_dap20_schema_location = "http://xml.opendap.org/dap/dap2.xsd";

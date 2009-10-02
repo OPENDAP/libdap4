@@ -41,7 +41,19 @@ static char rcsid[] not_used =
     };
 
 #include "Byte.h"
-//#include "Int16.h"
+#include "Int16.h"
+#include "UInt16.h"
+#include "Int32.h"
+#include "UInt32.h"
+#include "Float32.h"
+#include "Float64.h"
+#include "Str.h"
+#include "Url.h"
+#include "Array.h"
+#include "Structure.h"
+#include "Sequence.h"
+#include "Grid.h"
+
 #include "DDS.h"
 #include "Operators.h"
 
