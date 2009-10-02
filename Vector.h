@@ -86,9 +86,31 @@ private:
     vector<string> d_str;       // special storage for strings. jhrg 2/11/05
     vector<BaseType *> _vec; // array for other data
 
+    // the number of elements we have allocated memory to store.
+    // This should be either the sizeof(buf)/width() for cardinal data
+    // or the capacity of d_str for strings or capacity of _vec.
+    unsigned int _capacity;
+
 protected:
     // This function copies the private members of Vector.
     void _duplicate(const Vector &v);
+
+    /**
+     * @return whether the type of this Vector is a cardinal type (ie stored in _buf)
+     */
+    bool is_cardinal_type() const;
+
+    /** Create _buf so that it can store numElts of the
+    * (assumed) cardinal type.  This create storage for
+    * width() * numElts bytes.
+    * If _buf already exists, this DELETES IT and creates a new one.
+    * So don't use this if you want to keep the original _buf data around.
+    * This also sets the valueCapacity().
+    * @param numElts the number of elements of the cardinal type in var() that we want storage for.
+    * @return the size of the buffer created.
+    * @exception if the Vector's type is not cardinal type.
+    */
+    unsigned int create_cardinal_data_buffer_for_type(unsigned int numEltsOfType);
 
 public:
     Vector(const string &n, BaseType *v, const Type &t);
@@ -125,6 +147,55 @@ public:
     void set_vec(unsigned int i, BaseType *val);
 
     void vec_resize(int l);
+
+    /**
+     * Remove any read or set data in the private data of this Vector, setting read_p() to false.
+     * Essentially clears the _buf, d_str, and _vec of any data.
+     * Useful for tightening up memory when the data is no longer needed, but the object cannot
+     * yet be destroyed.
+     * NOTE: this is not virtual, and only affects the data in Vector itself!
+     * On exit: get_value_capacity() == 0 && !read_p()
+     */
+    void clear_local_data();
+
+    /** Return the capacity of the Vector in terms of number of
+    * elements of its data type that it CAN currently hold (i.e. not bytes).
+    * For example, this could be
+    * the size of the _buf array in bytes / sizeof(T) for the cardinal types T, or the
+    * capacity of the d_str vector if T is string or url type.
+    */
+    virtual unsigned int get_value_capacity() const;
+
+    /** Allocate enough memory for the Vector to contain numElements data elements of the
+     * Vector's type.  Must be used before set_value_slice to ensure memory exists.
+     * @exception if the memory cannot be allocated
+     */
+    virtual void reserve_value_capacity(unsigned int numElements);
+
+    /** Make sure there's storage allocated for the current length() of the Vector.
+     * Same as reserveValueCapacity(length())
+     * */
+    virtual void reserve_value_capacity();
+
+    /**
+     * Copy rowMajorData.length() elements currently in a rowMajorData buffer into this
+     * value buffer starting at element index startElement and continuing up to startElement+rowMajorData.length()-1
+     *
+     * This is used for aggregating together smaller rowMajor vectors into a larger one.
+     *
+     * Note: unlike the other set_value calls, this does NOT set read_p() since it is assumed to be
+     *       used as a partial read and the caller is expected to set_read_p() when the data is complete.
+     *
+     * ASSUMES: rowMajorData.read_p() so that the data is valid!
+     * ASSUMES: this Vector has enough value_capacity() to contain all the elements such that
+     *          startElement + rowMajorData.length() <= this->value_capacity().
+     * ASSUMES: the data type of this->var() and rowMajorData.var() MUST be non-NULL and be the same!
+     *
+     * @param rowMajorData the vector from which to copy data, assumed already read in or set.
+     * @param startElement the element index (NOT byte, but rather data type element) to place the first data value.
+     * @return the number of elements added, such that startElement + the return value is the next "free" element.
+     */
+    virtual unsigned int set_value_slice_from_row_major_vector(const Vector& rowMajorData, unsigned int startElement);
 
     virtual bool set_value(dods_byte *val, int sz);
     virtual bool set_value(vector<dods_byte> &val, int sz);

@@ -51,6 +51,7 @@ static char rcsid[] not_used =
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
+#include <sstream>
 
 using std::cerr;
 using std::endl;
@@ -98,6 +99,82 @@ void Vector::_duplicate(const Vector & v)
     _buf = 0;                   // init to null
     if (v._buf)                 // only copy if data present
         val2buf(v._buf);        // store v's value in this's _BUF.
+
+    _capacity = v._capacity;
+}
+
+bool
+Vector::is_cardinal_type() const
+{
+  // Not cardinal if no _var at all!
+  if (!_var) {
+    return false;
+  }
+
+  switch (_var->type()) {
+     case dods_byte_c:
+     case dods_int16_c:
+     case dods_uint16_c:
+     case dods_int32_c:
+     case dods_uint32_c:
+     case dods_float32_c:
+     case dods_float64_c: {
+       return true;
+       break;
+     }
+
+     // These must be handled differently.
+     case dods_str_c:
+     case dods_url_c:
+     case dods_array_c:
+     case dods_structure_c:
+     case dods_sequence_c:
+     case dods_grid_c:
+       return false;
+       break;
+
+     default:
+       cerr << "Vector::var: Unrecognized type" << endl;
+       return false;
+  } // switch
+}
+
+unsigned int
+Vector::create_cardinal_data_buffer_for_type(unsigned int numEltsOfType)
+{
+  // Make sure we HAVE a _var, or we cannot continue.
+  if (!_var) {
+    throw InternalErr(__FILE__, __LINE__,
+        "create_cardinal_data_buffer_for_type: Logic error: _var is null!");
+  }
+
+  // Make sure we only do this for the correct data types.
+  if (!is_cardinal_type()) {
+      throw InternalErr(__FILE__, __LINE__,
+          "create_cardinal_data_buffer_for_type: incorrectly used on Vector whose type was not a cardinal (simple data types).");
+  }
+
+  // Grab the width of the data type.
+  unsigned int bytesPerElt = _var->width();
+
+  // If there already is one, delete it so we make a new one.
+  if (_buf) {
+    delete[] _buf; _buf = 0;
+    _capacity = 0;
+  }
+
+  // Actually new up the array with enough bytes to hold numEltsOfType of the actual type.
+  unsigned int bytesNeeded = bytesPerElt * numEltsOfType;
+  _buf = new char[bytesNeeded];
+  if (!_buf) {
+    ostringstream oss;
+    oss << "create_cardinal_data_buffer_for_type: new char[] failed to allocate " <<
+           bytesNeeded <<
+           " bytes!  Out of memory or too large a buffer required!";
+    throw InternalErr(__FILE__, __LINE__, oss.str());
+  }
+  _capacity = numEltsOfType;
+  return bytesNeeded;
 }
 
 /** The Vector constructor requires the name of the variable to be
@@ -117,7 +194,7 @@ void Vector::_duplicate(const Vector & v)
     @see Type
     @brief The Vector constructor.  */
 Vector::Vector(const string & n, BaseType * v, const Type & t)
-        : BaseType(n, t), _length(-1), _var(0), _buf(0), _vec(0)
+        : BaseType(n, t), _length(-1), _var(0), _buf(0), _vec(0), _capacity(0)
 {
     if (v)
         add_var(v);
@@ -147,7 +224,7 @@ Vector::Vector(const string & n, BaseType * v, const Type & t)
     @see Type
     @brief The Vector constructor.  */
 Vector::Vector(const string & n, const string &d, BaseType * v, const Type & t)
-        : BaseType(n, d, t), _length(-1), _var(0), _buf(0), _vec(0)
+        : BaseType(n, d, t), _length(-1), _var(0), _buf(0), _vec(0), _capacity(0)
 {
     if (v)
         add_var(v);
@@ -174,6 +251,9 @@ Vector::~Vector()
     delete _var;
     _var = 0;
 
+    // Old code now encapsulated in this function.
+    clear_local_data();
+#if 0
     if (_buf) {
         delete[]_buf;
         _buf = 0;
@@ -184,6 +264,7 @@ Vector::~Vector()
             _vec[i] = 0;
         }
     }
+#endif
 
     DBG2(cerr << "Exiting ~Vector" << endl);
 }
@@ -246,7 +327,9 @@ void Vector::set_send_p(bool state)
     @brief Indicates that the data is ready to send.  */
 void Vector::set_read_p(bool state)
 {
-    _var->set_read_p(state);
+    if (_var) {
+      _var->set_read_p(state);
+    }
     BaseType::set_read_p(state);
 }
 
@@ -434,6 +517,7 @@ void Vector::set_length(int l)
 void Vector::vec_resize(int l)
 {
     _vec.resize((l > 0) ? l : 0, 0);    // Fill with NULLs
+    _capacity = l; // capacity in terms of number of elements.
 }
 
 /** @brief read data into a variable for later use
@@ -640,6 +724,7 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
 
         if (!_buf) {
             _buf = new char[width()];   // we always do the allocation!
+            _capacity = length(); // the capacity of _buf is the number of elements since width() == length() * _var->width()
             DBG(cerr << "Vector::deserialize: allocating "
                 << width() << " bytes for an array of "
                 << length() << " " << _var->type_name() << endl);
@@ -666,6 +751,7 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
                               "The client sent declarations and data with mismatched sizes.");
 
         d_str.resize((num > 0) ? num : 0);      // Fill with NULLs
+        _capacity = num; // capacity is number of strings we can fit.
 
         for (i = 0; i < num; ++i) {
             string str;
@@ -760,10 +846,12 @@ unsigned int Vector::val2buf(void *val, bool reuse)
             if (_buf && !reuse) {
                 delete[]_buf;
                 _buf = 0;
+                _capacity = 0;
             }
 
             if (!_buf) {        // First time or no reuse (free'd above)
                 _buf = new char[array_wid];
+                _capacity = length();
             }
 
             memcpy(_buf, val, array_wid);
@@ -775,6 +863,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
             // Assume val points to an array of C++ string objects. Copy
             // them into the vector<string> field of this object.
             d_str.resize(_length);
+            _capacity = _length;
             for (int i = 0; i < _length; ++i)
                 d_str[i] = *(static_cast < string * >(val) + i);
 
@@ -840,8 +929,13 @@ unsigned int Vector::buf2val(void **val)
     case dods_uint32_c:
     case dods_float32_c:
     case dods_float64_c:
-        if (!*val)
+        if (!*val) {
             *val = new char[wid];
+        }
+        // avoid bus error if _buf is null and this is called improperly.
+        if (!_buf) {
+          throw InternalErr(__FILE__, __LINE__, "Vector::buf2val: Logic error: called when _buf was null!");
+        }
 
         (void) memcpy(*val, _buf, wid);
 
@@ -908,6 +1002,170 @@ void Vector::set_vec(unsigned int i, BaseType * val)
     _vec[i] = val->ptr_duplicate();
 }
 
+void
+Vector::clear_local_data()
+{
+  if (_buf) {
+    delete[]_buf;
+    _buf = 0;
+  }
+
+  for (unsigned int i = 0; i < _vec.size(); ++i) {
+    delete _vec[i];
+    _vec[i] = 0;
+  }
+
+  // Force memory to be reclaimed.
+  _vec.resize(0);
+  d_str.resize(0);
+
+  _capacity = 0;
+  set_read_p(false);
+}
+
+unsigned int
+Vector::get_value_capacity() const
+{
+  return _capacity;
+}
+
+void
+Vector::reserve_value_capacity(unsigned int numElements)
+{
+  if (!_var) {
+   throw InternalErr(__FILE__, __LINE__,
+       "reserve_value_capacity: Logic error: _var is null!");
+  }
+  switch (_var->type()) {
+     case dods_byte_c:
+     case dods_int16_c:
+     case dods_uint16_c:
+     case dods_int32_c:
+     case dods_uint32_c:
+     case dods_float32_c:
+     case dods_float64_c:
+       // Make _buf be the right size and set _capacity
+       create_cardinal_data_buffer_for_type(numElements);
+       break;
+
+     case dods_str_c:
+     case dods_url_c:
+       // Make sure the d_str has enough room for all the strings.
+       // Technically not needed, but it will speed things up for large arrays.
+       d_str.reserve(numElements);
+       _capacity = numElements;
+       break;
+
+     case dods_array_c:
+     case dods_structure_c:
+     case dods_sequence_c:
+     case dods_grid_c:
+       // not clear anyone will go this path, but best to be complete.
+       _vec.reserve(numElements);
+       _capacity = numElements;
+       break;
+
+     default:
+         throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Unknown type!");
+         break;
+     }
+
+}
+
+void
+Vector::reserve_value_capacity()
+{
+  // Use the current length of the vector as the reserve amount.
+  reserve_value_capacity(length());
+}
+
+unsigned int
+Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsigned int startElement)
+{
+  static const string funcName = "set_value_slice_from_row_major_vector:";
+
+  // semantically const from the caller's viewpoint, but some calls are not syntactic const.
+  Vector& rowMajorData = const_cast<Vector&>(rowMajorDataC);
+
+  bool typesMatch = rowMajorData.var() && _var && (rowMajorData.var()->type() == _var->type());
+  if (!typesMatch) {
+    throw InternalErr(__FILE__, __LINE__,
+        funcName + "Logic error: types do not match so cannot be copied!");
+  }
+
+  // Make sure the data exists
+  if (!rowMajorData.read_p()) {
+    throw InternalErr(__FILE__, __LINE__,
+        funcName + "Logic error: the Vector to copy data from has !read_p() and should have been read in!");
+  }
+
+  // Check this otherwise the static_cast<unsigned int> below will do the wrong thing.
+  if (rowMajorData.length() < 0) {
+    throw InternalErr(__FILE__, __LINE__,
+            funcName + "Logic error: the Vector to copy data from has length() < 0 and was probably not initialized!");
+  }
+
+  // The read-in capacity had better be at least the length (the amountt we will copy) or we'll memcpy into bad memory
+  // I imagine we could copy just the capacity rather than throw, but I really think this implies a problem to be addressed.
+  if (rowMajorData.get_value_capacity() < static_cast<unsigned int>(rowMajorData.length())) {
+    throw InternalErr(__FILE__, __LINE__,
+        funcName + "Logic error: the Vector to copy from has a data capacity less than its length, can't copy!");
+  }
+
+  // Make sure there's enough room in this Vector to store all the elements requested.  Again,
+  // better to throw than just copy what we can since it implies a logic error that needs to be solved.
+  if (_capacity < (startElement + rowMajorData.length())) {
+    throw InternalErr(__FILE__, __LINE__,
+        funcName + "Logic error: the capacity of this Vector cannot hold all the data in the from Vector!");
+  }
+
+  // OK, at this point we're pretty sure we can copy the data, but we have to do it differently depending on type.
+  switch (_var->type()) {
+      case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
+      case dods_int32_c:
+      case dods_uint32_c:
+      case dods_float32_c:
+      case dods_float64_c:
+        if (!_buf) {
+          throw InternalErr(__FILE__, __LINE__, funcName + "Logic error: this->_buf was unexpectedly null!");
+        }
+        if (!rowMajorData._buf) {
+          throw InternalErr(__FILE__, __LINE__, funcName + "Logic error: rowMajorData._buf was unexpectedly null!");
+        }
+        // memcpy the data into this, taking care to do ptr arithmetic on bytes and not sizeof(element)
+        memcpy(_buf + (startElement * _var->width()),
+               rowMajorData._buf,
+               rowMajorData.width() );
+        break;
+
+      case dods_str_c:
+      case dods_url_c:
+        // Strings need to be copied directly
+        for (unsigned int i = 0; i < static_cast<unsigned int>(rowMajorData.length()); ++i) {
+          d_str[startElement + i] = rowMajorData.d_str[i];
+        }
+        break;
+
+      case dods_array_c:
+      case dods_structure_c:
+      case dods_sequence_c:
+      case dods_grid_c:
+        // Not sure that this function will be used for these type of nested objects, so I will throw here.
+        // TODO impl and test this path if it's ever needed.
+        throw InternalErr(__FILE__, __LINE__,
+            funcName + "Unimplemented method for Vectors of type: dods_array_c, dods_structure_c, dods_sequence_c and dods_grid_c.");
+        break;
+
+      default:
+        throw InternalErr(__FILE__, __LINE__, funcName + ": Unknown type!");
+        break;
+  } // switch (_var->type())
+
+  // This is how many elements we copied.
+  return rowMajorData.length();
+}
 
 //@{
 /** @brief set the value of a byte array */
@@ -916,6 +1174,7 @@ Vector::set_value(dods_byte *val, int sz)
 {
     if (var()->type() == dods_byte_c && val) {
         _buf = reinterpret_cast<char*>(new dods_byte[sz]) ;
+        _capacity = sz;
         memcpy(_buf, val, sz * sizeof(dods_byte));
         set_read_p(true);
         return true;
@@ -952,6 +1211,7 @@ Vector::set_value(dods_int16 *val, int sz)
 {
     if (var()->type() == dods_int16_c && val) {
         _buf = reinterpret_cast<char*>(new dods_int16[sz]) ;
+        _capacity = sz;
         memcpy(_buf, val, sz * sizeof(dods_int16));
         set_read_p(true);
         return true;
@@ -988,6 +1248,7 @@ Vector::set_value(dods_int32 *val, int sz)
 {
     if (var()->type() == dods_int32_c && val) {
         _buf = reinterpret_cast<char*>(new dods_int32[sz]) ;
+        _capacity = sz;
         memcpy(_buf, val, sz * sizeof(dods_int32));
         set_read_p(true);
         return true;
@@ -1024,6 +1285,7 @@ Vector::set_value(dods_uint16 *val, int sz)
 {
     if (var()->type() == dods_uint16_c && val) {
         _buf = reinterpret_cast<char*>(new dods_uint16[sz]) ;
+        _capacity = sz;
         memcpy(_buf, val, sz * sizeof(dods_uint16));
         set_read_p(true);
         return true;
@@ -1060,6 +1322,7 @@ Vector::set_value(dods_uint32 *val, int sz)
 {
     if (var()->type() == dods_uint32_c && val) {
         _buf = reinterpret_cast<char*>(new dods_uint32[sz]) ;
+        _capacity = sz;
         memcpy(_buf, val, sz * sizeof(dods_uint32));
         set_read_p(true);
         return true;
@@ -1096,6 +1359,7 @@ Vector::set_value(dods_float32 *val, int sz)
 {
     if (var()->type() == dods_float32_c && val) {
         _buf = reinterpret_cast<char*>(new dods_float32[sz]) ;
+        _capacity = sz;
         memcpy(_buf, val, sz * sizeof(dods_float32));
         set_read_p(true);
         return true;
@@ -1136,6 +1400,7 @@ Vector::set_value(dods_float64 *val, int sz)
     switch (var()->type()) {
     case dods_float64_c:
         _buf = reinterpret_cast<char*>(new dods_float64[sz]) ;
+        _capacity = sz;
         memcpy(_buf, val, sz * sizeof(dods_float64));
         set_read_p(true);
         return true;
@@ -1171,6 +1436,7 @@ Vector::set_value(string *val, int sz)
 {
     if ((var()->type() == dods_str_c || var()->type() == dods_url_c) && val) {
         d_str.resize(sz);
+        _capacity = sz;
         for (register int t = 0; t < sz; t++) {
             d_str[t] = val[t] ;
         }
@@ -1189,6 +1455,7 @@ Vector::set_value(vector<string> &val, int sz)
 {
     if (var()->type() == dods_str_c || var()->type() == dods_url_c) {
         d_str.resize(sz);
+        _capacity = sz;
         for (register int t = 0; t < sz; t++) {
             d_str[t] = val[t] ;
         }
