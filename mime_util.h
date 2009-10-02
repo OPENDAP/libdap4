@@ -139,7 +139,10 @@ void set_mime_not_modified(ostream &out);
 
 //@}
 
+#if 0
+// Moved to dap-server usage module
 string get_user_supplied_docs(string name, string cgi);
+#endif
 
 ObjectType get_type(const string &value); // deprecated
 ObjectType get_description_type(const string &value);
