@@ -1,0 +1,11 @@
+The complete DDS:
+Dataset {
+    Sequence {
+        Int32 i;
+        String s;
+    } names;
+} test.e;
+The data:
+Sequence {
+    String s;
+} names = { {  } };

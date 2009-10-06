@@ -12,7 +12,7 @@ AT_INIT([das-test])
 # Usage: _AT_TEST_*(<das source>, <baseline file>)
 
 m4_define([_AT_DAS_TEST],   
-[AT_BANNER([Test $1 $2])
+[# AT_BANNER([Test $1 $2])
 AT_SETUP([DAS $1])
 AT_KEYWORDS([das])
 #Added || true because the $srcdir/das-test -p < $1 needs to be true whether the
@@ -24,7 +24,7 @@ AT_CHECK([diff -b -B $2 stdout || diff -b -B $2 stderr], [], [ignore],[],[])
 AT_CLEANUP])
 
 m4_define([AT_DAS_RESPONSE_TEST],
-[AT_BANNER([DAS response for $1.])
+[#AT_BANNER([DAS response for $1.])
 _AT_DAS_TEST([$srcdir/das-testsuite/$1], [$srcdir/das-testsuite/$1.base])
 ])
 

@@ -13,8 +13,8 @@ m4_define([_EXPR_TEST], [
     AT_KEYWORDS([expr])
 
     # Added || true because expr-test returns 0 (failure) for some of
-    # these tests which is correct for the test - we expect soem of
-    # the input to trigger an error response from teh parser, et
+    # these tests which is correct for the test - we expect some of
+    # the input to trigger an error response from the parser, et
     # cetera. That's also why we capture both stdout and stderr -
     # successful runs are sent to stdout while the errors are sent to
     # stderr.
@@ -28,10 +28,14 @@ m4_define([_EXPR_TEST], [
 
 m4_define([EXPR_RESPONSE_P], [
     # AT_BANNER([EXPR response for $1, $2, $4.])
+    # Test the serialize/deserialize methods
     _EXPR_TEST([-w], [$srcdir/expr-testsuite/$1], [$2], [$srcdir/expr-testsuite/$3.base], $4)
+    # Test the intern_data method (which combines serialize and deserialze)
     _EXPR_TEST([-W], [$srcdir/expr-testsuite/$1], [$2], [$srcdir/expr-testsuite/$3.base], $4)
 ])
 
+# The -b option to expr-test uses the 'series values' feature of the Test
+# classes.
 m4_define([EXPR_RESPONSE_B], [
     # AT_BANNER([EXPR response for $1, $2, $4.])
     _EXPR_TEST([-b -w], [$srcdir/expr-testsuite/$1], [$2], [$srcdir/expr-testsuite/$3.base], $4)
@@ -47,12 +51,16 @@ EXPR_RESPONSE_P([test.2], [s1], [test.2], [pass])
 EXPR_RESPONSE_P([test.2], [s2], [test.2a], [pass])
 EXPR_RESPONSE_P([test.2], [s2,s3], [test.2b], [pass])
 EXPR_RESPONSE_P([test.2], [s2[[2:2:4]],s3.o], [test.2c], [pass])
-EXPR_RESPONSE_P([test.2], [s2[[2:2:4]].m], [test.2d], [xfail])
+
+EXPR_RESPONSE_P([test.2], [s2[[2:2:4]].m], [test.2d], [pass])
 EXPR_RESPONSE_P([test.2], [s2[[2:2:4]].m,s2[[2:2:4]].l], [test.2e], [pass])
+
 EXPR_RESPONSE_P([test.2a], [s2[[2:4]].m[[0:4]],s2[[2:4]].l[[0:5]]], [test.2f], [pass])
 EXPR_RESPONSE_P([test.3], [i[[1:10]]], [test.3], [pass])
 EXPR_RESPONSE_P([test.4], ['s&s=~"^Silly.*"'], [test.4], [pass])
-EXPR_RESPONSE_P([test.4], ['s&s=~\"Very\"'], [test.4a], [pass])
+
+EXPR_RESPONSE_P([test.e], ['names.s&names.s=~".*: 3"'], [test.ea], [pass])
+EXPR_RESPONSE_P([test.e], ['names.s&names.s=~".*: 5"'], [test.eb], [pass])
 EXPR_RESPONSE_P([test.5], [g[[0:2:4]][[0]][[0]]], [test.5], [pass])
 EXPR_RESPONSE_P([test.5], [g[[0:2:4]][[0:2:4]][[0:2:4]]], [test.5a], [pass])
 EXPR_RESPONSE_P([test.6], [i], [test.6], [pass])

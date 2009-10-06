@@ -412,46 +412,6 @@ void evaluate_dds(DDS & table, bool print_constrained)
             (*p)->print_decl(cout, "", true, true);
 }
 
-// create a pipe for the caller's process which can be used by the DODS
-// software to write to and read from itself.
-#if 0
-#ifndef WIN32
-#define PIPE(x) pipe((x))
-#else
-#define PIPE(x) _pipe((x), 1024, _O_BINARY)
-#endif
-#if 0
-bool
-loopback_pipe(fdostream **pout, fdistream **pin)
-{
-    int fd[2];
-    if (pipe(fd) < 0) {
-        fprintf(stderr, "Could not open pipe\n");
-        return false;
-    }
-
-    *pin = new fdistream(fd[0]);
-    *pout = new fdostream(fd[1]);
-
-    return true;
-}
-#else
-bool
-loopback_pipe(fdostream **pout, FILE **pin)
-{
-    int fd[2];
-    if (pipe(fd) < 0) {
-        fprintf(stderr, "Could not open pipe\n");
-        return false;
-    }
-
-    *pin = fdopen(fd[0], "r");
-    *pout = new fdostream(fd[1]);
-
-    return true;
-}
-#endif
-#endif
 // Gobble up the MIME header. At one time the MIME Headers were output from
 // the server filter programs (not the core software) so we could call
 // DDS::send() from this test code and not have to parse the MIME header. But
@@ -497,19 +457,6 @@ void
 constrained_trans(const string & dds_name, const bool constraint_expr,
                   const string & constraint, const bool series_values)
 {
-#if 0
-#if 1
-    FILE *pin;
-#else
-    fdistream *pin;
-#endif
-    fdostream *pout;
-    /* Add error check ***/
-    if (!loopback_pipe(&pout, &pin))
-	throw InternalErr(__FILE__, __LINE__,
-			  "Could not create the loopback pipe.");
-#endif
-
     // If the CE was not passed in, read it from the command line.
     string ce;
     if (!constraint_expr) {
@@ -549,60 +496,6 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     df.send_data(server, eval, out, "", false);
     out.close();
 
-#if 0
-    eval.parse_constraint(ce, server);  // Throws Error if the ce doesn't parse.
-
-    server.tag_nested_sequences();      // Tag Sequences as Parent or Leaf node.
-
-    if (eval.functional_expression()) {
-        BaseType *var = eval.eval_function(server, dds_name);
-        if (!var)
-            throw Error(unknown_error, "Error calling the CE function.");
-
-        *pout << "Dataset {\n";
-        var->print_decl(*pout, "    ", true, false, true);
-        *pout << "} function_value;\n";
-        *pout << "Data:\n";
-
-        *pout << flush;
-
-        XDRStreamMarshaller m( *pout ) ;
-
-        try {
-            // In the following call to serialize, suppress CE evaluation.
-            var->serialize(eval, server, m, false);
-        }
-        catch(Error & e) {
-            delete var;
-            var = 0;
-            throw;
-        }
-
-        delete var;
-        var = 0;
-    }
-    else {
-        // send constrained DDS
-        server.print_constrained(*pout);
-        *pout << "Data:\n";
-        *pout << flush;
-
-        // Grab a stream that encodes using XDR.
-        XDRStreamMarshaller m( *pout ) ;
-
-        // Send all variables in the current projection (send_p())
-        for (DDS::Vars_iter i = server.var_begin(); i != server.var_end();
-             i++)
-            if ((*i)->send_p()) {
-                DBG(cerr << "Sending " << (*i)->name() << endl);
-                (*i)->serialize(eval, server, m, true);
-            }
-
-        *pout << flush;
-    }
-
-    delete pout;
-#endif
     // Now do what Connect::request_data() does:
     FILE *fp = fopen("expr-test-data.bin", "r");
 
@@ -621,38 +514,6 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
         (*q)->print_val(cout);
     }
-
-#if 0
-    // First read the DDS into a new object (using a file to store the DDS
-    // temporarily - the parser/scanner won't stop reading until an EOF is
-    // found, this fixes that problem).
-
-    // I use the default BaseTypeFactory since we're just printing the
-    // values here.
-    BaseTypeFactory factory;
-    DataDDS dds(&factory, "Test_data", "DAP/3.1");      // Must use DataDDS on receiving end
-    DBG(cerr << "pin: " << pin << endl);
-    dds.parse(pin);
-
-#if 0
-    XDRFileUnMarshaller um( pin ) ;
-#else
-    int pos = ftell( pin );
-    int fd = fileno( pin );
-    if ( lseek( fd, pos, SEEK_SET ) < 0 )
-	throw Error(string("I could not initialize the fdistream object (lseek to ") + long_to_string(pos) + ").");
-    fdistream sin( fd );
-    XDRStreamUnMarshaller um( sin ) ;
-#endif
-  // Back on the client side; deserialize the data *using the newly
-    // generated DDS* (the one sent with the data).
-
-    cout << "The data:" << endl;
-    for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
-        (*q)->deserialize(um, &dds);
-        (*q)->print_val(cout);
-    }
-#endif
 }
 
 /** This function does what constrained_trans() does but does not use the
@@ -720,6 +581,13 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
 
     cout << "The data:\n";
 
+    // This code calls 'output_values()' because print_val() does not test
+    // the value of send_p(). We need to wrap a method around the calls to
+    // print_val() to ensure that only values for variables with send_p() set
+    // are called. In the serialize/deserialize case, the 'client' DDS only
+    // has variables sent by the 'server' but in the intern_data() case, the
+    // whole DDS is still present and only variables selected in the CE have
+    // values.
     for (DDS::Vars_iter q = server.var_begin(); q != server.var_end(); q++) {
         if ((*q)->send_p()) {
             (*q)->print_decl(cout, "", false, false, true);
