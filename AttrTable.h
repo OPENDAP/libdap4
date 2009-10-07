@@ -239,9 +239,6 @@ private:
     AttrTable *d_parent;
     std::vector<entry *> attr_map;
 
-    Attr_iter simple_find(const string &target);
-    AttrTable *simple_find_container(const string &target);
-
     void delete_attr_table();
 
     friend class AttrTableTest;
@@ -286,6 +283,10 @@ public:
     virtual AttrTable *find_container(const string &target);
     virtual AttrTable *recurrsive_find(const string &target,
 				       Attr_iter *location);
+
+    Attr_iter simple_find(const string &target);
+    AttrTable *simple_find_container(const string &target);
+
 
     virtual AttrTable *get_attr_table(const string &name);
     virtual string get_type(const string &name);

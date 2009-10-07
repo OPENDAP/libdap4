@@ -445,7 +445,7 @@ AttrTable::recurrsive_find(const string &target, Attr_iter *location)
     return 0;
 }
 
-// Private
+// Made public for callers that want non-recursive find.  [mjohnson 6 oct 09]
 /** Look in this AttrTable for the attribute called \c name. If found return
  an Attr_iter which references it, otherwise return the end iterator for
  this AttrTable.
@@ -493,7 +493,7 @@ AttrTable::find_container(const string &target)
     }
 }
 
-// Private
+// Made public for callers that want non-recursive find.  [mjohnson 6 oct 09]
 AttrTable *
 AttrTable::simple_find_container(const string &target)
 {
