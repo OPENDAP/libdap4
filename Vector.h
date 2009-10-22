@@ -97,6 +97,9 @@ protected:
 
     bool is_cardinal_type() const;
     unsigned int create_cardinal_data_buffer_for_type(unsigned int numEltsOfType);
+    void delete_cardinal_data_buffer();
+
+    template <class CardType> void set_cardinal_values_internal(const CardType* fromArray, int numElts);
 
 public:
     Vector(const string &n, BaseType *v, const Type &t);

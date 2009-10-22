@@ -170,16 +170,10 @@ Vector::create_cardinal_data_buffer_for_type(unsigned int numEltsOfType)
           "create_cardinal_data_buffer_for_type: incorrectly used on Vector whose type was not a cardinal (simple data types).");
   }
 
-  // Grab the width of the data type.
-  unsigned int bytesPerElt = _var->width();
-
-  // If there already is one, delete it so we make a new one.
-  if (_buf) {
-    delete[] _buf; _buf = 0;
-    _capacity = 0;
-  }
+  delete_cardinal_data_buffer();
 
   // Actually new up the array with enough bytes to hold numEltsOfType of the actual type.
+  unsigned int bytesPerElt = _var->width();
   unsigned int bytesNeeded = bytesPerElt * numEltsOfType;
   _buf = new char[bytesNeeded];
   if (!_buf) {
@@ -192,6 +186,39 @@ Vector::create_cardinal_data_buffer_for_type(unsigned int numEltsOfType)
   _capacity = numEltsOfType;
   return bytesNeeded;
 }
+
+/** Delete _buf and zero it and _capacity out */
+void
+Vector::delete_cardinal_data_buffer()
+{
+  if (_buf) {
+     delete[] _buf;
+     _buf = 0;
+     _capacity = 0;
+   }
+}
+
+/** Helper to reduce cut and paste in the virtual's.
+ *
+ */
+template <class CardType>
+void
+Vector::set_cardinal_values_internal(const CardType* fromArray, int numElts)
+{
+  if (numElts < 0) {
+     throw InternalErr(__FILE__, __LINE__,
+                 "Logic error: Vector::set_cardinal_values_internal() called with negative numElts!");
+  }
+  if (!fromArray) {
+    throw InternalErr(__FILE__, __LINE__,
+        "Logic error: Vector::set_cardinal_values_internal() called with null fromArray!");
+  }
+  set_length(numElts);
+  create_cardinal_data_buffer_for_type(numElts);
+  memcpy(_buf, fromArray, numElts * sizeof(CardType) );
+  set_read_p(true);
+}
+
 
 /** The Vector constructor requires the name of the variable to be
     created, and a pointer to an object of the type the Vector is to
@@ -267,20 +294,8 @@ Vector::~Vector()
     delete _var;
     _var = 0;
 
-    // Old code now encapsulated in this function.
+    // Clears all buffers
     clear_local_data();
-#if 0
-    if (_buf) {
-        delete[]_buf;
-        _buf = 0;
-    }
-    else {
-        for (unsigned int i = 0; i < _vec.size(); ++i) {
-            delete _vec[i];
-            _vec[i] = 0;
-        }
-    }
-#endif
 
     DBG2(cerr << "Exiting ~Vector" << endl);
 }
@@ -303,10 +318,9 @@ Vector::set_name(const std::string& name)
   BaseType::set_name(name);
   // We need to set the template variable name as well since
   // this is what gets output in the dds!  Otherwise, there's a mismatch.
-  if (_var)
-    {
+  if (_var) {
       _var->set_name(name);
-    }
+  }
 }
 
 int Vector::element_count(bool leaves)
@@ -493,9 +507,10 @@ BaseType *Vector::var(unsigned int i)
 unsigned int Vector::width()
 {
     // Jose Garcia
-    if (!_var)
+    if (!_var) {
         throw InternalErr(__FILE__, __LINE__,
                           "Cannot get width since *this* object is not holding data.");
+    }
 
     return length() * _var->width();
 }
@@ -723,9 +738,9 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
     case dods_uint32_c:
     case dods_float32_c:
     case dods_float64_c:
-        if (_buf && !reuse)
-            delete[]_buf;
-        _buf = 0;
+        if (_buf && !reuse) {
+            delete_cardinal_data_buffer();
+        }
 
 	um.get_int( (int &)num ) ;
 
@@ -739,8 +754,8 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
             throw InternalErr(__FILE__, __LINE__, "The server sent declarations and data with mismatched sizes.");
 
         if (!_buf) {
-            _buf = new char[width()];   // we always do the allocation!
-            _capacity = length(); // the capacity of _buf is the number of elements since width() == length() * _var->width()
+            // Make _buf be large enough for length() elements of _var->type()
+            create_cardinal_data_buffer_for_type(length());
             DBG(cerr << "Vector::deserialize: allocating "
                 << width() << " bytes for an array of "
                 << length() << " " << _var->type_name() << endl);
@@ -860,14 +875,11 @@ unsigned int Vector::val2buf(void *val, bool reuse)
             // width() returns the size given the constraint
             unsigned int array_wid = width();
             if (_buf && !reuse) {
-                delete[]_buf;
-                _buf = 0;
-                _capacity = 0;
+               delete_cardinal_data_buffer();
             }
 
             if (!_buf) {        // First time or no reuse (free'd above)
-                _buf = new char[array_wid];
-                _capacity = length();
+              create_cardinal_data_buffer_for_type(length());
             }
 
             memcpy(_buf, val, array_wid);
@@ -1249,11 +1261,8 @@ bool
 Vector::set_value(dods_byte *val, int sz)
 {
     if (var()->type() == dods_byte_c && val) {
-        _buf = reinterpret_cast<char*>(new dods_byte[sz]) ;
-        _capacity = sz;
-        memcpy(_buf, val, sz * sizeof(dods_byte));
-        set_read_p(true);
-        return true;
+      set_cardinal_values_internal<dods_byte>(val, sz);
+      return true;
     }
     else {
         return false;
@@ -1265,20 +1274,6 @@ bool
 Vector::set_value(vector<dods_byte> &val, int sz)
 {
     return set_value(&val[0], sz);
-#if 0
-    if (var()->type() == dods_byte_c) {
-	dods_byte *tmp_buf = new dods_byte[sz] ;
-        _buf = reinterpret_cast<char*>(tmp_buf) ;
-        for (register int t = 0; t < sz; t++) {
-            tmp_buf[t] = val[t] ;
-        }
-        set_read_p(true);
-        return true;
-    }
-    else {
-        return false;
-    }
-#endif
 }
 
 /** @brief set the value of a int16 array */
@@ -1286,11 +1281,8 @@ bool
 Vector::set_value(dods_int16 *val, int sz)
 {
     if (var()->type() == dods_int16_c && val) {
-        _buf = reinterpret_cast<char*>(new dods_int16[sz]) ;
-        _capacity = sz;
-        memcpy(_buf, val, sz * sizeof(dods_int16));
-        set_read_p(true);
-        return true;
+      set_cardinal_values_internal<dods_int16>(val, sz);
+      return true;
     }
     else {
         return false;
@@ -1302,20 +1294,6 @@ bool
 Vector::set_value(vector<dods_int16> &val, int sz)
 {
     return set_value(&val[0], sz);
-#if 0
-    if (var()->type() == dods_int16_c) {
-	dods_int16 *tmp_buf = new dods_int16[sz] ;
-        _buf = reinterpret_cast<char*>(tmp_buf) ;
-        for (register int t = 0; t < sz; t++) {
-            tmp_buf[t] = val[t] ;
-        }
-        set_read_p(true);
-        return true;
-    }
-    else {
-        return false;
-    }
-#endif
 }
 
 /** @brief set the value of a int32 array */
@@ -1323,11 +1301,8 @@ bool
 Vector::set_value(dods_int32 *val, int sz)
 {
     if (var()->type() == dods_int32_c && val) {
-        _buf = reinterpret_cast<char*>(new dods_int32[sz]) ;
-        _capacity = sz;
-        memcpy(_buf, val, sz * sizeof(dods_int32));
-        set_read_p(true);
-        return true;
+       set_cardinal_values_internal<dods_int32>(val, sz);
+       return true;
     }
     else {
         return false;
@@ -1339,20 +1314,6 @@ bool
 Vector::set_value(vector<dods_int32> &val, int sz)
 {
     return set_value(&val[0], sz);
-#if 0
-    if (var()->type() == dods_int32_c) {
-	dods_int32 *tmp_buf = new dods_int32[sz] ;
-        _buf = reinterpret_cast<char*>(tmp_buf) ;
-        for (register int t = 0; t < sz; t++) {
-            tmp_buf[t] = val[t] ;
-        }
-        set_read_p(true);
-        return true;
-    }
-    else {
-        return false;
-    }
-#endif
 }
 
 /** @brief set the value of a uint16 array */
@@ -1360,11 +1321,8 @@ bool
 Vector::set_value(dods_uint16 *val, int sz)
 {
     if (var()->type() == dods_uint16_c && val) {
-        _buf = reinterpret_cast<char*>(new dods_uint16[sz]) ;
-        _capacity = sz;
-        memcpy(_buf, val, sz * sizeof(dods_uint16));
-        set_read_p(true);
-        return true;
+      set_cardinal_values_internal<dods_uint16>(val, sz);
+      return true;
     }
     else {
         return false;
@@ -1376,20 +1334,6 @@ bool
 Vector::set_value(vector<dods_uint16> &val, int sz)
 {
     return set_value(&val[0], sz);
-#if 0
-    if (var()->type() == dods_uint16_c) {
-	dods_uint16 *tmp_buf = new dods_uint16[sz] ;
-        _buf = reinterpret_cast<char*>(tmp_buf) ;
-        for (register int t = 0; t < sz; t++) {
-            tmp_buf[t] = val[t] ;
-        }
-        set_read_p(true);
-        return true;
-    }
-    else {
-        return false;
-    }
-#endif
 }
 
 /** @brief set the value of a uint32 array */
@@ -1397,10 +1341,7 @@ bool
 Vector::set_value(dods_uint32 *val, int sz)
 {
     if (var()->type() == dods_uint32_c && val) {
-        _buf = reinterpret_cast<char*>(new dods_uint32[sz]) ;
-        _capacity = sz;
-        memcpy(_buf, val, sz * sizeof(dods_uint32));
-        set_read_p(true);
+        set_cardinal_values_internal<dods_uint32>(val, sz);
         return true;
     }
     else {
@@ -1413,20 +1354,6 @@ bool
 Vector::set_value(vector<dods_uint32> &val, int sz)
 {
     return set_value(&val[0], sz);
-#if 0
-    if (var()->type() == dods_uint32_c) {
-	dods_uint32 *tmp_buf = new dods_uint32[sz] ;
-        _buf = reinterpret_cast<char*>(tmp_buf) ;
-        for (register int t = 0; t < sz; t++) {
-            tmp_buf[t] = val[t] ;
-        }
-        set_read_p(true);
-        return true;
-    }
-    else {
-        return false;
-    }
-#endif
 }
 
 /** @brief set the value of a float32 array */
@@ -1434,10 +1361,7 @@ bool
 Vector::set_value(dods_float32 *val, int sz)
 {
     if (var()->type() == dods_float32_c && val) {
-        _buf = reinterpret_cast<char*>(new dods_float32[sz]) ;
-        _capacity = sz;
-        memcpy(_buf, val, sz * sizeof(dods_float32));
-        set_read_p(true);
+        set_cardinal_values_internal<dods_float32>(val, sz);
         return true;
     }
     else {
@@ -1450,38 +1374,18 @@ bool
 Vector::set_value(vector<dods_float32> &val, int sz)
 {
     return set_value(&val[0], sz);
-#if 0
-    if (var()->type() == dods_float32_c) {
-	dods_float32 *tmp_buf = new dods_float32[sz] ;
-        _buf = reinterpret_cast<char*>(tmp_buf) ;
-        for (register int t = 0; t < sz; t++) {
-            tmp_buf[t] = val[t] ;
-        }
-        set_read_p(true);
-        return true;
-    }
-    else {
-        return false;
-    }
-#endif
 }
 
 /** @brief set the value of a float64 array */
 bool
 Vector::set_value(dods_float64 *val, int sz)
 {
-    if (!val)
-        return false;
-
-    switch (var()->type()) {
-    case dods_float64_c:
-        _buf = reinterpret_cast<char*>(new dods_float64[sz]) ;
-        _capacity = sz;
-        memcpy(_buf, val, sz * sizeof(dods_float64));
-        set_read_p(true);
-        return true;
-    default:
-        return false;
+    if (var()->type() == dods_float64_c && val) {
+      set_cardinal_values_internal<dods_float64>(val, sz);
+      return true;
+    }
+    else {
+      return false;
     }
 }
 
@@ -1490,20 +1394,6 @@ bool
 Vector::set_value(vector<dods_float64> &val, int sz)
 {
     return set_value(&val[0], sz);
-#if 0
-    if (var()->type() == dods_float64_c) {
-	dods_float64 *tmp_buf = new dods_float64[sz] ;
-        _buf = reinterpret_cast<char*>(tmp_buf) ;
-        for (register int t = 0; t < sz; t++) {
-            tmp_buf[t] = val[t] ;
-        }
-        set_read_p(true);
-        return true;
-    }
-    else {
-        return false;
-    }
-#endif
 }
 
 /** @brief set the value of a string or url array */
