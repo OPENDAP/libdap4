@@ -772,8 +772,8 @@ Connect::request_ddx(DDS &dds, string expr)
         break;
 
     case dap4_ddx:
-        // DDS::parse throws an exception on error.
-        try {
+    case dods_ddx:
+	try {
             string blob;
 
             DDXParser ddxp(dds.get_factory());
@@ -785,9 +785,12 @@ Connect::request_ddx(DDS &dds, string expr)
         }
         break;
 
-        // See the comment in process_data() and bug 706. 03/22/04 jhrg
     default:
-        throw Error("The site did not return a valid response (it lacked the\nexpected content description header value of 'dap4-ddx').\nThis may indicate that the server at the site is not correctly\nconfigured, or that the URL has changed.");
+        throw Error("The site did not return a valid response (it lacked the\n\
+expected content description header value of 'dap4-ddx' and\n\
+instead returned '" + long_to_string(rs->get_type()) + "').\n\
+This may indicate that the server at the site is not correctly\n\
+configured, or that the URL has changed.");
     }
 
     delete rs; rs = 0;
@@ -830,10 +833,12 @@ Connect::request_ddx_url(DDS &dds)
         break;
 
     case dap4_ddx:
-    default:
-        // DDS::parse throws an exception on error.
-        try {
-            dds.parse(rs->get_stream()); // read and parse the dds from a file
+    case dods_ddx:
+	try {
+            string blob;
+
+            DDXParser ddxp(dds.get_factory());
+            ddxp.intern_stream(rs->get_stream(), &dds, blob);
         }
         catch (Error &e) {
             delete rs; rs = 0;
@@ -841,11 +846,12 @@ Connect::request_ddx_url(DDS &dds)
         }
         break;
 
-#if 0
-        // See the comment in process_data() and bug 706. 03/22/04 jhrg
     default:
-        throw Error("The site did not return a valid response (it lacked the\nexpected content description header value of 'dods_ddx').\nThis may indicate that the server at the site is not correctly\nconfigured, or that the URL has changed.");
-#endif
+        throw Error("The site did not return a valid response (it lacked the\n\
+expected content description header value of 'dap4-ddx' and\n\
+instead returned '" + long_to_string(rs->get_type()) + "').\n\
+This may indicate that the server at the site is not correctly\n\
+configured, or that the URL has changed.");
     }
 
     delete rs; rs = 0;

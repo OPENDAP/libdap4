@@ -50,9 +50,6 @@ static char rcsid[] not_used =
 
 #include "GetOpt.h"
 
-#if 0
-#include "AISConnect.h"
-#endif
 #include "Sequence.h"
 #include "Connect.h"
 #include "Response.h"
@@ -67,6 +64,7 @@ using namespace libdap ;
 const char *version = CVER " (" DVR " DAP/" DAP_PROTOCOL_VERSION ")";
 
 extern int libdap::dods_keep_temps;     // defined in HTTPResponse.h
+extern int libdap::www_trace;
 
 void usage(string name)
 {
@@ -102,28 +100,24 @@ void usage(string name)
     cerr << "        i: For each URL, get the server version." << endl;
     cerr << "        d: For each URL, get the the DDS." << endl;
     cerr << "        a: For each URL, get the the DAS." << endl;
-#if 0
-    cerr << "        A: Use the AIS for DAS objects." << endl;
-#endif
     cerr << "        D: For each URL, get the the DataDDS." << endl;
     cerr <<
     "        x: For each URL, get the DDX object. Does not get data."
     << endl;
-    cerr << "        X: Build a DDX in getdap using the DDS and DAS." << endl;
-#if 0
-    cerr << "        B: <AIS xml dataBase>. Overrides .dodsrc." << endl;
-#endif
-    cerr << "        v: Verbose." << endl;
-    cerr << "        V: Version." << endl;
-    cerr << "        c: <expr> is a constraint expression. Used with -D." <<
+    cerr << "        X: Request a DataDDX from the server (the DAP4 data response" << endl;
+    cerr << "        B: Build a DDX in getdap using the DDS and DAS." << endl;
+    cerr << "        v: Verbose output." << endl;
+    cerr << "        V: Version of this client; see 'i' for server version." << endl;
+    cerr << "        c: <expr> is a constraint expression. Used with -D/X." <<
     endl;
     cerr << "           NB: You can use a `?' for the CE also." << endl;
-    cerr << "        k: Keep temporary files created by libdap core" << endl;
+    cerr << "        k: Keep temporary files created by libdap." << endl;
     cerr << "        m: Request the same URL <num> times." << endl;
     cerr << "        z: Ask the server to compress data." << endl;
     cerr << "        s: Print Sequences using numbered rows." << endl;
     cerr << "        M: Assume data read from a file has no MIME headers" << endl;
     cerr << "           (the default is to assume the headers are present)." << endl;
+    cerr << "        p: Set DAP protocol to x.y" << endl;
 }
 
 bool read_data(FILE * fp)
@@ -159,13 +153,14 @@ static void print_data(DDS & dds, bool print_rows = false)
 
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "idaDxXAVvkB:c:m:zshM?Hp:");
+    GetOpt getopt(argc, argv, "idaDxXBVvkc:m:zshM?Hp:t");
     int option_char;
 
     bool get_das = false;
     bool get_dds = false;
     bool get_data = false;
     bool get_ddx = false;
+    bool get_data_ddx = false;
     bool build_ddx = false;
     bool get_version = false;
     bool cexpr = false;
@@ -173,17 +168,11 @@ int main(int argc, char *argv[])
     bool multi = false;
     bool accept_deflate = false;
     bool print_rows = false;
-#if 0
-    bool use_ais = false;
-#endif
     bool mime_headers = true;
     int times = 1;
     int dap_client_major = 2;
     int dap_client_minor = 0;
     string expr = "";
-#if 0
-    string ais_db = "";
-#endif
 
 #ifdef WIN32
     _setmode(_fileno(stdout), _O_BINARY);
@@ -204,13 +193,8 @@ int main(int argc, char *argv[])
             get_ddx = true;
             break;
         case 'X':
-            build_ddx = true;
+            get_data_ddx = true;
             break;
-#if 0
-        case 'A':
-            use_ais = true;
-            break;
-#endif
         case 'V':
             fprintf(stderr, "getdap version: %s\n", version);
             exit(0);
@@ -231,12 +215,9 @@ int main(int argc, char *argv[])
             multi = true;
             times = atoi(getopt.optarg);
             break;
-#if 0
         case 'B':
-            use_ais = true;
-            ais_db = getopt.optarg;
+            build_ddx = true;
             break;
-#endif
         case 'z':
             accept_deflate = true;
             break;
@@ -254,6 +235,9 @@ int main(int argc, char *argv[])
             iss >> dap_client_minor;
             break;
         }
+        case 't':
+            www_trace = 1;
+            break;
         case 'h':
         case '?':
         default:
@@ -271,17 +255,6 @@ int main(int argc, char *argv[])
 
             string name = argv[i];
             Connect *url = 0;
-#if 0
-            if (use_ais) {
-                if (!ais_db.empty())
-                    url = new AISConnect(name, ais_db);
-                else
-                    url = new AISConnect(name);
-            }
-            else {
-                url = new Connect(name);
-            }
-#endif
 
             url = new Connect(name);
 
@@ -420,7 +393,7 @@ int main(int argc, char *argv[])
                         fprintf(stderr, "DDX:\n");
                     }
 
-                    dds.print_xml(cout, false, "getdap; no blob yet");
+                    dds.print_xml(cout, false);
                 }
             }
 
@@ -447,7 +420,7 @@ int main(int argc, char *argv[])
                         fprintf(stderr, "Client-built DDX:\n");
                     }
 
-                    dds.print_xml(cout, false, "getdap; no blob yet");
+                    dds.print_xml(cout, false);
                 }
             }
 
@@ -459,6 +432,31 @@ int main(int argc, char *argv[])
                         DBG(cerr << "URL: " << url->URL(false) << endl);
                         DBG(cerr << "CE: " << expr << endl);
                         url->request_data(dds, expr);
+
+                        if (verbose)
+                            fprintf(stderr, "DAP version: %s, Server version: %s\n",
+                                    url->get_protocol().c_str(),
+                                    url->get_version().c_str());
+
+                        print_data(dds, print_rows);
+                    }
+                    catch (Error & e) {
+                        cerr << e.get_error_message() << endl;
+                        delete url;
+                        url = 0;
+                        continue;
+                    }
+                }
+            }
+
+            else if (get_data_ddx) {
+                for (int j = 0; j < times; ++j) {
+                    BaseTypeFactory factory;
+                    DataDDS dds(&factory);
+                    try {
+                        DBG(cerr << "URL: " << url->URL(false) << endl);
+                        DBG(cerr << "CE: " << expr << endl);
+                        url->request_data_ddx(dds, expr);
 
                         if (verbose)
                             fprintf(stderr, "DAP version: %s, Server version: %s\n",

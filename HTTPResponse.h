@@ -47,6 +47,7 @@ namespace libdap
 {
 
 extern int dods_keep_temps; // defined in HTTPConnect.cc
+
 extern void close_temp(FILE *s, const string &name);
 
 /** Encapsulate an http response. Instead of directly returning the FILE

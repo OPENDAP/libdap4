@@ -59,6 +59,9 @@ using std::vector;
 namespace libdap
 {
 
+extern int www_trace;
+extern int dods_keep_temps;
+
 /** Use the CURL library to dereference a HTTP URL. Scan the response for
     headers used by the DAP 2.0 and extract their values. The body of the
     response is made available by a FILE pointer.

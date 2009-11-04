@@ -186,12 +186,14 @@ private:
 
     int d_dap_major;       // The protocol major version number
     int d_dap_minor;       // ... and minor version number
-
+#if 0
+    // Get rid of these???
+    // TODO
     // These hold the major and minor versions of DAP that the client sent in
     // the XDAP-Accept header. If the header is not sent, these default to 2.0
     int d_client_dap_major;
     int d_client_dap_minor;
-
+#endif
     string d_request_xml_base;
 
     AttrTable d_attr;           // Global attributes.

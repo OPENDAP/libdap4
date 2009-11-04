@@ -353,6 +353,8 @@ get_description_type(const string &value)
         return dods_error;
     else if ((value == "web_error") | (value == "web-error"))
         return web_error;
+    else if ((value == "dods_ddx") | (value == "dods-ddx"))
+        return dods_ddx;
     else if ((value == "dap4_ddx") | (value == "dap4-ddx"))
         return dap4_ddx;
     else if ((value == "dap4_data") | (value == "dap4-data"))

@@ -126,6 +126,7 @@ private:
 
 protected:
     void _duplicate(const Array &a);
+    void update_length(int size);
 
     //#if FILE_METHODS
     unsigned int print_array(FILE *out, unsigned int index,
@@ -158,8 +159,6 @@ public:
     virtual BaseType *ptr_duplicate();
 
     void add_var(BaseType *v, Part p = nil);
-
-    void update_length(int size);
 
     void append_dim(int size, string name = "");
 

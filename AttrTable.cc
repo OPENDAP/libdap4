@@ -1175,7 +1175,7 @@ void
 AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
 {
     // Why this works: AttrTable is really a hacked class that used to
-    // implement a single level, unnested, set of attributes. Containers
+    // implement a single-level set of attributes. Containers
     // were added several years later by dropping in the 'entry' structure.
     // It's not a class in its own right; instead accessors from AttrTable
     // are used to access information from entry. So... the loop below

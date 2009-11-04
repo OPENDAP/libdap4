@@ -85,7 +85,7 @@ static char rcsid[] not_used =
 #include "escaping.h"
 
 const string c_default_dap20_schema_location = "http://xml.opendap.org/dap/dap2.xsd";
-const string c_default_dap32_schema_location = "http://xml.opendap.org/dap/dap/3.2.xsd";
+const string c_default_dap32_schema_location = "http://xml.opendap.org/dap/dap3.2.xsd";
 
 const string c_dap20_namespace = "http://xml.opendap.org/ns/DAP2";
 const string c_dap32_namespace = "http://xml.opendap.org/ns/DAP/3.2#";
@@ -142,11 +142,14 @@ DDS::duplicate(const DDS &dds)
 DDS::DDS(BaseTypeFactory *factory, const string &n)
 
         : d_factory(factory), name(n), d_container(0), d_dap_major(2),
-        d_dap_minor(0), d_client_dap_major(2), d_client_dap_minor(0),
+        d_dap_minor(0),
+#if 0
+        //d_client_dap_major(2), d_client_dap_minor(0),
+#endif
         d_request_xml_base(""), d_timeout(0)
 {
     DBG(cerr << "Building a DDS with client major/minor: "
-            << d_client_dap_major << "." << d_client_dap_minor << endl);
+            << d_dap_major << "." << d_dap_minor << endl);
 }
 
 /** The DDS copy constructor. */
@@ -1089,7 +1092,7 @@ DDS::print_xml(ostream &out, bool constrained, const string &blob)
         out << "xmlns=\"" << c_dap32_namespace << "\"\n" ;
         out << "xmlns:dap=\"" << c_dap32_namespace << "\"\n" ;
 
-        out << "dap_version=\"" << get_dap_major() << "."
+        out << "dapVersion=\"" << get_dap_major() << "."
             << get_dap_minor() << "\"";
 
         if (!get_request_xml_base().empty()) {

@@ -49,6 +49,7 @@ static char rcsid[] not_used =
 
 //#define DODS_DEBUG
 //#define DODS_DEBUG2
+//#define HTTP_TRACE
 
 #include "debug.h"
 #include "mime_util.h"
@@ -516,8 +517,11 @@ HTTPConnect::read_url(const string &url, FILE *stream,
         req_hdrs = for_each(headers->begin(), headers->end(), req_hdrs);
     curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, req_hdrs.get_headers());
 
+#if 0
+    // See set_accept_deflate()
     if (d_accept_deflate)
         curl_easy_setopt(d_curl, CURLOPT_ENCODING, "deflate");
+#endif
 
     // Turn off the proxy for this URL?
     bool temporary_proxy = false;

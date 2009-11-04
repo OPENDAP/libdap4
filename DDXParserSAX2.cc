@@ -586,8 +586,8 @@ void DDXParser::ddx_sax2_start_element(void *p,
             if (parser->check_required_attribute(string("name")))
                 parser->dds->set_dataset_name(parser->attribute_table["name"].value);
 
-            if (parser->check_attribute("dap_version"))
-                parser->dds->set_dap_version(parser->attribute_table["dap_version"].value);
+            if (parser->check_attribute("dapVersion"))
+                parser->dds->set_dap_version(parser->attribute_table["dapVersion"].value);
         }
         else
             DDXParser::ddx_fatal_error(parser,
