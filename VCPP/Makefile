@@ -155,7 +155,7 @@ DAP_OBJS = $(GRAM_OBJS) \
 		$(OBJDIR)\DAS.obj \
 		$(OBJDIR)\DDS.obj \
 		$(OBJDIR)\DataDDS.obj \
-		$(OBJDIR)\DDXParser.obj \
+		$(OBJDIR)\DDXParserSAX2.obj \
 		$(OBJDIR)\BaseType.obj \
 		$(OBJDIR)\Byte.obj \
 		$(OBJDIR)\Error.obj \
@@ -200,16 +200,17 @@ CLIENT_OBJS = $(OBJDIR)\RCReader.obj \
 		$(OBJDIR)\HTTPConnect.obj \
 		$(OBJDIR)\HTTPCache.obj \
 		$(OBJDIR)\HTTPCacheTable.obj \
-		$(OBJDIR)\AISResources.obj \
-		$(OBJDIR)\AISDatabaseParser.obj \
-		$(OBJDIR)\AISMerge.obj \
-		$(OBJDIR)\AISConnect.obj \
 		$(OBJDIR)\util_mit.obj \
 		$(OBJDIR)\ResponseTooBigErr.obj
 
+#		$(OBJDIR)\AISResources.obj \
+#		$(OBJDIR)\AISDatabaseParser.obj \
+#		$(OBJDIR)\AISMerge.obj \
+#		$(OBJDIR)\AISConnect.obj \
+
 SERVER_OBJS = $(OBJDIR)\DODSFilter.obj \
 		$(OBJDIR)\Ancillary.obj \
-		$(OBJDIR)\cgi_util.obj
+		$(OBJDIR)\mime_util.obj
 
 # Convenience dependancies
 libdapMT.lib:		$(OBJDIR)\libdapMT.lib
@@ -289,7 +290,7 @@ $(OBJDIR)\DapIndent.obj					: $(SRCDIR)\DapIndent.cc
 $(OBJDIR)\DAS.obj						: $(SRCDIR)\DAS.cc
 $(OBJDIR)\DDS.obj						: $(SRCDIR)\DDS.cc
 $(OBJDIR)\DataDDS.obj					: $(SRCDIR)\DataDDS.cc
-$(OBJDIR)\DDXParser.obj					: $(SRCDIR)\DDXParser.cc
+$(OBJDIR)\DDXParserSAX2.obj				: $(SRCDIR)\DDXParserSAX2.cc
 $(OBJDIR)\BaseType.obj					: $(SRCDIR)\BaseType.cc
 $(OBJDIR)\Byte.obj						: $(SRCDIR)\Byte.cc
 $(OBJDIR)\Int32.obj						: $(SRCDIR)\Int32.cc
@@ -343,17 +344,18 @@ $(OBJDIR)\Connect.obj					: $(SRCDIR)\Connect.cc
 $(OBJDIR)\HTTPConnect.obj				: $(SRCDIR)\HTTPConnect.cc
 $(OBJDIR)\HTTPCache.obj					: $(SRCDIR)\HTTPCache.cc
 $(OBJDIR)\HTTPCacheTable.obj			: $(SRCDIR)\HTTPCacheTable.cc
-$(OBJDIR)\AISResources.obj				: $(SRCDIR)\AISResources.cc
-$(OBJDIR)\AISDatabaseParser.obj			: $(SRCDIR)\AISDatabaseParser.cc
-$(OBJDIR)\AISMerge.obj					: $(SRCDIR)\AISMerge.cc
-$(OBJDIR)\AISConnect.obj				: $(SRCDIR)\AISConnect.cc
 $(OBJDIR)\util_mit.obj					: $(SRCDIR)\util_mit.cc
 $(OBJDIR)\ResponseTooBigErr.obj			: $(SRCDIR)\ResponseTooBigErr.cc
+
+# $(OBJDIR)\AISResources.obj				: $(SRCDIR)\AISResources.cc
+# $(OBJDIR)\AISDatabaseParser.obj			: $(SRCDIR)\AISDatabaseParser.cc
+# $(OBJDIR)\AISMerge.obj					: $(SRCDIR)\AISMerge.cc
+# $(OBJDIR)\AISConnect.obj				: $(SRCDIR)\AISConnect.cc
 
 # libdap server
 $(OBJDIR)\DODSFilter.obj				: $(SRCDIR)\DODSFilter.cc
 $(OBJDIR)\Ancillary.obj					: $(SRCDIR)\Ancillary.cc
-$(OBJDIR)\cgi_util.obj					: $(SRCDIR)\cgi_util.cc
+$(OBJDIR)\mime_util.obj					: $(SRCDIR)\mime_util.cc
 
 # Regular expression code
 $(OBJDIR)\GetOpt.obj		: $(SRCDIR)\GNU\GetOpt.cc
