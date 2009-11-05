@@ -150,18 +150,6 @@ ErrMsgT(const string &Msgt)
         TimStr[TimLen - 2] = '\0'; // overwrite the \n
     }
 
-#if 0
-	// This was removed because writing these values out 'leaks' system information.
-	// Since we're not going to write out the script or host, I also removed the
-	// calls to getenv(). jhrg 8/7/2007
-    const char *host_or_addr = getenv("REMOTE_HOST") ? getenv("REMOTE_HOST") :
-                               getenv("REMOTE_ADDR") ? getenv("REMOTE_ADDR") : "local (a non-CGI run)";
-    const char *script = getenv("SCRIPT_NAME") ? getenv("SCRIPT_NAME") :
-                         "OPeNDAP server";
-
-    cerr << "[" << TimStr << "] CGI: " << script << " failed for "
-         << host_or_addr << ": " << Msgt << endl;
-#endif
     cerr << "[" << TimStr << "] DAP server error: " << Msgt << endl;
 }
 
@@ -1028,70 +1016,5 @@ remove_mime_header(FILE *in)
     return false;
 }
 
-#if 0
-/** Look in the CGI directory (given by \c cgi) for a per-cgi HTML* file.
-    Also look for a dataset-specific HTML* document. Catenate the documents
-    and return them in a single String variable.
-
-    Similarly, to locate the dataset-specific HTML* file it catenates `.html'
-    to \c name, where \c name is the name of the dataset. If the filename
-    part of \c name is of the form [A-Za-z]+[0-9]*.* then this function also
-    looks for a file whose name is [A-Za-z]+.html For example, if \c name is
-    .../data/fnoc1.nc this function first looks for .../data/fnoc1.nc.html.
-    However, if that does not exist it will look for .../data/fnoc.html. This
-    allows one `per-dataset' file to be used for a collection of files with
-    the same root name.
-
-    @note An HTML* file contains HTML without the \c html, \c head or \c body
-    tags (my own notation).
-
-    @brief Look for the user supplied CGI- and dataset-specific HTML*
-    documents.
-
-    @return A String which contains these two documents catenated. Documents
-    that don't exist are treated as `empty'.  */
-
-string
-get_user_supplied_docs(string name, string cgi)
-{
-    char tmp[256];
-    ostringstream oss;
-    ifstream ifs((cgi + ".html").c_str());
-
-    if (ifs) {
-        while (!ifs.eof()) {
-            ifs.getline(tmp, 255);
-            oss << tmp << "\n";
-        }
-        ifs.close();
-
-        oss << "<hr>";
-    }
-
-    // Problem: This code is run with the CWD as the CGI-BIN directory but
-    // the data are in DocumentRoot (and we don't have the pathname of the
-    // data relative to DocumentRoot). So the only time this will work is
-    // when the server is in the same directory as the data. See bug 815.
-    // 10/08/04 jhrg
-    ifs.open((name + ".html").c_str());
-
-    // If name.html cannot be opened, look for basename.html
-    if (!ifs) {
-        string new_name = Ancillary::find_group_ancillary_file(name, ".html");
-        if (new_name != "")
-            ifs.open(new_name.c_str());
-    }
-
-    if (ifs) {
-        while (!ifs.eof()) {
-            ifs.getline(tmp, 255);
-            oss << tmp << "\n";
-        }
-        ifs.close();
-    }
-
-    return oss.str();
-}
-#endif
 } // namespace libdap
 

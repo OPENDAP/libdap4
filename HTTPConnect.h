@@ -169,10 +169,7 @@ public:
 
     HTTPResponse *fetch_url(const string &url);
 };
-#if 0
-ObjectType get_type(const string &value); // deprecated
-ObjectType get_description_type(const string &value);
-#endif
+
 } // namespace libdap
 
 #endif // _httpconnect_h

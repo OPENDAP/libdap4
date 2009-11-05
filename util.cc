@@ -168,14 +168,6 @@ const char *
 libdap_root()
 {
     return LIBDAP_ROOT;
-#if 0
-    // I've changed this because this could be used to get the library to
-    // use a different compression function when it builds compressed
-    // responses. The use of 'deflate' to compress responses should be
-    // removed since Hyrax now uses Tomcat to perform this function.
-    char *libdap_root = 0;
-    return ((libdap_root = getenv("LIBDAP_ROOT")) ? libdap_root : LIBDAP_ROOT);
-#endif
 }
 
 extern "C"
@@ -504,91 +496,6 @@ path_to_filename(string path)
     return (pos == string::npos) ? path : path.substr(++pos);
 }
 
-#if 0
-// Look around for a reasonable place to put a temporary file. Check first
-// the value of the TMPDIR env var. If that does not yeild a path that's
-// writable (as defined by access(..., W_OK|R_OK)) then look at P_tmpdir (as
-// defined in stdio.h. If both come up empty, then use `./'.
-//
-// This function allocates storage using new. The caller must delete the char
-// array.
-
-// Change this to a version that either returns a string or an open file
-// descriptor. Use information from https://buildsecurityin.us-cert.gov/
-// (see open()) to make it more secure. Ideal solution: get deserialize()
-// methods to read from a stream returned by libcurl, not from a temporary
-// file. 9/21/07 jhrg
-char *
-get_tempfile_template(char *file_template)
-{
-    char *c;
-
-#ifdef WIN32
-    // whitelist for a WIN32 directory
-    Regex directory("[-a-zA-Z0-9_\\]*");
-
-    c = getenv("TEMP");
-    if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0))
-    	goto valid_temp_directory;
-
-    c= getenv("TMP");
-    if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0))
-    	goto valid_temp_directory;
-#else
-
-	c = getenv("TMPDIR");
-	// Changed this so that it uses the pathname_ok() method instead
-	// of using its own regex. jhrg 2/4/08
-	if (c) {
-	    string tmpdir = *c;
-	    if (pathname_ok(tmpdir) && (access(c, W_OK | R_OK) == 0))
-	        goto valid_temp_directory;
-	}
-
-#ifdef P_tmpdir
-	if (access(P_tmpdir, W_OK | R_OK) == 0) {
-        c = P_tmpdir;
-        goto valid_temp_directory;
-	}
-#endif
-
-#endif  // WIN32
-
-    c = ".";
-
-valid_temp_directory:
-	// Sanitize allocation
-	int size = strlen(c) + strlen(file_template) + 2;
-	if (!size_ok(1, size))
-		throw Error("Bad temporary file name.");
-
-    char *temp = new char[size];
-    strncpy(temp, c, size-2);
-    strcat(temp, "/");
-
-    strcat(temp, file_template);
-
-    return temp;
-}
-#endif
-#if 0
-/** Intended for testing, this may have other uses. The template should be
-    the pathname of the temporary file ending in 'XXXXXX' (as for mkstemp)
-    and will be modified.
-    @param temp Pathname, ending in 'XXXXXX'
-    @return A FILE pointer opened for update. */
-#ifndef WIN32
-FILE *
-get_temp_file(char *temp)
-{
-    int fd = mkstemp(temp);
-    if (fd < 0)
-        return 0;
-    FILE *tmp = fdopen(fd, "a+");
-    return tmp;
-}
-#endif
-#endif
 /** Read stuff from a file and dump it into a string. This assumes the file
     holds character data only. Intended for testing...
     @param fp Read from this file

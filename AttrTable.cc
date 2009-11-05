@@ -400,13 +400,6 @@ AttrTable::find(const string &target, AttrTable **at, Attr_iter *iter)
         }
     }
     else {
-#if 0
-        // Replaced this call to simple_find with the call to recursive_find
-        // so that older code that assumes that attribute names will not need
-        // to be FQNs works. jhrg 2/9/06
-        *at = this;
-        *iter = simple_find(target);
-#endif
         *at = recurrsive_find(target, iter);
     }
 }

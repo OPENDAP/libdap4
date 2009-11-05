@@ -33,6 +33,8 @@
 #include "BaseType.h"
 #endif
 
+
+
 namespace libdap
 {
 
@@ -81,14 +83,14 @@ public:
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
 
-    //#if FILE_METHODS
+#if FILE_METHODS
     virtual void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
                             bool constrained = false);
     virtual void print_xml(FILE *out, string space = "    ",
                            bool constrained = false);
-    //#endif
+#endif
 
     virtual void dump(ostream &strm) const ;
 };

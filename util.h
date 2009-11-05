@@ -43,60 +43,6 @@
 #include "BaseType.h"
 #endif
 
-#if 0
-#ifndef _byte_h
-#include "Byte.h"
-#endif
-
-#ifndef _int16_h
-#include "Int16.h"
-#endif
-
-#ifndef _uint16_h
-#include "UInt16.h"
-#endif
-
-#ifndef _int32_h
-#include "Int32.h"
-#endif
-
-#ifndef _uint32_h
-#include "UInt32.h"
-#endif
-
-#ifndef _float32_h
-#include "Float32.h"
-#endif
-
-#ifndef _float64_h
-#include "Float64.h"
-#endif
-
-#ifndef _str_h
-#include "Str.h"
-#endif
-
-#ifndef _url_h
-#include "Url.h"
-#endif
-
-#ifndef _array_h
-#include "Array.h"
-#endif
-
-#ifndef _structure_h
-#include "Structure.h"
-#endif
-
-#ifndef _sequence_h
-#include "Sequence.h"
-#endif
-
-#ifndef _grid_h
-#include "Grid.h"
-#endif
-#endif
-
 using std::iostream;
 
 namespace libdap
@@ -191,25 +137,6 @@ string dap_version();
     @return A string containing only the filename given a path. */
 string path_to_filename(string path);
 
-#if 0
-// Moved to HTTPConnect.cc - the only file where it's used.
-/** Build a template for a temporary file suitable for use with mkstemp.
-    Look around for a reasonable place to put a temporary file. Check first
-    the value of the TMPDIR env var. If that does not yield a path that's
-    writable (as defined by access(..., W_OK|R_OK)) then look at P_tmpdir (as
-    defined in stdio.h. If both come up empty, then use `./'.
-
-    This function allocates storage using new. The caller must delete the
-    char array.
-
-    @param file_template A template suitable for use with mkstemp (so it has
-    to have six extra chars at its end. This is combined with the path to
-    some temporary directory (see above).
-    @return A writable char[] that holds the fully qualified
-    filename/template to use with mkstemp. */
-char *get_tempfile_template(char *file_template);
-FILE *get_temp_file(char *temp);
-#endif
 string file_to_string(FILE *fp);
 
 time_t parse_time(const char * str, bool expand);

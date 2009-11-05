@@ -84,6 +84,8 @@ static char rcsid[] not_used =
 
 #define CRLF "\r\n"             // Change here, expr-test.cc and DODSFilter.cc
 
+#undef FILE_METHODS
+
 using namespace std;
 
 namespace libdap {
@@ -103,17 +105,6 @@ const string usage =
     <time>, return an HTTP 304 response.\n\
     -t <seconds>: Timeout the handler after <seconds>.\n\
     -h: This message.";
-
-#if 0
-// Removed the call to waitpid in send_data() because calling fflush
-// addresses the problem wait() was supposed to solve and calling wait() is
-// the root of ticket #335. jhrg 3/10/06
-#ifdef WIN32
-#define WAITPID(pid) while(_cwait(NULL, pid, NULL) > 0)
-#else
-#define WAITPID(pid) while(waitpid(pid, 0, 0) > 0)
-#endif
-#endif
 
 /** Create an instance of DODSFilter using the command line
 arguments passed by the CGI (or other) program.  The default
@@ -659,41 +650,6 @@ DODSFilter::establish_timeout(ostream &stream) const
 #endif
 }
 
-#if 0
-/** Read the ancillary DAS information and merge it into the input
-    DAS object.
-
-    @brief Test if ancillary data must be read.
-    @param das A DAS object that will be augmented with the
-    ancillary data attributes.
-    @param anc_location The directory in which the external DAS file resides.
-    @return void
-    @see DAS */
-void
-DODSFilter::read_ancillary_das(DAS &das, const string &anc_location) const
-{
-    Ancillary::read_ancillary_das( das, d_dataset,
-			       (anc_location == "") ? d_anc_dir : anc_location,
-			       d_anc_file);
-}
-
-/** Read the ancillary DDS information and merge it into the input
-    DDS object.
-
-    @brief Test if ancillary data must be read.
-    @param dds A DDS object that will be augmented with the
-    ancillary data properties.
-    @param anc_location The directory in which the external DAS file resides.
-    @return void
-    @see DDS */
-void
-DODSFilter::read_ancillary_dds(DDS &dds, const string &anc_location) const
-{
-    Ancillary::read_ancillary_dds( dds, d_dataset,
-			       (anc_location == "") ? d_anc_dir : anc_location,
-			       d_anc_file);
-}
-#endif
 static const char *emessage = "DODS internal server error; usage error. Please report this to the dataset maintainer, or to the opendap-tech@opendap.org mailing list.";
 
 /** This message is printed when the filter program is incorrectly
@@ -1363,71 +1319,5 @@ DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
 	data_stream << CRLF << "--" << boundary << "--" << CRLF;
 }
 
-#if 0
-#if FILE_METHODS
-/** Write the BLOB response to the client.
-    @param dds Use the variables in this DDS to generate the BLOB response.
-    @param out Dump the response to this FILE pointer.
-    @param with_mime_headers If true (the default) send MIME headers. */
-void
-DODSFilter::send_blob(DDS &, FILE *, bool)
-{
-#if 0
-    // Broken. jhrg 4/3/06
-    bool compress = d_comp && deflate_exists();
-    time_t data_lmt = get_data_last_modified_time(d_anc_dir);
-
-    // If this is a conditional request and the server should send a 304
-    // response, do that and exit. Otherwise, continue on and send the full
-    // response.
-    if (is_conditional() && data_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
-        set_mime_not_modified(out);
-        return;
-    }
-
-    dds.parse_constraint(d_ce);
-
-    // Handle *functional* constraint expressions specially
-    if (dds.functional_expression()) {
-        BaseType *var = dds.eval_function(d_dataset);
-        if (!var)
-            throw Error("Error calling the CE function.");
-
-        if (with_mime_headers)
-            set_mime_binary(out, dods_data, d_cgi_ver,
-                            (compress) ? deflate : x_plain, data_lmt);
-
-        FILE *comp_sink;
-        XDR *xdr_sink;
-        int childpid = get_sinks(out, compress, &comp_sink, &xdr_sink);
-
-        // In the following call to serialize, suppress CE evaluation.
-        if (!var->serialize(d_dataset, dds, xdr_sink, false))
-            throw Error("Could not send the function result.");
-
-        clean_sinks(childpid, compress, xdr_sink, comp_sink);
-    }
-    else {
-        if (with_mime_headers)
-            set_mime_binary(out, dods_data, d_cgi_ver,
-                            (compress) ? deflate : x_plain, data_lmt);
-
-        FILE *comp_sink;
-        XDR *xdr_sink;
-        int childpid = get_sinks(out, compress, &comp_sink, &xdr_sink);
-
-        for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
-            if ((*i)->send_p()) // only process projected variables
-                if (!(*i)->serialize(d_dataset, dds, xdr_sink, true))
-                    throw Error(string("Could not serialize variable '")
-                                + (*i)->name() + string("'."));
-
-        clean_sinks(childpid, compress, xdr_sink, comp_sink);
-    }
-#endif
-}
-#endif
-#endif
 } // namespace libdap
 

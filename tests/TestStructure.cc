@@ -43,14 +43,6 @@ void
 TestStructure::_duplicate(const TestStructure &ts)
 {
     d_series_values = ts.d_series_values;
-#if 0
-    TestStructure *tsp = const_cast<TestStructure *>(&ts);
-    for (Vars_iter i = tsp->var_begin(); i != tsp->var_end(); i++) {
-        DBG(cerr << "Copying field: " << (*i)->name() << endl);
-        if (!(*i)->send_p())
-            del_var((*i)->name());
-    }
-#endif
 }
 
 BaseType *

@@ -267,11 +267,6 @@ TestArray::print_array(ostream &out, unsigned int index, unsigned int dims,
 void
 TestArray::output_values(std::ostream &out)
 {
-#if 0
-    // if a simple type, call print_val
-    print_val(out, "", false);
-    // if a constructor type, call var()->output_values
-#endif
     unsigned int *shape = new unsigned int[dimensions(true)];
     unsigned int index = 0;
     for (Dim_iter i = dim_begin(); i != dim_end() && index < dimensions(true); ++i)

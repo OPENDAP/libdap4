@@ -253,13 +253,7 @@ int check_int32(const char *val)
     if (errno == ERANGE) {
         return FALSE;
     }
-#if 0
-    // This will never evaluate to true, but hte test above catches the
-    // case where the value is out of the limits.
-    if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
-        return FALSE;
-    }
-#endif
+
     return TRUE;
 }
 
@@ -289,15 +283,6 @@ int check_uint32(const char *val)
     if (errno == ERANGE) {
       return FALSE;
     }
-
-#if 0
-    // This can never evaluate true but if the string 'val' represents a
-    // larger value, errno == ERANGE will be true and the condition will be
-    // caught.
-    if (v > DODS_UINT_MAX) {
-      return FALSE;
-    }
-#endif
 
     return TRUE;
 }

@@ -317,28 +317,6 @@ GeoConstraint::LatitudeSense GeoConstraint::categorize_latitude() const
     return d_lat[0] >= d_lat[d_lat_length - 1] ? normal : inverted;
 }
 
-#if 0
-/** Given the top and bottom sides of the bounding box, use the Grid or Array
-    latitude information to constrain the data to that bounding box.
-
-    @note Make \e sure to call this before set_bounding_box_longitude().
-
-    @param top The top side of the bounding box, in degress
-    @param bottom The bottom side */
-void GeoConstraint::set_bounding_box_latitude(double top, double bottom)
-{
-    // Record the 'sense' of the latitude for use here and later on.
-    d_latitude_sense = categorize_latitude();
-
-    // This is simpler than the longitude case because there's no need to test
-    // for several notations, no need to accommodate them in the return, no
-    // modulo arithmetic for the axis and no need to account for a constraint with
-    // two disconnected parts to be joined.
-    find_latitude_indeces(top, bottom, d_latitude_sense,
-                          d_latitude_index_top, d_latitude_index_bottom);
-}
-#endif
-
 // Use 'index' as the pivot point. Move the points behind index to the front of
 // the vector and those points in front of and at index to the rear.
 static void
@@ -411,10 +389,7 @@ void GeoConstraint::reorder_data_longitude_axis(Array &a)
     a.set_read_p(false);
     a.read();
     DBG2(a.print_val(stderr));
-#if 0
-    char *left_data = 0;
-    int left_size = a.buf2val((void **) & left_data);
-#endif
+
     char *left_data = (char*)a.value();
     int left_size = a.length();
 
@@ -430,10 +405,7 @@ void GeoConstraint::reorder_data_longitude_axis(Array &a)
     a.set_read_p(false);
     a.read();
     DBG2(a.print_val(stderr));
-#if 0
-    char *right_data = 0;
-    int right_size = a.buf2val((void **) & right_data);
-#endif
+
     char *right_data = (char*)a.value();
     int right_size = a.length();
 
@@ -463,44 +435,6 @@ void GeoConstraint::reorder_data_longitude_axis(Array &a)
     delete[]left_data;
     delete[]right_data;
 }
-
-#if 0
-/** Given the left and right sides of the bounding box, use the Grid or Array
-    longitude information to constrain the data to that bounding box. This
-    method takes into account the two different notations commonly used to
-    specify longitude (0/359 and -180/179) and that the longitude axis is
-    cyclic so that 360 == 0 (== 720, ...).
-
-    @note This reads data because it is easier to reorder the arry here... Is this true???
-
-    @todo Make this method correctly reorder the Grid/Array when the longitude
-    constraint crosses the edge of the data's storage.
-
-    @param left The left side of the bounding box, in degress
-    @param right The right side */
-void GeoConstraint::set_bounding_box_longitude(double left, double right)
-{
-    // Categorize the notation used by the bounding box (0/359 or -180/179).
-    d_longitude_notation = categorize_notation(left, right);
-
-    // If the notation uses -180/179, transform the request to 0/359 notation.
-    if (d_longitude_notation == neg_pos)
-        transform_constraint_to_pos_notation(left, right);
-
-    // If the grid uses -180/179, transform it to 0/359 as well. This will make
-    // subsequent logic easier and adds only a few extra operations, even with
-    // large maps.
-    Notation longitude_notation =
-        categorize_notation(d_lon[0], d_lon[d_lon_length - 1]);
-
-    if (longitude_notation == neg_pos)
-        transform_longitude_to_pos_notation();
-
-    // Find the longitude map indeces that correspond to the bounding box.
-    find_longitude_indeces(left, right, d_longitude_index_left,
-                           d_longitude_index_right);
-}
-#endif
 
 /** @brief Initialize GeoConstraint.
 

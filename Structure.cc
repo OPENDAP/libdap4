@@ -445,7 +445,8 @@ Structure::m_exact_match(const string &name, btp_stack *s)
 
     return 0;
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 void
 Structure::print_val(FILE *out, string space, bool print_decl_p)
 {
@@ -465,7 +466,8 @@ Structure::print_val(FILE *out, string space, bool print_decl_p)
     if (print_decl_p)
         fprintf(out, ";\n") ;
 }
-//#endif
+#endif
+
 void
 Structure::print_val(ostream &out, string space, bool print_decl_p)
 {

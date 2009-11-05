@@ -46,10 +46,6 @@
 #include "Sequence.h"
 #include "Grid.h"
 
-#if 0
-#include "Vector.h"
-#endif
-
 #include "util.h"
 #include "InternalErr.h"
 
@@ -105,13 +101,6 @@ XDRFileMarshaller::put_int16( dods_int16 val )
 void
 XDRFileMarshaller::put_int32( dods_int32 val )
 {
-#if 0
-#ifdef _MSC_VER
-    if( !XDR_INT32( _sink, (int *)&val ) )
-#else
-    if( !XDR_INT32( _sink, &val ) )
-#endif
-#endif
     if( !XDR_INT32( _sink, &val ) )
         throw Error("Network I/O Error. Could not read int 32 data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
 }
@@ -140,13 +129,6 @@ XDRFileMarshaller::put_uint16( dods_uint16 val )
 void
 XDRFileMarshaller::put_uint32( dods_uint32 val )
 {
-#if 0
-#ifdef _MSC_VER
-    if( !XDR_UINT32( _sink, (unsigned int *)&val ) )
-#else
-  	if( !XDR_UINT32( _sink, &val ) )
-#endif
-#endif
     if( !XDR_UINT32( _sink, &val ) )
         throw Error("Network I/O Error. Could not send uint 32 data. This may be due to a\nbug in libdap or a problem with the network connection.");
 }

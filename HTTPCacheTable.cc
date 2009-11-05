@@ -128,9 +128,6 @@ static inline void
 delete_cache_entry(HTTPCacheTable::CacheEntry *e)
 {
     DBG2(cerr << "Deleting CacheEntry: " << e << endl);
-#if 0    
-    DESTROY(&e->get_lock());
-#endif
     delete e;
 }
 
@@ -331,9 +328,6 @@ HTTPCacheTable::cache_index_parse_line(const char *line)
 {
     // Read the line and create the cache object
 	HTTPCacheTable::CacheEntry *entry = new HTTPCacheTable::CacheEntry;
-#if 0
-    INIT(&entry->d_lock);
-#endif
     istringstream iss(line);
     iss >> entry->url;
     iss >> entry->cachename;
@@ -584,9 +578,6 @@ HTTPCacheTable::get_locked_entry_from_cache_table(int hash, const string &url) /
             // removed this entry; the CacheEntry will then be null.
             if ((*i) && (*i)->url == url) {
             	(*i)->lock_read_response();	// Lock the response
-#if 0            	
-            	(*i)->lock();
-#endif
             	return *i;
             }
         }
@@ -612,9 +603,6 @@ HTTPCacheTable::get_write_locked_entry_from_cache_table(const string &url)
             // removed this entry; the CacheEntry will then be null.
             if ((*i) && (*i)->url == url) {
             	(*i)->lock_write_response();	// Lock the response
-#if 0            	
-            	(*i)->lock();
-#endif
             	return *i;
             }
         }
@@ -837,9 +825,6 @@ void HTTPCacheTable::parse_headers(HTTPCacheTable::CacheEntry *entry,
 void HTTPCacheTable::bind_entry_to_data(HTTPCacheTable::CacheEntry *entry, FILE *body) {
 	entry->hits++;  // Mark hit
     d_locked_entries[body] = entry; // record lock, see release_cached_r...
-#if 0
-    entry->unlock();			// Unlock the entry object so others can read it
-#endif
 }
 
 void HTTPCacheTable::uncouple_entry_from_data(FILE *body) {

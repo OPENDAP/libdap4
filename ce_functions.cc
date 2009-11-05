@@ -64,11 +64,6 @@ static char rcsid[]not_used =
 #include "Structure.h"
 #include "Sequence.h"
 #include "Grid.h"
-#if 0
-#include "Array.h"
-#include "Sequence.h"
-#include "Grid.h"
-#endif
 #include "Error.h"
 #include "RValue.h"
 

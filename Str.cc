@@ -236,7 +236,8 @@ Str::value() const
 {
     return _buf;
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 void
 Str::print_val(FILE *out, string space, bool print_decl_p)
 {
@@ -247,7 +248,8 @@ Str::print_val(FILE *out, string space, bool print_decl_p)
     else
         fprintf(out, "\"%s\"", escattr(_buf).c_str()) ;
 }
-//#endif
+#endif
+
 void
 Str::print_val(ostream &out, string space, bool print_decl_p)
 {

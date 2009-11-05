@@ -143,9 +143,6 @@ DDS::DDS(BaseTypeFactory *factory, const string &n)
 
         : d_factory(factory), name(n), d_container(0), d_dap_major(2),
         d_dap_minor(0),
-#if 0
-        //d_client_dap_major(2), d_client_dap_minor(0),
-#endif
         d_request_xml_base(""), d_timeout(0)
 {
     DBG(cerr << "Building a DDS with client major/minor: "
@@ -333,16 +330,6 @@ DDS::transfer_attributes(DAS *das)
                     dynamic_cast<Constructor&>(*dest_variable).transfer_attributes(*source_p);
                 }
                 else {
-#if 0
-                    // Trick:
-                    DBG(cerr << "Is current source aliased: "
-                            << (*source_p)->is_alias << endl);
-                    AttrTable &local = *(*source_p)->attributes;
-                    for (AttrTable::Attr_iter i = local.attr_begin();
-                         i != local.attr_end(); ++i) {
-                        cerr << "... or one of its entries: " << (*i)->is_alias << endl;
-                    }
-#endif
                     dest->append_container(new AttrTable(*(*source_p)->attributes),
                                            (*source_p)->name);
                 }
@@ -438,38 +425,7 @@ DDS::set_dap_version(const string &version_string)
     set_dap_major(major);
     set_dap_minor(minor);
 }
-#if 0
 
-// Having two dap versions is really confusing things... jhrg 8/21/09
-
-/** Given a version string passed to a server from a client in the XDAP-Accept
-    MIME header, parse that string and record the major and minor protocol
-    version numbers. This method differs from set_dap_version() in that it is
-    storing the version that the client would _like_ the server to use. The
-    actual protocol version to which this DDS/DDX conforms is found using the
-    get_dap_major() and get_dap_minor() methods.
-    @param version_string
- */
-void
-DDS::set_client_dap_version(const string &version_string)
-{
-    istringstream iss(version_string);
-
-    int major = -1, minor = -1;
-    char dot;
-    iss >> major;
-    iss >> dot;
-    iss >> minor;
-
-    DBG(cerr << "Major: " << major << ", dot: " << dot <<", Minor: " << minor << endl);
-
-    if (major == -1 || minor == -1)
-        throw Error("Could not parse the client dap (XDAP-Accept header) value");
-
-    set_client_dap_major(major);
-    set_client_dap_minor(minor);
-}
-#endif
 /** Get and set the current container. If there are multiple files being
     used to build this DDS, using a container will set a virtual structure
     for the current container.
@@ -885,7 +841,8 @@ DDS::parse(FILE *in)
             throw *arg.error();
     }
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 /** @brief Print the entire DDS to the specified file. */
 void
 DDS::print(FILE *out)
@@ -900,7 +857,8 @@ DDS::print(FILE *out)
 
     return ;
 }
-//#endif
+#endif
+
 /** @brief Print the entire DDS to the specified ostream. */
 void
 DDS::print(ostream &out)
@@ -915,7 +873,8 @@ DDS::print(ostream &out)
 
     return ;
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 /** @brief Print a constrained DDS to the specified file.
 
     Print those parts (variables) of the DDS structure to OS that
@@ -942,7 +901,8 @@ DDS::print_constrained(FILE *out)
 
     return;
 }
-//#endif
+#endif
+
 /** @brief Print a constrained DDS to the specified ostream.
 
     Print those parts (variables) of the DDS structure to OS that
@@ -969,7 +929,8 @@ DDS::print_constrained(ostream &out)
 
     return;
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 class VariablePrintXML : public unary_function<BaseType *, void>
 {
     FILE *d_out;
@@ -983,8 +944,7 @@ public:
         bt->print_xml(d_out, "    ", d_constrained);
     }
 };
-//#endif
-//#if FILE_METHODS
+
 /** Print an XML representation of this DDS. This method is used to generate
     the part of the DDX response. The \c Dataset tag is \e not written by
     this code. The caller of this method must handle writing that and
@@ -1045,7 +1005,7 @@ DDS::print_xml(FILE *out, bool constrained, const string &blob)
 
     fprintf(out, "</Dataset>\n");
 }
-//#endif
+#endif
 
 class VariablePrintXMLStrm : public unary_function<BaseType *, void>
 {

@@ -1285,7 +1285,8 @@ Sequence::buf2val(void **)
     throw InternalErr(__FILE__, __LINE__, "Use Sequence::var_value() or Sequence::row_value() in place of Sequence::buf2val()");
     return sizeof(Sequence);
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 void
 Sequence::print_one_row(FILE *out, int row, string space,
                         bool print_row_num)
@@ -1323,7 +1324,8 @@ Sequence::print_one_row(FILE *out, int row, string space,
 
     fprintf(out, " }") ;
 }
-//#endif
+#endif
+
 void
 Sequence::print_one_row(ostream &out, int row, string space,
                         bool print_row_num)
@@ -1367,39 +1369,10 @@ Sequence::print_one_row(ostream &out, int row, string space,
         }
     }
 
-#if 0
-    // old version
-    int elements = element_count() - 1;
-    int j;
-    BaseType *bt_ptr;
-    // Print first N-1 elements of the row.
-    for (j = 0; j < elements; ++j) {
-        bt_ptr = var_value(row, j);
-        if (bt_ptr) {  // data
-            if (bt_ptr->type() == dods_sequence_c)
-                dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
-                     (out, space + "    ", false, print_row_num);
-            else
-                bt_ptr->print_val(out, space, false);
-	    out << ", " ;
-        }
-    }
-
-    // Print Nth element; end with a `}.'
-    bt_ptr = var_value(row, j);
-    if (bt_ptr) {  // data
-        if (bt_ptr->type() == dods_sequence_c)
-            dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
-            (out, space + "    ", false, print_row_num);
-        else
-            bt_ptr->print_val(out, space, false);
-    }
-#endif
-
     out << " }" ;
 }
 
-//#if FILE_METHODS
+#if FILE_METHODS
 void
 Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
                             bool print_row_numbers)
@@ -1424,7 +1397,8 @@ Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
     if (print_decl_p)
         fprintf(out, ";\n") ;
 }
-//#endif
+#endif
+
 void
 Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p,
                             bool print_row_numbers)
@@ -1449,13 +1423,15 @@ Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p,
     if (print_decl_p)
 	out << ";\n" ;
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 void
 Sequence::print_val(FILE *out, string space, bool print_decl_p)
 {
     print_val_by_rows(out, space, print_decl_p, false);
 }
-//#endif
+#endif
+
 void
 Sequence::print_val(ostream &out, string space, bool print_decl_p)
 {

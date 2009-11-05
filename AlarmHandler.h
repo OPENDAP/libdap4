@@ -32,6 +32,8 @@
 
 #include "EventHandler.h"
 
+
+
 namespace libdap
 {
 
@@ -45,40 +47,40 @@ namespace libdap
 class AlarmHandler : public EventHandler
 {
 private:
-    //#if FILE_METHODS
+#if FILE_METHODS
     FILE *d_file;  // Sink for the Error object.
-    //#endif
+#endif
     ostream &d_stream;
     string d_version;
 
     // Ensure that d_stream gets initialized...
     AlarmHandler() :
-	//#if FILE_METHODS
+#if FILE_METHODS
         d_file( 0 ),
-	//#endif
+#endif
         d_stream( cout )
     {}
 
 public:
     /** Store information to be used by the handler.
     @param s Write to this stream. */
-    //#if FILE_METHODS
+#if FILE_METHODS
     AlarmHandler(FILE *s) : d_file(s), d_stream( cout )
     {}
-    //#endif
+#endif
     AlarmHandler(ostream &out) :
-	//#if FILE_METHODS
+#if FILE_METHODS
         d_file(0),
-	//#endif
+#endif
         d_stream( out )
     {}
 
     virtual ~AlarmHandler()
     {
-	//#if FILE_METHODS
+#if FILE_METHODS
         if( d_file )
             fclose( d_file ) ;
-	//#endif
+#endif
     }
 
     /** Handle an alarm signal. When one of our servers gets an alarm, that
@@ -97,23 +99,6 @@ public:
     {
         if (signum != SIGALRM)
             fprintf(stderr, "SIGALRM handler caught another signal!\n");
-#if 0
-        // Use this code, or a variant, once we have reliable error delivery.
-	if( d_file )
-	    fprintf(d_file, "\n\n\n\n");
-	else
-	    d_stream << "\n\n\n\n";
-
-        Error e("The server has timed out. This happens when a request\n\
-                takes longer to process than the server's preset time-out value.\n\
-                Try making a request for a smaller amount of data. You can also contact\n\
-                the server's administrator and request that the time-out value be increased.");
-
-	if( d_file )
-	    e.print(d_file);
-	else
-	    e.print(d_stream);
-#endif
         exit(1);
     }
 

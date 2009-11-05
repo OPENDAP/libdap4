@@ -64,6 +64,8 @@
 
 using std::cout;
 
+
+
 namespace libdap
 {
 
@@ -186,23 +188,13 @@ private:
 
     int d_dap_major;       // The protocol major version number
     int d_dap_minor;       // ... and minor version number
-#if 0
-    // Get rid of these???
-    // TODO
-    // These hold the major and minor versions of DAP that the client sent in
-    // the XDAP-Accept header. If the header is not sent, these default to 2.0
-    int d_client_dap_major;
-    int d_client_dap_minor;
-#endif
+
     string d_request_xml_base;
 
     AttrTable d_attr;           // Global attributes.
 
     vector<BaseType *> vars;    // Variables at the top level
-#if 0
-    bool is_global_attr(string name);
-    void add_global_attribute(AttrTable::entry *entry);
-#endif
+
     BaseType *find_hdf4_dimension_attribute_home(AttrTable::entry *source);
 
     int d_timeout;              // alarm time in seconds. If greater than
@@ -214,14 +206,6 @@ protected:
     void duplicate(const DDS &dds);
     BaseType *leaf_match(const string &name, BaseType::btp_stack *s = 0);
     BaseType *exact_match(const string &name, BaseType::btp_stack *s = 0);
-#if 0
-    void transfer_attr(DAS *das, const AttrTable::entry *ep, BaseType *btp,
-                       const string &suffix = "");
-    void transfer_attr_table(DAS *das, AttrTable *at, BaseType *btp,
-                             const string &suffix = "");
-    void transfer_attr_table(DAS *das, AttrTable *at, Constructor *c,
-                             const string &suffix = "");
-#endif
     virtual AttrTable *find_matching_container(AttrTable::entry *source,
             BaseType **dest_variable);
 
@@ -280,22 +264,6 @@ public:
     void set_dap_minor(int p) { d_dap_minor = p; }
 
     void set_dap_version(const string &version_string);
-#if 0
-    // These are confusing things because having two version numbers, even
-    // though the idea is good sounding, is breaking stuff.
-
-    /// Get the DAP major version as sent by the client
-    int get_client_dap_major() const { return d_client_dap_major; }
-    /// Get the DAP minor version as sent by the client
-    int get_client_dap_minor() const { return d_client_dap_minor; }
-
-    /// Set the DAP major version (typically using info from the client)
-    void set_client_dap_major(int p) { d_client_dap_major = p; }
-    /// Set the DAP minor version (typically using info from the client)
-    void set_client_dap_minor(int p) { d_client_dap_minor = p; }
-
-    void set_client_dap_version(const string &version_string);
-#endif
 
     /// Get the URL that will return this DDS/DDX/DataThing
     string get_request_xml_base() const { return d_request_xml_base; }
@@ -341,17 +309,13 @@ public:
     void parse(string fname);
     void parse(int fd);
     void parse(FILE *in = stdin);
-    //#if FILE_METHODS
+#if FILE_METHODS
     void print(FILE *out);
-    //#endif
-    void print(ostream &out);
-    //#if FILE_METHODS
     void print_constrained(FILE *out);
-    //#endif
-    void print_constrained(ostream &out);
-    //#if FILE_METHODS
     void print_xml(FILE *out, bool constrained, const string &blob = "");
-    //#endif
+#endif
+    void print(ostream &out);
+    void print_constrained(ostream &out);
     void print_xml(ostream &out, bool constrained, const string &blob = "");
 
     void mark_all(bool state);

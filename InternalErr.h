@@ -77,10 +77,6 @@ public:
     InternalErr(const string &msg);
     ///
     InternalErr(const string &file, const int &line, const string &msg);
-#if 0
-    ///
-    InternalErr(string msg, ProgramType pt, char *pgm);
-#endif
     ///
     InternalErr();
     ///

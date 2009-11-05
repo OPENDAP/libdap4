@@ -200,7 +200,8 @@ Int32::set_value(dods_int32 i)
 
     return true;
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 void
 Int32::print_val(FILE *out, string space, bool print_decl_p)
 {
@@ -211,7 +212,8 @@ Int32::print_val(FILE *out, string space, bool print_decl_p)
     else
         fprintf(out, "%d", (int)_buf) ;
 }
-//#endif
+#endif
+
 void
 Int32::print_val(ostream &out, string space, bool print_decl_p)
 {

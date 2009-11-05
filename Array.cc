@@ -471,7 +471,8 @@ Array::dimension_name(Dim_iter i)
                            "*This* array has no dimensions.");
     return (*i).name;
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 /** Prints a declaration for the Array.  This is what appears in a
     DDS.  If the Array is constrained, the declaration will reflect
     the size of the Array once the constraint is applied.
@@ -516,7 +517,8 @@ Array::print_decl(FILE *out, string space, bool print_semi,
         fprintf(out, ";\n") ;
     }
 }
-//#endif
+#endif
+
 /** Prints a declaration for the Array.  This is what appears in a
     DDS.  If the Array is constrained, the declaration will reflect
     the size of the Array once the constraint is applied.
@@ -561,31 +563,31 @@ Array::print_decl(ostream &out, string space, bool print_semi,
 	out << ";\n" ;
     }
 }
-//#if FILE_METHODS
+#if FILE_METHODS
 void
 Array::print_xml(FILE *out, string space, bool constrained)
 {
     print_xml_core(out, space, constrained, "Array");
 }
-//#endif
+#endif
 void
 Array::print_xml(ostream &out, string space, bool constrained)
 {
     print_xml_core(out, space, constrained, "Array");
 }
-//#if FILE_METHODS
+#if FILE_METHODS
 void
 Array::print_as_map_xml(FILE *out, string space, bool constrained)
 {
     print_xml_core(out, space, constrained, "Map");
 }
-//#endif
+#endif
 void
 Array::print_as_map_xml(ostream &out, string space, bool constrained)
 {
     print_xml_core(out, space, constrained, "Map");
 }
-//#if FILE_METHODS
+#if FILE_METHODS
 class PrintArrayDim : public unary_function<Array::dimension&, void>
 {
     FILE *d_out;
@@ -632,7 +634,8 @@ Array::print_xml_core(FILE *out, string space, bool constrained, string tag)
 
     fprintf(out, "%s</%s>\n", space.c_str(), tag.c_str());
 }
-//#endif
+#endif
+
 class PrintArrayDimStrm : public unary_function<Array::dimension&, void>
 {
     ostream &d_out;
@@ -678,7 +681,8 @@ Array::print_xml_core(ostream &out, string space, bool constrained, string tag)
 
     out << space << "</" << tag << ">\n" ;
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 /** Prints the values in ASCII of the entire (constrained) array. This method
     Attempts to make an aesthetically pleasing display. However, it is
     primarily intended for debugging purposes.
@@ -722,7 +726,8 @@ Array::print_array(FILE *out, unsigned int index, unsigned int dims,
         return index;
     }
 }
-//#endif
+#endif
+
 /** Prints the values in ASCII of the entire (constrained) array. This method
     Attempts to make an anesthetically pleasing display. However, it is
     primarily intended for debugging purposes.
@@ -766,7 +771,8 @@ Array::print_array(ostream &out, unsigned int index, unsigned int dims,
         return index;
     }
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 void
 Array::print_val(FILE *out, string space, bool print_decl_p)
 {
@@ -794,7 +800,8 @@ Array::print_val(FILE *out, string space, bool print_decl_p)
         fprintf(out, ";\n") ;
     }
 }
-//#endif
+#endif
+
 void
 Array::print_val(ostream &out, string space, bool print_decl_p)
 {

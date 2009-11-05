@@ -49,19 +49,13 @@ string extract_string_argument(BaseType *arg) ;
 double extract_double_value(BaseType *arg) ;
 double *extract_double_array(Array *a) ;
 void set_array_using_double(Array *dest, double *src, int src_len) ;
-#if 0
-BaseType *func_version(int argc, BaseType *argv[], DDS &dds) ;
-BaseType *function_grid(int argc, BaseType *argv[], DDS &dds) ;
-BaseType *function_geogrid(int argc, BaseType *argv[], DDS &dds) ;
-BaseType *function_linear_scale(int argc, BaseType *argv[], DDS &dds) ;
-BaseType *function_geoarray(int argc, BaseType *argv[], DDS &dds) ;
-#else
+
 void func_version(int argc, BaseType *argv[], DDS &dds, BaseType **btpp) ;
 void function_grid(int argc, BaseType *argv[], DDS &dds, BaseType **btpp) ;
 void function_geogrid(int argc, BaseType *argv[], DDS &dds, BaseType **btpp) ;
 void function_linear_scale(int argc, BaseType *argv[], DDS &dds, BaseType **btpp) ;
 void function_geoarray(int argc, BaseType *argv[], DDS &dds, BaseType **btpp) ;
-#endif
+
 void register_functions(ConstraintEvaluator &ce);
 
 } // namespace libdap

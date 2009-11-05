@@ -65,10 +65,7 @@ namespace libdap
 //@{
 
 bool do_version(const string &script_ver, const string &dataset_ver);
-#if 0
-bool do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
-                      const string &dataset, const string &constraint);
-#endif
+
 void ErrMsgT(const string &Msgt);
 
 string name_path(const string &path);
@@ -138,11 +135,6 @@ void set_mime_not_modified(ostream &out);
 
 
 //@}
-
-#if 0
-// Moved to dap-server usage module
-string get_user_supplied_docs(string name, string cgi);
-#endif
 
 ObjectType get_type(const string &value); // deprecated
 ObjectType get_description_type(const string &value);

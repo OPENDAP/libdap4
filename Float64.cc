@@ -203,7 +203,8 @@ Float64::set_value(dods_float64 val)
 
     return true;
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 void
 Float64::print_val(FILE *out, string space, bool print_decl_p)
 {
@@ -217,7 +218,8 @@ Float64::print_val(FILE *out, string space, bool print_decl_p)
     else
         fprintf(out, "%.15g", _buf) ;
 }
-//#endif
+#endif
+
 void
 Float64::print_val(ostream &out, string space, bool print_decl_p)
 {

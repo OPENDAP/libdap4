@@ -42,11 +42,6 @@ public:
     TestCommon();
     virtual ~TestCommon();
 
-#if 0
-    // FILE_METHODS
-    virtual void output_values(FILE *out);
-#endif
-
     /** Write out values first testing send_p() to ensure the variable has
         data. This method is to be used when the intern_data() method is used
         to read data into variables after the CE is evaluated. In most cases

@@ -723,10 +723,6 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds,
 
 bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
 {
-#if 0
-    // status no longer used. jhrg 8/28/07
-    bool status;
-#endif
     unsigned int num;
     unsigned i = 0;
 

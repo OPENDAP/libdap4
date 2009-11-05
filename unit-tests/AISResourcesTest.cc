@@ -298,17 +298,6 @@ public:
 	catch (AISDatabaseWriteFailed &adwf) {
 	    CPPUNIT_ASSERT(!"Write failed!");
 	}
-#if 0
-	// Removed because this passes on FC 8 when run as root (i.e., as
-	// part of the nightly builds).
-	try {
-	    ais->write_database("/nowhere_at_all/dummy.xml");
-	    CPPUNIT_ASSERT(!"Write succeeded, but should not!");
-	}
-	catch (AISDatabaseWriteFailed &adwf) {
-	    CPPUNIT_ASSERT("Write failed as intended");
-	}
-#endif
     }
 };
 

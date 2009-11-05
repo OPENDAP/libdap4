@@ -166,9 +166,6 @@ rvalue::bvalue(DDS &dds)
         // If func is true, then args must be set. See the constructor.
         // 12/23/04 jhrg
         BaseType **argv = build_btp_args(d_args, dds);
-#if 0
-        BaseType *ret_val = (*d_func)(d_args->size(), argv, dds);
-#endif
         BaseType *ret_val;
         (*d_func)(d_args->size(), argv, dds, &ret_val);
         delete[] argv;

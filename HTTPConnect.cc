@@ -112,68 +112,7 @@ static const char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN +1] =
         "Gateway Time-out.",
         "HTTP Version Not Supported."
     };
-#if 0
-/** This function returns the ObjectType value that matches the given string.
-    Modified to include tests for the descriptions that use hyphens in addition
-    to underscores. 8/1/08 jhrg
 
-    @deprecated Use get_description_type instead - there are two other get_type()
-    functions in libdap.*/
-ObjectType
-get_type(const string &value)
-{
-    if ((value == "dods_das") | (value == "dods-das"))
-        return dods_das;
-    else if ((value == "dods_dds") | (value == "dods-dds"))
-        return dods_dds;
-    else if ((value == "dods_data") | (value == "dods-data"))
-        return dods_data;
-    else if ((value == "dods_error") | (value == "dods-error"))
-        return dods_error;
-    else if ((value == "web_error") | (value == "web-error"))
-        return web_error;
-    else if ((value == "dap4_ddx") | (value == "dap4-ddx"))
-        return dap4_ddx;
-    else if ((value == "dap4_data") | (value == "dap4-data"))
-        return dap4_data;
-    else if ((value == "dap4_error") | (value == "dap4-error"))
-        return dap4_error;
-    else if ((value == "dap4_data_ddx") | (value == "dap4-data-ddx"))
-        return dap4_data_ddx;
-    else
-        return unknown_type;
-}
-
-/** This function returns the ObjectType value that matches the given string.
-    Modified to include tests for the descriptions that use hyphens in addition
-    to underscores. 8/1/08 jhrg
-
-    @param value Value from the HTTP response header */
-ObjectType
-get_description_type(const string &value)
-{
-    if ((value == "dods_das") | (value == "dods-das"))
-        return dods_das;
-    else if ((value == "dods_dds") | (value == "dods-dds"))
-        return dods_dds;
-    else if ((value == "dods_data") | (value == "dods-data"))
-        return dods_data;
-    else if ((value == "dods_error") | (value == "dods-error"))
-        return dods_error;
-    else if ((value == "web_error") | (value == "web-error"))
-        return web_error;
-    else if ((value == "dap4_ddx") | (value == "dap4-ddx"))
-        return dap4_ddx;
-    else if ((value == "dap4_data") | (value == "dap4-data"))
-        return dap4_data;
-    else if ((value == "dap4_error") | (value == "dap4-error"))
-        return dap4_error;
-    else if ((value == "dap4_data_ddx") | (value == "dap4-data-ddx"))
-        return dap4_data_ddx;
-    else
-        return unknown_type;
-}
-#endif
 /** This function translates the HTTP status codes into error messages. It
     works for those code greater than or equal to 400. */
 static string
@@ -204,21 +143,9 @@ public:
 
     void operator()(const string &line)
     {
-#if 0
-	std::istringstream line(header);
-
-        string name;
-        line >> name;
-        downcase(name);
-#endif
         string name, value;
         parse_mime_header(line, name, value);
         if (name == "content-description") {
-#if 0
-            string value;
-            line >> value;
-            downcase(value);
-#endif
             DBG2(cerr << name << ": " << value << endl);
             type = get_description_type(value);
         }
@@ -226,46 +153,22 @@ public:
         // been seen. If so, use that header in preference to the old
         // XDODS-Server header. jhrg 2/7/06
         else if (name == "xdods-server" && server == "dods/0.0") {
-#if 0
-            string value;
-            line >> value;
-            downcase(value);
-#endif
             DBG2(cerr << name << ": " << value << endl);
             server = value;
         }
         else if (name == "xopendap-server") {
-#if 0
-            string value;
-            line >> value;
-            downcase(value);
-#endif
             DBG2(cerr << name << ": " << value << endl);
             server = value;
         }
         else if (name == "xdap") {
-#if 0
-            string value;
-            line >> value;
-            downcase(value);
-#endif
             DBG2(cerr << name << ": " << value << endl);
             protocol = value;
         }
         else if (server == "dods/0.0" && name == "server") {
-#if 0
-            string value;
-            line >> value;
-            downcase(value);
-#endif
             DBG2(cerr << name << ": " << value << endl);
             server = value;
         }
        	else if (name == "location") {
-#if 0
-       	    string value;
-       	    line >> value;
-#endif
        	    DBG2(cerr << name << ": " << value << endl);
        	    location = value;
         }
@@ -516,12 +419,6 @@ HTTPConnect::read_url(const string &url, FILE *stream,
     if (headers)
         req_hdrs = for_each(headers->begin(), headers->end(), req_hdrs);
     curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, req_hdrs.get_headers());
-
-#if 0
-    // See set_accept_deflate()
-    if (d_accept_deflate)
-        curl_easy_setopt(d_curl, CURLOPT_ENCODING, "deflate");
-#endif
 
     // Turn off the proxy for this URL?
     bool temporary_proxy = false;

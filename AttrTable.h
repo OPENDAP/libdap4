@@ -167,12 +167,7 @@ public:
 
         entry(): name(""), type(Attr_unknown), is_alias(false),
                 aliased_to(""), attributes(0), attr(0) {}
-#if 0
-        {
-            attributes = 0;
-            attr = 0;
-        }
-#endif
+
         entry(const entry &rhs)
         {
             clone(rhs);

@@ -211,7 +211,8 @@ dods_byte Byte::value() const
 {
     return _buf;
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 void Byte::print_val(FILE * out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
@@ -221,7 +222,8 @@ void Byte::print_val(FILE * out, string space, bool print_decl_p)
     else
         fprintf(out, "%d", (int) _buf);
 }
-//#endif
+#endif
+
 void Byte::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
@@ -237,9 +239,6 @@ bool Byte::ops(BaseType * b, int op)
 
     // Extract the Byte arg's value.
     if (!read_p() && !read()) {
-#if 0
-        cerr << "This value not read!" << endl;
-#endif
         // Jose Garcia
         // Since the read method is virtual and implemented outside
         // libdap++ if we cannot read the data that is the problem
@@ -249,9 +248,6 @@ bool Byte::ops(BaseType * b, int op)
     }
     // Extract the second arg's value.
     if (!b || !(b->read_p() || b->read())) {
-#if 0
-        cerr << "This value not read!" << endl;
-#endif
         // Jose Garcia
         // Since the read method is virtual and implemented outside
         // libdap++ if we cannot read the data that is the problem

@@ -159,93 +159,8 @@ Connect::process_data(DataDDS &data, Response *rs)
 
             return;
         }
-
-#if 0
-        // According to the spec (DAP 2), servers MUST return the dods_data
-        // Content-Type. But, many older servers do not do this, so the
-        // default case is not to throw an error, but to treat the response
-        // as data... See bug 706. 03/22/04 jhrg
-    default:
-        throw Error("The site did not return a valid response (it lacked the\nexpected content description header value of 'dods_data').\nThis may indicate that the server at the site is not correctly\nconfigured, or that the URL has changed.");
-#endif
     }
 }
-
-#if 0
-/** This private method process the data ddx from both local and remote
-    sources. It exists to eliminate duplication of code and does for the DAP4
-    DataDDX what 'process_data()' does for the DAP2 DataDDS response/object. */
-void
-Connect::process_data_ddx(DataDDS &data, Response *rs)
-{
-    DBG(cerr << "Entering Connect::process_data_ddx" << endl);
-
-    data.set_version(rs->get_version());
-    data.set_protocol(rs->get_protocol());
-
-    DBG(cerr << "Entering process_data_ddx: d_stream = " << rs << endl);
-    switch (rs->get_type()) {
-    case dods_error: {
-	    // FIXME: Here we should be processing the ErrorX response. 8/25/09
-	    Error e;
-            if (!e.parse(rs->get_stream()))
-                throw InternalErr(__FILE__, __LINE__,
-                                  "Could not parse the Error object returned by the server!");
-            throw e;
-        }
-
-    case web_error:
-        // Web errors (those reported in the return document's MIME header)
-        // are processed by the WWW library.
-        throw InternalErr(__FILE__, __LINE__, "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
-
-    case dap4_data_ddx: {
-            // Parse the DDX; throw an exception on error.
-	    DDXParser ddx_parser(data.get_factory());
-
-	    // Read the MPM boundary and then read the subsequent headers
-	    string boundary = read_multipart_boundary(rs->get_stream());
-	    DBG(cerr << "MPM Boundary: " << boundary << endl);
-	    read_multipart_headers(rs->get_stream(), "text/xml", dap4_ddx);
-
-	    // Parse the DDX, reading up to and including the next boundary.
-	    // Return the CID for the matching data part
-	    string data_cid;
-	    ddx_parser.intern(rs->get_stream(), &data, data_cid, boundary);
-
-	    // Munge the CID into something we can work with
-	    data_cid = cid_to_header_value(data_cid);
-	    DBG(cerr << "Data CID: " << data_cid << endl);
-
-	    // Read the data part's MPM part headers (boundary was read by
-	    // DDXParse::intern)
-	    read_multipart_headers(rs->get_stream(),
-		    "application/octet-stream", dap4_data, data_cid);
-
-	    // Now read the data
-	    XDRFileUnMarshaller um( rs->get_stream() ) ;
-            try {
-        	for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
-                     i++) {
-                    (*i)->deserialize(um, &data);
-                }
-            }
-            catch (Error &e) {
-                throw e;
-            }
-
-            return;
-        }
-
-    default:
-        throw Error(\
-"The site did not return a valid response (it lacked the\n\
-expected content description header value of 'dap4_data_ddx').\n\
-This may indicate that the server at the site is not correctly\n\
-configured, or that the URL has changed.");
-    }
-}
-#endif
 
 // Barely a parser... This is used when reading from local sources of DODS
 // Data objects. It simulates the important actions of the libwww MIME header
@@ -497,12 +412,6 @@ Connect::request_das(DAS &das)
         }
 
         break;
-
-#if 0
-        // See the comment in process_data() and bug 706. 03/22/04 jhrg
-    default:
-        throw Error("The site did not return a valid response (it lacked the\nexpected content description header value of 'dods_das').\nThis may indicate that the server at the site is not correctly\nconfigured, or that the URL has changed.");
-#endif
     }
 
     delete rs; rs = 0;
@@ -638,12 +547,6 @@ Connect::request_dds(DDS &dds, string expr)
             throw e;
         }
         break;
-
-#if 0
-        // See the comment in process_data() and bug 706. 03/22/04 jhrg
-    default:
-        throw Error("The site did not return a valid response (it lacked the\nexpected content description header value of 'dods_dds').\nThis may indicate that the server at the site is not correctly\nconfigured, or that the URL has changed.");
-#endif
     }
 
     delete rs; rs = 0;
@@ -1083,9 +986,6 @@ Connect::read_data_no_mime(DataDDS &data, Response *rs)
 	process_data(data, rs);
 	break;
     case dap4_data_ddx:
-#if 0
-	process_data_ddx(data, rs);
-#endif
 	process_data(data, rs);
 	d_version = rs->get_version();
 	d_protocol = data.get_protocol();

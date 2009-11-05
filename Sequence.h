@@ -60,6 +60,8 @@
 // FIXME
 #include "XDRUtils.h"
 
+
+
 namespace libdap
 {
 
@@ -327,7 +329,7 @@ public:
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 
-    //#if FILE_METHODS
+#if FILE_METHODS
     virtual void print_one_row(FILE *out, int row, string space,
                                bool print_row_num = false);
     virtual void print_val_by_rows(FILE *out, string space = "",
@@ -335,7 +337,7 @@ public:
                                    bool print_row_numbers = true);
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
-    //#endif
+#endif
 
     virtual bool check_semantics(string &msg, bool all = false);
 

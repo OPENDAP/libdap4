@@ -751,7 +751,8 @@ BaseType::intern_data(ConstraintEvaluator &, DDS &dds)
 
     dds.timeout_off();
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 /** Write the variable's declaration in a C-style syntax. This
     function is used to create textual representation of the Data
     Descriptor Structure (DDS).  See <i>The DODS User Manual</i> for
@@ -816,7 +817,8 @@ BaseType::print_decl(FILE *out, string space, bool print_semi,
     if (print_semi)
         fprintf(out, ";\n") ;
 }
-//#endif
+#endif
+
 /** Write the variable's declaration in a C-style syntax. This
     function is used to create textual representation of the Data
     Descriptor Structure (DDS).  See <i>The DODS User Manual</i> for
@@ -880,7 +882,8 @@ BaseType::print_decl(ostream &out, string space, bool print_semi,
     if (print_semi)
 	out << ";\n" ;
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 /** Write the XML representation of this variable. This method is used to
     build the DDX XML response.
     @param out Destination.
@@ -907,7 +910,8 @@ BaseType::print_xml(FILE *out, string space, bool constrained)
         fprintf(out, "/>\n"); // no attributes; just close tag.
     }
 }
-//#endif
+#endif
+
 /** Write the XML representation of this variable. This method is used to
     build the DDX XML response.
     @param out Destination output stream

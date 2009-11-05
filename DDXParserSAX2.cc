@@ -1071,45 +1071,6 @@ void DDXParser::ddx_fatal_error(void * p, const char *msg, ...)
 }
 
 //@}
-#if 0
-/** This local variable holds pointers to the callback <i>functions</i> which
-    comprise the SAX parser. */
-static xmlSAXHandler ddx_sax_parser =
-    {
-        0,                          // internalSubset
-        0,                          // isStandalone
-        0,                          // hasInternalSubset
-        0,                          // hasExternalSubset
-        0,                          // resolveEntity
-        (getEntitySAXFunc) DDXParser::ddx_get_entity,       // getEntity
-        0,                          // entityDecl
-        0,                          // notationDecl
-        0,                          // attributeDecl
-        0,                          // elementDecl
-        0,                          // unparsedEntityDecl
-        0,                          // setDocumentLocator
-        (startDocumentSAXFunc) DDXParser::ddx_start_document,       // startDocument
-        (endDocumentSAXFunc) DDXParser::ddx_end_document,   // endDocument
-        (startElementSAXFunc) 0, //DDXParser::ddx_start_element, // startElement
-        (endElementSAXFunc) 0, //DDXParser::ddx_end_element,     // endElement
-        0,                          // reference
-        (charactersSAXFunc) DDXParser::ddx_get_characters,
-        (ignorableWhitespaceSAXFunc) DDXParser::ddx_ignoreable_whitespace, // ignorableWhitespace
-        0,                          // processingInstruction
-        0,                          // (commentSAXFunc)gladeComment,  comment
-        (warningSAXFunc) DDXParser::ddx_fatal_error,        // warning
-        (errorSAXFunc) DDXParser::ddx_fatal_error,  // error
-        (fatalErrorSAXFunc) DDXParser::ddx_fatal_error,     // fatalError
-        0,                          // getParameterEntity
-        0,                          // cdataBlock
-        0,                          // externalSubset
-        XML_SAX2_MAGIC, // 0,                          // initialized
-        0,                          // _private
-        (startElementNsSAX2Func) DDXParser::ddx_sax2_start_element,  // startElementNs
-        (endElementNsSAX2Func) DDXParser::ddx_sax2_end_element,    // endElementNs
-        (xmlStructuredErrorFunc)0   // serror
-    };
-#endif
 
 void DDXParser::cleanup_parse(xmlParserCtxtPtr & context) const
 {
@@ -1182,11 +1143,7 @@ void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid,
         context->sax = &ddx_sax_parser;
         context->userData = this;
         context->validate = true;
-#if 0
-        while ((res = fread(chars, 1, size, in)) > 0) {
-            xmlParseChunk(ctxt, chars, res, 0);
-        }
-#endif
+
         while ((fgets(chars, size, in) > 0) && !is_boundary(chars, boundary)) {
             DBG(cerr << "line: " << chars << endl);
             xmlParseChunk(ctxt, chars, strlen(chars), 0);

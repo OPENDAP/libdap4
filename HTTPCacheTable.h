@@ -117,13 +117,9 @@ public:
 	    bool no_cache;  // This field is not saved in the index.
 
 	    int readers;
-	    pthread_mutex_t d_response_lock;	// set if being read
-	    pthread_mutex_t d_response_write_lock;			// set if being written
-#if 0	    
-	    // This lock prevents access to the fields of a CacheEntry. Might not
-	    // be needed.
-	    pthread_mutex_t d_lock;
-#endif	    
+	    pthread_mutex_t d_response_lock;		// set if being read
+	    pthread_mutex_t d_response_write_lock;	// set if being written
+
 	    // Allow HTTPCacheTable methods access and the test class, too
 	    friend class HTTPCacheTable;
 		friend class HTTPCacheTest;
@@ -170,19 +166,7 @@ public:
 			no_cache = state;
 		}
 	    bool is_no_cache() { return no_cache; }
-#if 0	    
-	    void lock() {
-	        DBG(cerr << "Locking entry... (" << hex << &d_lock << dec << ") ");
-	    	LOCK(&d_lock);
-	        DBGN(cerr << "Done" << endl);
-	    }
-	    void unlock() {
-	        DBG(cerr << "Unlocking entry... (" << hex << &d_lock << dec << ") ");
-	    	UNLOCK(&d_lock);
-	        DBGN(cerr << "Done" << endl);
-	    }
-	    pthread_mutex_t &get_lock() { return d_lock; }
-#endif	    
+
 	    void lock_read_response() {
 	        DBG(cerr << "Try locking read response... (" << hex << &d_response_lock << dec << ") ");
 	        int status = TRYLOCK(&d_response_lock);
@@ -226,9 +210,6 @@ public:
 					no_cache(false), readers(0) {
 	    	INIT(&d_response_lock);
 	    	INIT(&d_response_write_lock);
-#if 0
-	    	INIT(&d_lock);
-#endif
 	    }
 		CacheEntry(const string &u) :
 			url(u), hash(-1), hits(0), cachename(""), etag(""), lm(-1),
@@ -238,9 +219,6 @@ public:
 					no_cache(false), readers(0) {
 	    	INIT(&d_response_lock);
 	    	INIT(&d_response_write_lock);
-#if 0
-	    	INIT(&d_lock);
-#endif
 	    	hash = get_hash(url);
 		}
 	};

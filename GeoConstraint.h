@@ -188,18 +188,14 @@ protected:
     void find_longitude_indeces(double left, double right,
                                 int &longitude_index_left,
                                 int &longitude_index_right) const;
-#if 0
-    virtual void set_bounding_box_longitude(double left, double right) ;
-#endif
+
     virtual void reorder_longitude_map(int longitude_index_left);
 
     virtual LatitudeSense categorize_latitude() const;
     void find_latitude_indeces(double top, double bottom, LatitudeSense sense,
                                int &latitude_index_top,
                                int &latitude_index_bottom) const;
-#if 0
-    virtual void set_bounding_box_latitude(double top, double bottom) ;
-#endif
+
     virtual void reorder_data_longitude_axis(Array &a);
 
 

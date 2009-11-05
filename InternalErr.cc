@@ -78,17 +78,7 @@ InternalErr::InternalErr(const string &file, const int &line, const string &msg)
     _error_message += msg + "\n";
     _error_message += "Please report this to support@opendap.org\n";
 }
-#if 0
-InternalErr::InternalErr(string msg, ProgramType pt, char *pgm)
-        : Error(unknown_error, msg, pt, pgm)
-{
-    ostringstream oss;
-    oss << "An internal error was encountered:" << endl
-    << msg << endl
-    << "Please report this to support@opendap.org";
-    _error_message  = oss.str();
-}
-#endif
+
 InternalErr::InternalErr(const InternalErr &copy_from)
         : Error(copy_from)
 {}

@@ -64,6 +64,7 @@
 // FIXME
 //#include "XDRUtils.h"
 
+
 namespace libdap
 {
 
@@ -148,10 +149,10 @@ public:
     virtual void del_var(const string &name);
 
     virtual bool read() ;
-    //#if FILE_METHODS
+#if FILE_METHODS
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
-    //#endif
+#endif
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 

@@ -193,7 +193,8 @@ UInt32::set_value(dods_uint32 i)
 
     return true;
 }
-//#if FILE_METHODS
+
+#if FILE_METHODS
 void
 UInt32::print_val(FILE *out, string space, bool print_decl_p)
 {
@@ -204,7 +205,8 @@ UInt32::print_val(FILE *out, string space, bool print_decl_p)
     else
         fprintf(out, "%u", (unsigned int)_buf) ;
 }
-//#endif
+#endif
+
 void
 UInt32::print_val(ostream &out, string space, bool print_decl_p)
 {

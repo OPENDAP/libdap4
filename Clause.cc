@@ -143,35 +143,6 @@ Clause::value_clause()
     return (_bt_func != 0);
 }
 
-#if 0
-static bool
-boolean_value(BaseType *btp)
-{
-    switch (btp->type()) {
-        case dods_byte_c:
-            return !dynamic_cast<Byte&>(*btp).value();
-        case dods_int16_c:
-            return !dynamic_cast<Int16&>(*btp).value();
-        case dods_uint16_c:
-            return !dynamic_cast<UInt16&>(*btp).value();
-        case dods_int32_c:
-            return !dynamic_cast<Int32&>(*btp).value();
-        case dods_uint32_c:
-            return !dynamic_cast<UInt32&>(*btp).value();
-        case dods_float32_c:
-        case dods_float64_c:
-        case dods_str_c:
-        case dods_url_c:
-        case dods_array_c:
-        case dods_structure_c:
-        case dods_sequence_c:
-        case dods_grid_c:
-        default:
-            throw Error(malformed_expr, "A Function returning something other than an integer was used in a boolean context.");
-    }
-}
-#endif
-
 /** @brief Evaluate a clause which returns a boolean value
     This method must only be evaluated for clauses with relational
     expressions or boolean functions.
@@ -242,10 +213,8 @@ Clause::value(DDS &dds, BaseType **value)
         // to the functions themselves. 9/25/06 jhrg
         BaseType **argv = build_btp_args(_args, dds);
 
-#if 0
-        *value = (*_bt_func)(_argc, argv, dds);
-#endif
         (*_bt_func)(_argc, argv, dds, value);
+
         delete[] argv;  // Cache me!
         argv = 0;
 
