@@ -43,7 +43,6 @@
 #endif
 
 #include <vector>
-//#include "Pix.h"
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -61,9 +60,7 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-// FIXME
-//#include "XDRUtils.h"
-
+#define FILE_METHODS 1
 
 namespace libdap
 {

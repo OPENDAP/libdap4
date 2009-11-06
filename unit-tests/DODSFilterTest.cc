@@ -295,9 +295,12 @@ Content-Description: dap4-ddx\r\n\
 <\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>.*\
 <Dataset name=\"test\".*\
 .*\
-xmlns=\"http://xml.opendap.org/ns/DAP/3.2#\".*\
-xmlns:dap=\"http://xml.opendap.org/ns/DAP/3.2#\".*\
-dap_version=\"3.2\">.*\
+.*\
+.*\
+.*\
+.*\
+.*\
+dapVersion=\"3.2\">.*\
 .*\
 <Byte name=\"a\">.*\
     <Attribute name=\"size\" type=\"Int32\">.*\
@@ -348,7 +351,7 @@ Content-Description: dap4-ddx\r\n\
 <\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>.*\
 <Dataset name=\"test\".*\
 .*\
-dap_version=\"3.2\">.*\
+dapVersion=\"3.2\">.*\
 .*\
     <Byte name=\"a\">.*\
         <Attribute name=\"size\" type=\"Int32\">.*\
@@ -407,7 +410,7 @@ Content-Description: dap4-ddx\r\n\
 <\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>.*\
 <Dataset name=\"test\".*\
 .*\
-dap_version=\"3.2\">.*\
+dapVersion=\"3.2\">.*\
 .*\
     <Byte name=\"a\">.*\
         <Attribute name=\"size\" type=\"Int32\">.*\
@@ -495,20 +498,21 @@ Content-Encoding: binary\r\n\
     }
 
     CPPUNIT_TEST_SUITE( DODSFilterTest );
-
+#if 0
     CPPUNIT_TEST(get_dataset_last_modified_time_test);
     CPPUNIT_TEST(get_das_last_modified_time_test);
 
     CPPUNIT_TEST(send_das_test);
     CPPUNIT_TEST(send_dds_test);
+#endif
     CPPUNIT_TEST(send_ddx_test);
     CPPUNIT_TEST(send_data_ddx_test);
     CPPUNIT_TEST(send_data_ddx_test2);
-
+#if 0
     CPPUNIT_TEST(is_conditional_test);
     CPPUNIT_TEST(get_request_if_modified_since_test);
     CPPUNIT_TEST(escape_code_test);
-
+#endif
     CPPUNIT_TEST_SUITE_END();
 };
 

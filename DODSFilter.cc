@@ -36,8 +36,6 @@
 
 #include "config.h"
 
-#undef FILE_METHODS
-
 static char rcsid[] not_used =
     {"$Id$"
     };
@@ -71,11 +69,12 @@ static char rcsid[] not_used =
 #include "util.h"
 #include "escaping.h"
 #include "DODSFilter.h"
-#if 0
+#if FILE_METHODS
 #include "XDRFileMarshaller.h"
 #endif
 #include "XDRStreamMarshaller.h"
 #include "InternalErr.h"
+
 #ifndef WIN32
 #include "SignalHandler.h"
 #include "EventHandler.h"
@@ -84,7 +83,7 @@ static char rcsid[] not_used =
 
 #define CRLF "\r\n"             // Change here, expr-test.cc and DODSFilter.cc
 
-#undef FILE_METHODS
+//#undef FILE_METHODS
 
 using namespace std;
 
@@ -866,7 +865,6 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
 
     fflush(out);
 
-    // Grab a stream encodes using XDR.
     XDRFileMarshaller m( out ) ;
 
     try {

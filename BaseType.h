@@ -67,7 +67,7 @@
 #include "Marshaller.h"
 #include "UnMarshaller.h"
 
-
+#define FILE_METHODS 1
 
 using namespace std;
 

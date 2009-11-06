@@ -41,7 +41,7 @@
 #include "dods-limits.h"
 #include "BaseType.h"
 
-
+#define FILE_METHODS 1
 
 namespace libdap
 {

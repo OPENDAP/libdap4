@@ -286,7 +286,7 @@ last_modified_time(const string &name)
 static const char *descrip[] =
     {"unknown", "dods_das", "dods_dds", "dods_data",
      "dods_error", "web_error", "dap4-ddx", "dap4-data", "dap4-error",
-     "dap4-data-ddx"
+     "dap4-data-ddx", "dods_ddx"
     };
 static const char *encoding[] =
     {"unknown", "deflate", "x-plain", "gzip", "binary"
@@ -296,8 +296,7 @@ static const char *encoding[] =
     Modified to include tests for the descriptions that use hyphens in addition
     to underscores. 8/1/08 jhrg
 
-    @deprecated Use get_description_type instead - there are two other get_type()
-    functions in libdap.*/
+    @deprecated Use get_description_type instead */
 ObjectType
 get_type(const string &value)
 {
@@ -319,6 +318,8 @@ get_type(const string &value)
         return dap4_error;
     else if ((value == "dap4_data_ddx") | (value == "dap4-data-ddx"))
         return dap4_data_ddx;
+    else if ((value == "dods_ddx") | (value == "dods-ddx"))
+        return dods_ddx;
     else
         return unknown_type;
 }
@@ -351,6 +352,8 @@ get_description_type(const string &value)
         return dap4_error;
     else if ((value == "dap4_data_ddx") | (value == "dap4-data-ddx"))
         return dap4_data_ddx;
+    else if ((value == "dods_ddx") | (value == "dods-ddx"))
+        return dods_ddx;
     else
         return unknown_type;
 }

@@ -14,14 +14,9 @@ AM_CONFIG_HEADER([config.h dods-datatypes-config.h xdr-datatypes-config.h])
 AC_CONFIG_MACRO_DIR([conf])
 
 AM_INIT_AUTOMAKE
-# The second arg test autotest to look for the getocapi exec here, in the 
-# $top_srcdir since when relative paths are used with autotest it assumes 
-# they are relative to $top_srcdir. Without the second argument autotest
-# will use 'tests' as the value which breaks since the exec is not in the
-# Tests subdir. jhrg
 AC_CONFIG_TESTDIR(tests, [.])
 
-AC_DEFINE([FILE_METHODS], [1], [Define this to activate the old FILE * methods.])
+dnl AC_DEFINE([FILE_METHODS], [1], [Define this to activate the old FILE * methods.])
 
 AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])
 AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])

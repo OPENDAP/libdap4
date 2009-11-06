@@ -26,14 +26,13 @@
 #ifndef _constructor_h
 #define _constructor_h 1
 
-
 #include <vector>
 
 #ifndef _basetype_h
 #include "BaseType.h"
 #endif
 
-
+#define FILE_METHODS 1
 
 namespace libdap
 {

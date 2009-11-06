@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Dataset name="SimpleTypes" dap_version="3.2">
+<Dataset name="SimpleTypes" dapVersion="3.2">
 
         <Attribute name="PrincipleInvestigator" type="String">
             <value>&quot;Mark Abbott&quot;</value>

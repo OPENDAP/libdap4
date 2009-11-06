@@ -32,7 +32,7 @@
 
 #include "EventHandler.h"
 
-
+#define FILE_METHODS 1
 
 namespace libdap
 {

@@ -60,7 +60,7 @@
 // FIXME
 #include "XDRUtils.h"
 
-
+#define FILE_METHODS 1
 
 namespace libdap
 {

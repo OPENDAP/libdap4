@@ -48,7 +48,7 @@
 #include "Vector.h"
 #endif
 
-
+#define FILE_METHODS 1
 
 namespace libdap
 {

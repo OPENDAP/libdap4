@@ -64,7 +64,7 @@
 
 using std::cout;
 
-
+#define FILE_METHODS 1
 
 namespace libdap
 {
@@ -181,10 +181,6 @@ private:
     string d_container_name;	// name of container structure
     Structure *d_container;	// current container for container name
 				// dataset or part of dataset.
-
-    // These are used on the client-side and correspond to the version of the
-    // response. The client_dap_major/minor fields hold information sent from
-    // a client describing what it would like.
 
     int d_dap_major;       // The protocol major version number
     int d_dap_minor;       // ... and minor version number
