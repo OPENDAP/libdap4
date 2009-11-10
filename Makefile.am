@@ -61,7 +61,8 @@ noinst_HEADERS = config_dap.h
 # fdiostream_test_SOURCES = GNU/fdiostream_test.cc
 
 getdap_SOURCES = getdap.cc
-getdap_LDADD = libdapclient.la libdap.la libdapserver.la
+getdap_LDADD = libdapclient.la libdap.la
+# libdapserver.la
 getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 
 # deflate_SOURCES = deflate.c
