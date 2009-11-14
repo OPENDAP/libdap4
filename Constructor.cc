@@ -54,8 +54,19 @@ namespace libdap {
 // Private member functions
 
 void
-Constructor::_duplicate(const Constructor &)
-{}
+Constructor::_duplicate(const Constructor &c)
+{
+    Constructor &cc = const_cast<Constructor &> (c);
+
+    DBG(cerr << "Copying constructor: " << name() << endl);
+
+    for (Vars_iter i = cc._vars.begin(); i != cc._vars.end(); i++) {
+	DBG(cerr << "Copying field: " << (*i)->name() << endl);
+	BaseType *btp = (*i)->ptr_duplicate();
+	btp->set_parent(this);
+	_vars.push_back(btp);
+    }
+}
 
 // Public member functions
 

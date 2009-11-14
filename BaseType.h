@@ -86,7 +86,9 @@ class ConstraintEvaluator;
     enum Part {
     nil,
     array,
-    maps
+    maps,
+    dap4_array,
+    dap4_map
     };
     \endcode
 
@@ -98,7 +100,9 @@ class ConstraintEvaluator;
 enum Part {
     nil,   // nil is for types that don't have parts...
     array,
-    maps
+    maps,
+    dap4_array,
+    dap4_map
 };
 
 /** <b>Type</b> identifies the data type stored in a particular type
@@ -120,7 +124,8 @@ enum Part {
     dods_array_c,
     dods_structure_c,
     dods_sequence_c,
-    dods_grid_c
+    dods_grid_c,
+    dap4_group_c
     };
     \endcode
 
@@ -142,7 +147,8 @@ enum Type {
     dods_array_c,
     dods_structure_c,
     dods_sequence_c,
-    dods_grid_c
+    dods_grid_c,
+    dap4_group_c
 };
 
 /** This defines the basic data type features for the DODS data access
@@ -197,8 +203,9 @@ private:
     bool _read_p;  // true if the value has been read
     bool _send_p;  // Is the variable in the projection?
     bool d_in_selection; // Is the variable in the selection?
+#if 0
     bool _synthesized_p; // true if the variable is synthesized
-
+#endif
     // d_parent points to the Constructor or Vector which holds a particular
     // variable. It is null for simple variables. The Vector and Constructor
     // classes must maintain this variable.
@@ -245,10 +252,10 @@ public:
     virtual bool is_simple_type();
     virtual bool is_vector_type();
     virtual bool is_constructor_type();
-
+#if 0
     virtual bool synthesized_p();
     virtual void set_synthesized_p(bool state);
-
+#endif
     virtual int element_count(bool leaves = false);
 
     virtual bool read_p();

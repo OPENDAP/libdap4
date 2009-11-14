@@ -57,7 +57,6 @@ static const char *s_as_string = \
           _dataset: \n\
           _read_p: 0\n\
           _send_p: 0\n\
-          _synthesized_p: 0\n\
           d_parent: 0\n\
           d_attr: 0x.*\n\
 BaseType \\(0x.*\\):\n\
@@ -66,7 +65,6 @@ BaseType \\(0x.*\\):\n\
           _dataset: \n\
           _read_p: 0\n\
           _send_p: 0\n\
-          _synthesized_p: 0\n\
           d_parent: 0x.*\n\
           d_attr: 0x.*\n\
 BaseType \\(0x.*\\):\n\
@@ -75,7 +73,6 @@ BaseType \\(0x.*\\):\n\
           _dataset: \n\
           _read_p: 0\n\
           _send_p: 0\n\
-          _synthesized_p: 0\n\
           d_parent: 0x.*\n\
           d_attr: 0x.*\n\
 BaseType \\(0x.*\\):\n\
@@ -84,7 +81,6 @@ BaseType \\(0x.*\\):\n\
           _dataset: \n\
           _read_p: 0\n\
           _send_p: 0\n\
-          _synthesized_p: 0\n\
           d_parent: 0x.*\n\
           d_attr: 0x.*\n\
 \n";
@@ -167,7 +163,7 @@ public:
     CPPUNIT_TEST(ctor_test);
     CPPUNIT_TEST(assignment);
     CPPUNIT_TEST(copy_ctor);
-#if 0
+#if 1
     CPPUNIT_TEST(test_set_leaf_sequence);
     CPPUNIT_TEST(test_set_leaf_sequence2);
     CPPUNIT_TEST(test_set_leaf_sequence3);
@@ -180,6 +176,22 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
+    void ctor_test() {
+	DBG(cerr << "s: " << s->toString() << endl);
+	CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
+    }
+
+    void assignment() {
+	Sequence ts2 = *s;
+	DBG(cerr << "ts2: " << ts2.toString() << endl);
+	CPPUNIT_ASSERT(re_match(s_regex, ts2.toString().c_str()));
+    }
+
+    void copy_ctor() {
+	Sequence s2(*s);
+	CPPUNIT_ASSERT(re_match(s_regex, s2.toString().c_str()));
+    }
+
     void intern_data_test1() {
         ConstraintEvaluator ce;
         s->set_send_p(true);
@@ -393,22 +405,6 @@ public:
         i = inner->var_begin();
         Sequence *inner2 = dynamic_cast<Sequence*>(*++i);
         CPPUNIT_ASSERT(inner2 && inner2->is_leaf_sequence());
-    }
-    
-    void ctor_test() {
-	DBG(cerr << "s: " << s->toString() << endl);
-	CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
-    }
-
-    void assignment() {
-	Sequence ts2 = *s;
-	DBG(cerr << "ts2: " << ts2.toString() << endl);
-	CPPUNIT_ASSERT(re_match(s_regex, ts2.toString().c_str()));
-    }
-
-    void copy_ctor() {
-	Sequence s2 = *s;
-	CPPUNIT_ASSERT(re_match(s_regex, s2.toString().c_str()));
     }
 };
 

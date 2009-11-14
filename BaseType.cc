@@ -87,8 +87,9 @@ BaseType::_duplicate(const BaseType &bt)
     _read_p = bt._read_p; // added, reza
     _send_p = bt._send_p; // added, reza
     d_in_selection = bt.d_in_selection;
+#if 0
     _synthesized_p = bt._synthesized_p; // 5/11/2001 jhrg
-
+#endif
     d_parent = bt.d_parent; // copy pointers 6/4/2001 jhrg
 
     d_attr = bt.d_attr;  // Deep copy.
@@ -109,7 +110,10 @@ BaseType::_duplicate(const BaseType &bt)
     @see Type */
 BaseType::BaseType(const string &n, const Type &t)
         : _name(n), _type(t), _dataset(""), _read_p(false), _send_p(false),
-        d_in_selection(false), _synthesized_p(false), d_parent(0)
+        d_in_selection(false), d_parent(0)
+#if 0
+        _synthesized_p(false),
+#endif
 {}
 
 /** The BaseType constructor needs a name, a dataset, and a type.
@@ -127,7 +131,10 @@ BaseType::BaseType(const string &n, const Type &t)
     @see Type */
 BaseType::BaseType(const string &n, const string &d, const Type &t)
         : _name(n), _type(t), _dataset(d), _read_p(false), _send_p(false),
-        d_in_selection(false), _synthesized_p(false), d_parent(0)
+        d_in_selection(false), d_parent(0)
+#if 0
+        _synthesized_p(false),
+#endif
 {}
 
 /** @brief The BaseType copy constructor. */
@@ -167,7 +174,9 @@ BaseType::toString()
     << "          _dataset: " << _dataset << endl
     << "          _read_p: " << _read_p << endl
     << "          _send_p: " << _send_p << endl
+#if 0
     << "          _synthesized_p: " << _synthesized_p << endl
+#endif
     << "          d_parent: " << d_parent << endl
     << "          d_attr: " << hex << &d_attr << dec << endl;
 
@@ -194,7 +203,9 @@ BaseType::dump(ostream &strm) const
     strm << DapIndent::LMarg << "dataset: " << _dataset << endl ;
     strm << DapIndent::LMarg << "read_p: " << _read_p << endl ;
     strm << DapIndent::LMarg << "send_p: " << _send_p << endl ;
+#if 0
     strm << DapIndent::LMarg << "synthesized_p: " << _synthesized_p << endl ;
+#endif
     strm << DapIndent::LMarg << "parent: " << (void *)d_parent << endl ;
     strm << DapIndent::LMarg << "attributes: " << endl ;
     DapIndent::Indent() ;
@@ -311,6 +322,8 @@ BaseType::is_simple_type()
     case dods_structure_c:
     case dods_sequence_c:
     case dods_grid_c:
+
+    case dap4_group_c:
         return false;
     }
 
@@ -342,6 +355,8 @@ BaseType::is_vector_type()
     case dods_structure_c:
     case dods_sequence_c:
     case dods_grid_c:
+
+    case dap4_group_c:
         return false;
     }
 
@@ -372,7 +387,9 @@ BaseType::is_constructor_type()
     case dods_structure_c:
     case dods_sequence_c:
     case dods_grid_c:
-        return true;
+
+    case dap4_group_c:
+	return true;
     }
 
     return false;
@@ -408,7 +425,7 @@ BaseType::element_count(bool)
 {
     return 1;
 }
-
+#if 0
 /** Returns true if the variable is a synthesized variable. A synthesized
     variable is one that is added to the dataset by the server (usually
     with a `projection function'. */
@@ -417,18 +434,19 @@ BaseType::synthesized_p()
 {
     return _synthesized_p;
 }
-
+#endif
 /** Set the synthesized flag. Before setting this flag be sure to set the
     <tt>read_p()</tt> state. Once this flag is set you cannot
     alter the state of the <tt>read_p</tt> flag!
 
     @see synthesized_p() */
+#if 0
 void
 BaseType::set_synthesized_p(bool state)
 {
     _synthesized_p = state;
 }
-
+#endif
 // Return the state of _read_p (true if the value of the variable has been
 // read (and is in memory) false otherwise).
 
@@ -482,11 +500,16 @@ BaseType::read_p()
 void
 BaseType::set_read_p(bool state)
 {
+#if 0
     if (! _synthesized_p) {
         DBG(cerr << "Changing read_p state of " << name() << " to "
 	         << state << endl);
         _read_p = state;
     }
+#endif
+    DBG(cerr << "Changing read_p state of " << name() << " to "
+	         << state << endl);
+    _read_p = state;
 }
 
 /** Returns the state of the \c send_p property. If true, this variable

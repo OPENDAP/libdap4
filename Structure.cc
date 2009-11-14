@@ -251,7 +251,7 @@ Structure::del_var(const string &n)
     }
 }
 
-/** @brief simple implementation of reat that iterates through vars
+/** @brief simple implementation of read that iterates through vars
  *  and calls read on them
  *
  * @return returns false to signify all has been read

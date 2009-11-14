@@ -49,11 +49,11 @@ libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la
 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
 libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS) $(XML2_CFLAGS)
-libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
-
+libdapclient_la_LIBADD = $(CURL_LIBS) $(PTHREAD_LIBS)
+# libdap.la 
 libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
-libdapserver_la_LIBADD = libdap.la $(UUID_LIBS)
-
+libdapserver_la_LIBADD = $(UUID_LIBS)
+# libdap.la
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
 # $(XSTREAM_HDR) 
 noinst_HEADERS = config_dap.h
@@ -61,7 +61,8 @@ noinst_HEADERS = config_dap.h
 # fdiostream_test_SOURCES = GNU/fdiostream_test.cc
 
 getdap_SOURCES = getdap.cc
-getdap_LDADD = libdapclient.la libdap.la libdapserver.la
+getdap_LDADD = libdapclient.la libdap.la
+# libdapserver.la
 getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 
 # deflate_SOURCES = deflate.c
@@ -225,7 +226,8 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc BaseType.cc \
 	Clause.cc RValue.cc ConstraintEvaluator.cc ArrayGeoConstraint.cc \
 	DapIndent.cc Operators.h					 \
 	XDRUtils.cc XDRFileMarshaller.cc XDRFileUnMarshaller.cc		 \
-	XDRStreamMarshaller.cc XDRStreamUnMarshaller.cc mime_util.cc 
+	XDRStreamMarshaller.cc XDRStreamUnMarshaller.cc mime_util.cc \
+	Dap4Dataset.cc Dap4Group.cc
 
 Operators.h: ce_expr.tab.hh
 
@@ -252,7 +254,8 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h DDXExceptions.h	\
 	DapIndent.h DapObj.h XDRFileMarshaller.h Marshaller.h		  \
 	XDRFileUnMarshaller.h UnMarshaller.h XDRStreamMarshaller.h	  \
 	XDRUtils.h xdr-datatypes.h mime_util.h cgi_util.h                 \
-	XDRStreamUnMarshaller.h 
+	XDRStreamUnMarshaller.h \
+	Dap4Dataset.h Dap4Group.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h

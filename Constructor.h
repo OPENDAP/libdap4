@@ -47,7 +47,7 @@ private:
 protected:
     std::vector<BaseType *> _vars;
 
-    void _duplicate(const Constructor &s);
+    void _duplicate(const Constructor &c);
     virtual AttrTable *find_matching_container(AttrTable::entry *source,
             BaseType **dest_variable);
 
