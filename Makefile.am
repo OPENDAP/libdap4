@@ -39,23 +39,21 @@ bin_PROGRAMS = getdap
 BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC) 
-# $(XSTREAM_SRC)
-libdapclient_la_SOURCES = $(CLIENT_SRC) 
-libdapserver_la_SOURCES = $(SERVER_SRC)
-
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la
 
+libdapclient_la_SOURCES = $(CLIENT_SRC) 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
 libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS) $(XML2_CFLAGS)
-libdapclient_la_LIBADD = $(CURL_LIBS) $(PTHREAD_LIBS)
-# libdap.la 
+libdapclient_la_LIBADD = $(CURL_LIBS) $(PTHREAD_LIBS) libdap.la
+
+libdapserver_la_SOURCES = $(SERVER_SRC)
 libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
-libdapserver_la_LIBADD = $(UUID_LIBS)
-# libdap.la
+libdapserver_la_LIBADD = $(UUID_LIBS) libdap.la
+
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
-# $(XSTREAM_HDR) 
+
 noinst_HEADERS = config_dap.h
 
 # fdiostream_test_SOURCES = GNU/fdiostream_test.cc
@@ -227,7 +225,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc BaseType.cc \
 	DapIndent.cc Operators.h					 \
 	XDRUtils.cc XDRFileMarshaller.cc XDRFileUnMarshaller.cc		 \
 	XDRStreamMarshaller.cc XDRStreamUnMarshaller.cc mime_util.cc \
-	Dap4Dataset.cc Dap4Group.cc
+	Dap4Dataset.cc Dap4Group.cc Dap4SharedDimension.cc
 
 Operators.h: ce_expr.tab.hh
 
@@ -255,7 +253,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h DDXExceptions.h	\
 	XDRFileUnMarshaller.h UnMarshaller.h XDRStreamMarshaller.h	  \
 	XDRUtils.h xdr-datatypes.h mime_util.h cgi_util.h                 \
 	XDRStreamUnMarshaller.h \
-	Dap4Dataset.h Dap4Group.h
+	Dap4Dataset.h Dap4Group.h Dap4SharedDimension.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h

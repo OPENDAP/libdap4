@@ -84,7 +84,7 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	SequenceTest SignalHandlerTest CEFunctionsTest 			\
 	GridGeoConstraintTest ArrayGeoConstraintTest MarshallerTest     \
 	fdiostreamTest \
-	Dap4DatasetTest
+	Dap4DatasetTest Dap4GroupTest
 
 #  AISDatabaseParserTest AISMergeTest AISResourcesTest	
 
@@ -137,6 +137,9 @@ DDSTest_LDADD = ../libdap.la $(AM_LDADD)
 
 Dap4DatasetTest_SOURCES = Dap4DatasetTest.cc
 Dap4DatasetTest_LDADD = ../libdap.la $(AM_LDADD)
+
+Dap4GroupTest_SOURCES = Dap4GroupTest.cc
+Dap4GroupTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DDXParserTest_SOURCES = DDXParserTest.cc
 DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)

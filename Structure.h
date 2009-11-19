@@ -39,9 +39,6 @@
 #ifndef _structure_h
 #define _structure_h 1
 
-#ifndef __POWERPC__
-#endif
-
 #include <vector>
 
 #ifndef _basetype_h
@@ -52,10 +49,6 @@
 #include "Constructor.h"
 #endif
 
-#ifndef _dds_h
-#include "DDS.h"
-#endif
-
 #ifndef constraint_evaluator_h
 #include "ConstraintEvaluator.h"
 #endif
@@ -64,6 +57,8 @@
 
 namespace libdap
 {
+
+class DDS;
 
 /** This data type is used to hold a collection of related data types,
     in a manner roughly corresponding to a C structure.  The member
@@ -105,6 +100,11 @@ private:
 
 protected:
     void _duplicate(const Structure &s);
+
+    // These constructors allow child classes to set their type
+    Structure(const string &n, const Type &t) : Constructor(n, t) {}
+    Structure(const string &n, const string &d, const Type &t)
+	    : Constructor(n, d, t) {}
 
 public:
     Structure(const string &n);

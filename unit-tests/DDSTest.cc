@@ -46,6 +46,7 @@
 #include "Grid.h"
 
 #include "DDS.h"
+#include "DAS.h"
 
 #include "GNURegex.h"
 #include "util.h"

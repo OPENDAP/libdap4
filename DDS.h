@@ -42,6 +42,11 @@
 #include <string>
 #include <vector>
 
+#ifndef base_type_factory_h
+#include "BaseTypeFactory.h"
+#endif
+
+#if 0
 #ifndef _basetype_h
 #include "BaseType.h"
 #endif
@@ -49,17 +54,20 @@
 #ifndef _constructor_h
 #include "Constructor.h"
 #endif
-
-#ifndef base_type_factory_h
-#include "BaseTypeFactory.h"
 #endif
 
+#ifndef _structure_h
+#include "Structure.h"
+#endif
+
+#if 0
 #ifndef _das_h
 #include "DAS.h"
 #endif
 
 #ifndef A_DapObj_h
 #include "DapObj.h"
+#endif
 #endif
 
 using std::cout;
@@ -68,6 +76,8 @@ using std::cout;
 
 namespace libdap
 {
+
+class DAS;
 
 /** The DAP2 Data Descriptor Object (DDS) is a data structure used by
     the DAP2 software to describe datasets and subsets of those
@@ -171,12 +181,12 @@ namespace libdap
     @see BaseType
     @see DAS */
 
-class DDS : public DapObj
+class DDS : public Structure
 {
 private:
     BaseTypeFactory *d_factory;
 
-    string name;                // The dataset name
+    string d_dataset_name;      // The dataset name
     string d_filename;		// File name (or other OS identifier) for
     string d_container_name;	// name of container structure
     Structure *d_container;	// current container for container name
@@ -271,7 +281,7 @@ public:
     void container_name( const string &cn ) ;
     Structure *container() ;
 
-    void add_var(BaseType *bt);
+    virtual void add_var(BaseType *bt);
 
     /// Removes a variable from the DDS.
     void del_var(const string &n);
@@ -302,9 +312,9 @@ public:
     void set_timeout(int t);
     int get_timeout();
 
-    void parse(string fname);
-    void parse(int fd);
-    void parse(FILE *in = stdin);
+    virtual void parse(string fname);
+    virtual void parse(int fd);
+    virtual void parse(FILE *in = stdin);
 #if FILE_METHODS
     void print(FILE *out);
     void print_constrained(FILE *out);
@@ -312,11 +322,11 @@ public:
 #endif
     void print(ostream &out);
     void print_constrained(ostream &out);
-    void print_xml(ostream &out, bool constrained, const string &blob = "");
+    virtual void print_xml(ostream &out, bool constrained, const string &blob = "");
 
-    void mark_all(bool state);
-    bool mark(const string &name, bool state);
-    bool check_semantics(bool all = false);
+    virtual void mark_all(bool state);
+    virtual bool mark(const string &name, bool state);
+    virtual bool check_semantics(bool all = false);
 
     void tag_nested_sequences();
 

@@ -110,7 +110,7 @@ void
 DDS::duplicate(const DDS &dds)
 {
     DBG(cerr << "Entering DDS::duplicate... " <<endl);
-    name = dds.name;
+    d_dataset_name = dds.d_dataset_name;
     d_filename = dds.d_filename;
     d_container_name = dds.d_container_name;
     d_timeout = dds.d_timeout;
@@ -140,17 +140,15 @@ DDS::duplicate(const DDS &dds)
     @param n The name of the data set. Can also be set using
     set_dataset_name(). */
 DDS::DDS(BaseTypeFactory *factory, const string &n)
-
-        : d_factory(factory), name(n), d_container(0), d_dap_major(2),
-        d_dap_minor(0),
-        d_request_xml_base(""), d_timeout(0)
+    : Structure(n), d_factory(factory), d_dataset_name(n), d_container(0),
+      d_dap_major(2), d_dap_minor(0), d_request_xml_base(""), d_timeout(0)
 {
     DBG(cerr << "Building a DDS with client major/minor: "
             << d_dap_major << "." << d_dap_minor << endl);
 }
 
 /** The DDS copy constructor. */
-DDS::DDS(const DDS &rhs) : DapObj()
+DDS::DDS(const DDS &rhs) : Structure(rhs.d_dataset_name)
 {
     DBG(cerr << "Entering DDS(const DDS &rhs) ..." << endl);
     duplicate(rhs);
@@ -359,14 +357,14 @@ DDS::transfer_attributes(DAS *das)
 string
 DDS::get_dataset_name() const
 {
-    return name;
+    return d_dataset_name;
 }
 
 /** Sets the dataset name. */
 void
 DDS::set_dataset_name(const string &n)
 {
-    name = n;
+    d_dataset_name = n;
 }
 
 //@}
@@ -853,7 +851,7 @@ DDS::print(FILE *out)
         (*i)->print_decl(out) ;
     }
 
-    fprintf(out, "} %s;\n", id2www(name).c_str()) ;
+    fprintf(out, "} %s;\n", id2www(d_dataset_name).c_str()) ;
 
     return ;
 }
@@ -869,7 +867,7 @@ DDS::print(ostream &out)
         (*i)->print_decl(out) ;
     }
 
-    out << "} " << id2www(name) << ";\n" ;
+    out << "} " << id2www(d_dataset_name) << ";\n" ;
 
     return ;
 }
@@ -897,7 +895,7 @@ DDS::print_constrained(FILE *out)
         (*i)->print_decl(out, "    ", true, false, true) ;
     }
 
-    fprintf(out, "} %s;\n", id2www(name).c_str()) ;
+    fprintf(out, "} %s;\n", id2www(d_dataset_name).c_str()) ;
 
     return;
 }
@@ -925,7 +923,7 @@ DDS::print_constrained(ostream &out)
         (*i)->print_decl(out, "    ", true, false, true) ;
     }
 
-    out << "} " << id2www(name) << ";\n" ;
+    out << "} " << id2www(d_dataset_name) << ";\n" ;
 
     return;
 }
@@ -960,7 +958,7 @@ DDS::print_xml(FILE *out, bool constrained, const string &blob)
 {
     fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
-    fprintf(out, "<Dataset name=\"%s\"\n", id2xml(name).c_str());
+    fprintf(out, "<Dataset name=\"%s\"\n", id2xml(d_dataset_name).c_str());
 
     fprintf(out, "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
 
@@ -1036,7 +1034,7 @@ DDS::print_xml(ostream &out, bool constrained, const string &blob)
 {
     out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" ;
 
-    out << "<Dataset name=\"" << id2xml(name) << "\"\n" ;
+    out << "<Dataset name=\"" << id2xml(d_dataset_name) << "\"\n" ;
 
     out << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" ;
 
@@ -1113,13 +1111,13 @@ bool
 DDS::check_semantics(bool all)
 {
     // The dataset must have a name
-    if (name == "") {
+    if (d_dataset_name == "") {
         cerr << "A dataset must have a name" << endl;
         return false;
     }
 
     string msg;
-    if (!unique_names(vars, name, "Dataset", msg))
+    if (!unique_names(vars, d_dataset_name, "Dataset", msg))
         return false;
 
     if (all)
@@ -1219,7 +1217,7 @@ DDS::dump(ostream &strm) const
     strm << DapIndent::LMarg << "DDS::dump - ("
     << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
-    strm << DapIndent::LMarg << "name: " << name << endl ;
+    strm << DapIndent::LMarg << "name: " << d_dataset_name << endl ;
     strm << DapIndent::LMarg << "filename: " << d_filename << endl ;
     strm << DapIndent::LMarg << "protocol major: " << d_dap_major << endl;
     strm << DapIndent::LMarg << "protocol minor: " << d_dap_minor << endl;

@@ -417,7 +417,7 @@ Constructor::print_xml(ostream &out, string space, bool constrained)
     if (constrained && !send_p())
         return;
 
-    bool has_attributes = false; // *** fix me
+    bool has_attributes = get_attr_table().get_size() > 0;
     bool has_variables = (var_begin() != var_end());
 
     out << space << "<" << type_name() ;

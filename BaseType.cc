@@ -291,6 +291,21 @@ BaseType::type_name() const
         return string("Sequence");
     case dods_grid_c:
         return string("Grid");
+
+    case dap4_group_c:	// dap4 prefix
+	return string("Group");
+    case dap4_grid_c:
+	return string("NGrid");
+    case dap4_sequence_c:
+	return string("NSequence");
+    case dap4_opaque_c:
+	return string("Opaque");
+
+    case dods_int64_c:	// Used 'dods_' for these
+	return string("Int64");
+    case dods_uint64_c:
+	return string("UInt64");
+
     default:
         cerr << "BaseType::type_name: Undefined type" << endl;
         return string("");
@@ -312,11 +327,17 @@ BaseType::is_simple_type()
     case dods_uint16_c:
     case dods_int32_c:
     case dods_uint32_c:
+
+    case dods_int64_c:
+    case dods_uint64_c:
+
     case dods_float32_c:
     case dods_float64_c:
     case dods_str_c:
     case dods_url_c:
         return true;
+
+    case dap4_opaque_c:
 
     case dods_array_c:
     case dods_structure_c:
@@ -324,6 +345,8 @@ BaseType::is_simple_type()
     case dods_grid_c:
 
     case dap4_group_c:
+    case dap4_grid_c:
+    case dap4_sequence_c:
         return false;
     }
 
@@ -342,6 +365,10 @@ BaseType::is_vector_type()
     case dods_int16_c:
     case dods_uint16_c:
     case dods_int32_c:
+
+    case dods_int64_c:
+    case dods_uint64_c:
+
     case dods_uint32_c:
     case dods_float32_c:
     case dods_float64_c:
@@ -352,11 +379,15 @@ BaseType::is_vector_type()
     case dods_array_c:
         return true;
 
+    case dap4_opaque_c:
+
     case dods_structure_c:
     case dods_sequence_c:
     case dods_grid_c:
 
     case dap4_group_c:
+    case dap4_grid_c:
+    case dap4_sequence_c:
         return false;
     }
 
@@ -377,18 +408,26 @@ BaseType::is_constructor_type()
     case dods_uint16_c:
     case dods_int32_c:
     case dods_uint32_c:
+
+    case dods_int64_c:
+    case dods_uint64_c:
+
     case dods_float32_c:
     case dods_float64_c:
     case dods_str_c:
     case dods_url_c:
     case dods_array_c:
-        return false;
+
+    case dap4_opaque_c:
+	return false;
 
     case dods_structure_c:
     case dods_sequence_c:
     case dods_grid_c:
 
     case dap4_group_c:
+    case dap4_grid_c:
+    case dap4_sequence_c:
 	return true;
     }
 

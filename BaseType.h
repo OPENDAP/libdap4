@@ -125,7 +125,14 @@ enum Part {
     dods_structure_c,
     dods_sequence_c,
     dods_grid_c,
-    dap4_group_c
+
+    dap4_group_c,	// dap4 prefix
+    dap4_grid_c,
+    dap4_sequence_c,
+    dap4_opaque_c,
+
+    dods_int64_c,	// Used 'dods_' for these
+    dods_uint64_c
     };
     \endcode
 
@@ -148,7 +155,14 @@ enum Type {
     dods_structure_c,
     dods_sequence_c,
     dods_grid_c,
-    dap4_group_c
+
+    dap4_group_c,	// dap4 prefix
+    dap4_grid_c,
+    dap4_sequence_c,
+    dap4_opaque_c,
+
+    dods_int64_c,	// Used 'dods_' for these
+    dods_uint64_c
 };
 
 /** This defines the basic data type features for the DODS data access
@@ -346,7 +360,7 @@ public:
 	the characters, since that value cannot be determined from
 	type information alone. For Structure, and other constructor
 	types size() returns the number of bytes needed to store
-	pointers to the C++ objects.
+	the contained C++ objects.
 
 	@brief Returns the size of the class instance data. */
     virtual unsigned int width() = 0;
@@ -359,7 +373,7 @@ public:
 	caller is responsible for deallocating that memory. Array and
 	values for simple types are stored as C would store an array.
 
-    @deprecated Use value() in the leaf classes.
+	@deprecated Use value() in the leaf classes.
 
 	@brief Reads the class data.
 
