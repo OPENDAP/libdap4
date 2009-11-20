@@ -13,4 +13,6 @@ Dataset {
     } g;
 } test1;
 The data:
-Float64 length[5] = {99.999, 99.999, 99.999, 99.999, 99.999};
+Structure {
+    Float64 length[5];
+} g = { {99.999, 99.999, 99.999, 99.999, 99.999} };

@@ -44,8 +44,6 @@
 #include "util.h"
 #include "InternalErr.h"
 #include "escaping.h"
-//#include "BTIterAdapter.h"
-
 
 using namespace std;
 
@@ -552,6 +550,7 @@ Grid::print_decl(FILE *out, string space, bool print_semi,
     if (constrained && !send_p())
         return;
 
+#if 0
     // If we are printing the declaration of a constrained Grid then check for
     // the case where the projection removes all but one component; the
     // resulting object is a simple array.
@@ -569,7 +568,14 @@ Grid::print_decl(FILE *out, string space, bool print_semi,
     // component Grid, send the M components as elements of a Struture.
     // This will preserve the grouping without violating the rules for a
     // Grid.
-    else if (constrained && !projection_yields_grid()) {
+    // else
+#endif
+    // The problem with the above is that if two Grids are projected and each
+    // contain one variable, say a map, and it happens to have the same name
+    // in each Grid, then without the enclosing Structures, the returned dataset
+    // has two variables with the same name at the same lexical level. So I'm
+    // removing the code above.
+    if (constrained && !projection_yields_grid()) {
         fprintf(out, "%sStructure {\n", space.c_str()) ;
 
         _array_var->print_decl(out, space + "    ", true, constraint_info,
@@ -609,9 +615,11 @@ Grid::print_decl(FILE *out, string space, bool print_semi,
 
     if (print_semi)
         fprintf(out, ";\n") ;
-
+#if 0
     // If sending just one comp, skip sending the terminal semicolon, etc.
 exit:
+#endif
+
     return;
 }
 #endif
@@ -630,6 +638,7 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
     // I replaced the 'true' with the value of 'print_semi' passed in by the
     // caller. This fixes an issue with the intern_data tests and does not
     // seem to break anything else. jhrg 11/9/07
+#if 0
     int projection = components(true);
     if (constrained && projection == 1) {
         _array_var->print_decl(out, space, print_semi /*true*/, constraint_info,
@@ -644,7 +653,11 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
     // component Grid, send the M components as elements of a Structure.
     // This will preserve the grouping without violating the rules for a
     // Grid.
-    else if (constrained && !projection_yields_grid()) {
+    // else
+#endif
+
+    // See comment for the FILE* version of this method.
+    if (constrained && !projection_yields_grid()) {
 	out << space << "Structure {\n" ;
 
         _array_var->print_decl(out, space + "    ", true, constraint_info,
@@ -684,9 +697,11 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
 
     if (print_semi)
 	out << ";\n" ;
-
+#if 0
     // If sending just one comp, skip sending the terminal semicolon, etc.
 exit:
+#endif
+
     return;
 }
 
@@ -724,6 +739,7 @@ Grid::print_xml(FILE *out, string space, bool constrained)
      // I replaced the 'true' with the value of 'print_semi' passed in by the
      // caller. This fixes an issue with the intern_data tests and does not
      // seem to break anything else. jhrg 11/9/07
+#if 0
      int projection = components(true);
      if (constrained && projection == 1) {
          get_attr_table().print_xml(out, space + "    ", constrained);
@@ -737,7 +753,10 @@ Grid::print_xml(FILE *out, string space, bool constrained)
      // component Grid, send the M components as elements of a Structure.
      // This will preserve the grouping without violating the rules for a
      // Grid.
-     else if (constrained && !projection_yields_grid()) {
+     // else
+#endif
+
+     if (constrained && !projection_yields_grid()) {
          fprintf(out, "%s<Structure", space.c_str());
          if (!name().empty())
              fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
@@ -807,6 +826,7 @@ Grid::print_xml(ostream &out, string space, bool constrained)
     // I replaced the 'true' with the value of 'print_semi' passed in by the
     // caller. This fixes an issue with the intern_data tests and does not
     // seem to break anything else. jhrg 11/9/07
+#if 0
     int projection = components(true);
     if (constrained && projection == 1) {
         get_attr_table().print_xml(out, space + "    ", constrained);
@@ -820,7 +840,10 @@ Grid::print_xml(ostream &out, string space, bool constrained)
     // component Grid, send the M components as elements of a Structure.
     // This will preserve the grouping without violating the rules for a
     // Grid.
-    else if (constrained && !projection_yields_grid()) {
+    //else
+#endif
+
+    if (constrained && !projection_yields_grid()) {
         out << space << "<Structure" ;
         if (!name().empty())
             out << " name=\"" << id2xml(name()) << "\"" ;
