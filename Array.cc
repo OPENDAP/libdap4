@@ -221,6 +221,32 @@ Array::append_dim(int size, string name)
     update_length(size);
 }
 
+/** Creates a new OUTER dimension (slowest varying in rowmajor)
+ * for the array by prepending rather than appending it.
+ * @param size cardinality of the new dimension
+ * @param name  optional name for the new dimension
+ */
+void
+Array::prepend_dim(int size, const string& name/* = "" */)
+{
+  dimension d;
+
+  // This is invariant
+  d.size = size;
+  d.name = www2id(name);
+
+  // this information changes with each constraint expression
+  d.start = 0;
+  d.stop = size - 1;
+  d.stride = 1;
+  d.c_size = size;
+
+  // Shifts the whole array, but it's tiny in general
+  _shape.insert(_shape.begin(), d);
+
+  update_length(size); // the number is ignored...
+}
+
 /** Resets the dimension constraint information so that the entire
     array is selected.
 

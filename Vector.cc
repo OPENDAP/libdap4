@@ -1219,9 +1219,13 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
           throw InternalErr(__FILE__, __LINE__, funcName + "Logic error: rowMajorData._buf was unexpectedly null!");
         }
         // memcpy the data into this, taking care to do ptr arithmetic on bytes and not sizeof(element)
-        memcpy(_buf + (startElement * _var->width()),
-               rowMajorData._buf,
-               rowMajorData.width() );
+        int varWidth = _var->width();
+        char* pFromBuf = rowMajorData._buf;
+        int numBytesToCopy = rowMajorData.width();
+        char* pIntoBuf = _buf + (startElement * varWidth);
+        memcpy(pIntoBuf,
+               pFromBuf,
+               numBytesToCopy );
         break;
 
       case dods_str_c:

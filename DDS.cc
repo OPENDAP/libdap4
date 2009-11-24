@@ -497,7 +497,11 @@ DDS::add_var(BaseType *bt)
     DBG2(cerr << "In DDS::add_var(), btp's address is: " << btp << endl);
     if( d_container )
     {
+        // Mem leak fix [mjohnson nov 2009]
+        // Structure::add_var() creates ANOTHER copy.
 	d_container->add_var( bt ) ;
+	// So we need to delete btp or else it leaks
+	delete btp; btp = 0;
     }
     else
     {

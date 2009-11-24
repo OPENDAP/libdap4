@@ -126,6 +126,7 @@ private:
     BaseType *_array_var;
     std::vector<BaseType *> _map_vars;
 
+protected: // subclasses need access [mjohnson 11 nov 2009]
     void _duplicate(const Grid &s);
 
 public:
@@ -156,8 +157,13 @@ public:
 
     virtual void add_var(BaseType *bt, Part part);
 
+    virtual void set_array(Array* p_new_arr);
+    virtual Array* add_map(Array* p_new_map, bool add_copy);
+    virtual Array* prepend_map(Array* p_new_map, bool add_copy);
+
     BaseType *array_var();
     Array *get_array();
+
 
     virtual unsigned int width();
 
