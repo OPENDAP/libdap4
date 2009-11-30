@@ -359,7 +359,8 @@ Grid::add_var(BaseType *bt, Part part)
     // so the owner of bt which is external to libdap++
     // is free to deallocate its object.
     switch (part) {
-    case array:
+
+    case array: {
         // Refactored to use new set_array ([mjohnson 11 nov 2009])
         Array* p_arr = dynamic_cast<Array*>(bt);
         // avoid obvious broken semantics
@@ -370,13 +371,18 @@ Grid::add_var(BaseType *bt, Part part)
         // Add it as a copy to preserve old semantics.  This sets parent too.
         set_array(static_cast<Array*>(p_arr->ptr_duplicate()));
         return;
+    }
+    break;
+
     case maps: {
             BaseType *btp = bt->ptr_duplicate();
             btp->set_parent(this);
             _map_vars.push_back(btp);
             return;
         }
-    default:
+    break;
+
+    default: {
         if (!_array_var) {
             // Refactored to use new set_array ([mjohnson 11 nov 2009])
             Array* p_arr = dynamic_cast<Array*>(bt);
@@ -395,6 +401,8 @@ Grid::add_var(BaseType *bt, Part part)
         }
         return;
     }
+    break;
+  }// switch
 }
 
 /**
