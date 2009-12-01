@@ -29,9 +29,10 @@
 //
 // Authors:
 //      pwest       Patrick West <pwest@ucar.edu>
-
+#include "config.h"
 #include "XDRStreamUnMarshaller.h"
 
+#include <cstring> // for memcpy
 #include <string>
 #include <sstream>
 
@@ -231,7 +232,7 @@ XDRStreamUnMarshaller::get_opaque( char *val, unsigned int len )
     // Round len up to the next multiple of 4. There is also the RNDUP()
     // macro in xdr.h, at least on OS/X.
     len += len&3;
-    if ( len > XDR_DAP_BUFF_SIZE )
+    if ( static_cast<int>(len) > XDR_DAP_BUFF_SIZE )
 	throw Error("Network I/O Error. Length of opaque data larger than allowed");
 
     _in.read( _buf, len );
