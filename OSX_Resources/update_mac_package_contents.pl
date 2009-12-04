@@ -18,6 +18,7 @@ print "Package_size: $package_size\n" if $debug ge 1;
 
 substitute_values("OSX_Resources/Info.plist", $version_number, $package_size);
 substitute_arch("OSX_Resources/InstallationCheck");
+chmod(0755, "OSX_Resources/InstallationCheck");
 
 ###################################################################
 
