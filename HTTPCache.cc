@@ -545,6 +545,7 @@ HTTPCache::create_cache_root(const string &cache_root)
 
 #ifdef WIN32
     cur = cache_root[1] == ':' ? 3 : 1;
+    typedef int mode_t;
 #else
     cur = 1;
 #endif
