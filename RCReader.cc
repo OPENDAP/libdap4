@@ -432,7 +432,7 @@ RCReader::RCReader() throw(Error)
 #ifdef WIN32
     string homedir = string("C:") + string(DIR_SEP_STRING) + string("Dods");
     d_rc_file_path = check_string(homedir);
-    if d_rc_file_path.empty()) {
+    if (d_rc_file_path.empty()) {
 	homedir = string("C:") + string(DIR_SEP_STRING) + string("opendap");
 	d_rc_file_path = check_string(homedir);
     }
