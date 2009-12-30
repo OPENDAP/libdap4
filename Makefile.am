@@ -100,6 +100,14 @@ docs:
 	doxygen $(srcdir)/doxy.conf
 	(cd docs && tar -czf html.tar.gz html)
 
+# cccc computes metrics like Lines of code and McCabe. It'a available
+# on the web...
+.PHONY: cccc
+cccc:
+	-mkdir cccc
+	cccc --outdir=cccc $(DAP_SRC) $(SERVER_SRC) $(CLIENT_SRC) \
+	$(DAP_HDR) $(SERVER_HDR) $(CLIENT_HDR)
+
 ###########################################################################
 
 # Fortify targets.

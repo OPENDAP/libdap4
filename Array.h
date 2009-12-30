@@ -128,7 +128,6 @@ private:
 
 protected:
     void _duplicate(const Array &a);
-    void update_length(int size);
 
 #if FILE_METHODS
     unsigned int print_array(FILE *out, unsigned int index,
@@ -169,6 +168,8 @@ public:
     virtual void reset_constraint();
 
     virtual void clear_constraint();
+
+    virtual void update_length(int size);
 
     Dim_iter dim_begin() ;
     Dim_iter dim_end() ;

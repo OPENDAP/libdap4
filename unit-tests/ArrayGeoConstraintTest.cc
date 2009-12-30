@@ -145,8 +145,8 @@ public:
             ArrayGeoConstraint agc(ta, 10, 10, 89.9, 89);
             CPPUNIT_ASSERT(agc.d_extent.d_left == 10
                            && agc.d_extent.d_top == 10
-                           && agc.d_extent.d_right == 89.9
-                           && agc.d_extent.d_bottom == 89);
+                           && agc.d_extent.d_right == 89
+                           && agc.d_extent.d_bottom == 89.9);
             CPPUNIT_ASSERT(agc.d_projection.d_name == "plat-carre"
                            && agc.d_projection.d_datum == "wgs84");
         }
@@ -160,8 +160,8 @@ public:
                                    "plat-carre", "wgs84");
             CPPUNIT_ASSERT(agc.d_extent.d_left == 10
                            && agc.d_extent.d_top == 10
-                           && agc.d_extent.d_right == 89.9
-                           && agc.d_extent.d_bottom == 89);
+                           && agc.d_extent.d_right == 89
+                           && agc.d_extent.d_bottom == 89.9);
             CPPUNIT_ASSERT(agc.d_projection.d_name == "plat-carre"
                            && agc.d_projection.d_datum == "wgs84");
         }
@@ -183,7 +183,7 @@ public:
 
     void build_lat_lon_maps_test() {
         // build_lat_lon_maps() is called in the ctor
-        ArrayGeoConstraint agc(a1, 10, 90, 89, -90);
+        ArrayGeoConstraint agc(a1, 90, 10, -90, 89);
 
         CPPUNIT_ASSERT(agc.get_lon()[0] == 10.0);
         DBG(cerr << "agc.get_lon()[9]: " << agc.get_lon()[9] << endl);
@@ -193,23 +193,25 @@ public:
     }
 
     void set_bounding_box_test() {
-        ArrayGeoConstraint agc1(a1, 10, 90, 89, -90);
-        agc1.set_bounding_box(10, 90,89, -90);
-        CPPUNIT_ASSERT(agc1.get_longitude_index_left() == 0);
-        CPPUNIT_ASSERT(agc1.get_longitude_index_right() == 9);
-        CPPUNIT_ASSERT(agc1.get_latitude_index_top() == 0);
-        CPPUNIT_ASSERT(agc1.get_latitude_index_bottom() == 20);
+	try {
+	    ArrayGeoConstraint agc1(a1, 90, 10, -90, 89);
+	    agc1.set_bounding_box(90, 10, -90, 89);
+	    CPPUNIT_ASSERT(agc1.get_longitude_index_left() == 0);
+	    CPPUNIT_ASSERT(agc1.get_longitude_index_right() == 9);
+	    CPPUNIT_ASSERT(agc1.get_latitude_index_top() == 0);
+	    CPPUNIT_ASSERT(agc1.get_latitude_index_bottom() == 20);
 
-        ArrayGeoConstraint agc2(a2, 0, 90, 359, -90);
-        agc2.set_bounding_box(10, 45, 89, -45);
-        DBG(cerr << "agc2.get_longitude_index_left(): " << agc2.get_longitude_index_left() << endl);
-        DBG(cerr << "agc2.get_longitude_index_right(): " << agc2.get_longitude_index_right() << endl);
-        DBG(cerr << "agc2.get_latitude_index_top(): " << agc2.get_latitude_index_top() << endl);
-        DBG(cerr << "agc2.get_latitude_index_bottom(): " << agc2.get_latitude_index_bottom() << endl);
-        CPPUNIT_ASSERT(agc2.get_longitude_index_left() == 0);
-        CPPUNIT_ASSERT(agc2.get_longitude_index_right() == 3);
-        CPPUNIT_ASSERT(agc2.get_latitude_index_top() == 5);
-        CPPUNIT_ASSERT(agc2.get_latitude_index_bottom() == 15);
+	    ArrayGeoConstraint agc2(a2, 90, 0, -90, 359);
+	    agc2.set_bounding_box(45, 10, -45, 89);
+	    DBG(cerr << "agc2.get_longitude_index_left(): " << agc2.get_longitude_index_left() << endl); DBG(cerr << "agc2.get_longitude_index_right(): " << agc2.get_longitude_index_right() << endl); DBG(cerr << "agc2.get_latitude_index_top(): " << agc2.get_latitude_index_top() << endl); DBG(cerr << "agc2.get_latitude_index_bottom(): " << agc2.get_latitude_index_bottom() << endl);
+	    CPPUNIT_ASSERT(agc2.get_longitude_index_left() == 0);
+	    CPPUNIT_ASSERT(agc2.get_longitude_index_right() == 3);
+	    CPPUNIT_ASSERT(agc2.get_latitude_index_top() == 5);
+	    CPPUNIT_ASSERT(agc2.get_latitude_index_bottom() == 15);
+	}
+	catch (Error &e) {
+	    CPPUNIT_FAIL(e.get_error_message());
+	}
     }
 };
 
