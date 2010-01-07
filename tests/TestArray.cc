@@ -109,7 +109,7 @@ TestArray::operator=(const TestArray &rhs)
 
 /** Special names are ones that start with 'lat' or 'lon'. These indicate
     that the vector (this is only for vectors) is a vector of latitude or
-    longitude values. Only true for vectors.*/
+    longitude values. */
 bool
 TestArray::name_is_special()
 {
@@ -139,7 +139,7 @@ TestArray::build_special_values()
         int array_len = length();
         double *lon_data = new double[array_len];
         for (int i = 0; i < array_len; ++i) {
-            lon_data[i] = -179 + (360/array_len) * (i+1);
+            lon_data[i] = (360/array_len) * (i+1);
         }
         libdap::set_array_using_double(this, lon_data, array_len);
     }
@@ -370,8 +370,6 @@ TestArray::read()
       }
 
       case dods_structure_c:
-      case dods_sequence_c:
-      case dods_grid_c:
 
 	// Arrays of Structure, ... must load each element into the array
 	// manually. Because these are stored as C++/DODS objects, there is
@@ -400,6 +398,8 @@ TestArray::read()
 
 	break;
 
+      case dods_sequence_c:
+      case dods_grid_c:
       case dods_array_c:
       case dods_null_c:
       default:

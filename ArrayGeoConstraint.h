@@ -65,7 +65,7 @@ private:
 
         Extent()
         {}
-        Extent(double l, double t, double r, double b)
+        Extent(double t, double l, double b, double r)
                 : d_left(l), d_top(t), d_right(r), d_bottom(b)
         {}
     };

@@ -53,7 +53,6 @@ using namespace std;
 
 namespace libdap {
 
-
 /** @brief Initialize GeoConstraint with a Grid.
 
     @todo Remove ds_name. 10/2/08
@@ -145,6 +144,9 @@ bool GridGeoConstraint::build_lat_lon_maps()
             set_lon_length(d_longitude->length());
 
             set_lon_dim(d);
+
+            if (m + 1 == d_grid->map_end())
+            	set_longitude_rightmost(true);
         }
 
         ++m;
@@ -199,24 +201,23 @@ GridGeoConstraint::lat_lon_dimensions_ok()
     has. If this were implemented as a 'selection function' (i.e., if the code
     was run by ConstraintExpression::eval() then we might be able to better
     optimize how data are read, but in this case we have read all the data
-    and may have alredy reorganized it. Set up the internal buffers so they
+    and may have already reorganized it. Set up the internal buffers so they
     hold the correct values and mark the Grid's array and lat/lon maps as
     read. */
 void GridGeoConstraint::apply_constraint_to_data()
 {
-    if (!get_bounding_box_set())
-        throw
-        InternalErr
-        ("The Latitude and Longitude constraints must be set before calling apply_constraint_to_data().");
+    if (!is_bounding_box_set())
+        throw InternalErr("The Latitude and Longitude constraints must be set before calling apply_constraint_to_data().");
 
     Array::Dim_iter fd = d_latitude->dim_begin();
+
     if (get_latitude_sense() == inverted) {
         int tmp = get_latitude_index_top();
         set_latitude_index_top(get_latitude_index_bottom());
         set_latitude_index_bottom(tmp);
     }
 
-    // It's esy to flip the Latitude values; if the bottom index value
+    // It's easy to flip the Latitude values; if the bottom index value
     // is before/above the top index, return an error explaining that.
     if (get_latitude_index_top() > get_latitude_index_bottom())
         throw Error("The upper and lower latitude indices appear to be reversed. Please provide the latitude bounding box numbers giving the northern-most latitude first.");
@@ -241,19 +242,19 @@ void GridGeoConstraint::apply_constraint_to_data()
         // Note that the following method only reads the data out and stores
         // it in this object after joining the two parts. The method
         // apply_constraint_to_data() transfers the data back from the this
-        // objet to the DAP Grid variable.
-        reorder_data_longitude_axis(*d_grid->get_array());
+        // object to the DAP Grid variable.
+        reorder_data_longitude_axis(*d_grid->get_array(), get_lon_dim());
 
-        // Now the data are all in local storage
-
-        // alter the indices; the left index has now been moved to 0, and the right
-        // index is now at lon_vector_length-left+right.
+        // Now that the data are all in local storage alter the indices; the
+        // left index has now been moved to 0, and the right index is now
+        // at lon_vector_length-left+right.
         set_longitude_index_right(get_lon_length() - get_longitude_index_left()
                                   + get_longitude_index_right());
         set_longitude_index_left(0);
     }
+
     // If the constraint used the -180/179 (neg_pos) notation, transform
-    // the longitude map s it uses the -180/179 notation. Note that at this
+    // the longitude map so it uses the -180/179 notation. Note that at this
     // point, d_longitude always uses the pos notation because of the earlier
     // conditional transformation.
 
@@ -266,6 +267,7 @@ void GridGeoConstraint::apply_constraint_to_data()
     if (get_longitude_notation() == neg_pos) {
         transform_longitude_to_neg_pos_notation();
     }
+
     // Apply constraint; stride is always one and maps only have one dimension
     fd = d_longitude->dim_begin();
     d_longitude->add_constraint(fd, get_longitude_index_left(), 1,
@@ -276,21 +278,45 @@ void GridGeoConstraint::apply_constraint_to_data()
                                         1, get_longitude_index_right());
 
     // Transfer values from the local lat vector to the Grid's
+    // Here test the sense of the latitude vector and invert the vector if the
+    // sense is 'inverted' so that the top is always the northern-most value
+    if (get_latitude_sense() == inverted) {
+	DBG(cerr << "Inverted latitude sense" << endl);
+	transpose_vector(get_lat() + get_latitude_index_top(),
+		get_latitude_index_bottom() - get_latitude_index_top() + 1);
+	// Now read the Array data and flip the latitudes.
+	flip_latitude_within_array(*d_grid->get_array(),
+		get_latitude_index_bottom() - get_latitude_index_top() + 1,
+		get_longitude_index_right() - get_longitude_index_left() + 1);
+    }
+
     set_array_using_double(d_latitude, get_lat() + get_latitude_index_top(),
                            get_latitude_index_bottom() - get_latitude_index_top() + 1);
 
     set_array_using_double(d_longitude, get_lon() + get_longitude_index_left(),
                            get_longitude_index_right() - get_longitude_index_left() + 1);
 
+    // Look for any non-lat/lon maps and make sure they are read correctly
+    Grid::Map_iter i = d_grid->map_begin();
+    Grid::Map_iter end = d_grid->map_end();
+    while (i != end) {
+	if (*i != d_latitude && *i != d_longitude) {
+	    if ((*i)->send_p()) {
+		DBG(cerr << "reading grid map: " << (*i)->name() << endl);
+		//(*i)->set_read_p(false);
+		(*i)->read();
+	    }
+	}
+	++i;
+    }
+
     // ... and then the Grid's array if it has been read.
     if (get_array_data()) {
-/* ***/
         int size = d_grid->get_array()->val2buf(get_array_data());
 
         if (size != get_array_data_size())
-            throw
-            InternalErr
-            ("Expected data size not copied to the Grid's buffer.");
+            throw InternalErr(__FILE__, __LINE__, "Expected data size not copied to the Grid's buffer.");
+
         d_grid->set_read_p(true);
     }
     else {

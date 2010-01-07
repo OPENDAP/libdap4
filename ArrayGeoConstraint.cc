@@ -62,20 +62,20 @@ void ArrayGeoConstraint::m_init()
 
 // In the other methods the ds_name parameter defaults to "" but that's not
 // possible here. Remove ds_name
-ArrayGeoConstraint::ArrayGeoConstraint(Array *array, double left, double top,
-        double right, double bottom)
+ArrayGeoConstraint::ArrayGeoConstraint(Array *array, double top, double left,
+        double bottom, double right)
         : GeoConstraint(), d_array(array),
-        d_extent(left, top, right, bottom), d_projection("plat-carre", "wgs84")
+        d_extent(top, left, bottom, right), d_projection("plat-carre", "wgs84")
 
 {
     m_init();
 }
 
 ArrayGeoConstraint::ArrayGeoConstraint(Array *array,
-                                       double left, double top, double right, double bottom,
+                                       double top, double left, double bottom, double right,
                                        const string &projection, const string &datum)
         : GeoConstraint(), d_array(array),
-        d_extent(left, top, right, bottom), d_projection(projection, datum)
+        d_extent(top, left, bottom, right), d_projection(projection, datum)
 
 {
     m_init();
@@ -149,7 +149,7 @@ ArrayGeoConstraint::lat_lon_dimensions_ok()
     call and send all the data in the buffer. */
 void ArrayGeoConstraint::apply_constraint_to_data()
 {
-    if (!get_bounding_box_set())
+    if (!is_bounding_box_set())
         throw InternalErr(
             "The Latitude and Longitude constraints must be set before calling\n\
             apply_constraint_to_data().");
@@ -172,7 +172,7 @@ void ArrayGeoConstraint::apply_constraint_to_data()
     // Does the longitude constraint cross the edge of the longitude vector?
     // If so, reorder the data (array).
     if (get_longitude_index_left() > get_longitude_index_right()) {
-        reorder_data_longitude_axis(*d_array);
+        reorder_data_longitude_axis(*d_array, get_lon_dim());
 
         // Now the data are all in local storage
 

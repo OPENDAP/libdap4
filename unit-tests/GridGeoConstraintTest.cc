@@ -29,7 +29,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Int32.h"
@@ -266,19 +266,20 @@ public:
     }
 
     CPPUNIT_TEST_SUITE( GridGeoConstraintTest );
-#if 1
+
+#if 0
     CPPUNIT_TEST(geoconstraint_build_lat_lon_maps_test);
     CPPUNIT_TEST(lat_lon_dimensions_ok_test);
     CPPUNIT_TEST(transform_longitude_to_pos_notation_test);
     CPPUNIT_TEST(find_longitude_indeces_test);
+#endif
     CPPUNIT_TEST(categorize_latitude_test);
     CPPUNIT_TEST(find_latitude_indeces_test);
+#if 0
     CPPUNIT_TEST(set_array_using_double_test);
     CPPUNIT_TEST(reorder_longitude_map_test);
-#if 0
     // See the comment at the function...
-    CPPUNIT_TEST(reorder_data_longitude_axis_test);
-#endif
+    // CPPUNIT_TEST(reorder_data_longitude_axis_test);
     CPPUNIT_TEST(set_bounding_box_test1);
     CPPUNIT_TEST(set_bounding_box_test2);
     CPPUNIT_TEST(set_bounding_box_test3);
@@ -288,10 +289,9 @@ public:
     CPPUNIT_TEST(set_bounding_box_test7);
     CPPUNIT_TEST(apply_constriant_to_data_test);
     CPPUNIT_TEST(apply_constriant_to_data_test2);
-#endif
     CPPUNIT_TEST(apply_constriant_to_data_test3);
     CPPUNIT_TEST(apply_constriant_to_data_test4);
-
+#endif
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -334,14 +334,14 @@ public:
             GridGeoConstraint gc1(g);
             CPPUNIT_ASSERT(gc1.build_lat_lon_maps());
             CPPUNIT_ASSERT(gc1.lat_lon_dimensions_ok());
-            CPPUNIT_ASSERT(gc1.get_longitude_rightmost() == false);
+            CPPUNIT_ASSERT(gc1.is_longitude_rightmost() == false);
 
             Grid *g3 = dynamic_cast<Grid*>(geo_dds->var("SST3"));
             CPPUNIT_ASSERT(g3);
             GridGeoConstraint gc3(g3);
             CPPUNIT_ASSERT(gc3.build_lat_lon_maps());
             CPPUNIT_ASSERT(gc3.lat_lon_dimensions_ok());
-            CPPUNIT_ASSERT(gc3.get_longitude_rightmost() == true);
+            CPPUNIT_ASSERT(gc3.is_longitude_rightmost() == true);
         }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
@@ -380,6 +380,7 @@ public:
     void find_longitude_indeces_test()
     {
 	try {
+	    //  { 0, 40, 80, 120, 160, 200, 240, 280, 320, 359 };
         Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
         CPPUNIT_ASSERT(g);
         GridGeoConstraint gc1(g);
@@ -417,6 +418,7 @@ public:
         CPPUNIT_ASSERT(left_i == 2);
         CPPUNIT_ASSERT(right_i == 1);
 
+	    // lon: { 41, 81, 121, 161, 201, 241, 281, 321, 361, 365, 370, 375, 380, 385, 390 };
         g = dynamic_cast<Grid*>(geo_dds_coads_lon->var("SST5"));
         CPPUNIT_ASSERT(g);
         GridGeoConstraint gc5(g);
@@ -461,45 +463,65 @@ public:
     {
         // SST1 lat: { 40, 30, 20, 10, 0, -10, -20, -30, -40, -50 };
         Grid *g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
-        CPPUNIT_ASSERT(g);
-        GridGeoConstraint gc0(g);
-
         int top_i, bottom_i;
+
+        CPPUNIT_ASSERT(g);
+
+        GridGeoConstraint gc0(g);
         gc0.find_latitude_indeces(20, -20, GeoConstraint::normal, top_i, bottom_i);
         DBG(cerr << "SST1, top: " << top_i << ", bottom: " << bottom_i << endl);
         CPPUNIT_ASSERT(top_i == 2);
         CPPUNIT_ASSERT(bottom_i == 6);
 
         // SST1 lat: { 40, 30, 20, 10, 0, -10, -20, -30, -40, -50 };
-        g = dynamic_cast<Grid*>(geo_dds->var("SST1"));
-        CPPUNIT_ASSERT(g);
         GridGeoConstraint gc1(g);
+        gc1.find_latitude_indeces(35, 5, GeoConstraint::normal, top_i, bottom_i);
+        DBG(cerr << "SST1, top: " << top_i << ", bottom: " << bottom_i << endl);
+        CPPUNIT_ASSERT(top_i == 0);
+        CPPUNIT_ASSERT(bottom_i == 4);
 
-        gc1.find_latitude_indeces(25, -25, GeoConstraint::normal, top_i, bottom_i);
+        // SST1 lat: { 40, 30, 20, 10, 0, -10, -20, -30, -40, -50 };
+        GridGeoConstraint gc2(g);
+        gc2.find_latitude_indeces(25, -25, GeoConstraint::normal, top_i, bottom_i);
         DBG(cerr << "SST1, top: " << top_i << ", bottom: " << bottom_i << endl);
         CPPUNIT_ASSERT(top_i == 1);
         CPPUNIT_ASSERT(bottom_i == 7);
 
+        // SST1 lat: { 40, 30, 20, 10, 0, -10, -20, -30, -40, -50 };
+        GridGeoConstraint gc3(g);
+        gc3.find_latitude_indeces(-15, -35, GeoConstraint::normal, top_i, bottom_i);
+        DBG(cerr << "SST1, top: " << top_i << ", bottom: " << bottom_i << endl);
+        CPPUNIT_ASSERT(top_i == 5);
+        CPPUNIT_ASSERT(bottom_i == 8);
+
         // SST3 lat: { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
         g = dynamic_cast<Grid*>(geo_dds->var("SST3"));
         CPPUNIT_ASSERT(g);
-        GridGeoConstraint gc2(g);
 
-        gc2.find_latitude_indeces(20, -20, GeoConstraint::inverted, top_i, bottom_i);
+        GridGeoConstraint gc4(g);
+        gc4.find_latitude_indeces(20, -20, GeoConstraint::inverted, top_i, bottom_i);
         DBG(cerr << "SST3, top: " << top_i << ", bottom: " << bottom_i << endl);
         CPPUNIT_ASSERT(top_i == 6);
         CPPUNIT_ASSERT(bottom_i == 2);
 
         // SST3 lat: { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
-        g = dynamic_cast<Grid*>(geo_dds->var("SST3"));
-        CPPUNIT_ASSERT(g);
-        GridGeoConstraint gc3(g);
-
-        gc3.find_latitude_indeces(25, -25, GeoConstraint::inverted, top_i, bottom_i);
+        GridGeoConstraint gc5(g);
+        gc5.find_latitude_indeces(35, 5, GeoConstraint::inverted, top_i, bottom_i);
         DBG(cerr << "SST3, top: " << top_i << ", bottom: " << bottom_i << endl);
-        // 1 and 7 because the bounding box is inclusive. According to the
-        // requirements, we can include extra stuff but must include all that
-        // was requested.
+        CPPUNIT_ASSERT(top_i == 8);
+        CPPUNIT_ASSERT(bottom_i == 4);
+
+        // SST3 lat: { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
+        GridGeoConstraint gc6(g);
+        gc6.find_latitude_indeces(-5, -35, GeoConstraint::inverted, top_i, bottom_i);
+        DBG(cerr << "SST3, top: " << top_i << ", bottom: " << bottom_i << endl);
+        CPPUNIT_ASSERT(top_i == 4);
+        CPPUNIT_ASSERT(bottom_i == 0);
+
+        // SST3 lat: { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
+        GridGeoConstraint gc7(g);
+        gc7.find_latitude_indeces(25, -25, GeoConstraint::inverted, top_i, bottom_i);
+        DBG(cerr << "SST3, top: " << top_i << ", bottom: " << bottom_i << endl);
         CPPUNIT_ASSERT(top_i == 7);
         CPPUNIT_ASSERT(bottom_i == 1);
     }

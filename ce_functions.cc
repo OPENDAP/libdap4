@@ -48,7 +48,7 @@ static char rcsid[]not_used =
 #include <vector>
 #include <algorithm>
 
-// #define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Byte.h"
@@ -330,9 +330,11 @@ function_version(int, BaseType *[], DDS &, BaseType **btpp)
                        <function name=\"version\" version=\"1.0\"/>\
                        <function name=\"grid\" version=\"1.0\"/>\
                        <function name=\"geogrid\" version=\"1.0b2\"/>\
-                       <function name=\"geoarray\" version=\"0.9b1\"/>\
                        <function name=\"linear_scale\" version=\"1.0b1\"/>\
                        </functions>";
+#if 0
+                       <function name=\"geoarray\" version=\"0.9b1\"/>
+#endif
 
     Str *response = new Str("version");
 
@@ -566,7 +568,7 @@ function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     "The geogrid() function applies a constraint given in latitude and\n" +
     "longitude to a DAP Grid variable. The arguments to the function are:\n" +
     "\n" +
-    "  geogrid(variable, top, left, bottom, right, expressions)\n" +
+    "  geogrid(variable, top, left, bottom, right[, expressions])\n" +
     "\n" +
     "The variable is the data type to be returned.  Top, left, bottom,\n" +
     "right are the coordinates of the northwesterm and southeastern corners\n" +
@@ -576,7 +578,7 @@ function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     "\n" +
     "The function will always return a single Grid variable whose values\n" +
     "completely cover the given region, although there may be cases when\n" +
-    "some additional data is also returned. If the longitude values 'wrap\n" +
+    "some additional data are also returned. If the longitude values 'wrap\n" +
     "around' the right edge of the data, then the function will make two\n" +
     "requests and return those joined together as a single Grid.\n" +
     "</function>";
@@ -608,11 +610,13 @@ function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     Grid::Map_iter i = l_grid->map_begin();
     while (i != l_grid->map_end())
         (*i++)->set_send_p(true);
+
     l_grid->read();
     // Calling read() above sets the read_p flag for the entire grid; clear it
     // for the grid's array so that later on the code will be sure to read it
     // under all circumstances.
-    l_grid->get_array()->set_read_p(false);DBG(cerr << "geogrid: past map read" << endl);
+    l_grid->get_array()->set_read_p(false);
+    DBG(cerr << "geogrid: past map read" << endl);
 
     // Look for Grid Selection Expressions tacked onto the end of the BB
     // specification. If there are any, evaluate them before evaluating the BB.
@@ -642,7 +646,7 @@ function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
         double left = extract_double_value(argv[2]);
         double bottom = extract_double_value(argv[3]);
         double right = extract_double_value(argv[4]);
-        gc.set_bounding_box(left, top, right, bottom);
+        gc.set_bounding_box(top, left, bottom, right);
         DBG(cerr << "geogrid: past bounding box set" << endl);
 
         // This also reads all of the data into the grid variable
@@ -932,7 +936,7 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     *btpp = dest;
     return;
 }
-
+#if 0
 /** Perform a selection on the array using geographical coordinates. This
  function takes several groups of arguments.
  <ul>
@@ -1058,13 +1062,15 @@ function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 
     throw InternalErr(__FILE__, __LINE__, "Impossible condition in geoarray.");
 }
-
+#endif
 void register_functions(ConstraintEvaluator & ce)
 {
     ce.add_function("grid", function_grid);
     ce.add_function("geogrid", function_geogrid);
     ce.add_function("linear_scale", function_linear_scale);
+#if 0
     ce.add_function("geoarray", function_geoarray);
+#endif
     ce.add_function("version", function_version);
 }
 

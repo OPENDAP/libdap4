@@ -122,12 +122,12 @@ public:
     };
 
 private:
-    char *d_array_data;    //< Holds the Grid's data values
-    int d_array_data_size;
+    char *d_array_data;    	//< Holds the Grid's data values
+    int d_array_data_size;	//< Total size (bytes) of the array data
 
     double *d_lat;              //< Holds the latitude values
     double *d_lon;              //< Holds the longitude values
-    int d_lat_length;           //< How long is the latitude vector
+    int d_lat_length;           //< Elements (not bytes) in the latitude vector
     int d_lon_length;           //< ... longitude vector
 
     // These four are indexes of the constraint
@@ -179,16 +179,17 @@ protected:
 	false otherwise*/
     virtual bool lat_lon_dimensions_ok() = 0;
 
-    Notation categorize_notation(double left, double right) const;
+    Notation categorize_notation(const double left, const double right) const;
     void transform_constraint_to_pos_notation(double &left, double &right) const;
     virtual void transform_longitude_to_pos_notation();
     virtual void transform_longitude_to_neg_pos_notation();
-    virtual bool is_bounding_box_valid(double left, double top, double right,
-                                       double bottom) const;
+    virtual bool is_bounding_box_valid(const double left, const double top,
+					const double right, const double bottom) const;
     void find_longitude_indeces(double left, double right,
                                 int &longitude_index_left,
                                 int &longitude_index_right) const;
 
+    virtual void transpose_vector(double *src, const int length);
     virtual void reorder_longitude_map(int longitude_index_left);
 
     virtual LatitudeSense categorize_latitude() const;
@@ -196,8 +197,9 @@ protected:
                                int &latitude_index_top,
                                int &latitude_index_bottom) const;
 
-    virtual void reorder_data_longitude_axis(Array &a);
-
+    virtual void reorder_data_longitude_axis(Array &a, Array::Dim_iter lon_dim);
+    virtual void flip_latitude_within_array(Array &a, int lat_length,
+					    int lon_length);
 
     friend class GridGeoConstraintTest; // Unit tests
 
@@ -209,8 +211,8 @@ public:
 
     virtual ~GeoConstraint()
     {
-        delete [] d_lat;
-        delete [] d_lon;
+        delete [] d_lat; d_lat = 0;
+        delete [] d_lon; d_lon = 0;
         delete [] d_array_data; d_array_data = 0;
     }
 
@@ -312,11 +314,11 @@ public:
         d_longitude_index_right = right;
     }
 
-    bool get_bounding_box_set() const
+    bool is_bounding_box_set() const
     {
         return d_bounding_box_set;
     }
-    bool get_longitude_rightmost() const
+    bool is_longitude_rightmost() const
     {
         return d_longitude_rightmost;
     }
@@ -361,7 +363,7 @@ public:
         }
     //@}
 
-    void set_bounding_box(double left, double top, double right, double bottom);
+    void set_bounding_box(double top, double left, double bottom, double right);
 
     /** @brief Once the bounding box is set use this method to apply
         the constraint. */
