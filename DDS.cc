@@ -321,9 +321,9 @@ DDS::transfer_attributes(DAS *das)
             DBG(cerr << "Working on the '" << (*source_p)->name << "' attribute"
                 << endl);
 
-            // If this is container, we must have a container (this one) within
-            // a container (the 'source'). Look and see if the variable is a
-            // Constructor. If so, pass that container into
+            // If this is an attribute container, we must have a container
+            // (this one) within a container (the 'source'). Look and see if
+            // the variable is a Constructor. If so, pass that container into
             // Constructor::transfer_attributes()
             if ((*source_p)->type == Attr_container) {
                 if (dest_variable && dest_variable->is_constructor_type()) {
