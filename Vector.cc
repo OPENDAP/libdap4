@@ -1263,7 +1263,7 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
   } // switch (_var->type())
 
   // This is how many elements we copied.
-  return rowMajorData.length();
+  return (unsigned int)rowMajorData.length();
 }
 
 //@{
