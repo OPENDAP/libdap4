@@ -303,18 +303,18 @@ XDRStreamUnMarshaller::get_vector( char **val, unsigned int &num, int width, Vec
 
     char *buf = 0;
     XDR *source = 0;
-    int size = i * width + 4; // '+ 4' to hold the int already read
+    int size = i * width; // + 4; // '+ 4' to hold the int already read
     BaseType *var = vec.var();
 
     // Must address the case where the string is larger than the buffer
     if (size > XDR_DAP_BUFF_SIZE) {
 	source = new XDR;
-	buf = (char *) malloc( size );
-	xdrmem_create(source, buf, size, XDR_DECODE);
+	buf = (char *) malloc( size + 4 );
+	xdrmem_create(source, buf, size + 4, XDR_DECODE);
 	DBG2(cerr << "size: " << size << endl);
 	memcpy(buf, _buf, 4);
 
-	_in.read(buf + 4, size ); // +4 for the int already read
+	_in.read(buf + 4, size); // +4 for the int already read
 	DBG2(cerr << "bytes read: " << _in.gcount() << endl);
 
 	xdr_setpos( source, 0 );
