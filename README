@@ -1,4 +1,16 @@
 
+Updated for Version 3.10.0
+
+DAP 3.3 is now supported; see http://docs.opendap.org/index.php/DAP3/4.
+
+This version of libdap contains many changes that are needed for both
+DAP 4 and the NcML handler. This version of the library is required
+for the Hyrax 1.6 handlers.
+
+The 'deflate' program is no longer part of this library package since
+we are no longer supporting the old data server system (based on WWW's
+CGI specification).
+
 Updated for version 3.9.2
 
 Now libdap supports DAP 3.2. You can read about the evolving DAP 3.x protocol

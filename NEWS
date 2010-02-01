@@ -1,3 +1,22 @@
+News for version 3.10.0
+
+We have removed the Server 3 (CGI) software from the dap-server
+package and, with that change, we have removed the deflate program
+from this library/package.
+
+The geogrid() function has been much improved. It will now answer
+requests where the latitude is upside down in the dataset and flip the
+result so that the north pole is 'up'. It will also handle requests
+that 'wrap around' the date line. Error messages are also improved.
+
+This library now implements DAP 3.3 including the OtherXML DAP
+attribute type (which will become AnyXML in DAP 4). The library now
+implements simple version negotiation and a DDX response that is DAP
+version sensitive. See the online DAP4 design documentation for more
+information (docs.opendap.org).
+
+Many, many fixes and extensions for DAP4 and NcML support. (NB: the
+NcML handler is a separate project).
 
 News for version 3.9.2
 

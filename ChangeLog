@@ -1,3 +1,636 @@
+2010-02-01  James Gallagher <jgallagher@opendap.org>
+
+	Modified the way errors in attribute values are tested for. Now we
+	test errno first, then for values of 0.0 with ptr values non-null.
+	This matches the man page more closely then the old tests.
+
+2010-01-12  James Gallagher <jgallagher@opendap.org>
+
+	Fixed potential read beyond bounds in
+	XDRStreamUnMarshaller::get_vector.
+
+2010-01-12  James Gallagher <jgallagher@opendap.org>
+
+	Fixed return type in
+	Vector::set_value_slice_from_row_major_vector (changed to unsigned
+	int).
+
+2010-01-12  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a comment
+
+2010-01-08  Patrick West <pwest@ucar.edu>
+
+	--clean to clean build and src files for rpmbuild
+	M    Makefile.am
+
+2010-01-07  James Gallagher <jgallagher@opendap.org>
+
+	Changed the documentation for server-side functions so that the
+	bulk of the documentation is now on the web.
+
+2010-01-07  James Gallagher <jgallagher@opendap.org>
+
+	Fixes to geogrid() so that the longitude wrapping feature works
+	and so that if latitude is upsidedown in the data, it's returned
+	as 'north up' data.
+
+2009-12-29  James Gallagher <jgallagher@opendap.org>
+
+	Shrew build changes that will hopefully lead to a version that we
+	can build using NMI's B&T system. Also, I added 'cccc' targets so
+	that we can take a 'metrics snapshot' without undue pain.
+
+2009-12-23  rduncan
+
+	changes for win32 build
+
+2009-12-03  James Gallagher <jgallagher@opendap.org>
+
+	Added chmod of InstallationCheck script which seems to be needed
+	when buidling on osx 10.5.8.
+
+	M    update_mac_package_contents.pl
+
+2009-12-01  mjohnson
+
+	o Needed to add explicit #include <cstring> in order to find
+	memcpy for Red Hat Enterprise 5 using gcc-4.3.2. Seems they
+	cleaned up headers and you need to be explicit about the include
+	now.
+
+2009-11-30  mjohnson
+
+	Fix for link bug on some platforms: initializing variables in a
+	switch without declaring a local scope block is an error.
+
+2009-11-30  mjohnson
+
+	Fix for link bug on some platforms: initializing variables in a
+	switch without declaring a local scope block is an error.
+
+2009-11-24  mjohnson
+
+	DDS.cc: fixed minor memory leak
+
+	Array.cc, Array.h: added prepend_dim function for adding outer
+	dimensions.
+
+	Grid.h, Grid.cc: added function to set the array part explicitly
+	without copying it. fixed potential memory leaks. added a few
+	extra checks on proper types being set. added function to add maps
+	to (to beginning or end of map vector to support new outer
+	dimensions). made _duplicate protected for subclasses to be able
+	to call it.
+
+2009-11-19  James Gallagher <jgallagher@opendap.org>
+
+	ticket 1399 - Grids that have only one member after projection
+	still must be wrapped in a Structure (because there might be two
+	Grids so projected and they might have members with the same names
+	- this is a real case). The Structures provide for unique FQN as
+	the DAP requires.
+
+2009-11-10  James Gallagher <jgallagher@opendap.org>
+
+	Removed libdapserver from the getdap link.
+
+2009-11-05  James Gallagher <jgallagher@opendap.org>
+
+	I changed how the FILE_METHODS compile-time switch was defined,
+	Now it's defined in the headers and not, directly in the config.h
+	or *.cc files. That was a bug. All tests pass now. I'm going to
+	check this in and then run tests on the entire shrew project.
+
+2009-11-04  James Gallagher <jgallagher@opendap.org>
+
+	Removed lots of accumulated 'old code' and reinstated the
+	FILE_METHODS compilation flag.
+
+2009-11-04  James Gallagher <jgallagher@opendap.org>
+
+	Likely fixes for the win32 build. Test these on a vm.
+
+2009-11-04  James Gallagher <jgallagher@opendap.org>
+
+	tweaks to get the ddx and dataddx responses working with the trunk
+	BES. See getdap's -x (ddx) and -X (DataDDX) responses. These work
+	using the -p x.y switch to set the DAP Accept version to x.y. Alos
+	added the -t option to turn on HTTP protocol tracing. The new
+	parser DDXParserSXA2 reads the dapVersion XML attribute and sets
+	the value in the DDS instance. I also modified the Connect class
+	to recognize the dods_ddx and dods-ddx values for
+	Content-Description.
+
+2009-10-22  mjohnson
+
+	Ticket #1442:
+
+	o Fixed several potential memory leaks.
+
+	o set_value now sets length.
+
+	o Refactored cut & pasted sections to use helper funcs.
+
+2009-10-07  mjohnson
+
+	Made simple_find() and simple_find_container() public for callers
+	that require non-recursing lookups.
+
+2009-10-06  James Gallagher <jgallagher@opendap.org>
+
+	I fixed problems with two sets of tests. First, the "Array of
+	structures with child arrays" test was failing because the
+	TestCommon and TestArray classes were not generating valid output
+	in the case where intern_data() was used. Second, the test for
+	String regexes where nothing matched was botched because when a
+	selection is applied to anything other than a Sequence and nothing
+	is selected the response from the server is broken. This will be
+	an issue for DAP4. In place of the test that used a Structure and
+	selected nothing, I added two tests of Sequences with strings and
+	tried both selections that return and don't return values. Both
+	cases work.
+
+2009-10-05  mjohnson
+
+	Vector.h, Vector.cc: Cleaned up and moved doxygen comments to impl
+	file.
+
+2009-10-02  Patrick West <pwest@ucar.edu>
+
+	This funciton is no longer used in libdap and is specific to usage in
+	dap-server. Moved the function.
+	M    mime_util.h
+
+2009-10-02  James Gallagher <jgallagher@opendap.org>
+
+	Regarding the previous commit: On the IOOS branch I removed a 'bad
+	fix' added at some point where includes within util.h supplied the
+	class definitions for Byte, ..., Grid. So it looked like the .cc
+	files were not including must at all, but in fact not only were
+	they (and they need those includes) but _everything_ that used
+	util.cc/h was too. So here are the includes, back in the .cc files
+	where they belong.
+
+2009-10-02  James Gallagher <jgallagher@opendap.org>
+
+	Merged code from ioos/src/libdap rev 20393 that contained the
+	'OtherXML' attribute implementation. This was apparently lost when
+	that branch was updated between the commit of that revision and
+	now. In addition to changes in AttrTable and the DAS and DDX
+	parsers, there are changes in tests/ and unit-tests/. There's also
+	a new function for converting octal escapes codes that is in
+	escaping.cc/h. I updated the DDX parser to use the SAX2 interface
+	and it now correctly processes namespaces and as a result, it's in
+	a new file 'DDXParserSAX2.cc/h'. Oddly, when I performed the
+	merge, an old 'feature' of the Type (Byte, ...) classes reemerged,
+	the 'include the world' feature. In testing I could not get a good
+	compile without these includes after the merge (but before the
+	merge it was fine). I'm going to leave those changes out of this
+	commit and see if the resulting code is OK. If not, I'l commit
+	those changes, too.
+
+2009-10-02  mjohnson
+
+	Vector.cc, Vector.h: Added support for reserving data buffer
+	storage in advance, clearing out data buffers, and for copying a
+	Vector into a subset of the value buffer of another Vector. In
+	support of aggregation to allow Vector's to be combined into a
+	larger Vector. Ticket #1427 has more information. This was a
+	monotonic interface addition and code change only --- no
+	interfaces removed or changed.
+
+2009-09-25  James Gallagher <jgallagher@opendap.org>
+
+	Removed XDRFileMarshaller.h from DODSFilter.cc
+
+2009-09-25  James Gallagher <jgallagher@opendap.org>
+
+	It just seem right to save things at this point. Most of the
+	configure.ac files have been updated. The libdap software has had
+	a number of the FILE* methods/functions commented out using #if
+	FILE_METHODS and then #undef FILE_METHODS. We'll see how much of
+	the redundant code can be removed before the next Hyrax 1.6
+	release.
+
+2009-09-25  James Gallagher <jgallagher@opendap.org>
+
+	Added fdiostream to the library because it seems we might be using
+	it someday soon. Modified expr-test to use temp. files and the
+	methods in DODSFilter and Connect - this is a better test of the
+	library. I modified XDRStreamUnMarshaller a fair amount but it's
+	still not work 100% and needs more error checking. This code still
+	uses XDRFileUnMarshaller.
+
+	M    DODSFilter.cc
+	A    fdiostream.cc
+	M    tests/expr-test.cc
+	M    tests/TestByte.cc
+	M    tests/Makefile.am
+	M    Marshaller.h
+	D    GNU/fdiostream_test.cc
+	D    GNU/fdiostream.h
+	M    Makefile.am
+	M    DODSFilter.h
+	M    XDRStreamUnMarshaller.cc
+	M    HTTPConnect.cc
+	M    XDRStreamMarshaller.cc
+	M    Connect.cc
+	A  + unit-tests/fdiostreamTest.cc
+	M    unit-tests/Makefile.am
+	M    unit-tests/MarshallerTest.cc
+	AM + fdiostream.h
+
+2009-09-22  James Gallagher <jgallagher@opendap.org>
+
+	Removed the xstream code - if we need this it's available on the web.
+
+2009-09-22  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a bug in fdiostream and added support for a istream that
+	reads from a FILE* (ugh).
+
+2009-09-18  James Gallagher <jgallagher@opendap.org>
+
+	Uses the new file descriptor stream classes - that is, it tests
+	both input and output.
+
+2009-09-18  James Gallagher <jgallagher@opendap.org>
+
+	Added XDRStreamUnMarshaller to the Makefile.am
+
+2009-09-18  James Gallagher <jgallagher@opendap.org>
+
+	Added XDRStreamUnMarshaller
+
+2009-09-18  James Gallagher <jgallagher@opendap.org>
+
+	Minor fixes to the XDRStreamMarshaller class
+
+2009-09-17  James Gallagher <jgallagher@opendap.org>
+
+	Now includes the newly revamped stream buffer classes (fdiostream.h)
+
+2009-09-17  James Gallagher <jgallagher@opendap.org>
+
+	Added input stream buf for file descriptors and renamed the files.
+	Updated the README.
+
+2009-09-11  mjohnson
+
+	Grid.cc: Made Grid add it's array and map vectors to the
+	Constructor _vars list so they get iterated by the superclass
+	Vars_Iter calls. For ticket #1406
+
+2009-09-02  Nathan Potter <ndp@coas.oregonstate.edu>
+
+2009-09-02  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: tweaked configure.ac to fix uuid lib problem
+
+2009-09-02  James Gallagher <jgallagher@opendap.org>
+
+	Updated the pkg-config and dap-config scripts so they contain the UUID
+	library when needed.
+
+	M    libdap.pc.in
+	M    libdapserver.pc.in
+	M    dap-config.in
+
+2009-09-02  James Gallagher <jgallagher@opendap.org>
+
+	Build fixes for linux. Linux uses libuuid for the uuid functions
+	while OSX does not - I added a test for that library to
+	configure.ac and the corrsponding changes to the Makefile.am. I
+	also found and fixed two other errors that were not showing up on
+	the OSX platform.
+
+	M    DODSFilter.cc
+	M    configure.ac
+	M    tests/Makefile.am
+	M    Makefile.am
+
+2009-09-02  mjohnson
+
+	o Fixed typo causing build error.
+
+2009-08-31  James Gallagher <jgallagher@opendap.org>
+
+	Replace fgetln with fgets in DDXParser.cc.  oddly package.m4 in
+	tests has the version number for the library. I changed that to 3.10.0
+	(we should have something for the trunk better than a version number
+	that looks like a release number) since I didn't think 3.9.2 was a
+	good value...
+
+2009-08-31  James Gallagher <jgallagher@opendap.org>
+
+	Configure fixes.
+
+	M    configure.ac
+
+2009-08-31  James Gallagher <jgallagher@opendap.org>
+
+	Updates for make dist.
+
+	M    tests/Makefile.am
+	M    INSTALL
+	M    Makefile.am
+
+2009-08-31  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2009-08-31  James Gallagher <jgallagher@opendap.org>
+
+	Added.
+
+2009-08-28  James Gallagher <jgallagher@opendap.org>
+
+	Refactor of libdap: AIS removed from build. In addition,
+	bug tickets addressed for Array, DDS, Vector and parser-util.cc
+
+2009-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Moved mime_util to libdap from libdapserver.
+
+2009-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Removed unnecessary libdapserver use for the unit-tests after moving cgi_util to mime_util
+	and putting the latter in libdap.
+
+2009-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Added code to build and read the DataDDX response for DAP4.
+	Connect has request_data_ddx() and request_data_ddx_url()
+	methods that will ask a server for the DataDDX and parse
+	the returned response. Connect::read_data() can read a DataDDX
+	response from a file; getdap -M - can read the DataDDX returned
+	by besstandalone when it's asked to return a DataDDX. DODSFilter
+	now has a send_data_ddx() method and appropriate functions are
+	now in mime_util.cc/h to build and parse the multipart MIME
+	response. I also refactored the code somewhat renaming cgi_util to
+	mime_util and removing redundant MIME parsing code in Connect and
+	HTTPConnect - now all the MIME header parsing is done by functions
+	in mime_util. Since these are used by both client and server
+	operations, that should be moved to libdap (from libdapserver).
+
+2009-08-21  James Gallagher <jgallagher@opendap.org>
+
+	Changed ID to Id to match the RFCs in the set_mime...() functions..
+	Also removed the set_client_dap_version() method and the matching get
+	methods - These were causing more confusion than anything else. Use
+	set_dap_version() and the matching get methods.
+
+	M    cgi_util.cc
+	M    DDS.cc
+	M    DDS.h
+
+2009-08-21  James Gallagher <jgallagher@opendap.org>
+
+	Changed ID to Id in the set_mime...() code to match the RFCs; fixed here in
+	tests.
+
+	M    unit-tests/DODSFilterTest.cc
+
+2009-08-21  James Gallagher <jgallagher@opendap.org>
+
+	Fixed an error where getdomainname() can return nothing
+	and not indicate and error. Now the default domain name
+	is opendap.org in that case.
+
+2009-08-20  James Gallagher <jgallagher@opendap.org>
+
+	Updates for the DataDDX response. New values were added
+	to the ObjectType and and EncodingType enums. DODSFilter
+	now has a send_data_ddx method that can either supply just
+	the body (as needed by the OLFS) or the complete message.
+	Unit tests added in unit-tests.DODSFilterTest. In HTTPConnect,
+	get_description_type() and get_object() were also updated.
+	Lastly, I change the values of Content-Description slightly
+	so they were a little less clunky and made the dap4 prefixed
+	values use dashes instead of underscores.
+
+2009-08-19  James Gallagher <jgallagher@opendap.org>
+
+	Interim version of autogen.sh for our projects - fix the --force option.
+
+	M    autogen.sh
+
+2009-08-19  James Gallagher <jgallagher@opendap.org>
+
+	Removed generated files.
+
+	D    conf/mkinstalldirs
+	D    conf/depcomp
+	D    conf/compile
+	D    conf/missing
+	D    conf/config.guess
+	D    conf/config.sub
+	D    conf/ltmain.sh
+	D    conf/install-sh
+
+2009-08-18  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Repaired bad string syntax and formatting.
+
+2009-08-18  mjohnson
+
+	Added set_name() override to set the name of the template var() as
+	well since this is what is output in a DDS and they didn't match.
+	Ticket #1346.
+
+2009-08-18  tomss
+
+	Changes to documentation only. Formatted ce function documentation
+	to be easier to read and removed a bad paragraph from the main
+	doxygen docs.
+
+2009-08-04  James Gallagher <jgallagher@opendap.org>
+
+	Added autogen.sh which is probably better than always running
+	autoreconf.
+
+	AM   autogen.sh
+
+2009-08-04  James Gallagher <jgallagher@opendap.org>
+
+	Changes for gcc 4.4: Removed warnings about misplaced or missing const
+	qualifiers and logic issues. Also fixed a missing header under FC 11
+	(util_mit.cc needs <cstdio> for sprintf).
+
+	M    Int16.cc
+	M    conf/mkinstalldirs
+	M    conf/depcomp
+	M    conf/missing
+	M    conf/config.guess
+	M    conf/config.sub
+	M    conf/ltmain.sh
+	M    conf/install-sh
+	M    INSTALL
+	M    UInt16.cc
+	M    Byte.cc
+	M    parser-util.cc
+	M    Float32.cc
+	M    HTTPConnect.cc
+	M    Str.cc
+	M    ce_functions.cc
+	M    das.y
+	M    UInt32.cc
+	M    util_mit.cc
+	M    dds.y
+	M    RCReader.h
+
+2009-07-28  James Gallagher <jgallagher@opendap.org>
+
+	Modified AISDataBaseParser.cc so that the library will build
+	with the --enable-debug=2 configure option. ticket 1318
+
+2009-07-21  mjohnson
+
+	del_attr_table needed to 0 out parent as well to preserve invariant.
+
+2009-07-21  mjohnson
+
+	Fixed memory leak in del_attr_table for Ticket #1326 and #1327.
+
+2009-07-21  mjohnson
+
+	Fixed several issues with the DAP type checking routines (which I re-used in NcML handler) failing to reject out of range Int32 and accepting a negative number as valid UInt32.
+
+2009-05-08  James Gallagher <jgallagher@opendap.org>
+
+	Merged changes for ticket 1301 from the tags/libdap/3.9.2 code.
+
+	M    Makefile.am
+	M    das.y
+	M    unit-tests/AISMergeTest.cc
+	M    unit-tests/DASTest.cc
+	M    unit-tests/DDSTest.cc
+
+2009-04-09  James Gallagher <jgallagher@opendap.org>
+
+	Changes for autoconf 2.63 (should work with 2.62 also).
+
+	M EXPRTest.at
+
+2009-04-08  James Gallagher <jgallagher@opendap.org>
+
+	Merged the 3.9.2 tagged code back into the trunk.
+
+	_M   .
+	M    RValue.cc
+	M    Int16.cc
+	M    configure.ac
+	M    DDXParser.cc
+	M    cgi_util.cc
+	M    ChangeLog
+	A  + conf/link-warning.h
+	M    DDS.cc
+	M    Array.cc
+	_M   tests/das-testsuite/test.1.das
+	_M   tests/expr-testsuite/test.2
+	_M   tests/expr-testsuite/test.3
+	_M   tests/expr-testsuite/test.c0
+	_M   tests/expr-testsuite/test.4
+	_M   tests/expr-testsuite/test.c1
+	_M   tests/expr-testsuite/test.c2
+	_M   tests/expr-testsuite/test.5
+	_M   tests/expr-testsuite/test.c3
+	_M   tests/expr-testsuite/test.6
+	_M   tests/expr-testsuite/test.c4
+	_M   tests/expr-testsuite/test.7
+	_M   tests/expr-testsuite/test.8
+	_M   tests/expr-testsuite/test.9
+	_M   tests/expr-testsuite/test.a
+	_M   tests/expr-testsuite/test.b
+	_M   tests/expr-testsuite/test.d
+	_M   tests/expr-testsuite/test.61
+	_M   tests/expr-testsuite/test.2a
+	_M   tests/expr-testsuite/test.cc0
+	_M   tests/expr-testsuite/test.cc1
+	_M   tests/expr-testsuite/test.1
+	M    tests/package.m4
+	M    INSTALL
+	M    UInt16.cc
+	M    libdap.spec
+	M    Byte.cc
+	M    GNU/GNURegex.cc
+	M    README
+	M    Makefile.am
+	M    HTTPCache.cc
+	M    ce_expr.y
+	M    Float32.cc
+	M    dds.lex
+	M    util.h
+	M    grammarfiles/ce_expr.tab.cc
+	M    NEWS
+	M    Str.cc
+	M    Sequence.cc
+	A  + gl/m4/absolute-header.m4
+	M    gl/m4/wchar.m4
+	M    gl/m4/stdint.m4
+	A  + gl/m4/malloc.m4
+	M    gl/m4/regex.m4
+	M    gl/m4/gnulib-comp.m4
+	A  + gl/m4/unistd_h.m4
+	M    gl/m4/include_next.m4
+	M    gl/m4/gnulib-cache.m4
+	D    gl/m4/onceonly_2_57.m4
+	A  + gl/m4/stdlib_h.m4
+	M    gl/m4/extensions.m4
+	M    gl/localcharset.c
+	M    gl/regex_internal.c
+	M    gl/malloc.c
+	M    gl/localcharset.h
+	M    gl/regex_internal.h
+	M    gl/regexec.c
+	A  + gl/stdlib.h
+	M    gl/regcomp.c
+	M    gl/alloca_.h
+	M    gl/wchar_.h
+	M    gl/stdint_.h
+	A  + gl/unistd_.h
+	M    gl/stdbool_.h
+	M    gl/regex.c
+	A  + gl/unistd.h
+	M    gl/regex.h
+	M    gl/wctype_.h
+	A  + gl/stdlib_.h
+	M    gl/Makefile.am
+	M    gl/gettext.h
+	M    gl/alloca.c
+	M    ce_functions.cc
+	M    expr.h
+	M    AttrTable.h
+	M    GridGeoConstraint.cc
+	M    util.cc
+	M    UInt32.cc
+	M    XDRStreamMarshaller.cc
+	M    Grid.cc
+	M    escaping.cc
+	M    unit-tests/HTTPCacheTest.cc
+	M    unit-tests/AttrTableTest.cc
+	M    unit-tests/generalUtilTest.cc
+	M    dds.y
+	M    Clause.cc
+	M    Array.h
+	M    ce_expr.lex
+
+2009-04-08  James Gallagher <jgallagher@opendap.org>
+
+	Bumped up the autoconf version to 2.61 which we need for the top_srcdir
+	variable. Other minor fixes like spelling errors in comments.
+
+	M    configure.ac
+	M    INSTALL
+	M    GNU/outbuf.h
+	M    ce_expr.y
+	M    Clause.cc
+	M    AISDatabaseParser.cc
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2009-04-06  James Gallagher <jgallagher@opendap.org>
 
 	Bug fix: entry::clone() was performing a deep copy in aliases when

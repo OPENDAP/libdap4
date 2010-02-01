@@ -1,10 +1,9 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP
-Version: 3.9.2
+Version: 3.10.0
 Release: 1
 
-# the deflate program is covered by the W3C license
-License: LGPLv2+ and W3C
+License: LGPLv2+
 Group: Development/Libraries
 URL: http://www.opendap.org/
 Source0: http://www.opendap.org/pub/source/libdap-%{version}.tar.gz
@@ -16,8 +15,6 @@ BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 # fedora
 BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
 BuildRequires: doxygen graphviz
-# deflate depends directly on zlib
-BuildRequires: zlib-devel
 BuildRequires: pkgconfig
 
 # This package could be relocatable. In that case uncomment the following
@@ -27,11 +24,13 @@ Prefix: %{_prefix}
 
 %description
 The libdap++ library contains an implementation of DAP2. This package
-contains the library, dap-config, getdap and deflate. The script dap-config
-simplifies using the library in other projects. The getdap utility is a
-simple command-line tool to read from DAP2 servers. It is built using the
-library and demonstrates simple uses of it. The deflate utility is used by
-the library when it returns compressed responses.
+contains the library, dap-config, getdap. The script dap-config
+simplifies using the library in other projects. The getdap utility is
+a simple command-line tool to read from DAP2 servers. It is built
+using the library and demonstrates simple uses of it. Note that libdap
+used to include a copy of 'deflate' which was used to compress
+responses. This has been removed since it is no longer used and the
+CGI-based code is no longer supported.
 
 
 %package devel
@@ -58,17 +57,12 @@ Documentation of the libdap library.
 
 %prep
 %setup -q
-iconv -f latin1 -t utf8 < COPYRIGHT_W3C > COPYRIGHT_W3C.utf8
-touch -r COPYRIGHT_W3C COPYRIGHT_W3C.utf8
-mv COPYRIGHT_W3C.utf8 COPYRIGHT_W3C
-
 
 %build
 %configure --disable-static --disable-dependency-tracking
 make %{?_smp_mflags}
 
 make docs
-
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -97,12 +91,10 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %{_bindir}/getdap
-%{_sbindir}/deflate
 %{_libdir}/libdap.so.*
 %{_libdir}/libdapclient.so.*
 %{_libdir}/libdapserver.so.*
 %doc README NEWS COPYING COPYRIGHT_URI README.AIS README.dodsrc
-%doc COPYRIGHT_W3C
 
 %files devel
 %defattr(-,root,root,-)
@@ -120,6 +112,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Feb  1 2010 James Gallagehr <jgallagher@opendap.org> - 3.10.0
+- Removed deflate; general update for 3.10.0 release
+
 * Tue Jun 10 2008 James Gallagher <jgallagher@opendap.org> - 3.8.1-1
 - Update for 3.8.1 This is code actually checked in on 4/25/08
 
