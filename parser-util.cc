@@ -305,10 +305,15 @@ int check_float32(const char *val)
 
     DBG(cerr << "v: " << v << ", ptr: " << ptr
         << ", errno: " << errno << ", val==ptr: " << (val == ptr) << endl);
+
+    if (errno == ERANGE || (v == 0.0 && val == ptr) || *ptr != '\0')
+	return FALSE;
+#if 0
     if ((v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE))
         || *ptr != '\0') {
         return FALSE;
     }
+#endif
 
     DBG(cerr << "fabs(" << val << ") = " << fabs(v) << endl);
     double abs_val = fabs(v);
@@ -334,11 +339,15 @@ int check_float64(const char *val)
     DBG(cerr << "v: " << v << ", ptr: " << ptr
         << ", errno: " << errno << ", val==ptr: " << (val == ptr) << endl);
 
+
+    if (errno == ERANGE || (v == 0.0 && val == ptr) || *ptr != '\0')
+	return FALSE;
+#if 0
     if ((v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE))
         || *ptr != '\0') {
         return FALSE;
     }
-
+#endif
     DBG(cerr << "fabs(" << val << ") = " << fabs(v) << endl);
     double abs_val = fabs(v);
     if (abs_val > DODS_DBL_MAX

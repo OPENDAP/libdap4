@@ -117,8 +117,9 @@ fortify: dods-datatypes.h xdr-datatypes.h
 	(cd gl && sourceanalyzer -b @PACKAGE@-gl $(MAKE) )
 	$(MAKE) $(grammar_objects)
 	sourceanalyzer -b @PACKAGE@ $(MAKE) libdap.la libdapserver.la
-	sourceanalyzer -b @PACKAGE@-gl -scan -f @PACKAGE@-gl-@PACKAGE_VERSION@.fpr
 	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
+
+# sourceanalyzer -b @PACKAGE@-gl -scan -f @PACKAGE@-gl-@PACKAGE_VERSION@.fpr
 
 # run fortify on only our code, not the gnulib code or the flex/bison code.
 # This does skip testing some of the functions we wrote in the *.lex/*.y
