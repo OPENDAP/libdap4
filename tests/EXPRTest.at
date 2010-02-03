@@ -19,7 +19,7 @@ m4_define([_EXPR_TEST], [
     # successful runs are sent to stdout while the errors are sent to
     # stderr.
 
-    AT_CHECK([$srcdir/expr-test $1 $2 -k $3 -f "dummy" || true], [], [stdout], [stderr])
+    AT_CHECK([$abs_builddir/expr-test $1 $2 -k $3 -f "dummy" || true], [], [stdout], [stderr])
     AT_CHECK([diff -b -B $4 stdout || diff -b -B $4 stderr], [], [ignore],[],[])
     AT_XFAIL_IF([test "$5" = "xfail"])
     AT_CLEANUP
