@@ -29,17 +29,17 @@ m4_define([_EXPR_TEST], [
 m4_define([EXPR_RESPONSE_P], [
     # AT_BANNER([EXPR response for $1, $2, $4.])
     # Test the serialize/deserialize methods
-    _EXPR_TEST([-w], [$srcdir/expr-testsuite/$1], [$2], [$srcdir/expr-testsuite/$3.base], $4)
+    _EXPR_TEST([-w], [$abs_srcdir/expr-testsuite/$1], [$2], [$abs_srcdir/expr-testsuite/$3.base], $4)
     # Test the intern_data method (which combines serialize and deserialze)
-    _EXPR_TEST([-W], [$srcdir/expr-testsuite/$1], [$2], [$srcdir/expr-testsuite/$3.base], $4)
+    _EXPR_TEST([-W], [$abs_srcdir/expr-testsuite/$1], [$2], [$abs_srcdir/expr-testsuite/$3.base], $4)
 ])
 
 # The -b option to expr-test uses the 'series values' feature of the Test
 # classes.
 m4_define([EXPR_RESPONSE_B], [
     # AT_BANNER([EXPR response for $1, $2, $4.])
-    _EXPR_TEST([-b -w], [$srcdir/expr-testsuite/$1], [$2], [$srcdir/expr-testsuite/$3.base], $4)
-    _EXPR_TEST([-b -W], [$srcdir/expr-testsuite/$1], [$2], [$srcdir/expr-testsuite/$3.base], $4)
+    _EXPR_TEST([-b -w], [$abs_srcdir/expr-testsuite/$1], [$2], [$abs_srcdir/expr-testsuite/$3.base], $4)
+    _EXPR_TEST([-b -W], [$abs_srcdir/expr-testsuite/$1], [$2], [$abs_srcdir/expr-testsuite/$3.base], $4)
 ])
 
 EXPR_RESPONSE_P([test.1], [i], [test.1], [pass])
