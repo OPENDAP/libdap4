@@ -94,7 +94,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libdap.so.*
 %{_libdir}/libdapclient.so.*
 %{_libdir}/libdapserver.so.*
-%doc README NEWS COPYING COPYRIGHT_URI README.AIS README.dodsrc
+%doc README NEWS COPYING COPYRIGHT_URI README.dodsrc
 
 %files devel
 %defattr(-,root,root,-)
