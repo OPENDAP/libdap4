@@ -54,7 +54,7 @@ EXTRA_DIST = $(DIRS_EXTRA) testFile.cc test_config.h.in
 
 CLEANFILES = testout .dodsrc  *.gcda *.gcno
 
-DISTCLEANFILES = test_config.h
+DISTCLEANFILES = test_config.h *.strm *.file tmp.txt
 
 # ais_testsuite/ais_database.xml
 
