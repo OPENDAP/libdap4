@@ -56,7 +56,7 @@ DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite
 # ddx-testsuite	  
 
 EXTRA_DIST = DASTest.at  $(DASTESTSUITE) DDSTest.at  $(DDSTESTSUITE) \
-	atlocal.in $(srcdir)/package.m4 \
+	EXPRTest.at $(EXPRTESTSUITE) atlocal.in $(srcdir)/package.m4 \
 	$(DIRS_EXTRA)
 
 DISTCLEANFILES = *.log DASTest.dir/* DDSTest.dir/* EXPRTest.dir/*
