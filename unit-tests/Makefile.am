@@ -48,13 +48,13 @@ AIS_EXTRA = ais_testsuite/123.das ais_testsuite/ais_database.xml.in	\
 
 ####
 
-EXTRA_DIST = $(DIRS_EXTRA) testFile.cc test_config.h.in
+EXTRA_DIST = $(DIRS_EXTRA) testFile.cc test_config.h.in fdiostream.txt
 
 # $(AIS_EXTRA)
 
 CLEANFILES = testout .dodsrc  *.gcda *.gcno
 
-DISTCLEANFILES = test_config.h *.strm *.file tmp.txt
+DISTCLEANFILES = test_config.h *.strm *.file tmp.txt fdiostream.txt
 
 # ais_testsuite/ais_database.xml
 
