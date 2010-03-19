@@ -269,6 +269,12 @@ id2xml(string in, const string &not_allowed)
         in.replace(i, 1, entity(in[i]));
         ++i;
     }
+#if 0
+    // Removed the encoding of octal escapes. This function is used by
+    // AttrTable to encode the stuff that is the value of the <value>
+    // element in the DDX. The problem is that some of the values are not
+    // valid UTF-8 and that makes a XML parser gag.; ticket 1512.
+    // jhrg 3/19/10
 
     // OK, now scan for octal escape sequences like \\012 (where the '\'
     // is itself escaped). This type of attribute value comes from the netCDF
@@ -295,7 +301,7 @@ id2xml(string in, const string &not_allowed)
         // increment i
         i += 6;
     }
-
+#endif
     return in;
 }
 

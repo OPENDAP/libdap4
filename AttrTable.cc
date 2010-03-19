@@ -1206,14 +1206,8 @@ AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
             }
             else {
                 for (unsigned j = 0; j < get_attr_num(i); ++j) {
-                    // This code was using id2xml() to encode the value, but
-                    // that was causing problems with values less than 0x20
-                    // since those are not valid UTF-8 but we were encoding
-                    // them anyway. I removed that call so that the values
-                    // included in the DDX are now the same as those in the
-                    // DAS. See ticket 1512. jhrg 3/19/10
                     fprintf(out, "%s<value>%s</value>\n", value_pad.c_str(),
-                	    get_attr(i, j).c_str());
+                	    id2xml(get_attr(i, j)).c_str());
                 }
             }
             fprintf(out, "%s</Attribute>\n", pad.c_str());
@@ -1255,9 +1249,7 @@ AttrTable::print_xml(ostream &out, string pad, bool /*constrained*/)
             else {
                 string value_pad = pad + "    ";
                 for (unsigned j = 0; j < get_attr_num(i); ++j) {
-                    // See above; removed call to id2xml(); ticket 1512.
-                    // jhrg 3/19/10
-                    out << value_pad << "<value>" << get_attr(i, j) << "</value>\n";
+                    out << value_pad << "<value>" << id2xml(get_attr(i, j)) << "</value>\n";
                 }
             }
             out << pad << "</Attribute>\n";

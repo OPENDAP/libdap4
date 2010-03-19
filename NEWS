@@ -1,4 +1,4 @@
-News for version 3.10.0
+News for version 3.10.1b
 
 We have removed the Server 3 (CGI) software from the dap-server
 package and, with that change, we have removed the deflate program
