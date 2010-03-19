@@ -37,6 +37,7 @@
 #include "config.h"
 
 //#define DODS_DEBUG
+#define FILE_METHODS 1
 
 static char rcsid[] not_used =
     { "$Id$"
@@ -54,10 +55,10 @@ static char rcsid[] not_used =
 #include "DDXParserSAX2.h"
 #if FILE_METHODS
 #include "XDRFileUnMarshaller.h"
-#endif
+#else
 #include "fdiostream.h"
 #include "XDRStreamUnMarshaller.h"
-
+#endif
 #include "mime_util.h"
 
 using std::cerr;

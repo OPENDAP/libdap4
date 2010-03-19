@@ -5,7 +5,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
 AC_INIT(libdap, 3.10.0, opendap-tech@opendap.org)
-AC_DEFINE(DAP_PROTOCOL_VERSION, ["3.2"], [Highest DAP version implemented?])
+AC_DEFINE(DAP_PROTOCOL_VERSION, ["3.3"], [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
 AC_CONFIG_SRCDIR([Connect.cc])
