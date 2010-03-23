@@ -38,6 +38,7 @@
 #include "config.h"
 
 #include <cstring>
+#include <cstdlib>
 
 #include <unistd.h>  // for stat
 #include <sys/types.h>

@@ -43,6 +43,8 @@ static char rcsid[] not_used =
 #include <cassert>
 #include <cstring>
 #include <cmath>
+#include <cstdlib>
+
 #include <iostream>
 #include <sstream>
 

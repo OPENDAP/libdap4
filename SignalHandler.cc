@@ -35,6 +35,8 @@ static char rcsid[] not_used =
     { "$Id$"
     };
 
+#include <cstdlib>
+
 #include <signal.h>
 #include <pthread.h>
 
