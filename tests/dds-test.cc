@@ -102,12 +102,12 @@ main(int argc, char *argv[])
 	    case '?':
 	    default:
 	      usage(argv[0]);
-	      exit(1);
+	      return 1;
 	  }
 
     if (!scanner_test && !parser_test && !class_test) {
 	usage(argv[0]);
-	exit(1);
+	return 1;
     }
 
     try {

@@ -247,14 +247,21 @@ int check_int32(const char *val)
         return FALSE;
     }
 
-    // We need to check errno since strtol return clamps on overflow so the check
-    // against the DODS values below will always pass, even for out of bounds
-    // values in the string.  mjohnson 7/20/09
+    // We need to check errno since strtol return clamps on overflow so the
+    // check against the DODS values below will always pass, even for out of
+    // bounds values in the string. mjohnson 7/20/09
     if (errno == ERANGE) {
         return FALSE;
     }
-
-    return TRUE;
+    // This could be combined with the above, or course, but I'm making it
+    // separate to highlite the test. On 64-bit linux boxes 'long' may be 
+    // 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
+    else if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
+	return FALSE;
+    }
+    else {
+	return TRUE;
+    }
 }
 
 int check_uint32(const char *val)
@@ -283,8 +290,13 @@ int check_uint32(const char *val)
     if (errno == ERANGE) {
       return FALSE;
     }
-
-    return TRUE;
+    // See above.
+    else if (v > DODS_UINT_MAX) {
+	return FALSE;
+    }
+    else {
+	return TRUE;
+    }
 }
 
 // Check first for system errors (like numbers so small they convert
@@ -295,7 +307,7 @@ int check_float32(const char *val)
 {
     char *ptr;
     errno = 0;                  // Clear previous value. Fix for the 64bit
-    // IRIX from Rob Morris. 5/21/2001 jhrg
+				// IRIX from Rob Morris. 5/21/2001 jhrg
 
 #ifdef WIN32
     double v = w32strtod(val, &ptr);
