@@ -34,7 +34,7 @@ DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
 
 # Defining this instead of just adding the directory because now there are
 # generated files in ais_testsuite. If just list the directory then it
-# copies the generated file as well, which we don't want.
+# copies the generated files as well, which we don't want.
 
 #### Remove
 
@@ -82,8 +82,9 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	DDSTest	DDXParserTest DODSFilterTest generalUtilTest 		\
 	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest 	\
 	SequenceTest SignalHandlerTest CEFunctionsTest 			\
-	GridGeoConstraintTest ArrayGeoConstraintTest MarshallerTest     \
-	fdiostreamTest
+	GridGeoConstraintTest ArrayGeoConstraintTest MarshallerTest
+
+#	fdiostreamTest
 
 #  AISDatabaseParserTest AISMergeTest AISResourcesTest	
 

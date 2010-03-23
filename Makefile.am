@@ -246,7 +246,9 @@ Operators.h: ce_expr.tab.hh
 # with the other headers. It includes one of the built grammar file headers.
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
-	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc fdiostream.cc
+	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc 
+	
+# fdiostream.cc
 
 # AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc 
 
@@ -291,7 +293,9 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		 \
 	Response.h HTTPResponse.h HTTPCacheResponse.h  PipeResponse.h	 \
 	StdinResponse.h SignalHandlerRegisteredErr.h ResponseTooBigErr.h \
-	Resource.h HTTPCacheTable.h fdiostream.h
+	Resource.h HTTPCacheTable.h 
+	
+# fdiostream.h
 
 # AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h AISResources.h 	
 
