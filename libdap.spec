@@ -7,12 +7,10 @@ License: LGPLv2+
 Group: Development/Libraries
 URL: http://www.opendap.org/
 Source0: http://www.opendap.org/pub/source/libdap-%{version}.tar.gz
+Requires: curl >= 7.10.6 libxml2 >= 2.5.7
 
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-# Mandrake
-# BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
-# fedora
 BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
 BuildRequires: doxygen graphviz
 BuildRequires: pkgconfig
