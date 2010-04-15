@@ -6,6 +6,94 @@ ACLOCAL_AMFLAGS = -I conf -I gl/m4
 aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
+# Arrange to build with the backward compatibility mode enabled.
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU 
+# -I$(top_srcdir)/xstream
+AM_CXXFLAGS = 
+if COMPILER_IS_GCC
+AM_CXXFLAGS += -Wall -W -Wcast-align
+endif
+
+AM_YFLAGS = -d -v
+AM_LFLAGS = -8
+
+# These are not used by automake but are often useful for certain types of
+# debugging. The best way to use these is to run configure as:
+#     export CXXFLAGS='...'; ./configure --disable-shared
+# the --disable-shared is not required, but it seems to help with debuggers.
+CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
+TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
+
+SUBDIRS = gl . tests unit-tests
+DIST_SUBDIRS = unit-tests gl tests
+
+lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
+
+bin_SCRIPTS = dap-config dap-config-pkgconfig
+
+bin_PROGRAMS = getdap
+# fdiostream_test
+
+# sbin_PROGRAMS = deflate
+
+BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
+
+libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC) 
+# $(XSTREAM_SRC)
+libdapclient_la_SOURCES = $(CLIENT_SRC) 
+libdapserver_la_SOURCES = $(SERVER_SRC)
+
+libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
+libdap_la_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
+libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la
+
+libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
+libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS) $(XML2_CFLAGS)
+libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
+
+libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
+libdapserver_la_LIBADD = libdap.la $(UUID_LIBS)
+
+pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
+# $(XSTREAM_HDR) 
+noinst_HEADERS = config_dap.h
+
+# fdiostream_test_SOURCES = GNU/fdiostream_test.cc
+
+getdap_SOURCES = getdap.cc
+getdap_LDADD = libdapclient.la libdap.la
+# libdapserver.la
+getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
+
+# deflate_SOURCES = deflate.c
+#deflate_LDADD = $(ZLIB_LIBS)
+#deflate_CPPFLAGS = $(ZLIB_CFLAGS)
+#deflate_LDFLAGS = $(ZLIB_LDFLAGS)
+
+LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex \
+	gse.y Error.lex Error.y
+
+EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI	 \
+	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
+	VCPP dods-datatypes-static.h xdr-datatypes-static.h \
+	dap-config-pkgconfig $(LEX_YACC_EXTRA) $(GRAM_SRC) OSX_Resources
+
+# README.AIS xstream/README 
+
+dist_aclocal_DATA = conf/libdap.m4
+pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
+
+CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
+
+dist-hook:
+	$(AMTAR) -xzf # Build libdap, libtest-types.a, getdap
+
+AUTOMAKE_OPTIONS = foreign check-news
+ACLOCAL_AMFLAGS = -I conf -I gl/m4
+
+aclocaldir=$(datadir)/aclocal
+pkgconfigdir=$(libdir)/pkgconfig
+
 all-hook:
 	echo "running the all-hook"
 
@@ -88,6 +176,11 @@ pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
 CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
 
+# Not nearly as clean as it could be, but this removes .svn directories
+# in subdirs.
+dist-hook:
+	rm -rf `find $(distdir) -name .svn`
+
 # MAINTAINERCLEANFILES = $(GRAM_SRC)
 
 # Copy the generated grammar files to the 'grammarfiles' directory.
@@ -142,16 +235,14 @@ fortifyclean:
 
 ###########################################################################
 
-# Build linux RPMs
+# Build linux RPMs. Use the environment variable 'RPM_OPTIONS' to pass in
+# extra options like --nodeps and --macros
 
 srpm: dist
-	rpmbuild -ts --clean @PACKAGE@-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -ts --clean $(RPM_OPTIONS) @PACKAGE@-@PACKAGE_VERSION@.tar.gz
 
 rpm: dist
-	rpmbuild -tb --clean @PACKAGE@-@PACKAGE_VERSION@.tar.gz
-
-rpm-nodeps: dist
-	rpmbuild -tb --clean --nodeps @PACKAGE@-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -tb --clean $(RPM_OPTIONS) @PACKAGE@-@PACKAGE_VERSION@.tar.gz
 
 ###########################################################################
 
@@ -250,7 +341,7 @@ Operators.h: ce_expr.tab.hh
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc 
-	
+
 # fdiostream.cc
 
 # AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc 
@@ -297,7 +388,7 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	Response.h HTTPResponse.h HTTPCacheResponse.h  PipeResponse.h	 \
 	StdinResponse.h SignalHandlerRegisteredErr.h ResponseTooBigErr.h \
 	Resource.h HTTPCacheTable.h 
-	
+
 # fdiostream.h
 
 # AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h AISResources.h 	
