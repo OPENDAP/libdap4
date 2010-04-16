@@ -341,23 +341,19 @@ Grid::var(const string &n, bool, btp_stack *s)
 void
 Grid::add_var(BaseType *bt, Part part)
 {
-    if (!bt)
+    if (!bt) {
         throw InternalErr(__FILE__, __LINE__,
                           "Passing NULL pointer as variable to be added.");
+    }
 
     if (part == array && _array_var) {
       // Avoid leaking memory...  Function is add, not set, so it is an error to call again for the array part.
       throw InternalErr(__FILE__, __LINE__, "Error: Grid::add_var called with part==Array, but the array was already set!");
     }
 
-    // mjohnson 10 Sep 2009
-    // Add it to the superclass _vars list so we can iterate on superclass vars
-    _vars.push_back(bt);
+    // Set to the clone of bt if we get that far.
+    BaseType* bt_clone = 0;
 
-    // Jose Garcia
-    // Now we get a copy of the maps or of the array
-    // so the owner of bt which is external to libdap++
-    // is free to deallocate its object.
     switch (part) {
 
     case array: {
@@ -369,16 +365,15 @@ Grid::add_var(BaseType *bt, Part part)
               "Grid::add_var(): with Part==array: object is not an Array!");
         }
         // Add it as a copy to preserve old semantics.  This sets parent too.
-        set_array(static_cast<Array*>(p_arr->ptr_duplicate()));
-        return;
+        bt_clone = p_arr->ptr_duplicate();
+        set_array(static_cast<Array*>(bt_clone));
     }
     break;
 
     case maps: {
-            BaseType *btp = bt->ptr_duplicate();
-            btp->set_parent(this);
-            _map_vars.push_back(btp);
-            return;
+            bt_clone = bt->ptr_duplicate();
+            bt_clone->set_parent(this);
+            _map_vars.push_back(bt_clone);
         }
     break;
 
@@ -392,17 +387,24 @@ Grid::add_var(BaseType *bt, Part part)
                   "Grid::add_var(): with Part==array: object is not an Array!");
             }
             // Add it as a copy to preserve old semantics.  This sets parent too.
-            set_array(static_cast<Array*>(p_arr->ptr_duplicate()));
+            bt_clone = p_arr->ptr_duplicate();
+            set_array(static_cast<Array*>(bt_clone));
         }
         else {
-            BaseType *btp = bt->ptr_duplicate();
-            btp->set_parent(this);
-            _map_vars.push_back(btp);
+            bt_clone = bt->ptr_duplicate();
+            bt_clone->set_parent(this);
+            _map_vars.push_back(bt_clone);
         }
-        return;
     }
     break;
   }// switch
+
+  // if we get ehre without exception, add the cloned object to the superclass variable iterator
+  // mjohnson 10 Sep 2009
+  // Add it to the superclass _vars list so we can iterate on superclass vars
+  if (bt_clone) {
+    _vars.push_back(bt_clone);
+  }
 }
 
 /**
