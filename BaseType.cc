@@ -541,6 +541,50 @@ BaseType::set_attr_table(const AttrTable &at)
     d_attr = at;
 }
 
+/**
+ * Transfer attributes from a DAS object into this variable. Because of the
+ * rough history of the DAS object and the way that various server code built
+ * the DAS, this is necessarily a heuristic process. The intent is that this
+ * method will be overridden by handlers that need to look for certain patterns
+ * in the DAS (e.g., hdf4's odd variable_dim_n; where n = 0, 1, 2, ...)
+ * attribute containers.
+ *
+ * There should be a one-to-one
+ * mapping between variables and attribute containers. However, in some cases
+ * one variable has attributes spread across several top level containers and
+ * in some cases one container is used by several variables
+ *
+ * @note This method is technically \e unnecessary because a server (or
+ * client) can easily add attributes directly using the DDS::get_attr_table
+ * or BaseType::get_attr_table methods and then poke values in using any
+ * of the methods AttrTable provides. This method exists to ease the
+ * transition to DDS objects which contain attribute information for the
+ * existing servers (Since they all make DAS objects separately from the
+ * DDS). They could be modified to use the same AttrTable methods but
+ * operate on the AttrTable instances in a DDS/BaseType instead of those in
+ * a DAS.
+  *
+ * @param das A pointer to the DAS object for the entire dataset.
+ * @return void
+ */
+void
+BaseType::transfer_attributes(AttrTable *at_container)
+{
+    AttrTable *at = at_container->get_attr_table(name());
+
+    if (at) {
+	at->set_is_global_attribute(false);
+
+	AttrTable::Attr_iter at_p = at->attr_begin();
+	while (at_p != at->attr_end()) {
+	    get_attr_table().append_attr(at->get_name(at_p),
+		    at->get_type(at_p), at->get_attr_vector(at_p));
+
+	    at_p++;
+	}
+    }
+}
+
 /** Does this variable appear in either the selection part or as a function
     argument in the current constrain expression. If this property is set
     (true) then implementations of the read() method should read this

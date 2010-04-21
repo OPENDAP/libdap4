@@ -234,6 +234,8 @@ private:
     AttrTable *d_parent;
     std::vector<entry *> attr_map;
 
+    bool d_is_global_attribute;
+
     void delete_attr_table();
 
     friend class AttrTableTest;
@@ -265,6 +267,9 @@ public:
     {
         return d_parent;
     }
+
+    virtual bool is_global_attribute() const { return d_is_global_attribute; }
+    virtual void set_is_global_attribute(bool ga) { d_is_global_attribute = ga; }
 
     virtual unsigned int append_attr(const string &name, const string &type,
 				     const string &value);

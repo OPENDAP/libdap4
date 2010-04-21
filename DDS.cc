@@ -179,6 +179,7 @@ DDS::operator=(const DDS &rhs)
     return *this;
 }
 
+#if 0
 /** @brief Look for the parent of an HDF4 dimension attribute
 
     If this attribute container's name ends in the '_dim_?' suffix, look
@@ -226,7 +227,7 @@ DDS::find_matching_container(AttrTable::entry *source, BaseType **dest_variable)
 {
     // The attribute entry 'source' must be a container
     if (source->type != Attr_container)
-        throw InternalErr(__FILE__, __LINE__, "DDS::find_matching_container");
+        throw InternalErr(__FILE__, __LINE__, "DDS::find_matching_container; expected 'source' to be a container.");
 
     // Use the name of the attribute container 'source' to figure out where
     // to put its contents.
@@ -244,7 +245,7 @@ DDS::find_matching_container(AttrTable::entry *source, BaseType **dest_variable)
             *dest_variable = btp;
             return &btp->get_attr_table();
         }
-        else { // must ba a plain Array
+        else { // must be a plain Array
             string::size_type i = source->name.find("_dim_");
             string ext = source->name.substr(i + 1);
             *dest_variable = btp;
@@ -301,6 +302,7 @@ DDS::transfer_attributes(DAS *das)
 	    throw InternalErr(__FILE__, __LINE__, err ) ;
 	}
     }
+
     AttrTable *top_level = das->get_top_level_attributes() ;
 
     // foreach container at the outer level
@@ -346,6 +348,88 @@ DDS::transfer_attributes(DAS *das)
         ++das_i;
     }
 }
+#endif
+
+/**
+ * This is the main method used to transfer attributes from a DAS object into a
+ * DDS. This uses the BaseType::transfer_attributes() method and the various
+ * implementations found here (in the constructors classes) and in handlers.
+ *
+ * This method uses a deep copy to transfer the attributes, to it's safe to
+ * delete the source DAS object passed to this method once it's done.
+ *
+ * @note To accommodate oddly built DAS objects produced by various handlers,
+ * specialize the methods there.
+ *
+ * @param das Transfer (copy) attributes from this DAS object.
+ */
+void
+DDS::transfer_attributes(DAS *das)
+{
+    // If there is a container set in the DDS then get the container from
+    // the DAS. If they are not the same container, then throw an exception
+    // (should be working on the same container). If the container does not
+    // exist in the DAS, then throw an exception
+    if( d_container )
+    {
+	if( das->container_name() != d_container_name )
+	    throw InternalErr(__FILE__, __LINE__, "Error transferring attributes: working on a container in dds, but not das" ) ;
+    }
+
+    // Give each variable a chance to claim its attributes.
+    AttrTable *top_level = das->get_top_level_attributes() ;
+
+    Vars_iter var = var_begin();
+    while (var != var_end()) {
+	(*var)->transfer_attributes(top_level);
+	var++;
+    }
+
+    // Now we transfer all of the attributes still marked as global to the
+    // global container in the DDS.
+
+    AttrTable::Attr_iter at_cont_p = top_level->attr_begin();
+    while (at_cont_p != top_level->attr_end()) {
+	// In truth, all of the top level attributes should be containers, but
+	// this test handles the abnormal case where somehow someone makes a
+	// top level attribute that is not a container by silently dropping it.
+	if ((*at_cont_p)->type == Attr_container
+		&& (*at_cont_p)->attributes->is_global_attribute()) {
+	    DBG(cerr << (*at_cont_p)->name << " is a global attribute." << endl);
+	    // copy the source container so that the DAS passed in can be
+	    // deleted after calling htis method.
+	    AttrTable *at = new AttrTable(*(*at_cont_p)->attributes);
+	    d_attr.append_container(at, at->get_name());
+	}
+
+	at_cont_p++;
+    }
+}
+
+#if 0
+    // cruft from the above method
+
+	    AttrTable *dest = d_attr.find_container(at->get_name());
+	    if (!dest) {
+		cerr << "making a new sub containter for it" << endl;
+		// If there's currently no top level container with this
+		//container's name (the typical case) make one.
+		dest = new AttrTable(); // Make a new global table if needed
+		d_attr.append_container(dest, at->get_name());
+	    }
+
+	    cerr << "now copying its contents to the new container" << endl;
+	    // Now copy all of the global attribute's stuff into the matching
+	    // container in the DDS.
+	    AttrTable::Attr_iter at_p = at->attr_begin();
+	    while (at_p != at->attr_end()) {
+		if (at->get_attr_type(at_p) == Attr_container)
+		    dest->append_container(at->get_attr_table(at_p), at->get_name(at_p));
+		else
+		    dest->append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
+		at_p++;
+	    }
+#endif
 
 /** Get and set the dataset's name.  This is the name of the dataset
     itself, and is not to be confused with the name of the file or

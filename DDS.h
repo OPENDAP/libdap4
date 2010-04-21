@@ -202,9 +202,10 @@ protected:
     void duplicate(const DDS &dds);
     BaseType *leaf_match(const string &name, BaseType::btp_stack *s = 0);
     BaseType *exact_match(const string &name, BaseType::btp_stack *s = 0);
+#if 0
     virtual AttrTable *find_matching_container(AttrTable::entry *source,
             BaseType **dest_variable);
-
+#endif
 public:
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;

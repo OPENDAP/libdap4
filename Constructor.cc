@@ -140,6 +140,7 @@ Constructor::find_hdf4_dimension_attribute_home(AttrTable::entry *source)
     return 0;
 }
 
+#if 0
 /** Given an attribute container from a table, find or make a destination
     for its contents in the current constructor variable. */
 AttrTable *
@@ -187,7 +188,8 @@ Constructor::find_matching_container(AttrTable::entry *source,
         return at;
     }
 }
-
+#endif
+#if 0
 /** Given an Attribute entry, scavenge attributes from it and load them into
     this object and the variables it contains. Assume that the caller has
     determined the table holds attributes pertinent to only this variable.
@@ -242,6 +244,44 @@ Constructor::transfer_attributes(AttrTable::entry * entry)
         }
 
         ++source_p;
+    }
+}
+#endif
+
+/** Given an Attribute table, scavenge attributes from it and load them into
+    this object and the variables it contains.
+
+    This implementation differes from the version in BaseType in that each of
+    the children of the Constructor are passed an attribute container if one
+    is found that matches the name of this Constructor variable.
+
+    @param at_containeer Search for attributes in this container.
+    */
+void Constructor::transfer_attributes(AttrTable *at_container)
+{
+    AttrTable *at = at_container->get_attr_table(name());
+
+    if (at) {
+	at->set_is_global_attribute(false);
+
+	Vars_iter var = var_begin();
+	while (var != var_end()) {
+	    (*var)->transfer_attributes(at);
+	    var++;
+	}
+
+	// Trick: If an attribute that's within the container 'at' still has its
+	// is_global_attribute property set, then it's not really a global attr
+	// but instead an attribute that belongs to this Constructor.
+	AttrTable::Attr_iter at_p = at->attr_begin();
+	while (at_p != at->attr_end()) {
+	    if (at->is_global_attribute())
+		get_attr_table().append_attr(at->get_name(at_p), at->get_type(
+			at_p), at->get_attr_vector(at_p));
+
+	    at_p++;
+	}
+
     }
 }
 

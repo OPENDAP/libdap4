@@ -48,9 +48,10 @@ protected:
     std::vector<BaseType *> _vars;
 
     void _duplicate(const Constructor &s);
+#if 0
     virtual AttrTable *find_matching_container(AttrTable::entry *source,
             BaseType **dest_variable);
-
+#endif
     Constructor(const string &n, const Type &t);
     Constructor(const string &n, const string &d, const Type &t);
 
@@ -63,7 +64,10 @@ public:
     virtual ~Constructor();
 
     Constructor &operator=(const Constructor &rhs);
+#if 0
     virtual void transfer_attributes(AttrTable::entry *entry);
+#endif
+    virtual void transfer_attributes(AttrTable *at_container);
 
     Vars_iter var_begin();
     Vars_iter var_end();

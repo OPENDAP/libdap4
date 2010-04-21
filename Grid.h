@@ -204,6 +204,8 @@ public:
                            bool print_decl_p = true);
 #endif
 
+    virtual void transfer_attributes(AttrTable *at_container);
+
     virtual bool check_semantics(string &msg, bool all = false);
 
     Map_iter map_begin() ;

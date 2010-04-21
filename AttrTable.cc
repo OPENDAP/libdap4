@@ -129,13 +129,15 @@ void AttrTable::clone(const AttrTable &at)
     }
 
     d_parent = at.d_parent;
+
+    d_is_global_attribute = at.d_is_global_attribute;
 }
 
 /** @name Instance management functions */
 
 //@{
 AttrTable::AttrTable() :
-    d_name(""), d_parent(0)
+    d_name(""), d_parent(0), d_is_global_attribute(true)
 {
 }
 

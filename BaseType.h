@@ -266,6 +266,8 @@ public:
     virtual void set_parent(BaseType *parent);
     virtual BaseType *get_parent();
 
+    virtual void transfer_attributes(AttrTable *at);
+
     // I put this comment here because the version in BaseType.cc does not
     // include the exact_match or s variables since they are not used. Doxygen
     // was gaging on the comment.

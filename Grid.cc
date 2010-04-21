@@ -605,6 +605,36 @@ Grid::components(bool constrained)
     return comp;
 }
 
+void Grid::transfer_attributes(AttrTable *at_container)
+{
+    AttrTable *at = at_container->get_attr_table(name());
+
+    if (at) {
+	at->set_is_global_attribute(false);
+
+	array_var()->transfer_attributes(at);
+
+	Map_iter map = map_begin();
+	while (map != map_end()) {
+	    (*map)->transfer_attributes(at);
+	    map++;
+	}
+
+	// Trick: If an attribute that's within the container 'at' still has its
+	// is_global_attribute property set, then it's not really a global attr
+	// but instead an attribute that belongs to this Constructor.
+	AttrTable::Attr_iter at_p = at->attr_begin();
+	while (at_p != at->attr_end()) {
+	    if (at->is_global_attribute())
+		get_attr_table().append_attr(at->get_name(at_p), at->get_type(
+			at_p), at->get_attr_vector(at_p));
+
+	    at_p++;
+	}
+
+    }
+}
+
 // When projected (using whatever the current constraint provides in the way
 // of a projection), is the object still a Grid?
 
