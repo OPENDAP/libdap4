@@ -83,7 +83,7 @@ REQUIREMENTS
 
   o The library uses libcurl and libxml2. You will need these libraries
     installed on your system to successfully run configure and build the
-    library. You must have libcurl version 7.10.6 or newer and libxml2 2.5.7
+    library. You must have libcurl version 7.10.6 or newer and libxml2 2.6.16
     or newer. We provide source versions of the packages on the web site; the
     web pages for these projects are: http://curl.haxx.se/ and
     http://xmlsoft.org/. Modern Linux and recent OS/X distributions include
