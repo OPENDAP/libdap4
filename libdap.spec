@@ -7,11 +7,11 @@ License: LGPLv2+
 Group: Development/Libraries
 URL: http://www.opendap.org/
 Source0: http://www.opendap.org/pub/source/libdap-%{version}.tar.gz
-Requires: curl >= 7.10.6 libxml2 >= 2.5.7
+Requires: curl >= 7.10.6 libxml2 >= 2.6.16
 
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
+BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.6.16
 BuildRequires: doxygen graphviz
 BuildRequires: pkgconfig
 
@@ -35,7 +35,7 @@ CGI-based code is no longer supported.
 Summary: Development and header files from libdap
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
-Requires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
+Requires: curl-devel >= 7.10.6 libxml2-devel >= 2.6.16
 Requires: pkgconfig
 # for the /usr/share/aclocal directory ownership
 Requires: automake
