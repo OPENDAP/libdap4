@@ -160,13 +160,15 @@ public:
         bool is_alias;
         string aliased_to;
 
+        bool is_global; // use this to mark non-container attributes. see below.
+
         // If type == Attr_container, use attributes to read the contained
         // table, otherwise use attr to read the vector of values.
         AttrTable *attributes;
         std::vector<string> *attr; // a vector of values. jhrg 12/5/94
 
         entry(): name(""), type(Attr_unknown), is_alias(false),
-                aliased_to(""), attributes(0), attr(0) {}
+                aliased_to(""), is_global(true), attributes(0), attr(0) {}
 
         entry(const entry &rhs)
         {
@@ -196,6 +198,7 @@ public:
             type = rhs.type;
             is_alias = rhs.is_alias;
             aliased_to = rhs.aliased_to;
+            is_global = rhs.is_global;
             switch (rhs.type) {
             case Attr_unknown:
                 break;
@@ -234,6 +237,12 @@ private:
     AttrTable *d_parent;
     std::vector<entry *> attr_map;
 
+    // Use this to mark container attribues. Look at the methods
+    // is_global_attribute() and set_is_...., esp. at the versions that take
+    // an iterator. This code is tricky because it has to track both whole
+    // containers that are global and individual attributes that are 'global'
+    // relative to a constructor. That is, there are soe attributes that are
+    // bound to a container and not any of the container's childern.
     bool d_is_global_attribute;
 
     void delete_attr_table();
@@ -308,6 +317,8 @@ public:
     virtual unsigned int get_attr_num(Attr_iter iter);
     virtual string get_attr(Attr_iter iter, unsigned int i = 0);
     virtual std::vector<string> *get_attr_vector(Attr_iter iter);
+    virtual bool is_global_attribute(Attr_iter iter);
+    virtual void set_is_global_attribute(Attr_iter iter, bool ga);
 
     virtual void add_container_alias(const string &name, AttrTable *src);
     virtual void add_value_alias(AttrTable *at, const string &name,

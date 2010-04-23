@@ -32,6 +32,8 @@
 
 #include "config.h"
 
+// #define DODS_DEBUG
+
 static char rcsid[]not_used =
         "$Id$";
 
@@ -222,6 +224,7 @@ unsigned int
 AttrTable::append_attr(const string &name, const string &type,
         const string &attribute)
 {
+    DBG(cerr << "Entering AttrTable::append_attr" << endl);
     string lname = www2id(name);
 
     Attr_iter iter = simple_find(lname);
@@ -276,6 +279,7 @@ unsigned int
 AttrTable::append_attr(const string &name, const string &type,
         vector<string> *values)
 {
+    DBG(cerr << "Entering AttrTable::append_attr(..., vector)" << endl);
     string lname = www2id(name);
 
     Attr_iter iter = simple_find(lname);
@@ -799,6 +803,26 @@ AttrTable::get_attr_vector(Attr_iter iter)
 {
     assert(iter != attr_map.end());
     return (*iter)->type != Attr_container ? (*iter)->attr : 0;
+}
+
+bool
+AttrTable::is_global_attribute(Attr_iter iter)
+{
+    assert(iter != attr_map.end());
+    if ((*iter)->type == Attr_container)
+	(*iter)->attributes->is_global_attribute();
+    else
+	return (*iter)->is_global;
+}
+
+void
+AttrTable::set_is_global_attribute(Attr_iter iter, bool ga)
+{
+    assert(iter != attr_map.end());
+    if ((*iter)->type == Attr_container)
+	(*iter)->attributes->set_is_global_attribute(ga);
+    else
+	(*iter)->is_global = ga;
 }
 
 //@} Accessors that use an iterator

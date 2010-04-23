@@ -572,13 +572,23 @@ BaseType::transfer_attributes(AttrTable *at_container)
 {
     AttrTable *at = at_container->get_attr_table(name());
 
+    DBG(cerr << "In BaseType::transfer_attributes; processing " << name() << endl);
+
     if (at) {
 	at->set_is_global_attribute(false);
+	DBG(cerr << "Processing AttrTable: " << at->get_name() << endl);
 
 	AttrTable::Attr_iter at_p = at->attr_begin();
 	while (at_p != at->attr_end()) {
-	    get_attr_table().append_attr(at->get_name(at_p),
-		    at->get_type(at_p), at->get_attr_vector(at_p));
+	    DBG(cerr << "About to append "  << endl);
+	    DBG(cerr << "attr name,type:" << at->get_name(at_p) << ", " << at->get_type(at_p) << endl);
+
+	    if (at->get_attr_type(at_p) == Attr_container)
+		get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)),
+			at->get_name(at_p));
+	    else
+		get_attr_table().append_attr(at->get_name(at_p),
+			at->get_type(at_p), at->get_attr_vector(at_p));
 
 	    at_p++;
 	}

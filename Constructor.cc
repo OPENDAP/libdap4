@@ -275,10 +275,14 @@ void Constructor::transfer_attributes(AttrTable *at_container)
 	// but instead an attribute that belongs to this Constructor.
 	AttrTable::Attr_iter at_p = at->attr_begin();
 	while (at_p != at->attr_end()) {
-	    if (at->is_global_attribute())
-		get_attr_table().append_attr(at->get_name(at_p), at->get_type(
-			at_p), at->get_attr_vector(at_p));
-
+	    if (at->is_global_attribute(at_p)) {
+		if (at->get_attr_type(at_p) == Attr_container)
+		    get_attr_table().append_container(new AttrTable(
+			    *at->get_attr_table(at_p)), at->get_name(at_p));
+		else
+		    get_attr_table().append_attr(at->get_name(at_p),
+			    at->get_type(at_p), at->get_attr_vector(at_p));
+	    }
 	    at_p++;
 	}
 
