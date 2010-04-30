@@ -26,56 +26,25 @@ check_PROGRAMS = $(UNIT_TESTS)
 TESTS = $(UNIT_TESTS)
 
 noinst_HEADERS = test_config.h
-# noinst_SCRIPTS = ais_testsuite/ais_database.xml
 
 DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
 	rcreader-testsuite server-testsuite cgi-util-tests	\
 	ce-functions-testsuite
 
-# Defining this instead of just adding the directory because now there are
-# generated files in ais_testsuite. If just list the directory then it
-# copies the generated files as well, which we don't want.
-
-#### Remove
-
-AIS_EXTRA = ais_testsuite/123.das ais_testsuite/ais_database.xml.in	\
-	ais_testsuite/ais_error_1.xml ais_testsuite/ais_error_2.xml	\
-	ais_testsuite/ais_error_3.xml ais_testsuite/ais_error_4.xml	\
-	ais_testsuite/ais_error_5.xml ais_testsuite/ais_error_6.xml	\
-	ais_testsuite/bears_1.nc.das ais_testsuite/coads.das		\
-	ais_testsuite/fnoc1.nc.das ais_testsuite/fnoc2_replace.das	\
-	ais_testsuite/fnoc3_fallback.das ais_testsuite/starts_with_number.das
-
-####
-
 EXTRA_DIST = $(DIRS_EXTRA) testFile.cc test_config.h.in fdiostream.txt
-
-# $(AIS_EXTRA)
 
 CLEANFILES = testout .dodsrc  *.gcda *.gcno
 
 DISTCLEANFILES = test_config.h *.strm *.file tmp.txt fdiostream.txt
 
-# ais_testsuite/ais_database.xml
-
 test_config.h: test_config.h.in Makefile
 	sed -e "s%[@]abs_srcdir[@]%${abs_srcdir}%" $< > test_config.h
-
-#### Remove
-
-ais_testsuite/ais_database.xml: ais_testsuite/ais_database.xml.in ../config.status
-	mkdir -p ais_testsuite
-	chmod +w ais_testsuite
-	sed -e "s%[@]abs_srcdir[@]%${abs_srcdir}%" $< > ais_testsuite/ais_database.xml
-
-####
 
 ############################################################################
 # Unit Tests
 #
 
 if CPPUNIT
-#UNIT_TESTS = AttrTableTest
 UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	RegexTest                                                       \
 	ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest 	\
@@ -85,8 +54,6 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	GridGeoConstraintTest ArrayGeoConstraintTest MarshallerTest
 
 #	fdiostreamTest
-
-#  AISDatabaseParserTest AISMergeTest AISResourcesTest	
 
 else
 UNIT_TESTS =
@@ -103,16 +70,6 @@ endif
 RegexTest_SOURCES = RegexTest.cc
 RegexTest_LDADD = ../libdap.la $(AM_LDADD)
 
-# AISDatabaseParserTest_SOURCES = AISDatabaseParserTest.cc
-# AISDatabaseParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
-# AISDatabaseParserTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
-
-# AISMergeTest_SOURCES = AISMergeTest.cc
-# AISMergeTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
-
-# AISResourcesTest_SOURCES = AISResourcesTest.cc
-# AISResourcesTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
-
 ArrayTest_SOURCES = ArrayTest.cc
 ArrayTest_LDADD = ../libdap.la $(AM_LDADD)
 
@@ -124,7 +81,6 @@ ByteTest_LDADD = ../libdap.la $(AM_LDADD)
 
 MIMEUtilTest_SOURCES = MIMEUtilTest.cc
 MIMEUtilTest_LDADD = ../libdap.la $(AM_LDADD)
-#  ../libdapserver.la
 
 ancT_SOURCES = ancT.cc
 ancT_LDADD = ../libdapserver.la ../libdap.la $(AM_LDADD)
@@ -138,7 +94,6 @@ DDSTest_LDADD = ../libdap.la $(AM_LDADD)
 DDXParserTest_SOURCES = DDXParserTest.cc
 DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 DDXParserTest_LDADD = ../libdap.la $(AM_LDADD)
-#  ../libdapserver.la 
 
 DODSFilterTest_SOURCES = DODSFilterTest.cc
 DODSFilterTest_LDADD = ../libdapserver.la ../libdap.la \
@@ -146,15 +101,12 @@ DODSFilterTest_LDADD = ../libdapserver.la ../libdap.la \
 
 generalUtilTest_SOURCES = generalUtilTest.cc
 generalUtilTest_LDADD = ../libdap.la $(AM_LDADD)
-# ../libdapserver.la 
 
 HTTPCacheTest_SOURCES = HTTPCacheTest.cc
 HTTPCacheTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
-#  ../libdapserver.la
 
 HTTPConnectTest_SOURCES = HTTPConnectTest.cc
 HTTPConnectTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
-#  ../libdapserver.la
 
 parserUtilTest_SOURCES = parserUtilTest.cc
 parserUtilTest_LDADD = ../libdap.la $(AM_LDADD)
@@ -194,15 +146,12 @@ dasT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
 CEFunctionsTest_SOURCES = CEFunctionsTest.cc
 CEFunctionsTest_LDADD = ../tests/libtest-types.a  ../libdap.la $(AM_LDADD)
-# ../libdapserver.la
 
 GridGeoConstraintTest_SOURCES = GridGeoConstraintTest.cc
 GridGeoConstraintTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
-# ../libdapserver.la 
 
 ArrayGeoConstraintTest_SOURCES = ArrayGeoConstraintTest.cc
 ArrayGeoConstraintTest_LDADD =  ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
-# ../libdapserver.la 
 
-fdiostreamTest_SOURCES = fdiostreamTest.cc
-fdiostreamTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
+# fdiostreamTest_SOURCES = fdiostreamTest.cc
+# fdiostreamTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
