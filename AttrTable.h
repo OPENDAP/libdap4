@@ -237,12 +237,12 @@ private:
     AttrTable *d_parent;
     std::vector<entry *> attr_map;
 
-    // Use this to mark container attribues. Look at the methods
+    // Use this to mark container attributes. Look at the methods
     // is_global_attribute() and set_is_...., esp. at the versions that take
     // an iterator. This code is tricky because it has to track both whole
     // containers that are global and individual attributes that are 'global'
-    // relative to a constructor. That is, there are soe attributes that are
-    // bound to a container and not any of the container's childern.
+    // relative to a constructor. That is, there are some attributes that are
+    // bound to a container and not any of the container's children.
     bool d_is_global_attribute;
 
     void delete_attr_table();

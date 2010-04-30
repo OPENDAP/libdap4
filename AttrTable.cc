@@ -122,17 +122,27 @@ AttrType String_to_AttrType(const string &s)
 void AttrTable::clone(const AttrTable &at)
 {
     d_name = at.d_name;
+    d_is_global_attribute = at.d_is_global_attribute;
+
+    // Set the parent to null (no parent, not in container)
+    // since using at.d_parent is semantically incorrect
+    // and potentially dangerous.
+    d_parent = 0;
 
     Attr_citer i = at.attr_map.begin();
     Attr_citer ie = at.attr_map.end();
     for (; i != ie; i++) {
+        // this deep-copies containers recursively
         entry *e = new entry(*(*i));
         attr_map.push_back(e);
+
+        // If the entry being added was a container,
+        // set its parent to this to maintain invariant.
+        if (e->type == Attr_container) {
+          assert(e->attributes);
+          e->attributes->d_parent = this;
+        }
     }
-
-    d_parent = at.d_parent;
-
-    d_is_global_attribute = at.d_is_global_attribute;
 }
 
 /** @name Instance management functions */
