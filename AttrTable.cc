@@ -820,7 +820,7 @@ AttrTable::is_global_attribute(Attr_iter iter)
 {
     assert(iter != attr_map.end());
     if ((*iter)->type == Attr_container)
-	(*iter)->attributes->is_global_attribute();
+	return (*iter)->attributes->is_global_attribute();
     else
 	return (*iter)->is_global;
 }
