@@ -1,3 +1,192 @@
+2010-04-30  James Gallagher <jgallagher@opendap.org>
+
+	Fixed an error in AttrTable::is_global_attribute() where the function did not
+	always return a value.
+
+	M    AttrTable.cc
+
+2010-04-30  James Gallagher <jgallagher@opendap.org>
+
+	Commented the fdiostreamTest stuff - automake was complaining. Removed a
+	bunch of AIS-related things that are no longer needed.
+
+2010-04-30  mjohnson
+
+	AttrTable.cc, AttrTable.h: Changes for #1544. clone() wasn't
+	preserving parent/child ptrs properly leading to dangling
+	pointers.
+
+2010-04-26  Patrick West <pwest@ucar.edu>
+
+	Fixed version check when a (alpha) or b (beta) at the end of the version
+
+	M    conf/libdap.m4
+
+2010-04-22  James Gallagher <jgallagher@opendap.org>
+
+	Modified the transfer_attributes code so that it checks the
+	is_global property for individual attributes and
+	containers (before it was just containers). This entailed a change
+	to AttrTable in both the way it tracks and sets that property.
+	Fixed the unit tests. Several tests became invalid because they
+	tested handler-specific features that are now dealt with in the
+	handlers themselves.
+
+2010-04-22  mjohnson
+
+	Added version update to INSTALL as well for #1540
+
+2010-04-22  Patrick West <pwest@ucar.edu>
+
+	Requires libxml2 2.6.16
+	M    libdap.spec
+
+2010-04-21  James Gallagher <jgallagher@opendap.org>
+
+	Initial check in of the new methods to handle the transfer (copy)
+	of attributes from the DAS to the DDS object. The new approach
+	includes a new set of methods that are defined in BaseType and
+	Constructor that are designed to be subclassed by handlers that
+	build odd DAS objects. The default methods handle merging a DAS
+	the follows the DAP 2.0 and later specs. The method in DDS calls
+	these 'type-based' methods. The old approach is commented out
+	using #if 0 ... #endif.
+
+2010-04-21  mjohnson
+
+	Added #include <cstdarg> for va_start and va_end Some systems
+	don't find it by default.
+
+2010-04-16  mjohnson
+
+	Fixed invalid memory and broken invariant problem with using
+	deleted copy in Grid::add_var(). Ticket #1530 revealed this.
+
+2010-04-15  James Gallagher <jgallagher@opendap.org>
+
+	Added dist-hook target to remove the .svn subdirs that were being included in
+	the dist files.
+
+	M    libdap/Makefile.am
+	M    bes/Makefile.am
+
+2010-04-15  James Gallagher <jgallagher@opendap.org>
+
+	Added Requires: lines to the .spec files for libdap and bes.
+
+2010-03-23  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for distcheck build on 64-bit linux (FC 11)
+
+	M    SignalHandler.cc
+	M    RCReader.cc
+	M    parser-util.cc
+	M    unit-tests/MarshallerTest.cc
+
+2010-03-23  James Gallagher <jgallagher@opendap.org>
+
+	Fixes from the 64-bit linux build. Includes fix for the DAS value issue where
+	values larger than 32-bits were being allowed in int32 attributes.
+
+	M    tests/das-test.cc
+	M    tests/dds-test.cc
+	M    libdap.spec
+	M    Makefile.am
+	M    parser-util.cc
+	M    unit-tests/RCReaderTest.cc
+
+2010-03-23  James Gallagher <jgallagher@opendap.org>
+
+	Removed fdiostream from libdap and from the tests. Changed
+	generalUtilTest to match the new version of id2xml()
+
+2010-03-19  James Gallagher <jgallagher@opendap.org>
+
+	More changes for ticket 1521. Modified the id2xml() function so
+	that it no longer encodes the stuff in an octal escape sequence.
+	However, the value of the <value> element in the DDX _is_ encoded
+	so that things like '<' will be escaped for the XML parser. Also,
+	bumped the version in configure.ac to 3.10.1b. One unit test fails
+	- this is a stop-gap fix so we can come back to that test and this
+	fix later.
+
+2010-03-19  James Gallagher <jgallagher@opendap.org>
+
+	Modified Connect.cc so that the FILE_METHODS are used, which
+	effectively removed the fdiostream.h header from the compilation.
+	Also, the DAP version has been bumped to 3.3 - a fix since libdap
+	included in the hyrax 1.6 beta release said 3.2 by mistake.
+
+2010-03-19  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for ticket 1512. The function id2xml() was being used to
+	encode String (DAP) Attribute values and this was causing problems
+	when those values were not valid UTF-8 characters (e.g., when they
+	were less than 0x20). As a fix we dropped the encoding altogether
+	and fell back to the same encoding used by the DAS for the
+	values (that encoding represents all non ASCII values using octal
+	escape codes). I also fixed one of the unit tests that was
+	explicitly testing for the XDAP header to be 3.2 and made it
+	accept any value.
+
+2010-02-10  Patrick West <pwest@ucar.edu>
+
+	fdiostreamtest.txt file added to EXTRA_DIST
+	M    unit-tests/Makefile.am
+
+2010-02-07  Patrick West <pwest@ucar.edu>
+
+	EXPRTest.at wasn't included in EXTRA_DIST
+	M    tests/Makefile.am
+
+2010-02-05  Patrick West <pwest@ucar.edu>
+
+	Added DISTCLEANFILES to both of these to clean up unit-tests and tests
+	files left around.
+	M    tests/Makefile.am
+	M    unit-tests/Makefile.am
+
+2010-02-05  Patrick West <pwest@ucar.edu>
+
+	Including test_config.h, which has the local definition of abs_srcdir
+	and can be used to find files to load.
+	M    fdiostreamTest.cc
+
+2010-02-05  Patrick West <pwest@ucar.edu>
+
+	Using abs_srcdir instead of just srcdir. This fixes this part of the
+	distcheck problem.
+	M    tests/DASTest.at
+	M    tests/DDSTest.at
+	M    tests/EXPRTest.at
+
+2010-02-05  Patrick West <pwest@ucar.edu>
+
+	README.AIS has been removed
+	M    libdap.spec
+
+2010-02-03  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for autotest that I forgot to check in to the branch.
+	$srcdir/<tool> --> $abs_builddir/<tool>
+
+2010-02-01  James Gallagher <jgallagher@opendap.org>
+
+	Branch for Hyrax 1.6
+
+	A    http://scm.opendap.org/svn/branch/libdap/3.10.0
+
+2010-02-01  James Gallagher <jgallagher@opendap.org>
+
+	Changes for version 3.10.0
+
+	M    configure.ac
+	M    ChangeLog
+	M    INSTALL
+	M    libdap.spec
+	M    README
+	M    NEWS
+
 2010-02-01  James Gallagher <jgallagher@opendap.org>
 
 	Modified the way errors in attribute values are tested for. Now we
@@ -32,7 +221,7 @@
 2010-01-07  James Gallagher <jgallagher@opendap.org>
 
 	Fixes to geogrid() so that the longitude wrapping feature works
-	and so that if latitude is upsidedown in the data, it's returned
+	and so that if latitude is upside down in the data, it's returned
 	as 'north up' data.
 
 2009-12-29  James Gallagher <jgallagher@opendap.org>
@@ -115,7 +304,7 @@
 
 	tweaks to get the ddx and dataddx responses working with the trunk
 	BES. See getdap's -x (ddx) and -X (DataDDX) responses. These work
-	using the -p x.y switch to set the DAP Accept version to x.y. Alos
+	using the -p x.y switch to set the DAP Accept version to x.y. Also
 	added the -t option to turn on HTTP protocol tracing. The new
 	parser DDXParserSXA2 reads the dapVersion XML attribute and sets
 	the value in the DDS instance. I also modified the Connect class
@@ -158,7 +347,7 @@
 
 2009-10-02  Patrick West <pwest@ucar.edu>
 
-	This funciton is no longer used in libdap and is specific to usage in
+	This function is no longer used in libdap and is specific to usage in
 	dap-server. Moved the function.
 	M    mime_util.h
 

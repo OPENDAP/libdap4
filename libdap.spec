@@ -1,6 +1,6 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP
-Version: 3.10.1b
+Version: 3.10.2
 Release: 1
 
 License: LGPLv2+
@@ -110,6 +110,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue May  4 2010 James Gallagehr <jgallagher@opendap.org> - 3.10.2
+- 3.10.2 release candidate 1
+ 
 * Mon Feb  1 2010 James Gallagehr <jgallagher@opendap.org> - 3.10.0
 - Removed deflate; general update for 3.10.0 release
 

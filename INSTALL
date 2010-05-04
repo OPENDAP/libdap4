@@ -25,13 +25,12 @@ BUILDING THE SOFTWARE
      to type `sh configure'.
 
   2. Type `make' to build the library, `make check' to run the tests.
-     You must have CppUnit to run `make check.' CppUnit is optional,
-     but recommended. On a Mandrake/Mandriva system, you need to copy
-     or link conf/config.guess into the 'tests' directory and then run
-     the tests.
+     You must have CppUnit to run `make check.' On a Mandrake/Mandriva
+     system, you need to copy or link conf/config.guess into the
+     'tests' directory and then run the tests.
 
   3. Type `make install' to install the library files. The libraries
-     (libdap.a. libdapclient.a and libdapserver.a), their header files and
+     (libdap.a. libdapclient.a and libdapserver.a, etc.), their header files and
      the getdap and dap-config utilities install under /usr/local/ in lib,
      include/libdap and bin by default. Use the --prefix option to specify a
      different root directory. For example, './configure
