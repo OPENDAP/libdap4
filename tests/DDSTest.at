@@ -18,7 +18,7 @@ AT_SETUP([DDS $1])
 AT_KEYWORDS([dds])
 #Added || true because the $srcdir/dds-test -p < $1 needs to be true whether the
 #output is printed to stdout or stderr
-AT_CHECK([$srcdir/dds-test -p < $1 || true], [], [stdout], [stderr])
+AT_CHECK([$abs_builddir/dds-test -p < $1 || true], [], [stdout], [stderr])
 #Need to compare either stdout or stderr because of the directory the above
 #AT_CHECK prints output to
 AT_CHECK([diff -b -B $2 stdout || diff -b -B $2 stderr], [], [ignore],[],[])
