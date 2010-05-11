@@ -1,19 +1,17 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP
-Version: 3.10.0
+Version: 3.10.2
 Release: 1
 
 License: LGPLv2+
 Group: Development/Libraries
 URL: http://www.opendap.org/
 Source0: http://www.opendap.org/pub/source/libdap-%{version}.tar.gz
+Requires: curl >= 7.10.6 libxml2 >= 2.6.16
 
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-# Mandrake
-# BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
-# fedora
-BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
+BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.6.16
 BuildRequires: doxygen graphviz
 BuildRequires: pkgconfig
 
@@ -37,7 +35,7 @@ CGI-based code is no longer supported.
 Summary: Development and header files from libdap
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
-Requires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
+Requires: curl-devel >= 7.10.6 libxml2-devel >= 2.6.16
 Requires: pkgconfig
 # for the /usr/share/aclocal directory ownership
 Requires: automake
@@ -94,7 +92,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libdap.so.*
 %{_libdir}/libdapclient.so.*
 %{_libdir}/libdapserver.so.*
-%doc README NEWS COPYING COPYRIGHT_URI README.AIS README.dodsrc
+%doc README NEWS COPYING COPYRIGHT_URI README.dodsrc
 
 %files devel
 %defattr(-,root,root,-)
@@ -112,6 +110,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue May  4 2010 James Gallagehr <jgallagher@opendap.org> - 3.10.2
+- 3.10.2 release candidate 1
+ 
 * Mon Feb  1 2010 James Gallagehr <jgallagher@opendap.org> - 3.10.0
 - Removed deflate; general update for 3.10.0 release
 

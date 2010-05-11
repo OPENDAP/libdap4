@@ -1,3 +1,8 @@
+Updated for Version 3.10.2
+
+BaseType::transfer_attributes() and related methods provide a way for
+handlers to customize how attributes from a DAS object are merged into
+a DDS.
 
 Updated for Version 3.10.0
 

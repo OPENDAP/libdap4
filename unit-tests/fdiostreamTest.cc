@@ -37,6 +37,7 @@
 #include <string>
 
 #include "fdiostream.h"
+#include "test_config.h"
 #include "debug.h"
 
 using namespace std;
@@ -46,7 +47,8 @@ using namespace libdap;
 
 class fdiostreamTest: public TestFixture {
 private:
-    //std::string data;
+    string fdiostream_txt ;
+    string ff_test1_data ;
 public:
     fdiostreamTest()
     {
@@ -58,6 +60,9 @@ public:
 
     void setUp()
     {
+	fdiostream_txt = (string)TEST_SRC_DIR + "/fdiostream.txt" ;
+	ff_test1_data = (string)TEST_SRC_DIR
+			+ "/server-testsuite/ff_test1_ce1.data" ;
     }
 
     void tearDown()
@@ -84,6 +89,7 @@ public:
     void write_file()
     {
 	int fd = open("tmp.txt", O_WRONLY | O_CREAT | O_TRUNC, 0777);
+	CPPUNIT_ASSERT( "write_file open tmp.txt" && fd != -1 ) ;
 	fdostream out(fd);
 	out << "Output from fdiostream";
 	out.flush();
@@ -103,7 +109,8 @@ public:
 
     void read_test()
     {
-	int fd = open("fdiostream.txt", O_RDONLY);
+	int fd = open(fdiostream_txt.c_str(), O_RDONLY);
+	CPPUNIT_ASSERT( "read_test open fdiostream.txt" && fd != -1 ) ;
 	fdistream in(fd, true);
 
 	char buf[1024];
@@ -123,7 +130,8 @@ public:
     // more info.
     void readsome_test()
     {
-	int fd = open("fdiostream.txt", O_RDONLY);
+	int fd = open(fdiostream_txt.c_str(), O_RDONLY);
+	CPPUNIT_ASSERT( "readsome_test open fdiostream.txt" && fd != -1 ) ;
 	fdistream in(fd, true);
 
 	char buf[1024];
@@ -143,7 +151,8 @@ public:
     // them.
     void readsome_test2()
     {
-	int fd = open("fdiostream.txt", O_RDONLY);
+	int fd = open(fdiostream_txt.c_str(), O_RDONLY);
+	CPPUNIT_ASSERT( "readsome_test2 open fdiostream.txt" && fd != -1 ) ;
 	fdistream in(fd, true);
 
 	char buf[1024];
@@ -158,7 +167,8 @@ public:
 
     void read_strings()
     {
-	int fd = open("fdiostream.txt", O_RDONLY);
+	int fd = open(fdiostream_txt.c_str(), O_RDONLY);
+	CPPUNIT_ASSERT( "read_strings open fdiostream.txt" && fd != -1 ) ;
 	fdistream in(fd, true);
 
 	// Strings read as space-separated tokens
@@ -183,7 +193,8 @@ public:
     // FILE pointers.
     void read_test_file_ptr()
     {
-	FILE *fp = fopen("fdiostream.txt", "r");
+	FILE *fp = fopen(fdiostream_txt.c_str(), "r");
+	CPPUNIT_ASSERT( "read_test_file_ptr fopen fdiostream.txt" && fp != NULL ) ;
 	char word[7];
 	int num = fread(&word[0], 1, 6, fp);
 	word[6] = '\0';
@@ -209,7 +220,8 @@ public:
     // now test FILE*s using fpistream (not fd...)
     void read_test_file_ptr_2()
     {
-	FILE *fp = fopen("fdiostream.txt", "r");
+	FILE *fp = fopen(fdiostream_txt.c_str(), "r");
+	CPPUNIT_ASSERT( "read_test_file_ptr_2 fopen fdiostream.txt" && fp != NULL ) ;
 	char word[7];
 	int num = fread(&word[0], 1, 6, fp);
 	word[6] = '\0';
@@ -230,7 +242,8 @@ public:
 
     void read_test_unget_file_descriptor()
     {
-	int fd = open("fdiostream.txt", O_RDONLY);
+	int fd = open(fdiostream_txt.c_str(), O_RDONLY);
+	CPPUNIT_ASSERT( "read_test_unget_file_descriptor open fdiostream.txt" && fd != -1 ) ;
 	fdistream in(fd, true);
 
 	string test;
@@ -252,7 +265,8 @@ public:
 
     void read_test_unget_file_ptr()
     {
-	FILE *fp = fopen("fdiostream.txt", "r");
+	FILE *fp = fopen(fdiostream_txt.c_str(), "r");
+	CPPUNIT_ASSERT( "read_test_unget_file_ptr open fdiostream.txt" && fp != NULL ) ;
 	fpistream in(fp, true);
 
 	string test;
@@ -274,7 +288,8 @@ public:
 
     void large_read_test()
     {
-	int fd = open("server-testsuite/ff_test1_ce1.data", O_RDONLY);
+	int fd = open(ff_test1_data.c_str(), O_RDONLY);
+	CPPUNIT_ASSERT( "large_read_test open server-testsuite/ff_test1_ce1.data" && fd != -1 ) ;
 	fdistream in(fd, true);
 
 	char buf[55000]; // actual size 54,351 characters/bytes
@@ -294,7 +309,8 @@ public:
 
     void large_read_test_file_pointer()
     {
-	FILE *fp = fopen("server-testsuite/ff_test1_ce1.data", "r");
+	FILE *fp = fopen(ff_test1_data.c_str(), "r");
+	CPPUNIT_ASSERT( "large_read_test_file_pointer open server-testsuite/ff_test1_ce1.data" && fp != NULL ) ;
 	fpistream in(fp, true);
 
 	char buf[55000]; // actual size 54,351 characters/bytes

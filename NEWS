@@ -1,4 +1,31 @@
-News for version 3.10.0
+News for version 3.10.2
+
+Changed the way the DAS object's attributes are merged into a DDS
+object, which did two things. First, the process of merging the
+attributes has a default behavior that will work if the DAS and DDS
+are built according to the DAp 2.0 specification, and second, the
+handlers can specialize the process to suite their own needs. This
+means that new handlers that build odd DAS objects will need to
+specialize the transfer_attributes() method defined by BaseType,
+Constructor and Grid. I've already done this for the current handlers
+we're distributing as part of Hyrax. This means that attributes from
+the netCDF handler appear correctly in Grid maps.
+
+Speaking of the netCDF handler, it now builds with netcdf 4.1.
+
+Build fixes galore, including new Requires: lines in the rpm spec
+files which should make it easier to short circuit installation
+problems with the handlers.
+
+The DDX no longer contains attribtues with &0xdd; escape codes. When
+an XML document declares that it is UTF-8 codes < 0x20 are not
+allowed. We're using octal esacpes again.
+
+The preceding fix, along with the corrected processing of the DAS
+object mean that two major issues with the DDX that hindered the use
+of that response in semantic web applications are gone.
+
+News for version 3.10.1b
 
 We have removed the Server 3 (CGI) software from the dap-server
 package and, with that change, we have removed the deflate program

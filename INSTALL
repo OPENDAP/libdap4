@@ -25,13 +25,12 @@ BUILDING THE SOFTWARE
      to type `sh configure'.
 
   2. Type `make' to build the library, `make check' to run the tests.
-     You must have CppUnit to run `make check.' CppUnit is optional,
-     but recommended. On a Mandrake/Mandriva system, you need to copy
-     or link conf/config.guess into the 'tests' directory and then run
-     the tests.
+     You must have CppUnit to run `make check.' On a Mandrake/Mandriva
+     system, you need to copy or link conf/config.guess into the
+     'tests' directory and then run the tests.
 
   3. Type `make install' to install the library files. The libraries
-     (libdap.a. libdapclient.a and libdapserver.a), their header files and
+     (libdap.a. libdapclient.a and libdapserver.a, etc.), their header files and
      the getdap and dap-config utilities install under /usr/local/ in lib,
      include/libdap and bin by default. Use the --prefix option to specify a
      different root directory. For example, './configure
@@ -83,7 +82,7 @@ REQUIREMENTS
 
   o The library uses libcurl and libxml2. You will need these libraries
     installed on your system to successfully run configure and build the
-    library. You must have libcurl version 7.10.6 or newer and libxml2 2.5.7
+    library. You must have libcurl version 7.10.6 or newer and libxml2 2.6.16
     or newer. We provide source versions of the packages on the web site; the
     web pages for these projects are: http://curl.haxx.se/ and
     http://xmlsoft.org/. Modern Linux and recent OS/X distributions include

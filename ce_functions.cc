@@ -333,7 +333,7 @@ function_version(int, BaseType *[], DDS &, BaseType **btpp)
                        <function name=\"version\" version=\"1.0\"/>\
                      </functions>";
 
-    //                        <function name=\"geoarray\" version=\"0.9b1\"/>\
+    //                        <function name=\"geoarray\" version=\"0.9b1\"/>
 
     Str *response = new Str("version");
 

@@ -15,7 +15,7 @@ m4_define([_AT_DAS_TEST],
 [# AT_BANNER([Test $1 $2])
 AT_SETUP([DAS $1])
 AT_KEYWORDS([das])
-#Added || true because the $srcdir/das-test -p < $1 needs to be true whether the
+#Added || true because the $abs_srcdir/das-test -p < $1 needs to be true whether the
 #output is printed to stdout or stderr
 AT_CHECK([$abs_builddir/das-test -p < $1 || true], [], [stdout], [stderr])
 #Need to compare either stdout or stderr because of the directory the above
@@ -25,7 +25,7 @@ AT_CLEANUP])
 
 m4_define([AT_DAS_RESPONSE_TEST],
 [#AT_BANNER([DAS response for $1.])
-_AT_DAS_TEST([$srcdir/das-testsuite/$1], [$srcdir/das-testsuite/$1.base])
+_AT_DAS_TEST([$abs_srcdir/das-testsuite/$1], [$abs_srcdir/das-testsuite/$1.base])
 ])
 
 AT_DAS_RESPONSE_TEST([bad_value_test.1.das])

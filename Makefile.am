@@ -6,13 +6,10 @@ ACLOCAL_AMFLAGS = -I conf -I gl/m4
 aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
-all-hook:
-	echo "running the all-hook"
-
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU 
 # -I$(top_srcdir)/xstream
-AM_CXXFLAGS = 
+AM_CXXFLAGS = -g3 -O0 -fno-defer-pop
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
 endif
@@ -88,6 +85,11 @@ pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
 CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
 
+# Not nearly as clean as it could be, but this removes .svn directories
+# in subdirs.
+dist-hook:
+	rm -rf `find $(distdir) -name .svn`
+
 # MAINTAINERCLEANFILES = $(GRAM_SRC)
 
 # Copy the generated grammar files to the 'grammarfiles' directory.
@@ -142,13 +144,14 @@ fortifyclean:
 
 ###########################################################################
 
-# Build linux RPMs
+# Build linux RPMs. Use the environment variable 'RPM_OPTIONS' to pass in
+# extra options like --nodeps and --macros
 
 srpm: dist
-	rpmbuild -ts --clean @PACKAGE@-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -ts --clean $(RPM_OPTIONS) @PACKAGE@-@PACKAGE_VERSION@.tar.gz
 
 rpm: dist
-	rpmbuild -tb --clean @PACKAGE@-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -tb --clean $(RPM_OPTIONS) @PACKAGE@-@PACKAGE_VERSION@.tar.gz
 
 ###########################################################################
 
@@ -246,7 +249,9 @@ Operators.h: ce_expr.tab.hh
 # with the other headers. It includes one of the built grammar file headers.
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
-	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc fdiostream.cc
+	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc 
+
+# fdiostream.cc
 
 # AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc 
 
@@ -291,7 +296,9 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		 \
 	Response.h HTTPResponse.h HTTPCacheResponse.h  PipeResponse.h	 \
 	StdinResponse.h SignalHandlerRegisteredErr.h ResponseTooBigErr.h \
-	Resource.h HTTPCacheTable.h fdiostream.h
+	Resource.h HTTPCacheTable.h 
+
+# fdiostream.h
 
 # AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h AISResources.h 	
 

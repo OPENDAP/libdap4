@@ -32,6 +32,8 @@
 
 #include "config.h"
 
+// #define DODS_DEBUG
+
 static char rcsid[]not_used =
         "$Id$";
 
@@ -120,22 +122,34 @@ AttrType String_to_AttrType(const string &s)
 void AttrTable::clone(const AttrTable &at)
 {
     d_name = at.d_name;
+    d_is_global_attribute = at.d_is_global_attribute;
+
+    // Set the parent to null (no parent, not in container)
+    // since using at.d_parent is semantically incorrect
+    // and potentially dangerous.
+    d_parent = 0;
 
     Attr_citer i = at.attr_map.begin();
     Attr_citer ie = at.attr_map.end();
     for (; i != ie; i++) {
+        // this deep-copies containers recursively
         entry *e = new entry(*(*i));
         attr_map.push_back(e);
-    }
 
-    d_parent = at.d_parent;
+        // If the entry being added was a container,
+        // set its parent to this to maintain invariant.
+        if (e->type == Attr_container) {
+          assert(e->attributes);
+          e->attributes->d_parent = this;
+        }
+    }
 }
 
 /** @name Instance management functions */
 
 //@{
 AttrTable::AttrTable() :
-    d_name(""), d_parent(0)
+    d_name(""), d_parent(0), d_is_global_attribute(true)
 {
 }
 
@@ -220,6 +234,7 @@ unsigned int
 AttrTable::append_attr(const string &name, const string &type,
         const string &attribute)
 {
+    DBG(cerr << "Entering AttrTable::append_attr" << endl);
     string lname = www2id(name);
 
     Attr_iter iter = simple_find(lname);
@@ -274,6 +289,7 @@ unsigned int
 AttrTable::append_attr(const string &name, const string &type,
         vector<string> *values)
 {
+    DBG(cerr << "Entering AttrTable::append_attr(..., vector)" << endl);
     string lname = www2id(name);
 
     Attr_iter iter = simple_find(lname);
@@ -799,6 +815,26 @@ AttrTable::get_attr_vector(Attr_iter iter)
     return (*iter)->type != Attr_container ? (*iter)->attr : 0;
 }
 
+bool
+AttrTable::is_global_attribute(Attr_iter iter)
+{
+    assert(iter != attr_map.end());
+    if ((*iter)->type == Attr_container)
+	return (*iter)->attributes->is_global_attribute();
+    else
+	return (*iter)->is_global;
+}
+
+void
+AttrTable::set_is_global_attribute(Attr_iter iter, bool ga)
+{
+    assert(iter != attr_map.end());
+    if ((*iter)->type == Attr_container)
+	(*iter)->attributes->set_is_global_attribute(ga);
+    else
+	(*iter)->is_global = ga;
+}
+
 //@} Accessors that use an iterator
 
 // Alias an attribute table. The alias should be added to this object.
@@ -1207,7 +1243,7 @@ AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
             else {
                 for (unsigned j = 0; j < get_attr_num(i); ++j) {
                     fprintf(out, "%s<value>%s</value>\n", value_pad.c_str(),
-                            id2xml(get_attr(i, j)).c_str());
+                	    id2xml(get_attr(i, j)).c_str());
                 }
             }
             fprintf(out, "%s</Attribute>\n", pad.c_str());

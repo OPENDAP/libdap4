@@ -29,6 +29,7 @@
 //#define DODS_DEBUG2 1
 
 #include <cstring>
+#include <cstdarg>
 
 #include "BaseType.h"
 #include "Byte.h"

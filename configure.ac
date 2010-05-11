@@ -4,8 +4,8 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.10.0, opendap-tech@opendap.org)
-AC_DEFINE(DAP_PROTOCOL_VERSION, ["3.2"], [Highest DAP version implemented?])
+AC_INIT(libdap, 3.10.2, opendap-tech@opendap.org)
+AC_DEFINE(DAP_PROTOCOL_VERSION, ["3.3"], [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
 AC_CONFIG_SRCDIR([Connect.cc])
@@ -26,11 +26,6 @@ AC_SUBST(DVR)
 AC_DEFINE(EVAL, 1, [Should all the classes run ConstraintEvaluator::eval()?])
 AC_SUBST(EVAL)
 
-# As of 9/25/09 we're dropping support for Server3
-# 
-# AC_DEFINE(COMPRESSION_FOR_SERVER3, 0, [Should the subprocess compression for Server3 be included?])
-# AC_SUBST(COMPRESSION_FOR_SERVER3)
-
 dnl flags for the compilers and linkers - set these before locating the
 dnl actual tools since some of the AC_PROG macros set these `flag variables'
 dnl to default values otherwise.
@@ -40,8 +35,8 @@ AC_SUBST(host)
 
 dnl library version: Update these when the interface changes. Generally,
 dnl assume that the interface tracks the major and minor release numbers.
-DAPLIB_CURRENT=11
-DAPLIB_AGE=1
+DAPLIB_CURRENT=12
+DAPLIB_AGE=2
 DAPLIB_REVISION=0
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)

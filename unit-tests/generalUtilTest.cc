@@ -297,8 +297,8 @@ public:
 	CPPUNIT_ASSERT(id2xml("'abc'def") == "&apos;abc&apos;def");
 	CPPUNIT_ASSERT(id2xml("\"abc\"def\"") == "&quot;abc&quot;def&quot;");
 	// To get '\\' in a string both the backslashes must be escaped.
-	cerr << id2xml("octal escape: \\\\012") << endl;
-	CPPUNIT_ASSERT(id2xml("octal escape: \\\\012") == "octal escape: &#x0a;");
+	DBG(cerr << id2xml("octal escape: \\\\012") << endl);
+	CPPUNIT_ASSERT(id2xml("octal escape: \\\\012") == "octal escape: \\\\012");
     }
 
     void xml2id_test() {

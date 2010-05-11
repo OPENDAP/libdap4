@@ -338,7 +338,7 @@ Date: .*\r\n\
     void send_data_ddx_test() {
 	Regex r1("HTTP/1.0 200 OK\r\n\
 .*\
-XDAP: 3.2\r\n\
+XDAP:.*\r\n\
 .*\
 Content-Type: Multipart/Related; boundary=boundary; start=\"<start@opendap.org>\"; type=\"Text/xml\"\r\n\
 Content-Description: dap4-data-ddx\r\n\
@@ -498,7 +498,7 @@ Content-Encoding: binary\r\n\
     }
 
     CPPUNIT_TEST_SUITE( DODSFilterTest );
-#if 0
+#if 1
     CPPUNIT_TEST(get_dataset_last_modified_time_test);
     CPPUNIT_TEST(get_das_last_modified_time_test);
 
@@ -508,7 +508,7 @@ Content-Encoding: binary\r\n\
     CPPUNIT_TEST(send_ddx_test);
     CPPUNIT_TEST(send_data_ddx_test);
     CPPUNIT_TEST(send_data_ddx_test2);
-#if 0
+#if 1
     CPPUNIT_TEST(is_conditional_test);
     CPPUNIT_TEST(get_request_if_modified_since_test);
     CPPUNIT_TEST(escape_code_test);

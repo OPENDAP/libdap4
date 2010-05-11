@@ -35,6 +35,8 @@
 
 #include "config.h"
 
+//#define DODS_DEBUG
+
 #include <functional>
 #include <algorithm>
 
@@ -44,6 +46,8 @@
 #include "util.h"
 #include "InternalErr.h"
 #include "escaping.h"
+
+#include "debug.h"
 
 using namespace std;
 
@@ -341,23 +345,19 @@ Grid::var(const string &n, bool, btp_stack *s)
 void
 Grid::add_var(BaseType *bt, Part part)
 {
-    if (!bt)
+    if (!bt) {
         throw InternalErr(__FILE__, __LINE__,
                           "Passing NULL pointer as variable to be added.");
+    }
 
     if (part == array && _array_var) {
       // Avoid leaking memory...  Function is add, not set, so it is an error to call again for the array part.
       throw InternalErr(__FILE__, __LINE__, "Error: Grid::add_var called with part==Array, but the array was already set!");
     }
 
-    // mjohnson 10 Sep 2009
-    // Add it to the superclass _vars list so we can iterate on superclass vars
-    _vars.push_back(bt);
+    // Set to the clone of bt if we get that far.
+    BaseType* bt_clone = 0;
 
-    // Jose Garcia
-    // Now we get a copy of the maps or of the array
-    // so the owner of bt which is external to libdap++
-    // is free to deallocate its object.
     switch (part) {
 
     case array: {
@@ -369,16 +369,15 @@ Grid::add_var(BaseType *bt, Part part)
               "Grid::add_var(): with Part==array: object is not an Array!");
         }
         // Add it as a copy to preserve old semantics.  This sets parent too.
-        set_array(static_cast<Array*>(p_arr->ptr_duplicate()));
-        return;
+        bt_clone = p_arr->ptr_duplicate();
+        set_array(static_cast<Array*>(bt_clone));
     }
     break;
 
     case maps: {
-            BaseType *btp = bt->ptr_duplicate();
-            btp->set_parent(this);
-            _map_vars.push_back(btp);
-            return;
+            bt_clone = bt->ptr_duplicate();
+            bt_clone->set_parent(this);
+            _map_vars.push_back(bt_clone);
         }
     break;
 
@@ -392,17 +391,24 @@ Grid::add_var(BaseType *bt, Part part)
                   "Grid::add_var(): with Part==array: object is not an Array!");
             }
             // Add it as a copy to preserve old semantics.  This sets parent too.
-            set_array(static_cast<Array*>(p_arr->ptr_duplicate()));
+            bt_clone = p_arr->ptr_duplicate();
+            set_array(static_cast<Array*>(bt_clone));
         }
         else {
-            BaseType *btp = bt->ptr_duplicate();
-            btp->set_parent(this);
-            _map_vars.push_back(btp);
+            bt_clone = bt->ptr_duplicate();
+            bt_clone->set_parent(this);
+            _map_vars.push_back(bt_clone);
         }
-        return;
     }
     break;
   }// switch
+
+  // if we get ehre without exception, add the cloned object to the superclass variable iterator
+  // mjohnson 10 Sep 2009
+  // Add it to the superclass _vars list so we can iterate on superclass vars
+  if (bt_clone) {
+    _vars.push_back(bt_clone);
+  }
 }
 
 /**
@@ -601,6 +607,40 @@ Grid::components(bool constrained)
     }
 
     return comp;
+}
+
+void Grid::transfer_attributes(AttrTable *at_container)
+{
+    AttrTable *at = at_container->get_attr_table(name());
+
+    if (at) {
+	at->set_is_global_attribute(false);
+
+	array_var()->transfer_attributes(at);
+
+	Map_iter map = map_begin();
+	while (map != map_end()) {
+	    (*map)->transfer_attributes(at);
+	    map++;
+	}
+
+	// Trick: If an attribute that's within the container 'at' still has its
+	// is_global_attribute property set, then it's not really a global attr
+	// but instead an attribute that belongs to this Grid.
+	AttrTable::Attr_iter at_p = at->attr_begin();
+	while (at_p != at->attr_end()) {
+	    if (at->is_global_attribute(at_p)) {
+		if (at->get_attr_type(at_p) == Attr_container)
+		    get_attr_table().append_container(new AttrTable(
+			    *at->get_attr_table(at_p)), at->get_name(at_p));
+		else
+		    get_attr_table().append_attr(at->get_name(at_p),
+			    at->get_type(at_p), at->get_attr_vector(at_p));
+	    }
+
+	    at_p++;
+	}
+    }
 }
 
 // When projected (using whatever the current constraint provides in the way

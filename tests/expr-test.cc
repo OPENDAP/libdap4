@@ -75,7 +75,9 @@ static char rcsid[] not_used =
 #include "expr.h"
 #include "ce_expr.tab.hh"
 #include "util.h"
+#if 0
 #include "fdiostream.h"
+#endif
 #include "debug.h"
 
 using namespace std;

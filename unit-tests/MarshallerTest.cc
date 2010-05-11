@@ -38,7 +38,9 @@
 #include "XDRStreamMarshaller.h"
 #include "XDRFileUnMarshaller.h"
 #include "XDRStreamUnMarshaller.h"
+#if 0
 #include "fdiostream.h"
+#endif
 #include "debug.h"
 
 using std::cerr ;
@@ -610,6 +612,7 @@ public:
 	}
     }
 
+#if 0
     // Not currently run...
     void simple_types_fdistream_deserialize_test() {
 	try
@@ -671,6 +674,7 @@ public:
 	    CPPUNIT_FAIL( err.c_str() ) ;
 	}
     }
+#endif
 
     void array_stream_serialize_test() {
 	try
