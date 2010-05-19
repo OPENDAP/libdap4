@@ -255,6 +255,7 @@ DAS::add_table( const string &name, AttrTable *at )
 {
     if( d_container )
     {
+	at->set_is_global_attribute( false ) ;
 	return d_container->append_container( at, name ) ;
     }
     return d_attrs.append_container( at, name ) ;
