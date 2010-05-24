@@ -104,7 +104,7 @@ public:
 	    << prune_spaces(test_server_ce_spaces) << endl);
 	CPPUNIT_ASSERT(prune_spaces(test_server_ce_spaces) == test_server_ce);
 
-	string hdf_two_var = "http://test.opendap.org/opendap/nph-dods/data/hdf/S3096277.HDF.Z?Avg_Wind_Speed[0:5][0],RMS_Wind_Speed[0:5][0]";
+	string hdf_two_var = "http://test.opendap.org/dap/data/hdf/S3096277.HDF.Z?Avg_Wind_Speed[0:5][0],RMS_Wind_Speed[0:5][0]";
 	CPPUNIT_ASSERT(prune_spaces(hdf_two_var) == hdf_two_var);
     }
 

@@ -787,11 +787,11 @@ public:
 
 	void cache_gc_test() {
 		string fnoc1 =
-				"http://test.opendap.org/opendap/nph-dods/data/nc/fnoc1.nc.dds";
+				"http://test.opendap.org/dap/data/nc/fnoc1.nc.dds";
 		string fnoc2 =
-				"http://test.opendap.org/opendap/nph-dods/data/nc/fnoc2.nc.dds";
+				"http://test.opendap.org/dap/data/nc/fnoc2.nc.dds";
 		string fnoc3 =
-				"http://test.opendap.org/opendap/nph-dods/data/nc/fnoc3.nc.dds";
+				"http://test.opendap.org/dap/data/nc/fnoc3.nc.dds";
 		try {
 			auto_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
 
