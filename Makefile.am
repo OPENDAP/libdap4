@@ -9,7 +9,7 @@ pkgconfigdir=$(libdir)/pkgconfig
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU 
 # -I$(top_srcdir)/xstream
-AM_CXXFLAGS = -g3 -O0 -fno-defer-pop
+AM_CXXFLAGS = 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
 endif
