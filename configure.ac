@@ -36,7 +36,7 @@ AC_SUBST(host)
 dnl library version: Update these when the interface changes. Generally,
 dnl assume that the interface tracks the major and minor release numbers.
 DAPLIB_CURRENT=12
-DAPLIB_AGE=2
+DAPLIB_AGE=1
 DAPLIB_REVISION=0
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)

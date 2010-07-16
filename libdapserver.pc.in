@@ -9,6 +9,6 @@ Name: libdapserver
 Description: Server side of the OPeNDAP C++ implementation of the Data Access Protocol
 Version: @VERSION@
 Requires: libdap
-Libs: -L${libdir} -ldapserver @UUID_LIBS@
+Libs: -L${libdir} -ldapserver
 Cflags: -I${includedir}/libdap
 

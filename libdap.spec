@@ -1,7 +1,7 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP
 Version: 3.10.2
-Release: 1
+Release: 2
 
 License: LGPLv2+
 Group: Development/Libraries
