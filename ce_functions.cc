@@ -556,13 +556,40 @@ function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
         return ;
     }
 
-    if (argc < 5)
-        throw Error(malformed_expr,"Wrong number of arguments to geogrid(). See geogrid() for more information.");
+    // There are two main forms of this function, one that takes a Grid and one
+    // that takes a Grid and two Arrays. The latter provides a way to explicitly
+    // tell the function which maps contain lat and lon data. The remaining
+    // arguments are the same for both versions, although that includes a
+    // varying argument list.
 
+    // Look at the types of the first three arguments to determine which of the
+    // two forms were used to call this function.
+    Grid *l_grid = 0;
+    if (argc < 1 || !(l_grid = dynamic_cast < Grid * >(argv[0]->ptr_duplicate())))
+	throw Error(malformed_expr,"The first argument to geogrid() must be a Grid variable!");
+
+    // Both forms require at least this many args
+    if (argc < 5)
+        throw Error(malformed_expr,"Wrong number of arguments to geogrid() (expected at least 5 args). See geogrid() for more information.");
+
+    bool grid_lat_lon_form;
+    Array *l_lat = 0;
+    Array *l_lon = 0;
+    if (!(l_lat = dynamic_cast < Array * >(argv[1]->ptr_duplicate())))
+	grid_lat_lon_form = false;
+    else if (!(l_lon = dynamic_cast < Array * >(argv[2]->ptr_duplicate())))
+	throw Error(malformed_expr,"When using the Grid, Lat, Lon form of geogrid() both the lat and lon maps must be given (lon map missing)!");
+    else
+	grid_lat_lon_form = true;
+
+    if (grid_lat_lon_form && argc < 7)
+        throw Error(malformed_expr,"Wrong number of arguments to geogrid() (expected at least 7 args). See geogrid() for more information.");
+
+#if 0
     Grid *l_grid = dynamic_cast < Grid * >(argv[0]->ptr_duplicate());
     if (!l_grid)
         throw Error(malformed_expr,"The first argument to geogrid() must be a Grid variable!");
-
+#endif
     // Read the maps. Do this before calling parse_gse_expression(). Avoid
     // reading the array until the constraints have been applied because it
     // might be really large.
@@ -586,12 +613,13 @@ function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 
     // Look for Grid Selection Expressions tacked onto the end of the BB
     // specification. If there are any, evaluate them before evaluating the BB.
-    if (argc > 5) {
+    int min_arg_count = (grid_lat_lon_form) ? 7 : 5;
+    if (argc > min_arg_count) {
         // argv[5..n] holds strings; each are little Grid Selection Expressions
         // to be parsed and evaluated.
         vector < GSEClause * > clauses;
         gse_arg *arg = new gse_arg(l_grid);
-        for (int i = 5; i < argc; ++i) {
+        for (int i = min_arg_count; i < argc; ++i) {
             parse_gse_expression(arg, argv[i]);
             clauses.push_back(arg->get_gsec());
         }
@@ -608,10 +636,11 @@ function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 
         // This sets the bounding box and modifies the maps to match the
         // notation of the box (0/359 or -180/179)
-        double top = extract_double_value(argv[1]);
-        double left = extract_double_value(argv[2]);
-        double bottom = extract_double_value(argv[3]);
-        double right = extract_double_value(argv[4]);
+        int box_index_offset = (grid_lat_lon_form) ? 3 : 1;
+        double top = extract_double_value(argv[box_index_offset]);
+        double left = extract_double_value(argv[box_index_offset + 1]);
+        double bottom = extract_double_value(argv[box_index_offset + 2]);
+        double right = extract_double_value(argv[box_index_offset + 3]);
         gc.set_bounding_box(top, left, bottom, right);
         DBG(cerr << "geogrid: past bounding box set" << endl);
 

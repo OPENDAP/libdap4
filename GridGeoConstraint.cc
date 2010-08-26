@@ -78,6 +78,20 @@ GridGeoConstraint::GridGeoConstraint(Grid *grid)
         throw Error("The geogrid() function will only work when the Grid's Longitude and Latitude\nmaps are the rightmost dimensions.");
 }
 
+GridGeoConstraint::GridGeoConstraint(Grid *grid, Array *lat, Array *lon)
+        : GeoConstraint(), d_grid(grid), d_latitude(lat), d_longitude(lon)
+{
+    if (d_grid->get_array()->dimensions() < 2
+        || d_grid->get_array()->dimensions() > 3)
+        throw Error("The geogrid() function works only with Grids of two or three dimensions.");
+
+    // This ctor differs from tha above in that the class does not need to
+    // figure out which, if any, of the Grid's maps are lat and lon data.
+    // It does test the maps passed in to see that they are valid.
+    if (!lat_lon_dimensions_ok())
+        throw Error("The geogrid() function will only work when the Grid's Longitude and Latitude\nmaps are the rightmost dimensions.");
+}
+
 /** A private method called by the constructor that searches for latitude
     and longitude map vectors. This method returns false if either map
     cannot be found. It assumes that the d_grid and d_dds fields are set.
@@ -100,7 +114,11 @@ bool GridGeoConstraint::build_lat_lon_maps()
     // array part has dimensions. Thus don't bother to test the Grid's array
     // dimension iterator for '!= dim_end()'.
     Array::Dim_iter d = d_grid->get_array()->dim_begin();
-    // The fields d_latitude and d_longitude are initialized to null
+    // The fields d_latitude and d_longitude may be initialized to null or they
+    // may already contain pointers to the maps to use. In the latter case,
+    // skip the heuristics used in this code. However, given that all this
+    // method does is find the lat/lon maps, if they are given in the ctor,
+    // This method will likely not be called at all.
     while (m != d_grid->map_end() && (!d_latitude || !d_longitude)) {
         string units_value = (*m)->get_attr_table().get_attr("units");
         units_value = remove_quotes(units_value);

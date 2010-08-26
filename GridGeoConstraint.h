@@ -64,6 +64,7 @@ public:
     /** @name Constructors */
     //@{
     GridGeoConstraint(Grid *grid);
+    GridGeoConstraint(Grid *grid, Array *lat, Array *lon);
     //@}
 
     virtual ~GridGeoConstraint()

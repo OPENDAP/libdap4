@@ -191,8 +191,7 @@ Clause::value(DDS &dds)
 
 /** @brief Evaluate a clause that returns a value via a BaseType
     pointer.
-    This method must only be evaluated for clauses with relational
-    expressions or boolean functions.
+    This method should be called only for those clauses that return values.
     @param dataset This is passed to the function.
     @param dds Use variables from this DDS when evaluating the
     expression

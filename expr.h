@@ -66,11 +66,16 @@ typedef struct
 // (argv) and the DDS for the dataset for which these function is being
 // evaluated (analogous to the ENVP in UNIX). ARGC is the length of ARGV.
 
-// Try to make a single `selection function' type.
-#if 1
+// These two types of functions now take four args - the DDS was added.
+
 typedef void(*bool_func)(int argc, BaseType *argv[], DDS &dds, bool *result);
-#endif
 typedef void(*btp_func)(int argc, BaseType *argv[], DDS &dds, BaseType **btpp);
+
+// Projection function: A function that appears in the projection part of the
+// CE and is executed for its side-effect. Usually adds a new variable to
+// the DDS. These are run _during the parse_ so their side-effects can be used
+// by subsequent parts of the CE.
+
 typedef void(*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce);
 
 // INT_LIST and INT_LIST_LIST are used by the parser to store the array

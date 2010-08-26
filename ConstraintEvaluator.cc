@@ -178,7 +178,7 @@ public:
     any of these functions, the entries in the list allow the parser to evaluate
     it. The functions are of three types: those that return boolean values,
     those that return real (also called BaseType) values, and those that
-    are applied during evaluation of the project for side effect
+    are applied during evaluation of the projection for side effect
 
     @note The add_function() methods will replace a function of the same name,
     so it is possible to overwrite functions in specific handlers if the
@@ -192,7 +192,6 @@ public:
     @name External Function Accessors
 */
 //@{
-#if 1
 /** @brief Add a boolean function to the list. */
 void
 ConstraintEvaluator::add_function(const string &name, bool_func f)
@@ -201,7 +200,7 @@ ConstraintEvaluator::add_function(const string &name, bool_func f)
     function func(name, f);
     functions.push_back(func);
 }
-#endif
+
 /** @brief Add a BaseType function to the list. */
 void
 ConstraintEvaluator::add_function(const string &name, btp_func f)
@@ -219,7 +218,7 @@ ConstraintEvaluator::add_function(const string &name, proj_func f)
     function func(name, f);
     functions.push_back(func);
 }
-#if 1
+
 /** @brief Find a Boolean function with a given name in the function list. */
 bool
 ConstraintEvaluator::find_function(const string &name, bool_func *f) const
@@ -235,7 +234,7 @@ ConstraintEvaluator::find_function(const string &name, bool_func *f) const
 
     return false;
 }
-#endif
+
 /** @brief Find a BaseType function with a given name in the function list. */
 bool
 ConstraintEvaluator::find_function(const string &name, btp_func *f) const
@@ -269,7 +268,11 @@ ConstraintEvaluator::find_function(const string &name, proj_func *f) const
 //@}
 
 /** @brief Does the current constraint expression return a BaseType
-    pointer? */
+    pointer?
+    This method does not evaluate the clause, it provides information to the
+    evaluator regarding _how_ to evaluate the clause.
+    @return True if the clause is a function that returns a BaseType* and
+    false otherwise */
 bool
 ConstraintEvaluator::functional_expression()
 {

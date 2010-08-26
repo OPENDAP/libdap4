@@ -890,7 +890,7 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
 
     out << flush ;
 
-    // Grab a stream encodes using XDR.
+    // Grab a stream that encodes using XDR.
     XDRStreamMarshaller m( out ) ;
 
     try {
