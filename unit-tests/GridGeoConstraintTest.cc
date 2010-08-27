@@ -272,10 +272,8 @@ public:
     CPPUNIT_TEST(lat_lon_dimensions_ok_test);
     CPPUNIT_TEST(transform_longitude_to_pos_notation_test);
     CPPUNIT_TEST(find_longitude_indeces_test);
-#endif
     CPPUNIT_TEST(categorize_latitude_test);
     CPPUNIT_TEST(find_latitude_indeces_test);
-#if 0
     CPPUNIT_TEST(set_array_using_double_test);
     CPPUNIT_TEST(reorder_longitude_map_test);
     // See the comment at the function...
@@ -292,6 +290,7 @@ public:
     CPPUNIT_TEST(apply_constriant_to_data_test3);
     CPPUNIT_TEST(apply_constriant_to_data_test4);
 #endif
+    CPPUNIT_TEST(apply_constriant_to_data_test_three_arg);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -773,6 +772,70 @@ public:
             cerr << endl << endl;
 
             GridGeoConstraint gc2(g2);
+            // SST1 with a constraint that uses neg_pos notation for lon
+            // This should result in a constraint lat from 5 to 8 and
+            // from lon 1 to 5
+            gc2.set_bounding_box(30, 40, 10, 120);
+
+            /* lat: { 40, 30, 20, 10, 0, -10, -20, -30, -40, -50 };
+               lon: { 0, 40, 80, 120, 160, 200, 240, 280, 320, 359 };
+
+               Data values for Grid SST1:
+                    { { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+                      { 10,11,12,13,14,15,16,17,18,19},
+                      { 20,21,22,23,24,25,26,27,28,29},
+                      { 30,31,32,33,34,35,36,37,38,39},
+                      { 40,41,42,43,44,45,46,47,48,49},
+                      { 50,51,52,53,54,55,56,57,58,59},
+                      { 60,61,62,63,64,65,66,67,68,69},
+                      { 70,71,72,73,74,75,76,77,78,79},
+                      { 80,81,82,83,84,85,86,87,88,89},
+                      { 90,91,92,93,94,95,96,97,98,99} };
+            */
+
+            gc2.apply_constraint_to_data();
+
+            CPPUNIT_ASSERT(gc2.d_latitude->length() == 3);
+            CPPUNIT_ASSERT(gc2.d_longitude->length() == 3);
+
+            double *lats = 0;
+            double **lats_ptr = &lats;
+            gc2.d_latitude->buf2val((void**)lats_ptr);
+            CPPUNIT_ASSERT(lats[0] == 30.0);
+            CPPUNIT_ASSERT(lats[2] == 10.0);
+
+            double *lons = 0;
+            double **lons_ptr = &lons;
+            gc2.d_longitude->buf2val((void**)lons_ptr);
+            CPPUNIT_ASSERT(lons[0] == 40.0);
+            CPPUNIT_ASSERT(lons[2] == 120.0);
+
+            gc2.get_constrained_grid()->print_decl(cerr, "    ", true, false, true);
+            gc2.get_constrained_grid()->print_val(cerr, "    ", false);
+            cerr << endl << endl;
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
+    }
+
+    void apply_constriant_to_data_test_three_arg()
+    {
+        try {
+            Grid *g2 = dynamic_cast<Grid*>(geo_dds->var("SST1"));
+            CPPUNIT_ASSERT(g2);
+            g2->set_send_p(true);
+
+            g2->print_decl(cerr, "    ", true, false, true);
+            g2->print_val(cerr, "    ", false);
+            cerr << endl << endl;
+
+            Array *lat2 = dynamic_cast<Array*>(geo_dds->var("SST1.lat"));
+            CPPUNIT_ASSERT(lat2);
+            Array *lon2 = dynamic_cast<Array*>(geo_dds->var("SST1.lon"));
+            CPPUNIT_ASSERT(lon2);
+
+            GridGeoConstraint gc2(g2, lat2, lon2);
             // SST1 with a constraint that uses neg_pos notation for lon
             // This should result in a constraint lat from 5 to 8 and
             // from lon 1 to 5

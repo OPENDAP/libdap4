@@ -71,23 +71,25 @@ GridGeoConstraint::GridGeoConstraint(Grid *grid)
     // Is this Grid a geo-referenced grid? Throw Error if not.
     if (!build_lat_lon_maps())
         throw Error(string("The grid '") + d_grid->name()
-                    +
-                    "' does not have identifiable latitude/longitude map vectors.");
+                    + "' does not have identifiable latitude/longitude map vectors.");
 
     if (!lat_lon_dimensions_ok())
         throw Error("The geogrid() function will only work when the Grid's Longitude and Latitude\nmaps are the rightmost dimensions.");
 }
 
 GridGeoConstraint::GridGeoConstraint(Grid *grid, Array *lat, Array *lon)
-        : GeoConstraint(), d_grid(grid), d_latitude(lat), d_longitude(lon)
+        : GeoConstraint(), d_grid(grid), d_latitude(0), d_longitude(0)
 {
     if (d_grid->get_array()->dimensions() < 2
         || d_grid->get_array()->dimensions() > 3)
         throw Error("The geogrid() function works only with Grids of two or three dimensions.");
 
-    // This ctor differs from tha above in that the class does not need to
-    // figure out which, if any, of the Grid's maps are lat and lon data.
-    // It does test the maps passed in to see that they are valid.
+    // Is this Grid a geo-referenced grid? Throw Error if not.
+    if (!build_lat_lon_maps(lat, lon))
+        throw Error(string("The grid '") + d_grid->name()
+                    + "' does not have valid latitude/longitude map vectors.");
+
+
     if (!lat_lon_dimensions_ok())
         throw Error("The geogrid() function will only work when the Grid's Longitude and Latitude\nmaps are the rightmost dimensions.");
 }
@@ -110,7 +112,7 @@ GridGeoConstraint::GridGeoConstraint(Grid *grid, Array *lat, Array *lon)
 bool GridGeoConstraint::build_lat_lon_maps()
 {
     Grid::Map_iter m = d_grid->map_begin();
-    // Assume that a Grid is correct and thus has exactly as many maps at its
+    // Assume that a Grid is correct and thus has exactly as many maps as its
     // array part has dimensions. Thus don't bother to test the Grid's array
     // dimension iterator for '!= dim_end()'.
     Array::Dim_iter d = d_grid->get_array()->dim_begin();
@@ -174,7 +176,58 @@ bool GridGeoConstraint::build_lat_lon_maps()
     return get_lat() && get_lon();
 }
 
-/** Are the latitude and longitude dimentions ordered so that this class can
+/** A private method called by the constructor that check to make sure the
+    two arrays passed to the constructor are valid latitude and longitude
+    maps. If so, a they are read in and the values are slurped up by this
+    object. Then the Grid's dimension iterator is used to record a reference
+    the the lat and lon dimension of the Grid itself.
+
+    @return True if the maps are valid, otherwise False */
+bool GridGeoConstraint::build_lat_lon_maps(Array *lat, Array *lon)
+{
+    Grid::Map_iter m = d_grid->map_begin();
+
+    Array::Dim_iter d = d_grid->get_array()->dim_begin();
+
+    while (m != d_grid->map_end() && (!d_latitude || !d_longitude)) {
+	// Look for the Grid map that matches the variable passed as 'lat'
+	if (!d_latitude && *m == lat) {
+
+            d_latitude = lat;
+
+            if (!d_latitude->read_p())
+                d_latitude->read();
+
+            set_lat(extract_double_array(d_latitude));   // throws Error
+            set_lat_length(d_latitude->length());
+
+            set_lat_dim(d);
+        }
+
+        if (!d_longitude && *m == lon) {
+
+            d_longitude = lon;
+
+            if (!d_longitude->read_p())
+                d_longitude->read();
+
+            set_lon(extract_double_array(d_longitude));
+            set_lon_length(d_longitude->length());
+
+            set_lon_dim(d);
+
+            if (m + 1 == d_grid->map_end())
+            	set_longitude_rightmost(true);
+        }
+
+        ++m;
+        ++d;
+    }
+
+    return get_lat() && get_lon();
+}
+
+/** Are the latitude and longitude dimensions ordered so that this class can
     properly constrain the data? This method throws Error if lat and lon are
     not to two 'fastest-varying' (or 'rightmost') dimensions. It also sets the
     internal property \e longitude_rightmost if that's true.

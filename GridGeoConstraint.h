@@ -56,6 +56,8 @@ private:
     Array *d_longitude;         //< A pointer to the Grid's longitude map
 
     bool build_lat_lon_maps();
+    bool build_lat_lon_maps(Array *lat, Array *lon);
+
     bool lat_lon_dimensions_ok();
 
     friend class GridGeoConstraintTest; // Unit tests

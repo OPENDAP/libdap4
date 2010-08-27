@@ -575,9 +575,9 @@ function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     bool grid_lat_lon_form;
     Array *l_lat = 0;
     Array *l_lon = 0;
-    if (!(l_lat = dynamic_cast < Array * >(argv[1]->ptr_duplicate())))
+    if (!(l_lat = dynamic_cast < Array * >(argv[1]))) //->ptr_duplicate())))
 	grid_lat_lon_form = false;
-    else if (!(l_lon = dynamic_cast < Array * >(argv[2]->ptr_duplicate())))
+    else if (!(l_lon = dynamic_cast < Array * >(argv[2]))) //->ptr_duplicate())))
 	throw Error(malformed_expr,"When using the Grid, Lat, Lon form of geogrid() both the lat and lon maps must be given (lon map missing)!");
     else
 	grid_lat_lon_form = true;
