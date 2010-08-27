@@ -35,7 +35,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include <functional>
 #include <algorithm>
@@ -676,26 +676,30 @@ Grid::projection_yields_grid()
     if (!a->send_p())
         return false;
 
-    Array::Dim_iter i = a->dim_begin() ;
+    // If only one part is being sent, it's clearly not a grid (it must be
+    // the array part of the Grid that's being sent (given that the above
+    // test passed and the array is being sent).
+    if (components(true) == 1)
+	return false;
+
+    Array::Dim_iter d = a->dim_begin() ;
     Map_iter m = map_begin() ;
-    for (; valid && i != a->dim_end() && m != map_end(); i++, m++) {
-        if (a->dimension_size(i, true)) {
+
+    while (valid && d != a->dim_end() && m != map_end()) {
+	Array &map = dynamic_cast<Array&>(**m);
+        if (a->dimension_size(d, true) && map.send_p()) {
             // Check the matching Map vector; the Map projection must equal
             // the Array dimension projection
-            Array *map = (Array *)(*m);
-            Array::Dim_iter fd = map->dim_begin(); // Maps have only one dim!
-            valid = map->dimension_start(fd, true)
-                    == a->dimension_start(i, true)
-                    && map->dimension_stop(fd, true)
-                    == a->dimension_stop(i, true)
-                    && map->dimension_stride(fd, true)
-                    == a->dimension_stride(i, true);
+            Array::Dim_iter fd = map.dim_begin(); // Maps have only one dim!
+            valid = map.dimension_start(fd, true) == a->dimension_start(d, true)
+                    && map.dimension_stop(fd, true) == a->dimension_stop(d, true)
+                    && map.dimension_stride(fd, true) == a->dimension_stride(d, true);
         }
         else {
-            // Corresponding Map vector must be excluded from the projection.
-            Array *map = (Array *)(*m);
-            valid = !map->send_p();
+           valid = false;
         }
+
+	d++, m++;
     }
 
     return valid;
