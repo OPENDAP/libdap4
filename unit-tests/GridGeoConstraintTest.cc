@@ -29,7 +29,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Int32.h"
@@ -267,7 +267,7 @@ public:
 
     CPPUNIT_TEST_SUITE( GridGeoConstraintTest );
 
-#if 0
+#if 1
     CPPUNIT_TEST(geoconstraint_build_lat_lon_maps_test);
     CPPUNIT_TEST(lat_lon_dimensions_ok_test);
     CPPUNIT_TEST(transform_longitude_to_pos_notation_test);
@@ -291,6 +291,9 @@ public:
     CPPUNIT_TEST(apply_constriant_to_data_test4);
 #endif
     CPPUNIT_TEST(apply_constriant_to_data_test_three_arg);
+    CPPUNIT_TEST(apply_constriant_to_data_test2_three_arg);
+    CPPUNIT_TEST(apply_constriant_to_data_test3_three_arg);
+    CPPUNIT_TEST(apply_constriant_to_data_test4_three_arg);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -698,7 +701,7 @@ public:
 
         }
         catch (Error &e) {
-            DBG(cerr << "Error: " << e.get_error_message() << endl);
+            cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_ASSERT("Caught Error.");
         }
     }
@@ -767,9 +770,9 @@ public:
             CPPUNIT_ASSERT(g2);
             g2->set_send_p(true);
 
-            g2->print_decl(cerr, "    ", true, false, true);
-            g2->print_val(cerr, "    ", false);
-            cerr << endl << endl;
+            DBG(g2->print_decl(cerr, "    ", true, false, true));
+            DBG(g2->print_val(cerr, "    ", false));
+            DBG(cerr << endl << endl);
 
             GridGeoConstraint gc2(g2);
             // SST1 with a constraint that uses neg_pos notation for lon
@@ -810,9 +813,9 @@ public:
             CPPUNIT_ASSERT(lons[0] == 40.0);
             CPPUNIT_ASSERT(lons[2] == 120.0);
 
-            gc2.get_constrained_grid()->print_decl(cerr, "    ", true, false, true);
-            gc2.get_constrained_grid()->print_val(cerr, "    ", false);
-            cerr << endl << endl;
+            DBG(gc2.get_constrained_grid()->print_decl(cerr, "    ", true, false, true));
+            DBG(gc2.get_constrained_grid()->print_val(cerr, "    ", false));
+            DBG(cerr << endl << endl);
         }
         catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
@@ -826,9 +829,9 @@ public:
             CPPUNIT_ASSERT(g2);
             g2->set_send_p(true);
 
-            g2->print_decl(cerr, "    ", true, false, true);
-            g2->print_val(cerr, "    ", false);
-            cerr << endl << endl;
+            DBG(g2->print_decl(cerr, "    ", true, false, true));
+            DBG(g2->print_val(cerr, "    ", false));
+            DBG(cerr << endl << endl);
 
             Array *lat2 = dynamic_cast<Array*>(geo_dds->var("SST1.lat"));
             CPPUNIT_ASSERT(lat2);
@@ -874,9 +877,9 @@ public:
             CPPUNIT_ASSERT(lons[0] == 40.0);
             CPPUNIT_ASSERT(lons[2] == 120.0);
 
-            gc2.get_constrained_grid()->print_decl(cerr, "    ", true, false, true);
-            gc2.get_constrained_grid()->print_val(cerr, "    ", false);
-            cerr << endl << endl;
+            DBG(gc2.get_constrained_grid()->print_decl(cerr, "    ", true, false, true));
+            DBG(gc2.get_constrained_grid()->print_val(cerr, "    ", false));
+            DBG(cerr << endl << endl);
         }
         catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
@@ -891,6 +894,75 @@ public:
             g->set_send_p(true);
 
             GridGeoConstraint gc(g);
+            // SST1 with a constraint that uses neg_pos notation for lon
+            // This should result in a constraint from lon 1 to 5 and lat from
+            // 5 to 8
+            gc.set_bounding_box(30.0, 200.0, 20.0, 280.0);
+
+            /* time[3] = { 0, 1, 2 };
+               lon4[5] = { 160, 200, 240, 280, 320 };
+               lat4[5] = { 40, 30, 20, 10, 0 };
+                dods_byte tmp_data4[3][5][5] =
+                    {
+                      { { 0, 1, 2, 3, 4},
+                        { 10,11,12,13,14},
+                        { 20,21,22,23,24},
+                        { 30,31,32,33,34},
+                        { 40,41,42,43,44}  },
+                      { { 100, 101, 102, 103, 104},
+                        { 110, 111, 112, 113, 114},
+                        { 120, 121, 122, 123, 124},
+                        { 130, 131, 132, 133, 134},
+                        { 140, 141, 142, 143, 144}  },
+                      { { 200, 201, 202, 203, 204},
+                        { 210, 211, 212, 213, 214},
+                        { 220, 221, 222, 223, 224},
+                        { 230, 231, 232, 233, 234},
+                        { 240, 241, 242, 243, 244}  }
+                    };
+            */
+
+            gc.apply_constraint_to_data();
+
+            CPPUNIT_ASSERT(gc.d_latitude->length() == 2);
+            CPPUNIT_ASSERT(gc.d_longitude->length() == 3);
+
+            double *lats = 0;
+            double **lats_ptr = &lats;
+            gc.d_latitude->buf2val((void**)lats_ptr);
+            CPPUNIT_ASSERT(lats[0] == 30.0);
+            CPPUNIT_ASSERT(lats[1] == 20.0);
+
+            double *lons = 0;
+            double **lons_ptr = &lons;
+            gc.d_longitude->buf2val((void**)lons_ptr);
+            CPPUNIT_ASSERT(lons[0] == 200.0);
+            CPPUNIT_ASSERT(lons[2] == 280.0);
+#ifdef DODS_DEBUG
+            gc.get_constrained_grid()->print_decl(cerr, "    ", true, false, true);
+            gc.get_constrained_grid()->print_val(cerr, "    ", false);
+            cerr << endl << endl;
+#endif
+        }
+        catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"apply_constriant_to_data_test caught Error");
+        }
+    }
+
+    void apply_constriant_to_data_test2_three_arg()
+    {
+        try {
+            Grid *g = dynamic_cast<Grid*>(geo_dds_3d->var("SST4"));
+            CPPUNIT_ASSERT(g);
+            g->set_send_p(true);
+
+            Array *lat = dynamic_cast<Array*>(geo_dds_3d->var("SST4.lat"));
+            CPPUNIT_ASSERT(lat);
+            Array *lon = dynamic_cast<Array*>(geo_dds_3d->var("SST4.lon"));
+            CPPUNIT_ASSERT(lon);
+
+            GridGeoConstraint gc(g, lat, lon);
             // SST1 with a constraint that uses neg_pos notation for lon
             // This should result in a constraint from lon 1 to 5 and lat from
             // 5 to 8
@@ -1012,6 +1084,78 @@ public:
             CPPUNIT_FAIL(e.get_error_message());
         }
     }
+
+    // This tests the 'stitch' feature of the GridGeoConstraint/GeoConstraint
+    void apply_constriant_to_data_test3_three_arg()
+    {
+        try {
+            Grid *g2 = dynamic_cast<Grid*>(geo_dds->var("SST3"));
+            CPPUNIT_ASSERT(g2);
+            g2->set_send_p(true);
+
+            Array *lat2 = dynamic_cast<Array*>(geo_dds->var("SST3.lat"));
+            CPPUNIT_ASSERT(lat2);
+            Array *lon2 = dynamic_cast<Array*>(geo_dds->var("SST3.lon"));
+            CPPUNIT_ASSERT(lon2);
+
+            GridGeoConstraint gc2(g2, lat2, lon2);
+            // SST1 with a constraint that uses neg_pos notation for lon
+            // This should result in a constraint lat from 5 to 8 and
+            // from lon 1 to 5
+            gc2.set_bounding_box(30, 300, 30, 60);
+
+            /* lat:  { -40, -30, -20, -10, 0, 10, 20, 30, 40, 50 };
+               lon: { 20, 60, 100, 140, 180, 220, 260, 300, 340, 379 };
+
+               Data values for Grid SST1:
+                    { { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+                      { 10,11,12,13,14,15,16,17,18,19},
+                      { 20,21,22,23,24,25,26,27,28,29},
+                      { 30,31,32,33,34,35,36,37,38,39},
+                      { 40,41,42,43,44,45,46,47,48,49},
+                      { 50,51,52,53,54,55,56,57,58,59},
+                      { 60,61,62,63,64,65,66,67,68,69},
+                      { 70,71,72,73,74,75,76,77,78,79},
+                      { 80,81,82,83,84,85,86,87,88,89},
+                      { 90,91,92,93,94,95,96,97,98,99} };
+            */
+
+            gc2.apply_constraint_to_data();
+
+            DBG(cerr << "gc2.d_latitude->length(): " << gc2.d_latitude->length() << endl);
+            DBG(cerr << "gc2.d_longitude->length(): " << gc2.d_longitude->length() << endl);
+
+            double *lats = 0;
+            double **lats_ptr = &lats;
+            gc2.d_latitude->buf2val((void**)lats_ptr);
+            DBG(cerr << "lats[0]: " << lats[0] << endl);
+
+            double *lons = 0;
+            double **lons_ptr = &lons;
+            gc2.d_longitude->buf2val((void**)lons_ptr);
+            DBG(cerr << "lons[0]: " << lons[0] << endl);
+            DBG(cerr << "lons[gc2.d_longitude->length()-1]: " << lons[gc2.d_longitude->length()-1] << endl);
+            //CPPUNIT_ASSERT(lons[0] == 260.0);
+            //CPPUNIT_ASSERT(lons[4] == 20.0);
+
+            CPPUNIT_ASSERT(gc2.d_latitude->length() == 1);
+            CPPUNIT_ASSERT(gc2.d_longitude->length() == 5);
+
+            CPPUNIT_ASSERT(lats[0] == 30.0);
+
+            CPPUNIT_ASSERT(lons[0] == 300.0);
+            CPPUNIT_ASSERT(lons[4] == 60.0);
+#ifdef DODS_DEBUG
+            gc2.get_constrained_grid()->print_decl(cerr, "    ", true, false, true);
+            gc2.get_constrained_grid()->print_val(cerr, "    ", false);
+            cerr << endl << endl;
+#endif
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
+    }
+
     // This tests the 'stitch' feature of the GridGeoConstraint/GeoConstraint
     void apply_constriant_to_data_test4()
     {
@@ -1078,6 +1222,78 @@ public:
             CPPUNIT_FAIL(e.get_error_message());
         }
     }
+
+    void apply_constriant_to_data_test4_three_arg()
+    {
+        try {
+            Grid *g2 = dynamic_cast<Grid*>(geo_dds->var("SST1_1"));
+            CPPUNIT_ASSERT(g2);
+            g2->set_send_p(true);
+
+            Array *lat2 = dynamic_cast<Array*>(geo_dds->var("SST1_1.lat"));
+            CPPUNIT_ASSERT(lat2);
+            Array *lon2 = dynamic_cast<Array*>(geo_dds->var("SST1_1.lon"));
+            CPPUNIT_ASSERT(lon2);
+
+            GridGeoConstraint gc2(g2, lat2, lon2);
+            // SST1 with a constraint that uses neg_pos notation for lon
+            // This should result in a constraint lat from 5 to 8 and
+            // from lon 1 to 5
+            gc2.set_bounding_box(30, 280, 30, 40);
+
+            /* lat: { 40, 30, 20, 10, 0, -10, -20, -30, -40, -50 };
+	       lon: { 0, 40, 80, 120, 160, 200, 240, 280, 320, 359 };
+               Data values for Grid SST1_1:
+                    { { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+                      { 10,11,12,13,14,15,16,17,18,19},
+                      { 20,21,22,23,24,25,26,27,28,29},
+                      { 30,31,32,33,34,35,36,37,38,39},
+                      { 40,41,42,43,44,45,46,47,48,49},
+                      { 50,51,52,53,54,55,56,57,58,59},
+                      { 60,61,62,63,64,65,66,67,68,69},
+                      { 70,71,72,73,74,75,76,77,78,79},
+                      { 80,81,82,83,84,85,86,87,88,89},
+                      { 90,91,92,93,94,95,96,97,98,99} };
+            */
+
+            gc2.apply_constraint_to_data();
+
+            DBG(cerr << "gc2.d_latitude->length(): " << gc2.d_latitude->length() << endl);
+            DBG(cerr << "gc2.d_longitude->length(): " << gc2.d_longitude->length() << endl);
+
+            double *lats = 0;
+            double **lats_ptr = &lats;
+            gc2.d_latitude->buf2val((void**)lats_ptr);
+            DBG(cerr << "lats[0]: " << lats[0] << endl);
+            //CPPUNIT_ASSERT(lats[3] == -40.0);
+
+            double *lons = 0;
+            double **lons_ptr = &lons;
+            gc2.d_longitude->buf2val((void**)lons_ptr);
+            DBG(cerr << "lons[0]: " << lons[0] << endl);
+            DBG(cerr << "lons[3]: " << lons[4] << endl);
+            //CPPUNIT_ASSERT(lons[0] == 260.0);
+            //CPPUNIT_ASSERT(lons[4] == 20.0);
+
+            CPPUNIT_ASSERT(gc2.d_latitude->length() == 1);
+            CPPUNIT_ASSERT(gc2.d_longitude->length() == 5);
+
+            CPPUNIT_ASSERT(lats[0] == 30.0);
+            //CPPUNIT_ASSERT(lats[3] == -40.0);
+
+            CPPUNIT_ASSERT(lons[0] == 280.0);
+            CPPUNIT_ASSERT(lons[4] == 40.0);
+#ifdef DODS_DEBUG
+            gc2.get_constrained_grid()->print_decl(cerr, "    ", true, false, true);
+            gc2.get_constrained_grid()->print_val(cerr, "    ", false);
+            cerr << endl << endl;
+#endif
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
+    }
+
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(GridGeoConstraintTest);
