@@ -722,26 +722,6 @@ Grid::print_decl(FILE *out, string space, bool print_semi,
     if (constrained && !send_p())
         return;
 
-#if 0
-    // If we are printing the declaration of a constrained Grid then check for
-    // the case where the projection removes all but one component; the
-    // resulting object is a simple array.
-    int projection = components(true);
-    if (constrained && projection == 1) {
-        _array_var->print_decl(out, space, print_semi /*true*/, constraint_info,
-                               constrained);
-        for (Map_citer i = _map_vars.begin(); i != _map_vars.end(); i++) {
-            (*i)->print_decl(out, space, print_semi /*true*/, constraint_info, constrained);
-        }
-
-        goto exit;  // Skip end material.
-    }
-    // If there are M (< N) componets (Array and Maps combined) in a N
-    // component Grid, send the M components as elements of a Struture.
-    // This will preserve the grouping without violating the rules for a
-    // Grid.
-    // else
-#endif
     // The problem with the above is that if two Grids are projected and each
     // contain one variable, say a map, and it happens to have the same name
     // in each Grid, then without the enclosing Structures, the returned dataset
@@ -787,10 +767,6 @@ Grid::print_decl(FILE *out, string space, bool print_semi,
 
     if (print_semi)
         fprintf(out, ";\n") ;
-#if 0
-    // If sending just one comp, skip sending the terminal semicolon, etc.
-exit:
-#endif
 
     return;
 }
@@ -802,31 +778,6 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
 {
     if (constrained && !send_p())
         return;
-
-    // If we are printing the declaration of a constrained Grid then check for
-    // the case where the projection removes all but one component; the
-    // resulting object is a simple array.
-    //
-    // I replaced the 'true' with the value of 'print_semi' passed in by the
-    // caller. This fixes an issue with the intern_data tests and does not
-    // seem to break anything else. jhrg 11/9/07
-#if 0
-    int projection = components(true);
-    if (constrained && projection == 1) {
-        _array_var->print_decl(out, space, print_semi /*true*/, constraint_info,
-                               constrained);
-        for (Map_citer i = _map_vars.begin(); i != _map_vars.end(); i++) {
-            (*i)->print_decl(out, space, print_semi /*true*/, constraint_info, constrained);
-        }
-
-        goto exit;  // Skip end material.
-    }
-    // If there are M (< N) components (Array and Maps combined) in a N
-    // component Grid, send the M components as elements of a Structure.
-    // This will preserve the grouping without violating the rules for a
-    // Grid.
-    // else
-#endif
 
     // See comment for the FILE* version of this method.
     if (constrained && !projection_yields_grid()) {
@@ -869,10 +820,6 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
 
     if (print_semi)
 	out << ";\n" ;
-#if 0
-    // If sending just one comp, skip sending the terminal semicolon, etc.
-exit:
-#endif
 
     return;
 }
@@ -903,30 +850,6 @@ Grid::print_xml(FILE *out, string space, bool constrained)
 {
     if (constrained && !send_p())
          return;
-
-     // If we are printing the declaration of a constrained Grid then check for
-     // the case where the projection removes all but one component; the
-     // resulting object is a simple array.
-     //
-     // I replaced the 'true' with the value of 'print_semi' passed in by the
-     // caller. This fixes an issue with the intern_data tests and does not
-     // seem to break anything else. jhrg 11/9/07
-#if 0
-     int projection = components(true);
-     if (constrained && projection == 1) {
-         get_attr_table().print_xml(out, space + "    ", constrained);
-
-         get_array()->print_xml(out, space + "    ", constrained);
-
-         for_each(map_begin(), map_end(),
-                  PrintMapField(out, space + "    ", constrained, "Array"));
-     }
-     // If there are M (< N) components (Array and Maps combined) in a N
-     // component Grid, send the M components as elements of a Structure.
-     // This will preserve the grouping without violating the rules for a
-     // Grid.
-     // else
-#endif
 
      if (constrained && !projection_yields_grid()) {
          fprintf(out, "%s<Structure", space.c_str());
@@ -990,30 +913,6 @@ Grid::print_xml(ostream &out, string space, bool constrained)
 {
     if (constrained && !send_p())
         return;
-
-    // If we are printing the declaration of a constrained Grid then check for
-    // the case where the projection removes all but one component; the
-    // resulting object is a simple array.
-    //
-    // I replaced the 'true' with the value of 'print_semi' passed in by the
-    // caller. This fixes an issue with the intern_data tests and does not
-    // seem to break anything else. jhrg 11/9/07
-#if 0
-    int projection = components(true);
-    if (constrained && projection == 1) {
-        get_attr_table().print_xml(out, space + "    ", constrained);
-
-        get_array()->print_xml(out, space + "    ", constrained);
-
-        for_each(map_begin(), map_end(),
-                 PrintMapFieldStrm(out, space + "    ", constrained, "Array"));
-    }
-    // If there are M (< N) components (Array and Maps combined) in a N
-    // component Grid, send the M components as elements of a Structure.
-    // This will preserve the grouping without violating the rules for a
-    // Grid.
-    //else
-#endif
 
     if (constrained && !projection_yields_grid()) {
         out << space << "<Structure" ;

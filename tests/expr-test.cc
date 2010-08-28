@@ -94,7 +94,7 @@ void test_scanner(bool show_prompt);
 void test_parser(ConstraintEvaluator & eval, DDS & table,
                  const string & dds_name, const string & constraint);
 bool read_table(DDS & table, const string & name, bool print);
-void evaluate_dds(DDS & table, bool print_constrained);
+void evaluate_dds(DDS & table, bool print_constrained, bool xml_syntax);
 void constrained_trans(const string & dds_name, const bool constraint_expr,
                        const string & ce, const bool series_values);
 void intern_data_test(const string & dds_name, const bool constraint_expr,
@@ -115,7 +115,7 @@ static int keep_temps = 0;      // MT-safe; test code.
 
 const string version = "version 1.12";
 const string prompt = "expr-test: ";
-const string options = "sS:bdecvp:w:W:f:k:v";
+const string options = "sS:bdecvp:w:W:f:k:vx?";
 const string usage = "\
 \nexpr-test [-s [-S string] -d -c -v [-p dds-file]\
 \n[-e expr] [-w|-W dds-file] [-f data-file] [-k expr]]\
@@ -142,7 +142,10 @@ const string usage = "\
 \n      -b: Use periodic/cyclic/changing values. For testing Sequence CEs.\
 \n      -f: A file to use for data. Currently only used by -w for sequences.\
 \n      -k: A constraint expression to use with the data. Works with -p,\
-\n          -e, -t and -w";
+\n          -e, -t and -w\
+\n		-x: Print declarations using the XML syntax. Does not work with the\
+\n		    data printouts.\
+\n		-?: Print usage information";
 
 int main(int argc, char *argv[])
 {
@@ -156,6 +159,7 @@ int main(int argc, char *argv[])
     bool scan_string = false;
     bool verbose = false;
     bool series_values = false;
+    bool xml_syntax = false;
     string dds_file_name;
     string dataset = "";
     string constraint = "";
@@ -212,6 +216,9 @@ int main(int argc, char *argv[])
         case 'V':
             cerr << argv[0] << ": " <<  version << endl;
             exit(0);
+        case 'x':
+        	xml_syntax = true;
+        	break;
         case '?':
         default:
             cerr << usage << endl;
@@ -241,7 +248,7 @@ int main(int argc, char *argv[])
         }
 
         if (evaluate_test) {
-            evaluate_dds(table, print_constrained);
+            evaluate_dds(table, print_constrained, xml_syntax);
         }
 
         if (whole_enchalada) {
@@ -382,8 +389,8 @@ test_parser(ConstraintEvaluator & eval, DDS & dds, const string & dds_name,
     }
 }
 
-// Read a DDS from stdin and build the cooresponding DDS. IF PRINT is true,
-// print the text reprsentation of that DDS on the stdout. The DDS TABLE is
+// Read a DDS from stdin and build the corresponding DDS. IF PRINT is true,
+// print the text representation of that DDS on the stdout. The DDS TABLE is
 // modified as a side effect.
 //
 // Returns: true iff that DDS pasted the semantic_check() mfunc, otherwise
@@ -404,14 +411,22 @@ bool read_table(DDS & table, const string & name, bool print)
     }
 }
 
-void evaluate_dds(DDS & table, bool print_constrained)
+void evaluate_dds(DDS & table, bool print_constrained, bool xml_syntax)
 {
-    if (print_constrained)
-        table.print_constrained(cout);
-    else
-        for (DDS::Vars_iter p = table.var_begin(); p != table.var_end();
-             p++)
-            (*p)->print_decl(cout, "", true, true);
+    if (print_constrained) {
+    	if (xml_syntax)
+    		table.print_xml(cout, print_constrained, "");
+    	else
+    		table.print_constrained(cout);
+    }
+    else {
+        for (DDS::Vars_iter p = table.var_begin(); p != table.var_end(); p++) {
+        	if (xml_syntax)
+        		(*p)->print_decl(cout, "", print_constrained);
+        	else
+        		(*p)->print_decl(cout, "", true, true);
+        }
+    }
 }
 
 // Gobble up the MIME header. At one time the MIME Headers were output from
