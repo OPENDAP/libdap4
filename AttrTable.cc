@@ -131,7 +131,7 @@ void AttrTable::clone(const AttrTable &at)
 
     Attr_citer i = at.attr_map.begin();
     Attr_citer ie = at.attr_map.end();
-    for (; i != ie; i++) {
+    for (; i != ie; ++i) {
         // this deep-copies containers recursively
         entry *e = new entry(*(*i));
         attr_map.push_back(e);
@@ -148,13 +148,17 @@ void AttrTable::clone(const AttrTable &at)
 /** @name Instance management functions */
 
 //@{
-AttrTable::AttrTable() :
-    d_name(""), d_parent(0), d_is_global_attribute(true)
+AttrTable::AttrTable()
+  : DapObj()
+  , d_name("")
+  , d_parent(0)
+  , attr_map()
+  , d_is_global_attribute(true)
 {
 }
 
-AttrTable::AttrTable(const AttrTable &rhs) :
-    DapObj()
+AttrTable::AttrTable(const AttrTable &rhs)
+: DapObj()
 {
     clone(rhs);
 }
@@ -162,10 +166,11 @@ AttrTable::AttrTable(const AttrTable &rhs) :
 // Private
 void AttrTable::delete_attr_table()
 {
-    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++) {
+    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); ++i) {
         delete *i;
         *i = 0;
     }
+    attr_map.clear();
 }
 
 AttrTable::~AttrTable()
@@ -465,7 +470,7 @@ AttrTable::Attr_iter
 AttrTable::simple_find(const string &target)
 {
     Attr_iter i;
-    for (i = attr_map.begin(); i != attr_map.end(); i++) {
+    for (i = attr_map.begin(); i != attr_map.end(); ++i) {
         if (target == (*i)->name) {
             break;
         }
@@ -509,7 +514,7 @@ AttrTable::simple_find_container(const string &target)
     if (get_name() == target)
     return this;
 
-    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++) {
+    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); ++i) {
         if (is_container(i) && target == (*i)->name) {
             return (*i)->attributes;
         }
@@ -967,7 +972,7 @@ AttrTable::attr_alias(const string &alias, const string &name)
 void
 AttrTable::erase()
 {
-    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++) {
+    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); ++i) {
         delete *i; *i = 0;
     }
 
@@ -1149,7 +1154,7 @@ AttrTable::simple_print(ostream &out, string pad, Attr_iter i,
 void
 AttrTable::print(FILE *out, string pad, bool dereference)
 {
-    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++) {
+    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); ++i) {
         if ((*i)->is_alias) {
             if (dereference) {
                 simple_print(out, pad, i, dereference);
@@ -1180,7 +1185,7 @@ AttrTable::print(FILE *out, string pad, bool dereference)
 void
 AttrTable::print(ostream &out, string pad, bool dereference)
 {
-    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++) {
+    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); ++i) {
         if ((*i)->is_alias) {
             if (dereference) {
                 simple_print(out, pad, i, dereference);
@@ -1312,7 +1317,7 @@ AttrTable::dump(ostream &strm) const
         DapIndent::Indent();
         Attr_citer i = attr_map.begin();
         Attr_citer ie = attr_map.end();
-        for (; i != ie; i++) {
+        for (; i != ie; ++i) {
             entry *e = (*i);
             string type = AttrType_to_String(e->type);
             if (e->is_alias) {
