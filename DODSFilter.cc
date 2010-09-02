@@ -905,7 +905,7 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
 #if FILE_METHODS
 void
 DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
-                               FILE * out) const
+                               FILE * out, bool ce_eval) const
 {
     // send constrained DDS
     dds.print_constrained(out);
@@ -920,7 +920,7 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
         for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
             if ((*i)->send_p()) {
                 DBG(cerr << "Sending " << (*i)->name() << endl);
-                (*i)->serialize(eval, dds, m, true);
+                (*i)->serialize(eval, dds, m, ce_eval);
             }
     }
     catch (Error & e) {
@@ -931,7 +931,7 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
 
 void
 DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
-                               ostream &out) const
+                               ostream &out, bool ce_eval) const
 {
     // send constrained DDS
     dds.print_constrained(out);
@@ -946,7 +946,7 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
         for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
             if ((*i)->send_p()) {
                 DBG(cerr << "Sending " << (*i)->name() << endl);
-                (*i)->serialize(eval, dds, m, true);
+                (*i)->serialize(eval, dds, m, ce_eval);
             }
     }
     catch (Error & e) {
@@ -957,7 +957,7 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
 void
 DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
                                ostream &out, const string &boundary,
-                               const string &start) const
+                               const string &start, bool ce_eval) const
 {
     // Write the MPM headers for the DDX (text/xml) part of the response
     set_mime_ddx_boundary(out, boundary, start, dap4_ddx);
@@ -987,7 +987,7 @@ DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
         for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
             if ((*i)->send_p()) {
                 DBG(cerr << "Sending " << (*i)->name() << endl);
-                (*i)->serialize(eval, dds, m, true);
+                (*i)->serialize(eval, dds, m, ce_eval);
             }
     }
     catch (Error & e) {
@@ -1037,11 +1037,9 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
     // Start sending the response...
-#if COMPRESSION_FOR_SERVER3
-    bool compress = d_comp && deflate_exists();
-#endif
 
     // Handle *functional* constraint expressions specially
+#if 0
     if (eval.functional_expression()) {
         // Get the result and then start sending the headers. This provides a
         // way to send errors back to the client w/o colliding with the
@@ -1070,17 +1068,17 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
         delete var;
         var = 0;
     }
-    else {
-#if COMPRESSION_FOR_SERVER3
-        if (with_mime_headers)
-            set_mime_binary(data_stream, dods_data, d_cgi_ver,
-                            (compress) ? deflate : x_plain, data_lmt);
-        fflush(data_stream);
-
-        int childpid;
-        if (compress)
-            data_stream = compressor(data_stream, childpid);
 #endif
+    if (eval.function_clauses()) {
+	DDS *fdds = eval.eval_function_clauses(dds);
+
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
+
+        dataset_constraint(*fdds, eval, data_stream, false);
+	delete fdds;
+    }
+    else {
         if (with_mime_headers)
             set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
 
@@ -1134,6 +1132,7 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     // Start sending the response...
 
     // Handle *functional* constraint expressions specially
+#if 0
     if (eval.functional_expression()) {
         // Get the result and then start sending the headers. This provides a
         // way to send errors back to the client w/o colliding with the
@@ -1151,6 +1150,15 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
         functional_constraint(*var, dds, eval, data_stream);
         delete var;
         var = 0;
+    }
+#endif
+    if (eval.function_clauses()) {
+	DDS *fdds = eval.eval_function_clauses(dds);
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
+
+        dataset_constraint(*fdds, eval, data_stream, false);
+	delete fdds;
     }
     else {
         if (with_mime_headers)
@@ -1284,6 +1292,7 @@ DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
     // Start sending the response...
 
     // Handle *functional* constraint expressions specially
+#if 0
     if (eval.functional_expression()) {
         BaseType *var = eval.eval_function(dds, d_dataset);
         if (!var)
@@ -1302,6 +1311,16 @@ DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
         // functional_constraint_ddx(*var, dds, eval, data_stream, boundary);
         delete var;
         var = 0;
+    }
+#endif
+    if (eval.function_clauses()) {
+    	DDS *fdds = eval.eval_function_clauses(dds);
+        if (with_mime_headers)
+            set_mime_multipart(data_stream, boundary, start, dap4_data_ddx,
+        	    d_cgi_ver, x_plain, data_lmt);
+        data_stream << flush ;
+        dataset_constraint(*fdds, eval, data_stream, false);
+    	delete fdds;
     }
     else {
         if (with_mime_headers)

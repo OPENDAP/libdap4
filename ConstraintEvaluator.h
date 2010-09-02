@@ -110,12 +110,12 @@ public:
 
     // New for libdap 3.11. These methods provide a way to evaluate multiple
     // functions in one CE
-    bool function_expressions();
-    DDS *eval_function_expressions(DDS &dds, const string &dataset);
+    bool function_clauses();
+    DDS *eval_function_clauses(DDS &dds);
 
     Clause_iter clause_begin();
     Clause_iter clause_end();
-    bool clause_value(Clause_iter &i, DDS &dds/*, const string &dataset***/);
+    bool clause_value(Clause_iter &i, DDS &dds);
 
     void parse_constraint(const string &constraint, DDS &dds);
     void append_constant(BaseType *btp);

@@ -1,0 +1,17 @@
+Dataset {
+   Grid {
+     ARRAY:
+       Byte SST[lat = 13][lon = 11];
+     MAPS:
+       Float32 lat[13];
+       Float32 lon[11];
+   } SST;
+
+   Grid {
+     ARRAY:
+       Byte AIRT[lat = 13][lon = 11];
+     MAPS:
+       Float32 lat[13];
+       Float32 lon[11];
+   } AIRT;
+} SST_grid;

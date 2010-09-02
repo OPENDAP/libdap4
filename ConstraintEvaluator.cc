@@ -308,17 +308,16 @@ ConstraintEvaluator::eval_function(DDS &dds, const string &)
 
     @return True if the clause is a function that returns a DDS* and
     false otherwise */
-bool
-ConstraintEvaluator::function_expressions()
+bool ConstraintEvaluator::function_clauses()
 {
     if (expr.empty())
-        return false;
+	return false;
 
     for (unsigned int i = 0; i < expr.size(); ++i) {
-		Clause *cp = expr[i];
-		if (!cp->value_clause())
-			return false;
-	}
+	Clause *cp = expr[i];
+	if (!cp->value_clause())
+	    return false;
+    }
 
     return true;
 }
@@ -339,20 +338,22 @@ ConstraintEvaluator::function_expressions()
 
     @note Added for libdap 3.11 */
 DDS *
-ConstraintEvaluator::eval_function_expressions(DDS &dds, const string &)
+ConstraintEvaluator::eval_function_clauses(DDS &dds)
 {
     if (expr.empty())
-        throw InternalErr(__FILE__, __LINE__, "The constraint expression is empty.");
+	throw InternalErr(__FILE__, __LINE__, "The constraint expression is empty.");
 
     DDS *fdds = new DDS(dds.get_factory(), "function_result_" + dds.get_dataset_name());
     for (unsigned int i = 0; i < expr.size(); ++i) {
-		Clause *cp = expr[i];
-		BaseType *result;
-		if (cp->value(dds, &result))
-			fdds->add_var(result);
-		else
-			throw Error("A function was called but failed to return a value.");
+	Clause *cp = expr[i];
+	BaseType *result;
+	if (cp->value(dds, &result)) {
+	    result->set_send_p(true);
+	    fdds->add_var(result);
 	}
+	else
+	    throw Error("A function was called but failed to return a value.");
+    }
 
     return fdds;
 }

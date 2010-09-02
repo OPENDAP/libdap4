@@ -92,7 +92,7 @@ int test_variable_sleep_interval = 0;   // Used in Test* classes for testing
 void test_scanner(const string & str);
 void test_scanner(bool show_prompt);
 void test_parser(ConstraintEvaluator & eval, DDS & table,
-                 const string & dds_name, const string & constraint);
+                 const string & dds_name, string constraint);
 bool read_table(DDS & table, const string & name, bool print);
 void evaluate_dds(DDS & table, bool print_constrained, bool xml_syntax);
 void constrained_trans(const string & dds_name, const bool constraint_expr,
@@ -121,19 +121,19 @@ const string usage = "\
 \n[-e expr] [-w|-W dds-file] [-f data-file] [-k expr]]\
 \nTest the expression evaluation software.\
 \nOptions:\
-\n	-s: Feed the input stream directly into the expression scanner, does\
-\n	    not parse.\
+\n  -s: Feed the input stream directly into the expression scanner, does\
+\n      not parse.\
 \n  -S: <string> Scan the string as if it was standard input.\
-\n	-d: Turn on expression parser debugging.\
-\n	-c: Print the constrained DDS (the one that will be returned\
-\n	    prepended to a data transmission. Must also supply -p and -e \
+\n  -d: Turn on expression parser debugging.\
+\n  -c: Print the constrained DDS (the one that will be returned\
+\n      prepended to a data transmission. Must also supply -p and -e \
 \n  -v: Verbose output\
 \n  -V: Print the version of expr-test\
 \n  -p: DDS-file: Read the DDS from DDS-file and create a DDS object,\
-\n	    then prompt for an expression and parse that expression, given\
-\n	    the DDS object.\
-\n	-e: Evaluate the constraint expression. Must be used with -p.\
-\n	-w: Do the whole enchilada. You don't need to supply -p, -e, ...\
+\n      then prompt for an expression and parse that expression, given\
+\n      the DDS object.\
+\n  -e: Evaluate the constraint expression. Must be used with -p.\
+\n  -w: Do the whole enchilada. You don't need to supply -p, -e, ...\
 \n      This prompts for the constraint expression and the optional\
 \n      data file name. NOTE: The CE parser Error objects do not print\
 \n      with this option.\
@@ -144,8 +144,8 @@ const string usage = "\
 \n  -k: A constraint expression to use with the data. Works with -p,\
 \n      -e, -t and -w\
 \n  -x: Print declarations using the XML syntax. Does not work with the\
-\n	    data printouts.\
-\n	-?: Print usage information";
+\n      data printouts.\
+\n  -?: Print usage information";
 
 int main(int argc, char *argv[])
 {
@@ -368,23 +368,22 @@ void test_scanner(bool show_prompt)
 
 void
 test_parser(ConstraintEvaluator & eval, DDS & dds, const string & dds_name,
-            const string & constraint)
+            string constraint)
 {
     try {
         read_table(dds, dds_name, true);
 
-        if (constraint != "") {
-            eval.parse_constraint(constraint, dds);
-        } else {
-        	throw Error("This code used to prompt for a CE, but that feature no longer works.");
-#if 0
-            ce_exprrestart(stdin);
-            fprintf(stdout, "%s", prompt.c_str());
-            parser_arg arg(&eval);
-            ce_exprparse((void *) &arg);
-#endif
+        if (constraint.empty()) {
+            cout << "Constraint:";
+            char c[256];
+            cin.getline(c, 256);
+            if (!cin)
+                throw InternalErr(__FILE__, __LINE__,
+                                  "Could not read the constraint expression\n");
+            constraint = c;
         }
 
+        eval.parse_constraint(constraint, dds);
         fprintf(stdout, "Input parsed\n");      // Parser throws on failure.
     }
     catch(Error & e) {
@@ -583,6 +582,7 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
 
     server.tag_nested_sequences();      // Tag Sequences as Parent or Leaf node.
 
+#if 0
     if (eval.functional_expression()) {
         BaseType *var = eval.eval_function(server, dds_name);
         if (!var)
@@ -593,27 +593,55 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
         var->set_send_p(true);
         server.add_var(var);
     }
+#endif
+
+    if (eval.function_clauses()) {
+        DDS *fdds = eval.eval_function_clauses(server);
+
+        for (DDS::Vars_iter i = fdds->var_begin(); i != fdds->var_end(); i++)
+            if ((*i)->send_p())
+                (*i)->intern_data(eval, *fdds);
+
+        cout << "The data:\n";
+
+        // This code calls 'output_values()' because print_val() does not test
+        // the value of send_p(). We need to wrap a method around the calls to
+        // print_val() to ensure that only values for variables with send_p() set
+        // are called. In the serialize/deserialize case, the 'client' DDS only
+        // has variables sent by the 'server' but in the intern_data() case, the
+        // whole DDS is still present and only variables selected in the CE have
+        // values.
+        for (DDS::Vars_iter q = fdds->var_begin(); q != fdds->var_end(); q++) {
+            if ((*q)->send_p()) {
+                (*q)->print_decl(cout, "", false, false, true);
+                cout << " = ";
+                dynamic_cast<TestCommon&>(**q).output_values(cout);
+                cout << ";\n";
+            }
+        }
+
+        delete fdds;
+    }
     else {
         for (DDS::Vars_iter i = server.var_begin(); i != server.var_end(); i++)
             if ((*i)->send_p())
                 (*i)->intern_data(eval, server);
-    }
+        cout << "The data:\n";
 
-    cout << "The data:\n";
-
-    // This code calls 'output_values()' because print_val() does not test
-    // the value of send_p(). We need to wrap a method around the calls to
-    // print_val() to ensure that only values for variables with send_p() set
-    // are called. In the serialize/deserialize case, the 'client' DDS only
-    // has variables sent by the 'server' but in the intern_data() case, the
-    // whole DDS is still present and only variables selected in the CE have
-    // values.
-    for (DDS::Vars_iter q = server.var_begin(); q != server.var_end(); q++) {
-        if ((*q)->send_p()) {
-            (*q)->print_decl(cout, "", false, false, true);
-            cout << " = ";
-            dynamic_cast<TestCommon&>(**q).output_values(cout);
-            cout << ";\n";
+        // This code calls 'output_values()' because print_val() does not test
+        // the value of send_p(). We need to wrap a method around the calls to
+        // print_val() to ensure that only values for variables with send_p() set
+        // are called. In the serialize/deserialize case, the 'client' DDS only
+        // has variables sent by the 'server' but in the intern_data() case, the
+        // whole DDS is still present and only variables selected in the CE have
+        // values.
+        for (DDS::Vars_iter q = server.var_begin(); q != server.var_end(); q++) {
+            if ((*q)->send_p()) {
+                (*q)->print_decl(cout, "", false, false, true);
+                cout << " = ";
+                dynamic_cast<TestCommon&>(**q).output_values(cout);
+                cout << ";\n";
+            }
         }
     }
 }
