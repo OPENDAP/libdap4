@@ -108,6 +108,10 @@ public:
     bool eval_selection(DDS &dds, const string &dataset);
     BaseType *eval_function(DDS &dds, const string &dataset);
 
+    // New for libdap 3.11. These methods provide a way to evaluate multiple
+    // functions in one CE
+    bool function_expressions();
+    DDS *eval_function_expressions(DDS &dds, const string &dataset);
 
     Clause_iter clause_begin();
     Clause_iter clause_end();

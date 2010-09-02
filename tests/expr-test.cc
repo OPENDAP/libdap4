@@ -123,29 +123,29 @@ const string usage = "\
 \nOptions:\
 \n	-s: Feed the input stream directly into the expression scanner, does\
 \n	    not parse.\
-\n      -S: <string> Scan the string as if it was standard input.\
+\n  -S: <string> Scan the string as if it was standard input.\
 \n	-d: Turn on expression parser debugging.\
 \n	-c: Print the constrained DDS (the one that will be returned\
 \n	    prepended to a data transmission. Must also supply -p and -e \
-\n      -v: Verbose output\
-\n      -V: Print the version of expr-test\
-\n  	-p: DDS-file: Read the DDS from DDS-file and create a DDS object,\
+\n  -v: Verbose output\
+\n  -V: Print the version of expr-test\
+\n  -p: DDS-file: Read the DDS from DDS-file and create a DDS object,\
 \n	    then prompt for an expression and parse that expression, given\
 \n	    the DDS object.\
 \n	-e: Evaluate the constraint expression. Must be used with -p.\
 \n	-w: Do the whole enchilada. You don't need to supply -p, -e, ...\
-\n          This prompts for the constraint expression and the optional\
-\n          data file name. NOTE: The CE parser Error objects do not print\
-\n          with this option.\
-\n      -W: Similar to -w but uses the new (11/2007) intern_data() methods\
-\n          in place of the serialize()/deserialize() combination.\
-\n      -b: Use periodic/cyclic/changing values. For testing Sequence CEs.\
-\n      -f: A file to use for data. Currently only used by -w for sequences.\
-\n      -k: A constraint expression to use with the data. Works with -p,\
-\n          -e, -t and -w\
-\n		-x: Print declarations using the XML syntax. Does not work with the\
-\n		    data printouts.\
-\n		-?: Print usage information";
+\n      This prompts for the constraint expression and the optional\
+\n      data file name. NOTE: The CE parser Error objects do not print\
+\n      with this option.\
+\n  -W: Similar to -w but uses the new (11/2007) intern_data() methods\
+\n      in place of the serialize()/deserialize() combination.\
+\n  -b: Use periodic/cyclic/changing values. For testing Sequence CEs.\
+\n  -f: A file to use for data. Currently only used by -w for sequences.\
+\n  -k: A constraint expression to use with the data. Works with -p,\
+\n      -e, -t and -w\
+\n  -x: Print declarations using the XML syntax. Does not work with the\
+\n	    data printouts.\
+\n	-?: Print usage information";
 
 int main(int argc, char *argv[])
 {
@@ -376,10 +376,13 @@ test_parser(ConstraintEvaluator & eval, DDS & dds, const string & dds_name,
         if (constraint != "") {
             eval.parse_constraint(constraint, dds);
         } else {
+        	throw Error("This code used to prompt for a CE, but that feature no longer works.");
+#if 0
             ce_exprrestart(stdin);
             fprintf(stdout, "%s", prompt.c_str());
             parser_arg arg(&eval);
             ce_exprparse((void *) &arg);
+#endif
         }
 
         fprintf(stdout, "Input parsed\n");      // Parser throws on failure.

@@ -62,7 +62,7 @@ TestInt32::TestInt32(const string &n) : Int32(n), d_series_values(false)
     _buf = 1;
 }
 
-TestInt32::TestInt32(const string &n, const string &d)
+TestInt32::TestInt32(const string &n, const string &)
     : Int32(n), d_series_values(false)
 {
     _buf = 1;

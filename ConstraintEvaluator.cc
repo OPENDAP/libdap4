@@ -146,13 +146,13 @@ ConstraintEvaluator::append_clause(btp_func func, rvalue_list *args)
     expr.push_back(clause);
 }
 
-/** The DDS maintains a list of BaseType pointers for all the constants
-    that the constraint expression parser generates. These objects are
-    deleted by the DDS destructor. Note that there are no list accessors;
-    these constants are never accessed from the list. The list is simply
-    a convenient way to make sure the constants are disposed of properly.
-
-    @todo Update this comment (ConstraintEvaluator, not DDS. */
+/** The Constraint Evaluator maintains a list of BaseType pointers for all the
+ 	 constants that the constraint expression parser generates. These objects
+ 	 are deleted by the Constraint Evaluator destructor. Note that there are no
+ 	 list accessors; these constants are never accessed from the list. The list
+ 	 is simply a convenient way to make sure the constants are disposed of
+ 	 properly.
+ */
 void
 ConstraintEvaluator::append_constant(BaseType *btp)
 {
@@ -297,6 +297,64 @@ ConstraintEvaluator::eval_function(DDS &dds, const string &)
         return result;
     else
         return NULL;
+}
+
+/** @brief Does the current constraint expression return a DDS pointer?
+
+    This method does not evaluate the clauses, it provides information to the
+    evaluator regarding _how_ to evaluate the clause.
+
+    @note Added for libdap 3.11
+
+    @return True if the clause is a function that returns a DDS* and
+    false otherwise */
+bool
+ConstraintEvaluator::function_expressions()
+{
+    if (expr.empty())
+        return false;
+
+    for (unsigned int i = 0; i < expr.size(); ++i) {
+		Clause *cp = expr[i];
+		if (!cp->value_clause())
+			return false;
+	}
+
+    return true;
+}
+
+/** @brief Evaluate a function-valued constraint expression that contains
+    several function calls.
+
+    This method can be called for any function-valued constraint expression.
+    Unlike eval_function(), it will package the return value in a new DDS
+    object. The server should free this object once it has been serialized
+    and sent.
+
+    @note While there is another type of function that can appear in a CE (a
+    'projection function') those are evaluated by the ce parser - they are used
+    to insert new variables into the DDS as a side effect of CE evaluation.
+    That kind of function can never appear here; these are all functions that
+    return BaseType pointers.
+
+    @note Added for libdap 3.11 */
+DDS *
+ConstraintEvaluator::eval_function_expressions(DDS &dds, const string &)
+{
+    if (expr.empty())
+        throw InternalErr(__FILE__, __LINE__, "The constraint expression is empty.");
+
+    DDS *fdds = new DDS(dds.get_factory(), "function_result_" + dds.get_dataset_name());
+    for (unsigned int i = 0; i < expr.size(); ++i) {
+		Clause *cp = expr[i];
+		BaseType *result;
+		if (cp->value(dds, &result))
+			fdds->add_var(result);
+		else
+			throw Error("A function was called but failed to return a value.");
+	}
+
+    return fdds;
 }
 
 /** @brief Does the current constraint expression return a boolean value? */

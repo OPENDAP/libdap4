@@ -68,6 +68,9 @@ typedef struct
 
 // These two types of functions now take four args - the DDS was added.
 
+/** @todo A better design would wrap these in a class and record at minimum
+    their names so that error messages could be a bit more informative. jhrg
+ */
 typedef void(*bool_func)(int argc, BaseType *argv[], DDS &dds, bool *result);
 typedef void(*btp_func)(int argc, BaseType *argv[], DDS &dds, BaseType **btpp);
 
