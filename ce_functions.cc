@@ -546,7 +546,7 @@ function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
     string info =
     string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
-    "<function name=\"geogrid\" version=\"1.1\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#geogrid\">\n"+
+    "<function name=\"geogrid\" version=\"1.2\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#geogrid\">\n"+
     "</function>";
 
     if (argc == 0) {
