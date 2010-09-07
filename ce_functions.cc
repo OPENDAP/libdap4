@@ -694,11 +694,19 @@ static double string_to_double(const char *val)
 }
 
 /** Look for any one of a series of attribute values in the attribute table
- for \e var.
+ for \e var. This function treats the list of attributes as if they are ordered
+ from most to least likely/important. It stops when the first of the vector of
+ values is found. If the variable (var) is a Grid, this function also looks
+ at the Grid's Array for the named attributes. In all cases it returns the
+ first value found.
+ @param var Look for attributes in this BaseType variable.
+ @param attributes A vector of attributes; the first one found will be returned.
  @return The attribute value in a double. */
 static double get_attribute_double_value(BaseType *var,
         vector<string> &attributes)
 {
+    // This code also builds a list of the attribute values that have been
+    // passed in but not found so that an informative message can be returned.
     AttrTable &attr = var->get_attr_table();
     string attribute_value = "";
     string values = "";
@@ -711,12 +719,12 @@ static double get_attribute_double_value(BaseType *var,
     }
 
     // If the value string is empty, then look at the grid's array (if it's a
-    // grid or throw an Error.
+    // grid) or throw an Error.
     if (attribute_value.empty()) {
         if (var->type() == dods_grid_c)
             return get_attribute_double_value(dynamic_cast<Grid&>(*var).get_array(), attributes);
         else
-            throw Error(malformed_expr,string("No COARDS '") + values.substr(0, values.length() - 2)
+            throw Error(malformed_expr,string("No COARDS/CF '") + values.substr(0, values.length() - 2)
                     + "' attribute was found for the variable '"
                     + var->name() + "'.");
     }
@@ -907,6 +915,7 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     *btpp = dest;
     return;
 }
+
 #if 0
 /** Perform a selection on the array using geographical coordinates. This
  function takes several groups of arguments.
@@ -1017,6 +1026,7 @@ function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     throw InternalErr(__FILE__, __LINE__, "Impossible condition in geoarray.");
 }
 #endif
+
 void register_functions(ConstraintEvaluator & ce)
 {
     ce.add_function("grid", function_grid);
