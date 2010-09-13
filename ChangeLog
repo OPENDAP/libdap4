@@ -1,3 +1,157 @@
+2010-09-07  James Gallagher <jgallagher@opendap.org>
+
+	Added to doc comments
+
+2010-09-03  James Gallagher <jgallagher@opendap.org>
+
+	Updated the version number for geogrid.
+
+2010-09-02  James Gallagher <jgallagher@opendap.org>
+
+	Constraint expressions can now include multiple function calls.
+	Two tests included. Some fixes were added to expr-test.cc which
+	was looking a little long in the tooth... 
+
+2010-09-01  James Gallagher <jgallagher@opendap.org>
+
+	Added new functions to ConstraintEvaluator. Untested.
+
+2010-09-01  mjohnson
+
+	o Fix for memory bug in ticket #1637.
+
+2010-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Grid now prints the XML declaration correctly when a constrained
+	Grid variable's type decays to a Structure. The expr-test program
+	now has an XML option (-x) for use with constrained DDS/DDX
+	output.
+
+2010-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the Grid projection bug - should clean up the code a bit.
+	The error was in projection yields grid which was not correctly
+	testing that each Grid dimension had a matching Map vector that
+	was in the current projection.
+
+2010-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Added regression tests for the new version of geogrid().
+	Removed some old stuff from the dejagnu days.
+
+2010-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Added more tests (unit tests) for GridGeoConstraint for the Grid,
+	Array, Array, ..., version of the constructor.
+
+2010-08-27  James Gallagher <jgallagher@opendap.org>
+
+	geogrid() now takes both (grid, <box points>) and (grid, lat
+	array, lon array <box points>). This includes some minimal testing
+	of the new code.
+
+2010-08-26  James Gallagher <jgallagher@opendap.org>
+
+	Changes to the geogrid function so that it can take lat/lon maps
+	as explicit arguments.
+
+2010-07-16  James Gallagher <jgallagher@opendap.org>
+
+	I removed the AIS functions in libdap 3.8 but failed to correctly
+	set the Age of the library in libdap 3.10. Fixed.
+
+2010-06-17  mjohnson
+
+	Removed debug AM_CXXFLAGS entries.
+
+2010-05-24  James Gallagher <jgallagher@opendap.org>
+
+	Updated tests given that the nph-dods alias is no longer supported by
+	test.opendap.org
+
+	M    unit-tests/HTTPCacheTest.cc
+	M    unit-tests/generalUtilTest.cc
+
+2010-05-19  Patrick West <pwest@ucar.edu>
+
+	Seems to fix bug #1563. When adding an attribute table to the DAS when a
+	container is currently set, set that new attribute table to not be
+	global using set_is_global_attribute(false)
+	
+	M    DAS.cc
+
+2010-05-12  James Gallagher <jgallagher@opendap.org>
+
+	Fixed etag for 304 response test - the etag changed when the server was
+	updated.
+
+	M    unit-tests/HTTPConnectTest.cc
+
+2010-05-11  James Gallagher <jgallagher@opendap.org>
+
+	Merge from the shrew-1.6 branch (which was tagged 3.10.2)
+
+	_M   .
+	M    SignalHandler.cc
+	M    configure.ac
+	M    ChangeLog
+	M    conf/libdap.m4
+	M    DDS.cc
+	M    BaseType.h
+	_M   tests/old_tests/grid-func-testsuite
+	_M   tests/old_tests/server-testsuite
+	M    tests/das-test.cc
+	M    tests/package.m4
+	M    tests/DASTest.at
+	M    tests/DDSTest.at
+	M    tests/expr-test.cc
+	M    tests/EXPRTest.at
+	M    tests/Makefile.am
+	M    tests/dds-test.cc
+	M    INSTALL
+	M    DDXParserSAX2.cc
+	M    libdap.spec
+	M    README
+	M    DDS.h
+	M    BaseType.cc
+	M    Makefile.am
+	M    Constructor.h
+	M    RCReader.cc
+	M    parser-util.cc
+	M    AttrTable.cc
+	_M   mime_util.h
+	M    Grid.h
+	M    NEWS
+	M    ce_functions.cc
+	M    AttrTable.h
+	_M   mime_util.cc
+	M    Constructor.cc
+	M    Grid.cc
+	M    Connect.cc
+	M    escaping.cc
+	M    unit-tests/DODSFilterTest.cc
+	M    unit-tests/DDSTest.cc
+	_M   unit-tests/MIMEUtilTest.cc
+	MM   unit-tests/fdiostreamTest.cc
+	M    unit-tests/generalUtilTest.cc
+	M    unit-tests/dds-testsuite/test.19b.das
+	M    unit-tests/dds-testsuite/test.19e.das
+	M    unit-tests/dds-testsuite/test.19g.das
+	A  + unit-tests/dds-testsuite/coads_climatology.nc.dds
+	A  + unit-tests/dds-testsuite/coads_climatology.nc.das
+	M    unit-tests/Makefile.am
+	M    unit-tests/RCReaderTest.cc
+	M    unit-tests/MarshallerTest.cc
+	_M   fdiostream.h
+
+2010-05-11  James Gallagher <jgallagher@opendap.org>
+
+	ci prior to merge
+
+	M    tests/DASTest.at
+	M    tests/DDSTest.at
+	M    tests/EXPRTest.at
+
 2010-04-30  James Gallagher <jgallagher@opendap.org>
 
 	Fixed an error in AttrTable::is_global_attribute() where the function did not

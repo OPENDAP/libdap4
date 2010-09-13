@@ -1,3 +1,9 @@
+Updated for version 3.11.0
+
+Now constraint expressions can have multiple function calls that return data.
+
+I've bumped up the DAP version from 3.3 to 3.4 to reflect this change.
+
 Updated for Version 3.10.2
 
 BaseType::transfer_attributes() and related methods provide a way for
@@ -26,7 +32,7 @@ Updated for version 3.9.2
 
 Now libdap supports DAP 3.2. You can read about the evolving DAP 3.x protocol
 at http://docs.opendap.org/index.php/DAP3/4. If your client sends the
-XDAP-Accept header witha value of 3.2 the DDX is different (it includes
+XDAP-Accept header with a value of 3.2 the DDX is different (it includes
 protocol information and also an xmlbase element).
 
 Behavior change for the DAS: In the past the format handlers added double
@@ -92,7 +98,7 @@ Updated for Version 3.7.10 (28 November 2007)
 
 A bug fix release. See NEWS.
 
-Updated for Version 3.7.9 (13 Novenber 2007)
+Updated for Version 3.7.9 (13 November 2007)
 
 This release is a bug fix and refactoring release. Old classes which were no
 longer used have been removed, the FILE* output methods are slated to be

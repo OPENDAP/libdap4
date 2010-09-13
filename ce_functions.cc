@@ -327,7 +327,7 @@ function_version(int, BaseType *[], DDS &, BaseType **btpp)
             xml_value =
                     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
                        <functions>\
-                       <function name=\"geogrid\" version=\"1.1\"/>\
+                       <function name=\"geogrid\" version=\"1.2\"/>\
                        <function name=\"grid\" version=\"1.0\"/>\
                        <function name=\"linear_scale\" version=\"1.0b1\"/>\
                        <function name=\"version\" version=\"1.0\"/>\

@@ -1,3 +1,25 @@
+News for version 3.11.0
+
+Constraint expressions can now include multiple function calls.
+Previously, when a function was used in the projection part of the CE
+and it was not a 'projection function,' but a function that returns
+data, only function could be called in the CE. Now the evaluator
+supports calling a series of functions. The results are returned in a
+Dataset object as before. Because this is a new behavior for the
+library I have bumped up the minor revision. This version is backward
+compatible with the previous version of the library.
+
+Grid now prints the XML declaration correctly when a constrained Grid
+variable's type decays to a Structure. The expr-test program now has
+an XML option (-x) for use with constrained DDS/DDX output. This bug
+affected the usefulness of the DDX response.
+
+the geogrid() function now takes both (grid, <box points>) and (grid,
+lat array, lon array <box points>). This includes some minimal testing
+of the new code.
+
+Bug fixes.
+
 News for version 3.10.2
 
 Changed the way the DAS object's attributes are merged into a DDS
@@ -17,9 +39,9 @@ Build fixes galore, including new Requires: lines in the rpm spec
 files which should make it easier to short circuit installation
 problems with the handlers.
 
-The DDX no longer contains attribtues with &0xdd; escape codes. When
+The DDX no longer contains attributes with &0xdd; escape codes. When
 an XML document declares that it is UTF-8 codes < 0x20 are not
-allowed. We're using octal esacpes again.
+allowed. We're using octal escapes again.
 
 The preceding fix, along with the corrected processing of the DAS
 object mean that two major issues with the DDX that hindered the use
