@@ -205,8 +205,7 @@ bool GeoConstraint::is_bounding_box_valid(const double left, const double top,
     @param  longitude_index_right Value-result parameter for the right edge
     index. */
 void GeoConstraint::find_longitude_indeces(double left, double right,
-        int &longitude_index_left,
-        int &longitude_index_right) const
+        int &longitude_index_left, int &longitude_index_right) const
 {
     // Use all values 'modulo 360' to take into account the cases where the
     // constraint and/or the longitude vector are given using values greater
@@ -242,7 +241,7 @@ void GeoConstraint::find_longitude_indeces(double left, double right,
 
         // If we cycle completely through all the values/indices, throw
         if (i == lon_origin_index)
-            throw Error("geogrid: Could not find an index for the longitude value '" + long_to_string(left) + "'");
+            throw Error("geogrid: Could not find an index for the longitude value '" + double_to_string(left) + "'");
     }
 
     if (fmod(d_lon[i], 360.0) == t_left)
@@ -260,7 +259,7 @@ void GeoConstraint::find_longitude_indeces(double left, double right,
         // This is like modulus but for 'counting down'
         i = (i == 0) ? d_lon_length - 1 : i - 1;
         if (i == largest_lon_index)
-            throw Error("geogrid: Could not find an index for the longitude value '" + long_to_string(right) + "'");
+            throw Error("geogrid: Could not find an index for the longitude value '" + double_to_string(right) + "'");
     }
 
     if (fmod(d_lon[i], 360.0) == t_right)
