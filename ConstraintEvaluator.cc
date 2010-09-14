@@ -358,6 +358,35 @@ ConstraintEvaluator::eval_function_clauses(DDS &dds)
     return fdds;
 }
 
+/** @brief Evaluate a function-valued constraint expression that contains
+    several function calls. Takes and returns a DataDDS.
+
+    @see ConstraintEvaluator::eval_function_clauses(DataDDS &dds)
+    @note Added for libdap 3.11 */
+DataDDS *
+ConstraintEvaluator::eval_function_clauses(DataDDS &dds)
+{
+    if (expr.empty())
+	throw InternalErr(__FILE__, __LINE__, "The constraint expression is empty.");
+
+    DataDDS *fdds = new DataDDS(dds.get_factory(),
+				"function_result_" + dds.get_dataset_name(),
+				dds.get_version(), dds.get_protocol());
+
+    for (unsigned int i = 0; i < expr.size(); ++i) {
+	Clause *cp = expr[i];
+	BaseType *result;
+	if (cp->value(dds, &result)) {
+	    result->set_send_p(true);
+	    fdds->add_var(result);
+	}
+	else
+	    throw Error("A function was called but failed to return a value.");
+    }
+
+    return fdds;
+}
+
 /** @brief Does the current constraint expression return a boolean value? */
 bool
 ConstraintEvaluator::boolean_expression()

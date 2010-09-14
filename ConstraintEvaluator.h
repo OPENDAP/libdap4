@@ -27,6 +27,14 @@
 
 #include <list>
 
+#ifndef _dds_h
+#include "DDS.h"
+#endif
+
+#ifndef _datadds_h
+#include "DataDDS.h"
+#endif
+
 #ifndef _clause_h
 #include "Clause.h"
 #endif
@@ -112,6 +120,7 @@ public:
     // functions in one CE
     bool function_clauses();
     DDS *eval_function_clauses(DDS &dds);
+    DataDDS *eval_function_clauses(DataDDS &dds);
 
     Clause_iter clause_begin();
     Clause_iter clause_end();
