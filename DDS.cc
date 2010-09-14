@@ -935,6 +935,12 @@ DDS::parse(FILE *in)
 void
 DDS::print(FILE *out)
 {
+#if 0
+    ostringstream oss;
+    print(oss);
+
+    fwrite(oss.str().c_str(), oss.str().length(), 1, out);
+#else
     fprintf(out, "Dataset {\n") ;
 
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
@@ -944,6 +950,7 @@ DDS::print(FILE *out)
     fprintf(out, "} %s;\n", id2www(name).c_str()) ;
 
     return ;
+#endif
 }
 #endif
 

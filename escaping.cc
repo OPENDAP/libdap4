@@ -65,7 +65,7 @@
 #include "GNURegex.h"
 #include "Error.h"
 #include "InternalErr.h"
-// #define DODS_DEBUG
+//#define DODS_DEBUG
 #include "debug.h"
 
 using namespace std;
@@ -80,8 +80,7 @@ string
 hexstring(unsigned char val)
 {
     ostringstream buf;
-    buf << hex << setw(2) << setfill('0')
-    << static_cast<unsigned int>(val);
+    buf << hex << setw(2) << setfill('0') << static_cast<unsigned int>(val);
 
     return buf.str();
 }
@@ -143,7 +142,7 @@ unoctstring(string s)
         (Connect::request_version, request_protocol, request_das, request_dds,
         request_data).
 
-    @param in The string in which to replace characters.
+    @param in Replace characters in this string.
     @param allowable The set of characters that are allowed in a URI.
     default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/.\\*"
     @see id2www_ce()
@@ -152,10 +151,12 @@ string
 id2www(string in, const string &allowable)
 {
     string::size_type i = 0;
-
+    DBG(cerr<<"Input string: [" << in << "]" << endl);
     while ((i = in.find_first_not_of(allowable, i)) != string::npos) {
+	DBG(cerr<<"Found escapee: [" << in[i] << "]");
         in.replace(i, 1, "%" + hexstring(in[i]));
-        i++;
+        DBGN(cerr<<" now the string is: " << in << endl);
+        i += 3;//i++;
     }
 
     return in;
@@ -220,6 +221,7 @@ www2id(const string &in, const string &escape, const string &except)
             continue;
         }
         res.replace(i, 3, unhexstring(res.substr(i + 1, 2)));
+        ++i;
     }
 
     return res;
