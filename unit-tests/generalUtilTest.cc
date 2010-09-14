@@ -140,6 +140,7 @@ public:
 	CPPUNIT_ASSERT(id2www("This/is") == "This/is");
 	CPPUNIT_ASSERT(id2www("This%is") == "This%25is");
 	CPPUNIT_ASSERT(id2www("This&is") == "This%26is");
+	CPPUNIT_ASSERT(id2www("%This&is") == "%25This%26is");
     }
 
     void www2id_test() {
@@ -163,6 +164,8 @@ public:
 
 	CPPUNIT_ASSERT(www2id("Grid%20Data%26Fields[20][20]", "%", "%20%26")
 	        == "Grid%20Data%26Fields[20][20]");
+	cerr << "www2id(\"%25This%26is\"): " << www2id("%25This%26is") << endl;
+	CPPUNIT_ASSERT(www2id("%25This%26is") == "%This&is");
 
     }
 
