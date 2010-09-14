@@ -1,3 +1,25 @@
+2010-09-14  James Gallagher <jgallagher@opendap.org>
+
+	Added a second version of eval_function_clauses() that takes and
+	returns a DataDDS instead of a DDS. This enables easier use of the
+	method in handlers that are using subclasses of the types and
+	building responses from DataDDS objects passed around in the BES.
+	I also updated some of the library version information in
+	configure.ac to match more closely the addition to
+	ConstraintEvaluator's interface.
+
+2010-09-13  James Gallagher <jgallagher@opendap.org>
+
+	Changes for 3.11.0 release
+
+	M    configure.ac
+	M    ChangeLog
+	M    INSTALL
+	M    libdap.spec
+	M    README
+	M    NEWS
+	M    ce_functions.cc
+
 2010-09-07  James Gallagher <jgallagher@opendap.org>
 
 	Added to doc comments
