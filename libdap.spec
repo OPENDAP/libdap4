@@ -110,13 +110,13 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Mon Sep 13 2010 James Gallagehr <jgallagher@opendap.org> - 3.11.0
+* Mon Sep 13 2010 James Gallagher <jgallagher@opendap.org> - 3.11.0
 - 3.11.0 rc 1
  
-* Tue May  4 2010 James Gallagehr <jgallagher@opendap.org> - 3.10.2
+* Tue May  4 2010 James Gallagher <jgallagher@opendap.org> - 3.10.2
 - 3.10.2 release candidate 1
  
-* Mon Feb  1 2010 James Gallagehr <jgallagher@opendap.org> - 3.10.0
+* Mon Feb  1 2010 James Gallagher <jgallagher@opendap.org> - 3.10.0
 - Removed deflate; general update for 3.10.0 release
 
 * Tue Jun 10 2008 James Gallagher <jgallagher@opendap.org> - 3.8.1-1

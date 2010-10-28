@@ -31,11 +31,11 @@ DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
 	rcreader-testsuite server-testsuite cgi-util-tests	\
 	ce-functions-testsuite
 
-EXTRA_DIST = $(DIRS_EXTRA) testFile.cc test_config.h.in fdiostream.txt
+EXTRA_DIST = $(DIRS_EXTRA) testFile.cc test_config.h.in
 
 CLEANFILES = testout .dodsrc  *.gcda *.gcno
 
-DISTCLEANFILES = test_config.h *.strm *.file tmp.txt fdiostream.txt
+DISTCLEANFILES = test_config.h *.strm *.file tmp.txt
 
 test_config.h: test_config.h.in Makefile
 	sed -e "s%[@]abs_srcdir[@]%${abs_srcdir}%" $< > test_config.h
