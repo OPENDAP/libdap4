@@ -51,7 +51,8 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	DDSTest	DDXParserTest DODSFilterTest generalUtilTest 		\
 	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest 	\
 	SequenceTest SignalHandlerTest CEFunctionsTest 			\
-	GridGeoConstraintTest ArrayGeoConstraintTest MarshallerTest
+	GridGeoConstraintTest ArrayGeoConstraintTest MarshallerTest \
+	ResponseBuilderTest
 
 #	fdiostreamTest
 
@@ -97,6 +98,10 @@ DDXParserTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DODSFilterTest_SOURCES = DODSFilterTest.cc
 DODSFilterTest_LDADD = ../libdapserver.la ../libdap.la \
+	../tests/libtest-types.a $(AM_LDADD)
+
+ResponseBuilderTest_SOURCES = ResponseBuilderTest.cc
+ResponseBuilderTest_LDADD = ../libdapserver.la ../libdap.la \
 	../tests/libtest-types.a $(AM_LDADD)
 
 generalUtilTest_SOURCES = generalUtilTest.cc

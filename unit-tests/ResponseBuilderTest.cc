@@ -36,7 +36,7 @@
 
 //#define DODS_DEBUG
 
-#include "DODSFilter.h"
+#include "ResponseBuilder.h"
 #include "DAS.h"
 #include "DDS.h"
 #include "GNURegex.h"
@@ -56,9 +56,9 @@ int test_variable_sleep_interval = 0;
 
 namespace libdap {
 
-class DODSFilterTest : public TestFixture {
+class ResponseBuilderTest : public TestFixture {
 private:
-    DODSFilter *df, *df_conditional, *df1, *df2, *df3, *df4, *df5, *df6;
+    ResponseBuilder *df, *df_conditional, *df1, *df2, *df3, *df4, *df5, *df6;
 
     AttrTable *cont_a;
     DAS *das;
@@ -68,7 +68,7 @@ private:
     char now_array[256];
 
 public:
-    DODSFilterTest() {
+    ResponseBuilderTest() {
 	now = time(0);
 	ostringstream time_string;
 	time_string << (int)now;
@@ -76,25 +76,25 @@ public:
 	now_array[255] = '\0';
     }
 
-    ~DODSFilterTest() {}
+    ~ResponseBuilderTest() {}
 
     void setUp() {
 	// Test pathname
 	string test_file = (string)TEST_SRC_DIR + "/server-testsuite/bears.data" ;
 	char *argv_1[] = {(char*)"test_case", (char *)test_file.c_str()};
-	df = new DODSFilter(2, argv_1);
+	df = new ResponseBuilder(2, argv_1);
 
 	char *argv_1_1[] = {(char*)"test_case", (char *)test_file.c_str(), (char*)"-l", &now_array[0]};
-	df_conditional = new DODSFilter(4, argv_1_1);
+	df_conditional = new ResponseBuilder(4, argv_1_1);
 
 	// Test missing file
 	argv_1[1] = (char*)"no-such-file";
-	df1 = new DODSFilter(2, argv_1);
+	df1 = new ResponseBuilder(2, argv_1);
 
 	// Test files in CWD. Note that the time is the GM time : Tue, 01 May
 	// 2001 01:08:14 -0700
 	argv_1[1] = (char*)"test_config.h";
-	df2 = new DODSFilter(2, argv_1);
+	df2 = new ResponseBuilder(2, argv_1);
 
 	// This file has an ancillary DAS in the server-testsuite dir.
 	// df3 is also used to test escaping stuff in URLs. 5/4/2001 jhrg
@@ -108,7 +108,7 @@ public:
 	argv_2[5] = (char*)"u,x,z[0]&grid(u,\"lat<10.0\")";
 	argv_2[6] = (char*)"-t";
 	argv_2[7] = (char*)"1";
-	df3 = new DODSFilter(6, argv_2);
+	df3 = new ResponseBuilder(6, argv_2);
 
 	// Go back to this data source to test w/o an ancillary DAS.
 	argv_2[0] = (char*)"test_case";
@@ -120,14 +120,14 @@ public:
 	argv_2[5] = (char*)"u,x,z[0]&grid(u,\"lat<10.0\")";
 	argv_2[6] = (char*)"-t";
 	argv_2[7] = (char*)"1";
-	df4 = new DODSFilter(6, argv_2);
+	df4 = new ResponseBuilder(6, argv_2);
 
 	// Test escaping stuff. 5/4/2001 jhrg
 	char *argv_3[]={(char*)"test_case", (char*)"nowhere%5Bmydisk%5Dmyfile", (char*)"-e", (char*)"u%5B0%5D"};
-	df5 = new DODSFilter(4, argv_3);
+	df5 = new ResponseBuilder(4, argv_3);
 
 	char *argv_4[]={(char*)"test_case", (char*)"nowhere%3a%5bmydisk%5dmyfile", (char*)"-e", (char*)"Grid%20field%3au%5b0%5d,Grid%20field%3av"};
-	df6 = new DODSFilter(4, argv_4);
+	df6 = new ResponseBuilder(4, argv_4);
 
 	cont_a = new AttrTable;
 	cont_a->append_attr("size", "Int32", "7");
@@ -181,7 +181,7 @@ public:
     }
 
     void add_keyword_test() {
-	DODSFilter tdf;
+	ResponseBuilder tdf;
 	tdf.add_keyword("test");
 	CPPUNIT_ASSERT(tdf.d_keywords.find("test") != tdf.d_keywords.end());
 	CPPUNIT_ASSERT(tdf.d_keywords.find("test") == tdf.d_keywords.begin());
@@ -191,7 +191,7 @@ public:
     }
 
     void is_keyword_test() {
-	DODSFilter tdf;
+	ResponseBuilder tdf;
 	tdf.add_keyword("test");
 	tdf.add_keyword("dap3.3");
 	CPPUNIT_ASSERT(tdf.is_keyword("test"));
@@ -199,7 +199,7 @@ public:
     }
 
     void get_keywords() {
-	DODSFilter tdf;
+	ResponseBuilder tdf;
 	tdf.add_keyword("test");
 	tdf.add_keyword("dap2.0");
 	tdf.add_keyword("dap4.0");
@@ -471,7 +471,7 @@ Content-Encoding: binary\r\n\
 
 	    // Unlike the test where the full headers are generated, there's
 	    // no check for a conditional response here because that feature
-	    // of DODSFilter is only supported when MIME headers are built by
+	    // of ResponseBuilder is only supported when MIME headers are built by
 	    // the class. In order to return a '304' response, headers must be
 	    // built.
 	}
@@ -527,7 +527,7 @@ Content-Encoding: binary\r\n\
 	CPPUNIT_ASSERT(df1->get_timeout() == 0);
     }
 
-    CPPUNIT_TEST_SUITE( DODSFilterTest );
+    CPPUNIT_TEST_SUITE( ResponseBuilderTest );
     CPPUNIT_TEST(add_keyword_test);
     CPPUNIT_TEST(is_keyword_test);
     CPPUNIT_TEST(get_keywords);
@@ -549,7 +549,7 @@ Content-Encoding: binary\r\n\
     CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(DODSFilterTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(ResponseBuilderTest);
 }
 
 int

@@ -4,7 +4,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003,2011 OPeNDAP, Inc.
+// Copyright (c) 2011 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -23,21 +23,10 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// (c) COPYRIGHT URI/MIT 1997-1999
-// Please read the full copyright statement in the file COPYRIGHT_URI.
-//
-// Authors:
-//      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
-
-// Implementation of the DODSFilter class. This class is used to build dods
-// filter programs which, along with a CGI program, comprise OPeNDAP servers.
-// jhrg 8/26/97
-
-
 #include "config.h"
 
 static char rcsid[] not_used =
-    {"$Id$"
+    {"$Id: ResponseBuilder.cc 23477 2010-09-02 21:02:59Z jimg $"
     };
 
 #include <signal.h>
@@ -69,7 +58,7 @@ static char rcsid[] not_used =
 #include "Ancillary.h"
 #include "util.h"
 #include "escaping.h"
-#include "DODSFilter.h"
+#include "ResponseBuilder.h"
 #if FILE_METHODS
 #include "XDRFileMarshaller.h"
 #endif
@@ -82,7 +71,7 @@ static char rcsid[] not_used =
 #include "AlarmHandler.h"
 #endif
 
-#define CRLF "\r\n"             // Change here, expr-test.cc and DODSFilter.cc
+#define CRLF "\r\n"             // Change here, expr-test.cc and ResponseBuilder.cc
 
 #undef FILE_METHODS
 
@@ -108,11 +97,11 @@ const string usage =
     -h: This message.";
 
 /**
-   Make an instance of DODSFilter using the command line
+   Make an instance of ResponseBuilder using the command line
 arguments passed by the CGI (or other) program.  The default
 constructor is private; this and the copy constructor (which is
 just the default copy constructor) are the only way to create an
-instance of DODSFilter.
+instance of ResponseBuilder.
 
 These are the valid options:
 
@@ -170,10 +159,10 @@ request. It is given in seconds since the start of the Unix epoch
 
 </dl>
 
-@brief DODSFilter constructor.
+@brief ResponseBuilder constructor.
 @deprecated */
 
-DODSFilter::DODSFilter(int argc, char *argv[]) throw(Error)
+ResponseBuilder::ResponseBuilder(int argc, char *argv[]) throw(Error)
 {
     initialize(argc, argv);
 
@@ -190,14 +179,14 @@ DODSFilter::DODSFilter(int argc, char *argv[]) throw(Error)
     DBG(cerr << "d_timeout: " << d_timeout << endl);
 }
 
-DODSFilter::~DODSFilter()
+ResponseBuilder::~ResponseBuilder()
 {
 }
 
-/** Called when initializing a DODSFilter that's not going to be passed a
+/** Called when initializing a ResponseBuilder that's not going to be passed a
 command line arguments. */
 void
-DODSFilter::initialize()
+ResponseBuilder::initialize()
 {
     // Set default values. Don't use the C++ constructor initialization so
     // that a subclass can have more control over this process.
@@ -235,7 +224,7 @@ DODSFilter::initialize()
 #endif
 }
 
-/** Initialize. Specializations can call this once an empty DODSFilter has
+/** Initialize. Specializations can call this once an empty ResponseBuilder has
 been created using the default constructor. Using a method such as this
 provides a way to specialize the process_options() method and then have
 that specialization called by the subclass' constructor.
@@ -249,7 +238,7 @@ not fully constructed.
 
 @deprecated */
 void
-DODSFilter::initialize(int argc, char *argv[])
+ResponseBuilder::initialize(int argc, char *argv[])
 {
     initialize();
 
@@ -280,7 +269,7 @@ It's often a file name.
 
 @deprecated */
 int
-DODSFilter::process_options(int argc, char *argv[])
+ResponseBuilder::process_options(int argc, char *argv[])
 {
     DBG(cerr << "Entering process_options... ");
 
@@ -320,7 +309,7 @@ DODSFilter::process_options(int argc, char *argv[])
 
 @deprecated */
 bool
-DODSFilter::is_conditional() const
+ResponseBuilder::is_conditional() const
 {
     return d_conditional_request;
 }
@@ -341,20 +330,20 @@ the actual C++ software set the version string.
 
 @deprecated */
 void
-DODSFilter::set_cgi_version(string version)
+ResponseBuilder::set_cgi_version(string version)
 {
     d_cgi_ver = version;
 }
 
 /** Return the version information passed to the instance when it was
-created. This string is passed to the DODSFilter ctor using the -v
+created. This string is passed to the ResponseBuilder ctor using the -v
 option.
 
 @return The version string supplied at initialization.
 
 @deprecated */
 string
-DODSFilter::get_cgi_version() const
+ResponseBuilder::get_cgi_version() const
 {
     return d_cgi_ver;
 }
@@ -363,7 +352,7 @@ DODSFilter::get_cgi_version() const
  * Add the keyword to the set of keywords that apply to this request.
  * @param kw The keyword
  */
-void DODSFilter::add_keyword(const string &kw)
+void ResponseBuilder::add_keyword(const string &kw)
 {
     d_keywords.insert(kw);
 }
@@ -374,7 +363,7 @@ void DODSFilter::add_keyword(const string &kw)
  * @param kw Keyword
  * @return true if the keyword is set.
  */
-bool DODSFilter::is_keyword(const string &kw) const
+bool ResponseBuilder::is_keyword(const string &kw) const
 {
     return d_keywords.count(kw) != 0;
     //return d_keywords.find(kw) != d_keywords.end();
@@ -385,7 +374,7 @@ bool DODSFilter::is_keyword(const string &kw) const
  * this request.
  * @return The list of keywords as a list of string objects.
  */
-list<string> DODSFilter::get_keywords() const
+list<string> ResponseBuilder::get_keywords() const
 {
     list<string> kws;
     set<string>::const_iterator i;
@@ -400,7 +389,7 @@ list<string> DODSFilter::get_keywords() const
  * @return true if the keyword is known
  */
 bool
-DODSFilter::is_known_keyword(const string &w) const
+ResponseBuilder::is_known_keyword(const string &w) const
 {
     return d_known_keywords.count(w) != 0;
 }
@@ -413,13 +402,13 @@ question mark.
 @brief Get the constraint expression.
 @return A string object that contains the constraint expression. */
 string
-DODSFilter::get_ce() const
+ResponseBuilder::get_ce() const
 {
     return d_ce;
 }
 
 void
-DODSFilter::set_ce(string _ce)
+ResponseBuilder::set_ce(string _ce)
 {
     // Get the whole CE
     string projection = www2id(_ce, "%", "%20");
@@ -432,7 +421,7 @@ DODSFilter::set_ce(string _ce)
 	projection = projection.substr(0, amp);
     }
 
-    // Extract keywords; add to the DODSFilter keywords. For this, scan for
+    // Extract keywords; add to the ResponseBuilder keywords. For this, scan for
     // a known set of keywords and assume that anything else is part of the
     // projection and should be left alone. Keywords must come before variables
     // The 'projection' string will look like: '' or 'dap4.0' or 'dap4.0,u,v'
@@ -461,13 +450,13 @@ access method.
 @brief Get the dataset name.
 @return A string object that contains the name of the dataset. */
 string
-DODSFilter::get_dataset_name() const
+ResponseBuilder::get_dataset_name() const
 {
     return d_dataset;
 }
 
 void
-DODSFilter::set_dataset_name(const string ds)
+ResponseBuilder::set_dataset_name(const string ds)
 {
     d_dataset = www2id(ds, "%", "%20");
 }
@@ -476,7 +465,7 @@ DODSFilter::set_dataset_name(const string ds)
 to the server.
 @return The URL. */
 string
-DODSFilter::get_URL() const
+ResponseBuilder::get_URL() const
 {
     return d_url;
 }
@@ -486,7 +475,7 @@ DODSFilter::get_URL() const
 
 @deprecated */
 void
-DODSFilter::set_URL(const string &url)
+ResponseBuilder::set_URL(const string &url)
 {
     if (url.find('?') != url.npos)
         print_usage();  // Throws Error
@@ -504,7 +493,7 @@ information.
 
 @deprecated */
 string
-DODSFilter::get_dataset_version() const
+ResponseBuilder::get_dataset_version() const
 {
     return "";
 }
@@ -517,7 +506,7 @@ DODSFilter::get_dataset_version() const
 names.
 
 @deprecated */
-void DODSFilter::set_response(const string &r)
+void ResponseBuilder::set_response(const string &r)
 {
     if (r == "DAS" || r == "das") {
 	d_response = DAS_Response;
@@ -550,8 +539,8 @@ void DODSFilter::set_response(const string &r)
 /** Get the enum name of the response to be returned.
  *
 @deprecated */
-DODSFilter::Response
-DODSFilter::get_response() const
+ResponseBuilder::Response
+ResponseBuilder::get_response() const
 {
     return d_response;
 }
@@ -559,7 +548,7 @@ DODSFilter::get_response() const
 /** Get the string name of the response to be returned.
  *
 @deprecated */
-string DODSFilter::get_action() const
+string ResponseBuilder::get_action() const
 {
     return d_action;
 }
@@ -571,9 +560,9 @@ string DODSFilter::get_action() const
     1970 00:00:00 GMT).
 
     This method perform a simple check on the file named by the dataset
-    given when the DODSFilter instance was created. If the dataset is not
+    given when the ResponseBuilder instance was created. If the dataset is not
     a filter, this method returns the current time. Servers which provide
-    access to non-file-based data should subclass DODSFilter and supply a
+    access to non-file-based data should subclass ResponseBuilder and supply a
     more suitable version of this method.
 
     From the stat(2) man page: ``Traditionally, <tt>st_mtime</tt>
@@ -587,7 +576,7 @@ string DODSFilter::get_action() const
 
 @deprecated */
 time_t
-DODSFilter::get_dataset_last_modified_time() const
+ResponseBuilder::get_dataset_last_modified_time() const
 {
     return last_modified_time(d_dataset);
 }
@@ -602,9 +591,9 @@ DODSFilter::get_dataset_last_modified_time() const
     @see get_dataset_last_modified_time()
     @see get_dds_last_modified_time()   */
 time_t
-DODSFilter::get_das_last_modified_time(const string &anc_location) const
+ResponseBuilder::get_das_last_modified_time(const string &anc_location) const
 {
-    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location="
+    DBG(cerr << "ResponseBuilder::get_das_last_modified_time(anc_location="
         << anc_location << "call faf(das) d_dataset=" << d_dataset
         << " d_anc_file=" << d_anc_file << endl);
 
@@ -625,9 +614,9 @@ DODSFilter::get_das_last_modified_time(const string &anc_location) const
     @see get_dataset_last_modified_time()
     @see get_dds_last_modified_time() */
 time_t
-DODSFilter::get_dds_last_modified_time(const string &anc_location) const
+ResponseBuilder::get_dds_last_modified_time(const string &anc_location) const
 {
-    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location="
+    DBG(cerr << "ResponseBuilder::get_das_last_modified_time(anc_location="
         << anc_location << "call faf(dds) d_dataset=" << d_dataset
         << " d_anc_file=" << d_anc_file << endl);
 
@@ -654,9 +643,9 @@ DODSFilter::get_dds_last_modified_time(const string &anc_location) const
     @see get_das_last_modified_time()
     @see get_dds_last_modified_time() */
 time_t
-DODSFilter::get_data_last_modified_time(const string &anc_location) const
+ResponseBuilder::get_data_last_modified_time(const string &anc_location) const
 {
-    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location="
+    DBG(cerr << "ResponseBuilder::get_das_last_modified_time(anc_location="
         << anc_location << "call faf(both) d_dataset=" << d_dataset
         << " d_anc_file=" << d_anc_file << endl);
 
@@ -686,7 +675,7 @@ DODSFilter::get_data_last_modified_time(const string &anc_location) const
     @return If-Modified-Since time from a condition GET request.
 @deprecated */
 time_t
-DODSFilter::get_request_if_modified_since() const
+ResponseBuilder::get_request_if_modified_since() const
 {
     return d_if_modified_since;
 }
@@ -699,7 +688,7 @@ DODSFilter::get_request_if_modified_since() const
     @return A string object that contains the cache file directory.
 @deprecated */
 string
-DODSFilter::get_cache_dir() const
+ResponseBuilder::get_cache_dir() const
 {
     return d_cache_dir;
 }
@@ -709,14 +698,14 @@ DODSFilter::get_cache_dir() const
 
     @param t Server timeout in seconds. Default is zero (no timeout). */
 void
-DODSFilter::set_timeout(int t)
+ResponseBuilder::set_timeout(int t)
 {
     d_timeout = t;
 }
 
 /** Get the server's timeout value. */
 int
-DODSFilter::get_timeout() const
+ResponseBuilder::get_timeout() const
 {
     return d_timeout;
 }
@@ -734,7 +723,7 @@ DODSFilter::get_timeout() const
     clients will never get the Error object... */
 
 void
-DODSFilter::establish_timeout(FILE *stream) const
+ResponseBuilder::establish_timeout(FILE *stream) const
 {
 #ifndef WIN32
     if (d_timeout > 0) {
@@ -749,7 +738,7 @@ DODSFilter::establish_timeout(FILE *stream) const
 
 // FIXME
 void
-DODSFilter::establish_timeout(ostream &stream) const
+ResponseBuilder::establish_timeout(ostream &stream) const
 {
 #ifndef WIN32
     if (d_timeout > 0) {
@@ -775,7 +764,7 @@ static const char *emessage = "DODS internal server error; usage error. Please r
 
 @deprecated */
 void
-DODSFilter::print_usage() const
+ResponseBuilder::print_usage() const
 {
     // Write a message to the WWW server error log file.
     ErrMsgT(usage.c_str());
@@ -790,7 +779,7 @@ DODSFilter::print_usage() const
     @brief Send version information back to the client program.
 @deprecated */
 void
-DODSFilter::send_version_info() const
+ResponseBuilder::send_version_info() const
 {
     do_version(d_cgi_ver, get_dataset_version());
 }
@@ -808,7 +797,7 @@ DODSFilter::send_version_info() const
     @return void
     @see DAS */
 void
-DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location,
+ResponseBuilder::send_das(FILE *out, DAS &das, const string &anc_location,
                      bool with_mime_headers) const
 {
     time_t das_lmt = get_das_last_modified_time(anc_location);
@@ -838,7 +827,7 @@ DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location,
     @return void
     @see DAS */
 void
-DODSFilter::send_das(ostream &out, DAS &das, const string &anc_location,
+ResponseBuilder::send_das(ostream &out, DAS &das, const string &anc_location,
                      bool with_mime_headers) const
 {
     time_t das_lmt = get_das_last_modified_time(anc_location);
@@ -856,7 +845,7 @@ DODSFilter::send_das(ostream &out, DAS &das, const string &anc_location,
 }
 
 void
-DODSFilter::send_das(DAS &das, const string &anc_location,
+ResponseBuilder::send_das(DAS &das, const string &anc_location,
                      bool with_mime_headers) const
 {
     send_das(cout, das, anc_location, with_mime_headers);
@@ -880,7 +869,7 @@ DODSFilter::send_das(DAS &das, const string &anc_location,
     @return void
     @see DDS */
 void
-DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
+ResponseBuilder::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
                      bool constrained,
                      const string &anc_location,
                      bool with_mime_headers) const
@@ -928,7 +917,7 @@ DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
     @return void
     @see DDS */
 void
-DODSFilter::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
+ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
                      bool constrained,
                      const string &anc_location,
                      bool with_mime_headers) const
@@ -959,7 +948,7 @@ DODSFilter::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
 }
 
 void
-DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval,
+ResponseBuilder::send_dds(DDS &dds, ConstraintEvaluator &eval,
                      bool constrained, const string &anc_location,
                      bool with_mime_headers) const
 {
@@ -975,7 +964,7 @@ DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval,
  * @param out
  */
 void
-DODSFilter::functional_constraint(BaseType &var, DDS &dds,
+ResponseBuilder::functional_constraint(BaseType &var, DDS &dds,
                                   ConstraintEvaluator &eval, FILE *out) const
 {
     fprintf(out, "Dataset {\n");
@@ -1005,7 +994,7 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
  * @param out
  */
 void
-DODSFilter::functional_constraint(BaseType &var, DDS &dds,
+ResponseBuilder::functional_constraint(BaseType &var, DDS &dds,
                                   ConstraintEvaluator &eval, ostream &out) const
 {
     out << "Dataset {\n" ;
@@ -1029,7 +1018,7 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
 
 #if FILE_METHODS
 void
-DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
+ResponseBuilder::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
                                FILE * out, bool ce_eval) const
 {
     // send constrained DDS
@@ -1055,7 +1044,7 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
 #endif
 
 void
-DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
+ResponseBuilder::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
                                ostream &out, bool ce_eval) const
 {
     // send constrained DDS
@@ -1080,7 +1069,7 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
 }
 
 void
-DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
+ResponseBuilder::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
                                ostream &out, const string &boundary,
                                const string &start, bool ce_eval) const
 {
@@ -1138,7 +1127,7 @@ DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
     Defaults to true.
     @return void */
 void
-DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
+ResponseBuilder::send_data(DDS & dds, ConstraintEvaluator & eval,
                       FILE * data_stream, const string & anc_location,
                       bool with_mime_headers) const
 {
@@ -1231,7 +1220,7 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     Defaults to true.
     @return void */
 void
-DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
+ResponseBuilder::send_data(DDS & dds, ConstraintEvaluator & eval,
                       ostream & data_stream, const string & anc_location,
                       bool with_mime_headers) const
 {
@@ -1287,7 +1276,7 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     @param with_mime_headers If true, include the MIME headers in the response.
     Defaults to true. */
 void
-DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
+ResponseBuilder::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
                      bool with_mime_headers) const
 {
     // If constrained, parse the constraint. Throws Error or InternalErr.
@@ -1326,7 +1315,7 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
     @param with_mime_headers If true, include the MIME headers in the response.
     Defaults to true. */
 void
-DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
+ResponseBuilder::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
                      bool with_mime_headers) const
 {
     // If constrained, parse the constraint. Throws Error or InternalErr.
@@ -1370,7 +1359,7 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
     Defaults to true.
     @return void */
 void
-DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
+ResponseBuilder::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
                       ostream & data_stream, const string &start,
                       const string &boundary, const string & anc_location,
                       bool with_mime_headers) const

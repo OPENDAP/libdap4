@@ -4,7 +4,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Copyright (c) 2011 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -23,14 +23,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// (c) COPYRIGHT URI/MIT 1997-1999
-// Please first read the full copyright statement in the file COPYRIGHT_URI.
-//
-// Authors:
-// jhrg,jimg James Gallagher <jgallagher@gso.uri.edu>
-
-#ifndef _dodsfilter_h
-#define _dodsfilter_h
+#ifndef _response_builder_h
+#define _response_builder_h
 
 #include <string>
 #include <set>
@@ -54,36 +48,16 @@ namespace libdap
 {
 
 /**
- Originally, this class was intended to simplify processing command line
- options that were passed to various 'handlers' used by the CGI version
- of our data server. That's long gone. This class is now used to trigger
- building responses using libdap by the BES. Since much of the class was
- originally used to parse command line options, there are many parts that
- are deprecated.
 
- The original use of the code was responsible for three things that are
- now handled by other parts of the Hyrax server: processing ancillary
- metadata (now done using hte NCML module); handling conditional HTTP GET
- requests (now done by the OLFS with some interactions with the BES to get
- information from the file system); and building compressed responses (now
- done by the olfs using a filter). Also note that the 'cache dir' information
- is specific to the HDF4 handler and is handled using a BES parameter (so
- that makes fur things...)
+ @brief Build responses for Hyrax server modules/handlers.
+ @author jhrg 1/28/2011 */
 
- Now this class is a place where the filename, ce, etc can be processed and
- passed off to the DDS class when a response object is needed.
-
- @note most (all?) of the old and unused methods are marked as deprecated.
-
- @brief Common functions for Hyrax server modules/handlers.
- @author jhrg 8/26/97 */
-
-class DODSFilter
+class ResponseBuilder
 {
 public:
-    friend class DODSFilterTest;
+    friend class ResponseBuilderTest;
 
-    /** Types of responses DODSFilter knows about. */
+    /** Types of responses ResponseBuilder knows about. */
     enum Response {
         Unknown_Response,
         DAS_Response,
@@ -134,12 +108,12 @@ public:
     /** Make an empty instance. Use the set_*() methods to load with needed
         values. You must call at least set_dataset_name() or be requesting
         version information. */
-    DODSFilter() {
+    ResponseBuilder() {
         initialize();
     }
-    DODSFilter(int argc, char *argv[]) throw(Error);
+    ResponseBuilder(int argc, char *argv[]) throw(Error);
 
-    virtual ~DODSFilter();
+    virtual ~ResponseBuilder();
 
     virtual void add_keyword(const string &kw);
     virtual bool is_keyword(const string &kw) const;

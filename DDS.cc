@@ -487,8 +487,9 @@ DDS::filename(const string &fn)
 
 /** Given the dap protocol version either from a MIME header or from within
     the DDX Dataset element, parse that string and set the DDS fields.
-    @see set_dap_client_version()
-    @param version_string The version string from the MIME of XML document.
+
+    @param version_string The version string from the MIME (request) or XML
+    document.
  */
 void
 DDS::set_dap_version(const string &version_string)
@@ -505,6 +506,34 @@ DDS::set_dap_version(const string &version_string)
 
     if (major == -1 || minor == -1)
         throw Error("Could not parse the client dap (XDAP-Accept header) value");
+
+    set_dap_major(major);
+    set_dap_minor(minor);
+}
+
+/** Given the dap protocol version, parse that string and set the DDS fields.
+    This version of th method takes a double - a value that would be passed
+    to a server-side function. This provides a way to set the protocol using
+    stuff in the URL.
+
+    @param d The protocol version requested by the client, as a double.
+ */
+void
+DDS::set_dap_version(double d)
+{
+    int major = d;
+    int minor = (d-major)*10;
+
+#if 0
+    istringstream iss(version_string);
+
+    int major = -1, minor = -1;
+    char dot;
+    iss >> major;
+    iss >> dot;
+    iss >> minor;
+#endif
+    DBG(cerr << "Major: " << major << ", Minor: " << minor << endl);
 
     set_dap_major(major);
     set_dap_minor(minor);

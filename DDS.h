@@ -261,6 +261,7 @@ public:
     void set_dap_minor(int p) { d_dap_minor = p; }
 
     void set_dap_version(const string &version_string);
+    void set_dap_version(double d);
 
     /// Get the URL that will return this DDS/DDX/DataThing
     string get_request_xml_base() const { return d_request_xml_base; }

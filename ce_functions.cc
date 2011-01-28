@@ -130,6 +130,7 @@ string extract_string_argument(BaseType * arg)
 
     return s;
 }
+
 template<class T> static void set_array_using_double_helper(Array * a,
         double *src, int src_len)
 {
@@ -153,7 +154,7 @@ template<class T> static void set_array_using_double_helper(Array * a,
  source (\e src) array is different than the destination (\e dest) the
  caller has made a mistake. In that case it will throw an Error object.
 
- After setting that values, this method sets the \c read_p property for
+ After setting the values, this method sets the \c read_p property for
  \e dest.
 
  @param dest An Array. The values are written to this array, reusing
@@ -331,6 +332,7 @@ function_version(int, BaseType *[], DDS &, BaseType **btpp)
                        <function name=\"grid\" version=\"1.0\"/>\
                        <function name=\"linear_scale\" version=\"1.0b1\"/>\
                        <function name=\"version\" version=\"1.0\"/>\
+        	       <function name=\"dap\" version=\"1.0\"/>\
                      </functions>";
 
     //                        <function name=\"geoarray\" version=\"0.9b1\"/>
@@ -340,6 +342,22 @@ function_version(int, BaseType *[], DDS &, BaseType **btpp)
     response->set_value(xml_value);
     *btpp = response;
     return;
+}
+
+void
+function_dap(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &)
+{
+    if (argc != 1) {
+	throw Error("The 'dap' function must be called with a version number.\n\
+	see http://docs.opendap.org/index.php/Server_Side_Processing_Functions#dap");
+    }
+
+    double pv = extract_double_value(argv[0]);
+#if 0
+    ostringstream oss;
+    oss << pv;
+#endif
+    dds.set_dap_version(pv);
 }
 
 static void parse_gse_expression(gse_arg * arg, BaseType * expr)
@@ -1036,6 +1054,8 @@ void register_functions(ConstraintEvaluator & ce)
     ce.add_function("geoarray", function_geoarray);
 #endif
     ce.add_function("version", function_version);
+
+    ce.add_function("dap", function_dap);
 }
 
 } // namespace libdap

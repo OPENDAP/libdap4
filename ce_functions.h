@@ -56,6 +56,9 @@ void function_geogrid(int argc, BaseType *argv[], DDS &dds, BaseType **btpp) ;
 void function_linear_scale(int argc, BaseType *argv[], DDS &dds, BaseType **btpp) ;
 void function_geoarray(int argc, BaseType *argv[], DDS &dds, BaseType **btpp) ;
 
+// Projection function used to pass DAP version information
+void function_dap(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce);
+
 void register_functions(ConstraintEvaluator &ce);
 
 } // namespace libdap

@@ -245,7 +245,7 @@ CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 
 # AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc 
 
-SERVER_SRC = DODSFilter.cc Ancillary.cc
+SERVER_SRC = DODSFilter.cc Ancillary.cc ResponseBuilder.cc
 
 DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h DDXExceptions.h	\
 	BaseType.h Byte.h Int32.h Float64.h Str.h Url.h Vector.h Array.h   \
@@ -292,7 +292,8 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 
 # AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h AISResources.h 	
 
-SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
+SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h \
+	ResponseBuilder.h
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support

@@ -140,6 +140,10 @@ public:
     CPPUNIT_TEST(linear_scale_grid_attributes_test2);
     CPPUNIT_TEST(linear_scale_scalar_test);
 
+    CPPUNIT_TEST(function_dap_1_test);
+    CPPUNIT_TEST(function_dap_2_test);
+    CPPUNIT_TEST(function_dap_3_test);
+
     CPPUNIT_TEST_SUITE_END();
 
     void no_arguments_test()
@@ -505,6 +509,62 @@ public:
             CPPUNIT_ASSERT(!"Error in linear_scale_scalar_test()");
         }
     }
+
+
+    void function_dap_1_test() {
+        try {
+            Int32 *i = new Int32("function_dap_1_test_int32");
+            CPPUNIT_ASSERT(i);
+            i->set_value(2);
+            BaseType *argv[1];
+            argv[0] = i;
+
+            ConstraintEvaluator unused;
+            function_dap(1, argv, *dds, unused);
+
+            CPPUNIT_ASSERT(dds->get_dap_major() == 2);
+            CPPUNIT_ASSERT(dds->get_dap_minor() == 0);
+        }
+        catch (Error &e) {
+            DBG(cerr << e.get_error_message() << endl);
+            CPPUNIT_FAIL("Error in function_dap_1_test(): " + e.get_error_message());
+        }
+    }
+
+    void function_dap_2_test() {
+        try {
+            Float64 *d = new Float64("function_dap_1_test_float64");
+            CPPUNIT_ASSERT(d);
+            d->set_value(3.2);
+            BaseType *argv[1];
+            argv[0] = d;
+
+            ConstraintEvaluator unused;
+            function_dap(1, argv, *dds, unused);
+
+            CPPUNIT_ASSERT(dds->get_dap_major() == 3);
+            CPPUNIT_ASSERT(dds->get_dap_minor() == 2);
+        }
+        catch (Error &e) {
+            DBG(cerr << e.get_error_message() << endl);
+            CPPUNIT_FAIL("Error in function_dap_2_test(): " + e.get_error_message());
+        }
+    }
+
+    void function_dap_3_test() {
+        try {
+            cerr <<"In function_dap_3_test" << endl;
+            ConstraintEvaluator unused;
+            function_dap(0, 0, *dds, unused);
+
+            CPPUNIT_FAIL("Should have thrown an exception on no args");
+                    }
+        catch (Error &e) {
+            DBG(cerr << e.get_error_message() << endl);
+            CPPUNIT_ASSERT("Pass: Caught exception");
+        }
+    }
+
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(CEFunctionsTest);
