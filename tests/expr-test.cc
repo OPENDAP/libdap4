@@ -516,7 +516,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     df.send_data(server, eval, out, "", false);
 #endif
     df.send_data(server, eval, out, "", true);
-    cout << "Server protocol version: " << server.get_dap_major() << "." << server.get_dap_minor() << endl;
+    //cout << "Server protocol version: " << server.get_dap_major() << "." << server.get_dap_minor() << endl;
     out.close();
 
     // Now do what Connect::request_data() does:
@@ -537,7 +537,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
 #endif
     c.read_data(dds, &r);
 
-    cout << "Protocol version: " << dds.get_protocol() << endl;
+    //cout << "Protocol version: " << dds.get_protocol() << endl;
 
     cout << "The data:" << endl;
     for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
