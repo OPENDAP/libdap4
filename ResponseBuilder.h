@@ -41,9 +41,6 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-//#define FILE_METHODS 1
-#undef FILE_METHODS
-
 namespace libdap
 {
 
@@ -70,38 +67,14 @@ public:
     };
 
 protected:
-    // Note that just about everything except the dataset name, ce and timeout
-    // are deprecated. I'm adding support for keywords.
-
-    bool d_comp;  /// @deprecated True if the output should be compressed.
-    bool d_bad_options;  /// @deprecated True if the options (argc,argv) are bad.
-    bool d_conditional_request; /// @deprecated True for a HTTP conditional-get
-
-    string d_program_name; /// @deprecated Name of the filter program
     string d_dataset;  /// Name of the dataset/database
     string d_ce;  /// Constraint expression
-    string d_cgi_ver;  /// @deprecated Version of CGI script (caller)
-    string d_anc_dir;  /// @deprecated Look here for ancillary files
-    string d_anc_file;  /// @deprecated Use this for ancillary file name
-    string d_cache_dir;  /// @deprecated Use this for cache files
-    string d_url;  /// @deprecated URL minus CE.
-
-    Response d_response; /// @deprecated enum name of the response to generate
-    string d_action;  /// @deprecated string name of the response to generate
-
     int d_timeout;  // Response timeout after N seconds
-
-    time_t d_anc_das_lmt; /// @deprecated Last modified time of the anc. DAS.
-    time_t d_anc_dds_lmt; /// @deprecated Last modified time of the anc. DDS.
-    time_t d_if_modified_since; /// @deprecated Time from a conditional request.
 
     set<string> d_keywords; /// Holds all of the keywords passed in the CE
     set<string> d_known_keywords; /// Holds all of the keywords libdap understands.
 
     void initialize();
-    void initialize(int argc, char *argv[]);
-
-    virtual int process_options(int argc, char *argv[]);
 
 public:
 
@@ -111,8 +84,6 @@ public:
     ResponseBuilder() {
         initialize();
     }
-    ResponseBuilder(int argc, char *argv[]) throw(Error);
-
     virtual ~ResponseBuilder();
 
     virtual void add_keyword(const string &kw);
@@ -121,64 +92,23 @@ public:
     // This method holds all of the keywords that this version of libdap groks
     virtual bool is_known_keyword(const string &w) const;
 
-    virtual bool is_conditional() const;
-
-    virtual string get_cgi_version() const;
-    virtual void set_cgi_version(string version);
-
     virtual string get_ce() const;
     virtual void set_ce(string _ce);
 
     virtual string get_dataset_name() const;
     virtual void set_dataset_name(const string _dataset);
 
-    virtual string get_URL() const;
-    virtual void set_URL(const string &url);
-
-    virtual string get_dataset_version() const;
-
-    virtual Response get_response() const;
-    virtual string get_action() const;
-    virtual void set_response(const string &r);
-
-    virtual time_t get_dataset_last_modified_time() const;
-
-    virtual time_t get_das_last_modified_time(const string &anc_location = "") const;
-
-    virtual time_t get_dds_last_modified_time(const string &anc_location = "") const;
-
-    virtual time_t get_data_last_modified_time(const string &anc_location = "") const;
-
-    virtual time_t get_request_if_modified_since() const;
-
-    virtual string get_cache_dir() const;
-
     void set_timeout(int timeout = 0);
-
     int get_timeout() const;
 
     virtual void establish_timeout(ostream &stream) const;
 
-    virtual void print_usage() const;
-
-    virtual void send_version_info() const;
-
-    virtual void send_das(DAS &das, const string &anc_location = "",
-                          bool with_mime_headers = true) const;
     virtual void send_das(ostream &out, DAS &das, const string &anc_location = "",
-                          bool with_mime_headers = true) const;
-
-    virtual void send_dds(DDS &dds, ConstraintEvaluator &eval,
-                          bool constrained = false,
-                          const string &anc_location = "",
                           bool with_mime_headers = true) const;
     virtual void send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
                           bool constrained = false,
                           const string &anc_location = "",
                           bool with_mime_headers = true) const;
-    // deprecated
-    virtual void functional_constraint(BaseType &var, DDS &dds,
-                                       ConstraintEvaluator &eval, ostream &out) const;
 
     virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
                                     ostream &out, bool ce_eval = true) const;
@@ -199,27 +129,6 @@ public:
                            const string &anc_location = "",
                            bool with_mime_headers = true) const;
 
-#if FILE_METHODS
-    virtual void establish_timeout(FILE *stream) const;
-    virtual void send_das(FILE *out, DAS &das, const string &anc_location = "",
-                          bool with_mime_headers = true) const;
-    virtual void send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
-                          bool constrained = false,
-                          const string &anc_location = "",
-                          bool with_mime_headers = true) const;
-    // deprecated
-    virtual void functional_constraint(BaseType &var, DDS &dds,
-                                       ConstraintEvaluator &eval, FILE *out) const;
-
-    virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
-                                    FILE *out, bool ce_eval = true) const;
-    virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
-                           FILE *data_stream,
-                           const string &anc_location = "",
-                           bool with_mime_headers = true) const;
-    virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
-                          bool with_mime_headers = true) const;
-#endif
 };
 
 } // namespace libdap

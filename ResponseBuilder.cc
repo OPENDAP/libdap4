@@ -59,9 +59,6 @@ static char rcsid[] not_used =
 #include "util.h"
 #include "escaping.h"
 #include "ResponseBuilder.h"
-#if FILE_METHODS
-#include "XDRFileMarshaller.h"
-#endif
 #include "XDRStreamMarshaller.h"
 #include "InternalErr.h"
 
@@ -73,111 +70,9 @@ static char rcsid[] not_used =
 
 #define CRLF "\r\n"             // Change here, expr-test.cc and ResponseBuilder.cc
 
-#undef FILE_METHODS
-
 using namespace std;
 
 namespace libdap {
-
-/// @deprecated
-const string usage =
-    "Usage: <handler name> -o <response> -u <url> [options ...] [data set]\n\
-    \n\
-    options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
-    -u <url>: The complete URL minus the CE (required for DDX)\n\
-    -c: Compress the response using the deflate algorithm.\n\
-    -e <expr>: When returning a DataDDS, use <expr> as the constraint.\n\
-    -v <version>: Use <version> as the version number\n\
-    -d <dir>: Look for ancillary file in <dir> (deprecated).\n\
-    -f <file>: Look for ancillary data in <file> (deprecated).\n\
-    -r <dir>: Use <dir> as a cache directory\n\
-    -l <time>: Conditional request; if data source is unchanged since\n\
-    <time>, return an HTTP 304 response.\n\
-    -t <seconds>: Timeout the handler after <seconds>.\n\
-    -h: This message.";
-
-/**
-   Make an instance of ResponseBuilder using the command line
-arguments passed by the CGI (or other) program.  The default
-constructor is private; this and the copy constructor (which is
-just the default copy constructor) are the only way to create an
-instance of ResponseBuilder.
-
-These are the valid options:
-
-<dl>
-<dt><i>filename</i><dd>
-The name of the file on which the filter is to operate.  Usually
-this would be the file whose data has been requested. In fact, this class
-can be specialized and <i>any meaning</i> can be associated to this
-string. It could be the name of a database, for example.
-
-<dt><tt>-o</tt> <i>response</i><dd>
-
-Specifies the type of response desired. The \e response is a string
-and must be one of \c DAS, \c DDS, \c DataDDS or \c Version. Note
-that \c Version returns version information in the body of the response
-and is useful for debugging, et cetera. Each response returns version
-information in an HTTP header for internal use by a client.
-
-<dt><tt>-c</tt><dd>
-Send compressed data. Data are compressed using the deflate program.
-
-<dt><tt>-e</tt> <i>expression</i><dd>
-This option specifies a non-blank constraint expression used to
-subsample a dataset.
-
-<dt><tt>-v</tt> <i>cgi-version</i><dd> Set the CGI/Server version to
-<tt>cgi-version</tt>. This is a way for the caller to set version
-information passed back to the client either as the response to a
-version request of in the response headers.
-
-<dt><tt>-d</tt> <i>ancdir</i><dd>
-Specifies that ancillary data be sought in the <i>ancdir</i>
-directory. <i>ancdir</i> must end in '/'.
-
-<dt><tt>-f</tt> <i>ancfile</i><dd>
-Specifies that ancillary data may be found in a file called
-<i>ancfile</i>.
-
-<dt><tt>-r</tt> <i>cache directory</i><dd>
-Specify a directory to use if/when files are to be cached. Not all
-handlers support caching and each uses its own rules tailored to a
-specific file or data type.
-
-<dt><tt>-t</tt> <i>timeout</i><dd> Specifies a a timeout value in
-seconds. If the server runs longer than \e timeout seconds, an Error is
-returned to the client explaining that the request has timed out.
-
-<dt><tt>-l</tt> <i>time</i><dd> Indicates that the request is a
-conditional request; send a complete response if and only if the data has
-changed since <i>time</i>. If it has not changed since <i>time</i>, then
-send a 304 (Not Modified) response. The <i>time</i> parameter is the
-<tt>Last-Modified</tt> time from an If-Modified-Since condition GET
-request. It is given in seconds since the start of the Unix epoch
-(Midnight, 1 Jan 1970).
-
-</dl>
-
-@brief ResponseBuilder constructor.
-@deprecated */
-
-ResponseBuilder::ResponseBuilder(int argc, char *argv[]) throw(Error)
-{
-    initialize(argc, argv);
-
-    DBG(cerr << "d_comp: " << d_comp << endl);
-    DBG(cerr << "d_ce: " << d_ce << endl);
-    DBG(cerr << "d_cgi_ver: " << d_cgi_ver << endl);
-    DBG(cerr << "d_response: " << d_response << endl);
-    DBG(cerr << "d_anc_dir: " << d_anc_dir << endl);
-    DBG(cerr << "d_anc_file: " << d_anc_file << endl);
-    DBG(cerr << "d_cache_dir: " << d_cache_dir << endl);
-    DBG(cerr << "d_conditional_request: " << d_conditional_request << endl);
-    DBG(cerr << "d_if_modified_since: " << d_if_modified_since << endl);
-    DBG(cerr << "d_url: " << d_url << endl);
-    DBG(cerr << "d_timeout: " << d_timeout << endl);
-}
 
 ResponseBuilder::~ResponseBuilder()
 {
@@ -190,21 +85,8 @@ ResponseBuilder::initialize()
 {
     // Set default values. Don't use the C++ constructor initialization so
     // that a subclass can have more control over this process.
-    d_comp = false;
-    d_bad_options = false;
-    d_conditional_request = false;
     d_dataset = "";
     d_ce = "";
-    d_cgi_ver = "";
-    d_anc_dir = "";
-    d_anc_file = "";
-    d_cache_dir = "";
-    d_response = Unknown_Response;;
-    d_anc_das_lmt = 0;
-    d_anc_dds_lmt = 0;
-    d_if_modified_since = -1;
-    d_url = "";
-    d_program_name = "Unknown";
     d_timeout = 0;
 
     // Load known_keywords
@@ -223,131 +105,6 @@ ResponseBuilder::initialize()
     _setmode(_fileno(stdout), _O_BINARY);
 #endif
 }
-
-/** Initialize. Specializations can call this once an empty ResponseBuilder has
-been created using the default constructor. Using a method such as this
-provides a way to specialize the process_options() method and then have
-that specialization called by the subclass' constructor.
-
-This class and any class that specializes it should call this method in
-its constructor. Note that when this method is called, the object is \e
-not fully constructed.
-
-@param argc The argument count
-@param argv The vector of char * argument strings.
-
-@deprecated */
-void
-ResponseBuilder::initialize(int argc, char *argv[])
-{
-    initialize();
-
-    d_program_name = argv[0];
-
-    // This should be specialized by a subclass. This may throw Error.
-    int next_arg = process_options(argc, argv);
-
-    // Look at what's left after processing the command line options. Either
-    // there MUST be a dataset name OR the caller is asking for version
-    // information. If neither is true, then the options are bad.
-    if (next_arg < argc) {
-        d_dataset = argv[next_arg];
-        d_dataset = www2id(d_dataset, "%", "%20");
-    }
-    else if (get_response() != Version_Response)
-        print_usage();   // Throws Error
-}
-
-/** Processing the command line options passed to the filter is handled by
-this method so that specializations can change the options easily.
-
-@param argc The argument count
-@param argv The vector of char * argument strings.
-@return The index of the next, unprocessed, argument. This must be the
-identifier passed to the filter program that identifies the data source.
-It's often a file name.
-
-@deprecated */
-int
-ResponseBuilder::process_options(int argc, char *argv[])
-{
-    DBG(cerr << "Entering process_options... ");
-
-    int option_char;
-    GetOpt getopt (argc, argv, "ce: v: d: f: r: l: o: u: t: ");
-
-    while ((option_char = getopt()) != EOF) {
-        switch (option_char) {
-        case 'c': d_comp = true; break;
-        case 'e': set_ce(getopt.optarg); break;
-        case 'v': set_cgi_version(getopt.optarg); break;
-        case 'd': d_anc_dir = getopt.optarg; break;
-        case 'f': d_anc_file = getopt.optarg; break;
-        case 'r': d_cache_dir = getopt.optarg; break;
-        case 'o': set_response(getopt.optarg); break;
-        case 'u': set_URL(getopt.optarg); break;
-        case 't': d_timeout = atoi(getopt.optarg); break;
-        case 'l':
-            d_conditional_request = true;
-            d_if_modified_since
-            = static_cast<time_t>(strtol(getopt.optarg, NULL, 10));
-            break;
-        case 'h': print_usage(); exit(1);
-        default: print_usage(); // Throws Error
-        }
-    }
-
-    DBGN(cerr << "exiting." << endl);
-
-    return getopt.optind; // return the index of the next argument
-}
-
-/** @brief Is this request conditional?
-
-@return True if the request is conditional.
-@see get_request_if_modified_since().
-
-@deprecated */
-bool
-ResponseBuilder::is_conditional() const
-{
-    return d_conditional_request;
-}
-
-/** Set the CGI/Server version number. Servers use this when answering
-requests for version information. The version `number' should include
-both the name of the server (e.g., <tt>ff_dods</tt>) as well
-as the version
-number. Since this information is typically divined by configure,
-it's up to the executable to poke the correct value in using this
-method.
-
-Note that the -v switch that this class understands is deprecated
-since it is usually called by Perl code. It makes more sense to have
-the actual C++ software set the version string.
-
-@param version A version string for this server.
-
-@deprecated */
-void
-ResponseBuilder::set_cgi_version(string version)
-{
-    d_cgi_ver = version;
-}
-
-/** Return the version information passed to the instance when it was
-created. This string is passed to the ResponseBuilder ctor using the -v
-option.
-
-@return The version string supplied at initialization.
-
-@deprecated */
-string
-ResponseBuilder::get_cgi_version() const
-{
-    return d_cgi_ver;
-}
-
 /**
  * Add the keyword to the set of keywords that apply to this request.
  * @param kw The keyword
@@ -461,238 +218,6 @@ ResponseBuilder::set_dataset_name(const string ds)
     d_dataset = www2id(ds, "%", "%20");
 }
 
-/** Get the URL. This returns the URL, minus the constraint originally sent
-to the server.
-@return The URL. */
-string
-ResponseBuilder::get_URL() const
-{
-    return d_url;
-}
-
-/** Set the URL. Set the URL sent to the server.
-@param url The URL, minus the constraint.
-
-@deprecated */
-void
-ResponseBuilder::set_URL(const string &url)
-{
-    if (url.find('?') != url.npos)
-        print_usage();  // Throws Error
-
-    d_url = url;
-}
-
-/** To read version information that is specific to a certain
-dataset, override this method with an implementation that does
-what you want. By default, this returns an empty string.
-
-@brief Get the version information for the dataset.
-@return A string object that contains the dataset version
-information.
-
-@deprecated */
-string
-ResponseBuilder::get_dataset_version() const
-{
-    return "";
-}
-
-/** Set the response to be returned. Valid response names are "DAS", "DDS",
-"DataDDS, "Version".
-
-@param r The name of the object.
-@exception InternalErr Thrown if the response is not one of the valid
-names.
-
-@deprecated */
-void ResponseBuilder::set_response(const string &r)
-{
-    if (r == "DAS" || r == "das") {
-	d_response = DAS_Response;
-	d_action = "das" ;
-    }
-    else if (r == "DDS" || r == "dds") {
-	d_response = DDS_Response;
-	d_action = "dds" ;
-    }
-    else if (r == "DataDDS" || r == "dods") {
-	d_response = DataDDS_Response;
-	d_action = "dods" ;
-    }
-    else if (r == "DDX" || r == "ddx") {
-	d_response = DDX_Response;
-	d_action = "ddx" ;
-    }
-    else if (r == "DataDDX" || r == "dataddx") {
-	d_response = DataDDX_Response;
-	d_action = "dataddx" ;
-    }
-    else if (r == "Version") {
-	d_response = Version_Response;
-	d_action = "version" ;
-    }
-    else
-	print_usage();   // Throws Error
-}
-
-/** Get the enum name of the response to be returned.
- *
-@deprecated */
-ResponseBuilder::Response
-ResponseBuilder::get_response() const
-{
-    return d_response;
-}
-
-/** Get the string name of the response to be returned.
- *
-@deprecated */
-string ResponseBuilder::get_action() const
-{
-    return d_action;
-}
-
-/** Get the dataset's last modified time. This returns the time at which
-    the dataset was last modified as defined by UNIX's notion of
-    modification. This does not take into account the modification of an
-    ancillary DAS or DDS. Time is given in seconds since the epoch (1 Jan
-    1970 00:00:00 GMT).
-
-    This method perform a simple check on the file named by the dataset
-    given when the ResponseBuilder instance was created. If the dataset is not
-    a filter, this method returns the current time. Servers which provide
-    access to non-file-based data should subclass ResponseBuilder and supply a
-    more suitable version of this method.
-
-    From the stat(2) man page: ``Traditionally, <tt>st_mtime</tt>
-    is changed by mknod(2), utime(2), and write(2). The
-    <tt>st_mtime</tt> is not changed for
-    changes in owner, group, hard link count, or mode.''
-
-    @return Time of the last modification in seconds since the epoch.
-    @see get_das_last_modified_time()
-    @see get_dds_last_modified_time()
-
-@deprecated */
-time_t
-ResponseBuilder::get_dataset_last_modified_time() const
-{
-    return last_modified_time(d_dataset);
-}
-
-/** Get the last modified time for the dataset's DAS. This time, given in
-    seconds since the epoch (1 Jan 1970 00:00:00 GMT), is the greater of
-    the datasets's and any ancillary DAS' last modified time.
-
-    @param anc_location A directory to search for ancillary files (in
-    addition to the CWD).
-    @return Time of last modification of the DAS.
-    @see get_dataset_last_modified_time()
-    @see get_dds_last_modified_time()   */
-time_t
-ResponseBuilder::get_das_last_modified_time(const string &anc_location) const
-{
-    DBG(cerr << "ResponseBuilder::get_das_last_modified_time(anc_location="
-        << anc_location << "call faf(das) d_dataset=" << d_dataset
-        << " d_anc_file=" << d_anc_file << endl);
-
-    string name
-    = Ancillary::find_ancillary_file(d_dataset, "das",
-                          (anc_location == "") ? d_anc_dir : anc_location,
-                          d_anc_file);
-
-    return max((name != "") ? last_modified_time(name) : 0,
-               get_dataset_last_modified_time());
-}
-
-/** Get the last modified time for the dataset's DDS. This time, given in
-    seconds since the epoch (1 Jan 1970 00:00:00 GMT), is the greater of
-    the datasets's and any ancillary DDS' last modified time.
-
-    @return Time of last modification of the DDS.
-    @see get_dataset_last_modified_time()
-    @see get_dds_last_modified_time() */
-time_t
-ResponseBuilder::get_dds_last_modified_time(const string &anc_location) const
-{
-    DBG(cerr << "ResponseBuilder::get_das_last_modified_time(anc_location="
-        << anc_location << "call faf(dds) d_dataset=" << d_dataset
-        << " d_anc_file=" << d_anc_file << endl);
-
-    string name
-    = Ancillary::find_ancillary_file(d_dataset, "dds",
-                          (anc_location == "") ? d_anc_dir : anc_location,
-                          d_anc_file);
-
-    return max((name != "") ? last_modified_time(name) : 0,
-               get_dataset_last_modified_time());
-}
-
-/** Get the last modified time to be used for a particular data request.
-    This method should look at both the constraint expression and any
-    ancillary files for this dataset. The implementation provided here
-    returns the latest time returned by the <tt>get_dataset</tt>...(),
-    <tt>get_das</tt>...() and <tt>get_dds</tt>...() methods and
-    does not currently check the CE.
-
-    @param anc_location A directory to search for ancillary files (in
-    addition to the CWD).
-    @return Time of last modification of the data.
-    @see get_dataset_last_modified_time()
-    @see get_das_last_modified_time()
-    @see get_dds_last_modified_time() */
-time_t
-ResponseBuilder::get_data_last_modified_time(const string &anc_location) const
-{
-    DBG(cerr << "ResponseBuilder::get_das_last_modified_time(anc_location="
-        << anc_location << "call faf(both) d_dataset=" << d_dataset
-        << " d_anc_file=" << d_anc_file << endl);
-
-    string dds_name
-    = Ancillary::find_ancillary_file(d_dataset, "dds",
-                          (anc_location == "") ? d_anc_dir : anc_location,
-                          d_anc_file);
-    string das_name
-    = Ancillary::find_ancillary_file(d_dataset, "das",
-                          (anc_location == "") ? d_anc_dir : anc_location,
-                          d_anc_file);
-
-    time_t m = max((das_name != "") ? last_modified_time(das_name) : (time_t)0,
-                   (dds_name != "") ? last_modified_time(dds_name) : (time_t)0);
-    // Note that this is a call to get_dataset_... not get_data_...
-    time_t n = get_dataset_last_modified_time();
-
-    return max(m, n);
-}
-
-/** Get the value of a conditional request's If-Modified-Since header.
-    This value is used to determine if the request should get a full
-    response or a Not Modified (304) response. The time is given in
-    seconds since the Unix epoch (midnight, 1 Jan 1970). If no time was
-    given with the request, this methods returns -1.
-
-    @return If-Modified-Since time from a condition GET request.
-@deprecated */
-time_t
-ResponseBuilder::get_request_if_modified_since() const
-{
-    return d_if_modified_since;
-}
-
-/** The <tt>cache_dir</tt> is used to hold the cached .dds and .das files.
-    By default, this returns an empty string (store cache files in
-    current directory.
-
-    @brief Get the cache directory.
-    @return A string object that contains the cache file directory.
-@deprecated */
-string
-ResponseBuilder::get_cache_dir() const
-{
-    return d_cache_dir;
-}
-
 /** Set the server's timeout value. A value of zero (the default) means no
     timeout.
 
@@ -710,7 +235,6 @@ ResponseBuilder::get_timeout() const
     return d_timeout;
 }
 
-#if FILE_METHODS
 /** Use values of this instance to establish a timeout alarm for the server.
     If the timeout value is zero, do nothing.
 
@@ -721,22 +245,6 @@ ResponseBuilder::get_timeout() const
     should scan ahead in the input stream for an Error object. Add this, or a
     sensible variant once libdap++ supports reliable error delivery. Dumb
     clients will never get the Error object... */
-
-void
-ResponseBuilder::establish_timeout(FILE *stream) const
-{
-#ifndef WIN32
-    if (d_timeout > 0) {
-        SignalHandler *sh = SignalHandler::instance();
-        EventHandler *old_eh = sh->register_handler(SIGALRM, new AlarmHandler(stream));
-        delete old_eh;
-        alarm(d_timeout);
-    }
-#endif
-}
-#endif
-
-// FIXME
 void
 ResponseBuilder::establish_timeout(ostream &stream) const
 {
@@ -750,71 +258,6 @@ ResponseBuilder::establish_timeout(ostream &stream) const
 #endif
 }
 
-static const char *emessage = "DODS internal server error; usage error. Please report this to the dataset maintainer, or to the opendap-tech@opendap.org mailing list.";
-
-/** This message is printed when the filter program is incorrectly
-    invoked by the dispatch CGI.  This is an error in the server
-    installation or the CGI implementation, so the error message is
-    written to stderr instead of stdout.  A server's stderr messages
-    show up in the httpd log file. In addition, an error object is
-    sent back to the client program telling them that the server is
-    broken.
-
-    @brief Print usage information for a filter program.
-
-@deprecated */
-void
-ResponseBuilder::print_usage() const
-{
-    // Write a message to the WWW server error log file.
-    ErrMsgT(usage.c_str());
-
-    throw Error(unknown_error, emessage);
-}
-
-/** This function formats and sends to stdout version
-    information from the httpd server, the server dispatch scripts,
-    the DODS core software, and (optionally) the dataset.
-
-    @brief Send version information back to the client program.
-@deprecated */
-void
-ResponseBuilder::send_version_info() const
-{
-    do_version(d_cgi_ver, get_dataset_version());
-}
-
-#if FILE_METHODS
-/** This function formats and prints an ASCII representation of a
-    DAS on stdout.  This has the effect of sending the DAS object
-    back to the client program.
-
-    @brief Transmit a DAS.
-    @param out The output FILE to which the DAS is to be sent.
-    @param das The DAS object to be sent.
-    @param anc_location The directory in which the external DAS file resides.
-    @param with_mime_headers If true (the default) send MIME headers.
-    @return void
-    @see DAS */
-void
-ResponseBuilder::send_das(FILE *out, DAS &das, const string &anc_location,
-                     bool with_mime_headers) const
-{
-    time_t das_lmt = get_das_last_modified_time(anc_location);
-    if (is_conditional()
-        && das_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
-        set_mime_not_modified(out);
-    }
-    else {
-        if (with_mime_headers)
-            set_mime_text(out, dods_das, d_cgi_ver, x_plain, das_lmt);
-        das.print(out);
-    }
-    fflush(out) ;
-}
-#endif
-
 /** This function formats and prints an ASCII representation of a
     DAS on stdout.  This has the effect of sending the DAS object
     back to the client program.
@@ -826,79 +269,14 @@ ResponseBuilder::send_das(FILE *out, DAS &das, const string &anc_location,
     @param with_mime_headers If true (the default) send MIME headers.
     @return void
     @see DAS */
-void
-ResponseBuilder::send_das(ostream &out, DAS &das, const string &anc_location,
-                     bool with_mime_headers) const
-{
-    time_t das_lmt = get_das_last_modified_time(anc_location);
-    if (is_conditional()
-        && das_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
-        set_mime_not_modified(out);
-    }
-    else {
-        if (with_mime_headers)
-            set_mime_text(out, dods_das, d_cgi_ver, x_plain, das_lmt);
-        das.print(out);
-    }
-    out << flush ;
+void ResponseBuilder::send_das(ostream &out, DAS &das, const string &,
+		bool with_mime_headers) const {
+	if (with_mime_headers)
+		set_mime_text(out, dods_das, "", x_plain, last_modified_time(d_dataset));
+	das.print(out);
+
+	out << flush;
 }
-
-void
-ResponseBuilder::send_das(DAS &das, const string &anc_location,
-                     bool with_mime_headers) const
-{
-    send_das(cout, das, anc_location, with_mime_headers);
-}
-
-#if FILE_METHODS
-/** This function formats and prints an ASCII representation of a
-    DDS on stdout.  When called by a CGI program, this has the
-    effect of sending a DDS object back to the client
-    program. Either an entire DDS or a constrained DDS may be sent.
-
-    @brief Transmit a DDS.
-    @param out The output FILE to which the DAS is to be sent.
-    @param dds The DDS to send back to a client.
-    @param eval A reference to the ConstraintEvaluator to use.
-    @param constrained If this argument is true, evaluate the
-    current constraint expression and send the `constrained DDS'
-    back to the client.
-    @param anc_location The directory in which the external DAS file resides.
-    @param with_mime_headers If true (the default) send MIME headers.
-    @return void
-    @see DDS */
-void
-ResponseBuilder::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
-                     bool constrained,
-                     const string &anc_location,
-                     bool with_mime_headers) const
-{
-    // If constrained, parse the constraint. Throws Error or InternalErr.
-    if (constrained)
-        eval.parse_constraint(d_ce, dds);
-
-    if (eval.functional_expression())
-        throw Error("Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
-
-    time_t dds_lmt = get_dds_last_modified_time(anc_location);
-    if (is_conditional()
-        && dds_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
-        set_mime_not_modified(out);
-    }
-    else {
-        if (with_mime_headers)
-            set_mime_text(out, dods_dds, d_cgi_ver, x_plain, dds_lmt);
-        if (constrained)
-            dds.print_constrained(out);
-        else
-            dds.print(out);
-    }
-
-    fflush(out) ;
-}
-#endif
 
 /** This function formats and prints an ASCII representation of a
     DDS on stdout.  When called by a CGI program, this has the
@@ -916,156 +294,47 @@ ResponseBuilder::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
     @param with_mime_headers If true (the default) send MIME headers.
     @return void
     @see DDS */
-void
-ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
-                     bool constrained,
-                     const string &anc_location,
-                     bool with_mime_headers) const
-{
-    // If constrained, parse the constraint. Throws Error or InternalErr.
-    if (constrained)
-        eval.parse_constraint(d_ce, dds);
+void ResponseBuilder::send_dds(ostream &out, DDS &dds,
+		ConstraintEvaluator &eval, bool constrained, const string &,
+		bool with_mime_headers) const {
+	// If constrained, parse the constraint. Throws Error or InternalErr.
+	if (constrained)
+		eval.parse_constraint(d_ce, dds);
 
-    if (eval.functional_expression())
-        throw Error("Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
+	if (eval.functional_expression())
+		throw Error(
+				"Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
 
-    time_t dds_lmt = get_dds_last_modified_time(anc_location);
-    if (is_conditional()
-        && dds_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
-        set_mime_not_modified(out);
-    }
-    else {
-        if (with_mime_headers)
-            set_mime_text(out, dods_dds, d_cgi_ver, x_plain, dds_lmt);
-        if (constrained)
-            dds.print_constrained(out);
-        else
-            dds.print(out);
-    }
+	if (with_mime_headers)
+		set_mime_text(out, dods_dds, "", x_plain, last_modified_time(d_dataset));
+	if (constrained)
+		dds.print_constrained(out);
+	else
+		dds.print(out);
 
-    out << flush ;
+	out << flush;
 }
 
-void
-ResponseBuilder::send_dds(DDS &dds, ConstraintEvaluator &eval,
-                     bool constrained, const string &anc_location,
-                     bool with_mime_headers) const
-{
-    send_dds(cout, dds, eval, constrained, anc_location, with_mime_headers);
-}
+void ResponseBuilder::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
+		ostream &out, bool ce_eval) const {
+	// send constrained DDS
+	dds.print_constrained(out);
+	out << "Data:\n";
+	out << flush;
 
-#if FILE_METHODS
-/**
- * @deprecated
- * @param var
- * @param dds
- * @param eval
- * @param out
- */
-void
-ResponseBuilder::functional_constraint(BaseType &var, DDS &dds,
-                                  ConstraintEvaluator &eval, FILE *out) const
-{
-    fprintf(out, "Dataset {\n");
-    var.print_decl(out, "    ", true, false, true);
-    fprintf(out, "} function_value;\n");
-    fprintf(out, "Data:\n");
+	// Grab a stream that encodes using XDR.
+	XDRStreamMarshaller m(out);
 
-    fflush(out);
-
-    XDRFileMarshaller m( out ) ;
-
-    try {
-        // In the following call to serialize, suppress CE evaluation.
-        var.serialize(eval, dds, m, false);
-    }
-    catch (Error &e) {
-        throw;
-    }
-}
-#endif
-
-/**
- * @deprecated
- * @param var
- * @param dds
- * @param eval
- * @param out
- */
-void
-ResponseBuilder::functional_constraint(BaseType &var, DDS &dds,
-                                  ConstraintEvaluator &eval, ostream &out) const
-{
-    out << "Dataset {\n" ;
-    var.print_decl(out, "    ", true, false, true);
-    out << "} function_value;\n" ;
-    out << "Data:\n" ;
-
-    out << flush ;
-
-    // Grab a stream that encodes using XDR.
-    XDRStreamMarshaller m( out ) ;
-
-    try {
-        // In the following call to serialize, suppress CE evaluation.
-        var.serialize(eval, dds, m, false);
-    }
-    catch (Error &e) {
-        throw;
-    }
-}
-
-#if FILE_METHODS
-void
-ResponseBuilder::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
-                               FILE * out, bool ce_eval) const
-{
-    // send constrained DDS
-    dds.print_constrained(out);
-    fprintf(out, "Data:\n");
-    fflush(out);
-
-    // Grab a stream that encodes using XDR.
-    XDRFileMarshaller m( out ) ;
-
-    try {
-        // Send all variables in the current projection (send_p())
-        for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
-            if ((*i)->send_p()) {
-                DBG(cerr << "Sending " << (*i)->name() << endl);
-                (*i)->serialize(eval, dds, m, ce_eval);
-            }
-    }
-    catch (Error & e) {
-        throw;
-    }
-}
-#endif
-
-void
-ResponseBuilder::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
-                               ostream &out, bool ce_eval) const
-{
-    // send constrained DDS
-    dds.print_constrained(out);
-    out << "Data:\n" ;
-    out << flush ;
-
-    // Grab a stream that encodes using XDR.
-    XDRStreamMarshaller m( out ) ;
-
-    try {
-        // Send all variables in the current projection (send_p())
-        for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
-            if ((*i)->send_p()) {
-                DBG(cerr << "Sending " << (*i)->name() << endl);
-                (*i)->serialize(eval, dds, m, ce_eval);
-            }
-    }
-    catch (Error & e) {
-        throw;
-    }
+	try {
+		// Send all variables in the current projection (send_p())
+		for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
+			if ((*i)->send_p()) {
+				DBG(cerr << "Sending " << (*i)->name() << endl);
+				(*i)->serialize(eval, dds, m, ce_eval);
+			}
+	} catch (Error & e) {
+		throw;
+	}
 }
 
 void
@@ -1109,100 +378,6 @@ ResponseBuilder::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
     }
 }
 
-#if FILE_METHODS
-/** Send the data in the DDS object back to the client program. The data is
-    encoded using a Marshaller, and enclosed in a MIME document which is all sent
-    to \c data_stream. If this is being called from a CGI, \c data_stream is
-    probably \c stdout and writing to it has the effect of sending the
-    response back to the client.
-
-    @brief Transmit data.
-    @param dds A DDS object containing the data to be sent.
-    @param eval A reference to the ConstraintEvaluator to use.
-    @param data_stream Write the response to this FILE.
-    @param anc_location A directory to search for ancillary files (in
-    addition to the CWD).  This is used in a call to
-    get_data_last_modified_time().
-    @param with_mime_headers If true, include the MIME headers in the response.
-    Defaults to true.
-    @return void */
-void
-ResponseBuilder::send_data(DDS & dds, ConstraintEvaluator & eval,
-                      FILE * data_stream, const string & anc_location,
-                      bool with_mime_headers) const
-{
-    // If this is a conditional request and the server should send a 304
-    // response, do that and exit. Otherwise, continue on and send the full
-    // response.
-    time_t data_lmt = get_data_last_modified_time(anc_location);
-    if (is_conditional()
-        && data_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
-        set_mime_not_modified(data_stream);
-        return;
-    }
-    // Set up the alarm.
-    establish_timeout(data_stream);
-    dds.set_timeout(d_timeout);
-
-    eval.parse_constraint(d_ce, dds);   // Throws Error if the ce doesn't
-					// parse.
-
-    dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
-
-    // Start sending the response...
-
-    // Handle *functional* constraint expressions specially
-#if 0
-    if (eval.functional_expression()) {
-        // Get the result and then start sending the headers. This provides a
-        // way to send errors back to the client w/o colliding with the
-        // normal response headers. There's some duplication of code with this
-        // and the else-clause.
-        BaseType *var = eval.eval_function(dds, d_dataset);
-        if (!var)
-            throw Error(unknown_error, "Error calling the CE function.");
-
-#if COMPRESSION_FOR_SERVER3
-        if (with_mime_headers)
-            set_mime_binary(data_stream, dods_data, d_cgi_ver,
-                            (compress) ? deflate : x_plain, data_lmt);
-        fflush(data_stream);
-
-        int childpid;
-        if (compress)
-            data_stream = compressor(data_stream, childpid);
-#endif
-        if (with_mime_headers)
-            set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
-
-        fflush(data_stream);
-
-        functional_constraint(*var, dds, eval, data_stream);
-        delete var;
-        var = 0;
-    }
-#endif
-    if (eval.function_clauses()) {
-	DDS *fdds = eval.eval_function_clauses(dds);
-
-        if (with_mime_headers)
-            set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
-
-        dataset_constraint(*fdds, eval, data_stream, false);
-	delete fdds;
-    }
-    else {
-        if (with_mime_headers)
-            set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
-
-        dataset_constraint(dds, eval, data_stream);
-    }
-
-    fflush(data_stream);
-}
-#endif
-
 /** Send the data in the DDS object back to the client program. The data is
     encoded using a Marshaller, and enclosed in a MIME document which is all sent
     to \c data_stream. If this is being called from a CGI, \c data_stream is
@@ -1221,20 +396,10 @@ ResponseBuilder::send_data(DDS & dds, ConstraintEvaluator & eval,
     @return void */
 void
 ResponseBuilder::send_data(DDS & dds, ConstraintEvaluator & eval,
-                      ostream & data_stream, const string & anc_location,
+                      ostream & data_stream, const string &,
                       bool with_mime_headers) const
 {
-    // If this is a conditional request and the server should send a 304
-    // response, do that and exit. Otherwise, continue on and send the full
-    // response.
-    time_t data_lmt = get_data_last_modified_time(anc_location);
-    if (is_conditional()
-        && data_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
-        set_mime_not_modified(data_stream);
-        return;
-    }
-    // Set up the alarm.
+	// Set up the alarm.
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
@@ -1247,62 +412,22 @@ ResponseBuilder::send_data(DDS & dds, ConstraintEvaluator & eval,
 
     // Handle *functional* constraint expressions specially
     if (eval.function_clauses()) {
-	DDS *fdds = eval.eval_function_clauses(dds);
+    	DDS *fdds = eval.eval_function_clauses(dds);
         if (with_mime_headers)
-            set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
+            set_mime_binary(data_stream, dods_data, "", x_plain, last_modified_time(d_dataset));
 
         dataset_constraint(*fdds, eval, data_stream, false);
-	delete fdds;
+        delete fdds;
     }
     else {
         if (with_mime_headers)
-            set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
+            set_mime_binary(data_stream, dods_data, "", x_plain, last_modified_time(d_dataset));
 
         dataset_constraint(dds, eval, data_stream);
     }
 
     data_stream << flush ;
 }
-
-#if FILE_METHODS
-/** Send the DDX response. The DDX never contains data, instead it holds a
-    reference to a Blob response which is used to get the data values. The
-    DDS and DAS objects are built using code that already exists in the
-    servers.
-
-    @param dds The dataset's DDS \e with attributes in the variables.
-    @param eval A reference to the ConstraintEvaluator to use.
-    @param out Destination
-    @param with_mime_headers If true, include the MIME headers in the response.
-    Defaults to true. */
-void
-ResponseBuilder::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
-                     bool with_mime_headers) const
-{
-    // If constrained, parse the constraint. Throws Error or InternalErr.
-    if (!d_ce.empty())
-        eval.parse_constraint(d_ce, dds);
-
-    if (eval.functional_expression())
-        throw Error("Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
-
-    time_t dds_lmt = get_dds_last_modified_time(d_anc_dir);
-
-    // If this is a conditional request and the server should send a 304
-    // response, do that and exit. Otherwise, continue on and send the full
-    // response.
-    if (is_conditional() && dds_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
-        set_mime_not_modified(out);
-        return;
-    }
-    else {
-        if (with_mime_headers)
-            set_mime_text(out, dap4_ddx, d_cgi_ver, x_plain, dds_lmt);
-        dds.print_xml(out, !d_ce.empty(), "");
-    }
-}
-#endif
 
 /** Send the DDX response. The DDX never contains data, instead it holds a
     reference to a Blob response which is used to get the data values. The
@@ -1325,21 +450,9 @@ ResponseBuilder::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
     if (eval.functional_expression())
         throw Error("Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
 
-    time_t dds_lmt = get_dds_last_modified_time(d_anc_dir);
-
-    // If this is a conditional request and the server should send a 304
-    // response, do that and exit. Otherwise, continue on and send the full
-    // response.
-    if (is_conditional() && dds_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
-        set_mime_not_modified(out);
-        return;
-    }
-    else {
-        if (with_mime_headers)
-            set_mime_text(out, dap4_ddx, d_cgi_ver, x_plain, dds_lmt);
+    if (with_mime_headers)
+            set_mime_text(out, dap4_ddx, "", x_plain, last_modified_time(d_dataset));
         dds.print_xml(out, !d_ce.empty(), "");
-    }
 }
 
 /** Send the data in the DDS object back to the client program. The data is
@@ -1361,19 +474,9 @@ ResponseBuilder::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
 void
 ResponseBuilder::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
                       ostream & data_stream, const string &start,
-                      const string &boundary, const string & anc_location,
+                      const string &boundary, const string &,
                       bool with_mime_headers) const
 {
-    // If this is a conditional request and the server should send a 304
-    // response, do that and exit. Otherwise, continue on and send the full
-    // response.
-    time_t data_lmt = get_data_last_modified_time(anc_location);
-    if (is_conditional()
-        && data_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
-        set_mime_not_modified(data_stream);
-        return;
-    }
     // Set up the alarm.
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
@@ -1386,32 +489,11 @@ ResponseBuilder::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
     // Start sending the response...
 
     // Handle *functional* constraint expressions specially
-#if 0
-    if (eval.functional_expression()) {
-        BaseType *var = eval.eval_function(dds, d_dataset);
-        if (!var)
-            throw Error(unknown_error, "Error calling the CE function.");
-
-        if (with_mime_headers)
-            set_mime_multipart(data_stream, boundary, start, dap4_data_ddx,
-		d_cgi_ver, x_plain, data_lmt);
-	data_stream << flush ;
-	BaseTypeFactory btf;
-	DDS var_dds(&btf, var->name());
-	var->set_send_p(true);
-	var_dds.add_var(var);
-        dataset_constraint_ddx(var_dds, eval, data_stream, boundary, start);
-
-        // functional_constraint_ddx(*var, dds, eval, data_stream, boundary);
-        delete var;
-        var = 0;
-    }
-#endif
     if (eval.function_clauses()) {
     	DDS *fdds = eval.eval_function_clauses(dds);
         if (with_mime_headers)
             set_mime_multipart(data_stream, boundary, start, dap4_data_ddx,
-        	    d_cgi_ver, x_plain, data_lmt);
+        	    "", x_plain, last_modified_time(d_dataset));
         data_stream << flush ;
         dataset_constraint(*fdds, eval, data_stream, false);
     	delete fdds;
@@ -1419,7 +501,7 @@ ResponseBuilder::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
     else {
         if (with_mime_headers)
             set_mime_multipart(data_stream, boundary, start, dap4_data_ddx,
-        	    d_cgi_ver, x_plain, data_lmt);
+        	    "", x_plain, last_modified_time(d_dataset));
         data_stream << flush ;
         dataset_constraint_ddx(dds, eval, data_stream, boundary, start);
     }
