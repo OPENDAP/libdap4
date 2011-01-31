@@ -141,8 +141,8 @@ DDS::duplicate(const DDS &dds)
     set_dataset_name(). */
 DDS::DDS(BaseTypeFactory *factory, const string &n)
 
-        : d_factory(factory), name(n), d_container(0), d_dap_major(2),
-        d_dap_minor(0),
+        : d_factory(factory), name(n), d_container(0),
+          d_dap_major(2), d_dap_minor(0),
         d_request_xml_base(""), d_timeout(0)
 {
     DBG(cerr << "Building a DDS with client major/minor: "
@@ -178,177 +178,6 @@ DDS::operator=(const DDS &rhs)
     DBG(cerr << " bye." << endl);
     return *this;
 }
-
-#if 0
-/** @brief Look for the parent of an HDF4 dimension attribute
-
-    If this attribute container's name ends in the '_dim_?' suffix, look
-    for the variable to which it's attributes should be bound: For an array,
-    they should be held in a sub-table of the array; for a Structure or
-    Sequence, I don't think the HDF4 handler ever makes these (since those
-    types don't have 'dimension' in hdf-land);  and for a Grid, the attributes
-    belong with the map variables.
-
-    @note This method does check that the \e source really is an hdf4 dimension
-    attribute.
-
-    @param source The attribute container, an AttrTable::entry instance.
-    @return the BaseType to which these attributes belong or null if none
-    was found. */
-BaseType *
-DDS::find_hdf4_dimension_attribute_home(AttrTable::entry *source)
-{
-    BaseType *btp;
-    string::size_type i = source->name.find("_dim_");
-    if (i != string::npos && (btp = var(source->name.substr(0, i)))) {
-        if (btp->is_vector_type()) {
-            return btp;
-        }
-        else if (btp->type() == dods_grid_c) {
-            // For a Grid, the hdf4 handler uses _dim_n for the n-th Map
-            // i+5 points to the character holding 'n'
-            int n = atoi(source->name.substr(i + 5).c_str());
-            DBG(cerr << "Found a Grid (" << btp->name() << ") and "
-                << source->name.substr(i) << ", extracted n: " << n << endl);
-            return *(dynamic_cast<Grid&>(*btp).map_begin() + n);
-        }
-    }
-
-    return 0;
-}
-
-/** Given an attribute container from a DAS, find or make a destination
-    for its contents in the DDS.
-    @param source Attribute table
-    @param dest_variable result param that holds the BaseType
-    @return Destination Attribute Table */
-AttrTable *
-DDS::find_matching_container(AttrTable::entry *source, BaseType **dest_variable)
-{
-    // The attribute entry 'source' must be a container
-    if (source->type != Attr_container)
-        throw InternalErr(__FILE__, __LINE__, "DDS::find_matching_container; expected 'source' to be a container.");
-
-    // Use the name of the attribute container 'source' to figure out where
-    // to put its contents.
-    BaseType *btp;
-    if ((btp = var(source->name))) {
-        // ... matches a variable name? Use var's table
-        *dest_variable = btp;
-        return &btp->get_attr_table();
-    }
-    else if ((btp = find_hdf4_dimension_attribute_home(source))) {
-        // ... hdf4 dimension attribute? Make a sub table and use that.
-        // btp can only be an Array or a Grid Map (which is an array)
-        if (btp->get_parent() && btp->get_parent()->type() == dods_grid_c) {
-            DBG(cerr << "Found a Grid, assigning to the map" << endl);
-            *dest_variable = btp;
-            return &btp->get_attr_table();
-        }
-        else { // must be a plain Array
-            string::size_type i = source->name.find("_dim_");
-            string ext = source->name.substr(i + 1);
-            *dest_variable = btp;
-            return btp->get_attr_table().append_container(ext);
-        }
-    }
-    else {
-        // ... otherwise assume it's a global attribute.
-        AttrTable *at = d_attr.find_container(source->name);
-        if (!at) {
-            at = new AttrTable();       // Make a new global table if needed
-            d_attr.append_container(at, source->name);
-        }
-
-        *dest_variable = 0;
-        return at;
-    }
-}
-
-/** Given a DAS object, scavenge attributes from it and load them into this
-    object and the variables it contains.
-
-    If a DAS contains attributes from the current (8/2006) HDF4 server with
-    names like var_dim_0, var_dim_1, then make those attribute tables
-    sub tables of the \e var table.
-
-    @todo Generalize the code that treats the _dim_? attributes or make
-    is obsolete by fixing the HDF4 server.
-
-    @note This method is technically \e unnecessary because a server (or
-    client) can easily add attributes directly using the DDS::get_attr_table
-    or BaseType::get_attr_table methods and then poke values in using any
-    of the methods AttrTable provides. This method exists to ease the
-    transition to DDS objects which contain attribute information for the
-    existing servers (Since they all make DAS objects separately from the
-    DDS). They could be modified to use the same AttrTable methods but
-    operate on the AttrTable instances in a DDS/BaseType instead of those in
-    a DAS.
-
-    @param das Get attribute information from this DAS. */
-void
-DDS::transfer_attributes(DAS *das)
-{
-    // If there is a container set in the DDS then get the container from
-    // the DAS. If they are not the same container, then throw an exception
-    // (should be working on the same container). If the container does not
-    // exist in the DAS, then throw an exception
-    if( d_container )
-    {
-	if( das->container_name() != d_container_name )
-	{
-	    string err = (string)"Error transferring attributes: "
-			 + "working on container in dds, but not das" ;
-	    throw InternalErr(__FILE__, __LINE__, err ) ;
-	}
-    }
-
-    AttrTable *top_level = das->get_top_level_attributes() ;
-
-    // foreach container at the outer level
-    AttrTable::Attr_iter das_i = top_level->attr_begin();
-    AttrTable::Attr_iter das_e = top_level->attr_end();
-    while (das_i != das_e) {
-        DBG(cerr << "Working on the '" << (*das_i)->name << "' container."
-            << endl);
-
-        AttrTable *source = (*das_i)->attributes;
-        // Variable that holds 'dest'; null for a global attribute.
-        BaseType *dest_variable = 0;
-        AttrTable *dest = find_matching_container(*das_i, &dest_variable);
-
-        // foreach source attribute in the das_i container
-        AttrTable::Attr_iter source_p = source->attr_begin();
-        while (source_p != source->attr_end()) {
-            DBG(cerr << "Working on the '" << (*source_p)->name << "' attribute"
-                << endl);
-
-            // If this is an attribute container, we must have a container
-            // (this one) within a container (the 'source'). Look and see if
-            // the variable is a Constructor. If so, pass that container into
-            // Constructor::transfer_attributes()
-            if ((*source_p)->type == Attr_container) {
-                if (dest_variable && dest_variable->is_constructor_type()) {
-                    dynamic_cast<Constructor&>(*dest_variable).transfer_attributes(*source_p);
-                }
-                else {
-                    dest->append_container(new AttrTable(*(*source_p)->attributes),
-                                           (*source_p)->name);
-                }
-            }
-            else {
-                dest->append_attr(source->get_name(source_p),
-                                  source->get_type(source_p),
-                                  source->get_attr_vector(source_p));
-            }
-
-            ++source_p;
-        }
-
-        ++das_i;
-    }
-}
-#endif
 
 /**
  * This is the main method used to transfer attributes from a DAS object into a
@@ -406,31 +235,6 @@ DDS::transfer_attributes(DAS *das)
     }
 }
 
-#if 0
-    // cruft from the above method
-
-	    AttrTable *dest = d_attr.find_container(at->get_name());
-	    if (!dest) {
-		cerr << "making a new sub containter for it" << endl;
-		// If there's currently no top level container with this
-		//container's name (the typical case) make one.
-		dest = new AttrTable(); // Make a new global table if needed
-		d_attr.append_container(dest, at->get_name());
-	    }
-
-	    cerr << "now copying its contents to the new container" << endl;
-	    // Now copy all of the global attribute's stuff into the matching
-	    // container in the DDS.
-	    AttrTable::Attr_iter at_p = at->attr_begin();
-	    while (at_p != at->attr_end()) {
-		if (at->get_attr_type(at_p) == Attr_container)
-		    dest->append_container(at->get_attr_table(at_p), at->get_name(at_p));
-		else
-		    dest->append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
-		at_p++;
-	    }
-#endif
-
 /** Get and set the dataset's name.  This is the name of the dataset
     itself, and is not to be confused with the name of the file or
     disk on which it is stored.
@@ -485,6 +289,34 @@ DDS::filename(const string &fn)
 }
 //@}
 
+void
+DDS::set_dap_major(int p)
+{
+    d_dap_major = p;
+
+    // This works because regardless of the order set_dap_major and set_dap_minor
+    // are called, once they both are called, the value in the string is
+    // correct. I protect against negative numbers because that would be
+    // nonsensical.
+    if (d_dap_minor >= 0) {
+	ostringstream oss;
+	oss << d_dap_major << "." << d_dap_minor;
+	d_dap_version = oss.str();
+    }
+}
+
+void
+DDS::set_dap_minor(int p)
+{
+    d_dap_minor = p;
+
+    if (d_dap_major >= 0) {
+	ostringstream oss;
+	oss << d_dap_major << "." << d_dap_minor;
+	d_dap_version = oss.str();
+    }
+}
+
 /** Given the dap protocol version either from a MIME header or from within
     the DDX Dataset element, parse that string and set the DDS fields.
 
@@ -507,6 +339,8 @@ DDS::set_dap_version(const string &version_string)
     if (major == -1 || minor == -1)
         throw Error("Could not parse the client dap (XDAP-Accept header) value");
 
+    d_dap_version = version_string;
+
     set_dap_major(major);
     set_dap_minor(minor);
 }
@@ -524,16 +358,11 @@ DDS::set_dap_version(double d)
     int major = d;
     int minor = (d-major)*10;
 
-#if 0
-    istringstream iss(version_string);
-
-    int major = -1, minor = -1;
-    char dot;
-    iss >> major;
-    iss >> dot;
-    iss >> minor;
-#endif
     DBG(cerr << "Major: " << major << ", Minor: " << minor << endl);
+
+    ostringstream oss;
+    oss << major << "." << minor;
+    d_dap_version = oss.str();
 
     set_dap_major(major);
     set_dap_minor(minor);

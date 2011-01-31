@@ -103,11 +103,10 @@ public:
 
     virtual void establish_timeout(ostream &stream) const;
 
-    virtual void send_das(ostream &out, DAS &das, const string &anc_location = "",
+    virtual void send_das(ostream &out, DAS &das,
                           bool with_mime_headers = true) const;
     virtual void send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
                           bool constrained = false,
-                          const string &anc_location = "",
                           bool with_mime_headers = true) const;
 
     virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
@@ -119,16 +118,48 @@ public:
 
     virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
                            ostream &data_stream,
-                           const string &anc_location = "",
                            bool with_mime_headers = true) const;
     virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
                           bool with_mime_headers = true) const;
     virtual void send_data_ddx(DDS &dds, ConstraintEvaluator &eval,
                            ostream &data_stream, const string &start,
                            const string &boundary,
-                           const string &anc_location = "",
                            bool with_mime_headers = true) const;
 
+    // These functions are used both by the methods above and by other code
+
+    void set_mime_text(ostream &out, ObjectType type = unknown_type,
+                       EncodingType enc = x_plain,
+                       const time_t last_modified = 0,
+                       const string &protocol = DAP_PROTOCOL_VERSION) const;
+
+    void set_mime_html(ostream &out, ObjectType type = unknown_type,
+                       EncodingType enc = x_plain,
+                       const time_t last_modified = 0,
+                       const string &protocol = DAP_PROTOCOL_VERSION) const;
+
+    void set_mime_binary(ostream &out, ObjectType type = unknown_type,
+                         EncodingType enc = x_plain,
+                         const time_t last_modified = 0,
+                         const string &protocol = DAP_PROTOCOL_VERSION) const;
+
+    void set_mime_multipart(ostream &out, const string &boundary,
+    	const string &start, ObjectType type = unknown_type,
+            EncodingType enc = x_plain,
+            const time_t last_modified = 0,
+            const string &protocol = DAP_PROTOCOL_VERSION) const;
+
+    void set_mime_ddx_boundary(ostream &out, const string &boundary,
+    	const string &start, ObjectType type = unknown_type,
+            EncodingType enc = x_plain) const;
+
+    void set_mime_data_boundary(ostream &out, const string &boundary,
+    	const string &cid, ObjectType type = unknown_type,
+            EncodingType enc = x_plain) const;
+
+    void set_mime_error(ostream &out, int code = 404,
+                        const string &reason = "Dataset not found",
+                        const string &protocol = DAP_PROTOCOL_VERSION) const;
 };
 
 } // namespace libdap

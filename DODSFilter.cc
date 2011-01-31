@@ -217,7 +217,7 @@ DODSFilter::initialize()
     d_url = "";
     d_program_name = "Unknown";
     d_timeout = 0;
-
+#if 0
     // Load known_keywords
     d_known_keywords.insert("dap2");
     d_known_keywords.insert("dap2.0");
@@ -226,7 +226,7 @@ DODSFilter::initialize()
 
     d_known_keywords.insert("dap4");
     d_known_keywords.insert("dap4.0");
-
+#endif
 #ifdef WIN32
     //  We want serving from win32 to behave in a manner
     //  similar to the UNIX way - no CR->NL terminated lines
@@ -358,7 +358,7 @@ DODSFilter::get_cgi_version() const
 {
     return d_cgi_ver;
 }
-
+#if 0
 /**
  * Add the keyword to the set of keywords that apply to this request.
  * @param kw The keyword
@@ -404,7 +404,7 @@ DODSFilter::is_known_keyword(const string &w) const
 {
     return d_known_keywords.count(w) != 0;
 }
-
+#endif
 
 /** Return the entire constraint expression in a string.  This
 includes both the projection and selection clauses, but not the
@@ -418,6 +418,13 @@ DODSFilter::get_ce() const
     return d_ce;
 }
 
+void
+DODSFilter::set_ce(string _ce)
+{
+    d_ce = www2id(_ce, "%", "%20");
+}
+
+#if 0
 void
 DODSFilter::set_ce(string _ce)
 {
@@ -451,7 +458,7 @@ DODSFilter::set_ce(string _ce)
     // The CE is whatever is left after removing the keywords
     d_ce = projection + selection;
 }
-
+#endif
 /** The ``dataset name'' is the filename or other string that the
 filter program will use to access the data. In some cases this
 will indicate a disk file containing the data.  In others, it

@@ -120,10 +120,10 @@ protected:
     time_t d_anc_das_lmt; /// @deprecated Last modified time of the anc. DAS.
     time_t d_anc_dds_lmt; /// @deprecated Last modified time of the anc. DDS.
     time_t d_if_modified_since; /// @deprecated Time from a conditional request.
-
+#if 0
     set<string> d_keywords; /// Holds all of the keywords passed in the CE
     set<string> d_known_keywords; /// Holds all of the keywords libdap understands.
-
+#endif
     void initialize();
     void initialize(int argc, char *argv[]);
 
@@ -140,13 +140,13 @@ public:
     DODSFilter(int argc, char *argv[]) throw(Error);
 
     virtual ~DODSFilter();
-
+#if 0
     virtual void add_keyword(const string &kw);
     virtual bool is_keyword(const string &kw) const;
     virtual list<string> get_keywords() const;
     // This method holds all of the keywords that this version of libdap groks
     virtual bool is_known_keyword(const string &w) const;
-
+#endif
     virtual bool is_conditional() const;
 
     virtual string get_cgi_version() const;

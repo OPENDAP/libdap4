@@ -180,6 +180,7 @@ public:
 	return pos > 0;
     }
 
+#if 0
     void add_keyword_test() {
 	DODSFilter tdf;
 	tdf.add_keyword("test");
@@ -216,6 +217,7 @@ public:
 	CPPUNIT_ASSERT(oss.str().find("dap2.0") != string::npos);
 	CPPUNIT_ASSERT(oss.str().find("dap4.0") != string::npos);
     }
+#endif
 
     void get_dataset_last_modified_time_test() {
 	time_t t = time(0);
@@ -528,24 +530,26 @@ Content-Encoding: binary\r\n\
     }
 
     CPPUNIT_TEST_SUITE( DODSFilterTest );
+#if 0
     CPPUNIT_TEST(add_keyword_test);
     CPPUNIT_TEST(is_keyword_test);
     CPPUNIT_TEST(get_keywords);
-#if 1
+#endif
+
     CPPUNIT_TEST(get_dataset_last_modified_time_test);
     CPPUNIT_TEST(get_das_last_modified_time_test);
 
     CPPUNIT_TEST(send_das_test);
     CPPUNIT_TEST(send_dds_test);
-#endif
+
     CPPUNIT_TEST(send_ddx_test);
     CPPUNIT_TEST(send_data_ddx_test);
     CPPUNIT_TEST(send_data_ddx_test2);
-#if 1
+
     CPPUNIT_TEST(is_conditional_test);
     CPPUNIT_TEST(get_request_if_modified_since_test);
     CPPUNIT_TEST(escape_code_test);
-#endif
+
     CPPUNIT_TEST_SUITE_END();
 };
 

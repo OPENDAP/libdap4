@@ -353,10 +353,6 @@ function_dap(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &)
     }
 
     double pv = extract_double_value(argv[0]);
-#if 0
-    ostringstream oss;
-    oss << pv;
-#endif
     dds.set_dap_version(pv);
 }
 

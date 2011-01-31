@@ -22,6 +22,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -34,6 +36,8 @@
 
 //#define DODS_DEBUG
 
+#include "ObjectType.h"
+#include "EncodingType.h"
 #include "ResponseBuilder.h"
 #include "DAS.h"
 #include "DDS.h"
@@ -55,158 +59,166 @@ namespace libdap {
 
 class ResponseBuilderTest: public TestFixture {
 private:
-	ResponseBuilder *df, *df1, *df2, *df3, *df4, *df5;
+    ResponseBuilder *df, *df1, *df2, *df3, *df4, *df5;
 
-	AttrTable *cont_a;
-	DAS *das;
-	DDS *dds;
-	ostringstream oss;
-	time_t now;
-	char now_array[256];
+    AttrTable *cont_a;
+    DAS *das;
+    DDS *dds;
+    ostringstream oss;
+    time_t now;
+    char now_array[256];
 
 public:
-	ResponseBuilderTest() {
-		now = time(0);
-		ostringstream time_string;
-		time_string << (int) now;
-		strncpy(now_array, time_string.str().c_str(), 255);
-		now_array[255] = '\0';
-	}
+    ResponseBuilderTest()
+    {
+	now = time(0);
+	ostringstream time_string;
+	time_string << (int) now;
+	strncpy(now_array, time_string.str().c_str(), 255);
+	now_array[255] = '\0';
+    }
 
-	~ResponseBuilderTest() {
-	}
+    ~ResponseBuilderTest()
+    {
+    }
 
-	void setUp() {
-		// Test pathname
-		df = new ResponseBuilder();
+    void setUp()
+    {
+	// Test pathname
+	df = new ResponseBuilder();
 #if 0
-		df->d_url = (string) TEST_SRC_DIR + "/server-testsuite/bears.data";
+	df->d_url = (string) TEST_SRC_DIR + "/server-testsuite/bears.data";
 #endif
-		// Test missing file
-		df1 = new ResponseBuilder();
-		df1->set_dataset_name("no-such-file");
+	// Test missing file
+	df1 = new ResponseBuilder();
+	df1->set_dataset_name("no-such-file");
 
-		// Test files in CWD. Note that the time is the GM time : Tue, 01 May
-		// 2001 01:08:14 -0700
-		df2 = new ResponseBuilder();
-		df2->set_dataset_name("test_config.h");
+	// Test files in CWD. Note that the time is the GM time : Tue, 01 May
+	// 2001 01:08:14 -0700
+	df2 = new ResponseBuilder();
+	df2->set_dataset_name("test_config.h");
 
-		// This file has an ancillary DAS in the server-testsuite dir.
-		// df3 is also used to test escaping stuff in URLs. 5/4/2001 jhrg
-		df3 = new ResponseBuilder();
-		df3->set_dataset_name((string) TEST_SRC_DIR
-				+ "/server-testsuite/coads.data");
-		df3->set_ce("u,x,z[0]&grid(u,\"lat<10.0\")");
-		df3->set_timeout(1);
+	// This file has an ancillary DAS in the server-testsuite dir.
+	// df3 is also used to test escaping stuff in URLs. 5/4/2001 jhrg
+	df3 = new ResponseBuilder();
+	df3->set_dataset_name((string) TEST_SRC_DIR + "/server-testsuite/coads.data");
+	df3->set_ce("u,x,z[0]&grid(u,\"lat<10.0\")");
+	df3->set_timeout(1);
 
-		// Go back to this data source to test w/o an ancillary DAS.
-		df4 = new ResponseBuilder();
-		df4->set_dataset_name((string) TEST_SRC_DIR
-				+ "/server-testsuite/bears.data");
-		df4->set_ce("u,x,z[0]&grid(u,\"lat<10.0\")");
-		df4->set_timeout(1);
+	// Go back to this data source to test w/o an ancillary DAS.
+	df4 = new ResponseBuilder();
+	df4->set_dataset_name((string) TEST_SRC_DIR + "/server-testsuite/bears.data");
+	df4->set_ce("u,x,z[0]&grid(u,\"lat<10.0\")");
+	df4->set_timeout(1);
 
-		// Test escaping stuff. 5/4/2001 jhrg
-		df5 = new ResponseBuilder();
-		df5->set_dataset_name("nowhere%5Bmydisk%5Dmyfile");
-		df5->set_ce("u%5B0%5D");
+	// Test escaping stuff. 5/4/2001 jhrg
+	df5 = new ResponseBuilder();
+	df5->set_dataset_name("nowhere%5Bmydisk%5Dmyfile");
+	df5->set_ce("u%5B0%5D");
 
-		cont_a = new AttrTable;
-		cont_a->append_attr("size", "Int32", "7");
-		cont_a->append_attr("type", "String", "cars");
-		das = new DAS;
-		das->add_table("a", cont_a);
+	cont_a = new AttrTable;
+	cont_a->append_attr("size", "Int32", "7");
+	cont_a->append_attr("type", "String", "cars");
+	das = new DAS;
+	das->add_table("a", cont_a);
 
-		// This AttrTable looks like:
-		//      Attributes {
-		//          a {
-		//              Int32 size 7;
-		//              String type cars;
-		//          }
-		//      }
+	// This AttrTable looks like:
+	//      Attributes {
+	//          a {
+	//              Int32 size 7;
+	//              String type cars;
+	//          }
+	//      }
 
-		TestTypeFactory ttf;
-		dds = new DDS(&ttf, "test");
-		TestByte a("a");
-		dds->add_var(&a);
+	TestTypeFactory ttf;
+	dds = new DDS(&ttf, "test");
+	TestByte a("a");
+	dds->add_var(&a);
 
-		dds->transfer_attributes(das);
-		dds->set_dap_major(3);
-		dds->set_dap_minor(2);
-	}
+	dds->transfer_attributes(das);
+	dds->set_dap_major(3);
+	dds->set_dap_minor(2);
+    }
 
-	void tearDown() {
-		delete df;
-		df = 0;
-		delete df1;
-		df1 = 0;
-		delete df2;
-		df2 = 0;
-		delete df3;
-		df3 = 0;
-		delete df4;
-		df4 = 0;
-		delete df5;
-		df5 = 0;
+    void tearDown()
+    {
+	delete df;
+	df = 0;
+	delete df1;
+	df1 = 0;
+	delete df2;
+	df2 = 0;
+	delete df3;
+	df3 = 0;
+	delete df4;
+	df4 = 0;
+	delete df5;
+	df5 = 0;
 
-		delete das;
-		das = 0;
-	}
+	delete das;
+	das = 0;
+    }
 
-	bool re_match(Regex &r, const string &s) {
-		DBG(cerr << "s.length(): " << s.length() << endl);
-		int pos = r.match(s.c_str(), s.length());
-		DBG(cerr << "r.match(s): " << pos << endl);
-		return pos > 0 && static_cast<unsigned> (pos) == s.length();
-	}
+    bool re_match(Regex &r, const string &s)
+    {
+	DBG(cerr << "s.length(): " << s.length() << endl);
+	int pos = r.match(s.c_str(), s.length());
+	DBG(cerr << "r.match(s): " << pos << endl);
+	return pos > 0 && static_cast<unsigned> (pos) == s.length();
+    }
 
-	bool re_match_binary(Regex &r, const string &s) {
-		DBG(cerr << "s.length(): " << s.length() << endl);
-		int pos = r.match(s.c_str(), s.length());
-		DBG(cerr << "r.match(s): " << pos << endl);
-		return pos > 0;
-	}
+    bool re_match_binary(Regex &r, const string &s)
+    {
+	DBG(cerr << "s.length(): " << s.length() << endl);
+	int pos = r.match(s.c_str(), s.length());
+	DBG(cerr << "r.match(s): " << pos << endl);
+	return pos > 0;
+    }
 
-	void add_keyword_test() {
-		ResponseBuilder tdf;
-		tdf.add_keyword("test");
-		CPPUNIT_ASSERT(tdf.d_keywords.find("test") != tdf.d_keywords.end());
-		CPPUNIT_ASSERT(tdf.d_keywords.find("test") == tdf.d_keywords.begin());
-		CPPUNIT_ASSERT(*(tdf.d_keywords.find("test")) == string("test"));
-		tdf.add_keyword("dap3.3");
-		CPPUNIT_ASSERT(tdf.d_keywords.size() == 2);
-	}
+    void add_keyword_test()
+    {
+	ResponseBuilder tdf;
+	tdf.add_keyword("test");
+	CPPUNIT_ASSERT(tdf.d_keywords.find("test") != tdf.d_keywords.end());
+	CPPUNIT_ASSERT(tdf.d_keywords.find("test") == tdf.d_keywords.begin());
+	CPPUNIT_ASSERT(*(tdf.d_keywords.find("test")) == string("test"));
+	tdf.add_keyword("dap3.3");
+	CPPUNIT_ASSERT(tdf.d_keywords.size() == 2);
+    }
 
-	void is_keyword_test() {
-		ResponseBuilder tdf;
-		tdf.add_keyword("test");
-		tdf.add_keyword("dap3.3");
-		CPPUNIT_ASSERT(tdf.is_keyword("test"));
-		CPPUNIT_ASSERT(!tdf.is_keyword("TEST"));
-	}
+    void is_keyword_test()
+    {
+	ResponseBuilder tdf;
+	tdf.add_keyword("test");
+	tdf.add_keyword("dap3.3");
+	CPPUNIT_ASSERT(tdf.is_keyword("test"));
+	CPPUNIT_ASSERT(!tdf.is_keyword("TEST"));
+    }
 
-	void get_keywords() {
-		ResponseBuilder tdf;
-		tdf.add_keyword("test");
-		tdf.add_keyword("dap2.0");
-		tdf.add_keyword("dap4.0");
-		CPPUNIT_ASSERT(tdf.d_keywords.size() == 3);
+    void get_keywords()
+    {
+	ResponseBuilder tdf;
+	tdf.add_keyword("test");
+	tdf.add_keyword("dap2.0");
+	tdf.add_keyword("dap4.0");
+	CPPUNIT_ASSERT(tdf.d_keywords.size() == 3);
 
-		ostringstream oss;
-		list<string> kwds = tdf.get_keywords();
-		list<string>::iterator i = kwds.begin();
-		while (i != kwds.end())
-			oss << *i++;
+	ostringstream oss;
+	list<string> kwds = tdf.get_keywords();
+	list<string>::iterator i = kwds.begin();
+	while (i != kwds.end())
+	    oss << *i++;
 
-		CPPUNIT_ASSERT(oss.str().find("test") != string::npos);
-		CPPUNIT_ASSERT(oss.str().find("dap2.0") != string::npos);
-		CPPUNIT_ASSERT(oss.str().find("dap4.0") != string::npos);
-	}
+	CPPUNIT_ASSERT(oss.str().find("test") != string::npos);
+	CPPUNIT_ASSERT(oss.str().find("dap2.0") != string::npos);
+	CPPUNIT_ASSERT(oss.str().find("dap4.0") != string::npos);
+    }
 
-	void send_das_test() {
-		Regex
-				r1(
-						"HTTP/1.0 200 OK\r\n\
+    void send_das_test()
+    {
+	Regex
+		r1(
+			"HTTP/1.0 200 OK\r\n\
 XDODS-Server: .*\
 XOPeNDAP-Server: .*\
 XDAP: .*\
@@ -222,18 +234,19 @@ Attributes \\{\n\
     \\}\n\
 \\}\n");
 
-		df->send_das(oss, *das);
+	df->send_das(oss, *das);
 
-		DBG(cerr << "DAS: " << oss.str() << endl);
+	DBG(cerr << "DAS: " << oss.str() << endl);
 
-		CPPUNIT_ASSERT(re_match(r1, oss.str()));
-		oss.str("");
-	}
+	CPPUNIT_ASSERT(re_match(r1, oss.str()));
+	oss.str("");
+    }
 
-	void send_dds_test() {
-		Regex
-				r1(
-						"HTTP/1.0 200 OK\r\n\
+    void send_dds_test()
+    {
+	Regex
+		r1(
+			"HTTP/1.0 200 OK\r\n\
 XDODS-Server: .*\
 XOPeNDAP-Server: .*\
 XDAP: .*\
@@ -246,20 +259,21 @@ Dataset \\{\n\
     Byte a;\n\
 \\} test;\n");
 
-		ConstraintEvaluator ce;
+	ConstraintEvaluator ce;
 
-		df->send_dds(oss, *dds, ce);
+	df->send_dds(oss, *dds, ce);
 
-		DBG(cerr << "DDS: " << oss.str() << endl);
+	DBG(cerr << "DDS: " << oss.str() << endl);
 
-		CPPUNIT_ASSERT(re_match(r1, oss.str()));
-		oss.str("");
-	}
+	CPPUNIT_ASSERT(re_match(r1, oss.str()));
+	oss.str("");
+    }
 
-	void send_ddx_test() {
-		Regex
-				r1(
-						"HTTP/1.0 200 OK\r\n\
+    void send_ddx_test()
+    {
+	Regex
+		r1(
+			"HTTP/1.0 200 OK\r\n\
 XDODS-Server: .*\
 XOPeNDAP-Server: .*\
 XDAP: .*\
@@ -289,24 +303,26 @@ dapVersion=\"3.2\">.*\
 .*\
 </Dataset>.*");
 
-		ConstraintEvaluator ce;
+	ConstraintEvaluator ce;
 
-		try {
-			df->send_ddx(*dds, ce, oss);
+	try {
+	    df->send_ddx(*dds, ce, oss);
 
-			DBG(cerr << "DDX: " << oss.str() << endl);
+	    DBG(cerr << "DDX: " << oss.str() << endl);
 
-			CPPUNIT_ASSERT(re_match(r1, oss.str()));
-			oss.str("");
-		} catch (Error &e) {
-			CPPUNIT_FAIL("Error: " + e.get_error_message());
-		}
+	    CPPUNIT_ASSERT(re_match(r1, oss.str()));
+	    oss.str("");
 	}
+	catch (Error &e) {
+	    CPPUNIT_FAIL("Error: " + e.get_error_message());
+	}
+    }
 
-	void send_data_ddx_test() {
-		Regex
-				r1(
-						"HTTP/1.0 200 OK\r\n\
+    void send_data_ddx_test()
+    {
+	Regex
+		r1(
+			"HTTP/1.0 200 OK\r\n\
 .*\
 XDAP:.*\r\n\
 .*\
@@ -342,30 +358,31 @@ Content-Encoding: binary\r\n\
 \r\n\
 .*");
 
-		// I do not look for the closing '--boundary' because the binary
-		// data breaks the regex functions in the c library WRT subsequent
-		// pattern matches. jhrg
-		//--boundary--\r\n");
+	// I do not look for the closing '--boundary' because the binary
+	// data breaks the regex functions in the c library WRT subsequent
+	// pattern matches. jhrg
+	//--boundary--\r\n");
 
-		ConstraintEvaluator ce;
+	ConstraintEvaluator ce;
 
-		try {
-			df->send_data_ddx(*dds, ce, oss, "start@opendap.org", "boundary",
-					"", true);
+	try {
+	    df->send_data_ddx(*dds, ce, oss, "start@opendap.org", "boundary", true);
 
-			DBG(cerr << "DataDDX: " << oss.str() << endl);
+	    DBG(cerr << "DataDDX: " << oss.str() << endl);
 
-			CPPUNIT_ASSERT(re_match_binary(r1, oss.str()));
-			oss.str("");
-		} catch (Error &e) {
-			CPPUNIT_FAIL("Error: " + e.get_error_message());
-		}
+	    CPPUNIT_ASSERT(re_match_binary(r1, oss.str()));
+	    oss.str("");
 	}
+	catch (Error &e) {
+	    CPPUNIT_FAIL("Error: " + e.get_error_message());
+	}
+    }
 
-	void send_data_ddx_test2() {
-		Regex
-				r1(
-						"--boundary\r\n\
+    void send_data_ddx_test2()
+    {
+	Regex
+		r1(
+			"--boundary\r\n\
 Content-Type: Text/xml; charset=iso-8859-1\r\n\
 Content-Id: <start@opendap.org>\r\n\
 Content-Description: dap4-ddx\r\n\
@@ -394,54 +411,58 @@ Content-Encoding: binary\r\n\
 \r\n\
 .*");
 
-		ConstraintEvaluator ce;
+	ConstraintEvaluator ce;
 
-		try {
-			df->send_data_ddx(*dds, ce, oss, "start@opendap.org", "boundary",
-					"", false);
-			DBG(cerr << "DataDDX: " << oss.str() << endl);
-			CPPUNIT_ASSERT(re_match_binary(r1, oss.str()));
+	try {
+	    df->send_data_ddx(*dds, ce, oss, "start@opendap.org", "boundary", false);
+	    DBG(cerr << "DataDDX: " << oss.str() << endl);
+	    CPPUNIT_ASSERT(re_match_binary(r1, oss.str()));
 
-			// Unlike the test where the full headers are generated, there's
-			// no check for a conditional response here because that feature
-			// of ResponseBuilder is only supported when MIME headers are built by
-			// the class. In order to return a '304' response, headers must be
-			// built.
-		} catch (Error &e) {
-			CPPUNIT_FAIL("Error: " + e.get_error_message());
-		}
+	    // Unlike the test where the full headers are generated, there's
+	    // no check for a conditional response here because that feature
+	    // of ResponseBuilder is only supported when MIME headers are built by
+	    // the class. In order to return a '304' response, headers must be
+	    // built.
 	}
-
-	void escape_code_test() {
-		// These should NOT be escaped.
-
-		DBG(cerr << df3->get_dataset_name() << endl); DBG(cerr << df3->get_ce() << endl);
-
-		CPPUNIT_ASSERT(df3->get_dataset_name() == (string)TEST_SRC_DIR + "/server-testsuite/coads.data");
-		CPPUNIT_ASSERT(df3->get_ce() == "u,x,z[0]&grid(u,\"lat<10.0\")");
-
-		// The ResponseBuilder instance is feed escaped values; they should be
-		// unescaped by the ctor and the mutators. 5/4/2001 jhrg
-
-		DBG(cerr << df5->get_dataset_name() << endl); DBG(cerr << df5->get_ce() << endl);
-
-		CPPUNIT_ASSERT(df5->get_dataset_name() == "nowhere[mydisk]myfile");
-		CPPUNIT_ASSERT(df5->get_ce() == "u[0]");
-
-		df5->set_ce("u%5B0%5D");
-		CPPUNIT_ASSERT(df5->get_ce() == "u[0]");
-
-		df5->set_ce("Grid%20u%5B0%5D");
-		CPPUNIT_ASSERT(df5->get_ce() == "Grid%20u[0]");
+	catch (Error &e) {
+	    CPPUNIT_FAIL("Error: " + e.get_error_message());
 	}
+    }
 
-	// This tests reading the timeout value from argv[].
-	void timeout_test() {
-		CPPUNIT_ASSERT(df3->get_timeout() == 1);
-		CPPUNIT_ASSERT(df1->get_timeout() == 0);
-	}
+    void escape_code_test()
+    {
+	// These should NOT be escaped.
 
-	CPPUNIT_TEST_SUITE( ResponseBuilderTest );
+	DBG(cerr << df3->get_dataset_name() << endl);
+	DBG(cerr << df3->get_ce() << endl);
+
+	CPPUNIT_ASSERT(df3->get_dataset_name() == (string)TEST_SRC_DIR + "/server-testsuite/coads.data");
+	CPPUNIT_ASSERT(df3->get_ce() == "u,x,z[0]&grid(u,\"lat<10.0\")");
+
+	// The ResponseBuilder instance is feed escaped values; they should be
+	// unescaped by the ctor and the mutators. 5/4/2001 jhrg
+
+	DBG(cerr << df5->get_dataset_name() << endl);
+	DBG(cerr << df5->get_ce() << endl);
+
+	CPPUNIT_ASSERT(df5->get_dataset_name() == "nowhere[mydisk]myfile");
+	CPPUNIT_ASSERT(df5->get_ce() == "u[0]");
+
+	df5->set_ce("u%5B0%5D");
+	CPPUNIT_ASSERT(df5->get_ce() == "u[0]");
+
+	df5->set_ce("Grid%20u%5B0%5D");
+	CPPUNIT_ASSERT(df5->get_ce() == "Grid%20u[0]");
+    }
+
+    // This tests reading the timeout value from argv[].
+    void timeout_test()
+    {
+	CPPUNIT_ASSERT(df3->get_timeout() == 1);
+	CPPUNIT_ASSERT(df1->get_timeout() == 0);
+    }
+
+CPPUNIT_TEST_SUITE( ResponseBuilderTest );
 
 	CPPUNIT_TEST(add_keyword_test);
 	CPPUNIT_TEST(is_keyword_test);
@@ -456,18 +477,18 @@ Content-Encoding: binary\r\n\
 
 	CPPUNIT_TEST(escape_code_test);
 
-	CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST_SUITE_END();
 };
-
 CPPUNIT_TEST_SUITE_REGISTRATION(ResponseBuilderTest);
 }
 
-int main(int, char**) {
-	CppUnit::TextTestRunner runner;
-	runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
+int main(int, char**)
+{
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-	bool wasSuccessful = runner.run("", false);
+    bool wasSuccessful = runner.run("", false);
 
-	return wasSuccessful ? 0 : 1;
+    return wasSuccessful ? 0 : 1;
 }
 

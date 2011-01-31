@@ -182,9 +182,9 @@ private:
     Structure *d_container;	// current container for container name
 				// dataset or part of dataset.
 
-    int d_dap_major;       // The protocol major version number
-    int d_dap_minor;       // ... and minor version number
-
+    int d_dap_major;       	// The protocol major version number
+    int d_dap_minor;       	// ... and minor version number
+    string d_dap_version; 	// String version of the protocol
     string d_request_xml_base;
 
     AttrTable d_attr;           // Global attributes.
@@ -256,12 +256,14 @@ public:
     int get_dap_minor() const { return d_dap_minor; }
 
     /// Set the DAP major version (typically using info from the client)
-    void set_dap_major(int p) { d_dap_major = p; }
+    void set_dap_major(int p);
     /// Set the DAP minor version (typically using info from the client)
-    void set_dap_minor(int p) { d_dap_minor = p; }
+    void set_dap_minor(int p);
 
     void set_dap_version(const string &version_string);
     void set_dap_version(double d);
+
+    string get_dap_version() const { return d_dap_version; }
 
     /// Get the URL that will return this DDS/DDX/DataThing
     string get_request_xml_base() const { return d_request_xml_base; }
