@@ -6,7 +6,3 @@ like the complete library it may be obtained from ftp.gnu.org.
 
 The files GNURegex.{cc,h} were originally from teh GNU libg++ package, but 
 I rewrote them to use the Unix regex library some time ago. 
-
-The files outbuf.h and .cc are from Nicolai Josuttis' "The C++ Standard
-Library" and are not part part of libg++. I use these to build a pipe that 
-can be written to using an ostream object.
