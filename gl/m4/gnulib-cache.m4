@@ -1,4 +1,4 @@
-# Copyright (C) 2004-2007 Free Software Foundation, Inc.
+# Copyright (C) 2002-2011 Free Software Foundation, Inc.
 #
 # This file is free software, distributed under the terms of the GNU
 # General Public License.  As a special exception to the GNU General
@@ -10,16 +10,18 @@
 #
 # This file represents the specification of how gnulib-tool is used.
 # It acts as a cache: It is written and read by gnulib-tool.
-# In projects using CVS, this file is meant to be stored in CVS,
-# like the configure.ac and various Makefile.am files.
+# In projects that use version control, this file is meant to be put under
+# version control, like the configure.ac and various Makefile.am files.
 
 
 # Specification in the form of a command-line invocation:
-#   gnulib-tool --import --dir=. --lib=libgnu --source-base=gl --m4-base=gl/m4 --doc-base=gl/doc --aux-dir=conf --lgpl --libtool --macro-prefix=gl regex
+#   gnulib-tool --import --dir=. --lib=libgnu --source-base=gl --m4-base=gl/m4 --doc-base=gl/doc --tests-base=tests --aux-dir=conf --lgpl --libtool --macro-prefix=gl regex
 
 # Specification in the form of a few gnulib-tool.m4 macro invocations:
 gl_LOCAL_DIR([])
-gl_MODULES([regex])
+gl_MODULES([
+  regex
+])
 gl_AVOID([])
 gl_SOURCE_BASE([gl])
 gl_M4_BASE([gl/m4])

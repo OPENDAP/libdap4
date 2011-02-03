@@ -1,11 +1,11 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002-2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published by
-   the Free Software Foundation; either version 2.1, or (at your option)
+   the Free Software Foundation; either version 2, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -27,14 +27,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _LIBC
-# include <langinfo.h>
-#else
+#include <langinfo.h>
+#ifndef _LIBC
 # include "localcharset.h"
 #endif
-#if defined HAVE_LOCALE_H || defined _LIBC
-# include <locale.h>
-#endif
+#include <locale.h>
 
 #include <wchar.h>
 #include <wctype.h>
@@ -84,7 +81,7 @@
 # define SIZE_MAX ((size_t) -1)
 #endif
 
-#if (defined MB_CUR_MAX && HAVE_LOCALE_H && HAVE_WCTYPE_H && HAVE_ISWCTYPE && HAVE_WCRTOMB && HAVE_MBRTOWC && HAVE_WCSCOLL) || _LIBC
+#if (defined MB_CUR_MAX && HAVE_WCTYPE_H && HAVE_ISWCTYPE && HAVE_WCSCOLL) || _LIBC
 # define RE_ENABLE_I18N
 #endif
 
@@ -115,6 +112,7 @@
 # define __iswctype iswctype
 # define __btowc btowc
 # define __wcrtomb wcrtomb
+# define __mbrtowc mbrtowc
 # define __regfree regfree
 # define attribute_hidden
 #endif /* not _LIBC */
@@ -161,9 +159,9 @@ typedef unsigned long int bitset_word_t;
    instead, deduce it directly from BITSET_WORD_MAX.  Avoid
    greater-than-32-bit integers and unconditional shifts by more than
    31 bits, as they're not portable.  */
-#if BITSET_WORD_MAX == 0xffffffff
+#if BITSET_WORD_MAX == 0xffffffffUL
 # define BITSET_WORD_BITS 32
-#elif BITSET_WORD_MAX >> 31 >> 5 == 1
+#elif BITSET_WORD_MAX >> 31 >> 4 == 1
 # define BITSET_WORD_BITS 36
 #elif BITSET_WORD_MAX >> 31 >> 16 == 1
 # define BITSET_WORD_BITS 48
@@ -182,10 +180,6 @@ typedef unsigned long int bitset_word_t;
 # if BITSET_WORD_BITS <= SBC_MAX
 #  error "Invalid SBC_MAX"
 # endif
-#elif BITSET_WORD_MAX == (0xffffffff + 2) * 0xffffffff
-/* Work around a bug in 64-bit PGC (before version 6.1-2), where the
-   preprocessor mishandles large unsigned values as if they were signed.  */
-# define BITSET_WORD_BITS 64
 #else
 # error "Add case for new bitset_word_t size"
 #endif
@@ -421,7 +415,7 @@ struct re_dfa_t;
 typedef struct re_dfa_t re_dfa_t;
 
 #ifndef _LIBC
-# ifdef __i386__
+# if defined __i386__ && !defined __EMX__
 #  define internal_function   __attribute ((regparm (3), stdcall))
 # else
 #  define internal_function
@@ -470,6 +464,8 @@ static unsigned int re_string_context_at (const re_string_t *input, Idx idx,
 # else
 /* alloca is implemented with malloc, so just use malloc.  */
 #  define __libc_use_alloca(n) 0
+#  undef alloca
+#  define alloca(n) malloc (n)
 # endif
 #endif
 
@@ -853,5 +849,22 @@ re_string_elem_size_at (const re_string_t *pstr, Idx idx)
     return 1;
 }
 #endif /* RE_ENABLE_I18N */
+
+#ifndef __GNUC_PREREQ
+# if defined __GNUC__ && defined __GNUC_MINOR__
+#  define __GNUC_PREREQ(maj, min) \
+         ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+# else
+#  define __GNUC_PREREQ(maj, min) 0
+# endif
+#endif
+
+#if __GNUC_PREREQ (3,4)
+# undef __attribute_warn_unused_result__
+# define __attribute_warn_unused_result__ \
+   __attribute__ ((__warn_unused_result__))
+#else
+# define __attribute_warn_unused_result__ /* empty */
+#endif
 
 #endif /*  _REGEX_INTERNAL_H */
