@@ -196,10 +196,12 @@ id2www_ce(string in, const string &allowable)
      -# Grid::var(), Sequence::var(), Structure::var() Variable names are decoded.
 
    -In the server code:
-     -# DODSFilter::initialize() The dataset name is decoded except that %20
+     -# ResponseBuilder::initialize() The dataset name is decoded except that %20
         is not removed.
-     -# DODSFilter::set_ce() The CE is decoded, except for spaces (%20).
-     -# DODSFilter::set_dataset_name() same logic as the first case.
+     -# ResponseBuilder::set_ce() The CE is decoded, except for spaces (%20).
+     -# ResponseBuilder::set_dataset_name() same logic as the first case.
+     -# The ResponseBuilder methods supersede methods with the same names
+        from DODSFilter, which is still in the code although deprecated.
 
     @param in The string to modify.
     @param escape The character used to signal the beginning of an escape
