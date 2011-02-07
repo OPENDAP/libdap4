@@ -103,10 +103,7 @@ namespace libdap
     constraint expressions are formed and how to manage them.
 
     Connect also provides additional services such as automatic
-    decompression of compressed data, transmission progress reports
-    and error processing.  Refer to the GUI and Error classes for more
-    information about these features. See the DODSFilter class for
-    information on servers that compress data.
+    decompression of compressed data and and error processing.
 
     @note Update: I removed the DEFAULT_BASETYPE_FACTORY switch because it
     caused more confusion than it avoided. See Trac #130.
@@ -126,7 +123,6 @@ namespace libdap
     dataset.
     @see DDS
     @see DAS
-    @see DODSFilter
     @see Error
     @author jhrg */
 
