@@ -83,7 +83,7 @@ static char rcsid[] not_used =
 #endif
 
 // ...not using a const string here to avoid global objects. jhrg 12/23/05
-#define CRLF "\r\n"             // Change here, expr-test.cc and DODSFilter.cc
+#define CRLF "\r\n"             // Change here, expr-test.cc, in DODSFilter and ResponseBuilder
 
 using namespace std;
 
