@@ -474,7 +474,7 @@ function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     if (!original_grid)
         throw Error(malformed_expr,"The first argument to grid() must be a Grid variable!");
 
-    // Duplicate the grid; DODSFilter::send_data() will delete the variable
+    // Duplicate the grid; ResponseBuilder::send_data() will delete the variable
     // after serializing it.
     Grid *l_grid = dynamic_cast < Grid * >(original_grid->ptr_duplicate());
     if (!l_grid)
