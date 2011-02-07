@@ -420,7 +420,7 @@ public:
 
 	This function is only used on the server side of the
 	client/server connection, and is generally only called from
-	the DODSFilter::send() function. It has no BaseType
+	the ResponseBuilder functions. It has no BaseType
 	implementation; each datatype child class supplies its own
 	implementation.
 
