@@ -33,7 +33,6 @@
 #define _dodsfilter_h
 
 #include <string>
-#include <set>
 
 #ifndef _das_h
 #include "DAS.h"
@@ -47,43 +46,41 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-//#define FILE_METHODS 1
-#undef FILE_METHODS
+#define FILE_METHODS 1
 
 namespace libdap
 {
 
-/**
- Originally, this class was intended to simplify processing command line
- options that were passed to various 'handlers' used by the CGI version
- of our data server. That's long gone. This class is now used to trigger
- building responses using libdap by the BES. Since much of the class was
- originally used to parse command line options, there are many parts that
- are deprecated.
+/** When a DODS server receives a request from a DODS client, the
+    server CGI script dispatches the request to one of several
+    ``filter'' programs.  Each filter is responsible for returning a
+    different aspect of the dataset information: one is for data, one
+    is for the dataset DDS, one is for the dataset DAS, and a fourth
+    is for a usage message describing the server itself.  Some
+    installations may have additional optional filters.
 
- The original use of the code was responsible for three things that are
- now handled by other parts of the Hyrax server: processing ancillary
- metadata (now done using hte NCML module); handling conditional HTTP GET
- requests (now done by the OLFS with some interactions with the BES to get
- information from the file system); and building compressed responses (now
- done by the olfs using a filter). Also note that the 'cache dir' information
- is specific to the HDF4 handler and is handled using a BES parameter (so
- that makes fur things...)
+    The filter program receives a data request from the dispatch
+    script. It receives its operating parameters from the command
+    line, like any UNIX command, and it returns its output to standard
+    output, which the httpd server packages up into a reply to the
+    client.
 
- Now this class is a place where the filename, ce, etc can be processed and
- passed off to the DDS class when a response object is needed.
+    This class contains some common functions for the filter programs
+    used to make up the DODS data servers. The filter programs do not
+    <i>have</i> to be called by a CGI program, but that is the normal
+    mechanism by which they are invoked.
 
- @note most (all?) of the old and unused methods are marked as deprecated.
+    @todo Add a test to make sure that the required arguments are given.
+    @todo We need to rethink the ancillary file/directory stuff. I don't
+    think it's ever been used...
 
- @brief Common functions for Hyrax server modules/handlers.
- @author jhrg 8/26/97 */
+    @brief Common functions for DODS server filter programs.
+    @author jhrg 8/26/97 */
 
 class DODSFilter
 {
 public:
-    friend class DODSFilterTest;
-
-    /** Types of responses DODSFilter knows about. */
+    /** Types of responses DODSFilter know about. */
     enum Response {
         Unknown_Response,
         DAS_Response,
@@ -96,57 +93,49 @@ public:
     };
 
 protected:
-    // Note that just about everything except the dataset name, ce and timeout
-    // are deprecated. I'm adding support for keywords.
+    bool d_comp;  // True if the output should be compressed.
+    bool d_bad_options;  // True if the options (argc,argv) are bad.
+    bool d_conditional_request;
 
-    bool d_comp;  /// @deprecated True if the output should be compressed.
-    bool d_bad_options;  /// @deprecated True if the options (argc,argv) are bad.
-    bool d_conditional_request; /// @deprecated True for a HTTP conditional-get
+    string d_program_name; // Name of the filter program
+    string d_dataset;  // Name of the dataset/database
+    string d_ce;  // Constraint expression
+    string d_cgi_ver;  // Version of CGI script (caller)
+    string d_anc_dir;  // Look here for ancillary files
+    string d_anc_file;  // Use this for ancillary file name
+    string d_cache_dir;  // Use this for cache files
+    string d_url;  // URL minus CE.
 
-    string d_program_name; /// @deprecated Name of the filter program
-    string d_dataset;  /// Name of the dataset/database
-    string d_ce;  /// Constraint expression
-    string d_cgi_ver;  /// @deprecated Version of CGI script (caller)
-    string d_anc_dir;  /// @deprecated Look here for ancillary files
-    string d_anc_file;  /// @deprecated Use this for ancillary file name
-    string d_cache_dir;  /// @deprecated Use this for cache files
-    string d_url;  /// @deprecated URL minus CE.
+    Response d_response; // enum name of the response to generate
+    string d_action;  // string name of the response to generate
 
-    Response d_response; /// @deprecated enum name of the response to generate
-    string d_action;  /// @deprecated string name of the response to generate
+    int d_timeout;  // Server timeout after N seconds
 
-    int d_timeout;  // Response timeout after N seconds
+    time_t d_anc_das_lmt; // Last modified time of the anc. DAS.
+    time_t d_anc_dds_lmt; // Last modified time of the anc. DDS.
+    time_t d_if_modified_since; // Time from a conditional request.
 
-    time_t d_anc_das_lmt; /// @deprecated Last modified time of the anc. DAS.
-    time_t d_anc_dds_lmt; /// @deprecated Last modified time of the anc. DDS.
-    time_t d_if_modified_since; /// @deprecated Time from a conditional request.
-#if 0
-    set<string> d_keywords; /// Holds all of the keywords passed in the CE
-    set<string> d_known_keywords; /// Holds all of the keywords libdap understands.
-#endif
     void initialize();
     void initialize(int argc, char *argv[]);
 
     virtual int process_options(int argc, char *argv[]);
 
 public:
-
     /** Make an empty instance. Use the set_*() methods to load with needed
         values. You must call at least set_dataset_name() or be requesting
-        version information. */
-    DODSFilter() {
+        version information.
+
+        @todo Add methods to provide a way to set all of the parameters
+        this class contains. They can currently only be set using the
+        argc/argv command line parameters. */
+    DODSFilter()
+    {
         initialize();
     }
     DODSFilter(int argc, char *argv[]) throw(Error);
 
     virtual ~DODSFilter();
-#if 0
-    virtual void add_keyword(const string &kw);
-    virtual bool is_keyword(const string &kw) const;
-    virtual list<string> get_keywords() const;
-    // This method holds all of the keywords that this version of libdap groks
-    virtual bool is_known_keyword(const string &w) const;
-#endif
+
     virtual bool is_conditional() const;
 
     virtual string get_cgi_version() const;

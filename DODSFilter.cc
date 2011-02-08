@@ -4,7 +4,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003,2011 OPeNDAP, Inc.
+// Copyright (c) 2002,2003 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -53,7 +53,6 @@ static char rcsid[] not_used =
 
 #include <iostream>
 #include <string>
-#include <set>
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
@@ -84,13 +83,12 @@ static char rcsid[] not_used =
 
 #define CRLF "\r\n"             // Change here, expr-test.cc and DODSFilter.cc
 
-#undef FILE_METHODS
+//#undef FILE_METHODS
 
 using namespace std;
 
 namespace libdap {
 
-/// @deprecated
 const string usage =
     "Usage: <handler name> -o <response> -u <url> [options ...] [data set]\n\
     \n\
@@ -107,8 +105,7 @@ const string usage =
     -t <seconds>: Timeout the handler after <seconds>.\n\
     -h: This message.";
 
-/**
-   Make an instance of DODSFilter using the command line
+/** Create an instance of DODSFilter using the command line
 arguments passed by the CGI (or other) program.  The default
 constructor is private; this and the copy constructor (which is
 just the default copy constructor) are the only way to create an
@@ -170,8 +167,7 @@ request. It is given in seconds since the start of the Unix epoch
 
 </dl>
 
-@brief DODSFilter constructor.
-@deprecated */
+@brief DODSFilter constructor. */
 
 DODSFilter::DODSFilter(int argc, char *argv[]) throw(Error)
 {
@@ -217,16 +213,7 @@ DODSFilter::initialize()
     d_url = "";
     d_program_name = "Unknown";
     d_timeout = 0;
-#if 0
-    // Load known_keywords
-    d_known_keywords.insert("dap2");
-    d_known_keywords.insert("dap2.0");
 
-    d_known_keywords.insert("dap3.2");
-
-    d_known_keywords.insert("dap4");
-    d_known_keywords.insert("dap4.0");
-#endif
 #ifdef WIN32
     //  We want serving from win32 to behave in a manner
     //  similar to the UNIX way - no CR->NL terminated lines
@@ -245,9 +232,7 @@ its constructor. Note that when this method is called, the object is \e
 not fully constructed.
 
 @param argc The argument count
-@param argv The vector of char * argument strings.
-
-@deprecated */
+@param argv The vector of char * argument strings. */
 void
 DODSFilter::initialize(int argc, char *argv[])
 {
@@ -276,9 +261,7 @@ this method so that specializations can change the options easily.
 @param argv The vector of char * argument strings.
 @return The index of the next, unprocessed, argument. This must be the
 identifier passed to the filter program that identifies the data source.
-It's often a file name.
-
-@deprecated */
+It's often a file name. */
 int
 DODSFilter::process_options(int argc, char *argv[])
 {
@@ -316,9 +299,7 @@ DODSFilter::process_options(int argc, char *argv[])
 /** @brief Is this request conditional?
 
 @return True if the request is conditional.
-@see get_request_if_modified_since().
-
-@deprecated */
+@see get_request_if_modified_since(). */
 bool
 DODSFilter::is_conditional() const
 {
@@ -337,9 +318,7 @@ Note that the -v switch that this class understands is deprecated
 since it is usually called by Perl code. It makes more sense to have
 the actual C++ software set the version string.
 
-@param version A version string for this server.
-
-@deprecated */
+@param version A version string for this server. */
 void
 DODSFilter::set_cgi_version(string version)
 {
@@ -350,61 +329,12 @@ DODSFilter::set_cgi_version(string version)
 created. This string is passed to the DODSFilter ctor using the -v
 option.
 
-@return The version string supplied at initialization.
-
-@deprecated */
+@return The version string supplied at initialization. */
 string
 DODSFilter::get_cgi_version() const
 {
     return d_cgi_ver;
 }
-#if 0
-/**
- * Add the keyword to the set of keywords that apply to this request.
- * @param kw The keyword
- */
-void DODSFilter::add_keyword(const string &kw)
-{
-    d_keywords.insert(kw);
-}
-
-/**
- * Lookup a keyword and return true if it has been set for this request,
- * otherwise return false.
- * @param kw Keyword
- * @return true if the keyword is set.
- */
-bool DODSFilter::is_keyword(const string &kw) const
-{
-    return d_keywords.count(kw) != 0;
-    //return d_keywords.find(kw) != d_keywords.end();
-}
-
-/**
- * Get a list of the strings that make up the set of current keywords for
- * this request.
- * @return The list of keywords as a list of string objects.
- */
-list<string> DODSFilter::get_keywords() const
-{
-    list<string> kws;
-    set<string>::const_iterator i;
-    for (i = d_keywords.begin(); i != d_keywords.end(); ++i)
-	kws.push_front(*i);
-    return kws;
-}
-
-/**
- * Is the word one of the known keywords for this version of libdap?
- * @param w
- * @return true if the keyword is known
- */
-bool
-DODSFilter::is_known_keyword(const string &w) const
-{
-    return d_known_keywords.count(w) != 0;
-}
-#endif
 
 /** Return the entire constraint expression in a string.  This
 includes both the projection and selection clauses, but not the
@@ -424,41 +354,6 @@ DODSFilter::set_ce(string _ce)
     d_ce = www2id(_ce, "%", "%20");
 }
 
-#if 0
-void
-DODSFilter::set_ce(string _ce)
-{
-    // Get the whole CE
-    string projection = www2id(_ce, "%", "%20");
-    string selection = "";
-
-    // Separate the selection part (which follows/includes the first '&')
-    string::size_type amp = projection.find('&');
-    if (amp != string::npos) {
-	selection = projection.substr(amp);
-	projection = projection.substr(0, amp);
-    }
-
-    // Extract keywords; add to the DODSFilter keywords. For this, scan for
-    // a known set of keywords and assume that anything else is part of the
-    // projection and should be left alone. Keywords must come before variables
-    // The 'projection' string will look like: '' or 'dap4.0' or 'dap4.0,u,v'
-    while (!projection.empty()) {
-	string::size_type i = projection.find(',');
-	string next_word = projection.substr(0, i);
-	if (is_known_keyword(next_word)) {
-	    add_keyword(next_word);
-	    projection = projection.substr(i+1);
-	}
-	else {
-	    break;	// exit on first non-keyword
-	}
-    }
-
-    // The CE is whatever is left after removing the keywords
-    d_ce = projection + selection;
-}
-#endif
 /** The ``dataset name'' is the filename or other string that the
 filter program will use to access the data. In some cases this
 will indicate a disk file containing the data.  In others, it
@@ -489,9 +384,7 @@ DODSFilter::get_URL() const
 }
 
 /** Set the URL. Set the URL sent to the server.
-@param url The URL, minus the constraint.
-
-@deprecated */
+@param url The URL, minus the constraint. */
 void
 DODSFilter::set_URL(const string &url)
 {
@@ -507,9 +400,7 @@ what you want. By default, this returns an empty string.
 
 @brief Get the version information for the dataset.
 @return A string object that contains the dataset version
-information.
-
-@deprecated */
+information.  */
 string
 DODSFilter::get_dataset_version() const
 {
@@ -521,9 +412,7 @@ DODSFilter::get_dataset_version() const
 
 @param r The name of the object.
 @exception InternalErr Thrown if the response is not one of the valid
-names.
-
-@deprecated */
+names. */
 void DODSFilter::set_response(const string &r)
 {
     if (r == "DAS" || r == "das") {
@@ -554,18 +443,14 @@ void DODSFilter::set_response(const string &r)
 	print_usage();   // Throws Error
 }
 
-/** Get the enum name of the response to be returned.
- *
-@deprecated */
+/** Get the enum name of the response to be returned. */
 DODSFilter::Response
 DODSFilter::get_response() const
 {
     return d_response;
 }
 
-/** Get the string name of the response to be returned.
- *
-@deprecated */
+/** Get the string name of the response to be returned. */
 string DODSFilter::get_action() const
 {
     return d_action;
@@ -590,9 +475,7 @@ string DODSFilter::get_action() const
 
     @return Time of the last modification in seconds since the epoch.
     @see get_das_last_modified_time()
-    @see get_dds_last_modified_time()
-
-@deprecated */
+    @see get_dds_last_modified_time() */
 time_t
 DODSFilter::get_dataset_last_modified_time() const
 {
@@ -607,7 +490,7 @@ DODSFilter::get_dataset_last_modified_time() const
     addition to the CWD).
     @return Time of last modification of the DAS.
     @see get_dataset_last_modified_time()
-    @see get_dds_last_modified_time()   */
+    @see get_dds_last_modified_time() */
 time_t
 DODSFilter::get_das_last_modified_time(const string &anc_location) const
 {
@@ -690,8 +573,7 @@ DODSFilter::get_data_last_modified_time(const string &anc_location) const
     seconds since the Unix epoch (midnight, 1 Jan 1970). If no time was
     given with the request, this methods returns -1.
 
-    @return If-Modified-Since time from a condition GET request.
-@deprecated */
+    @return If-Modified-Since time from a condition GET request. */
 time_t
 DODSFilter::get_request_if_modified_since() const
 {
@@ -703,8 +585,7 @@ DODSFilter::get_request_if_modified_since() const
     current directory.
 
     @brief Get the cache directory.
-    @return A string object that contains the cache file directory.
-@deprecated */
+    @return A string object that contains the cache file directory.  */
 string
 DODSFilter::get_cache_dir() const
 {
@@ -778,9 +659,7 @@ static const char *emessage = "DODS internal server error; usage error. Please r
     sent back to the client program telling them that the server is
     broken.
 
-    @brief Print usage information for a filter program.
-
-@deprecated */
+    @brief Print usage information for a filter program. */
 void
 DODSFilter::print_usage() const
 {
@@ -794,8 +673,7 @@ DODSFilter::print_usage() const
     information from the httpd server, the server dispatch scripts,
     the DODS core software, and (optionally) the dataset.
 
-    @brief Send version information back to the client program.
-@deprecated */
+    @brief Send version information back to the client program. */
 void
 DODSFilter::send_version_info() const
 {
@@ -974,13 +852,8 @@ DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval,
 }
 
 #if FILE_METHODS
-/**
- * @deprecated
- * @param var
- * @param dds
- * @param eval
- * @param out
- */
+// 'lmt' unused. Should it be used to supply a LMT or removed from the
+// method? jhrg 8/9/05
 void
 DODSFilter::functional_constraint(BaseType &var, DDS &dds,
                                   ConstraintEvaluator &eval, FILE *out) const
@@ -1004,13 +877,8 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
 }
 #endif
 
-/**
- * @deprecated
- * @param var
- * @param dds
- * @param eval
- * @param out
- */
+// 'lmt' unused. Should it be used to supply a LMT or removed from the
+// method? jhrg 8/9/05
 void
 DODSFilter::functional_constraint(BaseType &var, DDS &dds,
                                   ConstraintEvaluator &eval, ostream &out) const
@@ -1264,6 +1132,26 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     // Start sending the response...
 
     // Handle *functional* constraint expressions specially
+#if 0
+    if (eval.functional_expression()) {
+        // Get the result and then start sending the headers. This provides a
+        // way to send errors back to the client w/o colliding with the
+        // normal response headers. There's some duplication of code with this
+        // and the else-clause.
+        BaseType *var = eval.eval_function(dds, d_dataset);
+        if (!var)
+            throw Error(unknown_error, "Error calling the CE function.");
+
+       if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
+
+	data_stream << flush ;
+
+        functional_constraint(*var, dds, eval, data_stream);
+        delete var;
+        var = 0;
+    }
+#endif
     if (eval.function_clauses()) {
 	DDS *fdds = eval.eval_function_clauses(dds);
         if (with_mime_headers)
