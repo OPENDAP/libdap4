@@ -91,6 +91,7 @@ void ResponseBuilder::initialize()
     d_known_keywords.insert("dap2.0");
 
     d_known_keywords.insert("dap3.2");
+    d_known_keywords.insert("dap3.3");
 
     d_known_keywords.insert("dap4");
     d_known_keywords.insert("dap4.0");

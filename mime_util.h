@@ -75,11 +75,11 @@ bool is_boundary(const char *line, const string &boundary);
 string cid_to_header_value(const string &cid);
 string read_multipart_boundary(FILE *in, const string &boundary = "");
 void parse_mime_header(const string &header, string &name, string &value);
+string name_path(const string &path);
 
 // All of these are deprecated
 bool do_version(const string &script_ver, const string &dataset_ver);
 void ErrMsgT(const string &Msgt);
-string name_path(const string &path);
 ObjectType get_type(const string &value); // deprecated
 bool remove_mime_header(FILE *in);
 string get_next_mime_header(FILE *in);

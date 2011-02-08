@@ -249,7 +249,6 @@ ErrMsgT(const string &Msgt)
     component of the path.  That is, given <tt>/a/b/c/ralph.nc.das</tt>, it
     returns <tt>ralph.nc</tt>.
 
-    @deprecated
     @brief Returns the filename portion of a pathname.
     @param path A C-style simple string containing a pathname to be
     parsed.
