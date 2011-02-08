@@ -306,7 +306,7 @@ dapVersion=\"3.2\">.*\
 	ConstraintEvaluator ce;
 
 	try {
-	    df->send_ddx(*dds, ce, oss);
+	    df->send_ddx(oss, *dds, ce);
 
 	    DBG(cerr << "DDX: " << oss.str() << endl);
 
@@ -366,7 +366,7 @@ Content-Encoding: binary\r\n\
 	ConstraintEvaluator ce;
 
 	try {
-	    df->send_data_ddx(*dds, ce, oss, "start@opendap.org", "boundary", true);
+	    df->send_data_ddx(oss, *dds, ce, "start@opendap.org", "boundary", true);
 
 	    DBG(cerr << "DataDDX: " << oss.str() << endl);
 
@@ -414,7 +414,7 @@ Content-Encoding: binary\r\n\
 	ConstraintEvaluator ce;
 
 	try {
-	    df->send_data_ddx(*dds, ce, oss, "start@opendap.org", "boundary", false);
+	    df->send_data_ddx(oss, *dds, ce, "start@opendap.org", "boundary", false);
 	    DBG(cerr << "DataDDX: " << oss.str() << endl);
 	    CPPUNIT_ASSERT(re_match_binary(r1, oss.str()));
 

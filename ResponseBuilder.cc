@@ -40,24 +40,24 @@ static char rcsid[] not_used = { "$Id: ResponseBuilder.cc 23477 2010-09-02 21:02
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <set>
-#include <algorithm>
-#include <cstdlib>
-#include <cstring>
+//#include <set>
+//#include <algorithm>
+//#include <cstdlib>
+//#include <cstring>
 
 #include <uuid/uuid.h>	// used to build CID header value for data ddx
-#include <GetOpt.h>
+//#include <GetOpt.h>
 
 #include "DAS.h"
 #include "DDS.h"
 #include "debug.h"
-#include "mime_util.h"
-#include "Ancillary.h"
-#include "util.h"
+#include "mime_util.h"	// for last_modified_time() and rfc_822_date()
+// #include "Ancillary.h"
+//#include "util.h"
 #include "escaping.h"
 #include "ResponseBuilder.h"
 #include "XDRStreamMarshaller.h"
-#include "InternalErr.h"
+// #include "InternalErr.h"
 
 #ifndef WIN32
 #include "SignalHandler.h"
@@ -65,7 +65,7 @@ static char rcsid[] not_used = { "$Id: ResponseBuilder.cc 23477 2010-09-02 21:02
 #include "AlarmHandler.h"
 #endif
 
-#define CRLF "\r\n"             // Change here, expr-test.cc and ResponseBuilder.cc
+#define CRLF "\r\n"             // Change here, expr-test.cc
 using namespace std;
 
 namespace libdap {
@@ -303,7 +303,7 @@ void ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval
     out << flush;
 }
 
-void ResponseBuilder::dataset_constraint(DDS & dds, ConstraintEvaluator & eval, ostream &out, bool ce_eval) const
+void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEvaluator & eval, bool ce_eval) const
 {
     // send constrained DDS
     dds.print_constrained(out);
@@ -326,7 +326,7 @@ void ResponseBuilder::dataset_constraint(DDS & dds, ConstraintEvaluator & eval, 
     }
 }
 
-void ResponseBuilder::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval, ostream &out,
+void ResponseBuilder::dataset_constraint_ddx( ostream &out, DDS & dds, ConstraintEvaluator & eval,
 	const string &boundary, const string &start, bool ce_eval) const
 {
     // Write the MPM headers for the DDX (text/xml) part of the response
@@ -381,7 +381,7 @@ void ResponseBuilder::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & ev
  @param with_mime_headers If true, include the MIME headers in the response.
  Defaults to true.
  @return void */
-void ResponseBuilder::send_data(DDS & dds, ConstraintEvaluator & eval, ostream & data_stream, bool with_mime_headers) const
+void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEvaluator & eval, bool with_mime_headers) const
 {
     // Set up the alarm.
     establish_timeout(data_stream);
@@ -400,14 +400,14 @@ void ResponseBuilder::send_data(DDS & dds, ConstraintEvaluator & eval, ostream &
 	if (with_mime_headers)
 	    set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
-	dataset_constraint(*fdds, eval, data_stream, false);
+	dataset_constraint(data_stream, *fdds, eval, false);
 	delete fdds;
     }
     else {
 	if (with_mime_headers)
 	    set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
-	dataset_constraint(dds, eval, data_stream);
+	dataset_constraint(data_stream, dds, eval);
     }
 
     data_stream << flush;
@@ -423,7 +423,7 @@ void ResponseBuilder::send_data(DDS & dds, ConstraintEvaluator & eval, ostream &
  @param out Destination
  @param with_mime_headers If true, include the MIME headers in the response.
  Defaults to true. */
-void ResponseBuilder::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out, bool with_mime_headers) const
+void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers) const
 {
     // If constrained, parse the constraint. Throws Error or InternalErr.
     if (!d_ce.empty())
@@ -454,7 +454,7 @@ void ResponseBuilder::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out
  @param with_mime_headers If true, include the MIME headers in the response.
  Defaults to true.
  @return void */
-void ResponseBuilder::send_data_ddx(DDS & dds, ConstraintEvaluator & eval, ostream & data_stream, const string &start,
+void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, ConstraintEvaluator & eval, const string &start,
 	const string &boundary, bool with_mime_headers) const
 {
     // Set up the alarm.
@@ -475,14 +475,14 @@ void ResponseBuilder::send_data_ddx(DDS & dds, ConstraintEvaluator & eval, ostre
 	    set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
 	data_stream << flush;
 	// TODO: Change this to dataset_constraint_ddx()
-	dataset_constraint(*fdds, eval, data_stream, false);
+	dataset_constraint(data_stream, *fdds, eval, false);
 	delete fdds;
     }
     else {
 	if (with_mime_headers)
 	    set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
 	data_stream << flush;
-	dataset_constraint_ddx(dds, eval, data_stream, boundary, start);
+	dataset_constraint_ddx(data_stream, dds, eval, boundary, start);
     }
 
     data_stream << flush;

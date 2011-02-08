@@ -61,19 +61,6 @@ class ResponseBuilder
 {
 public:
     friend class ResponseBuilderTest;
-#if 0
-    /** Types of responses ResponseBuilder knows about. */
-    enum Response {
-        Unknown_Response,
-        DAS_Response,
-        DDS_Response,
-        DataDDS_Response,
-        DDX_Response,
-        DataDDX_Response,
-        BLOB_Response,
-        Version_Response
-    };
-#endif
 
 protected:
     string d_dataset;  		/// Name of the dataset/database
@@ -120,21 +107,20 @@ public:
                           bool constrained = false,
                           bool with_mime_headers = true) const;
 
-    virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
-                                    ostream &out, bool ce_eval = true) const;
-    virtual void dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
-                                   ostream &out, const string &boundary,
-                                   const string &start,
+    virtual void dataset_constraint(ostream &out, DDS &dds, ConstraintEvaluator &eval,
+                                    bool ce_eval = true) const;
+    virtual void dataset_constraint_ddx(ostream &out, DDS & dds, ConstraintEvaluator & eval,
+                                   const string &boundary, const string &start,
                                    bool ce_eval = true) const;
 
-    virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
-                           ostream &data_stream,
+    virtual void send_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval,
                            bool with_mime_headers = true) const;
-    virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
+
+    virtual void send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval,
                           bool with_mime_headers = true) const;
-    virtual void send_data_ddx(DDS &dds, ConstraintEvaluator &eval,
-                           ostream &data_stream, const string &start,
-                           const string &boundary,
+
+    virtual void send_data_ddx(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval,
+                           const string &start, const string &boundary,
                            bool with_mime_headers = true) const;
 
     // These functions are used both by the methods above and by other code

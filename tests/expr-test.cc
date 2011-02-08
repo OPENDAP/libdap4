@@ -62,7 +62,10 @@ static char rcsid[] not_used =
 #include "XDRFileUnMarshaller.h"
 #include "XDRStreamUnMarshaller.h"
 #include "XDRStreamMarshaller.h"
+#if 0
 #include "DODSFilter.h"
+#endif
+#include "ResponseBuilder.h"
 #include "Response.h"
 #include "Connect.h"
 #include "Error.h"
@@ -505,17 +508,17 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     // versatility 02/05/07 jhrg
     set_series_values(server, series_values);
 
-    DODSFilter df;
+    ResponseBuilder df;
     df.set_ce(ce);
     df.set_dataset_name(dds_name);
-    df.set_URL("test://test");
-    df.set_response("DataDDS");
+    // df.set_URL("test://test");
+    // df.set_response("DataDDS");
 
     ofstream out("expr-test-data.bin", ios::out|ios::trunc|ios::binary);
 #if 0
     df.send_data(server, eval, out, "", false);
 #endif
-    df.send_data(server, eval, out, "", true);
+    df.send_data(out, server, eval, true);
     //cout << "Server protocol version: " << server.get_dap_major() << "." << server.get_dap_minor() << endl;
     out.close();
 
