@@ -84,6 +84,8 @@ void ResponseBuilder::initialize()
     d_ce = "";
     d_timeout = 0;
 
+    d_default_protocol = DAP_PROTOCOL_VERSION;
+
     // Load known_keywords
     d_known_keywords.insert("dap2");
     d_known_keywords.insert("dap2.0");
@@ -514,7 +516,10 @@ void ResponseBuilder::set_mime_text(ostream &strm, ObjectType type,
     strm << "XDODS-Server: " << DVR << CRLF;
     strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
-    strm << "XDAP: " << protocol << CRLF;
+    if (protocol == "")
+	strm << "XDAP: " << d_default_protocol << CRLF;
+    else
+	strm << "XDAP: " << protocol  << CRLF;
 
     const time_t t = time(0);
     strm << "Date: " << rfc822_date(t).c_str() << CRLF;
@@ -561,7 +566,10 @@ void ResponseBuilder::set_mime_html(ostream &strm, ObjectType type,
     strm << "XDODS-Server: " << DVR << CRLF;
     strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
-    strm << "XDAP: " << protocol << CRLF;
+    if (protocol == "")
+	strm << "XDAP: " << d_default_protocol << CRLF;
+    else
+	strm << "XDAP: " << protocol  << CRLF;
 
     const time_t t = time(0);
     strm << "Date: " << rfc822_date(t).c_str() << CRLF;
@@ -606,7 +614,10 @@ void ResponseBuilder::set_mime_binary(ostream &strm, ObjectType type,
     strm << "XDODS-Server: " << DVR << CRLF;
     strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
-    strm << "XDAP: " << protocol << CRLF;
+    if (protocol == "")
+	strm << "XDAP: " << d_default_protocol << CRLF;
+    else
+	strm << "XDAP: " << protocol  << CRLF;
 
     const time_t t = time(0);
     strm << "Date: " << rfc822_date(t).c_str() << CRLF;
@@ -634,7 +645,10 @@ void ResponseBuilder::set_mime_multipart(ostream &strm, const string &boundary,
     strm << "XDODS-Server: " << DVR << CRLF;
     strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
-    strm << "XDAP: " << protocol << CRLF;
+    if (protocol == "")
+	strm << "XDAP: " << d_default_protocol << CRLF;
+    else
+	strm << "XDAP: " << protocol  << CRLF;
 
     const time_t t = time(0);
     strm << "Date: " << rfc822_date(t).c_str() << CRLF;
@@ -694,7 +708,10 @@ void ResponseBuilder::set_mime_error(ostream &strm, int code, const string &reas
     strm << "XDODS-Server: " << DVR << CRLF;
     strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
-    strm << "XDAP: " << protocol << CRLF;
+    if (protocol == "")
+	strm << "XDAP: " << d_default_protocol << CRLF;
+    else
+	strm << "XDAP: " << protocol  << CRLF;
 
     const time_t t = time(0);
     strm << "Date: " << rfc822_date(t).c_str() << CRLF;

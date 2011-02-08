@@ -41,6 +41,14 @@
 #include "ConstraintEvaluator.h"
 #endif
 
+#ifndef _object_type_h
+#include "ObjectType.h"
+#endif
+
+#ifndef _encodingtype_h
+#include "EncodingType.h"
+#endif
+
 namespace libdap
 {
 
@@ -53,7 +61,7 @@ class ResponseBuilder
 {
 public:
     friend class ResponseBuilderTest;
-
+#if 0
     /** Types of responses ResponseBuilder knows about. */
     enum Response {
         Unknown_Response,
@@ -65,13 +73,16 @@ public:
         BLOB_Response,
         Version_Response
     };
+#endif
 
 protected:
-    string d_dataset;  /// Name of the dataset/database
-    string d_ce;  /// Constraint expression
-    int d_timeout;  // Response timeout after N seconds
+    string d_dataset;  		/// Name of the dataset/database
+    string d_ce;  		/// Constraint expression
+    int d_timeout;  		/// Response timeout after N seconds
+    string d_default_protocol;	/// Version string for the library's default protocol version
 
-    set<string> d_keywords; /// Holds all of the keywords passed in the CE
+    ///@todo Remove the Keywords feature?
+    set<string> d_keywords; 	/// Holds all of the keywords passed in the CE
     set<string> d_known_keywords; /// Holds all of the keywords libdap understands.
 
     void initialize();
@@ -131,23 +142,23 @@ public:
     void set_mime_text(ostream &out, ObjectType type = unknown_type,
                        EncodingType enc = x_plain,
                        const time_t last_modified = 0,
-                       const string &protocol = DAP_PROTOCOL_VERSION) const;
+                       const string &protocol = "") const;
 
     void set_mime_html(ostream &out, ObjectType type = unknown_type,
                        EncodingType enc = x_plain,
                        const time_t last_modified = 0,
-                       const string &protocol = DAP_PROTOCOL_VERSION) const;
+                       const string &protocol = "") const;
 
     void set_mime_binary(ostream &out, ObjectType type = unknown_type,
                          EncodingType enc = x_plain,
                          const time_t last_modified = 0,
-                         const string &protocol = DAP_PROTOCOL_VERSION) const;
+                         const string &protocol = "") const;
 
     void set_mime_multipart(ostream &out, const string &boundary,
     	const string &start, ObjectType type = unknown_type,
             EncodingType enc = x_plain,
             const time_t last_modified = 0,
-            const string &protocol = DAP_PROTOCOL_VERSION) const;
+            const string &protocol = "") const;
 
     void set_mime_ddx_boundary(ostream &out, const string &boundary,
     	const string &start, ObjectType type = unknown_type,
@@ -159,9 +170,9 @@ public:
 
     void set_mime_error(ostream &out, int code = 404,
                         const string &reason = "Dataset not found",
-                        const string &protocol = DAP_PROTOCOL_VERSION) const;
+                        const string &protocol = "") const;
 };
 
 } // namespace libdap
 
-#endif // _dodsfilter_h
+#endif // _response_builder_h
