@@ -49,6 +49,8 @@ static char rcsid[]not_used =
 #include <algorithm>
 
 //#define DODS_DEBUG
+#undef FUNCTION_DAP	// undef so the dap() function always returns an error;
+			// use keywords instead.
 
 #include "BaseType.h"
 #include "Byte.h"
@@ -345,8 +347,9 @@ function_version(int, BaseType *[], DDS &, BaseType **btpp)
 }
 
 void
-function_dap(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &)
+function_dap(int, BaseType *[], DDS &, ConstraintEvaluator &)
 {
+#ifdef FUNCTION_DAP
     if (argc != 1) {
 	throw Error("The 'dap' function must be called with a version number.\n\
 	see http://docs.opendap.org/index.php/Server_Side_Processing_Functions#dap");
@@ -354,6 +357,10 @@ function_dap(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &)
 
     double pv = extract_double_value(argv[0]);
     dds.set_dap_version(pv);
+#else
+    throw Error("The 'dap' function is not supported in lieu of Constraint expression 'keywords.'\n\
+see http://docs.opendap.org/index.php/Server_Side_Processing_Functions#keywords");
+#endif
 }
 
 static void parse_gse_expression(gse_arg * arg, BaseType * expr)

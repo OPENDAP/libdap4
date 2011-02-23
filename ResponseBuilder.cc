@@ -40,24 +40,16 @@ static char rcsid[] not_used = { "$Id: ResponseBuilder.cc 23477 2010-09-02 21:02
 #include <iostream>
 #include <string>
 #include <sstream>
-//#include <set>
-//#include <algorithm>
-//#include <cstdlib>
-//#include <cstring>
 
 #include <uuid/uuid.h>	// used to build CID header value for data ddx
-//#include <GetOpt.h>
 
 #include "DAS.h"
 #include "DDS.h"
 #include "debug.h"
 #include "mime_util.h"	// for last_modified_time() and rfc_822_date()
-// #include "Ancillary.h"
-//#include "util.h"
 #include "escaping.h"
 #include "ResponseBuilder.h"
 #include "XDRStreamMarshaller.h"
-// #include "InternalErr.h"
 
 #ifndef WIN32
 #include "SignalHandler.h"
@@ -85,7 +77,7 @@ void ResponseBuilder::initialize()
     d_timeout = 0;
 
     d_default_protocol = DAP_PROTOCOL_VERSION;
-
+#if 0 	// Keyword support moved to Keywords class
     // Load known_keywords
     d_known_keywords.insert("dap2");
     d_known_keywords.insert("dap2.0");
@@ -95,7 +87,7 @@ void ResponseBuilder::initialize()
 
     d_known_keywords.insert("dap4");
     d_known_keywords.insert("dap4.0");
-
+#endif
 #ifdef WIN32
     //  We want serving from win32 to behave in a manner
     //  similar to the UNIX way - no CR->NL terminated lines
@@ -103,6 +95,8 @@ void ResponseBuilder::initialize()
     _setmode(_fileno(stdout), _O_BINARY);
 #endif
 }
+
+#if 0
 /**
  * Add the keyword to the set of keywords that apply to this request.
  * @param kw The keyword
@@ -121,7 +115,6 @@ void ResponseBuilder::add_keyword(const string &kw)
 bool ResponseBuilder::is_keyword(const string &kw) const
 {
     return d_keywords.count(kw) != 0;
-    //return d_keywords.find(kw) != d_keywords.end();
 }
 
 /**
@@ -158,9 +151,12 @@ string ResponseBuilder::get_ce() const
 {
     return d_ce;
 }
+#endif
 
 void ResponseBuilder::set_ce(string _ce)
 {
+    string d_ce = www2id(_ce, "%", "%20");
+#if 0
     // Get the whole CE
     string projection = www2id(_ce, "%", "%20");
     string selection = "";
@@ -190,6 +186,7 @@ void ResponseBuilder::set_ce(string _ce)
 
     // The CE is whatever is left after removing the keywords
     d_ce = projection + selection;
+#endif
 }
 
 /** The ``dataset name'' is the filename or other string that the

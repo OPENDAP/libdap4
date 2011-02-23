@@ -68,10 +68,10 @@ protected:
     int d_timeout;  		/// Response timeout after N seconds
     string d_default_protocol;	/// Version string for the library's default protocol version
 
-    ///@todo Remove the Keywords feature?
+#if 0	// Keyword support moved to Keywords class
     set<string> d_keywords; 	/// Holds all of the keywords passed in the CE
     set<string> d_known_keywords; /// Holds all of the keywords libdap understands.
-
+#endif
     void initialize();
 
 public:
@@ -82,13 +82,15 @@ public:
     ResponseBuilder() {
         initialize();
     }
-    virtual ~ResponseBuilder();
 
+    virtual ~ResponseBuilder();
+#if 0
     virtual void add_keyword(const string &kw);
     virtual bool is_keyword(const string &kw) const;
     virtual list<string> get_keywords() const;
     // This method holds all of the keywords that this version of libdap groks
     virtual bool is_known_keyword(const string &w) const;
+#endif
 
     virtual string get_ce() const;
     virtual void set_ce(string _ce);

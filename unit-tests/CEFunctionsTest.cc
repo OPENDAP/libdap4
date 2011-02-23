@@ -139,11 +139,12 @@ public:
     CPPUNIT_TEST(linear_scale_grid_attributes_test);
     CPPUNIT_TEST(linear_scale_grid_attributes_test2);
     CPPUNIT_TEST(linear_scale_scalar_test);
-
+#if 0
+    // Not used and defined to throw by default. 2/23/11 jhrg
     CPPUNIT_TEST(function_dap_1_test);
     CPPUNIT_TEST(function_dap_2_test);
     CPPUNIT_TEST(function_dap_3_test);
-
+#endif
     CPPUNIT_TEST_SUITE_END();
 
     void no_arguments_test()
