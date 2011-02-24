@@ -87,7 +87,7 @@ class HTTPConnectTest: public TestFixture {
     }
 
     void setUp() {
-        putenv("DODS_CONF=cache-testsuite/dodsrc");
+        putenv((char*)"DODS_CONF=cache-testsuite/dodsrc");
         http = new HTTPConnect(RCReader::instance());
 
         localhost_url = "http://test.opendap.org/test-304.html";
@@ -437,7 +437,7 @@ dods_test." << endl;
         RCReader::delete_instance();
         // this dodsrc directs all access through a proxy server. The
         // localhost must be configured as such.
-        putenv("DODS_CONF=cache-testsuite/dodsrc_proxy");
+        putenv((char*)"DODS_CONF=cache-testsuite/dodsrc_proxy");
         try {
             RCReader::initialize_instance();    // work-around pthreads for tests
             http = new HTTPConnect(RCReader::instance());
