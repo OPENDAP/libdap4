@@ -66,6 +66,7 @@ check-local:
 	@echo "check target in unit-tests directory                     *"
 	@echo "**********************************************************"
 	@echo ""
+	
 endif
 
 RegexTest_SOURCES = RegexTest.cc

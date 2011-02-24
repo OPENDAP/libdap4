@@ -140,6 +140,7 @@ bool ResponseBuilder::is_known_keyword(const string &w) const
 {
     return d_known_keywords.count(w) != 0;
 }
+#endif
 
 /** Return the entire constraint expression in a string.  This
  includes both the projection and selection clauses, but not the
@@ -151,11 +152,11 @@ string ResponseBuilder::get_ce() const
 {
     return d_ce;
 }
-#endif
 
 void ResponseBuilder::set_ce(string _ce)
 {
-    string d_ce = www2id(_ce, "%", "%20");
+    d_ce = www2id(_ce, "%", "%20");
+
 #if 0
     // Get the whole CE
     string projection = www2id(_ce, "%", "%20");

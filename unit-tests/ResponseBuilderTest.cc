@@ -174,7 +174,7 @@ public:
 	DBG(cerr << "r.match(s): " << pos << endl);
 	return pos > 0;
     }
-
+#if 0
     void add_keyword_test()
     {
 	ResponseBuilder tdf;
@@ -213,7 +213,7 @@ public:
 	CPPUNIT_ASSERT(oss.str().find("dap2.0") != string::npos);
 	CPPUNIT_ASSERT(oss.str().find("dap4.0") != string::npos);
     }
-
+#endif
     void send_das_test()
     {
 	Regex
@@ -463,11 +463,11 @@ Content-Encoding: binary\r\n\
     }
 
 CPPUNIT_TEST_SUITE( ResponseBuilderTest );
-
+#if 0
 	CPPUNIT_TEST(add_keyword_test);
 	CPPUNIT_TEST(is_keyword_test);
 	CPPUNIT_TEST(get_keywords);
-
+#endif
 	CPPUNIT_TEST(send_das_test);
 	CPPUNIT_TEST(send_dds_test);
 

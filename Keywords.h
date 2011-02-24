@@ -25,6 +25,12 @@
 #ifndef KEYWORDS_H_
 #define KEYWORDS_H_
 
+#include <string>
+#include <set>
+#include <list>
+
+using namespace std;
+
 namespace libdap {
 
 /**
@@ -34,6 +40,7 @@ namespace libdap {
  * can then be used by the ConstraintExpression class.
  */
 class Keywords {
+private:
     set<string> d_keywords; 	/// Holds all of the keywords passed in the CE
     set<string> d_known_keywords; /// Holds all of the keywords libdap understands.
 

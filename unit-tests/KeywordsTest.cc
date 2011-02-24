@@ -40,6 +40,8 @@
 #include "DDS.h"
 #include "DAS.h"
 #include "ce_functions.h"
+#include "Keywords.h"
+
 #include <test_config.h>
 
 #include "../tests/TestTypeFactory.h"
@@ -73,7 +75,7 @@ public:
 
     void setUp()
     {
-	k = new Keyword();
+	k = new Keywords();
     }
 
     void tearDown()
@@ -85,8 +87,9 @@ public:
 
     CPPUNIT_TEST(no_keywords_test);
     CPPUNIT_TEST(one_keyword_test_1);
-    CPPUNIT_TEST(one_keyword_test_1);
-    CPPUNIT_TEST(two_keyword_test);
+    CPPUNIT_TEST(one_keyword_test_2);
+    CPPUNIT_TEST(two_keyword_test_1);
+    CPPUNIT_TEST(two_keyword_test_2);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -94,14 +97,14 @@ public:
     {
 	string ce = k->parse_keywords("");
 	CPPUNIT_ASSERT(ce == "");
-	CPPUNIT_ASSERT(k->get_keywords()->count() == 0);
+	CPPUNIT_ASSERT(k->get_keywords().size() == 0);
     }
 
     void one_keyword_test_1()
     {
 	string ce = k->parse_keywords("dap2");
 	CPPUNIT_ASSERT(ce == "");
-	CPPUNIT_ASSERT(k->get_keywords()->count() == 1);
+	CPPUNIT_ASSERT(k->get_keywords().size() == 1);
 	CPPUNIT_ASSERT(k->is_known_keyword("dap2"));
     }
 
@@ -109,13 +112,26 @@ public:
     {
 	string ce = k->parse_keywords("dap2,u,v&v<7");
 	CPPUNIT_ASSERT(ce == "u,v&v<7");
-	CPPUNIT_ASSERT(k->get_keywords()->count() == 1);
+	CPPUNIT_ASSERT(k->get_keywords().size() == 1);
 	CPPUNIT_ASSERT(k->is_known_keyword("dap2"));
     }
 
-    void two_keyword_test()
+    void two_keyword_test_1()
     {
+	string ce = k->parse_keywords("dap2,dap3.2");
+	CPPUNIT_ASSERT(ce == "");
+	CPPUNIT_ASSERT(k->get_keywords().size() == 2);
+	CPPUNIT_ASSERT(k->is_known_keyword("dap2"));
+	CPPUNIT_ASSERT(k->is_known_keyword("dap3.2"));
+    }
 
+    void two_keyword_test_2()
+    {
+	string ce = k->parse_keywords("dap2,dap3.2,u,v&v<7");
+	CPPUNIT_ASSERT(ce == "u,v&v<7");
+	CPPUNIT_ASSERT(k->get_keywords().size() == 2);
+	CPPUNIT_ASSERT(k->is_known_keyword("dap2"));
+	CPPUNIT_ASSERT(k->is_known_keyword("dap3.2"));
     }
 };
 

@@ -21,8 +21,16 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
+#include "config.h"
+
+static char rcsid[] not_used = { "$Id: ResponseBuilder.cc 23477 2010-09-02 21:02:59Z jimg $" };
+
+#include <iostream>
 
 #include "Keywords.h"
+#include "escaping.h"
+
+using namespace std;
 
 namespace libdap {
 
@@ -31,7 +39,7 @@ Keywords::Keywords()
     m_init();
 }
 
-Keywords::m_init()
+void Keywords::m_init()
 {
     // Load known_keywords
     d_known_keywords.insert("dap2");
@@ -93,17 +101,6 @@ bool Keywords::is_known_keyword(const string &w) const
     return d_known_keywords.count(w) != 0;
 }
 
-/** Return the entire constraint expression in a string.  This
- includes both the projection and selection clauses, but not the
- question mark.
-
- @brief Get the constraint expression.
- @return A string object that contains the constraint expression. */
-string Keywords::get_ce() const
-{
-    return d_ce;
-}
-
 /** Parse the constraint expression, removing all keywords. As a side effect,
  * return the remaining CE.
  * @param ce
@@ -131,7 +128,10 @@ string Keywords::parse_keywords(const string &ce)
 	string next_word = projection.substr(0, i);
 	if (is_known_keyword(next_word)) {
 	    add_keyword(next_word);
-	    projection = projection.substr(i + 1);
+	    if (i != string::npos)
+		projection = projection.substr(i + 1);
+	    else
+		projection = "";
 	}
 	else {
 	    break; // exit on first non-keyword
