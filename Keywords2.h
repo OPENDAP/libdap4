@@ -53,47 +53,37 @@ public:
     // convenience types
     typedef string keyword;
     typedef string keyword_value;
-    typedef pair<keyword_kind, keyword_value> kind_value_t;
     typedef pair<keyword, keyword_value> keyword_value_t;
 
 private:
-    // Note that the known keywords are indexed by keyword while the parsed
-    // keywords are indexed b keyword_kind. And we can have only one instance
-    // of each index - so there can be only one keyword,keyword_value pair
-    // for Keywords::dap_protocol, e.g.
+    /// Holds the keywords and value of the keywords passed in the CE
+    map<keyword, keyword_value> d_parsed_keywords;
 
-    /// Holds the keyword_kind and value of the keywords passed in the CE
-    map<keyword_kind, pair<string, string> > d_parsed_keywords;
-
-    /// Holds all of the keywords and their keyword_kind and value
-    map<string, pair<keyword_kind, string> > d_known_keywords;
+    /// Holds all of the keywords
+    set<keyword> d_known_keywords;
 
     void m_init();
     // Not needed w/o pointers Keyword &clone(const Keyword &rhs);
-    void m_insert_tuple(const string &k, keyword_kind kind, const string &v);
+    void m_insert(const keyword &k);
+    bool m_is_known_keyword(const string &kw, string &word, string &value) const;
 
 public:
     Keywords();
     virtual ~Keywords();
 
     virtual string parse_keywords(const string &ce);
-    virtual void add_keyword(const string &kw);
+    virtual void add_keyword(const string &s);
 
     // Is this keyword in the dictionary?
-    virtual bool is_known_keyword(const string &w) const;
+    virtual bool is_known_keyword(const string &s) const;
 
     // Get a list of all of the keywords parsed
-    virtual list<string> get_keywords() const;
+    virtual list<keyword> get_keywords() const;
     // Has a keyword of a particular kind been parsed
-    virtual bool has_keyword_kind(const keyword_kind &kind) const;
+    virtual bool has_keyword(const keyword &kw) const;
 
     // Get the parsed keyword (and it's dictionary value) of a particular kind
-    virtual string get_kind_value(const keyword_kind &kind) const;
-    virtual string get_kind_keyword(const keyword_kind &kind) const;
-
-    // Look in the dictionary and get the value and kind for a particular keyword
-    virtual string get_keyword_value(const keyword &k) const;
-    virtual keyword_kind get_keyword_kind(const keyword &k) const;
+    virtual keyword_value get_keyword_value(const keyword &kw) const;
 };
 
 }

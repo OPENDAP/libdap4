@@ -43,73 +43,81 @@ Keywords::Keywords()
 void Keywords::m_init()
 {
     // Load known_keywords
-    m_insert_tuple("dap2", dap_version, "2.0");
-    m_insert_tuple("dap2.0", dap_version, "2.0");
-
-    m_insert_tuple("dap3.2", dap_version, "3.2");
-    m_insert_tuple("dap3.3", dap_version, "3.3");
-
-    m_insert_tuple("dap4", dap_version, "4.0");
-    m_insert_tuple("dap4.0", dap_version, "4.0");
+    m_insert("dap");
 }
 
-void Keywords::m_parse_keyword()
+/** Static function to parse the curly-brace keyword notation.
+ * @param kw the keyword
+ * @param word (result) the word
+ * @param value (result) the value
+ */
+static void f_parse_keyword(const string &kw, string &word, string &value)
+{
+	word = "";
+	value = "";
+	string::size_type i = kw.find('{');
+	if (i == string::npos)
+		return;
+	word = kw.substr(0, i);
+	string::size_type j = kw.find('}');
+	if (j == string::npos)
+		return;
+	value = kw.substr(i + 1, j);
+}
+
 Keywords::~Keywords()
 {
 }
 
-void Keywords::m_insert_tuple(const keyword &k, keyword_kind kind, const keyword_value &v)
+void Keywords::m_insert(const keyword &k)
 {
-    kind_value_t kind_value = kind_value_t(kind,v);
-    d_known_keywords.insert(pair<keyword,  kind_value_t >(k, kind_value));
+    d_known_keywords.insert(k);
 }
 
 /**
  * Add the keyword to the set of keywords that apply to this request.
- * @param kw The keyword
+ * @param s The keyword, as a string, including its value.
  */
-void Keywords::add_keyword(const string &kw)
+void Keywords::add_keyword(const string &s)
 {
-    if (!is_known_keyword(kw))
-	throw Error("Keyword not known (" + kw + ")");
+	string word, value;
+    if (!m_is_known_keyword(s, word, value))
+    	throw Error("Keyword not known (" + s + ")");
 
-    kind_value_t kind_value = d_known_keywords.at(kw);
-    keyword_value_t keyword_value = keyword_value_t (kw,kind_value.second);
-
-    d_parsed_keywords[kind_value.first] = keyword_value;
+    d_parsed_keywords[word] = value;
 }
 
 /**
  * Is the word one of the known keywords for this version of libdap?
- * @param w
+ * @param s As a string, including the value
  * @return true if the keyword is known
  */
-bool Keywords::is_known_keyword(const string &kw) const {
-	// if the keyword is of the form word{value} and if word is a known
-	// keyword, then return true.
-	string::size_type i = kw.find('{');
-	if (i == string::npos)
-		return false;
-	string word = kw.substr(0, i);
-	string::size_type j = kw.find('}');
-	if (j == string::npos)
-		return false;
-	string value = kw.substr(i + 1, j);
+bool Keywords::is_known_keyword(const string &s) const
+{
+	string word, value; // not used here
+	return m_is_known_keyword(s, word, value);
 
 	return (d_known_keywords.count(word) != 0 && !value.empty());
 }
 
+// private version, parses word and value as a side effect
+bool Keywords::m_is_known_keyword(const string &kw, string &word, string &value) const
+{
+	f_parse_keyword(kw, word, value);
+
+	return (d_known_keywords.count(word) != 0 && !value.empty());
+}
 /**
  * Get a list of the strings that make up the set of current keywords for
  * this request.
  * @return The list of keywords as a list of string objects.
  */
-list<string> Keywords::get_keywords() const
+list<keywords> Keywords::get_keywords() const
 {
     list<string> kws;
-    map<keyword_kind, pair<string, string> >::const_iterator i;
+    map<keyword, keyword_value>::const_iterator i;
     for (i = d_parsed_keywords.begin(); i != d_parsed_keywords.end(); ++i)
-	kws.push_front((*i).second.first);
+    	kws.push_front((*i).first);
 
     return kws;
 }
@@ -121,34 +129,9 @@ list<string> Keywords::get_keywords() const
  * @param kw Keyword
  * @return true if the keyword is set.
  */
-bool Keywords::has_keyword_kind(const keyword_kind &kind) const
+bool Keywords::has_keyword(const keyword &kw) const
 {
     return d_parsed_keywords.count(kind) != 0;
-}
-
-/** Look up the value for a keyword_kind that has been parsed.
- *
- * @param kind
- * @return The value
- */
-string Keywords::get_kind_value(const keyword_kind &kind) const
-{
-    if (d_parsed_keywords.count(kind) == 0)
-	return "";
-    else
-	return d_parsed_keywords.at(kind).second;
-}
-
-/** Look up the keyword (parsed) associated with a given keyword_kind.
- * @param kind
- * @return The keyword
- */
-string Keywords::get_kind_keyword(const keyword_kind &kind) const
-{
-    if (d_parsed_keywords.count(kind) == 0)
-	return "";
-    else
-	return d_parsed_keywords.at(kind).first;
 }
 
 /** Look in the dictionary for the value associated with a given keyword.
@@ -156,25 +139,12 @@ string Keywords::get_kind_keyword(const keyword_kind &kind) const
  * @param k
  * @return The value
  */
-string Keywords::get_keyword_value(const keyword &kw) const
+keyword_value Keywords::get_keyword_value(const keyword &kw) const
 {
-    if (!is_known_keyword(kw))
-	throw Error("Keyword not known (" + kw + ")");
+    if (d_known_keywords.count(kw) != 1)
+    	throw Error("Keyword not known (" + kw + ")");
 
     return d_known_keywords.at(kw).second;
-}
-
-/** Look in the dictionary for the keyword_kind assoicated with a given
- * keyword.
- * @param k
- * @return The keyword_kind
- */
-Keywords::keyword_kind Keywords::get_keyword_kind(const keyword &kw) const
-{
-    if (!is_known_keyword(kw))
-	throw Error("Keyword not known (" + kw + ")");
-
-    return d_known_keywords.at(kw).first;
 }
 
 /** Parse the constraint expression, removing all keywords. As a side effect,
