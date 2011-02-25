@@ -28,6 +28,7 @@ static char rcsid[] not_used = { "$Id: ResponseBuilder.cc 23477 2010-09-02 21:02
 #include <iostream>
 
 #include "Keywords.h"
+#include "Error.h"
 #include "escaping.h"
 
 using namespace std;
@@ -42,19 +43,35 @@ Keywords::Keywords()
 void Keywords::m_init()
 {
     // Load known_keywords
-    d_known_keywords.insert("dap2");
-    d_known_keywords.insert("dap2.0");
+    m_insert_tuple("dap2", dap_version, "2.0");
+    m_insert_tuple("dap2.0", dap_version, "2.0");
 
-    d_known_keywords.insert("dap3.2");
-    d_known_keywords.insert("dap3.3");
+    m_insert_tuple("dap3.2", dap_version, "3.2");
+    m_insert_tuple("dap3.3", dap_version, "3.3");
 
-    d_known_keywords.insert("dap4");
-    d_known_keywords.insert("dap4.0");
+    m_insert_tuple("dap4", dap_version, "4.0");
+    m_insert_tuple("dap4.0", dap_version, "4.0");
+
+#if 0
+    d_known_keywords.insert(pair<string,double>(,2.0));
+    d_known_keywords.insert(pair<string,double>("dap2.0",2.0));
+
+    d_known_keywords.insert(pair<string,double>("dap3.2",3.2));
+    d_known_keywords.insert(pair<string,double>("dap3.3",3.3));
+
+    d_known_keywords.insert(pair<string,double>("dap4",4.0));
+    d_known_keywords.insert(pair<string,double>("dap4.0",4.0));
+#endif
 }
 
 Keywords::~Keywords()
 {
-    // TODO Auto-generated destructor stub
+}
+
+void Keywords::m_insert_tuple(const keyword &k, keyword_kind kind, const keyword_value &v)
+{
+    kind_value_t kind_value = kind_value_t(kind,v);
+    d_known_keywords.insert(pair<keyword,  kind_value_t >(k, kind_value));
 }
 
 /**
@@ -63,18 +80,23 @@ Keywords::~Keywords()
  */
 void Keywords::add_keyword(const string &kw)
 {
-    d_keywords.insert(kw);
+    if (!is_known_keyword(kw))
+	throw Error("Keyword not known (" + kw + ")");
+
+    kind_value_t kind_value = d_known_keywords.at(kw);
+    keyword_value_t keyword_value = keyword_value_t (kw,kind_value.second);
+
+    d_parsed_keywords[kind_value.first] = keyword_value;
 }
 
 /**
- * Lookup a keyword and return true if it has been set for this request,
- * otherwise return false.
- * @param kw Keyword
- * @return true if the keyword is set.
+ * Is the word one of the known keywords for this version of libdap?
+ * @param w
+ * @return true if the keyword is known
  */
-bool Keywords::is_keyword(const string &kw) const
+bool Keywords::is_known_keyword(const string &kw) const
 {
-    return d_keywords.count(kw) != 0;
+    return d_known_keywords.count(kw) != 0;
 }
 
 /**
@@ -85,20 +107,74 @@ bool Keywords::is_keyword(const string &kw) const
 list<string> Keywords::get_keywords() const
 {
     list<string> kws;
-    set<string>::const_iterator i;
-    for (i = d_keywords.begin(); i != d_keywords.end(); ++i)
-	kws.push_front(*i);
+    map<keyword_kind, pair<string, string> >::const_iterator i;
+    for (i = d_parsed_keywords.begin(); i != d_parsed_keywords.end(); ++i)
+	kws.push_front((*i).second.first);
+
     return kws;
 }
 
+
 /**
- * Is the word one of the known keywords for this version of libdap?
- * @param w
- * @return true if the keyword is known
+ * Lookup a keyword_kind and return true if it has been set for this request,
+ * otherwise return false.
+ * @param kw Keyword
+ * @return true if the keyword is set.
  */
-bool Keywords::is_known_keyword(const string &w) const
+bool Keywords::has_keyword_kind(const keyword_kind &kind) const
 {
-    return d_known_keywords.count(w) != 0;
+    return d_parsed_keywords.count(kind) != 0;
+}
+
+/** Look up the value for a keyword_kind that has been parsed.
+ *
+ * @param kind
+ * @return The value
+ */
+string Keywords::get_kind_value(const keyword_kind &kind) const
+{
+    if (d_parsed_keywords.count(kind) == 0)
+	return "";
+    else
+	return d_parsed_keywords.at(kind).second;
+}
+
+/** Look up the keyword (parsed) associated with a given keyword_kind.
+ * @param kind
+ * @return The keyword
+ */
+string Keywords::get_kind_keyword(const keyword_kind &kind) const
+{
+    if (d_parsed_keywords.count(kind) == 0)
+	return "";
+    else
+	return d_parsed_keywords.at(kind).first;
+}
+
+/** Look in the dictionary for the value associated with a given keyword.
+ *
+ * @param k
+ * @return The value
+ */
+string Keywords::get_keyword_value(const keyword &kw) const
+{
+    if (!is_known_keyword(kw))
+	throw Error("Keyword not known (" + kw + ")");
+
+    return d_known_keywords.at(kw).second;
+}
+
+/** Look in the dictionary for the keyword_kind assoicated with a given
+ * keyword.
+ * @param k
+ * @return The keyword_kind
+ */
+Keywords::keyword_kind Keywords::get_keyword_kind(const keyword &kw) const
+{
+    if (!is_known_keyword(kw))
+	throw Error("Keyword not known (" + kw + ")");
+
+    return d_known_keywords.at(kw).first;
 }
 
 /** Parse the constraint expression, removing all keywords. As a side effect,

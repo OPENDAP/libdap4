@@ -85,42 +85,65 @@ public:
 
     CPPUNIT_TEST_SUITE( KeywordsTest );
 
-    CPPUNIT_TEST(no_keywords_test);
+    CPPUNIT_TEST(no_keywords_test_1);
+    CPPUNIT_TEST(no_keywords_test_2);
+
     CPPUNIT_TEST(one_keyword_test_1);
     CPPUNIT_TEST(one_keyword_test_2);
+
     CPPUNIT_TEST(two_keyword_test_1);
     CPPUNIT_TEST(two_keyword_test_2);
 
+    CPPUNIT_TEST(bad_keyword_test_1);
+
     CPPUNIT_TEST_SUITE_END();
 
-    void no_keywords_test()
+    void no_keywords_test_1()
     {
 	string ce = k->parse_keywords("");
+	CPPUNIT_ASSERT(!k->has_keyword_kind(Keywords::dap_version));
 	CPPUNIT_ASSERT(ce == "");
+	CPPUNIT_ASSERT(k->get_keywords().size() == 0);
+    }
+
+    void no_keywords_test_2()
+    {
+	string ce = k->parse_keywords("u,v");
+	CPPUNIT_ASSERT(!k->has_keyword_kind(Keywords::dap_version));
+	CPPUNIT_ASSERT(ce == "u,v");
 	CPPUNIT_ASSERT(k->get_keywords().size() == 0);
     }
 
     void one_keyword_test_1()
     {
+	CPPUNIT_ASSERT(k->is_known_keyword("dap2"));
 	string ce = k->parse_keywords("dap2");
 	CPPUNIT_ASSERT(ce == "");
+	CPPUNIT_ASSERT(k->has_keyword_kind(Keywords::dap_version));
+	CPPUNIT_ASSERT(k->get_kind_keyword(Keywords::dap_version) == "dap2");
+	CPPUNIT_ASSERT(k->get_kind_value(Keywords::dap_version) == "2.0");
 	CPPUNIT_ASSERT(k->get_keywords().size() == 1);
-	CPPUNIT_ASSERT(k->is_known_keyword("dap2"));
     }
 
     void one_keyword_test_2()
     {
 	string ce = k->parse_keywords("dap2,u,v&v<7");
 	CPPUNIT_ASSERT(ce == "u,v&v<7");
+	CPPUNIT_ASSERT(k->has_keyword_kind(Keywords::dap_version));
 	CPPUNIT_ASSERT(k->get_keywords().size() == 1);
-	CPPUNIT_ASSERT(k->is_known_keyword("dap2"));
+	CPPUNIT_ASSERT(k->get_kind_keyword(Keywords::dap_version) == "dap2");
+	CPPUNIT_ASSERT(k->get_kind_value(Keywords::dap_version) == "2.0");
     }
 
     void two_keyword_test_1()
     {
 	string ce = k->parse_keywords("dap2,dap3.2");
 	CPPUNIT_ASSERT(ce == "");
-	CPPUNIT_ASSERT(k->get_keywords().size() == 2);
+	CPPUNIT_ASSERT(k->has_keyword_kind(Keywords::dap_version));
+	CPPUNIT_ASSERT(k->get_keywords().size() == 1);
+	CPPUNIT_ASSERT(k->get_kind_keyword(Keywords::dap_version) == "dap3.2");
+	CPPUNIT_ASSERT(k->get_kind_value(Keywords::dap_version) == "3.2");
+
 	CPPUNIT_ASSERT(k->is_known_keyword("dap2"));
 	CPPUNIT_ASSERT(k->is_known_keyword("dap3.2"));
     }
@@ -129,9 +152,24 @@ public:
     {
 	string ce = k->parse_keywords("dap2,dap3.2,u,v&v<7");
 	CPPUNIT_ASSERT(ce == "u,v&v<7");
-	CPPUNIT_ASSERT(k->get_keywords().size() == 2);
-	CPPUNIT_ASSERT(k->is_known_keyword("dap2"));
-	CPPUNIT_ASSERT(k->is_known_keyword("dap3.2"));
+	CPPUNIT_ASSERT(k->has_keyword_kind(Keywords::dap_version));
+	CPPUNIT_ASSERT(k->get_kind_keyword(Keywords::dap_version) == "dap3.2");
+	CPPUNIT_ASSERT(k->get_kind_value(Keywords::dap_version) == "3.2");
+	CPPUNIT_ASSERT(k->get_keywords().size() == 1);
+    }
+
+    void bad_keyword_test_1()
+    {
+	try {
+	    string ce = k->parse_keywords("dap7");
+	    // Even though this is pretty obviously wrong, we soldier on because
+	    // The keyword processing code has no way of knowing what will be
+	    // valid variable names.
+	    CPPUNIT_ASSERT(ce == "dap7");
+	}
+	catch (Error &e) {
+	    CPPUNIT_FAIL("Should not get here");
+	}
     }
 };
 
