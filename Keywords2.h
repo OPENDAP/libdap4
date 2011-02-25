@@ -49,14 +49,14 @@ public:
     // convenience types
     typedef string keyword;
     typedef string keyword_value;
-    typedef pair<keyword, keyword_value> keyword_value_t;
+    typedef set<keyword_value> value_set_t;
 
 private:
     /// Holds the keywords and value of the keywords passed in the CE
     map<keyword, keyword_value> d_parsed_keywords;
 
     /// Holds all of the keywords
-    set<keyword> d_known_keywords;
+    map<keyword, value_set_t> d_known_keywords;
 
     virtual void m_add_keyword(const keyword &word, const keyword_value &value);
     virtual bool m_is_valid_keyword(const keyword &word, const keyword_value &value) const;

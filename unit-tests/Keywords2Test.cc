@@ -87,6 +87,9 @@ public:
     CPPUNIT_TEST(two_keyword_test_2);
 
     CPPUNIT_TEST(bad_keyword_test_1);
+    CPPUNIT_TEST(bad_keyword_test_2);
+    CPPUNIT_TEST(bad_keyword_test_3);
+    CPPUNIT_TEST(bad_keyword_test_4);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -157,6 +160,45 @@ public:
 	}
 	catch (Error &e) {
 	    CPPUNIT_FAIL("Should not get here");
+	}
+    }
+    void bad_keyword_test_2()
+    {
+	try {
+	    string ce = k->parse_keywords("dap(7");
+	    // Even though this is pretty obviously wrong, we soldier on because
+	    // The keyword processing code has no way of knowing what will be
+	    // valid variable names.
+	    CPPUNIT_ASSERT(ce == "dap(7");
+	}
+	catch (Error &e) {
+	    CPPUNIT_FAIL("Should not get here");
+	}
+    }
+    void bad_keyword_test_3()
+    {
+	try {
+	    string ce = k->parse_keywords("dap7)");
+	    // Even though this is pretty obviously wrong, we soldier on because
+	    // The keyword processing code has no way of knowing what will be
+	    // valid variable names.
+	    CPPUNIT_ASSERT(ce == "dap7)");
+	}
+	catch (Error &e) {
+	    CPPUNIT_FAIL("Should not get here");
+	}
+    }
+    void bad_keyword_test_4()
+    {
+	try {
+	    string ce = k->parse_keywords("dap(7)");
+	    // Even though this is pretty obviously wrong, we soldier on because
+	    // The keyword processing code has no way of knowing what will be
+	    // valid variable names.
+	    CPPUNIT_FAIL("Should throw - bad value to keyword/function");
+	}
+	catch (Error &e) {
+	    CPPUNIT_ASSERT("Should throw - bad value to keyword/function");
 	}
     }
 };

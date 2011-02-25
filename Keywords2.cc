@@ -40,8 +40,10 @@ namespace libdap {
 
 Keywords::Keywords()
 {
-    // Load known keywords
-    d_known_keywords.insert("dap");
+    // Load known keywords and their allowed values
+    string values[] = {"2", "2.0", "3.2", "3.3", "3.4", "4", "4.0"};
+    value_set_t vs = value_set_t(values, values+sizeof(values)/sizeof(string*));
+    d_known_keywords["dap"] = vs;
 }
 
 Keywords::~Keywords()
@@ -52,45 +54,52 @@ Keywords::~Keywords()
  * @param kw the keyword clause '<word> ( <value> )'
  * @param word (result) the word
  * @param value (result) the value
+ * @return True if the parse was successful (word and value contain useful
+ * results) and False otherwise.
  */
-static void f_parse_keyword(const string &kw, string &word, string &value)
+static bool f_parse_keyword(const string &kw, string &word, string &value)
 {
-    DBG(cerr << "f_parse_keyword, kw: " << kw << endl);
-
     word = "";
     value = "";
     string::size_type i = kw.find('(');
     if (i == string::npos)
-	return;
+	return false;
     word = kw.substr(0, i);
     string::size_type j = kw.find(')');
     if (j == string::npos)
-	return;
+	return false;
     ++i; // Move past the opening brace
     value = kw.substr(i, j-i);
 
-    DBG(cerr << "i: " << i << ", j: " << j << endl);
-    DBG(cerr << "word: " << word << ", value: " << value << endl);
+    return (!word.empty() && !value.empty());
 }
 
 /**
  * Add the keyword to the set of keywords that apply to this request.
  * @note Should call m_is_valid_keyword first.
- * @param s The keyword, as a string, including its value.
+ * @param word The keyword/function name
+ * @param value The keyword/function value
  */
 void Keywords::m_add_keyword(const keyword &word, const keyword_value &value)
 {
     d_parsed_keywords[word] = value;
 }
 
-/** Is the string a valid keyword clause? This checks for the syntax
- * '<word> ( <value> )'.
- * @param s
- * @return True if the string is valid keyword clause
+/** Is the string a valid keyword clause? Assumption: the word and value have
+ * already been successfully parsed.
+ * @param word The keyword/function name
+ * @param value The keyword/function value
+ * @return True if the string is valid keyword and the value is one of the
+ * allowed values.
  */
 bool Keywords::m_is_valid_keyword(const keyword &word, const keyword_value &value) const
 {
-	return (d_known_keywords.count(word) != 0 && !value.empty());
+    if (d_known_keywords.count(word) == 0)
+	return false;
+    else if (d_known_keywords.at(word).find(value) == d_known_keywords.at(word).end())
+	throw Error("Bad value passed to the keyword/function: " + word);
+    else
+	return true;
 }
 
 /**
@@ -100,7 +109,7 @@ bool Keywords::m_is_valid_keyword(const keyword &word, const keyword_value &valu
  */
 bool Keywords::is_known_keyword(const string &word) const
 {
-	return d_known_keywords.count(word) != 0;
+	return d_known_keywords.count(word) == 1;
 }
 
 /**
@@ -127,10 +136,10 @@ list<Keywords::keyword> Keywords::get_keywords() const
  */
 bool Keywords::has_keyword(const keyword &kw) const
 {
-    return d_parsed_keywords.count(kw) != 0;
+    return d_parsed_keywords.count(kw) == 1;
 }
 
-/** Look in the dictionary for the value associated with a given keyword.
+/** Look at the parsed keywords for the value associated with a given keyword.
  *
  * @param k
  * @return The value
@@ -169,8 +178,8 @@ string Keywords::parse_keywords(const string &ce)
 	string::size_type i = projection.find(',');
 	string next_word = projection.substr(0, i);
 	string word, value;
-	f_parse_keyword(next_word, word, value);
-	if (m_is_valid_keyword(word, value)) {
+	if (f_parse_keyword(next_word, word, value)
+	    && m_is_valid_keyword(word, value)) {
 	    m_add_keyword(word, value);
 	    if (i != string::npos)
 		projection = projection.substr(i + 1);
