@@ -52,7 +52,7 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest 	\
 	SequenceTest SignalHandlerTest CEFunctionsTest 			\
 	GridGeoConstraintTest ArrayGeoConstraintTest MarshallerTest \
-	ResponseBuilderTest KeywordsTest
+	ResponseBuilderTest Keywords2Test
 
 #	fdiostreamTest
 
@@ -105,8 +105,8 @@ ResponseBuilderTest_SOURCES = ResponseBuilderTest.cc
 ResponseBuilderTest_LDADD = ../libdapserver.la ../libdap.la \
 	../tests/libtest-types.a $(AM_LDADD)
 
-KeywordsTest_SOURCES = KeywordsTest.cc
-KeywordsTest_LDADD = ../libdapserver.la ../libdap.la \
+Keywords2Test_SOURCES = Keywords2Test.cc
+Keywords2Test_LDADD = ../libdapserver.la ../libdap.la \
 	../tests/libtest-types.a $(AM_LDADD)
 
 generalUtilTest_SOURCES = generalUtilTest.cc

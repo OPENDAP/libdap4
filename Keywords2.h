@@ -46,10 +46,6 @@ namespace libdap {
  */
 class Keywords {
 public:
-    enum keyword_kind {
-	dap_version, none
-    };
-
     // convenience types
     typedef string keyword;
     typedef string keyword_value;
@@ -62,24 +58,21 @@ private:
     /// Holds all of the keywords
     set<keyword> d_known_keywords;
 
-    void m_init();
-    // Not needed w/o pointers Keyword &clone(const Keyword &rhs);
-    void m_insert(const keyword &k);
-    bool m_is_known_keyword(const string &kw, string &word, string &value) const;
+    virtual void m_add_keyword(const keyword &word, const keyword_value &value);
+    virtual bool m_is_valid_keyword(const keyword &word, const keyword_value &value) const;
 
 public:
     Keywords();
     virtual ~Keywords();
 
     virtual string parse_keywords(const string &ce);
-    virtual void add_keyword(const string &s);
 
     // Is this keyword in the dictionary?
     virtual bool is_known_keyword(const string &s) const;
 
     // Get a list of all of the keywords parsed
     virtual list<keyword> get_keywords() const;
-    // Has a keyword of a particular kind been parsed
+    // Has a particular keyword been parsed
     virtual bool has_keyword(const keyword &kw) const;
 
     // Get the parsed keyword (and it's dictionary value) of a particular kind

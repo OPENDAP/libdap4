@@ -27,9 +27,12 @@ static char rcsid[] not_used = { "$Id: ResponseBuilder.cc 23477 2010-09-02 21:02
 
 #include <iostream>
 
-#include "Keywords.h"
+//#define DODS_DEBUG
+
+#include "Keywords2.h"
 #include "Error.h"
 #include "escaping.h"
+#include "debug.h"
 
 using namespace std;
 
@@ -37,54 +40,57 @@ namespace libdap {
 
 Keywords::Keywords()
 {
-    m_init();
-}
-
-void Keywords::m_init()
-{
-    // Load known_keywords
-    m_insert("dap");
-}
-
-/** Static function to parse the curly-brace keyword notation.
- * @param kw the keyword
- * @param word (result) the word
- * @param value (result) the value
- */
-static void f_parse_keyword(const string &kw, string &word, string &value)
-{
-	word = "";
-	value = "";
-	string::size_type i = kw.find('{');
-	if (i == string::npos)
-		return;
-	word = kw.substr(0, i);
-	string::size_type j = kw.find('}');
-	if (j == string::npos)
-		return;
-	value = kw.substr(i + 1, j);
+    // Load known keywords
+    d_known_keywords.insert("dap");
 }
 
 Keywords::~Keywords()
 {
 }
 
-void Keywords::m_insert(const keyword &k)
+/** Static function to parse the curly-brace keyword notation.
+ * @param kw the keyword clause '<word> ( <value> )'
+ * @param word (result) the word
+ * @param value (result) the value
+ */
+static void f_parse_keyword(const string &kw, string &word, string &value)
 {
-    d_known_keywords.insert(k);
+    DBG(cerr << "f_parse_keyword, kw: " << kw << endl);
+
+    word = "";
+    value = "";
+    string::size_type i = kw.find('(');
+    if (i == string::npos)
+	return;
+    word = kw.substr(0, i);
+    string::size_type j = kw.find(')');
+    if (j == string::npos)
+	return;
+    ++i; // Move past the opening brace
+    value = kw.substr(i, j-i);
+
+    DBG(cerr << "i: " << i << ", j: " << j << endl);
+    DBG(cerr << "word: " << word << ", value: " << value << endl);
 }
 
 /**
  * Add the keyword to the set of keywords that apply to this request.
+ * @note Should call m_is_valid_keyword first.
  * @param s The keyword, as a string, including its value.
  */
-void Keywords::add_keyword(const string &s)
+void Keywords::m_add_keyword(const keyword &word, const keyword_value &value)
 {
-	string word, value;
-    if (!m_is_known_keyword(s, word, value))
-    	throw Error("Keyword not known (" + s + ")");
-
     d_parsed_keywords[word] = value;
+}
+
+/** Is the string a valid keyword clause? This checks for the syntax
+ * '<word> ( <value> )'.
+ * @param s
+ * @return True if the string is valid keyword clause
+ */
+bool Keywords::m_is_valid_keyword(const keyword &word, const keyword_value &value) const
+{
+	return (d_known_keywords.count(word) != 0 && !value.empty());
 }
 
 /**
@@ -92,29 +98,19 @@ void Keywords::add_keyword(const string &s)
  * @param s As a string, including the value
  * @return true if the keyword is known
  */
-bool Keywords::is_known_keyword(const string &s) const
+bool Keywords::is_known_keyword(const string &word) const
 {
-	string word, value; // not used here
-	return m_is_known_keyword(s, word, value);
-
-	return (d_known_keywords.count(word) != 0 && !value.empty());
+	return d_known_keywords.count(word) != 0;
 }
 
-// private version, parses word and value as a side effect
-bool Keywords::m_is_known_keyword(const string &kw, string &word, string &value) const
-{
-	f_parse_keyword(kw, word, value);
-
-	return (d_known_keywords.count(word) != 0 && !value.empty());
-}
 /**
  * Get a list of the strings that make up the set of current keywords for
  * this request.
  * @return The list of keywords as a list of string objects.
  */
-list<keywords> Keywords::get_keywords() const
+list<Keywords::keyword> Keywords::get_keywords() const
 {
-    list<string> kws;
+    list<keyword> kws;
     map<keyword, keyword_value>::const_iterator i;
     for (i = d_parsed_keywords.begin(); i != d_parsed_keywords.end(); ++i)
     	kws.push_front((*i).first);
@@ -131,7 +127,7 @@ list<keywords> Keywords::get_keywords() const
  */
 bool Keywords::has_keyword(const keyword &kw) const
 {
-    return d_parsed_keywords.count(kind) != 0;
+    return d_parsed_keywords.count(kw) != 0;
 }
 
 /** Look in the dictionary for the value associated with a given keyword.
@@ -139,12 +135,12 @@ bool Keywords::has_keyword(const keyword &kw) const
  * @param k
  * @return The value
  */
-keyword_value Keywords::get_keyword_value(const keyword &kw) const
+Keywords::keyword_value Keywords::get_keyword_value(const keyword &kw) const
 {
     if (d_known_keywords.count(kw) != 1)
     	throw Error("Keyword not known (" + kw + ")");
 
-    return d_known_keywords.at(kw).second;
+    return d_parsed_keywords.at(kw);
 }
 
 /** Parse the constraint expression, removing all keywords. As a side effect,
@@ -172,8 +168,10 @@ string Keywords::parse_keywords(const string &ce)
     while (!projection.empty()) {
 	string::size_type i = projection.find(',');
 	string next_word = projection.substr(0, i);
-	if (is_known_keyword(next_word)) {
-	    add_keyword(next_word);
+	string word, value;
+	f_parse_keyword(next_word, word, value);
+	if (m_is_valid_keyword(word, value)) {
+	    m_add_keyword(word, value);
 	    if (i != string::npos)
 		projection = projection.substr(i + 1);
 	    else

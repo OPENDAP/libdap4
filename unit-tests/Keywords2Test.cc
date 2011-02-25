@@ -109,7 +109,8 @@ public:
     void one_keyword_test_1()
     {
 	CPPUNIT_ASSERT(k->is_known_keyword("dap"));
-	string ce = k->parse_keywords("dap{2}");
+
+	string ce = k->parse_keywords("dap(2)");
 	CPPUNIT_ASSERT(ce == "");
 	CPPUNIT_ASSERT(k->has_keyword("dap"));
 	CPPUNIT_ASSERT(k->get_keyword_value("dap") == "2");
@@ -118,7 +119,7 @@ public:
 
     void one_keyword_test_2()
     {
-	string ce = k->parse_keywords("dap{2},u,v&v<7");
+	string ce = k->parse_keywords("dap(2),u,v&v<7");
 	CPPUNIT_ASSERT(ce == "u,v&v<7");
 	CPPUNIT_ASSERT(k->has_keyword("dap"));
 	CPPUNIT_ASSERT(k->get_keyword_value("dap") == "2");
@@ -127,7 +128,7 @@ public:
 
     void two_keyword_test_1()
     {
-	string ce = k->parse_keywords("dap{2},dap{3.2}");
+	string ce = k->parse_keywords("dap(2),dap(3.2)");
 	CPPUNIT_ASSERT(ce == "");
 	CPPUNIT_ASSERT(k->has_keyword("dap"));
 	CPPUNIT_ASSERT(k->get_keyword_value("dap") == "3.2");
@@ -138,7 +139,7 @@ public:
 
     void two_keyword_test_2()
     {
-	string ce = k->parse_keywords("dap{2},dap{3.2},u,v&v<7");
+	string ce = k->parse_keywords("dap(2),dap(3.2),u,v&v<7");
 	CPPUNIT_ASSERT(ce == "u,v&v<7");
 	CPPUNIT_ASSERT(k->has_keyword("dap"));
 	CPPUNIT_ASSERT(k->get_keyword_value("dap") == "3.2");
