@@ -40,6 +40,7 @@ static char rcsid[] not_used = { "$Id: ResponseBuilder.cc 23477 2010-09-02 21:02
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <cstring>
 
 #include <uuid/uuid.h>	// used to build CID header value for data ddx
 
