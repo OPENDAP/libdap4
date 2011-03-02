@@ -231,7 +231,8 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc BaseType.cc \
 	Clause.cc RValue.cc ConstraintEvaluator.cc ArrayGeoConstraint.cc \
 	DapIndent.cc Operators.h					 \
 	XDRUtils.cc XDRFileMarshaller.cc XDRFileUnMarshaller.cc		 \
-	XDRStreamMarshaller.cc XDRStreamUnMarshaller.cc mime_util.cc 
+	XDRStreamMarshaller.cc XDRStreamUnMarshaller.cc mime_util.cc \
+	Keywords2.cc 
 
 Operators.h: ce_expr.tab.hh
 
@@ -245,7 +246,7 @@ CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 
 # AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc 
 
-SERVER_SRC = DODSFilter.cc Ancillary.cc ResponseBuilder.cc Keywords2.cc 
+SERVER_SRC = DODSFilter.cc Ancillary.cc ResponseBuilder.cc
 
 DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h DDXExceptions.h	\
 	BaseType.h Byte.h Int32.h Float64.h Str.h Url.h Vector.h Array.h   \
@@ -260,7 +261,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h DDXExceptions.h	\
 	DapIndent.h DapObj.h XDRFileMarshaller.h Marshaller.h		  \
 	XDRFileUnMarshaller.h UnMarshaller.h XDRStreamMarshaller.h	  \
 	XDRUtils.h xdr-datatypes.h mime_util.h cgi_util.h                 \
-	XDRStreamUnMarshaller.h 
+	XDRStreamUnMarshaller.h  Keywords2.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h
@@ -293,7 +294,7 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		 \
 # AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h AISResources.h 	
 
 SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h \
-	ResponseBuilder.h Keywords2.h
+	ResponseBuilder.h
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support

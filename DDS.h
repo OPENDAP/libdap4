@@ -62,6 +62,10 @@
 #include "DapObj.h"
 #endif
 
+#ifndef KEYWORDS_H_
+#include "Keywords2.h"
+#endif
+
 using std::cout;
 
 #define FILE_METHODS 1
@@ -196,16 +200,15 @@ private:
     int d_timeout;              // alarm time in seconds. If greater than
                                 // zero, raise the alarm signal if more than
                                 // d_timeout seconds are spent reading data.
+    Keywords d_keywords;	// Holds keywords parsed from the CE
+
     friend class DDSTest;
 
 protected:
     void duplicate(const DDS &dds);
     BaseType *leaf_match(const string &name, BaseType::btp_stack *s = 0);
     BaseType *exact_match(const string &name, BaseType::btp_stack *s = 0);
-#if 0
-    virtual AttrTable *find_matching_container(AttrTable::entry *source,
-            BaseType **dest_variable);
-#endif
+
 public:
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;
@@ -264,6 +267,8 @@ public:
     void set_dap_version(double d);
 
     string get_dap_version() const { return d_dap_version; }
+
+    Keywords &get_keywords() { return d_keywords; }
 
     /// Get the URL that will return this DDS/DDX/DataThing
     string get_request_xml_base() const { return d_request_xml_base; }

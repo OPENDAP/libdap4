@@ -41,8 +41,10 @@ namespace libdap {
  * the ConstraintExpression evaluator can parse it (because the keywords are
  * not identifiers in the DDS, they will cause a parse error.
  *
+ * @note If pointers are added to this code, modify DDS so copying still works!
+ *
  * @note The keywords are used to specify the DAP version(s) that the client
- * can understand
+ * can understand.
  */
 class Keywords {
 public:

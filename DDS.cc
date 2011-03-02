@@ -63,6 +63,7 @@ static char rcsid[] not_used =
 #include "Clause.h"
 #include "Error.h"
 #include "InternalErr.h"
+#include "Keywords2.h"
 
 #include "parser.h"
 #include "debug.h"
@@ -121,6 +122,8 @@ DDS::duplicate(const DDS &dds)
     d_dap_major = dds.d_dap_major;
     d_dap_minor = dds.d_dap_minor;
 
+    d_keywords = dds.d_keywords; // value copy; Keywords contains no pointers
+
     DDS &dds_tmp = const_cast<DDS &>(dds);
 
     // copy the things pointed to by the list, not just the pointers
@@ -143,7 +146,7 @@ DDS::DDS(BaseTypeFactory *factory, const string &n)
 
         : d_factory(factory), name(n), d_container(0),
           d_dap_major(2), d_dap_minor(0),
-        d_request_xml_base(""), d_timeout(0)
+        d_request_xml_base(""), d_timeout(0), d_keywords()
 {
     DBG(cerr << "Building a DDS with client major/minor: "
             << d_dap_major << "." << d_dap_minor << endl);
@@ -330,19 +333,23 @@ DDS::set_dap_version(const string &version_string)
 
     int major = -1, minor = -1;
     char dot;
-    iss >> major;
-    iss >> dot;
-    iss >> minor;
+    if (!iss.eof() && !iss.fail())
+	iss >> major;
+    if (!iss.eof() && !iss.fail())
+	iss >> dot;
+    if (!iss.eof() && !iss.fail())
+	iss >> minor;
 
     DBG(cerr << "Major: " << major << ", dot: " << dot <<", Minor: " << minor << endl);
-
+#if 0
     if (major == -1 || minor == -1)
         throw Error("Could not parse the client dap (XDAP-Accept header) value");
+#endif
 
     d_dap_version = version_string;
 
-    set_dap_major(major);
-    set_dap_minor(minor);
+    set_dap_major(major == -1 ? 2 : major);
+    set_dap_minor(minor == -1 ? 0 : minor);
 }
 
 /** Given the dap protocol version, parse that string and set the DDS fields.

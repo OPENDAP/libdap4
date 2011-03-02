@@ -106,8 +106,7 @@ ResponseBuilderTest_LDADD = ../libdapserver.la ../libdap.la \
 	../tests/libtest-types.a $(AM_LDADD)
 
 Keywords2Test_SOURCES = Keywords2Test.cc
-Keywords2Test_LDADD = ../libdapserver.la ../libdap.la \
-	../tests/libtest-types.a $(AM_LDADD)
+Keywords2Test_LDADD = ../libdap.la $(AM_LDADD)
 
 generalUtilTest_SOURCES = generalUtilTest.cc
 generalUtilTest_LDADD = ../libdap.la $(AM_LDADD)
