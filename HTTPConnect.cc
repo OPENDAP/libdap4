@@ -751,15 +751,15 @@ HTTPConnect::caching_fetch_url(const string &url)
 {
     DBG(cerr << "Is this URL (" << url << ") in the cache?... ");
 
-    vector<string> *headers = new vector<string> ;
-    FILE *s = d_http_cache->get_cached_response(url, *headers);
+    vector<string> *headers = new vector<string>;
+    string file_name;
+    FILE *s = d_http_cache->get_cached_response(url, *headers, file_name);
     if (!s) {
         // url not in cache; get it and cache it
         DBGN(cerr << "no; getting response and caching." << endl);
         time_t now = time(0);
         HTTPResponse *rs = plain_fetch_url(url);
-        d_http_cache->cache_response(url, now, *(rs->get_headers()),
-                rs->get_stream());
+        d_http_cache->cache_response(url, now, *(rs->get_headers()), rs->get_stream());
 
         return rs;
     }
@@ -768,8 +768,7 @@ HTTPConnect::caching_fetch_url(const string &url)
 
         if (d_http_cache->is_url_valid(url)) { // url in cache and valid
             DBGN(cerr << "and it's valid; using cached response." << endl);
-            HTTPCacheResponse *crs =
-                    new HTTPCacheResponse(s, 200, headers, d_http_cache);
+            HTTPCacheResponse *crs = new HTTPCacheResponse(s, 200, headers, file_name, d_http_cache);
             return crs;
         }
         else { // url in cache but not valid; validate
@@ -778,8 +777,7 @@ HTTPConnect::caching_fetch_url(const string &url)
             d_http_cache->release_cached_response(s);
 
             vector<string> *resp_hdrs = new vector<string> ;
-            vector<string> cond_hdrs =
-                    d_http_cache->get_conditional_request_headers(url);
+            vector<string> cond_hdrs = d_http_cache->get_conditional_request_headers(url);
             FILE *body = 0;
             string dods_temp = get_temp_file(body);
             time_t now = time(0); // When was the request made (now).
@@ -799,8 +797,7 @@ HTTPConnect::caching_fetch_url(const string &url)
                     DBGN(cerr << "read a new response; caching." << endl);
 
                     d_http_cache->cache_response(url, now, *resp_hdrs, body);
-                    HTTPResponse *rs = new HTTPResponse(body, http_status, resp_hdrs,
-                            dods_temp);
+                    HTTPResponse *rs = new HTTPResponse(body, http_status, resp_hdrs, dods_temp);
 
                     return rs;
                 }
@@ -812,8 +809,9 @@ HTTPConnect::caching_fetch_url(const string &url)
                     d_http_cache->update_response(url, now, *resp_hdrs);
 
                     vector<string> *headers = new vector<string>;
-                    FILE *hs = d_http_cache->get_cached_response(url, *headers);
-                    HTTPCacheResponse *crs = new HTTPCacheResponse(hs, 304, headers, d_http_cache);
+                    string file_name;
+                    FILE *hs = d_http_cache->get_cached_response(url, *headers, file_name);
+                    HTTPCacheResponse *crs = new HTTPCacheResponse(hs, 304, headers, file_name, d_http_cache);
                     return crs;
                 }
 
