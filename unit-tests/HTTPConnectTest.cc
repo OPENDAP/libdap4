@@ -114,7 +114,7 @@ class HTTPConnectTest: public TestFixture {
     }
 
     CPPUNIT_TEST_SUITE(HTTPConnectTest);
-#if 0
+#if 1
     CPPUNIT_TEST(read_url_test);
     CPPUNIT_TEST(fetch_url_test);
     CPPUNIT_TEST(get_response_headers_test);
@@ -122,7 +122,7 @@ class HTTPConnectTest: public TestFixture {
     CPPUNIT_TEST(type_test);
 #endif
     CPPUNIT_TEST(cache_test);
-#if 0
+#if 1
     CPPUNIT_TEST(set_accept_deflate_test);
     CPPUNIT_TEST(set_xdap_protocol_test);
     CPPUNIT_TEST(read_url_password_test);
