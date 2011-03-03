@@ -94,12 +94,17 @@ void Keywords::m_add_keyword(const keyword &word, const keyword_value &value)
  */
 bool Keywords::m_is_valid_keyword(const keyword &word, const keyword_value &value) const
 {
-    if (d_known_keywords.count(word) == 0)
+    map<keyword, value_set_t>::const_iterator ci = d_known_keywords.find(word);
+    if (ci == d_known_keywords.end())
 	return false;
-    else if (d_known_keywords.at(word).find(value) == d_known_keywords.at(word).end())
-	throw Error("Bad value passed to the keyword/function: " + word);
-    else
-	return true;
+    else {
+	value_set_t vs = ci->second;
+
+	if (vs.find(value) == vs.end())
+	    throw Error("Bad value passed to the keyword/function: " + word);
+    }
+
+    return true;
 }
 
 /**
@@ -146,10 +151,10 @@ bool Keywords::has_keyword(const keyword &kw) const
  */
 Keywords::keyword_value Keywords::get_keyword_value(const keyword &kw) const
 {
-    if (d_known_keywords.count(kw) != 1)
+    if (d_known_keywords.find(kw) == d_known_keywords.end())
     	throw Error("Keyword not known (" + kw + ")");
 
-    return d_parsed_keywords.at(kw);
+    return d_parsed_keywords.find(kw)->second;
 }
 
 /** Parse the constraint expression, removing all keywords. As a side effect,
