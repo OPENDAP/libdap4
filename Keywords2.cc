@@ -44,6 +44,10 @@ Keywords::Keywords()
     string values[] = {"2", "2.0", "3.2", "3.3", "3.4", "4", "4.0"};
     value_set_t vs = value_set_t(values, values+sizeof(values)/sizeof(string*));
     d_known_keywords["dap"] = vs;
+
+    string values2[] = {"md5", "MD5", "sha1", "SHA1"};
+    value_set_t vs2 = value_set_t(values2, values+sizeof(values2)/sizeof(string*));
+    d_known_keywords["checksum"] = vs2;
 }
 
 Keywords::~Keywords()
