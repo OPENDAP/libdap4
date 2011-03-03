@@ -46,7 +46,7 @@ Keywords::Keywords()
     d_known_keywords["dap"] = vs;
 
     string values2[] = {"md5", "MD5", "sha1", "SHA1"};
-    value_set_t vs2 = value_set_t(values2, values+sizeof(values2)/sizeof(string*));
+    value_set_t vs2 = value_set_t(values2, values2+sizeof(values2)/sizeof(string*));
     d_known_keywords["checksum"] = vs2;
 }
 

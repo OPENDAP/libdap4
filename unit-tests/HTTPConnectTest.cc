@@ -33,11 +33,12 @@
 #include <algorithm>
 #include <functional>
 
-// #define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "GNURegex.h"
 #include "HTTPConnect.h"
 #include "RCReader.h"
+
 #include "debug.h"
 
 #include "test_config.h"
@@ -113,7 +114,7 @@ class HTTPConnectTest: public TestFixture {
     }
 
     CPPUNIT_TEST_SUITE(HTTPConnectTest);
-#if 1
+#if 0
     CPPUNIT_TEST(read_url_test);
     CPPUNIT_TEST(fetch_url_test);
     CPPUNIT_TEST(get_response_headers_test);
@@ -121,7 +122,7 @@ class HTTPConnectTest: public TestFixture {
     CPPUNIT_TEST(type_test);
 #endif
     CPPUNIT_TEST(cache_test);
-#if 1
+#if 0
     CPPUNIT_TEST(set_accept_deflate_test);
     CPPUNIT_TEST(set_xdap_protocol_test);
     CPPUNIT_TEST(read_url_password_test);
@@ -189,16 +190,38 @@ class HTTPConnectTest: public TestFixture {
 
     void fetch_url_test() {
         HTTPResponse *stuff = 0;
+        char c;
         try {
-#if 0
             stuff = http->fetch_url(localhost_url);
-            char c;
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
                            && !ferror(stuff->get_stream())
                            && !feof(stuff->get_stream()));
             delete stuff;
             stuff = 0;
 
+        }
+        catch(InternalErr & e) {
+            delete stuff;
+            stuff = 0;
+            cerr << "InternalErr: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+        }
+        catch(Error & e) {
+            delete stuff;
+            stuff = 0;
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+        }
+        // Catch the exception from a failed ASSERT and clean up. Deleting a
+        // Response object also unlocks the HTTPCache in some cases. If delete
+        // is not called, then a failed test can leave the cache with locked
+        // entries
+        catch (...) {
+            delete stuff; stuff = 0;
+            throw;
+        }
+
+        try {
             stuff = http->fetch_url(netcdf_das_url);
             DBG2(char ln[1024]; while (!feof(stuff->get_stream())) {
                  fgets(ln, 1024, stuff->get_stream()); cerr << ln;}
@@ -209,14 +232,58 @@ class HTTPConnectTest: public TestFixture {
                            && !feof(stuff->get_stream()));
             delete stuff;
             stuff = 0;
+        }
+        catch(InternalErr & e) {
+            delete stuff;
+            stuff = 0;
+            cerr << "InternalErr: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+        }
+        catch(Error & e) {
+            delete stuff;
+            stuff = 0;
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+        }
+        // Catch the exception from a failed ASSERT and clean up. Deleting a
+        // Response object also unlocks the HTTPCache in some cases. If delete
+        // is not called, then a failed test can leave the cache with locked
+        // entries
+        catch (...) {
+            delete stuff; stuff = 0;
+            throw;
+        }
 
+        try {
             stuff = http->fetch_url("file:///etc/passwd");
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
                            && !ferror(stuff->get_stream())
                            && !feof(stuff->get_stream()));
             delete stuff;
             stuff = 0;
+        }
+        catch(InternalErr & e) {
+            delete stuff;
+            stuff = 0;
+            cerr << "InternalErr: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+        }
+        catch(Error & e) {
+            delete stuff;
+            stuff = 0;
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+        }
+        // Catch the exception from a failed ASSERT and clean up. Deleting a
+        // Response object also unlocks the HTTPCache in some cases. If delete
+        // is not called, then a failed test can leave the cache with locked
+        // entries
+        catch (...) {
+            delete stuff; stuff = 0;
+            throw;
+        }
 
+        try {
 	    string url = (string)"file://test_config.h" ;
             stuff = http->fetch_url(url);
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
@@ -224,7 +291,6 @@ class HTTPConnectTest: public TestFixture {
                            && !feof(stuff->get_stream()));
             delete stuff;
             stuff = 0;
-#endif
         }
         catch(InternalErr & e) {
             delete stuff;
@@ -384,11 +450,11 @@ class HTTPConnectTest: public TestFixture {
         // Initially there should be no header and the protocol should be 2.0
         CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 2
                        && http->d_dap_client_protocol_minor == 0);
-#if 1
+
         CPPUNIT_ASSERT(count_if(http->d_request_headers.begin(),
                              http->d_request_headers.end(),
                              HeaderMatch("XDAP-Accept:")) == 0);
-#endif
+
         http->set_xdap_protocol(8, 9);
         CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 8
                        && http->d_dap_client_protocol_minor == 9);

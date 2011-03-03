@@ -1105,9 +1105,11 @@ HTTPCache::write_body(const string &cachename, const FILE *src)
 FILE *
 HTTPCache::open_body(const string &cachename)
 {
-	FILE *src = fopen(cachename.c_str(), "rb");		// Read only
-	if (!src)
-        throw InternalErr(__FILE__, __LINE__, "Could not open cache file.");
+    DBG(cerr << "cachename: " << cachename << endl);
+
+    FILE *src = fopen(cachename.c_str(), "rb"); // Read only
+    if (!src)
+	throw InternalErr(__FILE__, __LINE__, "Could not open cache file.");
 
     return src;
 }

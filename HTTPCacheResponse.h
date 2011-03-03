@@ -85,6 +85,7 @@ public:
     virtual ~HTTPCacheResponse()
     {
         DBG(cerr << "Freeing HTTPCache resources... ");
+        set_file(""); // This keeps ~HTTPResponse() from removing the cache entry.
         d_cache->release_cached_response(get_stream());
         DBGN(cerr << endl);
     }

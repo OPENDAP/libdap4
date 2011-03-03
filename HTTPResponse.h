@@ -135,6 +135,11 @@ public:
     {
         d_headers = h;
     }
+
+    virtual void set_file(const string &n)
+    {
+	d_file = n;
+    }
     //@}
 };
 
