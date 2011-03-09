@@ -187,8 +187,8 @@ DDS::operator=(const DDS &rhs)
  * DDS. This uses the BaseType::transfer_attributes() method and the various
  * implementations found here (in the constructors classes) and in handlers.
  *
- * This method uses a deep copy to transfer the attributes, to it's safe to
- * delete the source DAS object passed to this method once it's done.
+ * This method uses a deep copy to transfer the attributes, so it is safe to
+ * delete the source DAS object passed to this method once it is done.
  *
  * @note To accommodate oddly built DAS objects produced by various handlers,
  * specialize the methods there.
@@ -202,8 +202,7 @@ DDS::transfer_attributes(DAS *das)
     // the DAS. If they are not the same container, then throw an exception
     // (should be working on the same container). If the container does not
     // exist in the DAS, then throw an exception
-    if( d_container )
-    {
+    if( d_container ) {
 	if( das->container_name() != d_container_name )
 	    throw InternalErr(__FILE__, __LINE__, "Error transferring attributes: working on a container in dds, but not das" ) ;
     }

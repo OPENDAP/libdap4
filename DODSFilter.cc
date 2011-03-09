@@ -1255,14 +1255,18 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
     response back to the client.
 
     @brief Transmit data.
+
     @param dds A DDS object containing the data to be sent.
     @param eval A reference to the ConstraintEvaluator to use.
     @param data_stream Write the response to this stream.
+    @param start
+    @param boundary
     @param anc_location A directory to search for ancillary files (in
     addition to the CWD).  This is used in a call to
     get_data_last_modified_time().
     @param with_mime_headers If true, include the MIME headers in the response.
     Defaults to true.
+
     @return void */
 void
 DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,

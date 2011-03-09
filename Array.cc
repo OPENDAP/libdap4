@@ -714,9 +714,10 @@ Array::print_xml_core(ostream &out, string space, bool constrained, string tag)
     primarily intended for debugging purposes.
 
     @param out Write the output to this FILE *.
-    @param space The space to use in printing.
-    @param print_decl_p A boolean value indicating whether you want
-    the Array declaration to precede the Array value.
+    @param index
+    @param dims
+    @param shape
+
     @brief Print the value given the current constraint.
 */
 unsigned int
@@ -759,9 +760,10 @@ Array::print_array(FILE *out, unsigned int index, unsigned int dims,
     primarily intended for debugging purposes.
 
     @param out Write the output to this ostream
-    @param space The space to use in printing.
-    @param print_decl_p A boolean value indicating whether you want
-    the Array declaration to precede the Array value.
+    @param index
+    @param dims
+    @param shape
+
     @brief Print the value given the current constraint.
 */
 unsigned int

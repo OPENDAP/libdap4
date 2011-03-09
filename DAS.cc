@@ -80,19 +80,12 @@ namespace libdap {
 DAS::DAS() : DapObj(), d_container( 0 )
 {}
 
-/** Create a DAS object with one attribute table. Use <tt>append_attr()</tt>
-    to add additional attributes.
-
-    @see append_attr()
-    @param attr The initial AttrTable.
-    @param name The name of the DAS parent structure.
-*/
-/*
+#if 0
 DAS::DAS(AttrTable *attr, string name)
 {
     append_container(attr, www2id(name));
 }
-*/
+#endif
 
 // FIXME: Need to create copy constructor and op=.
 

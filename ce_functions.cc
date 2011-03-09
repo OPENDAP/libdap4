@@ -322,7 +322,11 @@ double extract_double_value(BaseType * arg)
 }
 
 /** This server-side function returns version information for the server-side
- functions. */
+ functions. Note that this function takes no arguments and returns a
+ String using the BaseType value/result parameter.
+
+ @param btpp A pointer to the return value; caller must delete.
+*/
 void
 function_version(int, BaseType *[], DDS &, BaseType **btpp)
 {
@@ -456,8 +460,8 @@ static void apply_grid_selection_expressions(Grid * grid,
  @param argv An array of BaseType pointers which hold the arguments to be
  passed to geogrid. The arguments may be Strings, Integers, or Reals, subject
  to the above constraints.
- @param dds The DDS which holds the Grid.
- @param dataset Name of the dataset.
+ @param btpp A pointer to the return value; caller must delete.
+
  @see geogrid() (func_geogrid_select) A function which has logic specific
  to longitude/latitude selection. */
 void
@@ -558,9 +562,8 @@ function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
  @param argv An array of BaseType pointers which hold the arguments to be
  passed to geogrid. The arguments may be Strings, Integers, or Reals,
  subject to the above constraints.
- @param dds The DDS which holds the Grid. This DDS \e must include
- attributes.
- @param dataset Name of the dataset.
+ @param btpp A pointer to the return value; caller must delete.
+
  @return The constrained and read Grid, ready to be sent. */
 void
 function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
@@ -794,10 +797,10 @@ static double get_missing_value(BaseType *var)
  constants 'm' and 'b' or the function will look for the COARDS attributes
  'scale_factor' and 'add_offset'.
 
- @param argc
- @param argv
- @param dds
- @param dataset
+ @param argc A count of the arguments 
+ @param argv An array of pointers to each argument, wrapped in a child of BaseType
+ @param btpp A pointer to the return value; caller must delete.
+
  @return The scaled variable, represented using Float64
  @exception Error Thrown if scale_factor is not given and the COARDS
  attributes cannot be found OR if the source variable is not a
@@ -948,10 +951,11 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 
  @note Only the plat-carre projection and wgs84 datum are currently
  supported.
- @param argc
- @param argv
- @param dds
- @param dataset
+
+ @param argc A count of the arguments 
+ @param argv An array of pointers to each argument, wrapped in a child of BaseType
+ @param btpp A pointer to the return value; caller must delete.
+
  @return The Array, constrained by the selection
  @exception Error Thrown if thins go awry. */
 void

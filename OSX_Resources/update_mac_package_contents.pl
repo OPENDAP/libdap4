@@ -10,8 +10,7 @@ my $package_dir = $ARGV[2];
 
 unix2mac($readme, "OSX_Resources/ReadMe.txt");
 
-###################################################################
-
+##################################################################
 # Read a textfile where each line is terminated by a newline and
 # paragraphs are terminated by an otherwise blank line. Write the text
 # out without those pesky line-terminating newlines.
@@ -42,4 +41,3 @@ sub unix2mac {
   close IN;
   close OUT;
 }
-

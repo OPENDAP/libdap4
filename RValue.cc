@@ -87,8 +87,7 @@ append_rvalue_list(rvalue_list *rvals, rvalue *rv)
     class well. It is used by Clause and ce_expr.y.
 
     @param args A list of RValue objects
-    @param dds Use this DDS when evaluating functions
-    @param dataset Use this when evaluating functions. */
+    @param dds Use this DDS when evaluating functions */
 BaseType **
 build_btp_args(rvalue_list *args, DDS &dds)
 {
@@ -152,8 +151,6 @@ rvalue::value_name()
     result. The functions referenced by func_rvalues must encapsulate their
     return values in BaseType *s.
 
-    @param dataset The dataset name to pass to a function (which may call
-    BaseType::read() using that argument).
     @param dds The dds to pass to a function.
 */
 BaseType *

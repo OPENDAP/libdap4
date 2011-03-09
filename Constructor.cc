@@ -251,11 +251,11 @@ Constructor::transfer_attributes(AttrTable::entry * entry)
 /** Given an Attribute table, scavenge attributes from it and load them into
     this object and the variables it contains.
 
-    This implementation differes from the version in BaseType in that each of
+    This implementation differs from the version in BaseType in that each of
     the children of the Constructor are passed an attribute container if one
     is found that matches the name of this Constructor variable.
 
-    @param at_containeer Search for attributes in this container.
+    @param at_container Search for attributes in this container.
     */
 void Constructor::transfer_attributes(AttrTable *at_container)
 {

@@ -801,6 +801,7 @@ bool is_boundary(const char *line, const string &boundary)
     value of boundary just read.
 
     @param boundary Value of the boundary to look for - optional
+    @param in Read from this FILE*
     @return The value of teh boundary header read
     @exception Error if no boundary was found.
  */
@@ -832,7 +833,7 @@ string read_multipart_boundary(FILE *in, const string &boundary)
     @param content_type The expected value of the Content-Type header
     @param object_type The expected value of the Content-Description header
     @param cid The expected value of the Content-Id header - optional.
-    @param boundary The expected value of the boundary - optional
+
     @return The value of the MIME boundary
     @exception Error if the boundary is not found or if any of the expected
     header values don't match. The optional values are tested only if they

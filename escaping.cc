@@ -176,6 +176,8 @@ string
 id2www_ce(string in, const string &allowable)
 {
     return id2www(in, allowable);
+
+
 }
 
 /** Given a string that contains WWW escape sequences, translate those escape
@@ -185,7 +187,7 @@ id2www_ce(string in, const string &allowable)
     -Places in the dap code where www2id() is called:
      -# Array::append_dim() the name is decoded before it is added
      -# AttrTable::set_name(), AttrTable::append_attr(),
-        AttrTable::append_container(), AttrTable?::del_attr(),
+        AttrTable::append_container(), AttrTable::del_attr(),
         AttrTable::add_container_alias(), AttrTable::add_value_alias()
         names are decoded before that are set/used.
      -# BaseType::set_name() Names are decoded before they are set

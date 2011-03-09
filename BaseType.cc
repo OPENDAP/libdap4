@@ -564,7 +564,7 @@ BaseType::set_attr_table(const AttrTable &at)
  * operate on the AttrTable instances in a DDS/BaseType instead of those in
  * a DAS.
   *
- * @param das A pointer to the DAS object for the entire dataset.
+ * @param at_container Transfer attributes from this container.
  * @return void
  */
 void

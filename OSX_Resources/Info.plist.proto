@@ -23,7 +23,7 @@
 	<key>IFPkgFlagBackgroundScaling</key>
 	<string>none</string>
 	<key>IFPkgFlagDefaultLocation</key>
-	<string>/Users/jimg/src/hyrax_1.6.2_release</string>
+	<string>_PREFIX_</string>
 	<key>IFPkgFlagFollowLinks</key>
 	<true/>
 	<key>IFPkgFlagInstallFat</key>

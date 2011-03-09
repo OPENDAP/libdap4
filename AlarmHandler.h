@@ -62,12 +62,12 @@ private:
     {}
 
 public:
-    /** Store information to be used by the handler.
-    @param s Write to this stream. */
 #if FILE_METHODS
     AlarmHandler(FILE *s) : d_file(s), d_stream( cout )
     {}
 #endif
+    /** Store information to be used by the handler.
+    @param out Write to this stream. */
     AlarmHandler(ostream &out) :
 #if FILE_METHODS
         d_file(0),

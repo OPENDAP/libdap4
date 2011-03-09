@@ -515,7 +515,7 @@ void DDXParser::finish_variable(const char *tag, Type t, const char *expected)
 /** Initialize the SAX parser state object. This object is passed to each
     callback as a void pointer. The initial state is parser_start.
 
-    @param parser The SAX parser  */
+    @param p The SAX parser  */
 void DDXParser::ddx_start_document(void * p)
 {
     DDXParser *parser = static_cast<DDXParser*>(p);
@@ -536,7 +536,7 @@ void DDXParser::ddx_start_document(void * p)
 }
 
 /** Clean up after finishing a parse.
-    @param parser The SAX parser  */
+    @param p The SAX parser  */
 void DDXParser::ddx_end_document(void * p)
 {
     DDXParser *parser = static_cast<DDXParser*>(p);
@@ -1051,7 +1051,7 @@ xmlEntityPtr DDXParser::ddx_get_entity(void *, const xmlChar * name)
     typically no way to tell a user about the error since there's often no
     user interface for this software.
 
-    @param parser The SAX parser
+    @param p The SAX parser
     @param msg A printf-style format string. */
 void DDXParser::ddx_fatal_error(void * p, const char *msg, ...)
 {

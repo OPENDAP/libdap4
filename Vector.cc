@@ -150,7 +150,7 @@ Vector::is_cardinal_type() const
  * If _buf already exists, this DELETES IT and creates a new one.
  * So don't use this if you want to keep the original _buf data around.
  * This also sets the valueCapacity().
- * @param numElts the number of elements of the cardinal type in var()
+ * @param numEltsOfType the number of elements of the cardinal type in var()
                   that we want storage for.
  * @return the size of the buffer created.
  * @exception if the Vector's type is not cardinal type.
@@ -1161,7 +1161,7 @@ Vector::reserve_value_capacity()
  * ASSUMES: the data type of this->var() and rowMajorData.var()
  *          MUST be non-NULL and be the same!
  *
- * @param rowMajorData the vector from which to copy data,
+ * @param rowMajorDataC the vector from which to copy data,
  *                     assumed already read in or set.
  * @param startElement the element index
  *                     (NOT byte, but rather data type element)

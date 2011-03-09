@@ -55,11 +55,9 @@ namespace libdap {
 
 /** @brief Initialize GeoConstraint with a Grid.
 
-    @todo Remove ds_name. 10/2/08
     @param grid Set the GeoConstraint to use this Grid variable. It is the
     caller's responsibility to ensure that the value \e grid is a valid Grid
     variable.
-    @param ds_name The name of the dataset. Passed to BaseType::read().
  */
 GridGeoConstraint::GridGeoConstraint(Grid *grid)
         : GeoConstraint(), d_grid(grid), d_latitude(0), d_longitude(0)

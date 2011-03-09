@@ -490,7 +490,7 @@ Grid::add_map(Array* p_new_map, bool add_as_copy)
  * we are preserving Grid semantics but want to
  * add a new OUTER dimension, whereas add_map
  * appends to the end making a new INNER dimension.
- * @param pMap the map to add or copy and add
+ * @param p_new_map the map to add or copy and add
  * @param add_copy if true, copy pMap and add the copy.
  * @return The actual memory stored in the Grid,
  *      either pMap (if !add_copy) or the ptr to
