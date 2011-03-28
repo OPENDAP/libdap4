@@ -50,9 +50,9 @@ private:
 protected:
     /** @name Suppress the C++ defaults for these. */
     //@{
-    AISConnect()
+    AISConnect(): d_ais_merge(0)
     {}
-    AISConnect(const AISConnect &ac) : Connect(ac)
+    AISConnect(const AISConnect &ac) :Connect(ac),  d_ais_merge(0)
     {}
     //@}
 

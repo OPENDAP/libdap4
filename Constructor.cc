@@ -77,7 +77,7 @@ Constructor::Constructor(const string &n, const string &d, const Type &t)
         : BaseType(n, d, t)
 {}
 
-Constructor::Constructor(const Constructor &rhs) : BaseType(rhs)
+Constructor::Constructor(const Constructor &rhs) : BaseType(rhs), _vars(0)
 {}
 
 Constructor::~Constructor()

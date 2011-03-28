@@ -96,7 +96,7 @@ protected:
 
 public:
     HTTPCacheTest() : http_conn(0) {
-	putenv("DODS_CONF=./cache-testsuite/dodsrc");
+	putenv((char*)"DODS_CONF=./cache-testsuite/dodsrc");
 	http_conn = new HTTPConnect(RCReader::instance());
 
 	DBG2(cerr << "Entring HTTPCacheTest ctor... ");
@@ -308,11 +308,13 @@ public:
 	}
 
 	void set_cache_root_test() {
-		putenv("DODS_CACHE=/home/jimg");
+#if 0
+	    // env var support removed 3/22/11 jhrg
+	    putenv("DODS_CACHE=/home/jimg");
 		hc->set_cache_root();
 		CPPUNIT_ASSERT(hc->d_cache_root == "/home/jimg/dods-cache/");
 		remove("/home/jimg/w3c-cache/");
-
+#endif
 		hc->set_cache_root("/home/jimg/test_cache");
 		CPPUNIT_ASSERT(hc->d_cache_root == "/home/jimg/test_cache/");
 		remove("/home/jimg/test_cache/");

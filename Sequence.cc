@@ -1048,8 +1048,10 @@ Sequence::intern_data_parent_part_two(DDS &dds,
             }
             else if ((*iter)->send_p()) { //Sequence; must be the last variable
                 Sequence *tmp = dynamic_cast<Sequence*>((*iter)->ptr_duplicate());
-                if (!tmp)
+                if (!tmp) {
+                	delete row_data;
                     throw InternalErr(__FILE__, __LINE__, "Expected a Sequence.");
+                }
                 row_data->push_back(tmp);
                 DBG2(cerr << "    pushing d_values of " << tmp->name()
 		     << " (" << &(tmp->d_values)

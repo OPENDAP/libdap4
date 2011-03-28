@@ -351,8 +351,10 @@ ConstraintEvaluator::eval_function_clauses(DDS &dds)
 	    result->set_send_p(true);
 	    fdds->add_var(result);
 	}
-	else
+	else {
+		delete fdds;
 	    throw Error("A function was called but failed to return a value.");
+	}
     }
 
     return fdds;
@@ -380,8 +382,10 @@ ConstraintEvaluator::eval_function_clauses(DataDDS &dds)
 	    result->set_send_p(true);
 	    fdds->add_var(result);
 	}
-	else
+	else {
+		delete fdds;
 	    throw Error("A function was called but failed to return a value.");
+	}
     }
 
     return fdds;

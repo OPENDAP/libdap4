@@ -26,6 +26,7 @@
 static char rcsid[] not_used = { "$Id: ResponseBuilder.cc 23477 2010-09-02 21:02:59Z jimg $" };
 
 #include <iostream>
+#include <vector>
 
 //#define DODS_DEBUG
 
@@ -41,12 +42,15 @@ namespace libdap {
 Keywords::Keywords()
 {
     // Load known keywords and their allowed values
-    string values[] = {"2", "2.0", "3.2", "3.3", "3.4", "4", "4.0"};
-    value_set_t vs = value_set_t(values, values+sizeof(values)/sizeof(string*));
+    vector<string> v1(7);
+    v1[0] = "2"; v1[1] = "2.0"; v1[2] = "3.2"; v1[3] = "3.3"; v1[4] = "3.4";
+    v1[5] = "4"; v1[6] = "4.0";
+    value_set_t vs = value_set_t(v1.begin(), v1.end());
     d_known_keywords["dap"] = vs;
 
-    string values2[] = {"md5", "MD5", "sha1", "SHA1"};
-    value_set_t vs2 = value_set_t(values2, values2+sizeof(values2)/sizeof(string*));
+    vector<string> v2(4);
+    v2[0] = "md5"; v2[1] = "MD5"; v2[2] = "sha1"; v2[3] = "SHA1";
+    value_set_t vs2 = value_set_t(v2.begin(), v2.end());
     d_known_keywords["checksum"] = vs2;
 }
 

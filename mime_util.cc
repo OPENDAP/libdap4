@@ -780,6 +780,9 @@ void parse_mime_header(const string &header, string &name, string &value)
 
 /** Is this string the same as the MPM boundary value?
 
+    @note Since fgets() is used to read into line, it is guaranteed to be
+    null terminated.
+
     @param line The input to test
     @param boundary The complete boundary line to test for, excluding
     terminating characters.
@@ -788,11 +791,10 @@ void parse_mime_header(const string &header, string &name, string &value)
 
 bool is_boundary(const char *line, const string &boundary)
 {
-    if (!(line[0] == '-' && line[1] == '-'))
-	return false;
-    else {
-	return strncmp(line, boundary.c_str(), boundary.length()) == 0;
-    }
+    if (strlen(line) < 2 || !(line[0] == '-' && line[1] == '-'))
+		return false;
+    else
+		return strncmp(line, boundary.c_str(), boundary.length()) == 0;
 }
 
 /** Read the next line of input and test to see if it is a multipart MIME

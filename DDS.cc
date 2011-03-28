@@ -733,7 +733,7 @@ DDS::parse(string fname)
     }
     catch (Error &e) {
         fclose(in);
-        throw e;
+        throw ;
     }
 }
 
@@ -758,7 +758,7 @@ DDS::parse(int fd)
     }
     catch (Error &e) {
         fclose(in);
-        throw e;
+        throw ;
     }
 }
 

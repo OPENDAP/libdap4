@@ -402,7 +402,8 @@ void GeoConstraint::flip_latitude_within_array(Array &a, int lat_length,
     }
 
     int size = count_size_except_latitude_and_longitude(a);
-    char *tmp_data = new char[d_array_data_size];
+    // char *tmp_data = new char[d_array_data_size];
+    vector<char> tmp_data(d_array_data_size);
     int array_elem_size = a.var()->width();
     int lat_lon_size = (d_array_data_size / size);
 
@@ -419,13 +420,13 @@ void GeoConstraint::flip_latitude_within_array(Array &a, int lat_length,
 	int lon_size = array_elem_size * lon_length;
 	int offset = i * lat_lon_size;
 	while (s_lat > -1)
-	    memcpy(tmp_data + offset + (lat++ * lon_size),
+	    memcpy(&tmp_data[0] + offset + (lat++ * lon_size),
 		    d_array_data + offset + (s_lat-- * lon_size),
 		    lon_size);
     }
 
-    memcpy(d_array_data, tmp_data, d_array_data_size);
-    delete [] tmp_data;
+    memcpy(d_array_data, &tmp_data[0], d_array_data_size);
+    // delete [] tmp_data;
 }
 
 /** Reorder the elements in the longitude map so that the longitude constraint no

@@ -59,6 +59,8 @@ extern void close_temp(FILE *s, const string &name);
 class HTTPResponse : public Response
 {
 private:
+    // TODO Make this a value, not a pointer. Fix all uses and then
+    // change code in HTTPConnect
     vector<string> *d_headers; // Response headers
     string d_file;  // Temp file that holds response body
 

@@ -63,7 +63,7 @@ private:
         double d_right;
         double d_bottom;
 
-        Extent()
+        Extent() : d_left(0.0), d_top(0.0), d_right(0.0), d_bottom(0.0)
         {}
         Extent(double t, double l, double b, double r)
                 : d_left(l), d_top(t), d_right(r), d_bottom(b)
@@ -108,7 +108,7 @@ public:
     /** @name Constructors */
     //@{
     ArrayGeoConstraint(Array *)
-            : GeoConstraint()
+            : GeoConstraint(), d_array(0)
     {
         // See ce_finctions.cc:function_geoarray() to put this message in
         // context.

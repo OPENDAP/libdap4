@@ -217,9 +217,12 @@ TestArray::constrained_matrix(char *constrained_array)
     DBG(cerr << "constrained size: " << constrained_size << endl);
     DBG(cerr << "constrained_array: ";
         for (int i = 0; i < constrained_size; ++i) {
-    	cerr << (int)*(dods_byte*)(constrained_array + (i * elem_width)) << ", ";
+    	    cerr << (int)*(dods_byte*)(constrained_array + (i * elem_width)) << ", ";
         }
-    cerr << endl);
+        cerr << endl);
+
+    delete[] whole_array;
+    delete[] elem_val;
 }
 
 // This code calls 'output_values()' because print_val() does not test
@@ -297,7 +300,9 @@ TestArray::read()
       case dods_float32_c:
       case dods_float64_c: {
 
-        char *tmp = new char[width()];
+        //char *tmp = new char[width()];
+	vector<char> tmp(width());
+
         unsigned int elem_wid = var()->width(); // size of an element
         char *elem_val = 0;       // Null forces buf2val to allocate memory
 
@@ -308,17 +313,17 @@ TestArray::read()
                 build_special_values();
             }
             else if (dimensions() == 2) {
-                constrained_matrix(tmp);
-                val2buf(tmp);
+                constrained_matrix(&tmp[0]);
+                val2buf(&tmp[0]);
             }
             else {
                 for (unsigned i = 0; i < array_len; ++i) {
                     var()->read();
                     var()->buf2val((void **)&elem_val); // internal buffer to ELEM_VAL
-                    memcpy(tmp + i * elem_wid, elem_val, elem_wid);
+                    memcpy(&tmp[0] + i * elem_wid, elem_val, elem_wid);
                     var()->set_read_p(false); // pick up the next value
                  }
-                 val2buf(tmp);
+                 val2buf(&tmp[0]);
             }
         }
         else {
@@ -326,21 +331,22 @@ TestArray::read()
 	    var()->buf2val((void **)&elem_val);
 
 	    for (unsigned i = 0; i < array_len; ++i) {
-	        memcpy(tmp + i * elem_wid, elem_val, elem_wid);
+	        memcpy(&tmp[0] + i * elem_wid, elem_val, elem_wid);
             }
 
-            val2buf(tmp);
+            val2buf(&tmp[0]);
         }
 
 	delete elem_val; elem_val = 0; // alloced in buf2val()
-	delete[] tmp; tmp = 0;	// alloced above
+	// delete[] tmp; tmp = 0;	// alloced above
 
 	break;
       }
 
       case dods_str_c:
       case dods_url_c: {
-        char *tmp = new char[width()];
+        // char *tmp = new char[width()];
+        vector<char> tmp(width());
         unsigned int elem_wid = var()->width(); // size of an element
         char *elem_val = 0;       // Null forces buf2val to allocate memory
 
@@ -348,7 +354,7 @@ TestArray::read()
                 for (unsigned i = 0; i < array_len; ++i) {
                     var()->read();
                     var()->buf2val((void **)&elem_val); // internal buffer to ELEM_VAL
-                    memcpy(tmp + i * elem_wid, elem_val, elem_wid);
+                    memcpy(&tmp[0] + i * elem_wid, elem_val, elem_wid);
                     var()->set_read_p(false); // pick up the next value
                  }
         }
@@ -357,14 +363,14 @@ TestArray::read()
             var()->buf2val((void **)&elem_val);
 
             for (unsigned i = 0; i < array_len; ++i) {
-                memcpy(tmp + i * elem_wid, elem_val, elem_wid);
+                memcpy(&tmp[0] + i * elem_wid, elem_val, elem_wid);
             }
         }
 
-        val2buf(tmp);
+        val2buf(&tmp[0]);
 
         delete elem_val; elem_val = 0; // alloced in buf2val()
-        delete[] tmp; tmp = 0;  // alloced above
+        // delete[] tmp; tmp = 0;  // alloced above
 
         break;
       }

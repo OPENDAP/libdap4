@@ -169,6 +169,8 @@ GSEClause::set_start_stop()
 
         d_stop = i;
     }
+    
+    delete[] vals;
 }
 
 void

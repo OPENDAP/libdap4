@@ -59,7 +59,11 @@
 #include <time.h>
 #include <fcntl.h>
 #define MKDIR(a,b) _mkdir((a))
-#define REMOVE(a) remove((a))
+#define REMOVE(a) do { \
+		int s = remove((a)); \
+		if (s != 0) \
+			throw InternalErr(__FILE__, __LINE__, "Coule not remove file: " + long_to_string(s)); \
+	} while(0);
 #define MKSTEMP(a) _open(_mktemp((a)),_O_CREAT,_S_IREAD|_S_IWRITE)
 #define DIR_SEPARATOR_CHAR '\\'
 #define DIR_SEPARATOR_STR "\\"
@@ -105,19 +109,16 @@ get_hash(const string &url)
 }
 
 HTTPCacheTable::HTTPCacheTable(const string &cache_root, int block_size) :
-	d_cache_root(cache_root),
-	d_block_size(block_size),
-	d_current_size(0),
-	d_new_entries(0)
+    d_cache_root(cache_root), d_block_size(block_size), d_current_size(0), d_new_entries(0)
 {
-	d_cache_index = cache_root + CACHE_INDEX;
-	
-	d_cache_table = new CacheEntries*[CACHE_TABLE_SIZE];
-	
-	// Initialize the cache table.
+    d_cache_index = cache_root + CACHE_INDEX;
+
+    d_cache_table = new CacheEntries*[CACHE_TABLE_SIZE];
+
+    // Initialize the cache table.
     for (int i = 0; i < CACHE_TABLE_SIZE; ++i)
-        d_cache_table[i] = 0;
-    
+	d_cache_table[i] = 0;
+
     cache_index_read();
 }
 
@@ -131,20 +132,21 @@ delete_cache_entry(HTTPCacheTable::CacheEntry *e)
     delete e;
 }
 
-HTTPCacheTable::~HTTPCacheTable() {
-	for (int i = 0; i < CACHE_TABLE_SIZE; ++i) {
-		HTTPCacheTable::CacheEntries *cp = get_cache_table()[i];
-		if (cp) {
-			// delete each entry
-			for_each(cp->begin(), cp->end(), delete_cache_entry);
-			
-			// now delete the vector that held the entries
-			delete get_cache_table()[i];
-			get_cache_table()[i] = 0;
-		}
+HTTPCacheTable::~HTTPCacheTable()
+{
+    for (int i = 0; i < CACHE_TABLE_SIZE; ++i) {
+	HTTPCacheTable::CacheEntries *cp = get_cache_table()[i];
+	if (cp) {
+	    // delete each entry
+	    for_each(cp->begin(), cp->end(), delete_cache_entry);
+
+	    // now delete the vector that held the entries
+	    delete get_cache_table()[i];
+	    get_cache_table()[i] = 0;
 	}
-	
-	delete[] d_cache_table;
+    }
+
+    delete[] d_cache_table;
 }
 
 /** Functor which deletes and nulls a single CacheEntry if it has expired.
@@ -488,22 +490,27 @@ HTTPCacheTable::create_location(HTTPCacheTable::CacheEntry *entry)
 #endif
 
     // mkstemp uses the storage passed to it; must be writable and local.
-    char *templat = new char[hash_dir.size() + 1];
-    strcpy(templat, hash_dir.c_str());
+    // char *templat = new char[hash_dir.size() + 1];
+    vector<char> templat(hash_dir.size() + 1);
+    strncpy(&templat[0], hash_dir.c_str(), hash_dir.size() + 1);
 
     // Open truncated for update. NB: mkstemp() returns a file descriptor.
     // man mkstemp says "... The file is opened with the O_EXCL flag,
     // guaranteeing that when mkstemp returns successfully we are the only
     // user." 09/19/02 jhrg
-    int fd = MKSTEMP(templat); // fd mode is 666 or 600 (Unix)
+#ifndef WIN32
+    // Make sure that temp files are accessible only by the owner.
+    umask(077);
+#endif
+    int fd = MKSTEMP(&templat[0]); // fd mode is 666 or 600 (Unix)
     if (fd < 0) {
-        delete[] templat; templat = 0;
+        // delete[] templat; templat = 0;
         close(fd);
         throw Error("The HTTP Cache could not create a file to hold the response; it will not be cached.");
     }
 
-    entry->cachename = templat;
-    delete[] templat; templat = 0;
+    entry->cachename = &templat[0];
+    // delete[] templat; templat = 0;
     close(fd);
 }
 
@@ -569,18 +576,18 @@ HTTPCacheTable::get_locked_entry_from_cache_table(const string &url) /*const*/
 HTTPCacheTable::CacheEntry *
 HTTPCacheTable::get_locked_entry_from_cache_table(int hash, const string &url) /*const*/
 {
-	DBG(cerr << "url: " << url << "; hash: " << hash << endl);
-	DBG(cerr << "d_cache_table: " << hex << d_cache_table << dec << endl);
+    DBG(cerr << "url: " << url << "; hash: " << hash << endl);
+    DBG(cerr << "d_cache_table: " << hex << d_cache_table << dec << endl);
     if (d_cache_table[hash]) {
-        CacheEntries *cp = d_cache_table[hash];
-        for (CacheEntriesIter i = cp->begin(); i != cp->end(); ++i) {
-            // Must test *i because perform_garbage_collection may have
-            // removed this entry; the CacheEntry will then be null.
-            if ((*i) && (*i)->url == url) {
-            	(*i)->lock_read_response();	// Lock the response
-            	return *i;
-            }
-        }
+	CacheEntries *cp = d_cache_table[hash];
+	for (CacheEntriesIter i = cp->begin(); i != cp->end(); ++i) {
+	    // Must test *i because perform_garbage_collection may have
+	    // removed this entry; the CacheEntry will then be null.
+	    if ((*i) && (*i)->url == url) {
+		(*i)->lock_read_response(); // Lock the response
+		return *i;
+	    }
+	}
     }
 
     return 0;
@@ -680,35 +687,37 @@ HTTPCacheTable::remove_entry_from_cache_table(const string &url)
 
 /** Functor to delete and null all unlocked HTTPCacheTable::CacheEntry objects. */
 
-class DeleteUnlockedCacheEntry :
-	public unary_function<HTTPCacheTable::CacheEntry *&, void> {
-	HTTPCacheTable &d_table;
+class DeleteUnlockedCacheEntry: public unary_function<HTTPCacheTable::CacheEntry *&, void> {
+    HTTPCacheTable &d_table;
 
 public:
-	DeleteUnlockedCacheEntry(HTTPCacheTable &t) :
-		d_table(t) {
+    DeleteUnlockedCacheEntry(HTTPCacheTable &t) :
+	d_table(t)
+    {
+    }
+    void operator()(HTTPCacheTable::CacheEntry *&e)
+    {
+	if (e) {
+	    d_table.remove_cache_entry(e);
+	    delete e;
+	    e = 0;
 	}
-	void operator()(HTTPCacheTable::CacheEntry *&e) {
-		if (e) {
-			d_table.remove_cache_entry(e);
-			delete e; e = 0;
-		}
-	}
+    }
 };
 
-void HTTPCacheTable::delete_all_entries() {
-	// Walk through the cache table and, for every entry in the cache, delete
-	// it on disk and in the cache table.
-	for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
-		HTTPCacheTable::CacheEntries *slot = get_cache_table()[cnt];
-		if (slot) {
-			for_each(slot->begin(), slot->end(), DeleteUnlockedCacheEntry(*this));
-			slot->erase(remove(slot->begin(), slot->end(), static_cast<HTTPCacheTable::CacheEntry *>(0)), 
-					    slot->end());
-		}
+void HTTPCacheTable::delete_all_entries()
+{
+    // Walk through the cache table and, for every entry in the cache, delete
+    // it on disk and in the cache table.
+    for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
+	HTTPCacheTable::CacheEntries *slot = get_cache_table()[cnt];
+	if (slot) {
+	    for_each(slot->begin(), slot->end(), DeleteUnlockedCacheEntry(*this));
+	    slot->erase(remove(slot->begin(), slot->end(), static_cast<HTTPCacheTable::CacheEntry *> (0)), slot->end());
 	}
-	
-	cache_index_delete();
+    }
+
+    cache_index_delete();
 }
 
 /** Calculate the corrected_initial_age of the object. We use the time when
@@ -768,55 +777,62 @@ HTTPCacheTable::calculate_time(HTTPCacheTable::CacheEntry *entry, int default_ex
     @param max_entry_size DO not cache entries larger than this.
     @param headers A vector of header lines. */
 
-void HTTPCacheTable::parse_headers(HTTPCacheTable::CacheEntry *entry,
-		unsigned long max_entry_size, const vector<string> &headers) {
-	vector<string>::const_iterator i;
-	for (i = headers.begin(); i != headers.end(); ++i) {
-		// skip a blank header.
-		if ((*i).empty())
-			continue;
+void HTTPCacheTable::parse_headers(HTTPCacheTable::CacheEntry *entry, unsigned long max_entry_size,
+	const vector<string> &headers)
+{
+    vector<string>::const_iterator i;
+    for (i = headers.begin(); i != headers.end(); ++i) {
+	// skip a blank header.
+	if ((*i).empty())
+	    continue;
 
-		string::size_type colon = (*i).find(':');
+	string::size_type colon = (*i).find(':');
 
-		// skip a header with no colon in it.
-		if (colon == string::npos)
-			continue;
+	// skip a header with no colon in it.
+	if (colon == string::npos)
+	    continue;
 
-		string header = (*i).substr(0, (*i).find(':'));
-		string value = (*i).substr((*i).find(": ") + 2);
-		DBG2(cerr << "Header: " << header << endl);DBG2(cerr << "Value: " << value << endl);
+	string header = (*i).substr(0, (*i).find(':'));
+	string value = (*i).substr((*i).find(": ") + 2);
+	DBG2(cerr << "Header: " << header << endl);DBG2(cerr << "Value: " << value << endl);
 
-		if (header == "ETag") {
-			entry->etag = value;
-		} else if (header == "Last-Modified") {
-			entry->lm = parse_time(value.c_str());
-		} else if (header == "Expires") {
-			entry->expires = parse_time(value.c_str());
-		} else if (header == "Date") {
-			entry->date = parse_time(value.c_str());
-		} else if (header == "Age") {
-			entry->age = parse_time(value.c_str());
-		} else if (header == "Content-Length") {
-			unsigned long clength = strtoul(value.c_str(), 0, 0);
-			if (clength > max_entry_size)
-				entry->set_no_cache(true);
-		} else if (header == "Cache-Control") {
-			// Ignored Cache-Control values: public, private, no-transform,
-			// proxy-revalidate, s-max-age. These are used by shared caches.
-			// See section 14.9 of RFC 2612. 10/02/02 jhrg
-			if (value == "no-cache" || value == "no-store")
-				// Note that we *can* store a 'no-store' response in volatile
-				// memory according to RFC 2616 (section 14.9.2) but those
-				// will be rare coming from DAP servers. 10/02/02 jhrg
-				entry->set_no_cache(true);
-			else if (value == "must-revalidate")
-				entry->must_revalidate = true;
-			else if (value.find("max-age") != string::npos) {
-				string max_age = value.substr(value.find("=" + 1));
-				entry->max_age = parse_time(max_age.c_str());
-			}
-		}
+	if (header == "ETag") {
+	    entry->etag = value;
 	}
+	else if (header == "Last-Modified") {
+	    entry->lm = parse_time(value.c_str());
+	}
+	else if (header == "Expires") {
+	    entry->expires = parse_time(value.c_str());
+	}
+	else if (header == "Date") {
+	    entry->date = parse_time(value.c_str());
+	}
+	else if (header == "Age") {
+	    entry->age = parse_time(value.c_str());
+	}
+	else if (header == "Content-Length") {
+	    unsigned long clength = strtoul(value.c_str(), 0, 0);
+	    if (clength > max_entry_size)
+		entry->set_no_cache(true);
+	}
+	else if (header == "Cache-Control") {
+	    // Ignored Cache-Control values: public, private, no-transform,
+	    // proxy-revalidate, s-max-age. These are used by shared caches.
+	    // See section 14.9 of RFC 2612. 10/02/02 jhrg
+	    if (value == "no-cache" || value == "no-store")
+		// Note that we *can* store a 'no-store' response in volatile
+		// memory according to RFC 2616 (section 14.9.2) but those
+		// will be rare coming from DAP servers. 10/02/02 jhrg
+		entry->set_no_cache(true);
+	    else if (value == "must-revalidate")
+		entry->must_revalidate = true;
+	    else if (value.find("max-age") != string::npos) {
+		string max_age = value.substr(value.find("=" + 1));
+		entry->max_age = parse_time(max_age.c_str());
+	    }
+	}
+    }
 }
 
 //@} End of the CacheEntry methods.
@@ -828,7 +844,8 @@ void HTTPCacheTable::bind_entry_to_data(HTTPCacheTable::CacheEntry *entry, FILE 
 }
 
 void HTTPCacheTable::uncouple_entry_from_data(FILE *body) {
-	HTTPCacheTable::CacheEntry *entry = d_locked_entries[body];
+
+    HTTPCacheTable::CacheEntry *entry = d_locked_entries[body];
     if (!entry)
         throw InternalErr("There is no cache entry for the response given.");
 

@@ -331,9 +331,10 @@ AttrTable::append_attr(const string &name, const string &type,
 
 /** Create and append an attribute container to this AttrTable. If this
  attribute table already contains an attribute container called
- <tt>name</tt> an exception is thrown.
+ <tt>name</tt> an exception is thrown. Return a pointer to the new container.
 
  @brief Add a container to the attribute table.
+ @param name The name of the container to create.
  @return A pointer to the new AttrTable object.
  */
 
@@ -348,7 +349,7 @@ AttrTable::append_container(const string &name)
     catch (Error &e) {
         // an error occurred, attribute with that name already exists
         delete new_at; new_at = 0;
-        throw e;
+        throw ;
     }
     return ret;
 }
@@ -363,6 +364,8 @@ AttrTable::append_container(const string &name)
  set_name() method.
 
  @brief Add a container to the attribute table.
+ @param at A pointer to the new attribute table to append.
+ @param name The name of the new attribute table.
  @return A pointer to the new AttrTable object.
  */
 AttrTable *
@@ -1341,7 +1344,7 @@ AttrTable::dump(ostream &strm) const
                 strm << DapIndent::LMarg;
                 vector<string>::const_iterator iter = e->attr->begin();
                 vector<string>::const_iterator last = e->attr->end() - 1;
-                for (; iter != last; iter++) {
+                for (; iter != last; ++iter) {
                     strm << (*iter) << ", ";
                 }
                 strm << (*(e->attr->end() - 1)) << endl;

@@ -487,10 +487,13 @@ function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 
     // Duplicate the grid; ResponseBuilder::send_data() will delete the variable
     // after serializing it.
-    Grid *l_grid = dynamic_cast < Grid * >(original_grid->ptr_duplicate());
-    if (!l_grid)
+    BaseType *btp = original_grid->ptr_duplicate();
+    Grid *l_grid = dynamic_cast < Grid * >(btp);
+    if (!l_grid) {
+    	delete btp;
         throw InternalErr(__FILE__, __LINE__, "Expected a Grid.");
-
+    }
+    
     DBG(cerr << "grid: past initialization code" << endl);
 
     // Read the maps. Do this before calling parse_gse_expression(). Avoid

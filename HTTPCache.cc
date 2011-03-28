@@ -27,6 +27,7 @@
 
 //#define DODS_DEBUG
 //#define DODS_DEBUG2
+#undef USE_GETENV
 
 #include <pthread.h>
 #include <limits.h>
@@ -90,10 +91,10 @@ static pthread_once_t once_block = PTHREAD_ONCE_INIT;
 #endif
 
 #ifdef WIN32
-#define CACHE_LOC "\\tmp\\"
+#define CACHE_LOCATION "\\tmp\\"
 #define CACHE_ROOT "dods-cache\\"
 #else
-#define CACHE_LOC "/tmp/"
+#define CACHE_LOCATION "/tmp/"
 #define CACHE_ROOT "dods-cache/"
 #endif
 #define CACHE_INDEX ".index"
@@ -153,9 +154,14 @@ once_init_routine()
 HTTPCache *
 HTTPCache::instance(const string &cache_root, bool force)
 {
+    int status = pthread_once(&once_block, once_init_routine);
+    if (status != 0)
+	throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
+
     LOCK(&instance_mutex);
+
     DBG(cerr << "Entering instance(); (" << hex << _instance << dec << ")"
-        << "... ");
+	    << "... ");
 
     try {
         if (!_instance) {
@@ -260,11 +266,11 @@ HTTPCache::HTTPCache(string cache_root, bool force) :
         d_http_cache_table(0)
 {
     DBG(cerr << "Entering the constructor for " << this << "... ");
-
+#if 0
 	int status = pthread_once(&once_block, once_init_routine);
 	if (status != 0)
 		throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
-
+#endif
 	INIT(&d_cache_mutex);
 
 	// This used to throw an Error object if we could not get the
@@ -594,12 +600,16 @@ HTTPCache::set_cache_root(const string &root)
     else {
         // If no cache root has been indicated then look for a suitable
         // location.
+#ifdef USE_GETENV
         char * cr = (char *) getenv("DODS_CACHE");
         if (!cr) cr = (char *) getenv("TMP");
         if (!cr) cr = (char *) getenv("TEMP");
-        if (!cr) cr = CACHE_LOC;
-
+        if (!cr) cr = (char*)CACHE_LOCATION;
         d_cache_root = cr;
+#else
+        d_cache_root = CACHE_LOCATION;
+#endif
+
         if (d_cache_root[d_cache_root.size()-1] != DIR_SEPARATOR_CHAR)
             d_cache_root += DIR_SEPARATOR_CHAR;
 
@@ -923,7 +933,7 @@ HTTPCache::get_cache_control()
 
     This method locks the class' interface.
 
-	@todo Remvoe this is broken.
+	@todo Remove this is broken.
     @param url The url to look for.
     @return True if \c url is found, otherwise False. */
 
@@ -982,8 +992,12 @@ HTTPCache::write_metadata(const string &cachename, const vector<string> &headers
     vector<string>::const_iterator i;
     for (i = headers.begin(); i != headers.end(); ++i) {
         if (!is_hop_by_hop_header(*i)) {
-            fwrite((*i).c_str(), (*i).size(), 1, dest);
-            fwrite("\n", 1, 1, dest);
+            int s = fwrite((*i).c_str(), (*i).size(), 1, dest);
+            if (s != 1)
+            	throw InternalErr(__FILE__, __LINE__, "could not write header: '" + (*i) + "' " + long_to_string(s));
+            s = fwrite("\n", 1, 1, dest);
+            if (s != 1)
+            	throw InternalErr(__FILE__, __LINE__, "could not write header: " + long_to_string(s));
         }
     }
 
@@ -1493,8 +1507,10 @@ FILE * HTTPCache::get_cached_response(const string &url,
         d_http_cache_table->bind_entry_to_data(entry, body);
     }
     catch (...) {
+    	// Why make this unlock operation conditional on entry?
         if (entry)
-        unlock_cache_interface();
+        	unlock_cache_interface();
+        fclose(body);
         throw;
     }
 
@@ -1502,6 +1518,7 @@ FILE * HTTPCache::get_cached_response(const string &url,
 
     return body;
 }
+
 /** Get information from the cache. This is a convenience method that calls
  	the three parameter version of get_cache_response().
 

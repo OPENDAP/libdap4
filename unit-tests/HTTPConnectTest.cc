@@ -181,10 +181,9 @@ class HTTPConnectTest: public TestFixture {
 
         }
         catch(Error & e) {
-            cerr << e.get_error_message() << endl;
             delete resp_h;
             resp_h = 0;
-            CPPUNIT_ASSERT(!"Should not get an Error");
+            CPPUNIT_FAIL("Error: " + e.get_error_message() );
         }
     }
 
@@ -203,14 +202,12 @@ class HTTPConnectTest: public TestFixture {
         catch(InternalErr & e) {
             delete stuff;
             stuff = 0;
-            cerr << "InternalErr: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
         }
         catch(Error & e) {
             delete stuff;
             stuff = 0;
-            cerr << "Error: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
         // Response object also unlocks the HTTPCache in some cases. If delete
@@ -236,14 +233,12 @@ class HTTPConnectTest: public TestFixture {
         catch(InternalErr & e) {
             delete stuff;
             stuff = 0;
-            cerr << "InternalErr: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
         }
         catch(Error & e) {
             delete stuff;
             stuff = 0;
-            cerr << "Error: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
         // Response object also unlocks the HTTPCache in some cases. If delete
@@ -265,14 +260,12 @@ class HTTPConnectTest: public TestFixture {
         catch(InternalErr & e) {
             delete stuff;
             stuff = 0;
-            cerr << "InternalErr: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
         }
         catch(Error & e) {
             delete stuff;
             stuff = 0;
-            cerr << "Error: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
         // Response object also unlocks the HTTPCache in some cases. If delete
@@ -295,14 +288,12 @@ class HTTPConnectTest: public TestFixture {
         catch(InternalErr & e) {
             delete stuff;
             stuff = 0;
-            cerr << "InternalErr: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
         }
         catch(Error & e) {
             delete stuff;
             stuff = 0;
-            cerr << "Error: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
         // Response object also unlocks the HTTPCache in some cases. If delete
@@ -338,7 +329,7 @@ class HTTPConnectTest: public TestFixture {
         catch(InternalErr & e) {
             delete r;
             r = 0;
-            CPPUNIT_FAIL("Caught an exception from get_response_headers");
+            CPPUNIT_FAIL("Caught an InternalErr exception from get_response_headers: " + e.get_error_message() );
         }
         catch (...) {
             delete r; r = 0;
@@ -362,7 +353,7 @@ class HTTPConnectTest: public TestFixture {
         catch(InternalErr & e) {
             delete r;
             r = 0;
-            CPPUNIT_ASSERT(!"Caught an exception from server_version");
+            CPPUNIT_FAIL("Caught an InternalErr exception from server_version: " + e.get_error_message() );
         }
         catch (...) {
             delete r; r = 0;
@@ -383,7 +374,7 @@ class HTTPConnectTest: public TestFixture {
         catch(InternalErr & e) {
             delete r;
             r = 0;
-            CPPUNIT_ASSERT(!"Caught an exception from type()");
+            CPPUNIT_FAIL("Caught an InternalErr exception from type(): " + e.get_error_message() );
         }
 
     }
@@ -403,25 +394,36 @@ class HTTPConnectTest: public TestFixture {
         catch(InternalErr & e) {
             delete stuff;
             stuff = 0;
-            CPPUNIT_ASSERT(!"Caught exception from output");
+            CPPUNIT_FAIL("Caught an InternalErrexception from output: " + e.get_error_message());
         }
     }
 
     void cache_test() {
         DBG(cerr << endl << "Entering Caching tests." << endl);
+	try {
+	    // The cache-testsuite/dodsrc file turns this off; all the other
+	    // params are set up. It used to be that HTTPConnect had an option to
+	    // turn caching on, but that no longer is present. This hack enables
+	    // caching for this test. 06/18/04 jhrg
+	    http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root(), false);
+	    DBG(cerr << "Instantiate the cache" << endl);
 
-        // The cache-testsuite/dodsrc file turns this off; all the other
-        // params are set up. It used to be that HTTPConnect had an option to
-        // turn caching on, but that no longer is present. This hack enables
-        // caching for this test. 06/18/04 jhrg
-        http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root(), false);
-        CPPUNIT_ASSERT(http->d_http_cache != 0);
-        http->d_http_cache->set_cache_enabled(true);
+	    CPPUNIT_ASSERT(http->d_http_cache != 0);
+	    http->d_http_cache->set_cache_enabled(true);
+	    DBG(cerr << "Enable the cache" << endl);
 
-        fetch_url_test();
-        get_response_headers_test();
-        server_version_test();
-        type_test();
+	    fetch_url_test();
+	    DBG(cerr << "fetch_url_test" << endl);
+	    get_response_headers_test();
+	    DBG(cerr << "get_response_headers_test" << endl);
+	    server_version_test();
+	    DBG(cerr << "server_version_test" << endl);
+	    type_test();
+	    DBG(cerr << "type_test" << endl);
+	}
+	catch (Error &e) {
+	    CPPUNIT_FAIL((string)"Error: " + e.get_error_message());
+	}
     }
 
     void set_accept_deflate_test() {

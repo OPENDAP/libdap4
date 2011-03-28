@@ -52,13 +52,13 @@ using std::endl;
 namespace libdap {
 
 Clause::Clause(const int oper, rvalue *a1, rvalue_list *rv)
-        : _op(oper), _b_func(0), _bt_func(0), _arg1(a1), _args(rv)
+        : _op(oper), _b_func(0), _bt_func(0), _argc(0), _arg1(a1), _args(rv)
 {
     assert(OK());
 }
 #if 1
 Clause::Clause(bool_func func, rvalue_list *rv)
-        : _op(0), _b_func(func), _bt_func(0), _arg1(0), _args(rv)
+        : _op(0), _b_func(func), _bt_func(0), _argc(0), _arg1(0), _args(rv)
 {
     assert(OK());
 
@@ -69,7 +69,7 @@ Clause::Clause(bool_func func, rvalue_list *rv)
 }
 #endif
 Clause::Clause(btp_func func, rvalue_list *rv)
-        : _op(0), _b_func(0), _bt_func(func), _arg1(0), _args(rv)
+        : _op(0), _b_func(0), _bt_func(func), _argc(0), _arg1(0), _args(rv)
 {
     assert(OK());
 
@@ -79,7 +79,7 @@ Clause::Clause(btp_func func, rvalue_list *rv)
         _argc = 0;
 }
 
-Clause::Clause() : _op(0), _b_func(0), _bt_func(0), _arg1(0), _args(0)
+Clause::Clause() : _op(0), _b_func(0), _bt_func(0), _argc(0), _arg1(0), _args(0)
 {}
 
 static inline void

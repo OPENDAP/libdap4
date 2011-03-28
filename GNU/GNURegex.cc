@@ -35,6 +35,7 @@
 
 #include <new>
 #include <string>
+#include <vector>
 #include <stdexcept>
 
 #include "GNURegex.h"
@@ -55,11 +56,12 @@ Regex::init(const char *t)
         size_t msg_len = regerror(result, static_cast<regex_t*>(d_preg),
                                   static_cast<char*>(NULL),
                                   static_cast<size_t>(0));
-        char *msg = new char[msg_len+1];
-        regerror(result, static_cast<regex_t*>(d_preg), msg, msg_len);
-        Error e(string("Regex error: ") + string(msg));
-        delete[] msg;
-        throw e;
+        vector<char> msg(msg_len+1);
+        //char *msg = new char[msg_len+1];
+        regerror(result, static_cast<regex_t*>(d_preg), &msg[0], msg_len);
+        throw Error(string("Regex error: ") + string(&msg[0]));
+        //delete[] msg;
+        //throw e;
     }
 }
 
@@ -94,6 +96,9 @@ Regex::Regex(const char* t, int)
 int 
 Regex::match(const char* s, int len, int pos)
 {
+   if (len > 32766)	// Integer overflow protection
+    	return -1;
+    	
     regmatch_t *pmatch = new regmatch_t[len+1];
     string ss = s;
 

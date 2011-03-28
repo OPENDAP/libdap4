@@ -146,9 +146,9 @@ private:
 protected:
     /** @name Suppress the C++ defaults for these. */
     //@{
-    Connect()
+    Connect() : d_http(0)
     { }
-    Connect(const Connect &)
+    Connect(const Connect &) : d_http(0)
     { }
     Connect &operator=(const Connect &)
     {

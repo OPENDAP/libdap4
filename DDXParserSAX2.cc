@@ -384,9 +384,11 @@ void DDXParser::process_dimension(const xmlChar **attrs, int nb_attributes)
     if (check_required_attribute(string("size"))) {
         set_state(inside_dimension);
         Array *ap = dynamic_cast < Array * >(bt_stack.top());
-		if (!ap)
+		if (!ap) {
 			ddx_fatal_error(this, "Parse error: Expected an array variable.");
-
+			return;
+		}
+		
         ap->append_dim(atoi(attribute_table["size"].value.c_str()),
                        attribute_table["name"].value);
     }
@@ -555,9 +557,11 @@ void DDXParser::ddx_end_document(void * p)
     // Pop the temporary Structure off the stack and transfer its variables
     // to the DDS.
     Constructor *cp = dynamic_cast < Constructor * >(parser->bt_stack.top());
-    if (!cp)
+    if (!cp) {
     	ddx_fatal_error(parser, "Parse error: Expected a Structure, Sequence or Grid variable.");
-
+		return;
+    }
+    
     for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end();
          ++i)
         parser->dds->add_var(*i);
@@ -1145,7 +1149,9 @@ void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid,
         context->userData = this;
         context->validate = true;
 
+
         while ((fgets(chars, size, in) > 0) && !is_boundary(chars, boundary)) {
+            chars[size-1] = '\0';
             DBG(cerr << "line: " << chars << endl);
             xmlParseChunk(ctxt, chars, strlen(chars), 0);
         }

@@ -124,16 +124,19 @@ Connect::process_data(DataDDS &data, Response *rs)
             fpistream in ( rs->get_stream() );
 	    XDRStreamUnMarshaller um( in ) ;
 #endif
+#if 0
 	    try {
+#endif
         	for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
                      i++) {
                     (*i)->deserialize(um, &data);
                 }
+#if 0
             }
             catch (Error &e) {
-                throw e;
+                throw ;
             }
-
+#endif
             return;
         }
 
@@ -148,16 +151,19 @@ Connect::process_data(DataDDS &data, Response *rs)
 	    XDRStreamUnMarshaller um( in ) ;
 #endif
             // Load the DDS with data.
+#if 0
             try {
+#endif
                 for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
                      i++) {
                     (*i)->deserialize(um, &data);
                 }
+#if 0
             }
             catch (Error &e) {
-                throw e;
+                throw ;
             }
-
+#endif
             return;
         }
     }
@@ -312,7 +318,7 @@ Connect::request_version()
     }
     catch (Error &e) {
         delete rs; rs = 0;
-        throw e;
+        throw ;
     }
 
     d_version = rs->get_version();
@@ -347,7 +353,7 @@ Connect::request_protocol()
     }
     catch (Error &e) {
         delete rs; rs = 0;
-        throw e;
+        throw ;
     }
 
     d_version = rs->get_version();
@@ -378,7 +384,7 @@ Connect::request_das(DAS &das)
     }
     catch (Error &e) {
         delete rs; rs = 0;
-        throw e;
+        throw ;
     }
 
     d_version = rs->get_version();
@@ -388,12 +394,12 @@ Connect::request_das(DAS &das)
     case dods_error: {
             Error e;
             if (!e.parse(rs->get_stream())) {
+            	delete rs; rs = 0;
                 throw InternalErr(__FILE__, __LINE__,
                                   "Could not parse error returned from server.");
-                break;
             }
+            delete rs; rs = 0;
             throw e;
-            break;
         }
 
     case web_error:
@@ -409,7 +415,7 @@ Connect::request_das(DAS &das)
         }
         catch (Error &e) {
             delete rs; rs = 0;
-            throw e;
+            throw ;
         }
 
         break;
@@ -438,7 +444,7 @@ Connect::request_das_url(DAS &das)
     }
     catch (Error &e) {
         delete rs; rs = 0;
-        throw e;
+        throw ;
     }
 
     d_version = rs->get_version();
@@ -448,12 +454,12 @@ Connect::request_das_url(DAS &das)
     case dods_error: {
             Error e;
             if (!e.parse(rs->get_stream())) {
+            	delete rs; rs = 0;
                 throw InternalErr(__FILE__, __LINE__,
                                   "Could not parse error returned from server.");
-                break;
             }
+            delete rs; rs = 0;
             throw e;
-            break;
         }
 
     case web_error:
@@ -469,7 +475,7 @@ Connect::request_das_url(DAS &das)
         }
         catch (Error &e) {
             delete rs; rs = 0;
-            throw e;
+            throw ;
         }
 
         break;
@@ -514,7 +520,7 @@ Connect::request_dds(DDS &dds, string expr)
     }
     catch (Error &e) {
         delete rs; rs = 0;
-        throw e;
+        throw ;
     }
 
     d_version = rs->get_version();
@@ -524,12 +530,12 @@ Connect::request_dds(DDS &dds, string expr)
     case dods_error: {
             Error e;
             if (!e.parse(rs->get_stream())) {
+            	delete rs; rs = 0;
                 throw InternalErr(__FILE__, __LINE__,
                                   "Could not parse error returned from server.");
-                break;
             }
+            delete rs; rs = 0;
             throw e;
-            break;
         }
 
     case web_error:
@@ -545,7 +551,7 @@ Connect::request_dds(DDS &dds, string expr)
         }
         catch (Error &e) {
             delete rs; rs = 0;
-            throw e;
+            throw ;
         }
         break;
     }
@@ -579,7 +585,7 @@ Connect::request_dds_url(DDS &dds)
     }
     catch (Error &e) {
         delete rs; rs = 0;
-        throw e;
+        throw ;
     }
 
     d_version = rs->get_version();
@@ -589,12 +595,12 @@ Connect::request_dds_url(DDS &dds)
     case dods_error: {
             Error e;
             if (!e.parse(rs->get_stream())) {
+            	delete rs; rs = 0;
                 throw InternalErr(__FILE__, __LINE__,
                                   "Could not parse error returned from server.");
-                break;
             }
+            delete rs; rs = 0;
             throw e;
-            break;
         }
 
     case web_error:
@@ -610,7 +616,7 @@ Connect::request_dds_url(DDS &dds)
         }
         catch (Error &e) {
             delete rs; rs = 0;
-            throw e;
+            throw ;
         }
         break;
     }
@@ -652,7 +658,7 @@ Connect::request_ddx(DDS &dds, string expr)
     }
     catch (Error &e) {
         delete rs; rs = 0;
-        throw e;
+        throw ;
     }
 
     d_version = rs->get_version();
@@ -662,12 +668,12 @@ Connect::request_ddx(DDS &dds, string expr)
     case dods_error: {
             Error e;
             if (!e.parse(rs->get_stream())) {
+            	delete rs; rs = 0;
                 throw InternalErr(__FILE__, __LINE__,
                                   "Could not parse error returned from server.");
-                break;
             }
+            delete rs; rs = 0;
             throw e;
-            break;
         }
 
     case web_error:
@@ -685,11 +691,12 @@ Connect::request_ddx(DDS &dds, string expr)
         }
         catch (Error &e) {
             delete rs; rs = 0;
-            throw e;
+            throw ;
         }
         break;
 
     default:
+    	delete rs; rs = 0;
         throw Error("The site did not return a valid response (it lacked the\n\
 expected content description header value of 'dap4-ddx' and\n\
 instead returned '" + long_to_string(rs->get_type()) + "').\n\
@@ -713,7 +720,7 @@ Connect::request_ddx_url(DDS &dds)
     }
     catch (Error &e) {
         delete rs; rs = 0;
-        throw e;
+        throw ;
     }
 
     d_version = rs->get_version();
@@ -723,12 +730,12 @@ Connect::request_ddx_url(DDS &dds)
     case dods_error: {
             Error e;
             if (!e.parse(rs->get_stream())) {
+            	delete rs; rs = 0;
                 throw InternalErr(__FILE__, __LINE__,
                                   "Could not parse error returned from server.");
-                break;
             }
+            delete rs; rs = 0;
             throw e;
-            break;
         }
 
     case web_error:
@@ -746,11 +753,12 @@ Connect::request_ddx_url(DDS &dds)
         }
         catch (Error &e) {
             delete rs; rs = 0;
-            throw e;
+            throw ;
         }
         break;
 
     default:
+    	delete rs; rs = 0;
         throw Error("The site did not return a valid response (it lacked the\n\
 expected content description header value of 'dap4-ddx' and\n\
 instead returned '" + long_to_string(rs->get_type()) + "').\n\
@@ -806,7 +814,7 @@ Connect::request_data(DataDDS &data, string expr)
     }
     catch (Error &e) {
         delete rs; rs = 0;
-        throw e;
+        throw ;
     }
 }
 
@@ -844,7 +852,7 @@ Connect::request_data_url(DataDDS &data)
     }
     catch (Error &e) {
         delete rs; rs = 0;
-        throw e;
+        throw ;
     }
 }
 
@@ -878,7 +886,7 @@ Connect::request_data_ddx(DataDDS &data, string expr)
     }
     catch (Error &e) {
         delete rs; rs = 0;
-        throw e;
+        throw ;
     }
 }
 
@@ -899,7 +907,7 @@ Connect::request_data_ddx_url(DataDDS &data)
     }
     catch (Error &e) {
         delete rs; rs = 0;
-        throw e;
+        throw ;
     }
 }
 

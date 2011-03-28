@@ -234,7 +234,8 @@ public:
     DDXParser(BaseTypeFactory *factory)
         : d_factory(factory),
         other_xml(""), other_xml_depth(0), unknown_depth(0),
-        error_msg(""), ctxt(0), dds(0), dods_attr_name(""), dods_attr_type(""),
+        error_msg(""), ctxt(0), dds(0), blob_href(0),
+        dods_attr_name(""), dods_attr_type(""),
         char_data(""), root_ns("")
     {}
 
