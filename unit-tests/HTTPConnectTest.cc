@@ -405,7 +405,7 @@ class HTTPConnectTest: public TestFixture {
 	    // params are set up. It used to be that HTTPConnect had an option to
 	    // turn caching on, but that no longer is present. This hack enables
 	    // caching for this test. 06/18/04 jhrg
-	    http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root(), false);
+	    http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root(), true);
 	    DBG(cerr << "Instantiate the cache" << endl);
 
 	    CPPUNIT_ASSERT(http->d_http_cache != 0);

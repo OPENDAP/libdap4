@@ -39,7 +39,7 @@ using namespace std;
 #include "ObjectType.h"
 #endif
 
-#ifndef _internal_err_
+#ifndef _internalerr_h
 #include "InternalErr.h"
 #endif
 

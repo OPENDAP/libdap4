@@ -25,8 +25,8 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
-//#define DODS_DEBUG2
+// #define DODS_DEBUG
+// #define DODS_DEBUG2
 #undef USE_GETENV
 
 #include <pthread.h>
@@ -287,7 +287,7 @@ HTTPCache::HTTPCache(string cache_root, bool force) :
 	int block_size;
 
 	if (!get_single_user_lock(force))
-		throw Error("Could not get single user lock for the cache");
+	    throw Error("Could not get single user lock for the cache");
 
 #ifdef WIN32
 	//  Windows is unable to provide us this information.  4096 appears
@@ -466,43 +466,48 @@ void HTTPCache::too_big_gc() {
     default.
     @return True if the cache was locked for our use, False otherwise. */
 
-bool HTTPCache::get_single_user_lock(bool force) {
-	if (!d_locked_open_file) {
-		FILE * fp = NULL;
+bool HTTPCache::get_single_user_lock(bool force) 
+{
+    if (!d_locked_open_file) {
+	FILE * fp = NULL;
 
-		try {
-			// It's OK to call create_cache_root if the directory already
-			// exists.
-			create_cache_root(d_cache_root);
-		}
-		catch (Error &e) {
-			// We need to catch and return false because this method is
-			// called from a ctor and throwing at this point will result in a
-			// partially constructed object. 01/22/04 jhrg
-			return false;
-		}
-
-		// Try to read the lock file. If we can open for reading, it exists.
-		string lock = d_cache_root + CACHE_LOCK;
-		if ((fp = fopen(lock.c_str(), "r")) != NULL) {
-			int res = fclose(fp);
-			if (res) {
-				DBG(cerr << "Failed to close " << (void *)fp << endl);
-			}
-			if (force)
-				REMOVE(lock.c_str());
-			else
-				return false;
-		}
-
-		if ((fp = fopen(lock.c_str(), "w")) == NULL)
-			return false;
-
-		d_locked_open_file = fp;
-		return true;
+	try {
+	    // It's OK to call create_cache_root if the directory already
+	    // exists.
+	    create_cache_root(d_cache_root);
+	}
+	catch (Error &e) {
+	    // We need to catch and return false because this method is
+	    // called from a ctor and throwing at this point will result in a
+	    // partially constructed object. 01/22/04 jhrg
+	    DBG(cerr << "Failure to create the cache root" << endl);
+	    return false;
 	}
 
-	return false;
+	// Try to read the lock file. If we can open for reading, it exists.
+	string lock = d_cache_root + CACHE_LOCK;
+	if ((fp = fopen(lock.c_str(), "r")) != NULL) {
+	    int res = fclose(fp);
+	    if (res) {
+		DBG(cerr << "Failed to close " << (void *)fp << endl);
+	    }
+	    if (force)
+		REMOVE(lock.c_str());
+	    else
+		return false;
+	}
+
+	if ((fp = fopen(lock.c_str(), "w")) == NULL) {
+	    DBG(cerr << "Could not open for write access" << endl);
+	    return false;
+	}
+
+	d_locked_open_file = fp;
+	return true;
+    }
+
+    cerr << "locked_open_file is true" << endl;
+    return false;
 }
 
 /** Release the single user (process) lock. A private method. */

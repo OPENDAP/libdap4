@@ -203,11 +203,10 @@ public:
 	{
 	    DBG(cerr << "Try locking read response... (" << hex << &d_response_lock << dec << ") ");
 	    int status = TRYLOCK(&d_response_lock);
-	    while (status != 0 /*&& status == EBUSY*/) {
+	    if (status != 0 /*&& status == EBUSY*/) {
 		// If locked, wait for any writers
 		LOCK(&d_response_write_lock);
 		UNLOCK(&d_response_write_lock);
-		status = TRYLOCK(&d_response_lock);
 	    };
 	    DBGN(cerr << "Done" << endl);
 	    readers++; // REcord number of readers

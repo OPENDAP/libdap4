@@ -49,7 +49,7 @@ static char rcsid[] not_used =
 #include <cstdlib>
 #include <cstring>
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 //#define DODS_DEBUG2
 //#define HTTP_TRACE
 //#define DODS_DEBUG
