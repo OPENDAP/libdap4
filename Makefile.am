@@ -181,8 +181,8 @@ pkg-main: pkg-build
 	       > foo
 	mv foo ./OSX_Resources/Info.plist
 	${PACKAGEMAKER} --root mac_osx --id org.opendap.@PACKAGE@ \
-		--title "@PACKAGE@ @PACKAGE_VERSION@" --version @PACKAGE_VERSION@ \
-		--out @PACKAGE@-@PACKAGE_VERSION@.pkg --resources OSX_Resources
+	    --title "@PACKAGE@ @PACKAGE_VERSION@" --version @PACKAGE_VERSION@ \
+	    --out @PACKAGE@-@PACKAGE_VERSION@.pkg --resources OSX_Resources
 
 pkg-dmg: pkg-main
 	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
