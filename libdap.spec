@@ -12,13 +12,12 @@ Requires: curl >= 7.10.6 libxml2 >= 2.6.16
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.6.16
-BuildRequires: doxygen graphviz
+#BuildRequires: doxygen graphviz
 BuildRequires: pkgconfig
 
 # This package could be relocatable. In that case uncomment the following
 # line
 Prefix: %{_prefix}
-
 
 %description
 The libdap++ library contains an implementation of DAP2. This package
@@ -29,7 +28,6 @@ using the library and demonstrates simple uses of it. Note that libdap
 used to include a copy of 'deflate' which was used to compress
 responses. This has been removed since it is no longer used and the
 CGI-based code is no longer supported.
-
 
 %package devel
 Summary: Development and header files from libdap
@@ -44,14 +42,12 @@ Requires: automake
 This package contains all the files needed to develop applications that
 will use libdap.
 
+# %package doc
+# Summary: Documentation of the libdap library
+# Group: Documentation
 
-%package doc
-Summary: Documentation of the libdap library
-Group: Documentation
-
-%description doc
-Documentation of the libdap library.
-
+# %description doc
+# Documentation of the libdap library.
 
 %prep
 %setup -q
@@ -60,7 +56,7 @@ Documentation of the libdap library.
 %configure --disable-static --disable-dependency-tracking
 make %{?_smp_mflags}
 
-make docs
+# make docs
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -68,23 +64,20 @@ make install DESTDIR=$RPM_BUILD_ROOT INSTALL="%{__install} -p"
 rm $RPM_BUILD_ROOT%{_libdir}/*.la
 mv $RPM_BUILD_ROOT%{_bindir}/dap-config-pkgconfig $RPM_BUILD_ROOT%{_bindir}/dap-config
 
-rm -rf __dist_docs
-cp -pr docs __dist_docs
-# those .map and .md5 are of dubious use, remove them
-rm -f __dist_docs/html/*.map __dist_docs/html/*.md5
-# use the ChangeLog timestamp to have the same timestamps for the doc files 
-# for all arches
-touch -r ChangeLog __dist_docs/html/*
-
+# rm -rf __dist_docs
+# cp -pr docs __dist_docs
+# # those .map and .md5 are of dubious use, remove them
+# rm -f __dist_docs/html/*.map __dist_docs/html/*.md5
+# # use the ChangeLog timestamp to have the same timestamps for the doc files 
+# # for all arches
+# touch -r ChangeLog __dist_docs/html/*
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
-
 
 %files
 %defattr(-,root,root,-)
@@ -104,10 +97,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/libdap/
 %{_datadir}/aclocal/*
 
-%files doc
-%defattr(-,root,root,-)
-%doc __dist_docs/html/
-
+# %files doc
+# %defattr(-,root,root,-)
+# %doc __dist_docs/html/
 
 %changelog
 * Tue May  4 2010 James Gallagher <jgallagher@opendap.org> - 3.10.2
