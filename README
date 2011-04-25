@@ -1,3 +1,7 @@
+Updated for version 3.11.1
+
+Bug fixes only.
+
 Updated for version 3.11.0
 
 Now constraint expressions can have multiple function calls that return data.

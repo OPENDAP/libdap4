@@ -1,6 +1,6 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP
-Version: 3.11.0
+Version: 3.11.1
 Release: 1
 
 License: LGPLv2+
@@ -12,7 +12,7 @@ Requires: curl >= 7.10.6 libxml2 >= 2.6.16
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.6.16
-#BuildRequires: doxygen graphviz
+# BuildRequires: doxygen graphviz
 BuildRequires: pkgconfig
 
 # This package could be relocatable. In that case uncomment the following
