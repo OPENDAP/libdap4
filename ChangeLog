@@ -85,7 +85,9 @@
 
 2011-03-03  James Gallagher <jgallagher@opendap.org>
 
-	Fixed HTTPCache hack that provides access to the cached response body. Also fixed an error in Keywords that broke a gazillion tests.
+	Fixed HTTPCache hack that provides access to the cached response
+	body. Also fixed an error in Keywords that broke a gazillion
+	tests.
 
 2011-03-03  James Gallagher <jgallagher@opendap.org>
 
@@ -93,15 +95,20 @@
 
 2011-03-03  James Gallagher <jgallagher@opendap.org>
 
-	Keywords2 was modified so it'll build on older (4.1) gcc compilers (with an older stl implementation).
+	Keywords2 was modified so it'll build on older (4.1) gcc
+	compilers (with an older stl implementation).
 
 2011-03-02  James Gallagher <jgallagher@opendap.org>
 
-	Modified HTTPConnect to store the filename of the cached body when returning cached responses. Use the HTTPResponse::get_file() method to use this. Once the HTTPResponse is deleted, the name is no loner valid.
+	Modified HTTPConnect to store the filename of the cached body when
+	returning cached responses. Use the HTTPResponse::get_file()
+	method to use this. Once the HTTPResponse is deleted, the name is
+	no loner valid.
 
 2011-03-01  James Gallagher <jgallagher@opendap.org>
 
-	Added Keywords to DDS and modified the behavior of set_dap_version so that '2' parses as '2.0' (really 'x' --> 'x.0').
+	Added Keywords to DDS and modified the behavior of set_dap_version
+	so that '2' parses as '2.0' (really 'x' --> 'x.0').
 
 2011-03-01  Patrick West <pwest@ucar.edu>
 

@@ -63,13 +63,7 @@ noinst_HEADERS = config_dap.h
 
 getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la
-# libdapserver.la
 getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
-
-# deflate_SOURCES = deflate.c
-#deflate_LDADD = $(ZLIB_LIBS)
-#deflate_CPPFLAGS = $(ZLIB_CFLAGS)
-#deflate_LDFLAGS = $(ZLIB_LDFLAGS)
 
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex \
 	gse.y Error.lex Error.y
@@ -241,10 +235,6 @@ Operators.h: ce_expr.tab.hh
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc	\
 	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc
-
-# fdiostream.cc
-
-# AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc 
 
 SERVER_SRC = DODSFilter.cc Ancillary.cc ResponseBuilder.cc
 
