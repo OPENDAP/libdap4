@@ -150,71 +150,112 @@ gl_MODULES(regex)
 
 gl_INIT
 
+AC_ARG_WITH(curl,[  --with-curl=PFX   Prefix where curl/libcurl is installed (optional). This will override pkgconfig, etc.],
+            with_curl_prefix="$withval", with_curl_prefix="")
+
 dnl I wrote these checks because we need the *-config scripts to build, so 
 dnl the AC_CHECK_LIB macro is not needed.
 
 curlprivatereq=
 curlprivatelibs=
-libdap_pkgconfig_libcurl=yes
-libdap_libcurl_module='libcurl >= 7.10.6'
-PKG_CHECK_MODULES([CURL],[$libdap_libcurl_module],,
-  [libdap_pkgconfig_libcurl=no])
-AC_MSG_CHECKING([for libcurl])
-if test $libdap_pkgconfig_libcurl = 'yes'
+curl_set=
+
+if test -n "$with_curl_prefix" -a -x $with_curl_prefix/bin/curl-config
 then
-	curlprivatereq=$libdap_libcurl_module
-	CURL_STATIC_LIBS="`$PKG_CONFIG --static --libs libcurl`"
-	AC_MSG_RESULT([yes; used pkg-config])
-elif curl-config --version > /dev/null 2>&1
+    AC_MSG_NOTICE([Using $with_curl_prefix as the curl prefix directory.])
+    CURL_LIBS="`$with_curl_prefix/bin/curl-config --libs`"
+    CURL_STATIC_LIBS=$CURL_LIBS
+    curlprivatelibs="`$with_curl_prefix/bin/curl-config --libs`"
+    CURL_CFLAGS="`$with_curl_prefix/bin/curl-config --cflags`"
+    curl_set="yes"
+elif test -n "$with_curl_prefix"
 then
-	version_libcurl=`curl-config --version | sed 's@libcurl \(.*\)@\1@'`
-
-	version_M=`echo $version_libcurl | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
-	version_m=`echo $version_libcurl | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
-	version_m_m=`echo $version_libcurl | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
-	
-	dnl echo "version_M: $version_M"
-	dnl echo "version_m: $version_m"
-	dnl echo "version_m_m: $version_m_m"
-
-	dnl Test for several different versions of libcurl. We can use 7.10.6
-	dnl or newer.
-	
-	if test $version_M -gt 7
-	then
-		libcurl_ok='yes'
-	elif test $version_M -eq 7 && test $version_m -gt 10
-	then
-		libcurl_ok='yes'
-	elif test $version_M -eq 7 && test $version_m -eq 10 && test $version_m_m -gt 5
-	then
-		libcurl_ok='yes'
-	else
-		libcurl_ok='no'
-	fi
-
-	dnl First test the minimum
-	if test $libcurl_ok = "no"
-	then
-		AC_MSG_ERROR([must have libcurl 7.10.6 or greater, found $version_libcurl])
-	fi
-
-	CURL_LIBS="`curl-config --libs`"
-	CURL_STATIC_LIBS=$CURL_LIBS
-	curlprivatelibs="`curl-config --libs`"
-	CURL_CFLAGS="`curl-config --cflags`"
-	AC_MSG_RESULT([yes; used curl-config])
-else
-	AC_MSG_ERROR([I could not find libcurl])
+    AC_MSG_ERROR([You set the curl-prefix directory to $with_curl_prefix, but curl-config is not there.])
 fi
+
+if test -z "$curl_set"
+then
+    # curlprivatereq=
+    # curlprivatelibs=
+    libdap_pkgconfig_libcurl=yes
+    libdap_libcurl_module='libcurl >= 7.10.6'
+    PKG_CHECK_MODULES([CURL],[$libdap_libcurl_module],,
+        [libdap_pkgconfig_libcurl=no])
+    AC_MSG_CHECKING([for libcurl])
+    
+    if test $libdap_pkgconfig_libcurl = 'yes'
+    then
+	   curlprivatereq=$libdap_libcurl_module
+	   CURL_STATIC_LIBS="`$PKG_CONFIG --static --libs libcurl`"
+	   AC_MSG_RESULT([yes; used pkg-config])
+    elif curl-config --version > /dev/null 2>&1
+    then
+	   version_libcurl=`curl-config --version | sed 's@libcurl \(.*\)@\1@'`
+
+	   version_M=`echo $version_libcurl | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
+	   version_m=`echo $version_libcurl | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
+	   version_m_m=`echo $version_libcurl | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
+	
+       dnl Test for several different versions of libcurl. We can use 7.10.6
+	   dnl or newer.
+	
+       if test $version_M -gt 7
+	   then
+		  libcurl_ok='yes'
+	   elif test $version_M -eq 7 && test $version_m -gt 10
+	   then
+		  libcurl_ok='yes'
+	   elif test $version_M -eq 7 && test $version_m -eq 10 && test $version_m_m -gt 5
+	   then
+		  libcurl_ok='yes'
+	   else
+		  libcurl_ok='no'
+	   fi
+
+	   dnl First test the minimum
+	   if test $libcurl_ok = "no"
+	   then
+		  AC_MSG_ERROR([must have libcurl 7.10.6 or greater, found $version_libcurl])
+	   fi
+
+	   CURL_LIBS="`curl-config --libs`"
+	   CURL_STATIC_LIBS=$CURL_LIBS
+	   curlprivatelibs="`curl-config --libs`"
+	   CURL_CFLAGS="`curl-config --cflags`"
+	   AC_MSG_RESULT([yes; used curl-config])
+    else
+	   AC_MSG_ERROR([I could not find libcurl])
+    fi
+fi
+
 AC_SUBST([curlprivatereq])
 AC_SUBST([curlprivatelibs])
 AC_SUBST([CURL_LIBS])
 AC_SUBST([CURL_STATIC_LIBS])
 AC_SUBST([CURL_CFLAGS])
 
+AC_ARG_WITH(xml2,[  --with-xml2=PFX   Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.],
+            with_xml2_prefix="$withval", with_xml2_prefix="")
+
 xmlprivatereq=
 xmlprivatelibs=
+xml_set=
+
+if test -n "$with_xml2_prefix" -a -x $with_xml2_prefix/bin/xml2-config
+then
+    AC_MSG_NOTICE([Using $with_xml2_prefix as the libxml2 prefix directory.])
+    XML2_LIBS="`$with_xml2_prefix/bin/xml2-config --libs`"
+    XML2_STATIC_LIBS=$XML2_LIBS
+    xmlprivatelibs="`$with_xml2_prefix/bin/xml2-config --libs`"
+    XML2_CFLAGS="`$with_xml2_prefix/bin/xml2-config --cflags`"
+    xml_set="yes"
+elif test -n "$with_xml2_prefix"
+then
+    AC_MSG_ERROR([You set the libxml2 prefix directory to $with_xml2_prefix, but xml2-config is not there.])
+fi
+
+if test -z "$xml_set"
+then
 libdap_pkgconfig_libxml2=yes
 libdap_libxml2_module='libxml-2.0 >= 2.6.16'
 PKG_CHECK_MODULES([XML2],[$libdap_libxml2_module],,
@@ -248,6 +289,8 @@ then
 else
 	AC_MSG_ERROR([I could not find libxml2 2.6.16 or newer])
 fi
+fi
+
 AC_SUBST([xmlprivatereq])
 AC_SUBST([xmlprivatelibs])
 AC_SUBST([XML2_LIBS])
