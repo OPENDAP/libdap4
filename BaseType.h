@@ -345,6 +345,7 @@ public:
 
 	@brief Returns the size of the class instance data. */
     virtual unsigned int width() = 0;
+    virtual unsigned int width(bool constrained);
 
     /** Reads the class data into the memory referenced by <i>val</i>.
 	The caller should either allocate enough storage to <i>val</i>

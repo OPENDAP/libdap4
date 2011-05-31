@@ -510,6 +510,31 @@ Sequence::width()
     return sz;
 }
 
+/** This version of width simply returns the same thing as width() for simple
+    types and Arrays. For Sequence it returns the total row size if constrained
+    is false, or the size of the row elements in the current projection if true.
+
+    @param constrained If true, return the size after applying a constraint.
+    @return  The number of bytes used by the variable.
+ */
+unsigned int
+Sequence::width(bool constrained)
+{
+    unsigned int sz = 0;
+
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    	if (constrained) {
+    		if ((*i)->send_p())
+    			sz += (*i)->width(constrained);
+    	}
+    	else {
+    		sz += (*i)->width(constrained);
+    	}
+    }
+
+    return sz;
+}
+
 // This version returns -1. Each API-specific subclass should define a more
 // reasonable version. jhrg 5/24/96
 

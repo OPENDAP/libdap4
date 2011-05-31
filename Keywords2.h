@@ -45,6 +45,9 @@ namespace libdap {
  *
  * @note The keywords are used to specify the DAP version(s) that the client
  * can understand.
+ *
+ * @note Keywords are parsed and used by the BES in Hyrax - libdap never makes
+ * calls to these methods.
  */
 class Keywords {
 public:

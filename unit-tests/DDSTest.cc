@@ -123,6 +123,12 @@ class DDSTest: public TestFixture {
         CPPUNIT_TEST(print_xml_test6);
 #endif
         // CPPUNIT_TEST(print_xml_test7);
+        CPPUNIT_TEST(get_response_size_test);
+        CPPUNIT_TEST(get_response_size_test_c);
+        CPPUNIT_TEST(get_response_size_test_c2);
+        CPPUNIT_TEST(get_response_size_test_c3);
+        CPPUNIT_TEST(get_response_size_test_seq);
+        CPPUNIT_TEST(get_response_size_test_seq_c);
 
         CPPUNIT_TEST_SUITE_END();
 
@@ -591,6 +597,64 @@ class DDSTest: public TestFixture {
 
             CPPUNIT_ASSERT(re_match(r, oss.str()));
         }
+
+    	void get_response_size_test() {
+    		dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
+    		CPPUNIT_ASSERT(dds1->get_request_size(false) == 230400);
+    		// cerr << "3B42.980909.5.HDF response size: " << dds1->get_request_size(false) << endl;
+
+    		dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
+    		CPPUNIT_ASSERT(dds2->get_request_size(false) == 3119424);
+    		// cerr << "coads_climatology.nc response size: " << dds2->get_request_size(false) << endl;
+    	}
+
+    	void get_response_size_test_c() {
+        	ConstraintEvaluator eval;
+
+    		dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
+    		eval.parse_constraint("percipitate", *dds1);
+    		//cerr << "3B42.980909.5.HDF response size: " << dds1->get_request_size(true) << endl;
+    		CPPUNIT_ASSERT(dds1->get_request_size(true) == 115200);
+    		CPPUNIT_ASSERT(dds1->get_request_size(false) == 230400);
+
+    		dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
+    		eval.parse_constraint("SST", *dds2);
+    		//cerr << "coads_climatology.nc response size: " << dds2->get_request_size(true) << endl;
+    		CPPUNIT_ASSERT(dds2->get_request_size(true) == 779856);
+    		CPPUNIT_ASSERT(dds2->get_request_size(false) == 3119424);
+    	}
+
+    	void get_response_size_test_c2() {
+        	ConstraintEvaluator eval;
+        	dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
+        	eval.parse_constraint("SST[0:5][0:44][0:89]", *dds2);
+        	//cerr << "coads_climatology.nc response size: " << dds2->get_request_size(true) << endl;
+        	CPPUNIT_ASSERT(dds2->get_request_size(true) == 98328);
+    	}
+
+    	void get_response_size_test_c3() {
+        	ConstraintEvaluator eval;
+        	dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
+        	eval.parse_constraint("SST[0][0:44][0:89]", *dds2);
+			//cerr << "coads_climatology.nc response size: " << dds2->get_request_size(true) << endl;
+			CPPUNIT_ASSERT(dds2->get_request_size(true) == 17288);
+    	}
+
+    	void get_response_size_test_seq() {
+    		ConstraintEvaluator eval;
+    		dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.dds");
+    		eval.parse_constraint("NSCAT%20Rev%2020.NSCAT%20L2", *dds2);
+    		//cerr << "S2000415.HDF response size: " << dds2->get_request_size(true) << endl;
+    		CPPUNIT_ASSERT(dds2->get_request_size(true) == 16); //sizeof(string) == 8
+    	}
+
+    	void get_response_size_test_seq_c() {
+    		ConstraintEvaluator eval;
+    		dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.dds");
+    		eval.parse_constraint("NSCAT%20Rev%2020.NSCAT%20L2.Low_Wind_Speed_Flag", *dds2);
+    		//cerr << "S2000415.HDF response size: " << dds2->get_request_size(true) << endl;
+    		CPPUNIT_ASSERT(dds2->get_request_size(true) == 4);
+    	}
 
     };
 

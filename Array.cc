@@ -61,12 +61,11 @@ Array::_duplicate(const Array &a)
 // in which case that means they want the whole thing. Array projection
 // should probably work this way too, but it doesn't. 9/21/2001 jhrg
 
-/** @deprecated Calling this method should never be necessary. It is called
-    whenever the size of the Array is changed.
+/** @deprecated Calling this method should never be necessary. It is used
+    internally called whenever the size of the Array is changed, e.g., by a
+    constraint.
 
-    Changes the size property of the array.  If the array
-    exists, it is augmented by a factor of <tt>size</tt>. This does
-    not change the actual size of the array.
+    Changes the length property of the array.
 */
 void
 Array::update_length(int)
@@ -497,6 +496,28 @@ Array::dimension_name(Dim_iter i)
                            "*This* array has no dimensions.");
     return (*i).name;
 }
+
+/** Returns the number of bytes needed to hold the array.
+
+    @brief Returns the width of the data, in bytes. */
+unsigned int Array::width(bool constrained)
+{
+
+	if (constrained) {
+		// This preserves the original method's semantics when we ask for the
+		// size of the constrained array but no constraint has been applied.
+		// In this case, length will be -1. Wrong, I know...
+		return length() * var()->width(constrained);
+	}
+	else {
+		int length = 1;
+		for (Dim_iter i = _shape.begin(); i != _shape.end(); i++) {
+			length *= dimension_size(i, false);
+		}
+		return length * var()->width(false);
+	}
+}
+
 
 #if FILE_METHODS
 /** Prints a declaration for the Array.  This is what appears in a

@@ -125,6 +125,7 @@ public:
     virtual void set_leaf_sequence(int level = 1);
 
     virtual unsigned int width();
+    virtual unsigned int width(bool constrained);
 
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,

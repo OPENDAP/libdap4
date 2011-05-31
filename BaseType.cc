@@ -1087,4 +1087,19 @@ BaseType::ops(BaseType *, int)
     throw InternalErr(__FILE__, __LINE__, "Unimplemented operator.");
 }
 
+/** This version of width simply returns the same thing as width() for simple
+    types and Arrays. For Constructors, it needs to be specialized. This is
+    partly due to an inconsistency in the way Vector::width() is implemented.
+    That method uses the constrained size of the array (while the Constructor
+    versions do not take the constraint into account).
+
+    @param constrained If true, return the size after applying a constraint.
+    @return  The number of bytes used by the variable.
+ */
+unsigned int
+BaseType::width(bool /*constrained*/)
+{
+	return width();
+}
+
 } // namespace libdap

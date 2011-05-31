@@ -166,6 +166,7 @@ public:
 
 
     virtual unsigned int width();
+    virtual unsigned int width(bool constrained);
 
     virtual int components(bool constrained = false);
 

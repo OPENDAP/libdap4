@@ -267,6 +267,7 @@ public:
     virtual void set_in_selection(bool state);
 
     virtual unsigned int width();
+    virtual unsigned int width(bool constrained);
 
     virtual int length();
 

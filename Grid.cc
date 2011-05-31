@@ -212,6 +212,39 @@ Grid::width()
     return sz;
 }
 
+/** This version of width simply returns the same thing as width() for simple
+    types and Arrays. For Structure it returns the total size if constrained
+    is false, or the size of the elements in the current projection if true.
+
+    @param constrained If true, return the size after applying a constraint.
+    @return  The number of bytes used by the variable.
+ */
+unsigned int
+Grid::width(bool constrained)
+{
+    unsigned int sz = 0;
+
+    if (constrained) {
+    	if (_array_var->send_p())
+    		sz = _array_var->width(constrained);
+    }
+    else {
+    	sz = _array_var->width(constrained);
+    }
+
+    for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++) {
+    	if (constrained) {
+    		if ((*i)->send_p())
+    			sz += (*i)->width(constrained);
+    	}
+    	else {
+    		sz += (*i)->width(constrained);
+    	}
+    }
+
+    return sz;
+}
+
 void
 Grid::intern_data(ConstraintEvaluator &eval, DDS &dds)
 {

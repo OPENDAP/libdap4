@@ -143,10 +143,10 @@ DDS::duplicate(const DDS &dds)
     @param n The name of the data set. Can also be set using
     set_dataset_name(). */
 DDS::DDS(BaseTypeFactory *factory, const string &n)
-
         : d_factory(factory), name(n), d_container(0),
           d_dap_major(2), d_dap_minor(0),
-        d_request_xml_base(""), d_timeout(0), d_keywords()
+          d_request_xml_base(""), d_timeout(0), d_keywords(),
+          d_max_response_size(0)
 {
     DBG(cerr << "Building a DDS with client major/minor: "
             << d_dap_major << "." << d_dap_minor << endl);
@@ -426,6 +426,33 @@ DDS::container()
 }
 
 //@}
+
+/** Get the size of a response. This method looks at the variables in the DDS
+ *  a computes the number of bytes in the response.
+ *
+ *  @note This version of the method does a poor job with Sequences. A better
+ *  implementation would look at row-constraint-based limitations and use them
+ *  for size computations. If a row-constraint is missing, return an error.
+ *
+ *  @param constrained Should the size of the whole DDS be used or should the
+ *  current constraint be taken into account?
+ */
+int
+DDS::get_request_size(bool constrained)
+{
+	int w = 0;
+    for (Vars_iter i = vars.begin(); i != vars.end(); i++) {
+    	if (constrained) {
+    		if ((*i)->send_p())
+    			w += (*i)->width(constrained);
+    	}
+    	else {
+    		w += (*i)->width(constrained);
+    	}
+    }
+
+    return w;
+}
 
 /** @brief Adds a copy of the variable to the DDS.
     Using the ptr_duplicate() method, perform a deep copy on the variable

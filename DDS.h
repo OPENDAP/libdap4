@@ -202,6 +202,8 @@ private:
                                 // d_timeout seconds are spent reading data.
     Keywords d_keywords;	// Holds keywords parsed from the CE
 
+    int d_max_response_size;
+
     friend class DDSTest;
 
 protected:
@@ -275,6 +277,15 @@ public:
 
     /// @see get_request_xml_base
     void set_request_xml_base(const string &xb) { d_request_xml_base = xb; }
+
+    /// Get the maximum response size. Zero indicates no limit.
+    int get_response_limit() { return d_max_response_size; }
+
+    /// Set the maximum response size. Zero is the default value.
+    void set_response_limit(int size) { d_max_response_size = size; }
+
+    /// Get the estimated response size.
+    int get_request_size(bool constrained);
 
     string container_name() ;
     void container_name( const string &cn ) ;
