@@ -31,6 +31,7 @@
 #include <unistd.h>
 #endif
 
+#include <cstdlib>
 #include <cstring>
 #include <cstdlib>
 

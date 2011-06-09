@@ -60,7 +60,7 @@ TestUrl::TestUrl(const string &n) : Url(n), d_series_values(false)
 {
 }
 
-TestUrl::TestUrl(const string &n, const string &d)
+TestUrl::TestUrl(const string &n, const string &)
     : Url(n), d_series_values(false)
 {
 }

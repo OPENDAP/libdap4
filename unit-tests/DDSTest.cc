@@ -102,27 +102,20 @@ class DDSTest: public TestFixture {
         // DAS, it will need to specialize the BaseType::transfer_attributes()
         // method.
         CPPUNIT_TEST_SUITE( DDSTest );
-#if 1
+
         CPPUNIT_TEST(transfer_attributes_test_1);
         CPPUNIT_TEST(transfer_attributes_test_2);
 
         CPPUNIT_TEST(symbol_name_test);
+
         // These test both transfer_attributes() and print_xml()
         CPPUNIT_TEST(print_xml_test);
         CPPUNIT_TEST(print_xml_test2);
         CPPUNIT_TEST(print_xml_test3);
-#endif
-        // CPPUNIT_TEST(print_xml_test3_1);
-#if 1
         CPPUNIT_TEST(print_xml_test4);
-
         CPPUNIT_TEST(print_xml_test5);
-#endif
-        // CPPUNIT_TEST(print_xml_test5_1);
-#if 1
         CPPUNIT_TEST(print_xml_test6);
-#endif
-        // CPPUNIT_TEST(print_xml_test7);
+
         CPPUNIT_TEST(get_response_size_test);
         CPPUNIT_TEST(get_response_size_test_c);
         CPPUNIT_TEST(get_response_size_test_c2);

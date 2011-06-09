@@ -181,14 +181,14 @@ private:
     BaseTypeFactory *d_factory;
 
     string name;                // The dataset name
-    string d_filename;		// File name (or other OS identifier) for
+    string d_filename;		    // File name (or other OS identifier) for
     string d_container_name;	// name of container structure
-    Structure *d_container;	// current container for container name
-				// dataset or part of dataset.
+    Structure *d_container; 	// current container for container name
+				                // dataset or part of dataset.
 
-    int d_dap_major;       	// The protocol major version number
-    int d_dap_minor;       	// ... and minor version number
-    string d_dap_version; 	// String version of the protocol
+    int d_dap_major;       	    // The protocol major version number
+    int d_dap_minor;       	    // ... and minor version number
+    string d_dap_version; 	    // String version of the protocol
     string d_request_xml_base;
 
     AttrTable d_attr;           // Global attributes.
@@ -200,9 +200,9 @@ private:
     int d_timeout;              // alarm time in seconds. If greater than
                                 // zero, raise the alarm signal if more than
                                 // d_timeout seconds are spent reading data.
-    Keywords d_keywords;	// Holds keywords parsed from the CE
+    Keywords d_keywords;	    // Holds keywords parsed from the CE
 
-    int d_max_response_size;
+    long d_max_response_size;   // In bytes
 
     friend class DDSTest;
 
@@ -278,11 +278,13 @@ public:
     /// @see get_request_xml_base
     void set_request_xml_base(const string &xb) { d_request_xml_base = xb; }
 
-    /// Get the maximum response size. Zero indicates no limit.
-    int get_response_limit() { return d_max_response_size; }
+    /// Get the maximum response size, in KB. Zero indicates no limit.
+    long get_response_limit() { return d_max_response_size; }
 
-    /// Set the maximum response size. Zero is the default value.
-    void set_response_limit(int size) { d_max_response_size = size; }
+    /** Set the maximum response size. Zero is the default value. The size
+        is given in kilobytes.
+        @param size The maximum size of the response in kilobytes. */
+    void set_response_limit(long size) { d_max_response_size = size * 1024; }
 
     /// Get the estimated response size.
     int get_request_size(bool constrained);

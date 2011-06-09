@@ -49,6 +49,7 @@ static char rcsid[] not_used = { "$Id: ResponseBuilder.cc 23477 2010-09-02 21:02
 #include "debug.h"
 #include "mime_util.h"	// for last_modified_time() and rfc_822_date()
 #include "escaping.h"
+#include "util.h"
 #include "ResponseBuilder.h"
 #include "XDRStreamMarshaller.h"
 
@@ -381,33 +382,43 @@ void ResponseBuilder::dataset_constraint_ddx( ostream &out, DDS & dds, Constrain
  @param with_mime_headers If true, include the MIME headers in the response.
  Defaults to true.
  @return void */
-void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEvaluator & eval, bool with_mime_headers) const
+void ResponseBuilder::send_data(ostream & data_stream, DDS & dds,
+        ConstraintEvaluator & eval, bool with_mime_headers) const
 {
     // Set up the alarm.
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
-    eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't
-    // parse.
+    eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
 
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
+
+    if (dds.get_response_limit() != 0
+        && dds.get_request_size(true) > dds.get_response_limit()) {
+        string msg = "The Request for "
+                + long_to_string(dds.get_request_size(true))
+                + "KB is too large; requests for this user are limited to "
+                + long_to_string(dds.get_response_limit())
+                + "KB.";
+        throw Error(msg);
+    }
 
     // Start sending the response...
 
     // Handle *functional* constraint expressions specially
     if (eval.function_clauses()) {
-	DDS *fdds = eval.eval_function_clauses(dds);
-	if (with_mime_headers)
-	    set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+        DDS *fdds = eval.eval_function_clauses(dds);
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
-	dataset_constraint(data_stream, *fdds, eval, false);
-	delete fdds;
+        dataset_constraint(data_stream, *fdds, eval, false);
+        delete fdds;
     }
     else {
-	if (with_mime_headers)
-	    set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
-	dataset_constraint(data_stream, dds, eval);
+        dataset_constraint(data_stream, dds, eval);
     }
 
     data_stream << flush;
@@ -454,15 +465,24 @@ void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval
  @param with_mime_headers If true, include the MIME headers in the response.
  Defaults to true.
  @return void */
-void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, ConstraintEvaluator & eval, const string &start,
-	const string &boundary, bool with_mime_headers) const
+void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds,
+        ConstraintEvaluator & eval, const string &start,
+        const string &boundary, bool with_mime_headers) const
 {
     // Set up the alarm.
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
-    eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't
-    // parse.
+    eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+
+    if (dds.get_response_limit() != 0
+        && dds.get_request_size(true) > dds.get_response_limit()) {
+        string msg = "The Request for "
+                + long_to_string(dds.get_request_size(true))
+                + "KB is too large; requests for this user are limited to "
+                + long_to_string(dds.get_response_limit()) + "KB.";
+        throw Error(msg);
+    }
 
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
@@ -470,25 +490,25 @@ void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, Constraint
 
     // Handle *functional* constraint expressions specially
     if (eval.function_clauses()) {
-	DDS *fdds = eval.eval_function_clauses(dds);
-	if (with_mime_headers)
-	    set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
-	data_stream << flush;
-	// TODO: Change this to dataset_constraint_ddx()
-	dataset_constraint(data_stream, *fdds, eval, false);
-	delete fdds;
+        DDS *fdds = eval.eval_function_clauses(dds);
+        if (with_mime_headers)
+            set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
+        data_stream << flush;
+        // TODO: Change this to dataset_constraint_ddx()
+        dataset_constraint(data_stream, *fdds, eval, false);
+        delete fdds;
     }
     else {
-	if (with_mime_headers)
-	    set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
-	data_stream << flush;
-	dataset_constraint_ddx(data_stream, dds, eval, boundary, start);
+        if (with_mime_headers)
+            set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
+        data_stream << flush;
+        dataset_constraint_ddx(data_stream, dds, eval, boundary, start);
     }
 
     data_stream << flush;
 
     if (with_mime_headers)
-	data_stream << CRLF << "--" << boundary << "--" << CRLF;
+        data_stream << CRLF << "--" << boundary << "--" << CRLF;
 }
 
 static const char *descrip[] = { "unknown", "dods_das", "dods_dds", "dods_data", "dods_error", "web_error", "dap4-ddx",
