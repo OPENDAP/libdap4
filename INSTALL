@@ -1,7 +1,7 @@
 
 	$Id$
 
-Updated for version 3.11.0 of the OPeNDAP DAP 3.4 library software.
+Updated for version 3.11.1 of the OPeNDAP DAP 3.4 library software.
 
 Installing the DAP2/3.x library
 
@@ -30,12 +30,12 @@ BUILDING THE SOFTWARE
      'tests' directory and then run the tests.
 
   3. Type `make install' to install the library files. The libraries
-     (libdap.a. libdapclient.a and libdapserver.a, etc.), their header files and
-     the getdap and dap-config utilities install under /usr/local/ in lib,
-     include/libdap and bin by default. Use the --prefix option to specify a
-     different root directory. For example, './configure
-     --prefix=/opt/opendap' would set the build so that the library was
-     installed in /opt/opendap/lib, ...
+     (libdap.a. libdapclient.a and libdapserver.a, etc.), their header
+     files and the getdap and dap-config utilities install under
+     /usr/local/ in lib, include/libdap and bin by default. Use the
+     --prefix option to specify a different root directory. For
+     example, './configure --prefix=/opt/opendap' would set the build
+     so that the library was installed in /opt/opendap/lib, ...
 
 Building from Our SVN Repository
 
@@ -72,13 +72,14 @@ AFTER INSTALLING
 
 REQUIREMENTS
 
-  o To build from a fresh SVN checkout, you'll need automake 1.11, autoconf
-    2.63 and libtool 2.2.6. Earlier versions may work, but may cause
-    problems, particularly with the 'distcheck' target for make. Given those
-    requirements, use 'autoreconf --force --verbose' and then build as
-    described above. You also need bison and flex as of version 3.7.9. If you
-    don't have these tools, you can try the copies of the generated files
-    in the 'grammarfiles' directory.
+  o To build from a fresh SVN checkout, you'll need automake 1.11,
+    autoconf 2.63 and libtool 2.2.6. Earlier versions may work, but
+    may cause problems, particularly with the 'distcheck' target for
+    make. Given those requirements, use 'autoreconf --force --install
+    --verbose' and then build as described above. You also need bison
+    and flex as of version 3.7.9. If you don't have these tools, you
+    can try the copies of the generated files in the 'grammarfiles'
+    directory.
 
   o The library uses libcurl and libxml2. You will need these libraries
     installed on your system to successfully run configure and build the
@@ -106,10 +107,13 @@ REQUIREMENTS
     and GNU gcc/++ 3.2.1, 3.3, 3.4, 4.0, ..., 4.4. The library has also been
     built using the native AIX compiler; see INSTALL.AIX.
 
-  o We ship the C++ source files generated using bison and flex so these
-    programs are no longer required to build the source code. However, to
-    build the C++ sources from the grammar files, you'll need bison 1.25 and
-    flex 2.5.4.
+  o We ship the C++ source files generated using bison and flex so
+    these programs are no longer required to build the source code.
+    However, to build the C++ sources from the grammar files, you'll
+    need bison 1.25 and flex 2.5.4. Note, howver, that older versions
+    of bison and flex have some issues with the code they generate -
+    you should uses the newest versions of these tools if the software
+    you build is going to run on a production server.
 
 NOTES
 
@@ -124,7 +128,7 @@ NOTES
 
   o If you are developing code that uses the DAP, get autoconf and subversion
     (SVN). We maintain a SVN-managed source tree that people outside the
-    group may access. See http://scm.opendap.org:8090/trac/
+    group may access. See http://scm.opendap.org/trac/
 
   o The gnulib software is used to provide replacement functions when
     autoconf detects that is necessary. To update the gnulib, check it out

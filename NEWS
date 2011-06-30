@@ -1,3 +1,13 @@
+News for version 3.11.1
+
+The new DAP3.3 Keywords are supported by the library.
+
+Merge of the Hyrax 3.6.2 fixes.
+
+A race condition in the HTTP cache was fixed.
+
+Fixes for the OS/X package.
+
 News for version 3.11.0
 
 Constraint expressions can now include multiple function calls.
