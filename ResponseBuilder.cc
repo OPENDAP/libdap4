@@ -396,9 +396,9 @@ void ResponseBuilder::send_data(ostream & data_stream, DDS & dds,
     if (dds.get_response_limit() != 0
         && dds.get_request_size(true) > dds.get_response_limit()) {
         string msg = "The Request for "
-                + long_to_string(dds.get_request_size(true))
+                + long_to_string(dds.get_request_size(true)/1024)
                 + "KB is too large; requests for this user are limited to "
-                + long_to_string(dds.get_response_limit())
+                + long_to_string(dds.get_response_limit()/1024)
                 + "KB.";
         throw Error(msg);
     }
@@ -478,9 +478,9 @@ void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds,
     if (dds.get_response_limit() != 0
         && dds.get_request_size(true) > dds.get_response_limit()) {
         string msg = "The Request for "
-                + long_to_string(dds.get_request_size(true))
+                + long_to_string(dds.get_request_size(true)/1024)
                 + "KB is too large; requests for this user are limited to "
-                + long_to_string(dds.get_response_limit()) + "KB.";
+                + long_to_string(dds.get_response_limit()/1024) + "KB.";
         throw Error(msg);
     }
 
