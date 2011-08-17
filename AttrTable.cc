@@ -32,7 +32,7 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG
+//#define DODS_DEBUG
 
 static char rcsid[]not_used =
         "$Id$";
@@ -375,7 +375,7 @@ AttrTable::append_container(AttrTable *at, const string &name)
 
     if (simple_find(name) != attr_end())
     throw Error(string("There already exists a container called `")
-            + name + string("' in this attribute table."));
+            + name + string("' in this attribute table. (1)"));
     DBG(cerr << "Setting appended attribute container name to: "
             << lname << endl);
     at->set_name(lname);
@@ -858,7 +858,7 @@ AttrTable::add_container_alias(const string &name, AttrTable *src)
 
     if (simple_find(lname) != attr_end())
     throw Error(string("There already exists a container called `")
-            + name + string("in this attribute table."));
+            + name + string("in this attribute table. (2)"));
 
     entry *e = new entry;
     e->name = lname;
@@ -915,7 +915,7 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
 
     if (simple_find(lname) != attr_end())
     throw Error(string("There already exists a container called `")
-            + name + string("in this attribute table."));
+            + name + string("in this attribute table. (3)"));
 
     entry *e = new entry;
     e->name = lname;

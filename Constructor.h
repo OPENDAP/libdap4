@@ -42,7 +42,7 @@ class Constructor: public BaseType
 {
 private:
     Constructor();  // No default ctor.
-    BaseType *find_hdf4_dimension_attribute_home(AttrTable::entry *source);
+    // BaseType *find_hdf4_dimension_attribute_home(AttrTable::entry *source);
 
 protected:
     std::vector<BaseType *> _vars;
