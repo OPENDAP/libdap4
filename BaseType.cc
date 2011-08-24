@@ -79,7 +79,7 @@ namespace libdap {
 void
 BaseType::_duplicate(const BaseType &bt)
 {
-    DBG(cerr << "BaseType::_duplicate: " << bt._name << " send_p: "
+    DBG2(cerr << "BaseType::_duplicate: " << bt._name << " send_p: "
             << bt._send_p << endl);
     _name = bt._name;
     _type = bt._type;
@@ -138,8 +138,8 @@ BaseType::BaseType(const BaseType &copy_from) : DapObj()
 
 BaseType::~BaseType()
 {
-    DBG(cerr << "Entering ~BaseType (" << this << ")" << endl);
-    DBG(cerr << "Exiting ~BaseType" << endl);
+    DBG2(cerr << "Entering ~BaseType (" << this << ")" << endl);
+    DBG2(cerr << "Exiting ~BaseType" << endl);
 }
 
 BaseType &
@@ -483,7 +483,7 @@ void
 BaseType::set_read_p(bool state)
 {
     if (! _synthesized_p) {
-        DBG(cerr << "Changing read_p state of " << name() << " to "
+        DBG2(cerr << "Changing read_p state of " << name() << " to "
 	         << state << endl);
         _read_p = state;
     }
@@ -516,7 +516,7 @@ BaseType::send_p()
 void
 BaseType::set_send_p(bool state)
 {
-    DBG(cerr << "Calling BaseType::set_send_p() for: " << this->name()
+    DBG2(cerr << "Calling BaseType::set_send_p() for: " << this->name()
         << endl);
     _send_p = state;
 }
@@ -567,32 +567,27 @@ BaseType::set_attr_table(const AttrTable &at)
  * @param at_container Transfer attributes from this container.
  * @return void
  */
-void
-BaseType::transfer_attributes(AttrTable *at_container)
-{
-    AttrTable *at = at_container->get_attr_table(name());
+void BaseType::transfer_attributes(AttrTable *at_container) {
+	AttrTable *at = at_container->get_attr_table(name());
 
-    DBG(cerr << "In BaseType::transfer_attributes; processing " << name() << endl);
+	DBG(cerr << "In BaseType::transfer_attributes; processing " << name() << endl);
 
-    if (at) {
-	at->set_is_global_attribute(false);
-	DBG(cerr << "Processing AttrTable: " << at->get_name() << endl);
+	if (at) {
+		at->set_is_global_attribute(false);
+		DBG(cerr << "Processing AttrTable: " << at->get_name() << endl);
 
-	AttrTable::Attr_iter at_p = at->attr_begin();
-	while (at_p != at->attr_end()) {
-	    DBG(cerr << "About to append "  << endl);
-	    DBG(cerr << "attr name,type:" << at->get_name(at_p) << ", " << at->get_type(at_p) << endl);
+		AttrTable::Attr_iter at_p = at->attr_begin();
+		while (at_p != at->attr_end()) {
+			DBG(cerr << "About to append " << "attr name, type:" << at->get_name(at_p) << ", " << at->get_type(at_p) << endl);
 
-	    if (at->get_attr_type(at_p) == Attr_container)
-		get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)),
-			at->get_name(at_p));
-	    else
-		get_attr_table().append_attr(at->get_name(at_p),
-			at->get_type(at_p), at->get_attr_vector(at_p));
+			if (at->get_attr_type(at_p) == Attr_container)
+				get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)), at->get_name(at_p));
+			else
+				get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
 
-	    at_p++;
+			at_p++;
+		}
 	}
-    }
 }
 
 /** Does this variable appear in either the selection part or as a function
@@ -799,7 +794,7 @@ void
 BaseType::intern_data(ConstraintEvaluator &, DDS &dds)
 {
     dds.timeout_on();
-    DBG(cerr << "BaseType::intern_data: " << name() << endl);
+    DBG2(cerr << "BaseType::intern_data: " << name() << endl);
     if (!read_p())
         read();          // read() throws Error and InternalErr
 

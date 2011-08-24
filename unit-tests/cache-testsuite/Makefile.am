@@ -10,6 +10,4 @@ cleanup.sh: cleanup.sh.in ../../config.status
 
 clean-local: cleanup.sh
 	sh ./cleanup.sh
-
-distclean-local:
 	rm -rf dods_cache

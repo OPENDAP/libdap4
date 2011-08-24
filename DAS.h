@@ -42,8 +42,6 @@
 #include <string>
 #include <iostream>
 
-//#include "Pix.h"
-
 #ifndef _attrtable_h
 #include "AttrTable.h"
 #endif
@@ -146,11 +144,11 @@ public:
      * the top most dataset container attribute tables, if we have multiple
      * datasets being used to construct this DAS
      */
-    virtual AttrTable *get_top_level_attributes()
-    {
-	if( d_container ) return d_container ;
-	return &d_attrs ;
-    }
+    virtual AttrTable *get_top_level_attributes() {
+		if (d_container)
+			return d_container;
+		return &d_attrs;
+	}
 
     virtual void erase() ;
 
