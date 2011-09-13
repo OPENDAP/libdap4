@@ -234,10 +234,10 @@ AttrTable::set_name(const string &n)
  @return Returns the length of the added attribute value.
  @param name The name of the attribute to add or modify.
  @param type The type of the attribute to add or modify.
- @param attribute The value to add to the attribute table. */
+ @param value The value to add to the attribute table. */
 unsigned int
 AttrTable::append_attr(const string &name, const string &type,
-        const string &attribute)
+        const string &value)
 {
     DBG(cerr << "Entering AttrTable::append_attr" << endl);
     string lname = www2id(name);
@@ -254,7 +254,7 @@ AttrTable::append_attr(const string &name, const string &type,
             + string("' already exists but is a container."));
 
     if (iter != attr_map.end()) { // Must be a new attribute value; add it.
-        (*iter)->attr->push_back(attribute);
+        (*iter)->attr->push_back(value);
         return (*iter)->attr->size();
     }
     else { // Must be a completely new attribute; add it
@@ -264,7 +264,7 @@ AttrTable::append_attr(const string &name, const string &type,
         e->is_alias = false;
         e->type = String_to_AttrType(type); // Record type using standard names.
         e->attr = new vector<string>;
-        e->attr->push_back(attribute);
+        e->attr->push_back(value);
 
         attr_map.push_back(e);
 

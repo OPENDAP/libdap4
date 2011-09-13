@@ -109,24 +109,20 @@ DAS::container_name()
  *
  * @param cn container name
  */
-void
-DAS::container_name( const string &cn )
+void DAS::container_name(const string &cn)
 {
     // We want to find a top level attribute table with the given name. So
     // set d_container to null first so that we aren't searching some
     // previous container
-    if( cn != _container_name )
-    {
-	d_container = 0 ;
-	if( !cn.empty() )
-	{
-	    d_container = get_table( cn ) ;
-	    if( !d_container )
-	    {
-		d_container = add_table( cn, new AttrTable ) ;
-	    }
-	}
-	_container_name = cn;
+    if (cn != _container_name) {
+        d_container = 0;
+        if (!cn.empty()) {
+            d_container = get_table(cn);
+            if (!d_container) {
+                d_container = add_table(cn, new AttrTable);
+            }
+        }
+        _container_name = cn;
     }
 }
 
@@ -147,66 +143,55 @@ DAS::container()
  * attribute tables for the current container. If not set then return the
  * number of current attribute tables in the outermost attribute table.
  */
-unsigned int
-DAS::get_size() const
+unsigned int DAS::get_size() const
 {
-    if( d_container )
-    {
-	return d_container->get_size() ;
+    if (d_container) {
+        return d_container->get_size();
     }
-    return d_attrs.get_size() ;
+    return d_attrs.get_size();
 }
 
 /** @brief erase all attributes in this DAS
  */
-void
-DAS::erase()
+void DAS::erase()
 {
-    if( d_container )
-    {
-	d_container->erase() ;
+    if (d_container) {
+        d_container->erase();
     }
-    else
-    {
-	d_attrs.erase() ;
+    else {
+        d_attrs.erase();
     }
 }
 
 /** @brief Returns a reference to the attribute table for the first variable.
  */
-AttrTable::Attr_iter
-DAS::var_begin()
+AttrTable::Attr_iter DAS::var_begin()
 {
-    if( d_container )
-    {
-	return d_container->attr_begin() ;
+    if (d_container) {
+        return d_container->attr_begin();
     }
-    return d_attrs.attr_begin() ;
+    return d_attrs.attr_begin();
 }
 
 /** Returns a reference to the end of the attribute table. Does not
  *  point to an attribute table.
  */
-AttrTable::Attr_iter
-DAS::var_end()
+AttrTable::Attr_iter DAS::var_end()
 {
-    if( d_container )
-    {
-	return d_container->attr_end() ;
+    if (d_container) {
+        return d_container->attr_end();
     }
-    return d_attrs.attr_end() ;
+    return d_attrs.attr_end();
 }
 
 /** @brief Returns the name of the referenced variable attribute table.
  */
-string
-DAS::get_name(AttrTable::Attr_iter &i)
+string DAS::get_name(AttrTable::Attr_iter &i)
 {
-    if( d_container )
-    {
-	return d_container->get_name( i ) ;
+    if (d_container) {
+        return d_container->get_name(i);
     }
-    return d_attrs.get_name( i ) ;
+    return d_attrs.get_name(i);
 }
 
 /** @brief Returns the referenced variable attribute table.
@@ -214,23 +199,21 @@ DAS::get_name(AttrTable::Attr_iter &i)
 AttrTable *
 DAS::get_table(AttrTable::Attr_iter &i)
 {
-    if( d_container )
-    {
-	return d_container->get_attr_table( i ) ;
+    if (d_container) {
+        return d_container->get_attr_table(i);
     }
-    return d_attrs.get_attr_table( i ) ;
+    return d_attrs.get_attr_table(i);
 }
 
 /** @brief Returns the variable attribute table with the given name.
  */
 AttrTable *
-DAS::get_table( const string &name )
+DAS::get_table(const string &name)
 {
-    if( d_container )
-    {
-	return d_container->get_attr_table( name ) ;
+    if (d_container) {
+        return d_container->get_attr_table(name);
     }
-    return d_attrs.get_attr_table( name ) ;
+    return d_attrs.get_attr_table(name);
 }
 
 //@}
@@ -246,10 +229,9 @@ DAS::get_table( const string &name )
 AttrTable *
 DAS::add_table( const string &name, AttrTable *at )
 {
-    if( d_container )
-    {
-	at->set_is_global_attribute( false ) ;
-	return d_container->append_container( at, name ) ;
+    if (d_container) {
+        at->set_is_global_attribute(false);
+        return d_container->append_container(at, name);
     }
     return d_attrs.append_container( at, name ) ;
 }
