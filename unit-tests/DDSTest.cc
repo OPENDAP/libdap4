@@ -639,7 +639,9 @@ class DDSTest: public TestFixture {
     		eval.parse_constraint("NSCAT%20Rev%2020.NSCAT%20L2", *dds2);
     		cerr << "S2000415.HDF response size: " << dds2->get_request_size(true) << endl;
 		dds2->print_constrained(cerr);
-    		CPPUNIT_ASSERT(dds2->get_request_size(true) == 16); //sizeof(string) == 8
+    		CPPUNIT_ASSERT(dds2->get_request_size(true) == 16
+			       || dds2->get_request_size(true) == 12); 
+		//sizeof(string) == 8 or 4 depending on the compiler version (?)
     	}
 
     	void get_response_size_test_seq_c() {
