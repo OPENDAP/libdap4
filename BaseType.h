@@ -64,6 +64,10 @@
 #include "DapObj.h"
 #endif
 
+#ifndef XMLWRITER_H_
+#include "XMLWriter.h"
+#endif
+
 #include "Marshaller.h"
 #include "UnMarshaller.h"
 
@@ -329,6 +333,8 @@ public:
 
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
+
+    virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
 
     /** @name Abstract Methods */
     //@{

@@ -66,6 +66,10 @@
 #include "Keywords2.h"
 #endif
 
+#ifndef XMLWRITER_H_
+#include "XMLWriter.h"
+#endif
+
 using std::cout;
 
 #define FILE_METHODS 1
@@ -335,6 +339,8 @@ public:
     void print(ostream &out);
     void print_constrained(ostream &out);
     void print_xml(ostream &out, bool constrained, const string &blob = "");
+
+    void print_xml_writer(ostream &out, bool constrained, const string &blob = "");
 
     void mark_all(bool state);
     bool mark(const string &name, bool state);

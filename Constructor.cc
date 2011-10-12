@@ -407,6 +407,9 @@ public:
     }
 };
 
+/**
+ * @deprecated
+ */
 void
 Constructor::print_xml(FILE *out, string space, bool constrained)
 {
@@ -452,6 +455,9 @@ public:
     }
 };
 
+/**
+ * @deprecated
+ */
 void
 Constructor::print_xml(ostream &out, string space, bool constrained)
 {
@@ -463,21 +469,61 @@ Constructor::print_xml(ostream &out, string space, bool constrained)
 
     out << space << "<" << type_name() ;
     if (!name().empty())
-	out << " name=\"" << id2xml(name()) << "\"" ;
+    out << " name=\"" << id2xml(name()) << "\"" ;
 
     if (has_attributes || has_variables) {
-	out << ">\n" ;
+    out << ">\n" ;
 
         get_attr_table().print_xml(out, space + "    ", constrained);
 
         for_each(var_begin(), var_end(),
                  PrintFieldStrm(out, space + "    ", constrained));
 
-	out << space << "</" << type_name() << ">\n" ;
+    out << space << "</" << type_name() << ">\n" ;
     }
     else {
-	out << "/>\n" ;
+    out << "/>\n" ;
     }
+}
+
+class PrintFieldXMLWriter : public unary_function<BaseType *, void>
+{
+    XMLWriter &d_xml;
+    bool d_constrained;
+public:
+    PrintFieldXMLWriter(XMLWriter &x, bool c)
+            : d_xml(x), d_constrained(c)
+    {}
+
+    void operator()(BaseType *btp)
+    {
+        btp->print_xml_writer(d_xml, d_constrained);
+    }
+};
+
+void
+Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)type_name().c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write " + type_name() + " element");
+
+    if (!name().empty())
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+    bool has_attributes = false; // FIXME
+    bool has_variables = (var_begin() != var_end());
+    if (has_attributes || has_variables) {
+        get_attr_table().print_xml_writer(xml);
+
+        for_each(var_begin(), var_end(), PrintFieldXMLWriter(xml, constrained));
+    }
+
+    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
 }
 
 /** True if the instance can be flattened and printed as a single table

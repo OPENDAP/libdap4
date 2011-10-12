@@ -139,6 +139,12 @@ string path_to_filename(string path);
 
 string file_to_string(FILE *fp);
 
+int wildcmp(const char *wild, const char *string);
+
+int glob( const char *c, const char *s );
+
+int wmatch(const char *pat, const char *s);
+
 time_t parse_time(const char * str, bool expand);
 
 bool size_ok(unsigned int sz, unsigned int nelem);

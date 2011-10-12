@@ -218,6 +218,41 @@ AttrTable::set_name(const string &n)
     d_name = www2id(n);
 }
 
+#if 0
+// This was taken from das.y and could be used here to make the 'dods_errors'
+// attribute container like th parser used to. Then again, maybe this feature
+// was just BS. jhrg (ticket 1469)
+static void add_bad_attribute(AttrTable *attr, const string &type, const string &name, const string &value,
+        const string &msg) {
+    // First, if this bad value is already in a *_dods_errors container,
+    // then just add it. This can happen when the server side processes a DAS
+    // and then hands it off to a client which does the same.
+    // Make a new container. Call it <attr's name>_errors. If that container
+    // already exists, use it.
+    // Add the attribute.
+    // Add the error string to an attribute in the container called
+    // `<name_explanation.'.
+
+    if (attr->get_name().find("_dap_error") != string::npos) {
+        attr->append_attr(name, type, value);
+    }
+    else {
+        string error_cont_name = attr->get_name() + "_dods_errors";
+        AttrTable *error_cont = attr->get_attr_table(error_cont_name);
+        if (!error_cont)
+            error_cont = attr->append_container(error_cont_name);
+
+        error_cont->append_attr(name, type, value);
+
+#ifndef ATTR_STRING_QUOTE_FIX
+        error_cont->append_attr(name + "_dap_explanation", "String", "\"" + msg + "\"");
+#else
+        error_cont->append_attr(name + "_dap_explanation", "String", msg);
+#endif
+    }
+}
+#endif
+
 /** If the given name already refers to an attribute, and the attribute has a
  value, the given value is appended to the attribute vector. Calling this
  function repeatedly is the way to append to an attribute vector.
@@ -235,10 +270,7 @@ AttrTable::set_name(const string &n)
  @param name The name of the attribute to add or modify.
  @param type The type of the attribute to add or modify.
  @param value The value to add to the attribute table. */
-unsigned int
-AttrTable::append_attr(const string &name, const string &type,
-        const string &value)
-{
+unsigned int AttrTable::append_attr(const string &name, const string &type, const string &value) {
     DBG(cerr << "Entering AttrTable::append_attr" << endl);
     string lname = www2id(name);
 
@@ -247,11 +279,9 @@ AttrTable::append_attr(const string &name, const string &type,
     // If the types don't match OR this attribute is a container, calling
     // this mfunc is an error!
     if (iter != attr_map.end() && ((*iter)->type != String_to_AttrType(type)))
-    throw Error(string("An attribute called `") + name
-            + string("' already exists but is of a different type"));
+        throw Error(string("An attribute called `") + name + string("' already exists but is of a different type"));
     if (iter != attr_map.end() && (get_type(iter) == "Container"))
-    throw Error(string("An attribute called `") + name
-            + string("' already exists but is a container."));
+        throw Error(string("An attribute called `") + name + string("' already exists but is a container."));
 
     if (iter != attr_map.end()) { // Must be a new attribute value; add it.
         (*iter)->attr->push_back(value);
@@ -263,7 +293,7 @@ AttrTable::append_attr(const string &name, const string &type,
         e->name = lname;
         e->is_alias = false;
         e->type = String_to_AttrType(type); // Record type using standard names.
-        e->attr = new vector<string>;
+        e->attr = new vector<string> ;
         e->attr->push_back(value);
 
         attr_map.push_back(e);
@@ -290,10 +320,7 @@ AttrTable::append_attr(const string &name, const string &type,
  @param type The type of the attribute to add or modify.
  @param values A vector of values. Note: The vector is COPIED, not stored. */
 
-unsigned int
-AttrTable::append_attr(const string &name, const string &type,
-        vector<string> *values)
-{
+unsigned int AttrTable::append_attr(const string &name, const string &type, vector<string> *values) {
     DBG(cerr << "Entering AttrTable::append_attr(..., vector)" << endl);
     string lname = www2id(name);
 
@@ -302,16 +329,14 @@ AttrTable::append_attr(const string &name, const string &type,
     // If the types don't match OR this attribute is a container, calling
     // this mfunc is an error!
     if (iter != attr_map.end() && ((*iter)->type != String_to_AttrType(type)))
-    throw Error(string("An attribute called `") + name
-            + string("' already exists but is of a different type"));
+        throw Error(string("An attribute called `") + name + string("' already exists but is of a different type"));
     if (iter != attr_map.end() && (get_type(iter) == "Container"))
-    throw Error(string("An attribute called `") + name
-            + string("' already exists but is a container."));
+        throw Error(string("An attribute called `") + name + string("' already exists but is a container."));
 
     if (iter != attr_map.end()) { // Must be new attribute values; add.
         vector<string>::iterator i = values->begin();
         while (i != values->end())
-        (*iter)->attr->push_back(*i++);
+            (*iter)->attr->push_back(*i++);
 
         return (*iter)->attr->size();
     }
@@ -321,7 +346,7 @@ AttrTable::append_attr(const string &name, const string &type,
         e->name = lname;
         e->is_alias = false;
         e->type = String_to_AttrType(type); // Record type using standard names.
-        e->attr = new vector<string>(*values);
+        e->attr = new vector<string> (*values);
 
         attr_map.push_back(e);
 
@@ -1207,7 +1232,8 @@ AttrTable::print(ostream &out, string pad, bool dereference)
 /** Print the attribute table in XML.
  @param out Destination
  @param pad Indent lines of text/xml this much. Default is four spaces.
- @param constrained Not used */
+ @param constrained Not used
+ @deprecated */
 void
 AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
 {
@@ -1259,10 +1285,9 @@ AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
     }
 }
 
-/** Print the attribute table in XML.
- @param out Destination stream
- @param pad Indent lines of text/xml this much. Default is four spaces.
- @param constrained Not used */
+/**
+ * @deprecated
+ */
 void
 AttrTable::print_xml(ostream &out, string pad, bool /*constrained*/)
 {
@@ -1297,6 +1322,70 @@ AttrTable::print_xml(ostream &out, string pad, bool /*constrained*/)
                 }
             }
             out << pad << "</Attribute>\n";
+        }
+    }
+}
+
+/** Print the attribute table in XML.
+ @param out Destination stream
+ @param pad Indent lines of text/xml this much. Default is four spaces.
+ @param constrained Not used */
+void
+AttrTable::print_xml_writer(XMLWriter &xml)
+{
+    for (Attr_iter i = attr_begin(); i != attr_end(); ++i) {
+        if ((*i)->is_alias) {
+            if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Alias") < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write Alias element");
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)get_name(i).c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "Attribute", (const xmlChar*)(*i)->aliased_to.c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+            if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not end Alias element");
+        }
+        else if (is_container(i)) {
+            if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Attribute") < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write Attribute element");
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)get_name(i).c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "type", (const xmlChar*)get_type(i).c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+            get_attr_table(i)->print_xml_writer(xml);
+
+            if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not end Attribute element");
+        }
+        else {
+            if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Attribute") < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write Attribute element");
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)get_name(i).c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "type", (const xmlChar*)get_type(i).c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+            if (get_attr_type(i) == Attr_other_xml) {
+                if (get_attr_num(i) != 1)
+                    throw Error("OtherXML attributes cannot be vector-valued.");
+
+                if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*)get_attr(i, 0).c_str()) < 0)
+                    throw InternalErr(__FILE__, __LINE__, "Could not write OtherXML value");
+            }
+            else {
+                for (unsigned j = 0; j < get_attr_num(i); ++j) {
+                    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "value") < 0)
+                        throw InternalErr(__FILE__, __LINE__, "Could not write value element");
+
+                    if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*)get_attr(i, j).c_str()) < 0)
+                        throw InternalErr(__FILE__, __LINE__, "Could not write attribute value");
+
+                    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+                        throw InternalErr(__FILE__, __LINE__, "Could not end value element");
+                }
+            }
+            if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not end Attribute element");
         }
     }
 }

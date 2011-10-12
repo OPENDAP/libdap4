@@ -74,7 +74,7 @@ RegexTest_LDADD = ../libdap.la $(AM_LDADD)
 ArrayTest_SOURCES = ArrayTest.cc
 ArrayTest_LDADD = ../libdap.la $(AM_LDADD)
 
-AttrTableTest_SOURCES = AttrTableTest.cc
+AttrTableTest_SOURCES = AttrTableTest.cc testFile.cc
 AttrTableTest_LDADD = ../libdap.la $(AM_LDADD)
 
 ByteTest_SOURCES = ByteTest.cc
@@ -89,18 +89,18 @@ ancT_LDADD = ../libdapserver.la ../libdap.la $(AM_LDADD)
 DASTest_SOURCES = DASTest.cc
 DASTest_LDADD = ../libdap.la $(AM_LDADD)
 
-DDSTest_SOURCES = DDSTest.cc
+DDSTest_SOURCES = DDSTest.cc testFile.cc
 DDSTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DDXParserTest_SOURCES = DDXParserTest.cc
 DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 DDXParserTest_LDADD = ../libdap.la $(AM_LDADD)
 
-DODSFilterTest_SOURCES = DODSFilterTest.cc
+DODSFilterTest_SOURCES = DODSFilterTest.cc testFile.cc
 DODSFilterTest_LDADD = ../libdapserver.la ../libdap.la \
 	../tests/libtest-types.a $(AM_LDADD)
 
-ResponseBuilderTest_SOURCES = ResponseBuilderTest.cc
+ResponseBuilderTest_SOURCES = ResponseBuilderTest.cc testFile.cc
 ResponseBuilderTest_LDADD = ../libdapserver.la ../libdap.la \
 	../tests/libtest-types.a $(AM_LDADD)
 

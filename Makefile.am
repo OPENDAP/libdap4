@@ -226,7 +226,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	ConstraintEvaluator.cc ArrayGeoConstraint.cc DapIndent.cc	\
 	Operators.h XDRUtils.cc XDRFileMarshaller.cc			\
 	XDRFileUnMarshaller.cc XDRStreamMarshaller.cc			\
-	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc
+	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc
 
 Operators.h: ce_expr.tab.hh
 
@@ -250,7 +250,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	ce_parser.h DapIndent.h DapObj.h XDRFileMarshaller.h		\
 	Marshaller.h XDRFileUnMarshaller.h UnMarshaller.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
-	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h
+	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h

@@ -878,6 +878,9 @@ public:
     }
 };
 
+/**
+ * @deprecated
+ */
 void
 Grid::print_xml(FILE *out, string space, bool constrained)
 {
@@ -941,6 +944,9 @@ public:
     }
 };
 
+/**
+ * @deprecated
+ */
 void
 Grid::print_xml(ostream &out, string space, bool constrained)
 {
@@ -980,6 +986,72 @@ Grid::print_xml(ostream &out, string space, bool constrained)
                  PrintMapFieldStrm(out, space + "    ", constrained));
 
         out << space << "</Grid>\n" ;
+    }
+}
+
+
+class PrintGridFieldXMLWriter : public unary_function<BaseType *, void>
+{
+    XMLWriter &d_xml;
+    bool d_constrained;
+    string d_tag;
+public:
+    PrintGridFieldXMLWriter(XMLWriter &x, bool c, const string &t = "Map")
+            : d_xml(x), d_constrained(c), d_tag(t)
+    {}
+
+    void operator()(BaseType *btp)
+    {
+        Array *a = dynamic_cast<Array*>(btp);
+        if (!a)
+            throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
+        a->print_xml_writer_core(d_xml, d_constrained, d_tag);
+    }
+};
+
+void
+Grid::print_xml_writer(XMLWriter &xml, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    if (constrained && !projection_yields_grid()) {
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)"Structure") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write Structure element");
+
+        if (!name().empty())
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+        get_attr_table().print_xml_writer(xml);
+
+        get_array()->print_xml_writer(xml, constrained);
+
+        for_each(map_begin(), map_end(),
+                 PrintGridFieldXMLWriter(xml, constrained, "Array"));
+
+        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not end Structure element");
+    }
+    else {
+        // The number of elements in the (projected) Grid must be such that
+        // we have a valid Grid object; send it as such.
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)"Grid") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write Grid element");
+
+        if (!name().empty())
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+        get_attr_table().print_xml_writer(xml);
+
+        get_array()->print_xml_writer(xml, constrained);
+
+        for_each(map_begin(), map_end(),
+                 PrintGridFieldXMLWriter(xml, constrained, "Map"));
+
+        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not end Grid element");
     }
 }
 

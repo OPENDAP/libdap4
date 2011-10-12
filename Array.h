@@ -48,6 +48,10 @@
 #include "Vector.h"
 #endif
 
+#ifndef XMLWRITER_H_
+#include "XMLWriter.h"
+#endif
+
 #define FILE_METHODS 1
 
 namespace libdap
@@ -190,6 +194,10 @@ public:
 
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
+
+    virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
+    virtual void print_xml_writer_core(XMLWriter &out, bool constrained, string tag);
+    virtual void print_as_map_xml_writer(XMLWriter &xml, bool constrained);
 
 #if FILE_METHODS
     virtual void print_xml_core(FILE *out, string space, bool constrained, string tag);

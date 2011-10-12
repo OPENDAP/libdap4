@@ -50,6 +50,10 @@ using std::vector;
 #include "DapObj.h"
 #endif
 
+#ifndef XMLWRITER_H_
+#include "XMLWriter.h"
+#endif
+
 namespace libdap
 {
 
@@ -337,6 +341,8 @@ public:
 			   bool constrained = false);
     virtual void print_xml(ostream &out, string pad = "    ",
 			   bool constrained = false);
+
+    void print_xml_writer(XMLWriter &xml);
 
     virtual void dump(ostream &strm) const ;
 };

@@ -1,0 +1,35 @@
+HTTP/1.0 200 OK\r
+XDODS-Server: *
+XOPeNDAP-Server: *
+XDAP: *
+Date: *
+Last-Modified: *
+Content-Type: Multipart/Related; boundary=boundary; start="<start@opendap.org>"; type="Text/xml"\r
+Content-Description: dap4-data-ddx\r
+\r
+--boundary\r
+Content-Type: Text/xml; charset=iso-8859-1\r
+Content-Id: <start@opendap.org>\r
+Content-Description: dap4-ddx\r
+\r
+<.xml version="1.0" encoding="ISO-8859-1".>
+<Dataset name="test" *
+    <Byte name="a">
+        <Attribute name="size" type="Int32">
+            <value>7</value>
+        </Attribute>
+        <Attribute name="type" type="String">
+            <value>cars</value>
+        </Attribute>
+    </Byte>
+    <blob href="cid:*@opendap.org"/>
+</Dataset>
+
+--boundary\r
+Content-Type: application/octet-stream\r
+Content-Id: <*@opendap.org>\r
+Content-Description: dap4-data\r
+Content-Encoding: binary\r
+\r
+*
+--boundary--\r
