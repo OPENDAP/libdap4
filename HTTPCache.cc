@@ -1487,7 +1487,7 @@ FILE * HTTPCache::get_cached_response(const string &url,
 		vector<string> &headers, string &cacheName) {
     lock_cache_interface();
 
-    FILE *body;
+    FILE *body = 0;
     HTTPCacheTable::CacheEntry *entry = 0;
 
     DBG(cerr << "Getting the cached response for " << url << endl);
@@ -1515,7 +1515,8 @@ FILE * HTTPCache::get_cached_response(const string &url,
     	// Why make this unlock operation conditional on entry?
         if (entry)
         	unlock_cache_interface();
-        fclose(body);
+        if (body != 0)
+            fclose(body);
         throw;
     }
 

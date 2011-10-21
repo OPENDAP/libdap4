@@ -40,6 +40,8 @@ bin_PROGRAMS = getdap
 BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
 
 libparsers_la_SOURCES = $(GRAM_SRC) 
+libparsers_la_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
+libparsers_la_LIBADD = $(XML2_LIBS)
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC) 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
