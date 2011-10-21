@@ -235,6 +235,24 @@ Structure::add_var(BaseType *bt, Part)
     _vars.push_back(btp);
 }
 
+/** Adds an element to a Structure.
+
+    @param bt A pointer to the DAP2 type variable to add to this Structure.
+    @param part Not used by this class, defaults to nil */
+void
+Structure::add_var_nocopy(BaseType *bt, Part)
+{
+    // Jose Garcia
+    // Passing and invalid pointer to an object is a developer's error.
+    if (!bt)
+        throw InternalErr(__FILE__, __LINE__,
+                          "The BaseType parameter cannot be null.");
+
+    bt->set_parent(this);
+    _vars.push_back(bt);
+}
+
+
 /** Removed an element from a Structure.
 
     @param n name of the variable to remove */

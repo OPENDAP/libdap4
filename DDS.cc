@@ -467,30 +467,50 @@ DDS::get_request_size(bool constrained)
     \e bt and adds the result to this DDS.
     @note The copy will not copy data values.
     @param bt Source variable. */
-void
-DDS::add_var(BaseType *bt)
-{
+void DDS::add_var(BaseType *bt) {
     if (!bt)
-        throw InternalErr(__FILE__, __LINE__,
-                          "Trying to add a BaseType object with a NULL pointer.");
+        throw InternalErr(__FILE__, __LINE__, "Trying to add a BaseType object with a NULL pointer.");
 
     DBG2(cerr << "In DDS::add_var(), bt's address is: " << bt << endl);
 
     BaseType *btp = bt->ptr_duplicate();
     DBG2(cerr << "In DDS::add_var(), btp's address is: " << btp << endl);
-    if( d_container )
-    {
+    if (d_container) {
         // Mem leak fix [mjohnson nov 2009]
         // Structure::add_var() creates ANOTHER copy.
-	d_container->add_var( bt ) ;
-	// So we need to delete btp or else it leaks
-	delete btp; btp = 0;
+        d_container->add_var(bt);
+        // So we need to delete btp or else it leaks
+        delete btp;
+        btp = 0;
     }
-    else
-    {
-	vars.push_back(btp);
+    else {
+        vars.push_back(btp);
     }
 }
+
+/** @brief Adds the variable to the DDS.
+    @param bt Source variable. */
+void DDS::add_var_nocopy(BaseType *bt) {
+    if (!bt)
+        throw InternalErr(__FILE__, __LINE__, "Trying to add a BaseType object with a NULL pointer.");
+
+    DBG2(cerr << "In DDS::add_var(), bt's address is: " << bt << endl);
+
+    BaseType *btp = bt->ptr_duplicate();
+    DBG2(cerr << "In DDS::add_var(), btp's address is: " << btp << endl);
+    if (d_container) {
+        // Mem leak fix [mjohnson nov 2009]
+        // Structure::add_var() creates ANOTHER copy.
+        d_container->add_var(bt);
+        // So we need to delete btp or else it leaks
+        delete btp;
+        btp = 0;
+    }
+    else {
+        vars.push_back(btp);
+    }
+}
+
 
 /** Remove the named variable from the DDS. This method is not smart about
     looking up names. The variable must exist at the top level of the DDS and
@@ -701,6 +721,29 @@ BaseType *
 DDS::get_var_index(int i)
 {
     return *(vars.begin() + i);
+}
+
+/** Insert a copy of the BaseType before the position given.
+ * @param i The iterator that marks the position
+ * @param ptr The BaseType object to copy and insert
+ */
+void
+DDS::insert_var(Vars_iter i, BaseType *ptr)
+{
+    vars.insert(i, ptr->ptr_duplicate());
+}
+
+/** Insert the BaseType before the position given.
+ * @note Does not copy the BaseType object - that caller must not
+ * free the inserted object's pointer. This object will, however,
+ * delete the pointer when it is deleted.
+ * @param i The iterator that marks the position
+ * @param ptr The BaseType object to insert
+ */
+void
+DDS::insert_var_nocopy(Vars_iter i, BaseType *ptr)
+{
+    vars.insert(i, ptr);
 }
 
 /** @brief Returns the number of variables in the DDS. */

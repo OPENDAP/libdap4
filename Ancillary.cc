@@ -1,6 +1,9 @@
 // Ancillary.cc
 
 #include "config.h"
+
+//#define DODS_DEBUG
+
 #include "Ancillary.h"
 #include "debug.h"
 
@@ -197,6 +200,8 @@ Ancillary::read_ancillary_das( DAS &das,
 {
     string name = find_ancillary_file( pathname, "das", dir, file ) ;
 
+    DBG(cerr << "In Ancillary::read_ancillary_dds: name:" << name << endl);
+
     FILE *in = fopen( name.c_str(), "r" ) ;
     if( in ) {
         das.parse( in ) ;
@@ -213,6 +218,8 @@ Ancillary::read_ancillary_dds( DDS &dds,
 			       const string &file )
 {
     string name = find_ancillary_file( pathname, "dds", dir, file ) ;
+
+    DBG(cerr << "In Ancillary::read_ancillary_dds: name:" << name << endl);
 
     FILE *in = fopen( name.c_str(), "r" ) ;
     if( in ) {

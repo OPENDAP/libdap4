@@ -144,6 +144,8 @@ public:
     virtual BaseType *var(const string &n, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part = nil);
+    virtual void add_var_nocopy(BaseType *bt, Part part = nil);
+
     virtual void del_var(const string &name);
 
     virtual bool read() ;
