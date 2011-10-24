@@ -7,7 +7,7 @@ aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU 
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
 # -I$(top_srcdir)/xstream
 AM_CXXFLAGS = 
 if COMPILER_IS_GCC
@@ -40,17 +40,18 @@ bin_PROGRAMS = getdap
 BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
 
 libparsers_la_SOURCES = $(GRAM_SRC) 
-libparsers_la_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
+libparsers_la_CPPFLAGS = $(AM_CPPFLAGS) #$(XML2_CFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC) 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
-libdap_la_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
+libdap_la_CPPFLAGS = $(AM_CPPFLAGS) #$(XML2_CFLAGS)
 libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la libparsers.la
 
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
-libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS) $(XML2_CFLAGS)
+#libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS) $(XML2_CFLAGS)
+libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
 
 libdapserver_la_SOURCES = $(SERVER_SRC)
