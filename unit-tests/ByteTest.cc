@@ -38,7 +38,7 @@
 
 #include "Byte.h"
 
-#include "testFile.cc"
+#include "testFile.h"
 
 using namespace CppUnit;
 using namespace std;
