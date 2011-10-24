@@ -997,11 +997,10 @@ void
 DDS::print_xml(FILE *out, bool constrained, const string &blob)
 {
     ostringstream oss;
-
     print_xml_writer(oss, constrained, blob);
 
     string doc = oss.str();
-    fwrite(doc.data(), 1, doc.length(),out);
+    fwrite(doc.data(), 1, doc.length(), out);
 
 #if 0
     fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -1083,6 +1082,7 @@ void
 DDS::print_xml(ostream &out, bool constrained, const string &blob)
 {
     print_xml_writer(out, constrained, blob);
+
 
 #if 0
     out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" ;
@@ -1241,7 +1241,7 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end Dataset element");
 
-    out << xml.get_doc() << endl;
+    out << xml.get_doc();// << ends;// << endl;
 }
 
 // Used by DDS::send() when returning data from a function call.

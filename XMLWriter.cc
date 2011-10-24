@@ -40,23 +40,13 @@ XMLWriter::XMLWriter(const string &pad) {
             throw InternalErr(__FILE__, __LINE__, "Error setting indentation for response document ");
 
         d_started = true;
+        d_ended = false;
 
         /* Start the document with the xml default for the version,
          * encoding ISO 8859-1 and the default for the standalone
          * declaration. MY_ENCODING defined at top of this file*/
         if (xmlTextWriterStartDocument(d_writer, NULL, ENCODING, NULL) < 0)
             throw InternalErr(__FILE__, __LINE__, "Error starting xml response document");
-#if 0
-        /* Start an element named "Dataset". Since this is the first element,
-         * this will be the root element of the document */
-        if (xmlTextWriterStartElementNS(d_writer, NULL, (const xmlChar*) "Dataset", (const xmlChar*) DAP_SCHEMA) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Error starting the response element for response ");
-
-        /* Add an attribute... */
-
-        if( xmlTextWriterWriteAttribute(d_writer, REQUEST_ID, reqid.c_str() ) < 0 )
-            throw InternalErr(__FILE__, __LINE__, "Error adding attribute to the Dataset element.");
-#endif
     }
     catch (InternalErr &e) {
         m_cleanup();
@@ -72,10 +62,12 @@ XMLWriter::~XMLWriter() {
 void XMLWriter::m_cleanup() {
     // make sure the buffer and writer are all cleaned up
     if (d_writer) {
-        xmlFreeTextWriter(d_writer);
+        xmlFreeTextWriter(d_writer); // This frees both d_writer and d_doc_buf
         d_writer = 0;
         d_doc_buf = 0;
     }
+
+    // We could be here because of an exception and d_writer might be zero
     if (d_doc_buf) {
         xmlBufferFree(d_doc_buf);
         d_doc_buf = 0;
@@ -86,23 +78,22 @@ void XMLWriter::m_cleanup() {
 }
 
 const char *XMLWriter::get_doc() {
-    if (d_writer) {
-#if 0
-        // this should end the response element
-        if (xmlTextWriterEndElement(d_writer) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Error ending Dataset element.");
-#endif
+    if (d_writer && d_started) {
         if (xmlTextWriterEndDocument(d_writer) < 0)
             throw InternalErr(__FILE__, __LINE__, "Error ending the document");
 
-        // must call this before getting the buffer content
-        xmlFreeTextWriter(d_writer);
-        d_writer = 0;
+        d_ended = true;
     }
 
-    // get the xml document as a string and return
     if (!d_doc_buf->content)
         throw InternalErr(__FILE__, __LINE__, "Error retrieving response document as string");
 
-    return (char *) d_doc_buf->content;
+    return (const char *)d_doc_buf->content;
+
+#if 0
+    if (*(const char *)d_doc_buf->content == '\n')
+        return (const char *)d_doc_buf + 1;
+    else
+        return (const char *)d_doc_buf->content;
+#endif
 }

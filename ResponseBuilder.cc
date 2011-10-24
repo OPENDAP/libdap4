@@ -43,7 +43,6 @@ static char rcsid[] not_used = { "$Id: ResponseBuilder.cc 23477 2010-09-02 21:02
 #include <cstring>
 
 #include <uuid/uuid.h>	// used to build CID header value for data ddx
-
 #include "DAS.h"
 #include "DDS.h"
 #include "debug.h"
@@ -64,14 +63,12 @@ using namespace std;
 
 namespace libdap {
 
-ResponseBuilder::~ResponseBuilder()
-{
+ResponseBuilder::~ResponseBuilder() {
 }
 
 /** Called when initializing a ResponseBuilder that's not going to be passed a
  command line arguments. */
-void ResponseBuilder::initialize()
-{
+void ResponseBuilder::initialize() {
     // Set default values. Don't use the C++ constructor initialization so
     // that a subclass can have more control over this process.
     d_dataset = "";
@@ -129,7 +126,7 @@ list<string> ResponseBuilder::get_keywords() const
     list<string> kws;
     set<string>::const_iterator i;
     for (i = d_keywords.begin(); i != d_keywords.end(); ++i)
-	kws.push_front(*i);
+    kws.push_front(*i);
     return kws;
 }
 
@@ -150,13 +147,11 @@ bool ResponseBuilder::is_known_keyword(const string &w) const
 
  @brief Get the constraint expression.
  @return A string object that contains the constraint expression. */
-string ResponseBuilder::get_ce() const
-{
+string ResponseBuilder::get_ce() const {
     return d_ce;
 }
 
-void ResponseBuilder::set_ce(string _ce)
-{
+void ResponseBuilder::set_ce(string _ce) {
     d_ce = www2id(_ce, "%", "%20");
 
 #if 0
@@ -167,8 +162,8 @@ void ResponseBuilder::set_ce(string _ce)
     // Separate the selection part (which follows/includes the first '&')
     string::size_type amp = projection.find('&');
     if (amp != string::npos) {
-	selection = projection.substr(amp);
-	projection = projection.substr(0, amp);
+        selection = projection.substr(amp);
+        projection = projection.substr(0, amp);
     }
 
     // Extract keywords; add to the ResponseBuilder keywords. For this, scan for
@@ -176,15 +171,15 @@ void ResponseBuilder::set_ce(string _ce)
     // projection and should be left alone. Keywords must come before variables
     // The 'projection' string will look like: '' or 'dap4.0' or 'dap4.0,u,v'
     while (!projection.empty()) {
-	string::size_type i = projection.find(',');
-	string next_word = projection.substr(0, i);
-	if (is_known_keyword(next_word)) {
-	    add_keyword(next_word);
-	    projection = projection.substr(i + 1);
-	}
-	else {
-	    break; // exit on first non-keyword
-	}
+        string::size_type i = projection.find(',');
+        string next_word = projection.substr(0, i);
+        if (is_known_keyword(next_word)) {
+            add_keyword(next_word);
+            projection = projection.substr(i + 1);
+        }
+        else {
+            break; // exit on first non-keyword
+        }
     }
 
     // The CE is whatever is left after removing the keywords
@@ -200,13 +195,11 @@ void ResponseBuilder::set_ce(string _ce)
 
  @brief Get the dataset name.
  @return A string object that contains the name of the dataset. */
-string ResponseBuilder::get_dataset_name() const
-{
+string ResponseBuilder::get_dataset_name() const {
     return d_dataset;
 }
 
-void ResponseBuilder::set_dataset_name(const string ds)
-{
+void ResponseBuilder::set_dataset_name(const string ds) {
     d_dataset = www2id(ds, "%", "%20");
 }
 
@@ -214,14 +207,12 @@ void ResponseBuilder::set_dataset_name(const string ds)
  timeout.
 
  @param t Server timeout in seconds. Default is zero (no timeout). */
-void ResponseBuilder::set_timeout(int t)
-{
+void ResponseBuilder::set_timeout(int t) {
     d_timeout = t;
 }
 
 /** Get the server's timeout value. */
-int ResponseBuilder::get_timeout() const
-{
+int ResponseBuilder::get_timeout() const {
     return d_timeout;
 }
 
@@ -235,14 +226,13 @@ int ResponseBuilder::get_timeout() const
  should scan ahead in the input stream for an Error object. Add this, or a
  sensible variant once libdap++ supports reliable error delivery. Dumb
  clients will never get the Error object... */
-void ResponseBuilder::establish_timeout(ostream &stream) const
-{
+void ResponseBuilder::establish_timeout(ostream &stream) const {
 #ifndef WIN32
     if (d_timeout > 0) {
-	SignalHandler *sh = SignalHandler::instance();
-	EventHandler *old_eh = sh->register_handler(SIGALRM, new AlarmHandler(stream));
-	delete old_eh;
-	alarm(d_timeout);
+        SignalHandler *sh = SignalHandler::instance();
+        EventHandler *old_eh = sh->register_handler(SIGALRM, new AlarmHandler(stream));
+        delete old_eh;
+        alarm(d_timeout);
     }
 #endif
 }
@@ -258,10 +248,9 @@ void ResponseBuilder::establish_timeout(ostream &stream) const
  @param with_mime_headers If true (the default) send MIME headers.
  @return void
  @see DAS */
-void ResponseBuilder::send_das(ostream &out, DAS &das, bool with_mime_headers) const
-{
+void ResponseBuilder::send_das(ostream &out, DAS &das, bool with_mime_headers) const {
     if (with_mime_headers)
-	set_mime_text(out, dods_das, x_plain, last_modified_time(d_dataset), "2.0");
+        set_mime_text(out, dods_das, x_plain, last_modified_time(d_dataset), "2.0");
     das.print(out);
 
     out << flush;
@@ -284,28 +273,27 @@ void ResponseBuilder::send_das(ostream &out, DAS &das, bool with_mime_headers) c
  @return void
  @see DDS */
 void ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool constrained,
-	bool with_mime_headers) const
-{
+                               bool with_mime_headers) const {
     // If constrained, parse the constraint. Throws Error or InternalErr.
     if (constrained)
-	eval.parse_constraint(d_ce, dds);
+        eval.parse_constraint(d_ce, dds);
 
     if (eval.functional_expression())
-	throw Error("Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
+        throw Error(
+                "Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
 
     if (with_mime_headers)
-	set_mime_text(out, dods_dds, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+        set_mime_text(out, dods_dds, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
     if (constrained)
-	dds.print_constrained(out);
+        dds.print_constrained(out);
     else
-	dds.print(out);
+        dds.print(out);
 
     out << flush;
 }
 
-void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEvaluator & eval, bool ce_eval) const
-{
+void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEvaluator & eval, bool ce_eval) const {
     // send constrained DDS
     dds.print_constrained(out);
     out << "Data:\n";
@@ -315,21 +303,19 @@ void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEval
     XDRStreamMarshaller m(out);
 
     try {
-	// Send all variables in the current projection (send_p())
-	for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
-	    if ((*i)->send_p()) {
-		DBG(cerr << "Sending " << (*i)->name() << endl);
-		(*i)->serialize(eval, dds, m, ce_eval);
-	    }
-    }
-    catch (Error & e) {
-	throw;
+        // Send all variables in the current projection (send_p())
+        for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
+            if ((*i)->send_p()) {
+                DBG(cerr << "Sending " << (*i)->name() << endl);
+                (*i)->serialize(eval, dds, m, ce_eval);
+            }
+    } catch (Error & e) {
+        throw;
     }
 }
 
-void ResponseBuilder::dataset_constraint_ddx( ostream &out, DDS & dds, ConstraintEvaluator & eval,
-	const string &boundary, const string &start, bool ce_eval) const
-{
+void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS & dds, ConstraintEvaluator & eval,
+                                             const string &boundary, const string &start, bool ce_eval) const {
     // Write the MPM headers for the DDX (text/xml) part of the response
     set_mime_ddx_boundary(out, boundary, start, dap4_ddx);
 
@@ -340,7 +326,7 @@ void ResponseBuilder::dataset_constraint_ddx( ostream &out, DDS & dds, Constrain
     uuid_unparse(uu, &uuid[0]);
     char domain[256];
     if (getdomainname(domain, 255) != 0 || strlen(domain) == 0)
-	strncpy(domain, "opendap.org", 255);
+        strncpy(domain, "opendap.org", 255);
 
     string cid = string(&uuid[0]) + "@" + string(&domain[0]);
 
@@ -354,15 +340,14 @@ void ResponseBuilder::dataset_constraint_ddx( ostream &out, DDS & dds, Constrain
     XDRStreamMarshaller m(out);
 
     try {
-	// Send all variables in the current projection (send_p())
-	for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
-	    if ((*i)->send_p()) {
-		DBG(cerr << "Sending " << (*i)->name() << endl);
-		(*i)->serialize(eval, dds, m, ce_eval);
-	    }
-    }
-    catch (Error & e) {
-	throw;
+        // Send all variables in the current projection (send_p())
+        for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
+            if ((*i)->send_p()) {
+                DBG(cerr << "Sending " << (*i)->name() << endl);
+                (*i)->serialize(eval, dds, m, ce_eval);
+            }
+    } catch (Error & e) {
+        throw;
     }
 }
 
@@ -382,9 +367,7 @@ void ResponseBuilder::dataset_constraint_ddx( ostream &out, DDS & dds, Constrain
  @param with_mime_headers If true, include the MIME headers in the response.
  Defaults to true.
  @return void */
-void ResponseBuilder::send_data(ostream & data_stream, DDS & dds,
-        ConstraintEvaluator & eval, bool with_mime_headers) const
-{
+void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEvaluator & eval, bool with_mime_headers) const {
     // Set up the alarm.
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
@@ -393,13 +376,10 @@ void ResponseBuilder::send_data(ostream & data_stream, DDS & dds,
 
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
-    if (dds.get_response_limit() != 0
-        && dds.get_request_size(true) > dds.get_response_limit()) {
-        string msg = "The Request for "
-                + long_to_string(dds.get_request_size(true)/1024)
-                + "KB is too large; requests for this user are limited to "
-                + long_to_string(dds.get_response_limit()/1024)
-                + "KB.";
+    if (dds.get_response_limit() != 0 && dds.get_request_size(true) > dds.get_response_limit()) {
+        string msg = "The Request for " + long_to_string(dds.get_request_size(true) / 1024)
+                + "KB is too large; requests for this user are limited to " + long_to_string(
+                dds.get_response_limit() / 1024) + "KB.";
         throw Error(msg);
     }
 
@@ -434,19 +414,19 @@ void ResponseBuilder::send_data(ostream & data_stream, DDS & dds,
  @param out Destination
  @param with_mime_headers If true, include the MIME headers in the response.
  Defaults to true. */
-void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers) const
-{
+void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers) const {
     // If constrained, parse the constraint. Throws Error or InternalErr.
     if (!d_ce.empty())
-	eval.parse_constraint(d_ce, dds);
+        eval.parse_constraint(d_ce, dds);
 
     if (eval.functional_expression())
-	throw Error(
-		"Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
+        throw Error(
+                "Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
 
     if (with_mime_headers)
-	set_mime_text(out, dap4_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
-    dds.print_xml(out, !d_ce.empty(), "");
+        set_mime_text(out, dap4_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+
+    dds.print_xml_writer(out, !d_ce.empty(), "");
 }
 
 /** Send the data in the DDS object back to the client program. The data is
@@ -465,22 +445,18 @@ void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval
  @param with_mime_headers If true, include the MIME headers in the response.
  Defaults to true.
  @return void */
-void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds,
-        ConstraintEvaluator & eval, const string &start,
-        const string &boundary, bool with_mime_headers) const
-{
+void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, ConstraintEvaluator & eval, const string &start,
+                                    const string &boundary, bool with_mime_headers) const {
     // Set up the alarm.
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
     eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
 
-    if (dds.get_response_limit() != 0
-        && dds.get_request_size(true) > dds.get_response_limit()) {
-        string msg = "The Request for "
-                + long_to_string(dds.get_request_size(true)/1024)
-                + "KB is too large; requests for this user are limited to "
-                + long_to_string(dds.get_response_limit()/1024) + "KB.";
+    if (dds.get_response_limit() != 0 && dds.get_request_size(true) > dds.get_response_limit()) {
+        string msg = "The Request for " + long_to_string(dds.get_request_size(true) / 1024)
+                + "KB is too large; requests for this user are limited to " + long_to_string(
+                dds.get_response_limit() / 1024) + "KB.";
         throw Error(msg);
     }
 
@@ -512,7 +488,7 @@ void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds,
 }
 
 static const char *descrip[] = { "unknown", "dods_das", "dods_dds", "dods_data", "dods_error", "web_error", "dap4-ddx",
-	"dap4-data", "dap4-error", "dap4-data-ddx", "dods_ddx" };
+        "dap4-data", "dap4-error", "dap4-data-ddx", "dods_ddx" };
 static const char *encoding[] = { "unknown", "deflate", "x-plain", "gzip", "binary" };
 
 /** Generate an HTTP 1.0 response header for a text document. This is used
@@ -527,43 +503,41 @@ static const char *encoding[] = { "unknown", "deflate", "x-plain", "gzip", "bina
  x_... versions of those. Default is x_plain.
  @param last_modified The time to use for the Last-Modified header value.
  Default is zero which means use the current time. */
-void ResponseBuilder::set_mime_text(ostream &strm, ObjectType type,
-	EncodingType enc, const time_t last_modified,
-	const string &protocol) const
-{
+void ResponseBuilder::set_mime_text(ostream &strm, ObjectType type, EncodingType enc, const time_t last_modified,
+                                    const string &protocol) const {
     strm << "HTTP/1.0 200 OK" << CRLF;
 
     strm << "XDODS-Server: " << DVR << CRLF;
     strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
     if (protocol == "")
-	strm << "XDAP: " << d_default_protocol << CRLF;
+        strm << "XDAP: " << d_default_protocol << CRLF;
     else
-	strm << "XDAP: " << protocol  << CRLF;
+        strm << "XDAP: " << protocol << CRLF;
 
     const time_t t = time(0);
     strm << "Date: " << rfc822_date(t).c_str() << CRLF;
 
     strm << "Last-Modified: ";
     if (last_modified > 0)
-	strm << rfc822_date(last_modified).c_str() << CRLF;
+        strm << rfc822_date(last_modified).c_str() << CRLF;
     else
-	strm << rfc822_date(t).c_str() << CRLF;
+        strm << rfc822_date(t).c_str() << CRLF;
 
     if (type == dap4_ddx)
-	strm << "Content-Type: text/xml" << CRLF;
+        strm << "Content-Type: text/xml" << CRLF;
     else
-	strm << "Content-Type: text/plain" << CRLF;
+        strm << "Content-Type: text/plain" << CRLF;
 
     // Note that Content-Description is from RFC 2045 (MIME, pt 1), not 2616.
     // jhrg 12/23/05
     strm << "Content-Description: " << descrip[type] << CRLF;
     if (type == dods_error) // don't cache our error responses.
-	strm << "Cache-Control: no-cache" << CRLF;
+        strm << "Cache-Control: no-cache" << CRLF;
     // Don't write a Content-Encoding header for x-plain since that breaks
     // Netscape on NT. jhrg 3/23/97
     if (enc != x_plain)
-	strm << "Content-Encoding: " << encoding[enc] << CRLF;
+        strm << "Content-Encoding: " << encoding[enc] << CRLF;
     strm << CRLF;
 }
 
@@ -577,38 +551,36 @@ void ResponseBuilder::set_mime_text(ostream &strm, ObjectType type,
  x_... versions of those. Default is x_plain.
  @param last_modified The time to use for the Last-Modified header value.
  Default is zero which means use the current time. */
-void ResponseBuilder::set_mime_html(ostream &strm, ObjectType type,
-	EncodingType enc, const time_t last_modified,
-	const string &protocol) const
-{
+void ResponseBuilder::set_mime_html(ostream &strm, ObjectType type, EncodingType enc, const time_t last_modified,
+                                    const string &protocol) const {
     strm << "HTTP/1.0 200 OK" << CRLF;
 
     strm << "XDODS-Server: " << DVR << CRLF;
     strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
     if (protocol == "")
-	strm << "XDAP: " << d_default_protocol << CRLF;
+        strm << "XDAP: " << d_default_protocol << CRLF;
     else
-	strm << "XDAP: " << protocol  << CRLF;
+        strm << "XDAP: " << protocol << CRLF;
 
     const time_t t = time(0);
     strm << "Date: " << rfc822_date(t).c_str() << CRLF;
 
     strm << "Last-Modified: ";
     if (last_modified > 0)
-	strm << rfc822_date(last_modified).c_str() << CRLF;
+        strm << rfc822_date(last_modified).c_str() << CRLF;
     else
-	strm << rfc822_date(t).c_str() << CRLF;
+        strm << rfc822_date(t).c_str() << CRLF;
 
     strm << "Content-type: text/html" << CRLF;
     // See note above about Content-Description header. jhrg 12/23/05
     strm << "Content-Description: " << descrip[type] << CRLF;
     if (type == dods_error) // don't cache our error responses.
-	strm << "Cache-Control: no-cache" << CRLF;
+        strm << "Cache-Control: no-cache" << CRLF;
     // Don't write a Content-Encoding header for x-plain since that breaks
     // Netscape on NT. jhrg 3/23/97
     if (enc != x_plain)
-	strm << "Content-Encoding: " << encoding[enc] << CRLF;
+        strm << "Content-Encoding: " << encoding[enc] << CRLF;
     strm << CRLF;
 }
 
@@ -625,91 +597,85 @@ void ResponseBuilder::set_mime_html(ostream &strm, ObjectType type,
  @param last_modified The time to use for the Last-Modified header value.
  Default is zero which means use the current time.
  */
-void ResponseBuilder::set_mime_binary(ostream &strm, ObjectType type,
-	EncodingType enc, const time_t last_modified,
-	const string &protocol) const
-{
+void ResponseBuilder::set_mime_binary(ostream &strm, ObjectType type, EncodingType enc, const time_t last_modified,
+                                      const string &protocol) const {
     strm << "HTTP/1.0 200 OK" << CRLF;
 
     strm << "XDODS-Server: " << DVR << CRLF;
     strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
     if (protocol == "")
-	strm << "XDAP: " << d_default_protocol << CRLF;
+        strm << "XDAP: " << d_default_protocol << CRLF;
     else
-	strm << "XDAP: " << protocol  << CRLF;
+        strm << "XDAP: " << protocol << CRLF;
 
     const time_t t = time(0);
     strm << "Date: " << rfc822_date(t).c_str() << CRLF;
 
     strm << "Last-Modified: ";
     if (last_modified > 0)
-	strm << rfc822_date(last_modified).c_str() << CRLF;
+        strm << rfc822_date(last_modified).c_str() << CRLF;
     else
-	strm << rfc822_date(t).c_str() << CRLF;
+        strm << rfc822_date(t).c_str() << CRLF;
 
     strm << "Content-Type: application/octet-stream" << CRLF;
     strm << "Content-Description: " << descrip[type] << CRLF;
     if (enc != x_plain)
-	strm << "Content-Encoding: " << encoding[enc] << CRLF;
+        strm << "Content-Encoding: " << encoding[enc] << CRLF;
 
     strm << CRLF;
 }
 
-void ResponseBuilder::set_mime_multipart(ostream &strm, const string &boundary,
-	const string &start, ObjectType type, EncodingType enc,
-	const time_t last_modified, const string &protocol) const
-{
+void ResponseBuilder::set_mime_multipart(ostream &strm, const string &boundary, const string &start, ObjectType type,
+                                         EncodingType enc, const time_t last_modified, const string &protocol) const {
     strm << "HTTP/1.0 200 OK" << CRLF;
 
     strm << "XDODS-Server: " << DVR << CRLF;
     strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
     if (protocol == "")
-	strm << "XDAP: " << d_default_protocol << CRLF;
+        strm << "XDAP: " << d_default_protocol << CRLF;
     else
-	strm << "XDAP: " << protocol  << CRLF;
+        strm << "XDAP: " << protocol << CRLF;
 
     const time_t t = time(0);
     strm << "Date: " << rfc822_date(t).c_str() << CRLF;
 
     strm << "Last-Modified: ";
     if (last_modified > 0)
-	strm << rfc822_date(last_modified).c_str() << CRLF;
+        strm << rfc822_date(last_modified).c_str() << CRLF;
     else
-	strm << rfc822_date(t).c_str() << CRLF;
+        strm << rfc822_date(t).c_str() << CRLF;
 
     strm << "Content-Type: Multipart/Related; boundary=" << boundary << "; start=\"<" << start
-	    << ">\"; type=\"Text/xml\"" << CRLF;
+            << ">\"; type=\"Text/xml\"" << CRLF;
     strm << "Content-Description: " << descrip[type] << CRLF;
     if (enc != x_plain)
-	strm << "Content-Encoding: " << encoding[enc] << CRLF;
+        strm << "Content-Encoding: " << encoding[enc] << CRLF;
 
     strm << CRLF;
 }
 
-void ResponseBuilder::set_mime_ddx_boundary(ostream &strm, const string &boundary,
-	const string &cid, ObjectType type, EncodingType enc) const
-{
+void ResponseBuilder::set_mime_ddx_boundary(ostream &strm, const string &boundary, const string &cid, ObjectType type,
+                                            EncodingType enc) const {
     strm << "--" << boundary << CRLF;
     strm << "Content-Type: Text/xml; charset=iso-8859-1" << CRLF;
     strm << "Content-Id: <" << cid << ">" << CRLF;
     strm << "Content-Description: " << descrip[type] << CRLF;
     if (enc != x_plain)
-	strm << "Content-Encoding: " << encoding[enc] << CRLF;
+        strm << "Content-Encoding: " << encoding[enc] << CRLF;
 
     strm << CRLF;
 }
 
-void ResponseBuilder::set_mime_data_boundary(ostream &strm, const string &boundary,
-	const string &cid, ObjectType type, EncodingType enc) const
-{
+void ResponseBuilder::set_mime_data_boundary(ostream &strm, const string &boundary, const string &cid, ObjectType type,
+                                             EncodingType enc) const {
     strm << "--" << boundary << CRLF;
     strm << "Content-Type: application/octet-stream" << CRLF;
     strm << "Content-Id: <" << cid << ">" << CRLF;
     strm << "Content-Description: " << descrip[type] << CRLF;
     if (enc != x_plain)
-	strm << "Content-Encoding: " << encoding[enc] << CRLF;
+        strm << "Content-Encoding: " << encoding[enc] << CRLF;
 
     strm << CRLF;
 }
@@ -720,18 +686,16 @@ void ResponseBuilder::set_mime_data_boundary(ostream &strm, const string &bounda
  @param reason Reason string of the HTTP 1.0 response header.
  @param version The version string; denotes the DAP spec and implementation
  version. */
-void ResponseBuilder::set_mime_error(ostream &strm, int code, const string &reason,
-	const string &protocol) const
-{
+void ResponseBuilder::set_mime_error(ostream &strm, int code, const string &reason, const string &protocol) const {
     strm << "HTTP/1.0 " << code << " " << reason.c_str() << CRLF;
 
     strm << "XDODS-Server: " << DVR << CRLF;
     strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
     if (protocol == "")
-	strm << "XDAP: " << d_default_protocol << CRLF;
+        strm << "XDAP: " << d_default_protocol << CRLF;
     else
-	strm << "XDAP: " << protocol  << CRLF;
+        strm << "XDAP: " << protocol << CRLF;
 
     const time_t t = time(0);
     strm << "Date: " << rfc822_date(t).c_str() << CRLF;

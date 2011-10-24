@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -35,7 +34,7 @@
 
 #include "config.h"
 
-static char rcsid[] not_used = {"$Id$"};
+static char rcsid[] not_used = { "$Id$" };
 
 #include <GetOpt.h>
 
@@ -47,7 +46,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "util.h"
 #include "Error.h"
 
-using namespace libdap ;
+using namespace libdap;
 
 void test_scanner();
 void test_parser();
@@ -58,215 +57,207 @@ int ddsparse(DDS &);
 
 extern YYSTYPE ddslval;
 extern int ddsdebug;
+static bool print_ddx = false;
+
 const char *prompt = "dds-test: ";
 
-void
-usage(string name)
-{
-    fprintf( stderr, "usage: %s %s\n %s\n %s\n %s\n %s\n %s\n %s\n %s\n",
-		     name.c_str(),
-		     "[s] [pd] [c]",
-		     "s: Test the scanner.",
-		     "p: Test the parser; reads from stdin and prints the",
-		     "   internal structure to stdout.",
-		     "d: Turn on parser debugging. (only for the hard core.)",
-		     "c: Test the C++ code for manipulating DDS objects.",
-		     "   Reads from stdin, parses and writes the modified DDS",
-		     "   to stdout." ) ;
+void usage(string name) {
+    fprintf(stderr, "usage: %s %s\n %s\n %s\n %s\n %s\n %s\n %s\n %s\n", name.c_str(), "[s] [pd] [c]",
+            "s: Test the scanner.", "p: Test the parser; reads from stdin and prints the",
+            "   internal structure to stdout.", "d: Turn on parser debugging. (only for the hard core.)",
+            "c: Test the C++ code for manipulating DDS objects.",
+            "   Reads from stdin, parses and writes the modified DDS", "   to stdout.");
 }
 
-int
-main(int argc, char *argv[])
-{
-    GetOpt getopt (argc, argv, "spdc");
+int main(int argc, char *argv[]) {
+    GetOpt getopt(argc, argv, "spdcx");
     int option_char;
     int scanner_test = 0, parser_test = 0, class_test = 0;
 
     // process options
 
-    while ((option_char = getopt ()) != EOF)
-	switch (option_char)
-	  {
-	    case 'd':
-	      ddsdebug = 1;
-	      break;
-	    case 's':
-	      scanner_test = 1;
-	      break;
-	    case 'p':
-	      parser_test = 1;
-	      break;
-	    case 'c':
-	      class_test = 1;
-	      break;
-	    case '?':
-	    default:
-	      usage(argv[0]);
-	      return 1;
-	  }
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+        case 'd':
+            ddsdebug = 1;
+            break;
+        case 's':
+            scanner_test = 1;
+            break;
+        case 'p':
+            parser_test = 1;
+            break;
+        case 'x':
+            print_ddx = true;
+            break;
+        case 'c':
+            class_test = 1;
+            break;
+        case '?':
+        default:
+            usage(argv[0]);
+            return 1;
+        }
 
     if (!scanner_test && !parser_test && !class_test) {
-	usage(argv[0]);
-	return 1;
+        usage(argv[0]);
+        return 1;
     }
 
     try {
-      if (scanner_test) {
-	test_scanner();
-      }
+        if (scanner_test) {
+            test_scanner();
+        }
 
-      if (parser_test) {
-	test_parser();
-      }
+        if (parser_test) {
+            test_parser();
+        }
 
-      if (class_test) {
-	test_class();
-      }
-    }
-    catch (Error &e) {
-      cerr << e.get_error_message() << endl;
+        if (class_test) {
+            test_class();
+        }
+    } catch (Error &e) {
+        cerr << e.get_error_message() << endl;
     }
 }
 
-void
-test_scanner(void)
-{
+void test_scanner(void) {
     int tok;
 
     cout << prompt << flush; // first prompt
 
     while ((tok = ddslex())) {
-	switch (tok) {
-	  case SCAN_DATASET:
-	    cout << "DATASET" << endl;
-	    break;
-	  case SCAN_LIST:
-	    cout << "LIST" << endl;
-	    break;
-	  case SCAN_SEQUENCE:
-	    cout << "SEQUENCE" << endl;
-	    break;
-	  case SCAN_STRUCTURE:
-	    cout << "STRUCTURE" << endl;
-	    break;
-	  case SCAN_FUNCTION:
-	    cout << "FUNCTION" << endl;
-	    break;
-	  case SCAN_GRID:
-	    cout << "GRID" << endl;
-	    break;
-	  case SCAN_BYTE:
-	    cout << "BYTE" << endl;
-	    break;
-	  case SCAN_INT16:
-	    cout << "INT16" << endl;
-	    break;
-	  case SCAN_UINT16:
-	    cout << "UINT16" << endl;
-	    break;
-	  case SCAN_INT32:
-	    cout << "INT32" << endl;
-	    break;
-	  case SCAN_UINT32:
-	    cout << "UINT32" << endl;
-	    break;
-	  case SCAN_FLOAT32:
-	    cout << "FLOAT32" << endl;
-	    break;
-	  case SCAN_FLOAT64:
-	    cout << "FLOAT64" << endl;
-	    break;
-	  case SCAN_STRING:
-	    cout << "STRING" << endl;
-	    break;
-	  case SCAN_URL:
-	    cout << "Url" << endl;
-	    break;
-	  case SCAN_WORD:
-	    cout << "WORD: " << ddslval.word << endl;
-	    break;
-	  case '{':
-	    cout << "Left Brace" << endl;
-	    break;
-	  case '}':
-	    cout << "Right Brace" << endl;
-	    break;
-	  case '[':
-	    cout << "Left Bracket" << endl;
-	    break;
-	  case ']':
-	    cout << "Right Bracket" << endl;
-	    break;
-	  case ';':
-	    cout << "Semicolon" << endl;
-	    break;
-	  case ':':
-	    cout << "Colon" << endl;
-	    break;
-	  case '=':
-	    cout << "Assignment" << endl;
-	    break;
-	  default:
-	    cout << "Error: Unrecognized input" << endl;
-	}
-    cout << prompt << flush;  // print prompt after output
+        switch (tok) {
+        case SCAN_DATASET:
+            cout << "DATASET" << endl;
+            break;
+        case SCAN_LIST:
+            cout << "LIST" << endl;
+            break;
+        case SCAN_SEQUENCE:
+            cout << "SEQUENCE" << endl;
+            break;
+        case SCAN_STRUCTURE:
+            cout << "STRUCTURE" << endl;
+            break;
+        case SCAN_FUNCTION:
+            cout << "FUNCTION" << endl;
+            break;
+        case SCAN_GRID:
+            cout << "GRID" << endl;
+            break;
+        case SCAN_BYTE:
+            cout << "BYTE" << endl;
+            break;
+        case SCAN_INT16:
+            cout << "INT16" << endl;
+            break;
+        case SCAN_UINT16:
+            cout << "UINT16" << endl;
+            break;
+        case SCAN_INT32:
+            cout << "INT32" << endl;
+            break;
+        case SCAN_UINT32:
+            cout << "UINT32" << endl;
+            break;
+        case SCAN_FLOAT32:
+            cout << "FLOAT32" << endl;
+            break;
+        case SCAN_FLOAT64:
+            cout << "FLOAT64" << endl;
+            break;
+        case SCAN_STRING:
+            cout << "STRING" << endl;
+            break;
+        case SCAN_URL:
+            cout << "Url" << endl;
+            break;
+        case SCAN_WORD:
+            cout << "WORD: " << ddslval.word << endl;
+            break;
+        case '{':
+            cout << "Left Brace" << endl;
+            break;
+        case '}':
+            cout << "Right Brace" << endl;
+            break;
+        case '[':
+            cout << "Left Bracket" << endl;
+            break;
+        case ']':
+            cout << "Right Bracket" << endl;
+            break;
+        case ';':
+            cout << "Semicolon" << endl;
+            break;
+        case ':':
+            cout << "Colon" << endl;
+            break;
+        case '=':
+            cout << "Assignment" << endl;
+            break;
+        default:
+            cout << "Error: Unrecognized input" << endl;
+        }
+        cout << prompt << flush; // print prompt after output
     }
 }
 
-void
-test_parser(void)
-{
+void test_parser(void) {
     BaseTypeFactory *factory = new BaseTypeFactory;
     DDS table(factory);
     table.parse();
 
     if (table.check_semantics())
-	cout << "DDS past semantic check" << endl ;
+        cout << "DDS past semantic check" << endl;
     else
-	cout << "DDS failed semantic check" << endl ;
+        cout << "DDS failed semantic check" << endl;
 
     if (table.check_semantics(true))
-	cout << "DDS past full semantic check" << endl ;
+        cout << "DDS past full semantic check" << endl;
     else
-	cout << "DDS failed full semantic check" << endl ;
+        cout << "DDS failed full semantic check" << endl;
 
-    table.print( cout );
+    if (print_ddx)
+        table.print_xml_writer(cout, false, "");
+    else
+        table.print(cout);
 
-    delete factory; factory = 0;
+    delete factory;
+    factory = 0;
 }
 
-void
-test_class(void)
-{
+void test_class(void) {
     BaseTypeFactory *factory = new BaseTypeFactory;
     DDS table(factory);
     table.parse();
 
     if (table.check_semantics())
-	cout << "DDS past semantic check" << endl ;
+        cout << "DDS past semantic check" << endl;
     else
-	cout << "DDS filed semantic check" << endl ;
+        cout << "DDS filed semantic check" << endl;
 
     if (table.check_semantics(true))
-	cout << "DDS past full semantic check" << endl ;
+        cout << "DDS past full semantic check" << endl;
     else
-	cout << "DDS filed full semantic check" << endl ;
+        cout << "DDS filed full semantic check" << endl;
 
-    table.print( cout );
+    table.print(cout);
 
-    DDS table2 = table;		// test copy ctor;
-    table2.print( cout );
+    DDS table2 = table; // test copy ctor;
+    table2.print(cout);
 
     BaseTypeFactory *factory2 = new BaseTypeFactory;
     DDS table3(factory2);
-    table3 = table;		// test operator=
+    table3 = table; // test operator=
 
-    cout << "Dataset name: " << table.get_dataset_name() << endl ;
+    cout << "Dataset name: " << table.get_dataset_name() << endl;
 
     string name = "goofy";
     table.add_var(table.get_factory()->NewInt32(name)); // table dtor should delete this object
 
-    table.print( cout );
+    table.print(cout);
 
     BaseType *btp = table.var(name);
 
@@ -274,11 +265,11 @@ test_class(void)
 
     table.del_var(name);
 
-    table.print( cout );
+    table.print(cout);
 
     table.add_var(table.get_factory()->NewInt32("goofy"));
 
-    table.print( cout );
+    table.print(cout);
 
     btp = table.var("goofy");
 
@@ -286,12 +277,14 @@ test_class(void)
 
     table.del_var("goofy");
 
-    table.print( cout );
+    table.print(cout);
 
     for (DDS::Vars_iter p = table.var_begin(); p != table.var_end(); p++)
-	(*p)->print_decl(cout, "", true);	// print them all w/semicolons
+        (*p)->print_decl(cout, "", true); // print them all w/semicolons
 
-    delete factory; factory = 0;
-    delete factory2; factory2 = 0;
+    delete factory;
+    factory = 0;
+    delete factory2;
+    factory2 = 0;
 }
 
