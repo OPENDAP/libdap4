@@ -186,7 +186,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
         try {
             dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b");
             ostringstream oss;
-            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
+            dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
             DBG2(cerr << oss.str() << endl);
 
             string baseline = testFile((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.xml");
@@ -209,7 +209,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
         dds2->transfer_attributes(&das);
 
         ostringstream oss;
-        dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
 
         DBG2(cerr << oss.str() << endl);
 
@@ -226,7 +226,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
         dds2->transfer_attributes(&das);
 
         ostringstream oss;
-        dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
 
         DBG2(cerr << oss.str() << endl);
 
@@ -245,7 +245,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
         dds2->transfer_attributes(&das);
 
         ostringstream oss;
-        dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
 
         DBG2(cerr << oss.str() << endl);
 
@@ -264,7 +264,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
         DBG(AttrTable &at2 = dds2->var("c%20d")->get_attr_table()); DBG(at2.print(stderr));
 
         ostringstream oss;
-        dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
 
         DBG(cerr << oss.str() << endl);
 
@@ -288,7 +288,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
         DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table()); DBG(at2.print(stderr));
 
         ostringstream oss;
-        dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
 
         DBG(cerr << oss.str() << endl);
 
@@ -314,7 +314,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
         DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table()); DBG(at2.print(stderr));
 
         ostringstream oss;
-        dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
 
         DBG(cerr << oss.str() << endl);
 
@@ -331,7 +331,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
         dds2->transfer_attributes(&das);
 
         ostringstream oss;
-        dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
 
         DBG(cerr << oss.str() << endl);
 
@@ -357,7 +357,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
         DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table()); DBG(at2.print(stderr));
 
         ostringstream oss;
-        dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
 
         DBG(cerr << oss.str() << endl);
 

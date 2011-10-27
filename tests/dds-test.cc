@@ -49,7 +49,7 @@ static char rcsid[] not_used = { "$Id$" };
 using namespace libdap;
 
 void test_scanner();
-void test_parser();
+void test_parser(const string &name);
 void test_class();
 
 int ddslex();
@@ -70,10 +70,10 @@ void usage(string name) {
 }
 
 int main(int argc, char *argv[]) {
-    GetOpt getopt(argc, argv, "spdcx");
+    GetOpt getopt(argc, argv, "spP:dcx");
     int option_char;
     int scanner_test = 0, parser_test = 0, class_test = 0;
-
+    string name = "";
     // process options
 
     while ((option_char = getopt()) != EOF)
@@ -86,6 +86,10 @@ int main(int argc, char *argv[]) {
             break;
         case 'p':
             parser_test = 1;
+            break;
+        case 'P':
+            parser_test = 1;
+            name = getopt.optarg;
             break;
         case 'x':
             print_ddx = true;
@@ -110,7 +114,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (parser_test) {
-            test_parser();
+            test_parser(name);
         }
 
         if (class_test) {
@@ -204,10 +208,13 @@ void test_scanner(void) {
     }
 }
 
-void test_parser(void) {
+void test_parser(const string &name) {
     BaseTypeFactory *factory = new BaseTypeFactory;
     DDS table(factory);
-    table.parse();
+    if (name.empty())
+        table.parse();
+    else
+        table.parse(name);
 
     if (table.check_semantics())
         cout << "DDS past semantic check" << endl;
