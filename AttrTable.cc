@@ -1368,8 +1368,10 @@ AttrTable::print_xml_writer(XMLWriter &xml)
             if (get_attr_type(i) == Attr_other_xml) {
                 if (get_attr_num(i) != 1)
                     throw Error("OtherXML attributes cannot be vector-valued.");
-
-                if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*)get_attr(i, 0).c_str()) < 0)
+                // Replaced xmltextWriterWriteString with xmlTextWriterWriteRaw to squelch the
+                // libxml2 code from escaping the xml (which was breaking all of the inferening
+                // code. jhrg
+                if (xmlTextWriterWriteRaw(xml.get_writer(), (const xmlChar*)get_attr(i, 0).c_str()) < 0)
                     throw InternalErr(__FILE__, __LINE__, "Could not write OtherXML value");
             }
             else {
