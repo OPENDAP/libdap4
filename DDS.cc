@@ -1209,7 +1209,7 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
     }
 
-    // PRint the global attributes
+    // Print the global attributes
     d_attr.print_xml_writer(xml);
 
     // Print each variable

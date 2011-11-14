@@ -64,7 +64,7 @@ void XMLWriter::m_cleanup() {
     if (d_writer) {
         xmlFreeTextWriter(d_writer); // This frees both d_writer and d_doc_buf
         d_writer = 0;
-        d_doc_buf = 0;
+        // d_doc_buf = 0;
     }
 
     // We could be here because of an exception and d_writer might be zero
@@ -83,17 +83,20 @@ const char *XMLWriter::get_doc() {
             throw InternalErr(__FILE__, __LINE__, "Error ending the document");
 
         d_ended = true;
+
+        // must call this before getting the buffer content. Odd, but appears to be true.
+        // jhrg
+        xmlFreeTextWriter(d_writer);
+        d_writer = 0;
     }
 
     if (!d_doc_buf->content)
         throw InternalErr(__FILE__, __LINE__, "Error retrieving response document as string");
+#if 0
+    // This is not needed when the TextWriter is freed before getting buffer content.
+    if (xmlTextWriterFlush(d_writer) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Error flushing the xml writer buffer");
+#endif
 
     return (const char *)d_doc_buf->content;
-
-#if 0
-    if (*(const char *)d_doc_buf->content == '\n')
-        return (const char *)d_doc_buf + 1;
-    else
-        return (const char *)d_doc_buf->content;
-#endif
 }
