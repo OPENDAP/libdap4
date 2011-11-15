@@ -1083,7 +1083,6 @@ DDS::print_xml(ostream &out, bool constrained, const string &blob)
 {
     print_xml_writer(out, constrained, blob);
 
-
 #if 0
     out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" ;
 
@@ -1177,36 +1176,36 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
     // this at some point... jhrg
     if (get_dap_major() == 3 && get_dap_minor() == 2) {
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xsi:schemaLocation", (const xmlChar*)c_dap_32_n_sl.c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:schemaLocation");
 
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:grddl", (const xmlChar*)"http://www.w3.org/2003/g/data-view#") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:grddl");
 
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "grddl:transformation", (const xmlChar*)grddl_transformation_dap32.c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:transformation");
 
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns", (const xmlChar*)c_dap32_namespace.c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:dap", (const xmlChar*)c_dap32_namespace.c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:dap");
 
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "dapVersion", (const xmlChar*)"3.2") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:dapVersion");
 
         if (!get_request_xml_base().empty()) {
             if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xml", (const xmlChar*)c_xml_namespace.c_str()) < 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xml");
 
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "base", (const xmlChar*)get_request_xml_base().c_str()) < 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xml:base", (const xmlChar*)get_request_xml_base().c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xml:base");
         }
     }
     else {
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns", (const xmlChar*)c_dap20_namespace.c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
 
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xsi:schemaLocation", (const xmlChar*)c_dap_20_n_sl.c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:schemaLocation");
     }
 
     // Print the global attributes
