@@ -184,9 +184,10 @@ public:
 
 	CPPUNIT_ASSERT(www2id("Grid%20Data%26Fields[20][20]", "%", "%20%26")
 	        == "Grid%20Data%26Fields[20][20]");
-	cerr << "www2id(\"%25This%26is\"): " << www2id("%25This%26is") << endl;
+	//cerr << "www2id(\"%25This%26is\"): " << www2id("%25This%26is") << endl;
 	CPPUNIT_ASSERT(www2id("%25This%26is") == "%This&is");
-
+	//cerr << "www2id(\"OPF_MaxSpectralPixelsMissing%d4\"): " << www2id("OPF_MaxSpectralPixelsMissing%d4") << endl;
+	//CPPUNIT_ASSERT(www2id("OPF_MaxSpectralPixelsMissing%d4") == "OPF_MaxSpectralPixelsMissing?");
     }
 
     // This is the code in expr.lex that removes enclosing double quotes and

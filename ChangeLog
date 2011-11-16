@@ -7440,10 +7440,10 @@
 2001-07-27  James Gallagher  <jimg@dcz.dods.org>
 
 	* New escaping semantics. The DAP library now supports escaping
-	names. Servers (and clients) no longer need to escaping characters
+	names. Servers (and clients) no longer need to escape characters
 	themselves. The functions used to escape characters have been
 	changed, too. The old functions escaped chars that could not be
-	included in a DAP URL. The new function only escape chars that
+	included in a DAP URL. The new functions only escape chars that
 	cannot be present in a URI as defined by RFC 2396 (``Uniform
 	Resource Identifiers (URI): Generic Syntax''). The DAP's scanners
 	and parsers have been expanded so that many more characters are

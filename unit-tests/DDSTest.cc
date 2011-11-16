@@ -109,14 +109,17 @@ CPPUNIT_TEST_SUITE( DDSTest );
         CPPUNIT_TEST(print_xml_test);
         CPPUNIT_TEST(print_xml_test2);
         CPPUNIT_TEST(print_xml_test3);
+
         // The X_1 tests look at the proper merging of hdf4's _dim_n attributes.
         // But that functionality was moved from libdap to the hdf4 handler.
         // CPPUNIT_TEST(print_xml_test3_1);
+
         CPPUNIT_TEST(print_xml_test4);
         CPPUNIT_TEST(print_xml_test5);
         // CPPUNIT_TEST(print_xml_test5_1);
         CPPUNIT_TEST(print_xml_test6);
         // CPPUNIT_TEST(print_xml_test6_1);
+
         CPPUNIT_TEST(get_response_size_test);
         CPPUNIT_TEST(get_response_size_test_c);
         CPPUNIT_TEST(get_response_size_test_c2);

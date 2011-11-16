@@ -37,8 +37,8 @@
 #endif
 
 #include "GNURegex.h"
-
 #include "AttrTable.h"
+#include "debug.h"
 
 #include "testFile.h"
 
@@ -270,6 +270,10 @@ class AttrTableTest: public TestFixture {
         void names_with_spaces_test() {
             // Create an AttrTable where some names have spaces. The spaces
             // should be replaced by %20 escapes.
+            // Replacing the spaces with %20 was the bad, old, behavior. Now
+            // the spaces can stay. If someone is writing a DAS using the {}
+            // notation, they can use '%20' for the spaces. In the printed
+            // DAS using the {} notation, spaces will be represented by %20.
             AttrTable *t = new AttrTable;
             t->append_attr("long name", "String", "first");
             t->append_attr("longer name", "String", "\"second test\"");
@@ -299,7 +303,7 @@ String longer%20name \"second test\";";
 .*String long%20name \"first\";\n\
 .*Alias an%20alias long%20name;\n\
 \\}\n\n");
-		cout << sof << endl ;
+                DBG(cout << sof << endl);
                 CPPUNIT_ASSERT(re_match(r, sof.c_str()));
                 delete top; top = 0;
             }

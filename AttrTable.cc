@@ -38,6 +38,7 @@ static char rcsid[]not_used =
         "$Id$";
 
 #include <cassert>
+#include <sstream>
 
 #include "AttrTable.h"
 
@@ -46,12 +47,48 @@ static char rcsid[]not_used =
 
 #include "debug.h"
 
+#define WWW_ENCODING 0
+
 using std::cerr;
 using std::string;
 using std::endl;
 using std::vector;
 
 namespace libdap {
+
+/** Remove %20 space encoding */
+string remove_space_encoding(const string &s)
+{
+    string::size_type pos = s.find("%20");
+    if (pos != string::npos) {
+        string n = s;
+        do {
+            n.replace(pos, 3, " ");
+            pos = n.find("%20");
+        } while (pos != string::npos);
+        return n;
+    }
+    else {
+        return s;
+    }
+}
+
+/** Add %20 space encoding. */
+string add_space_encoding(const string &s)
+{
+    string::size_type pos = s.find(" ");
+    if (pos != string::npos) {
+        string n = s;
+        do {
+            n.replace(pos, 1, "%20");
+            pos = n.find(" ");
+        } while (pos != string::npos);
+        return n;
+    }
+    else {
+        return s;
+    }
+}
 
 /** Convert an AttrType to it's string representation.
  @param at The Attribute Type.
@@ -215,12 +252,16 @@ AttrTable::get_name() const
 void
 AttrTable::set_name(const string &n)
 {
+#if WWW_ENCODING
     d_name = www2id(n);
+#else
+    d_name = remove_space_encoding(n);
+#endif
 }
 
 #if 0
 // This was taken from das.y and could be used here to make the 'dods_errors'
-// attribute container like th parser used to. Then again, maybe this feature
+// attribute container like the parser used to. Then again, maybe this feature
 // was just BS. jhrg (ticket 1469)
 static void add_bad_attribute(AttrTable *attr, const string &type, const string &name, const string &value,
         const string &msg) {
@@ -233,10 +274,11 @@ static void add_bad_attribute(AttrTable *attr, const string &type, const string 
     // Add the error string to an attribute in the container called
     // `<name_explanation.'.
 
-    if (attr->get_name().find("_dap_error") != string::npos) {
+    if (attr->get_name().find("_dods_errors") != string::npos) {
         attr->append_attr(name, type, value);
     }
     else {
+        // I think _dods_errors should be _dap_error. jhrg 11/16/11
         string error_cont_name = attr->get_name() + "_dods_errors";
         AttrTable *error_cont = attr->get_attr_table(error_cont_name);
         if (!error_cont)
@@ -272,7 +314,11 @@ static void add_bad_attribute(AttrTable *attr, const string &type, const string 
  @param value The value to add to the attribute table. */
 unsigned int AttrTable::append_attr(const string &name, const string &type, const string &value) {
     DBG(cerr << "Entering AttrTable::append_attr" << endl);
+#if WWW_ENCODING
     string lname = www2id(name);
+#else
+    string lname = remove_space_encoding(name);
+#endif
 
     Attr_iter iter = simple_find(lname);
 
@@ -322,8 +368,11 @@ unsigned int AttrTable::append_attr(const string &name, const string &type, cons
 
 unsigned int AttrTable::append_attr(const string &name, const string &type, vector<string> *values) {
     DBG(cerr << "Entering AttrTable::append_attr(..., vector)" << endl);
+#if WWW_ENCODING
     string lname = www2id(name);
-
+#else
+    string lname = remove_space_encoding(name);
+#endif
     Attr_iter iter = simple_find(lname);
 
     // If the types don't match OR this attribute is a container, calling
@@ -396,7 +445,11 @@ AttrTable::append_container(const string &name)
 AttrTable *
 AttrTable::append_container(AttrTable *at, const string &name)
 {
+#if WWW_ENCODING
     string lname = www2id(name);
+#else
+    string lname = remove_space_encoding(name);
+#endif
 
     if (simple_find(name) != attr_end())
     throw Error(string("There already exists a container called `")
@@ -435,6 +488,8 @@ AttrTable::append_container(AttrTable *at, const string &name)
 void
 AttrTable::find(const string &target, AttrTable **at, Attr_iter *iter)
 {
+    // TODO Use remove_space_encoding() here?
+
     string::size_type dotpos = target.rfind('.');
     if (dotpos != string::npos) {
         string container = target.substr(0, dotpos);
@@ -467,7 +522,7 @@ AttrTable::find(const string &target, AttrTable **at, Attr_iter *iter)
 AttrTable *
 AttrTable::recurrsive_find(const string &target, Attr_iter *location)
 {
-    //*location = attr_begin();
+    // TODO Use remove_space_encoding() here?
     Attr_iter i = attr_begin();
     while (i != attr_end()) {
         if (target == (*i)->name) {
@@ -635,7 +690,11 @@ AttrTable::get_attr_vector(const string &name)
 void
 AttrTable::del_attr(const string &name, int i)
 {
+#if WWW_ENCODING
     string lname = www2id(name);
+#else
+    string lname = remove_space_encoding(name);
+#endif
 
     Attr_iter iter = simple_find(lname);
     if (iter != attr_map.end()) {
@@ -879,7 +938,11 @@ AttrTable::set_is_global_attribute(Attr_iter iter, bool ga)
 void
 AttrTable::add_container_alias(const string &name, AttrTable *src)
 {
+#if WWW_ENCODING
     string lname = www2id(name);
+#else
+    string lname = remove_space_encoding(name);
+#endif
 
     if (simple_find(lname) != attr_end())
     throw Error(string("There already exists a container called `")
@@ -912,8 +975,17 @@ void
 AttrTable::add_value_alias(AttrTable *das, const string &name,
         const string &source)
 {
+#if WWW_ENCODING
     string lname = www2id(name);
+#else
+    string lname = remove_space_encoding(name);
+#endif
+
+#if WWW_ENCODING
     string lsource = www2id(source);
+#else
+    string lsource = remove_space_encoding(source);
+#endif
 
     // find the container that holds source and its (sources's) iterator
     // within that container. Search at the uppermost level of the attribute
@@ -1031,6 +1103,7 @@ write_string_attribute_for_das(ostream &out, const string &value, const string &
     out << double_quote << value << double_quote << term;
 }
 
+#if 0
 static void
 write_string_attribute_for_das(FILE *out, const string &value, const string &term)
 {
@@ -1039,6 +1112,7 @@ write_string_attribute_for_das(FILE *out, const string &value, const string &ter
     else
     fprintf(out, "\"%s\"%s", value.c_str(), term.c_str());
 }
+#endif
 
 // Special treatment for XML: Make sure to escape double quotes when XML is
 // printed in a DAS.
@@ -1051,6 +1125,7 @@ write_xml_attribute_for_das(ostream &out, const string &value, const string &ter
     out << double_quote << escape_double_quotes(value) << double_quote << term;
 }
 
+#if 0
 static void
 write_xml_attribute_for_das(FILE *out, const string &value, const string &term)
 {
@@ -1059,26 +1134,36 @@ write_xml_attribute_for_das(FILE *out, const string &value, const string &term)
     else
     fprintf(out, "\"%s\"%s", escape_double_quotes(value).c_str(), term.c_str());
 }
+#endif
 
 /** A simple printer that does nothing fancy with aliases.
  Protected. */
 void
-AttrTable::simple_print(FILE *out, string pad, Attr_iter i,
-        bool dereference)
+AttrTable::simple_print(FILE *out, string pad, Attr_iter i, bool dereference)
 {
+    ostringstream oss;
+    simple_print(oss, pad, i, dereference);
+    fwrite(oss.str().data(), 1, oss.str().length(), out);
+
+#if 0
     switch ((*i)->type) {
         case Attr_container:
-        fprintf(out, "%s%s {\n", pad.c_str(), id2www(get_name(i)).c_str());
-
+#if WWW_ENCODING
+            fprintf(out, "%s%s {\n", pad.c_str(), id2www(get_name(i)).c_str());
+#else
+            fprintf(out, "%s%s {\n", pad.c_str(), get_name(i).c_str());
+#endif
         (*i)->attributes->print(out, pad + "    ", dereference);
 
         fprintf(out, "%s}\n", pad.c_str());
         break;
 
         case Attr_string: {
-            fprintf(out, "%s%s %s ", pad.c_str(), get_type(i).c_str(),
-                    id2www(get_name(i)).c_str());
-
+#if WWW_ENCODING
+            fprintf(out, "%s%s %s ", pad.c_str(), get_type(i).c_str(), id2www(get_name(i)).c_str());
+#else
+            fprintf(out, "%s%s %s ", pad.c_str(), get_type(i).c_str(), get_name(i).c_str());
+#endif
             vector<string> *sxp = (*i)->attr;
             vector<string>::iterator last = sxp->end() - 1;
             for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
@@ -1089,9 +1174,11 @@ AttrTable::simple_print(FILE *out, string pad, Attr_iter i,
         break;
 
         case Attr_other_xml: {
-            fprintf(out, "%s%s %s ", pad.c_str(), get_type(i).c_str(),
-                    id2www(get_name(i)).c_str());
-
+#if WWW_ENCODING
+            fprintf(out, "%s%s %s ", pad.c_str(), get_type(i).c_str(), id2www(get_name(i)).c_str());
+#else
+            fprintf(out, "%s%s %s ", pad.c_str(), get_type(i).c_str(), get_name(i).c_str());
+#endif
             vector<string> *sxp = (*i)->attr;
             vector<string>::iterator last = sxp->end() - 1;
             for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
@@ -1102,8 +1189,11 @@ AttrTable::simple_print(FILE *out, string pad, Attr_iter i,
         break;
 
         default: {
-            fprintf(out, "%s%s %s ", pad.c_str(), get_type(i).c_str(),
-                    id2www(get_name(i)).c_str());
+#if WWW_ENCODING
+            fprintf(out, "%s%s %s ", pad.c_str(), get_type(i).c_str(), id2www(get_name(i)).c_str());
+#else
+            fprintf(out, "%s%s %s ", pad.c_str(), get_type(i).c_str(), get_name(i).c_str());
+#endif
 
             vector<string> *sxp = (*i)->attr;
             vector<string>::iterator last = sxp->end() - 1;
@@ -1114,6 +1204,7 @@ AttrTable::simple_print(FILE *out, string pad, Attr_iter i,
         }
         break;
     }
+#endif
 }
 
 /** A simple printer that does nothing fancy with aliases.
@@ -1124,16 +1215,21 @@ AttrTable::simple_print(ostream &out, string pad, Attr_iter i,
 {
     switch ((*i)->type) {
         case Attr_container:
-        out << pad << id2www(get_name(i)) << " {\n";
-
-        (*i)->attributes->print(out, pad + "    ", dereference);
-
-        out << pad << "}\n";
+#if WWW_ENCODING
+            out << pad << id2www(get_name(i)) << " {\n";
+#else
+            out << pad << add_space_encoding(get_name(i)) << " {\n";
+#endif
+            (*i)->attributes->print(out, pad + "    ", dereference);
+            out << pad << "}\n";
         break;
 
         case Attr_string: {
+#if WWW_ENCODING
             out << pad << get_type(i) << " " << id2www(get_name(i)) << " ";
-
+#else
+            out << pad << get_type(i) << " " << add_space_encoding(get_name(i)) << " ";
+#endif
             vector<string> *sxp = (*i)->attr;
             vector<string>::iterator last = sxp->end() - 1;
             for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
@@ -1144,8 +1240,11 @@ AttrTable::simple_print(ostream &out, string pad, Attr_iter i,
         break;
 
         case Attr_other_xml: {
+#if WWW_ENCODING
             out << pad << get_type(i) << " " << id2www(get_name(i)) << " ";
-
+#else
+            out << pad << get_type(i) << " " << add_space_encoding(get_name(i)) << " ";
+#endif
             vector<string> *sxp = (*i)->attr;
             vector<string>::iterator last = sxp->end() - 1;
             for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
@@ -1156,8 +1255,11 @@ AttrTable::simple_print(ostream &out, string pad, Attr_iter i,
         break;
 
         default: {
+#if WWW_ENCODING
             out << pad << get_type(i) << " " << id2www(get_name(i)) << " ";
-
+#else
+            out << pad << get_type(i) << " " << add_space_encoding(get_name(i)) << " ";
+#endif
             vector<string> *sxp = (*i)->attr;
             vector<string>::iterator last = sxp->end() - 1;
             for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
@@ -1182,22 +1284,34 @@ AttrTable::simple_print(ostream &out, string pad, Attr_iter i,
 void
 AttrTable::print(FILE *out, string pad, bool dereference)
 {
+    ostringstream oss;
+    print(oss, pad, dereference);
+    fwrite(oss.str().data(), 1, oss.str().length(), out);
+
+#if 0
     for (Attr_iter i = attr_map.begin(); i != attr_map.end(); ++i) {
         if ((*i)->is_alias) {
             if (dereference) {
                 simple_print(out, pad, i, dereference);
             }
             else {
+#if WWW_ENCODING
                 fprintf(out, "%sAlias %s %s;\n",
                         pad.c_str(),
                         id2www(get_name(i)).c_str(),
                         id2www((*i)->aliased_to).c_str());
+#else
+                fprintf(out, "%sAlias %s %s;\n",
+                        pad.c_str(), add_space_encoding(get_name(i)).c_str(), add_space_encoding((*i)->aliased_to).c_str());
+
+#endif
             }
         }
         else {
             simple_print(out, pad, i, dereference);
         }
     }
+#endif
 }
 
 /** Prints an ASCII representation of the attribute table to the
@@ -1219,8 +1333,13 @@ AttrTable::print(ostream &out, string pad, bool dereference)
                 simple_print(out, pad, i, dereference);
             }
             else {
+#if WWW_ENCODING
                 out << pad << "Alias " << id2www(get_name(i))
                 << " " << id2www((*i)->aliased_to) << ";\n";
+#else
+                out << pad << "Alias " << add_space_encoding(get_name(i))
+                << " " << add_space_encoding((*i)->aliased_to) << ";\n";
+#endif
             }
         }
         else {
@@ -1237,6 +1356,11 @@ AttrTable::print(ostream &out, string pad, bool dereference)
 void
 AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
 {
+    ostringstream oss;
+    print_xml(oss, pad);
+    fwrite(oss.str().data(), 1, oss.str().length(), out);
+
+#if 0
     // Why this works: AttrTable is really a hacked class that used to
     // implement a single-level set of attributes. Containers
     // were added several years later by dropping in the 'entry' structure.
@@ -1283,6 +1407,7 @@ AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
             fprintf(out, "%s</Attribute>\n", pad.c_str());
         }
     }
+#endif
 }
 
 /**
@@ -1291,6 +1416,11 @@ AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
 void
 AttrTable::print_xml(ostream &out, string pad, bool /*constrained*/)
 {
+    XMLWriter xml(pad);
+    print_xml_writer(xml);
+    out << xml.get_doc();
+
+#if 0
     for (Attr_iter i = attr_begin(); i != attr_end(); ++i) {
         if ((*i)->is_alias) {
             out << pad << "<Alias name=\"" << id2xml(get_name(i))
@@ -1324,6 +1454,7 @@ AttrTable::print_xml(ostream &out, string pad, bool /*constrained*/)
             out << pad << "</Attribute>\n";
         }
     }
+#endif
 }
 
 /** Print the attribute table in XML.
@@ -1368,8 +1499,8 @@ AttrTable::print_xml_writer(XMLWriter &xml)
             if (get_attr_type(i) == Attr_other_xml) {
                 if (get_attr_num(i) != 1)
                     throw Error("OtherXML attributes cannot be vector-valued.");
-                // Replaced xmltextWriterWriteString with xmlTextWriterWriteRaw to squelch the
-                // libxml2 code from escaping the xml (which was breaking all of the inferening
+                // Replaced xmltextWriterWriteString with xmlTextWriterWriteRaw to keep the
+                // libxml2 code from escaping the xml (which was breaking all of the inferencing
                 // code. jhrg
                 if (xmlTextWriterWriteRaw(xml.get_writer(), (const xmlChar*)get_attr(i, 0).c_str()) < 0)
                     throw InternalErr(__FILE__, __LINE__, "Could not write OtherXML value");
