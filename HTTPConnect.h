@@ -30,7 +30,6 @@
 #include <string>
 
 #include <curl/curl.h>
-#include <curl/types.h>
 #include <curl/easy.h>
 
 #ifndef _rc_reader_h_
