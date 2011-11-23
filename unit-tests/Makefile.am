@@ -112,9 +112,11 @@ generalUtilTest_SOURCES = generalUtilTest.cc
 generalUtilTest_LDADD = ../libdap.la $(AM_LDADD)
 
 HTTPCacheTest_SOURCES = HTTPCacheTest.cc
+HTTPCacheTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 HTTPCacheTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
 
 HTTPConnectTest_SOURCES = HTTPConnectTest.cc
+HTTPConnectTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 HTTPConnectTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
 
 parserUtilTest_SOURCES = parserUtilTest.cc
