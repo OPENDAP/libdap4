@@ -1190,7 +1190,7 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:dap");
 
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "dapVersion", (const xmlChar*)"3.2") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:dapVersion");
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dapVersion");
 
         if (!get_request_xml_base().empty()) {
             if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xml", (const xmlChar*)c_xml_namespace.c_str()) < 0)

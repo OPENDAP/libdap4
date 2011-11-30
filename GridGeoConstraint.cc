@@ -110,10 +110,12 @@ GridGeoConstraint::GridGeoConstraint(Grid *grid, Array *lat, Array *lon)
 bool GridGeoConstraint::build_lat_lon_maps()
 {
     Grid::Map_iter m = d_grid->map_begin();
+
     // Assume that a Grid is correct and thus has exactly as many maps as its
     // array part has dimensions. Thus don't bother to test the Grid's array
     // dimension iterator for '!= dim_end()'.
     Array::Dim_iter d = d_grid->get_array()->dim_begin();
+
     // The fields d_latitude and d_longitude may be initialized to null or they
     // may already contain pointers to the maps to use. In the latter case,
     // skip the heuristics used in this code. However, given that all this

@@ -35,7 +35,7 @@
 //#define DODS_DEBUG
 
 static char rcsid[]not_used =
-        "$Id$";
+"$Id$";
 
 #include <cassert>
 #include <sstream>
@@ -47,6 +47,8 @@ static char rcsid[]not_used =
 
 #include "debug.h"
 
+// Should the www2id and id2www functions be used to encode attribute names?
+// Probably not... jhrg 11/16/11
 #define WWW_ENCODING 0
 
 using std::cerr;
@@ -57,7 +59,7 @@ using std::vector;
 namespace libdap {
 
 /** Remove %20 space encoding */
-string remove_space_encoding(const string &s)
+static string remove_space_encoding(const string &s)
 {
     string::size_type pos = s.find("%20");
     if (pos != string::npos) {
@@ -74,7 +76,7 @@ string remove_space_encoding(const string &s)
 }
 
 /** Add %20 space encoding. */
-string add_space_encoding(const string &s)
+static string add_space_encoding(const string &s)
 {
     string::size_type pos = s.find(" ");
     if (pos != string::npos) {
@@ -96,30 +98,30 @@ string add_space_encoding(const string &s)
 string AttrType_to_String(const AttrType at)
 {
     switch (at) {
-        case Attr_container:
-            return "Container";
-        case Attr_byte:
-            return "Byte";
-        case Attr_int16:
-            return "Int16";
-        case Attr_uint16:
-            return "UInt16";
-        case Attr_int32:
-            return "Int32";
-        case Attr_uint32:
-            return "UInt32";
-        case Attr_float32:
-            return "Float32";
-        case Attr_float64:
-            return "Float64";
-        case Attr_string:
-            return "String";
-        case Attr_url:
-            return "Url";
-        case Attr_other_xml:
-            return "OtherXML";
-        default:
-            return "";
+    case Attr_container:
+        return "Container";
+    case Attr_byte:
+        return "Byte";
+    case Attr_int16:
+        return "Int16";
+    case Attr_uint16:
+        return "UInt16";
+    case Attr_int32:
+        return "Int32";
+    case Attr_uint32:
+        return "UInt32";
+    case Attr_float32:
+        return "Float32";
+    case Attr_float64:
+        return "Float64";
+    case Attr_string:
+        return "String";
+    case Attr_url:
+        return "Url";
+    case Attr_other_xml:
+        return "OtherXML";
+    default:
+        return "";
     }
 }
 
@@ -176,8 +178,8 @@ void AttrTable::clone(const AttrTable &at)
         // If the entry being added was a container,
         // set its parent to this to maintain invariant.
         if (e->type == Attr_container) {
-          assert(e->attributes);
-          e->attributes->d_parent = this;
+            assert(e->attributes);
+            e->attributes->d_parent = this;
         }
     }
 }
@@ -185,17 +187,13 @@ void AttrTable::clone(const AttrTable &at)
 /** @name Instance management functions */
 
 //@{
-AttrTable::AttrTable()
-  : DapObj()
-  , d_name("")
-  , d_parent(0)
-  , attr_map()
-  , d_is_global_attribute(true)
+AttrTable::AttrTable() :
+    DapObj(), d_name(""), d_parent(0), attr_map(), d_is_global_attribute(true)
 {
 }
 
-AttrTable::AttrTable(const AttrTable &rhs)
-: DapObj()
+AttrTable::AttrTable(const AttrTable &rhs) :
+    DapObj()
 {
     clone(rhs);
 }
@@ -213,7 +211,8 @@ void AttrTable::delete_attr_table()
 AttrTable::~AttrTable()
 {
     DBG(cerr << "Entering ~AttrTable (" << this << ")" << endl);
-    delete_attr_table();DBG(cerr << "Exiting ~AttrTable" << endl);
+    delete_attr_table();
+    DBG(cerr << "Exiting ~AttrTable" << endl);
 }
 
 AttrTable &
@@ -233,24 +232,21 @@ AttrTable::operator=(const AttrTable &rhs)
  @return The number of entries.
  @brief Get the number of entries in this attribute table.
  */
-unsigned int
-AttrTable::get_size() const
+unsigned int AttrTable::get_size() const
 {
     return attr_map.size();
 }
 
 /** @brief Get the name of this attribute table.
  @return A string containing the name. */
-string
-AttrTable::get_name() const
+string AttrTable::get_name() const
 {
     return d_name;
 }
 
 /** @brief Set the name of this attribute table.
  @param n The new name of the attribute table. */
-void
-AttrTable::set_name(const string &n)
+void AttrTable::set_name(const string &n)
 {
 #if WWW_ENCODING
     d_name = www2id(n);
@@ -282,7 +278,7 @@ static void add_bad_attribute(AttrTable *attr, const string &type, const string 
         string error_cont_name = attr->get_name() + "_dods_errors";
         AttrTable *error_cont = attr->get_attr_table(error_cont_name);
         if (!error_cont)
-            error_cont = attr->append_container(error_cont_name);
+        error_cont = attr->append_container(error_cont_name);
 
         error_cont->append_attr(name, type, value);
 
@@ -312,7 +308,8 @@ static void add_bad_attribute(AttrTable *attr, const string &type, const string 
  @param name The name of the attribute to add or modify.
  @param type The type of the attribute to add or modify.
  @param value The value to add to the attribute table. */
-unsigned int AttrTable::append_attr(const string &name, const string &type, const string &value) {
+unsigned int AttrTable::append_attr(const string &name, const string &type, const string &value)
+{
     DBG(cerr << "Entering AttrTable::append_attr" << endl);
 #if WWW_ENCODING
     string lname = www2id(name);
@@ -366,7 +363,8 @@ unsigned int AttrTable::append_attr(const string &name, const string &type, cons
  @param type The type of the attribute to add or modify.
  @param values A vector of values. Note: The vector is COPIED, not stored. */
 
-unsigned int AttrTable::append_attr(const string &name, const string &type, vector<string> *values) {
+unsigned int AttrTable::append_attr(const string &name, const string &type, vector<string> *values)
+{
     DBG(cerr << "Entering AttrTable::append_attr(..., vector)" << endl);
 #if WWW_ENCODING
     string lname = www2id(name);
@@ -419,11 +417,11 @@ AttrTable::append_container(const string &name)
     AttrTable *ret = NULL;
     try {
         ret = append_container(new_at, name);
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         // an error occurred, attribute with that name already exists
-        delete new_at; new_at = 0;
-        throw ;
+        delete new_at;
+        new_at = 0;
+        throw;
     }
     return ret;
 }
@@ -452,8 +450,8 @@ AttrTable::append_container(AttrTable *at, const string &name)
 #endif
 
     if (simple_find(name) != attr_end())
-    throw Error(string("There already exists a container called `")
-            + name + string("' in this attribute table. (1)"));
+        throw Error(
+                string("There already exists a container called `") + name + string("' in this attribute table. (1)"));
     DBG(cerr << "Setting appended attribute container name to: "
             << lname << endl);
     at->set_name(lname);
@@ -485,11 +483,8 @@ AttrTable::append_container(AttrTable *at, const string &name)
  @param iter The iterator which will reference the attribute found.
  Can be used to access \c target from within \c at. References
  dim_end() within \c at if the attribute or container does not exist. */
-void
-AttrTable::find(const string &target, AttrTable **at, Attr_iter *iter)
+void AttrTable::find(const string &target, AttrTable **at, Attr_iter *iter)
 {
-    // TODO Use remove_space_encoding() here?
-
     string::size_type dotpos = target.rfind('.');
     if (dotpos != string::npos) {
         string container = target.substr(0, dotpos);
@@ -522,7 +517,6 @@ AttrTable::find(const string &target, AttrTable **at, Attr_iter *iter)
 AttrTable *
 AttrTable::recurrsive_find(const string &target, Attr_iter *location)
 {
-    // TODO Use remove_space_encoding() here?
     Attr_iter i = attr_begin();
     while (i != attr_end()) {
         if (target == (*i)->name) {
@@ -532,7 +526,7 @@ AttrTable::recurrsive_find(const string &target, Attr_iter *location)
         else if ((*i)->type == Attr_container) {
             AttrTable *at = (*i)->attributes->recurrsive_find(target, location);
             if (at)
-            return at;
+                return at;
         }
 
         ++i;
@@ -549,8 +543,7 @@ AttrTable::recurrsive_find(const string &target, Attr_iter *location)
 
  @param target The name of the attribute.
  @return An Attr_iter which references \c target. */
-AttrTable::Attr_iter
-AttrTable::simple_find(const string &target)
+AttrTable::Attr_iter AttrTable::simple_find(const string &target)
 {
     Attr_iter i;
     for (i = attr_map.begin(); i != attr_map.end(); ++i) {
@@ -595,7 +588,7 @@ AttrTable *
 AttrTable::simple_find_container(const string &target)
 {
     if (get_name() == target)
-    return this;
+        return this;
 
     for (Attr_iter i = attr_map.begin(); i != attr_map.end(); ++i) {
         if (is_container(i) && target == (*i)->name) {
@@ -622,17 +615,15 @@ AttrTable::get_attr_table(const string &name)
 }
 
 /** @brief Get the type name of an attribute within this attribute table. */
-string
-AttrTable::get_type(const string &name)
+string AttrTable::get_type(const string &name)
 {
     Attr_iter p = simple_find(name);
-    return (p != attr_map.end()) ? get_type(p) : (string)"";
+    return (p != attr_map.end()) ? get_type(p) : (string) "";
 }
 
 /** @brief Get the type of an attribute.
  @return The <tt>AttrType</tt> value describing the attribute. */
-AttrType
-AttrTable::get_attr_type(const string &name)
+AttrType AttrTable::get_attr_type(const string &name)
 {
     Attr_iter p = simple_find(name);
     return (p != attr_map.end()) ? get_attr_type(p) : Attr_unknown;
@@ -645,8 +636,7 @@ AttrTable::get_attr_type(const string &name)
  attribute value).
  @brief Get the number of attributes in this container.
  */
-unsigned int
-AttrTable::get_attr_num(const string &name)
+unsigned int AttrTable::get_attr_num(const string &name)
 {
     Attr_iter iter = simple_find(name);
     return (iter != attr_map.end()) ? get_attr_num(iter) : 0;
@@ -687,8 +677,7 @@ AttrTable::get_attr_vector(const string &name)
  non-negative, the i-th entry in the vector is deleted, and the
  array is repacked.  If <tt>i</tt> equals -1 (the default), the
  entire attribute is deleted. */
-void
-AttrTable::del_attr(const string &name, int i)
+void AttrTable::del_attr(const string &name, int i)
 {
 #if WWW_ENCODING
     string lname = www2id(name);
@@ -701,17 +690,18 @@ AttrTable::del_attr(const string &name, int i)
         if (i == -1) { // Delete the whole attribute
             entry *e = *iter;
             attr_map.erase(iter);
-            delete e; e = 0;
+            delete e;
+            e = 0;
         }
         else { // Delete one element from attribute array
             // Don't try to delete elements from the vector of values if the
             // map is a container!
             if ((*iter)->type == Attr_container)
-            return;
+                return;
 
             vector<string> *sxp = (*iter)->attr;
 
-            assert(i >= 0 && i < (int)sxp->size());
+            assert(i >= 0 && i < (int) sxp->size());
             sxp->erase(sxp->begin() + i); // rm the element
         }
     }
@@ -723,8 +713,7 @@ AttrTable::del_attr(const string &name, int i)
 //@{
 /** Get an iterator to the first entry in this attribute table.
  @return Attr_iter; references the end of the array if empty list. */
-AttrTable::Attr_iter
-AttrTable::attr_begin()
+AttrTable::Attr_iter AttrTable::attr_begin()
 {
     return attr_map.begin();
 }
@@ -732,8 +721,7 @@ AttrTable::attr_begin()
 /** Get an iterator to the end attribute table. Does not point to
  the last attribute in the table
  @return Attr_iter */
-AttrTable::Attr_iter
-AttrTable::attr_end()
+AttrTable::Attr_iter AttrTable::attr_end()
 {
     return attr_map.end();
 }
@@ -746,15 +734,13 @@ AttrTable::attr_end()
  @param i The index
  @return The corresponding Attr_iter
  @see get_attr_num, get_size */
-AttrTable::Attr_iter
-AttrTable::get_attr_iter(int i)
+AttrTable::Attr_iter AttrTable::get_attr_iter(int i)
 {
     return attr_map.begin() + i;
 }
 
 /** Returns the name of the attribute referenced by \e iter. */
-string
-AttrTable::get_name(Attr_iter iter)
+string AttrTable::get_name(Attr_iter iter)
 {
     assert(iter != attr_map.end());
 
@@ -762,8 +748,7 @@ AttrTable::get_name(Attr_iter iter)
 }
 
 /** Returns true if the attribute referenced by \e i is a container. */
-bool
-AttrTable::is_container(Attr_iter i)
+bool AttrTable::is_container(Attr_iter i)
 {
     return (*i)->type == Attr_container;
 }
@@ -781,18 +766,17 @@ AttrTable::get_attr_table(Attr_iter iter)
 }
 
 /** Delete the iterator.  Since AttrTable stores pointers to AttrTable
-    objects, the caller should be sure to delete the AttrTable itself.
-    The caller will gain control of the AttrTable* located at
-    get_attr_table(iter) prior to this call.
+ objects, the caller should be sure to delete the AttrTable itself.
+ The caller will gain control of the AttrTable* located at
+ get_attr_table(iter) prior to this call.
 
  @note calling this method <b>invalidates</b> the iterator \e iter.
  @param iter points to the entry to be deleted.
  @return The Attr_iter for the element following \e iter */
-AttrTable::Attr_iter
-AttrTable::del_attr_table(Attr_iter iter)
+AttrTable::Attr_iter AttrTable::del_attr_table(Attr_iter iter)
 {
     if ((*iter)->type != Attr_container)
-    return ++iter;
+        return ++iter;
 
     // the caller intends to delete/reuse the contained AttrTable,
     // so zero it out so it doesn't get deleted before we delete the entry
@@ -800,7 +784,7 @@ AttrTable::del_attr_table(Attr_iter iter)
     struct entry* e = *iter;
     // container no longer has a parent.
     if (e->attributes) {
-      e->attributes->d_parent = 0;
+        e->attributes->d_parent = 0;
     }
     e->attributes = 0;
     delete e;
@@ -811,8 +795,7 @@ AttrTable::del_attr_table(Attr_iter iter)
 /** Get the type name of an attribute referenced by \e iter.
  @param iter Reference to the Attribute.
  @return A string with the name of this attribute datatype. */
-string
-AttrTable::get_type(Attr_iter iter)
+string AttrTable::get_type(Attr_iter iter)
 {
     assert(iter != attr_map.end());
     return AttrType_to_String((*iter)->type);
@@ -821,8 +804,7 @@ AttrTable::get_type(Attr_iter iter)
 /** Get the type of the attribute referenced by \e iter.
  @param iter
  @return The datatype of this attribute in an instance of AttrType. */
-AttrType
-AttrTable::get_attr_type(Attr_iter iter)
+AttrType AttrTable::get_attr_type(Attr_iter iter)
 {
     return (*iter)->type;
 }
@@ -834,13 +816,10 @@ AttrTable::get_attr_type(Attr_iter iter)
  vector attribute value).
  @param iter Reference to an attribute
  @return The number of elements in the attribute. */
-unsigned int
-AttrTable::get_attr_num(Attr_iter iter)
+unsigned int AttrTable::get_attr_num(Attr_iter iter)
 {
     assert(iter != attr_map.end());
-    return ((*iter)->type == Attr_container)
-    ? (*iter)->attributes->get_size()
-    : (*iter)->attr->size();
+    return ((*iter)->type == Attr_container) ? (*iter)->attributes->get_size() : (*iter)->attr->size();
 }
 
 /** Returns the value of an attribute. If the attribute has a vector
@@ -859,34 +838,17 @@ AttrTable::get_attr_num(Attr_iter iter)
  @return If the indicated attribute is a container, this function
  returns the string ``None''. If using a name to refer to the attribute
  and the named attribute does not exist, return the empty string. */
-string
-AttrTable::get_attr(Attr_iter iter, unsigned int i)
+string AttrTable::get_attr(Attr_iter iter, unsigned int i)
 {
     assert(iter != attr_map.end());
-#if 1
-    return (*iter)->type == Attr_container ? (string)"None" : (*(*iter)->attr)[i];
-#else
-    if ((*iter)->type == Attr_container) {
-        return "None";
-    }
-    else {
-        cerr << "(*iter)->attr: " << (*iter)->attr << endl;
-        cerr << "(*iter)->name: " << (*iter)->name << endl;
-        cerr << "(*iter)->type: " << (*iter)->type << endl;
-        //cerr << "get_attr: return value: [" << i << "]: " << (*(*iter)->attr)[i]<< endl;
-        if ((*iter)->name == "SIS_ID")
-        return "SIS_ID_value";
-        else
-        return (*(*iter)->attr)[i];
-    }
-#endif
+
+    return (*iter)->type == Attr_container ? (string) "None" : (*(*iter)->attr)[i];
 }
 
-string
-AttrTable::get_attr(const string &name, unsigned int i)
+string AttrTable::get_attr(const string &name, unsigned int i)
 {
     Attr_iter p = simple_find(name);
-    return (p != attr_map.end()) ? get_attr(p, i) : (string)"";
+    return (p != attr_map.end()) ? get_attr(p, i) : (string) "";
 }
 
 /** Returns a pointer to the vector of values associated with the
@@ -907,24 +869,22 @@ AttrTable::get_attr_vector(Attr_iter iter)
     return (*iter)->type != Attr_container ? (*iter)->attr : 0;
 }
 
-bool
-AttrTable::is_global_attribute(Attr_iter iter)
+bool AttrTable::is_global_attribute(Attr_iter iter)
 {
     assert(iter != attr_map.end());
     if ((*iter)->type == Attr_container)
-	return (*iter)->attributes->is_global_attribute();
+        return (*iter)->attributes->is_global_attribute();
     else
-	return (*iter)->is_global;
+        return (*iter)->is_global;
 }
 
-void
-AttrTable::set_is_global_attribute(Attr_iter iter, bool ga)
+void AttrTable::set_is_global_attribute(Attr_iter iter, bool ga)
 {
     assert(iter != attr_map.end());
     if ((*iter)->type == Attr_container)
-	(*iter)->attributes->set_is_global_attribute(ga);
+        (*iter)->attributes->set_is_global_attribute(ga);
     else
-	(*iter)->is_global = ga;
+        (*iter)->is_global = ga;
 }
 
 //@} Accessors that use an iterator
@@ -935,8 +895,7 @@ AttrTable::set_is_global_attribute(Attr_iter iter, bool ga)
  @param src The existing attribute container to alias.
  @exception Error if an attribute, container or alias called
  <tt>name</tt> already exists in this attribute table. */
-void
-AttrTable::add_container_alias(const string &name, AttrTable *src)
+void AttrTable::add_container_alias(const string &name, AttrTable *src)
 {
 #if WWW_ENCODING
     string lname = www2id(name);
@@ -945,8 +904,7 @@ AttrTable::add_container_alias(const string &name, AttrTable *src)
 #endif
 
     if (simple_find(lname) != attr_end())
-    throw Error(string("There already exists a container called `")
-            + name + string("in this attribute table. (2)"));
+        throw Error(string("There already exists a container called `") + name + string("in this attribute table. (2)"));
 
     entry *e = new entry;
     e->name = lname;
@@ -971,9 +929,7 @@ AttrTable::add_container_alias(const string &name, AttrTable *src)
  @exception Error if the attribute table already contains an
  attribute, container or alias called <tt>name</tt> or if an
  attribute called <tt>source</tt> does not exist. */
-void
-AttrTable::add_value_alias(AttrTable *das, const string &name,
-        const string &source)
+void AttrTable::add_value_alias(AttrTable *das, const string &name, const string &source)
 {
 #if WWW_ENCODING
     string lname = www2id(name);
@@ -1001,18 +957,18 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
     if (!at || (iter == at->attr_end()) || !*iter) {
         find(lsource, &at, &iter);
         if (!at || (iter == at->attr_end()) || !*iter)
-        throw Error(string("Could not find the attribute `")
-                + source + string("' in the attribute object."));
+            throw Error(string("Could not find the attribute `") + source + string("' in the attribute object."));
     }
 
     // If we've got a value to alias and it's being added at the top level of
     // the DAS, that's an error.
     if (at && !at->is_container(iter) && this == das)
-    throw Error(string("A value cannot be aliased to the top level of the DAS;\nOnly containers may be present at that level of the DAS."));
+        throw Error(
+                string(
+                        "A value cannot be aliased to the top level of the DAS;\nOnly containers may be present at that level of the DAS."));
 
     if (simple_find(lname) != attr_end())
-    throw Error(string("There already exists a container called `")
-            + name + string("in this attribute table. (3)"));
+        throw Error(string("There already exists a container called `") + name + string("in this attribute table. (3)"));
 
     entry *e = new entry;
     e->name = lname;
@@ -1020,9 +976,9 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
     e->aliased_to = lsource;
     e->type = get_attr_type(iter);
     if (at && e->type == Attr_container)
-    e->attributes = at->get_attr_table(iter);
+        e->attributes = at->get_attr_table(iter);
     else
-    e->attr = (*iter)->attr;
+        e->attr = (*iter)->attr;
 
     attr_map.push_back(e);
 }
@@ -1046,8 +1002,7 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
  @param name The name of the already-existing attribute to which
  the alias will refer.
  @param at An attribute table in which to insert the alias. */
-bool
-AttrTable::attr_alias(const string &alias, AttrTable *at, const string &name)
+bool AttrTable::attr_alias(const string &alias, AttrTable *at, const string &name)
 {
     add_value_alias(at, alias, name);
     return true;
@@ -1060,8 +1015,7 @@ AttrTable::attr_alias(const string &alias, AttrTable *at, const string &name)
  @param alias The alias to insert into the attribute table.
  @param name The name of the already-existing attribute to which
  the alias will refer. */
-bool
-AttrTable::attr_alias(const string &alias, const string &name)
+bool AttrTable::attr_alias(const string &alias, const string &name)
 {
     return attr_alias(alias, this, name);
 }
@@ -1069,11 +1023,11 @@ AttrTable::attr_alias(const string &alias, const string &name)
 /** Erase the entire attribute table. This returns an AttrTable to the empty
  state that's the same as the object generated by the null constructor.
  @brief Erase the attribute table. */
-void
-AttrTable::erase()
+void AttrTable::erase()
 {
     for (Attr_iter i = attr_map.begin(); i != attr_map.end(); ++i) {
-        delete *i; *i = 0;
+        delete *i;
+        *i = 0;
     }
 
     attr_map.erase(attr_map.begin(), attr_map.end());
@@ -1094,13 +1048,12 @@ const string double_quote = "\"";
 // those quotes were added by the handlers as a hack to get the output
 // formatting correct for the DAS. jhrg 7/30/08
 
-static void
-write_string_attribute_for_das(ostream &out, const string &value, const string &term)
+static void write_string_attribute_for_das(ostream &out, const string &value, const string &term)
 {
     if (is_quoted(value))
-    out << value << term;
+        out << value << term;
     else
-    out << double_quote << value << double_quote << term;
+        out << double_quote << value << double_quote << term;
 }
 
 #if 0
@@ -1116,13 +1069,12 @@ write_string_attribute_for_das(FILE *out, const string &value, const string &ter
 
 // Special treatment for XML: Make sure to escape double quotes when XML is
 // printed in a DAS.
-static void
-write_xml_attribute_for_das(ostream &out, const string &value, const string &term)
+static void write_xml_attribute_for_das(ostream &out, const string &value, const string &term)
 {
     if (is_quoted(value))
-    out << escape_double_quotes(value) << term;
+        out << escape_double_quotes(value) << term;
     else
-    out << double_quote << escape_double_quotes(value) << double_quote << term;
+        out << double_quote << escape_double_quotes(value) << double_quote << term;
 }
 
 #if 0
@@ -1138,8 +1090,7 @@ write_xml_attribute_for_das(FILE *out, const string &value, const string &term)
 
 /** A simple printer that does nothing fancy with aliases.
  Protected. */
-void
-AttrTable::simple_print(FILE *out, string pad, Attr_iter i, bool dereference)
+void AttrTable::simple_print(FILE *out, string pad, Attr_iter i, bool dereference)
 {
     ostringstream oss;
     simple_print(oss, pad, i, dereference);
@@ -1149,9 +1100,9 @@ AttrTable::simple_print(FILE *out, string pad, Attr_iter i, bool dereference)
     switch ((*i)->type) {
         case Attr_container:
 #if WWW_ENCODING
-            fprintf(out, "%s%s {\n", pad.c_str(), id2www(get_name(i)).c_str());
+        fprintf(out, "%s%s {\n", pad.c_str(), id2www(get_name(i)).c_str());
 #else
-            fprintf(out, "%s%s {\n", pad.c_str(), get_name(i).c_str());
+        fprintf(out, "%s%s {\n", pad.c_str(), get_name(i).c_str());
 #endif
         (*i)->attributes->print(out, pad + "    ", dereference);
 
@@ -1209,64 +1160,62 @@ AttrTable::simple_print(FILE *out, string pad, Attr_iter i, bool dereference)
 
 /** A simple printer that does nothing fancy with aliases.
  Protected. */
-void
-AttrTable::simple_print(ostream &out, string pad, Attr_iter i,
-        bool dereference)
+void AttrTable::simple_print(ostream &out, string pad, Attr_iter i, bool dereference)
 {
     switch ((*i)->type) {
-        case Attr_container:
+    case Attr_container:
 #if WWW_ENCODING
-            out << pad << id2www(get_name(i)) << " {\n";
+        out << pad << id2www(get_name(i)) << " {\n";
 #else
-            out << pad << add_space_encoding(get_name(i)) << " {\n";
+        out << pad << add_space_encoding(get_name(i)) << " {\n";
 #endif
-            (*i)->attributes->print(out, pad + "    ", dereference);
-            out << pad << "}\n";
+        (*i)->attributes->print(out, pad + "    ", dereference);
+        out << pad << "}\n";
         break;
 
-        case Attr_string: {
+    case Attr_string: {
 #if WWW_ENCODING
-            out << pad << get_type(i) << " " << id2www(get_name(i)) << " ";
+        out << pad << get_type(i) << " " << id2www(get_name(i)) << " ";
 #else
-            out << pad << get_type(i) << " " << add_space_encoding(get_name(i)) << " ";
+        out << pad << get_type(i) << " " << add_space_encoding(get_name(i)) << " ";
 #endif
-            vector<string> *sxp = (*i)->attr;
-            vector<string>::iterator last = sxp->end() - 1;
-            for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
-                write_string_attribute_for_das(out, *i, ", ");
-            }
-            write_string_attribute_for_das(out, *last, ";\n");
+        vector<string> *sxp = (*i)->attr;
+        vector<string>::iterator last = sxp->end() - 1;
+        for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
+            write_string_attribute_for_das(out, *i, ", ");
         }
+        write_string_attribute_for_das(out, *last, ";\n");
+    }
         break;
 
-        case Attr_other_xml: {
+    case Attr_other_xml: {
 #if WWW_ENCODING
-            out << pad << get_type(i) << " " << id2www(get_name(i)) << " ";
+        out << pad << get_type(i) << " " << id2www(get_name(i)) << " ";
 #else
-            out << pad << get_type(i) << " " << add_space_encoding(get_name(i)) << " ";
+        out << pad << get_type(i) << " " << add_space_encoding(get_name(i)) << " ";
 #endif
-            vector<string> *sxp = (*i)->attr;
-            vector<string>::iterator last = sxp->end() - 1;
-            for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
-                write_xml_attribute_for_das(out, *i, ", ");
-            }
-            write_xml_attribute_for_das(out, *last, ";\n");
+        vector<string> *sxp = (*i)->attr;
+        vector<string>::iterator last = sxp->end() - 1;
+        for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
+            write_xml_attribute_for_das(out, *i, ", ");
         }
+        write_xml_attribute_for_das(out, *last, ";\n");
+    }
         break;
 
-        default: {
+    default: {
 #if WWW_ENCODING
-            out << pad << get_type(i) << " " << id2www(get_name(i)) << " ";
+        out << pad << get_type(i) << " " << id2www(get_name(i)) << " ";
 #else
-            out << pad << get_type(i) << " " << add_space_encoding(get_name(i)) << " ";
+        out << pad << get_type(i) << " " << add_space_encoding(get_name(i)) << " ";
 #endif
-            vector<string> *sxp = (*i)->attr;
-            vector<string>::iterator last = sxp->end() - 1;
-            for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
-                out << *i <<", ";
-            }
-            out << *last << ";\n";
+        vector<string> *sxp = (*i)->attr;
+        vector<string>::iterator last = sxp->end() - 1;
+        for (vector<string>::iterator i = sxp->begin(); i != last; ++i) {
+            out << *i << ", ";
         }
+        out << *last << ";\n";
+    }
         break;
     }
 }
@@ -1281,8 +1230,7 @@ AttrTable::simple_print(ostream &out, string pad, Attr_iter i,
  default this is a string of four spaces
  @param dereference If true, follow aliases. Default is false. */
 
-void
-AttrTable::print(FILE *out, string pad, bool dereference)
+void AttrTable::print(FILE *out, string pad, bool dereference)
 {
     ostringstream oss;
     print(oss, pad, dereference);
@@ -1324,8 +1272,7 @@ AttrTable::print(FILE *out, string pad, bool dereference)
  default this is a string of four spaces
  @param dereference If true, follow aliases. Default is false. */
 
-void
-AttrTable::print(ostream &out, string pad, bool dereference)
+void AttrTable::print(ostream &out, string pad, bool dereference)
 {
     for (Attr_iter i = attr_map.begin(); i != attr_map.end(); ++i) {
         if ((*i)->is_alias) {
@@ -1337,8 +1284,8 @@ AttrTable::print(ostream &out, string pad, bool dereference)
                 out << pad << "Alias " << id2www(get_name(i))
                 << " " << id2www((*i)->aliased_to) << ";\n";
 #else
-                out << pad << "Alias " << add_space_encoding(get_name(i))
-                << " " << add_space_encoding((*i)->aliased_to) << ";\n";
+                out << pad << "Alias " << add_space_encoding(get_name(i)) << " "
+                        << add_space_encoding((*i)->aliased_to) << ";\n";
 #endif
             }
         }
@@ -1353,8 +1300,7 @@ AttrTable::print(ostream &out, string pad, bool dereference)
  @param pad Indent lines of text/xml this much. Default is four spaces.
  @param constrained Not used
  @deprecated */
-void
-AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
+void AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
 {
     ostringstream oss;
     print_xml(oss, pad);
@@ -1395,13 +1341,13 @@ AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
             // cannot be an vector of XML things as can be with the other types.
             if (get_attr_type(i) == Attr_other_xml) {
                 if (get_attr_num(i) != 1)
-                    throw Error("OtherXML attributes cannot be vector-valued.");
+                throw Error("OtherXML attributes cannot be vector-valued.");
                 fprintf(out, "%s%s\n", value_pad.c_str(), get_attr(i, 0).c_str());
             }
             else {
                 for (unsigned j = 0; j < get_attr_num(i); ++j) {
                     fprintf(out, "%s<value>%s</value>\n", value_pad.c_str(),
-                	    id2xml(get_attr(i, j)).c_str());
+                            id2xml(get_attr(i, j)).c_str());
                 }
             }
             fprintf(out, "%s</Attribute>\n", pad.c_str());
@@ -1413,8 +1359,7 @@ AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
 /**
  * @deprecated
  */
-void
-AttrTable::print_xml(ostream &out, string pad, bool /*constrained*/)
+void AttrTable::print_xml(ostream &out, string pad, bool /*constrained*/)
 {
     XMLWriter xml(pad);
     print_xml_writer(xml);
@@ -1442,7 +1387,7 @@ AttrTable::print_xml(ostream &out, string pad, bool /*constrained*/)
             string value_pad = pad + "    ";
             if (get_attr_type(i) == Attr_other_xml) {
                 if (get_attr_num(i) != 1)
-                    throw Error("OtherXML attributes cannot be vector-valued.");
+                throw Error("OtherXML attributes cannot be vector-valued.");
                 out << value_pad << get_attr(i, 0) << "\n";
             }
             else {
@@ -1461,16 +1406,17 @@ AttrTable::print_xml(ostream &out, string pad, bool /*constrained*/)
  @param out Destination stream
  @param pad Indent lines of text/xml this much. Default is four spaces.
  @param constrained Not used */
-void
-AttrTable::print_xml_writer(XMLWriter &xml)
+void AttrTable::print_xml_writer(XMLWriter &xml)
 {
     for (Attr_iter i = attr_begin(); i != attr_end(); ++i) {
         if ((*i)->is_alias) {
             if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Alias") < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write Alias element");
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)get_name(i).c_str()) < 0)
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name",
+                    (const xmlChar*) get_name(i).c_str()) < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "Attribute", (const xmlChar*)(*i)->aliased_to.c_str()) < 0)
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "Attribute",
+                    (const xmlChar*) (*i)->aliased_to.c_str()) < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
             if (xmlTextWriterEndElement(xml.get_writer()) < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not end Alias element");
@@ -1478,9 +1424,11 @@ AttrTable::print_xml_writer(XMLWriter &xml)
         else if (is_container(i)) {
             if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Attribute") < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write Attribute element");
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)get_name(i).c_str()) < 0)
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name",
+                    (const xmlChar*) get_name(i).c_str()) < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "type", (const xmlChar*)get_type(i).c_str()) < 0)
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "type",
+                    (const xmlChar*) get_type(i).c_str()) < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
             get_attr_table(i)->print_xml_writer(xml);
@@ -1491,9 +1439,11 @@ AttrTable::print_xml_writer(XMLWriter &xml)
         else {
             if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Attribute") < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write Attribute element");
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)get_name(i).c_str()) < 0)
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name",
+                    (const xmlChar*) get_name(i).c_str()) < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "type", (const xmlChar*)get_type(i).c_str()) < 0)
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "type",
+                    (const xmlChar*) get_type(i).c_str()) < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
             if (get_attr_type(i) == Attr_other_xml) {
@@ -1502,7 +1452,7 @@ AttrTable::print_xml_writer(XMLWriter &xml)
                 // Replaced xmltextWriterWriteString with xmlTextWriterWriteRaw to keep the
                 // libxml2 code from escaping the xml (which was breaking all of the inferencing
                 // code. jhrg
-                if (xmlTextWriterWriteRaw(xml.get_writer(), (const xmlChar*)get_attr(i, 0).c_str()) < 0)
+                if (xmlTextWriterWriteRaw(xml.get_writer(), (const xmlChar*) get_attr(i, 0).c_str()) < 0)
                     throw InternalErr(__FILE__, __LINE__, "Could not write OtherXML value");
             }
             else {
@@ -1510,7 +1460,7 @@ AttrTable::print_xml_writer(XMLWriter &xml)
                     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "value") < 0)
                         throw InternalErr(__FILE__, __LINE__, "Could not write value element");
 
-                    if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*)get_attr(i, j).c_str()) < 0)
+                    if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) get_attr(i, j).c_str()) < 0)
                         throw InternalErr(__FILE__, __LINE__, "Could not write attribute value");
 
                     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
@@ -1530,11 +1480,9 @@ AttrTable::print_xml_writer(XMLWriter &xml)
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void
-AttrTable::dump(ostream &strm) const
+void AttrTable::dump(ostream &strm) const
 {
-    strm << DapIndent::LMarg << "AttrTable::dump - ("
-    << (void *)this << ")" << endl;
+    strm << DapIndent::LMarg << "AttrTable::dump - (" << (void *) this << ")" << endl;
     DapIndent::Indent();
     strm << DapIndent::LMarg << "table name: " << d_name << endl;
     if (attr_map.size()) {
@@ -1546,22 +1494,16 @@ AttrTable::dump(ostream &strm) const
             entry *e = (*i);
             string type = AttrType_to_String(e->type);
             if (e->is_alias) {
-                strm << DapIndent::LMarg << "alias: " << e->name
-                << " aliased to: " << e->aliased_to
-                << endl;
+                strm << DapIndent::LMarg << "alias: " << e->name << " aliased to: " << e->aliased_to << endl;
             }
             else if (e->type == Attr_container) {
-                strm << DapIndent::LMarg << "attr: " << e->name
-                << " of type " << type
-                << endl;
+                strm << DapIndent::LMarg << "attr: " << e->name << " of type " << type << endl;
                 DapIndent::Indent();
                 e->attributes->dump(strm);
                 DapIndent::UnIndent();
             }
             else {
-                strm << DapIndent::LMarg << "attr: " << e->name
-                << " of type " << type
-                << endl;
+                strm << DapIndent::LMarg << "attr: " << e->name << " of type " << type << endl;
                 DapIndent::Indent();
                 strm << DapIndent::LMarg;
                 vector<string>::const_iterator iter = e->attr->begin();
@@ -1579,8 +1521,7 @@ AttrTable::dump(ostream &strm) const
         strm << DapIndent::LMarg << "attributes: empty" << endl;
     }
     if (d_parent) {
-        strm << DapIndent::LMarg << "parent table:"
-        << d_name << ":" << (void *)d_parent << endl;
+        strm << DapIndent::LMarg << "parent table:" << d_name << ":" << (void *) d_parent << endl;
     }
     else {
         strm << DapIndent::LMarg << "parent table: none" << d_name << endl;
