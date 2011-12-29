@@ -79,14 +79,16 @@ LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex \
 EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
 	VCPP dods-datatypes-static.h xdr-datatypes-static.h \
-	dap-config-pkgconfig $(LEX_YACC_EXTRA) $(GRAM_SRC) OSX_Resources
+	dap-config-pkgconfig $(LEX_YACC_EXTRA) $(GRAM_SRC) OSX_Resources \
+	getdap.man1 dap-config.man1
 
 # README.AIS xstream/README 
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
-CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
+CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h \
+    xdr-datatypes.h getdap.1 dap-config.1
 
 # Not nearly as clean as it could be, but this removes .svn directories
 # in subdirs.
