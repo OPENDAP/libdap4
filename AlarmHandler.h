@@ -98,8 +98,11 @@ public:
     virtual void handle_signal(int signum)
     {
         if (signum != SIGALRM)
-            fprintf(stderr, "SIGALRM handler caught another signal!\n");
+            cerr << "SIGALRM handler caught another signal!" << endl;
+#if 0
         exit(1);
+#endif
+        throw Error("Timeout");
     }
 
 };

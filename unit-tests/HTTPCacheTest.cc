@@ -144,7 +144,7 @@ public:
     }
 
     CPPUNIT_TEST_SUITE(HTTPCacheTest);
-#if 1
+
     CPPUNIT_TEST(constructor_test);
     CPPUNIT_TEST(cache_index_read_test);
     CPPUNIT_TEST(cache_index_parse_line_test);
@@ -152,9 +152,8 @@ public:
     CPPUNIT_TEST(cache_index_write_test);
     CPPUNIT_TEST(create_cache_root_test);
     CPPUNIT_TEST(set_cache_root_test);
-#endif
     CPPUNIT_TEST(get_single_user_lock_test);
-#if 1
+
     CPPUNIT_TEST(release_single_user_lock_test);
     CPPUNIT_TEST(create_hash_directory_test);
     CPPUNIT_TEST(create_location_test);
@@ -173,7 +172,6 @@ public:
     CPPUNIT_TEST(get_conditional_response_headers_test);
     CPPUNIT_TEST(update_response_test);
     CPPUNIT_TEST(cache_gc_test);
-#endif
 #if 0
     CPPUNIT_TEST(interrupt_test);
 #endif
@@ -264,27 +262,34 @@ public:
 	}
 
 	void cache_index_write_test() {
-		HTTPCache *hc_3 = new HTTPCache("cache-testsuite/dods_cache/", true);
-		hc_3->d_http_cache_table->add_entry_to_cache_table(hc->d_http_cache_table->cache_index_parse_line(index_file_line.c_str()));
+        try {
+            HTTPCache * hc_3 = new HTTPCache("cache-testsuite/dods_cache/", true);
+            hc_3->d_http_cache_table->add_entry_to_cache_table(
+                    hc->d_http_cache_table->cache_index_parse_line(index_file_line.c_str()));
 
-		hc_3->d_http_cache_table->d_cache_index = hc->d_cache_root + "test_index";
-		hc_3->d_http_cache_table->cache_index_write();
+            hc_3->d_http_cache_table->d_cache_index = hc->d_cache_root + "test_index";
+            hc_3->d_http_cache_table->cache_index_write();
 
-		HTTPCache *hc_4 = new HTTPCache("cache-testsuite/dods_cache/", true);
-		hc_4->d_http_cache_table->d_cache_index = hc_3->d_cache_root + "test_index";
-		hc_4->d_http_cache_table->cache_index_read();
+            HTTPCache *hc_4 = new HTTPCache("cache-testsuite/dods_cache/", true);
+            hc_4->d_http_cache_table->d_cache_index = hc_3->d_cache_root + "test_index";
+            hc_4->d_http_cache_table->cache_index_read();
 
-		HTTPCacheTable::CacheEntry *e =
-				hc_4->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
-		CPPUNIT_ASSERT(e);
-		CPPUNIT_ASSERT(e->url == localhost_url);
-		e->unlock_read_response();
+            HTTPCacheTable::CacheEntry *e = hc_4->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
+            cerr << "Got locked entry" << endl;
+            CPPUNIT_ASSERT(e);
+            CPPUNIT_ASSERT(e->url == localhost_url);
+            e->unlock_read_response();
 
-		delete hc_3;
-		hc = 0;
-		delete hc_4;
-		hc = 0;
-	}
+            delete hc_3;
+            hc_3 = 0;
+            delete hc_4;
+            hc_4 = 0;
+        }
+        catch (Error &e) {
+            cerr << "Fail: " << e.get_error_message() << endl;
+            CPPUNIT_FAIL("Caugt exception.");
+        }
+    }
 
 	void create_cache_root_test() {
 		hc->create_cache_root("/tmp/silly/");

@@ -88,7 +88,6 @@ using namespace libdap ;
 #define YY_DECL int daslex YY_PROTO(( void ))
 #define YY_FATAL_ERROR(msg) {\
     throw(Error(string("Error scanning DAS object text: ") + string(msg))); \
-    yy_fatal_error(msg); /* 'Used' here to suppress warning */ \
 }
 
 #include "das.tab.hh"
@@ -99,6 +98,7 @@ static int start_line;		/* used in quote and comment error handlers */
 %}
     
 %option noyywrap
+%option nounput
 %option prefix="das"
 %option outfile="lex.das.cc"
  

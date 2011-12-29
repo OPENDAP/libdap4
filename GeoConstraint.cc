@@ -426,7 +426,6 @@ void GeoConstraint::flip_latitude_within_array(Array &a, int lat_length,
     }
 
     memcpy(d_array_data, &tmp_data[0], d_array_data_size);
-    // delete [] tmp_data;
 }
 
 /** Reorder the elements in the longitude map so that the longitude constraint no

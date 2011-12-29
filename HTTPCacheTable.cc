@@ -50,34 +50,10 @@
 #endif
 #include "HTTPCacheInterruptHandler.h"
 #include "HTTPCacheTable.h"
+#include "HTTPCacheMacros.h"
 
 #include "util_mit.h"
 #include "debug.h"
-
-#ifdef WIN32
-#include <direct.h>
-#include <time.h>
-#include <fcntl.h>
-#define MKDIR(a,b) _mkdir((a))
-#define REMOVE(a) do { \
-		int s = remove((a)); \
-		if (s != 0) \
-			throw InternalErr(__FILE__, __LINE__, "Coule not remove file: " + long_to_string(s)); \
-	} while(0);
-#define MKSTEMP(a) _open(_mktemp((a)),_O_CREAT,_S_IREAD|_S_IWRITE)
-#define DIR_SEPARATOR_CHAR '\\'
-#define DIR_SEPARATOR_STR "\\"
-#else
-#define MKDIR(a,b) mkdir((a), (b))
-#define REMOVE(a) remove((a))
-#define MKSTEMP(a) mkstemp((a))
-#define DIR_SEPARATOR_CHAR '/'
-#define DIR_SEPARATOR_STR "/"
-#endif
-
-#define CACHE_META ".meta"
-#define CACHE_INDEX ".index"
-#define CACHE_EMPTY_ETAG "@cache@"
 
 #define NO_LM_EXPIRATION 24*3600 // 24 hours
 #define MAX_LM_EXPIRATION 48*3600 // Max expiration from LM
@@ -135,15 +111,15 @@ delete_cache_entry(HTTPCacheTable::CacheEntry *e)
 HTTPCacheTable::~HTTPCacheTable()
 {
     for (int i = 0; i < CACHE_TABLE_SIZE; ++i) {
-	HTTPCacheTable::CacheEntries *cp = get_cache_table()[i];
-	if (cp) {
-	    // delete each entry
-	    for_each(cp->begin(), cp->end(), delete_cache_entry);
+        HTTPCacheTable::CacheEntries *cp = get_cache_table()[i];
+        if (cp) {
+            // delete each entry
+            for_each(cp->begin(), cp->end(), delete_cache_entry);
 
-	    // now delete the vector that held the entries
-	    delete get_cache_table()[i];
-	    get_cache_table()[i] = 0;
-	}
+            // now delete the vector that held the entries
+            delete get_cache_table()[i];
+            get_cache_table()[i] = 0;
+        }
     }
 
     delete[] d_cache_table;
@@ -281,7 +257,7 @@ HTTPCacheTable::cache_index_delete()
 {
 	d_new_entries = 0;
 	
-    return (REMOVE(d_cache_index.c_str()) == 0);
+    return (REMOVE_BOOL(d_cache_index.c_str()) == 0);
 }
 
 /** Read the saved set of cached entries from disk. Consistency between the

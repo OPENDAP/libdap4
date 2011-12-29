@@ -45,15 +45,25 @@ static char rcsid[] not_used = {"$Id$"};
 
 #include <cstdlib>
 #include <cassert>
+#include <cstring>
+
+#include <string>
+
+#include "parser.h"
+#include "Error.tab.hh"
+
+using namespace libdap;
 
 #ifndef YY_PROTO
 #define YY_PROTO(proto) proto
 #endif
 
-#define YY_NO_UNPUT
+//#define YY_NO_UNPUT
 #define YY_DECL int Errorlex YY_PROTO(( void ))
 
-#include "Error.tab.hh"
+#define YY_FATAL_ERROR(msg) {\
+    throw(Error(string("Error scanning the error response: ") + string(msg))); \
+}
 
 int error_line_num = 1;
 static int start_line;		/* used in quote and comment error handlers */
@@ -64,6 +74,7 @@ void store_string();
 %}
     
 %option noyywrap
+%option nounput
 %option prefix="Error"
 %option outfile="lex.Error.cc"
 %x quote
@@ -114,7 +125,7 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,]
                         }
 <quote><<EOF>>		{
                           char msg[256];
-			  sprintf(msg,
+			  snprintf(msg, 255,
 				  "Unterminated quote (starts on line %d)\n",
 				  start_line);
 			  YY_FATAL_ERROR(msg);

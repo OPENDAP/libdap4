@@ -61,7 +61,6 @@ static char rcsid[] not_used = {"$Id$"};
 #define YY_NO_INPUT 1
 #define YY_FATAL_ERROR(msg) {\
     throw(Error(string("Error scanning grid constraint expression text: ") + string(msg))); \
-    yy_fatal_error(msg); /* 'Used' here to suppress warning */ \
 }
 
 #include "gse.tab.hh"
@@ -77,6 +76,7 @@ static void store_op(int op);
 %}
 
 %option noyywrap
+%option nounput
 %option prefix="gse_"
 %option outfile="lex.gse_.cc"
 

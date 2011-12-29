@@ -76,7 +76,6 @@ static char rcsid[] not_used =
 #include "GNURegex.h"
 #include "debug.h"
 
-
 using namespace std;
 
 namespace libdap {
@@ -511,8 +510,13 @@ file_to_string(FILE *fp)
     return oss.str();
 }
 
-int wildcmp(const char *wild, const char *string) {
+int
+wildcmp(const char *wild, const char *string)
+{
   // Written by Jack Handy - jakkhandy@hotmail.com
+
+  if (!wild || !string)
+      return 0;
 
   const char *cp = NULL, *mp = NULL;
 
@@ -568,7 +572,12 @@ static void globchars( const char *s, const char *e, char *b );
  * characters remaining in the string and 1 if the pattern does not match
  */
 
-int glob(const char *c, const char *s) {
+int
+glob(const char *c, const char *s)
+{
+    if (!c || !s)
+        return 1;
+
     char bitlist[BITLISTSIZE];
     int i = 0;
     for (;;) {
@@ -682,6 +691,9 @@ static void globchars(const char *s, const char *e, char *b) {
 
 int wmatch(const char *pat, const char *s)
 {
+    if (!pat || !s)
+        return 0;
+
   switch (*pat) {
     case '\0': return (*s == '\0');
     case '?': return (*s != '\0') && wmatch(pat+1, s+1);

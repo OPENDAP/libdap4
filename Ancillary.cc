@@ -205,9 +205,12 @@ Ancillary::read_ancillary_das( DAS &das,
     FILE *in = fopen( name.c_str(), "r" ) ;
     if( in ) {
         das.parse( in ) ;
+        (void)fclose( in ) ;
+#if 0
         int res = fclose( in ) ;
         if( res )
             DBG(cerr << "Ancillary::read_ancillary_das - Failed to close file " << (void *)in << endl) ;
+#endif
     }
 }
 
@@ -224,9 +227,12 @@ Ancillary::read_ancillary_dds( DDS &dds,
     FILE *in = fopen( name.c_str(), "r" ) ;
     if( in ) {
         dds.parse( in ) ;
+        (void)fclose( in ) ;
+#if 0
         int res = fclose( in ) ;
         if( res )
             DBG(cerr << "Ancillary::read_ancillary_das - Failed to close file " << (void *)in << endl) ;
+#endif
     }
 }
 

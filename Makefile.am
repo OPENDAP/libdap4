@@ -253,7 +253,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	ce_parser.h DapIndent.h DapObj.h XDRFileMarshaller.h		\
 	Marshaller.h XDRFileUnMarshaller.h UnMarshaller.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
-	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h
+	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h 
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h
@@ -269,7 +269,7 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		\
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		\
 	Response.h HTTPResponse.h HTTPCacheResponse.h PipeResponse.h	\
 	StdinResponse.h SignalHandlerRegisteredErr.h			\
-	ResponseTooBigErr.h Resource.h HTTPCacheTable.h
+	ResponseTooBigErr.h Resource.h HTTPCacheTable.h HTTPCacheMacros.h
 
 SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h	\
 	ResponseBuilder.h

@@ -80,7 +80,6 @@ using namespace libdap ;
 
 #define YY_FATAL_ERROR(msg) {\
     throw(Error(string("Error scanning DDS object text: ") + string(msg))); \
-    yy_fatal_error(msg); /* 'Used' here to suppress warning */ \
 }
 
 int dds_line_num = 1;
@@ -90,6 +89,7 @@ static void store_word();
 %}
 
 %option noyywrap
+%option nounput
 %option prefix="dds"
 %option outfile="lex.dds.cc"
 %x comment
