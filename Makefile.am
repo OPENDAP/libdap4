@@ -37,7 +37,12 @@ bin_PROGRAMS = getdap
 
 # sbin_PROGRAMS = deflate
 
-BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
+BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1
+
+man_MANS = getdap.1 dap-config.1
+
+%.1: %.man1
+	groff -t -e -mandoc -Tascii $< | col -bx > $@
 
 libparsers_la_SOURCES = $(GRAM_SRC) 
 libparsers_la_CPPFLAGS = $(AM_CPPFLAGS) #$(XML2_CFLAGS)

@@ -1,0 +1,107 @@
+.\" getdap.man
+.\" 
+.\"  Created on: Dec 29, 2011
+.\"      Author: jimg
+.\" 
+.\" Process this file with
+.\" groff -man -Tascii getdap.1
+.\"
+.TH GETDAP 1 "December 2011" Linux "User Manuals"
+.SH NAME
+getdap \- test driver for the libdap library
+.SH SYNOPSIS
+.B getdap [-idaDxXBvVkzsM] [-c 
+.I expr
+.B ] [-m 
+.I num
+.B ] [-p 
+.I x.y
+.B ] 
+.I url
+.B ...
+
+.B getdap [-VvksM]
+.I file
+.B ...
+.SH DESCRIPTION
+.B getdap
+In the first form of the command, dereference the URL and
+perform the requested operations. This includes routing
+the returned information through the DAP processing
+library (parsing the returned objects, et c.). If none
+of a, d, or D are used with a URL, then the DAP library
+routines are NOT used and the URLs contents are dumped
+to standard output.
+
+In the second form of the command, assume the files are
+DataDDS objects (stored in files or read from pipes)
+and process them as if -D were given. In this case the
+information *must* contain valid MIME header in order
+to be processed.
+.SH OPTIONS
+.IP -i 
+For each URL, get the server version.
+.IP -d
+For each URL, get the the DDS.
+.IP -a
+For each URL, get the the DAS.
+.IP -D
+For each URL, get the the DataDDS.
+.IP -x
+For each URL, get the DDX object. Does not get data.
+.IP -X
+Request a DataDDX from the server (the DAP4 data response).
+.IP -B
+Build a DDX in getdap using the DDS and DAS.
+.IP -v
+Verbose output.
+.IP -V
+Version of this client; see 'i' for server version.
+.IP "-c expr" 
+.I expr
+is a constraint expression. Used with -D/X.
+You can use a `?' for the CE also.
+.IP -k
+Keep temporary files created by libdap.
+.IP "-m num"
+Request the same URL 
+.I num
+times
+.IP -z
+Ask the server to compress data.
+.IP -s
+Print Sequences using numbered rows.
+.IP -M
+Assume data read from a file has no MIME headers
+(the default is to assume the headers are present).
+.IP "-p x.y"
+Set DAP protocol to 
+.I x.y
+.
+.SH FILES
+.I ~/.dodsrc
+.RS
+The 
+.I .dodsrc
+file contains various parameters that affect the runtime behavior for DAP clients.
+See
+.BR dodsrc (5)
+for further details.
+.RE
+.SH ENVIRONMENT
+.IP DODS_CONF
+Specifies an alternate file or directory for the 
+.I .dodsrc
+file.
+.SH DIAGNOSTICS
+Various self-explanitory messages may be issued on stderr.
+
+.SH BUGS
+The command name should have been chosen more carefully
+to reflect its purpose.
+
+The dodsrc man page needs to be written.
+.SH AUTHOR
+James Gallagher <jgallagher at opendap.org>
+.SH "SEE ALSO"
+.BR dodsrc (5)
