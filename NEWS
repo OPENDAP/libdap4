@@ -6,15 +6,17 @@ of a hidden feature of DAP4 that might not be used.
 There are many bug fixes in this update; check the ChangeLog or Trac.
 Two notable fixes:
 
-* The way attributes are encoded has changed subtlely so that now only
+* The way attributes are encoded has changed subtly so that now only
   spaces are escaped. This fixes a problem with our XML and RDF
   responses.
 
 * The XML output (i.e., the DDX) is now built using an XML library, so
   any encoding issues are its fault ;-) But, in a pragmatic sense,
   this has greatly simplified the library and sets the stage for
-  further simplifcation of the methods that build responses. The
+  further simplification of the methods that build responses. The
   behavior of those methods has not changed.
+
+News for version 3.11.1
 
 Merge of the Hyrax 3.6.2 fixes.
 
