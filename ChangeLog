@@ -1,3 +1,23 @@
+2012-02-07  James Gallagher <jgallagher@opendap.org>
+
+	Removed the static curl libs from dap-config.
+
+2012-01-17  James Gallagher <jgallagher@opendap.org>
+
+	News was updated.
+
+	M    NEWS
+
+2012-01-10  James Gallagher <jgallagher@opendap.org>
+
+	Update for Hyrax 1.8 release.
+
+	M    ChangeLog
+	M    tests/package.m4
+	M    INSTALL
+	M    README
+	M    NEWS
+
 2012-01-04  James Gallagher <jgallagher@opendap.org>
 
 	version number bump in NEWS

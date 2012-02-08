@@ -1,3 +1,9 @@
+News for version 3.11.3
+
+Changed the return value for dap-config --libs so that it does not contain 
+the curl static libs. This causes problems whenlinking on CentOS 6 in some
+cases.
+
 News for version 3.11.2
 
 The new DAP3.3 Keywords are supported by the library. These are sort
