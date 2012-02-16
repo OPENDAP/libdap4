@@ -27,6 +27,7 @@
 static char rcsid[] not_used = { "$Id: ResponseBuilder.cc 23477 2010-09-02 21:02:59Z jimg $" };
 
 #include <signal.h>
+#include <unistd.h>
 
 #ifndef WIN32
 // #include <unistd.h>   // for getopt
