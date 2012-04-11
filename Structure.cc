@@ -51,6 +51,7 @@
 #include "Sequence.h"
 #include "Grid.h"
 
+#include "XDRStreamMarshaller.h"
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
@@ -341,7 +342,18 @@ Structure::serialize(ConstraintEvaluator &eval, DDS &dds,
 
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
         if ((*i)->send_p()) {
+#ifdef CHECKSUMS
+            XDRStreamMarshaller &sm = dynamic_cast<XDRStreamMarshaller &>(m);
+            if ((*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
+                sm.reset_checksum();
+
+            (*i)->serialize(eval, dds, sm, false);
+
+            if ((*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
+                cerr << (*i)->name() << ": " << sm.get_checksum() << endl;
+#else
             (*i)->serialize(eval, dds, m, false);
+#endif
         }
     }
 

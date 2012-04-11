@@ -1,3 +1,53 @@
+2011-09-13  James Gallagher <jgallagher@opendap.org>
+
+	Refactor - no change to the ABI.
+
+2011-08-24  James Gallagher <jgallagher@opendap.org>
+
+	Merge of Hyrax 1.7.1
+
+	_M   .
+	_M   OSX_Resources/Info.plist.proto
+	M    DAS.h
+	M    DDS.cc
+	_M   tests/old_tests/grid-func-testsuite
+	_M   tests/old_tests/server-testsuite
+	M    tests/expr-testsuite/test.6b.base
+	M    DDS.h
+	M    BaseType.cc
+	M    Constructor.h
+	M    AttrTable.cc
+	_M   mime_util.h
+	_M   mime_util.cc
+	M    Constructor.cc
+	M    unit-tests/cache-testsuite/Makefile.am
+	_M   unit-tests/MIMEUtilTest.cc
+	_M   unit-tests/fdiostreamTest.cc
+	_M   fdiostream.h
+
+2011-07-15  James Gallagher <jgallagher@opendap.org>
+
+	Fixed an issues with the response too big error message - the sizes were returned in Bytes, but the units were listed as KB. Now the values are in KB (truncated, but good enough).
+
+2011-06-30  Patrick West <pwest@ucar.edu>
+
+	Merge hyrax 1.7 branch to trunk
+
+2011-06-09  James Gallagher <jgallagher@opendap.org>
+
+	Added support for the first version of response size limits - does not do much for Sequences.
+
+2011-05-30  James Gallagher <jgallagher@opendap.org>
+
+	Added get/set_response_limit() and get_request_size() (first version) to libdap:DDS.
+
+2011-05-10  James Gallagher <jgallagher@opendap.org>
+
+	Added --with-curl and --with-xml2 to configure.
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2011-04-25  James Gallagher <jgallagher@opendap.org>
 
 	Removed doc rpm - this breaks when the build hosts lacks dot or

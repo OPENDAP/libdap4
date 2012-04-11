@@ -34,8 +34,6 @@ AC_SUBST(PACKAGE_MAJOR_VERSION)
 AC_SUBST(PACKAGE_MINOR_VERSION)
 AC_SUBST(PACKAGE_SUBMINOR_VERSION)
 
-
-
 AC_DEFINE(EVAL, 1, [Should all the classes run ConstraintEvaluator::eval()?])
 AC_SUBST(EVAL)
 
@@ -297,7 +295,7 @@ AC_SUBST([XML2_LIBS])
 AC_SUBST([XML2_STATIC_LIBS])
 AC_SUBST([XML2_CFLAGS])
 
-DAP_CHECK_ZLIB
+# DAP_CHECK_ZLIB
 
 AC_CHECK_LIB([pthread], [pthread_kill], 
 	[PTHREAD_LIBS="-lpthread"],
@@ -323,6 +321,16 @@ AC_DEFINE([LIBDAP_ROOT], ["/usr/local"], [Set to the prefix directory])
 else
 AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])
 fi
+
+AC_ARG_ENABLE([checksums], 
+    AC_HELP_STRING([--enable-checksums], [Enable MD5 checksums (default is NO)]))
+
+dnl echo "enable_checksums = $enable_checksums"
+AS_IF([test "x$enable_checksums" = "xyes"], [
+    dnl Do the stuff needed for enabling the feature
+    dnl echo "Defining checksums! "
+    AC_DEFINE([CHECKSUMS], 1, [Should checksums be generated])
+])
 
 dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in
 
