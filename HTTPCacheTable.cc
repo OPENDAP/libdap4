@@ -62,7 +62,7 @@
 #define REMOVE(a) do { \
 		int s = remove((a)); \
 		if (s != 0) \
-			throw InternalErr(__FILE__, __LINE__, "Coule not remove file: " + long_to_string(s)); \
+			throw InternalErr(__FILE__, __LINE__, "Cache error; could not remove file: " + long_to_string(s)); \
 	} while(0);
 #define MKSTEMP(a) _open(_mktemp((a)),_O_CREAT,_S_IREAD|_S_IWRITE)
 #define DIR_SEPARATOR_CHAR '\\'
