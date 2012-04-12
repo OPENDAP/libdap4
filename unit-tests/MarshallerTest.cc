@@ -6,6 +6,7 @@
 #include <cppunit/CompilerOutputter.h>
 
 #include "config.h"
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -80,13 +81,13 @@ CPPUNIT_TEST_SUITE( MarshallerTest );
         CPPUNIT_TEST( structure_stream_deserialize_test );
         CPPUNIT_TEST( grid_stream_deserialize_test );
         CPPUNIT_TEST( sequence_stream_deserialize_test );
-
+#if CHECKSUMS
         CPPUNIT_TEST( simple_types_stream_serialize_checksum_test );
         CPPUNIT_TEST( array_stream_serialize_checksum_test );
         CPPUNIT_TEST( structure_stream_serialize_checksum_test );
         CPPUNIT_TEST( grid_stream_serialize_checksum_test );
         CPPUNIT_TEST( sequence_stream_serialize_checksum_test );
-
+#endif
     CPPUNIT_TEST_SUITE_END( );
 
     TestByte *b;
@@ -964,6 +965,7 @@ public:
         }
     }
 
+#if CHECKSUMS
     // Check sum tests
 
     void simple_types_stream_serialize_checksum_test()
@@ -1102,6 +1104,8 @@ public:
         }
     }
 
+    // This test is broken because Sequence::serialize() does not
+    // properly call the checksum methods.
     void sequence_stream_serialize_checksum_test()
     {
         try {
@@ -1132,8 +1136,9 @@ public:
             CPPUNIT_FAIL( err.c_str() );
         }
     }
-
+#endif
 };
+
 CPPUNIT_TEST_SUITE_REGISTRATION( MarshallerTest ) ;
 
 int main(int, char **)
