@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset name="test.19c" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xml.opendap.org/ns/DAP2" xsi:schemaLocation="http://xml.opendap.org/ns/DAP2 http://xml.opendap.org/dap/dap2.xsd">
+    <Attribute name="NC_GLOBAL" type="Container">
+        <Attribute name="long_name" type="String">
+            <value>Attribute merge test</value>
+        </Attribute>
+        <Attribute name="primes" type="Int32">
+            <value>2</value>
+            <value>3</value>
+            <value>5</value>
+            <value>7</value>
+            <value>11</value>
+        </Attribute>
+    </Attribute>
+    <Int32 name="a"/>
+    <dataBLOB href=""/>
+</Dataset>

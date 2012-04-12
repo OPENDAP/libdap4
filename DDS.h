@@ -66,6 +66,10 @@
 #include "Keywords2.h"
 #endif
 
+#ifndef XMLWRITER_H_
+#include "XMLWriter.h"
+#endif
+
 using std::cout;
 
 #define FILE_METHODS 1
@@ -294,6 +298,7 @@ public:
     Structure *container() ;
 
     void add_var(BaseType *bt);
+    void add_var_nocopy(BaseType *bt);
 
     /// Removes a variable from the DDS.
     void del_var(const string &n);
@@ -314,6 +319,9 @@ public:
     Vars_iter get_vars_iter(int i);
     /// Get a variable
     BaseType *get_var_index(int i);
+    /// Insert a variable before the referenced element
+    void insert_var(Vars_iter i, BaseType *ptr);
+    void insert_var_nocopy(Vars_iter i, BaseType *ptr);
     /// Removes a variable from the DDS.
     void del_var(Vars_iter i);
     /// Removes a range of variables from the DDS.
@@ -335,6 +343,8 @@ public:
     void print(ostream &out);
     void print_constrained(ostream &out);
     void print_xml(ostream &out, bool constrained, const string &blob = "");
+
+    void print_xml_writer(ostream &out, bool constrained, const string &blob = "");
 
     void mark_all(bool state);
     bool mark(const string &name, bool state);

@@ -350,6 +350,27 @@ Sequence::add_var(BaseType *bt, Part)
     _vars.push_back(bt_copy);
 }
 
+/** @brief Adds a variable to the Sequence.
+
+    @note Remember that if you wish to add a member to a nested
+    Sequence, you must use the <tt>add_var()</tt> of that
+    Sequence.  This means that variable names need not be unique
+    among a set of nested Sequences.
+    @note This method does not copy the BaseType object; the caller
+    must not free the pointer.
+
+    @param bt A pointer to the DAP2 type variable to add to this Sequence.
+    @param part defaults to nil */
+void
+Sequence::add_var_nocopy(BaseType *bt, Part)
+{
+    if (!bt)
+        throw InternalErr(__FILE__, __LINE__,
+                          "Cannot add variable: NULL pointer");
+    bt->set_parent(this);
+    _vars.push_back(bt);
+}
+
 // Deprecated
 BaseType *
 Sequence::var(const string &n, btp_stack &s)

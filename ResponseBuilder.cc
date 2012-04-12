@@ -25,6 +25,7 @@
 #include "config.h"
 
 #include <signal.h>
+#include <unistd.h>
 
 #ifndef WIN32
 // #include <unistd.h>   // for getopt
@@ -61,14 +62,12 @@ using namespace std;
 
 namespace libdap {
 
-ResponseBuilder::~ResponseBuilder()
-{
+ResponseBuilder::~ResponseBuilder() {
 }
 
 /** Called when initializing a ResponseBuilder that's not going to be passed a
  command line arguments. */
-void ResponseBuilder::initialize()
-{
+void ResponseBuilder::initialize() {
     // Set default values. Don't use the C++ constructor initialization so
     // that a subclass can have more control over this process.
     d_dataset = "";
@@ -147,13 +146,11 @@ bool ResponseBuilder::is_known_keyword(const string &w) const
 
  @brief Get the constraint expression.
  @return A string object that contains the constraint expression. */
-string ResponseBuilder::get_ce() const
-{
+string ResponseBuilder::get_ce() const {
     return d_ce;
 }
 
-void ResponseBuilder::set_ce(string _ce)
-{
+void ResponseBuilder::set_ce(string _ce) {
     d_ce = www2id(_ce, "%", "%20");
 
 #if 0
@@ -197,13 +194,11 @@ void ResponseBuilder::set_ce(string _ce)
 
  @brief Get the dataset name.
  @return A string object that contains the name of the dataset. */
-string ResponseBuilder::get_dataset_name() const
-{
+string ResponseBuilder::get_dataset_name() const {
     return d_dataset;
 }
 
-void ResponseBuilder::set_dataset_name(const string ds)
-{
+void ResponseBuilder::set_dataset_name(const string ds) {
     d_dataset = www2id(ds, "%", "%20");
 }
 
@@ -211,14 +206,12 @@ void ResponseBuilder::set_dataset_name(const string ds)
  timeout.
 
  @param t Server timeout in seconds. Default is zero (no timeout). */
-void ResponseBuilder::set_timeout(int t)
-{
+void ResponseBuilder::set_timeout(int t) {
     d_timeout = t;
 }
 
 /** Get the server's timeout value. */
-int ResponseBuilder::get_timeout() const
-{
+int ResponseBuilder::get_timeout() const {
     return d_timeout;
 }
 
@@ -232,8 +225,7 @@ int ResponseBuilder::get_timeout() const
  should scan ahead in the input stream for an Error object. Add this, or a
  sensible variant once libdap++ supports reliable error delivery. Dumb
  clients will never get the Error object... */
-void ResponseBuilder::establish_timeout(ostream &stream) const
-{
+void ResponseBuilder::establish_timeout(ostream &stream) const {
 #ifndef WIN32
     if (d_timeout > 0) {
         SignalHandler *sh = SignalHandler::instance();
@@ -255,8 +247,7 @@ void ResponseBuilder::establish_timeout(ostream &stream) const
  @param with_mime_headers If true (the default) send MIME headers.
  @return void
  @see DAS */
-void ResponseBuilder::send_das(ostream &out, DAS &das, bool with_mime_headers) const
-{
+void ResponseBuilder::send_das(ostream &out, DAS &das, bool with_mime_headers) const {
     if (with_mime_headers)
         set_mime_text(out, dods_das, x_plain, last_modified_time(d_dataset), "2.0");
     das.print(out);
@@ -300,8 +291,7 @@ void ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval
     out << flush;
 }
 
-void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEvaluator & eval, bool ce_eval) const
-{
+void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEvaluator & eval, bool ce_eval) const {
     // send constrained DDS
     dds.print_constrained(out);
     out << "Data:\n";
@@ -437,8 +427,7 @@ void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEval
  @param out Destination
  @param with_mime_headers If true, include the MIME headers in the response.
  Defaults to true. */
-void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers) const
-{
+void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers) const {
     // If constrained, parse the constraint. Throws Error or InternalErr.
     if (!d_ce.empty())
         eval.parse_constraint(d_ce, dds);
@@ -449,7 +438,7 @@ void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval
     if (with_mime_headers)
         set_mime_text(out, dap4_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
-    dds.print_xml(out, !d_ce.empty(), "");
+    dds.print_xml_writer(out, !d_ce.empty(), "");
 }
 
 /** Send the data in the DDS object back to the client program. The data is

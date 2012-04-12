@@ -427,83 +427,82 @@ name:		var_name { (*DDS_OBJ(arg)).set_dataset_name($1); }
 %%
 
 /* 
-   This function must be defined. However, use the error reporting code in
-   parser-utils.cc.
-*/
+ This function must be defined. However, use the error reporting code in
+ parser-utils.cc.
+ */
 
-void 
+void
 ddserror(char *)
 {
 }
 
 /*
-  Error clean up. Call this before calling YYBORT. Don't call this on a
-  normal exit.
-*/
+ Error clean up. Call this before calling YYBORT. Don't call this on a
+ normal exit.
+ */
 
-void
-error_exit_cleanup()
+void error_exit_cleanup()
 {
-    delete id; id = 0;
-    delete current; current = 0;
-    delete ctor; ctor = 0;
+    delete id;
+    id = 0;
+    delete current;
+    current = 0;
+    delete ctor;
+    ctor = 0;
 }
 
 /*
-  Invalid declaration message.
-*/
+ Invalid declaration message.
+ */
 
-void
-invalid_declaration(parser_arg *arg, string semantic_err_msg, char *type, 
-		    char *name)
+void invalid_declaration(parser_arg *arg, string semantic_err_msg, char *type, char *name)
 {
-  ostringstream msg;
-  msg << "In the dataset descriptor object: `" << type << " " << name 
-      << "'" << endl << "is not a valid declaration." << endl 
-      << semantic_err_msg;
-  parse_error((parser_arg *)arg, msg.str().c_str(), dds_line_num);
+    ostringstream msg;
+    msg << "In the dataset descriptor object: `" << type << " " << name << "'" << endl << "is not a valid declaration."
+            << endl << semantic_err_msg;
+    parse_error((parser_arg *) arg, msg.str().c_str(), dds_line_num);
 }
 
 /*
-  Add the variable pointed to by CURRENT to either the topmost ctor object on
-  the stack CTOR or to the dataset variable table TABLE if CTOR is empty.  If
-  it exists, the current ctor object is popped off the stack and assigned to
-  CURRENT.
+ Add the variable pointed to by CURRENT to either the topmost ctor object on
+ the stack CTOR or to the dataset variable table TABLE if CTOR is empty.  If
+ it exists, the current ctor object is popped off the stack and assigned to
+ CURRENT.
 
-  NB: the ctor stack is popped for arrays because they are ctors which
-  contain only a single variable. For other ctor types, several variables may
-  be members and the parse rule (see `declaration' above) determines when to
-  pop the stack.
+ NB: the ctor stack is popped for arrays because they are ctors which
+ contain only a single variable. For other ctor types, several variables may
+ be members and the parse rule (see `declaration' above) determines when to
+ pop the stack.
 
-  Returns: void 
-*/
+ Returns: void 
+ */
 
-void	
-add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
-{ 
+void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
+{
     if (!*ctor)
-	*ctor = new stack<BaseType *>;
+        *ctor = new stack<BaseType *> ;
 
     if (!(*ctor)->empty()) { /* must be parsing a ctor type */
-	(*ctor)->top()->add_var(*current, part);
+        (*ctor)->top()->add_var(*current, part);
 
- 	const Type &ctor_type = (*ctor)->top()->type();
+        const Type &ctor_type = (*ctor)->top()->type();
 
-	if (ctor_type == dods_array_c) {
-	    if( *current ) delete *current ;
-	    *current = (*ctor)->top();
-	    (*ctor)->pop();
+        if (ctor_type == dods_array_c) {
+            if (*current)
+                delete *current;
+            *current = (*ctor)->top();
+            (*ctor)->pop();
 
-	    // Return here to avoid deleting the new value of 'current.'
-	    return;
-	}
+            // Return here to avoid deleting the new value of 'current.'
+            return;
+        }
     }
     else {
-	table.add_var(*current);
+        table.add_var(*current);
     }
 
-    if (*current) 
-	delete *current; 
+    if (*current)
+        delete *current;
     *current = 0;
 }
 

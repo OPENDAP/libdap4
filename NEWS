@@ -1,6 +1,28 @@
-News for version 3.11.1
+News for version 3.11.3
 
-The new DAP3.3 Keywords are supported by the library.
+Changed the return value for dap-config --libs so that it does not contain 
+the curl static libs. This causes problems whenlinking on CentOS 6 in some
+cases.
+
+News for version 3.11.2
+
+The new DAP3.3 Keywords are supported by the library. These are sort
+of a hidden feature of DAP4 that might not be used.
+
+There are many bug fixes in this update; check the ChangeLog or Trac.
+Two notable fixes:
+
+* The way attributes are encoded has changed subtly so that now only
+  spaces are escaped. This fixes a problem with our XML and RDF
+  responses.
+
+* The XML output (i.e., the DDX) is now built using an XML library, so
+  any encoding issues are its fault ;-) But, in a pragmatic sense,
+  this has greatly simplified the library and sets the stage for
+  further simplification of the methods that build responses. The
+  behavior of those methods has not changed.
+
+News for version 3.11.1
 
 Merge of the Hyrax 3.6.2 fixes.
 

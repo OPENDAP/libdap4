@@ -91,6 +91,9 @@ const string c_default_dap32_schema_location = "http://xml.opendap.org/dap/dap3.
 const string c_dap20_namespace = "http://xml.opendap.org/ns/DAP2";
 const string c_dap32_namespace = "http://xml.opendap.org/ns/DAP/3.2#";
 
+const string c_dap_20_n_sl = c_dap20_namespace + " " + c_default_dap20_schema_location;
+const string c_dap_32_n_sl = c_dap32_namespace + " " + c_default_dap32_schema_location;
+
 const string grddl_transformation_dap32 = "http://xml.opendap.org/transforms/ddxToRdfTriples.xsl";
 
 const string c_xml_namespace = "http://www.w3.org/XML/1998/namespace";
@@ -464,30 +467,50 @@ DDS::get_request_size(bool constrained)
     \e bt and adds the result to this DDS.
     @note The copy will not copy data values.
     @param bt Source variable. */
-void
-DDS::add_var(BaseType *bt)
-{
+void DDS::add_var(BaseType *bt) {
     if (!bt)
-        throw InternalErr(__FILE__, __LINE__,
-                          "Trying to add a BaseType object with a NULL pointer.");
+        throw InternalErr(__FILE__, __LINE__, "Trying to add a BaseType object with a NULL pointer.");
 
     DBG2(cerr << "In DDS::add_var(), bt's address is: " << bt << endl);
 
     BaseType *btp = bt->ptr_duplicate();
     DBG2(cerr << "In DDS::add_var(), btp's address is: " << btp << endl);
-    if( d_container )
-    {
+    if (d_container) {
         // Mem leak fix [mjohnson nov 2009]
         // Structure::add_var() creates ANOTHER copy.
-	d_container->add_var( bt ) ;
-	// So we need to delete btp or else it leaks
-	delete btp; btp = 0;
+        d_container->add_var(bt);
+        // So we need to delete btp or else it leaks
+        delete btp;
+        btp = 0;
     }
-    else
-    {
-	vars.push_back(btp);
+    else {
+        vars.push_back(btp);
     }
 }
+
+/** @brief Adds the variable to the DDS.
+    @param bt Source variable. */
+void DDS::add_var_nocopy(BaseType *bt) {
+    if (!bt)
+        throw InternalErr(__FILE__, __LINE__, "Trying to add a BaseType object with a NULL pointer.");
+
+    DBG2(cerr << "In DDS::add_var(), bt's address is: " << bt << endl);
+
+    BaseType *btp = bt->ptr_duplicate();
+    DBG2(cerr << "In DDS::add_var(), btp's address is: " << btp << endl);
+    if (d_container) {
+        // Mem leak fix [mjohnson nov 2009]
+        // Structure::add_var() creates ANOTHER copy.
+        d_container->add_var(bt);
+        // So we need to delete btp or else it leaks
+        delete btp;
+        btp = 0;
+    }
+    else {
+        vars.push_back(btp);
+    }
+}
+
 
 /** Remove the named variable from the DDS. This method is not smart about
     looking up names. The variable must exist at the top level of the DDS and
@@ -698,6 +721,29 @@ BaseType *
 DDS::get_var_index(int i)
 {
     return *(vars.begin() + i);
+}
+
+/** Insert a copy of the BaseType before the position given.
+ * @param i The iterator that marks the position
+ * @param ptr The BaseType object to copy and insert
+ */
+void
+DDS::insert_var(Vars_iter i, BaseType *ptr)
+{
+    vars.insert(i, ptr->ptr_duplicate());
+}
+
+/** Insert the BaseType before the position given.
+ * @note Does not copy the BaseType object - that caller must not
+ * free the inserted object's pointer. This object will, however,
+ * delete the pointer when it is deleted.
+ * @param i The iterator that marks the position
+ * @param ptr The BaseType object to insert
+ */
+void
+DDS::insert_var_nocopy(Vars_iter i, BaseType *ptr)
+{
+    vars.insert(i, ptr);
 }
 
 /** @brief Returns the number of variables in the DDS. */
@@ -945,10 +991,18 @@ public:
     @param constrained True if the output should be limited to just those
     variables that are in the projection of the current constraint
     expression.
-    @param blob The dataBLOB href. */
+    @param blob The dataBLOB href.
+    @deprecated */
 void
 DDS::print_xml(FILE *out, bool constrained, const string &blob)
 {
+    ostringstream oss;
+    print_xml_writer(oss, constrained, blob);
+
+    string doc = oss.str();
+    fwrite(doc.data(), 1, doc.length(), out);
+
+#if 0
     fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
     fprintf(out, "<Dataset name=\"%s\"\n", id2xml(name).c_str());
@@ -995,6 +1049,7 @@ DDS::print_xml(FILE *out, bool constrained, const string &blob)
 
 
     fprintf(out, "</Dataset>\n");
+#endif
 }
 #endif
 
@@ -1021,10 +1076,14 @@ public:
     @param constrained True if the output should be limited to just those
     variables that are in the projection of the current constraint
     expression.
-    @param blob The dataBLOB href. */
+    @param blob The dataBLOB href.
+    @deprecated */
 void
 DDS::print_xml(ostream &out, bool constrained, const string &blob)
 {
+    print_xml_writer(out, constrained, blob);
+
+#if 0
     out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" ;
 
     out << "<Dataset name=\"" << id2xml(name) << "\"\n" ;
@@ -1077,12 +1136,110 @@ DDS::print_xml(ostream &out, bool constrained, const string &blob)
         out << "    <dataBLOB href=\"\"/>\n" ;
     }
     else if (!blob.empty()
-	     && (get_dap_major() == 3 && get_dap_minor() >= 2)
-	     || get_dap_major() >= 4) {
-	out << "    <blob href=\"cid:" << blob << "\"/>\n";
+         && (get_dap_major() == 3 && get_dap_minor() >= 2)
+         || get_dap_major() >= 4) {
+    out << "    <blob href=\"cid:" << blob << "\"/>\n";
     }
 
     out << "</Dataset>\n" ;
+#endif
+}
+
+class VariablePrintXMLWriter : public unary_function<BaseType *, void>
+{
+    XMLWriter &d_xml;
+    bool d_constrained;
+public:
+    VariablePrintXMLWriter(XMLWriter &xml, bool constrained)
+            : d_xml(xml), d_constrained(constrained)
+    {}
+    void operator()(BaseType *bt)
+    {
+        bt->print_xml_writer(d_xml, d_constrained);
+    }
+};
+
+
+void
+DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
+{
+    XMLWriter xml("    ");
+
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dataset") < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write Dataset element");
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name.c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xsi", (const xmlChar*)"http://www.w3.org/2001/XMLSchema-instance") < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+
+    // Are we responding to a 3.2 or 2.0 client? We will have to improve on
+    // this at some point... jhrg
+    if (get_dap_major() == 3 && get_dap_minor() == 2) {
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xsi:schemaLocation", (const xmlChar*)c_dap_32_n_sl.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:schemaLocation");
+
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:grddl", (const xmlChar*)"http://www.w3.org/2003/g/data-view#") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:grddl");
+
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "grddl:transformation", (const xmlChar*)grddl_transformation_dap32.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:transformation");
+
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns", (const xmlChar*)c_dap32_namespace.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:dap", (const xmlChar*)c_dap32_namespace.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:dap");
+
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "dapVersion", (const xmlChar*)"3.2") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dapVersion");
+
+        if (!get_request_xml_base().empty()) {
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xml", (const xmlChar*)c_xml_namespace.c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xml");
+
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xml:base", (const xmlChar*)get_request_xml_base().c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xml:base");
+        }
+    }
+    else {
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns", (const xmlChar*)c_dap20_namespace.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
+
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xsi:schemaLocation", (const xmlChar*)c_dap_20_n_sl.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:schemaLocation");
+    }
+
+    // Print the global attributes
+    d_attr.print_xml_writer(xml);
+
+    // Print each variable
+    for_each(var_begin(), var_end(), VariablePrintXMLWriter(xml, constrained));
+
+    // Only print this for the 2.0, 3.0 and 3.1 versions - which are essentially
+    // the same.
+    // For DAP 3.2 and greater, use the new syntax and value. The 'blob' is
+    // actually the CID of the MIME part that holds the data.
+    if (get_dap_major() == 2 && get_dap_minor() == 0) {
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "dataBLOB") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write dataBLOB element");
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "href", (const xmlChar*)"") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not end dataBLOB element");
+    }
+    else if (!blob.empty() && (get_dap_major() == 3 && get_dap_minor() >= 2)  || get_dap_major() >= 4) {
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "blob") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write blob element");
+        string cid="cid:" + blob;
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "href", (const xmlChar*)cid.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not end blob element");
+    }
+
+    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not end Dataset element");
+
+    out << xml.get_doc();// << ends;// << endl;
 }
 
 // Used by DDS::send() when returning data from a function call.

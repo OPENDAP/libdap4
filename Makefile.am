@@ -7,9 +7,7 @@ aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU
-#-DCHECKSUMS
-# -DCHECKSUMS_AND_DATA Not used?
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
 # -I$(top_srcdir)/xstream
 AM_CXXFLAGS = 
 if COMPILER_IS_GCC
@@ -39,18 +37,26 @@ bin_PROGRAMS = getdap
 
 # sbin_PROGRAMS = deflate
 
-BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
+BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1
+
+man_MANS = getdap.1 dap-config.1
+
+%.1: %.man1
+	groff -t -e -mandoc -Tascii $< | col -bx > $@
 
 libparsers_la_SOURCES = $(GRAM_SRC) 
+libparsers_la_CPPFLAGS = $(AM_CPPFLAGS) #$(XML2_CFLAGS)
+libparsers_la_LIBADD = $(XML2_LIBS)
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC) 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
-libdap_la_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
+libdap_la_CPPFLAGS = $(AM_CPPFLAGS) #$(XML2_CFLAGS)
 libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) -lcrypto gl/libgnu.la libparsers.la
 
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
-libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS) $(XML2_CFLAGS)
+#libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS) $(XML2_CFLAGS)
+libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
 
 libdapserver_la_SOURCES = $(SERVER_SRC)
@@ -73,14 +79,16 @@ LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex \
 EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
 	VCPP dods-datatypes-static.h xdr-datatypes-static.h \
-	dap-config-pkgconfig $(LEX_YACC_EXTRA) $(GRAM_SRC) OSX_Resources
+	dap-config-pkgconfig $(LEX_YACC_EXTRA) $(GRAM_SRC) OSX_Resources \
+	getdap.man1 dap-config.man1
 
 # README.AIS xstream/README 
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
-CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h
+CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h \
+    xdr-datatypes.h getdap.1 dap-config.1
 
 # Not nearly as clean as it could be, but this removes .svn directories
 # in subdirs.
@@ -228,7 +236,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	ConstraintEvaluator.cc ArrayGeoConstraint.cc DapIndent.cc	\
 	Operators.h XDRUtils.cc XDRFileMarshaller.cc			\
 	XDRFileUnMarshaller.cc XDRStreamMarshaller.cc			\
-	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc
+	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc
 
 Operators.h: ce_expr.tab.hh
 
@@ -252,7 +260,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	ce_parser.h DapIndent.h DapObj.h XDRFileMarshaller.h		\
 	Marshaller.h XDRFileUnMarshaller.h UnMarshaller.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
-	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h
+	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h 
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h
@@ -268,7 +276,7 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		\
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		\
 	Response.h HTTPResponse.h HTTPCacheResponse.h PipeResponse.h	\
 	StdinResponse.h SignalHandlerRegisteredErr.h			\
-	ResponseTooBigErr.h Resource.h HTTPCacheTable.h
+	ResponseTooBigErr.h Resource.h HTTPCacheTable.h HTTPCacheMacros.h
 
 SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h	\
 	ResponseBuilder.h

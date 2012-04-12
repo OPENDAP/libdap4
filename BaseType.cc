@@ -938,7 +938,8 @@ BaseType::print_decl(ostream &out, string space, bool print_semi,
     @param out Destination.
     @param space Use this to indent child declarations. Default is "".
     @param constrained If true, only print this if it's part part of the
-    current projection. Default is False. */
+    current projection. Default is False.
+    @deprecated */
 void
 BaseType::print_xml(FILE *out, string space, bool constrained)
 {
@@ -966,7 +967,8 @@ BaseType::print_xml(FILE *out, string space, bool constrained)
     @param out Destination output stream
     @param space Use this to indent child declarations. Default is "".
     @param constrained If true, only print this if it's part part of the
-    current projection. Default is False. */
+    current projection. Default is False.
+    @deprecated */
 void
 BaseType::print_xml(ostream &out, string space, bool constrained)
 {
@@ -975,17 +977,44 @@ BaseType::print_xml(ostream &out, string space, bool constrained)
 
     out << space << "<" << type_name() ;
     if (!_name.empty())
-	out << " name=\"" << id2xml(_name) << "\"" ;
+    out << " name=\"" << id2xml(_name) << "\"" ;
 
     if (get_attr_table().get_size() > 0) {
-	out << ">\n" ;
+    out << ">\n" ;
         get_attr_table().print_xml(out, space + "    ", constrained);
         // After attributes, print closing tag
-	out << space << "</" << type_name() << ">\n" ;
+    out << space << "</" << type_name() << ">\n" ;
     }
     else {
-	out << "/>\n" ;
+    out << "/>\n" ;
     }
+}
+
+/** Write the XML representation of this variable. This method is used to
+    build the DDX XML response.
+    @param out Destination output stream
+    @param space Use this to indent child declarations. Default is "".
+    @param constrained If true, only print this if it's part part of the
+    current projection. Default is False. */
+void
+BaseType::print_xml_writer(XMLWriter &xml, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)type_name().c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write " + type_name() + " element");
+
+    if (!_name.empty())
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)_name.c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+    if (get_attr_table().get_size() > 0)
+        get_attr_table().print_xml_writer(xml);
+
+    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
+
 }
 
 // Compares the object's current state with the semantics of a particular

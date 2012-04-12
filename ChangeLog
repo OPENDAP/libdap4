@@ -1,3 +1,224 @@
+2012-02-07  James Gallagher <jgallagher@opendap.org>
+
+	Removed the static curl libs from dap-config.
+
+2012-01-17  James Gallagher <jgallagher@opendap.org>
+
+	News was updated.
+
+	M    NEWS
+
+2012-01-10  James Gallagher <jgallagher@opendap.org>
+
+	Update for Hyrax 1.8 release.
+
+	M    ChangeLog
+	M    tests/package.m4
+	M    INSTALL
+	M    README
+	M    NEWS
+
+2012-01-04  James Gallagher <jgallagher@opendap.org>
+
+	version number bump in NEWS
+
+2011-12-30  James Gallagher <jgallagher@opendap.org>
+
+	Bumped up the versions in libdap to 3.11.2. Not sure if this will
+	be the version number we use for the release.
+
+2011-12-30  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the rpm build; included the man page stuff.
+
+	M    libdap.spec
+
+2011-12-30  James Gallagher <jgallagher@opendap.org>
+
+	Added HTTPCacheMacros.h
+
+2011-12-29  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for distcheck given the new man pages
+
+	M    Makefile.am
+
+2011-12-29  James Gallagher <jgallagher@opendap.org>
+
+	Added man pages for getdap and dap-config
+
+	M    Makefile.am
+	A    getdap.man1
+	A    dap-config.man1
+
+2011-12-29  James Gallagher <jgallagher@opendap.org>
+
+	Removed calls to exit(). Fixed the FSF address. Half of ticket 1868.
+
+2011-12-19  James Gallagher <jgallagher@opendap.org>
+
+	comment fixes
+
+2011-11-30  James Gallagher <jgallagher@opendap.org>
+
+	Formatting, Spelling and an error message's text fixed.
+
+2011-11-30  James Gallagher <jgallagher@opendap.org>
+
+	Fix for Fedora builds; the extra newlines in these baseline files are
+	likely breaking the tests
+
+	M    tests/expr-testsuite/test.6b.base
+	M    tests/expr-testsuite/test.5e.base
+
+2011-11-23  Patrick West <pwest@ucar.edu>
+
+	With HTTPConnect including CURL headers, added CURL_CFLAGS to the
+	--cflags option M dap-config.in
+
+2011-11-23  Patrick West <pwest@ucar.edu>
+
+	CURL_CFLAGS was not being used when compiling tests. Added.
+	M    unit-tests/Makefile.am
+
+2011-11-23  Patrick West <pwest@ucar.edu>
+
+	curl includes were not being included properly. Works if in common
+	place, but not if in custom location. M tests/Makefile.am
+
+2011-11-23  Patrick West <pwest@ucar.edu>
+
+	curl/types.h is deprecated and no longer needed
+	M    HTTPConnect.h
+
+2011-11-16  James Gallagher <jgallagher@opendap.org>
+
+	AttrTable was using id2www() to escape spaces and other characters
+	in attribute names. This was done probably because of the
+	spaces (spaces in the attribute names break the DAP2 DAS object
+	parser), but no matter. It was breaking DAS and DDX objects
+	because names with '%' characters in them were mangled. I replaced
+	id2www and www2id with new functions that encode/decode only
+	spaces. I have not fiddled with the find functions; it's fine to
+	use names with spaces in them with the API, but the printed
+	representation of the DAS will show those spaces as %20.
+	Similarly, when the printed representation is parsed, those %20
+	escape codes are replaced with real spaces. This means that the
+	names in the binary objects and XML representation are correct.
+
+2011-11-15  James Gallagher <jgallagher@opendap.org>
+
+	Fix for ticket 1841 - the xml attribute 'base' in the Dataset root
+	element should have been preceeded by the namespace 'xml'. It is now.
+
+2011-11-13  James Gallagher <jgallagher@opendap.org>
+
+	Fixed, I hope, the problem with the xmlTextWriter code in version
+	2.6 of libxml. I think what was happening was really tripping over
+	an odd feature of the xmlTextWriter API where the TextWriter
+	object has to be freed before the pointer it has been writing to
+	can be used. Actually, I suspect that freeing the object calls the
+	buffer flush function, so calling that would probably work, too. I
+	opted for the call sequence in the only example I can dig up...
+
+2011-11-13  James Gallagher <jgallagher@opendap.org>
+
+	Fix for ticket 1837. The code libxml2 was escaping attributes with
+	with OtherXML, turning them into useless goo. I switched from the
+	...WriteString to ...WriteRaw function for this type of attribute
+	and order was restored.
+
+2011-10-31  Patrick West <pwest@ucar.edu>
+
+	The code was printing a blank line when certain conditions existed.
+	Removed that code.
+	M    DDS.cc
+
+2011-10-26  James Gallagher <jgallagher@opendap.org>
+
+	Updates for the new DDX tests... nearly done
+
+2011-10-24  Patrick West <pwest@ucar.edu>
+
+	Forgot a quote
+	M    dap-config.in
+
+2011-10-24  Patrick West <pwest@ucar.edu>
+
+	Added xml2 includes to cflags
+	M    dap-config.in
+
+2011-10-24  James Gallagher <jgallagher@opendap.org>
+
+	some poking around regarding the DDX/XML bug (1829). Doesn't look
+	like it's in libdap. Some cleanup, though.
+
+2011-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the distcheck target.
+
+	M    unit-tests/dasT.cc
+	M    unit-tests/AISMergeTest.cc
+	M    unit-tests/MIMEUtilTest.cc
+	M    unit-tests/ddsT.cc
+	M    unit-tests/ByteTest.cc
+	M    unit-tests/Makefile.am
+
+2011-10-24  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Fixed problems with libxml dependencies.
+
+2011-10-21  James Gallagher <jgallagher@opendap.org>
+
+	Added testFle.h in unit-tests
+
+2011-10-21  James Gallagher <jgallagher@opendap.org>
+
+	Added libparsers_la_CPPFLAGS so that -I for libxml2 will be used
+	when building the grammar files (really only needed for the DAS
+	stuff?). Also fixed minor warning in HTTPCache where a File* could
+	be used uninitialized.
+
+	M    Makefile.am
+	M    HTTPCache.cc
+
+2011-10-21  James Gallagher <jgallagher@opendap.org>
+
+	I added a new method to DDS that can insert a variable anywhere in
+	the DDS. I also added 'nocopy' versions of the new insert_var()
+	method and the older ad_var() method. Once the ncml handler
+	stabilizes, we can start using those methods to boost performance.
+	Lastly, I forgot to add the new XMLWriter class on the last
+	commit,
+
+2011-10-12  James Gallagher <jgallagher@opendap.org>
+
+	I added a new method to BaseType, DDS and DAS: print_xml_writer()
+	that takes a XMLWriter object and uses libxml2's xml writer API to
+	build the DDX response. This should fix all of our woes WRT xml
+	encoding. The new method is called by the DDS::print_xml method
+	although it could be used in place of that method since it has the
+	same parameters. I added tests and, in the course of that,
+	modified the way some of the tests are done (using files instead
+	of string variables for the regexs). I also tried adding some
+	globbing functions to the util.cc file but those proved less than
+	totally useful - I've left them there all the same.
+
+2011-09-23  James Gallagher <jgallagher@opendap.org>
+
+	Fix for the unit test of get_request_size(). For this function,
+	different compilers return different values for sizeof(string) so
+	I made the unit test an OR of two values. Fixed here on the branch
+	and on the trunk.
+
+	M    unit-tests/DDSTest.cc
+
+2011-09-21  James Gallagher <jgallagher@opendap.org>
+
+	Hyrax 1.8
+
+	A    http://scm.opendap.org/svn/branch/libdap/3.11.2
+
 2011-09-13  James Gallagher <jgallagher@opendap.org>
 
 	Refactor - no change to the ABI.
@@ -45,9 +266,6 @@
 
 	Added --with-curl and --with-xml2 to configure.
 
-;; Local Variables:
-;; coding: utf-8
-;; End:
 2011-04-25  James Gallagher <jgallagher@opendap.org>
 
 	Removed doc rpm - this breaks when the build hosts lacks dot or
@@ -7490,10 +7708,10 @@
 2001-07-27  James Gallagher  <jimg@dcz.dods.org>
 
 	* New escaping semantics. The DAP library now supports escaping
-	names. Servers (and clients) no longer need to escaping characters
+	names. Servers (and clients) no longer need to escape characters
 	themselves. The functions used to escape characters have been
 	changed, too. The old functions escaped chars that could not be
-	included in a DAP URL. The new function only escape chars that
+	included in a DAP URL. The new functions only escape chars that
 	cannot be present in a URI as defined by RFC 2396 (``Uniform
 	Resource Identifiers (URI): Generic Syntax''). The DAP's scanners
 	and parsers have been expanded so that many more characters are

@@ -11,7 +11,7 @@
 #endif
 #include <fcntl.h>
 
-// #define DODS_DEBUG 1
+//#define DODS_DEBUG 1
 
 #include <iostream>
 #include <fstream>
@@ -1125,7 +1125,7 @@ public:
             string cs = sm.get_checksum();
 
             DBG(cerr << cs << endl);
-            CPPUNIT_ASSERT(cs == "7d86b1be027b7452a2479b2dc9b63809");
+            CPPUNIT_ASSERT(cs == "d0c837cf518882338dceb7e7428e2cd1");
         }
         catch( Error &e ) {
             string err = "failed:" + e.get_error_message();

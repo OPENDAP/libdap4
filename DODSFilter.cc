@@ -286,8 +286,11 @@ DODSFilter::process_options(int argc, char *argv[])
             d_if_modified_since
             = static_cast<time_t>(strtol(getopt.optarg, NULL, 10));
             break;
-        case 'h': print_usage(); exit(1);
-        default: print_usage(); // Throws Error
+        case 'h': print_usage(); // exit(1);
+                                 // Removed 12/29/2011; exit should
+                                 // not be called by a library. NB:
+                                 // print_usage() throws Error.
+        default: print_usage();  // Throws Error
         }
     }
 
@@ -666,7 +669,7 @@ DODSFilter::print_usage() const
     // Write a message to the WWW server error log file.
     ErrMsgT(usage.c_str());
 
-    throw Error(unknown_error, emessage);
+    throw Error(emessage);
 }
 
 /** This function formats and sends to stdout version

@@ -50,6 +50,7 @@
 #endif
 #include "HTTPCacheInterruptHandler.h"
 #include "HTTPCacheTable.h"
+#include "HTTPCacheMacros.h"
 
 #include "util_mit.h"
 #include "debug.h"
@@ -135,15 +136,15 @@ delete_cache_entry(HTTPCacheTable::CacheEntry *e)
 HTTPCacheTable::~HTTPCacheTable()
 {
     for (int i = 0; i < CACHE_TABLE_SIZE; ++i) {
-	HTTPCacheTable::CacheEntries *cp = get_cache_table()[i];
-	if (cp) {
-	    // delete each entry
-	    for_each(cp->begin(), cp->end(), delete_cache_entry);
+        HTTPCacheTable::CacheEntries *cp = get_cache_table()[i];
+        if (cp) {
+            // delete each entry
+            for_each(cp->begin(), cp->end(), delete_cache_entry);
 
-	    // now delete the vector that held the entries
-	    delete get_cache_table()[i];
-	    get_cache_table()[i] = 0;
-	}
+            // now delete the vector that held the entries
+            delete get_cache_table()[i];
+            get_cache_table()[i] = 0;
+        }
     }
 
     delete[] d_cache_table;
@@ -281,7 +282,7 @@ HTTPCacheTable::cache_index_delete()
 {
 	d_new_entries = 0;
 	
-    return (REMOVE(d_cache_index.c_str()) == 0);
+    return (REMOVE_BOOL(d_cache_index.c_str()) == 0);
 }
 
 /** Read the saved set of cached entries from disk. Consistency between the

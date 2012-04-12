@@ -14,7 +14,7 @@
 
 #include "DAS.h"
 
-#include "testFile.cc"
+#include "testFile.h"
 
 using namespace std;
 using namespace libdap;

@@ -465,6 +465,82 @@ Grid::add_var(BaseType *bt, Part part)
   }
 }
 
+/** Add an array or map to the Grid.
+
+    @note The original version of this method required that the \c part parameter
+    be present. However, this complicates using the class from a parser
+    (e.g., the schema-based XML parser). I have modified the method so that
+    if \c part is nil (the default), then the first variable added is the
+    array and subsequent variables are maps. This matches the behavior in the
+    Java DAP implementation.
+
+    @note This version of the method does not the BaseType before adding it.
+    The caller must not free the BaseType object.
+
+    @param bt Array or Map variable
+    @param part is this an array or a map. If not present, first \c bt is the
+    array and subsequent <tt>bt</tt>s are maps. */
+void
+Grid::add_var_nocopy(BaseType *bt, Part part)
+{
+    if (!bt) {
+        throw InternalErr(__FILE__, __LINE__,
+                          "Passing NULL pointer as variable to be added.");
+    }
+
+    if (part == array && _array_var) {
+      // Avoid leaking memory...  Function is add, not set, so it is an error to call again for the array part.
+      throw InternalErr(__FILE__, __LINE__, "Error: Grid::add_var called with part==Array, but the array was already set!");
+    }
+
+    bt->set_parent(this);
+
+    switch (part) {
+
+    case array: {
+        // Refactored to use new set_array ([mjohnson 11 nov 2009])
+        Array* p_arr = dynamic_cast<Array*>(bt);
+        // avoid obvious broken semantics
+        if (!p_arr) {
+          throw InternalErr(__FILE__, __LINE__,
+              "Grid::add_var(): with Part==array: object is not an Array!");
+        }
+        set_array(static_cast<Array*>(bt));
+    }
+    break;
+
+    case maps: {
+            //bt->set_parent(this);
+            _map_vars.push_back(bt);
+        }
+    break;
+
+    default: {
+        if (!_array_var) {
+            // Refactored to use new set_array ([mjohnson 11 nov 2009])
+            Array* p_arr = dynamic_cast<Array*>(bt);
+            // avoid obvious broken semantics
+            if (!p_arr) {
+              throw InternalErr(__FILE__, __LINE__,
+                  "Grid::add_var(): with Part==array: object is not an Array!");
+            }
+            set_array(static_cast<Array*>(bt));
+        }
+        else {
+            _map_vars.push_back(bt);
+        }
+    }
+    break;
+  }// switch
+
+  // if we get here without exception, add the cloned object to the superclass variable iterator
+  // mjohnson 10 Sep 2009
+  // Add it to the superclass _vars list so we can iterate on superclass vars
+  if (bt) {
+    _vars.push_back(bt);
+  }
+}
+
 /**
  * Set the Array part of the Grid to point to the memory
  * p_new_arr.  Grid takes control of the memory (no copy
@@ -899,6 +975,9 @@ public:
     }
 };
 
+/**
+ * @deprecated
+ */
 void
 Grid::print_xml(FILE *out, string space, bool constrained)
 {
@@ -962,6 +1041,9 @@ public:
     }
 };
 
+/**
+ * @deprecated
+ */
 void
 Grid::print_xml(ostream &out, string space, bool constrained)
 {
@@ -1001,6 +1083,72 @@ Grid::print_xml(ostream &out, string space, bool constrained)
                  PrintMapFieldStrm(out, space + "    ", constrained));
 
         out << space << "</Grid>\n" ;
+    }
+}
+
+
+class PrintGridFieldXMLWriter : public unary_function<BaseType *, void>
+{
+    XMLWriter &d_xml;
+    bool d_constrained;
+    string d_tag;
+public:
+    PrintGridFieldXMLWriter(XMLWriter &x, bool c, const string &t = "Map")
+            : d_xml(x), d_constrained(c), d_tag(t)
+    {}
+
+    void operator()(BaseType *btp)
+    {
+        Array *a = dynamic_cast<Array*>(btp);
+        if (!a)
+            throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
+        a->print_xml_writer_core(d_xml, d_constrained, d_tag);
+    }
+};
+
+void
+Grid::print_xml_writer(XMLWriter &xml, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    if (constrained && !projection_yields_grid()) {
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)"Structure") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write Structure element");
+
+        if (!name().empty())
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+        get_attr_table().print_xml_writer(xml);
+
+        get_array()->print_xml_writer(xml, constrained);
+
+        for_each(map_begin(), map_end(),
+                 PrintGridFieldXMLWriter(xml, constrained, "Array"));
+
+        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not end Structure element");
+    }
+    else {
+        // The number of elements in the (projected) Grid must be such that
+        // we have a valid Grid object; send it as such.
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)"Grid") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write Grid element");
+
+        if (!name().empty())
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+        get_attr_table().print_xml_writer(xml);
+
+        get_array()->print_xml_writer(xml, constrained);
+
+        for_each(map_begin(), map_end(),
+                 PrintGridFieldXMLWriter(xml, constrained, "Map"));
+
+        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not end Grid element");
     }
 }
 

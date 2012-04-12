@@ -7,7 +7,7 @@ AUTOMAKE_OPTIONS = foreign
 
 # Headers in 'tests' are used by the arrayT unit tests.
 
-AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests $(CURL_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests $(CURL_CFLAGS) $(XML2_CFLAGS)
 AM_LDADD =
 if CPPUNIT
 AM_CPPFLAGS += $(CPPUNIT_CFLAGS)
@@ -31,7 +31,7 @@ DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
 	rcreader-testsuite server-testsuite cgi-util-tests	\
 	ce-functions-testsuite
 
-EXTRA_DIST = $(DIRS_EXTRA) testFile.cc test_config.h.in
+EXTRA_DIST = $(DIRS_EXTRA) testFile.cc testFile.h test_config.h.in
 
 CLEANFILES = testout .dodsrc  *.gcda *.gcno
 
@@ -68,16 +68,17 @@ check-local:
 	@echo ""
 endif
 
+TEST_SRC = testFile.cc testFile.h
 RegexTest_SOURCES = RegexTest.cc
 RegexTest_LDADD = ../libdap.la $(AM_LDADD)
 
 ArrayTest_SOURCES = ArrayTest.cc
 ArrayTest_LDADD = ../libdap.la $(AM_LDADD)
 
-AttrTableTest_SOURCES = AttrTableTest.cc
+AttrTableTest_SOURCES = AttrTableTest.cc $(TEST_SRC)
 AttrTableTest_LDADD = ../libdap.la $(AM_LDADD)
 
-ByteTest_SOURCES = ByteTest.cc
+ByteTest_SOURCES = ByteTest.cc $(TEST_SRC)
 ByteTest_LDADD = ../libdap.la $(AM_LDADD)
 
 MIMEUtilTest_SOURCES = MIMEUtilTest.cc
@@ -89,18 +90,18 @@ ancT_LDADD = ../libdapserver.la ../libdap.la $(AM_LDADD)
 DASTest_SOURCES = DASTest.cc
 DASTest_LDADD = ../libdap.la $(AM_LDADD)
 
-DDSTest_SOURCES = DDSTest.cc
+DDSTest_SOURCES = DDSTest.cc $(TEST_SRC)
 DDSTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DDXParserTest_SOURCES = DDXParserTest.cc
 DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 DDXParserTest_LDADD = ../libdap.la $(AM_LDADD)
 
-DODSFilterTest_SOURCES = DODSFilterTest.cc
+DODSFilterTest_SOURCES = DODSFilterTest.cc $(TEST_SRC)
 DODSFilterTest_LDADD = ../libdapserver.la ../libdap.la \
 	../tests/libtest-types.a $(AM_LDADD)
 
-ResponseBuilderTest_SOURCES = ResponseBuilderTest.cc
+ResponseBuilderTest_SOURCES = ResponseBuilderTest.cc $(TEST_SRC)
 ResponseBuilderTest_LDADD = ../libdapserver.la ../libdap.la \
 	../tests/libtest-types.a $(AM_LDADD)
 
@@ -111,9 +112,11 @@ generalUtilTest_SOURCES = generalUtilTest.cc
 generalUtilTest_LDADD = ../libdap.la $(AM_LDADD)
 
 HTTPCacheTest_SOURCES = HTTPCacheTest.cc
+HTTPCacheTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 HTTPCacheTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
 
 HTTPConnectTest_SOURCES = HTTPConnectTest.cc
+HTTPConnectTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 HTTPConnectTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
 
 parserUtilTest_SOURCES = parserUtilTest.cc
@@ -146,10 +149,10 @@ structT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 sequenceT_SOURCES = sequenceT.cc
 sequenceT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
-ddsT_SOURCES = ddsT.cc
+ddsT_SOURCES = ddsT.cc $(TEST_SRC)
 ddsT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
-dasT_SOURCES = dasT.cc
+dasT_SOURCES = dasT.cc $(TEST_SRC)
 dasT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
 CEFunctionsTest_SOURCES = CEFunctionsTest.cc

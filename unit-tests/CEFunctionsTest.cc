@@ -347,7 +347,7 @@ public:
 
             BaseType *btp = 0;
             function_grid(2, argv, *dds, &btp);
-            Grid &g = dynamic_cast<Grid&>(*btp);
+            //Grid &g = dynamic_cast<Grid&>(*btp);
 
             // function_grid(2, argv, *dds);
 
@@ -373,7 +373,7 @@ public:
 
             BaseType *btp = 0;
             function_grid(2, argv, *dds, &btp);
-            Grid &g = dynamic_cast<Grid&>(*btp);
+            //Grid &g = dynamic_cast<Grid&>(*btp);
 
             // function_grid(2, argv, *dds);
 

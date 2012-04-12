@@ -36,7 +36,7 @@
 #include "util.h"
 #include "debug.h"
 
-#include "testFile.cc"
+#include "testFile.h"
 
 using namespace std;
 using namespace libdap;

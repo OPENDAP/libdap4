@@ -46,8 +46,6 @@
 #include "debug.h"
 #include <test_config.h>
 
-//#include "testFile.cc"
-
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;

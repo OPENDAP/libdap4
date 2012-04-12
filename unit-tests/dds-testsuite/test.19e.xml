@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset name="test.19e" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xml.opendap.org/ns/DAP2" xsi:schemaLocation="http://xml.opendap.org/ns/DAP2 http://xml.opendap.org/dap/dap2.xsd">
+    <Float64 name="c d">
+        <Attribute name="long_name" type="String">
+            <value>c d with a WWW escape sequence</value>
+        </Attribute>
+        <Attribute name="sub" type="Container">
+            <Attribute name="about" type="String">
+                <value>Attributes inside attributes</value>
+            </Attribute>
+            <Attribute name="pi" type="Float64">
+                <value>3.1415</value>
+            </Attribute>
+        </Attribute>
+    </Float64>
+    <dataBLOB href=""/>
+</Dataset>

@@ -76,7 +76,6 @@ static char rcsid[] not_used =
 #include "GNURegex.h"
 #include "debug.h"
 
-
 using namespace std;
 
 namespace libdap {
@@ -509,6 +508,198 @@ file_to_string(FILE *fp)
     while (fread(&c, 1, 1, fp))
         oss << c;
     return oss.str();
+}
+
+int
+wildcmp(const char *wild, const char *string)
+{
+  // Written by Jack Handy - jakkhandy@hotmail.com
+
+  if (!wild || !string)
+      return 0;
+
+  const char *cp = NULL, *mp = NULL;
+
+  while ((*string) && (*wild != '*')) {
+    if ((*wild != *string) && (*wild != '?')) {
+      return 0;
+    }
+    wild++;
+    string++;
+  }
+
+  while (*string) {
+    if (*wild == '*') {
+      if (!*++wild) {
+        return 1;
+      }
+      mp = wild;
+      cp = string+1;
+    } else if ((*wild == *string) || (*wild == '?')) {
+      wild++;
+      string++;
+    } else {
+      wild = mp;
+      string = cp++;
+    }
+  }
+
+  while (*wild == '*') {
+    wild++;
+  }
+  return !*wild;
+}
+
+#define CHECK_BIT( tab, bit ) ( tab[ (bit)/8 ] & (1<<( (bit)%8 )) )
+#define BITLISTSIZE 16 /* bytes used for [chars] in compiled expr */
+
+static void globchars( const char *s, const char *e, char *b );
+
+/*
+ * glob:  match a string against a simple pattern
+ *
+ * Understands the following patterns:
+ *
+ *  *   any number of characters
+ *  ?   any single character
+ *  [a-z]   any single character in the range a-z
+ *  [^a-z]  any single character not in the range a-z
+ *  \x  match x
+ *
+ * @param c The pattern
+ * @param s The string
+ * @return 0 on success, -1 if the pattern is exhausted but there are
+ * characters remaining in the string and 1 if the pattern does not match
+ */
+
+int
+glob(const char *c, const char *s)
+{
+    if (!c || !s)
+        return 1;
+
+    char bitlist[BITLISTSIZE];
+    int i = 0;
+    for (;;) {
+        ++i;
+        switch (*c++) {
+        case '\0':
+            return *s ? -1 : 0;
+
+        case '?':
+            if (!*s++)
+                return i/*1*/;
+            break;
+
+        case '[': {
+            /* scan for matching ] */
+
+            const char *here = c;
+            do {
+                if (!*c++)
+                    return i/*1*/;
+            } while (here == c || *c != ']');
+            c++;
+
+            /* build character class bitlist */
+
+            globchars(here, c, bitlist);
+
+            if (!CHECK_BIT( bitlist, *(unsigned char *)s ))
+                return i/*1*/;
+            s++;
+            break;
+        }
+
+        case '*': {
+            const char *here = s;
+
+            while (*s)
+                s++;
+
+            /* Try to match the rest of the pattern in a recursive */
+            /* call.  If the match fails we'll back up chars, retrying. */
+
+            while (s != here) {
+                int r;
+
+                /* A fast path for the last token in a pattern */
+
+                r = *c ? glob(c, s) : *s ? -1 : 0;
+
+                if (!r)
+                    return 0;
+                else if (r < 0)
+                    return i/*1*/;
+
+                --s;
+            }
+            break;
+        }
+
+        case '\\':
+            /* Force literal match of next char. */
+
+            if (!*c || *s++ != *c++)
+                return i/*1*/;
+            break;
+
+        default:
+            if (*s++ != c[-1])
+                return i/*1*/;
+            break;
+        }
+    }
+}
+
+/*
+ * globchars() - build a bitlist to check for character group match
+ */
+
+static void globchars(const char *s, const char *e, char *b) {
+    int neg = 0;
+
+    memset(b, '\0', BITLISTSIZE);
+
+    if (*s == '^')
+        neg++, s++;
+
+    while (s < e) {
+        int c;
+
+        if (s + 2 < e && s[1] == '-') {
+            for (c = s[0]; c <= s[2]; c++)
+                b[c / 8] |= (1 << (c % 8));
+            s += 3;
+        }
+        else {
+            c = *s++;
+            b[c / 8] |= (1 << (c % 8));
+        }
+    }
+
+    if (neg) {
+        int i;
+        for (i = 0; i < BITLISTSIZE; i++)
+            b[i] ^= 0377;
+    }
+
+    /* Don't include \0 in either $[chars] or $[^chars] */
+
+    b[0] &= 0376;
+}
+
+int wmatch(const char *pat, const char *s)
+{
+    if (!pat || !s)
+        return 0;
+
+  switch (*pat) {
+    case '\0': return (*s == '\0');
+    case '?': return (*s != '\0') && wmatch(pat+1, s+1);
+    case '*': return wmatch(pat+1, s) || (*s != '\0' && wmatch(pat, s+1));
+    default: return (*s == *pat) && wmatch(pat+1, s+1);
+  }
 }
 
 /** @name Security functions */

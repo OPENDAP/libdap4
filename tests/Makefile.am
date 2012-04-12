@@ -3,7 +3,7 @@
 AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU $(CURL_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU $(XML2_CFLAGS) $(CURL_CFLAGS)
 AM_CXXFLAGS =  
 
 # These are not used by automake but are often useful for certain types of

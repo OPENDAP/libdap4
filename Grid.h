@@ -156,6 +156,7 @@ public:
     virtual BaseType *var(const string &n, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part);
+    virtual void add_var_nocopy(BaseType *bt, Part part);
 
     virtual void set_array(Array* p_new_arr);
     virtual Array* add_map(Array* p_new_map, bool add_copy);
@@ -190,6 +191,7 @@ public:
 
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
+    virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
 
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);

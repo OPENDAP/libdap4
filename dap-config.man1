@@ -1,0 +1,48 @@
+.\" dap-config.1
+.\"
+.\" Created on: Dec 29, 2011
+.\"     Author: jimg
+.TH DAP-CONFIG 1 "December 2011" Linux "User Manuals"
+.SH NAME
+dap-config \- get information about the libdap library
+.SH SYNOPSIS
+.B dap-config [OPTIONS] 
+.SH DESCRIPTION
+.B dap-config
+Get information about the libdap library so that it can be easily used
+in building other software. Option exist to help with build configuration,
+compilation, linking.
+.SH OPTIONS
+Available values for OPTION include:
+
+.IP  --help        
+display a help message and exit
+.IP  --cc          
+C compiler
+.IP  --cxx         
+C++ compiler
+.IP  --cflags      
+pre-processor and compiler flags
+.IP  --libs        
+library linking information for libdap (both clients and servers)
+.IP  --server-libs 
+libraries for servers
+.IP  --client-libs 
+libraries for clients
+.IP  --prefix      
+OPeNDAP install prefix
+.IP  --version     
+Library version
+.SH FILES
+.I none
+.SH ENVIRONMENT
+.I none
+.SH DIAGNOSTICS
+.I none
+.SH BUGS
+The pkg-config tool provides the same information, although it is sometimes
+not available.
+.SH AUTHOR
+James Gallagher <jgallagher at opendap.org>
+.SH "SEE ALSO"
+.BR getdap (1)

@@ -36,7 +36,7 @@
 #include "debug.h"
 #include <test_config.h>
 
-#include "testFile.cc"
+#include "testFile.h"
 
 using namespace CppUnit;
 

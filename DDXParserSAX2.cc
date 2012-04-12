@@ -1122,6 +1122,7 @@ void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid,
 
     int res = fread(chars, 1, 4, in);
     if (res > 0) {
+        chars[4]='\0';
         xmlParserCtxtPtr context =
             xmlCreatePushParserCtxt(NULL, NULL, chars, res, "stream");
 

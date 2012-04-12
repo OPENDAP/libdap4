@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset name="test.19" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xml.opendap.org/ns/DAP2" xsi:schemaLocation="http://xml.opendap.org/ns/DAP2 http://xml.opendap.org/dap/dap2.xsd">
+    <Attribute name="b#c" type="Container">
+        <Attribute name="long_name" type="String">
+            <value>b pound c</value>
+        </Attribute>
+    </Attribute>
+    <Attribute name="b#c_dim_0" type="Container">
+        <Attribute name="add_offset" type="Float64">
+            <value>0.125</value>
+        </Attribute>
+    </Attribute>
+    <Attribute name="huh" type="Container">
+        <Attribute name="long_name" type="String">
+            <value>The Grid huh</value>
+        </Attribute>
+        <Attribute name="colors" type="Container">
+            <Attribute name="long_name2" type="String">
+                <value>The color map vector</value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Image#data" type="Container"/>
+    </Attribute>
+    <Attribute name="huh_dim_0" type="Container">
+        <Attribute name="units" type="String">
+            <value>m/s</value>
+        </Attribute>
+    </Attribute>
+    <Structure name="s">
+        <Array name="b#c">
+            <Int32/>
+            <dimension size="10"/>
+        </Array>
+        <Grid name="huh">
+            <Array name="Image#data">
+                <Byte/>
+                <dimension size="512"/>
+            </Array>
+            <Map name="colors">
+                <String/>
+                <dimension size="512"/>
+            </Map>
+        </Grid>
+    </Structure>
+    <dataBLOB href=""/>
+</Dataset>

@@ -36,14 +36,15 @@
 
 #include "config.h"
 
+#include <algorithm>
+#include <functional>
+#include <sstream>
+
 #include "Array.h"
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
 #include "escaping.h"
-
-#include <algorithm>
-#include <functional>
 
 using namespace std;
 
@@ -611,29 +612,45 @@ Array::print_decl(ostream &out, string space, bool print_semi,
     }
 }
 #if FILE_METHODS
+/**
+ * @deprecated
+ */
 void
 Array::print_xml(FILE *out, string space, bool constrained)
 {
     print_xml_core(out, space, constrained, "Array");
 }
 #endif
+
+/**
+ * @deprecated
+ */
 void
 Array::print_xml(ostream &out, string space, bool constrained)
 {
     print_xml_core(out, space, constrained, "Array");
 }
+
 #if FILE_METHODS
+/**
+ * @deprecated
+ */
 void
 Array::print_as_map_xml(FILE *out, string space, bool constrained)
 {
     print_xml_core(out, space, constrained, "Map");
 }
 #endif
+
+/**
+ * @deprecated
+ */
 void
 Array::print_as_map_xml(ostream &out, string space, bool constrained)
 {
     print_xml_core(out, space, constrained, "Map");
 }
+
 #if FILE_METHODS
 class PrintArrayDim : public unary_function<Array::dimension&, void>
 {
@@ -657,6 +674,9 @@ public:
     }
 };
 
+/**
+ * @deprecated
+ */
 void
 Array::print_xml_core(FILE *out, string space, bool constrained, string tag)
 {
@@ -697,23 +717,26 @@ public:
     {
         int size = d_constrained ? d.c_size : d.size;
         if (d.name.empty())
-	    d_out << d_space << "<dimension size=\"" << size << "\"/>\n" ;
+        d_out << d_space << "<dimension size=\"" << size << "\"/>\n" ;
         else
-	    d_out << d_space << "<dimension name=\"" << id2xml(d.name)
-	          << "\" size=\"" << size << "\"/>\n" ;
+        d_out << d_space << "<dimension name=\"" << id2xml(d.name)
+              << "\" size=\"" << size << "\"/>\n" ;
     }
 };
 
+/**
+ * @deprecated
+ */
 void
 Array::print_xml_core(ostream &out, string space, bool constrained, string tag)
 {
     if (constrained && !send_p())
         return;
 
-    out << space << "<" << tag ;
+    out << space << "<" << tag;
     if (!name().empty())
-	out << " name=\"" << id2xml(name()) << "\"" ;
-    out << ">\n" ;
+        out << " name=\"" << id2xml(name()) << "\"";
+    out << ">\n";
 
     get_attr_table().print_xml(out, space + "    ", constrained);
 
@@ -723,10 +746,74 @@ Array::print_xml_core(ostream &out, string space, bool constrained, string tag)
     btp->print_xml(out, space + "    ", constrained);
     btp->set_name(tmp_name);
 
-    for_each(dim_begin(), dim_end(),
-             PrintArrayDimStrm(out, space + "    ", constrained));
+    for_each(dim_begin(), dim_end(), PrintArrayDimStrm(out, space + "    ", constrained));
 
-    out << space << "</" << tag << ">\n" ;
+    out << space << "</" << tag << ">\n";
+}
+
+void
+Array::print_xml_writer(XMLWriter &xml, bool constrained)
+{
+    print_xml_writer_core(xml, constrained, "Array");
+}
+
+void
+Array::print_as_map_xml_writer(XMLWriter &xml, bool constrained)
+{
+    print_xml_writer_core(xml, constrained, "Map");
+}
+
+class PrintArrayDimXMLWriter : public unary_function<Array::dimension&, void>
+{
+    XMLWriter &xml;
+    bool d_constrained;
+public:
+    PrintArrayDimXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) {}
+
+    void operator()(Array::dimension &d)
+    {
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)"dimension") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write dimension element");
+
+        if (!d.name.empty())
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d.name.c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+        ostringstream size;
+        size << (d_constrained ? d.c_size : d.size);
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "size", (const xmlChar*)size.str().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not end dimension element");
+    }
+};
+
+void
+Array::print_xml_writer_core(XMLWriter &xml, bool constrained, string tag)
+{
+    if (constrained && !send_p())
+        return;
+
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)tag.c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write " + tag + " element");
+
+    if (!name().empty())
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+    get_attr_table().print_xml_writer(xml);
+
+    BaseType *btp = var();
+    string tmp_name = btp->name();
+    btp->set_name("");
+    btp->print_xml_writer(xml, constrained);
+    btp->set_name(tmp_name);
+
+    for_each(dim_begin(), dim_end(), PrintArrayDimXMLWriter(xml, constrained));
+
+    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not end " + tag + " element");
 }
 
 #if FILE_METHODS

@@ -51,6 +51,7 @@
 #include "HTTPCacheInterruptHandler.h"
 #include "HTTPCacheTable.h"
 #include "HTTPCache.h"
+#include "HTTPCacheMacros.h"
 
 #include "util_mit.h"
 #include "debug.h"
@@ -71,36 +72,6 @@ HTTPCache *HTTPCache::_instance = 0;
 static pthread_mutex_t instance_mutex;
 static pthread_once_t once_block = PTHREAD_ONCE_INIT;
 
-#ifdef WIN32
-#include <direct.h>
-#include <time.h>
-#include <fcntl.h>
-#define MKDIR(a,b) _mkdir((a))
-#define UMASK(a) _umask((a))
-#define REMOVE(a) remove((a))
-#define MKSTEMP(a) _open(_mktemp((a)),_O_CREAT,_S_IREAD|_S_IWRITE)
-#define DIR_SEPARATOR_CHAR '\\'
-#define DIR_SEPARATOR_STR "\\"
-#else
-#define MKDIR(a,b) mkdir((a), (b))
-#define UMASK(a) umask((a))
-#define REMOVE(a) remove((a))
-#define MKSTEMP(a) mkstemp((a))
-#define DIR_SEPARATOR_CHAR '/'
-#define DIR_SEPARATOR_STR "/"
-#endif
-
-#ifdef WIN32
-#define CACHE_LOCATION "\\tmp\\"
-#define CACHE_ROOT "dods-cache\\"
-#else
-#define CACHE_LOCATION "/tmp/"
-#define CACHE_ROOT "dods-cache/"
-#endif
-#define CACHE_INDEX ".index"
-#define CACHE_LOCK ".lock"
-#define CACHE_META ".meta"
-//#define CACHE_EMPTY_ETAG "@cache@"
 
 #define NO_LM_EXPIRATION 24*3600 // 24 hours
 
@@ -998,11 +969,15 @@ HTTPCache::write_metadata(const string &cachename, const vector<string> &headers
     for (i = headers.begin(); i != headers.end(); ++i) {
         if (!is_hop_by_hop_header(*i)) {
             int s = fwrite((*i).c_str(), (*i).size(), 1, dest);
-            if (s != 1)
+            if (s != 1) {
+                fclose(dest);
             	throw InternalErr(__FILE__, __LINE__, "could not write header: '" + (*i) + "' " + long_to_string(s));
+            }
             s = fwrite("\n", 1, 1, dest);
-            if (s != 1)
+            if (s != 1) {
+                fclose(dest);
             	throw InternalErr(__FILE__, __LINE__, "could not write header: " + long_to_string(s));
+            }
         }
     }
 
@@ -1487,7 +1462,7 @@ FILE * HTTPCache::get_cached_response(const string &url,
 		vector<string> &headers, string &cacheName) {
     lock_cache_interface();
 
-    FILE *body;
+    FILE *body = 0;
     HTTPCacheTable::CacheEntry *entry = 0;
 
     DBG(cerr << "Getting the cached response for " << url << endl);
@@ -1515,7 +1490,8 @@ FILE * HTTPCache::get_cached_response(const string &url,
     	// Why make this unlock operation conditional on entry?
         if (entry)
         	unlock_cache_interface();
-        fclose(body);
+        if (body != 0)
+            fclose(body);
         throw;
     }
 

@@ -55,19 +55,25 @@ while test $# -gt 0; do
 	;;
 
     --cflags)
-	echo "-I${includedir}/libdap @CURL_CFLAGS@"
+	echo "-I${includedir}/libdap @XML2_CFLAGS@ @CURL_CFLAGS@"
 	;;
 
     --libs)
-       	echo "-L${libdir} -ldap -ldapserver -ldapclient @CURL_STATIC_LIBS@ @XML2_STATIC_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @LIBS@"
+       	echo "-L${libdir} -ldap -ldapserver -ldapclient @CURL_LIBS@ @XML2_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @LIBS@"
+#
+#   Changed CURL_STATIC_LIBS to CURL_LIBS because the former was including a
+#   a boatload of crypto stuff that might or might not be present on a server.
+#   Various handlers use this script to determine which libraries to link with.
+#   jhrg 2/7/12
+#       	echo "-L${libdir} -ldap -ldapserver -ldapclient @CURL_STATIC_LIBS@ @XML2_STATIC_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @LIBS@"
        	;;
 
     --server-libs)
-       	echo "-L${libdir} -ldap -ldapserver @XML2_STATIC_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @LIBS@"
+       	echo "-L${libdir} -ldap -ldapserver @XML2_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @LIBS@"
        	;;
 
     --client-libs)
-       	echo "-L${libdir} -ldap -ldapclient @CURL_STATIC_LIBS@ @XML2_STATIC_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @LIBS@"
+       	echo "-L${libdir} -ldap -ldapclient @CURL_LIBS@ @XML2_STATIC_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @LIBS@"
        	;;
 
     --prefix)

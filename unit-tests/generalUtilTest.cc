@@ -74,9 +74,29 @@ public:
     CPPUNIT_TEST(id2xml_test);
     CPPUNIT_TEST(xml2id_test);
 
+    CPPUNIT_TEST(glob_test_1);
+    CPPUNIT_TEST(glob_test_2);
+    CPPUNIT_TEST(glob_test_3);
+
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
+    void glob_test_1() {
+        string t = "This is a test";
+        int status = glob("This is a test", t.c_str());
+        CPPUNIT_ASSERT(status == 0);
+    }
+    void glob_test_2() {
+        string t = "This is a test";
+        int status = glob("This * test", t.c_str());
+        CPPUNIT_ASSERT(status == 0);
+    }
+    void glob_test_3() {
+        string t = "This is a test";
+        int status = glob("* is * test", t.c_str());
+        CPPUNIT_ASSERT(status == 0);
+    }
+
     void octal_to_hex_test() {
         string hex;
         hex = octal_to_hex("000");
@@ -164,9 +184,10 @@ public:
 
 	CPPUNIT_ASSERT(www2id("Grid%20Data%26Fields[20][20]", "%", "%20%26")
 	        == "Grid%20Data%26Fields[20][20]");
-	cerr << "www2id(\"%25This%26is\"): " << www2id("%25This%26is") << endl;
+	//cerr << "www2id(\"%25This%26is\"): " << www2id("%25This%26is") << endl;
 	CPPUNIT_ASSERT(www2id("%25This%26is") == "%This&is");
-
+	//cerr << "www2id(\"OPF_MaxSpectralPixelsMissing%d4\"): " << www2id("OPF_MaxSpectralPixelsMissing%d4") << endl;
+	//CPPUNIT_ASSERT(www2id("OPF_MaxSpectralPixelsMissing%d4") == "OPF_MaxSpectralPixelsMissing?");
     }
 
     // This is the code in expr.lex that removes enclosing double quotes and

@@ -86,6 +86,8 @@ public:
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
 
+    virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
+
 #if FILE_METHODS
     virtual void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,
