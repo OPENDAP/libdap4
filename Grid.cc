@@ -46,7 +46,7 @@
 #include "util.h"
 #include "InternalErr.h"
 #include "escaping.h"
-
+#include "XDRStreamMarshaller.h"
 #include "debug.h"
 
 using namespace std;
@@ -285,12 +285,33 @@ Grid::serialize(ConstraintEvaluator &eval, DDS &dds,
 
     dds.timeout_off();
 
-    if (_array_var->send_p())
+    if (_array_var->send_p()) {
+#ifdef CHECKSUMS
+        XDRStreamMarshaller &sm = dynamic_cast<XDRStreamMarshaller &>(m);
+        sm.reset_checksum();
+
         _array_var->serialize(eval, dds, m, false);
+
+        //cerr << _array_var->name() << ": " <<
+        sm.get_checksum();// << endl;
+#else
+            _array_var->serialize(eval, dds, m, false);
+#endif
+    }
 
     for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++) {
         if ((*i)->send_p()) {
+#ifdef CHECKSUMS
+            XDRStreamMarshaller &sm = dynamic_cast<XDRStreamMarshaller &>(m);
+            sm.reset_checksum();
+
             (*i)->serialize(eval, dds, m, false);
+
+            //cerr << (*i)->name() << ": " <<
+            sm.get_checksum(); // << endl;
+#else
+            (*i)->serialize(eval, dds, m, false);
+#endif
         }
     }
 

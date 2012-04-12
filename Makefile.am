@@ -51,7 +51,7 @@ libparsers_la_LIBADD = $(XML2_LIBS)
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC) 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_CPPFLAGS = $(AM_CPPFLAGS) #$(XML2_CFLAGS)
-libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la libparsers.la
+libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) -lcrypto gl/libgnu.la libparsers.la
 
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
