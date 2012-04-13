@@ -83,7 +83,9 @@ void ErrMsgT(const string &Msgt);
 ObjectType get_type(const string &value); // deprecated
 bool remove_mime_header(FILE *in);
 string get_next_mime_header(FILE *in);
+#if 0
 bool found_override(string name, string &doc);
+#endif
 //@}
 
 /** These functions are used to create the MIME headers for a message

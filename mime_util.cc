@@ -990,6 +990,7 @@ set_mime_not_modified(ostream &strm)
     strm << CRLF ;
 }
 
+#if 0
 /** Look for the override file by taking the dataset name and
     appending `.ovr' to it. If such a file exists, then read it in and
     store the contents in <tt>doc</tt>. Note that the file contents
@@ -1010,13 +1011,15 @@ found_override(string name, string &doc)
     doc = "";
     while (!ifs.eof()) {
         ifs.getline(tmp, 255);
-        strcat(tmp, "\n");
+        tmp[255] = '\0';
+        strncat(tmp, "\n", sizeof(tmp) - strlen(tmp) - 1);
         doc += tmp;
     }
 
 	ifs.close();
     return true;
 }
+#endif
 
 /** Read the input stream <tt>in</tt> and discard the MIME header. The MIME
     header is separated from the body of the document by a single blank line.

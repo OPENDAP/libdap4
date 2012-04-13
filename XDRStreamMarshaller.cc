@@ -311,6 +311,8 @@ void XDRStreamMarshaller::put_str(const string &val)
 
     if (_write_data) {
     int size = val.length() + 8;
+    // Replace this malloc with a vector<char>.
+    // ...and maybe elsewhere in this class... jhrg 3/9/12
     char *str_buf = (char *) malloc(size);
 
     if (!str_buf) {

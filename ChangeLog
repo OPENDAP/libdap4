@@ -1,3 +1,4 @@
+
 2012-02-07  James Gallagher <jgallagher@opendap.org>
 
 	Removed the static curl libs from dap-config.

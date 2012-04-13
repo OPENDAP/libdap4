@@ -540,7 +540,9 @@ entry_disk_space(int size, unsigned int block_size)
 void
 HTTPCacheTable::add_entry_to_cache_table(CacheEntry *entry)
 {
-    int hash = entry->hash;
+    unsigned int hash = entry->hash;
+    if (hash > CACHE_TABLE_SIZE)
+        throw InternalErr(__FILE__, __LINE__, "Hash value too large!");
 
     if (!d_cache_table[hash])
         d_cache_table[hash] = new CacheEntries;
