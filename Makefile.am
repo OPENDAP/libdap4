@@ -6,12 +6,14 @@ ACLOCAL_AMFLAGS = -I conf -I gl/m4
 aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
-# Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
-# -I$(top_srcdir)/xstream
+
 AM_CXXFLAGS = 
 if COMPILER_IS_GCC
-AM_CXXFLAGS += -Wall -W -Wcast-align
+AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-deprecated
+endif
+if USING_GRIDFIELDS 
+AM_CXXFLAGS += $(GF_CFLAGS)
 endif
 
 AM_YFLAGS = -d -v
@@ -33,9 +35,6 @@ lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 bin_SCRIPTS = dap-config dap-config-pkgconfig
 
 bin_PROGRAMS = getdap
-# fdiostream_test
-
-# sbin_PROGRAMS = deflate
 
 BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1
 
@@ -45,17 +44,21 @@ man_MANS = getdap.1 dap-config.1
 	groff -t -e -mandoc -Tascii $< | col -bx > $@
 
 libparsers_la_SOURCES = $(GRAM_SRC) 
-libparsers_la_CPPFLAGS = $(AM_CPPFLAGS) #$(XML2_CFLAGS)
+libparsers_la_CPPFLAGS = $(AM_CPPFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC) 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
-libdap_la_CPPFLAGS = $(AM_CPPFLAGS) #$(XML2_CFLAGS)
-libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) -lcrypto gl/libgnu.la libparsers.la
+libdap_la_CPPFLAGS = $(AM_CPPFLAGS)
+# crypto is only needed if the library is built with checksums on. 4/17/12
+libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) -lcrypto gl/libgnu.la \
+	libparsers.la
+if USING_GRIDFIELDS
+libdap_la_LIBADD += $(GF_LIBS)
+endif
 
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
-#libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS) $(XML2_CFLAGS)
 libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
 
@@ -67,8 +70,6 @@ pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR)
 
 noinst_HEADERS = config_dap.h
 
-# fdiostream_test_SOURCES = GNU/fdiostream_test.cc
-
 getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la
 getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
@@ -76,13 +77,11 @@ getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y gse.lex \
 	gse.y Error.lex Error.y
 
-EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI	 \
-	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
-	VCPP dods-datatypes-static.h xdr-datatypes-static.h \
-	dap-config-pkgconfig $(LEX_YACC_EXTRA) $(GRAM_SRC) OSX_Resources \
-	getdap.man1 dap-config.man1
-
-# README.AIS xstream/README 
+EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI		\
+	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf		\
+	libdap.spec VCPP dods-datatypes-static.h			\
+	xdr-datatypes-static.h dap-config-pkgconfig $(LEX_YACC_EXTRA)	\
+	$(GRAM_SRC) OSX_Resources getdap.man1 dap-config.man1
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
@@ -94,8 +93,6 @@ CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h \
 # in subdirs.
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`
-
-# MAINTAINERCLEANFILES = $(GRAM_SRC)
 
 # Copy the generated grammar files to the 'grammarfiles' directory.
 .PHONY: grammarfiles
@@ -118,7 +115,6 @@ cccc:
 ###########################################################################
 
 # Fortify targets.
-# dods-datatypes.h xdr-datatypes.h
 .PHONY: fortify
 fortify: $(BUILT_SOURCES)
 	(cd gl && sourceanalyzer -b @PACKAGE@-gl $(MAKE) )

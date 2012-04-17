@@ -358,6 +358,15 @@ fi
 AC_SUBST([GF_LIBS])
 AC_SUBST([GF_CFLAGS])
 
+if test "$libgf_ok" = "yes"
+then
+    echo "Set gridfields CFLAGS to $GF_CFLAGS"
+    echo "Set gridfields LIBS to $GF_LIBS"
+    AM_CONDITIONAL([USING_GRIDFIELDS],[true])
+else
+    AM_CONDITIONAL([USING_GRIDFIELDS],[false])
+fi
+
 AC_CHECK_LIB([pthread], [pthread_kill], 
 	[PTHREAD_LIBS="-lpthread"],
 	[AC_MSG_ERROR([I could not find pthreads])])
