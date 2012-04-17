@@ -295,7 +295,68 @@ AC_SUBST([XML2_LIBS])
 AC_SUBST([XML2_STATIC_LIBS])
 AC_SUBST([XML2_CFLAGS])
 
-# DAP_CHECK_ZLIB
+dnl DAP_CHECK_ZLIB
+
+dnl When pkgconfig support is added, use this
+libdap_libgridfields_module='libgridfields >= 0.7.0'
+
+libgf_ok="no"
+
+AC_WITH([gridfields],
+    [GF_LIBS="-L$withval/lib -lgridfields"
+     GF_CFLAGS="-I$withval/include"
+     AC_DEFINE([GRIDFIELDS],[1],[define if gridfields lib is present])
+     libgf_ok="yes"],
+    [])
+
+AC_ARG_ENABLE([gridfields],
+    AC_HELP_STRING([--enable-gridfields], [Enable libgridfields-based server functions (default is NO)]))
+
+if test "$libgf_ok" = "no" -a "$enable_gridfields" = "yes"
+then
+     
+AC_MSG_CHECKING([for libgridfields])
+if gridfields-config --version > /dev/null 2>&1
+then
+	version_libgf=`gridfields-config --version | sed 's@libgridfields \(.*\)@\1@'`
+
+	version_M=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
+	version_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
+	version_m_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
+	
+	dnl Test for several different versions of libgridfields
+	
+	if test $version_M -gt 0
+	then
+		libgf_ok='yes'
+	elif test $version_M -eq 0 && test $version_m -gt 7
+	then
+		libgf_ok='yes'
+	elif test $version_M -eq 0 && test $version_m -eq 7 && test $version_m_m -gt 0
+	then
+		libgf_ok='yes'
+	else
+		libgf_ok='no'
+	fi
+
+	if test "$libgf_ok"="no"
+	then
+  	    AC_MSG_ERROR([must have libgf 0.7.0 or greater, found $version_libgf])
+	fi
+
+	GF_LIBS="`gridfields-config --libs`"
+	GF_CFLAGS="`gridfields-config --cflags`"
+
+	AC_DEFINE([GRDIFIELDS],[1],[define if gridfields lib is present])
+	AC_MSG_RESULT([yes; used gridfields-config])
+else
+	AC_MSG_ERROR([I could not find libgridfields])
+fi
+
+fi
+
+AC_SUBST([GF_LIBS])
+AC_SUBST([GF_CFLAGS])
 
 AC_CHECK_LIB([pthread], [pthread_kill], 
 	[PTHREAD_LIBS="-lpthread"],

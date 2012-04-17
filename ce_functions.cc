@@ -77,6 +77,17 @@ static char rcsid[]not_used = { "$Id$" };
 #include "debug.h"
 #include "util.h"
 
+#ifdef GRIDFIELDS
+#include <gridfields/restrict.h>
+#include <gridfields/gridfield.h>
+#include <gridfields/grid.h>
+#include <gridfields/cell.h>
+#include <gridfields/cellarray.h>
+#include <gridfields/array.h>
+#include <gridfields/implicit0cells.h>
+#include <gridfields/gridfieldoperator.h>
+#endif
+
 //  We wrapped VC++ 6.x strtod() to account for a short coming
 //  in that function in regards to "NaN".  I don't know if this
 //  still applies in more recent versions of that product.
@@ -101,10 +112,13 @@ namespace libdap {
 /** Is \e lhs equal to \e rhs? Use epsilon to determine equality. */
 inline bool double_eq(double lhs, double rhs, double epsilon = 1.0e-5)
 {
+    return fabs(lhs - rhs) < epsilon;
+#if 0
     if (lhs > rhs)
         return (lhs - rhs) < ((lhs + rhs) / epsilon);
     else
         return (rhs - lhs) < ((lhs + rhs) / epsilon);
+#endif
 }
 
 /** Given a BaseType pointer, extract the string value it contains and return
@@ -117,20 +131,22 @@ inline bool double_eq(double lhs, double rhs, double epsilon = 1.0e-5)
 string extract_string_argument(BaseType * arg)
 {
     if (arg->type() != dods_str_c)
-        throw Error(malformed_expr, "The function requires a DAP string argument.");
+        throw Error(malformed_expr,
+                "The function requires a DAP string argument.");
 
     if (!arg->read_p())
         throw InternalErr(__FILE__, __LINE__,
                 "The CE Evaluator built an argument list where some constants held no values.");
 
-    string s = dynamic_cast<Str&> (*arg).value();
+    string s = dynamic_cast<Str&>(*arg).value();
 
     DBG(cerr << "s: " << s << endl);
 
     return s;
 }
 
-template<class T> static void set_array_using_double_helper(Array * a, double *src, int src_len)
+template<class T> static void set_array_using_double_helper(Array * a,
+        double *src, int src_len)
 {
     T *values = new T[src_len];
     for (int i = 0; i < src_len; ++i)
@@ -142,7 +158,7 @@ template<class T> static void set_array_using_double_helper(Array * a, double *s
     a->set_value(values, src_len);
 #endif
 
-    delete[] values;
+    delete[]values;
 }
 
 /** Given an array that holds some sort of numeric data, load it with values
@@ -153,7 +169,9 @@ template<class T> static void set_array_using_double_helper(Array * a, double *s
  caller has made a mistake. In that case it will throw an Error object.
 
  After setting the values, this method sets the \c read_p property for
- \e dest.
+ \e dest. Setting \e read_p tells the serialization methods in libdap
+ that this variable already holds data values and, given that, the
+ serialization code will not try to read the values.
 
  @param dest An Array. The values are written to this array, reusing
  its storage. Existing values are lost.
@@ -165,20 +183,21 @@ template<class T> static void set_array_using_double_helper(Array * a, double *s
 void set_array_using_double(Array * dest, double *src, int src_len)
 {
     // Simple types are Byte, ..., Float64, String and Url.
-    if ((dest->type() == dods_array_c && !dest->var()->is_simple_type()) || dest->var()->type() == dods_str_c
-            || dest->var()->type() == dods_url_c)
-        throw InternalErr(__FILE__, __LINE__, "The function requires a DAP numeric-type array argument.");
+    if ((dest->type() == dods_array_c && !dest->var()->is_simple_type()) 
+	|| dest->var()->type() == dods_str_c 
+	|| dest->var()->type() == dods_url_c)
+        throw InternalErr(__FILE__, __LINE__,
+                "The function requires a DAP numeric-type array argument.");
 
     // Test sizes. Note that Array::length() takes any constraint into account
     // when it returns the length. Even if this was removed, the 'helper'
     // function this uses calls Vector::val2buf() which uses Vector::width()
     // which in turn uses length().
     if (dest->length() != src_len)
-        throw InternalErr(
-                __FILE__,
-                __LINE__,
-                "The source and destination array sizes don't match (" + long_to_string(src_len) + " versus "
-                        + long_to_string(dest->length()) + ").");
+        throw InternalErr(__FILE__, __LINE__,
+                "The source and destination array sizes don't match ("
+                + long_to_string(src_len) + " versus "
+                + long_to_string(dest->length()) + ").");
 
     // The types of arguments that the CE Parser will build for numeric
     // constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
@@ -186,25 +205,25 @@ void set_array_using_double(Array * dest, double *src, int src_len)
     // just arguments.
     switch (dest->var()->type()) {
     case dods_byte_c:
-        set_array_using_double_helper<dods_byte> (dest, src, src_len);
+        set_array_using_double_helper<dods_byte>(dest, src, src_len);
         break;
     case dods_uint16_c:
-        set_array_using_double_helper<dods_uint16> (dest, src, src_len);
+        set_array_using_double_helper<dods_uint16>(dest, src, src_len);
         break;
     case dods_int16_c:
-        set_array_using_double_helper<dods_int16> (dest, src, src_len);
+        set_array_using_double_helper<dods_int16>(dest, src, src_len);
         break;
     case dods_uint32_c:
-        set_array_using_double_helper<dods_uint32> (dest, src, src_len);
+        set_array_using_double_helper<dods_uint32>(dest, src, src_len);
         break;
     case dods_int32_c:
-        set_array_using_double_helper<dods_int32> (dest, src, src_len);
+        set_array_using_double_helper<dods_int32>(dest, src, src_len);
         break;
     case dods_float32_c:
-        set_array_using_double_helper<dods_float32> (dest, src, src_len);
+        set_array_using_double_helper<dods_float32>(dest, src, src_len);
         break;
     case dods_float64_c:
-        set_array_using_double_helper<dods_float64> (dest, src, src_len);
+        set_array_using_double_helper<dods_float64>(dest, src, src_len);
         break;
     default:
         throw InternalErr(__FILE__, __LINE__,
@@ -214,6 +233,168 @@ void set_array_using_double(Array * dest, double *src, int src_len)
     // Set the read_p property.
     dest->set_read_p(true);
 }
+
+#ifdef GRIDFIELDS
+template<typename DODS, typename T> T *extract_array_helper(Array *a) 
+{
+  DBG(cerr << "Extracting array values..." << endl);
+  int length = a->length();
+
+  DBG(cerr << "Allocating..." << length << endl);
+  DODS *b = new DODS[length];
+  DBG(cerr << "Assigning value..." << endl);
+  a->value(b);
+  DBG(cerr << "array values extracted.  Casting..." << endl);
+  T *dest = new T[length];
+  for (int i = 0; i < length; ++i)
+    dest[i] = (T) b[i];
+  delete[]b;
+  DBG(cerr << "Returning extracted values." << endl);
+
+  return dest;
+}
+#endif // GRIDFIELDS
+
+#ifdef GRIDFIELDS
+GF::Array *extract_gridfield_array(Array *a) {
+    if ((a->type() == dods_array_c && !a->var()->is_simple_type())
+  || a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
+        throw Error(malformed_expr,
+                "The function requires a DAP numeric-type array argument.");
+
+    a->set_send_p(true);
+    a->read();
+
+    // Construct a GridField array from a DODS array
+    GF::Array *gfa;
+
+    switch (a->var()->type()) {
+    case dods_byte_c:
+       gfa = new GF::Array(a->var()->name(), GF::INT);
+       gfa->shareIntData(extract_array_helper<dods_byte, int>(a), a->length());
+       break;
+    case dods_uint16_c:
+       gfa = new GF::Array(a->var()->name(), GF::INT);
+       gfa->shareIntData(extract_array_helper<dods_uint16, int>(a), a->length());
+       break;
+    case dods_int16_c:
+       gfa = new GF::Array(a->var()->name(), GF::INT);
+       gfa->shareIntData(extract_array_helper<dods_int16, int>(a), a->length());
+       break;
+    case dods_uint32_c:
+       gfa = new GF::Array(a->var()->name(), GF::INT);
+       gfa->shareIntData(extract_array_helper<dods_uint32, int>(a), a->length());
+       break;
+    case dods_int32_c:
+       gfa = new GF::Array(a->var()->name(), GF::INT);
+       gfa->shareIntData(extract_array_helper<dods_int32, int>(a), a->length());
+       break;
+    case dods_float32_c:
+       gfa = new GF::Array(a->var()->name(), GF::FLOAT);
+       gfa->shareFloatData(extract_array_helper<dods_float32, float>(a), a->length());
+       break;
+    case dods_float64_c:
+       gfa = new GF::Array(a->var()->name(), GF::FLOAT);
+       gfa->shareFloatData(extract_array_helper<dods_float64, float>(a), a->length());
+       break;
+    default:
+        throw InternalErr(__FILE__, __LINE__,
+                "Unknown DDS type encountered when converting to gridfields array");
+    }
+    return gfa;
+};
+#endif // GRIDFIELDS
+
+#ifdef GRIDFIELDS
+/*
+If the array has the exact dimensions in the vector dims, in the same order, 
+return true.  Otherwise return false. 
+
+*/
+bool same_dimensions(Array *arr, vector<Array::dimension> &dims) {
+  vector<Array::dimension>::iterator dit;
+  Array::Dim_iter ait;
+  DBG(cerr << "same_dimensions test for array " << arr->name() << endl);
+  DBG(cerr << << "  array dims: ");
+  for (ait = arr->dim_begin(); ait!=arr->dim_end(); ++ait) {
+    DBG(cerr << (*ait).name << ", ");
+  }
+  DBG(cerr << endl);
+  DBG(cerr << "  rank dims: ");
+  for (dit = dims.begin(); dit!=dims.end(); ++dit) {
+    DBG(cerr << (*dit).name << ", " << endl);
+    for (ait = arr->dim_begin(); ait!=arr->dim_end(); ++ait) {
+      Array::dimension dd = *dit;
+      Array::dimension ad = *ait;
+      if (dd.name != ad.name 
+       or dd.size != ad.size 
+       or dd.stride != ad.stride
+       or dd.stop != ad.stop) 
+       return false;
+    }
+    DBG(cerr << endl);
+  }
+  return true;
+}
+#endif // GRIDFIELDS
+
+#ifdef GRIDFIELDS
+/** Given a pointer to an Array which holds a numeric type, extract the
+ values and return in an array of T. This function allocates the
+ array using 'new T[n]' so delete[] can be used when you are done
+ the data. */
+template<typename T>
+T *extract_array(Array * a)
+{
+    // Simple types are Byte, ..., Float64, String and Url.
+    if ((a->type() == dods_array_c && !a->var()->is_simple_type())
+  || a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
+        throw Error(malformed_expr,
+                "The function requires a DAP numeric-type array argument.");
+
+    a->set_send_p(true);
+    a->read();
+    // This test should never pass due to the previous two lines; 
+    // reading here seems to make 
+    // sense rather than letting the caller forget to do so.
+    // is read() idemopotent?
+    if (!a->read_p())
+        throw InternalErr(__FILE__, __LINE__,
+                string("The Array '") + a->name() +
+                "'does not contain values. send_read_p() not called?");
+
+    // The types of arguments that the CE Parser will build for numeric
+    // constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
+    // Expanded to work for any numeric type so it can be used for more than
+    // just arguments.
+    switch (a->var()->type()) {
+    case dods_byte_c:
+        return extract_array_helper<dods_byte, T>(a);
+    case dods_uint16_c:
+        DBG(cerr << "dods_uint32_c" << endl);
+        return extract_array_helper<dods_uint16, T>(a);
+    case dods_int16_c:
+        DBG(cerr << "dods_int16_c" << endl);
+        return extract_array_helper<dods_int16, T>(a);
+    case dods_uint32_c:
+        DBG(cerr << "dods_uint32_c" << endl);
+        return extract_array_helper<dods_uint32, T>(a);
+    case dods_int32_c:
+        DBG(cerr << "dods_int32_c" << endl);
+        return extract_array_helper<dods_int32, T>(a);
+    case dods_float32_c:
+        DBG(cerr << "dods_float32_c" << endl);
+        return extract_array_helper<dods_float32, T>(a);
+    case dods_float64_c:
+        DBG(cerr << "dods_float64_c" << endl);
+        return extract_array_helper<dods_float64, T>(a);
+    default:
+        throw InternalErr(__FILE__, __LINE__,
+                "The argument list built by the CE parser contained an unsupported numeric type.");
+    }
+}
+
+#endif // GRIDFIELDS
 
 template<class T> static double *extract_double_array_helper(Array * a)
 {
@@ -225,7 +406,7 @@ template<class T> static double *extract_double_array_helper(Array * a)
     double *dest = new double[length];
     for (int i = 0; i < length; ++i)
         dest[i] = (double) b[i];
-    delete[] b;
+    delete[]b;
 
     return dest;
 }
@@ -237,12 +418,15 @@ template<class T> static double *extract_double_array_helper(Array * a)
 double *extract_double_array(Array * a)
 {
     // Simple types are Byte, ..., Float64, String and Url.
-    if ((a->type() == dods_array_c && !a->var()->is_simple_type()) || a->var()->type() == dods_str_c
-            || a->var()->type() == dods_url_c)
-        throw Error(malformed_expr, "The function requires a DAP numeric-type array argument.");
+    if ((a->type() == dods_array_c && !a->var()->is_simple_type())
+	|| a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
+        throw Error(malformed_expr,
+                "The function requires a DAP numeric-type array argument.");
 
     if (!a->read_p())
-        throw InternalErr(__FILE__, __LINE__, string("The Array '") + a->name() + "'does not contain values.");
+        throw InternalErr(__FILE__, __LINE__,
+                string("The Array '") + a->name() +
+                "'does not contain values.");
 
     // The types of arguments that the CE Parser will build for numeric
     // constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
@@ -250,19 +434,19 @@ double *extract_double_array(Array * a)
     // just arguments.
     switch (a->var()->type()) {
     case dods_byte_c:
-        return extract_double_array_helper<dods_byte> (a);
+        return extract_double_array_helper<dods_byte>(a);
     case dods_uint16_c:
-        return extract_double_array_helper<dods_uint16> (a);
+        return extract_double_array_helper<dods_uint16>(a);
     case dods_int16_c:
-        return extract_double_array_helper<dods_int16> (a);
+        return extract_double_array_helper<dods_int16>(a);
     case dods_uint32_c:
-        return extract_double_array_helper<dods_uint32> (a);
+        return extract_double_array_helper<dods_uint32>(a);
     case dods_int32_c:
-        return extract_double_array_helper<dods_int32> (a);
+        return extract_double_array_helper<dods_int32>(a);
     case dods_float32_c:
-        return extract_double_array_helper<dods_float32> (a);
+        return extract_double_array_helper<dods_float32>(a);
     case dods_float64_c:
-        return extract_double_array_helper<dods_float64> (a);
+        return extract_double_array_helper<dods_float64>(a);
     default:
         throw InternalErr(__FILE__, __LINE__,
                 "The argument list built by the CE parser contained an unsupported numeric type.");
@@ -279,8 +463,10 @@ double *extract_double_array(Array * a)
 double extract_double_value(BaseType * arg)
 {
     // Simple types are Byte, ..., Float64, String and Url.
-    if (!arg->is_simple_type() || arg->type() == dods_str_c || arg->type() == dods_url_c)
-        throw Error(malformed_expr, "The function requires a DAP numeric-type argument.");
+    if (!arg->is_simple_type() || arg->type() == dods_str_c || arg->type()
+            == dods_url_c)
+        throw Error(malformed_expr,
+                "The function requires a DAP numeric-type argument.");
 
     if (!arg->read_p())
         throw InternalErr(__FILE__, __LINE__,
@@ -292,19 +478,19 @@ double extract_double_value(BaseType * arg)
     // just arguments.
     switch (arg->type()) {
     case dods_byte_c:
-        return (double) (dynamic_cast<Byte&> (*arg).value());
+        return (double)(dynamic_cast<Byte&>(*arg).value());
     case dods_uint16_c:
-        return (double) (dynamic_cast<UInt16&> (*arg).value());
+        return (double)(dynamic_cast<UInt16&>(*arg).value());
     case dods_int16_c:
-        return (double) (dynamic_cast<Int16&> (*arg).value());
+        return (double)(dynamic_cast<Int16&>(*arg).value());
     case dods_uint32_c:
-        return (double) (dynamic_cast<UInt32&> (*arg).value());
+        return (double)(dynamic_cast<UInt32&>(*arg).value());
     case dods_int32_c:
-        return (double) (dynamic_cast<Int32&> (*arg).value());
+        return (double)(dynamic_cast<Int32&>(*arg).value());
     case dods_float32_c:
-        return (double) (dynamic_cast<Float32&> (*arg).value());
+        return (double)(dynamic_cast<Float32&>(*arg).value());
     case dods_float64_c:
-        return dynamic_cast<Float64&> (*arg).value();
+        return dynamic_cast<Float64&>(*arg).value();
     default:
         throw InternalErr(__FILE__, __LINE__,
                 "The argument list built by the CE parser contained an unsupported numeric type.");
@@ -316,8 +502,9 @@ double extract_double_value(BaseType * arg)
  String using the BaseType value/result parameter.
 
  @param btpp A pointer to the return value; caller must delete.
- */
-void function_version(int, BaseType *[], DDS &, BaseType **btpp)
+*/
+void
+function_version(int, BaseType *[], DDS &, BaseType **btpp)
 {
     string
             xml_value =
@@ -326,9 +513,8 @@ void function_version(int, BaseType *[], DDS &, BaseType **btpp)
                        <function name=\"geogrid\" version=\"1.2\"/>\
                        <function name=\"grid\" version=\"1.0\"/>\
                        <function name=\"linear_scale\" version=\"1.0b1\"/>\
-                       <function name=\"version\" version=\"1.0\"/>\
-        	       <function name=\"dap\" version=\"1.0\"/>\
-                     </functions>";
+                       <function name=\"ugrid_demo\" version=\"0.1\"/>\
+                       </functions>";
 
     //                        <function name=\"geoarray\" version=\"0.9b1\"/>
 
@@ -339,19 +525,19 @@ void function_version(int, BaseType *[], DDS &, BaseType **btpp)
     return;
 }
 
-void function_dap(int, BaseType *[], DDS &, ConstraintEvaluator &)
+void
+function_dap(int, BaseType *[], DDS &, ConstraintEvaluator &)
 {
 #ifdef FUNCTION_DAP
     if (argc != 1) {
-        throw Error("The 'dap' function must be called with a version number.\n\
+	throw Error("The 'dap' function must be called with a version number.\n\
 	see http://docs.opendap.org/index.php/Server_Side_Processing_Functions#dap");
     }
 
     double pv = extract_double_value(argv[0]);
     dds.set_dap_version(pv);
 #else
-    throw Error(
-            "The 'dap' function is not supported in lieu of Constraint expression 'keywords.'\n\
+    throw Error("The 'dap' function is not supported in lieu of Constraint expression 'keywords.'\n\
 see http://docs.opendap.org/index.php/Server_Side_Processing_Functions#keywords");
 #endif
 }
@@ -376,13 +562,13 @@ static void apply_grid_selection_expr(Grid * grid, GSEClause * clause)
         ++map_i;
 
     if (map_i == grid->map_end())
-        throw Error(malformed_expr,
-                "The map vector '" + clause->get_map_name() + "' is not in the grid '" + grid->name() + "'.");
+        throw Error(malformed_expr,"The map vector '" + clause->get_map_name()
+                + "' is not in the grid '" + grid->name() + "'.");
 
     // Use pointer arith & the rule that map order must match array dim order
     Array::Dim_iter grid_dim = (grid->get_array()->dim_begin() + (map_i - grid->map_begin()));
 
-    Array *map = dynamic_cast<Array *> ((*map_i));
+    Array *map = dynamic_cast < Array * >((*map_i));
     if (!map)
         throw InternalErr(__FILE__, __LINE__, "Expected an Array");
     int start = max(map->dimension_start(map->dim_begin()), clause->get_start());
@@ -390,10 +576,13 @@ static void apply_grid_selection_expr(Grid * grid, GSEClause * clause)
 
     if (start > stop) {
         ostringstream msg;
-        msg << "The expressions passed to grid() do not result in an inclusive \n" << "subset of '"
-                << clause->get_map_name() << "'. The map's values range " << "from " << clause->get_map_min_value()
-                << " to " << clause->get_map_max_value() << ".";
-        throw Error(malformed_expr, msg.str());
+        msg
+                << "The expressions passed to grid() do not result in an inclusive \n"
+                << "subset of '" << clause->get_map_name()
+                << "'. The map's values range " << "from "
+                << clause->get_map_min_value() << " to "
+                << clause->get_map_max_value() << ".";
+        throw Error(malformed_expr,msg.str());
     }
 
     DBG(cerr << "Setting constraint on " << map->name()
@@ -404,9 +593,10 @@ static void apply_grid_selection_expr(Grid * grid, GSEClause * clause)
     grid->get_array()->add_constraint(grid_dim, start, 1, stop);
 }
 
-static void apply_grid_selection_expressions(Grid * grid, vector<GSEClause *> clauses)
+static void apply_grid_selection_expressions(Grid * grid,
+        vector < GSEClause * >clauses)
 {
-    vector<GSEClause *>::iterator clause_i = clauses.begin();
+    vector < GSEClause * >::iterator clause_i = clauses.begin();
     while (clause_i != clauses.end())
         apply_grid_selection_expr(grid, *clause_i++);
 
@@ -449,15 +639,15 @@ static void apply_grid_selection_expressions(Grid * grid, vector<GSEClause *> cl
 
  @see geogrid() (func_geogrid_select) A function which has logic specific
  to longitude/latitude selection. */
-void function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
+void
+function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
     DBG(cerr << "Entering function_grid..." << endl);
 
-    string
-            info =
-                    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-                            + "<function name=\"grid\" version=\"1.0\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#grid\">\n"
-                            + "</function>\n";
+    string info =
+    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
+    "<function name=\"grid\" version=\"1.0\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#grid\">\n" +
+    "</function>\n";
 
     if (argc == 0) {
         Str *response = new Str("info");
@@ -466,19 +656,19 @@ void function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
         return;
     }
 
-    Grid *original_grid = dynamic_cast<Grid *> (argv[0]);
+    Grid *original_grid = dynamic_cast < Grid * >(argv[0]);
     if (!original_grid)
-        throw Error(malformed_expr, "The first argument to grid() must be a Grid variable!");
+        throw Error(malformed_expr,"The first argument to grid() must be a Grid variable!");
 
     // Duplicate the grid; ResponseBuilder::send_data() will delete the variable
     // after serializing it.
     BaseType *btp = original_grid->ptr_duplicate();
-    Grid *l_grid = dynamic_cast<Grid *> (btp);
+    Grid *l_grid = dynamic_cast < Grid * >(btp);
     if (!l_grid) {
-        delete btp;
+    	delete btp;
         throw InternalErr(__FILE__, __LINE__, "Expected a Grid.");
     }
-
+    
     DBG(cerr << "grid: past initialization code" << endl);
 
     // Read the maps. Do this before calling parse_gse_expression(). Avoid
@@ -498,7 +688,7 @@ void function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     // When each expression is parsed, the parser makes a new instance of
     // GSEClause. GSEClause checks to make sure the named map really exists
     // in the Grid and that the range of values given makes sense.
-    vector<GSEClause *> clauses;
+    vector < GSEClause * > clauses;
     gse_arg *arg = new gse_arg(l_grid);
     for (int i = 1; i < argc; ++i) {
         parse_gse_expression(arg, argv[i]);
@@ -553,19 +743,19 @@ void function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
  @param btpp A pointer to the return value; caller must delete.
 
  @return The constrained and read Grid, ready to be sent. */
-void function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
+void
+function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
-    string
-            info =
-                    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-                            + "<function name=\"geogrid\" version=\"1.2\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#geogrid\">\n"
-                            + "</function>";
+    string info =
+    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
+    "<function name=\"geogrid\" version=\"1.2\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#geogrid\">\n"+
+    "</function>";
 
     if (argc == 0) {
         Str *response = new Str("version");
         response->set_value(info);
         *btpp = response;
-        return;
+        return ;
     }
 
     // There are two main forms of this function, one that takes a Grid and one
@@ -577,33 +767,30 @@ void function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     // Look at the types of the first three arguments to determine which of the
     // two forms were used to call this function.
     Grid *l_grid = 0;
-    if (argc < 1 || !(l_grid = dynamic_cast<Grid *> (argv[0]->ptr_duplicate())))
-        throw Error(malformed_expr, "The first argument to geogrid() must be a Grid variable!");
+    if (argc < 1 || !(l_grid = dynamic_cast < Grid * >(argv[0]->ptr_duplicate())))
+	throw Error(malformed_expr,"The first argument to geogrid() must be a Grid variable!");
 
     // Both forms require at least this many args
     if (argc < 5)
-        throw Error(malformed_expr,
-                "Wrong number of arguments to geogrid() (expected at least 5 args). See geogrid() for more information.");
+        throw Error(malformed_expr,"Wrong number of arguments to geogrid() (expected at least 5 args). See geogrid() for more information.");
 
     bool grid_lat_lon_form;
     Array *l_lat = 0;
     Array *l_lon = 0;
-    if (!(l_lat = dynamic_cast<Array *> (argv[1]))) //->ptr_duplicate())))
-        grid_lat_lon_form = false;
-    else if (!(l_lon = dynamic_cast<Array *> (argv[2]))) //->ptr_duplicate())))
-        throw Error(malformed_expr,
-                "When using the Grid, Lat, Lon form of geogrid() both the lat and lon maps must be given (lon map missing)!");
+    if (!(l_lat = dynamic_cast < Array * >(argv[1]))) //->ptr_duplicate())))
+	grid_lat_lon_form = false;
+    else if (!(l_lon = dynamic_cast < Array * >(argv[2]))) //->ptr_duplicate())))
+	throw Error(malformed_expr,"When using the Grid, Lat, Lon form of geogrid() both the lat and lon maps must be given (lon map missing)!");
     else
-        grid_lat_lon_form = true;
+	grid_lat_lon_form = true;
 
     if (grid_lat_lon_form && argc < 7)
-        throw Error(malformed_expr,
-                "Wrong number of arguments to geogrid() (expected at least 7 args). See geogrid() for more information.");
+        throw Error(malformed_expr,"Wrong number of arguments to geogrid() (expected at least 7 args). See geogrid() for more information.");
 
 #if 0
     Grid *l_grid = dynamic_cast < Grid * >(argv[0]->ptr_duplicate());
     if (!l_grid)
-    throw Error(malformed_expr,"The first argument to geogrid() must be a Grid variable!");
+        throw Error(malformed_expr,"The first argument to geogrid() must be a Grid variable!");
 #endif
     // Read the maps. Do this before calling parse_gse_expression(). Avoid
     // reading the array until the constraints have been applied because it
@@ -632,7 +819,7 @@ void function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     if (argc > min_arg_count) {
         // argv[5..n] holds strings; each are little Grid Selection Expressions
         // to be parsed and evaluated.
-        vector<GSEClause *> clauses;
+        vector < GSEClause * > clauses;
         gse_arg *arg = new gse_arg(l_grid);
         for (int i = min_arg_count; i < argc; ++i) {
             parse_gse_expression(arg, argv[i]);
@@ -667,10 +854,15 @@ void function_geogrid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
         // by this call. The caller of the function must free the pointer.
         *btpp = gc.get_constrained_grid();
         return;
-    } catch (Error &e) {
+    }
+    catch (Error &e) {
         throw e;
-    } catch (exception & e) {
-        throw InternalErr(string("A C++ exception was thrown from inside geogrid(): ") + e.what());
+    }
+    catch (exception & e) {
+        throw
+        InternalErr(string
+                ("A C++ exception was thrown from inside geogrid(): ")
+                + e.what());
     }
 }
 
@@ -691,13 +883,14 @@ static double string_to_double(const char *val)
     double v = strtod(val, &ptr);
 #endif
 
-    if ((v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE)) || *ptr != '\0') {
-        throw Error(malformed_expr, string("Could not convert the string '") + val + "' to a double.");
+    if ((v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE))
+            || *ptr != '\0') {
+        throw Error(malformed_expr,string("Could not convert the string '") + val + "' to a double.");
     }
 
     double abs_val = fabs(v);
     if (abs_val > DODS_DBL_MAX || (abs_val != 0.0 && abs_val < DODS_DBL_MIN))
-        throw Error(malformed_expr, string("Could not convert the string '") + val + "' to a double.");
+        throw Error(malformed_expr,string("Could not convert the string '") + val + "' to a double.");
 
     return v;
 }
@@ -711,7 +904,8 @@ static double string_to_double(const char *val)
  @param var Look for attributes in this BaseType variable.
  @param attributes A vector of attributes; the first one found will be returned.
  @return The attribute value in a double. */
-static double get_attribute_double_value(BaseType *var, vector<string> &attributes)
+static double get_attribute_double_value(BaseType *var,
+        vector<string> &attributes)
 {
     // This code also builds a list of the attribute values that have been
     // passed in but not found so that an informative message can be returned.
@@ -730,12 +924,11 @@ static double get_attribute_double_value(BaseType *var, vector<string> &attribut
     // grid) or throw an Error.
     if (attribute_value.empty()) {
         if (var->type() == dods_grid_c)
-            return get_attribute_double_value(dynamic_cast<Grid&> (*var).get_array(), attributes);
+            return get_attribute_double_value(dynamic_cast<Grid&>(*var).get_array(), attributes);
         else
-            throw Error(
-                    malformed_expr,
-                    string("No COARDS/CF '") + values.substr(0, values.length() - 2)
-                            + "' attribute was found for the variable '" + var->name() + "'.");
+            throw Error(malformed_expr,string("No COARDS/CF '") + values.substr(0, values.length() - 2)
+                    + "' attribute was found for the variable '"
+                    + var->name() + "'.");
     }
 
     return string_to_double(remove_quotes(attribute_value).c_str());
@@ -750,10 +943,11 @@ static double get_attribute_double_value(BaseType *var, const string &attribute)
     // grid or throw an Error.
     if (attribute_value.empty()) {
         if (var->type() == dods_grid_c)
-            return get_attribute_double_value(dynamic_cast<Grid&> (*var).get_array(), attribute);
+            return get_attribute_double_value(dynamic_cast<Grid&>(*var).get_array(), attribute);
         else
-            throw Error(malformed_expr,
-                    string("No COARDS '") + attribute + "' attribute was found for the variable '" + var->name() + "'.");
+            throw Error(malformed_expr,string("No COARDS '") + attribute
+                    + "' attribute was found for the variable '"
+                    + var->name() + "'.");
     }
 
     return string_to_double(remove_quotes(attribute_value).c_str());
@@ -789,13 +983,13 @@ static double get_missing_value(BaseType *var)
  @exception Error Thrown if scale_factor is not given and the COARDS
  attributes cannot be found OR if the source variable is not a
  numeric scalar, Array or Grid. */
-void function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
+void
+function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
-    string
-            info =
-                    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-                            + "<function name=\"linear_scale\" version=\"1.0b1\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#linear_scale\">\n"
-                            + "</function>";
+    string info =
+    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
+    "<function name=\"linear_scale\" version=\"1.0b1\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#linear_scale\">\n" +
+    "</function>";
 
     if (argc == 0) {
         Str *response = new Str("info");
@@ -807,8 +1001,7 @@ void function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     // Check for 1 or 3 arguments: 1 --> use attributes; 3 --> m & b supplied
     DBG(cerr << "argc = " << argc << endl);
     if (!(argc == 1 || argc == 3 || argc == 4))
-        throw Error(malformed_expr,
-                "Wrong number of arguments to linear_scale(). See linear_scale() for more information");
+        throw Error(malformed_expr,"Wrong number of arguments to linear_scale(). See linear_scale() for more information");
 
     // Get m & b
     bool use_missing = false;
@@ -818,13 +1011,11 @@ void function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
         b = extract_double_value(argv[2]);
         missing = extract_double_value(argv[3]);
         use_missing = true;
-    }
-    else if (argc == 3) {
+    } else if (argc == 3) {
         m = extract_double_value(argv[1]);
         b = extract_double_value(argv[2]);
         use_missing = false;
-    }
-    else {
+    } else {
         m = get_slope(argv[0]);
 
         // This is really a hack; on a fair number of datasets, the y intercept
@@ -832,7 +1023,8 @@ void function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
         // catches the error if a y intercept is not found.
         try {
             b = get_y_intercept(argv[0]);
-        } catch (Error &e) {
+        }
+        catch (Error &e) {
             b = 0.0;
         }
 
@@ -842,7 +1034,8 @@ void function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
         try {
             missing = get_missing_value(argv[0]);
             use_missing = true;
-        } catch (Error &e) {
+        }
+        catch (Error &e) {
             use_missing = false;
         }
     }
@@ -854,7 +1047,7 @@ void function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     BaseType *dest = 0;
     double *data;
     if (argv[0]->type() == dods_grid_c) {
-        Array &source = *dynamic_cast<Grid&> (*argv[0]).get_array();
+        Array &source = *dynamic_cast<Grid&>(*argv[0]).get_array();
         source.set_send_p(true);
         source.read();
         data = extract_double_array(&source);
@@ -876,12 +1069,11 @@ void function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 #else
         source.set_value(data, i);
 #endif
-        delete[] data; // val2buf copies.
+        delete [] data; // val2buf copies.
         delete temp_f; // add_var copies and then adds.
         dest = argv[0];
-    }
-    else if (argv[0]->is_vector_type()) {
-        Array &source = dynamic_cast<Array&> (*argv[0]);
+    } else if (argv[0]->is_vector_type()) {
+        Array &source = dynamic_cast<Array&>(*argv[0]);
         source.set_send_p(true);
         // If the array is really a map, make sure to read using the Grid
         // because of the HDF4 handler's odd behavior WRT dimensions.
@@ -902,25 +1094,24 @@ void function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
         Float64 *temp_f = new Float64(source.name());
         source.add_var(temp_f);
 
-        source.val2buf(static_cast<void*> (data), false);
+        source.val2buf(static_cast<void*>(data), false);
 
-        delete[] data; // val2buf copies.
+        delete [] data; // val2buf copies.
         delete temp_f; // add_var copies and then adds.
 
         dest = argv[0];
-    }
-    else if (argv[0]->is_simple_type() && !(argv[0]->type() == dods_str_c || argv[0]->type() == dods_url_c)) {
+    } else if (argv[0]->is_simple_type() && !(argv[0]->type() == dods_str_c
+            || argv[0]->type() == dods_url_c)) {
         double data = extract_double_value(argv[0]);
         if (!use_missing || !double_eq(data, missing))
             data = data * m + b;
 
         dest = new Float64(argv[0]->name());
 
-        dest->val2buf(static_cast<void*> (&data));
+        dest->val2buf(static_cast<void*>(&data));
 
-    }
-    else {
-        throw Error(malformed_expr, "The linear_scale() function works only for numeric Grids, Arrays and scalars.");
+    } else {
+        throw Error(malformed_expr,"The linear_scale() function works only for numeric Grids, Arrays and scalars.");
     }
 
     *btpp = dest;
@@ -962,12 +1153,12 @@ function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 
     DBG(cerr << "argc = " << argc << endl);
     if (!(argc == 5 || argc == 9 || argc == 11))
-    throw Error(malformed_expr,"Wrong number of arguments to geoarray(). See geoarray() for more information.");
+        throw Error(malformed_expr,"Wrong number of arguments to geoarray(). See geoarray() for more information.");
 
     // Check the Array (and dup because the caller will free the variable).
     Array *l_array = dynamic_cast < Array * >(argv[0]->ptr_duplicate());
     if (!l_array)
-    throw Error(malformed_expr,"The first argument to geoarray() must be an Array variable!");
+        throw Error(malformed_expr,"The first argument to geoarray() must be an Array variable!");
 
     try {
 
@@ -979,14 +1170,14 @@ function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 
         switch (argc) {
             case 5: {
-                ArrayGeoConstraint agc(l_array);
+            	ArrayGeoConstraint agc(l_array);
 
-                agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
-                // This also reads all of the data into the grid variable
-                agc.apply_constraint_to_data();
-                *btpp = agc.get_constrained_array();
-                return;
-                break;
+         		agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
+				// This also reads all of the data into the grid variable
+        		agc.apply_constraint_to_data();
+        		*btpp = agc.get_constrained_array();
+        		return;
+            	break;
             }
             case 9: {
                 double var_top = extract_double_value(argv[5]);
@@ -995,11 +1186,11 @@ function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp)
                 double var_right = extract_double_value(argv[8]);
                 ArrayGeoConstraint agc (l_array, var_left, var_top, var_right, var_bottom);
 
-                agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
-                // This also reads all of the data into the grid variable
-                agc.apply_constraint_to_data();
-                *btpp = agc.get_constrained_array();
-                return;
+        		agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
+				// This also reads all of the data into the grid variable
+        		agc.apply_constraint_to_data();
+        		*btpp =  agc.get_constrained_array();
+        		return;
                 break;
             }
             case 11: {
@@ -1013,15 +1204,15 @@ function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp)
                         var_left, var_top, var_right, var_bottom,
                         projection, datum);
 
-                agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
-                // This also reads all of the data into the grid variable
-                agc.apply_constraint_to_data();
-                *btpp = agc.get_constrained_array();
-                return;
+        		agc.set_bounding_box(bb_left, bb_top, bb_right, bb_bottom);
+				// This also reads all of the data into the grid variable
+        		agc.apply_constraint_to_data();
+        		*btpp = agc.get_constrained_array();
+        		return;
                 break;
             }
             default:
-            throw InternalErr(__FILE__, __LINE__, "Wrong number of args to geoarray.");
+            	throw InternalErr(__FILE__, __LINE__, "Wrong number of args to geoarray.");
         }
     }
     catch (Error & e) {
@@ -1039,8 +1230,253 @@ function_geoarray(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 }
 #endif
 
+#ifdef GRIDFIELDS
+
+/** This is a stub Constraint Expression (i.e., server-side) function
+    that will evolve into an interface for Unstructured Grid
+    operations. 
+
+    The function takes a single variable that should be a one
+    dimensional array variable and scales it by a factor of ten. The 
+    result is returned as the value of the CE expression.
+
+    @param argc Count of the function's arguments
+    @param argv Array of pointers to the functions arguments
+    @param dds Reference to the DDS object for the complete dataset.
+    This holds pointers to all of the variables and attributes in the
+    dataset. 
+    @param btpp Return the function result in an instance of BaseType
+    referenced by this pointer to a pointer. We could have used a
+    BaseType reference, instead of pointer to a pointer, but we didn't.
+    This is a value-result parameter.
+
+    @return void
+
+    @exception Error Thrown If the Array is not a one dimensional
+    array. */
+void
+function_ugrid_demo(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
+{
+
+    // This is the nascent on-line help for these functions. 
+    static string info =
+	string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
+	"<function name=\"ugrid_demo\" version=\"0.1\">\n" +
+	"Fledgling code for Unstructured grid operations.\n" +
+	"</function>";
+    
+    if (argc == 0) {
+	Str *response = new Str("info");
+	response->set_value(info);
+	*btpp = response;
+	return;
+    }
+
+    // Check number of arguments; DBG is a macro. Use #define
+    // DODS_DEBUG to activate the debugging stuff.
+    if (argc != 2)
+        throw Error(malformed_expr,"Wrong number of arguments to ugrid_demo. ugrid_demo(dim:int32, condition:string");
+
+    if (argv[0]->type() != dods_int32_c) {
+        throw Error(malformed_expr,"Wrong type for first argument. ugrid_demo(dim:int32, condition:string");
+    }
+    if (argv[1]->type() != dods_str_c) {
+        throw Error(malformed_expr,"Wrong type for second argument. ugrid_demo(dim:int32, condition:string");
+    }
+
+    BaseType *result = 0;		// This will hold the result
+    
+    // keep track of which DDS dimensions correspond to GF dimensions
+    map<GF::Dim_t, vector<Array::dimension> > rank_dimensions; 
+
+    GF::Grid *G = new GF::Grid("result");
+  
+    // 1) Find the nodes
+    DBG(cerr << "Reading 0-cells" << endl);
+    GF::AbstractCellArray *nodes = NULL;
+    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
+      BaseType *bt = *vi;
+      Array &arr = dynamic_cast<Array&>(*bt);
+      AttrTable &at = arr.get_attr_table();
+      DBG(cerr << "Array: " << arr.name() << endl);
+
+      int node_count = -1;  //error condition
+      AttrTable::Attr_iter loc = at.simple_find("grid_location");
+      if (loc != at.attr_end()) {
+        if (at.get_attr(loc, 0) == "node") {
+          node_count = 1; 
+          Array::Dim_iter di = arr.dim_begin();
+          DBG(cerr << "Interpreting 0-cells from dimensions: ");
+          rank_dimensions[0] = vector<Array::dimension>();
+          for (Array::Dim_iter di = arr.dim_begin(); di!= arr.dim_end(); di++) {
+            // These dimensions define the nodes.
+            DBG(cerr << di->name << ", ");
+            rank_dimensions[0].push_back(*di);
+            node_count *= di->c_size;
+          }
+          DBG(cerr << endl);
+        } // Bound to nodes?  
+      } // Has a "grid_location" attribute?
+      /* 
+We should use implicit0cells here, but that's limited to 
+cell ids that are numbered from zero.  The class can 
+and should be generalized, but I don't want to get 
+distracted fixing it.  
+Instead, we materialize the nodes as explciit cells.  Wastes memory.
+
+Update: We do use implicit0cells, noting that the index_origin attribute
+is currently only defined for k-cells, where k>0.
+For now, we do NOT preserve index_origin the result.
+We can therefore guarantee that nodes are numbered from 0.
+       */  
+      nodes = new GF::Implicit0Cells(node_count);
+/*
+
+      nodes = new GF::CellArray();
+      for (int i=index_origin; i<node_count; i++) {
+        // insert a cell of one node with id i
+        nodes->addCellNodes(&i, 1);
+      }
+*/    
+
+      // We've figured out which dimensions are associated with
+      // the nodes, so stop 
+      // TODO: Assumes only one grid per file!
+      break; 
+    }
+
+    // Attach the nodes to the grid
+    G->setKCells(nodes, 0);
+
+    // 2) For each k, find the k-cells
+    // k = 2, for now
+    DBG(cerr << "Reading 2-cells" << endl);
+    GF::CellArray *twocells = NULL;
+    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
+      BaseType *bt = *vi;
+      Array &arr = dynamic_cast<Array&>(*bt);
+      DBG(cerr << "Array: " << arr.name() << endl);
+      AttrTable &at = arr.get_attr_table();
+
+      AttrTable::Attr_iter iter_cell_type = at.simple_find("cell_type");
+
+      if (iter_cell_type != at.attr_end()) {        
+        string cell_type = at.get_attr(iter_cell_type, 0);
+        DBG(cerr << cell_type << endl);
+        if (cell_type == "tri_ccw") {
+          // Ok, we expect triangles
+          // which means a shape of 3xN
+          int twocell_count = -1, i=0;
+          int total_size = 1;
+          rank_dimensions[2] = vector<Array::dimension>();
+          for (Array::Dim_iter di = arr.dim_begin(); di!= arr.dim_end(); di++) {
+            total_size *= di->c_size;
+            rank_dimensions[2].push_back(*di);
+            if (i == 0) {
+              if (di->c_size != 3) {
+                DBG(cerr << "Cell array of type 'tri_ccw' must have a shape of 3xN, since triangles have three nodes." << endl);
+                throw Error(malformed_expr,"Cell array of type 'tri_ccw' must have a shape of 3xN, since triangles have three nodes.");
+              }
+            }
+            if (i == 1) {
+              twocell_count = di->c_size;
+            }
+            if (i>1) {
+              DBG(cerr << "Too many dimensions for a cell array of type 'tri_ccw'.  Expected shape of 3XN" << endl);
+              throw Error(malformed_expr,"Too many dimensions for a cell array of type 'tri_ccw'.  Expected shape of 3XN");
+            }
+            i++;
+          }
+
+          // interpret the array data as triangles
+          GF::Node *cellids = extract_array<GF::Node>(&arr);
+         
+          // adjust for index origin
+          AttrTable::Attr_iter iter_index_origin = at.simple_find("index_origin");
+          if (iter_index_origin != at.attr_end()) {
+            DBG(cerr << "Found an index origin attribute." << endl);
+            AttrTable::entry *index_origin_entry = *iter_index_origin;
+            int index_origin;
+            if (index_origin_entry->attr->size() == 1) {
+              AttrTable::entry *index_origin_entry = *iter_index_origin;
+              string val = (*index_origin_entry->attr)[0];
+              DBG(cerr << "Value: " << val << endl);
+              stringstream buffer(val);
+              // what happens if string cannot be converted to an integer?
+              buffer >> index_origin;
+              DBG(cerr << "converted: " << index_origin << endl);
+              if (index_origin != 0) {
+                for (int j=0; j<total_size; j++) {
+                  cellids[j] -= index_origin;
+                }
+              }
+            } else {
+              throw Error(malformed_expr,"Index origin attribute exists, but either no value supplied, or more than one value supplied.");
+            }
+          }
+
+          // Create the cell array
+          twocells = new GF::CellArray(cellids, twocell_count, 3);
+          // Attach it to the grid
+          G->setKCells(twocells, 2);
+        }
+      }
+
+    }
+ 
+    // 3) For each var, bind it to the appropriate dimension
+
+    // For each variable in the data source:
+    GF::GridField *input = new GF::GridField(G);
+    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
+      BaseType *bt = *vi;
+      if (bt->type() == dods_array_c) {
+        Array *arr = (Array *)bt;
+        DBG(cerr << "Data Array: " << arr->name() << endl);
+        // Each rank is associated with a sequence of dimensions
+        // Vars that have the same dimensions should be bound to the grid at that rank
+        // (Note that in gridfields, Dimension and rank are synonyms.  We
+        // use the latter here to avoid confusion).
+        map<GF::Dim_t, vector<Array::dimension> >::iterator iter;
+        for( iter = rank_dimensions.begin(); iter != rank_dimensions.end(); ++iter ) {
+          bool same = same_dimensions(arr, iter->second);
+          if (same) {
+            // This var should be bound to rank k
+            GF::Array *gfa = extract_gridfield_array(arr);
+            DBG(cerr << "Adding Attribute: " << gfa->sname() << endl);
+            input->AddAttribute(iter->first, gfa);
+          } else {
+            //This array does not appear to be associated with any rank of the unstructured grid.  Ignore for now.  Anything else we should do?
+          }
+        }
+      } // Ignore if not an array type.  Anything else we should do?
+    }
+    input->print();
+/*
+    input->print();
+    GF::GridFieldOperator *op = GF::RestrictOp(expr, dim, input);
+    GF::GridField *R = op->getResult(); 
+        
+    R->print();
+*/
+
+    // 4) Convert back to a DDS BaseType
+
+    /*
+    // Create variables for each cell dimension
+    // Create variables for each attribute at each rank
+    */
+
+    *btpp = result;
+    return;
+}
+#endif // GRIDFIELDS
+
 void register_functions(ConstraintEvaluator & ce)
 {
+#ifdef GRIDFIELDS
+    ce.add_function("ugrid_demo", function_ugrid_demo);
+#endif
     ce.add_function("grid", function_grid);
     ce.add_function("geogrid", function_geogrid);
     ce.add_function("linear_scale", function_linear_scale);
