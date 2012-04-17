@@ -1,3 +1,7 @@
+News for version 3.11.4
+
+Merged to trunk; tagged.
+
 News for version 3.11.3
 
 Changed the return value for dap-config --libs so that it does not contain 
