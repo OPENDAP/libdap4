@@ -424,7 +424,8 @@ AC_CONFIG_FILES([Makefile
                  tests/Makefile
                  tests/atlocal
                  unit-tests/Makefile
-                 unit-tests/cache-testsuite/Makefile])
+                 unit-tests/cache-testsuite/Makefile
+                 ugrid_project/bes.conf])
 AC_CONFIG_FILES([dap-config], [chmod +x dap-config]) 
 		 
 AC_OUTPUT

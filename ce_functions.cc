@@ -35,8 +35,6 @@
 
 #include "config.h"
 
-static char rcsid[]not_used = { "$Id$" };
-
 #include <limits.h>
 
 #include <cstdlib>      // used by strtod()
@@ -1266,22 +1264,23 @@ function_ugrid_demo(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 	"</function>";
     
     if (argc == 0) {
-	Str *response = new Str("info");
-	response->set_value(info);
-	*btpp = response;
-	return;
+        Str *response = new Str("info");
+        response->set_value(info);
+        *btpp = response;
+        return;
     }
 
     // Check number of arguments; DBG is a macro. Use #define
     // DODS_DEBUG to activate the debugging stuff.
     if (argc != 2)
-        throw Error(malformed_expr,"Wrong number of arguments to ugrid_demo. ugrid_demo(dim:int32, condition:string");
+        throw Error(malformed_expr,"Wrong number of arguments to ugrid_demo. ugrid_demo(dim:int32, condition:string); was passed " + long_to_string(argc) + " argument(s)");
 
+    //FIXME Neither of the input parameters are used.
     if (argv[0]->type() != dods_int32_c) {
-        throw Error(malformed_expr,"Wrong type for first argument. ugrid_demo(dim:int32, condition:string");
+        throw Error(malformed_expr,"Wrong type for first argument. ugrid_demo(dim:int32, condition:string); was passed a/an " + argv[1]->type_name());
     }
     if (argv[1]->type() != dods_str_c) {
-        throw Error(malformed_expr,"Wrong type for second argument. ugrid_demo(dim:int32, condition:string");
+        throw Error(malformed_expr,"Wrong type for second argument. ugrid_demo(dim:int32, condition:string); was passed a/an " + argv[1]->type_name());
     }
 
     BaseType *result = 0;		// This will hold the result
@@ -1466,6 +1465,13 @@ We can therefore guarantee that nodes are numbered from 0.
     // Create variables for each cell dimension
     // Create variables for each attribute at each rank
     */
+
+#if 1
+    //FIXME HACKHACKHACK
+    result = new Str("result");
+    string result_string = "The gridfields function is not complete yet.";
+    dynamic_cast<Str&>(*result).set_value(result_string);
+#endif
 
     *btpp = result;
     return;
