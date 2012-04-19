@@ -28,10 +28,6 @@
 
 #include "config.h"
 
-static char id[] not_used =
-    { "$Id$"
-    };
-
 #include <cmath>
 #include <iostream>
 #include <sstream>

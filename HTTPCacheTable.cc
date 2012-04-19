@@ -89,7 +89,7 @@
 #define LM_EXPIRATION(t) (min((MAX_LM_EXPIRATION), static_cast<int>((t) / 10)))
 #endif
 
-const int CACHE_TABLE_SIZE = 1499;
+const unsigned int CACHE_TABLE_SIZE = 1499;
 
 using namespace std;
 

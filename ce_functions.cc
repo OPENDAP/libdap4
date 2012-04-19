@@ -75,6 +75,8 @@
 #include "debug.h"
 #include "util.h"
 
+// GRIDFIELDS should never be defined since this was moved to the netcdf
+// handler. 4/19/12 jhrg
 #ifdef GRIDFIELDS
 #include <gridfields/restrict.h>
 #include <gridfields/gridfield.h>
@@ -101,7 +103,7 @@ int gse_parse(void *arg);
 void gse_restart(FILE * in);
 
 // Glue routines declared in gse.lex
-void gse_switch_to_buffer(void *new_buffer);
+// void gse_switch_to_buffer(void *new_buffer);
 void gse_delete_buffer(void *buffer);
 void *gse_string(const char *yy_str);
 
@@ -111,12 +113,6 @@ namespace libdap {
 inline bool double_eq(double lhs, double rhs, double epsilon = 1.0e-5)
 {
     return fabs(lhs - rhs) < epsilon;
-#if 0
-    if (lhs > rhs)
-        return (lhs - rhs) < ((lhs + rhs) / epsilon);
-    else
-        return (rhs - lhs) < ((lhs + rhs) / epsilon);
-#endif
 }
 
 /** Given a BaseType pointer, extract the string value it contains and return

@@ -121,24 +121,6 @@ fi
 
 # Checks for library functions.
 
-# These, at least some of them, cannot be used along with gnulib without
-# breaking stuff. Since we are not bothering to handle the cases where these
-# functions break, there's not much point in testing for them. However, it
-# might be a good thing to use the gnulib versions since those fix various
-# common problems found in many distributions.
-
-dnl AC_FUNC_CLOSEDIR_VOID
-dnl AC_FUNC_FORK
-dnl AC_FUNC_STRFTIME
-dnl AC_HEADER_STDBOOL
-dnl AC_FUNC_ALLOCA
-dnl AC_FUNC_ERROR_AT_LINE
-dnl AC_FUNC_MALLOC
-dnl AC_FUNC_MEMCMP
-dnl AC_FUNC_REALLOC
-dnl AC_FUNC_STAT
-dnl AC_FUNC_STRTOD
-
 dnl using AC_CHECK_FUNCS does not run macros from gnulib.
 AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv setenv strchr strerror strtol strtoul timegm mktime])
 
@@ -295,78 +277,6 @@ AC_SUBST([XML2_LIBS])
 AC_SUBST([XML2_STATIC_LIBS])
 AC_SUBST([XML2_CFLAGS])
 
-dnl DAP_CHECK_ZLIB
-
-dnl When pkgconfig support is added, use this
-libdap_libgridfields_module='libgridfields >= 0.7.0'
-
-libgf_ok="no"
-
-AC_WITH([gridfields],
-    [GF_LIBS="-L$withval/lib -lgridfields"
-     GF_CFLAGS="-I$withval/include"
-     AC_DEFINE([GRIDFIELDS],[1],[define if gridfields lib is present])
-     libgf_ok="yes"],
-    [])
-
-AC_ARG_ENABLE([gridfields],
-    AC_HELP_STRING([--enable-gridfields], [Enable libgridfields-based server functions (default is NO)]))
-
-if test "$libgf_ok" = "no" -a "$enable_gridfields" = "yes"
-then
-     
-AC_MSG_CHECKING([for libgridfields])
-if gridfields-config --version > /dev/null 2>&1
-then
-	version_libgf=`gridfields-config --version | sed 's@libgridfields \(.*\)@\1@'`
-
-	version_M=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
-	version_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
-	version_m_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
-	
-	dnl Test for several different versions of libgridfields
-	
-	if test $version_M -gt 0
-	then
-		libgf_ok='yes'
-	elif test $version_M -eq 0 && test $version_m -gt 7
-	then
-		libgf_ok='yes'
-	elif test $version_M -eq 0 && test $version_m -eq 7 && test $version_m_m -gt 0
-	then
-		libgf_ok='yes'
-	else
-		libgf_ok='no'
-	fi
-
-	if test "$libgf_ok"="no"
-	then
-  	    AC_MSG_ERROR([must have libgf 0.7.0 or greater, found $version_libgf])
-	fi
-
-	GF_LIBS="`gridfields-config --libs`"
-	GF_CFLAGS="`gridfields-config --cflags`"
-
-	AC_DEFINE([GRDIFIELDS],[1],[define if gridfields lib is present])
-	AC_MSG_RESULT([yes; used gridfields-config])
-else
-	AC_MSG_ERROR([I could not find libgridfields])
-fi
-
-fi
-
-AC_SUBST([GF_LIBS])
-AC_SUBST([GF_CFLAGS])
-
-if test "$libgf_ok" = "yes"
-then
-    echo "Set gridfields CFLAGS to $GF_CFLAGS"
-    echo "Set gridfields LIBS to $GF_LIBS"
-    AM_CONDITIONAL([USING_GRIDFIELDS],[true])
-else
-    AM_CONDITIONAL([USING_GRIDFIELDS],[false])
-fi
-
 AC_CHECK_LIB([pthread], [pthread_kill], 
 	[PTHREAD_LIBS="-lpthread"],
 	[AC_MSG_ERROR([I could not find pthreads])])
@@ -400,6 +310,7 @@ AS_IF([test "x$enable_checksums" = "xyes"], [
     dnl Do the stuff needed for enabling the feature
     dnl echo "Defining checksums! "
     AC_DEFINE([CHECKSUMS], 1, [Should checksums be generated])
+    AM_CONDITIONAL([CHECKSUMS_DEFINED], [true]) 
 ])
 
 dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in

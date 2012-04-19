@@ -7,13 +7,10 @@ aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
-
 AM_CXXFLAGS = 
+
 if COMPILER_IS_GCC
-AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-deprecated
-endif
-if USING_GRIDFIELDS 
-AM_CXXFLAGS += $(GF_CFLAGS)
+AM_CXXFLAGS += -Wall -W -Wcast-align
 endif
 
 AM_YFLAGS = -d -v
@@ -50,11 +47,10 @@ libparsers_la_LIBADD = $(XML2_LIBS)
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC) 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_CPPFLAGS = $(AM_CPPFLAGS)
-# crypto is only needed if the library is built with checksums on. 4/17/12
-libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) -lcrypto gl/libgnu.la \
-	libparsers.la
-if USING_GRIDFIELDS
-libdap_la_LIBADD += $(GF_LIBS)
+libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la libparsers.la
+
+if CHECKSUMS_DEFINED
+    libdap_la_LIBADD += -lcrypto 
 endif
 
 libdapclient_la_SOURCES = $(CLIENT_SRC) 

@@ -59,7 +59,7 @@ while test $# -gt 0; do
 	;;
 
     --libs)
-       	echo "-L${libdir} -ldap -ldapserver -ldapclient @CURL_LIBS@ @XML2_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @GF_LIBS@ @LIBS@"
+       	echo "-L${libdir} -ldap -ldapserver -ldapclient @CURL_LIBS@ @XML2_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @LIBS@"
         ;;
 #
 #   Changed CURL_STATIC_LIBS to CURL_LIBS because the former was including a
@@ -68,11 +68,11 @@ while test $# -gt 0; do
 #   jhrg 2/7/12
 
     --server-libs)
-       	echo "-L${libdir} -ldap -ldapserver @XML2_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @GF_LIBS@ @LIBS@"
+       	echo "-L${libdir} -ldap -ldapserver @XML2_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @LIBS@"
        	;;
 
     --client-libs)
-       	echo "-L${libdir} -ldap -ldapclient @CURL_LIBS@ @XML2_STATIC_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @GF_LIBS@ @LIBS@"
+       	echo "-L${libdir} -ldap -ldapclient @CURL_LIBS@ @XML2_STATIC_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @LIBS@"
        	;;
 
     --prefix)
