@@ -72,7 +72,7 @@ while test $# -gt 0; do
        	;;
 
     --client-libs)
-       	echo "-L${libdir} -ldap -ldapclient @CURL_LIBS@ @XML2_STATIC_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @LIBS@"
+       	echo "-L${libdir} -ldap -ldapclient @CURL_LIBS@ @XML2_LIBS@ @PTHREAD_LIBS@ @UUID_LIBS@ @LIBS@"
        	;;
 
     --prefix)

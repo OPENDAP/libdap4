@@ -36,10 +36,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    { "$Id$"
-    };
-
 #include "Byte.h"
 #include "Int16.h"
 #include "UInt16.h"
