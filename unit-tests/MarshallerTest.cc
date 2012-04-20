@@ -158,8 +158,9 @@ public:
         arr->append_dim(3, "dim2");
         arr->read();
         arr->set_read_p(true);
+	DBG(cerr << "arr->length(): " << arr->length() << endl);
         db = new dods_byte[arr->length() * sizeof(dods_byte)];
-        for (int i; i < arr->length(); ++i)
+        for (int i = 0; i < arr->length(); ++i)
             db[i] = 126;
         arr->value(db);
 
