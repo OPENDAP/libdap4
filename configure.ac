@@ -310,7 +310,9 @@ AS_IF([test "x$enable_checksums" = "xyes"], [
     dnl Do the stuff needed for enabling the feature
     dnl echo "Defining checksums! "
     AC_DEFINE([CHECKSUMS], 1, [Should checksums be generated])
-    AM_CONDITIONAL([CHECKSUMS_DEFINED], [true]) 
+    AM_CONDITIONAL([CHECKSUMS_DEFINED], [true]) ],
+    [ dnl else enable_checksums is false
+    AM_CONDITIONAL([CHECKSUMS_DEFINED], [false])
 ])
 
 dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in
