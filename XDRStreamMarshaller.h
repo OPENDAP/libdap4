@@ -35,25 +35,13 @@
 
 #include <iostream>
 
-#include <openssl/md5.h>
+#include <openssl/evp.h>
 
 using std::ostream ;
 using std::cout ;
 
 #include "Marshaller.h"
 #include "XDRUtils.h"
-
-#if 0
-#include <openssl/md5.h>
-
-unsigned char *MD5(const unsigned char *d, unsigned long n,
-                 unsigned char *md);
-
-int MD5_Init(MD5_CTX *c);
-int MD5_Update(MD5_CTX *c, const void *data,
-                 unsigned long len);
-int MD5_Final(unsigned char *md, MD5_CTX *c);
-#endif
 
 namespace libdap
 {
@@ -70,19 +58,20 @@ private:
     static char *	_buf ;
     XDR *			_sink ;
     ostream &		_out ;
-    MD5_CTX *       _md5 ;  // jhrg 1/18/12
+    EVP_MD_CTX *    _MD_CTX;    // jhrg 4/24/12
     bool            _write_data ; // jhrg 1/27/12
     bool            _checksum_ctx_valid ;
+    string          _checksum ; // jhrg 4/24/12
 
     				XDRStreamMarshaller() ;
     				XDRStreamMarshaller( const XDRStreamMarshaller &m ) ;
     XDRStreamMarshaller &operator=( const XDRStreamMarshaller & ) ;
 
 public:
-    				/* XDRStreamMarshaller( ostream &out ) ; */
     				XDRStreamMarshaller( ostream &out, bool checksum = false, bool write_data = true) ;
     virtual			~XDRStreamMarshaller() ;
 
+    virtual bool    checksums() { return _MD_CTX != 0; }
     virtual void    reset_checksum() ;
     virtual string  get_checksum() ;
     virtual void    checksum_update(const void *data, unsigned long len) ;

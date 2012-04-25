@@ -16,7 +16,7 @@ License along with this library; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <config.h>
+#include "config.h"
 
 /* AIX requires the alloca decl to be the first thing in the file. */
 #ifdef __GNUC__
@@ -33,7 +33,7 @@ char *alloca ();
 
 #include <vector>
 
-#ifndef WIN32
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <string.h>		// Added these. 10/20/98 jhrg

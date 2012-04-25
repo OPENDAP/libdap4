@@ -848,6 +848,12 @@ void
 BaseType::print_decl(FILE *out, string space, bool print_semi,
                      bool constraint_info, bool constrained)
 {
+    ostringstream oss;
+    print_decl(oss, space, print_semi, constraint_info, constrained);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
+
     // if printing the constrained declaration, exit if this variable was not
     // selected.
     if (constrained && !send_p())
@@ -865,6 +871,7 @@ BaseType::print_decl(FILE *out, string space, bool print_semi,
 
     if (print_semi)
         fprintf(out, ";\n") ;
+#endif
 }
 #endif
 
@@ -943,6 +950,17 @@ BaseType::print_decl(ostream &out, string space, bool print_semi,
 void
 BaseType::print_xml(FILE *out, string space, bool constrained)
 {
+    XMLWriter xml(space);
+    print_xml_writer(xml, constrained);
+    fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
+
+#if OLD_XML_METHODS
+    ostringstream oss;
+    print_xml(oss, space, constrained);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+#endif
+#if OLD_FILE_METHODS
+
     if (constrained && !send_p())
         return;
 
@@ -959,6 +977,8 @@ BaseType::print_xml(FILE *out, string space, bool constrained)
     else {
         fprintf(out, "/>\n"); // no attributes; just close tag.
     }
+#endif
+
 }
 #endif
 
@@ -972,6 +992,11 @@ BaseType::print_xml(FILE *out, string space, bool constrained)
 void
 BaseType::print_xml(ostream &out, string space, bool constrained)
 {
+    XMLWriter xml(space);
+    print_xml_writer(xml, constrained);
+    out << xml.get_doc();
+
+#if OLD_XML_METHODS
     if (constrained && !send_p())
         return;
 
@@ -988,6 +1013,7 @@ BaseType::print_xml(ostream &out, string space, bool constrained)
     else {
     out << "/>\n" ;
     }
+#endif
 }
 
 /** Write the XML representation of this variable. This method is used to
@@ -1014,7 +1040,6 @@ BaseType::print_xml_writer(XMLWriter &xml, bool constrained)
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
-
 }
 
 // Compares the object's current state with the semantics of a particular

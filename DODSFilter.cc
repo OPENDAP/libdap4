@@ -36,10 +36,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    {"$Id$"
-    };
-
 #include <signal.h>
 
 #ifndef WIN32
@@ -52,6 +48,7 @@ static char rcsid[] not_used =
 #endif
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <algorithm>
 #include <cstdlib>
@@ -69,7 +66,7 @@ static char rcsid[] not_used =
 #include "util.h"
 #include "escaping.h"
 #include "DODSFilter.h"
-#if FILE_METHODS
+#if OLD_FILE_METHODS
 #include "XDRFileMarshaller.h"
 #endif
 #include "XDRStreamMarshaller.h"
@@ -286,11 +283,14 @@ DODSFilter::process_options(int argc, char *argv[])
             d_if_modified_since
             = static_cast<time_t>(strtol(getopt.optarg, NULL, 10));
             break;
-        case 'h': print_usage(); // exit(1);
+        case 'h': print_usage();
+            break;
+                                 // exit(1);
                                  // Removed 12/29/2011; exit should
                                  // not be called by a library. NB:
                                  // print_usage() throws Error.
         default: print_usage();  // Throws Error
+            break;
         }
     }
 
@@ -699,6 +699,11 @@ void
 DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location,
                      bool with_mime_headers) const
 {
+    ostringstream oss;
+    send_das(oss, das, anc_location, with_mime_headers);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     time_t das_lmt = get_das_last_modified_time(anc_location);
     if (is_conditional()
         && das_lmt <= get_request_if_modified_since()
@@ -711,6 +716,7 @@ DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location,
         das.print(out);
     }
     fflush(out) ;
+#endif
 }
 #endif
 
@@ -773,6 +779,11 @@ DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
                      const string &anc_location,
                      bool with_mime_headers) const
 {
+    ostringstream oss;
+    send_dds(oss, dds, eval, constrained, anc_location, with_mime_headers);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     // If constrained, parse the constraint. Throws Error or InternalErr.
     if (constrained)
         eval.parse_constraint(d_ce, dds);
@@ -796,6 +807,7 @@ DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
     }
 
     fflush(out) ;
+#endif
 }
 #endif
 
@@ -861,6 +873,11 @@ void
 DODSFilter::functional_constraint(BaseType &var, DDS &dds,
                                   ConstraintEvaluator &eval, FILE *out) const
 {
+    ostringstream oss;
+    functional_constraint(var, dds, eval, oss);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     fprintf(out, "Dataset {\n");
     var.print_decl(out, "    ", true, false, true);
     fprintf(out, "} function_value;\n");
@@ -877,6 +894,7 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
     catch (Error &e) {
         throw;
     }
+#endif
 }
 #endif
 
@@ -910,6 +928,11 @@ void
 DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
                                FILE * out, bool ce_eval) const
 {
+    ostringstream oss;
+    dataset_constraint(dds, eval, oss, ce_eval);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     // send constrained DDS
     dds.print_constrained(out);
     fprintf(out, "Data:\n");
@@ -929,6 +952,7 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
     catch (Error & e) {
         throw;
     }
+#endif
 }
 #endif
 
@@ -977,7 +1001,7 @@ DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
     string cid = string(&uuid[0]) + "@" + string(&domain[0]);
 
     // Send constrained DDX with a data blob reference
-    dds.print_xml(out, true, cid);
+    dds.print_xml_writer(out, true, cid);
 
     // Write the MPM headers for the data part of the response.
     set_mime_data_boundary(out, boundary, cid, dap4_data, binary);
@@ -1020,6 +1044,12 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
                       FILE * data_stream, const string & anc_location,
                       bool with_mime_headers) const
 {
+    ostringstream oss;
+    send_data(dds, eval, oss, anc_location, with_mime_headers);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), data_stream);
+
+#if OLD_FILE_METHODS
+
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
     // response.
@@ -1089,6 +1119,7 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     }
 
     fflush(data_stream);
+#endif
 }
 #endif
 
@@ -1188,6 +1219,11 @@ void
 DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
                      bool with_mime_headers) const
 {
+    ostringstream oss;
+    send_ddx(dds, eval, oss, with_mime_headers);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     // If constrained, parse the constraint. Throws Error or InternalErr.
     if (!d_ce.empty())
         eval.parse_constraint(d_ce, dds);
@@ -1210,6 +1246,7 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
             set_mime_text(out, dap4_ddx, d_cgi_ver, x_plain, dds_lmt);
         dds.print_xml(out, !d_ce.empty(), "");
     }
+#endif
 }
 #endif
 
@@ -1247,7 +1284,7 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
     else {
         if (with_mime_headers)
             set_mime_text(out, dap4_ddx, d_cgi_ver, x_plain, dds_lmt);
-        dds.print_xml(out, !d_ce.empty(), "");
+        dds.print_xml_writer(out, !d_ce.empty(), "");
     }
 }
 

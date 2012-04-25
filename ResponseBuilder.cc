@@ -342,7 +342,7 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS & dds, Constraint
     string cid = string(&uuid[0]) + "@" + string(&domain[0]);
 
     // Send constrained DDX with a data blob reference
-    dds.print_xml(out, true, cid);
+    dds.print_xml_writer(out, true, cid);
 
     // Write the MPM headers for the data part of the response.
     set_mime_data_boundary(out, boundary, cid, dap4_data, binary);

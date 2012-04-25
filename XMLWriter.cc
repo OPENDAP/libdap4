@@ -1,3 +1,26 @@
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2010 OPeNDAP, Inc.
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
+
 /*
  * XMLWriter.cpp
  *
@@ -99,4 +122,29 @@ const char *XMLWriter::get_doc() {
 #endif
 
     return (const char *)d_doc_buf->content;
+}
+
+unsigned int XMLWriter::get_doc_size() {
+    if (d_writer && d_started) {
+        if (xmlTextWriterEndDocument(d_writer) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Error ending the document");
+
+        d_ended = true;
+
+        // must call this before getting the buffer content. Odd, but appears to be true.
+        // jhrg
+        xmlFreeTextWriter(d_writer);
+        d_writer = 0;
+    }
+
+    if (!d_doc_buf->content)
+        throw InternalErr(__FILE__, __LINE__, "Error retrieving response document as string");
+#if 0
+    // This is not needed when the TextWriter is freed before getting buffer content.
+    if (xmlTextWriterFlush(d_writer) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Error flushing the xml writer buffer");
+#endif
+
+    // how much of the buffer is in use?
+    return d_doc_buf->use;
 }

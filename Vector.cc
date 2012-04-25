@@ -39,14 +39,16 @@
 
 //#define DODS_DEBUG
 
+#include <sstream>
+#include <vector>
 #include <algorithm>
 
 #include "Vector.h"
+#include "dods-datatypes.h"
 #include "escaping.h"
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
-#include <sstream>
 
 using std::cerr;
 using std::endl;
@@ -468,7 +470,9 @@ BaseType *Vector::var(unsigned int i)
             break;
 
         default:
-            cerr << "Vector::var: Unrecognized type" << endl;
+            throw Error ("Vector::var: Unrecognized type");
+            //cerr << "Vector::var: Unrecognized type" << endl;
+            break;
     }
 
     return 0;

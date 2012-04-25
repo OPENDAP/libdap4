@@ -227,9 +227,9 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	GridGeoConstraint.cc Clause.cc RValue.cc			\
 	ConstraintEvaluator.cc ArrayGeoConstraint.cc DapIndent.cc	\
 	Operators.h XDRUtils.cc XDRFileMarshaller.cc			\
-	XDRFileUnMarshaller.cc XDRStreamMarshaller.cc			\
+	XDRStreamMarshaller.cc XDRFileUnMarshaller.cc			\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc
-
+	
 Operators.h: ce_expr.tab.hh
 
 # Operators.h is included in with the source to prevent it from bing installed
@@ -250,7 +250,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	ArrayGeoConstraint.h ce_functions.h gse_parser.h GSEClause.h	\
 	util_mit.h expr.h Clause.h RValue.h ConstraintEvaluator.h	\
 	ce_parser.h DapIndent.h DapObj.h XDRFileMarshaller.h		\
-	Marshaller.h XDRFileUnMarshaller.h UnMarshaller.h		\
+	Marshaller.h UnMarshaller.h XDRFileUnMarshaller.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h 
 

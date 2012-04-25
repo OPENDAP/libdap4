@@ -37,11 +37,7 @@
 #include "config.h"
 
 //#define DODS_DEBUG
-#define FILE_METHODS 1
-
-static char rcsid[] not_used =
-    { "$Id$"
-    };
+#define FILE_UN_MARSHALLER 1
 
 #include <cstring>
 #include <fstream>
@@ -53,7 +49,7 @@ static char rcsid[] not_used =
 #include "escaping.h"
 #include "RCReader.h"
 #include "DDXParserSAX2.h"
-#if FILE_METHODS
+#if FILE_UN_MARSHALLER
 #include "XDRFileUnMarshaller.h"
 #else
 #include "fdiostream.h"
@@ -118,10 +114,10 @@ Connect::process_data(DataDDS &data, Response *rs)
 		    "application/octet-stream", dap4_data, data_cid);
 
 	    // Now read the data
-#if FILE_METHODS
+#if FILE_UN_MARSHALLER
 	    XDRFileUnMarshaller um( rs->get_stream() ) ;
 #else
-            fpistream in ( rs->get_stream() );
+        fpistream in ( rs->get_stream() );
 	    XDRStreamUnMarshaller um( in ) ;
 #endif
 #if 0
@@ -144,7 +140,7 @@ Connect::process_data(DataDDS &data, Response *rs)
     default: {
             // Parse the DDS; throw an exception on error.
             data.parse(rs->get_stream());
-#if FILE_METHODS
+#if FILE_UN_MARSHALLER
             XDRFileUnMarshaller um( rs->get_stream() ) ;
 #else
             fpistream in ( rs->get_stream() );

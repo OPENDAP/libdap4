@@ -33,14 +33,9 @@
 //
 // jhrg 9/7/94
 
-#include <iomanip>
-
 #include "config.h"
 
-static char rcsid[] not_used =
-    {"$Id$"
-    };
-
+#include <sstream>
 #include <iomanip>
 
 #include "Byte.h"
@@ -208,6 +203,11 @@ Float64::set_value(dods_float64 val)
 void
 Float64::print_val(FILE *out, string space, bool print_decl_p)
 {
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     // FIX: need to set precision in the printing somehow.
     // os.precision(DODS_DBL_DIG);
 
@@ -217,6 +217,7 @@ Float64::print_val(FILE *out, string space, bool print_decl_p)
     }
     else
         fprintf(out, "%.15g", _buf) ;
+#endif
 }
 #endif
 

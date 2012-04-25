@@ -1339,6 +1339,11 @@ void
 Sequence::print_one_row(FILE *out, int row, string space,
                         bool print_row_num)
 {
+    ostringstream oss;
+    print_one_row(oss, row, space, print_row_num);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     if (print_row_num)
         fprintf(out, "\n%s%d: ", space.c_str(), row) ;
 
@@ -1371,6 +1376,7 @@ Sequence::print_one_row(FILE *out, int row, string space,
     }
 
     fprintf(out, " }") ;
+#endif
 }
 #endif
 
@@ -1425,6 +1431,11 @@ void
 Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
                             bool print_row_numbers)
 {
+    ostringstream oss;
+    print_val_by_rows(oss, space, print_decl_p, print_row_numbers);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     if (print_decl_p) {
         print_decl(out, space, false);
         fprintf(out, " = ") ;
@@ -1444,6 +1455,7 @@ Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
 
     if (print_decl_p)
         fprintf(out, ";\n") ;
+#endif
 }
 #endif
 

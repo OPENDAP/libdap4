@@ -46,9 +46,11 @@
 
 #include "config.h"
 
-#ifndef WIN32
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#else
+#endif
+
+#ifdef WIN32
 #include <io.h>
 #include <fcntl.h>
 #include <process.h>

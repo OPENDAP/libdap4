@@ -12,7 +12,7 @@
 #endif
 #include <fcntl.h>
 
-//#define DODS_DEBUG 1
+// #define DODS_DEBUG 1
 
 #include <iostream>
 #include <fstream>
@@ -81,12 +81,15 @@ CPPUNIT_TEST_SUITE( MarshallerTest );
         CPPUNIT_TEST( structure_stream_deserialize_test );
         CPPUNIT_TEST( grid_stream_deserialize_test );
         CPPUNIT_TEST( sequence_stream_deserialize_test );
+
 #if CHECKSUMS
         CPPUNIT_TEST( simple_types_stream_serialize_checksum_test );
         CPPUNIT_TEST( array_stream_serialize_checksum_test );
         CPPUNIT_TEST( structure_stream_serialize_checksum_test );
         CPPUNIT_TEST( grid_stream_serialize_checksum_test );
+#if 0
         CPPUNIT_TEST( sequence_stream_serialize_checksum_test );
+#endif
 #endif
     CPPUNIT_TEST_SUITE_END( );
 
@@ -158,7 +161,7 @@ public:
         arr->append_dim(3, "dim2");
         arr->read();
         arr->set_read_p(true);
-	DBG(cerr << "arr->length(): " << arr->length() << endl);
+
         db = new dods_byte[arr->length() * sizeof(dods_byte)];
         for (int i = 0; i < arr->length(); ++i)
             db[i] = 126;
@@ -318,13 +321,6 @@ public:
         try {
             FILE *f = fopen("struct_test.file", "w");
             XDRFileMarshaller fm(f);
-#if 0
-            TestStructure s("s");
-            s->add_var(i32);
-            s->add_var(str);
-            s->add_var(arr);
-            s->set_send_p(true);
-#endif
             s->serialize(eval, dds, fm, false);
         }
         catch( Error &e ) {
@@ -731,13 +727,6 @@ public:
         try {
             ofstream strm("struct_test.strm", ios::out | ios::trunc);
             XDRStreamMarshaller sm(strm);
-#if 0
-            TestStructure s("s");
-            s->add_var(i32);
-            s->add_var(str);
-            s->add_var(arr);
-            s->set_send_p(true);
-#endif
             s->serialize(eval, dds, sm, false);
         }
         catch( Error &e ) {
@@ -977,46 +966,53 @@ public:
 
             sm.reset_checksum();
             b->serialize(eval, dds, sm, false);
-            // cerr << sm.get_checksum() << endl;
-            // NB: Checksum can be called at most once between calls to
-            // reset_checksum().
-            CPPUNIT_ASSERT(sm.get_checksum() == "00594fd4f42ba43fc1ca0427a0576295");
+            DBG(cerr << sm.get_checksum() << endl);
+            CPPUNIT_ASSERT(sm.get_checksum() == "85e53271e14006f0265921d02d4d736cdc580b0b");
 
             sm.reset_checksum();
             i16->serialize(eval, dds, sm, false);
-            CPPUNIT_ASSERT(sm.get_checksum() == "e1542bf1157a45fa5434ef0f8ead95fe");
+            DBG(cerr << sm.get_checksum() << endl);
+            CPPUNIT_ASSERT(sm.get_checksum() == "fb7cc6f64453ad5a9926a1ba40955198004f6b31");
 
             sm.reset_checksum();
             i32->serialize(eval, dds, sm, false);
-            CPPUNIT_ASSERT(sm.get_checksum() == "623ad5eda301ae082d466141a7f6dcaf");
+            DBG(cerr << sm.get_checksum() << endl);
+            CPPUNIT_ASSERT(sm.get_checksum() == "d245351a7b5cf9244f146fa0763b4dd036245666");
 
             sm.reset_checksum();
             ui16->serialize(eval, dds, sm, false);
-            CPPUNIT_ASSERT(sm.get_checksum() == "97e5469b504c8e8fdff3870a9c170505");
+            DBG(cerr << sm.get_checksum() << endl);
+            CPPUNIT_ASSERT(sm.get_checksum() == "f1e39479b3f84f40a6dca061ace8c910036cb867");
 
             sm.reset_checksum();
             ui32->serialize(eval, dds, sm, false);
-            CPPUNIT_ASSERT(sm.get_checksum() == "def59b1b1c5b8571629665d94c06dece");
+            DBG(cerr << sm.get_checksum() << endl);
+            CPPUNIT_ASSERT(sm.get_checksum() == "0d75307097b3f51d5b327f59e775165d4b1bfefa");
 
             sm.reset_checksum();
             f32->serialize(eval, dds, sm, false);
-            CPPUNIT_ASSERT(sm.get_checksum() == "f598b75413dfea585f918dc5fd3bd4af");
+            DBG(cerr << sm.get_checksum() << endl);
+            CPPUNIT_ASSERT(sm.get_checksum() == "16b84e7d293b3a53ceb97b9e50999b7ca2d17204");
 
             sm.reset_checksum();
             f64->serialize(eval, dds, sm, false);
-            CPPUNIT_ASSERT(sm.get_checksum() == "db81ae031cbc240bcc699ddf9a2ffe03");
+            DBG(cerr << sm.get_checksum() << endl);
+            CPPUNIT_ASSERT(sm.get_checksum() == "e8f339d9807f4998d8dc11e4c9d6f2ed05ca50cb");
 
             sm.reset_checksum();
             str->serialize(eval, dds, sm, false);
             string cs = sm.get_checksum();
             DBG(cerr << "cs: " << cs << endl);
-            CPPUNIT_ASSERT(cs == "34a13db3c3fc434ec6016f2b46ce01b2");
+            // This value changes with the number of times str is serialized
+            // since the TestStr class returns different values for each call
+            // to read().
+            CPPUNIT_ASSERT(cs == "77b52cf559aec21b5bb06785693c915cdd7983c3");
 
             sm.reset_checksum();
             url->serialize(eval, dds, sm, false);
             cs = sm.get_checksum();
             DBG(cerr << "cs: " << cs << endl);
-            CPPUNIT_ASSERT(cs == "98e8fb12c7b3467d3489a4a04e9eddff");
+            CPPUNIT_ASSERT(cs == "18c61893206349dfc1ee4d030cfa18f924d44571");
         }
         catch( Error &e ) {
             string err = "failed:" + e.get_error_message();
@@ -1035,7 +1031,7 @@ public:
             string cs = sm.get_checksum();
 
             DBG(cerr << cs << endl);
-            CPPUNIT_ASSERT(cs == "9ddd02276e5c30436e3b530eba05ad6a");
+            CPPUNIT_ASSERT(cs == "9f39fdfeaf3d34181b346e2eec26abe9d9cdde3a");
         }
         catch( Error &e ) {
             string err = "failed:" + e.get_error_message();
@@ -1048,19 +1044,12 @@ public:
         try {
             ofstream strm("struct_test.strm", ios::out | ios::trunc);
             XDRStreamMarshaller sm(strm, true);
-#if 0
-            TestStructure s("s");
-            s->add_var(i32);
-            s->add_var(str);
-            s->add_var(arr);
-            s->set_send_p(true);
-#endif
             sm.reset_checksum();
             s->serialize(eval, dds, sm, false);
             string cs = sm.get_checksum();
 
             DBG(cerr << cs << endl);
-            CPPUNIT_ASSERT(cs == "c02e69c6e59c7ba0cbb40d7a1311399d");
+            CPPUNIT_ASSERT(cs == "9f39fdfeaf3d34181b346e2eec26abe9d9cdde3a");
         }
         catch( Error &e ) {
             string err = "failed:" + e.get_error_message();
@@ -1097,7 +1086,7 @@ public:
             string cs = sm.get_checksum();
 
             DBG(cerr << cs << endl);
-            CPPUNIT_ASSERT(cs == "176612ebf0983a27635d963fd3148eea");
+            CPPUNIT_ASSERT(cs == "ed67de94237ec33d220d8fb75734c195d64d4794");
         }
         catch( Error &e ) {
             string err = "failed:" + e.get_error_message();
@@ -1130,7 +1119,7 @@ public:
             string cs = sm.get_checksum();
 
             DBG(cerr << cs << endl);
-            CPPUNIT_ASSERT(cs == "d0c837cf518882338dceb7e7428e2cd1");
+            CPPUNIT_ASSERT(cs == "7b99e35c2fb361eb27f51aec30fc2a17ac8cda50");
         }
         catch( Error &e ) {
             string err = "failed:" + e.get_error_message();

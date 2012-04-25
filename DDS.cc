@@ -33,10 +33,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    {"$Id$"
-    };
-
 #include <cstdio>
 #include <sys/types.h>
 
@@ -100,7 +96,7 @@ const string c_xml_namespace = "http://www.w3.org/XML/1998/namespace";
 
 using namespace std;
 
-void ddsrestart(FILE *yyin); // Defined in dds.tab.c
+// void ddsrestart(FILE *yyin); // Defined in dds.tab.c
 int ddsparse(void *arg);
 
 // Glue for the DDS parser defined in dds.lex
@@ -877,12 +873,11 @@ DDS::parse(FILE *in)
 void
 DDS::print(FILE *out)
 {
-#if 0
     ostringstream oss;
     print(oss);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 
-    fwrite(oss.str().c_str(), oss.str().length(), 1, out);
-#else
+#if OLD_FILE_METHODS
     fprintf(out, "Dataset {\n") ;
 
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
@@ -925,6 +920,11 @@ DDS::print(ostream &out)
 void
 DDS::print_constrained(FILE *out)
 {
+    ostringstream oss;
+    print_constrained(oss);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     fprintf(out, "Dataset {\n") ;
 
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
@@ -937,6 +937,7 @@ DDS::print_constrained(FILE *out)
     fprintf(out, "} %s;\n", id2www(name).c_str()) ;
 
     return;
+#endif
 }
 #endif
 
@@ -968,6 +969,8 @@ DDS::print_constrained(ostream &out)
 }
 
 #if FILE_METHODS
+#if OLD_FILE_METHODS
+
 class VariablePrintXML : public unary_function<BaseType *, void>
 {
     FILE *d_out;
@@ -981,7 +984,7 @@ public:
         bt->print_xml(d_out, "    ", d_constrained);
     }
 };
-
+#endif
 /** Print an XML representation of this DDS. This method is used to generate
     the part of the DDX response. The \c Dataset tag is \e not written by
     this code. The caller of this method must handle writing that and
@@ -998,9 +1001,7 @@ DDS::print_xml(FILE *out, bool constrained, const string &blob)
 {
     ostringstream oss;
     print_xml_writer(oss, constrained, blob);
-
-    string doc = oss.str();
-    fwrite(doc.data(), 1, doc.length(), out);
+    fwrite(oss.str().data(), 1, oss.str().length(), out);
 
 #if 0
     fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -1053,6 +1054,7 @@ DDS::print_xml(FILE *out, bool constrained, const string &blob)
 }
 #endif
 
+#if OLD_XML_METHODS
 class VariablePrintXMLStrm : public unary_function<BaseType *, void>
 {
     ostream &d_out;
@@ -1066,6 +1068,7 @@ public:
         bt->print_xml(d_out, "    ", d_constrained);
     }
 };
+#endif
 
 /** Print an XML representation of this DDS. This method is used to generate
     the part of the DDX response. The \c Dataset tag is \e not written by
@@ -1226,7 +1229,7 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
         if (xmlTextWriterEndElement(xml.get_writer()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not end dataBLOB element");
     }
-    else if (!blob.empty() && (get_dap_major() == 3 && get_dap_minor() >= 2)  || get_dap_major() >= 4) {
+    else if (!blob.empty() && ((get_dap_major() == 3 && get_dap_minor() >= 2)  || get_dap_major() >= 4)) {
         if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "blob") < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write blob element");
         string cid="cid:" + blob;

@@ -1302,9 +1302,15 @@ void AttrTable::print(ostream &out, string pad, bool dereference)
  @deprecated */
 void AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
 {
+    XMLWriter xml(pad);
+    print_xml_writer(xml);
+    fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
+
+#if OLD_XML_MOETHODS
     ostringstream oss;
     print_xml(oss, pad);
     fwrite(oss.str().data(), 1, oss.str().length(), out);
+#endif
 
 #if 0
     // Why this works: AttrTable is really a hacked class that used to

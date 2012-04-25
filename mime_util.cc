@@ -38,10 +38,6 @@
 #include "config.h"
 #undef FILE_METHODS
 
-static char rcsid[] not_used =
-    {"$Id$"
-    };
-
 #include <cstring>
 #include <cstdio>
 #include <ctype.h>
@@ -170,7 +166,7 @@ rfc822_date(const time_t t)
 }
 
 static const int TimLen = 26; // length of string from asctime()
-static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
+//static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
 
 /** This sends a formatted block of text to the client, containing
     version information about various aspects of the server.  The

@@ -646,6 +646,8 @@ glob(const char *c, const char *s)
             break;
         }
     }
+
+    return 1;   // Should never get here; this quiets gcc's warning
 }
 
 /*

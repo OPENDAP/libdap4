@@ -35,19 +35,15 @@
 
 #include "config.h"
 
-#define DODS_DEBUG
-
-static char rcsid[] not_used =
-    { "$Id$" };
+// #define DODS_DEBUG
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef WIN32
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <string.h>
 #include <errno.h>
-
 
 #include <iostream>
 #include <fstream>
@@ -59,7 +55,9 @@ static char rcsid[] not_used =
 #include "DDS.h"
 #include "DataDDS.h"
 #include "ConstraintEvaluator.h"
+#if 0
 #include "XDRFileUnMarshaller.h"
+#endif
 #include "XDRStreamUnMarshaller.h"
 #include "XDRStreamMarshaller.h"
 #if 0
@@ -104,7 +102,7 @@ void intern_data_test(const string & dds_name, const bool constraint_expr,
                  const string & ce, const bool series_values);
 
 int ce_exprlex();               // exprlex() uses the global ce_exprlval
-int ce_exprparse(void *arg);
+// int ce_exprparse(void *arg);
 void ce_exprrestart(FILE * in);
 
 // Glue routines declared in expr.lex
@@ -359,6 +357,7 @@ void test_scanner(bool show_prompt)
             break;
         default:
             cout << "Error: Unrecognized input" << endl;
+            break;
         }
 
         cout << prompt << flush;  // print prompt after output

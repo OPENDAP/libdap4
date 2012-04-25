@@ -33,6 +33,7 @@
 #include "config.h"
 
 #include <string>
+#include <sstream>
 #include <algorithm>
 #include <functional>
 
@@ -343,6 +344,11 @@ void
 Constructor::print_decl(FILE *out, string space, bool print_semi,
                         bool constraint_info, bool constrained)
 {
+    ostringstream oss;
+    print_decl(oss, space, print_semi, constraint_info, constrained);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     if (constrained && !send_p())
         return;
 
@@ -362,6 +368,7 @@ Constructor::print_decl(FILE *out, string space, bool print_semi,
 
     if (print_semi)
         fprintf(out, ";\n") ;
+#endif
 }
 #endif
 
@@ -391,6 +398,7 @@ Constructor::print_decl(ostream &out, string space, bool print_semi,
 }
 
 #if FILE_METHODS
+#if OLD_FILE_METHODS
 class PrintField : public unary_function<BaseType *, void>
 {
     FILE *d_out;
@@ -406,13 +414,24 @@ public:
         btp->print_xml(d_out, d_space, d_constrained);
     }
 };
-
+#endif
 /**
  * @deprecated
  */
 void
 Constructor::print_xml(FILE *out, string space, bool constrained)
 {
+    XMLWriter xml(space);
+    print_xml_writer(xml, constrained);
+    fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
+
+#if OLD_XML_METHODS
+    ostringstream oss;
+    print_xml(oss, space, constrained);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+#endif
+
+#if OLD_FILE_METHODS
     if (constrained && !send_p())
         return;
 
@@ -436,9 +455,11 @@ Constructor::print_xml(FILE *out, string space, bool constrained)
     else {
         fprintf(out, "/>\n");
     }
+#endif
 }
 #endif
 
+#if OLD_XML_METHODS
 class PrintFieldStrm : public unary_function<BaseType *, void>
 {
     ostream &d_out;
@@ -454,6 +475,7 @@ public:
         btp->print_xml(d_out, d_space, d_constrained);
     }
 };
+#endif
 
 /**
  * @deprecated
@@ -461,6 +483,11 @@ public:
 void
 Constructor::print_xml(ostream &out, string space, bool constrained)
 {
+    XMLWriter xml(space);
+    print_xml_writer(xml, constrained);
+    out << xml.get_doc();
+
+#if OLD_XML_METHODS
     if (constrained && !send_p())
         return;
 
@@ -484,6 +511,7 @@ Constructor::print_xml(ostream &out, string space, bool constrained)
     else {
     out << "/>\n" ;
     }
+#endif
 }
 
 class PrintFieldXMLWriter : public unary_function<BaseType *, void>

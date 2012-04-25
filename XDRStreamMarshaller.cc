@@ -59,7 +59,7 @@ char *XDRStreamMarshaller::_buf = 0;
  * @param write_data If true, write data values. True by default
  */
 XDRStreamMarshaller::XDRStreamMarshaller(ostream &out, bool checksum, bool write_data) :
-    _sink(0), _out(out), _md5(0), _write_data(write_data), _checksum_ctx_valid(false)
+    _sink(0), _out(out), _MD_CTX(0), _write_data(write_data), _checksum_ctx_valid(false)
 {
     if (!_buf)
         _buf = (char *) malloc(XDR_DAP_BUFF_SIZE);
@@ -69,9 +69,11 @@ XDRStreamMarshaller::XDRStreamMarshaller(ostream &out, bool checksum, bool write
     _sink = new XDR;
     xdrmem_create(_sink, _buf, XDR_DAP_BUFF_SIZE, XDR_ENCODE);
 
+#if CHECKSUMS
     if (checksum) {
-        _md5 = reinterpret_cast<MD5_CTX*>(new char[sizeof(MD5_CTX)]);
+        _MD_CTX = EVP_MD_CTX_create();
     }
+#endif
 }
 
 XDRStreamMarshaller::XDRStreamMarshaller() :
@@ -100,6 +102,11 @@ XDRStreamMarshaller::~XDRStreamMarshaller()
         xdr_destroy(_sink); //delete_xdrstdio(_sink);
 
     _sink = 0;
+
+#if CHECKSUMS
+    if (_MD_CTX)
+        EVP_MD_CTX_destroy(_MD_CTX);
+#endif
 }
 
 /** Initialize the checksum buffer. This resets the checksum calculation.
@@ -108,13 +115,15 @@ XDRStreamMarshaller::~XDRStreamMarshaller()
  */
 void XDRStreamMarshaller::reset_checksum()
 {
-    if (_md5 == 0)
-        throw InternalErr( __FILE__, __LINE__, "checksum_init() called by checksum is not enabled.");
+#if CHECKSUMS
+    if (_MD_CTX == 0)
+        throw InternalErr( __FILE__, __LINE__, "reset_checksum() called by checksum is not enabled.");
 
-    if (MD5_Init(_md5) == 0)
-        throw Error("Error initializing the checksum buffer.");
+    if (EVP_DigestInit_ex(_MD_CTX, EVP_sha1(), 0) == 0)
+        throw Error("Failed to initialize checksum object.");
 
     _checksum_ctx_valid = true;
+#endif
 }
 
 /** Get the current checksum. It is not possible to continue computing the
@@ -124,47 +133,54 @@ void XDRStreamMarshaller::reset_checksum()
  */
 string XDRStreamMarshaller::get_checksum()
 {
-    if (_md5 == 0)
-        throw InternalErr( __FILE__, __LINE__, "checksum_init() called by checksum is not enabled.");
+#if CHECKSUMS
+    if (_MD_CTX == 0)
+        throw InternalErr(__FILE__, __LINE__, "checksum_init() called by checksum is not enabled.");
 
-    if (!_checksum_ctx_valid)
-        throw InternalErr( __FILE__, __LINE__, "Invalid checksum context.");
+    if (_checksum_ctx_valid) {
+        // '...Final()' 'erases' the context so the next call without a reset
+        // returns a bogus value.
+        _checksum_ctx_valid = false;
 
-    // Setting this here ensures that we call get_checksum() only once for
-    // a context. The 'Final()' 'erases' the context so the next checksum is
-    // bogus.
-    _checksum_ctx_valid = false;
+        vector<unsigned char> md(EVP_MAX_MD_SIZE);
+        unsigned int md_len;
+        if (EVP_DigestFinal_ex(_MD_CTX, &md[0], &md_len) == 0)
+            throw Error("Error computing the checksum (checksum computation).");
 
-    vector<unsigned char> md(MD5_DIGEST_LENGTH);
-    if (MD5_Final(&md[0], _md5) == 0)
-        throw Error("Error computing the checksum.");
+        ostringstream oss;
+        oss.setf(ios::hex, ios::basefield);
+        for (unsigned int i = 0; i < md_len; ++i) {
+            oss << setfill('0') << setw(2) << (unsigned int) md[i];
+        }
 
-    ostringstream oss;
-    oss.setf ( ios::hex, ios::basefield );
-    for (int i = 0; i < MD5_DIGEST_LENGTH; ++i) {
-        oss << setfill('0') << setw(2) << (unsigned int)md[i];
+        _checksum = oss.str();
     }
 
-    return oss.str();
+    return _checksum;
+#else
+    return "";
+#endif
 }
 
 void XDRStreamMarshaller::checksum_update(const void *data, unsigned long len)
 {
-    if (_md5 == 0)
+#if CHECKSUMS
+    if (_MD_CTX == 0)
         throw InternalErr( __FILE__, __LINE__, "checksum_init() called by checksum is not enabled.");
 
     if (!_checksum_ctx_valid)
-        throw InternalErr( __FILE__, __LINE__, "Invalid checksum context.");
+        throw InternalErr( __FILE__, __LINE__, "Invalid checksum context (checksum update).");
 
-    if (MD5_Update(_md5, data, len) == 0) {
+    if (EVP_DigestUpdate(_MD_CTX, data, len) == 0) {
         _checksum_ctx_valid = false;
-        throw Error("Error computing the checksum.");
+        throw Error("Error computing the checksum (checksum update).");
     }
+#endif
 }
 
 void XDRStreamMarshaller::put_byte(dods_byte val)
 {
-    if (_md5)
+    if (_MD_CTX)
         checksum_update(&val, sizeof(dods_byte));
 
     if (_write_data) {
@@ -186,7 +202,7 @@ void XDRStreamMarshaller::put_byte(dods_byte val)
 
 void XDRStreamMarshaller::put_int16(dods_int16 val)
 {
-    if (_md5)
+    if (_MD_CTX)
         checksum_update(&val, sizeof(dods_int16));
 
     if (_write_data) {
@@ -206,7 +222,7 @@ void XDRStreamMarshaller::put_int16(dods_int16 val)
 
 void XDRStreamMarshaller::put_int32(dods_int32 val)
 {
-    if (_md5)
+    if (_MD_CTX)
         checksum_update(&val, sizeof(dods_int32));
 
     if (_write_data) {
@@ -226,7 +242,7 @@ void XDRStreamMarshaller::put_int32(dods_int32 val)
 
 void XDRStreamMarshaller::put_float32(dods_float32 val)
 {
-    if (_md5)
+    if (_MD_CTX)
         checksum_update(&val, sizeof(dods_float32));
 
     if (_write_data) {
@@ -246,7 +262,7 @@ void XDRStreamMarshaller::put_float32(dods_float32 val)
 
 void XDRStreamMarshaller::put_float64(dods_float64 val)
 {
-    if (_md5)
+    if (_MD_CTX)
         checksum_update(&val, sizeof(dods_float64));
 
     if (_write_data) {
@@ -266,7 +282,7 @@ void XDRStreamMarshaller::put_float64(dods_float64 val)
 
 void XDRStreamMarshaller::put_uint16(dods_uint16 val)
 {
-    if (_md5)
+    if (_MD_CTX)
         checksum_update(&val, sizeof(dods_uint16));
 
     if (_write_data) {
@@ -286,7 +302,7 @@ void XDRStreamMarshaller::put_uint16(dods_uint16 val)
 
 void XDRStreamMarshaller::put_uint32(dods_uint32 val)
 {
-    if (_md5)
+    if (_MD_CTX)
         checksum_update(&val, sizeof(dods_uint32));
 
     if (_write_data) {
@@ -306,7 +322,7 @@ void XDRStreamMarshaller::put_uint32(dods_uint32 val)
 
 void XDRStreamMarshaller::put_str(const string &val)
 {
-    if (_md5)
+    if (_MD_CTX)
         checksum_update(val.c_str(), val.length());
 
     if (_write_data) {
@@ -356,7 +372,7 @@ void XDRStreamMarshaller::put_url(const string &val)
 
 void XDRStreamMarshaller::put_opaque(char *val, unsigned int len)
 {
-    if (_md5)
+    if (_MD_CTX)
         checksum_update(&val, len);
 
     if (_write_data) {
@@ -380,7 +396,7 @@ void XDRStreamMarshaller::put_opaque(char *val, unsigned int len)
 void XDRStreamMarshaller::put_int(int val)
 {
 #if 0
-    if (_md5)
+    if (_MD_CTX)
         checksum_update(&val, sizeof(int));
 #endif
     if (_write_data) {
@@ -403,7 +419,7 @@ void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
     if (!val)
         throw InternalErr(__FILE__, __LINE__, "Could not send byte vector data. Buffer pointer is not set.");
 
-    if (_md5)
+    if (_MD_CTX)
         checksum_update(val, num);
 
     if (_write_data) {
@@ -452,7 +468,7 @@ void XDRStreamMarshaller::put_vector(char *val, int num, int width, Vector &vec)
     if (!val)
         throw InternalErr(__FILE__, __LINE__, "Buffer pointer is not set.");
 
-    if (_md5)
+    if (_MD_CTX)
         checksum_update(val, num * width);
 
     if (_write_data) {

@@ -542,6 +542,11 @@ void
 Array::print_decl(FILE *out, string space, bool print_semi,
                   bool constraint_info, bool constrained)
 {
+    ostringstream oss;
+    print_decl(oss, space, print_semi, constraint_info, constrained);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     if (constrained && !send_p())
         return;
 
@@ -564,7 +569,10 @@ Array::print_decl(FILE *out, string space, bool print_semi,
     if (print_semi) {
         fprintf(out, ";\n") ;
     }
+#endif
+
 }
+
 #endif
 
 /** Prints a declaration for the Array.  This is what appears in a
@@ -611,6 +619,7 @@ Array::print_decl(ostream &out, string space, bool print_semi,
 	out << ";\n" ;
     }
 }
+
 #if FILE_METHODS
 /**
  * @deprecated
@@ -618,7 +627,19 @@ Array::print_decl(ostream &out, string space, bool print_semi,
 void
 Array::print_xml(FILE *out, string space, bool constrained)
 {
+    XMLWriter xml(space);
+    print_xml_writer_core(xml, constrained, "Array");
+    fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
+
+#if OLD_XML_METHODS
+    ostringstream oss;
+    print_xml_core(oss, space, constrained, "Array");
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+#endif
+
+#if OLD_FILE_METHODS
     print_xml_core(out, space, constrained, "Array");
+#endif
 }
 #endif
 
@@ -628,7 +649,13 @@ Array::print_xml(FILE *out, string space, bool constrained)
 void
 Array::print_xml(ostream &out, string space, bool constrained)
 {
+    XMLWriter xml(space);
+    print_xml_writer_core(xml, constrained, "Array");
+    out << xml.get_doc();
+
+#if OLD_XML_METHODS
     print_xml_core(out, space, constrained, "Array");
+#endif
 }
 
 #if FILE_METHODS
@@ -638,7 +665,19 @@ Array::print_xml(ostream &out, string space, bool constrained)
 void
 Array::print_as_map_xml(FILE *out, string space, bool constrained)
 {
+    XMLWriter xml(space);
+    print_xml_writer_core(xml, constrained, "Map");
+    fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
+
+#if OLD_XML_METHODS
+    ostringstream oss;
+    print_xml_core(oss, space, constrained, "Map");
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+#endif
+
+#if OLD_FILE_METHODS
     print_xml_core(out, space, constrained, "Map");
+#endif
 }
 #endif
 
@@ -648,10 +687,17 @@ Array::print_as_map_xml(FILE *out, string space, bool constrained)
 void
 Array::print_as_map_xml(ostream &out, string space, bool constrained)
 {
+    XMLWriter xml(space);
+    print_xml_writer_core(xml, constrained, "Map");
+    out << xml.get_doc();
+
+#if OLD_XML_METHODS
     print_xml_core(out, space, constrained, "Map");
+#endif
 }
 
 #if FILE_METHODS
+#if OLD_FILE_METHODS
 class PrintArrayDim : public unary_function<Array::dimension&, void>
 {
     FILE *d_out;
@@ -673,6 +719,7 @@ public:
                     d_space.c_str(), id2xml(d.name).c_str(), size);
     }
 };
+#endif
 
 /**
  * @deprecated
@@ -680,6 +727,18 @@ public:
 void
 Array::print_xml_core(FILE *out, string space, bool constrained, string tag)
 {
+    XMLWriter xml(space);
+    print_xml_writer_core(xml, constrained, tag);
+    fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
+
+#if OLD_XML_METHODS
+    ostringstream oss;
+    print_xml_core(oss, space, constrained, tag);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+#endif
+
+#if OLD_FILE_METHODS
+
     if (constrained && !send_p())
         return;
 
@@ -700,9 +759,11 @@ Array::print_xml_core(FILE *out, string space, bool constrained, string tag)
              PrintArrayDim(out, space + "    ", constrained));
 
     fprintf(out, "%s</%s>\n", space.c_str(), tag.c_str());
+#endif
 }
 #endif
 
+#if OLD_XML_METHODS
 class PrintArrayDimStrm : public unary_function<Array::dimension&, void>
 {
     ostream &d_out;
@@ -723,6 +784,7 @@ public:
               << "\" size=\"" << size << "\"/>\n" ;
     }
 };
+#endif
 
 /**
  * @deprecated
@@ -730,6 +792,11 @@ public:
 void
 Array::print_xml_core(ostream &out, string space, bool constrained, string tag)
 {
+    XMLWriter xml(space);
+    print_xml_writer_core(xml, constrained, tag);
+    out << xml.get_doc();
+
+#if OLD_XML_METHODS
     if (constrained && !send_p())
         return;
 
@@ -749,6 +816,7 @@ Array::print_xml_core(ostream &out, string space, bool constrained, string tag)
     for_each(dim_begin(), dim_end(), PrintArrayDimStrm(out, space + "    ", constrained));
 
     out << space << "</" << tag << ">\n";
+#endif
 }
 
 void
@@ -832,6 +900,13 @@ unsigned int
 Array::print_array(FILE *out, unsigned int index, unsigned int dims,
                    unsigned int shape[])
 {
+    ostringstream oss;
+    unsigned int i = print_array(oss, index, dims, shape);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+    return i;
+
+#if OLD_FILE_METHODS
     if (dims == 1) {
         fprintf(out, "{") ;
         for (unsigned i = 0; i < shape[0] - 1; ++i) {
@@ -860,6 +935,7 @@ Array::print_array(FILE *out, unsigned int index, unsigned int dims,
 
         return index;
     }
+#endif
 }
 #endif
 
@@ -917,7 +993,11 @@ Array::print_val(FILE *out, string space, bool print_decl_p)
     //   for each element,
     //     print the array given its shape, number of dimensions.
     // Add the `;'
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 
+#if OLD_FILE_METHODS
     if (print_decl_p) {
         print_decl(out, space, false, false, false);
         fprintf(out, " = ") ;
@@ -935,6 +1015,8 @@ Array::print_val(FILE *out, string space, bool print_decl_p)
     if (print_decl_p) {
         fprintf(out, ";\n") ;
     }
+#endif
+
 }
 #endif
 

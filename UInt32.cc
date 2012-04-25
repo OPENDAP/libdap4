@@ -36,9 +36,7 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    {"$Id$"
-    };
+#include <sstream>
 
 #include "Byte.h"
 #include "Int16.h"
@@ -198,12 +196,18 @@ UInt32::set_value(dods_uint32 i)
 void
 UInt32::print_val(FILE *out, string space, bool print_decl_p)
 {
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     if (print_decl_p) {
         print_decl(out, space, false);
         fprintf(out, " = %u;\n", (unsigned int)_buf) ;
     }
     else
         fprintf(out, "%u", (unsigned int)_buf) ;
+#endif
 }
 #endif
 

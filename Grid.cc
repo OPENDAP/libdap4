@@ -37,6 +37,7 @@
 
 // #define DODS_DEBUG
 
+#include <sstream>
 #include <functional>
 #include <algorithm>
 
@@ -287,28 +288,30 @@ Grid::serialize(ConstraintEvaluator &eval, DDS &dds,
 
     if (_array_var->send_p()) {
 #ifdef CHECKSUMS
-        XDRStreamMarshaller &sm = dynamic_cast<XDRStreamMarshaller &>(m);
-        sm.reset_checksum();
+        XDRStreamMarshaller *sm = dynamic_cast<XDRStreamMarshaller*>(&m);
+        if (sm && sm->checksums())
+            sm->reset_checksum();
 
         _array_var->serialize(eval, dds, m, false);
 
-        //cerr << _array_var->name() << ": " <<
-        sm.get_checksum();// << endl;
+        if (sm && sm->checksums())
+            sm->get_checksum();
 #else
-            _array_var->serialize(eval, dds, m, false);
+        _array_var->serialize(eval, dds, m, false);
 #endif
     }
 
     for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++) {
         if ((*i)->send_p()) {
 #ifdef CHECKSUMS
-            XDRStreamMarshaller &sm = dynamic_cast<XDRStreamMarshaller &>(m);
-            sm.reset_checksum();
+            XDRStreamMarshaller *sm = dynamic_cast<XDRStreamMarshaller*>(&m);
+            if (sm && sm->checksums())
+                sm->reset_checksum();
 
             (*i)->serialize(eval, dds, m, false);
 
-            //cerr << (*i)->name() << ": " <<
-            sm.get_checksum(); // << endl;
+            if (sm && sm->checksums())
+                sm->get_checksum();
 #else
             (*i)->serialize(eval, dds, m, false);
 #endif
@@ -849,6 +852,11 @@ void
 Grid::print_decl(FILE *out, string space, bool print_semi,
                  bool constraint_info, bool constrained)
 {
+    ostringstream oss;
+    print_decl(oss, space, print_semi, constraint_info, constrained);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     if (constrained && !send_p())
         return;
 
@@ -899,6 +907,7 @@ Grid::print_decl(FILE *out, string space, bool print_semi,
         fprintf(out, ";\n") ;
 
     return;
+#endif
 }
 #endif
 
@@ -955,6 +964,7 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
 }
 
 #if FILE_METHODS
+#if OLD_FILE_METHODS
 class PrintMapField : public unary_function<BaseType *, void>
 {
     FILE *d_out;
@@ -974,13 +984,24 @@ public:
         a->print_xml_core(d_out, d_space, d_constrained, d_tag);
     }
 };
-
+#endif
 /**
  * @deprecated
  */
 void
 Grid::print_xml(FILE *out, string space, bool constrained)
 {
+    XMLWriter xml(space);
+    print_xml_writer(xml, constrained);
+    fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
+
+#if OLD_XML_METHODS
+    ostringstream oss;
+    print_xml(oss, space, constrained);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+#endif
+
+#if OLD_FILE_METHODS
     if (constrained && !send_p())
          return;
 
@@ -1018,9 +1039,11 @@ Grid::print_xml(FILE *out, string space, bool constrained)
 
          fprintf(out, "%s</Grid>\n", space.c_str());
      }
+#endif
 }
 #endif
 
+#if OLD_XML_METHODS
 class PrintMapFieldStrm : public unary_function<BaseType *, void>
 {
     ostream &d_out;
@@ -1040,6 +1063,7 @@ public:
         a->print_xml_core(d_out, d_space, d_constrained, d_tag);
     }
 };
+#endif
 
 /**
  * @deprecated
@@ -1047,6 +1071,11 @@ public:
 void
 Grid::print_xml(ostream &out, string space, bool constrained)
 {
+    XMLWriter xml(space);
+    print_xml_writer(xml, constrained);
+    out << xml.get_doc();
+
+#if OLD_XML_METHODS
     if (constrained && !send_p())
         return;
 
@@ -1084,6 +1113,7 @@ Grid::print_xml(ostream &out, string space, bool constrained)
 
         out << space << "</Grid>\n" ;
     }
+#endif
 }
 
 
@@ -1156,6 +1186,11 @@ Grid::print_xml_writer(XMLWriter &xml, bool constrained)
 void
 Grid::print_val(FILE *out, string space, bool print_decl_p)
 {
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     if (print_decl_p) {
         print_decl(out, space, false);
         fprintf(out, " = ") ;
@@ -1181,6 +1216,7 @@ Grid::print_val(FILE *out, string space, bool print_decl_p)
 
     if (print_decl_p)
         fprintf(out, ";\n") ;
+#endif
 }
 #endif
 

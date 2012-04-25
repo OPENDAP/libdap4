@@ -37,6 +37,8 @@
 
 #include "config.h"
 
+#include <sstream>
+
 #include "Byte.h"
 #include "Int16.h"
 #include "UInt16.h"
@@ -361,14 +363,14 @@ Structure::serialize(ConstraintEvaluator &eval, DDS &dds,
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
         if ((*i)->send_p()) {
 #ifdef CHECKSUMS
-            XDRStreamMarshaller &sm = dynamic_cast<XDRStreamMarshaller &>(m);
-            if ((*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
-                sm.reset_checksum();
+            XDRStreamMarshaller *sm = dynamic_cast<XDRStreamMarshaller*>(&m);
+            if (sm && sm->checksums() && (*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
+                sm->reset_checksum();
 
-            (*i)->serialize(eval, dds, sm, false);
+            (*i)->serialize(eval, dds, m, false);
 
-            if ((*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
-                cerr << (*i)->name() << ": " << sm.get_checksum() << endl;
+            if (sm && sm->checksums() && (*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
+                sm->get_checksum();
 #else
             (*i)->serialize(eval, dds, m, false);
 #endif
@@ -507,6 +509,11 @@ Structure::m_exact_match(const string &name, btp_stack *s)
 void
 Structure::print_val(FILE *out, string space, bool print_decl_p)
 {
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+
+#if OLD_FILE_METHODS
     if (print_decl_p) {
         print_decl(out, space, false);
         fprintf(out, " = ") ;
@@ -522,6 +529,7 @@ Structure::print_val(FILE *out, string space, bool print_decl_p)
 
     if (print_decl_p)
         fprintf(out, ";\n") ;
+#endif
 }
 #endif
 
