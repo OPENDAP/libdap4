@@ -199,28 +199,13 @@ Float32::value() const
     return _buf;
 }
 
-#if FILE_METHODS
 void
 Float32::print_val(FILE *out, string space, bool print_decl_p)
 {
     ostringstream oss;
     print_val(oss, space, print_decl_p);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-
-#if OLD_FILE_METHODS
-    fwrite(oss.str(), sizeof(char), oss.str().length(), put);
-    // FIX: need to set precision in the printing somehow.
-    // os.precision(DODS_FLT_DIG);
-
-    if (print_decl_p) {
-        print_decl(out, space, false);
-        fprintf(out, " = %.6g;\n", _buf) ;
-    }
-    else
-        fprintf(out, "%.6g", _buf) ;
-#endif
 }
-#endif
 
 void
 Float32::print_val(ostream &out, string space, bool print_decl_p)

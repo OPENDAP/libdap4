@@ -16,8 +16,6 @@ AC_CONFIG_MACRO_DIR([conf])
 AM_INIT_AUTOMAKE
 AC_CONFIG_TESTDIR(tests, [.])
 
-dnl AC_DEFINE([FILE_METHODS], [1], [Define this to activate the old FILE * methods.])
-
 AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])
 AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
 AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and version combined])

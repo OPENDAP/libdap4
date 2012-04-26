@@ -49,8 +49,6 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-#define FILE_METHODS 1
-
 namespace libdap
 {
 
@@ -101,10 +99,9 @@ public:
 
     virtual bool set_value(const dods_byte value);
     virtual dods_byte value() const;
-#if FILE_METHODS
+
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
-#endif
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 

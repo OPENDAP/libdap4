@@ -190,24 +190,13 @@ UInt16::set_value(dods_uint16 i)
     return true;
 }
 
-#if FILE_METHODS
 void
 UInt16::print_val(FILE *out, string space, bool print_decl_p)
 {
     ostringstream oss;
     print_val(oss, space, print_decl_p);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-
-#if OLD_FILE_METHODS
-    if (print_decl_p) {
-        print_decl(out, space, false);
-        fprintf(out, " = %u;\n", (unsigned int)_buf) ;
-    }
-    else
-        fprintf(out, "%u", (unsigned int)_buf) ;
-#endif
 }
-#endif
 
 void
 UInt16::print_val(ostream &out, string space, bool print_decl_p)

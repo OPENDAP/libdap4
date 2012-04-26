@@ -6,6 +6,10 @@ AUTOMAKE_OPTIONS = foreign
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU $(XML2_CFLAGS) $(CURL_CFLAGS)
 AM_CXXFLAGS =  
 
+if COMPILER_IS_GCC
+AM_CXXFLAGS += -Wall -W -Wcast-align
+endif
+
 # These are not used by automake but are often useful for certain types of
 # debugging. 
 CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror

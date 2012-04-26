@@ -339,7 +339,6 @@ Constructor::get_var_index(int i)
     return *(_vars.begin() + i);
 }
 
-#if FILE_METHODS
 void
 Constructor::print_decl(FILE *out, string space, bool print_semi,
                         bool constraint_info, bool constrained)
@@ -347,30 +346,7 @@ Constructor::print_decl(FILE *out, string space, bool print_semi,
     ostringstream oss;
     print_decl(oss, space, print_semi, constraint_info, constrained);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-
-#if OLD_FILE_METHODS
-    if (constrained && !send_p())
-        return;
-
-    fprintf(out, "%s%s {\n", space.c_str(), type_name().c_str()) ;
-    for (Vars_citer i = _vars.begin(); i != _vars.end(); i++) {
-        (*i)->print_decl(out, space + "    ", true,
-                         constraint_info, constrained);
-    }
-    fprintf(out, "%s} %s", space.c_str(), id2www(name()).c_str()) ;
-
-    if (constraint_info) { // Used by test drivers only.
-        if (send_p())
-            cout << ": Send True";
-        else
-            cout << ": Send False";
-    }
-
-    if (print_semi)
-        fprintf(out, ";\n") ;
-#endif
 }
-#endif
 
 void
 Constructor::print_decl(ostream &out, string space, bool print_semi,
@@ -397,24 +373,6 @@ Constructor::print_decl(ostream &out, string space, bool print_semi,
 	out << ";\n" ;
 }
 
-#if FILE_METHODS
-#if OLD_FILE_METHODS
-class PrintField : public unary_function<BaseType *, void>
-{
-    FILE *d_out;
-    string d_space;
-    bool d_constrained;
-public:
-    PrintField(FILE *o, string s, bool c)
-            : d_out(o), d_space(s), d_constrained(c)
-    {}
-
-    void operator()(BaseType *btp)
-    {
-        btp->print_xml(d_out, d_space, d_constrained);
-    }
-};
-#endif
 /**
  * @deprecated
  */
@@ -424,58 +382,7 @@ Constructor::print_xml(FILE *out, string space, bool constrained)
     XMLWriter xml(space);
     print_xml_writer(xml, constrained);
     fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
-
-#if OLD_XML_METHODS
-    ostringstream oss;
-    print_xml(oss, space, constrained);
-    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-#endif
-
-#if OLD_FILE_METHODS
-    if (constrained && !send_p())
-        return;
-
-    bool has_attributes = false; // *** fix me
-    bool has_variables = (var_begin() != var_end());
-
-    fprintf(out, "%s<%s", space.c_str(), type_name().c_str());
-    if (!name().empty())
-        fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
-
-    if (has_attributes || has_variables) {
-        fprintf(out, ">\n");
-
-        get_attr_table().print_xml(out, space + "    ", constrained);
-
-        for_each(var_begin(), var_end(),
-                 PrintField(out, space + "    ", constrained));
-
-        fprintf(out, "%s</%s>\n", space.c_str(), type_name().c_str());
-    }
-    else {
-        fprintf(out, "/>\n");
-    }
-#endif
 }
-#endif
-
-#if OLD_XML_METHODS
-class PrintFieldStrm : public unary_function<BaseType *, void>
-{
-    ostream &d_out;
-    string d_space;
-    bool d_constrained;
-public:
-    PrintFieldStrm(ostream &o, string s, bool c)
-            : d_out(o), d_space(s), d_constrained(c)
-    {}
-
-    void operator()(BaseType *btp)
-    {
-        btp->print_xml(d_out, d_space, d_constrained);
-    }
-};
-#endif
 
 /**
  * @deprecated
@@ -486,32 +393,6 @@ Constructor::print_xml(ostream &out, string space, bool constrained)
     XMLWriter xml(space);
     print_xml_writer(xml, constrained);
     out << xml.get_doc();
-
-#if OLD_XML_METHODS
-    if (constrained && !send_p())
-        return;
-
-    bool has_attributes = false; // *** fix me
-    bool has_variables = (var_begin() != var_end());
-
-    out << space << "<" << type_name() ;
-    if (!name().empty())
-    out << " name=\"" << id2xml(name()) << "\"" ;
-
-    if (has_attributes || has_variables) {
-    out << ">\n" ;
-
-        get_attr_table().print_xml(out, space + "    ", constrained);
-
-        for_each(var_begin(), var_end(),
-                 PrintFieldStrm(out, space + "    ", constrained));
-
-    out << space << "</" << type_name() << ">\n" ;
-    }
-    else {
-    out << "/>\n" ;
-    }
-#endif
 }
 
 class PrintFieldXMLWriter : public unary_function<BaseType *, void>

@@ -210,24 +210,12 @@ dods_byte Byte::value() const
     return _buf;
 }
 
-#if FILE_METHODS
 void Byte::print_val(FILE * out, string space, bool print_decl_p)
 {
     ostringstream oss;
     print_val(oss, space, print_decl_p);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-
-#if OLD_FILE_METHODS
-
-    if (print_decl_p) {
-        print_decl(out, space, false);
-        fprintf(out, " = %d;\n", (int) _buf);
-    }
-    else
-        fprintf(out, "%d", (int) _buf);
-#endif
 }
-#endif
 
 void Byte::print_val(ostream &out, string space, bool print_decl_p)
 {

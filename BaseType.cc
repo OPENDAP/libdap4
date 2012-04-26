@@ -801,7 +801,6 @@ BaseType::intern_data(ConstraintEvaluator &, DDS &dds)
     dds.timeout_off();
 }
 
-#if FILE_METHODS
 /** Write the variable's declaration in a C-style syntax. This
     function is used to create textual representation of the Data
     Descriptor Structure (DDS).  See <i>The DODS User Manual</i> for
@@ -851,29 +850,7 @@ BaseType::print_decl(FILE *out, string space, bool print_semi,
     ostringstream oss;
     print_decl(oss, space, print_semi, constraint_info, constrained);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-
-#if OLD_FILE_METHODS
-
-    // if printing the constrained declaration, exit if this variable was not
-    // selected.
-    if (constrained && !send_p())
-        return;
-
-    fprintf(out, "%s%s %s", space.c_str(), type_name().c_str(),
-            id2www(_name).c_str()) ;
-
-    if (constraint_info) {
-        if (send_p())
-            fprintf(out, ": Send True") ;
-        else
-            fprintf(out, ": Send False") ;
-    }
-
-    if (print_semi)
-        fprintf(out, ";\n") ;
-#endif
 }
-#endif
 
 /** Write the variable's declaration in a C-style syntax. This
     function is used to create textual representation of the Data
@@ -939,7 +916,6 @@ BaseType::print_decl(ostream &out, string space, bool print_semi,
 	out << ";\n" ;
 }
 
-#if FILE_METHODS
 /** Write the XML representation of this variable. This method is used to
     build the DDX XML response.
     @param out Destination.
@@ -953,34 +929,7 @@ BaseType::print_xml(FILE *out, string space, bool constrained)
     XMLWriter xml(space);
     print_xml_writer(xml, constrained);
     fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
-
-#if OLD_XML_METHODS
-    ostringstream oss;
-    print_xml(oss, space, constrained);
-    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-#endif
-#if OLD_FILE_METHODS
-
-    if (constrained && !send_p())
-        return;
-
-    fprintf(out, "%s<%s", space.c_str(), type_name().c_str());
-    if (!_name.empty())
-        fprintf(out, " name=\"%s\"", id2xml(_name).c_str());
-
-    if (get_attr_table().get_size() > 0) {
-        fprintf(out, ">\n"); // close the variable's tag
-        get_attr_table().print_xml(out, space + "    ", constrained);
-        // After attributes, print closing tag
-        fprintf(out, "%s</%s>\n", space.c_str(), type_name().c_str());
-    }
-    else {
-        fprintf(out, "/>\n"); // no attributes; just close tag.
-    }
-#endif
-
 }
-#endif
 
 /** Write the XML representation of this variable. This method is used to
     build the DDX XML response.
@@ -995,25 +944,6 @@ BaseType::print_xml(ostream &out, string space, bool constrained)
     XMLWriter xml(space);
     print_xml_writer(xml, constrained);
     out << xml.get_doc();
-
-#if OLD_XML_METHODS
-    if (constrained && !send_p())
-        return;
-
-    out << space << "<" << type_name() ;
-    if (!_name.empty())
-    out << " name=\"" << id2xml(_name) << "\"" ;
-
-    if (get_attr_table().get_size() > 0) {
-    out << ">\n" ;
-        get_attr_table().print_xml(out, space + "    ", constrained);
-        // After attributes, print closing tag
-    out << space << "</" << type_name() << ">\n" ;
-    }
-    else {
-    out << "/>\n" ;
-    }
-#endif
 }
 
 /** Write the XML representation of this variable. This method is used to

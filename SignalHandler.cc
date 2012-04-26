@@ -31,10 +31,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    { "$Id$"
-    };
-
 #include <cstdlib>
 
 #include <signal.h>
@@ -86,7 +82,7 @@ SignalHandler::delete_instance()
 }
 
 /** This private method is the adapter between the C-style interface of the
-    signal sub-system and C++'s method interface. This uses the lookup table
+    signal subsystem and C++'s method interface. This uses the lookup table
     to find an instance of EventHandler and calls that instance's
     handle_signal method.
 

@@ -36,7 +36,6 @@
 // ReZa 9/30/94
 
 #include "config.h"
-#undef FILE_METHODS
 
 #include <cstring>
 #include <cstdio>
@@ -354,7 +353,6 @@ get_description_type(const string &value)
         return unknown_type;
 }
 
-#if FILE_METHODS
 /** Generate an HTTP 1.0 response header for a text document. This is used
     when returning a serialized DAS or DDS object.
 
@@ -372,6 +370,11 @@ void
 set_mime_text(FILE *out, ObjectType type, const string &ver,
               EncodingType enc, const time_t last_modified)
 {
+    ostringstream oss;
+    set_mime_text(oss, type, ver, enc, last_modified);
+    fwrite(oss.str().data(), 1, oss.str().length(), out);
+
+#if OD_FILE_METHODS
     fprintf(out, "HTTP/1.0 200 OK%s", CRLF) ;
     if (ver == "") {
         fprintf(out, "XDODS-Server: %s%s", DVR, CRLF) ;
@@ -407,8 +410,8 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
     if (enc != x_plain)
         fprintf(out, "Content-Encoding: %s%s", encoding[enc], CRLF) ;
     fprintf(out, CRLF) ;
-}
 #endif
+}
 
 /** Generate an HTTP 1.0 response header for a text document. This is used
     when returning a serialized DAS or DDS object.
@@ -464,7 +467,6 @@ set_mime_text(ostream &strm, ObjectType type, const string &ver,
     strm << CRLF ;
 }
 
-#if FILE_METHODS
 /** Generate an HTTP 1.0 response header for a html document.
 
     @deprecated
@@ -480,6 +482,11 @@ void
 set_mime_html(FILE *out, ObjectType type, const string &ver,
               EncodingType enc, const time_t last_modified)
 {
+    ostringstream oss;
+    set_mime_html(oss, type, ver, enc, last_modified);
+    fwrite(oss.str().data(), 1, oss.str().length(), out);
+
+#if OD_FILE_METHODS
     fprintf(out, "HTTP/1.0 200 OK%s", CRLF) ;
     if (ver == "") {
         fprintf(out, "XDODS-Server: %s%s", DVR, CRLF) ;
@@ -510,8 +517,8 @@ set_mime_html(FILE *out, ObjectType type, const string &ver,
     if (enc != x_plain)
         fprintf(out, "Content-Encoding: %s%s", encoding[enc], CRLF) ;
     fprintf(out, CRLF) ;
-}
 #endif
+}
 
 /** Generate an HTTP 1.0 response header for a html document.
 
@@ -560,7 +567,6 @@ set_mime_html(ostream &strm, ObjectType type, const string &ver,
     strm << CRLF ;
 }
 
-#if FILE_METHODS
 /** Write an HTTP 1.0 response header for our binary response document (i.e.,
     the DataDDS object).
 
@@ -579,6 +585,11 @@ void
 set_mime_binary(FILE *out, ObjectType type, const string &ver,
                 EncodingType enc, const time_t last_modified)
 {
+    ostringstream oss;
+    set_mime_binary(oss, type, ver, enc, last_modified);
+    fwrite(oss.str().data(), 1, oss.str().length(), out);
+
+#if OD_FILE_METHODS
     fprintf(out, "HTTP/1.0 200 OK%s", CRLF) ;
     if (ver == "") {
         fprintf(out, "XDODS-Server: %s%s", DVR, CRLF) ;
@@ -605,8 +616,8 @@ set_mime_binary(FILE *out, ObjectType type, const string &ver,
         fprintf(out, "Content-Encoding: %s%s", encoding[enc], CRLF) ;
 
     fprintf(out, CRLF) ;
-}
 #endif
+}
 
 /** Write an HTTP 1.0 response header for our binary response document (i.e.,
     the DataDDS object).
@@ -892,7 +903,6 @@ string cid_to_header_value(const string &cid)
     return value;
 }
 
-#if FILE_METHODS
 /** Generate an HTTP 1.0 response header for an Error object.
 
     @deprecated
@@ -905,6 +915,11 @@ void
 set_mime_error(FILE *out, int code, const string &reason,
                const string &version)
 {
+    ostringstream oss;
+    set_mime_error(oss, code, reason, version);
+    fwrite(oss.str().data(), 1, oss.str().length(), out);
+
+#if OD_FILE_METHODS
     fprintf(out, "HTTP/1.0 %d %s%s", code, reason.c_str(), CRLF) ;
     if (version == "") {
         fprintf(out, "XDODS-Server: %s%s", DVR, CRLF) ;
@@ -920,8 +935,8 @@ set_mime_error(FILE *out, int code, const string &reason,
     fprintf(out, "Date: %s%s", rfc822_date(t).c_str(), CRLF) ;
     fprintf(out, "Cache-Control: no-cache%s", CRLF) ;
     fprintf(out, CRLF) ;
-}
 #endif
+}
 
 /** Generate an HTTP 1.0 response header for an Error object.
 
@@ -952,7 +967,6 @@ set_mime_error(ostream &strm, int code, const string &reason,
     strm << CRLF ;
 }
 
-#if FILE_METHODS
 /** Use this function to create a response signaling that the target of a
     conditional get has not been modified relative to the condition given in
     the request. This will have to be a date until the servers support ETags.
@@ -963,12 +977,17 @@ set_mime_error(ostream &strm, int code, const string &reason,
 void
 set_mime_not_modified(FILE *out)
 {
+    ostringstream oss;
+    set_mime_not_modified(oss);
+    fwrite(oss.str().data(), 1, oss.str().length(), out);
+
+#if OD_FILE_METHODS
     fprintf(out, "HTTP/1.0 304 NOT MODIFIED%s", CRLF) ;
     const time_t t = time(0);
     fprintf(out, "Date: %s%s", rfc822_date(t).c_str(), CRLF) ;
     fprintf(out, CRLF) ;
-}
 #endif
+}
 
 /** Use this function to create a response signaling that the target of a
     conditional get has not been modified relative to the condition given in

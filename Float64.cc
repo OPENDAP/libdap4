@@ -199,27 +199,13 @@ Float64::set_value(dods_float64 val)
     return true;
 }
 
-#if FILE_METHODS
 void
 Float64::print_val(FILE *out, string space, bool print_decl_p)
 {
     ostringstream oss;
     print_val(oss, space, print_decl_p);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-
-#if OLD_FILE_METHODS
-    // FIX: need to set precision in the printing somehow.
-    // os.precision(DODS_DBL_DIG);
-
-    if (print_decl_p) {
-        print_decl(out, space, false);
-        fprintf(out, " = %.15g;\n", _buf) ;
-    }
-    else
-        fprintf(out, "%.15g", _buf) ;
-#endif
 }
-#endif
 
 void
 Float64::print_val(ostream &out, string space, bool print_decl_p)

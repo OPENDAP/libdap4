@@ -46,8 +46,6 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-#define FILE_METHODS 1
-
 namespace libdap
 {
 
@@ -214,7 +212,6 @@ public:
                            const string &anc_location = "",
                            bool with_mime_headers = true) const;
 
-#if FILE_METHODS
     virtual void establish_timeout(FILE *stream) const;
     virtual void send_das(FILE *out, DAS &das, const string &anc_location = "",
                           bool with_mime_headers = true) const;
@@ -234,7 +231,6 @@ public:
                            bool with_mime_headers = true) const;
     virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
                           bool with_mime_headers = true) const;
-#endif
 };
 
 } // namespace libdap

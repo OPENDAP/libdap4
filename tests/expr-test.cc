@@ -55,14 +55,8 @@
 #include "DDS.h"
 #include "DataDDS.h"
 #include "ConstraintEvaluator.h"
-#if 0
-#include "XDRFileUnMarshaller.h"
-#endif
 #include "XDRStreamUnMarshaller.h"
 #include "XDRStreamMarshaller.h"
-#if 0
-#include "DODSFilter.h"
-#endif
 #include "ResponseBuilder.h"
 #include "Response.h"
 #include "Connect.h"
@@ -274,7 +268,6 @@ int main(int argc, char *argv[])
 }
 
 // Instead of reading the tokens from stdin, read them from a string.
-
 
 void test_scanner(const string & str)
 {

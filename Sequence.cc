@@ -1334,7 +1334,6 @@ Sequence::buf2val(void **)
     return sizeof(Sequence);
 }
 
-#if FILE_METHODS
 void
 Sequence::print_one_row(FILE *out, int row, string space,
                         bool print_row_num)
@@ -1342,43 +1341,7 @@ Sequence::print_one_row(FILE *out, int row, string space,
     ostringstream oss;
     print_one_row(oss, row, space, print_row_num);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-
-#if OLD_FILE_METHODS
-    if (print_row_num)
-        fprintf(out, "\n%s%d: ", space.c_str(), row) ;
-
-    fprintf(out, "{ ") ;
-
-    int elements = element_count() - 1;
-    int j;
-    BaseType *bt_ptr;
-    // Print first N-1 elements of the row.
-    for (j = 0; j < elements; ++j) {
-        bt_ptr = var_value(row, j);
-        if (bt_ptr) {  // data
-            if (bt_ptr->type() == dods_sequence_c)
-                dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
-                (out, space + "    ", false, print_row_num);
-            else
-                bt_ptr->print_val(out, space, false);
-            fprintf(out, ", ") ;
-        }
-    }
-
-    // Print Nth element; end with a `}.'
-    bt_ptr = var_value(row, j);
-    if (bt_ptr) {  // data
-        if (bt_ptr->type() == dods_sequence_c)
-            dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
-            (out, space + "    ", false, print_row_num);
-        else
-            bt_ptr->print_val(out, space, false);
-    }
-
-    fprintf(out, " }") ;
-#endif
 }
-#endif
 
 void
 Sequence::print_one_row(ostream &out, int row, string space,
@@ -1426,7 +1389,6 @@ Sequence::print_one_row(ostream &out, int row, string space,
     out << " }" ;
 }
 
-#if FILE_METHODS
 void
 Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
                             bool print_row_numbers)
@@ -1434,30 +1396,7 @@ Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
     ostringstream oss;
     print_val_by_rows(oss, space, print_decl_p, print_row_numbers);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-
-#if OLD_FILE_METHODS
-    if (print_decl_p) {
-        print_decl(out, space, false);
-        fprintf(out, " = ") ;
-    }
-
-    fprintf(out, "{ ") ;
-
-    int rows = number_of_rows() - 1;
-    int i;
-    for (i = 0; i < rows; ++i) {
-        print_one_row(out, i, space, print_row_numbers);
-        fprintf(out, ", ") ;
-    }
-    print_one_row(out, i, space, print_row_numbers);
-
-    fprintf(out, " }") ;
-
-    if (print_decl_p)
-        fprintf(out, ";\n") ;
-#endif
 }
-#endif
 
 void
 Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p,
@@ -1484,13 +1423,11 @@ Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p,
 	out << ";\n" ;
 }
 
-#if FILE_METHODS
 void
 Sequence::print_val(FILE *out, string space, bool print_decl_p)
 {
     print_val_by_rows(out, space, print_decl_p, false);
 }
-#endif
 
 void
 Sequence::print_val(ostream &out, string space, bool print_decl_p)

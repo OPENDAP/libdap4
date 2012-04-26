@@ -60,8 +60,6 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-#define FILE_METHODS 1
-
 namespace libdap
 {
 
@@ -91,8 +89,6 @@ namespace libdap
     Structure called ``Tom'' and Tom has a member Float32 called
     ``shoe_size'', then you can refer to Tom's shoe size as
     ``Tom.shoe_size''.
-
-    @todo Refactor with Sequence moving methods up into Constructor.
 
     @brief Holds a structure (aggregate) type.
 */
@@ -149,10 +145,9 @@ public:
     virtual void del_var(const string &name);
 
     virtual bool read() ;
-#if FILE_METHODS
+
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
-#endif
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 

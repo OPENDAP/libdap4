@@ -70,7 +70,6 @@
 #define DIR_SEPARATOR_STR "\\"
 #else
 #define MKDIR(a,b) mkdir((a), (b))
-#define REMOVE(a) remove((a))
 #define MKSTEMP(a) mkstemp((a))
 #define DIR_SEPARATOR_CHAR '/'
 #define DIR_SEPARATOR_STR "/"
@@ -89,7 +88,7 @@
 #define LM_EXPIRATION(t) (min((MAX_LM_EXPIRATION), static_cast<int>((t) / 10)))
 #endif
 
-const unsigned int CACHE_TABLE_SIZE = 1499;
+const int CACHE_TABLE_SIZE = 1499;
 
 using namespace std;
 
@@ -540,7 +539,7 @@ entry_disk_space(int size, unsigned int block_size)
 void
 HTTPCacheTable::add_entry_to_cache_table(CacheEntry *entry)
 {
-    unsigned int hash = entry->hash;
+    int hash = entry->hash;
     if (hash > CACHE_TABLE_SIZE)
         throw InternalErr(__FILE__, __LINE__, "Hash value too large!");
 

@@ -80,7 +80,7 @@ string name_path(const string &path);
 // All of these are deprecated
 bool do_version(const string &script_ver, const string &dataset_ver);
 void ErrMsgT(const string &Msgt);
-ObjectType get_type(const string &value); // deprecated
+ObjectType get_type(const string &value);
 bool remove_mime_header(FILE *in);
 string get_next_mime_header(FILE *in);
 #if 0

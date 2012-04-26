@@ -868,7 +868,6 @@ DDS::parse(FILE *in)
     }
 }
 
-#if FILE_METHODS
 /** @brief Print the entire DDS to the specified file. */
 void
 DDS::print(FILE *out)
@@ -876,20 +875,7 @@ DDS::print(FILE *out)
     ostringstream oss;
     print(oss);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-
-#if OLD_FILE_METHODS
-    fprintf(out, "Dataset {\n") ;
-
-    for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
-        (*i)->print_decl(out) ;
-    }
-
-    fprintf(out, "} %s;\n", id2www(name).c_str()) ;
-
-    return ;
-#endif
 }
-#endif
 
 /** @brief Print the entire DDS to the specified ostream. */
 void
@@ -906,7 +892,6 @@ DDS::print(ostream &out)
     return ;
 }
 
-#if FILE_METHODS
 /** @brief Print a constrained DDS to the specified file.
 
     Print those parts (variables) of the DDS structure to OS that
@@ -923,23 +908,7 @@ DDS::print_constrained(FILE *out)
     ostringstream oss;
     print_constrained(oss);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-
-#if OLD_FILE_METHODS
-    fprintf(out, "Dataset {\n") ;
-
-    for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
-        // for each variable, indent with four spaces, print a trailing
-        // semicolon, do not print debugging information, print only
-        // variables in the current projection.
-        (*i)->print_decl(out, "    ", true, false, true) ;
-    }
-
-    fprintf(out, "} %s;\n", id2www(name).c_str()) ;
-
-    return;
-#endif
 }
-#endif
 
 /** @brief Print a constrained DDS to the specified ostream.
 
@@ -968,23 +937,6 @@ DDS::print_constrained(ostream &out)
     return;
 }
 
-#if FILE_METHODS
-#if OLD_FILE_METHODS
-
-class VariablePrintXML : public unary_function<BaseType *, void>
-{
-    FILE *d_out;
-    bool d_constrained;
-public:
-    VariablePrintXML(FILE *out, bool constrained)
-            : d_out(out), d_constrained(constrained)
-    {}
-    void operator()(BaseType *bt)
-    {
-        bt->print_xml(d_out, "    ", d_constrained);
-    }
-};
-#endif
 /** Print an XML representation of this DDS. This method is used to generate
     the part of the DDX response. The \c Dataset tag is \e not written by
     this code. The caller of this method must handle writing that and
@@ -1002,73 +954,7 @@ DDS::print_xml(FILE *out, bool constrained, const string &blob)
     ostringstream oss;
     print_xml_writer(oss, constrained, blob);
     fwrite(oss.str().data(), 1, oss.str().length(), out);
-
-#if 0
-    fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-
-    fprintf(out, "<Dataset name=\"%s\"\n", id2xml(name).c_str());
-
-    fprintf(out, "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
-
-    fprintf(out,"method=\"FILE*\"\n");
-    fprintf(out, "dap_major=\"%d\"\n", get_dap_major());
-    fprintf(out, "dap_minor=\"%d\"\n", get_dap_minor());
-
-    // Are we responding to a 3.2 or 2.0 client? We will have to improve on
-    // this at some point... jhrg
-    if (get_dap_major() == 3 && get_dap_minor() == 2) {
-    fprintf(out, "xmlns=\"%s\"\n", c_dap32_namespace.c_str());
-
-    fprintf(out, "xsi:schemaLocation=\"%s  %s\">\n\n",
-            c_dap32_namespace.c_str(), c_default_dap32_schema_location.c_str());
-    }
-    else {
-        fprintf(out, "xmlns=\"%s\"\n", c_dap20_namespace.c_str());
-        fprintf(out, "xsi:schemaLocation=\"%s  %s\">\n\n",
-                c_dap20_namespace.c_str(), c_default_dap20_schema_location.c_str());
-    }
-
-
-    d_attr.print_xml(out, "    ", constrained);
-
-    fprintf(out, "\n");
-
-    for_each(var_begin(), var_end(), VariablePrintXML(out, constrained));
-
-    fprintf(out, "\n");
-
-    // Only print this for the 2.0, 3.0 and 3.1 versions - which are essentially
-    // the same. jhrg
-    if (get_dap_major() == 2 && get_dap_minor() == 0) {
-        fprintf(out, "    <dataBLOB href=\"\"/>\n");
-    }
-    else if (!blob.empty()
-	     && (get_dap_major() == 3 && get_dap_minor() >= 2)
-	     || get_dap_major() >= 4) {
-	fprintf(out, "    <blob href=\"cid:%s\"/>\n", blob.c_str());
-    }
-
-
-    fprintf(out, "</Dataset>\n");
-#endif
 }
-#endif
-
-#if OLD_XML_METHODS
-class VariablePrintXMLStrm : public unary_function<BaseType *, void>
-{
-    ostream &d_out;
-    bool d_constrained;
-public:
-    VariablePrintXMLStrm(ostream &out, bool constrained)
-            : d_out(out), d_constrained(constrained)
-    {}
-    void operator()(BaseType *bt)
-    {
-        bt->print_xml(d_out, "    ", d_constrained);
-    }
-};
-#endif
 
 /** Print an XML representation of this DDS. This method is used to generate
     the part of the DDX response. The \c Dataset tag is \e not written by
@@ -1085,67 +971,6 @@ void
 DDS::print_xml(ostream &out, bool constrained, const string &blob)
 {
     print_xml_writer(out, constrained, blob);
-
-#if 0
-    out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" ;
-
-    out << "<Dataset name=\"" << id2xml(name) << "\"\n" ;
-
-    out << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" ;
-
-    // Are we responding to a 3.2 or 2.0 client? We will have to improve on
-    // this at some point... jhrg
-    if (get_dap_major() == 3 && get_dap_minor() == 2) {
-        out << "xsi:schemaLocation=\"" << c_dap32_namespace
-            << "  " << c_default_dap32_schema_location << "\"\n" ;
-
-        out << "xmlns:grddl=\"http://www.w3.org/2003/g/data-view#\"\n";
-        out << "grddl:transformation=\"" << grddl_transformation_dap32 <<"\"\n";
-
-        out << "xmlns=\"" << c_dap32_namespace << "\"\n" ;
-        out << "xmlns:dap=\"" << c_dap32_namespace << "\"\n" ;
-
-        out << "dapVersion=\"" << get_dap_major() << "."
-            << get_dap_minor() << "\"";
-
-        if (!get_request_xml_base().empty()) {
-            out << "\n";
-            out << "xmlns:xml=\"" << c_xml_namespace << "\"\n";
-            out << "xml:base=\"" << get_request_xml_base() << "\"";
-        }
-
-        // Close the Dataset element
-        out << ">\n";
-    }
-    else {
-        out << "xmlns=\"" << c_dap20_namespace << "\"\n" ;
-        out << "xsi:schemaLocation=\"" << c_dap20_namespace
-            << "  " << c_default_dap20_schema_location << "\">\n\n" ;
-    }
-
-    d_attr.print_xml(out, "    ", constrained);
-
-    out << "\n" ;
-
-    for_each(var_begin(), var_end(), VariablePrintXMLStrm(out, constrained));
-
-    out << "\n" ;
-
-    // Only print this for the 2.0, 3.0 and 3.1 versions - which are essentially
-    // the same.
-    // For DAP 3.2 and greater, use the new syntax and value. The 'blob' is
-    // actually the CID of the MIME part that holds the data.
-    if (get_dap_major() == 2 && get_dap_minor() == 0) {
-        out << "    <dataBLOB href=\"\"/>\n" ;
-    }
-    else if (!blob.empty()
-         && (get_dap_major() == 3 && get_dap_minor() >= 2)
-         || get_dap_major() >= 4) {
-    out << "    <blob href=\"cid:" << blob << "\"/>\n";
-    }
-
-    out << "</Dataset>\n" ;
-#endif
 }
 
 class VariablePrintXMLWriter : public unary_function<BaseType *, void>

@@ -847,7 +847,6 @@ Grid::clear_constraint()
         dynamic_cast<Array&>(*(*m)).clear_constraint();
 }
 
-#if FILE_METHODS
 void
 Grid::print_decl(FILE *out, string space, bool print_semi,
                  bool constraint_info, bool constrained)
@@ -855,61 +854,7 @@ Grid::print_decl(FILE *out, string space, bool print_semi,
     ostringstream oss;
     print_decl(oss, space, print_semi, constraint_info, constrained);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-
-#if OLD_FILE_METHODS
-    if (constrained && !send_p())
-        return;
-
-    // The problem with the above is that if two Grids are projected and each
-    // contain one variable, say a map, and it happens to have the same name
-    // in each Grid, then without the enclosing Structures, the returned dataset
-    // has two variables with the same name at the same lexical level. So I'm
-    // removing the code above.
-    if (constrained && !projection_yields_grid()) {
-        fprintf(out, "%sStructure {\n", space.c_str()) ;
-
-        _array_var->print_decl(out, space + "    ", true, constraint_info,
-                               constrained);
-
-        for (Map_citer i = _map_vars.begin(); i != _map_vars.end(); i++) {
-            (*i)->print_decl(out, space + "    ", true,
-                             constraint_info, constrained);
-        }
-
-        fprintf(out, "%s} %s", space.c_str(), id2www(name()).c_str()) ;
-    }
-    else {
-        // The number of elements in the (projected) Grid must be such that
-        // we have a valid Grid object; send it as such.
-        fprintf(out, "%s%s {\n", space.c_str(), type_name().c_str()) ;
-
-        fprintf(out, "%s  Array:\n", space.c_str()) ;
-        _array_var->print_decl(out, space + "    ", true, constraint_info,
-                               constrained);
-
-        fprintf(out, "%s  Maps:\n", space.c_str()) ;
-        for (Map_citer i = _map_vars.begin(); i != _map_vars.end(); i++) {
-            (*i)->print_decl(out, space + "    ", true,
-                             constraint_info, constrained);
-        }
-
-        fprintf(out, "%s} %s", space.c_str(), id2www(name()).c_str()) ;
-    }
-
-    if (constraint_info) {
-        if (send_p())
-            fprintf( out, ": Send True");
-        else
-            fprintf( out, ": Send False");
-    }
-
-    if (print_semi)
-        fprintf(out, ";\n") ;
-
-    return;
-#endif
 }
-#endif
 
 void
 Grid::print_decl(ostream &out, string space, bool print_semi,
@@ -963,28 +908,6 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
     return;
 }
 
-#if FILE_METHODS
-#if OLD_FILE_METHODS
-class PrintMapField : public unary_function<BaseType *, void>
-{
-    FILE *d_out;
-    string d_space;
-    bool d_constrained;
-    string d_tag;
-public:
-    PrintMapField(FILE *o, string s, bool c, const string &t = "Map")
-            : d_out(o), d_space(s), d_constrained(c), d_tag(t)
-    {}
-
-    void operator()(BaseType *btp)
-    {
-        Array *a = dynamic_cast<Array*>(btp);
-        if (!a)
-            throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
-        a->print_xml_core(d_out, d_space, d_constrained, d_tag);
-    }
-};
-#endif
 /**
  * @deprecated
  */
@@ -994,76 +917,7 @@ Grid::print_xml(FILE *out, string space, bool constrained)
     XMLWriter xml(space);
     print_xml_writer(xml, constrained);
     fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
-
-#if OLD_XML_METHODS
-    ostringstream oss;
-    print_xml(oss, space, constrained);
-    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-#endif
-
-#if OLD_FILE_METHODS
-    if (constrained && !send_p())
-         return;
-
-     if (constrained && !projection_yields_grid()) {
-         fprintf(out, "%s<Structure", space.c_str());
-         if (!name().empty())
-             fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
-
-         fprintf(out, ">\n");
-
-         get_attr_table().print_xml(out, space + "    ", constrained);
-
-         get_array()->print_xml(out, space + "    ", constrained);
-
-         for_each(map_begin(), map_end(),
-                  PrintMapField(out, space + "    ", constrained, "Array"));
-
-         fprintf(out, "%s</Structure>\n", space.c_str());
-     }
-     else {
-         // The number of elements in the (projected) Grid must be such that
-         // we have a valid Grid object; send it as such.
-         fprintf(out, "%s<Grid", space.c_str());
-         if (!name().empty())
-             fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
-
-         fprintf(out, ">\n");
-
-         get_attr_table().print_xml(out, space + "    ", constrained);
-
-         get_array()->print_xml(out, space + "    ", constrained);
-
-         for_each(map_begin(), map_end(),
-                  PrintMapField(out, space + "    ", constrained));
-
-         fprintf(out, "%s</Grid>\n", space.c_str());
-     }
-#endif
 }
-#endif
-
-#if OLD_XML_METHODS
-class PrintMapFieldStrm : public unary_function<BaseType *, void>
-{
-    ostream &d_out;
-    string d_space;
-    bool d_constrained;
-    string d_tag;
-public:
-    PrintMapFieldStrm(ostream &o, string s, bool c, const string &t = "Map")
-            : d_out(o), d_space(s), d_constrained(c), d_tag(t)
-    {}
-
-    void operator()(BaseType *btp)
-    {
-        Array *a = dynamic_cast<Array*>(btp);
-        if (!a)
-            throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
-        a->print_xml_core(d_out, d_space, d_constrained, d_tag);
-    }
-};
-#endif
 
 /**
  * @deprecated
@@ -1074,46 +928,6 @@ Grid::print_xml(ostream &out, string space, bool constrained)
     XMLWriter xml(space);
     print_xml_writer(xml, constrained);
     out << xml.get_doc();
-
-#if OLD_XML_METHODS
-    if (constrained && !send_p())
-        return;
-
-    if (constrained && !projection_yields_grid()) {
-        out << space << "<Structure" ;
-        if (!name().empty())
-            out << " name=\"" << id2xml(name()) << "\"" ;
-
-        out << ">\n" ;
-
-        get_attr_table().print_xml(out, space + "    ", constrained);
-
-        get_array()->print_xml(out, space + "    ", constrained);
-
-        for_each(map_begin(), map_end(),
-                 PrintMapFieldStrm(out, space + "    ", constrained, "Array"));
-
-        out << space << "</Structure>\n" ;
-    }
-    else {
-        // The number of elements in the (projected) Grid must be such that
-        // we have a valid Grid object; send it as such.
-        out << space << "<Grid" ;
-        if (!name().empty())
-            out << " name=\"" << id2xml(name()) << "\"" ;
-
-        out << ">\n" ;
-
-        get_attr_table().print_xml(out, space + "    ", constrained);
-
-        get_array()->print_xml(out, space + "    ", constrained);
-
-        for_each(map_begin(), map_end(),
-                 PrintMapFieldStrm(out, space + "    ", constrained));
-
-        out << space << "</Grid>\n" ;
-    }
-#endif
 }
 
 
@@ -1182,43 +996,13 @@ Grid::print_xml_writer(XMLWriter &xml, bool constrained)
     }
 }
 
-#if FILE_METHODS
 void
 Grid::print_val(FILE *out, string space, bool print_decl_p)
 {
     ostringstream oss;
     print_val(oss, space, print_decl_p);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-
-#if OLD_FILE_METHODS
-    if (print_decl_p) {
-        print_decl(out, space, false);
-        fprintf(out, " = ") ;
-    }
-
-    // If we are printing a value on the client-side, projection_yields_grid
-    // should not be called since we don't *have* a projection without a
-    // contraint. I think that if we are here and send_p() is not true, then
-    // the value of this function should be ignored. 4/6/2000 jhrg
-    bool pyg = projection_yields_grid(); // hack 12/1/99 jhrg
-    if (pyg || !send_p())
-        fprintf(out, "{  Array: ") ;
-    else
-        fprintf(out, "{") ;
-    _array_var->print_val(out, "", false);
-    if (pyg || !send_p())
-        fprintf(out, "  Maps: ") ;
-    for (Map_citer i = _map_vars.begin(); i != _map_vars.end();
-         i++, (void)(i != _map_vars.end() && fprintf(out, ", "))) {
-        (*i)->print_val(out, "", false);
-    }
-    fprintf(out, " }") ;
-
-    if (print_decl_p)
-        fprintf(out, ";\n") ;
-#endif
 }
-#endif
 
 void
 Grid::print_val(ostream &out, string space, bool print_decl_p)

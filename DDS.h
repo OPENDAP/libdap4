@@ -72,8 +72,6 @@
 
 using std::cout;
 
-#define FILE_METHODS 1
-
 namespace libdap
 {
 
@@ -335,11 +333,11 @@ public:
     void parse(string fname);
     void parse(int fd);
     void parse(FILE *in = stdin);
-#if FILE_METHODS
+
     void print(FILE *out);
     void print_constrained(FILE *out);
     void print_xml(FILE *out, bool constrained, const string &blob = "");
-#endif
+
     void print(ostream &out);
     void print_constrained(ostream &out);
     void print_xml(ostream &out, bool constrained, const string &blob = "");

@@ -505,33 +505,13 @@ Structure::m_exact_match(const string &name, btp_stack *s)
     return 0;
 }
 
-#if FILE_METHODS
 void
 Structure::print_val(FILE *out, string space, bool print_decl_p)
 {
     ostringstream oss;
     print_val(oss, space, print_decl_p);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-
-#if OLD_FILE_METHODS
-    if (print_decl_p) {
-        print_decl(out, space, false);
-        fprintf(out, " = ") ;
-    }
-
-    fprintf(out, "{ ") ;
-    for (Vars_citer i = _vars.begin(); i != _vars.end();
-         i++, (void)(i != _vars.end() && fprintf(out, ", "))) {
-        (*i)->print_val(out, "", false);
-    }
-
-    fprintf(out, " }") ;
-
-    if (print_decl_p)
-        fprintf(out, ";\n") ;
-#endif
 }
-#endif
 
 void
 Structure::print_val(ostream &out, string space, bool print_decl_p)

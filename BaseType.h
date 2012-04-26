@@ -71,8 +71,6 @@
 #include "Marshaller.h"
 #include "UnMarshaller.h"
 
-#define FILE_METHODS 1
-
 using namespace std;
 
 namespace libdap
@@ -317,7 +315,7 @@ public:
     virtual bool check_semantics(string &msg, bool all = false);
 
     virtual bool ops(BaseType *b, int op);
-#if FILE_METHODS
+
     virtual void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
@@ -325,7 +323,7 @@ public:
 
     virtual void print_xml(FILE *out, string space = "    ",
                            bool constrained = false);
-#endif
+
     virtual void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
@@ -476,7 +474,6 @@ public:
 	@see DDS */
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) = 0;
 
-#if FILE_METHODS
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS
 	applications. However, it can be overloaded and used to do
@@ -494,7 +491,6 @@ public:
 
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true) = 0;
-#endif
 
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS
