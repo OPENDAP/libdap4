@@ -130,6 +130,7 @@ string extract_string_argument(BaseType * arg)
     return s;
 }
 
+// @todo Replace new with vector<T> (vector<T> values(src_len);)
 template<class T> static void set_array_using_double_helper(Array * a, double *src, int src_len)
 {
     T *values = new T[src_len];
@@ -218,7 +219,7 @@ void set_array_using_double(Array * dest, double *src, int src_len)
 template<class T> static double *extract_double_array_helper(Array * a)
 {
     int length = a->length();
-
+    // Could improve this using vector<T>. jhrg
     T *b = new T[length];
     a->value(b);
 
@@ -232,7 +233,7 @@ template<class T> static double *extract_double_array_helper(Array * a)
 
 /** Given a pointer to an Array which holds a numeric type, extract the
  values and return in an array of doubles. This function allocates the
- array using 'new double[n]' so delete[] can be used when you are done
+ array using 'new double[n]' so delete[] MUST be used when you are done
  the data. */
 double *extract_double_array(Array * a)
 {
@@ -411,6 +412,68 @@ static void apply_grid_selection_expressions(Grid * grid, vector<GSEClause *> cl
         apply_grid_selection_expr(grid, *clause_i++);
 
     grid->set_read_p(false);
+}
+
+/** This is an example function for use by the MIIC project team. The first version
+ * of this function simply looked for the Latitude and Longitude arrays of a MODIS
+ * granule and returned them if found. This version, miic_ex2, takes two optional
+ * arguments. If present, these two arguments are the names of the variables in the
+ * dataset that should be used for the latitude and longitude data. If they are not
+ * present, the function reverts to the old behavior. If only one argument is given,
+ * an error is returned.
+ *
+ */
+void function_miic_ex2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
+{
+    Array *l_lat = 0;
+    Array *l_lon = 0;
+    switch (argc) {
+    case 0: {
+        // First find the latitude and longitude variables. This assumes the file is
+        // CF. Note that the names of these are not passed into the function so it
+        // looks up the variables in the DDS. If the names were passed in, this step
+        // would be skipped.
+        if (!(l_lat = dynamic_cast<Array *>(dds.var("Latitude")))
+                || !(l_lon = dynamic_cast<Array *>(dds.var("Latitude"))))
+            throw Error(malformed_expr, "Could not find the Latitude or Longitude data!");
+        break;
+    }
+    case 2: {
+        l_lat = dynamic_cast<Array*>(argv[0]);
+        l_lon = dynamic_cast<Array*>(argv[1]);
+        if (!l_lat || !l_lon)
+            throw Error(malformed_expr, "Expected two Array variables as arguments.");
+        break;
+    }
+    default:
+        throw Error(malformed_expr, "Expected either zero or two arguments.");
+    }
+
+    // Now read the data values into C arrays the function can use. The length of the
+    // data is l_lat->length() and l_lon->length() resp. Use delete[] to release the
+    // storage. Also note that the Array* must be used to determine the number of
+    // dimensions of the arrays - extract_double_array() returns a simple vector.
+    l_lat->read();
+    double *lat = extract_double_array(l_lat);
+    l_lon->read();
+    double *lon = extract_double_array(l_lon);
+
+    // For this example, make a Structure, add two new variables to it and stuff
+    // these values in them. Make the new variable one-dimensional arrays (vectors)
+    // just to keep the code simple.
+    Structure *dest = new Structure("MODIS_Geo_information");
+
+    Array *new_lat = new Array("MODIS_Latitude", new Float64("MODIS_Latitude"));
+    new_lat->append_dim(l_lat->length());
+    new_lat->set_value(lat, l_lat->length());
+    dest->add_var(new_lat);
+
+    Array *new_lon = new Array("MODIS_Longtude", new Float64("MODIS_Longtude"));
+    new_lon->append_dim(l_lon->length());
+    new_lon->set_value(lon, l_lon->length());
+    dest->add_var(new_lon);
+
+    *btpp = dest;
 }
 
 /** The grid function uses a set of relational expressions to form a selection
@@ -1044,10 +1107,9 @@ void register_functions(ConstraintEvaluator & ce)
     ce.add_function("grid", function_grid);
     ce.add_function("geogrid", function_geogrid);
     ce.add_function("linear_scale", function_linear_scale);
-#if 0
-    ce.add_function("geoarray", function_geoarray);
-#endif
     ce.add_function("version", function_version);
+
+    ce.add_function("miic_ex2", function_miic_ex2);
 
     ce.add_function("dap", function_dap);
 }

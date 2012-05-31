@@ -363,6 +363,12 @@ ConstraintEvaluator::eval_function_clauses(DDS &dds)
 /** @brief Evaluate a function-valued constraint expression that contains
     several function calls. Takes and returns a DataDDS.
 
+    @todo Change this so that the new variables are appended to the
+    original DDS object - this will allow constraints that mix simple
+    projectionss with function calls. The function is responsible for
+    setting the new variable's read_p property and this 'evaluator'
+    sets the send_p property.
+
     @see ConstraintEvaluator::eval_function_clauses(DataDDS &dds)
     @note Added for libdap 3.11 */
 DataDDS *

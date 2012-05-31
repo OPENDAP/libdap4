@@ -350,6 +350,8 @@ AC_CONFIG_FILES([Makefile
                  libdap.pc
                  libdapclient.pc
                  libdapserver.pc
+                 main_page.doxygen
+		 doxy.conf
                  gl/Makefile
                  tests/Makefile
                  tests/atlocal

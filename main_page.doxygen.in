@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// $Id$
+// $Id: main_page.doxygen 21281 2009-08-18 06:38:17Z tomss $
 
 // Documentation for the main page of the doxygen-generated reference manual
 
@@ -8,7 +8,7 @@
 
 \section intro Introduction
 
-This reference documentation corresponds to version 3.11.4 of libdap, a C++
+This reference documentation corresponds to version @PACKAGE_VERSION@ of libdap, a C++
 implementation of DAP2, with some extensions. The libdap library
 includes classes and functions which implement DAP 2.0 as well as utilities
 which simpify building clients and servers for DAP 2.0. The library also
