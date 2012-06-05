@@ -146,13 +146,14 @@ XDODS-Server: dods-test/0.00\r\n\
 XOPeNDAP-Server: dods-test/0.00\r\n\
 XDAP: .*\r\n\
 Date: .*\r\n\
-Last-Modified: Sat, 01 Jan 2000 ..:00:00 GMT\r\n\
+Last-Modified: (Sat, 01 Jan 2000 ..:00:00 GMT|Fri, 31 Dec 1999 ..:00:00 GMT)\r\n\
 Content-Type: text/plain\r\n\
 Content-Description: dods_dds\r\n\
 \r\n.*");
 
 	oss.str("");
 	set_mime_text(oss, dods_dds, "dods-test/0.00", x_plain, t);
+	DBG(cerr << "set_mime_text_test: oss: " << oss.str() << endl);
 	CPPUNIT_ASSERT(re_match(r3, oss.str()));
     }
 
@@ -164,7 +165,7 @@ Content-Description: dods_dds\r\n\
 	t = mktime(&tm);
 	// This test may fail for some locations since mktime interprets t as
 	// the local time and returns the corresponding GMT time.
-	Regex r1("Sat, 01 Jan 2000 ..:00:00 GMT");
+	Regex r1("(Sat, 01 Jan 2000 ..:00:00 GMT|Fri, 31 Dec 1999 ..:00:00 GMT)");
 	CPPUNIT_ASSERT(re_match(r1, rfc822_date(t)));
     }
 
