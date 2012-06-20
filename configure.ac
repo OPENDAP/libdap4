@@ -268,18 +268,30 @@ else
 AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])
 fi
 
-AC_ARG_ENABLE([checksums], 
-    AC_HELP_STRING([--enable-checksums], [Enable MD5 checksums (default is NO)]))
+AC_ARG_ENABLE([dap4], 
+    AC_HELP_STRING([--enable-dap4], [Enable DAP4 types and responses (default is NO)]))
 
-dnl echo "enable_checksums = $enable_checksums"
-AS_IF([test "x$enable_checksums" = "xyes"], [
+AS_IF([test "x$enable_dap4" = "xyes"], [
     dnl Do the stuff needed for enabling the feature
-    dnl echo "Defining checksums! "
-    AC_DEFINE([CHECKSUMS], 1, [Should checksums be generated])
-    AM_CONDITIONAL([CHECKSUMS_DEFINED], [true]) ],
-    [ dnl else enable_checksums is false
-    AM_CONDITIONAL([CHECKSUMS_DEFINED], [false])
+    dnl echo "Defining DAP4! "
+    AC_DEFINE([DAP4], 1, [Should DAP4 support be enabled?])
+    AM_CONDITIONAL([DAP4_DEFINED], [true]) ],
+    [ dnl else enable_dap4 is false
+    AM_CONDITIONAL([DAP4_DEFINED], [false])
 ])
+
+dnl AC_ARG_ENABLE([checksums], 
+dnl    AC_HELP_STRING([--enable-checksums], [Enable MD5 checksums for DAP2 (default is NO)]))
+dnl
+dnl echo "enable_checksums = $enable_checksums"
+dnl AS_IF([test "x$enable_checksums" = "xyes"], [
+dnl    dnl Do the stuff needed for enabling the feature
+dnl    dnl echo "Defining checksums! "
+dnl    AC_DEFINE([CHECKSUMS], 1, [Should checksums be generated])
+dnl    AM_CONDITIONAL([CHECKSUMS_DEFINED], [true]) ],
+dnl    [ dnl else enable_checksums is false
+dnl    AM_CONDITIONAL([CHECKSUMS_DEFINED], [false])
+dnl])
 
 dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in
 

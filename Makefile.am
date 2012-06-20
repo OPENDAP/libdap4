@@ -44,12 +44,15 @@ libparsers_la_SOURCES = $(GRAM_SRC)
 libparsers_la_CPPFLAGS = $(AM_CPPFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
-libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC) 
+libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)
+if DAP4_DEFINED
+    libdap_la_SOURCES += $(DAP4_ONLY_SRC)
+endif
+
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_CPPFLAGS = $(AM_CPPFLAGS)
 libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la libparsers.la
-
-if CHECKSUMS_DEFINED
+if DAP4_DEFINED
     libdap_la_LIBADD += -lcrypto 
 endif
 
@@ -63,6 +66,9 @@ libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
 libdapserver_la_LIBADD = libdap.la $(UUID_LIBS)
 
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
+if DAP4_DEFINED
+    pkginclude_HEADERS += $(DAP4_ONLY_HDR)
+endif
 
 noinst_HEADERS = config_dap.h
 
@@ -229,7 +235,10 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	Operators.h XDRUtils.cc XDRFileMarshaller.cc			\
 	XDRStreamMarshaller.cc XDRFileUnMarshaller.cc			\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc
-	
+
+DAP4_ONLY_SRC = DAP4StreamMarshaller.cc DAP4StreamUnMarshaller.cc
+# Int64.cc 
+
 Operators.h: ce_expr.tab.hh
 
 # Operators.h is included in with the source to prevent it from bing installed
@@ -253,6 +262,9 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	Marshaller.h UnMarshaller.h XDRFileUnMarshaller.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h 
+
+DAP4_ONLY_HDR = DAP4StreamMarshaller.h DAP4StreamUnMarshaller.h
+# Int64.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h

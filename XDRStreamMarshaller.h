@@ -42,6 +42,7 @@ using std::cout ;
 
 #include "Marshaller.h"
 #include "XDRUtils.h"
+#include "BaseType.h"
 
 namespace libdap
 {
@@ -55,26 +56,29 @@ namespace libdap
 class XDRStreamMarshaller : public Marshaller
 {
 private:
-    static char *	_buf ;
-    XDR *			_sink ;
-    ostream &		_out ;
+    static char *	d_buf ;
+    XDR 			d_sink ;
+    ostream &		d_out ;
+#if 0
     EVP_MD_CTX *    _MD_CTX;    // jhrg 4/24/12
     bool            _write_data ; // jhrg 1/27/12
     bool            _checksum_ctx_valid ;
     string          _checksum ; // jhrg 4/24/12
-
+#endif
     				XDRStreamMarshaller() ;
     				XDRStreamMarshaller( const XDRStreamMarshaller &m ) ;
     XDRStreamMarshaller &operator=( const XDRStreamMarshaller & ) ;
 
 public:
-    				XDRStreamMarshaller( ostream &out, bool checksum = false, bool write_data = true) ;
+    				XDRStreamMarshaller( ostream &out) ; //, bool checksum = false, bool write_data = true) ;
     virtual			~XDRStreamMarshaller() ;
 
+#if 0
     virtual bool    checksums() { return _MD_CTX != 0; }
     virtual void    reset_checksum() ;
     virtual string  get_checksum() ;
     virtual void    checksum_update(const void *data, unsigned long len) ;
+#endif
 
     virtual void	put_byte( dods_byte val ) ;
 
@@ -94,7 +98,9 @@ public:
     virtual void	put_int( int val ) ;
 
     virtual void	put_vector( char *val, int num, Vector &vec ) ;
-    virtual void	put_vector( char *val, int num, int width, Vector &vec ) ;
+    virtual void    put_vector( char *val, int num, int width, Vector &vec) ;
+
+    virtual void put_vector(char *val, unsigned int num, int width, Type type);
 
     virtual void	dump(ostream &strm) const ;
 } ;

@@ -300,7 +300,7 @@ void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEval
     // Grab a stream that encodes using XDR.
     XDRStreamMarshaller m(out, true, true);
 #else
-    XDRStreamMarshaller m(out, false, true);
+    XDRStreamMarshaller m(out); //, false, true);
 #endif
     try {
         // Send all variables in the current projection (send_p())
