@@ -40,11 +40,13 @@ namespace libdap
 {
 
 class Vector;
-const unsigned int c_md5_length = 16;
 
 /** @brief Read data from the stream made by DAP4StreamMarshaller.
  */
 class DAP4StreamUnMarshaller: public UnMarshaller {
+public:
+    const static unsigned int c_md5_length = 16;
+
 private:
     istream & d_in;
     bool d_isBigEndian;

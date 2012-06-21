@@ -41,7 +41,6 @@ using std::cout;
 namespace libdap {
 
 class Vector;
-const unsigned int c_md5_length = 16;
 
 /** @brief Marshaller that knows how to marshal/serialize dap data objects
  * to a C++ iostream using DAP4's receiver-makes-right scheme. This code
@@ -58,6 +57,9 @@ const unsigned int c_md5_length = 16;
  * Apple did this is a mystery.
  */
 class DAP4StreamMarshaller: public Marshaller {
+public:
+    const static unsigned int c_md5_length = 16;
+
 private:
     XDR d_scalar_sink;
     char * d_ieee754_buf; // used to serialize a float or double
@@ -74,7 +76,7 @@ private:
     DAP4StreamMarshaller() : d_out(cout) {
         throw InternalErr( __FILE__, __LINE__, "not implemented." ) ;
     }
-    DAP4StreamMarshaller(const DAP4StreamMarshaller &) : d_out(cout) {
+    DAP4StreamMarshaller(const DAP4StreamMarshaller &) : Marshaller(), d_out(cout) {
         throw InternalErr( __FILE__, __LINE__, "not implemented." ) ;
     }
     DAP4StreamMarshaller & operator=(const DAP4StreamMarshaller &) {
