@@ -266,19 +266,23 @@ Grid::intern_data(ConstraintEvaluator &eval, DDS &dds)
 }
 
 bool
-Grid::serialize(ConstraintEvaluator &eval, DDS &dds,
-                Marshaller &m, bool ce_eval)
+Grid::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
+    DBG(cerr << "In Grid::serialize()" << endl);
+
     dds.timeout_on();
 
     // Re ticket 560: Get an object from eval that describes how to sample
     // and rearrange the data, then perform those actions. Alternative:
     // implement this as a selection function.
+    DBG(cerr << "In Grid::serialize(), before read() - read_p() returned: " << read_p() << endl);
 
     if (!read_p())
         read();  // read() throws Error and InternalErr
 
-#if EVAL
+    DBG(cerr << "In Grid::serialize(), past read() - read_p() returned: " << read_p() << endl);
+
+    #if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
 #endif
@@ -295,6 +299,7 @@ Grid::serialize(ConstraintEvaluator &eval, DDS &dds,
         //cerr << _array_var->name() << ": " <<
         sm.get_checksum();// << endl;
 #else
+        DBG(cerr << "About to call Array::serialize() in Grid::serialize" << endl);
             _array_var->serialize(eval, dds, m, false);
 #endif
     }

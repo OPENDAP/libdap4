@@ -787,7 +787,7 @@ BaseType::read()
     if (_read_p)
         return false;
 
-    throw InternalErr("Unimplemented BaseType::read() method called.");
+    throw InternalErr("Unimplemented BaseType::read() method called for the variable named: " + name());
 }
 
 void
