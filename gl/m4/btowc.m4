@@ -1,5 +1,5 @@
-# btowc.m4 serial 8
-dnl Copyright (C) 2008-2011 Free Software Foundation, Inc.
+# btowc.m4 serial 10
+dnl Copyright (C) 2008-2012 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -107,11 +107,6 @@ int main ()
       *yes) ;;
       *) REPLACE_BTOWC=1 ;;
     esac
-  fi
-  if test $HAVE_BTOWC = 0 || test $REPLACE_BTOWC = 1; then
-    gl_REPLACE_WCHAR_H
-    AC_LIBOBJ([btowc])
-    gl_PREREQ_BTOWC
   fi
 ])
 

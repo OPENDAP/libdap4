@@ -1,6 +1,6 @@
-/* Convert unibyte character to wide character.
-   Copyright (C) 2008, 2010-2012 Free Software Foundation, Inc.
-   Written by Bruno Haible <bruno@clisp.org>, 2008.
+/* Convert multibyte character to wide character.
+   Copyright (C) 2011-2012 Free Software Foundation, Inc.
+   Written by Bruno Haible <bruno@clisp.org>, 2011.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published by
@@ -17,23 +17,10 @@
 
 #include <config.h>
 
-/* Specification.  */
-#include <wchar.h>
-
-#include <stdio.h>
 #include <stdlib.h>
 
-wint_t
-btowc (int c)
-{
-  if (c != EOF)
-    {
-      char buf[1];
-      wchar_t wc;
+#include <errno.h>
+#include <string.h>
+#include <wchar.h>
 
-      buf[0] = c;
-      if (mbtowc (&wc, buf, 1) >= 0)
-        return wc;
-    }
-  return WEOF;
-}
+#include "mbtowc-impl.h"

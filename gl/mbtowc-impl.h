@@ -1,6 +1,6 @@
-/* Convert wide character to multibyte character.
-   Copyright (C) 2008-2012 Free Software Foundation, Inc.
-   Written by Bruno Haible <bruno@clisp.org>, 2008.
+/* Convert multibyte character to wide character.
+   Copyright (C) 2011-2012 Free Software Foundation, Inc.
+   Written by Bruno Haible <bruno@clisp.org>, 2011.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published by
@@ -15,39 +15,30 @@
    You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <config.h>
+/* We don't need a static internal state, because the encoding is not state
+   dependent, and when mbrtowc returns (size_t)(-2). we throw the result
+   away. */
 
-/* Specification.  */
-#include <wchar.h>
-
-#include <errno.h>
-#include <stdlib.h>
-
-
-size_t
-wcrtomb (char *s, wchar_t wc, mbstate_t *ps)
+int
+mbtowc (wchar_t *pwc, const char *s, size_t n)
 {
-  /* This implementation of wcrtomb on top of wctomb() supports only
-     stateless encodings.  ps must be in the initial state.  */
-  if (ps != NULL && !mbsinit (ps))
-    {
-      errno = EINVAL;
-      return (size_t)(-1);
-    }
-
   if (s == NULL)
-    /* We know the NUL wide character corresponds to the NUL character.  */
-    return 1;
+    return 0;
   else
     {
-      int ret = wctomb (s, wc);
+      mbstate_t state;
+      wchar_t wc;
+      size_t result;
 
-      if (ret >= 0)
-        return ret;
-      else
+      memset (&state, 0, sizeof (mbstate_t));
+      result = mbrtowc (&wc, s, n, &state);
+      if (result == (size_t)-1 || result == (size_t)-2)
         {
           errno = EILSEQ;
-          return (size_t)(-1);
+          return -1;
         }
+      if (pwc != NULL)
+        *pwc = wc;
+      return (wc == 0 ? 0 : result);
     }
 }

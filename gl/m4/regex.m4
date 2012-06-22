@@ -1,6 +1,6 @@
-# serial 58
+# serial 61
 
-# Copyright (C) 1996-2001, 2003-2011 Free Software Foundation, Inc.
+# Copyright (C) 1996-2001, 2003-2012 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -175,6 +175,9 @@ AC_DEFUN([gl_REGEX],
   esac
 
   if test $ac_use_included_regex = yes; then
+    AC_DEFINE([_REGEX_INCLUDE_LIMITS_H], [1],
+      [Define if you want <regex.h> to include <limits.h>, so that it
+       consistently overrides <limits.h>'s RE_DUP_MAX.])
     AC_DEFINE([_REGEX_LARGE_OFFSETS], [1],
       [Define if you want regoff_t to be at least as wide POSIX requires.])
     AC_DEFINE([re_syntax_options], [rpl_re_syntax_options],
@@ -207,8 +210,6 @@ AC_DEFUN([gl_REGEX],
       [Define to rpl_regerror if the replacement should be used.])
     AC_DEFINE([regfree], [rpl_regfree],
       [Define to rpl_regfree if the replacement should be used.])
-    AC_LIBOBJ([regex])
-    gl_PREREQ_REGEX
   fi
 ])
 
@@ -221,5 +222,5 @@ AC_DEFUN([gl_PREREQ_REGEX],
   AC_REQUIRE([AC_TYPE_MBSTATE_T])
   AC_CHECK_HEADERS([libintl.h])
   AC_CHECK_FUNCS_ONCE([isblank iswctype wcscoll])
-  AC_CHECK_DECLS([isblank], [], [], [#include <ctype.h>])
+  AC_CHECK_DECLS([isblank], [], [], [[#include <ctype.h>]])
 ])
