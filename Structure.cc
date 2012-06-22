@@ -227,6 +227,8 @@ Structure::add_var(BaseType *bt, Part)
     if (!bt)
         throw InternalErr(__FILE__, __LINE__,
                           "The BaseType parameter cannot be null.");
+    if (bt->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Structure.");
 
     // Jose Garcia
     // Now we add a copy of bt so the external user is able to destroy bt as
@@ -245,11 +247,11 @@ Structure::add_var(BaseType *bt, Part)
 void
 Structure::add_var_nocopy(BaseType *bt, Part)
 {
-    // Jose Garcia
-    // Passing and invalid pointer to an object is a developer's error.
     if (!bt)
         throw InternalErr(__FILE__, __LINE__,
                           "The BaseType parameter cannot be null.");
+    if (bt->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Structure.");
 
     bt->set_parent(this);
     _vars.push_back(bt);

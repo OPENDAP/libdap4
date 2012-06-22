@@ -26,10 +26,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    { "$Id$"
-    };
-
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif

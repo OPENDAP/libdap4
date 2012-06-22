@@ -44,6 +44,9 @@
 #include <algorithm>
 
 #include "Vector.h"
+#include "Marshaller.h"
+#include "UnMarshaller.h"
+
 #include "dods-datatypes.h"
 #include "escaping.h"
 #include "util.h"
@@ -298,6 +301,15 @@ Vector & Vector::operator=(const Vector & rhs)
     return *this;
 }
 
+/**
+ * The Vector (and Array) classes are specific to DAP2. They do not support
+ * the semantics of DAP4 which allows varying dimensions.
+ */
+bool Vector::is_dap2_only_type()
+{
+    return true;
+}
+
 void Vector::set_name(const std::string& name)
 {
     BaseType::set_name(name);
@@ -370,6 +382,7 @@ BaseType *Vector::var(const string & n, bool exact, btp_stack * s)
     string name = www2id(n);
     DBG(cerr << "Vector::var: Looking for " << n << endl);
 
+    // If this is a Vector of constructor types, look for 'name' recursively.
     // Make sure to check for the case where name is the default (the empty
     // string). 9/1/98 jhrg
     if (_var->is_constructor_type()) {
@@ -386,7 +399,7 @@ BaseType *Vector::var(const string & n, bool exact, btp_stack * s)
         }
     }
     else {
-        return _var; // I don't see why this isn't return 0 *** jhrg 10/9/08
+        return _var;
     }
 }
 
@@ -1479,11 +1492,17 @@ void *Vector::value()
  <tt>v</tt>'s name is null, then assume that the array \e is named and
  don't overwrite it with <tt>v</tt>'s null name.
 
+ @note As is the case with Array, this method can be called with a null
+ BaseType pointer.
+
  @param v The template variable for the array
  @param p The Part parameter defaults to nil and is ignored by this method.
  */
 void Vector::add_var(BaseType * v, Part)
 {
+    if (v && v->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Vector.");
+
     // Delete the current template variable
     if (_var) {
         delete _var;
@@ -1499,6 +1518,39 @@ void Vector::add_var(BaseType * v, Part)
         // By getting a copy of this object to be assigned to _var
         // we let the owner of 'v' to deallocate it as necessary.
         _var = v->ptr_duplicate();
+
+        // If 'v' has a name, use it as the name of the array. If it *is*
+        // empty, then make sure to copy the array's name to the template
+        // so that software which uses the template's name will still work.
+        if (!v->name().empty())
+            set_name(v->name());
+        else
+            _var->set_name(name());
+
+        _var->set_parent(this); // Vector --> child
+
+        DBG(cerr << "Vector::add_var: Added variable " << v << " ("
+                << v->name() << " " << v->type_name() << ")" << endl);
+    }
+}
+
+void Vector::add_var_nocopy(BaseType * v, Part)
+{
+    if (v && v->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Vector.");
+
+    // Delete the current template variable
+    if (_var) {
+        delete _var;
+        _var = 0;
+    }
+
+    // if 'v' is null, just set _var to null and exit.
+    if (!v) {
+        _var = 0;
+    }
+    else {
+        _var = v;
 
         // If 'v' has a name, use it as the name of the array. If it *is*
         // empty, then make sure to copy the array's name to the template

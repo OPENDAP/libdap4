@@ -82,6 +82,14 @@ AC_PROG_CC
 dnl Call this gnulib macro right after a working C Compiler is found
 gl_EARLY
 
+dnl echo "CC = $CC"
+if test "$CC" = "gcc"
+then
+    AM_CONDITIONAL([COMPILER_IS_GCC],[true])
+else
+    AM_CONDITIONAL([COMPILER_IS_GCC],[false])
+fi
+
 AM_PROG_LEX
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -97,6 +105,7 @@ dnl Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
+
 AC_CHECK_HEADERS([fcntl.h malloc.h memory.h netinet/in.h stddef.h stdlib.h string.h strings.h sys/param.h sys/time.h unistd.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
@@ -107,15 +116,18 @@ AC_CHECK_MEMBERS([struct stat.st_blksize])
 AC_HEADER_TIME
 AC_STRUCT_TM
 AC_C_VOLATILE
+AC_C_BIGENDIAN
+        
 DODS_CHECK_SIZES
 
-dnl echo "CC = $CC"
-if test "$CC" = "gcc"
-then
-    AM_CONDITIONAL([COMPILER_IS_GCC],[true])
-else
-    AM_CONDITIONAL([COMPILER_IS_GCC],[false])
-fi
+AC_ARG_ENABLE([runtime-endian-check],
+    AC_HELP_STRING([--enable-runtime-endian-check], [Enable runtime tests for big- or little-endian byte order (default is NO)])
+)
+
+AS_IF([test "x$enable_runtime_endian_check" = "xyes"], [
+    dnl Do the stuff needed for enabling the feature
+    AC_DEFINE([COMPUTE_ENDIAN_AT_RUNTIME], 1, [Should a function (run-time) be used to determine the byte order?])
+])
 
 # Checks for library functions.
 
@@ -124,7 +136,7 @@ AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove m
 
 gl_SOURCE_BASE(gl)
 gl_M4_BASE(gl/m4)
-gl_MODULES(regex)
+gl_MODULES(regex btyeswap)
 
 gl_INIT
 

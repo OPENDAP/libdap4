@@ -49,7 +49,7 @@ public:
 
 private:
     istream & d_in;
-    bool d_isBigEndian;
+    bool d_twiddle_bytes;
 
     // These are used for reals that need to be converted from IEEE 754
     XDR d_source;
@@ -65,21 +65,19 @@ private:
         throw InternalErr( __FILE__, __LINE__, "not implemented." ) ;
     }
 
-    template <class T> void m_deserialize_reals(char *val, unsigned int num, Type type);
+    void m_deserialize_reals(char *val, unsigned int num, int width, Type type);
+    void m_twidle_vector_elements(char *vals, unsigned int num, int width);
 
 public:
     struct checksum {
         unsigned char md[c_md5_length];
     };
 
-    DAP4StreamUnMarshaller(istream &in, bool isBigEndian);
+    DAP4StreamUnMarshaller(istream &in, bool is_stream_bigendian);
     virtual ~DAP4StreamUnMarshaller();
 
     checksum get_checksum();
     string get_checksum(checksum c);
-
-    bool getIsBigEndian() { return d_isBigEndian; }
-    void setIsBigEndian(bool isBigEndian) { d_isBigEndian = isBigEndian; }
 
     virtual void get_byte(dods_byte &val);
 

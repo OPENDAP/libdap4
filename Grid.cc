@@ -146,6 +146,17 @@ Grid::operator=(const Grid &rhs)
     return *this;
 }
 
+/**
+ * Grid can only be used for DAP2.
+ * @note This might change depending on just how complex DAP4Array becomes,
+ * for example.
+ */
+bool
+Grid::is_dap2_only_type()
+{
+    return true;
+}
+
 int
 Grid::element_count(bool leaves)
 {
@@ -402,10 +413,10 @@ Grid::var(const string &n, bool, btp_stack *s)
 void
 Grid::add_var(BaseType *bt, Part part)
 {
-    if (!bt) {
-        throw InternalErr(__FILE__, __LINE__,
-                          "Passing NULL pointer as variable to be added.");
-    }
+    if (!bt)
+        throw InternalErr(__FILE__, __LINE__, "Passing NULL pointer as variable to be added.");
+    if (bt->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Grid.");
 
     if (part == array && _array_var) {
       // Avoid leaking memory...  Function is add, not set, so it is an error to call again for the array part.
@@ -486,10 +497,10 @@ Grid::add_var(BaseType *bt, Part part)
 void
 Grid::add_var_nocopy(BaseType *bt, Part part)
 {
-    if (!bt) {
-        throw InternalErr(__FILE__, __LINE__,
-                          "Passing NULL pointer as variable to be added.");
-    }
+    if (!bt)
+        throw InternalErr(__FILE__, __LINE__, "Passing NULL pointer as variable to be added.");
+    if (bt->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Grid.");
 
     if (part == array && _array_var) {
       // Avoid leaking memory...  Function is add, not set, so it is an error to call again for the array part.
@@ -600,14 +611,13 @@ Grid::set_array(Array* p_new_arr)
 Array*
 Grid::add_map(Array* p_new_map, bool add_as_copy)
 {
-  if (!p_new_map) {
-    throw InternalErr(__FILE__, __LINE__,
-        "Grid::add_map(): cannot have p_new_map null!");
-  }
+  if (!p_new_map)
+    throw InternalErr(__FILE__, __LINE__, "Grid::add_map(): cannot have p_new_map null!");
+  if (p_new_map->is_dap4_only_type())
+      throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Grid.");
 
-  if (add_as_copy) {
+  if (add_as_copy)
     p_new_map = static_cast<Array*>(p_new_map->ptr_duplicate());
-  }
 
   p_new_map->set_parent(this);
   _map_vars.push_back(p_new_map);

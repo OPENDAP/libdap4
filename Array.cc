@@ -162,11 +162,16 @@ Array::operator=(const Array &rhs)
     <tt>v</tt>'s name is null, then assume that the array \e is named and
     don't overwrite it with <tt>v</tt>'s null name.
 
+    @note It is possible for the BaseType pointer to be null when this
+    method is called, a behavior that differs considerably from that of
+    the other 'add_var()' methods.
+
     @note This version checks to see if \e v is an array. If so, it calls
     Vector::add_var() using the template variable of \e v and then appends
     the dimensions of \e v to this array. This somewhat obscure behavior
     simplifies 'translating' Sequences to arrays when the actual variable
     being translated is not a regular Sequence but an array of Sequences.
+    This is of very debatable usefulness, but it's here all the same.
 
     @param v The template variable for the array
     @param p The Part parameter defaults to nil and is ignored by this method.
@@ -175,9 +180,39 @@ Array::operator=(const Array &rhs)
 void
 Array::add_var(BaseType *v, Part)
 {
+    if (v && v->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Array.");
+
+    // If 'v' is an Array, add the template instance to this object and
+    // then copy the dimension information. Odd semantics; I wonder if this
+    //is ever used. jhrg 6/13/12
     if (v && v->type() == dods_array_c) {
         Array &a = dynamic_cast<Array&>(*v);
         Vector::add_var(a.var());
+        Dim_iter i = a.dim_begin();
+        Dim_iter i_end = a.dim_end();
+        while (i != i_end) {
+            append_dim(a.dimension_size(i), a.dimension_name(i));
+            ++i;
+        }
+    }
+    else {
+        Vector::add_var(v);
+    }
+}
+
+void
+Array::add_var_nocopy(BaseType *v, Part)
+{
+    if (v && v->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Array.");
+
+    // If 'v' is an Array, add the template instance to this object and
+    // then copy the dimension information. Odd semantics; I wonder if this
+    //is ever used. jhrg 6/13/12
+    if (v && v->type() == dods_array_c) {
+        Array &a = dynamic_cast<Array&>(*v);
+        Vector::add_var_nocopy(a.var());
         Dim_iter i = a.dim_begin();
         Dim_iter i_end = a.dim_end();
         while (i != i_end) {

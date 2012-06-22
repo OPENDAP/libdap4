@@ -4,7 +4,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Copyright (c) 2012 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -23,18 +23,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// (c) COPYRIGHT URI/MIT 1994-1999
-// Please read the full copyright statement in the file COPYRIGHT_URI.
-//
-// Authors:
-//      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
-
-// Interface for Int32 type.
-//
-// jhrg 9/7/94
-
-#ifndef _int32_h
-#define _int32_h 1
+#ifndef _int64_h
+#define _int64_h 1
 
 
 #ifndef _dods_datatypes_h
@@ -45,23 +35,19 @@
 #include "BaseType.h"
 #endif
 
-#if 0
-#ifndef constraint_evaluator_h
-#include "ConstraintEvaluator.h"
-#endif
-#endif
-
 namespace libdap
 {
 
 class ConstraintEvaluator;
+class DAP4StreamMarshaller;
+class DAP4StreamUnMarshaller;
 
-/** @brief Holds a 32-bit signed integer.
+/** @brief Holds a64-bit signed integer.
 
     @see BaseType
     */
 
-class Int32: public BaseType
+class Int64: public BaseType
 {
     /** This class allows Byte, ..., Float64 access to <tt>_buf</tt> to
     simplify and speed up the relational operators.
@@ -72,35 +58,35 @@ class Int32: public BaseType
     friend class Int16;
     friend class UInt16;
     friend class UInt32;
+    // FIXME DAP4 friend class UInt64;
     friend class Float32;
     friend class Float64;
 
+    unsigned int val2buf(void *, bool)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
+    unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
+
 protected:
-    dods_int32 _buf;
+    dods_int64 _buf;
 
 public:
-    Int32(const string &n);
-    Int32(const string &n, const string &d);
+    Int64(const string &n);
+    Int64(const string &n, const string &d);
 
-    Int32(const Int32 &copy_from);
+    Int64(const Int64 &copy_from);
 
-    Int32 &operator=(const Int32 &rhs);
+    Int64 &operator=(const Int64 &rhs);
 
-    virtual ~Int32();
+    virtual ~Int64();
 
     virtual BaseType *ptr_duplicate();
 
     virtual unsigned int width();
 
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
-			   Marshaller &m, bool ce_eval = true);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
-
-    virtual bool set_value(dods_int32 i);
-    virtual dods_int32 value() const;
+    virtual bool set_value(dods_int64 i);
+    virtual dods_int64 value() const;
 
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
@@ -114,5 +100,5 @@ public:
 
 } // namespace libdap
 
-#endif // _int32_h
+#endif // _int64_h
 

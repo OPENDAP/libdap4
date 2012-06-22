@@ -83,11 +83,11 @@ private:
         throw InternalErr( __FILE__, __LINE__, "not implemented." ) ;
     }
 
-    template<class T> void m_serialize_reals(char *val, unsigned int num, Type type);
+    void m_serialize_reals(char *val, unsigned int num, int width, Type type);
     void m_compute_checksum();
 
 public:
-    DAP4StreamMarshaller(ostream &out, bool checksum = true, bool write_data = true);
+    DAP4StreamMarshaller(ostream &out, bool write_data = true);
     virtual ~DAP4StreamMarshaller();
 
     // Added here

@@ -68,8 +68,10 @@
 #include "XMLWriter.h"
 #endif
 
+#if 0
 #include "Marshaller.h"
 #include "UnMarshaller.h"
+#endif
 
 using namespace std;
 
@@ -78,6 +80,8 @@ namespace libdap
 
 class DDS;
 class ConstraintEvaluator;
+class Marshaller;
+class UnMarshaller;
 
 /** <b>Part</b> names the parts of multi-section constructor types.
     For example, the <b>Grid</b> class has an <i>array</i> and
@@ -122,7 +126,11 @@ enum Part {
     dods_array_c,
     dods_structure_c,
     dods_sequence_c,
-    dods_grid_c
+    dods_grid_c,
+
+    dods_int64_c,
+    dods_uint64_c
+
     };
     \endcode
 
@@ -144,7 +152,10 @@ enum Type {
     dods_array_c,
     dods_structure_c,
     dods_sequence_c,
-    dods_grid_c
+    dods_grid_c,
+    // Added for DAP4
+    dods_int64_c,
+    dods_uint64_c
 };
 
 /** This defines the basic data type features for the DODS data access
@@ -192,14 +203,14 @@ enum Type {
 class BaseType : public DapObj
 {
 private:
-    string _name;  // name of the instance
-    Type _type;   // instance's type
-    string _dataset; // name of the dataset used to create this BaseType
+    string d_name;  // name of the instance
+    Type d_type;   // instance's type
+    string d_dataset; // name of the dataset used to create this BaseType
 
-    bool _read_p;  // true if the value has been read
-    bool _send_p;  // Is the variable in the projection?
+    bool d_is_read;  // true if the value has been read
+    bool d_is_send;  // Is the variable in the projection?
     bool d_in_selection; // Is the variable in the selection?
-    bool _synthesized_p; // true if the variable is synthesized
+    bool d_is_synthesized; // true if the variable is synthesized
 
     // d_parent points to the Constructor or Vector which holds a particular
     // variable. It is null for simple variables. The Vector and Constructor
@@ -247,6 +258,9 @@ public:
     virtual bool is_simple_type();
     virtual bool is_vector_type();
     virtual bool is_constructor_type();
+
+    virtual bool is_dap4_only_type();
+    virtual bool is_dap2_only_type();
 
     virtual bool synthesized_p();
     virtual void set_synthesized_p(bool state);

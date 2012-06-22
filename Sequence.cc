@@ -56,6 +56,9 @@
 #include "Sequence.h"
 #include "Grid.h"
 
+#include "Marshaller.h"
+#include "UnMarshaller.h"
+
 #include "debug.h"
 #include "Error.h"
 #include "InternalErr.h"
@@ -238,6 +241,15 @@ Sequence::operator=(const Sequence &rhs)
     return *this;
 }
 
+/**
+ * The Sequence class will be streamlined for DAP4.
+ */
+bool
+Sequence::is_dap2_only_type()
+{
+    return true;
+}
+
 string
 Sequence::toString()
 {
@@ -342,6 +354,9 @@ Sequence::add_var(BaseType *bt, Part)
     if (!bt)
         throw InternalErr(__FILE__, __LINE__,
                           "Cannot add variable: NULL pointer");
+    if (bt->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Sequence.");
+
     // Jose Garcia
     // We append a copy of bt so the owner of bt is free to deallocate
 
@@ -367,6 +382,9 @@ Sequence::add_var_nocopy(BaseType *bt, Part)
     if (!bt)
         throw InternalErr(__FILE__, __LINE__,
                           "Cannot add variable: NULL pointer");
+    if (bt->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Sequence.");
+
     bt->set_parent(this);
     _vars.push_back(bt);
 }

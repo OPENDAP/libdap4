@@ -57,8 +57,9 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-// FIXME
+#ifndef S_XDRUtils_h
 #include "XDRUtils.h"
+#endif
 
 namespace libdap
 {
@@ -253,6 +254,8 @@ public:
     Sequence &operator=(const Sequence &rhs);
 
     virtual BaseType *ptr_duplicate();
+
+    virtual bool is_dap2_only_type();
 
     virtual string toString();
 

@@ -142,6 +142,8 @@ public:
     Grid &operator=(const Grid &rhs);
     virtual BaseType *ptr_duplicate();
 
+    virtual bool is_dap2_only_type();
+
     virtual int element_count(bool leaves = false);
 
     virtual void set_send_p(bool state);

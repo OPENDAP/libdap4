@@ -400,7 +400,7 @@ simultaneous and/or overlapping calls to a single copy of libdap. If
 several threads are part of a program and each will make calls to
 libdap, either those threads must synchronize their calls or arrange
 to each use their own copy of libdap.  Some aspects of the library
-''are'' thread-safe: the singleton classes are all protected as is the
+are thread-safe: the singleton classes are all protected as is the
 HTTP cache (which uses the local file system).
 
 INSTALLATION INSTRUCTIONS

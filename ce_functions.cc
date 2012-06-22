@@ -510,8 +510,6 @@ function_version(int, BaseType *[], DDS &, BaseType **btpp)
                        <function name=\"ugrid_demo\" version=\"0.1\"/>\
                        </functions>";
 
-    //                        <function name=\"geoarray\" version=\"0.9b1\"/>
-
     Str *response = new Str("version");
 
     response->set_value(xml_value);

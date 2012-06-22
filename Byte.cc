@@ -54,6 +54,8 @@
 
 #include "DDS.h"
 #include "Operators.h"
+#include "Marshaller.h"
+#include "UnMarshaller.h"
 
 #include "util.h"
 #include "parser.h"

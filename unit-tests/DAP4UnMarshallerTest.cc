@@ -39,48 +39,25 @@ class DAP4UnMarshallerTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(test_varying_vector);
 
     CPPUNIT_TEST_SUITE_END( );
-#if 0
-    /**
-     * Compare the contents of a file with a memory buffer
-     */
-    bool cmp(const char *buf, unsigned int len, string file) {
-        fstream in;
-        in.open(file.c_str(), fstream::binary | fstream::in);
-        if (!in) {
-            cerr << "Could not open file: " << file << endl;
-            return false;
-        }
 
-        vector<char> fbuf(len);
-        in.read(&fbuf[0], len);
-        if (!in) {
-            cerr << "Could not read " << len << " bytes from file." << endl;
-            return false;
-        }
+    static inline bool is_host_big_endian()
+    {
+#ifdef COMPUTE_ENDIAN_AT_RUNTIME
 
-        for (unsigned int i = 0; i < len; ++i)
-            if (*buf++ != fbuf[i]) {
-                cerr << "Response differs from baseline at byte " << i << endl;
-                cerr << "Expected: " << setfill('0') << setw(2) << hex
-                        << (unsigned int)fbuf[i] << "; got: "
-                        << (unsigned int)buf[i] << dec << endl;
-                return false;
-            }
+        dods_int16 i = 0x0100;
+        char *c = reinterpret_cast<char*>(&i);
+        return *c;
 
+#else
+
+#ifdef WORDS_BIGENDIAN
         return true;
-    }
-
-    void write_binary_file(const char *buf, int len, string file) {
-        fstream out;
-        out.open(file.c_str(), fstream::binary | fstream::out);
-        if (!out) {
-            cerr << "Could not open file: " << file << endl;
-            return;
-        }
-
-        out.write(buf, len);
-    }
+#else
+        return false;
 #endif
+
+#endif
+    }
 
 public:
     DAP4UnMarshallerTest() {
@@ -100,7 +77,7 @@ public:
         // computes checksums and writes data
         try {
             in.open("test_scalars_1_bin.dat", fstream::binary | fstream::in);
-            DAP4StreamUnMarshaller dsm(in, true);
+            DAP4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             dods_byte b;
             dsm.get_byte(b);
@@ -169,7 +146,7 @@ public:
         // computes checksums and writes data
         try {
             in.open("test_scalars_2_bin.dat", fstream::binary | fstream::in);
-            DAP4StreamUnMarshaller dsm(in, true);
+            DAP4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             dods_float32 r1;
             dsm.get_float32(r1);
@@ -202,7 +179,7 @@ public:
         // computes checksums and writes data
         try {
             in.open("test_scalars_3_bin.dat", fstream::binary | fstream::in);
-            DAP4StreamUnMarshaller dsm(in, true);
+            DAP4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             string s;
             dsm.get_str(s);
@@ -235,7 +212,7 @@ public:
         // computes checksums and writes data
         try {
             in.open("test_opaque_1_bin.dat", fstream::binary | fstream::in);
-            DAP4StreamUnMarshaller dsm(in, true);
+            DAP4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             // Test both get_opaque calls; this one that expects the caller
             // to allocate memory.
@@ -276,7 +253,7 @@ public:
         // computes checksums and writes data
         try {
             in.open("test_vector_1_bin.dat", fstream::binary | fstream::in);
-            DAP4StreamUnMarshaller dsm(in, true);
+            DAP4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             vector<unsigned char> buf1(32768);
             dsm.get_vector(reinterpret_cast<char*>(&buf1[0]), 32768);
@@ -322,7 +299,7 @@ public:
         // computes checksums and writes data
         try {
             in.open("test_vector_2_bin.dat", fstream::binary | fstream::in);
-            DAP4StreamUnMarshaller dsm(in, true);
+            DAP4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             // Reuse the same pointer for all of the data...
             char *buf;

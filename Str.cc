@@ -52,6 +52,8 @@
 #include "Sequence.h"
 #include "Grid.h"
 
+#include "Marshaller.h"
+#include "UnMarshaller.h"
 
 #include "DDS.h"
 #include "util.h"

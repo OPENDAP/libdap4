@@ -127,17 +127,15 @@ inline uint8_t* WriteVarint64ToArrayInline(uint64_t value, uint8_t* target) {
  * and enable the use of the reset_checksum() and get_checksum() methods.
  *
  * @param out Write to this stream object.
- * @param checksum If true, compute checksums. False by default
  * @param write_data If true, write data values. True by default
  */
-DAP4StreamMarshaller::DAP4StreamMarshaller(ostream &out, bool checksum, bool write_data) :
+DAP4StreamMarshaller::DAP4StreamMarshaller(ostream &out, bool write_data) :
         d_out(out), d_ctx(0), d_write_data(write_data), d_checksum_ctx_valid(false)
 {
-    // All of this stuff is just used if the call
-    // std::numeric_limits<double>::is_iec559() returns false indicating that
-    // the compiler is not using IEEE 754. If it is, we just write out the
-    // bytes. ...alocated to hold a double. Why allocate? Because xdr_destroy
-    // is going to call free() for us.
+    // XDR is used if the call std::numeric_limits<double>::is_iec559()
+    // returns false indicating that the compiler is not using IEEE 754.
+    // If it is, we just write out the bytes. Why malloc()? Because
+    // xdr_destroy is going to call free() for us.
     d_ieee754_buf = (char*)malloc(sizeof(dods_float64));
     if (!d_ieee754_buf)
         throw InternalErr(__FILE__, __LINE__, "Could not create DAP4StreamMarshaller");
@@ -147,8 +145,8 @@ DAP4StreamMarshaller::DAP4StreamMarshaller(ostream &out, bool checksum, bool wri
     // will be ostream::failure
     out.exceptions(ostream::failbit | ostream::badbit);
 
-    if (checksum)
-        d_ctx = EVP_MD_CTX_create();
+    // if (checksum)
+    d_ctx = EVP_MD_CTX_create();
 }
 
 DAP4StreamMarshaller::~DAP4StreamMarshaller()
@@ -158,7 +156,7 @@ DAP4StreamMarshaller::~DAP4StreamMarshaller()
     // allocate it).
     xdr_destroy (&d_scalar_sink);
 
-    if (d_ctx)
+    //if (d_ctx)
         EVP_MD_CTX_destroy(d_ctx);
 }
 
@@ -168,8 +166,10 @@ DAP4StreamMarshaller::~DAP4StreamMarshaller()
  */
 void DAP4StreamMarshaller::reset_checksum()
 {
+#if 0
     if (d_ctx == 0)
         throw InternalErr(__FILE__, __LINE__, "reset_checksum() called by checksum is not enabled.");
+#endif
 
     if (EVP_DigestInit_ex(d_ctx, EVP_md5(), 0) == 0)
         throw Error("Failed to initialize checksum object.");
@@ -182,8 +182,11 @@ void DAP4StreamMarshaller::reset_checksum()
  */
 void DAP4StreamMarshaller::m_compute_checksum()
 {
+#if 0
     if (d_ctx == 0)
-        throw InternalErr(__FILE__, __LINE__, "checksum_init() called by checksum is not enabled.");
+    throw InternalErr(__FILE__, __LINE__, "checksum_init() called by checksum is not enabled.");
+#endif
+
 
     if (d_checksum_ctx_valid) {
         // '...Final()' 'erases' the context so the next call without a reset
@@ -232,8 +235,11 @@ void DAP4StreamMarshaller::put_checksum()
 
 void DAP4StreamMarshaller::checksum_update(const void *data, unsigned long len)
 {
+#if 0
     if (d_ctx == 0)
-        throw InternalErr(__FILE__, __LINE__, "checksum_init() called by checksum is not enabled.");
+    throw InternalErr(__FILE__, __LINE__, "checksum_init() called by checksum is not enabled.");
+#endif
+
 
     if (!d_checksum_ctx_valid)
         throw InternalErr(__FILE__, __LINE__, "Invalid checksum context (checksum update).");
@@ -246,7 +252,7 @@ void DAP4StreamMarshaller::checksum_update(const void *data, unsigned long len)
 
 void DAP4StreamMarshaller::put_byte(dods_byte val)
 {
-    if (d_ctx)
+    //if (d_ctx)
         checksum_update(&val, sizeof(dods_byte));
 
     if (d_write_data) {
@@ -258,7 +264,7 @@ void DAP4StreamMarshaller::put_byte(dods_byte val)
 
 void DAP4StreamMarshaller::put_int16(dods_int16 val)
 {
-    if (d_ctx)
+    //if (d_ctx)
         checksum_update(&val, sizeof(dods_int16));
 
     if (d_write_data)
@@ -267,7 +273,7 @@ void DAP4StreamMarshaller::put_int16(dods_int16 val)
 
 void DAP4StreamMarshaller::put_int32(dods_int32 val)
 {
-    if (d_ctx)
+    //if (d_ctx)
         checksum_update(&val, sizeof(dods_int32));
 
     if (d_write_data)
@@ -276,7 +282,7 @@ void DAP4StreamMarshaller::put_int32(dods_int32 val)
 
 void DAP4StreamMarshaller::put_int64(dods_int64 val)
 {
-    if (d_ctx)
+    //if (d_ctx)
         checksum_update(&val, sizeof(dods_int64));
 
     if (d_write_data)
@@ -285,7 +291,7 @@ void DAP4StreamMarshaller::put_int64(dods_int64 val)
 
 void DAP4StreamMarshaller::put_float32(dods_float32 val)
 {
-    if (d_ctx)
+    //if (d_ctx)
         checksum_update(&val, sizeof(dods_float32));
 
     if (d_write_data) {
@@ -310,7 +316,7 @@ void DAP4StreamMarshaller::put_float32(dods_float32 val)
 
 void DAP4StreamMarshaller::put_float64(dods_float64 val)
 {
-    if (d_ctx)
+    //if (d_ctx)
         checksum_update(&val, sizeof(dods_float64));
 
     if (d_write_data) {
@@ -333,7 +339,7 @@ void DAP4StreamMarshaller::put_float64(dods_float64 val)
 
 void DAP4StreamMarshaller::put_uint16(dods_uint16 val)
 {
-    if (d_ctx)
+    //if (d_ctx)
         checksum_update(&val, sizeof(dods_uint16));
 
     if (d_write_data)
@@ -342,7 +348,7 @@ void DAP4StreamMarshaller::put_uint16(dods_uint16 val)
 
 void DAP4StreamMarshaller::put_uint32(dods_uint32 val)
 {
-    if (d_ctx)
+    //if (d_ctx)
         checksum_update(&val, sizeof(dods_uint32));
 
     if (d_write_data)
@@ -351,7 +357,7 @@ void DAP4StreamMarshaller::put_uint32(dods_uint32 val)
 
 void DAP4StreamMarshaller::put_uint64(dods_uint64 val)
 {
-    if (d_ctx)
+    //if (d_ctx)
         checksum_update(&val, sizeof(dods_uint64));
 
     if (d_write_data)
@@ -361,7 +367,7 @@ void DAP4StreamMarshaller::put_uint64(dods_uint64 val)
 
 void DAP4StreamMarshaller::put_str(const string &val)
 {
-    if (d_ctx)
+    //if (d_ctx)
         checksum_update(val.c_str(), val.length());
 
     if (d_write_data) {
@@ -377,7 +383,7 @@ void DAP4StreamMarshaller::put_url(const string &val)
 
 void DAP4StreamMarshaller::put_opaque(char *val, unsigned int len)
 {
-    if (d_ctx)
+    //if (d_ctx)
         checksum_update(val, len);
 
     if (d_write_data) {
@@ -401,7 +407,7 @@ void DAP4StreamMarshaller::put_length_prefix(dods_uint64 val)
 
 void DAP4StreamMarshaller::put_vector(char *val, unsigned int num)
 {
-    if (d_ctx)
+    //if (d_ctx)
         checksum_update(val, num);
 
     d_out.write(val, num);
@@ -427,15 +433,14 @@ void DAP4StreamMarshaller::put_varying_vector(char *val, unsigned int num)
  * serializes directly to the stream (element by element) and compare the
  * run times.
  */
-template <class T>
-void DAP4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, Type type)
+void DAP4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int width, Type type)
 {
-    dods_uint64 size = num * sizeof(T);
+    dods_uint64 size = num * width;
     char *buf = (char*)malloc(size);
     XDR xdr;
     xdrmem_create(&xdr, buf, size, XDR_ENCODE);
     try {
-        if(!xdr_array(&xdr, &val, (unsigned int *)&num, size, sizeof(T), XDRUtils::xdr_coder(type)))
+        if(!xdr_array(&xdr, &val, (unsigned int *)&num, size, width, XDRUtils::xdr_coder(type)))
             throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 array");
 
         if (xdr_getpos(&xdr) != size)
@@ -452,16 +457,16 @@ void DAP4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, Type t
 
 void DAP4StreamMarshaller::put_vector(char *val, unsigned int num, int width, Type type)
 {
-    if (d_ctx)
+    //if (d_ctx)
         checksum_update(val, num * width);
 
     if (d_write_data) {
         if (type == dods_float32_c && !std::numeric_limits<float>::is_iec559) {
             // If not using IEEE 754, use XDR to get it that way.
-            m_serialize_reals<dods_float32>(val, num, type);
+            m_serialize_reals(val, num, 4, type);
         }
         else if (type == dods_float64_c && !std::numeric_limits<double>::is_iec559) {
-            m_serialize_reals<dods_float64>(val, num, type);
+            m_serialize_reals(val, num, 8, type);
         }
         else {
             d_out.write(val, num * width);

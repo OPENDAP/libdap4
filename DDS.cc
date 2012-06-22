@@ -466,6 +466,8 @@ DDS::get_request_size(bool constrained)
 void DDS::add_var(BaseType *bt) {
     if (!bt)
         throw InternalErr(__FILE__, __LINE__, "Trying to add a BaseType object with a NULL pointer.");
+    if (bt->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 DDS.");
 
     DBG2(cerr << "In DDS::add_var(), bt's address is: " << bt << endl);
 
@@ -489,6 +491,8 @@ void DDS::add_var(BaseType *bt) {
 void DDS::add_var_nocopy(BaseType *bt) {
     if (!bt)
         throw InternalErr(__FILE__, __LINE__, "Trying to add a BaseType object with a NULL pointer.");
+    if (bt->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 DDS.");
 
     DBG2(cerr << "In DDS::add_var(), bt's address is: " << bt << endl);
 
@@ -497,10 +501,12 @@ void DDS::add_var_nocopy(BaseType *bt) {
     if (d_container) {
         // Mem leak fix [mjohnson nov 2009]
         // Structure::add_var() creates ANOTHER copy.
-        d_container->add_var(bt);
+        d_container->add_var_nocopy(bt);
         // So we need to delete btp or else it leaks
+#if 0
         delete btp;
         btp = 0;
+#endif
     }
     else {
         vars.push_back(btp);
@@ -726,6 +732,9 @@ DDS::get_var_index(int i)
 void
 DDS::insert_var(Vars_iter i, BaseType *ptr)
 {
+    if (ptr->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 DDS.");
+
     vars.insert(i, ptr->ptr_duplicate());
 }
 
@@ -739,6 +748,9 @@ DDS::insert_var(Vars_iter i, BaseType *ptr)
 void
 DDS::insert_var_nocopy(Vars_iter i, BaseType *ptr)
 {
+    if (ptr->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 DDS.");
+
     vars.insert(i, ptr);
 }
 

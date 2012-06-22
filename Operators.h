@@ -114,7 +114,7 @@ public:
     }
     static bool gr(UT1 v1, T2 v2)
     {
-        return v1 > dods_max(0, v2);
+        return v1 > v2;//dods_max(0, v2);
     }
     static bool ge(UT1 v1, T2 v2)
     {
@@ -140,7 +140,7 @@ public:
     comparison. This class is one implementation of the comparison policy
     used by rops. This class is here to make writing the Byte::ops, ...
     member functions simpler. It is not necessary since the functions could
-    twiddle the order of arguments to rops and use <tt>USCmp</tt>. Having
+    twidle the order of arguments to rops and use <tt>USCmp</tt>. Having
     this class make Byte:ops, ... simpler to read and write.
 
     @see Byte::ops

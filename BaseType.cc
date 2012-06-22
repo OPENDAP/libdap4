@@ -79,15 +79,15 @@ namespace libdap {
 void
 BaseType::_duplicate(const BaseType &bt)
 {
-    DBG2(cerr << "BaseType::_duplicate: " << bt._name << " send_p: "
-            << bt._send_p << endl);
-    _name = bt._name;
-    _type = bt._type;
-    _dataset = bt._dataset;
-    _read_p = bt._read_p; // added, reza
-    _send_p = bt._send_p; // added, reza
+    DBG2(cerr << "BaseType::_duplicate: " << bt.d_name << " send_p: "
+            << bt.d_is_send << endl);
+    d_name = bt.d_name;
+    d_type = bt.d_type;
+    d_dataset = bt.d_dataset;
+    d_is_read = bt.d_is_read; // added, reza
+    d_is_send = bt.d_is_send; // added, reza
     d_in_selection = bt.d_in_selection;
-    _synthesized_p = bt._synthesized_p; // 5/11/2001 jhrg
+    d_is_synthesized = bt.d_is_synthesized; // 5/11/2001 jhrg
 
     d_parent = bt.d_parent; // copy pointers 6/4/2001 jhrg
 
@@ -108,8 +108,8 @@ BaseType::_duplicate(const BaseType &bt)
     data in this variable to a client DODS process.
     @see Type */
 BaseType::BaseType(const string &n, const Type &t)
-        : _name(n), _type(t), _dataset(""), _read_p(false), _send_p(false),
-        d_in_selection(false), _synthesized_p(false), d_parent(0)
+        : d_name(n), d_type(t), d_dataset(""), d_is_read(false), d_is_send(false),
+        d_in_selection(false), d_is_synthesized(false), d_parent(0)
 {}
 
 /** The BaseType constructor needs a name, a dataset, and a type.
@@ -126,8 +126,8 @@ BaseType::BaseType(const string &n, const Type &t)
     data in this variable to a client DODS process.
     @see Type */
 BaseType::BaseType(const string &n, const string &d, const Type &t)
-        : _name(n), _type(t), _dataset(d), _read_p(false), _send_p(false),
-        d_in_selection(false), _synthesized_p(false), d_parent(0)
+        : d_name(n), d_type(t), d_dataset(d), d_is_read(false), d_is_send(false),
+        d_in_selection(false), d_is_synthesized(false), d_parent(0)
 {}
 
 /** @brief The BaseType copy constructor. */
@@ -162,12 +162,12 @@ BaseType::toString()
 {
     ostringstream oss;
     oss << "BaseType (" << this << "):" << endl
-    << "          _name: " << _name << endl
+    << "          _name: " << d_name << endl
     << "          _type: " << type_name() << endl
-    << "          _dataset: " << _dataset << endl
-    << "          _read_p: " << _read_p << endl
-    << "          _send_p: " << _send_p << endl
-    << "          _synthesized_p: " << _synthesized_p << endl
+    << "          _dataset: " << d_dataset << endl
+    << "          _read_p: " << d_is_read << endl
+    << "          _send_p: " << d_is_send << endl
+    << "          _synthesized_p: " << d_is_synthesized << endl
     << "          d_parent: " << d_parent << endl
     << "          d_attr: " << hex << &d_attr << dec << endl;
 
@@ -189,12 +189,12 @@ BaseType::dump(ostream &strm) const
     << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
 
-    strm << DapIndent::LMarg << "name: " << _name << endl ;
+    strm << DapIndent::LMarg << "name: " << d_name << endl ;
     strm << DapIndent::LMarg << "type: " << type_name() << endl ;
-    strm << DapIndent::LMarg << "dataset: " << _dataset << endl ;
-    strm << DapIndent::LMarg << "read_p: " << _read_p << endl ;
-    strm << DapIndent::LMarg << "send_p: " << _send_p << endl ;
-    strm << DapIndent::LMarg << "synthesized_p: " << _synthesized_p << endl ;
+    strm << DapIndent::LMarg << "dataset: " << d_dataset << endl ;
+    strm << DapIndent::LMarg << "read_p: " << d_is_read << endl ;
+    strm << DapIndent::LMarg << "send_p: " << d_is_send << endl ;
+    strm << DapIndent::LMarg << "synthesized_p: " << d_is_synthesized << endl ;
     strm << DapIndent::LMarg << "parent: " << (void *)d_parent << endl ;
     strm << DapIndent::LMarg << "attributes: " << endl ;
     DapIndent::Indent() ;
@@ -209,7 +209,7 @@ BaseType::dump(ostream &strm) const
 string
 BaseType::name() const
 {
-    return _name;
+    return d_name;
 }
 
 /** @brief Sets the name of the class instance. */
@@ -217,7 +217,7 @@ void
 BaseType::set_name(const string &n)
 {
     string name = n;
-    _name = www2id(name); // www2id writes into its param.
+    d_name = www2id(name); // www2id writes into its param.
 }
 
 /** @brief Returns the name of the dataset used to create this instance
@@ -230,28 +230,28 @@ BaseType::set_name(const string &n)
 string
 BaseType::dataset() const
 {
-    return _dataset;
+    return d_dataset;
 }
 
 /** @brief Returns the type of the class instance. */
 Type
 BaseType::type() const
 {
-    return _type;
+    return d_type;
 }
 
 /** @brief Sets the type of the class instance. */
 void
 BaseType::set_type(const Type &t)
 {
-    _type = t;
+    d_type = t;
 }
 
 /** @brief Returns the type of the class instance as a string. */
 string
 BaseType::type_name() const
 {
-    switch (_type) {
+    switch (d_type) {
     case dods_null_c:
         return string("Null");
     case dods_byte_c:
@@ -301,6 +301,10 @@ BaseType::is_simple_type()
     case dods_uint16_c:
     case dods_int32_c:
     case dods_uint32_c:
+
+    case dods_int64_c:
+    case dods_uint64_c:
+
     case dods_float32_c:
     case dods_float64_c:
     case dods_str_c:
@@ -330,6 +334,10 @@ BaseType::is_vector_type()
     case dods_uint16_c:
     case dods_int32_c:
     case dods_uint32_c:
+
+    case dods_int64_c:
+    case dods_uint64_c:
+
     case dods_float32_c:
     case dods_float64_c:
     case dods_str_c:
@@ -362,6 +370,10 @@ BaseType::is_constructor_type()
     case dods_uint16_c:
     case dods_int32_c:
     case dods_uint32_c:
+
+    case dods_int64_c:
+    case dods_uint64_c:
+
     case dods_float32_c:
     case dods_float64_c:
     case dods_str_c:
@@ -375,6 +387,30 @@ BaseType::is_constructor_type()
         return true;
     }
 
+    return false;
+}
+
+/**
+ * Return true if this variable's type is allowed only for DAP4.
+ *
+ * @note the default implementation returns false; the new DAP4
+ * implementations must overload this method.
+ */
+bool
+BaseType::is_dap4_only_type()
+{
+    return false;
+}
+
+/**
+ * Return true if this variable's type is allowed only for DAP2.
+ *
+ * @note the default implementation returns false; the old DAP2
+ * implementations must overload this method.
+ */
+bool
+BaseType::is_dap2_only_type()
+{
     return false;
 }
 
@@ -415,7 +451,7 @@ BaseType::element_count(bool)
 bool
 BaseType::synthesized_p()
 {
-    return _synthesized_p;
+    return d_is_synthesized;
 }
 
 /** Set the synthesized flag. Before setting this flag be sure to set the
@@ -426,10 +462,10 @@ BaseType::synthesized_p()
 void
 BaseType::set_synthesized_p(bool state)
 {
-    _synthesized_p = state;
+    d_is_synthesized = state;
 }
 
-// Return the state of _read_p (true if the value of the variable has been
+// Return the state of d_is_read (true if the value of the variable has been
 // read (and is in memory) false otherwise).
 
 /** Returns true if the value(s) for this variable have been read from the
@@ -443,7 +479,7 @@ BaseType::set_synthesized_p(bool state)
 bool
 BaseType::read_p()
 {
-    return _read_p;
+    return d_is_read;
 }
 
 /** Sets the value of the <tt>read_p</tt> property. This indicates that the
@@ -482,10 +518,10 @@ BaseType::read_p()
 void
 BaseType::set_read_p(bool state)
 {
-    if (! _synthesized_p) {
+    if (! d_is_synthesized) {
         DBG2(cerr << "Changing read_p state of " << name() << " to "
 	         << state << endl);
-        _read_p = state;
+        d_is_read = state;
     }
 }
 
@@ -502,14 +538,14 @@ BaseType::set_read_p(bool state)
 bool
 BaseType::send_p()
 {
-    return _send_p;
+    return d_is_send;
 }
 
 /** Sets the value of the <tt>send_p</tt> flag.  This
     function is meant to be called from within the constraint evaluator of
     other code which determines that this variable should be returned to the
-    client.  Data are ready to be sent when <i>both</i> the <tt>_send_p</tt>
-    and <tt>_read_p</tt> flags are set to TRUE.
+    client.  Data are ready to be sent when <i>both</i> the <tt>d_is_send</tt>
+    and <tt>d_is_read</tt> flags are set to TRUE.
 
     @param state The logical state to set the <tt>send_p</tt> flag.
 */
@@ -518,7 +554,7 @@ BaseType::set_send_p(bool state)
 {
     DBG2(cerr << "Calling BaseType::set_send_p() for: " << this->name()
         << endl);
-    _send_p = state;
+    d_is_send = state;
 }
 
 
@@ -784,7 +820,7 @@ BaseType::add_var(BaseType *, Part)
 bool
 BaseType::read()
 {
-    if (_read_p)
+    if (d_is_read)
         return false;
 
     throw InternalErr("Unimplemented BaseType::read() method called.");
@@ -903,7 +939,7 @@ BaseType::print_decl(ostream &out, string space, bool print_semi,
     if (constrained && !send_p())
         return;
 
-    out << space << type_name() << " " << id2www(_name) ;
+    out << space << type_name() << " " << id2www(d_name) ;
 
     if (constraint_info) {
         if (send_p())
@@ -961,8 +997,8 @@ BaseType::print_xml_writer(XMLWriter &xml, bool constrained)
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)type_name().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write " + type_name() + " element");
 
-    if (!_name.empty())
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)_name.c_str()) < 0)
+    if (!d_name.empty())
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
     if (get_attr_table().get_size() > 0)
@@ -1014,7 +1050,7 @@ BaseType::print_xml_writer(XMLWriter &xml, bool constrained)
 bool
 BaseType::check_semantics(string &msg, bool)
 {
-    bool sem = (_type != dods_null_c && _name.length());
+    bool sem = (d_type != dods_null_c && d_name.length());
 
     if (!sem)
         msg = "Every variable must have both a name and a type\n";

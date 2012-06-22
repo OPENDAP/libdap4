@@ -423,13 +423,12 @@ Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-    bool has_attributes = false; // FIXME
+    bool has_attributes = get_attr_table().get_size() > 0;
     bool has_variables = (var_begin() != var_end());
-    if (has_attributes || has_variables) {
+    if (has_attributes)
         get_attr_table().print_xml_writer(xml);
-
+    if (has_variables)
         for_each(var_begin(), var_end(), PrintFieldXMLWriter(xml, constrained));
-    }
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");

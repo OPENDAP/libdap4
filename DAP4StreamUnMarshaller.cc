@@ -27,6 +27,8 @@
 #include "config.h"
 #include "DAP4StreamUnMarshaller.h"
 
+#include <byteswap.h>
+
 //#include <cstring> // for memcpy
 #include <iostream>
 #include <iomanip>
@@ -48,9 +50,29 @@
 
 namespace libdap {
 
-DAP4StreamUnMarshaller::DAP4StreamUnMarshaller(istream &in, bool isBigEndian)
-    : d_in( in ), d_isBigEndian(isBigEndian), d_buf(0)
+static inline bool is_host_big_endian()
 {
+#ifdef COMPUTE_ENDIAN_AT_RUNTIME
+
+    dods_int16 i = 0x0100;
+    char *c = reinterpret_cast<char*>(&i);
+    return *c;
+
+#else
+
+#ifdef WORDS_BIGENDIAN
+    return true;
+#else
+    return false;
+#endif
+
+#endif
+}
+
+DAP4StreamUnMarshaller::DAP4StreamUnMarshaller(istream &in, bool is_stream_big_endian)
+    : d_in( in ), d_buf(0)
+{
+    // XDR is used to handle transforming non-ieee754 reals, nothing else.
     if (!d_buf)
         d_buf = (char *) malloc(sizeof(dods_float64));
     if (!d_buf)
@@ -62,6 +84,13 @@ DAP4StreamUnMarshaller::DAP4StreamUnMarshaller(istream &in, bool isBigEndian)
     // will be ostream::failure
     d_in.exceptions(istream::failbit | istream::badbit);
 
+    DBG(cerr << "Host is big endian: " << is_host_big_endian() << endl);
+
+    if ((is_host_big_endian() && is_stream_big_endian)
+        || (!is_host_big_endian() && !is_stream_big_endian))
+        d_twiddle_bytes = false;
+    else
+        d_twiddle_bytes = true;
 }
 
 DAP4StreamUnMarshaller::~DAP4StreamUnMarshaller( )
@@ -99,18 +128,24 @@ void
 DAP4StreamUnMarshaller::get_int16( dods_int16 &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_int16));
+    if (d_twiddle_bytes)
+        val = bswap_16(val);
 }
 
 void
 DAP4StreamUnMarshaller::get_int32( dods_int32 &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_int32));
+    if (d_twiddle_bytes)
+        val = bswap_32(val);
 }
 
 void
 DAP4StreamUnMarshaller::get_int64( dods_int64 &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_int64));
+    if (d_twiddle_bytes)
+        val = bswap_64(val);
 }
 
 void
@@ -118,6 +153,11 @@ DAP4StreamUnMarshaller::get_float32( dods_float32 &val )
 {
     if (std::numeric_limits<float>::is_iec559) {
         d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_float32));
+        if (d_twiddle_bytes) {
+            dods_int32 *i = reinterpret_cast<dods_int32*>(&val);
+            *i = bswap_32(*i);
+        }
+
     }
     else {
         xdr_setpos( &d_source, 0);
@@ -133,6 +173,10 @@ DAP4StreamUnMarshaller::get_float64( dods_float64 &val )
 {
     if (std::numeric_limits<float>::is_iec559) {
         d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_float64));
+        if (d_twiddle_bytes) {
+            dods_int64 *i = reinterpret_cast<dods_int64*>(&val);
+            *i = bswap_32(*i);
+        }
     }
     else {
         xdr_setpos( &d_source, 0);
@@ -147,18 +191,24 @@ void
 DAP4StreamUnMarshaller::get_uint16( dods_uint16 &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_uint16));
+    if (d_twiddle_bytes)
+        val = bswap_16(val);
 }
 
 void
 DAP4StreamUnMarshaller::get_uint32( dods_uint32 &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_uint32));
+    if (d_twiddle_bytes)
+        val = bswap_32(val);
 }
 
 void
 DAP4StreamUnMarshaller::get_uint64( dods_uint64 &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_uint64));
+    if (d_twiddle_bytes)
+        val = bswap_64(val);
 }
 
 /**
@@ -247,10 +297,9 @@ DAP4StreamUnMarshaller::get_vector( char *val, unsigned int num )
  * serializes directly to the stream (element by element) and compare the
  * run times.
  */
-template <class T>
-void DAP4StreamUnMarshaller::m_deserialize_reals(char *val, unsigned int num, Type type)
+void DAP4StreamUnMarshaller::m_deserialize_reals(char *val, unsigned int num, int width, Type type)
 {
-    dods_uint64 size = num * sizeof(T);
+    dods_uint64 size = num * width;
     char *buf = (char*)malloc(size);
     XDR xdr;
     xdrmem_create(&xdr, buf, size, XDR_DECODE);
@@ -258,7 +307,7 @@ void DAP4StreamUnMarshaller::m_deserialize_reals(char *val, unsigned int num, Ty
         xdr_setpos(&d_source, 0);
         d_in.read(buf, size);
 
-        if(!xdr_array(&xdr, &val, (unsigned int *)&num, size, sizeof(T), XDRUtils::xdr_coder(type)))
+        if(!xdr_array(&xdr, &val, (unsigned int *)&num, size, width, XDRUtils::xdr_coder(type)))
             throw InternalErr(__FILE__, __LINE__, "Error deserializing a Float64 array");
 
         if (xdr_getpos(&xdr) != size)
@@ -271,18 +320,52 @@ void DAP4StreamUnMarshaller::m_deserialize_reals(char *val, unsigned int num, Ty
     xdr_destroy(&xdr);
 }
 
+void DAP4StreamUnMarshaller::m_twidle_vector_elements(char *vals, unsigned int num, int width)
+{
+    switch (width) {
+        case 2: {
+            dods_int16 *local = reinterpret_cast<dods_int16*>(vals);
+            while (num--) {
+                *local = bswap_16(*local);
+                local++;
+            }
+            break;
+        }
+        case 4: {
+            dods_int32 *local = reinterpret_cast<dods_int32*>(vals);;
+            while (num--) {
+                *local = bswap_32(*local);
+                local++;
+            }
+            break;
+        }
+        case 8: {
+            dods_int64 *local = reinterpret_cast<dods_int64*>(vals);;
+            while (num--) {
+                *local = bswap_64(*local);
+                local++;
+            }
+            break;
+        }
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Unrecognized word size.");
+    }
+}
+
 void
 DAP4StreamUnMarshaller::get_vector( char *val, unsigned int num, int width, Type type )
 {
     if (type == dods_float32_c && !std::numeric_limits<float>::is_iec559) {
         // If not using IEEE 754, use XDR to get it that way.
-        m_deserialize_reals<dods_float32>(val, num, type);
+        m_deserialize_reals(val, num, 4, type);
     }
     else if (type == dods_float64_c && !std::numeric_limits<double>::is_iec559) {
-        m_deserialize_reals<dods_float64>(val, num, type);
+        m_deserialize_reals(val, num, 8, type);
     }
     else {
         d_in.read(val, num * width);
+        if (d_twiddle_bytes)
+            m_twidle_vector_elements(val, num, width);
     }
 }
 
@@ -301,14 +384,15 @@ DAP4StreamUnMarshaller::get_varying_vector( char **val, unsigned int &num, int w
     *val = new char[size];
 
     if (type == dods_float32_c && !std::numeric_limits<float>::is_iec559) {
-        // If not using IEEE 754, use XDR to get it that way.
-        m_deserialize_reals<dods_float32>(*val, num, type);
+        m_deserialize_reals(*val, num, 4, type);
     }
     else if (type == dods_float64_c && !std::numeric_limits<double>::is_iec559) {
-        m_deserialize_reals<dods_float64>(*val, num, type);
+        m_deserialize_reals(*val, num, 8, type);
     }
     else {
         d_in.read(*val, size);
+        if (d_twiddle_bytes)
+            m_twidle_vector_elements(*val, num, width);
     }
 }
 
