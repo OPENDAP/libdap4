@@ -614,7 +614,6 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
-    cerr << "In Vector::serialize" << endl;
     int i = 0;
 
     dds.timeout_on();
