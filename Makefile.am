@@ -19,9 +19,15 @@ AM_LFLAGS = -8
 # These are not used by automake but are often useful for certain types of
 # debugging. The best way to use these is to run configure as:
 #     export CXXFLAGS='...'; ./configure --disable-shared
+# or ./configure --enable-developer --disable-shared
 # the --disable-shared is not required, but it seems to help with debuggers.
-CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
+CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align 
+# -Werror There are some warnings in this code that are here to stay...
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
+
+if BUILD_DEVELOPER
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
+endif
 
 SUBDIRS = gl . tests unit-tests
 DIST_SUBDIRS = unit-tests gl tests
@@ -237,7 +243,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc
 
 DAP4_ONLY_SRC = DAP4StreamMarshaller.cc DAP4StreamUnMarshaller.cc Int64.cc \
-        UInt64.h
+        UInt64.h Int8.cc
 
 Operators.h: ce_expr.tab.hh
 
@@ -264,7 +270,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h 
 
 DAP4_ONLY_HDR = DAP4StreamMarshaller.h DAP4StreamUnMarshaller.h Int64.h \
-        UInt64.h
+        UInt64.h Int8.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h

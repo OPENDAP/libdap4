@@ -35,6 +35,7 @@
 #include "DAP4StreamMarshaller.h"
 
 #include <stdint.h>     // for the Google protobuf code
+#include <byteswap.h>
 
 #include <iostream>
 #include <sstream>
@@ -49,6 +50,26 @@ using namespace std;
 #include "debug.h"
 
 namespace libdap {
+
+static inline bool is_host_big_endian()
+{
+#ifdef COMPUTE_ENDIAN_AT_RUNTIME
+
+    dods_int16 i = 0x0100;
+    char *c = reinterpret_cast<char*>(&i);
+    return *c;
+
+#else
+
+#ifdef WORDS_BIGENDIAN
+    return true;
+#else
+    return false;
+#endif
+
+#endif
+}
+
 
 // From the Google protobuf library
 inline uint8_t* WriteVarint64ToArrayInline(uint64_t value, uint8_t* target) {
@@ -145,7 +166,6 @@ DAP4StreamMarshaller::DAP4StreamMarshaller(ostream &out, bool write_data) :
     // will be ostream::failure
     out.exceptions(ostream::failbit | ostream::badbit);
 
-    // if (checksum)
     d_ctx = EVP_MD_CTX_create();
 }
 
@@ -156,8 +176,19 @@ DAP4StreamMarshaller::~DAP4StreamMarshaller()
     // allocate it).
     xdr_destroy (&d_scalar_sink);
 
-    //if (d_ctx)
-        EVP_MD_CTX_destroy(d_ctx);
+    EVP_MD_CTX_destroy(d_ctx);
+}
+
+/**
+ * Return the is the host big- or little-endian?
+ *
+ * @return 'big' or ' little'.
+ */
+
+string
+DAP4StreamMarshaller::get_endian() const
+{
+    return (is_host_big_endian()) ? "big": "little";
 }
 
 /** Initialize the checksum buffer. This resets the checksum calculation.
@@ -166,11 +197,6 @@ DAP4StreamMarshaller::~DAP4StreamMarshaller()
  */
 void DAP4StreamMarshaller::reset_checksum()
 {
-#if 0
-    if (d_ctx == 0)
-        throw InternalErr(__FILE__, __LINE__, "reset_checksum() called by checksum is not enabled.");
-#endif
-
     if (EVP_DigestInit_ex(d_ctx, EVP_md5(), 0) == 0)
         throw Error("Failed to initialize checksum object.");
 
@@ -182,12 +208,6 @@ void DAP4StreamMarshaller::reset_checksum()
  */
 void DAP4StreamMarshaller::m_compute_checksum()
 {
-#if 0
-    if (d_ctx == 0)
-    throw InternalErr(__FILE__, __LINE__, "checksum_init() called by checksum is not enabled.");
-#endif
-
-
     if (d_checksum_ctx_valid) {
         // '...Final()' 'erases' the context so the next call without a reset
         // returns a bogus value.
@@ -235,12 +255,6 @@ void DAP4StreamMarshaller::put_checksum()
 
 void DAP4StreamMarshaller::checksum_update(const void *data, unsigned long len)
 {
-#if 0
-    if (d_ctx == 0)
-    throw InternalErr(__FILE__, __LINE__, "checksum_init() called by checksum is not enabled.");
-#endif
-
-
     if (!d_checksum_ctx_valid)
         throw InternalErr(__FILE__, __LINE__, "Invalid checksum context (checksum update).");
 
@@ -252,8 +266,7 @@ void DAP4StreamMarshaller::checksum_update(const void *data, unsigned long len)
 
 void DAP4StreamMarshaller::put_byte(dods_byte val)
 {
-    //if (d_ctx)
-        checksum_update(&val, sizeof(dods_byte));
+    checksum_update(&val, sizeof(dods_byte));
 
     if (d_write_data) {
         DBG( std::cerr << "put_byte: " << val << std::endl );
@@ -262,10 +275,20 @@ void DAP4StreamMarshaller::put_byte(dods_byte val)
     }
 }
 
+void DAP4StreamMarshaller::put_int8(dods_int8 val)
+{
+    checksum_update(&val, sizeof(dods_int8));
+
+    if (d_write_data) {
+        DBG( std::cerr << "put_int8: " << val << std::endl );
+
+        d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_int8));
+    }
+}
+
 void DAP4StreamMarshaller::put_int16(dods_int16 val)
 {
-    //if (d_ctx)
-        checksum_update(&val, sizeof(dods_int16));
+    checksum_update(&val, sizeof(dods_int16));
 
     if (d_write_data)
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_int16));
@@ -273,8 +296,7 @@ void DAP4StreamMarshaller::put_int16(dods_int16 val)
 
 void DAP4StreamMarshaller::put_int32(dods_int32 val)
 {
-    //if (d_ctx)
-        checksum_update(&val, sizeof(dods_int32));
+    checksum_update(&val, sizeof(dods_int32));
 
     if (d_write_data)
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_int32));
@@ -282,8 +304,7 @@ void DAP4StreamMarshaller::put_int32(dods_int32 val)
 
 void DAP4StreamMarshaller::put_int64(dods_int64 val)
 {
-    //if (d_ctx)
-        checksum_update(&val, sizeof(dods_int64));
+    checksum_update(&val, sizeof(dods_int64));
 
     if (d_write_data)
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_int64));
@@ -291,8 +312,7 @@ void DAP4StreamMarshaller::put_int64(dods_int64 val)
 
 void DAP4StreamMarshaller::put_float32(dods_float32 val)
 {
-    //if (d_ctx)
-        checksum_update(&val, sizeof(dods_float32));
+    checksum_update(&val, sizeof(dods_float32));
 
     if (d_write_data) {
         if (std::numeric_limits<float>::is_iec559 ) {
@@ -309,6 +329,13 @@ void DAP4StreamMarshaller::put_float32(dods_float32 val)
             if (xdr_getpos(&d_scalar_sink) != sizeof(dods_float32))
                 throw InternalErr(__FILE__, __LINE__, "Error serializing a Float32 variable");
 
+            // If this is a little-endian host, twiddle the bytes
+            static bool twiddle_bytes = !is_host_big_endian();
+            if (twiddle_bytes) {
+                dods_int32 *i = reinterpret_cast<dods_int32*>(&d_ieee754_buf);
+                *i = bswap_32(*i);
+            }
+
             d_out.write(d_ieee754_buf, sizeof(dods_float32));
         }
     }
@@ -316,8 +343,7 @@ void DAP4StreamMarshaller::put_float32(dods_float32 val)
 
 void DAP4StreamMarshaller::put_float64(dods_float64 val)
 {
-    //if (d_ctx)
-        checksum_update(&val, sizeof(dods_float64));
+    checksum_update(&val, sizeof(dods_float64));
 
     if (d_write_data) {
         if (std::numeric_limits<double>::is_iec559)
@@ -332,6 +358,13 @@ void DAP4StreamMarshaller::put_float64(dods_float64 val)
             if (xdr_getpos(&d_scalar_sink) != sizeof(dods_float64))
                 throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 variable");
 
+            // If this is a little-endian host, twiddle the bytes
+            static bool twiddle_bytes = !is_host_big_endian();
+            if (twiddle_bytes) {
+                dods_int64 *i = reinterpret_cast<dods_int64*>(&d_ieee754_buf);
+                *i = bswap_64(*i);
+            }
+
             d_out.write(d_ieee754_buf, sizeof(dods_float64));
         }
     }
@@ -339,8 +372,7 @@ void DAP4StreamMarshaller::put_float64(dods_float64 val)
 
 void DAP4StreamMarshaller::put_uint16(dods_uint16 val)
 {
-    //if (d_ctx)
-        checksum_update(&val, sizeof(dods_uint16));
+    checksum_update(&val, sizeof(dods_uint16));
 
     if (d_write_data)
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_uint16));
@@ -348,8 +380,7 @@ void DAP4StreamMarshaller::put_uint16(dods_uint16 val)
 
 void DAP4StreamMarshaller::put_uint32(dods_uint32 val)
 {
-    //if (d_ctx)
-        checksum_update(&val, sizeof(dods_uint32));
+    checksum_update(&val, sizeof(dods_uint32));
 
     if (d_write_data)
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_uint32));
@@ -357,8 +388,7 @@ void DAP4StreamMarshaller::put_uint32(dods_uint32 val)
 
 void DAP4StreamMarshaller::put_uint64(dods_uint64 val)
 {
-    //if (d_ctx)
-        checksum_update(&val, sizeof(dods_uint64));
+    checksum_update(&val, sizeof(dods_uint64));
 
     if (d_write_data)
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_uint64));
@@ -367,8 +397,7 @@ void DAP4StreamMarshaller::put_uint64(dods_uint64 val)
 
 void DAP4StreamMarshaller::put_str(const string &val)
 {
-    //if (d_ctx)
-        checksum_update(val.c_str(), val.length());
+    checksum_update(val.c_str(), val.length());
 
     if (d_write_data) {
         put_length_prefix(val.length());
@@ -383,8 +412,7 @@ void DAP4StreamMarshaller::put_url(const string &val)
 
 void DAP4StreamMarshaller::put_opaque(char *val, unsigned int len)
 {
-    //if (d_ctx)
-        checksum_update(val, len);
+    checksum_update(val, len);
 
     if (d_write_data) {
         put_length_prefix(len);
@@ -407,8 +435,7 @@ void DAP4StreamMarshaller::put_length_prefix(dods_uint64 val)
 
 void DAP4StreamMarshaller::put_vector(char *val, unsigned int num)
 {
-    //if (d_ctx)
-        checksum_update(val, num);
+    checksum_update(val, num);
 
     d_out.write(val, num);
 }
@@ -446,6 +473,25 @@ void DAP4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int wi
         if (xdr_getpos(&xdr) != size)
             throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 array");
 
+        // If this is a little-endian host, twiddle the bytes
+        static bool twiddle_bytes = !is_host_big_endian();
+        if (twiddle_bytes) {
+            if (width == 4) {
+                dods_float32 *lbuf = reinterpret_cast<dods_float32*>(buf);
+                while (num--) {
+                    dods_int32 *i = reinterpret_cast<dods_int32*>(lbuf++);
+                    *i = bswap_32(*i);
+                }
+            }
+            else { // width == 8
+                dods_float64 *lbuf = reinterpret_cast<dods_float64*>(buf);
+                while (num--) {
+                    dods_int64 *i = reinterpret_cast<dods_int64*>(lbuf++);
+                    *i = bswap_64(*i);
+                }
+            }
+        }
+
         d_out.write(buf, size);
     }
     catch (...) {
@@ -457,8 +503,7 @@ void DAP4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int wi
 
 void DAP4StreamMarshaller::put_vector(char *val, unsigned int num, int width, Type type)
 {
-    //if (d_ctx)
-        checksum_update(val, num * width);
+    checksum_update(val, num * width);
 
     if (d_write_data) {
         if (type == dods_float32_c && !std::numeric_limits<float>::is_iec559) {

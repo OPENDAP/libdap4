@@ -63,7 +63,7 @@ class Str: public BaseType
 {
 
 protected:
-    string _buf;
+    string d_buf;
 
 public:
     Str(const string &n);

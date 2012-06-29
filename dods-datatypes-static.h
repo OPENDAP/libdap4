@@ -45,6 +45,8 @@ typedef double dods_float64;
 typedef float dods_float32;		
 
 // Added for DAP4
+typedef int8_t dods_int8;
+
 typedef int64_t dods_int64;
 
 typedef uint64_t dods_uint64;

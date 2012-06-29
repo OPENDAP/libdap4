@@ -63,20 +63,8 @@ class ConstraintEvaluator;
 
 class Int32: public BaseType
 {
-    /** This class allows Byte, ..., Float64 access to <tt>_buf</tt> to
-    simplify and speed up the relational operators.
-
-    NB: According to Stroustrup it does not matter where (public, private
-    or protected) friend classes are declared. */
-    friend class Byte;
-    friend class Int16;
-    friend class UInt16;
-    friend class UInt32;
-    friend class Float32;
-    friend class Float64;
-
 protected:
-    dods_int32 _buf;
+    dods_int32 d_buf;
 
 public:
     Int32(const string &n);

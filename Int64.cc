@@ -39,15 +39,14 @@
 #include <cassert>
 #include <sstream>
 
-#include "Byte.h"
+#include "Byte.h"           // synonymous with UInt8 and Char
+#include "Int8.h"
 #include "Int16.h"
 #include "UInt16.h"
 #include "Int32.h"
 #include "UInt32.h"
-
 #include "Int64.h"
 #include "UInt64.h"
-
 #include "Float32.h"
 #include "Float64.h"
 #include "Str.h"
@@ -98,7 +97,7 @@ Int64::Int64(const string &n, const string &d) : BaseType(n, d, dods_int64_c)
 
 Int64::Int64(const Int64 &copy_from) : BaseType(copy_from)
 {
-    _buf = copy_from._buf;
+    d_buf = copy_from.d_buf;
 }
 
 BaseType *
@@ -120,7 +119,7 @@ Int64::operator=(const Int64 &rhs)
 
     dynamic_cast<BaseType &>(*this) = rhs;
 
-    _buf = rhs._buf;
+    d_buf = rhs.d_buf;
 
     return *this;
 }
@@ -148,7 +147,7 @@ Int64::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eva
 
     assert(typeid(m) == typeid(DAP4StreamMarshaller));
 
-    static_cast<DAP4StreamMarshaller*>(&m)->put_int64( _buf ) ;
+    static_cast<DAP4StreamMarshaller*>(&m)->put_int64( d_buf ) ;
 
     return true;
 }
@@ -158,7 +157,7 @@ Int64::deserialize(UnMarshaller &um, DDS *, bool)
 {
     assert(typeid(um) == typeid(DAP4StreamUnMarshaller));
 
-    static_cast<DAP4StreamUnMarshaller*>(&um)->get_int64( _buf ) ;
+    static_cast<DAP4StreamUnMarshaller*>(&um)->get_int64( d_buf ) ;
 
     return false;
 }
@@ -166,13 +165,13 @@ Int64::deserialize(UnMarshaller &um, DDS *, bool)
 dods_int64
 Int64::value() const
 {
-    return _buf;
+    return d_buf;
 }
 
 bool
 Int64::set_value(dods_int64 i)
 {
-    _buf = i;
+    d_buf = i;
     set_read_p(true);
 
     return true;
@@ -190,10 +189,10 @@ void Int64::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
         print_decl(out, space, false);
-        out << " = " << (dods_int64) _buf << ";\n";
+        out << " = " << (dods_int64) d_buf << ";\n";
     }
     else
-        out << (int) _buf;
+        out << (int) d_buf;
 }
 
 bool
@@ -208,24 +207,26 @@ Int64::ops(BaseType *b, int op)
         throw InternalErr(__FILE__, __LINE__, "This value not read!");
 
     switch (b->type()) {
+        case dods_int8_c:
+            return Cmp<dods_int64, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
         case dods_byte_c:
-            return rops<dods_int64, dods_byte, SUCmp<dods_int64, dods_byte> >(_buf, static_cast<Byte*>(b)->value(), op);
+            return SUCmp<dods_int64, dods_byte>(op, d_buf, static_cast<Byte*>(b)->value());
         case dods_int16_c:
-            return rops<dods_int64, dods_int16, Cmp<dods_int64, dods_int16> >(_buf, static_cast<Int16 *>(b)->value(), op);
+            return Cmp<dods_int64, dods_int16>(op, d_buf, static_cast<Int16*>(b)->value());
         case dods_uint16_c:
-            return rops<dods_int64, dods_uint16, SUCmp<dods_int64, dods_uint16> >(_buf, static_cast<UInt16 *>(b)->value(), op);
+            return SUCmp<dods_int64, dods_uint16>(op, d_buf, static_cast<UInt16*>(b)->value());
         case dods_int32_c:
-            return rops<dods_int64, dods_int32, Cmp<dods_int64, dods_int32> >(_buf, static_cast<Int32 *>(b)->value(), op);
+            return Cmp<dods_int64, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
         case dods_uint32_c:
-            return rops<dods_int64, dods_uint32, SUCmp<dods_int64, dods_uint32> >(_buf, static_cast<UInt32 *>(b)->value(), op);
+            return SUCmp<dods_int64, dods_uint32>(op, d_buf, static_cast<UInt32*>(b)->value());
         case dods_int64_c:
-            return rops<dods_int64, dods_int64, Cmp<dods_int64, dods_int64> >(_buf, static_cast<Int64 *>(b)->value(), op);
+            return Cmp<dods_int64, dods_int64>(op, d_buf, static_cast<Int64*>(b)->value());
         case dods_uint64_c:
-            return rops<dods_int64, dods_uint64, Cmp<dods_int64, dods_uint64> >(_buf, static_cast<UInt64 *>(b)->value(), op);
+            return SUCmp<dods_int64, dods_uint64>(op, d_buf, static_cast<UInt64*>(b)->value());
         case dods_float32_c:
-            return rops<dods_int64, dods_float32, Cmp<dods_int64, dods_float32> >(_buf, static_cast<Float32 *>(b)->value(), op);
+            return Cmp<dods_int64, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
         case dods_float64_c:
-            return rops<dods_int64, dods_float64, Cmp<dods_int64, dods_float64> >(_buf, static_cast<Float64 *>(b)->value(), op);
+            return Cmp<dods_int64, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
         default:
             return false;
     }
@@ -248,7 +249,7 @@ Int64::dump(ostream &strm) const
     << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
     BaseType::dump(strm) ;
-    strm << DapIndent::LMarg << "value: " << _buf << endl ;
+    strm << DapIndent::LMarg << "value: " << d_buf << endl ;
     DapIndent::UnIndent() ;
 }
 

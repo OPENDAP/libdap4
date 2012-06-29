@@ -38,19 +38,18 @@
 
 #include <sstream>
 
-#include "Byte.h"
+#include "Byte.h"           // synonymous with UInt8 and Char
+#include "Int8.h"
 #include "Int16.h"
 #include "UInt16.h"
 #include "Int32.h"
 #include "UInt32.h"
+#include "Int64.h"
+#include "UInt64.h"
 #include "Float32.h"
 #include "Float64.h"
 #include "Str.h"
 #include "Url.h"
-#include "Array.h"
-#include "Structure.h"
-#include "Sequence.h"
-#include "Grid.h"
 
 #include "DDS.h"
 #include "Operators.h"
@@ -94,7 +93,7 @@ Byte::Byte(const string &n, const string &d): BaseType(n, d, dods_byte_c)
 
 Byte::Byte(const Byte & copy_from): BaseType(copy_from)
 {
-    _buf = copy_from._buf;
+    d_buf = copy_from.d_buf;
 }
 
 BaseType *Byte::ptr_duplicate()
@@ -109,7 +108,7 @@ Byte & Byte::operator=(const Byte & rhs)
 
     dynamic_cast < BaseType & >(*this) = rhs;
 
-    _buf = rhs._buf;
+    d_buf = rhs.d_buf;
 
     return *this;
 }
@@ -144,7 +143,7 @@ bool Byte::serialize(ConstraintEvaluator & eval, DDS & dds,
 
     dds.timeout_off();
 
-    m.put_byte( _buf ) ;
+    m.put_byte( d_buf ) ;
 
     return true;
 }
@@ -154,7 +153,7 @@ bool Byte::serialize(ConstraintEvaluator & eval, DDS & dds,
 */
 bool Byte::deserialize(UnMarshaller &um, DDS *, bool)
 {
-    um.get_byte( _buf ) ;
+    um.get_byte( d_buf ) ;
 
     return false;
 }
@@ -173,7 +172,7 @@ unsigned int Byte::val2buf(void *val, bool)
     if (!val)
         throw InternalErr("the incoming pointer does not contain any data.");
 
-    _buf = *(dods_byte *) val;
+    d_buf = *(dods_byte *) val;
 
     return width();
 }
@@ -188,7 +187,7 @@ unsigned int Byte::buf2val(void **val)
     if (!*val)
         *val = new dods_byte;
 
-    *(dods_byte *) * val = _buf;
+    *(dods_byte *) * val = d_buf;
 
     return width();
 }
@@ -199,7 +198,7 @@ unsigned int Byte::buf2val(void **val)
     with the Passive* subclasses written by HAO. */
 bool Byte::set_value(dods_byte value)
 {
-    _buf = value;
+    d_buf = value;
     set_read_p(true);
 
     return true;
@@ -209,7 +208,7 @@ bool Byte::set_value(dods_byte value)
     @return The value. */
 dods_byte Byte::value() const
 {
-    return _buf;
+    return d_buf;
 }
 
 void Byte::print_val(FILE * out, string space, bool print_decl_p)
@@ -223,10 +222,10 @@ void Byte::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
         print_decl(out, space, false);
-	out << " = " << (int)_buf << ";\n" ;
+	out << " = " << (int)d_buf << ";\n" ;
     }
     else
-	out << (int)_buf ;
+	out << (int)d_buf ;
 }
 
 bool Byte::ops(BaseType * b, int op)
@@ -252,31 +251,28 @@ bool Byte::ops(BaseType * b, int op)
     }
 
     switch (b->type()) {
-    case dods_byte_c:
-        return rops < dods_byte, dods_byte, Cmp < dods_byte, dods_byte > >
-               (_buf, dynamic_cast < Byte * >(b)->_buf, op);
-    case dods_int16_c:
-        return rops < dods_byte, dods_int16, USCmp < dods_byte,
-               dods_int16 > > (_buf, dynamic_cast < Int16 * >(b)->_buf, op);
-    case dods_uint16_c:
-        return rops < dods_byte, dods_uint16, Cmp < dods_byte,
-               dods_uint16 > > (_buf, dynamic_cast < UInt16 * >(b)->_buf, op);
-    case dods_int32_c:
-        return rops < dods_byte, dods_int32, USCmp < dods_byte,
-               dods_int32 > > (_buf, dynamic_cast < Int32 * >(b)->_buf, op);
-    case dods_uint32_c:
-        return rops < dods_byte, dods_uint32, Cmp < dods_byte,
-               dods_uint32 > > (_buf, dynamic_cast < UInt32 * >(b)->_buf, op);
-    case dods_float32_c:
-        return rops < dods_byte, dods_float32, Cmp < dods_byte,
-               dods_float32 > > (_buf, dynamic_cast < Float32 * >(b)->_buf,
-                                 op);
-    case dods_float64_c:
-        return rops < dods_byte, dods_float64, Cmp < dods_byte,
-               dods_float64 > > (_buf, dynamic_cast < Float64 * >(b)->_buf,
-                                 op);
-    default:
-        return false;
+        case dods_int8_c:
+            return USCmp<dods_byte, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
+        case dods_byte_c:
+            return Cmp<dods_byte, dods_byte>(op, d_buf, static_cast<Byte*>(b)->value());
+        case dods_int16_c:
+            return USCmp<dods_byte, dods_int16>(op, d_buf, static_cast<Int16*>(b)->value());
+        case dods_uint16_c:
+            return Cmp<dods_byte, dods_uint16>(op, d_buf, static_cast<UInt16*>(b)->value());
+        case dods_int32_c:
+            return USCmp<dods_byte, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
+        case dods_uint32_c:
+            return Cmp<dods_byte, dods_uint32>(op, d_buf, static_cast<UInt32*>(b)->value());
+        case dods_int64_c:
+            return USCmp<dods_byte, dods_int64>(op, d_buf, static_cast<Int64*>(b)->value());
+        case dods_uint64_c:
+            return Cmp<dods_byte, dods_uint64>(op, d_buf, static_cast<UInt64*>(b)->value());
+        case dods_float32_c:
+            return USCmp<dods_byte, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
+        case dods_float64_c:
+            return USCmp<dods_byte, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
+        default:
+            return false;
     }
 }
 
@@ -294,7 +290,7 @@ void Byte::dump(ostream & strm) const
     << (void *) this << ")" << endl;
     DapIndent::Indent();
     BaseType::dump(strm);
-    strm << DapIndent::LMarg << "value: " << _buf << endl;
+    strm << DapIndent::LMarg << "value: " << d_buf << endl;
     DapIndent::UnIndent();
 }
 

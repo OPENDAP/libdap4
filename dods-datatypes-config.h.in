@@ -45,6 +45,9 @@ typedef DFLOAT64 dods_float64;
 #undef DFLOAT32
 typedef DFLOAT32 dods_float32;	
 
+#undef DINT8
+typedef DINT8 dods_int8;
+
 #undef DINT64
 typedef DINT64 dods_int64;
 

@@ -91,15 +91,17 @@ public:
     virtual ~DAP4StreamMarshaller();
 
     // Added here
-    virtual bool checksums() {
+    virtual bool checksums() const {
         return d_ctx != 0;
     }
+    virtual string get_endian() const;
     virtual void reset_checksum();
     virtual string get_checksum();
     virtual void checksum_update(const void *data, unsigned long len);
     void put_checksum();
 
     virtual void put_byte(dods_byte val);
+    virtual void put_int8(dods_int8 val);
 
     virtual void put_int16(dods_int16 val);
     virtual void put_int32(dods_int32 val);

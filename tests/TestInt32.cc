@@ -59,13 +59,13 @@ TestInt32::_duplicate(const TestInt32 &ts)
 
 TestInt32::TestInt32(const string &n) : Int32(n), d_series_values(false)
 {
-    _buf = 1;
+    d_buf = 1;
 }
 
 TestInt32::TestInt32(const string &n, const string &)
     : Int32(n), d_series_values(false)
 {
-    _buf = 1;
+    d_buf = 1;
 }
 
 TestInt32::TestInt32(const TestInt32 &rhs) : Int32(rhs), TestCommon(rhs)
@@ -109,17 +109,17 @@ TestInt32::read()
 	sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
-        _buf = 32 * _buf;
-        if (!_buf)
-            _buf = 32;
+        d_buf = 32 * d_buf;
+        if (!d_buf)
+            d_buf = 32;
     }
     else {
-        _buf = 123456789;
+        d_buf = 123456789;
     }
 
     set_read_p(true);
 
-    DBG(cerr << "In TestInt32::read, _buf = " << _buf << endl);
+    DBG(cerr << "In TestInt32::read, _buf = " << d_buf << endl);
     
     return true;
 }

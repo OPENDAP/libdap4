@@ -65,13 +65,13 @@ TestFloat64::_duplicate(const TestFloat64 &ts)
 
 TestFloat64::TestFloat64(const string &n) : Float64(n), d_series_values(false)
 {
-    _buf = 0.0;
+    d_buf = 0.0;
 }
 
 TestFloat64::TestFloat64(const string &n, const string &d)
     : Float64(n, d), d_series_values(false)
 {
-    _buf = 0.0;
+    d_buf = 0.0;
 }
 
 TestFloat64::TestFloat64(const TestFloat64 &rhs) : Float64(rhs) , TestCommon(rhs)
@@ -114,11 +114,11 @@ TestFloat64::read()
 	sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
-        _buf += 10.0;
-        _buf = (float)(trunc(10000 * cos(trunc(_buf))) / 100);
+        d_buf += 10.0;
+        d_buf = (float)(trunc(10000 * cos(trunc(d_buf))) / 100);
     }
     else {
-        _buf = 99.999;
+        d_buf = 99.999;
     }
     
     set_read_p(true);

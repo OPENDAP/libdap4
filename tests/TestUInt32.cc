@@ -57,13 +57,13 @@ TestUInt32::_duplicate(const TestUInt32 &ts)
 
 TestUInt32::TestUInt32(const string &n) : UInt32(n), d_series_values(false)
 {
-    _buf = 1;
+    d_buf = 1;
 }
 
 TestUInt32::TestUInt32(const string &n, const string &d)
     : UInt32(n, d), d_series_values(false)
 {
-    _buf = 1;
+    d_buf = 1;
 }
 
 TestUInt32::TestUInt32(const TestUInt32 &rhs) : UInt32(rhs), TestCommon(rhs)
@@ -107,10 +107,10 @@ TestUInt32::read()
 	sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
-        _buf = 32 * _buf;
+        d_buf = 32 * d_buf;
     }
     else {
-        _buf = 0xf0000000;		// about 4 billion
+        d_buf = 0xf0000000;		// about 4 billion
     }
 
     set_read_p(true);

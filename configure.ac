@@ -292,6 +292,24 @@ AS_IF([test "x$enable_dap4" = "xyes"], [
     AM_CONDITIONAL([DAP4_DEFINED], [false])
 ])
 
+AC_ARG_ENABLE([developer],
+[AS_HELP_STRING([--enable-developer],
+[Build a debug (-g3 -O0) version of this code and include assert() calls in the code (default is no)])],
+[case "${enableval}" in
+       yes) build_developer=true ;;
+       no)  build_developer=false ;;
+       *) AC_MSG_ERROR([bad value ${enableval} for --enable-developer]) ;;
+     esac],
+[build_developer=false])
+
+if test "x$build_developer" = "xtrue"; then
+   AC_MSG_NOTICE(["Building developer version"])
+else
+   AC_MSG_NOTICE(["Not building developer version"])
+   AC_DEFINE([NDEBUG], [1], [Remove this to activate assert() calls.])
+fi
+AM_CONDITIONAL([BUILD_DEVELOPER], [test "x$build_developer" = "xtrue"])
+
 dnl AC_ARG_ENABLE([checksums], 
 dnl    AC_HELP_STRING([--enable-checksums], [Enable MD5 checksums for DAP2 (default is NO)]))
 dnl

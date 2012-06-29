@@ -26,7 +26,6 @@
 #ifndef _int64_h
 #define _int64_h 1
 
-
 #ifndef _dods_datatypes_h
 #include "dods-datatypes.h"
 #endif
@@ -49,24 +48,11 @@ class DAP4StreamUnMarshaller;
 
 class Int64: public BaseType
 {
-    /** This class allows Byte, ..., Float64 access to <tt>_buf</tt> to
-    simplify and speed up the relational operators.
-
-    NB: According to Stroustrup it does not matter where (public, private
-    or protected) friend classes are declared. */
-    friend class Byte;
-    friend class Int16;
-    friend class UInt16;
-    friend class UInt32;
-    // FIXME DAP4 friend class UInt64;
-    friend class Float32;
-    friend class Float64;
-
     unsigned int val2buf(void *, bool)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
     unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
 
 protected:
-    dods_int64 _buf;
+    dods_int64 d_buf;
 
 public:
     Int64(const string &n);

@@ -80,6 +80,7 @@ public:
     string get_checksum(checksum c);
 
     virtual void get_byte(dods_byte &val);
+    virtual void get_int8(dods_int8 &val);
 
     virtual void get_int16(dods_int16 &val);
     virtual void get_int32(dods_int32 &val);

@@ -59,20 +59,8 @@ namespace libdap
 
 class Float64: public BaseType
 {
-    /** This class allows Byte, ..., Float32 access to <tt>_buf</tt> to
-    simplify and speed up the relational operators.
-
-    NB: According to Stroustrup it does not matter where (public, private
-    or protected) friend classes are declared. */
-    friend class Byte;
-    friend class Int16;
-    friend class UInt16;
-    friend class Int32;
-    friend class UInt32;
-    friend class Float32;
-
 protected:
-    dods_float64 _buf;
+    dods_float64 d_buf;
 
 public:
     Float64(const string &n);

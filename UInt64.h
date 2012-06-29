@@ -48,22 +48,11 @@ namespace libdap
 
 class UInt64: public BaseType
 {
-#if 0
-    /** This class allows Byte, ..., Float64 access to <tt>_buf</tt> to
-    simplify and speed up the relational operators.
-
-    NB: According to Stroustrup it does not matter where (public, private
-    or protected) friend classes are declared. */
-    friend class Byte;
-    friend class Int16;
-    friend class UInt16;
-    friend class Int64;
-    friend class Float32;
-    friend class Float64;
-#endif
+    virtual unsigned int val2buf(void *, bool)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
+    virtual unsigned int buf2val(void **)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
 
 protected:
-    dods_uint64 _buf;
+    dods_uint64 d_buf;
 
 public:
     UInt64(const string &n);
@@ -82,9 +71,6 @@ public:
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
 			   Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
-
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
 
     virtual dods_uint64 value() const;
     virtual bool set_value(dods_uint64 val);

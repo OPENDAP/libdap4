@@ -53,9 +53,11 @@ namespace libdap
 {
 
 /**
-
- @brief Build responses for Hyrax server modules/handlers.
- @author jhrg 1/28/2011 */
+ * This class is used to build responses for/by the BES. This class replaces
+ * DODSFilter (although DODSFilter is still included in the library, its use
+ * is deprecated). and it does not have a provision for command line arguments.
+ * @author jhrg 1/28/2011
+ */
 
 class ResponseBuilder
 {
@@ -68,10 +70,6 @@ protected:
     int d_timeout;  		/// Response timeout after N seconds
     string d_default_protocol;	/// Version string for the library's default protocol version
 
-#if 0	// Keyword support moved to Keywords class
-    set<string> d_keywords; 	/// Holds all of the keywords passed in the CE
-    set<string> d_known_keywords; /// Holds all of the keywords libdap understands.
-#endif
     void initialize();
 
 public:
@@ -84,13 +82,6 @@ public:
     }
 
     virtual ~ResponseBuilder();
-#if 0
-    virtual void add_keyword(const string &kw);
-    virtual bool is_keyword(const string &kw) const;
-    virtual list<string> get_keywords() const;
-    // This method holds all of the keywords that this version of libdap groks
-    virtual bool is_known_keyword(const string &w) const;
-#endif
 
     virtual string get_ce() const;
     virtual void set_ce(string _ce);
@@ -111,21 +102,29 @@ public:
 
     virtual void dataset_constraint(ostream &out, DDS &dds, ConstraintEvaluator &eval,
                                     bool ce_eval = true) const;
-    virtual void dataset_constraint_ddx(ostream &out, DDS & dds, ConstraintEvaluator & eval,
-                                   const string &boundary, const string &start,
-                                   bool ce_eval = true) const;
-
     virtual void send_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval,
                            bool with_mime_headers = true) const;
 
     virtual void send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval,
                           bool with_mime_headers = true) const;
 
+    virtual void dataset_constraint_ddx(ostream &out, DDS & dds, ConstraintEvaluator & eval,
+                                   const string &boundary, const string &start,
+                                   bool ce_eval = true) const;
+
     virtual void send_data_ddx(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval,
                            const string &start, const string &boundary,
                            bool with_mime_headers = true) const;
 
-    // These functions are used both by the methods above and by other code
+    void set_mime_ddx_boundary(ostream &out, const string &boundary,
+        const string &start) const;
+
+    void set_mime_data_boundary(ostream &out, const string &boundary,
+        const string &cid, const string &endian, unsigned long long len) const;
+
+    // These functions are used both by the methods above and by other code.
+    // However, Hyrax uses the OLFS to send the HTTP headers, so these functions
+    // are never used in Hyrax. The BES may uses these in other contexts.
 
     void set_mime_text(ostream &out, ObjectType type = unknown_type,
                        EncodingType enc = x_plain,
@@ -143,18 +142,9 @@ public:
                          const string &protocol = "") const;
 
     void set_mime_multipart(ostream &out, const string &boundary,
-    	const string &start, ObjectType type = unknown_type,
-            EncodingType enc = x_plain,
-            const time_t last_modified = 0,
-            const string &protocol = "") const;
-
-    void set_mime_ddx_boundary(ostream &out, const string &boundary,
-    	const string &start, ObjectType type = unknown_type,
-            EncodingType enc = x_plain) const;
-
-    void set_mime_data_boundary(ostream &out, const string &boundary,
-    	const string &cid, ObjectType type = unknown_type,
-            EncodingType enc = x_plain) const;
+    	const string &start, EncodingType enc = x_plain,
+    	const time_t last_modified = 0, const string &protocol = "",
+    	const string &url = "") const;
 
     void set_mime_error(ostream &out, int code = 404,
                         const string &reason = "Dataset not found",

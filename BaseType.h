@@ -108,7 +108,7 @@ enum Part {
 };
 
 /** <b>Type</b> identifies the data type stored in a particular type
-    class.  All the DODS Data Access Protocol (DAP) types inherit from
+    class. All the DODS Data Access Protocol (DAP) types inherit from
     the BaseType class.
 
     \code
@@ -128,6 +128,7 @@ enum Part {
     dods_sequence_c,
     dods_grid_c,
 
+    dods_int8_c,
     dods_int64_c,
     dods_uint64_c
 
@@ -154,6 +155,7 @@ enum Type {
     dods_sequence_c,
     dods_grid_c,
     // Added for DAP4
+    dods_int8_c,
     dods_int64_c,
     dods_uint64_c
 };

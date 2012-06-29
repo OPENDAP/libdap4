@@ -29,7 +29,6 @@
 
 #include <byteswap.h>
 
-//#include <cstring> // for memcpy
 #include <iostream>
 #include <iomanip>
 
@@ -38,10 +37,6 @@
 
 //#define DODS_DEBUG2 1
 //#define DODS_DEBUG 1
-
-//#include "Str.h"
-//#include "Vector.h"
-//#include "Array.h"
 
 #include "util.h"
 #include "XDRUtils.h"
@@ -122,6 +117,12 @@ void
 DAP4StreamUnMarshaller::get_byte( dods_byte &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_byte));
+}
+
+void
+DAP4StreamUnMarshaller::get_int8( dods_int8 &val )
+{
+    d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_int8));
 }
 
 void
