@@ -251,11 +251,10 @@ void test_parser(const string &name) {
 }
 
 void test_dap4_parser(const string &name) {
-    DAP4BaseTypeFactory *factory = new DAP4BaseTypeFactory;
+    DAP4BaseTypeFactory factory;
 
-    // TODO: Is the factory needed here given that DDXParserDAP4 gets a copy?
-    DDS table(factory);
-    DDXParserDAP4 parser(factory);
+    DDS table(&factory);
+    DDXParserDAP4 parser(&factory);
 
     if (name.empty()) {
         parser.intern_stream(cin, &table);
@@ -279,9 +278,6 @@ void test_dap4_parser(const string &name) {
         table.print_xml_writer(cout, false, "");
     else
         table.print(cout);
-
-    delete factory;
-    factory = 0;
 }
 
 void test_class(void) {

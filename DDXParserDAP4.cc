@@ -24,8 +24,8 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG 1
-//#define DODS_DEBUG2 1
+#define DODS_DEBUG 1
+#define DODS_DEBUG2 1
 
 #include <iostream>
 
@@ -239,8 +239,7 @@ void DDXParserDAP4::transfer_xml_attrs(const xmlChar **attributes, int nb_attrib
     for (int i = 0; i < nb_attributes; ++i, index += 5) {
         // Make a value using the attribute name and the prefix, namespace URI
         // and the value. The prefix might be null.
-        attribute_table.insert(
-                map<string, XMLAttribute>::value_type(string((const char *) attributes[index]),
+        attribute_table.insert(map<string, XMLAttribute>::value_type(string((const char *) attributes[index]),
                         XMLAttribute(attributes + index + 1)));
 
         DBG(cerr << "Attribute '" << (const char *)attributes[index] << "': "
@@ -554,14 +553,13 @@ void DDXParserDAP4::ddx_start_element(void *p, const xmlChar *l, const xmlChar *
     DDXParserDAP4 *parser = static_cast<DDXParserDAP4*>(p);
     const char *localname = (const char *) l;
 
-    DBG2(cerr << "start element: " << localname << ", states: "
-            << states[parser->get_state()]);
+    DBG2(cerr << "start element: " << localname << ", state: " << states[parser->get_state()] << endl);
 
     switch (parser->get_state()) {
         case parser_start:
             if (strcmp(localname, "Group") == 0) {
                 parser->set_state(inside_root_group);
-                parser->root_ns = URI != 0 ? (const char *) URI : "";
+                parser->root_ns = URI ? (const char *) URI : "";
                 parser->transfer_xml_attrs(attributes, nb_attributes);
 
                 if (parser->check_required_attribute(string("name")))
@@ -570,11 +568,9 @@ void DDXParserDAP4::ddx_start_element(void *p, const xmlChar *l, const xmlChar *
                 if (parser->check_attribute("dapVersion"))
                     parser->dds->set_dap_version(parser->attribute_table["dapVersion"].value);
 
-#if 0
-                // What do we do with the namespace?
-                if (parser->check_attribute("ns"))
-                    parser->dds->set_dap_version(parser->attribute_table["ns"].value);
-#endif
+                if (!parser->root_ns.empty())
+                    parser->dds->set_namespace(parser->root_ns);
+
                 if (parser->check_attribute("base"))
                     parser->dds->set_request_xml_base(parser->attribute_table["base"].value);
             }

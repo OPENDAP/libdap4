@@ -192,6 +192,7 @@ private:
     int d_dap_minor;       	    // ... and minor version number
     string d_dap_version; 	    // String version of the protocol
     string d_request_xml_base;
+    string d_namespace;
 
     AttrTable d_attr;           // Global attributes.
 
@@ -277,6 +278,12 @@ public:
 
     /// @see get_request_xml_base
     void set_request_xml_base(const string &xb) { d_request_xml_base = xb; }
+
+    /// Get the namespace associated with the DDS - likely set only by DDX responses
+    string get_namespace() const { return d_namespace; }
+
+    /// Set the namespace for this DDS/DDX object/response
+    void set_namespace(const string &ns) { d_namespace = ns; }
 
     /// Get the maximum response size, in KB. Zero indicates no limit.
     long get_response_limit() { return d_max_response_size; }

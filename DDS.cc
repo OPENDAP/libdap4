@@ -999,22 +999,58 @@ public:
     }
 };
 
-
+/**
+ * Print the DDX. This code uses the libxml2 'TextWriter' interface; something
+ * that seems to be a good compromise between doing it by hand (although more
+ * verbose it is also more reliable) and DOM.
+ *
+ * @note This code handles several different versions of DAP in a fairly
+ * crude way. I've broken it up into three different responses: DAP2, DAP3.2
+ * and DAP4.
+ *
+ * @param out Write the XML to this output sink
+ * @param constrained True if the only variables to print are those in the
+ * current projection. If true, this will also suppress printing attributes.
+ * @param blob This is an href (DAP2) or a cid (DAP3.4 and 4). The href
+ * points to the binary data; the cid is the M-MIME separator for the binary
+ * data.
+ */
 void
 DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
 {
     XMLWriter xml("    ");
 
-    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dataset") < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write Dataset element");
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xsi", (const xmlChar*)"http://www.w3.org/2001/XMLSchema-instance") < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+    // Stamp and repeat for these sections; trying to economize is makes it
+    // even more confusing
+    if (get_dap_major() >= 4) {
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Group") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write Group element");
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-    // Are we responding to a 3.2 or 2.0 client? We will have to improve on
-    // this at some point... jhrg
-    if (get_dap_major() == 3 && get_dap_minor() == 2) {
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "dapVersion", (const xmlChar*)get_dap_version().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dapVersion");
+
+        if (!get_request_xml_base().empty()) {
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xml", (const xmlChar*)c_xml_namespace.c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xml");
+
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xml:base", (const xmlChar*)get_request_xml_base().c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xml:base");
+        }
+        if (!get_namespace().empty()) {
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns", (const xmlChar*)get_namespace().c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
+        }
+    }
+    else if (get_dap_major() == 3 && get_dap_minor() >= 2) {
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dataset") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write Dataset element");
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xsi", (const xmlChar*)"http://www.w3.org/2001/XMLSchema-instance") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xsi:schemaLocation", (const xmlChar*)c_dap_32_n_sl.c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:schemaLocation");
 
@@ -1040,7 +1076,14 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
                 throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xml:base");
         }
     }
-    else {
+    else { // dap2
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dataset") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write Dataset element");
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xsi", (const xmlChar*)"http://www.w3.org/2001/XMLSchema-instance") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns", (const xmlChar*)c_dap20_namespace.c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
 
@@ -1054,26 +1097,37 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
     // Print each variable
     for_each(var_begin(), var_end(), VariablePrintXMLWriter(xml, constrained));
 
-    // Only print this for the 2.0, 3.0 and 3.1 versions - which are essentially
-    // the same.
     // For DAP 3.2 and greater, use the new syntax and value. The 'blob' is
-    // actually the CID of the MIME part that holds the data.
-    if (get_dap_major() == 2 && get_dap_minor() == 0) {
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "dataBLOB") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write dataBLOB element");
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "href", (const xmlChar*)"") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not end dataBLOB element");
+    // the CID of the MIME part that holds the data. For DAP2 (which includes
+    // 3.0 and 3.1), the blob is an href. For DAP4, only write the CID if it's
+    // given.
+    if (get_dap_major() >= 4) {
+        if (!blob.empty()) {
+            if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "blob") < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write blob element");
+            string cid = "cid:" + blob;
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "href", (const xmlChar*) cid.c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+            if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not end blob element");
+        }
     }
-    else if (!blob.empty() && ((get_dap_major() == 3 && get_dap_minor() >= 2)  || get_dap_major() >= 4)) {
+    else if (get_dap_major() == 3 && get_dap_minor() >= 2) {
         if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "blob") < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write blob element");
-        string cid="cid:" + blob;
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "href", (const xmlChar*)cid.c_str()) < 0)
+        string cid = "cid:" + blob;
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "href", (const xmlChar*) cid.c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
         if (xmlTextWriterEndElement(xml.get_writer()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not end blob element");
+    }
+    else { // dap2
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "dataBLOB") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write dataBLOB element");
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "href", (const xmlChar*) "") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not end dataBLOB element");
     }
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
