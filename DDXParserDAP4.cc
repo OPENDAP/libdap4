@@ -75,7 +75,7 @@ static const not_used char *states[] = { "start",
 
 "structure", "sequence",
 
-"blob href",
+"blob",
 
 "unknown", "error" };
 
@@ -390,9 +390,9 @@ void DDXParserDAP4::process_dimension(const xmlChar **attrs, int nb_attributes)
 void DDXParserDAP4::process_blob(const xmlChar **attrs, int nb_attributes)
 {
     transfer_xml_attrs(attrs, nb_attributes);
-    if (check_required_attribute(string("href"))) {
-        set_state(inside_blob_href);
-        *blob_href = attribute_table["href"].value;
+    if (check_required_attribute(string("cid"))) {
+        set_state(inside_blob);
+        *blob_cid = attribute_table["cid"].value;
     }
 }
 
@@ -588,10 +588,10 @@ void DDXParserDAP4::ddx_start_element(void *p, const xmlChar *l, const xmlChar *
                 break;
             else if (parser->is_variable(localname, attributes, nb_attributes))
                 break;
-#if 0
-            else if (strcmp(localname, "blob") == 0 || strcmp(localname, "dataBLOB") == 0) {
+#if 1
+            else if (strcmp(localname, "blob") == 0) {
                 parser->process_blob(attributes, nb_attributes);
-                // next state: inside_data_blob
+                // next state: inside_blob
             }
 #endif
             else
@@ -749,9 +749,9 @@ void DDXParserDAP4::ddx_start_element(void *p, const xmlChar *l, const xmlChar *
                         localname);
             break;
 
-        case inside_blob_href:
+        case inside_blob:
             ddx_fatal_error(parser,
-                    "Internal parser error; unexpected state, inside blob href while processing element '%s'.",
+                    "Internal parser error; unexpected state, inside blob while processing element '%s'.",
                     localname);
             break;
 
@@ -910,11 +910,11 @@ void DDXParserDAP4::ddx_end_element(void *p, const xmlChar *l, const xmlChar *pr
             parser->finish_variable(localname, dods_array_c, "Map");
             break;
 
-        case inside_blob_href:
-            if (strcmp(localname, "blob") == 0 || strcmp(localname, "dataBLOB") == 0)
+        case inside_blob:
+            if (strcmp(localname, "blob") == 0)
                 parser->pop_state();
             else
-                DDXParserDAP4::ddx_fatal_error(parser, "Expected an end dataBLOB/blob tag; found '%s' instead.",
+                DDXParserDAP4::ddx_fatal_error(parser, "Expected an end blob tag; found '%s' instead.",
                         localname);
             break;
 
@@ -1055,9 +1055,23 @@ void DDXParserDAP4::cleanup_parse(xmlParserCtxtPtr & context) const
 }
 
 #if 1
-/** @brief Read the DDX from a stream instead of a file.
- @see DDXParserDAP4::intern(). */
-void DDXParserDAP4::intern_stream(istream &f, DDS *dest_dds)//, string &cid, const string &boundary)
+/**
+ * @brief Read the DDX from a stream instead of a file.
+ *
+ * This method reads and parses the DDX from a stream. When/if it encounters
+ * the <blob> element is records the value of the  CID attribute and returns
+ * it using the cid value-result parameter. When the boundary marker is
+ * found, the parser will read that and return (if it is found before the
+ * DDX is completely parsed).
+ *
+ * @param f The input stream
+ * @param dest_dds Value-result parameter. Pass a DDS in and the inforamtion
+ * in the DDX will be added to it.
+ * @param cid Value-result parameter. When/if read, the value of the <blob>
+ * element's @cid attribute will be returned here.
+ * @param boundary Value of the M-MIME boundary separator; default is ""
+ * @see DDXParserDAP4::intern(). */
+void DDXParserDAP4::intern_stream(istream &f, DDS *dest_dds, string &cid, const string &boundary)
 {
     // Code example from libxml2 docs re: read from a stream.
 
@@ -1067,15 +1081,16 @@ void DDXParserDAP4::intern_stream(istream &f, DDS *dest_dds)//, string &cid, con
     const int size = 1024;
     char chars[size];
 
-    f.read(chars, 4);
+    f.getline(chars, size);
     int res = f.gcount(); // fread(chars, 1, 4, in);
     if (res > 0) {
-        chars[4] = '\0';
-        xmlParserCtxtPtr context = xmlCreatePushParserCtxt(NULL, NULL, chars, res, "stream");
+        // chars[4] = '\0';
+        DBG(cerr << "line: (" << res << "): " << chars << endl);
+        xmlParserCtxtPtr context = xmlCreatePushParserCtxt(NULL, NULL, chars, res - 1, "stream");
 
         ctxt = context; // need ctxt for error messages
         dds = dest_dds; // dump values here
-        //blob_href = &cid; // cid goes here
+        blob_cid = &cid; // cid goes here
 
         xmlSAXHandler ddx_sax_parser;
         memset(&ddx_sax_parser, 0, sizeof(xmlSAXHandler));
@@ -1097,12 +1112,13 @@ void DDXParserDAP4::intern_stream(istream &f, DDS *dest_dds)//, string &cid, con
         context->userData = this;
         context->validate = true;
 
-        f.read(chars, size);
-        while ((f.gcount() > 0)) {// && !is_boundary(chars, boundary)) {
-            chars[size - 1] = '\0';
-            DBG(cerr << "line: " << chars << endl);
-            xmlParseChunk(ctxt, chars, strlen(chars), 0);
-            f.read(chars, size);
+        f.getline(chars, size);
+        // chars[size - 1] = '\0';
+        while ((f.gcount() > 0) && !is_boundary(chars, boundary)) {
+            DBG(cerr << "line: (" << f.gcount() << "): " << chars << endl);
+            xmlParseChunk(ctxt, chars, f.gcount() - 1, 0);
+            f.getline(chars, size);
+            //chars[size - 1] = '\0';
         }
         // This call ends the parse: The fourth argument of xmlParseChunk is
         // the bool 'terminate.'
@@ -1124,7 +1140,7 @@ void DDXParserDAP4::intern_stream(istream &f, DDS *dest_dds)//, string &cid, con
  CID.
  @exception DDXParseFailed Thrown if the XML document could not be
  read or parsed. */
-void DDXParserDAP4::intern(const string & document, DDS * dest_dds, string &cid)
+void DDXParserDAP4::intern(const string &document, DDS *dest_dds, string &cid)
 {
     // Create the context pointer explicitly so that we can store a pointer
     // to it in the DDXParserDAP4 instance. This provides a way to generate our
@@ -1138,7 +1154,7 @@ void DDXParserDAP4::intern(const string & document, DDS * dest_dds, string &cid)
         throw DDXParseFailed(string("Could not initialize the parser with the file: '") + document + string("'."));
 
     dds = dest_dds; // dump values here
-    blob_href = &cid;
+    blob_cid = &cid;
     ctxt = context; // need ctxt for error messages
 
     xmlSAXHandler ddx_sax_parser;

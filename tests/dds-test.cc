@@ -255,13 +255,13 @@ void test_dap4_parser(const string &name) {
 
     DDS table(&factory);
     DDXParserDAP4 parser(&factory);
-
+    string cid;
     if (name.empty()) {
-        parser.intern_stream(cin, &table);
+        parser.intern_stream(cin, &table, cid);
     }
     else {
         fstream in(name.c_str(), ios_base::in);
-        parser.intern_stream(in, &table);//, "blank", "blank");
+        parser.intern_stream(in, &table, cid);
     }
 
     if (table.check_semantics())

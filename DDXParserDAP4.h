@@ -105,7 +105,7 @@ private:
         inside_structure,
         inside_sequence,
 
-        inside_blob_href,
+        inside_blob,
 
         parser_unknown,
         parser_error
@@ -132,7 +132,7 @@ private:
 
     // The results of the parse operation are stored in these fields.
     DDS *dds;   // dump DDX here
-    string *blob_href;  // put href to blob here
+    string *blob_cid;  // put href to blob here
 
     // These hold temporary values read during the parse.
     string dods_attr_name; // DAP2 attributes, not XML attributes
@@ -236,13 +236,13 @@ public:
     DDXParserDAP4(DAP4BaseTypeFactory *factory)
         : d_factory(factory),
         other_xml(""), other_xml_depth(0), unknown_depth(0),
-        error_msg(""), ctxt(0), dds(0), blob_href(0),
+        error_msg(""), ctxt(0), dds(0), blob_cid(0),
         dods_attr_name(""), dods_attr_type(""),
         char_data(""), root_ns("")
     {}
 
     void intern(const string &document, DDS *dest_dds, string &cid);
-    void intern_stream(istream &in, DDS *dds);//, string &cid, const string &boundary = "");
+    void intern_stream(istream &in, DDS *dds, string &cid, const string &boundary = "");
 
 #if 0
     void intern_stream(FILE *in, DDS *dds, string &cid,
