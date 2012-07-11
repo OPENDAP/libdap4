@@ -222,10 +222,10 @@ void Byte::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
         print_decl(out, space, false);
-	out << " = " << (int)d_buf << ";\n" ;
+        out << " = " << (int) d_buf << ";\n";
     }
     else
-	out << (int)d_buf ;
+        out << (int) d_buf;
 }
 
 bool Byte::ops(BaseType * b, int op)

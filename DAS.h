@@ -125,12 +125,8 @@ private:
     string _container_name ;
     AttrTable d_attrs ;
 
-protected:
-    //AttrTable *das_find(string name);
-
 public:
     DAS();
-    //DAS(AttrTable *attr_table, string name);
 
     virtual ~DAS();
 

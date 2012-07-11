@@ -74,7 +74,7 @@ public:
     @param signum We know it is SIGINT; included here as a check and only
     when NDEBUG is not defined.
     @return Never returns. */
-    virtual void handle_signal(int signum)
+    virtual void handle_signal(int)
     {
         assert(signum == SIGINT);
         DBG(cerr << "Inside the HTTPCacheInterruptHandler." << endl);

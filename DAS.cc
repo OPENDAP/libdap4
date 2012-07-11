@@ -36,11 +36,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    {"$Id$"
-    };
-
-
 #include <cstdio>
 
 #ifdef HAVE_UNISTD_H
@@ -70,7 +65,7 @@ extern void das_switch_to_buffer(void *new_buffer);
 extern void das_delete_buffer(void * buffer);
 extern void *das_buffer(FILE *fp);
 
-extern void dasrestart(FILE *yyin);
+//extern void dasrestart(FILE *yyin);
 extern int dasparse(void *arg); // defined in das.tab.c
 
 namespace libdap {

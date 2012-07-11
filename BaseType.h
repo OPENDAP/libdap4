@@ -129,8 +129,10 @@ enum Part {
     dods_grid_c,
 
     dods_int8_c,
+    dods_uint8_c,
     dods_int64_c,
-    dods_uint64_c
+    dods_uint64_c,
+    dods_url4_c
 
     };
     \endcode
@@ -156,8 +158,12 @@ enum Type {
     dods_grid_c,
     // Added for DAP4
     dods_int8_c,
+    dods_uint8_c,
     dods_int64_c,
-    dods_uint64_c
+    dods_uint64_c,
+
+    dods_url4_c
+
 };
 
 /** This defines the basic data type features for the DODS data access

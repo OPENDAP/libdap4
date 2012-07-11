@@ -78,8 +78,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    bool serialize(ConstraintEvaluator &eval, DDS &dds,
-		   Marshaller &m, bool ce_eval);
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval);
     bool deserialize(UnMarshaller &um, DDS *, bool);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
@@ -88,10 +87,8 @@ public:
     virtual bool set_value(const dods_byte value);
     virtual dods_byte value() const;
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
 
     virtual bool ops(BaseType *b, int op);
 

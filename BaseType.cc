@@ -280,6 +280,18 @@ BaseType::type_name() const
         return string("Sequence");
     case dods_grid_c:
         return string("Grid");
+
+    case dods_int8_c:
+        return string("Int8");
+    case dods_uint8_c:
+        return string("UInt8");
+    case dods_int64_c:
+        return string("Int64");
+    case dods_uint64_c:
+        return string("UInt64");
+    case dods_url4_c:
+        return string("URL");
+
     default:
         cerr << "BaseType::type_name: Undefined type" << endl;
         return string("");
@@ -297,6 +309,10 @@ BaseType::is_simple_type()
     switch (type()) {
     case dods_null_c:
     case dods_byte_c:
+
+    case dods_int8_c:
+    case dods_uint8_c:
+
     case dods_int16_c:
     case dods_uint16_c:
     case dods_int32_c:
@@ -309,6 +325,8 @@ BaseType::is_simple_type()
     case dods_float64_c:
     case dods_str_c:
     case dods_url_c:
+
+    case dods_url4_c:
         return true;
 
     case dods_array_c:
@@ -330,6 +348,10 @@ BaseType::is_vector_type()
     switch (type()) {
     case dods_null_c:
     case dods_byte_c:
+
+    case dods_int8_c:
+    case dods_uint8_c:
+
     case dods_int16_c:
     case dods_uint16_c:
     case dods_int32_c:
@@ -342,6 +364,8 @@ BaseType::is_vector_type()
     case dods_float64_c:
     case dods_str_c:
     case dods_url_c:
+
+    case dods_url4_c:
         return false;
 
     case dods_array_c:
@@ -366,6 +390,10 @@ BaseType::is_constructor_type()
     switch (type()) {
     case dods_null_c:
     case dods_byte_c:
+
+    case dods_int8_c:
+    case dods_uint8_c:
+
     case dods_int16_c:
     case dods_uint16_c:
     case dods_int32_c:
@@ -378,6 +406,9 @@ BaseType::is_constructor_type()
     case dods_float64_c:
     case dods_str_c:
     case dods_url_c:
+
+    case dods_url4_c:
+
     case dods_array_c:
         return false;
 

@@ -197,8 +197,6 @@ private:
 
     vector<BaseType *> vars;    // Variables at the top level
 
-    // BaseType *find_hdf4_dimension_attribute_home(AttrTable::entry *source);
-
     int d_timeout;              // alarm time in seconds. If greater than
                                 // zero, raise the alarm signal if more than
                                 // d_timeout seconds are spent reading data.

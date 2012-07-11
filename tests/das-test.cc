@@ -38,8 +38,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used = {"$Id$"};
-
 #include <cstdlib>
 #include <string>
 #include <GetOpt.h>
@@ -213,6 +211,7 @@ test_scanner()
 
 	  default:
 	    fprintf( stdout, "Error: Unrecognized input\n" ) ;
+	    break;
 	}
 	fprintf( stdout, "%s", prompt ) ; // print prompt after output
 	fflush( stdout ) ;

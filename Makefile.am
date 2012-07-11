@@ -243,7 +243,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc
 
 DAP4_ONLY_SRC = DAP4StreamMarshaller.cc DAP4StreamUnMarshaller.cc Int64.cc \
-        UInt64.h Int8.cc
+        UInt64.cc Int8.cc DDXParserDAP4.cc DAP4BaseTypeFactory.cc
 
 Operators.h: ce_expr.tab.hh
 
@@ -270,7 +270,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h 
 
 DAP4_ONLY_HDR = DAP4StreamMarshaller.h DAP4StreamUnMarshaller.h Int64.h \
-        UInt64.h Int8.h
+        UInt64.h Int8.h DDXParserDAP4.h DAP4BaseTypeFactory.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h

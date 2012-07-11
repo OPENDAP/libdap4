@@ -40,8 +40,8 @@
 #include "Str.h"
 #include "Url.h"
 
-#include "Marshaller.h"
-#include "UnMarshaller.h"
+#include "DAP4StreamMarshaller.h"
+#include "DAP4StreamUnMarshaller.h"
 
 #include "DDS.h"
 #include "util.h"
@@ -122,7 +122,7 @@ UInt64::serialize(ConstraintEvaluator &eval, DDS &dds,
 
     dds.timeout_off();
 
-    static_cast<DAP4Marshaller*>(&m)->put_uint64( d_buf ) ;
+    static_cast<DAP4StreamMarshaller*>(&m)->put_uint64( d_buf ) ;
 
     return true;
 }
@@ -131,7 +131,7 @@ bool
 UInt64::deserialize(UnMarshaller &um, DDS *, bool)
 {
     // TODO assert
-    static_cast<DAP4UnMarshaller*>(&um)->get_uint64( d_buf ) ;
+    static_cast<DAP4StreamUnMarshaller*>(&um)->get_uint64( d_buf ) ;
 
     return false;
 }
@@ -216,7 +216,7 @@ UInt64::ops(BaseType *b, int op)
  * @return void
  */
 void
-UInt32::dump(ostream &strm) const
+UInt64::dump(ostream &strm) const
 {
     strm << DapIndent::LMarg << "UInt32::dump - ("
     << (void *)this << ")" << endl ;

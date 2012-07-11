@@ -34,12 +34,13 @@
 
 #include "config.h"
 
-static char rcsid[] not_used = { "$Id$" };
+#include <fstream>
 
 #include <GetOpt.h>
 
 #include "parser.h"
 #include "dds.tab.hh"
+#include "DDXParserDAP4.h"
 #include "BaseType.h"
 #include "Int32.h"
 #include "DDS.h"
@@ -51,9 +52,10 @@ using namespace libdap;
 void test_scanner();
 void test_parser(const string &name);
 void test_class();
+void test_dap4_parser(const string &name);
 
 int ddslex();
-int ddsparse(DDS &);
+// int ddsparse(DDS &);
 
 extern YYSTYPE ddslval;
 extern int ddsdebug;
@@ -70,9 +72,10 @@ void usage(string name) {
 }
 
 int main(int argc, char *argv[]) {
-    GetOpt getopt(argc, argv, "spP:dcx");
+    GetOpt getopt(argc, argv, "spP:dfF:cx");
     int option_char;
     int scanner_test = 0, parser_test = 0, class_test = 0;
+    int dap4_parser_test = 0;
     string name = "";
     // process options
 
@@ -91,6 +94,16 @@ int main(int argc, char *argv[]) {
             parser_test = 1;
             name = getopt.optarg;
             break;
+
+        case 'f':
+            dap4_parser_test = 1;
+            break;
+
+        case 'F':
+            dap4_parser_test = 1;
+            name = getopt.optarg;
+            break;
+
         case 'x':
             print_ddx = true;
             break;
@@ -103,24 +116,25 @@ int main(int argc, char *argv[]) {
             return 1;
         }
 
-    if (!scanner_test && !parser_test && !class_test) {
+    if (!scanner_test && !parser_test && !class_test && !dap4_parser_test) {
         usage(argv[0]);
         return 1;
     }
 
     try {
-        if (scanner_test) {
+        if (scanner_test)
             test_scanner();
-        }
 
-        if (parser_test) {
+        if (parser_test)
             test_parser(name);
-        }
 
-        if (class_test) {
+        if (dap4_parser_test)
+            test_dap4_parser(name);
+
+        if (class_test)
             test_class();
-        }
-    } catch (Error &e) {
+    }
+    catch (Error &e) {
         cerr << e.get_error_message() << endl;
     }
 }
@@ -203,6 +217,7 @@ void test_scanner(void) {
             break;
         default:
             cout << "Error: Unrecognized input" << endl;
+            break;
         }
         cout << prompt << flush; // print prompt after output
     }
@@ -225,6 +240,40 @@ void test_parser(const string &name) {
         cout << "DDS past full semantic check" << endl;
     else
         cout << "DDS failed full semantic check" << endl;
+
+    if (print_ddx)
+        table.print_xml_writer(cout, false, "");
+    else
+        table.print(cout);
+
+    delete factory;
+    factory = 0;
+}
+
+void test_dap4_parser(const string &name) {
+    DAP4BaseTypeFactory *factory = new DAP4BaseTypeFactory;
+
+    // TODO: Is the factory needed here given that DDXParserDAP4 gets a copy?
+    DDS table(factory);
+    DDXParserDAP4 parser(factory);
+
+    if (name.empty()) {
+        parser.intern_stream(cin, &table);
+    }
+    else {
+        fstream in(name.c_str(), ios_base::in);
+        parser.intern_stream(in, &table);//, "blank", "blank");
+    }
+
+    if (table.check_semantics())
+        cout << "DAP4 DDS past semantic check" << endl;
+    else
+        cout << "DAP4 DDS failed semantic check" << endl;
+
+    if (table.check_semantics(true))
+        cout << "DAP4 DDS past full semantic check" << endl;
+    else
+        cout << "DAP4 DDS failed full semantic check" << endl;
 
     if (print_ddx)
         table.print_xml_writer(cout, false, "");
