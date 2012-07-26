@@ -99,6 +99,8 @@ XDRStreamMarshaller::~XDRStreamMarshaller()
     if (_sink)
         xdr_destroy(_sink); //delete_xdrstdio(_sink);
 
+    // xdr_destroy knows nothing about the memory we allocated
+    delete _sink;
     _sink = 0;
 }
 
