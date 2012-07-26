@@ -496,18 +496,11 @@ void DDS::add_var_nocopy(BaseType *bt) {
 
     DBG2(cerr << "In DDS::add_var(), bt's address is: " << bt << endl);
 
-    BaseType *btp = bt->ptr_duplicate();
-    DBG2(cerr << "In DDS::add_var(), btp's address is: " << btp << endl);
     if (d_container) {
-        // Mem leak fix [mjohnson nov 2009]
-        // Structure::add_var() creates ANOTHER copy.
-        d_container->add_var(bt);
-        // So we need to delete btp or else it leaks
-        delete btp;
-        btp = 0;
+        d_container->add_var_nocopy(bt);
     }
     else {
-        vars.push_back(btp);
+        vars.push_back(bt);
     }
 }
 
