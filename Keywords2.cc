@@ -58,7 +58,7 @@ Keywords::~Keywords()
 {
 }
 
-/** Static function to parse the curly-brace keyword notation.
+/** Static function to parse the keyword notation.
  * @param kw the keyword clause '<word> ( <value> )'
  * @param word (result) the word
  * @param value (result) the value
@@ -76,7 +76,7 @@ static bool f_parse_keyword(const string &kw, string &word, string &value)
     string::size_type j = kw.find(')');
     if (j == string::npos)
 	return false;
-    ++i; // Move past the opening brace
+    ++i; // Move past the opening paren
     value = kw.substr(i, j-i);
 
     return (!word.empty() && !value.empty());
