@@ -12,10 +12,10 @@ using namespace std;
         FILE *(f) = fopen("testout", "w");\
         c;\
         fclose(f);\
-        s = testFile("testout");\
+        s = readTestBaseline("testout");\
         unlink("testout");\
 } while(0);
 
-string testFile(const string &fn);
+string readTestBaseline(const string &fn);
 
-// string testFile(char *fn);
+// string readTestBaseline(char *fn);

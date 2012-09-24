@@ -116,6 +116,12 @@ public:
                            const string &start, const string &boundary,
                            bool with_mime_headers = true) const;
 
+    // DAP4 responses - but do not send the response MIME headers, just the
+    // response body.
+    virtual void send_dmr(ostream &out, DDS &dds, ConstraintEvaluator &eval) const;
+
+    virtual void send_dap4_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval) const;
+
     void set_mime_ddx_boundary(ostream &out, const string &boundary,
         const string &start) const;
 

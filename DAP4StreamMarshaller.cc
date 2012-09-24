@@ -87,7 +87,7 @@ inline uint8_t* WriteVarint64ToArrayInline(uint64_t value, uint8_t* target) {
   // and part2 are zero.  However, if the caller is using 64-bit integers,
   // it is likely that they expect the numbers to often be very large, so
   // we probably don't want to optimize for small numbers anyway.  Thus,
-  // we end up with a hardcoded binary search tree...
+  // we end up with a hard coded binary search tree...
   if (part2 == 0) {
     if (part1 == 0) {
       if (part0 < (1 << 14)) {

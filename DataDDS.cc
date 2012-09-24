@@ -34,11 +34,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    {"$Id$"
-    };
-
-
 #include <iostream>
 #include <iomanip>
 #include <sstream>

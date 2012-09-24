@@ -222,7 +222,7 @@ Dataset \\{\n\
     }
 
     void send_ddx_test() {
-        string baseline = testFile((string) TEST_SRC_DIR + "/ddx-testsuite/response_builder_send_ddx_test.xml");
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/ddx-testsuite/response_builder_send_ddx_test.xml");
         Regex r1(baseline.c_str());
         ConstraintEvaluator ce;
 
@@ -240,7 +240,7 @@ Dataset \\{\n\
     }
 
     void send_data_ddx_test() {
-        string baseline = testFile((string) TEST_SRC_DIR + "/tmp.xml"); //"/ddx-testsuite/response_builder_send_data_ddx_test_3.xml");
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/tmp.xml"); //"/ddx-testsuite/response_builder_send_data_ddx_test_3.xml");
         Regex r1(baseline.c_str());
         // I do not look for the closing '--boundary' because the binary
         // data breaks the regex functions in the c library WRT subsequent
@@ -354,6 +354,11 @@ CPPUNIT_TEST_SUITE( ResponseBuilderTest );
         // CPPUNIT_TEST(send_data_ddx_test);
         // CPPUNIT_TEST(send_data_ddx_test2);
         CPPUNIT_TEST(escape_code_test);
+
+#if 0
+        // not written yet 9/14/12
+        CPPUNIT_TEST(send_dmr_test_1);
+#endif
 
     CPPUNIT_TEST_SUITE_END();
 };

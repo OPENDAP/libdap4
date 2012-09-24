@@ -182,10 +182,10 @@ class DDS : public DapObj
 private:
     BaseTypeFactory *d_factory;
 
-    string name;                // The dataset name
-    string d_filename;		    // File name (or other OS identifier) for
-    string d_container_name;	// name of container structure
-    Structure *d_container; 	// current container for container name
+    string d_name;                // The dataset d_name
+    string d_filename;		    // File d_name (or other OS identifier) for
+    string d_container_name;	// d_name of container structure
+    Structure *d_container; 	// current container for container d_name
 				                // dataset or part of dataset.
 
     int d_dap_major;       	    // The protocol major version number
@@ -217,7 +217,8 @@ public:
     typedef std::vector<BaseType *>::iterator Vars_iter ;
     typedef std::vector<BaseType *>::reverse_iterator Vars_riter ;
 
-    DDS(BaseTypeFactory *factory, const string &n = "");
+    DDS(BaseTypeFactory *factory, const string &name = "");
+    DDS(BaseTypeFactory *factory, const string &name, const string &version);
     DDS(const DDS &dds);
 
     virtual ~DDS();
@@ -261,15 +262,16 @@ public:
     /// Get the DAP minor version as sent by the client
     int get_dap_minor() const { return d_dap_minor; }
 
-    /// Set the DAP major version (typically using info from the client)
-    void set_dap_major(int p);
-    /// Set the DAP minor version (typically using info from the client)
-    void set_dap_minor(int p);
-
-    void set_dap_version(const string &version_string);
-    void set_dap_version(double d);
-
+    void set_dap_version(const string &version_string = "2.0");
     string get_dap_version() const { return d_dap_version; }
+    string get_dmr_version() const { return "1.0"; }
+
+    /// @deprecated
+    void set_dap_major(int p);
+    /// @deprecated
+    void set_dap_minor(int p);
+    /// @deprecated
+    void set_dap_version(double d);
 
     Keywords &get_keywords() { return d_keywords; }
 
@@ -335,19 +337,26 @@ public:
     void set_timeout(int t);
     int get_timeout();
 
+    // These parse the DAP2 curly-brace document and make a C++ object.
     void parse(string fname);
     void parse(int fd);
     void parse(FILE *in = stdin);
 
+    // These print the Binary object in either the curly-brace or XML reps
     void print(FILE *out);
     void print_constrained(FILE *out);
     void print_xml(FILE *out, bool constrained, const string &blob = "");
 
+    // Same as above, but using C++ i/o streams
     void print(ostream &out);
     void print_constrained(ostream &out);
     void print_xml(ostream &out, bool constrained, const string &blob = "");
 
+    // Print the XML using libxml2; the other print_xml methods use this impl.
     void print_xml_writer(ostream &out, bool constrained, const string &blob = "");
+
+    // Print the DAP4 DMR 'object'
+    void print_dmr(ostream &out, bool constrained);
 
     void mark_all(bool state);
     bool mark(const string &name, bool state);

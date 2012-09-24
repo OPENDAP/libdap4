@@ -28,7 +28,6 @@
 #include <unistd.h>
 
 #ifndef WIN32
-// #include <unistd.h>   // for getopt
 #include <sys/wait.h>
 #else
 #include <io.h>
@@ -278,7 +277,6 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS & dds, Constraint
             m.put_checksum();
         }
     }
-
 }
 
 /** Send the data in the DDS object back to the client program. The data is
@@ -432,6 +430,84 @@ void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, Constraint
         data_stream << CRLF << "--" << boundary << "--" << CRLF;
 }
 
+/**
+ * Send the DAP4 DMR (Dataset Metadata Response)
+ *
+ * @note The DAP2/3 methods have an optional 'with_mime_headers' parameter
+ * that triggers the generation of a complete HTTP response document. This
+ * method lacks that.
+ *
+ * @todo Modify the definition of server-functions so that they can return
+ * the DMR.
+ */
+void
+ResponseBuilder::send_dmr(ostream &out, DDS &dds, ConstraintEvaluator &eval) const
+{
+    // If constrained, parse the constraint. Throws Error or InternalErr.
+    if (!d_ce.empty())
+        eval.parse_constraint(d_ce, dds);
+
+    // TODO Change functions so this is no longer an error
+    if (eval.functional_expression())
+        throw Error(
+                "Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
+
+    dds.print_dmr(out, !d_ce.empty());
+}
+/**
+ * Build a DAP4 data response document body and write it to the output
+ * stream 'out'.
+ *
+ * @note The DAP2/3 methods have an optional 'with_mime_headers' parameter
+ * that triggers the generation of a complete HTTP response document. This
+ * method lacks that.
+ *
+ * @param out Write the response body here
+ * @param dds This DDS holds the variables to serialize
+ * @parma eval Use this instance of the CE evaluator to subset/sample the
+ * dataset
+ */
+void
+ResponseBuilder::send_dap4_data(ostream &out, DDS &dds, ConstraintEvaluator &eval) const
+{
+    throw InternalErr(__FILE__, __LINE__, "ResponseBuilder::send_dap4_data: Not implemented");
+
+    // TODO
+    // Print the chunk offset info so that clients can skip the DMR and go
+    // directly to the data.
+
+    // Send constrained DMR
+    dds.print_dmr(out, !d_ce.empty());
+
+    // Grab a stream that encodes for DAP4
+    DAP4StreamMarshaller m(out);
+
+    // TODO Write word order information
+
+    // Send all variables in the current projection (send_p()). In DAP4,
+    // all of the top-level variables are serialized with their checksums.
+    // Internal variables are not.
+    //
+    // TODO When Group support is added to libdap, this will need to be
+    // generalized so that all variables in the top-levels of all the
+    // groups will have checksums included in the response.
+    //
+    // TODO Switch to the DAP4 serialization method once it's written
+    for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++) {
+        if ((*i)->send_p()) {
+            DBG(cerr << "Sending " << (*i)->name() << endl);
+
+            m.reset_checksum();
+
+            // FIXME Replace with DAP4 call
+            (*i)->serialize(eval, dds, m, true);
+
+            m.put_checksum();
+        }
+    }
+
+}
+
 static const char *descrip[] = { "unknown", "dods_das", "dods_dds", "dods_data", "dods_error", "web_error", "dap4-ddx",
         "dap4-data", "dap4-error", "dap4-data-ddx", "dods_ddx" };
 static const char *encoding[] = { "unknown", "deflate", "x-plain", "gzip", "binary" };
@@ -577,7 +653,7 @@ void ResponseBuilder::set_mime_binary(ostream &strm, ObjectType type, EncodingTy
     strm << CRLF;
 }
 
-/** Build the intial headers for the DAP4 data response */
+/** Build the initial headers for the DAP4 data response */
 
 void ResponseBuilder::set_mime_multipart(ostream &strm, const string &boundary, const string &start, EncodingType enc,
         const time_t last_modified, const string &protocol, const string &url) const

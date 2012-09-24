@@ -66,6 +66,8 @@ private:
     DDS *dds1, *dds2;
     BaseTypeFactory factory;
 
+    DDS *dds_dap4;
+
 public:
     DDSTest() {
     }
@@ -73,17 +75,17 @@ public:
     }
 
     void setUp() {
-        //factory = new BaseTypeFactory;
         dds1 = new DDS(&factory, "test1");
         dds2 = new DDS(&factory, "test2");
+
+        dds_dap4 = new DDS(&factory, "test2", "4.0");
     }
 
     void tearDown() {
-        delete dds1;
-        dds1 = 0;
-        delete dds2;
-        dds2 = 0;
-        //delete factory; factory = 0;
+        delete dds1; dds1 = 0;
+        delete dds2; dds2 = 0;
+
+        delete dds_dap4; dds_dap4 = 0;
     }
 
     bool re_match(Regex &r, const string &s) {
@@ -98,8 +100,8 @@ public:
     // to work with transfer_attributes() - if a handler builds a malformed
     // DAS, it will need to specialize the BaseType::transfer_attributes()
     // method.
-CPPUNIT_TEST_SUITE( DDSTest );
-
+    CPPUNIT_TEST_SUITE( DDSTest );
+#if 1
         CPPUNIT_TEST(transfer_attributes_test_1);
         CPPUNIT_TEST(transfer_attributes_test_2);
 
@@ -107,6 +109,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
 
         // These test both transfer_attributes() and print_xml()
         CPPUNIT_TEST(print_xml_test);
+
         CPPUNIT_TEST(print_xml_test2);
         CPPUNIT_TEST(print_xml_test3);
 
@@ -119,14 +122,16 @@ CPPUNIT_TEST_SUITE( DDSTest );
         // CPPUNIT_TEST(print_xml_test5_1);
         CPPUNIT_TEST(print_xml_test6);
         // CPPUNIT_TEST(print_xml_test6_1);
-
+#endif
+        CPPUNIT_TEST(print_dmr_test);
+#if 1
         CPPUNIT_TEST(get_response_size_test);
         CPPUNIT_TEST(get_response_size_test_c);
         CPPUNIT_TEST(get_response_size_test_c2);
         CPPUNIT_TEST(get_response_size_test_c3);
         CPPUNIT_TEST(get_response_size_test_seq);
         CPPUNIT_TEST(get_response_size_test_seq_c);
-
+#endif
     CPPUNIT_TEST_SUITE_END();
 
     void transfer_attributes_test_1() {
@@ -190,17 +195,16 @@ CPPUNIT_TEST_SUITE( DDSTest );
             dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b");
             ostringstream oss;
             dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
-            DBG2(cerr << oss.str() << endl);
+            DBG2(cerr << "Printed DDX: " << oss.str() << endl);
 
-            string baseline = testFile((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.xml");
-            DBG2(cerr << baseline << endl);
+            string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.xml");
+            DBG2(cerr << "The baseline: " << baseline << endl);
+
             CPPUNIT_ASSERT(baseline == oss.str());
-        } catch (Error &e) {
+        }
+        catch (Error &e) {
             cerr << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught unexpected Error object");
-        } catch (...) {
-            cerr << "Caught an unknown exception." << endl;
-            CPPUNIT_FAIL("Caught an unknown exception");
         }
     }
 
@@ -216,7 +220,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
 
         DBG2(cerr << oss.str() << endl);
 
-        string baseline = testFile((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.xml");
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -233,7 +237,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
 
         DBG2(cerr << oss.str() << endl);
 
-        string baseline = testFile((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.xml");
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -252,7 +256,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
 
         DBG2(cerr << oss.str() << endl);
 
-        string baseline = testFile((string) TEST_SRC_DIR + "/dds-testsuite/test.19d1.xml");
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d1.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -271,7 +275,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
 
         DBG(cerr << oss.str() << endl);
 
-        string baseline = testFile((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.xml");
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -295,7 +299,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
 
         DBG(cerr << oss.str() << endl);
 
-        string baseline = testFile((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.xml");
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -321,7 +325,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
 
         DBG(cerr << oss.str() << endl);
 
-        string baseline = testFile((string) TEST_SRC_DIR + "/dds-testsuite/test.19f1.xml");
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19f1.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -338,7 +342,7 @@ CPPUNIT_TEST_SUITE( DDSTest );
 
         DBG(cerr << oss.str() << endl);
 
-        string baseline = testFile((string) TEST_SRC_DIR + "/dds-testsuite/test.19b6.xml");
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b6.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -364,9 +368,37 @@ CPPUNIT_TEST_SUITE( DDSTest );
 
         DBG(cerr << oss.str() << endl);
 
-        string baseline = testFile((string) TEST_SRC_DIR + "/dds-testsuite/test.19g.xml");
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19g.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+    }
+
+    void print_dmr_test()
+    {
+        try {
+            dds_dap4->parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+            DAS das;
+            das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+            dds_dap4->transfer_attributes(&das);
+#if 0
+            string file = (string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dmr.xml";
+            ofstream d(file.c_str());
+            dds_dap4->print_dmr(d, false);
+            d.close();
+#endif
+            ostringstream oss;
+            dds_dap4->print_dmr(oss, false);
+
+            string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dmr.xml");
+
+            DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
+            DBG(cerr << "DMR: -->" << oss.str() << "<--" << endl);
+
+            CPPUNIT_ASSERT(baseline == oss.str());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
     }
 
     void get_response_size_test() {
@@ -435,7 +467,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DDSTest);
 
 }
 
-int main(int, char**) {
+int main(int, char *[]) {
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 

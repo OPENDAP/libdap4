@@ -251,6 +251,7 @@ void test_parser(const string &name) {
 }
 
 void test_dap4_parser(const string &name) {
+#ifdef DAP4
     DAP4BaseTypeFactory factory;
 
     DDS table(&factory);
@@ -278,6 +279,9 @@ void test_dap4_parser(const string &name) {
         table.print_xml_writer(cout, false, "");
     else
         table.print(cout);
+#else
+    cerr << "DAP4 parsing not supported by this version of libdap" << endl;
+#endif
 }
 
 void test_class(void) {
