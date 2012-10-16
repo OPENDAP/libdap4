@@ -49,20 +49,12 @@ namespace libdap
 {
 
 string prune_spaces(const string &);
-bool unique_names(vector<BaseType *> l, const string &var, const string &type,
-                  string &msg);
-FILE *text_to_temp(string text);
+bool unique_names(vector<BaseType *> l, const string &var, const string &type, string &msg);
 string systime();
-FILE *compressor(FILE *output, int &childpid);
-bool deflate_exists();
 const char *libdap_root();
-/** Return the version string for this package.
-    @note This function has C linkage so that it can be found using autoconf
-    tests.
-    @return The version string. */
 extern "C" const char *libdap_version();
 extern "C" const char *libdap_name();
-const char *dods_progress();
+
 #ifdef WIN32
 void flush_stream(iostream ios, FILE *out);
 #endif
@@ -70,6 +62,13 @@ void flush_stream(iostream ios, FILE *out);
 void downcase(string &s);
 bool is_quoted(const string &s);
 string remove_quotes(const string &s);
+
+Type get_type(const char *name);
+string type_name(Type t);
+bool is_simple_type(Type t);
+bool is_vector_type(Type t);
+bool is_constructor_type(Type t);
+bool is_integer_type(Type t);
 
 // Jose Garcia
 /** @name Integer to string conversion functions
@@ -124,31 +123,33 @@ void append_double_to_string(const double &num, string &str);
 string double_to_string(const double &num);
 //@}
 
-/** Get the version of the DAP library. */
+string path_to_filename(string path);
+int glob( const char *c, const char *s );
+time_t parse_time(const char * str, bool expand);
+bool size_ok(unsigned int sz, unsigned int nelem);
+bool pathname_ok(const string &path, bool strict = true);
 string dap_version();
 
-/** Get the filename part from a path. This function can be used to return a
-    string that has the directory components stripped from a path. This is
-    useful when building error message strings.
+#if COMPRESSION_FOR_SERVER3
+FILE *compressor(FILE *output, int &childpid);
+bool deflate_exists();
+#endif
 
-    If WIN32 is defined, use '\' as the path separator, otherwise use '/' as
-    the path separator.
-
-    @return A string containing only the filename given a path. */
-string path_to_filename(string path);
-
+#if 0
+FILE *text_to_temp(string text);
+#endif
+#if 0
+int wmatch(const char *pat, const char *s);
+#endif
+#if 0
 string file_to_string(FILE *fp);
 
 int wildcmp(const char *wild, const char *string);
+#endif
+#if 0
+const char *dods_progress();
+#endif
 
-int glob( const char *c, const char *s );
-
-int wmatch(const char *pat, const char *s);
-
-time_t parse_time(const char * str, bool expand);
-
-bool size_ok(unsigned int sz, unsigned int nelem);
-bool pathname_ok(const string &path, bool strict = true);
 
 } // namespace libdap
 

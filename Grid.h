@@ -108,7 +108,7 @@ namespace libdap
     (<tt>get_array()</tt>), and a set of functions for cycling through the
     list of Map vectors.
 
-    @todo Move, in some sense, the _map_vars up to Constructor. Look at using
+    @todo Move, in some sense, the d_map_vars up to Constructor. Look at using
     Constructor's _var field for these.
     @todo Along the same lines as the previous item, consider removing the
     Part enum and adopting the convention that the first variable added is
@@ -121,11 +121,11 @@ namespace libdap
 class Grid: public Constructor
 {
 private:
-    BaseType *_array_var;
-    std::vector<BaseType *> _map_vars;
+    BaseType *d_array_var;
+    std::vector<BaseType *> d_map_vars;
 
 protected: // subclasses need access [mjohnson 11 nov 2009]
-    void _duplicate(const Grid &s);
+    void m_duplicate(const Grid &s);
 
 public:
 
@@ -150,9 +150,7 @@ public:
     virtual void set_read_p(bool state);
     virtual void set_in_selection(bool state);
 
-    virtual BaseType *var(const string &n, bool exact = true,
-                          btp_stack *s = 0);
-
+    virtual BaseType *var(const string &n, bool exact = true, btp_stack *s = 0);
     virtual BaseType *var(const string &n, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part);
@@ -165,7 +163,6 @@ public:
     BaseType *array_var();
     Array *get_array();
 
-
     virtual unsigned int width();
     virtual unsigned int width(bool constrained);
 
@@ -176,13 +173,12 @@ public:
     virtual void clear_constraint();
 
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
-			   Marshaller &m, bool ce_eval = true);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
-
+#if 0
     virtual unsigned int val2buf(void *buf, bool reuse = false);
-
     virtual unsigned int buf2val(void **val);
+#endif
 
     virtual void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,

@@ -29,10 +29,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    {"$Id$"
-    };
-
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -76,7 +72,7 @@ static const char * wkdays[7] =
 
    The problem here is that toupper(x) is not defined officially unless
    isupper(x) is. These macros are CERTAINLY needed on #if defined(pyr) ||
-   define(mips) or BDSI platforms. For safefy, we make them mandatory.
+   define(mips) or BDSI platforms. For safety, we make them mandatory.
 */
 
 #ifndef TOLOWER
@@ -98,6 +94,7 @@ strncasecomp(const char *a, const char *b, int n)
         if (diff) return diff;
     }
     /*NOTREACHED*/
+    return -1; // silence gcc
 }
 
 static int

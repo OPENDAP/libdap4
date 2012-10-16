@@ -147,6 +147,7 @@ BaseType *DDXParser::factory(Type t, const string & name)
     }
 }
 
+#if 0
 /** Get the Type enumeration value which matches the given name. */
 static Type get_type(const char *name)
 {
@@ -191,6 +192,7 @@ static Type get_type(const char *name)
 
     return dods_null_c;
 }
+#endif
 
 static Type is_simple_type(const char *name)
 {
@@ -437,8 +439,9 @@ DDXParser::is_attribute_or_alias(const char *name, const xmlChar **attrs,
 inline bool DDXParser::is_variable(const char *name, const xmlChar **attrs,
         int nb_attributes)
 {
-    Type t;
-    if ((t = is_simple_type(name)) != dods_null_c) {
+    Type t = get_type(name);
+    //if ((t = is_simple_type(name)) != dods_null_c) {
+    if (is_simple_type(t)) {
         process_variable(t, inside_simple_type, attrs, nb_attributes);
         return true;
     }
@@ -898,8 +901,9 @@ void DDXParser::ddx_sax2_end_element(void *p, const xmlChar *l,
         parser->pop_state();
         break;
 
-    case inside_simple_type:
-        if (is_simple_type(localname) != dods_null_c) {
+    case inside_simple_type: {
+        Type t = get_type(localname);
+        if (is_simple_type(t)) {
             parser->pop_state();
             BaseType *btp = parser->bt_stack.top();
             parser->bt_stack.pop();
@@ -923,6 +927,7 @@ void DDXParser::ddx_sax2_end_element(void *p, const xmlChar *l,
                                        "Expected an end tag for a simple type; found '%s' instead.",
                                        localname);
         break;
+    }
 
     case inside_array:
         parser->finish_variable(localname, dods_array_c, "Array");

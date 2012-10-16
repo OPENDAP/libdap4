@@ -48,19 +48,21 @@
 #include "Sequence.h"
 #include "Grid.h"
 
-#include "DAP4BaseTypeFactory.h"
+#include "D4Group.h"
+
+#include "D4BaseTypeFactory.h"
 #include "debug.h"
 
 namespace libdap {
 
 Byte *
-DAP4BaseTypeFactory::NewByte(const string &n) const
+D4BaseTypeFactory::NewByte(const string &n) const
 {
     return new Byte(n);
 }
 
 Byte *
-DAP4BaseTypeFactory::NewUInt8(const string &n) const
+D4BaseTypeFactory::NewUInt8(const string &n) const
 {
     Byte *b = new Byte(n);
     b->set_type(dods_uint8_c);
@@ -68,75 +70,75 @@ DAP4BaseTypeFactory::NewUInt8(const string &n) const
 }
 
 Int8 *
-DAP4BaseTypeFactory::NewInt8(const string &n) const
+D4BaseTypeFactory::NewInt8(const string &n) const
 {
     return new Int8(n);
 }
 
 Int16 *
-DAP4BaseTypeFactory::NewInt16(const string &n) const
+D4BaseTypeFactory::NewInt16(const string &n) const
 {
     return new Int16(n);
 }
 
 UInt16 *
-DAP4BaseTypeFactory::NewUInt16(const string &n) const
+D4BaseTypeFactory::NewUInt16(const string &n) const
 {
     return new UInt16(n);
 }
 
 Int32 *
-DAP4BaseTypeFactory::NewInt32(const string &n) const
+D4BaseTypeFactory::NewInt32(const string &n) const
 {
     DBG(cerr << "Inside DAP4BaseTypeFactory::NewInt32" << endl);
     return new Int32(n);
 }
 
 UInt32 *
-DAP4BaseTypeFactory::NewUInt32(const string &n) const
+D4BaseTypeFactory::NewUInt32(const string &n) const
 {
     return new UInt32(n);
 }
 
 Int64 *
-DAP4BaseTypeFactory::NewInt64(const string &n) const
+D4BaseTypeFactory::NewInt64(const string &n) const
 {
     DBG(cerr << "Inside DAP4BaseTypeFactory::NewInt64" << endl);
     return new Int64(n);
 }
 
 UInt64 *
-DAP4BaseTypeFactory::NewUInt64(const string &n) const
+D4BaseTypeFactory::NewUInt64(const string &n) const
 {
     return new UInt64(n);
 }
 
 Float32 *
-DAP4BaseTypeFactory::NewFloat32(const string &n) const
+D4BaseTypeFactory::NewFloat32(const string &n) const
 {
     return new Float32(n);
 }
 
 Float64 *
-DAP4BaseTypeFactory::NewFloat64(const string &n) const
+D4BaseTypeFactory::NewFloat64(const string &n) const
 {
     return new Float64(n);
 }
 
 Str *
-DAP4BaseTypeFactory::NewStr(const string &n) const
+D4BaseTypeFactory::NewStr(const string &n) const
 {
     return new Str(n);
 }
 
 Url *
-DAP4BaseTypeFactory::NewUrl(const string &n) const
+D4BaseTypeFactory::NewUrl(const string &n) const
 {
     return new Url(n);
 }
 
 Url *
-DAP4BaseTypeFactory::NewURL(const string &n) const
+D4BaseTypeFactory::NewURL(const string &n) const
 {
     Url *u = new Url(n);
     u->set_type(dods_url4_c);
@@ -144,26 +146,32 @@ DAP4BaseTypeFactory::NewURL(const string &n) const
 }
 
 Array *
-DAP4BaseTypeFactory::NewArray(const string &n , BaseType *v) const
+D4BaseTypeFactory::NewArray(const string &n , BaseType *v) const
 {
     return new Array(n, v);
 }
 
 Structure *
-DAP4BaseTypeFactory::NewStructure(const string &n) const
+D4BaseTypeFactory::NewStructure(const string &n) const
 {
     return new Structure(n);
 }
 
+D4Group *
+D4BaseTypeFactory::NewGroup(const string &n) const
+{
+    return new D4Group(n);
+}
+
 Sequence *
-DAP4BaseTypeFactory::NewSequence(const string &n) const
+D4BaseTypeFactory::NewSequence(const string &n) const
 {
     DBG(cerr << "Inside DAP4BaseTypeFactory::NewSequence" << endl);
     return new Sequence(n);
 }
 
 Grid *
-DAP4BaseTypeFactory::NewGrid(const string &n) const
+D4BaseTypeFactory::NewGrid(const string &n) const
 {
     return new Grid(n);
 }

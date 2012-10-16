@@ -114,23 +114,21 @@ class HTTPConnectTest: public TestFixture {
     }
 
     CPPUNIT_TEST_SUITE(HTTPConnectTest);
-#if 1
+
     CPPUNIT_TEST(read_url_test);
     CPPUNIT_TEST(fetch_url_test);
     CPPUNIT_TEST(get_response_headers_test);
     CPPUNIT_TEST(server_version_test);
     CPPUNIT_TEST(type_test);
-#endif
+
     CPPUNIT_TEST(cache_test);
-#if 1
+
     CPPUNIT_TEST(set_accept_deflate_test);
     CPPUNIT_TEST(set_xdap_protocol_test);
     CPPUNIT_TEST(read_url_password_test);
     CPPUNIT_TEST(read_url_password_test2);
-#endif
-#if 0
-    CPPUNIT_TEST(read_url_password_proxy_test);
-#endif
+
+  // CPPUNIT_TEST(read_url_password_proxy_test);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -188,10 +186,13 @@ class HTTPConnectTest: public TestFixture {
     }
 
     void fetch_url_test() {
+        DBG(cerr << "Entering fetch_url_test" << endl);
         HTTPResponse *stuff = 0;
         char c;
         try {
+            DBG(cerr << "    First request..." << endl;)
             stuff = http->fetch_url(localhost_url);
+            DBG(cerr << "    Back from first request." << endl);
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
                            && !ferror(stuff->get_stream())
                            && !feof(stuff->get_stream()));
@@ -214,6 +215,7 @@ class HTTPConnectTest: public TestFixture {
         // is not called, then a failed test can leave the cache with locked
         // entries
         catch (...) {
+            cerr << "Caught unknown exception" << endl;
             delete stuff; stuff = 0;
             throw;
         }

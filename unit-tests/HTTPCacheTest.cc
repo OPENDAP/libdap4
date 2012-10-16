@@ -45,6 +45,7 @@
 #include "RCReader.h"		// ditto
 
 //#define DODS_DEBUG 1
+//#define DODS_DEBUG2 2
 #include "debug.h"
 
 #if defined(DODS_DEBUG) || defined(DODS_DEBUG2)
@@ -70,11 +71,13 @@ file_size(string name)
     return s.st_size;
 }
 
+#if 0
 inline static void
 print_entry(HTTPCache *, HTTPCacheTable::CacheEntry **e)
 {
     cerr << "Entry: " << (*e)->get_cachename() << endl;
 }
+#endif
 
 // Note that because this test class uses the fixture 'hc' we must always
 // force access to the single user/process lock for the cache. This is
@@ -99,7 +102,7 @@ public:
 	putenv((char*)"DODS_CONF=./cache-testsuite/dodsrc");
 	http_conn = new HTTPConnect(RCReader::instance());
 
-	DBG2(cerr << "Entring HTTPCacheTest ctor... ");
+	DBG2(cerr << "Entering HTTPCacheTest ctor... ");
 	hash_value = 656;
 	localhost_url = "http://test.opendap.org/test-304.html";
 	index_file_line = "http://test.opendap.org/test-304.html cache-testsuite/dods_cache/656/dodsKbcD0h \"3f62c-157-139c2680\" 1121283146 -1 343 0 656 1 7351 1121360379 3723 0";
@@ -162,7 +165,6 @@ public:
     CPPUNIT_TEST(calculate_time_test);
     CPPUNIT_TEST(write_metadata_test);
     CPPUNIT_TEST(cache_response_test);
-
     CPPUNIT_TEST(is_url_valid_test);
     CPPUNIT_TEST(get_cached_response_test);
 

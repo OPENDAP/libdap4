@@ -1500,9 +1500,10 @@ void *Vector::value()
  */
 void Vector::add_var(BaseType * v, Part)
 {
+#if 0
     if (v && v->is_dap4_only_type())
         throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Vector.");
-
+#endif
     // Delete the current template variable
     if (_var) {
         delete _var;
@@ -1536,9 +1537,10 @@ void Vector::add_var(BaseType * v, Part)
 
 void Vector::add_var_nocopy(BaseType * v, Part)
 {
+#if 0
     if (v && v->is_dap4_only_type())
         throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Vector.");
-
+#endif
     // Delete the current template variable
     if (_var) {
         delete _var;

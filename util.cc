@@ -83,8 +83,6 @@ namespace libdap {
     This function assumes that there are no holes in both the URL and the CE.
     It will remove \e leading space, but not other spaces.
 
-    @todo Is this still needed? This function may predate the switch from
-    libwww to libcurl and the latter may not need to have spaces removed.
     @param name The URL to process
     @return Returns a new string object that contains the pruned URL. */
 string
@@ -128,20 +126,8 @@ unique_names(vector<BaseType *> l, const string &var_name,
     // sort the array of names
     sort(names.begin(), names.end());
 
-#ifdef DODS_DEBUG2
-    cout << "unique:" << endl;
-    for (int ii = 0; ii < nelem; ++ii)
-        cout << "NAMES[" << ii << "]=" << names[ii] << endl;
-#endif
-
     // sort the array of names
     sort(names.begin(), names.end());
-
-#ifdef DODS_DEBUG2
-    cout << "unique:" << endl;
-    for (int ii = 0; ii < nelem; ++ii)
-        cout << "NAMES[" << ii << "]=" << names[ii] << endl;
-#endif
 
     // look for any instance of consecutive names that are ==
     for (int j = 1; j < nelem; ++j) {
@@ -165,9 +151,12 @@ libdap_root()
     return LIBDAP_ROOT;
 }
 
-extern "C"
-    const char *
-    libdap_version()
+/** Return the version string for this package.
+    @note This function has C linkage so that it can be found using autoconf
+    tests.
+    @return The version string. */
+extern "C" const char *
+libdap_version()
 {
     return PACKAGE_VERSION;
 }
@@ -177,6 +166,638 @@ extern "C"
     libdap_name()
 {
     return PACKAGE_NAME;
+}
+
+/**
+ * Use the system time() function to get the current time. Return a string,
+ * removing the trailing newline that time() includes in its response.
+ * @return A C++ string with the current system time as formatted by time()
+ */
+string
+systime()
+{
+    time_t TimBin;
+
+    if (time(&TimBin) == (time_t) - 1)
+        return string("time() error");
+    else {
+        string TimStr = ctime(&TimBin);
+        return TimStr.substr(0, TimStr.size() - 2); // remove the \n
+    }
+}
+
+/**
+ * Downcase the source string. This function modifies its argument.
+ * @param The string to modify
+ */
+void
+downcase(string &s)
+{
+    for (unsigned int i = 0; i < s.length(); i++)
+        s[i] = tolower(s[i]);
+}
+
+/**
+ * Is the string surrounded by double quotes?
+ * @param s The source string
+ * @reurn True if the string is quoted, false otherwise.
+ */
+bool
+is_quoted(const string &s)
+{
+    return (!s.empty() && s[0] == '\"' && s[s.length()-1] == '\"');
+}
+/**
+ * Return a new string that is not quoted. This will return a new string
+ * regardless of whether the source string is actualy quoted.
+ * @param s The source string
+ * @return A new string without quotes
+ */
+string
+remove_quotes(const string &s)
+{
+    if (is_quoted(s))
+        return s.substr(1, s.length() - 2);
+    else
+        return s;
+}
+
+/** Get the Type enumeration value which matches the given name. */
+Type get_type(const char *name)
+{
+    if (strcmp(name, "Byte") == 0)
+        return dods_byte_c;
+
+    if (strcmp(name, "Int8") == 0)
+        return dods_int8_c;
+
+    if (strcmp(name, "UInt8") == 0)
+        return dods_uint8_c;
+
+    if (strcmp(name, "Int16") == 0)
+        return dods_int16_c;
+
+    if (strcmp(name, "UInt16") == 0)
+        return dods_uint16_c;
+
+    if (strcmp(name, "Int32") == 0)
+        return dods_int32_c;
+
+    if (strcmp(name, "UInt32") == 0)
+        return dods_uint32_c;
+
+    if (strcmp(name, "Int64") == 0)
+        return dods_int64_c;
+
+    if (strcmp(name, "UInt64") == 0)
+        return dods_uint64_c;
+
+    if (strcmp(name, "Float32") == 0)
+        return dods_float32_c;
+
+    if (strcmp(name, "Float64") == 0)
+        return dods_float64_c;
+
+    if (strcmp(name, "String") == 0)
+        return dods_str_c;
+
+    if (strcmp(name, "URL") == 0)
+        return dods_url4_c;
+
+    if (strcmp(name, "Url") == 0)
+        return dods_url_c;
+
+    if (strcmp(name, "Array") == 0)
+        return dods_array_c;
+
+    if (strcmp(name, "Structure") == 0)
+        return dods_structure_c;
+
+    if (strcmp(name, "Sequence") == 0)
+        return dods_sequence_c;
+
+    if (strcmp(name, "Grid") == 0)
+        return dods_grid_c;
+
+    return dods_null_c;
+}
+
+/** @brief Returns the type of the class instance as a string. */
+string
+type_name(Type t)
+{
+    switch (t) {
+    case dods_null_c:
+        return string("Null");
+    case dods_byte_c:
+        return string("Byte");
+    case dods_int16_c:
+        return string("Int16");
+    case dods_uint16_c:
+        return string("UInt16");
+    case dods_int32_c:
+        return string("Int32");
+    case dods_uint32_c:
+        return string("UInt32");
+    case dods_float32_c:
+        return string("Float32");
+    case dods_float64_c:
+        return string("Float64");
+    case dods_str_c:
+        return string("String");
+    case dods_url_c:
+        return string("Url");
+    case dods_array_c:
+        return string("Array");
+    case dods_structure_c:
+        return string("Structure");
+    case dods_sequence_c:
+        return string("Sequence");
+    case dods_grid_c:
+        return string("Grid");
+
+    case dods_int8_c:
+        return string("Int8");
+    case dods_uint8_c:
+        return string("UInt8");
+    case dods_int64_c:
+        return string("Int64");
+    case dods_uint64_c:
+        return string("UInt64");
+    case dods_url4_c:
+        return string("URL");
+    case dods_group_c:
+        return string("Group");
+    case dods_enum_c:
+        return string("Enum");
+
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown type.");
+    }
+}
+
+/** @brief Returns true if the instance is a numeric, string or URL
+    type variable.
+    @return True if the instance is a scalar numeric, String or URL variable,
+    False otherwise. Arrays (even of simple types) return False.
+    @see is_vector_type() */
+bool
+is_simple_type(Type t)
+{
+    switch (t) {
+
+    case dods_byte_c:
+
+    case dods_int8_c:
+    case dods_uint8_c:
+
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+
+    case dods_int64_c:
+    case dods_uint64_c:
+
+    case dods_float32_c:
+    case dods_float64_c:
+    case dods_str_c:
+    case dods_url_c:
+
+    case dods_url4_c:
+    case dods_enum_c:
+        return true;
+
+    case dods_null_c:
+    case dods_array_c:
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+    case dods_group_c:
+        return false;
+    }
+
+    return false;
+}
+
+/** @brief Returns true if the instance is a vector (i.e., array) type
+    variable.
+    @return True if the instance is an Array, False otherwise. */
+bool
+is_vector_type(Type t)
+{
+    switch (t) {
+    case dods_null_c:
+    case dods_byte_c:
+
+    case dods_int8_c:
+    case dods_uint8_c:
+
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+
+    case dods_int64_c:
+    case dods_uint64_c:
+
+    case dods_float32_c:
+    case dods_float64_c:
+    case dods_str_c:
+    case dods_url_c:
+
+    case dods_url4_c:
+    case dods_enum_c:
+        return false;
+
+    case dods_array_c:
+        return true;
+
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+    case dods_group_c:
+        return false;
+    }
+
+    return false;
+}
+
+/** @brief Returns true if the instance is a constructor (i.e., Structure,
+    Sequence or Grid) type variable.
+    @return True if the instance is a Structure, Sequence or Grid, False
+    otherwise. */
+bool
+is_constructor_type(Type t)
+{
+    switch (t) {
+    case dods_null_c:
+    case dods_byte_c:
+
+    case dods_int8_c:
+    case dods_uint8_c:
+
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+
+    case dods_int64_c:
+    case dods_uint64_c:
+
+    case dods_float32_c:
+    case dods_float64_c:
+    case dods_str_c:
+    case dods_url_c:
+
+    case dods_url4_c:
+    case dods_enum_c:
+
+    case dods_array_c:
+        return false;
+
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+    case dods_group_c:
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Is this an integer type?
+ * @return True if the type holds an interger value, false otherwise.
+ */
+bool is_integer_type(Type t)
+{
+    switch (t) {
+        case dods_byte_c:
+        case dods_int8_c:
+        case dods_uint8_c:
+        case dods_int16_c:
+        case dods_uint16_c:
+        case dods_int32_c:
+        case dods_uint32_c:
+        case dods_int64_c:
+        case dods_uint64_c:
+            return true;
+        default:
+            return false;
+    }
+}
+
+#ifdef WIN32
+//  Sometimes need to buffer within an iostream under win32 when
+//  we want the output to go to a FILE *.  This is because
+//  it's not possible to associate an ofstream with a FILE *
+//  under the Standard ANSI C++ Library spec.  Unix systems
+//  don't follow the spec in this regard.
+void flush_stream(iostream ios, FILE *out)
+{
+    int nbytes;
+    char buffer[512];
+
+    ios.get(buffer, 512, NULL);
+    while ((nbytes = ios.gcount()) > 0) {
+        fwrite(buffer, 1, nbytes, out);
+        ios.get(buffer, 512, NULL);
+    }
+
+    return;
+}
+#endif
+
+// Jose Garcia
+void
+append_long_to_string(long val, int base, string &str_val)
+{
+    // The array digits contains 36 elements which are the
+    // posible valid digits for out bases in the range
+    // [2,36]
+    char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    // result of val / base
+    ldiv_t r;
+
+    if (base > 36 || base < 2) {
+        // no conversion if wrong base
+        std::invalid_argument ex("The parameter base has an invalid value.");
+        throw ex;
+    }
+    if (val < 0)
+        str_val += '-';
+    r = ldiv(labs(val), base);
+
+    // output digits of val/base first
+    if (r.quot > 0)
+        append_long_to_string(r.quot, base, str_val);
+
+    // output last digit
+
+    str_val += digits[(int)r.rem];
+}
+
+// base defaults to 10
+string
+long_to_string(long val, int base)
+{
+    string s;
+    append_long_to_string(val, base, s);
+    return s;
+}
+
+// Jose Garcia
+void append_double_to_string(const double &num, string &str)
+{
+    // s having 100 characters should be enough for sprintf to do its job.
+    // I want to banish all instances of sprintf. 10/5/2001 jhrg
+    ostringstream oss;
+    oss.precision(9);
+    oss << num;
+    str += oss.str();
+}
+
+string
+double_to_string(const double &num)
+{
+    string s;
+    append_double_to_string(num, s);
+    return s;
+}
+
+// Given a pathname, return the file at the end of the path. This is used
+// when reporting errors (maybe other times, too) to keep the server from
+// revealing too much about its organization when sending error responses
+// back to clients. 10/11/2000 jhrg
+// MT-safe. 08/05/02 jhrg
+
+#ifdef WIN32
+static const char path_sep[] =
+    {"\\"
+    };
+#else
+static const char path_sep[] =
+    {"/"
+    };
+#endif
+
+/** Get the filename part from a path. This function can be used to return a
+    string that has the directory components stripped from a path. This is
+    useful when building error message strings.
+
+    If WIN32 is defined, use '\' as the path separator, otherwise use '/' as
+    the path separator.
+
+    @return A string containing only the filename given a path. */
+string
+path_to_filename(string path)
+{
+    string::size_type pos = path.rfind(path_sep);
+
+    return (pos == string::npos) ? path : path.substr(++pos);
+}
+
+
+#define CHECK_BIT( tab, bit ) ( tab[ (bit)/8 ] & (1<<( (bit)%8 )) )
+#define BITLISTSIZE 16 /* bytes used for [chars] in compiled expr */
+
+/*
+ * globchars() - build a bitlist to check for character group match
+ */
+
+static void globchars(const char *s, const char *e, char *b) {
+    int neg = 0;
+
+    memset(b, '\0', BITLISTSIZE);
+
+    if (*s == '^')
+        neg++, s++;
+
+    while (s < e) {
+        int c;
+
+        if (s + 2 < e && s[1] == '-') {
+            for (c = s[0]; c <= s[2]; c++)
+                b[c / 8] |= (1 << (c % 8));
+            s += 3;
+        }
+        else {
+            c = *s++;
+            b[c / 8] |= (1 << (c % 8));
+        }
+    }
+
+    if (neg) {
+        int i;
+        for (i = 0; i < BITLISTSIZE; i++)
+            b[i] ^= 0377;
+    }
+
+    /* Don't include \0 in either $[chars] or $[^chars] */
+
+    b[0] &= 0376;
+}
+
+
+/**
+ * glob:  match a string against a simple pattern
+ *
+ * Understands the following patterns:
+ *
+ *  *   any number of characters
+ *  ?   any single character
+ *  [a-z]   any single character in the range a-z
+ *  [^a-z]  any single character not in the range a-z
+ *  \x  match x
+ *
+ * @param c The pattern
+ * @param s The string
+ * @return 0 on success, -1 if the pattern is exhausted but there are
+ * characters remaining in the string and 1 if the pattern does not match
+ */
+int
+glob(const char *c, const char *s)
+{
+    if (!c || !s)
+        return 1;
+
+    char bitlist[BITLISTSIZE];
+    int i = 0;
+    for (;;) {
+        ++i;
+        switch (*c++) {
+        case '\0':
+            return *s ? -1 : 0;
+
+        case '?':
+            if (!*s++)
+                return i/*1*/;
+            break;
+
+        case '[': {
+            /* scan for matching ] */
+
+            const char *here = c;
+            do {
+                if (!*c++)
+                    return i/*1*/;
+            } while (here == c || *c != ']');
+            c++;
+
+            /* build character class bitlist */
+
+            globchars(here, c, bitlist);
+
+            if (!CHECK_BIT( bitlist, *(unsigned char *)s ))
+                return i/*1*/;
+            s++;
+            break;
+        }
+
+        case '*': {
+            const char *here = s;
+
+            while (*s)
+                s++;
+
+            /* Try to match the rest of the pattern in a recursive */
+            /* call.  If the match fails we'll back up chars, retrying. */
+
+            while (s != here) {
+                int r;
+
+                /* A fast path for the last token in a pattern */
+
+                r = *c ? glob(c, s) : *s ? -1 : 0;
+
+                if (!r)
+                    return 0;
+                else if (r < 0)
+                    return i/*1*/;
+
+                --s;
+            }
+            break;
+        }
+
+        case '\\':
+            /* Force literal match of next char. */
+
+            if (!*c || *s++ != *c++)
+                return i/*1*/;
+            break;
+
+        default:
+            if (*s++ != c[-1])
+                return i/*1*/;
+            break;
+        }
+    }
+
+    return 1;   // Should never get here; this quiets gcc's warning
+}
+
+/** @name Security functions */
+//@{
+
+/** @brief sanitize the size of an array.
+    Test for integer overflow when dynamically allocating an array.
+    @param nelem Number of elements.
+    @param sz size of each element.
+    @return True if the \c nelem elements of \c sz size will overflow an array. */
+bool
+size_ok(unsigned int sz, unsigned int nelem)
+{
+    return (sz > 0 && nelem < UINT_MAX / sz);
+}
+
+/** @brief Does the string name a potentially valid pathname?
+    Test the given pathname to verify that it is a valid name. We define this
+    as: Contains only printable characters; and Is less then 256 characters.
+    If \e strict is true, test that the pathname consists of only letters,
+    digits, and underscore, dash and dot characters instead of the more general
+    case where a pathname can be composed of any printable characters.
+
+    @note Using this function does not guarantee that the path is valid, only
+    that the path \e could be valid. The intent is foil attacks where an
+    exploit is encoded in a string then passed to a library function. This code
+    does not address whether the pathname references a valid resource.
+
+    @param path The pathname to test
+    @param strict Apply more restrictive tests (true by default)
+    @return true if the pathname consists of legal characters and is of legal
+    size, false otherwise. */
+bool
+pathname_ok(const string &path, bool strict)
+{
+    if (path.length() > 255)
+        return false;
+
+    Regex name("[-0-9A-z_./]+");
+    if (!strict)
+        name = "[:print:]+";
+
+    string::size_type len = path.length();
+    int result = name.match(path.c_str(), len);
+    // Protect against casting too big an uint to int
+    // if LEN is bigger than the max int32, the second test can't work
+    if (len > INT_MAX || result != static_cast<int>(len))
+        return false;
+
+    return true;
+}
+
+//@}
+
+/**
+ * Get the version of the DAP library.
+ * @deprecated
+ */
+string
+dap_version()
+{
+    return (string)"OPeNDAP DAP/" + libdap_version() + ": compiled on " + __DATE__ + ":" + __TIME__ ;
 }
 
 // Since Server4 can get compressed responses using Tomcat, bail on this
@@ -342,155 +963,7 @@ compressor(FILE *output, int &childpid)
 
 #endif // COMPRESSION_FOR_SERVER3
 
-// This function returns a pointer to the system time formated for an httpd
-// log file.
-
-string
-systime()
-{
-    time_t TimBin;
-
-    if (time(&TimBin) == (time_t) - 1)
-        return string("time() error");
-    else {
-        string TimStr = ctime(&TimBin);
-        return TimStr.substr(0, TimStr.size() - 2); // remove the \n
-    }
-}
-
-void
-downcase(string &s)
-{
-    for (unsigned int i = 0; i < s.length(); i++)
-        s[i] = tolower(s[i]);
-}
-
-bool
-is_quoted(const string &s)
-{
-    return (!s.empty() && s[0] == '\"' && s[s.length()-1] == '\"');
-}
-
-string
-remove_quotes(const string &s)
-{
-    if (is_quoted(s))
-        return s.substr(1, s.length() - 2);
-    else
-        return s;
-}
-
-#ifdef WIN32
-//  Sometimes need to buffer within an iostream under win32 when
-//  we want the output to go to a FILE *.  This is because
-//  it's not possible to associate an ofstream with a FILE *
-//  under the Standard ANSI C++ Library spec.  Unix systems
-//  don't follow the spec in this regard.
-void flush_stream(iostream ios, FILE *out)
-{
-    int nbytes;
-    char buffer[512];
-
-    ios.get(buffer, 512, NULL);
-    while ((nbytes = ios.gcount()) > 0) {
-        fwrite(buffer, 1, nbytes, out);
-        ios.get(buffer, 512, NULL);
-    }
-
-    return;
-}
-#endif
-
-// Jose Garcia
-void
-append_long_to_string(long val, int base, string &str_val)
-{
-    // The array digits contains 36 elements which are the
-    // posible valid digits for out bases in the range
-    // [2,36]
-    char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    // result of val / base
-    ldiv_t r;
-
-    if (base > 36 || base < 2) {
-        // no conversion if wrong base
-        std::invalid_argument ex("The parameter base has an invalid value.");
-        throw ex;
-    }
-    if (val < 0)
-        str_val += '-';
-    r = ldiv(labs(val), base);
-
-    // output digits of val/base first
-    if (r.quot > 0)
-        append_long_to_string(r.quot, base, str_val);
-
-    // output last digit
-
-    str_val += digits[(int)r.rem];
-}
-
-// base defaults to 10
-string
-long_to_string(long val, int base)
-{
-    string s;
-    append_long_to_string(val, base, s);
-    return s;
-}
-
-// Jose Garcia
-void append_double_to_string(const double &num, string &str)
-{
-    // s having 100 characters should be enough for sprintf to do its job.
-    // I want to banish all instances of sprintf. 10/5/2001 jhrg
-    ostringstream oss;
-    oss.precision(9);
-    oss << num;
-    str += oss.str();
-}
-
-string
-double_to_string(const double &num)
-{
-    string s;
-    append_double_to_string(num, s);
-    return s;
-}
-
-// Get the version number of the core software. Defining this means that
-// clients of the DAP don't have to rely on config.h for the version
-// number.
-string
-dap_version()
-{
-    return (string)"OPeNDAP DAP/" + libdap_version() + ": compiled on " + __DATE__ + ":" + __TIME__ ;
-}
-
-// Given a pathname, return the file at the end of the path. This is used
-// when reporting errors (maybe other times, too) to keep the server from
-// revealing too much about its organization when sending error responses
-// back to clients. 10/11/2000 jhrg
-// MT-safe. 08/05/02 jhrg
-
-#ifdef WIN32
-static const char path_sep[] =
-    {"\\"
-    };
-#else
-static const char path_sep[] =
-    {"/"
-    };
-#endif
-
-string
-path_to_filename(string path)
-{
-    string::size_type pos = path.rfind(path_sep);
-
-    return (pos == string::npos) ? path : path.substr(++pos);
-}
-
+#if 0
 /** Read stuff from a file and dump it into a string. This assumes the file
     holds character data only. Intended for testing...
     @param fp Read from this file
@@ -545,148 +1018,8 @@ wildcmp(const char *wild, const char *string)
   }
   return !*wild;
 }
-
-#define CHECK_BIT( tab, bit ) ( tab[ (bit)/8 ] & (1<<( (bit)%8 )) )
-#define BITLISTSIZE 16 /* bytes used for [chars] in compiled expr */
-
-static void globchars( const char *s, const char *e, char *b );
-
-/*
- * glob:  match a string against a simple pattern
- *
- * Understands the following patterns:
- *
- *  *   any number of characters
- *  ?   any single character
- *  [a-z]   any single character in the range a-z
- *  [^a-z]  any single character not in the range a-z
- *  \x  match x
- *
- * @param c The pattern
- * @param s The string
- * @return 0 on success, -1 if the pattern is exhausted but there are
- * characters remaining in the string and 1 if the pattern does not match
- */
-
-int
-glob(const char *c, const char *s)
-{
-    if (!c || !s)
-        return 1;
-
-    char bitlist[BITLISTSIZE];
-    int i = 0;
-    for (;;) {
-        ++i;
-        switch (*c++) {
-        case '\0':
-            return *s ? -1 : 0;
-
-        case '?':
-            if (!*s++)
-                return i/*1*/;
-            break;
-
-        case '[': {
-            /* scan for matching ] */
-
-            const char *here = c;
-            do {
-                if (!*c++)
-                    return i/*1*/;
-            } while (here == c || *c != ']');
-            c++;
-
-            /* build character class bitlist */
-
-            globchars(here, c, bitlist);
-
-            if (!CHECK_BIT( bitlist, *(unsigned char *)s ))
-                return i/*1*/;
-            s++;
-            break;
-        }
-
-        case '*': {
-            const char *here = s;
-
-            while (*s)
-                s++;
-
-            /* Try to match the rest of the pattern in a recursive */
-            /* call.  If the match fails we'll back up chars, retrying. */
-
-            while (s != here) {
-                int r;
-
-                /* A fast path for the last token in a pattern */
-
-                r = *c ? glob(c, s) : *s ? -1 : 0;
-
-                if (!r)
-                    return 0;
-                else if (r < 0)
-                    return i/*1*/;
-
-                --s;
-            }
-            break;
-        }
-
-        case '\\':
-            /* Force literal match of next char. */
-
-            if (!*c || *s++ != *c++)
-                return i/*1*/;
-            break;
-
-        default:
-            if (*s++ != c[-1])
-                return i/*1*/;
-            break;
-        }
-    }
-
-    return 1;   // Should never get here; this quiets gcc's warning
-}
-
-/*
- * globchars() - build a bitlist to check for character group match
- */
-
-static void globchars(const char *s, const char *e, char *b) {
-    int neg = 0;
-
-    memset(b, '\0', BITLISTSIZE);
-
-    if (*s == '^')
-        neg++, s++;
-
-    while (s < e) {
-        int c;
-
-        if (s + 2 < e && s[1] == '-') {
-            for (c = s[0]; c <= s[2]; c++)
-                b[c / 8] |= (1 << (c % 8));
-            s += 3;
-        }
-        else {
-            c = *s++;
-            b[c / 8] |= (1 << (c % 8));
-        }
-    }
-
-    if (neg) {
-        int i;
-        for (i = 0; i < BITLISTSIZE; i++)
-            b[i] ^= 0377;
-    }
-
-    /* Don't include \0 in either $[chars] or $[^chars] */
-
-    b[0] &= 0376;
-}
-
+#endif
+#if 0
 int wmatch(const char *pat, const char *s)
 {
     if (!pat || !s)
@@ -699,58 +1032,7 @@ int wmatch(const char *pat, const char *s)
     default: return (*s == *pat) && wmatch(pat+1, s+1);
   }
 }
-
-/** @name Security functions */
-//@{
-
-/** @brief sanitize the size of an array.
-    Test for integer overflow when dynamically allocating an array.
-    @param nelem Number of elements.
-    @param sz size of each element.
-    @return True if the \c nelem elements of \c sz size will overflow an array. */
-bool
-size_ok(unsigned int sz, unsigned int nelem)
-{
-    return (sz > 0 && nelem < UINT_MAX / sz);
-}
-
-/** @brief Does the string name a potentailly valid pathname?
-    Test the given pathname to verfiy that it is a valid name. We define this
-    as: Contains only printable characters; and Is less then 256 characters.
-    If \e strict is true, test that the pathname consists of only letters,
-    digits, and underscore, dash and dot characters instead of the more general
-    case where a pathname can be composed of any printable characters.
-
-    @note Using this function does not guarentee that the path is valid, only
-    that the path \e could be valid. The intent is foil attacks where an
-    exploit is encoded in a string then passed to a library function. This code
-    does not address whether the pathname references a valid resource.
-
-    @param path The pathname to test
-    @param strict Apply more restrictive tests (true by default)
-    @return true if the pathname consists of legal characters and is of legal
-    size, false otherwise. */
-bool
-pathname_ok(const string &path, bool strict)
-{
-    if (path.length() > 255)
-        return false;
-
-    Regex name("[-0-9A-z_./]+");
-    if (!strict)
-        name = "[:print:]+";
-
-    string::size_type len = path.length();
-    int result = name.match(path.c_str(), len);
-    // Protect against casting too big an uint to int
-    // if LEN is bigger than the max int32, the second test can't work
-    if (len > INT_MAX || result != static_cast<int>(len))
-        return false;
-
-    return true;
-}
-
-//@}
+#endif
 
 } // namespace libdap
 

@@ -48,30 +48,19 @@
 #include <iostream>
 #include <string>
 
-#ifndef _attrtable_h
+// These are instantiated only for DAP4 variables
+#include "D4Dimensions.h"
+#include "D4Maps.h"
+
 #include "AttrTable.h"
-#endif
 
-#ifndef _internalerr_h
 #include "InternalErr.h"
-#endif
 
-#ifndef __DODS_DATATYPES_
 #include "dods-datatypes.h"
-#endif
 
-#ifndef A_DapObj_h
 #include "DapObj.h"
-#endif
 
-#ifndef XMLWRITER_H_
 #include "XMLWriter.h"
-#endif
-
-#if 0
-#include "Marshaller.h"
-#include "UnMarshaller.h"
-#endif
 
 using namespace std;
 
@@ -133,6 +122,8 @@ enum Part {
     dods_int64_c,
     dods_uint64_c,
     dods_url4_c
+    dods_enum_c,
+    dods_group_c
 
     };
     \endcode
@@ -156,13 +147,18 @@ enum Type {
     dods_structure_c,
     dods_sequence_c,
     dods_grid_c,
+
     // Added for DAP4
     dods_int8_c,
     dods_uint8_c,
+
     dods_int64_c,
     dods_uint64_c,
 
-    dods_url4_c
+    dods_url4_c,
+
+    dods_enum_c,
+    dods_group_c
 
 };
 
@@ -196,16 +192,6 @@ enum Type {
     the constraints
     to be returned. These cautions are outlined where they occur.
 
-    @todo We really need a better way to get values out of these types, esp.
-    the Float32, Int16, ..., types. In \e most cases we know the type, so a
-    type specific method (one that requires a downcast to use) is OK. For
-    example, Byte might have a method <tt>dods_byte Byte::value()</tt>. Sure
-    you have to downcast from BaseType to Byte in order to use it, but you
-    have to figure out you have a Byte to use Byte::buf2val() anyway, so
-    what's the big deal? Having a method that returns the \e value would
-    simplify code that reads from data sets to extract meta data (like
-    lat/lon corner points, et c.).
-
     @brief The basic data type for the DODS DAP types.  */
 
 class BaseType : public DapObj
@@ -228,15 +214,28 @@ private:
     // Attributes for this variable. Added 05/20/03 jhrg
     AttrTable d_attr;
 
+    bool d_is_dap4;         // True if this is a DAP4 variable, false ... DAP2
+
+    // These are non-empty only for DAP4 variables. Added 9/27/12 jhrg
+#if DAP4
+    D4Dimensions d_dims;   // If non-empty, this BaseType is an DAP4 Array
+    D4Maps d_maps;         // if non-empty, this BaseType is a DAP4 'Grid'
+#endif
+
 protected:
-    void _duplicate(const BaseType &bt);
+    void m_duplicate(const BaseType &bt);
 
 public:
     typedef stack<BaseType *> btp_stack;
 
-    BaseType(const string &n, const Type &t);
-    BaseType(const string &n, const string &d, const Type &t);
-
+    // These ctors assume is_dap4 is false
+    BaseType(const string &n, const Type &t, bool is_dap4 = false);
+    BaseType(const string &n, const string &d, const Type &t, bool is_dap4 = false);
+#if 0
+    // These provide a way to set is_dap4
+    BaseType(const string &n, const Type &t, bool is_dap4);
+    BaseType(const string &n, const string &d, const Type &t, bool is_dap4);
+#endif
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();
 
@@ -245,6 +244,9 @@ public:
     virtual void dump(ostream &strm) const ;
 
     BaseType &operator=(const BaseType &rhs);
+
+    bool is_dap4() { return d_is_dap4; }
+    void set_is_dap4(const bool v) { d_is_dap4 = v;}
 
     /** Clone this instance. Allocate a new instance and copy \c *this into
 	it. This method must perform a deep copy.
@@ -267,9 +269,11 @@ public:
     virtual bool is_vector_type();
     virtual bool is_constructor_type();
 
+#if 0
+    // Not yet, if ever. Allow 'sloppy' changeover in the handlers
     virtual bool is_dap4_only_type();
     virtual bool is_dap2_only_type();
-
+#endif
     virtual bool synthesized_p();
     virtual void set_synthesized_p(bool state);
 
@@ -326,8 +330,7 @@ public:
         no name is given, the function returns the first (only)
         variable. For example, an Array has only one variable, while a
         Structure can have many. */
-    virtual BaseType *var(const string &name = "", bool exact_match = true,
-                          btp_stack *s = 0);
+    virtual BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = 0);
     virtual BaseType *var(const string &name, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part = nil);

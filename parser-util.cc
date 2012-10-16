@@ -35,10 +35,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    { "$Id$"
-    };
-
 #include <cerrno>
 #include <cassert>
 #include <cstring>

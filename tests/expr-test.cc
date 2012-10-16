@@ -106,7 +106,9 @@ void *ce_expr_string(const char *yy_str);
 
 extern int ce_exprdebug;
 
+#if 0
 static int keep_temps = 0;      // MT-safe; test code.
+#endif
 
 const string version = "version 1.12";
 const string prompt = "expr-test: ";

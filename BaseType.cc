@@ -77,7 +77,7 @@ namespace libdap {
     @brief Perform a deep copy.
     @param bt The source object. */
 void
-BaseType::_duplicate(const BaseType &bt)
+BaseType::m_duplicate(const BaseType &bt)
 {
     DBG2(cerr << "BaseType::_duplicate: " << bt.d_name << " send_p: "
             << bt.d_is_send << endl);
@@ -92,6 +92,12 @@ BaseType::_duplicate(const BaseType &bt)
     d_parent = bt.d_parent; // copy pointers 6/4/2001 jhrg
 
     d_attr = bt.d_attr;  // Deep copy.
+
+#if DAP4
+    // FIXME How to copy? these are pointers
+    d_dims = bt.d_dims;
+    d_maps = bt.d_maps;
+#endif
 }
 
 // Public mfuncs
@@ -103,13 +109,50 @@ BaseType::_duplicate(const BaseType &bt)
     directly.
 
     @brief The BaseType constructor.
+
+    @param n A string containing the name of the new variable.
+    @param t The type of the variable.
+    @param is_dap4 True if this is a DAP4 variable. Default is False
+    @see Type */
+BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
+        : d_name(n), d_type(t), d_dataset(""), d_is_read(false), d_is_send(false),
+        d_in_selection(false), d_is_synthesized(false), d_parent(0),
+        d_is_dap4(is_dap4)
+{}
+
+/** The BaseType constructor needs a name, a dataset, and a type.
+    The BaseType class exists to provide data to
+    type classes that inherit from it.  The constructors of those
+    classes call the BaseType constructor; it is never called
+    directly.
+
+    @brief The BaseType constructor.
+    @param n A string containing the name of the new variable.
+    @param d A string containing the dataset name.
+    @param t The type of the variable. Default is False
+    @param is_dap4 True if this is a DAP4 variable.
+    @see Type */
+BaseType::BaseType(const string &n, const string &d, const Type &t, bool is_dap4)
+        : d_name(n), d_type(t), d_dataset(d), d_is_read(false), d_is_send(false),
+        d_in_selection(false), d_is_synthesized(false), d_parent(0),
+        d_is_dap4(is_dap4)
+{}
+#if 0
+/** The BaseType constructor needs a name  and a type.
+    The BaseType class exists to provide data to
+    type classes that inherit from it.  The constructors of those
+    classes call the BaseType constructor; it is never called
+    directly.
+
+    @brief The BaseType constructor.
     @param n A string containing the name of the new variable.
     @param t The type of the variable.
     data in this variable to a client DODS process.
     @see Type */
-BaseType::BaseType(const string &n, const Type &t)
+BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
         : d_name(n), d_type(t), d_dataset(""), d_is_read(false), d_is_send(false),
-        d_in_selection(false), d_is_synthesized(false), d_parent(0)
+        d_in_selection(false), d_is_synthesized(false), d_parent(0),
+        d_is_dap4(is_dap4)
 {}
 
 /** The BaseType constructor needs a name, a dataset, and a type.
@@ -125,15 +168,16 @@ BaseType::BaseType(const string &n, const Type &t)
     @param t The type of the variable.
     data in this variable to a client DODS process.
     @see Type */
-BaseType::BaseType(const string &n, const string &d, const Type &t)
+BaseType::BaseType(const string &n, const string &d, const Type &t, bool is_dap4)
         : d_name(n), d_type(t), d_dataset(d), d_is_read(false), d_is_send(false),
-        d_in_selection(false), d_is_synthesized(false), d_parent(0)
+        d_in_selection(false), d_is_synthesized(false), d_parent(0),
+        d_is_dap4(is_dap4)
 {}
-
+#endif
 /** @brief The BaseType copy constructor. */
 BaseType::BaseType(const BaseType &copy_from) : DapObj()
 {
-    _duplicate(copy_from);
+    m_duplicate(copy_from);
 }
 
 BaseType::~BaseType()
@@ -148,7 +192,7 @@ BaseType::operator=(const BaseType &rhs)
     if (this == &rhs)
         return *this;
 
-    _duplicate(rhs);
+    m_duplicate(rhs);
 
     return *this;
 }
@@ -251,6 +295,8 @@ BaseType::set_type(const Type &t)
 string
 BaseType::type_name() const
 {
+    return libdap::type_name(d_type);
+#if 0
     switch (d_type) {
     case dods_null_c:
         return string("Null");
@@ -291,11 +337,16 @@ BaseType::type_name() const
         return string("UInt64");
     case dods_url4_c:
         return string("URL");
+    case dods_group_c:
+        return string("Group");
+    case dods_enum_c:
+        return string("Enum");
 
     default:
         cerr << "BaseType::type_name: Undefined type" << endl;
         return string("");
     }
+#endif
 }
 
 /** @brief Returns true if the instance is a numeric, string or URL
@@ -306,6 +357,8 @@ BaseType::type_name() const
 bool
 BaseType::is_simple_type()
 {
+    return libdap::is_simple_type(type());
+#if 0
     switch (type()) {
     case dods_null_c:
     case dods_byte_c:
@@ -327,16 +380,19 @@ BaseType::is_simple_type()
     case dods_url_c:
 
     case dods_url4_c:
+    case dods_enum_c:
         return true;
 
     case dods_array_c:
     case dods_structure_c:
     case dods_sequence_c:
     case dods_grid_c:
+    case dods_group_c:
         return false;
     }
 
     return false;
+#endif
 }
 
 /** @brief Returns true if the instance is a vector (i.e., array) type
@@ -345,6 +401,8 @@ BaseType::is_simple_type()
 bool
 BaseType::is_vector_type()
 {
+    return libdap::is_vector_type(type());
+#if 0
     switch (type()) {
     case dods_null_c:
     case dods_byte_c:
@@ -366,6 +424,7 @@ BaseType::is_vector_type()
     case dods_url_c:
 
     case dods_url4_c:
+    case dods_enum_c:
         return false;
 
     case dods_array_c:
@@ -374,10 +433,12 @@ BaseType::is_vector_type()
     case dods_structure_c:
     case dods_sequence_c:
     case dods_grid_c:
+    case dods_group_c:
         return false;
     }
 
     return false;
+#endif
 }
 
 /** @brief Returns true if the instance is a constructor (i.e., Structure,
@@ -387,6 +448,8 @@ BaseType::is_vector_type()
 bool
 BaseType::is_constructor_type()
 {
+    return libdap::is_constructor_type(type());
+#if 0
     switch (type()) {
     case dods_null_c:
     case dods_byte_c:
@@ -408,6 +471,7 @@ BaseType::is_constructor_type()
     case dods_url_c:
 
     case dods_url4_c:
+    case dods_enum_c:
 
     case dods_array_c:
         return false;
@@ -415,12 +479,15 @@ BaseType::is_constructor_type()
     case dods_structure_c:
     case dods_sequence_c:
     case dods_grid_c:
+    case dods_group_c:
         return true;
     }
 
     return false;
+#endif
 }
 
+#if 0
 /**
  * Return true if this variable's type is allowed only for DAP4.
  *
@@ -444,6 +511,7 @@ BaseType::is_dap2_only_type()
 {
     return false;
 }
+#endif
 
 /** Return a count of the total number of variables in this variable.
     This is used to count the number of variables held by a constructor
@@ -760,7 +828,7 @@ BaseType::var(const string &, btp_stack &)
     type you must either use the var() method to get a pointer to the actual
     instance added to \c *this or you must first add all of <em>bt</em>'s
     children to it before adding it to \c *this. The implementations should use
-    _duplicate() to perform a deep copy of \e bt.
+    m_duplicate() to perform a deep copy of \e bt.
 
     @brief Add a variable.
 

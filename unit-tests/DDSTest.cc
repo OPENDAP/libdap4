@@ -106,10 +106,10 @@ public:
         CPPUNIT_TEST(transfer_attributes_test_2);
 
         CPPUNIT_TEST(symbol_name_test);
-
+#endif
         // These test both transfer_attributes() and print_xml()
         CPPUNIT_TEST(print_xml_test);
-
+#if 1
         CPPUNIT_TEST(print_xml_test2);
         CPPUNIT_TEST(print_xml_test3);
 
@@ -122,9 +122,8 @@ public:
         // CPPUNIT_TEST(print_xml_test5_1);
         CPPUNIT_TEST(print_xml_test6);
         // CPPUNIT_TEST(print_xml_test6_1);
-#endif
         CPPUNIT_TEST(print_dmr_test);
-#if 1
+
         CPPUNIT_TEST(get_response_size_test);
         CPPUNIT_TEST(get_response_size_test_c);
         CPPUNIT_TEST(get_response_size_test_c2);
@@ -132,6 +131,7 @@ public:
         CPPUNIT_TEST(get_response_size_test_seq);
         CPPUNIT_TEST(get_response_size_test_seq_c);
 #endif
+
     CPPUNIT_TEST_SUITE_END();
 
     void transfer_attributes_test_1() {

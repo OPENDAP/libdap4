@@ -44,6 +44,7 @@
 
 #include "debug.h"
 #include "escaping.h"
+#include "util.h"
 #include "Error.h"
 #include "InternalErr.h"
 
@@ -55,13 +56,21 @@ namespace libdap {
 // Private member functions
 
 void
-Constructor::_duplicate(const Constructor &)
-{}
+Constructor::m_duplicate(const Constructor &c)
+{
+    Constructor &cs = const_cast<Constructor &>(c);
+
+    for (Vars_iter i = cs.d_vars.begin(); i != cs.d_vars.end(); i++) {
+        BaseType *btp = (*i)->ptr_duplicate();
+        btp->set_parent(this);
+        d_vars.push_back(btp);
+    }
+}
 
 // Public member functions
 
-Constructor::Constructor(const string &n, const Type &t)
-        : BaseType(n, t)
+Constructor::Constructor(const string &n, const Type &t, bool is_dap4)
+        : BaseType(n, t, is_dap4)
 {}
 
 /** Server-side constructor that takes the name of the variable to be
@@ -74,11 +83,11 @@ Constructor::Constructor(const string &n, const Type &t)
  * variable is being created
  * @param t type of data being stored
  */
-Constructor::Constructor(const string &n, const string &d, const Type &t)
-        : BaseType(n, d, t)
+Constructor::Constructor(const string &n, const string &d, const Type &t, bool is_dap4)
+        : BaseType(n, d, t, is_dap4)
 {}
 
-Constructor::Constructor(const Constructor &rhs) : BaseType(rhs), _vars(0)
+Constructor::Constructor(const Constructor &rhs) : BaseType(rhs), d_vars(0)
 {}
 
 Constructor::~Constructor()
@@ -92,210 +101,174 @@ Constructor::operator=(const Constructor &rhs)
 
     dynamic_cast<BaseType &>(*this) = rhs; // run BaseType=
 
-    _duplicate(rhs);
+    m_duplicate(rhs);
 
     return *this;
+}
+
+int
+Constructor::element_count(bool leaves)
+{
+    if (!leaves)
+        return d_vars.size();
+    else {
+        int i = 0;
+        for (Vars_iter j = d_vars.begin(); j != d_vars.end(); j++) {
+            i += (*j)->element_count(leaves);
+        }
+        return i;
+    }
+}
+
+void
+Constructor::set_send_p(bool state)
+{
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        (*i)->set_send_p(state);
+    }
+
+    BaseType::set_send_p(state);
+}
+
+void
+Constructor::set_read_p(bool state)
+{
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        (*i)->set_read_p(state);
+    }
+
+    BaseType::set_read_p(state);
+}
+
+// TODO Recode to use width(bool). Bur see comments in BaseType.h
+unsigned int
+Constructor::width()
+{
+    unsigned int sz = 0;
+
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        sz += (*i)->width();
+    }
+
+    return sz;
+}
+
+/** This version of width simply returns the same thing as width() for simple
+    types and Arrays. For Structure it returns the total size if constrained
+    is false, or the size of the elements in the current projection if true.
+
+    @param constrained If true, return the size after applying a constraint.
+    @return  The number of bytes used by the variable.
+ */
+unsigned int
+Constructor::width(bool constrained)
+{
+    unsigned int sz = 0;
+
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        if (constrained) {
+            if ((*i)->send_p())
+                sz += (*i)->width(constrained);
+        }
+        else {
+            sz += (*i)->width(constrained);
+        }
+    }
+
+    return sz;
+}
+
+BaseType *
+Constructor::var(const string &name, bool exact_match, btp_stack *s)
+{
+    string n = www2id(name);
+
+    if (exact_match)
+        return m_exact_match(n, s);
+    else
+        return m_leaf_match(n, s);
+}
+
+/** @deprecated See comment in BaseType */
+BaseType *
+Constructor::var(const string &n, btp_stack &s)
+{
+    string name = www2id(n);
+
+    BaseType *btp = m_exact_match(name, &s);
+    if (btp)
+        return btp;
+
+    return m_leaf_match(name, &s);
+}
+
+// Protected method
+BaseType *
+Constructor::m_leaf_match(const string &name, btp_stack *s)
+{
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        if ((*i)->name() == name) {
+            if (s) {
+                DBG(cerr << "Pushing " << this->name() << endl);
+                s->push(static_cast<BaseType *>(this));
+            }
+            return *i;
+        }
+        if ((*i)->is_constructor_type()) {
+            BaseType *btp = (*i)->var(name, false, s);
+            if (btp) {
+                if (s) {
+                    DBG(cerr << "Pushing " << this->name() << endl);
+                    s->push(static_cast<BaseType *>(this));
+                }
+                return btp;
+            }
+        }
+    }
+
+    return 0;
+}
+
+// Protected method
+BaseType *
+Constructor::m_exact_match(const string &name, btp_stack *s)
+{
+    // Look for name at the top level first.
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        if ((*i)->name() == name) {
+            if (s)
+                s->push(static_cast<BaseType *>(this));
+
+            return *i;
+        }
+    }
+
+    // If it was not found using the simple search, look for a dot and
+    // search the hierarchy.
+    string::size_type dot_pos = name.find("."); // zero-based index of `.'
+    if (dot_pos != string::npos) {
+        string aggregate = name.substr(0, dot_pos);
+        string field = name.substr(dot_pos + 1);
+
+        BaseType *agg_ptr = var(aggregate);
+        if (agg_ptr) {
+            if (s)
+                s->push(static_cast<BaseType *>(this));
+
+            return agg_ptr->var(field, true, s); // recurse
+        }
+        else
+            return 0;  // qualified names must be *fully* qualified
+    }
+
+    return 0;
 }
 
 /** Returns an iterator referencing the first structure element. */
 Constructor::Vars_iter
 Constructor::var_begin()
 {
-    return _vars.begin() ;
-}
-
-#if 0
-/** @brief Look for the parent of an HDF4 dimension attribute
-
-    If this attribute container's name ends in the '_dim_?' suffix, look
-    for the variable to which it's attributes should be bound: For an array,
-    they should be held in a sub-table of the array; for a Structure or
-    Sequence, I don't think the HDF4 handler ever makes these (since those
-    types don't have 'dimension' in hdf-land);  and for a Grid, the attributes
-    belong with the map variables.
-
-    @note This method does check that the \e source really is an hdf4 dimension
-    attribute.
-
-    @note I think the comment that Structures in HDF4 files cannot have
-    dimension attributes is wrong. 8/17/11 jhrg
-
-    @param source The attribute container, an AttrTable::entry instance.
-    @return the BaseType to which these attributes belong or null if none
-    was found. */
-BaseType *
-Constructor::find_hdf4_dimension_attribute_home(AttrTable::entry *source)
-{
-    BaseType *btp;
-    string::size_type i = source->name.find("_dim_");
-    if (i != string::npos && (btp = var(source->name.substr(0, i)))) {
-        if (btp->is_vector_type()) {
-            return btp;
-        }
-        else if (btp->type() == dods_grid_c) {
-            // For a Grid, the hdf4 handler uses _dim_n for the n-th Map
-            // i+5 points to the character holding 'n'
-            int n = atoi(source->name.substr(i + 5).c_str());
-            DBG(cerr << "Found a Grid (" << btp->name() << ") and "
-                << source->name.substr(i) << ", extracted n: " << n << endl);
-            return *(dynamic_cast<Grid&>(*btp).map_begin() + n);
-        }
-    }
-
-    return 0;
-}
-#endif
-#if 0
-/** Given an attribute container from a table, find or make a destination
-    for its contents in the current constructor variable. */
-AttrTable *
-Constructor::find_matching_container(AttrTable::entry *source,
-                                     BaseType **dest_variable)
-{
-    // The attribute entry 'source' must be a container
-    if (source->type != Attr_container)
-        throw InternalErr(__FILE__, __LINE__, "Constructor::find_matching_container");
-
-    // Use the name of the attribute container 'source' to figure out where
-    // to put its contents.
-    BaseType *btp;
-    if ((btp = var(source->name))) {
-        // ... matches a variable name? Use var's table
-        *dest_variable = btp;
-        return &btp->get_attr_table();
-    }
-    // As more special-case attribute containers come to light, add clauses
-    // here.
-    else if ((btp = find_hdf4_dimension_attribute_home(source))) {
-        // ... hdf4 dimension attribute? Make a sub table and use that.
-        // btp can only be an Array or a Grid Map (which is an array)
-        if (btp->get_parent()->type() == dods_grid_c) {
-            DBG(cerr << "Found a Grid" << endl);
-            *dest_variable = btp;
-            return &btp->get_attr_table();
-        }
-        else { // must be a plain Array
-            string::size_type i = source->name.find("_dim_");
-            string ext = source->name.substr(i + 1);
-            *dest_variable = btp;
-            return btp->get_attr_table().append_container(ext);
-        }
-    }
-    else {
-        // ... otherwise assume it's a global attribute.
-        AttrTable *at = get_attr_table().find_container(source->name);
-        if (!at) {
-            at = new AttrTable();       // Make a new global table if needed
-            get_attr_table().append_container(at, source->name);
-        }
-
-        *dest_variable = 0;
-        return at;
-    }
-}
-#endif
-#if 0
-/** Given an Attribute entry, scavenge attributes from it and load them into
-    this object and the variables it contains. Assume that the caller has
-    determined the table holds attributes pertinent to only this variable.
-
-    @note This method is technically \e unnecessary because a server (or
-    client) can easily add attributes directly using the DDS::get_attr_table
-    or BaseType::get_attr_table methods and then poke values in using any
-    of the methods AttrTable provides. This method exists to ease the
-    transition to DDS objects which contain attribute information for the
-    existing servers (Since they all make DAS objects separately from the
-    DDS). They could be modified to use the same AttrTable methods but
-    operate on the AttrTable instances in a DDS/BaseType instead of those in
-    a DAS.
-
-    @param entry Get attribute information from this Attribute table. Note
-    that even though the type of the argument is an AttrTable::entry, the
-    entry \e must be an attribute container.*/
-void
-Constructor::transfer_attributes(AttrTable::entry * entry)
-{
-    DBG(cerr << "Constructor::transfer_attributes, variable: " << name() <<
-        endl);
-    DBG(cerr << "Working on the '" << entry->
-        name << "' container." << endl);
-    if (entry->type != Attr_container)
-        throw InternalErr(__FILE__, __LINE__,
-                          "Constructor::transfer_attributes");
-
-    AttrTable *source = entry->attributes;
-    BaseType *dest_variable = 0;
-    AttrTable *dest = find_matching_container(entry, &dest_variable);
-
-    // foreach source attribute in the das_i container
-    AttrTable::Attr_iter source_p = source->attr_begin();
-    while (source_p != source->attr_end()) {
-        DBG(cerr << "Working on the '" << (*source_p)->
-            name << "' attribute" << endl);
-
-        if ((*source_p)->type == Attr_container) {
-            if (dest_variable && dest_variable->is_constructor_type()) {
-                dynamic_cast <Constructor & >(*dest_variable).transfer_attributes(*source_p);
-            }
-            else {
-                dest->append_container(new AttrTable(*(*source_p)->attributes),
-                                       (*source_p)->name);
-            }
-        }
-        else {
-            dest->append_attr(source->get_name(source_p),
-                              source->get_type(source_p),
-                              source->get_attr_vector(source_p));
-        }
-
-        ++source_p;
-    }
-}
-#endif
-
-/** Given an Attribute table, scavenge attributes from it and load them into
-    this object and the variables it contains.
-
-    This implementation differs from the version in BaseType in that each of
-    the children of the Constructor are passed an attribute container if one
-    is found that matches the name of this Constructor variable.
-
-    @param at_container Search for attributes in this container.
-    */
-void Constructor::transfer_attributes(AttrTable *at_container) {
-	AttrTable *at = at_container->get_attr_table(name());
-
-	if (at) {
-		at->set_is_global_attribute(false);
-
-		Vars_iter var = var_begin();
-		while (var != var_end()) {
-			try {
-				DBG(cerr << "Processing the attributes for: " << (*var)->name() << " a " << (*var)->type_name() << endl);
-				(*var)->transfer_attributes(at);
-				var++;
-			} catch (Error &e) {
-				DBG(cerr << "Got this exception: " << e.get_error_message() << endl);
-				var++;
-				throw e;
-			}
-		}
-
-		// Trick: If an attribute that's within the container 'at' still has its
-		// is_global_attribute property set, then it's not really a global attr
-		// but instead an attribute that belongs to this Constructor.
-		AttrTable::Attr_iter at_p = at->attr_begin();
-		while (at_p != at->attr_end()) {
-			if (at->is_global_attribute(at_p)) {
-				if (at->get_attr_type(at_p) == Attr_container)
-					get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)), at->get_name(at_p));
-				else
-					get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
-			}
-			at_p++;
-		}
-
-	}
+    return d_vars.begin() ;
 }
 
 /** Returns an iterator referencing the end of the list of structure
@@ -303,14 +276,14 @@ void Constructor::transfer_attributes(AttrTable *at_container) {
 Constructor::Vars_iter
 Constructor::var_end()
 {
-    return _vars.end() ;
+    return d_vars.end() ;
 }
 
 /** Return a reverse iterator that references the last element. */
 Constructor::Vars_riter
 Constructor::var_rbegin()
 {
-    return _vars.rbegin();
+    return d_vars.rbegin();
 }
 
 /** Return a reverse iterator that references a point 'before' the first
@@ -318,7 +291,7 @@ Constructor::var_rbegin()
 Constructor::Vars_riter
 Constructor::var_rend()
 {
-    return _vars.rend();
+    return d_vars.rend();
 }
 
 /** Return the iterator for the \e ith variable.
@@ -327,7 +300,7 @@ Constructor::var_rend()
 Constructor::Vars_iter
 Constructor::get_vars_iter(int i)
 {
-    return _vars.begin() + i;
+    return d_vars.begin() + i;
 }
 
 /** Return the BaseType pointer for the \e ith variable.
@@ -336,7 +309,151 @@ Constructor::get_vars_iter(int i)
 BaseType *
 Constructor::get_var_index(int i)
 {
-    return *(_vars.begin() + i);
+    return *(d_vars.begin() + i);
+}
+
+/** Adds an element to a Constructor.
+
+    @param bt A pointer to the variable to add to this Constructor.
+    @param part Not used by this class, defaults to nil */
+void
+Constructor::add_var(BaseType *bt, Part)
+{
+    // Jose Garcia
+    // Passing and invalid pointer to an object is a developer's error.
+    if (!bt)
+        throw InternalErr(__FILE__, __LINE__, "The BaseType parameter cannot be null.");
+#if 0
+    if (bt->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Structure.");
+#endif
+    // Jose Garcia
+    // Now we add a copy of bt so the external user is able to destroy bt as
+    // he/she wishes. The policy is: "If it is allocated outside, it is
+    // deallocated outside, if it is allocated inside, it is deallocated
+    // inside"
+    BaseType *btp = bt->ptr_duplicate();
+    btp->set_parent(this);
+    d_vars.push_back(btp);
+}
+
+/** Adds an element to a Constructor.
+
+    @param bt A pointer to thee variable to add to this Constructor.
+    @param part Not used by this class, defaults to nil */
+void
+Constructor::add_var_nocopy(BaseType *bt, Part)
+{
+    if (!bt)
+        throw InternalErr(__FILE__, __LINE__, "The BaseType parameter cannot be null.");
+#if 0
+    if (bt->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Structure.");
+#endif
+    bt->set_parent(this);
+    d_vars.push_back(bt);
+}
+
+/** Remove an element from a Constructor.
+
+    @param n name of the variable to remove */
+void
+Constructor::del_var(const string &n)
+{
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        if ((*i)->name() == n) {
+            BaseType *bt = *i ;
+            d_vars.erase(i) ;
+            delete bt ; bt = 0;
+            return;
+        }
+    }
+}
+
+void
+Constructor::del_var(Vars_iter i)
+{
+    if (*i != 0) {
+        BaseType *bt = *i;
+        d_vars.erase(i);
+        delete bt;
+    }
+}
+
+/** @brief simple implementation of read that iterates through vars
+ *  and calls read on them
+ *
+ * @return returns false to signify all has been read
+ */
+bool Constructor::read()
+{
+    if (!read_p()) {
+        for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+            (*i)->read();
+        }
+        set_read_p(true);
+    }
+
+    return false;
+}
+
+void
+Constructor::intern_data(ConstraintEvaluator & eval, DDS & dds)
+{
+    DBG(cerr << "Structure::intern_data: " << name() << endl);
+    if (!read_p())
+        read();          // read() throws Error and InternalErr
+
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        if ((*i)->send_p()) {
+            (*i)->intern_data(eval, dds);
+        }
+    }
+}
+
+bool
+Constructor::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
+{
+    dds.timeout_on();
+
+    if (!read_p())
+        read();  // read() throws Error and InternalErr
+
+#if EVAL
+    if (ce_eval && !eval.eval_selection(dds, dataset()))
+        return true;
+#endif
+
+    dds.timeout_off();
+
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        if ((*i)->send_p()) {
+#ifdef CHECKSUMS
+            XDRStreamMarshaller *sm = dynamic_cast<XDRStreamMarshaller*>(&m);
+            if (sm && sm->checksums() && (*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
+                sm->reset_checksum();
+
+            (*i)->serialize(eval, dds, m, false);
+
+            if (sm && sm->checksums() && (*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
+                sm->get_checksum();
+#else
+            (*i)->serialize(eval, dds, m, false);
+#endif
+        }
+    }
+
+    return true;
+}
+
+bool
+Constructor::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
+{
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        (*i)->deserialize(um, dds, reuse);
+    }
+
+    return false;
 }
 
 void
@@ -356,9 +473,8 @@ Constructor::print_decl(ostream &out, string space, bool print_semi,
         return;
 
     out << space << type_name() << " {\n" ;
-    for (Vars_citer i = _vars.begin(); i != _vars.end(); i++) {
-        (*i)->print_decl(out, space + "    ", true,
-                         constraint_info, constrained);
+    for (Vars_citer i = d_vars.begin(); i != d_vars.end(); i++) {
+        (*i)->print_decl(out, space + "    ", true, constraint_info, constrained);
     }
     out << space << "} " << id2www(name()) ;
 
@@ -370,7 +486,35 @@ Constructor::print_decl(ostream &out, string space, bool print_semi,
     }
 
     if (print_semi)
-	out << ";\n" ;
+        out << ";\n" ;
+}
+
+void
+Constructor::print_val(FILE *out, string space, bool print_decl_p)
+{
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+}
+
+void
+Constructor::print_val(ostream &out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+        print_decl(out, space, false);
+        out << " = " ;
+    }
+
+    out << "{ " ;
+    for (Vars_citer i = d_vars.begin(); i != d_vars.end();
+         i++, (void)(i != d_vars.end() && out << ", ")) {
+        (*i)->print_val(out, "", false);
+    }
+
+    out << " }" ;
+
+    if (print_decl_p)
+        out << ";\n" ;
 }
 
 /**
@@ -434,6 +578,25 @@ Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
 }
 
+bool
+Constructor::check_semantics(string &msg, bool all)
+{
+    if (!BaseType::check_semantics(msg))
+        return false;
+
+    if (!unique_names(d_vars, name(), type_name(), msg))
+        return false;
+
+    if (all)
+        for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+            if (!(*i)->check_semantics(msg, true)) {
+                return false;
+            }
+        }
+
+    return true;
+}
+
 /** True if the instance can be flattened and printed as a single table
     of values. For Arrays and Grids this is always false. For Structures
     and Sequences the conditions are more complex. The implementation
@@ -450,6 +613,21 @@ bool
 Constructor::is_linear()
 {
     return false;
+}
+
+/** Set the \e in_selection property for this variable and all of its
+    children.
+
+    @brief Set the \e in_selection property.
+    @param state Set the property value to \e state. */
+void
+Constructor::set_in_selection(bool state)
+{
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        (*i)->set_in_selection(state);
+    }
+
+    BaseType::set_in_selection(state);
 }
 
 /** @brief dumps information about this object
@@ -469,8 +647,8 @@ Constructor::dump(ostream &strm) const
     BaseType::dump(strm) ;
     strm << DapIndent::LMarg << "vars: " << endl ;
     DapIndent::Indent() ;
-    Vars_citer i = _vars.begin() ;
-    Vars_citer ie = _vars.end() ;
+    Vars_citer i = d_vars.begin() ;
+    Vars_citer ie = d_vars.end() ;
     for (; i != ie; i++) {
         (*i)->dump(strm) ;
     }

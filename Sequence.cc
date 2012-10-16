@@ -79,7 +79,7 @@ static const unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
 // Private member functions
 
 void
-Sequence::_duplicate(const Sequence &s)
+Sequence::m_duplicate(const Sequence &s)
 {
     d_row_number = s.d_row_number;
     d_starting_row_number = s.d_starting_row_number;
@@ -190,7 +190,7 @@ Sequence::Sequence(const string &n, const string &d)
 /** @brief The Sequence copy constructor. */
 Sequence::Sequence(const Sequence &rhs) : Constructor(rhs)
 {
-    _duplicate(rhs);
+    m_duplicate(rhs);
 }
 
 BaseType *
@@ -219,7 +219,7 @@ delete_rows(BaseTypeRow *bt_row_ptr)
 Sequence::~Sequence()
 {
     DBG2(cerr << "Entering Sequence::~Sequence" << endl);
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         BaseType *btp = *i ;
         delete btp ; btp = 0;
     }
@@ -236,7 +236,7 @@ Sequence::operator=(const Sequence &rhs)
 
     dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
 
-    _duplicate(rhs);
+    m_duplicate(rhs);
 
     return *this;
 }
@@ -257,7 +257,7 @@ Sequence::toString()
 
     oss << BaseType::toString();
 
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         oss << (*i)->toString();
     }
 
@@ -266,26 +266,28 @@ Sequence::toString()
     return oss.str();
 }
 
+#if 0
 int
 Sequence::element_count(bool leaves)
 {
     if (!leaves)
-        return _vars.size();
+        return d_vars.size();
     else {
         int i = 0;
-        for (Vars_iter iter = _vars.begin(); iter != _vars.end(); iter++) {
+        for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
             i += (*iter)->element_count(true);
         }
         return i;
     }
 }
+#endif
 
 bool
 Sequence::is_linear()
 {
     bool linear = true;
     bool seq_found = false;
-    for (Vars_iter iter = _vars.begin(); linear && iter != _vars.end(); iter++) {
+    for (Vars_iter iter = d_vars.begin(); linear && iter != d_vars.end(); iter++) {
         if ((*iter)->type() == dods_sequence_c) {
             // A linear sequence cannot have more than one child seq. at any
             // one level. If we've already found a seq at this level, return
@@ -309,10 +311,11 @@ Sequence::is_linear()
     return linear;
 }
 
+#if 0
 void
 Sequence::set_send_p(bool state)
 {
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         (*i)->set_send_p(state);
     }
 
@@ -322,23 +325,25 @@ Sequence::set_send_p(bool state)
 void
 Sequence::set_read_p(bool state)
 {
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         (*i)->set_read_p(state);
     }
 
     BaseType::set_read_p(state);
 }
-
+#endif
+#if 0
 void
 Sequence::set_in_selection(bool state)
 {
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         (*i)->set_in_selection(state);
     }
 
     BaseType::set_in_selection(state);
 }
-
+#endif
+#if 0
 /** @brief Adds a variable to the Sequence.
 
     Remember that if you wish to add a member to a nested
@@ -362,7 +367,7 @@ Sequence::add_var(BaseType *bt, Part)
 
     BaseType *bt_copy = bt->ptr_duplicate();
     bt_copy->set_parent(this);
-    _vars.push_back(bt_copy);
+    d_vars.push_back(bt_copy);
 }
 
 /** @brief Adds a variable to the Sequence.
@@ -386,9 +391,10 @@ Sequence::add_var_nocopy(BaseType *bt, Part)
         throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Sequence.");
 
     bt->set_parent(this);
-    _vars.push_back(bt);
+    d_vars.push_back(bt);
 }
-
+#endif
+#if 0
 // Deprecated
 BaseType *
 Sequence::var(const string &n, btp_stack &s)
@@ -412,11 +418,12 @@ Sequence::var(const string &name, bool exact_match, btp_stack *s)
     else
         return m_leaf_match(n, s);
 }
-
+#endif
+#if 0
 BaseType *
 Sequence::m_leaf_match(const string &name, btp_stack *s)
 {
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->name() == name) {
             if (s)
                 s->push(static_cast<BaseType *>(this));
@@ -438,7 +445,7 @@ Sequence::m_leaf_match(const string &name, btp_stack *s)
 BaseType *
 Sequence::m_exact_match(const string &name, btp_stack *s)
 {
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->name() == name) {
             if (s)
                 s->push(static_cast<BaseType *>(this));
@@ -463,7 +470,7 @@ Sequence::m_exact_match(const string &name, btp_stack *s)
 
     return 0;
 }
-
+#endif
 /** @brief Get a whole row from the sequence.
     @param row Get row number <i>row</i> from the sequence.
     @return A BaseTypeRow object (vector<BaseType *>). Null if there's no such
@@ -537,12 +544,13 @@ Sequence::var_value(size_t row, size_t i)
     return (*bt_row_ptr)[i];
 }
 
+#if 0
 unsigned int
 Sequence::width()
 {
     unsigned int sz = 0;
 
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         sz += (*i)->width();
     }
 
@@ -561,7 +569,7 @@ Sequence::width(bool constrained)
 {
     unsigned int sz = 0;
 
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
     	if (constrained) {
     		if ((*i)->send_p())
     			sz += (*i)->width(constrained);
@@ -573,6 +581,7 @@ Sequence::width(bool constrained)
 
     return sz;
 }
+#endif
 
 // This version returns -1. Each API-specific subclass should define a more
 // reasonable version. jhrg 5/24/96
@@ -580,7 +589,7 @@ Sequence::width(bool constrained)
 /** Returns the number of elements in a Sequence object. Note that
     this is <i>not</i> the number of items in a row, but the number
     of rows in the complete sequence object. To be meaningful, this
-    must be computed after constraint expresseion (CE) evaluation.
+    must be computed after constraint expression (CE) evaluation.
     The purpose of this function is to facilitate translations
     between Sequence objects and Array objects, particularly when
     the Sequence is too large to be transferred from the server to
@@ -589,7 +598,7 @@ Sequence::width(bool constrained)
     This function, to be useful, must be specialized for the API and
     data format in use.
 
-    @return The base implentation returns -1, indicating that the
+    @return The base implementation returns -1, indicating that the
     length is not known.  Sub-classes specific to a particular API
     will have a more complete implementation. */
 int
@@ -780,7 +789,7 @@ Sequence::is_end_of_rows(int i)
 
     <li>CE evaluation happens only in a leaf sequence.</li>
 
-    <li>When no data statisfies a CE, the empty Sequence is signalled by a
+    <li>When no data satisfies a CE, the empty Sequence is signaled by a
     single EOS marker, regardless of the level of nesting of Sequences. That
     is, the EOS marker is sent for only the outer Sequence in the case of a
     completely empty response.</li>
@@ -825,10 +834,10 @@ Sequence::serialize_parent_part_one(DDS &dds,
         // write_start_of_instance(sink);
 
         // In this loop serialize will signal an error with an exception.
-        for (Vars_iter iter = _vars.begin(); iter != _vars.end(); iter++) {
+        for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
             // Only call serialize for child Sequences; the leaf sequence
             // will trigger the transmission of values for its parents (this
-            // sequence and maybe others) once it gets soem valid data to
+            // sequence and maybe others) once it gets some valid data to
             // send.
             // Note that if the leaf sequence has no variables in the current
             // projection, its serialize() method will never be called and that's
@@ -848,7 +857,7 @@ Sequence::serialize_parent_part_one(DDS &dds,
     d_row_number = -1;
 
     // Always write the EOS marker? 12/23/04 jhrg
-    // Yes. According to DAP2, a completely empty response is signalled by
+    // Yes. According to DAP2, a completely empty response is signaled by
     // a return value of only the EOS marker for the outermost sequence.
     if (d_top_most || d_wrote_soi) {
         DBG(cerr << "Writing End of Sequence marker" << endl);
@@ -860,9 +869,9 @@ Sequence::serialize_parent_part_one(DDS &dds,
 }
 
 // If we are here then we know that this is 'parent sequence' and that the
-// leaf seq has found valid data to send. We also know that
+// leaf sequence has found valid data to send. We also know that
 // serialize_parent_part_one has been called so data are in the instance's
-// fields. This is wheree we send data. Whereas ..._part_one() contains a
+// fields. This is where we send data. Whereas ..._part_one() contains a
 // loop to iterate over all of rows in a parent sequence, this does not. This
 // method assumes that the serialize_leaf() will call it each time it needs
 // to be called.
@@ -885,7 +894,7 @@ Sequence::serialize_parent_part_two(DDS &dds,
         write_start_of_instance(m);
 
         // In this loop serialize will signal an error with an exception.
-        for (Vars_iter iter = _vars.begin(); iter != _vars.end(); iter++) {
+        for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
             // Send all the non-sequence variables
             DBG(cerr << "Sequence::serialize_parent_part_two(), serializing "
                 << (*iter)->name() << endl);
@@ -941,7 +950,7 @@ Sequence::serialize_leaf(DDS &dds,
         write_start_of_instance(m);
 
         // In this loop serialize will signal an error with an exception.
-        for (Vars_iter iter = _vars.begin(); iter != _vars.end(); iter++) {
+        for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
             DBG(cerr << "Sequence::serialize_leaf(), serializing "
                 << (*iter)->name() << endl);
             if ((*iter)->send_p()) {
@@ -956,7 +965,7 @@ Sequence::serialize_leaf(DDS &dds,
         DBG(cerr << "Sequence::serialize_leaf::read_row() status: " << status << endl);
     }
 
-    // Only write the EOS marker if there's a matching Start Of Instnace
+    // Only write the EOS marker if there's a matching Start Of Instance
     // Marker in the stream.
     if (d_wrote_soi || d_top_most) {
         DBG(cerr << "Writing End of Sequence marker" << endl);
@@ -986,7 +995,7 @@ Sequence::serialize_leaf(DDS &dds,
     Sequences which have a parent (directly or indirectly) variable that is
     a Sequence.
 
-    @param eval Use this contraint evaluator
+    @param eval Use this constraint evaluator
     @param dds This DDS holds the variables for the data source */
 void
 Sequence::intern_data(ConstraintEvaluator &eval, DDS &dds)
@@ -1037,9 +1046,9 @@ Sequence::intern_data_parent_part_one(DDS & dds,
 
     // Grab the current size of the value stack. We do this because it is
     // possible that no nested sequences for this row happened to be
-    // selected because of a constract evaluation or the last row is not
+    // selected because of a constraint evaluation or the last row is not
     // selected because of a constraint evaluation. In either case, no
-    // nested sequence d_values are pused onto the stack, so there is
+    // nested sequence d_values are pushed onto the stack, so there is
     // nothing to pop at the end of this function. pcw 07/14/08
     SequenceValues::size_type orig_stack_size = sequence_values_stack.size() ;
 
@@ -1206,7 +1215,7 @@ Sequence::intern_data_for_leaf(DDS &dds,
     @param um An UnMarshaller that knows how to deserialize data
     @param dds A DataDDS from which to read.
     @param reuse Passed to child objects when they are deserialized. Some
-    implementations of derialize() use this to determine if new storage should
+    implementations of deserialize() use this to determine if new storage should
     be allocated or existing storage reused.
     @exception Error if a sequence stream marker cannot be read.
     @exception InternalErr if the <tt>dds</tt> param is not a DataDDS.
@@ -1243,7 +1252,7 @@ Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
                  << name() << endl);
             BaseTypeRow *bt_row_ptr = new BaseTypeRow;
             // Read the instance's values, building up the row
-            for (Vars_iter iter = _vars.begin(); iter != _vars.end(); iter++) {
+            for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
                 BaseType *bt_ptr = (*iter)->ptr_duplicate();
                 bt_ptr->deserialize(um, dds, reuse);
                 DBG2(cerr << "Deserialized " << bt_ptr->name() << " ("
@@ -1319,7 +1328,7 @@ Sequence::get_ending_row_number()
     If omitted, the stride defaults to 1.
 
     @param start The starting row number. The first row is row zero.
-    @param stop The eding row number. The 20th row is row 19.
+    @param stop The ending row number. The 20th row is row 19.
     @param stride The stride. A stride of two skips every other row. */
 void
 Sequence::set_row_number_constraint(int start, int stop, int stride)
@@ -1332,6 +1341,7 @@ Sequence::set_row_number_constraint(int start, int stop, int stride)
     d_ending_row_number = stop;
 }
 
+#if 0
 /** Never use this interface for Sequence! To add data to the members of a
     Sequence, use BaseTypeRow variables and operate on them individually. */
 unsigned int
@@ -1351,6 +1361,7 @@ Sequence::buf2val(void **)
     throw InternalErr(__FILE__, __LINE__, "Use Sequence::var_value() or Sequence::row_value() in place of Sequence::buf2val()");
     return sizeof(Sequence);
 }
+#endif
 
 void
 Sequence::print_one_row(FILE *out, int row, string space,
@@ -1453,18 +1464,18 @@ Sequence::print_val(ostream &out, string space, bool print_decl_p)
     print_val_by_rows(out, space, print_decl_p, false);
 }
 
-
+#if 0
 bool
 Sequence::check_semantics(string &msg, bool all)
 {
     if (!BaseType::check_semantics(msg))
         return false;
 
-    if (!unique_names(_vars, name(), type_name(), msg))
+    if (!unique_names(d_vars, name(), type_name(), msg))
         return false;
 
     if (all)
-        for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+        for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
             if (!(*i)->check_semantics(msg, true)) {
                 return false;
             }
@@ -1472,6 +1483,7 @@ Sequence::check_semantics(string &msg, bool all)
 
     return true;
 }
+#endif
 
 void
 Sequence::set_leaf_p(bool state)
@@ -1490,8 +1502,8 @@ Sequence::is_leaf_sequence()
     In a nested Sequence, the Sequence which holds the leaf elements is special
     because it during the serialization of this Sequence's data that constraint
     Expressions must be evaluated. If CEs are evaluated at the upper levels,
-    then valid data may not be sent because it was effectlively hidden from the
-    serialization and evaluation code (see the documentatin for the serialize_leaf()
+    then valid data may not be sent because it was effectively hidden from the
+    serialization and evaluation code (see the documentation for the serialize_leaf()
     method).
 
     The notion of the leaf Sequence needs to be modified to mean the lowest level
@@ -1518,7 +1530,7 @@ Sequence::set_leaf_sequence(int lvl)
 
     DBG2(cerr << "Processing sequence " << name() << endl);
 
-    for (Vars_iter iter = _vars.begin(); iter != _vars.end(); iter++) {
+    for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
         // About the test for send_p(): Only descend into a sequence if it has
         // fields that might be sent. Thus if, in a two-level sequence, nothing
         // in the lower level is to be sent, the upper level is marked as the

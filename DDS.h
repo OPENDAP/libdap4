@@ -203,7 +203,9 @@ private:
                                 // d_timeout seconds are spent reading data.
     Keywords d_keywords;	    // Holds keywords parsed from the CE
 
-    long d_max_response_size;   // In bytes
+    long d_max_response_size;   // In bytes...
+
+
 
     friend class DDSTest;
 

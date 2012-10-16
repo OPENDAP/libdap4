@@ -882,7 +882,7 @@ HTTPConnect::plain_fetch_url(const string &url)
     try {
         status = read_url(url, stream, resp_hdrs); // Throws Error.
         if (status >= 400) {
-        	delete resp_hdrs;
+        	// delete resp_hdrs; resp_hdrs = 0;
             string msg = "Error while reading the URL: ";
             msg += url;
             msg += ".\nThe OPeNDAP server returned the following message:\n";

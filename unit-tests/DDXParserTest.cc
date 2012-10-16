@@ -69,7 +69,7 @@ public:
     }
 
     CPPUNIT_TEST_SUITE( DDXParserTest );
-
+#if 1
     CPPUNIT_TEST(other_xml_parse_test1);
     CPPUNIT_TEST(other_xml_parse_test2);
     CPPUNIT_TEST(other_xml_parse_test3);
@@ -79,10 +79,12 @@ public:
     CPPUNIT_TEST(parsing_ddx_from_dataddx_test);
     CPPUNIT_TEST(top_level_attribute_test);
     CPPUNIT_TEST(top_level_attribute_container_test);
+#endif
     CPPUNIT_TEST(top_level_simple_types_test);
     CPPUNIT_TEST(top_level_simple_types_with_attributes_test);
     CPPUNIT_TEST(simple_arrays_test);
     CPPUNIT_TEST(simple_arrays_multi_dim_test);
+#if 1
     CPPUNIT_TEST(simple_arrays_attributes_test);
     CPPUNIT_TEST(structure_test);
     CPPUNIT_TEST(sequence_test);
@@ -98,7 +100,7 @@ public:
     CPPUNIT_TEST(simple_type_missing_attribute_test);
     CPPUNIT_TEST(array_missing_dimension_test);
     CPPUNIT_TEST(array_missing_dimension_stream_read_test);
-
+#endif
     CPPUNIT_TEST_SUITE_END();
 
     void other_xml_parse_test1() {

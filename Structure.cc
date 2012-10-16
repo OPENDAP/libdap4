@@ -53,6 +53,9 @@
 #include "Sequence.h"
 #include "Grid.h"
 
+#include "DDS.h"
+#include "ConstraintEvaluator.h"
+
 #include "XDRStreamMarshaller.h"
 #include "util.h"
 #include "debug.h"
@@ -64,14 +67,21 @@ using std::endl;
 
 namespace libdap {
 
+#if 0
+/** This method is protected so it's hidden from the whole world, but
+ * available to direct child classes. Because of that, we need a glue-routine
+ * here so children of Structure can specialize it.
+ */
 void
-Structure::_duplicate(const Structure &s)
+Structure::m_duplicate(const Structure &s)
 {
+    Constructor::m_duplicate(s);
+#if 0
     Structure &cs = const_cast<Structure &>(s);
 
     DBG(cerr << "Copying structure: " << name() << endl);
 
-    for (Vars_iter i = cs._vars.begin(); i != cs._vars.end(); i++) {
+    for (Vars_iter i = cs.d_vars.begin(); i != cs.d_vars.end(); i++) {
         DBG(cerr << "Copying field: " << (*i)->name() << endl);
         // Jose Garcia
         // I think this assert here is part of a debugging
@@ -80,9 +90,11 @@ Structure::_duplicate(const Structure &s)
         // assert(*i);
         BaseType *btp = (*i)->ptr_duplicate();
         btp->set_parent(this);
-        _vars.push_back(btp);
+        d_vars.push_back(btp);
     }
+#endif
 }
+#endif
 
 /** The Structure constructor requires only the name of the variable
     to be created. The name may be omitted, which will create a
@@ -110,12 +122,12 @@ Structure::Structure(const string &n, const string &d)
 /** The Structure copy constructor. */
 Structure::Structure(const Structure &rhs) : Constructor(rhs)
 {
-    _duplicate(rhs);
+    m_duplicate(rhs);
 }
 
 Structure::~Structure()
 {
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         BaseType *btp = *i ;
         delete btp ;  btp = 0;
     }
@@ -135,30 +147,32 @@ Structure::operator=(const Structure &rhs)
 
     dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
 
-    _duplicate(rhs);
+    m_duplicate(rhs);
 
     return *this;
 }
 
+#if 0
 int
 Structure::element_count(bool leaves)
 {
     if (!leaves)
-        return _vars.size();
+        return d_vars.size();
     else {
         int i = 0;
-        for (Vars_iter j = _vars.begin(); j != _vars.end(); j++) {
-            j += (*j)->element_count(leaves);
+        for (Vars_iter j = d_vars.begin(); j != d_vars.end(); j++) {
+            i += (*j)->element_count(leaves);
         }
         return i;
     }
 }
+#endif
 
 bool
 Structure::is_linear()
 {
     bool linear = true;
-    for (Vars_iter i = _vars.begin(); linear && i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); linear && i != d_vars.end(); i++) {
         if ((*i)->type() == dods_structure_c)
             linear = linear && dynamic_cast<Structure*>((*i))->is_linear();
         else
@@ -168,10 +182,11 @@ Structure::is_linear()
     return linear;
 }
 
+#if 0
 void
 Structure::set_send_p(bool state)
 {
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         (*i)->set_send_p(state);
     }
 
@@ -181,13 +196,14 @@ Structure::set_send_p(bool state)
 void
 Structure::set_read_p(bool state)
 {
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         (*i)->set_read_p(state);
     }
 
     BaseType::set_read_p(state);
 }
-
+#endif
+#if 0
 /** Set the \e in_selection property for this variable and all of its
     children.
 
@@ -196,13 +212,13 @@ Structure::set_read_p(bool state)
 void
 Structure::set_in_selection(bool state)
 {
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         (*i)->set_in_selection(state);
     }
 
     BaseType::set_in_selection(state);
 }
-
+#endif
 /** @brief Traverse Structure, set Sequence leaf nodes. */
 void
 Structure::set_leaf_sequence(int level)
@@ -215,6 +231,7 @@ Structure::set_leaf_sequence(int level)
     }
 }
 
+#if 0
 /** Adds an element to a Structure.
 
     @param bt A pointer to the DAP2 type variable to add to this Structure.
@@ -225,8 +242,8 @@ Structure::add_var(BaseType *bt, Part)
     // Jose Garcia
     // Passing and invalid pointer to an object is a developer's error.
     if (!bt)
-        throw InternalErr(__FILE__, __LINE__,
-                          "The BaseType parameter cannot be null.");
+        throw InternalErr(__FILE__, __LINE__, "The BaseType parameter cannot be null.");
+
     if (bt->is_dap4_only_type())
         throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Structure.");
 
@@ -237,7 +254,7 @@ Structure::add_var(BaseType *bt, Part)
     // inside"
     BaseType *btp = bt->ptr_duplicate();
     btp->set_parent(this);
-    _vars.push_back(btp);
+    d_vars.push_back(btp);
 }
 
 /** Adds an element to a Structure.
@@ -248,13 +265,13 @@ void
 Structure::add_var_nocopy(BaseType *bt, Part)
 {
     if (!bt)
-        throw InternalErr(__FILE__, __LINE__,
-                          "The BaseType parameter cannot be null.");
+        throw InternalErr(__FILE__, __LINE__, "The BaseType parameter cannot be null.");
+
     if (bt->is_dap4_only_type())
         throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Structure.");
 
     bt->set_parent(this);
-    _vars.push_back(bt);
+    d_vars.push_back(bt);
 }
 
 
@@ -264,42 +281,42 @@ Structure::add_var_nocopy(BaseType *bt, Part)
 void
 Structure::del_var(const string &n)
 {
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->name() == n) {
             BaseType *bt = *i ;
-            _vars.erase(i) ;
+            d_vars.erase(i) ;
             delete bt ; bt = 0;
             return;
         }
     }
 }
-
-/** @brief simple implementation of reat that iterates through vars
+#endif
+#if 0
+/** @brief simple implementation of read that iterates through vars
  *  and calls read on them
  *
  * @return returns false to signify all has been read
  */
-bool
-Structure::read()
+bool Structure::read()
 {
-    if( !read_p() )
-    {
-	for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
-	    (*i)->read() ;
-	}
-	set_read_p(true) ;
+    if (!read_p()) {
+        for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+            (*i)->read();
+        }
+        set_read_p(true);
     }
 
-    return false ;
+    return false;
 }
-
+#endif
+#if 0
 // TODO Recode to use width(bool)
 unsigned int
 Structure::width()
 {
     unsigned int sz = 0;
 
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         sz += (*i)->width();
     }
 
@@ -318,7 +335,7 @@ Structure::width(bool constrained)
 {
     unsigned int sz = 0;
 
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
     	if (constrained) {
     		if ((*i)->send_p())
     			sz += (*i)->width(constrained);
@@ -330,8 +347,9 @@ Structure::width(bool constrained)
 
     return sz;
 }
+#endif
 
-
+#if 0
 void
 Structure::intern_data(ConstraintEvaluator & eval, DDS & dds)
 {
@@ -339,7 +357,7 @@ Structure::intern_data(ConstraintEvaluator & eval, DDS & dds)
     if (!read_p())
         read();          // read() throws Error and InternalErr
 
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->send_p()) {
             (*i)->intern_data(eval, dds);
         }
@@ -362,7 +380,7 @@ Structure::serialize(ConstraintEvaluator &eval, DDS &dds,
 
     dds.timeout_off();
 
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->send_p()) {
 #ifdef CHECKSUMS
             XDRStreamMarshaller *sm = dynamic_cast<XDRStreamMarshaller*>(&m);
@@ -385,13 +403,14 @@ Structure::serialize(ConstraintEvaluator &eval, DDS &dds,
 bool
 Structure::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 {
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         (*i)->deserialize(um, dds, reuse);
     }
 
     return false;
 }
-
+#endif
+#if 0
 /**  @brief Never call this
 
      This method cannot be used to change values of a Structure since
@@ -415,7 +434,9 @@ Structure::buf2val(void **)
 {
     return sizeof(Structure);
 }
+#endif
 
+#if 0
 BaseType *
 Structure::var(const string &name, bool exact_match, btp_stack *s)
 {
@@ -439,13 +460,14 @@ Structure::var(const string &n, btp_stack &s)
 
     return m_leaf_match(name, &s);
 }
-
+#endif
+#if 0
 // Private method to find a variable using the shorthand name. This
 // should be moved to Constructor.
 BaseType *
 Structure::m_leaf_match(const string &name, btp_stack *s)
 {
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->name() == name) {
             if (s) {
                 DBG(cerr << "Pushing " << this->name() << endl);
@@ -469,23 +491,23 @@ Structure::m_leaf_match(const string &name, btp_stack *s)
 }
 
 // Breadth-first search for NAME. If NAME contains one or more dots (.)
+// TODO The btp_stack is not needed since there are 'back pointers' in
+// BaseType.
 BaseType *
 Structure::m_exact_match(const string &name, btp_stack *s)
 {
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
-        DBG(cerr << "Looking at " << (*i)->name() << " in: " << *i
-            << endl);
+    // Look for name at the top level first.
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->name() == name) {
-            DBG(cerr << "Found " << (*i)->name() << " in: "
-                << *i << endl);
-            if (s) {
-                DBG(cerr << "Pushing " << this->name() << endl);
+            if (s)
                 s->push(static_cast<BaseType *>(this));
-            }
+
             return *i;
         }
     }
 
+    // If it was not found using the simple search, look for a dot and
+    // search the hierarchy.
     string::size_type dot_pos = name.find("."); // zero-based index of `.'
     if (dot_pos != string::npos) {
         string aggregate = name.substr(0, dot_pos);
@@ -493,11 +515,9 @@ Structure::m_exact_match(const string &name, btp_stack *s)
 
         BaseType *agg_ptr = var(aggregate);
         if (agg_ptr) {
-            DBG(cerr << "Descending into " << agg_ptr->name() << endl);
-            if (s) {
-                DBG(cerr << "Pushing " << this->name() << endl);
+            if (s)
                 s->push(static_cast<BaseType *>(this));
-            }
+
             return agg_ptr->var(field, true, s); // recurse
         }
         else
@@ -506,7 +526,10 @@ Structure::m_exact_match(const string &name, btp_stack *s)
 
     return 0;
 }
-
+#endif
+// TODO Can these be removed and the versions in Constructor used instead?
+// Yes.
+#if 0
 void
 Structure::print_val(FILE *out, string space, bool print_decl_p)
 {
@@ -524,8 +547,8 @@ Structure::print_val(ostream &out, string space, bool print_decl_p)
     }
 
     out << "{ " ;
-    for (Vars_citer i = _vars.begin(); i != _vars.end();
-         i++, (void)(i != _vars.end() && out << ", ")) {
+    for (Vars_citer i = d_vars.begin(); i != d_vars.end();
+         i++, (void)(i != d_vars.end() && out << ", ")) {
         (*i)->print_val(out, "", false);
     }
 
@@ -534,7 +557,9 @@ Structure::print_val(ostream &out, string space, bool print_decl_p)
     if (print_decl_p)
 	out << ";\n" ;
 }
+#endif
 
+#if 0
 bool
 Structure::check_semantics(string &msg, bool all)
 {
@@ -543,11 +568,11 @@ Structure::check_semantics(string &msg, bool all)
 
     bool status = true;
 
-    if (!unique_names(_vars, name(), type_name(), msg))
+    if (!unique_names(d_vars, name(), type_name(), msg))
         return false;
 
     if (all) {
-        for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+        for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
             //assert(*i);
             if (!(*i)->check_semantics(msg, true)) {
                 status = false;
@@ -559,6 +584,7 @@ Structure::check_semantics(string &msg, bool all)
 exit:
     return status;
 }
+#endif
 
 /** @brief dumps information about this object
  *

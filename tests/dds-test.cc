@@ -40,12 +40,16 @@
 
 #include "parser.h"
 #include "dds.tab.hh"
-#include "DDXParserDAP4.h"
 #include "BaseType.h"
 #include "Int32.h"
 #include "DDS.h"
 #include "util.h"
 #include "Error.h"
+
+#ifdef DAP4
+#include "D4ParserSax2.h"
+#include "D4BaseTypeFactory.h"
+#endif
 
 using namespace libdap;
 
@@ -252,17 +256,16 @@ void test_parser(const string &name) {
 
 void test_dap4_parser(const string &name) {
 #ifdef DAP4
-    DAP4BaseTypeFactory factory;
+    D4BaseTypeFactory factory;
 
     DDS table(&factory);
-    DDXParserDAP4 parser(&factory);
-    string cid;
+    D4ParserSax2 parser;
     if (name.empty()) {
-        parser.intern_stream(cin, &table, cid);
+        parser.intern(cin, &table);
     }
     else {
         fstream in(name.c_str(), ios_base::in);
-        parser.intern_stream(in, &table, cid);
+        parser.intern(in, &table);
     }
 
     if (table.check_semantics())

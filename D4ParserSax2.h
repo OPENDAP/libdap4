@@ -4,7 +4,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2003 OPeNDAP, Inc.
+// Copyright (c) 2012 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -23,8 +23,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#ifndef ddx_dap4_parser_h
-#define ddx_dap4_parser_h
+#ifndef d4_parser_sax2_h
+#define d4_parser_sax2_h
 
 #include <string>
 #include <iostream>
@@ -33,43 +33,32 @@
 
 #include <libxml/parserInternals.h>
 
-#ifndef ddx_exceptions_h
-#include "DDXExceptions.h"
-#endif
-
-#ifndef _dds_h
 #include "DDS.h"
-#endif
-
-#ifndef _basetype_h
 #include "BaseType.h"
-#endif
+#include "D4EnumDef.h"
+#include "D4BaseTypeFactory.h"
 
-#ifndef dap4_base_type_factory_h
-#include "DAP4BaseTypeFactory.h"
-#endif
+#include "D4ParseError.h"
 
 namespace libdap
 {
 
 /** Parse the XML text which encodes the network/persistent representation of
-    the DDX object. In the current implementation, the DDX is held by an
+    the DMR object. In the current implementation, the DMR is held by an
     instance of the class DDS which in turn holds variables which include
-    attributes. That is, the binary \e implementation of a DDX uses the old
-    DDS, BaseType and AttrTable classes, albeit arranged in a slightly new
-    way.
+    attributes.
 
-    This parser for the DDX \e document uses the SAX interface of \c libxml2.
+    This parser for the DMR document uses the SAX interface of libxml2.
     Static methods are used as callbacks for the SAX parser. These static
     methods are public because making them private complicates compilation.
-    They should not be called by anything other than the \e intern method.
+    They should not be called by anything other than the intern method.
     They do not throw exceptions because exceptions from within callbacks are
     not reliable or portable. To signal errors, the methods record
-    information in the DDXParserDAP4 object. Once the error handler is called,
-    construction of an DDX/DDS object ends even though the SAX parser still
-    calls the various callback functions. The parser treats \e warnings, \e
-    errors and \e fatal_errors the same way; when any are found parsing
-    stops. The \e intern method throws an DDXParseFailed exception if an
+    information in the D4ParserSax2 object. Once the error handler is called,
+    construction of an DMR object ends even though the SAX parser still
+    calls the various callback functions. The parser treats warnings,
+    errors and fatal_errors the same way; when any are found parsing
+    stops. The intern method throws an D4ParseError exception if an
     error was found.
 
     Note that this class uses the C++-supplied default definitions for the
@@ -77,7 +66,7 @@ namespace libdap
     operator.
 
     @see DDS */
-class DDXParserDAP4
+class D4ParserSax2
 {
 private:
     /** States used by DDXParserDAP4State. These are the states of the SAX parser
@@ -85,13 +74,18 @@ private:
     enum ParseState {
         parser_start,
 
-        inside_root_group,
-        group,
+        // inside_group is the state just after parsing the start of a Group
+        // element.
+        inside_group,
 
+        // @TODO Parse attributes once the variables are working.
         inside_attribute_container,
         inside_attribute,
         inside_attribute_value,
         inside_other_xml_attribute,
+
+        inside_enum_def,
+        inside_enum_const,
 
         // This covers Byte, ..., Url, Opaque
         inside_simple_type,
@@ -105,18 +99,19 @@ private:
         inside_structure,
         inside_sequence,
 
-        inside_blob,
-
         parser_unknown,
         parser_error
     };
 
-    DAP4BaseTypeFactory *d_factory;
+    D4BaseTypeFactory *d_factory;
 
     // These stacks hold the state of the parse as it progresses.
     stack<ParseState> s; // Current parse state
-    stack<BaseType*> bt_stack; // current variable(s)
+    stack<BaseType*> bt_stack; // current variable(s)/groups(s)
     stack<AttrTable*> at_stack; // current attribute table
+
+    // If an enumeration being defined, hold it here until its complete
+    D4EnumDef *d_enum_def;
 
     // Accumulate stuff inside an 'OtherXML' DAP attribute here
     string other_xml;
@@ -131,14 +126,13 @@ private:
     xmlParserCtxtPtr ctxt; // used for error message line numbers
 
     // The results of the parse operation are stored in these fields.
-    DDS *dds;   // dump DDX here
-    string *blob_cid;  // put href to blob here
+    DDS *dds;   // dump DMR here
 
     // These hold temporary values read during the parse.
-    string dods_attr_name; // DAP2 attributes, not XML attributes
+    string dods_attr_name; // DAP4 attributes, not XML attributes
     string dods_attr_type; // ... not XML ...
     string char_data;  // char data in value elements; null after use
-    string root_ns;     // What is the namespace of the root node (Dataset)
+    string root_ns;     // What is the namespace of the root node (Group)
 
     class XMLAttribute {
         public:
@@ -174,21 +168,21 @@ private:
     };
 
     typedef map<string, XMLAttribute> XMLAttrMap;
-    XMLAttrMap attribute_table; // dump XML attributes here
+    XMLAttrMap xml_attrs; // dump XML attributes here
 
-    XMLAttrMap::iterator attr_table_begin() {
-        return attribute_table.begin();
+    XMLAttrMap::iterator xml_attr_begin() {
+        return xml_attrs.begin();
     }
 
-    XMLAttrMap::iterator attr_table_end() {
-        return attribute_table.end();
+    XMLAttrMap::iterator xml_attr_end() {
+        return xml_attrs.end();
     }
 
     map<string, string> namespace_table;
 
     // These are kind of silly...
-    void set_state(DDXParserDAP4::ParseState state);
-    DDXParserDAP4::ParseState get_state() const;
+    void set_state(D4ParserSax2::ParseState state);
+    D4ParserSax2::ParseState get_state() const;
     void pop_state();
 
     // Glue for the BaseTypeFactory class.
@@ -208,46 +202,38 @@ private:
     bool check_required_attribute(const string &attr);
     bool check_attribute(const string & attr);
 
-    void process_attribute_element(const xmlChar **attrs, int nb_attrs);
-#if 0
-    void process_attribute_alias(const xmlChar **attrs, int nb_attrs);
-#endif
+    void process_attribute_helper(const xmlChar **attrs, int nb_attrs);
 
-    void process_variable(Type t, ParseState s, const xmlChar **attrs,
-            int nb_attributes);
+    void process_variable_helper(Type t, ParseState s, const xmlChar **attrs, int nb_attributes);
+
+    void process_enum_const_helper(const xmlChar **attrs, int nb_attributes);
+    void process_enum_def_helper(const xmlChar **attrs, int nb_attributes);
 
     void process_dimension(const xmlChar **attrs, int nb_attrs);
-    void process_blob(const xmlChar **attrs, int nb_attrs);
 
-    bool is_attribute(const char *name, const xmlChar **attrs,
-            int nb_attributes);
-    bool is_variable(const char *name, const xmlChar **attrs, int nb_attributes);
+    bool process_attribute(const char *name, const xmlChar **attrs, int nb_attributes);
+    bool process_variable(const char *name, const xmlChar **attrs, int nb_attributes);
+
+    bool process_enum_def(const char *name, const xmlChar **attrs, int nb_attributes);
+    bool process_enum_const(const char *name, const xmlChar **attrs, int nb_attributes);
 
     void finish_variable(const char *tag, Type t, const char *expected);
     //@}
 
-    /// Define the default ctor here to prevent its use.
-    DDXParserDAP4() {}
-    //{throw InternalErr(__FILE__, __LINE__, "DDXParserDAP4 internal ctor called!");}
-
-    friend class DDXParserDAP4Test;
+    friend class D4ParserSax2Test;
 
 public:
-    DDXParserDAP4(DAP4BaseTypeFactory *factory)
-        : d_factory(factory),
+    // Read the factory class used to build BaseTypes from the DDS passed
+    // into the intern() method.
+    D4ParserSax2() : d_factory(0),
         other_xml(""), other_xml_depth(0), unknown_depth(0),
-        error_msg(""), ctxt(0), dds(0), blob_cid(0),
+        error_msg(""), ctxt(0), dds(0),
         dods_attr_name(""), dods_attr_type(""),
         char_data(""), root_ns("")
     {}
 
-    void intern(const string &document, DDS *dest_dds, string &cid);
-    void intern_stream(istream &in, DDS *dds, string &cid, const string &boundary = "");
-
-#if 0
-    void intern_stream(FILE *in, DDS *dds, string &cid,
-		const string &boundary = "");
-#endif
+    void intern(const string &document, DDS *dest_dds);
+    void intern(istream &in, DDS *dest_dds);
 
     static void ddx_start_document(void *parser);
     static void ddx_end_document(void *parser);
@@ -270,4 +256,4 @@ public:
 
 } // namespace libdap
 
-#endif // ddx_dap4_parser_h
+#endif // d4_parser_sax2_h

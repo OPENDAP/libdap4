@@ -180,9 +180,10 @@ Array::operator=(const Array &rhs)
 void
 Array::add_var(BaseType *v, Part)
 {
+#if 0
     if (v && v->is_dap4_only_type())
         throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Array.");
-
+#endif
     // If 'v' is an Array, add the template instance to this object and
     // then copy the dimension information. Odd semantics; I wonder if this
     //is ever used. jhrg 6/13/12
@@ -204,9 +205,10 @@ Array::add_var(BaseType *v, Part)
 void
 Array::add_var_nocopy(BaseType *v, Part)
 {
+#if 0
     if (v && v->is_dap4_only_type())
         throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Array.");
-
+#endif
     // If 'v' is an Array, add the template instance to this object and
     // then copy the dimension information. Odd semantics; I wonder if this
     //is ever used. jhrg 6/13/12

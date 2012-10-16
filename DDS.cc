@@ -171,8 +171,12 @@ DDS::duplicate(const DDS &dds)
     d_max_response_size = dds.d_max_response_size;
 }
 
+//FIXME says 3.2 when it's 2.0
 /**
  * Make a DDS which uses the given BaseTypeFactory to create variables.
+ *
+ * @note The default DAP version is 3.2 - this is really DAP2 with a handful
+ * of enhancements that our WCS software relies on.
  *
  * @param factory The BaseTypeFactory to use when creating instances of
  * DAP variables. The caller must ensure the factory's lifetime is at least
@@ -185,7 +189,7 @@ DDS::DDS(BaseTypeFactory *factory, const string &name)
           d_request_xml_base(""),
           d_timeout(0), d_keywords(), d_max_response_size(0)
 {
-    DBG(cerr << "Building a DDS for the default version (2.0)" << endl);
+    DBG(cerr << "Building a DDS for the default version (3.2)" << endl);
 
     // This method sets a number of values, including those returned by
     // get_protocol_major(), ..., get_namespace().
@@ -204,7 +208,7 @@ DDS::DDS(BaseTypeFactory *factory, const string &name)
  * that of the DDS instance.
  * @param name The name of the DDS - usually derived from the name of the
  * pathname or table name of the dataset.
- * @param version The DAP version to support. This set the DAP version, as
+ * @param version The DAP version to support. This sets the DAP version, as
  * well as a number of other dependent constants.
  */
 DDS::DDS(BaseTypeFactory *factory, const string &name, const string &version)
@@ -552,9 +556,10 @@ DDS::get_request_size(bool constrained)
 void DDS::add_var(BaseType *bt) {
     if (!bt)
         throw InternalErr(__FILE__, __LINE__, "Trying to add a BaseType object with a NULL pointer.");
+#if 0
     if (bt->is_dap4_only_type())
         throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 DDS.");
-
+#endif
     DBG2(cerr << "In DDS::add_var(), bt's address is: " << bt << endl);
 
     BaseType *btp = bt->ptr_duplicate();
@@ -574,16 +579,23 @@ void DDS::add_var(BaseType *bt) {
 
 /** @brief Adds the variable to the DDS.
     @param bt Source variable. */
-void DDS::add_var_nocopy(BaseType *bt) {
+void
+DDS::add_var_nocopy(BaseType *bt)
+{
     if (!bt)
         throw InternalErr(__FILE__, __LINE__, "Trying to add a BaseType object with a NULL pointer.");
+#if 0
+    //FIXME There's no longer a DAP2 and DAP4 DDS
     if (bt->is_dap4_only_type())
         throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 DDS.");
-
+#endif
+#if 0
     DBG2(cerr << "In DDS::add_var(), bt's address is: " << bt << endl);
-
+#if 0
     BaseType *btp = bt->ptr_duplicate();
+#endif
     DBG2(cerr << "In DDS::add_var(), btp's address is: " << btp << endl);
+#endif
     if (d_container) {
         // Mem leak fix [mjohnson nov 2009]
         // Structure::add_var() creates ANOTHER copy.
@@ -595,7 +607,7 @@ void DDS::add_var_nocopy(BaseType *bt) {
 #endif
     }
     else {
-        vars.push_back(btp);
+        vars.push_back(bt);
     }
 }
 
@@ -818,9 +830,10 @@ DDS::get_var_index(int i)
 void
 DDS::insert_var(Vars_iter i, BaseType *ptr)
 {
+#if 0
     if (ptr->is_dap4_only_type())
         throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 DDS.");
-
+#endif
     vars.insert(i, ptr->ptr_duplicate());
 }
 
@@ -834,9 +847,10 @@ DDS::insert_var(Vars_iter i, BaseType *ptr)
 void
 DDS::insert_var_nocopy(Vars_iter i, BaseType *ptr)
 {
+#if 0
     if (ptr->is_dap4_only_type())
         throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 DDS.");
-
+#endif
     vars.insert(i, ptr);
 }
 
