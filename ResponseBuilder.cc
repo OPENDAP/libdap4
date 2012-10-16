@@ -49,7 +49,7 @@
 #include "util.h"
 #include "ResponseBuilder.h"
 #include "XDRStreamMarshaller.h"
-#include "DAP4streamMarshaller.h"
+#include "DAP4StreamMarshaller.h"
 
 #ifndef WIN32
 #include "SignalHandler.h"
