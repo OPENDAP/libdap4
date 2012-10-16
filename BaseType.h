@@ -217,6 +217,8 @@ private:
     bool d_is_dap4;         // True if this is a DAP4 variable, false ... DAP2
 
     // These are non-empty only for DAP4 variables. Added 9/27/12 jhrg
+
+    // FIXME Remove this. This header cannot have compile-time variation
 #if DAP4
     D4Dimensions d_dims;   // If non-empty, this BaseType is an DAP4 Array
     D4Maps d_maps;         // if non-empty, this BaseType is a DAP4 'Grid'
