@@ -827,7 +827,7 @@ string read_multipart_boundary(FILE *in, const string &boundary)
     a parameter _and_ returns that value as a result, but this code can be
     used in two different situations. In one case, it is called on a partial
     document read from stdin and needs to return the value of boundary to the
-    downstream DDX parser to that code can sense the end of hte DDX. In the
+    downstream DDX parser so that code can sense the end of the DDX. In the
     other case, this function is told the value of boundary and tests for it
     to ensure document correctness.
 

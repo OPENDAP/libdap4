@@ -237,14 +237,14 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	Operators.h XDRUtils.cc XDRFileMarshaller.cc			\
 	XDRFileUnMarshaller.cc XDRStreamMarshaller.cc			\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc \
-	DAPCache3.cc Connect.cc 
+	DAPCache3.cc
 
 Operators.h: ce_expr.tab.hh
 
 # Operators.h is included in with the source to prevent it from bing installed
 # with the other headers. It includes one of the built grammar file headers.
 
-CLIENT_SRC = RCReader.cc HTTPConnect.cc HTTPCache.cc	\
+CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc	\
 	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc
 
 SERVER_SRC = DODSFilter.cc Ancillary.cc ResponseBuilder.cc
@@ -262,7 +262,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	Marshaller.h XDRFileUnMarshaller.h UnMarshaller.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h \
-	DAPCache3.h Connect.h 
+	DAPCache3.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h
@@ -274,7 +274,7 @@ endif
 xdr-datatypes.h: xdr-datatypes-config.h
 	cp -p $< xdr-datatypes.h
 
-CLIENT_HDR = RCReader.h HTTPConnect.h HTTPCache.h		\
+CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		\
 	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		\
 	Response.h HTTPResponse.h HTTPCacheResponse.h PipeResponse.h	\
 	StdinResponse.h SignalHandlerRegisteredErr.h			\

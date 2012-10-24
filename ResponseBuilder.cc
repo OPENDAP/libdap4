@@ -56,11 +56,14 @@
 #endif
 #include "DAS.h"
 #include "DDS.h"
-#include "Connect.h"
-#include "Response.h"
+//#include "Connect.h"
+//#include "Response.h"
+#include "DDXParserSax2.h"
 #include "Ancillary.h"
 #include "ResponseBuilder.h"
 #include "XDRStreamMarshaller.h"
+#include "XDRFileUnMarshaller.h"
+
 #include "DAPCache3.h"
 
 #include "debug.h"
@@ -1003,6 +1006,66 @@ void ResponseBuilder::cache_data_ddx(const string &cache_file_name, DDS &dds)
 }
 
 /**
+ * Read the data from the saved response document.
+ *
+ * @note this method is made of code copied from Connect (process_data(0)
+ * but this copy assumes ot is reading a DDX with data written using the
+ * code in ResponseBuilder::cache_data_ddx().
+ *
+ * @note I put this code here instead of using what was in Connect because
+ * I did not want all of the handlers to be modified to inlcude libdapclient
+ * and thus libcurl and libuuid.
+ *
+ * @todo Maybe move this code into libdap as a general 'get it from
+ * disk' method. Use that code in libdapclient.
+ *
+ * @param data The input stream
+ * @parma fdds Load this DDS object with the variables, attributes and
+ * data values from the cached DDS.
+ */
+void ResponseBuilder::read_data_from_cache(FILE *data, DDS *fdds)
+{
+    // Rip off the MIME headers from the response if they are present
+    string mime = get_next_mime_header(data);
+    while (!mime.empty()) {
+#if 0
+        string header, value;
+        parse_mime_header(mime, header, value);
+#endif
+        mime = get_next_mime_header(data);
+    }
+
+    // Parse the DDX; throw an exception on error.
+    DDXParser ddx_parser(fdds->get_factory());
+
+    // Read the MPM boundary and then read the subsequent headers
+    string boundary = read_multipart_boundary(data);
+    DBG(cerr << "MPM Boundary: " << boundary << endl);
+
+    read_multipart_headers(data, "text/xml", dap4_ddx);
+
+    // Parse the DDX, reading up to and including the next boundary.
+    // Return the CID for the matching data part
+    string data_cid;
+    ddx_parser.intern_stream(data, fdds, data_cid, boundary);
+
+    // Munge the CID into something we can work with
+    data_cid = cid_to_header_value(data_cid);
+    DBG(cerr << "Data CID: " << data_cid << endl);
+
+    // Read the data part's MPM part headers (boundary was read by
+    // DDXParse::intern)
+    read_multipart_headers(data, "application/octet-stream", dap4_data, data_cid);
+
+    // Now read the data
+
+    XDRFileUnMarshaller um(data);
+    for (DDS::Vars_iter i = fdds->var_begin(); i != fdds->var_end(); i++) {
+        (*i)->deserialize(um, fdds);
+    }
+}
+
+/**
  * Read data from cache. Allocates a new DDS using the given factory.
  */
 DDS *
@@ -1015,12 +1078,19 @@ ResponseBuilder::get_cached_data_ddx(const string &cache_file_name, BaseTypeFact
     fdds->filename( d_dataset ) ;
     fdds->set_dataset_name( "function_result_" + name_path( d_dataset ) ) ;
 
+#if 0
     Connect *url = new Connect( d_dataset ) ;
     Response *r = new Response( fopen( cache_file_name.c_str(), "r" ), 0 ) ;
     if( !r->get_stream() )
         throw Error("The input source: " + cache_file_name +  " could not be opened");
 
     url->read_data( *fdds, r ) ;
+#endif
+
+    // fstream data(cache_file_name.c_str());
+    FILE *data = fopen( cache_file_name.c_str(), "r" );
+    read_data_from_cache(data, fdds);
+
     fdds->set_factory( 0 ) ;
 
     // mark everything as read.

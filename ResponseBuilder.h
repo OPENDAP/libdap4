@@ -137,6 +137,7 @@ public:
                            bool with_mime_headers = true);
 
     virtual void cache_data_ddx(const string &cache_file_name, DDS &dds);
+    virtual void read_data_from_cache(FILE *data, DDS *fdds);
     virtual DDS *get_cached_data_ddx(const string &cache_file_name, BaseTypeFactory *factory);
 
     // These functions are used both by the methods above and by other code
