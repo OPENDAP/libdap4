@@ -130,20 +130,17 @@ TestGrid::~TestGrid()
 {
 }
 
-bool
-TestGrid::read()
+bool TestGrid::read()
 {
     if (read_p())
-	return true;
+        return true;
 
     get_array()->read();
 
-    for (Map_iter i = map_begin(); i != map_end(); i++)
-    {
-	if (!(*i)->read())
-	{
-	    return false;
-	}
+    for (Map_iter i = map_begin(); i != map_end(); i++) {
+        if (!(*i)->read()) {
+            return false;
+        }
     }
 
     set_read_p(true);

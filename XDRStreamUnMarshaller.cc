@@ -36,8 +36,8 @@
 #include <string>
 #include <sstream>
 
-#define DODS_DEBUG2 1
-#define DODS_DEBUG 1
+//#define DODS_DEBUG2 1
+//#define DODS_DEBUG 1
 
 #include "Str.h"
 #include "Vector.h"

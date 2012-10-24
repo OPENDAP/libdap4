@@ -904,6 +904,28 @@ DDS::print(ostream &out)
     return ;
 }
 
+/**
+ * Print the DAP2 DAS object using attribute information recorded
+ * this DDS object.
+ *
+ * @note Uses default indenting of four spaces and does not follow
+ * (now deprecated) attribute aliases.
+ *
+ * @param out Write the DAS here.
+ */
+void
+DDS::print_das(ostream &out)
+{
+    out << "Attributes {\n" ;
+
+    d_attr.print(out, "    ");
+    for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
+        (*i)->get_attr_table().print(out, "    ");
+    }
+
+    out << "}\n" ;
+}
+
 #if FILE_METHODS
 /** @brief Print a constrained DDS to the specified file.
 
@@ -1211,6 +1233,9 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
     // the same.
     // For DAP 3.2 and greater, use the new syntax and value. The 'blob' is
     // actually the CID of the MIME part that holds the data.
+    // FIXME cerr
+    cerr << "blob: " << blob << ", " << "dap major, minor: " << get_dap_major() << ", " << get_dap_minor() << endl;
+
     if (get_dap_major() == 2 && get_dap_minor() == 0) {
         if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "dataBLOB") < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write dataBLOB element");
@@ -1323,10 +1348,12 @@ DDS::mark(const string &n, bool state)
 
         DBG2(cerr << "DDS::mark: Set variable " << s->top()->name()
                 << " (a " << s->top()->type_name() << ")" << endl);
+        // FIXME get_parent() hosed?
+#if 1
         string parent_name = (s->top()->get_parent()) ? s->top()->get_parent()->name(): "none";
         string parent_type = (s->top()->get_parent()) ? s->top()->get_parent()->type_name(): "none";
         DBG2(cerr << "DDS::mark: Parent variable " << parent_name << " (a " << parent_type << ")" << endl);
-
+#endif
         s->pop();
     }
 

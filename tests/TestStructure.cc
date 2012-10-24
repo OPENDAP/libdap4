@@ -33,7 +33,7 @@
 //
 // jhrg 1/12/95
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "config.h"
 #include "TestStructure.h"

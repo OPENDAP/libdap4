@@ -176,7 +176,7 @@ bool GridGeoConstraint::build_lat_lon_maps()
     return get_lat() && get_lon();
 }
 
-/** A private method called by the constructor that check to make sure the
+/** A private method called by the constructor that checks to make sure the
     two arrays passed to the constructor are valid latitude and longitude
     maps. If so, a they are read in and the values are slurped up by this
     object. Then the Grid's dimension iterator is used to record a reference
@@ -272,7 +272,7 @@ GridGeoConstraint::lat_lon_dimensions_ok()
     has. If this were implemented as a 'selection function' (i.e., if the code
     was run by ConstraintExpression::eval() then we might be able to better
     optimize how data are read, but in this case we have read all the data
-    and may have already reorganized it. Set up the internal buffers so they
+    and may have already reorganized it). Set up the internal buffers so they
     hold the correct values and mark the Grid's array and lat/lon maps as
     read. */
 void GridGeoConstraint::apply_constraint_to_data()

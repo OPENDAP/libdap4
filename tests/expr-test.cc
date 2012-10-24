@@ -35,10 +35,7 @@
 
 #include "config.h"
 
-#define DODS_DEBUG
-
-static char rcsid[] not_used =
-    { "$Id$" };
+//#define DODS_DEBUG
 
 #include <stdio.h>
 #include <stdlib.h>

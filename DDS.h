@@ -346,6 +346,8 @@ public:
 
     void print_xml_writer(ostream &out, bool constrained, const string &blob = "");
 
+    void print_das(ostream &out);
+
     void mark_all(bool state);
     bool mark(const string &name, bool state);
     bool check_semantics(bool all = false);

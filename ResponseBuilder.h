@@ -49,6 +49,8 @@
 #include "EncodingType.h"
 #endif
 
+class DAPCache3;
+
 namespace libdap
 {
 
@@ -64,9 +66,12 @@ public:
 
 protected:
     string d_dataset;  		/// Name of the dataset/database
-    string d_ce;  		/// Constraint expression
+    string d_ce;  		    /// Constraint expression
+    string d_btp_func_ce;   /// The BTP functions, extracted from the CE
     int d_timeout;  		/// Response timeout after N seconds
     string d_default_protocol;	/// Version string for the library's default protocol version
+
+    DAPCache3 *d_cache;
 
 #if 0	// Keyword support moved to Keywords class
     set<string> d_keywords; 	/// Holds all of the keywords passed in the CE
@@ -95,6 +100,9 @@ public:
     virtual string get_ce() const;
     virtual void set_ce(string _ce);
 
+    virtual string get_btp_func_ce() const { return d_btp_func_ce; }
+    virtual void set_btp_func_ce(string _ce) { d_btp_func_ce = _ce; }
+
     virtual string get_dataset_name() const;
     virtual void set_dataset_name(const string _dataset);
 
@@ -103,11 +111,15 @@ public:
 
     virtual void establish_timeout(ostream &stream) const;
 
-    virtual void send_das(ostream &out, DAS &das,
-                          bool with_mime_headers = true) const;
+    virtual void split_ce(ConstraintEvaluator &eval, const string &expr = "");
+    virtual bool is_valid(const string &cache_file_name);
+
+    virtual void send_das(ostream &out, DAS &das, bool with_mime_headers = true);
+    virtual void send_das(ostream &out, DDS &dds, ConstraintEvaluator &eval,
+                          bool constrained = false, bool with_mime_headers = true);
+
     virtual void send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
-                          bool constrained = false,
-                          bool with_mime_headers = true) const;
+                          bool constrained = false,  bool with_mime_headers = true);
 
     virtual void dataset_constraint(ostream &out, DDS &dds, ConstraintEvaluator &eval,
                                     bool ce_eval = true) const;
@@ -115,15 +127,17 @@ public:
                                    const string &boundary, const string &start,
                                    bool ce_eval = true) const;
 
-    virtual void send_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval,
-                           bool with_mime_headers = true) const;
+    virtual void send_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers = true);
 
     virtual void send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval,
-                          bool with_mime_headers = true) const;
+                          bool with_mime_headers = true);
 
     virtual void send_data_ddx(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval,
                            const string &start, const string &boundary,
-                           bool with_mime_headers = true) const;
+                           bool with_mime_headers = true);
+
+    virtual void cache_data_ddx(const string &cache_file_name, DDS &dds);
+    virtual DDS *get_cached_data_ddx(const string &cache_file_name, BaseTypeFactory *factory);
 
     // These functions are used both by the methods above and by other code
 

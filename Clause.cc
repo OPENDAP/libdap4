@@ -220,6 +220,18 @@ Clause::value(DDS &dds, BaseType **value)
         argv = 0;
 
         if (*value) {
+            // FIXME This comment is likely wrong... 10/19/12
+            // This call to set_send_p was removed because new logic used
+            // in ResponseBuilder will handle it. See send_data(), ...
+            // When the second part of the CE is parsed, if it is null,
+            // then all the variables in the DDS that holds the function
+            // result variables will be sent. If there's a projection in
+            // that second CE, it will denote what is to be sent. Setting
+            // set_send_p(true) here had the affect of overriding that
+            // second CE. Note, however, that the code in send_data() clears
+            // all of the send_p properties for variables in the DDS, so
+            // removing the call here is just removing something that will
+            // actually have no affect. jhrg 10/19/12
             (*value)->set_send_p(true);
             (*value)->set_read_p(true);
             return true;

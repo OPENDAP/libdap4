@@ -886,7 +886,7 @@ string cid_to_header_value(const string &cid)
 {
     string::size_type offset = cid.find("cid:");
     if (offset != 0)
-	throw Error("expected CID to start with 'cid:'");
+        throw Error("expected CID to start with 'cid:'");
 
     string value = "<";
     value.append(cid.substr(offset + 4));

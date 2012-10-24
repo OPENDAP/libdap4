@@ -423,10 +423,6 @@ BaseType *Vector::var(const string & n, btp_stack & s)
  pointer will reference the element itself, so multiple calls to this
  method should save each value before making the next call.
 
- @todo Is this method thread safe? If 'apartment threading' is used, I
- think so. But if the library is running in more than one thread, then
- this is not thread safe.
-
  @param i The index of the desired Vector element.  Zero
  indicates the first element of the Vector.
  @return A pointer to a BaseType class instance containing

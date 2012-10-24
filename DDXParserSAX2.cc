@@ -562,9 +562,10 @@ void DDXParser::ddx_end_document(void * p)
 		return;
     }
     
-    for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end();
-         ++i)
+    for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end(); ++i) {
+        (*i)->set_parent(0);        // top-level vars have no parents
         parser->dds->add_var(*i);
+    }
 
     parser->bt_stack.pop();
     delete cp;

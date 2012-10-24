@@ -47,6 +47,7 @@ static char rcsid[]not_used = { "$Id$" };
 #include <algorithm>
 
 //#define DODS_DEBUG
+
 #undef FUNCTION_DAP	// undef so the dap() function always returns an error;
 // use keywords instead.
 
@@ -553,6 +554,7 @@ void function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     Grid::Map_iter i = l_grid->map_begin();
     while (i != l_grid->map_end())
         (*i++)->set_send_p(true);
+
     l_grid->read();
 
     DBG(cerr << "grid: past map read" << endl);
@@ -577,6 +579,12 @@ void function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     l_grid->get_array()->set_send_p(true);
 
     l_grid->read();
+
+    // Make a new grid here and copy just the parts of the Grid
+    // that are in the current projection - this means reading
+    // the array slicing information, extracting the correct
+    // values and building destination arrays with just those
+    // values.
 
     *btpp = l_grid;
     return;
@@ -917,11 +925,17 @@ void function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     BaseType *dest = 0;
     double *data;
     if (argv[0]->type() == dods_grid_c) {
-        Array &source = *dynamic_cast<Grid&> (*argv[0]).get_array();
-        source.set_send_p(true);
-        source.read();
-        data = extract_double_array(&source);
-        int length = source.length();
+#if 0
+        // For a Grid, the function scales only the Array part.
+        Array *source = dynamic_cast<Grid*>(argv[0])->get_array();
+        //argv[0]->set_send_p(true);
+             //source->set_send_p(true);
+        source->read();
+        data = extract_double_array(source);
+        int length = source->length();
+        for (int i = 0; i < length; ++i)
+            data[i] = data[i] * m + b;
+#if 0
         int i = 0;
         while (i < length) {
             DBG2(cerr << "data[" << i << "]: " << data[i] << endl);
@@ -930,20 +944,96 @@ void function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
             DBG2(cerr << " >> data[" << i << "]: " << data[i] << endl);
             ++i;
         }
-
+#endif
         // Vector::add_var will delete the existing 'template' variable
-        Float64 *temp_f = new Float64(source.name());
-        source.add_var(temp_f);
+        Float64 *temp_f = new Float64(source->name());
+        source->add_var(temp_f);
+
 #ifdef VAL2BUF
         source.val2buf(static_cast<void*>(data), false);
 #else
-        source.set_value(data, i);
+        source->set_value(data, length);
 #endif
         delete[] data; // val2buf copies.
         delete temp_f; // add_var copies and then adds.
         dest = argv[0];
+        dest->set_send_p(true);
+#endif
+        // Grab the whole Grid; note that the scaling is done only on the array part
+        Grid &source = dynamic_cast<Grid&>(*argv[0]);
+
+        DBG(cerr << "Grid send_p: " << source.send_p() << endl);
+        DBG(cerr << "Grid Array send_p: " << source.get_array()->send_p() << endl);
+
+        // Read the grid; set send_p since Grid is a kind of constructor and
+        // read will only be called on it's fields if their send_p flag is set
+        source.set_send_p(true);
+        source.read();
+
+        // Get the Array part and read the values
+        Array *a = source.get_array();
+        //a->read();
+        data = extract_double_array(a);
+
+        // Now scale the data.
+        int length = a->length();
+        for (int i = 0; i < length; ++i)
+            data[i] = data[i] * m + b;
+#if 0
+        // read the maps so that those values will be copied when the source Grid
+        // is copied to the dest Grid
+        Grid::Map_iter s = source.map_begin();
+        while (s != source.map_end()) {
+            static_cast<Array*>(*s)->read();
+            ++s;
+        }
+#endif
+        // Copy source Grid to result Grid. Could improve on this by not using this
+        // trick since it copies all of 'source' to 'dest', including the main Array.
+        // The next bit of code will replace those values with the newly scaled ones.
+        Grid *result = new Grid(source);
+
+        // Now load the transferred values; use Float64 as the new type of the result
+        // Grid Array.
+        result->get_array()->add_var_nocopy(new Float64(source.name()));
+        result->get_array()->set_value(data, length);
+        delete[] data;
+
+#if 0
+        // Now set the maps (NB: the copy constructor does not copy data)
+        Grid::Map_iter s = source.map_begin();
+        Grid::Map_iter d = result->map_begin();
+        while (s != source.map_end()) {
+            Array *a = static_cast<Array*>(*s);
+            a->read();
+            switch(a->var()->type()) {
+            case dods_byte_c: {
+                vector<dods_byte> v(a->length());
+                a->value(&v[0]);
+                static_cast<Array*>(*d)->set_value(v, v.size());
+                break;
+            }
+            case dods_float32_c: {
+                vector<dods_float32> v(a->length());
+                a->value(&v[0]);
+                static_cast<Array*>(*d)->set_value(v, a->length());
+                break;
+            }
+            default:
+                throw Error("Non-numeric Grid Map not supported by linear_scale().");
+            }
+            ++s; ++d;
+        }
+#endif
+
+        // FIXME result->set_send_p(true);
+        DBG(cerr << "Grid send_p: " << result->send_p() << endl);
+        DBG(cerr << "Grid Array send_p: " << result->get_array()->send_p() << endl);
+
+        dest = result;
     }
     else if (argv[0]->is_vector_type()) {
+#if 0
         Array &source = dynamic_cast<Array&> (*argv[0]);
         source.set_send_p(true);
         // If the array is really a map, make sure to read using the Grid
@@ -971,16 +1061,41 @@ void function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
         delete temp_f; // add_var copies and then adds.
 
         dest = argv[0];
+#endif
+        Array &source = dynamic_cast<Array&>(*argv[0]);
+        // If the array is really a map, make sure to read using the Grid
+        // because of the HDF4 handler's odd behavior WRT dimensions.
+        if (source.get_parent() && source.get_parent()->type() == dods_grid_c) {
+            source.get_parent()->set_send_p(true);
+            source.get_parent()->read();
+        }
+        else
+            source.read();
+
+        data = extract_double_array(&source);
+        int length = source.length();
+        for (int i = 0; i < length; ++i)
+            data[i] = data[i] * m + b;
+
+        Array *result = new Array(source);
+
+        result->add_var_nocopy(new Float64(source.name()));
+        result->set_value(data, length);
+
+        delete[] data; // val2buf copies.
+
+        dest = result;
     }
     else if (argv[0]->is_simple_type() && !(argv[0]->type() == dods_str_c || argv[0]->type() == dods_url_c)) {
         double data = extract_double_value(argv[0]);
         if (!use_missing || !double_eq(data, missing))
             data = data * m + b;
 
-        dest = new Float64(argv[0]->name());
+        Float64 *fdest = new Float64(argv[0]->name());
 
-        dest->val2buf(static_cast<void*> (&data));
-
+        fdest->set_value(data);
+        // dest->val2buf(static_cast<void*> (&data));
+        dest = fdest;
     }
     else {
         throw Error(malformed_expr, "The linear_scale() function works only for numeric Grids, Arrays and scalars.");

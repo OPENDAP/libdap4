@@ -46,9 +46,14 @@ static char rcsid[] not_used = {"$Id$"};
 
 #include <cassert>
 #include <cstdlib>
-#include <string>
 #include <cstring>
+
+#include <iostream>
+#include <iterator>
+#include <string>
 #include <stack>
+
+//#define DODS_DEBUG
 
 #include "debug.h"
 #include "escaping.h"
@@ -168,41 +173,42 @@ proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 %%
 
 constraint_expr: /* empty constraint --> send all */
-                 {
+         {
+             DBG(cerr << "Mark all variables" << endl);
 		     DDS(arg)->mark_all(true);
 		     $$ = true;
 		 }
-                 /* projection only */
-                 | projection
+         /* projection only */
+         | projection
 		 /* selection only --> project everything */
-                 | '&' { DDS(arg)->mark_all(true); } selection
-                 { 
+         | '&' { DDS(arg)->mark_all(true); } selection
+         { 
 		     $$ = $3;
 		 }
-                 | projection '&' selection
-                 {
+         | projection '&' selection
+         {
 		     $$ = $1 && $3;
 		 }
 ;
 
-projection:     proj_clause
-                | proj_clause ',' projection
-                {
-		    $$ = $1 && $3;
-		}
+projection: proj_clause
+         | proj_clause ',' projection
+         {
+		     $$ = $1 && $3;
+		 }
 ;
 
-proj_clause:	name 
-                { 
-		    BaseType *var = DDS(arg)->var($1);
-		    if (var) {
-			DBG(cerr << "Marking " << $1 << endl);
-			$$ = DDS(arg)->mark($1, true);
-			DBG(cerr << "result: " << $$ << endl);
-		    }
-		    else {
-			no_such_ident($1, "identifier");
-		    }
+proj_clause: name 
+         { 
+		     BaseType *var = DDS(arg)->var($1);
+		     if (var) {
+			     DBG(cerr << "Marking " << $1 << endl);
+			     $$ = DDS(arg)->mark($1, true);
+			     DBG(cerr << "result: " << $$ << endl);
+		     }
+		     else {
+			     no_such_ident($1, "identifier");
+		     }
 		}
 /*		| SCAN_STR
                 {
@@ -220,34 +226,34 @@ proj_clause:	name
                     }
                 }
 */
-                | proj_function
-                {
+        | proj_function
+        {
 		    $$ = $1;
 		}
 		| array_projection
-                {
+        {
 		    $$ = $1;
 		}
 ;
 
 proj_function:  SCAN_WORD '(' arg_list ')'
-	        {
+	    {
 		    proj_func p_f = 0;
 		    btp_func f = 0;
 
 		    if ((f = get_btp_function(*(EVALUATOR(arg)), $1))) {
-			EVALUATOR(arg)->append_clause(f, $3);
-			$$ = true;
+			    EVALUATOR(arg)->append_clause(f, $3);
+			    $$ = true;
 		    }
 		    else if ((p_f = get_proj_function(*(EVALUATOR(arg)), $1))) {
 		        DDS &dds = dynamic_cast<DDS&>(*(DDS(arg)));
-			BaseType **args = build_btp_args( $3, dds );
-			(*p_f)(($3) ? $3->size():0, args, dds, *(EVALUATOR(arg)));
-			delete[] args;
-			$$ = true;
+			    BaseType **args = build_btp_args( $3, dds );
+			    (*p_f)(($3) ? $3->size():0, args, dds, *(EVALUATOR(arg)));
+			    delete[] args;
+			    $$ = true;
 		    }
 		    else {
-			no_such_func($1);
+			    no_such_func($1);
 		    }
 		}
 ;
@@ -652,309 +658,282 @@ make_array_index(value &i1, value &i2, value &i3)
     index->push_back((int) i2.v.i);
     index->push_back((int) i3.v.i);
 
-    DBG(cout << "index: ";
-            for (int_iter dp = index->begin(); dp != index->end(); dp++)
-                cout << (*dp) << " ";
-\
-            cout << endl);
-
-            return index;
-        }
-
-        int_list *
-        make_array_index(value &i1, value &i2)
-        {
-            if (i1.type != dods_uint32_c || i2.type != dods_uint32_c)
-                return (int_list *) 0;
-
-            int_list *index = new int_list;
-
-            index->push_back((int) i1.v.i);
-            index->push_back(1);
-            index->push_back((int) i2.v.i);
-
-            DBG(cout << "index: ";
-                    for (int_citer dp = index->begin(); dp != index->end(); dp++)
-                        cout << (*dp) << " ";
-\
-                    cout << endl);
-
-                    return index;
-                }
-
-                int_list *
-                make_array_index(value &i1)
-                {
-                    if (i1.type != dods_uint32_c)
-                        return (int_list *) 0;
-
-                    int_list *index = new int_list;
-
-                    index->push_back((int) i1.v.i);
-                    index->push_back(1);
-                    index->push_back((int) i1.v.i);
-
-                    DBG(cout << "index: ";
-                            for (int_citer dp = index->begin(); dp != index->end(); dp++)
-                                cout << (*dp) << " ";
-\
-                            cout << endl);
-
-                            return index;
-                        }
-
-                        int_list_list *
-                        make_array_indices(int_list *index)
-                        {
-                            int_list_list *indices = new int_list_list;
-
-                            DBG(cout << "index: ";
-                                    for (int_citer dp = index->begin(); dp != index->end(); dp++)
-                                        cout << (*dp) << " ";
-\
-                                    cout << endl);
-
-                                    assert(index);
-                                    indices->push_back(index);
-
-                                    return indices;
-                                }
-
-                                int_list_list *
-                                append_array_index(int_list_list *indices, int_list *index)
-                                {
-                                    assert(indices);
-                                    assert(index);
-
-                                    indices->push_back(index);
-
-                                    return indices;
-                                }
-
-                                // Delete an array indices list. 
-
-                                void delete_array_indices(int_list_list *indices)
-                                {
-                                    assert(indices);
-
-                                    for (int_list_citer i = indices->begin(); i != indices->end(); i++) {
-                                        int_list *il = *i;
-                                        assert(il);
-                                        delete il;
-                                    }
-
-                                    delete indices;
-                                }
-
-                                bool is_array_t(BaseType *variable)
-                                {
-                                    assert(variable);
-
-                                    if (variable->type() != dods_array_c)
-                                        return false;
-                                    else
-                                        return true;
-                                }
-
-                                bool is_grid_t(BaseType *variable)
-                                {
-                                    assert(variable);
-
-                                    if (variable->type() != dods_grid_c)
-                                        return false;
-                                    else
-                                        return true;
-                                }
-
-                                bool is_sequence_t(BaseType *variable)
-                                {
-                                    assert(variable);
-
-                                    if (variable->type() != dods_sequence_c)
-                                        return false;
-                                    else
-                                        return true;
-                                }
-
-                                void process_array_indices(BaseType *variable, int_list_list *indices)
-                                {
-                                    assert(variable);
-
-                                    Array *a = dynamic_cast<Array *> (variable); // replace with dynamic cast
-                                    if (!a)
-                                        throw Error(
-                                                malformed_expr,
-                                                string("The constraint expression evaluator expected an array; ")
-                                                        + variable->name() + " is not an array.");
-
-                                    if (a->dimensions(true) != (unsigned) indices->size())
-                                        throw Error(
-                                                malformed_expr,
-                                                string("Error: The number of dimensions in the constraint for ")
-                                                        + variable->name() + " must match the number in the array.");
-
-                                    DBG(cerr << "Before clear_constraint:" << endl);
-                                    DBG(a->print_decl(cerr, "", true, false, true));
-
-                                    // a->reset_constraint();	// each projection erases the previous one
-
-                                    DBG(cerr << "After reset_constraint:" << endl);
-                                    DBG(a->print_decl(cerr, "", true, false, true));
-
-                                    assert(indices);
-                                    int_list_citer p = indices->begin();
-                                    Array::Dim_iter r = a->dim_begin();
-                                    for (; p != indices->end() && r != a->dim_end(); p++, r++) {
-                                        int_list *index = *p;
-                                        assert(index);
-
-                                        int_citer q = index->begin();
-                                        assert(q != index->end());
-                                        int start = *q;
-
-                                        q++;
-                                        int stride = *q;
-
-                                        q++;
-                                        int stop = *q;
-
-                                        q++;
-                                        if (q != index->end()) {
-                                            throw Error(malformed_expr,
-                                                    string("Too many values in index list for ") + a->name() + ".");
-                                        }
-
-                                        DBG(
-                                                cerr << "process_array_indices: Setting constraint on "\
- << a->name()
-                                                        << "[" << start << ":" << stop << "]" << endl);
-
-                                        // It's possible that an array will appear more than once in a CE
-                                        // (for example, if an array of structures is constrained so that
-                                        // only two fields are projected and there's an associated hyperslab).
-                                        // However, in this case the two hyperslabs must be equal; test for
-                                        // that here. But see clear_constraint above... 10/28/08 jhrg
-
-                                        if (a->send_p() && (a->dimension_start(r, true) != start || a->dimension_stop(
-                                                r, true) != stop || a->dimension_stride(r, true) != stride))
-                                            throw Error(
-                                                    malformed_expr,
-                                                    string(
-                                                            "The Array was already projected differently in the constraint expression: ")
-                                                            + a->name() + ".");
-
-                                        a->add_constraint(r, start, stride, stop);
-
-                                        DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
-                                    }
-
-                                    DBG(cerr << "After processing loop:" << endl);
-                                    DBG(a->print_decl(cerr, "", true, false, true));
-
-                                    DBG(cout << "Array Constraint: ";
-                                            for (Array::Dim_iter dp = a->dim_begin(); dp != a->dim_end(); dp++)
-                                                cout << a->dimension_size(dp, true) << " ";
-\
-                                            cout << endl);
-
-                                            if (p != indices->end() && r == a->dim_end()) {
-                                                throw Error(malformed_expr,
-                                                        string("Too many indices in constraint for ") + a->name() + ".");
-                                            }
-                                        }
-
-                                        void process_grid_indices(BaseType *variable, int_list_list *indices)
-                                        {
-                                            assert(variable);
-                                            assert(variable->type() == dods_grid_c);
-                                            Grid *g = dynamic_cast<Grid *> (variable);
-                                            if (!g)
-                                                throw Error(unknown_error, "Expected a Grid variable");
-
-                                            Array *a = g->get_array();
-#if 0
-                                            // This test s now part of Grid::get_array(). jhrg 3/5/09
-                                            if (!a)
-                                            throw InternalErr(__FILE__, __LINE__, "Malformed Grid variable");
-#endif
-                                            if (a->dimensions(true) != (unsigned) indices->size())
-                                                throw Error(
-                                                        malformed_expr,
-                                                        string("Error: The number of dimensions in the constraint for ")
-                                                                + variable->name()
-                                                                + " must match the number in the grid.");
-
-                                            // First do the constraints on the ARRAY in the grid.
-                                            process_array_indices(g->array_var(), indices);
-
-                                            // Now process the maps.
-                                            Grid::Map_iter r = g->map_begin();
-
-                                            // Suppress all maps by default.
-                                            for (; r != g->map_end(); r++) {
-                                                (*r)->set_send_p(false);
-                                            }
-
-                                            // Add specified maps to the current projection.
-                                            assert(indices);
-                                            int_list_citer p = indices->begin();
-                                            r = g->map_begin();
-                                            for (; p != indices->end() && r != g->map_end(); p++, r++) {
-                                                int_list *index = *p;
-                                                assert(index);
-
-                                                int_citer q = index->begin();
-                                                assert(q != index->end());
-                                                int start = *q;
-
-                                                q++;
-                                                int stride = *q;
-
-                                                q++;
-                                                int stop = *q;
-
-                                                BaseType *btp = *r;
-                                                assert(btp);
-                                                assert(btp->type() == dods_array_c);
-                                                Array *a = (Array *) btp;
-                                                a->set_send_p(true);
-                                                a->reset_constraint();
-
-                                                q++;
-                                                if (q != index->end()) {
-                                                    throw Error(
-                                                            malformed_expr,
-                                                            string("Too many values in index list for ") + a->name()
-                                                                    + ".");
-                                                }
-
-                                                DBG(
-                                                        cerr << "process_grid_indices: Setting constraint on "\
-
-                                                                << a->name() << "[" << start << ":" << stop << "]"
-                                                                << endl);
-
-                                                Array::Dim_iter si = a->dim_begin();
-                                                a->add_constraint(si, start, stride, stop);
-
-DBG                                            (Array::Dim_iter aiter = a->dim_begin();
-                                                    cerr << "Set Constraint: "
-                                                    << a->dimension_size(aiter, true) << endl);
-                                        }
-
-                                        DBG(cout << "Grid Constraint: ";
-                                                for (Array::Dim_iter dp = ((Array *)g->array_var())->dim_begin();
-                                                        dp != ((Array *)g->array_var())->dim_end();
-                                                        dp++)
-                                                cout << ((Array *)g->array_var())->dimension_size(dp, true) << " ";
-                                                cout << endl);
-
-                                        if (p!=indices->end() && r==g->map_end()) {
-                                            throw Error(malformed_expr,
-                                                    string("Too many indices in constraint for ")
-                                                    + (*r)->name() + ".");
-                                        }
-                                    }
+    DBG(cout << "index: ");
+    DBG(copy(index->begin(), index->end(), ostream_iterator<int>(cerr, " ")));
+    DBG(cerr << endl);
+
+    return index;
+}
+
+int_list *
+make_array_index(value &i1, value &i2)
+{
+    if (i1.type != dods_uint32_c || i2.type != dods_uint32_c)
+	return (int_list *) 0;
+
+    int_list *index = new int_list;
+
+    index->push_back((int) i1.v.i);
+    index->push_back(1);
+    index->push_back((int) i2.v.i);
+
+    DBG(cout << "index: ");
+    DBG(copy(index->begin(), index->end(), ostream_iterator<int>(cerr, " ")));
+    DBG(cerr << endl);
+
+    return index;
+}
+
+int_list *
+make_array_index(value &i1)
+{
+    if (i1.type != dods_uint32_c)
+	return (int_list *) 0;
+
+    int_list *index = new int_list;
+
+    index->push_back((int) i1.v.i);
+    index->push_back(1);
+    index->push_back((int) i1.v.i);
+
+    DBG(cout << "index: ");
+    DBG(copy(index->begin(), index->end(), ostream_iterator<int>(cerr, " ")));
+    DBG(cerr << endl);
+
+    return index;
+}
+
+int_list_list *
+make_array_indices(int_list *index)
+{
+    int_list_list *indices = new int_list_list;
+
+    DBG(cout << "index: ");
+    DBG(copy(index->begin(), index->end(), ostream_iterator<int>(cerr, " ")));
+    DBG(cerr << endl);
+
+    assert(index);
+    indices->push_back(index);
+
+    return indices;
+}
+
+int_list_list *
+append_array_index(int_list_list *indices, int_list *index)
+{
+    assert(indices);
+    assert(index);
+
+    indices->push_back(index);
+
+    return indices;
+}
+
+// Delete an array indices list. 
+
+void delete_array_indices(int_list_list *indices)
+{
+    assert(indices);
+
+    for (int_list_citer i = indices->begin(); i != indices->end(); i++) {
+	int_list *il = *i;
+	assert(il);
+	delete il;
+    }
+
+    delete indices;
+}
+
+bool is_array_t(BaseType *variable)
+{
+    assert(variable);
+
+    if (variable->type() != dods_array_c)
+	return false;
+    else
+	return true;
+}
+
+bool is_grid_t(BaseType *variable)
+{
+    assert(variable);
+
+    if (variable->type() != dods_grid_c)
+	return false;
+    else
+	return true;
+}
+
+bool is_sequence_t(BaseType *variable)
+{
+    assert(variable);
+
+    if (variable->type() != dods_sequence_c)
+	return false;
+    else
+	return true;
+}
+
+void process_array_indices(BaseType *variable, int_list_list *indices)
+{
+    assert(variable);
+
+    Array *a = dynamic_cast<Array *>(variable); // replace with dynamic cast
+    if (!a)
+	throw Error(malformed_expr,
+		    string("The constraint expression evaluator expected an array; ") + variable->name() + " is not an array.");
+
+    if (a->dimensions(true) != (unsigned) indices->size())
+	throw Error(malformed_expr,
+		    string("Error: The number of dimensions in the constraint for ") + variable->name()
+                    + " must match the number in the array.");
+
+    DBG(cerr << "Before clear_constraint:" << endl);
+    DBG(a->print_decl(cerr, "", true, false, true));
+
+    // a->reset_constraint();	// each projection erases the previous one
+
+    DBG(cerr << "After clear_constraint:" << endl);
+    DBG(a->print_decl(cerr, "", true, false, true));
+
+    assert(indices);
+    int_list_citer p = indices->begin();
+    Array::Dim_iter r = a->dim_begin();
+    for (; p != indices->end() && r != a->dim_end(); p++, r++) {
+	int_list *index = *p;
+	assert(index);
+
+	int_citer q = index->begin();
+	assert(q != index->end());
+	int start = *q;
+
+	q++;
+	int stride = *q;
+
+	q++;
+	int stop = *q;
+
+	q++;
+	if (q != index->end()) {
+	    throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
+	}
+
+	DBG(cerr << "process_array_indices: Setting constraint on " 
+	    << a->name() << "[" << start << ":" << stop << "]"
+	    << endl);
+
+	// It's possible that an array will appear more than once in a CE
+	// (for example, if an array of structures is constrained so that
+	// only two fields are projected and there's an associated hyperslab).
+	// However, in this case the two hyperslabs must be equal; test for
+	// that here. But see clear_constraint above... 10/28/08 jhrg
+
+	if (a->send_p()
+	    && (a->dimension_start(r, true) != start || a->dimension_stop(r, true) != stop
+		|| a->dimension_stride(r, true) != stride))
+	    throw Error(malformed_expr,
+			string("The Array was already projected differently in the constraint expression: ") + a->name() + ".");
+
+	a->add_constraint(r, start, stride, stop);
+
+	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
+    }
+
+    DBG(cerr << "After processing loop:" << endl);
+    DBG(a->print_decl(cerr, "", true, false, true));
+
+    DBG(cerr << "Array Constraint: ");
+    DBG(for (Array::Dim_iter dp = a->dim_begin(); dp != a->dim_end();
+	     dp++
+	     ) cout << a->dimension_size(dp, true) << " ");
+    DBG(cerr << endl);
+
+    if (p != indices->end() && r == a->dim_end()) {
+	throw Error(malformed_expr, string("Too many indices in constraint for ") + a->name() + ".");
+    }
+}
+
+void process_grid_indices(BaseType *variable, int_list_list *indices)
+{
+    assert(variable);
+    assert(variable->type() == dods_grid_c);
+    Grid *g = dynamic_cast<Grid *>(variable);
+    if (!g)
+        throw Error(unknown_error, "Expected a Grid variable");
+
+    Array *a = g->get_array();
+
+    if (a->dimensions(true) != (unsigned) indices->size())
+        throw Error(malformed_expr,
+		    string("Error: The number of dimensions in the constraint for ") + variable->name()
+		    + " must match the number in the grid.");
+
+    // First do the constraints on the ARRAY in the grid.
+    process_array_indices(g->array_var(), indices);
+
+    // Now process the maps.
+    Grid::Map_iter r = g->map_begin();
+
+    // Suppress all maps by default.
+    for (; r != g->map_end(); r++) {
+	(*r)->set_send_p(false);
+    }
+
+    // Add specified maps to the current projection.
+    assert(indices);
+    int_list_citer p = indices->begin();
+    r = g->map_begin();
+    for (; p != indices->end() && r != g->map_end(); p++, r++) {
+	int_list *index = *p;
+	assert(index);
+
+	int_citer q = index->begin();
+	assert(q != index->end());
+	int start = *q;
+
+	q++;
+	int stride = *q;
+
+	q++;
+	int stop = *q;
+
+	BaseType *btp = *r;
+	assert(btp);
+	assert(btp->type() == dods_array_c);
+	Array *a = (Array *) btp;
+	a->set_send_p(true);
+	a->reset_constraint();
+
+	q++;
+	if (q != index->end()) {
+	    throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
+	}
+
+	DBG(
+	    cerr << "process_grid_indices: Setting constraint on "\
+	    << a->name() << "[" << start << ":"
+	    << stop << "]" << endl);
+
+	Array::Dim_iter si = a->dim_begin();
+	a->add_constraint(si, start, stride, stop);
+
+	DBG (Array::Dim_iter aiter = a->dim_begin();
+	     cerr << "Set Constraint: " << a->dimension_size(aiter, true) << endl
+	     )                        ;
+    }
+
+    DBG(cout << "Grid Constraint: ";
+	for (Array::Dim_iter dp = ((Array *) g->array_var())->dim_begin();
+	     dp != ((Array *) g->array_var())->dim_end(); dp++)
+	    cout << ((Array *) g->array_var())->dimension_size(dp, true) << " ";
+	cout << endl
+	);
+
+    if (p != indices->end() && r == g->map_end()) {
+	throw Error(malformed_expr,
+		    string("Too many indices in constraint for ") + (*r)->name() + ".");
+    }
+}
 
 void process_sequence_indices(BaseType *variable, int_list_list *indices)
 {
