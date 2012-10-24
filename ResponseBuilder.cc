@@ -325,6 +325,7 @@ void ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &eval
 
             // If here, the cache_file_name could not be locked for read access;
             // try to build it. First make an empty file and get an exclusive lock on it.
+            // TODO Make this an 'else if'?
             if (d_cache->create_and_lock(cache_file_name, fd)) {
                 DBG(cerr << "function ce - caching " << cache_file_name << endl );
 

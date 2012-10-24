@@ -51,7 +51,7 @@ static char rcsid[] not_used =
 #include "DataDDS.h"
 #include "Connect.h"
 #include "escaping.h"
-#include "RCReader.h"
+//#include "RCReader.h"
 #include "DDXParserSAX2.h"
 #if FILE_METHODS
 #include "XDRFileUnMarshaller.h"
@@ -121,7 +121,7 @@ Connect::process_data(DataDDS &data, Response *rs)
 #if FILE_METHODS
 	    XDRFileUnMarshaller um( rs->get_stream() ) ;
 #else
-            fpistream in ( rs->get_stream() );
+        fpistream in ( rs->get_stream() );
 	    XDRStreamUnMarshaller um( in ) ;
 #endif
 #if 0

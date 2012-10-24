@@ -510,6 +510,8 @@ file_to_string(FILE *fp)
     return oss.str();
 }
 
+#if 0
+// This code is not used.
 int
 wildcmp(const char *wild, const char *string)
 {
@@ -549,6 +551,7 @@ wildcmp(const char *wild, const char *string)
   }
   return !*wild;
 }
+#endif
 
 #define CHECK_BIT( tab, bit ) ( tab[ (bit)/8 ] & (1<<( (bit)%8 )) )
 #define BITLISTSIZE 16 /* bytes used for [chars] in compiled expr */
