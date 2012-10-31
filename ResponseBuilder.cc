@@ -58,7 +58,7 @@
 #include "DDS.h"
 //#include "Connect.h"
 //#include "Response.h"
-#include "DDXParserSax2.h"
+#include "DDXParserSAX2.h"
 #include "Ancillary.h"
 #include "ResponseBuilder.h"
 #include "XDRStreamMarshaller.h"
