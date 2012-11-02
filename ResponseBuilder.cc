@@ -271,10 +271,14 @@ void ResponseBuilder::send_das(ostream &out, DAS &das, bool with_mime_headers)
 
 /** This function formats and prints an ASCII representation of a
  DAS on stdout.  This has the effect of sending the DAS object
- back to the client program.
+ back to the client program. This version of send_das() uses the
+ DDS object (and assumes it's populated with attributes). If the
+ request contains a CE, that's fine and if the request has been
+ cached, it will read the DDS from the cache.
 
- @todo Test me!
- @brief Transmit a DAS.
+ @todo Test me! Modify the BES to use this code!!
+
+ @brief Transmit a DAS using the DDS.
  @param out The output stream to which the DAS is to be sent.
  @param das The DAS object to be sent.
  @param with_mime_headers If true (the default) send MIME headers.
@@ -388,9 +392,10 @@ void ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &eval
 }
 
 /** This function formats and prints an ASCII representation of a
- DDS on stdout.  When called by a CGI program, this has the
- effect of sending a DDS object back to the client
- program. Either an entire DDS or a constrained DDS may be sent.
+ DDS on stdout. Either an entire DDS or a constrained DDS may be sent.
+ This function looks in the local cache and uses a DDS object there
+ if it's valid. Otherwise, if the request CE contains server functions
+ that build data for the response, the resulting DDS will be cached.
 
  @brief Transmit a DDS.
  @param out The output stream to which the DAS is to be sent.
@@ -884,6 +889,10 @@ void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEval
  DDS and DAS objects are built using code that already exists in the
  servers.
 
+ FIXME!!!
+ @todo I am broken WRT the other code here for sending data and DDS
+ responses
+
  @param dds The dataset's DDS \e with attributes in the variables.
  @param eval A reference to the ConstraintEvaluator to use.
  @param out Destination
@@ -909,6 +918,10 @@ void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval
  to \c data_stream. If this is being called from a CGI, \c data_stream is
  probably \c stdout and writing to it has the effect of sending the
  response back to the client.
+
+ FIXME!!!
+ @todo I am broken WRT the other code here for sending data and DDS
+ responses
 
  @brief Transmit data.
  @param dds A DDS object containing the data to be sent.
@@ -1090,6 +1103,7 @@ ResponseBuilder::get_cached_data_ddx(const string &cache_file_name, BaseTypeFact
     // fstream data(cache_file_name.c_str());
     FILE *data = fopen( cache_file_name.c_str(), "r" );
     read_data_from_cache(data, fdds);
+    fclose(data);
 
     fdds->set_factory( 0 ) ;
 
@@ -1103,10 +1117,13 @@ ResponseBuilder::get_cached_data_ddx(const string &cache_file_name, BaseTypeFact
 
     // for_each(dds->var_begin(), dds->var_end(), mfunc(BaseType::set_read_p));
 
+#if 0
+    // Ancillary attributes were read when the DDX was built and are part of the
+    // cached BLOB.
     DAS *das = new DAS ;
     Ancillary::read_ancillary_das( *das, d_dataset ) ;
     fdds->transfer_attributes( das ) ;
-
+#endif
     return fdds;
 }
 
