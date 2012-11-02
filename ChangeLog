@@ -1,3 +1,108 @@
+2012-11-02  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for a respource leak in the server function cache code.
+
+	M    ResponseBuilder.cc
+
+2012-10-31  James Gallagher <jgallagher@opendap.org>
+
+	fixed an error in the include of DDXParserSAX2.h - OSX file system
+	case issues
+
+2012-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Changed svn ignore properties
+
+2012-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Changes so that users - handlers primarily - of libdap don't have to
+	change their link libraries even though ResponseBuilder has the new
+	caching code. The first version used Connect, this version uses hacked
+	copies of (tiny) parts of Connect. This keeps the handlers from needing
+	libdapclient, libcurl and libuuid to link.
+
+	M    ResponseBuilder.h
+	M    ResponseBuilder.cc
+	M    Makefile.am
+	M    mime_util.cc
+
+2012-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Fixes both from a code review and to move Connect into libdap proper
+	so that clients will link correctly (now that Connect is used both by
+	clients and servers.
+
+	M    HTTPCacheTable.cc
+	M    ResponseBuilder.cc
+	M    Makefile.am
+	M    util.cc
+	M    Connect.cc
+
+2012-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Changed svn ignore properties
+
+2012-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Added DAPCache3.
+
+2012-10-24  James Gallagher <jgallagher@opendap.org>
+
+2012-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Changed svn ignore properties
+
+2012-10-23  James Gallagher <jgallagher@opendap.org>
+
+	These changes support server functions in DAP2 using the F-TDS/GDS 'in
+	path' syntax. They aslo add support for retrieving the DDS and DAS from
+	URLs with functions (both the F-TDS/GDS syntax and ours) and cache the
+	results of function calls.
+
+	M    Connect.h
+	M    ResponseBuilder.h
+	M    ConstraintEvaluator.cc
+	M    DDS.cc
+	M    tests/TestGrid.cc
+	M    tests/expr-test.cc
+	M    tests/TestStructure.cc
+	M    DDXParserSAX2.cc
+	M    ResponseBuilder.cc
+	M    BaseType.cc
+	M    DDS.h
+	M    Makefile.am
+	M    ce_expr.y
+	M    XDRStreamUnMarshaller.cc
+	M    Vector.cc
+	M    ce_functions.cc
+	M    mime_util.cc
+	M    GridGeoConstraint.cc
+	M    Connect.cc
+	M    unit-tests/ResponseBuilderTest.cc
+	M    Clause.cc
+
+2012-09-28  James Gallagher <jgallagher@opendap.org>
+
+	Changed to using named branches for the server release.
+
+	A    https://scm.opendap.org/svn/branch/libdap/hyrax-1.8-release
+
+2012-07-26  James Gallagher <jgallagher@opendap.org>
+
+	Memory leak in XDRStreamMarshaller fixed.
+
+2012-07-26  James Gallagher <jgallagher@opendap.org>
+
+	Found and fixed an error in the add_var_nocopy() method for DDS. I
+	also added add_var_nocopy() methods to Vector and Array and noted
+	that when a BaseType is passed to Array's ctor the add_var()
+	method is used, thus making a copy. If the 'nocopy' behavior is
+	desired, then pass null to the ctor and call add_var_nocopy() 'by
+	hand.' I also changed two instances of dynamic_cast so that
+	static_cast is used instead. These changes are backward compatible
+	to the previous version of the library. Bumped the version up to
+	3.12.0
+
 2012-07-26  James Gallagher <jgallagher@opendap.org>
 
 	Memory leak in XDRStreamMarshaller fixed.

@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.62)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.11.5, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.11.6, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["3.4"], [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
@@ -44,8 +44,6 @@ dnl to default values otherwise.
 AC_CANONICAL_HOST
 AC_SUBST(host)
 
-dnl library version: Update these when the interface changes. Generally,
-dnl assume that the interface tracks the major and minor release numbers.
 DAPLIB_CURRENT=15
 DAPLIB_AGE=4
 DAPLIB_REVISION=1
@@ -66,8 +64,8 @@ AC_SUBST(CLIENTLIB_REVISION)
 CLIENTLIB_VERSION="$CLIENTLIB_CURRENT:$CLIENTLIB_REVISION:$CLIENTLIB_AGE"
 AC_SUBST(CLIENTLIB_VERSION)
 
-SERVERLIB_CURRENT=9
-SERVERLIB_AGE=2
+SERVERLIB_CURRENT=10
+SERVERLIB_AGE=3
 SERVERLIB_REVISION=0
 AC_SUBST(SERVERLIB_CURRENT)
 AC_SUBST(SERVERLIB_AGE)

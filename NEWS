@@ -1,3 +1,11 @@
+News for version 3.11.6
+
+Changes to the way constraints are evaluated when they contain server
+functions. Now DAS and DDS objects can be returned from requests that
+include those constraints. The server function call results are
+cached, so that sending the same function calls several times will not
+evaluate those functions more than once.
+
 News for version 3.11.5
 
 Fixed a memory leak in XDRStreamMarshaller and a bug in
