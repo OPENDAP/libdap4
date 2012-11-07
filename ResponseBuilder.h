@@ -140,6 +140,9 @@ public:
     virtual void read_data_from_cache(FILE *data, DDS *fdds);
     virtual DDS *get_cached_data_ddx(const string &cache_file_name, BaseTypeFactory *factory);
 
+    // This method is uses the above three and is used by send_das(), send_dds(), and send_data().
+    virtual DDS *read_cached_dataset(DDS &dds, ConstraintEvaluator & eval, string &cache_token);
+
     // These functions are used both by the methods above and by other code
 
     void set_mime_text(ostream &out, ObjectType type = unknown_type,

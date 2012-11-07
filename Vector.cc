@@ -610,7 +610,7 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
-    int i = 0;
+    int i = 0;// TODO move closer to use
 
     dds.timeout_on();
 

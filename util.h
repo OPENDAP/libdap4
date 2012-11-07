@@ -53,8 +53,8 @@ bool unique_names(vector<BaseType *> l, const string &var, const string &type,
                   string &msg);
 FILE *text_to_temp(string text);
 string systime();
-FILE *compressor(FILE *output, int &childpid);
-bool deflate_exists();
+//FILE *compressor(FILE *output, int &childpid);
+//bool deflate_exists();
 const char *libdap_root();
 /** Return the version string for this package.
     @note This function has C linkage so that it can be found using autoconf
@@ -70,6 +70,12 @@ void flush_stream(iostream ios, FILE *out);
 void downcase(string &s);
 bool is_quoted(const string &s);
 string remove_quotes(const string &s);
+
+bool dir_exists(const string &dir);
+#if 0
+// UNTESTED
+bool dir_writable(const string &dir);
+#endif
 
 // Jose Garcia
 /** @name Integer to string conversion functions

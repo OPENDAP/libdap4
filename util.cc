@@ -39,6 +39,8 @@ static char rcsid[] not_used =
     {"$Id$"
     };
 
+#include <fstream>
+
 #include <cassert>
 #include <cstring>
 
@@ -345,6 +347,48 @@ compressor(FILE *output, int &childpid)
 }
 
 #endif // COMPRESSION_FOR_SERVER3
+
+/**
+ * Does the directory exist?
+ *
+ * @param dir The pathname to test.
+ * @return True if the directory exists, false otherwise
+ */
+bool
+dir_exists(const string &dir)
+{
+    struct stat buf;
+
+    return (stat(dir.c_str(), &buf) == 0) && (buf.st_mode & S_IFDIR);
+}
+
+#if 0
+
+// UNTESTED 11/7/12
+
+/**
+ * Is the directory writable?
+ *
+ * @param dir The pathname to test
+ * @return True if the pathname is a directory and can be written by the
+ * caller, false otherwise.
+ */
+bool
+dir_writable(const string &dir)
+{
+    try {
+        string test = dir + "/test.txt";
+        ofstream ofs(dir.c_str());
+        ofs.write("test", 5);
+        ofs.close();
+        unlink(test.c_str());
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+#endif
 
 // This function returns a pointer to the system time formated for an httpd
 // log file.
