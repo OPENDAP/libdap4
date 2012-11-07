@@ -79,7 +79,8 @@
 #define CRLF "\r\n"             // Change here, expr-test.cc
 #define FUNCTION_CACHE "/tmp/dap_functions_cache/"
 #define FUNCTION_CACHE_PREFIX "f"
-#define FUNCTION_CACHE_SIZE (1ULL << 22)
+// Cache size in megabytes; 20,000M -> 20GB
+#define FUNCTION_CACHE_SIZE 20000
 
 using namespace std;
 

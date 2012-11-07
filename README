@@ -1,7 +1,14 @@
+Updated for version 3.11.7
+
+Minor tweak for the server function caching code: turn on or off the 
+cache by adding or removing the directory /tmp/dap_functions_cache. 
+If the directory is not present no caching of server function calls
+is done. All the other behaviors are otherwise identical.
+
 Updated for version 3.11.6
 
 There is a new cache for some kinds of response objects. It's size and
-location are currently fixed to 2^22 bytes and
+location are currently fixed to 20GB bytes and 
 "/tmp/dap_functions_cache/" but these will be made BES parameters in a
 future release.
 

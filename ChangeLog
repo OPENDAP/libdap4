@@ -1,3 +1,39 @@
+2012-11-07  James Gallagher <jgallagher@opendap.org>
+
+	Changed svn ignore properties
+
+2012-11-07  James Gallagher <jgallagher@opendap.org>
+
+	Changed svn ignore properties
+
+2012-11-07  James Gallagher <jgallagher@opendap.org>
+
+	Changes for libdap 3.11.7 so that when the CE Function cache
+	directory is not present, caching is off. Before the code was just
+	crashing when a function was used. I also refactored
+	ResponseBuilder (where the fix is) so that it's got less
+	redundancy.
+
+2012-11-02  James Gallagher <jgallagher@opendap.org>
+
+	Release 3.11.6
+
+	M    configure.ac
+	M    ChangeLog
+	M    main_page.doxygen
+	M    tests/package.m4
+	M    INSTALL
+	M    libdap.spec
+	M    README
+	M    NEWS
+	M    doxy.conf
+
+2012-11-02  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for a respource leak in the server function cache code.
+
+	M    ResponseBuilder.cc
+
 2012-11-02  James Gallagher <jgallagher@opendap.org>
 
 	Fixes for a respource leak in the server function cache code.

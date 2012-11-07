@@ -1,3 +1,15 @@
+News for version 3.11.7
+
+Bug fix for the server function caching code. Now if the function
+cache directory /tmp/dap_functions_cache exists, it will be used to 
+cache the results of applying server functions. If the directory does
+not exist, then the function results won't be cached - a minor 
+performance penalty in most cases. 
+
+The size of the cache is set to 20GB. The size and location of the 
+cache are fixed for this version of libdap but they will move into
+the bes.conf file as parameters in a future version of the server.
+
 News for version 3.11.6
 
 Changes to the way constraints are evaluated when they contain server
