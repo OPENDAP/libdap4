@@ -8,11 +8,16 @@ pkgconfigdir=$(libdir)/pkgconfig
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
-# -I$(top_srcdir)/xstream
 AM_CXXFLAGS = 
+
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
 endif
+
+if USING_GRIDFIELDS
+AM_CPPFLAGS += $(GF_CFLAGS)
+endif
+
 
 AM_YFLAGS = -d -v
 AM_LFLAGS = -8
@@ -50,8 +55,12 @@ libparsers_la_LIBADD = $(XML2_LIBS)
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC) 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
-libdap_la_CPPFLAGS = $(AM_CPPFLAGS) #$(XML2_CFLAGS)
+libdap_la_CPPFLAGS = $(AM_CPPFLAGS)
 libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) -lcrypto gl/libgnu.la libparsers.la
+
+if USING_GRIDFIELDS
+libdap_la_LIBADD += $(GF_LIBS)
+endif
 
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
@@ -162,8 +171,6 @@ rpm: dist
 # are there so that the values built into dap-config will match the mac
 # osx install dirs and not the temp directory used to build the packages
 
-# PACKAGEMAKER=/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker*
-
 PACKAGEMAKER=/Developer/usr/bin/packagemaker
 PKG_CONF_FLAGS=
 
@@ -178,7 +185,7 @@ pkg-build: clean-pkg
 pkg-main: pkg-build
 	./OSX_Resources/update_mac_package_contents.pl README
 	cat ./OSX_Resources/Info.plist.proto | \
-	   sed -e "s^_PREFIX_^$(prefix)^g" \
+	   sed -e "s^_PREFIX_^/usr/local/servers/hyrax-1.8.8^g" \
 	       -e "s^_FULL_VERSION_^@PACKAGE_VERSION@^g" \
 	       -e "s^_MAJOR_VERSION_^@PACKAGE_MAJOR_VERSION@^g" \
 	       -e "s^_MINOR_VERSION_^@PACKAGE_MINOR_VERSION@^g" \
@@ -187,6 +194,8 @@ pkg-main: pkg-build
 	${PACKAGEMAKER} --root mac_osx --id org.opendap.@PACKAGE@ \
 	    --title "@PACKAGE@ @PACKAGE_VERSION@" --version @PACKAGE_VERSION@ \
 	    --out @PACKAGE@-@PACKAGE_VERSION@.pkg --resources OSX_Resources
+
+# 	   sed -e "s^_PREFIX_^$(prefix)^g" 
 
 pkg-dmg: pkg-main
 	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
@@ -237,7 +246,11 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	Operators.h XDRUtils.cc XDRFileMarshaller.cc			\
 	XDRFileUnMarshaller.cc XDRStreamMarshaller.cc			\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc \
-	DAPCache3.cc
+	DAPCache3.cc 
+
+if USING_GRIDFIELDS
+DAP_SRC += gridfields_functions.cc
+endif
 
 Operators.h: ce_expr.tab.hh
 
@@ -262,7 +275,11 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	Marshaller.h XDRFileUnMarshaller.h UnMarshaller.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h \
-	DAPCache3.h
+	DAPCache3.h 
+	
+if USING_GRIDFIELDS
+DAP_SRC += gridfields_functions.h
+endif
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h

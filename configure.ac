@@ -309,6 +309,82 @@ AM_PATH_CPPUNIT(1.12.0,
 	[AM_CONDITIONAL([CPPUNIT], [true])],
 	[AM_CONDITIONAL([CPPUNIT], [false])])
 
+dnl When pkgconfig support is added, use this
+libdap_libgridfields_module='libgridfields >= 0.7.0'
+
+libgf_ok="no"
+
+AC_ARG_WITH([gridfields],
+    AC_HELP_STRING([--with-gridfields=path], [Use the gridfields library at this location.]),
+    [if test "$withval" = "yes"
+     then
+         AC_MSG_ERROR([You must supply a path when using --with-gridfields; try --enable-gridfields.])
+     else
+         GF_LIBS="-L$withval/lib -lgridfields"
+         GF_CFLAGS="-I$withval/include"
+         AC_DEFINE([GRIDFIELDS],[1],[define if gridfields lib is present])
+         libgf_ok="yes"
+     fi],
+    [])
+
+AC_ARG_ENABLE([gridfields],
+    AC_HELP_STRING([--enable-gridfields], [Enable libgridfields-based server functions (default is NO)]))
+
+if test "$libgf_ok" = "no" -a "$enable_gridfields" = "yes"
+then
+     
+AC_MSG_CHECKING([for libgridfields])
+if gridfields-config --version > /dev/null 2>&1
+then
+    version_libgf=`gridfields-config --version | sed 's@libgridfields \(.*\)@\1@'`
+
+    version_M=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
+    version_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
+    version_m_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
+    
+    dnl Test for several different versions of libgridfields
+    
+    if test $version_M -gt 0
+    then
+        libgf_ok='yes'
+    elif test $version_M -eq 0 && test $version_m -gt 7
+    then
+        libgf_ok='yes'
+    elif test $version_M -eq 0 && test $version_m -eq 7 && test $version_m_m -gt 0
+    then
+        libgf_ok='yes'
+    else
+        libgf_ok='no'
+    fi
+
+    if test "$libgf_ok"="no"
+    then
+        AC_MSG_ERROR([must have libgf 0.7.0 or greater, found $version_libgf])
+    fi
+
+    GF_LIBS="`gridfields-config --libs`"
+    GF_CFLAGS="`gridfields-config --cflags`"
+
+    AC_DEFINE([GRDIFIELDS],[1],[define if gridfields lib is present])
+    AC_MSG_RESULT([yes; used gridfields-config])
+else
+    AC_MSG_ERROR([I could not find libgridfields])
+fi
+
+fi
+
+AC_SUBST([GF_LIBS])
+AC_SUBST([GF_CFLAGS])
+
+if test "$libgf_ok" = "yes"
+then
+    echo "Set gridfields CFLAGS to $GF_CFLAGS"
+    echo "Set gridfields LIBS to $GF_LIBS"
+    AM_CONDITIONAL([USING_GRIDFIELDS],[true])
+else
+    AM_CONDITIONAL([USING_GRIDFIELDS],[false])
+fi
+
 DODS_DEBUG_OPTION
 
 dnl Temporary hack; find a home for the deflate program; set it to
@@ -349,12 +425,14 @@ AC_CONFIG_FILES([Makefile
                  libdapclient.pc
                  libdapserver.pc
                  main_page.doxygen
-		 doxy.conf
+		         doxy.conf
                  gl/Makefile
                  tests/Makefile
                  tests/atlocal
                  unit-tests/Makefile
                  unit-tests/cache-testsuite/Makefile])
 AC_CONFIG_FILES([dap-config], [chmod +x dap-config]) 
+	
+AS_IF([test "$libgf_ok" = "yes"], [AC_CONFIG_FILES([ugrid_project/bes.conf])])
 		 
 AC_OUTPUT

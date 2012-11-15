@@ -65,14 +65,19 @@ static char rcsid[]not_used = { "$Id$" };
 #include "Structure.h"
 #include "Sequence.h"
 #include "Grid.h"
-#include "Error.h"
-#include "RValue.h"
 
+#include "Error.h"
+
+#include "RValue.h"
 #include "GSEClause.h"
 #include "GridGeoConstraint.h"
 #include "ArrayGeoConstraint.h"
 
 #include "ce_functions.h"
+#ifdef GRIDFIELDS
+#include "gridfields_functions.h"
+#endif
+
 #include "gse_parser.h"
 #include "gse.tab.hh"
 #include "debug.h"
@@ -1224,9 +1229,14 @@ void register_functions(ConstraintEvaluator & ce)
     ce.add_function("linear_scale", function_linear_scale);
     ce.add_function("version", function_version);
 
-    ce.add_function("miic_ex2", function_miic_ex2);
+#ifdef GRIDFIELDS
+    ce.add_function("ugrid_restrict", function_ugrid_restrict);
+#endif
 
+#if 0
+    ce.add_function("miic_ex2", function_miic_ex2);
     ce.add_function("dap", function_dap);
+#endif
 }
 
 } // namespace libdap

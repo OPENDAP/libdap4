@@ -20,7 +20,7 @@
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.macosx.base.907055126.1883494657" name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.macosx.base.282076323" name="cdt.managedbuild.toolchain.gnu.macosx.base" superClass="cdt.managedbuild.toolchain.gnu.macosx.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.MachO64" id="cdt.managedbuild.target.gnu.platform.macosx.base.1589501912" name="Debug Platform" osList="macosx" superClass="cdt.managedbuild.target.gnu.platform.macosx.base"/>
-							<builder arguments="install" command="make" id="cdt.managedbuild.target.gnu.builder.macosx.base.257462511" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="6" superClass="cdt.managedbuild.target.gnu.builder.macosx.base"/>
+							<builder arguments="" command="make" id="cdt.managedbuild.target.gnu.builder.macosx.base.257462511" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="6" superClass="cdt.managedbuild.target.gnu.builder.macosx.base"/>
 							<tool id="cdt.managedbuild.tool.macosx.c.linker.macosx.base.1632126458" name="MacOS X C Linker" superClass="cdt.managedbuild.tool.macosx.c.linker.macosx.base"/>
 							<tool id="cdt.managedbuild.tool.macosx.cpp.linker.macosx.base.435931811" name="MacOS X C++ Linker" superClass="cdt.managedbuild.tool.macosx.cpp.linker.macosx.base">
 								<inputType id="cdt.managedbuild.tool.macosx.cpp.linker.input.452824656" superClass="cdt.managedbuild.tool.macosx.cpp.linker.input">
@@ -29,6 +29,9 @@
 								</inputType>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.macosx.base.210169359" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.macosx.base">
+								<option id="gnu.both.asm.option.include.paths.891397041" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/Users/jimg/src/hyrax_1.8_release/deps/gridfields-1.0.0/include"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1875505208" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.macosx.base.393061576" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.macosx.base"/>
@@ -56,7 +59,9 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="libdap.null.1781219706" name="libdap"/>
 	</storageModule>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="1">
+		<resource resourceType="PROJECT" workspacePath="/libdap"/>
+	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
@@ -366,7 +371,6 @@
 			</target>
 			<target name="MIMEUtilTest" path="unit-tests" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 				<buildCommand>make</buildCommand>
-				<buildArguments/>
 				<buildTarget>MIMEUtilTest</buildTarget>
 				<stopOnError>false</stopOnError>
 				<useDefaultCommand>false</useDefaultCommand>
@@ -374,10 +378,10 @@
 			</target>
 			<target name="all" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 				<buildCommand>make</buildCommand>
-				<buildArguments>-j3</buildArguments>
+				<buildArguments>-j6</buildArguments>
 				<buildTarget>all</buildTarget>
 				<stopOnError>false</stopOnError>
-				<useDefaultCommand>false</useDefaultCommand>
+				<useDefaultCommand>true</useDefaultCommand>
 				<runAllBuilders>false</runAllBuilders>
 			</target>
 			<target name="install" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
@@ -390,10 +394,10 @@
 			</target>
 			<target name="clean" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 				<buildCommand>make</buildCommand>
-				<buildArguments>install -j6</buildArguments>
+				<buildArguments/>
 				<buildTarget>clean</buildTarget>
 				<stopOnError>false</stopOnError>
-				<useDefaultCommand>true</useDefaultCommand>
+				<useDefaultCommand>false</useDefaultCommand>
 				<runAllBuilders>false</runAllBuilders>
 			</target>
 			<target name="check" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">

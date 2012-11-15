@@ -30,13 +30,7 @@
 
 2012-11-02  James Gallagher <jgallagher@opendap.org>
 
-	Fixes for a respource leak in the server function cache code.
-
-	M    ResponseBuilder.cc
-
-2012-11-02  James Gallagher <jgallagher@opendap.org>
-
-	Fixes for a respource leak in the server function cache code.
+	Fixes for a resource leak in the server function cache code.
 
 	M    ResponseBuilder.cc
 
