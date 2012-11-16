@@ -514,6 +514,9 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 
         BaseType *bt = *vi;
         // TODO allow variables that are not arrays; just ignore them
+        if (bt->type() != dods_array_c)
+            continue;
+
         Array &arr = dynamic_cast<Array&>(*bt);
         AttrTable &at = arr.get_attr_table();
         DBG(cerr << "Array: " << arr.name() << endl);
@@ -556,6 +559,9 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
         BaseType *bt = *vi;
         // TODO Allow variables that are not Arrays; ignore as above
+        if (bt->type() != dods_array_c)
+            continue;
+
         Array &arr = dynamic_cast<Array&>(*bt);
         DBG(cerr << "Array: " << arr.name() << endl);
 
@@ -666,16 +672,17 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
                     // This array does not appear to be associated with any
                     // rank of the unstructured grid. Ignore for now.
                     // TODO Anything else we should do?
+                    // FIXME Free the storage!!
                 }
             }
         } // Ignore if not an array type. Anything else we should do?
     }
 
     int dim = extract_double_value(argv[0]);
-    string projection = extract_string_argument(argv[1]);
+    string filter_expr = extract_string_argument(argv[1]);
     // not used jhrg 11/15/12 int nodenumber=input->Card(0);
 
-    GF::RestrictOp op = GF::RestrictOp(projection, dim, input);
+    GF::RestrictOp op = GF::RestrictOp(filter_expr, dim, input);
     GF::GridField *R = new GF::GridField(op.getResult());
 
     // 4) Convert back to a DDS BaseType
@@ -731,6 +738,7 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
                 Nodes->set_value_slice_from_row_major_vector(*Node3,Node1->length()+Node2->length());
                 AttrTable &arrattr1 = arr->get_attr_table();
                 Nodes->set_attr_table(arrattr1);
+
                 construct->add_var_nocopy(Nodes);
             }
             else {
@@ -738,9 +746,9 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
                     bool same = same_dimensions(arr, iter->second);
                     if (same) {
                         // This var should be bound to rank k
-                        Float64 *witness2=new Float64(arr->name());
+                        Float64 *witness2 = new Float64(arr->name());
 
-                        GF::Array* gfa=R->GetAttribute(iter->first, arr->name());
+                        GF::Array* gfa = R->GetAttribute(iter->first, arr->name());
 
                         vector<dods_float64> GFA = gfa->makeArrayf();
 
@@ -751,6 +759,7 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
                         AttrTable &arrattr1 = arr->get_attr_table();
                         Nodes->set_attr_table(arrattr1);
                         // AttrTable &arrattr = Nodes->get_attr_table();
+
                         construct->add_var_nocopy(Nodes);
                     }
                     else {

@@ -1233,8 +1233,6 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
     // the same.
     // For DAP 3.2 and greater, use the new syntax and value. The 'blob' is
     // actually the CID of the MIME part that holds the data.
-    // FIXME cerr
-    cerr << "blob: " << blob << ", " << "dap major, minor: " << get_dap_major() << ", " << get_dap_minor() << endl;
 
     if (get_dap_major() == 2 && get_dap_minor() == 0) {
         if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "dataBLOB") < 0)
