@@ -433,6 +433,4 @@ AC_CONFIG_FILES([Makefile
                  unit-tests/cache-testsuite/Makefile])
 AC_CONFIG_FILES([dap-config], [chmod +x dap-config]) 
 	
-AS_IF([test "$libgf_ok" = "yes"], [AC_CONFIG_FILES([ugrid_project/bes.conf])])
-		 
 AC_OUTPUT
