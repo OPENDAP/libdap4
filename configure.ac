@@ -385,6 +385,49 @@ else
     AM_CONDITIONAL([USING_GRIDFIELDS],[false])
 fi
 
+# Which, if any, copy of GDAL should be used for the build?
+GDAL_FOUND=
+
+AC_ARG_WITH(gdal, AS_HELP_STRING([--with-gdal], [Use the copy of GDAL at this location]),
+            with_gdal_prefix="$withval", with_gdal_prefix="")
+
+if test -n "$with_gdal_prefix" -a -x $with_gdal_prefix/bin/gdal-config
+then
+    AC_MSG_NOTICE([Using $with_gdal_prefix as the GDAL prefix directory.])
+    GDAL_LIBS="`$with_gdal_prefix/bin/gdal-config --libs`"
+    GDAL_CFLAGS="`$with_gdal_prefix/bin/gdal-config --cflags`"
+    GDAL_FOUND="yes"
+elif test -n "$with_gdal_prefix"
+then
+    AC_MSG_ERROR([You set the gdal-prefix directory to $with_gdal_prefix, but gdal-config is not there.])
+fi
+
+# Because of the run-time errors encountered when there are competing
+# versions of libs, only include GDAL when explictly told to. NB: see
+# the fileout_gdal handler for another place where GDAL can be added to
+# a running Hyrax server. jhrg 11/23/12
+
+# if test -z "$GDAL_FOUND"
+# then
+#    AX_LIB_GDAL([1.9.0])
+#    if test ! -z "$GDAL_CFLAGS" -a ! -z "$GDAL_LDFLAGS"; then
+#        GDAL_FOUND="yes"
+#    fi
+# fi
+
+AC_SUBST([GDAL_LIBS])
+AC_SUBST([GDAL_CFLAGS])
+
+
+if test -n "$GDAL_FOUND"
+then
+    echo "Set GDAL_CFLAGS to $GDAL_CFLAGS"
+    echo "Set GDAL_LIBS to $GF_LIBS"
+    AM_CONDITIONAL([USING_GDAL],[true])
+else
+    AM_CONDITIONAL([USING_GDAL],[false])
+fi
+
 DODS_DEBUG_OPTION
 
 dnl Temporary hack; find a home for the deflate program; set it to
@@ -427,6 +470,7 @@ AC_CONFIG_FILES([Makefile
                  main_page.doxygen
 		         doxy.conf
                  gl/Makefile
+                 swath2grid/Makefile
                  tests/Makefile
                  tests/atlocal
                  unit-tests/Makefile

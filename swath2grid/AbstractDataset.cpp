@@ -85,8 +85,8 @@ AbstractDataset::AbstractDataset(const string& id, vector<int> &rBandList) :
 
 AbstractDataset::~AbstractDataset()
 {
-	if (maptrDS.get())
-		GDALClose(maptrDS.release());
+	if (maptr_DS.get())
+		GDALClose(maptr_DS.release());
 }
 
 /************************************************************************/
@@ -127,7 +127,7 @@ CPLErr AbstractDataset::InitialDataset(const int isSimple)
 
 GDALDataset* AbstractDataset::GetGDALDataset()
 {
-	return maptrDS.get();
+	return maptr_DS.get();
 }
 
 /************************************************************************/
@@ -186,7 +186,7 @@ const OGRSpatialReference& AbstractDataset::GetNativeCRS()
 
 CPLErr AbstractDataset::SetNativeCRS()
 {
-	char* wktStr = (char*) maptrDS->GetProjectionRef();
+	char* wktStr = (char*) maptr_DS->GetProjectionRef();
 
 	if (wktStr && OGRERR_NONE == mo_NativeCRS.importFromWkt(&wktStr))
 		return CE_None;
@@ -209,7 +209,7 @@ CPLErr AbstractDataset::SetNativeCRS()
 
 CPLErr AbstractDataset::SetGeoTransform()
 {
-	if (CE_None != maptrDS->GetGeoTransform(md_Geotransform))
+	if (CE_None != maptr_DS->GetGeoTransform(md_Geotransform))
 		return CE_Failure;
 
 	//Is the returned matrix correct? check the resolution values;
@@ -374,7 +374,7 @@ string AbstractDataset::GetDatasetDescription()
 	//[15x2030x1354] Band JPEG2000 (16-bit unsigned integer)
 	string rtnBuf;
 	int aiDimSizes[3];
-	int nBandCount = maptrDS->GetRasterCount();
+	int nBandCount = maptr_DS->GetRasterCount();
 	string pszString;
 	if (nBandCount > 1)
 	{
@@ -391,7 +391,7 @@ string AbstractDataset::GetDatasetDescription()
 	}
 
 	rtnBuf = "[" + pszString + "] " + ms_DatasetName + " " + ms_DataTypeName + " (" +
-			GDALGetDataTypeName(maptrDS->GetRasterBand(1)->GetRasterDataType()) + ")";
+			GDALGetDataTypeName(maptr_DS->GetRasterBand(1)->GetRasterDataType()) + ")";
 
 	return rtnBuf;
 }
@@ -458,9 +458,9 @@ void AbstractDataset::GetNativeBBox(double bBox[])
 	else
 	{
 		bBox[0] = 0;
-		bBox[1] = maptrDS->GetRasterXSize() - 1;
+		bBox[1] = maptr_DS->GetRasterXSize() - 1;
 		bBox[2] = 0;
-		bBox[3] = maptrDS->GetRasterYSize() - 1;
+		bBox[3] = maptr_DS->GetRasterYSize() - 1;
 	}
 }
 
@@ -540,7 +540,7 @@ CPLErr AbstractDataset::GetGeoMinMax(double geoMinMax[])
 
 int AbstractDataset::GetImageXSize()
 {
-	return maptrDS->GetRasterXSize();
+	return maptr_DS->GetRasterXSize();
 }
 
 /************************************************************************/
@@ -557,7 +557,7 @@ int AbstractDataset::GetImageXSize()
  */
 int AbstractDataset::GetImageYSize()
 {
-	return maptrDS->GetRasterYSize();
+	return maptr_DS->GetRasterYSize();
 }
 
 /************************************************************************/
@@ -773,7 +773,7 @@ string AbstractDataset::GetCoverageSensor()
 
 int AbstractDataset::GetImageBandCount()
 {
-	return maptrDS->GetRasterCount();
+	return maptr_DS->GetRasterCount();
 }
 
 /************************************************************************/
@@ -850,7 +850,7 @@ CPLErr AbstractDataset::SetMetaDataList(GDALDataset* hSrc)
 
 vector<string> AbstractDataset::GetMetaDataList()
 {
-	return mv_MeteDataList;
+	return mv_MetaDataList;
 }
 
 /************************************************************************/
@@ -1045,7 +1045,7 @@ CPLErr AbstractDataset::GetSuggestedWarpResolution(	OGRSpatialReference& dstCRS,
 		char *pszSrcWKT;
 		mo_NativeCRS.exportToWkt(&pszSrcWKT);
 
-		void *hTransformArg = GDALCreateGenImgProjTransformer(maptrDS.get(),
+		void *hTransformArg = GDALCreateGenImgProjTransformer(maptr_DS.get(),
 				(const char*) pszSrcWKT, NULL, (const char*) pszDstWKT, TRUE, 1000.0, 0);
 		OGRFree(pszDstWKT);
 		OGRFree(pszSrcWKT);
@@ -1059,7 +1059,7 @@ CPLErr AbstractDataset::GetSuggestedWarpResolution(	OGRSpatialReference& dstCRS,
 		/* -------------------------------------------------------------------- */
 		/*      Get approximate output definition.                              */
 		/* -------------------------------------------------------------------- */
-		if (GDALSuggestedWarpOutput(maptrDS.get(), GDALGenImgProjTransform,
+		if (GDALSuggestedWarpOutput(maptr_DS.get(), GDALGenImgProjTransform,
 				hTransformArg, adfDstGeoTransform, &nPixels, &nLines) != CE_None)
 		{
 			SetWCS_ErrorLocator("AbstractDataset::GetSuggestedWarpResolution()");
@@ -1181,15 +1181,15 @@ GDALDataset* AbstractDataset::DatasetWarper(int& IsRefDS,
 		locCRS=mo_NativeCRS;
 
 	if((mo_NativeCRS.IsSame(&locCRS) &&
-			iDstRasterXsize	== maptrDS->GetRasterXSize() &&
-			iDstRasterYsize == maptrDS->GetRasterYSize())&&
+			iDstRasterXsize	== maptr_DS->GetRasterXSize() &&
+			iDstRasterYsize == maptr_DS->GetRasterYSize())&&
 			CPLIsEqual(md_Geotransform[0],pDstGeoTransform[0])&&
 			CPLIsEqual(md_Geotransform[1],pDstGeoTransform[1])&&
 			CPLIsEqual(md_Geotransform[3],pDstGeoTransform[3])&&
 			CPLIsEqual(md_Geotransform[5],pDstGeoTransform[5]))
 	{
 		IsRefDS = TRUE;
-		return maptrDS.get();
+		return maptr_DS.get();
 	}
 
 	char *sDstCRS_WKT;
@@ -1198,9 +1198,9 @@ GDALDataset* AbstractDataset::DatasetWarper(int& IsRefDS,
 	/* Create a memory data-set for re-projection */
 	GDALDriverH poDriver = GDALGetDriverByName("MEM");
 
-	int nBand = maptrDS->GetRasterCount();
+	int nBand = maptr_DS->GetRasterCount();
 	GDALDataset* hMemDS = (GDALDataset*) GDALCreate(poDriver, "", iDstRasterXsize,
-			iDstRasterYsize, nBand, GDALGetRasterDataType(maptrDS->GetRasterBand(1)), NULL);
+			iDstRasterYsize, nBand, GDALGetRasterDataType(maptr_DS->GetRasterBand(1)), NULL);
 	if (NULL == hMemDS)
 	{
 		GDALClose(poDriver);
@@ -1221,7 +1221,7 @@ GDALDataset* AbstractDataset::DatasetWarper(int& IsRefDS,
 	/* -------------------------------------------------------------------- */
 	char *srcWKT;
 	mo_NativeCRS.exportToWkt(&srcWKT);
-	if (CE_None != GDALReprojectImage(maptrDS.get(), srcWKT, hMemDS,
+	if (CE_None != GDALReprojectImage(maptr_DS.get(), srcWKT, hMemDS,
 			sDstCRS_WKT, eResampleAlg, 0, 0.125, NULL, NULL, NULL))
 	{
 		GDALClose(poDriver);

@@ -3,7 +3,7 @@
  *
  * Project:  The Open Geospatial Consortium (OGC) Web Coverage Service (WCS)
  * 			 for Earth Observation: Open Source Reference Implementation
- * Purpose:  NC_GOES_Dataset implementation for NOAA GOES data
+ * Purpose:  DAP_Dataset implementation for NOAA GOES data
  * Author:   Yuanzheng Shao, yshao3@gmu.edu
  *
  ******************************************************************************
@@ -28,39 +28,39 @@
  * DEALINGS IN THE SOFTWARE.
  ****************************************************************************/
 
-#include "NC_GOES_Dataset.h"
+#include "DAP_Dataset.h"
 
 using namespace std;
 
 #define GOES_TIME_DEBUG FALSE
 
-NC_GOES_Dataset::NC_GOES_Dataset()
+DAP_Dataset::DAP_Dataset()
 {
 }
 
 /************************************************************************/
-/*                           ~NC_GOES_Dataset()                         */
+/*                           ~DAP_Dataset()                         */
 /************************************************************************/
 
 /**
- * \brief Destroy an open NC_GOES_Dataset object.
+ * \brief Destroy an open DAP_Dataset object.
  *
- * This is the accepted method of closing a NC_GOES_Dataset dataset and
+ * This is the accepted method of closing a DAP_Dataset dataset and
  * deallocating all resources associated with it.
  */
 
-NC_GOES_Dataset::~NC_GOES_Dataset()
+DAP_Dataset::~DAP_Dataset()
 {
 }
 
 /************************************************************************/
-/*                           NC_GOES_Dataset()                          */
+/*                           DAP_Dataset()                          */
 /************************************************************************/
 
 /**
- * \brief Create an NC_GOES_Dataset object.
+ * \brief Create an DAP_Dataset object.
  *
- * This is the accepted method of creating a NC_GOES_Dataset object and
+ * This is the accepted method of creating a DAP_Dataset object and
  * allocating all resources associated with it.
  *
  * @param id The coverage identifier.
@@ -69,14 +69,28 @@ NC_GOES_Dataset::~NC_GOES_Dataset()
  * daily data, the user could specify multiple days range in request.
  * Each day is seemed as one field.
  *
- * @return A NC_GOES_Dataset object.
+ * @return A DAP_Dataset object.
  */
 
-NC_GOES_Dataset::NC_GOES_Dataset(const string& id, vector<int> &rBandList) :
+DAP_Dataset::DAP_Dataset(const string& id, vector<int> &rBandList) :
 	AbstractDataset(id, rBandList)
 {
 	md_MissingValue = 0;
 	mb_GeoTransformSet = FALSE;
+}
+
+/**
+ * @brief Initialize a DAP Dataset using Array objects already read.
+ *
+ *
+ */
+
+DAP_Dataset::DAP_Dataset(Array *src, Array *lat, Array *lon) :
+    AbstractDataset(), m_src(src), m_lat(lat), m_lon(lon)
+{
+    // TODO Where to set missing_value?
+    md_MissingValue = 0;
+    mb_GeoTransformSet = FALSE;
 }
 
 /************************************************************************/
@@ -96,13 +110,14 @@ NC_GOES_Dataset::NC_GOES_Dataset(const string& id, vector<int> &rBandList) :
  * @return CE_None on success or CE_Failure on failure.
  */
 
-CPLErr NC_GOES_Dataset::InitialDataset(const int isSimple)
+CPLErr DAP_Dataset::InitialDataset(const int isSimple)
 {
+#if 0
 	vector<string> strSet;
 	unsigned int n = CsvburstCpp(ms_CoverageID, strSet, ':');
 	if (n != 4)
 	{
-		SetWCS_ErrorLocator("NC_GOES_Dataset::InitialDataset()");
+		SetWCS_ErrorLocator("DAP_Dataset::InitialDataset()");
 		WCS_Error(CE_Failure, OGC_WCS_NoApplicableCode, "Incorrect coverage ID.");
 		return CE_Failure;
 	}
@@ -118,7 +133,7 @@ CPLErr NC_GOES_Dataset::InitialDataset(const int isSimple)
 	GDALDataset* pSrc = (GDALDataset*) GDALOpenShared(m_ncCoverageIDName.c_str(), GA_ReadOnly);
 	if (pSrc == NULL)
 	{
-		SetWCS_ErrorLocator("NC_GOES_Dataset::InitialDataset()");
+		SetWCS_ErrorLocator("DAP_Dataset::InitialDataset()");
 		WCS_Error(CE_Failure, OGC_WCS_NoApplicableCode, "Failed to open file \"%s\".", ms_SrcFilename.c_str());
 		return CE_Failure;
 	}
@@ -126,21 +141,32 @@ CPLErr NC_GOES_Dataset::InitialDataset(const int isSimple)
 	ms_NativeFormat = GDALGetDriverShortName(pSrc->GetDriver());
 
 	//setmetalist
-	SetMetaDataList(pSrc);
+	SetMetaDataList(pSrc); // This doesn't do anything for DAP
+
+	// We always have one band - could maybe expand this to more than one
+	// later on so that several Grids would be returned.
 
 	//set noValue
 	unsigned int nBandCount = pSrc->GetRasterCount();
 	if (nBandCount < 1)
 	{
 		GDALClose(pSrc);
-		SetWCS_ErrorLocator("NC_GOES_Dataset::InitialDataset()");
+		SetWCS_ErrorLocator("DAP_Dataset::InitialDataset()");
 		WCS_Error(CE_Failure, OGC_WCS_NoApplicableCode, "The GOES file does not contain any raster band.");
 		return CE_Failure;
 	}
 
 	maptr_DS.reset(pSrc);
+#endif
 
-	//set moNativeCRS and mGeoTransform
+	// FIXME Start rewriting code here - see notes.
+
+	// NB: maptr_DS is not valid since it's (re)set above in code not
+	// used anymore. SeGDALDataset() frees the original dataset
+	// and makes a new virtual dataset. It then calls RectifyGOESDataSet
+	// which does the remapping and resets maptr_DS once again.
+
+	// Might break that operation out so the remap is a separate call
 	if (CE_None != SetNativeCRS() ||
 		CE_None != SetGeoTransform() ||
 		CE_None != SetGDALDataset(isSimple))
@@ -171,11 +197,16 @@ CPLErr NC_GOES_Dataset::InitialDataset(const int isSimple)
  * @return CE_None on success or CE_Failure on failure.
  */
 
-CPLErr NC_GOES_Dataset::SetNativeCRS()
+CPLErr DAP_Dataset::SetNativeCRS()
 {
+#if 0
+    // This has no effect since mo_NativeCRS is set to WGS84 below
 	if (CE_None == AbstractDataset::SetNativeCRS())
 		return CE_None;
+#endif
 
+#if 0
+	// These values have already been read by the constraint evaluator
 	GDALDataset* hLatDS = (GDALDataset*) GDALOpen(m_ncLatDataSetName.c_str(), GA_ReadOnly);
 	GDALDataset* hLonDS = (GDALDataset*) GDALOpen(m_ncLonDataSetName.c_str(), GA_ReadOnly);
 
@@ -191,15 +222,18 @@ CPLErr NC_GOES_Dataset::SetNativeCRS()
 
 	if (hLatDS == NULL || hLonDS == NULL)
 	{
-		SetWCS_ErrorLocator("NC_GOES_Dataset::SetNativeCRS()");
+		SetWCS_ErrorLocator("DAP_Dataset::SetNativeCRS()");
 		WCS_Error(CE_Failure, OGC_WCS_NoApplicableCode, "Failed to open latitude/longitude sub-dataset.");
 		return CE_Failure;
 	}
+#endif
 
 	mo_NativeCRS.SetWellKnownGeogCS("WGS84");
 
+#if 0
 	GDALClose(hLatDS);
 	GDALClose(hLonDS);
+#endif
 
 	return CE_None;
 }
@@ -219,10 +253,14 @@ CPLErr NC_GOES_Dataset::SetNativeCRS()
  * @return CE_None on success or CE_Failure on failure.
  */
 
-CPLErr NC_GOES_Dataset::SetGeoTransform()
+CPLErr DAP_Dataset::SetGeoTransform()
 {
+#if 0
+    // This call has no effect since the md_GeoTransform array is
+    // set below.
 	if (CE_None == AbstractDataset::SetGeoTransform())
 		return CE_None;
+#endif
 
 	if (CE_None != SetGeoBBoxAndGCPs(maptr_DS.get()))
 		return CE_Failure;
@@ -255,8 +293,11 @@ CPLErr NC_GOES_Dataset::SetGeoTransform()
 	return CE_None;
 }
 
-CPLErr NC_GOES_Dataset::setResampleStandard(GDALDataset* hSrcDS, int& xRSValue, int& yRSValue)
+CPLErr DAP_Dataset::setResampleStandard(GDALDataset* hSrcDS, int& xRSValue, int& yRSValue)
 {
+    // FIXME
+    // Since DAP_Dataset can do all of this w/o GDAL, replace this with
+    // two functions. Not sure about the RESAMPLE_STANDARD
 	static int RESAMPLE_STANDARD = 500;
 	int nXSize = hSrcDS->GetRasterXSize();
 	int nYSize = hSrcDS->GetRasterYSize();
@@ -282,8 +323,11 @@ CPLErr NC_GOES_Dataset::setResampleStandard(GDALDataset* hSrcDS, int& xRSValue, 
  * @return CE_None on success or CE_Failure on failure.
  */
 
-CPLErr NC_GOES_Dataset::SetGeoBBoxAndGCPs(GDALDataset* poVDS)
+CPLErr DAP_Dataset::SetGeoBBoxAndGCPs(GDALDataset* poVDS)
 {
+    // FIXME
+    // 'VDS' is a misnomer since it's not the virtual dataset yet. This code is just
+    // working with the raster band's GDAL dataset object
 	GDALDataset* hLatDS = (GDALDataset*) GDALOpen(m_ncLatDataSetName.c_str(), GA_ReadOnly);
 	GDALDataset* hLonDS = (GDALDataset*) GDALOpen(m_ncLonDataSetName.c_str(), GA_ReadOnly);
 
@@ -303,7 +347,7 @@ CPLErr NC_GOES_Dataset::SetGeoBBoxAndGCPs(GDALDataset* poVDS)
 		GDALClose(hLatDS);
 		GDALClose(hLonDS);
 
-		SetWCS_ErrorLocator("NC_GOES_Dataset::SetGeoBBoxAndGCPs()");
+		SetWCS_ErrorLocator("DAP_Dataset::SetGeoBBoxAndGCPs()");
 		WCS_Error(CE_Failure, OGC_WCS_NoApplicableCode, "The size of latitude/longitude and data field does not match.");
 
 		return CE_Failure;
@@ -411,7 +455,7 @@ CPLErr NC_GOES_Dataset::SetGeoBBoxAndGCPs(GDALDataset* poVDS)
  * @return CE_None on success or CE_Failure on failure.
  */
 
-CPLErr NC_GOES_Dataset::SetGDALDataset(const int isSimple)
+CPLErr DAP_Dataset::SetGDALDataset(const int isSimple)
 {
 	for(int i = 1; i <= maptr_DS->GetRasterCount(); ++i)
 		mv_BandList.push_back(i);
@@ -419,7 +463,7 @@ CPLErr NC_GOES_Dataset::SetGDALDataset(const int isSimple)
 	VRTDataset *poVDS = (VRTDataset *)VRTCreate(mi_RectifiedImageXSize, mi_RectifiedImageYSize);
 	if (poVDS == NULL)
 	{
-		SetWCS_ErrorLocator("NC_GOES_Dataset::SetGDALDataset()");
+		SetWCS_ErrorLocator("DAP_Dataset::SetGDALDataset()");
 		WCS_Error(CE_Failure, OGC_WCS_NoApplicableCode, "Failed to create VRT DataSet.");
 		return CE_Failure;
 	}
@@ -440,7 +484,7 @@ CPLErr NC_GOES_Dataset::SetGDALDataset(const int isSimple)
 				mi_RectifiedImageXSize, mi_RectifiedImageYSize, NULL, md_MissingValue))
 		{
 			GDALClose((GDALDatasetH) poVDS);
-			SetWCS_ErrorLocator("NC_GOES_Dataset::setGDALDataset()");
+			SetWCS_ErrorLocator("DAP_Dataset::setGDALDataset()");
 			WCS_Error(CE_Failure, OGC_WCS_NoApplicableCode, "Failed to Add Simple Source into VRT DataSet.");
 			return CE_Failure;
 		}
@@ -477,7 +521,7 @@ CPLErr NC_GOES_Dataset::SetGDALDataset(const int isSimple)
  * @return CE_None on success or CE_Failure on failure.
  */
 
-CPLErr NC_GOES_Dataset::SetGCPGeoRef4VRTDataset(GDALDataset* poVDS)
+CPLErr DAP_Dataset::SetGCPGeoRef4VRTDataset(GDALDataset* poVDS)
 {
 	char* psTargetSRS;
 	mo_NativeCRS.exportToWkt(&psTargetSRS);
@@ -486,7 +530,7 @@ CPLErr NC_GOES_Dataset::SetGCPGeoRef4VRTDataset(GDALDataset* poVDS)
 	if (CE_None != poVDS->SetGCPs(m_gdalGCPs.size(), (GDAL_GCP*) (m_gdalGCPs.data()), psTargetSRS))
 	{
 		OGRFree(psTargetSRS);
-		SetWCS_ErrorLocator("NC_GOES_Dataset::SetGCPGeoRef4VRTDataset()");
+		SetWCS_ErrorLocator("DAP_Dataset::SetGCPGeoRef4VRTDataset()");
 		WCS_Error(CE_Failure, OGC_WCS_NoApplicableCode, "Failed to set GCPs.");
 
 		return CE_Failure;
@@ -496,7 +540,7 @@ CPLErr NC_GOES_Dataset::SetGCPGeoRef4VRTDataset(GDALDataset* poVDS)
 		if(CE_None!=poVDS->SetGCPs(m_gdalGCPs.size(), (GDAL_GCP*)&m_gdalGCPs[0], psTargetSRS))
 		{
 			OGRFree( psTargetSRS );
-			SetWCS_ErrorLocator("NC_GOES_Dataset::SetGCPGeoRef4VRTDataset()");
+			SetWCS_ErrorLocator("DAP_Dataset::SetGCPGeoRef4VRTDataset()");
 			WCS_Error(CE_Failure,OGC_WCS_NoApplicableCode,"Failed to set GCPs.");
 
 			return CE_Failure;
@@ -524,9 +568,11 @@ CPLErr NC_GOES_Dataset::SetGCPGeoRef4VRTDataset(GDALDataset* poVDS)
  * @return CE_None on success or CE_Failure on failure.
  */
 
-CPLErr NC_GOES_Dataset::SetMetaDataList(GDALDataset* hSrcDS)
+CPLErr DAP_Dataset::SetMetaDataList(GDALDataset* hSrcDS)
 {
-	mv_MetaDataList.push_back("Product_Description=The data was created by GMU WCS from NOAA GOES satellite data.");
+    // TODO Remove
+#if 0
+    mv_MetaDataList.push_back("Product_Description=The data was created by GMU WCS from NOAA GOES satellite data.");
 	mv_MetaDataList.push_back("unit=GVAR");
 	mv_MetaDataList.push_back("FillValue=0");
 	ms_FieldQuantityDef = "GVAR";
@@ -534,6 +580,7 @@ CPLErr NC_GOES_Dataset::SetMetaDataList(GDALDataset* hSrcDS)
 	ms_CoveragePlatform = "GOES-11";
 	ms_CoverageInstrument = "GOES-11";
 	ms_CoverageSensor = "Imager";
+#endif
 
 	return CE_None;
 }
@@ -553,7 +600,7 @@ CPLErr NC_GOES_Dataset::SetMetaDataList(GDALDataset* hSrcDS)
  * @return CE_None on success or CE_Failure on failure.
  */
 
-CPLErr NC_GOES_Dataset::GetGeoMinMax(double geoMinMax[])
+CPLErr DAP_Dataset::GetGeoMinMax(double geoMinMax[])
 {
 	if (!mb_GeoTransformSet)
 		return CE_Failure;
@@ -579,7 +626,7 @@ CPLErr NC_GOES_Dataset::GetGeoMinMax(double geoMinMax[])
  * @return CE_None on success or CE_Failure on failure.
  */
 
-CPLErr NC_GOES_Dataset::RectifyGOESDataSet()
+CPLErr DAP_Dataset::RectifyGOESDataSet()
 {
 	char *pszDstWKT;
 	mo_NativeCRS.exportToWkt(&pszDstWKT);

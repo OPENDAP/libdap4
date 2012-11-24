@@ -50,99 +50,99 @@ using namespace std;
 /* ******************************************************************** */
 
 //! Abstract dataset model definition. Based on GDAL dataset model.
-
-class AbstractDataset
-{
+class AbstractDataset {
 
 protected:
-	auto_ptr<GDALDataset>	maptrDS;
+    auto_ptr<GDALDataset> maptr_DS;
 
-	// Coverage Information Related
-	string			ms_CoverageID;
-	string			ms_CoverageBeginTime;
-	string			ms_CoverageEndTime;
-	string			ms_CoverageSubType;
-	string			ms_CoverageArchiveTime;
-	string			ms_CoveragePlatform;
-	string			ms_CoverageInstrument;
-	string			ms_CoverageSensor;
-	string			ms_SrcFilename;
-	string			ms_DatasetName;
-	string			ms_DataTypeName;
-	string			ms_NativeFormat;
-	string			ms_FieldQuantityDef;
-	string			ms_AllowRanges;
-	string			ms_ISO19115Metadata;
+    // Coverage Information Related
+    string ms_CoverageID;
+    string ms_CoverageBeginTime;
+    string ms_CoverageEndTime;
+    string ms_CoverageSubType;
+    string ms_CoverageArchiveTime;
+    string ms_CoveragePlatform;
+    string ms_CoverageInstrument;
+    string ms_CoverageSensor;
+    string ms_SrcFilename;
+    string ms_DatasetName;
+    string ms_DataTypeName;
+    string ms_NativeFormat;
+    string ms_FieldQuantityDef;
+    string ms_AllowRanges;
+    string ms_ISO19115Metadata;
 
-	vector<int>		mv_BandList;
-	vector<string>	mv_MeteDataList;
+    vector<int> mv_BandList;
+    vector<string> mv_MetaDataList;
 
-	double			md_Geotransform[6];
-	double			md_GeoMinMax[4];// Order: xmin, xmax, ymin, ymax
-	double			md_MissingValue;
+    double md_Geotransform[6];
+    double md_GeoMinMax[4]; // Order: xmin, xmax, ymin, ymax
+    double md_MissingValue;
 
-	int 			mb_GeoTransformSet;
-	int				mb_IsVirtualDS;
+    int mb_GeoTransformSet;
+    int mb_IsVirtualDS;
 
-	OGRSpatialReference 	mo_NativeCRS;
+    OGRSpatialReference mo_NativeCRS;
 
 protected:
-	AbstractDataset();
-	virtual CPLErr SetNativeCRS();
-	virtual CPLErr SetGeoTransform();
-	virtual CPLErr SetGDALDataset(const int isSimple=0);
-	virtual CPLErr SetMetaDataList(GDALDataset*);
+    AbstractDataset();
+    virtual CPLErr SetNativeCRS();
+    virtual CPLErr SetGeoTransform();
+    virtual CPLErr SetGDALDataset(const int isSimple = 0);
+    virtual CPLErr SetMetaDataList(GDALDataset*);
 
 public:
-	AbstractDataset(const string&, vector<int> &);
-	virtual ~AbstractDataset();
+    AbstractDataset(const string&, vector<int> &);
+    virtual ~AbstractDataset();
 
-	GDALDataset* GetGDALDataset();
+    GDALDataset* GetGDALDataset();
 
-	// Virtual Functions Definition
-	virtual CPLErr InitialDataset(const int isSimple=0);
+    // Virtual Functions Definition
+    virtual CPLErr InitialDataset(const int isSimple = 0);
 
-	// Fetch Function Related
-	const OGRSpatialReference& 	GetNativeCRS();
-	const double& 	GetMissingValue();
-	int 			GetGeoTransform(double geoTrans[]);
-	vector<string> 	GetMetaDataList();
-	vector<int> 	GetBandList();
-	void 			GetNativeBBox(double bBox[]);
-	CPLErr 			GetGeoMinMax(double geoMinMax[]);
+    // Fetch Function Related
+    const OGRSpatialReference& GetNativeCRS();
+    const double& GetMissingValue();
+    int GetGeoTransform(double geoTrans[]);
+    vector<string> GetMetaDataList();
+    vector<int> GetBandList();
+    void GetNativeBBox(double bBox[]);
+    CPLErr GetGeoMinMax(double geoMinMax[]);
 
-	int			GetImageBandCount();
-	int 		GetImageXSize();
-	int 		GetImageYSize();
-	string 		GetResourceFileName();
-	string 		GetDatasetName();
-	string 		GetDataTypeName();
-	string 		GetNativeFormat();
-	string 		GetCoverageID();
-	string 		GetDatasetDescription();
-	string 		GetNativeCRS_URN();
-	string 		GetGeoCRS_URN();
-	string 		GetProjectionRef();
-	string 		GetCoverageBeginTime();
-	string 		GetCoverageEndTime();
-	string 		GetCoverageSubType();
-	string 		GetFieldQuantityDef();
-	string 		GetAllowValues();
-	string 		GetISO19115Metadata();
-	string		GetCoverageArchiveTime();
-	string		GetCoveragePlatform();
-	string		GetCoverageInstrument();
-	string		GetCoverageSensor();
+    int GetImageBandCount();
+    int GetImageXSize();
+    int GetImageYSize();
+    string GetResourceFileName();
+    string GetDatasetName();
+    string GetDataTypeName();
+    string GetNativeFormat();
+    string GetCoverageID();
+    string GetDatasetDescription();
+    string GetNativeCRS_URN();
+    string GetGeoCRS_URN();
+    string GetProjectionRef();
+    string GetCoverageBeginTime();
+    string GetCoverageEndTime();
+    string GetCoverageSubType();
+    string GetFieldQuantityDef();
+    string GetAllowValues();
+    string GetISO19115Metadata();
+    string GetCoverageArchiveTime();
+    string GetCoveragePlatform();
+    string GetCoverageInstrument();
+    string GetCoverageSensor();
 
-	// Fetch Variables Status Related
-	int 		IsbGeoTransformSet();
-	int 		IsCrossingIDL();
+    // Fetch Variables Status Related
+    int IsbGeoTransformSet();
+    int IsCrossingIDL();
 
-	CPLErr GetSuggestedWarpResolution(OGRSpatialReference& dstCRS, double adfDstGeoTransform[], int &nPixels, int &nLines);
-	CPLErr GetSuggestedWarpResolution2(OGRSpatialReference& dstCRS, double adfDstGeoTransform[], int &nPixels, int &nLines);
+    CPLErr GetSuggestedWarpResolution(OGRSpatialReference& dstCRS, double adfDstGeoTransform[], int &nPixels,
+                                      int &nLines);
+    CPLErr GetSuggestedWarpResolution2(OGRSpatialReference& dstCRS, double adfDstGeoTransform[], int &nPixels,
+                                       int &nLines);
 
-	GDALDataset* DatasetWarper(int& IsRefDS, OGRSpatialReference& dstCRS, int& iDstRasterXsize,
-			int& iDstRasterYsize, double pDstGeoTransform[], GDALResampleAlg eResampleAlg=GRA_NearestNeighbour);
+    GDALDataset* DatasetWarper(int& IsRefDS, OGRSpatialReference& dstCRS, int& iDstRasterXsize, int& iDstRasterYsize,
+                               double pDstGeoTransform[], GDALResampleAlg eResampleAlg = GRA_NearestNeighbour);
 };
 
 #endif /*ABSTRACTDATASET_H_*/

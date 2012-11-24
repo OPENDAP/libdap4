@@ -23,7 +23,7 @@ libswath2grid_la_LDFLAGS =
 libswath2grid_la_LIBADD = $(GDAL_LIBS)
 
 SRCS = AbstractDataset.cpp NC_GOES_Dataset.cpp wcs_error.cpp    \
-BoundingBox.cpp wcsUtil.cpp
+BoundingBox.cpp wcsUtil.cpp DAP_Dataset.cpp
 
 HDRS = AbstractDataset.h NC_GOES_Dataset.h wcs_error.h    \
-BoundingBox.h wcsUtil.h
+BoundingBox.h wcsUtil.h DAP_Dataset.h
