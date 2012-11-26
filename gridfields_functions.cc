@@ -466,44 +466,48 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 {
     static string info =
     string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
-    "<function name=\"ugrid_demo\" version=\"0.1\">\n" +
-    "Fledgling code for Unstructured grid operations.\n" +
+    "<function name=\"ugrid_restrict\" version=\"0.1\">\n" +
+    "Server function for Unstructured grid operations.\n" +
     "</function>";
 
-    static string info2 =
-    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
-    "<function name=\"ugrid_demo\" version=\"0.1\">\n" +
-    "code for Unstructured grid operations.\n" +
-    "</function>";
     if (argc == 0) {
         Str *response = new Str("info");
         response->set_value(info);
         *btpp = response;
         return;
     }
-
+#if 0
+    static string info2 =
+    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
+    "<function name=\"ugrid_restrict\" version=\"0.1\">\n" +
+    "code for Unstructured grid operations.\n" +
+    "</function>";
+    // FIXME What/Why are there 7 args? Why test this case? Below it clearly takes only two...
     if (argc == 7) {
         Str *response = new Str("info2");
         response->set_value(info);
         *btpp = response;
         return;
     }
+#endif
 
     // Check number of arguments; DBG is a macro. Use #define
     // DODS_DEBUG to activate the debugging stuff.
     if (argc != 2)
-        throw Error(malformed_expr,"Wrong number of arguments to ugrid_demo. ugrid_demo(dim:int32, condition:string); was passed " + long_to_string(argc) + " argument(s)");
+        throw Error(malformed_expr,"Wrong number of arguments to ugrid_demo. ugrid_restrict(dim:int32, condition:string); was passed " + long_to_string(argc) + " argument(s)");
 
     if (argv[0]->type() != dods_int32_c)
-        throw Error(malformed_expr,"Wrong type for first argument. ugrid_demo(dim:int32, condition:string); was passed a/an " + argv[0]->type_name());
+        throw Error(malformed_expr,"Wrong type for first argument. ugrid_restrict(dim:int32, condition:string); was passed a/an " + argv[0]->type_name());
 
     if (argv[1]->type() != dods_str_c)
-        throw Error(malformed_expr,"Wrong type for second argument. ugrid_demo(dim:int32, condition:string); was passed a/an " + argv[1]->type_name());
+        throw Error(malformed_expr,"Wrong type for second argument. ugrid_restrict(dim:int32, condition:string); was passed a/an " + argv[1]->type_name());
 
     // keep track of which DDS dimensions correspond to GF dimensions
 
     map<GF::Dim_t, vector<Array::dimension> > rank_dimensions;
 
+    // TODO Leaked?
+    // TODO This is the 'domain' data?
     GF::Grid *G = new GF::Grid("result");
 
     // 1) Find the nodes
@@ -522,6 +526,10 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
         DBG(cerr << "Array: " << arr.name() << endl);
 
         int node_count = -1;    //error condition
+        // FIXME
+        // Look at the spec: http://bit.ly/ugrid_cf. There's no attribute
+        // called 'grid_location' but there is an attribute called 'location'
+        // and it can have the value 'node' (or 'face').
         AttrTable::Attr_iter loc = at.simple_find("grid_location");
 
         if (loc != at.attr_end()) {
@@ -530,7 +538,10 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
                 node_count = 1;
                 Array::Dim_iter di = arr.dim_begin();
                 DBG(cerr << "Interpreting 0-cells from dimensions: ");
+                // FIXME This will overwrite previous Arrays that have 'grid_location'
+                // attributes with a value of 'node'.
                 rank_dimensions[0] = vector<Array::dimension>();
+                // FIXME use the Array::size() method?
                 for (Array::Dim_iter di = arr.dim_begin(); di!= arr.dim_end(); di++) {
                     // These dimensions define the nodes.
                     DBG(cerr << di->name << ", ");
@@ -540,6 +551,7 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
                 DBG(cerr << endl);
 
                 nodes = new GF::Implicit0Cells(node_count);
+
                 break;
             } // Bound to nodes?
         } // Has a "grid_location" attribute?
@@ -549,6 +561,8 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
         throw Error("Could not find a grid_location attribute and/or its node set.");
 
     // Attach the nodes to the grid
+    // TODO Is this '0' the same as the '0' in 'rank_dimensions[0]'? See the
+    // note/question below...
     G->setKCells(nodes, 0);
 
     // 2) For each k, find the k-cells
@@ -567,6 +581,8 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 
         AttrTable &at = arr.get_attr_table();
 
+        // FIXME
+        // There is no longer a 'cell_type' attribute in the spec...
         AttrTable::Attr_iter iter_cell_type = at.simple_find("cell_type");
 
         if (iter_cell_type != at.attr_end()) {
@@ -575,7 +591,12 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
             if (cell_type == "tri_ccw") {
                 // Ok, we expect triangles
                 // which means a shape of 3xN
+                // FIXME: The loop below checks that the array is 3xN and
+                // stores the size of the second dimension in twocell_count
                 int twocell_count = -1, i=0;
+                // FIXME total_size is only used in the loop below when the attribute
+                // 'index_origin' is found but that attribute is not defined in the spec.
+                // Do we need this?
                 int total_size = 1;
                 rank_dimensions[2] = vector<Array::dimension>();
                 for (Array::Dim_iter di = arr.dim_begin(); di!= arr.dim_end(); di++) {
@@ -598,15 +619,22 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
                 }
 
                 // interpret the array data as triangles
+                // FIXME Can allocate cellids without copying arr's values
                 GF::Node *cellids = extract_array<GF::Node>(&arr);
                 GF::Node *cellids2 = extract_array<GF::Node>(&arr);
-                for (int j=0;j<twocell_count;j++)
-                {   cellids[3*j]=cellids2[j];
+                // FIXME
+                // This loop appears to reorganize cellids so that it contains
+                // in in three consecutive values (0,1,2; 3,4,5; ...) the values
+                // from cellids2 0,N,2N; 1,1+N,1+2N; ...
+                // But cellids2 is never used anywhere else; consider rewriting
+                // so it does this repacking operation.
+                for (int j=0;j<twocell_count;j++) {   cellids[3*j]=cellids2[j];
                     cellids[3*j+1]=cellids2[j+twocell_count];
                     cellids[3*j+2]=cellids2[j+2*twocell_count];
                 }
 
                 // adjust for index origin
+                // FIXME There's no 'index_origin' attribute in the spec.
                 AttrTable::Attr_iter iter_index_origin = at.simple_find("index_origin");
                 if (iter_index_origin != at.attr_end()) {
                     DBG(cerr << "Found an index origin attribute." << endl);
@@ -632,9 +660,11 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
                 }
 
                 // Create the cell array
+                // TODO Is this '3' the same as the '3' in '3xN'?
                 twocells = new GF::CellArray(cellids, twocell_count, 3);
 
                 // Attach it to the grid
+                // TODO Is this '2' the same as the '2' in 'rank_dimensions[2]'?
                 G->setKCells(twocells, 2);
             }
         }
@@ -665,6 +695,9 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
                 bool same = same_dimensions(arr, iter->second);
                 if (same) {
                     // This var should be bound to rank k
+                    // TODO This code sets AddAttribute(0, <grid_location --> 'node'>)
+                    // (which occurs three times in test4.nc - X, Y, and nodedata) and
+                    // AddAttribute(2, <the 3xN var>).
                     DBG(cerr << "Adding Attribute: " << gfa->sname() << endl);
                     input->AddAttribute(iter->first, gfa);
                 }
@@ -677,6 +710,8 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
             }
         } // Ignore if not an array type. Anything else we should do?
     }
+
+    //FIXME Tell James what dim is about...
 
     int dim = extract_double_value(argv[0]);
     string filter_expr = extract_string_argument(argv[1]);
@@ -693,6 +728,11 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     R->GetGrid()->normalize();
 
     Structure *construct = new Structure("construct");
+
+    // FIXME This code loops through the DDS and finds the variables
+    // that were the sources of information used by Gridfields (there are four)
+    // and uses those names to make the names of the four result variables.
+    // It also copies the attribute table from those variables.
     for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
         BaseType *bt = *vi;
         if (bt->type() == dods_array_c) {
