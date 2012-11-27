@@ -35,9 +35,11 @@
 #include "AbstractDataset.h"
 #include "wcsUtil.h"
 
-class Array;
-
 using namespace std;
+
+namespace libdap {
+
+class Array;
 
 /************************************************************************/
 /* ==================================================================== */
@@ -75,7 +77,7 @@ using namespace std;
  * process GOES Imager and Sounder products.
  */
 
-class DAP_Dataset: public AbstractDataset {
+class DAP_Dataset : public AbstractDataset {
 protected:
     string m_ncLatDataSetName;
     string m_ncLonDataSetName;
@@ -103,7 +105,7 @@ protected:
 
 public:
     CPLErr SetGCPGeoRef4VRTDataset(GDALDataset*);
-    CPLErr SetGeoBBoxAndGCPs(GDALDataset* hSrcDS);
+    void SetGeoBBoxAndGCPs();
     CPLErr RectifyGOESDataSet();
     CPLErr setResampleStandard(GDALDataset* hSrcDS, int& xRSValue, int& yRSValue);
 
@@ -133,4 +135,5 @@ public:
     virtual ~DAP_Dataset();
 };
 
+} // namespace libdap
 #endif /* DAP_DATASET_H_ */
