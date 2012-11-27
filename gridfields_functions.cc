@@ -98,7 +98,8 @@ static string extract_string_argument(BaseType * arg)
         throw InternalErr(__FILE__, __LINE__,
                 "The CE Evaluator built an argument list where some constants held no values.");
 
-    string s = dynamic_cast<Str&>(*arg).value();
+    Str &dapString = dynamic_cast<Str&>(*arg);
+    string s = dapString.value();
 
     DBG(cerr << "s: " << s << endl);
 
@@ -840,6 +841,919 @@ function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 
     return;
 }
+
+
+/**
+ * #######################################################################################################
+ * #######################################################################################################
+ * #######################################################################################################
+ * #######################################################################################################
+ * #######################################################################################################
+ * #######################################################################################################
+ * #######################################################################################################
+ * #######################################################################################################
+ * #######################################################################################################
+ * #######################################################################################################
+ */
+
+
+
+string ugrSyntax = "ugr(dim:int32, rangeVariable:string, condition:string)";
+
+struct ugr_args {
+	int dimension;
+	Array *rangeVar;
+	string filterExpression;
+};
+
+static ugr_args processArgs(int argc, BaseType * argv[]){
+
+	ugr_args args;
+
+    // Check number of arguments; DBG is a macro. Use #define
+    // DODS_DEBUG to activate the debugging stuff.
+    if (argc != 3)
+        throw Error(malformed_expr,"Wrong number of arguments to ugrid restrict function: "+ugrSyntax+" was passed " + long_to_string(argc) + " argument(s)");
+
+    //FIXME Process the first arg, which is "dimension" or something - WE DON'T REALLY KNOW.
+    if (argv[0]->type() != dods_int32_c)
+        throw Error(malformed_expr,"Wrong type for first argument, expected DAP Int32. "+ugrSyntax+"  was passed a/an " + argv[0]->type_name());
+    //FIXME Tell James what dim is about...
+    args.dimension = extract_double_value(argv[0]);
+
+
+    // Process the second argument, the range Variable selected by the user.
+    if (argv[1]->type() != dods_array_c)
+        throw Error(malformed_expr,"Wrong type for second argument, expected DAP Array. "+ugrSyntax+"  was passed a/an " + argv[1]->type_name());
+
+    args.rangeVar = dynamic_cast<Array*>(argv[1]);
+    if(args.rangeVar == 0) {
+        throw Error(malformed_expr,"Wrong type for second argument. "+ugrSyntax+"  was passed a/an " + argv[1]->type_name());
+    }
+
+
+    // Process the third argument, the relation expression used to restrict the ugrid content..
+    if (argv[2]->type() != dods_str_c)
+        throw Error(malformed_expr,"Wrong type for third argument, expected DAP String. "+ugrSyntax+"  was passed a/an " + argv[2]->type_name());
+    args.filterExpression = extract_string_argument(argv[2]);
+
+    return args;
+
+
+
+#if 0
+    // ORIGINAL IMPLEMENTATION
+
+
+    // Check number of arguments; DBG is a macro. Use #define
+    // DODS_DEBUG to activate the debugging stuff.
+    if (argc != 3)
+        throw Error(malformed_expr,"Wrong number of arguments to ugrid restrict function: "+ugrSyntax+" was passed " + long_to_string(argc) + " argument(s)");
+
+    //FIXME Process the first arg, which is "dimension" or something - WE DON'T REALLY KNOW.
+    if (argv[0]->type() != dods_int32_c)
+        throw Error(malformed_expr,"Wrong type for first argument. "+ugrSyntax+"  was passed a/an " + argv[0]->type_name());
+    //FIXME Tell James what dim is about...
+    int dim = extract_double_value(argv[0]);
+
+
+    // Process the second argument, the range Variable selected by the user.
+    if (argv[1]->type() != dods_array_c)
+        throw Error(malformed_expr,"Wrong type for second argument. "+ugrSyntax+"  was passed a/an " + argv[1]->type_name());
+    Array &rangeVar;
+    try {
+    	rangeVar = dynamic_cast<Array&>(*argv[1]);
+    }
+    catch(std::bad_cast &e) {
+        throw Error(malformed_expr,"Wrong type for second argument. "+ugrSyntax+"  was passed a/an " + argv[1]->type_name());
+    }
+
+
+    // Process the third argument, the relation expression used to restrict the ugrid content..
+    if (argv[2]->type() != dods_str_c)
+        throw Error(malformed_expr,"Wrong type for third argument. "+ugrSyntax+"  was passed a/an " + argv[2]->type_name());
+    string filter_expr = extract_string_argument(argv[2]);
+
+
+    // not used jhrg 11/15/12 int nodenumber=input->Card(0);
+
+#endif
+
+}
+
+
+/**
+ * The original implementation iterated over the variables in the dataset. If a variable had an attribute named "grid_location"
+ * (which is now called "location") whose value was equal to 'node' then it would build one of these Implicit0Cells things
+ * using the computed capacity of the array as the parameter to the constructor. However, it would build one for only the first
+ * variable in the dataset that had the matching attribute conditions, and then it would call "break;" and leave the variable
+ * iteration loop. So in the end only the first variable matching the attribute condition is utilized, which seems problematic
+ * if the dataset is is more complex than anticipated.
+ *
+ * Ultimately it would appear that the original code is simply trying to determine the number of nodes in the ugrid.
+ * I think this can be more effectively done either by utilizing a user supplied range variable, or following the ugrid
+ * specification and locating the variable with the attribute "cf_role" whose value is "mesh_topology", and working it
+ * out from there (based on the spec).
+ *
+ * This implementation uses the range variable identified by the user as the template variable and fails if template
+ * doen's contain 'location' attribute with the value 'node'
+ */
+static GF::Implicit0Cells *getNodes(Array *rangeVar)
+{
+    // 1) Check The Range Nodes
+    DBG(cerr << "Checking Range Variable..." << endl);
+    GF::Implicit0Cells *nodes = NULL;
+
+    AttrTable &at = rangeVar->get_attr_table();
+    DBG(cerr << "The user submitted the range array: " << rangeNodes.name() << endl);
+
+    AttrTable::Attr_iter loc = at.simple_find("location");
+    if (loc != at.attr_end()) {
+        DBG(cerr << "Array: " << rangeNodes.name() << " has a 'location' attribute."<< endl);
+        string value = at.get_attr(loc, 0);
+        DBG(cerr << "Attribute 'location' has value of '" << value << "'"<< endl);
+        if (value == "node") {
+        	int node_count = rangeVar->length();
+            nodes = new GF::Implicit0Cells(node_count);
+            return nodes;
+        }
+        else {
+            throw Error("The requested range variable '"+rangeVar->name()+"' has a 'location' attribute " +
+            		"that is not equal to 'node'. location='"+value+"'");
+        }
+    }
+    else {
+        throw Error("The requested range variable '"+rangeVar->name()+"' that does not have the " +
+        		"required 'location' attribute.");
+    }
+
+
+
+
+#if 0
+
+    // ORIGINAL IMPLEMENTATION
+
+
+
+
+    // 1) Check The Range Nodes
+    DBG(cerr << "Checking Range Variable..." << endl);
+    GF::AbstractCellArray *nodes = NULL;
+
+    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
+
+        BaseType *bt = *vi;
+        // TODO allow variables that are not arrays; just ignore them
+        if (bt->type() != dods_array_c)
+            continue;
+
+        Array &arr = dynamic_cast<Array&>(*bt);
+        AttrTable &at = arr.get_attr_table();
+        DBG(cerr << "Array: " << arr.name() << endl);
+
+        int node_count = -1;    //error condition
+        // FIXME
+        // Look at the spec: http://bit.ly/ugrid_cf. There's no attribute
+        // called 'grid_location' but there is an attribute called 'location'
+        // and it can have the value 'node' (or 'face').
+        AttrTable::Attr_iter loc = at.simple_find("location");
+
+        if (loc != at.attr_end()) {
+
+            if (at.get_attr(loc, 0) == "node") {
+
+
+                node_count = 1;
+                Array::Dim_iter di = arr.dim_begin();
+                DBG(cerr << "Interpreting 0-cells from dimensions: ");
+                // FIXME This will overwrite previous Arrays that have 'grid_location'
+                // attributes with a value of 'node'.
+                rank_dimensions[0] = vector<Array::dimension>();
+                // FIXME use the Array::size() method?
+
+
+                for (Array::Dim_iter di = arr.dim_begin(); di!= arr.dim_end(); di++) {
+                    // These dimensions define the nodes.
+                    DBG(cerr << di->name << ", ");
+                    rank_dimensions[0].push_back(*di);
+                    node_count *= di->c_size;
+                }
+                DBG(cerr << endl);
+
+                nodes = new GF::Implicit0Cells(node_count);
+                break;
+            } // Bound to nodes?
+        } // Has a "grid_location" attribute?
+    }
+
+    if (!nodes)
+        throw Error("Could not find a grid_location attribute and/or its node set.");
+
+    // Attach the nodes to the grid
+    // TODO Is this '0' the same as the '0' in 'rank_dimensions[0]'? See the
+    // note/question below...
+    G->setKCells(nodes, 0);
+
+
+#endif
+
+
+}
+
+
+
+static GF::CellArray *getRankTwoKCells(DDS &dds, map<GF::Dim_t, vector<Array::dimension> > &rank_dimensions)
+{
+
+    // 2) For each k, find the k-cells
+    // k = 2, for now
+    DBG(cerr << "Reading 2-cells" << endl);
+    GF::CellArray *twocells = NULL;
+
+    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
+        BaseType *bt = *vi;
+        // TODO Allow variables that are not Arrays; ignore as above
+        if (bt->type() != dods_array_c)
+            continue;
+
+        Array &arr = dynamic_cast<Array&>(*bt);
+        DBG(cerr << "Array: " << arr.name() << endl);
+
+        AttrTable &at = arr.get_attr_table();
+
+        // FIXME
+        // There is no longer a 'cell_type' attribute in the spec...
+        AttrTable::Attr_iter iter_cell_type = at.simple_find("cell_type");
+
+        if (iter_cell_type != at.attr_end()) {
+            string cell_type = at.get_attr(iter_cell_type, 0);
+            DBG(cerr << cell_type << endl);
+            if (cell_type == "tri_ccw") {
+                // Ok, we expect triangles
+                // which means a shape of 3xN
+                // FIXME: The loop below checks that the array is 3xN and
+                // stores the size of the second dimension in twocell_count
+                int twocell_count = -1, i=0;
+                // FIXME total_size is only used in the loop below when the attribute
+                // 'index_origin' is found but that attribute is not defined in the spec.
+                // Do we need this?
+                int total_size = 1;
+                rank_dimensions[2] = vector<Array::dimension>();
+                for (Array::Dim_iter di = arr.dim_begin(); di!= arr.dim_end(); di++) {
+                    total_size *= di->c_size;
+                    rank_dimensions[2].push_back(*di);
+                    if (i == 0) {
+                        if (di->c_size != 3) {
+                            DBG(cerr << "Cell array of type 'tri_ccw' must have a shape of 3xN, since triangles have three nodes." << endl);
+                            throw Error(malformed_expr,"Cell array of type 'tri_ccw' must have a shape of 3xN, since triangles have three nodes.");
+                        }
+                    }
+                    if (i == 1) {
+                        twocell_count = di->c_size;
+                    }
+                    if (i>1) {
+                        DBG(cerr << "Too many dimensions for a cell array of type 'tri_ccw'.  Expected shape of 3XN" << endl);
+                        throw Error(malformed_expr,"Too many dimensions for a cell array of type 'tri_ccw'.  Expected shape of 3XN");
+                    }
+                    i++;
+                }
+
+                // interpret the array data as triangles
+                // FIXME Can allocate cellids without copying arr's values
+                GF::Node *cellids = extract_array<GF::Node>(&arr);
+                GF::Node *cellids2 = extract_array<GF::Node>(&arr);
+                // FIXME
+                // This loop appears to reorganize cellids so that it contains
+                // in in three consecutive values (0,1,2; 3,4,5; ...) the values
+                // from cellids2 0,N,2N; 1,1+N,1+2N; ...
+                // But cellids2 is never used anywhere else; consider rewriting
+                // so it does this repacking operation.
+                for (int j=0;j<twocell_count;j++) {   cellids[3*j]=cellids2[j];
+                    cellids[3*j+1]=cellids2[j+twocell_count];
+                    cellids[3*j+2]=cellids2[j+2*twocell_count];
+                }
+
+                // adjust for index origin
+                // FIXME There's no 'index_origin' attribute in the spec.
+                AttrTable::Attr_iter iter_index_origin = at.simple_find("index_origin");
+                if (iter_index_origin != at.attr_end()) {
+                    DBG(cerr << "Found an index origin attribute." << endl);
+                    AttrTable::entry *index_origin_entry = *iter_index_origin;
+                    int index_origin;
+                    if (index_origin_entry->attr->size() == 1) {
+                        AttrTable::entry *index_origin_entry = *iter_index_origin;
+                        string val = (*index_origin_entry->attr)[0];
+                        DBG(cerr << "Value: " << val << endl);
+                        stringstream buffer(val);
+                        // what happens if string cannot be converted to an integer?
+                        buffer >> index_origin;
+                        DBG(cerr << "converted: " << index_origin << endl);
+                        if (index_origin != 0) {
+                            for (int j=0; j<total_size; j++) {
+                                cellids[j] -= index_origin;
+                            }
+                        }
+                    }
+                    else {
+                        throw Error(malformed_expr,"Index origin attribute exists, but either no value supplied, or more than one value supplied.");
+                    }
+                }
+
+                // Create the cell array
+                // TODO Is this '3' the same as the '3' in '3xN'?
+                twocells = new GF::CellArray(cellids, twocell_count, 3);
+
+                return twocells;
+            }
+        }
+    }
+
+    throw Error("Could not find cell array of CCW triangles");
+
+
+}
+
+
+static GF::GridField *getInputCells(DDS &dds, map<GF::Dim_t, vector<Array::dimension> > &rank_dimensions, GF::Grid *G)
+{
+    // 3) For each var, bind it to the appropriate dimension
+
+    // For each variable in the data source:
+    GF::GridField *input = new GF::GridField(G);
+
+    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
+        BaseType *bt = *vi;
+
+        if (bt->type() == dods_array_c) {
+            Array *arr = (Array *)bt;
+            DBG(cerr << "Data Array: " << arr->name() << endl);
+            GF::Array *gfa = extract_gridfield_array(arr);
+
+            // Each rank is associated with a sequence of dimensions
+            // Vars that have the same dimensions should be bound to the grid at that rank
+            // (Note that in gridfields, Dimension and rank are synonyms.  We
+            // use the latter here to avoid confusion).
+            map<GF::Dim_t, vector<Array::dimension> >::iterator iter;
+            for( iter = rank_dimensions.begin(); iter != rank_dimensions.end(); ++iter ) {
+                bool same = same_dimensions(arr, iter->second);
+                if (same) {
+                    // This var should be bound to rank k
+                    // TODO This code sets AddAttribute(0, <grid_location --> 'node'>)
+                    // (which occurs three times in test4.nc - X, Y, and nodedata) and
+                    // AddAttribute(2, <the 3xN var>).
+                    DBG(cerr << "Adding Attribute: " << gfa->sname() << endl);
+                    input->AddAttribute(iter->first, gfa);
+                }
+                else {
+                    // This array does not appear to be associated with any
+                    // rank of the unstructured grid. Ignore for now.
+                    // TODO Anything else we should do?
+                    // FIXME Free the storage!!
+                }
+            }
+        } // Ignore if not an array type. Anything else we should do?
+    }
+
+    return input;
+
+}
+
+
+static Structure *convertUgridToDapObject(DDS &dds, map<GF::Dim_t, vector<Array::dimension> > &rank_dimensions, GF::GridField *R)
+{
+    // 4) Convert back to a DDS BaseType
+
+    // Create variables for each cell dimension
+    // Create variables for each attribute at each rank
+
+    R->GetGrid()->normalize();
+
+    Structure *construct = new Structure("construct");
+
+    // FIXME This code loops through the DDS and finds the variables
+    // that were the sources of information used by Gridfields (there are four)
+    // and uses those names to make the names of the four result variables.
+    // It also copies the attribute table from those variables.
+    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
+        BaseType *bt = *vi;
+        if (bt->type() == dods_array_c) {
+            Array *arr = (Array *)bt;
+            map<GF::Dim_t, vector<Array::dimension> >::iterator iter;
+
+            AttrTable &arrattr2 = arr->get_attr_table();
+
+            if(arrattr2.simple_find("cell_type")!=arrattr2.attr_end())
+            {
+                GF::CellArray* Inb=(GF::CellArray*)(R->GetGrid()->getKCells(2));
+                Int32 *witnessn4 = new Int32(arr->name());
+                Array *Nodes = new Array(arr->name(),witnessn4);
+                vector< vector<int> > nodes2 = Inb->makeArrayInts();
+                vector<dods_int32> node1;
+                vector<dods_int32> node2;
+                vector<dods_int32> node3;
+                for (unsigned int j=0; j < nodes2.size(); j++) {
+                    node1.push_back(nodes2.at(j).at(0));
+                    node2.push_back(nodes2.at(j).at(1));
+                    node3.push_back(nodes2.at(j).at(2));
+                }
+                Int32 *witnessn1=new Int32("nodes1");
+                Int32 *witnessn2=new Int32("nodes2");
+                Int32 *witnessn3=new Int32("nodes3");
+                Array *Node1=new Array("trinode1",witnessn1);
+                Array *Node2=new Array("trinode2",witnessn2);
+                Array *Node3=new Array("trinode3",witnessn3);
+                Node1->append_dim(node1.size(),"dim-1");
+
+                Node2->append_dim(node2.size(),"dim-1");
+                Node3->append_dim(node3.size(),"dim-1");
+
+                Node1->set_value(node1,node1.size());
+                Node2->set_value(node2,node2.size());
+                Node3->set_value(node3,node3.size());
+
+                Nodes->append_dim(3,"three");
+                Nodes->append_dim(node1.size(),"tris");
+                Nodes->reserve_value_capacity(3*node1.size());
+                Nodes->set_value_slice_from_row_major_vector(*Node1,0);
+                Nodes->set_value_slice_from_row_major_vector(*Node2,Node1->length());
+                Nodes->set_value_slice_from_row_major_vector(*Node3,Node1->length()+Node2->length());
+                AttrTable &arrattr1 = arr->get_attr_table();
+                Nodes->set_attr_table(arrattr1);
+
+                construct->add_var_nocopy(Nodes);
+            }
+            else {
+                for( iter = rank_dimensions.begin(); iter != rank_dimensions.end(); ++iter ) {
+                    bool same = same_dimensions(arr, iter->second);
+                    if (same) {
+                        // This var should be bound to rank k
+                        Float64 *witness2 = new Float64(arr->name());
+
+                        GF::Array* gfa = R->GetAttribute(iter->first, arr->name());
+
+                        vector<dods_float64> GFA = gfa->makeArrayf();
+
+                        Array *Nodes = new Array(arr->name(), witness2);
+                        Nodes->append_dim(GFA.size(), "nodes");
+                        Nodes->set_value(GFA,GFA.size());
+
+                        AttrTable &arrattr1 = arr->get_attr_table();
+                        Nodes->set_attr_table(arrattr1);
+                        // AttrTable &arrattr = Nodes->get_attr_table();
+
+                        construct->add_var_nocopy(Nodes);
+                    }
+                    else {
+                        // This array does not appear to be associated with
+                        // any rank of the unstructured grid. Ignore for now.
+                        // Anything else we should do?
+                    }
+                }
+            }
+        }
+    }
+
+    return construct;
+}
+
+
+
+
+/**
+ Subset an irregular mesh (aka unstructured grid).
+
+ @param argc Count of the function's arguments
+ @param argv Array of pointers to the functions arguments
+ @param dds Reference to the DDS object for the complete dataset.
+ This holds pointers to all of the variables and attributes in the
+ dataset.
+ @param btpp Return the function result in an instance of BaseType
+ referenced by this pointer to a pointer. We could have used a
+ BaseType reference, instead of pointer to a pointer, but we didn't.
+ This is a value-result parameter.
+
+ @return void
+
+ @exception Error Thrown If the Array is not a one dimensional
+ array. */
+void
+function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
+{
+    static string info =
+    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
+    "<function name=\"ugrid_restrict\" version=\"0.1\">\n" +
+    "Server function for Unstructured grid operations.\n" +
+    "</function>";
+
+    if (argc == 0) {
+        Str *response = new Str("info");
+        response->set_value(info);
+        *btpp = response;
+        return;
+    }
+
+    ugr_args args = processArgs(argc,argv);
+
+#if 0
+    // Check number of arguments; DBG is a macro. Use #define
+    // DODS_DEBUG to activate the debugging stuff.
+    if (argc != 3)
+        throw Error(malformed_expr,"Wrong number of arguments to ugrid restrict function: "+ugrSyntax+" was passed " + long_to_string(argc) + " argument(s)");
+
+    //FIXME Process the first arg, which is "dimension" or something - WE DON'T REALLY KNOW.
+    if (argv[0]->type() != dods_int32_c)
+        throw Error(malformed_expr,"Wrong type for first argument. "+ugrSyntax+"  was passed a/an " + argv[0]->type_name());
+    //FIXME Tell James what dim is about...
+    int dim = extract_double_value(argv[0]);
+
+
+    // Process the second argument, the range Variable selected by the user.
+    if (argv[1]->type() != dods_array_c)
+        throw Error(malformed_expr,"Wrong type for second argument. "+ugrSyntax+"  was passed a/an " + argv[1]->type_name());
+    Array &rangeVar;
+    try {
+    	rangeVar = dynamic_cast<Array&>(*argv[1]);
+    }
+    catch(std::bad_cast &e) {
+        throw Error(malformed_expr,"Wrong type for second argument. "+ugrSyntax+"  was passed a/an " + argv[1]->type_name());
+    }
+
+
+    // Process the third argument, the relation expression used to restrict the ugrid content..
+    if (argv[2]->type() != dods_str_c)
+        throw Error(malformed_expr,"Wrong type for third argument. "+ugrSyntax+"  was passed a/an " + argv[2]->type_name());
+    string filter_expr = extract_string_argument(argv[2]);
+
+
+    // not used jhrg 11/15/12 int nodenumber=input->Card(0);
+
+#endif
+
+    // keep track of which DDS dimensions correspond to GF dimensions
+    map<GF::Dim_t, vector<Array::dimension> > rank_dimensions;
+
+    // TODO Leaked?
+    // TODO This is the 'domain' data?
+    GF::Grid *G = new GF::Grid("result");
+
+
+    // 1) Get The Range Nodes
+    GF::AbstractCellArray *nodes = getNodes(args.rangeVar);
+
+    // Attach the range nodes to the grid
+    // TODO Is this '0' the same as the '0' in 'rank_dimensions[0]'? See the note/question below...
+    G->setKCells(nodes, 0);
+
+#if 0
+    // 1) Check The Range Nodes
+    DBG(cerr << "Checking Range Variable..." << endl);
+    GF::AbstractCellArray *nodes = NULL;
+
+    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
+
+        BaseType *bt = *vi;
+        // TODO allow variables that are not arrays; just ignore them
+        if (bt->type() != dods_array_c)
+            continue;
+
+        Array &arr = dynamic_cast<Array&>(*bt);
+        AttrTable &at = arr.get_attr_table();
+        DBG(cerr << "Array: " << arr.name() << endl);
+
+        int node_count = -1;    //error condition
+        // FIXME
+        // Look at the spec: http://bit.ly/ugrid_cf. There's no attribute
+        // called 'grid_location' but there is an attribute called 'location'
+        // and it can have the value 'node' (or 'face').
+        AttrTable::Attr_iter loc = at.simple_find("location");
+
+        if (loc != at.attr_end()) {
+
+            if (at.get_attr(loc, 0) == "node") {
+
+
+                node_count = 1;
+                Array::Dim_iter di = arr.dim_begin();
+                DBG(cerr << "Interpreting 0-cells from dimensions: ");
+                // FIXME This will overwrite previous Arrays that have 'grid_location'
+                // attributes with a value of 'node'.
+                rank_dimensions[0] = vector<Array::dimension>();
+                // FIXME use the Array::size() method?
+
+
+                for (Array::Dim_iter di = arr.dim_begin(); di!= arr.dim_end(); di++) {
+                    // These dimensions define the nodes.
+                    DBG(cerr << di->name << ", ");
+                    rank_dimensions[0].push_back(*di);
+                    node_count *= di->c_size;
+                }
+                DBG(cerr << endl);
+
+                nodes = new GF::Implicit0Cells(node_count);
+                break;
+            } // Bound to nodes?
+        } // Has a "grid_location" attribute?
+    }
+
+    if (!nodes)
+        throw Error("Could not find a grid_location attribute and/or its node set.");
+
+    // Attach the nodes to the grid
+    // TODO Is this '0' the same as the '0' in 'rank_dimensions[0]'? See the
+    // note/question below...
+    G->setKCells(nodes, 0);
+
+
+#endif
+
+    // 2) Get rank 2 k-cells.
+    GF::CellArray *twocells = getRankTwoKCells(dds, rank_dimensions);
+
+    // Attach it to the grid
+    // TODO Is this '2' the same as the '2' in 'rank_dimensions[2]'?
+    G->setKCells(twocells, 2);
+
+
+#if 0
+    // 2) For each k, find the k-cells
+    // k = 2, for now
+    DBG(cerr << "Reading 2-cells" << endl);
+    GF::CellArray *twocells = NULL;
+
+    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
+        BaseType *bt = *vi;
+        // TODO Allow variables that are not Arrays; ignore as above
+        if (bt->type() != dods_array_c)
+            continue;
+
+        Array &arr = dynamic_cast<Array&>(*bt);
+        DBG(cerr << "Array: " << arr.name() << endl);
+
+        AttrTable &at = arr.get_attr_table();
+
+        // FIXME
+        // There is no longer a 'cell_type' attribute in the spec...
+        AttrTable::Attr_iter iter_cell_type = at.simple_find("cell_type");
+
+        if (iter_cell_type != at.attr_end()) {
+            string cell_type = at.get_attr(iter_cell_type, 0);
+            DBG(cerr << cell_type << endl);
+            if (cell_type == "tri_ccw") {
+                // Ok, we expect triangles
+                // which means a shape of 3xN
+                // FIXME: The loop below checks that the array is 3xN and
+                // stores the size of the second dimension in twocell_count
+                int twocell_count = -1, i=0;
+                // FIXME total_size is only used in the loop below when the attribute
+                // 'index_origin' is found but that attribute is not defined in the spec.
+                // Do we need this?
+                int total_size = 1;
+                rank_dimensions[2] = vector<Array::dimension>();
+                for (Array::Dim_iter di = arr.dim_begin(); di!= arr.dim_end(); di++) {
+                    total_size *= di->c_size;
+                    rank_dimensions[2].push_back(*di);
+                    if (i == 0) {
+                        if (di->c_size != 3) {
+                            DBG(cerr << "Cell array of type 'tri_ccw' must have a shape of 3xN, since triangles have three nodes." << endl);
+                            throw Error(malformed_expr,"Cell array of type 'tri_ccw' must have a shape of 3xN, since triangles have three nodes.");
+                        }
+                    }
+                    if (i == 1) {
+                        twocell_count = di->c_size;
+                    }
+                    if (i>1) {
+                        DBG(cerr << "Too many dimensions for a cell array of type 'tri_ccw'.  Expected shape of 3XN" << endl);
+                        throw Error(malformed_expr,"Too many dimensions for a cell array of type 'tri_ccw'.  Expected shape of 3XN");
+                    }
+                    i++;
+                }
+
+                // interpret the array data as triangles
+                // FIXME Can allocate cellids without copying arr's values
+                GF::Node *cellids = extract_array<GF::Node>(&arr);
+                GF::Node *cellids2 = extract_array<GF::Node>(&arr);
+                // FIXME
+                // This loop appears to reorganize cellids so that it contains
+                // in in three consecutive values (0,1,2; 3,4,5; ...) the values
+                // from cellids2 0,N,2N; 1,1+N,1+2N; ...
+                // But cellids2 is never used anywhere else; consider rewriting
+                // so it does this repacking operation.
+                for (int j=0;j<twocell_count;j++) {   cellids[3*j]=cellids2[j];
+                    cellids[3*j+1]=cellids2[j+twocell_count];
+                    cellids[3*j+2]=cellids2[j+2*twocell_count];
+                }
+
+                // adjust for index origin
+                // FIXME There's no 'index_origin' attribute in the spec.
+                AttrTable::Attr_iter iter_index_origin = at.simple_find("index_origin");
+                if (iter_index_origin != at.attr_end()) {
+                    DBG(cerr << "Found an index origin attribute." << endl);
+                    AttrTable::entry *index_origin_entry = *iter_index_origin;
+                    int index_origin;
+                    if (index_origin_entry->attr->size() == 1) {
+                        AttrTable::entry *index_origin_entry = *iter_index_origin;
+                        string val = (*index_origin_entry->attr)[0];
+                        DBG(cerr << "Value: " << val << endl);
+                        stringstream buffer(val);
+                        // what happens if string cannot be converted to an integer?
+                        buffer >> index_origin;
+                        DBG(cerr << "converted: " << index_origin << endl);
+                        if (index_origin != 0) {
+                            for (int j=0; j<total_size; j++) {
+                                cellids[j] -= index_origin;
+                            }
+                        }
+                    }
+                    else {
+                        throw Error(malformed_expr,"Index origin attribute exists, but either no value supplied, or more than one value supplied.");
+                    }
+                }
+
+                // Create the cell array
+                // TODO Is this '3' the same as the '3' in '3xN'?
+                twocells = new GF::CellArray(cellids, twocell_count, 3);
+
+                // Attach it to the grid
+                // TODO Is this '2' the same as the '2' in 'rank_dimensions[2]'?
+                G->setKCells(twocells, 2);
+            }
+        }
+    }
+
+    if (!twocells)
+        throw Error("Could not find cell array of CCW triangles");
+
+#endif
+
+    // 3) Build the input cells for the grid
+
+    GF::GridField *inputCells = getInputCells(dds,rank_dimensions,G);
+
+    // Build the restriction operator;
+    GF::RestrictOp op = GF::RestrictOp(args.filterExpression, args.dimension, inputCells);
+
+    // Apply the operator and get the result;
+    GF::GridField *R = new GF::GridField(op.getResult());
+
+#if 0
+
+    // 3) For each var, bind it to the appropriate dimension
+
+    // For each variable in the data source:
+    GF::GridField *input = new GF::GridField(G);
+
+    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
+        BaseType *bt = *vi;
+
+        if (bt->type() == dods_array_c) {
+            Array *arr = (Array *)bt;
+            DBG(cerr << "Data Array: " << arr->name() << endl);
+            GF::Array *gfa = extract_gridfield_array(arr);
+
+            // Each rank is associated with a sequence of dimensions
+            // Vars that have the same dimensions should be bound to the grid at that rank
+            // (Note that in gridfields, Dimension and rank are synonyms.  We
+            // use the latter here to avoid confusion).
+            map<GF::Dim_t, vector<Array::dimension> >::iterator iter;
+            for( iter = rank_dimensions.begin(); iter != rank_dimensions.end(); ++iter ) {
+                bool same = same_dimensions(arr, iter->second);
+                if (same) {
+                    // This var should be bound to rank k
+                    // TODO This code sets AddAttribute(0, <grid_location --> 'node'>)
+                    // (which occurs three times in test4.nc - X, Y, and nodedata) and
+                    // AddAttribute(2, <the 3xN var>).
+                    DBG(cerr << "Adding Attribute: " << gfa->sname() << endl);
+                    input->AddAttribute(iter->first, gfa);
+                }
+                else {
+                    // This array does not appear to be associated with any
+                    // rank of the unstructured grid. Ignore for now.
+                    // TODO Anything else we should do?
+                    // FIXME Free the storage!!
+                }
+            }
+        } // Ignore if not an array type. Anything else we should do?
+    }
+
+    int dim = extract_double_value(argv[0]);
+    string filter_expr = extract_string_argument(argv[1]);
+    // not used jhrg 11/15/12 int nodenumber=input->Card(0);
+
+    GF::RestrictOp op = GF::RestrictOp(filter_expr, dim, input);
+    GF::GridField *R = new GF::GridField(op.getResult());
+
+#endif
+
+    // 4) Get the GridField back in a DAP representation of a ugrid.
+    Structure *construct = convertUgridToDapObject(dds,rank_dimensions,R);
+    *btpp = construct;
+
+
+#if 0
+    // 4) Convert back to a DDS BaseType
+
+    // Create variables for each cell dimension
+    // Create variables for each attribute at each rank
+
+    R->GetGrid()->normalize();
+
+    Structure *construct = new Structure("construct");
+
+    // FIXME This code loops through the DDS and finds the variables
+    // that were the sources of information used by Gridfields (there are four)
+    // and uses those names to make the names of the four result variables.
+    // It also copies the attribute table from those variables.
+    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
+        BaseType *bt = *vi;
+        if (bt->type() == dods_array_c) {
+            Array *arr = (Array *)bt;
+            map<GF::Dim_t, vector<Array::dimension> >::iterator iter;
+
+            AttrTable &arrattr2 = arr->get_attr_table();
+
+            if(arrattr2.simple_find("cell_type")!=arrattr2.attr_end())
+            {
+                GF::CellArray* Inb=(GF::CellArray*)(R->GetGrid()->getKCells(2));
+                Int32 *witnessn4 = new Int32(arr->name());
+                Array *Nodes = new Array(arr->name(),witnessn4);
+                vector< vector<int> > nodes2 = Inb->makeArrayInts();
+                vector<dods_int32> node1;
+                vector<dods_int32> node2;
+                vector<dods_int32> node3;
+                for (unsigned int j=0; j < nodes2.size(); j++) {
+                    node1.push_back(nodes2.at(j).at(0));
+                    node2.push_back(nodes2.at(j).at(1));
+                    node3.push_back(nodes2.at(j).at(2));
+                }
+                Int32 *witnessn1=new Int32("nodes1");
+                Int32 *witnessn2=new Int32("nodes2");
+                Int32 *witnessn3=new Int32("nodes3");
+                Array *Node1=new Array("trinode1",witnessn1);
+                Array *Node2=new Array("trinode2",witnessn2);
+                Array *Node3=new Array("trinode3",witnessn3);
+                Node1->append_dim(node1.size(),"dim-1");
+
+                Node2->append_dim(node2.size(),"dim-1");
+                Node3->append_dim(node3.size(),"dim-1");
+
+                Node1->set_value(node1,node1.size());
+                Node2->set_value(node2,node2.size());
+                Node3->set_value(node3,node3.size());
+
+                Nodes->append_dim(3,"three");
+                Nodes->append_dim(node1.size(),"tris");
+                Nodes->reserve_value_capacity(3*node1.size());
+                Nodes->set_value_slice_from_row_major_vector(*Node1,0);
+                Nodes->set_value_slice_from_row_major_vector(*Node2,Node1->length());
+                Nodes->set_value_slice_from_row_major_vector(*Node3,Node1->length()+Node2->length());
+                AttrTable &arrattr1 = arr->get_attr_table();
+                Nodes->set_attr_table(arrattr1);
+
+                construct->add_var_nocopy(Nodes);
+            }
+            else {
+                for( iter = rank_dimensions.begin(); iter != rank_dimensions.end(); ++iter ) {
+                    bool same = same_dimensions(arr, iter->second);
+                    if (same) {
+                        // This var should be bound to rank k
+                        Float64 *witness2 = new Float64(arr->name());
+
+                        GF::Array* gfa = R->GetAttribute(iter->first, arr->name());
+
+                        vector<dods_float64> GFA = gfa->makeArrayf();
+
+                        Array *Nodes = new Array(arr->name(), witness2);
+                        Nodes->append_dim(GFA.size(), "nodes");
+                        Nodes->set_value(GFA,GFA.size());
+
+                        AttrTable &arrattr1 = arr->get_attr_table();
+                        Nodes->set_attr_table(arrattr1);
+                        // AttrTable &arrattr = Nodes->get_attr_table();
+
+                        construct->add_var_nocopy(Nodes);
+                    }
+                    else {
+                        // This array does not appear to be associated with
+                        // any rank of the unstructured grid. Ignore for now.
+                        // Anything else we should do?
+                    }
+                }
+            }
+        }
+    }
+    // TODO Needed?
+    //GF::Grid *newgrid = R->GetGrid();
+
+    *btpp = construct;
+#endif
+
+    return;
+}
+
+
+
+
 
 } // namespace libdap
 //#endif
