@@ -318,6 +318,7 @@ CPLErr DAP_Dataset::SetGeoTransform()
 
     return CE_None;
 }
+
 #if 0
 CPLErr DAP_Dataset::setResampleStandard(GDALDataset* hSrcDS, int& xRSValue, int& yRSValue)
 {

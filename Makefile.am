@@ -18,7 +18,6 @@ if USING_GRIDFIELDS
 AM_CPPFLAGS += $(GF_CFLAGS)
 endif
 
-
 AM_YFLAGS = -d -v
 AM_LFLAGS = -8
 
@@ -29,9 +28,12 @@ AM_LFLAGS = -8
 CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
-# FIXME Make swath2grid conditional
-SUBDIRS = gl swath2grid . tests unit-tests
-DIST_SUBDIRS = unit-tests gl swath2grid tests
+if USING_GDAL
+SWATH2GRID = swath2grid
+endif
+
+SUBDIRS = gl $(SWATH2GRID) . tests unit-tests
+DIST_SUBDIRS = gl swath2grid tests unit-tests
 
 noinst_LTLIBRARIES = libparsers.la
 lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
@@ -61,6 +63,10 @@ libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) -lcrypto gl/libgnu.la libparsers
 
 if USING_GRIDFIELDS
 libdap_la_LIBADD += $(GF_LIBS)
+endif
+
+if USING_GDAL
+libdap_la_LIBADD += -Lswath2grid -lswath2grid
 endif
 
 libdapclient_la_SOURCES = $(CLIENT_SRC) 

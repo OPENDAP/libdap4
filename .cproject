@@ -29,8 +29,9 @@
 								</inputType>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.macosx.base.210169359" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.macosx.base">
-								<option id="gnu.both.asm.option.include.paths.891397041" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+								<option id="gnu.both.asm.option.include.paths.891397041" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/Users/jimg/src/hyrax_1.8_release/deps/gridfields-1.0.0/include"/>
+									<listOptionValue builtIn="false" value="/Users/jimg/src/hyrax_1.8_release/deps/gridfields-1.0.0/include/"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1875505208" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -38,12 +39,14 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.macosx.base.639173126" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.macosx.base">
 								<option id="gnu.cpp.compiler.option.include.paths.194074753" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.2.1/"/>
+									<listOptionValue builtIn="false" value="/Users/jimg/src/hyrax_1.8_release/deps/gridfields-1.0.0/include/"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1925253824" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.macosx.base.913962141" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.macosx.base">
 								<option id="gnu.c.compiler.option.include.paths.478578607" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/include"/>
+									<listOptionValue builtIn="false" value="/Users/jimg/src/hyrax_1.8_release/deps/gridfields-1.0.0/include/"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1721473510" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
