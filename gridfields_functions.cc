@@ -38,7 +38,7 @@
 #include <iostream>
 #include <sstream>
 
-// #define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Byte.h"
@@ -1323,7 +1323,7 @@ static Structure *convertUgridToDapObject(DDS &dds, map<GF::Dim_t, vector<Array:
  @exception Error Thrown If the Array is not a one dimensional
  array. */
 void
-function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
+function_ugrOLD(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 {
     static string info =
     string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
@@ -1751,6 +1751,20 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
  * *******************************************************************************************************
  * *******************************************************************************************************
  */
+// TODO make this work on situations where multiple spaces doesn't hose the split()
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while(std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    return split(s, delim, elems);
+}
 
 /*
  fvcom_mesh {
@@ -1777,7 +1791,9 @@ static string _nodeCoordinates = "node_coordinates";
 static string _faceNodeConnectivity = "face_node_connectivity";
 static string _dimension = "dimension";
 static string _location = "location";
+static string _gridLocation = "grid_location";
 static string _node = "node";
+static string _start_index = "start_index";
 
 #if 0
 #endif
@@ -1790,6 +1806,76 @@ struct UgridRestrictArgs {
 	Array *rangeVar;
 	string filterExpression;
 };
+
+
+// Returns true iff the submitted BaseType variable has an attribute called aName attribute whose value is aValue.
+static bool checkAttributeValue(BaseType *bt, string aName, string aValue){
+
+    AttrTable &at = bt->get_attr_table();
+    DBG(cerr << "The user submitted the variable: " << bt->name() << endl);
+
+
+    // Confirm that submitted variable has an attribute called aName attribute whose value is aValue.
+    AttrTable::Attr_iter loc = at.simple_find(aName);
+    if (loc != at.attr_end()) {
+        DBG(cerr << "Array: " << bt->name() << " has a '" << aName << "' attribute."<< endl);
+        string value = at.get_attr(loc, 0);
+        DBG(cerr << "Attribute '"<< aName <<"' has value of '" << value << "'"<< endl);
+        if (value != aValue) {
+            return false;
+        }
+        return true;
+    }
+    return false;
+
+}
+
+/**
+ * Checks the passed BaseType attributes as follows: If the BaseType has a "cf_role" attribute and it's value is the same as
+ * aValue return true. If it doesn't have a "cf_role" attribute, then if there is a "standard_name" attribute and it's value is
+ * the same as aValue then  return true. All other outcomes return false.
+ */
+static bool checkCfRoleAndStandardName(BaseType *bt, string aValue){
+    // Confirm that submitted variable has a 'location' attribute whose value is "node".
+    if(!checkAttributeValue(bt,_cfRole,aValue)){
+    	// Missing the 'cf_role' attribute? Check for a 'standard_name' attribute whose value is "aValue".
+    	if(!checkAttributeValue(bt,_standardName,aValue)){
+    		return false;
+    	}
+    }
+    return true;
+}
+
+
+/*
+ If the two arrays have the exact dimensions in the same order, with the same name, size, start, stop, and stride values,
+ return true.  Otherwise return false.
+ */
+static bool same_dimensions(Array *arr1, Array *arr2) {
+	Array::Dim_iter ait1;
+	Array::Dim_iter ait2;
+	DBG(cerr << "same_dimensions test for array " << arr1->name() << " and array " << arr2->name() << endl);
+
+	if(arr1->dimensions(true) != arr1->dimensions(true))
+		return false;
+
+	// We start walking both sets of ArrayDimensions at the beginning and increment each together.
+	// We can test only the end of one set because we have already tested that they are the same size.
+	for (ait1=arr1->dim_begin(), ait2=arr2->dim_begin();
+			ait1!=arr1->dim_end();
+			++ait1, ++ait2) {
+		Array::dimension ad1 = *ait1;
+		Array::dimension ad2 = *ait2;
+		DBG(cerr << "Testing: "<< ad1.name << "[" << ad1.size << "] AND " << ad2.name << "[" << ad2.size << "] "<< endl);
+		if (ad2.name != ad1.name or ad2.size != ad1.size
+				or ad2.stride != ad1.stride or ad2.stop != ad1.stop)
+			return false;
+	}
+	if(ait2!=arr2->dim_end())
+		return false;
+
+	return true;
+}
 
 
 static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
@@ -1805,6 +1891,7 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
     BaseType * bt;
 
 
+    // ---------------------------------------------
     //FIXME Process the first arg, which is "dimension" or something - WE DON'T REALLY KNOW.
     bt = argv[0];
     if (bt->type() != dods_int32_c)
@@ -1813,6 +1900,7 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
     args.dimension = extract_double_value(bt);
 
 
+    // ---------------------------------------------
     // Process the second argument, the range Variable selected by the user.
     bt = argv[1];
     if (bt->type() != dods_array_c)
@@ -1823,28 +1911,19 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
         throw Error(malformed_expr,"Wrong type for second argument. "+UgridRestrictSyntax+"  was passed a/an " + bt->type_name());
     }
 
-
-    AttrTable &at = args.rangeVar->get_attr_table();
     DBG(cerr << "The user submitted the range array: " << args.rangeVar->name() << endl);
 
-    AttrTable::Attr_iter loc = at.simple_find(_location);
-    if (loc != at.attr_end()) {
-        DBG(cerr << "Array: " << args.rangeVar->name() << " has a '" << _location << "' attribute."<< endl);
-        string value = at.get_attr(loc, 0);
-        DBG(cerr << "Attribute '"<< _location <<"' has value of '" << value << "'"<< endl);
-        if (value != _node) {
-            throw Error("The requested range variable '"+args.rangeVar->name()+"' has a 'location' attribute " +
-            		"that is not equal to '"+ _node + "'. location='"+value+"'");
-        }
-    }
-    else {
-        throw Error("The requested range variable '"+args.rangeVar->name()+"' that does not have the " +
-        		"required '"+ _location +"' attribute.");
+    // Confirm that submitted variable has a 'location' attribute whose value is "node".
+    if(!checkAttributeValue(args.rangeVar,_location,_node)){
+    	// Missing the 'location' attribute? Check for a 'grid_location' attribute whose value is "node".
+    	if(!checkAttributeValue(args.rangeVar,_gridLocation,_node)){
+            throw Error("The requested range variable '"+args.rangeVar->name()+"' has neither a '"+_location+"' attribute " +
+            		"or a "+_gridLocation+" attribute whose value is equal to '"+ _node + "'.");
+    	}
     }
 
-
-
-    // Process the third argument, the relation expression used to restrict the ugrid content..
+    // ---------------------------------------------
+    // Process the third argument, the relational expression used to restrict the ugrid content.
     bt = argv[2];
     if (bt->type() != dods_str_c)
         throw Error(malformed_expr,"Wrong type for third argument, expected DAP String. "+UgridRestrictSyntax+"  was passed a/an " + bt->type_name());
@@ -1854,20 +1933,6 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
 
 }
 
-// TODO make this work on situations where multiple spaces doesn't hose the split()
-std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-    std::stringstream ss(s);
-    std::string item;
-    while(std::getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-    return elems;
-}
-
-std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
-    return split(s, delim, elems);
-}
 
 /**
  * Finds the first occurrence of a variable that has either an attribute named "cf_role" or and attribute named "standard_name"
@@ -1879,21 +1944,8 @@ static BaseType *getMeshTopologyVariable(DDS &dds)
     for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
         BaseType *bt = *vi;
         AttrTable at = bt->get_attr_table();
-
-        AttrTable::Attr_iter iter_cf_role = at.simple_find(_cfRole);
-        if (iter_cf_role != at.attr_end()) {
-            string cf_role = at.get_attr(iter_cf_role, 0);
-            if(cf_role == _meshTopology){
-            	return bt;
-            }
-        }
-
-        AttrTable::Attr_iter iter_standard_name = at.simple_find(_standardName);
-        if (iter_standard_name != at.attr_end()) {
-            string standard_name = at.get_attr(iter_standard_name, 0);
-            if(standard_name == _meshTopology){
-            	return bt;
-            }
+        if(checkCfRoleAndStandardName(bt,_meshTopology)){
+        	return bt;
         }
     }
 
@@ -1918,34 +1970,50 @@ static vector<Array *> *getNodeCoordinates(BaseType *meshTopology, DDS &dds)
     			"The mesh_topology variable is named "+meshTopology->name());
     }
 
-    vector<Array *> *nodeCoordinates  = new vector<Array *>();
+    vector<Array *> *nodeCoordinateArrays  = new vector<Array *>();
 
     // Split the node_coordinates string up on spaces
     // TODO make this work on situations where multiple spaces in the node_coorindates string doesn't hose the split()
     vector<string> nodeCoordinateNames = split(node_coordinates,' ');
 
 
-    //TODO find each variable in the resulting list
-    vector<string>::iterator it;
-    for(it=nodeCoordinateNames.begin(); it!=nodeCoordinateNames.end(); ++it) {
-    	string nodeCoordinateName = *it;
+    // Find each variable in the resulting list
+    vector<string>::iterator coorName_it;
+    for(coorName_it=nodeCoordinateNames.begin(); coorName_it!=nodeCoordinateNames.end(); ++coorName_it) {
+    	string nodeCoordinateName = *coorName_it;
 
-    	//TODO now that we have the name of the coordinate variable get it from the DDS!!
+    	//Now that we have the name of the coordinate variable get it from the DDS!!
+    	BaseType *btp = dds.var(nodeCoordinateName);
+        if(btp==0)
+        	throw Error("Could not locate the "+_nodeCoordinates+" variable named '"+nodeCoordinateName+"'! "+
+        			"The mesh_topology variable is named "+meshTopology->name());
 
-        //TODO make sure each variable has the same shape as all the others on the list - error is not true.
 
-        //TODO Add variable to returned vector.
+        Array *newNodeCoordArray = dynamic_cast<Array*>(btp);
+        if(newNodeCoordArray == 0) {
+            throw Error(malformed_expr,"Node coordinate variable '"+nodeCoordinateName+"' is not an Array type. It's an instance of " + btp->type_name());
+        }
+
+
+        // Make sure this node coordinate variable has the same shape as all the others on the list - error if not true.
+        vector<Array *>::iterator cachedCoorVar_it;
+        for(cachedCoorVar_it=nodeCoordinateArrays->begin(); cachedCoorVar_it!=nodeCoordinateArrays->end(); ++cachedCoorVar_it) {
+        	Array *cachedNodeCoordinateArray = *cachedCoorVar_it;
+        	if(!same_dimensions(newNodeCoordArray,cachedNodeCoordinateArray))
+            	throw Error("The node coordinate array '"+nodeCoordinateName+"' is not the same shape as the cached node coordinate "+
+            			" array '"+cachedNodeCoordinateArray->name()+"'! "+
+            			"The mesh_topology variable is named "+meshTopology->name());
+        }
+        // Add variable to returned vector.
+        nodeCoordinateArrays->push_back(newNodeCoordArray);
 
     }
 
-
-
-
-    return nodeCoordinates;
+    return nodeCoordinateArrays;
 
 }
 
-static Array *getFaceNodeConnectivityVariable(BaseType *meshTopology, DDS &dds)
+static Array *getFaceNodeConnectivityArray(BaseType *meshTopology, DDS &dds)
 {
 	string face_node_connectivity_var_name;
     AttrTable at = meshTopology->get_attr_table();
@@ -1969,18 +2037,116 @@ static Array *getFaceNodeConnectivityVariable(BaseType *meshTopology, DDS &dds)
 
     // Additional QC??
 
-    // return it!
-	throw Error("Implementation incomplete!");
+    // Is it an array?
+    Array *fncArray = dynamic_cast<Array*>(btp);
+    if(fncArray == 0) {
+        throw Error(malformed_expr,"Face Node Connectivity variable '"+face_node_connectivity_var_name+"' is not an Array type. It's an instance of " + btp->type_name());
+    }
+
+    return fncArray;
 
 
 }
 
-static GF::CellArray *getFaceNodeConnectivityCells(BaseType *meshTopology, DDS &dds)
+/**
+ * Retrieves the size of the second dimension from a 3xN array. Throws an
+ * Error if the array is not the correct shape.
+ */
+static int getNfrom3byNArray(Array *array){
+
+	int dimCount = array->dimensions(true);
+
+	if(dimCount != 2)
+		throw Error("Expected a 2 dimensional array. The array '" + array->name() + "' has " + long_to_string(dimCount) + " dimensions.");
+
+	// Check the first dimension to be sure it's size is 3.
+	Array::Dim_iter di = array->dim_begin();
+    if (di->c_size != 3) {
+    	string msg = "Expected a 2 dimensional array with shape of 3xN! The array "+array->name()+" has a first "+
+        		"dimension of size "+ long_to_string(di->c_size);
+        DBG(cerr << msg << endl);
+        throw Error(malformed_expr,msg);
+    }
+
+    // Return the size of the second dimension;
+    di++;
+    return di->c_size;
+
+}
+
+
+static GF::Node *getGridFieldNodes(Array *fncVar){
+
+	int nodeCount = getNfrom3byNArray(fncVar);
+
+    // interpret the array data as triangles
+    // FIXME Can allocate cellids without copying arr's values
+    GF::Node *cellids = extract_array<GF::Node>(fncVar);
+    GF::Node *cellids2 = extract_array<GF::Node>(fncVar);
+    // FIXME
+    // This loop appears to reorganize cellids so that it contains
+    // in in three consecutive values (0,1,2; 3,4,5; ...) the values
+    // from cellids2 0,N,2N; 1,1+N,1+2N; ...
+    // But cellids2 is never used anywhere else; consider rewriting
+    // so it does this repacking operation.
+    for (int j=0;j<nodeCount;j++) {   cellids[3*j]=cellids2[j];
+        cellids[3*j+1]=cellids2[j+nodeCount];
+        cellids[3*j+2]=cellids2[j+2*nodeCount];
+    }
+    return cellids;
+}
+
+/**
+ * Returns the value of the "start_index" attribute for the passed Array. If the start_index
+ * is missing the value 0 is returned.
+ */
+static int getStartIndex(Array *array){
+
+    // adjust for index origin
+    // FIXME There's no 'index_origin' attribute in the spec.
+    AttrTable &at = array->get_attr_table();
+    AttrTable::Attr_iter start_index_iter = at.simple_find(_start_index);
+    if (start_index_iter != at.attr_end()) {
+        DBG(cerr << "Found the "<< _start_index<<" attribute." << endl);
+        AttrTable::entry *start_index_entry = *start_index_iter;
+        if (start_index_entry->attr->size() == 1) {
+            string val = (*start_index_entry->attr)[0];
+            DBG(cerr << "Value: " << val << endl);
+            stringstream buffer(val);
+            // what happens if string cannot be converted to an integer?
+            int start_index;;
+
+            buffer >> start_index;
+            return start_index;
+        }
+        else {
+            throw Error(malformed_expr,"Index origin attribute exists, but either no value supplied, or more than one value supplied.");
+        }
+    }
+    return 0;
+}
+
+
+static GF::CellArray *getFaceNodeConnectivityCells(Array *fncVar)
 {
 
-	Array *fncVar = getFaceNodeConnectivityVariable(meshTopology,dds);
+	int twocell_count = getNfrom3byNArray(fncVar);
 
-	throw Error("Implementation incomplete!");
+    int total_size = 3 * twocell_count;
+
+    GF::Node *cellids = getGridFieldNodes(fncVar);
+
+    // adjust for the start_index (cardinal or ordinal array access)
+    int startIndex = getStartIndex(fncVar);
+    if (startIndex != 0) {
+		for (int j=0; j<total_size; j++) {
+			cellids[j] -= startIndex;
+		}
+	}
+    // Create the cell array
+    // TODO Is this '3' the same as the '3' in '3xN'?
+    GF::CellArray *twocells = new GF::CellArray(cellids, twocell_count, 3);
+    return twocells;
 
 
 #if 0
@@ -2094,37 +2260,249 @@ static GF::CellArray *getFaceNodeConnectivityCells(BaseType *meshTopology, DDS &
 
 }
 
-/*
- If the two arrays have the exact dimensions in the same order, with the same name, size, start, stop, and stride values,
- return true.  Otherwise return false.
- */
-static bool same_dimensions(Array *arr1, Array *arr2) {
-	Array::Dim_iter ait1;
-	Array::Dim_iter ait2;
-	DBG(cerr << "same_dimensions test for array " << arr1->name() << " and array " << arr2->name() << endl);
+static void addInputCells(Array *arr, int gridDimKey, GF::GridField *input)
+{
+	DBG(cerr << "Adding Data Array: " << arr->name() << " to GridField gridDimKey: " << gridDimKey << endl);
+	GF::Array *gfa = extract_gridfield_array(arr);
+	input->AddAttribute(gridDimKey, gfa);
 
-	if(arr1->dimensions(true) != arr1->dimensions(true))
-		return false;
 
-	// We start walking both sets of ArrayDimensions at the beginning and increment each together.
-	// We can test only the end of one set because we have already tested that they are the same size.
-	for (ait1=arr1->dim_begin(), ait2=arr2->dim_begin();
-			ait1!=arr1->dim_end();
-			++ait1, ++ait2) {
-		Array::dimension ad1 = *ait1;
-		Array::dimension ad2 = *ait2;
-		DBG(cerr << "Testing: "<< ad1.name << "[" << ad1.size << "] AND " << ad2.name << "[" << ad2.size << "] "<< endl);
-		if (ad2.name != ad1.name or ad2.size != ad1.size
-				or ad2.stride != ad1.stride or ad2.stop != ad1.stop)
-			return false;
+
+#if 0
+    // 3) For each var, bind it to the appropriate dimension
+
+    // For each variable in the data source:
+    GF::GridField *input = new GF::GridField(G);
+
+	DBG(cerr << "Data Array: " << arr->name() << endl);
+	GF::Array *gfa = extract_gridfield_array(arr);
+
+	// Each rank is associated with a sequence of dimensions
+	// Vars that have the same dimensions should be bound to the grid at that rank
+	// (Note that in gridfields, Dimension and rank are synonyms.  We
+	// use the latter here to avoid confusion).
+	map<GF::Dim_t, vector<Array::dimension> >::iterator iter;
+	for( iter = rank_dimensions.begin(); iter != rank_dimensions.end(); ++iter ) {
+		int gridDimKey = iter->first; // either 0 or 2
+		vector<Array::dimension> arrDims = iter->second;
+		bool same = same_dimensions(arr, arrDims);
+		if (same) {
+			// This var should be bound to rank k
+			// TODO This code sets AddAttribute(0, <grid_location --> 'node'>)
+			// (which occurs three times in test4.nc - X, Y, and nodedata) and
+			// AddAttribute(2, <the 3xN var>).
+			DBG(cerr << "Adding Attribute: " << gfa->sname() << endl);
+			input->AddAttribute(gridDimKey, gfa);
+		}
+		else {
+			// This array does not appear to be associated with any
+			// rank of the unstructured grid. Ignore for now.
+			// TODO Anything else we should do?
+			// FIXME Free the storage!!
+		}
 	}
-	if(ait2!=arr2->dim_end())
-		return false;
 
-	return true;
+    return input;
+#endif
+
 }
 
 
+
+static Array *getMeshAsDapArray(GF::GridField *resultGridField, Array *sourceMeshArray){
+    map<GF::Dim_t, vector<Array::dimension> >::iterator iter;
+
+	GF::CellArray* Inb=(GF::CellArray*)(resultGridField->GetGrid()->getKCells(2));
+	Int32 *witnessn4 = new Int32(sourceMeshArray->name());
+	Array *resultMeshArray = new Array(sourceMeshArray->name(),witnessn4);
+	vector< vector<int> > nodes2 = Inb->makeArrayInts();
+	vector<dods_int32> node1;
+	vector<dods_int32> node2;
+	vector<dods_int32> node3;
+	for (unsigned int j=0; j < nodes2.size(); j++) {
+		node1.push_back(nodes2.at(j).at(0));
+		node2.push_back(nodes2.at(j).at(1));
+		node3.push_back(nodes2.at(j).at(2));
+	}
+	Int32 *witnessn1=new Int32("nodes1");
+	Int32 *witnessn2=new Int32("nodes2");
+	Int32 *witnessn3=new Int32("nodes3");
+	Array *Node1=new Array("trinode1",witnessn1);
+	Array *Node2=new Array("trinode2",witnessn2);
+	Array *Node3=new Array("trinode3",witnessn3);
+	Node1->append_dim(node1.size(),"dim-1");
+
+	Node2->append_dim(node2.size(),"dim-1");
+	Node3->append_dim(node3.size(),"dim-1");
+
+	Node1->set_value(node1,node1.size());
+	Node2->set_value(node2,node2.size());
+	Node3->set_value(node3,node3.size());
+
+	resultMeshArray->append_dim(3,"three");
+	resultMeshArray->append_dim(node1.size(),"tris");
+	resultMeshArray->reserve_value_capacity(3*node1.size());
+	resultMeshArray->set_value_slice_from_row_major_vector(*Node1,0);
+	resultMeshArray->set_value_slice_from_row_major_vector(*Node2,Node1->length());
+	resultMeshArray->set_value_slice_from_row_major_vector(*Node3,Node1->length()+Node2->length());
+	AttrTable &arrattr1 = sourceMeshArray->get_attr_table();
+	resultMeshArray->set_attr_table(arrattr1);
+	
+	return resultMeshArray;
+
+}
+
+static Array *getRankZeroAttributeNodeSetAsDapArray(GF::GridField *resultGridField, Array *sourceArray){
+
+	// This var should be bound to rank k
+	Float64 *witness2 = new Float64(sourceArray->name());
+
+	GF::Array* gfa = resultGridField->GetAttribute(0, sourceArray->name());
+
+	vector<dods_float64> GFA = gfa->makeArrayf();
+
+	Array *Nodes = new Array(sourceArray->name(), witness2);
+	Nodes->append_dim(GFA.size(), "nodes");
+	Nodes->set_value(GFA,GFA.size());
+
+	AttrTable &arrattr1 = sourceArray->get_attr_table();
+	Nodes->set_attr_table(arrattr1);
+	// AttrTable &arrattr = Nodes->get_attr_table();
+
+
+	return Nodes;
+
+}
+
+
+
+
+static Structure *convertUgridResultToDapObject(GF::GridField *resultGridField, Array *rangeVar, vector<Array *> *coordinateVars, Array *sourceFaceNodeConnectivityArray)
+{
+	
+	
+	resultGridField->GetGrid()->normalize();
+
+    Structure *construct = new Structure("construct");
+    
+    vector<Array *>::iterator it;
+    for(it=coordinateVars->begin(); it!=coordinateVars->end(); ++it) {
+    	Array *sourceCoordinateArray = *it;
+    	Array *resultCoordinateArray = getRankZeroAttributeNodeSetAsDapArray(resultGridField,sourceCoordinateArray);
+        construct->add_var_nocopy(resultCoordinateArray);
+    }
+    
+    
+	Array *resultRangeVar = getRankZeroAttributeNodeSetAsDapArray(resultGridField,rangeVar);
+    construct->add_var_nocopy(resultRangeVar);
+
+
+    Array *resultFaceNodeConnectivityDapArray = getMeshAsDapArray(resultGridField,sourceFaceNodeConnectivityArray);
+
+	construct->add_var_nocopy(resultFaceNodeConnectivityDapArray);
+
+
+    
+    return construct;
+	
+	
+#if 0
+	
+    // 4) Convert back to a DDS BaseType
+
+    // Create variables for each cell dimension
+    // Create variables for each attribute at each rank
+
+    R->GetGrid()->normalize();
+
+    Structure *construct = new Structure("construct");
+
+    // FIXME This code loops through the DDS and finds the variables
+    // that were the sources of information used by Gridfields (there are four)
+    // and uses those names to make the names of the four result variables.
+    // It also copies the attribute table from those variables.
+    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
+        BaseType *bt = *vi;
+        if (bt->type() == dods_array_c) {
+            Array *arr = (Array *)bt;
+            map<GF::Dim_t, vector<Array::dimension> >::iterator iter;
+
+            AttrTable &arrattr2 = arr->get_attr_table();
+
+            if(arrattr2.simple_find("cell_type")!=arrattr2.attr_end())
+            {
+                GF::CellArray* Inb=(GF::CellArray*)(R->GetGrid()->getKCells(2));
+                Int32 *witnessn4 = new Int32(arr->name());
+                Array *Nodes = new Array(arr->name(),witnessn4);
+                vector< vector<int> > nodes2 = Inb->makeArrayInts();
+                vector<dods_int32> node1;
+                vector<dods_int32> node2;
+                vector<dods_int32> node3;
+                for (unsigned int j=0; j < nodes2.size(); j++) {
+                    node1.push_back(nodes2.at(j).at(0));
+                    node2.push_back(nodes2.at(j).at(1));
+                    node3.push_back(nodes2.at(j).at(2));
+                }
+                Int32 *witnessn1=new Int32("nodes1");
+                Int32 *witnessn2=new Int32("nodes2");
+                Int32 *witnessn3=new Int32("nodes3");
+                Array *Node1=new Array("trinode1",witnessn1);
+                Array *Node2=new Array("trinode2",witnessn2);
+                Array *Node3=new Array("trinode3",witnessn3);
+                Node1->append_dim(node1.size(),"dim-1");
+
+                Node2->append_dim(node2.size(),"dim-1");
+                Node3->append_dim(node3.size(),"dim-1");
+
+                Node1->set_value(node1,node1.size());
+                Node2->set_value(node2,node2.size());
+                Node3->set_value(node3,node3.size());
+
+                Nodes->append_dim(3,"three");
+                Nodes->append_dim(node1.size(),"tris");
+                Nodes->reserve_value_capacity(3*node1.size());
+                Nodes->set_value_slice_from_row_major_vector(*Node1,0);
+                Nodes->set_value_slice_from_row_major_vector(*Node2,Node1->length());
+                Nodes->set_value_slice_from_row_major_vector(*Node3,Node1->length()+Node2->length());
+                AttrTable &arrattr1 = arr->get_attr_table();
+                Nodes->set_attr_table(arrattr1);
+
+                construct->add_var_nocopy(Nodes);
+            }
+            else {
+                for( iter = rank_dimensions.begin(); iter != rank_dimensions.end(); ++iter ) {
+                    bool same = same_dimensions(arr, iter->second);
+                    if (same) {
+                        // This var should be bound to rank k
+                        Float64 *witness2 = new Float64(arr->name());
+
+                        GF::Array* gfa = R->GetAttribute(iter->first, arr->name());
+
+                        vector<dods_float64> GFA = gfa->makeArrayf();
+
+                        Array *Nodes = new Array(arr->name(), witness2);
+                        Nodes->append_dim(GFA.size(), "nodes");
+                        Nodes->set_value(GFA,GFA.size());
+
+                        AttrTable &arrattr1 = arr->get_attr_table();
+                        Nodes->set_attr_table(arrattr1);
+                        // AttrTable &arrattr = Nodes->get_attr_table();
+
+                        construct->add_var_nocopy(Nodes);
+                    }
+                    else {
+                        // This array does not appear to be associated with
+                        // any rank of the unstructured grid. Ignore for now.
+                        // Anything else we should do?
+                    }
+                }
+            }
+        }
+    }
+
+    return construct;
+#endif
+}
 
 /**
  Subset an irregular mesh (aka unstructured grid).
@@ -2144,7 +2522,7 @@ static bool same_dimensions(Array *arr1, Array *arr2) {
  @exception Error Thrown If the Array is not a one dimensional
  array. */
 void
-function_ugridR(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
+function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 {
     static string info =
     string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
@@ -2172,6 +2550,8 @@ function_ugridR(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     vector<Array *> *nodeCoordinates = getNodeCoordinates(meshTopologyVariable,dds);
 
     // Make sure that the requested range variable and all of the node coordinate arrays have the same shape.
+    //FIXME This test is redundant for all but the first node coordinate array because we already tested to ensure that
+    //FIXME the node coordinate arrays are all the same shape.
     vector<Array *>::iterator it;
     for(it=nodeCoordinates->begin(); it!=nodeCoordinates->end(); ++it) {
     	Array *nc = *it;
@@ -2179,53 +2559,59 @@ function_ugridR(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     		throw Error("The dimensions of the requested range variable "+rangeVar->name()+" does not match the shape "
     				+" of the node coordinate array "+nc->name());
     }
+    
+    
+    // Locate the Face Node Connectivity array.
+	Array *faceNodeConnectivityArray = getFaceNodeConnectivityArray(meshTopologyVariable,dds);
 
     // ----------------------------------
     // OK, so up to this point we have not read any data from the data set, but we have QC'd the inputs and verified that
     // it looks like the request is consistent with the semantics of the dataset.
     // Now it's time to read some data and pack it into the GridFields library...
 
+	
+	
+    // Start building the Grid for the GridField operation.
 
-
-    // Get the face node connectivity cells (these correspond to the GridFields K cells of Rank 2)
-    GF::CellArray *faceNodeConnectivityCells = getFaceNodeConnectivityCells(meshTopologyVariable,dds);
-
-
-
-
-
-
-
-    // keep track of which DDS dimensions correspond to GF dimensions
-    map<GF::Dim_t, vector<Array::dimension> > rank_dimensions;
-
-    // TODO Leaked?
+    // TODO Is the Grid G Leaked?
     // TODO This is the 'domain' data?
     GF::Grid *G = new GF::Grid("result");
 
-
-
-
-    // 1) Get The Range Nodes
-    GF::AbstractCellArray *nodes = getNodes(dds,rank_dimensions);
-
-    // Attach the range nodes to the grid
-    // TODO Is this '0' the same as the '0' in 'rank_dimensions[0]'? See the note/question below...
+    // 1) Make the implicit nodes
+    int node_count = rangeVar->length();
+    GF::AbstractCellArray *nodes = new GF::Implicit0Cells(node_count);
+    // Attach the implicit nodes to the grid at rank 0
+    // TODO Is this '0' the same as the '0' in 'rank_dimensions[0]'? See the note/question below.
     G->setKCells(nodes, 0);
 
+    // Attach the Mesh to the grid.
+    // Get the face node connectivity cells (i think these correspond to the GridFields K cells of Rank 2)
+    GF::CellArray *faceNodeConnectivityCells = getFaceNodeConnectivityCells(faceNodeConnectivityArray);
 
-    // 2) Get rank 2 k-cells.
-    GF::CellArray *twocells = getRankTwoKCells(dds, rank_dimensions);
-
-    // Attach it to the grid
+    // Attach the Mesh to the grid at rank 2
     // TODO Is this '2' the same as the '2' in 'rank_dimensions[2]'?
-    G->setKCells(twocells, 2);
+    //TODO or more importantly - is this 2 the same as the value of the dimension attribute in the mesh_topology variable?
+    G->setKCells(faceNodeConnectivityCells, 2);
 
 
+    // The Grid is complete. Now we make a GridField from the Grid
+    GF::GridField *inputCells = new GF::GridField(G);
+    GF::Array *gfa;
 
-    // 3) Build the input cells for the grid
+    // We add the coordinate data (using GridField->addAttribute() )to the GridField at grid dimension key (rank?? whatever this is) 0.
+    for(it=nodeCoordinates->begin(); it!=nodeCoordinates->end(); ++it) {
+    	Array *nc = *it;
+    	gfa = extract_gridfield_array(nc);
+    	inputCells->AddAttribute(0,gfa);
+    }
 
-    GF::GridField *inputCells = getInputCells(dds,rank_dimensions,G);
+    // We add the requested range data to the GridField at grid dimension key (rank?? whatever this is) 0.
+	gfa = extract_gridfield_array(rangeVar);
+	inputCells->AddAttribute(0,gfa);
+
+    // We add faceNodeConnectivity data at grid dimension key (rank?? whatever this is) 2.
+	gfa = extract_gridfield_array(faceNodeConnectivityArray);
+	inputCells->AddAttribute(2,gfa);
 
     // Build the restriction operator;
     GF::RestrictOp op = GF::RestrictOp(args.filterExpression, args.dimension, inputCells);
@@ -2234,8 +2620,14 @@ function_ugridR(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     GF::GridField *R = new GF::GridField(op.getResult());
 
 
+
+    // keep track of which DDS dimensions correspond to GF dimensions
+    map<GF::Dim_t, vector<Array::dimension> > rank_dimensions;
+
+
+
     // 4) Get the GridField back in a DAP representation of a ugrid.
-    Structure *construct = convertUgridToDapObject(dds,rank_dimensions,R);
+    Structure *construct = convertUgridResultToDapObject(R, rangeVar, nodeCoordinates, faceNodeConnectivityArray);
     *btpp = construct;
 
 
