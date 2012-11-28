@@ -1231,6 +1231,7 @@ void register_functions(ConstraintEvaluator & ce)
 
 #ifdef GRIDFIELDS
     ce.add_function("ugrid_restrict", function_ugrid_restrict);
+    ce.add_function("ugr", function_ugr);
 #endif
 
 #if 0

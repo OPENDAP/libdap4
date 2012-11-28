@@ -41,6 +41,7 @@
 namespace libdap {
 
 void function_ugrid_restrict(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) ;
+void function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) ;
 
 }
 #endif // _ce_functions_h
