@@ -33,6 +33,7 @@
 #include "DAP_Dataset.h"
 
 #include "Array.h"
+#include "Float64.h"
 
 #include "ce_functions.h"
 
@@ -48,7 +49,7 @@ DAP_Dataset::DAP_Dataset()
 }
 
 /************************************************************************/
-/*                           ~DAP_Dataset()                         */
+/*                           ~DAP_Dataset()                             */
 /************************************************************************/
 
 /**
@@ -63,7 +64,7 @@ DAP_Dataset::~DAP_Dataset()
 }
 
 /************************************************************************/
-/*                           DAP_Dataset()                          */
+/*                           DAP_Dataset()                              */
 /************************************************************************/
 
 /**
@@ -196,6 +197,86 @@ CPLErr DAP_Dataset::InitialDataset(const int isSimple)
     }
 
     return CE_None;
+}
+
+/************************************************************************/
+/*                            GetDAPArray()                            */
+/************************************************************************/
+
+/**
+ * @brief Build a DAP Array from the GDALDataset
+ */
+// FIXME Add a getDAPGrid method too!
+Array *DAP_Dataset::GetDAPArray()
+{
+    GDALDataset *reproj = maptr_DS.get();
+
+    // Now build a libdap::Grid to return as the response
+
+    // There should be just one band
+    if (reproj->GetRasterCount() != 1)
+        throw Error("In function swath2grid(), expected a single raster band.");
+
+    // Get the x and y dimensions of the raster band
+    int x = reproj->GetRasterXSize();
+    int y = reproj->GetRasterYSize();
+    GDALRasterBand *rb = reproj->GetRasterBand(1);
+    if (!rb)
+        throw Error("In function swath2grid(), could not access the raster data.");
+    string projection_info = reproj->GetProjectionRef();
+    double geo_transform_coef[6];
+    if (CE_None != reproj->GetGeoTransform (geo_transform_coef))
+        throw Error("In function swath2grid(), could not access the geo transform data.");
+
+    string gcp_projection_info = reproj->GetGCPProjection();
+
+    // Since the DAP_Dataset code works with all data values as doubles,
+    // Assume the raster band has GDAL type GDT_Float64, but test anyway
+    if (GDT_Float64 != rb->GetRasterDataType())
+        throw Error("In function swath2grid(), expected raster data to be of type double.");
+
+    Array *a = new Array(m_src->name(), new Float64(m_src->name()));
+
+    // Make the result array have two dimensions
+    Array::Dim_iter i = m_src->dim_begin();
+    if (i == m_src->dim_end())
+        throw Error("In function swath2grid(), expected source array to have two dimensions (1).");
+    if (m_src->dimension_size(i, true) != x)
+        throw Error("In function swath2grid(), expected source and destination X dimensions to match.");
+
+    a->append_dim(x, m_src->dimension_name(i));
+    ++i;
+
+    if (i == m_src->dim_end())
+        throw Error("In function swath2grid(), expected source array to have two dimensions (2).");
+    if (m_src->dimension_size(i, true) != y)
+        throw Error("In function swath2grid(), expected source and destination Y dimensions to match.");
+    a->append_dim(y, m_src->dimension_name(i));
+
+    // Now poke in some attributes
+    // TODO Make these CF attributes
+    AttrTable &attr = a->get_attr_table();
+    attr.append_attr("projection", "String", projection_info);
+    attr.append_attr("gcp_projection", "String", gcp_projection_info);
+
+    // Poke in the values
+    /* RasterIO (   GDALRWFlag  eRWFlag,
+    int     nXOff,
+    int     nYOff,
+    int     nXSize,
+    int     nYSize,
+    void *  pData,
+    int     nBufXSize,
+    int     nBufYSize,
+    GDALDataType    eBufType,
+    int     nPixelSpace,
+    int     nLineSpace
+    ) */
+    vector<double> data(x * y);
+    rb->RasterIO(GF_Read, 0, 0, x, y, &data[0], x, y, GDT_Float64, 0, 0);
+    a->set_value(data, data.size());
+
+    return a;
 }
 
 /************************************************************************/

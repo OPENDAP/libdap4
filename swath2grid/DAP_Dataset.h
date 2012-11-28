@@ -131,6 +131,7 @@ public:
 
     // Added jhrg 11/23/12
     DAP_Dataset(Array *src, Array *lat, Array *lon);
+    Array *GetDAPArray();
 
     virtual ~DAP_Dataset();
 };
