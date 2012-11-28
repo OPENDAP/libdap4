@@ -38,7 +38,7 @@
 #include <iostream>
 #include <sstream>
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Byte.h"
@@ -1818,7 +1818,7 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
 
     AttrTable::Attr_iter loc = at.simple_find(_location);
     if (loc != at.attr_end()) {
-        DBG(cerr << "Array: " << args.rangeVar.name() << " has a '" << _location << "' attribute."<< endl);
+        DBG(cerr << "Array: " << args.rangeVar->name() << " has a '" << _location << "' attribute."<< endl);
         string value = at.get_attr(loc, 0);
         DBG(cerr << "Attribute '"<< _location <<"' has value of '" << value << "'"<< endl);
         if (value != _node) {
@@ -1933,22 +1933,42 @@ static vector<Array *> *getNodeCoordinates(BaseType *meshTopology, DDS &dds)
 
 }
 
-static GF::CellArray *getFaceNodeConnectivityCells(BaseType *meshTopology, DDS &dds)
+static Array *getFaceNodeConnectivityVariable(BaseType *meshTopology, DDS &dds)
 {
-	string face_node_connectivity;
+	string face_node_connectivity_var_name;
     AttrTable at = meshTopology->get_attr_table();
 
     AttrTable::Attr_iter iter_fnc = at.simple_find(_faceNodeConnectivity);
     if (iter_fnc != at.attr_end()) {
-    	face_node_connectivity = at.get_attr(iter_fnc, 0);
+    	face_node_connectivity_var_name = at.get_attr(iter_fnc, 0);
     }
     else {
     	throw Error("Could not locate the "+_faceNodeConnectivity+" attribute in the "+_meshTopology+" variable! "+
     			"The mesh_topology variable is named "+meshTopology->name());
     }
 
+	// Find the variable using the name
+
+    BaseType *btp = dds.var(face_node_connectivity_var_name);
+
+    if(btp==0)
+    	throw Error("Could not locate the "+_faceNodeConnectivity+" variable named '"+face_node_connectivity_var_name+"'! "+
+    			"The mesh_topology variable is named "+meshTopology->name());
+
+    // Additional QC??
+
+    // return it!
 	throw Error("Implementation incomplete!");
 
+
+}
+
+static GF::CellArray *getFaceNodeConnectivityCells(BaseType *meshTopology, DDS &dds)
+{
+
+	Array *fncVar = getFaceNodeConnectivityVariable(meshTopology,dds);
+
+	throw Error("Implementation incomplete!");
 
 
 #if 0
@@ -2134,17 +2154,17 @@ function_ugridR(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     Array *rangeVar =  args.rangeVar;
 
     // Locate the mesh_topology variable in the dataset as defined in the ugrid specification
-    BaseType *meshTopology = getMeshTopologyVariable(dds);
+    BaseType *meshTopologyVariable = getMeshTopologyVariable(dds);
 
     // Retrieve the node coordinate arrays for the mesh
-    vector<Array *> *nodeCoordinates = getNodeCoordinates(meshTopology,dds);
+    vector<Array *> *nodeCoordinates = getNodeCoordinates(meshTopologyVariable,dds);
 
     // Make sure that the requested range variable and all of the node coordinate arrays have the same shape.
     vector<Array *>::iterator it;
     for(it=nodeCoordinates->begin(); it!=nodeCoordinates->end(); ++it) {
     	Array *nc = *it;
     	if(!same_dimensions(rangeVar,nc))
-    		throw Error("The dimensions of the request range variable "+rangeVar->name()+" does not match the shape "
+    		throw Error("The dimensions of the requested range variable "+rangeVar->name()+" does not match the shape "
     				+" of the node coordinate array "+nc->name());
     }
 
@@ -2156,7 +2176,7 @@ function_ugridR(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 
 
     // Get the face node connectivity cells (these correspond to the GridFields K cells of Rank 2)
-    GF::CellArray *faceNodeConnectivityCells = getFaceNodeConnectivityCells(meshTopology,dds);
+    GF::CellArray *faceNodeConnectivityCells = getFaceNodeConnectivityCells(meshTopologyVariable,dds);
 
 
 
