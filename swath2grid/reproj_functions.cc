@@ -39,16 +39,24 @@ static char rcsid[]not_used = { "$Id: ce_functions.cc 26039 2012-11-15 23:29:56Z
 
 #include <limits.h>
 
+#if 0
 #include <cstdlib>      // used by strtod()
 #include <cerrno>
 #include <cmath>
+#endif
 #include <iostream>
+#if 0
 #include <vector>
 #include <algorithm>
+#endif
+
+#include <gdal.h>
+// #include <gdal_priv.h>
 
 //#define DODS_DEBUG
 
 #include "BaseType.h"
+#if 0
 #include "Byte.h"
 #include "Int16.h"
 #include "UInt16.h"
@@ -58,9 +66,12 @@ static char rcsid[]not_used = { "$Id: ce_functions.cc 26039 2012-11-15 23:29:56Z
 #include "Float64.h"
 #include "Str.h"
 #include "Url.h"
+#endif
 #include "Array.h"
+#if 0
 #include "Structure.h"
 #include "Sequence.h"
+#endif
 #include "Grid.h"
 
 #include "Error.h"
@@ -84,6 +95,77 @@ namespace libdap {
 
 void function_swath2grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
+    DBG(cerr << "Entering function_swath2grid..." << endl);
+
+    string info = string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+    		+ "<function name=\"swath2grid\" version=\"1.0\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#swath2grid\">\n"
+            + "</function>\n";
+
+    if (argc == 0) {
+        Str *response = new Str("info");
+        response->set_value(info);
+        *btpp = response;
+        return;
+    }
+
+    // TODO Add optional fourth arg that lets the caller say which datum to use;
+    // default to WGS84
+    if (argc != 3)
+    	throw Error("The function swath2grid() requires three arguments. See http://docs.opendap.org/index.php/Server_Side_Processing_Functions#swath2grid");
+
+    Array *src = dymanic_cast<Array*>(argv[0]);
+    if (!src)
+    	throw Error("The first argument to swath2grid() must be a data array. See http://docs.opendap.org/index.php/Server_Side_Processing_Functions#swath2grid");
+
+    Array *lat = dymanic_cast<Array*>(argv[1]);
+    if (!lat)
+    	throw Error("The second argument to swath2grid() must be a latitude array. See http://docs.opendap.org/index.php/Server_Side_Processing_Functions#swath2grid");
+
+    Array *lon = dymanic_cast<Array*>(argv[2]);
+    if (!lon)
+    	throw Error("The first argument to swath2grid() must be a longitude array. See http://docs.opendap.org/index.php/Server_Side_Processing_Functions#swath2grid");
+
+    DAP_Dataset ds(src, lat, lon);
+
+    GDALDataset *reproj = ds.maptr_DS.get();
+
+    // Now build a libdap::Grid to return as the response
+
+    // There should be just one band
+    if (reproj->GetRasterCount() != 1)
+    	throw Error("In function swath2grid(), expected a single raster band.");
+
+    // Get the x and y dimensions of the raster band
+    int x = reproj->GetRasterXSize();
+    int y = reproj->GetRasterYSize();
+    GDALRasterBand *rb = reproj->GetRasterBand(1);
+    if (!rb)
+    	throw Error("In function swath2grid(), could not access the raster data.");
+    string projection_info = reproj->GetProjectionRef();
+    double geo_transform_coef[6];
+    if (CPL_None != reproj->GetGeoTransform (geo_transform_coef))
+        throw Error("In function swath2grid(), could not access the geo transform data.");
+
+    string gcp_projection_info = reporj->GetGCPProjection();
+
+    // Since the DAP_Dataset code works with all data values as doubles,
+    // Assume the raster band has GDAL type GDT_Float64, but test anyway
+ 	if (GDT_Float64 != reproj->GetRasterDataType())
+ 	    throw Error("In function swath2grid(), expected raster data to be of type double.");
+
+ 	/* RasterIO	(	GDALRWFlag 	eRWFlag,
+ 	int 	nXOff,
+ 	int 	nYOff,
+ 	int 	nXSize,
+ 	int 	nYSize,
+ 	void * 	pData,
+ 	int 	nBufXSize,
+ 	int 	nBufYSize,
+ 	GDALDataType 	eBufType,
+ 	int 	nPixelSpace,
+ 	int 	nLineSpace
+ 	) */
+    double *data;
 
 }
 
