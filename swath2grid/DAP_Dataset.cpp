@@ -121,6 +121,9 @@ DAP_Dataset::DAP_Dataset(Array *src, Array *lat, Array *lon) :
  * Within this method, SetNativeCRS(), SetGeoTransform() and SetGDALDataset()
  * will be called to initialize an GOES dataset.
  *
+ * @note To use this, call this method and then access the GDALDataset that
+ * contains the reprojected array using maptr_DS.get().
+ *
  * @param isSimple the WCS request type.  When user executing a DescribeCoverage
  * request, isSimple is set to 1, and for GetCoverage, is set to 0.
  *
@@ -596,13 +599,12 @@ CPLErr DAP_Dataset::SetGDALDataset(const int isSimple)
 
     double *data = extract_double_array(m_src);
     //GDALRasterBand srcBand;
-    if (CE_None
-            != poVRTBand->RasterIO(GF_Write, 0, 0, mi_RectifiedImageXSize, mi_RectifiedImageYSize, data,
+    if (CE_None != poVRTBand->RasterIO(GF_Write, 0, 0, mi_RectifiedImageXSize, mi_RectifiedImageYSize, data,
                     mi_RectifiedImageXSize, mi_RectifiedImageYSize, eBandType, 0, 0)) {
         GDALClose((GDALDatasetH) poVDS);
         throw Error("Failed to satellite data band to VRT DataSet.");
-
     }
+
     delete[] data;
 
     /*
@@ -618,6 +620,7 @@ CPLErr DAP_Dataset::SetGDALDataset(const int isSimple)
      int     nPixelSpace,
      int     nLineSpace
      )  */
+
 #if 0
     if (CE_None
             != poVRTBand->AddSimpleSource(&srcBand, 0, 0, mi_RectifiedImageXSize, mi_RectifiedImageYSize, 0, 0,
@@ -638,6 +641,7 @@ CPLErr DAP_Dataset::SetGDALDataset(const int isSimple)
 #if 0
     GDALClose(maptr_DS.release());
 #endif
+
     maptr_DS.reset(poVDS);
 
     if (isSimple)
@@ -776,8 +780,8 @@ CPLErr DAP_Dataset::RectifyGOESDataSet()
     rectDataSet->SetProjection(pszDstWKT);
     rectDataSet->SetGeoTransform(md_Geotransform);
 
-    if (CE_None
-            != GDALReprojectImage(maptr_DS.get(), NULL, rectDataSet, pszDstWKT, GRA_NearestNeighbour, 0, 0.125, NULL,
+    // FIXME Magic value of 0.125
+    if (CE_None != GDALReprojectImage(maptr_DS.get(), NULL, rectDataSet, pszDstWKT, GRA_NearestNeighbour, 0, 0.125, NULL,
                     NULL, NULL)) {
         GDALClose(rectDataSet);
         GDALClose(poDriver);
