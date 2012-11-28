@@ -38,7 +38,7 @@
 #include <iostream>
 #include <sstream>
 
-#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Byte.h"
@@ -879,18 +879,23 @@ static ugr_args processArgs(int argc, BaseType * argv[]){
     if (argc != 2)
         throw Error(malformed_expr,"Wrong number of arguments to ugrid restrict function: "+ugrSyntax+" was passed " + long_to_string(argc) + " argument(s)");
 
+    BaseType *bt;
+
+
     //FIXME Process the first arg, which is "dimension" or something - WE DON'T REALLY KNOW.
-    if (argv[0]->type() != dods_int32_c)
-        throw Error(malformed_expr,"Wrong type for first argument, expected DAP Int32. "+ugrSyntax+"  was passed a/an " + argv[0]->type_name());
+    bt = argv[0];
+    if (bt->type() != dods_int32_c)
+        throw Error(malformed_expr,"Wrong type for first argument, expected DAP Int32. "+ugrSyntax+"  was passed a/an " + bt->type_name());
     //FIXME Tell James what dim is about...
-    args.dimension = extract_double_value(argv[0]);
+    args.dimension = extract_double_value(bt);
 
 
 
     // Process the second argument, the relational expression used to restrict the ugrid content.
-    if (argv[2]->type() != dods_str_c)
-        throw Error(malformed_expr,"Wrong type for third argument, expected DAP String. "+ugrSyntax+"  was passed a/an " + argv[2]->type_name());
-    args.filterExpression = extract_string_argument(argv[2]);
+    bt = argv[1];
+    if (bt->type() != dods_str_c)
+        throw Error(malformed_expr,"Wrong type for third argument, expected DAP String. "+ugrSyntax+"  was passed a/an " + bt->type_name());
+    args.filterExpression = extract_string_argument(bt);
 
     return args;
 
@@ -1796,20 +1801,26 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
     if (argc != 3)
         throw Error(malformed_expr,"Wrong number of arguments to ugrid restrict function: "+UgridRestrictSyntax+" was passed " + long_to_string(argc) + " argument(s)");
 
+
+    BaseType * bt;
+
+
     //FIXME Process the first arg, which is "dimension" or something - WE DON'T REALLY KNOW.
-    if (argv[0]->type() != dods_int32_c)
-        throw Error(malformed_expr,"Wrong type for first argument, expected DAP Int32. "+UgridRestrictSyntax+"  was passed a/an " + argv[0]->type_name());
+    bt = argv[0];
+    if (bt->type() != dods_int32_c)
+        throw Error(malformed_expr,"Wrong type for first argument, expected DAP Int32. "+UgridRestrictSyntax+"  was passed a/an " + bt->type_name());
     //FIXME Tell James what dim is about...
-    args.dimension = extract_double_value(argv[0]);
+    args.dimension = extract_double_value(bt);
 
 
     // Process the second argument, the range Variable selected by the user.
-    if (argv[1]->type() != dods_array_c)
-        throw Error(malformed_expr,"Wrong type for second argument, expected DAP Array. "+UgridRestrictSyntax+"  was passed a/an " + argv[1]->type_name());
+    bt = argv[1];
+    if (bt->type() != dods_array_c)
+        throw Error(malformed_expr,"Wrong type for second argument, expected DAP Array. "+UgridRestrictSyntax+"  was passed a/an " + bt->type_name());
 
-    args.rangeVar = dynamic_cast<Array*>(argv[1]);
+    args.rangeVar = dynamic_cast<Array*>(bt);
     if(args.rangeVar == 0) {
-        throw Error(malformed_expr,"Wrong type for second argument. "+UgridRestrictSyntax+"  was passed a/an " + argv[1]->type_name());
+        throw Error(malformed_expr,"Wrong type for second argument. "+UgridRestrictSyntax+"  was passed a/an " + bt->type_name());
     }
 
 
@@ -1834,9 +1845,10 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
 
 
     // Process the third argument, the relation expression used to restrict the ugrid content..
-    if (argv[2]->type() != dods_str_c)
-        throw Error(malformed_expr,"Wrong type for third argument, expected DAP String. "+UgridRestrictSyntax+"  was passed a/an " + argv[2]->type_name());
-    args.filterExpression = extract_string_argument(argv[2]);
+    bt = argv[2];
+    if (bt->type() != dods_str_c)
+        throw Error(malformed_expr,"Wrong type for third argument, expected DAP String. "+UgridRestrictSyntax+"  was passed a/an " + bt->type_name());
+    args.filterExpression = extract_string_argument(bt);
 
     return args;
 
