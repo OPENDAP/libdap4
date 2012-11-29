@@ -1888,6 +1888,9 @@ static bool same_dimensions(Array *arr1, Array *arr2) {
 }
 
 
+/**
+ * Process the functions arguments and return the structure containing their values.
+ */
 static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
 
 	UgridRestrictArgs args;
@@ -2179,165 +2182,7 @@ static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityAr
     return rankTwoCells;
 
 
-#if 0
-
-    // 2) For each k, find the k-cells
-    // k = 2, for now
-    DBG(cerr << "Reading 2-cells" << endl);
-    GF::CellArray *twocells = NULL;
-
-    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
-        BaseType *bt = *vi;
-        // TODO Allow variables that are not Arrays; ignore as above
-        if (bt->type() != dods_array_c)
-            continue;
-
-        Array &arr = dynamic_cast<Array&>(*bt);
-        DBG(cerr << "Array: " << arr.name() << endl);
-
-        AttrTable &at = arr.get_attr_table();
-
-        // FIXME
-        // There is no longer a 'cell_type' attribute in the spec...
-        AttrTable::Attr_iter iter_cell_type = at.simple_find("cell_type");
-
-        if (iter_cell_type != at.attr_end()) {
-            string cell_type = at.get_attr(iter_cell_type, 0);
-            DBG(cerr << cell_type << endl);
-            if (cell_type == "tri_ccw") {
-                // Ok, we expect triangles
-                // which means a shape of 3xN
-                // FIXME: The loop below checks that the array is 3xN and
-                // stores the size of the second dimension in twocell_count
-                int twocell_count = -1, i=0;
-                // FIXME total_size is only used in the loop below when the attribute
-                // 'index_origin' is found but that attribute is not defined in the spec.
-                // Do we need this?
-                int total_size = 1;
-                rank_dimensions[2] = vector<Array::dimension>();
-                for (Array::Dim_iter di = arr.dim_begin(); di!= arr.dim_end(); di++) {
-                    total_size *= di->c_size;
-                    rank_dimensions[2].push_back(*di);
-                    if (i == 0) {
-                        if (di->c_size != 3) {
-                            DBG(cerr << "Cell array of type 'tri_ccw' must have a shape of 3xN, since triangles have three nodes." << endl);
-                            throw Error(malformed_expr,"Cell array of type 'tri_ccw' must have a shape of 3xN, since triangles have three nodes.");
-                        }
-                    }
-                    if (i == 1) {
-                        twocell_count = di->c_size;
-                    }
-                    if (i>1) {
-                        DBG(cerr << "Too many dimensions for a cell array of type 'tri_ccw'.  Expected shape of 3XN" << endl);
-                        throw Error(malformed_expr,"Too many dimensions for a cell array of type 'tri_ccw'.  Expected shape of 3XN");
-                    }
-                    i++;
-                }
-
-                // interpret the array data as triangles
-                // FIXME Can allocate cellids without copying arr's values
-                GF::Node *cellids = extract_array<GF::Node>(&arr);
-                GF::Node *cellids2 = extract_array<GF::Node>(&arr);
-                // FIXME
-                // This loop appears to reorganize cellids so that it contains
-                // in in three consecutive values (0,1,2; 3,4,5; ...) the values
-                // from cellids2 0,N,2N; 1,1+N,1+2N; ...
-                // But cellids2 is never used anywhere else; consider rewriting
-                // so it does this repacking operation.
-                for (int j=0;j<twocell_count;j++) {   cellids[3*j]=cellids2[j];
-                    cellids[3*j+1]=cellids2[j+twocell_count];
-                    cellids[3*j+2]=cellids2[j+2*twocell_count];
-                }
-
-                // adjust for index origin
-                // FIXME There's no 'index_origin' attribute in the spec.
-                AttrTable::Attr_iter iter_index_origin = at.simple_find("index_origin");
-                if (iter_index_origin != at.attr_end()) {
-                    DBG(cerr << "Found an index origin attribute." << endl);
-                    AttrTable::entry *index_origin_entry = *iter_index_origin;
-                    int index_origin;
-                    if (index_origin_entry->attr->size() == 1) {
-                        AttrTable::entry *index_origin_entry = *iter_index_origin;
-                        string val = (*index_origin_entry->attr)[0];
-                        DBG(cerr << "Value: " << val << endl);
-                        stringstream buffer(val);
-                        // what happens if string cannot be converted to an integer?
-                        buffer >> index_origin;
-                        DBG(cerr << "converted: " << index_origin << endl);
-                        if (index_origin != 0) {
-                            for (int j=0; j<total_size; j++) {
-                                cellids[j] -= index_origin;
-                            }
-                        }
-                    }
-                    else {
-                        throw Error(malformed_expr,"Index origin attribute exists, but either no value supplied, or more than one value supplied.");
-                    }
-                }
-
-                // Create the cell array
-                // TODO Is this '3' the same as the '3' in '3xN'?
-                twocells = new GF::CellArray(cellids, twocell_count, 3);
-
-                return twocells;
-            }
-        }
-    }
-
-    throw Error("Could not find cell array of CCW triangles");
-
-#endif
-
 }
-
-#if 0
-static void addInputCells(Array *arr, int gridDimKey, GF::GridField *input)
-{
-	DBG(cerr << "Adding Data Array: " << arr->name() << " to GridField gridDimKey: " << gridDimKey << endl);
-	GF::Array *gfa = extract_gridfield_array(arr);
-	input->AddAttribute(gridDimKey, gfa);
-
-
-
-#if 0
-    // 3) For each var, bind it to the appropriate dimension
-
-    // For each variable in the data source:
-    GF::GridField *input = new GF::GridField(G);
-
-	DBG(cerr << "Data Array: " << arr->name() << endl);
-	GF::Array *gfa = extract_gridfield_array(arr);
-
-	// Each rank is associated with a sequence of dimensions
-	// Vars that have the same dimensions should be bound to the grid at that rank
-	// (Note that in gridfields, Dimension and rank are synonyms.  We
-	// use the latter here to avoid confusion).
-	map<GF::Dim_t, vector<Array::dimension> >::iterator iter;
-	for( iter = rank_dimensions.begin(); iter != rank_dimensions.end(); ++iter ) {
-		int gridDimKey = iter->first; // either 0 or 2
-		vector<Array::dimension> arrDims = iter->second;
-		bool same = same_dimensions(arr, arrDims);
-		if (same) {
-			// This var should be bound to rank k
-			// TODO This code sets AddAttribute(0, <grid_location --> 'node'>)
-			// (which occurs three times in test4.nc - X, Y, and nodedata) and
-			// AddAttribute(2, <the 3xN var>).
-			DBG(cerr << "Adding Attribute: " << gfa->sname() << endl);
-			input->AddAttribute(gridDimKey, gfa);
-		}
-		else {
-			// This array does not appear to be associated with any
-			// rank of the unstructured grid. Ignore for now.
-			// TODO Anything else we should do?
-			// FIXME Free the storage!!
-		}
-	}
-
-    return input;
-#endif
-
-}
-#endif
 
 
 /**
@@ -2435,56 +2280,6 @@ static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField, Ar
 
 	return resultFcnDapArray;
 
-
-#if 0
-
-	// Scott's method
-	//GF::CellArray* Inb=(GF::CellArray*)(resultGridField->GetGrid()->getKCells(2));
-	Int32 *witnessn4 = new Int32(sourceMeshArray->name());
-	Array *resultMeshArray = new Array(sourceMeshArray->name(),witnessn4);
-	//vector< vector<int> > nodes2 = Inb->makeArrayInts();
-	vector<dods_int32> node1;
-	vector<dods_int32> node2;
-	vector<dods_int32> node3;
-	for (unsigned int j=0; j < nodes2.size(); j++) {
-		node1.push_back(nodes2.at(j).at(0));
-		node2.push_back(nodes2.at(j).at(1));
-		node3.push_back(nodes2.at(j).at(2));
-	}
-	Int32 *witnessn1=new Int32("nodes1");
-	Int32 *witnessn2=new Int32("nodes2");
-	Int32 *witnessn3=new Int32("nodes3");
-	Array *Node1=new Array("trinode1",witnessn1);
-	Array *Node2=new Array("trinode2",witnessn2);
-	Array *Node3=new Array("trinode3",witnessn3);
-	Node1->append_dim(node1.size(),"dim-1");
-
-	Node2->append_dim(node2.size(),"dim-1");
-	Node3->append_dim(node3.size(),"dim-1");
-
-	Node1->set_value(node1,node1.size());
-	Node2->set_value(node2,node2.size());
-	Node3->set_value(node3,node3.size());
-
-	resultMeshArray->append_dim(3,"three");
-	resultMeshArray->append_dim(node1.size(),"tris");
-	resultMeshArray->reserve_value_capacity(3*node1.size());
-	resultMeshArray->set_value_slice_from_row_major_vector(*Node1,0);
-	resultMeshArray->set_value_slice_from_row_major_vector(*Node2,Node1->length());
-	resultMeshArray->set_value_slice_from_row_major_vector(*Node3,Node1->length()+Node2->length());
-	AttrTable &arrattr1 = sourceMeshArray->get_attr_table();
-	resultMeshArray->set_attr_table(arrattr1);
-	
-	DBG(cerr<<endl<<endl;
-		cerr << "Scott's resultMeshArray with data values: "<< endl;
-		resultMeshArray->print_val(cerr);
-	    cerr<<endl<<endl;
-	   )
-
-	//return resultMeshArray;
-
-#endif
-
 }
 
 
@@ -2551,8 +2346,6 @@ static Array *getRankZeroAttributeNodeSetAsDapArray(
  */
 static Structure *convertUgridResultToDapObject(GF::GridField *resultGridField, BaseType *meshTopologyVar, Array *rangeVar, vector<Array *> *coordinateVars, Array *sourceFaceNodeConnectivityArray)
 {
-	
-	
 	resultGridField->GetGrid()->normalize();
 
 	//FIXME Change the name of this structure to "ugr_result"
@@ -2579,104 +2372,6 @@ static Structure *convertUgridResultToDapObject(GF::GridField *resultGridField, 
 	construct->add_var_nocopy(resultFaceNodeConnectivityDapArray);
 
     return construct;
-	
-	
-#if 0
-	
-    // 4) Convert back to a DDS BaseType
-
-    // Create variables for each cell dimension
-    // Create variables for each attribute at each rank
-
-    R->GetGrid()->normalize();
-
-    Structure *construct = new Structure("construct");
-
-    // FIXME This code loops through the DDS and finds the variables
-    // that were the sources of information used by Gridfields (there are four)
-    // and uses those names to make the names of the four result variables.
-    // It also copies the attribute table from those variables.
-    for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
-        BaseType *bt = *vi;
-        if (bt->type() == dods_array_c) {
-            Array *arr = (Array *)bt;
-            map<GF::Dim_t, vector<Array::dimension> >::iterator iter;
-
-            AttrTable &arrattr2 = arr->get_attr_table();
-
-            if(arrattr2.simple_find("cell_type")!=arrattr2.attr_end())
-            {
-                GF::CellArray* Inb=(GF::CellArray*)(R->GetGrid()->getKCells(2));
-                Int32 *witnessn4 = new Int32(arr->name());
-                Array *Nodes = new Array(arr->name(),witnessn4);
-                vector< vector<int> > nodes2 = Inb->makeArrayInts();
-                vector<dods_int32> node1;
-                vector<dods_int32> node2;
-                vector<dods_int32> node3;
-                for (unsigned int j=0; j < nodes2.size(); j++) {
-                    node1.push_back(nodes2.at(j).at(0));
-                    node2.push_back(nodes2.at(j).at(1));
-                    node3.push_back(nodes2.at(j).at(2));
-                }
-                Int32 *witnessn1=new Int32("nodes1");
-                Int32 *witnessn2=new Int32("nodes2");
-                Int32 *witnessn3=new Int32("nodes3");
-                Array *Node1=new Array("trinode1",witnessn1);
-                Array *Node2=new Array("trinode2",witnessn2);
-                Array *Node3=new Array("trinode3",witnessn3);
-                Node1->append_dim(node1.size(),"dim-1");
-
-                Node2->append_dim(node2.size(),"dim-1");
-                Node3->append_dim(node3.size(),"dim-1");
-
-                Node1->set_value(node1,node1.size());
-                Node2->set_value(node2,node2.size());
-                Node3->set_value(node3,node3.size());
-
-                Nodes->append_dim(3,"three");
-                Nodes->append_dim(node1.size(),"tris");
-                Nodes->reserve_value_capacity(3*node1.size());
-                Nodes->set_value_slice_from_row_major_vector(*Node1,0);
-                Nodes->set_value_slice_from_row_major_vector(*Node2,Node1->length());
-                Nodes->set_value_slice_from_row_major_vector(*Node3,Node1->length()+Node2->length());
-                AttrTable &arrattr1 = arr->get_attr_table();
-                Nodes->set_attr_table(arrattr1);
-
-                construct->add_var_nocopy(Nodes);
-            }
-            else {
-                for( iter = rank_dimensions.begin(); iter != rank_dimensions.end(); ++iter ) {
-                    bool same = same_dimensions(arr, iter->second);
-                    if (same) {
-                        // This var should be bound to rank k
-                        Float64 *witness2 = new Float64(arr->name());
-
-                        GF::Array* gfa = R->GetAttribute(iter->first, arr->name());
-
-                        vector<dods_float64> GFA = gfa->makeArrayf();
-
-                        Array *Nodes = new Array(arr->name(), witness2);
-                        Nodes->append_dim(GFA.size(), "nodes");
-                        Nodes->set_value(GFA,GFA.size());
-
-                        AttrTable &arrattr1 = arr->get_attr_table();
-                        Nodes->set_attr_table(arrattr1);
-                        // AttrTable &arrattr = Nodes->get_attr_table();
-
-                        construct->add_var_nocopy(Nodes);
-                    }
-                    else {
-                        // This array does not appear to be associated with
-                        // any rank of the unstructured grid. Ignore for now.
-                        // Anything else we should do?
-                    }
-                }
-            }
-        }
-    }
-
-    return construct;
-#endif
 }
 
 
