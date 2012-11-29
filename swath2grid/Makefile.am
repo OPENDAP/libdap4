@@ -22,8 +22,10 @@ libswath2grid_la_CPPFLAGS = $(GDAL_CFLAGS)
 libswath2grid_la_LDFLAGS = 
 libswath2grid_la_LIBADD = $(GDAL_LIBS)
 
-SRCS = AbstractDataset.cpp NC_GOES_Dataset.cpp wcs_error.cpp    \
+SRCS = AbstractDataset.cpp wcs_error.cpp    \
 BoundingBox.cpp wcsUtil.cpp DAP_Dataset.cpp  reproj_functions.cc
 
-HDRS = AbstractDataset.h NC_GOES_Dataset.h wcs_error.h    \
+# NC_GOES_Dataset.cpp NC_GOES_Dataset.h
+
+HDRS = AbstractDataset.h wcs_error.h    \
 BoundingBox.h wcsUtil.h DAP_Dataset.h reproj_functions.h

@@ -247,7 +247,7 @@ void function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 }
 #endif
 
-void register_functions(ConstraintEvaluator & ce)
+void register_reproj_functions(ConstraintEvaluator & ce)
 {
     ce.add_function("swath2grid", function_swath2grid);
 }
