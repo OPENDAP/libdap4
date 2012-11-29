@@ -1747,7 +1747,11 @@ function_ugrOLD(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
  * *******************************************************************************************************
  * *******************************************************************************************************
  */
-// TODO make this work on situations where multiple spaces doesn't hose the split()
+
+/**
+ * Splits the string on the passed char. Returns vector of substrings.
+ * TODO make this work on situations where multiple spaces doesn't hose the split()
+ */
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
     std::stringstream ss(s);
     std::string item;
@@ -1757,6 +1761,9 @@ std::vector<std::string> &split(const std::string &s, char delim, std::vector<st
     return elems;
 }
 
+/**
+ * Splits the string on the passed char. Returns vector of substrings.
+ */
 std::vector<std::string> split(const std::string &s, char delim) {
     std::vector<std::string> elems;
     return split(s, delim, elems);
@@ -1779,7 +1786,9 @@ struct MeshTopology {
 };
  */
 
-
+/**
+ *  UGrid vocabulary
+ */
 static string _cfRole = "cf_role";
 static string _standardName = "standard_name";
 static string _meshTopology = "mesh_topology";
@@ -1791,12 +1800,17 @@ static string _gridLocation = "grid_location";
 static string _node = "node";
 static string _start_index = "start_index";
 
-#if 0
-#endif
 
+
+/**
+ * Function syntax
+ */
 string UgridRestrictSyntax = "ugr(dim:int32, rangeVariable:string, condition:string)";
 
 
+/**
+ * Function Arguments
+ */
 struct UgridRestrictArgs {
 	int dimension;
 	Array *rangeVar;
@@ -1831,7 +1845,7 @@ static bool checkAttributeValue(BaseType *bt, string aName, string aValue){
  * aValue return true. If it doesn't have a "cf_role" attribute, then if there is a "standard_name" attribute and it's value is
  * the same as aValue then  return true. All other outcomes return false.
  */
-static bool checkCfRoleAndStandardName(BaseType *bt, string aValue){
+static bool matchesCfRoleOrStandardName(BaseType *bt, string aValue){
     // Confirm that submitted variable has a 'location' attribute whose value is "node".
     if(!checkAttributeValue(bt,_cfRole,aValue)){
     	// Missing the 'cf_role' attribute? Check for a 'standard_name' attribute whose value is "aValue".
@@ -1940,7 +1954,7 @@ static BaseType *getMeshTopologyVariable(DDS &dds)
     for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
         BaseType *bt = *vi;
         AttrTable at = bt->get_attr_table();
-        if(checkCfRoleAndStandardName(bt,_meshTopology)){
+        if(matchesCfRoleOrStandardName(bt,_meshTopology)){
         	return bt;
         }
     }
@@ -1951,7 +1965,11 @@ static BaseType *getMeshTopologyVariable(DDS &dds)
 }
 
 
-
+/**
+ * Returns the coordinate variables identified in the meshTopology variable's node_coordinates attribute.
+ * throws an error if the node_coordinates attribute is missing, if the coordinates are not arrays, and
+ * if the arrays are not all the same shape.
+ */
 static vector<Array *> *getNodeCoordinates(BaseType *meshTopology, DDS &dds)
 {
 	string node_coordinates;
@@ -2009,6 +2027,11 @@ static vector<Array *> *getNodeCoordinates(BaseType *meshTopology, DDS &dds)
 
 }
 
+
+/**
+ * Locates the the DAP variable identified by the face_node_connectivity attribute of the
+ * meshTopology variable.
+ */
 static Array *getFaceNodeConnectivityArray(BaseType *meshTopology, DDS &dds)
 {
 	string face_node_connectivity_var_name;
@@ -2038,6 +2061,8 @@ static Array *getFaceNodeConnectivityArray(BaseType *meshTopology, DDS &dds)
     if(fncArray == 0) {
         throw Error(malformed_expr,"Face Node Connectivity variable '"+face_node_connectivity_var_name+"' is not an Array type. It's an instance of " + btp->type_name());
     }
+
+
 
     return fncArray;
 
@@ -2071,23 +2096,29 @@ static int getNfrom3byNArray(Array *array){
 }
 
 
-static GF::Node *getGridFieldNodes(Array *fncVar){
+/**
+ * Takes a row major 3xN Face node connectivity DAP array
+ * and converts it to a collection GF::Nodes organized as
+ * 0,N,2N; 1,1+N,1+2N;
+ *
+ * This is the inverse operation to getGridFieldCellArrayAsDapArray()
+ *
+ */
+static GF::Node *getFncArrayAsGFNodes(Array *fncVar){
 
 	int nodeCount = getNfrom3byNArray(fncVar);
 
     // interpret the array data as triangles
-    // FIXME Can allocate cellids without copying arr's values
-    //GF::Node *cellids = extract_array<GF::Node>(fncVar);
     GF::Node *cellids = new GF::Node[fncVar->length()];
 
     GF::Node *cellids2 = extract_array<GF::Node>(fncVar);
-    // FIXME
-    // This loop appears to reorganize cellids so that it contains
-    // in in three consecutive values (0,1,2; 3,4,5; ...) the values
-    // from cellids2 0,N,2N; 1,1+N,1+2N; ...
-    // But cellids2 is never used anywhere else; consider rewriting
-    // so it does this repacking operation.
-    for (int j=0;j<nodeCount;j++) {   cellids[3*j]=cellids2[j];
+
+    // Reorganize the cell ids so that cellids contains
+    // the cells in three consecutive values (0,1,2; 3,4,5; ...).
+    // The the values from  fncVar now in cellids2 and ar organized
+    // as 0,N,2N; 1,1+N,1+2N; ...
+    for (int j=0;j<nodeCount;j++) {
+    	cellids[3*j]=cellids2[j];
         cellids[3*j+1]=cellids2[j+nodeCount];
         cellids[3*j+2]=cellids2[j+2*nodeCount];
     }
@@ -2099,9 +2130,6 @@ static GF::Node *getGridFieldNodes(Array *fncVar){
  * is missing the value 0 is returned.
  */
 static int getStartIndex(Array *array){
-
-    // adjust for index origin
-    // FIXME There's no 'index_origin' attribute in the spec.
     AttrTable &at = array->get_attr_table();
     AttrTable::Attr_iter start_index_iter = at.simple_find(_start_index);
     if (start_index_iter != at.attr_end()) {
@@ -2125,17 +2153,20 @@ static int getStartIndex(Array *array){
 }
 
 
-static GF::CellArray *getFaceNodeConnectivityCells(Array *fncVar)
+/**
+ * Converts a a row major 3xN Face node connectivity DAP array into a GF::CellArray
+ */
+static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityArray)
 {
 
-	int twocell_count = getNfrom3byNArray(fncVar);
+	int rank2CellCount = getNfrom3byNArray(faceNodeConnectivityArray);
 
-    int total_size = 3 * twocell_count;
+    int total_size = 3 * rank2CellCount;
 
-    GF::Node *cellids = getGridFieldNodes(fncVar);
+    GF::Node *cellids = getFncArrayAsGFNodes(faceNodeConnectivityArray);
 
     // adjust for the start_index (cardinal or ordinal array access)
-    int startIndex = getStartIndex(fncVar);
+    int startIndex = getStartIndex(faceNodeConnectivityArray);
     if (startIndex != 0) {
 		for (int j=0; j<total_size; j++) {
 			cellids[j] -= startIndex;
@@ -2143,8 +2174,9 @@ static GF::CellArray *getFaceNodeConnectivityCells(Array *fncVar)
 	}
     // Create the cell array
     // TODO Is this '3' the same as the '3' in '3xN'?
-    GF::CellArray *twocells = new GF::CellArray(cellids, twocell_count, 3);
-    return twocells;
+    // If so, then this is where we extend the code for faces with more sides.
+    GF::CellArray *rankTwoCells = new GF::CellArray(cellids, rank2CellCount, 3);
+    return rankTwoCells;
 
 
 #if 0
@@ -2307,40 +2339,13 @@ static void addInputCells(Array *arr, int gridDimKey, GF::GridField *input)
 }
 #endif
 
-//FIXME Make this use a template or generic pattern
-static BaseType *getDapVariableInstance(string name, Type t){
-	BaseType *bt;
-    switch (t) {
-        case dods_byte_c:
-        	bt = new Byte(name);
-            break;
-        case dods_uint16_c:
-        	bt = new UInt16(name);
-            break;
-        case dods_int16_c:
-        	bt = new Int16(name);
-            break;
-        case dods_uint32_c:
-        	bt = new UInt32(name);
-            break;
-        case dods_int32_c:
-        	bt = new Int32(name);
-            break;
-        case dods_float32_c:
-        	bt = new Float32(name);
-            break;
-        case dods_float64_c:
-        	bt = new Float64(name);
-            break;
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Unknown DAP type encountered when constructing a variable instance. Type: "+t);
-    }
 
-    return bt;
-
-}
-
-static Array *make3byNArrayFromTemplate(Array *templateArray, int N){
+/**
+ * Get a new 3xN DAP Array of Int32 with the same name, attributes, and dimension names
+ * as the templateArray. Make the new array's second dimension size N.
+ * Returns a DAP Array with an Int32 type template.
+ */
+static Array *getNewFcnDapArray(Array *templateArray, int N){
 	
 	// Is the template array a 2D array?
 	int dimCount = templateArray->dimensions(true);
@@ -2357,16 +2362,18 @@ static Array *make3byNArrayFromTemplate(Array *templateArray, int N){
     }
 
     // Get a new template variable for our new array (should be just like the template for the source array)
-	BaseType *arrayTemplate = getDapVariableInstance(templateArray->var(0)->name(),templateArray->var(0)->type());
-	Array *newArray = new Array(templateArray->name(), arrayTemplate);
+	//BaseType *arrayTemplate = getDapVariableInstance(templateArray->var(0)->name(),templateArray->var(0)->type());
+	Array *newArray = new Array( templateArray->name(), new Int32(templateArray->name()));
 
-   //Add the first dimension (size 3 same same as template array's first dimension)
+    //Add the first dimension (size 3 same same as template array's first dimension)
 	newArray->append_dim(3,di->name);
 
     // Add the second dimension to the result array, but use only the name from the template array's
 	// second dimension. The size will be from the passed parameter N
 	di++;
 	newArray->append_dim(N,di->name);
+
+	newArray->set_attr_table(templateArray->get_attr_table());
 
 	// make the new array big enough to hold all the values.
 	newArray->reserve_value_capacity(3*N);
@@ -2381,9 +2388,13 @@ static Array *make3byNArrayFromTemplate(Array *templateArray, int N){
 	
 }
 
-static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField, Array *sourceMeshArray){
+/**
+ * Takes a GF::GridField, extracts it's rank2 GF::CellArray. The GF::CellArray content is
+ * extracted and re-packed into a 3xN DAP Array. This is the inverse operation to
+ * getFncArrayAsGFNodes()
+ */
+static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField, Array *sourceFcnArray){
 
-//#if 0
 
 	// Get the rank 2 k-cells from the GridField object.
 	GF::CellArray* Inb=(GF::CellArray*)(resultGridField->GetGrid()->getKCells(2));
@@ -2391,7 +2402,7 @@ static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField, Ar
 	// This is a vector of size N holding vectors of size 3
 	vector< vector<int> > nodes2 = Inb->makeArrayInts();
 
-	Array *resultDapArray = make3byNArrayFromTemplate(sourceMeshArray,nodes2.size());
+	Array *resultFcnDapArray = getNewFcnDapArray(sourceFcnArray,nodes2.size());
 
 	// Make a vector to hold the re-packed cell nodes.
 	vector<dods_int32> rowMajorNodes;
@@ -2401,28 +2412,8 @@ static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField, Ar
 		for (unsigned int secondDim=0; secondDim < nodes2.size(); secondDim++) {
 			dods_int32 val = nodes2.at(secondDim).at(firstDim);
 			rowMajorNodes.push_back(val);
-			//DBG( cerr << "Added nodes2(" << secondDim << ")(" << firstDim << ")=" << val << " to rowMajorNodes("<< rowMajorNodes.size()-1 <<")"<< endl;)
 		}
 	}
-#if 0
-
-	for (unsigned int j=0; j < nodes2.size(); j++) {
-		dods_int32 val = nodes2.at(j).at(0);
-		node1.push_back(val);
-		DBG( cerr << "Added nodes2("<<j<<")(0)=" << val << endl;)
-	}
-	for (unsigned int j=0; j < nodes2.size(); j++) {
-		dods_int32 val = nodes2.at(j).at(1);
-		node1.push_back(val);
-		DBG( cerr << "Added nodes2("<<j<<")(1)=" << val << endl;)
-	}
-	for (unsigned int j=0; j < nodes2.size(); j++) {
-		dods_int32 val = nodes2.at(j).at(2);
-		node1.push_back(val);
-		DBG( cerr << "Added nodes2("<<j<<")(2)=" << val << endl;)
-	}
-#endif
-
 
 	DBG(
 		cerr << "rowMajorNodes: " << endl << "{";
@@ -2434,20 +2425,18 @@ static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField, Ar
 	)
 
 	// Add them to the DAP array.
-	//resultMeshArray->set_value(&rowMajorNodes[0],rowMajorNodes.size());
-	resultDapArray->set_value(rowMajorNodes,rowMajorNodes.size());
+	resultFcnDapArray->set_value(rowMajorNodes,rowMajorNodes.size());
 
 	DBG(cerr<<endl<<endl;
-    	cerr << "Nathan's resultDapArray with data values: "<< endl;
-		resultDapArray->print_val(cerr);
+	    resultFcnDapArray->print_val(cerr);
 	    cerr<<endl<<endl;
 	   )
 
-//return resultDapArray;
 
-//#endif
+	return resultFcnDapArray;
 
-//#if 0
+
+#if 0
 
 	// Scott's method
 	//GF::CellArray* Inb=(GF::CellArray*)(resultGridField->GetGrid()->getKCells(2));
@@ -2494,59 +2483,72 @@ static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField, Ar
 
 	//return resultMeshArray;
 
-//#endif
-	return resultDapArray;
-
-}
-
-
-#if 0
-static Array *getRankZeroAttributeNodeSetAsDapArray(GF::GridField *resultGridField, Array *sourceArray){
-
-	// This var should be bound to rank k
-	Float64 *witness2 = new Float64(sourceArray->name());
-
-	GF::Array* gfa = resultGridField->GetAttribute(0, sourceArray->name());
-
-	vector<dods_float64> GFA = gfa->makeArrayf();
-
-	Array *Nodes = new Array(sourceArray->name(), witness2);
-	Nodes->append_dim(GFA.size(), "nodes");
-	Nodes->set_value(GFA,GFA.size());
-
-	AttrTable &arrattr1 = sourceArray->get_attr_table();
-	Nodes->set_attr_table(arrattr1);
-	// AttrTable &arrattr = Nodes->get_attr_table();
-
-
-	return Nodes;
-
-}
 #endif
 
-
-static Array *getRankZeroAttributeNodeSetAsDapArray(GF::GridField *resultGridField, Array *sourceArray){
-
-	// The result variable is assumed to be bound to the GridField with rank 0
-
-	GF::Array* gfa = resultGridField->GetAttribute(0, sourceArray->name());
-
-	vector<dods_float64> GFA = gfa->makeArrayf();
-
-	Array *Nodes = new Array(sourceArray->name(), new Float64(sourceArray->name()));
-
-	string dimName = sourceArray->dimension_name(sourceArray->dim_begin());
-	Nodes->append_dim(GFA.size(), dimName);
-	Nodes->set_value(GFA,GFA.size());
-
-	Nodes->set_attr_table(sourceArray->get_attr_table());
-
-	return Nodes;
 }
 
 
+/**
+ * Retrieves a single dimensional rank 0 GF attribute array from a GF::GridField and places the data into
+ * DAP array of the appropriate type.
+ */
+static Array *getRankZeroAttributeNodeSetAsDapArray(
+		GF::GridField *resultGridField, Array *sourceArray) {
 
+	// The result variable is assumed to be bound to the GridField with rank 0
+	// Try to get the Attribute from rank 0 with the same name as the source array
+	GF::Array* gfa = resultGridField->GetAttribute(0, sourceArray->name());
 
+	Array *dapArray;
+	BaseType *templateVar = sourceArray->var();
+	string dimName;
+
+	switch (templateVar->type()) {
+		case dods_byte_c:
+		case dods_uint16_c:
+		case dods_int16_c:
+		case dods_uint32_c:
+		case dods_int32_c: {
+			// Get the data
+			vector<dods_int32> GF_ints = gfa->makeArray();
+			// Make a DAP array to put the data into.
+			dapArray = new Array(sourceArray->name(),
+					new Int32(sourceArray->name()));
+			// Add the dimension
+			dimName = sourceArray->dimension_name(sourceArray->dim_begin());
+			dapArray->append_dim(GF_ints.size(), dimName);
+			// Add the data
+			dapArray->set_value(GF_ints, GF_ints.size());
+			break;
+		}
+		case dods_float32_c:
+		case dods_float64_c: {
+			// Get the data
+			vector<dods_float64> GF_floats = gfa->makeArrayf();
+			// Make a DAP array to put the data into.
+			dapArray = new Array(sourceArray->name(),
+					new Float64(sourceArray->name()));
+			// Add the dimension
+			dimName = sourceArray->dimension_name(sourceArray->dim_begin());
+			dapArray->append_dim(GF_floats.size(), dimName);
+			// Add the data
+			dapArray->set_value(GF_floats, GF_floats.size());
+			break;
+		}
+		default:
+			throw InternalErr(__FILE__, __LINE__,
+					"Unknown DAP type encountered when converting to gridfields array");
+	}
+
+	// Copy the source objects attributes.
+	dapArray->set_attr_table(sourceArray->get_attr_table());
+
+	return dapArray;
+}
+
+/**
+ * Builds the DAP response content from the GF::GridField response object.
+ */
 static Structure *convertUgridResultToDapObject(GF::GridField *resultGridField, BaseType *meshTopologyVar, Array *rangeVar, vector<Array *> *coordinateVars, Array *sourceFaceNodeConnectivityArray)
 {
 	
@@ -2556,9 +2558,11 @@ static Structure *convertUgridResultToDapObject(GF::GridField *resultGridField, 
 	//FIXME Change the name of this structure to "ugr_result"
     Structure *construct = new Structure("construct");
     
-    //FIXME Make sure the thing we return is a valid ugrid dataset
-    //construct->add_var(meshTopologyVar);
+    // FIXME Make sure the thing we return is a valid ugrid dataset
+    // Which means add the mesh_topology variable etc.
+    // construct->add_var(meshTopologyVar);
 
+    // Add the coordinate node arrays to the response.
     vector<Array *>::iterator it;
     for(it=coordinateVars->begin(); it!=coordinateVars->end(); ++it) {
     	Array *sourceCoordinateArray = *it;
@@ -2566,17 +2570,14 @@ static Structure *convertUgridResultToDapObject(GF::GridField *resultGridField, 
         construct->add_var_nocopy(resultCoordinateArray);
     }
     
-    
+    // Get the range data and add it to the response.
 	Array *resultRangeVar = getRankZeroAttributeNodeSetAsDapArray(resultGridField,rangeVar);
     construct->add_var_nocopy(resultRangeVar);
 
-
+    // Add the new face node connectivity array - make sure it has the same attributes as the original.
     Array *resultFaceNodeConnectivityDapArray = getGridFieldCellArrayAsDapArray(resultGridField,sourceFaceNodeConnectivityArray);
-
 	construct->add_var_nocopy(resultFaceNodeConnectivityDapArray);
 
-
-    
     return construct;
 	
 	
@@ -2678,6 +2679,7 @@ static Structure *convertUgridResultToDapObject(GF::GridField *resultGridField, 
 #endif
 }
 
+
 /**
  Subset an irregular mesh (aka unstructured grid).
 
@@ -2743,7 +2745,7 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     // it looks like the request is consistent with the semantics of the dataset.
     // Now it's time to read some data and pack it into the GridFields library...
 
-	
+
 	
     // Start building the Grid for the GridField operation.
 
@@ -2764,7 +2766,7 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 
     // Attach the Mesh to the grid at rank 2
     // TODO Is this '2' the same as the '2' in 'rank_dimensions[2]'?
-    //TODO or more importantly - is this 2 the same as the value of the dimension attribute in the mesh_topology variable?
+    // TODO or more importantly - is this 2 the same as the value of the dimension attribute in the mesh_topology variable?
     G->setKCells(faceNodeConnectivityCells, 2);
 
 
@@ -2795,12 +2797,11 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 
 
 
-    // keep track of which DDS dimensions correspond to GF dimensions
-    map<GF::Dim_t, vector<Array::dimension> > rank_dimensions;
-
-
-
-    // 4) Get the GridField back in a DAP representation of a ugrid.
+    // Get the GridField back in a DAP representation of a ugrid.
+    // FIXME - this returns a single structure but it would make better sense to the
+    // world if it could return a vector of objects and have them appear at the
+    // top level of the DDS.
+    // FIXME Because the metadata attributes hold the key to understanding the response we need to allow h user to request DAS and DDX for the function call.
     Structure *construct = convertUgridResultToDapObject(R, meshTopologyVariable, rangeVar, nodeCoordinates, faceNodeConnectivityArray);
     *btpp = construct;
 
