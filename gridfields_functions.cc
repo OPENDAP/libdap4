@@ -1752,10 +1752,10 @@ function_ugrOLD(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
  * Splits the string on the passed char. Returns vector of substrings.
  * TODO make this work on situations where multiple spaces doesn't hose the split()
  */
-std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-    std::stringstream ss(s);
-    std::string item;
-    while(std::getline(ss, item, delim)) {
+vector<string> &split(const string &s, char delim, vector<string> &elems) {
+    stringstream ss(s);
+    string item;
+    while(getline(ss, item, delim)) {
         elems.push_back(item);
     }
     return elems;
@@ -1764,8 +1764,8 @@ std::vector<std::string> &split(const std::string &s, char delim, std::vector<st
 /**
  * Splits the string on the passed char. Returns vector of substrings.
  */
-std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
+vector<string> split(const string &s, char delim) {
+    vector<string> elems;
     return split(s, delim, elems);
 }
 
@@ -1792,23 +1792,23 @@ struct MeshTopology {
 /**
  *  UGrid vocabulary
  */
-static string _cfRole = "cf_role";
-static string _standardName = "standard_name";
-static string _meshTopology = "mesh_topology";
-static string _nodeCoordinates = "node_coordinates";
-static string _faceNodeConnectivity = "face_node_connectivity";
-static string _dimension = "dimension";
-static string _location = "location";
-static string _gridLocation = "grid_location";
-static string _node = "node";
-static string _start_index = "start_index";
+const string _cfRole               = "cf_role";
+const string _standardName         = "standard_name";
+const string _meshTopology         = "mesh_topology";
+const string _nodeCoordinates      = "node_coordinates";
+const string _faceNodeConnectivity = "face_node_connectivity";
+const string _dimension            = "dimension";
+const string _location             = "location";
+const string _gridLocation         = "grid_location";
+const string _node                 = "node";
+const string _start_index          = "start_index";
 
 
 
 /**
  * Function syntax
  */
-string UgridRestrictSyntax = "ugr(dim:int32, rangeVariable:string, [rangeVariable:string,] condition:string)";
+string UgridRestrictSyntax = "ugr(dim:int32, rangeVariable:string, [rangeVariable:string, ... ] condition:string)";
 
 
 /**
@@ -1816,7 +1816,7 @@ string UgridRestrictSyntax = "ugr(dim:int32, rangeVariable:string, [rangeVariabl
  */
 struct UgridRestrictArgs {
 	int dimension;
-	vector<Array *> *rangeVars;
+	vector<Array *> rangeVars;
 	string filterExpression;
 };
 
@@ -1897,7 +1897,7 @@ static bool same_dimensions(Array *arr1, Array *arr2) {
 static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
 
 	UgridRestrictArgs args;
-	args.rangeVars = new vector<Array *>();
+	args.rangeVars =  vector<Array *>();
 
     // Check number of arguments; DBG is a macro. Use #define
     // DODS_DEBUG to activate the debugging stuff.
@@ -1954,17 +1954,15 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
         }
 
         vector<Array *>::iterator it;
-        for(it=args.rangeVars->begin(); it!=args.rangeVars->end(); ++it) {\
+        for(it=args.rangeVars.begin(); it!=args.rangeVars.end(); ++it) {\
         	Array *rangeVar = *it;
     		if(!same_dimensions(newRangeVar,rangeVar))
     			throw Error("The dimensions of the requested range variable "+newRangeVar->name()+" does not match the shape "
     					+" of the node range (data) array "+rangeVar->name());
         }
 
-        args.rangeVars->push_back(newRangeVar);
+        args.rangeVars.push_back(newRangeVar);
     }
-
-
 
     return args;
 
@@ -2441,7 +2439,7 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 
     // For convenience, cache the pointer to the user selected range variable
     //    Array *rangeVar =  args.rangeVar;
-    vector<Array *> *rangeVars =  args.rangeVars;
+    vector<Array *> &rangeVars =  args.rangeVars;
 
     // Locate the mesh_topology variable in the dataset as defined in the ugrid specification
     BaseType *meshTopologyVariable = getMeshTopologyVariable(dds);
@@ -2454,7 +2452,7 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     // because we have already made sure all of the node coordinate arrays are the same size and
     // that all the rangeVar arrays are the same size. This is just to compare the two collections.
     Array *firstCoordinate = (*nodeCoordinates)[0];
-    Array *firstRangeVar = (*rangeVars)[0];
+    Array *firstRangeVar = rangeVars[0];
 	if(!same_dimensions(firstRangeVar,firstCoordinate))
 		throw Error("The dimensions of the requested range variable "+firstRangeVar->name()+" does not match the shape "
 				+" of the node coordinate array "+firstCoordinate->name());
@@ -2473,8 +2471,8 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     // TODO This is the 'domain' data?
     GF::Grid *G = new GF::Grid("result");
 
-    // 1) Make the implicit nodes - same size as the range and the cooridinate node arrays
-    int node_count = (*rangeVars)[0]->length();
+    // 1) Make the implicit nodes - same size as the range and the coordinate node arrays
+    int node_count = rangeVars[0]->length();
     GF::AbstractCellArray *nodes = new GF::Implicit0Cells(node_count);
     // Attach the implicit nodes to the grid at rank 0
     G->setKCells(nodes, 0);
@@ -2502,7 +2500,7 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     }
 
     // We add the requested range data arrays to the GridField at grid dimension key (rank?? whatever this is) 0.
-    for(it=rangeVars->begin(); it!=rangeVars->end(); ++it) {
+    for(it=rangeVars.begin(); it!=rangeVars.end(); ++it) {
     	Array *rangeVar = *it;
     	gfa = extract_gridfield_array(rangeVar);
     	inputCells->AddAttribute(0,gfa);
@@ -2526,7 +2524,7 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     // top level of the DDS.
     // FIXME Because the metadata attributes hold the key to understanding the response we
     // need to allow the user to request DAS and DDX for the function call.
-    Structure *construct = convertResultGridFieldToDapObject(R, meshTopologyVariable, rangeVars, nodeCoordinates, faceNodeConnectivityArray);
+    Structure *construct = convertResultGridFieldToDapObject(R, meshTopologyVariable, &rangeVars, nodeCoordinates, faceNodeConnectivityArray);
     *btpp = construct;
 
 
