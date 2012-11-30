@@ -1808,7 +1808,7 @@ static string _start_index = "start_index";
 /**
  * Function syntax
  */
-string UgridRestrictSyntax = "ugr(dim:int32, rangeVariable:string, condition:string)";
+string UgridRestrictSyntax = "ugr(dim:int32, rangeVariable:string, [rangeVariable:string,] condition:string)";
 
 
 /**
@@ -1816,7 +1816,7 @@ string UgridRestrictSyntax = "ugr(dim:int32, rangeVariable:string, condition:str
  */
 struct UgridRestrictArgs {
 	int dimension;
-	Array *rangeVar;
+	vector<Array *> *rangeVars;
 	string filterExpression;
 };
 
@@ -1897,10 +1897,11 @@ static bool same_dimensions(Array *arr1, Array *arr2) {
 static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
 
 	UgridRestrictArgs args;
+	args.rangeVars = new vector<Array *>();
 
     // Check number of arguments; DBG is a macro. Use #define
     // DODS_DEBUG to activate the debugging stuff.
-    if (argc != 3)
+    if (argc < 3)
         throw Error(malformed_expr,"Wrong number of arguments to ugrid restrict function: "+UgridRestrictSyntax+" was passed " + long_to_string(argc) + " argument(s)");
 
 
@@ -1908,42 +1909,62 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
 
 
     // ---------------------------------------------
-    //FIXME Process the first arg, which is "dimension" or something - WE DON'T REALLY KNOW.
+    // Process the first arg, which is "dimension" or something - WE DON'T REALLY KNOW. (see FIXME below)
+    // FIXME Ask Bill/Scott what this is about. Eliminate if not needed.
     bt = argv[0];
     if (bt->type() != dods_int32_c)
         throw Error(malformed_expr,"Wrong type for first argument, expected DAP Int32. "+UgridRestrictSyntax+"  was passed a/an " + bt->type_name());
     //FIXME Tell James what dim is about...
     args.dimension = extract_double_value(bt);
 
-
     // ---------------------------------------------
-    // Process the second argument, the range Variable selected by the user.
-    bt = argv[1];
-    if (bt->type() != dods_array_c)
-        throw Error(malformed_expr,"Wrong type for second argument, expected DAP Array. "+UgridRestrictSyntax+"  was passed a/an " + bt->type_name());
-
-    args.rangeVar = dynamic_cast<Array*>(bt);
-    if(args.rangeVar == 0) {
-        throw Error(malformed_expr,"Wrong type for second argument. "+UgridRestrictSyntax+"  was passed a/an " + bt->type_name());
-    }
-
-    DBG(cerr << "The user submitted the range array: " << args.rangeVar->name() << endl);
-
-    // Confirm that submitted variable has a 'location' attribute whose value is "node".
-    if(!checkAttributeValue(args.rangeVar,_location,_node)){
-    	// Missing the 'location' attribute? Check for a 'grid_location' attribute whose value is "node".
-    	if(!checkAttributeValue(args.rangeVar,_gridLocation,_node)){
-            throw Error("The requested range variable '"+args.rangeVar->name()+"' has neither a '"+_location+"' attribute " +
-            		"or a "+_gridLocation+" attribute whose value is equal to '"+ _node + "'.");
-    	}
-    }
-
-    // ---------------------------------------------
-    // Process the third argument, the relational expression used to restrict the ugrid content.
-    bt = argv[2];
+    // Process the last argument, the relational expression used to restrict the ugrid content.
+    bt = argv[argc-1];
     if (bt->type() != dods_str_c)
         throw Error(malformed_expr,"Wrong type for third argument, expected DAP String. "+UgridRestrictSyntax+"  was passed a/an " + bt->type_name());
     args.filterExpression = extract_string_argument(bt);
+
+
+
+    // --------------------------------------------------
+    // Process the range variables selected by the user.
+    // We know that argc>=3, because we checked so the
+    // following loop will try to find at least one rangeVar,
+    // and it won't try to process the first or last members
+    // of argv.
+    for(int i=1; i<(argc-1) ;i++){
+        bt = argv[i];
+        if (bt->type() != dods_array_c)
+            throw Error(malformed_expr,"Wrong type for second argument, expected DAP Array. "+UgridRestrictSyntax+"  was passed a/an " + bt->type_name());
+
+        Array *newRangeVar = dynamic_cast<Array*>(bt);
+        if(newRangeVar == 0) {
+            throw Error(malformed_expr,"Wrong type for second argument. "+UgridRestrictSyntax+"  was passed a/an " + bt->type_name());
+        }
+
+        DBG(cerr << "The user submitted the range array: " << newRangeVar->name() << endl);
+
+        // Confirm that submitted variable has a 'location' attribute whose value is "node".
+        if(!checkAttributeValue(newRangeVar,_location,_node)){
+        	// Missing the 'location' attribute? Check for a 'grid_location' attribute whose value is "node".
+        	if(!checkAttributeValue(newRangeVar,_gridLocation,_node)){
+                throw Error("The requested range variable '"+newRangeVar->name()+"' has neither a '"+_location+"' attribute " +
+                		"or a "+_gridLocation+" attribute whose value is equal to '"+ _node + "'.");
+        	}
+        }
+
+        vector<Array *>::iterator it;
+        for(it=args.rangeVars->begin(); it!=args.rangeVars->end(); ++it) {\
+        	Array *rangeVar = *it;
+    		if(!same_dimensions(newRangeVar,rangeVar))
+    			throw Error("The dimensions of the requested range variable "+newRangeVar->name()+" does not match the shape "
+    					+" of the node range (data) array "+rangeVar->name());
+        }
+
+        args.rangeVars->push_back(newRangeVar);
+    }
+
+
 
     return args;
 
@@ -2345,36 +2366,39 @@ static Array *getRankZeroAttributeNodeSetAsDapArray(
 }
 
 /**
- * Builds the DAP response content from the GF::GridField response object.
+ * Builds the DAP response content from the GF::GridField result object.
  */
-static Structure *convertUgridResultToDapObject(GF::GridField *resultGridField, BaseType *meshTopologyVar, Array *rangeVar, vector<Array *> *coordinateVars, Array *sourceFaceNodeConnectivityArray)
+static Structure *convertResultGridFieldToDapObject(GF::GridField *resultGridField, BaseType *meshTopologyVar, vector<Array *> *rangeVars, vector<Array *> *coordinateVars, Array *sourceFaceNodeConnectivityArray)
 {
 	resultGridField->GetGrid()->normalize();
 
-	//FIXME Change the name of this structure to "ugr_result"
-    Structure *construct = new Structure("construct");
+    Structure *result = new Structure("ugr_result");
     
-    // FIXME Make sure the thing we return is a valid ugrid dataset
-    // Which means add the mesh_topology variable etc.
-    // construct->add_var(meshTopologyVar);
+    // FIXME fix the names of the variables in the mesh_topology attributes
+    // If the server side function can be made to return a DDS or a collection of BaseType's then the
+    // names won't change and the original mesh_topology variable and it's metadata will be valid
+    result->add_var(meshTopologyVar);
 
     // Add the coordinate node arrays to the response.
     vector<Array *>::iterator it;
     for(it=coordinateVars->begin(); it!=coordinateVars->end(); ++it) {
     	Array *sourceCoordinateArray = *it;
     	Array *resultCoordinateArray = getRankZeroAttributeNodeSetAsDapArray(resultGridField,sourceCoordinateArray);
-        construct->add_var_nocopy(resultCoordinateArray);
+        result->add_var_nocopy(resultCoordinateArray);
     }
     
-    // Get the range data and add it to the response.
-	Array *resultRangeVar = getRankZeroAttributeNodeSetAsDapArray(resultGridField,rangeVar);
-    construct->add_var_nocopy(resultRangeVar);
+    // Add the range variable data arrays to the response.
+    for(it=rangeVars->begin(); it!=rangeVars->end(); ++it) {
+    	Array *rangeVar = *it;
+    	Array *resultRangeVar = getRankZeroAttributeNodeSetAsDapArray(resultGridField,rangeVar);
+        result->add_var_nocopy(resultRangeVar);
+    }
 
     // Add the new face node connectivity array - make sure it has the same attributes as the original.
     Array *resultFaceNodeConnectivityDapArray = getGridFieldCellArrayAsDapArray(resultGridField,sourceFaceNodeConnectivityArray);
-	construct->add_var_nocopy(resultFaceNodeConnectivityDapArray);
+	result->add_var_nocopy(resultFaceNodeConnectivityDapArray);
 
-    return construct;
+    return result;
 }
 
 
@@ -2416,7 +2440,8 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     UgridRestrictArgs args = processUgrArgs(argc,argv);
 
     // For convenience, cache the pointer to the user selected range variable
-    Array *rangeVar =  args.rangeVar;
+    //    Array *rangeVar =  args.rangeVar;
+    vector<Array *> *rangeVars =  args.rangeVars;
 
     // Locate the mesh_topology variable in the dataset as defined in the ugrid specification
     BaseType *meshTopologyVariable = getMeshTopologyVariable(dds);
@@ -2424,17 +2449,15 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     // Retrieve the node coordinate arrays for the mesh
     vector<Array *> *nodeCoordinates = getNodeCoordinates(meshTopologyVariable,dds);
 
-    // Make sure that the requested range variable and all of the node coordinate arrays have the same shape.
-    //FIXME This test is redundant for all but the first node coordinate array because we already tested to ensure that
-    //FIXME the node coordinate arrays are all the same shape.
-    vector<Array *>::iterator it;
-    for(it=nodeCoordinates->begin(); it!=nodeCoordinates->end(); ++it) {
-    	Array *nc = *it;
-    	if(!same_dimensions(rangeVar,nc))
-    		throw Error("The dimensions of the requested range variable "+rangeVar->name()+" does not match the shape "
-    				+" of the node coordinate array "+nc->name());
-    }
-    
+    // Make sure that the requested range variable is the same shape as the node coordinate arrays
+    // We only need to test the first nodeCoordinate array against the first rangeVar array
+    // because we have already made sure all of the node coordinate arrays are the same size and
+    // that all the rangeVar arrays are the same size. This is just to compare the two collections.
+    Array *firstCoordinate = (*nodeCoordinates)[0];
+    Array *firstRangeVar = (*rangeVars)[0];
+	if(!same_dimensions(firstRangeVar,firstCoordinate))
+		throw Error("The dimensions of the requested range variable "+firstRangeVar->name()+" does not match the shape "
+				+" of the node coordinate array "+firstCoordinate->name());
     
     // Locate the Face Node Connectivity array.
 	Array *faceNodeConnectivityArray = getFaceNodeConnectivityArray(meshTopologyVariable,dds);
@@ -2443,8 +2466,6 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     // OK, so up to this point we have not read any data from the data set, but we have QC'd the inputs and verified that
     // it looks like the request is consistent with the semantics of the dataset.
     // Now it's time to read some data and pack it into the GridFields library...
-
-
 	
     // Start building the Grid for the GridField operation.
 
@@ -2452,11 +2473,10 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     // TODO This is the 'domain' data?
     GF::Grid *G = new GF::Grid("result");
 
-    // 1) Make the implicit nodes
-    int node_count = rangeVar->length();
+    // 1) Make the implicit nodes - same size as the range and the cooridinate node arrays
+    int node_count = (*rangeVars)[0]->length();
     GF::AbstractCellArray *nodes = new GF::Implicit0Cells(node_count);
     // Attach the implicit nodes to the grid at rank 0
-    // TODO Is this '0' the same as the '0' in 'rank_dimensions[0]'? See the note/question below.
     G->setKCells(nodes, 0);
 
     // Attach the Mesh to the grid.
@@ -2464,8 +2484,7 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     GF::CellArray *faceNodeConnectivityCells = getFaceNodeConnectivityCells(faceNodeConnectivityArray);
 
     // Attach the Mesh to the grid at rank 2
-    // TODO Is this '2' the same as the '2' in 'rank_dimensions[2]'?
-    // TODO or more importantly - is this 2 the same as the value of the dimension attribute in the mesh_topology variable?
+    // TODO Is this 2 the same as the value of the "dimension" attribute in the "mesh_topology" variable?
     G->setKCells(faceNodeConnectivityCells, 2);
 
 
@@ -2473,16 +2492,21 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     GF::GridField *inputCells = new GF::GridField(G);
     GF::Array *gfa;
 
-    // We add the coordinate data (using GridField->addAttribute() )to the GridField at grid dimension key (rank?? whatever this is) 0.
+    // We add the coordinate data (using GridField->addAttribute() )to the GridField at
+    // grid dimension 0 ( key?, rank?? whatever this is)
+    vector<Array *>::iterator it;
     for(it=nodeCoordinates->begin(); it!=nodeCoordinates->end(); ++it) {
     	Array *nc = *it;
     	gfa = extract_gridfield_array(nc);
     	inputCells->AddAttribute(0,gfa);
     }
 
-    // We add the requested range data to the GridField at grid dimension key (rank?? whatever this is) 0.
-	gfa = extract_gridfield_array(rangeVar);
-	inputCells->AddAttribute(0,gfa);
+    // We add the requested range data arrays to the GridField at grid dimension key (rank?? whatever this is) 0.
+    for(it=rangeVars->begin(); it!=rangeVars->end(); ++it) {
+    	Array *rangeVar = *it;
+    	gfa = extract_gridfield_array(rangeVar);
+    	inputCells->AddAttribute(0,gfa);
+    }
 
     // We add faceNodeConnectivity data at grid dimension key (rank?? whatever this is) 2.
 	gfa = extract_gridfield_array(faceNodeConnectivityArray);
@@ -2497,11 +2521,12 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 
 
     // Get the GridField back in a DAP representation of a ugrid.
-    // FIXME - this returns a single structure but it would make better sense to the
+    // TODO This returns a single structure but it would make better sense to the
     // world if it could return a vector of objects and have them appear at the
     // top level of the DDS.
-    // FIXME Because the metadata attributes hold the key to understanding the response we need to allow h user to request DAS and DDX for the function call.
-    Structure *construct = convertUgridResultToDapObject(R, meshTopologyVariable, rangeVar, nodeCoordinates, faceNodeConnectivityArray);
+    // FIXME Because the metadata attributes hold the key to understanding the response we
+    // need to allow the user to request DAS and DDX for the function call.
+    Structure *construct = convertResultGridFieldToDapObject(R, meshTopologyVariable, rangeVars, nodeCoordinates, faceNodeConnectivityArray);
     *btpp = construct;
 
 
