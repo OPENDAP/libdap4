@@ -1779,10 +1779,13 @@ std::vector<std::string> split(const std::string &s, char delim) {
  }
 
 struct MeshTopology {
-	vector<string> *faceCoordinateNames;
+	vector<string>  *nodeCoordinateNames;
+	vector<string>  *faceCoordinateNames;
 	string faceNodeConnectivityName;
 	int dimension;
-	vector<string> *nodeCoordinateNames;
+	vector<Array *> *nodeCoordinateArrays;
+	vector<Array *> *faceCoordinateArrays;
+	Array *faceNodeConnectivityArray;
 };
  */
 
@@ -2399,6 +2402,7 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
     "<function name=\"ugrid_restrict\" version=\"0.1\">\n" +
     "Server function for Unstructured grid operations.\n" +
+    "usage: " + UgridRestrictSyntax +"\n"
     "</function>";
 
     if (argc == 0) {
