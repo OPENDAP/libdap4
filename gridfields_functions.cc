@@ -101,7 +101,7 @@ static string extract_string_argument(BaseType * arg)
     Str &dapString = dynamic_cast<Str&>(*arg);
     string s = dapString.value();
 
-    DBG(cerr << "s: " << s << endl);
+    DBG(cerr << "extract_string_argument() - s: " << s << endl);
 
     return s;
 }
@@ -123,20 +123,21 @@ static T *extract_array_helper(Array *a)
 {
     int length = a->length();
 
-    DBG(cerr << "Allocating..." << length << endl);
+    DBG(cerr << "extract_array_helper() - " << "Allocating: " << length << endl);
     DODS *b = new DODS[length];
 
-    DBG(cerr << "Assigning value..." << endl);
+
+    DBG(cerr << "extract_array_helper() - "  << "Assigning value." << endl);
     a->value(b);
 
-    DBG(cerr << "array values extracted.  Casting..." << endl);
+    DBG(cerr << "extract_array_helper() - "  << "Array values extracted.  Casting/Copying..." << endl);
     T *dest = new T[length];
 
     for (int i = 0; i < length; ++i)
         dest[i] = (T) b[i];
     delete[]b;
 
-    DBG(cerr << "Returning extracted values." << endl);
+    DBG(cerr << "extract_array_helper() - "  << "Returning extracted values." << endl);
 
     return dest;
 }
@@ -264,28 +265,28 @@ static T *extract_array(Array * a)
         return extract_array_helper<dods_byte, T>(a);
 
         case dods_uint16_c:
-        DBG(cerr << "dods_uint32_c" << endl);
+        DBG(cerr << "extract_array() - " << "dods_uint32_c" << endl);
         return extract_array_helper<dods_uint16, T>(a);
 
         case dods_int16_c:
-        DBG(cerr << "dods_int16_c" << endl);
+        DBG(cerr << "extract_array() - " << "dods_int16_c" << endl);
         return extract_array_helper<dods_int16, T>(a);
 
         case dods_uint32_c:
-        DBG(cerr << "dods_uint32_c" << endl);
+        DBG(cerr << "extract_array() - " << "dods_uint32_c" << endl);
         return extract_array_helper<dods_uint32, T>(a);
 
         case dods_int32_c:
-        DBG(cerr << "dods_int32_c" << endl);
+        DBG(cerr << "extract_array() - " << "dods_int32_c" << endl);
         return extract_array_helper<dods_int32, T>(a);
 
         case dods_float32_c:
-        DBG(cerr << "dods_float32_c" << endl);
+        DBG(cerr << "extract_array() - " << "dods_float32_c" << endl);
         // Added the following line. jhrg 8/7/12
         return extract_array_helper<dods_float32, T>(a);
 
         case dods_float64_c:
-        DBG(cerr << "dods_float64_c" << endl);
+        DBG(cerr << "extract_array() - " << "dods_float64_c" << endl);
         return extract_array_helper<dods_float64, T>(a);
 
         default:
@@ -1825,15 +1826,16 @@ struct UgridRestrictArgs {
 static bool checkAttributeValue(BaseType *bt, string aName, string aValue){
 
     AttrTable &at = bt->get_attr_table();
-    DBG(cerr << "The user submitted the variable: " << bt->name() << endl);
+    DBG(cerr << "checkAttributeValue() - " << "Checking to see if the variable " << bt->name()
+    		<< "' has an attribute '"<< aName << "' with value '" << aValue << "'"<<endl);
 
 
-    // Confirm that submitted variable has an attribute called aName attribute whose value is aValue.
+    // Confirm that submitted variable has an attribute called aName whose value is aValue.
     AttrTable::Attr_iter loc = at.simple_find(aName);
     if (loc != at.attr_end()) {
-        DBG(cerr << "Array: " << bt->name() << " has a '" << aName << "' attribute."<< endl);
+        DBG(cerr << "checkAttributeValue() - " << "'" << bt->name() << "' has a attribute named'" << aName << "'"<< endl);
         string value = at.get_attr(loc, 0);
-        DBG(cerr << "Attribute '"<< aName <<"' has value of '" << value << "'"<< endl);
+        DBG(cerr << "checkAttributeValue() - " << "Attribute '"<< aName <<"' has value of '" << value << "'"<< endl);
         if (value != aValue) {
             return false;
         }
@@ -1867,19 +1869,20 @@ static bool matchesCfRoleOrStandardName(BaseType *bt, string aValue){
 static bool same_dimensions(Array *arr1, Array *arr2) {
 	Array::Dim_iter ait1;
 	Array::Dim_iter ait2;
-	DBG(cerr << "same_dimensions test for array " << arr1->name() << " and array " << arr2->name() << endl);
+	DBG(cerr<< "same_dimensions() - "  << "comparing array " << arr1->name() << " and array " << arr2->name() << endl);
 
 	if(arr1->dimensions(true) != arr1->dimensions(true))
 		return false;
 
 	// We start walking both sets of ArrayDimensions at the beginning and increment each together.
-	// We can test only the end of one set because we have already tested that they are the same size.
+	// We end the loop by testing for the end of one set of dimensions because we have already tested
+	// that the two sets are the same size.
 	for (ait1=arr1->dim_begin(), ait2=arr2->dim_begin();
 			ait1!=arr1->dim_end();
 			++ait1, ++ait2) {
 		Array::dimension ad1 = *ait1;
 		Array::dimension ad2 = *ait2;
-		DBG(cerr << "Testing: "<< ad1.name << "[" << ad1.size << "] AND " << ad2.name << "[" << ad2.size << "] "<< endl);
+		DBG(cerr << "same_dimensions() - " << "Comparing: "<< arr1->name() << "["<< ad1.name << "=" << ad1.size << "] AND "<< arr2->name() << "[" << ad2.name << "=" << ad2.size << "] "<< endl);
 		if (ad2.name != ad1.name or ad2.size != ad1.size
 				or ad2.stride != ad1.stride or ad2.stop != ad1.stop)
 			return false;
@@ -1895,6 +1898,8 @@ static bool same_dimensions(Array *arr1, Array *arr2) {
  * Process the functions arguments and return the structure containing their values.
  */
 static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
+
+    DBG(cerr << "processUgrArgs() - BEGIN" << endl);
 
 	UgridRestrictArgs args;
 	args.rangeVars =  vector<Array *>();
@@ -1942,7 +1947,7 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
             throw Error(malformed_expr,"Wrong type for second argument. "+UgridRestrictSyntax+"  was passed a/an " + bt->type_name());
         }
 
-        DBG(cerr << "The user submitted the range array: " << newRangeVar->name() << endl);
+        DBG(cerr << "processUgrArgs() - The user submitted the range data array: " << newRangeVar->name() << endl);
 
         // Confirm that submitted variable has a 'location' attribute whose value is "node".
         if(!checkAttributeValue(newRangeVar,_location,_node)){
@@ -1963,6 +1968,7 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
 
         args.rangeVars.push_back(newRangeVar);
     }
+    DBG(cerr << "processUgrArgs() - END" << endl);
 
     return args;
 
@@ -1975,11 +1981,13 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]){
  */
 static BaseType *getMeshTopologyVariable(DDS &dds)
 {
+    DBG(cerr << "getMeshTopologyVariable() - "  << "Searching dataset for Ugrid mesh_topology variable.." << endl);
 
     for (DDS::Vars_iter vi = dds.var_begin(); vi != dds.var_end(); vi++) {
         BaseType *bt = *vi;
         AttrTable at = bt->get_attr_table();
         if(matchesCfRoleOrStandardName(bt,_meshTopology)){
+            DBG(cerr << "getMeshTopologyVariable() - "  << "DONE" << endl);
         	return bt;
         }
     }
@@ -1997,6 +2005,8 @@ static BaseType *getMeshTopologyVariable(DDS &dds)
  */
 static vector<Array *> *getNodeCoordinates(BaseType *meshTopology, DDS &dds)
 {
+    DBG(cerr << "getNodeCoordinates() - "  << "Gathering nodes coordinate arrays..." << endl);
+
 	string node_coordinates;
     AttrTable at = meshTopology->get_attr_table();
 
@@ -2047,6 +2057,7 @@ static vector<Array *> *getNodeCoordinates(BaseType *meshTopology, DDS &dds)
         nodeCoordinateArrays->push_back(newNodeCoordArray);
 
     }
+    DBG(cerr << "getNodeCoordinates() - "  << "DONE" << endl);
 
     return nodeCoordinateArrays;
 
@@ -2059,6 +2070,9 @@ static vector<Array *> *getNodeCoordinates(BaseType *meshTopology, DDS &dds)
  */
 static Array *getFaceNodeConnectivityArray(BaseType *meshTopology, DDS &dds)
 {
+
+    DBG(cerr << "getFaceNodeConnectivityArray() - "  << "Locating FNCA" << endl);
+
 	string face_node_connectivity_var_name;
     AttrTable at = meshTopology->get_attr_table();
 
@@ -2088,6 +2102,7 @@ static Array *getFaceNodeConnectivityArray(BaseType *meshTopology, DDS &dds)
     }
 
 
+    DBG(cerr << "getFaceNodeConnectivityArray() - "  << "Got FCNA '"+fncArray->name()+"'" << endl);
 
     return fncArray;
 
@@ -2158,11 +2173,11 @@ static int getStartIndex(Array *array){
     AttrTable &at = array->get_attr_table();
     AttrTable::Attr_iter start_index_iter = at.simple_find(_start_index);
     if (start_index_iter != at.attr_end()) {
-        DBG(cerr << "Found the "<< _start_index<<" attribute." << endl);
+        DBG(cerr << "getStartIndex() - "<< "Found the "<< _start_index<<" attribute." << endl);
         AttrTable::entry *start_index_entry = *start_index_iter;
         if (start_index_entry->attr->size() == 1) {
             string val = (*start_index_entry->attr)[0];
-            DBG(cerr << "Value: " << val << endl);
+            DBG(cerr << "getStartIndex() - " << "value: " << val << endl);
             stringstream buffer(val);
             // what happens if string cannot be converted to an integer?
             int start_index;;
@@ -2183,6 +2198,8 @@ static int getStartIndex(Array *array){
  */
 static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityArray)
 {
+    DBG(cerr << "getFaceNodeConnectivityCells() - Building face node connectivity Cell " <<
+    		"array from the Array "<< faceNodeConnectivityArray->name() << endl);
 
 	int rank2CellCount = getNfrom3byNArray(faceNodeConnectivityArray);
 
@@ -2201,6 +2218,8 @@ static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityAr
     // TODO Is this '3' the same as the '3' in '3xN'?
     // If so, then this is where we extend the code for faces with more sides.
     GF::CellArray *rankTwoCells = new GF::CellArray(cellids, rank2CellCount, 3);
+
+    DBG(cerr << "getFaceNodeConnectivityCells() - DONE" << endl);
     return rankTwoCells;
 
 
@@ -2245,11 +2264,13 @@ static Array *getNewFcnDapArray(Array *templateArray, int N){
 	// make the new array big enough to hold all the values.
 	newArray->reserve_value_capacity(3*N);
 
-	DBG(cerr<<endl<<endl;
+#if 0
+	DBG(cerr<<"getNewFcnDapArray() -"<<endl<<endl;
 	    cerr << "Newly minted Array: "<< endl;
 		newArray->print_val(cerr);
 	    cerr<<endl<<endl;
 	   )
+#endif
 
 	return newArray;
 	
@@ -2283,7 +2304,7 @@ static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField, Ar
 	}
 
 	DBG(
-		cerr << "rowMajorNodes: " << endl << "{";
+		cerr << "getGridFieldCellArrayAsDapArray() - rowMajorNodes: " << endl << "{";
 		for (unsigned int j=0; j < rowMajorNodes.size(); j++) {
 			dods_int32 val = rowMajorNodes.at(j);
 			cerr << val << ", ";
@@ -2294,9 +2315,9 @@ static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField, Ar
 	// Add them to the DAP array.
 	resultFcnDapArray->set_value(rowMajorNodes,rowMajorNodes.size());
 
-	DBG(cerr<<endl<<endl;
+	DBG(
+		cerr << "getGridFieldCellArrayAsDapArray() - DAP Array: "<< endl;
 	    resultFcnDapArray->print_val(cerr);
-	    cerr<<endl<<endl;
 	   )
 
 
@@ -2420,6 +2441,8 @@ static Structure *convertResultGridFieldToDapObject(GF::GridField *resultGridFie
 void
 function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 {
+    DBG(cerr << "function_ugr() - BEGIN" << endl);
+
     static string info =
     string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
     "<function name=\"ugrid_restrict\" version=\"0.1\">\n" +
@@ -2437,10 +2460,17 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     // Process and QC the arguments
     UgridRestrictArgs args = processUgrArgs(argc,argv);
 
-    // For convenience, cache the pointer to the user selected range variable
+    // For convenience, cache the pointer to the collection of user selected range variables
     //    Array *rangeVar =  args.rangeVar;
     vector<Array *> &rangeVars =  args.rangeVars;
 
+    // FIXME Look at the range variables and sort them by the different mesh_topology variables that they associate themselves with.
+
+    // FIXME Locate all the meshTopology variables.
+
+
+    // ----------------------------------------------------------------------------------------------------
+    // Collect the Mesh Topology components. FIXME - make this work with multiple mesh_topology variables
     // Locate the mesh_topology variable in the dataset as defined in the ugrid specification
     BaseType *meshTopologyVariable = getMeshTopologyVariable(dds);
 
@@ -2466,12 +2496,16 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     // Now it's time to read some data and pack it into the GridFields library...
 	
     // Start building the Grid for the GridField operation.
+	// THis is, I think essentially a representation of the
+	// mesh_topology
 
     // TODO Is the Grid G Leaked?
     // TODO This is the 'domain' data?
+    DBG(cerr << "function_ugr() - Constructing new GF::Grid" << endl);
     GF::Grid *G = new GF::Grid("result");
 
     // 1) Make the implicit nodes - same size as the range and the coordinate node arrays
+    DBG(cerr << "function_ugr() - Building and adding implicit range Nodes to the GF::Grid" << endl);
     int node_count = rangeVars[0]->length();
     GF::AbstractCellArray *nodes = new GF::Implicit0Cells(node_count);
     // Attach the implicit nodes to the grid at rank 0
@@ -2479,19 +2513,22 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 
     // Attach the Mesh to the grid.
     // Get the face node connectivity cells (i think these correspond to the GridFields K cells of Rank 2)
+    DBG(cerr << "function_ugr() - Building face node connectivity Cell array from the DAP version" << endl);
     GF::CellArray *faceNodeConnectivityCells = getFaceNodeConnectivityCells(faceNodeConnectivityArray);
 
     // Attach the Mesh to the grid at rank 2
     // TODO Is this 2 the same as the value of the "dimension" attribute in the "mesh_topology" variable?
+    DBG(cerr << "function_ugr() - Attaching Cell array to GF::Grid" << endl);
     G->setKCells(faceNodeConnectivityCells, 2);
 
-
     // The Grid is complete. Now we make a GridField from the Grid
+    DBG(cerr << "function_ugr() - Construct new GF::GridField from GF::Grid" << endl);
     GF::GridField *inputCells = new GF::GridField(G);
     GF::Array *gfa;
 
-    // We add the coordinate data (using GridField->addAttribute() )to the GridField at
+    // We add the coordinate data (using GridField->addAttribute() to the GridField at
     // grid dimension 0 ( key?, rank?? whatever this is)
+    DBG(cerr << "function_ugr() - Adding node coordinates to GF::GridField at rank 0" << endl);
     vector<Array *>::iterator it;
     for(it=nodeCoordinates->begin(); it!=nodeCoordinates->end(); ++it) {
     	Array *nc = *it;
@@ -2500,6 +2537,7 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     }
 
     // We add the requested range data arrays to the GridField at grid dimension key (rank?? whatever this is) 0.
+    DBG(cerr << "function_ugr() - Adding range variables to GF::GridField at rank 0" << endl);
     for(it=rangeVars.begin(); it!=rangeVars.end(); ++it) {
     	Array *rangeVar = *it;
     	gfa = extract_gridfield_array(rangeVar);
@@ -2507,13 +2545,17 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     }
 
     // We add faceNodeConnectivity data at grid dimension key (rank?? whatever this is) 2.
+    DBG(cerr << "function_ugr() - Adding face node connectivity Cell array to GF::GridField at rank 2" << endl);
 	gfa = extract_gridfield_array(faceNodeConnectivityArray);
 	inputCells->AddAttribute(2,gfa);
 
     // Build the restriction operator;
+    DBG(cerr << "function_ugr() - Constructing new GF::RestrictOp using user "<<
+    		"supplied dimension value and filter expression combined with the GF:GridField " << endl);
     GF::RestrictOp op = GF::RestrictOp(args.filterExpression, args.dimension, inputCells);
 
     // Apply the operator and get the result;
+    DBG(cerr << "function_ugr() - Applying GridField operator." << endl);
     GF::GridField *R = new GF::GridField(op.getResult());
 
 
@@ -2524,12 +2566,33 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     // top level of the DDS.
     // FIXME Because the metadata attributes hold the key to understanding the response we
     // need to allow the user to request DAS and DDX for the function call.
+    DBG(cerr << "function_ugr() - Converting result GF:GridField to DAP data structure.." << endl);
     Structure *construct = convertResultGridFieldToDapObject(R, meshTopologyVariable, &rangeVars, nodeCoordinates, faceNodeConnectivityArray);
     *btpp = construct;
 
 
+    DBG(cerr << "function_ugr() - END" << endl);
 
     return;
+}
+
+
+void function_newUGR(){
+	// look at user supplied range (data) vars.
+	// Make sure you apply constrains
+	// QC vars (shapes, etc)
+	// for each range var check for a mesh attribute
+	// use the value of the mesh attribute to locate the mesh_topology var for that variable
+	// make a collection pof all the requested range vars for each mesh topology
+	// look at the location attriobute for each rangeVar
+	// - we know what to do with node data, so do that
+	// - figure out what to do with face data.
+	// build one GF::GridField for each mesh_topology (and maybe one for faces and one for nodes for each mesh_topology
+	// allpy GF::RestrictOp using user supplied filter expression to every GF::GridField
+	// get results
+	// un pack into a DAP object
+
+
 }
 
 
