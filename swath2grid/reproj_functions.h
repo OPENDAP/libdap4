@@ -33,8 +33,8 @@
 //
 // 1/15/99 jhrg
 
-#ifndef _ce_functions_h
-#define _ce_functions_h
+#ifndef _reproj_functions_h
+#define _reproj_functions_h
 
 #include "BaseType.h"
 #include "Array.h"
@@ -61,8 +61,8 @@ void function_geoarray(int argc, BaseType *argv[], DDS &dds, BaseType **btpp) ;
 void function_dap(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce);
 #endif
 
-void register_reproj_functions(ConstraintEvaluator &ce);
+void register_reproj_functions(ConstraintEvaluator & ce);
 
 } // namespace libdap
 
-#endif // _ce_functions_h
+#endif // _reproj_functions_h

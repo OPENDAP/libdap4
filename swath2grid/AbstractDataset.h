@@ -33,9 +33,11 @@
 
 #include <vector>
 #include <memory>
+
 #include <gdal.h>
 #include <gdal_priv.h>
 #include <gdalwarper.h>
+#include <ogrsf_frmts.h>
 #include <ogr_spatialref.h>
 #include <cpl_conv.h>
 #include <cpl_minixml.h>

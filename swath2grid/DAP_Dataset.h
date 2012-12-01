@@ -92,8 +92,8 @@ protected:
 
     int mi_RectifiedImageXSize;
     int mi_RectifiedImageYSize;
-    int mi_GoesSrcImageXSize;
-    int mi_GoesSrcImageYSize;
+    int mi_SrcImageXSize;
+    int mi_SrcImageYSize;
 
     double mb_LatLonBBox[4];
     double mdSrcGeoMinX;
@@ -105,7 +105,7 @@ protected:
 
 public:
     CPLErr SetGCPGeoRef4VRTDataset(GDALDataset*);
-    void SetGeoBBoxAndGCPs();
+    void SetGeoBBoxAndGCPs(int xSize, int ySize);
     CPLErr RectifyGOESDataSet();
     CPLErr setResampleStandard(GDALDataset* hSrcDS, int& xRSValue, int& yRSValue);
 
