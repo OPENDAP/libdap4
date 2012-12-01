@@ -37,6 +37,9 @@ static char rcsid[] not_used = { "$Id$" };
 
 
 #include "ce_functions.h"
+#ifdef GDAL
+#include "swath2grid/reproj_functions.h"
+#endif
 #include "parser.h"
 #include "ce_parser.h"
 #include "debug.h"
@@ -55,6 +58,9 @@ namespace libdap {
 ConstraintEvaluator::ConstraintEvaluator()
 {
     register_functions(*this);
+#ifdef GDAL
+    register_reproj_functions(*this);
+#endif
 }
 
 ConstraintEvaluator::~ConstraintEvaluator()
@@ -345,10 +351,8 @@ ConstraintEvaluator::eval_function_clauses(DDS &dds)
         Clause *cp = expr[i];
         BaseType *result;
         if (cp->value(dds, &result)) {
-            // FIXME result->set_send_p(true);
-            // FIXME Check on using nocopy here
-            DBG(cerr << "In CE 1 Grid send_p: " << result->send_p() << endl);
-            DBG(cerr << "In CE 1 Grid Array send_p: " << static_cast<Grid*>(result)->get_array()->send_p() << endl);
+            // This is correct: The function must allocate the memory for the result
+            // variable. 11/30/12 jhrg
             fdds->add_var_nocopy(result);
         }
         else {
@@ -387,10 +391,6 @@ ConstraintEvaluator::eval_function_clauses(DataDDS &dds)
         Clause *cp = expr[i];
         BaseType *result;
         if (cp->value(dds, &result)) {
-            //result->set_send_p(true);
-            DBG(cerr << "In CE 2 Grid send_p: " << result->send_p() << endl);
-            DBG(cerr << "In CE 2 Grid Array send_p: " << static_cast<Grid*>(result)->get_array()->send_p() << endl);
-
             fdds->add_var_nocopy(result);
         }
         else {

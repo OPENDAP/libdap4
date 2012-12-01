@@ -381,6 +381,7 @@ Array::dim_end()
 unsigned int
 Array::dimensions(bool /*constrained*/)
 {
+    // TODO This could be _shape.end() - _shape.begin()
     unsigned int dim = 0;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
         dim++;

@@ -424,6 +424,7 @@ then
     echo "Set GDAL_CFLAGS to $GDAL_CFLAGS"
     echo "Set GDAL_LIBS to $GF_LIBS"
     AM_CONDITIONAL([USING_GDAL],[true])
+    AC_DEFINE([GDAL],[1],[define if gdal lib is present])
 else
     AM_CONDITIONAL([USING_GDAL],[false])
 fi
