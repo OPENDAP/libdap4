@@ -2283,6 +2283,7 @@ static Array *getNewFcnDapArray(Array *templateArray, int N){
  */
 static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField, Array *sourceFcnArray){
 
+    DBG(cerr << "getGridFieldCellArrayAsDapArray() - BEGIN" << endl);
 
 	// Get the rank 2 k-cells from the GridField object.
 	GF::CellArray* Inb=(GF::CellArray*)(resultGridField->GetGrid()->getKCells(2));
@@ -2320,6 +2321,7 @@ static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField, Ar
 	    resultFcnDapArray->print_val(cerr);
 	   )
 
+    DBG(cerr << "getGridFieldCellArrayAsDapArray() - DONE" << endl);
 
 	return resultFcnDapArray;
 
@@ -2333,9 +2335,13 @@ static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField, Ar
 static Array *getRankZeroAttributeNodeSetAsDapArray(
 		GF::GridField *resultGridField, Array *sourceArray) {
 
+    DBG(cerr << "getRankZeroAttributeNodeSetAsDapArray() - BEGIN" << endl);
+
 	// The result variable is assumed to be bound to the GridField with rank 0
 	// Try to get the Attribute from rank 0 with the same name as the source array
-	GF::Array* gfa = resultGridField->GetAttribute(0, sourceArray->name());
+    DBG(cerr << "getRankZeroAttributeNodeSetAsDapArray() - Retrieving GF::GridField Attribute '" <<
+    		sourceArray->name() << "'"<< endl);
+    GF::Array* gfa = resultGridField->GetAttribute(0, sourceArray->name());
 
 	Array *dapArray;
 	BaseType *templateVar = sourceArray->var();
@@ -2348,6 +2354,7 @@ static Array *getRankZeroAttributeNodeSetAsDapArray(
 		case dods_uint32_c:
 		case dods_int32_c: {
 			// Get the data
+		    DBG(cerr << "getRankZeroAttributeNodeSetAsDapArray() - GF::Array was made from some type of int, retrieve it as such." << endl);
 			vector<dods_int32> GF_ints = gfa->makeArray();
 			// Make a DAP array to put the data into.
 			dapArray = new Array(sourceArray->name(),
@@ -2362,6 +2369,7 @@ static Array *getRankZeroAttributeNodeSetAsDapArray(
 		case dods_float32_c:
 		case dods_float64_c: {
 			// Get the data
+		    DBG(cerr << "getRankZeroAttributeNodeSetAsDapArray() - GF::Array was made from some type of float, retrieve it as such." << endl);
 			vector<dods_float64> GF_floats = gfa->makeArrayf();
 			// Make a DAP array to put the data into.
 			dapArray = new Array(sourceArray->name(),
@@ -2380,6 +2388,8 @@ static Array *getRankZeroAttributeNodeSetAsDapArray(
 
 	// Copy the source objects attributes.
 	dapArray->set_attr_table(sourceArray->get_attr_table());
+
+    DBG(cerr << "getRankZeroAttributeNodeSetAsDapArray() - DONE" << endl);
 
 	return dapArray;
 }
