@@ -2003,9 +2003,9 @@ static BaseType *getMeshTopologyVariable(DDS &dds)
  * throws an error if the node_coordinates attribute is missing, if the coordinates are not arrays, and
  * if the arrays are not all the same shape.
  */
-static vector<Array *> *getNodeCoordinates(BaseType *meshTopology, DDS &dds)
+static vector<Array *> *getNodeCoordinateArrays(BaseType *meshTopology, DDS &dds)
 {
-    DBG(cerr << "getNodeCoordinates() - "  << "Gathering nodes coordinate arrays..." << endl);
+    DBG(cerr << "getNodeCoordinatesArrays() - "  << "BEGIN Gathering node coordinate arrays..." << endl);
 
 	string node_coordinates;
     AttrTable at = meshTopology->get_attr_table();
@@ -2057,7 +2057,7 @@ static vector<Array *> *getNodeCoordinates(BaseType *meshTopology, DDS &dds)
         nodeCoordinateArrays->push_back(newNodeCoordArray);
 
     }
-    DBG(cerr << "getNodeCoordinates() - "  << "DONE" << endl);
+    DBG(cerr << "getNodeCoordinatesArrays() - "  << "DONE" << endl);
 
     return nodeCoordinateArrays;
 
@@ -2475,7 +2475,7 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     BaseType *meshTopologyVariable = getMeshTopologyVariable(dds);
 
     // Retrieve the node coordinate arrays for the mesh
-    vector<Array *> *nodeCoordinates = getNodeCoordinates(meshTopologyVariable,dds);
+    vector<Array *> *nodeCoordinates = getNodeCoordinateArrays(meshTopologyVariable,dds);
 
     // Make sure that the requested range variable is the same shape as the node coordinate arrays
     // We only need to test the first nodeCoordinate array against the first rangeVar array
