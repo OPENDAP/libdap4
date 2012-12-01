@@ -1833,7 +1833,7 @@ static bool checkAttributeValue(BaseType *bt, string aName, string aValue){
     // Confirm that submitted variable has an attribute called aName whose value is aValue.
     AttrTable::Attr_iter loc = at.simple_find(aName);
     if (loc != at.attr_end()) {
-        DBG(cerr << "checkAttributeValue() - " << "'" << bt->name() << "' has a attribute named'" << aName << "'"<< endl);
+        DBG(cerr << "checkAttributeValue() - " << "'" << bt->name() << "' has a attribute named '" << aName << "'"<< endl);
         string value = at.get_attr(loc, 0);
         DBG(cerr << "checkAttributeValue() - " << "Attribute '"<< aName <<"' has value of '" << value << "'"<< endl);
         if (value != aValue) {
@@ -2389,16 +2389,21 @@ static Array *getRankZeroAttributeNodeSetAsDapArray(
  */
 static Structure *convertResultGridFieldToDapObject(GF::GridField *resultGridField, BaseType *meshTopologyVar, vector<Array *> *rangeVars, vector<Array *> *coordinateVars, Array *sourceFaceNodeConnectivityArray)
 {
-	resultGridField->GetGrid()->normalize();
+    DBG(cerr << "convertResultGridFieldToDapObject() - BEGIN" << endl);
+
+    DBG(cerr << "convertResultGridFieldToDapObject() - Normalizing Grid." << endl);
+    resultGridField->GetGrid()->normalize();
 
     Structure *result = new Structure("ugr_result");
     
     // FIXME fix the names of the variables in the mesh_topology attributes
     // If the server side function can be made to return a DDS or a collection of BaseType's then the
     // names won't change and the original mesh_topology variable and it's metadata will be valid
+    DBG(cerr << "convertResultGridFieldToDapObject() - Adding mesh_topology variable to the response." << endl);
     result->add_var(meshTopologyVar);
 
     // Add the coordinate node arrays to the response.
+    DBG(cerr << "convertResultGridFieldToDapObject() - Adding the coordinate node arrays to the response." << endl);
     vector<Array *>::iterator it;
     for(it=coordinateVars->begin(); it!=coordinateVars->end(); ++it) {
     	Array *sourceCoordinateArray = *it;
@@ -2407,6 +2412,7 @@ static Structure *convertResultGridFieldToDapObject(GF::GridField *resultGridFie
     }
     
     // Add the range variable data arrays to the response.
+    DBG(cerr << "convertResultGridFieldToDapObject() - Adding the range variable data arrays to the response." << endl);
     for(it=rangeVars->begin(); it!=rangeVars->end(); ++it) {
     	Array *rangeVar = *it;
     	Array *resultRangeVar = getRankZeroAttributeNodeSetAsDapArray(resultGridField,rangeVar);
@@ -2414,9 +2420,11 @@ static Structure *convertResultGridFieldToDapObject(GF::GridField *resultGridFie
     }
 
     // Add the new face node connectivity array - make sure it has the same attributes as the original.
+    DBG(cerr << "convertResultGridFieldToDapObject() - Adding the new face node connectivity array to the response." << endl);
     Array *resultFaceNodeConnectivityDapArray = getGridFieldCellArrayAsDapArray(resultGridField,sourceFaceNodeConnectivityArray);
 	result->add_var_nocopy(resultFaceNodeConnectivityDapArray);
 
+    DBG(cerr << "convertResultGridFieldToDapObject() - DONE" << endl);
     return result;
 }
 
