@@ -2340,7 +2340,7 @@ static Array *getRankZeroAttributeNodeSetAsDapArray(
 	// The result variable is assumed to be bound to the GridField with rank 0
 	// Try to get the Attribute from rank 0 with the same name as the source array
     DBG(cerr << "getRankZeroAttributeNodeSetAsDapArray() - Retrieving GF::GridField Attribute '" <<
-    		sourceArray->name() << "'"<< endl);
+    		sourceArray->name() << "'" << endl);
     GF::Array* gfa = resultGridField->GetAttribute(0, sourceArray->name());
 
 	Array *dapArray;
@@ -2570,12 +2570,18 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     // Build the restriction operator;
     DBG(cerr << "function_ugr() - Constructing new GF::RestrictOp using user "<<
     		"supplied dimension value and filter expression combined with the GF:GridField " << endl);
-    GF::RestrictOp op = GF::RestrictOp(args.filterExpression, args.dimension, inputCells);
+
+    GF::RestrictOp *op;
+    try {
+    	op = new GF::RestrictOp(args.filterExpression, args.dimension, inputCells);
+    }
+    catch(std::bad_alloc &e) {
+        throw Error("Unable to construct GF::RestrictOp. Bad Allocation Exception. std::bad_alloc.where(): '"+string(e.what())+"'");
+    }
 
     // Apply the operator and get the result;
     DBG(cerr << "function_ugr() - Applying GridField operator." << endl);
-    GF::GridField *R = new GF::GridField(op.getResult());
-
+    GF::GridField *R = new GF::GridField(op->getResult());
 
 
     // Get the GridField back in a DAP representation of a ugrid.
