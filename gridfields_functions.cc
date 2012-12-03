@@ -38,7 +38,7 @@
 #include <iostream>
 #include <sstream>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Byte.h"
