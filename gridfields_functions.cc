@@ -2567,35 +2567,38 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
 	gfa = extract_gridfield_array(faceNodeConnectivityArray);
 	inputCells->AddAttribute(2,gfa);
 
-    // Build the restriction operator;
-    DBG(cerr << "function_ugr() - Constructing new GF::RestrictOp using user "<<
-    		"supplied dimension value and filter expression combined with the GF:GridField " << endl);
 
-    GF::RestrictOp *op;
     try {
-    	op = new GF::RestrictOp(args.filterExpression, args.dimension, inputCells);
+        // Build the restriction operator;
+        DBG(cerr << "function_ugr() - Constructing new GF::RestrictOp using user "<<
+        		"supplied dimension value and filter expression combined with the GF:GridField " << endl);
+    	GF::RestrictOp op = GF::RestrictOp(args.filterExpression, args.dimension, inputCells);
+
+
+    	// Apply the operator and get the result;
+        DBG(cerr << "function_ugr() - Applying GridField operator." << endl);
+        GF::GridField *R = new GF::GridField(op.getResult());
+
+
+        // Get the GridField back in a DAP representation of a ugrid.
+        // TODO This returns a single structure but it would make better sense to the
+        // world if it could return a vector of objects and have them appear at the
+        // top level of the DDS.
+        // FIXME Because the metadata attributes hold the key to understanding the response we
+        // need to allow the user to request DAS and DDX for the function call.
+        DBG(cerr << "function_ugr() - Converting result GF:GridField to DAP data structure.." << endl);
+        Structure *construct = convertResultGridFieldToDapObject(R, meshTopologyVariable, &rangeVars, nodeCoordinates, faceNodeConnectivityArray);
+        *btpp = construct;
+
+
     }
     catch(std::bad_alloc &e) {
         throw Error("Unable to construct GF::RestrictOp. Bad Allocation Exception. std::bad_alloc.where(): '"+string(e.what())+"'");
     }
 
-    // Apply the operator and get the result;
-    DBG(cerr << "function_ugr() - Applying GridField operator." << endl);
-    GF::GridField *R = new GF::GridField(op->getResult());
-
-
-    // Get the GridField back in a DAP representation of a ugrid.
-    // TODO This returns a single structure but it would make better sense to the
-    // world if it could return a vector of objects and have them appear at the
-    // top level of the DDS.
-    // FIXME Because the metadata attributes hold the key to understanding the response we
-    // need to allow the user to request DAS and DDX for the function call.
-    DBG(cerr << "function_ugr() - Converting result GF:GridField to DAP data structure.." << endl);
-    Structure *construct = convertResultGridFieldToDapObject(R, meshTopologyVariable, &rangeVars, nodeCoordinates, faceNodeConnectivityArray);
-    *btpp = construct;
-
 
     DBG(cerr << "function_ugr() - END" << endl);
+
 
     return;
 }
