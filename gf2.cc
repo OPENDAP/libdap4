@@ -37,6 +37,7 @@
 #include <cmath>
 #include <iostream>
 #include <sstream>
+#include <cxxabi.h>
 
 #define DODS_DEBUG
 
@@ -106,34 +107,41 @@ static string extract_string_argument(BaseType * arg) {
 	return s;
 }
 
-template<class T>
-static void set_array_using_double_helper(Array * a, double *src, int src_len) {
-	T *values = new T[src_len];
-	for (int i = 0; i < src_len; ++i)
-		values[i] = (T) src[i];
-
-	a->set_value(values, src_len);
-
-	delete[] values;
-}
 
 template<typename DODS, typename T>
 static T *extract_array_helper(Array *a) {
 	int length = a->length();
 
+	DBG(
+	int status;
+	char *dodsTypeName = abi::__cxa_demangle(typeid(DODS).name(), 0, 0, &status);;
+	char *tTypeName = abi::__cxa_demangle(typeid(T).name(), 0, 0, &status);;
+	)
+
 	DBG(cerr << "extract_array_helper() - " << "Extracting data from DAP Array '" << a->name() <<"'"<< endl);
-	DBG(cerr << "extract_array_helper() - " << "Allocating: " << length << endl);
-	DODS *b = new DODS[length];
+	DBG(cerr << "extract_array_helper() - " << "Allocating " << length << " of type "<< dodsTypeName << endl);
+	DODS *src = new DODS[length];
 
-	DBG(cerr << "extract_array_helper() - " << "Assigning value." << endl);
-	a->value(b);
+	DBG(cerr << "extract_array_helper() - " << "Copying values from DAP Array "<< a->name() <<
+			" to an array of type '" << dodsTypeName <<"'. targetAddress=" << src << endl);
+	a->value(src);
+	DBG(cerr << "extract_array_helper() - " << "Copy complete." << endl);
 
-	DBG(cerr << "extract_array_helper() - " << "Array values extracted.  Casting/Copying..." << endl);
+	DBG(cerr << "extract_array_helper() - " << "Allocating " << length << " of type "<< tTypeName << endl);
 	T *dest = new T[length];
 
+	DBG(cerr << "extract_array_helper() - " << "Casting/Copying array of type '" <<
+			 dodsTypeName<<"' to an array of type '" << tTypeName << "'" << endl);
 	for (int i = 0; i < length; ++i)
-		dest[i] = (T) b[i];
-	delete[] b;
+		dest[i] = (T) src[i];
+
+	DBG(cerr << "extract_array_helper() - " << "Copy complete." << endl);
+
+
+	// We're done with b, so get rid of it.
+	DBG(cerr << "extract_array_helper() - " << "Releasing memory for an array of size "<< length <<
+			" and type '" << dodsTypeName <<"'"<< endl);
+	delete [] src;
 
 	DBG(cerr << "extract_array_helper() - " << "Returning extracted values from DAP Array '" << a->name() <<"'"<< endl);
 
@@ -156,6 +164,7 @@ static GF::Array *extract_gridfield_array(Array *a) {
 		throw Error(malformed_expr,
 				"The function requires a DAP numeric-type array argument.");
 
+	DBG(cerr << "extract_gridfield_array() - " << "Reading data values into DAP Array '" << a->name() <<"'"<< endl);
 	a->set_send_p(true);
 	a->read();
 
@@ -164,46 +173,142 @@ static GF::Array *extract_gridfield_array(Array *a) {
 
 	switch (a->var()->type()) {
 	case dods_byte_c:
+	{
 		gfa = new GF::Array(a->var()->name(), GF::INT);
-		gfa->shareIntData(extract_array_helper<dods_byte, int>(a), a->length());
+		int *values = extract_array_helper<dods_byte, int>(a);
+		gfa->shareIntData(values, a->length());
 		break;
+	}
 	case dods_uint16_c:
+	{
 		gfa = new GF::Array(a->var()->name(), GF::INT);
-		gfa->shareIntData(extract_array_helper<dods_uint16, int>(a),
-				a->length());
+		int *values = extract_array_helper<dods_uint16, int>(a);
+		gfa->shareIntData(values, a->length());
 		break;
+	}
 	case dods_int16_c:
+	{
 		gfa = new GF::Array(a->var()->name(), GF::INT);
-		gfa->shareIntData(extract_array_helper<dods_int16, int>(a),
-				a->length());
+		int *values = extract_array_helper<dods_int16, int>(a);
+		gfa->shareIntData(values, a->length());
 		break;
+	}
 	case dods_uint32_c:
+	{
 		gfa = new GF::Array(a->var()->name(), GF::INT);
-		gfa->shareIntData(extract_array_helper<dods_uint32, int>(a),
-				a->length());
+		int *values = extract_array_helper<dods_uint32, int>(a);
+		gfa->shareIntData(values, a->length());
 		break;
+	}
 	case dods_int32_c:
+	{
 		gfa = new GF::Array(a->var()->name(), GF::INT);
-		gfa->shareIntData(extract_array_helper<dods_int32, int>(a),
-				a->length());
+		int *values = extract_array_helper<dods_int32, int>(a);
+		gfa->shareIntData(values, a->length());
 		break;
+	}
 	case dods_float32_c:
+	{
 		gfa = new GF::Array(a->var()->name(), GF::FLOAT);
-		gfa->shareFloatData(extract_array_helper<dods_float32, float>(a),
-				a->length());
+		float *values = extract_array_helper<dods_float32, float>(a);
+		gfa->shareFloatData(values, a->length());
 		break;
+	}
 	case dods_float64_c:
+	{
 		gfa = new GF::Array(a->var()->name(), GF::FLOAT);
-		gfa->shareFloatData(extract_array_helper<dods_float64, float>(a),
-				a->length());
+		float *values = extract_array_helper<dods_float64, float>(a);
+		gfa->shareFloatData(values, a->length());
 		break;
+	}
+	default:
+		throw InternalErr(__FILE__, __LINE__,
+				"Unknown DAP type encountered when converting to gridfields array");
+	}
+
+
+	return gfa;
+}
+
+/**
+ * Extract data from a DAP array and return those values in a gridfields
+ * array. This function sets the \e send_p property of the DAP Array and
+ * uses its \e read() member function to get values. Thus, it should work
+ * for values stored in any type of data source (e.g., file) for which the
+ * Array class has been specialized.
+ *
+ * @param a The DAP Array. Extract values from this array
+ * @return A GF::Array
+ */
+static GF::Array *extractGridFieldIntArray(Array *a) {
+	if ((a->type() == dods_array_c && !a->var()->is_simple_type())
+			|| a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
+		throw Error(malformed_expr,
+				"The function requires a DAP numeric-type array argument.");
+
+	DBG(cerr << "extract_gridfield_array() - " << "Reading data values into DAP Array '" << a->name() <<"'"<< endl);
+	a->set_send_p(true);
+	a->read();
+
+	// Construct a GridField array from a DODS array
+	GF::Array *gfa;
+
+	switch (a->var()->type()) {
+	case dods_byte_c:
+	{
+		gfa = new GF::Array(a->var()->name(), GF::INT);
+		int *values = extract_array_helper<dods_byte, int>(a);
+		gfa->shareIntData(values, a->length());
+		break;
+	}
+	case dods_uint16_c:
+	{
+		gfa = new GF::Array(a->var()->name(), GF::INT);
+		int *values = extract_array_helper<dods_uint16, int>(a);
+		gfa->shareIntData(values, a->length());
+		break;
+	}
+	case dods_int16_c:
+	{
+		gfa = new GF::Array(a->var()->name(), GF::INT);
+		int *values = extract_array_helper<dods_int16, int>(a);
+		gfa->shareIntData(values, a->length());
+		break;
+	}
+	case dods_uint32_c:
+	{
+		gfa = new GF::Array(a->var()->name(), GF::INT);
+		int *values = extract_array_helper<dods_uint32, int>(a);
+		gfa->shareIntData(values, a->length());
+		break;
+	}
+	case dods_int32_c:
+	{
+		gfa = new GF::Array(a->var()->name(), GF::INT);
+		int *values = extract_array_helper<dods_int32, int>(a);
+		gfa->shareIntData(values, a->length());
+		break;
+	}
+	case dods_float32_c:
+	{
+		gfa = new GF::Array(a->var()->name(), GF::FLOAT);
+		float *values = extract_array_helper<dods_float32, float>(a);
+		gfa->shareFloatData(values, a->length());
+		break;
+	}
+	case dods_float64_c:
+	{
+		gfa = new GF::Array(a->var()->name(), GF::FLOAT);
+		float *values = extract_array_helper<dods_float64, float>(a);
+		gfa->shareFloatData(values, a->length());
+		break;
+	}
 	default:
 		throw InternalErr(__FILE__, __LINE__,
 				"Unknown DAP type encountered when converting to gridfields array");
 	}
 	return gfa;
 }
-;
 
 /** Given a pointer to an Array that holds a numeric type, extract the
  values and return in an array of T. This function allocates the
@@ -217,6 +322,7 @@ static T *extract_array(Array * a) {
 		throw Error(malformed_expr,
 				"The function requires a DAP numeric-type array argument.");
 
+	DBG(cerr << "extract_array() - " << "Reading data values into DAP Array '" << a->name() <<"'"<< endl);
 	a->set_send_p(true);
 	a->read();
 	// This test should never pass due to the previous two lines;
@@ -228,37 +334,40 @@ static T *extract_array(Array * a) {
 				string("The Array '") + a->name()
 						+ "'does not contain values. send_read_p() not called?");
 
+
+
 	// The types of arguments that the CE Parser will build for numeric
 	// constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
 	// Expanded to work for any numeric type so it can be used for more than
 	// just arguments.
 	switch (a->var()->type()) {
 	case dods_byte_c:
+		DBG(cerr << "extract_array() - extracting to an array of 'dods_byte_c'" << endl);
 		return extract_array_helper<dods_byte, T>(a);
 
 	case dods_uint16_c:
-		DBG(cerr << "extract_array() - " << "dods_uint32_c" << endl);
+		DBG(cerr << "extract_array() - extracting to an array of 'dods_uint16_c'" << endl);
 		return extract_array_helper<dods_uint16, T>(a);
 
 	case dods_int16_c:
-		DBG(cerr << "extract_array() - " << "dods_int16_c" << endl);
+		DBG(cerr << "extract_array() - extracting to an array of 'dods_int16_c'" << endl);
 		return extract_array_helper<dods_int16, T>(a);
 
 	case dods_uint32_c:
-		DBG(cerr << "extract_array() - " << "dods_uint32_c" << endl);
+		DBG(cerr << "extract_array() - extracting to an array of 'dods_uint32_c'" << endl);
 		return extract_array_helper<dods_uint32, T>(a);
 
 	case dods_int32_c:
-		DBG(cerr << "extract_array() - " << "dods_int32_c" << endl);
+		DBG(cerr << "extract_array() - extracting to an array of 'dods_int32_c'" << endl);
 		return extract_array_helper<dods_int32, T>(a);
 
 	case dods_float32_c:
-		DBG(cerr << "extract_array() - " << "dods_float32_c" << endl);
+		DBG(cerr << "extract_array() - extracting to an array of 'dods_float32_c'" << endl);
 		// Added the following line. jhrg 8/7/12
 		return extract_array_helper<dods_float32, T>(a);
 
 	case dods_float64_c:
-		DBG(cerr << "extract_array() - " << "dods_float64_c" << endl);
+		DBG(cerr << "extract_array() - extracting to an array of 'dods_float64_c'" << endl);
 		return extract_array_helper<dods_float64, T>(a);
 
 	default:
@@ -442,8 +551,8 @@ struct TwoDMeshTopology {
 	 * longitude, and optional elevation or other coordinates). These auxiliary coordinate
 	 * variables will have length nNodes.
 	 */
-	vector<string> *nodeCoordinateNames;
 	vector<Array *> *nodeCoordinateArrays;
+
 
 	/**
 	 * REQUIRED
@@ -476,10 +585,8 @@ struct TwoDMeshTopology {
 	 * indexing for more details.
 	 *
 	 */
-	string faceNodeConnectivityArrayName;
 	Array *faceNodeConnectivityArray;
 
-	vector<string *> *rangeDataArrayNames;
 	vector<MeshDataVariable *> *rangeDataArrays;
 
 	/**
@@ -1264,6 +1371,15 @@ static vector<BaseType *> *convertResultGridFieldToDapObjects(TwoDMeshTopology *
 
 }
 
+static void release(TwoDMeshTopology *tdmt){
+
+	delete tdmt->rangeDataArrays;
+
+	delete tdmt->gridTopology;
+	//delete tdmt->inputGridField;
+	delete tdmt->resultGridField;
+
+}
 
 /**
  Subset an irregular mesh (aka unstructured grid).
@@ -1405,8 +1521,7 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 			// Build the restriction operator;
 			DBG(cerr << "function_ugr() - Constructing new GF::RestrictOp using user "<<
 					"supplied dimension value and filter expression combined with the GF:GridField " << endl);
-			GF::RestrictOp op = GF::RestrictOp(args.filterExpression,
-					args.dimension, tdmt->inputGridField);
+			GF::RestrictOp op = GF::RestrictOp(args.filterExpression, args.dimension, tdmt->inputGridField);
 
 			// Apply the operator and get the result;
 			DBG(cerr << "function_ugr() - Applying GridField operator." << endl);
@@ -1443,6 +1558,12 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 	*btpp = dapResult;
 
 
+	for (mit = meshTopologies.begin(); mit != meshTopologies.end(); ++mit) {
+		string meshTopologyName = mit->first;
+		TwoDMeshTopology *tdmt = mit->second;
+
+		release(tdmt);
+	}
 
 
 	DBG(cerr << "function_ugr() - END" << endl);
