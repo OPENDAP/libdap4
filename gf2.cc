@@ -1385,23 +1385,38 @@ static vector<BaseType *> *convertResultGridFieldToDapObjects(TwoDMeshTopology *
 
 static void release(TwoDMeshTopology *tdmt){
 
+	DBG(cerr << "release() - BEGIN:   Releasing memory for MeshTopology '" << tdmt->myVar->name() << "'" << endl);
+
+	DBG(cerr << "release() - Deleting resultGridField." << endl);
 	delete tdmt->resultGridField;
+
+	DBG(cerr << "release() - Deleting inputGridField." << endl);
 	delete tdmt->inputGridField;
+
+
+	DBG(cerr << "release() - Deleting gridTopology." << endl);
 	delete tdmt->gridTopology;
 
 
+	DBG(cerr << "release() - Deleting rawIntArrays..." << endl);
 	for (vector<int *>::iterator it = tdmt->rawIntArrays->begin(); it != tdmt->rawIntArrays->end(); ++it) {
 		int *i = *it;
 		delete [] i;
 	}
+	delete tdmt->rawIntArrays;
+
+	DBG(cerr << "release() - Deleting rawFloatArrays..." << endl);
 	for (vector<float *>::iterator it = tdmt->rawFloatArrays->begin(); it != tdmt->rawFloatArrays->end(); ++it) {
 		float *f = *it;
 		delete [] f;
 	}
+	delete tdmt->rawFloatArrays;
 
+	DBG(cerr << "release() - Deleting MeshDataVariables..." << endl);
 	vector<MeshDataVariable *>::iterator mdvIt;
 	for (mdvIt = tdmt->rangeDataArrays->begin(); mdvIt != tdmt->rangeDataArrays->end(); ++mdvIt) {
 		MeshDataVariable *mdv = *mdvIt;
+		DBG(cerr << "release() - Deleting MeshDataVariable '"<< mdv->meshDataVar->name()<< "'" << endl);
 		delete mdv;
 	}
 	delete tdmt->rangeDataArrays;
