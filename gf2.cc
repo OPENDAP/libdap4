@@ -240,7 +240,7 @@ static GF::Array *extract_gridfield_array(Array *a) {
  * @param a The DAP Array. Extract values from this array
  * @return A GF::Array
  */
-static GF::Array *extractGridFieldIntArray(Array *a) {
+static GF::Array *extractGridFieldArray(Array *a, vector<int*> *intArrays, vector<float*> *floatArrays) {
 	if ((a->type() == dods_array_c && !a->var()->is_simple_type())
 			|| a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
 		throw Error(malformed_expr,
@@ -259,6 +259,7 @@ static GF::Array *extractGridFieldIntArray(Array *a) {
 		gfa = new GF::Array(a->var()->name(), GF::INT);
 		int *values = extract_array_helper<dods_byte, int>(a);
 		gfa->shareIntData(values, a->length());
+		intArrays->push_back(values);
 		break;
 	}
 	case dods_uint16_c:
@@ -266,6 +267,7 @@ static GF::Array *extractGridFieldIntArray(Array *a) {
 		gfa = new GF::Array(a->var()->name(), GF::INT);
 		int *values = extract_array_helper<dods_uint16, int>(a);
 		gfa->shareIntData(values, a->length());
+		intArrays->push_back(values);
 		break;
 	}
 	case dods_int16_c:
@@ -273,6 +275,7 @@ static GF::Array *extractGridFieldIntArray(Array *a) {
 		gfa = new GF::Array(a->var()->name(), GF::INT);
 		int *values = extract_array_helper<dods_int16, int>(a);
 		gfa->shareIntData(values, a->length());
+		intArrays->push_back(values);
 		break;
 	}
 	case dods_uint32_c:
@@ -280,6 +283,7 @@ static GF::Array *extractGridFieldIntArray(Array *a) {
 		gfa = new GF::Array(a->var()->name(), GF::INT);
 		int *values = extract_array_helper<dods_uint32, int>(a);
 		gfa->shareIntData(values, a->length());
+		intArrays->push_back(values);
 		break;
 	}
 	case dods_int32_c:
@@ -287,6 +291,7 @@ static GF::Array *extractGridFieldIntArray(Array *a) {
 		gfa = new GF::Array(a->var()->name(), GF::INT);
 		int *values = extract_array_helper<dods_int32, int>(a);
 		gfa->shareIntData(values, a->length());
+		intArrays->push_back(values);
 		break;
 	}
 	case dods_float32_c:
@@ -294,6 +299,7 @@ static GF::Array *extractGridFieldIntArray(Array *a) {
 		gfa = new GF::Array(a->var()->name(), GF::FLOAT);
 		float *values = extract_array_helper<dods_float32, float>(a);
 		gfa->shareFloatData(values, a->length());
+		floatArrays->push_back(values);
 		break;
 	}
 	case dods_float64_c:
@@ -301,6 +307,7 @@ static GF::Array *extractGridFieldIntArray(Array *a) {
 		gfa = new GF::Array(a->var()->name(), GF::FLOAT);
 		float *values = extract_array_helper<dods_float64, float>(a);
 		gfa->shareFloatData(values, a->length());
+		floatArrays->push_back(values);
 		break;
 	}
 	default:
@@ -655,6 +662,9 @@ struct TwoDMeshTopology {
 	GF::GridField *inputGridField;
 	GF::GridField *resultGridField;
 
+	vector<int *> *rawIntArrays;
+	vector<float *> *rawFloatArrays;
+
 };
 
 /**
@@ -899,6 +909,8 @@ static TwoDMeshTopology *getNewMeshTopology(DDS &dds, string meshVarName) {
 	tdmt->nodeCount = (*tdmt->nodeCoordinateArrays)[0]->length();
 
 	tdmt->rangeDataArrays = new vector<MeshDataVariable *>();
+	tdmt->rawIntArrays = new vector<int *>();
+	tdmt->rawFloatArrays = new vector<float *>();
 
 	return tdmt;
 
@@ -1376,6 +1388,17 @@ static void release(TwoDMeshTopology *tdmt){
 	delete tdmt->resultGridField;
 	delete tdmt->inputGridField;
 	delete tdmt->gridTopology;
+
+
+	for (vector<int *>::iterator it = tdmt->rawIntArrays->begin(); it != tdmt->rawIntArrays->end(); ++it) {
+		int *i = *it;
+		delete [] i;
+	}
+	for (vector<float *>::iterator it = tdmt->rawFloatArrays->begin(); it != tdmt->rawFloatArrays->end(); ++it) {
+		float *f = *it;
+		delete [] f;
+	}
+
 	vector<MeshDataVariable *>::iterator mdvIt;
 	for (mdvIt = tdmt->rangeDataArrays->begin(); mdvIt != tdmt->rangeDataArrays->end(); ++mdvIt) {
 		MeshDataVariable *mdv = *mdvIt;
@@ -1423,7 +1446,6 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 	// For convenience, cache the pointer to the collection of user selected range variables
 	//    Array *rangeVar =  args.rangeVar;
-	//vector<Array *> &rangeVars = args.rangeVars;
 
 	//vector<MeshDataVariable *> meshDataVars;
 	map<string, TwoDMeshTopology *> meshTopologies;
@@ -1489,13 +1511,13 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 		vector<Array *>::iterator ncit;
 		for (ncit = nodeCoordinateArrays->begin(); ncit != nodeCoordinateArrays->end(); ++ncit) {
 			Array *nca = *ncit;
-			GF::Array *gfa = extract_gridfield_array(nca);
+			GF::Array *gfa = extractGridFieldArray(nca,tdmt->rawIntArrays,tdmt->rawFloatArrays);
 			tdmt->inputGridField->AddAttribute(node, gfa);
 		}
 
 		// FIXME Read this the array once! It has already been read above.
 		// We read and add faceNodeConnectivity data to the grid at rank 2 for face.
-		GF::Array *gfa = extract_gridfield_array(tdmt->faceNodeConnectivityArray);
+		GF::Array *gfa = extractGridFieldArray(tdmt->faceNodeConnectivityArray,tdmt->rawIntArrays,tdmt->rawFloatArrays);
 		DBG(cerr << "function_ugr() - Adding face node connectivity Cell array to GF::GridField at rank 2" << endl);
 		tdmt->inputGridField->AddAttribute(face, gfa);
 
@@ -1505,7 +1527,7 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 		// They are added at Rank 0 because they're nodes, at least for now.
 		for (vector<MeshDataVariable *>::iterator mdv_it = tdmt->rangeDataArrays->begin(); mdv_it != tdmt->rangeDataArrays->end(); ++mdv_it) {
 			MeshDataVariable *mdVar = *mdv_it;
-			GF::Array *gfa = extract_gridfield_array(mdVar->meshDataVar);
+			GF::Array *gfa = extractGridFieldArray(mdVar->meshDataVar,tdmt->rawIntArrays,tdmt->rawFloatArrays);
 			DBG(cerr << "function_ugr() - Adding mesh data variable '"<< mdVar->meshDataVar->name() <<"' to GF::GridField at rank 0" << endl);
 			tdmt->inputGridField->AddAttribute(node, gfa);
 		}
