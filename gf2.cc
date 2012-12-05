@@ -1524,7 +1524,7 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 			// Build the restriction operator;
 			DBG(cerr << "function_ugr() - Constructing new GF::RestrictOp using user "<<
-					"supplied dimension value and filter expression combined with the GF:GridField " << endl);
+					"supplied 'dimension' value and filter expression combined with the GF:GridField " << endl);
 			GF::RestrictOp op = GF::RestrictOp(args.filterExpression, args.dimension, tdmt->inputGridField);
 
 			// Apply the operator and get the result;
