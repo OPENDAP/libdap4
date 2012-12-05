@@ -1376,6 +1376,11 @@ static void release(TwoDMeshTopology *tdmt){
 	delete tdmt->resultGridField;
 	delete tdmt->inputGridField;
 	delete tdmt->gridTopology;
+	vector<MeshDataVariable *>::iterator mdvIt;
+	for (mdvIt = tdmt->rangeDataArrays->begin(); mdvIt != tdmt->rangeDataArrays->end(); ++mdvIt) {
+		MeshDataVariable *mdv = *mdvIt;
+		delete mdv;
+	}
 	delete tdmt->rangeDataArrays;
 
 }
