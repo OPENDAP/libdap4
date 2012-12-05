@@ -1373,11 +1373,10 @@ static vector<BaseType *> *convertResultGridFieldToDapObjects(TwoDMeshTopology *
 
 static void release(TwoDMeshTopology *tdmt){
 
-	delete tdmt->rangeDataArrays;
-
-	delete tdmt->gridTopology;
-	//delete tdmt->inputGridField;
 	delete tdmt->resultGridField;
+	delete tdmt->inputGridField;
+	delete tdmt->gridTopology;
+	delete tdmt->rangeDataArrays;
 
 }
 
