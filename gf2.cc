@@ -1233,11 +1233,10 @@ static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField,
 	DBG(cerr << "getGridFieldCellArrayAsDapArray() - BEGIN" << endl);
 
 	// Get the rank 2 k-cells from the GridField object.
-	GF::CellArray* Inb =
-			(GF::CellArray*) (resultGridField->GetGrid()->getKCells(2));
+	GF::CellArray* gfCellArray = (GF::CellArray*) (resultGridField->GetGrid()->getKCells(2));
 
 	// This is a vector of size N holding vectors of size 3
-	vector<vector<int> > nodes2 = Inb->makeArrayInts();
+	vector<vector<int> > nodes2 = gfCellArray->makeArrayInts();
 
 	Array *resultFcnDapArray = getNewFcnDapArray(sourceFcnArray, nodes2.size());
 
@@ -1253,23 +1252,26 @@ static Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField,
 		}
 	}
 
+#if 0
 	DBG(
-			cerr << "getGridFieldCellArrayAsDapArray() - rowMajorNodes: " << endl << "{";
-			for (unsigned int j=0; j < rowMajorNodes.size(); j++) {
-				dods_int32 val = rowMajorNodes.at(j);
-				cerr << val << ", ";
-			}
-			cerr << "}" << endl;
+		cerr << "getGridFieldCellArrayAsDapArray() - rowMajorNodes: " << endl << "{";
+		for (unsigned int j=0; j < rowMajorNodes.size(); j++) {
+			dods_int32 val = rowMajorNodes.at(j);
+			cerr << val << ", ";
+		}
+		cerr << "}" << endl;
 	)
+#endif
 
 	// Add them to the DAP array.
 	resultFcnDapArray->set_value(rowMajorNodes, rowMajorNodes.size());
 
+#if 0
 	DBG(
 			cerr << "getGridFieldCellArrayAsDapArray() - DAP Array: "<< endl;
 			resultFcnDapArray->print_val(cerr);
 	)
-
+#endif
 	DBG(cerr << "getGridFieldCellArrayAsDapArray() - DONE" << endl);
 
 	return resultFcnDapArray;
@@ -1420,6 +1422,11 @@ static void release(TwoDMeshTopology *tdmt){
 		delete mdv;
 	}
 	delete tdmt->rangeDataArrays;
+
+	DBG(cerr << "release() - Deleting TwoDMeshTopology." << endl);
+	delete tdmt;
+
+
 
 }
 
