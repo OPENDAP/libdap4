@@ -2514,7 +2514,7 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
     // Now it's time to read some data and pack it into the GridFields library...
 	
     // Start building the Grid for the GridField operation.
-	// THis is, I think essentially a representation of the
+	// This is, I think essentially a representation of the
 	// mesh_topology
 
     // TODO Is the Grid G Leaked?
@@ -2590,11 +2590,14 @@ function_ugr(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
         Structure *construct = convertResultGridFieldToDapObject(R, meshTopologyVariable, &rangeVars, nodeCoordinates, faceNodeConnectivityArray);
         *btpp = construct;
 
+        //delete R;
+
 
     }
     catch(std::bad_alloc &e) {
         throw Error("Unable to construct GF::RestrictOp. Bad Allocation Exception. std::bad_alloc.where(): '"+string(e.what())+"'");
     }
+    //delete inputCells;
 
 
     DBG(cerr << "function_ugr() - END" << endl);

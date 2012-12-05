@@ -257,6 +257,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 
 if USING_GRIDFIELDS
 DAP_SRC += gridfields_functions.cc
+DAP_SRC += gf2.cc
 endif
 
 Operators.h: ce_expr.tab.hh
@@ -286,6 +287,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	
 if USING_GRIDFIELDS
 DAP_SRC += gridfields_functions.h
+DAP_SRC += gf2.h
 endif
 
 if USE_C99_TYPES

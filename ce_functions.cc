@@ -76,6 +76,7 @@ static char rcsid[]not_used = { "$Id$" };
 #include "ce_functions.h"
 #ifdef GRIDFIELDS
 #include "gridfields_functions.h"
+#include "gf2.h"
 #endif
 
 #include "gse_parser.h"
@@ -1232,6 +1233,7 @@ void register_functions(ConstraintEvaluator & ce)
 #ifdef GRIDFIELDS
     ce.add_function("ugrid_restrict", function_ugrid_restrict);
     ce.add_function("ugr", function_ugr);
+    ce.add_function("ugr2", function_ugr2);
 #endif
 
 #if 0

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <bes:request xmlns:bes="http://xml.opendap.org/ns/bes/1.0#" reqID="[http-8080-1:24:bes_request]">
   <bes:setContext name="xdap_accept">2.0</bes:setContext>
   <bes:setContext name="dap_explicit_containers">no</bes:setContext>
