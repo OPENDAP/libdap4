@@ -1426,6 +1426,7 @@ static void release(TwoDMeshTopology *tdmt){
 	DBG(cerr << "release() - Deleting TwoDMeshTopology." << endl);
 	delete tdmt;
 
+	DBG(cerr << "release() - END" << endl);
 
 
 }
