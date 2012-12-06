@@ -1439,7 +1439,7 @@ static void releaseTDMT(TwoDMeshTopology *tdmt){
 	vector<MeshDataVariable *>::iterator mdvIt;
 	for (mdvIt = tdmt->rangeDataArrays->begin(); mdvIt != tdmt->rangeDataArrays->end(); ++mdvIt) {
 		MeshDataVariable *mdv = *mdvIt;
-		DBG(cerr << "release() - Deleting MeshDataVariable '"<< mdv->meshDataVar->name()<< "'" << endl);
+		DBG(cerr << "releaseTDMT() - Deleting MeshDataVariable '"<< mdv->meshDataVar->name()<< "'" << endl);
 		delete mdv;
 	}
 	delete tdmt->rangeDataArrays;
