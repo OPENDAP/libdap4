@@ -1150,7 +1150,7 @@ static int getStartIndex(Array *array) {
 /**
  * Converts a row major 3xN Face node connectivity DAP array into a GF::CellArray
  */
-static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityArray) {
+static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityArray, vector<int *> *sharedIntArrays) {
 	DBG(cerr << "getFaceNodeConnectivityCells() - Building face node connectivity Cell " <<
 			"array from the Array "<< faceNodeConnectivityArray->name() << endl);
 
@@ -1160,9 +1160,13 @@ static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityAr
 
 	GF::Node *cellids = getFncArrayAsGFNodes(faceNodeConnectivityArray);
 
+	DBG(cerr << "getFaceNodeConnectivityCells() - Caching shared GF::Node array 'cellids' "<< cellids << endl);
+	sharedIntArrays->push_back((int *)cellids);
+
 	// adjust for the start_index (cardinal or ordinal array access)
 	int startIndex = getStartIndex(faceNodeConnectivityArray);
 	if (startIndex != 0) {
+		DBG(cerr << "getFaceNodeConnectivityCells() - Applying startIndex to GF::Node array 'cellids'." << endl);
 		for (int j = 0; j < total_size; j++) {
 			cellids[j] -= startIndex;
 		}
@@ -1172,8 +1176,8 @@ static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityAr
 	// If so, then this is where we extend the code for faces with more sides.
 	GF::CellArray *rankTwoCells = new GF::CellArray(cellids, rank2CellCount, 3);
 
-	DBG(cerr << "getFaceNodeConnectivityCells() - Deleting intermediate GF::Node array 'cellids' "<< cellids << endl);
-	delete [] cellids;
+	//DBG(cerr << "getFaceNodeConnectivityCells() - Deleting intermediate GF::Node array 'cellids' "<< cellids << endl);
+	//delete [] cellids;
 
 	DBG(cerr << "getFaceNodeConnectivityCells() - DONE" << endl);
 	return rankTwoCells;
@@ -1532,7 +1536,7 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 		// Get the face node connectivity cells (i think these correspond to the GridFields K cells of Rank 2)
 		// FIXME Read this array once! It is read again below..
 		DBG(cerr << "function_ugr() - Building face node connectivity Cell array from the DAP version" << endl);
-		GF::CellArray *faceNodeConnectivityCells = getFaceNodeConnectivityCells(tdmt->faceNodeConnectivityArray);
+		GF::CellArray *faceNodeConnectivityCells = getFaceNodeConnectivityCells(tdmt->faceNodeConnectivityArray,tdmt->sharedIntArrays);
 
 		// Attach the Mesh to the grid at rank 2
 		// TODO Is this 2 the same as the value of the "dimension" attribute in the "mesh_topology" variable?
