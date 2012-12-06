@@ -1601,6 +1601,9 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 			DBG(cerr << "function_ugr() - Applying GridField operator." << endl);
 
 			// FIXME Why make a new GF::GRidField from the result of the RestrictOp . Is this necessary? Seems like a waste.
+			// tdmt->resultGridField = new GF::GridField(op.getResult());
+
+			//Trying this...
 			GF::GridField *resultGF = op.getResult();
 			tdmt->resultGridField = resultGF; //new GF::GridField(resultGF);
 			// delete resultGF; //FIXME  Should we be deleting the intermediate??
