@@ -323,6 +323,7 @@ static GF::Array *extractGridFieldArray(Array *a, vector<int*> *sharedIntArrays,
  the data. */
 template<typename T>
 static T *extract_array(Array * a) {
+
 	// Simple types are Byte, ..., Float64, String and Url.
 	if ((a->type() == dods_array_c && !a->var()->is_simple_type())
 			|| a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
@@ -1088,22 +1089,33 @@ static int getNfrom3byNArray(Array *array) {
  */
 static GF::Node *getFncArrayAsGFNodes(Array *fncVar) {
 
+	DBG(cerr << "getFncArrayAsGFNodes() - BEGIN" << endl);
+
 	int nodeCount = getNfrom3byNArray(fncVar);
 
 	// interpret the array data as triangles
 	GF::Node *cellids = new GF::Node[fncVar->length()];
 
+	DBG(cerr << "getFncArrayAsGFNodes() - Reading DAP data into GF::Node array." << endl);
 	GF::Node *cellids2 = extract_array<GF::Node>(fncVar);
 
 	// Reorganize the cell ids so that cellids contains
 	// the cells in three consecutive values (0,1,2; 3,4,5; ...).
 	// The the values from  fncVar now in cellids2 and ar organized
 	// as 0,N,2N; 1,1+N,1+2N; ...
+	DBG(cerr << "getFncArrayAsGFNodes() - Re-packing and copying GF::Node array to result." << endl);
 	for (int j = 0; j < nodeCount; j++) {
 		cellids[3 * j] = cellids2[j];
 		cellids[3 * j + 1] = cellids2[j + nodeCount];
 		cellids[3 * j + 2] = cellids2[j + 2 * nodeCount];
 	}
+
+
+	DBG(cerr << "getFncArrayAsGFNodes() - Deleting intermediate GF::Node array." << endl);
+	delete [] cellids2;
+
+	DBG(cerr << "getFncArrayAsGFNodes() - DONE" << endl);
+
 	return cellids;
 }
 
@@ -1138,8 +1150,7 @@ static int getStartIndex(Array *array) {
 /**
  * Converts a row major 3xN Face node connectivity DAP array into a GF::CellArray
  */
-static GF::CellArray *getFaceNodeConnectivityCells(
-		Array *faceNodeConnectivityArray) {
+static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityArray) {
 	DBG(cerr << "getFaceNodeConnectivityCells() - Building face node connectivity Cell " <<
 			"array from the Array "<< faceNodeConnectivityArray->name() << endl);
 
@@ -1160,6 +1171,9 @@ static GF::CellArray *getFaceNodeConnectivityCells(
 	// TODO Is this '3' the same as the '3' in '3xN'?
 	// If so, then this is where we extend the code for faces with more sides.
 	GF::CellArray *rankTwoCells = new GF::CellArray(cellids, rank2CellCount, 3);
+
+	DBG(cerr << "getFaceNodeConnectivityCells() - Deleting intermediate GF::Node array 'cellids' "<< cellids << endl);
+	delete [] cellids;
 
 	DBG(cerr << "getFaceNodeConnectivityCells() - DONE" << endl);
 	return rankTwoCells;
@@ -1403,6 +1417,7 @@ static void releaseTDMT(TwoDMeshTopology *tdmt){
 	DBG(cerr << "releaseTDMT() - Deleting sharedIntArrays..." << endl);
 	for (vector<int *>::iterator it = tdmt->sharedIntArrays->begin(); it != tdmt->sharedIntArrays->end(); ++it) {
 		int *i = *it;
+		DBG(cerr << "releaseTDMT() - Deleting int array '" << i << "'" << endl);
 		delete [] i;
 	}
 	delete tdmt->sharedIntArrays;
@@ -1410,6 +1425,7 @@ static void releaseTDMT(TwoDMeshTopology *tdmt){
 	DBG(cerr << "releaseTDMT() - Deleting sharedFloatArrays..." << endl);
 	for (vector<float *>::iterator it = tdmt->sharedFloatArrays->begin(); it != tdmt->sharedFloatArrays->end(); ++it) {
 		float *f = *it;
+		DBG(cerr << "releaseTDMT() - Deleting float array '" << f << "'" << endl);
 		delete [] f;
 	}
 	delete tdmt->sharedFloatArrays;
