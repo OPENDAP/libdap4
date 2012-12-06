@@ -1596,7 +1596,11 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 			// Apply the operator and get the result;
 			DBG(cerr << "function_ugr() - Applying GridField operator." << endl);
-			tdmt->resultGridField = new GF::GridField(op.getResult());
+
+			GF::GridField *resultGF = op.getResult();
+			tdmt->resultGridField = new GF::GridField(resultGF);
+
+			delete resultGF;
 
 			// FIXME fix the names of the variables in the mesh_topology attributes
 			// If the server side function can be made to return a DDS or a collection of BaseType's then the
