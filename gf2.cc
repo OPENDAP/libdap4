@@ -1161,6 +1161,7 @@ static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityAr
 	GF::Node *cellids = getFncArrayAsGFNodes(faceNodeConnectivityArray);
 
 	DBG(cerr << "getFaceNodeConnectivityCells() - Caching shared GF::Node array 'cellids' "<< cellids << endl);
+	// FIXME It probably isn't cool to cast GF::Node* to int*
 	sharedIntArrays->push_back((int *)cellids);
 
 	// adjust for the start_index (cardinal or ordinal array access)
@@ -1579,7 +1580,8 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 
 
-
+	// FIXME Because the metadata attributes hold the key to understanding the response we
+	// need to allow the user to request DAS and DDX for the function call.
 	Structure *dapResult = new Structure("ugr_result");
 	try {
 
@@ -1596,6 +1598,9 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 			DBG(cerr << "function_ugr() - Applying GridField operator." << endl);
 			tdmt->resultGridField = new GF::GridField(op.getResult());
 
+			// FIXME fix the names of the variables in the mesh_topology attributes
+			// If the server side function can be made to return a DDS or a collection of BaseType's then the
+			// names won't change and the original mesh_topology variable and it's metadata will be valid
 			DBG(cerr << "function_ugr() - Adding mesh_topology variable '"<< tdmt->myVar->name() << "' to the DAP response." << endl);
 			dapResult->add_var(tdmt->myVar);
 
@@ -1603,14 +1608,9 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 			// TODO This returns a single structure but it would make better sense to the
 			// world if it could return a vector of objects and have them appear at the
 			// top level of the DDS.
-			// FIXME Because the metadata attributes hold the key to understanding the response we
-			// need to allow the user to request DAS and DDX for the function call.
 			DBG(cerr << "function_ugr() - Converting result GF:GridField to DAP data structure.." << endl);
 			vector<BaseType *> *dapResults = convertResultGridFieldToDapObjects(tdmt);
 
-			// FIXME fix the names of the variables in the mesh_topology attributes
-			// If the server side function can be made to return a DDS or a collection of BaseType's then the
-			// names won't change and the original mesh_topology variable and it's metadata will be valid
 			for (vector<BaseType *>::iterator btIt=dapResults->begin(); btIt != dapResults->end(); ++btIt) {
 				BaseType *bt = *btIt;
 				dapResult->add_var_nocopy(bt);
