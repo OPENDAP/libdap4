@@ -1173,8 +1173,8 @@ static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityAr
 		}
 	}
 	// Create the cell array
-	// TODO Is this '3' the same as the '3' in '3xN'?
-	// If so, then this is where we extend the code for faces with more sides.
+	// Is this '3' the same as the '3' in '3xN'? YES! The 3 here is the number of nodes per cell (aka face)
+	// This is where we extend the code for faces with more vetrices (nodes).
 	GF::CellArray *rankTwoCells = new GF::CellArray(cellids, rank2CellCount, 3);
 
 	//DBG(cerr << "getFaceNodeConnectivityCells() - Deleting intermediate GF::Node array 'cellids' "<< cellids << endl);
@@ -1522,8 +1522,6 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 		// Start building the Grid for the GridField operation.
 		// This is, I think essentially a representation of the
 		// mesh_topology
-		// TODO Is the Grid G Leaked?
-		// TODO This is the 'domain' data?
 		DBG(cerr << "function_ugr() - Constructing new GF::Grid for "<< name << endl);
 		tdmt->gridTopology = new GF::Grid(name);
 
@@ -1541,6 +1539,7 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 		// Attach the Mesh to the grid at rank 2
 		// TODO Is this 2 the same as the value of the "dimension" attribute in the "mesh_topology" variable?
+		// This 2 stands for rank 2, or faces.
 		DBG(cerr << "function_ugr() - Attaching Cell array to GF::Grid" << endl);
 		tdmt->gridTopology->setKCells(faceNodeConnectivityCells, 2);
 
@@ -1582,6 +1581,10 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 	// FIXME Because the metadata attributes hold the key to understanding the response we
 	// need to allow the user to request DAS and DDX for the function call.
+
+	// TODO This returns a single structure but it would make better sense to the
+	// world if it could return a vector of objects and have them appear at the
+	// top level of the DDS.
 	Structure *dapResult = new Structure("ugr_result");
 	try {
 
@@ -1599,8 +1602,8 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 			// FIXME Why make a new GF::GRidField from the result of the RestrictOp . Is this neccessary? Seems like a waste.
 			GF::GridField *resultGF = op.getResult();
-			tdmt->resultGridField = resultGF ; //new GF::GridField(resultGF);
-			// delete resultGF;
+			tdmt->resultGridField = new GF::GridField(resultGF);
+			// delete resultGF; //FIXME  Should we be deleting the intermediate??
 
 			// FIXME fix the names of the variables in the mesh_topology attributes
 			// If the server side function can be made to return a DDS or a collection of BaseType's then the
@@ -1609,9 +1612,6 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 			dapResult->add_var(tdmt->myVar);
 
 			// Get the GridField back in a DAP representation of a ugrid.
-			// TODO This returns a single structure but it would make better sense to the
-			// world if it could return a vector of objects and have them appear at the
-			// top level of the DDS.
 			DBG(cerr << "function_ugr() - Converting result GF:GridField to DAP data structure.." << endl);
 			vector<BaseType *> *dapResults = convertResultGridFieldToDapObjects(tdmt);
 
