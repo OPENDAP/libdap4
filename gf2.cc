@@ -1586,49 +1586,42 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 	// world if it could return a vector of objects and have them appear at the
 	// top level of the DDS.
 	Structure *dapResult = new Structure("ugr_result");
-	try {
 
-		for (mit = meshTopologies.begin(); mit != meshTopologies.end(); ++mit) {
-			string meshTopologyName = mit->first;
-			TwoDMeshTopology *tdmt = mit->second;
+	for (mit = meshTopologies.begin(); mit != meshTopologies.end(); ++mit) {
+		string meshTopologyName = mit->first;
+		TwoDMeshTopology *tdmt = mit->second;
 
-			// Build the restriction operator;
-			DBG(cerr << "function_ugr() - Constructing new GF::RestrictOp using user "<<
-					"supplied 'dimension' value and filter expression combined with the GF:GridField " << endl);
-			GF::RestrictOp op = GF::RestrictOp(args.filterExpression, args.dimension, tdmt->inputGridField);
+		// Build the restriction operator;
+		DBG(cerr << "function_ugr() - Constructing new GF::RestrictOp using user "<<
+				"supplied 'dimension' value and filter expression combined with the GF:GridField " << endl);
+		GF::RestrictOp op = GF::RestrictOp(args.filterExpression, args.dimension, tdmt->inputGridField);
 
-			// Apply the operator and get the result;
-			DBG(cerr << "function_ugr() - Applying GridField operator." << endl);
+		// Apply the operator and get the result;
+		DBG(cerr << "function_ugr() - Applying GridField operator." << endl);
 
-			// FIXME Why make a new GF::GRidField from the result of the RestrictOp . Is this necessary? Seems like a waste.
-			// tdmt->resultGridField = new GF::GridField(op.getResult());
+		// FIXME Why make a new GF::GRidField from the result of the RestrictOp . Is this necessary? Seems like a waste.
+		// tdmt->resultGridField = new GF::GridField(op.getResult());
 
-			//Trying this...
-			GF::GridField *resultGF = op.getResult();
-			tdmt->resultGridField = resultGF; //new GF::GridField(resultGF);
-			// delete resultGF; //FIXME  Should we be deleting the intermediate??
+		//Trying this...
+		GF::GridField *resultGF = op.getResult();
+		tdmt->resultGridField = resultGF; //new GF::GridField(resultGF);
+		// delete resultGF; //FIXME  Should we be deleting the intermediate??
 
-			// FIXME fix the names of the variables in the mesh_topology attributes
-			// If the server side function can be made to return a DDS or a collection of BaseType's then the
-			// names won't change and the original mesh_topology variable and it's metadata will be valid
-			DBG(cerr << "function_ugr() - Adding mesh_topology variable '"<< tdmt->myVar->name() << "' to the DAP response." << endl);
-			dapResult->add_var(tdmt->myVar);
+		// FIXME fix the names of the variables in the mesh_topology attributes
+		// If the server side function can be made to return a DDS or a collection of BaseType's then the
+		// names won't change and the original mesh_topology variable and it's metadata will be valid
+		DBG(cerr << "function_ugr() - Adding mesh_topology variable '"<< tdmt->myVar->name() << "' to the DAP response." << endl);
+		dapResult->add_var(tdmt->myVar);
 
-			// Get the GridField back in a DAP representation of a ugrid.
-			DBG(cerr << "function_ugr() - Converting result GF:GridField to DAP data structure.." << endl);
-			vector<BaseType *> *dapResults = convertResultGridFieldToDapObjects(tdmt);
+		// Get the GridField back in a DAP representation of a ugrid.
+		DBG(cerr << "function_ugr() - Converting result GF:GridField to DAP data structure.." << endl);
+		vector<BaseType *> *dapResults = convertResultGridFieldToDapObjects(tdmt);
 
-			for (vector<BaseType *>::iterator btIt=dapResults->begin(); btIt != dapResults->end(); ++btIt) {
-				BaseType *bt = *btIt;
-				dapResult->add_var_nocopy(bt);
-			}
+		for (vector<BaseType *>::iterator btIt=dapResults->begin(); btIt != dapResults->end(); ++btIt) {
+			BaseType *bt = *btIt;
+			dapResult->add_var_nocopy(bt);
 		}
-	} catch (std::bad_alloc &e) {
-		throw Error(
-				"Unable to construct GF::RestrictOp. Bad Allocation Exception. std::bad_alloc.where(): '"
-						+ string(e.what()) + "'");
 	}
-
 
 
 	*btpp = dapResult;
