@@ -39,7 +39,7 @@
 #include <sstream>
 #include <cxxabi.h>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Byte.h"
@@ -1404,6 +1404,9 @@ static vector<BaseType *> *convertResultGridFieldToDapObjects(TwoDMeshTopology *
 
 }
 
+/**
+ * This cleans up any memory allocated using "new" and stored in a TwoDMeshTopology
+ */
 static void releaseTDMT(TwoDMeshTopology *tdmt){
 
 	DBG(cerr << "releaseTDMT() - BEGIN:   Releasing memory for MeshTopology '" << tdmt->myVar->name() << "'" << endl);
@@ -1621,6 +1624,8 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 			BaseType *bt = *btIt;
 			dapResult->add_var_nocopy(bt);
 		}
+
+		delete dapResults;
 	}
 
 
@@ -1630,7 +1635,6 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 	for (mit = meshTopologies.begin(); mit != meshTopologies.end(); ++mit) {
 		string meshTopologyName = mit->first;
 		TwoDMeshTopology *tdmt = mit->second;
-
 		releaseTDMT(tdmt);
 	}
 
