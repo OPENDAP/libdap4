@@ -1161,6 +1161,7 @@ static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityAr
 	GF::Node *cellids = getFncArrayAsGFNodes(faceNodeConnectivityArray);
 
 	DBG(cerr << "getFaceNodeConnectivityCells() - Caching shared GF::Node array 'cellids' "<< cellids << endl);
+
 	// FIXME It probably isn't cool to cast GF::Node* to int*
 	sharedIntArrays->push_back((int *)cellids);
 
@@ -1563,7 +1564,9 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 		// FIXME Read this the array once! It has already been read above.
 		// We read and add faceNodeConnectivity data to the grid at rank 2 for face.
+		DBG(cerr << "function_ugr() - Re-Reading face node connectivity array..." << endl);
 		GF::Array *gfa = extractGridFieldArray(tdmt->faceNodeConnectivityArray,tdmt->sharedIntArrays,tdmt->sharedFloatArrays);
+
 		DBG(cerr << "function_ugr() - Adding face node connectivity Cell array to GF::GridField at rank 2" << endl);
 		tdmt->inputGridField->AddAttribute(face, gfa);
 
@@ -1604,8 +1607,7 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 		// FIXME Why make a new GF::GRidField from the result of the RestrictOp . Is this necessary? Seems like a waste.
 		// tdmt->resultGridField = new GF::GridField(op.getResult());
-
-		//Trying this...
+		// Trying this...
 		GF::GridField *resultGF = op.getResult();
 		tdmt->resultGridField = resultGF; //new GF::GridField(resultGF);
 		// delete resultGF; //FIXME  Should we be deleting the intermediate??
@@ -1617,9 +1619,10 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 		dapResult->add_var(tdmt->myVar);
 
 		// Get the GridField back in a DAP representation of a ugrid.
-		DBG(cerr << "function_ugr() - Converting result GF:GridField to DAP data structure.." << endl);
+		DBG(cerr << "function_ugr() - Converting result GF::GridField to DAP data objects.." << endl);
 		vector<BaseType *> *dapResults = convertResultGridFieldToDapObjects(tdmt);
 
+		DBG(cerr << "function_ugr() - Adding GF::GridField results to DAP data structure.." << endl);
 		for (vector<BaseType *>::iterator btIt=dapResults->begin(); btIt != dapResults->end(); ++btIt) {
 			BaseType *bt = *btIt;
 			dapResult->add_var_nocopy(bt);
@@ -1632,6 +1635,7 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 	*btpp = dapResult;
 
 
+	DBG(cerr << "function_ugr() - Releasing memory held by TwoDMeshTopology objects..." << endl);
 	for (mit = meshTopologies.begin(); mit != meshTopologies.end(); ++mit) {
 		string meshTopologyName = mit->first;
 		TwoDMeshTopology *tdmt = mit->second;
