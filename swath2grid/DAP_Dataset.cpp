@@ -138,6 +138,7 @@ DAP_Dataset::DAP_Dataset(Array *src, Array *lat, Array *lon) :
 
 CPLErr DAP_Dataset::InitialDataset(const int isSimple)
 {
+	// TODO Remove these?
     GDALAllRegister();
     OGRRegisterAll();
 
@@ -224,19 +225,21 @@ Array *DAP_Dataset::GetDAPArray()
     // TODO Make these CF attributes
     string projection_info = maptr_DS->GetProjectionRef();
     string gcp_projection_info = maptr_DS->GetGCPProjection();
-    double geo_transform_coef[6];
-    if (CE_None != maptr_DS->GetGeoTransform (geo_transform_coef))
+
+    // This sets the instance variable that holds the geotransform coefs. These
+    // are needed by the GetDAPGrid() method.
+    if (CE_None != maptr_DS->GetGeoTransform (m_geo_transform_coef))
         throw Error("In function swath2grid(), could not access the geo transform data.");
 
     DBG(cerr << "projection_info: " << projection_info << endl);
     DBG(cerr << "gcp_projection_info: " << gcp_projection_info << endl);
-    DBG(cerr << "geo_transform coefs: " << double_to_string(geo_transform_coef[0]) << endl);
+    DBG(cerr << "geo_transform coefs: " << double_to_string(m_geo_transform_coef[0]) << endl);
 
     AttrTable &attr = a->get_attr_table();
     attr.append_attr("projection", "String", projection_info);
     attr.append_attr("gcp_projection", "String", gcp_projection_info);
     for (int i = 0; i < sizeof(geo_transform_coef); ++i) {
-        attr.append_attr("geo_transform_coefs", "String", double_to_string(geo_transform_coef[i]));
+        attr.append_attr("geo_transform_coefs", "String", double_to_string(m_geo_transform_coef[i]));
     }
 
     return a;
@@ -262,21 +265,41 @@ Grid *DAP_Dataset::GetDAPGrid()
     g->add_var_nocopy(a, array);
 
     // Add maps; assume lon, lat; only two dimensions
-    Array *lon = new Array("longtude", new Float64("longitude"));
+    Array *lon = new Array("longitude", new Float64("longitude"));
     lon->append_dim(lon_size);
-    vector<double> lon_data(lon_size);
+
+    vector<double> data(max(lon_size, lat_size)); // (re)use this for both lon and lat
+
     // Compute values
     // u = a*x + b*y
     // v = c*x + d*y
     // u,v --> x,y --> lon,lat
-    // By the way, the values of the constants a, b, c, d are given by the 1, 2, 4, and 5
-    // entries in the geotransform array.
+    // The constants a, b, c, d are given by the 1, 2, 4, and 5 entries in the geotransform array.
 
+    if (m_geo_transform_coef[2] != 0)
+    	throw Error("The transformed data's Geographic projection should not be rotated.");
     for (int j = 0; j < lon_size; ++j) {
-        // lon_data[j] =
+        // data[j] = m_geo_transform_coef[1] * j + m_geo_transform_coef[0]
     }
-    // load values
-    lon->set_value(&lon_data[0], lon_size);
+
+    // load (copy) values
+    lon->set_value(&data[0], lon_size);
+    // Set the map
+    g->add_var_nocopy(lon, map);
+
+    // Now do the latitude map
+    Array *lat = new Array("latitude", new Float64("latitude"));
+    lat->append_dim(lat_size);
+
+    if (m_geo_transform_coef[4] != 0)
+    	throw Error("The transformed data's Geographic projection should not be rotated.");
+    for (int k = 0; k < lat_size; ++k) {
+        // data[k] = m_geo_transform_coef[5] * k + m_geo_transform_coef[3]
+    }
+
+    lat->set_value(&data[0], lat_size);
+    g->add_var_nocopy(lat, map);
+
     return g;
 }
 

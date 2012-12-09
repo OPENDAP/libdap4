@@ -82,8 +82,68 @@ using namespace std;
 namespace libdap {
 
 /**
- * @todo Make this return a Grid instead of an an Array
+ * @todo The lat and lon arrays are passed in, but there's an assumption that the
+ * source data array and the two lat and lon arrays are the same shape. But the
+ * code does not actually test that.
  *
+ * @todo Enable multiple bands paired with just the two lat/lon arrays? Not sure
+ * if that is a good idea...
+ */
+void function_swath2array(int argc, BaseType * argv[], DDS &, BaseType **btpp)
+{
+    DBG(cerr << "Entering function_swath2array..." << endl);
+
+    // Use the same documentation for both swath2array and swath2grid
+    string info = string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+    		+ "<function name=\"swath2array\" version=\"1.0\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions#swath2grid\">\n"
+            + "</function>\n";
+
+    if (argc == 0) {
+        Str *response = new Str("info");
+        response->set_value(info);
+        *btpp = response;
+        return;
+    }
+
+    // TODO Add optional fourth arg that lets the caller say which datum to use;
+    // default to WGS84
+    if (argc != 3)
+    	throw Error("The function swath2array() requires three arguments. See http://docs.opendap.org/index.php/Server_Side_Processing_Functions#swath2grid");
+
+    Array *src = dynamic_cast<Array*>(argv[0]);
+    if (!src)
+    	throw Error("The first argument to swath2array() must be a data array. See http://docs.opendap.org/index.php/Server_Side_Processing_Functions#swath2grid");
+
+    Array *lat = dynamic_cast<Array*>(argv[1]);
+    if (!lat)
+    	throw Error("The second argument to swath2array() must be a latitude array. See http://docs.opendap.org/index.php/Server_Side_Processing_Functions#swath2grid");
+
+    Array *lon = dynamic_cast<Array*>(argv[2]);
+    if (!lon)
+    	throw Error("The third argument to swath2array() must be a longitude array. See http://docs.opendap.org/index.php/Server_Side_Processing_Functions#swath2grid");
+
+    // The args passed into the function using argv[] are deleted after the call.
+
+    DAP_Dataset ds(src, lat, lon);
+
+    try {
+        ds.InitialDataset(0);
+
+        *btpp = ds.GetDAPArray();
+    }
+    catch (Error &e) {
+        DBG(cerr << "caught Error: " << e.get_error_message() << endl);
+        throw e;
+    }
+    catch(...) {
+        DBG(cerr << "caught unknown exception" << endl);
+        throw;
+    }
+
+    return;
+}
+
+/**
  * @todo The lat and lon arrays are passed in, but there's an assumption that the
  * source data array and the two lat and lon arrays are the same shape. But the
  * code does not actually test that.
@@ -130,7 +190,7 @@ void function_swath2grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     try {
         ds.InitialDataset(0);
 
-        *btpp = ds.GetDAPArray();
+        *btpp = ds.GetDAPGrid();
     }
     catch (Error &e) {
         DBG(cerr << "caught Error: " << e.get_error_message() << endl);
@@ -146,6 +206,7 @@ void function_swath2grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 
 void register_reproj_functions(ConstraintEvaluator & ce)
 {
+    ce.add_function("swath2array", function_swath2array);
     ce.add_function("swath2grid", function_swath2grid);
 }
 

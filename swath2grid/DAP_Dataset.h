@@ -102,6 +102,9 @@ protected:
     double mdSrcGeoMaxX;
     double mdSrcGeoMaxY;
 
+    // This is not set until GetDAPArray() is called.
+    double m_geo_transform_coef[6];
+
     vector<GDAL_GCP> m_gdalGCPs;
 
 public:

@@ -44,7 +44,7 @@
 namespace libdap
 {
 
-// These functions are use by the code in GeoConstraint
+// These functions are used by the code in GeoConstraint
 string extract_string_argument(BaseType *arg) ;
 double extract_double_value(BaseType *arg) ;
 double *extract_double_array(Array *a) ;
