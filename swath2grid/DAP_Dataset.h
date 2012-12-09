@@ -40,6 +40,7 @@ using namespace std;
 namespace libdap {
 
 class Array;
+class Grid;
 
 /************************************************************************/
 /* ==================================================================== */
@@ -132,6 +133,7 @@ public:
     // Added jhrg 11/23/12
     DAP_Dataset(Array *src, Array *lat, Array *lon);
     Array *GetDAPArray();
+    Grid *GetDAPGrid();
 
     virtual ~DAP_Dataset();
 };

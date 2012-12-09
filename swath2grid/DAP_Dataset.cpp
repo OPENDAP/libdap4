@@ -35,6 +35,7 @@
 #include "DAP_Dataset.h"
 
 #include "Array.h"
+#include "Grid.h"
 #include "Float64.h"
 
 #include "ce_functions.h"
@@ -166,44 +167,26 @@ CPLErr DAP_Dataset::InitialDataset(const int isSimple)
 Array *DAP_Dataset::GetDAPArray()
 {
     DBG(cerr << "In GetDAPArray" << endl);
-
-    // TODO use either maptr_DS _xor_ reproj
-    GDALDataset *reproj = maptr_DS.get();
-
-    DBG(cerr << "reproj: " << reproj << endl);
-
-    // Now build a libdap::Grid to return as the response
-
+    DBG(cerr << "maptr_DS: " << maptr_DS.get() << endl);
     DBG(cerr << "raster band count: " << maptr_DS->GetRasterCount() << endl);
 
     // There should be just one band
     if (maptr_DS->GetRasterCount() != 1)
         throw Error("In function swath2grid(), expected a single raster band.");
 
-    DBG(cerr << "raster band count: " << maptr_DS->GetRasterCount() << endl);
-
     // Get the x and y dimensions of the raster band
-    int x = reproj->GetRasterXSize();
-    int y = reproj->GetRasterYSize();
-    GDALRasterBand *rb = reproj->GetRasterBand(1);
+    int x = maptr_DS->GetRasterXSize();
+    int y = maptr_DS->GetRasterYSize();
+    GDALRasterBand *rb = maptr_DS->GetRasterBand(1);
     if (!rb)
         throw Error("In function swath2grid(), could not access the raster data.");
-    string projection_info = reproj->GetProjectionRef();
-    double geo_transform_coef[6];
-    if (CE_None != reproj->GetGeoTransform (geo_transform_coef))
-        throw Error("In function swath2grid(), could not access the geo transform data.");
-
-    string gcp_projection_info = reproj->GetGCPProjection();
-
-    DBG(cerr << "projection_info: " << projection_info << endl);
-    DBG(cerr << "gcp_projection_info: " << gcp_projection_info << endl);
 
     // Since the DAP_Dataset code works with all data values as doubles,
     // Assume the raster band has GDAL type GDT_Float64, but test anyway
     if (GDT_Float64 != rb->GetRasterDataType())
         throw Error("In function swath2grid(), expected raster data to be of type double.");
 
-    DBG(cerr << "Destination array will have dimentsions: " << x << ", " << y << endl);
+    DBG(cerr << "Destination array will have dimensions: " << x << ", " << y << endl);
 
     Array *a = new Array(m_src->name(), new Float64(m_src->name()));
 
@@ -218,16 +201,7 @@ Array *DAP_Dataset::GetDAPArray()
 
     a->append_dim(y, m_src->dimension_name(i));
 
-    // Now poke in some attributes
-    // TODO Make these CF attributes
-    AttrTable &attr = a->get_attr_table();
-    attr.append_attr("projection", "String", projection_info);
-    attr.append_attr("gcp_projection", "String", gcp_projection_info);
-    for (int i = 0; i < sizeof(geo_transform_coef); ++i) {
-        attr.append_attr("gcp_projection", "String", double_to_string(geo_transform_coef[i]));
-    }
-
-    // Poke in the values
+    // Poke in the data values
     /* RasterIO (   GDALRWFlag  eRWFlag,
     int     nXOff,
     int     nYOff,
@@ -242,9 +216,68 @@ Array *DAP_Dataset::GetDAPArray()
     ) */
     vector<double> data(x * y);
     rb->RasterIO(GF_Read, 0, 0, x, y, &data[0], x, y, GDT_Float64, 0, 0);
+
+    // NB: set_value() copies into new storage
     a->set_value(data, data.size());
 
+    // Now poke in some attributes
+    // TODO Make these CF attributes
+    string projection_info = maptr_DS->GetProjectionRef();
+    string gcp_projection_info = maptr_DS->GetGCPProjection();
+    double geo_transform_coef[6];
+    if (CE_None != maptr_DS->GetGeoTransform (geo_transform_coef))
+        throw Error("In function swath2grid(), could not access the geo transform data.");
+
+    DBG(cerr << "projection_info: " << projection_info << endl);
+    DBG(cerr << "gcp_projection_info: " << gcp_projection_info << endl);
+    DBG(cerr << "geo_transform coefs: " << double_to_string(geo_transform_coef[0]) << endl);
+
+    AttrTable &attr = a->get_attr_table();
+    attr.append_attr("projection", "String", projection_info);
+    attr.append_attr("gcp_projection", "String", gcp_projection_info);
+    for (int i = 0; i < sizeof(geo_transform_coef); ++i) {
+        attr.append_attr("geo_transform_coefs", "String", double_to_string(geo_transform_coef[i]));
+    }
+
     return a;
+}
+
+/************************************************************************/
+/*                            GetDAPGrid()                              */
+/************************************************************************/
+
+/**
+ * @brief Build a DAP Grid from the GDALDataset
+ */
+Grid *DAP_Dataset::GetDAPGrid()
+{
+    DBG(cerr << "In GetDAPGrid" << endl);
+
+    Array *a = GetDAPArray();
+    Array::Dim_iter i = a->dim_begin();
+    int lon_size = a->dimension_size(i);
+    int lat_size = a->dimension_size(++i);
+
+    Grid *g = new Grid(a->name());
+    g->add_var_nocopy(a, array);
+
+    // Add maps; assume lon, lat; only two dimensions
+    Array *lon = new Array("longtude", new Float64("longitude"));
+    lon->append_dim(lon_size);
+    vector<double> lon_data(lon_size);
+    // Compute values
+    // u = a*x + b*y
+    // v = c*x + d*y
+    // u,v --> x,y --> lon,lat
+    // By the way, the values of the constants a, b, c, d are given by the 1, 2, 4, and 5
+    // entries in the geotransform array.
+
+    for (int j = 0; j < lon_size; ++j) {
+        // lon_data[j] =
+    }
+    // load values
+    lon->set_value(&lon_data[0], lon_size);
+    return g;
 }
 
 /************************************************************************/
