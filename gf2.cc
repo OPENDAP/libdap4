@@ -853,7 +853,7 @@ static TwoDMeshTopology *getNewMeshTopology(DDS &dds, string meshVarName) {
 
 /**
  * Evaluates the rangeVar and determines which meshTopology it is associated with. If one hasn't been found
- * a new mesh topology os created. Once the associated mesh topology had been found (or created), the rangeVar
+ * a new mesh topology is created. Once the associated mesh topology had been found (or created), the rangeVar
  * is added to the vector of rangeVars held by the mesh topology for later evaluation.
  */
 static void addRangeVar(DDS &dds, Array *rangeVar, map<string, TwoDMeshTopology *> &meshTopologies) {
