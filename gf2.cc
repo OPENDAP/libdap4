@@ -954,8 +954,6 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]) {
 	args.filterExpression = dynamic_cast<Str&>(*bt).value();
 
 
-
-
 	// --------------------------------------------------
 	// Process the range variables selected by the user.
 	// We know that argc>=3, because we checked so the
@@ -977,7 +975,9 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]) {
 							+ "  was passed a/an " + bt->type_name());
 		}
 		args.rangeVars.push_back(newRangeVar);
-	} DBG(cerr << "processUgrArgs() - END" << endl);
+	}
+
+	DBG(cerr << "processUgrArgs() - END" << endl);
 
 	return args;
 
