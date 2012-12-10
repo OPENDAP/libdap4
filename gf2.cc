@@ -83,30 +83,6 @@ using namespace libdap;
 
 namespace libdap {
 
-/** Given a BaseType pointer, extract the string value it contains and return
- it.
-
- @param arg The BaseType pointer
- @return A C++ string
- @exception Error thrown if the referenced BaseType object does not contain
- a DAP String. */
-static string extract_string_argument(BaseType * arg) {
-	if (arg->type() != dods_str_c)
-		throw Error(malformed_expr,
-				"The function requires a DAP string argument.");
-
-	if (!arg->read_p())
-		throw InternalErr(__FILE__, __LINE__,
-				"The CE Evaluator built an argument list where some constants held no values.");
-
-	Str &dapString = dynamic_cast<Str&>(*arg);
-	string s = dapString.value();
-
-	DBG(cerr << "extract_string_argument() - s: " << s << endl);
-
-	return s;
-}
-
 
 template<typename DODS, typename T>
 static T *extract_array_helper(Array *a) {
@@ -384,48 +360,6 @@ static T *extract_array(Array * a) {
 	}
 }
 
-/** Given a BaseType pointer, extract the numeric value it contains and return
- it in a C++ double.
-
- @param arg The BaseType pointer
- @return A C++ double
- @exception Error thrown if the referenced BaseType object does not contain
- a DAP numeric value. */
-static double extract_double_value(BaseType * arg) {
-	// Simple types are Byte, ..., Float64, String and Url.
-	if (!arg->is_simple_type() || arg->type() == dods_str_c
-			|| arg->type() == dods_url_c)
-		throw Error(malformed_expr,
-				"The function requires a DAP numeric-type argument.");
-
-	if (!arg->read_p())
-		throw InternalErr(__FILE__, __LINE__,
-				"The CE Evaluator built an argument list where some constants held no values.");
-
-	// The types of arguments that the CE Parser will build for numeric
-	// constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
-	// Expanded to work for any numeric type so it can be used for more than
-	// just arguments.
-	switch (arg->type()) {
-	case dods_byte_c:
-		return (double) (dynamic_cast<Byte&>(*arg).value());
-	case dods_uint16_c:
-		return (double) (dynamic_cast<UInt16&>(*arg).value());
-	case dods_int16_c:
-		return (double) (dynamic_cast<Int16&>(*arg).value());
-	case dods_uint32_c:
-		return (double) (dynamic_cast<UInt32&>(*arg).value());
-	case dods_int32_c:
-		return (double) (dynamic_cast<Int32&>(*arg).value());
-	case dods_float32_c:
-		return (double) (dynamic_cast<Float32&>(*arg).value());
-	case dods_float64_c:
-		return dynamic_cast<Float64&>(*arg).value();
-	default:
-		throw InternalErr(__FILE__, __LINE__,
-				"The argument list built by the CE parser contained an unsupported numeric type.");
-	}
-}
 
 /**
  * *******************************************************************************************************
@@ -941,7 +875,7 @@ static void addRangeVar(DDS &dds, Array *rangeVar,
 							+ "'.");
 		}
 	}
-	mdv->location = node;
+	mdv-> location = node;
 
 	string meshVarName = getAttributeValue(rangeVar, _mesh);
 
@@ -1000,16 +934,14 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]) {
 	BaseType * bt;
 
 	// ---------------------------------------------
-	// Process the first arg, which is "dimension" or something - WE DON'T REALLY KNOW. (see FIXME below)
-	// FIXME Ask Bill/Scott what this is about. Eliminate if not needed.
+	// Process the first arg, which is the rank of the Restriction Clause
 	bt = argv[0];
 	if (bt->type() != dods_int32_c)
 		throw Error(malformed_expr,
 				"Wrong type for first argument, expected DAP Int32. "
 						+ UgridRestrictSyntax + "  was passed a/an "
 						+ bt->type_name());
-	//FIXME Tell James what dim is about...
-	args.dimension = extract_double_value(bt);
+	args.dimension = dynamic_cast<Int32&>(*argv[0]).value();
 
 	// ---------------------------------------------
 	// Process the last argument, the relational expression used to restrict the ugrid content.
@@ -1019,7 +951,10 @@ static UgridRestrictArgs processUgrArgs(int argc, BaseType * argv[]) {
 				"Wrong type for third argument, expected DAP String. "
 						+ UgridRestrictSyntax + "  was passed a/an "
 						+ bt->type_name());
-	args.filterExpression = extract_string_argument(bt);
+	args.filterExpression = dynamic_cast<Str&>(*bt).value();
+
+
+
 
 	// --------------------------------------------------
 	// Process the range variables selected by the user.
@@ -1650,4 +1585,3 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 
 } // namespace libdap
-//#endif
