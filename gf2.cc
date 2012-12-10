@@ -599,7 +599,7 @@ struct TwoDMeshTopology {
 
 	vector<int *> *sharedIntArrays;
 	vector<float *> *sharedFloatArrays;
-
+	GF::Node *sharedNodeArray;
 };
 
 /**
@@ -1024,6 +1024,8 @@ static int getNfrom3byNArray(Array *array) {
  *
  * This is the inverse operation to getGridFieldCellArrayAsDapArray()
  *
+ *FIXME Make this use less memory. Certainly consider reading the values directly from
+ *FIXME the DAP array (after it's read method has been called)
  */
 static GF::Node *getFncArrayAsGFNodes(Array *fncVar) {
 
@@ -1088,23 +1090,21 @@ static int getStartIndex(Array *array) {
 /**
  * Converts a row major 3xN Face node connectivity DAP array into a GF::CellArray
  */
-static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityArray, vector<int *> *sharedIntArrays) {
+static GF::CellArray *getFaceNodeConnectivityCells(TwoDMeshTopology *tdmt) {
 	DBG(cerr << "getFaceNodeConnectivityCells() - Building face node connectivity Cell " <<
 			"array from the Array "<< faceNodeConnectivityArray->name() << endl);
 
-	int rank2CellCount = getNfrom3byNArray(faceNodeConnectivityArray);
+	int rank2CellCount = getNfrom3byNArray(tdmt->faceNodeConnectivityArray);
 
 	int total_size = 3 * rank2CellCount;
 
-	GF::Node *cellids = getFncArrayAsGFNodes(faceNodeConnectivityArray);
+	GF::Node *cellids = getFncArrayAsGFNodes(tdmt->faceNodeConnectivityArray);
 
 	DBG(cerr << "getFaceNodeConnectivityCells() - Caching shared GF::Node array 'cellids' "<< cellids << endl);
-
-	// FIXME It probably isn't cool to cast GF::Node* to int*
-	sharedIntArrays->push_back((int *)cellids);
+	tdmt->sharedNodeArray = cellids;
 
 	// adjust for the start_index (cardinal or ordinal array access)
-	int startIndex = getStartIndex(faceNodeConnectivityArray);
+	int startIndex = getStartIndex(tdmt->faceNodeConnectivityArray);
 	if (startIndex != 0) {
 		DBG(cerr << "getFaceNodeConnectivityCells() - Applying startIndex to GF::Node array 'cellids'." << endl);
 		for (int j = 0; j < total_size; j++) {
@@ -1113,7 +1113,7 @@ static GF::CellArray *getFaceNodeConnectivityCells(Array *faceNodeConnectivityAr
 	}
 	// Create the cell array
 	// Is this '3' the same as the '3' in '3xN'? YES! The 3 here is the number of nodes per cell (aka face)
-	// This is where we extend the code for faces with more vetrices (nodes).
+	// This is where we extend the code for faces with more vertices (nodes).
 	GF::CellArray *rankTwoCells = new GF::CellArray(cellids, rank2CellCount, 3);
 
 	//DBG(cerr << "getFaceNodeConnectivityCells() - Deleting intermediate GF::Node array 'cellids' "<< cellids << endl);
@@ -1467,13 +1467,13 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 		DBG(cerr << "function_ugr() - Building and adding implicit range Nodes to the GF::Grid" << endl);
 		GF::AbstractCellArray *nodes = new GF::Implicit0Cells(tdmt->nodeCount);
 		// Attach the implicit nodes to the grid at rank 0
-		tdmt->gridTopology->setKCells(nodes, 0);
+		tdmt->gridTopology->setKCells(nodes, node);
 
 		// Attach the Mesh to the grid.
 		// Get the face node connectivity cells (i think these correspond to the GridFields K cells of Rank 2)
 		// FIXME Read this array once! It is read again below..
 		DBG(cerr << "function_ugr() - Building face node connectivity Cell array from the DAP version" << endl);
-		GF::CellArray *faceNodeConnectivityCells = getFaceNodeConnectivityCells(tdmt->faceNodeConnectivityArray,tdmt->sharedIntArrays);
+		GF::CellArray *faceNodeConnectivityCells = getFaceNodeConnectivityCells(tdmt);
 
 		// Attach the Mesh to the grid at rank 2
 		// TODO Is this 2 the same as the value of the "dimension" attribute in the "mesh_topology" variable?
