@@ -238,7 +238,7 @@ Array *DAP_Dataset::GetDAPArray()
     AttrTable &attr = a->get_attr_table();
     attr.append_attr("projection", "String", projection_info);
     attr.append_attr("gcp_projection", "String", gcp_projection_info);
-    for (int i = 0; i < sizeof(geo_transform_coef); ++i) {
+    for (int i = 0; i < sizeof(m_geo_transform_coef); ++i) {
         attr.append_attr("geo_transform_coefs", "String", double_to_string(m_geo_transform_coef[i]));
     }
 
@@ -279,13 +279,13 @@ Grid *DAP_Dataset::GetDAPGrid()
     if (m_geo_transform_coef[2] != 0)
     	throw Error("The transformed data's Geographic projection should not be rotated.");
     for (int j = 0; j < lon_size; ++j) {
-        // data[j] = m_geo_transform_coef[1] * j + m_geo_transform_coef[0]
+        data[j] = m_geo_transform_coef[1] * j + m_geo_transform_coef[0];
     }
 
     // load (copy) values
     lon->set_value(&data[0], lon_size);
     // Set the map
-    g->add_var_nocopy(lon, map);
+    g->add_var_nocopy(lon, maps);
 
     // Now do the latitude map
     Array *lat = new Array("latitude", new Float64("latitude"));
@@ -294,11 +294,11 @@ Grid *DAP_Dataset::GetDAPGrid()
     if (m_geo_transform_coef[4] != 0)
     	throw Error("The transformed data's Geographic projection should not be rotated.");
     for (int k = 0; k < lat_size; ++k) {
-        // data[k] = m_geo_transform_coef[5] * k + m_geo_transform_coef[3]
+        data[k] = m_geo_transform_coef[5] * k + m_geo_transform_coef[3];
     }
 
     lat->set_value(&data[0], lat_size);
-    g->add_var_nocopy(lat, map);
+    g->add_var_nocopy(lat, maps);
 
     return g;
 }
