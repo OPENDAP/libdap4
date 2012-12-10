@@ -1536,13 +1536,8 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 		// Apply the operator and get the result;
 		DBG(cerr << "function_ugr() - Applying GridField operator." << endl);
-
-		// FIXME Why make a new GF::GRidField from the result of the RestrictOp . Is this necessary? Seems like a waste.
-		// tdmt->resultGridField = new GF::GridField(op.getResult());
-		// Trying this...
 		GF::GridField *resultGF = op.getResult();
-		tdmt->resultGridField = resultGF; //new GF::GridField(resultGF);
-		// delete resultGF; //FIXME  Should we be deleting the intermediate??
+		tdmt->resultGridField = resultGF;
 
 		// FIXME fix the names of the variables in the mesh_topology attributes
 		// If the server side function can be made to return a DDS or a collection of BaseType's then the
