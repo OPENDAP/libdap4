@@ -1484,6 +1484,7 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 		// The Grid is complete. Now we make a GridField from the Grid
 		DBG(cerr << "function_ugr() - Construct new GF::GridField from GF::Grid" << endl);
 		tdmt->inputGridField = new GF::GridField(tdmt->gridTopology);
+		// TODO Question for Bill: Can we delete the GF::Grid (tdmt->gridTopology) here?
 
 		// We read and add the coordinate data (using GridField->addAttribute() to the GridField at
 		// grid dimension 0 ( key?, rank?? whatever this is)
@@ -1496,14 +1497,13 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 			tdmt->inputGridField->AddAttribute(node, gfa);
 		}
 
-		// FIXME Read this the array once! It has already been read above.
+		// TODO Question for Bill: Can we get away with reading this only once?
 		// We read and add faceNodeConnectivity data to the grid at rank 2 for face.
 		DBG(cerr << "function_ugr() - Re-Reading face node connectivity array..." << endl);
 		GF::Array *gfa = extractGridFieldArray(tdmt->faceNodeConnectivityArray,tdmt->sharedIntArrays,tdmt->sharedFloatArrays);
 
 		DBG(cerr << "function_ugr() - Adding face node connectivity Cell array to GF::GridField at rank 2" << endl);
 		tdmt->inputGridField->AddAttribute(face, gfa);
-
 
 		// For each range data variable associated with this MeshTopology read and add the  data to the GridField
 		// At the appropriate rank.
@@ -1514,10 +1514,7 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 			DBG(cerr << "function_ugr() - Adding mesh data variable '"<< mdVar->meshDataVar->name() <<"' to GF::GridField at rank 0" << endl);
 			tdmt->inputGridField->AddAttribute(node, gfa);
 		}
-
 	}
-
-
 
 	// FIXME Because the metadata attributes hold the key to understanding the response we
 	// need to allow the user to request DAS and DDX for the function call.
