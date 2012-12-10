@@ -851,9 +851,12 @@ static TwoDMeshTopology *getNewMeshTopology(DDS &dds, string meshVarName) {
 
 }
 
-// map<string, TwoDMeshTopology *> rank_dimensions;
-static void addRangeVar(DDS &dds, Array *rangeVar,
-		map<string, TwoDMeshTopology *> &meshTopologies) {
+/**
+ * Evaluates the rangeVar and determines which meshTopology it is associated with. If one hasn't been found
+ * a new mesh topology os created. Once the associated mesh topology had been found (or created), the rangeVar
+ * is added to the vector of rangeVars held by the mesh topology for later evaluation.
+ */
+static void addRangeVar(DDS &dds, Array *rangeVar, map<string, TwoDMeshTopology *> &meshTopologies) {
 
 	MeshDataVariable *mdv = new MeshDataVariable();
 	mdv->meshDataVar = rangeVar;
@@ -875,7 +878,7 @@ static void addRangeVar(DDS &dds, Array *rangeVar,
 							+ "'.");
 		}
 	}
-	mdv-> location = node;
+	mdv->location = node;
 
 	string meshVarName = getAttributeValue(rangeVar, _mesh);
 
@@ -1427,10 +1430,6 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 	// Process and QC the arguments
 	UgridRestrictArgs args = processUgrArgs(argc, argv);
 
-	// For convenience, cache the pointer to the collection of user selected range variables
-	//    Array *rangeVar =  args.rangeVar;
-
-	//vector<MeshDataVariable *> meshDataVars;
 	map<string, TwoDMeshTopology *> meshTopologies;
 
 	int rangeVarCount =0;
