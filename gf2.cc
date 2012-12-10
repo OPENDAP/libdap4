@@ -1386,6 +1386,10 @@ static void releaseTDMT(TwoDMeshTopology *tdmt){
 	}
 	delete tdmt->rangeDataArrays;
 
+	DBG(cerr << "releaseTDMT() - Deleting GF::Node array." << endl);
+	delete tdmt->sharedNodeArray;
+
+
 	DBG(cerr << "releaseTDMT() - Deleting TwoDMeshTopology." << endl);
 	delete tdmt;
 
@@ -1515,9 +1519,6 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 			tdmt->inputGridField->AddAttribute(node, gfa);
 		}
 	}
-
-	// FIXME Because the metadata attributes hold the key to understanding the response we
-	// need to allow the user to request DAS and DDX for the function call.
 
 	// TODO This returns a single structure but it would make better sense to the
 	// world if it could return a vector of objects and have them appear at the
