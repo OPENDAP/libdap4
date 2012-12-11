@@ -76,7 +76,7 @@ static char rcsid[]not_used = { "$Id$" };
 #include "ce_functions.h"
 #ifdef GRIDFIELDS
 #include "gridfields_functions.h"
-#include "gf2.h"
+#include "ugridFunctions/gf2.h"
 #endif
 
 #include "gse_parser.h"

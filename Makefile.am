@@ -16,6 +16,7 @@ endif
 
 if USING_GRIDFIELDS
 AM_CPPFLAGS += $(GF_CFLAGS)
+GRIDFIELDS = ugridFunctions
 endif
 
 AM_YFLAGS = -d -v
@@ -32,8 +33,8 @@ if USING_GDAL
 SWATH2GRID = swath2grid
 endif
 
-SUBDIRS = gl $(SWATH2GRID) . tests unit-tests
-DIST_SUBDIRS = gl swath2grid tests unit-tests
+SUBDIRS = gl $(GRIDFIELDS) $(SWATH2GRID) . tests unit-tests
+DIST_SUBDIRS = gl ugridFunctions swath2grid  tests unit-tests
 
 noinst_LTLIBRARIES = libparsers.la
 lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
@@ -63,6 +64,7 @@ libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) -lcrypto gl/libgnu.la libparsers
 
 if USING_GRIDFIELDS
 libdap_la_LIBADD += $(GF_LIBS)
+libdap_la_LIBADD += -LugridFunctions -lugridFunctions
 endif
 
 if USING_GDAL
@@ -257,7 +259,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 
 if USING_GRIDFIELDS
 DAP_SRC += gridfields_functions.cc
-DAP_SRC += gf2.cc
+#DAP_SRC += gf2.cc
 endif
 
 Operators.h: ce_expr.tab.hh
@@ -287,7 +289,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	
 if USING_GRIDFIELDS
 DAP_SRC += gridfields_functions.h
-DAP_SRC += gf2.h
+#DAP_SRC += gf2.h
 endif
 
 if USE_C99_TYPES

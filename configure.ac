@@ -320,6 +320,7 @@ AC_ARG_WITH([gridfields],
      then
          AC_MSG_ERROR([You must supply a path when using --with-gridfields; try --enable-gridfields.])
      else
+         AC_MSG_NOTICE([Using $withval as the GridFields prefix directory.])
          GF_LIBS="-L$withval/lib -lgridfields"
          GF_CFLAGS="-I$withval/include"
          AC_DEFINE([GRIDFIELDS],[1],[define if gridfields lib is present])
@@ -472,6 +473,7 @@ AC_CONFIG_FILES([Makefile
 		         doxy.conf
                  gl/Makefile
                  swath2grid/Makefile
+                 ugridFunctions/Makefile
                  tests/Makefile
                  tests/atlocal
                  unit-tests/Makefile

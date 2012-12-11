@@ -1,5 +1,5 @@
 
-# Build libswath2grid, part of libdap.
+# Build libugridFunctions, part of libdap.
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -15,17 +15,15 @@ TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 # SUBDIRS = 
 # DIST_SUBDIRS = 
 
-noinst_LTLIBRARIES = libswath2grid.la
+noinst_LTLIBRARIES = libugridFunctions.la
 
-libswath2grid_la_SOURCES = $(SRCS) $(HDRS)
-libswath2grid_la_CPPFLAGS = $(GDAL_CFLAGS) $(XML2_CFLAGS)
-libswath2grid_la_LDFLAGS = 
-libswath2grid_la_LIBADD = $(GDAL_LIBS)
+libugridFunctions_la_SOURCES = $(SRCS) $(HDRS)
+libugridFunctions_la_CPPFLAGS = $(GF_CFLAGS) $(XML2_CFLAGS)
+libugridFunctions_la_LDFLAGS = 
+libugridFunctions_la_LIBADD = $(GF_LIBS) 
 
-SRCS = AbstractDataset.cpp wcs_error.cpp    \
-BoundingBox.cpp wcsUtil.cpp DAP_Dataset.cpp  reproj_functions.cc
+SRCS = gf2.cc
 
 # NC_GOES_Dataset.cpp NC_GOES_Dataset.h
 
-HDRS = AbstractDataset.h wcs_error.h    \
-BoundingBox.h wcsUtil.h DAP_Dataset.h reproj_functions.h
+HDRS = gf2.h
