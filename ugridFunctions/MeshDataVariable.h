@@ -32,22 +32,13 @@
 
 #ifndef _MeshDataVariable_h
 #define _MeshDataVariable_h 1
-#if 0
-#include "ugrid_utils.h"
 
-#include "TwoDMeshTopology.h"
-
-#include "Array.h"
-#endif
-
-
-//#include "utils.h"
+#include "LocationType.h"
 
 using namespace std;
 using namespace libdap;
 
 class Array;
-enum locationType;
 
 namespace libdap {
 
