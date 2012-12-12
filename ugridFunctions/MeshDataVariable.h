@@ -33,7 +33,7 @@
 #ifndef _MeshDataVariable_h
 #define _MeshDataVariable_h 1
 
-#include "utils.h"
+#include "ugrid_utils.h"
 
 #include "TwoDMeshTopology.h"
 
