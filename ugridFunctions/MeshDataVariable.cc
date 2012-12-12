@@ -42,11 +42,11 @@ MeshDataVariable::MeshDataVariable(Array *dapArray) {
 }
 
 void setLocation(locationType loc){
-	_location = loc;
+	_myLocation = loc;
 }
 
 locationType getLocation(){
-	return _location;
+	return _myLocation;
 }
 
 

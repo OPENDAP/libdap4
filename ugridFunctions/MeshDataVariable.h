@@ -74,7 +74,7 @@ private:
 	 * The attribute location points to the (stagger) location within the mesh at which the
 	 * variable is defined. (face or node)
 	 */
-	locationType _location;
+	locationType _myLocation;
 
 	/**
 	 * OPTIONAL

@@ -194,7 +194,7 @@ public:
 
 
 	TwoDMeshTopology();
-
+	~TwoDMeshTopology();
 
 };
 
