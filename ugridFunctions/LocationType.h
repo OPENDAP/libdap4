@@ -1,13 +1,13 @@
-// -*- mode: c++; c-basic-offset:4 -*-
+/*
+ * LocationType.h
+ *
+ *  Created on: Dec 12, 2012
+ *      Author: jimg
+ */
 
-// This file is part of libdap, A C++ implementation of the OPeNDAP Data
-// Access Protocol.
-
-// Copyright (c) 2002,2003,2011,2012 OPeNDAP, Inc.
+// Copyright (c) 2012 OPeNDAP, Inc.
 // Authors: Nathan Potter <ndp@opendap.org>
 //          James Gallagher <jgallagher@opendap.org>
-//          Scott Moe <smeest1@gmail.com>
-//          Bill Howe <billhowe@cs.washington.edu>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,34 +25,11 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#include "config.h"
+#ifndef LOCATIONTYPE_H_
+#define LOCATIONTYPE_H_
 
-#include "Array.h"
+enum locationType {
+    node, edge, face
+};
 
-#include "ugrid_utils.h"
-#include "LocationType.h"
-#include "MeshDataVariable.h"
-#include "TwoDMeshTopology.h"
-
-using namespace std;
-using namespace libdap;
-
-namespace libdap {
-
-MeshDataVariable::MeshDataVariable(Array *dapArray) {
-	_meshDataVar = dapArray;
-	_meshName = getAttributeValue(dapArray, _mesh);
-}
-
-// TODO You could move these to the header file
-void MeshDataVariable::setLocation(locationType loc)
-{
-	_myLocation = loc;
-}
-
-locationType MeshDataVariable::getLocation()
-{
-	return _myLocation;
-}
-
-} // namespace libdap
+#endif /* LOCATIONTYPE_H_ */

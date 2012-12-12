@@ -25,11 +25,17 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// NOTE: This file is built only when the gridfields library is linked with
-// the netcdf_handler (i.e., the handler's build is configured using the
-// --with-gridfields=... option to the 'configure' script).
-#include "TwoDMeshTopology.h"
+#include "config.h"
 
+#include <vector>
+
+#include <gridfields/gridfield.h>
+#include <gridfields/grid.h>
+
+#include "BaseType.h"
+#include "Array.h"
+
+#include "TwoDMeshTopology.h"
 
 #include "debug.h"
 

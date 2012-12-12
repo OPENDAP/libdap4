@@ -25,16 +25,10 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// NOTE: This file is built only when the gridfields library is linked with
-// the netcdf_handler (i.e., the handler's build is configured using the
-// --with-gridfields=... option to the 'configure' script).
-
 #ifndef _UgridUtilities_h
 #define _UgridUtilities_h 1
 
-
 #include "Array.h"
-
 
 #include <gridfields/array.h>
 
@@ -42,6 +36,12 @@ using namespace std;
 using namespace libdap;
 
 namespace libdap {
+
+//FIXME Puting these - technically definitions since they create storage - is likely to make more problems than
+// it will solve. These are global objects, but including the header more than once will mean they are multiply
+// defined. It's also an easy way to get names that 'collide'. I try to avoid names starting with underscores because
+// sometimes those kinds of names are 'magic' with compilers/linkers/libraries. If you replace these with #define
+// then you will not confuse the compiler and you'll at least get a warning if they are defined multiple times.
 
 /**
  *  UGrid attribute vocabulary
@@ -58,31 +58,29 @@ const string _node = "node";
 const string _mesh = "mesh";
 const string _start_index = "start_index";
 
-
+//FIXME A classic problem with enums is that they get lumped into a header and then for code to use that enum,
+// the whole header is included. Move this to its own .h file. My code suffers from this... I'll do that now.
+#if 0
 enum locationType {
 	node, edge, face
 };
+#endif
 
-static vector<string> &split(const string &s, char delim, vector<string> &elems);
-static vector<string> split(const string &s, char delim);
+#if 0
+vector<string> &split(const string &s, char delim, vector<string> &elems);
+vector<string> split(const string &s, char delim);
+#endif
 
-static GF::Array *extractGridFieldArray(Array *a, vector<int*> *sharedIntArrays, vector<float*> *sharedFloatArrays);
+GF::Array *extractGridFieldArray(Array *a, vector<int*> *sharedIntArrays, vector<float*> *sharedFloatArrays);
 
 template<typename T>static T *extract_array(Array * a) ;
 
 template<typename DODS, typename T> static T *extract_array_helper(Array *a);
+string getAttributeValue(BaseType *bt, string aName) ;
+bool matchesCfRoleOrStandardName(BaseType *bt, string aValue);
+bool same_dimensions(Array *arr1, Array *arr2);
 
-
-static string getAttributeValue(BaseType *bt, string aName) ;
-static bool matchesCfRoleOrStandardName(BaseType *bt, string aValue);
-static bool same_dimensions(Array *arr1, Array *arr2);
-
-static bool checkAttributeValue(BaseType *bt, string aName, string aValue);
-
-
-
-
-
+bool checkAttributeValue(BaseType *bt, string aName, string aValue);
 
 }
 

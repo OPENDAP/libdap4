@@ -25,27 +25,29 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// NOTE: This file is built only when the gridfields library is linked with
-// the netcdf_handler (i.e., the handler's build is configured using the
-// --with-gridfields=... option to the 'configure' script).
-
 #ifndef _TwoDMeshTopology_h
 #define _TwoDMeshTopology_h 1
 
-
+#if 0
 #include "MeshDataVariable.h"
 #include "BaseType.h"
 #include "Array.h"
 
-
 #include <gridfields/gridfield.h>
 #include <gridfields/grid.h>
-
+#endif
 
 using namespace std;
 using namespace libdap;
 
 namespace libdap {
+
+class BaseType;
+class Array;
+class MeshDataVariable;
+class Grid;
+class GridField;
+class Node;
 
 /*
  * Identifies the location/rank/dimension that various grid components are associated with.
@@ -83,7 +85,6 @@ private:
 	 * variables will have length nNodes.
 	 */
 	vector<Array *> *_nodeCoordinateArrays;
-
 
 	/**
 	 * REQUIRED
@@ -191,13 +192,9 @@ private:
 	GF::Node *_sharedNodeArray;
 
 public:
-
-
 	TwoDMeshTopology();
 	~TwoDMeshTopology();
-
 };
-
 
 }
 #endif // _TwoDMeshTopology_h

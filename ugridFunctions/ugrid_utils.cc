@@ -25,11 +25,6 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// NOTE: This file is built only when the gridfields library is linked with
-// the netcdf_handler (i.e., the handler's build is configured using the
-// --with-gridfields=... option to the 'configure' script).
-
-
 #include <limits.h>
 
 #include <cstdlib>      // used by strtod()
@@ -61,18 +56,15 @@
 
 #include "ugrid_utils.h"
 
-
 using namespace std;
 using namespace libdap;
 
 namespace libdap {
 
-
 /**
  * DAP Array data extraction helper method.
  */
-template<typename DODS, typename T>
-static T *extract_array_helper(Array *a) {
+template<typename DODS, typename T>T *extract_array_helper(Array *a) {
 	int length = a->length();
 
 	DBG(
@@ -110,7 +102,6 @@ static T *extract_array_helper(Array *a) {
 
 	return dest;
 }
-
 
 #if 0
 /**
@@ -207,7 +198,7 @@ static GF::Array *extract_gridfield_array(Array *a) {
  * @param a The DAP Array. Extract values from this array
  * @return A GF::Array
  */
-static GF::Array *extractGridFieldArray(Array *a, vector<int*> *sharedIntArrays, vector<float*> *sharedFloatArrays) {
+GF::Array *extractGridFieldArray(Array *a, vector<int*> *sharedIntArrays, vector<float*> *sharedFloatArrays) {
 	if ((a->type() == dods_array_c && !a->var()->is_simple_type())
 			|| a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
 		throw Error(malformed_expr,
@@ -288,8 +279,7 @@ static GF::Array *extractGridFieldArray(Array *a, vector<int*> *sharedIntArrays,
  values and return in an array of T. This function allocates the
  array using 'new T[n]' so delete[] can be used when you are done
  the data. */
-template<typename T>
-static T *extract_array(Array * a) {
+template<typename T> T *extract_array(Array * a) {
 
 	// Simple types are Byte, ..., Float64, String and Url.
 	if ((a->type() == dods_array_c && !a->var()->is_simple_type())
@@ -351,9 +341,6 @@ static T *extract_array(Array * a) {
 	}
 }
 
-
-
-
 /**
  * Splits the string on the passed char. Returns vector of substrings.
  * TODO make this work on situations where multiple spaces doesn't hose the split()
@@ -375,10 +362,8 @@ static vector<string> split(const string &s, char delim) {
 	return split(s, delim, elems);
 }
 
-
-
 // Returns the string value of the attribute called aName, 0 otherwise.
-static string getAttributeValue(BaseType *bt, string aName) {
+string getAttributeValue(BaseType *bt, string aName) {
 
 	AttrTable &at = bt->get_attr_table();
 	DBG(cerr << "getAttributeValue() - " << "Checking to see if the variable " << bt->name()
@@ -392,7 +377,6 @@ static string getAttributeValue(BaseType *bt, string aName) {
 		return value;
 	}
 	throw Error( "The variable "+bt->name()+" does not have the requested attribute '" + aName );
-
 }
 
 /**
@@ -400,7 +384,7 @@ static string getAttributeValue(BaseType *bt, string aName) {
  * aValue return true. If it doesn't have a "cf_role" attribute, then if there is a "standard_name" attribute and it's value is
  * the same as aValue then  return true. All other outcomes return false.
  */
-static bool matchesCfRoleOrStandardName(BaseType *bt, string aValue) {
+bool matchesCfRoleOrStandardName(BaseType *bt, string aValue) {
 	// Confirm that submitted variable has a 'location' attribute whose value is "node".
 	if (!checkAttributeValue(bt, _cfRole, aValue)) {
 		// Missing the 'cf_role' attribute? Check for a 'standard_name' attribute whose value is "aValue".
@@ -415,7 +399,7 @@ static bool matchesCfRoleOrStandardName(BaseType *bt, string aValue) {
  If the two arrays have the exact dimensions in the same order, with the same name, size, start, stop, and stride values,
  return true.  Otherwise return false.
  */
-static bool same_dimensions(Array *arr1, Array *arr2) {
+bool same_dimensions(Array *arr1, Array *arr2) {
 	Array::Dim_iter ait1;
 	Array::Dim_iter ait2;
 	DBG(cerr<< "same_dimensions() - " << "comparing array " << arr1->name() << " and array " << arr2->name() << endl);
@@ -443,7 +427,7 @@ static bool same_dimensions(Array *arr1, Array *arr2) {
 
 
 // Returns true iff the submitted BaseType variable has an attribute called aName attribute whose value is aValue.
-static bool checkAttributeValue(BaseType *bt, string aName, string aValue) {
+bool checkAttributeValue(BaseType *bt, string aName, string aValue) {
 
 	AttrTable &at = bt->get_attr_table();
 	DBG(cerr << "checkAttributeValue() - " << "Checking to see if the variable " << bt->name()
@@ -463,6 +447,5 @@ static bool checkAttributeValue(BaseType *bt, string aName, string aValue) {
 	return false;
 
 }
-
 
 } // namespace libdap
