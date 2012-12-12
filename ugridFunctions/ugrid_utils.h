@@ -28,14 +28,12 @@
 #ifndef _UgridUtilities_h
 #define _UgridUtilities_h 1
 
-#include "Array.h"
-
-#include <gridfields/array.h>
-
 using namespace std;
 using namespace libdap;
 
 namespace libdap {
+
+class Array;
 
 //FIXME Puting these - technically definitions since they create storage - is likely to make more problems than
 // it will solve. These are global objects, but including the header more than once will mean they are multiply

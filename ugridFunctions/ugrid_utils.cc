@@ -25,6 +25,9 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
+
+#if 0
 #include <limits.h>
 
 #include <cstdlib>      // used by strtod()
@@ -51,6 +54,15 @@
 #include "Sequence.h"
 #include "Grid.h"
 #include "Error.h"
+#endif
+
+#include <vector>
+#include <sstream>
+
+#include <gridfields/array.h>
+
+#include "BaseType.h"
+#include "Array.h"
 
 #include "debug.h"
 

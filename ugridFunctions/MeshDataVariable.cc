@@ -27,6 +27,8 @@
 
 #include "config.h"
 
+#include <gridfields/array.h>
+
 #include "Array.h"
 
 #include "ugrid_utils.h"

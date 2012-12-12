@@ -28,15 +28,6 @@
 #ifndef _TwoDMeshTopology_h
 #define _TwoDMeshTopology_h 1
 
-#if 0
-#include "MeshDataVariable.h"
-#include "BaseType.h"
-#include "Array.h"
-
-#include <gridfields/gridfield.h>
-#include <gridfields/grid.h>
-#endif
-
 using namespace std;
 using namespace libdap;
 
@@ -49,12 +40,9 @@ class Grid;
 class GridField;
 class Node;
 
-/*
+/**
  * Identifies the location/rank/dimension that various grid components are associated with.
  */
-//enum locationType {
-//	node, edge, face
-//};
 
 class TwoDMeshTopology
 {
