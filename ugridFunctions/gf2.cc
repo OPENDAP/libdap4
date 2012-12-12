@@ -4,9 +4,10 @@
 // Access Protocol.
 
 // Copyright (c) 2002,2003,2011,2012 OPeNDAP, Inc.
-// Authors: James Gallagher <jgallagher@opendap.org>
-//         Scott Moe <smeest1@gmail.com>
-//         Bill Howe <billhowe@cs.washington.edu>
+// Authors: Nathan Potter <ndp@opendap.org>
+//          James Gallagher <jgallagher@opendap.org>
+//          Scott Moe <smeest1@gmail.com>
+//          Bill Howe <billhowe@cs.washington.edu>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -39,7 +40,7 @@
 #include <sstream>
 #include <cxxabi.h>
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Byte.h"
@@ -83,7 +84,9 @@ using namespace libdap;
 
 namespace libdap {
 
-
+/**
+ * DAP Array data extraction helper method.
+ */
 template<typename DODS, typename T>
 static T *extract_array_helper(Array *a) {
 	int length = a->length();
@@ -124,6 +127,8 @@ static T *extract_array_helper(Array *a) {
 	return dest;
 }
 
+
+#if 0
 /**
  * Extract data from a DAP array and return those values in a gridfields
  * array. This function sets the \e send_p property of the DAP Array and
@@ -205,6 +210,8 @@ static GF::Array *extract_gridfield_array(Array *a) {
 
 	return gfa;
 }
+
+#endif
 
 /**
  * Extract data from a DAP array and return those values in a gridfields
@@ -1031,7 +1038,7 @@ static GF::Node *getFncArrayAsGFNodes(Array *fncVar) {
 
 	DBG(cerr << "getFncArrayAsGFNodes() - BEGIN" << endl);
 
-	int nodeCount = getNfrom3byNArray(fncVar);
+	int N = getNfrom3byNArray(fncVar);
 
 	// interpret the array data as triangles
 	GF::Node *cellids = new GF::Node[fncVar->length()];
@@ -1044,10 +1051,10 @@ static GF::Node *getFncArrayAsGFNodes(Array *fncVar) {
 	// The the values from  fncVar now in cellids2 and ar organized
 	// as 0,N,2N; 1,1+N,1+2N; ...
 	DBG(cerr << "getFncArrayAsGFNodes() - Re-packing and copying GF::Node array to result." << endl);
-	for (int j = 0; j < nodeCount; j++) {
+	for (int j = 0; j < N; j++) {
 		cellids[3 * j] = cellids2[j];
-		cellids[3 * j + 1] = cellids2[j + nodeCount];
-		cellids[3 * j + 2] = cellids2[j + 2 * nodeCount];
+		cellids[3 * j + 1] = cellids2[j + N];
+		cellids[3 * j + 2] = cellids2[j + 2 * N];
 	}
 
 
@@ -1092,7 +1099,7 @@ static int getStartIndex(Array *array) {
  */
 static GF::CellArray *getFaceNodeConnectivityCells(TwoDMeshTopology *tdmt) {
 	DBG(cerr << "getFaceNodeConnectivityCells() - Building face node connectivity Cell " <<
-			"array from the Array "<< faceNodeConnectivityArray->name() << endl);
+			"array from the Array "<< tdmt->faceNodeConnectivityArray->name() << endl);
 
 	int rank2CellCount = getNfrom3byNArray(tdmt->faceNodeConnectivityArray);
 
@@ -1483,31 +1490,36 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 		// TODO Is this 2 the same as the value of the "dimension" attribute in the "mesh_topology" variable?
 		// This 2 stands for rank 2, or faces.
 		DBG(cerr << "function_ugr() - Attaching Cell array to GF::Grid" << endl);
-		tdmt->gridTopology->setKCells(faceNodeConnectivityCells, 2);
+		tdmt->gridTopology->setKCells(faceNodeConnectivityCells, face);
 
 		// The Grid is complete. Now we make a GridField from the Grid
 		DBG(cerr << "function_ugr() - Construct new GF::GridField from GF::Grid" << endl);
 		tdmt->inputGridField = new GF::GridField(tdmt->gridTopology);
 		// TODO Question for Bill: Can we delete the GF::Grid (tdmt->gridTopology) here?
 
+
+
 		// We read and add the coordinate data (using GridField->addAttribute() to the GridField at
-		// grid dimension 0 ( key?, rank?? whatever this is)
-		DBG(cerr << "function_ugr() - Adding node coordinates to GF::GridField at rank 0" << endl);
+		// grid dimension/rank/dimension 0 (a.k.a. node)
 		vector<Array *> *nodeCoordinateArrays = tdmt->nodeCoordinateArrays;
 		vector<Array *>::iterator ncit;
 		for (ncit = nodeCoordinateArrays->begin(); ncit != nodeCoordinateArrays->end(); ++ncit) {
 			Array *nca = *ncit;
+			DBG(cerr << "function_ugr() - Adding node coordinate "<< nca->name() << " to GF::GridField at rank 0" << endl);
 			GF::Array *gfa = extractGridFieldArray(nca,tdmt->sharedIntArrays,tdmt->sharedFloatArrays);
 			tdmt->inputGridField->AddAttribute(node, gfa);
 		}
 
+#if 0
 		// TODO Question for Bill: Can we get away with reading this only once?
+		// ANSWER: YES! Don't do this at all!
 		// We read and add faceNodeConnectivity data to the grid at rank 2 for face.
-		DBG(cerr << "function_ugr() - Re-Reading face node connectivity array..." << endl);
-		GF::Array *gfa = extractGridFieldArray(tdmt->faceNodeConnectivityArray,tdmt->sharedIntArrays,tdmt->sharedFloatArrays);
+		// DBG(cerr << "function_ugr() - Re-Reading face node connectivity array..." << endl);
+		// GF::Array *gfa = extractGridFieldArray(tdmt->faceNodeConnectivityArray,tdmt->sharedIntArrays,tdmt->sharedFloatArrays);
 
-		DBG(cerr << "function_ugr() - Adding face node connectivity Cell array to GF::GridField at rank 2" << endl);
-		tdmt->inputGridField->AddAttribute(face, gfa);
+		// DBG(cerr << "function_ugr() - Adding face node connectivity Cell array to GF::GridField at rank 2" << endl);
+		// tdmt->inputGridField->AddAttribute(face, gfa);
+#endif
 
 		// For each range data variable associated with this MeshTopology read and add the  data to the GridField
 		// At the appropriate rank.
@@ -1564,7 +1576,6 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 	DBG(cerr << "function_ugr() - Releasing memory held by TwoDMeshTopology objects..." << endl);
 	for (mit = meshTopologies.begin(); mit != meshTopologies.end(); ++mit) {
-		string meshTopologyName = mit->first;
 		TwoDMeshTopology *tdmt = mit->second;
 		releaseTDMT(tdmt);
 	}

@@ -12,7 +12,7 @@
       <!-- bes:constraint>h</bes:constraint -->
     </bes:container>
   </bes:define>
-  <bes:get type="ascii" definition="d1"  />
+  <bes:get type="dds" definition="d1"  />
 </bes:request>
 
 

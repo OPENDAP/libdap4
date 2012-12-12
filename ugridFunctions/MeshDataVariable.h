@@ -3,10 +3,11 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2012 OPeNDAP, Inc.
-// Author: James Gallagher <jgallagher@opendap.org>
-//         Dan Holloway <dan@hollywood.gso.uri.edu>
-//         Reza Nekovei <reza@intcomm.net>
+// Copyright (c) 2002,2003,2011,2012 OPeNDAP, Inc.
+// Authors: Nathan Potter <ndp@opendap.org>
+//          James Gallagher <jgallagher@opendap.org>
+//          Scott Moe <smeest1@gmail.com>
+//          Bill Howe <billhowe@cs.washington.edu>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -23,17 +24,22 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
-//
-// Authors:
-//      ndp       Nathan Potter <ndp@opendap.org>
-//
-// ndp 12/11/12
+
+// NOTE: This file is built only when the gridfields library is linked with
+// the netcdf_handler (i.e., the handler's build is configured using the
+// --with-gridfields=... option to the 'configure' script).
+
 
 #ifndef _MeshDataVariable_h
 #define _MeshDataVariable_h 1
 
+#include "utils.h"
 
 #include "TwoDMeshTopology.h"
+
+#include "Array.h"
+
+//#include "utils.h"
 
 using namespace std;
 using namespace libdap;
@@ -47,28 +53,28 @@ private:
 	/**
 	 * The DAP dataset variable that the user requested.
 	 */
-	Array *meshDataVar;
+	Array *_meshDataVar;
 
 	/**
 	 * REQUIRED
 	 * The attribute mesh points to the mesh_topology variable containing the meta-data attributes
 	 * of the mesh on which the variable has been defined.
 	 */
-	string meshName;
+	string _meshName;
 
 	/**
 	 * REQUIRED
 	 * The first DAP dataset variable in the dataset that has a 'cf_role' attribute whose value is equal the value of
 	 * the string 'mesh' or an attribute named 'standard_name' whose value is the same as the value of the string 'mesh'.
 	 */
-	BaseType *meshTopologyVariable;
+	BaseType *_meshTopologyVariable;
 
 	/**
 	 * REQUIRED
 	 * The attribute location points to the (stagger) location within the mesh at which the
 	 * variable is defined. (face or node)
 	 */
-	locationType location;
+	locationType _location;
 
 	/**
 	 * OPTIONAL
@@ -88,36 +94,11 @@ private:
 	//vector<string> *coordinateNames;
 	//vector<Array *> *coordinateArrays;
 public:
-	double mi_X;
-	double mi_Y;
 
-	virtual ~My2DPoint();
+	MeshDataVariable(Array *dapArray);
 
-	MeshDataVariable()
-	{
-		mi_X = 0;
-		mi_Y = 0;
-	}
-
-	MeshDataVariable(const double& xx, const double& yy) :
-		mi_X(xx), mi_Y(yy)
-	{
-	}
-
-	MeshDataVariable(const My2DPoint& p) :
-		mi_X(p.mi_X), mi_Y(p.mi_Y)
-	{
-	}
-
-	MeshDataVariable& operator =(const MeshDataVariable& p)
-	{
-		mi_X = p.mi_X;
-		mi_Y = p.mi_Y;
-		return *this;
-	}
-
-
-
+	void setLocation(locationType loc);
+	locationType getLocation();
 };
 
 

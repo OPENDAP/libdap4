@@ -1,11 +1,13 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
-// Author: James Gallagher <jgallagher@opendap.org>
+// Copyright (c) 2002,2003,2011,2012 OPeNDAP, Inc.
+// Authors: Nathan Potter <ndp@opendap.org>
+//          James Gallagher <jgallagher@opendap.org>
+//          Scott Moe <smeest1@gmail.com>
+//          Bill Howe <billhowe@cs.washington.edu>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -23,15 +25,9 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// (c) COPYRIGHT URI/MIT 1999
-// Please read the full copyright statement in the file COPYRIGHT_URI.
-//
-// Authors:
-//      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
-
-// Declarations for CE functions.
-//
-// 1/15/99 jhrg
+// NOTE: This file is built only when the gridfields library is linked with
+// the netcdf_handler (i.e., the handler's build is configured using the
+// --with-gridfields=... option to the 'configure' script).
 
 #ifndef _gf2_h
 #define _gf2_h

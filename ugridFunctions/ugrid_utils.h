@@ -28,47 +28,64 @@
 // NOTE: This file is built only when the gridfields library is linked with
 // the netcdf_handler (i.e., the handler's build is configured using the
 // --with-gridfields=... option to the 'configure' script).
-#include "TwoDMeshTopology.h"
+
+#ifndef _UgridUtilities_h
+#define _UgridUtilities_h 1
 
 
-#include "debug.h"
+#include "Array.h"
+
+
+#include <gridfields/array.h>
 
 using namespace std;
 using namespace libdap;
 
 namespace libdap {
 
-TwoDMeshTopology::TwoDMeshTopology()
-{
-	_sharedIntArrays = new vector<int *>();
-	_sharedFloatArrays = new vector<float *>();
+/**
+ *  UGrid attribute vocabulary
+ */
+const string _cfRole = "cf_role";
+const string _standardName = "standard_name";
+const string _meshTopology = "mesh_topology";
+const string _nodeCoordinates = "node_coordinates";
+const string _faceNodeConnectivity = "face_node_connectivity";
+const string _dimension = "dimension";
+const string _location = "location";
+const string _gridLocation = "grid_location";
+const string _node = "node";
+const string _mesh = "mesh";
+const string _start_index = "start_index";
+
+
+enum locationType {
+	node, edge, face
+};
+
+static vector<string> &split(const string &s, char delim, vector<string> &elems);
+static vector<string> split(const string &s, char delim);
+
+static GF::Array *extractGridFieldArray(Array *a, vector<int*> *sharedIntArrays, vector<float*> *sharedFloatArrays);
+
+template<typename T>static T *extract_array(Array * a) ;
+
+template<typename DODS, typename T> static T *extract_array_helper(Array *a);
+
+
+static string getAttributeValue(BaseType *bt, string aName) ;
+static bool matchesCfRoleOrStandardName(BaseType *bt, string aValue);
+static bool same_dimensions(Array *arr1, Array *arr2);
+
+static bool checkAttributeValue(BaseType *bt, string aName, string aValue);
+
 }
 
-TwoDMeshTopology::~TwoDMeshTopology()
-{
-    DBG(cerr << "Entering ~TwoDMeshTopology (" << this << ")" << endl);
-
-
-	DBG(cerr << "~TwoDMeshTopology() - Deleting sharedIntArrays..." << endl);
-	for (vector<int *>::iterator it = _sharedIntArrays->begin(); it != _sharedIntArrays->end(); ++it) {
-		int *i = *it;
-		DBG(cerr << "~TwoDMeshTopology() - Deleting int array '" << i << "'" << endl);
-		delete [] i;
-	}
-	delete _sharedIntArrays;
-
-	DBG(cerr << "~TwoDMeshTopology() - Deleting sharedFloatArrays..." << endl);
-	for (vector<float *>::iterator it = _sharedFloatArrays->begin(); it != _sharedFloatArrays->end(); ++it) {
-		float *f = *it;
-		DBG(cerr << "~TwoDMeshTopology() - Deleting float array '" << f << "'" << endl);
-		delete [] f;
-	}
-	delete _sharedFloatArrays;
-
-    DBG(cerr << "Exiting ~TwoDMeshTopology" << endl);
-}
 
 
 
 
-} // namespace libdap
+
+
+
+#endif // _UgridUtilities_h
