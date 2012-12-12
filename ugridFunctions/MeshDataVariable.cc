@@ -41,11 +41,13 @@ MeshDataVariable::MeshDataVariable(Array *dapArray) {
 	_meshName = getAttributeValue(dapArray, _mesh);
 }
 
-void setLocation(locationType loc){
+void setLocation(locationType loc)
+{
 	_myLocation = loc;
 }
 
-locationType getLocation(){
+locationType getLocation()
+{
 	return _myLocation;
 }
 

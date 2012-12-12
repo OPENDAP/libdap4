@@ -79,6 +79,11 @@ static bool same_dimensions(Array *arr1, Array *arr2);
 
 static bool checkAttributeValue(BaseType *bt, string aName, string aValue);
 
+
+
+
+
+
 }
 
 
