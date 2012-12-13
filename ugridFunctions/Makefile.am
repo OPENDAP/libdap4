@@ -22,8 +22,8 @@ libugridFunctions_la_CPPFLAGS = $(GF_CFLAGS) $(XML2_CFLAGS)
 libugridFunctions_la_LDFLAGS = 
 libugridFunctions_la_LIBADD = $(GF_LIBS) 
 
-SRCS = gf2.cc TwoDMeshTopology.cc MeshDataVariable.cc ugrid_utils.cc
+SRCS = gf2.cc ugrid_utils.cc MeshDataVariable.cc TwoDMeshTopology.cc  gf3.cc
 
 # NC_GOES_Dataset.cpp NC_GOES_Dataset.h
 
-HDRS = gf2.h TwoDMeshTopology.h MeshDataVariable.h ugrid_utils.h
+HDRS = gf2.h ugrid_utils.h MeshDataVariable.h  TwoDMeshTopology.h gf3.h

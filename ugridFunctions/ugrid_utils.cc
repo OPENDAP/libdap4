@@ -65,6 +65,7 @@
 #include "Array.h"
 
 #include "debug.h"
+#include "util.h"
 
 #include "ugrid_utils.h"
 
@@ -357,7 +358,8 @@ template<typename T> T *extract_array(Array * a) {
  * Splits the string on the passed char. Returns vector of substrings.
  * TODO make this work on situations where multiple spaces doesn't hose the split()
  */
-static vector<string> &split(const string &s, char delim, vector<string> &elems) {
+vector<string> &split(const string &s, char delim, vector<string> &elems)
+{
 	stringstream ss(s);
 	string item;
 	while (getline(ss, item, delim)) {
@@ -369,7 +371,8 @@ static vector<string> &split(const string &s, char delim, vector<string> &elems)
 /**
  * Splits the string on the passed char. Returns vector of substrings.
  */
-static vector<string> split(const string &s, char delim) {
+vector<string> split(const string &s, char delim)
+{
 	vector<string> elems;
 	return split(s, delim, elems);
 }
@@ -381,7 +384,7 @@ string getAttributeValue(BaseType *bt, string aName) {
 	DBG(cerr << "getAttributeValue() - " << "Checking to see if the variable " << bt->name()
 			<< "' has an attribute '"<< aName << "'"<<endl);
 
-	// Confirm that submitted variable has an attribute called aName whose value is aValue.
+	// Confirm that submitted variable has an attribute called aName and return its value.
 	AttrTable::Attr_iter loc = at.simple_find(aName);
 	if (loc != at.attr_end()) {
 		DBG(cerr << "checkAttributeValue() - " << "'" << bt->name() << "' has a attribute named '" << aName << "'"<< endl);
@@ -398,9 +401,9 @@ string getAttributeValue(BaseType *bt, string aName) {
  */
 bool matchesCfRoleOrStandardName(BaseType *bt, string aValue) {
 	// Confirm that submitted variable has a 'location' attribute whose value is "node".
-	if (!checkAttributeValue(bt, _cfRole, aValue)) {
+	if (!checkAttributeValue(bt, CF_ROLE, aValue)) {
 		// Missing the 'cf_role' attribute? Check for a 'standard_name' attribute whose value is "aValue".
-		if (!checkAttributeValue(bt, _standardName, aValue)) {
+		if (!checkAttributeValue(bt, CF_STANDARD_NAME, aValue)) {
 			return false;
 		}
 	}
@@ -459,5 +462,42 @@ bool checkAttributeValue(BaseType *bt, string aName, string aValue) {
 	return false;
 
 }
+
+
+
+
+/**
+ * Retrieves the size of the second dimension from a 3xN array. Throws an
+ * Error if the array is not the correct shape.
+ */
+int getNfrom3byNArray(Array *array)
+{
+
+	int dimCount = array->dimensions(true);
+
+	if (dimCount != 2)
+		throw Error(
+				"Expected a 2 dimensional array. The array '" + array->name()
+						+ "' has " + long_to_string(dimCount) + " dimensions.");
+
+	// Check the first dimension to be sure it's size is 3.
+	Array::Dim_iter di = array->dim_begin();
+	if (di->c_size != 3) {
+		string msg =
+				"Expected a 2 dimensional array with shape of 3xN! The array "
+						+ array->name() + " has a first " + "dimension of size "
+						+ long_to_string(di->c_size);
+		DBG(cerr << msg << endl);
+		throw Error(malformed_expr, msg);
+	}
+
+	// Return the size of the second dimension;
+	di++;
+	return di->c_size;
+
+}
+
+
+
 
 } // namespace libdap

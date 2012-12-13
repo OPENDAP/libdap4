@@ -30,6 +30,7 @@
 #include <gridfields/array.h>
 
 #include "Array.h"
+#include "debug.h"
 
 #include "ugrid_utils.h"
 #include "LocationType.h"
@@ -41,20 +42,36 @@ using namespace libdap;
 
 namespace libdap {
 
-MeshDataVariable::MeshDataVariable(Array *dapArray) {
-	_meshDataVar = dapArray;
-	_meshName = getAttributeValue(dapArray, _mesh);
+MeshDataVariable::MeshDataVariable(){}
+
+void MeshDataVariable::init(Array *rangeVar)
+{
+	meshDataVar = rangeVar;
+	DBG(cerr << "init() - The user submitted the range data array: " << rangeVar->name() << endl);
+
+	/**
+	 * TODO: STOP doing this check and deal with face nodes!
+	 * Confirm that submitted variable has a 'location' attribute whose value is "node".
+	 */
+	if (!checkAttributeValue(rangeVar, UGRID_LOCATION, UGRID_NODE)) {
+		// Missing the 'location' attribute? Check for a 'grid_location' attribute whose value is "node".
+		if (!checkAttributeValue(rangeVar, UGRID_GRID_LOCATION, UGRID_NODE)) {
+			throw Error(
+					"The requested range variable '" + rangeVar->name()
+							+ "' has neither a '" + UGRID_LOCATION + "' attribute "
+							+ "or a " + UGRID_GRID_LOCATION
+							+ " attribute whose value is equal to '" + UGRID_NODE
+							+ "'.");
+		}
+	}
+
+	setLocation(node);
+
+	meshName = getAttributeValue(rangeVar, UGRID_MESH);
+
+	DBG(cerr << "init() - Range data array refers to 'mesh' variable:: " << meshVarName << endl);
+
 }
 
-// TODO You could move these to the header file
-void MeshDataVariable::setLocation(locationType loc)
-{
-	_myLocation = loc;
-}
-
-locationType MeshDataVariable::getLocation()
-{
-	return _myLocation;
-}
 
 } // namespace libdap

@@ -35,7 +35,7 @@ namespace libdap {
 
 class Array;
 
-//FIXME Puting these - technically definitions since they create storage - is likely to make more problems than
+//FIXME Putting these - technically definitions since they create storage - is likely to make more problems than
 // it will solve. These are global objects, but including the header more than once will mean they are multiply
 // defined. It's also an easy way to get names that 'collide'. I try to avoid names starting with underscores because
 // sometimes those kinds of names are 'magic' with compilers/linkers/libraries. If you replace these with #define
@@ -44,17 +44,19 @@ class Array;
 /**
  *  UGrid attribute vocabulary
  */
-const string _cfRole = "cf_role";
-const string _standardName = "standard_name";
-const string _meshTopology = "mesh_topology";
-const string _nodeCoordinates = "node_coordinates";
-const string _faceNodeConnectivity = "face_node_connectivity";
-const string _dimension = "dimension";
-const string _location = "location";
-const string _gridLocation = "grid_location";
-const string _node = "node";
-const string _mesh = "mesh";
-const string _start_index = "start_index";
+#define CF_ROLE "cf_role"
+#define CF_STANDARD_NAME "standard_name"
+#define UGRID_MESH_TOPOLOGY "mesh_topology"
+#define UGRID_NODE_COORDINATES "node_coordinates"
+#define UGRID_FACE_NODE_CONNECTIVITY "face_node_connectivity"
+#define UGRID_DIMENSION "dimension"
+#define UGRID_LOCATION "location"
+#define UGRID_GRID_LOCATION "grid_location"
+#define UGRID_NODE "node"
+#define UGRID_MESH "mesh"
+#define UGRID_START_INDEX "start_index"
+
+
 
 //FIXME A classic problem with enums is that they get lumped into a header and then for code to use that enum,
 // the whole header is included. Move this to its own .h file. My code suffers from this... I'll do that now.
@@ -80,13 +82,17 @@ bool same_dimensions(Array *arr1, Array *arr2);
 
 bool checkAttributeValue(BaseType *bt, string aName, string aValue);
 
-}
+
+vector<string> split(const string &s, char delim);
+vector<string> &split(const string &s, char delim, vector<string> &elems);
+
+
+int getNfrom3byNArray(Array *array);
 
 
 
 
 
-
-
+}// namespace libdap
 
 #endif // _UgridUtilities_h

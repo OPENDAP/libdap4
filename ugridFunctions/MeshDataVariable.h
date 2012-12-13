@@ -44,28 +44,28 @@ private:
 	/**
 	 * The DAP dataset variable that the user requested.
 	 */
-	Array *_meshDataVar;
+	Array *meshDataVar;
 
 	/**
 	 * REQUIRED
 	 * The attribute mesh points to the mesh_topology variable containing the meta-data attributes
 	 * of the mesh on which the variable has been defined.
 	 */
-	string _meshName;
+	string meshName;
 
 	/**
 	 * REQUIRED
 	 * The first DAP dataset variable in the dataset that has a 'cf_role' attribute whose value is equal the value of
 	 * the string 'mesh' or an attribute named 'standard_name' whose value is the same as the value of the string 'mesh'.
 	 */
-	BaseType *_meshTopologyVariable;
+	BaseType *meshTopologyVariable;
 
 	/**
 	 * REQUIRED
 	 * The attribute location points to the (stagger) location within the mesh at which the
 	 * variable is defined. (face or node)
 	 */
-	locationType _myLocation;
+	locationType myLocation;
 
 	/**
 	 * OPTIONAL
@@ -86,10 +86,21 @@ private:
 	//vector<Array *> *coordinateArrays;
 public:
 
-	MeshDataVariable(Array *dapArray);
+	MeshDataVariable();
 
-	void setLocation(locationType loc);
-	locationType getLocation();
+	void setLocation(locationType loc){myLocation = loc;}
+	locationType getLocation(){return myLocation;}
+
+	void setMeshName(string mName){meshName=mName;}
+	string getMeshName(){ return meshName;}
+
+	string getName(){ return meshDataVar->name();}
+
+	Array *getDapArray(){ return meshDataVar;}
+
+	void init(Array *dapArray);
+
+
 };
 
 

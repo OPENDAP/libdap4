@@ -427,7 +427,7 @@ enum locationType {
  *
  */
 
-struct MeshDataVariable {
+struct MeshDataVar {
 
 	/**
 	 * The DAP dataset variable that the user requested.
@@ -474,7 +474,7 @@ struct MeshDataVariable {
 	//vector<Array *> *coordinateArrays;
 };
 
-struct TwoDMeshTopology {
+struct TwoDMeshTopo {
 
 	/**
 	 * REQUIRED
@@ -536,7 +536,7 @@ struct TwoDMeshTopology {
 	 */
 	Array *faceNodeConnectivityArray;
 
-	vector<MeshDataVariable *> *rangeDataArrays;
+	vector<MeshDataVar *> *rangeDataArrays;
 
 	/**
 	 * OPTIONAL
@@ -836,9 +836,9 @@ static Array *getFaceNodeConnectivityArray(BaseType *meshTopology, DDS &dds)
 /**
  * FIXME: Make this thing ingest the other parts of the TwoDMeshTopology
  */
-static TwoDMeshTopology *getNewMeshTopology(DDS &dds, string meshVarName) {
+static TwoDMeshTopo *getNewMeshTopology(DDS &dds, string meshVarName) {
 
-	TwoDMeshTopology *tdmt = new TwoDMeshTopology();
+	TwoDMeshTopo *tdmt = new TwoDMeshTopo();
 
 	tdmt->myVar = dds.var(meshVarName);
 
@@ -850,7 +850,7 @@ static TwoDMeshTopology *getNewMeshTopology(DDS &dds, string meshVarName) {
 
 	tdmt->nodeCount = (*tdmt->nodeCoordinateArrays)[0]->length();
 
-	tdmt->rangeDataArrays = new vector<MeshDataVariable *>();
+	tdmt->rangeDataArrays = new vector<MeshDataVar *>();
 	tdmt->sharedIntArrays = new vector<int *>();
 	tdmt->sharedFloatArrays = new vector<float *>();
 
@@ -863,9 +863,9 @@ static TwoDMeshTopology *getNewMeshTopology(DDS &dds, string meshVarName) {
  * a new mesh topology is created. Once the associated mesh topology had been found (or created), the rangeVar
  * is added to the vector of rangeVars held by the mesh topology for later evaluation.
  */
-static void addRangeVar(DDS &dds, Array *rangeVar, map<string, TwoDMeshTopology *> &meshTopologies) {
+static void addRangeVar(DDS &dds, Array *rangeVar, map<string, TwoDMeshTopo *> &meshTopologies) {
 
-	MeshDataVariable *mdv = new MeshDataVariable();
+	MeshDataVar *mdv = new MeshDataVar();
 	mdv->meshDataVar = rangeVar;
 
 	DBG(cerr << "getMeshDataVar() - The user submitted the range data array: " << rangeVar->name() << endl);
@@ -892,8 +892,8 @@ static void addRangeVar(DDS &dds, Array *rangeVar, map<string, TwoDMeshTopology 
 	DBG(cerr << "getMeshDataVar() - Range data array refers to 'mesh' variable:: " << meshVarName << endl);
 
 	// Get the MeshTopology from the map.
-	TwoDMeshTopology *meshTopology;
-	map<string, TwoDMeshTopology *>::iterator mit = meshTopologies.find(meshVarName);
+	TwoDMeshTopo *meshTopology;
+	map<string, TwoDMeshTopo *>::iterator mit = meshTopologies.find(meshVarName);
 	if(mit == meshTopologies.end()){
 		// Not there? Make a new one.
 		DBG(cerr << "getMeshDataVar() - MeshTopology object for '" << meshVarName <<"' does NOT exist. Getting a new one... "  << endl);
@@ -1097,7 +1097,7 @@ static int getStartIndex(Array *array) {
 /**
  * Converts a row major 3xN Face node connectivity DAP array into a GF::CellArray
  */
-static GF::CellArray *getFaceNodeConnectivityCells(TwoDMeshTopology *tdmt) {
+static GF::CellArray *getFaceNodeConnectivityCells(TwoDMeshTopo *tdmt) {
 	DBG(cerr << "getFaceNodeConnectivityCells() - Building face node connectivity Cell " <<
 			"array from the Array "<< tdmt->faceNodeConnectivityArray->name() << endl);
 
@@ -1312,7 +1312,7 @@ static Array *getRankZeroAttributeNodeSetAsDapArray(
 /**
  * Builds the DAP response content from the GF::GridField result object.
  */
-static vector<BaseType *> *convertResultGridFieldToDapObjects(TwoDMeshTopology *tdmt){
+static vector<BaseType *> *convertResultGridFieldToDapObjects(TwoDMeshTopo *tdmt){
 
 	DBG(cerr << "convertResultGridFieldToDapObject() - BEGIN" << endl);
 
@@ -1332,9 +1332,9 @@ static vector<BaseType *> *convertResultGridFieldToDapObjects(TwoDMeshTopology *
 
 	// Add the range variable data arrays to the response.
 	DBG(cerr << "convertResultGridFieldToDapObject() - Adding the range variable data arrays to the response." << endl);
-	vector<MeshDataVariable *>::iterator mdvIt;
+	vector<MeshDataVar *>::iterator mdvIt;
 	for (mdvIt = tdmt->rangeDataArrays->begin(); mdvIt != tdmt->rangeDataArrays->end(); ++mdvIt) {
-		MeshDataVariable *mdv = *mdvIt;
+		MeshDataVar *mdv = *mdvIt;
 		Array *resultRangeVar = getRankZeroAttributeNodeSetAsDapArray(tdmt->resultGridField, mdv->meshDataVar);
 		results->push_back(resultRangeVar);
 	}
@@ -1353,7 +1353,7 @@ static vector<BaseType *> *convertResultGridFieldToDapObjects(TwoDMeshTopology *
 /**
  * This cleans up any memory allocated using "new" and stored in a TwoDMeshTopology
  */
-static void releaseTDMT(TwoDMeshTopology *tdmt){
+static void releaseTDMT(TwoDMeshTopo *tdmt){
 
 	DBG(cerr << "releaseTDMT() - BEGIN:   Releasing memory for MeshTopology '" << tdmt->myVar->name() << "'" << endl);
 
@@ -1384,11 +1384,11 @@ static void releaseTDMT(TwoDMeshTopology *tdmt){
 	}
 	delete tdmt->sharedFloatArrays;
 
-	DBG(cerr << "releaseTDMT() - Deleting MeshDataVariables..." << endl);
-	vector<MeshDataVariable *>::iterator mdvIt;
+	DBG(cerr << "releaseTDMT() - Deleting MeshDataVars..." << endl);
+	vector<MeshDataVar *>::iterator mdvIt;
 	for (mdvIt = tdmt->rangeDataArrays->begin(); mdvIt != tdmt->rangeDataArrays->end(); ++mdvIt) {
-		MeshDataVariable *mdv = *mdvIt;
-		DBG(cerr << "releaseTDMT() - Deleting MeshDataVariable '"<< mdv->meshDataVar->name()<< "'" << endl);
+		MeshDataVar *mdv = *mdvIt;
+		DBG(cerr << "releaseTDMT() - Deleting MeshDataVar '"<< mdv->meshDataVar->name()<< "'" << endl);
 		delete mdv;
 	}
 	delete tdmt->rangeDataArrays;
@@ -1441,7 +1441,7 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 	// Process and QC the arguments
 	UgridRestrictArgs args = processUgrArgs(argc, argv);
 
-	map<string, TwoDMeshTopology *> meshTopologies;
+	map<string, TwoDMeshTopo *> meshTopologies;
 
 	int rangeVarCount =0;
 	vector<Array *>::iterator it;
@@ -1460,10 +1460,10 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 	// Now it's time to read some data and pack it into the GridFields library...
 
 	//Each mesh topology gets it's own GridField
-	map<string, TwoDMeshTopology *>::iterator mit;
+	map<string, TwoDMeshTopo *>::iterator mit;
 	for (mit = meshTopologies.begin(); mit != meshTopologies.end(); ++mit) {
 		string name = mit->first;
-		TwoDMeshTopology *tdmt = mit->second;
+		TwoDMeshTopo *tdmt = mit->second;
 
 		DBG(cerr << "function_ugr() - Building GridFields objects for mesh_topology variable "<< tdmt->myVar->name() << endl);
 
@@ -1524,8 +1524,8 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 		// For each range data variable associated with this MeshTopology read and add the  data to the GridField
 		// At the appropriate rank.
 		// They are added at Rank 0 because they're nodes, at least for now.
-		for (vector<MeshDataVariable *>::iterator mdv_it = tdmt->rangeDataArrays->begin(); mdv_it != tdmt->rangeDataArrays->end(); ++mdv_it) {
-			MeshDataVariable *mdVar = *mdv_it;
+		for (vector<MeshDataVar *>::iterator mdv_it = tdmt->rangeDataArrays->begin(); mdv_it != tdmt->rangeDataArrays->end(); ++mdv_it) {
+			MeshDataVar *mdVar = *mdv_it;
 			GF::Array *gfa = extractGridFieldArray(mdVar->meshDataVar,tdmt->sharedIntArrays,tdmt->sharedFloatArrays);
 			DBG(cerr << "function_ugr() - Adding mesh data variable '"<< mdVar->meshDataVar->name() <<"' to GF::GridField at rank 0" << endl);
 			tdmt->inputGridField->AddAttribute(node, gfa);
@@ -1539,7 +1539,7 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 	for (mit = meshTopologies.begin(); mit != meshTopologies.end(); ++mit) {
 		string meshTopologyName = mit->first;
-		TwoDMeshTopology *tdmt = mit->second;
+		TwoDMeshTopo *tdmt = mit->second;
 
 		// Build the restriction operator;
 		DBG(cerr << "function_ugr() - Constructing new GF::RestrictOp using user "<<
@@ -1576,7 +1576,7 @@ void function_ugr2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp) {
 
 	DBG(cerr << "function_ugr() - Releasing memory held by TwoDMeshTopology objects..." << endl);
 	for (mit = meshTopologies.begin(); mit != meshTopologies.end(); ++mit) {
-		TwoDMeshTopology *tdmt = mit->second;
+		TwoDMeshTopo *tdmt = mit->second;
 		releaseTDMT(tdmt);
 	}
 

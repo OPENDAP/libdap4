@@ -1753,7 +1753,7 @@ function_ugrOLD(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
  * Splits the string on the passed char. Returns vector of substrings.
  * TODO make this work on situations where multiple spaces doesn't hose the split()
  */
-vector<string> &split(const string &s, char delim, vector<string> &elems) {
+vector<string> &splitStr(const string &s, char delim, vector<string> &elems) {
     stringstream ss(s);
     string item;
     while(getline(ss, item, delim)) {
@@ -1765,9 +1765,9 @@ vector<string> &split(const string &s, char delim, vector<string> &elems) {
 /**
  * Splits the string on the passed char. Returns vector of substrings.
  */
-vector<string> split(const string &s, char delim) {
+vector<string> splitStr(const string &s, char delim) {
     vector<string> elems;
-    return split(s, delim, elems);
+    return splitStr(s, delim, elems);
 }
 
 /*
@@ -2023,7 +2023,7 @@ static vector<Array *> *getNodeCoordinateArrays(BaseType *meshTopology, DDS &dds
 
     // Split the node_coordinates string up on spaces
     // TODO make this work on situations where multiple spaces in the node_coorindates string doesn't hose the split()
-    vector<string> nodeCoordinateNames = split(node_coordinates,' ');
+    vector<string> nodeCoordinateNames = splitStr(node_coordinates,' ');
 
 
     // Find each variable in the resulting list

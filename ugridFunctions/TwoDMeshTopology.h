@@ -53,16 +53,16 @@ private:
 	 *
 	 * The DAP dataset variable that defined the mesh_topology.
 	 */
-	BaseType *_myVar;
+	BaseType *myVar;
 
 	/**
 	 * REQUIRED
 	 * The attribute dimension indicates the highest dimensionality of the geometric
 	 * elements; for a 2-dimensional (triangular) mesh this should be 2.
 	 */
-	int _dimension;
+	string dimension;
 
-	int _nodeCount;
+	int nodeCount;
 
 	/**
 	 * REQUIRED
@@ -72,7 +72,7 @@ private:
 	 * longitude, and optional elevation or other coordinates). These auxiliary coordinate
 	 * variables will have length nNodes.
 	 */
-	vector<Array *> *_nodeCoordinateArrays;
+	vector<Array *> *nodeCoordinateArrays;
 
 	/**
 	 * REQUIRED
@@ -105,9 +105,9 @@ private:
 	 * indexing for more details.
 	 *
 	 */
-	Array *_faceNodeConnectivityArray;
+	Array *faceNodeConnectivityArray;
 
-	vector<MeshDataVariable *> *_rangeDataArrays;
+	vector<MeshDataVariable *> *rangeDataArrays;
 
 	/**
 	 * OPTIONAL
@@ -171,17 +171,40 @@ private:
 	//vector<string> *edgeCoordinateNames;
 	//vector<Array *> *edgeCoordinateArrays;
 
-	GF::Grid *_gridTopology;
-	GF::GridField *_inputGridField;
-	GF::GridField *_resultGridField;
+	GF::Grid *gridTopology;
+	GF::GridField *inputGridField;
+	GF::GridField *resultGridField;
 
-	vector<int *> *_sharedIntArrays;
-	vector<float *> *_sharedFloatArrays;
-	GF::Node *_sharedNodeArray;
+	vector<int *> *sharedIntArrays;
+	vector<float *> *sharedFloatArrays;
+
+	GF::Node *sharedNodeArray;
+
+
+	Array *getFaceNodeConnectivityArray(BaseType *meshTopology, DDS &dds);
+	vector<Array *> *getNodeCoordinateArrays(BaseType *meshTopology, DDS &dds);
+
+	GF::Node *getFncArrayAsGFNodes(Array *fncVar);
+	int getStartIndex(Array *array);
+	GF::CellArray *getFaceNodeConnectivityCells();
+
+	Array *getRankZeroAttributeNodeSetAsDapArray(GF::GridField *resultGridField, Array *sourceArray);
+	Array *getGridFieldCellArrayAsDapArray(GF::GridField *resultGridField, Array *sourceFcnArray);
+	Array *getNewFcnDapArray(Array *templateArray, int N);
+
 
 public:
 	TwoDMeshTopology();
 	~TwoDMeshTopology();
+	void init(string meshVarName, DDS &dds);
+	void addDataVariable(MeshDataVariable *mdt);
+	string name(){ return myVar->name();}
+	BaseType *getDapVariable(){ return myVar; }
+
+	void buildGridFieldsTopology();
+	void applyOperator(locationType loc, string filterExpression);
+	vector<BaseType *> *convertResultGridFieldToDapObjects();
+
 };
 
 }
