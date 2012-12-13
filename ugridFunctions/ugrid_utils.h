@@ -28,18 +28,15 @@
 #ifndef _UgridUtilities_h
 #define _UgridUtilities_h 1
 
+#include <gridfields/array.h>
+
+
 using namespace std;
 using namespace libdap;
 
 namespace libdap {
 
 class Array;
-
-//FIXME Putting these - technically definitions since they create storage - is likely to make more problems than
-// it will solve. These are global objects, but including the header more than once will mean they are multiply
-// defined. It's also an easy way to get names that 'collide'. I try to avoid names starting with underscores because
-// sometimes those kinds of names are 'magic' with compilers/linkers/libraries. If you replace these with #define
-// then you will not confuse the compiler and you'll at least get a warning if they are defined multiple times.
 
 /**
  *  UGrid attribute vocabulary
@@ -56,20 +53,6 @@ class Array;
 #define UGRID_MESH "mesh"
 #define UGRID_START_INDEX "start_index"
 
-
-
-//FIXME A classic problem with enums is that they get lumped into a header and then for code to use that enum,
-// the whole header is included. Move this to its own .h file. My code suffers from this... I'll do that now.
-#if 0
-enum locationType {
-	node, edge, face
-};
-#endif
-
-#if 0
-vector<string> &split(const string &s, char delim, vector<string> &elems);
-vector<string> split(const string &s, char delim);
-#endif
 
 GF::Array *extractGridFieldArray(Array *a, vector<int*> *sharedIntArrays, vector<float*> *sharedFloatArrays);
 

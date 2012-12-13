@@ -28,6 +28,14 @@
 #ifndef _TwoDMeshTopology_h
 #define _TwoDMeshTopology_h 1
 
+
+
+#include <gridfields/type.h>
+#include <gridfields/gridfield.h>
+#include <gridfields/grid.h>
+#include <gridfields/cellarray.h>
+
+
 using namespace std;
 using namespace libdap;
 
@@ -37,8 +45,6 @@ class BaseType;
 class Array;
 class MeshDataVariable;
 class Grid;
-class GridField;
-class Node;
 
 /**
  * Identifies the location/rank/dimension that various grid components are associated with.
@@ -202,7 +208,7 @@ public:
 	BaseType *getDapVariable(){ return myVar; }
 
 	void buildGridFieldsTopology();
-	void applyOperator(locationType loc, string filterExpression);
+	void applyRestrictOperator(locationType loc, string filterExpression);
 	vector<BaseType *> *convertResultGridFieldToDapObjects();
 
 };

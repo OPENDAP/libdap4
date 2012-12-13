@@ -438,7 +438,7 @@ GF::CellArray *TwoDMeshTopology::getFaceNodeConnectivityCells()
 
 
 
-void TwoDMeshTopology::applyOperator(locationType loc, string filterExpression)
+void TwoDMeshTopology::applyRestrictOperator(locationType loc, string filterExpression)
 {
 	// Build the restriction operator;
 	DBG(cerr << "applyOperator() - Constructing new GF::RestrictOp using user "<<
