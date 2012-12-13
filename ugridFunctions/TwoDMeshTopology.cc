@@ -143,6 +143,7 @@ void TwoDMeshTopology::addDataVariable(MeshDataVariable *mdv)
 						+ " of the node coordinate array "
 						+ firstCoordinate->name());
 
+
 	rangeDataArrays->push_back(mdv);
 }
 

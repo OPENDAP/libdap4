@@ -55,10 +55,10 @@ class Array;
 
 
 GF::Array *extractGridFieldArray(Array *a, vector<int*> *sharedIntArrays, vector<float*> *sharedFloatArrays);
+template<typename T> T *extract_array(Array * a);
+template<typename DODS, typename T> T *extract_array_helper(Array *a);
 
-template<typename T>static T *extract_array(Array * a) ;
 
-template<typename DODS, typename T> static T *extract_array_helper(Array *a);
 string getAttributeValue(BaseType *bt, string aName) ;
 bool matchesCfRoleOrStandardName(BaseType *bt, string aValue);
 bool same_dimensions(Array *arr1, Array *arr2);
