@@ -30,6 +30,7 @@
 #include <sstream>
 #include <vector>
 
+#include <gridfields/type.h>
 #include <gridfields/gridfield.h>
 #include <gridfields/grid.h>
 #include <gridfields/implicit0cells.h>
