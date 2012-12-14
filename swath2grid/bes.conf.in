@@ -6,19 +6,18 @@ BES.Group=group_name
 BES.LogName=./bes.log
 BES.LogVerbose=no
 
-BES.modules=dap,cmd,nc,h4,fong
-BES.module.dap=@beslibdir@/libdap_module.so
-BES.module.cmd=@beslibdir@/libdap_xml_module.so
+BES.modules=dap,cmd,nc,h4,fong,fonc
+BES.module.dap=@libdir@/bes/libdap_module.so
+BES.module.cmd=@libdir@/bes/libdap_xml_module.so
 
-BES.module.nc=@beslibdir@/libnc_module.so
-BES.module.h4=@beslibdir@/libhdf4_module.so
+BES.module.nc=@libdir@/bes/libnc_module.so
+BES.module.h4=@libdir@/bes/libhdf4_module.so
 
-BES.module.fong=@abs_top_builddir@/.libs/libfong_module.so
-
+BES.module.fong=@libdir@/bes/libfong_module.so
+BES.module.fonc=@libdir@/bes/libfonc_module.so
 
 BES.Catalog.catalog.RootDirectory=@abs_top_srcdir@
 BES.Data.RootDirectory=/dev/null
-
 
 BES.Catalog.catalog.TypeMatch=nc:.*.nc(.bz2|.gz|.Z)?$;h4:.*.(hdf|HDF|eos)(.bz2|.gz|.Z)?$;
 
@@ -29,7 +28,6 @@ BES.FollowSymLinks=No
 BES.Catalog.catalog.FollowSymLinks=No
 
 BES.ServerPort=10002
-
 
 BES.CacheDir=/tmp
 BES.CachePrefix=bes_cache
@@ -47,5 +45,4 @@ BES.ProcessManagerMethod=multiple
 BES.DefaultResponseMethod=POST
 
 FONg.TempDirectory=@abs_top_srcdir@/tests
-
 

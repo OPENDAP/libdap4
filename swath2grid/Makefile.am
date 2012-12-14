@@ -2,8 +2,14 @@
 # Build libswath2grid, part of libdap.
 
 AUTOMAKE_OPTIONS = foreign
+ 
+AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests  $(XML2_CFLAGS) $(CURL_CFLAGS)
+AM_LDADD =
 
-# AM_CPPFLAGS = 
+if CPPUNIT
+AM_CPPFLAGS += $(CPPUNIT_CFLAGS)
+AM_LDADD += $(CPPUNIT_LIBS)
+endif
 
 # These are not used by automake but are often useful for certain types of
 # debugging. The best way to use these is to run configure as:
@@ -14,6 +20,12 @@ TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 # SUBDIRS = 
 # DIST_SUBDIRS = 
+
+# This determines what gets built by make check
+check_PROGRAMS = $(UNIT_TESTS)
+
+# This determines what gets run by 'make check.'
+TESTS = $(UNIT_TESTS)
 
 noinst_LTLIBRARIES = libswath2grid.la
 
@@ -29,3 +41,21 @@ BoundingBox.cpp wcsUtil.cpp DAP_Dataset.cpp  reproj_functions.cc
 
 HDRS = AbstractDataset.h wcs_error.h    \
 BoundingBox.h wcsUtil.h DAP_Dataset.h reproj_functions.h
+
+if CPPUNIT
+UNIT_TESTS = s2gTest
+else
+UNIT_TESTS =
+check-local:
+    @echo ""
+    @echo "**********************************************************"
+    @echo "You must have cppunit 1.12.x or greater installed to run *"
+    @echo "check target in unit-tests directory                     *"
+    @echo "**********************************************************"
+    @echo ""
+endif
+
+
+s2gTest_SOURCES = s2gTest.cc
+s2gTest_LDADD = ../libdap.la ../tests/libtest-types.a libswath2grid.la $(AM_LDADD)
+

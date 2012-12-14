@@ -1,32 +1,27 @@
-/******************************************************************************
- * $Id: TRMM_Dataset.cpp 2011-07-19 16:24:00Z $
- *
- * Project:  The Open Geospatial Consortium (OGC) Web Coverage Service (WCS)
- * 			 for Earth Observation: Open Source Reference Implementation
- * Purpose:  DAP_Dataset implementation for NOAA GOES data
- * Author:   Yuanzheng Shao, yshao3@gmu.edu
- *
- ******************************************************************************
- * Copyright (c) 2011, Liping Di <ldi@gmu.edu>, Yuanzheng Shao <yshao3@gmu.edu>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- ****************************************************************************/
+
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2012 OPeNDAP, Inc.
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <cstdlib>
 
@@ -45,7 +40,9 @@
 using namespace libdap;
 using namespace std;
 
+#if 0
 #define GOES_TIME_DEBUG FALSE
+#endif
 
 namespace libdap {
 
@@ -350,10 +347,17 @@ CPLErr DAP_Dataset::SetGeoTransform()
 {
     DBG(cerr << "In SetGeoTransform" << endl);
 
+    // TODO Look at this; is this correct
     // Assume the array is two dimensional
     Array::Dim_iter i = m_src->dim_begin();
+#if 0
+    // ORIGINAL code; maybe wrong
     int nXSize = m_src->dimension_size(i, true);
     int nYSize = m_src->dimension_size(i + 1, true);
+#endif
+    // Data are in row-major order, so the first dim is the Y-axis value
+    int nYSize = m_src->dimension_size(i, true);
+    int nXSize = m_src->dimension_size(i + 1, true);
 
     mi_SrcImageXSize = nXSize;
     mi_SrcImageYSize = nYSize;
@@ -420,6 +424,7 @@ void DAP_Dataset::SetGeoBBoxAndGCPs(int nXSize, int nYSize)
 
     if (nXSize != nLatXSize || nLatXSize != nLonXSize || nYSize != nLatYSize || nLatYSize != nLonYSize)
         throw Error("The size of latitude/longitude and data field does not match.");
+
 #if 0
     /*
      *	Re-sample Standards:
@@ -443,8 +448,6 @@ void DAP_Dataset::SetGeoBBoxAndGCPs(int nXSize, int nYSize)
     xSpace = int(nXSize / RESAMPLE_STANDARD) + 2;
     ySpace = int(nYSize / RESAMPLE_STANDARD) + 2;
 #endif
-    int nGCPs = 0;
-    GDAL_GCP gdalCGP;
 
     m_lat->read();
     m_lon->read();
@@ -460,9 +463,12 @@ void DAP_Dataset::SetGeoBBoxAndGCPs(int nXSize, int nYSize)
         mdSrcGeoMinY = 90;
         mdSrcGeoMaxY = -90;
 
-        // Sample every fourth row and column
-        int xSpace = 4;
-        int ySpace = 4;
+        // Sample every other row and column
+        int xSpace = 2;
+        int ySpace = 2;
+
+        int nGCPs = 0;
+        GDAL_GCP gdalCGP;
 
         for (int iLine = 0; iLine < nYSize - ySpace; iLine += ySpace) {
             for (int iPixel = 0; iPixel < nXSize - xSpace; iPixel += xSpace) {
@@ -479,6 +485,9 @@ void DAP_Dataset::SetGeoBBoxAndGCPs(int nXSize, int nYSize)
                     gdalCGP.dfGCPPixel = iPixel;
                     gdalCGP.dfGCPX = x;
                     gdalCGP.dfGCPY = y;
+
+                    DBG2(cerr << "iLine, iPixel: " << iLine << ", " << iPixel << " --> x,y: " << x << ", " << y << endl);
+
                     gdalCGP.dfGCPZ = 0;
                     m_gdalGCPs.push_back(gdalCGP);
 
@@ -518,12 +527,13 @@ CPLErr DAP_Dataset::SetGDALDataset(const int isSimple)
 
     // NB: mi_RectifiedImageXSize & Y are set in SetGeoTransform()
     GDALDataType eBandType = GDT_Float64;
+    // VRT, which was used in the original sample code, is not supported in this context, so I used MEM
     GDALDriverH poDriver = GDALGetDriverByName("MEM");
     GDALDataset* satDataSet = (GDALDataset*) GDALCreate(poDriver, "", mi_RectifiedImageXSize, mi_RectifiedImageYSize,
             1, eBandType, NULL);
     if (NULL == satDataSet) {
         GDALClose(poDriver);
-        throw Error("Failed to create \"MEM\" dataSet.");
+        throw Error("Failed to create MEM dataSet (" + string(CPLGetLastErrorMsg()) + ").");
     }
 
     GDALRasterBand *poBand = satDataSet->GetRasterBand(1);
@@ -534,14 +544,14 @@ CPLErr DAP_Dataset::SetGDALDataset(const int isSimple)
     if (CE_None != poBand->RasterIO(GF_Write, 0, 0, mi_RectifiedImageXSize, mi_RectifiedImageYSize, data,
                     mi_SrcImageXSize, mi_SrcImageYSize, eBandType, 0, 0)) {
         GDALClose((GDALDatasetH) satDataSet);
-        throw Error("Failed to satellite data band to VRT DataSet.");
+        throw Error("Failed to set satellite data band to MEM DataSet (" + string(CPLGetLastErrorMsg()) + ").");
     }
     delete[] data;
 
     //set GCPs for this VRTDataset
     if (CE_None != SetGCPGeoRef4VRTDataset(satDataSet)) {
         GDALClose((GDALDatasetH) satDataSet);
-        throw Error("Could not georeference the virtual dataset.");
+        throw Error("Could not georeference the virtual dataset (" + string(CPLGetLastErrorMsg()) + ").");
     }
 
     DBG(cerr << "satDataSet: " << satDataSet << endl);
@@ -593,7 +603,7 @@ CPLErr DAP_Dataset::SetGCPGeoRef4VRTDataset(GDALDataset* poVDS)
 
     return CE_None;
 }
-
+#if 0
 /************************************************************************/
 /*                        SetMetaDataList()                             */
 /************************************************************************/
@@ -625,7 +635,7 @@ CPLErr DAP_Dataset::SetMetaDataList(GDALDataset* hSrcDS)
 
     return CE_None;
 }
-
+#endif
 /************************************************************************/
 /*                          GetGeoMinMax()                              */
 /************************************************************************/
@@ -674,7 +684,7 @@ CPLErr DAP_Dataset::RectifyGOESDataSet()
     char *pszDstWKT;
     mo_NativeCRS.exportToWkt(&pszDstWKT);
 
-    GDALDriverH poDriver = GDALGetDriverByName("MEM");
+    GDALDriverH poDriver = GDALGetDriverByName("VRT"); // MEM
     GDALDataset* rectDataSet = (GDALDataset*) GDALCreate(poDriver, "", mi_RectifiedImageXSize, mi_RectifiedImageYSize,
             maptr_DS->GetRasterCount(), maptr_DS->GetRasterBand(1)->GetRasterDataType(), NULL);
     if (NULL == rectDataSet) {
@@ -691,11 +701,11 @@ CPLErr DAP_Dataset::RectifyGOESDataSet()
 
     // FIXME Magic value of 0.125
     if (CE_None != GDALReprojectImage(maptr_DS.get(), NULL, rectDataSet, pszDstWKT,
-            GRA_NearestNeighbour, 0, 0.125, NULL, NULL, NULL)) {
+            GRA_Lanczos /*GRA_NearestNeighbour*/, 0, 0.0/*0.125*/, NULL, NULL, NULL)) {
         GDALClose(rectDataSet);
         GDALClose(poDriver);
         OGRFree(pszDstWKT);
-        throw Error("Failed to re-project GOES data from satellite GCP CRS to geographical CRS.");
+        throw Error("Failed to re-project satellite data from GCP CRS to geographical CRS.");
     }
 
     OGRFree(pszDstWKT);
