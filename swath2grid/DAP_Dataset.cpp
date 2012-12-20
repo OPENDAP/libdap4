@@ -100,6 +100,15 @@ DAP_Dataset::DAP_Dataset(const string& id, vector<int> &rBandList) :
 DAP_Dataset::DAP_Dataset(Array *src, Array *lat, Array *lon) :
         AbstractDataset(), m_src(src), m_lat(lat), m_lon(lon)
 {
+#if 1
+    // TODO Remove these?
+    DBG(cerr << "Registering GDAL drivers" << endl);
+    GDALAllRegister();
+    OGRRegisterAll();
+#endif
+
+    CPLSetErrorHandler(CPLQuietErrorHandler);
+
     // Read this from the 'missing_value' or '_FillValue' attributes
     string missing_value = m_src->get_attr_table().get_attr("missing_value");
     if (missing_value.empty())
@@ -135,10 +144,6 @@ DAP_Dataset::DAP_Dataset(Array *src, Array *lat, Array *lon) :
 
 CPLErr DAP_Dataset::InitialDataset(const int isSimple)
 {
-	// TODO Remove these?
-    GDALAllRegister();
-    OGRRegisterAll();
-
     DBG(cerr << "In InitialDataset" << endl);
 
     // Might break that operation out so the remap is a separate call
@@ -235,7 +240,7 @@ Array *DAP_Dataset::GetDAPArray()
     AttrTable &attr = a->get_attr_table();
     attr.append_attr("projection", "String", projection_info);
     attr.append_attr("gcp_projection", "String", gcp_projection_info);
-    for (int i = 0; i < sizeof(m_geo_transform_coef); ++i) {
+    for (unsigned int i = 0; i < sizeof(m_geo_transform_coef); ++i) {
         attr.append_attr("geo_transform_coefs", "String", double_to_string(m_geo_transform_coef[i]));
     }
 
@@ -529,9 +534,13 @@ CPLErr DAP_Dataset::SetGDALDataset(const int isSimple)
     GDALDataType eBandType = GDT_Float64;
     // VRT, which was used in the original sample code, is not supported in this context, so I used MEM
     GDALDriverH poDriver = GDALGetDriverByName("MEM");
+    if (!poDriver) {
+        throw Error("Failed to get MEM driver (" + string(CPLGetLastErrorMsg()) + ").");
+    }
+
     GDALDataset* satDataSet = (GDALDataset*) GDALCreate(poDriver, "", mi_RectifiedImageXSize, mi_RectifiedImageYSize,
             1, eBandType, NULL);
-    if (NULL == satDataSet) {
+    if (!satDataSet) {
         GDALClose(poDriver);
         throw Error("Failed to create MEM dataSet (" + string(CPLGetLastErrorMsg()) + ").");
     }
