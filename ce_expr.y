@@ -161,6 +161,8 @@ proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 %token <op> SCAN_LESS_EQL
 %token <op> SCAN_REGEXP
 
+%token <op> SCAN_STAR
+
 %type <boolean> constraint_expr projection proj_clause proj_function
 %type <boolean> array_projection selection clause bool_function
 %type <id> array_proj_clause name
@@ -210,22 +212,6 @@ proj_clause: name
 			     no_such_ident($1, "identifier");
 		     }
 		}
-/*		| SCAN_STR
-                {
-                    if ($1.type != dods_str_c || $1.v.s == 0 || $1.v.s->empty())
-                        ce_exprerror("Malformed string", "");
-                        
-                    BaseType *var = DDS(arg)->var(*($1.v.s));
-                    if (var) {
-                        DBG(cerr << "Marking " << $1 << endl);
-                        $$ = DDS(arg)->mark(*($1.v.s), true);
-                        DBG(cerr << "result: " << $$ << endl);
-                    }
-                    else {
-                        no_such_ident(*($1.v.s), "identifier");
-                    }
-                }
-*/
         | proj_function
         {
 		    $$ = $1;
@@ -427,19 +413,8 @@ name:           SCAN_WORD
                         ce_exprerror("Malformed string", "");
                         
                     strncpy($$, www2id(*($1.v.s)).c_str(), ID_MAX-1);
-                    // delete the string? ***
+                    
                     $$[ID_MAX-1] = '\0';
-/*
-                    BaseType *var = DDS(arg)->var(*($1.v.s));
-                    if (var) {
-                        DBG(cerr << "Marking " << $1 << endl);
-                        $$ = DDS(arg)->mark(*($1.v.s), true);
-                        DBG(cerr << "result: " << $$ << endl);
-                    }
-                    else {
-                        no_such_ident(*($1.v.s), "identifier");
-                    }
-*/
                 }
 ;
 
@@ -453,60 +428,80 @@ array_indices:  array_index
 		}
 ;
 
-array_index: 	'[' SCAN_WORD ']'
-                {
-		    if (!check_uint32($2)) {
-			string msg = "The word `";
-			msg += string($2) + "' is not a valid array index.";
-			throw Error(malformed_expr, msg);
-		    }
-		    value i;
-		    i.type = dods_uint32_c;
-		    i.v.i = atoi($2);
-		    $$ = make_array_index(i);
-		}
-		|'[' SCAN_WORD ':' SCAN_WORD ']'
-                {
-		    if (!check_uint32($2)) {
-			string msg = "The word `";
-			msg += string($2) + "' is not a valid array index.";
-			throw Error(malformed_expr, msg);
-		    }
-		    if (!check_uint32($4)) {
-			string msg = "The word `";
-			msg += string($4) + "' is not a valid array index.";
-			throw Error(malformed_expr, msg);
-		    }
-		    value i,j;
-		    i.type = j.type = dods_uint32_c;
-		    i.v.i = atoi($2);
-		    j.v.i = atoi($4);
-		    $$ = make_array_index(i, j);
-		}
-		| '[' SCAN_WORD ':' SCAN_WORD ':' SCAN_WORD ']'
-                {
-		    if (!check_uint32($2)) {
-			string msg = "The word `";
-			msg += string($2) + "' is not a valid array index.";
-			throw Error(malformed_expr, msg);
-		    }
-		    if (!check_uint32($4)) {
-			string msg = "The word `";
-			msg += string($4) + "' is not a valid array index.";
-			throw Error(malformed_expr, msg);
-		    }
-		    if (!check_uint32($6)) {
-			string msg = "The word `";
-			msg += string($6) + "' is not a valid array index.";
-			throw Error(malformed_expr, msg);
-		    }
-		    value i, j, k;
-		    i.type = j.type = k.type = dods_uint32_c;
-		    i.v.i = atoi($2);
-		    j.v.i = atoi($4);
-		    k.v.i = atoi($6);
-		    $$ = make_array_index(i, j, k);
-		}
+/*
+ * We added [*], [n:*] and [n:m:*] to the syntax for array projections.
+ * These mean, resp., all the elements, elements from n to the end, and
+ * from n to the end with a stride of m. To encode this with as little 
+ * disruption as possible, we represent the star with -1. jhrg 12/20/12
+ */ 
+array_index:    '[' SCAN_WORD ']'
+{
+    if (!check_uint32($2))
+        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+    value i;
+    i.type = dods_uint32_c;
+    i.v.i = atoi($2);
+    $$ = make_array_index(i);
+}
+|   '[' SCAN_STAR ']'
+{
+    value i;
+    i.type = dods_int32_c;
+    i.v.i =-1;
+    $$ = make_array_index(i);
+}
+|'[' SCAN_WORD ':' SCAN_WORD ']'
+{
+    if (!check_uint32($2))
+        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+    if (!check_uint32($4))
+        throw Error(malformed_expr, "The word `" + string($4) + "' is not a valid array index.");
+    value i,j;
+    i.type = j.type = dods_uint32_c;
+    i.v.i = atoi($2);
+    j.v.i = atoi($4);
+    $$ = make_array_index(i, j);
+}
+|'[' SCAN_WORD ':' SCAN_STAR ']'
+{
+    if (!check_uint32($2))
+        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+    value i,j;
+    i.type = dods_uint32_c;
+    j.type = dods_int32_c;  /* signed */
+    i.v.i = atoi($2);
+    j.v.i = -1;
+    $$ = make_array_index(i, j);
+}
+| '[' SCAN_WORD ':' SCAN_WORD ':' SCAN_WORD ']'
+{
+    if (!check_uint32($2))
+        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+    if (!check_uint32($4))
+        throw Error(malformed_expr, "The word `" + string($4) + "' is not a valid array index.");
+    if (!check_uint32($6))
+        throw Error(malformed_expr, "The word `" + string($6) + "' is not a valid array index.");
+    value i, j, k;
+    i.type = j.type = k.type = dods_uint32_c;
+    i.v.i = atoi($2);
+    j.v.i = atoi($4);
+    k.v.i = atoi($6);
+    $$ = make_array_index(i, j, k);
+}
+| '[' SCAN_WORD ':' SCAN_WORD ':' SCAN_STAR ']'
+{
+    if (!check_uint32($2))
+        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+    if (!check_uint32($4))
+        throw Error(malformed_expr, "The word `" + string($4) + "' is not a valid array index.");
+    value i, j, k;
+    i.type = j.type = dods_uint32_c;
+    k.type = dods_int32_c;
+    i.v.i = atoi($2);
+    j.v.i = atoi($4);
+    k.v.i = -1;
+    $$ = make_array_index(i, j, k);
+}
 ;
 
 rel_op:		SCAN_EQUAL
@@ -642,6 +637,12 @@ bool bracket_projection(DDS &table, const char *name, int_list_list *indices)
 
 // Given three values (I1, I2, I3), all of which must be integers, build an
 // int_list which contains those values.
+// 
+// Note that we added support for * in the rightmost position of an index
+// (i.e., [*], [n:*], [n:m:*]) and indicate that star using -1 as an index value.
+// Bescause of this change, the test for the type of the rightmost value in
+// the index subexpr was changed to include signed int.
+// jhrg 12/20/12
 //
 // Returns: A pointer to an int_list of three integers or NULL if any of the
 // values are not integers.
@@ -649,7 +650,7 @@ bool bracket_projection(DDS &table, const char *name, int_list_list *indices)
 int_list *
 make_array_index(value &i1, value &i2, value &i3)
 {
-    if (i1.type != dods_uint32_c || i2.type != dods_uint32_c || i3.type != dods_uint32_c)
+    if (i1.type != dods_uint32_c || i2.type != dods_uint32_c || (i3.type != dods_uint32_c && i3.type != dods_int32_c))
         return (int_list *) 0;
 
     int_list *index = new int_list;
@@ -668,7 +669,7 @@ make_array_index(value &i1, value &i2, value &i3)
 int_list *
 make_array_index(value &i1, value &i2)
 {
-    if (i1.type != dods_uint32_c || i2.type != dods_uint32_c)
+    if (i1.type != dods_uint32_c || (i2.type != dods_uint32_c && i2.type != dods_int32_c))
 	return (int_list *) 0;
 
     int_list *index = new int_list;
@@ -687,12 +688,18 @@ make_array_index(value &i1, value &i2)
 int_list *
 make_array_index(value &i1)
 {
-    if (i1.type != dods_uint32_c)
+    if (i1.type != dods_uint32_c && i1.type != dods_int32_c)
 	return (int_list *) 0;
 
     int_list *index = new int_list;
 
-    index->push_back((int) i1.v.i);
+    // When the CE is Array[*] that means all of the elements, but the value
+    // of i1 will be -1. Make the projection triple be 0:1:-1 which is a 
+    // pattern that libdap::Array will recognize.
+    if (i1.v.i == -1)
+        index->push_back(0);
+    else
+        index->push_back((int) i1.v.i);
     index->push_back(1);
     index->push_back((int) i1.v.i);
 
@@ -780,77 +787,69 @@ void process_array_indices(BaseType *variable, int_list_list *indices)
 
     Array *a = dynamic_cast<Array *>(variable); // replace with dynamic cast
     if (!a)
-	throw Error(malformed_expr,
+        throw Error(malformed_expr,
 		    string("The constraint expression evaluator expected an array; ") + variable->name() + " is not an array.");
 
     if (a->dimensions(true) != (unsigned) indices->size())
-	throw Error(malformed_expr,
+        throw Error(malformed_expr,
 		    string("Error: The number of dimensions in the constraint for ") + variable->name()
                     + " must match the number in the array.");
 
-    DBG(cerr << "Before clear_constraint:" << endl);
-    DBG(a->print_decl(cerr, "", true, false, true));
-
-    // a->reset_constraint();	// each projection erases the previous one
-
-    DBG(cerr << "After clear_constraint:" << endl);
+    DBG(cerr << "Before applying projection to array:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
     assert(indices);
+    
     int_list_citer p = indices->begin();
     Array::Dim_iter r = a->dim_begin();
     for (; p != indices->end() && r != a->dim_end(); p++, r++) {
-	int_list *index = *p;
-	assert(index);
+        int_list *index = *p;
+        assert(index);
 
-	int_citer q = index->begin();
-	assert(q != index->end());
-	int start = *q;
+        int_citer q = index->begin();
+        assert(q != index->end());
+        int start = *q;
 
-	q++;
-	int stride = *q;
+        q++;
+        int stride = *q;
 
-	q++;
-	int stop = *q;
+        q++;
+        int stop = *q;
 
-	q++;
-	if (q != index->end()) {
-	    throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
-	}
+        q++;
+        if (q != index->end())
+            throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
 
-	DBG(cerr << "process_array_indices: Setting constraint on " 
-	    << a->name() << "[" << start << ":" << stop << "]"
-	    << endl);
+        DBG(cerr << "process_array_indices: Setting constraint on " 
+            << a->name() << "[" << start << ":" << stop << "]"
+            << endl);
 
-	// It's possible that an array will appear more than once in a CE
-	// (for example, if an array of structures is constrained so that
-	// only two fields are projected and there's an associated hyperslab).
-	// However, in this case the two hyperslabs must be equal; test for
-	// that here. But see clear_constraint above... 10/28/08 jhrg
+        // It's possible that an array will appear more than once in a CE
+        // (for example, if an array of structures is constrained so that
+        // only two fields are projected and there's an associated hyperslab).
+        // However, in this case the two hyperslabs must be equal; test for
+        // that here.
+        //
+        // We added '*' to mean 'the last element' in the array and use an index of -1
+        // to indicate that. If 'stop' is -1, don't test it here because dimension_stop()
+        // won't be -1 but the actual ending index of the array. jhrg 12/20/12
 
-	if (a->send_p()
-	    && (a->dimension_start(r, true) != start || a->dimension_stop(r, true) != stop
-		|| a->dimension_stride(r, true) != stride))
-	    throw Error(malformed_expr,
-			string("The Array was already projected differently in the constraint expression: ") + a->name() + ".");
+        if (a->send_p() && (a->dimension_start(r, true) != start || (a->dimension_stop(r, true) != stop && stop != -1)
+                            || a->dimension_stride(r, true) != stride))
+            throw Error(malformed_expr,
+                    string("The Array was already projected differently in the constraint expression: ") + a->name() + ".");
 
-	a->add_constraint(r, start, stride, stop);
+        a->add_constraint(r, start, stride, stop);
 
-	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
+        DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
     }
 
-    DBG(cerr << "After processing loop:" << endl);
+    DBG(cerr << "After applying projection to array:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
-    DBG(cerr << "Array Constraint: ");
-    DBG(for (Array::Dim_iter dp = a->dim_begin(); dp != a->dim_end();
-	     dp++
-	     ) cout << a->dimension_size(dp, true) << " ");
-    DBG(cerr << endl);
 
-    if (p != indices->end() && r == a->dim_end()) {
-	throw Error(malformed_expr, string("Too many indices in constraint for ") + a->name() + ".");
-    }
+    if (p != indices->end() && r == a->dim_end())
+        throw Error(malformed_expr, string("Too many indices in constraint for ") + a->name() + ".");
 }
 
 void process_grid_indices(BaseType *variable, int_list_list *indices)
@@ -876,7 +875,7 @@ void process_grid_indices(BaseType *variable, int_list_list *indices)
 
     // Suppress all maps by default.
     for (; r != g->map_end(); r++) {
-	(*r)->set_send_p(false);
+        (*r)->set_send_p(false);
     }
 
     // Add specified maps to the current projection.
@@ -884,53 +883,49 @@ void process_grid_indices(BaseType *variable, int_list_list *indices)
     int_list_citer p = indices->begin();
     r = g->map_begin();
     for (; p != indices->end() && r != g->map_end(); p++, r++) {
-	int_list *index = *p;
-	assert(index);
+        int_list *index = *p;
+        assert(index);
 
-	int_citer q = index->begin();
-	assert(q != index->end());
-	int start = *q;
+        int_citer q = index->begin();
+        assert(q != index->end());
+        int start = *q;
 
-	q++;
-	int stride = *q;
+        q++;
+        int stride = *q;
 
-	q++;
-	int stop = *q;
+        q++;
+        int stop = *q;
 
-	BaseType *btp = *r;
-	assert(btp);
-	assert(btp->type() == dods_array_c);
-	Array *a = (Array *) btp;
-	a->set_send_p(true);
-	a->reset_constraint();
+        BaseType *btp = *r;
+        assert(btp);
+        assert(btp->type() == dods_array_c);
+        Array *a = (Array *) btp;
+        a->set_send_p(true);
+        a->reset_constraint();
 
-	q++;
-	if (q != index->end()) {
-	    throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
-	}
+        q++;
+        if (q != index->end()) {
+            throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
+        }
 
-	DBG(
-	    cerr << "process_grid_indices: Setting constraint on "\
-	    << a->name() << "[" << start << ":"
-	    << stop << "]" << endl);
+        DBG(cerr << "process_grid_indices: Setting constraint on "
+            << a->name() << "[" << start << ":"
+            << stop << "]" << endl);
+    
+        Array::Dim_iter si = a->dim_begin();
+        a->add_constraint(si, start, stride, stop);
 
-	Array::Dim_iter si = a->dim_begin();
-	a->add_constraint(si, start, stride, stop);
-
-	DBG (Array::Dim_iter aiter = a->dim_begin();
-	     cerr << "Set Constraint: " << a->dimension_size(aiter, true) << endl
-	     )                        ;
     }
 
     DBG(cout << "Grid Constraint: ";
 	for (Array::Dim_iter dp = ((Array *) g->array_var())->dim_begin();
 	     dp != ((Array *) g->array_var())->dim_end(); dp++)
 	    cout << ((Array *) g->array_var())->dimension_size(dp, true) << " ";
-	cout << endl
+	    cout << endl
 	);
 
     if (p != indices->end() && r == g->map_end()) {
-	throw Error(malformed_expr,
+        throw Error(malformed_expr,
 		    string("Too many indices in constraint for ") + (*r)->name() + ".");
     }
 }

@@ -106,21 +106,23 @@ INF		[Ii][Nn][Ff]
 
 SCAN_WORD       [-+a-zA-Z0-9_/%.\\][-+a-zA-Z0-9_/%.\\#]*
 
-SCAN_EQUAL	=
+SCAN_EQUAL	    =
 SCAN_NOT_EQUAL	!=
 SCAN_GREATER	>
 SCAN_GREATER_EQL >=
-SCAN_LESS	<
+SCAN_LESS	    <
 SCAN_LESS_EQL	<=
-SCAN_REGEXP	=~
+SCAN_REGEXP	    =~
+
+SCAN_STAR       \*
 
 NEVER		[^\-+a-zA-Z0-9_/%.\\#:,(){}[\]&<>=~]
 
 %%
 
-"["    	    	return (int)*yytext;
-"]"    	    	return (int)*yytext;
-":"    	    	return (int)*yytext;
+"["    	return (int)*yytext;
+"]"    	return (int)*yytext;
+":"    	return (int)*yytext;
 ","		return (int)*yytext;
 "&"		return (int)*yytext;
 "("		return (int)*yytext;
@@ -138,29 +140,35 @@ NEVER		[^\-+a-zA-Z0-9_/%.\\#:,(){}[\]&<>=~]
 {SCAN_LESS_EQL}	store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
 {SCAN_REGEXP}	store_op(SCAN_REGEXP); return SCAN_REGEXP;
 
+{SCAN_STAR}   store_op(SCAN_STAR); return SCAN_STAR;
+
 [ \t\r\n]+
 <INITIAL><<EOF>> yy_init = 1; yyterminate();
 
 \"		BEGIN(quote); yymore();
+
 <quote>[^"\\]*  yymore(); /*"*/
+
 <quote>\\.	yymore();
+
 <quote>\"	{ 
     		  BEGIN(INITIAL); 
-                  store_str();
-		  return SCAN_STR;
-                }
+              store_str();
+              return SCAN_STR;
+            }
+
 <quote><<EOF>>	{
                   char msg[256];
-		  sprintf(msg, "Unterminated quote\n");
-		  YY_FATAL_ERROR(msg);
+                  sprintf(msg, "Unterminated quote\n");
+                  YY_FATAL_ERROR(msg);
                 }
 
 {NEVER}         {
                   if (yytext) {	/* suppress msgs about `' chars */
                     fprintf(stderr, "Character `%c' is not", *yytext);
                     fprintf(stderr, " allowed and has been ignored\n");
-		  }
-		}
+                  }
+		        }
 %%
 
 // Three glue routines for string scanning. These are not declared in the

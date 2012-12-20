@@ -334,6 +334,11 @@ Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 {
     dimension &d = *i ;
 
+    // if stop is -1, set it to the array's max element index
+    // jhrg 12/20/12
+    if (stop == -1)
+        stop = d.size - 1;
+
     // Check for bad constraints.
     // Jose Garcia
     // Usually invalid data for a constraint is the user's mistake

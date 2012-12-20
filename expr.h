@@ -84,6 +84,10 @@ typedef void(*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluat
 // INT_LIST and INT_LIST_LIST are used by the parser to store the array
 // indexes.
 
+// To add the new feature of 'to the end' in an array projection (denoted using
+// start), I used the value -1 for an index. This makes do difference here. jhrg
+// 12/20/12
+
 typedef std::vector<int> int_list;
 typedef std::vector<int>::const_iterator int_citer ;
 typedef std::vector<int>::iterator int_iter ;

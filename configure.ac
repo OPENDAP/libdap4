@@ -394,7 +394,7 @@ AC_ARG_WITH(gdal, AS_HELP_STRING([--with-gdal], [Use the copy of GDAL at this lo
 if test -n "$with_gdal_prefix" -a -x $with_gdal_prefix/bin/gdal-config
 then
     AC_MSG_NOTICE([Using $with_gdal_prefix as the GDAL prefix directory.])
-    GDAL_LIBS="`$with_gdal_prefix/bin/gdal-config --libs`"
+    GDAL_LIBS="`$with_gdal_prefix/bin/gdal-config --libs` `$with_gdal_prefix/bin/gdal-config --dep-libs`"
     GDAL_CFLAGS="`$with_gdal_prefix/bin/gdal-config --cflags`"
     GDAL_FOUND="yes"
 elif test -n "$with_gdal_prefix"

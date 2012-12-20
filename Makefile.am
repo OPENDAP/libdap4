@@ -37,14 +37,12 @@ SUBDIRS = gl $(GRIDFIELDS) $(SWATH2GRID) . tests unit-tests
 DIST_SUBDIRS = gl ugridFunctions swath2grid  tests unit-tests
 
 noinst_LTLIBRARIES = libparsers.la
+
 lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 
 bin_SCRIPTS = dap-config dap-config-pkgconfig
 
 bin_PROGRAMS = getdap
-# fdiostream_test
-
-# sbin_PROGRAMS = deflate
 
 BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1
 
@@ -54,7 +52,7 @@ man_MANS = getdap.1 dap-config.1
 	groff -t -e -mandoc -Tascii $< | col -bx > $@
 
 libparsers_la_SOURCES = $(GRAM_SRC) 
-libparsers_la_CPPFLAGS = $(AM_CPPFLAGS) #$(XML2_CFLAGS)
+libparsers_la_CPPFLAGS = $(AM_CPPFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC) 
@@ -64,16 +62,19 @@ libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) -lcrypto gl/libgnu.la libparsers
 
 if USING_GRIDFIELDS
 libdap_la_LIBADD += $(GF_LIBS)
-libdap_la_LIBADD += -LugridFunctions -lugridFunctions
+libdap_la_LIBADD += ugridFunctions/libugridFunctions.la
+# Removing the -L is a work-around for linker warnings that crop up about 
+# where -L<dir> results in messages about <dir> cannot be found. jhrg 12/14/12
+#-LugridFunctions -lugridFunctions
 endif
 
 if USING_GDAL
-libdap_la_LIBADD += -Lswath2grid -lswath2grid
+libdap_la_LIBADD += swath2grid/libswath2grid.la
+# -Lswath2grid -lswath2grid
 endif
 
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
-#libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS) $(XML2_CFLAGS)
 libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
 
