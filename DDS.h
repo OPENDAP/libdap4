@@ -360,6 +360,8 @@ public:
     // Print the DAP4 DMR 'object'
     void print_dmr(ostream &out, bool constrained);
 
+    void print_das(ostream &out);
+
     void mark_all(bool state);
     bool mark(const string &name, bool state);
     bool check_semantics(bool all = false);

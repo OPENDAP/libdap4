@@ -194,6 +194,8 @@ static Type get_type(const char *name)
 }
 #endif
 
+#if 0
+// Not used. jhrg 1/17/13
 static Type is_simple_type(const char *name)
 {
     Type t = get_type(name);
@@ -212,6 +214,7 @@ static Type is_simple_type(const char *name)
         return dods_null_c;
     }
 }
+#endif
 
 static bool is_not(const char *name, const char *tag)
 {
@@ -565,9 +568,10 @@ void DDXParser::ddx_end_document(void * p)
 		return;
     }
     
-    for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end();
-         ++i)
+    for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end(); ++i) {
+        (*i)->set_parent(0);        // top-level vars have no parents
         parser->dds->add_var(*i);
+    }
 
     parser->bt_stack.pop();
     delete cp;

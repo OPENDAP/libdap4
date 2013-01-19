@@ -45,7 +45,7 @@
 #include "DataDDS.h"
 #include "Connect.h"
 #include "escaping.h"
-#include "RCReader.h"
+//#include "RCReader.h"
 #include "DDXParserSAX2.h"
 #if FILE_UN_MARSHALLER
 #include "XDRFileUnMarshaller.h"
@@ -113,7 +113,7 @@ void Connect::process_data(DataDDS &data, Response *rs)
 #if FILE_UN_MARSHALLER
             XDRFileUnMarshaller um(rs->get_stream());
 #else
-            fpistream in ( rs->get_stream() );
+        fpistream in ( rs->get_stream() );
             XDRStreamUnMarshaller um( in );
 #endif
             for (DDS::Vars_iter i = data.var_begin(); i != data.var_end(); i++) {
@@ -136,6 +136,110 @@ void Connect::process_data(DataDDS &data, Response *rs)
             for (DDS::Vars_iter i = data.var_begin(); i != data.var_end(); i++) {
                 (*i)->deserialize(um, &data);
             }
+            return;
+        }
+    }
+}
+
+/** This private method process data from both local and remote sources. It
+    exists to eliminate duplication of code. */
+void
+Connect::process_data(DDS &data, Response *rs)
+{
+    DBG(cerr << "Entering Connect::process_data" << endl);
+
+#if 0
+    data.set_version(rs->get_version());
+    data.set_protocol(rs->get_protocol());
+#endif
+    // TODO is this the correct info?
+    data.set_dap_version(rs->get_protocol());
+
+    DBG(cerr << "Entering process_data: d_stream = " << rs << endl);
+    switch (rs->get_type()) {
+    case dods_error: {
+            Error e;
+            if (!e.parse(rs->get_stream()))
+                throw InternalErr(__FILE__, __LINE__,
+                                  "Could not parse the Error object returned by the server!");
+            throw e;
+        }
+
+    case web_error:
+        // Web errors (those reported in the return document's MIME header)
+        // are processed by the WWW library.
+        throw InternalErr(__FILE__, __LINE__, "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
+
+    case dap4_data_ddx: {
+            // Parse the DDX; throw an exception on error.
+        DDXParser ddx_parser(data.get_factory());
+
+        // Read the MPM boundary and then read the subsequent headers
+        string boundary = read_multipart_boundary(rs->get_stream());
+        DBG(cerr << "MPM Boundary: " << boundary << endl);
+        read_multipart_headers(rs->get_stream(), "text/xml", dap4_ddx);
+
+        // Parse the DDX, reading up to and including the next boundary.
+        // Return the CID for the matching data part
+        string data_cid;
+        ddx_parser.intern_stream(rs->get_stream(), &data, data_cid, boundary);
+
+        // Munge the CID into something we can work with
+        data_cid = cid_to_header_value(data_cid);
+        DBG(cerr << "Data CID: " << data_cid << endl);
+
+        // Read the data part's MPM part headers (boundary was read by
+        // DDXParse::intern)
+        read_multipart_headers(rs->get_stream(),
+            "application/octet-stream", dap4_data, data_cid);
+
+        // Now read the data
+#if FILE_UN_MARSHALLER
+        XDRFileUnMarshaller um( rs->get_stream() ) ;
+#else
+        fpistream in ( rs->get_stream() );
+        XDRStreamUnMarshaller um( in ) ;
+#endif
+#if 0
+        try {
+#endif
+            for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
+                     i++) {
+                    (*i)->deserialize(um, &data);
+                }
+#if 0
+            }
+            catch (Error &e) {
+                throw ;
+            }
+#endif
+            return;
+        }
+
+    case dods_data:
+    default: {
+            // Parse the DDS; throw an exception on error.
+            data.parse(rs->get_stream());
+#if FILE_UN_MARSHALLER
+            XDRFileUnMarshaller um( rs->get_stream() ) ;
+#else
+           fpistream in ( rs->get_stream() );
+        XDRStreamUnMarshaller um( in ) ;
+#endif
+            // Load the DDS with data.
+#if 0
+            try {
+#endif
+                for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
+                     i++) {
+                    (*i)->deserialize(um, &data);
+                }
+#if 0
+            }
+            catch (Error &e) {
+                throw ;
+            }
+#endif
             return;
         }
     }
@@ -932,6 +1036,17 @@ void Connect::read_data(DataDDS &data, Response *rs)
 
     read_data_no_mime(data, rs);
 }
+void
+Connect::read_data(DDS &data, Response *rs)
+{
+    if (!rs)
+        throw InternalErr(__FILE__, __LINE__, "Response object is null.");
+
+    // Read from data_source and parse the MIME headers specific to DAP2/4.
+    parse_mime(rs);
+
+    read_data_no_mime(data, rs);
+}
 
 // This function looks at the input stream and makes its best guess at what
 // lies in store for downstream processing code. Definitely heuristic.
@@ -998,8 +1113,31 @@ void Connect::read_data_no_mime(DataDDS &data, Response *rs)
             throw InternalErr(__FILE__, __LINE__, "Should have been a DataDDS or DataDDX.");
     }
 }
+void Connect::read_data_no_mime(DDS &data, Response *rs)
+{
+    if (rs->get_type() == unknown_type)
+        divine_type_information(rs);
 
-bool Connect::is_local()
+    switch (rs->get_type()) {
+    case dods_data:
+        d_version = rs->get_version();
+        d_protocol = rs->get_protocol();
+        process_data(data, rs);
+        break;
+    case dap4_data_ddx:
+        process_data(data, rs);
+        d_version = rs->get_version();
+        // TODO should check to see if this hack is a correct replacement
+        // for get_protocol from DataDDS
+        d_protocol = data.get_dap_version();
+        break;
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Should have been a DataDDS or DataDDX.");
+    }
+}
+
+bool
+Connect::is_local()
 {
     return _local;
 }

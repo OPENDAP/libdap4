@@ -41,6 +41,8 @@
 #include "ResponseBuilder.h"
 #include "DAS.h"
 #include "DDS.h"
+#include "ce_functions.h"
+
 #include "GNURegex.h"
 #include "util.h"
 #include "debug.h"
@@ -340,6 +342,54 @@ Content-Encoding: binary\r\n\
         CPPUNIT_ASSERT(df1->get_timeout() == 0);
     }
 
+    void split_ce_test_1() {
+        ConstraintEvaluator eval;
+        register_functions(eval);
+        df->split_ce(eval, "x,y,z");
+        CPPUNIT_ASSERT(df->get_ce() == "x,y,z");
+        CPPUNIT_ASSERT(df->get_btp_func_ce() == "");
+    }
+
+    void split_ce_test_2() {
+        ConstraintEvaluator eval;
+        register_functions(eval);
+        df->split_ce(eval, "honker(noise),x,y,z");
+        CPPUNIT_ASSERT(df->get_ce() == "honker(noise),x,y,z");
+        CPPUNIT_ASSERT(df->get_btp_func_ce() == "");
+    }
+
+    void split_ce_test_3() {
+        ConstraintEvaluator eval;
+        register_functions(eval);
+        df->split_ce(eval, "grid(noise),x,y,z");
+        CPPUNIT_ASSERT(df->get_ce() == "x,y,z");
+        CPPUNIT_ASSERT(df->get_btp_func_ce() == "grid(noise)");
+    }
+
+    void split_ce_test_4() {
+        ConstraintEvaluator eval;
+        register_functions(eval);
+        df->split_ce(eval, "grid(noise),linear_scale(noise2),x,y,z");
+        CPPUNIT_ASSERT(df->get_ce() == "x,y,z");
+        CPPUNIT_ASSERT(df->get_btp_func_ce() == "grid(noise),linear_scale(noise2)");
+    }
+
+    void split_ce_test_5() {
+         ConstraintEvaluator eval;
+         register_functions(eval);
+         df->split_ce(eval, "grid(noise),honker(foo),grid(noise2),x,y,z");
+         CPPUNIT_ASSERT(df->get_ce() == "honker(foo),x,y,z");
+         CPPUNIT_ASSERT(df->get_btp_func_ce() == "grid(noise),grid(noise2)");
+     }
+
+    void split_ce_test_6() {
+         ConstraintEvaluator eval;
+         register_functions(eval);
+         df->split_ce(eval, "grid(noise),honker(foo),grid(noise2),x,y,z,foo()");
+         CPPUNIT_ASSERT(df->get_ce() == "honker(foo),x,y,z,foo()");
+         CPPUNIT_ASSERT(df->get_btp_func_ce() == "grid(noise),grid(noise2)");
+     }
+
 CPPUNIT_TEST_SUITE( ResponseBuilderTest );
 
         CPPUNIT_TEST(send_das_test);
@@ -359,6 +409,13 @@ CPPUNIT_TEST_SUITE( ResponseBuilderTest );
         // not written yet 9/14/12
         CPPUNIT_TEST(send_dmr_test_1);
 #endif
+
+        CPPUNIT_TEST(split_ce_test_1);
+        CPPUNIT_TEST(split_ce_test_2);
+        CPPUNIT_TEST(split_ce_test_3);
+        CPPUNIT_TEST(split_ce_test_4);
+        CPPUNIT_TEST(split_ce_test_5);
+        CPPUNIT_TEST(split_ce_test_6);
 
     CPPUNIT_TEST_SUITE_END();
 };

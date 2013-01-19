@@ -438,10 +438,6 @@ BaseType *Vector::var(const string & n, btp_stack & s)
  pointer will reference the element itself, so multiple calls to this
  method should save each value before making the next call.
 
- @todo Is this method thread safe? If 'apartment threading' is used, I
- think so. But if the library is running in more than one thread, then
- this is not thread safe.
-
  @param i The index of the desired Vector element.  Zero
  indicates the first element of the Vector.
  @return A pointer to a BaseType class instance containing
@@ -631,7 +627,7 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
-    int i = 0;
+    int i = 0;// TODO move closer to use
 
     dds.timeout_on();
 
@@ -1568,6 +1564,39 @@ void Vector::add_var_nocopy(BaseType * v, Part)
                 << v->name() << " " << v->type_name() << ")" << endl);
     }
 }
+
+#if 0
+// branch version
+void Vector::add_var_nocopy(BaseType * v, Part)
+{
+    // Delete the current template variable
+    if (_var) {
+        delete _var;
+        _var = 0;
+    }
+
+    // if 'v' is null, just set _var to null and exit.
+    if (!v) {
+        _var = 0;
+    }
+    else {
+        _var = v;
+
+        // If 'v' has a name, use it as the name of the array. If it *is*
+        // empty, then make sure to copy the array's name to the template
+        // so that software which uses the template's name will still work.
+        if (!v->name().empty())
+            set_name(v->name());
+        else
+            _var->set_name(name());
+
+        _var->set_parent(this); // Vector --> child
+
+        DBG(cerr << "Vector::add_var: Added variable " << v << " ("
+                << v->name() << " " << v->type_name() << ")" << endl);
+    }
+}
+#endif
 
 bool Vector::check_semantics(string & msg, bool)
 {

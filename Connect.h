@@ -140,6 +140,8 @@ private:
     string d_protocol;          // DAP protocol from the server
 
     void process_data(DataDDS &data, Response *rs);
+    void process_data(DDS &data, Response *rs);
+
     // Use when you cannot use libwww/libcurl. Reads HTTP response.
     void parse_mime(Response *rs);
 
@@ -219,6 +221,8 @@ public:
 
     virtual void read_data(DataDDS &data, Response *rs);
     virtual void read_data_no_mime(DataDDS &data, Response *rs);
+    virtual void read_data(DDS &data, Response *rs);
+    virtual void read_data_no_mime(DDS &data, Response *rs);
 };
 
 } // namespace libdap

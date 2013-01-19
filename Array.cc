@@ -94,12 +94,12 @@ Array::update_length(int)
     @param n A string containing the name of the variable to be
     created.
     @param v A pointer to a variable of the type to be included
-    in the Array.
+    in the Array. May be null and set later using add_var() or add_var_nocopy()
     @brief Array constructor
 */
 Array::Array(const string &n, BaseType *v) : Vector(n, 0, dods_array_c)
 {
-    add_var(v); // Vector::add_var() stores null is v is null
+    add_var(v); // Vector::add_var() stores null if v is null
 }
 
 /** Build an array on the server-side with a name, a dataset name from which
@@ -188,12 +188,13 @@ Array::add_var(BaseType *v, Part)
     // then copy the dimension information. Odd semantics; I wonder if this
     //is ever used. jhrg 6/13/12
     if (v && v->type() == dods_array_c) {
-        Array &a = dynamic_cast<Array&>(*v);
-        Vector::add_var(a.var());
-        Dim_iter i = a.dim_begin();
-        Dim_iter i_end = a.dim_end();
+        Array *a = static_cast<Array*>(v);
+        Vector::add_var(a->var());
+
+        Dim_iter i = a->dim_begin();
+        Dim_iter i_end = a->dim_end();
         while (i != i_end) {
-            append_dim(a.dimension_size(i), a.dimension_name(i));
+            append_dim(a->dimension_size(i), a->dimension_name(i));
             ++i;
         }
     }
@@ -223,7 +224,7 @@ Array::add_var_nocopy(BaseType *v, Part)
         }
     }
     else {
-        Vector::add_var(v);
+        Vector::add_var_nocopy(v);
     }
 }
 
@@ -351,6 +352,11 @@ Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 {
     dimension &d = *i ;
 
+    // if stop is -1, set it to the array's max element index
+    // jhrg 12/20/12
+    if (stop == -1)
+        stop = d.size - 1;
+
     // Check for bad constraints.
     // Jose Garcia
     // Usually invalid data for a constraint is the user's mistake
@@ -398,6 +404,7 @@ Array::dim_end()
 unsigned int
 Array::dimensions(bool /*constrained*/)
 {
+    // TODO This could be _shape.end() - _shape.begin()
     unsigned int dim = 0;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
         dim++;

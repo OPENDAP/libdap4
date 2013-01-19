@@ -35,6 +35,8 @@
 
 #include "config.h"
 
+#include <fstream>
+
 #include <cassert>
 #include <cstring>
 
@@ -207,6 +209,7 @@ is_quoted(const string &s)
 {
     return (!s.empty() && s[0] == '\"' && s[s.length()-1] == '\"');
 }
+
 /**
  * Return a new string that is not quoted. This will return a new string
  * regardless of whether the source string is actualy quoted.
@@ -395,6 +398,7 @@ is_vector_type(Type t)
 
     case dods_int16_c:
     case dods_uint16_c:
+
     case dods_int32_c:
     case dods_uint32_c:
 
@@ -403,6 +407,7 @@ is_vector_type(Type t)
 
     case dods_float32_c:
     case dods_float64_c:
+
     case dods_str_c:
     case dods_url_c:
 
@@ -487,6 +492,48 @@ bool is_integer_type(Type t)
             return false;
     }
 }
+
+/**
+ * Does the directory exist?
+ *
+ * @param dir The pathname to test.
+ * @return True if the directory exists, false otherwise
+ */
+bool
+dir_exists(const string &dir)
+{
+    struct stat buf;
+
+    return (stat(dir.c_str(), &buf) == 0) && (buf.st_mode & S_IFDIR);
+}
+
+#if 0
+
+// UNTESTED 11/7/12
+
+/**
+ * Is the directory writable?
+ *
+ * @param dir The pathname to test
+ * @return True if the pathname is a directory and can be written by the
+ * caller, false otherwise.
+ */
+bool
+dir_writable(const string &dir)
+{
+    try {
+        string test = dir + "/test.txt";
+        ofstream ofs(dir.c_str());
+        ofs.write("test", 5);
+        ofs.close();
+        unlink(test.c_str());
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+#endif
 
 #ifdef WIN32
 //  Sometimes need to buffer within an iostream under win32 when
@@ -598,7 +645,6 @@ path_to_filename(string path)
     return (pos == string::npos) ? path : path.substr(++pos);
 }
 
-
 #define CHECK_BIT( tab, bit ) ( tab[ (bit)/8 ] & (1<<( (bit)%8 )) )
 #define BITLISTSIZE 16 /* bytes used for [chars] in compiled expr */
 
@@ -638,7 +684,6 @@ static void globchars(const char *s, const char *e, char *b) {
 
     b[0] &= 0376;
 }
-
 
 /**
  * glob:  match a string against a simple pattern

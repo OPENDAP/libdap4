@@ -35,7 +35,7 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -317,8 +317,8 @@ void test_scanner(bool show_prompt)
         case SCAN_REGEXP:
             cout << "REGEXP: " << ce_exprlval.op << endl;
             break;
-        case '*':
-            cout << "Dereference" << endl;
+        case SCAN_STAR:
+            cout << "STAR: " << ce_exprlval.op << endl;
             break;
         case '.':
             cout << "Field Selector" << endl;

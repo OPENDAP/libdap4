@@ -589,22 +589,11 @@ DDS::add_var_nocopy(BaseType *bt)
     if (bt->is_dap4_only_type())
         throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 DDS.");
 #endif
-#if 0
+
     DBG2(cerr << "In DDS::add_var(), bt's address is: " << bt << endl);
-#if 0
-    BaseType *btp = bt->ptr_duplicate();
-#endif
-    DBG2(cerr << "In DDS::add_var(), btp's address is: " << btp << endl);
-#endif
+
     if (d_container) {
-        // Mem leak fix [mjohnson nov 2009]
-        // Structure::add_var() creates ANOTHER copy.
         d_container->add_var_nocopy(bt);
-        // So we need to delete btp or else it leaks
-#if 0
-        delete btp;
-        btp = 0;
-#endif
     }
     else {
         vars.push_back(bt);
@@ -1002,6 +991,28 @@ DDS::print(ostream &out)
     out << "} " << id2www(d_name) << ";\n" ;
 
     return ;
+}
+
+/**
+ * Print the DAP2 DAS object using attribute information recorded
+ * this DDS object.
+ *
+ * @note Uses default indenting of four spaces and does not follow
+ * (now deprecated) attribute aliases.
+ *
+ * @param out Write the DAS here.
+ */
+void
+DDS::print_das(ostream &out)
+{
+    out << "Attributes {\n" ;
+
+    d_attr.print(out, "    ");
+    for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
+        (*i)->get_attr_table().print(out, "    ");
+    }
+
+    out << "}\n" ;
 }
 
 /** @brief Print a constrained DDS to the specified file.
@@ -1411,10 +1422,12 @@ DDS::mark(const string &n, bool state)
 
         DBG2(cerr << "DDS::mark: Set variable " << s->top()->d_name()
                 << " (a " << s->top()->type_name() << ")" << endl);
+        // FIXME get_parent() hosed?
+#if 1
         string parent_name = (s->top()->get_parent()) ? s->top()->get_parent()->name(): "none";
         string parent_type = (s->top()->get_parent()) ? s->top()->get_parent()->type_name(): "none";
         DBG2(cerr << "DDS::mark: Parent variable " << parent_name << " (a " << parent_type << ")" << endl);
-
+#endif
         s->pop();
     }
 

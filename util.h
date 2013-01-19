@@ -51,6 +51,8 @@ namespace libdap
 string prune_spaces(const string &);
 bool unique_names(vector<BaseType *> l, const string &var, const string &type, string &msg);
 string systime();
+//FILE *compressor(FILE *output, int &childpid);
+//bool deflate_exists();
 const char *libdap_root();
 extern "C" const char *libdap_version();
 extern "C" const char *libdap_name();
@@ -69,6 +71,12 @@ bool is_simple_type(Type t);
 bool is_vector_type(Type t);
 bool is_constructor_type(Type t);
 bool is_integer_type(Type t);
+
+bool dir_exists(const string &dir);
+#if 0
+// UNTESTED
+bool dir_writable(const string &dir);
+#endif
 
 // Jose Garcia
 /** @name Integer to string conversion functions

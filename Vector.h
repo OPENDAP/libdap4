@@ -182,7 +182,7 @@ public:
     virtual BaseType *var(unsigned int i);
 
     virtual void add_var(BaseType *v, Part p = nil);
-    virtual void add_var_nocopy(BaseType * v, Part p = nil);
+    virtual void add_var_nocopy(BaseType *v, Part p = nil);
 
     virtual bool check_semantics(string &msg, bool all = false);
 

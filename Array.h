@@ -161,7 +161,7 @@ public:
     virtual BaseType *ptr_duplicate();
 
     void add_var(BaseType *v, Part p = nil);
-    void add_var_nocopy(BaseType *v, Part);
+    void add_var_nocopy(BaseType *v, Part p = nil);
 
     void append_dim(int size, string name = "");
     void prepend_dim(int size, const string& name = "");

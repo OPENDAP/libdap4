@@ -45,6 +45,7 @@
 #include <algorithm>
 
 //#define DODS_DEBUG
+
 #undef FUNCTION_DAP	// undef so the dap() function always returns an error;
 // use keywords instead.
 
@@ -62,14 +63,21 @@
 #include "Structure.h"
 #include "Sequence.h"
 #include "Grid.h"
-#include "Error.h"
-#include "RValue.h"
 
+#include "Error.h"
+
+#include "RValue.h"
 #include "GSEClause.h"
 #include "GridGeoConstraint.h"
 #include "ArrayGeoConstraint.h"
 
 #include "ce_functions.h"
+#ifdef GRIDFIELDS
+#include "gridfields_functions.h"
+#include "ugridFunctions/gf2.h"
+#include "ugridFunctions/gf3.h"
+#endif
+
 #include "gse_parser.h"
 #include "gse.tab.hh"
 #include "debug.h"
@@ -139,8 +147,8 @@ string extract_string_argument(BaseType * arg)
     return s;
 }
 
-template<class T> static void set_array_using_double_helper(Array * a,
-        double *src, int src_len)
+// @todo Replace new with vector<T> (vector<T> values(src_len);)
+template<class T> static void set_array_using_double_helper(Array * a, double *src, int src_len)
 {
     T *values = new T[src_len];
     for (int i = 0; i < src_len; ++i)
@@ -393,7 +401,7 @@ T *extract_array(Array * a)
 template<class T> static double *extract_double_array_helper(Array * a)
 {
     int length = a->length();
-
+    // Could improve this using vector<T>. jhrg
     T *b = new T[length];
     a->value(b);
 
@@ -407,7 +415,7 @@ template<class T> static double *extract_double_array_helper(Array * a)
 
 /** Given a pointer to an Array which holds a numeric type, extract the
  values and return in an array of doubles. This function allocates the
- array using 'new double[n]' so delete[] can be used when you are done
+ array using 'new double[n]' so delete[] MUST be used when you are done
  the data. */
 double *extract_double_array(Array * a)
 {
@@ -595,6 +603,68 @@ static void apply_grid_selection_expressions(Grid * grid,
     grid->set_read_p(false);
 }
 
+/** This is an example function for use by the MIIC project team. The first version
+ * of this function simply looked for the Latitude and Longitude arrays of a MODIS
+ * granule and returned them if found. This version, miic_ex2, takes two optional
+ * arguments. If present, these two arguments are the names of the variables in the
+ * dataset that should be used for the latitude and longitude data. If they are not
+ * present, the function reverts to the old behavior. If only one argument is given,
+ * an error is returned.
+ *
+ */
+void function_miic_ex2(int argc, BaseType * argv[], DDS &dds, BaseType **btpp)
+{
+    Array *l_lat = 0;
+    Array *l_lon = 0;
+    switch (argc) {
+    case 0: {
+        // First find the latitude and longitude variables. This assumes the file is
+        // CF. Note that the names of these are not passed into the function so it
+        // looks up the variables in the DDS. If the names were passed in, this step
+        // would be skipped.
+        if (!(l_lat = dynamic_cast<Array *>(dds.var("Latitude")))
+                || !(l_lon = dynamic_cast<Array *>(dds.var("Latitude"))))
+            throw Error(malformed_expr, "Could not find the Latitude or Longitude data!");
+        break;
+    }
+    case 2: {
+        l_lat = dynamic_cast<Array*>(argv[0]);
+        l_lon = dynamic_cast<Array*>(argv[1]);
+        if (!l_lat || !l_lon)
+            throw Error(malformed_expr, "Expected two Array variables as arguments.");
+        break;
+    }
+    default:
+        throw Error(malformed_expr, "Expected either zero or two arguments.");
+    }
+
+    // Now read the data values into C arrays the function can use. The length of the
+    // data is l_lat->length() and l_lon->length() resp. Use delete[] to release the
+    // storage. Also note that the Array* must be used to determine the number of
+    // dimensions of the arrays - extract_double_array() returns a simple vector.
+    l_lat->read();
+    double *lat = extract_double_array(l_lat);
+    l_lon->read();
+    double *lon = extract_double_array(l_lon);
+
+    // For this example, make a Structure, add two new variables to it and stuff
+    // these values in them. Make the new variable one-dimensional arrays (vectors)
+    // just to keep the code simple.
+    Structure *dest = new Structure("MODIS_Geo_information");
+
+    Array *new_lat = new Array("MODIS_Latitude", new Float64("MODIS_Latitude"));
+    new_lat->append_dim(l_lat->length());
+    new_lat->set_value(lat, l_lat->length());
+    dest->add_var(new_lat);
+
+    Array *new_lon = new Array("MODIS_Longtude", new Float64("MODIS_Longtude"));
+    new_lon->append_dim(l_lon->length());
+    new_lon->set_value(lon, l_lon->length());
+    dest->add_var(new_lon);
+
+    *btpp = dest;
+}
+
 /** The grid function uses a set of relational expressions to form a selection
  within a Grid variable based on the values in the Grid's map vectors.
  Thus, if a Grid has a 'temperature' map which ranges from 0.0 to 32.0
@@ -672,6 +742,7 @@ function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     Grid::Map_iter i = l_grid->map_begin();
     while (i != l_grid->map_end())
         (*i++)->set_send_p(true);
+
     l_grid->read();
 
     DBG(cerr << "grid: past map read" << endl);
@@ -696,6 +767,12 @@ function_grid(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     l_grid->get_array()->set_send_p(true);
 
     l_grid->read();
+
+    // Make a new grid here and copy just the parts of the Grid
+    // that are in the current projection - this means reading
+    // the array slicing information, extracting the correct
+    // values and building destination arrays with just those
+    // values.
 
     *btpp = l_grid;
     return;
@@ -1039,11 +1116,17 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     BaseType *dest = 0;
     double *data;
     if (argv[0]->type() == dods_grid_c) {
-        Array &source = *dynamic_cast<Grid&>(*argv[0]).get_array();
-        source.set_send_p(true);
-        source.read();
-        data = extract_double_array(&source);
-        int length = source.length();
+#if 0
+        // For a Grid, the function scales only the Array part.
+        Array *source = dynamic_cast<Grid*>(argv[0])->get_array();
+        //argv[0]->set_send_p(true);
+             //source->set_send_p(true);
+        source->read();
+        data = extract_double_array(source);
+        int length = source->length();
+        for (int i = 0; i < length; ++i)
+            data[i] = data[i] * m + b;
+#if 0
         int i = 0;
         while (i < length) {
             DBG2(cerr << "data[" << i << "]: " << data[i] << endl);
@@ -1052,20 +1135,97 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
             DBG2(cerr << " >> data[" << i << "]: " << data[i] << endl);
             ++i;
         }
-
+#endif
         // Vector::add_var will delete the existing 'template' variable
-        Float64 *temp_f = new Float64(source.name());
-        source.add_var(temp_f);
+        Float64 *temp_f = new Float64(source->name());
+        source->add_var(temp_f);
+
 #ifdef VAL2BUF
         source.val2buf(static_cast<void*>(data), false);
 #else
-        source.set_value(data, i);
+        source->set_value(data, length);
 #endif
         delete [] data; // val2buf copies.
         delete temp_f; // add_var copies and then adds.
         dest = argv[0];
-    } else if (argv[0]->is_vector_type()) {
-        Array &source = dynamic_cast<Array&>(*argv[0]);
+        dest->set_send_p(true);
+#endif
+        // Grab the whole Grid; note that the scaling is done only on the array part
+        Grid &source = dynamic_cast<Grid&>(*argv[0]);
+
+        DBG(cerr << "Grid send_p: " << source.send_p() << endl);
+        DBG(cerr << "Grid Array send_p: " << source.get_array()->send_p() << endl);
+
+        // Read the grid; set send_p since Grid is a kind of constructor and
+        // read will only be called on it's fields if their send_p flag is set
+        source.set_send_p(true);
+        source.read();
+
+        // Get the Array part and read the values
+        Array *a = source.get_array();
+        //a->read();
+        data = extract_double_array(a);
+
+        // Now scale the data.
+        int length = a->length();
+        for (int i = 0; i < length; ++i)
+            data[i] = data[i] * m + b;
+#if 0
+        // read the maps so that those values will be copied when the source Grid
+        // is copied to the dest Grid
+        Grid::Map_iter s = source.map_begin();
+        while (s != source.map_end()) {
+            static_cast<Array*>(*s)->read();
+            ++s;
+        }
+#endif
+        // Copy source Grid to result Grid. Could improve on this by not using this
+        // trick since it copies all of 'source' to 'dest', including the main Array.
+        // The next bit of code will replace those values with the newly scaled ones.
+        Grid *result = new Grid(source);
+
+        // Now load the transferred values; use Float64 as the new type of the result
+        // Grid Array.
+        result->get_array()->add_var_nocopy(new Float64(source.name()));
+        result->get_array()->set_value(data, length);
+        delete[] data;
+
+#if 0
+        // Now set the maps (NB: the copy constructor does not copy data)
+        Grid::Map_iter s = source.map_begin();
+        Grid::Map_iter d = result->map_begin();
+        while (s != source.map_end()) {
+            Array *a = static_cast<Array*>(*s);
+            a->read();
+            switch(a->var()->type()) {
+            case dods_byte_c: {
+                vector<dods_byte> v(a->length());
+                a->value(&v[0]);
+                static_cast<Array*>(*d)->set_value(v, v.size());
+                break;
+            }
+            case dods_float32_c: {
+                vector<dods_float32> v(a->length());
+                a->value(&v[0]);
+                static_cast<Array*>(*d)->set_value(v, a->length());
+                break;
+            }
+            default:
+                throw Error("Non-numeric Grid Map not supported by linear_scale().");
+            }
+            ++s; ++d;
+        }
+#endif
+
+        // FIXME result->set_send_p(true);
+        DBG(cerr << "Grid send_p: " << result->send_p() << endl);
+        DBG(cerr << "Grid Array send_p: " << result->get_array()->send_p() << endl);
+
+        dest = result;
+    }
+    else if (argv[0]->is_vector_type()) {
+#if 0
+        Array &source = dynamic_cast<Array&> (*argv[0]);
         source.set_send_p(true);
         // If the array is really a map, make sure to read using the Grid
         // because of the HDF4 handler's odd behavior WRT dimensions.
@@ -1092,16 +1252,41 @@ function_linear_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
         delete temp_f; // add_var copies and then adds.
 
         dest = argv[0];
-    } else if (argv[0]->is_simple_type() && !(argv[0]->type() == dods_str_c
-            || argv[0]->type() == dods_url_c)) {
+#endif
+        Array &source = dynamic_cast<Array&>(*argv[0]);
+        // If the array is really a map, make sure to read using the Grid
+        // because of the HDF4 handler's odd behavior WRT dimensions.
+        if (source.get_parent() && source.get_parent()->type() == dods_grid_c) {
+            source.get_parent()->set_send_p(true);
+            source.get_parent()->read();
+        }
+        else
+            source.read();
+
+        data = extract_double_array(&source);
+        int length = source.length();
+        for (int i = 0; i < length; ++i)
+            data[i] = data[i] * m + b;
+
+        Array *result = new Array(source);
+
+        result->add_var_nocopy(new Float64(source.name()));
+        result->set_value(data, length);
+
+        delete[] data; // val2buf copies.
+
+        dest = result;
+    }
+    else if (argv[0]->is_simple_type() && !(argv[0]->type() == dods_str_c || argv[0]->type() == dods_url_c)) {
         double data = extract_double_value(argv[0]);
         if (!use_missing || !double_eq(data, missing))
             data = data * m + b;
 
-        dest = new Float64(argv[0]->name());
+        Float64 *fdest = new Float64(argv[0]->name());
 
-        dest->val2buf(static_cast<void*>(&data));
-
+        fdest->set_value(data);
+        // dest->val2buf(static_cast<void*> (&data));
+        dest = fdest;
     } else {
         throw Error(malformed_expr,"The linear_scale() function works only for numeric Grids, Arrays and scalars.");
     }
@@ -1480,12 +1665,19 @@ void register_functions(ConstraintEvaluator & ce)
     ce.add_function("grid", function_grid);
     ce.add_function("geogrid", function_geogrid);
     ce.add_function("linear_scale", function_linear_scale);
-#if 0
-    ce.add_function("geoarray", function_geoarray);
-#endif
     ce.add_function("version", function_version);
 
+#ifdef GRIDFIELDS
+    ce.add_function("ugrid_restrict", function_ugrid_restrict);
+    ce.add_function("ugr", function_ugr);
+    ce.add_function("ugr2", function_ugr2);
+    ce.add_function("ugr3", function_ugr3);
+#endif
+
+#if 0
+    ce.add_function("miic_ex2", function_miic_ex2);
     ce.add_function("dap", function_dap);
+#endif
 }
 
 } // namespace libdap

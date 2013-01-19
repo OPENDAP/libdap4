@@ -758,17 +758,20 @@ BaseType::set_in_selection(bool state)
 }
 
 // Protected method.
-/** Set the <tt>parent</tt> property for this variable. Only instances of
-    Constructor or Vector should call this method.
+/** Set the <tt>parent</tt> property for this variable.
 
-    @param parent Pointer to the Constructor of Vector parent variable.
+    @note Added ability to set parent to null. 10/19/12 jhrg
+
+    @param parent Pointer to the Constructor of Vector parent variable or null
+    if the variable has no parent (if it is at the top-level of a DAP2/3 DDS).
     @exception InternalErr thrown if called with anything other than a
-    Constructor or Vector. */
+    Constructor, Vector or Null. */
 void
 BaseType::set_parent(BaseType *parent)
 {
     if (!dynamic_cast<Constructor *>(parent)
-        && !dynamic_cast<Vector *>(parent))
+        && !dynamic_cast<Vector *>(parent)
+        && parent != 0)
         throw InternalErr("Call to set_parent with incorrect variable type.");
 
     d_parent = parent;
@@ -922,7 +925,7 @@ BaseType::read()
     if (d_is_read)
         return false;
 
-    throw InternalErr("Unimplemented BaseType::read() method called.");
+    throw InternalErr("Unimplemented BaseType::read() method called for the variable named: " + name());
 }
 
 void

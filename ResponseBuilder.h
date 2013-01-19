@@ -49,6 +49,8 @@
 #include "EncodingType.h"
 #endif
 
+class DAPCache3;
+
 namespace libdap
 {
 
@@ -66,9 +68,17 @@ public:
 
 protected:
     string d_dataset;  		/// Name of the dataset/database
-    string d_ce;  		/// Constraint expression
+    string d_ce;  		    /// Constraint expression
+    string d_btp_func_ce;   /// The BTP functions, extracted from the CE
     int d_timeout;  		/// Response timeout after N seconds
     string d_default_protocol;	/// Version string for the library's default protocol version
+
+    DAPCache3 *d_cache;
+
+#if 0	// Keyword support moved to Keywords class
+    set<string> d_keywords; 	/// Holds all of the keywords passed in the CE
+    set<string> d_known_keywords; /// Holds all of the keywords libdap understands.
+#endif
 
     void initialize();
 
@@ -86,6 +96,9 @@ public:
     virtual string get_ce() const;
     virtual void set_ce(string _ce);
 
+    virtual string get_btp_func_ce() const { return d_btp_func_ce; }
+    virtual void set_btp_func_ce(string _ce) { d_btp_func_ce = _ce; }
+
     virtual string get_dataset_name() const;
     virtual void set_dataset_name(const string _dataset);
 
@@ -94,33 +107,44 @@ public:
 
     virtual void establish_timeout(ostream &stream) const;
 
-    virtual void send_das(ostream &out, DAS &das,
-                          bool with_mime_headers = true) const;
-    virtual void send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
-                          bool constrained = false,
-                          bool with_mime_headers = true) const;
+    virtual void split_ce(ConstraintEvaluator &eval, const string &expr = "");
+    virtual bool is_valid(const string &cache_file_name);
 
-    virtual void dataset_constraint(ostream &out, DDS &dds, ConstraintEvaluator &eval,
-                                    bool ce_eval = true) const;
-    virtual void send_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval,
-                           bool with_mime_headers = true) const;
+    virtual void send_das(ostream &out, DAS &das, bool with_mime_headers = true) const;
+    virtual void send_das(ostream &out, DDS &dds, ConstraintEvaluator &eval,
+                          bool constrained = false, bool with_mime_headers = true);
+
+    virtual void send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
+                          bool constrained = false,  bool with_mime_headers = true);
+
+    virtual void dataset_constraint(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool ce_eval = true);
+    virtual void send_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers = true);
 
     virtual void send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval,
-                          bool with_mime_headers = true) const;
+                          bool with_mime_headers = true);
 
     virtual void dataset_constraint_ddx(ostream &out, DDS & dds, ConstraintEvaluator & eval,
                                    const string &boundary, const string &start,
-                                   bool ce_eval = true) const;
+                                   bool ce_eval = true);
 
     virtual void send_data_ddx(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval,
                            const string &start, const string &boundary,
-                           bool with_mime_headers = true) const;
+                           bool with_mime_headers = true);
 
     // DAP4 responses - but do not send the response MIME headers, just the
     // response body.
-    virtual void send_dmr(ostream &out, DDS &dds, ConstraintEvaluator &eval) const;
+    virtual void send_dmr(ostream &out, DDS &dds, ConstraintEvaluator &eval);
 
-    virtual void send_dap4_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval) const;
+    virtual void cache_data_ddx(const string &cache_file_name, DDS &dds);
+    virtual void read_data_from_cache(FILE *data, DDS *fdds);
+    virtual DDS *get_cached_data_ddx(const string &cache_file_name, BaseTypeFactory *factory);
+
+    // This method is uses the above three and is used by send_das(), send_dds(), and send_data().
+    virtual DDS *read_cached_dataset(DDS &dds, ConstraintEvaluator & eval, string &cache_token);
+
+    // These functions are used both by the methods above and by other code
+
+    virtual void send_dap4_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval);
 
     void set_mime_ddx_boundary(ostream &out, const string &boundary,
         const string &start) const;
@@ -148,7 +172,7 @@ public:
                          const string &protocol = "") const;
 
     void set_mime_multipart(ostream &out, const string &boundary,
-    	const string &start, EncodingType enc = x_plain,
+    	const string &start, ObjectType type = unknown_type, EncodingType enc = x_plain,
     	const time_t last_modified = 0, const string &protocol = "",
     	const string &url = "") const;
 

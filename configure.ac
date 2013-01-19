@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.62)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.11.4, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.11.7, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["3.4"], [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
@@ -20,7 +20,6 @@ AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])
 AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
 AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and version combined])
 AC_SUBST(DVR)
-
 
 PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
 PACKAGE_MINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
@@ -42,11 +41,9 @@ dnl to default values otherwise.
 AC_CANONICAL_HOST
 AC_SUBST(host)
 
-dnl library version: Update these when the interface changes. Generally,
-dnl assume that the interface tracks the major and minor release numbers.
-DAPLIB_CURRENT=14
-DAPLIB_AGE=3
-DAPLIB_REVISION=0
+DAPLIB_CURRENT=15
+DAPLIB_AGE=4
+DAPLIB_REVISION=1
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)
 AC_SUBST(DAPLIB_REVISION)
@@ -64,8 +61,8 @@ AC_SUBST(CLIENTLIB_REVISION)
 CLIENTLIB_VERSION="$CLIENTLIB_CURRENT:$CLIENTLIB_REVISION:$CLIENTLIB_AGE"
 AC_SUBST(CLIENTLIB_VERSION)
 
-SERVERLIB_CURRENT=9
-SERVERLIB_AGE=2
+SERVERLIB_CURRENT=11
+SERVERLIB_AGE=4
 SERVERLIB_REVISION=0
 AC_SUBST(SERVERLIB_CURRENT)
 AC_SUBST(SERVERLIB_AGE)
@@ -270,6 +267,127 @@ AM_PATH_CPPUNIT(1.12.0,
 	[AM_CONDITIONAL([CPPUNIT], [true])],
 	[AM_CONDITIONAL([CPPUNIT], [false])])
 
+dnl When pkgconfig support is added, use this
+libdap_libgridfields_module='libgridfields >= 0.7.0'
+
+libgf_ok="no"
+
+AC_ARG_WITH([gridfields],
+    AC_HELP_STRING([--with-gridfields=path], [Use the gridfields library at this location.]),
+    [if test "$withval" = "yes"
+     then
+         AC_MSG_ERROR([You must supply a path when using --with-gridfields; try --enable-gridfields.])
+     else
+         AC_MSG_NOTICE([Using $withval as the GridFields prefix directory.])
+         GF_LIBS="-L$withval/lib -lgridfields"
+         GF_CFLAGS="-I$withval/include"
+         AC_DEFINE([GRIDFIELDS],[1],[define if gridfields lib is present])
+         libgf_ok="yes"
+     fi],
+    [])
+
+AC_ARG_ENABLE([gridfields],
+    AC_HELP_STRING([--enable-gridfields], [Enable libgridfields-based server functions (default is NO)]))
+
+if test "$libgf_ok" = "no" -a "$enable_gridfields" = "yes"
+then
+     
+AC_MSG_CHECKING([for libgridfields])
+if gridfields-config --version > /dev/null 2>&1
+then
+    version_libgf=`gridfields-config --version | sed 's@libgridfields \(.*\)@\1@'`
+
+    version_M=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
+    version_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
+    version_m_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
+    
+    dnl Test for several different versions of libgridfields
+    
+    if test $version_M -gt 0
+    then
+        libgf_ok='yes'
+    elif test $version_M -eq 0 && test $version_m -gt 7
+    then
+        libgf_ok='yes'
+    elif test $version_M -eq 0 && test $version_m -eq 7 && test $version_m_m -gt 0
+    then
+        libgf_ok='yes'
+    else
+        libgf_ok='no'
+    fi
+
+    if test "$libgf_ok"="no"
+    then
+        AC_MSG_ERROR([must have libgf 0.7.0 or greater, found $version_libgf])
+    fi
+
+    GF_LIBS="`gridfields-config --libs`"
+    GF_CFLAGS="`gridfields-config --cflags`"
+
+    AC_DEFINE([GRDIFIELDS],[1],[define if gridfields lib is present])
+    AC_MSG_RESULT([yes; used gridfields-config])
+else
+    AC_MSG_ERROR([I could not find libgridfields])
+fi
+
+fi
+
+AC_SUBST([GF_LIBS])
+AC_SUBST([GF_CFLAGS])
+
+if test "$libgf_ok" = "yes"
+then
+    echo "Set gridfields CFLAGS to $GF_CFLAGS"
+    echo "Set gridfields LIBS to $GF_LIBS"
+    AM_CONDITIONAL([USING_GRIDFIELDS],[true])
+else
+    AM_CONDITIONAL([USING_GRIDFIELDS],[false])
+fi
+
+# Which, if any, copy of GDAL should be used for the build?
+GDAL_FOUND=
+
+AC_ARG_WITH(gdal, AS_HELP_STRING([--with-gdal], [Use the copy of GDAL at this location]),
+            with_gdal_prefix="$withval", with_gdal_prefix="")
+
+if test -n "$with_gdal_prefix" -a -x $with_gdal_prefix/bin/gdal-config
+then
+    AC_MSG_NOTICE([Using $with_gdal_prefix as the GDAL prefix directory.])
+    GDAL_LIBS="`$with_gdal_prefix/bin/gdal-config --libs` `$with_gdal_prefix/bin/gdal-config --dep-libs`"
+    GDAL_CFLAGS="`$with_gdal_prefix/bin/gdal-config --cflags`"
+    GDAL_FOUND="yes"
+elif test -n "$with_gdal_prefix"
+then
+    AC_MSG_ERROR([You set the gdal-prefix directory to $with_gdal_prefix, but gdal-config is not there.])
+fi
+
+# Because of the run-time errors encountered when there are competing
+# versions of libs, only include GDAL when explictly told to. NB: see
+# the fileout_gdal handler for another place where GDAL can be added to
+# a running Hyrax server. jhrg 11/23/12
+
+# if test -z "$GDAL_FOUND"
+# then
+#    AX_LIB_GDAL([1.9.0])
+#    if test ! -z "$GDAL_CFLAGS" -a ! -z "$GDAL_LDFLAGS"; then
+#        GDAL_FOUND="yes"
+#    fi
+# fi
+
+AC_SUBST([GDAL_LIBS])
+AC_SUBST([GDAL_CFLAGS])
+
+
+if test -n "$GDAL_FOUND"
+then
+    echo "Set GDAL_CFLAGS to $GDAL_CFLAGS"
+    echo "Set GDAL_LIBS to $GF_LIBS"
+    AM_CONDITIONAL([USING_GDAL],[true])
+    AC_DEFINE([GDAL],[1],[define if gdal lib is present])
+else
+    AM_CONDITIONAL([USING_GDAL],[false])
+fi
+
 DODS_DEBUG_OPTION
 
 dnl See util.cc:dods_root()
@@ -341,12 +459,17 @@ AC_CONFIG_FILES([Makefile
                  libdap.pc
                  libdapclient.pc
                  libdapserver.pc
+                 main_page.doxygen
+		         doxy.conf
                  gl/Makefile
+                 swath2grid/Makefile
+                 swath2grid/bes.conf
+                 ugridFunctions/Makefile
                  tests/Makefile
                  tests/atlocal
                  unit-tests/Makefile
                  unit-tests/cache-testsuite/Makefile])
 
 AC_CONFIG_FILES([dap-config], [chmod +x dap-config]) 
-		 
+	
 AC_OUTPUT
