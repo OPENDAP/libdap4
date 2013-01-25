@@ -131,9 +131,11 @@ public:
                            const string &start, const string &boundary,
                            bool with_mime_headers = true);
 
+#ifdef DAP4
     // DAP4 responses - but do not send the response MIME headers, just the
     // response body.
     virtual void send_dmr(ostream &out, DDS &dds, ConstraintEvaluator &eval);
+#endif // DAP4
 
     virtual void cache_data_ddx(const string &cache_file_name, DDS &dds);
     virtual void read_data_from_cache(FILE *data, DDS *fdds);
@@ -142,15 +144,17 @@ public:
     // This method is uses the above three and is used by send_das(), send_dds(), and send_data().
     virtual DDS *read_cached_dataset(DDS &dds, ConstraintEvaluator & eval, string &cache_token);
 
+#ifdef DAP4
     // These functions are used both by the methods above and by other code
 
     virtual void send_dap4_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval);
+#endif // DAP4
 
     void set_mime_ddx_boundary(ostream &out, const string &boundary,
         const string &start) const;
 
     void set_mime_data_boundary(ostream &out, const string &boundary,
-        const string &cid, const string &endian, unsigned long long len) const;
+    const string &cid, const string &endian, unsigned long long len) const;
 
     // These functions are used both by the methods above and by other code.
     // However, Hyrax uses the OLFS to send the HTTP headers, so these functions

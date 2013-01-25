@@ -69,7 +69,10 @@
 #include "mime_util.h"	// for last_modified_time() and rfc_822_date()
 #include "escaping.h"
 #include "util.h"
+
+#ifdef DAP4
 #include "DAP4StreamMarshaller.h"
+#endif
 
 #ifndef WIN32
 #include "SignalHandler.h"
@@ -796,10 +799,15 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS & dds, Constraint
     dds.print_xml_writer(out, true, cid);
 
     // Grab a stream that encodes for DAP4
+#ifdef DAP4
     DAP4StreamMarshaller m(out);
 
     // Write the MPM headers for the data part of the response.
     set_mime_data_boundary(out, boundary, cid, m.get_endian(), 0);
+#else
+    XDRStreamMarshaller m(out);
+#endif // DAP4
+
 
     // Send all variables in the current projection (send_p()). In DAP4,
     // all of the top-level variables are serialized with their checksums.
@@ -811,11 +819,15 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS & dds, Constraint
         if ((*i)->send_p()) {
             DBG(cerr << "Sending " << (*i)->name() << endl);
 
+#ifdef DAP4
             m.reset_checksum();
+#endif
 
             (*i)->serialize(eval, dds, m, ce_eval);
 
+#ifdef DAP4
             m.put_checksum();
+#endif
         }
     }
 }
@@ -1175,6 +1187,7 @@ void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, Constraint
         data_stream << CRLF << "--" << boundary << "--" << CRLF;
 }
 
+#ifdef DAP4
 /**
  * Send the DAP4 DMR (Dataset Metadata Response)
  *
@@ -1199,6 +1212,7 @@ ResponseBuilder::send_dmr(ostream &out, DDS &dds, ConstraintEvaluator &eval)
 
     dds.print_dmr(out, !d_ce.empty());
 }
+#endif // DAP4
 
 /** Write a DDS to an output stream. This method is intended to be used
     to write to a cache so that interim results can be reused w/o needing
@@ -1352,6 +1366,7 @@ ResponseBuilder::get_cached_data_ddx(const string &cache_file_name, BaseTypeFact
     return fdds;
 }
 
+#ifdef DAP4
 /**
  * Build a DAP4 data response document body and write it to the output
  * stream 'out'.
@@ -1405,6 +1420,7 @@ ResponseBuilder::send_dap4_data(ostream &out, DDS &dds, ConstraintEvaluator &eva
     }
 
 }
+#endif // DAP4
 
 static const char *descrip[] = { "unknown", "dods_das", "dods_dds", "dods_data", "dods_error", "web_error", "dap4-ddx",
         "dap4-data", "dap4-error", "dap4-data-ddx", "dods_ddx" };

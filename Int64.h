@@ -38,8 +38,8 @@ namespace libdap
 {
 
 class ConstraintEvaluator;
-class DAP4StreamMarshaller;
-class DAP4StreamUnMarshaller;
+class Marshaller;
+class UnMarshaller;
 
 /** @brief Holds a64-bit signed integer.
 
