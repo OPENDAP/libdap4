@@ -254,7 +254,7 @@ void test_parser(const string &name) {
     factory = 0;
 }
 
-void test_dap4_parser(const string &name) {
+void test_dap4_parser(const string &/*name*/) {
 #ifdef DAP4
     D4BaseTypeFactory factory;
 
