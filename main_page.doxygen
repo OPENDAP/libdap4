@@ -8,7 +8,7 @@
 
 \section intro Introduction
 
-This reference documentation corresponds to version 3.11.7 of libdap, a C++
+This reference documentation corresponds to version 3.12.0 of libdap, a C++
 implementation of DAP2, with some extensions. The libdap library
 includes classes and functions which implement DAP 2.0 as well as utilities
 which simpify building clients and servers for DAP 2.0. The library also

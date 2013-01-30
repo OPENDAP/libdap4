@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.11.7, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.12.0, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["3.4"], [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
@@ -272,121 +272,121 @@ libdap_libgridfields_module='libgridfields >= 0.7.0'
 
 libgf_ok="no"
 
-AC_ARG_WITH([gridfields],
-    AC_HELP_STRING([--with-gridfields=path], [Use the gridfields library at this location.]),
-    [if test "$withval" = "yes"
-     then
-         AC_MSG_ERROR([You must supply a path when using --with-gridfields; try --enable-gridfields.])
-     else
-         AC_MSG_NOTICE([Using $withval as the GridFields prefix directory.])
-         GF_LIBS="-L$withval/lib -lgridfields"
-         GF_CFLAGS="-I$withval/include"
-         AC_DEFINE([GRIDFIELDS],[1],[define if gridfields lib is present])
-         libgf_ok="yes"
-     fi],
-    [])
+dnl AC_ARG_WITH([gridfields],
+dnl     AC_HELP_STRING([--with-gridfields=path], [Use the gridfields library at this location.]),
+dnl     [if test "$withval" = "yes"
+dnl      then
+dnl          AC_MSG_ERROR([You must supply a path when using --with-gridfields; try --enable-gridfields.])
+dnl      else
+dnl          AC_MSG_NOTICE([Using $withval as the GridFields prefix directory.])
+dnl          GF_LIBS="-L$withval/lib -lgridfields"
+dnl          GF_CFLAGS="-I$withval/include"
+dnl          AC_DEFINE([GRIDFIELDS],[1],[define if gridfields lib is present])
+dnl          libgf_ok="yes"
+dnl      fi],
+dnl     [])
 
-AC_ARG_ENABLE([gridfields],
-    AC_HELP_STRING([--enable-gridfields], [Enable libgridfields-based server functions (default is NO)]))
+dnl AC_ARG_ENABLE([gridfields],
+dnl     AC_HELP_STRING([--enable-gridfields], [Enable libgridfields-based server functions (default is NO)]))
 
-if test "$libgf_ok" = "no" -a "$enable_gridfields" = "yes"
-then
+dnl if test "$libgf_ok" = "no" -a "$enable_gridfields" = "yes"
+dnl then
      
-AC_MSG_CHECKING([for libgridfields])
-if gridfields-config --version > /dev/null 2>&1
-then
-    version_libgf=`gridfields-config --version | sed 's@libgridfields \(.*\)@\1@'`
+dnl AC_MSG_CHECKING([for libgridfields])
+dnl if gridfields-config --version > /dev/null 2>&1
+dnl then
+dnl     version_libgf=`gridfields-config --version | sed 's@libgridfields \(.*\)@\1@'`
 
-    version_M=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
-    version_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
-    version_m_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
+dnl     version_M=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
+dnl     version_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
+dnl     version_m_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
     
-    dnl Test for several different versions of libgridfields
+dnl     dnl Test for several different versions of libgridfields
     
-    if test $version_M -gt 0
-    then
-        libgf_ok='yes'
-    elif test $version_M -eq 0 && test $version_m -gt 7
-    then
-        libgf_ok='yes'
-    elif test $version_M -eq 0 && test $version_m -eq 7 && test $version_m_m -gt 0
-    then
-        libgf_ok='yes'
-    else
-        libgf_ok='no'
-    fi
+dnl     if test $version_M -gt 0
+dnl     then
+dnl         libgf_ok='yes'
+dnl     elif test $version_M -eq 0 && test $version_m -gt 7
+dnl     then
+dnl         libgf_ok='yes'
+dnl     elif test $version_M -eq 0 && test $version_m -eq 7 && test $version_m_m -gt 0
+dnl     then
+dnl         libgf_ok='yes'
+dnl     else
+dnl         libgf_ok='no'
+dnl     fi
 
-    if test "$libgf_ok"="no"
-    then
-        AC_MSG_ERROR([must have libgf 0.7.0 or greater, found $version_libgf])
-    fi
+dnl     if test "$libgf_ok"="no"
+dnl     then
+dnl         AC_MSG_ERROR([must have libgf 0.7.0 or greater, found $version_libgf])
+dnl     fi
 
-    GF_LIBS="`gridfields-config --libs`"
-    GF_CFLAGS="`gridfields-config --cflags`"
+dnl     GF_LIBS="`gridfields-config --libs`"
+dnl     GF_CFLAGS="`gridfields-config --cflags`"
 
-    AC_DEFINE([GRDIFIELDS],[1],[define if gridfields lib is present])
-    AC_MSG_RESULT([yes; used gridfields-config])
-else
-    AC_MSG_ERROR([I could not find libgridfields])
-fi
+dnl     AC_DEFINE([GRDIFIELDS],[1],[define if gridfields lib is present])
+dnl     AC_MSG_RESULT([yes; used gridfields-config])
+dnl else
+dnl     AC_MSG_ERROR([I could not find libgridfields])
+dnl fi
 
-fi
+dnl fi
 
-AC_SUBST([GF_LIBS])
-AC_SUBST([GF_CFLAGS])
+dnl AC_SUBST([GF_LIBS])
+dnl AC_SUBST([GF_CFLAGS])
 
-if test "$libgf_ok" = "yes"
-then
-    echo "Set gridfields CFLAGS to $GF_CFLAGS"
-    echo "Set gridfields LIBS to $GF_LIBS"
-    AM_CONDITIONAL([USING_GRIDFIELDS],[true])
-else
-    AM_CONDITIONAL([USING_GRIDFIELDS],[false])
-fi
+dnl if test "$libgf_ok" = "yes"
+dnl then
+dnl     echo "Set gridfields CFLAGS to $GF_CFLAGS"
+dnl     echo "Set gridfields LIBS to $GF_LIBS"
+dnl     AM_CONDITIONAL([USING_GRIDFIELDS],[true])
+dnl else
+dnl     AM_CONDITIONAL([USING_GRIDFIELDS],[false])
+dnl fi
 
-# Which, if any, copy of GDAL should be used for the build?
-GDAL_FOUND=
+dnl # Which, if any, copy of GDAL should be used for the build?
+dnl GDAL_FOUND=
 
-AC_ARG_WITH(gdal, AS_HELP_STRING([--with-gdal], [Use the copy of GDAL at this location]),
-            with_gdal_prefix="$withval", with_gdal_prefix="")
+dnl AC_ARG_WITH(gdal, AS_HELP_STRING([--with-gdal], [Use the copy of GDAL at this location]),
+dnl             with_gdal_prefix="$withval", with_gdal_prefix="")
 
-if test -n "$with_gdal_prefix" -a -x $with_gdal_prefix/bin/gdal-config
-then
-    AC_MSG_NOTICE([Using $with_gdal_prefix as the GDAL prefix directory.])
-    GDAL_LIBS="`$with_gdal_prefix/bin/gdal-config --libs` `$with_gdal_prefix/bin/gdal-config --dep-libs`"
-    GDAL_CFLAGS="`$with_gdal_prefix/bin/gdal-config --cflags`"
-    GDAL_FOUND="yes"
-elif test -n "$with_gdal_prefix"
-then
-    AC_MSG_ERROR([You set the gdal-prefix directory to $with_gdal_prefix, but gdal-config is not there.])
-fi
+dnl if test -n "$with_gdal_prefix" -a -x $with_gdal_prefix/bin/gdal-config
+dnl then
+dnl     AC_MSG_NOTICE([Using $with_gdal_prefix as the GDAL prefix directory.])
+dnl     GDAL_LIBS="`$with_gdal_prefix/bin/gdal-config --libs` `$with_gdal_prefix/bin/gdal-config --dep-libs`"
+dnl     GDAL_CFLAGS="`$with_gdal_prefix/bin/gdal-config --cflags`"
+dnl     GDAL_FOUND="yes"
+dnl elif test -n "$with_gdal_prefix"
+dnl then
+dnl     AC_MSG_ERROR([You set the gdal-prefix directory to $with_gdal_prefix, but gdal-config is not there.])
+dnl fi
 
-# Because of the run-time errors encountered when there are competing
-# versions of libs, only include GDAL when explictly told to. NB: see
-# the fileout_gdal handler for another place where GDAL can be added to
-# a running Hyrax server. jhrg 11/23/12
+dnl # Because of the run-time errors encountered when there are competing
+dnl # versions of libs, only include GDAL when explictly told to. NB: see
+dnl # the fileout_gdal handler for another place where GDAL can be added to
+dnl # a running Hyrax server. jhrg 11/23/12
 
-# if test -z "$GDAL_FOUND"
-# then
-#    AX_LIB_GDAL([1.9.0])
-#    if test ! -z "$GDAL_CFLAGS" -a ! -z "$GDAL_LDFLAGS"; then
-#        GDAL_FOUND="yes"
-#    fi
-# fi
+dnl # if test -z "$GDAL_FOUND"
+dnl # then
+dnl #    AX_LIB_GDAL([1.9.0])
+dnl #    if test ! -z "$GDAL_CFLAGS" -a ! -z "$GDAL_LDFLAGS"; then
+dnl #        GDAL_FOUND="yes"
+dnl #    fi
+dnl # fi
 
-AC_SUBST([GDAL_LIBS])
-AC_SUBST([GDAL_CFLAGS])
+dnl AC_SUBST([GDAL_LIBS])
+dnl AC_SUBST([GDAL_CFLAGS])
 
 
-if test -n "$GDAL_FOUND"
-then
-    echo "Set GDAL_CFLAGS to $GDAL_CFLAGS"
-    echo "Set GDAL_LIBS to $GF_LIBS"
-    AM_CONDITIONAL([USING_GDAL],[true])
-    AC_DEFINE([GDAL],[1],[define if gdal lib is present])
-else
-    AM_CONDITIONAL([USING_GDAL],[false])
-fi
+dnl if test -n "$GDAL_FOUND"
+dnl then
+dnl     echo "Set GDAL_CFLAGS to $GDAL_CFLAGS"
+dnl     echo "Set GDAL_LIBS to $GF_LIBS"
+dnl     AM_CONDITIONAL([USING_GDAL],[true])
+dnl     AC_DEFINE([GDAL],[1],[define if gdal lib is present])
+dnl else
+dnl     AM_CONDITIONAL([USING_GDAL],[false])
+dnl fi
 
 DODS_DEBUG_OPTION
 
@@ -460,15 +460,16 @@ AC_CONFIG_FILES([Makefile
                  libdapclient.pc
                  libdapserver.pc
                  main_page.doxygen
-		         doxy.conf
+	         doxy.conf
                  gl/Makefile
-                 swath2grid/Makefile
-                 swath2grid/bes.conf
-                 ugridFunctions/Makefile
                  tests/Makefile
                  tests/atlocal
                  unit-tests/Makefile
                  unit-tests/cache-testsuite/Makefile])
+
+dnl swath2grid/Makefile
+dnl swath2grid/bes.conf
+dnl ugridFunctions/Makefile
 
 AC_CONFIG_FILES([dap-config], [chmod +x dap-config]) 
 	

@@ -29,28 +29,11 @@
 #include "ServerFunctionsList.h"
 #include "ConstraintEvaluator.h"
 
-#if 0
-//FIXME
-#include "BaseType.h"
-#include "Array.h"
-#include "Grid.h"
-#endif
-#if 0
-#include "ce_functions.h"
-#endif
-#ifdef GDAL
-#include "swath2grid/reproj_functions.h"
-#endif
-
-//#include "parser.h"
 #include "ce_parser.h"
 #include "debug.h"
 
 struct yy_buffer_state;
 
-#if 0
-yy_buffer_state *ce_expr_scan_string(const char *str);
-#endif
 int ce_exprparse(void *arg);
 
 // Glue routines declared in expr.lex
@@ -62,19 +45,14 @@ namespace libdap {
 
 ConstraintEvaluator::ConstraintEvaluator()
 {
-    // Functions are now held in BES modules and registered in a particular
-    // instance of ConstraintEvaluator when a request is made. See
-    // BESDapTransmitt in bes/dap. jhrg 1/30/13
+    // Functions are now held in BES modules. jhrg 1/30/13
 
-    // modules load functions to this list; this class searchs the list
+    // modules load functions to this list; this class searches the list
+    // instead of having it's own copy. This is very similar to the BES'
+    // various List classes, but this one is part of libdap and not the
+    // BES. The List class is a singleton, so each function module can
+    // register it's functions to the list object.
     d_functions_list = ServerFunctionsList::TheList();
-
-#if 0
-    register_functions(*this);
-#endif
-#ifdef GDAL
-    register_reproj_functions(*this);
-#endif
 }
 
 ConstraintEvaluator::~ConstraintEvaluator()
@@ -179,6 +157,9 @@ void ConstraintEvaluator::append_constant(BaseType *btp)
     constants.push_back(btp);
 }
 
+// This code was removed when I switched from CE having it's own internal
+// list of functions to using an external list.
+#if 0
 class func_name_is {
 private:
     const string d_name;
@@ -236,6 +217,7 @@ void ConstraintEvaluator::add_function(const string &name, proj_func f)
     function func(name, f);
     functions.push_back(func);
 }
+#endif
 
 /** @brief Find a Boolean function with a given name in the function list. */
 bool ConstraintEvaluator::find_function(const string &name, bool_func *f) const

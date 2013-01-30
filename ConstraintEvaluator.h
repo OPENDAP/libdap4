@@ -48,6 +48,7 @@ class ServerFunctionsList;
 class ConstraintEvaluator
 {
 private:
+#if 0
     // This struct is used to hold all the known `user defined' functions
     // (including those that are `built-in').
     struct function
@@ -69,13 +70,13 @@ private:
         function(): name(""), bt_func(0), p_func(0)
         {}
     };
-
+#endif
     vector<Clause *> expr;      // List of CE Clauses
 
     vector<BaseType *> constants;// List of temporary objects
-
+#if 0
     list<function> functions; // Known external functions
-
+#endif
     ServerFunctionsList *d_functions_list;  // Know external functions from
                                             // modules
 
@@ -97,9 +98,10 @@ public:
 
     typedef std::vector<BaseType *>::const_iterator Constants_citer ;
     typedef std::vector<BaseType *>::iterator Constants_iter ;
-
+#if 0
     typedef std::list<function>::const_iterator Functions_citer ;
     typedef std::list<function>::iterator Functions_iter ;
+#endif
 
     ConstraintEvaluator();
 
