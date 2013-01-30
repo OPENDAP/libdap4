@@ -62,11 +62,10 @@ typedef struct
 
 // Syntactic sugar for `pointer to function returning boolean' (bool_func)
 // and `pointer to function returning BaseType *' (btp_func). Both function
-// types take three arguments, an integer (argc), a vector of BaseType *s
-// (argv) and the DDS for the dataset for which these function is being
-// evaluated (analogous to the ENVP in UNIX). ARGC is the length of ARGV.
-
-// These two types of functions now take four args - the DDS was added.
+// types take four arguments, an integer (argc), a vector of BaseType *s
+// (argv), the DDS for the dataset for which these function is being
+// evaluated (analogous to the ENVP in UNIX) and a pointer for the function's
+// return value. ARGC is the length of ARGV.
 
 /** @todo A better design would wrap these in a class and record at minimum
     their names so that error messages could be a bit more informative. jhrg

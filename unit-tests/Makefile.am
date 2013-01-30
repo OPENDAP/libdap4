@@ -50,10 +50,12 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest 	\
 	DDSTest	DDXParserTest DODSFilterTest generalUtilTest 		\
 	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest 	\
-	SequenceTest SignalHandlerTest CEFunctionsTest 			\
-	GridGeoConstraintTest ArrayGeoConstraintTest MarshallerTest     \
+	SequenceTest SignalHandlerTest 			\
+	MarshallerTest     \
 	ResponseBuilderTest Keywords2Test 
 	
+# GridGeoConstraintTest ArrayGeoConstraintTest CEFunctionsTest 
+
 if DAP4_DEFINED
     UNIT_TESTS += DAP4MarshallerTest DAP4UnMarshallerTest
 endif
@@ -159,14 +161,14 @@ ddsT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 dasT_SOURCES = dasT.cc $(TEST_SRC)
 dasT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
-CEFunctionsTest_SOURCES = CEFunctionsTest.cc
-CEFunctionsTest_LDADD = ../tests/libtest-types.a  ../libdap.la $(AM_LDADD)
+#CEFunctionsTest_SOURCES = CEFunctionsTest.cc
+#CEFunctionsTest_LDADD = ../tests/libtest-types.a  ../libdap.la $(AM_LDADD)
 
-GridGeoConstraintTest_SOURCES = GridGeoConstraintTest.cc
-GridGeoConstraintTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
+#GridGeoConstraintTest_SOURCES = GridGeoConstraintTest.cc
+#GridGeoConstraintTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
-ArrayGeoConstraintTest_SOURCES = ArrayGeoConstraintTest.cc
-ArrayGeoConstraintTest_LDADD =  ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
+#ArrayGeoConstraintTest_SOURCES = ArrayGeoConstraintTest.cc
+#ArrayGeoConstraintTest_LDADD =  ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
 if DAP4_DEFINED
 

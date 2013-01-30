@@ -35,8 +35,6 @@
 
 #include "config.h"
 
-static char rcsid[]not_used = { "$Id: ce_functions.cc 26039 2012-11-15 23:29:56Z jimg $" };
-
 #include <limits.h>
 
 #if 0

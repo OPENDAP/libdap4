@@ -165,6 +165,7 @@ fortify-lite: dods-datatypes.h xdr-datatypes.h
 	sourceanalyzer -b @PACKAGE@ $(MAKE) libdap.la libdapserver.la libdapclient.la
 	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
 
+# No longer used? jhrg 1/29/13
 grammar_objects = lex.das.o das.tab.o lex.dds.o dds.tab.o lex.ce_expr.o \
 ce_expr.tab.o lex.gse_.o gse.tab.o lex.Error.o Error.tab.o
 
@@ -251,8 +252,10 @@ GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h
 
 GRAM_SRC = lex.das.cc das.tab.cc das.tab.hh lex.dds.cc dds.tab.cc	\
 	dds.tab.hh lex.ce_expr.cc ce_expr.tab.cc ce_expr.tab.hh		\
-	lex.Error.cc Error.tab.cc Error.tab.hh gse.tab.hh gse.tab.cc	\
-	lex.gse_.cc
+	lex.Error.cc Error.tab.cc Error.tab.hh 
+	
+#	gse.tab.hh gse.tab.cc	
+#	lex.gse_.cc
 
 DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc		\
@@ -260,13 +263,16 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	Int16.cc UInt16.cc Float32.cc Constructor.cc			\
 	BaseTypeFactory.cc SignalHandler.cc Error.cc InternalErr.cc	\
 	util.cc xdrutil_ppc.c parser-util.cc escaping.cc		\
-	ce_functions.cc GSEClause.cc GeoConstraint.cc			\
-	GridGeoConstraint.cc Clause.cc RValue.cc			\
-	ConstraintEvaluator.cc ArrayGeoConstraint.cc DapIndent.cc	\
+	Clause.cc RValue.cc			\
+	ConstraintEvaluator.cc DapIndent.cc	\
 	Operators.h XDRUtils.cc XDRFileMarshaller.cc			\
 	XDRStreamMarshaller.cc XDRFileUnMarshaller.cc			\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc \
 	DAPCache3.cc 
+
+# ce_functions.cc GSEClause.cc GeoConstraint.cc
+# GridGeoConstraint.cc ArrayGeoConstraint.cc 
+
 
 DAP4_ONLY_SRC = DAP4StreamMarshaller.cc DAP4StreamUnMarshaller.cc Int64.cc \
         UInt64.cc Int8.cc D4ParserSax2.cc D4BaseTypeFactory.cc \
@@ -293,14 +299,16 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	Grid.h UInt32.h Int16.h UInt16.h Float32.h BaseTypeFactory.h	\
 	ObjectType.h EncodingType.h SignalHandler.h Error.h		\
 	InternalErr.h util.h escaping.h parser.h debug.h dods-limits.h	\
-	dods-datatypes.h GeoConstraint.h GridGeoConstraint.h		\
-	ArrayGeoConstraint.h ce_functions.h gse_parser.h GSEClause.h	\
+	dods-datatypes.h 		\
 	util_mit.h expr.h Clause.h RValue.h ConstraintEvaluator.h	\
 	ce_parser.h DapIndent.h DapObj.h XDRFileMarshaller.h		\
 	Marshaller.h UnMarshaller.h XDRFileUnMarshaller.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h \
 	DAPCache3.h 
+
+# ArrayGeoConstraint.h ce_functions.h gse_parser.h GSEClause.h  
+# GeoConstraint.h GridGeoConstraint.h
 
 if USING_GRIDFIELDS
 DAP_SRC += gridfields_functions.h
@@ -368,12 +376,12 @@ ce_expr.tab.cc ce_expr.tab.hh: ce_expr.y
 
 # Build the grid selection sub_expression scanner and parser
 
-lex.gse_.cc: gse.lex gse.tab.cc gse.tab.hh
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+#lex.gse_.cc: gse.lex gse.tab.cc gse.tab.hh
+#	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
 
-gse.tab.cc gse.tab.hh: gse.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p gse_ -o gse.tab.cc $<
-	if test -e gse.tab.cc.h; then mv gse.tab.cc.h gse.tab.hh; fi
+#gse.tab.cc gse.tab.hh: gse.y
+#	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p gse_ -o gse.tab.cc $<
+#	if test -e gse.tab.cc.h; then mv gse.tab.cc.h gse.tab.hh; fi
 
 # Errors
 

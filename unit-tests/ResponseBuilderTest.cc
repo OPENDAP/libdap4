@@ -41,7 +41,7 @@
 #include "ResponseBuilder.h"
 #include "DAS.h"
 #include "DDS.h"
-#include "ce_functions.h"
+//#include "ce_functions.h"
 
 #include "GNURegex.h"
 #include "util.h"
@@ -341,7 +341,9 @@ Content-Encoding: binary\r\n\
         CPPUNIT_ASSERT(df3->get_timeout() == 1);
         CPPUNIT_ASSERT(df1->get_timeout() == 0);
     }
-
+#if 0
+    // The server functions have been moved out of libdap and into a bes
+    // module.
     void split_ce_test_1() {
         ConstraintEvaluator eval;
         register_functions(eval);
@@ -389,6 +391,7 @@ Content-Encoding: binary\r\n\
          CPPUNIT_ASSERT(df->get_ce() == "honker(foo),x,y,z,foo()");
          CPPUNIT_ASSERT(df->get_btp_func_ce() == "grid(noise),grid(noise2)");
      }
+#endif
 
 CPPUNIT_TEST_SUITE( ResponseBuilderTest );
 
@@ -409,14 +412,14 @@ CPPUNIT_TEST_SUITE( ResponseBuilderTest );
         // not written yet 9/14/12
         CPPUNIT_TEST(send_dmr_test_1);
 #endif
-
+#if 0
         CPPUNIT_TEST(split_ce_test_1);
         CPPUNIT_TEST(split_ce_test_2);
         CPPUNIT_TEST(split_ce_test_3);
         CPPUNIT_TEST(split_ce_test_4);
         CPPUNIT_TEST(split_ce_test_5);
         CPPUNIT_TEST(split_ce_test_6);
-
+#endif
     CPPUNIT_TEST_SUITE_END();
 };
 CPPUNIT_TEST_SUITE_REGISTRATION(ResponseBuilderTest);

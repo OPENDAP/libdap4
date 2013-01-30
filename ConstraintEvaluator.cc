@@ -24,28 +24,32 @@
 
 #include "config.h"
 
-static char rcsid[] not_used = { "$Id$" };
-
 //#define DODS_DEBUG
 
 #include "ConstraintEvaluator.h"
 
+#if 0
 //FIXME
 #include "BaseType.h"
 #include "Array.h"
 #include "Grid.h"
-
-
+#endif
+#if 0
 #include "ce_functions.h"
+#endif
 #ifdef GDAL
 #include "swath2grid/reproj_functions.h"
 #endif
-#include "parser.h"
+
+//#include "parser.h"
 #include "ce_parser.h"
 #include "debug.h"
 
 struct yy_buffer_state;
+
+#if 0
 yy_buffer_state *ce_expr_scan_string(const char *str);
+#endif
 int ce_exprparse(void *arg);
 
 // Glue routines declared in expr.lex
@@ -57,7 +61,12 @@ namespace libdap {
 
 ConstraintEvaluator::ConstraintEvaluator()
 {
+    // Functions are now held in BES modules and registered in a particular
+    // instance of ConstraintEvaluator when a request is made. See
+    // BESDapTransmitt in bes/dap. jhrg 1/30/13
+#if 0
     register_functions(*this);
+#endif
 #ifdef GDAL
     register_reproj_functions(*this);
 #endif

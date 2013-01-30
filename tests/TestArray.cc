@@ -49,7 +49,8 @@
 
 //#define DODS_DEBUG
 
-#include "ce_functions.h"
+//#include "ce_functions.h"
+#include "util.h"
 #include "debug.h"
 
 #include "TestArray.h"

@@ -37,6 +37,7 @@
 #define _util_h 1
 
 #include <cstdio>
+#include <cmath>
 #include <vector>
 
 #ifndef _basetype_h
@@ -47,6 +48,19 @@ using std::iostream;
 
 namespace libdap
 {
+
+class Array;
+
+/** Is \e lhs equal to \e rhs? Use epsilon to determine equality. */
+inline bool double_eq(double lhs, double rhs, double epsilon = 1.0e-5)
+{
+    return fabs(lhs - rhs) < epsilon;
+}
+
+string extract_string_argument(BaseType *arg) ;
+double extract_double_value(BaseType *arg) ;
+double *extract_double_array(Array *a) ;
+void set_array_using_double(Array *dest, double *src, int src_len) ;
 
 string prune_spaces(const string &);
 bool unique_names(vector<BaseType *> l, const string &var, const string &type, string &msg);
