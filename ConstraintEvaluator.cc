@@ -26,6 +26,7 @@
 
 //#define DODS_DEBUG
 
+#include "ServerFunctionsList.h"
 #include "ConstraintEvaluator.h"
 
 #if 0
@@ -64,6 +65,10 @@ ConstraintEvaluator::ConstraintEvaluator()
     // Functions are now held in BES modules and registered in a particular
     // instance of ConstraintEvaluator when a request is made. See
     // BESDapTransmitt in bes/dap. jhrg 1/30/13
+
+    // modules load functions to this list; this class searchs the list
+    d_functions_list = ServerFunctionsList::TheList();
+
 #if 0
     register_functions(*this);
 #endif
@@ -235,6 +240,8 @@ void ConstraintEvaluator::add_function(const string &name, proj_func f)
 /** @brief Find a Boolean function with a given name in the function list. */
 bool ConstraintEvaluator::find_function(const string &name, bool_func *f) const
 {
+    return d_functions_list->find_function(name, f);
+#if 0
     if (functions.empty())
         return false;
 
@@ -245,11 +252,14 @@ bool ConstraintEvaluator::find_function(const string &name, bool_func *f) const
     }
 
     return false;
+#endif
 }
 
 /** @brief Find a BaseType function with a given name in the function list. */
 bool ConstraintEvaluator::find_function(const string &name, btp_func *f) const
 {
+    return d_functions_list->find_function(name, f);
+#if 0
     if (functions.empty())
         return false;
 
@@ -260,11 +270,14 @@ bool ConstraintEvaluator::find_function(const string &name, btp_func *f) const
     }
 
     return false;
+#endif
 }
 
 /** @brief Find a projection function with a given name in the function list. */
 bool ConstraintEvaluator::find_function(const string &name, proj_func *f) const
 {
+    return d_functions_list->find_function(name, f);
+#if 0
     if (functions.empty())
         return false;
 
@@ -274,6 +287,7 @@ bool ConstraintEvaluator::find_function(const string &name, proj_func *f) const
         }
 
     return false;
+#endif
 }
 //@}
 

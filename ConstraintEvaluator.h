@@ -42,6 +42,8 @@
 namespace libdap
 {
 
+class ServerFunctionsList;
+
 /** @brief Evaluate a constraint expression */
 class ConstraintEvaluator
 {
@@ -74,6 +76,9 @@ private:
 
     list<function> functions; // Known external functions
 
+    ServerFunctionsList *d_functions_list;  // Know external functions from
+                                            // modules
+
     // The default versions of these methods will break this class. Because
     // Clause does not support deep copies, that class will need to be modified
     // before these can be properly implemented. jhrg 4/3/06
@@ -97,6 +102,7 @@ public:
     typedef std::list<function>::iterator Functions_iter ;
 
     ConstraintEvaluator();
+
     virtual ~ConstraintEvaluator();
 
     void add_function(const string &name, bool_func f);
