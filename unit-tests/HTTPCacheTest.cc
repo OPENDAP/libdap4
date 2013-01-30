@@ -44,8 +44,8 @@
 #endif
 #include "RCReader.h"		// ditto
 
-#define DODS_DEBUG 1
-#define DODS_DEBUG2 2
+//#define DODS_DEBUG 1
+//#define DODS_DEBUG2 2
 #include "debug.h"
 
 #if defined(DODS_DEBUG) || defined(DODS_DEBUG2)
@@ -147,7 +147,7 @@ public:
     }
 
     CPPUNIT_TEST_SUITE(HTTPCacheTest);
-#if 0
+#if 1
     CPPUNIT_TEST(constructor_test);
     CPPUNIT_TEST(cache_index_read_test);
     CPPUNIT_TEST(cache_index_parse_line_test);
@@ -167,7 +167,7 @@ public:
     CPPUNIT_TEST(cache_response_test);
 #endif
     CPPUNIT_TEST(is_url_valid_test);
-#if 0
+#if 1
     CPPUNIT_TEST(get_cached_response_test);
 
     CPPUNIT_TEST(perform_garbage_collection_test);

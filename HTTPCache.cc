@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 // #define DODS_DEBUG2
 #undef USE_GETENV
 
