@@ -10,7 +10,7 @@ AC_SUBST(DAP_PROTOCOL_VERSION)
 
 AC_CONFIG_SRCDIR([Connect.cc])
 AC_CONFIG_AUX_DIR(conf)
-AM_CONFIG_HEADER([config.h dods-datatypes-config.h xdr-datatypes-config.h])
+AC_CONFIG_HEADERS([config.h dods-datatypes-config.h xdr-datatypes-config.h])
 AC_CONFIG_MACRO_DIR([conf])
 
 AM_INIT_AUTOMAKE
