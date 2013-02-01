@@ -57,9 +57,9 @@ public:
     virtual bool add_function(std::string name, libdap::btp_func func);
     virtual bool add_function(std::string name, libdap::bool_func func);
     virtual bool add_function(std::string name, libdap::proj_func func);
-
+#if 0
     virtual void store_functions(libdap::ConstraintEvaluator &ce);
-
+#endif
     virtual bool find_function(const std::string &name, libdap::bool_func *f) const;
     virtual bool find_function(const std::string &name, libdap::btp_func *f) const;
     virtual bool find_function(const std::string &name, libdap::proj_func *f) const;

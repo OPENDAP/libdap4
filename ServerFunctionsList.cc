@@ -78,6 +78,7 @@ ServerFunctionsList::add_function( string name, proj_func func )
     return false;
 }
 
+#if 0
 void ServerFunctionsList::store_functions(ConstraintEvaluator &ce)
 {
     if (d_btp_func_list.size() > 0) {
@@ -107,7 +108,7 @@ void ServerFunctionsList::store_functions(ConstraintEvaluator &ce)
         }
     }
 }
-
+#endif
 /** @brief Find a Boolean function with a given name in the function list. */
 bool ServerFunctionsList::find_function(const string &name, bool_func *f) const
 {

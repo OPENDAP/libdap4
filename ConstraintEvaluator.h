@@ -106,11 +106,11 @@ public:
     ConstraintEvaluator();
 
     virtual ~ConstraintEvaluator();
-
+#if 0
     void add_function(const string &name, bool_func f);
     void add_function(const string &name, btp_func f);
     void add_function(const string &name, proj_func f);
-
+#endif
     bool find_function(const string &name, bool_func *f) const;
     bool find_function(const string &name, btp_func *f) const;
     bool find_function(const string &name, proj_func *f) const;
