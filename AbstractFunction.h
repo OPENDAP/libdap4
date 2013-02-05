@@ -9,6 +9,7 @@
 #define ABSTRACTFUNCTION_H_
 
 #include <iostream>
+#include "expr.h"
 
 using std::endl;
 
@@ -28,6 +29,10 @@ private:
     string usage;
     functionType fType;
 
+    libdap::bool_func d_bool_func;
+    libdap::btp_func  d_btp_func;
+    libdap::proj_func d_proj_func;
+
 public:
     AbstractFunction();
 	virtual ~AbstractFunction();
@@ -43,9 +48,42 @@ public:
 
 	bool canOperateOn(DDS &dds) { return true; }
 
-	virtual void func(int argc, BaseType *argv[], DDS &dds, bool *result) = 0;
-	virtual void func(int argc, BaseType *argv[], DDS &dds, BaseType **btpp) = 0;
-	virtual void func(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce) = 0;
+
+	void setFunction(bool_func bf){
+		d_bool_func = bf;
+		d_btp_func  = 0;
+		d_proj_func = 0;
+	}
+
+	void setFunction(d_btp_func btp){
+		d_bool_func = 0;
+		d_btp_func  = btp;
+		d_proj_func = 0;
+	}
+
+	void setFunction(d_proj_func pf){
+		d_bool_func = 0;
+		d_btp_func  = 0;
+		d_proj_func = pf;
+	}
+
+	btp_func get_bool_func(){ return d_bool_func; }
+	btp_func get_btp_func() { return d_btp_func;  }
+	btp_func get_proj_func(){ return d_proj_func; }
+
+	void func(int argc, BaseType *argv[], DDS &dds, bool *result){
+		result = 0;;
+	}
+
+	void func(int argc, BaseType *argv[], DDS &dds, BaseType **btpp){
+		*btpp = 0;
+	}
+	void func(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce){
+		ce = 0;
+	}
+
+
+
 
 };
 
