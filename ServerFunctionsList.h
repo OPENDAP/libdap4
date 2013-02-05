@@ -28,6 +28,8 @@
 #include <map>
 #include <string>
 
+#include "AbstractFunction.h"
+
 #include <expr.h>
 #if 0
 using std::map;
@@ -48,6 +50,10 @@ private:
     std::map<std::string, libdap::bool_func> d_bool_func_list;
     std::map<std::string, libdap::proj_func> d_proj_func_list;
 
+    std::map<std::string, libdap::AbstractFunction *> func_list;
+
+
+
 protected:
     ServerFunctionsList(void);
 
@@ -57,12 +63,17 @@ public:
     virtual bool add_function(std::string name, libdap::btp_func func);
     virtual bool add_function(std::string name, libdap::bool_func func);
     virtual bool add_function(std::string name, libdap::proj_func func);
+
+    virtual bool add_function(std::string name, libdap::AbstractFunction *func);
+
 #if 0
     virtual void store_functions(libdap::ConstraintEvaluator &ce);
 #endif
     virtual bool find_function(const std::string &name, libdap::bool_func *f) const;
     virtual bool find_function(const std::string &name, libdap::btp_func *f) const;
     virtual bool find_function(const std::string &name, libdap::proj_func *f) const;
+
+    virtual bool find_function(const std::string &name, libdap::functionType type) const;
 
     //virtual void dump(ostream &strm) const;
 

@@ -272,7 +272,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	Operators.h XDRUtils.cc XDRFileMarshaller.cc			\
 	XDRStreamMarshaller.cc XDRFileUnMarshaller.cc			\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc \
-	DAPCache3.cc ServerFunctionsList.cc
+	DAPCache3.cc ServerFunctionsList.cc AbstractFunction.cc
 
 # ce_functions.cc GSEClause.cc GeoConstraint.cc
 # GridGeoConstraint.cc ArrayGeoConstraint.cc 
@@ -309,7 +309,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	Marshaller.h UnMarshaller.h XDRFileUnMarshaller.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h \
-	DAPCache3.h ServerFunctionsList.h
+	DAPCache3.h ServerFunctionsList.h AbstractFunction.h
 
 # ArrayGeoConstraint.h ce_functions.h gse_parser.h GSEClause.h  
 # GeoConstraint.h GridGeoConstraint.h

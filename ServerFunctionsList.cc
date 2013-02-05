@@ -46,6 +46,18 @@ ServerFunctionsList::~ServerFunctionsList()
 }
 
 bool
+ServerFunctionsList::add_function( string name, AbstractFunction *func )
+{
+    if (func_list[name] == 0) {
+    	func_list[name] = func;
+        return true;
+    }
+
+    return false;
+}
+
+
+bool
 ServerFunctionsList::add_function( string name, btp_func func )
 {
     if (d_btp_func_list[name] == 0) {
@@ -55,6 +67,7 @@ ServerFunctionsList::add_function( string name, btp_func func )
 
     return false;
 }
+
 
 bool
 ServerFunctionsList::add_function( string name, bool_func func )
@@ -109,6 +122,23 @@ void ServerFunctionsList::store_functions(ConstraintEvaluator &ce)
     }
 }
 #endif
+/** @brief Find an AbstractFunction instance with a given name in the function list. */
+bool ServerFunctionsList::find_function(const string &name, functionType type) const
+{
+    if (func_list.empty())
+        return false;
+
+    map<string, AbstractFunction *>::const_iterator i = func_list.begin();
+    while(i != func_list.end()) {
+        if (name == (*i).first && (type == (*i).second->getType())) {
+            return true;
+        }
+        ++i;
+    }
+
+    return false;
+}
+
 /** @brief Find a Boolean function with a given name in the function list. */
 bool ServerFunctionsList::find_function(const string &name, bool_func *f) const
 {
