@@ -17,9 +17,6 @@ using std::endl;
 
 namespace libdap {
 
-enum functionType {
-    null, basetypePointer, boolean, projection
-};
 
 class AbstractFunction {
 
@@ -27,7 +24,6 @@ private:
     string name;
     string description;
     string usage;
-    functionType fType;
 
     libdap::bool_func d_bool_func;
     libdap::btp_func  d_btp_func;
@@ -36,9 +32,6 @@ private:
 public:
     AbstractFunction();
 	virtual ~AbstractFunction();
-
-	void setType(functionType ft){ fType = ft; }
-	functionType getType(){ return fType; }
 
 	string getName(){ return name; }
 	void setName(string n){ name = n; }
@@ -67,20 +60,9 @@ public:
 		d_proj_func = pf;
 	}
 
-	btp_func get_bool_func(){ return d_bool_func; }
-	btp_func get_btp_func() { return d_btp_func;  }
-	btp_func get_proj_func(){ return d_proj_func; }
-
-	void func(int argc, BaseType *argv[], DDS &dds, bool *result){
-		result = 0;;
-	}
-
-	void func(int argc, BaseType *argv[], DDS &dds, BaseType **btpp){
-		*btpp = 0;
-	}
-	void func(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce){
-		ce = 0;
-	}
+	bool_func get_bool_func(){ return d_bool_func; }
+	btp_func  get_btp_func() { return d_btp_func;  }
+	proj_func get_proj_func(){ return d_proj_func; }
 
 
 

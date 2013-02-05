@@ -10,9 +10,12 @@
 namespace libdap {
 
 AbstractFunction::AbstractFunction() {
-	setType(null);
 	setName("abstract_function");
 	setDescriptionString("This function does nothing.");
+	d_bool_func = 0;
+	d_btp_func  = 0;
+	d_proj_func = 0;
+
 }
 
 AbstractFunction::~AbstractFunction() {
