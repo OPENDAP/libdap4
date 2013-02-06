@@ -46,11 +46,13 @@ class ServerFunctionsList {
 private:
     static ServerFunctionsList * d_instance;
 
+#if 0
     std::map<std::string, libdap::btp_func> d_btp_func_list;
     std::map<std::string, libdap::bool_func> d_bool_func_list;
     std::map<std::string, libdap::proj_func> d_proj_func_list;
+#endif
 
-    std::map<std::string, libdap::AbstractFunction *> func_list;
+    std::multimap<std::string, libdap::AbstractFunction *> func_list;
 
 
 
@@ -60,20 +62,23 @@ protected:
 public:
     virtual ~ServerFunctionsList(void);
 
+#if 0
     virtual bool add_function(std::string name, libdap::btp_func func);
     virtual bool add_function(std::string name, libdap::bool_func func);
     virtual bool add_function(std::string name, libdap::proj_func func);
+#endif
 
-    virtual bool add_function(std::string name, libdap::AbstractFunction *func);
 
 #if 0
     virtual void store_functions(libdap::ConstraintEvaluator &ce);
 #endif
-    virtual bool find_function(const std::string &name, libdap::bool_func *f) const;
-    virtual bool find_function(const std::string &name, libdap::btp_func *f) const;
-    virtual bool find_function(const std::string &name, libdap::proj_func *f) const;
 
-    virtual bool find_function(const std::string &name, libdap::functionType type) const;
+
+    virtual bool add_function(libdap::AbstractFunction *func);
+
+    virtual bool find_function(const std::string &name, libdap::bool_func *f) const;
+    virtual bool find_function(const std::string &name, libdap::btp_func  *f) const;
+    virtual bool find_function(const std::string &name, libdap::proj_func *f) const;
 
     //virtual void dump(ostream &strm) const;
 

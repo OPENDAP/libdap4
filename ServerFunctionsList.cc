@@ -46,16 +46,15 @@ ServerFunctionsList::~ServerFunctionsList()
 }
 
 bool
-ServerFunctionsList::add_function( string name, AbstractFunction *func )
+ServerFunctionsList::add_function(AbstractFunction *func )
 {
-    if (func_list[name] == 0) {
-    	func_list[name] = func;
-        return true;
-    }
+	//func_list.insert(pair<string, AbstractFunction *>(func->getName(),func));
+	func_list.insert(std::make_pair(func->getName(),func));
 
     return false;
 }
 
+#if 0
 
 bool
 ServerFunctionsList::add_function( string name, btp_func func )
@@ -90,6 +89,7 @@ ServerFunctionsList::add_function( string name, proj_func func )
 
     return false;
 }
+#endif
 
 #if 0
 void ServerFunctionsList::store_functions(ConstraintEvaluator &ce)
@@ -122,26 +122,14 @@ void ServerFunctionsList::store_functions(ConstraintEvaluator &ce)
     }
 }
 #endif
-/** @brief Find an AbstractFunction instance with a given name in the function list. */
-bool ServerFunctionsList::find_function(const string &name, functionType type) const
-{
-    if (func_list.empty())
-        return false;
-
-    map<string, AbstractFunction *>::const_iterator i = func_list.begin();
-    while(i != func_list.end()) {
-        if (name == (*i).first && (type == (*i).second->getType())) {
-            return true;
-        }
-        ++i;
-    }
-
-    return false;
-}
 
 /** @brief Find a Boolean function with a given name in the function list. */
-bool ServerFunctionsList::find_function(const string &name, bool_func *f) const
+bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) const
 {
+
+	// @TODO Understand the difference, if any between using in iterator like this: name == (*i).first  Versus using it like this: name == it->first
+	//
+#if 0
     if (d_bool_func_list.empty())
         return false;
 
@@ -154,11 +142,27 @@ bool ServerFunctionsList::find_function(const string &name, bool_func *f) const
     }
 
     return false;
+#endif
+
+    if (func_list.empty())
+        return false;
+
+    std::pair <std::multimap<std::string,libdap::AbstractFunction *>::const_iterator, std::multimap<std::string,libdap::AbstractFunction *>::const_iterator> ret;
+    ret = func_list.equal_range(name);
+    for (std::multimap<std::string,libdap::AbstractFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
+        if (name == it->first && (*f = it->second->get_bool_func())){
+            return true;
+        }
+    }
+    return false;
+
 }
 
 /** @brief Find a BaseType function with a given name in the function list. */
 bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
 {
+
+#if 0
     if (d_btp_func_list.empty())
         return false;
 
@@ -171,11 +175,29 @@ bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
     }
 
     return false;
+#endif
+
+    if (func_list.empty())
+        return false;
+
+    std::pair <std::multimap<string,AbstractFunction *>::const_iterator, std::multimap<string,AbstractFunction *>::const_iterator> ret;
+    ret = func_list.equal_range(name);
+    for (std::multimap<string,AbstractFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
+        if (name == it->first && (*f = it->second->get_btp_func())){
+            return true;
+        }
+    }
+    return false;
+
+
+
 }
 
 /** @brief Find a projection function with a given name in the function list. */
 bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
 {
+
+#if 0
     if (d_proj_func_list.empty())
         return false;
 
@@ -188,7 +210,26 @@ bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
     }
 
     return false;
+#endif
+
+    if (func_list.empty())
+        return false;
+
+    std::pair <std::multimap<string,AbstractFunction *>::const_iterator, std::multimap<string,AbstractFunction *>::const_iterator> ret;
+    ret = func_list.equal_range(name);
+    for (std::multimap<string,AbstractFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
+        if (name == it->first && (*f = it->second->get_proj_func())){
+            return true;
+        }
+    }
+    return false;
+
 }
+
+
+
+
+
 #if 0
 /** @brief dumps information about this object
  *
