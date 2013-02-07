@@ -74,13 +74,17 @@ public:
 #endif
 
 
-    virtual bool add_function(libdap::ServerFunction *func);
+    virtual void add_function(libdap::ServerFunction *func);
 
     virtual bool find_function(const std::string &name, libdap::bool_func *f) const;
     virtual bool find_function(const std::string &name, libdap::btp_func  *f) const;
     virtual bool find_function(const std::string &name, libdap::proj_func *f) const;
 
     //virtual void dump(ostream &strm) const;
+
+    std::multimap<string,libdap::ServerFunction *>::iterator begin();
+    std::multimap<string,libdap::ServerFunction *>::iterator end();
+    ServerFunction *getFunction(std::multimap<string,libdap::ServerFunction *>::iterator it);
 
     static ServerFunctionsList * TheList();
 };

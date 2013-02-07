@@ -22,14 +22,17 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include <iostream>
 #include <algorithm>
 
-#include <ConstraintEvaluator.h>
 #include <expr.h>
 
 #include "ServerFunctionsList.h"
-//#include "BESReporter.h"
+#include "debug.h"
 
+using std::cerr;
+using std::string;
+using std::endl;
 using namespace std;
 using namespace libdap;
 
@@ -45,13 +48,17 @@ ServerFunctionsList::~ServerFunctionsList()
 {
 }
 
-bool
-ServerFunctionsList::add_function(ServerFunction *func )
-{
-	//func_list.insert(pair<string, AbstractFunction *>(func->getName(),func));
-	func_list.insert(std::make_pair(func->getName(),func));
 
-    return false;
+/**
+ * Adds the passed ServerFunction pointer to the list of ServerFunctions using
+ * the value of ServerFunction.getName() as the key in the list.
+ *
+ * @brief Adds the passed ServerFunction pointer to the list of ServerFunctions.
+ * @param *func A pointer to the ServerFunction object to add to the ServerFunctionList.
+ */
+void ServerFunctionsList::add_function(ServerFunction *func )
+{
+	func_list.insert(std::make_pair(func->getName(),func));
 }
 
 #if 0
@@ -123,12 +130,28 @@ void ServerFunctionsList::store_functions(ConstraintEvaluator &ce)
 }
 #endif
 
-/** @brief Find a Boolean function with a given name in the function list. */
+/**
+ * Returns the first boolean function in the list whose key value matches the passed string name.
+ * When a match is found the function returns true and sets returned value parameter *f to
+ * the boolean function held by the ServerFunction object extracted from the list.
+ *
+ * Method:
+ * Looks through the list of ServerFunctions and compares each function's key value (which
+ * would be the value of SurverFunction.getName()) with the value of the string parameter
+ * 'name'. When they match then the returned value parameter is set to the value returned
+ * by ServerFunction.get_btp_func(). If the ServerFunction _is not_  a instance of a boolean
+ * function then the return value will be 0 (null) and the search for matching function will continue.
+ * If the ServerFunction _is_ a boolean function then the returned value will be non-zero and
+ * the search will return true (it found the thing) and the returned value parameter *f will have
+ * it's value set to the boolean function.
+ *
+ *  @brief Find a boolean function with a given name in the function list.
+ *  @param name A string containing the name of the function to find.
+ *  @param *f   A returned value parameter through which a point to the desired function is returned.
+ *
+ */
 bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) const
 {
-
-	// @TODO Understand the difference, if any between using in iterator like this: name == (*i).first  Versus using it like this: name == it->first
-	//
 #if 0
     if (d_bool_func_list.empty())
         return false;
@@ -158,7 +181,28 @@ bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) c
 
 }
 
-/** @brief Find a BaseType function with a given name in the function list. */
+
+
+/**
+ * Returns the first BaseType function in the list whose key value matches the passed string name.
+ * When a match is found the function returns true and sets returned value parameter *f to
+ * the BaseType function held by the ServerFunction object extracted from the list.
+ *
+ * Method:
+ * Looks through the list of ServerFunctions and compares each function's key value (which
+ * would be the value of SurverFunction.getName()) with the value of the string parameter
+ * 'name'. When they match then the returned value parameter is set to the value returned
+ * by ServerFunction.get_btp_func(). If the ServerFunction _is not_  a instance of a BaseType
+ * function then the return value will be 0 (null) and the search for matching function will continue.
+ * If the ServerFunction _is_ a BaseType function then the returned value will be non-zero and
+ * the search will return true (it found the thing) and the returned value parameter *f will have
+ * it's value set to the BaseType function.
+ *
+ *  @brief Find a BaseType function with a given name in the function list.
+ *  @param name A string containing the name of the function to find.
+ *  @param *f   A returned value parameter through which a point to the desired function is returned.
+ *
+ */
 bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
 {
 
@@ -187,13 +231,33 @@ bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
             return true;
         }
     }
+
     return false;
 
 
 
 }
 
-/** @brief Find a projection function with a given name in the function list. */
+/**
+ * Returns the first projection function in the list whose key value matches the passed string name.
+ * When a match is found the function returns true and sets returned value parameter *f to
+ * the projection function held by the ServerFunction object extracted from the list.
+ *
+ * Method:
+ * Looks through the list of ServerFunctions and looks at each function's key value (which
+ * would be the value of SurverFunction.getName() for each function). When a function has the same
+ * key name as the value of the string parameter 'name', then the returned value parameter is set
+ * the value returned by ServerFunction.get_proj_func(). If the ServerFunction _is not_  a projection
+ * function then the return value will be 0 (null) and the search for matching function will continue.
+ * If the ServerFunction _is_ a projection then the returned value will be non-zero and the search will
+ * return true (it found the thing) and the returned value parameter *f will have it's value set
+ * to the projection function.
+ *
+ *  @brief Find a projection function with a given name in the function list.
+ *  @param name A string containing the name of the function to find.
+ *  @param *f   A returned value parameter through which a point to the desired function is returned.
+ *
+ */
 bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
 {
 
@@ -225,6 +289,33 @@ bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
     return false;
 
 }
+
+
+
+/** @brief Returns an iterator pointing to the first key pair in the ServerFunctionList. */
+std::multimap<string,libdap::ServerFunction *>::iterator ServerFunctionsList::begin()
+{
+    return func_list.begin();
+}
+
+/** @brief Returns an iterator pointing to the last key pair in the ServerFunctionList. */
+std::multimap<string,libdap::ServerFunction *>::iterator ServerFunctionsList::end()
+{
+    return func_list.end();
+}
+
+
+/**
+ *
+ *
+ * @brief Returns the ServerFunction pointed to by the passed iterator.
+ *
+ */
+libdap::ServerFunction *ServerFunctionsList::getFunction(std::multimap<string,libdap::ServerFunction *>::iterator it)
+{
+    return (*it).second;
+}
+
 
 
 

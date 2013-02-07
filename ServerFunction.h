@@ -17,6 +17,7 @@ using std::endl;
 
 namespace libdap {
 
+
 class ServerFunction {
 
 private:
@@ -77,6 +78,17 @@ public:
 		d_btp_func  = 0;
 		d_proj_func = pf;
 	}
+
+	string getTypeString(){
+		if(d_bool_func)
+			return "boolean";
+		if(d_btp_func)
+			return "basetype";
+		if(d_proj_func)
+			return "projection";
+		return "null";
+	}
+
 
 	bool_func get_bool_func(){ return d_bool_func; }
 	btp_func  get_btp_func() { return d_btp_func;  }
