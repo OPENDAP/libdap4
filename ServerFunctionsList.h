@@ -28,7 +28,7 @@
 #include <map>
 #include <string>
 
-#include "AbstractFunction.h"
+#include "ServerFunction.h"
 
 #include <expr.h>
 #if 0
@@ -52,7 +52,7 @@ private:
     std::map<std::string, libdap::proj_func> d_proj_func_list;
 #endif
 
-    std::multimap<std::string, libdap::AbstractFunction *> func_list;
+    std::multimap<std::string, libdap::ServerFunction *> func_list;
 
 
 
@@ -74,7 +74,7 @@ public:
 #endif
 
 
-    virtual bool add_function(libdap::AbstractFunction *func);
+    virtual bool add_function(libdap::ServerFunction *func);
 
     virtual bool find_function(const std::string &name, libdap::bool_func *f) const;
     virtual bool find_function(const std::string &name, libdap::btp_func  *f) const;

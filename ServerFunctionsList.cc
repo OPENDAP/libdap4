@@ -46,7 +46,7 @@ ServerFunctionsList::~ServerFunctionsList()
 }
 
 bool
-ServerFunctionsList::add_function(AbstractFunction *func )
+ServerFunctionsList::add_function(ServerFunction *func )
 {
 	//func_list.insert(pair<string, AbstractFunction *>(func->getName(),func));
 	func_list.insert(std::make_pair(func->getName(),func));
@@ -147,9 +147,9 @@ bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) c
     if (func_list.empty())
         return false;
 
-    std::pair <std::multimap<std::string,libdap::AbstractFunction *>::const_iterator, std::multimap<std::string,libdap::AbstractFunction *>::const_iterator> ret;
+    std::pair <std::multimap<std::string,libdap::ServerFunction *>::const_iterator, std::multimap<std::string,libdap::ServerFunction *>::const_iterator> ret;
     ret = func_list.equal_range(name);
-    for (std::multimap<std::string,libdap::AbstractFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
+    for (std::multimap<std::string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_bool_func())){
             return true;
         }
@@ -180,9 +180,9 @@ bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
     if (func_list.empty())
         return false;
 
-    std::pair <std::multimap<string,AbstractFunction *>::const_iterator, std::multimap<string,AbstractFunction *>::const_iterator> ret;
+    std::pair <std::multimap<string,libdap::ServerFunction *>::const_iterator, std::multimap<string,libdap::ServerFunction *>::const_iterator> ret;
     ret = func_list.equal_range(name);
-    for (std::multimap<string,AbstractFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
+    for (std::multimap<string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_btp_func())){
             return true;
         }
@@ -215,9 +215,9 @@ bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
     if (func_list.empty())
         return false;
 
-    std::pair <std::multimap<string,AbstractFunction *>::const_iterator, std::multimap<string,AbstractFunction *>::const_iterator> ret;
+    std::pair <std::multimap<string,libdap::ServerFunction *>::const_iterator, std::multimap<string,libdap::ServerFunction *>::const_iterator> ret;
     ret = func_list.equal_range(name);
-    for (std::multimap<string,AbstractFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
+    for (std::multimap<string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_proj_func())){
             return true;
         }

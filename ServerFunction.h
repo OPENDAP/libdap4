@@ -17,7 +17,7 @@ using std::endl;
 
 namespace libdap {
 
-class AbstractFunction {
+class ServerFunction {
 
 private:
     string name;
@@ -32,12 +32,11 @@ private:
     libdap::proj_func d_proj_func;
 
 public:
-    AbstractFunction();
-    AbstractFunction(string name, string version, string description, string usage, string doc_url, string role, bool_func f);
-    AbstractFunction(string name, string version, string description, string usage, string doc_url, string role, btp_func f);
-    AbstractFunction(string name, string version, string description, string usage, string doc_url, string role, proj_func f);
-
-    virtual ~AbstractFunction();
+    ServerFunction();
+    ServerFunction(string name, string version, string description, string usage, string doc_url, string role, bool_func f);
+    ServerFunction(string name, string version, string description, string usage, string doc_url, string role, btp_func f);
+    ServerFunction(string name, string version, string description, string usage, string doc_url, string role, proj_func f);
+    virtual ~ServerFunction();
 
 
 

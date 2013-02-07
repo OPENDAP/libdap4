@@ -5,11 +5,11 @@
  *      Author: ndp
  */
 
-#include "AbstractFunction.h"
+#include "ServerFunction.h"
 
 namespace libdap {
 
-AbstractFunction::AbstractFunction() {
+ServerFunction::ServerFunction() {
 	setName("abstract_function");
 	setDescriptionString("This function does nothing.");
 	setUsageString("You can't use this function");
@@ -21,7 +21,7 @@ AbstractFunction::AbstractFunction() {
 
 }
 
-AbstractFunction::AbstractFunction(string name, string version, string description, string usage, string doc_url, string role, bool_func f){
+ServerFunction::ServerFunction(string name, string version, string description, string usage, string doc_url, string role, bool_func f){
 	setName(name);
 	setVersion(version);
 	setDescriptionString(description);
@@ -31,7 +31,7 @@ AbstractFunction::AbstractFunction(string name, string version, string descripti
 	setFunction(f);
 }
 
-AbstractFunction::AbstractFunction(string name, string version, string description, string usage, string doc_url, string role, btp_func f){
+ServerFunction::ServerFunction(string name, string version, string description, string usage, string doc_url, string role, btp_func f){
 	setName(name);
 	setVersion(version);
 	setDescriptionString(description);
@@ -42,7 +42,7 @@ AbstractFunction::AbstractFunction(string name, string version, string descripti
 
 }
 
-AbstractFunction::AbstractFunction(string name, string version, string description, string usage, string doc_url, string role, proj_func f){
+ServerFunction::ServerFunction(string name, string version, string description, string usage, string doc_url, string role, proj_func f){
 	setName(name);
 	setVersion(version);
 	setDescriptionString(description);
@@ -53,9 +53,10 @@ AbstractFunction::AbstractFunction(string name, string version, string descripti
 }
 
 
-AbstractFunction::~AbstractFunction() {
-	// Nothing happens here...
-	;
+ServerFunction::~ServerFunction() {
+    d_bool_func = 0;
+	d_btp_func  = 0;
+	d_proj_func = 0;
 }
 
 
