@@ -59,7 +59,7 @@ public:
 	string getVersion(){ return version; }
 	void   setVersion(string ver){ version = ver; }
 
-	bool canOperateOn(DDS &dds) { return true; }
+	virtual bool canOperateOn(DDS &dds) { return true; }
 
 	void setFunction(bool_func bf){
 		d_bool_func = bf;

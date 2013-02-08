@@ -377,7 +377,7 @@ void Vector::set_read_p(bool state)
 
  @return A pointer to the BaseType if found, otherwise null.
  @see Vector::var */
-BaseType *Vector::var(const string & n, bool exact, btp_stack * s)
+BaseType *Vector::var(const string &n, bool exact, btp_stack *s)
 {
     string name = www2id(n);
     DBG(cerr << "Vector::var: Looking for " << n << endl);
