@@ -59,6 +59,18 @@ public:
 	string getVersion(){ return version; }
 	void   setVersion(string ver){ version = ver; }
 
+	/**
+	 * If you are writing a function that can only operate on a particular kind of data, or one that relies on the presence
+	 * of particular metadata, then you might orride this method in order to stop the server from
+	 * advertising the function in conjunction with datasets to which it cannot be applied.
+	 *
+	 * @param dds A DDS object for the dataset about which we will ask the question:
+	 * Can this function operate on all or some portion of the contents of this dataset?
+	 * CAUTION: Any implementation of this should be careful not to read data (or read as little as possible) from the
+	 * passed DDS. Reading data in this method may have negative effect on overall performance. Examining metadata and
+	 * dataset structure should be the basis for determining the applicability of a function to the dataset.
+	 * @return true If this function operate on all or some portion of the contents of this dataset, false otherwise.
+	 */
 	virtual bool canOperateOn(DDS &dds) { return true; }
 
 	void setFunction(bool_func bf){
