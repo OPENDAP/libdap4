@@ -443,6 +443,9 @@ HTTPConnect::read_url(const string &url, FILE *stream,
     // value/result parameter to get the raw response header information .
     curl_easy_setopt(d_curl, CURLOPT_WRITEHEADER, resp_hdrs);
 
+    // This is the call that causes curl to go and get the remote resource and "write it down"
+    // utilizing the configuration state that has been previously conditioned by various perturbations
+    // of calls to curl_easy_setopt().
     CURLcode res = curl_easy_perform(d_curl);
 
     // Free the header list and null the value in d_curl.
@@ -520,8 +523,7 @@ HTTPConnect::HTTPConnect(RCReader *rcr) : d_username(""), d_password(""),
 
     // HTTPCache::instance returns a valid ptr or 0.
     if (d_rcr->get_use_cache())
-        d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root(),
-                                           true);
+        d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root(),true);
     else
         d_http_cache = 0;
 
