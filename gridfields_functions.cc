@@ -27,6 +27,7 @@
 // NOTE: This file is built only when the gridfields library is linked with
 // the netcdf_handler (i.e., the handler's build is configured using the
 // --with-gridfields=... option to the 'configure' script).
+#if 0 // Disabling cruft code from earlier ugrid work - ndp 03/25/2013
 
 #include "config.h"
 
@@ -2627,4 +2628,4 @@ void function_newUGR(){
 
 
 } // namespace libdap
-//#endif
+#endif // Disabling cruft code from earlier ugrid work - ndp 03/25/2013
