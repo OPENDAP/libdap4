@@ -392,4 +392,14 @@ ServerFunctionsList::TheList()
     return d_instance;
 }
 
+
+void ServerFunctionsList::getFunctionNames(vector<string> *names){
+    std::multimap<string,libdap::ServerFunction *>::iterator fit;
+    for(fit=func_list.begin(); fit!=func_list.end() ; fit++){
+        ServerFunction *func = fit->second;
+        names->push_back(func->getName());
+    }
+}
+
+
 }

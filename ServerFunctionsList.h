@@ -86,6 +86,8 @@ public:
     std::multimap<string,libdap::ServerFunction *>::iterator end();
     ServerFunction *getFunction(std::multimap<string,libdap::ServerFunction *>::iterator it);
 
+    virtual void getFunctionNames(vector<string> *names);
+
     static ServerFunctionsList * TheList();
 };
 
