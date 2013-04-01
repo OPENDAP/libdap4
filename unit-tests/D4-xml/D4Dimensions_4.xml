@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dimension name="first" size="10"/>
+<Dimension name="odd" size="20"/>
+<Dimension name="second" size="100"/>
+<Dimension name="third" unlimited="true"/>

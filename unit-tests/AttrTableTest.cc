@@ -279,11 +279,14 @@ class AttrTableTest: public TestFixture {
             AttrTable *t = new AttrTable;
             t->append_attr("long name", "String", "first");
             t->append_attr("longer name", "String", "\"second test\"");
-            string sof;
-            FILE2string(sof, of, t->print(of, ""));
+            //string sof;
+            ostringstream oss;
+            t->print(oss, "");
+            //FILE2string(sof, of, t->print(of, ""));
             string attrs = "String long%20name \"first\";\n\
 String longer%20name \"second test\";";
-            CPPUNIT_ASSERT(sof.find(attrs) != string::npos);
+            //CPPUNIT_ASSERT(sof.find(attrs) != string::npos);
+            CPPUNIT_ASSERT(oss.str().find(attrs) != string::npos);
             delete t; t = 0;
         }
 

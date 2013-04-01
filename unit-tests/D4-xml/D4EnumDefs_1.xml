@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Enumeration name="first" basetype="Byte">
+    <EnumConst name="red" value="1"/>
+    <EnumConst name="blue" value="2"/>
+</Enumeration>

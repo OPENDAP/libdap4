@@ -2,20 +2,16 @@
 
 #include <fstream>
 #include <string>
-#include <sstream>
-
-#include "InternalErr.h"
+#include <vector>
 
 #include "testFile.h"
 
 using namespace std;
-using namespace libdap;
 
 string
 readTestBaseline(const string &fn)
 {
     int length;
-    char * buffer;
 
     ifstream is;
     is.open (fn.c_str(), ios::binary );
@@ -23,34 +19,17 @@ readTestBaseline(const string &fn)
     // get length of file:
     is.seekg (0, ios::end);
     length = is.tellg();
+
+    // back to start
     is.seekg (0, ios::beg);
 
     // allocate memory:
-    buffer = new char [length+1];
+    vector<char> buffer(length+1);
 
     // read data as a block:
-    is.read (buffer,length);
+    is.read (&buffer[0], length);
     is.close();
     buffer[length] = '\0';
 
-    return string(buffer);
+    return string(&buffer[0]);
 }
-#if 0
-string
-readTestBaseline(const string &fn)
-{
-    ifstream ifs(fn.c_str());
-    if (!ifs)
-        throw InternalErr(__FILE__, __LINE__, "Could not open file");
-
-    ostringstream strm;
-    char line[1024];
-    while (!ifs.eof()) {
-        ifs.getline(line, 1024);
-        strm << line << endl;
-    }
-    ifs.close();
-    
-    return strm.str();
-}
-#endif

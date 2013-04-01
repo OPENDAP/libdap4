@@ -7,7 +7,8 @@
 
 using namespace std;
 
-// Mever use this!
+#if 0
+// Never use this!
 #define FILE2string(s,f,c) do {\
         FILE *(f) = fopen("testout", "w");\
         c;\
@@ -15,7 +16,6 @@ using namespace std;
         s = readTestBaseline("testout");\
         unlink("testout");\
 } while(0);
+#endif
 
 string readTestBaseline(const string &fn);
-
-// string readTestBaseline(char *fn);

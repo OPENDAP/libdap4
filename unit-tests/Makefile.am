@@ -29,7 +29,7 @@ noinst_HEADERS = test_config.h
 
 DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
 	rcreader-testsuite server-testsuite cgi-util-tests	\
-	ce-functions-testsuite
+	ce-functions-testsuite D4-xml
 
 EXTRA_DIST = $(DIRS_EXTRA) testFile.cc testFile.h test_config.h.in
 
@@ -50,14 +50,14 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest 	\
 	DDSTest	DDXParserTest DODSFilterTest generalUtilTest 		\
 	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest 	\
-	SequenceTest SignalHandlerTest 			\
-	MarshallerTest     \
+	SequenceTest SignalHandlerTest  MarshallerTest                  \
 	ResponseBuilderTest Keywords2Test 
 	
 # GridGeoConstraintTest ArrayGeoConstraintTest CEFunctionsTest 
 
 if DAP4_DEFINED
-    UNIT_TESTS += DAP4MarshallerTest DAP4UnMarshallerTest
+    UNIT_TESTS += DAP4MarshallerTest DAP4UnMarshallerTest \
+    D4DimensionsTest D4EnumDefsTest
 endif
 
 #	fdiostreamTest
@@ -75,6 +75,7 @@ check-local:
 endif
 
 TEST_SRC = testFile.cc testFile.h
+
 RegexTest_SOURCES = RegexTest.cc
 RegexTest_LDADD = ../libdap.la $(AM_LDADD)
 
@@ -177,6 +178,12 @@ DAP4MarshallerTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DAP4UnMarshallerTest_SOURCES = DAP4UnMarshallerTest.cc
 DAP4UnMarshallerTest_LDADD = ../libdap.la $(AM_LDADD)
+
+D4DimensionsTest_SOURCES = D4DimensionsTest.cc $(TEST_SRC)
+D4DimensionsTest_LDADD = ../libdap.la $(AM_LDADD)
+
+D4EnumDefsTest_SOURCES = D4EnumDefsTest.cc $(TEST_SRC)
+D4EnumDefsTest_LDADD = ../libdap.la $(AM_LDADD)
 
 endif
 
