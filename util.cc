@@ -39,6 +39,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <climits>
 
 #include <ctype.h>
 #ifndef TM_IN_SYS_TIME
