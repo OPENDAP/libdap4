@@ -35,7 +35,7 @@
 
 #include "DDS.h"
 #include "BaseType.h"
-#include "D4EnumDef.h"
+//#include "D4EnumDef.h"
 #include "D4BaseTypeFactory.h"
 
 #include "D4ParseError.h"
@@ -110,8 +110,10 @@ private:
     stack<BaseType*> bt_stack; // current variable(s)/groups(s)
     stack<AttrTable*> at_stack; // current attribute table
 
+#if 0
     // If an enumeration being defined, hold it here until its complete
     D4EnumDef *d_enum_def;
+#endif
 
     // Accumulate stuff inside an 'OtherXML' DAP attribute here
     string other_xml;
