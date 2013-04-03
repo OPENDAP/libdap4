@@ -61,6 +61,7 @@
 #include "D4ParserSax2.h"
 
 #include "util.h"
+// #include "mime_util.h"
 #include "debug.h"
 
 namespace libdap {
@@ -306,10 +307,8 @@ void D4ParserSax2::process_enum_def_helper(const xmlChar **attrs, int nb_attribu
         t = dods_uint64_c;
     }
 
-    // FIXME
-#if 0
     d_enum_def = new D4EnumDef(xml_attrs["name"].value, t);
-#endif
+
     set_state(inside_enum_def);
 }
 
@@ -334,15 +333,14 @@ void D4ParserSax2::process_enum_const_helper(const xmlChar **attrs, int nb_attri
         ddx_fatal_error(this, "Error: Expected an integer value for an Enumeration constant, got '%s' instead.",
                 xml_attrs["value"].value.c_str());
     }
-    //FIXME
-#if 0
     else if (!is_valid_enum_value(d_enum_def->get_type(), value))
         ddx_fatal_error(this, "Error: In an Enumeration constant, the value '%s' cannot fit in a variable of type '%s'.",
                 xml_attrs["value"].value.c_str(), type_name(d_enum_def->get_type()).c_str());
+
     else {
         d_enum_def->add_value(xml_attrs["name"].value, value);
     }
-#endif
+
     set_state(inside_enum_const);
 }
 
@@ -552,7 +550,7 @@ void D4ParserSax2::ddx_start_element(void *p, const xmlChar *l, const xmlChar *p
 
     switch (parser->get_state()) {
         case parser_start:
-            if (strcmp(localname, "Dataset") == 0) {
+            if (strcmp(localname, "Group") == 0) {
 
                 parser->set_state(inside_group);
 
@@ -859,10 +857,7 @@ void D4ParserSax2::ddx_end_element(void *p, const xmlChar *l, const xmlChar *pre
                     D4ParserSax2::ddx_fatal_error(parser, "Expected a Group to be the current item, while finishing up an %s.", localname);
                 else {
                     D4Group *g = static_cast<D4Group*>(btp);
-                    // FIXME
-#if 0
                     g->add_enumeration_nocopy(parser->d_enum_def);
-#endif
                     parser->pop_state();
                 }
             }

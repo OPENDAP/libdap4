@@ -99,9 +99,9 @@ libdapserver_la_LIBADD = libdap.la $(UUID_LIBS)
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
 # TODO Until the compile-time issue with headers like BaseType.h depending on
 # configure params is fixed, always install these headers.
-# if DAP4_DEFINED
+if DAP4_DEFINED
     pkginclude_HEADERS += $(DAP4_ONLY_HDR)
-# endif
+endif
 
 noinst_HEADERS = config_dap.h
 
