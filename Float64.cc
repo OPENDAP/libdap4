@@ -33,31 +33,28 @@
 //
 // jhrg 9/7/94
 
-#include <iomanip>
-
 #include "config.h"
 
-static char rcsid[] not_used =
-    {"$Id$"
-    };
-
+#include <sstream>
 #include <iomanip>
 
-#include "Byte.h"
+#include "Byte.h"           // synonymous with UInt8 and Char
+#include "Int8.h"
 #include "Int16.h"
 #include "UInt16.h"
 #include "Int32.h"
 #include "UInt32.h"
+#include "Int64.h"
+#include "UInt64.h"
 #include "Float32.h"
 #include "Float64.h"
 #include "Str.h"
 #include "Url.h"
-#include "Array.h"
-#include "Structure.h"
-#include "Sequence.h"
-#include "Grid.h"
 
 #include "DDS.h"
+#include "Marshaller.h"
+#include "UnMarshaller.h"
+
 #include "util.h"
 #include "parser.h"
 #include "Operators.h"
@@ -95,7 +92,7 @@ Float64::Float64(const string &n, const string &d)
 
 Float64::Float64(const Float64 &copy_from) : BaseType(copy_from)
 {
-    _buf = copy_from._buf;
+    d_buf = copy_from.d_buf;
 }
 
 BaseType *
@@ -112,7 +109,7 @@ Float64::operator=(const Float64 &rhs)
 
     dynamic_cast<BaseType &>(*this) = rhs;
 
-    _buf = rhs._buf;
+    d_buf = rhs.d_buf;
 
     return *this;
 }
@@ -139,7 +136,7 @@ Float64::serialize(ConstraintEvaluator &eval, DDS &dds,
 
     dds.timeout_off();
 
-    m.put_float64( _buf ) ;
+    m.put_float64( d_buf ) ;
 
     return true;
 }
@@ -147,7 +144,7 @@ Float64::serialize(ConstraintEvaluator &eval, DDS &dds,
 bool
 Float64::deserialize(UnMarshaller &um, DDS *, bool)
 {
-    um.get_float64( _buf ) ;
+    um.get_float64( d_buf ) ;
 
     return false;
 }
@@ -163,7 +160,7 @@ Float64::val2buf(void *val, bool)
         throw InternalErr(__FILE__, __LINE__,
                           "The incoming pointer does not contain any data.");
 
-    _buf = *(dods_float64 *)val;
+    d_buf = *(dods_float64 *)val;
 
     return width();
 }
@@ -179,7 +176,7 @@ Float64::buf2val(void **val)
     if (!*val)
         *val = new dods_float64;
 
-    *(dods_float64 *)*val = _buf;
+    *(dods_float64 *)*val = d_buf;
 
     return width();
 }
@@ -192,33 +189,25 @@ Float64::buf2val(void **val)
 dods_float64
 Float64::value() const
 {
-    return _buf;
+    return d_buf;
 }
 
 bool
 Float64::set_value(dods_float64 val)
 {
-    _buf = val;
+    d_buf = val;
     set_read_p(true);
 
     return true;
 }
 
-#if FILE_METHODS
 void
 Float64::print_val(FILE *out, string space, bool print_decl_p)
 {
-    // FIX: need to set precision in the printing somehow.
-    // os.precision(DODS_DBL_DIG);
-
-    if (print_decl_p) {
-        print_decl(out, space, false);
-        fprintf(out, " = %.15g;\n", _buf) ;
-    }
-    else
-        fprintf(out, "%.15g", _buf) ;
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
-#endif
 
 void
 Float64::print_val(ostream &out, string space, bool print_decl_p)
@@ -228,10 +217,10 @@ Float64::print_val(ostream &out, string space, bool print_decl_p)
 
     if (print_decl_p) {
         print_decl(out, space, false);
-	out << " = " << std::setprecision( 15 ) << _buf << ";\n" ;
+	out << " = " << std::setprecision( 15 ) << d_buf << ";\n" ;
     }
     else
-	out << std::setprecision( 15 ) << _buf ;
+	out << std::setprecision( 15 ) << d_buf ;
 }
 
 bool
@@ -258,29 +247,28 @@ Float64::ops(BaseType *b, int op)
     }
 
     switch (b->type()) {
-    case dods_byte_c:
-        return rops<dods_float64, dods_byte, Cmp<dods_float64, dods_byte> >
-               (_buf, dynamic_cast<Byte *>(b)->_buf, op);
-    case dods_int16_c:
-        return rops<dods_float64, dods_int16, Cmp<dods_float64, dods_int16> >
-               (_buf, dynamic_cast<Int16 *>(b)->_buf, op);
-    case dods_uint16_c:
-        return rops<dods_float64, dods_uint16, Cmp<dods_float64, dods_uint16> >
-               (_buf, dynamic_cast<UInt16 *>(b)->_buf, op);
-    case dods_int32_c:
-        return rops<dods_float64, dods_int32, Cmp<dods_float64, dods_int32> >
-               (_buf, dynamic_cast<Int32 *>(b)->_buf, op);
-    case dods_uint32_c:
-        return rops<dods_float64, dods_uint32, Cmp<dods_float64, dods_uint32> >
-               (_buf, dynamic_cast<UInt32 *>(b)->_buf, op);
-    case dods_float32_c:
-        return rops<dods_float64, dods_float32, Cmp<dods_float64, dods_float32> >
-               (_buf, dynamic_cast<Float32 *>(b)->_buf, op);
-    case dods_float64_c:
-        return rops<dods_float64, dods_float64, Cmp<dods_float64, dods_float64> >
-               (_buf, dynamic_cast<Float64 *>(b)->_buf, op);
-    default:
-        return false;
+        case dods_int8_c:
+            return Cmp<dods_float64, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
+        case dods_byte_c:
+            return SUCmp<dods_float64, dods_byte>(op, d_buf, static_cast<Byte*>(b)->value());
+        case dods_int16_c:
+            return Cmp<dods_float64, dods_int16>(op, d_buf, static_cast<Int16*>(b)->value());
+        case dods_uint16_c:
+            return SUCmp<dods_float64, dods_uint16>(op, d_buf, static_cast<UInt16*>(b)->value());
+        case dods_int32_c:
+            return Cmp<dods_float64, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
+        case dods_uint32_c:
+            return SUCmp<dods_float64, dods_uint32>(op, d_buf, static_cast<UInt32*>(b)->value());
+        case dods_int64_c:
+            return Cmp<dods_float64, dods_int64>(op, d_buf, static_cast<Int64*>(b)->value());
+        case dods_uint64_c:
+            return SUCmp<dods_float64, dods_uint64>(op, d_buf, static_cast<UInt64*>(b)->value());
+        case dods_float32_c:
+            return Cmp<dods_float64, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
+        case dods_float64_c:
+            return Cmp<dods_float64, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
+        default:
+            return false;
     }
 }
 
@@ -299,7 +287,7 @@ Float64::dump(ostream &strm) const
     << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
     BaseType::dump(strm) ;
-    strm << DapIndent::LMarg << "value: " << _buf << endl ;
+    strm << DapIndent::LMarg << "value: " << d_buf << endl ;
     DapIndent::UnIndent() ;
 }
 

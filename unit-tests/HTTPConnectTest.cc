@@ -33,11 +33,12 @@
 #include <algorithm>
 #include <functional>
 
-// #define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "GNURegex.h"
 #include "HTTPConnect.h"
 #include "RCReader.h"
+
 #include "debug.h"
 
 #include "test_config.h"
@@ -87,7 +88,7 @@ class HTTPConnectTest: public TestFixture {
     }
 
     void setUp() {
-        putenv("DODS_CONF=cache-testsuite/dodsrc");
+        putenv((char*)"DODS_CONF=cache-testsuite/dodsrc");
         http = new HTTPConnect(RCReader::instance());
 
         localhost_url = "http://test.opendap.org/test-304.html";
@@ -96,7 +97,7 @@ class HTTPConnectTest: public TestFixture {
         // above URL. The values below much match the etag and last-modified
         // time returned by the server. Run this test with DODS_DEBUG defined
         // to see the values it's returning.
-        etag = "\"2c004-157-139c2680\"";
+        etag = "\"a10df-157-139c2680\""; // a10df-157-139c2680a
         lm = "Wed, 13 Jul 2005 19:32:26 GMT";
 
         localhost_pw_url =
@@ -119,15 +120,15 @@ class HTTPConnectTest: public TestFixture {
     CPPUNIT_TEST(get_response_headers_test);
     CPPUNIT_TEST(server_version_test);
     CPPUNIT_TEST(type_test);
+
     CPPUNIT_TEST(cache_test);
+
     CPPUNIT_TEST(set_accept_deflate_test);
     CPPUNIT_TEST(set_xdap_protocol_test);
     CPPUNIT_TEST(read_url_password_test);
     CPPUNIT_TEST(read_url_password_test2);
 
-#if 0
-    CPPUNIT_TEST(read_url_password_proxy_test);
-#endif
+  // CPPUNIT_TEST(read_url_password_proxy_test);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -178,23 +179,48 @@ class HTTPConnectTest: public TestFixture {
 
         }
         catch(Error & e) {
-            cerr << e.get_error_message() << endl;
             delete resp_h;
             resp_h = 0;
-            CPPUNIT_ASSERT(!"Should not get an Error");
+            CPPUNIT_FAIL("Error: " + e.get_error_message() );
         }
     }
 
     void fetch_url_test() {
-        HTTPResponse *stuff = http->fetch_url(localhost_url);
+        DBG(cerr << "Entering fetch_url_test" << endl);
+        HTTPResponse *stuff = 0;
+        char c;
         try {
-            char c;
+            DBG(cerr << "    First request..." << endl;)
+            stuff = http->fetch_url(localhost_url);
+            DBG(cerr << "    Back from first request." << endl);
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
                            && !ferror(stuff->get_stream())
                            && !feof(stuff->get_stream()));
             delete stuff;
             stuff = 0;
 
+        }
+        catch(InternalErr & e) {
+            delete stuff;
+            stuff = 0;
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
+        }
+        catch(Error & e) {
+            delete stuff;
+            stuff = 0;
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        // Catch the exception from a failed ASSERT and clean up. Deleting a
+        // Response object also unlocks the HTTPCache in some cases. If delete
+        // is not called, then a failed test can leave the cache with locked
+        // entries
+        catch (...) {
+            cerr << "Caught unknown exception" << endl;
+            delete stuff; stuff = 0;
+            throw;
+        }
+
+        try {
             stuff = http->fetch_url(netcdf_das_url);
             DBG2(char ln[1024]; while (!feof(stuff->get_stream())) {
                  fgets(ln, 1024, stuff->get_stream()); cerr << ln;}
@@ -205,14 +231,54 @@ class HTTPConnectTest: public TestFixture {
                            && !feof(stuff->get_stream()));
             delete stuff;
             stuff = 0;
+        }
+        catch(InternalErr & e) {
+            delete stuff;
+            stuff = 0;
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
+        }
+        catch(Error & e) {
+            delete stuff;
+            stuff = 0;
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        // Catch the exception from a failed ASSERT and clean up. Deleting a
+        // Response object also unlocks the HTTPCache in some cases. If delete
+        // is not called, then a failed test can leave the cache with locked
+        // entries
+        catch (...) {
+            delete stuff; stuff = 0;
+            throw;
+        }
 
+        try {
             stuff = http->fetch_url("file:///etc/passwd");
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
                            && !ferror(stuff->get_stream())
                            && !feof(stuff->get_stream()));
             delete stuff;
             stuff = 0;
+        }
+        catch(InternalErr & e) {
+            delete stuff;
+            stuff = 0;
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
+        }
+        catch(Error & e) {
+            delete stuff;
+            stuff = 0;
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        // Catch the exception from a failed ASSERT and clean up. Deleting a
+        // Response object also unlocks the HTTPCache in some cases. If delete
+        // is not called, then a failed test can leave the cache with locked
+        // entries
+        catch (...) {
+            delete stuff; stuff = 0;
+            throw;
+        }
 
+        try {
 	    string url = (string)"file://test_config.h" ;
             stuff = http->fetch_url(url);
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
@@ -224,14 +290,12 @@ class HTTPConnectTest: public TestFixture {
         catch(InternalErr & e) {
             delete stuff;
             stuff = 0;
-            cerr << "InternalErr: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
         }
         catch(Error & e) {
             delete stuff;
             stuff = 0;
-            cerr << "Error: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
         // Response object also unlocks the HTTPCache in some cases. If delete
@@ -244,9 +308,10 @@ class HTTPConnectTest: public TestFixture {
     }
 
     void get_response_headers_test() {
-        HTTPResponse *r = http->fetch_url(netcdf_das_url);
+        HTTPResponse *r = 0;
 
         try {
+            r = http->fetch_url(netcdf_das_url);
             vector < string > *h = r->get_headers();
 
             DBG(copy(h->begin(), h->end(),
@@ -266,7 +331,7 @@ class HTTPConnectTest: public TestFixture {
         catch(InternalErr & e) {
             delete r;
             r = 0;
-            CPPUNIT_FAIL("Caught an exception from get_response_headers");
+            CPPUNIT_FAIL("Caught an InternalErr exception from get_response_headers: " + e.get_error_message() );
         }
         catch (...) {
             delete r; r = 0;
@@ -275,9 +340,11 @@ class HTTPConnectTest: public TestFixture {
     }
 
     void server_version_test() {
-        Response *r = http->fetch_url(netcdf_das_url);
+        Response *r = 0;
         Regex protocol("^[0-9]+\\.[0-9]+$");
         try {
+            r = http->fetch_url(netcdf_das_url);
+
             DBG(cerr << "r->get_version().c_str(): "
                 << r->get_protocol().c_str() << endl);
 
@@ -288,7 +355,7 @@ class HTTPConnectTest: public TestFixture {
         catch(InternalErr & e) {
             delete r;
             r = 0;
-            CPPUNIT_ASSERT(!"Caught an exception from server_version");
+            CPPUNIT_FAIL("Caught an InternalErr exception from server_version: " + e.get_error_message() );
         }
         catch (...) {
             delete r; r = 0;
@@ -298,8 +365,9 @@ class HTTPConnectTest: public TestFixture {
     }
 
     void type_test() {
-        Response *r = http->fetch_url(netcdf_das_url);
+        Response *r = 0;
         try {
+            r = http->fetch_url(netcdf_das_url);
             DBG(cerr << "r->get_type(): " << r->get_type() << endl);
             CPPUNIT_ASSERT(r->get_type() == dods_das);
             delete r;
@@ -308,7 +376,7 @@ class HTTPConnectTest: public TestFixture {
         catch(InternalErr & e) {
             delete r;
             r = 0;
-            CPPUNIT_ASSERT(!"Caught an exception from type()");
+            CPPUNIT_FAIL("Caught an InternalErr exception from type(): " + e.get_error_message() );
         }
 
     }
@@ -328,26 +396,36 @@ class HTTPConnectTest: public TestFixture {
         catch(InternalErr & e) {
             delete stuff;
             stuff = 0;
-            CPPUNIT_ASSERT(!"Caught exception from output");
+            CPPUNIT_FAIL("Caught an InternalErrexception from output: " + e.get_error_message());
         }
     }
 
     void cache_test() {
         DBG(cerr << endl << "Entering Caching tests." << endl);
+	try {
+	    // The cache-testsuite/dodsrc file turns this off; all the other
+	    // params are set up. It used to be that HTTPConnect had an option to
+	    // turn caching on, but that no longer is present. This hack enables
+	    // caching for this test. 06/18/04 jhrg
+	    http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root(), true);
+	    DBG(cerr << "Instantiate the cache" << endl);
 
-        // The cache-testsuite/dodsrc file turns this off; all the other
-        // params are set up. It used to be that HTTPConnect had an option to
-        // turn caching on, but that no longer is present. This hack enables
-        // caching for this test. 06/18/04 jhrg
-        http->d_http_cache =
-            HTTPCache::instance(http->d_rcr->get_dods_cache_root(), false);
-        CPPUNIT_ASSERT(http->d_http_cache != 0);
-        http->d_http_cache->set_cache_enabled(true);
+	    CPPUNIT_ASSERT(http->d_http_cache != 0);
+	    http->d_http_cache->set_cache_enabled(true);
+	    DBG(cerr << "Enable the cache" << endl);
 
-        fetch_url_test();
-        get_response_headers_test();
-        server_version_test();
-        type_test();
+	    fetch_url_test();
+	    DBG(cerr << "fetch_url_test" << endl);
+	    get_response_headers_test();
+	    DBG(cerr << "get_response_headers_test" << endl);
+	    server_version_test();
+	    DBG(cerr << "server_version_test" << endl);
+	    type_test();
+	    DBG(cerr << "type_test" << endl);
+	}
+	catch (Error &e) {
+	    CPPUNIT_FAIL((string)"Error: " + e.get_error_message());
+	}
     }
 
     void set_accept_deflate_test() {
@@ -376,11 +454,11 @@ class HTTPConnectTest: public TestFixture {
         // Initially there should be no header and the protocol should be 2.0
         CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 2
                        && http->d_dap_client_protocol_minor == 0);
-#if 1
+
         CPPUNIT_ASSERT(count_if(http->d_request_headers.begin(),
                              http->d_request_headers.end(),
                              HeaderMatch("XDAP-Accept:")) == 0);
-#endif
+
         http->set_xdap_protocol(8, 9);
         CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 8
                        && http->d_dap_client_protocol_minor == 9);
@@ -437,7 +515,7 @@ dods_test." << endl;
         RCReader::delete_instance();
         // this dodsrc directs all access through a proxy server. The
         // localhost must be configured as such.
-        putenv("DODS_CONF=cache-testsuite/dodsrc_proxy");
+        putenv((char*)"DODS_CONF=cache-testsuite/dodsrc_proxy");
         try {
             RCReader::initialize_instance();    // work-around pthreads for tests
             http = new HTTPConnect(RCReader::instance());

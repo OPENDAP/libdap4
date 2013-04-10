@@ -16,7 +16,7 @@ License along with this library; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <config.h>
+#include "config.h"
 
 /* AIX requires the alloca decl to be the first thing in the file. */
 #ifdef __GNUC__
@@ -31,7 +31,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 char *alloca ();
 #endif
 
-#ifndef WIN32
+#include <vector>
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <string.h>		// Added these. 10/20/98 jhrg
@@ -67,13 +69,14 @@ GetOpt::GetOpt (int argc, char **argv, const char *optstring)
 void
 GetOpt::exchange (char **argv)
 {
-  int nonopts_size
-    = (last_nonopt - first_nonopt) * sizeof (char *);
-  char **temp = (char **) alloca (nonopts_size);
-
+  int nonopts_size = (last_nonopt - first_nonopt) * sizeof(char *);
+  /* char **temp = (char **) alloca (nonopts_size); */
+  /* char **temp = (char **)malloc(nonopts_size); */
+  std::vector<char> temp(nonopts_size);
+  
   /* Interchange the two blocks of data in argv.  */
 
-  memcpy (temp, &argv[first_nonopt], nonopts_size);
+  memcpy (&temp[0], &argv[first_nonopt], nonopts_size);
 
   /* valgrind complains about this because in some cases the memory areas
      overlap. I switched to memmove. See the memcpy & memmove man pages.
@@ -85,13 +88,15 @@ GetOpt::exchange (char **argv)
   memmove (&argv[first_nonopt], &argv[last_nonopt],
          (optind - last_nonopt) * sizeof (char *));
 
-  memcpy (&argv[first_nonopt + optind - last_nonopt], temp,
+  memcpy (&argv[first_nonopt + optind - last_nonopt], &temp[0],
          nonopts_size);
 
   /* Update records for the slots the non-options now occupy.  */
 
   first_nonopt += (optind - last_nonopt);
   last_nonopt = optind;
+  
+  //free(temp);
 }
 
 /* Scan elements of ARGV (whose length is ARGC) for option characters

@@ -30,7 +30,9 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG2
+//#define DODS_DEBUG2
+//#define DODS_DEBUG
+
 #include "Byte.h"
 #include "Int16.h"
 #include "UInt16.h"
@@ -46,11 +48,12 @@
 #include "Grid.h"
 
 #include "DDS.h"
-#include "DAS.h"
 
 #include "GNURegex.h"
 #include "util.h"
 #include "debug.h"
+
+#include "testFile.h"
 #include "test_config.h"
 
 using namespace CppUnit;
@@ -59,731 +62,412 @@ using namespace std;
 namespace libdap {
 
 class DDSTest: public TestFixture {
-    private:
-        DDS *dds1, *dds2;
-        BaseTypeFactory factory;
+private:
+    DDS *dds1, *dds2;
+    BaseTypeFactory factory;
 
-    public:
-        DDSTest()
-        {
-        }
-        ~DDSTest()
-        {
-        }
+    DDS *dds_dap4;
 
-        void setUp()
-        {
-            //factory = new BaseTypeFactory;
-            dds1 = new DDS(&factory, "test1");
-            dds2 = new DDS(&factory, "test2");
-        }
+public:
+    DDSTest() {
+    }
+    ~DDSTest() {
+    }
 
-        void tearDown()
-        {
-            delete dds1;
-            dds1 = 0;
-            delete dds2;
-            dds2 = 0;
-            //delete factory; factory = 0;
-        }
+    void setUp() {
+        dds1 = new DDS(&factory, "test1");
+        dds2 = new DDS(&factory, "test2");
 
-        bool re_match(Regex &r, const string &s)
-        {
-            int match = r.match(s.c_str(), s.length());
-            DBG(cerr << "Match: " << match << " should be: " << s.length()
-                    << endl);
-            return match == static_cast<int> (s.length());
-        }
+        dds_dap4 = new DDS(&factory, "test2", "4.0");
+    }
 
-        CPPUNIT_TEST_SUITE( DDSTest );
+    void tearDown() {
+        delete dds1; dds1 = 0;
+        delete dds2; dds2 = 0;
+
+        delete dds_dap4; dds_dap4 = 0;
+    }
+
+    bool re_match(Regex &r, const string &s) {
+        int match = r.match(s.c_str(), s.length());
+        DBG(cerr << "Match: " << match << " should be: " << s.length()
+                << endl);
+        return match == static_cast<int> (s.length());
+    }
+
+    // The tests commented exercise features no longer supported
+    // by libdap. In particular, a DAS must now be properly structured
+    // to work with transfer_attributes() - if a handler builds a malformed
+    // DAS, it will need to specialize the BaseType::transfer_attributes()
+    // method.
+    CPPUNIT_TEST_SUITE( DDSTest );
 #if 1
+        CPPUNIT_TEST(transfer_attributes_test_1);
+        CPPUNIT_TEST(transfer_attributes_test_2);
+
         CPPUNIT_TEST(symbol_name_test);
-        CPPUNIT_TEST(print_xml_test);
-        CPPUNIT_TEST(find_hdf4_dimension_attribute_home_test);
-        CPPUNIT_TEST(find_matching_container_test);
-        CPPUNIT_TEST(transfer_attributes_test);
-        // These test both transfer_attributes() and print_xml()
 #endif
-        CPPUNIT_TEST(print_xml_test2);
+        // These test both transfer_attributes() and print_xml()
+        CPPUNIT_TEST(print_xml_test);
 #if 1
+        CPPUNIT_TEST(print_xml_test2);
         CPPUNIT_TEST(print_xml_test3);
-        CPPUNIT_TEST(print_xml_test3_1);
+
+        // The X_1 tests look at the proper merging of hdf4's _dim_n attributes.
+        // But that functionality was moved from libdap to the hdf4 handler.
+        // CPPUNIT_TEST(print_xml_test3_1);
+
         CPPUNIT_TEST(print_xml_test4);
         CPPUNIT_TEST(print_xml_test5);
-        CPPUNIT_TEST(print_xml_test5_1);
-
+        // CPPUNIT_TEST(print_xml_test5_1);
         CPPUNIT_TEST(print_xml_test6);
-        CPPUNIT_TEST(print_xml_test7);
+        // CPPUNIT_TEST(print_xml_test6_1);
+        CPPUNIT_TEST(print_dmr_test);
+
+        CPPUNIT_TEST(get_response_size_test);
+        CPPUNIT_TEST(get_response_size_test_c);
+        CPPUNIT_TEST(get_response_size_test_c2);
+        CPPUNIT_TEST(get_response_size_test_c3);
+        CPPUNIT_TEST(get_response_size_test_seq);
+        CPPUNIT_TEST(get_response_size_test_seq_c);
 #endif
-        //CPPUNIT_TEST(add_global_attribute_test);
 
-        CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST_SUITE_END();
 
-        void find_hdf4_dimension_attribute_home_test() {
-            try {
-                dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
-                DAS das;
-                das.parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.hacked.HDF.das");
+    void transfer_attributes_test_1() {
+        try {
+            dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+            DAS das;
+            das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+            dds1->transfer_attributes(&das);
 
-                AttrTable::Attr_iter eb = das.var_begin();
-                AttrTable::Attr_iter ei = eb + 2;
-                CPPUNIT_ASSERT((*ei)->name == "percipitate_dim_0");
-                BaseType *btp = dds1->find_hdf4_dimension_attribute_home(*ei);
-                CPPUNIT_ASSERT(btp->name() == "percipitate" && btp->is_vector_type());
-                ei = eb + 4;
-                btp = dds1->find_hdf4_dimension_attribute_home(*ei);
-                CPPUNIT_ASSERT(btp->name() == "percipitate" && btp->is_vector_type());
+            DBG2(dds1->print_xml(cerr, false, ""));
 
-                ei = eb + 1;
-                btp = dds1->find_hdf4_dimension_attribute_home(*ei);
-                CPPUNIT_ASSERT(!btp);
+            AttrTable &at = dds1->get_attr_table();
+            AttrTable::Attr_iter i = at.attr_begin();
+            CPPUNIT_ASSERT(i != at.attr_end() && at.get_name(i) == "NC_GLOBAL");
+            CPPUNIT_ASSERT(i != at.attr_end() && at.get_name(++i) == "DODS_EXTRA");
+        } catch (Error &e) {
+            cout << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_FAIL("Error thrown!");
+        }
+    }
 
-                dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/hdf_dimension_attribute_grid.dds");
-                DAS das2;
-                das2.parse((string)TEST_SRC_DIR + "/dds-testsuite/hdf_dimension_attribute_grid.das");
-                eb = das2.var_begin();
-                ei = eb + 1;
-                CPPUNIT_ASSERT((*ei)->name == "g_dim_0");
-                btp = dds2->find_hdf4_dimension_attribute_home(*ei);
-                CPPUNIT_ASSERT(btp->name() == "x" && btp->is_vector_type());
-                CPPUNIT_ASSERT(btp->get_parent()->type() == dods_grid_c);
+    void transfer_attributes_test_2() {
+        try {
+            dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
+            DAS das;
+            das.parse((string) TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.hacked.HDF.das");
+            dds2->transfer_attributes(&das);
 
-                ei = eb + 2;
-                CPPUNIT_ASSERT((*ei)->name == "g_dim_1");
-                btp = dds2->find_hdf4_dimension_attribute_home(*ei);
-                CPPUNIT_ASSERT(btp->name() == "y" && btp->is_vector_type());
-                CPPUNIT_ASSERT(btp->get_parent()->type() == dods_grid_c);
-            }
+            DBG2(dds2->print_xml(cerr, false, ""));
 
-            catch (Error &e) {
-                cout << "Error: " << e.get_error_message() << endl;
-                CPPUNIT_FAIL("Error thrown!");
-            }
+            AttrTable &at = dds2->get_attr_table();
+            AttrTable::Attr_iter i = at.attr_begin();
+            CPPUNIT_ASSERT(i != at.attr_end() && at.get_name(i) == "HDF_GLOBAL");
+            CPPUNIT_ASSERT(i != at.attr_end() && at.get_name(++i) == "CoreMetadata");
+        } catch (Error &e) {
+            cout << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_FAIL("Error thrown!");
+        }
+    }
+
+    void symbol_name_test() {
+        try {
+            // read a DDS.
+            dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.18");
+            CPPUNIT_ASSERT(dds1->var("oddTemp"));
+
+            dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b");
+            CPPUNIT_ASSERT(dds2->var("b#c"));
+            CPPUNIT_ASSERT(dds2->var("b%23c"));
+            CPPUNIT_ASSERT(dds2->var("huh.Image#data"));
+            CPPUNIT_ASSERT(dds2->var("c d"));
+            CPPUNIT_ASSERT(dds2->var("c%20d"));
+        } catch (Error &e) {
+            cerr << e.get_error_message() << endl;
+            CPPUNIT_FAIL("Caught unexpected Error object");
+        }
+    }
+
+    void print_xml_test() {
+        try {
+            dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b");
+            ostringstream oss;
+            dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
+            DBG2(cerr << "Printed DDX: " << oss.str() << endl);
+
+            string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.xml");
+            DBG2(cerr << "The baseline: " << baseline << endl);
+
+            CPPUNIT_ASSERT(baseline == oss.str());
+        }
+        catch (Error &e) {
+            cerr << e.get_error_message() << endl;
+            CPPUNIT_FAIL("Caught unexpected Error object");
+        }
+    }
+
+    void print_xml_test2() {
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19c");
+        DAS das;
+        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.das");
+
+        dds2->transfer_attributes(&das);
+
+        ostringstream oss;
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
+
+        DBG2(cerr << oss.str() << endl);
+
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.xml");
+        DBG2(cerr << baseline << endl);
+        CPPUNIT_ASSERT(baseline == oss.str());
+    }
+
+    void print_xml_test3() {
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19d");
+        DAS das;
+        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.das");
+
+        dds2->transfer_attributes(&das);
+
+        ostringstream oss;
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
+
+        DBG2(cerr << oss.str() << endl);
+
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.xml");
+        DBG2(cerr << baseline << endl);
+        CPPUNIT_ASSERT(baseline == oss.str());
+    }
+
+    // This tests the HDF4 <var>_dim_n attribute. support for that was
+    // moved to the handler itself.
+    void print_xml_test3_1() {
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19d");
+        DAS das;
+        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19d1.das");
+
+        dds2->transfer_attributes(&das);
+
+        ostringstream oss;
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
+
+        DBG2(cerr << oss.str() << endl);
+
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d1.xml");
+        DBG2(cerr << baseline << endl);
+        CPPUNIT_ASSERT(baseline == oss.str());
+    }
+
+    void print_xml_test4() {
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19e");
+        DAS das;
+        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.das");
+
+        dds2->transfer_attributes(&das);
+
+        DBG(AttrTable &at2 = dds2->var("c%20d")->get_attr_table()); DBG(at2.print(stderr));
+
+        ostringstream oss;
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
+
+        DBG(cerr << oss.str() << endl);
+
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.xml");
+        DBG2(cerr << baseline << endl);
+        CPPUNIT_ASSERT(baseline == oss.str());
+    }
+
+    void print_xml_test5() {
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19f");
+        DAS das;
+        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.das");
+
+        try {
+            dds2->transfer_attributes(&das);
+        } catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_FAIL("Error exception");
         }
 
-        void find_matching_container_test() {
-            try {
-                dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
-                DAS das;
-                das.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+        DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table()); DBG(at2.print(stderr));
 
-                AttrTable::Attr_iter i = das.var_begin();
-                while (i != das.var_end()) {
-                    if ((*i)->type != Attr_container)
-                    continue;
-                    DBG(cerr << "looking for a destination for '" << (*i)->name
-                            << "'" << endl);
-                    BaseType *dest_var = 0;
-                    AttrTable *dest = dds1->find_matching_container((*i), &dest_var);
-                    BaseType *variable = dds1->var((*i)->name);
-                    AttrTable *matching = variable ? &variable->get_attr_table(): 0;
-                    if (variable) {
-                        DBG(cerr << "variable: " << variable->name() << endl);
-                        if (dest_var)
-                        DBG(cerr << "dest_var: " << dest_var->name() << endl);
-                        CPPUNIT_ASSERT(dest_var == variable);
-                        CPPUNIT_ASSERT(dest == matching);
-                    }
-                    else {
-                        CPPUNIT_ASSERT(dest_var == 0);
-                        CPPUNIT_ASSERT(dest != 0);
-                    }
+        ostringstream oss;
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
 
-                    ++i;
-                }
+        DBG(cerr << oss.str() << endl);
 
-                dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/hdf_dimension_attribute_grid.dds");
-                DAS das2;
-                das2.parse((string)TEST_SRC_DIR + "/dds-testsuite/hdf_dimension_attribute_grid.das");
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.xml");
+        DBG2(cerr << baseline << endl);
+        CPPUNIT_ASSERT(baseline == oss.str());
+    }
 
-                // There are three containers in the DAS and the _dim_0/1
-                // containers should be bound to the Grid's map vectors.
-                i = das2.var_begin();
-                DBG(cerr << "looking for a destination for '" << (*i)->name << "'"
-                        << endl);
-                BaseType *dest_var = 0;
-                AttrTable *dest = dds2->find_matching_container((*i), &dest_var);
-                Grid *g = dynamic_cast<Grid*>(dds2->var("g"));
-                CPPUNIT_ASSERT(g);
-                CPPUNIT_ASSERT(dest == &g->get_attr_table());
+    // Tests flat DAS into a DDS; no longer supported by libdap; specialize
+    // handlers if they make these malformed DAS objects
+    void print_xml_test5_1() {
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19f");
+        DAS das;
+        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19f1.das");
 
-                ++i;
-                DBG(cerr << "looking for a destination for '" << (*i)->name << "'"
-                        << endl);
-                dest = dds2->find_matching_container((*i), &dest_var);
-                Array *m = dynamic_cast<Array*>(*(g->map_begin()));
-                CPPUNIT_ASSERT(m);
-                CPPUNIT_ASSERT(dest == &m->get_attr_table());
-
-                ++i;
-                DBG(cerr << "looking for a destination for '" << (*i)->name << "'"
-                        << endl);
-                dest = dds2->find_matching_container((*i), &dest_var);
-                m = dynamic_cast<Array*>(*(g->map_begin()+1));
-                CPPUNIT_ASSERT(m);
-                CPPUNIT_ASSERT(dest == &m->get_attr_table());
-            }
-
-            catch (Error &e) {
-                cout << "Error: " << e.get_error_message() << endl;
-                CPPUNIT_FAIL("Error thrown!");
-            }
+        try {
+            dds2->transfer_attributes(&das);
+        } catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_FAIL("Error exception");
         }
 
-        // This is here mostly to test for memory leaks using valgrind. Does
-        // DDS::add_global_attribute() leak memory? Apparently not. jhrg 3/18/05
+        DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table()); DBG(at2.print(stderr));
+
+        ostringstream oss;
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
+
+        DBG(cerr << oss.str() << endl);
+
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19f1.xml");
+        DBG2(cerr << baseline << endl);
+        CPPUNIT_ASSERT(baseline == oss.str());
+    }
+
+    void print_xml_test6() {
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b");
+        DAS das;
+        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.das");
+
+        dds2->transfer_attributes(&das);
+
+        ostringstream oss;
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
+
+        DBG(cerr << oss.str() << endl);
+
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b6.xml");
+        DBG2(cerr << baseline << endl);
+        CPPUNIT_ASSERT(baseline == oss.str());
+    }
+
+    // Tests flat DAS into a DDS; no longer supported by libdap; specialize
+    // handlers if they make these malformed DAS objects
+    void print_xml_test6_1() {
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19g");
+        DAS das;
+        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19g.das");
+
+        try {
+            dds2->transfer_attributes(&das);
+        } catch (Error &e) {
+            cerr << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_FAIL("Error exception");
+        }
+
+        DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table()); DBG(at2.print(stderr));
+
+        ostringstream oss;
+        dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
+
+        DBG(cerr << oss.str() << endl);
+
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19g.xml");
+        DBG2(cerr << baseline << endl);
+        CPPUNIT_ASSERT(baseline == oss.str());
+    }
+
+    void print_dmr_test()
+    {
+        try {
+            dds_dap4->parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+            DAS das;
+            das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+            dds_dap4->transfer_attributes(&das);
 #if 0
-        void add_global_attribute_test() {
-            DAS das;
-            das.parse("./das-testsuite/test.1.das");
-            AttrTable::Attr_iter i = das.var_begin();
-            CPPUNIT_ASSERT(i != das.attr_end());
-
-            dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.1");
-            dds1->add_global_attribute(*i);
-
-            CPPUNIT_ASSERT(dds1->d_attr.get_size() == 1);
-        }
-#endif
-
-        void transfer_attributes_test() {
-            try {
-                dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
-                DAS das;
-                das.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
-                dds1->transfer_attributes(&das);
-
-                AttrTable &at = dds1->get_attr_table();
-                AttrTable::Attr_iter i = at.attr_begin();
-                CPPUNIT_ASSERT(at.get_name(i) == "NC_GLOBAL");
-                CPPUNIT_ASSERT(at.get_name(++i) == "DODS_EXTRA");
-            }
-            catch (Error &e) {
-                cout << "Error: " << e.get_error_message() << endl;
-                CPPUNIT_FAIL("Error thrown!");
-            }
-
-            try {
-                dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
-                DAS das;
-                das.parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.hacked.HDF.das");
-                dds2->transfer_attributes(&das);
-
-                AttrTable &at = dds2->get_attr_table();
-                AttrTable::Attr_iter i = at.attr_begin();
-                CPPUNIT_ASSERT(at.get_name(i) == "HDF_GLOBAL");
-                CPPUNIT_ASSERT(at.get_name(++i) == "CoreMetadata");
-            }
-            catch (Error &e) {
-                cout << "Error: " << e.get_error_message() << endl;
-                CPPUNIT_FAIL("Error thrown!");
-            }
-
-            try {
-                BaseTypeFactory factory;
-                DDS dds(&factory);
-                dds.parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.dds");
-                DAS das;
-                das.parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.das");
-                dds.transfer_attributes(&das);
-
-                AttrTable &at = dds.get_attr_table();
-                AttrTable::Attr_iter i = at.attr_begin();
-                CPPUNIT_ASSERT(at.get_name(i) == "HDF_GLOBAL");
-                AttrTable &at2 = dds.var("WVC_Lat")->get_attr_table();
-                DBG2(at2.print(stderr));
-                CPPUNIT_ASSERT(at2.get_name(at2.attr_begin()) == "long_name");
-            }
-            catch (Error &e) {
-                cout << "Error: " << e.get_error_message() << endl;
-                CPPUNIT_ASSERT(!"Error thrown!");
-            }
-            try {
-                BaseTypeFactory factory;
-                DDS dds(&factory);
-                dds.parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.dds");
-                DAS das;
-                das.parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.test1.das");
-                dds.transfer_attributes(&das);
-
-                AttrTable &at2 = dds.var("WVC_Lat")->get_attr_table();
-                DBG2(at2.print(stderr));
-                CPPUNIT_ASSERT(at2.get_name(at2.attr_begin()) == "long_name");
-            }
-            catch (Error &e) {
-                cout << "Error: " << e.get_error_message() << endl;
-                CPPUNIT_FAIL("Error thrown!");
-            }
-#if 0
-            // This part of the test requires files written by Patrick that have
-            // not been checked into SVN as of 9/18/08 (it looks like the changes
-            // to DDSTest.cc were made on the multifile branch around 2/28/08.
-            // jhrg 9/18/08
-            try {
-                BaseTypeFactory factory;
-                DDS dds(&factory);
-                dds.parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.fnoc1.dds");
-                DAS das;
-                das.parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.fnoc1.das");
-                dds.container_name( "fnoc1" );
-                das.container_name( "fnoc1" );
-                dds.transfer_attributes(&das);
-                dds.container_name( "S2000415" );
-                das.container_name( "S2000415" );
-                dds.transfer_attributes(&das);
-
-                dds.print(cout);
-                das.print(cout);
-                BaseType *bt = dds.var("WVC_Lat");
-                CPPUNIT_ASSERT(bt);
-                AttrTable &at2 = bt->get_attr_table();
-                at2.print(cout);
-                DBG2(at2.print(stderr));
-                CPPUNIT_ASSERT(at2.get_name(at2.attr_begin()) == "long_name");
-            }
-            catch (Error &e) {
-                cout << "Error: " << e.get_error_message() << endl;
-                CPPUNIT_FAIL("Error thrown!");
-            }
-#endif
-        }
-
-        void symbol_name_test() {
-            try {
-                // read a DDS.
-                dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.18");
-                CPPUNIT_ASSERT(dds1->var("oddTemp"));
-
-                dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b");
-                CPPUNIT_ASSERT(dds2->var("b#c"));
-                CPPUNIT_ASSERT(dds2->var("b%23c"));
-                CPPUNIT_ASSERT(dds2->var("huh.Image#data"));
-                CPPUNIT_ASSERT(dds2->var("c d"));
-                CPPUNIT_ASSERT(dds2->var("c%20d"));
-            }
-            catch (Error &e) {
-                cerr << e.get_error_message() << endl;
-                CPPUNIT_FAIL("Caught unexpected Error object");
-            }
-        }
-
-        void print_xml_test() {
-            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b");
-#if 0
-            char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
-            FILE *tmp = get_temp_file(DDSTemp);
+            string file = (string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dmr.xml";
+            ofstream d(file.c_str());
+            dds_dap4->print_dmr(d, false);
+            d.close();
 #endif
             ostringstream oss;
-            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
-            Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
-<Dataset name=\"test.19\"\n\
-.*\
-   <Int32 name=\"a\"/>\n\
-    <Array name=\"b#c\">\n\
-        <Int32/>\n\
-        <dimension size=\"10\"/>\n\
-    </Array>\n\
-    <Float64 name=\"c d\"/>\n\
-    <Grid name=\"huh\">\n\
-        <Array name=\"Image#data\">\n\
-            <Byte/>\n\
-            <dimension size=\"512\"/>\n\
-        </Array>\n\
-        <Map name=\"colors\">\n\
-            <String/>\n\
-            <dimension size=\"512\"/>\n\
-        </Map>\n\
-    </Grid>\n\
-\n\
-    <dataBLOB href=\"\"/>\n\
-</Dataset>\n");
-            CPPUNIT_ASSERT(re_match(r, oss.str()));
-#if 0
-            fclose(tmp);
-            remove(DDSTemp);
-#endif
-            }
+            dds_dap4->print_dmr(oss, false);
 
-        void print_xml_test2() {
-            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19c");
-            DAS das;
-            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19c.das");
+            string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dmr.xml");
 
-            dds2->transfer_attributes(&das);
+            DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
+            DBG(cerr << "DMR: -->" << oss.str() << "<--" << endl);
 
-            ostringstream oss;
-            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
-
-            DBG2(cerr << oss.str() << endl);
-
-            Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
-<Dataset name=\"test.19c\"\n\
-.*\
-\n\
-    <Attribute name=\"NC_GLOBAL\" type=\"Container\">\n\
-        <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>Attribute merge test</value>\n\
-        </Attribute>\n\
-        <Attribute name=\"primes\" type=\"Int32\">\n\
-            <value>2</value>\n\
-            <value>3</value>\n\
-            <value>5</value>\n\
-            <value>7</value>\n\
-            <value>11</value>\n\
-        </Attribute>\n\
-    </Attribute>\n\
-\n\
-    <Int32 name=\"a\"/>\n\
-\n\
-    <dataBLOB href=\"\"/>\n\
-</Dataset>\n");
-
-            CPPUNIT_ASSERT(re_match(r, oss.str()));
-
+            CPPUNIT_ASSERT(baseline == oss.str());
         }
-
-        void print_xml_test3() {
-            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d");
-            DAS das;
-            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d.das");
-
-            dds2->transfer_attributes(&das);
-
-            ostringstream oss;
-            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
-
-            DBG2(cerr << oss.str() << endl);
-
-            Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
-<Dataset name=\"test.19d\"\n\
-.*\
-    <Array name=\"b#c\">\n\
-        <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>b pound c</value>\n\
-        </Attribute>\n\
-        <Int32/>\n\
-        <dimension size=\"10\"/>\n\
-    </Array>\n\
-\n\
-    <dataBLOB href=\"\"/>\n\
-</Dataset>\n");
-
-            CPPUNIT_ASSERT(re_match(r, oss.str()));
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
         }
+    }
 
-        void print_xml_test3_1() {
-            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d");
-            DAS das;
-            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d1.das");
+    void get_response_size_test() {
+        dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
+        CPPUNIT_ASSERT(dds1->get_request_size(false) == 230400);
+        DBG(cerr << "3B42.980909.5.HDF response size: " << dds1->get_request_size(false) << endl);
 
-            dds2->transfer_attributes(&das);
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
+        CPPUNIT_ASSERT(dds2->get_request_size(false) == 3119424);
+        DBG(cerr << "coads_climatology.nc response size: " << dds2->get_request_size(false) << endl);
+    }
 
-            ostringstream oss;
-            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
+    void get_response_size_test_c() {
+        ConstraintEvaluator eval;
 
-            DBG2(cerr << oss.str() << endl);
+        dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
+        eval.parse_constraint("percipitate", *dds1);
+        DBG(cerr << "3B42.980909.5.HDF response size: " << dds1->get_request_size(true) << endl);
+        CPPUNIT_ASSERT(dds1->get_request_size(true) == 115200);
+        CPPUNIT_ASSERT(dds1->get_request_size(false) == 230400);
 
-            Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
-<Dataset name=\"test.19d\"\n\
-.*\
-    <Array name=\"b#c\">\n\
-        <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>b pound c</value>\n\
-        </Attribute>\n\
-        <Attribute name=\"dim_0\" type=\"Container\">\n\
-            <Attribute name=\"add_offset\" type=\"Float64\">\n\
-                <value>0.125</value>\n\
-            </Attribute>\n\
-        </Attribute>\n\
-        <Int32/>\n\
-        <dimension size=\"10\"/>\n\
-    </Array>\n\
-\n\
-    <dataBLOB href=\"\"/>\n\
-</Dataset>\n");
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
+        eval.parse_constraint("SST", *dds2);
+        DBG(cerr << "coads_climatology.nc response size: " << dds2->get_request_size(true) << endl);
+        CPPUNIT_ASSERT(dds2->get_request_size(true) == 779856);
+        CPPUNIT_ASSERT(dds2->get_request_size(false) == 3119424);
+    }
 
-            CPPUNIT_ASSERT(re_match(r, oss.str()));
-        }
+    void get_response_size_test_c2() {
+        ConstraintEvaluator eval;
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
+        eval.parse_constraint("SST[0:5][0:44][0:89]", *dds2);
+        //cerr << "coads_climatology.nc response size: " << dds2->get_request_size(true) << endl;
+        CPPUNIT_ASSERT(dds2->get_request_size(true) == 98328);
+    }
 
-        void print_xml_test4() {
-            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19e");
-            DAS das;
-            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19e.das");
+    void get_response_size_test_c3() {
+        ConstraintEvaluator eval;
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
+        eval.parse_constraint("SST[0][0:44][0:89]", *dds2);
+        DBG(cerr << "coads_climatology.nc response size: " << dds2->get_request_size(true) << endl);
+        CPPUNIT_ASSERT(dds2->get_request_size(true) == 17288);
+    }
 
-            dds2->transfer_attributes(&das);
+    void get_response_size_test_seq() {
+        ConstraintEvaluator eval;
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.dds");
+        eval.parse_constraint("NSCAT%20Rev%2020.NSCAT%20L2", *dds2);
+        DBG(cerr << "S2000415.HDF response size: " << dds2->get_request_size(true) << endl);
+        DBG(dds2->print_constrained(cerr));
+        CPPUNIT_ASSERT(dds2->get_request_size(true) == 16
+                || dds2->get_request_size(true) == 12);
+        // sizeof(string) == 8 or 4 depending on the compiler version (?)
+    }
 
-            DBG(AttrTable &at2 = dds2->var("c%20d")->get_attr_table());
-            DBG(at2.print(stderr));
+    void get_response_size_test_seq_c() {
+        ConstraintEvaluator eval;
+        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.dds");
+        eval.parse_constraint("NSCAT%20Rev%2020.NSCAT%20L2.Low_Wind_Speed_Flag", *dds2);
+        DBG(cerr << "S2000415.HDF response size: " << dds2->get_request_size(true) << endl);
+        CPPUNIT_ASSERT(dds2->get_request_size(true) == 4);
+    }
 
-            ostringstream oss;
-            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
-
-            DBG(cerr << oss.str() << endl);
-
-            Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
-<Dataset name=\"test.19e\"\n\
-.*\
-    <Float64 name=\"c d\">\n\
-        <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>c d with a WWW escape sequence</value>\n\
-        </Attribute>\n\
-        <Attribute name=\"sub\" type=\"Container\">\n\
-            <Attribute name=\"about\" type=\"String\">\n\
-                <value>Attributes inside attributes</value>\n\
-            </Attribute>\n\
-            <Attribute name=\"pi\" type=\"Float64\">\n\
-                <value>3.1415</value>\n\
-            </Attribute>\n\
-        </Attribute>\n\
-    </Float64>\n\
-\n\
-    <dataBLOB href=\"\"/>\n\
-</Dataset>\n");
-
-            CPPUNIT_ASSERT(re_match(r, oss.str()));
-        }
-
-        void print_xml_test5() {
-            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19f");
-            DAS das;
-            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19f.das");
-
-            try {
-                dds2->transfer_attributes(&das);
-            }
-            catch (Error &e) {
-                cerr << "Error: " << e.get_error_message() << endl;
-                CPPUNIT_FAIL("Error exception");
-            }
-
-            DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table());
-            DBG(at2.print(stderr));
-
-            ostringstream oss;
-            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
-
-            DBG(cerr << oss.str() << endl);
-
-            Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
-<Dataset name=\"test.19f\"\n\
-.*\
-    <Grid name=\"huh\">\n\
-        <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>The Grid huh</value>\n\
-        </Attribute>\n\
-        <Array name=\"Image#data\">\n\
-            <Byte/>\n\
-            <dimension size=\"512\"/>\n\
-        </Array>\n\
-        <Map name=\"colors\">\n\
-            <Attribute name=\"long_name2\" type=\"String\">\n\
-                <value>The color map vector</value>\n\
-            </Attribute>\n\
-            <String/>\n\
-            <dimension size=\"512\"/>\n\
-        </Map>\n\
-    </Grid>\n\
-\n\
-    <dataBLOB href=\"\"/>\n\
-</Dataset>\n");
-
-            CPPUNIT_ASSERT(re_match(r, oss.str()));
-        }
-
-        void print_xml_test5_1() {
-            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19f");
-            DAS das;
-            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19f1.das");
-
-            try {
-                dds2->transfer_attributes(&das);
-            }
-            catch (Error &e) {
-                cerr << "Error: " << e.get_error_message() << endl;
-                CPPUNIT_FAIL("Error exception");
-            }
-
-            DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table());
-            DBG(at2.print(stderr));
-
-            ostringstream oss;
-            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
-
-            DBG(cerr << oss.str() << endl);
-
-            Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
-<Dataset name=\"test.19f\"\n\
-.*\
-    <Grid name=\"huh\">\n\
-        <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>The Grid huh</value>\n\
-        </Attribute>\n\
-        <Array name=\"Image#data\">\n\
-            <Byte/>\n\
-            <dimension size=\"512\"/>\n\
-        </Array>\n\
-        <Map name=\"colors\">\n\
-            <Attribute name=\"long_name2\" type=\"String\">\n\
-                <value>The color map vector</value>\n\
-            </Attribute>\n\
-            <Attribute name=\"units\" type=\"String\">\n\
-                <value>m/s</value>\n\
-            </Attribute>\n\
-            <String/>\n\
-            <dimension size=\"512\"/>\n\
-        </Map>\n\
-    </Grid>\n\
-\n\
-    <dataBLOB href=\"\"/>\n\
-</Dataset>\n");
-
-            CPPUNIT_ASSERT(re_match(r, oss.str()));
-        }
-
-        void print_xml_test6() {
-            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b");
-            DAS das;
-            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b.das");
-
-            dds2->transfer_attributes(&das);
-
-            ostringstream oss;
-            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
-
-            DBG(cerr << oss.str() << endl);
-
-            Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
-<Dataset name=\"test.19\"\n\
-.*\
-    <Attribute name=\"NC_GLOBAL\" type=\"Container\">\n\
-        <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>Attribute merge test</value>\n\
-        </Attribute>\n\
-        <Attribute name=\"primes\" type=\"Int32\">\n\
-            <value>2</value>\n\
-            <value>3</value>\n\
-            <value>5</value>\n\
-            <value>7</value>\n\
-            <value>11</value>\n\
-        </Attribute>\n\
-    </Attribute>\n\
-\n\
-    <Int32 name=\"a\"/>\n\
-    <Array name=\"b#c\">\n\
-        <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>b pound c</value>\n\
-        </Attribute>\n\
-        <Int32/>\n\
-        <dimension size=\"10\"/>\n\
-    </Array>\n\
-    <Float64 name=\"c d\">\n\
-        <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>c d with a WWW escape sequence</value>\n\
-        </Attribute>\n\
-        <Attribute name=\"sub\" type=\"Container\">\n\
-            <Attribute name=\"about\" type=\"String\">\n\
-                <value>Attributes inside attributes</value>\n\
-            </Attribute>\n\
-            <Attribute name=\"pi\" type=\"Float64\">\n\
-                <value>3.1415</value>\n\
-            </Attribute>\n\
-        </Attribute>\n\
-    </Float64>\n\
-    <Grid name=\"huh\">\n\
-        <Attribute name=\"long_name\" type=\"String\">\n\
-            <value>The Grid huh</value>\n\
-        </Attribute>\n\
-        <Array name=\"Image#data\">\n\
-            <Byte/>\n\
-            <dimension size=\"512\"/>\n\
-        </Array>\n\
-        <Map name=\"colors\">\n\
-            <Attribute name=\"long_name\" type=\"String\">\n\
-                <value>The color map vector</value>\n\
-            </Attribute>\n\
-            <String/>\n\
-            <dimension size=\"512\"/>\n\
-        </Map>\n\
-    </Grid>\n\
-\n\
-    <dataBLOB href=\"\"/>\n\
-</Dataset>\n");
-
-            CPPUNIT_ASSERT(re_match(r, oss.str()));
-        }
-
-        void print_xml_test7() {
-            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19g");
-            DAS das;
-            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19g.das");
-
-            try {
-                dds2->transfer_attributes(&das);
-            }
-            catch (Error &e) {
-                cerr << "Error: " << e.get_error_message() << endl;
-                CPPUNIT_FAIL("Error exception");
-            }
-
-            DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table());
-            DBG(at2.print(stderr));
-
-            ostringstream oss;
-            dds2->print_xml(oss, false, "http://localhost/dods/test.xyz");
-
-            DBG(cerr << oss.str() << endl);
-
-            Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
-<Dataset name=\"test.19\"\n\
-.*\
-    <Structure name=\"s\">\n\
-        <Array name=\"b#c\">\n\
-            <Attribute name=\"long_name\" type=\"String\">\n\
-                <value>b pound c</value>\n\
-            </Attribute>\n\
-            <Attribute name=\"dim_0\" type=\"Container\">\n\
-                <Attribute name=\"add_offset\" type=\"Float64\">\n\
-                    <value>0.125</value>\n\
-                </Attribute>\n\
-            </Attribute>\n\
-            <Int32/>\n\
-            <dimension size=\"10\"/>\n\
-        </Array>\n\
-        <Grid name=\"huh\">\n\
-            <Attribute name=\"long_name\" type=\"String\">\n\
-                <value>The Grid huh</value>\n\
-            </Attribute>\n\
-            <Array name=\"Image#data\">\n\
-                <Byte/>\n\
-                <dimension size=\"512\"/>\n\
-            </Array>\n\
-            <Map name=\"colors\">\n\
-                <Attribute name=\"long_name2\" type=\"String\">\n\
-                    <value>The color map vector</value>\n\
-                </Attribute>\n\
-                <Attribute name=\"units\" type=\"String\">\n\
-                    <value>m/s</value>\n\
-                </Attribute>\n\
-                <String/>\n\
-                <dimension size=\"512\"/>\n\
-            </Map>\n\
-        </Grid>\n\
-    </Structure>\n\
-\n\
-    <dataBLOB href=\"\"/>\n\
-</Dataset>\n");
-
-            CPPUNIT_ASSERT(re_match(r, oss.str()));
-        }
-
-    };
-
-    CPPUNIT_TEST_SUITE_REGISTRATION(DDSTest);
+};
+CPPUNIT_TEST_SUITE_REGISTRATION(DDSTest);
 
 }
 
-int main(int, char**)
-{
+int main(int, char *[]) {
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 

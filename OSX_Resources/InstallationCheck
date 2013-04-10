@@ -2,30 +2,13 @@
 #
 # Check the architecture
 
-# use "i386" or "ppc.*" - nake sure to use a regex for PPC!
-
-architecture="i386.*"
-
-
-if arch | grep -v "$architecture"
-then
-    if arch | grep "i386"
-    then
-	# You have an intel mac error message
-	exit 115
-    else
-	# PowerPC message
-	exit 116
-    fi
-fi
-
-# Check to make sure the computer is running 10.3 or later.
+# Check to make sure the computer is running 10.5 or later.
 
 version=`uname -a | sed 's/.*Darwin Kernel Version \([0-9.]*\):.*/\1/'`
 major=`echo $version | sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1/'`
 minor=`echo $version | sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2/'`
 
-if test $major -lt 7 -o $major -eq 7 -a $minor -lt 9
+if test $major -lt 9 -o $major -eq 9 -a $minor -lt 8
 then
     # Warn and display message 16 (the string displayed will be read from 
     # InstallationCheck.strings using the exit code minus 32 to select the
@@ -40,7 +23,9 @@ minor=`echo $version | sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2/'`
 
 if test $major -lt 7 -o $major -eq 7 -a $minor -lt 10
 then
-    # Fail and display message 17 (exit code - 96)
+    # Fail and display message 17 (exit code - 96) (the string displayed 
+    # will be read from InstallationCheck.strings using the exit code 
+    # minus 96 to select the specific string.)
     exit 113
 fi
 
@@ -51,7 +36,9 @@ minor=`echo $version | sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2/'`
 
 if test $major -lt 2 -o $major -eq 2 -a $minor -lt 6
 then
-    # Fail and display message 81
+    # Fail and display message 18 (exit code - 96) (the string displayed 
+    # will be read from InstallationCheck.strings using the exit code 
+    # minus 96 to select the specific string.)
     exit 114
 fi
 

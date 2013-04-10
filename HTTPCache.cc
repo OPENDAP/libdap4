@@ -26,7 +26,8 @@
 #include "config.h"
 
 //#define DODS_DEBUG
-//#define DODS_DEBUG2
+// #define DODS_DEBUG2
+#undef USE_GETENV
 
 #include <pthread.h>
 #include <limits.h>
@@ -50,6 +51,7 @@
 #include "HTTPCacheInterruptHandler.h"
 #include "HTTPCacheTable.h"
 #include "HTTPCache.h"
+#include "HTTPCacheMacros.h"
 
 #include "util_mit.h"
 #include "debug.h"
@@ -70,36 +72,6 @@ HTTPCache *HTTPCache::_instance = 0;
 static pthread_mutex_t instance_mutex;
 static pthread_once_t once_block = PTHREAD_ONCE_INIT;
 
-#ifdef WIN32
-#include <direct.h>
-#include <time.h>
-#include <fcntl.h>
-#define MKDIR(a,b) _mkdir((a))
-#define UMASK(a) _umask((a))
-#define REMOVE(a) remove((a))
-#define MKSTEMP(a) _open(_mktemp((a)),_O_CREAT,_S_IREAD|_S_IWRITE)
-#define DIR_SEPARATOR_CHAR '\\'
-#define DIR_SEPARATOR_STR "\\"
-#else
-#define MKDIR(a,b) mkdir((a), (b))
-#define UMASK(a) umask((a))
-#define REMOVE(a) remove((a))
-#define MKSTEMP(a) mkstemp((a))
-#define DIR_SEPARATOR_CHAR '/'
-#define DIR_SEPARATOR_STR "/"
-#endif
-
-#ifdef WIN32
-#define CACHE_LOC "\\tmp\\"
-#define CACHE_ROOT "dods-cache\\"
-#else
-#define CACHE_LOC "/tmp/"
-#define CACHE_ROOT "dods-cache/"
-#endif
-#define CACHE_INDEX ".index"
-#define CACHE_LOCK ".lock"
-#define CACHE_META ".meta"
-//#define CACHE_EMPTY_ETAG "@cache@"
 
 #define NO_LM_EXPIRATION 24*3600 // 24 hours
 
@@ -153,9 +125,14 @@ once_init_routine()
 HTTPCache *
 HTTPCache::instance(const string &cache_root, bool force)
 {
+    int status = pthread_once(&once_block, once_init_routine);
+    if (status != 0)
+	throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
+
     LOCK(&instance_mutex);
+
     DBG(cerr << "Entering instance(); (" << hex << _instance << dec << ")"
-        << "... ");
+	    << "... ");
 
     try {
         if (!_instance) {
@@ -260,11 +237,11 @@ HTTPCache::HTTPCache(string cache_root, bool force) :
         d_http_cache_table(0)
 {
     DBG(cerr << "Entering the constructor for " << this << "... ");
-
+#if 0
 	int status = pthread_once(&once_block, once_init_routine);
 	if (status != 0)
 		throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
-
+#endif
 	INIT(&d_cache_mutex);
 
 	// This used to throw an Error object if we could not get the
@@ -281,7 +258,7 @@ HTTPCache::HTTPCache(string cache_root, bool force) :
 	int block_size;
 
 	if (!get_single_user_lock(force))
-		throw Error("Could not get single user lock for the cache");
+	    throw Error("Could not get single user lock for the cache");
 
 #ifdef WIN32
 	//  Windows is unable to provide us this information.  4096 appears
@@ -460,43 +437,48 @@ void HTTPCache::too_big_gc() {
     default.
     @return True if the cache was locked for our use, False otherwise. */
 
-bool HTTPCache::get_single_user_lock(bool force) {
-	if (!d_locked_open_file) {
-		FILE * fp = NULL;
+bool HTTPCache::get_single_user_lock(bool force) 
+{
+    if (!d_locked_open_file) {
+	FILE * fp = NULL;
 
-		try {
-			// It's OK to call create_cache_root if the directory already
-			// exists.
-			create_cache_root(d_cache_root);
-		}
-		catch (Error &e) {
-			// We need to catch and return false because this method is
-			// called from a ctor and throwing at this point will result in a
-			// partially constructed object. 01/22/04 jhrg
-			return false;
-		}
-
-		// Try to read the lock file. If we can open for reading, it exists.
-		string lock = d_cache_root + CACHE_LOCK;
-		if ((fp = fopen(lock.c_str(), "r")) != NULL) {
-			int res = fclose(fp);
-			if (res) {
-				DBG(cerr << "Failed to close " << (void *)fp << endl);
-			}
-			if (force)
-				REMOVE(lock.c_str());
-			else
-				return false;
-		}
-
-		if ((fp = fopen(lock.c_str(), "w")) == NULL)
-			return false;
-
-		d_locked_open_file = fp;
-		return true;
+	try {
+	    // It's OK to call create_cache_root if the directory already
+	    // exists.
+	    create_cache_root(d_cache_root);
+	}
+	catch (Error &e) {
+	    // We need to catch and return false because this method is
+	    // called from a ctor and throwing at this point will result in a
+	    // partially constructed object. 01/22/04 jhrg
+	    DBG(cerr << "Failure to create the cache root" << endl);
+	    return false;
 	}
 
-	return false;
+	// Try to read the lock file. If we can open for reading, it exists.
+	string lock = d_cache_root + CACHE_LOCK;
+	if ((fp = fopen(lock.c_str(), "r")) != NULL) {
+	    int res = fclose(fp);
+	    if (res) {
+		DBG(cerr << "Failed to close " << (void *)fp << endl);
+	    }
+	    if (force)
+		REMOVE(lock.c_str());
+	    else
+		return false;
+	}
+
+	if ((fp = fopen(lock.c_str(), "w")) == NULL) {
+	    DBG(cerr << "Could not open for write access" << endl);
+	    return false;
+	}
+
+	d_locked_open_file = fp;
+	return true;
+    }
+
+    cerr << "locked_open_file is true" << endl;
+    return false;
 }
 
 /** Release the single user (process) lock. A private method. */
@@ -545,6 +527,7 @@ HTTPCache::create_cache_root(const string &cache_root)
 
 #ifdef WIN32
     cur = cache_root[1] == ':' ? 3 : 1;
+    typedef int mode_t;
 #else
     cur = 1;
 #endif
@@ -593,12 +576,16 @@ HTTPCache::set_cache_root(const string &root)
     else {
         // If no cache root has been indicated then look for a suitable
         // location.
+#ifdef USE_GETENV
         char * cr = (char *) getenv("DODS_CACHE");
         if (!cr) cr = (char *) getenv("TMP");
         if (!cr) cr = (char *) getenv("TEMP");
-        if (!cr) cr = CACHE_LOC;
-
+        if (!cr) cr = (char*)CACHE_LOCATION;
         d_cache_root = cr;
+#else
+        d_cache_root = CACHE_LOCATION;
+#endif
+
         if (d_cache_root[d_cache_root.size()-1] != DIR_SEPARATOR_CHAR)
             d_cache_root += DIR_SEPARATOR_CHAR;
 
@@ -922,7 +909,7 @@ HTTPCache::get_cache_control()
 
     This method locks the class' interface.
 
-	@todo Remvoe this is broken.
+	@todo Remove this is broken.
     @param url The url to look for.
     @return True if \c url is found, otherwise False. */
 
@@ -981,8 +968,16 @@ HTTPCache::write_metadata(const string &cachename, const vector<string> &headers
     vector<string>::const_iterator i;
     for (i = headers.begin(); i != headers.end(); ++i) {
         if (!is_hop_by_hop_header(*i)) {
-            fwrite((*i).c_str(), (*i).size(), 1, dest);
-            fwrite("\n", 1, 1, dest);
+            int s = fwrite((*i).c_str(), (*i).size(), 1, dest);
+            if (s != 1) {
+                fclose(dest);
+            	throw InternalErr(__FILE__, __LINE__, "could not write header: '" + (*i) + "' " + long_to_string(s));
+            }
+            s = fwrite("\n", 1, 1, dest);
+            if (s != 1) {
+                fclose(dest);
+            	throw InternalErr(__FILE__, __LINE__, "could not write header: " + long_to_string(s));
+            }
         }
     }
 
@@ -1104,9 +1099,11 @@ HTTPCache::write_body(const string &cachename, const FILE *src)
 FILE *
 HTTPCache::open_body(const string &cachename)
 {
-	FILE *src = fopen(cachename.c_str(), "rb");		// Read only
-	if (!src)
-        throw InternalErr(__FILE__, __LINE__, "Could not open cache file.");
+    DBG(cerr << "cachename: " << cachename << endl);
+
+    FILE *src = fopen(cachename.c_str(), "rb"); // Read only
+    if (!src)
+	throw InternalErr(__FILE__, __LINE__, "Could not open cache file.");
 
     return src;
 }
@@ -1465,7 +1462,7 @@ FILE * HTTPCache::get_cached_response(const string &url,
 		vector<string> &headers, string &cacheName) {
     lock_cache_interface();
 
-    FILE *body;
+    FILE *body = 0;
     HTTPCacheTable::CacheEntry *entry = 0;
 
     DBG(cerr << "Getting the cached response for " << url << endl);
@@ -1490,8 +1487,11 @@ FILE * HTTPCache::get_cached_response(const string &url,
         d_http_cache_table->bind_entry_to_data(entry, body);
     }
     catch (...) {
+    	// Why make this unlock operation conditional on entry?
         if (entry)
-        unlock_cache_interface();
+        	unlock_cache_interface();
+        if (body != 0)
+            fclose(body);
         throw;
     }
 
@@ -1499,6 +1499,7 @@ FILE * HTTPCache::get_cached_response(const string &url,
 
     return body;
 }
+
 /** Get information from the cache. This is a convenience method that calls
  	the three parameter version of get_cache_response().
 

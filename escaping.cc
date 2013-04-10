@@ -65,7 +65,7 @@
 #include "GNURegex.h"
 #include "Error.h"
 #include "InternalErr.h"
-// #define DODS_DEBUG
+//#define DODS_DEBUG
 #include "debug.h"
 
 using namespace std;
@@ -80,8 +80,7 @@ string
 hexstring(unsigned char val)
 {
     ostringstream buf;
-    buf << hex << setw(2) << setfill('0')
-    << static_cast<unsigned int>(val);
+    buf << hex << setw(2) << setfill('0') << static_cast<unsigned int>(val);
 
     return buf.str();
 }
@@ -143,7 +142,7 @@ unoctstring(string s)
         (Connect::request_version, request_protocol, request_das, request_dds,
         request_data).
 
-    @param in The string in which to replace characters.
+    @param in Replace characters in this string.
     @param allowable The set of characters that are allowed in a URI.
     default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/.\\*"
     @see id2www_ce()
@@ -152,10 +151,12 @@ string
 id2www(string in, const string &allowable)
 {
     string::size_type i = 0;
-
+    DBG(cerr<<"Input string: [" << in << "]" << endl);
     while ((i = in.find_first_not_of(allowable, i)) != string::npos) {
+	DBG(cerr<<"Found escapee: [" << in[i] << "]");
         in.replace(i, 1, "%" + hexstring(in[i]));
-        i++;
+        DBGN(cerr<<" now the string is: " << in << endl);
+        i += 3;//i++;
     }
 
     return in;
@@ -175,6 +176,8 @@ string
 id2www_ce(string in, const string &allowable)
 {
     return id2www(in, allowable);
+
+
 }
 
 /** Given a string that contains WWW escape sequences, translate those escape
@@ -184,7 +187,7 @@ id2www_ce(string in, const string &allowable)
     -Places in the dap code where www2id() is called:
      -# Array::append_dim() the name is decoded before it is added
      -# AttrTable::set_name(), AttrTable::append_attr(),
-        AttrTable::append_container(), AttrTable?::del_attr(),
+        AttrTable::append_container(), AttrTable::del_attr(),
         AttrTable::add_container_alias(), AttrTable::add_value_alias()
         names are decoded before that are set/used.
      -# BaseType::set_name() Names are decoded before they are set
@@ -195,10 +198,12 @@ id2www_ce(string in, const string &allowable)
      -# Grid::var(), Sequence::var(), Structure::var() Variable names are decoded.
 
    -In the server code:
-     -# DODSFilter::initialize() The dataset name is decoded except that %20
+     -# ResponseBuilder::initialize() The dataset name is decoded except that %20
         is not removed.
-     -# DODSFilter::set_ce() The CE is decoded, except for spaces (%20).
-     -# DODSFilter::set_dataset_name() same logic as the first case.
+     -# ResponseBuilder::set_ce() The CE is decoded, except for spaces (%20).
+     -# ResponseBuilder::set_dataset_name() same logic as the first case.
+     -# The ResponseBuilder methods supersede methods with the same names
+        from DODSFilter, which is still in the code although deprecated.
 
     @param in The string to modify.
     @param escape The character used to signal the beginning of an escape
@@ -220,6 +225,7 @@ www2id(const string &in, const string &escape, const string &except)
             continue;
         }
         res.replace(i, 3, unhexstring(res.substr(i + 1, 2)));
+        ++i;
     }
 
     return res;
@@ -269,6 +275,12 @@ id2xml(string in, const string &not_allowed)
         in.replace(i, 1, entity(in[i]));
         ++i;
     }
+#if 0
+    // Removed the encoding of octal escapes. This function is used by
+    // AttrTable to encode the stuff that is the value of the <value>
+    // element in the DDX. The problem is that some of the values are not
+    // valid UTF-8 and that makes a XML parser gag.; ticket 1512.
+    // jhrg 3/19/10
 
     // OK, now scan for octal escape sequences like \\012 (where the '\'
     // is itself escaped). This type of attribute value comes from the netCDF
@@ -295,7 +307,7 @@ id2xml(string in, const string &not_allowed)
         // increment i
         i += 6;
     }
-
+#endif
     return in;
 }
 

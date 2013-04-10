@@ -29,10 +29,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    {"$Id$"
-    };
-
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -76,7 +72,7 @@ static const char * wkdays[7] =
 
    The problem here is that toupper(x) is not defined officially unless
    isupper(x) is. These macros are CERTAINLY needed on #if defined(pyr) ||
-   define(mips) or BDSI platforms. For safefy, we make them mandatory.
+   define(mips) or BDSI platforms. For safety, we make them mandatory.
 */
 
 #ifndef TOLOWER
@@ -98,6 +94,7 @@ strncasecomp(const char *a, const char *b, int n)
         if (diff) return diff;
     }
     /*NOTREACHED*/
+    return -1; // silence gcc
 }
 
 static int
@@ -317,7 +314,7 @@ string date_time_str(time_t *calendar, bool local)
 #if defined(_REENTRANT)
         struct tm loctime;
         localtime_r(calendar, &loctime);
-        sprintf(buf, "%s, %02d %s %04d %02d:%02d:%02d",
+        snprintf(buf, 40, "%s, %02d %s %04d %02d:%02d:%02d",
                 wkdays[loctime.tm_wday],
                 loctime.tm_mday,
                 months[loctime.tm_mon],
@@ -327,7 +324,7 @@ string date_time_str(time_t *calendar, bool local)
                 loctime.tm_sec);
 #else
     struct tm *loctime = localtime(calendar);
-    sprintf(buf, "%s, %02d %s %04d %02d:%02d:%02d",
+    snprintf(buf, 40, "%s, %02d %s %04d %02d:%02d:%02d",
             wkdays[loctime->tm_wday],
             loctime->tm_mday,
             months[loctime->tm_mon],
@@ -341,7 +338,7 @@ string date_time_str(time_t *calendar, bool local)
 #if defined(_REENTRANT) || defined(SOLARIS)
         struct tm gmt;
         gmtime_r(calendar, &gmt);
-        sprintf(buf, "%s, %02d %s %04d %02d:%02d:%02d GMT",
+        snprintf(buf, 40, "%s, %02d %s %04d %02d:%02d:%02d GMT",
                 wkdays[gmt.tm_wday],
                 gmt.tm_mday,
                 months[gmt.tm_mon],
@@ -351,7 +348,7 @@ string date_time_str(time_t *calendar, bool local)
                 gmt.tm_sec);
 #else
     struct tm *gmt = gmtime(calendar);
-    sprintf(buf, "%s, %02d %s %04d %02d:%02d:%02d GMT",
+    snprintf(buf, 40, "%s, %02d %s %04d %02d:%02d:%02d GMT",
             wkdays[gmt->tm_wday],
             gmt->tm_mday,
             months[gmt->tm_mon],

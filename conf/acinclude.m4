@@ -516,16 +516,22 @@ AC_DEFUN([DODS_CHECK_SIZES], [dnl
 
     # DMH: Divide into two sets of tests: one for DODS and one for XDR
     if test x"$dap_use_c99_types" = 'xyes'; then
+        DODS_INT64=int64_t
+        DODS_UINT64=uint64_t
         DODS_INT32=int32_t
         DODS_UINT32=uint32_t
         DODS_INT16=int16_t
         DODS_UINT16=uint16_t
+        DODS_INT8=int8_t
         DODS_BYTE=uint8_t
     else
+        DODS_INT64="long long"
+        DODS_UINT64="unsigned long long"
         DODS_INT16=short
         DODS_UINT16="unsigned short"
 	DODS_INT32=int
 	DODS_UINT32="unsigned int"
+	DODS_INT8=char
 	DODS_BYTE="unsigned char"
     fi
     DODS_FLOAT64=double
@@ -534,15 +540,22 @@ AC_DEFUN([DODS_CHECK_SIZES], [dnl
     # I'm using the three arg form of AC_DEFINE_UNQUOTED because autoheader
     # needs the third argument (although I don't quite get the specifics...
     # 2/15/2001 jhrg
-    AC_DEFINE_UNQUOTED(DINT32, $DODS_INT32, [int32])
-    AC_DEFINE_UNQUOTED(DUINT32, $DODS_UINT32, [uint32])
-    AC_DEFINE_UNQUOTED(DINT16, $DODS_INT16, [dint16])
-    AC_DEFINE_UNQUOTED(DUINT16, $DODS_UINT16, [uint16])
-    AC_DEFINE_UNQUOTED(DFLOAT64, $DODS_FLOAT64, [dfloat64])
-    AC_DEFINE_UNQUOTED(DFLOAT32, $DODS_FLOAT32, [dfloat32])
-    AC_DEFINE_UNQUOTED(DBYTE, $DODS_BYTE, [dbyte])
+    AC_DEFINE_UNQUOTED(DINT64, $DODS_INT64, [64-bit integer type])
+    AC_DEFINE_UNQUOTED(DUINT64, $DODS_UINT64, [64-bit unsigned integer type])
+    AC_DEFINE_UNQUOTED(DINT32, $DODS_INT32, [32-bit integer type])
+    AC_DEFINE_UNQUOTED(DUINT32, $DODS_UINT32, [32-bit unsigned integer type])
+    AC_DEFINE_UNQUOTED(DINT16, $DODS_INT16, [16-bit integer type])
+    AC_DEFINE_UNQUOTED(DUINT16, $DODS_UINT16, [16-bit unsigned integer type])
+    AC_DEFINE_UNQUOTED(DFLOAT64, $DODS_FLOAT64, [64-bit real type])
+    AC_DEFINE_UNQUOTED(DFLOAT32, $DODS_FLOAT32, [32-bit real type])
+    AC_DEFINE_UNQUOTED(DINT8, $DODS_INT8, [8-bit integer type])
+    AC_DEFINE_UNQUOTED(DBYTE, $DODS_BYTE, [unsigned bytes/chars])
 
     # XDR INTEGER TYPES
+    #
+    # Since DAP4 does not use XDR, there are no defines for the int8 or the
+    # 64-bit integer types used by DAP4. jhrg  6/26/12
+    #
     # Unfortunately, there is little commonality about xdr
 
     # First, we need to see if the xdr routines are in libc, librpc,

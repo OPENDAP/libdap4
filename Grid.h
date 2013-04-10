@@ -60,8 +60,6 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-#define FILE_METHODS 1
-
 namespace libdap
 {
 
@@ -110,7 +108,7 @@ namespace libdap
     (<tt>get_array()</tt>), and a set of functions for cycling through the
     list of Map vectors.
 
-    @todo Move, in some sense, the _map_vars up to Constructor. Look at using
+    @todo Move, in some sense, the d_map_vars up to Constructor. Look at using
     Constructor's _var field for these.
     @todo Along the same lines as the previous item, consider removing the
     Part enum and adopting the convention that the first variable added is
@@ -123,10 +121,11 @@ namespace libdap
 class Grid: public Constructor
 {
 private:
-    BaseType *_array_var;
-    std::vector<BaseType *> _map_vars;
+    BaseType *d_array_var;
+    std::vector<BaseType *> d_map_vars;
 
-    void _duplicate(const Grid &s);
+protected: // subclasses need access [mjohnson 11 nov 2009]
+    void m_duplicate(const Grid &s);
 
 public:
 
@@ -143,23 +142,29 @@ public:
     Grid &operator=(const Grid &rhs);
     virtual BaseType *ptr_duplicate();
 
+    virtual bool is_dap2_only_type();
+
     virtual int element_count(bool leaves = false);
 
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
     virtual void set_in_selection(bool state);
 
-    virtual BaseType *var(const string &n, bool exact = true,
-                          btp_stack *s = 0);
-
+    virtual BaseType *var(const string &n, bool exact = true, btp_stack *s = 0);
     virtual BaseType *var(const string &n, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part);
+    virtual void add_var_nocopy(BaseType *bt, Part part);
+
+    virtual void set_array(Array* p_new_arr);
+    virtual Array* add_map(Array* p_new_map, bool add_copy);
+    virtual Array* prepend_map(Array* p_new_map, bool add_copy);
 
     BaseType *array_var();
     Array *get_array();
 
     virtual unsigned int width();
+    virtual unsigned int width(bool constrained);
 
     virtual int components(bool constrained = false);
 
@@ -168,13 +173,12 @@ public:
     virtual void clear_constraint();
 
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
-			   Marshaller &m, bool ce_eval = true);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
-
+#if 0
     virtual unsigned int val2buf(void *buf, bool reuse = false);
-
     virtual unsigned int buf2val(void **val);
+#endif
 
     virtual void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,
@@ -183,11 +187,11 @@ public:
 
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
+    virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
 
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 
-#if FILE_METHODS
     virtual void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
@@ -196,7 +200,8 @@ public:
                            bool constrained = false);
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
-#endif
+
+    virtual void transfer_attributes(AttrTable *at_container);
 
     virtual bool check_semantics(string &msg, bool all = false);
 

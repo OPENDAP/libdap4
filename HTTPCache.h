@@ -70,12 +70,6 @@
 #include "SignalHandlerRegisteredErr.h"
 #endif
 
-#define LOCK(m) pthread_mutex_lock((m))
-#define TRYLOCK(m) pthread_mutex_trylock((m))
-#define UNLOCK(m) pthread_mutex_unlock((m))
-#define INIT(m) pthread_mutex_init((m), 0)
-#define DESTROY(m) pthread_mutex_destroy((m))
-
 using namespace std;
 
 namespace libdap

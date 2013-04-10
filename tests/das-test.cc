@@ -38,8 +38,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used = {"$Id$"};
-
 #include <cstdlib>
 #include <string>
 #include <GetOpt.h>
@@ -105,7 +103,7 @@ int main(int argc, char *argv[])
 	      break;
 	    case 'v':
 	      fprintf( stderr, "%s: %s\n", argv[0], version ) ;
-	      exit(0);
+	      return 0;
 	    case 'd':
 	      dasdebug = 1;
 	      break;
@@ -118,14 +116,14 @@ int main(int argc, char *argv[])
 	    case '?':
 	    default:
 	      usage(argv[0]);
-	      exit(1);
+              return 1;
 	  }
 
     DAS das;
 
     if (!parser_test && !scanner_test && !code_test) {
 	usage(argv[0]);
-	exit(1);
+	return 1;
     }
 
     try {
@@ -213,6 +211,7 @@ test_scanner()
 
 	  default:
 	    fprintf( stdout, "Error: Unrecognized input\n" ) ;
+	    break;
 	}
 	fprintf( stdout, "%s", prompt ) ; // print prompt after output
 	fflush( stdout ) ;

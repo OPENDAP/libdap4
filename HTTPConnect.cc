@@ -26,13 +26,11 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    { "$Id$"
-    };
-
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+
+#include <sys/stat.h>
 
 #ifdef WIN32
 #include <io.h>
@@ -47,9 +45,12 @@ static char rcsid[] not_used =
 #include <cstdlib>
 #include <cstring>
 
-//#define DODS_DEBUG
 //#define DODS_DEBUG2
 //#define HTTP_TRACE
+//#define DODS_DEBUG
+
+#undef USE_GETENV
+
 
 #include "debug.h"
 #include "mime_util.h"
@@ -66,7 +67,7 @@ namespace libdap {
 
 // These global variables are not MT-Safe, but I'm leaving them as is because
 // they are used only for debugging (set them in a debugger like gdb or ddd).
-// They are not static because I *believe* that many debuggers cannot access
+// They are not static because I think that many debuggers cannot access
 // static variables. 08/07/02 jhrg
 
 // Set this to 1 to turn on libcurl's verbose mode (for debugging).
@@ -103,7 +104,7 @@ static const char *http_client_errors[CLIENT_ERR_MAX - CLIENT_ERR_MIN +1] =
 
 #define SERVER_ERR_MIN 500
 #define SERVER_ERR_MAX 505
-static const char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN +1] =
+static const char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN + 1] =
     {
         "Internal Server Error.",
         "Not Implemented.",
@@ -442,6 +443,9 @@ HTTPConnect::read_url(const string &url, FILE *stream,
     // value/result parameter to get the raw response header information .
     curl_easy_setopt(d_curl, CURLOPT_WRITEHEADER, resp_hdrs);
 
+    // This is the call that causes curl to go and get the remote resource and "write it down"
+    // utilizing the configuration state that has been previously conditioned by various perturbations
+    // of calls to curl_easy_setopt().
     CURLcode res = curl_easy_perform(d_curl);
 
     // Free the header list and null the value in d_curl.
@@ -473,8 +477,7 @@ HTTPConnect::url_uses_proxy_for(const string &url) throw()
     if (d_rcr->is_proxy_for_used()) {
         Regex host_regex(d_rcr->get_proxy_for_regexp().c_str());
         int index = 0, matchlen;
-        return host_regex.search(url.c_str(), url.size(), matchlen, index)
-               != -1;
+        return host_regex.search(url.c_str(), url.size(), matchlen, index) != -1;
     }
 
     return false;
@@ -520,8 +523,7 @@ HTTPConnect::HTTPConnect(RCReader *rcr) : d_username(""), d_password(""),
 
     // HTTPCache::instance returns a valid ptr or 0.
     if (d_rcr->get_use_cache())
-        d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root(),
-                                           true);
+        d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root(),true);
     else
         d_http_cache = 0;
 
@@ -599,8 +601,9 @@ HTTPConnect::fetch_url(const string &url)
 
     // handle redirection case (2007-04-27, gaffigan@sfos.uaf.edu)
     if (parser.get_location() != "" &&
-	url.substr(0,url.find("?",0)).compare(parser.get_location().substr(0,url.find("?",0))) != 0) {
-           return fetch_url(parser.get_location());
+	    url.substr(0,url.find("?",0)).compare(parser.get_location().substr(0,url.find("?",0))) != 0) {
+	delete stream;
+        return fetch_url(parser.get_location());
     }
 
     stream->set_type(parser.get_object_type());
@@ -614,63 +617,74 @@ HTTPConnect::fetch_url(const string &url)
 // the value of the TMPDIR env var. If that does not yeild a path that's
 // writable (as defined by access(..., W_OK|R_OK)) then look at P_tmpdir (as
 // defined in stdio.h. If both come up empty, then use `./'.
-//
-// This function allocates storage using new. The caller must delete the char
-// array.
 
 // Change this to a version that either returns a string or an open file
 // descriptor. Use information from https://buildsecurityin.us-cert.gov/
 // (see open()) to make it more secure. Ideal solution: get deserialize()
 // methods to read from a stream returned by libcurl, not from a temporary
-// file. 9/21/07 jhrg
-static char *
-get_tempfile_template(const char *file_template)
+// file. 9/21/07 jhrg Updated to use strings, so other misc changes. 3/22/11
+static string
+get_tempfile_template(const string &file_template)
 {
-    const char *c;
+    string c;
 
+    // Windows has one idea of the standard name(s) for a temporary files dir
 #ifdef WIN32
-    // whitelist for a WIN32 directory
-    Regex directory("[-a-zA-Z0-9_\\]*");
+    // white list for a WIN32 directory
+    Regex directory("[-a-zA-Z0-9_:\\]*");
 
+    // If we're OK to use getenv(), try it.
+#ifdef USE_GETENV
     c = getenv("TEMP");
-    if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0))
-    	goto valid_temp_directory;
+    if (c && directory.match(c.c_str(), c.length()) && (access(c.c_str(), 6) == 0))
+	goto valid_temp_directory;
 
     c= getenv("TMP");
-    if (c && directory.match(c, strlen(c)) && (access(getenv("TEMP"), 6) == 0))
-    	goto valid_temp_directory;
-#else
-	// whitelist for a directory
-	Regex directory("[-a-zA-Z0-9_/]*");
+    if (c && directory.match(c.c_str(), c.length()) && (access(c.c_str(), 6) == 0))
+	goto valid_temp_directory;
+#endif // USE_GETENV
 
-	c = getenv("TMPDIR");
-	if (c && directory.match(c, strlen(c)) && (access(c, W_OK | R_OK) == 0))
-    	goto valid_temp_directory;
+    // The windows default
+    c = "c:\tmp";
+    if (c && directory.match(c.c_str(), c.length()) && (access(c.c_str(), 6) == 0))
+	goto valid_temp_directory;
 
+#else	// Unix/Linux/OSX has another...
+    // white list for a directory
+    Regex directory("[-a-zA-Z0-9_/]*");
+#ifdef USE_GETENV
+    c = getenv("TMPDIR");
+    if (directory.match(c.c_str(), c.length()) && (access(c.c_str(), W_OK | R_OK) == 0))
+	goto valid_temp_directory;
+#endif // USE_GETENV
+
+    // Unix defines this sometimes - if present, use it.
 #ifdef P_tmpdir
-	if (access(P_tmpdir, W_OK | R_OK) == 0) {
-        c = P_tmpdir;
-        goto valid_temp_directory;
-	}
+    if (access(P_tmpdir, W_OK | R_OK) == 0) {
+	c = P_tmpdir;
+	goto valid_temp_directory;
+    }
 #endif
+
+    // The Unix default
+    c = "/tmp";
+    if (directory.match(c.c_str(), c.length()) && (access(c.c_str(), W_OK | R_OK) == 0))
+	goto valid_temp_directory;
 
 #endif  // WIN32
 
+    // If we found nothing useful, use the current directory
     c = ".";
 
 valid_temp_directory:
-	// Sanitize allocation
-	int size = strlen(c) + strlen(file_template) + 2;
-	if (!size_ok(1, size))
-		throw Error("Bad temporary file name.");
 
-    char *temp = new char[size];
-    strncpy(temp, c, size-2);
-    strcat(temp, "/");
+#ifdef WIN32
+    c += "\\" + file_template;
+#else
+    c += "/" + file_template;
+#endif
 
-    strcat(temp, file_template);
-
-    return temp;
+    return c;
 }
 
 /** Open a temporary file and return its name. This method opens a temporary
@@ -694,23 +708,31 @@ valid_temp_directory:
 string
 get_temp_file(FILE *&stream) throw(InternalErr)
 {
-    // get_tempfile_template() uses new, must call delete
-    char *dods_temp = get_tempfile_template("dodsXXXXXX");
+    string dods_temp = get_tempfile_template((string)"dodsXXXXXX");
+
+    vector<char> pathname(dods_temp.length() + 1);
+
+    strncpy(&pathname[0], dods_temp.c_str(), dods_temp.length());
+
+    DBG(cerr << "pathanme: " << &pathname[0] << " (" << dods_temp.length() + 1 << ")" << endl);
 
     // Open truncated for update. NB: mkstemp() returns a file descriptor.
 #if defined(WIN32) || defined(TEST_WIN32_TEMPS)
-    stream = fopen(_mktemp(dods_temp), "w+b");
+    stream = fopen(_mktemp(&pathname[0]), "w+b");
 #else
-    stream = fdopen(mkstemp(dods_temp), "w+");
+    // Make sure that temp files are accessible only by the owner.
+    umask(077);
+    stream = fdopen(mkstemp(&pathname[0]), "w+");
 #endif
 
-    if (!stream)
-        throw InternalErr("I/O Error: Failed to open a temporary file for the data values.");
+    if (!stream) {
+	throw InternalErr(__FILE__, __LINE__,
+		"Failed to open a temporary file for the data values ("
+		+ dods_temp + ")");
+    }
 
-    string dods_temp_s = dods_temp;
-    delete[] dods_temp; dods_temp = 0;
-
-    return dods_temp_s;
+    dods_temp = &pathname[0];
+    return dods_temp;
 }
 
 /** Close the temporary file opened for read_url(). */
@@ -718,11 +740,12 @@ void
 close_temp(FILE *s, const string &name)
 {
     int res = fclose(s);
-    if (res) {
-	DBG(cerr << "Counld not close the temporary file: " << name << endl);
-    }
+    if (res)
+	throw InternalErr(__FILE__, __LINE__, "!FAIL! " + long_to_string(res));
 
-    unlink(name.c_str());
+    res = unlink(name.c_str());
+    if (res != 0)
+    	throw InternalErr(__FILE__, __LINE__, "!FAIL! " + long_to_string(res));
 }
 
 /** Dereference a URL. This method looks first in the HTTP cache to see if a
@@ -751,15 +774,16 @@ HTTPConnect::caching_fetch_url(const string &url)
 {
     DBG(cerr << "Is this URL (" << url << ") in the cache?... ");
 
-    vector<string> *headers = new vector<string> ;
-    FILE *s = d_http_cache->get_cached_response(url, *headers);
+    vector<string> *headers = new vector<string>;
+    string file_name;
+    FILE *s = d_http_cache->get_cached_response(url, *headers, file_name);
     if (!s) {
         // url not in cache; get it and cache it
         DBGN(cerr << "no; getting response and caching." << endl);
+        delete headers; headers = 0;
         time_t now = time(0);
         HTTPResponse *rs = plain_fetch_url(url);
-        d_http_cache->cache_response(url, now, *(rs->get_headers()),
-                rs->get_stream());
+        d_http_cache->cache_response(url, now, *(rs->get_headers()), rs->get_stream());
 
         return rs;
     }
@@ -768,29 +792,27 @@ HTTPConnect::caching_fetch_url(const string &url)
 
         if (d_http_cache->is_url_valid(url)) { // url in cache and valid
             DBGN(cerr << "and it's valid; using cached response." << endl);
-            HTTPCacheResponse *crs =
-                    new HTTPCacheResponse(s, 200, headers, d_http_cache);
+            HTTPCacheResponse *crs = new HTTPCacheResponse(s, 200, headers, file_name, d_http_cache);
             return crs;
         }
         else { // url in cache but not valid; validate
             DBGN(cerr << "but it's not valid; validating... ");
 
-            d_http_cache->release_cached_response(s);
-
-            vector<string> *resp_hdrs = new vector<string> ;
-            vector<string> cond_hdrs =
-                    d_http_cache->get_conditional_request_headers(url);
+            d_http_cache->release_cached_response(s); // This closes 's'
+            headers->clear();
+            vector<string> cond_hdrs = d_http_cache->get_conditional_request_headers(url);
             FILE *body = 0;
             string dods_temp = get_temp_file(body);
             time_t now = time(0); // When was the request made (now).
             long http_status;
 
             try {
-                http_status = read_url(url, body, resp_hdrs, &cond_hdrs);
+                http_status = read_url(url, body, /*resp_hdrs*/headers, &cond_hdrs);
                 rewind(body);
             }
             catch (Error &e) {
                 close_temp(body, dods_temp);
+                delete headers;
                 throw ;
             }
 
@@ -798,9 +820,8 @@ HTTPConnect::caching_fetch_url(const string &url)
                 case 200: { // New headers and new body
                     DBGN(cerr << "read a new response; caching." << endl);
 
-                    d_http_cache->cache_response(url, now, *resp_hdrs, body);
-                    HTTPResponse *rs = new HTTPResponse(body, http_status, resp_hdrs,
-                            dods_temp);
+                    d_http_cache->cache_response(url, now, /* *resp_hdrs*/*headers, body);
+                    HTTPResponse *rs = new HTTPResponse(body, http_status, /*resp_hdrs*/headers, dods_temp);
 
                     return rs;
                 }
@@ -809,17 +830,17 @@ HTTPConnect::caching_fetch_url(const string &url)
                     DBGN(cerr << "cached response valid; updating." << endl);
 
                     close_temp(body, dods_temp);
-                    d_http_cache->update_response(url, now, *resp_hdrs);
-
-                    vector<string> *headers = new vector<string>;
-                    FILE *hs = d_http_cache->get_cached_response(url, *headers);
-                    HTTPCacheResponse *crs = new HTTPCacheResponse(hs, 304, headers, d_http_cache);
+                    d_http_cache->update_response(url, now, /* *resp_hdrs*/ *headers);
+                    string file_name;
+                    FILE *hs = d_http_cache->get_cached_response(url, *headers, file_name);
+                    HTTPCacheResponse *crs = new HTTPCacheResponse(hs, 304, headers, file_name, d_http_cache);
                     return crs;
                 }
 
                 default: { // Oops.
                     close_temp(body, dods_temp);
                     if (http_status >= 400) {
+                	delete headers; headers = 0;
                         string msg = "Error while reading the URL: ";
                         msg += url;
                         msg
@@ -828,6 +849,7 @@ HTTPConnect::caching_fetch_url(const string &url)
                         throw Error(msg);
                     }
                     else {
+                	delete headers; headers = 0;
                         throw InternalErr(__FILE__, __LINE__,
                                 "Bad response from the HTTP server: " + long_to_string(http_status));
                     }
@@ -862,6 +884,7 @@ HTTPConnect::plain_fetch_url(const string &url)
     try {
         status = read_url(url, stream, resp_hdrs); // Throws Error.
         if (status >= 400) {
+        	// delete resp_hdrs; resp_hdrs = 0;
             string msg = "Error while reading the URL: ";
             msg += url;
             msg += ".\nThe OPeNDAP server returned the following message:\n";
@@ -871,8 +894,9 @@ HTTPConnect::plain_fetch_url(const string &url)
     }
 
     catch (Error &e) {
+    	delete resp_hdrs;
         close_temp(stream, dods_temp);
-        throw e;
+        throw;
     }
 
     rewind(stream);

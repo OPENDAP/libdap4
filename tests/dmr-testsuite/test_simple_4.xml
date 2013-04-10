@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Attributes -->
+
+<Group name="test_dap4_1" dapVersion="4.0" xml:base="file:dap4/test_dap4_1.xml"
+  xmlns="http://xml.opendap.org/ns/DAP/4.0#"
+  xmlns:dap="http://xml.opendap.org/ns/DAP/4.0#">
+  
+  <dap:Int32 name="x">
+    <Attribute name="long_name" type="String">
+      <value>x_axis_value</value>
+    </Attribute>
+  </dap:Int32>
+  
+</Group>

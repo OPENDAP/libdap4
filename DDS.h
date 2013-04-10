@@ -42,11 +42,6 @@
 #include <string>
 #include <vector>
 
-#ifndef base_type_factory_h
-#include "BaseTypeFactory.h"
-#endif
-
-#if 0
 #ifndef _basetype_h
 #include "BaseType.h"
 #endif
@@ -54,13 +49,11 @@
 #ifndef _constructor_h
 #include "Constructor.h"
 #endif
+
+#ifndef base_type_factory_h
+#include "BaseTypeFactory.h"
 #endif
 
-#ifndef _structure_h
-#include "Structure.h"
-#endif
-
-#if 0
 #ifndef _das_h
 #include "DAS.h"
 #endif
@@ -68,16 +61,19 @@
 #ifndef A_DapObj_h
 #include "DapObj.h"
 #endif
+
+#ifndef KEYWORDS_H_
+#include "Keywords2.h"
+#endif
+
+#ifndef XMLWRITER_H_
+#include "XMLWriter.h"
 #endif
 
 using std::cout;
 
-#define FILE_METHODS 1
-
 namespace libdap
 {
-
-class DAS;
 
 /** The DAP2 Data Descriptor Object (DDS) is a data structure used by
     the DAP2 software to describe datasets and subsets of those
@@ -181,46 +177,50 @@ class DAS;
     @see BaseType
     @see DAS */
 
-class DDS : public Structure
+class DDS : public DapObj
 {
 private:
     BaseTypeFactory *d_factory;
 
-    string d_dataset_name;      // The dataset name
-    string d_filename;		// File name (or other OS identifier) for
-    string d_container_name;	// name of container structure
-    Structure *d_container;	// current container for container name
-				// dataset or part of dataset.
+    string d_name;                // The dataset d_name
+    string d_filename;		    // File d_name (or other OS identifier) for
+    string d_container_name;	// d_name of container structure
+    Structure *d_container; 	// current container for container d_name
+				                // dataset or part of dataset.
 
-    int d_dap_major;       // The protocol major version number
-    int d_dap_minor;       // ... and minor version number
-
+    int d_dap_major;       	    // The protocol major version number
+    int d_dap_minor;       	    // ... and minor version number
+    string d_dap_version; 	    // String version of the protocol
     string d_request_xml_base;
+    string d_namespace;
 
     AttrTable d_attr;           // Global attributes.
 
     vector<BaseType *> vars;    // Variables at the top level
 
-    BaseType *find_hdf4_dimension_attribute_home(AttrTable::entry *source);
-
     int d_timeout;              // alarm time in seconds. If greater than
                                 // zero, raise the alarm signal if more than
                                 // d_timeout seconds are spent reading data.
+    Keywords d_keywords;	    // Holds keywords parsed from the CE
+
+    long d_max_response_size;   // In bytes...
+
+
+
     friend class DDSTest;
 
 protected:
     void duplicate(const DDS &dds);
     BaseType *leaf_match(const string &name, BaseType::btp_stack *s = 0);
     BaseType *exact_match(const string &name, BaseType::btp_stack *s = 0);
-    virtual AttrTable *find_matching_container(AttrTable::entry *source,
-            BaseType **dest_variable);
 
 public:
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;
     typedef std::vector<BaseType *>::reverse_iterator Vars_riter ;
 
-    DDS(BaseTypeFactory *factory, const string &n = "");
+    DDS(BaseTypeFactory *factory, const string &name = "");
+    DDS(BaseTypeFactory *factory, const string &name, const string &version);
     DDS(const DDS &dds);
 
     virtual ~DDS();
@@ -264,12 +264,18 @@ public:
     /// Get the DAP minor version as sent by the client
     int get_dap_minor() const { return d_dap_minor; }
 
-    /// Set the DAP major version (typically using info from the client)
-    void set_dap_major(int p) { d_dap_major = p; }
-    /// Set the DAP minor version (typically using info from the client)
-    void set_dap_minor(int p) { d_dap_minor = p; }
+    void set_dap_version(const string &version_string = "2.0");
+    string get_dap_version() const { return d_dap_version; }
+    string get_dmr_version() const { return "1.0"; }
 
-    void set_dap_version(const string &version_string);
+    /// @deprecated
+    void set_dap_major(int p);
+    /// @deprecated
+    void set_dap_minor(int p);
+    /// @deprecated
+    void set_dap_version(double d);
+
+    Keywords &get_keywords() { return d_keywords; }
 
     /// Get the URL that will return this DDS/DDX/DataThing
     string get_request_xml_base() const { return d_request_xml_base; }
@@ -277,11 +283,29 @@ public:
     /// @see get_request_xml_base
     void set_request_xml_base(const string &xb) { d_request_xml_base = xb; }
 
+    /// Get the namespace associated with the DDS - likely set only by DDX responses
+    string get_namespace() const { return d_namespace; }
+
+    /// Set the namespace for this DDS/DDX object/response
+    void set_namespace(const string &ns) { d_namespace = ns; }
+
+    /// Get the maximum response size, in KB. Zero indicates no limit.
+    long get_response_limit() { return d_max_response_size; }
+
+    /** Set the maximum response size. Zero is the default value. The size
+        is given in kilobytes.
+        @param size The maximum size of the response in kilobytes. */
+    void set_response_limit(long size) { d_max_response_size = size * 1024; }
+
+    /// Get the estimated response size.
+    int get_request_size(bool constrained);
+
     string container_name() ;
     void container_name( const string &cn ) ;
     Structure *container() ;
 
-    virtual void add_var(BaseType *bt);
+    void add_var(BaseType *bt);
+    void add_var_nocopy(BaseType *bt);
 
     /// Removes a variable from the DDS.
     void del_var(const string &n);
@@ -302,6 +326,9 @@ public:
     Vars_iter get_vars_iter(int i);
     /// Get a variable
     BaseType *get_var_index(int i);
+    /// Insert a variable before the referenced element
+    void insert_var(Vars_iter i, BaseType *ptr);
+    void insert_var_nocopy(Vars_iter i, BaseType *ptr);
     /// Removes a variable from the DDS.
     void del_var(Vars_iter i);
     /// Removes a range of variables from the DDS.
@@ -312,21 +339,32 @@ public:
     void set_timeout(int t);
     int get_timeout();
 
-    virtual void parse(string fname);
-    virtual void parse(int fd);
-    virtual void parse(FILE *in = stdin);
-#if FILE_METHODS
+    // These parse the DAP2 curly-brace document and make a C++ object.
+    void parse(string fname);
+    void parse(int fd);
+    void parse(FILE *in = stdin);
+
+    // These print the Binary object in either the curly-brace or XML reps
     void print(FILE *out);
     void print_constrained(FILE *out);
     void print_xml(FILE *out, bool constrained, const string &blob = "");
-#endif
+
+    // Same as above, but using C++ i/o streams
     void print(ostream &out);
     void print_constrained(ostream &out);
-    virtual void print_xml(ostream &out, bool constrained, const string &blob = "");
+    void print_xml(ostream &out, bool constrained, const string &blob = "");
 
-    virtual void mark_all(bool state);
-    virtual bool mark(const string &name, bool state);
-    virtual bool check_semantics(bool all = false);
+    // Print the XML using libxml2; the other print_xml methods use this impl.
+    void print_xml_writer(ostream &out, bool constrained, const string &blob = "");
+
+    // Print the DAP4 DMR 'object'
+    void print_dmr(ostream &out, bool constrained);
+
+    void print_das(ostream &out);
+
+    void mark_all(bool state);
+    bool mark(const string &name, bool state);
+    bool check_semantics(bool all = false);
 
     void tag_nested_sequences();
 

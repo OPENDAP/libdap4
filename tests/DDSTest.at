@@ -16,9 +16,9 @@ m4_define([_AT_DDS_TEST],
 # AT_BANNER([Test $1 $2])
 AT_SETUP([DDS $1])
 AT_KEYWORDS([dds])
-#Added || true because the $srcdir/dds-test -p < $1 needs to be true whether the
+#Added || true because the $abs_srcdir/dds-test -p < $1 needs to be true whether the
 #output is printed to stdout or stderr
-AT_CHECK([$srcdir/dds-test -p < $1 || true], [], [stdout], [stderr])
+AT_CHECK([$abs_builddir/dds-test -p < $1 || true], [], [stdout], [stderr])
 #Need to compare either stdout or stderr because of the directory the above
 #AT_CHECK prints output to
 AT_CHECK([diff -b -B $2 stdout || diff -b -B $2 stderr], [], [ignore],[],[])
@@ -27,7 +27,7 @@ AT_CLEANUP])
 m4_define([AT_DDS_RESPONSE_TEST],
 [
 # AT_BANNER([DDS response for $1.])
-_AT_DDS_TEST([$srcdir/dds-testsuite/$1], [$srcdir/dds-testsuite/$1.base])
+_AT_DDS_TEST([$abs_srcdir/dds-testsuite/$1], [$abs_srcdir/dds-testsuite/$1.base])
 ])
 
 

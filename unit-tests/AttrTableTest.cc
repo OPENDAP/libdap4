@@ -37,10 +37,10 @@
 #endif
 
 #include "GNURegex.h"
-
 #include "AttrTable.h"
+#include "debug.h"
 
-#include "testFile.cc"
+#include "testFile.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -124,9 +124,9 @@ class AttrTableTest: public TestFixture {
         }
 
         CPPUNIT_TEST_SUITE( AttrTableTest );
+#if 1
 
         CPPUNIT_TEST(clone_test);
-#if 1
         CPPUNIT_TEST(find_container_test);
         CPPUNIT_TEST(get_parent_test);
         CPPUNIT_TEST(recurrsive_find_test);
@@ -135,7 +135,9 @@ class AttrTableTest: public TestFixture {
         CPPUNIT_TEST(assignment);
         CPPUNIT_TEST(erase_test);
         CPPUNIT_TEST(names_with_spaces_test);
+#endif
         CPPUNIT_TEST(containers_with_spaces_test);
+#if 1
         CPPUNIT_TEST(get_attr_iter_test);
         CPPUNIT_TEST(del_attr_table_test);
         CPPUNIT_TEST(append_attr_vector_test);
@@ -270,14 +272,21 @@ class AttrTableTest: public TestFixture {
         void names_with_spaces_test() {
             // Create an AttrTable where some names have spaces. The spaces
             // should be replaced by %20 escapes.
+            // Replacing the spaces with %20 was the bad, old, behavior. Now
+            // the spaces can stay. If someone is writing a DAS using the {}
+            // notation, they can use '%20' for the spaces. In the printed
+            // DAS using the {} notation, spaces will be represented by %20.
             AttrTable *t = new AttrTable;
             t->append_attr("long name", "String", "first");
             t->append_attr("longer name", "String", "\"second test\"");
-            string sof;
-            FILE2string(sof, of, t->print(of, ""));
+            //string sof;
+            ostringstream oss;
+            t->print(oss, "");
+            //FILE2string(sof, of, t->print(of, ""));
             string attrs = "String long%20name \"first\";\n\
 String longer%20name \"second test\";";
-            CPPUNIT_ASSERT(sof.find(attrs) != string::npos);
+            //CPPUNIT_ASSERT(sof.find(attrs) != string::npos);
+            CPPUNIT_ASSERT(oss.str().find(attrs) != string::npos);
             delete t; t = 0;
         }
 
@@ -293,14 +302,18 @@ String longer%20name \"second test\";";
                 CPPUNIT_ASSERT("Caught Error exception!" && false);
             }
             try {
+#if 0
                 string sof;
                 FILE2string(sof, of, top->print(of, ""));
-                Regex r("Data%20Field \\{\n\
+#endif
+                ostringstream oss;
+                top->print(oss);
+                Regex r(".*Data%20Field \\{\n\
 .*String long%20name \"first\";\n\
 .*Alias an%20alias long%20name;\n\
-\\}\n\n");
-		cout << sof << endl ;
-                CPPUNIT_ASSERT(re_match(r, sof.c_str()));
+.*\\}\n");
+                DBG(cout << ">" << oss.str() << "<" << endl);
+                CPPUNIT_ASSERT(re_match(r, oss.str().c_str()));
                 delete top; top = 0;
             }
             catch (Error &e) {

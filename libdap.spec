@@ -1,44 +1,39 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP
-Version: 3.9.2
+Version: 3.11.7
 Release: 1
 
-# the deflate program is covered by the W3C license
-License: LGPLv2+ and W3C
+License: LGPLv2+
 Group: Development/Libraries
 URL: http://www.opendap.org/
 Source0: http://www.opendap.org/pub/source/libdap-%{version}.tar.gz
+Requires: curl >= 7.10.6 libxml2 >= 2.6.16
 
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-# Mandrake
-# BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
-# fedora
-BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
-BuildRequires: doxygen graphviz
-# deflate depends directly on zlib
-BuildRequires: zlib-devel
+BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.6.16
+# BuildRequires: doxygen graphviz
 BuildRequires: pkgconfig
 
 # This package could be relocatable. In that case uncomment the following
 # line
 Prefix: %{_prefix}
 
-
 %description
 The libdap++ library contains an implementation of DAP2. This package
-contains the library, dap-config, getdap and deflate. The script dap-config
-simplifies using the library in other projects. The getdap utility is a
-simple command-line tool to read from DAP2 servers. It is built using the
-library and demonstrates simple uses of it. The deflate utility is used by
-the library when it returns compressed responses.
-
+contains the library, dap-config, getdap. The script dap-config
+simplifies using the library in other projects. The getdap utility is
+a simple command-line tool to read from DAP2 servers. It is built
+using the library and demonstrates simple uses of it. Note that libdap
+used to include a copy of 'deflate' which was used to compress
+responses. This has been removed since it is no longer used and the
+CGI-based code is no longer supported.
 
 %package devel
 Summary: Development and header files from libdap
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
-Requires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
+Requires: curl-devel >= 7.10.6 libxml2-devel >= 2.6.16
 Requires: pkgconfig
 # for the /usr/share/aclocal directory ownership
 Requires: automake
@@ -47,28 +42,21 @@ Requires: automake
 This package contains all the files needed to develop applications that
 will use libdap.
 
+# %package doc
+# Summary: Documentation of the libdap library
+# Group: Documentation
 
-%package doc
-Summary: Documentation of the libdap library
-Group: Documentation
-
-%description doc
-Documentation of the libdap library.
-
+# %description doc
+# Documentation of the libdap library.
 
 %prep
 %setup -q
-iconv -f latin1 -t utf8 < COPYRIGHT_W3C > COPYRIGHT_W3C.utf8
-touch -r COPYRIGHT_W3C COPYRIGHT_W3C.utf8
-mv COPYRIGHT_W3C.utf8 COPYRIGHT_W3C
-
 
 %build
 %configure --disable-static --disable-dependency-tracking
 make %{?_smp_mflags}
 
-make docs
-
+# make docs
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -76,33 +64,29 @@ make install DESTDIR=$RPM_BUILD_ROOT INSTALL="%{__install} -p"
 rm $RPM_BUILD_ROOT%{_libdir}/*.la
 mv $RPM_BUILD_ROOT%{_bindir}/dap-config-pkgconfig $RPM_BUILD_ROOT%{_bindir}/dap-config
 
-rm -rf __dist_docs
-cp -pr docs __dist_docs
-# those .map and .md5 are of dubious use, remove them
-rm -f __dist_docs/html/*.map __dist_docs/html/*.md5
-# use the ChangeLog timestamp to have the same timestamps for the doc files 
-# for all arches
-touch -r ChangeLog __dist_docs/html/*
-
+# rm -rf __dist_docs
+# cp -pr docs __dist_docs
+# # those .map and .md5 are of dubious use, remove them
+# rm -f __dist_docs/html/*.map __dist_docs/html/*.md5
+# # use the ChangeLog timestamp to have the same timestamps for the doc files 
+# # for all arches
+# touch -r ChangeLog __dist_docs/html/*
 
 %clean
 rm -rf $RPM_BUILD_ROOT
-
 
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
-
 %files
 %defattr(-,root,root,-)
 %{_bindir}/getdap
-%{_sbindir}/deflate
 %{_libdir}/libdap.so.*
 %{_libdir}/libdapclient.so.*
 %{_libdir}/libdapserver.so.*
-%doc README NEWS COPYING COPYRIGHT_URI README.AIS README.dodsrc
-%doc COPYRIGHT_W3C
+%doc README NEWS COPYING COPYRIGHT_URI README.dodsrc
+%{_mandir}/man1/*
 
 %files devel
 %defattr(-,root,root,-)
@@ -114,12 +98,21 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/libdap/
 %{_datadir}/aclocal/*
 
-%files doc
-%defattr(-,root,root,-)
-%doc __dist_docs/html/
-
+# %files doc
+# %defattr(-,root,root,-)
+# %doc __dist_docs/html/
 
 %changelog
+* Tue May  4 2010 James Gallagher <jgallagher@opendap.org> - 3.10.2
+
+* Mon Sep 13 2010 James Gallagehr <jgallagher@opendap.org> - 3.11.0
+- 3.11.0 rc 1
+ 
+- 3.10.2 release candidate 1
+ 
+* Mon Feb  1 2010 James Gallagher <jgallagher@opendap.org> - 3.10.0
+- Removed deflate; general update for 3.10.0 release
+
 * Tue Jun 10 2008 James Gallagher <jgallagher@opendap.org> - 3.8.1-1
 - Update for 3.8.1 This is code actually checked in on 4/25/08
 

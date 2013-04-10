@@ -46,9 +46,14 @@ static char rcsid[] not_used = {"$Id$"};
 
 #include <cassert>
 #include <cstdlib>
-#include <string>
 #include <cstring>
+
+#include <iostream>
+#include <iterator>
+#include <string>
 #include <stack>
+
+//#define DODS_DEBUG
 
 #include "debug.h"
 #include "escaping.h"
@@ -156,6 +161,8 @@ proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 %token <op> SCAN_LESS_EQL
 %token <op> SCAN_REGEXP
 
+%token <op> SCAN_STAR
+
 %type <boolean> constraint_expr projection proj_clause proj_function
 %type <boolean> array_projection selection clause bool_function
 %type <id> array_proj_clause name
@@ -168,86 +175,71 @@ proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 %%
 
 constraint_expr: /* empty constraint --> send all */
-                 {
+         {
+             DBG(cerr << "Mark all variables" << endl);
 		     DDS(arg)->mark_all(true);
 		     $$ = true;
 		 }
-                 /* projection only */
-                 | projection
+         /* projection only */
+         | projection
 		 /* selection only --> project everything */
-                 | '&' { DDS(arg)->mark_all(true); } selection
-                 { 
+         | '&' { DDS(arg)->mark_all(true); } selection
+         { 
 		     $$ = $3;
 		 }
-                 | projection '&' selection
-                 {
+         | projection '&' selection
+         {
 		     $$ = $1 && $3;
 		 }
 ;
 
-projection:     proj_clause
-                | proj_clause ',' projection
-                {
-		    $$ = $1 && $3;
-		}
+projection: proj_clause
+         | proj_clause ',' projection
+         {
+		     $$ = $1 && $3;
+		 }
 ;
 
-proj_clause:	name 
-                { 
-		    BaseType *var = DDS(arg)->var($1);
-		    if (var) {
-			DBG(cerr << "Marking " << $1 << endl);
-			$$ = DDS(arg)->mark($1, true);
-			DBG(cerr << "result: " << $$ << endl);
-		    }
-		    else {
-			no_such_ident($1, "identifier");
-		    }
+proj_clause: name 
+         { 
+		     BaseType *var = DDS(arg)->var($1);
+		     if (var) {
+			     DBG(cerr << "Marking " << $1 << endl);
+			     $$ = DDS(arg)->mark($1, true);
+			     DBG(cerr << "result: " << $$ << endl);
+		     }
+		     else {
+			     no_such_ident($1, "identifier");
+		     }
 		}
-/*		| SCAN_STR
-                {
-                    if ($1.type != dods_str_c || $1.v.s == 0 || $1.v.s->empty())
-                        ce_exprerror("Malformed string", "");
-                        
-                    BaseType *var = DDS(arg)->var(*($1.v.s));
-                    if (var) {
-                        DBG(cerr << "Marking " << $1 << endl);
-                        $$ = DDS(arg)->mark(*($1.v.s), true);
-                        DBG(cerr << "result: " << $$ << endl);
-                    }
-                    else {
-                        no_such_ident(*($1.v.s), "identifier");
-                    }
-                }
-*/
-                | proj_function
-                {
+        | proj_function
+        {
 		    $$ = $1;
 		}
 		| array_projection
-                {
+        {
 		    $$ = $1;
 		}
 ;
 
 proj_function:  SCAN_WORD '(' arg_list ')'
-	        {
+	    {
 		    proj_func p_f = 0;
 		    btp_func f = 0;
 
 		    if ((f = get_btp_function(*(EVALUATOR(arg)), $1))) {
-			EVALUATOR(arg)->append_clause(f, $3);
-			$$ = true;
+			    EVALUATOR(arg)->append_clause(f, $3);
+			    $$ = true;
 		    }
 		    else if ((p_f = get_proj_function(*(EVALUATOR(arg)), $1))) {
 		        DDS &dds = dynamic_cast<DDS&>(*(DDS(arg)));
-			BaseType **args = build_btp_args( $3, dds );
-			(*p_f)(($3) ? $3->size():0, args, dds, *(EVALUATOR(arg)));
-			delete[] args;
-			$$ = true;
+			    BaseType **args = build_btp_args( $3, dds );
+			    (*p_f)(($3) ? $3->size():0, args, dds, *(EVALUATOR(arg)));
+			    delete[] args;
+			    $$ = true;
 		    }
 		    else {
-			no_such_func($1);
+			    no_such_func($1);
 		    }
 		}
 ;
@@ -421,19 +413,8 @@ name:           SCAN_WORD
                         ce_exprerror("Malformed string", "");
                         
                     strncpy($$, www2id(*($1.v.s)).c_str(), ID_MAX-1);
-                    // delete the string? ***
+                    
                     $$[ID_MAX-1] = '\0';
-/*
-                    BaseType *var = DDS(arg)->var(*($1.v.s));
-                    if (var) {
-                        DBG(cerr << "Marking " << $1 << endl);
-                        $$ = DDS(arg)->mark(*($1.v.s), true);
-                        DBG(cerr << "result: " << $$ << endl);
-                    }
-                    else {
-                        no_such_ident(*($1.v.s), "identifier");
-                    }
-*/
                 }
 ;
 
@@ -447,60 +428,80 @@ array_indices:  array_index
 		}
 ;
 
-array_index: 	'[' SCAN_WORD ']'
-                {
-		    if (!check_uint32($2)) {
-			string msg = "The word `";
-			msg += string($2) + "' is not a valid array index.";
-			throw Error(malformed_expr, msg);
-		    }
-		    value i;
-		    i.type = dods_uint32_c;
-		    i.v.i = atoi($2);
-		    $$ = make_array_index(i);
-		}
-		|'[' SCAN_WORD ':' SCAN_WORD ']'
-                {
-		    if (!check_uint32($2)) {
-			string msg = "The word `";
-			msg += string($2) + "' is not a valid array index.";
-			throw Error(malformed_expr, msg);
-		    }
-		    if (!check_uint32($4)) {
-			string msg = "The word `";
-			msg += string($4) + "' is not a valid array index.";
-			throw Error(malformed_expr, msg);
-		    }
-		    value i,j;
-		    i.type = j.type = dods_uint32_c;
-		    i.v.i = atoi($2);
-		    j.v.i = atoi($4);
-		    $$ = make_array_index(i, j);
-		}
-		| '[' SCAN_WORD ':' SCAN_WORD ':' SCAN_WORD ']'
-                {
-		    if (!check_uint32($2)) {
-			string msg = "The word `";
-			msg += string($2) + "' is not a valid array index.";
-			throw Error(malformed_expr, msg);
-		    }
-		    if (!check_uint32($4)) {
-			string msg = "The word `";
-			msg += string($4) + "' is not a valid array index.";
-			throw Error(malformed_expr, msg);
-		    }
-		    if (!check_uint32($6)) {
-			string msg = "The word `";
-			msg += string($6) + "' is not a valid array index.";
-			throw Error(malformed_expr, msg);
-		    }
-		    value i, j, k;
-		    i.type = j.type = k.type = dods_uint32_c;
-		    i.v.i = atoi($2);
-		    j.v.i = atoi($4);
-		    k.v.i = atoi($6);
-		    $$ = make_array_index(i, j, k);
-		}
+/*
+ * We added [*], [n:*] and [n:m:*] to the syntax for array projections.
+ * These mean, resp., all the elements, elements from n to the end, and
+ * from n to the end with a stride of m. To encode this with as little 
+ * disruption as possible, we represent the star with -1. jhrg 12/20/12
+ */ 
+array_index:    '[' SCAN_WORD ']'
+{
+    if (!check_uint32($2))
+        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+    value i;
+    i.type = dods_uint32_c;
+    i.v.i = atoi($2);
+    $$ = make_array_index(i);
+}
+|   '[' SCAN_STAR ']'
+{
+    value i;
+    i.type = dods_int32_c;
+    i.v.i =-1;
+    $$ = make_array_index(i);
+}
+|'[' SCAN_WORD ':' SCAN_WORD ']'
+{
+    if (!check_uint32($2))
+        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+    if (!check_uint32($4))
+        throw Error(malformed_expr, "The word `" + string($4) + "' is not a valid array index.");
+    value i,j;
+    i.type = j.type = dods_uint32_c;
+    i.v.i = atoi($2);
+    j.v.i = atoi($4);
+    $$ = make_array_index(i, j);
+}
+|'[' SCAN_WORD ':' SCAN_STAR ']'
+{
+    if (!check_uint32($2))
+        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+    value i,j;
+    i.type = dods_uint32_c;
+    j.type = dods_int32_c;  /* signed */
+    i.v.i = atoi($2);
+    j.v.i = -1;
+    $$ = make_array_index(i, j);
+}
+| '[' SCAN_WORD ':' SCAN_WORD ':' SCAN_WORD ']'
+{
+    if (!check_uint32($2))
+        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+    if (!check_uint32($4))
+        throw Error(malformed_expr, "The word `" + string($4) + "' is not a valid array index.");
+    if (!check_uint32($6))
+        throw Error(malformed_expr, "The word `" + string($6) + "' is not a valid array index.");
+    value i, j, k;
+    i.type = j.type = k.type = dods_uint32_c;
+    i.v.i = atoi($2);
+    j.v.i = atoi($4);
+    k.v.i = atoi($6);
+    $$ = make_array_index(i, j, k);
+}
+| '[' SCAN_WORD ':' SCAN_WORD ':' SCAN_STAR ']'
+{
+    if (!check_uint32($2))
+        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+    if (!check_uint32($4))
+        throw Error(malformed_expr, "The word `" + string($4) + "' is not a valid array index.");
+    value i, j, k;
+    i.type = j.type = dods_uint32_c;
+    k.type = dods_int32_c;
+    i.v.i = atoi($2);
+    j.v.i = atoi($4);
+    k.v.i = -1;
+    $$ = make_array_index(i, j, k);
+}
 ;
 
 rel_op:		SCAN_EQUAL
@@ -520,132 +521,128 @@ rel_op:		SCAN_EQUAL
 
 void
 ce_exprerror(const string &s)
-{ 
+{
     ce_exprerror(s.c_str());
 }
 
-void
-ce_exprerror(const char *s)
+void ce_exprerror(const char *s)
 {
     // cerr << "Expression parse error: " << s << endl;
-    string msg = "Constraint expression parse error: " + (string)s;
+    string msg = "Constraint expression parse error: " + (string) s;
     throw Error(malformed_expr, msg);
 }
 
-void
-ce_exprerror(const string &s, const string &s2)
+void ce_exprerror(const string &s, const string &s2)
 {
     ce_exprerror(s.c_str(), s2.c_str());
 }
 
-void
-ce_exprerror(const char *s, const char *s2)
+void ce_exprerror(const char *s, const char *s2)
 {
-    string msg = "Constraint expression parse error: " + (string)s + ": " 
-	+ (string)s2;
+    string msg = "Constraint expression parse error: " + (string) s + ": " + (string) s2;
     throw Error(malformed_expr, msg);
 }
 
-void
-no_such_ident(const string &name, const string &word)
+void no_such_ident(const string &name, const string &word)
 {
     string msg = "No such " + word + " in dataset";
     ce_exprerror(msg.c_str(), name);
 }
 
-void
-no_such_ident(char *name, char *word)
+void no_such_ident(char *name, char *word)
 {
-    string msg = "No such " + (string)word + " in dataset";
+    string msg = "No such " + (string) word + " in dataset";
     ce_exprerror(msg.c_str(), name);
 }
 
-void
-no_such_func(const string &name)
+void no_such_func(const string &name)
 {
     no_such_func(name.c_str());
 }
 
-void
-no_such_func(char *name)
+void no_such_func(char *name)
 {
     ce_exprerror("Not a registered function", name);
 }
 
 /* If we're calling this, assume var is not a Sequence. But assume that the
-   name contains a dot and it's a separator. Look for the rightmost dot and
-   then look to see if the name to the left is a sequence. Return a pointer
-   to the sequence if it is otherwise return null. Uses tail-recursion to
-   'walk' back from right to left looking at each dot. This way the sequence
-   will be found even if there are structures between the field and the
-   Sequence. */
+ name contains a dot and it's a separator. Look for the rightmost dot and
+ then look to see if the name to the left is a sequence. Return a pointer
+ to the sequence if it is otherwise return null. Uses tail-recursion to
+ 'walk' back from right to left looking at each dot. This way the sequence
+ will be found even if there are structures between the field and the
+ Sequence. */
 static Sequence *
 parent_is_sequence(DDS &table, const string &n)
 {
     string::size_type dotpos = n.find_last_of('.');
     if (dotpos == string::npos)
-	return 0;
+        return 0;
 
     string s = n.substr(0, dotpos);
-    
+
     // If the thing returned by table.var is not a Sequence, this cast
     // will yield null.
-    Sequence *seq = dynamic_cast<Sequence*>(table.var(s));
+    Sequence *seq = dynamic_cast<Sequence*> (table.var(s));
     if (seq)
-	return seq;
+        return seq;
     else
-	return parent_is_sequence(table, s);
+        return parent_is_sequence(table, s);
 }
 
-
-bool
-bracket_projection(DDS &table, const char *name, int_list_list *indices)
+bool bracket_projection(DDS &table, const char *name, int_list_list *indices)
 {
     BaseType *var = table.var(name);
-    Sequence *seq;		// used in last else-if clause
+    Sequence *seq; // used in last else-if clause
 #if 0
     Array *array;
 #endif    
     if (!var)
-	return false;
-	
+        return false;
+
     if (is_array_t(var)) {
-	/* calls to set_send_p should be replaced with
-	   calls to DDS::mark so that arrays of Structures,
-	   etc. will be processed correctly when individual
-	   elements are projected using short names.
-	   9/1/98 jhrg */
-	/* var->set_send_p(true); */
-	//table.mark(name, true);
-	// We don't call mark() here for an array. Instead it is called from
-	// within the parser. jhrg 10/10/08
-	process_array_indices(var, indices);    // throws on error
-	delete_array_indices(indices);
+        /* calls to set_send_p should be replaced with
+         calls to DDS::mark so that arrays of Structures,
+         etc. will be processed correctly when individual
+         elements are projected using short names.
+         9/1/98 jhrg */
+        /* var->set_send_p(true); */
+        //table.mark(name, true);
+        // We don't call mark() here for an array. Instead it is called from
+        // within the parser. jhrg 10/10/08
+        process_array_indices(var, indices); // throws on error
+        delete_array_indices(indices);
     }
     else if (is_grid_t(var)) {
-	process_grid_indices(var, indices);
+        process_grid_indices(var, indices);
         table.mark(name, true);
-	delete_array_indices(indices);
+        delete_array_indices(indices);
     }
     else if (is_sequence_t(var)) {
-	table.mark(name, true);
-	process_sequence_indices(var, indices);
-	delete_array_indices(indices);
+        table.mark(name, true);
+        process_sequence_indices(var, indices);
+        delete_array_indices(indices);
     }
     else if ((seq = parent_is_sequence(table, name))) {
-	process_sequence_indices(seq, indices);
+        process_sequence_indices(seq, indices);
         table.mark(name, true);
-	delete_array_indices(indices);
+        delete_array_indices(indices);
     }
     else {
-	return false;
+        return false;
     }
-  
+
     return true;
 }
 
 // Given three values (I1, I2, I3), all of which must be integers, build an
 // int_list which contains those values.
+// 
+// Note that we added support for * in the rightmost position of an index
+// (i.e., [*], [n:*], [n:m:*]) and indicate that star using -1 as an index value.
+// Bescause of this change, the test for the type of the rightmost value in
+// the index subexpr was changed to include signed int.
+// jhrg 12/20/12
 //
 // Returns: A pointer to an int_list of three integers or NULL if any of the
 // values are not integers.
@@ -653,21 +650,18 @@ bracket_projection(DDS &table, const char *name, int_list_list *indices)
 int_list *
 make_array_index(value &i1, value &i2, value &i3)
 {
-    if (i1.type != dods_uint32_c
-	|| i2.type != dods_uint32_c
-	|| i3.type != dods_uint32_c)
-	return (int_list *)0;
+    if (i1.type != dods_uint32_c || i2.type != dods_uint32_c || (i3.type != dods_uint32_c && i3.type != dods_int32_c))
+        return (int_list *) 0;
 
     int_list *index = new int_list;
 
-    index->push_back((int)i1.v.i);
-    index->push_back((int)i2.v.i);
-    index->push_back((int)i3.v.i);
+    index->push_back((int) i1.v.i);
+    index->push_back((int) i2.v.i);
+    index->push_back((int) i3.v.i);
 
-    DBG(cout << "index: ";\
-	for (int_iter dp = index->begin(); dp != index->end(); dp++)\
-	cout << (*dp) << " ";\
-	cout << endl);
+    DBG(cout << "index: ");
+    DBG(copy(index->begin(), index->end(), ostream_iterator<int>(cerr, " ")));
+    DBG(cerr << endl);
 
     return index;
 }
@@ -675,19 +669,18 @@ make_array_index(value &i1, value &i2, value &i3)
 int_list *
 make_array_index(value &i1, value &i2)
 {
-    if (i1.type != dods_uint32_c || i2.type != dods_uint32_c)
-	return (int_list *)0;
+    if (i1.type != dods_uint32_c || (i2.type != dods_uint32_c && i2.type != dods_int32_c))
+	return (int_list *) 0;
 
     int_list *index = new int_list;
- 
-    index->push_back((int)i1.v.i);
-    index->push_back(1);
-    index->push_back((int)i2.v.i);
 
-    DBG(cout << "index: ";\
-	for (int_citer dp = index->begin(); dp != index->end(); dp++)\
-	cout << (*dp) << " ";\
-	cout << endl);
+    index->push_back((int) i1.v.i);
+    index->push_back(1);
+    index->push_back((int) i2.v.i);
+
+    DBG(cout << "index: ");
+    DBG(copy(index->begin(), index->end(), ostream_iterator<int>(cerr, " ")));
+    DBG(cerr << endl);
 
     return index;
 }
@@ -695,19 +688,24 @@ make_array_index(value &i1, value &i2)
 int_list *
 make_array_index(value &i1)
 {
-    if (i1.type != dods_uint32_c)
-	return (int_list *)0;
+    if (i1.type != dods_uint32_c && i1.type != dods_int32_c)
+	return (int_list *) 0;
 
     int_list *index = new int_list;
 
-    index->push_back((int)i1.v.i);
+    // When the CE is Array[*] that means all of the elements, but the value
+    // of i1 will be -1. Make the projection triple be 0:1:-1 which is a 
+    // pattern that libdap::Array will recognize.
+    if (i1.v.i == -1)
+        index->push_back(0);
+    else
+        index->push_back((int) i1.v.i);
     index->push_back(1);
-    index->push_back((int)i1.v.i);
+    index->push_back((int) i1.v.i);
 
-    DBG(cout << "index: ";\
-	for (int_citer dp = index->begin(); dp != index->end(); dp++)\
-	cout << (*dp) << " ";\
-	cout << endl);
+    DBG(cout << "index: ");
+    DBG(copy(index->begin(), index->end(), ostream_iterator<int>(cerr, " ")));
+    DBG(cerr << endl);
 
     return index;
 }
@@ -717,10 +715,9 @@ make_array_indices(int_list *index)
 {
     int_list_list *indices = new int_list_list;
 
-    DBG(cout << "index: ";\
-	for (int_citer dp = index->begin(); dp != index->end(); dp++)\
-	cout << (*dp) << " ";\
-	cout << endl);
+    DBG(cout << "index: ");
+    DBG(copy(index->begin(), index->end(), ostream_iterator<int>(cerr, " ")));
+    DBG(cerr << endl);
 
     assert(index);
     indices->push_back(index);
@@ -741,13 +738,12 @@ append_array_index(int_list_list *indices, int_list *index)
 
 // Delete an array indices list. 
 
-void
-delete_array_indices(int_list_list *indices)
+void delete_array_indices(int_list_list *indices)
 {
     assert(indices);
 
     for (int_list_citer i = indices->begin(); i != indices->end(); i++) {
-	int_list *il = *i ;
+	int_list *il = *i;
 	assert(il);
 	delete il;
     }
@@ -755,8 +751,7 @@ delete_array_indices(int_list_list *indices)
     delete indices;
 }
 
-bool
-is_array_t(BaseType *variable)
+bool is_array_t(BaseType *variable)
 {
     assert(variable);
 
@@ -766,8 +761,7 @@ is_array_t(BaseType *variable)
 	return true;
 }
 
-bool
-is_grid_t(BaseType *variable)
+bool is_grid_t(BaseType *variable)
 {
     assert(variable);
 
@@ -777,8 +771,7 @@ is_grid_t(BaseType *variable)
 	return true;
 }
 
-bool
-is_sequence_t(BaseType *variable)
+bool is_sequence_t(BaseType *variable)
 {
     assert(variable);
 
@@ -788,220 +781,187 @@ is_sequence_t(BaseType *variable)
 	return true;
 }
 
-void
-process_array_indices(BaseType *variable, int_list_list *indices)
+void process_array_indices(BaseType *variable, int_list_list *indices)
 {
     assert(variable);
 
     Array *a = dynamic_cast<Array *>(variable); // replace with dynamic cast
     if (!a)
-	throw Error(malformed_expr, 
-	   string("The constraint expression evaluator expected an array; ")
-		    + variable->name() + " is not an array.");
-		   
-    if (a->dimensions(true) != (unsigned)indices->size())
-	throw Error(malformed_expr, 
-	   string("Error: The number of dimensions in the constraint for ")
-		    + variable->name() 
-		    + " must match the number in the array.");
-		   
-    DBG(cerr << "Before clear_constraint:" << endl);
-    DBG(a->print_decl(cerr, "", true, false, true));
+        throw Error(malformed_expr,
+		    string("The constraint expression evaluator expected an array; ") + variable->name() + " is not an array.");
 
-    // a->reset_constraint();	// each projection erases the previous one
+    if (a->dimensions(true) != (unsigned) indices->size())
+        throw Error(malformed_expr,
+		    string("Error: The number of dimensions in the constraint for ") + variable->name()
+                    + " must match the number in the array.");
 
-    DBG(cerr << "After reset_constraint:" << endl);
+    DBG(cerr << "Before applying projection to array:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
     assert(indices);
-    int_list_citer p = indices->begin() ;
-    Array::Dim_iter r = a->dim_begin() ;
+    
+    int_list_citer p = indices->begin();
+    Array::Dim_iter r = a->dim_begin();
     for (; p != indices->end() && r != a->dim_end(); p++, r++) {
-	int_list *index = *p;
-	assert(index);
+        int_list *index = *p;
+        assert(index);
 
-	int_citer q = index->begin(); 
-	assert(q!=index->end());
-	int start = *q;
+        int_citer q = index->begin();
+        assert(q != index->end());
+        int start = *q;
 
-	q++;
-	int stride = *q;
-	
-	q++;
-	int stop = *q;
+        q++;
+        int stride = *q;
 
-	q++;
-	if (q != index->end()) {
-	    throw Error(malformed_expr,
-			string("Too many values in index list for ")
-			+ a->name() + ".");
-	}
+        q++;
+        int stop = *q;
 
-	DBG(cerr << "process_array_indices: Setting constraint on "\
-	    << a->name() << "[" << start << ":" << stop << "]" << endl);
+        q++;
+        if (q != index->end())
+            throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
+
+        DBG(cerr << "process_array_indices: Setting constraint on " 
+            << a->name() << "[" << start << ":" << stop << "]"
+            << endl);
 
         // It's possible that an array will appear more than once in a CE
         // (for example, if an array of structures is constrained so that
         // only two fields are projected and there's an associated hyperslab).
         // However, in this case the two hyperslabs must be equal; test for
-        // that here. But see clear_constraint above... 10/28/08 jhrg
+        // that here.
+        //
+        // We added '*' to mean 'the last element' in the array and use an index of -1
+        // to indicate that. If 'stop' is -1, don't test it here because dimension_stop()
+        // won't be -1 but the actual ending index of the array. jhrg 12/20/12
 
-        if (a->send_p()
-            && (a->dimension_start(r, true) != start
-                || a->dimension_stop(r, true) != stop
-                || a->dimension_stride(r, true) != stride))
+        if (a->send_p() && (a->dimension_start(r, true) != start || (a->dimension_stop(r, true) != stop && stop != -1)
+                            || a->dimension_stride(r, true) != stride))
             throw Error(malformed_expr,
-                        string("The Array was already projected differently in the constraint expression: ")
-                    + a->name() + ".");
-                 
-	a->add_constraint(r, start, stride, stop);
+                    string("The Array was already projected differently in the constraint expression: ") + a->name() + ".");
 
-	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
+        a->add_constraint(r, start, stride, stop);
+
+        DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
     }
 
-    DBG(cerr << "After processing loop:" << endl);
+    DBG(cerr << "After applying projection to array:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
-    DBG(cout << "Array Constraint: ";\
-	for (Array::Dim_iter dp = a->dim_begin(); dp != a->dim_end(); dp++)\
-	    cout << a->dimension_size(dp, true) << " ";\
-	cout << endl);
-    
-    if (p != indices->end() && r == a->dim_end()) {
-	throw Error(malformed_expr,
-		    string("Too many indices in constraint for ")
-		    + a->name() + ".");
-    }
+
+    if (p != indices->end() && r == a->dim_end())
+        throw Error(malformed_expr, string("Too many indices in constraint for ") + a->name() + ".");
 }
 
-void
-process_grid_indices(BaseType *variable, int_list_list *indices)
+void process_grid_indices(BaseType *variable, int_list_list *indices)
 {
     assert(variable);
     assert(variable->type() == dods_grid_c);
     Grid *g = dynamic_cast<Grid *>(variable);
     if (!g)
-	throw Error(unknown_error, "Expected a Grid variable");
+        throw Error(unknown_error, "Expected a Grid variable");
 
     Array *a = g->get_array();
-#if 0
-    // This test s now part of Grid::get_array(). jhrg 3/5/09
-    if (!a)
-	throw InternalErr(__FILE__, __LINE__, "Malformed Grid variable");
-#endif
-    if (a->dimensions(true) != (unsigned)indices->size())
-	throw Error(malformed_expr, 
-	   string("Error: The number of dimensions in the constraint for ")
-		    + variable->name() 
+
+    if (a->dimensions(true) != (unsigned) indices->size())
+        throw Error(malformed_expr,
+		    string("Error: The number of dimensions in the constraint for ") + variable->name()
 		    + " must match the number in the grid.");
-		   
+
     // First do the constraints on the ARRAY in the grid.
     process_array_indices(g->array_var(), indices);
 
     // Now process the maps.
-    Grid::Map_iter r = g->map_begin() ;
+    Grid::Map_iter r = g->map_begin();
 
     // Suppress all maps by default.
-    for (; r != g->map_end(); r++)
-    {
-	(*r)->set_send_p(false);
+    for (; r != g->map_end(); r++) {
+        (*r)->set_send_p(false);
     }
 
     // Add specified maps to the current projection.
     assert(indices);
     int_list_citer p = indices->begin();
-    r = g->map_begin(); 
-    for (; p != indices->end() && r != g->map_end(); p++, r++)
-    {
-	int_list *index = *p;
-	assert(index);
+    r = g->map_begin();
+    for (; p != indices->end() && r != g->map_end(); p++, r++) {
+        int_list *index = *p;
+        assert(index);
 
-	int_citer q = index->begin(); 
-	assert(q != index->end());
-	int start = *q;
+        int_citer q = index->begin();
+        assert(q != index->end());
+        int start = *q;
 
-	q++;
-	int stride = *q;
-	
-	q++;
-	int stop = *q;
+        q++;
+        int stride = *q;
 
-	BaseType *btp = *r;
-	assert(btp);
-	assert(btp->type() == dods_array_c);
-	Array *a = (Array *)btp;
-	a->set_send_p(true);
-	a->reset_constraint();
+        q++;
+        int stop = *q;
 
-	q++;
-	if (q!=index->end()) {
-	    throw Error(malformed_expr,
-			string("Too many values in index list for ")
-			+ a->name() + ".");
-	}
+        BaseType *btp = *r;
+        assert(btp);
+        assert(btp->type() == dods_array_c);
+        Array *a = (Array *) btp;
+        a->set_send_p(true);
+        a->reset_constraint();
 
-	DBG(cerr << "process_grid_indices: Setting constraint on "\
-	    << a->name() << "[" << start << ":" << stop << "]" << endl);
+        q++;
+        if (q != index->end()) {
+            throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
+        }
 
-	Array::Dim_iter si = a->dim_begin() ;
-	a->add_constraint(si, start, stride, stop);
+        DBG(cerr << "process_grid_indices: Setting constraint on "
+            << a->name() << "[" << start << ":"
+            << stop << "]" << endl);
+    
+        Array::Dim_iter si = a->dim_begin();
+        a->add_constraint(si, start, stride, stop);
 
-	DBG(Array::Dim_iter aiter = a->dim_begin() ; \
-	    cerr << "Set Constraint: " \
-	    << a->dimension_size(aiter, true) << endl);
     }
 
-    DBG(cout << "Grid Constraint: ";\
-	for (Array::Dim_iter dp = ((Array *)g->array_var())->dim_begin();
-	     dp != ((Array *)g->array_var())->dim_end(); \
-	     dp++)\
-	   cout << ((Array *)g->array_var())->dimension_size(dp, true) << " ";\
-	cout << endl);
-    
-    if (p!=indices->end() && r==g->map_end()) {
-	throw Error(malformed_expr,
-		    string("Too many indices in constraint for ")
-		    + (*r)->name() + ".");
+    DBG(cout << "Grid Constraint: ";
+	for (Array::Dim_iter dp = ((Array *) g->array_var())->dim_begin();
+	     dp != ((Array *) g->array_var())->dim_end(); dp++)
+	    cout << ((Array *) g->array_var())->dimension_size(dp, true) << " ";
+	    cout << endl
+	);
+
+    if (p != indices->end() && r == g->map_end()) {
+        throw Error(malformed_expr,
+		    string("Too many indices in constraint for ") + (*r)->name() + ".");
     }
 }
 
-void
-process_sequence_indices(BaseType *variable, int_list_list *indices)
+void process_sequence_indices(BaseType *variable, int_list_list *indices)
 {
     assert(variable);
     assert(variable->type() == dods_sequence_c);
-    Sequence *s = dynamic_cast<Sequence *>(variable);
+    Sequence *s = dynamic_cast<Sequence *> (variable);
     if (!s)
-	throw Error(malformed_expr, "Expected a Sequence variable");
+        throw Error(malformed_expr, "Expected a Sequence variable");
 
     // Add specified maps to the current projection.
     assert(indices);
-    for (int_list_citer p = indices->begin(); p != indices->end(); p++)
-    {
-	int_list *index = *p;
-	assert(index);
+    for (int_list_citer p = indices->begin(); p != indices->end(); p++) {
+        int_list *index = *p;
+        assert(index);
 
-	int_citer q = index->begin(); 
-	assert(q!=index->end());
-	int start = *q;
+        int_citer q = index->begin();
+        assert(q != index->end());
+        int start = *q;
 
-	q++;
-	int stride = *q;
-	
-	q++;
-	int stop = *q;
+        q++;
+        int stride = *q;
 
-	q++;
-	if (q!=index->end()) {
-	  throw Error(malformed_expr, 
-		      string("Too many values in index list for ")
-		      + s->name() + ".");
-	}
+        q++;
+        int stop = *q;
 
-	s->set_row_number_constraint(start, stop, stride);
+        q++;
+        if (q != index->end()) {
+            throw Error(malformed_expr, string("Too many values in index list for ") + s->name() + ".");
+        }
+
+        s->set_row_number_constraint(start, stop, stride);
     }
 }
-
 
 // Given a value, wrap it up in a BaseType and return a pointer to the same.
 
@@ -1010,30 +970,30 @@ make_variable(ConstraintEvaluator &eval, const value &val)
 {
     BaseType *var;
     switch (val.type) {
-      case dods_int32_c: {
-	var = new Int32("dummy");
-	var->val2buf((void *)&val.v.i);
-	break;
-      }
-
-      case dods_float64_c: {
-	var = new Float64("dummy");
-	var->val2buf((void *)&val.v.f);
-	break;
-      }
-
-      case dods_str_c: {
-	var = new Str("dummy");
-	var->val2buf((void *)val.v.s);
-	break;
-      }
-
-      default:
-	var = (BaseType *)0;
-	return var;
+    case dods_int32_c: {
+        var = new Int32("dummy");
+        var->val2buf((void *) &val.v.i);
+        break;
     }
 
-    var->set_read_p(true);	// ...so the evaluator will know it has data
+    case dods_float64_c: {
+        var = new Float64("dummy");
+        var->val2buf((void *) &val.v.f);
+        break;
+    }
+
+    case dods_str_c: {
+        var = new Str("dummy");
+        var->val2buf((void *) val.v.s);
+        break;
+    }
+
+    default:
+        var = (BaseType *) 0;
+        return var;
+    }
+
+    var->set_read_p(true); // ...so the evaluator will know it has data
     eval.append_constant(var);
 
     return var;
@@ -1045,36 +1005,33 @@ make_variable(ConstraintEvaluator &eval, const value &val)
 //
 // Returns: A pointer to the function or NULL if not such function exists.
 
-bool_func
-get_function(const ConstraintEvaluator &eval, const char *name)
+bool_func get_function(const ConstraintEvaluator &eval, const char *name)
 {
     bool_func f;
 
     if (eval.find_function(name, &f))
-	return f;
+        return f;
     else
-	return 0;
+        return 0;
 }
 
-btp_func
-get_btp_function(const ConstraintEvaluator &eval, const char *name)
+btp_func get_btp_function(const ConstraintEvaluator &eval, const char *name)
 {
     btp_func f;
 
     if (eval.find_function(name, &f))
-	return f;
+        return f;
     else
-	return 0;
+        return 0;
 }
 
-proj_func
-get_proj_function(const ConstraintEvaluator &eval, const char *name)
+proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name)
 {
     proj_func f;
 
     if (eval.find_function(name, &f))
-	return f;
+        return f;
     else
-	return 0;
+        return 0;
 }
 

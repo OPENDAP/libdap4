@@ -28,11 +28,7 @@
 
 #include <vector>
 
-#ifndef _basetype_h
 #include "BaseType.h"
-#endif
-
-#define FILE_METHODS 1
 
 namespace libdap
 {
@@ -42,19 +38,19 @@ class Constructor: public BaseType
 {
 private:
     Constructor();  // No default ctor.
-    BaseType *find_hdf4_dimension_attribute_home(AttrTable::entry *source);
 
 protected:
-    std::vector<BaseType *> _vars;
+    std::vector<BaseType *> d_vars;
 
-    void _duplicate(const Constructor &c);
-    virtual AttrTable *find_matching_container(AttrTable::entry *source,
-            BaseType **dest_variable);
+    void m_duplicate(const Constructor &s);
+    BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
+    BaseType *m_exact_match(const string &name, btp_stack *s = 0);
 
-    Constructor(const string &n, const Type &t);
-    Constructor(const string &n, const string &d, const Type &t);
+    Constructor(const string &n, const Type &t, bool is_dap4 = false);
+    Constructor(const string &n, const string &d, const Type &t, bool is_dap4 = false);
 
     Constructor(const Constructor &copy_from);
+
 public:
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;
@@ -63,7 +59,22 @@ public:
     virtual ~Constructor();
 
     Constructor &operator=(const Constructor &rhs);
-    virtual void transfer_attributes(AttrTable::entry *entry);
+
+    //virtual void transfer_attributes(AttrTable *at_container);
+
+    virtual int element_count(bool leaves = false);
+
+    virtual void set_send_p(bool state);
+    virtual void set_read_p(bool state);
+
+    /// @deprecated
+    virtual unsigned int width();
+    virtual unsigned int width(bool constrained);
+
+    /// btp_stack no longer needed; use back pointers (BaseType::get_parent())
+    virtual BaseType *var(const string &name, bool exact_match = true, btp_stack *s = 0);
+    /// @deprecated
+    virtual BaseType *var(const string &n, btp_stack &s);
 
     Vars_iter var_begin();
     Vars_iter var_end();
@@ -72,7 +83,27 @@ public:
     Vars_iter get_vars_iter(int i);
     BaseType *get_var_index(int i);
 
+    virtual void add_var(BaseType *bt, Part part = nil);
+    virtual void add_var_nocopy(BaseType *bt, Part part = nil);
+
+    virtual void del_var(const string &name);
+    virtual void del_var(Vars_iter i);
+
+    virtual bool read();
+    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
+    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+
+    // Do not store values in memory as for C; users work with the C++ objects
+    virtual unsigned int val2buf(void *, bool) {
+        throw InternalErr(__FILE__, __LINE__, "Never use this method; see the programmer's guide documentation.");
+    }
+    virtual unsigned int buf2val(void **) {
+        throw InternalErr(__FILE__, __LINE__, "Never use this method; see the programmer's guide documentation.");
+    }
+
     virtual bool is_linear();
+    virtual void set_in_selection(bool state);
 
     virtual void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,
@@ -82,14 +113,21 @@ public:
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
 
-#if FILE_METHODS
+    virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
+
     virtual void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
                             bool constrained = false);
     virtual void print_xml(FILE *out, string space = "    ",
                            bool constrained = false);
-#endif
+
+    virtual void print_val(FILE *out, string space = "",
+                           bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "",
+                           bool print_decl_p = true);
+
+    virtual bool check_semantics(string &msg, bool all = false);
 
     virtual void dump(ostream &strm) const ;
 };

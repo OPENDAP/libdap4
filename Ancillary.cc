@@ -1,6 +1,9 @@
 // Ancillary.cc
 
 #include "config.h"
+
+//#define DODS_DEBUG
+
 #include "Ancillary.h"
 #include "debug.h"
 
@@ -197,12 +200,17 @@ Ancillary::read_ancillary_das( DAS &das,
 {
     string name = find_ancillary_file( pathname, "das", dir, file ) ;
 
+    DBG(cerr << "In Ancillary::read_ancillary_dds: name:" << name << endl);
+
     FILE *in = fopen( name.c_str(), "r" ) ;
     if( in ) {
         das.parse( in ) ;
+        (void)fclose( in ) ;
+#if 0
         int res = fclose( in ) ;
         if( res )
-            DBG(cerr << "DODSFilter::read_ancillary_das - Failed to close file " << (void *)in << endl) ;
+            DBG(cerr << "Ancillary::read_ancillary_das - Failed to close file " << (void *)in << endl) ;
+#endif
     }
 }
 
@@ -214,12 +222,17 @@ Ancillary::read_ancillary_dds( DDS &dds,
 {
     string name = find_ancillary_file( pathname, "dds", dir, file ) ;
 
+    DBG(cerr << "In Ancillary::read_ancillary_dds: name:" << name << endl);
+
     FILE *in = fopen( name.c_str(), "r" ) ;
     if( in ) {
         dds.parse( in ) ;
+        (void)fclose( in ) ;
+#if 0
         int res = fclose( in ) ;
         if( res )
-            DBG(cerr << "DODSFilter::read_ancillary_das - Failed to close file " << (void *)in << endl) ;
+            DBG(cerr << "Ancillary::read_ancillary_das - Failed to close file " << (void *)in << endl) ;
+#endif
     }
 }
 

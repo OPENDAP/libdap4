@@ -49,8 +49,6 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-#define FILE_METHODS 1
-
 namespace libdap
 {
 
@@ -60,18 +58,8 @@ namespace libdap
     */
 class Float32: public BaseType
 {
-    /** This class allows Byte, ..., Float64 access to <tt>_buf</tt>
-	to simplify and speed up the relational operators. */
-
-    friend class Byte;
-    friend class Int16;
-    friend class UInt16;
-    friend class Int32;
-    friend class UInt32;
-    friend class Float64;
-
 protected:
-    dods_float32 _buf;
+    dods_float32 d_buf;
 
 public:
     Float32(const string &n);
@@ -97,10 +85,9 @@ public:
 
     virtual dods_float32 value() const;
     virtual bool set_value(dods_float32 f);
-#if FILE_METHODS
+
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
-#endif
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 

@@ -1,5 +1,9 @@
 Notes for the prototype AIS implementation:
 
+Note that this code was removed from libdap 3.8.x
+
+------------------------------------------------------------------------------
+
 Current for version 3.7.6 (12 March 2007)
 
 How to use the AIS. These notes correspond to the prototype AIS developed in

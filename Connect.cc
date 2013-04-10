@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -33,14 +32,10 @@
 //      dan             Dan Holloway <dholloway@gso.uri.edu>
 //      reza            Reza Nekovei <reza@intcomm.net>
 
-
 #include "config.h"
 
 //#define DODS_DEBUG
-
-static char rcsid[] not_used =
-    { "$Id$"
-    };
+#define FILE_UN_MARSHALLER 1
 
 #include <cstring>
 #include <fstream>
@@ -50,14 +45,14 @@ static char rcsid[] not_used =
 #include "DataDDS.h"
 #include "Connect.h"
 #include "escaping.h"
-#include "RCReader.h"
+//#include "RCReader.h"
 #include "DDXParserSAX2.h"
-#if FILE_METHODS
+#if FILE_UN_MARSHALLER
 #include "XDRFileUnMarshaller.h"
-#endif
+#else
 #include "fdiostream.h"
 #include "XDRStreamUnMarshaller.h"
-
+#endif
 #include "mime_util.h"
 
 using std::cerr;
@@ -69,14 +64,96 @@ using std::min;
 namespace libdap {
 
 /** This private method process data from both local and remote sources. It
-    exists to eliminate duplication of code. */
-void
-Connect::process_data(DataDDS &data, Response *rs)
+ exists to eliminate duplication of code. */
+void Connect::process_data(DataDDS &data, Response *rs)
 {
     DBG(cerr << "Entering Connect::process_data" << endl);
 
     data.set_version(rs->get_version());
     data.set_protocol(rs->get_protocol());
+
+    DBG(cerr << "Entering process_data: d_stream = " << rs << endl);
+    switch (rs->get_type()) {
+        case dods_error: {
+            Error e;
+            if (!e.parse(rs->get_stream()))
+                throw InternalErr(__FILE__, __LINE__, "Could not parse the Error object returned by the server!");
+            throw e;
+        }
+
+        case web_error:
+            // Web errors (those reported in the return document's MIME header)
+            // are processed by the WWW library.
+            throw InternalErr(__FILE__, __LINE__,
+                    "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
+
+        case dap4_data_ddx: {
+            // Parse the DDX; throw an exception on error.
+            DDXParser ddx_parser(data.get_factory());
+
+            // Read the MPM boundary and then read the subsequent headers
+            string boundary = read_multipart_boundary(rs->get_stream());
+            DBG(cerr << "MPM Boundary: " << boundary << endl);
+            read_multipart_headers(rs->get_stream(), "text/xml", dap4_ddx);
+
+            // Parse the DDX, reading up to and including the next boundary.
+            // Return the CID for the matching data part
+            string data_cid;
+            ddx_parser.intern_stream(rs->get_stream(), &data, data_cid, boundary);
+
+            // Munge the CID into something we can work with
+            data_cid = cid_to_header_value(data_cid);
+            DBG(cerr << "Data CID: " << data_cid << endl);
+
+            // Read the data part's MPM part headers (boundary was read by
+            // DDXParse::intern)
+            read_multipart_headers(rs->get_stream(), "application/octet-stream", dap4_data, data_cid);
+
+            // Now read the data
+#if FILE_UN_MARSHALLER
+            XDRFileUnMarshaller um(rs->get_stream());
+#else
+        fpistream in ( rs->get_stream() );
+            XDRStreamUnMarshaller um( in );
+#endif
+            for (DDS::Vars_iter i = data.var_begin(); i != data.var_end(); i++) {
+                (*i)->deserialize(um, &data);
+            }
+            return;
+        }
+
+        case dods_data:
+        default: {
+            // Parse the DDS; throw an exception on error.
+            data.parse(rs->get_stream());
+#if FILE_UN_MARSHALLER
+            XDRFileUnMarshaller um(rs->get_stream());
+#else
+            fpistream in ( rs->get_stream() );
+            XDRStreamUnMarshaller um( in );
+#endif
+            // Load the DDS with data.
+            for (DDS::Vars_iter i = data.var_begin(); i != data.var_end(); i++) {
+                (*i)->deserialize(um, &data);
+            }
+            return;
+        }
+    }
+}
+
+/** This private method process data from both local and remote sources. It
+    exists to eliminate duplication of code. */
+void
+Connect::process_data(DDS &data, Response *rs)
+{
+    DBG(cerr << "Entering Connect::process_data" << endl);
+
+#if 0
+    data.set_version(rs->get_version());
+    data.set_protocol(rs->get_protocol());
+#endif
+    // TODO is this the correct info?
+    data.set_dap_version(rs->get_protocol());
 
     DBG(cerr << "Entering process_data: d_stream = " << rs << endl);
     switch (rs->get_type()) {
@@ -95,44 +172,47 @@ Connect::process_data(DataDDS &data, Response *rs)
 
     case dap4_data_ddx: {
             // Parse the DDX; throw an exception on error.
-	    DDXParser ddx_parser(data.get_factory());
+        DDXParser ddx_parser(data.get_factory());
 
-	    // Read the MPM boundary and then read the subsequent headers
-	    string boundary = read_multipart_boundary(rs->get_stream());
-	    DBG(cerr << "MPM Boundary: " << boundary << endl);
-	    read_multipart_headers(rs->get_stream(), "text/xml", dap4_ddx);
+        // Read the MPM boundary and then read the subsequent headers
+        string boundary = read_multipart_boundary(rs->get_stream());
+        DBG(cerr << "MPM Boundary: " << boundary << endl);
+        read_multipart_headers(rs->get_stream(), "text/xml", dap4_ddx);
 
-	    // Parse the DDX, reading up to and including the next boundary.
-	    // Return the CID for the matching data part
-	    string data_cid;
-	    ddx_parser.intern_stream(rs->get_stream(), &data, data_cid, boundary);
+        // Parse the DDX, reading up to and including the next boundary.
+        // Return the CID for the matching data part
+        string data_cid;
+        ddx_parser.intern_stream(rs->get_stream(), &data, data_cid, boundary);
 
-	    // Munge the CID into something we can work with
-	    data_cid = cid_to_header_value(data_cid);
-	    DBG(cerr << "Data CID: " << data_cid << endl);
+        // Munge the CID into something we can work with
+        data_cid = cid_to_header_value(data_cid);
+        DBG(cerr << "Data CID: " << data_cid << endl);
 
-	    // Read the data part's MPM part headers (boundary was read by
-	    // DDXParse::intern)
-	    read_multipart_headers(rs->get_stream(),
-		    "application/octet-stream", dap4_data, data_cid);
+        // Read the data part's MPM part headers (boundary was read by
+        // DDXParse::intern)
+        read_multipart_headers(rs->get_stream(),
+            "application/octet-stream", dap4_data, data_cid);
 
-	    // Now read the data
-#if FILE_METHODS
-	    XDRFileUnMarshaller um( rs->get_stream() ) ;
+        // Now read the data
+#if FILE_UN_MARSHALLER
+        XDRFileUnMarshaller um( rs->get_stream() ) ;
 #else
-            fpistream in ( rs->get_stream() );
-	    XDRStreamUnMarshaller um( in ) ;
+        fpistream in ( rs->get_stream() );
+        XDRStreamUnMarshaller um( in ) ;
 #endif
-	    try {
-        	for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
+#if 0
+        try {
+#endif
+            for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
                      i++) {
                     (*i)->deserialize(um, &data);
                 }
+#if 0
             }
             catch (Error &e) {
-                throw e;
+                throw ;
             }
-
+#endif
             return;
         }
 
@@ -140,23 +220,26 @@ Connect::process_data(DataDDS &data, Response *rs)
     default: {
             // Parse the DDS; throw an exception on error.
             data.parse(rs->get_stream());
-#if FILE_METHODS
+#if FILE_UN_MARSHALLER
             XDRFileUnMarshaller um( rs->get_stream() ) ;
 #else
-            fpistream in ( rs->get_stream() );
-	    XDRStreamUnMarshaller um( in ) ;
+           fpistream in ( rs->get_stream() );
+        XDRStreamUnMarshaller um( in ) ;
 #endif
             // Load the DDS with data.
+#if 0
             try {
+#endif
                 for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
                      i++) {
                     (*i)->deserialize(um, &data);
                 }
+#if 0
             }
             catch (Error &e) {
-                throw e;
+                throw ;
             }
-
+#endif
             return;
         }
     }
@@ -176,15 +259,14 @@ Connect::process_data(DataDDS &data, Response *rs)
 
 /** Use when you cannot use libcurl.
 
-    @note This method tests for MIME headers with lines terminated by CRLF
-    (\r\n) and Newlines (\n). In either case, the line terminators are removed
-    before each header is processed.
+ @note This method tests for MIME headers with lines terminated by CRLF
+ (\r\n) and Newlines (\n). In either case, the line terminators are removed
+ before each header is processed.
 
-    @param data_source Read from this stream.
-    @param rs Value/Result parameter. Dump version and type information here.
-    */
-void
-Connect::parse_mime(Response *rs)
+ @param data_source Read from this stream.
+ @param rs Value/Result parameter. Dump version and type information here.
+ */
+void Connect::parse_mime(Response *rs)
 {
     rs->set_version("dods/0.0"); // initial value; for backward compatibility.
     rs->set_protocol("2.0");
@@ -192,8 +274,8 @@ Connect::parse_mime(Response *rs)
     FILE *data_source = rs->get_stream();
     string mime = get_next_mime_header(data_source);
     while (!mime.empty()) {
-	string header, value;
-	parse_mime_header(mime, header, value);
+        string header, value;
+        parse_mime_header(mime, header, value);
 
         // Note that this is an ordered list
         if (header == "content-description:") {
@@ -201,8 +283,7 @@ Connect::parse_mime(Response *rs)
             rs->set_type(get_description_type(value));
         }
         // Use the value of xdods-server only if no other value has been read
-        else if (header == "xdods-server:"
-                 && rs->get_version() == "dods/0.0") {
+        else if (header == "xdods-server:" && rs->get_version() == "dods/0.0") {
             DBG(cout << header << ": " << value << endl);
             rs->set_version(value);
         }
@@ -228,15 +309,14 @@ Connect::parse_mime(Response *rs)
 // public mfuncs
 
 /** The Connect constructor requires a <tt>name</tt>, which is the URL to
-    which the connection is to be made.
+ which the connection is to be made.
 
-    @param n The URL for the virtual connection.
-    @param uname Use this username for authentication. Null by default.
-    @param password Password to use for authentication. Null by default.
-    @brief Create an instance of Connect. */
-Connect::Connect(const string &n, string uname, string password)
-throw(Error, InternalErr)
-        : d_http(0), d_version("unknown"), d_protocol("2.0")
+ @param n The URL for the virtual connection.
+ @param uname Use this username for authentication. Null by default.
+ @param password Password to use for authentication. Null by default.
+ @brief Create an instance of Connect. */
+Connect::Connect(const string &n, string uname, string password) throw (Error, InternalErr) :
+        d_http(0), d_version("unknown"), d_protocol("2.0")
 {
     string name = prune_spaces(n);
 
@@ -275,7 +355,7 @@ throw(Error, InternalErr)
 
         d_http = 0;
         _URL = "";
-        _local = true;  // local in this case means non-DAP
+        _local = true; // local in this case means non-DAP
     }
 
     set_credentials(uname, password);
@@ -286,20 +366,20 @@ Connect::~Connect()
     DBG2(cerr << "Entering the Connect dtor" << endl);
 
     if (d_http)
-        delete d_http; d_http = 0;
+        delete d_http;
+    d_http = 0;
 
     DBG2(cerr << "Leaving the Connect dtor" << endl);
 }
 
 /** Get version information from the server. This is a new method which will
-    ease the transition to DAP 4.
+ ease the transition to DAP 4.
 
-    @note Use request_protocol() to get the DAP protocol version.
+ @note Use request_protocol() to get the DAP protocol version.
 
-    @return The DAP version string.
-    @see request_protocol() */
-string
-Connect::request_version()
+ @return The DAP version string.
+ @see request_protocol() */
+string Connect::request_version()
 {
     string version_url = _URL + ".ver";
     if (_proj.length() + _sel.length())
@@ -310,31 +390,32 @@ Connect::request_version()
         rs = d_http->fetch_url(version_url);
     }
     catch (Error &e) {
-        delete rs; rs = 0;
-        throw e;
+        delete rs;
+        rs = 0;
+        throw;
     }
 
     d_version = rs->get_version();
     d_protocol = rs->get_protocol();
 
-    delete rs; rs = 0;
+    delete rs;
+    rs = 0;
 
     return d_version;
 }
 
 /** Get protocol version  information from the server. This is a new method
-    which will ease the transition to DAP 4. Note that this method returns
-    the version of the DAP protocol implemented by the server. The
-    request_version() method returns the \e server's version number, not
-    the DAP protocol version.
+ which will ease the transition to DAP 4. Note that this method returns
+ the version of the DAP protocol implemented by the server. The
+ request_version() method returns the \e server's version number, not
+ the DAP protocol version.
 
-    @note This method actually asks the server for the protocol version - use
-    get_protocol() to get the protocol information from the most recent
-    response (e.g., from the last DDX response returned by the server).
+ @note This method actually asks the server for the protocol version - use
+ get_protocol() to get the protocol information from the most recent
+ response (e.g., from the last DDX response returned by the server).
 
-    @return The DAP protocol version string. */
-string
-Connect::request_protocol()
+ @return The DAP protocol version string. */
+string Connect::request_protocol()
 {
     string version_url = _URL + ".ver";
     if (_proj.length() + _sel.length())
@@ -345,27 +426,28 @@ Connect::request_protocol()
         rs = d_http->fetch_url(version_url);
     }
     catch (Error &e) {
-        delete rs; rs = 0;
-        throw e;
+        delete rs;
+        rs = 0;
+        throw;
     }
 
     d_version = rs->get_version();
     d_protocol = rs->get_protocol();
 
-    delete rs; rs = 0;
+    delete rs;
+    rs = 0;
 
     return d_protocol;
 }
 
 /** Reads the DAS corresponding to the dataset in the Connect
-    object's URL. Although DAP does not support using CEs with DAS
-    requests, if present in the Connect object's instance, they will be
-    escaped and passed as the query string of the request.
+ object's URL. Although DAP does not support using CEs with DAS
+ requests, if present in the Connect object's instance, they will be
+ escaped and passed as the query string of the request.
 
-    @brief Get the DAS from a server.
-    @param das Result. */
-void
-Connect::request_das(DAS &das)
+ @brief Get the DAS from a server.
+ @param das Result. */
+void Connect::request_das(DAS &das)
 {
     string das_url = _URL + ".das";
     if (_proj.length() + _sel.length())
@@ -376,122 +458,128 @@ Connect::request_das(DAS &das)
         rs = d_http->fetch_url(das_url);
     }
     catch (Error &e) {
-        delete rs; rs = 0;
-        throw e;
+        delete rs;
+        rs = 0;
+        throw;
     }
 
     d_version = rs->get_version();
     d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
-    case dods_error: {
+        case dods_error: {
             Error e;
             if (!e.parse(rs->get_stream())) {
-                throw InternalErr(__FILE__, __LINE__,
-                                  "Could not parse error returned from server.");
-                break;
+                delete rs;
+                rs = 0;
+                throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
             }
+            delete rs;
+            rs = 0;
             throw e;
+        }
+
+        case web_error:
+            // We should never get here; a web error should be picked up read_url
+            // (called by fetch_url) and result in a thrown Error object.
             break;
-        }
 
-    case web_error:
-        // We should never get here; a web error should be picked up read_url
-        // (called by fetch_url) and result in a thrown Error object.
-        break;
+        case dods_das:
+        default:
+            // DAS::parse throws an exception on error.
+            try {
+                das.parse(rs->get_stream()); // read and parse the das from a file
+            }
+            catch (Error &e) {
+                delete rs;
+                rs = 0;
+                throw;
+            }
 
-    case dods_das:
-    default:
-        // DAS::parse throws an exception on error.
-        try {
-            das.parse(rs->get_stream()); // read and parse the das from a file
-        }
-        catch (Error &e) {
-            delete rs; rs = 0;
-            throw e;
-        }
-
-        break;
+            break;
     }
 
-    delete rs; rs = 0;
+    delete rs;
+    rs = 0;
 }
 
 /** Reads the DAS corresponding to the dataset in the Connect
-    object's URL. Although DAP does not support using CEs with DAS
-    requests, if present in the Connect object's instance, they will be
-    escaped and passed as the query string of the request.
+ object's URL. Although DAP does not support using CEs with DAS
+ requests, if present in the Connect object's instance, they will be
+ escaped and passed as the query string of the request.
 
-    Different from request_das method in that this method uses the URL as
-    given without attaching .das or projections or selections.
+ Different from request_das method in that this method uses the URL as
+ given without attaching .das or projections or selections.
 
-    @brief Get the DAS from a server.
-    @param das Result. */
-void
-Connect::request_das_url(DAS &das)
+ @brief Get the DAS from a server.
+ @param das Result. */
+void Connect::request_das_url(DAS &das)
 {
-    string use_url = _URL + "?" + _proj + _sel ;
+    string use_url = _URL + "?" + _proj + _sel;
     Response *rs = 0;
     try {
         rs = d_http->fetch_url(use_url);
     }
     catch (Error &e) {
-        delete rs; rs = 0;
-        throw e;
+        delete rs;
+        rs = 0;
+        throw;
     }
 
     d_version = rs->get_version();
     d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
-    case dods_error: {
+        case dods_error: {
             Error e;
             if (!e.parse(rs->get_stream())) {
-                throw InternalErr(__FILE__, __LINE__,
-                                  "Could not parse error returned from server.");
-                break;
+                delete rs;
+                rs = 0;
+                throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
             }
+            delete rs;
+            rs = 0;
             throw e;
+        }
+
+        case web_error:
+            // We should never get here; a web error should be picked up read_url
+            // (called by fetch_url) and result in a thrown Error object.
             break;
-        }
 
-    case web_error:
-        // We should never get here; a web error should be picked up read_url
-        // (called by fetch_url) and result in a thrown Error object.
-        break;
+        case dods_das:
+        default:
+            // DAS::parse throws an exception on error.
+            try {
+                das.parse(rs->get_stream()); // read and parse the das from a file
+            }
+            catch (Error &e) {
+                delete rs;
+                rs = 0;
+                throw;
+            }
 
-    case dods_das:
-    default:
-        // DAS::parse throws an exception on error.
-        try {
-            das.parse(rs->get_stream()); // read and parse the das from a file
-        }
-        catch (Error &e) {
-            delete rs; rs = 0;
-            throw e;
-        }
-
-        break;
+            break;
     }
 
-    delete rs; rs = 0;
+    delete rs;
+    rs = 0;
 }
 
 /** Reads the DDS corresponding to the dataset in the Connect object's URL.
-    If present in the Connect object's instance, a CE will be escaped,
-    combined with \c expr and passed as the query string of the request.
+ If present in the Connect object's instance, a CE will be escaped,
+ combined with \c expr and passed as the query string of the request.
 
-    @note If you need the DDS to hold specializations of the type classes,
-    be sure to include the factory class which will instantiate those
-    specializations in the DDS. Either pass a pointer to the factory to
-    DDS constructor or use the DDS::set_factory() method after the
-    object is built.
+ @note If you need the DDS to hold specializations of the type classes,
+ be sure to include the factory class which will instantiate those
+ specializations in the DDS. Either pass a pointer to the factory to
+ DDS constructor or use the DDS::set_factory() method after the
+ object is built.
 
-    @brief Get the DDS from a server.
-    @param dds Result.
-    @param expr Send this constraint expression to the server. */
-void
-Connect::request_dds(DDS &dds, string expr)
+ @brief Get the DDS from a server.
+ @param dds Result.
+ @param expr Send this constraint expression to the server. */
+void Connect::request_dds(DDS &dds, string expr)
 {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
@@ -504,132 +592,137 @@ Connect::request_dds(DDS &dds, string expr)
         sel = "";
     }
 
-    string dds_url = _URL + ".dds" + "?"
-                     + id2www_ce(_proj + proj + _sel + sel);
+    string dds_url = _URL + ".dds" + "?" + id2www_ce(_proj + proj + _sel + sel);
 
     Response *rs = 0;
     try {
         rs = d_http->fetch_url(dds_url);
     }
     catch (Error &e) {
-        delete rs; rs = 0;
-        throw e;
+        delete rs;
+        rs = 0;
+        throw;
     }
 
     d_version = rs->get_version();
     d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
-    case dods_error: {
+        case dods_error: {
             Error e;
             if (!e.parse(rs->get_stream())) {
-                throw InternalErr(__FILE__, __LINE__,
-                                  "Could not parse error returned from server.");
-                break;
+                delete rs;
+                rs = 0;
+                throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
             }
+            delete rs;
+            rs = 0;
             throw e;
+        }
+
+        case web_error:
+            // We should never get here; a web error should be picked up read_url
+            // (called by fetch_url) and result in a thrown Error object.
             break;
-        }
 
-    case web_error:
-        // We should never get here; a web error should be picked up read_url
-        // (called by fetch_url) and result in a thrown Error object.
-        break;
-
-    case dods_dds:
-    default:
-        // DDS::prase throws an exception on error.
-        try {
-            dds.parse(rs->get_stream()); // read and parse the dds from a file
-        }
-        catch (Error &e) {
-            delete rs; rs = 0;
-            throw e;
-        }
-        break;
+        case dods_dds:
+        default:
+            // DDS::prase throws an exception on error.
+            try {
+                dds.parse(rs->get_stream()); // read and parse the dds from a file
+            }
+            catch (Error &e) {
+                delete rs;
+                rs = 0;
+                throw;
+            }
+            break;
     }
 
-    delete rs; rs = 0;
+    delete rs;
+    rs = 0;
 }
 
 /** Reads the DDS corresponding to the dataset in the Connect object's URL.
-    If present in the Connect object's instance, a CE will be escaped,
-    combined with \c expr and passed as the query string of the request.
+ If present in the Connect object's instance, a CE will be escaped,
+ combined with \c expr and passed as the query string of the request.
 
-    Different from request_dds method above in that this method assumes
-    URL is complete and does not add anything to the command, such as .dds
-    or projections or selections.
+ Different from request_dds method above in that this method assumes
+ URL is complete and does not add anything to the command, such as .dds
+ or projections or selections.
 
-    @note If you need the DDS to hold specializations of the type classes,
-    be sure to include the factory class which will instantiate those
-    specializations in the DDS. Either pass a pointer to the factory to
-    DDS constructor or use the DDS::set_factory() method after the
-    object is built.
+ @note If you need the DDS to hold specializations of the type classes,
+ be sure to include the factory class which will instantiate those
+ specializations in the DDS. Either pass a pointer to the factory to
+ DDS constructor or use the DDS::set_factory() method after the
+ object is built.
 
-    @brief Get the DDS from a server.
-    @param dds Result. */
-void
-Connect::request_dds_url(DDS &dds)
+ @brief Get the DDS from a server.
+ @param dds Result. */
+void Connect::request_dds_url(DDS &dds)
 {
-    string use_url = _URL + "?" + _proj + _sel ;
+    string use_url = _URL + "?" + _proj + _sel;
     Response *rs = 0;
     try {
         rs = d_http->fetch_url(use_url);
     }
     catch (Error &e) {
-        delete rs; rs = 0;
-        throw e;
+        delete rs;
+        rs = 0;
+        throw;
     }
 
     d_version = rs->get_version();
     d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
-    case dods_error: {
+        case dods_error: {
             Error e;
             if (!e.parse(rs->get_stream())) {
-                throw InternalErr(__FILE__, __LINE__,
-                                  "Could not parse error returned from server.");
-                break;
+                delete rs;
+                rs = 0;
+                throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
             }
+            delete rs;
+            rs = 0;
             throw e;
+        }
+
+        case web_error:
+            // We should never get here; a web error should be picked up read_url
+            // (called by fetch_url) and result in a thrown Error object.
             break;
-        }
 
-    case web_error:
-        // We should never get here; a web error should be picked up read_url
-        // (called by fetch_url) and result in a thrown Error object.
-        break;
-
-    case dods_dds:
-    default:
-        // DDS::prase throws an exception on error.
-        try {
-            dds.parse(rs->get_stream()); // read and parse the dds from a file
-        }
-        catch (Error &e) {
-            delete rs; rs = 0;
-            throw e;
-        }
-        break;
+        case dods_dds:
+        default:
+            // DDS::prase throws an exception on error.
+            try {
+                dds.parse(rs->get_stream()); // read and parse the dds from a file
+            }
+            catch (Error &e) {
+                delete rs;
+                rs = 0;
+                throw;
+            }
+            break;
     }
 
-    delete rs; rs = 0;
+    delete rs;
+    rs = 0;
 }
 
 /** Reads the DDX corresponding to the dataset in the Connect object's URL.
-    If present in the Connect object's instance, a CE will be escaped,
-    combined with \c expr and passed as the query string of the request.
+ If present in the Connect object's instance, a CE will be escaped,
+ combined with \c expr and passed as the query string of the request.
 
-    @note A DDX is represented as XML on the wire but in memory libdap uses a
-    DDS object with variables that hold their own attributes (the DDS itself holds
-    the global attributes).
+ @note A DDX is represented as XML on the wire but in memory libdap uses a
+ DDS object with variables that hold their own attributes (the DDS itself holds
+ the global attributes).
 
-    @brief Get the DDX from a server.
-    @param dds Result.
-    @param expr Send this constraint expression to the server. */
-void
-Connect::request_ddx(DDS &dds, string expr)
+ @brief Get the DDX from a server.
+ @param dds Result.
+ @param expr Send this constraint expression to the server. */
+void Connect::request_ddx(DDS &dds, string expr)
 {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
@@ -642,141 +735,156 @@ Connect::request_ddx(DDS &dds, string expr)
         sel = "";
     }
 
-    string ddx_url = _URL + ".ddx" + "?"
-                     + id2www_ce(_proj + proj + _sel + sel);
+    string ddx_url = _URL + ".ddx" + "?" + id2www_ce(_proj + proj + _sel + sel);
 
     Response *rs = 0;
     try {
         rs = d_http->fetch_url(ddx_url);
     }
     catch (Error &e) {
-        delete rs; rs = 0;
-        throw e;
+        delete rs;
+        rs = 0;
+        throw;
     }
 
     d_version = rs->get_version();
     d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
-    case dods_error: {
+        case dods_error: {
             Error e;
             if (!e.parse(rs->get_stream())) {
-                throw InternalErr(__FILE__, __LINE__,
-                                  "Could not parse error returned from server.");
-                break;
+                delete rs;
+                rs = 0;
+                throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
             }
+            delete rs;
+            rs = 0;
             throw e;
+        }
+
+        case web_error:
+            // We should never get here; a web error should be picked up read_url
+            // (called by fetch_url) and result in a thrown Error object.
             break;
-        }
 
-    case web_error:
-        // We should never get here; a web error should be picked up read_url
-        // (called by fetch_url) and result in a thrown Error object.
-        break;
+        case dap4_ddx:
+        case dods_ddx:
+            try {
+                string blob;
 
-    case dap4_ddx:
-    case dods_ddx:
-	try {
-            string blob;
+                DDXParser ddxp(dds.get_factory());
+                ddxp.intern_stream(rs->get_stream(), &dds, blob);
+            }
+            catch (Error &e) {
+                delete rs;
+                rs = 0;
+                throw;
+            }
+            break;
 
-            DDXParser ddxp(dds.get_factory());
-            ddxp.intern_stream(rs->get_stream(), &dds, blob);
-        }
-        catch (Error &e) {
-            delete rs; rs = 0;
-            throw e;
-        }
-        break;
-
-    default:
-        throw Error("The site did not return a valid response (it lacked the\n\
+        default:
+            delete rs;
+            rs = 0;
+            throw Error(
+                    "The site did not return a valid response (it lacked the\n\
 expected content description header value of 'dap4-ddx' and\n\
-instead returned '" + long_to_string(rs->get_type()) + "').\n\
+instead returned '"
+                            + long_to_string(rs->get_type())
+                            + "').\n\
 This may indicate that the server at the site is not correctly\n\
 configured, or that the URL has changed.");
     }
 
-    delete rs; rs = 0;
+    delete rs;
+    rs = 0;
 }
 
 /** @brief The 'url' version of request_ddx
-    @see Connect::request_ddx. */
-void
-Connect::request_ddx_url(DDS &dds)
+ @see Connect::request_ddx. */
+void Connect::request_ddx_url(DDS &dds)
 {
-    string use_url = _URL + "?" + _proj + _sel ;
+    string use_url = _URL + "?" + _proj + _sel;
 
     Response *rs = 0;
     try {
         rs = d_http->fetch_url(use_url);
     }
     catch (Error &e) {
-        delete rs; rs = 0;
-        throw e;
+        delete rs;
+        rs = 0;
+        throw;
     }
 
     d_version = rs->get_version();
     d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
-    case dods_error: {
+        case dods_error: {
             Error e;
             if (!e.parse(rs->get_stream())) {
-                throw InternalErr(__FILE__, __LINE__,
-                                  "Could not parse error returned from server.");
-                break;
+                delete rs;
+                rs = 0;
+                throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
             }
+            delete rs;
+            rs = 0;
             throw e;
+        }
+
+        case web_error:
+            // We should never get here; a web error should be picked up read_url
+            // (called by fetch_url) and result in a thrown Error object.
             break;
-        }
 
-    case web_error:
-        // We should never get here; a web error should be picked up read_url
-        // (called by fetch_url) and result in a thrown Error object.
-        break;
+        case dap4_ddx:
+        case dods_ddx:
+            try {
+                string blob;
 
-    case dap4_ddx:
-    case dods_ddx:
-	try {
-            string blob;
+                DDXParser ddxp(dds.get_factory());
+                ddxp.intern_stream(rs->get_stream(), &dds, blob);
+            }
+            catch (Error &e) {
+                delete rs;
+                rs = 0;
+                throw;
+            }
+            break;
 
-            DDXParser ddxp(dds.get_factory());
-            ddxp.intern_stream(rs->get_stream(), &dds, blob);
-        }
-        catch (Error &e) {
-            delete rs; rs = 0;
-            throw e;
-        }
-        break;
-
-    default:
-        throw Error("The site did not return a valid response (it lacked the\n\
+        default:
+            delete rs;
+            rs = 0;
+            throw Error(
+                    "The site did not return a valid response (it lacked the\n\
 expected content description header value of 'dap4-ddx' and\n\
-instead returned '" + long_to_string(rs->get_type()) + "').\n\
+instead returned '"
+                            + long_to_string(rs->get_type())
+                            + "').\n\
 This may indicate that the server at the site is not correctly\n\
 configured, or that the URL has changed.");
     }
 
-    delete rs; rs = 0;
+    delete rs;
+    rs = 0;
 }
 
 /** Reads the DataDDS object corresponding to the dataset in the Connect
-    object's URL. If present in the Connect object's instance, a CE will be
-    escaped, combined with \c expr and passed as the query string of the
-    request. The result is a DataDDS which contains the data values bound to
-    variables.
+ object's URL. If present in the Connect object's instance, a CE will be
+ escaped, combined with \c expr and passed as the query string of the
+ request. The result is a DataDDS which contains the data values bound to
+ variables.
 
-    @note If you need the DataDDS to hold specializations of the type classes,
-    be sure to include the factory class which will instantiate those
-    specializations in the DataDDS. Either pass a pointer to the factory to
-    DataDDS constructor or use the DDS::set_factory() method after the
-    object is built.
+ @note If you need the DataDDS to hold specializations of the type classes,
+ be sure to include the factory class which will instantiate those
+ specializations in the DataDDS. Either pass a pointer to the factory to
+ DataDDS constructor or use the DDS::set_factory() method after the
+ object is built.
 
-    @brief Get the DAS from a server.
-    @param data Result.
-    @param expr Send this constraint expression to the server. */
-void
-Connect::request_data(DataDDS &data, string expr)
+ @brief Get the DAS from a server.
+ @param data Result.
+ @param expr Send this constraint expression to the server. */
+void Connect::request_data(DataDDS &data, string expr)
 {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
@@ -789,8 +897,7 @@ Connect::request_data(DataDDS &data, string expr)
         sel = "";
     }
 
-    string data_url = _URL + ".dods?"
-                      + id2www_ce(_proj + proj + _sel + sel);
+    string data_url = _URL + ".dods?" + id2www_ce(_proj + proj + _sel + sel);
 
     Response *rs = 0;
     // We need to catch Error exceptions to ensure calling close_output.
@@ -801,35 +908,36 @@ Connect::request_data(DataDDS &data, string expr)
         d_protocol = rs->get_protocol();
 
         process_data(data, rs);
-        delete rs; rs = 0;
+        delete rs;
+        rs = 0;
     }
     catch (Error &e) {
-        delete rs; rs = 0;
-        throw e;
+        delete rs;
+        rs = 0;
+        throw;
     }
 }
 
 /** Reads the DataDDS object corresponding to the dataset in the Connect
-    object's URL. If present in the Connect object's instance, a CE will be
-    escaped, combined with \c expr and passed as the query string of the
-    request. The result is a DataDDS which contains the data values bound to
-    variables.
+ object's URL. If present in the Connect object's instance, a CE will be
+ escaped, combined with \c expr and passed as the query string of the
+ request. The result is a DataDDS which contains the data values bound to
+ variables.
 
-    Different from request_data in that this method uses the syntax of the
-    new OPeNDAP server commands using dispatch
+ Different from request_data in that this method uses the syntax of the
+ new OPeNDAP server commands using dispatch
 
-    @note If you need the DataDDS to hold specializations of the type classes,
-    be sure to include the factory class which will instantiate those
-    specializations in the DataDDS. Either pass a pointer to the factory to
-    DataDDS constructor or use the DDS::set_factory() method after the
-    object is built.
+ @note If you need the DataDDS to hold specializations of the type classes,
+ be sure to include the factory class which will instantiate those
+ specializations in the DataDDS. Either pass a pointer to the factory to
+ DataDDS constructor or use the DDS::set_factory() method after the
+ object is built.
 
-    @brief Get the DAS from a server.
-    @param data Result. */
-void
-Connect::request_data_url(DataDDS &data)
+ @brief Get the DAS from a server.
+ @param data Result. */
+void Connect::request_data_url(DataDDS &data)
 {
-    string use_url = _URL + "?" + _proj + _sel ;
+    string use_url = _URL + "?" + _proj + _sel;
     Response *rs = 0;
     // We need to catch Error exceptions to ensure calling close_output.
     try {
@@ -839,16 +947,17 @@ Connect::request_data_url(DataDDS &data)
         d_protocol = rs->get_protocol();
 
         process_data(data, rs);
-        delete rs; rs = 0;
+        delete rs;
+        rs = 0;
     }
     catch (Error &e) {
-        delete rs; rs = 0;
-        throw e;
+        delete rs;
+        rs = 0;
+        throw;
     }
 }
 
-void
-Connect::request_data_ddx(DataDDS &data, string expr)
+void Connect::request_data_ddx(DataDDS &data, string expr)
 {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
@@ -861,8 +970,7 @@ Connect::request_data_ddx(DataDDS &data, string expr)
         sel = "";
     }
 
-    string data_url = _URL + ".dap?"
-                      + id2www_ce(_proj + proj + _sel + sel);
+    string data_url = _URL + ".dap?" + id2www_ce(_proj + proj + _sel + sel);
 
     Response *rs = 0;
     // We need to catch Error exceptions to ensure calling close_output.
@@ -873,18 +981,19 @@ Connect::request_data_ddx(DataDDS &data, string expr)
         d_protocol = rs->get_protocol();
 
         process_data(data, rs);
-        delete rs; rs = 0;
+        delete rs;
+        rs = 0;
     }
     catch (Error &e) {
-        delete rs; rs = 0;
-        throw e;
+        delete rs;
+        rs = 0;
+        throw;
     }
 }
 
-void
-Connect::request_data_ddx_url(DataDDS &data)
+void Connect::request_data_ddx_url(DataDDS &data)
 {
-    string use_url = _URL + "?" + _proj + _sel ;
+    string use_url = _URL + "?" + _proj + _sel;
     Response *rs = 0;
     // We need to catch Error exceptions to ensure calling close_output.
     try {
@@ -894,29 +1003,41 @@ Connect::request_data_ddx_url(DataDDS &data)
         d_protocol = rs->get_protocol();
 
         process_data(data, rs);
-        delete rs; rs = 0;
+        delete rs;
+        rs = 0;
     }
     catch (Error &e) {
-        delete rs; rs = 0;
-        throw e;
+        delete rs;
+        rs = 0;
+        throw;
     }
 }
 
 /** @brief Read data which is preceded by MIME headers.
-    This method works for both data dds and data ddx responses.
+ This method works for both data dds and data ddx responses.
 
-    @note If you need the DataDDS to hold specializations of the type classes,
-    be sure to include the factory class which will instantiate those
-    specializations in the DataDDS. Either pass a pointer to the factory to
-    DataDDS constructor or use the DDS::set_factory() method after the
-    object is built.
+ @note If you need the DataDDS to hold specializations of the type classes,
+ be sure to include the factory class which will instantiate those
+ specializations in the DataDDS. Either pass a pointer to the factory to
+ DataDDS constructor or use the DDS::set_factory() method after the
+ object is built.
 
-    @see read_data_no_mime()
-    @param data Result.
-    @param rs Read from this Response object. */
+ @see read_data_no_mime()
+ @param data Result.
+ @param rs Read from this Response object. */
 
+void Connect::read_data(DataDDS &data, Response *rs)
+{
+    if (!rs)
+        throw InternalErr(__FILE__, __LINE__, "Response object is null.");
+
+    // Read from data_source and parse the MIME headers specific to DAP2/4.
+    parse_mime(rs);
+
+    read_data_no_mime(data, rs);
+}
 void
-Connect::read_data(DataDDS &data, Response *rs)
+Connect::read_data(DDS &data, Response *rs)
 {
     if (!rs)
         throw InternalErr(__FILE__, __LINE__, "Response object is null.");
@@ -932,13 +1053,12 @@ Connect::read_data(DataDDS &data, Response *rs)
 // Assumptions:
 // #1 The current file position is past any MIME headers (if they were present).
 // #2 We must reset the FILE* position to the start of the DDS or DDX headers
-static void
-divine_type_information(Response *rs)
+static void divine_type_information(Response *rs)
 {
     // Consume whitespace
     char c = getc(rs->get_stream());
     while (isspace(c)) {
-	c = getc(rs->get_stream());
+        c = getc(rs->get_stream());
     }
 
     // The heuristic here is that a DataDDX is a multipart MIME document and
@@ -947,51 +1067,72 @@ divine_type_information(Response *rs)
     // with a DDS (;Dataset {' ...). I take into account that our parsers have
     // accepted both 'Dataset' and 'dataset' for a long time.
     switch (c) {
-    case '-':
-	rs->set_type(dap4_data_ddx);
-	break;
-    case 'D':
-    case 'd':
-	rs->set_type(dods_data);
-	break;
-    default:
-	throw InternalErr(__FILE__, __LINE__, "Could not determine type of response object in stream.");
+        case '-':
+            rs->set_type(dap4_data_ddx);
+            break;
+        case 'D':
+        case 'd':
+            rs->set_type(dods_data);
+            break;
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Could not determine type of response object in stream.");
     }
 
     ungetc(c, rs->get_stream());
 }
 
 /** @brief Read data from a file which does not have response MIME headers.
-    This method is a companion to read_data(). While read_data() assumes that
-    the response has MIME headers, this method does not. If you call this
-    with a Response that does contain headers, it will throw an Error (and
-    the message is likely to be inscrutable).
+ This method is a companion to read_data(). While read_data() assumes that
+ the response has MIME headers, this method does not. If you call this
+ with a Response that does contain headers, it will throw an Error (and
+ the message is likely to be inscrutable).
 
-    @note This method will use the 'type' information in the Response object
-    to choose between processing the response as a data dds or data ddx. If
-    there is no type information, it will attempt to figure it out.
+ @note This method will use the 'type' information in the Response object
+ to choose between processing the response as a data dds or data ddx. If
+ there is no type information, it will attempt to figure it out.
 
-    @param data Result.
-    @param rs Read from this Response object. */
-void
-Connect::read_data_no_mime(DataDDS &data, Response *rs)
+ @param data Result.
+ @param rs Read from this Response object. */
+void Connect::read_data_no_mime(DataDDS &data, Response *rs)
 {
     if (rs->get_type() == unknown_type)
-	divine_type_information(rs);
+        divine_type_information(rs);
+
+    switch (rs->get_type()) {
+        case dods_data:
+            d_version = rs->get_version();
+            d_protocol = rs->get_protocol();
+            process_data(data, rs);
+            break;
+        case dap4_data_ddx:
+            process_data(data, rs);
+            d_version = rs->get_version();
+            d_protocol = data.get_protocol();
+            break;
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Should have been a DataDDS or DataDDX.");
+    }
+}
+void Connect::read_data_no_mime(DDS &data, Response *rs)
+{
+    if (rs->get_type() == unknown_type)
+        divine_type_information(rs);
 
     switch (rs->get_type()) {
     case dods_data:
-	d_version = rs->get_version();
-	d_protocol = rs->get_protocol();
-	process_data(data, rs);
-	break;
+        d_version = rs->get_version();
+        d_protocol = rs->get_protocol();
+        process_data(data, rs);
+        break;
     case dap4_data_ddx:
-	process_data(data, rs);
-	d_version = rs->get_version();
-	d_protocol = data.get_protocol();
-	break;
+        process_data(data, rs);
+        d_version = rs->get_version();
+        // TODO should check to see if this hack is a correct replacement
+        // for get_protocol from DataDDS
+        d_protocol = data.get_dap_version();
+        break;
     default:
-	throw InternalErr(__FILE__, __LINE__, "Should have been a DataDDS or DataDDX.");
+        throw InternalErr(__FILE__, __LINE__, "Should have been a DataDDS or DataDDX.");
     }
 }
 
@@ -1002,27 +1143,25 @@ Connect::is_local()
 }
 
 /** Return the Connect object's URL in a string.  The URL was set by
-    the class constructor, and may not be reset.  If you want to
-    open another URL, you must create another Connect object.  There
-    is a Connections class created to handle the management of
-    multiple Connect objects.
+ the class constructor, and may not be reset.  If you want to
+ open another URL, you must create another Connect object.  There
+ is a Connections class created to handle the management of
+ multiple Connect objects.
 
-    @brief Get the object's URL.
-    @see Connections
-    @return A string containing the URL of the data to which the
-    Connect object refers.  If the object refers to local data,
-    the function returns the null string.
-    @param ce If TRUE, the returned URL will include any constraint
-    expression enclosed with the Connect object's URL (including the
-    <tt>?</tt>).  If FALSE, any constraint expression will be removed from
-    the URL.  The default is TRUE.
-*/
-string
-Connect::URL(bool ce)
+ @brief Get the object's URL.
+ @see Connections
+ @return A string containing the URL of the data to which the
+ Connect object refers.  If the object refers to local data,
+ the function returns the null string.
+ @param ce If TRUE, the returned URL will include any constraint
+ expression enclosed with the Connect object's URL (including the
+ <tt>?</tt>).  If FALSE, any constraint expression will be removed from
+ the URL.  The default is TRUE.
+ */
+string Connect::URL(bool ce)
 {
     if (_local)
-        throw InternalErr(__FILE__, __LINE__,
-                          "URL(): This call is only valid for a DAP data source.");
+        throw InternalErr(__FILE__, __LINE__, "URL(): This call is only valid for a DAP data source.");
 
     if (ce)
         return _URL + "?" + _proj + _sel;
@@ -1031,73 +1170,66 @@ Connect::URL(bool ce)
 }
 
 /** Return the constraint expression (CE) part of the Connect URL. Note
-    that this CE is supplied as part of the URL passed to the
-    Connect's constructor.  It is not the CE passed to the
-    <tt>request_data()</tt> function.
+ that this CE is supplied as part of the URL passed to the
+ Connect's constructor.  It is not the CE passed to the
+ <tt>request_data()</tt> function.
 
-    @brief Get the Connect's constraint expression.
-    @return A string containing the constraint expression (if any)
-    submitted to the Connect object's constructor.  */
-string
-Connect::CE()
+ @brief Get the Connect's constraint expression.
+ @return A string containing the constraint expression (if any)
+ submitted to the Connect object's constructor.  */
+string Connect::CE()
 {
     if (_local)
-        throw InternalErr(__FILE__, __LINE__,
-                          "CE(): This call is only valid for a DAP data source.");
+        throw InternalErr(__FILE__, __LINE__, "CE(): This call is only valid for a DAP data source.");
 
     return _proj + _sel;
 }
 
 /** @brief Set the credentials for responding to challenges while dereferencing
-    URLs.
-    @param u The username.
-    @param p The password.
-    @see extract_auth_info() */
-void
-Connect::set_credentials(string u, string p)
+ URLs.
+ @param u The username.
+ @param p The password.
+ @see extract_auth_info() */
+void Connect::set_credentials(string u, string p)
 {
     if (d_http)
         d_http->set_credentials(u, p);
 }
 
 /** Set the \e accept deflate property.
-    @param deflate True if the client can accept compressed responses, False
-    otherwise. */
-void
-Connect::set_accept_deflate(bool deflate)
+ @param deflate True if the client can accept compressed responses, False
+ otherwise. */
+void Connect::set_accept_deflate(bool deflate)
 {
     if (d_http)
         d_http->set_accept_deflate(deflate);
 }
 
 /** Set the \e XDAP-Accept property/header. This is used to send to a server
-    the (highest) DAP protocol version number that this client understands.
+ the (highest) DAP protocol version number that this client understands.
 
-    @param major The client dap protocol major version
-    @param minor The client dap protocol minor version */
-void
-Connect::set_xdap_protocol(int major, int minor)
+ @param major The client dap protocol major version
+ @param minor The client dap protocol minor version */
+void Connect::set_xdap_protocol(int major, int minor)
 {
     if (d_http)
         d_http->set_xdap_protocol(major, minor);
 }
 
 /** Disable any further use of the client-side cache. In a future version
-    of this software, this should be handled so that the www library is
-    not initialized with the cache running by default. */
-void
-Connect::set_cache_enabled(bool cache)
+ of this software, this should be handled so that the www library is
+ not initialized with the cache running by default. */
+void Connect::set_cache_enabled(bool cache)
 {
     if (d_http)
         d_http->set_cache_enabled(cache);
 }
 
-bool
-Connect::is_cache_enabled()
+bool Connect::is_cache_enabled()
 {
     bool status;
     DBG(cerr << "Entering is_cache_enabled (" << hex << d_http << dec
-        << ")... ");
+            << ")... ");
     if (d_http)
         status = d_http->is_cache_enabled();
     else

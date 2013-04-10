@@ -103,10 +103,7 @@ namespace libdap
     constraint expressions are formed and how to manage them.
 
     Connect also provides additional services such as automatic
-    decompression of compressed data, transmission progress reports
-    and error processing.  Refer to the GUI and Error classes for more
-    information about these features. See the DODSFilter class for
-    information on servers that compress data.
+    decompression of compressed data and and error processing.
 
     @note Update: I removed the DEFAULT_BASETYPE_FACTORY switch because it
     caused more confusion than it avoided. See Trac #130.
@@ -126,7 +123,6 @@ namespace libdap
     dataset.
     @see DDS
     @see DAS
-    @see DODSFilter
     @see Error
     @author jhrg */
 
@@ -144,15 +140,17 @@ private:
     string d_protocol;          // DAP protocol from the server
 
     void process_data(DataDDS &data, Response *rs);
+    void process_data(DDS &data, Response *rs);
+
     // Use when you cannot use libwww/libcurl. Reads HTTP response.
     void parse_mime(Response *rs);
 
 protected:
     /** @name Suppress the C++ defaults for these. */
     //@{
-    Connect()
+    Connect() : d_http(0)
     { }
-    Connect(const Connect &)
+    Connect(const Connect &) : d_http(0)
     { }
     Connect &operator=(const Connect &)
     {
@@ -223,6 +221,8 @@ public:
 
     virtual void read_data(DataDDS &data, Response *rs);
     virtual void read_data_no_mime(DataDDS &data, Response *rs);
+    virtual void read_data(DDS &data, Response *rs);
+    virtual void read_data_no_mime(DDS &data, Response *rs);
 };
 
 } // namespace libdap

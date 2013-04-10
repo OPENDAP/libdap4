@@ -49,8 +49,6 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-#define FILE_METHODS 1
-
 namespace libdap
 {
 
@@ -62,20 +60,8 @@ namespace libdap
     */
 class Byte: public BaseType
 {
-    /** This class allows Int16, ..., Float64 access to <tt>_buf</tt> to
-    simplify and speed up the relational operators.
-
-    NB: According to Stroustrup it does not matter where (public, private
-    or protected) friend classes are declared. */
-    friend class Int16;
-    friend class UInt16;
-    friend class Int32;
-    friend class UInt32;
-    friend class Float32;
-    friend class Float64;
-
 protected:
-    dods_byte _buf;
+    dods_byte d_buf;
 
 public:
     Byte(const string &n);
@@ -92,8 +78,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    bool serialize(ConstraintEvaluator &eval, DDS &dds,
-		   Marshaller &m, bool ce_eval);
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval);
     bool deserialize(UnMarshaller &um, DDS *, bool);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
@@ -101,12 +86,9 @@ public:
 
     virtual bool set_value(const dods_byte value);
     virtual dods_byte value() const;
-#if FILE_METHODS
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
-#endif
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+
+    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
 
     virtual bool ops(BaseType *b, int op);
 

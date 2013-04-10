@@ -29,6 +29,7 @@
 //#define DODS_DEBUG2 1
 
 #include <cstring>
+#include <cstdarg>
 
 #include "BaseType.h"
 #include "Byte.h"
@@ -146,6 +147,7 @@ BaseType *DDXParser::factory(Type t, const string & name)
     }
 }
 
+#if 0
 /** Get the Type enumeration value which matches the given name. */
 static Type get_type(const char *name)
 {
@@ -190,7 +192,10 @@ static Type get_type(const char *name)
 
     return dods_null_c;
 }
+#endif
 
+#if 0
+// Not used. jhrg 1/17/13
 static Type is_simple_type(const char *name)
 {
     Type t = get_type(name);
@@ -209,6 +214,7 @@ static Type is_simple_type(const char *name)
         return dods_null_c;
     }
 }
+#endif
 
 static bool is_not(const char *name, const char *tag)
 {
@@ -383,9 +389,11 @@ void DDXParser::process_dimension(const xmlChar **attrs, int nb_attributes)
     if (check_required_attribute(string("size"))) {
         set_state(inside_dimension);
         Array *ap = dynamic_cast < Array * >(bt_stack.top());
-		if (!ap)
+		if (!ap) {
 			ddx_fatal_error(this, "Parse error: Expected an array variable.");
-
+			return;
+		}
+		
         ap->append_dim(atoi(attribute_table["size"].value.c_str()),
                        attribute_table["name"].value);
     }
@@ -434,8 +442,9 @@ DDXParser::is_attribute_or_alias(const char *name, const xmlChar **attrs,
 inline bool DDXParser::is_variable(const char *name, const xmlChar **attrs,
         int nb_attributes)
 {
-    Type t;
-    if ((t = is_simple_type(name)) != dods_null_c) {
+    Type t = get_type(name);
+    //if ((t = is_simple_type(name)) != dods_null_c) {
+    if (is_simple_type(t)) {
         process_variable(t, inside_simple_type, attrs, nb_attributes);
         return true;
     }
@@ -514,7 +523,7 @@ void DDXParser::finish_variable(const char *tag, Type t, const char *expected)
 /** Initialize the SAX parser state object. This object is passed to each
     callback as a void pointer. The initial state is parser_start.
 
-    @param parser The SAX parser  */
+    @param p The SAX parser  */
 void DDXParser::ddx_start_document(void * p)
 {
     DDXParser *parser = static_cast<DDXParser*>(p);
@@ -535,7 +544,7 @@ void DDXParser::ddx_start_document(void * p)
 }
 
 /** Clean up after finishing a parse.
-    @param parser The SAX parser  */
+    @param p The SAX parser  */
 void DDXParser::ddx_end_document(void * p)
 {
     DDXParser *parser = static_cast<DDXParser*>(p);
@@ -554,12 +563,15 @@ void DDXParser::ddx_end_document(void * p)
     // Pop the temporary Structure off the stack and transfer its variables
     // to the DDS.
     Constructor *cp = dynamic_cast < Constructor * >(parser->bt_stack.top());
-    if (!cp)
+    if (!cp) {
     	ddx_fatal_error(parser, "Parse error: Expected a Structure, Sequence or Grid variable.");
-
-    for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end();
-         ++i)
+		return;
+    }
+    
+    for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end(); ++i) {
+        (*i)->set_parent(0);        // top-level vars have no parents
         parser->dds->add_var(*i);
+    }
 
     parser->bt_stack.pop();
     delete cp;
@@ -893,8 +905,9 @@ void DDXParser::ddx_sax2_end_element(void *p, const xmlChar *l,
         parser->pop_state();
         break;
 
-    case inside_simple_type:
-        if (is_simple_type(localname) != dods_null_c) {
+    case inside_simple_type: {
+        Type t = get_type(localname);
+        if (is_simple_type(t)) {
             parser->pop_state();
             BaseType *btp = parser->bt_stack.top();
             parser->bt_stack.pop();
@@ -918,6 +931,7 @@ void DDXParser::ddx_sax2_end_element(void *p, const xmlChar *l,
                                        "Expected an end tag for a simple type; found '%s' instead.",
                                        localname);
         break;
+    }
 
     case inside_array:
         parser->finish_variable(localname, dods_array_c, "Array");
@@ -1050,7 +1064,7 @@ xmlEntityPtr DDXParser::ddx_get_entity(void *, const xmlChar * name)
     typically no way to tell a user about the error since there's often no
     user interface for this software.
 
-    @param parser The SAX parser
+    @param p The SAX parser
     @param msg A printf-style format string. */
 void DDXParser::ddx_fatal_error(void * p, const char *msg, ...)
 {
@@ -1117,6 +1131,7 @@ void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid,
 
     int res = fread(chars, 1, 4, in);
     if (res > 0) {
+        chars[4]='\0';
         xmlParserCtxtPtr context =
             xmlCreatePushParserCtxt(NULL, NULL, chars, res, "stream");
 
@@ -1144,7 +1159,9 @@ void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid,
         context->userData = this;
         context->validate = true;
 
+
         while ((fgets(chars, size, in) > 0) && !is_boundary(chars, boundary)) {
+            chars[size-1] = '\0';
             DBG(cerr << "line: " << chars << endl);
             xmlParseChunk(ctxt, chars, strlen(chars), 0);
         }

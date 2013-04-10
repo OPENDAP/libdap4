@@ -94,9 +94,8 @@ private:
     /** The relational operator, if any. */
     int _op;
     /** A pointer to a valid boolean function. */
-#if 1
     bool_func _b_func;
-#endif
+
     /** A pointer to a valid function that returns a pointer to a
     BaseType. */
     btp_func _bt_func;
@@ -114,9 +113,7 @@ private:
 
 public:
     Clause(const int oper, rvalue *a1, rvalue_list *rv);
-#if 1
     Clause(bool_func func, rvalue_list *rv);
-#endif
     Clause(btp_func func, rvalue_list *rv);
     Clause();
 

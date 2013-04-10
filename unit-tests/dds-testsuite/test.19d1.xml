@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset name="test.19d" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xml.opendap.org/ns/DAP2" xsi:schemaLocation="http://xml.opendap.org/ns/DAP2 http://xml.opendap.org/dap/dap2.xsd">
+    <Array name="b#c">
+        <Attribute name="long_name" type="String">
+            <value>b pound c</value>
+        </Attribute>
+        <Attribute name="b#c_dim_0" type="Container">
+            <Attribute name="add_offset" type="Float64">
+                <value>0.125</value>
+            </Attribute>
+        </Attribute>
+        <Int32/>
+        <dimension size="10"/>
+    </Array>
+    <dataBLOB href=""/>
+</Dataset>

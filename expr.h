@@ -62,19 +62,30 @@ typedef struct
 
 // Syntactic sugar for `pointer to function returning boolean' (bool_func)
 // and `pointer to function returning BaseType *' (btp_func). Both function
-// types take three arguments, an integer (argc), a vector of BaseType *s
-// (argv) and the DDS for the dataset for which these function is being
-// evaluated (analogous to the ENVP in UNIX). ARGC is the length of ARGV.
+// types take four arguments, an integer (argc), a vector of BaseType *s
+// (argv), the DDS for the dataset for which these function is being
+// evaluated (analogous to the ENVP in UNIX) and a pointer for the function's
+// return value. ARGC is the length of ARGV.
 
-// Try to make a single `selection function' type.
-#if 1
+/** @todo A better design would wrap these in a class and record at minimum
+    their names so that error messages could be a bit more informative. jhrg
+ */
 typedef void(*bool_func)(int argc, BaseType *argv[], DDS &dds, bool *result);
-#endif
 typedef void(*btp_func)(int argc, BaseType *argv[], DDS &dds, BaseType **btpp);
+
+// Projection function: A function that appears in the projection part of the
+// CE and is executed for its side-effect. Usually adds a new variable to
+// the DDS. These are run _during the parse_ so their side-effects can be used
+// by subsequent parts of the CE.
+
 typedef void(*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce);
 
 // INT_LIST and INT_LIST_LIST are used by the parser to store the array
 // indexes.
+
+// To add the new feature of 'to the end' in an array projection (denoted using
+// start), I used the value -1 for an index. This makes do difference here. jhrg
+// 12/20/12
 
 typedef std::vector<int> int_list;
 typedef std::vector<int>::const_iterator int_citer ;

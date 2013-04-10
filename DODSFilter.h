@@ -46,8 +46,6 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-#define FILE_METHODS 1
-
 namespace libdap
 {
 
@@ -191,13 +189,16 @@ public:
                           bool constrained = false,
                           const string &anc_location = "",
                           bool with_mime_headers = true) const;
+    // deprecated
     virtual void functional_constraint(BaseType &var, DDS &dds,
                                        ConstraintEvaluator &eval, ostream &out) const;
+
     virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
-                                    ostream &out) const;
+                                    ostream &out, bool ce_eval = true) const;
     virtual void dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
                                    ostream &out, const string &boundary,
-                                   const string &start) const;
+                                   const string &start,
+                                   bool ce_eval = true) const;
 
     virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
                            ostream &data_stream,
@@ -211,7 +212,6 @@ public:
                            const string &anc_location = "",
                            bool with_mime_headers = true) const;
 
-#if FILE_METHODS
     virtual void establish_timeout(FILE *stream) const;
     virtual void send_das(FILE *out, DAS &das, const string &anc_location = "",
                           bool with_mime_headers = true) const;
@@ -219,17 +219,18 @@ public:
                           bool constrained = false,
                           const string &anc_location = "",
                           bool with_mime_headers = true) const;
+    // deprecated
     virtual void functional_constraint(BaseType &var, DDS &dds,
                                        ConstraintEvaluator &eval, FILE *out) const;
+
     virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
-                                    FILE *out) const;
+                                    FILE *out, bool ce_eval = true) const;
     virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
                            FILE *data_stream,
                            const string &anc_location = "",
                            bool with_mime_headers = true) const;
     virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
                           bool with_mime_headers = true) const;
-#endif
 };
 
 } // namespace libdap

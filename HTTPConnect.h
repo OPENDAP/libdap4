@@ -30,7 +30,8 @@
 #include <string>
 
 #include <curl/curl.h>
-#include <curl/types.h>
+//No longer used in CURL - pwest April 09, 2012
+//#include <curl/types.h>
 #include <curl/easy.h>
 
 #ifndef _rc_reader_h_

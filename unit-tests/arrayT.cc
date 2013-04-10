@@ -17,7 +17,7 @@ using std::cerr ;
 using std::endl ;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
-				      // timeouts. 
+				      // timeouts.
 
 class arrayT : public CppUnit::TestFixture {
 
@@ -28,14 +28,14 @@ CPPUNIT_TEST_SUITE_END( ) ;
 private:
     /* TEST PRIVATE DATA */
     TestTypeFactory *factory;
-    
+
 public:
     void setUp()
     {
         factory = new TestTypeFactory;
     }
 
-    void tearDown() 
+    void tearDown()
     {
         delete factory; factory = 0;
     }
@@ -52,6 +52,9 @@ public:
 	try
 	{
 	    int w = ar.width() ;
+	    cerr << "w = " << w << endl;
+	    cerr << "(int)bt->width() " << (int)bt->width() << endl;
+	    cerr << "L " << l << endl;
 	    CPPUNIT_ASSERT( w == ( l * (int)bt->width() ) ) ;
 	}
 	catch( InternalErr &e )
@@ -181,7 +184,7 @@ int main(int, char **)
     CppUnit::TestFactoryRegistry &registry =
 	CppUnit::TestFactoryRegistry::getRegistry() ;
     runner.addTest( registry.makeTest() ) ;
-    runner.setOutputter( CppUnit::CompilerOutputter::defaultOutputter( 
+    runner.setOutputter( CppUnit::CompilerOutputter::defaultOutputter(
                                                         &runner.result(),
                                                         std::cerr ) );
     bool wasSuccessful = runner.run( "", false ) ;

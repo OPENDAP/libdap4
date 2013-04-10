@@ -38,6 +38,7 @@
 #include "config.h"
 
 #include <cstring>
+#include <cstdlib>
 
 #include <unistd.h>  // for stat
 #include <sys/types.h>
@@ -164,62 +165,64 @@ RCReader::read_rc_file(const string &pathname)
         // tokens are found in the file then those defaults will be
         // overwritten.
         char *value;
-        char *tempstr = new char[1024];;
+        // TODO Replace with a vector<char>
+        //char *tempstr = new char[1024];
+        vector<char> tempstr(1024);
         int tokenlength;
         while (true) {
-            fpi.getline(tempstr, 1023);
+            fpi.getline(&tempstr[0], 1023);
             if (!fpi.good())
                 break;
 
-            value = strchr(tempstr, '=');
+            value = strchr(&tempstr[0], '=');
             if (!value)
                 continue;
-            tokenlength = value - tempstr;
+            tokenlength = value - &tempstr[0];
             value++;
 
-            if ((strncmp(tempstr, "USE_CACHE", 9) == 0)
+            if ((strncmp(&tempstr[0], "USE_CACHE", 9) == 0)
                 && tokenlength == 9) {
                 _dods_use_cache = atoi(value) ? true : false;
             }
-            else if ((strncmp(tempstr, "MAX_CACHE_SIZE", 14) == 0)
+            else if ((strncmp(&tempstr[0], "MAX_CACHE_SIZE", 14) == 0)
                      && tokenlength == 14) {
                 _dods_cache_max = atoi(value);
             }
-            else if ((strncmp(tempstr, "MAX_CACHED_OBJ", 14) == 0)
+            else if ((strncmp(&tempstr[0], "MAX_CACHED_OBJ", 14) == 0)
                      && tokenlength == 14) {
                 _dods_cached_obj = atoi(value);
             }
-            else if ((strncmp(tempstr, "IGNORE_EXPIRES", 14) == 0)
+            else if ((strncmp(&tempstr[0], "IGNORE_EXPIRES", 14) == 0)
                      && tokenlength == 14) {
                 _dods_ign_expires = atoi(value);
             }
-            else if ((strncmp(tempstr, "DEFLATE", 7) == 0)
+            else if ((strncmp(&tempstr[0], "DEFLATE", 7) == 0)
                      && tokenlength == 7) {
                 _dods_deflate = atoi(value) ? true : false;
             }
-            else if ((strncmp(tempstr, "CACHE_ROOT", 10) == 0)
+            else if ((strncmp(&tempstr[0], "CACHE_ROOT", 10) == 0)
                      && tokenlength == 10) {
                 d_cache_root = value;
                 if (d_cache_root[d_cache_root.length() - 1] != DIR_SEP_CHAR)
                     d_cache_root += string(DIR_SEP_STRING);
             }
-            else if ((strncmp(tempstr, "DEFAULT_EXPIRES", 15) == 0)
+            else if ((strncmp(&tempstr[0], "DEFAULT_EXPIRES", 15) == 0)
                      && tokenlength == 15) {
                 _dods_default_expires = atoi(value);
             }
-            else if ((strncmp(tempstr, "ALWAYS_VALIDATE", 15) == 0)
+            else if ((strncmp(&tempstr[0], "ALWAYS_VALIDATE", 15) == 0)
                      && tokenlength == 15) {
                 _dods_always_validate = atoi(value);
             }
-            else if ((strncmp(tempstr, "VALIDATE_SSL", 12) == 0)
+            else if ((strncmp(&tempstr[0], "VALIDATE_SSL", 12) == 0)
                      && tokenlength == 12) {
                 d_validate_ssl = atoi(value);
             }
-            else if (strncmp(tempstr, "AIS_DATABASE", 12) == 0
+            else if (strncmp(&tempstr[0], "AIS_DATABASE", 12) == 0
                      && tokenlength == 12) {
                 d_ais_database = value;
 	    }
-            else if (strncmp(tempstr, "COOKIE_JAR", 10) == 0
+            else if (strncmp(&tempstr[0], "COOKIE_JAR", 10) == 0
                      && tokenlength == 10) {
 		// if the value of COOKIE_JAR starts with a slash, use it as
 		// is. However, if it does not start with a slash, prefix it
@@ -232,7 +235,7 @@ RCReader::read_rc_file(const string &pathname)
 		}
 		DBG(cerr << "set cookie jar to: " << d_cookie_jar << endl);
             }
-            else if ((strncmp(tempstr, "PROXY_SERVER", 12) == 0)
+            else if ((strncmp(&tempstr[0], "PROXY_SERVER", 12) == 0)
                      && tokenlength == 12) {
                 // Setup a proxy server for all requests.
 		// The original syntax was <protocol>,<machine> where the
@@ -283,7 +286,7 @@ RCReader::read_rc_file(const string &pathname)
 		    d_dods_proxy_server_port = 80;
                 }
             }
-            else if ((strncmp(tempstr, "NO_PROXY_FOR", 12) == 0)
+            else if ((strncmp(&tempstr[0], "NO_PROXY_FOR", 12) == 0)
                      && tokenlength == 12) {
                 // Setup a proxy server for all requests.
                 string no_proxy = value;
@@ -304,7 +307,7 @@ RCReader::read_rc_file(const string &pathname)
             }
         }
 
-        delete [] tempstr; tempstr = 0;
+        //delete [] tempstr; tempstr = 0;
 
         fpi.close(); // Close the .dodsrc file. 12/14/99 jhrg
 
@@ -432,7 +435,7 @@ RCReader::RCReader() throw(Error)
 #ifdef WIN32
     string homedir = string("C:") + string(DIR_SEP_STRING) + string("Dods");
     d_rc_file_path = check_string(homedir);
-    if d_rc_file_path.empty()) {
+    if (d_rc_file_path.empty()) {
 	homedir = string("C:") + string(DIR_SEP_STRING) + string("opendap");
 	d_rc_file_path = check_string(homedir);
     }

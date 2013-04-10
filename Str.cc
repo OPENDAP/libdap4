@@ -36,9 +36,7 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    {"$Id$"
-    };
+#include <sstream>
 
 #include "Byte.h"
 #include "Int16.h"
@@ -54,6 +52,8 @@ static char rcsid[] not_used =
 #include "Sequence.h"
 #include "Grid.h"
 
+#include "Marshaller.h"
+#include "UnMarshaller.h"
 
 #include "DDS.h"
 #include "util.h"
@@ -77,7 +77,7 @@ namespace libdap {
     created.
 
 */
-Str::Str(const string &n) : BaseType(n, dods_str_c), _buf("")
+Str::Str(const string &n) : BaseType(n, dods_str_c), d_buf("")
 {}
 
 /** The Str server-side constructor accepts the name of the variable and the
@@ -88,12 +88,12 @@ Str::Str(const string &n) : BaseType(n, dods_str_c), _buf("")
     variable is created
 */
 Str::Str(const string &n, const string &d)
-    : BaseType(n, d, dods_str_c), _buf("")
+    : BaseType(n, d, dods_str_c), d_buf("")
 {}
 
 Str::Str(const Str &copy_from) : BaseType(copy_from)
 {
-    _buf = copy_from._buf;
+    d_buf = copy_from.d_buf;
 }
 
 BaseType *
@@ -111,7 +111,7 @@ Str::operator=(const Str &rhs)
     // Call BaseType::operator=.
     dynamic_cast<BaseType &>(*this) = rhs;
 
-    _buf = rhs._buf;
+    d_buf = rhs.d_buf;
 
     return *this;
 }
@@ -119,7 +119,7 @@ Str::operator=(const Str &rhs)
 unsigned int
 Str::length()
 {
-    return _buf.length();
+    return d_buf.length();
 }
 
 unsigned int
@@ -147,9 +147,9 @@ Str::serialize(ConstraintEvaluator &eval, DDS &dds,
 
     dds.timeout_off();
 
-    m.put_str( _buf ) ;
+    m.put_str( d_buf ) ;
 
-    DBG(cerr << "Exiting: buf = " << _buf << endl);
+    DBG(cerr << "Exiting: buf = " << d_buf << endl);
 
     return true;
 }
@@ -159,7 +159,7 @@ Str::serialize(ConstraintEvaluator &eval, DDS &dds,
 bool
 Str::deserialize(UnMarshaller &um, DDS *, bool)
 {
-    um.get_str( _buf ) ;
+    um.get_str( d_buf ) ;
 
     return false;
 }
@@ -183,11 +183,11 @@ Str::buf2val(void **val)
                           "No place to store a reference to the data.");
     // If *val is null, then the caller has not allocated storage for the
     // value; we must. If there is storage there, assume it is a string and
-    // assign _buf's value to that storage.
+    // assign d_buf's value to that storage.
     if (!*val)
-        *val = new string(_buf);
+        *val = new string(d_buf);
     else
-        *static_cast<string*>(*val) = _buf;
+        *static_cast<string*>(*val) = d_buf;
 
     return sizeof(string*);
 }
@@ -211,7 +211,7 @@ Str::val2buf(void *val, bool)
     if (!val)
         throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
 
-    _buf = *static_cast<string*>(val);
+    d_buf = *static_cast<string*>(val);
 
     return sizeof(string*);
 }
@@ -223,7 +223,7 @@ Str::val2buf(void *val, bool)
 bool
 Str::set_value(const string &value)
 {
-    _buf = value;
+    d_buf = value;
     set_read_p(true);
 
     return true;
@@ -234,31 +234,26 @@ Str::set_value(const string &value)
 string
 Str::value() const
 {
-    return _buf;
+    return d_buf;
 }
 
-#if FILE_METHODS
 void
 Str::print_val(FILE *out, string space, bool print_decl_p)
 {
-    if (print_decl_p) {
-        print_decl(out, space, false);
-        fprintf(out, " = \"%s\";\n", escattr(_buf).c_str()) ;
-    }
-    else
-        fprintf(out, "\"%s\"", escattr(_buf).c_str()) ;
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
-#endif
 
 void
 Str::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
         print_decl(out, space, false);
-	out << " = \"" << escattr(_buf) << "\";\n" ;
+	out << " = \"" << escattr(d_buf) << "\";\n" ;
     }
     else
-	out << "\"" << escattr(_buf) << "\"" ;
+	out << "\"" << escattr(d_buf) << "\"" ;
 }
 
 bool
@@ -286,11 +281,9 @@ Str::ops(BaseType *b, int op)
 
     switch (b->type()) {
     case dods_str_c:
-        return rops<string, string, StrCmp<string, string> >
-               (_buf, dynamic_cast<Str *>(b)->_buf, op);
+        return StrCmp<string, string>(op, d_buf, static_cast<Str*>(b)->value());
     case dods_url_c:
-        return rops<string, string, StrCmp<string, string> >
-               (_buf, dynamic_cast<Url *>(b)->_buf, op);
+        return StrCmp<string, string>(op, d_buf, static_cast<Url*>(b)->value());
     default:
         return false;
     }
@@ -311,7 +304,7 @@ Str::dump(ostream &strm) const
     << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
     BaseType::dump(strm) ;
-    strm << DapIndent::LMarg << "value: " << _buf << endl ;
+    strm << DapIndent::LMarg << "value: " << d_buf << endl ;
     DapIndent::UnIndent() ;
 }
 

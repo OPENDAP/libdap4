@@ -72,6 +72,8 @@ private:
 public:
     Url(const string &n);
     Url(const string &n, const string &d);
+    Url(const string &n, Type t);
+    Url(const string &n, const string &d, Type t);
     virtual ~Url()
     {}
 

@@ -1,3 +1,136 @@
+News for version 3.12.0
+
+Moved server functions out of libdap; they are now stored in a BES module.
+
+News for version 3.11.7
+
+Bug fix for the server function caching code. Now if the function
+cache directory /tmp/dap_functions_cache exists, it will be used to 
+cache the results of applying server functions. If the directory does
+not exist, then the function results won't be cached - a minor 
+performance penalty in most cases. 
+
+The size of the cache is set to 20GB. The size and location of the 
+cache are fixed for this version of libdap but they will move into
+the bes.conf file as parameters in a future version of the server.
+
+News for version 3.11.6
+
+Changes to the way constraints are evaluated when they contain server
+functions. Now DAS and DDS objects can be returned from requests that
+include those constraints. The server function call results are
+cached, so that sending the same function calls several times will not
+evaluate those functions more than once.
+
+News for version 3.11.5
+
+Fixed a memory leak in XDRStreamMarshaller and a bug in
+DDS::add_var_nocopy().
+
+News for version 3.11.4
+
+Merged to trunk; tagged.
+
+News for version 3.11.3
+
+Changed the return value for dap-config --libs so that it does not contain 
+the curl static libs. This causes problems whenlinking on CentOS 6 in some
+cases.
+
+News for version 3.11.2
+
+The new DAP3.3 Keywords are supported by the library. These are sort
+of a hidden feature of DAP4 that might not be used.
+
+There are many bug fixes in this update; check the ChangeLog or Trac.
+Two notable fixes:
+
+* The way attributes are encoded has changed subtly so that now only
+  spaces are escaped. This fixes a problem with our XML and RDF
+  responses.
+
+* The XML output (i.e., the DDX) is now built using an XML library, so
+  any encoding issues are its fault ;-) But, in a pragmatic sense,
+  this has greatly simplified the library and sets the stage for
+  further simplification of the methods that build responses. The
+  behavior of those methods has not changed.
+
+News for version 3.11.1
+
+Merge of the Hyrax 3.6.2 fixes.
+
+A race condition in the HTTP cache was fixed.
+
+Fixes for the OS/X package.
+
+News for version 3.11.0
+
+Constraint expressions can now include multiple function calls.
+Previously, when a function was used in the projection part of the CE
+and it was not a 'projection function,' but a function that returns
+data, only function could be called in the CE. Now the evaluator
+supports calling a series of functions. The results are returned in a
+Dataset object as before. Because this is a new behavior for the
+library I have bumped up the minor revision. This version is backward
+compatible with the previous version of the library.
+
+Grid now prints the XML declaration correctly when a constrained Grid
+variable's type decays to a Structure. The expr-test program now has
+an XML option (-x) for use with constrained DDS/DDX output. This bug
+affected the usefulness of the DDX response.
+
+the geogrid() function now takes both (grid, <box points>) and (grid,
+lat array, lon array <box points>). This includes some minimal testing
+of the new code.
+
+Bug fixes.
+
+News for version 3.10.2
+
+Changed the way the DAS object's attributes are merged into a DDS
+object, which did two things. First, the process of merging the
+attributes has a default behavior that will work if the DAS and DDS
+are built according to the DAp 2.0 specification, and second, the
+handlers can specialize the process to suite their own needs. This
+means that new handlers that build odd DAS objects will need to
+specialize the transfer_attributes() method defined by BaseType,
+Constructor and Grid. I've already done this for the current handlers
+we're distributing as part of Hyrax. This means that attributes from
+the netCDF handler appear correctly in Grid maps.
+
+Speaking of the netCDF handler, it now builds with netcdf 4.1.
+
+Build fixes galore, including new Requires: lines in the rpm spec
+files which should make it easier to short circuit installation
+problems with the handlers.
+
+The DDX no longer contains attributes with &0xdd; escape codes. When
+an XML document declares that it is UTF-8 codes < 0x20 are not
+allowed. We're using octal escapes again.
+
+The preceding fix, along with the corrected processing of the DAS
+object mean that two major issues with the DDX that hindered the use
+of that response in semantic web applications are gone.
+
+News for version 3.10.1b
+
+We have removed the Server 3 (CGI) software from the dap-server
+package and, with that change, we have removed the deflate program
+from this library/package.
+
+The geogrid() function has been much improved. It will now answer
+requests where the latitude is upside down in the dataset and flip the
+result so that the north pole is 'up'. It will also handle requests
+that 'wrap around' the date line. Error messages are also improved.
+
+This library now implements DAP 3.3 including the OtherXML DAP
+attribute type (which will become AnyXML in DAP 4). The library now
+implements simple version negotiation and a DDX response that is DAP
+version sensitive. See the online DAP4 design documentation for more
+information (docs.opendap.org).
+
+Many, many fixes and extensions for DAP4 and NcML support. (NB: the
+NcML handler is a separate project).
 
 News for version 3.9.2
 

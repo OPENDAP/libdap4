@@ -1,36 +1,35 @@
 #include "config.h"
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
 #include <fstream>
-#include <sstream>
-#include <debug.h>
+#include <string>
+#include <vector>
+
+#include "testFile.h"
 
 using namespace std;
 
-#define FILE2string(s,f,c) do {\
-        FILE *(f) = fopen("testout", "w");\
-        c;\
-        fclose(f);\
-        s = testFile("testout");\
-        unlink("testout");\
-} while(0);
-
-// It's evil to include code like this, but for the unit tests, such is
-// the way... jhrg 1/20/06
 string
-testFile(char *fn)
+readTestBaseline(const string &fn)
 {
-    ifstream ifs(fn);
-    ostringstream strm;
-    char line[1024];
-    while (!ifs.eof()) {
-        ifs.getline(line, 1024);
-        strm << line << endl;
-    }
-    ifs.close();
-    
-    return strm.str();
+    int length;
+
+    ifstream is;
+    is.open (fn.c_str(), ios::binary );
+
+    // get length of file:
+    is.seekg (0, ios::end);
+    length = is.tellg();
+
+    // back to start
+    is.seekg (0, ios::beg);
+
+    // allocate memory:
+    vector<char> buffer(length+1);
+
+    // read data as a block:
+    is.read (&buffer[0], length);
+    is.close();
+    buffer[length] = '\0';
+
+    return string(&buffer[0]);
 }

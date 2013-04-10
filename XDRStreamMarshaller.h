@@ -35,55 +35,74 @@
 
 #include <iostream>
 
+#include <openssl/evp.h>
+
 using std::ostream ;
 using std::cout ;
 
 #include "Marshaller.h"
 #include "XDRUtils.h"
+#include "BaseType.h"
 
 namespace libdap
 {
 
 /** @brief marshaller that knows how to marshal/serialize dap data objects
  * to a C++ iostream using XDR
+ *
+ * @note This class can now compute checksums for data that will be marshalled.
+ * jhrg 1/18/2012
  */
 class XDRStreamMarshaller : public Marshaller
 {
 private:
-    static char *		_buf ;
-    XDR *			_sink ;
-    ostream &			_out ;
-
+    static char *	d_buf ;
+    XDR 			d_sink ;
+    ostream &		d_out ;
+#if 0
+    EVP_MD_CTX *    _MD_CTX;    // jhrg 4/24/12
+    bool            _write_data ; // jhrg 1/27/12
+    bool            _checksum_ctx_valid ;
+    string          _checksum ; // jhrg 4/24/12
+#endif
     				XDRStreamMarshaller() ;
     				XDRStreamMarshaller( const XDRStreamMarshaller &m ) ;
-    XDRStreamMarshaller &	operator=( const XDRStreamMarshaller & ) ;
+    XDRStreamMarshaller &operator=( const XDRStreamMarshaller & ) ;
+
 public:
-    				XDRStreamMarshaller( ostream &out ) ;
+    				XDRStreamMarshaller( ostream &out) ; //, bool checksum = false, bool write_data = true) ;
     virtual			~XDRStreamMarshaller() ;
 
-    virtual void		put_byte( dods_byte val ) ;
+#if 0
+    virtual bool    checksums() { return _MD_CTX != 0; }
+    virtual void    reset_checksum() ;
+    virtual string  get_checksum() ;
+    virtual void    checksum_update(const void *data, unsigned long len) ;
+#endif
 
-    virtual void		put_int16( dods_int16 val ) ;
-    virtual void		put_int32( dods_int32 val ) ;
+    virtual void	put_byte( dods_byte val ) ;
 
-    virtual void		put_float32( dods_float32 val ) ;
-    virtual void		put_float64( dods_float64 val ) ;
+    virtual void	put_int16( dods_int16 val ) ;
+    virtual void	put_int32( dods_int32 val ) ;
 
-    virtual void		put_uint16( dods_uint16 val ) ;
-    virtual void		put_uint32( dods_uint32 val ) ;
+    virtual void	put_float32( dods_float32 val ) ;
+    virtual void	put_float64( dods_float64 val ) ;
 
-    virtual void		put_str( const string &val ) ;
-    virtual void		put_url( const string &val ) ;
+    virtual void	put_uint16( dods_uint16 val ) ;
+    virtual void	put_uint32( dods_uint32 val ) ;
 
-    virtual void		put_opaque( char *val, unsigned int len ) ;
-    virtual void		put_int( int val ) ;
+    virtual void	put_str( const string &val ) ;
+    virtual void	put_url( const string &val ) ;
 
-    virtual void		put_vector( char *val, int num,
-					    Vector &vec ) ;
-    virtual void		put_vector( char *val, int num, int width,
-                                            Vector &vec ) ;
+    virtual void	put_opaque( char *val, unsigned int len ) ;
+    virtual void	put_int( int val ) ;
 
-    virtual void		dump(ostream &strm) const ;
+    virtual void	put_vector( char *val, int num, Vector &vec ) ;
+    virtual void    put_vector( char *val, int num, int width, Vector &vec) ;
+
+    virtual void put_vector(char *val, unsigned int num, int width, Type type);
+
+    virtual void	dump(ostream &strm) const ;
 } ;
 
 } // namespace libdap

@@ -35,19 +35,15 @@
 
 #include "config.h"
 
-#define DODS_DEBUG
-
-static char rcsid[] not_used =
-    { "$Id$" };
+//#define DODS_DEBUG
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef WIN32
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <string.h>
 #include <errno.h>
-
 
 #include <iostream>
 #include <fstream>
@@ -59,10 +55,9 @@ static char rcsid[] not_used =
 #include "DDS.h"
 #include "DataDDS.h"
 #include "ConstraintEvaluator.h"
-#include "XDRFileUnMarshaller.h"
 #include "XDRStreamUnMarshaller.h"
 #include "XDRStreamMarshaller.h"
-#include "DODSFilter.h"
+#include "ResponseBuilder.h"
 #include "Response.h"
 #include "Connect.h"
 #include "Error.h"
@@ -75,7 +70,9 @@ static char rcsid[] not_used =
 #include "expr.h"
 #include "ce_expr.tab.hh"
 #include "util.h"
+#if 0
 #include "fdiostream.h"
+#endif
 #include "debug.h"
 
 using namespace std;
@@ -90,16 +87,16 @@ int test_variable_sleep_interval = 0;   // Used in Test* classes for testing
 void test_scanner(const string & str);
 void test_scanner(bool show_prompt);
 void test_parser(ConstraintEvaluator & eval, DDS & table,
-                 const string & dds_name, const string & constraint);
+                 const string & dds_name, string constraint);
 bool read_table(DDS & table, const string & name, bool print);
-void evaluate_dds(DDS & table, bool print_constrained);
+void evaluate_dds(DDS & table, bool print_constrained, bool xml_syntax);
 void constrained_trans(const string & dds_name, const bool constraint_expr,
                        const string & ce, const bool series_values);
 void intern_data_test(const string & dds_name, const bool constraint_expr,
                  const string & ce, const bool series_values);
 
 int ce_exprlex();               // exprlex() uses the global ce_exprlval
-int ce_exprparse(void *arg);
+// int ce_exprparse(void *arg);
 void ce_exprrestart(FILE * in);
 
 // Glue routines declared in expr.lex
@@ -109,38 +106,43 @@ void *ce_expr_string(const char *yy_str);
 
 extern int ce_exprdebug;
 
+#if 0
 static int keep_temps = 0;      // MT-safe; test code.
+#endif
 
 const string version = "version 1.12";
 const string prompt = "expr-test: ";
-const string options = "sS:bdecvp:w:W:f:k:v";
+const string options = "sS:bdecvp:w:W:f:k:vx?";
 const string usage = "\
 \nexpr-test [-s [-S string] -d -c -v [-p dds-file]\
 \n[-e expr] [-w|-W dds-file] [-f data-file] [-k expr]]\
 \nTest the expression evaluation software.\
 \nOptions:\
-\n	-s: Feed the input stream directly into the expression scanner, does\
-\n	    not parse.\
-\n      -S: <string> Scan the string as if it was standard input.\
-\n	-d: Turn on expression parser debugging.\
-\n	-c: Print the constrained DDS (the one that will be returned\
-\n	    prepended to a data transmission. Must also supply -p and -e \
-\n      -v: Verbose output\
-\n      -V: Print the version of expr-test\
-\n  	-p: DDS-file: Read the DDS from DDS-file and create a DDS object,\
-\n	    then prompt for an expression and parse that expression, given\
-\n	    the DDS object.\
-\n	-e: Evaluate the constraint expression. Must be used with -p.\
-\n	-w: Do the whole enchilada. You don't need to supply -p, -e, ...\
-\n          This prompts for the constraint expression and the optional\
-\n          data file name. NOTE: The CE parser Error objects do not print\
-\n          with this option.\
-\n      -W: Similar to -w but uses the new (11/2007) intern_data() methods\
-\n          in place of the serialize()/deserialize() combination.\
-\n      -b: Use periodic/cyclic/changing values. For testing Sequence CEs.\
-\n      -f: A file to use for data. Currently only used by -w for sequences.\
-\n      -k: A constraint expression to use with the data. Works with -p,\
-\n          -e, -t and -w";
+\n  -s: Feed the input stream directly into the expression scanner, does\
+\n      not parse.\
+\n  -S: <string> Scan the string as if it was standard input.\
+\n  -d: Turn on expression parser debugging.\
+\n  -c: Print the constrained DDS (the one that will be returned\
+\n      prepended to a data transmission. Must also supply -p and -e \
+\n  -v: Verbose output\
+\n  -V: Print the version of expr-test\
+\n  -p: DDS-file: Read the DDS from DDS-file and create a DDS object,\
+\n      then prompt for an expression and parse that expression, given\
+\n      the DDS object.\
+\n  -e: Evaluate the constraint expression. Must be used with -p.\
+\n  -w: Do the whole enchilada. You don't need to supply -p, -e, ...\
+\n      This prompts for the constraint expression and the optional\
+\n      data file name. NOTE: The CE parser Error objects do not print\
+\n      with this option.\
+\n  -W: Similar to -w but uses the new (11/2007) intern_data() methods\
+\n      in place of the serialize()/deserialize() combination.\
+\n  -b: Use periodic/cyclic/changing values. For testing Sequence CEs.\
+\n  -f: A file to use for data. Currently only used by -w for sequences.\
+\n  -k: A constraint expression to use with the data. Works with -p,\
+\n      -e, -t and -w\
+\n  -x: Print declarations using the XML syntax. Does not work with the\
+\n      data printouts.\
+\n  -?: Print usage information";
 
 int main(int argc, char *argv[])
 {
@@ -154,6 +156,7 @@ int main(int argc, char *argv[])
     bool scan_string = false;
     bool verbose = false;
     bool series_values = false;
+    bool xml_syntax = false;
     string dds_file_name;
     string dataset = "";
     string constraint = "";
@@ -210,6 +213,9 @@ int main(int argc, char *argv[])
         case 'V':
             cerr << argv[0] << ": " <<  version << endl;
             exit(0);
+        case 'x':
+        	xml_syntax = true;
+        	break;
         case '?':
         default:
             cerr << usage << endl;
@@ -239,7 +245,7 @@ int main(int argc, char *argv[])
         }
 
         if (evaluate_test) {
-            evaluate_dds(table, print_constrained);
+            evaluate_dds(table, print_constrained, xml_syntax);
         }
 
         if (whole_enchalada) {
@@ -264,7 +270,6 @@ int main(int argc, char *argv[])
 }
 
 // Instead of reading the tokens from stdin, read them from a string.
-
 
 void test_scanner(const string & str)
 {
@@ -312,8 +317,8 @@ void test_scanner(bool show_prompt)
         case SCAN_REGEXP:
             cout << "REGEXP: " << ce_exprlval.op << endl;
             break;
-        case '*':
-            cout << "Dereference" << endl;
+        case SCAN_STAR:
+            cout << "STAR: " << ce_exprlval.op << endl;
             break;
         case '.':
             cout << "Field Selector" << endl;
@@ -347,6 +352,7 @@ void test_scanner(bool show_prompt)
             break;
         default:
             cout << "Error: Unrecognized input" << endl;
+            break;
         }
 
         cout << prompt << flush;  // print prompt after output
@@ -359,20 +365,22 @@ void test_scanner(bool show_prompt)
 
 void
 test_parser(ConstraintEvaluator & eval, DDS & dds, const string & dds_name,
-            const string & constraint)
+            string constraint)
 {
     try {
         read_table(dds, dds_name, true);
 
-        if (constraint != "") {
-            eval.parse_constraint(constraint, dds);
-        } else {
-            ce_exprrestart(stdin);
-            fprintf(stdout, "%s", prompt.c_str());
-            parser_arg arg(&eval);
-            ce_exprparse((void *) &arg);
+        if (constraint.empty()) {
+            cout << "Constraint:";
+            char c[256];
+            cin.getline(c, 256);
+            if (!cin)
+                throw InternalErr(__FILE__, __LINE__,
+                                  "Could not read the constraint expression\n");
+            constraint = c;
         }
 
+        eval.parse_constraint(constraint, dds);
         fprintf(stdout, "Input parsed\n");      // Parser throws on failure.
     }
     catch(Error & e) {
@@ -380,8 +388,8 @@ test_parser(ConstraintEvaluator & eval, DDS & dds, const string & dds_name,
     }
 }
 
-// Read a DDS from stdin and build the cooresponding DDS. IF PRINT is true,
-// print the text reprsentation of that DDS on the stdout. The DDS TABLE is
+// Read a DDS from stdin and build the corresponding DDS. IF PRINT is true,
+// print the text representation of that DDS on the stdout. The DDS TABLE is
 // modified as a side effect.
 //
 // Returns: true iff that DDS pasted the semantic_check() mfunc, otherwise
@@ -402,14 +410,22 @@ bool read_table(DDS & table, const string & name, bool print)
     }
 }
 
-void evaluate_dds(DDS & table, bool print_constrained)
+void evaluate_dds(DDS & table, bool print_constrained, bool xml_syntax)
 {
-    if (print_constrained)
-        table.print_constrained(cout);
-    else
-        for (DDS::Vars_iter p = table.var_begin(); p != table.var_end();
-             p++)
-            (*p)->print_decl(cout, "", true, true);
+    if (print_constrained) {
+    	if (xml_syntax)
+    		table.print_xml(cout, print_constrained, "");
+    	else
+    		table.print_constrained(cout);
+    }
+    else {
+        for (DDS::Vars_iter p = table.var_begin(); p != table.var_end(); p++) {
+        	if (xml_syntax)
+        		(*p)->print_decl(cout, "", print_constrained);
+        	else
+        		(*p)->print_decl(cout, "", true, true);
+        }
+    }
 }
 
 // Gobble up the MIME header. At one time the MIME Headers were output from
@@ -486,29 +502,39 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     // versatility 02/05/07 jhrg
     set_series_values(server, series_values);
 
-    DODSFilter df;
+    ResponseBuilder df;
     df.set_ce(ce);
     df.set_dataset_name(dds_name);
-    df.set_URL("test://test");
-    df.set_response("DataDDS");
+    // df.set_URL("test://test");
+    // df.set_response("DataDDS");
 
     ofstream out("expr-test-data.bin", ios::out|ios::trunc|ios::binary);
+#if 0
     df.send_data(server, eval, out, "", false);
+#endif
+    df.send_data(out, server, eval, true);
+    //cout << "Server protocol version: " << server.get_dap_major() << "." << server.get_dap_minor() << endl;
     out.close();
 
     // Now do what Connect::request_data() does:
     FILE *fp = fopen("expr-test-data.bin", "r");
 
     Response r(fp, 400);
+#if 0
     r.set_type(dods_data);
     r.set_protocol("3.2");
-
+#endif
     Connect c("http://dummy_argument");
 
     BaseTypeFactory factory;
-    DataDDS dds(&factory, "Test_data", "DAP/3.1");      // Must use DataDDS on receiving end
+    DataDDS dds(&factory, "Test_data", "DAP/3.2");      // Must use DataDDS on receiving end
 
+#if 0
     c.read_data_no_mime(dds, &r);
+#endif
+    c.read_data(dds, &r);
+
+    //cout << "Protocol version: " << dds.get_protocol() << endl;
 
     cout << "The data:" << endl;
     for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
@@ -563,6 +589,7 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
 
     server.tag_nested_sequences();      // Tag Sequences as Parent or Leaf node.
 
+#if 0
     if (eval.functional_expression()) {
         BaseType *var = eval.eval_function(server, dds_name);
         if (!var)
@@ -573,27 +600,55 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
         var->set_send_p(true);
         server.add_var(var);
     }
+#endif
+
+    if (eval.function_clauses()) {
+        DDS *fdds = eval.eval_function_clauses(server);
+
+        for (DDS::Vars_iter i = fdds->var_begin(); i != fdds->var_end(); i++)
+            if ((*i)->send_p())
+                (*i)->intern_data(eval, *fdds);
+
+        cout << "The data:\n";
+
+        // This code calls 'output_values()' because print_val() does not test
+        // the value of send_p(). We need to wrap a method around the calls to
+        // print_val() to ensure that only values for variables with send_p() set
+        // are called. In the serialize/deserialize case, the 'client' DDS only
+        // has variables sent by the 'server' but in the intern_data() case, the
+        // whole DDS is still present and only variables selected in the CE have
+        // values.
+        for (DDS::Vars_iter q = fdds->var_begin(); q != fdds->var_end(); q++) {
+            if ((*q)->send_p()) {
+                (*q)->print_decl(cout, "", false, false, true);
+                cout << " = ";
+                dynamic_cast<TestCommon&>(**q).output_values(cout);
+                cout << ";\n";
+            }
+        }
+
+        delete fdds;
+    }
     else {
         for (DDS::Vars_iter i = server.var_begin(); i != server.var_end(); i++)
             if ((*i)->send_p())
                 (*i)->intern_data(eval, server);
-    }
+        cout << "The data:\n";
 
-    cout << "The data:\n";
-
-    // This code calls 'output_values()' because print_val() does not test
-    // the value of send_p(). We need to wrap a method around the calls to
-    // print_val() to ensure that only values for variables with send_p() set
-    // are called. In the serialize/deserialize case, the 'client' DDS only
-    // has variables sent by the 'server' but in the intern_data() case, the
-    // whole DDS is still present and only variables selected in the CE have
-    // values.
-    for (DDS::Vars_iter q = server.var_begin(); q != server.var_end(); q++) {
-        if ((*q)->send_p()) {
-            (*q)->print_decl(cout, "", false, false, true);
-            cout << " = ";
-            dynamic_cast<TestCommon&>(**q).output_values(cout);
-            cout << ";\n";
+        // This code calls 'output_values()' because print_val() does not test
+        // the value of send_p(). We need to wrap a method around the calls to
+        // print_val() to ensure that only values for variables with send_p() set
+        // are called. In the serialize/deserialize case, the 'client' DDS only
+        // has variables sent by the 'server' but in the intern_data() case, the
+        // whole DDS is still present and only variables selected in the CE have
+        // values.
+        for (DDS::Vars_iter q = server.var_begin(); q != server.var_end(); q++) {
+            if ((*q)->send_p()) {
+                (*q)->print_decl(cout, "", false, false, true);
+                cout << " = ";
+                dynamic_cast<TestCommon&>(**q).output_values(cout);
+                cout << ";\n";
+            }
         }
     }
 }

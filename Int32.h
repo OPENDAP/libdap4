@@ -45,14 +45,16 @@
 #include "BaseType.h"
 #endif
 
+#if 0
 #ifndef constraint_evaluator_h
 #include "ConstraintEvaluator.h"
 #endif
-
-#define FILE_METHODS 1
+#endif
 
 namespace libdap
 {
+
+class ConstraintEvaluator;
 
 /** @brief Holds a 32-bit signed integer.
 
@@ -61,20 +63,8 @@ namespace libdap
 
 class Int32: public BaseType
 {
-    /** This class allows Byte, ..., Float64 access to <tt>_buf</tt> to
-    simplify and speed up the relational operators.
-
-    NB: According to Stroustrup it does not matter where (public, private
-    or protected) friend classes are declared. */
-    friend class Byte;
-    friend class Int16;
-    friend class UInt16;
-    friend class UInt32;
-    friend class Float32;
-    friend class Float64;
-
 protected:
-    dods_int32 _buf;
+    dods_int32 d_buf;
 
 public:
     Int32(const string &n);
@@ -99,10 +89,9 @@ public:
 
     virtual bool set_value(dods_int32 i);
     virtual dods_int32 value() const;
-#if FILE_METHODS
+
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
-#endif
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 

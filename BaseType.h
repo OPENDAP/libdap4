@@ -48,26 +48,19 @@
 #include <iostream>
 #include <string>
 
-#ifndef _attrtable_h
+// These are instantiated only for DAP4 variables
+#include "D4Dimensions.h"
+#include "D4Maps.h"
+
 #include "AttrTable.h"
-#endif
 
-#ifndef _internalerr_h
 #include "InternalErr.h"
-#endif
 
-#ifndef __DODS_DATATYPES_
 #include "dods-datatypes.h"
-#endif
 
-#ifndef A_DapObj_h
 #include "DapObj.h"
-#endif
 
-#include "Marshaller.h"
-#include "UnMarshaller.h"
-
-#define FILE_METHODS 1
+#include "XMLWriter.h"
 
 using namespace std;
 
@@ -76,6 +69,8 @@ namespace libdap
 
 class DDS;
 class ConstraintEvaluator;
+class Marshaller;
+class UnMarshaller;
 
 /** <b>Part</b> names the parts of multi-section constructor types.
     For example, the <b>Grid</b> class has an <i>array</i> and
@@ -86,9 +81,7 @@ class ConstraintEvaluator;
     enum Part {
     nil,
     array,
-    maps,
-    dap4_array,
-    dap4_map
+    maps
     };
     \endcode
 
@@ -100,13 +93,11 @@ class ConstraintEvaluator;
 enum Part {
     nil,   // nil is for types that don't have parts...
     array,
-    maps,
-    dap4_array,
-    dap4_map
+    maps
 };
 
 /** <b>Type</b> identifies the data type stored in a particular type
-    class.  All the DODS Data Access Protocol (DAP) types inherit from
+    class. All the DODS Data Access Protocol (DAP) types inherit from
     the BaseType class.
 
     \code
@@ -126,13 +117,14 @@ enum Part {
     dods_sequence_c,
     dods_grid_c,
 
-    dap4_group_c,	// dap4 prefix
-    dap4_grid_c,
-    dap4_sequence_c,
-    dap4_opaque_c,
+    dods_int8_c,
+    dods_uint8_c,
+    dods_int64_c,
+    dods_uint64_c,
+    dods_url4_c
+    dods_enum_c,
+    dods_group_c
 
-    dods_int64_c,	// Used 'dods_' for these
-    dods_uint64_c
     };
     \endcode
 
@@ -156,13 +148,18 @@ enum Type {
     dods_sequence_c,
     dods_grid_c,
 
-    dap4_group_c,	// dap4 prefix
-    dap4_grid_c,
-    dap4_sequence_c,
-    dap4_opaque_c,
+    // Added for DAP4
+    dods_int8_c,
+    dods_uint8_c,
 
-    dods_int64_c,	// Used 'dods_' for these
-    dods_uint64_c
+    dods_int64_c,
+    dods_uint64_c,
+
+    dods_url4_c,
+
+    dods_enum_c,
+    dods_group_c
+
 };
 
 /** This defines the basic data type features for the DODS data access
@@ -195,31 +192,20 @@ enum Type {
     the constraints
     to be returned. These cautions are outlined where they occur.
 
-    @todo We really need a better way to get values out of these types, esp.
-    the Float32, Int16, ..., types. In \e most cases we know the type, so a
-    type specific method (one that requires a downcast to use) is OK. For
-    example, Byte might have a method <tt>dods_byte Byte::value()</tt>. Sure
-    you have to downcast from BaseType to Byte in order to use it, but you
-    have to figure out you have a Byte to use Byte::buf2val() anyway, so
-    what's the big deal? Having a method that returns the \e value would
-    simplify code that reads from data sets to extract meta data (like
-    lat/lon corner points, et c.).
-
     @brief The basic data type for the DODS DAP types.  */
 
 class BaseType : public DapObj
 {
 private:
-    string _name;  // name of the instance
-    Type _type;   // instance's type
-    string _dataset; // name of the dataset used to create this BaseType
+    string d_name;  // name of the instance
+    Type d_type;   // instance's type
+    string d_dataset; // name of the dataset used to create this BaseType
 
-    bool _read_p;  // true if the value has been read
-    bool _send_p;  // Is the variable in the projection?
+    bool d_is_read;  // true if the value has been read
+    bool d_is_send;  // Is the variable in the projection?
     bool d_in_selection; // Is the variable in the selection?
-#if 0
-    bool _synthesized_p; // true if the variable is synthesized
-#endif
+    bool d_is_synthesized; // true if the variable is synthesized
+
     // d_parent points to the Constructor or Vector which holds a particular
     // variable. It is null for simple variables. The Vector and Constructor
     // classes must maintain this variable.
@@ -228,15 +214,30 @@ private:
     // Attributes for this variable. Added 05/20/03 jhrg
     AttrTable d_attr;
 
+    bool d_is_dap4;         // True if this is a DAP4 variable, false ... DAP2
+
+    // These are non-empty only for DAP4 variables. Added 9/27/12 jhrg
+
+    // FIXME Remove this. This header cannot have compile-time variation
+#if DAP4
+    D4Dimensions d_dims;   // If non-empty, this BaseType is an DAP4 Array
+    D4Maps d_maps;         // if non-empty, this BaseType is a DAP4 'Grid'
+#endif
+
 protected:
-    void _duplicate(const BaseType &bt);
+    void m_duplicate(const BaseType &bt);
 
 public:
     typedef stack<BaseType *> btp_stack;
 
-    BaseType(const string &n, const Type &t);
-    BaseType(const string &n, const string &d, const Type &t);
-
+    // These ctors assume is_dap4 is false
+    BaseType(const string &n, const Type &t, bool is_dap4 = false);
+    BaseType(const string &n, const string &d, const Type &t, bool is_dap4 = false);
+#if 0
+    // These provide a way to set is_dap4
+    BaseType(const string &n, const Type &t, bool is_dap4);
+    BaseType(const string &n, const string &d, const Type &t, bool is_dap4);
+#endif
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();
 
@@ -245,6 +246,9 @@ public:
     virtual void dump(ostream &strm) const ;
 
     BaseType &operator=(const BaseType &rhs);
+
+    bool is_dap4() { return d_is_dap4; }
+    void set_is_dap4(const bool v) { d_is_dap4 = v;}
 
     /** Clone this instance. Allocate a new instance and copy \c *this into
 	it. This method must perform a deep copy.
@@ -266,10 +270,15 @@ public:
     virtual bool is_simple_type();
     virtual bool is_vector_type();
     virtual bool is_constructor_type();
+
 #if 0
+    // Not yet, if ever. Allow 'sloppy' changeover in the handlers
+    virtual bool is_dap4_only_type();
+    virtual bool is_dap2_only_type();
+#endif
     virtual bool synthesized_p();
     virtual void set_synthesized_p(bool state);
-#endif
+
     virtual int element_count(bool leaves = false);
 
     virtual bool read_p();
@@ -286,6 +295,8 @@ public:
 
     virtual void set_parent(BaseType *parent);
     virtual BaseType *get_parent();
+
+    virtual void transfer_attributes(AttrTable *at);
 
     // I put this comment here because the version in BaseType.cc does not
     // include the exact_match or s variables since they are not used. Doxygen
@@ -321,8 +332,7 @@ public:
         no name is given, the function returns the first (only)
         variable. For example, an Array has only one variable, while a
         Structure can have many. */
-    virtual BaseType *var(const string &name = "", bool exact_match = true,
-                          btp_stack *s = 0);
+    virtual BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = 0);
     virtual BaseType *var(const string &name, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part = nil);
@@ -332,7 +342,7 @@ public:
     virtual bool check_semantics(string &msg, bool all = false);
 
     virtual bool ops(BaseType *b, int op);
-#if FILE_METHODS
+
     virtual void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
@@ -340,7 +350,7 @@ public:
 
     virtual void print_xml(FILE *out, string space = "    ",
                            bool constrained = false);
-#endif
+
     virtual void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
@@ -348,6 +358,8 @@ public:
 
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
+
+    virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
 
     /** @name Abstract Methods */
     //@{
@@ -360,10 +372,11 @@ public:
 	the characters, since that value cannot be determined from
 	type information alone. For Structure, and other constructor
 	types size() returns the number of bytes needed to store
-	the contained C++ objects.
+	pointers to the C++ objects.
 
 	@brief Returns the size of the class instance data. */
     virtual unsigned int width() = 0;
+    virtual unsigned int width(bool constrained);
 
     /** Reads the class data into the memory referenced by <i>val</i>.
 	The caller should either allocate enough storage to <i>val</i>
@@ -373,7 +386,7 @@ public:
 	caller is responsible for deallocating that memory. Array and
 	values for simple types are stored as C would store an array.
 
-	@deprecated Use value() in the leaf classes.
+    @deprecated Use value() in the leaf classes.
 
 	@brief Reads the class data.
 
@@ -439,7 +452,7 @@ public:
 
 	This function is only used on the server side of the
 	client/server connection, and is generally only called from
-	the DODSFilter::send() function. It has no BaseType
+	the ResponseBuilder functions. It has no BaseType
 	implementation; each datatype child class supplies its own
 	implementation.
 
@@ -488,7 +501,6 @@ public:
 	@see DDS */
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) = 0;
 
-#if FILE_METHODS
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS
 	applications. However, it can be overloaded and used to do
@@ -506,7 +518,6 @@ public:
 
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true) = 0;
-#endif
 
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS

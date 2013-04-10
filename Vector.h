@@ -111,6 +111,8 @@ public:
     Vector &operator=(const Vector &rhs);
     virtual BaseType *ptr_duplicate() = 0;
 
+    virtual bool is_dap2_only_type();
+
     virtual void set_name(const std::string& name);
 
     virtual int element_count(bool leaves);
@@ -180,6 +182,8 @@ public:
     virtual BaseType *var(unsigned int i);
 
     virtual void add_var(BaseType *v, Part p = nil);
+    virtual void add_var_nocopy(BaseType *v, Part p = nil);
+
     virtual bool check_semantics(string &msg, bool all = false);
 
     virtual void dump(ostream &strm) const ;

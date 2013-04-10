@@ -1,0 +1,32 @@
+The complete DDS:
+Dataset {
+    Grid {
+      Array:
+        Byte SST[lat = 13][lon = 11];
+      Maps:
+        Float32 lat[13];
+        Float32 lon[11];
+    } SST;
+    Grid {
+      Array:
+        Byte AIRT[lat = 13][lon = 11];
+      Maps:
+        Float32 lat[13];
+        Float32 lon[11];
+    } AIRT;
+} SST_grid;
+The data:
+Grid {
+  Array:
+    Byte SST[lat = 3][lon = 3];
+  Maps:
+    Float32 lat[3];
+    Float32 lon[3];
+} SST = {  Array: {{156, 157, 158},{167, 168, 169},{178, 179, 180}}  Maps: {64, 51, 38}, {96, 128, 160} };
+Grid {
+  Array:
+    Byte AIRT[lat = 3][lon = 3];
+  Maps:
+    Float32 lat[3];
+    Float32 lon[3];
+} AIRT = {  Array: {{156, 157, 158},{167, 168, 169},{178, 179, 180}}  Maps: {64, 51, 38}, {96, 128, 160} };

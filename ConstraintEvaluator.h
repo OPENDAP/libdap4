@@ -27,6 +27,14 @@
 
 #include <list>
 
+#ifndef _dds_h
+#include "DDS.h"
+#endif
+
+#ifndef _datadds_h
+#include "DataDDS.h"
+#endif
+
 #ifndef _clause_h
 #include "Clause.h"
 #endif
@@ -34,10 +42,13 @@
 namespace libdap
 {
 
+class ServerFunctionsList;
+
 /** @brief Evaluate a constraint expression */
 class ConstraintEvaluator
 {
 private:
+#if 0
     // This struct is used to hold all the known `user defined' functions
     // (including those that are `built-in').
     struct function
@@ -59,12 +70,15 @@ private:
         function(): name(""), bt_func(0), p_func(0)
         {}
     };
-
+#endif
     vector<Clause *> expr;      // List of CE Clauses
 
     vector<BaseType *> constants;// List of temporary objects
-
+#if 0
     list<function> functions; // Known external functions
+#endif
+    ServerFunctionsList *d_functions_list;  // Know external functions from
+                                            // modules
 
     // The default versions of these methods will break this class. Because
     // Clause does not support deep copies, that class will need to be modified
@@ -84,17 +98,19 @@ public:
 
     typedef std::vector<BaseType *>::const_iterator Constants_citer ;
     typedef std::vector<BaseType *>::iterator Constants_iter ;
-
+#if 0
     typedef std::list<function>::const_iterator Functions_citer ;
     typedef std::list<function>::iterator Functions_iter ;
+#endif
 
     ConstraintEvaluator();
-    virtual ~ConstraintEvaluator();
 
+    virtual ~ConstraintEvaluator();
+#if 0
     void add_function(const string &name, bool_func f);
     void add_function(const string &name, btp_func f);
     void add_function(const string &name, proj_func f);
-
+#endif
     bool find_function(const string &name, bool_func *f) const;
     bool find_function(const string &name, btp_func *f) const;
     bool find_function(const string &name, proj_func *f) const;
@@ -108,10 +124,15 @@ public:
     bool eval_selection(DDS &dds, const string &dataset);
     BaseType *eval_function(DDS &dds, const string &dataset);
 
+    // New for libdap 3.11. These methods provide a way to evaluate multiple
+    // functions in one CE
+    bool function_clauses();
+    DDS *eval_function_clauses(DDS &dds);
+    DataDDS *eval_function_clauses(DataDDS &dds);
 
     Clause_iter clause_begin();
     Clause_iter clause_end();
-    bool clause_value(Clause_iter &i, DDS &dds/*, const string &dataset***/);
+    bool clause_value(Clause_iter &i, DDS &dds);
 
     void parse_constraint(const string &constraint, DDS &dds);
     void append_constant(BaseType *btp);

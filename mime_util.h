@@ -54,25 +54,38 @@ namespace libdap
 
 /** The CGI utilities include a variety of functions useful to
     programmers developing OPeNDAP CGI filter programs. However, before jumping
-    in and using these, look at the class DODSFilter. Always choose to use
-    that class over these functions if you can.
+    in and using these, look at the class ResponseBuilder. Always choose to use
+    that class over these functions if you can. Many of these functions were used
+    by the CGI programs that made up the first DAP server; all of those are
+    deprecated and the ResponseBuilder class should be used instead. Some of
+    the other functions are used by ResponseBuilder and the client-side parsing
+    code that needs to identify MIME headers, boundaries, etc.
 
-    @name CGI Utilities
-    @brief A collection of useful functions for writing OPeNDAP servers.
-    @see DODSFilter
+    @name MIME Utilities
+    @brief A collection of useful functions for writing MIME headers for
+    OPeNDAP servers.
+    @see ResponseBuilder, Connect, DDXParserSAX2
     */
 
 //@{
-
-bool do_version(const string &script_ver, const string &dataset_ver);
-
-void ErrMsgT(const string &Msgt);
-
+string rfc822_date(const time_t t);
+time_t last_modified_time(const string &name);
+ObjectType get_description_type(const string &value);
+bool is_boundary(const char *line, const string &boundary);
+string cid_to_header_value(const string &cid);
+string read_multipart_boundary(FILE *in, const string &boundary = "");
+void parse_mime_header(const string &header, string &name, string &value);
 string name_path(const string &path);
 
-string rfc822_date(const time_t t);
-
-time_t last_modified_time(const string &name);
+// All of these are deprecated
+bool do_version(const string &script_ver, const string &dataset_ver);
+void ErrMsgT(const string &Msgt);
+ObjectType get_type(const string &value);
+bool remove_mime_header(FILE *in);
+string get_next_mime_header(FILE *in);
+#if 0
+bool found_override(string name, string &doc);
+#endif
 //@}
 
 /** These functions are used to create the MIME headers for a message
@@ -82,6 +95,7 @@ time_t last_modified_time(const string &name);
     NB: These functions actually write both the response status line
     <i>and</i> the header.
 
+    @deprecated Use ResponseBuilder instead.
     @name MIME utility functions
     @see DODSFilter
 */
@@ -135,18 +149,6 @@ void set_mime_not_modified(ostream &out);
 
 
 //@}
-
-ObjectType get_type(const string &value); // deprecated
-ObjectType get_description_type(const string &value);
-
-bool is_boundary(const char *line, const string &boundary);
-string cid_to_header_value(const string &cid);
-string read_multipart_boundary(FILE *in, const string &boundary = "");
-bool remove_mime_header(FILE *in);
-string get_next_mime_header(FILE *in);
-void parse_mime_header(const string &header, string &name, string &value);
-
-bool found_override(string name, string &doc);
 
 } // namespace libdap
 

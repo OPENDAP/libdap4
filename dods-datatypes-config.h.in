@@ -23,7 +23,7 @@
    the dods-datatypes.h header when its contents change. This saves on
    compilation since the header is used by many files in the dap++ library.
    The downside is that the typedefs are so ugly... 2/14/2001 jhrg */
-
+   
 #undef DINT32
 typedef DINT32 dods_int32;
 
@@ -43,7 +43,16 @@ typedef DBYTE dods_byte;
 typedef DFLOAT64 dods_float64;
 
 #undef DFLOAT32
-typedef DFLOAT32 dods_float32;		
+typedef DFLOAT32 dods_float32;	
+
+#undef DINT8
+typedef DINT8 dods_int8;
+
+#undef DINT64
+typedef DINT64 dods_int64;
+
+#undef DUINT64
+typedef DUINT64 dods_uint64;
 
 #endif /* __DODS_DATATYPES__ */
 

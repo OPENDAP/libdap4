@@ -35,10 +35,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    { "$Id$"
-    };
-
 #ifdef WIN32
 #include <io.h>
 #include <fcntl.h>

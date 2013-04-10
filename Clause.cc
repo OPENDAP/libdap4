@@ -52,13 +52,13 @@ using std::endl;
 namespace libdap {
 
 Clause::Clause(const int oper, rvalue *a1, rvalue_list *rv)
-        : _op(oper), _b_func(0), _bt_func(0), _arg1(a1), _args(rv)
+        : _op(oper), _b_func(0), _bt_func(0), _argc(0), _arg1(a1), _args(rv)
 {
     assert(OK());
 }
 #if 1
 Clause::Clause(bool_func func, rvalue_list *rv)
-        : _op(0), _b_func(func), _bt_func(0), _arg1(0), _args(rv)
+        : _op(0), _b_func(func), _bt_func(0), _argc(0), _arg1(0), _args(rv)
 {
     assert(OK());
 
@@ -69,7 +69,7 @@ Clause::Clause(bool_func func, rvalue_list *rv)
 }
 #endif
 Clause::Clause(btp_func func, rvalue_list *rv)
-        : _op(0), _b_func(0), _bt_func(func), _arg1(0), _args(rv)
+        : _op(0), _b_func(0), _bt_func(func), _argc(0), _arg1(0), _args(rv)
 {
     assert(OK());
 
@@ -79,7 +79,7 @@ Clause::Clause(btp_func func, rvalue_list *rv)
         _argc = 0;
 }
 
-Clause::Clause() : _op(0), _b_func(0), _bt_func(0), _arg1(0), _args(0)
+Clause::Clause() : _op(0), _b_func(0), _bt_func(0), _argc(0), _arg1(0), _args(0)
 {}
 
 static inline void
@@ -146,9 +146,10 @@ Clause::value_clause()
 /** @brief Evaluate a clause which returns a boolean value
     This method must only be evaluated for clauses with relational
     expressions or boolean functions.
-    @param dataset This is passed to the rvalue::bvalue() method.
+
     @param dds Use variables from this DDS when evaluating the
     expression
+
     @return True if the clause is true, false otherwise.
     @exception InternalErr if called for a clause that returns a
     BaseType pointer. */
@@ -191,12 +192,12 @@ Clause::value(DDS &dds)
 
 /** @brief Evaluate a clause that returns a value via a BaseType
     pointer.
-    This method must only be evaluated for clauses with relational
-    expressions or boolean functions.
-    @param dataset This is passed to the function.
+    This method should be called only for those clauses that return values.
+
     @param dds Use variables from this DDS when evaluating the
     expression
     @param value A value-result parameter
+
     @return True if the the BaseType pointer is not null, false otherwise.
     @exception InternalErr if called for a clause that returns a
     boolean value. Not that this method itself \e does return a
@@ -219,6 +220,18 @@ Clause::value(DDS &dds, BaseType **value)
         argv = 0;
 
         if (*value) {
+            // FIXME This comment is likely wrong... 10/19/12
+            // This call to set_send_p was removed because new logic used
+            // in ResponseBuilder will handle it. See send_data(), ...
+            // When the second part of the CE is parsed, if it is null,
+            // then all the variables in the DDS that holds the function
+            // result variables will be sent. If there's a projection in
+            // that second CE, it will denote what is to be sent. Setting
+            // set_send_p(true) here had the affect of overriding that
+            // second CE. Note, however, that the code in send_data() clears
+            // all of the send_p properties for variables in the DDS, so
+            // removing the call here is just removing something that will
+            // actually have no affect. jhrg 10/19/12
             (*value)->set_send_p(true);
             (*value)->set_read_p(true);
             return true;

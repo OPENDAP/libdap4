@@ -66,13 +66,13 @@ TestFloat32::_duplicate(const TestFloat32 &ts)
 
 TestFloat32::TestFloat32(const string &n) : Float32(n), d_series_values(false)
 {
-    _buf = 0.0;
+    d_buf = 0.0;
 }
 
 TestFloat32::TestFloat32(const string &n, const string &d)
     : Float32(n, d), d_series_values(false)
 {
-    _buf = 0.0;
+    d_buf = 0.0;
 }
 
 TestFloat32::TestFloat32(const TestFloat32 &rhs) : Float32(rhs), TestCommon(rhs)
@@ -116,19 +116,19 @@ TestFloat32::read()
 	sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
-        _buf += 10.0;
-        _buf = (float)(trunc(10000 * sin(trunc(_buf))) / 100);
+        d_buf += 10.0;
+        d_buf = (float)(trunc(10000 * sin(trunc(d_buf))) / 100);
 	/*
-	_buf -= 0.11 ;
+	d_buf -= 0.11 ;
 	*/
     }
     else {
-        _buf = (float)99.999;
+        d_buf = (float)99.999;
     }
     
     set_read_p(true);
 
-    DBG(cerr << "In TestFloat32::read, _buf = " << _buf << endl);
+    DBG(cerr << "In TestFloat32::read, _buf = " << d_buf << endl);
     
     return true;
 }

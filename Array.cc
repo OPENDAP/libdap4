@@ -36,14 +36,15 @@
 
 #include "config.h"
 
+#include <algorithm>
+#include <functional>
+#include <sstream>
+
 #include "Array.h"
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
 #include "escaping.h"
-
-#include <algorithm>
-#include <functional>
 
 using namespace std;
 
@@ -61,12 +62,11 @@ Array::_duplicate(const Array &a)
 // in which case that means they want the whole thing. Array projection
 // should probably work this way too, but it doesn't. 9/21/2001 jhrg
 
-/** @deprecated Calling this method should never be necessary. It is called
-    whenever the size of the Array is changed.
+/** @deprecated Calling this method should never be necessary. It is used
+    internally called whenever the size of the Array is changed, e.g., by a
+    constraint.
 
-    Changes the size property of the array.  If the array
-    exists, it is augmented by a factor of <tt>size</tt>. This does
-    not change the actual size of the array.
+    Changes the length property of the array.
 */
 void
 Array::update_length(int)
@@ -94,12 +94,12 @@ Array::update_length(int)
     @param n A string containing the name of the variable to be
     created.
     @param v A pointer to a variable of the type to be included
-    in the Array.
+    in the Array. May be null and set later using add_var() or add_var_nocopy()
     @brief Array constructor
 */
 Array::Array(const string &n, BaseType *v) : Vector(n, 0, dods_array_c)
 {
-    add_var(v); // Vector::add_var() stores null is v is null
+    add_var(v); // Vector::add_var() stores null if v is null
 }
 
 /** Build an array on the server-side with a name, a dataset name from which
@@ -162,11 +162,16 @@ Array::operator=(const Array &rhs)
     <tt>v</tt>'s name is null, then assume that the array \e is named and
     don't overwrite it with <tt>v</tt>'s null name.
 
+    @note It is possible for the BaseType pointer to be null when this
+    method is called, a behavior that differs considerably from that of
+    the other 'add_var()' methods.
+
     @note This version checks to see if \e v is an array. If so, it calls
     Vector::add_var() using the template variable of \e v and then appends
     the dimensions of \e v to this array. This somewhat obscure behavior
     simplifies 'translating' Sequences to arrays when the actual variable
     being translated is not a regular Sequence but an array of Sequences.
+    This is of very debatable usefulness, but it's here all the same.
 
     @param v The template variable for the array
     @param p The Part parameter defaults to nil and is ignored by this method.
@@ -175,9 +180,42 @@ Array::operator=(const Array &rhs)
 void
 Array::add_var(BaseType *v, Part)
 {
+#if 0
+    if (v && v->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Array.");
+#endif
+    // If 'v' is an Array, add the template instance to this object and
+    // then copy the dimension information. Odd semantics; I wonder if this
+    //is ever used. jhrg 6/13/12
+    if (v && v->type() == dods_array_c) {
+        Array *a = static_cast<Array*>(v);
+        Vector::add_var(a->var());
+
+        Dim_iter i = a->dim_begin();
+        Dim_iter i_end = a->dim_end();
+        while (i != i_end) {
+            append_dim(a->dimension_size(i), a->dimension_name(i));
+            ++i;
+        }
+    }
+    else {
+        Vector::add_var(v);
+    }
+}
+
+void
+Array::add_var_nocopy(BaseType *v, Part)
+{
+#if 0
+    if (v && v->is_dap4_only_type())
+        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Array.");
+#endif
+    // If 'v' is an Array, add the template instance to this object and
+    // then copy the dimension information. Odd semantics; I wonder if this
+    //is ever used. jhrg 6/13/12
     if (v && v->type() == dods_array_c) {
         Array &a = dynamic_cast<Array&>(*v);
-        Vector::add_var(a.var());
+        Vector::add_var_nocopy(a.var());
         Dim_iter i = a.dim_begin();
         Dim_iter i_end = a.dim_end();
         while (i != i_end) {
@@ -186,7 +224,7 @@ Array::add_var(BaseType *v, Part)
         }
     }
     else {
-        Vector::add_var(v);
+        Vector::add_var_nocopy(v);
     }
 }
 
@@ -219,6 +257,32 @@ Array::append_dim(int size, string name)
     _shape.push_back(d);
 
     update_length(size);
+}
+
+/** Creates a new OUTER dimension (slowest varying in rowmajor)
+ * for the array by prepending rather than appending it.
+ * @param size cardinality of the new dimension
+ * @param name  optional name for the new dimension
+ */
+void
+Array::prepend_dim(int size, const string& name/* = "" */)
+{
+  dimension d;
+
+  // This is invariant
+  d.size = size;
+  d.name = www2id(name);
+
+  // this information changes with each constraint expression
+  d.start = 0;
+  d.stop = size - 1;
+  d.stride = 1;
+  d.c_size = size;
+
+  // Shifts the whole array, but it's tiny in general
+  _shape.insert(_shape.begin(), d);
+
+  update_length(size); // the number is ignored...
 }
 
 /** Resets the dimension constraint information so that the entire
@@ -288,6 +352,11 @@ Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 {
     dimension &d = *i ;
 
+    // if stop is -1, set it to the array's max element index
+    // jhrg 12/20/12
+    if (stop == -1)
+        stop = d.size - 1;
+
     // Check for bad constraints.
     // Jose Garcia
     // Usually invalid data for a constraint is the user's mistake
@@ -335,6 +404,7 @@ Array::dim_end()
 unsigned int
 Array::dimensions(bool /*constrained*/)
 {
+    // TODO This could be _shape.end() - _shape.begin()
     unsigned int dim = 0;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
         dim++;
@@ -472,7 +542,27 @@ Array::dimension_name(Dim_iter i)
     return (*i).name;
 }
 
-#if FILE_METHODS
+/** Returns the number of bytes needed to hold the array.
+
+    @brief Returns the width of the data, in bytes. */
+unsigned int Array::width(bool constrained)
+{
+
+	if (constrained) {
+		// This preserves the original method's semantics when we ask for the
+		// size of the constrained array but no constraint has been applied.
+		// In this case, length will be -1. Wrong, I know...
+		return length() * var()->width(constrained);
+	}
+	else {
+		int length = 1;
+		for (Dim_iter i = _shape.begin(); i != _shape.end(); i++) {
+			length *= dimension_size(i, false);
+		}
+		return length * var()->width(false);
+	}
+}
+
 /** Prints a declaration for the Array.  This is what appears in a
     DDS.  If the Array is constrained, the declaration will reflect
     the size of the Array once the constraint is applied.
@@ -494,30 +584,10 @@ void
 Array::print_decl(FILE *out, string space, bool print_semi,
                   bool constraint_info, bool constrained)
 {
-    if (constrained && !send_p())
-        return;
-
-    // print it, but w/o semicolon
-    var()->print_decl(out, space, false, constraint_info, constrained);
-
-    for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
-        fprintf(out, "[") ;
-        if ((*i).name != "") {
-            fprintf(out, "%s = ", id2www((*i).name).c_str()) ;
-        }
-        if (constrained) {
-            fprintf(out, "%d]", (*i).c_size) ;
-        }
-        else {
-            fprintf(out, "%d]", (*i).size) ;
-        }
-    }
-
-    if (print_semi) {
-        fprintf(out, ";\n") ;
-    }
+    ostringstream oss;
+    print_decl(oss, space, print_semi, constraint_info, constrained);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
-#endif
 
 /** Prints a declaration for the Array.  This is what appears in a
     DDS.  If the Array is constrained, the declaration will reflect
@@ -563,179 +633,169 @@ Array::print_decl(ostream &out, string space, bool print_semi,
 	out << ";\n" ;
     }
 }
-#if FILE_METHODS
+
+/**
+ * @deprecated
+ */
 void
 Array::print_xml(FILE *out, string space, bool constrained)
 {
-    print_xml_core(out, space, constrained, "Array");
+    XMLWriter xml(space);
+    print_xml_writer_core(xml, constrained, "Array");
+    fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
 }
-#endif
+
+/**
+ * @deprecated
+ */
 void
 Array::print_xml(ostream &out, string space, bool constrained)
 {
-    print_xml_core(out, space, constrained, "Array");
+    XMLWriter xml(space);
+    print_xml_writer_core(xml, constrained, "Array");
+    out << xml.get_doc();
 }
-#if FILE_METHODS
+
+/**
+ * @deprecated
+ */
 void
 Array::print_as_map_xml(FILE *out, string space, bool constrained)
 {
-    print_xml_core(out, space, constrained, "Map");
+    XMLWriter xml(space);
+    print_xml_writer_core(xml, constrained, "Map");
+    fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
 }
-#endif
+
+/**
+ * @deprecated
+ */
 void
 Array::print_as_map_xml(ostream &out, string space, bool constrained)
 {
-    print_xml_core(out, space, constrained, "Map");
+    XMLWriter xml(space);
+    print_xml_writer_core(xml, constrained, "Map");
+    out << xml.get_doc();
 }
-#if FILE_METHODS
-class PrintArrayDim : public unary_function<Array::dimension&, void>
-{
-    FILE *d_out;
-    string d_space;
-    bool d_constrained;
-public:
-    PrintArrayDim(FILE *o, string s, bool c)
-            : d_out(o), d_space(s), d_constrained(c)
-    {}
 
-    void operator()(Array::dimension &d)
-    {
-        int size = d_constrained ? d.c_size : d.size;
-        if (d.name.empty())
-            fprintf(d_out, "%s<dimension size=\"%d\"/>\n", d_space.c_str(),
-                    size);
-        else
-            fprintf(d_out, "%s<dimension name=\"%s\" size=\"%d\"/>\n",
-                    d_space.c_str(), id2xml(d.name).c_str(), size);
-    }
-};
-
+/**
+ * @deprecated
+ */
 void
 Array::print_xml_core(FILE *out, string space, bool constrained, string tag)
 {
-    if (constrained && !send_p())
-        return;
-
-    fprintf(out, "%s<%s", space.c_str(), tag.c_str());
-    if (!name().empty())
-        fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
-    fprintf(out , ">\n");
-
-    get_attr_table().print_xml(out, space + "    ", constrained);
-
-    BaseType *btp = var();
-    string tmp_name = btp->name();
-    btp->set_name("");
-    btp->print_xml(out, space + "    ", constrained);
-    btp->set_name(tmp_name);
-
-    for_each(dim_begin(), dim_end(),
-             PrintArrayDim(out, space + "    ", constrained));
-
-    fprintf(out, "%s</%s>\n", space.c_str(), tag.c_str());
+    XMLWriter xml(space);
+    print_xml_writer_core(xml, constrained, tag);
+    fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
 }
-#endif
 
-class PrintArrayDimStrm : public unary_function<Array::dimension&, void>
+/**
+ * @deprecated
+ */
+void
+Array::print_xml_core(ostream &out, string space, bool constrained, string tag)
 {
-    ostream &d_out;
-    string d_space;
+    XMLWriter xml(space);
+    print_xml_writer_core(xml, constrained, tag);
+    out << xml.get_doc();
+}
+
+void
+Array::print_xml_writer(XMLWriter &xml, bool constrained)
+{
+    print_xml_writer_core(xml, constrained, "Array");
+}
+
+void
+Array::print_as_map_xml_writer(XMLWriter &xml, bool constrained)
+{
+    print_xml_writer_core(xml, constrained, "Map");
+}
+
+class PrintArrayDimXMLWriter : public unary_function<Array::dimension&, void>
+{
+    XMLWriter &xml;
     bool d_constrained;
 public:
-    PrintArrayDimStrm(ostream &o, string s, bool c)
-            : d_out(o), d_space(s), d_constrained(c)
-    {}
+    PrintArrayDimXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) {}
 
     void operator()(Array::dimension &d)
     {
-        int size = d_constrained ? d.c_size : d.size;
-        if (d.name.empty())
-	    d_out << d_space << "<dimension size=\"" << size << "\"/>\n" ;
-        else
-	    d_out << d_space << "<dimension name=\"" << id2xml(d.name)
-	          << "\" size=\"" << size << "\"/>\n" ;
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)"dimension") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write dimension element");
+
+        if (!d.name.empty())
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d.name.c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+        ostringstream size;
+        size << (d_constrained ? d.c_size : d.size);
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "size", (const xmlChar*)size.str().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not end dimension element");
     }
 };
 
 void
-Array::print_xml_core(ostream &out, string space, bool constrained, string tag)
+Array::print_xml_writer_core(XMLWriter &xml, bool constrained, string tag)
 {
     if (constrained && !send_p())
         return;
 
-    out << space << "<" << tag ;
-    if (!name().empty())
-	out << " name=\"" << id2xml(name()) << "\"" ;
-    out << ">\n" ;
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)tag.c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write " + tag + " element");
 
-    get_attr_table().print_xml(out, space + "    ", constrained);
+    if (!name().empty())
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+    get_attr_table().print_xml_writer(xml);
 
     BaseType *btp = var();
     string tmp_name = btp->name();
     btp->set_name("");
-    btp->print_xml(out, space + "    ", constrained);
+    btp->print_xml_writer(xml, constrained);
     btp->set_name(tmp_name);
 
-    for_each(dim_begin(), dim_end(),
-             PrintArrayDimStrm(out, space + "    ", constrained));
+    for_each(dim_begin(), dim_end(), PrintArrayDimXMLWriter(xml, constrained));
 
-    out << space << "</" << tag << ">\n" ;
+    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not end " + tag + " element");
 }
 
-#if FILE_METHODS
 /** Prints the values in ASCII of the entire (constrained) array. This method
     Attempts to make an aesthetically pleasing display. However, it is
     primarily intended for debugging purposes.
 
     @param out Write the output to this FILE *.
-    @param space The space to use in printing.
-    @param print_decl_p A boolean value indicating whether you want
-    the Array declaration to precede the Array value.
+    @param index
+    @param dims
+    @param shape
+
     @brief Print the value given the current constraint.
 */
 unsigned int
 Array::print_array(FILE *out, unsigned int index, unsigned int dims,
                    unsigned int shape[])
 {
-    if (dims == 1) {
-        fprintf(out, "{") ;
-        for (unsigned i = 0; i < shape[0] - 1; ++i) {
-            var(index++)->print_val(out, "", false);
-            fprintf(out, ", ") ;
-        }
-        var(index++)->print_val(out, "", false);
-        fprintf(out, "}") ;
+    ostringstream oss;
+    unsigned int i = print_array(oss, index, dims, shape);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 
-        return index;
-    }
-    else {
-        fprintf(out, "{") ;
-        // Fixed an off-by-one error in the following loop. Since the array
-        // length is shape[dims-1]-1 *and* since we want one less dimension
-        // than that, the correct limit on this loop is shape[dims-2]-1. From
-        // Todd Karakasian.
-        // The saga continues; the loop test should be `i < shape[0]-1'. jhrg
-        // 9/12/96.
-        for (unsigned i = 0; i < shape[0] - 1; ++i) {
-            index = print_array(out, index, dims - 1, shape + 1);
-            fprintf(out, ",") ;   // Removed the extra `}'. Also from Todd
-        }
-        index = print_array(out, index, dims - 1, shape + 1);
-        fprintf(out, "}") ;
-
-        return index;
-    }
+    return i;
 }
-#endif
 
 /** Prints the values in ASCII of the entire (constrained) array. This method
     Attempts to make an anesthetically pleasing display. However, it is
     primarily intended for debugging purposes.
 
     @param out Write the output to this ostream
-    @param space The space to use in printing.
-    @param print_decl_p A boolean value indicating whether you want
-    the Array declaration to precede the Array value.
+    @param index
+    @param dims
+    @param shape
+
     @brief Print the value given the current constraint.
 */
 unsigned int
@@ -772,35 +832,13 @@ Array::print_array(ostream &out, unsigned int index, unsigned int dims,
     }
 }
 
-#if FILE_METHODS
 void
 Array::print_val(FILE *out, string space, bool print_decl_p)
 {
-    // print the declaration if print decl is true.
-    // for each dimension,
-    //   for each element,
-    //     print the array given its shape, number of dimensions.
-    // Add the `;'
-
-    if (print_decl_p) {
-        print_decl(out, space, false, false, false);
-        fprintf(out, " = ") ;
-    }
-
-    unsigned int *shape = new unsigned int[_shape.size()];
-    unsigned int index = 0;
-    for (Dim_iter i = _shape.begin(); i != _shape.end() && index < _shape.size(); i++)
-        shape[index++] = dimension_size(i, true);
-
-    print_array(out, 0, _shape.size(), shape);
-
-    delete [] shape; shape = 0;
-
-    if (print_decl_p) {
-        fprintf(out, ";\n") ;
-    }
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
-#endif
 
 void
 Array::print_val(ostream &out, string space, bool print_decl_p)

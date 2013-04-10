@@ -24,10 +24,10 @@ Attributes {
 
     huh {
         String long_name "The Grid huh";
-	colors {
-	    String long_name "The color map vector";
+	    colors {
+	        String long_name "The color map vector";
         }
-	Image#data {
-	}
+	    Image#data {
+	    }
     }
 }

@@ -46,9 +46,11 @@
 
 #include "config.h"
 
-#ifndef WIN32
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#else
+#endif
+
+#ifdef WIN32
 #include <io.h>
 #include <fcntl.h>
 #include <process.h>
@@ -82,13 +84,13 @@ TestByte::_duplicate(const TestByte &ts)
 
 TestByte::TestByte(const string &n) : Byte(n), d_series_values(false)
 {
-    _buf = 255;
+    d_buf = 255;
 }
 
 TestByte::TestByte(const string &n, const string &d)
     : Byte(n, d), d_series_values(false)
 {
-    _buf = 255;
+    d_buf = 255;
 }
 
 BaseType *
@@ -136,15 +138,15 @@ TestByte::read()
 	sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
-         _buf++;
+         d_buf++;
     }
     else {
-        _buf = 255;
+        d_buf = 255;
     }
 
     set_read_p(true);
 
-    DBG(cerr << "In TestByte::read, _buf = " << (int)_buf << endl);
+    DBG(cerr << "In TestByte::read, _buf = " << (int)d_buf << endl);
 
     return true;
 }

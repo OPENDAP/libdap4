@@ -63,7 +63,7 @@ TestGrid::output_values(std::ostream &out)
     bool pyg = projection_yields_grid();
     if (pyg)
         out << "{  Array: " ;
-    else if (components(true) > 1)
+    else //if (components(true) > 1)
         out << "{ " ;
 
     if (array_var()->send_p()) {
@@ -99,7 +99,7 @@ TestGrid::output_values(std::ostream &out)
         }
     }
 
-    if (pyg || components(true) > 1) 
+    //if (pyg || components(true) > 1)
         out << " }" ;
 }
 
@@ -130,20 +130,17 @@ TestGrid::~TestGrid()
 {
 }
 
-bool
-TestGrid::read()
+bool TestGrid::read()
 {
     if (read_p())
-	return true;
+        return true;
 
     get_array()->read();
 
-    for (Map_iter i = map_begin(); i != map_end(); i++)
-    {
-	if (!(*i)->read())
-	{
-	    return false;
-	}
+    for (Map_iter i = map_begin(); i != map_end(); i++) {
+        if (!(*i)->read()) {
+            return false;
+        }
     }
 
     set_read_p(true);

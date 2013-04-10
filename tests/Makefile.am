@@ -3,8 +3,12 @@
 AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU $(XML2_CFLAGS) $(CURL_CFLAGS)
 AM_CXXFLAGS =  
+
+if COMPILER_IS_GCC
+AM_CXXFLAGS += -Wall -W -Wcast-align
+endif
 
 # These are not used by automake but are often useful for certain types of
 # debugging. 
@@ -56,8 +60,10 @@ DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite
 # ddx-testsuite	  
 
 EXTRA_DIST = DASTest.at  $(DASTESTSUITE) DDSTest.at  $(DDSTESTSUITE) \
-	atlocal.in $(srcdir)/package.m4 \
+	EXPRTest.at $(EXPRTESTSUITE) atlocal.in $(srcdir)/package.m4 \
 	$(DIRS_EXTRA)
+
+DISTCLEANFILES = *.log DASTest.dir/* DDSTest.dir/* EXPRTest.dir/*
 
 ############## Autotest follows #####################
 

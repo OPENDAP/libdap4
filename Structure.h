@@ -39,26 +39,18 @@
 #ifndef _structure_h
 #define _structure_h 1
 
+#ifndef __POWERPC__
+#endif
+
 #include <vector>
 
-#ifndef _basetype_h
-#include "BaseType.h"
-#endif
-
-#ifndef _constructor_h
 #include "Constructor.h"
-#endif
-
-#ifndef constraint_evaluator_h
-#include "ConstraintEvaluator.h"
-#endif
-
-#define FILE_METHODS 1
 
 namespace libdap
 {
 
 class DDS;
+class ConstraintEvaluator;
 
 /** This data type is used to hold a collection of related data types,
     in a manner roughly corresponding to a C structure.  The member
@@ -87,24 +79,21 @@ class DDS;
     ``shoe_size'', then you can refer to Tom's shoe size as
     ``Tom.shoe_size''.
 
-    @todo Refactor with Sequence moving methods up into Constructor.
-
     @brief Holds a structure (aggregate) type.
 */
 
 class Structure: public Constructor
 {
 private:
+#if 0
     BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
     BaseType *m_exact_match(const string &name, btp_stack *s = 0);
+#endif
 
 protected:
-    void _duplicate(const Structure &s);
-
-    // These constructors allow child classes to set their type
-    Structure(const string &n, const Type &t) : Constructor(n, t) {}
-    Structure(const string &n, const string &d, const Type &t)
-	    : Constructor(n, d, t) {}
+#if 0
+    void m_duplicate(const Structure &s);
+#endif
 
 public:
     Structure(const string &n);
@@ -116,45 +105,59 @@ public:
     Structure &operator=(const Structure &rhs);
     virtual BaseType *ptr_duplicate();
 
+#if 0
     virtual int element_count(bool leaves = false);
+#endif
     virtual bool is_linear();
 
+#if 0
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
+#endif
+#if 0
     virtual void set_in_selection(bool state);
+#endif
     virtual void set_leaf_sequence(int level = 1);
-
+#if 0
     virtual unsigned int width();
-
+    virtual unsigned int width(bool constrained);
+#endif
+#if 0
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
 			   Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
-
+#endif
+#if 0
     // Do not store values in memory as for C; force users to work with the
     // C++ objects as defined by the DAP.
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
+#endif
 
-    virtual BaseType *var(const string &name, bool exact_match = true,
-                          btp_stack *s = 0);
-
+#if 0
+    virtual BaseType *var(const string &name, bool exact_match = true, btp_stack *s = 0);
     virtual BaseType *var(const string &n, btp_stack &s);
-
+#endif
+#if 0
     virtual void add_var(BaseType *bt, Part part = nil);
-    virtual void del_var(const string &name);
+    virtual void add_var_nocopy(BaseType *bt, Part part = nil);
 
+    virtual void del_var(const string &name);
+#endif
+#if 0
     virtual bool read() ;
-#if FILE_METHODS
+#endif
+#if 0
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
-#endif
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
-
+#endif
+#if 0
     virtual bool check_semantics(string &msg, bool all = false);
-
+#endif
     virtual void dump(ostream &strm) const ;
 };
 

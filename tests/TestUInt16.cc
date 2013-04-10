@@ -57,13 +57,13 @@ TestUInt16::_duplicate(const TestUInt16 &ts)
 
 TestUInt16::TestUInt16(const string &n) : UInt16(n), d_series_values(false)
 {
-    _buf = 1;
+    d_buf = 1;
 }
 
 TestUInt16::TestUInt16(const string &n, const string &d)
     : UInt16(n, d), d_series_values(false)
 {
-    _buf = 1;
+    d_buf = 1;
 }
 
 TestUInt16::TestUInt16(const TestUInt16 &rhs) : UInt16(rhs), TestCommon(rhs)
@@ -107,10 +107,10 @@ TestUInt16::read()
 	sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
-        _buf = (short)(16 * _buf);
+        d_buf = (short)(16 * d_buf);
     }
     else {
-        _buf = 64000;
+        d_buf = 64000;
     }
     
     set_read_p(true);

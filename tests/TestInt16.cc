@@ -56,13 +56,13 @@ TestInt16::_duplicate(const TestInt16 &ts)
 
 TestInt16::TestInt16(const string &n) : Int16(n), d_series_values(false)
 {
-    _buf = 1;
+    d_buf = 1;
 }
 
 TestInt16::TestInt16(const string &n, const string &d)
     : Int16(n, d), d_series_values(false)
 {
-    _buf = 1;
+    d_buf = 1;
 }
 
 TestInt16::TestInt16(const TestInt16 &rhs) : Int16(rhs), TestCommon(rhs)
@@ -106,10 +106,10 @@ TestInt16::read()
 	sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
-       _buf = (short)(16 * _buf);
+       d_buf = (short)(16 * d_buf);
     }
     else {
-        _buf = 32000;
+        d_buf = 32000;
     }
 
     set_read_p(true);

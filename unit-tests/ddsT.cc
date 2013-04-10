@@ -32,11 +32,11 @@
 #include "TestInt16.h"
 #include "TestStr.h"
 #include "TestTypeFactory.h"
-#include "ce_functions.h"
+//#include "ce_functions.h"
 #include "util.h"
 #include "debug.h"
 
-#include "testFile.cc"
+#include "testFile.h"
 
 using namespace std;
 using namespace libdap;

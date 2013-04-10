@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -30,7 +29,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>  // for stat
-
 #include <cstring>
 #include <sstream>
 
@@ -47,14 +45,15 @@
 
 #include <test_config.h>
 
-
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
 int test_variable_sleep_interval = 0;
 
-class DODSFilterTest : public TestFixture {
+namespace libdap {
+
+class DODSFilterTest: public TestFixture {
 private:
     DODSFilter *df, *df_conditional, *df1, *df2, *df3, *df4, *df5, *df6;
 
@@ -67,160 +66,162 @@ private:
 
 public:
     DODSFilterTest() {
-	now = time(0);
-	ostringstream time_string;
-	time_string << (int)now;
-	strncpy(now_array, time_string.str().c_str(), 255);
-	now_array[255] = '\0';
+        now = time(0);
+        ostringstream time_string;
+        time_string << (int) now;
+        strncpy(now_array, time_string.str().c_str(), 255);
+        now_array[255] = '\0';
     }
 
-    ~DODSFilterTest() {}
+    ~DODSFilterTest() {
+    }
 
     void setUp() {
-	// Test pathname
-	string test_file = (string)TEST_SRC_DIR + "/server-testsuite/bears.data" ;
-	char *argv_1[] = {"test_case", (char *)test_file.c_str()};
-	df = new DODSFilter(2, argv_1);
+        // Test pathname
+        string test_file = (string) TEST_SRC_DIR + "/server-testsuite/bears.data";
+        char *argv_1[] = { (char*) "test_case", (char *) test_file.c_str() };
+        df = new DODSFilter(2, argv_1);
 
-	char *argv_1_1[] = {"test_case", (char *)test_file.c_str(), "-l", &now_array[0]};
-	df_conditional = new DODSFilter(4, argv_1_1);
+        char *argv_1_1[] = { (char*) "test_case", (char *) test_file.c_str(), (char*) "-l", &now_array[0] };
+        df_conditional = new DODSFilter(4, argv_1_1);
 
-	// Test missing file
-	argv_1[1] = "no-such-file";
-	df1 = new DODSFilter(2, argv_1);
+        // Test missing file
+        argv_1[1] = (char*) "no-such-file";
+        df1 = new DODSFilter(2, argv_1);
 
-	// Test files in CWD. Note that the time is the GM time : Tue, 01 May
-	// 2001 01:08:14 -0700
-	argv_1[1] = "test_config.h";
-	df2 = new DODSFilter(2, argv_1);
+        // Test files in CWD. Note that the time is the GM time : Tue, 01 May
+        // 2001 01:08:14 -0700
+        argv_1[1] = (char*) "test_config.h";
+        df2 = new DODSFilter(2, argv_1);
 
-	// This file has an ancillary DAS in the server-testsuite dir.
-	// df3 is also used to test escaping stuff in URLs. 5/4/2001 jhrg
-	char *argv_2[8];
-	argv_2[0] = "test_case";
-	test_file = (string)TEST_SRC_DIR + "/server-testsuite/coads.data";
-	argv_2[1] = (char *)test_file.c_str();
-	argv_2[2] = "-l";
-	argv_2[3] = &now_array[0];
-	argv_2[4] = "-e";
-	argv_2[5] = "u,x,z[0]&grid(u,\"lat<10.0\")";
-	argv_2[6] = "-t";
-	argv_2[7] = "1";
-	df3 = new DODSFilter(6, argv_2);
+        // This file has an ancillary DAS in the server-testsuite dir.
+        // df3 is also used to test escaping stuff in URLs. 5/4/2001 jhrg
+        char *argv_2[8];
+        argv_2[0] = (char*) "test_case";
+        test_file = (string) TEST_SRC_DIR + "/server-testsuite/coads.data";
+        argv_2[1] = (char *) test_file.c_str();
+        argv_2[2] = (char*) "-l";
+        argv_2[3] = &now_array[0];
+        argv_2[4] = (char*) "-e";
+        argv_2[5] = (char*) "u,x,z[0]&grid(u,\"lat<10.0\")";
+        argv_2[6] = (char*) "-t";
+        argv_2[7] = (char*) "1";
+        df3 = new DODSFilter(6, argv_2);
 
-	// Go back to this data source to test w/o an ancillary DAS.
-	argv_2[0] = "test_case";
-	test_file = (string)TEST_SRC_DIR + "/server-testsuite/bears.data";
-	argv_2[1] = (char *)test_file.c_str();
-	argv_2[2] = "-l";
-	argv_2[3] = &now_array[0];
-	argv_2[4] = "-e";
-	argv_2[5] = "u,x,z[0]&grid(u,\"lat<10.0\")";
-	argv_2[6] = "-t";
-	argv_2[7] = "1";
-	df4 = new DODSFilter(6, argv_2);
+        // Go back to this data source to test w/o an ancillary DAS.
+        argv_2[0] = (char*) "test_case";
+        test_file = (string) TEST_SRC_DIR + "/server-testsuite/bears.data";
+        argv_2[1] = (char *) test_file.c_str();
+        argv_2[2] = (char*) "-l";
+        argv_2[3] = &now_array[0];
+        argv_2[4] = (char*) "-e";
+        argv_2[5] = (char*) "u,x,z[0]&grid(u,\"lat<10.0\")";
+        argv_2[6] = (char*) "-t";
+        argv_2[7] = (char*) "1";
+        df4 = new DODSFilter(6, argv_2);
 
-	// Test escaping stuff. 5/4/2001 jhrg
-	char *argv_3[]={"test_case", "nowhere%5Bmydisk%5Dmyfile", "-e",
-			"u%5B0%5D"};
-	df5 = new DODSFilter(4, argv_3);
+        // Test escaping stuff. 5/4/2001 jhrg
+        char *argv_3[] = { (char*) "test_case", (char*) "nowhere%5Bmydisk%5Dmyfile", (char*) "-e", (char*) "u%5B0%5D" };
+        df5 = new DODSFilter(4, argv_3);
 
-	char *argv_4[]={"test_case", "nowhere%3a%5bmydisk%5dmyfile", "-e",
-			"Grid%20field%3au%5b0%5d,Grid%20field%3av"};
-	df6 = new DODSFilter(4, argv_4);
+        char *argv_4[] = { (char*) "test_case", (char*) "nowhere%3a%5bmydisk%5dmyfile", (char*) "-e",
+                (char*) "Grid%20field%3au%5b0%5d,Grid%20field%3av" };
+        df6 = new DODSFilter(4, argv_4);
 
-	cont_a = new AttrTable;
-	cont_a->append_attr("size", "Int32", "7");
-	cont_a->append_attr("type", "String", "cars");
-	das = new DAS;
-	das->add_table( "a", cont_a ) ;
+        cont_a = new AttrTable;
+        cont_a->append_attr("size", "Int32", "7");
+        cont_a->append_attr("type", "String", "cars");
+        das = new DAS;
+        das->add_table("a", cont_a);
 
-	// This AttrTable looks like:
-	//      Attributes {
-	//          a {
-	//              Int32 size 7;
-	//              String type cars;
-	//          }
-	//      }
+        // This AttrTable looks like:
+        //      Attributes {
+        //          a {
+        //              Int32 size 7;
+        //              String type cars;
+        //          }
+        //      }
 
-	TestTypeFactory ttf;
-	dds = new DDS(&ttf, "test");
-	TestByte a("a");
-	dds->add_var(&a);
+        TestTypeFactory ttf;
+        dds = new DDS(&ttf, "test");
+        TestByte a("a");
+        dds->add_var(&a);
 
-	dds->transfer_attributes(das);
-	dds->set_dap_major(3);
-	dds->set_dap_minor(2);
+        dds->transfer_attributes(das);
+        dds->set_dap_major(3);
+        dds->set_dap_minor(2);
     }
 
     void tearDown() {
-	delete df; df = 0;
-	delete df_conditional; df_conditional = 0;
-	delete df1; df1 = 0;
-	delete df2; df2 = 0;
-	delete df3; df3 = 0;
-	delete df4; df4 = 0;
-	delete df5; df5 = 0;
-	delete df6; df6 = 0;
+        delete df;
+        df = 0;
+        delete df_conditional;
+        df_conditional = 0;
+        delete df1;
+        df1 = 0;
+        delete df2;
+        df2 = 0;
+        delete df3;
+        df3 = 0;
+        delete df4;
+        df4 = 0;
+        delete df5;
+        df5 = 0;
+        delete df6;
+        df6 = 0;
 
-	delete das; das = 0;
+        delete das;
+        das = 0;
     }
 
     bool re_match(Regex &r, const string &s) {
-	DBG(cerr << "s.length(): " << s.length() << endl);
-	int pos = r.match(s.c_str(), s.length());
-	DBG(cerr << "r.match(s): " << pos << endl);
-	return pos > 0 && static_cast<unsigned>(pos) == s.length();
+        DBG(cerr << "s.length(): " << s.length() << endl);
+        int pos = r.match(s.c_str(), s.length());
+        DBG(cerr << "r.match(s): " << pos << endl);
+        return pos > 0 && static_cast<unsigned> (pos) == s.length();
     }
 
     bool re_match_binary(Regex &r, const string &s) {
-	DBG(cerr << "s.length(): " << s.length() << endl);
-	int pos = r.match(s.c_str(), s.length());
-	DBG(cerr << "r.match(s): " << pos << endl);
-	return pos > 0;
-    }
-#if 0
-    // Tests for methods
-    void read_ancillary_das_test() {
+        DBG(cerr << "s.length(): " << s.length() << endl);
+        int pos = r.match(s.c_str(), s.length());
+        DBG(cerr << "r.match(s): " << pos << endl);
+        return pos > 0;
     }
 
-    void read_ancillary_dds_test() {
-    }
-#endif
     void get_dataset_last_modified_time_test() {
-	time_t t = time(0);
-	CPPUNIT_ASSERT(df1->get_dataset_last_modified_time() == t);
+        time_t t = time(0);
+        CPPUNIT_ASSERT(df1->get_dataset_last_modified_time() == t);
 
-	struct stat st;
-	string test_file = (string)TEST_SRC_DIR
-	                   + "/server-testsuite/bears.data";
-	stat(test_file.c_str(), &st);
-	CPPUNIT_ASSERT(df->get_dataset_last_modified_time() == st.st_mtime);
+        struct stat st;
+        string test_file = (string) TEST_SRC_DIR + "/server-testsuite/bears.data";
+        stat(test_file.c_str(), &st);
+        CPPUNIT_ASSERT(df->get_dataset_last_modified_time() == st.st_mtime);
 
-	stat("test_config.h", &st);
-	CPPUNIT_ASSERT(df2->get_dataset_last_modified_time() == st.st_mtime);
+        stat("test_config.h", &st);
+        CPPUNIT_ASSERT(df2->get_dataset_last_modified_time() == st.st_mtime);
 
-	test_file = (string)TEST_SRC_DIR + "/server-testsuite/coads.data";
-	stat(test_file.c_str(), &st);
-	CPPUNIT_ASSERT(df3->get_dataset_last_modified_time() == st.st_mtime);
+        test_file = (string) TEST_SRC_DIR + "/server-testsuite/coads.data";
+        stat(test_file.c_str(), &st);
+        CPPUNIT_ASSERT(df3->get_dataset_last_modified_time() == st.st_mtime);
     }
 
     void get_das_last_modified_time_test() {
-	// the dataset pointed to by df has no anc. DAS
-	struct stat st;
-	string test_file = (string)TEST_SRC_DIR
-	                   + "/server-testsuite/bears.data";
-	stat(test_file.c_str(), &st);
-	CPPUNIT_ASSERT(df->get_das_last_modified_time() == st.st_mtime);
+        // the dataset pointed to by df has no anc. DAS
+        struct stat st;
+        string test_file = (string) TEST_SRC_DIR + "/server-testsuite/bears.data";
+        stat(test_file.c_str(), &st);
+        CPPUNIT_ASSERT(df->get_das_last_modified_time() == st.st_mtime);
 
-	// the dataset pointed by df3 has an anc. DAS
-	test_file = (string)TEST_SRC_DIR + "/server-testsuite/coads.data.das";
-	stat(test_file.c_str(), &st);
-	CPPUNIT_ASSERT(df3->get_das_last_modified_time() == st.st_mtime);
+        // the dataset pointed by df3 has an anc. DAS
+        test_file = (string) TEST_SRC_DIR + "/server-testsuite/coads.data.das";
+        stat(test_file.c_str(), &st);
+        CPPUNIT_ASSERT(df3->get_das_last_modified_time() == st.st_mtime);
     }
 
     void send_das_test() {
-	Regex r1("HTTP/1.0 200 OK\r\n\
+        Regex
+                r1(
+                        "HTTP/1.0 200 OK\r\n\
 XDODS-Server: .*\
 XOPeNDAP-Server: .*\
 XDAP: .*\
@@ -236,23 +237,25 @@ Attributes \\{\n\
     \\}\n\
 \\}\n");
 
-	df->send_das(oss, *das);
+        df->send_das(oss, *das);
 
-	DBG(cerr << "DAS: " << oss.str() << endl);
+        DBG(cerr << "DAS: " << oss.str() << endl);
 
-	CPPUNIT_ASSERT(re_match(r1, oss.str()));
-	oss.str("");
+        CPPUNIT_ASSERT(re_match(r1, oss.str()));
+        oss.str("");
 
-	Regex r2("HTTP/1.0 304 NOT MODIFIED\r\n\
+        Regex r2("HTTP/1.0 304 NOT MODIFIED\r\n\
 Date: .*\r\n\
 \r\n");
 
-	df_conditional->send_das(oss, *das);
-	CPPUNIT_ASSERT(re_match(r2, oss.str()));
+        df_conditional->send_das(oss, *das);
+        CPPUNIT_ASSERT(re_match(r2, oss.str()));
     }
 
     void send_dds_test() {
-	Regex r1("HTTP/1.0 200 OK\r\n\
+        Regex
+                r1(
+                        "HTTP/1.0 200 OK\r\n\
 XDODS-Server: .*\
 XOPeNDAP-Server: .*\
 XDAP: .*\
@@ -265,269 +268,86 @@ Dataset \\{\n\
     Byte a;\n\
 \\} test;\n");
 
-	ConstraintEvaluator ce;
+        ConstraintEvaluator ce;
 
-	df->send_dds(oss, *dds, ce);
+        df->send_dds(oss, *dds, ce);
 
-	DBG(cerr << "DDS: " << oss.str() << endl);
+        DBG(cerr << "DDS: " << oss.str() << endl);
 
-	CPPUNIT_ASSERT(re_match(r1, oss.str()));
-	oss.str("");
+        CPPUNIT_ASSERT(re_match(r1, oss.str()));
+        oss.str("");
 
-	Regex r2("HTTP/1.0 304 NOT MODIFIED\r\n\
+        Regex r2("HTTP/1.0 304 NOT MODIFIED\r\n\
 Date: .*\r\n\
 \r\n");
 
-	df_conditional->send_dds(oss, *dds, ce);
-	CPPUNIT_ASSERT(re_match(r2, oss.str()));
-    }
-
-    void send_ddx_test() {
-	Regex r1("HTTP/1.0 200 OK\r\n\
-XDODS-Server: .*\
-XOPeNDAP-Server: .*\
-XDAP: .*\
-Date: .*\
-Last-Modified: .*\
-Content-Type: text/xml\r\n\
-Content-Description: dap4-ddx\r\n\
-\r\n\
-<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>.*\
-<Dataset name=\"test\".*\
-.*\
-.*\
-.*\
-.*\
-.*\
-.*\
-dapVersion=\"3.2\">.*\
-.*\
-<Byte name=\"a\">.*\
-    <Attribute name=\"size\" type=\"Int32\">.*\
-        <value>7</value>.*\
-    </Attribute>.*\
-    <Attribute name=\"type\" type=\"String\">.*\
-        <value>cars</value>.*\
-    </Attribute>.*\
-</Byte>.*\
-.*\
-</Dataset>.*");
-
-	ConstraintEvaluator ce;
-
-	try {
-	    df->send_ddx(*dds, ce, oss);
-
-	    DBG(cerr << "DDX: " << oss.str() << endl);
-
-	    CPPUNIT_ASSERT(re_match(r1, oss.str()));
-	    oss.str("");
-
-	    Regex r2("HTTP/1.0 304 NOT MODIFIED\r\n\
-Date: .*\r\n\
-\r\n");
-
-	    df_conditional->send_ddx(*dds, ce, oss);
-	    CPPUNIT_ASSERT(re_match(r2, oss.str()));
-	}
-	catch(Error &e) {
-	    cerr << "Error (line 306): " << e.get_error_message() << endl;
-	}
-    }
-
-    void send_data_ddx_test() {
-	Regex r1("HTTP/1.0 200 OK\r\n\
-.*\
-XDAP: 3.2\r\n\
-.*\
-Content-Type: Multipart/Related; boundary=boundary; start=\"<start@opendap.org>\"; type=\"Text/xml\"\r\n\
-Content-Description: dap4-data-ddx\r\n\
-\r\n\
---boundary\r\n\
-Content-Type: Text/xml; charset=iso-8859-1\r\n\
-Content-Id: <start@opendap.org>\r\n\
-Content-Description: dap4-ddx\r\n\
-\r\n\
-<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>.*\
-<Dataset name=\"test\".*\
-.*\
-dapVersion=\"3.2\">.*\
-.*\
-    <Byte name=\"a\">.*\
-        <Attribute name=\"size\" type=\"Int32\">.*\
-            <value>7</value>.*\
-        </Attribute>.*\
-        <Attribute name=\"type\" type=\"String\">.*\
-            <value>cars</value>.*\
-        </Attribute>.*\
-    </Byte>.*\
-.*\
-    <blob href=\"cid:.*@.*\"/>.*\
-</Dataset>.*\
---boundary\r\n\
-Content-Type: application/octet-stream\r\n\
-Content-Id: <.*@.*>\r\n\
-Content-Description: dap4-data\r\n\
-Content-Encoding: binary\r\n\
-\r\n\
-.*");
-
-	// I do not look for the closing '--boundary' because the binary
-	// data breaks the regex functions in the c library WRT subsequent
-	// pattern matches. jhrg
-	//--boundary--\r\n");
-
-	ConstraintEvaluator ce;
-
-	try {
-	    df->send_data_ddx(*dds, ce, oss, "start@opendap.org", "boundary",
-		    "", true);
-
-	    DBG(cerr << "DataDDX: " << oss.str() << endl);
-
-	    CPPUNIT_ASSERT(re_match_binary(r1, oss.str()));
-	    oss.str("");
-
-	    Regex r2("HTTP/1.0 304 NOT MODIFIED\r\n\
-Date: .*\r\n\
-\r\n");
-
-	    df_conditional->send_data_ddx(*dds, ce, oss, "start@opendap.org",
-		    "boundary", "", true);
-	    CPPUNIT_ASSERT(re_match(r2, oss.str()));
-	}
-	catch(Error &e) {
-	    cerr << "Error (line 306): " << e.get_error_message() << endl;
-	}
-    }
-
-    void send_data_ddx_test2() {
-	Regex r1("--boundary\r\n\
-Content-Type: Text/xml; charset=iso-8859-1\r\n\
-Content-Id: <start@opendap.org>\r\n\
-Content-Description: dap4-ddx\r\n\
-\r\n\
-<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>.*\
-<Dataset name=\"test\".*\
-.*\
-dapVersion=\"3.2\">.*\
-.*\
-    <Byte name=\"a\">.*\
-        <Attribute name=\"size\" type=\"Int32\">.*\
-            <value>7</value>.*\
-        </Attribute>.*\
-        <Attribute name=\"type\" type=\"String\">.*\
-            <value>cars</value>.*\
-        </Attribute>.*\
-    </Byte>.*\
-.*\
-    <blob href=\"cid:.*@.*\"/>.*\
-</Dataset>.*\
---boundary\r\n\
-Content-Type: application/octet-stream\r\n\
-Content-Id: <.*@.*>\r\n\
-Content-Description: dap4-data\r\n\
-Content-Encoding: binary\r\n\
-\r\n\
-.*");
-
-	ConstraintEvaluator ce;
-
-	try {
-	    df->send_data_ddx(*dds, ce, oss, "start@opendap.org", "boundary",
-		    "", false);
-	    DBG(cerr << "DataDDX: " << oss.str() << endl);
-	    CPPUNIT_ASSERT(re_match_binary(r1, oss.str()));
-
-	    // Unlike the test where the full headers are generated, there's
-	    // no check for a conditional response here because that feature
-	    // of DODSFilter is only supported when MIME headers are built by
-	    // the class. In order to return a '304' response, headers must be
-	    // built.
-	}
-	catch(Error &e) {
-	    cerr << "Error (line 306): " << e.get_error_message() << endl;
-	}
+        df_conditional->send_dds(oss, *dds, ce);
+        CPPUNIT_ASSERT(re_match(r2, oss.str()));
     }
 
     void is_conditional_test() {
-	CPPUNIT_ASSERT(df->is_conditional() == false);
-	CPPUNIT_ASSERT(df3->is_conditional() == true);
+        CPPUNIT_ASSERT(df->is_conditional() == false);
+        CPPUNIT_ASSERT(df3->is_conditional() == true);
     }
 
     void get_request_if_modified_since_test() {
-	CPPUNIT_ASSERT(df->get_request_if_modified_since() == -1);
-	CPPUNIT_ASSERT(df3->get_request_if_modified_since() == now);
+        CPPUNIT_ASSERT(df->get_request_if_modified_since() == -1);
+        CPPUNIT_ASSERT(df3->get_request_if_modified_since() == now);
     }
 
     void escape_code_test() {
-	// These should NOT be escaped.
+        // These should NOT be escaped.
 
-	DBG(cerr << df3->get_dataset_name() << endl);
-	DBG(cerr << df3->get_ce() << endl);
+        DBG(cerr << df3->get_dataset_name() << endl); DBG(cerr << df3->get_ce() << endl);
 
-	CPPUNIT_ASSERT(df3->get_dataset_name() == (string)TEST_SRC_DIR + "/server-testsuite/coads.data");
-	CPPUNIT_ASSERT(df3->get_ce() == "u,x,z[0]&grid(u,\"lat<10.0\")");
+        CPPUNIT_ASSERT(df3->get_dataset_name() == (string)TEST_SRC_DIR + "/server-testsuite/coads.data");
+        CPPUNIT_ASSERT(df3->get_ce() == "u,x,z[0]&grid(u,\"lat<10.0\")");
 
-	// The DODSFIlter instance is feed escaped values; they should be
-	// unescaped by the ctor and the mutators. 5/4/2001 jhrg
+        // The DODSFIlter instance is feed escaped values; they should be
+        // unescaped by the ctor and the mutators. 5/4/2001 jhrg
 
-	DBG(cerr << df5->get_dataset_name() << endl);
-	DBG(cerr << df5->get_ce() << endl);
+        DBG(cerr << df5->get_dataset_name() << endl); DBG(cerr << df5->get_ce() << endl);
 
-	CPPUNIT_ASSERT(df5->get_dataset_name() == "nowhere[mydisk]myfile");
-	CPPUNIT_ASSERT(df5->get_ce() == "u[0]");
+        CPPUNIT_ASSERT(df5->get_dataset_name() == "nowhere[mydisk]myfile");
+        CPPUNIT_ASSERT(df5->get_ce() == "u[0]");
 
-	df5->set_ce("u%5B0%5D");
-	CPPUNIT_ASSERT(df5->get_ce() == "u[0]");
+        df5->set_ce("u%5B0%5D");
+        CPPUNIT_ASSERT(df5->get_ce() == "u[0]");
 
-	DBG(cerr << df6->get_dataset_name() << endl);
-	DBG(cerr << df6->get_ce() << endl);
-#if 0
-	CPPUNIT_ASSERT(df6->get_dataset_name() == "nowhere:[mydisk]myfile");
-	CPPUNIT_ASSERT(df6->get_ce() == "Grid%20field:u[0],Grid%20field:v");
-#endif
-	df5->set_ce("Grid%20u%5B0%5D");
-	CPPUNIT_ASSERT(df5->get_ce() == "Grid%20u[0]");
+        DBG(cerr << df6->get_dataset_name() << endl); DBG(cerr << df6->get_ce() << endl);
+        df5->set_ce("Grid%20u%5B0%5D");
+        CPPUNIT_ASSERT(df5->get_ce() == "Grid%20u[0]");
     }
 
     // This tests reading the timeout value from argv[].
     void timeout_test() {
-	CPPUNIT_ASSERT(df3->get_timeout() == 1);
-	CPPUNIT_ASSERT(df1->get_timeout() == 0);
+        CPPUNIT_ASSERT(df3->get_timeout() == 1);
+        CPPUNIT_ASSERT(df1->get_timeout() == 0);
     }
 
-    CPPUNIT_TEST_SUITE( DODSFilterTest );
-#if 0
-    CPPUNIT_TEST(get_dataset_last_modified_time_test);
-    CPPUNIT_TEST(get_das_last_modified_time_test);
+CPPUNIT_TEST_SUITE( DODSFilterTest );
 
-    CPPUNIT_TEST(send_das_test);
-    CPPUNIT_TEST(send_dds_test);
-#endif
-    CPPUNIT_TEST(send_ddx_test);
-    CPPUNIT_TEST(send_data_ddx_test);
-    CPPUNIT_TEST(send_data_ddx_test2);
-#if 0
-    CPPUNIT_TEST(is_conditional_test);
-    CPPUNIT_TEST(get_request_if_modified_since_test);
-    CPPUNIT_TEST(escape_code_test);
-#endif
+        CPPUNIT_TEST(get_dataset_last_modified_time_test);
+        CPPUNIT_TEST(get_das_last_modified_time_test);
+
+        CPPUNIT_TEST(send_das_test);
+        CPPUNIT_TEST(send_dds_test);
+
+        CPPUNIT_TEST(is_conditional_test);
+        CPPUNIT_TEST(get_request_if_modified_since_test);
+        CPPUNIT_TEST(escape_code_test);
+
     CPPUNIT_TEST_SUITE_END();
 };
-
 CPPUNIT_TEST_SUITE_REGISTRATION(DODSFilterTest);
+}
 
-int
-main( int, char** )
-{
+int main(int, char**) {
     CppUnit::TextTestRunner runner;
-    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run( "", false ) ;
+    bool wasSuccessful = runner.run("", false);
 
     return wasSuccessful ? 0 : 1;
 }
-
-
 

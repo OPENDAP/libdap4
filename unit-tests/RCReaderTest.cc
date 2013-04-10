@@ -31,7 +31,10 @@
 #include <unistd.h>
 #endif
 
+#include <cstdlib>
 #include <cstring>
+#include <cstdlib>
+
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -83,17 +86,17 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
     void check_env_var_test1() {
-	putenv("DODS_CONF=");
+	putenv((char *)"DODS_CONF=");
 	CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == "");
     }
 
     void check_env_var_test2() {
-	putenv("DODS_CONF=Nothing_sensible");
+	putenv((char*)"DODS_CONF=Nothing_sensible");
 	CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == "");
     }
 
     void check_env_var_test3() {
-	putenv("DODS_CONF=/etc/passwd");
+	putenv((char*)"DODS_CONF=/etc/passwd");
 	CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == "/etc/passwd");
     }
 
@@ -134,7 +137,7 @@ public:
     void instance_test1() {
 	// This test assumes that HOME *is* defined. We should find the
 	// .dodsrc there. If it's not there, we should create one there.
-	putenv("DODS_CONF=");
+	putenv((char*)"DODS_CONF=");
 	string home = getenv("HOME");
 	if (*home.rbegin() != '/')
 	    home += "/";

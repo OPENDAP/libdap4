@@ -31,9 +31,7 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    { "$Id$"
-    };
+#include <cstdlib>
 
 #include <signal.h>
 #include <pthread.h>
@@ -84,7 +82,7 @@ SignalHandler::delete_instance()
 }
 
 /** This private method is the adapter between the C-style interface of the
-    signal sub-system and C++'s method interface. This uses the lookup table
+    signal subsystem and C++'s method interface. This uses the lookup table
     to find an instance of EventHandler and calls that instance's
     handle_signal method.
 
@@ -102,6 +100,7 @@ SignalHandler::dispatcher(int signum)
         return;
     else if (old_handler == SIG_DFL) {
         switch (signum) {
+#if 0
 #ifndef WIN32
         case SIGHUP:
         case SIGKILL:
@@ -116,6 +115,11 @@ SignalHandler::dispatcher(int signum)
             // register_handler() should never allow any fiddling with
             // signals other than those listed above.
         default: abort();
+#endif
+        // Calling _exit() or abort() is not a good thing for a library to be
+        // doing. This results in a warning from rpmlint
+        default:
+            throw Error("Signal handler operation on an unsupported signal.");
         }
     }
     else

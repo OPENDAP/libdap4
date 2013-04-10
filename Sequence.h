@@ -57,10 +57,9 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-// FIXME
+#ifndef S_XDRUtils_h
 #include "XDRUtils.h"
-
-#define FILE_METHODS 1
+#endif
 
 namespace libdap
 {
@@ -205,17 +204,16 @@ private:
 
     // In a hierarchy of sequences, is this the top most?
     bool d_top_most;
-
-    void _duplicate(const Sequence &s);
+#if 0
     BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
     BaseType *m_exact_match(const string &name, btp_stack *s = 0);
-
+#endif
     bool is_end_of_rows(int i);
 
     friend class SequenceTest;
 
 protected:
-
+    void m_duplicate(const Sequence &s);
     typedef stack<SequenceValues*> sequence_values_stack_t;
 
     virtual bool serialize_parent_part_one(DDS &dds,
@@ -256,17 +254,24 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
+    virtual bool is_dap2_only_type();
+
     virtual string toString();
-
+#if 0
     virtual int element_count(bool leaves = false);
-
+#endif
     virtual bool is_linear();
-
+#if 0
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
+#endif
+#if 0
     virtual void set_in_selection(bool state);
-
+#endif
+#if 0
     virtual unsigned int width();
+    virtual unsigned int width(bool constrained);
+#endif
 
     virtual int length();
 
@@ -276,8 +281,7 @@ public:
                           ConstraintEvaluator &eval, bool ce_eval = true);
 
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
-			   Marshaller &m, bool ce_eval = true);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     /// Rest the row number counter
@@ -303,24 +307,28 @@ public:
         d_unsent_data = usd;
     }
 
+#if 0
     // Move me!
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
+#endif
 
     virtual void set_value(SequenceValues &values);
     virtual SequenceValues value();
-
-    virtual BaseType *var(const string &name, bool exact_match = true,
-                          btp_stack *s = 0);
+#if 0
+    virtual BaseType *var(const string &name, bool exact_match = true,btp_stack *s = 0);
     virtual BaseType *var(const string &n, btp_stack &s);
+#endif
 
     virtual BaseType *var_value(size_t row, const string &name);
 
     virtual BaseType *var_value(size_t row, size_t i);
 
     virtual BaseTypeRow *row_value(size_t row);
-
+#if 0
     virtual void add_var(BaseType *, Part part = nil);
+    virtual void add_var_nocopy(BaseType *, Part part = nil);
+#endif
     virtual void print_one_row(ostream &out, int row, string space,
                                bool print_row_num = false);
     virtual void print_val_by_rows(ostream &out, string space = "",
@@ -329,7 +337,6 @@ public:
     virtual void print_val(ostream &out, string space = "",
                            bool print_decl_p = true);
 
-#if FILE_METHODS
     virtual void print_one_row(FILE *out, int row, string space,
                                bool print_row_num = false);
     virtual void print_val_by_rows(FILE *out, string space = "",
@@ -337,10 +344,9 @@ public:
                                    bool print_row_numbers = true);
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
-#endif
-
+#if 0
     virtual bool check_semantics(string &msg, bool all = false);
-
+#endif
     virtual void set_leaf_p(bool state);
 
     virtual bool is_leaf_sequence();
