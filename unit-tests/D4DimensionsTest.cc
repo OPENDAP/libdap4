@@ -66,7 +66,7 @@ public:
     // An empty D4Dimensions object prints nothing; the XMLWriter class adds
     // a xml doc preface.
     void test_print_empty() {
-        d->print(*xml);
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_empty.xml");
         DBG(cerr << "test_print_empty: doc: " << doc << endl);
@@ -77,7 +77,7 @@ public:
     void test_print_1() {
         d->add_dim("first", 10);
 
-        d->print(*xml);
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_1.xml");
         DBG(cerr << "test_print_1: doc: " << doc << endl);
@@ -89,7 +89,7 @@ public:
         d->add_dim("first", 10);
         d->add_dim("second", 100);
 
-        d->print(*xml);
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_2.xml");
         DBG(cerr << "test_print_2: doc: " << doc << endl);
@@ -102,7 +102,7 @@ public:
         d->add_dim("second", 100);
         d->add_dim("third", 0, true);
 
-        d->print(*xml);
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_3.xml");
         DBG(cerr << "test_print_varying: doc: " << doc << endl);
@@ -119,7 +119,7 @@ public:
         D4Dimensions::D4DimensionsIter i = d->dim_begin() + 1;
         d->insert_dim("odd", 20, false /*varying*/, i);
 
-        d->print(*xml);
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_4.xml");
         DBG(cerr << "test_print_insert_dim: doc: " << doc << endl);
@@ -134,7 +134,7 @@ public:
 
         D4Dimensions lhs = *d;
 
-        lhs.print(*xml);
+        lhs.print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_3.xml");
         DBG(cerr << "test_print_assignment: doc: " << doc << endl);
@@ -149,7 +149,7 @@ public:
 
         D4Dimensions lhs(*d);
 
-        lhs.print(*xml);
+        lhs.print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_3.xml");
         DBG(cerr << "test_print_copy_ctor: doc: " << doc << endl);

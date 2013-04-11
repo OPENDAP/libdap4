@@ -1479,6 +1479,17 @@ void AttrTable::print_xml_writer(XMLWriter &xml)
     }
 }
 
+/** Write the DAP4 XML representation for this attribute table. This
+ * method is used to build the DAP4 DMR response object.
+ *
+ * @param xml An XMLWriter that will do the serialization
+ */
+void
+AttrTable::print_dap4(XMLWriter &xml)
+{
+    print_xml_writer(xml);
+}
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and all attributes stored

@@ -79,8 +79,8 @@ namespace libdap {
 void
 BaseType::m_duplicate(const BaseType &bt)
 {
-    DBG2(cerr << "BaseType::_duplicate: " << bt.d_name << " send_p: "
-            << bt.d_is_send << endl);
+    DBG(cerr << "In BaseType::m_duplicate for " << bt.name() << endl);
+
     d_name = bt.d_name;
     d_type = bt.d_type;
     d_dataset = bt.d_dataset;
@@ -93,11 +93,7 @@ BaseType::m_duplicate(const BaseType &bt)
 
     d_attr = bt.d_attr;  // Deep copy.
 
-#if DAP4
-    // FIXME How to copy? these are pointers
-    d_dims = bt.d_dims;
-    d_maps = bt.d_maps;
-#endif
+    DBG(cerr << "Exiting BaseType::m_duplicate for " << bt.name() << endl);
 }
 
 // Public mfuncs
@@ -137,6 +133,7 @@ BaseType::BaseType(const string &n, const string &d, const Type &t, bool is_dap4
         d_in_selection(false), d_is_synthesized(false), d_parent(0),
         d_is_dap4(is_dap4)
 {}
+
 #if 0
 /** The BaseType constructor needs a name  and a type.
     The BaseType class exists to provide data to
@@ -177,6 +174,7 @@ BaseType::BaseType(const string &n, const string &d, const Type &t, bool is_dap4
 /** @brief The BaseType copy constructor. */
 BaseType::BaseType(const BaseType &copy_from) : DapObj()
 {
+    DBG(cerr << "In BaseTpe::copy_ctor for " << copy_from.name() << endl);
     m_duplicate(copy_from);
 }
 
@@ -189,11 +187,13 @@ BaseType::~BaseType()
 BaseType &
 BaseType::operator=(const BaseType &rhs)
 {
+    DBG(cerr << "Entering BaseType::operator=" << endl);
     if (this == &rhs)
         return *this;
 
     m_duplicate(rhs);
 
+    DBG(cerr << "Exiting BaseType::operator=" << endl);
     return *this;
 }
 
@@ -1108,6 +1108,19 @@ BaseType::print_xml_writer(XMLWriter &xml, bool constrained)
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
+}
+
+/** Write the DAP4 XML representation for this variable. This method is used
+ * to build the DAP4 DMR response object.
+ *
+ * @param xml An XMLWriter that will do the serialization
+ * @param constrained True if the response should show the variables subject
+ * to the current constraint expression.
+ */
+void
+BaseType::print_dap4(XMLWriter &xml, bool constrained)
+{
+    print_xml_writer(xml, constrained);
 }
 
 // Compares the object's current state with the semantics of a particular

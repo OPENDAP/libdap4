@@ -57,9 +57,12 @@ namespace libdap {
 void
 Grid::m_duplicate(const Grid &s)
 {
+    // TODO revisit this code once/if the class is switched from using it's
+    // own vars to those in Constructor. jhrg 4/3/13
+#if 0
     // Clear out any spurious vars in Constructor::d_vars
     d_vars.clear(); // [mjohnson 10 Sep 2009]
-
+#endif
     d_array_var = s.d_array_var->ptr_duplicate();
     d_array_var->set_parent(this);
     d_vars.push_back(d_array_var); // so the Constructor::Vars_Iter sees it [mjohnson 10 Sep 2009]
@@ -110,12 +113,16 @@ Grid::Grid(const Grid &rhs) : Constructor(rhs)
 
 Grid::~Grid()
 {
+    // Because the BaseType pointers are all pushed onto the Constructor's
+    // variables, they will be freed by its dtor.
+#if 0
     delete d_array_var; d_array_var = 0;
 
     for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
         BaseType *btp = *i ;
         delete btp ; btp = 0;
     }
+#endif
 }
 
 BaseType *
@@ -130,17 +137,18 @@ Grid::operator=(const Grid &rhs)
     if (this == &rhs)
         return *this;
 
+    // Removed this; it makes this operator= work differently than the rest
+#if 0
     delete d_array_var; d_array_var = 0;
 
     for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
         BaseType *btp = *i ;
         delete btp ;
     }
+#endif
 
-    // this doesn't copy Constructor::d_vars so...
     dynamic_cast<Constructor &>(*this) = rhs;
 
-    // we do it in here...
     m_duplicate(rhs);
 
     return *this;

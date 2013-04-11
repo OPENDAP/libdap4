@@ -23,10 +23,12 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
 
 #include <string>
 
 #include "BaseType.h"
+#include "Type.h"
 
 #include "Byte.h"
 #include "Int8.h"
@@ -43,17 +45,71 @@
 #include "Str.h"
 #include "Url.h"
 
-#include "Array.h"
 #include "Structure.h"
+#if 0
+#include "Array.h"
+
 #include "Sequence.h"
 #include "Grid.h"
-
+#endif
 #include "D4Group.h"
 
 #include "D4BaseTypeFactory.h"
 #include "debug.h"
 
 namespace libdap {
+
+BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
+{
+    switch (t) {
+        case dods_byte_c:
+            return NewByte(name);
+        case dods_uint8_c:
+            return NewUInt8(name);
+        case dods_int8_c:
+            return NewInt8(name);
+        case dods_int16_c:
+            return NewInt16(name);
+        case dods_uint16_c:
+            return NewUInt16(name);
+        case dods_int32_c:
+            return NewInt32(name);
+        case dods_uint32_c:
+            return NewUInt32(name);
+        case dods_int64_c:
+            return NewInt64(name);
+        case dods_uint64_c:
+            return NewUInt64(name);
+        case dods_float32_c:
+            return NewFloat32(name);
+        case dods_float64_c:
+            return NewFloat64(name);
+        case dods_str_c:
+            return NewStr(name);
+        case dods_url_c:
+            return NewUrl(name);
+        case dods_url4_c:
+            return NewURL(name);
+        case dods_structure_c:
+            return NewStructure(name);
+
+        case dods_array_c:
+            throw InternalErr(__FILE__, __LINE__, "Array is not part of DAP4.");
+        case dods_sequence_c:
+            throw InternalErr(__FILE__, __LINE__, "Sequence is not part of DAP4.");
+        case dods_grid_c:
+            throw InternalErr(__FILE__, __LINE__, "Grid is not part of DAP4.");
+
+        case dods_enum_c:
+            throw InternalErr(__FILE__, __LINE__, "Enum not impl yet.");
+        case dods_array4_c:
+            throw InternalErr(__FILE__, __LINE__, "Array4 not impl yet.");
+        case dods_group_c:
+            return NewGroup(name);
+        default:
+            return 0;
+    }
+}
 
 Byte *
 D4BaseTypeFactory::NewByte(const string &n) const
@@ -145,12 +201,6 @@ D4BaseTypeFactory::NewURL(const string &n) const
     return u;
 }
 
-Array *
-D4BaseTypeFactory::NewArray(const string &n , BaseType *v) const
-{
-    return new Array(n, v);
-}
-
 Structure *
 D4BaseTypeFactory::NewStructure(const string &n) const
 {
@@ -161,19 +211,6 @@ D4Group *
 D4BaseTypeFactory::NewGroup(const string &n) const
 {
     return new D4Group(n);
-}
-
-Sequence *
-D4BaseTypeFactory::NewSequence(const string &n) const
-{
-    DBG(cerr << "Inside DAP4BaseTypeFactory::NewSequence" << endl);
-    return new Sequence(n);
-}
-
-Grid *
-D4BaseTypeFactory::NewGrid(const string &n) const
-{
-    return new Grid(n);
 }
 
 } // namespace libdap

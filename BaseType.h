@@ -48,10 +48,6 @@
 #include <iostream>
 #include <string>
 
-// These are instantiated only for DAP4 variables
-#include "D4Dimensions.h"
-#include "D4Maps.h"
-
 #include "AttrTable.h"
 
 #include "InternalErr.h"
@@ -72,6 +68,9 @@ class ConstraintEvaluator;
 class Marshaller;
 class UnMarshaller;
 
+#include "Type.h"
+
+#if 0
 /** <b>Part</b> names the parts of multi-section constructor types.
     For example, the <b>Grid</b> class has an <i>array</i> and
     the array <i>maps</i>. Use the <tt>nil</tt> value for data types that
@@ -161,7 +160,7 @@ enum Type {
     dods_group_c
 
 };
-
+#endif
 /** This defines the basic data type features for the DODS data access
     protocol (DAP) data types. All the DAP type classes (Float64, Array,
     etc.) subclass it. This class is an abstract one; no variables will ever
@@ -219,7 +218,7 @@ private:
     // These are non-empty only for DAP4 variables. Added 9/27/12 jhrg
 
     // FIXME Remove this. This header cannot have compile-time variation
-#if DAP4
+#if 0
     D4Dimensions d_dims;   // If non-empty, this BaseType is an DAP4 Array
     D4Maps d_maps;         // if non-empty, this BaseType is a DAP4 'Grid'
 #endif
@@ -233,11 +232,7 @@ public:
     // These ctors assume is_dap4 is false
     BaseType(const string &n, const Type &t, bool is_dap4 = false);
     BaseType(const string &n, const string &d, const Type &t, bool is_dap4 = false);
-#if 0
-    // These provide a way to set is_dap4
-    BaseType(const string &n, const Type &t, bool is_dap4);
-    BaseType(const string &n, const string &d, const Type &t, bool is_dap4);
-#endif
+
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();
 
@@ -360,6 +355,8 @@ public:
                            bool constrained = false);
 
     virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
+
+    virtual void print_dap4(XMLWriter &xml, bool constrained = false);
 
     /** @name Abstract Methods */
     //@{

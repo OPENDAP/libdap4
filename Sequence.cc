@@ -92,11 +92,12 @@ Sequence::m_duplicate(const Sequence &s)
 
     Sequence &cs = const_cast<Sequence &>(s);
 
+#if 0
     // Copy the template BaseType objects.
     for (Vars_iter i = cs.var_begin(); i != cs.var_end(); i++) {
         add_var((*i)) ;
     }
-
+#endif
     // Copy the BaseType objects used to hold values.
     for (vector<BaseTypeRow *>::iterator rows_iter = cs.d_values.begin();
          rows_iter != cs.d_values.end();
@@ -219,11 +220,12 @@ delete_rows(BaseTypeRow *bt_row_ptr)
 Sequence::~Sequence()
 {
     DBG2(cerr << "Entering Sequence::~Sequence" << endl);
+#if 0
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         BaseType *btp = *i ;
         delete btp ; btp = 0;
     }
-
+#endif
     for_each(d_values.begin(), d_values.end(), delete_rows);
     DBG2(cerr << "exiting Sequence::~Sequence" << endl);
 }

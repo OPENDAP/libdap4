@@ -51,10 +51,7 @@ class Float64;
 class Str;
 class Url;
 
-class Array;
 class Structure;
-class Sequence;
-class Grid;
 
 class D4Group;
 
@@ -73,14 +70,24 @@ public:
     virtual ~D4BaseTypeFactory()
     {}
 
+    virtual BaseType *NewVariable(Type t, const string &name) const;
+
+    virtual BaseTypeFactory *ptr_duplicate() const {
+        return new D4BaseTypeFactory;
+    }
+
     virtual Byte *NewByte(const string &n = "") const;
+
+    // The Int8 types are new for DAP4
     virtual Int8 *NewInt8(const string &n = "") const;
     virtual Byte *NewUInt8(const string &n = "") const;
+
     virtual Int16 *NewInt16(const string &n = "") const;
     virtual UInt16 *NewUInt16(const string &n = "") const;
     virtual Int32 *NewInt32(const string &n = "") const;
     virtual UInt32 *NewUInt32(const string &n = "") const;
 
+    // New for DAP4
     virtual Int64 *NewInt64(const string &n = "") const;
     virtual UInt64 *NewUInt64(const string &n = "") const;
 
@@ -91,18 +98,17 @@ public:
     virtual Url *NewUrl(const string &n = "") const;
     virtual Url *NewURL(const string &n = "") const;
 
+    virtual Structure *NewStructure(const string &n = "") const;
+
+    virtual D4Group *NewGroup(const string &n = "") const;
+
     // FIXME Define these
 #if 0
     virtual Opaque *NewOpaque(const string &n = "") const;
     virtual Enumeration *NewEnumeration(const string &n = "") const;
+    virtual D4Array *NewArray(const string &n = "", BaseType *v = 0) const;
 #endif
-    virtual Structure *NewStructure(const string &n = "") const;
-    virtual Sequence *NewSequence(const string &n = "") const;
-#if 1
-    virtual D4Group *NewGroup(const string &n = "") const;
-#endif
-    virtual Array *NewArray(const string &n = "", BaseType *v = 0) const;
-    virtual Grid *NewGrid(const string &n = "") const;
+
 };
 
 } // namespace libdap

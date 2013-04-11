@@ -39,9 +39,6 @@
 #ifndef _structure_h
 #define _structure_h 1
 
-#ifndef __POWERPC__
-#endif
-
 #include <vector>
 
 #include "Constructor.h"

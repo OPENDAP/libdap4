@@ -53,14 +53,10 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	SequenceTest SignalHandlerTest  MarshallerTest                  \
 	ResponseBuilderTest Keywords2Test 
 	
-# GridGeoConstraintTest ArrayGeoConstraintTest CEFunctionsTest 
-
 if DAP4_DEFINED
-    UNIT_TESTS += DAP4MarshallerTest DAP4UnMarshallerTest \
-    D4DimensionsTest D4EnumDefsTest
+UNIT_TESTS += DAP4MarshallerTest DAP4UnMarshallerTest \
+        D4DimensionsTest D4EnumDefsTest D4GroupTest
 endif
-
-#	fdiostreamTest
 
 else
 UNIT_TESTS =
@@ -184,6 +180,9 @@ D4DimensionsTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4EnumDefsTest_SOURCES = D4EnumDefsTest.cc $(TEST_SRC)
 D4EnumDefsTest_LDADD = ../libdap.la $(AM_LDADD)
+
+D4GroupTest_SOURCES = D4GroupTest.cc $(TEST_SRC)
+D4GroupTest_LDADD = ../libdap.la $(AM_LDADD)
 
 endif
 

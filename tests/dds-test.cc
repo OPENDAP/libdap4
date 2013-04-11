@@ -46,9 +46,11 @@
 #include "util.h"
 #include "Error.h"
 
+#if 0
 #ifdef DAP4
 #include "D4ParserSax2.h"
 #include "D4BaseTypeFactory.h"
+#endif
 #endif
 
 using namespace libdap;
@@ -56,7 +58,9 @@ using namespace libdap;
 void test_scanner();
 void test_parser(const string &name);
 void test_class();
+#if 0
 void test_dap4_parser(const string &name);
+#endif
 
 int ddslex();
 // int ddsparse(DDS &);
@@ -68,18 +72,30 @@ static bool print_ddx = false;
 const char *prompt = "dds-test: ";
 
 void usage(string name) {
+    cerr << "Usage: " << name << "[s] [pd] [c]" << endl
+            << "s: Test the scanner." << endl
+            << "p: Test the parser; reads from stdin and prints the" << endl
+            << "   internal structure to stdout." << endl
+            << "d: Turn on parser debugging. (only for the hard core.)" << endl
+            << "c: Test the C++ code for manipulating DDS objects." << endl
+            << "   Reads from stdin, parses and writes the modified DDS" << endl
+            << "   to stdout." << endl;
+#if 0
     fprintf(stderr, "usage: %s %s\n %s\n %s\n %s\n %s\n %s\n %s\n %s\n", name.c_str(), "[s] [pd] [c]",
             "s: Test the scanner.", "p: Test the parser; reads from stdin and prints the",
             "   internal structure to stdout.", "d: Turn on parser debugging. (only for the hard core.)",
             "c: Test the C++ code for manipulating DDS objects.",
             "   Reads from stdin, parses and writes the modified DDS", "   to stdout.");
+#endif
 }
 
 int main(int argc, char *argv[]) {
-    GetOpt getopt(argc, argv, "spP:dfF:cx");
+    GetOpt getopt(argc, argv, "spP:dcx"); // remove fF:
     int option_char;
     int scanner_test = 0, parser_test = 0, class_test = 0;
+#if 0
     int dap4_parser_test = 0;
+#endif
     string name = "";
     // process options
 
@@ -98,7 +114,7 @@ int main(int argc, char *argv[]) {
             parser_test = 1;
             name = getopt.optarg;
             break;
-
+#if 0
         case 'f':
             dap4_parser_test = 1;
             break;
@@ -107,7 +123,7 @@ int main(int argc, char *argv[]) {
             dap4_parser_test = 1;
             name = getopt.optarg;
             break;
-
+#endif
         case 'x':
             print_ddx = true;
             break;
@@ -120,7 +136,7 @@ int main(int argc, char *argv[]) {
             return 1;
         }
 
-    if (!scanner_test && !parser_test && !class_test && !dap4_parser_test) {
+    if (!scanner_test && !parser_test && !class_test/* && !dap4_parser_test*/) {
         usage(argv[0]);
         return 1;
     }
@@ -131,10 +147,10 @@ int main(int argc, char *argv[]) {
 
         if (parser_test)
             test_parser(name);
-
+#if 0
         if (dap4_parser_test)
             test_dap4_parser(name);
-
+#endif
         if (class_test)
             test_class();
     }
@@ -254,7 +270,8 @@ void test_parser(const string &name) {
     factory = 0;
 }
 
-void test_dap4_parser(const string &/*name*/) {
+#if 0
+void test_dap4_parser(const string &name) {
 #ifdef DAP4
     D4BaseTypeFactory factory;
 
@@ -286,6 +303,7 @@ void test_dap4_parser(const string &/*name*/) {
     cerr << "DAP4 parsing not supported by this version of libdap" << endl;
 #endif
 }
+#endif
 
 void test_class(void) {
     BaseTypeFactory *factory = new BaseTypeFactory;

@@ -344,6 +344,8 @@ public:
 
     void print_xml_writer(XMLWriter &xml);
 
+    void print_dap4(XMLWriter &xml);
+
     virtual void dump(ostream &strm) const ;
 };
 

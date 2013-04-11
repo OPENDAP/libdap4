@@ -16,10 +16,12 @@ CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 check_PROGRAMS = das-test dds-test expr-test 
-# noinst_PROGRAMS = io_test
+
+if DAP4_DEFINED
+check_PROGRAMS += dmr-test
+endif
 
 TESTS = DASTest DDSTest EXPRTest
-# EXPRTest
 
 dist_check_SCRIPTS = DASTest DDSTest EXPRTest atconfig atlocal
 
@@ -32,9 +34,6 @@ noinst_LIBRARIES = libtest-types.a
 
 libtest_types_a_SOURCES = $(TESTSRCS) $(TEST_HDR)
 
-# io_test_SOURCES = io_test.cc
-# io_test_LDADD = ../libdap.la
-
 das_test_SOURCES = das-test.cc
 das_test_LDADD =  libtest-types.a ../libdapserver.la ../libdap.la 
 
@@ -43,6 +42,11 @@ dds_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la
 
 expr_test_SOURCES = expr-test.cc
 expr_test_LDADD = libtest-types.a ../libdapserver.la ../libdapclient.la ../libdap.la
+
+if DAP4_DEFINED
+dmr_test_SOURCES = dmr-test.cc
+dmr_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la
+endif
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestSequence.cc		 \
@@ -53,7 +57,7 @@ TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 	TestGrid.h TestInt16.h TestInt32.h TestSequence.h TestStr.h	      \
 	TestStructure.h TestTypeFactory.h TestUInt16.h TestUInt32.h TestUrl.h
 
-DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite 
+DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite dmr-testsuite
 
 # grid-func-testsuite cache-testsuite ais_testsuite rcreader-testsuite 
 # server-testsuite cgi-util-tests
@@ -76,14 +80,6 @@ DDSTESTSUITEFLAGS =
 EXPRTESTSUITE = $(srcdir)/EXPRTest 
 EXPRTESTSUITEFLAGS =
 
-#check-local: check-das check-dds
-
-#check-das: atconfig atlocal $(DASTESTSUITE)
-#	$(SHELL) $(DASTESTSUITE) $(DASTESTSUITEFLAGS)
-
-#check-dds: atconfig atlocal $(DDSTESTSUITE)
-#	$(SHELL) $(DDSTESTSUITE) $(DDSTESTSUITEFLAGS)
-
 clean-local:
 	test ! -f '$(DASTESTSUITE)' || $(SHELL) $(DASTESTSUITE) --clean
 	test ! -f '$(DDSTESTSUITE)' || $(SHELL) $(DDSTESTSUITE) --clean
@@ -92,6 +88,7 @@ distclean-local:
 	-rm atconfig
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
+
 $(DASTESTSUITE): $(srcdir)/DASTest.at $(srcdir)/package.m4
 	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
 	mv $@.tmp $@

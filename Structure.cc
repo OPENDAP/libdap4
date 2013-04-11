@@ -122,15 +122,18 @@ Structure::Structure(const string &n, const string &d)
 /** The Structure copy constructor. */
 Structure::Structure(const Structure &rhs) : Constructor(rhs)
 {
-    m_duplicate(rhs);
+    DBG(cerr << "In Structure::copy_ctor for " << name() << endl);
+    //m_duplicate(rhs);
 }
 
 Structure::~Structure()
 {
+#if 0
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         BaseType *btp = *i ;
         delete btp ;  btp = 0;
     }
+#endif
 }
 
 BaseType *
@@ -142,13 +145,15 @@ Structure::ptr_duplicate()
 Structure &
 Structure::operator=(const Structure &rhs)
 {
+    DBG(cerr << "Entering Structure::operator=" << endl);
     if (this == &rhs)
         return *this;
 
     dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
 
-    m_duplicate(rhs);
+    //m_duplicate(rhs);
 
+    DBG(cerr << "Exiting Structure::operator=" << endl);
     return *this;
 }
 

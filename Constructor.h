@@ -46,8 +46,8 @@ protected:
     BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
     BaseType *m_exact_match(const string &name, btp_stack *s = 0);
 
-    Constructor(const string &n, const Type &t, bool is_dap4 = false);
-    Constructor(const string &n, const string &d, const Type &t, bool is_dap4 = false);
+    Constructor(const string &name, const Type &type, bool is_dap4 = false);
+    Constructor(const string &name, const string &d, const Type &type, bool is_dap4 = false);
 
     Constructor(const Constructor &copy_from);
 
@@ -71,6 +71,8 @@ public:
     virtual unsigned int width();
     virtual unsigned int width(bool constrained);
 
+    // TODO Rewrite these methods to use the back pointers and keep this
+    // for older code.
     /// btp_stack no longer needed; use back pointers (BaseType::get_parent())
     virtual BaseType *var(const string &name, bool exact_match = true, btp_stack *s = 0);
     /// @deprecated

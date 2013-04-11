@@ -58,6 +58,23 @@ namespace libdap {
 void
 Constructor::m_duplicate(const Constructor &c)
 {
+    DBG(cerr << "In Constructor::m_duplicate for " << c.name() << endl);
+#if 1
+    // Clear out any spurious vars in Constructor::d_vars
+    // Moved from Grid::m_duplicate. jhrg 4/3/13
+    d_vars.clear(); // [mjohnson 10 Sep 2009]
+#endif
+
+    Vars_citer i = c.d_vars.begin();
+    while (i != c.d_vars.end()) {
+        BaseType *btp = (*i++)->ptr_duplicate();
+        btp->set_parent(this);
+        d_vars.push_back(btp);
+    }
+
+    DBG(cerr << "Exiting Constructor::m_duplicate for " << c.name() << endl);
+
+#if 0
     Constructor &cs = const_cast<Constructor &>(c);
 
     for (Vars_iter i = cs.d_vars.begin(); i != cs.d_vars.end(); i++) {
@@ -65,12 +82,13 @@ Constructor::m_duplicate(const Constructor &c)
         btp->set_parent(this);
         d_vars.push_back(btp);
     }
+#endif
 }
 
 // Public member functions
 
-Constructor::Constructor(const string &n, const Type &t, bool is_dap4)
-        : BaseType(n, t, is_dap4)
+Constructor::Constructor(const string &name, const Type &type, bool is_dap4)
+        : BaseType(name, type, is_dap4)
 {}
 
 /** Server-side constructor that takes the name of the variable to be
@@ -78,24 +96,35 @@ Constructor::Constructor(const string &n, const Type &t, bool is_dap4)
  * the type of data being stored in the Constructor. This is a protected
  * constructor, available only to derived classes of Constructor
  *
- * @param n string containing the name of the variable to be created
- * @param d string containing the name of the dataset from which this
+ * @param name string containing the name of the variable to be created
+ * @param dataset string containing the name of the dataset from which this
  * variable is being created
- * @param t type of data being stored
+ * @param type type of data being stored
  */
-Constructor::Constructor(const string &n, const string &d, const Type &t, bool is_dap4)
-        : BaseType(n, d, t, is_dap4)
+Constructor::Constructor(const string &name, const string &dataset, const Type &type, bool is_dap4)
+        : BaseType(name, dataset, type, is_dap4)
 {}
 
 Constructor::Constructor(const Constructor &rhs) : BaseType(rhs), d_vars(0)
-{}
+{
+    DBG(cerr << "In Constructor::copy_ctor for " << rhs.name() << endl);
+    m_duplicate(rhs);
+}
 
 Constructor::~Constructor()
-{}
+{
+    Vars_iter i = d_vars.begin();
+    while (i != d_vars.end()) {
+        delete *i;
+        *i = 0;
+        ++i;
+    }
+}
 
 Constructor &
 Constructor::operator=(const Constructor &rhs)
 {
+    DBG(cerr << "Entering Constructor::operator=" << endl);
     if (this == &rhs)
         return *this;
 
@@ -103,6 +132,7 @@ Constructor::operator=(const Constructor &rhs)
 
     m_duplicate(rhs);
 
+    DBG(cerr << "Exiting Constructor::operator=" << endl);
     return *this;
 }
 
@@ -140,7 +170,7 @@ Constructor::set_read_p(bool state)
     BaseType::set_read_p(state);
 }
 
-// TODO Recode to use width(bool). Bur see comments in BaseType.h
+// TODO Recode to use width(bool). But see comments in BaseType.h
 unsigned int
 Constructor::width()
 {

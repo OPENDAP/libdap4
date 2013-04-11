@@ -1,15 +1,47 @@
-/*
- * D4Group.cc
- *
- *  Created on: Sep 27, 2012
- *      Author: jimg
- */
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2013 OPeNDAP, Inc.
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include "D4Group.h"
 
-#include "BaseType.h"
-
 namespace libdap {
+
+void D4Group::m_duplicate(const D4Group &g)
+{
+    // dims
+    d_dims = g.d_dims;
+
+    // enums; deep copy
+    d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
+
+    // groups
+    groupsCIter i = g.d_groups.begin();
+    while(i != g.d_groups.end()) {
+        D4Group *g = (*i++)->ptr_duplicate();
+        this->d_groups.push_back(g);
+    }
+
+}
 
 /** The D4Group constructor requires only the name of the variable
     to be created. The name may be omitted, which will create a
@@ -17,7 +49,8 @@ namespace libdap {
 
     @param n A string containing the name of the variable.
 */
-D4Group::D4Group(const string &n) : Constructor(n, dods_group_c, /*is_dap4*/true)
+D4Group::D4Group(const string &name)
+    : Constructor(name, dods_group_c, /*is_dap4*/true), d_enum_defs(0)
 {}
 
 /** The D4Group server-side constructor requires the name of the variable
@@ -27,27 +60,38 @@ D4Group::D4Group(const string &n) : Constructor(n, dods_group_c, /*is_dap4*/true
     @param n A string containing the name of the variable.
     @param d A string containing the name of the dataset.
 */
-D4Group::D4Group(const string &n, const string &d)
-    : Constructor(n, d, dods_group_c, /*is_dap4*/true)
+D4Group::D4Group(const string &name, const string &dataset)
+    : Constructor(name, dataset, dods_group_c, /*is_dap4*/true), d_enum_defs(0)
 {}
 
 /** The D4Group copy constructor. */
-D4Group::D4Group(const D4Group &rhs) : Constructor(rhs)
+D4Group::D4Group(const D4Group &rhs) : Constructor(rhs), d_enum_defs(0)
 {
     m_duplicate(rhs);
 }
 
-static void enum_del(D4EnumDef *ed)
+static void group_delete(D4Group *g)
 {
-    delete ed;
+    delete g;
 }
 
 D4Group::~D4Group()
 {
-    for_each(d_enums.begin(), d_enums.end(), enum_del);
+    for_each(d_groups.begin(), d_groups.end(), group_delete);
+
+    // Setting the pointers in the container to null serves no purpose
+    // at this point since the object is going away. jhrg 4/3/13
+#if 0
+    groupsIter i = d_groups.begin();
+    while(i != d_groups.end()) {
+        delete *i;
+        *i = 0;
+        ++i;
+    }
+#endif
 }
 
-BaseType *
+D4Group *
 D4Group::ptr_duplicate()
 {
     return new D4Group(*this);
@@ -66,10 +110,36 @@ D4Group::operator=(const D4Group &rhs)
     return *this;
 }
 
-void
-D4Group::add_enumeration_nocopy(D4EnumDef *enum_def)
+/** Compute the size of all of the variables in this group and it's children,
+ * in kilobytes
+ *
+ * @param constrained Should the current constraint be taken into account?
+ * @return The size in kilobytes
+ */
+long
+D4Group::request_size(bool constrained)
 {
-    d_enums.push_back(enum_def);
+    long long size = 0;
+    // variables
+    Constructor::Vars_iter v = var_begin();
+    while (v != var_end()) {
+        if (constrained) {
+            if ((*v)->send_p())
+                size += (*v)->width(constrained);
+        }
+        else {
+            size += (*v)->width(constrained);
+        }
+
+        ++v;
+    }
+
+    // groups
+    groupsIter g = d_groups.begin();
+    while (g != d_groups.end())
+        size += (*g++)->request_size(constrained);
+
+    return size / 1024;
 }
 
 class PrintVariable : public unary_function<BaseType *, void>
@@ -85,46 +155,54 @@ public:
     }
 };
 
-class PrintEnum : public unary_function<D4EnumDef *, void>
-{
-    XMLWriter &d_xml;
-
-public:
-    PrintEnum(XMLWriter &x) : d_xml(x){}
-
-    void operator()(D4EnumDef *e)
-    {
-        e->print_xml_writer(d_xml);
-    }
-};
-
 void
-D4Group::print_xml_writer(XMLWriter &xml, bool constrained)
+D4Group::print_dap4(XMLWriter &xml, bool constrained)
 {
-    if (constrained && !send_p())
-        return;
+    if (!name().empty()) {
+        // For named groups, if constrained is true only print if this group
+        // has variables that are marked for transmission. For the root group
+        // this test is not made.
+        if (constrained && !send_p())
+            return;
 
-    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)type_name().c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write " + type_name() + " element");
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) type_name().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write " + type_name() + " element");
 
-    if (!name().empty())
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*) name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+    }
 
-    // If the Group has Enumeration definitions
-    if (d_enums.size() > 0)
-        for_each(d_enums.begin(), d_enums.end(), PrintEnum(xml));
+    // Print the Group body if this method is called on either a named group
+    // or the root group.
+    // enums
+    if (!enum_defs()->empty())
+        enum_defs()->print_dap4(xml);
 
-    // If it has attributes
-    if (get_attr_table().get_size() > 0)
-        get_attr_table().print_xml_writer(xml);
+    // dims
+    d_dims.print_dap4(xml);
 
-    // If it has variables
-    if (var_begin() != var_end())
-        for_each(var_begin(), var_end(), PrintVariable(xml, constrained));
+    // TODO Note that the order of the parts of a Group are different here
+    // than in the rng grammar.
 
-    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
+    // attributes
+    get_attr_table().print_dap4(xml);
+
+    // variables
+    Constructor::Vars_iter v = var_begin();
+    while (v != var_end()) {
+        (*v++)->print_dap4(xml, constrained);
+        //++v;
+    }
+
+    // groups
+    groupsIter g = d_groups.begin();
+    while (g != d_groups.end())
+        (*g++)->print_dap4(xml, constrained);
+
+    if (!name().empty()) {
+        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
+    }
 }
 
 } /* namespace libdap */
