@@ -28,8 +28,8 @@ namespace libdap {
 
 void D4Group::m_duplicate(const D4Group &g)
 {
-    // dims
-    d_dims = g.d_dims;
+    // dims; deep copy
+    d_dims = new D4Dimensions(*g.d_dims);
 
     // enums; deep copy
     d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
@@ -50,7 +50,7 @@ void D4Group::m_duplicate(const D4Group &g)
     @param n A string containing the name of the variable.
 */
 D4Group::D4Group(const string &name)
-    : Constructor(name, dods_group_c, /*is_dap4*/true), d_enum_defs(0)
+    : Constructor(name, dods_group_c, /*is_dap4*/true), d_dims(0), d_enum_defs(0)
 {}
 
 /** The D4Group server-side constructor requires the name of the variable
@@ -61,34 +61,26 @@ D4Group::D4Group(const string &name)
     @param d A string containing the name of the dataset.
 */
 D4Group::D4Group(const string &name, const string &dataset)
-    : Constructor(name, dataset, dods_group_c, /*is_dap4*/true), d_enum_defs(0)
+    : Constructor(name, dataset, dods_group_c, /*is_dap4*/true), d_dims(0), d_enum_defs(0)
 {}
 
 /** The D4Group copy constructor. */
-D4Group::D4Group(const D4Group &rhs) : Constructor(rhs), d_enum_defs(0)
+D4Group::D4Group(const D4Group &rhs) : Constructor(rhs), d_dims(0), d_enum_defs(0)
 {
     m_duplicate(rhs);
 }
 
-static void group_delete(D4Group *g)
-{
-    delete g;
-}
-
 D4Group::~D4Group()
 {
-    for_each(d_groups.begin(), d_groups.end(), group_delete);
+    //for_each(d_groups.begin(), d_groups.end(), group_delete);
 
-    // Setting the pointers in the container to null serves no purpose
-    // at this point since the object is going away. jhrg 4/3/13
-#if 0
+    delete d_dims;
+    delete d_enum_defs;
+
     groupsIter i = d_groups.begin();
-    while(i != d_groups.end()) {
-        delete *i;
-        *i = 0;
-        ++i;
-    }
-#endif
+    while(i != d_groups.end())
+        delete *i++;
+
 }
 
 D4Group *
@@ -142,19 +134,6 @@ D4Group::request_size(bool constrained)
     return size / 1024;
 }
 
-class PrintVariable : public unary_function<BaseType *, void>
-{
-    XMLWriter &d_xml;
-    bool d_constrained;
-public:
-    PrintVariable(XMLWriter &x, bool c) : d_xml(x), d_constrained(c) {}
-
-    void operator()(BaseType *btp)
-    {
-        btp->print_xml_writer(d_xml, d_constrained);
-    }
-};
-
 void
 D4Group::print_dap4(XMLWriter &xml, bool constrained)
 {
@@ -179,7 +158,8 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
         enum_defs()->print_dap4(xml);
 
     // dims
-    d_dims.print_dap4(xml);
+    if (!dims()->empty())
+        dims()->print_dap4(xml);
 
     // TODO Note that the order of the parts of a Group are different here
     // than in the rng grammar.

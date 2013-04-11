@@ -75,15 +75,15 @@ public:
     }
 
     void load_group_with_stuff(D4Group *g) {
-        g->get_dim_defs().add_dim("lat", 1024);
-        g->get_dim_defs().add_dim("lon", 1024);
-        g->get_dim_defs().add_dim("time", 0, true /*varying*/);
+        g->dims()->add_dim_nocopy(new D4Dimension("lat", 1024));
+        g->dims()->add_dim_nocopy(new D4Dimension("lon", 1024));
+        g->dims()->add_dim_nocopy(new D4Dimension("time"));
 
         D4EnumDef *color_values = new D4EnumDef("colors", dods_byte_c);
         color_values->add_value("red", 1);
         color_values->add_value("green", 2);
         color_values->add_value("blue", 3);
-        g->enum_defs()->add_enum(color_values);
+        g->enum_defs()->add_enum_nocopy(color_values);
 
         g->get_attr_table().append_attr("test", "Int16", "1");
     }

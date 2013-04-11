@@ -25,27 +25,27 @@
 #include <sstream>
 
 #include "D4Dimensions.h"
+#include "InternalErr.h"
 #include "XMLWriter.h"
 
 namespace libdap {
 
 void
-D4Dimensions::print_dim(XMLWriter &xml, const dimension &d) const
+D4Dimension::print_dap4(XMLWriter &xml) const
 {
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)"Dimension") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write Dimension element");
 
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d.name.c_str()) < 0)
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-    // Write out only one of "size" or "unlimited"
-    if (d.varying) {
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "unlimited", (const xmlChar*)"true") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for varying");
+    if (d_varying) {
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "size", (const xmlChar*)"*") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for size (varying)");
     }
     else {
         ostringstream oss;
-        oss << d.size;
+        oss << d_size;
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "size", (const xmlChar*)oss.str().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for size");
     }
@@ -57,9 +57,9 @@ D4Dimensions::print_dim(XMLWriter &xml, const dimension &d) const
 void
 D4Dimensions::print_dap4(XMLWriter &xml) const
 {
-    vector<dimension>::const_iterator i = d_dims.begin();
+    D4DimensionsCIter i = d_dims.begin();
     while (i != d_dims.end()) {
-        print_dim(xml, *i++);
+        (*i++)->print_dap4(xml);
     }
 
 }

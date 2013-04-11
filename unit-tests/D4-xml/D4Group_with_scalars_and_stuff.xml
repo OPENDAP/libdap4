@@ -6,7 +6,7 @@
 </Enumeration>
 <Dimension name="lat" size="1024"/>
 <Dimension name="lon" size="1024"/>
-<Dimension name="time" unlimited="true"/>
+<Dimension name="time" size="*"/>
 <Attribute name="test" type="Int16">
     <value>1</value>
 </Attribute>

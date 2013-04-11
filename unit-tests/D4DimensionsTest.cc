@@ -75,7 +75,7 @@ public:
     }
 
     void test_print_1() {
-        d->add_dim("first", 10);
+        d->add_dim_nocopy(new D4Dimension("first", 10));
 
         d->print_dap4(*xml);
         string doc = xml->get_doc();
@@ -86,8 +86,8 @@ public:
     }
 
     void test_print_2() {
-        d->add_dim("first", 10);
-        d->add_dim("second", 100);
+        d->add_dim_nocopy(new D4Dimension("first", 10));
+        d->add_dim_nocopy(new D4Dimension("second", 100));
 
         d->print_dap4(*xml);
         string doc = xml->get_doc();
@@ -98,9 +98,9 @@ public:
     }
 
     void test_print_varying() {
-        d->add_dim("first", 10);
-        d->add_dim("second", 100);
-        d->add_dim("third", 0, true);
+        d->add_dim_nocopy(new D4Dimension("first", 10));
+        d->add_dim_nocopy(new D4Dimension("second", 100));
+        d->add_dim_nocopy(new D4Dimension("third"));
 
         d->print_dap4(*xml);
         string doc = xml->get_doc();
@@ -111,13 +111,13 @@ public:
     }
 
     void test_print_insert_dim() {
-        d->add_dim("first", 10);
-        d->add_dim("second", 100);
-        d->add_dim("third", 0, true);
+        d->add_dim_nocopy(new D4Dimension("first", 10));
+        d->add_dim_nocopy(new D4Dimension("second", 100));
+        d->add_dim_nocopy(new D4Dimension("third"));
 
         //vector<D4Dimensions::dimension>::iterator i = d->dim_begin() + 1;
         D4Dimensions::D4DimensionsIter i = d->dim_begin() + 1;
-        d->insert_dim("odd", 20, false /*varying*/, i);
+        d->insert_dim_nocopy(new D4Dimension("odd", 20), i);
 
         d->print_dap4(*xml);
         string doc = xml->get_doc();
@@ -128,9 +128,9 @@ public:
     }
 
     void test_print_assignment() {
-        d->add_dim("first", 10);
-        d->add_dim("second", 100);
-        d->add_dim("third", 0, true);
+        d->add_dim_nocopy(new D4Dimension("first", 10));
+        d->add_dim_nocopy(new D4Dimension("second", 100));
+        d->add_dim_nocopy(new D4Dimension("third"));
 
         D4Dimensions lhs = *d;
 
@@ -143,9 +143,9 @@ public:
     }
 
     void test_print_copy_ctor() {
-        d->add_dim("first", 10);
-        d->add_dim("second", 100);
-        d->add_dim("third", 0, true);
+        d->add_dim_nocopy(new D4Dimension("first", 10));
+        d->add_dim_nocopy(new D4Dimension("second", 100));
+        d->add_dim_nocopy(new D4Dimension("third"));
 
         D4Dimensions lhs(*d);
 

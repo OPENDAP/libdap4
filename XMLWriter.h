@@ -35,7 +35,7 @@
 
 #include <string>
 
-#include <InternalErr.h>
+// FIXME Remove #include <InternalErr.h>
 
 using namespace std;
 

@@ -46,7 +46,7 @@ private:
 
     // This instance of D4Dimensions holds the Group's definitions; the same
     // class is used by Array to hold the actual dimensions for a variable.
-    D4Dimensions d_dims;
+    D4Dimensions *d_dims;
 
     // This holds the Group's enumeration definitions; a different class is
     // used for the Enumeration type
@@ -71,11 +71,13 @@ public:
     D4Group &operator=(const D4Group &rhs);
     virtual D4Group *ptr_duplicate();
 
-    /// Get a reference to the dimensions defined for this Group
-    // TODO Make this work like enum_defs()
-    D4Dimensions &get_dim_defs() { return d_dims; }
+    /// Get the dimensions defined for this Group
+    D4Dimensions *dims() {
+        if (!d_dims) d_dims = new D4Dimensions();
+        return d_dims;
+    }
 
-    /// Get a reference to the enumerations defined for this Group
+    /// Get  the enumerations defined for this Group
     D4EnumDefs *enum_defs() {
         if (!d_enum_defs) d_enum_defs = new D4EnumDefs;
         return d_enum_defs;

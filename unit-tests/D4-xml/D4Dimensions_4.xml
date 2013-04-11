@@ -2,4 +2,4 @@
 <Dimension name="first" size="10"/>
 <Dimension name="odd" size="20"/>
 <Dimension name="second" size="100"/>
-<Dimension name="third" unlimited="true"/>
+<Dimension name="third" size="*"/>
