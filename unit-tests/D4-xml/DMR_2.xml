@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- This is the smallest DMR possible -->
+<Dataset
+    name="DMR_1"
+    dapVersion="4.0"
+    dmrVersion="1.0"
+    base="DMR_1.xml">
+    <Dimension name="dim1" size="5"/>
+    <Enumeration name="colors" basetype="Byte">
+        <EnumConst name="red" value="1"/>
+        <EnumConst name="green" value="2"/>
+        <EnumConst name="blue" value="3"/>
+    </Enumeration>
+</Dataset>   
