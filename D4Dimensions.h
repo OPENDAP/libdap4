@@ -45,6 +45,7 @@ class D4Dimension {
 public:
     D4Dimension(const string &name, unsigned long size): d_name(name), d_size(size), d_varying(false) {}
     D4Dimension(const string &name): d_name(name), d_size(0), d_varying(true) {}
+    D4Dimension() : d_name(""), d_size(0), d_varying(0) {}
 
     string name() {return d_name;}
     void set_name(const string &name) { d_name = name; }

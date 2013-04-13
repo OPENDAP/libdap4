@@ -65,7 +65,7 @@ namespace libdap
     default and copy constructors as well as the destructor and assignment
     operator.
 
-    @see DDS */
+    @see DMR */
 class D4ParserSax2
 {
 private:
@@ -73,6 +73,8 @@ private:
     state-machine. */
     enum ParseState {
         parser_start,
+
+        inside_dataset,
 
         // inside_group is the state just after parsing the start of a Group
         // element.
@@ -86,6 +88,8 @@ private:
 
         inside_enum_def,
         inside_enum_const,
+
+        inside_dim_def,
 
         // This covers Byte, ..., Url, Opaque
         inside_simple_type,
@@ -120,6 +124,13 @@ private:
     }
     void clear_enum_def() { d_enum_def = 0; }
 
+    D4Dimension *d_dim_def;
+    D4Dimension *dim_def() {
+        if (!d_dim_def) d_dim_def = new D4Dimension;
+        return d_dim_def;
+    }
+    void clear_dim_def() { d_dim_def = 0; }
+
     // Accumulate stuff inside an 'OtherXML' DAP attribute here
     string other_xml;
 
@@ -130,7 +141,7 @@ private:
 
     // These are used for processing errors.
     string error_msg;  // Error message(s), if any.
-    xmlParserCtxtPtr ctxt; // used for error message line numbers
+    xmlParserCtxtPtr context; // used for error message line numbers
 
 
     // These hold temporary values read during the parse.
@@ -175,23 +186,19 @@ private:
     typedef map<string, XMLAttribute> XMLAttrMap;
     XMLAttrMap xml_attrs; // dump XML attributes here
 
-    XMLAttrMap::iterator xml_attr_begin() {
-        return xml_attrs.begin();
-    }
+    XMLAttrMap::iterator xml_attr_begin() { return xml_attrs.begin(); }
 
-    XMLAttrMap::iterator xml_attr_end() {
-        return xml_attrs.end();
-    }
+    XMLAttrMap::iterator xml_attr_end() {  return xml_attrs.end(); }
 
     map<string, string> namespace_table;
 
     // These are kind of silly...
-    void set_state(D4ParserSax2::ParseState state);
+    void push_state(D4ParserSax2::ParseState state);
     D4ParserSax2::ParseState get_state() const;
     void pop_state();
 
-    // Common cleanup code for intern() and intern_stream()
-    void cleanup_parse(xmlParserCtxtPtr &context) const;
+    // Common cleanup code for intern()
+    void cleanup_parse();
 
     /** @name Parser Actions
 
@@ -211,10 +218,12 @@ private:
     void process_enum_const_helper(const xmlChar **attrs, int nb_attributes);
     void process_enum_def_helper(const xmlChar **attrs, int nb_attributes);
 
-    void process_dimension(const xmlChar **attrs, int nb_attrs);
+    bool process_dimension(const char *name, const xmlChar **attrs, int nb_attrs);
+    bool process_dimension_def(const char *name, const xmlChar **attrs, int nb_attrs);
 
     bool process_attribute(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_variable(const char *name, const xmlChar **attrs, int nb_attributes);
+    bool process_group(const char *name, const xmlChar **attrs, int nb_attributes);
 
     bool process_enum_def(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_enum_const(const char *name, const xmlChar **attrs, int nb_attributes);
@@ -225,12 +234,10 @@ private:
     friend class D4ParserSax2Test;
 
 public:
-    // Read the factory class used to build BaseTypes from the DDS passed
-    // into the intern() method.
     D4ParserSax2() :
-        d_dmr(0), d_enum_def(0),
+        d_dmr(0), d_enum_def(0), d_dim_def(0),
         other_xml(""), other_xml_depth(0), unknown_depth(0),
-        error_msg(""), ctxt(0),
+        error_msg(""), context(0),
         dods_attr_name(""), dods_attr_type(""),
         char_data(""), root_ns("")
     {}

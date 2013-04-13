@@ -22,7 +22,6 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-
 #ifndef _dmr_h
 #define _dmr_h 1
 
@@ -39,108 +38,13 @@ namespace libdap
 
 class D4BaseTypeFactory;
 
-/** The DAP2 Data Descriptor Object (DDS) is a data structure used by
-    the DAP2 software to describe datasets and subsets of those
-    datasets.  The DDS may be thought of as the declarations for the
-    data structures that will hold data requested by some DAP2 client.
-    Part of the job of a DAP2 server is to build a suitable DDS for a
-    specific dataset and to send it to the client.  Depending on the
-    data access API in use, this may involve reading part of the
-    dataset and inferring the DDS.  Other APIs may require the server
-    simply to read some ancillary data file with the DDS in it.
-
-    On the server side, in addition to the data declarations, the DDS
-    holds the clauses of any constraint expression that may have
-    accompanied the data request from the DAP2 client.  The DDS object
-    includes methods for modifying the DDS according to the given
-    constraint expression.  It also has methods for directly modifying
-    a DDS, and for transmitting it from a server to a client.
-
-    For the client, the DDS object includes methods for reading the
-    persistent form of the object sent from a server. This includes parsing
-    the ASCII representation of the object and, possibly, reading data
-    received from a server into a data object.
-
-    Note that the class DDS is used to instantiate both DDS and DataDDS
-    objects. A DDS that is empty (contains no actual data) is used by servers
-    to send structural information to the client. The same DDS can becomes a
-    DataDDS when data values are bound to the variables it defines.
-
-    For a complete description of the DDS layout and protocol, please
-    refer to <i>The OPeNDAP User Guide</i>.
-
-    The DDS has an ASCII representation, which is what is transmitted
-    from a DAP2 server to a client.  Here is the DDS representation of
-    an entire dataset containing a time series of worldwide grids of
-    sea surface temperatures:
-
-    <pre>
-    Dataset {
-        Float64 lat[lat = 180];
-        Float64 lon[lon = 360];
-        Float64 time[time = 404];
-        Grid {
-         ARRAY:
-            Int32 sst[time = 404][lat = 180][lon = 360];
-         MAPS:
-            Float64 time[time = 404];
-            Float64 lat[lat = 180];
-            Float64 lon[lon = 360];
-        } sst;
-    } weekly;
-    </pre>
-
-    If the data request to this dataset includes a constraint
-    expression, the corresponding DDS might be different.  For
-    example, if the request was only for northern hemisphere data
-    at a specific time, the above DDS might be modified to appear like
-    this:
-
-    <pre>
-    Dataset {
-        Grid {
-         ARRAY:
-            Int32 sst[time = 1][lat = 90][lon = 360];
-         MAPS:
-            Float64 time[time = 1];
-            Float64 lat[lat = 90];
-            Float64 lon[lon = 360];
-        } sst;
-    } weekly;
-    </pre>
-
-    Since the constraint has narrowed the area of interest, the range
-    of latitude values has been halved, and there is only one time
-    value in the returned array.  Note that the simple arrays (<tt>lat</tt>,
-    <tt>lon</tt>, and <tt>time</tt>) described in the dataset are also
-    part of the <tt>sst</tt> Grid object.  They can be requested by
-    themselves or as part of that larger object.
-
-    See the <i>The OPeNDAP User Guide</i>, or the documentation of the
-    BaseType class for descriptions of the DAP2 data types.
-
-    @note Make sure to pass a valid pointer to the DDS constructor or use
-    the set_factory() method before actually using the DDS. Also make sure
-    that the Factory's lifetime thereafter is the same as the DDS's. Never
-    delete the factory until you're done using the DDS.
-
-    @note Update: I removed the DEFAULT_BASETYPE_FACTORY switch because it
-    caused more confusion than it avoided. See Trac #130. jhrg
-
-    @note The compile-time symbol DEFAULT_BASETYPE_FACTORY controls whether
-    the old (3.4 and earlier) DDS and DataDDS constructors are supported.
-    These constructors now use a default factory class (BaseTypeFactory,
-    implemented by this library) to instantiate Byte, ..., Grid variables. To
-    use the default ctor in your code you must also define this symbol. If
-    you \e do choose to define this and fail to provide a specialization of
-    BaseTypeFactory when your software needs one, you code may not link or
-    may fail at run time. In addition to the older ctors for DDS and DataDDS,
-    defining the symbol also makes some of the older methods in Connect
-    available (because those methods require the older DDS and DataDDS ctors.
-
-    @see BaseType
-    @see DAS */
-
+/** DMR is root object for a DAP4 dataset. It holds a D4Group and other
+ * information about the dataset (DAP protocol number, DMR version, etc.).
+ *
+ * @note This class holds the dataset name and filename (which might
+ * actually be a daabase name, but it's usually a filename). This might
+ * move to D4Group.
+ */
 class DMR : public DapObj
 {
 private:
@@ -204,7 +108,7 @@ public:
         Specialize D4BaseTypeFactory so that a DMR will be
         populated with your client or server's specialized types.*/
     //@{
-    virtual D4BaseTypeFactory *factory() const { return d_factory; }
+    virtual D4BaseTypeFactory *factory() { return d_factory; }
     virtual void set_factory(D4BaseTypeFactory *f) { d_factory = f; }
     //@}
 

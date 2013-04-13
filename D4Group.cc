@@ -164,9 +164,12 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
     // TODO Note that the order of the parts of a Group are different here
     // than in the rng grammar.
 
+    // FIXME The attributes in DAP4 are broken... Change them to fit the
+    // pattern established by D4Dimensions and D4EnumDefs
+#if 0
     // attributes
     get_attr_table().print_dap4(xml);
-
+#endif
     // variables
     Constructor::Vars_iter v = var_begin();
     while (v != var_end()) {

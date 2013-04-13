@@ -24,10 +24,6 @@
 
 #include "config.h"
 
-#include <cstdio>
-#include <cmath>
-#include <sys/types.h>
-
 #ifdef WIN32
 #include <io.h>
 #include <process.h>
@@ -39,41 +35,15 @@
 
 #include <iostream>
 #include <sstream>
-#include <algorithm>
-#include <functional>
 
 //#define DODS_DEBUG
 //#define DODS_DEBUG2
 
 #include "DMR.h"
 
-#include "GNURegex.h"
-
-//#include "DAS.h"
-#include "Clause.h"
-#include "Error.h"
-#include "InternalErr.h"
-//#include "Keywords2.h"
-
-#include "parser.h"
 #include "debug.h"
-#include "util.h"
 
-#include "Byte.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
-#include "Float32.h"
-#include "Float64.h"
-#include "Str.h"
-#include "Url.h"
-#include "Array.h"
-#include "Structure.h"
-#include "Sequence.h"
-#include "Grid.h"
-
-#include "escaping.h"
+#include "D4Group.h"
 
 const string c_xml_xsi = "http://www.w3.org/2001/XMLSchema-instance";
 const string c_xml_namespace = "http://www.w3.org/XML/1998/namespace";
@@ -91,7 +61,7 @@ namespace libdap {
 void
 DMR::m_duplicate(const DMR &dmr)
 {
-    d_factory = dmr.d_factory; //TODO Deep or shallow copy here?
+    d_factory = dmr.d_factory; // Shallow copy here
 
     d_name = dmr.d_name;
     d_filename = dmr.d_filename;
