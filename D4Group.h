@@ -89,8 +89,15 @@ public:
     /// Get an iterator to the end of the values
     groupsIter grp_end() { return d_groups.end(); }
 
-    void add_group(D4Group *g) { d_groups.push_back(g); }
-    void insert_group(D4Group *g, groupsIter i) { d_groups.insert(i, g); }
+    void add_group(D4Group *g) {
+        d_groups.push_back(new D4Group(*g));
+    }
+    void add_group_nocopy(D4Group *g) {
+        d_groups.push_back(g);
+    }
+    void insert_group_nocopy(D4Group *g, groupsIter i) {
+        d_groups.insert(i, g);
+    }
 
     long request_size(bool constrained);
 

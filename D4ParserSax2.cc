@@ -262,6 +262,29 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
 
 bool D4ParserSax2::process_group(const char *name, const xmlChar **attrs, int nb_attributes)
 {
+    transfer_xml_attrs(attrs, nb_attributes);
+
+    if (check_required_attribute("name")) {
+        BaseType *btp = dmr()->factory()->NewVariable(dods_group_c, xml_attrs["name"].value);
+        if (!btp)
+            dmr_fatal_error(this, "Internal parser error; could not instantiate the variable '%s'.",
+                    xml_attrs["name"].value.c_str());
+
+        bt_stack.push(btp);
+#if 0
+        // FIXME Attributes
+
+        // Once we make the new variable, we not only load it on to the
+        // BaseType stack, we also load its AttrTable on the AttrTable stack.
+        // The attribute processing software always operates on the AttrTable
+        // at the top of the AttrTable stack (at_stack).
+        at_stack.push(&btp->get_attr_table());
+#endif
+
+        return true;
+    }
+
+    return false;
 }
 
 /** Check to see if the current tag is either an \c Attribute or an \c Alias
@@ -409,8 +432,6 @@ void D4ParserSax2::finish_variable(const char *tag, Type t, const char *expected
         return;
     }
 
-    pop_state();
-
     BaseType *btp = bt_stack.top();
     bt_stack.pop();
 
@@ -446,7 +467,10 @@ void D4ParserSax2::finish_variable(const char *tag, Type t, const char *expected
                 tag, bt_stack.top()->type_name().c_str(), bt_stack.top()->name().c_str());
         return;
     }
+
     parent->add_var(btp);
+
+    pop_state();
 }
 
 /** @name SAX Parser Callbacks
@@ -552,7 +576,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             else if (parser->process_dimension_def(localname, attributes, nb_attributes))
                 parser->push_state(inside_dim_def);
             else if (parser->process_group(localname, attributes, nb_attributes))
-                break;
+                parser->push_state(inside_group);
             else
                 break;
             break;
@@ -571,7 +595,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             else if (parser->process_dimension_def(localname, attributes, nb_attributes))
                 parser->push_state(inside_dim_def);
             else if (parser->process_group(localname, attributes, nb_attributes))
-                break;
+                parser->push_state(inside_group);
 
             break;
 #if 0
@@ -773,14 +797,14 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             else
                 D4ParserSax2::dmr_fatal_error(parser, "Expected an end Dataset tag; found '%s' instead.", localname);
             break;
-
+#if 0
         case inside_group:
             if (strcmp(localname, "Group") == 0)
                 parser->pop_state();
             else
                 D4ParserSax2::dmr_fatal_error(parser, "Expected an end Group tag; found '%s' instead.", localname);
             break;
-
+#endif
         case inside_attribute_container:
             if (strcmp(localname, "Attribute") == 0) {
                 parser->pop_state();
@@ -923,6 +947,37 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
         case inside_structure:
             parser->finish_variable(localname, dods_structure_c, "Structure");
             break;
+
+        case inside_group: {
+            if (strcmp(localname, "Group") != 0) {
+                D4ParserSax2::dmr_fatal_error(parser, "Expected an end tag for a Group; found '%s' instead.", localname);
+                break;
+            }
+
+            // Pop the stack, the Group should be there
+            BaseType *btp = parser->bt_stack.top();
+            parser->bt_stack.pop();
+            if (btp->type() != dods_group_c) {
+                D4ParserSax2::dmr_fatal_error(parser, "Internal error: Expected a Group element.");
+                break;;
+            }
+
+            // Link the group we just poped to the thing on the stack, which
+            // should also be a group.
+            BaseType *parent = parser->bt_stack.top();
+            if (parent && !parent->type() == dods_group_c) {
+                D4ParserSax2::dmr_fatal_error(parser, "Tried to add a Group to a non-group type (%s %s).",
+                        parser->bt_stack.top()->type_name().c_str(), parser->bt_stack.top()->name().c_str());
+                break;
+            }
+
+            // Here we know parent is not null and is a group
+            static_cast<D4Group*>(parent)->add_group_nocopy(static_cast<D4Group*>(btp));
+
+            parser->pop_state();
+            break;
+        }
+
 #if 0
         case inside_sequence:
             parser->finish_variable(localname, dods_sequence_c, "Sequence");
