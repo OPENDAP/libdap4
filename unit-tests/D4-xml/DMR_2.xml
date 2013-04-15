@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!-- This is the smallest DMR possible -->
-<Dataset
-    name="DMR_1"
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" 
+    xml:base="file:DMR_2.xml"    
+    name="DMR_2"
     dapVersion="4.0"
-    dmrVersion="1.0"
-    base="DMR_1.xml">
+    dmrVersion="1.0">
     <Dimension name="dim1" size="5"/>
     <Enumeration name="colors" basetype="Byte">
         <EnumConst name="red" value="1"/>

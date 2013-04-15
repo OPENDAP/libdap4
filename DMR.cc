@@ -229,6 +229,8 @@ DMR::print_dap4(XMLWriter &xml, bool constrained)
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dataset") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write Dataset element");
 
+#if 0
+    // Reintroduce these if they are really useful. jhrg 4/15/13
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xml",
             (const xmlChar*) c_xml_namespace.c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xml");
@@ -240,22 +242,23 @@ DMR::print_dap4(XMLWriter &xml, bool constrained)
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xsi:schemaLocation",
             (const xmlChar*) c_dap_40_n_sl.c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:schemaLocation");
+#endif
 
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns",
             (const xmlChar*) get_namespace().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
-
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "dapVersion",  (const xmlChar*)dap_version().c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dapVersion");
-
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "dmrVersion", (const xmlChar*)dmr_version().c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dapVersion");
 
     if (!request_xml_base().empty()) {
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xml:base",
                 (const xmlChar*)request_xml_base().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xml:base");
     }
+
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "dapVersion",  (const xmlChar*)dap_version().c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dapVersion");
+
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "dmrVersion", (const xmlChar*)dmr_version().c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dapVersion");
 
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
