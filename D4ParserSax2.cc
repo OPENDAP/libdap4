@@ -360,12 +360,11 @@ inline bool D4ParserSax2::process_variable(const char *name, const xmlChar **att
         process_variable_helper(dods_structure_c, inside_structure, attrs, nb_attributes);
         return true;
     }
-    else if (strcmp(name, "Group") == 0) {
-        process_variable_helper(dods_group_c, inside_group, attrs, nb_attributes);
-        return true;
-    }
-    else
+    else {
         return false;
+    }
+
+
 }
 
 /** Given that a tag which opens a variable declaration has just been read,
@@ -379,23 +378,30 @@ void D4ParserSax2::process_variable_helper(Type t, ParseState s, const xmlChar *
 {
     transfer_xml_attrs(attrs, nb_attributes);
 
-    push_state(s);
-
     if (check_required_attribute("name")) {
         BaseType *btp = dmr()->factory()->NewVariable(t, xml_attrs["name"].value);
         if (!btp)
             dmr_fatal_error(this, "Internal parser error; could not instantiate the variable '%s'.",
                     xml_attrs["name"].value.c_str());
 
+        bt_stack.push(btp);
+#if 0
+        // FIXME Attributes
+
         // Once we make the new variable, we not only load it on to the
         // BaseType stack, we also load its AttrTable on the AttrTable stack.
         // The attribute processing software always operates on the AttrTable
         // at the top of the AttrTable stack (at_stack).
-        bt_stack.push(btp);
         at_stack.push(&btp->get_attr_table());
+#endif
+
+        push_state(s);
     }
 }
 
+// TODO this is called for array and structure only, but 'array' is about to
+// get subsumed by the code that processes simple types, so maybe this can
+// be retired?
 void D4ParserSax2::finish_variable(const char *tag, Type t, const char *expected)
 {
     if (strcmp(tag, expected) != 0) {
@@ -406,30 +412,40 @@ void D4ParserSax2::finish_variable(const char *tag, Type t, const char *expected
     pop_state();
 
     BaseType *btp = bt_stack.top();
-
     bt_stack.pop();
-    at_stack.pop();
 
+#if 0
+    // FIXME Attributes
+    at_stack.pop();
+#endif
     if (btp->type() != t) {
         D4ParserSax2::dmr_fatal_error(this, "Internal error: Expected a %s variable.", expected);
         return;
     }
-    // Once libxml2 validates, this can go away. 05/30/03 jhrg
+
 #if 0
+    // Once libxml2 validates, this can go away. 05/30/03 jhrg
     if (t == dods_array_c && dynamic_cast<Array *>(btp)->dimensions() == 0) {
         D4ParserSax2::dmr_fatal_error(this, "No dimension element included in the Array '%s'.", btp->name().c_str());
         return;
     }
 #endif
-    BaseType *parent = bt_stack.top();
 
+#if 0
     // TODO Remove is_vector_type() and do something more apropos for DAP4
     if (!(parent->is_vector_type() || parent->is_constructor_type())) {
         D4ParserSax2::dmr_fatal_error(this, "Tried to add the array variable '%s' to a non-constructor type (%s %s).",
                 tag, bt_stack.top()->type_name().c_str(), bt_stack.top()->name().c_str());
         return;
     }
+#endif
 
+    BaseType *parent = bt_stack.top();
+    if (parent && !parent->is_constructor_type()) {
+        D4ParserSax2::dmr_fatal_error(this, "Tried to add the array variable '%s' to a non-constructor type (%s %s).",
+                tag, bt_stack.top()->type_name().c_str(), bt_stack.top()->name().c_str());
+        return;
+    }
     parent->add_var(btp);
 }
 
@@ -528,6 +544,8 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             if (parser->process_attribute(localname, attributes, nb_attributes))
                 break;
             else if (parser->process_variable(localname, attributes, nb_attributes))
+                // This will push either inside_simple_type or inside_structure
+                // onto the parser state stack.
                 break;
             else if (parser->process_enum_def(localname, attributes, nb_attributes))
                 parser->push_state(inside_enum_def);
@@ -545,7 +563,9 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             if (parser->process_attribute(localname, attributes, nb_attributes))
                 break;
             else if (parser->process_variable(localname, attributes, nb_attributes))
-                break;
+                // This will push either inside_simple_type or inside_structure
+                // onto the parser state stack.
+               break;
             else if (parser->process_enum_def(localname, attributes, nb_attributes))
                 parser->push_state(inside_enum_def);
             else if (parser->process_dimension_def(localname, attributes, nb_attributes))
@@ -643,10 +663,12 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             break;
 
         case inside_simple_type:
+            // TODO Add support for arrays here because this is where
+            // dimensions will appear.
             if (parser->process_attribute(localname, attributes, nb_attributes))
                 break;
             else
-                dmr_fatal_error(parser, "Expected an 'Attribute' or 'Alias' element; found '%s' instead.", localname);
+                dmr_fatal_error(parser, "Expected an 'Attribute' element; found '%s' instead.", localname);
             break;
 
         case inside_array:
@@ -672,12 +694,14 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             if (parser->process_attribute(localname, attributes, nb_attributes))
                 break;
             else if (parser->process_variable(localname, attributes, nb_attributes))
+                // This will push either inside_simple_type or inside_structure
+                // onto the parser state stack.
                 break;
             else
                 D4ParserSax2::dmr_fatal_error(parser,
-                        "Expected an Attribute, Alias or variable element; found '%s' instead.", localname);
+                        "Expected an Attribute or variable element; found '%s' instead.", localname);
             break;
-
+#if 0
         case inside_sequence:
             if (parser->process_attribute(localname, attributes, nb_attributes))
                 break;
@@ -715,7 +739,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
                         "Expected an 'Attribute', 'Alias', variable or 'dimension' element; found '%s' instead.",
                         localname);
             break;
-
+#endif
         case parser_unknown:
             // *** Never used? If so remove/error
             parser->push_state(parser_unknown);
@@ -868,16 +892,12 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
                 parser->pop_state();
                 BaseType *btp = parser->bt_stack.top();
                 parser->bt_stack.pop();
+#if 0
                 parser->at_stack.pop();
-
+#endif
                 BaseType *parent = parser->bt_stack.top();
 
-                // NB: This works because we seed the stack with a dummy
-                // structure instance at the start of the parse. When the
-                // parse is complete the variables in that structure will
-                // be transferred to the DDS. Or maybe someday we will really
-                // use a Structure instance in DDS...
-                if (parent->is_vector_type() || parent->is_constructor_type())
+               if (parent && parent->is_constructor_type())
                     parent->add_var(btp);
                 else
                     D4ParserSax2::dmr_fatal_error(parser,
@@ -903,7 +923,7 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
         case inside_structure:
             parser->finish_variable(localname, dods_structure_c, "Structure");
             break;
-
+#if 0
         case inside_sequence:
             parser->finish_variable(localname, dods_sequence_c, "Sequence");
             break;
@@ -915,7 +935,7 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
         case inside_map:
             parser->finish_variable(localname, dods_array_c, "Map");
             break;
-
+#endif
         case parser_unknown:
             parser->pop_state();
             break;

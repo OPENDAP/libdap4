@@ -493,7 +493,13 @@ Type get_type(const char *name)
     if (strcmp(name, "Url") == 0)
         return dods_url_c;
 
-    if (strcmp(name, "Array") == 0)
+    if (strcmp(name, "Enum") == 0)
+        return dods_enum_c;
+
+    if (strcmp(name, "Opaque") == 0)
+        return dods_opaque_c;
+
+   if (strcmp(name, "Array") == 0)
         return dods_array_c;
 
     if (strcmp(name, "Structure") == 0)

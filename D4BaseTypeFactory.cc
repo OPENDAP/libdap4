@@ -193,6 +193,10 @@ D4BaseTypeFactory::NewUrl(const string &n) const
     return new Url(n);
 }
 
+/** Note that this method is called NewURL - URL in caps - and is the DAP4
+ * type. The DAP2 type is named 'Url'. Unfortunately, both are using the
+ * C++ class 'Url'.
+ */
 Url *
 D4BaseTypeFactory::NewURL(const string &n) const
 {

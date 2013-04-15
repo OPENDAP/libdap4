@@ -76,6 +76,7 @@ enum Part {
     dods_uint64_c,
     dods_url4_c
     dods_enum_c,
+    dods_opaque_c,
     dods_group_c
 
     };
@@ -115,6 +116,7 @@ enum Type {
 
     dods_array4_c,
     dods_enum_c,
+    dods_opaque_c,
     dods_group_c
 
 };

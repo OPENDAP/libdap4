@@ -140,11 +140,57 @@ public:
         }
     }
 
+    void test_simple_var_def() {
+        try {
+            string name = string(TEST_SRC_DIR) + "/D4-xml/DMR_3.xml";
+            ifstream ifile(name.c_str(), ifstream::in);
+            if (!ifile)
+                throw InternalErr(__FILE__, __LINE__, "Could not open file");
+
+            parser->intern(ifile, dmr);
+
+            ifile.close();
+
+            dmr->print_dap4(*xml, false);
+            string doc = xml->get_doc();
+            string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/DMR_3_baseline.xml");
+            DBG(cerr << "test_dimension_def DMR: " << doc << endl);
+            CPPUNIT_ASSERT(doc == baseline);
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message().c_str());
+        }
+    }
+
+    void test_all_simple_var_def() {
+        try {
+            string name = string(TEST_SRC_DIR) + "/D4-xml/DMR_4.xml";
+            ifstream ifile(name.c_str(), ifstream::in);
+            if (!ifile)
+                throw InternalErr(__FILE__, __LINE__, "Could not open file");
+
+            parser->intern(ifile, dmr);
+
+            ifile.close();
+
+            dmr->print_dap4(*xml, false);
+            string doc = xml->get_doc();
+            string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/DMR_4_baseline.xml");
+            DBG(cerr << "test_dimension_def DMR: " << doc << endl);
+            CPPUNIT_ASSERT(doc == baseline);
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message().c_str());
+        }
+    }
+
     CPPUNIT_TEST_SUITE( D4ParserSax2Test );
 
     CPPUNIT_TEST(test_empty_dmr);
     CPPUNIT_TEST(test_dimension_def);
     CPPUNIT_TEST(test_enum_def);
+    CPPUNIT_TEST(test_simple_var_def);
+    CPPUNIT_TEST(test_all_simple_var_def);
 
     CPPUNIT_TEST_SUITE_END();
 
