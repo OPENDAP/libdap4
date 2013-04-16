@@ -166,7 +166,7 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
 
     // FIXME The attributes in DAP4 are broken... Change them to fit the
     // pattern established by D4Dimensions and D4EnumDefs
-#if 0
+#if 1
     // attributes
     get_attr_table().print_dap4(xml);
 #endif

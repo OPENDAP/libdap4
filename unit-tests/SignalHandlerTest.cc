@@ -53,35 +53,41 @@ public:
     SignalHandlerTest() {}
     ~SignalHandlerTest() {}
 
-    void setUp() {
-	sh = SignalHandler::instance();
-	th = new TestHandler;
+    void setUp()
+    {
+        sh = SignalHandler::instance();
+        th = new TestHandler;
     }
 
-    void tearDown() {
-	delete th; th = 0;
+    void tearDown()
+    {
+        delete th;
+        th = 0;
     }
 
     // Tests for methods
-    void register_handler_test() {
-	sh->register_handler(SIGALRM, th);
-	CPPUNIT_ASSERT(sh->d_signal_handlers[SIGALRM] == th);
+    void register_handler_test()
+    {
+        sh->register_handler(SIGALRM, th);
+        CPPUNIT_ASSERT(sh->d_signal_handlers[SIGALRM] == th);
     }
 
-    void remove_handler_test() {
-	CPPUNIT_ASSERT(sh->remove_handler(SIGALRM) == th);
+    void remove_handler_test()
+    {
+        CPPUNIT_ASSERT(sh->remove_handler(SIGALRM) == th);
     }
 
-    void alarm_test() {
-	// Ignore the alarm signal and then register our handler. Without
-	// setting alram to ignore first the SignalHandler will call our
-	// EventHandler and then perform the default action for the signal,
-	// which is call exit() with EXIT_FAILURE.
-	signal(SIGALRM, SIG_IGN);
-	sh->register_handler(SIGALRM, th);
-	alarm(1);
-	sleep(10);
-	CPPUNIT_ASSERT(th->flag == 1);
+    void alarm_test()
+    {
+        // Ignore the alarm signal and then register our handler. Without
+        // setting alarm to ignore first the SignalHandler will call our
+        // EventHandler and then perform the default action for the signal,
+        // which is call exit() with EXIT_FAILURE.
+        signal(SIGALRM, SIG_IGN);
+        sh->register_handler(SIGALRM, th);
+        alarm(1);
+        sleep(10);
+        CPPUNIT_ASSERT(th->flag == 1);
     }
 
     CPPUNIT_TEST_SUITE( SignalHandlerTest );

@@ -27,6 +27,7 @@
 #define event_handler_h
 
 #include <iostream>
+#include "debug.h"
 
 namespace libdap
 {
@@ -64,7 +65,7 @@ public:
 
     virtual void handle_signal(int signum)
     {
-        std::cerr << "Got signal: " << signum << std::endl;
+        DBG(std::cerr << "Got signal: " << signum << std::endl);
         flag = 1;
     }
 };

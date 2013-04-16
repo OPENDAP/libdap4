@@ -44,6 +44,7 @@
 
 #include "Str.h"
 #include "Url.h"
+// #include "D4Enum.h"
 
 #include "Structure.h"
 #if 0
@@ -99,11 +100,13 @@ BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
             throw InternalErr(__FILE__, __LINE__, "Sequence is not part of DAP4.");
         case dods_grid_c:
             throw InternalErr(__FILE__, __LINE__, "Grid is not part of DAP4.");
-
+#if 0
         case dods_enum_c:
-            throw InternalErr(__FILE__, __LINE__, "Enum not impl yet.");
+            return  NewEnum(name);
+#endif
         case dods_array4_c:
             throw InternalErr(__FILE__, __LINE__, "Array4 not impl yet.");
+
         case dods_group_c:
             return NewGroup(name);
         default:
@@ -204,7 +207,21 @@ D4BaseTypeFactory::NewURL(const string &n) const
     u->set_type(dods_url4_c);
     return u;
 }
-
+#if 0
+/** For an Enum, both it's name and type must be know before use. This
+ * factory method uses "" and dods_null_c as the default values for name
+ * and type, respectively.
+ *
+ * @name The name of the Enum
+ * @type The Enum's element type.
+ * @return A new Enum variable
+ */
+D4Enum *
+D4BaseTypeFactory::NewEnum(const string &name, Type type) const
+{
+    return new D4Enum(name, type);
+}
+#endif
 Structure *
 D4BaseTypeFactory::NewStructure(const string &n) const
 {

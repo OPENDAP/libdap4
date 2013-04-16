@@ -26,6 +26,8 @@
 #ifndef d4_parser_sax2_h
 #define d4_parser_sax2_h
 
+#define ATTR 1
+
 #include <string>
 #include <iostream>
 #include <map>
@@ -108,13 +110,25 @@ private:
     };
 
     // The results of the parse operation are stored in these fields.
+    // This is passed into the parser using the intern() methods.
     DMR *d_dmr;   // dump DMR here
     DMR *dmr() const { return d_dmr; }
 
     // These stacks hold the state of the parse as it progresses.
+
     stack<ParseState> s; // Current parse state
-    stack<BaseType*> bt_stack; // current variable(s)/groups(s)
+    void push_state(D4ParserSax2::ParseState state) { s.push(state); }
+    D4ParserSax2::ParseState get_state() const { return s.top(); }
+    void pop_state() { s.pop(); }
+
+    stack<BaseType*> btp_stack; // current variable(s)/groups(s)
+    void push_basetype(BaseType *btp) { btp_stack.push(btp); }
+    BaseType * top_basetype() const { return btp_stack.top(); }
+    void pop_basetype() { btp_stack.pop(); }
+
+#if ATTR
     stack<AttrTable*> at_stack; // current attribute table
+#endif
 
     D4EnumDef *d_enum_def;
     D4EnumDef *enum_def() {
@@ -190,11 +204,6 @@ private:
     XMLAttrMap::iterator xml_attr_end() {  return xml_attrs.end(); }
 
     map<string, string> namespace_table;
-
-    // These are kind of silly...
-    void push_state(D4ParserSax2::ParseState state);
-    D4ParserSax2::ParseState get_state() const;
-    void pop_state();
 
     // Common cleanup code for intern()
     void cleanup_parse();

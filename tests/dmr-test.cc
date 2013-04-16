@@ -35,6 +35,7 @@
 #include "Error.h"
 
 #include "D4ParserSax2.h"
+#include "D4ParseError.h"
 #include "D4BaseTypeFactory.h"
 
 using namespace libdap;

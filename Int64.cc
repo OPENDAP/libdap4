@@ -82,7 +82,7 @@ namespace libdap {
     @param n A string containing the name of the variable to be
     created.
 */
-Int64::Int64(const string &n) : BaseType(n, dods_int64_c)
+Int64::Int64(const string &n) : BaseType(n, dods_int64_c, true /*is_dap4*/)
 {}
 
 /** The Int64 server-side constructor accepts the name of the variable and
@@ -92,7 +92,7 @@ Int64::Int64(const string &n) : BaseType(n, dods_int64_c)
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-Int64::Int64(const string &n, const string &d) : BaseType(n, d, dods_int64_c)
+Int64::Int64(const string &n, const string &d) : BaseType(n, d, dods_int64_c, true /*is_dap4*/)
 {}
 
 Int64::Int64(const Int64 &copy_from) : BaseType(copy_from)

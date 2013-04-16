@@ -477,7 +477,7 @@ bool HTTPCache::get_single_user_lock(bool force)
 	return true;
     }
 
-    cerr << "locked_open_file is true" << endl;
+    DBG(cerr << "locked_open_file is true" << endl);
     return false;
 }
 

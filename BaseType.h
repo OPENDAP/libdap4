@@ -514,7 +514,7 @@ public:
 	variable declaration is printed as well as the value. */
 
     virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true) = 0;
+                           bool print_decl_p = true);
 
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS

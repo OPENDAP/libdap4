@@ -1054,6 +1054,28 @@ BaseType::print_decl(ostream &out, string space, bool print_semi,
 	out << ";\n" ;
 }
 
+/** Prints the value of the variable, with its declaration. This
+function is primarily intended for debugging DODS
+applications. However, it can be overloaded and used to do
+some useful things. Take a look at the asciival and writeval
+clients, both of which overload this to output the values of
+variables in different ways.
+
+@brief Prints the value of the variable.
+
+@param out The output stream on which to print the value.
+@param space This value is passed to the print_decl()
+function, and controls the leading spaces of the output.
+@param print_decl_p A boolean value controlling whether the
+variable declaration is printed as well as the value. */
+void
+BaseType::print_val(FILE *out, string space, bool print_decl_p)
+{
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+}
+
 /** Write the XML representation of this variable. This method is used to
     build the DDX XML response.
     @param out Destination.

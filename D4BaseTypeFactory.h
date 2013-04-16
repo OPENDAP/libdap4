@@ -51,6 +51,8 @@ class Float64;
 class Str;
 class Url;
 
+//class D4Enum;
+
 class Structure;
 
 class D4Group;
@@ -98,6 +100,9 @@ public:
     virtual Url *NewUrl(const string &n = "") const;
     virtual Url *NewURL(const string &n = "") const;
 
+#if 0
+    virtual D4Enum *NewEnum(const string &n = "", Type type = dods_null_c) const;
+#endif
     virtual Structure *NewStructure(const string &n = "") const;
 
     virtual D4Group *NewGroup(const string &n = "") const;
@@ -105,7 +110,6 @@ public:
     // FIXME Define these
 #if 0
     virtual Opaque *NewOpaque(const string &n = "") const;
-    virtual Enumeration *NewEnumeration(const string &n = "") const;
     virtual D4Array *NewArray(const string &n = "", BaseType *v = 0) const;
 #endif
 

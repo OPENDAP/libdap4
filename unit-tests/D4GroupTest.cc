@@ -28,7 +28,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-//#define DODS_DEBUG
+//#define DODS_DEBUG 1
 
 #include "D4Group.h"
 
@@ -216,7 +216,9 @@ public:
         CPPUNIT_TEST(test_print_named_empty);
         CPPUNIT_TEST(test_print_with_vars);
         CPPUNIT_TEST(test_print_named_with_vars);
+
         CPPUNIT_TEST(test_print_with_vars_and_stuff);
+
         CPPUNIT_TEST(test_print_named_with_vars_and_stuff);
         CPPUNIT_TEST(test_print_everything);
 
