@@ -26,6 +26,7 @@
 
 #define DODS_DEBUG 1
 #define DODS_DEBUG2 1
+#define ATTR 0
 
 #include <iostream>
 #include <sstream>
@@ -33,39 +34,14 @@
 #include <cstring>
 #include <cstdarg>
 
+#include <libxml/parserInternals.h>
+
+#include "DMR.h"
 #include "BaseType.h"
-
-#if 0
-#include "Byte.h"
-#include "Int8.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
-#include "Int64.h"
-#include "UInt64.h"
-
-#include "Float32.h"
-#include "Float64.h"
-
-#include "Str.h"
-#include "Url.h"
-
-#include "Constructor.h"
-
-#include "Structure.h"
-
-#endif
-
 #include "D4Group.h"
 
-#if 0
-#include "Array.h"
-#include "Sequence.h"
-#include "Grid.h"
-#endif
-
 #include "D4ParserSax2.h"
+#include "D4ParseError.h"
 
 #include "util.h"
 #include "debug.h"
@@ -190,6 +166,7 @@ bool D4ParserSax2::check_attribute(const string & attr)
     return (xml_attrs.find(attr) != xml_attrs.end());
 }
 
+#if ATTR
 /** Given that an \c Attribute tag has just been read, determine whether the
  element is a container or a simple type, set the state and, for a simple
  type record the type and name for use when \c value elements are found.
@@ -230,6 +207,7 @@ void D4ParserSax2::process_attribute_helper(const xmlChar **attrs, int nb_attrib
         dods_attr_type = xml_attrs["type"].value;
     }
 }
+#endif
 
 bool D4ParserSax2::process_dimension_def(const char *name, const xmlChar **attrs, int nb_attributes)
 {
@@ -258,26 +236,39 @@ bool D4ParserSax2::process_dimension_def(const char *name, const xmlChar **attrs
 
 bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, int nb_attributes)
 {
+    if (strcmp(name, "Dim") == 0) {
+
+        transfer_xml_attrs(attrs, nb_attributes);
+
+        // Do stuff and return true if it's a valid Dim
+
+        return true;
+    }
+
+    return false;
 }
 
 bool D4ParserSax2::process_group(const char *name, const xmlChar **attrs, int nb_attributes)
 {
-    transfer_xml_attrs(attrs, nb_attributes);
+    if (strcmp(name, "Group") == 0) {
 
-    if (check_required_attribute("name")) {
+        transfer_xml_attrs(attrs, nb_attributes);
+
+        if (!check_required_attribute("name")) {
+            dmr_fatal_error(this, "Error: The required attribute 'name' was missing from a Group element.");
+            return false;
+        }
+
         BaseType *btp = dmr()->factory()->NewVariable(dods_group_c, xml_attrs["name"].value);
-        if (!btp)
+        if (!btp) {
             dmr_fatal_error(this, "Internal parser error; could not instantiate the variable '%s'.",
                     xml_attrs["name"].value.c_str());
+            return false;
+        }
 
         bt_stack.push(btp);
-#if 0
-        // FIXME Attributes
 
-        // Once we make the new variable, we not only load it on to the
-        // BaseType stack, we also load its AttrTable on the AttrTable stack.
-        // The attribute processing software always operates on the AttrTable
-        // at the top of the AttrTable stack (at_stack).
+#if ATTR
         at_stack.push(&btp->get_attr_table());
 #endif
 
@@ -287,6 +278,7 @@ bool D4ParserSax2::process_group(const char *name, const xmlChar **attrs, int nb
     return false;
 }
 
+#if ATTR
 /** Check to see if the current tag is either an \c Attribute or an \c Alias
  start tag. This method is a glorified macro...
 
@@ -303,6 +295,7 @@ inline bool D4ParserSax2::process_attribute(const char *name, const xmlChar **at
 
     return false;
 }
+#endif
 
 /** Check to see if the current tag is an \c Enumeration start tag.
 
@@ -312,6 +305,7 @@ inline bool D4ParserSax2::process_attribute(const char *name, const xmlChar **at
 inline bool D4ParserSax2::process_enum_def(const char *name, const xmlChar **attrs, int nb_attributes)
 {
     if (strcmp(name, "Enumeration") == 0) {
+
         transfer_xml_attrs(attrs, nb_attributes);
 
         if (!(check_required_attribute("name") && check_required_attribute("basetype")))
@@ -321,9 +315,7 @@ inline bool D4ParserSax2::process_enum_def(const char *name, const xmlChar **att
         if (!is_integer_type(t)) {
             dmr_fatal_error(this, "Error: The Enumeration '%s' must have an integer type, instead the type '%s' was used.",
                     xml_attrs["name"].value.c_str(), xml_attrs["basetype"].value.c_str());
-            // TODO Why not return false here as with the test above?
-            // So that the parse can continue, make the type UInt64
-            t = dods_uint64_c;
+            return false;
         }
 
         // This getter allocates a new object if needed.
@@ -386,8 +378,6 @@ inline bool D4ParserSax2::process_variable(const char *name, const xmlChar **att
     else {
         return false;
     }
-
-
 }
 
 /** Given that a tag which opens a variable declaration has just been read,
@@ -408,13 +398,7 @@ void D4ParserSax2::process_variable_helper(Type t, ParseState s, const xmlChar *
                     xml_attrs["name"].value.c_str());
 
         bt_stack.push(btp);
-#if 0
-        // FIXME Attributes
-
-        // Once we make the new variable, we not only load it on to the
-        // BaseType stack, we also load its AttrTable on the AttrTable stack.
-        // The attribute processing software always operates on the AttrTable
-        // at the top of the AttrTable stack (at_stack).
+#if ATTR
         at_stack.push(&btp->get_attr_table());
 #endif
 
@@ -435,31 +419,14 @@ void D4ParserSax2::finish_variable(const char *tag, Type t, const char *expected
     BaseType *btp = bt_stack.top();
     bt_stack.pop();
 
-#if 0
-    // FIXME Attributes
+#if ATTR
     at_stack.pop();
 #endif
+
     if (btp->type() != t) {
         D4ParserSax2::dmr_fatal_error(this, "Internal error: Expected a %s variable.", expected);
         return;
     }
-
-#if 0
-    // Once libxml2 validates, this can go away. 05/30/03 jhrg
-    if (t == dods_array_c && dynamic_cast<Array *>(btp)->dimensions() == 0) {
-        D4ParserSax2::dmr_fatal_error(this, "No dimension element included in the Array '%s'.", btp->name().c_str());
-        return;
-    }
-#endif
-
-#if 0
-    // TODO Remove is_vector_type() and do something more apropos for DAP4
-    if (!(parent->is_vector_type() || parent->is_constructor_type())) {
-        D4ParserSax2::dmr_fatal_error(this, "Tried to add the array variable '%s' to a non-constructor type (%s %s).",
-                tag, bt_stack.top()->type_name().c_str(), bt_stack.top()->name().c_str());
-        return;
-    }
-#endif
 
     BaseType *parent = bt_stack.top();
     if (parent && !parent->is_constructor_type()) {
@@ -561,49 +528,27 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
                         "Expected DMR to start with a Dataset element; found '%s' instead.", localname);
             break;
 
-            // Note that it's possible to have an empty Dataset. The elements
-            // are the same as those for a Group, but for the Dataset, the
-            // root group is implicit.
+            // Both inside dataset and inside group can have the same stuff.
+            // The difference is that the Dataset holds the root group, which
+            // must be present; other groups are optional
         case inside_dataset:
-            if (parser->process_attribute(localname, attributes, nb_attributes))
-                break;
-            else if (parser->process_variable(localname, attributes, nb_attributes))
-                // This will push either inside_simple_type or inside_structure
-                // onto the parser state stack.
-                break;
-            else if (parser->process_enum_def(localname, attributes, nb_attributes))
+        case inside_group:
+            // TODO Add code to process attributes here.
+            if (parser->process_enum_def(localname, attributes, nb_attributes))
                 parser->push_state(inside_enum_def);
             else if (parser->process_dimension_def(localname, attributes, nb_attributes))
                 parser->push_state(inside_dim_def);
             else if (parser->process_group(localname, attributes, nb_attributes))
                 parser->push_state(inside_group);
-            else
-                break;
-            break;
-
-            // The state 'inside_group' means we have just parsed the start
-            // of a Group element, but none of the child elements
-        case inside_group:
-            if (parser->process_attribute(localname, attributes, nb_attributes))
-                break;
             else if (parser->process_variable(localname, attributes, nb_attributes))
                 // This will push either inside_simple_type or inside_structure
                 // onto the parser state stack.
                break;
-            else if (parser->process_enum_def(localname, attributes, nb_attributes))
-                parser->push_state(inside_enum_def);
-            else if (parser->process_dimension_def(localname, attributes, nb_attributes))
-                parser->push_state(inside_dim_def);
-            else if (parser->process_group(localname, attributes, nb_attributes))
-                parser->push_state(inside_group);
-
-            break;
-#if 0
             else
                 D4ParserSax2::dmr_fatal_error(parser,
-                        "Expected an Attribute, or variable element; found '%s' instead.", localname);
+                        "Expected an Attribute, Enumeration, Dimension, Group or variable element; found '%s' instead.", localname);
             break;
-#endif
+#if ATTR
         case inside_attribute_container:
             if (parser->process_attribute(localname, attributes, nb_attributes))
                 break;
@@ -673,7 +618,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
 
             parser->other_xml.append(">");
             break;
-
+#endif
         case inside_enum_def:
             // process an EnumConst element
             if (parser->process_enum_const(localname, attributes, nb_attributes))
@@ -689,21 +634,25 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
         case inside_simple_type:
             // TODO Add support for arrays here because this is where
             // dimensions will appear.
+#if ATTR
             if (parser->process_attribute(localname, attributes, nb_attributes))
                 break;
             else
+#endif
                 dmr_fatal_error(parser, "Expected an 'Attribute' element; found '%s' instead.", localname);
             break;
 
         case inside_array:
-            if (parser->process_attribute(localname, attributes, nb_attributes))
-                break;
-            else if (is_not(localname, "Array") && parser->process_variable(localname, attributes, nb_attributes))
+            if (is_not(localname, "Array") && parser->process_variable(localname, attributes, nb_attributes))
                 break;
             else if (strcmp(localname, "dimension") == 0) {
                 parser->process_dimension(localname, attributes, nb_attributes);
                 // next state: inside_dimension
             }
+#if ATTR
+            else if (parser->process_attribute(localname, attributes, nb_attributes))
+                break;
+#endif
             else
                 dmr_fatal_error(parser, "Expected an 'Attribute' or 'Alias' element; found '%s' instead.", localname);
             break;
@@ -715,55 +664,19 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             break;
 
         case inside_structure:
-            if (parser->process_attribute(localname, attributes, nb_attributes))
-                break;
-            else if (parser->process_variable(localname, attributes, nb_attributes))
+            if (parser->process_variable(localname, attributes, nb_attributes))
                 // This will push either inside_simple_type or inside_structure
                 // onto the parser state stack.
                 break;
+#if ATTR
+            else if (parser->process_attribute(localname, attributes, nb_attributes))
+                break;
+#endif
             else
-                D4ParserSax2::dmr_fatal_error(parser,
-                        "Expected an Attribute or variable element; found '%s' instead.", localname);
-            break;
-#if 0
-        case inside_sequence:
-            if (parser->process_attribute(localname, attributes, nb_attributes))
-                break;
-            else if (parser->process_variable(localname, attributes, nb_attributes))
-                break;
-            else
-                D4ParserSax2::dmr_fatal_error(parser,
-                        "Expected an Attribute, Alias or variable element; found '%s' instead.", localname);
-            break;
-
-        case inside_grid:
-            if (parser->process_attribute(localname, attributes, nb_attributes))
-                break;
-            else if (strcmp(localname, "Array") == 0)
-                parser->process_variable_helper(dods_array_c, inside_array, attributes, nb_attributes);
-            else if (strcmp(localname, "Map") == 0)
-                parser->process_variable_helper(dods_array_c, inside_map, attributes, nb_attributes);
-            else
-                D4ParserSax2::dmr_fatal_error(parser,
-                        "Expected an Attribute, Alias or variable element; found '%s' instead.", localname);
-            break;
-
-        case inside_map:
-            if (parser->process_attribute(localname, attributes, nb_attributes))
-                break;
-            else if (is_not(localname, "Array") && is_not(localname, "Sequence") && is_not(localname, "Grid")
-                    && parser->process_variable(localname, attributes, nb_attributes))
-                break;
-            else if (strcmp(localname, "dimension") == 0) {
-                parser->process_dimension(localname, attributes, nb_attributes);
-                // next state: inside_dimension
-            }
-            else
-                dmr_fatal_error(parser,
-                        "Expected an 'Attribute', 'Alias', variable or 'dimension' element; found '%s' instead.",
+                D4ParserSax2::dmr_fatal_error(parser, "Expected an Attribute or variable element; found '%s' instead.",
                         localname);
             break;
-#endif
+
         case parser_unknown:
             // *** Never used? If so remove/error
             parser->push_state(parser_unknown);
@@ -797,14 +710,37 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             else
                 D4ParserSax2::dmr_fatal_error(parser, "Expected an end Dataset tag; found '%s' instead.", localname);
             break;
-#if 0
-        case inside_group:
-            if (strcmp(localname, "Group") == 0)
-                parser->pop_state();
-            else
-                D4ParserSax2::dmr_fatal_error(parser, "Expected an end Group tag; found '%s' instead.", localname);
+
+        case inside_group: {
+            if (strcmp(localname, "Group") != 0) {
+                D4ParserSax2::dmr_fatal_error(parser, "Expected an end tag for a Group; found '%s' instead.", localname);
+                break;
+            }
+
+            // Pop the stack, the Group should be there
+            BaseType *btp = parser->bt_stack.top();
+            parser->bt_stack.pop();
+            if (btp->type() != dods_group_c) {
+                D4ParserSax2::dmr_fatal_error(parser, "Internal error: Expected a Group element.");
+                break;;
+            }
+
+            // Link the group we just poped to the thing on the stack, which
+            // should also be a group.
+            BaseType *parent = parser->bt_stack.top();
+            if (parent && !parent->type() == dods_group_c) {
+                D4ParserSax2::dmr_fatal_error(parser, "Tried to add a Group to a non-group type (%s %s).",
+                        parser->bt_stack.top()->type_name().c_str(), parser->bt_stack.top()->name().c_str());
+                break;
+            }
+
+            // Here we know parent is not null and is a group
+            static_cast<D4Group*>(parent)->add_group_nocopy(static_cast<D4Group*>(btp));
+
+            parser->pop_state();
             break;
-#endif
+        }
+#if ATTR
         case inside_attribute_container:
             if (strcmp(localname, "Attribute") == 0) {
                 parser->pop_state();
@@ -864,7 +800,7 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             }
             break;
         }
-
+#endif
         case inside_enum_def:
             if (strcmp(localname, "Enumeration") == 0) {
                 BaseType *btp = parser->bt_stack.top();
@@ -916,7 +852,7 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
                 parser->pop_state();
                 BaseType *btp = parser->bt_stack.top();
                 parser->bt_stack.pop();
-#if 0
+#if ATTR
                 parser->at_stack.pop();
 #endif
                 BaseType *parent = parser->bt_stack.top();
@@ -948,49 +884,6 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             parser->finish_variable(localname, dods_structure_c, "Structure");
             break;
 
-        case inside_group: {
-            if (strcmp(localname, "Group") != 0) {
-                D4ParserSax2::dmr_fatal_error(parser, "Expected an end tag for a Group; found '%s' instead.", localname);
-                break;
-            }
-
-            // Pop the stack, the Group should be there
-            BaseType *btp = parser->bt_stack.top();
-            parser->bt_stack.pop();
-            if (btp->type() != dods_group_c) {
-                D4ParserSax2::dmr_fatal_error(parser, "Internal error: Expected a Group element.");
-                break;;
-            }
-
-            // Link the group we just poped to the thing on the stack, which
-            // should also be a group.
-            BaseType *parent = parser->bt_stack.top();
-            if (parent && !parent->type() == dods_group_c) {
-                D4ParserSax2::dmr_fatal_error(parser, "Tried to add a Group to a non-group type (%s %s).",
-                        parser->bt_stack.top()->type_name().c_str(), parser->bt_stack.top()->name().c_str());
-                break;
-            }
-
-            // Here we know parent is not null and is a group
-            static_cast<D4Group*>(parent)->add_group_nocopy(static_cast<D4Group*>(btp));
-
-            parser->pop_state();
-            break;
-        }
-
-#if 0
-        case inside_sequence:
-            parser->finish_variable(localname, dods_sequence_c, "Sequence");
-            break;
-
-        case inside_grid:
-            parser->finish_variable(localname, dods_grid_c, "Grid");
-            break;
-
-        case inside_map:
-            parser->finish_variable(localname, dods_array_c, "Map");
-            break;
-#endif
         case parser_unknown:
             parser->pop_state();
             break;
@@ -1162,13 +1055,6 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr)
     int res = f.gcount();
     if (res > 0) {
         DBG(cerr << "line: (" << res << "): " << chars << endl);
-#if 0
-        // Originally this and block below were used to alloc the context
-        // object for libxml2. In tracing down memory leaks, I wound up with
-        // what's in the code now, although 256 bytes are still leaked from
-        // inside xmlCreatePushParserCtxt according to valgrind.
-        context = xmlCreatePushParserCtxt(NULL, NULL, chars, res - 1, "stream");
-#endif
         d_dmr = dest_dmr; // dump values here
 
         xmlSAXHandler ddx_sax_parser;
@@ -1188,11 +1074,6 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr)
         ddx_sax_parser.endElementNs = &D4ParserSax2::dmr_end_element;
 
         context = xmlCreatePushParserCtxt(&ddx_sax_parser, this, chars, res - 1, "stream");
-
-#if 0
-       context->sax = &ddx_sax_parser;
-       context->userData = this;
-#endif
         context->validate = true;
 
         f.getline(chars, size);

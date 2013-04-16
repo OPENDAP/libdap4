@@ -38,7 +38,7 @@
 
 #include "D4BaseTypeFactory.h"
 
-#include "D4ParseError.h"
+//#include "D4ParseError.h"
 
 namespace libdap
 {
@@ -108,7 +108,6 @@ private:
     };
 
     // The results of the parse operation are stored in these fields.
-    // TODO rename/refactor
     DMR *d_dmr;   // dump DMR here
     DMR *dmr() const { return d_dmr; }
 
@@ -210,9 +209,9 @@ private:
     void transfer_xml_ns(const xmlChar **namespaces, int nb_namespaces);
     bool check_required_attribute(const string &attr);
     bool check_attribute(const string & attr);
-
+#if ATTR
     void process_attribute_helper(const xmlChar **attrs, int nb_attrs);
-
+#endif
     void process_variable_helper(Type t, ParseState s, const xmlChar **attrs, int nb_attributes);
 
     void process_enum_const_helper(const xmlChar **attrs, int nb_attributes);
@@ -220,8 +219,9 @@ private:
 
     bool process_dimension(const char *name, const xmlChar **attrs, int nb_attrs);
     bool process_dimension_def(const char *name, const xmlChar **attrs, int nb_attrs);
-
+#if ATTR
     bool process_attribute(const char *name, const xmlChar **attrs, int nb_attributes);
+#endif
     bool process_variable(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_group(const char *name, const xmlChar **attrs, int nb_attributes);
 
