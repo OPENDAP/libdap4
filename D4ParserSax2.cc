@@ -24,8 +24,8 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG 1
-//#define DODS_DEBUG2 1
+#define DODS_DEBUG 1
+#define DODS_DEBUG2 1
 #define ATTR 1
 
 #include <iostream>
@@ -165,8 +165,7 @@ void D4ParserSax2::process_attribute_helper(const xmlChar **attrs, int nb_attrib
     // These methods set the state to parser_error if a problem is found.
     transfer_xml_attrs(attrs, nb_attributes);
 
-    bool error = !(check_required_attribute(string("name")) && check_required_attribute(string("type")));
-    if (error)
+    if (!(check_required_attribute(string("name")) && check_required_attribute(string("type"))))
         return;
 
     if (xml_attrs["type"].value == "Container") {
@@ -177,7 +176,7 @@ void D4ParserSax2::process_attribute_helper(const xmlChar **attrs, int nb_attrib
 
         child = parent->append_container(xml_attrs["name"].value);
         at_stack.push(child); // save.
-        DBG2(cerr << "Pushing at" << endl);
+        DBG2(cerr << "Pushing container " << xml_attrs["name"].value << endl);
     }
     else if (xml_attrs["type"].value == "OtherXML") {
         push_state(inside_other_xml_attribute);
@@ -443,6 +442,7 @@ void D4ParserSax2::dmr_start_document(void * p)
     parser->char_data = "";
 
     parser->push_state(parser_start);
+    parser->at_stack.push(&parser->dmr()->root()->get_attr_table());
 
     DBG2(cerr << "Parser state: " << states[parser->get_state()] << endl);
 }
@@ -552,7 +552,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             else if (strcmp(localname, "value") == 0)
                 parser->push_state(inside_attribute_value);
             else
-                dmr_fatal_error(parser, "Expected an 'Attribute', 'Alias' or 'value' element; found '%s' instead.",
+                dmr_fatal_error(parser, "Expected an 'Attribute' or 'value' element; found '%s' instead.",
                         localname);
             break;
 

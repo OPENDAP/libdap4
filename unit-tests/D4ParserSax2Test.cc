@@ -30,7 +30,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-//#define DODS_DEBUG 1
+#define DODS_DEBUG 1
 
 #include "D4ParserSax2.h"
 #include "DMR.h"
@@ -87,6 +87,52 @@ public:
             dmr->print_dap4(*xml, false);
             string doc = xml->get_doc();
             string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/DMR_empty_baseline.xml");
+            DBG(cerr << "DMR: " << doc << endl);
+            CPPUNIT_ASSERT(doc == baseline);
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message().c_str());
+        }
+    }
+
+    void test_attribute_def() {
+        try {
+            string name = string(TEST_SRC_DIR) + "/D4-xml/DMR_0.xml";
+            ifstream ifile(name.c_str(), ifstream::in);
+            if (!ifile)
+                throw InternalErr(__FILE__, __LINE__, "Could not open file");
+
+            parser->intern(ifile, dmr);
+
+            ifile.close();
+
+            dmr->print_dap4(*xml, false);
+
+            string doc = xml->get_doc();
+            string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/DMR_0_baseline.xml");
+            DBG(cerr << "DMR: " << doc << endl);
+            CPPUNIT_ASSERT(doc == baseline);
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message().c_str());
+        }
+    }
+
+    void test_nested_attribute_def() {
+        try {
+            string name = string(TEST_SRC_DIR) + "/D4-xml/DMR_0_1.xml";
+            ifstream ifile(name.c_str(), ifstream::in);
+            if (!ifile)
+                throw InternalErr(__FILE__, __LINE__, "Could not open file");
+
+            parser->intern(ifile, dmr);
+
+            ifile.close();
+
+            dmr->print_dap4(*xml, false);
+
+            string doc = xml->get_doc();
+            string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/DMR_0_1_baseline.xml");
             DBG(cerr << "DMR: " << doc << endl);
             CPPUNIT_ASSERT(doc == baseline);
         }
@@ -229,15 +275,19 @@ public:
     }
 
     CPPUNIT_TEST_SUITE( D4ParserSax2Test );
-
+#if 0
     CPPUNIT_TEST(test_empty_dmr);
     CPPUNIT_TEST(test_dimension_def);
+#endif
+    CPPUNIT_TEST(test_attribute_def);
+    CPPUNIT_TEST(test_nested_attribute_def);
+#if 0
     CPPUNIT_TEST(test_enum_def);
     CPPUNIT_TEST(test_simple_var_def);
     CPPUNIT_TEST(test_all_simple_var_def);
     CPPUNIT_TEST(test_structure_def);
     CPPUNIT_TEST(test_group_def);
-
+#endif
     CPPUNIT_TEST_SUITE_END();
 
 };
