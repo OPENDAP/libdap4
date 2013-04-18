@@ -164,6 +164,9 @@ public:
         load_group_with_stuff(child);
         root->add_group(child);
 
+        // Used add_group() and not add_group_nocopy()
+        delete child;
+
         root->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_everything.xml");
@@ -179,7 +182,7 @@ public:
         D4Group *child = new D4Group("child");
         load_group_with_scalars(child);
         load_group_with_stuff(child);
-        root->add_group(child);
+        root->add_group_nocopy(child); // add it using ...nocopy() this time
 
         D4Group lhs(*root);
 
@@ -198,7 +201,7 @@ public:
         D4Group *child = new D4Group("child");
         load_group_with_scalars(child);
         load_group_with_stuff(child);
-        root->add_group(child);
+        root->add_group_nocopy(child);
 
         D4Group lhs = *root;
 
@@ -213,6 +216,7 @@ public:
     CPPUNIT_TEST_SUITE( D4GroupTest );
 
         CPPUNIT_TEST(test_print_empty);
+
         CPPUNIT_TEST(test_print_named_empty);
         CPPUNIT_TEST(test_print_with_vars);
         CPPUNIT_TEST(test_print_named_with_vars);
