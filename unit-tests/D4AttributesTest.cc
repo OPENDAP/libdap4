@@ -28,7 +28,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "D4Attributes.h"
 #include "XMLWriter.h"
@@ -46,7 +46,7 @@ private:
     XMLWriter *xml;
     D4Attributes *attrs;
 
-    D4Attribute a, a2, a3, a4, c, c2;
+    D4Attribute a, a2, a3, a4, a5, c, c2;
 
 public:
     D4AttributesTest() {
@@ -188,6 +188,88 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
+    void test_find() {
+        attrs->add_attribute(&a);
+        attrs->add_attribute(&a2);
+        attrs->add_attribute(&c);
+        attrs->add_attribute(&c2);
+
+        D4Attribute *find_result = attrs->find("color");
+
+        // 'color' is in the container 'container' which is the third
+        // attribute
+        D4Attribute *baseline = *(attrs->attribute_begin() + 2);
+        CPPUNIT_ASSERT(baseline);
+        CPPUNIT_ASSERT(baseline->type() == attr_container_c);
+        D4Attributes *local_attrs = baseline->attributes();
+
+        // it is the first attribute in that container
+        baseline = *(local_attrs->attribute_begin());
+        CPPUNIT_ASSERT(baseline);
+        CPPUNIT_ASSERT(baseline->type() == attr_str_c);
+        CPPUNIT_ASSERT(baseline->name() == "color");
+
+        // We get a pointer to actual container, not a copy
+        CPPUNIT_ASSERT(baseline == find_result);
+    }
+
+    void test_get() {
+        attrs->add_attribute(&a);
+        attrs->add_attribute(&a2);
+        attrs->add_attribute(&c);
+        attrs->add_attribute(&c2);
+
+        D4Attribute *get_result = attrs->get("container_1.color");
+
+        // 'color' is in the container 'container_1' which is the third
+        // attribute
+        D4Attribute *baseline = *(attrs->attribute_begin() + 2);
+        CPPUNIT_ASSERT(baseline);
+        CPPUNIT_ASSERT(baseline->type() == attr_container_c);
+        D4Attributes *local_attrs = baseline->attributes();
+
+        // it is the first attribute in that container
+        baseline = *(local_attrs->attribute_begin());
+        CPPUNIT_ASSERT(baseline);
+        CPPUNIT_ASSERT(baseline->type() == attr_str_c);
+        CPPUNIT_ASSERT(baseline->name() == "color");
+
+        // We get a pointer to actual container, not a copy
+        CPPUNIT_ASSERT(baseline == get_result);
+    }
+
+    void test_get2() {
+        attrs->add_attribute(&a);
+        attrs->add_attribute(&a2);
+        attrs->add_attribute(&c);
+        attrs->add_attribute(&c2);
+
+        D4Attribute *get_result = attrs->get("container_2.container_1.color");
+
+        // 'color' is (also) in the container 'container_1' which is in
+        // the container 'container_2' which is the fourth attribute
+        D4Attribute *baseline = *(attrs->attribute_begin() + 3);
+        CPPUNIT_ASSERT(baseline);
+        CPPUNIT_ASSERT(baseline->type() == attr_container_c);
+        CPPUNIT_ASSERT(baseline->name() == "container_2");
+        D4Attributes *local_attrs = baseline->attributes();
+
+        // 'container_1 is the second attribute in 'container_2'
+        baseline = *(local_attrs->attribute_begin() + 1);
+        CPPUNIT_ASSERT(baseline);
+        CPPUNIT_ASSERT(baseline->type() == attr_container_c);
+        CPPUNIT_ASSERT(baseline->name() == "container_1");
+        local_attrs = baseline->attributes();
+
+        // finally, 'color' is the first attribute in 'container_1'
+        baseline = *(local_attrs->attribute_begin());
+        CPPUNIT_ASSERT(baseline->type() == attr_str_c);
+        CPPUNIT_ASSERT(baseline->name() == "color");
+
+        // We get a pointer to actual container, not a copy
+        CPPUNIT_ASSERT(baseline == get_result);
+    }
+
     CPPUNIT_TEST_SUITE( D4AttributesTest );
 
         CPPUNIT_TEST(test_print_empty);
@@ -200,6 +282,10 @@ public:
         CPPUNIT_TEST(test_print_assignment_2);
 
         CPPUNIT_TEST(test_print_copy_ctor);
+
+        CPPUNIT_TEST(test_find);
+        CPPUNIT_TEST(test_get);
+        CPPUNIT_TEST(test_get2);
 
         CPPUNIT_TEST_SUITE_END();
 };

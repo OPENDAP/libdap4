@@ -34,7 +34,7 @@
 #include "debug.h"
 
 namespace libdap {
-#if 1
+
 /** Convert an AttrType to it's string representation.
  @param at The Attribute Type.
  @return The type's string representation */
@@ -143,7 +143,7 @@ D4AttributeType StringToD4AttributeType(string s)
     else
         return attr_null_c;
 }
-#endif
+
 void
 D4Attribute::m_duplicate(const D4Attribute &src)
 {
@@ -212,8 +212,11 @@ D4Attributes::get(const string &fqn)
     size_t pos = fqn.find('.');
     string part = fqn.substr(0, pos);
     string rest= "";
+
     if (pos != string::npos)
-        string rest = fqn.substr(pos + 1);
+        rest = fqn.substr(pos + 1);
+
+    DBG(cerr << "part: '" << part << "'; rest: '" << rest << "'" << endl);
 
     if (!part.empty()) {
         if (!rest.empty()) {
@@ -268,7 +271,7 @@ D4Attribute::print_dap4(XMLWriter &xml) const
                 if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "value") < 0)
                     throw InternalErr(__FILE__, __LINE__, "Could not write value element");
 
-                if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) (*i).c_str()) < 0)
+                if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) (*i++).c_str()) < 0)
                     throw InternalErr(__FILE__, __LINE__, "Could not write attribute value");
 
                 if (xmlTextWriterEndElement(xml.get_writer()) < 0)
@@ -288,7 +291,7 @@ D4Attributes::print_dap4(XMLWriter &xml) const
 {
     D4AttributesCIter i = d_attrs.begin();
     while (i != d_attrs.end()) {
-        (*i)->print_dap4(xml);
+        (*i++)->print_dap4(xml);
     }
 }
 
