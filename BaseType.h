@@ -70,97 +70,6 @@ class UnMarshaller;
 
 #include "Type.h"
 
-#if 0
-/** <b>Part</b> names the parts of multi-section constructor types.
-    For example, the <b>Grid</b> class has an <i>array</i> and
-    the array <i>maps</i>. Use the <tt>nil</tt> value for data types that
-    don't have separate parts.
-
-    \code
-    enum Part {
-    nil,
-    array,
-    maps
-    };
-    \endcode
-
-    @brief Names the parts of multi-section constructor data types.
-    @see Grid
-    @see BaseType
-*/
-
-enum Part {
-    nil,   // nil is for types that don't have parts...
-    array,
-    maps
-};
-
-/** <b>Type</b> identifies the data type stored in a particular type
-    class. All the DODS Data Access Protocol (DAP) types inherit from
-    the BaseType class.
-
-    \code
-    enum Type {
-    dods_null_c,
-    dods_byte_c,
-    dods_int16_c,
-    dods_uint16_c,
-    dods_int32_c,
-    dods_uint32_c,
-    dods_float32_c,
-    dods_float64_c,
-    dods_str_c,
-    dods_url_c,
-    dods_array_c,
-    dods_structure_c,
-    dods_sequence_c,
-    dods_grid_c,
-
-    dods_int8_c,
-    dods_uint8_c,
-    dods_int64_c,
-    dods_uint64_c,
-    dods_url4_c
-    dods_enum_c,
-    dods_group_c
-
-    };
-    \endcode
-
-    @brief Identifies the data type.
-    @see BaseType
-*/
-
-enum Type {
-    dods_null_c,
-    dods_byte_c,
-    dods_int16_c,
-    dods_uint16_c,
-    dods_int32_c,  // Added `dods_' to fix clash with IRIX 5.3.
-    dods_uint32_c,
-    dods_float32_c,
-    dods_float64_c,
-    dods_str_c,
-    dods_url_c,
-    dods_array_c,
-    dods_structure_c,
-    dods_sequence_c,
-    dods_grid_c,
-
-    // Added for DAP4
-    dods_int8_c,
-    dods_uint8_c,
-
-    dods_int64_c,
-    dods_uint64_c,
-
-    dods_url4_c,
-
-    dods_enum_c,
-    dods_group_c
-
-};
-#endif
 /** This defines the basic data type features for the DODS data access
     protocol (DAP) data types. All the DAP type classes (Float64, Array,
     etc.) subclass it. This class is an abstract one; no variables will ever
@@ -217,12 +126,6 @@ private:
 
     // These are non-empty only for DAP4 variables. Added 9/27/12 jhrg
 
-    // FIXME Remove this. This header cannot have compile-time variation
-#if 0
-    D4Dimensions d_dims;   // If non-empty, this BaseType is an DAP4 Array
-    D4Maps d_maps;         // if non-empty, this BaseType is a DAP4 'Grid'
-#endif
-
 protected:
     void m_duplicate(const BaseType &bt);
 
@@ -266,11 +169,6 @@ public:
     virtual bool is_vector_type();
     virtual bool is_constructor_type();
 
-#if 0
-    // Not yet, if ever. Allow 'sloppy' changeover in the handlers
-    virtual bool is_dap4_only_type();
-    virtual bool is_dap2_only_type();
-#endif
     virtual bool synthesized_p();
     virtual void set_synthesized_p(bool state);
 

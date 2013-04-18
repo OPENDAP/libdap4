@@ -246,7 +246,8 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 
 DAP4_ONLY_SRC = DAP4StreamMarshaller.cc DAP4StreamUnMarshaller.cc Int64.cc \
         UInt64.cc Int8.cc D4ParserSax2.cc D4BaseTypeFactory.cc \
-        D4Maps.cc D4Dimensions.cc  D4EnumDefs.cc D4Group.cc DMR.cc
+        D4Maps.cc D4Dimensions.cc  D4EnumDefs.cc D4Group.cc DMR.cc \
+        D4Attributes.cc
 
 Operators.h: ce_expr.tab.hh
 
@@ -274,7 +275,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 
 DAP4_ONLY_HDR = DAP4StreamMarshaller.h DAP4StreamUnMarshaller.h Int64.h \
         UInt64.h Int8.h D4ParserSax2.h D4BaseTypeFactory.h D4ParseError.h \
-        D4Maps.h D4Dimensions.h D4EnumDefs.h D4Group.h DMR.h
+        D4Maps.h D4Dimensions.h D4EnumDefs.h D4Group.h DMR.h D4Attributes.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h
