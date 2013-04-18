@@ -24,8 +24,8 @@
 
 #include "config.h"
 
-#define DODS_DEBUG 1
-#define DODS_DEBUG2 1
+//#define DODS_DEBUG 1
+//#define DODS_DEBUG2 1
 #define ATTR 1
 
 #include <iostream>

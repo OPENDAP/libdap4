@@ -68,6 +68,8 @@ class ConstraintEvaluator;
 class Marshaller;
 class UnMarshaller;
 
+class D4Attributes;
+
 #include "Type.h"
 
 /** This defines the basic data type features for the DODS data access
@@ -121,7 +123,12 @@ private:
 
     // Attributes for this variable. Added 05/20/03 jhrg
     AttrTable d_attr;
-
+#if 0
+    // This might be removed if we need to keep the 'D4' classes out of
+    // BaseType. If BaseType is split and we make a D4BaseType, it's not
+    // an issue.
+    D4Attributes *d_attributes;
+#endif
     bool d_is_dap4;         // True if this is a DAP4 variable, false ... DAP2
 
     // These are non-empty only for DAP4 variables. Added 9/27/12 jhrg
@@ -182,7 +189,12 @@ public:
 
     virtual AttrTable &get_attr_table();
     virtual void set_attr_table(const AttrTable &at);
-
+#if 0
+    // DAP4 attributes
+    virtual D4Attributes *attributes() const;
+    virtual void set_attributes(D4Attributes *);
+    virtual void set_attributes_nocopy(D4Attributes *);
+#endif
     virtual bool is_in_selection();
     virtual void set_in_selection(bool state);
 

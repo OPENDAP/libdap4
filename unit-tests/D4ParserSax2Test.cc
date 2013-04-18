@@ -30,7 +30,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#define DODS_DEBUG 1
+//#define DODS_DEBUG 1
 
 #include "D4ParserSax2.h"
 #include "DMR.h"

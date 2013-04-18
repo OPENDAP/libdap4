@@ -57,6 +57,8 @@
 #include "Sequence.h"
 #include "Grid.h"
 
+#include "D4Attributes.h"
+
 #include "InternalErr.h"
 
 #include "util.h"
@@ -92,7 +94,10 @@ BaseType::m_duplicate(const BaseType &bt)
     d_parent = bt.d_parent; // copy pointers 6/4/2001 jhrg
 
     d_attr = bt.d_attr;  // Deep copy.
-
+#if 0
+    if (d_attributes)
+        d_attributes = new D4Attributes(*bt.d_attributes);
+#endif
     DBG(cerr << "Exiting BaseType::m_duplicate for " << bt.name() << endl);
 }
 
@@ -113,7 +118,7 @@ BaseType::m_duplicate(const BaseType &bt)
 BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
         : d_name(n), d_type(t), d_dataset(""), d_is_read(false), d_is_send(false),
         d_in_selection(false), d_is_synthesized(false), d_parent(0),
-        d_is_dap4(is_dap4)
+        /*d_attributes(0),*/ d_is_dap4(is_dap4)
 {}
 
 /** The BaseType constructor needs a name, a dataset, and a type.
@@ -131,7 +136,7 @@ BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
 BaseType::BaseType(const string &n, const string &d, const Type &t, bool is_dap4)
         : d_name(n), d_type(t), d_dataset(d), d_is_read(false), d_is_send(false),
         d_in_selection(false), d_is_synthesized(false), d_parent(0),
-        d_is_dap4(is_dap4)
+        /*d_attributes(0),*/ d_is_dap4(is_dap4)
 {}
 
 #if 0
@@ -181,6 +186,10 @@ BaseType::BaseType(const BaseType &copy_from) : DapObj()
 BaseType::~BaseType()
 {
     DBG2(cerr << "Entering ~BaseType (" << this << ")" << endl);
+#if 0
+    if (d_attributes)
+        delete d_attributes;
+#endif
     DBG2(cerr << "Exiting ~BaseType" << endl);
 }
 
@@ -675,6 +684,31 @@ BaseType::set_attr_table(const AttrTable &at)
 {
     d_attr = at;
 }
+
+#if 0
+/** DAP4 Attribute methods
+ * @{
+ */
+D4Attributes *
+BaseType::attributes() const
+{
+    // if (!d_attributes) d_attributes = new D4Attributes();
+    return d_attributes;
+}
+
+void
+BaseType::set_attributes(D4Attributes *attrs)
+{
+    d_attributes = new D4Attributes(*attrs);
+}
+
+void
+BaseType::set_attributes_nocopy(D4Attributes *attrs)
+{
+    d_attributes = attrs;
+}
+///@}
+#endif
 
 /**
  * Transfer attributes from a DAS object into this variable. Because of the
