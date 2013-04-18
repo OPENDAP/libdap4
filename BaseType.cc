@@ -41,6 +41,7 @@
 #include <string>
 
 //#define DODS_DEBUG
+#define D4_ATTRS 1
 
 #include "BaseType.h"
 #include "Byte.h"
@@ -94,9 +95,11 @@ BaseType::m_duplicate(const BaseType &bt)
     d_parent = bt.d_parent; // copy pointers 6/4/2001 jhrg
 
     d_attr = bt.d_attr;  // Deep copy.
-#if 0
-    if (d_attributes)
-        d_attributes = new D4Attributes(*bt.d_attributes);
+#if D4_ATTRS
+    if (bt.d_attributes)
+        d_attributes = new D4Attributes(*bt.d_attributes); // deep copy
+    else
+        d_attributes = 0; // init to null if not used.
 #endif
     DBG(cerr << "Exiting BaseType::m_duplicate for " << bt.name() << endl);
 }
@@ -118,7 +121,10 @@ BaseType::m_duplicate(const BaseType &bt)
 BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
         : d_name(n), d_type(t), d_dataset(""), d_is_read(false), d_is_send(false),
         d_in_selection(false), d_is_synthesized(false), d_parent(0),
-        /*d_attributes(0),*/ d_is_dap4(is_dap4)
+#if D4_ATTRS
+        d_attributes(0),
+#endif
+        d_is_dap4(is_dap4)
 {}
 
 /** The BaseType constructor needs a name, a dataset, and a type.
@@ -136,46 +142,12 @@ BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
 BaseType::BaseType(const string &n, const string &d, const Type &t, bool is_dap4)
         : d_name(n), d_type(t), d_dataset(d), d_is_read(false), d_is_send(false),
         d_in_selection(false), d_is_synthesized(false), d_parent(0),
-        /*d_attributes(0),*/ d_is_dap4(is_dap4)
-{}
-
-#if 0
-/** The BaseType constructor needs a name  and a type.
-    The BaseType class exists to provide data to
-    type classes that inherit from it.  The constructors of those
-    classes call the BaseType constructor; it is never called
-    directly.
-
-    @brief The BaseType constructor.
-    @param n A string containing the name of the new variable.
-    @param t The type of the variable.
-    data in this variable to a client DODS process.
-    @see Type */
-BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
-        : d_name(n), d_type(t), d_dataset(""), d_is_read(false), d_is_send(false),
-        d_in_selection(false), d_is_synthesized(false), d_parent(0),
-        d_is_dap4(is_dap4)
-{}
-
-/** The BaseType constructor needs a name, a dataset, and a type.
-    The BaseType class exists to provide data to
-    type classes that inherit from it.  The constructors of those
-    classes call the BaseType constructor; it is never called
-    directly.
-
-    @brief The BaseType constructor.
-    @param n A string containing the name of the new variable.
-    @param d A string containing the dataset name from which this variable
-    is created
-    @param t The type of the variable.
-    data in this variable to a client DODS process.
-    @see Type */
-BaseType::BaseType(const string &n, const string &d, const Type &t, bool is_dap4)
-        : d_name(n), d_type(t), d_dataset(d), d_is_read(false), d_is_send(false),
-        d_in_selection(false), d_is_synthesized(false), d_parent(0),
-        d_is_dap4(is_dap4)
-{}
+#if D4_ATTRS
+        d_attributes(0),
 #endif
+        d_is_dap4(is_dap4)
+{}
+
 /** @brief The BaseType copy constructor. */
 BaseType::BaseType(const BaseType &copy_from) : DapObj()
 {
@@ -186,7 +158,7 @@ BaseType::BaseType(const BaseType &copy_from) : DapObj()
 BaseType::~BaseType()
 {
     DBG2(cerr << "Entering ~BaseType (" << this << ")" << endl);
-#if 0
+#if D4_ATTRS
     if (d_attributes)
         delete d_attributes;
 #endif
@@ -685,7 +657,7 @@ BaseType::set_attr_table(const AttrTable &at)
     d_attr = at;
 }
 
-#if 0
+#if D4_ATTRS
 /** DAP4 Attribute methods
  * @{
  */

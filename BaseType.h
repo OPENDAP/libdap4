@@ -42,7 +42,6 @@
 #ifndef _basetype_h
 #define _basetype_h 1
 
-
 #include <vector>
 #include <stack>
 #include <iostream>
@@ -57,6 +56,8 @@
 #include "DapObj.h"
 
 #include "XMLWriter.h"
+
+#define D4_ATTRS 1
 
 using namespace std;
 
@@ -123,7 +124,7 @@ private:
 
     // Attributes for this variable. Added 05/20/03 jhrg
     AttrTable d_attr;
-#if 0
+#if D4_ATTRS
     // This might be removed if we need to keep the 'D4' classes out of
     // BaseType. If BaseType is split and we make a D4BaseType, it's not
     // an issue.
@@ -189,7 +190,7 @@ public:
 
     virtual AttrTable &get_attr_table();
     virtual void set_attr_table(const AttrTable &at);
-#if 0
+#if D4_ATTRS
     // DAP4 attributes
     virtual D4Attributes *attributes() const;
     virtual void set_attributes(D4Attributes *);
