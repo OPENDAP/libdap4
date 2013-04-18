@@ -55,7 +55,8 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	
 if DAP4_DEFINED
 UNIT_TESTS += DAP4MarshallerTest DAP4UnMarshallerTest \
-        D4DimensionsTest D4EnumDefsTest D4GroupTest D4ParserSax2Test
+        D4DimensionsTest D4EnumDefsTest D4GroupTest D4ParserSax2Test \
+        D4AttributesTest
 endif
 
 else
@@ -186,5 +187,8 @@ D4GroupTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4ParserSax2Test_SOURCES = D4ParserSax2Test.cc $(TEST_SRC)
 D4ParserSax2Test_LDADD = ../libdap.la $(AM_LDADD)
+
+D4AttributesTest_SOURCES = D4AttributesTest.cc $(TEST_SRC)
+D4AttributesTest_LDADD = ../libdap.la $(AM_LDADD)
 
 endif
