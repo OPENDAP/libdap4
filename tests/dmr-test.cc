@@ -35,7 +35,6 @@
 #include "Error.h"
 
 #include "D4ParserSax2.h"
-#include "D4ParseError.h"
 #include "D4BaseTypeFactory.h"
 
 using namespace libdap;
@@ -121,7 +120,7 @@ void test_dap4_parser(const string &name, bool /*debug*/, bool print)
             parser.intern(in, &table);
         }
     }
-    catch(D4ParseError &e) {
+    catch(Error &e) {
         cerr << "Parse error: " << e.get_error_message() << endl;
         return;
     }

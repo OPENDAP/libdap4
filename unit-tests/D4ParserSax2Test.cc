@@ -32,9 +32,12 @@
 
 //#define DODS_DEBUG 1
 
-#include "D4ParserSax2.h"
 #include "DMR.h"
 #include "XMLWriter.h"
+
+#include "D4BaseTypeFactory.h"
+
+#include "D4ParserSax2.h"
 
 #include "InternalErr.h"
 #include "debug.h"

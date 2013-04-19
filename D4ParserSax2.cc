@@ -35,13 +35,14 @@
 #include <libxml/parserInternals.h>
 
 #include "DMR.h"
+
 #include "BaseType.h"
 #include "D4Group.h"
-
 #include "D4Attributes.h"
 
+#include "D4BaseTypeFactory.h"
+
 #include "D4ParserSax2.h"
-#include "D4ParseError.h"
 
 #include "util.h"
 #include "debug.h"
@@ -1010,13 +1011,15 @@ void D4ParserSax2::cleanup_parse()
 }
 
 /**
- * @brief Read the DMR from a stream instead of a file.
+ * Read the DMR from a stream instead of a file.
  *
  * @param f The input stream
  * @param dest_dmr Value-result parameter. Pass a pointer to a DMR in and
  * the information in the DMR will be added to it.
- * @exception D4ParseError Thrown if the XML document could not be read
- * or parsed.
+ * @param debug If true, ouput helpful debugging messages, False by default.
+ *
+ * @exception Error Thrown if the XML document could not be read or parsed.
+ * @exception InternalErr Thrown if an internal error is found.
  */
 void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 {
@@ -1025,7 +1028,7 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
     // Code example from libxml2 docs re: read from a stream.
 
     if (!f.good())
-        throw InternalErr(__FILE__, __LINE__, "Input stream not open or read error");
+        throw Error("Input stream not open or read error");
     if (!dest_dmr)
         throw InternalErr(__FILE__, __LINE__, "DMR object is null");
 
@@ -1071,12 +1074,14 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 }
 
 /** Parse a DMR document stored in a string.
-
- @param document Read the DMR from this string.
- @param dest_dmr Value/result parameter; dumps the information to this DMR
- instance.
- @exception D4ParseError Thrown if the XML document could not be
- read or parsed.
+ *
+ * @param document Read the DMR from this string.
+ * @param dest_dmr Value/result parameter; dumps the information to this DMR
+ * instance.
+ * @param debug If true, ouput helpful debugging messages, False by default
+ *
+ * @exception Error Thrown if the XML document could not be read or parsed.
+ * @exception InternalErr Thrown if an internal error is found.
  */
 void D4ParserSax2::intern(const string &document, DMR *dest_dmr, bool debug)
 {

@@ -35,15 +35,12 @@
 
 #include <libxml/parserInternals.h>
 
-#include "DMR.h"
-#include "BaseType.h"
-
-#include "D4BaseTypeFactory.h"
-
-//#include "D4ParseError.h"
-
 namespace libdap
 {
+
+class DMR;
+class BaseType;
+class D4BaseTypeFactory;
 
 /** Parse the XML text which encodes the network/persistent representation of
     the DMR object. In the current implementation, the DMR is held by an
@@ -60,7 +57,7 @@ namespace libdap
     construction of an DMR object ends even though the SAX parser still
     calls the various callback functions. The parser treats warnings,
     errors and fatal_errors the same way; when any are found parsing
-    stops. The intern method throws an D4ParseError exception if an
+    stops. The intern method throws an Error of InternalErr exception if an
     error was found.
 
     Note that this class uses the C++-supplied default definitions for the
