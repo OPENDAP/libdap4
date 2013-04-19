@@ -193,7 +193,7 @@ main( int, char** )
 
     bool wasSuccessful = runner.run( "", false ) ;
 
-    //xmlCleanupParser();
+    xmlMemoryDump();
 
     return (wasSuccessful) ? 0 : 1;
 }

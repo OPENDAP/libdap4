@@ -86,12 +86,9 @@ public:
         color_values->add_value("blue", 3);
         g->enum_defs()->add_enum_nocopy(color_values);
 
-        g->set_attributes(new D4Attributes());
         D4Attribute *attr = new D4Attribute("test", StringToD4AttributeType("Int16"));
         attr->add_value("1");
         g->attributes()->add_attribute_nocopy(attr);
-
-        //g->get_attr_table().append_attr("test", "Int16", "1");
     }
 
     // An empty D4Group object prints nothing; the XMLWriter class adds
