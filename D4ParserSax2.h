@@ -101,7 +101,8 @@ private:
         inside_structure,
 
         parser_unknown,
-        parser_error
+        parser_error,
+        parser_fatal_error
     };
 
     // The results of the parse operation are stored in these fields.
@@ -204,6 +205,7 @@ private:
     map<string, string> namespace_table;
 
     // Common cleanup code for intern()
+    void delete_parser_locals();
     void cleanup_parse();
 
     /** @name Parser Actions
@@ -263,6 +265,7 @@ public:
 
     static xmlEntityPtr dmr_get_entity(void *parser, const xmlChar *name);
     static void dmr_fatal_error(void *parser, const char *msg, ...);
+    static void dmr_error(void *parser, const char *msg, ...);
 };
 
 } // namespace libdap
