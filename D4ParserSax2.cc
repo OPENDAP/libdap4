@@ -164,13 +164,12 @@ bool D4ParserSax2::process_dimension_def(const char *name, const xmlChar **attrs
 
     // This getter (dim_def) allocates a new object if needed.
     dim_def()->set_name(xml_attrs["name"].value);
-    if (xml_attrs["size"].value == "*")
-        dim_def()->set_varying(true);
-    else {
-        long size;
-        istringstream iss(xml_attrs["size"].value);
-        iss >> skipws >> size;
-        dim_def()->set_size(size);
+    try {
+        dim_def()->set_size(xml_attrs["size"].value);
+    }
+    catch (Error &e) {
+        dmr_error(this, e.get_error_message().c_str());
+        return false;
     }
 
     return true;

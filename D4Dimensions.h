@@ -51,10 +51,12 @@ public:
     void set_name(const string &name) { d_name = name; }
 
     unsigned long size() { return d_size; }
-    void set_size(unsigned long size) { d_size = size; }
+    void set_size(unsigned long size) { d_size = size; if (d_size == 0) d_varying = true; }
+    // Because we build these in the XML parser and it's all text...
+    void set_size(const string &size);
 
     bool varying() { return d_varying; }
-    void set_varying(bool varying) { d_varying = varying; }
+    void set_varying(bool varying) { d_varying = varying; if (d_varying) d_size = 0;}
 
     void print_dap4(XMLWriter &xml) const;
 };

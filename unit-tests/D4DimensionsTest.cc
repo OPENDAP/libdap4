@@ -32,6 +32,8 @@
 
 #include "D4Dimensions.h"
 #include "XMLWriter.h"
+
+#include "Error.h"
 #include "debug.h"
 
 #include "testFile.h"
@@ -95,6 +97,12 @@ public:
         DBG(cerr << "test_print_2: doc: " << doc << endl);
         DBG(cerr << "test_print_2: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
+    }
+
+    void test_error() {
+        D4Dimension *d = new D4Dimension();
+        d->set_name("error");
+        d->set_size("bad");
     }
 
     void test_print_varying() {
@@ -162,6 +170,9 @@ public:
         CPPUNIT_TEST(test_print_empty);
         CPPUNIT_TEST(test_print_1);
         CPPUNIT_TEST(test_print_2);
+
+        CPPUNIT_TEST_EXCEPTION( test_error, Error );
+
         CPPUNIT_TEST(test_print_varying);
         CPPUNIT_TEST(test_print_insert_dim);
         CPPUNIT_TEST(test_print_assignment);

@@ -275,7 +275,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	DAPCache3.h ServerFunctionsList.h ServerFunction.h
 
 DAP4_ONLY_HDR = DAP4StreamMarshaller.h DAP4StreamUnMarshaller.h Int64.h \
-        UInt64.h Int8.h D4ParserSax2.h D4BaseTypeFactory.h D4ParseError.h \
+        UInt64.h Int8.h D4ParserSax2.h D4BaseTypeFactory.h \
         D4Maps.h D4Dimensions.h D4EnumDefs.h D4Group.h DMR.h D4Attributes.h
 
 if USE_C99_TYPES

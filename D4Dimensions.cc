@@ -25,10 +25,27 @@
 #include <sstream>
 
 #include "D4Dimensions.h"
+#include "Error.h"
 #include "InternalErr.h"
 #include "XMLWriter.h"
 
 namespace libdap {
+
+void
+D4Dimension::set_size(const string &size)
+{
+    if (size == "*") {
+        set_varying(true);
+    }
+    else {
+        unsigned long value;
+        istringstream iss(size);
+        iss >> skipws >> value;
+        if (iss.bad())
+            throw Error("Invalid value '" + size + "' passed to D4Dimension::set_size.");
+        set_size(value);
+    }
+}
 
 void
 D4Dimension::print_dap4(XMLWriter &xml) const
@@ -61,7 +78,6 @@ D4Dimensions::print_dap4(XMLWriter &xml) const
     while (i != d_dims.end()) {
         (*i++)->print_dap4(xml);
     }
-
 }
 
 } /* namespace libdap */
