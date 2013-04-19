@@ -24,9 +24,10 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG 1
-//#define DODS_DEBUG2 1
+#define DODS_DEBUG 1
+#define DODS_DEBUG2 1
 #define ATTR 1
+#define D4_ATTR 1
 
 #include <iostream>
 #include <sstream>
@@ -39,6 +40,8 @@
 #include "DMR.h"
 #include "BaseType.h"
 #include "D4Group.h"
+
+#include "D4Attributes.h"
 
 #include "D4ParserSax2.h"
 #include "D4ParseError.h"
@@ -171,11 +174,22 @@ void D4ParserSax2::process_attribute_helper(const xmlChar **attrs, int nb_attrib
     if (xml_attrs["type"].value == "Container") {
         push_state(inside_attribute_container);
 
+#if D4_ATTR
+        D4Attribute *child = new D4Attribute(xml_attrs["name"].value, attr_container_c);
+
+        D4Attributes *tos = top_attributes();
+        if (!tos)
+            dmr_fatal_error(this, "Error: Expected an Attribute container on the top of the attribute stack.");
+
+        tos->add_attribute_nocopy(child);
+        push_attributes(child->attributes());
+#else
         AttrTable *child;
         AttrTable *parent = at_stack.top();
 
         child = parent->append_container(xml_attrs["name"].value);
         at_stack.push(child); // save.
+#endif
         DBG2(cerr << "Pushing container " << xml_attrs["name"].value << endl);
     }
     else if (xml_attrs["type"].value == "OtherXML") {
@@ -249,10 +263,15 @@ bool D4ParserSax2::process_group(const char *name, const xmlChar **attrs, int nb
                     xml_attrs["name"].value.c_str());
             return false;
         }
-
+        // Need to set this to get teh D4Attribute behavior in the type classes
+        // shared between DAP2 and DAP4. jhrg 4/18/13
+        btp->set_is_dap4(true);
         push_basetype(btp);
 
-#if ATTR
+#if D4_ATTR
+        //btp->set_attributes(new D4Attributes());
+        push_attributes(btp->attributes());
+#else
         at_stack.push(&btp->get_attr_table());
 #endif
 
@@ -263,6 +282,7 @@ bool D4ParserSax2::process_group(const char *name, const xmlChar **attrs, int nb
 }
 
 #if ATTR
+//TODO move the 'helper' into this method
 /** Check to see if the current tag is either an \c Attribute or an \c Alias
  start tag. This method is a glorified macro...
 
@@ -381,8 +401,13 @@ void D4ParserSax2::process_variable_helper(Type t, ParseState s, const xmlChar *
             dmr_fatal_error(this, "Internal parser error; could not instantiate the variable '%s'.",
                     xml_attrs["name"].value.c_str());
 
+        btp->set_is_dap4(true); // see comment above
         push_basetype(btp);
-#if ATTR
+
+#if D4_ATTR
+       // btp->set_attributes(new D4Attributes());
+        push_attributes(btp->attributes());
+#else
         at_stack.push(&btp->get_attr_table());
 #endif
 
@@ -403,7 +428,9 @@ void D4ParserSax2::finish_variable(const char *tag, Type t, const char *expected
     BaseType *btp = top_basetype();
     pop_basetype();
 
-#if ATTR
+#if D4_ATTR
+    pop_attributes();
+#else
     at_stack.pop();
 #endif
 
@@ -419,7 +446,7 @@ void D4ParserSax2::finish_variable(const char *tag, Type t, const char *expected
         return;
     }
 
-    parent->add_var(btp);
+    parent->add_var(btp); // TODO leak? Maybe use nocopy()?
 
     pop_state();
 }
@@ -442,8 +469,12 @@ void D4ParserSax2::dmr_start_document(void * p)
     parser->char_data = "";
 
     parser->push_state(parser_start);
+#if D4_ATTR
+    //parser->dmr()->root()->set_attributes(new D4Attributes());
+    parser->push_attributes(parser->dmr()->root()->attributes());
+#else
     parser->at_stack.push(&parser->dmr()->root()->get_attr_table());
-
+#endif
     DBG2(cerr << "Parser state: " << states[parser->get_state()] << endl);
 }
 
@@ -466,7 +497,7 @@ void D4ParserSax2::dmr_end_document(void * p)
     // The root group should be on the stack
     if (parser->top_basetype()->type() != dods_group_c) {
         DBG(cerr << "Whoa! A Group should be on the stack!");
-        D4ParserSax2::dmr_fatal_error(parser, "The document contained unbalanced variables on the stack: Expected a Group a TOS.");
+        D4ParserSax2::dmr_fatal_error(parser, "The document contained unbalanced variables on the stack: Expected a Group at TOS.");
     }
 
     parser->pop_basetype();     // leave the stack 'clean'
@@ -479,7 +510,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
     D4ParserSax2 *parser = static_cast<D4ParserSax2*>(p);
     const char *localname = (const char *) l;
 
-    DBG2(cerr << "start element: " << localname << ", state: " << states[parser->get_state()] << endl);
+    DBG2(cerr << "start element: " << localname << ", state: " << states[parser->get_state()]);
 
     switch (parser->get_state()) {
         case parser_start:
@@ -675,7 +706,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             break;
     }
 
-    DBGN(cerr << " ... " << states[parser->get_state()] << endl);
+    DBGN(cerr << " exit state: " << states[parser->get_state()] << endl);
 }
 
 void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *prefix, const xmlChar *URI)
@@ -733,7 +764,11 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
         case inside_attribute_container:
             if (strcmp(localname, "Attribute") == 0) {
                 parser->pop_state();
+#if D4_ATTR
+                parser->pop_attributes();
+#else
                 parser->at_stack.pop(); // pop when leaving a container.
+#endif
             }
             else
                 D4ParserSax2::dmr_fatal_error(parser, "Expected an end Attribute tag; found '%s' instead.", localname);
@@ -749,8 +784,21 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
         case inside_attribute_value:
             if (strcmp(localname, "value") == 0) {
                 parser->pop_state();
+#if D4_ATTR
+                // The old code added more values using the name and type as
+                // indexes to find the correct attribute. Use get() for that
+                // now. Or fix this code to keep a pointer to the to attribute...
+                D4Attributes *attrs = parser->top_attributes();
+                D4Attribute *attr = attrs->get(parser->dods_attr_name);
+                if (!attr) {
+                    attr = new D4Attribute(parser->dods_attr_name, StringToD4AttributeType(parser->dods_attr_type));
+                    attrs->add_attribute_nocopy(attr);
+                }
+                attr->add_value(parser->char_data);
+#else
                 AttrTable *atp = parser->at_stack.top();
                 atp->append_attr(parser->dods_attr_name, parser->dods_attr_type, parser->char_data);
+#endif
                 parser->char_data = ""; // Null this after use.
             }
             else
@@ -766,9 +814,21 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
 
                 parser->pop_state();
 
+#if D4_ATTR
+                // The old code added more values using the name and type as
+                // indexes to find the correct attribute. Use get() for that
+                // now. Or fix this code to keep a pointer to the to attribute...
+                D4Attributes *attrs = parser->top_attributes();
+                D4Attribute *attr = attrs->get(parser->dods_attr_name);
+                if (!attr) {
+                    attr = new D4Attribute(parser->dods_attr_name, StringToD4AttributeType(parser->dods_attr_type));
+                    attrs->add_attribute_nocopy(attr);
+                }
+                attr->add_value(parser->other_xml);
+#else
                 AttrTable *atp = parser->at_stack.top();
                 atp->append_attr(parser->dods_attr_name, parser->dods_attr_type, parser->other_xml);
-
+#endif
                 parser->other_xml = ""; // Null this after use.
             }
             else {
@@ -844,7 +904,9 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
                 parser->pop_state();
                 BaseType *btp = parser->top_basetype();
                 parser->pop_basetype();
-#if ATTR
+#if D4_ATTR
+                parser->pop_attributes();
+#else
                 parser->at_stack.pop();
 #endif
                 BaseType *parent = parser->top_basetype();

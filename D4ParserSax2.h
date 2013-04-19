@@ -128,6 +128,11 @@ private:
 
 #if ATTR
     stack<AttrTable*> at_stack; // current attribute table
+
+    stack<D4Attributes*> d_attrs_stack; // DAP4 Attributes
+    void push_attributes(D4Attributes *attr) { d_attrs_stack.push(attr); }
+    D4Attributes *top_attributes() const { return d_attrs_stack.top(); }
+    void pop_attributes() { d_attrs_stack.pop(); }
 #endif
 
     D4EnumDef *d_enum_def;

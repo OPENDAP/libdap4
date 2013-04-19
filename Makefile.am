@@ -8,6 +8,7 @@ pkgconfigdir=$(libdir)/pkgconfig
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
 AM_CXXFLAGS = 
+CXXFLAGS = 
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align

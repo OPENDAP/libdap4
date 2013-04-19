@@ -73,7 +73,7 @@ public:
 
     /// Get the dimensions defined for this Group
     D4Dimensions *dims() {
-        if (!d_dims) d_dims = new D4Dimensions();
+        if (!d_dims) d_dims = new D4Dimensions;
         return d_dims;
     }
 

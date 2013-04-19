@@ -41,7 +41,7 @@
 #include <string>
 
 //#define DODS_DEBUG
-#define D4_ATTRS 1
+#define D4_ATTR 1
 
 #include "BaseType.h"
 #include "Byte.h"
@@ -95,12 +95,15 @@ BaseType::m_duplicate(const BaseType &bt)
     d_parent = bt.d_parent; // copy pointers 6/4/2001 jhrg
 
     d_attr = bt.d_attr;  // Deep copy.
-#if D4_ATTRS
+#if D4_ATTR
     if (bt.d_attributes)
         d_attributes = new D4Attributes(*bt.d_attributes); // deep copy
     else
         d_attributes = 0; // init to null if not used.
 #endif
+
+    d_is_dap4 = bt.d_is_dap4;
+
     DBG(cerr << "Exiting BaseType::m_duplicate for " << bt.name() << endl);
 }
 
@@ -121,7 +124,7 @@ BaseType::m_duplicate(const BaseType &bt)
 BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
         : d_name(n), d_type(t), d_dataset(""), d_is_read(false), d_is_send(false),
         d_in_selection(false), d_is_synthesized(false), d_parent(0),
-#if D4_ATTRS
+#if D4_ATTR
         d_attributes(0),
 #endif
         d_is_dap4(is_dap4)
@@ -142,7 +145,7 @@ BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
 BaseType::BaseType(const string &n, const string &d, const Type &t, bool is_dap4)
         : d_name(n), d_type(t), d_dataset(d), d_is_read(false), d_is_send(false),
         d_in_selection(false), d_is_synthesized(false), d_parent(0),
-#if D4_ATTRS
+#if D4_ATTR
         d_attributes(0),
 #endif
         d_is_dap4(is_dap4)
@@ -158,7 +161,7 @@ BaseType::BaseType(const BaseType &copy_from) : DapObj()
 BaseType::~BaseType()
 {
     DBG2(cerr << "Entering ~BaseType (" << this << ")" << endl);
-#if D4_ATTRS
+#if D4_ATTR
     if (d_attributes)
         delete d_attributes;
 #endif
@@ -277,57 +280,6 @@ string
 BaseType::type_name() const
 {
     return libdap::type_name(d_type);
-#if 0
-    switch (d_type) {
-    case dods_null_c:
-        return string("Null");
-    case dods_byte_c:
-        return string("Byte");
-    case dods_int16_c:
-        return string("Int16");
-    case dods_uint16_c:
-        return string("UInt16");
-    case dods_int32_c:
-        return string("Int32");
-    case dods_uint32_c:
-        return string("UInt32");
-    case dods_float32_c:
-        return string("Float32");
-    case dods_float64_c:
-        return string("Float64");
-    case dods_str_c:
-        return string("String");
-    case dods_url_c:
-        return string("Url");
-    case dods_array_c:
-        return string("Array");
-    case dods_structure_c:
-        return string("Structure");
-    case dods_sequence_c:
-        return string("Sequence");
-    case dods_grid_c:
-        return string("Grid");
-
-    case dods_int8_c:
-        return string("Int8");
-    case dods_uint8_c:
-        return string("UInt8");
-    case dods_int64_c:
-        return string("Int64");
-    case dods_uint64_c:
-        return string("UInt64");
-    case dods_url4_c:
-        return string("URL");
-    case dods_group_c:
-        return string("Group");
-    case dods_enum_c:
-        return string("Enum");
-
-    default:
-        cerr << "BaseType::type_name: Undefined type" << endl;
-        return string("");
-    }
-#endif
 }
 
 /** @brief Returns true if the instance is a numeric, string or URL
@@ -339,41 +291,6 @@ bool
 BaseType::is_simple_type()
 {
     return libdap::is_simple_type(type());
-#if 0
-    switch (type()) {
-    case dods_null_c:
-    case dods_byte_c:
-
-    case dods_int8_c:
-    case dods_uint8_c:
-
-    case dods_int16_c:
-    case dods_uint16_c:
-    case dods_int32_c:
-    case dods_uint32_c:
-
-    case dods_int64_c:
-    case dods_uint64_c:
-
-    case dods_float32_c:
-    case dods_float64_c:
-    case dods_str_c:
-    case dods_url_c:
-
-    case dods_url4_c:
-    case dods_enum_c:
-        return true;
-
-    case dods_array_c:
-    case dods_structure_c:
-    case dods_sequence_c:
-    case dods_grid_c:
-    case dods_group_c:
-        return false;
-    }
-
-    return false;
-#endif
 }
 
 /** @brief Returns true if the instance is a vector (i.e., array) type
@@ -383,43 +300,6 @@ bool
 BaseType::is_vector_type()
 {
     return libdap::is_vector_type(type());
-#if 0
-    switch (type()) {
-    case dods_null_c:
-    case dods_byte_c:
-
-    case dods_int8_c:
-    case dods_uint8_c:
-
-    case dods_int16_c:
-    case dods_uint16_c:
-    case dods_int32_c:
-    case dods_uint32_c:
-
-    case dods_int64_c:
-    case dods_uint64_c:
-
-    case dods_float32_c:
-    case dods_float64_c:
-    case dods_str_c:
-    case dods_url_c:
-
-    case dods_url4_c:
-    case dods_enum_c:
-        return false;
-
-    case dods_array_c:
-        return true;
-
-    case dods_structure_c:
-    case dods_sequence_c:
-    case dods_grid_c:
-    case dods_group_c:
-        return false;
-    }
-
-    return false;
-#endif
 }
 
 /** @brief Returns true if the instance is a constructor (i.e., Structure,
@@ -430,69 +310,7 @@ bool
 BaseType::is_constructor_type()
 {
     return libdap::is_constructor_type(type());
-#if 0
-    switch (type()) {
-    case dods_null_c:
-    case dods_byte_c:
-
-    case dods_int8_c:
-    case dods_uint8_c:
-
-    case dods_int16_c:
-    case dods_uint16_c:
-    case dods_int32_c:
-    case dods_uint32_c:
-
-    case dods_int64_c:
-    case dods_uint64_c:
-
-    case dods_float32_c:
-    case dods_float64_c:
-    case dods_str_c:
-    case dods_url_c:
-
-    case dods_url4_c:
-    case dods_enum_c:
-
-    case dods_array_c:
-        return false;
-
-    case dods_structure_c:
-    case dods_sequence_c:
-    case dods_grid_c:
-    case dods_group_c:
-        return true;
-    }
-
-    return false;
-#endif
 }
-
-#if 0
-/**
- * Return true if this variable's type is allowed only for DAP4.
- *
- * @note the default implementation returns false; the new DAP4
- * implementations must overload this method.
- */
-bool
-BaseType::is_dap4_only_type()
-{
-    return false;
-}
-
-/**
- * Return true if this variable's type is allowed only for DAP2.
- *
- * @note the default implementation returns false; the old DAP2
- * implementations must overload this method.
- */
-bool
-BaseType::is_dap2_only_type()
-{
-    return false;
-}
-#endif
 
 /** Return a count of the total number of variables in this variable.
     This is used to count the number of variables held by a constructor
@@ -657,14 +475,14 @@ BaseType::set_attr_table(const AttrTable &at)
     d_attr = at;
 }
 
-#if D4_ATTRS
+#if D4_ATTR
 /** DAP4 Attribute methods
  * @{
  */
 D4Attributes *
-BaseType::attributes() const
+BaseType::attributes()
 {
-    // if (!d_attributes) d_attributes = new D4Attributes();
+    if (!d_attributes) d_attributes = new D4Attributes();
     return d_attributes;
 }
 
@@ -1131,8 +949,16 @@ BaseType::print_xml_writer(XMLWriter &xml, bool constrained)
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
+#if D4_ATTR
+    if (is_dap4())
+        attributes()->print_dap4(xml);
+
+    if (!is_dap4() && get_attr_table().get_size() > 0)
+        get_attr_table().print_xml_writer(xml);
+#else
     if (get_attr_table().get_size() > 0)
         get_attr_table().print_xml_writer(xml);
+#endif
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");

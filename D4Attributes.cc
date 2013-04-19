@@ -289,6 +289,9 @@ D4Attribute::print_dap4(XMLWriter &xml) const
 void
 D4Attributes::print_dap4(XMLWriter &xml) const
 {
+    if (empty())
+        return;
+
     D4AttributesCIter i = d_attrs.begin();
     while (i != d_attrs.end()) {
         (*i++)->print_dap4(xml);

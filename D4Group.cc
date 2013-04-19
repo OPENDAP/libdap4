@@ -22,7 +22,12 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
+
 #include "D4Group.h"
+#include "D4Attributes.h"
+
+#define D4_ATTR 1
 
 namespace libdap {
 
@@ -161,15 +166,10 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
     if (!dims()->empty())
         dims()->print_dap4(xml);
 
-    // TODO Note that the order of the parts of a Group are different here
-    // than in the rng grammar.
-
-    // FIXME The attributes in DAP4 are broken... Change them to fit the
-    // pattern established by D4Dimensions and D4EnumDefs
-#if 1
-    // attributes
-    get_attr_table().print_dap4(xml);
+#if D4_ATTR
+    attributes()->print_dap4(xml);
 #endif
+
     // variables
     Constructor::Vars_iter v = var_begin();
     while (v != var_end()) {

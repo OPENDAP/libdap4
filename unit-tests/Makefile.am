@@ -9,6 +9,13 @@ AUTOMAKE_OPTIONS = foreign
 
 AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests $(CURL_CFLAGS) $(XML2_CFLAGS)
 AM_LDADD =
+AM_CXXFLAGS = 
+CXXFLAGS = 
+
+if COMPILER_IS_GCC
+AM_CXXFLAGS += -Wall -W -Wcast-align
+endif
+
 if CPPUNIT
 AM_CPPFLAGS += $(CPPUNIT_CFLAGS)
 AM_LDADD += $(CPPUNIT_LIBS)
@@ -16,8 +23,12 @@ endif
 
 # These are not used by automake but are often useful for certain types of
 # debugging. Set CXXFLAGS to this in the nightly build using export ...
-CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
+CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
+
+if BUILD_DEVELOPER
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
+endif
 
 # This determines what gets built by make check
 check_PROGRAMS = $(UNIT_TESTS)

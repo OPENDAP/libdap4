@@ -57,7 +57,7 @@
 
 #include "XMLWriter.h"
 
-#define D4_ATTRS 1
+#define D4_ATTR 1
 
 using namespace std;
 
@@ -124,7 +124,7 @@ private:
 
     // Attributes for this variable. Added 05/20/03 jhrg
     AttrTable d_attr;
-#if D4_ATTRS
+#if D4_ATTR
     // This might be removed if we need to keep the 'D4' classes out of
     // BaseType. If BaseType is split and we make a D4BaseType, it's not
     // an issue.
@@ -153,7 +153,7 @@ public:
 
     BaseType &operator=(const BaseType &rhs);
 
-    bool is_dap4() { return d_is_dap4; }
+    bool is_dap4() const { return d_is_dap4; }
     void set_is_dap4(const bool v) { d_is_dap4 = v;}
 
     /** Clone this instance. Allocate a new instance and copy \c *this into
@@ -190,9 +190,9 @@ public:
 
     virtual AttrTable &get_attr_table();
     virtual void set_attr_table(const AttrTable &at);
-#if D4_ATTRS
+#if D4_ATTR
     // DAP4 attributes
-    virtual D4Attributes *attributes() const;
+    virtual D4Attributes *attributes();
     virtual void set_attributes(D4Attributes *);
     virtual void set_attributes_nocopy(D4Attributes *);
 #endif

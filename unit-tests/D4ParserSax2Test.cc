@@ -30,7 +30,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-//#define DODS_DEBUG 1
+#define DODS_DEBUG 1
 
 #include "D4ParserSax2.h"
 #include "DMR.h"
@@ -156,20 +156,22 @@ public:
     }
 
     CPPUNIT_TEST_SUITE( D4ParserSax2Test );
-
+#if 1
     CPPUNIT_TEST(test_empty_dmr);
     CPPUNIT_TEST(test_dimension_def);
     CPPUNIT_TEST(test_attribute_def);
     CPPUNIT_TEST(test_nested_attribute_def);
     CPPUNIT_TEST(test_enum_def);
     CPPUNIT_TEST(test_simple_var_def);
+#endif
     CPPUNIT_TEST(test_simple_var_with_attributes_def);
+#if 1
     CPPUNIT_TEST(test_all_simple_var_def);
     CPPUNIT_TEST(test_structure_def);
     CPPUNIT_TEST(test_structure_with_attributes_def);
     CPPUNIT_TEST(test_group_def);
     CPPUNIT_TEST(test_group_with_attributes_def);
-
+#endif
     CPPUNIT_TEST_SUITE_END();
 
 };
