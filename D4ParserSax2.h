@@ -82,7 +82,6 @@ private:
         // element.
         inside_group,
 
-        // @TODO Parse attributes once the variables are working.
         inside_attribute_container,
         inside_attribute,
         inside_attribute_value,
@@ -99,11 +98,7 @@ private:
         inside_array,
         inside_dimension,
 
-        inside_grid,
-        inside_map,
-
         inside_structure,
-        inside_sequence,
 
         parser_unknown,
         parser_error
@@ -223,7 +218,7 @@ private:
     void transfer_xml_ns(const xmlChar **namespaces, int nb_namespaces);
     bool check_required_attribute(const string &attr);
     bool check_attribute(const string & attr);
-#if ATTR
+#if 0
     void process_attribute_helper(const xmlChar **attrs, int nb_attrs);
 #endif
     void process_variable_helper(Type t, ParseState s, const xmlChar **attrs, int nb_attributes);

@@ -678,6 +678,12 @@ BaseType::add_var(BaseType *, Part)
     throw InternalErr(__FILE__, __LINE__, "BaseType::add_var unimplemented");
 }
 
+void
+BaseType::add_var_nocopy(BaseType *, Part)
+{
+    throw InternalErr(__FILE__, __LINE__, "BaseType::add_var_nocopy unimplemented");
+}
+
 /** This method should be implemented for each of the data type classes (Byte,
     ..., Grid) when using the DAP class library to build a server. This
     method is only for DAP servers. The library provides a default

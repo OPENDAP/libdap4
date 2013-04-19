@@ -242,6 +242,7 @@ public:
     virtual BaseType *var(const string &name, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part = nil);
+    virtual void add_var_nocopy(BaseType *bt, Part part = nil);
 
     virtual bool read();
 
