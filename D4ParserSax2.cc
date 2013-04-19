@@ -422,7 +422,7 @@ void D4ParserSax2::dmr_start_document(void * p)
 
     parser->push_attributes(parser->dmr()->root()->attributes());
 
-    DBG2(cerr << "Parser state: " << states[parser->get_state()] << endl);
+    if (parser->debug()) cerr << "Parser start state: " << states[parser->get_state()] << endl;
 }
 
 /** Clean up after finishing a parse.
@@ -431,7 +431,7 @@ void D4ParserSax2::dmr_end_document(void * p)
 {
     D4ParserSax2 *parser = static_cast<D4ParserSax2*>(p);
 
-    DBG2(cerr << "Ending state == " << states[parser->get_state()] << endl);
+    if (parser->debug()) cerr << "Parser end state: " << states[parser->get_state()] << endl;
 
     if (parser->get_state() != parser_start)
         D4ParserSax2::dmr_fatal_error(parser, "The document contained unbalanced tags.");
@@ -443,7 +443,6 @@ void D4ParserSax2::dmr_end_document(void * p)
 
     // The root group should be on the stack
     if (parser->top_basetype()->type() != dods_group_c) {
-        DBG(cerr << "Whoa! A Group should be on the stack!");
         D4ParserSax2::dmr_fatal_error(parser, "The document contained unbalanced variables on the stack: Expected a Group at TOS.");
     }
 
@@ -457,7 +456,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
     D4ParserSax2 *parser = static_cast<D4ParserSax2*>(p);
     const char *localname = (const char *) l;
 
-    DBG2(cerr << "start element: " << localname << ", state: " << states[parser->get_state()]);
+    if (parser->debug()) cerr << "Start element " << localname << " (state " << states[parser->get_state()] << ")" << endl;
 
     switch (parser->get_state()) {
         case parser_start:
@@ -647,7 +646,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             break;
     }
 
-    DBGN(cerr << " exit state: " << states[parser->get_state()] << endl);
+    if (parser->debug()) cerr << "Start element exit state: " << states[parser->get_state()] << endl;
 }
 
 void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *prefix, const xmlChar *URI)
@@ -655,8 +654,7 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
     D4ParserSax2 *parser = static_cast<D4ParserSax2*>(p);
     const char *localname = (const char *) l;
 
-    DBG2(cerr << "End element " << localname << " (state "
-            << states[parser->get_state()] << ")" << endl);
+    if (parser->debug()) cerr << "End element " << localname << " (state " << states[parser->get_state()] << ")" << endl;
 
     switch (parser->get_state()) {
         case parser_start:
@@ -873,7 +871,7 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             break;
     }
 
-    DBGN(cerr << " ... " << states[parser->get_state()] << endl);
+    if (parser->debug()) cerr << "End element exit state: " << states[parser->get_state()] << endl;
 }
 
 /** Process/accumulate character data. This may be called more than once for
@@ -1019,8 +1017,10 @@ void D4ParserSax2::cleanup_parse()
  * @exception D4ParseError Thrown if the XML document could not be read
  * or parsed.
  */
-void D4ParserSax2::intern(istream &f, DMR *dest_dmr)
+void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 {
+    d_debug = debug;
+
     // Code example from libxml2 docs re: read from a stream.
 
     if (!f.good())
@@ -1034,7 +1034,7 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr)
     f.getline(chars, size);
     int res = f.gcount();
     if (res > 0) {
-        DBG(cerr << "line: (" << res << "): " << chars << endl);
+        if (debug) cerr << "line: (" << res << "): " << chars << endl;
         d_dmr = dest_dmr; // dump values here
 
         xmlSAXHandler ddx_sax_parser;
@@ -1058,7 +1058,7 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr)
 
         f.getline(chars, size);
         while ((f.gcount() > 0)) {
-            DBG(cerr << "line: (" << f.gcount() << "): " << chars << endl);
+            if (debug) cerr << "line: (" << f.gcount() << "): " << chars << endl;
             xmlParseChunk(context, chars, f.gcount() - 1, 0);
             f.getline(chars, size);
         }
@@ -1077,10 +1077,10 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr)
  @exception D4ParseError Thrown if the XML document could not be
  read or parsed.
  */
-void D4ParserSax2::intern(const string &document, DMR *dest_dmr)
+void D4ParserSax2::intern(const string &document, DMR *dest_dmr, bool debug)
 {
     istringstream iss(document);
-    intern(iss, dest_dmr);
+    intern(iss, dest_dmr, debug);
 }
 
 } // namespace libdap

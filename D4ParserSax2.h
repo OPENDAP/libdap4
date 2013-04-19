@@ -121,14 +121,10 @@ private:
     BaseType * top_basetype() const { return btp_stack.top(); }
     void pop_basetype() { btp_stack.pop(); }
 
-#if ATTR
-    stack<AttrTable*> at_stack; // current attribute table
-
     stack<D4Attributes*> d_attrs_stack; // DAP4 Attributes
     void push_attributes(D4Attributes *attr) { d_attrs_stack.push(attr); }
     D4Attributes *top_attributes() const { return d_attrs_stack.top(); }
     void pop_attributes() { d_attrs_stack.pop(); }
-#endif
 
     D4EnumDef *d_enum_def;
     D4EnumDef *enum_def() {
@@ -156,12 +152,14 @@ private:
     string error_msg;  // Error message(s), if any.
     xmlParserCtxtPtr context; // used for error message line numbers
 
-
     // These hold temporary values read during the parse.
     string dods_attr_name; // DAP4 attributes, not XML attributes
     string dods_attr_type; // ... not XML ...
     string char_data;  // char data in value elements; null after use
     string root_ns;     // What is the namespace of the root node (Group)
+
+    bool d_debug;
+    bool debug() const { return d_debug; }
 
     class XMLAttribute {
         public:
@@ -218,9 +216,6 @@ private:
     void transfer_xml_ns(const xmlChar **namespaces, int nb_namespaces);
     bool check_required_attribute(const string &attr);
     bool check_attribute(const string & attr);
-#if 0
-    void process_attribute_helper(const xmlChar **attrs, int nb_attrs);
-#endif
     void process_variable_helper(Type t, ParseState s, const xmlChar **attrs, int nb_attributes);
 
     void process_enum_const_helper(const xmlChar **attrs, int nb_attributes);
@@ -228,12 +223,9 @@ private:
 
     bool process_dimension(const char *name, const xmlChar **attrs, int nb_attrs);
     bool process_dimension_def(const char *name, const xmlChar **attrs, int nb_attrs);
-#if ATTR
     bool process_attribute(const char *name, const xmlChar **attrs, int nb_attributes);
-#endif
     bool process_variable(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_group(const char *name, const xmlChar **attrs, int nb_attributes);
-
     bool process_enum_def(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_enum_const(const char *name, const xmlChar **attrs, int nb_attributes);
 
@@ -251,8 +243,8 @@ public:
         char_data(""), root_ns("")
     {}
 
-    void intern(const string &document, DMR *dest_dmr);
-    void intern(istream &in, DMR *dest_dmr);
+    void intern(const string &document, DMR *dest_dmr, bool debug = false);
+    void intern(istream &in, DMR *dest_dmr, bool debug = false);
 
     static void dmr_start_document(void *parser);
     static void dmr_end_document(void *parser);
