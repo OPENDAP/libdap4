@@ -38,10 +38,13 @@ D4Dimension::set_size(const string &size)
         set_varying(true);
     }
     else {
-        unsigned long value;
+        unsigned long value = 0;
         istringstream iss(size);
-        iss >> skipws >> value;
-        if (iss.bad())
+        iss >> value;
+
+        // First test if the stream is OK, then look to see if we read all
+        // of the chars.
+        if (!iss || !iss.eof())
             throw Error("Invalid value '" + size + "' passed to D4Dimension::set_size.");
         set_size(value);
     }

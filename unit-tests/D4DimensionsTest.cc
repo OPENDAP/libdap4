@@ -102,7 +102,19 @@ public:
     void test_error() {
         D4Dimension *d = new D4Dimension();
         d->set_name("error");
-        d->set_size("bad");
+        d->set_size("10");
+
+        D4Dimension *d2 = new D4Dimension();
+        d2->set_name("error");
+        d2->set_size("20.0");
+        CPPUNIT_FAIL("Should throw an Error");
+    }
+
+    void test_error_2() {
+        D4Dimension *d3 = new D4Dimension();
+        d3->set_name("error");
+        d3->set_size("bad");
+        CPPUNIT_FAIL("Should throw an Error");
     }
 
     void test_print_varying() {
@@ -172,6 +184,7 @@ public:
         CPPUNIT_TEST(test_print_2);
 
         CPPUNIT_TEST_EXCEPTION( test_error, Error );
+        CPPUNIT_TEST_EXCEPTION( test_error_2, Error );
 
         CPPUNIT_TEST(test_print_varying);
         CPPUNIT_TEST(test_print_insert_dim);
