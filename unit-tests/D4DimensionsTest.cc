@@ -28,6 +28,8 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <GetOpt.h> // Part of libdap
+
 //#define DODS_DEBUG
 
 #include "D4Dimensions.h"
@@ -42,6 +44,11 @@
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
+
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
 
 class D4DimensionsTest: public TestFixture {
 private:
@@ -196,11 +203,36 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(D4DimensionsTest);
 
-int main(int, char**) {
+int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run("", false);
+    GetOpt getopt(argc, argv, "d");
+    char option_char;
+
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        default:
+            break;
+        }
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("D4DimensionsTest::") + argv[i++];
+
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }
