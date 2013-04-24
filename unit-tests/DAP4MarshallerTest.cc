@@ -164,10 +164,12 @@ public:
 
         dsm.put_float32(17);
         dsm.put_checksum();
+        DBG(cerr << "test_real_scalars: checksum: " << dsm.get_checksum() << endl);
         dsm.reset_checksum();
 
         dsm.put_float64(17);
         dsm.put_checksum();
+        DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
         dsm.reset_checksum();
 
         if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_scalars_2_bin.dat");
@@ -188,11 +190,13 @@ public:
 
             dsm.put_str("This is a test string with 40 characters");
             dsm.put_checksum();
+            DBG(cerr << "test_str: checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
 
             // 37 chars --> 0x25 --> 0x25 as a 128-bit varint
             dsm.put_url("http://www.opendap.org/lame/unit/test");
             dsm.put_checksum();
+            DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
 
             // True these are not really scalars...
@@ -217,10 +221,12 @@ public:
 
             dsm.put_opaque(reinterpret_cast<char*>(&buf[0]), 32768);
             dsm.put_checksum();
+            DBG(cerr << "test_opaque: checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
 
             dsm.put_opaque(reinterpret_cast<char*>(&buf[0]), 32768);
             dsm.put_checksum();
+            DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
 
             if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_opaque_1_bin.dat");
             CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_opaque_1_bin.dat"));
@@ -243,6 +249,7 @@ public:
 
             dsm.put_vector(reinterpret_cast<char*>(&buf1[0]), 32768);
             dsm.put_checksum();
+            DBG(cerr << "test_vector: checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
 
             vector<dods_int32> buf2(32768);
@@ -251,6 +258,7 @@ public:
 
             dsm.put_vector(reinterpret_cast<char*>(&buf2[0]), 32768, sizeof(dods_int32), dods_int32_c);
             dsm.put_checksum();
+            DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
 
             vector<dods_float64> buf3(32768);
@@ -259,6 +267,7 @@ public:
 
             dsm.put_vector(reinterpret_cast<char*>(&buf3[0]), 32768, sizeof(dods_float64), dods_float64_c);
             dsm.put_checksum();
+            DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
 
             if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_vector_1_bin.dat");
             CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_vector_1_bin.dat"));
@@ -351,14 +360,3 @@ int main(int argc, char*argv[]) {
 
     return wasSuccessful ? 0 : 1;
 }
-#if 0
-int main(int, char **)
-{
-    CppUnit::TextUi::TestRunner runner;
-    CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();
-    runner.addTest(registry.makeTest());
-    runner.setOutputter(CppUnit::CompilerOutputter::defaultOutputter(&runner.result(), std::cerr));
-    bool wasSuccessful = runner.run("", false);
-    return wasSuccessful ? 0 : 1;
-}
-#endif
