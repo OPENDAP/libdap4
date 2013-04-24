@@ -22,7 +22,7 @@
 #include <iomanip>
 #include <cstring>
 
-#include "DAP4StreamMarshaller.h"
+#include "D4StreamMarshaller.h"
 
 #include "GetOpt.h"
 #include "debug.h"
@@ -106,7 +106,7 @@ public:
         ostringstream oss;
         // computes checksums and writes data
         try {
-        DAP4StreamMarshaller dsm(oss);
+        D4StreamMarshaller dsm(oss);
 
         dsm.reset_checksum();
 
@@ -158,7 +158,7 @@ public:
         ostringstream oss;
         // computes checksums and writes data
         try {
-        DAP4StreamMarshaller dsm(oss);
+        D4StreamMarshaller dsm(oss);
 
         dsm.reset_checksum();
 
@@ -184,7 +184,7 @@ public:
     void test_str() {
         ostringstream oss;
         try {
-            DAP4StreamMarshaller dsm(oss);
+            D4StreamMarshaller dsm(oss);
 
             dsm.reset_checksum();
 
@@ -212,7 +212,7 @@ public:
     void test_opaque() {
         ostringstream oss;
         try {
-            DAP4StreamMarshaller dsm(oss);
+            D4StreamMarshaller dsm(oss);
             vector<unsigned char> buf(32768);
             for (int i = 0; i < 32768; ++i)
                 buf[i] = i % (1 << 7);
@@ -240,7 +240,7 @@ public:
     void test_vector() {
         ostringstream oss;
         try {
-            DAP4StreamMarshaller dsm(oss);
+            D4StreamMarshaller dsm(oss);
             vector<unsigned char> buf1(32768);
             for (int i = 0; i < 32768; ++i)
                 buf1[i] = i % (1 << 7);
@@ -281,7 +281,7 @@ public:
     void test_varying_vector() {
         ostringstream oss;
         try {
-            DAP4StreamMarshaller dsm(oss);
+            D4StreamMarshaller dsm(oss);
             vector<unsigned char> buf1(32768);
             for (int i = 0; i < 32768; ++i)
                 buf1[i] = i % (1 << 7);

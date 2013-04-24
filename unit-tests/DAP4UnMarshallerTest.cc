@@ -21,7 +21,7 @@
 #include <iomanip>
 #include <cstring>
 
-#include "DAP4StreamUnMarshaller.h"
+#include "D4StreamUnMarshaller.h"
 
 #include "GetOpt.h"
 #include "debug.h"
@@ -84,7 +84,7 @@ public:
         // computes checksums and writes data
         try {
             in.open("test_scalars_1_bin.dat", fstream::binary | fstream::in);
-            DAP4StreamUnMarshaller dsm(in, is_host_big_endian());
+            D4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             dods_byte b;
             dsm.get_byte(b);
@@ -153,7 +153,7 @@ public:
         // computes checksums and writes data
         try {
             in.open("test_scalars_2_bin.dat", fstream::binary | fstream::in);
-            DAP4StreamUnMarshaller dsm(in, is_host_big_endian());
+            D4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             dods_float32 r1;
             dsm.get_float32(r1);
@@ -186,7 +186,7 @@ public:
         // computes checksums and writes data
         try {
             in.open("test_scalars_3_bin.dat", fstream::binary | fstream::in);
-            DAP4StreamUnMarshaller dsm(in, is_host_big_endian());
+            D4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             string s;
             dsm.get_str(s);
@@ -219,7 +219,7 @@ public:
         // computes checksums and writes data
         try {
             in.open("test_opaque_1_bin.dat", fstream::binary | fstream::in);
-            DAP4StreamUnMarshaller dsm(in, is_host_big_endian());
+            D4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             // Test both get_opaque calls; this one that expects the caller
             // to allocate memory.
@@ -260,7 +260,7 @@ public:
         // computes checksums and writes data
         try {
             in.open("test_vector_1_bin.dat", fstream::binary | fstream::in);
-            DAP4StreamUnMarshaller dsm(in, is_host_big_endian());
+            D4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             vector<unsigned char> buf1(32768);
             dsm.get_vector(reinterpret_cast<char*>(&buf1[0]), 32768);
@@ -306,7 +306,7 @@ public:
         // computes checksums and writes data
         try {
             in.open("test_vector_2_bin.dat", fstream::binary | fstream::in);
-            DAP4StreamUnMarshaller dsm(in, is_host_big_endian());
+            D4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             // Reuse the same pointer for all of the data...
             char *buf;

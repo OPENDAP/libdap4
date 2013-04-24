@@ -1,4 +1,4 @@
-// DAP4StreamMarshaller.h
+// D4StreamMarshaller.h
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
@@ -25,8 +25,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#ifndef I_DAP4StreamMarshaller_h
-#define I_DAP4StreamMarshaller_h 1
+#ifndef I_D4StreamMarshaller_h
+#define I_D4StreamMarshaller_h 1
 
 #include <iostream>
 
@@ -63,7 +63,7 @@ class Vector;
  * to use far fewer methods since all of the put_*() methods take different
  * types.
  */
-class DAP4StreamMarshaller: public Marshaller {
+class D4StreamMarshaller: public Marshaller {
 
 private:
     XDR d_scalar_sink;
@@ -83,16 +83,16 @@ private:
 
     // These are private so they won't ever get used.
 
-    DAP4StreamMarshaller();
-    DAP4StreamMarshaller(const DAP4StreamMarshaller &);
-    DAP4StreamMarshaller & operator=(const DAP4StreamMarshaller &);
+    D4StreamMarshaller();
+    D4StreamMarshaller(const D4StreamMarshaller &);
+    D4StreamMarshaller & operator=(const D4StreamMarshaller &);
 
     void m_serialize_reals(char *val, unsigned int num, int width, Type type);
     void m_compute_checksum();
 
 public:
-    DAP4StreamMarshaller(ostream &out, bool write_data = true);
-    virtual ~DAP4StreamMarshaller();
+    D4StreamMarshaller(ostream &out, bool write_data = true);
+    virtual ~D4StreamMarshaller();
 
     virtual string get_endian() const;
 

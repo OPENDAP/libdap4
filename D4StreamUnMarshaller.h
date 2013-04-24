@@ -1,4 +1,4 @@
-// DAP4StreamUnMarshaller.h
+// D4StreamUnMarshaller.h
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
@@ -24,8 +24,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#ifndef I_DAP4StreamUnMarshaller_h
-#define I_DAP4StreamUnMarshaller_h 1
+#ifndef I_D4StreamUnMarshaller_h
+#define I_D4StreamUnMarshaller_h 1
 
 #include <iostream>
 
@@ -55,7 +55,7 @@ class Vector;
 
 /** @brief Read data from the stream made by DAP4StreamMarshaller.
  */
-class DAP4StreamUnMarshaller: public UnMarshaller {
+class D4StreamUnMarshaller: public UnMarshaller {
 public:
     const static unsigned int c_checksum_length = 4;
 
@@ -67,9 +67,9 @@ private:
     XDR d_source;
     char *d_buf;
 
-    DAP4StreamUnMarshaller();
-    DAP4StreamUnMarshaller(const DAP4StreamUnMarshaller &);
-    DAP4StreamUnMarshaller & operator=(const DAP4StreamUnMarshaller &);
+    D4StreamUnMarshaller();
+    D4StreamUnMarshaller(const D4StreamUnMarshaller &);
+    D4StreamUnMarshaller & operator=(const D4StreamUnMarshaller &);
 
     void m_deserialize_reals(char *val, unsigned int num, int width, Type type);
     void m_twidle_vector_elements(char *vals, unsigned int num, int width);
@@ -80,8 +80,8 @@ public:
         unsigned char md[c_checksum_length];
     };
 #endif
-    DAP4StreamUnMarshaller(istream &in, bool is_stream_bigendian);
-    virtual ~DAP4StreamUnMarshaller();
+    D4StreamUnMarshaller(istream &in, bool is_stream_bigendian);
+    virtual ~D4StreamUnMarshaller();
 
 #if 0
     checksum get_checksum();

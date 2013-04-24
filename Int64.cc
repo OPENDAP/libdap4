@@ -59,8 +59,8 @@
 #include "Grid.h"
 #endif
 
-#include "DAP4StreamMarshaller.h"
-#include "DAP4StreamUnMarshaller.h"
+#include "D4StreamMarshaller.h"
+#include "D4StreamUnMarshaller.h"
 
 #include "DDS.h"
 #include "util.h"
@@ -145,9 +145,9 @@ Int64::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eva
 
     dds.timeout_off();
 
-    assert(typeid(m) == typeid(DAP4StreamMarshaller));
+    assert(typeid(m) == typeid(D4StreamMarshaller));
 
-    static_cast<DAP4StreamMarshaller*>(&m)->put_int64( d_buf ) ;
+    static_cast<D4StreamMarshaller*>(&m)->put_int64( d_buf ) ;
 
     return true;
 }
@@ -155,9 +155,9 @@ Int64::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eva
 bool
 Int64::deserialize(UnMarshaller &um, DDS *, bool)
 {
-    assert(typeid(um) == typeid(DAP4StreamUnMarshaller));
+    assert(typeid(um) == typeid(D4StreamUnMarshaller));
 
-    static_cast<DAP4StreamUnMarshaller*>(&um)->get_int64( d_buf ) ;
+    static_cast<D4StreamUnMarshaller*>(&um)->get_int64( d_buf ) ;
 
     return false;
 }

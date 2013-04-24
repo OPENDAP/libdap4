@@ -1,4 +1,4 @@
-// DAP4StreamUnMarshaller.cc
+// D4StreamUnMarshaller.cc
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
@@ -25,7 +25,7 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include "config.h"
-#include "DAP4StreamUnMarshaller.h"
+#include "D4StreamUnMarshaller.h"
 
 #include <byteswap.h>
 
@@ -64,7 +64,7 @@ static inline bool is_host_big_endian()
 #endif
 }
 
-DAP4StreamUnMarshaller::DAP4StreamUnMarshaller(istream &in, bool is_stream_big_endian)
+D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in, bool is_stream_big_endian)
     : d_in( in ), d_buf(0)
 {
     // XDR is used to handle transforming non-ieee754 reals, nothing else.
@@ -88,11 +88,11 @@ DAP4StreamUnMarshaller::DAP4StreamUnMarshaller(istream &in, bool is_stream_big_e
         d_twiddle_bytes = true;
 }
 
-DAP4StreamUnMarshaller::~DAP4StreamUnMarshaller( )
+D4StreamUnMarshaller::~D4StreamUnMarshaller( )
 {
 }
 
-Crc32::checksum DAP4StreamUnMarshaller::get_checksum()
+Crc32::checksum D4StreamUnMarshaller::get_checksum()
 {
     Crc32::checksum c;
     d_in.read(reinterpret_cast<char*>(&c), sizeof(Crc32::checksum));
@@ -100,7 +100,7 @@ Crc32::checksum DAP4StreamUnMarshaller::get_checksum()
     return c;
 }
 
-string DAP4StreamUnMarshaller::get_checksum(Crc32::checksum c)
+string D4StreamUnMarshaller::get_checksum(Crc32::checksum c)
 {
     ostringstream oss;
     oss.setf(ios::hex, ios::basefield);
@@ -121,19 +121,19 @@ string DAP4StreamUnMarshaller::get_checksum(Crc32::checksum c)
 }
 
 void
-DAP4StreamUnMarshaller::get_byte( dods_byte &val )
+D4StreamUnMarshaller::get_byte( dods_byte &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_byte));
 }
 
 void
-DAP4StreamUnMarshaller::get_int8( dods_int8 &val )
+D4StreamUnMarshaller::get_int8( dods_int8 &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_int8));
 }
 
 void
-DAP4StreamUnMarshaller::get_int16( dods_int16 &val )
+D4StreamUnMarshaller::get_int16( dods_int16 &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_int16));
     if (d_twiddle_bytes)
@@ -141,7 +141,7 @@ DAP4StreamUnMarshaller::get_int16( dods_int16 &val )
 }
 
 void
-DAP4StreamUnMarshaller::get_int32( dods_int32 &val )
+D4StreamUnMarshaller::get_int32( dods_int32 &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_int32));
     if (d_twiddle_bytes)
@@ -149,7 +149,7 @@ DAP4StreamUnMarshaller::get_int32( dods_int32 &val )
 }
 
 void
-DAP4StreamUnMarshaller::get_int64( dods_int64 &val )
+D4StreamUnMarshaller::get_int64( dods_int64 &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_int64));
     if (d_twiddle_bytes)
@@ -157,7 +157,7 @@ DAP4StreamUnMarshaller::get_int64( dods_int64 &val )
 }
 
 void
-DAP4StreamUnMarshaller::get_float32( dods_float32 &val )
+D4StreamUnMarshaller::get_float32( dods_float32 &val )
 {
     if (std::numeric_limits<float>::is_iec559) {
         d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_float32));
@@ -177,7 +177,7 @@ DAP4StreamUnMarshaller::get_float32( dods_float32 &val )
 }
 
 void
-DAP4StreamUnMarshaller::get_float64( dods_float64 &val )
+D4StreamUnMarshaller::get_float64( dods_float64 &val )
 {
     if (std::numeric_limits<float>::is_iec559) {
         d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_float64));
@@ -196,7 +196,7 @@ DAP4StreamUnMarshaller::get_float64( dods_float64 &val )
 }
 
 void
-DAP4StreamUnMarshaller::get_uint16( dods_uint16 &val )
+D4StreamUnMarshaller::get_uint16( dods_uint16 &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_uint16));
     if (d_twiddle_bytes)
@@ -204,7 +204,7 @@ DAP4StreamUnMarshaller::get_uint16( dods_uint16 &val )
 }
 
 void
-DAP4StreamUnMarshaller::get_uint32( dods_uint32 &val )
+D4StreamUnMarshaller::get_uint32( dods_uint32 &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_uint32));
     if (d_twiddle_bytes)
@@ -212,7 +212,7 @@ DAP4StreamUnMarshaller::get_uint32( dods_uint32 &val )
 }
 
 void
-DAP4StreamUnMarshaller::get_uint64( dods_uint64 &val )
+D4StreamUnMarshaller::get_uint64( dods_uint64 &val )
 {
     d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_uint64));
     if (d_twiddle_bytes)
@@ -224,7 +224,7 @@ DAP4StreamUnMarshaller::get_uint64( dods_uint64 &val )
  * possible. It would be better if the values were in memory and we could
  * operate on them without a separate read for each byte.
  */
-dods_uint64 DAP4StreamUnMarshaller::get_length_prefix()
+dods_uint64 D4StreamUnMarshaller::get_length_prefix()
 {
     uint8_t b;
     int count = 0;
@@ -243,7 +243,7 @@ dods_uint64 DAP4StreamUnMarshaller::get_length_prefix()
 
 
 void
-DAP4StreamUnMarshaller::get_str( string &val )
+D4StreamUnMarshaller::get_str( string &val )
 {
     dods_int64 len = get_length_prefix();
     vector<char> raw(len+1);
@@ -254,7 +254,7 @@ DAP4StreamUnMarshaller::get_str( string &val )
 }
 
 void
-DAP4StreamUnMarshaller::get_url( string &val )
+D4StreamUnMarshaller::get_url( string &val )
 {
     get_str( val ) ;
 }
@@ -268,7 +268,7 @@ DAP4StreamUnMarshaller::get_url( string &val )
  * match 'len'
  */
 void
-DAP4StreamUnMarshaller::get_opaque( char *val, unsigned int len )
+D4StreamUnMarshaller::get_opaque( char *val, unsigned int len )
 {
     dods_int64 rlen = get_length_prefix();
     if (len != rlen)
@@ -286,7 +286,7 @@ DAP4StreamUnMarshaller::get_opaque( char *val, unsigned int len )
  * @param len value-result parameter for the length of the data
  */
 void
-DAP4StreamUnMarshaller::get_opaque( char **val, unsigned int &len )
+D4StreamUnMarshaller::get_opaque( char **val, unsigned int &len )
 {
     len = get_length_prefix();
 
@@ -295,7 +295,7 @@ DAP4StreamUnMarshaller::get_opaque( char **val, unsigned int &len )
 }
 
 void
-DAP4StreamUnMarshaller::get_vector( char *val, unsigned int num )
+D4StreamUnMarshaller::get_vector( char *val, unsigned int num )
 {
     d_in.read(val, num);
 }
@@ -305,7 +305,7 @@ DAP4StreamUnMarshaller::get_vector( char *val, unsigned int num )
  * serializes directly to the stream (element by element) and compare the
  * run times.
  */
-void DAP4StreamUnMarshaller::m_deserialize_reals(char *val, unsigned int num, int width, Type type)
+void D4StreamUnMarshaller::m_deserialize_reals(char *val, unsigned int num, int width, Type type)
 {
     dods_uint64 size = num * width;
     char *buf = (char*)malloc(size);
@@ -328,7 +328,7 @@ void DAP4StreamUnMarshaller::m_deserialize_reals(char *val, unsigned int num, in
     xdr_destroy(&xdr);
 }
 
-void DAP4StreamUnMarshaller::m_twidle_vector_elements(char *vals, unsigned int num, int width)
+void D4StreamUnMarshaller::m_twidle_vector_elements(char *vals, unsigned int num, int width)
 {
     switch (width) {
         case 2: {
@@ -361,7 +361,7 @@ void DAP4StreamUnMarshaller::m_twidle_vector_elements(char *vals, unsigned int n
 }
 
 void
-DAP4StreamUnMarshaller::get_vector( char *val, unsigned int num, int width, Type type )
+D4StreamUnMarshaller::get_vector( char *val, unsigned int num, int width, Type type )
 {
     if (type == dods_float32_c && !std::numeric_limits<float>::is_iec559) {
         // If not using IEEE 754, use XDR to get it that way.
@@ -378,13 +378,13 @@ DAP4StreamUnMarshaller::get_vector( char *val, unsigned int num, int width, Type
 }
 
 void
-DAP4StreamUnMarshaller::get_varying_vector( char **val, unsigned int &num )
+D4StreamUnMarshaller::get_varying_vector( char **val, unsigned int &num )
 {
     get_opaque(val, num);
 }
 
 void
-DAP4StreamUnMarshaller::get_varying_vector( char **val, unsigned int &num, int width, Type type )
+D4StreamUnMarshaller::get_varying_vector( char **val, unsigned int &num, int width, Type type )
 {
     num = get_length_prefix();
 
@@ -405,7 +405,7 @@ DAP4StreamUnMarshaller::get_varying_vector( char **val, unsigned int &num, int w
 }
 
 void
-DAP4StreamUnMarshaller::dump(ostream &strm) const
+D4StreamUnMarshaller::dump(ostream &strm) const
 {
     strm << DapIndent::LMarg << "DAP4StreamUnMarshaller::dump - ("
          << (void *)this << ")" << endl ;

@@ -41,8 +41,8 @@
 #include "Str.h"
 #include "Url.h"
 
-#include "DAP4StreamMarshaller.h"
-#include "DAP4StreamUnMarshaller.h"
+#include "D4StreamMarshaller.h"
+#include "D4StreamUnMarshaller.h"
 
 #include "DDS.h"
 #include "util.h"
@@ -119,8 +119,8 @@ Int8::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval
 
     dds.timeout_off();
 
-    assert(typeid(m)==typeid(DAP4StreamMarshaller));
-    static_cast<DAP4StreamMarshaller&>(m).put_int8( d_buf ) ;
+    assert(typeid(m)==typeid(D4StreamMarshaller));
+    static_cast<D4StreamMarshaller&>(m).put_int8( d_buf ) ;
 
     return true;
 }
@@ -128,8 +128,8 @@ Int8::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval
 bool
 Int8::deserialize(UnMarshaller &um, DDS *, bool)
 {
-    assert(typeid(um)==typeid(DAP4StreamUnMarshaller));
-    static_cast<DAP4StreamUnMarshaller&>(um).get_int8( d_buf ) ;
+    assert(typeid(um)==typeid(D4StreamUnMarshaller));
+    static_cast<D4StreamUnMarshaller&>(um).get_int8( d_buf ) ;
 
     return false;
 }

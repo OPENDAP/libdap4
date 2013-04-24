@@ -71,7 +71,7 @@
 #include "util.h"
 
 #ifdef DAP4
-#include "DAP4StreamMarshaller.h"
+#include "D4StreamMarshaller.h"
 #endif
 
 #ifndef WIN32
@@ -747,7 +747,7 @@ void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEval
 
 #ifdef CHECKSUMS
     // Grab a stream that encodes using XDR.
-    DAP4StreamMarshaller m(out, true);
+    D4StreamMarshaller m(out, true);
 #else
     XDRStreamMarshaller m(out);
 #endif
@@ -800,7 +800,7 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS & dds, Constraint
 
     // Grab a stream that encodes for DAP4
 #ifdef DAP4
-    DAP4StreamMarshaller m(out);
+    D4StreamMarshaller m(out);
 
     // Write the MPM headers for the data part of the response.
     set_mime_data_boundary(out, boundary, cid, m.get_endian(), 0);
@@ -1393,7 +1393,7 @@ ResponseBuilder::send_dap4_data(ostream &out, DDS &dds, ConstraintEvaluator &eva
     dds.print_dmr(out, !d_ce.empty());
 
     // Grab a stream that encodes for DAP4
-    DAP4StreamMarshaller m(out);
+    D4StreamMarshaller m(out);
 
     // TODO Write word order information
 

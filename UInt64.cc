@@ -40,8 +40,8 @@
 #include "Str.h"
 #include "Url.h"
 
-#include "DAP4StreamMarshaller.h"
-#include "DAP4StreamUnMarshaller.h"
+#include "D4StreamMarshaller.h"
+#include "D4StreamUnMarshaller.h"
 
 #include "DDS.h"
 #include "util.h"
@@ -122,7 +122,7 @@ UInt64::serialize(ConstraintEvaluator &eval, DDS &dds,
 
     dds.timeout_off();
 
-    static_cast<DAP4StreamMarshaller*>(&m)->put_uint64( d_buf ) ;
+    static_cast<D4StreamMarshaller*>(&m)->put_uint64( d_buf ) ;
 
     return true;
 }
@@ -131,7 +131,7 @@ bool
 UInt64::deserialize(UnMarshaller &um, DDS *, bool)
 {
     // TODO assert
-    static_cast<DAP4StreamUnMarshaller*>(&um)->get_uint64( d_buf ) ;
+    static_cast<D4StreamUnMarshaller*>(&um)->get_uint64( d_buf ) ;
 
     return false;
 }

@@ -1,4 +1,4 @@
-// DAP4StreamMarshaller.cc
+// D4StreamMarshaller.cc
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
@@ -43,7 +43,7 @@
 using namespace std;
 
 //#define DODS_DEBUG 1
-#include "DAP4StreamMarshaller.h"
+#include "D4StreamMarshaller.h"
 
 #include "dods-datatypes.h"
 #include "XDRUtils.h"
@@ -144,14 +144,14 @@ inline uint8_t* WriteVarint64ToArrayInline(uint64_t value, uint8_t* target) {
   return target + size;
 }
 
-/** Build an instance of DAP4StreamMarshaller. Bind the C++ stream out to this
+/** Build an instance of D4StreamMarshaller. Bind the C++ stream out to this
  * instance. If the write_data parameter is true, write the data in addition
  * to computing and sending the checksum.
  *
  * @param out Write to this stream object.
  * @param write_data If true, write data values. True by default
  */
-DAP4StreamMarshaller::DAP4StreamMarshaller(ostream &out, bool write_data) :
+D4StreamMarshaller::D4StreamMarshaller(ostream &out, bool write_data) :
         d_out(out), d_write_data(write_data)
 {
     // XDR is used if the call std::numeric_limits<double>::is_iec559()
@@ -168,7 +168,7 @@ DAP4StreamMarshaller::DAP4StreamMarshaller(ostream &out, bool write_data) :
     out.exceptions(ostream::failbit | ostream::badbit);
 }
 
-DAP4StreamMarshaller::~DAP4StreamMarshaller()
+D4StreamMarshaller::~D4StreamMarshaller()
 {
     // Free the buffer this contains. The xdr_destroy() macro does not
     // free the XDR struct (which is fine since we did not dynamically
@@ -183,14 +183,14 @@ DAP4StreamMarshaller::~DAP4StreamMarshaller()
  */
 
 string
-DAP4StreamMarshaller::get_endian() const
+D4StreamMarshaller::get_endian() const
 {
     return (is_host_big_endian()) ? "big": "little";
 }
 
 /** Initialize the checksum buffer. This resets the checksum calculation.
  */
-void DAP4StreamMarshaller::reset_checksum()
+void D4StreamMarshaller::reset_checksum()
 {
 #if 0
     if (EVP_DigestInit_ex(d_ctx, EVP_md5(), 0) == 0)
@@ -204,7 +204,7 @@ void DAP4StreamMarshaller::reset_checksum()
 /**
  * Private method to compute the checksum.
  */
-void DAP4StreamMarshaller::m_compute_checksum()
+void D4StreamMarshaller::m_compute_checksum()
 {
 #if 0
     if (d_checksum_ctx_valid) {
@@ -229,7 +229,7 @@ void DAP4StreamMarshaller::m_compute_checksum()
  * @exception InternalErr if called when the object was created without
  * checksum support or if called when the checksum has already been returned.
  */
-string DAP4StreamMarshaller::get_checksum()
+string D4StreamMarshaller::get_checksum()
 {
 #if 0
     if (d_checksum_ctx_valid) {
@@ -250,7 +250,7 @@ string DAP4StreamMarshaller::get_checksum()
     return oss.str();
 }
 
-void DAP4StreamMarshaller::put_checksum()
+void D4StreamMarshaller::put_checksum()
 {
 #if 0
     if (d_checksum_ctx_valid) {
@@ -263,7 +263,7 @@ void DAP4StreamMarshaller::put_checksum()
     d_out.write(reinterpret_cast<char*>(&chk), sizeof(Crc32::checksum));
 }
 
-void DAP4StreamMarshaller::checksum_update(const void *data, unsigned long len)
+void D4StreamMarshaller::checksum_update(const void *data, unsigned long len)
 {
 #if 0
     if (!d_checksum_ctx_valid)
@@ -277,7 +277,7 @@ void DAP4StreamMarshaller::checksum_update(const void *data, unsigned long len)
     d_checksum.AddData(reinterpret_cast<const uint8_t*>(data), len);
 }
 
-void DAP4StreamMarshaller::put_byte(dods_byte val)
+void D4StreamMarshaller::put_byte(dods_byte val)
 {
     checksum_update(&val, sizeof(dods_byte));
 
@@ -288,7 +288,7 @@ void DAP4StreamMarshaller::put_byte(dods_byte val)
     }
 }
 
-void DAP4StreamMarshaller::put_int8(dods_int8 val)
+void D4StreamMarshaller::put_int8(dods_int8 val)
 {
     checksum_update(&val, sizeof(dods_int8));
 
@@ -299,7 +299,7 @@ void DAP4StreamMarshaller::put_int8(dods_int8 val)
     }
 }
 
-void DAP4StreamMarshaller::put_int16(dods_int16 val)
+void D4StreamMarshaller::put_int16(dods_int16 val)
 {
     checksum_update(&val, sizeof(dods_int16));
 
@@ -307,7 +307,7 @@ void DAP4StreamMarshaller::put_int16(dods_int16 val)
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_int16));
 }
 
-void DAP4StreamMarshaller::put_int32(dods_int32 val)
+void D4StreamMarshaller::put_int32(dods_int32 val)
 {
     checksum_update(&val, sizeof(dods_int32));
 
@@ -315,7 +315,7 @@ void DAP4StreamMarshaller::put_int32(dods_int32 val)
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_int32));
 }
 
-void DAP4StreamMarshaller::put_int64(dods_int64 val)
+void D4StreamMarshaller::put_int64(dods_int64 val)
 {
     checksum_update(&val, sizeof(dods_int64));
 
@@ -323,7 +323,7 @@ void DAP4StreamMarshaller::put_int64(dods_int64 val)
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_int64));
 }
 
-void DAP4StreamMarshaller::put_float32(dods_float32 val)
+void D4StreamMarshaller::put_float32(dods_float32 val)
 {
     checksum_update(&val, sizeof(dods_float32));
 
@@ -354,7 +354,7 @@ void DAP4StreamMarshaller::put_float32(dods_float32 val)
     }
 }
 
-void DAP4StreamMarshaller::put_float64(dods_float64 val)
+void D4StreamMarshaller::put_float64(dods_float64 val)
 {
     checksum_update(&val, sizeof(dods_float64));
 
@@ -383,7 +383,7 @@ void DAP4StreamMarshaller::put_float64(dods_float64 val)
     }
 }
 
-void DAP4StreamMarshaller::put_uint16(dods_uint16 val)
+void D4StreamMarshaller::put_uint16(dods_uint16 val)
 {
     checksum_update(&val, sizeof(dods_uint16));
 
@@ -391,7 +391,7 @@ void DAP4StreamMarshaller::put_uint16(dods_uint16 val)
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_uint16));
 }
 
-void DAP4StreamMarshaller::put_uint32(dods_uint32 val)
+void D4StreamMarshaller::put_uint32(dods_uint32 val)
 {
     checksum_update(&val, sizeof(dods_uint32));
 
@@ -399,7 +399,7 @@ void DAP4StreamMarshaller::put_uint32(dods_uint32 val)
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_uint32));
 }
 
-void DAP4StreamMarshaller::put_uint64(dods_uint64 val)
+void D4StreamMarshaller::put_uint64(dods_uint64 val)
 {
     checksum_update(&val, sizeof(dods_uint64));
 
@@ -408,7 +408,7 @@ void DAP4StreamMarshaller::put_uint64(dods_uint64 val)
 }
 
 
-void DAP4StreamMarshaller::put_str(const string &val)
+void D4StreamMarshaller::put_str(const string &val)
 {
     checksum_update(val.c_str(), val.length());
 
@@ -418,12 +418,12 @@ void DAP4StreamMarshaller::put_str(const string &val)
     }
 }
 
-void DAP4StreamMarshaller::put_url(const string &val)
+void D4StreamMarshaller::put_url(const string &val)
 {
     put_str(val);
 }
 
-void DAP4StreamMarshaller::put_opaque(char *val, unsigned int len)
+void D4StreamMarshaller::put_opaque(char *val, unsigned int len)
 {
     checksum_update(val, len);
 
@@ -433,7 +433,7 @@ void DAP4StreamMarshaller::put_opaque(char *val, unsigned int len)
     }
 }
 
-void DAP4StreamMarshaller::put_length_prefix(dods_uint64 val)
+void D4StreamMarshaller::put_length_prefix(dods_uint64 val)
 {
     if (d_write_data) {
         DBG2(cerr << "val: " << val << endl);
@@ -446,7 +446,7 @@ void DAP4StreamMarshaller::put_length_prefix(dods_uint64 val)
     }
 }
 
-void DAP4StreamMarshaller::put_vector(char *val, unsigned int num)
+void D4StreamMarshaller::put_vector(char *val, unsigned int num)
 {
     checksum_update(val, num);
 
@@ -464,7 +464,7 @@ void DAP4StreamMarshaller::put_vector(char *val, unsigned int num)
  * @param val Pointer to the data to write
  * @param num The number of elements to write
  */
-void DAP4StreamMarshaller::put_varying_vector(char *val, unsigned int num)
+void D4StreamMarshaller::put_varying_vector(char *val, unsigned int num)
 {
     put_opaque(val, num);
 }
@@ -474,7 +474,7 @@ void DAP4StreamMarshaller::put_varying_vector(char *val, unsigned int num)
  * serializes directly to the stream (element by element) and compare the
  * run times.
  */
-void DAP4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int width, Type type)
+void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int width, Type type)
 {
     dods_uint64 size = num * width;
     char *buf = (char*)malloc(size);
@@ -515,7 +515,7 @@ void DAP4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int wi
     xdr_destroy(&xdr);
 }
 
-void DAP4StreamMarshaller::put_vector(char *val, unsigned int num, int width, Type type)
+void D4StreamMarshaller::put_vector(char *val, unsigned int num, int width, Type type)
 {
     checksum_update(val, num * width);
 
@@ -544,13 +544,13 @@ void DAP4StreamMarshaller::put_vector(char *val, unsigned int num, int width, Ty
  * @param width The number of bytes in each element
  * @param type The DAP type code (used only for float32 and float64 values).
  */
-void DAP4StreamMarshaller::put_varying_vector(char *val, unsigned int num, int width, Type type)
+void D4StreamMarshaller::put_varying_vector(char *val, unsigned int num, int width, Type type)
 {
     put_length_prefix(num);
     put_vector(val, num, width, type);
 }
 
-void DAP4StreamMarshaller::dump(ostream &strm) const
+void D4StreamMarshaller::dump(ostream &strm) const
 {
     strm << DapIndent::LMarg << "DAP4StreamMarshaller::dump - (" << (void *) this << ")" << endl;
 }

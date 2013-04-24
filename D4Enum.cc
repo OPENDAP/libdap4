@@ -80,9 +80,9 @@ D4Enum::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_ev
 
     dds.timeout_off();
 
-    assert(typeid(m) == typeid(DAP4StreamMarshaller));
+    assert(typeid(m) == typeid(D4StreamMarshaller));
 
-    static_cast<DAP4StreamMarshaller*>(&m)->put_int64( d_buf ) ;
+    static_cast<D4StreamMarshaller*>(&m)->put_int64( d_buf ) ;
 
     return true;
 }
@@ -90,9 +90,9 @@ D4Enum::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_ev
 bool
 D4Enum::deserialize(UnMarshaller &um, DDS *, bool)
 {
-    assert(typeid(um) == typeid(DAP4StreamUnMarshaller));
+    assert(typeid(um) == typeid(D4StreamUnMarshaller));
 
-    static_cast<DAP4StreamUnMarshaller*>(&um)->get_int64( d_buf ) ;
+    static_cast<D4StreamUnMarshaller*>(&um)->get_int64( d_buf ) ;
 
     return false;
 }
