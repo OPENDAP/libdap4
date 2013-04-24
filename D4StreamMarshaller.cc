@@ -173,7 +173,10 @@ D4StreamMarshaller::~D4StreamMarshaller()
     // Free the buffer this contains. The xdr_destroy() macro does not
     // free the XDR struct (which is fine since we did not dynamically
     // allocate it).
+    free(d_ieee754_buf);
+    d_ieee754_buf = 0;
     xdr_destroy (&d_scalar_sink);
+
 }
 
 /**
