@@ -52,6 +52,7 @@
 #include "InternalErr.h"
 
 #include "dods-datatypes.h"
+#include "Type.h"
 
 #include "DapObj.h"
 
@@ -70,8 +71,6 @@ class Marshaller;
 class UnMarshaller;
 
 class D4Attributes;
-
-#include "Type.h"
 
 /** This defines the basic data type features for the DODS data access
     protocol (DAP) data types. All the DAP type classes (Float64, Array,

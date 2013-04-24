@@ -52,7 +52,7 @@ private:
     D4Group *root, *named;
 
 public:
-    D4GroupTest() {
+    D4GroupTest() : root(0), named(0), xml(0 ){
     }
 
     ~D4GroupTest() {

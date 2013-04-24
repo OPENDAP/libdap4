@@ -31,8 +31,7 @@
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 
-
-#include "DAP4StreamMarshaller.h"
+#include "config.h"
 
 #include <stdint.h>     // for the Google protobuf code
 #include <byteswap.h>
@@ -44,8 +43,10 @@
 using namespace std;
 
 //#define DODS_DEBUG 1
+#include "DAP4StreamMarshaller.h"
 
 #include "dods-datatypes.h"
+#include "XDRUtils.h"
 #include "util.h"
 #include "debug.h"
 
@@ -144,14 +145,14 @@ inline uint8_t* WriteVarint64ToArrayInline(uint64_t value, uint8_t* target) {
 }
 
 /** Build an instance of DAP4StreamMarshaller. Bind the C++ stream out to this
- * instance. If the checksum parameter is true, initialize a checksum buffer
- * and enable the use of the reset_checksum() and get_checksum() methods.
+ * instance. If the write_data parameter is true, write the data in addition
+ * to computing and sending the checksum.
  *
  * @param out Write to this stream object.
  * @param write_data If true, write data values. True by default
  */
 DAP4StreamMarshaller::DAP4StreamMarshaller(ostream &out, bool write_data) :
-        d_out(out), d_ctx(0), d_write_data(write_data), d_checksum_ctx_valid(false)
+        d_out(out), d_write_data(write_data)
 {
     // XDR is used if the call std::numeric_limits<double>::is_iec559()
     // returns false indicating that the compiler is not using IEEE 754.
@@ -165,8 +166,6 @@ DAP4StreamMarshaller::DAP4StreamMarshaller(ostream &out, bool write_data) :
     // This will cause exceptions to be thrown on i/o errors. The exception
     // will be ostream::failure
     out.exceptions(ostream::failbit | ostream::badbit);
-
-    d_ctx = EVP_MD_CTX_create();
 }
 
 DAP4StreamMarshaller::~DAP4StreamMarshaller()
@@ -175,8 +174,6 @@ DAP4StreamMarshaller::~DAP4StreamMarshaller()
     // free the XDR struct (which is fine since we did not dynamically
     // allocate it).
     xdr_destroy (&d_scalar_sink);
-
-    EVP_MD_CTX_destroy(d_ctx);
 }
 
 /**
@@ -192,15 +189,16 @@ DAP4StreamMarshaller::get_endian() const
 }
 
 /** Initialize the checksum buffer. This resets the checksum calculation.
- * @exception InternalErr if called when the object was created without
- * checksum support.
  */
 void DAP4StreamMarshaller::reset_checksum()
 {
+#if 0
     if (EVP_DigestInit_ex(d_ctx, EVP_md5(), 0) == 0)
         throw Error("Failed to initialize checksum object.");
 
     d_checksum_ctx_valid = true;
+#endif
+    d_checksum.Reset();
 }
 
 /**
@@ -208,6 +206,7 @@ void DAP4StreamMarshaller::reset_checksum()
  */
 void DAP4StreamMarshaller::m_compute_checksum()
 {
+#if 0
     if (d_checksum_ctx_valid) {
         // '...Final()' 'erases' the context so the next call without a reset
         // returns a bogus value.
@@ -218,10 +217,11 @@ void DAP4StreamMarshaller::m_compute_checksum()
         // put_checksum() for a version that writes the 128-bit value without
         // that conversion.
         unsigned int md_len;
-        int status = EVP_DigestFinal_ex(d_ctx, &d_md[0], &md_len);
-        if (status == 0 || md_len != c_md5_length)
-            throw Error("Error computing the checksum (checksum computation).");
+        int status = EVP_DigestFinal_ex(d_ctx, &d_checksum[0], &md_len);
+        if (status == 0 || md_len != c_checksum_length)
+            throw Error("Error computing the checksum.");
     }
+#endif
 }
 
 /** Get the current checksum. It is not possible to continue computing the
@@ -231,30 +231,41 @@ void DAP4StreamMarshaller::m_compute_checksum()
  */
 string DAP4StreamMarshaller::get_checksum()
 {
+#if 0
     if (d_checksum_ctx_valid) {
         m_compute_checksum();
     }
 
     ostringstream oss;
     oss.setf(ios::hex, ios::basefield);
-    for (unsigned int i = 0; i < c_md5_length; ++i) {
-        oss << setfill('0') << setw(2) << (unsigned int) d_md[i];
+    for (unsigned int i = 0; i < c_checksum_length; ++i) {
+        oss << setfill('0') << setw(2) << (unsigned int) d_checksum[i];
     }
+#endif
+
+    ostringstream oss;
+    oss.setf(ios::hex, ios::basefield);
+    oss << setfill('0') << setw(8) << d_checksum.GetCrc32();
 
     return oss.str();
 }
 
 void DAP4StreamMarshaller::put_checksum()
 {
+#if 0
     if (d_checksum_ctx_valid) {
         m_compute_checksum();
     }
 
-    d_out.write(reinterpret_cast<char*>(&d_md[0]), c_md5_length);
+    d_out.write(reinterpret_cast<char*>(&d_checksum[0]), c_checksum_length);
+#endif
+    uint32_t chk = d_checksum.GetCrc32();
+    d_out.write(reinterpret_cast<char*>(&chk), sizeof(uint32_t));
 }
 
 void DAP4StreamMarshaller::checksum_update(const void *data, unsigned long len)
 {
+#if 0
     if (!d_checksum_ctx_valid)
         throw InternalErr(__FILE__, __LINE__, "Invalid checksum context (checksum update).");
 
@@ -262,6 +273,8 @@ void DAP4StreamMarshaller::checksum_update(const void *data, unsigned long len)
         d_checksum_ctx_valid = false;
         throw Error("Error computing the checksum (checksum update).");
     }
+#endif
+    d_checksum.AddData(reinterpret_cast<const uint8_t*>(data), len);
 }
 
 void DAP4StreamMarshaller::put_byte(dods_byte val)
@@ -437,7 +450,8 @@ void DAP4StreamMarshaller::put_vector(char *val, unsigned int num)
 {
     checksum_update(val, num);
 
-    d_out.write(val, num);
+    if (d_write_data)
+        d_out.write(val, num);
 }
 
 /**

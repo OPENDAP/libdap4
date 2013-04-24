@@ -29,12 +29,24 @@
 
 #include <iostream>
 
-using std::istream ;
-using std::cin ;
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock2.h>
+#include <xdr.h>
+#else
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
+#endif
 
+#include <crc.h>
+
+using std::istream;
+//using std::cout;
+
+#include "Type.h"
 #include "UnMarshaller.h"
-#include "BaseType.h"
-#include "XDRUtils.h"
+#include "InternalErr.h"
 
 namespace libdap
 {
@@ -45,39 +57,39 @@ class Vector;
  */
 class DAP4StreamUnMarshaller: public UnMarshaller {
 public:
-    const static unsigned int c_md5_length = 16;
+    const static unsigned int c_checksum_length = 4;
 
 private:
-    istream & d_in;
+    istream &d_in;
     bool d_twiddle_bytes;
 
     // These are used for reals that need to be converted from IEEE 754
     XDR d_source;
     char *d_buf;
 
-    DAP4StreamUnMarshaller() : d_in(cin) {
-        throw InternalErr( __FILE__, __LINE__, "not implemented." ) ;
-    }
-    DAP4StreamUnMarshaller(const DAP4StreamUnMarshaller &) : UnMarshaller(), d_in(cin) {
-        throw InternalErr( __FILE__, __LINE__, "not implemented." ) ;
-    }
-    DAP4StreamUnMarshaller & operator=(const DAP4StreamUnMarshaller &) {
-        throw InternalErr( __FILE__, __LINE__, "not implemented." ) ;
-    }
+    DAP4StreamUnMarshaller();
+    DAP4StreamUnMarshaller(const DAP4StreamUnMarshaller &);
+    DAP4StreamUnMarshaller & operator=(const DAP4StreamUnMarshaller &);
 
     void m_deserialize_reals(char *val, unsigned int num, int width, Type type);
     void m_twidle_vector_elements(char *vals, unsigned int num, int width);
 
 public:
+#if 0
     struct checksum {
-        unsigned char md[c_md5_length];
+        unsigned char md[c_checksum_length];
     };
-
+#endif
     DAP4StreamUnMarshaller(istream &in, bool is_stream_bigendian);
     virtual ~DAP4StreamUnMarshaller();
 
+#if 0
     checksum get_checksum();
     string get_checksum(checksum c);
+#endif
+
+    Crc32::crc32_checksum get_checksum();
+    string get_checksum(Crc32::crc32_checksum c);
 
     virtual void get_byte(dods_byte &val);
     virtual void get_int8(dods_int8 &val);

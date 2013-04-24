@@ -92,25 +92,32 @@ DAP4StreamUnMarshaller::~DAP4StreamUnMarshaller( )
 {
 }
 
-DAP4StreamUnMarshaller::checksum DAP4StreamUnMarshaller::get_checksum()
+Crc32::crc32_checksum DAP4StreamUnMarshaller::get_checksum()
 {
-    checksum c;
-    d_in.read(reinterpret_cast<char*>(&c), c_md5_length);
+    Crc32::crc32_checksum c;
+    d_in.read(reinterpret_cast<char*>(&c), sizeof(Crc32::crc32_checksum));
 
     return c;
 }
 
-string DAP4StreamUnMarshaller::get_checksum(DAP4StreamUnMarshaller::checksum c)
+string DAP4StreamUnMarshaller::get_checksum(Crc32::crc32_checksum c)
 {
+    ostringstream oss;
+    oss.setf(ios::hex, ios::basefield);
+    oss << setfill('0') << setw(8) << c;
+
+    return oss.str();
+#if 0
     unsigned char *md = reinterpret_cast<unsigned char*>(&c);
 
     ostringstream oss;
     oss.setf(ios::hex, ios::basefield);
-    for (unsigned int i = 0; i < c_md5_length; ++i) {
+    for (unsigned int i = 0; i < c_checksum_length; ++i) {
         oss << setfill('0') << setw(2) << (unsigned int)md[i];
     }
 
     return oss.str();
+#endif
 }
 
 void

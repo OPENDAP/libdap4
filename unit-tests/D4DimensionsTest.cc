@@ -56,7 +56,7 @@ private:
     D4Dimensions *d;
 
 public:
-    D4DimensionsTest() {
+    D4DimensionsTest() : xml(0), d(0) {
     }
 
     ~D4DimensionsTest() {

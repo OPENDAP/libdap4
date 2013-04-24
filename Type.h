@@ -25,6 +25,8 @@
 #ifndef TYPE_H_
 #define TYPE_H_
 
+namespace libdap {
+
 /** <b>Part</b> names the parts of multi-section constructor types.
     For example, the <b>Grid</b> class has an <i>array</i> and
     the array <i>maps</i>. Use the <tt>nil</tt> value for data types that
@@ -118,7 +120,8 @@ enum Type {
     dods_enum_c,
     dods_opaque_c,
     dods_group_c
-
 };
+
+} // namespace libdap
 
 #endif /* TYPE_H_ */

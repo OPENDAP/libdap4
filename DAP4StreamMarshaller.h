@@ -30,13 +30,24 @@
 
 #include <iostream>
 
-#include <openssl/evp.h>
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock2.h>
+#include <xdr.h>
+#else
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
+#endif
+
+#include <crc.h>
 
 using std::ostream;
-using std::cout;
+//using std::cout;
 
+#include "Type.h"
 #include "Marshaller.h"
-#include "XDRUtils.h"
+#include "InternalErr.h"
 
 namespace libdap {
 
@@ -51,37 +62,30 @@ class Vector;
  * @note This class uses the Marshaller interface; it could be rewritten
  * to use far fewer methods since all of the put_*() methods take different
  * types.
- *
- * @todo Add to configure a test for Apple's Common Crypto (man CC_MD5_Init)
- * and use that if present. ...drop in replacement for SSL MD5 functions. Why
- * Apple did this is a mystery.
  */
 class DAP4StreamMarshaller: public Marshaller {
-public:
-    const static unsigned int c_md5_length = 16;
 
 private:
     XDR d_scalar_sink;
-    char * d_ieee754_buf; // used to serialize a float or double
+    char *d_ieee754_buf; // used to serialize a float or double
 
-    ostream & d_out;
-
+    ostream &d_out;
+#if 0
     EVP_MD_CTX * d_ctx; // jhrg 4/24/12
+#endif
     bool d_write_data; // jhrg 1/27/12
+#if 0
     bool d_checksum_ctx_valid;
-    unsigned char d_md[c_md5_length];
+    uint32_t d_checksum;
+#endif
+
+    Crc32 d_checksum;
 
     // These are private so they won't ever get used.
 
-    DAP4StreamMarshaller() : d_out(cout) {
-        throw InternalErr( __FILE__, __LINE__, "not implemented." ) ;
-    }
-    DAP4StreamMarshaller(const DAP4StreamMarshaller &) : Marshaller(), d_out(cout) {
-        throw InternalErr( __FILE__, __LINE__, "not implemented." ) ;
-    }
-    DAP4StreamMarshaller & operator=(const DAP4StreamMarshaller &) {
-        throw InternalErr( __FILE__, __LINE__, "not implemented." ) ;
-    }
+    DAP4StreamMarshaller();
+    DAP4StreamMarshaller(const DAP4StreamMarshaller &);
+    DAP4StreamMarshaller & operator=(const DAP4StreamMarshaller &);
 
     void m_serialize_reals(char *val, unsigned int num, int width, Type type);
     void m_compute_checksum();
@@ -90,10 +94,6 @@ public:
     DAP4StreamMarshaller(ostream &out, bool write_data = true);
     virtual ~DAP4StreamMarshaller();
 
-    // Added here
-    virtual bool checksums() const {
-        return d_ctx != 0;
-    }
     virtual string get_endian() const;
     virtual void reset_checksum();
     virtual string get_checksum();
@@ -129,7 +129,6 @@ public:
 
     // Added; This method does not add its argument to the checksum;
     // put_uint64() does.
-    //virtual void    put_length_prefix( dods_uint32 val ) ;
     virtual void put_length_prefix(dods_uint64 val);
 
     virtual void put_vector(char *val, unsigned int num);

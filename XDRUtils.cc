@@ -170,9 +170,10 @@ XDRUtils::xdr_coder( const Type &t )
 	case dods_sequence_c:
 	case dods_grid_c:
 	default:
-	    return NULL ;
 	    break ;
     }
+
+    return NULL;
 }
 
 } // namespace libdap
