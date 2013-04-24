@@ -95,6 +95,7 @@ public:
     virtual ~DAP4StreamMarshaller();
 
     virtual string get_endian() const;
+
     virtual void reset_checksum();
     virtual string get_checksum();
     virtual void checksum_update(const void *data, unsigned long len);

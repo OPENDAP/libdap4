@@ -1,11 +1,12 @@
+
+#include "config.h"
+
 #include <cppunit/TestFixture.h>
 #include <cppunit/TestAssert.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/CompilerOutputter.h>
-
-#include "config.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -17,12 +18,20 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <iomanip>
 #include <cstring>
 
 #include "DAP4StreamMarshaller.h"
 
+#include "GetOpt.h"
 #include "debug.h"
+
+static bool debug = false;
+static bool write_baselines = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
 
 using namespace std;
 using namespace libdap;
@@ -47,24 +56,23 @@ class DAP4MarshallerTest: public CppUnit::TestFixture {
     bool cmp(const char *buf, unsigned int len, string file) {
         fstream in;
         in.open(file.c_str(), fstream::binary | fstream::in);
-        if (!in) {
-            cerr << "Could not open file: " << file << endl;
-            return false;
-        }
+        if (!in)
+            throw Error("Could not open file: " + file);
 
         vector<char> fbuf(len);
         in.read(&fbuf[0], len);
         if (!in) {
-            cerr << "Could not read " << len << " bytes from file." << endl;
-            return false;
+            ostringstream oss("Could not read ");
+            oss << len << " bytes from file.";
+            throw Error(oss.str());
         }
 
         for (unsigned int i = 0; i < len; ++i)
-            if (*buf++ != fbuf[i]) {
-                cerr << "Response differs from baseline at byte " << i << endl;
-                cerr << "Expected: " << setfill('0') << setw(2) << hex
+            if (buf[i] != fbuf[i]) {
+                DBG(cerr << "Response differs from baseline at byte " << i << endl);
+                DBG(cerr << "Expected: " << setfill('0') << setw(2) << hex
                         << (unsigned int)fbuf[i] << "; got: "
-                        << (unsigned int)buf[i] << dec << endl;
+                        << (unsigned int)buf[i] << dec << endl);
                 return false;
             }
 
@@ -74,11 +82,8 @@ class DAP4MarshallerTest: public CppUnit::TestFixture {
     void write_binary_file(const char *buf, int len, string file) {
         fstream out;
         out.open(file.c_str(), fstream::binary | fstream::out);
-        if (!out) {
-            cerr << "Could not open file: " << file << endl;
-            return;
-        }
-
+        if (!out)
+            throw Error("Could not open file: " + file);
         out.write(buf, len);
     }
 
@@ -107,33 +112,40 @@ public:
 
         dsm.put_byte(17);
         dsm.put_checksum();
+        DBG(cerr << "test_scalars: checksum: " << dsm.get_checksum() << endl);
         dsm.reset_checksum();
 
         dsm.put_int16(17);
         dsm.put_checksum();
+        DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
         dsm.reset_checksum();
 
         dsm.put_int32(17);
         dsm.put_checksum();
+        DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
         dsm.reset_checksum();
 
         dsm.put_int64(17);
         dsm.put_checksum();
+        DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
         dsm.reset_checksum();
 
         dsm.put_uint16(17);
         dsm.put_checksum();
+        DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
         dsm.reset_checksum();
 
         dsm.put_uint32(17);
         dsm.put_checksum();
+        DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
         dsm.reset_checksum();
 
         dsm.put_uint64(17);
         dsm.put_checksum();
+        DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
         dsm.reset_checksum();
 
-        //write_binary_file(oss.str().data(), oss.str().length(), "test_scalars_1_bin.dat");
+        if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_scalars_1_bin.dat");
         CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_scalars_1_bin.dat"));
         }
         catch (Error &e) {
@@ -158,7 +170,7 @@ public:
         dsm.put_checksum();
         dsm.reset_checksum();
 
-        //write_binary_file(oss.str().data(), oss.str().length(), "test_scalars_2_bin.dat");
+        if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_scalars_2_bin.dat");
         CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_scalars_2_bin.dat"));
         }
         catch (Error &e) {
@@ -184,7 +196,7 @@ public:
             dsm.reset_checksum();
 
             // True these are not really scalars...
-            //write_binary_file(oss.str().data(), oss.str().length(), "test_scalars_3_bin.dat");
+            if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_scalars_3_bin.dat");
             CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_scalars_3_bin.dat"));
        }
         catch (Error &e) {
@@ -210,7 +222,7 @@ public:
             dsm.put_opaque(reinterpret_cast<char*>(&buf[0]), 32768);
             dsm.put_checksum();
 
-            //write_binary_file(oss.str().data(), oss.str().length(), "test_opaque_1_bin.dat");
+            if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_opaque_1_bin.dat");
             CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_opaque_1_bin.dat"));
        }
         catch (Error &e) {
@@ -248,7 +260,7 @@ public:
             dsm.put_vector(reinterpret_cast<char*>(&buf3[0]), 32768, sizeof(dods_float64), dods_float64_c);
             dsm.put_checksum();
 
-            //write_binary_file(oss.str().data(), oss.str().length(), "test_vector_1_bin.dat");
+            if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_vector_1_bin.dat");
             CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_vector_1_bin.dat"));
        }
         catch (Error &e) {
@@ -269,6 +281,7 @@ public:
 
             dsm.put_varying_vector(reinterpret_cast<char*>(&buf1[0]), 32768);
             dsm.put_checksum();
+            DBG(cerr << "test_varying_vector: first checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
 
             vector<dods_int32> buf2(32768);
@@ -277,6 +290,7 @@ public:
 
             dsm.put_varying_vector(reinterpret_cast<char*>(&buf2[0]), 32768, sizeof(dods_int32), dods_int32_c);
             dsm.put_checksum();
+            DBG(cerr << "second checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
 
             vector<dods_float64> buf3(32768);
@@ -285,8 +299,9 @@ public:
 
             dsm.put_varying_vector(reinterpret_cast<char*>(&buf3[0]), 32768, sizeof(dods_float64), dods_float64_c);
             dsm.put_checksum();
+            DBG(cerr << "third checksum: " << dsm.get_checksum() << endl);
 
-            //write_binary_file(oss.str().data(), oss.str().length(), "test_vector_2_bin.dat");
+            if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_vector_2_bin.dat");
             CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_vector_2_bin.dat"));
        }
         catch (Error &e) {
@@ -299,6 +314,44 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION( DAP4MarshallerTest ) ;
 
+int main(int argc, char*argv[]) {
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
+    runner.setOutputter(CppUnit::CompilerOutputter::defaultOutputter(&runner.result(), std::cerr));
+
+    GetOpt getopt(argc, argv, "dw");
+    char option_char;
+
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+        case 'd':
+            debug = true;  // debug is a static global
+            break;
+        case 'w':
+            write_baselines = true;
+            break;
+        default:
+            break;
+        }
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("DAP4MarshallerTest::") + argv[i++];
+
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
+
+    return wasSuccessful ? 0 : 1;
+}
+#if 0
 int main(int, char **)
 {
     CppUnit::TextUi::TestRunner runner;
@@ -308,4 +361,4 @@ int main(int, char **)
     bool wasSuccessful = runner.run("", false);
     return wasSuccessful ? 0 : 1;
 }
-
+#endif

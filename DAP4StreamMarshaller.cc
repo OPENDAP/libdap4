@@ -259,8 +259,8 @@ void DAP4StreamMarshaller::put_checksum()
 
     d_out.write(reinterpret_cast<char*>(&d_checksum[0]), c_checksum_length);
 #endif
-    uint32_t chk = d_checksum.GetCrc32();
-    d_out.write(reinterpret_cast<char*>(&chk), sizeof(uint32_t));
+    Crc32::checksum chk = d_checksum.GetCrc32();
+    d_out.write(reinterpret_cast<char*>(&chk), sizeof(Crc32::checksum));
 }
 
 void DAP4StreamMarshaller::checksum_update(const void *data, unsigned long len)

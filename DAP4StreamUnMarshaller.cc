@@ -92,15 +92,15 @@ DAP4StreamUnMarshaller::~DAP4StreamUnMarshaller( )
 {
 }
 
-Crc32::crc32_checksum DAP4StreamUnMarshaller::get_checksum()
+Crc32::checksum DAP4StreamUnMarshaller::get_checksum()
 {
-    Crc32::crc32_checksum c;
-    d_in.read(reinterpret_cast<char*>(&c), sizeof(Crc32::crc32_checksum));
+    Crc32::checksum c;
+    d_in.read(reinterpret_cast<char*>(&c), sizeof(Crc32::checksum));
 
     return c;
 }
 
-string DAP4StreamUnMarshaller::get_checksum(Crc32::crc32_checksum c)
+string DAP4StreamUnMarshaller::get_checksum(Crc32::checksum c)
 {
     ostringstream oss;
     oss.setf(ios::hex, ios::basefield);

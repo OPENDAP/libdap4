@@ -88,8 +88,8 @@ public:
     string get_checksum(checksum c);
 #endif
 
-    Crc32::crc32_checksum get_checksum();
-    string get_checksum(Crc32::crc32_checksum c);
+    Crc32::checksum get_checksum();
+    string get_checksum(Crc32::checksum c);
 
     virtual void get_byte(dods_byte &val);
     virtual void get_int8(dods_int8 &val);
