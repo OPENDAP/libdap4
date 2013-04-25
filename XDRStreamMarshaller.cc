@@ -58,15 +58,13 @@ char *XDRStreamMarshaller::d_buf = 0;
  * @param checksum If true, compute checksums. False by default
  * @param write_data If true, write data values. True by default
  */
-XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) : // , bool checksum, bool write_data) :
-    /*&d_sink(0),*/ d_out(out)//, _MD_CTX(0), _write_data(write_data), _checksum_ctx_valid(false)
+XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) : d_out(out)
 {
     if (!d_buf)
         d_buf = (char *) malloc(XDR_DAP_BUFF_SIZE);
     if (!d_buf)
         throw Error("Failed to allocate memory for data serialization.");
 
-    //&d_sink = new XDR;
     xdrmem_create( &d_sink, d_buf, XDR_DAP_BUFF_SIZE, XDR_ENCODE);
 
 #if CHECKSUMS
@@ -77,13 +75,13 @@ XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) : // , bool checksum, boo
 }
 
 XDRStreamMarshaller::XDRStreamMarshaller() :
-    Marshaller(), /*&d_sink(0),*/ d_out(cout)
+    Marshaller(), d_out(cout)
 {
     throw InternalErr(__FILE__, __LINE__, "Default constructor not implemented.");
 }
 
 XDRStreamMarshaller::XDRStreamMarshaller(const XDRStreamMarshaller &m) :
-    Marshaller(m), /*&d_sink(0),*/ d_out(cout)
+    Marshaller(m), d_out(cout)
 {
     throw InternalErr(__FILE__, __LINE__, "Copy constructor not implemented.");
 }
@@ -98,9 +96,7 @@ XDRStreamMarshaller::operator=(const XDRStreamMarshaller &)
 
 XDRStreamMarshaller::~XDRStreamMarshaller()
 {
-    xdr_destroy(&d_sink); //delete_xdrstdio(&d_sink);
-    //delete(&d_sink);
-    //&d_sink = 0;
+    xdr_destroy(&d_sink);
 
 #if CHECKSUMS
     if (_MD_CTX)
@@ -185,7 +181,6 @@ void XDRStreamMarshaller::put_byte(dods_byte val)
     if (_MD_CTX)
         checksum_update(&val, sizeof(dods_byte));
 #endif
-//    if (_write_data) {
     DBG( std::cerr << "put_byte: " << val << std::endl );
 
     if (!xdr_setpos( &d_sink, 0 ))
@@ -199,7 +194,6 @@ void XDRStreamMarshaller::put_byte(dods_byte val)
         throw Error("Network I/O Error. Could not send byte data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
     d_out.write(d_buf, bytes_written);
-//    }
 }
 
 void XDRStreamMarshaller::put_int16(dods_int16 val)
@@ -208,7 +202,6 @@ void XDRStreamMarshaller::put_int16(dods_int16 val)
     if (_MD_CTX)
         checksum_update(&val, sizeof(dods_int16));
 #endif
-//    if (_write_data) {
     if (!xdr_setpos( &d_sink, 0 ))
         throw Error("Network I/O Error. Could not send int 16 data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
@@ -220,7 +213,6 @@ void XDRStreamMarshaller::put_int16(dods_int16 val)
         throw Error("Network I/O Error. Could not send int 16 data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
     d_out.write(d_buf, bytes_written);
-//    }
 }
 
 void XDRStreamMarshaller::put_int32(dods_int32 val)
@@ -229,7 +221,6 @@ void XDRStreamMarshaller::put_int32(dods_int32 val)
     if (_MD_CTX)
         checksum_update(&val, sizeof(dods_int32));
 #endif
-//    if (_write_data) {
     if (!xdr_setpos( &d_sink, 0 ))
         throw Error("Network I/O Error. Could not send int 32 data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
@@ -241,7 +232,6 @@ void XDRStreamMarshaller::put_int32(dods_int32 val)
         throw Error("Network I/O Error. Could not send int 32 data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
     d_out.write(d_buf, bytes_written);
-//    }
 }
 
 void XDRStreamMarshaller::put_float32(dods_float32 val)
@@ -250,7 +240,6 @@ void XDRStreamMarshaller::put_float32(dods_float32 val)
     if (_MD_CTX)
         checksum_update(&val, sizeof(dods_float32));
 #endif
-//    if (_write_data) {
     if (!xdr_setpos( &d_sink, 0 ))
         throw Error("Network I/O Error. Could not send float 32 data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
@@ -262,7 +251,6 @@ void XDRStreamMarshaller::put_float32(dods_float32 val)
         throw Error("Network I/O Error. Could not send float 32 data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
     d_out.write(d_buf, bytes_written);
-//    }
 }
 
 void XDRStreamMarshaller::put_float64(dods_float64 val)
@@ -271,7 +259,6 @@ void XDRStreamMarshaller::put_float64(dods_float64 val)
     if (_MD_CTX)
         checksum_update(&val, sizeof(dods_float64));
 #endif
-//    if (_write_data) {
     if (!xdr_setpos( &d_sink, 0 ))
         throw Error("Network I/O Error. Could not send float 64 data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
@@ -283,7 +270,6 @@ void XDRStreamMarshaller::put_float64(dods_float64 val)
         throw Error("Network I/O Error. Could not send float 64 data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
     d_out.write(d_buf, bytes_written);
-//    }
 }
 
 void XDRStreamMarshaller::put_uint16(dods_uint16 val)
@@ -292,7 +278,6 @@ void XDRStreamMarshaller::put_uint16(dods_uint16 val)
     if (_MD_CTX)
         checksum_update(&val, sizeof(dods_uint16));
 #endif
-//    if (_write_data) {
     if (!xdr_setpos( &d_sink, 0 ))
         throw Error("Network I/O Error. Could not send uint 16 data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
@@ -304,7 +289,6 @@ void XDRStreamMarshaller::put_uint16(dods_uint16 val)
         throw Error("Network I/O Error. Could not send uint 16 data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
     d_out.write(d_buf, bytes_written);
-//    }
 }
 
 void XDRStreamMarshaller::put_uint32(dods_uint32 val)
@@ -313,7 +297,6 @@ void XDRStreamMarshaller::put_uint32(dods_uint32 val)
     if (_MD_CTX)
         checksum_update(&val, sizeof(dods_uint32));
 #endif
-//    if (_write_data) {
     if (!xdr_setpos( &d_sink, 0 ))
         throw Error("Network I/O Error. Could not send uint 32 data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
@@ -325,17 +308,15 @@ void XDRStreamMarshaller::put_uint32(dods_uint32 val)
         throw Error("Network I/O Error. Could not send uint 32 data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
     d_out.write(d_buf, bytes_written);
-//    }
 }
 
-//FIXME XDR usage
 void XDRStreamMarshaller::put_str(const string &val)
 {
 #if 0
     if (_MD_CTX)
         checksum_update(val.c_str(), val.length());
 #endif
-//    if (_write_data) {
+
     int size = val.length() + 8;
     // Replace this malloc with a vector<char>.
     // ...and maybe elsewhere in this class... jhrg 3/9/12
@@ -372,7 +353,6 @@ void XDRStreamMarshaller::put_str(const string &val)
 
     delete_xdrstdio(str_sink);
     free(str_buf);
-//    }
 }
 
 void XDRStreamMarshaller::put_url(const string &val)
@@ -386,7 +366,6 @@ void XDRStreamMarshaller::put_opaque(char *val, unsigned int len)
     if (_MD_CTX)
         checksum_update(&val, len);
 #endif
-//    if (_write_data) {
     if (len > XDR_DAP_BUFF_SIZE)
         throw Error("Network I/O Error. Could not send opaque data - length of opaque data larger than allowed");
 
@@ -401,7 +380,6 @@ void XDRStreamMarshaller::put_opaque(char *val, unsigned int len)
         throw Error("Network I/O Error. Could not send opaque data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
     d_out.write(d_buf, bytes_written);
-//    }
 }
 
 void XDRStreamMarshaller::put_int( int val )
@@ -410,7 +388,6 @@ void XDRStreamMarshaller::put_int( int val )
     if (_MD_CTX)
         checksum_update(&val, sizeof(int));
 #endif
-//    if (_write_data) {
     if (!xdr_setpos( &d_sink, 0 ))
         throw Error("Network I/O Error. Could not send int data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
@@ -422,7 +399,6 @@ void XDRStreamMarshaller::put_int( int val )
         throw Error("Network I/O Error. Could not send int data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
     d_out.write(d_buf, bytes_written);
-//    }
 }
 
 void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
@@ -433,7 +409,6 @@ void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
     if (_MD_CTX)
         checksum_update(val, num);
 #endif
-//    if (_write_data) {
         // write the number of members of the array being written and then set the position to 0
         put_int(num);
 
@@ -472,7 +447,6 @@ void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
             xdr_destroy(&byte_sink);
             throw;
         }
-//    }
 }
 
 
@@ -491,7 +465,6 @@ void XDRStreamMarshaller::put_vector(char *val, unsigned int num, int width, Typ
     if (_MD_CTX)
         checksum_update(val, num * width);
 #endif
-//    if (_write_data) {
         // write the number of array members being written, then set the position back to 0
         put_int(num);
 
@@ -531,13 +504,14 @@ void XDRStreamMarshaller::put_vector(char *val, unsigned int num, int width, Typ
             // write that much out to the output stream
             d_out.write(vec_buf, bytes_written);
 
-            xdr_destroy( &vec_sink);
+            free(vec_buf);
+            xdr_destroy(&vec_sink);
         }
         catch (...) {
-            xdr_destroy( &vec_sink);
+            free(vec_buf);
+            xdr_destroy(&vec_sink);
             throw;
         }
-//    }
 }
 
 void XDRStreamMarshaller::dump(ostream &strm) const
