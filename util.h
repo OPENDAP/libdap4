@@ -57,6 +57,8 @@ inline bool double_eq(double lhs, double rhs, double epsilon = 1.0e-5)
     return fabs(lhs - rhs) < epsilon;
 }
 
+bool is_host_big_endian();
+
 string extract_string_argument(BaseType *arg) ;
 double extract_double_value(BaseType *arg) ;
 double *extract_double_array(Array *a) ;

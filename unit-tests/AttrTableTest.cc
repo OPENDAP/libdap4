@@ -353,28 +353,33 @@ String longer%20name \"second test\";";
 
             // try a second table. at2 contains a scalar attribute followed by a
             // container names 'a'.
+            AttrTable *at2;
             try {
-                AttrTable *at2 = new AttrTable;
+                at2 = new AttrTable;
                 at2->append_attr("color", "String", "red");
                 AttrTable *cont_at2 = at2->append_container("a");
                 cont_at2->append_attr("size", "Int32", "7");
                 cont_at2->append_attr("type", "String", "cars");
                 i = at2->attr_begin();
                 CPPUNIT_ASSERT(at2->get_name(i) == "color");
-		i++ ;
+                i++ ;
                 CPPUNIT_ASSERT(at2->get_name(i) == "a");
                 at2->del_attr_table(i);
                 i = at2->attr_begin();
                 CPPUNIT_ASSERT(at2->get_name(i) == "color");
-		i++ ;
+                i++ ;
                 CPPUNIT_ASSERT(i == at2->attr_end());
+
+                delete at2; at2 = 0;
             }
             catch (Error &e) {
                 cerr << "Error: " << e.get_error_message() << endl;
+                delete at2; at2 = 0;
                 throw;
             }
             catch (...) {
                 cerr << "caught an exception!" << endl;
+                delete at2; at2 = 0;
                 throw;
             }
         }

@@ -66,7 +66,9 @@ public:
 	s.add_var( bt ) ;
 	delete bt ; bt = 0 ;
 
-	Array *abt = factory->NewArray( "name_array", factory->NewInt16( "array_int" ) ) ;
+	bt = factory->NewInt16( "array_int" );
+	Array *abt = factory->NewArray( "name_array",  bt);
+	delete bt; bt = 0;
 	abt->append_dim( 4, "dim1" ) ;
 	abt->append_dim( 3, "dim2" ) ;
 	abt->append_dim( 2, "dim3" ) ;

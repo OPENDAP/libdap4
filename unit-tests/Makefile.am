@@ -27,7 +27,10 @@ CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align
 
 if USE_VALGRIND
 TESTS_ENVIRONMENT=valgrind --quiet --trace-children=yes --error-exitcode=1 \
---dsymutil=yes --leak-check=yes --log-file="valgrind-%p.log"
+--leak-check=yes --dsymutil=yes
+
+# skip using --log-file="valgrind-%p.log" because it always generates files
+# Might also drop --dsymutil=yes because it can take a long time to run.
 endif
 
 if BUILD_DEVELOPER
@@ -71,7 +74,7 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 # Breaks valgrind: HTTPCacheTest 
 
 if DAP4_DEFINED
-UNIT_TESTS += DAP4MarshallerTest DAP4UnMarshallerTest \
+UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest \
         D4DimensionsTest D4EnumDefsTest D4GroupTest D4ParserSax2Test \
         D4AttributesTest
 endif
@@ -132,9 +135,9 @@ Keywords2Test_LDADD = ../libdap.la $(AM_LDADD)
 generalUtilTest_SOURCES = generalUtilTest.cc
 generalUtilTest_LDADD = ../libdap.la $(AM_LDADD)
 
-HTTPCacheTest_SOURCES = HTTPCacheTest.cc
-HTTPCacheTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
-HTTPCacheTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
+#HTTPCacheTest_SOURCES = HTTPCacheTest.cc
+#HTTPCacheTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
+#HTTPCacheTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
 
 HTTPConnectTest_SOURCES = HTTPConnectTest.cc
 HTTPConnectTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
@@ -187,11 +190,11 @@ dasT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
 if DAP4_DEFINED
 
-DAP4MarshallerTest_SOURCES = DAP4MarshallerTest.cc
-DAP4MarshallerTest_LDADD = ../libdap.la $(AM_LDADD)
+D4MarshallerTest_SOURCES = D4MarshallerTest.cc
+D4MarshallerTest_LDADD = ../libdap.la $(AM_LDADD)
 
-DAP4UnMarshallerTest_SOURCES = DAP4UnMarshallerTest.cc
-DAP4UnMarshallerTest_LDADD = ../libdap.la $(AM_LDADD)
+D4UnMarshallerTest_SOURCES = D4UnMarshallerTest.cc
+D4UnMarshallerTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4DimensionsTest_SOURCES = D4DimensionsTest.cc $(TEST_SRC)
 D4DimensionsTest_LDADD = ../libdap.la $(AM_LDADD)

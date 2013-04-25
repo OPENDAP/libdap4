@@ -462,9 +462,13 @@ void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
 
             d_out.write(byte_buf, bytes_written);
 
+            free(byte_buf);
+            byte_buf = 0;
             xdr_destroy(&byte_sink);
         }
         catch (...) {
+            free(byte_buf);
+            byte_buf = 0;
             xdr_destroy(&byte_sink);
             throw;
         }

@@ -36,9 +36,9 @@ static bool write_baselines = false;
 using namespace std;
 using namespace libdap;
 
-class DAP4MarshallerTest: public CppUnit::TestFixture {
+class D4MarshallerTest: public CppUnit::TestFixture {
 
-    CPPUNIT_TEST_SUITE( DAP4MarshallerTest );
+    CPPUNIT_TEST_SUITE( D4MarshallerTest );
 
     CPPUNIT_TEST(test_cmp);
     CPPUNIT_TEST(test_scalars);
@@ -88,7 +88,7 @@ class DAP4MarshallerTest: public CppUnit::TestFixture {
     }
 
 public:
-    DAP4MarshallerTest() {
+    D4MarshallerTest() {
     }
 
     void setUp() {
@@ -321,7 +321,7 @@ public:
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( DAP4MarshallerTest ) ;
+CPPUNIT_TEST_SUITE_REGISTRATION( D4MarshallerTest ) ;
 
 int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;

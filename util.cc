@@ -87,6 +87,26 @@ using namespace std;
 
 namespace libdap {
 
+/** @brief DOes thsi host use big-endian byte order? */
+bool is_host_big_endian()
+{
+#ifdef COMPUTE_ENDIAN_AT_RUNTIME
+
+    dods_int16 i = 0x0100;
+    char *c = reinterpret_cast<char*>(&i);
+    return *c;
+
+#else
+
+#ifdef WORDS_BIGENDIAN
+    return true;
+#else
+    return false;
+#endif
+
+#endif
+}
+
 /** Given a BaseType pointer, extract the string value it contains and return
  it.
 
@@ -606,6 +626,7 @@ is_simple_type(Type t)
     case dods_sequence_c:
     case dods_grid_c:
     case dods_group_c:
+    default:
         return false;
     }
 
@@ -651,6 +672,7 @@ is_vector_type(Type t)
     case dods_sequence_c:
     case dods_grid_c:
     case dods_group_c:
+    default:
         return false;
     }
 
@@ -694,6 +716,7 @@ is_constructor_type(Type t)
     case dods_sequence_c:
     case dods_grid_c:
     case dods_group_c:
+    default:
         return true;
     }
 

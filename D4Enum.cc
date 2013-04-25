@@ -35,7 +35,7 @@
 #include "Int32.h"
 #include "UInt32.h"
 #include "D4Enum.h"
-#include "UD4Enum.h"
+//#include "UD4Enum.h"
 #include "Float32.h"
 #include "Float64.h"
 #include "Str.h"
@@ -48,8 +48,8 @@
 #include "Grid.h"
 #endif
 
-#include "DAP4StreamMarshaller.h"
-#include "DAP4StreamUnMarshaller.h"
+#include "D4StreamMarshaller.h"
+#include "D4StreamUnMarshaller.h"
 
 #include "DDS.h"
 #include "util.h"
@@ -92,7 +92,7 @@ D4Enum::deserialize(UnMarshaller &um, DDS *, bool)
 {
     assert(typeid(um) == typeid(D4StreamUnMarshaller));
 
-    static_cast<D4StreamUnMarshaller*>(&um)->get_int64( d_buf ) ;
+    static_cast<D4StreamUnMarshaller*>(&um)->get_int64( &d_buf ) ;
 
     return false;
 }

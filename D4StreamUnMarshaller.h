@@ -42,18 +42,16 @@
 #include <crc.h>
 
 using std::istream;
-//using std::cout;
 
 #include "Type.h"
 #include "UnMarshaller.h"
 #include "InternalErr.h"
 
-namespace libdap
-{
+namespace libdap {
 
 class Vector;
 
-/** @brief Read data from the stream made by DAP4StreamMarshaller.
+/** @brief Read data from the stream made by D4StreamMarshaller.
  */
 class D4StreamUnMarshaller: public UnMarshaller {
 public:
@@ -75,18 +73,8 @@ private:
     void m_twidle_vector_elements(char *vals, unsigned int num, int width);
 
 public:
-#if 0
-    struct checksum {
-        unsigned char md[c_checksum_length];
-    };
-#endif
     D4StreamUnMarshaller(istream &in, bool is_stream_bigendian);
     virtual ~D4StreamUnMarshaller();
-
-#if 0
-    checksum get_checksum();
-    string get_checksum(checksum c);
-#endif
 
     Crc32::checksum get_checksum();
     string get_checksum(Crc32::checksum c);
@@ -142,5 +130,5 @@ public:
 
 } // namespace libdap
 
-#endif // I_DAP4StreamUnMarshaller_h
+#endif // I_D4StreamUnMarshaller_h
 

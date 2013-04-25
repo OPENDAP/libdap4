@@ -34,9 +34,9 @@ static bool debug = false;
 using namespace std;
 using namespace libdap;
 
-class DAP4UnMarshallerTest: public CppUnit::TestFixture {
+class D4UnMarshallerTest: public CppUnit::TestFixture {
 
-    CPPUNIT_TEST_SUITE( DAP4UnMarshallerTest );
+    CPPUNIT_TEST_SUITE( D4UnMarshallerTest );
 
     CPPUNIT_TEST(test_scalars);
     CPPUNIT_TEST(test_real_scalars);
@@ -67,7 +67,7 @@ class DAP4UnMarshallerTest: public CppUnit::TestFixture {
     }
 
 public:
-    DAP4UnMarshallerTest() {
+    D4UnMarshallerTest() {
     }
 
     void setUp() {
@@ -355,7 +355,7 @@ public:
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( DAP4UnMarshallerTest ) ;
+CPPUNIT_TEST_SUITE_REGISTRATION( D4UnMarshallerTest ) ;
 
 int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;

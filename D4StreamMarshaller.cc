@@ -52,26 +52,6 @@ using namespace std;
 
 namespace libdap {
 
-static inline bool is_host_big_endian()
-{
-#ifdef COMPUTE_ENDIAN_AT_RUNTIME
-
-    dods_int16 i = 0x0100;
-    char *c = reinterpret_cast<char*>(&i);
-    return *c;
-
-#else
-
-#ifdef WORDS_BIGENDIAN
-    return true;
-#else
-    return false;
-#endif
-
-#endif
-}
-
-
 // From the Google protobuf library
 inline uint8_t* WriteVarint64ToArrayInline(uint64_t value, uint8_t* target) {
   // Splitting into 32-bit pieces gives better performance on 32-bit
@@ -160,7 +140,7 @@ D4StreamMarshaller::D4StreamMarshaller(ostream &out, bool write_data) :
     // xdr_destroy is going to call free() for us.
     d_ieee754_buf = (char*)malloc(sizeof(dods_float64));
     if (!d_ieee754_buf)
-        throw InternalErr(__FILE__, __LINE__, "Could not create DAP4StreamMarshaller");
+        throw InternalErr(__FILE__, __LINE__, "Could not create D4StreamMarshaller");
     xdrmem_create(&d_scalar_sink, d_ieee754_buf, sizeof(dods_float64), XDR_ENCODE);
 
     // This will cause exceptions to be thrown on i/o errors. The exception
@@ -175,8 +155,7 @@ D4StreamMarshaller::~D4StreamMarshaller()
     // allocate it).
     free(d_ieee754_buf);
     d_ieee754_buf = 0;
-    xdr_destroy (&d_scalar_sink);
-
+    xdr_destroy(&d_scalar_sink);
 }
 
 /**
@@ -195,36 +174,7 @@ D4StreamMarshaller::get_endian() const
  */
 void D4StreamMarshaller::reset_checksum()
 {
-#if 0
-    if (EVP_DigestInit_ex(d_ctx, EVP_md5(), 0) == 0)
-        throw Error("Failed to initialize checksum object.");
-
-    d_checksum_ctx_valid = true;
-#endif
     d_checksum.Reset();
-}
-
-/**
- * Private method to compute the checksum.
- */
-void D4StreamMarshaller::m_compute_checksum()
-{
-#if 0
-    if (d_checksum_ctx_valid) {
-        // '...Final()' 'erases' the context so the next call without a reset
-        // returns a bogus value.
-        d_checksum_ctx_valid = false;
-
-        // For MD5, the array md holds the 16 digits of the hash as values.
-        // The loop below turns that into a nice 32-digit hex number; see
-        // put_checksum() for a version that writes the 128-bit value without
-        // that conversion.
-        unsigned int md_len;
-        int status = EVP_DigestFinal_ex(d_ctx, &d_checksum[0], &md_len);
-        if (status == 0 || md_len != c_checksum_length)
-            throw Error("Error computing the checksum.");
-    }
-#endif
 }
 
 /** Get the current checksum. It is not possible to continue computing the
@@ -234,18 +184,6 @@ void D4StreamMarshaller::m_compute_checksum()
  */
 string D4StreamMarshaller::get_checksum()
 {
-#if 0
-    if (d_checksum_ctx_valid) {
-        m_compute_checksum();
-    }
-
-    ostringstream oss;
-    oss.setf(ios::hex, ios::basefield);
-    for (unsigned int i = 0; i < c_checksum_length; ++i) {
-        oss << setfill('0') << setw(2) << (unsigned int) d_checksum[i];
-    }
-#endif
-
     ostringstream oss;
     oss.setf(ios::hex, ios::basefield);
     oss << setfill('0') << setw(8) << d_checksum.GetCrc32();
@@ -255,28 +193,12 @@ string D4StreamMarshaller::get_checksum()
 
 void D4StreamMarshaller::put_checksum()
 {
-#if 0
-    if (d_checksum_ctx_valid) {
-        m_compute_checksum();
-    }
-
-    d_out.write(reinterpret_cast<char*>(&d_checksum[0]), c_checksum_length);
-#endif
     Crc32::checksum chk = d_checksum.GetCrc32();
     d_out.write(reinterpret_cast<char*>(&chk), sizeof(Crc32::checksum));
 }
 
 void D4StreamMarshaller::checksum_update(const void *data, unsigned long len)
 {
-#if 0
-    if (!d_checksum_ctx_valid)
-        throw InternalErr(__FILE__, __LINE__, "Invalid checksum context (checksum update).");
-
-    if (EVP_DigestUpdate(d_ctx, data, len) == 0) {
-        d_checksum_ctx_valid = false;
-        throw Error("Error computing the checksum (checksum update).");
-    }
-#endif
     d_checksum.AddData(reinterpret_cast<const uint8_t*>(data), len);
 }
 
@@ -555,7 +477,7 @@ void D4StreamMarshaller::put_varying_vector(char *val, unsigned int num, int wid
 
 void D4StreamMarshaller::dump(ostream &strm) const
 {
-    strm << DapIndent::LMarg << "DAP4StreamMarshaller::dump - (" << (void *) this << ")" << endl;
+    strm << DapIndent::LMarg << "D4StreamMarshaller::dump - (" << (void *) this << ")" << endl;
 }
 
 } // namespace libdap

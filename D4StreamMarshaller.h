@@ -70,14 +70,7 @@ private:
     char *d_ieee754_buf; // used to serialize a float or double
 
     ostream &d_out;
-#if 0
-    EVP_MD_CTX * d_ctx; // jhrg 4/24/12
-#endif
     bool d_write_data; // jhrg 1/27/12
-#if 0
-    bool d_checksum_ctx_valid;
-    uint32_t d_checksum;
-#endif
 
     Crc32 d_checksum;
 
@@ -88,7 +81,6 @@ private:
     D4StreamMarshaller & operator=(const D4StreamMarshaller &);
 
     void m_serialize_reals(char *val, unsigned int num, int width, Type type);
-    void m_compute_checksum();
 
 public:
     D4StreamMarshaller(ostream &out, bool write_data = true);
@@ -151,4 +143,4 @@ public:
 
 } // namespace libdap
 
-#endif // I_DAP4StreamMarshaller_h
+#endif // I_D4StreamMarshaller_h

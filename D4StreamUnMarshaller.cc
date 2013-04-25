@@ -45,33 +45,13 @@
 
 namespace libdap {
 
-static inline bool is_host_big_endian()
-{
-#ifdef COMPUTE_ENDIAN_AT_RUNTIME
-
-    dods_int16 i = 0x0100;
-    char *c = reinterpret_cast<char*>(&i);
-    return *c;
-
-#else
-
-#ifdef WORDS_BIGENDIAN
-    return true;
-#else
-    return false;
-#endif
-
-#endif
-}
-
 D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in, bool is_stream_big_endian)
     : d_in( in ), d_buf(0)
 {
     // XDR is used to handle transforming non-ieee754 reals, nothing else.
+    d_buf = (char *) malloc(sizeof(dods_float64));
     if (!d_buf)
-        d_buf = (char *) malloc(sizeof(dods_float64));
-    if (!d_buf)
-        throw Error("Failed to allocate memory for data serialization.");
+        throw InternalErr(__FILE__, __LINE__, "Failed to allocate memory for data serialization.");
 
     xdrmem_create(&d_source, d_buf, sizeof(dods_float64), XDR_DECODE);
 
@@ -90,6 +70,9 @@ D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in, bool is_stream_big_endia
 
 D4StreamUnMarshaller::~D4StreamUnMarshaller( )
 {
+    free(d_buf);
+    d_buf = 0;
+    xdr_destroy(&d_source);
 }
 
 Crc32::checksum D4StreamUnMarshaller::get_checksum()
@@ -107,17 +90,6 @@ string D4StreamUnMarshaller::get_checksum(Crc32::checksum c)
     oss << setfill('0') << setw(8) << c;
 
     return oss.str();
-#if 0
-    unsigned char *md = reinterpret_cast<unsigned char*>(&c);
-
-    ostringstream oss;
-    oss.setf(ios::hex, ios::basefield);
-    for (unsigned int i = 0; i < c_checksum_length; ++i) {
-        oss << setfill('0') << setw(2) << (unsigned int)md[i];
-    }
-
-    return oss.str();
-#endif
 }
 
 void
@@ -407,7 +379,7 @@ D4StreamUnMarshaller::get_varying_vector( char **val, unsigned int &num, int wid
 void
 D4StreamUnMarshaller::dump(ostream &strm) const
 {
-    strm << DapIndent::LMarg << "DAP4StreamUnMarshaller::dump - ("
+    strm << DapIndent::LMarg << "D4StreamUnMarshaller::dump - ("
          << (void *)this << ")" << endl ;
 }
 
