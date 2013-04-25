@@ -510,7 +510,7 @@ void DDXParser::finish_variable(const char *tag, Type t, const char *expected)
         return;
     }
 
-    parent->add_var(btp);
+    parent->add_var_nocopy(btp);
 }
 
 /** @name SAX Parser Callbacks
@@ -570,7 +570,7 @@ void DDXParser::ddx_end_document(void * p)
     
     for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end(); ++i) {
         (*i)->set_parent(0);        // top-level vars have no parents
-        parser->dds->add_var(*i);
+        parser->dds->add_var_nocopy(*i);
     }
 
     parser->bt_stack.pop();
@@ -916,7 +916,7 @@ void DDXParser::ddx_sax2_end_element(void *p, const xmlChar *l,
             BaseType *parent = parser->bt_stack.top();
 
             if (parent->is_vector_type() || parent->is_constructor_type())
-                parent->add_var(btp);
+                parent->add_var_nocopy(btp);
             else
                 DDXParser::ddx_fatal_error(parser,
                                            "Tried to add the simple-type variable '%s' to a non-constructor type (%s %s).",

@@ -139,21 +139,15 @@ public:
     }
 
     void tearDown() {
-        delete df;
-        df = 0;
-        delete df1;
-        df1 = 0;
-        delete df2;
-        df2 = 0;
-        delete df3;
-        df3 = 0;
-        delete df4;
-        df4 = 0;
-        delete df5;
-        df5 = 0;
+        delete df; df = 0;
+        delete df1; df1 = 0;
+        delete df2; df2 = 0;
+        delete df3; df3 = 0;
+        delete df4; df4 = 0;
+        delete df5; df5 = 0;
 
-        delete das;
-        das = 0;
+        delete das; das = 0;
+        delete dds; dds = 0;
     }
 
     bool re_match(Regex &r, const string &s) {

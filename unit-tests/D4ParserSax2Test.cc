@@ -23,6 +23,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -31,6 +33,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 //#define DODS_DEBUG 1
+
+#include "GetOpt.h"
 
 #include "DMR.h"
 #include "XMLWriter.h"
@@ -49,7 +53,10 @@ using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
-namespace libdap {
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
 
 class D4ParserSax2Test : public TestFixture {
 private:
@@ -159,41 +166,57 @@ public:
     }
 
     CPPUNIT_TEST_SUITE( D4ParserSax2Test );
-#if 1
+
     CPPUNIT_TEST(test_empty_dmr);
     CPPUNIT_TEST(test_dimension_def);
     CPPUNIT_TEST(test_attribute_def);
     CPPUNIT_TEST(test_nested_attribute_def);
     CPPUNIT_TEST(test_enum_def);
     CPPUNIT_TEST(test_simple_var_def);
-#endif
     CPPUNIT_TEST(test_simple_var_with_attributes_def);
-#if 1
     CPPUNIT_TEST(test_all_simple_var_def);
     CPPUNIT_TEST(test_structure_def);
     CPPUNIT_TEST(test_structure_with_attributes_def);
     CPPUNIT_TEST(test_group_def);
     CPPUNIT_TEST(test_group_with_attributes_def);
-#endif
+
     CPPUNIT_TEST_SUITE_END();
-
 };
-
-}
 
 CPPUNIT_TEST_SUITE_REGISTRATION( D4ParserSax2Test );
 
-int
-main( int, char** )
-{
-    //xmlInitParser();
-
+int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;
-    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run( "", false ) ;
+    GetOpt getopt(argc, argv, "d");
+    char option_char;
+
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        default:
+            break;
+        }
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("D4ParserSax2Test::") + argv[i++];
+            DBG(cerr << "test: " << test << endl);
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     xmlMemoryDump();
 
-    return (wasSuccessful) ? 0 : 1;
+    return wasSuccessful ? 0 : 1;
 }
