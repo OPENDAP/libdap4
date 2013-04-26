@@ -22,7 +22,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -51,7 +51,7 @@ int test_variable_sleep_interval;
 //  Note: MS VC++ won't tolerate the embedded newlines in strings, hence the \n
 //  is explicit.
 static const char *s_as_string = \
-"BaseType \\(0x.*\\):\n\
+        "BaseType \\(0x.*\\):\n\
           _name: s\n\
           _type: Sequence\n\
           _dataset: \n\
@@ -104,62 +104,55 @@ public:
     ~SequenceTest() {}
 
     void setUp() { 
-	// Set up a simple sequence. Used to test ctor, assigment, et cetera.
-	s = new TestSequence("s");
-	s->add_var(new TestInt32("i1"));
-	s->add_var(new TestStr("str1"));
-	s->add_var(new TestInt32("i2"));
+        // Set up a simple sequence. Used to test ctor, assigment, et cetera.
+        s = new TestSequence("s");
+        s->add_var_nocopy(new TestInt32("i1"));
+        s->add_var_nocopy(new TestStr("str1"));
+        s->add_var_nocopy(new TestInt32("i2"));
         s->set_series_values(true);        
 
         // Set ss, a two level sequence
         ss = new TestSequence("ss");
-        ss->add_var(new TestInt32("i1"));
+        ss->add_var_nocopy(new TestInt32("i1"));
         ss->set_series_values(true);
-        
-        ps = new TestSequence("child_of_ss");
-        ps->add_var(new TestInt32("i2"));
-        ps->set_series_values(true);
-        
-        ss->add_var(ps);
-        
-	// Set up sss, used to test multi-level sequences
-	sss = new TestSequence("sss");
-	sss->add_var(new TestInt32("i1"));
-	
-	ts = new TestSequence("child_of_sss");
-	ts->add_var(new TestStr("str1"));
-	
-	tts = new TestSequence("child_of_child_of_sss");
-	tts->add_var(new TestInt32("i2"));
-	ts->add_var(tts);
 
-	sss->add_var(ts);	// This has to be here because add_var adds
-				// copies of its argument.
+        ps = new TestSequence("child_of_ss");
+        ps->add_var_nocopy(new TestInt32("i2"));
+        ps->set_series_values(true);
+
+        ss->add_var_nocopy(ps);
+
+        // Set up sss, used to test multi-level sequences
+        sss = new TestSequence("sss");
+        sss->add_var_nocopy(new TestInt32("i1"));
+
+        ts = new TestSequence("child_of_sss");
+        ts->add_var_nocopy(new TestStr("str1"));
+
+        tts = new TestSequence("child_of_child_of_sss");
+        tts->add_var_nocopy(new TestInt32("i2"));
+        ts->add_var_nocopy(tts);
+
+        sss->add_var_nocopy(ts);	// This has to be here because add_var_nocopy adds
+        // copies of its argument.
         sss->set_series_values(true);
-        
+
         TestTypeFactory ttf;
         dds = new DDS(&ttf);
-        dds->add_var(s);
-        dds->add_var(ss);
-        dds->add_var(sss);
+        dds->add_var_nocopy(s);
+        dds->add_var_nocopy(ss);
+        dds->add_var_nocopy(sss);
     } 
 
     void tearDown() { 
-	delete s; s = 0;
-        delete ss; ss = 0;
-        delete ps; ps = 0;
-	delete sss; sss = 0;
-	delete ts; ts = 0;
-	delete tts; tts = 0;
-        
         delete dds; dds = 0;
     }
 
     bool re_match(Regex &r, const char *s) {
-	int match_position = r.match(s, strlen(s));
-	DBG(cerr << "match position: " << match_position 
-	    << " string length: " << (int)strlen(s) << endl);
-	return match_position == (int)strlen(s);
+        int match_position = r.match(s, strlen(s));
+        DBG(cerr << "match position: " << match_position
+                << " string length: " << (int)strlen(s) << endl);
+        return match_position == (int)strlen(s);
     }
 
     CPPUNIT_TEST_SUITE( SequenceTest );
@@ -186,7 +179,7 @@ public:
         s->set_leaf_sequence();
         try {
             s->intern_data(ce, *dds);
-            
+
             // Test the first value in the first four rows
             BaseType *btp = s->var_value(0, 0);
             CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32);
@@ -203,7 +196,7 @@ public:
             CPPUNIT_ASSERT(!"Error in transfer_data_for_leaf_test1()");
         }
     }
-    
+
     void intern_data_test2() {
         ConstraintEvaluator ce;
         ss->set_send_p(true);
@@ -211,7 +204,7 @@ public:
         try {
             ss->intern_data(ce, *dds);
             DBG(ss->print_val(stdout));
-            
+
             // Test the first value in the first four rows
             BaseType *btp = ss->var_value(0, 0);
             CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32);
@@ -221,7 +214,7 @@ public:
             CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32768);
             btp = ss->var_value(3, 0);
             CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1048576);
-            
+
             // Look at some values in the inner sequence
             Sequence *sp = dynamic_cast<Sequence*>(ss->var_value(0, 1));
             CPPUNIT_ASSERT(sp);
@@ -233,7 +226,7 @@ public:
             CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32768);
             btp = sp->var_value(3, 0);
             CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1048576);
-            
+
             sp = dynamic_cast<Sequence*>(ss->var_value(3, 1));
             CPPUNIT_ASSERT(sp);
             btp = sp->var_value(0, 0);
@@ -250,7 +243,7 @@ public:
             CPPUNIT_ASSERT(!"Error in transfer_data_test2()");
         }
     }
-    
+
     void intern_data_test3() {
         ConstraintEvaluator ce;
         sss->set_send_p(true);
@@ -267,14 +260,14 @@ public:
             CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32768);
             btp = sss->var_value(3, 0);
             CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1048576);
-            
+
             // Look at some values in the inner-most sequence (skip the middle
             // sequence since I don't have a value() accessor for that yet.
             Sequence *sp = dynamic_cast<Sequence*>(sss->var_value(0, 1));
             CPPUNIT_ASSERT(sp);
             Sequence *ssp = dynamic_cast<Sequence*>(sp->var_value(0, 1));
             CPPUNIT_ASSERT(ssp);
-            
+
             btp = ssp->var_value(0, 0);
             CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32);
             btp = ssp->var_value(1, 0);
@@ -283,12 +276,12 @@ public:
             CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32768);
             btp = ssp->var_value(3, 0);
             CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 1048576);
-            
+
             sp = dynamic_cast<Sequence*>(sss->var_value(3, 1));
             CPPUNIT_ASSERT(sp);
             ssp = dynamic_cast<Sequence*>(sp->var_value(3, 1));
             CPPUNIT_ASSERT(ssp);
-            
+
             btp = ssp->var_value(0, 0);
             CPPUNIT_ASSERT(btp && dynamic_cast<Int32&>(*btp).value() == 32);
             btp = ssp->var_value(1, 0);
@@ -303,7 +296,7 @@ public:
             CPPUNIT_ASSERT(!"Error in transfer_data_test3()");
         }
     }
-    
+
     void intern_data_for_leaf_test() {
         ConstraintEvaluator ce;
         s->set_send_p(true);
@@ -311,7 +304,7 @@ public:
             Sequence::sequence_values_stack_t sequence_values_stack;
             sequence_values_stack.push(&s->d_values);
             s->intern_data_for_leaf(*dds, ce, sequence_values_stack);
-            
+
             // Test the first value in the first four rows
             BaseType *btp = s->var_value(0, 0);
             CPPUNIT_ASSERT(dynamic_cast<Int32&>(*btp).value() == 32);
@@ -328,18 +321,18 @@ public:
             CPPUNIT_ASSERT(!"Error in transfer_data_for_leaf_test()");
         }
     }
-    
+
     void test_set_leaf_sequence3() {
         // Test for the rejection of a Sequence with two sequences in it.
-        sss->add_var(ss);
+        sss->add_var_nocopy(ss);
         sss->set_send_p(true);
         try {
-             sss->set_leaf_sequence(1);
-             CPPUNIT_ASSERT(!"Should have thrown Error");
+            sss->set_leaf_sequence(1);
+            CPPUNIT_ASSERT(!"Should have thrown Error");
         }
         catch (Error &e) {
-             cerr << e.get_error_message() << endl;
-             CPPUNIT_ASSERT("Caught Error");
+            cerr << e.get_error_message() << endl;
+            CPPUNIT_ASSERT("Caught Error");
         }
     }
 
@@ -356,7 +349,7 @@ public:
         sss->set_leaf_sequence(1);
 
         CPPUNIT_ASSERT(!sss->is_leaf_sequence());
-        
+
         i = sss->var_begin();
         inner = dynamic_cast<Sequence*>(*++i);
         CPPUNIT_ASSERT(inner && inner->is_leaf_sequence());
@@ -371,21 +364,21 @@ public:
         s->set_send_p(true);
         s->set_leaf_sequence(1);
         CPPUNIT_ASSERT(s->is_leaf_sequence());
-        
+
         // Two level sequence
         ss->set_send_p(true);
         ss->set_leaf_sequence(1);
         CPPUNIT_ASSERT(!ss->is_leaf_sequence());
-        // add_var() _copies_ the object, so ps should not be used here.
+        // add_var_nocopy() _copies_ the object, so ps should not be used here.
         Sequence::Vars_iter i = ss->var_begin();
         Sequence *inner = dynamic_cast<Sequence*>(*++i);
         CPPUNIT_ASSERT(inner->type() == dods_sequence_c && inner->is_leaf_sequence());
-        
+
         // Three level sequence
         sss->set_send_p(true);
         sss->set_leaf_sequence(1);
         CPPUNIT_ASSERT(!sss->is_leaf_sequence());
-        
+
         i = sss->var_begin();
         inner = dynamic_cast<Sequence*>(*++i);
         CPPUNIT_ASSERT(inner && !inner->is_leaf_sequence());
@@ -394,21 +387,21 @@ public:
         Sequence *inner2 = dynamic_cast<Sequence*>(*++i);
         CPPUNIT_ASSERT(inner2 && inner2->is_leaf_sequence());
     }
-    
+
     void ctor_test() {
-	DBG(cerr << "s: " << s->toString() << endl);
-	CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
+        DBG(cerr << "s: " << s->toString() << endl);
+        CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
     }
 
     void assignment() {
-	Sequence ts2 = *s;
-	DBG(cerr << "ts2: " << ts2.toString() << endl);
-	CPPUNIT_ASSERT(re_match(s_regex, ts2.toString().c_str()));
+        Sequence ts2 = *s;
+        DBG(cerr << "ts2: " << ts2.toString() << endl);
+        CPPUNIT_ASSERT(re_match(s_regex, ts2.toString().c_str()));
     }
 
     void copy_ctor() {
-	Sequence s2 = *s;
-	CPPUNIT_ASSERT(re_match(s_regex, s2.toString().c_str()));
+        Sequence s2 = *s;
+        CPPUNIT_ASSERT(re_match(s_regex, s2.toString().c_str()));
     }
 };
 
