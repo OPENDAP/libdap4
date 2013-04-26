@@ -46,6 +46,13 @@
 using namespace CppUnit;
 using namespace std;
 
+#include"GetOpt.h"
+
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
+
 namespace libdap
 {
 
@@ -56,6 +63,8 @@ class HTTPConnectTest: public TestFixture {
     string etag;
     string lm;
     string netcdf_das_url;
+
+    char env_data[128];
 
   protected:
     bool re_match(Regex & r, const char *s) {
@@ -81,14 +90,13 @@ class HTTPConnectTest: public TestFixture {
             bool operator()(const string &arg) { return arg.find(d_header) == 0; }
     };
 
-  public:
-     HTTPConnectTest() {
-    }
-    ~HTTPConnectTest() {
-    }
+    public:
+    HTTPConnectTest() { }
+    ~HTTPConnectTest() { }
 
     void setUp() {
-        putenv((char*)"DODS_CONF=cache-testsuite/dodsrc");
+        DBG(cerr << "Setting the DODS_CONF env var" << endl);
+        setenv("DODS_CONF", "cache-testsuite/dodsrc", 1);
         http = new HTTPConnect(RCReader::instance());
 
         localhost_url = "http://test.opendap.org/test-304.html";
@@ -109,8 +117,12 @@ class HTTPConnectTest: public TestFixture {
     }
 
     void tearDown() {
+        // normal code doesn't do this - it happens at exit() but not doing
+        // this here make valgrind think there are leaks.
+        http->d_http_cache->delete_instance();
         delete http;
         http = 0;
+        unsetenv("DODS_CONF");
     }
 
     CPPUNIT_TEST_SUITE(HTTPConnectTest);
@@ -190,7 +202,7 @@ class HTTPConnectTest: public TestFixture {
         HTTPResponse *stuff = 0;
         char c;
         try {
-            DBG(cerr << "    First request..." << endl;)
+            DBG(cerr << "    First request..." << endl);
             stuff = http->fetch_url(localhost_url);
             DBG(cerr << "    Back from first request." << endl);
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
@@ -534,14 +546,36 @@ CPPUNIT_TEST_SUITE_REGISTRATION(HTTPConnectTest);
 
 }
 
-int main(int, char **)
-{
+int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    cerr << "These tests require a working network connection." << endl;
+    GetOpt getopt(argc, argv, "d");
+    char option_char;
 
-    bool wasSuccessful = runner.run("", false);
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        default:
+            break;
+        }
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("libdap::HTTPConnectTest::") + argv[i++];
+
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }
