@@ -50,6 +50,9 @@ static char rcsid[]not_used =
 // Should the www2id and id2www functions be used to encode attribute names?
 // Probably not... jhrg 11/16/11
 #define WWW_ENCODING 0
+// See the note for del_attr_table(). That method now deletes the contained
+// AttrTable.
+#define NEW_DEL_ATTR_TABLE_BEHAVIOR 1
 
 using std::cerr;
 using std::string;
@@ -203,16 +206,13 @@ void AttrTable::delete_attr_table()
 {
     for (Attr_iter i = attr_map.begin(); i != attr_map.end(); ++i) {
         delete *i;
-        *i = 0;
     }
     attr_map.clear();
 }
 
 AttrTable::~AttrTable()
 {
-    DBG(cerr << "Entering ~AttrTable (" << this << ")" << endl);
     delete_attr_table();
-    DBG(cerr << "Exiting ~AttrTable" << endl);
 }
 
 AttrTable &
@@ -770,6 +770,16 @@ AttrTable::get_attr_table(Attr_iter iter)
  The caller will gain control of the AttrTable* located at
  get_attr_table(iter) prior to this call.
 
+ @note The original semantics of this methods were odd. The caller was
+ responsible for deleting the AttrTable, but if they did that before calling
+ this, then memory corruption would happen (because this code accesses a
+ field of the table). If the caller did not delete the table, memory leaked.
+ The only correct way to call the method was to grab the pointer, call this
+ and then delete the pointer. I added a call to delete the contained
+ AttrTable pointer, which changes the behavior of this, but porbably in a
+ way that will fix leaks in existing code. This change can be reverted by
+ setting NEW_DEL_ATTR_TABLE_BEHAVIOR to false. jhrg 4/26/13
+
  @note calling this method <b>invalidates</b> the iterator \e iter.
  @param iter points to the entry to be deleted.
  @return The Attr_iter for the element following \e iter */
@@ -781,12 +791,17 @@ AttrTable::Attr_iter AttrTable::del_attr_table(Attr_iter iter)
     // the caller intends to delete/reuse the contained AttrTable,
     // so zero it out so it doesn't get deleted before we delete the entry
     // [mjohnson]
-    struct entry* e = *iter;
+    struct entry *e = *iter;
     // container no longer has a parent.
     if (e->attributes) {
         e->attributes->d_parent = 0;
+
+#if NEW_DEL_ATTR_TABLE_BEHAVIOR
+        delete e->attributes;
+#endif
+        e->attributes = 0;
     }
-    e->attributes = 0;
+
     delete e;
 
     return attr_map.erase(iter);
