@@ -393,6 +393,7 @@ void D4ParserSax2::finish_variable(const char *tag, Type t, const char *expected
 
     if (btp->type() != t) {
         D4ParserSax2::dmr_error(this, "Expected a %s variable.", expected);
+        delete btp;
         return;
     }
 
@@ -400,6 +401,7 @@ void D4ParserSax2::finish_variable(const char *tag, Type t, const char *expected
     if (parent && !parent->is_constructor_type()) {
         D4ParserSax2::dmr_error(this, "Tried to add the variable '%s' to a non-constructor type (%s %s).",
                 tag, top_basetype()->type_name().c_str(), top_basetype()->name().c_str());
+        delete btp;
         return;
     }
 
@@ -675,18 +677,23 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
                 break;
             }
 
-            // Pop the stack, the Group should be there
+            // Pop the stack, the Group should be there. If an error is found,
+            // make sure to delete the BaseType*.
             BaseType *btp = parser->top_basetype();
             parser->pop_basetype();
-            if (btp->type() != dods_group_c)
+            if (btp->type() != dods_group_c) {
                 D4ParserSax2::dmr_error(parser, "Expected to find a Group element on the stack.");
+                delete btp;
+            }
 
             // Link the group we just poped to the thing on the stack, which
             // should also be a group.
             BaseType *parent = parser->top_basetype();
-            if (parent && !parent->type() == dods_group_c)
+            if (parent && !parent->type() == dods_group_c) {
                 D4ParserSax2::dmr_error(parser, "Tried to add a Group to a non-group type '%s %s' (will continue with parse).",
                         parser->top_basetype()->type_name().c_str(), parser->top_basetype()->name().c_str());
+                delete btp;
+            }
             else
                 static_cast<D4Group*>(parent)->add_group_nocopy(static_cast<D4Group*>(btp));
 
@@ -818,10 +825,14 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
 
                if (parent && parent->is_constructor_type())
                     parent->add_var_nocopy(btp);
-                else
+                else {
                     D4ParserSax2::dmr_error(parser,
                             "Tried to add the simple-type variable '%s' to a non-constructor type (%s %s).", localname,
                             parser->top_basetype()->type_name().c_str(), parser->top_basetype()->name().c_str());
+                    // since the BaseType* was popped and not copied anywhere,
+                    // it must be deleted.
+                    delete btp;
+                }
             }
             else
                 D4ParserSax2::dmr_error(parser, "Expected an end tag for a simple type; found '%s' instead.", localname);
@@ -972,7 +983,7 @@ void D4ParserSax2::dmr_error(void *p, const char *msg, ...)
     parser->error_msg += "At line " + long_to_string(line) + ": " + string(str);
 }
 //@}
-
+#if 0
 /** Helper to delete allocated stuff. */
 void D4ParserSax2::delete_parser_locals()
 {
@@ -985,28 +996,39 @@ void D4ParserSax2::delete_parser_locals()
     delete d_dim_def;
     d_dim_def = 0;
 }
-
+#endif
 /** Clean up after a parse operation. If the parser encountered an error,
  * throw either an Error or InternalErr object.
  */
 void D4ParserSax2::cleanup_parse()
 {
-    try {
-        if (!context->wellFormed)
-            throw Error("Error: The DMR was not well formed. " + error_msg);
-        else if (!context->valid)
-            throw Error("Error: The DMR was not valid." + error_msg);
-        else if (get_state() == parser_error)
-            throw Error("Error: " + error_msg);
-        else if (get_state() == parser_fatal_error)
-            throw InternalErr("Internal Error: " + error_msg);
-    }
-    catch (...) {
-        delete_parser_locals();
-        throw;
+    bool wellFormed = context->wellFormed;
+    bool valid = context->valid;
+
+    context->sax = NULL;
+    xmlFreeParserCtxt(context);
+
+    delete d_enum_def;
+    d_enum_def = 0;
+
+    delete d_dim_def;
+    d_dim_def = 0;
+
+    // If there's an error, there may still be items on the stack at the
+    // end of the parse.
+    while (!btp_stack.empty()) {
+        delete top_basetype();
+        pop_basetype();
     }
 
-    delete_parser_locals();
+    if (!wellFormed)
+        throw Error("Error: The DMR was not well formed. " + error_msg);
+    else if (!valid)
+        throw Error("Error: The DMR was not valid." + error_msg);
+    else if (get_state() == parser_error)
+        throw Error("Error: " + error_msg);
+    else if (get_state() == parser_fatal_error)
+        throw InternalErr("Internal Error: " + error_msg);
 }
 
 /**

@@ -202,7 +202,9 @@ private:
     map<string, string> namespace_table;
 
     // Common cleanup code for intern()
+#if 0
     void delete_parser_locals();
+#endif
     void cleanup_parse();
 
     /** @name Parser Actions
