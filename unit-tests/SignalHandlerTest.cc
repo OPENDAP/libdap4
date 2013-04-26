@@ -35,14 +35,34 @@
 #include <process.h>
 #endif
  
+#include "GetOpt.h"
 #include "SignalHandler.h"
 #include "debug.h"
 
 using namespace CppUnit;
 using namespace std;
 
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
+
 namespace libdap
 {
+
+/** Test Handler. This is used with the SignalHandlerTest unit tests. */
+class TestHandler : public EventHandler
+{
+public:
+    int flag;
+
+    TestHandler() : flag(0) {}
+
+    virtual void handle_signal(int signum) {
+        DBG(cerr << "signal number " << signum << " received" << endl);
+        flag = 1;
+    }
+};
 
 class SignalHandlerTest : public TestFixture {
 private:
@@ -74,19 +94,24 @@ public:
 
     void remove_handler_test()
     {
+        sh->register_handler(SIGALRM, th);
         CPPUNIT_ASSERT(sh->remove_handler(SIGALRM) == th);
     }
 
     void alarm_test()
     {
-        // Ignore the alarm signal and then register our handler. Without
-        // setting alarm to ignore first the SignalHandler will call our
-        // EventHandler and then perform the default action for the signal,
-        // which is call exit() with EXIT_FAILURE.
-        signal(SIGALRM, SIG_IGN);
-        sh->register_handler(SIGALRM, th);
+        sh->register_handler(SIGALRM, th, true);
+        CPPUNIT_ASSERT(th->flag == 0);
         alarm(1);
-        sleep(10);
+
+        // sleep(2) also works _except_ when run with valgrind; reason
+        // unknown. jhrg 4/26/13
+        int start, end;
+        start = end = time(0);
+        while (end < start + 2)
+            end = time(0);
+
+        DBG(cerr << "Event handler 'flag' value: " << th->flag << endl);
         CPPUNIT_ASSERT(th->flag == 1);
     }
 
@@ -103,16 +128,37 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SignalHandlerTest);
 
 }
 
-int 
-main( int, char** )
-{
+int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;
-    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run( "", false ) ;
+    GetOpt getopt(argc, argv, "d");
+    char option_char;
+
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        default:
+            break;
+        }
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("libdap::SignalHandlerTest::") + argv[i++];
+            DBG(cerr << "Running " << test << endl);
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }
-
-
 

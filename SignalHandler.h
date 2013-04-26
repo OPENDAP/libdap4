@@ -67,8 +67,8 @@ class SignalHandler
 {
 private:
     // Ensure we're a Singleton.
-    SignalHandler()
-    {}
+    SignalHandler() {}
+    SignalHandler(const SignalHandler &) {}
 
     // Singleton pointer.
     static SignalHandler *d_instance;
@@ -85,7 +85,7 @@ private:
     // that already has a non-default signal handler for things like SIGINT.
     static Sigfunc *d_old_handlers[NSIG];
 
-    // Entry point adapter installed into sigaction(). This must be static
+    // Entry point adapter installed into sigaction(). This must be a static
     // method (or a regular C-function) to conform to sigaction's interface.
     // this is the part of SignalHandler that uses the Adapter pattern.
     static void dispatcher(int signum);
@@ -104,8 +104,7 @@ public:
     static SignalHandler *instance();
 
     ///
-    virtual ~SignalHandler()
-    {}
+    virtual ~SignalHandler() {}
 
     EventHandler *register_handler(int signum, EventHandler *eh,
                                    bool override = false);

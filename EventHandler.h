@@ -27,7 +27,6 @@
 #define event_handler_h
 
 #include <iostream>
-#include "debug.h"
 
 namespace libdap
 {
@@ -54,6 +53,9 @@ public:
     {}
 };
 
+#if 0
+// moved to SignalHandlerTest jhrg 4/26/13
+
 /** Test Handler. This is used with the SignalHandlerTest unit tests. */
 class TestHandler : public EventHandler
 {
@@ -63,12 +65,11 @@ public:
     TestHandler() : flag(0)
     {}
 
-    virtual void handle_signal(int signum)
-    {
-        DBG(std::cerr << "Got signal: " << signum << std::endl);
+    virtual void handle_signal(int ) {
         flag = 1;
     }
 };
+#endif
 
 } // namespace libdap
 
