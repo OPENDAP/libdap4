@@ -1,0 +1,54 @@
+
+{
+   putenv
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:malloc_set_zone_name
+   fun:_malloc_initialize
+   fun:malloc_create_zone
+   fun:putenv
+   ...
+}
+
+{
+   setenv
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:__setenv
+   fun:setenv
+   ...
+}
+
+{
+   setenv2
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:malloc_set_zone_name
+   fun:init__zone0
+   fun:setenv
+   ...
+}
+
+{
+   setenv3
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:malloc_set_zone_name
+   fun:_malloc_initialize
+   fun:malloc_create_zone
+   fun:init__zone0
+   fun:setenv
+   ...
+}
+
+{
+   find
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/bin/find
+   obj:/usr/bin/find
+   obj:/usr/bin/find
+   obj:/usr/bin/find
+   obj:*
+   obj:*
+}

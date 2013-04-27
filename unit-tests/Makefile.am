@@ -27,7 +27,7 @@ CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align
 
 if USE_VALGRIND
 TESTS_ENVIRONMENT=valgrind --quiet --trace-children=yes --error-exitcode=1 \
---leak-check=yes --dsymutil=yes
+--leak-check=yes --dsymutil=yes -suppressions=valgrind_suppressions.txt
 
 # skip using --log-file="valgrind-%p.log" because it always generates files
 # Might also drop --dsymutil=yes because it can take a long time to run.
