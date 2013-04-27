@@ -49,8 +49,10 @@
 #include <string>
 
 // These are instantiated only for DAP4 variables
+#if DAP4
 #include "D4Dimensions.h"
 #include "D4Maps.h"
+#endif
 
 #include "AttrTable.h"
 
