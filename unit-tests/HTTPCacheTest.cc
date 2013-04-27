@@ -31,6 +31,7 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
+#include <iterator>
 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -42,6 +43,8 @@
 #include "SignalHandler.h"	// Needed to clean up this singleton.
 #endif
 #include "RCReader.h"		// ditto
+#include"GetOpt.h"
+
 //#define DODS_DEBUG 1
 //#define DODS_DEBUG2 2
 #include "debug.h"
@@ -57,6 +60,11 @@ using namespace std;
 #define F_OK 0
 #define W_OK 2
 #endif
+
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
 
 namespace libdap {
 
@@ -119,7 +127,7 @@ public:
     {
         delete http_conn;
         http_conn = 0;
-        DBG2(cerr << "Entering the HTTPCacheTest dtor... "); DBG2(cerr << "exiting." << endl);
+        DBG2(cerr << "Entering the HTTPCacheTest dtor... ");DBG2(cerr << "exiting." << endl);
     }
 #if 0
     static inline bool
@@ -149,9 +157,8 @@ public:
         DBG2(cerr << "exiting tearDown" << endl);
     }
 
-CPPUNIT_TEST_SUITE(HTTPCacheTest)
-    ;
-#if 1
+    CPPUNIT_TEST_SUITE(HTTPCacheTest);
+
     CPPUNIT_TEST(constructor_test);
     CPPUNIT_TEST(cache_index_read_test);
     CPPUNIT_TEST(cache_index_parse_line_test);
@@ -169,13 +176,11 @@ CPPUNIT_TEST_SUITE(HTTPCacheTest)
     CPPUNIT_TEST(calculate_time_test);
     CPPUNIT_TEST(write_metadata_test);
     CPPUNIT_TEST(cache_response_test);
-#endif
 #if 0
     // This test does not seem to work in New Zealand - maybe because
     // of the dateline??? jhrg 1/31/13
     CPPUNIT_TEST(is_url_valid_test);
 #endif
-#if 1
     CPPUNIT_TEST(get_cached_response_test);
 
     CPPUNIT_TEST(perform_garbage_collection_test);
@@ -184,17 +189,16 @@ CPPUNIT_TEST_SUITE(HTTPCacheTest)
     CPPUNIT_TEST(get_conditional_response_headers_test);
     CPPUNIT_TEST(update_response_test);
     CPPUNIT_TEST(cache_gc_test);
-#endif
 
-    CPPUNIT_TEST_SUITE_END()
-    ;
+    CPPUNIT_TEST_SUITE_END()  ;
 
     void constructor_test()
     {
         DBG(cerr << "hc->cache_index: " << hc->d_http_cache_table->d_cache_index << endl);
-        CPPUNIT_ASSERT(hc->d_http_cache_table->d_cache_index=="cache-testsuite/dods_cache/.index");
+        CPPUNIT_ASSERT(hc->d_http_cache_table->d_cache_index == "cache-testsuite/dods_cache/.index");
         CPPUNIT_ASSERT(hc->d_cache_root == "cache-testsuite/dods_cache/");
-        DBG(cerr << "Current size: " << hc->d_http_cache_table->d_current_size << endl); DBG(cerr << "Block size: " << hc->d_http_cache_table->d_block_size << endl);
+        DBG(cerr << "Current size: " << hc->d_http_cache_table->d_current_size << endl);
+        DBG(cerr << "Block size: " << hc->d_http_cache_table->d_block_size << endl);
         CPPUNIT_ASSERT(hc->d_http_cache_table->d_current_size == hc->d_http_cache_table->d_block_size);
     }
 
@@ -700,15 +704,14 @@ CPPUNIT_TEST_SUITE(HTTPCacheTest)
             CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
             vector<string> h = c->get_conditional_request_headers(localhost_url);
-            DBG(copy(h.begin(), h.end(),
-                            ostream_iterator<string>(cout, "\n"))); DBG(cerr << "if none match location: " <<
-                    h[0].find("If-None-Match: ") << endl);
+            DBG(copy(h.begin(), h.end(), ostream_iterator<string>(cout, "\n")));
+            DBG(cerr << "if none match location: " << h[0].find("If-None-Match: ") << endl);
             // I know what the strings should start with...
             CPPUNIT_ASSERT(h[0].find("If-None-Match: ") == 0);
 
             h = c->get_conditional_request_headers(expired);
-            DBG(cerr << "Number of headers: " << h.size() << endl); DBG(copy(h.begin(), h.end(),
-                            ostream_iterator<string>(cout, "\n")));
+            DBG(cerr << "Number of headers: " << h.size() << endl);
+            DBG(copy(h.begin(), h.end(), ostream_iterator<string>(cout, "\n")));
             CPPUNIT_ASSERT(h[0].find("If-Modified-Since: ") == 0);
         }
         catch (Error &e) {
@@ -721,8 +724,9 @@ CPPUNIT_TEST_SUITE(HTTPCacheTest)
 
     void update_response_test()
     {
+        HTTPCache *c = 0;
         try {
-            HTTPCache *c = new HTTPCache("cache-testsuite/singleton_cache", true);
+            c = new HTTPCache("cache-testsuite/singleton_cache", true);
 
             if (!c->is_url_in_cache(localhost_url)) {
                 HTTPResponse *rs = http_conn->fetch_url(localhost_url);
@@ -744,8 +748,7 @@ CPPUNIT_TEST_SUITE(HTTPCacheTest)
 
             vector<string> orig_h;
             FILE *cr = c->get_cached_response(localhost_url, orig_h);
-            DBG(copy(orig_h.begin(), orig_h.end(),
-                            ostream_iterator<string>(cerr, "\n")));
+            DBG(copy(orig_h.begin(), orig_h.end(), ostream_iterator<string>(cerr, "\n")));
 
             // Before we merge, et c., check that the headers we're going to
             // poke in aren't already there.
@@ -764,18 +767,19 @@ CPPUNIT_TEST_SUITE(HTTPCacheTest)
             vector<string> updated_h;
             cr = c->get_cached_response(localhost_url, updated_h);
             c->release_cached_response(cr);
-            DBG(copy(updated_h.begin(), updated_h.end(),
-                            ostream_iterator<string>(cerr, "\n")));
+            DBG(copy(updated_h.begin(), updated_h.end(), ostream_iterator<string>(cerr, "\n")));
 
             // The XHTTPCacheTest header should be new, Date should replace the
             // existing Date header.
             CPPUNIT_ASSERT(orig_h.size() + 1 == updated_h.size());
             CPPUNIT_ASSERT(find(updated_h.begin(), updated_h.end(), "XHTTPCache: 123456789") != updated_h.end());
             CPPUNIT_ASSERT(find(updated_h.begin(), updated_h.end(), "Date: <invalid date>") != updated_h.end());
+
+            delete c;
         }
         catch (Error &e) {
-            cerr << "Exception: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(false);
+            delete c;
+            CPPUNIT_FAIL(e.get_error_message());
         }
 
         HTTPCache::delete_instance();
@@ -879,18 +883,43 @@ CPPUNIT_TEST_SUITE_REGISTRATION(HTTPCacheTest);
 
 } // namespace libdap
 
-int main(int, char**)
+int main(int argc, char*argv[])
 {
-    // Run cleanup here, so that the first run works (since this code now
-    // sets up the tests).
-    system("cd cache-testsuite && ./cleanup.sh");
-
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run("", false);
+    GetOpt getopt(argc, argv, "d");
+    char option_char;
 
-    cerr.flush();
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+            case 'd':
+                debug = 1;  // debug is a static global
+                break;
+            default:
+                break;
+        }
+
+    // Run cleanup here, so that the first run works (since this code now
+    // sets up the tests).
+    // This gives valgrind fits...
+    system("cd cache-testsuite && ./cleanup.sh");
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("libdap::HTTPCacheTest::") + argv[i++];
+
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }
+
