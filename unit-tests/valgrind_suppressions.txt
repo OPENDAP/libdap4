@@ -11,6 +11,26 @@
 }
 
 {
+   putenv2
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:__setenv
+   fun:putenv
+   ...
+}
+
+{
+   putenv3
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:malloc_set_zone_name
+   fun:_malloc_initialize
+   fun:malloc_create_zone
+   fun:putenv
+   ...
+}
+
+{
    setenv
    Memcheck:Leak
    fun:malloc_zone_malloc
