@@ -54,6 +54,7 @@ using namespace std;
 #include"GetOpt.h"
 
 static bool debug = false;
+static char dods_conf_ev[1024] = "";
 
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
@@ -74,6 +75,19 @@ public:
 
     void tearDown() {}
 
+    /** Put values in an environment variable. This should be used only
+     * for the env var 'DODS_CONF' and should never pass in values longer
+     * than 1024 characters. The 'value' must include the DODS_CONF= text.
+     *
+     * @note this is used because environment variables use static storage,
+     * so any value passed in from the heap that might be freed or from the
+     * stack that could be popped will cause a memory access error.
+     */
+    void my_putenv(const string &value) {
+        strncpy(dods_conf_ev, value.c_str(), 1024);;
+        putenv(dods_conf_ev);
+    }
+
     CPPUNIT_TEST_SUITE(RCReaderTest);
 
     CPPUNIT_TEST(check_env_var_test1);
@@ -93,17 +107,17 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
     void check_env_var_test1() {
-        putenv((char *)"DODS_CONF=");
+        my_putenv("DODS_CONF=");
         CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == "");
     }
 
     void check_env_var_test2() {
-        putenv((char*)"DODS_CONF=Nothing_sensible");
+        my_putenv("DODS_CONF=Nothing_sensible");
         CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == "");
     }
 
     void check_env_var_test3() {
-        putenv((char*)"DODS_CONF=/etc/passwd");
+        my_putenv("DODS_CONF=/etc/passwd");
         CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == "/etc/passwd");
     }
 
@@ -115,8 +129,8 @@ public:
 
         string rc = string(cwd) + string("/.dodsrc");
         ifstream ifp(rc.c_str()); // This should create .dodsrc in the CWD
-        string dc = string("DODS_CONF=") + string(cwd);
-        putenv(const_cast<char*>(dc.c_str()));
+
+        my_putenv(string("DODS_CONF=") + string(cwd));
 
         // Return existing file
         CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == rc);
@@ -129,11 +143,10 @@ public:
         char cwd[1024];
         getcwd(cwd, 1024);
 
-        string rc = string(cwd) + string("/.dodsrc");
-        string dc = string("DODS_CONF=") + string(cwd);
-        putenv(const_cast<char*>(dc.c_str()));
+        my_putenv(string("DODS_CONF=") + string(cwd));
 
         // Create the file.
+        string rc = string(cwd) + string("/.dodsrc");
         CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == rc);
         struct stat stat_info;
         CPPUNIT_ASSERT(stat(rc.c_str(), &stat_info) == 0 &&
@@ -144,7 +157,7 @@ public:
     void instance_test1() {
         // This test assumes that HOME *is* defined. We should find the
         // .dodsrc there. If it's not there, we should create one there.
-        putenv((char*)"DODS_CONF=");
+        my_putenv("DODS_CONF=");
         string home = getenv("HOME");
         if (*home.rbegin() != '/')
             home += "/";
@@ -168,12 +181,7 @@ public:
         DBG(cerr << "RC: " << rc << endl);
         remove(rc.c_str());	// make sure the RC does not exist
 
-        char dc[1024];
-        strncpy(dc, "DODS_CONF=", 1024);
-        strncat(dc, cwd, 1024-strlen("DODS_CONF="));
-        dc[1023] = '\0';
-        DBG(cerr << "dc: " << dc << endl);
-        putenv(dc);
+        my_putenv(string("DODS_CONF=") + string(cwd));
 
         RCReader::delete_instance();
         RCReader::initialize_instance();
@@ -191,7 +199,7 @@ public:
     void proxy_test1() {
         string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test1.rc" ;
         DBG(cerr << "rc: " << rc << endl);
-        putenv((char *)rc.c_str());
+        my_putenv(rc);
 
         RCReader::delete_instance();
         RCReader::initialize_instance();
@@ -216,7 +224,7 @@ public:
     void proxy_test2() {
         string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test2.rc" ;
         DBG(cerr << "rc: " << rc << endl);
-        putenv((char *)rc.c_str());
+        my_putenv(rc);
 
         RCReader::delete_instance();
         RCReader::initialize_instance();
@@ -238,7 +246,7 @@ public:
     void proxy_test3() {
         string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test3.rc" ;
         DBG(cerr << "rc: " << rc << endl);
-        putenv((char *)rc.c_str());
+        my_putenv(rc);
 
         try {
             RCReader::delete_instance();
@@ -254,7 +262,7 @@ public:
     void proxy_test4() {
         string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test4.rc" ;
         DBG(cerr << "rc: " << rc << endl);
-        putenv((char *)rc.c_str());
+        my_putenv(rc);
 
         try {
             RCReader::delete_instance();
@@ -282,7 +290,7 @@ public:
     void proxy_test5() {
         string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test5.rc" ;
         DBG(cerr << "rc: " << rc << endl);
-        putenv((char *)rc.c_str());
+        my_putenv(rc);
 
         try {
             RCReader::delete_instance();
@@ -313,8 +321,7 @@ public:
     void validate_ssl_test() {
         string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_1" ;
         DBG(cerr << "rc: " << rc << endl);
-
-        putenv((char *)rc.c_str());
+        my_putenv(rc);
 
         RCReader::delete_instance();
         RCReader::initialize_instance();
@@ -329,10 +336,10 @@ public:
         // string object) because the code casts away the const-ness of the
         // char* returned by c_str() and putenv does odd stuff with it. There's
         // nothing good about using env vars...
-        string rc2 = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_2" ;
-        DBG(cerr << "rc2: " << rc2 << endl);
+        rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_2" ;
+        DBG(cerr << "rc: " << rc << endl);
 
-        putenv((char *)rc2.c_str());
+        my_putenv(rc);
 
         RCReader::delete_instance();
         RCReader::initialize_instance();
@@ -344,10 +351,10 @@ public:
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 1);
 
         // Param cleared in file 
-        string rc3 = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodsrc_ssl_3" ;
-        DBG(cerr << "rc3: " << rc3 << endl);
+        rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodsrc_ssl_3" ;
+        DBG(cerr << "rc: " << rc << endl);
 
-        putenv((char *)rc3.c_str());
+        my_putenv(rc);
 
         RCReader::delete_instance();
         RCReader::initialize_instance();
