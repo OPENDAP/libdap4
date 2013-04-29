@@ -313,6 +313,7 @@ public:
     void validate_ssl_test() {
         string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_1" ;
         DBG(cerr << "rc: " << rc << endl);
+
         putenv((char *)rc.c_str());
 
         RCReader::delete_instance();
@@ -324,9 +325,14 @@ public:
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 1);
 
         // Param set in file
-        rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_2" ;
-        DBG(cerr << "rc: " << rc << endl);
-        putenv((char *)rc.c_str());
+        // Note that string rc, rc2, and rc3 are used (instead of reusing one
+        // string object) because the code casts away the const-ness of the
+        // char* returned by c_str() and putenv does odd stuff with it. There's
+        // nothing good about using env vars...
+        string rc2 = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_2" ;
+        DBG(cerr << "rc2: " << rc2 << endl);
+
+        putenv((char *)rc2.c_str());
 
         RCReader::delete_instance();
         RCReader::initialize_instance();
@@ -338,9 +344,10 @@ public:
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 1);
 
         // Param cleared in file 
-        rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodsrc_ssl_3" ;
-        DBG(cerr << "rc: " << rc << endl);
-        putenv((char *)rc.c_str());
+        string rc3 = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodsrc_ssl_3" ;
+        DBG(cerr << "rc3: " << rc3 << endl);
+
+        putenv((char *)rc3.c_str());
 
         RCReader::delete_instance();
         RCReader::initialize_instance();
