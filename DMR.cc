@@ -75,8 +75,9 @@ DMR::m_duplicate(const DMR &dmr)
     d_request_xml_base = dmr.d_request_xml_base;
 
     d_namespace = dmr.d_namespace;
-
+#if 0
     d_timeout = dmr.d_timeout;
+#endif
     d_max_response_size = dmr.d_max_response_size;
 
     d_root = new D4Group(*dmr.d_root); // Deep copy
@@ -97,7 +98,10 @@ DMR::m_duplicate(const DMR &dmr)
 DMR::DMR(D4BaseTypeFactory *factory, const string &name)
         : d_factory(factory), d_name(name), d_filename(""),
           d_dmr_version("1.0"), d_request_xml_base(""),
-          d_namespace(""), d_timeout(0), d_max_response_size(0), d_root(0)
+          d_namespace(""), d_max_response_size(0), d_root(0)
+#if 0
+d_timeout(0),
+#endif
 {
     // sets d_dap_version string and the two integer fields too
     set_dap_version("4.0");
@@ -112,7 +116,10 @@ DMR::DMR(D4BaseTypeFactory *factory, const string &name)
 DMR::DMR()
         : d_factory(0), d_name(""), d_filename(""),
           d_dmr_version("1.0"), d_request_xml_base(""),
-          d_namespace(""), d_timeout(0), d_max_response_size(0), d_root(0)
+          d_namespace(""), d_max_response_size(0), d_root(0)
+#if 0
+d_timeout(0),
+#endif
 {
     // sets d_dap_version string and the two integer fields too
     set_dap_version("4.0");
@@ -200,6 +207,7 @@ DMR::request_size(bool constrained)
     return d_root->request_size(constrained);
 }
 
+#if 0
 void
 DMR::timeout_on()
 {
@@ -215,6 +223,7 @@ DMR::timeout_off()
     d_timeout = alarm(0);
 #endif
 }
+#endif
 
 /**
  * Print the DAP4 DMR object.
