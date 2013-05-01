@@ -42,22 +42,22 @@ public:
 
 
 	string getName() { return name; }
-	void   setName(const string n){ name = n; }
+	void   setName(const string &n){ name = n; }
 
 	string getUsageString() { return usage; }
-	void   setUsageString(const string u){ usage = u; }
+	void   setUsageString(const string &u){ usage = u; }
 
 	string getDocUrl() { return doc_url; }
-	void   setDocUrl(const string url){ doc_url = url; }
+	void   setDocUrl(const string &url){ doc_url = url; }
 
 	string getRole() { return role; }
-	void   setRole(const string r){ role = r; }
+	void   setRole(const string &r){ role = r; }
 
 	string getDescriptionString(){ return description; }
-	void   setDescriptionString(const string desc){ description = desc; }
+	void   setDescriptionString(const string &desc){ description = desc; }
 
 	string getVersion(){ return version; }
-	void   setVersion(const string ver){ version = ver; }
+	void   setVersion(const string &ver){ version = ver; }
 
 	/**
 	 * If you are writing a function that can only operate on a particular kind of data, or one that relies on the presence
