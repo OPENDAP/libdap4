@@ -74,11 +74,10 @@
 #include "Float32.h"
 #include "Float64.h"
 #include "Str.h"
-//#include "Url.h"
 #include "Array.h"
-//#include "Sequence.h"
+
 #include "Error.h"
-//#include "parser.h"
+
 #include "util.h"
 #include "GNURegex.h"
 #include "debug.h"
@@ -111,10 +110,10 @@ string extract_string_argument(BaseType * arg)
     return s;
 }
 
-// @todo Replace new with vector<T> (vector<T> values(src_len);)
 template<class T> static void set_array_using_double_helper(Array * a, double *src, int src_len)
 {
     T *values = new T[src_len];
+    // TODO Replace new with vector<T> (vector<T> values(src_len);)
     for (int i = 0; i < src_len; ++i)
         values[i] = (T) src[i];
 
@@ -730,55 +729,6 @@ dir_exists(const string &dir)
     return (stat(dir.c_str(), &buf) == 0) && (buf.st_mode & S_IFDIR);
 }
 
-#if 0
-
-// UNTESTED 11/7/12
-
-/**
- * Is the directory writable?
- *
- * @param dir The pathname to test
- * @return True if the pathname is a directory and can be written by the
- * caller, false otherwise.
- */
-bool
-dir_writable(const string &dir)
-{
-    try {
-        string test = dir + "/test.txt";
-        ofstream ofs(dir.c_str());
-        ofs.write("test", 5);
-        ofs.close();
-        unlink(test.c_str());
-        return true;
-    }
-    catch (...) {
-        return false;
-    }
-}
-#endif
-
-#ifdef WIN32
-//  Sometimes need to buffer within an iostream under win32 when
-//  we want the output to go to a FILE *.  This is because
-//  it's not possible to associate an ofstream with a FILE *
-//  under the Standard ANSI C++ Library spec.  Unix systems
-//  don't follow the spec in this regard.
-void flush_stream(iostream ios, FILE *out)
-{
-    int nbytes;
-    char buffer[512];
-
-    ios.get(buffer, 512, NULL);
-    while ((nbytes = ios.gcount()) > 0) {
-        fwrite(buffer, 1, nbytes, out);
-        ios.get(buffer, 512, NULL);
-    }
-
-    return;
-}
-#endif
-
 // Jose Garcia
 void
 append_long_to_string(long val, int base, string &str_val)
@@ -1067,240 +1017,6 @@ dap_version()
 {
     return (string)"OPeNDAP DAP/" + libdap_version() + ": compiled on " + __DATE__ + ":" + __TIME__ ;
 }
-
-// Since Server4 can get compressed responses using Tomcat, bail on this
-// software (which complicates building under Win32). It can be turned on
-// for use with Server3 in configure.ac.
-
-#if COMPRESSION_FOR_SERVER3
-
-// Return true if the program deflate exists and is executable by user, group
-// and world. If this returns false the caller should assume that server
-// filter programs won't be able to find the deflate program and thus won't
-// be able to compress the return document.
-// NB: this works because this function uses the same rules as compressor()
-// (which follows) to look for deflate. 2/11/98 jhrg
-
-bool
-deflate_exists()
-{
-    DBG(cerr << "Entering deflate_exists...");
-
-    int status = false;
-    struct stat buf;
-
-#ifdef WIN32
-    string deflate = (string)libdap_root() + "\\bin\\deflate";
-#else
-    string deflate = (string)libdap_root() + "/sbin/deflate";
-#endif
-
-    // Check that the file exists...
-    // First look for deflate using DODS_ROOT (compile-time constant subsumed
-    // by an environment variable) and if that fails in the CWD which finds
-    // the program when it is in the same directory as the dispatch script
-    // and other server components. 2/11/98 jhrg
-    status = (stat(deflate.c_str(), &buf) == 0)
-#ifdef WIN32
-             || (stat(".\\deflate", &buf) == 0);
-#else
-             || (stat("./deflate", &buf) == 0);
-#endif
-
-    // and that it can be executed.
-#ifdef WIN32
-    status &= (buf.st_mode & _S_IEXEC);
-#else
-    status &= buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH);
-#endif
-    DBG(cerr << " returning " << (status ? "true." : "false.") << endl);
-    return (status != 0);
-}
-
-FILE *
-compressor(FILE *output, int &childpid)
-{
-#ifdef WIN32
-    //  There is no such thing as a "fork" under win32. This makes it so that
-    //  we have to juggle handles more aggressively. This code hasn't been
-    //  tested and shown to work as of 07/2000.
-    int pid, data[2];
-    int hStdIn, hStdOut;
-
-    if (_pipe(data, 512, O_BINARY | O_NOINHERIT) < 0) {
-        cerr << "Could not create IPC channel for compressor process"
-        << endl;
-        return NULL;
-    }
-
-
-    // This sets up for the child process, but it has to be reversed for the
-    // parent after the spawn takes place.
-
-    // Store stdin, stdout so we have something to restore to
-    hStdIn  = _dup(_fileno(stdin));
-    hStdOut = _dup(_fileno(stdout));
-
-    // Child is to read from read end of pipe
-    if (_dup2(data[0], _fileno(stdin)) != 0) {
-        cerr << "dup of child stdin failed" << endl;
-        return NULL;
-    }
-    // Child is to write its's stdout to file
-    if (_dup2(_fileno(output), _fileno(stdout)) != 0) {
-        cerr << "dup of child stdout failed" << endl;
-        return NULL;
-    }
-
-    // Spawn child process
-    string deflate = "deflate.exe";
-    if ((pid = _spawnlp(_P_NOWAIT, deflate.c_str(), deflate.c_str(),
-                        "-c", "5", "-s", NULL)) < 0) {
-        cerr << "Could not spawn to create compressor process" << endl;
-        return NULL;
-    }
-
-    // Restore stdin, stdout for parent and close duplicate copies
-    if (_dup2(hStdIn, _fileno(stdin)) != 0) {
-        cerr << "dup of stdin failed" << endl;
-        return NULL;
-    }
-    if (_dup2(hStdOut, _fileno(stdout)) != 0) {
-        cerr << "dup of stdout failed" << endl;
-        return NULL;
-    }
-    close(hStdIn);
-    close(hStdOut);
-
-    // Tell the parent that it reads from the opposite end of the
-    // place where the child writes.
-    close(data[0]);
-    FILE *input = fdopen(data[1], "w");
-    setbuf(input, 0);
-    childpid = pid;
-    return input;
-
-#else
-    FILE *ret_file = NULL ;
-
-    int pid, data[2];
-
-    if (pipe(data) < 0) {
-        cerr << "Could not create IPC channel for compressor process"
-        << endl;
-        return NULL;
-    }
-
-    if ((pid = fork()) < 0) {
-        cerr << "Could not fork to create compressor process" << endl;
-        return NULL;
-    }
-
-    // The parent process closes the write end of the Pipe, and creates a
-    // FILE * using fdopen(). The FILE * is used by the calling program to
-    // access the read end of the Pipe.
-
-    if (pid > 0) {   // Parent, pid is that of the child
-        close(data[0]);
-        ret_file = fdopen(data[1], "w");
-        setbuf(ret_file, 0);
-        childpid = pid;
-    }
-    else {   // Child
-        close(data[1]);
-        dup2(data[0], 0); // Read from the pipe...
-        dup2(fileno(output), 1); // Write to the FILE *output.
-
-        DBG(cerr << "Opening compression stream." << endl);
-
-        // First try to run deflate using DODS_ROOT (the value read from the
-        // DODS_ROOT environment variable takes precedence over the value set
-        // at build time. If that fails, try the CWD.
-        string deflate = (string)libdap_root() + "/sbin/deflate";
-        (void) execl(deflate.c_str(), "deflate", "-c",  "5", "-s", NULL);
-        (void) execl("./deflate", "deflate", "-c",  "5", "-s", NULL);
-        cerr << "Warning: Could not start compressor!" << endl;
-        cerr << "defalte should be in DODS_ROOT/etc or in the CWD!"
-        << endl;
-        _exit(127);  // Only here if an error occurred.
-    }
-
-    return ret_file ;
-#endif
-}
-
-#endif // COMPRESSION_FOR_SERVER3
-
-#if 0
-/** Read stuff from a file and dump it into a string. This assumes the file
-    holds character data only. Intended for testing...
-    @param fp Read from this file
-    @return Returns a string which holds the character data. */
-string
-file_to_string(FILE *fp)
-{
-    rewind(fp);
-    ostringstream oss;
-    char c;
-    while (fread(&c, 1, 1, fp))
-        oss << c;
-    return oss.str();
-}
-
-int
-wildcmp(const char *wild, const char *string)
-{
-  // Written by Jack Handy - jakkhandy@hotmail.com
-
-  if (!wild || !string)
-      return 0;
-
-  const char *cp = NULL, *mp = NULL;
-
-  while ((*string) && (*wild != '*')) {
-    if ((*wild != *string) && (*wild != '?')) {
-      return 0;
-    }
-    wild++;
-    string++;
-  }
-
-  while (*string) {
-    if (*wild == '*') {
-      if (!*++wild) {
-        return 1;
-      }
-      mp = wild;
-      cp = string+1;
-    } else if ((*wild == *string) || (*wild == '?')) {
-      wild++;
-      string++;
-    } else {
-      wild = mp;
-      string = cp++;
-    }
-  }
-
-  while (*wild == '*') {
-    wild++;
-  }
-  return !*wild;
-}
-#endif
-#if 0
-int wmatch(const char *pat, const char *s)
-{
-    if (!pat || !s)
-        return 0;
-
-  switch (*pat) {
-    case '\0': return (*s == '\0');
-    case '?': return (*s != '\0') && wmatch(pat+1, s+1);
-    case '*': return wmatch(pat+1, s) || (*s != '\0' && wmatch(pat, s+1));
-    default: return (*s == *pat) && wmatch(pat+1, s+1);
-  }
-}
-#endif
 
 } // namespace libdap
 
