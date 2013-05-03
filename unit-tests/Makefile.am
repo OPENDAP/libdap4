@@ -51,7 +51,8 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	DDSTest	DDXParserTest DODSFilterTest generalUtilTest 		\
 	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest 	\
 	SequenceTest SignalHandlerTest  MarshallerTest                  \
-	ResponseBuilderTest Keywords2Test 
+	ResponseBuilderTest Keywords2Test \
+	ServerFunctionsListUnitTest
 	
 # GridGeoConstraintTest ArrayGeoConstraintTest CEFunctionsTest 
 
@@ -170,6 +171,10 @@ dasT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
 #ArrayGeoConstraintTest_SOURCES = ArrayGeoConstraintTest.cc
 #ArrayGeoConstraintTest_LDADD =  ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
+
+
+ServerFunctionsListUnitTest_SOURCES = ServerFunctionsListUnitTest.cc
+ServerFunctionsListUnitTest_LDADD = ../libdap.la $(AM_LDADD)
 
 if DAP4_DEFINED
 
