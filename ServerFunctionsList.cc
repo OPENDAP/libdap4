@@ -1,10 +1,12 @@
 // ServerFunctionsList.cc
 
-// This file is part of bes, A C++ back-end server implementation framework
-// for the OPeNDAP Data Access Protocol.
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
 
 // Copyright (c) 2013 OPeNDAP, Inc.
-// Author: James Gallagher <jgallagher@opendap.org>
+// Author: Nathan Potter <npotter@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -21,6 +23,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
+
 #include <pthread.h>
 
 #include <iostream>
