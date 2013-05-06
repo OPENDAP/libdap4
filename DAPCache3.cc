@@ -59,6 +59,8 @@
 using namespace std;
 using namespace libdap;
 
+namespace libdap {
+
 // conversion factor
 static const unsigned long long BYTES_PER_MEG = 1048576ULL;
 
@@ -986,3 +988,4 @@ void DAPCache3::dump(ostream &strm) const
     DapIndent::UnIndent();
 }
 
+} // namespace libdap
