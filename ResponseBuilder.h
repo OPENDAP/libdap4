@@ -28,22 +28,6 @@
 
 #include <string>
 
-#if 0
-#ifndef _das_h
-#include "DAS.h"
-#endif
-
-#ifndef _dds_h
-#include "DDS.h"
-#endif
-
-
-#ifndef constraint_evaluator_h
-#include "ConstraintEvaluator.h"
-#endif
-
-#endif
-
 #ifndef _object_type_h
 #include "ObjectType.h"
 #endif
@@ -51,8 +35,6 @@
 #ifndef _encodingtype_h
 #include "EncodingType.h"
 #endif
-
-#define CACHE 0
 
 namespace libdap
 {
@@ -80,10 +62,6 @@ protected:
     std::string d_btp_func_ce;   /// The BTP functions, extracted from the CE
     int d_timeout;  		/// Response timeout after N seconds
     std::string d_default_protocol;	/// Version std::string for the library's default protocol version
-
-#if CACHE
-    DAPCache3 *d_cache;
-#endif
 
     ResponseCache *d_response_cache;
 
@@ -118,9 +96,6 @@ public:
 
     virtual ResponseCache *responseCache();
 
-#if CACHE
-    virtual bool is_valid(const std::string &cache_file_name);
-#endif
     virtual void send_das(std::ostream &out, DAS &das, bool with_mime_headers = true) const;
     virtual void send_das(std::ostream &out, DDS &dds, ConstraintEvaluator &eval,
                           bool constrained = false, bool with_mime_headers = true);
@@ -143,20 +118,10 @@ public:
                            bool with_mime_headers = true);
 
     virtual void cache_data_ddx(const std::string &cache_file_name, DDS &dds);
-#if CACHE
-    virtual void read_data_from_cache(FILE *data, DDS *fdds);
-    virtual DDS *get_cached_data_ddx(const std::string &cache_file_name, BaseTypeFactory *factory);
-
-    // This method is uses the above three and is used by send_das(), send_dds(), and send_data().
-    virtual DDS *read_cached_dataset(DDS &dds, ConstraintEvaluator & eval, std::string &cache_token);
-#endif
 
     void set_mime_ddx_boundary(std::ostream &out, const std::string &boundary,
         const std::string &start) const;
-#if 0
-    void set_mime_data_boundary(std::ostream &out, const std::string &boundary,
-    const std::string &cid, const std::string &endian, unsigned long long len) const;
-#endif
+
     // These functions are used both by the methods above and by other code.
     // However, Hyrax uses the OLFS to send the HTTP headers, so these functions
     // are never used in Hyrax. The BES may uses these in other contexts.
@@ -175,12 +140,12 @@ public:
                          EncodingType enc = x_plain,
                          const time_t last_modified = 0,
                          const std::string &protocol = "") const;
-#if 1
+
     void set_mime_multipart(std::ostream &out, const std::string &boundary,
     	const std::string &start, ObjectType type = unknown_type, EncodingType enc = x_plain,
     	const time_t last_modified = 0, const std::string &protocol = "",
     	const std::string &url = "") const;
-#endif
+
     void set_mime_error(std::ostream &out, int code = 404,
                         const std::string &reason = "Dataset not found",
                         const std::string &protocol = "") const;
