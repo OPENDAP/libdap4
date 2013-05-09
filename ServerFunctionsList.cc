@@ -1,12 +1,10 @@
 // ServerFunctionsList.cc
 
-// -*- mode: c++; c-basic-offset:4 -*-
-
-// This file is part of libdap, A C++ implementation of the OPeNDAP Data
-// Access Protocol.
+// This file is part of bes, A C++ back-end server implementation framework
+// for the OPeNDAP Data Access Protocol.
 
 // Copyright (c) 2013 OPeNDAP, Inc.
-// Author: Nathan Potter <npotter@opendap.org>
+// Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -24,8 +22,6 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#include <pthread.h>
-
 #include <iostream>
 #include <algorithm>
 
@@ -41,7 +37,6 @@ using namespace std;
 using namespace libdap;
 
 
-static pthread_once_t instance_control = PTHREAD_ONCE_INIT;
 
 namespace libdap {
 
@@ -82,7 +77,7 @@ ServerFunctionsList::~ServerFunctionsList() {
 
 
 ServerFunctionsList * ServerFunctionsList::TheList() {
-    pthread_once(&instance_control, initialize_instance);
+    initialize_instance();
     return d_instance;
 }
 
