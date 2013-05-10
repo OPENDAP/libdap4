@@ -23,6 +23,9 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+
+//#define DODS_DEBUG
+
 #include <config.h>
 
 #ifndef WIN32
@@ -41,6 +44,8 @@
 #include "GNURegex.h"
 #include "Error.h"
 #include "util.h"
+#include "debug.h"
+
 
 using namespace std;
 
@@ -49,20 +54,33 @@ namespace libdap {
 void
 Regex::init(const char *t)
 {
+    DBG( cerr << "Regex::init() - BEGIN" << endl);
+
+    DBG( cerr << "Regex::init() - creating new regex..." << endl);
     d_preg = static_cast<void*>(new regex_t);
+
+    DBG( cerr << "Regex::init() - Calling regcomp()..." << endl);
     int result = regcomp(static_cast<regex_t*>(d_preg), t, REG_EXTENDED);
 
     if  (result != 0) {
+        DBG( cerr << "Regex::init() - Call to regcomp FAILED" << endl);
+        DBG( cerr << "Regex::init() - Calling regerror()..." << endl);
         size_t msg_len = regerror(result, static_cast<regex_t*>(d_preg),
                                   static_cast<char*>(NULL),
                                   static_cast<size_t>(0));
+
+        DBG( cerr << "Regex::init() - Creating message" << endl);
         vector<char> msg(msg_len+1);
         //char *msg = new char[msg_len+1];
+        DBG( cerr << "Regex::init() - Calling regerror() again..." << endl);
         regerror(result, static_cast<regex_t*>(d_preg), &msg[0], msg_len);
+        DBG( cerr << "Regex::init() - Throwing libdap::Error" << endl);
         throw Error(string("Regex error: ") + string(&msg[0]));
         //delete[] msg;
         //throw e;
     }
+    DBG( cerr << "Regex::init() - Call to regcomp() SUCCEEDED" << endl);
+    DBG( cerr << "Regex::init() - END" << endl);
 }
 
 Regex::~Regex()

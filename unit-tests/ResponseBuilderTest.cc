@@ -437,35 +437,28 @@ Content-Encoding: binary\r\n\
     }
 
     void invoke_server_side_function_test() {
-        ConstraintEvaluator ce;
-
-        try {
-            string baseline = readTestBaseline((string) TEST_SRC_DIR + "/server-testsuite/response_builder_invoke_server_side_function_test.xml");
-            //Regex r1(baseline.c_str());
-
-        }
-        catch (...){
-            CPPUNIT_FAIL("AN EXCEPTION WAS THROWN");
-
-        }
-
         DBG( cerr << endl);
         DBG( cerr << "invoke_server_side_function_test():" << endl);
-        DBG(cerr << "  dataset: '" << df6->get_dataset_name() << "'" << endl);
-        DBG(cerr << "  ce:      '" << df6->get_ce() << "'" << endl);
 
         try {
+            ConstraintEvaluator ce;
+            string baseline = readTestBaseline((string) TEST_SRC_DIR + "/server-testsuite/response_builder_invoke_server_side_function_test.xml");
+            DBG( cerr << "---- start baseline ----" << endl << baseline << "---- end baseline ----" << endl);
+            DBG(cerr << "  dataset: '" << df6->get_dataset_name() << "'" << endl);
+            DBG(cerr << "  ce:      '" << df6->get_ce() << "'" << endl);
+
+            Regex r1(baseline.c_str());
+
             DBG(cerr << "  calling send_data()" << endl);
             df6->send_data(oss, *dds, ce);
 
+            DBG( cerr << "---- start result ----" << endl << oss.str() << "---- end result ----" << endl);
 
-            DBG(cerr << "  DATA: " << endl << oss.str() << endl);
 
-            //CPPUNIT_ASSERT(re_match(r1, baseline));
-            CPPUNIT_ASSERT(true);
+            CPPUNIT_ASSERT(re_match(r1, baseline));
 
         } catch (Error &e) {
-            CPPUNIT_FAIL("Error: " + e.get_error_message());
+            CPPUNIT_FAIL("Caught libdap::Error!! Message:" + e.get_error_message());
         }
     }
 
