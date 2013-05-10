@@ -443,12 +443,13 @@ Content-Encoding: binary\r\n\
 
         DBG( cerr << endl);
         DBG( cerr << "invoke_server_side_function_test():" << endl);
-
         DBG(cerr << "  dataset: '" << df6->get_dataset_name() << "'" << endl);
         DBG(cerr << "  ce:      '" << df6->get_ce() << "'" << endl);
 
         try {
+            DBG(cerr << "  calling send_data()" << endl);
             df6->send_data(oss, *dds, ce);
+
 
             DBG(cerr << "  DATA: " << endl << oss.str() << endl);
 
