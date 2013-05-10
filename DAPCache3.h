@@ -121,8 +121,11 @@ private:
     typedef std::map<string, int> FilesAndLockDescriptors;
     FilesAndLockDescriptors d_locks;
 
-public:
+    // Life-cycle control
     virtual ~DAPCache3() { }
+    void delete_instance();
+
+public:
 
     string get_cache_file_name(const string &src, bool mangle = true);
 

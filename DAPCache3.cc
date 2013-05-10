@@ -42,7 +42,7 @@
 
 #include "DAPCache3.h"
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "InternalErr.h"
 #include "DapIndent.h"
@@ -106,9 +106,10 @@ BESCache3::get_instance(BESKeys *keys, const string &cache_dir_key, const string
 DAPCache3 *
 DAPCache3::get_instance(const string &cache_dir, const string &prefix, unsigned long long size)
 {
-    if (d_instance == 0)
+    if (d_instance == 0){
         d_instance = new DAPCache3(cache_dir, prefix, size);
-
+        atexit(delete_instance);
+    }
     return d_instance;
 }
 
@@ -494,6 +495,13 @@ DAPCache3::DAPCache3(const string &cache_dir, const string &prefix, unsigned lon
     m_initialize_cache_info();
 }
 
+void DAPCache3::delete_instance() {
+    DBG(cerr << "DAPCache3::delete_instance() - Deleting singleton DAPCache3 instance." << endl);
+    delete d_instance;
+    d_instance = 0;
+}
+
+
 /** Build the name of file that will holds the uncompressed data from
  * 'src' in the cache.
  *
@@ -526,6 +534,9 @@ string DAPCache3::get_cache_file_name(const string &src, bool mangle)
             target = target.substr(0, last_dot);
         }
     }
+    DBG(cerr << "  d_cache_dir: '" << d_cache_dir << "'" << endl);
+    DBG(cerr << "  d_prefix:    '" << d_prefix << "'" << endl);
+    DBG(cerr << "  target:      '" << target  << "'" << endl);
 
     return d_cache_dir + "/" + d_prefix + DAPCache3::DAP_CACHE_CHAR + target;
 }
