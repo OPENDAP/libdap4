@@ -437,9 +437,17 @@ Content-Encoding: binary\r\n\
     }
 
     void invoke_server_side_function_test() {
-        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/server-testsuite/response_builder_invoke_server_side_function_test.xml");
-        Regex r1(baseline.c_str());
         ConstraintEvaluator ce;
+
+        try {
+            string baseline = readTestBaseline((string) TEST_SRC_DIR + "/server-testsuite/response_builder_invoke_server_side_function_test.xml");
+            //Regex r1(baseline.c_str());
+
+        }
+        catch (...){
+            CPPUNIT_FAIL("AN EXCEPTION WAS THROWN");
+
+        }
 
         DBG( cerr << endl);
         DBG( cerr << "invoke_server_side_function_test():" << endl);
@@ -453,6 +461,7 @@ Content-Encoding: binary\r\n\
 
             DBG(cerr << "  DATA: " << endl << oss.str() << endl);
 
+            //CPPUNIT_ASSERT(re_match(r1, baseline));
             CPPUNIT_ASSERT(true);
 
         } catch (Error &e) {
