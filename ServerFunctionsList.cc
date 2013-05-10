@@ -59,6 +59,7 @@ void ServerFunctionsList::initialize_instance() {
  * Private static function can only be called by friends andf pThreads code.
  */
 void ServerFunctionsList::delete_instance() {
+    DBG(cerr << "ServerFunctionsList::delete_instance() - Deleting singleton ServerFunctionList instance." << endl);
     delete d_instance;
     d_instance = 0;
 }
@@ -81,6 +82,7 @@ ServerFunctionsList::~ServerFunctionsList() {
 
 ServerFunctionsList * ServerFunctionsList::TheList() {
     initialize_instance();
+    DBG(cerr << "ServerFunctionsList::TheList() - Returning singleton ServerFunctionList instance." << endl);
     return d_instance;
 }
 
