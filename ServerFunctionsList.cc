@@ -25,10 +25,12 @@
 #include <iostream>
 #include <algorithm>
 
+#define DODS_DEBUG
+
 #include <expr.h>
+#include "debug.h"
 
 #include "ServerFunctionsList.h"
-#include "debug.h"
 
 using std::cerr;
 using std::string;
@@ -43,10 +45,11 @@ namespace libdap {
 ServerFunctionsList *ServerFunctionsList::d_instance = 0 ;
 
 /**
- * private static that only get's called once by dint of...    EXPLAIN
+ * private static that only gets called once in the life cycle of the process.
  */
 void ServerFunctionsList::initialize_instance() {
     if (d_instance == 0) {
+        DBG(cerr << "ServerFunctionsList::initialize_instance() - Creating singleton ServerFunctionList instance." << endl);
         d_instance = new ServerFunctionsList;
         atexit(delete_instance);
     }
@@ -93,6 +96,7 @@ ServerFunctionsList * ServerFunctionsList::TheList() {
  */
 void ServerFunctionsList::add_function(ServerFunction *func )
 {
+    DBG(cerr << "ServerFunctionsList::add_function() - Adding ServerFunction " << func->getName() << endl);
     d_func_list.insert(std::make_pair(func->getName(),func));
 }
 
@@ -209,6 +213,7 @@ bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) c
     ret = d_func_list.equal_range(name);
     for (std::multimap<std::string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_bool_func())){
+            DBG(cerr << "ServerFunctionsList::find_function() - Found boolean function " << f->getName() << endl);
             return true;
         }
     }
@@ -258,11 +263,13 @@ bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
 
     if (d_func_list.empty())
         return false;
+    DBG(cerr << "ServerFunctionsList::find_function() - Looking for ServerFunction '" << name << "'" << endl);
 
     std::pair <std::multimap<string,libdap::ServerFunction *>::const_iterator, std::multimap<string,libdap::ServerFunction *>::const_iterator> ret;
     ret = d_func_list.equal_range(name);
     for (std::multimap<string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_btp_func())){
+            DBG(cerr << "ServerFunctionsList::find_function() - Found basetype function " << f->getName() << endl);
             return true;
         }
     }
@@ -318,7 +325,8 @@ bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
     ret = d_func_list.equal_range(name);
     for (std::multimap<string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_proj_func())){
-            return true;
+            DBG(cerr << "ServerFunctionsList::find_function() - Found projection function " << f->getName() << endl);
+           return true;
         }
     }
     return false;
