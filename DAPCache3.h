@@ -123,9 +123,12 @@ private:
 
     // Life-cycle control
     virtual ~DAPCache3() { }
-    void delete_instance();
+    static void delete_instance();
 
 public:
+    static DAPCache3 *get_instance(const string &cache_dir, const string &prefix, unsigned long long size);
+    static DAPCache3 *get_instance();
+
 
     string get_cache_file_name(const string &src, bool mangle = true);
 
@@ -148,8 +151,6 @@ public:
 #if 0
     static BESCache3 *get_instance(BESKeys *keys, const string &cache_dir_key, const string &prefix_key, const string &size_key);
 #endif
-    static DAPCache3 *get_instance(const string &cache_dir, const string &prefix, unsigned long long size);
-    static DAPCache3 *get_instance();
 
     virtual void dump(ostream &strm) const ;
 };
