@@ -39,9 +39,13 @@
 #include "ObjectType.h"
 #include "EncodingType.h"
 #include "ResponseBuilder.h"
+#include "ServerFunction.h"
+#include "ServerFunctionsList.h"
 #include "DAS.h"
 #include "DDS.h"
+#include "Str.h"
 //#include "ce_functions.h"
+#include "GetOpt.h"
 
 #include "GNURegex.h"
 #include "util.h"
@@ -59,11 +63,56 @@ using namespace libdap;
 
 int test_variable_sleep_interval = 0;
 
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
+
+
+void
+rb_test_function(int, BaseType *[], DDS &dds, BaseType **btpp)
+{
+    string xml_value = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+
+
+
+    ServerFunction *sf;
+    string functionType;
+
+    ServerFunctionsList *sfList = libdap::ServerFunctionsList::TheList();
+    std::multimap<string,libdap::ServerFunction *>::iterator begin = sfList->begin();
+    std::multimap<string,libdap::ServerFunction *>::iterator end = sfList->end();
+    std::multimap<string,libdap::ServerFunction *>::iterator sfit;
+
+    xml_value += "<ds:functions xmlns:ds=\"http://xml.opendap.org/ns/DAP/4.0/dataset-services#\">\n";
+    for(sfit=begin; sfit!=end; sfit++){
+        sf = sfList->getFunction(sfit);
+        if(sf->canOperateOn(dds)){
+            xml_value += "    <ds:function  name=\"" + sf->getName() +"\""+
+                         " version=\"" + sf->getVersion() + "\""+
+                         " type=\"" + sf->getTypeString() + "\""+
+                         " role=\"" + sf->getRole() + "\""+
+                         " >\n" ;
+            xml_value += "        <ds:Description href=\"" + sf->getDocUrl() + "\">" + sf->getDescriptionString() + "</ds:Description>\n";
+            xml_value += "    </ds:function>\n";
+        }
+    }
+    xml_value += "</functions>\n";
+
+    Str *response = new Str("version");
+
+    response->set_value(xml_value);
+    *btpp = response;
+    return;
+}
+
+
+
 namespace libdap {
 
 class ResponseBuilderTest: public TestFixture {
 private:
-    ResponseBuilder *df, *df1, *df2, *df3, *df4, *df5;
+    ResponseBuilder *df, *df1, *df2, *df3, *df4, *df5, *df6;
 
     AttrTable *cont_a;
     DAS *das;
@@ -72,14 +121,45 @@ private:
     time_t now;
     char now_array[256];
 
+    void loadServerSideFunction(){
+        libdap::ServerFunction *rbSSF = new libdap::ServerFunction(
+
+            // The name of the function as it will appear in a constraint expression
+            "rbFuncTest",
+
+            // The version of the function
+            "1.0",
+
+            // A brief description of the function
+            "Returns a list of the functions held in the ServerFunctionsList object",
+
+            // A usage/syntax statement
+            "rbFuncTest()",
+
+            // A URL that points two a web page describing the function
+            "http://docs.opendap.org/index.php/Hyrax:_Server_Side_Functions",
+
+            // A URI that defines the role of the function
+            "http://services.opendap.org/dap4/unit-tests/ResponseBuilderTest",
+
+            // A pointer to the helloWorld() function
+            rb_test_function
+        );
+        // Here we add our new instance of libdap::ServerFunction to the libdap::ServerFunctionsList.
+        libdap::ServerFunctionsList::TheList()->add_function(rbSSF);
+
+    }
+
 public:
-    ResponseBuilderTest() {
+    ResponseBuilderTest(): cont_a(0), df(0), df1(0), df2(0), df3(0), df4(0), df5(0), df6(0), dds(0), das(0) {
         now = time(0);
         ostringstream time_string;
         time_string << (int) now;
         strncpy(now_array, time_string.str().c_str(), 255);
         now_array[255] = '\0';
+
     }
+
 
     ~ResponseBuilderTest() {
     }
@@ -113,6 +193,17 @@ public:
         df5 = new ResponseBuilder();
         df5->set_dataset_name("nowhere%5Bmydisk%5Dmyfile");
         df5->set_ce("u%5B0%5D");
+
+
+
+        // Try a server side function call.
+        loadServerSideFunction();
+        df6 = new ResponseBuilder();
+        df6->set_dataset_name((string) TEST_SRC_DIR + "/server-testsuite/bears.data");
+        df6->set_ce("rbFuncTest()");
+        df6->set_timeout(1);
+
+
 
         cont_a = new AttrTable;
         cont_a->append_attr("size", "Int32", "7");
@@ -240,6 +331,8 @@ Dataset \\{\n\
             CPPUNIT_FAIL("Error: " + e.get_error_message());
         }
     }
+
+
 #if 0
     void send_data_ddx_test() {
         string baseline = readTestBaseline((string) TEST_SRC_DIR + "/tmp.xml"); //"/ddx-testsuite/response_builder_send_data_ddx_test_3.xml");
@@ -342,6 +435,27 @@ Content-Encoding: binary\r\n\
         CPPUNIT_ASSERT(df3->get_timeout() == 1);
         CPPUNIT_ASSERT(df1->get_timeout() == 0);
     }
+
+    void invoke_server_side_function_test() {
+        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/ddx-testsuite/response_builder_send_ddx_test.xml");
+        Regex r1(baseline.c_str());
+        ConstraintEvaluator ce;
+
+        try {
+            df6->send_data(oss, *dds, ce);
+
+            DBG(cerr << "DATA: " << oss.str() << endl);
+
+            CPPUNIT_ASSERT(re_match(r1, baseline));
+            //CPPUNIT_ASSERT(re_match(r1, oss.str()));
+            //oss.str("");
+        } catch (Error &e) {
+            CPPUNIT_FAIL("Error: " + e.get_error_message());
+        }
+    }
+
+
+
 #if 0
     // The server functions have been moved out of libdap and into a bes
     // module.
@@ -410,6 +524,7 @@ CPPUNIT_TEST_SUITE( ResponseBuilderTest );
         // CPPUNIT_TEST(send_data_ddx_test);
         // CPPUNIT_TEST(send_data_ddx_test2);
         CPPUNIT_TEST(escape_code_test);
+        CPPUNIT_TEST(invoke_server_side_function_test);
 
 #if 0
         // not written yet 9/14/12
@@ -428,12 +543,35 @@ CPPUNIT_TEST_SUITE( ResponseBuilderTest );
 CPPUNIT_TEST_SUITE_REGISTRATION(ResponseBuilderTest);
 }
 
-int main(int, char**) {
+int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run("", false);
+    GetOpt getopt(argc, argv, "d");
+    char option_char;
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        default:
+            break;
+        }
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("libdap::ResponseBuilderTest::") + argv[i++];
+
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }
-
