@@ -25,7 +25,7 @@
 #include <iostream>
 #include <algorithm>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include <expr.h>
 #include "debug.h"
@@ -37,8 +37,6 @@ using std::string;
 using std::endl;
 using namespace std;
 using namespace libdap;
-
-
 
 namespace libdap {
 
