@@ -215,7 +215,7 @@ bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) c
     ret = d_func_list.equal_range(name);
     for (std::multimap<std::string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_bool_func())){
-            DBG(cerr << "ServerFunctionsList::find_function() - Found boolean function " << f->getName() << endl);
+            DBG(cerr << "ServerFunctionsList::find_function() - Found boolean function " << it->second->getName() << endl);
             return true;
         }
     }
@@ -271,7 +271,7 @@ bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
     ret = d_func_list.equal_range(name);
     for (std::multimap<string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_btp_func())){
-            DBG(cerr << "ServerFunctionsList::find_function() - Found basetype function " << f->getName() << endl);
+            DBG(cerr << "ServerFunctionsList::find_function() - Found basetype function " << it->second->getName() << endl);
             return true;
         }
     }
@@ -327,7 +327,7 @@ bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
     ret = d_func_list.equal_range(name);
     for (std::multimap<string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_proj_func())){
-            DBG(cerr << "ServerFunctionsList::find_function() - Found projection function " << f->getName() << endl);
+            DBG(cerr << "ServerFunctionsList::find_function() - Found projection function " << it->second->getName() << endl);
            return true;
         }
     }
