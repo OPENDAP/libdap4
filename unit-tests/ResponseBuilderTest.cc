@@ -441,10 +441,16 @@ Content-Encoding: binary\r\n\
         Regex r1(baseline.c_str());
         ConstraintEvaluator ce;
 
+        DBG( cerr << endl);
+        DBG( cerr << "invoke_server_side_function_test():" << endl);
+
+        DBG(cerr << "  dataset: '" << df6->get_dataset_name() << "'" << endl);
+        DBG(cerr << "  ce:      '" << df6->get_ce() << "'" << endl);
+
         try {
             df6->send_data(oss, *dds, ce);
 
-            DBG(cerr << "DATA: " << oss.str() << endl);
+            DBG(cerr << "  DATA: " << endl << oss.str() << endl);
 
             CPPUNIT_ASSERT(true);
 
