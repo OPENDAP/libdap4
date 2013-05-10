@@ -59,10 +59,6 @@ namespace libdap {
  command line arguments. */
 void ResponseCache::initialize()
 {
-    // Cache size is given in megabytes and later converted to bytes
-    // for internal use.
-    d_cache = 0;
-
     // The directory is a low-budget config param since
     // the cache will only be used if the directory exists.
     if (dir_exists(FUNCTION_CACHE)) {

@@ -103,7 +103,7 @@ ResponseCache *
 ResponseBuilder::responseCache()
 {
 	if (!d_response_cache) d_response_cache = new ResponseCache();
-	return d_response_cache;
+	return d_response_cache->is_available() ? d_response_cache: 0;
 }
 
 /** Return the entire constraint expression in a string.  This

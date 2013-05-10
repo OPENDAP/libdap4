@@ -55,8 +55,10 @@ private:
     void initialize();
 
 public:
-    ResponseCache() { initialize(); }
+    ResponseCache() : d_cache(0) { initialize(); }
     virtual ~ResponseCache() {}
+
+    bool is_available() { return d_cache != 0; }
 
     // This method is uses the above three and is used by send_das(), send_dds(), and send_data().
     virtual DDS *read_cached_dataset(DDS &dds, ConstraintEvaluator &eval, ResponseBuilder &responseBuilder, std::string &cache_token);
