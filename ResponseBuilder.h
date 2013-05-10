@@ -27,19 +27,6 @@
 #define _response_builder_h
 
 #include <string>
-#include <set>
-
-#ifndef _das_h
-#include "DAS.h"
-#endif
-
-#ifndef _dds_h
-#include "DDS.h"
-#endif
-
-#ifndef constraint_evaluator_h
-#include "ConstraintEvaluator.h"
-#endif
 
 #ifndef _object_type_h
 #include "ObjectType.h"
@@ -49,10 +36,13 @@
 #include "EncodingType.h"
 #endif
 
-class DAPCache3;
-
 namespace libdap
 {
+
+class ResponseCache;
+class ConstraintEvaluator;
+class DDS;
+class DAS;
 
 /**
  * This class is used to build responses for/by the BES. This class replaces
@@ -67,18 +57,13 @@ public:
     friend class ResponseBuilderTest;
 
 protected:
-    string d_dataset;  		/// Name of the dataset/database
-    string d_ce;  		    /// Constraint expression
-    string d_btp_func_ce;   /// The BTP functions, extracted from the CE
+    std::string d_dataset;  		/// Name of the dataset/database
+    std::string d_ce;  		    /// Constraint expression
+    std::string d_btp_func_ce;   /// The BTP functions, extracted from the CE
     int d_timeout;  		/// Response timeout after N seconds
-    string d_default_protocol;	/// Version string for the library's default protocol version
+    std::string d_default_protocol;	/// Version std::string for the library's default protocol version
 
-    DAPCache3 *d_cache;
-
-#if 0	// Keyword support moved to Keywords class
-    set<string> d_keywords; 	/// Holds all of the keywords passed in the CE
-    set<string> d_known_keywords; /// Holds all of the keywords libdap understands.
-#endif
+    ResponseCache *d_response_cache;
 
     void initialize();
 
@@ -93,96 +78,77 @@ public:
 
     virtual ~ResponseBuilder();
 
-    virtual string get_ce() const;
-    virtual void set_ce(string _ce);
+    virtual std::string get_ce() const;
+    virtual void set_ce(std::string _ce);
 
-    virtual string get_btp_func_ce() const { return d_btp_func_ce; }
-    virtual void set_btp_func_ce(string _ce) { d_btp_func_ce = _ce; }
+    virtual std::string get_btp_func_ce() const { return d_btp_func_ce; }
+    virtual void set_btp_func_ce(std::string _ce) { d_btp_func_ce = _ce; }
 
-    virtual string get_dataset_name() const;
-    virtual void set_dataset_name(const string _dataset);
+    virtual std::string get_dataset_name() const;
+    virtual void set_dataset_name(const std::string _dataset);
 
     void set_timeout(int timeout = 0);
     int get_timeout() const;
 
-    virtual void establish_timeout(ostream &stream) const;
+    virtual void establish_timeout(std::ostream &stream) const;
 
-    virtual void split_ce(ConstraintEvaluator &eval, const string &expr = "");
-    virtual bool is_valid(const string &cache_file_name);
+    virtual void split_ce(ConstraintEvaluator &eval, const std::string &expr = "");
 
-    virtual void send_das(ostream &out, DAS &das, bool with_mime_headers = true) const;
-    virtual void send_das(ostream &out, DDS &dds, ConstraintEvaluator &eval,
+    virtual ResponseCache *responseCache();
+
+    virtual void send_das(std::ostream &out, DAS &das, bool with_mime_headers = true) const;
+    virtual void send_das(std::ostream &out, DDS &dds, ConstraintEvaluator &eval,
                           bool constrained = false, bool with_mime_headers = true);
 
-    virtual void send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
+    virtual void send_dds(std::ostream &out, DDS &dds, ConstraintEvaluator &eval,
                           bool constrained = false,  bool with_mime_headers = true);
 
-    virtual void dataset_constraint(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool ce_eval = true);
-    virtual void send_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers = true);
+    virtual void dataset_constraint(std::ostream &out, DDS &dds, ConstraintEvaluator &eval, bool ce_eval = true);
+    virtual void send_data(std::ostream &data_stream, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers = true);
 
-    virtual void send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval,
+    virtual void send_ddx(std::ostream &out, DDS &dds, ConstraintEvaluator &eval,
                           bool with_mime_headers = true);
 
-    virtual void dataset_constraint_ddx(ostream &out, DDS & dds, ConstraintEvaluator & eval,
-                                   const string &boundary, const string &start,
+    virtual void dataset_constraint_ddx(std::ostream &out, DDS & dds, ConstraintEvaluator & eval,
+                                   const std::string &boundary, const std::string &start,
                                    bool ce_eval = true);
 
-    virtual void send_data_ddx(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval,
-                           const string &start, const string &boundary,
+    virtual void send_data_ddx(std::ostream &data_stream, DDS &dds, ConstraintEvaluator &eval,
+                           const std::string &start, const std::string &boundary,
                            bool with_mime_headers = true);
 
-#ifdef DAP4
-    // DAP4 responses - but do not send the response MIME headers, just the
-    // response body.
-    virtual void send_dmr(ostream &out, DDS &dds, ConstraintEvaluator &eval);
-#endif // DAP4
+    virtual void cache_data_ddx(const std::string &cache_file_name, DDS &dds);
 
-    virtual void cache_data_ddx(const string &cache_file_name, DDS &dds);
-    virtual void read_data_from_cache(FILE *data, DDS *fdds);
-    virtual DDS *get_cached_data_ddx(const string &cache_file_name, BaseTypeFactory *factory);
-
-    // This method is uses the above three and is used by send_das(), send_dds(), and send_data().
-    virtual DDS *read_cached_dataset(DDS &dds, ConstraintEvaluator & eval, string &cache_token);
-
-#ifdef DAP4
-    // These functions are used both by the methods above and by other code
-
-    virtual void send_dap4_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval);
-#endif // DAP4
-
-    void set_mime_ddx_boundary(ostream &out, const string &boundary,
-        const string &start) const;
-
-    void set_mime_data_boundary(ostream &out, const string &boundary,
-    const string &cid, const string &endian, unsigned long long len) const;
+    void set_mime_ddx_boundary(std::ostream &out, const std::string &boundary,
+        const std::string &start) const;
 
     // These functions are used both by the methods above and by other code.
     // However, Hyrax uses the OLFS to send the HTTP headers, so these functions
     // are never used in Hyrax. The BES may uses these in other contexts.
 
-    void set_mime_text(ostream &out, ObjectType type = unknown_type,
+    void set_mime_text(std::ostream &out, ObjectType type = unknown_type,
                        EncodingType enc = x_plain,
                        const time_t last_modified = 0,
-                       const string &protocol = "") const;
+                       const std::string &protocol = "") const;
 
-    void set_mime_html(ostream &out, ObjectType type = unknown_type,
+    void set_mime_html(std::ostream &out, ObjectType type = unknown_type,
                        EncodingType enc = x_plain,
                        const time_t last_modified = 0,
-                       const string &protocol = "") const;
+                       const std::string &protocol = "") const;
 
-    void set_mime_binary(ostream &out, ObjectType type = unknown_type,
+    void set_mime_binary(std::ostream &out, ObjectType type = unknown_type,
                          EncodingType enc = x_plain,
                          const time_t last_modified = 0,
-                         const string &protocol = "") const;
+                         const std::string &protocol = "") const;
 
-    void set_mime_multipart(ostream &out, const string &boundary,
-    	const string &start, ObjectType type = unknown_type, EncodingType enc = x_plain,
-    	const time_t last_modified = 0, const string &protocol = "",
-    	const string &url = "") const;
+    void set_mime_multipart(std::ostream &out, const std::string &boundary,
+    	const std::string &start, ObjectType type = unknown_type, EncodingType enc = x_plain,
+    	const time_t last_modified = 0, const std::string &protocol = "",
+    	const std::string &url = "") const;
 
-    void set_mime_error(ostream &out, int code = 404,
-                        const string &reason = "Dataset not found",
-                        const string &protocol = "") const;
+    void set_mime_error(std::ostream &out, int code = 404,
+                        const std::string &reason = "Dataset not found",
+                        const std::string &protocol = "") const;
 };
 
 } // namespace libdap

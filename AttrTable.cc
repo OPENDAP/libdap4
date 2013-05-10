@@ -32,11 +32,6 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
-
-static char rcsid[]not_used =
-"$Id$";
-
 #include <cassert>
 #include <sstream>
 
@@ -52,7 +47,7 @@ static char rcsid[]not_used =
 #define WWW_ENCODING 0
 // See the note for del_attr_table(). That method now deletes the contained
 // AttrTable.
-#define NEW_DEL_ATTR_TABLE_BEHAVIOR 1
+#define NEW_DEL_ATTR_TABLE_BEHAVIOR 0
 
 using std::cerr;
 using std::string;
@@ -776,7 +771,7 @@ AttrTable::get_attr_table(Attr_iter iter)
  field of the table). If the caller did not delete the table, memory leaked.
  The only correct way to call the method was to grab the pointer, call this
  and then delete the pointer. I added a call to delete the contained
- AttrTable pointer, which changes the behavior of this, but porbably in a
+ AttrTable pointer, which changes the behavior of this, but probably in a
  way that will fix leaks in existing code. This change can be reverted by
  setting NEW_DEL_ATTR_TABLE_BEHAVIOR to false. jhrg 4/26/13
 

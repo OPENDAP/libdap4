@@ -3,8 +3,13 @@
 // This file is part of bes, A C++ back-end server implementation framework
 // for the OPeNDAP Data Access Protocol.
 
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
+
 // Copyright (c) 2013 OPeNDAP, Inc.
-// Author: James Gallagher <jgallagher@opendap.org>
+// Author: Nathan Potter <npotter@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -31,13 +36,9 @@
 #include "ServerFunction.h"
 
 #include <expr.h>
-#if 0
-using std::map;
-using std::string;
-#endif
 
 namespace libdap {
-
+class ServerFunctionsListUnitTest;
 class ConstraintEvaluator;
 
 //#include "BESObj.h"
@@ -45,33 +46,20 @@ class ConstraintEvaluator;
 class ServerFunctionsList {
 private:
     static ServerFunctionsList * d_instance;
+    std::multimap<std::string, libdap::ServerFunction *> d_func_list;
 
-#if 0
-    std::map<std::string, libdap::btp_func> d_btp_func_list;
-    std::map<std::string, libdap::bool_func> d_bool_func_list;
-    std::map<std::string, libdap::proj_func> d_proj_func_list;
-#endif
+    static void initialize_instance();
+    static void delete_instance();
 
-    std::multimap<std::string, libdap::ServerFunction *> func_list;
-
-
-
-protected:
-    ServerFunctionsList(void);
-
-public:
     virtual ~ServerFunctionsList(void);
 
-#if 0
-    virtual bool add_function(std::string name, libdap::btp_func func);
-    virtual bool add_function(std::string name, libdap::bool_func func);
-    virtual bool add_function(std::string name, libdap::proj_func func);
-#endif
+    friend class libdap::ServerFunctionsListUnitTest;
 
+protected:
+    ServerFunctionsList() {}
 
-#if 0
-    virtual void store_functions(libdap::ConstraintEvaluator &ce);
-#endif
+public:
+    static ServerFunctionsList * TheList();
 
 
     virtual void add_function(libdap::ServerFunction *func);
@@ -88,7 +76,6 @@ public:
 
     virtual void getFunctionNames(vector<string> *names);
 
-    static ServerFunctionsList * TheList();
 };
 
 }

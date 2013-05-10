@@ -58,7 +58,9 @@
 #include "Sequence.h"
 #include "Grid.h"
 
+#if D4_ATTR
 #include "D4Attributes.h"
+#endif
 
 #include "InternalErr.h"
 

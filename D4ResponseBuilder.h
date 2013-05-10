@@ -53,10 +53,10 @@
 
 #include "escaping.h"
 
-class DAPCache3;
-
 namespace libdap
 {
+
+class DAPCache3;
 
 /**
  * This class is used to build responses for/by the BES. This class replaces

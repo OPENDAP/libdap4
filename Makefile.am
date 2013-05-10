@@ -258,7 +258,8 @@ Operators.h: ce_expr.tab.hh
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc	\
 	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc
 
-SERVER_SRC = DODSFilter.cc Ancillary.cc ResponseBuilder.cc
+SERVER_SRC = DODSFilter.cc Ancillary.cc ResponseBuilder.cc \
+	ResponseCache.cc
 
 DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	DDXExceptions.h BaseType.h Byte.h Int32.h Float64.h Str.h	\
@@ -277,7 +278,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 DAP4_ONLY_HDR = D4StreamMarshaller.h D4StreamUnMarshaller.h Int64.h \
         UInt64.h Int8.h D4ParserSax2.h D4BaseTypeFactory.h \
         D4Maps.h D4Dimensions.h D4EnumDefs.h D4Group.h DMR.h D4Attributes.h \
-        D4ResponseBuilder.h
+        D4ResponseBuilder.h D4AttributeType.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h
@@ -296,7 +297,7 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		\
 	ResponseTooBigErr.h Resource.h HTTPCacheTable.h HTTPCacheMacros.h
 
 SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h	\
-	ResponseBuilder.h
+	ResponseBuilder.h ResponseCache.h
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support

@@ -44,6 +44,8 @@
 class BESKeys;
 #endif
 
+namespace libdap {
+
 // These typedefs are used to record information about the files in the cache.
 // See DAPCache3.cc and look at the purge() method.
 typedef struct {
@@ -148,5 +150,7 @@ public:
 
     virtual void dump(ostream &strm) const ;
 };
+
+} // namespace libdap
 
 #endif // DAPCache3_h_

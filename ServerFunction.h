@@ -1,3 +1,27 @@
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2013 OPeNDAP, Inc.
+// Author: Nathan Potter <npotter@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
+
 /*
  * AbstractFunction.h
  *
@@ -42,22 +66,22 @@ public:
 
 
 	string getName() { return name; }
-	void   setName(string n){ name = n; }
+	void   setName(const string &n){ name = n; }
 
 	string getUsageString() { return usage; }
-	void   setUsageString(string u){ usage = u; }
+	void   setUsageString(const string &u){ usage = u; }
 
 	string getDocUrl() { return doc_url; }
-	void   setDocUrl(string url){ doc_url = url; }
+	void   setDocUrl(const string &url){ doc_url = url; }
 
 	string getRole() { return role; }
-	void   setRole(string r){ role = r; }
+	void   setRole(const string &r){ role = r; }
 
 	string getDescriptionString(){ return description; }
-	void   setDescriptionString(string desc){ description = desc; }
+	void   setDescriptionString(const string &desc){ description = desc; }
 
 	string getVersion(){ return version; }
-	void   setVersion(string ver){ version = ver; }
+	void   setVersion(const string &ver){ version = ver; }
 
 	/**
 	 * If you are writing a function that can only operate on a particular kind of data, or one that relies on the presence

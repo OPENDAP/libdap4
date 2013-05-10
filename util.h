@@ -89,10 +89,6 @@ bool is_constructor_type(Type t);
 bool is_integer_type(Type t);
 
 bool dir_exists(const string &dir);
-#if 0
-// UNTESTED
-bool dir_writable(const string &dir);
-#endif
 
 // Jose Garcia
 /** @name Integer to string conversion functions

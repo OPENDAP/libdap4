@@ -47,16 +47,9 @@
 
 //#define DODS_DEBUG
 
-#if 0
-//FIXME
-#include "BaseType.h"
-#include "Array.h"
-#include "Grid.h"
-#endif
 #include "DAS.h"
 #include "DDS.h"
-//#include "Connect.h"
-//#include "Response.h"
+#include "ConstraintEvaluator.h"
 #include "DDXParserSAX2.h"
 #include "Ancillary.h"
 #include "ResponseBuilder.h"
@@ -64,15 +57,12 @@
 #include "XDRFileUnMarshaller.h"
 
 #include "DAPCache3.h"
+#include "ResponseCache.h"
 
 #include "debug.h"
 #include "mime_util.h"	// for last_modified_time() and rfc_822_date()
 #include "escaping.h"
 #include "util.h"
-
-#ifdef DAP4
-#include "D4StreamMarshaller.h"
-#endif
 
 #ifndef WIN32
 #include "SignalHandler.h"
@@ -80,11 +70,9 @@
 #include "AlarmHandler.h"
 #endif
 
+#define CACHE 0
+
 #define CRLF "\r\n"             // Change here, expr-test.cc
-#define FUNCTION_CACHE "/tmp/dap_functions_cache/"
-#define FUNCTION_CACHE_PREFIX "f"
-// Cache size in megabytes; 20,000M -> 20GB
-#define FUNCTION_CACHE_SIZE 20000
 
 using namespace std;
 
@@ -107,32 +95,15 @@ void ResponseBuilder::initialize()
 
     d_default_protocol = DAP_PROTOCOL_VERSION;
 
-    // Cache size is given in megabytes and later converted to bytes
-    // for internal use.
-    d_cache = 0;
+    d_response_cache = 0;
+}
 
-    // Without this, the directory becomes a low-budget config param since
-    // the cache will only be used if the directory exists.
-    // TODO fix this mess by adding a real config param in bes.conf
-#if 0
-    if (!dir_writable(FUNCTION_CACHE))
-        mkdir(FUNCTION_CACHE, 0777);
-#endif
-
-    if (dir_exists(FUNCTION_CACHE)) {
-        DBG(cerr << "the FUNCTION_CACHE directory (" << FUNCTION_CACHE <<") exists" << endl);
-        d_cache = DAPCache3::get_instance(FUNCTION_CACHE, FUNCTION_CACHE_PREFIX, FUNCTION_CACHE_SIZE);
-    }
-    else {
-        DBG(cerr << "the FUNCTION_CACHE directory (" << FUNCTION_CACHE <<") does not exist - not caching" << endl);
-    }
-
-#ifdef WIN32
-    //  We want serving from win32 to behave in a manner
-    //  similar to the UNIX way - no CR->NL terminated lines
-    //  in files. Hence stdout goes to binary mode.
-    _setmode(_fileno(stdout), _O_BINARY);
-#endif
+/** Lazy getter for the ResponseCache. */
+ResponseCache *
+ResponseBuilder::responseCache()
+{
+	if (!d_response_cache) d_response_cache = new ResponseCache();
+	return d_response_cache;
 }
 
 /** Return the entire constraint expression in a string.  This
@@ -186,14 +157,7 @@ int ResponseBuilder::get_timeout() const
 
 /** Use values of this instance to establish a timeout alarm for the server.
  If the timeout value is zero, do nothing.
-
- @todo When the alarm handler is called, two CRLF pairs are dumped to the
- stream and then an Error object is sent. No attempt is made to write the
- 'correct' MIME headers for an Error object. Instead, a savvy client will
- know that when an exception is thrown during a deserialize operation, it
- should scan ahead in the input stream for an Error object. Add this, or a
- sensible variant once libdap++ supports reliable error delivery. Dumb
- clients will never get the Error object... */
+*/
 void ResponseBuilder::establish_timeout(ostream &stream) const
 {
 #ifndef WIN32
@@ -211,7 +175,6 @@ void ResponseBuilder::establish_timeout(ostream &stream) const
  *  separated into their own string and can be evaluated separately from
  *  the rest of the CE (which can contain simple and slicing projection
  *  as well as other types of function calls).
- *
  */
 void
 ResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
@@ -259,167 +222,6 @@ ResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
 
     d_ce = ce;
     d_btp_func_ce = btp_function_ce;
-}
-
-/**
- * Use the dataset name and the function-part of the CE to build a name
- * that can be used to index the result of that CE on the dataset. This
- * name can be used both to store a result for later (re)use or to access
- * a previously-stored result.
- *
- */
-static string
-build_cache_file_name(const string &dataset, const string &ce)
-{
-    DBG(cerr << "build_cache_file_name: dataset: " << dataset << ", ce: " << ce << endl);
-
-    string name = dataset + "#" + ce;
-    string::size_type pos = name.find_first_of("/(),\"\'");
-    while (pos != string::npos) {
-        name.replace(pos, 1, "#", 1);
-        pos = name.find_first_of("/()\"\'");
-    }
-
-    DBG(cerr << "build_cache_file_name: name: " << name << endl);
-
-    return name;
-}
-
-#if 0
-static bool cached_data_ddx_exists(const string &cache_file_name)
-{
-    ifstream icache_file(cache_file_name.c_str()); // closes on return
-
-    return !icache_file.fail() && !icache_file.bad() && !icache_file.eof();
-}
-#endif
-/**
- * Is the item named by cache_entry_name valid? This code tests that the
- * cache entry is non-zero in size (returns false if that is the case, although
- * that might not be correct) and that the dataset associated with this
- * ResponseBulder instance is at least as old as the cached entry.
- *
- * @param cache_file_name File name of the cached entry
- * @return True if the thing is valid, false otherwise.
- */
-bool ResponseBuilder::is_valid(const string &cache_file_name)
-{
-    // If the cached response is zero bytes in size, it's not valid.
-    // (hmmm...)
-
-    off_t entry_size = 0;
-    time_t entry_time = 0;
-    struct stat buf;
-    if (stat(cache_file_name.c_str(), &buf) == 0) {
-        entry_size = buf.st_size;
-        entry_time = buf.st_mtime;
-    }
-    else {
-        return false;
-    }
-
-    if (entry_size == 0)
-        return false;
-
-    time_t dataset_time = entry_time;
-    if (stat(d_dataset.c_str(), &buf) == 0) {
-        dataset_time = buf.st_mtime;
-    }
-
-    // Trick: if the d_dataset is not a file, stat() returns error and
-    // the times stay equal and the code uses the cache entry.
-
-    // TODO Fix this so that the code can get a LMT from the correct
-    // handler.
-    if (dataset_time > entry_time)
-        return false;
-
-    return true;
-}
-
-/**
- * Get the cache DDS pointer - which will contain both attributes
- * and data values.
- *
- * @note Do not call this when d_cache is null or when d_btp_func_ce
- * is empty!
- *
- * @param dds The DDS of the dataset referenced by the URL
- * @return The cached DDS that resulted from calling the server functions
- * in the original CE.
- * @param cache_token A value-result parameter that contains teh name of
- * the file in the cache. Used to release the lock on the cached file.
- */
-DDS *ResponseBuilder::read_cached_dataset(DDS &dds, ConstraintEvaluator &eval,
-                                          string &cache_token)
-{
-    DBG(cerr << "Found function(s) in CE: " << d_btp_func_ce << endl);
-
-    // These are used for the cached or newly created DDS object
-    BaseTypeFactory factory;
-    DDS *fdds;
-
-    // Get the cache filename for this thing. Do not use the default
-    // name mangling; instead use what build_cache_file_name() does.
-    string cache_file_name = d_cache->get_cache_file_name(build_cache_file_name(d_dataset, d_btp_func_ce), false);
-    int fd;
-    try {
-        // If the object in the cache is not valid, remove it. The read_lock will
-        // then fail and the code will drop down to the create_and_lock() call.
-        // is_valid() tests for a non-zero object and for d_dateset newer than
-        // the cached object.
-        if (!is_valid(cache_file_name))
-            d_cache->purge_file(cache_file_name);
-
-        if (d_cache->get_read_lock(cache_file_name, fd)) {
-            DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-            fdds = get_cached_data_ddx(cache_file_name, &factory);
-        }
-
-        // If here, the cache_file_name could not be locked for read access;
-        // try to build it. First make an empty file and get an exclusive lock on it.
-        // TODO Make this an 'else if'?
-        if (d_cache->create_and_lock(cache_file_name, fd)) {
-            DBG(cerr << "function ce - caching " << cache_file_name << endl );
-
-            eval.parse_constraint(d_btp_func_ce, dds);
-            fdds = eval.eval_function_clauses(dds);
-
-            // TODO cache it using fd. Since this is advisory locking, this will work...
-            // Improve?
-            cache_data_ddx(cache_file_name, *fdds);
-
-            // Change the exclusive lock on the new file to a shared lock. This keeps
-            // other processes from purging the new file and ensures that the reading
-            // process can use it.
-            d_cache->exclusive_to_shared_lock(fd);
-
-            // Now update the total cache size info and purge if needed. The new file's
-            // name is passed into the purge method because this process cannot detect its
-            // own lock on the file.
-            unsigned long long size = d_cache->update_cache_info(cache_file_name);
-            if (d_cache->cache_too_big(size))
-                d_cache->update_and_purge(cache_file_name);
-        }
-        // get_read_lock() returns immediately if the file does not exist,
-        // but blocks waiting to get a shared lock if the file does exist.
-        else if (d_cache->get_read_lock(cache_file_name, fd)) {
-            DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-            fdds = get_cached_data_ddx(cache_file_name, &factory);
-        }
-        else {
-            throw InternalErr(__FILE__, __LINE__, "Cache error during function invocation.");
-        }
-    }
-    catch (...) {
-        DBG(cerr << "caught exception, unlocking cache and re-throw." << endl );
-        // I think this call is not needed. jhrg 10/23/12
-        d_cache->unlock_cache();
-        throw;
-    }
-
-    cache_token = cache_file_name;  // Set this value-result parameter
-    return fdds;
 }
 
 /** This function formats and prints an ASCII representation of a
@@ -483,76 +285,12 @@ void ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &eval
     // Use that DDS and parse the non-function ce
     // Serialize using the second ce and the second dds
     if (!d_btp_func_ce.empty()) {
-#if 0
-        DBG(cerr << "Found function(s) in CE: " << d_btp_func_ce << endl);
-
-        // These are used for the cached or newly created DDS object
-        BaseTypeFactory factory;
-        DDS *fdds;
-
-        // Get the cache filename for this thing. Do not use the default
-        // name mangling; instead use what build_cache_file_name() does.
-        string cache_file_name = d_cache->get_cache_file_name(build_cache_file_name(d_dataset, d_btp_func_ce), false);
-        int fd;
-        try {
-            // If the object in the cache is not valid, remove it. The read_lock will
-            // then fail and the code will drop down to the create_and_lock() call.
-            // is_valid() tests for a non-zero object and for d_dateset newer than
-            // the cached object.
-            if (!is_valid(cache_file_name))
-                d_cache->purge_file(cache_file_name);
-
-            if (d_cache->get_read_lock(cache_file_name, fd)) {
-                DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-                fdds = get_cached_data_ddx(cache_file_name, &factory);
-            }
-
-            // If here, the cache_file_name could not be locked for read access;
-            // try to build it. First make an empty file and get an exclusive lock on it.
-            // TODO Make this an 'else if'?
-            if (d_cache->create_and_lock(cache_file_name, fd)) {
-                DBG(cerr << "function ce - caching " << cache_file_name << endl );
-
-                eval.parse_constraint(d_btp_func_ce, dds);
-                fdds = eval.eval_function_clauses(dds);
-
-                // TODO cache it using fd. Since this is advisory locking, this will work...
-                // Improve?
-                cache_data_ddx(cache_file_name, *fdds);
-
-                // Change the exclusive lock on the new file to a shared lock. This keeps
-                // other processes from purging the new file and ensures that the reading
-                // process can use it.
-                d_cache->exclusive_to_shared_lock(fd);
-
-                // Now update the total cache size info and purge if needed. The new file's
-                // name is passed into the purge method because this process cannot detect its
-                // own lock on the file.
-                unsigned long long size = d_cache->update_cache_info(cache_file_name);
-                if (d_cache->cache_too_big(size))
-                    d_cache->update_and_purge(cache_file_name);
-            }
-            else if (d_cache->get_read_lock(cache_file_name, fd)) {
-                DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-                fdds = get_cached_data_ddx(cache_file_name, &factory);
-            }
-            else {
-                throw InternalErr(__FILE__, __LINE__, "Cache error during function invocation.");
-            }
-        }
-        catch (...) {
-            DBG(cerr << "caught exception, unlocking cache and re-throw." << endl );
-            // I think this call is not needed. jhrg 10/23/12
-            d_cache->unlock_cache();
-            throw;
-        }
-#endif
         DDS *fdds = 0;
         string cache_token = "";
 
-        if (d_cache) {
+        if (responseCache()) {
             DBG(cerr << "Using the cache for the server function CE" << endl);
-            fdds = read_cached_dataset(dds, eval, cache_token);
+            fdds = responseCache()->read_cached_dataset(dds, eval, *this, cache_token);
         }
         else {
             DBG(cerr << "Cache not found; (re)calculating" << endl);
@@ -565,8 +303,8 @@ void ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &eval
 
         fdds->print_das(out);
 
-        if (d_cache)
-            d_cache->unlock_and_close(cache_token);
+        if (responseCache())
+        	responseCache()->unlock_and_close(cache_token);
 
         delete fdds;
     }
@@ -624,75 +362,12 @@ void ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval
     // Use that DDS and parse the non-function ce
     // Serialize using the second ce and the second dds
     if (!d_btp_func_ce.empty()) {
-#if 0
-        DBG(cerr << "Found function(s) in CE: " << d_btp_func_ce << endl);
-
-        // These are used for the cached or newly created DDS object
-        BaseTypeFactory factory;
-        DDS *fdds;
-
-        // Get the cache filename for this thing. Do not use the default
-        // name mangling; instead use what build_cache_file_name() does.
-        string cache_file_name = d_cache->get_cache_file_name(build_cache_file_name(d_dataset, d_btp_func_ce), false);
-        int fd;
-        try {
-            // If the object in the cache is not valid, remove it. The read_lock will
-            // then fail and the code will drop down to the create_and_lock() call.
-            // is_valid() tests for a non-zero object and for d_dateset newer than
-            // the cached object.
-            if (!is_valid(cache_file_name))
-                d_cache->purge_file(cache_file_name);
-
-            if (d_cache->get_read_lock(cache_file_name, fd)) {
-                DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-                fdds = get_cached_data_ddx(cache_file_name, &factory);
-            }
-
-            // If here, the cache_file_name could not be locked for read access;
-            // try to build it. First make an empty file and get an exclusive lock on it.
-            if (d_cache->create_and_lock(cache_file_name, fd)) {
-                DBG(cerr << "function ce - caching " << cache_file_name << endl );
-
-                eval.parse_constraint(d_btp_func_ce, dds);
-                fdds = eval.eval_function_clauses(dds);
-
-                // TODO cache it using fd. Since this is advisory locking, this will work...
-                // Improve?
-                cache_data_ddx(cache_file_name, *fdds);
-
-                // Change the exclusive lock on the new file to a shared lock. This keeps
-                // other processes from purging the new file and ensures that the reading
-                // process can use it.
-                d_cache->exclusive_to_shared_lock(fd);
-
-                // Now update the total cache size info and purge if needed. The new file's
-                // name is passed into the purge method because this process cannot detect its
-                // own lock on the file.
-                unsigned long long size = d_cache->update_cache_info(cache_file_name);
-                if (d_cache->cache_too_big(size))
-                    d_cache->update_and_purge(cache_file_name);
-            }
-            else if (d_cache->get_read_lock(cache_file_name, fd)) {
-                    DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-                    fdds = get_cached_data_ddx(cache_file_name, &factory);
-            }
-            else {
-                throw InternalErr(__FILE__, __LINE__, "Cache error during function invocation.");
-            }
-        }
-        catch (...) {
-            DBG(cerr << "caught exception, unlocking cache and re-throw." << endl );
-            // I think this call is not needed. jhrg 10/23/12
-            d_cache->unlock_cache();
-            throw;
-        }
-#endif
         string cache_token = "";
         DDS *fdds = 0;
 
-        if (d_cache) {
+        if (responseCache()) {
             DBG(cerr << "Using the cache for the server function CE" << endl);
-            fdds = read_cached_dataset(dds, eval, cache_token);
+            fdds = responseCache()->read_cached_dataset(dds, eval, *this, cache_token);
         }
         else {
             DBG(cerr << "Cache not found; (re)calculating" << endl);
@@ -714,8 +389,8 @@ void ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval
 
         fdds->print_constrained(out);
 
-        if (d_cache)
-            d_cache->unlock_and_close(cache_token);
+        if (responseCache())
+        	responseCache()->unlock_and_close(cache_token);
 
         delete fdds;
     }
@@ -745,29 +420,13 @@ void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEval
     out << "Data:\n";
     out << flush;
 
-#ifdef CHECKSUMS
-    // Grab a stream that encodes using XDR.
-    D4StreamMarshaller m(out, true);
-#else
     XDRStreamMarshaller m(out);
-#endif
 
     try {
         // Send all variables in the current projection (send_p())
         for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
             if ((*i)->send_p()) {
-                DBG(cerr << "Sending " << (*i)->name() << endl);
-#ifdef CHECKSUMS
-                if ((*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
-                    m.reset_checksum();
-
                 (*i)->serialize(eval, dds, m, ce_eval);
-
-                if ((*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
-                    cerr << (*i)->name() << ": " << m.get_checksum() << endl;
-#else
-                (*i)->serialize(eval, dds, m, ce_eval);
-#endif
             }
     }
     catch (Error & e) {
@@ -798,36 +457,16 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS & dds, Constraint
     // Send constrained DDX with a data blob reference
     dds.print_xml_writer(out, true, cid);
 
-    // Grab a stream that encodes for DAP4
-#ifdef DAP4
-    D4StreamMarshaller m(out);
-
-    // Write the MPM headers for the data part of the response.
-    set_mime_data_boundary(out, boundary, cid, m.get_endian(), 0);
-#else
     XDRStreamMarshaller m(out);
-#endif // DAP4
 
 
     // Send all variables in the current projection (send_p()). In DAP4,
     // all of the top-level variables are serialized with their checksums.
     // Internal variables are not.
-    // TODO When Group support is added to libdap, this will need to be
-    // generalized so that all variables in the top-levels of all the
-    // groups will have checksums included in the response.
     for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++) {
         if ((*i)->send_p()) {
             DBG(cerr << "Sending " << (*i)->name() << endl);
-
-#ifdef DAP4
-            m.reset_checksum();
-#endif
-
             (*i)->serialize(eval, dds, m, ce_eval);
-
-#ifdef DAP4
-            m.put_checksum();
-#endif
         }
     }
 }
@@ -855,19 +494,6 @@ void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEval
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
-#if 0
-    eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
-
-    dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
-
-    if (dds.get_response_limit() != 0 && dds.get_request_size(true) > dds.get_response_limit()) {
-        string msg = "The Request for " + long_to_string(dds.get_request_size(true) / 1024)
-                + "KB is too large; requests for this user are limited to "
-                + long_to_string(dds.get_response_limit() / 1024) + "KB.";
-        throw Error(msg);
-    }
-#endif
-
     // Split constraint into two halves
     split_ce(eval);
 
@@ -876,129 +502,12 @@ void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEval
     // Serialize using the second ce and the second dds
     if (!d_btp_func_ce.empty()) {
         DBG(cerr << "Found function(s) in CE: " << d_btp_func_ce << endl);
-#if 0
-        // These are used for the cached or newly created DDS object
-        BaseTypeFactory factory;
-        DDS *fdds;
-
-        // Get the cache filename for this thing. Do not use the default
-        // name mangling; instead use what build_cache_file_name() does.
-        string cache_file_name = d_cache->get_cache_file_name(build_cache_file_name(d_dataset, d_btp_func_ce), false);
-        int fd;
-        try {
-            // If the object in the cache is not valid, remove it. The read_lock will
-            // then fail and the code will drop down to the create_and_lock() call.
-            // is_valid() tests for a non-zero object and for d_dateset newer than
-            // the cached object.
-            if (!is_valid(cache_file_name))
-                d_cache->purge_file(cache_file_name);
-
-            if (d_cache->get_read_lock(cache_file_name, fd)) {
-                DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-                fdds = get_cached_data_ddx(cache_file_name, &factory);
-            }
-
-            // If here, the cache_file_name could not be locked for read access;
-            // try to build it. First make an empty file and get an exclusive lock on it.
-            if (d_cache->create_and_lock(cache_file_name, fd)) {
-                DBG(cerr << "function ce - caching " << cache_file_name << endl );
-
-                eval.parse_constraint(d_btp_func_ce, dds);
-                fdds = eval.eval_function_clauses(dds);
-
-                // TODO cache it using fd. Since this is advisory locking, this will work...
-                // Improve?
-                // Until Connect/Response support working with file descriptors, it's
-                // better to use the names.
-                cache_data_ddx(cache_file_name, *fdds);
-
-                // Change the exclusive lock on the new file to a shared lock. This keeps
-                // other processes from purging the new file and ensures that the reading
-                // process can use it.
-                d_cache->exclusive_to_shared_lock(fd);
-
-                // Now update the total cache size info and purge if needed. The new file's
-                // name is passed into the purge method because this process cannot detect its
-                // own lock on the file.
-                unsigned long long size = d_cache->update_cache_info(cache_file_name);
-                if (d_cache->cache_too_big(size))
-                    d_cache->update_and_purge(cache_file_name);
-            }
-            else if (d_cache->get_read_lock(cache_file_name, fd)) {
-                    DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-                    fdds = get_cached_data_ddx(cache_file_name, &factory);
-            }
-            else {
-                throw InternalErr(__FILE__, __LINE__, "Cache error during function invocation.");
-            }
-        }
-        catch (...) {
-            DBG(cerr << "caught exception, unlocking cache and re-throw." << endl );
-            // I think this call is not needed. jhrg 10/23/12
-            d_cache->unlock_cache();
-            throw;
-        }
-#endif
-#if 0
-        // ******** original code here ***********
-
-        // Check to see if the cached data ddx exists and is valid
-        if (cached_data_ddx_exists(cache_file_name)) {
-            fdds = get_cached_data_ddx(cache_file_name, &factory);
-#if 0
-            // Use the cache file and don't eval the function(s)
-            DBG(cerr << "Reading cache for " << d_dataset + "?" + d_btp_func_ce << endl);
-            icache_file.close(); // only opened to see if it's there; Connect/Response do their own thing
-
-            fdds = new DDS(&factory);
-            fdds->set_dap_version("4.0"); // TODO note about cid, ...
-            // FIXME name should be...
-            fdds->filename( d_dataset ) ;
-            fdds->set_dataset_name( name_path( d_dataset ) ) ;
-
-            Connect *url = new Connect( d_dataset ) ;
-            Response *r = new Response( fopen( cache_file_name.c_str(), "r" ), 0 ) ;
-            if( !r->get_stream() )
-                throw Error("The input source: " + cache_file_name +  " could not be opened");
-
-            url->read_data( *fdds, r ) ;
-            fdds->set_factory( 0 ) ;
-
-            // mark everything as read.
-            DDS::Vars_iter i = fdds->var_begin() ;
-            DDS::Vars_iter e = fdds->var_end() ;
-            for( ; i != e; i++ ) {
-                BaseType *b = (*i) ;
-                b->set_read_p( true ) ;
-            }
-            // for_each(dds->var_begin(), dds->var_end(), mfunc(BaseType::set_read_p));
-
-            DAS *das = new DAS ;
-            Ancillary::read_ancillary_das( *das, d_dataset ) ;
-            fdds->transfer_attributes( das ) ;
-#endif
-        }
-        else {
-            eval.parse_constraint(d_btp_func_ce, dds);
-            fdds = eval.eval_function_clauses(dds);
-
-            cache_data_ddx(cache_file_name, *fdds);
-#if 0
-            // TODO cache the fdds here
-            ofstream ocache_file(cache_file_name.c_str());
-
-            DBG(cerr << "Caching " << d_dataset + "?" + d_btp_func_ce << endl);
-            cache_data_ddx(ocache_file, *fdds);
-            ocache_file.close();
-#endif
-        }
-#endif
         string cache_token = "";
         DDS *fdds = 0;
 
-        if (d_cache) {
+        if (responseCache()) {
             DBG(cerr << "Using the cache for the server function CE" << endl);
-            fdds = read_cached_dataset(dds, eval, cache_token);
+            fdds = responseCache()->read_cached_dataset(dds, eval, *this, cache_token);
         }
         else {
             DBG(cerr << "Cache not found; (re)calculating" << endl);
@@ -1006,10 +515,7 @@ void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEval
             fdds = eval.eval_function_clauses(dds);
         }
 
-        DBG(cerr << "Intermediate DDS: " << endl);
         DBG(fdds->print_constrained(cerr));
-
-        DBG(cerr << "Parsing remaining CE: " << d_ce << endl);
 
         // Server functions might mark variables to use their read()
         // methods. Clear that so the CE in d_ce will control what is
@@ -1035,8 +541,8 @@ void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEval
         DBG(cerr << "About to call dataset_constraint" << endl);
         dataset_constraint(data_stream, *fdds, eval, false);
 
-        if (d_cache)
-            d_cache->unlock_and_close(cache_token);
+        if (responseCache())
+        	responseCache()->unlock_and_close(cache_token);
 
         delete fdds;
     }
@@ -1059,26 +565,6 @@ void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEval
 
         dataset_constraint(data_stream, dds, eval);
     }
-
-#if 0
-    // Start sending the response...
-
-    // Handle *functional* constraint expressions specially
-    if (eval.function_clauses()) {
-        DDS *fdds = eval.eval_function_clauses(dds);
-        if (with_mime_headers)
-            set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
-
-        dataset_constraint(data_stream, *fdds, eval, false);
-        delete fdds;
-    }
-    else {
-        if (with_mime_headers)
-            set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
-
-        dataset_constraint(data_stream, dds, eval);
-    }
-#endif
 
     data_stream << flush;
 }
@@ -1103,18 +589,72 @@ void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEval
  Defaults to true. */
 void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers)
 {
-    // If constrained, parse the constraint. Throws Error or InternalErr.
-    if (!d_ce.empty())
-        eval.parse_constraint(d_ce, dds);
+    if (d_ce.empty()) {
+        if (with_mime_headers)
+            set_mime_text(out, dap4_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
-    if (eval.functional_expression())
-        throw Error(
-                "Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
+        dds.print_xml_writer(out, false, "");
+        //dds.print(out);
+        out << flush;
+        return;
+    }
 
-    if (with_mime_headers)
-        set_mime_text(out, dap4_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+    // Set up the alarm.
+    establish_timeout(out);
+    dds.set_timeout(d_timeout);
 
-    dds.print_xml_writer(out, !d_ce.empty(), "");
+    // Split constraint into two halves
+    split_ce(eval);
+
+    // If there are functions, parse them and eval.
+    // Use that DDS and parse the non-function ce
+    // Serialize using the second ce and the second dds
+    if (!d_btp_func_ce.empty()) {
+        string cache_token = "";
+        DDS *fdds = 0;
+
+        if (responseCache()) {
+            DBG(cerr << "Using the cache for the server function CE" << endl);
+            fdds = responseCache()->read_cached_dataset(dds, eval, *this, cache_token);
+        }
+        else {
+            DBG(cerr << "Cache not found; (re)calculating" << endl);
+            eval.parse_constraint(d_btp_func_ce, dds);
+            fdds = eval.eval_function_clauses(dds);
+        }
+
+        // Server functions might mark variables to use their read()
+        // methods. Clear that so the CE in d_ce will control what is
+        // sent. If that is empty (there was only a function call) all
+        // of the variables in the intermediate DDS (i.e., the function
+        // result) will be sent.
+        fdds->mark_all(false);
+
+        eval.parse_constraint(d_ce, *fdds);
+
+        if (with_mime_headers)
+            set_mime_text(out, dap4_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+
+        fdds->print_constrained(out);
+
+        if (responseCache())
+        	responseCache()->unlock_and_close(cache_token);
+
+        delete fdds;
+    }
+    else {
+        DBG(cerr << "Simple constraint" << endl);
+
+        eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+
+        if (with_mime_headers)
+            set_mime_text(out, dap4_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+
+        //dds.print_constrained(out);
+        dds.print_xml_writer(out, true, "");
+    }
+
+    out << flush;
 }
 
 /** Send the data in the DDS object back to the client program. The data is
@@ -1187,33 +727,6 @@ void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, Constraint
         data_stream << CRLF << "--" << boundary << "--" << CRLF;
 }
 
-#ifdef DAP4
-/**
- * Send the DAP4 DMR (Dataset Metadata Response)
- *
- * @note The DAP2/3 methods have an optional 'with_mime_headers' parameter
- * that triggers the generation of a complete HTTP response document. This
- * method lacks that.
- *
- * @todo Modify the definition of server-functions so that they can return
- * the DMR.
- */
-void
-ResponseBuilder::send_dmr(ostream &out, DDS &dds, ConstraintEvaluator &eval)
-{
-    // If constrained, parse the constraint. Throws Error or InternalErr.
-    if (!d_ce.empty())
-        eval.parse_constraint(d_ce, dds);
-
-    // TODO Change functions so this is no longer an error
-    if (eval.functional_expression())
-        throw Error(
-                "Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
-
-    dds.print_dmr(out, !d_ce.empty());
-}
-#endif // DAP4
-
 /** Write a DDS to an output stream. This method is intended to be used
     to write to a cache so that interim results can be reused w/o needing
     to be recomputed. I chose the 'data ddx' response because it combines
@@ -1234,12 +747,11 @@ void ResponseBuilder::cache_data_ddx(const string &cache_file_name, DDS &dds)
     // Test for a valid file open
 
     string start="dataddx_cache_start", boundary="dataddx_cache_boundary";
-#if 1
+
     // Does this really need the full set of MIME headers? Not including these
     // might make it comparable with the dapreader module in the BES.
     set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
     data_stream << flush;
-#endif
 
     // dataset_constraint_ddx() needs a ConstraintEvaluator because
     // it calls serialize().
@@ -1256,171 +768,6 @@ void ResponseBuilder::cache_data_ddx(const string &cache_file_name, DDS &dds)
     data_stream << CRLF << "--" << boundary << "--" << CRLF;
     data_stream.close();
 }
-
-/**
- * Read the data from the saved response document.
- *
- * @note this method is made of code copied from Connect (process_data(0)
- * but this copy assumes ot is reading a DDX with data written using the
- * code in ResponseBuilder::cache_data_ddx().
- *
- * @note I put this code here instead of using what was in Connect because
- * I did not want all of the handlers to be modified to inlcude libdapclient
- * and thus libcurl and libuuid.
- *
- * @todo Maybe move this code into libdap as a general 'get it from
- * disk' method. Use that code in libdapclient.
- *
- * @param data The input stream
- * @parma fdds Load this DDS object with the variables, attributes and
- * data values from the cached DDS.
- */
-void ResponseBuilder::read_data_from_cache(FILE *data, DDS *fdds)
-{
-    // Rip off the MIME headers from the response if they are present
-    string mime = get_next_mime_header(data);
-    while (!mime.empty()) {
-#if 0
-        string header, value;
-        parse_mime_header(mime, header, value);
-#endif
-        mime = get_next_mime_header(data);
-    }
-
-    // Parse the DDX; throw an exception on error.
-    DDXParser ddx_parser(fdds->get_factory());
-
-    // Read the MPM boundary and then read the subsequent headers
-    string boundary = read_multipart_boundary(data);
-    DBG(cerr << "MPM Boundary: " << boundary << endl);
-
-    read_multipart_headers(data, "text/xml", dap4_ddx);
-
-    // Parse the DDX, reading up to and including the next boundary.
-    // Return the CID for the matching data part
-    string data_cid;
-    ddx_parser.intern_stream(data, fdds, data_cid, boundary);
-
-    // Munge the CID into something we can work with
-    data_cid = cid_to_header_value(data_cid);
-    DBG(cerr << "Data CID: " << data_cid << endl);
-
-    // Read the data part's MPM part headers (boundary was read by
-    // DDXParse::intern)
-    read_multipart_headers(data, "application/octet-stream", dap4_data, data_cid);
-
-    // Now read the data
-
-    XDRFileUnMarshaller um(data);
-    for (DDS::Vars_iter i = fdds->var_begin(); i != fdds->var_end(); i++) {
-        (*i)->deserialize(um, fdds);
-    }
-}
-
-/**
- * Read data from cache. Allocates a new DDS using the given factory.
- */
-DDS *
-ResponseBuilder::get_cached_data_ddx(const string &cache_file_name, BaseTypeFactory *factory)
-{
-    DBG(cerr << "Reading cache for " << d_dataset + "?" + d_btp_func_ce << endl);
-
-    DDS *fdds = new DDS(factory);
-
-    fdds->filename( d_dataset ) ;
-    fdds->set_dataset_name( "function_result_" + name_path( d_dataset ) ) ;
-
-#if 0
-    Connect *url = new Connect( d_dataset ) ;
-    Response *r = new Response( fopen( cache_file_name.c_str(), "r" ), 0 ) ;
-    if( !r->get_stream() )
-        throw Error("The input source: " + cache_file_name +  " could not be opened");
-
-    url->read_data( *fdds, r ) ;
-#endif
-
-    // fstream data(cache_file_name.c_str());
-    FILE *data = fopen( cache_file_name.c_str(), "r" );
-    read_data_from_cache(data, fdds);
-    fclose(data);
-
-    fdds->set_factory( 0 ) ;
-
-    // mark everything as read.
-    DDS::Vars_iter i = fdds->var_begin() ;
-    DDS::Vars_iter e = fdds->var_end() ;
-    for( ; i != e; i++ ) {
-        BaseType *b = (*i) ;
-        b->set_read_p( true ) ;
-    }
-
-    // for_each(dds->var_begin(), dds->var_end(), mfunc(BaseType::set_read_p));
-
-#if 0
-    // Ancillary attributes were read when the DDX was built and are part of the
-    // cached BLOB.
-    DAS *das = new DAS ;
-    Ancillary::read_ancillary_das( *das, d_dataset ) ;
-    fdds->transfer_attributes( das ) ;
-#endif
-    return fdds;
-}
-
-#ifdef DAP4
-/**
- * Build a DAP4 data response document body and write it to the output
- * stream 'out'.
- *
- * @note The DAP2/3 methods have an optional 'with_mime_headers' parameter
- * that triggers the generation of a complete HTTP response document. This
- * method lacks that.
- *
- * @param out Write the response body here
- * @param dds This DDS holds the variables to serialize
- * @parma eval Use this instance of the CE evaluator to subset/sample the
- * dataset
- */
-void
-ResponseBuilder::send_dap4_data(ostream &out, DDS &dds, ConstraintEvaluator &eval)
-{
-    throw InternalErr(__FILE__, __LINE__, "ResponseBuilder::send_dap4_data: Not implemented");
-
-    // TODO
-    // Print the chunk offset info so that clients can skip the DMR and go
-    // directly to the data.
-
-    // Send constrained DMR
-    dds.print_dmr(out, !d_ce.empty());
-
-    // Grab a stream that encodes for DAP4
-    D4StreamMarshaller m(out);
-
-    // TODO Write word order information
-
-    // Send all variables in the current projection (send_p()). In DAP4,
-    // all of the top-level variables are serialized with their checksums.
-    // Internal variables are not.
-    //
-    // TODO When Group support is added to libdap, this will need to be
-    // generalized so that all variables in the top-levels of all the
-    // groups will have checksums included in the response.
-    //
-    // TODO Switch to the DAP4 serialization method once it's written
-    for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++) {
-        if ((*i)->send_p()) {
-            DBG(cerr << "Sending " << (*i)->name() << endl);
-
-            m.reset_checksum();
-
-            // FIXME Replace with DAP4 call
-            (*i)->serialize(eval, dds, m, true);
-
-            m.put_checksum();
-        }
-    }
-
-}
-#endif // DAP4
 
 static const char *descrip[] = { "unknown", "dods_das", "dods_dds", "dods_data", "dods_error", "web_error", "dap4-ddx",
         "dap4-data", "dap4-error", "dap4-data-ddx", "dods_ddx" };
@@ -1614,19 +961,6 @@ void ResponseBuilder::set_mime_ddx_boundary(ostream &strm, const string &boundar
     strm << "Content-Transfer-Encoding: binary" << CRLF;
     strm << "Content-Description: ddx" << CRLF;
     strm << "Content-Id: <" << cid << ">" << CRLF;
-
-    strm << CRLF;
-}
-
-void ResponseBuilder::set_mime_data_boundary(ostream &strm, const string &boundary, const string &cid,
-        const string &endian, unsigned long long len) const
-{
-    strm << "--" << boundary << CRLF;
-    strm << "Content-Type: application/x-dap-" << endian << "-endian" << CRLF;
-    strm << "Content-Transfer-Encoding: binary" << CRLF;
-    strm << "Content-Description: data" << CRLF;
-    strm << "Content-Id: <" << cid << ">" << CRLF;
-    strm << "Content-Length: " << len << CRLF;
 
     strm << CRLF;
 }

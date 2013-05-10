@@ -42,8 +42,6 @@
 
 #include <vector>
 
-//#include "Pix.h"
-
 #ifndef _basetype_h
 #include "BaseType.h"
 #endif
@@ -121,8 +119,8 @@ namespace libdap
 class Grid: public Constructor
 {
 private:
-    BaseType *d_array_var;
-    std::vector<BaseType *> d_map_vars;
+    //BaseType *d_array_var;	// weak pointer to the
+    bool d_is_array_set;
 
 protected: // subclasses need access [mjohnson 11 nov 2009]
     void m_duplicate(const Grid &s);
@@ -144,15 +142,6 @@ public:
 
     virtual bool is_dap2_only_type();
 
-    virtual int element_count(bool leaves = false);
-
-    virtual void set_send_p(bool state);
-    virtual void set_read_p(bool state);
-    virtual void set_in_selection(bool state);
-
-    virtual BaseType *var(const string &n, bool exact = true, btp_stack *s = 0);
-    virtual BaseType *var(const string &n, btp_stack &s);
-
     virtual void add_var(BaseType *bt, Part part);
     virtual void add_var_nocopy(BaseType *bt, Part part);
 
@@ -163,22 +152,11 @@ public:
     BaseType *array_var();
     Array *get_array();
 
-    virtual unsigned int width();
-    virtual unsigned int width(bool constrained);
-
     virtual int components(bool constrained = false);
 
     virtual bool projection_yields_grid();
 
     virtual void clear_constraint();
-
-    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
-#if 0
-    virtual unsigned int val2buf(void *buf, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
-#endif
 
     virtual void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,

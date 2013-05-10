@@ -1,10 +1,12 @@
 // ServerFunctionsList.cc
 
-// This file is part of bes, A C++ back-end server implementation framework
-// for the OPeNDAP Data Access Protocol.
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
 
 // Copyright (c) 2013 OPeNDAP, Inc.
-// Author: James Gallagher <jgallagher@opendap.org>
+// Author: Nathan Potter <npotter@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,6 +24,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include <pthread.h>
+
 #include <iostream>
 #include <algorithm>
 
@@ -36,17 +40,53 @@ using std::endl;
 using namespace std;
 using namespace libdap;
 
+
+static pthread_once_t instance_control = PTHREAD_ONCE_INIT;
+
 namespace libdap {
 
 ServerFunctionsList *ServerFunctionsList::d_instance = 0 ;
 
-ServerFunctionsList::ServerFunctionsList()
-{
+/**
+ * private static that only get's called once by dint of...    EXPLAIN
+ */
+void ServerFunctionsList::initialize_instance() {
+    if (d_instance == 0) {
+        d_instance = new ServerFunctionsList;
+        atexit(delete_instance);
+    }
 }
 
-ServerFunctionsList::~ServerFunctionsList()
-{
+/**
+ * Private static function can only be called by friends andf pThreads code.
+ */
+void ServerFunctionsList::delete_instance() {
+    delete d_instance;
+    d_instance = 0;
 }
+
+/**
+ * Private method insures that nobody can try to delete the singleton class.
+ */
+
+ServerFunctionsList::~ServerFunctionsList() {
+    std::multimap<string,libdap::ServerFunction *>::iterator fit;
+    for(fit=d_func_list.begin(); fit!=d_func_list.end() ; fit++){
+        libdap::ServerFunction *func = fit->second;
+        DBG(cerr << "ServerFunctionsList::~ServerFunctionsList() - Deleting ServerFunction " << func->getName() << " from ServerFunctionsList." << endl);
+        delete func;
+    }
+    d_func_list.clear();
+}
+
+
+
+ServerFunctionsList * ServerFunctionsList::TheList() {
+    pthread_once(&instance_control, initialize_instance);
+    return d_instance;
+}
+
+
 
 
 /**
@@ -58,7 +98,7 @@ ServerFunctionsList::~ServerFunctionsList()
  */
 void ServerFunctionsList::add_function(ServerFunction *func )
 {
-	func_list.insert(std::make_pair(func->getName(),func));
+    d_func_list.insert(std::make_pair(func->getName(),func));
 }
 
 #if 0
@@ -167,11 +207,11 @@ bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) c
     return false;
 #endif
 
-    if (func_list.empty())
+    if (d_func_list.empty())
         return false;
 
     std::pair <std::multimap<std::string,libdap::ServerFunction *>::const_iterator, std::multimap<std::string,libdap::ServerFunction *>::const_iterator> ret;
-    ret = func_list.equal_range(name);
+    ret = d_func_list.equal_range(name);
     for (std::multimap<std::string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_bool_func())){
             return true;
@@ -221,11 +261,11 @@ bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
     return false;
 #endif
 
-    if (func_list.empty())
+    if (d_func_list.empty())
         return false;
 
     std::pair <std::multimap<string,libdap::ServerFunction *>::const_iterator, std::multimap<string,libdap::ServerFunction *>::const_iterator> ret;
-    ret = func_list.equal_range(name);
+    ret = d_func_list.equal_range(name);
     for (std::multimap<string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_btp_func())){
             return true;
@@ -276,11 +316,11 @@ bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
     return false;
 #endif
 
-    if (func_list.empty())
+    if (d_func_list.empty())
         return false;
 
     std::pair <std::multimap<string,libdap::ServerFunction *>::const_iterator, std::multimap<string,libdap::ServerFunction *>::const_iterator> ret;
-    ret = func_list.equal_range(name);
+    ret = d_func_list.equal_range(name);
     for (std::multimap<string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_proj_func())){
             return true;
@@ -295,13 +335,13 @@ bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
 /** @brief Returns an iterator pointing to the first key pair in the ServerFunctionList. */
 std::multimap<string,libdap::ServerFunction *>::iterator ServerFunctionsList::begin()
 {
-    return func_list.begin();
+    return d_func_list.begin();
 }
 
 /** @brief Returns an iterator pointing to the last key pair in the ServerFunctionList. */
 std::multimap<string,libdap::ServerFunction *>::iterator ServerFunctionsList::end()
 {
-    return func_list.end();
+    return d_func_list.end();
 }
 
 
@@ -381,7 +421,6 @@ void ServerFunctionsList::dump(ostream &strm) const
 
     BESIndent::UnIndent();
 }
-#endif
 
 ServerFunctionsList *
 ServerFunctionsList::TheList()
@@ -392,10 +431,11 @@ ServerFunctionsList::TheList()
     return d_instance;
 }
 
+#endif
 
 void ServerFunctionsList::getFunctionNames(vector<string> *names){
     std::multimap<string,libdap::ServerFunction *>::iterator fit;
-    for(fit=func_list.begin(); fit!=func_list.end() ; fit++){
+    for(fit=d_func_list.begin(); fit!=d_func_list.end() ; fit++){
         ServerFunction *func = fit->second;
         names->push_back(func->getName());
     }

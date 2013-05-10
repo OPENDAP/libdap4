@@ -59,23 +59,11 @@ Grid::m_duplicate(const Grid &s)
 {
     // TODO revisit this code once/if the class is switched from using it's
     // own vars to those in Constructor. jhrg 4/3/13
-#if 0
-    // Clear out any spurious vars in Constructor::d_vars
-    d_vars.clear(); // [mjohnson 10 Sep 2009]
-#endif
-    d_array_var = s.d_array_var->ptr_duplicate();
-    d_array_var->set_parent(this);
-    d_vars.push_back(d_array_var); // so the Constructor::Vars_Iter sees it [mjohnson 10 Sep 2009]
 
-    Grid &cs = const_cast<Grid &>(s);
-
-    for (Map_iter i = cs.d_map_vars.begin(); i != cs.d_map_vars.end(); i++) {
-        BaseType *btp = (*i)->ptr_duplicate();
-        btp->set_parent(this);
-        d_map_vars.push_back(btp);
-        d_vars.push_back(btp); // push all map vectors as weak refs into super::d_vars which won't delete them [mjohnson 10 Sep 2009]
-    }
-
+	// copy the weak pointer - Constructor will take care of copying
+	// the 'strong' pointers.
+	//d_array_var = s.d_array_var;
+	d_is_array_set = s.d_is_array_set;
 }
 
 /** The Grid constructor requires only the name of the variable
@@ -87,7 +75,7 @@ Grid::m_duplicate(const Grid &s)
 
     @brief The Grid constructor.
 */
-Grid::Grid(const string &n) : Constructor(n, dods_grid_c), d_array_var(0)
+Grid::Grid(const string &n) : Constructor(n, dods_grid_c), d_is_array_set(false)
 {}
 
 /** The Grid server-side constructor requires the name of the variable
@@ -102,7 +90,7 @@ Grid::Grid(const string &n) : Constructor(n, dods_grid_c), d_array_var(0)
     @brief The Grid constructor.
 */
 Grid::Grid(const string &n, const string &d)
-    : Constructor(n, d, dods_grid_c), d_array_var(0)
+    : Constructor(n, d, dods_grid_c), d_is_array_set(false)
 {}
 
 /** @brief The Grid copy constructor. */
@@ -113,16 +101,7 @@ Grid::Grid(const Grid &rhs) : Constructor(rhs)
 
 Grid::~Grid()
 {
-    // Because the BaseType pointers are all pushed onto the Constructor's
-    // variables, they will be freed by its dtor.
-#if 0
-    delete d_array_var; d_array_var = 0;
-
-    for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
-        BaseType *btp = *i ;
-        delete btp ; btp = 0;
-    }
-#endif
+	//d_array_var = 0;	// Weak pointer; object will be freed by Constructor
 }
 
 BaseType *
@@ -165,254 +144,6 @@ Grid::is_dap2_only_type()
     return true;
 }
 
-int
-Grid::element_count(bool leaves)
-{
-    if (!leaves)
-        return d_map_vars.size() + 1;
-    else {
-        int i = 0;
-        for (Map_iter j = d_map_vars.begin(); j != d_map_vars.end(); j++) {
-            j += (*j)->element_count(leaves);
-        }
-
-		if (!get_array())
-			throw InternalErr(__FILE__, __LINE__, "No Grid array!");
-
-        i += get_array()->element_count(leaves);
-        return i;
-    }
-}
-
-void
-Grid::set_send_p(bool state)
-{
-    d_array_var->set_send_p(state);
-
-    for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
-        (*i)->set_send_p(state);
-    }
-
-    BaseType::set_send_p(state);
-}
-
-void
-Grid::set_read_p(bool state)
-{
-    d_array_var->set_read_p(state);
-
-    for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
-        (*i)->set_read_p(state);
-    }
-
-    BaseType::set_read_p(state);
-}
-
-void
-Grid::set_in_selection(bool state)
-{
-    d_array_var->set_in_selection(state);
-
-    for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
-        (*i)->set_in_selection(state);
-    }
-
-    BaseType::set_in_selection(state);
-}
-
-unsigned int
-Grid::width()
-{
-    unsigned int sz = d_array_var->width();
-
-    for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
-        sz += (*i)->width();
-    }
-
-    return sz;
-}
-
-/** This version of width simply returns the same thing as width() for simple
-    types and Arrays. For Structure it returns the total size if constrained
-    is false, or the size of the elements in the current projection if true.
-
-    @param constrained If true, return the size after applying a constraint.
-    @return  The number of bytes used by the variable.
- */
-unsigned int
-Grid::width(bool constrained)
-{
-    unsigned int sz = 0;
-
-    if (constrained) {
-    	if (d_array_var->send_p())
-    		sz = d_array_var->width(constrained);
-    }
-    else {
-    	sz = d_array_var->width(constrained);
-    }
-
-    for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
-    	if (constrained) {
-    		if ((*i)->send_p())
-    			sz += (*i)->width(constrained);
-    	}
-    	else {
-    		sz += (*i)->width(constrained);
-    	}
-    }
-
-    return sz;
-}
-
-void
-Grid::intern_data(ConstraintEvaluator &eval, DDS &dds)
-{
-    dds.timeout_on();
-
-    if (!read_p())
-        read();  // read() throws Error and InternalErr
-
-    dds.timeout_off();
-
-    if (d_array_var->send_p())
-        d_array_var->intern_data(eval, dds);
-
-    for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
-        if ((*i)->send_p()) {
-            (*i)->intern_data(eval, dds);
-        }
-    }
-}
-
-bool
-Grid::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
-{
-    DBG(cerr << "In Grid::serialize()" << endl);
-
-    dds.timeout_on();
-
-    // Re ticket 560: Get an object from eval that describes how to sample
-    // and rearrange the data, then perform those actions. Alternative:
-    // implement this as a selection function.
-    DBG(cerr << "In Grid::serialize(), before read() - read_p() returned: " << read_p() << endl);
-
-    if (!read_p())
-        read();  // read() throws Error and InternalErr
-
-    DBG(cerr << "In Grid::serialize(), past read() - read_p() returned: " << read_p() << endl);
-
-    #if EVAL
-    if (ce_eval && !eval.eval_selection(dds, dataset()))
-        return true;
-#endif
-
-    dds.timeout_off();
-
-    if (d_array_var->send_p()) {
-#ifdef CHECKSUMS
-        XDRStreamMarshaller *sm = dynamic_cast<XDRStreamMarshaller*>(&m);
-        if (sm && sm->checksums())
-            sm->reset_checksum();
-
-        d_array_var->serialize(eval, dds, m, false);
-
-        if (sm && sm->checksums())
-            sm->get_checksum();
-#else
-        DBG(cerr << "About to call Array::serialize() in Grid::serialize" << endl);
-        d_array_var->serialize(eval, dds, m, false);
-#endif
-    }
-
-    for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
-        if ((*i)->send_p()) {
-#ifdef CHECKSUMS
-            XDRStreamMarshaller *sm = dynamic_cast<XDRStreamMarshaller*>(&m);
-            if (sm && sm->checksums())
-                sm->reset_checksum();
-
-            (*i)->serialize(eval, dds, m, false);
-
-            if (sm && sm->checksums())
-                sm->get_checksum();
-#else
-            (*i)->serialize(eval, dds, m, false);
-#endif
-        }
-    }
-
-    return true;
-}
-
-bool
-Grid::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
-{
-    d_array_var->deserialize(um, dds, reuse);
-
-    for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
-        (*i)->deserialize(um, dds, reuse);
-    }
-
-    return false;
-}
-
-#if 0
-/** @brief Returns the size of the Grid type.
-
-    Use the <tt>val2buf()</tt>
-    functions of the member elements to insert values into the Grid
-    buffer.
-
-    @return The size (in bytes) of the value's representation.  */
-unsigned int
-Grid::val2buf(void *, bool)
-{
-    return sizeof(Grid);
-}
-
-/** Returns the size of the Grid type.  Use the <tt>buf2val()</tt>
-    functions of the member elements to read values from the Grid
-    buffer. */
-unsigned int
-Grid::buf2val(void **)
-{
-    return sizeof(Grid);
-}
-#endif
-
-BaseType *
-Grid::var(const string &n, btp_stack &s)
-{
-    return var(n, true, &s);
-}
-
-/** Note the parameter <i>exact_match</i> is not used by this
-    member function.
-
-    @see BaseType */
-BaseType *
-Grid::var(const string &n, bool, btp_stack *s)
-{
-    string name = www2id(n);
-
-    if (d_array_var->name() == name) {
-        if (s)
-            s->push(static_cast<BaseType *>(this));
-        return d_array_var;
-    }
-
-    for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
-        if ((*i)->name() == name) {
-            if (s)
-                s->push(static_cast<BaseType *>(this));
-            return *i;
-        }
-    }
-
-    return 0;
-}
-
 /** Add an array or map to the Grid.
 
     The original version of this method required that the \c part parameter
@@ -430,13 +161,15 @@ Grid::add_var(BaseType *bt, Part part)
 {
     if (!bt)
         throw InternalErr(__FILE__, __LINE__, "Passing NULL pointer as variable to be added.");
-#if 0
-    if (bt->is_dap4_only_type())
-        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Grid.");
-#endif
-    if (part == array && d_array_var) {
+
+    if (part == array && d_is_array_set/*get_array()*/) {
       // Avoid leaking memory...  Function is add, not set, so it is an error to call again for the array part.
       throw InternalErr(__FILE__, __LINE__, "Error: Grid::add_var called with part==Array, but the array was already set!");
+    }
+
+    // avoid obvious broken semantics
+    if (!dynamic_cast<Array*>(bt)) {
+      throw InternalErr(__FILE__, __LINE__, "Grid::add_var(): object is not an Array!");
     }
 
     // Set to the clone of bt if we get that far.
@@ -445,15 +178,8 @@ Grid::add_var(BaseType *bt, Part part)
     switch (part) {
 
     case array: {
-        // Refactored to use new set_array ([mjohnson 11 nov 2009])
-        Array* p_arr = dynamic_cast<Array*>(bt);
-        // avoid obvious broken semantics
-        if (!p_arr) {
-          throw InternalErr(__FILE__, __LINE__,
-              "Grid::add_var(): with Part==array: object is not an Array!");
-        }
         // Add it as a copy to preserve old semantics.  This sets parent too.
-        bt_clone = p_arr->ptr_duplicate();
+        bt_clone = bt->ptr_duplicate();
         set_array(static_cast<Array*>(bt_clone));
     }
     break;
@@ -461,37 +187,23 @@ Grid::add_var(BaseType *bt, Part part)
     case maps: {
             bt_clone = bt->ptr_duplicate();
             bt_clone->set_parent(this);
-            d_map_vars.push_back(bt_clone);
+            d_vars.push_back(bt_clone);
         }
     break;
 
     default: {
-        if (!d_array_var) {
-            // Refactored to use new set_array ([mjohnson 11 nov 2009])
-            Array* p_arr = dynamic_cast<Array*>(bt);
-            // avoid obvious broken semantics
-            if (!p_arr) {
-              throw InternalErr(__FILE__, __LINE__,
-                  "Grid::add_var(): with Part==array: object is not an Array!");
-            }
+        if (!d_is_array_set/*!d_array_var*/) {
             // Add it as a copy to preserve old semantics.  This sets parent too.
-            bt_clone = p_arr->ptr_duplicate();
+            bt_clone = bt->ptr_duplicate();
             set_array(static_cast<Array*>(bt_clone));
         }
         else {
             bt_clone = bt->ptr_duplicate();
             bt_clone->set_parent(this);
-            d_map_vars.push_back(bt_clone);
+            d_vars.push_back(bt_clone);
         }
     }
     break;
-  }// switch
-
-  // if we get ehre without exception, add the cloned object to the superclass variable iterator
-  // mjohnson 10 Sep 2009
-  // Add it to the superclass d_vars list so we can iterate on superclass vars
-  if (bt_clone) {
-    d_vars.push_back(bt_clone);
   }
 }
 
@@ -515,13 +227,15 @@ Grid::add_var_nocopy(BaseType *bt, Part part)
 {
     if (!bt)
         throw InternalErr(__FILE__, __LINE__, "Passing NULL pointer as variable to be added.");
-#if 0
-    if (bt->is_dap4_only_type())
-        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Grid.");
-#endif
-    if (part == array && d_array_var) {
+
+    if (part == array && d_is_array_set/*get_array()*/) {
       // Avoid leaking memory...  Function is add, not set, so it is an error to call again for the array part.
       throw InternalErr(__FILE__, __LINE__, "Error: Grid::add_var called with part==Array, but the array was already set!");
+    }
+
+    // avoid obvious broken semantics
+    if (!dynamic_cast<Array*>(bt)) {
+      throw InternalErr(__FILE__, __LINE__, "Grid::add_var(): object is not an Array!");
     }
 
     bt->set_parent(this);
@@ -530,45 +244,28 @@ Grid::add_var_nocopy(BaseType *bt, Part part)
 
     case array: {
         // Refactored to use new set_array ([mjohnson 11 nov 2009])
-        Array* p_arr = dynamic_cast<Array*>(bt);
-        // avoid obvious broken semantics
-        if (!p_arr) {
-          throw InternalErr(__FILE__, __LINE__,
-              "Grid::add_var(): with Part==array: object is not an Array!");
-        }
         set_array(static_cast<Array*>(bt));
     }
     break;
 
     case maps: {
+    	// FIXME Why is this commented out?
             //bt->set_parent(this);
-            d_map_vars.push_back(bt);
+            d_vars.push_back(bt);
         }
     break;
 
     default: {
-        if (!d_array_var) {
+        if (!d_is_array_set/*!get_array()*/) {
             // Refactored to use new set_array ([mjohnson 11 nov 2009])
-            Array* p_arr = dynamic_cast<Array*>(bt);
             // avoid obvious broken semantics
-            if (!p_arr) {
-              throw InternalErr(__FILE__, __LINE__,
-                  "Grid::add_var(): with Part==array: object is not an Array!");
-            }
             set_array(static_cast<Array*>(bt));
         }
         else {
-            d_map_vars.push_back(bt);
+            d_vars.push_back(bt);
         }
     }
     break;
-  }// switch
-
-  // if we get here without exception, add the cloned object to the superclass variable iterator
-  // mjohnson 10 Sep 2009
-  // Add it to the superclass d_vars list so we can iterate on superclass vars
-  if (bt) {
-    d_vars.push_back(bt);
   }
 }
 
@@ -578,25 +275,50 @@ Grid::add_var_nocopy(BaseType *bt, Part part)
  * is made).
  * If there already exists an array portion, the old
  * one will be deleted to avoid leaks.
+ *
+ * @note This code has been modified to use a new storage for
+ * the Grid's variables (the storage defined by Constructor).
+ *
  * @param p_new_arr  the object to store as the array
  *                   part of the grid.
  */
-void
-Grid::set_array(Array* p_new_arr)
+void Grid::set_array(Array* p_new_arr)
 {
-  if (!p_new_arr) {
-    throw InternalErr(__FILE__, __LINE__,
-        "Grid::set_array(): Cannot set to null!");
-  }
-  // Make sure not same memory, this would be evil.
-  if (p_new_arr == d_array_var) {
-      return;
-   }
-  // clean out any old array
-  delete d_array_var; d_array_var = 0;
-  // Set the new, with parent
-  d_array_var = p_new_arr;
-  d_array_var->set_parent(this);
+	if (!p_new_arr) {
+		throw InternalErr(__FILE__, __LINE__, "Grid::set_array(): Cannot set to null!");
+	}
+
+	// Make sure not same memory, this would be evil.
+	if (p_new_arr == get_array()) {
+		return;
+	}
+
+	p_new_arr->set_parent(this);
+
+	// Three cases: 1. There are no variables set for this grid at all
+	// 2. There are maps but no array
+	// 3. There is already an array set (and maybe maps).
+	// NB: d_array_var is a weak pointer to the Grid's Array
+	if (d_vars.size() == 0) {
+		d_vars.push_back(p_new_arr);
+	}
+	else if (!d_is_array_set/*!d_array_var*/) {
+		d_vars.insert(d_vars.begin(), p_new_arr);
+	}
+	else {
+		// clean out old array
+		delete get_array();
+		d_vars[0] = p_new_arr;
+	}
+
+	d_is_array_set = true;
+#if 0
+	// store the array pointer locally
+	d_array_var = p_new_arr;
+
+	// Set the  parent
+	d_array_var->set_parent(this);
+#endif
 }
 
 /**
@@ -630,16 +352,13 @@ Grid::add_map(Array* p_new_map, bool add_as_copy)
 {
   if (!p_new_map)
     throw InternalErr(__FILE__, __LINE__, "Grid::add_map(): cannot have p_new_map null!");
-#if 0
-  if (p_new_map->is_dap4_only_type())
-      throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Grid.");
-#endif
+
   if (add_as_copy)
     p_new_map = static_cast<Array*>(p_new_map->ptr_duplicate());
 
   p_new_map->set_parent(this);
-  d_map_vars.push_back(p_new_map);
-  d_vars.push_back(p_new_map); // allow superclass iter to work as well.
+
+  d_vars.push_back(p_new_map);
 
   // return the one that got put into the Grid.
   return p_new_map;
@@ -666,11 +385,9 @@ Grid::prepend_map(Array* p_new_map, bool add_copy)
     }
 
   p_new_map->set_parent(this);
-  d_map_vars.insert(d_map_vars.begin(), p_new_map);
-  d_vars.insert(d_vars.begin(), p_new_map); // allow superclass iter to work as well.
+  d_vars.insert(map_begin(), p_new_map);
 
-   // return the one that got put into the Grid.
-   return p_new_map;
+  return p_new_map;
 }
 
 /** @brief Returns the Grid Array.
@@ -679,7 +396,15 @@ Grid::prepend_map(Array* p_new_map, bool add_copy)
 BaseType *
 Grid::array_var()
 {
-    return d_array_var;
+    //return d_array_var;
+	// FIXME Should really test that the array has not be set; maps might be added first. jhrg 5/9/13
+#if 0
+	if (d_array_var)
+		cerr << "In array_var(), d_array_var holds a " << d_array_var->type_name() << endl;
+	else
+		cerr << "In array_var(), d_array_var is null" << endl;
+#endif
+	return d_is_array_set /*d_vars.size() > 0*/ ? *d_vars.begin() : 0;
 }
 
 /** @brief Returns the Grid Array.
@@ -688,18 +413,18 @@ Grid::array_var()
 Array *
 Grid::get_array()
 {
-    Array *a = dynamic_cast<Array*>(d_array_var);
-    if (a)
-        return a;
-    else
-        throw InternalErr(__FILE__, __LINE__, "bad Cast");
+    return dynamic_cast<Array*>(array_var());
 }
 
 /** @brief Returns an iterator referencing the first Map vector. */
 Grid::Map_iter
 Grid::map_begin()
 {
-    return d_map_vars.begin() ;
+    // The maps are stored in the second and subsequent elements of the
+    // d_var vector<BaseType*> of Constructor _unless_ the Array part
+    // has yet to be set. In the latter case, there are only maps in
+    // d_vars
+    return d_is_array_set/*(d_array_var != 0)*/ ? d_vars.begin() + 1: d_vars.begin();
 }
 
 /** Returns an iterator referencing the end of the list of Map vectors.
@@ -707,14 +432,15 @@ Grid::map_begin()
 Grid::Map_iter
 Grid::map_end()
 {
-    return d_map_vars.end() ;
+    return d_vars.end();
 }
 
 /** @brief Returns an iterator referencing the first Map vector. */
 Grid::Map_riter
 Grid::map_rbegin()
 {
-    return d_map_vars.rbegin() ;
+    // see above
+    return d_is_array_set/*(d_array_var != 0)*/ ? d_vars.rbegin() + 1: d_vars.rbegin();
 }
 
 /** Returns an iterator referencing the end of the list of Map vectors.
@@ -722,7 +448,7 @@ Grid::map_rbegin()
 Grid::Map_riter
 Grid::map_rend()
 {
-    return d_map_vars.rend() ;
+    return d_vars.rend();
 }
 
 /** Return the iterator for the \e ith map.
@@ -731,7 +457,7 @@ Grid::map_rend()
 Grid::Map_iter
 Grid::get_map_iter(int i)
 {
-    return d_map_vars.begin() + i;
+    return map_begin() + i;
 }
 
 /** Returns the number of components in the Grid object.  This is
@@ -755,16 +481,16 @@ Grid::components(bool constrained)
     int comp;
 
     if (constrained) {
-        comp = d_array_var->send_p() ? 1 : 0;
+        comp = get_array()->send_p() ? 1 : 0;
 
-        for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
+        for (Map_iter i = map_begin(); i != map_end(); i++) {
             if ((*i)->send_p()) {
                 comp++;
             }
         }
     }
     else {
-        comp = 1 + d_map_vars.size();
+        comp = d_vars.size();
     }
 
     return comp;
@@ -772,36 +498,34 @@ Grid::components(bool constrained)
 
 void Grid::transfer_attributes(AttrTable *at_container)
 {
-    AttrTable *at = at_container->get_attr_table(name());
+	AttrTable *at = at_container->get_attr_table(name());
 
-    if (at) {
-	at->set_is_global_attribute(false);
+	if (at) {
+		at->set_is_global_attribute(false);
 
-	array_var()->transfer_attributes(at);
+		array_var()->transfer_attributes(at);
 
-	Map_iter map = map_begin();
-	while (map != map_end()) {
-	    (*map)->transfer_attributes(at);
-	    map++;
+		Map_iter map = map_begin();
+		while (map != map_end()) {
+			(*map)->transfer_attributes(at);
+			map++;
+		}
+
+		// Trick: If an attribute that's within the container 'at' still has its
+		// is_global_attribute property set, then it's not really a global attr
+		// but instead an attribute that belongs to this Grid.
+		AttrTable::Attr_iter at_p = at->attr_begin();
+		while (at_p != at->attr_end()) {
+			if (at->is_global_attribute(at_p)) {
+				if (at->get_attr_type(at_p) == Attr_container)
+					get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)), at->get_name(at_p));
+				else
+					get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
+			}
+
+			at_p++;
+		}
 	}
-
-	// Trick: If an attribute that's within the container 'at' still has its
-	// is_global_attribute property set, then it's not really a global attr
-	// but instead an attribute that belongs to this Grid.
-	AttrTable::Attr_iter at_p = at->attr_begin();
-	while (at_p != at->attr_end()) {
-	    if (at->is_global_attribute(at_p)) {
-		if (at->get_attr_type(at_p) == Attr_container)
-		    get_attr_table().append_container(new AttrTable(
-			    *at->get_attr_table(at_p)), at->get_name(at_p));
-		else
-		    get_attr_table().append_attr(at->get_name(at_p),
-			    at->get_type(at_p), at->get_attr_vector(at_p));
-	    }
-
-	    at_p++;
-	}
-    }
 }
 
 // When projected (using whatever the current constraint provides in the way
@@ -831,7 +555,7 @@ Grid::projection_yields_grid()
     // projected dimension in the Array component, there is a matching Map
     // vector, then the Grid is valid.
     bool valid = true;
-    Array *a = (Array *)d_array_var;
+    Array *a = get_array();
 
     // Don't bother checking if the Array component is not included.
     if (!a->send_p())
@@ -841,7 +565,7 @@ Grid::projection_yields_grid()
     // the array part of the Grid that's being sent (given that the above
     // test passed and the array is being sent).
     if (components(true) == 1)
-	return false;
+    	return false;
 
     Array::Dim_iter d = a->dim_begin() ;
     Map_iter m = map_begin() ;
@@ -870,7 +594,7 @@ Grid::projection_yields_grid()
 void
 Grid::clear_constraint()
 {
-    dynamic_cast<Array&>(*d_array_var).clear_constraint();
+    get_array()->clear_constraint();
     for (Map_iter m = map_begin(); m != map_end(); ++m)
         dynamic_cast<Array&>(*(*m)).clear_constraint();
 }
@@ -895,10 +619,10 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
     if (constrained && !projection_yields_grid()) {
 	out << space << "Structure {\n" ;
 
-        d_array_var->print_decl(out, space + "    ", true, constraint_info,
+        get_array()->print_decl(out, space + "    ", true, constraint_info,
                                constrained);
 
-        for (Map_citer i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
+        for (Map_citer i = map_begin(); i != map_end(); i++) {
             (*i)->print_decl(out, space + "    ", true,
                              constraint_info, constrained);
         }
@@ -911,11 +635,11 @@ Grid::print_decl(ostream &out, string space, bool print_semi,
 	out << space << type_name() << " {\n" ;
 
 	out << space << "  Array:\n" ;
-        d_array_var->print_decl(out, space + "    ", true, constraint_info,
+        get_array()->print_decl(out, space + "    ", true, constraint_info,
                                constrained);
 
 	out << space << "  Maps:\n" ;
-        for (Map_citer i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
+        for (Map_citer i = map_begin(); i != map_end(); i++) {
             (*i)->print_decl(out, space + "    ", true,
                              constraint_info, constrained);
         }
@@ -971,6 +695,8 @@ public:
 
     void operator()(BaseType *btp)
     {
+    	// FIXME Remove
+    	cerr << "PrintGridFieldXMLWriter: tag = " << d_tag << ", type = " << btp->type_name() << "typeid: " << typeid(btp).name() << endl;
         Array *a = dynamic_cast<Array*>(btp);
         if (!a)
             throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
@@ -1049,11 +775,10 @@ Grid::print_val(ostream &out, string space, bool print_decl_p)
 	out << "{  Array: " ;
     else
 	out << "{" ;
-    d_array_var->print_val(out, "", false);
+    get_array()->print_val(out, "", false);
     if (pyg || !send_p())
 	out << "  Maps: " ;
-    for (Map_citer i = d_map_vars.begin(); i != d_map_vars.end();
-         i++, (void)(i != d_map_vars.end() && out << ", ")) {
+    for (Map_citer i = map_begin(); i != map_end(); i++, (void)(i != map_end() && out << ", ")) {
         (*i)->print_val(out, "", false);
     }
     out << " }" ;
@@ -1076,18 +801,18 @@ Grid::check_semantics(string &msg, bool all)
 
     msg = "";
 
-    if (!d_array_var) {
+    if (!get_array()) {
         msg += "Null grid base array in `" + name() + "'\n";
         return false;
     }
 
     // Is it an array?
-    if (d_array_var->type() != dods_array_c) {
-        msg += "Grid `" + name() + "'s' member `" + d_array_var->name() + "' must be an array\n";
+    if (get_array()->type() != dods_array_c) {
+        msg += "Grid `" + name() + "'s' member `" + get_array()->name() + "' must be an array\n";
         return false;
     }
 
-    Array *av = (Array *)d_array_var; // past test above, must be an array
+    Array *av = (Array *)get_array(); // past test above, must be an array
 
     // Array must be of a simple_type.
     if (!av->var()->is_simple_type()) {
@@ -1096,7 +821,7 @@ Grid::check_semantics(string &msg, bool all)
     }
 
     // enough maps?
-    if ((unsigned)d_map_vars.size() != av->dimensions()) {
+    if ((unsigned)d_vars.size()-1 != av->dimensions()) {
         msg += "The number of map variables for grid `" + this->name() + "' does not match the number of dimensions of `";
         msg += av->name() + "'\n";
         return false;
@@ -1104,8 +829,7 @@ Grid::check_semantics(string &msg, bool all)
 
     const string array_var_name = av->name();
     Array::Dim_iter asi = av->dim_begin() ;
-    for (Map_iter mvi = d_map_vars.begin();
-         mvi != d_map_vars.end(); mvi++, asi++) {
+    for (Map_iter mvi = map_begin(); mvi != map_end(); mvi++, asi++) {
 
         BaseType *mv = *mvi;
 
@@ -1139,15 +863,15 @@ Grid::check_semantics(string &msg, bool all)
         int av_size = av->dimension_size(asi) ;
         if (mv_a_size != av_size) {
             msg += "Grid map variable  `" + mv_a->name() + "'s' size does not match the size of array variable '";
-            msg += d_array_var->name() + "'s' cooresponding dimension\n";
+            msg += get_array()->name() + "'s' cooresponding dimension\n";
             return false;
         }
     }
 
     if (all) {
-        if (!d_array_var->check_semantics(msg, true))
+        if (!get_array()->check_semantics(msg, true))
             return false;
-        for (Map_iter mvi = d_map_vars.begin(); mvi != d_map_vars.end(); mvi++) {
+        for (Map_iter mvi = map_begin(); mvi != map_end(); mvi++) {
             if (!(*mvi)->check_semantics(msg, true)) {
                 return false;
             }
@@ -1172,23 +896,7 @@ Grid::dump(ostream &strm) const
     << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
     Constructor::dump(strm) ;
-    if (d_array_var) {
-        strm << DapIndent::LMarg << "array var: " << endl ;
-        DapIndent::Indent() ;
-        d_array_var->dump(strm) ;
-        DapIndent::UnIndent() ;
-    }
-    else {
-        strm << DapIndent::LMarg << "array var: null" << endl ;
-    }
-    strm << DapIndent::LMarg << "map var: " << endl ;
-    DapIndent::Indent() ;
-    Map_citer i = d_map_vars.begin() ;
-    Map_citer ie = d_map_vars.end() ;
-    for (; i != ie; i++) {
-        (*i)->dump(strm) ;
-    }
-    DapIndent::UnIndent() ;
+
     DapIndent::UnIndent() ;
 }
 

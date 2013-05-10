@@ -1167,7 +1167,7 @@ unsigned int Vector::set_value_slice_from_row_major_vector(const Vector& rowMajo
         throw InternalErr(__FILE__, __LINE__, funcName + "Logic error: the Vector to copy data from has length() < 0 and was probably not initialized!");
     }
 
-    // The read-in capacity had better be at least the length (the amountt we will copy) or we'll memcpy into bad memory
+    // The read-in capacity had better be at least the length (the amount we will copy) or we'll memcpy into bad memory
     // I imagine we could copy just the capacity rather than throw, but I really think this implies a problem to be addressed.
     if (rowMajorData.get_value_capacity() < static_cast<unsigned int> (rowMajorData.length())) {
         throw InternalErr(__FILE__, __LINE__, funcName + "Logic error: the Vector to copy from has a data capacity less than its length, can't copy!");

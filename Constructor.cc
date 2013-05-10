@@ -61,31 +61,19 @@ namespace libdap {
 void
 Constructor::m_duplicate(const Constructor &c)
 {
-    DBG(cerr << "In Constructor::m_duplicate for " << c.name() << endl);
-#if 1
-    // Clear out any spurious vars in Constructor::d_vars
-    // Moved from Grid::m_duplicate. jhrg 4/3/13
-    d_vars.clear(); // [mjohnson 10 Sep 2009]
-#endif
+	DBG(cerr << "In Constructor::m_duplicate for " << c.name() << endl);
+	// Clear out any spurious vars in Constructor::d_vars
+	// Moved from Grid::m_duplicate. jhrg 4/3/13
+	d_vars.clear(); // [mjohnson 10 Sep 2009]
 
-    Vars_citer i = c.d_vars.begin();
-    while (i != c.d_vars.end()) {
-        BaseType *btp = (*i++)->ptr_duplicate();
-        btp->set_parent(this);
-        d_vars.push_back(btp);
-    }
+	Vars_citer i = c.d_vars.begin();
+	while (i != c.d_vars.end()) {
+		BaseType *btp = (*i++)->ptr_duplicate();
+		btp->set_parent(this);
+		d_vars.push_back(btp);
+	}
 
-    DBG(cerr << "Exiting Constructor::m_duplicate for " << c.name() << endl);
-
-#if 0
-    Constructor &cs = const_cast<Constructor &>(c);
-
-    for (Vars_iter i = cs.d_vars.begin(); i != cs.d_vars.end(); i++) {
-        BaseType *btp = (*i)->ptr_duplicate();
-        btp->set_parent(this);
-        d_vars.push_back(btp);
-    }
-#endif
+	DBG(cerr << "Exiting Constructor::m_duplicate for " << c.name() << endl);
 }
 
 // Public member functions
@@ -116,11 +104,12 @@ Constructor::Constructor(const Constructor &rhs) : BaseType(rhs), d_vars(0)
 
 Constructor::~Constructor()
 {
+	// TODO use clear() here instead of the loop?
     Vars_iter i = d_vars.begin();
     while (i != d_vars.end()) {
-        delete *i;
-        *i = 0;
-        ++i;
+        delete *i++;
+        //*i = 0;
+        //++i;
     }
 }
 
@@ -138,6 +127,7 @@ Constructor::operator=(const Constructor &rhs)
     DBG(cerr << "Exiting Constructor::operator=" << endl);
     return *this;
 }
+
 
 int
 Constructor::element_count(bool leaves)

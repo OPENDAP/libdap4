@@ -63,13 +63,14 @@ test_config.h: test_config.h.in Makefile
 #
 
 if CPPUNIT
-UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
-	RegexTest                                                       \
-	ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest 	\
-	DDSTest	DDXParserTest DODSFilterTest generalUtilTest 		\
-	HTTPConnectTest parserUtilTest RCReaderTest 	\
-	SequenceTest SignalHandlerTest  MarshallerTest                  \
-	ResponseBuilderTest Keywords2Test HTTPCacheTest
+UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
+	RegexTest \
+	ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest \
+	DDSTest	DDXParserTest DODSFilterTest generalUtilTest \
+	HTTPConnectTest parserUtilTest RCReaderTest \
+	SequenceTest SignalHandlerTest  MarshallerTest \
+	ResponseBuilderTest Keywords2Test HTTPCacheTest \
+	ServerFunctionsListUnitTest
 	
 # Breaks valgrind: HTTPCacheTest 
 
@@ -187,6 +188,10 @@ dasT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
 #ArrayGeoConstraintTest_SOURCES = ArrayGeoConstraintTest.cc
 #ArrayGeoConstraintTest_LDADD =  ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
+
+
+ServerFunctionsListUnitTest_SOURCES = ServerFunctionsListUnitTest.cc
+ServerFunctionsListUnitTest_LDADD = ../libdap.la $(AM_LDADD)
 
 if DAP4_DEFINED
 

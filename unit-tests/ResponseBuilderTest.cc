@@ -234,7 +234,7 @@ Dataset \\{\n\
             CPPUNIT_FAIL("Error: " + e.get_error_message());
         }
     }
-
+#if 0
     void send_data_ddx_test() {
         string baseline = readTestBaseline((string) TEST_SRC_DIR + "/tmp.xml"); //"/ddx-testsuite/response_builder_send_data_ddx_test_3.xml");
         Regex r1(baseline.c_str());
@@ -306,6 +306,7 @@ Content-Encoding: binary\r\n\
             CPPUNIT_FAIL("Error: " + e.get_error_message());
         }
     }
+#endif
 
     void escape_code_test() {
         // These should NOT be escaped.
@@ -398,6 +399,8 @@ CPPUNIT_TEST_SUITE( ResponseBuilderTest );
         // likely because of the MIME header line termination chars. These
         // methods do work and I'm spending more time on the these two tests
         // than on all of the XMLWriter methods!
+        //
+        // Removed send_data_ddx from the class; it was never used.
         // CPPUNIT_TEST(send_data_ddx_test);
         // CPPUNIT_TEST(send_data_ddx_test2);
         CPPUNIT_TEST(escape_code_test);
