@@ -34,6 +34,10 @@
 #include <dirent.h>
 #include <fcntl.h>
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #include <string>
 #include <sstream>
 #include <vector>
@@ -42,7 +46,7 @@
 
 #include "DAPCache3.h"
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "InternalErr.h"
 #include "DapIndent.h"
@@ -135,7 +139,9 @@ DAPCache3::get_instance(const string &cache_dir, const string &prefix, unsigned 
 {
     if (d_instance == 0){
         d_instance = new DAPCache3(cache_dir, prefix, size);
+#if HAVE_ATEXIT
         atexit(delete_instance);
+#endif
     }
     return d_instance;
 }
