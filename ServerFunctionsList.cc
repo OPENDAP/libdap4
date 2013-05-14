@@ -22,6 +22,14 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#include <pthread.h>
+
 #include <iostream>
 #include <algorithm>
 
@@ -40,6 +48,8 @@ using namespace libdap;
 
 namespace libdap {
 
+static pthread_once_t ServerFunctionsList_instance_control = PTHREAD_ONCE_INIT;
+
 ServerFunctionsList *ServerFunctionsList::d_instance = 0 ;
 
 /**
@@ -49,7 +59,9 @@ void ServerFunctionsList::initialize_instance() {
     if (d_instance == 0) {
         DBG(cerr << "ServerFunctionsList::initialize_instance() - Creating singleton ServerFunctionList instance." << endl);
         d_instance = new ServerFunctionsList;
-        atexit(delete_instance);
+        #if HAVE_ATEXIT
+            atexit(delete_instance);
+        #endif
     }
 }
 
@@ -79,7 +91,7 @@ ServerFunctionsList::~ServerFunctionsList() {
 
 
 ServerFunctionsList * ServerFunctionsList::TheList() {
-    initialize_instance();
+    pthread_once(&ServerFunctionsList_instance_control, initialize_instance);
     DBG(cerr << "ServerFunctionsList::TheList() - Returning singleton ServerFunctionList instance." << endl);
     return d_instance;
 }
