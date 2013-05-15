@@ -52,16 +52,12 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
 	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest 	\
 	SequenceTest SignalHandlerTest  MarshallerTest                  \
 	ResponseBuilderTest Keywords2Test \
-	ServerFunctionsListUnitTest
+	ServerFunctionsListUnitTest ResponseCacheTest
 	
-# GridGeoConstraintTest ArrayGeoConstraintTest CEFunctionsTest 
-
 if DAP4_DEFINED
     UNIT_TESTS += DAP4MarshallerTest DAP4UnMarshallerTest \
     D4DimensionsTest D4EnumDefsTest
 endif
-
-#	fdiostreamTest
 
 else
 UNIT_TESTS =
@@ -163,18 +159,11 @@ ddsT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 dasT_SOURCES = dasT.cc $(TEST_SRC)
 dasT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
-#CEFunctionsTest_SOURCES = CEFunctionsTest.cc
-#CEFunctionsTest_LDADD = ../tests/libtest-types.a  ../libdap.la $(AM_LDADD)
-
-#GridGeoConstraintTest_SOURCES = GridGeoConstraintTest.cc
-#GridGeoConstraintTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
-
-#ArrayGeoConstraintTest_SOURCES = ArrayGeoConstraintTest.cc
-#ArrayGeoConstraintTest_LDADD =  ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
-
-
 ServerFunctionsListUnitTest_SOURCES = ServerFunctionsListUnitTest.cc
 ServerFunctionsListUnitTest_LDADD = ../libdap.la $(AM_LDADD)
+
+ResponseCacheTest_SOURCES = ResponseCacheTest.cc
+ResponseCacheTest_LDADD = ../tests/libtest-types.a ../libdapserver.la ../libdap.la $(AM_LDADD)
 
 if DAP4_DEFINED
 
@@ -191,6 +180,3 @@ D4EnumDefsTest_SOURCES = D4EnumDefsTest.cc $(TEST_SRC)
 D4EnumDefsTest_LDADD = ../libdap.la $(AM_LDADD)
 
 endif
-
-# fdiostreamTest_SOURCES = fdiostreamTest.cc
-# fdiostreamTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)

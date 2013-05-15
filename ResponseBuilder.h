@@ -116,12 +116,13 @@ public:
     virtual void send_data_ddx(std::ostream &data_stream, DDS &dds, ConstraintEvaluator &eval,
                            const std::string &start, const std::string &boundary,
                            bool with_mime_headers = true);
-
+#if 0
     virtual void cache_data_ddx(const std::string &cache_file_name, DDS &dds);
-
+#endif
+#if 0
     void set_mime_ddx_boundary(std::ostream &out, const std::string &boundary,
         const std::string &start) const;
-
+#endif
     // These functions are used both by the methods above and by other code.
     // However, Hyrax uses the OLFS to send the HTTP headers, so these functions
     // are never used in Hyrax. The BES may uses these in other contexts.

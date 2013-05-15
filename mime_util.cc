@@ -748,39 +748,38 @@ string read_multipart_boundary(FILE *in, const string &boundary)
     header values don't match. The optional values are tested only if they
     are given (the default values are not tested).
  */
-void read_multipart_headers(FILE *in, const string &content_type,
-	const ObjectType object_type, const string &cid)
+void read_multipart_headers(FILE *in, const string &content_type, const ObjectType object_type, const string &cid)
 {
-    bool ct = false, cd = false, ci = false;
+	bool ct = false, cd = false, ci = false;
 
-    string header = get_next_mime_header(in);
-    while (!header.empty()) {
-	string name, value;
-	parse_mime_header(header, name, value);
+	string header = get_next_mime_header(in);
+	while (!header.empty()) {
+		string name, value;
+		parse_mime_header(header, name, value);
 
-	if (name =="content-type") {
-	    ct = true;
-	    if (value.find(content_type) == string::npos)
-		throw Error("Content-Type for this part of a DAP4 data response must be " + content_type + ".");
+		if (name == "content-type") {
+			ct = true;
+			if (value.find(content_type) == string::npos)
+				throw Error("Content-Type for this part of a DAP4 data response must be " + content_type + ".");
+		}
+		else if (name == "content-description") {
+			cd = true;
+			if (get_description_type(value) != object_type)
+				throw Error(
+						"Content-Description for this part of a DAP4 data response must be dap4-ddx or dap4-data-ddx");
+		}
+		else if (name == "content-id") {
+			ci = true;
+			if (!cid.empty() && value != cid)
+				throw Error("Content-Id mismatch. Expected: " + cid + ", but got: " + value);
+		}
+
+		header = get_next_mime_header(in);
 	}
-	else if (name == "content-description") {
-	    cd = true;
-	    if (get_description_type(value) != object_type)
-		throw Error("Content-Description for this part of a DAP4 data response must be dap4-ddx or dap4-data-ddx");
-	}
-	else if (name == "content-id") {
-	    ci = true;
-	    if (!cid.empty() && value != cid)
-		throw Error("Content-Id mismatch. Expected: " + cid
-			+ ", but got: " + value);
-	}
 
-	header = get_next_mime_header(in);
-    }
-
-    if (!(ct && cd && ci))
-	throw Error("The DAP4 data response document is broken - missing header.");
+	if (!(ct && cd && ci)) throw Error("The DAP4 data response document is broken - missing header.");
 }
+
 /** Given a Content-Id read from the DDX, return the value to look for in a
     MPM Content-Id header. This function downcases the CID to match the value
     returned by parse_mime_header.

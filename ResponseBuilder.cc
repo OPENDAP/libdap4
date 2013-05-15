@@ -290,7 +290,7 @@ void ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &eval
 
         if (responseCache()) {
             DBG(cerr << "Using the cache for the server function CE" << endl);
-            fdds = responseCache()->read_cached_dataset(dds, eval, *this, cache_token);
+            fdds = responseCache()->read_cached_dataset(dds, d_btp_func_ce, this, &eval, cache_token);
         }
         else {
             DBG(cerr << "Cache not found; (re)calculating" << endl);
@@ -367,7 +367,7 @@ void ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval
 
         if (responseCache()) {
             DBG(cerr << "Using the cache for the server function CE" << endl);
-            fdds = responseCache()->read_cached_dataset(dds, eval, *this, cache_token);
+            fdds = responseCache()->read_cached_dataset(dds, d_btp_func_ce, this, &eval, cache_token);
         }
         else {
             DBG(cerr << "Cache not found; (re)calculating" << endl);
@@ -441,7 +441,7 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS & dds, Constraint
         const string &boundary, const string &start, bool ce_eval)
 {
     // Write the MPM headers for the DDX (text/xml) part of the response
-    set_mime_ddx_boundary(out, boundary, start);
+    libdap::set_mime_ddx_boundary(out, boundary, start, dap4_ddx, x_plain);
 
     // Make cid
     uuid_t uu;
@@ -457,8 +457,10 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS & dds, Constraint
     // Send constrained DDX with a data blob reference
     dds.print_xml_writer(out, true, cid);
 
-    XDRStreamMarshaller m(out);
+    // write the data part mime heraders here
+    set_mime_data_boundary(out, boundary, cid, dap4_data, x_plain);
 
+    XDRStreamMarshaller m(out);
 
     // Send all variables in the current projection (send_p()). In DAP4,
     // all of the top-level variables are serialized with their checksums.
@@ -507,7 +509,7 @@ void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEval
 
         if (responseCache()) {
             DBG(cerr << "Using the cache for the server function CE" << endl);
-            fdds = responseCache()->read_cached_dataset(dds, eval, *this, cache_token);
+            fdds = responseCache()->read_cached_dataset(dds, d_btp_func_ce, this, &eval, cache_token);
         }
         else {
             DBG(cerr << "Cache not found; (re)calculating" << endl);
@@ -615,7 +617,7 @@ void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval
 
         if (responseCache()) {
             DBG(cerr << "Using the cache for the server function CE" << endl);
-            fdds = responseCache()->read_cached_dataset(dds, eval, *this, cache_token);
+            fdds = responseCache()->read_cached_dataset(dds, d_btp_func_ce, this, &eval, cache_token);
         }
         else {
             DBG(cerr << "Cache not found; (re)calculating" << endl);
@@ -661,11 +663,8 @@ void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval
  encoded using a Marshaller, and enclosed in a MIME document which is all sent
  to \c data_stream.
 
- @note This is the DAP4 data response.
-
- FIXME!!!
- @todo I am broken WRT the other code here for sending data and DDS
- responses
+ @note This is not the DAP4 data response. This is used for now to cache
+ responses, so it does not read responses from the cache itself.
 
  @brief Transmit data.
  @param dds A DDS object containing the data to be sent.
@@ -704,7 +703,7 @@ void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, Constraint
         DDS *fdds = eval.eval_function_clauses(dds);
         try {
             if (with_mime_headers)
-                set_mime_multipart(data_stream, boundary, start, dods_ddx, x_plain, last_modified_time(d_dataset));
+                set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
             data_stream << flush;
             dataset_constraint_ddx(data_stream, *fdds, eval, boundary, start);
         }
@@ -716,7 +715,7 @@ void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, Constraint
     }
     else {
         if (with_mime_headers)
-            set_mime_multipart(data_stream, boundary, start, dods_ddx, x_plain, last_modified_time(d_dataset));
+            set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
         data_stream << flush;
         dataset_constraint_ddx(data_stream, dds, eval, boundary, start);
     }
@@ -727,6 +726,7 @@ void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, Constraint
         data_stream << CRLF << "--" << boundary << "--" << CRLF;
 }
 
+#if 0
 /** Write a DDS to an output stream. This method is intended to be used
     to write to a cache so that interim results can be reused w/o needing
     to be recomputed. I chose the 'data ddx' response because it combines
@@ -741,7 +741,22 @@ void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, Constraint
 
 void ResponseBuilder::cache_data_ddx(const string &cache_file_name, DDS &dds)
 {
-    DBG(cerr << "Caching " << d_dataset + "?" + d_btp_func_ce << endl);
+    ofstream data_stream(cache_file_name.c_str());
+    if (!data_stream)
+    	throw InternalErr(__FILE__, __LINE__, "Could not open '" + cache_file_name + "' to write cached response.");
+
+    string start="dataddx_cache_start", boundary="dataddx_cache_boundary";
+
+    ConstraintEvaluator eval;
+
+    dds.set_dap_version("3.2");
+
+    send_data_ddx(data_stream, dds, eval, start, boundary, true /*with_mime_headers*/);
+
+    data_stream.close();
+
+#if 0
+	DBG(cerr << "Caching " << d_dataset + "?" + d_btp_func_ce << endl);
 
     ofstream data_stream(cache_file_name.c_str());
     // Test for a valid file open
@@ -750,7 +765,8 @@ void ResponseBuilder::cache_data_ddx(const string &cache_file_name, DDS &dds)
 
     // Does this really need the full set of MIME headers? Not including these
     // might make it comparable with the dapreader module in the BES.
-    set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
+    // set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
+    set_mime_multipart(data_stream, boundary, start, dods_ddx, x_plain, last_modified_time(d_dataset));
     data_stream << flush;
 
     // dataset_constraint_ddx() needs a ConstraintEvaluator because
@@ -767,8 +783,9 @@ void ResponseBuilder::cache_data_ddx(const string &cache_file_name, DDS &dds)
 
     data_stream << CRLF << "--" << boundary << "--" << CRLF;
     data_stream.close();
+#endif
 }
-
+#endif
 
 static const char *descrip[] = { "unknown", "dods_das", "dods_dds", "dods_data", "dods_error", "web_error", "dap4-ddx",
         "dap4-data", "dap4-error", "dap4-data-ddx", "dods_ddx" };
@@ -955,6 +972,7 @@ void ResponseBuilder::set_mime_multipart(ostream &strm, const string &boundary, 
     strm << CRLF;
 }
 
+#if 0
 void ResponseBuilder::set_mime_ddx_boundary(ostream &strm, const string &boundary, const string &cid) const
 {
     strm << "--" << boundary << CRLF;
@@ -965,6 +983,7 @@ void ResponseBuilder::set_mime_ddx_boundary(ostream &strm, const string &boundar
 
     strm << CRLF;
 }
+#endif
 
 /** Generate an HTTP 1.0 response header for an Error object.
  @param strm Write the MIME header to this stream.

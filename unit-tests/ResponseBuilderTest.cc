@@ -29,9 +29,12 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <sys/types.h>
+
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
+#endif
+
 #include <unistd.h>  // for stat
-#include <cstring>
 #include <sstream>
 
 //#define DODS_DEBUG
@@ -44,7 +47,6 @@
 #include "DAS.h"
 #include "DDS.h"
 #include "Str.h"
-//#include "ce_functions.h"
 #include "GetOpt.h"
 
 #include "GNURegex.h"
@@ -73,8 +75,6 @@ void
 rb_test_function(int, BaseType *[], DDS &dds, BaseType **btpp)
 {
     string xml_value = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-
-
 
     ServerFunction *sf;
     string functionType;
@@ -106,8 +106,6 @@ rb_test_function(int, BaseType *[], DDS &dds, BaseType **btpp)
     return;
 }
 
-
-
 namespace libdap {
 
 class ResponseBuilderTest: public TestFixture {
@@ -121,7 +119,7 @@ private:
     time_t now;
     char now_array[256];
 
-    void loadServerSideFunction(){
+    void loadServerSideFunction() {
         libdap::ServerFunction *rbSSF = new libdap::ServerFunction(
 
             // The name of the function as it will appear in a constraint expression
@@ -147,11 +145,10 @@ private:
         );
         // Here we add our new instance of libdap::ServerFunction to the libdap::ServerFunctionsList.
         libdap::ServerFunctionsList::TheList()->add_function(rbSSF);
-
     }
 
 public:
-    ResponseBuilderTest(): cont_a(0), df(0), df1(0), df2(0), df3(0), df4(0), df5(0), df6(0), dds(0), das(0) {
+    ResponseBuilderTest(): df(0), df1(0), df2(0), df3(0), df4(0), df5(0), df6(0), cont_a(0), das(0), dds(0) {
         now = time(0);
         ostringstream time_string;
         time_string << (int) now;
@@ -159,7 +156,6 @@ public:
         now_array[255] = '\0';
 
     }
-
 
     ~ResponseBuilderTest() {
     }
@@ -194,16 +190,12 @@ public:
         df5->set_dataset_name("nowhere%5Bmydisk%5Dmyfile");
         df5->set_ce("u%5B0%5D");
 
-
-
         // Try a server side function call.
         loadServerSideFunction();
         df6 = new ResponseBuilder();
         df6->set_dataset_name((string) TEST_SRC_DIR + "/server-testsuite/bears.data");
         df6->set_ce("rbFuncTest()");
         df6->set_timeout(1);
-
-
 
         cont_a = new AttrTable;
         cont_a->append_attr("size", "Int32", "7");

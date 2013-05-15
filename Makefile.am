@@ -34,14 +34,8 @@ if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
 endif
 
-# if USING_GDAL
-# SWATH2GRID = swath2grid
-# endif
-
 SUBDIRS = gl . tests unit-tests
-# $(GRIDFIELDS) $(SWATH2GRID)
 DIST_SUBDIRS = gl tests unit-tests
-# ugridFunctions swath2grid  
 
 noinst_LTLIBRARIES = libparsers.la
 
@@ -74,19 +68,6 @@ if DAP4_DEFINED
     libdap_la_LIBADD += -lcrypto 
 endif
 
-# if USING_GRIDFIELDS
-#libdap_la_LIBADD += $(GF_LIBS)
-#libdap_la_LIBADD += ugridFunctions/libugridFunctions.la
-# Removing the -L is a work-around for linker warnings that crop up about 
-# where -L<dir> results in messages about <dir> cannot be found. jhrg 12/14/12
-##-LugridFunctions -lugridFunctions
-#endif
-
-#if USING_GDAL
-#libdap_la_LIBADD += swath2grid/libswath2grid.la
-## -Lswath2grid -lswath2grid
-#endif
-
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
 libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
@@ -111,8 +92,6 @@ getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y \
 Error.lex Error.y
-
-# gse.lex gse.y 
 
 EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI		\
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf		\
@@ -258,9 +237,6 @@ GRAM_SRC = lex.das.cc das.tab.cc das.tab.hh lex.dds.cc dds.tab.cc	\
 	dds.tab.hh lex.ce_expr.cc ce_expr.tab.cc ce_expr.tab.hh		\
 	lex.Error.cc Error.tab.cc Error.tab.hh 
 
-#	gse.tab.hh gse.tab.cc	
-#	lex.gse_.cc
-
 DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc		\
 	Vector.cc Array.cc Structure.cc Sequence.cc Grid.cc UInt32.cc	\
@@ -274,17 +250,9 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc \
 	DAPCache3.cc ServerFunctionsList.cc ServerFunction.cc
 
-# ce_functions.cc GSEClause.cc GeoConstraint.cc
-# GridGeoConstraint.cc ArrayGeoConstraint.cc 
-
-
 DAP4_ONLY_SRC = DAP4StreamMarshaller.cc DAP4StreamUnMarshaller.cc Int64.cc \
         UInt64.cc Int8.cc D4ParserSax2.cc D4BaseTypeFactory.cc \
         D4Maps.cc D4Dimensions.cc  D4EnumDef.cc D4Group.cc
-
-#if USING_GRIDFIELDS
-#DAP_SRC += gridfields_functions.cc
-#endif
 
 Operators.h: ce_expr.tab.hh
 
@@ -310,13 +278,6 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h \
 	DAPCache3.h ServerFunctionsList.h ServerFunction.h
-
-# ArrayGeoConstraint.h ce_functions.h gse_parser.h GSEClause.h  
-# GeoConstraint.h GridGeoConstraint.h
-
-#if USING_GRIDFIELDS
-#DAP_SRC += gridfields_functions.h
-#endif
 
 DAP4_ONLY_HDR = DAP4StreamMarshaller.h DAP4StreamUnMarshaller.h Int64.h \
         UInt64.h Int8.h D4ParserSax2.h D4BaseTypeFactory.h D4ParseError.h \
