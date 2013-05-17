@@ -76,6 +76,7 @@ string cid_to_header_value(const string &cid);
 string read_multipart_boundary(FILE *in, const string &boundary = "");
 void parse_mime_header(const string &header, string &name, string &value);
 string name_path(const string &path);
+string get_next_mime_header(istream &in);
 
 // All of these are deprecated
 bool do_version(const string &script_ver, const string &dataset_ver);
@@ -125,6 +126,11 @@ void set_mime_multipart(ostream &out, const string &boundary,
 	const string &start, ObjectType type = unknown_type,
         const string &version = "", EncodingType enc = x_plain,
         const time_t last_modified = 0);
+
+void set_mime_multipart(std::ostream &out, const std::string &boundary,
+	const std::string &start, ObjectType type = unknown_type, EncodingType enc = x_plain,
+	const time_t last_modified = 0, const std::string &protocol = "",
+	const std::string &url = "");
 
 void set_mime_ddx_boundary(ostream &out, const string &boundary,
 	const string &start, ObjectType type = unknown_type,

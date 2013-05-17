@@ -599,6 +599,46 @@ void set_mime_multipart(ostream &strm, const string &boundary,
     strm << CRLF ;
 }
 
+/** Build the initial headers for the DAP4 data response */
+
+void set_mime_multipart(ostream &strm, const string &boundary, const string &start, ObjectType type, EncodingType enc,
+        const time_t last_modified, const string &protocol, const string &url)
+{
+    strm << "HTTP/1.1 200 OK" << CRLF;
+
+    const time_t t = time(0);
+    strm << "Date: " << rfc822_date(t).c_str() << CRLF;
+
+    strm << "Last-Modified: ";
+    if (last_modified > 0)
+        strm << rfc822_date(last_modified).c_str() << CRLF;
+    else
+        strm << rfc822_date(t).c_str() << CRLF;
+
+    strm << "Content-Type: multipart/related; boundary=" << boundary << "; start=\"<" << start
+            << ">\"; type=\"text/xml\"" << CRLF;
+
+    // data-ddx;"; removed as a result of the merge of the hyrax 1.8 release
+    // branch.
+    strm << "Content-Description: " << descrip[type] << ";";
+    if (!url.empty())
+        strm << " url=\"" << url << "\"" << CRLF;
+    else
+        strm << CRLF;
+
+    if (enc != x_plain)
+        strm << "Content-Encoding: " << encoding[enc] << CRLF;
+
+    if (protocol == "")
+        strm << "X-DAP: " << DAP_PROTOCOL_VERSION << CRLF;
+    else
+        strm << "X-DAP: " << protocol << CRLF;
+
+    strm << "X-OPeNDAP-Server: " << DVR<< CRLF;
+
+    strm << CRLF;
+}
+
 void set_mime_ddx_boundary(ostream &strm, const string &boundary,
 	const string &cid, ObjectType type, EncodingType enc)
 {
@@ -630,7 +670,7 @@ const size_t line_length = 1024;
 /** Read the next MIME header from the input stream and return it in a string
     object. This function consumes any leading whitespace before the next
     header. It returns an empty string when the blank line that separates
-    the headers from the body is found. this function works for header and
+    the headers from the body is found. This function works for header and
     separator lines that use either a CRLF pair (the correct line ending) or
     just a newline (a common error).
 
@@ -660,6 +700,28 @@ string get_next_mime_header(FILE *in)
     }
 
     throw Error("I expected to find a MIME header, but got EOF instead.");
+}
+
+string get_next_mime_header(istream &in)
+{
+    // Get the header line and strip \r\n. Some headers end with just \n.
+    // If a blank line is found, return an empty string.
+	char line[line_length];
+	while (!in.eof()) {
+		in.getline(line, line_length);
+		if (strncmp(line, CRLF, 2) == 0 || line[0] == '\n') {
+			return "";
+		}
+		else {
+			size_t slen = min(strlen(line), line_length); // Never > line_length
+			line[slen - 1] = '\0'; // remove the newline
+			if (line[slen - 2] == '\r') // ...and the preceding carriage return
+				line[slen - 2] = '\0';
+			return string(line);
+		}
+	}
+
+	throw Error("I expected to find a MIME header, but got EOF instead.");
 }
 
 /** Given a string that contains a MIME header line, parse it into the
