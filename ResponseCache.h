@@ -51,22 +51,20 @@ class ResponseCache
 {
 private:
 	ResponseCache(const ResponseCache &src);
-	//ResponseCache();
 
     bool is_valid(const std::string &cache_file_name, const std::string &dataset);
-    //void cache_data_ddx(const std::string &cache_file_name, DDS &dds);
     void read_data_from_cache(FILE *data, DDS *fdds);
     DDS *get_cached_data_ddx(const std::string &cache_file_name, BaseTypeFactory *factory, const std::string &dataset);
 
     DAPCache3 *d_cache;
-    //ResponseBuilder *d_response_builder;
-    //ConstraintEvaluator *d_eval;
 
     void initialize(const std::string &cache_path, const std::string &prefix, unsigned long size_in_megabytes);
 
+    friend class ResponseCacheTest;
+
 public:
     /** Initialize the cache using the default values for the cache. */
-    ResponseCache(/*ResponseBuilder *rb, ConstraintEvaluator *eval*/) : d_cache(0)/*, d_response_builder(rb), d_eval(eval)*/ {
+    ResponseCache() : d_cache(0) {
     	initialize(FUNCTION_CACHE, FUNCTION_CACHE_PREFIX, FUNCTION_CACHE_SIZE);
     }
 
@@ -82,9 +80,8 @@ public:
      * cache entries from other entries if other things are cached in the same pathame.
      * @param size_in_megabytes Cache size.
      */
-    ResponseCache(/*ResponseBuilder *rb, ConstraintEvaluator *eval,*/ const std::string &cache_path, const std::string &prefix,
-    		unsigned long size_in_megabytes) : d_cache(0)/*, d_response_builder(rb), d_eval(eval)*/
-    {
+    ResponseCache(const std::string &cache_path, const std::string &prefix,
+    		unsigned long size_in_megabytes) : d_cache(0) {
     	initialize(cache_path, prefix, size_in_megabytes);
     }
 
@@ -98,8 +95,9 @@ public:
      */
     bool is_available() { return d_cache != 0; }
 
-    // This method is uses the above three and is used by send_das(), send_dds(), and send_data().
-    virtual DDS *read_cached_dataset(DDS &dds, const std::string &constraint, ResponseBuilder *rb, ConstraintEvaluator *eval, std::string &cache_token);
+    virtual DDS *read_cached_dataset(DDS &dds, const std::string &constraint, ResponseBuilder *rb,
+    		ConstraintEvaluator *eval, std::string &cache_token);
+
     virtual void unlock_and_close(const std::string &cache_token);
 };
 

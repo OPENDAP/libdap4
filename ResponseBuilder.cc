@@ -56,7 +56,7 @@
 #include "XDRStreamMarshaller.h"
 #include "XDRFileUnMarshaller.h"
 
-#include "DAPCache3.h"
+//#include "DAPCache3.h"
 #include "ResponseCache.h"
 
 #include "debug.h"
@@ -70,17 +70,11 @@
 #include "AlarmHandler.h"
 #endif
 
-#define CACHE 0
-
 #define CRLF "\r\n"             // Change here, expr-test.cc
 
 using namespace std;
 
 namespace libdap {
-
-ResponseBuilder::~ResponseBuilder()
-{
-}
 
 /** Called when initializing a ResponseBuilder that's not going to be passed
  command line arguments. */
@@ -117,6 +111,16 @@ string ResponseBuilder::get_ce() const
     return d_ce;
 }
 
+/** Set the constraint expression. This will filter the CE text removing
+ * any 'WWW' escape characters except space. Spaces are left in the CE
+ * because the CE parser uses whitespace to delimit tokens while some
+ * datasets have identifiers that contain spaces. It's possible to use
+ * double quotes around identifiers too, but most client software doesn't
+ * know about that.
+ *
+ * @@brief Set the CE
+ * @param _ce The constraint expression
+ */
 void ResponseBuilder::set_ce(string _ce)
 {
     d_ce = www2id(_ce, "%", "%20");
@@ -135,6 +139,16 @@ string ResponseBuilder::get_dataset_name() const
     return d_dataset;
 }
 
+/** Set the dataset name, which is a string used to access the dataset
+ * on the machine running the server. That is, this is typically a pathname
+ * to a data file, although it doesn't have to be. This is not
+ * echoed in error messages (because that would reveal server
+ * storage patterns that data providers might want to hide). All WWW-style
+ * escapes are replaced except for spaces.
+ *
+ * @brief Set the dataset pathname.
+ * @param ds The pathname (or equivalent) to the dataset.
+ */
 void ResponseBuilder::set_dataset_name(const string ds)
 {
     d_dataset = www2id(ds, "%", "%20");
@@ -143,6 +157,7 @@ void ResponseBuilder::set_dataset_name(const string ds)
 /** Set the server's timeout value. A value of zero (the default) means no
  timeout.
 
+ @see To establish a timeout, call establish_timeout(ostream &)
  @param t Server timeout in seconds. Default is zero (no timeout). */
 void ResponseBuilder::set_timeout(int t)
 {
@@ -230,12 +245,14 @@ ResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
 
  @note This is the DAP2 attribute response.
 
- @brief Transmit a DAS.
+ @brief Send a DAS.
+
  @param out The output stream to which the DAS is to be sent.
  @param das The DAS object to be sent.
  @param with_mime_headers If true (the default) send MIME headers.
  @return void
- @see DAS */
+ @see DAS
+ @deprecated */
 void ResponseBuilder::send_das(ostream &out, DAS &das, bool with_mime_headers) const
 {
     if (with_mime_headers)
@@ -246,23 +263,23 @@ void ResponseBuilder::send_das(ostream &out, DAS &das, bool with_mime_headers) c
     out << flush;
 }
 
-/** This function formats and prints an ASCII representation of a
- DAS on stdout.  This has the effect of sending the DAS object
- back to the client program. This version of send_das() uses the
- DDS object (and assumes it's populated with attributes). If the
- request contains a CE, that's fine and if the request has been
- cached, it will read the DDS from the cache.
-
- @note This is the DAP2 syntactic metadata response.
-
- @todo Test me! Modify the BES to use this code!!
-
- @brief Transmit a DAS using the DDS.
- @param out The output stream to which the DAS is to be sent.
- @param das The DAS object to be sent.
- @param with_mime_headers If true (the default) send MIME headers.
- @return void
- @see DAS */
+/** Send the DAP2 DAS response to the given stream. This version of
+ * send_das() uses the DDS object, assuming that it contains attribute
+ * information. If there is a constraint expression associated with this
+ * instance of ResponseBuilder, then it will be applied. This means
+ * that CEs that contain server functions will populate the response cache
+ * even if the server's initial request is for a DAS. This is different
+ * from the older behavior of libdap where CEs were never evaluated for
+ * the DAS response. This does not actually change the resulting DAS,
+ * just the behavior 'under the covers'.
+ *
+ * @param out Send the response to this ostream
+ * @param dds Use this DDS object
+ * @param eval A Constraint Evaluator to use for any CE bound to this
+ * ResponseBuilder instance
+ * @param constrained Should the result be constrained
+ * @param with_mime_headers Should MIME headers be sent to out?
+ */
 void ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool constrained, bool with_mime_headers)
 {
     // Set up the alarm.
@@ -335,7 +352,8 @@ void ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &eval
  @param constrained If this argument is true, evaluate the
  current constraint expression and send the `constrained DDS'
  back to the client.
- @param anc_location The directory in which the external DAS file resides.
+ @param constrained If true, apply the constraint bound to this instance
+ of ResponseBuilder
  @param with_mime_headers If true (default) send MIME headers.
  @return void
  @see DDS */
@@ -435,9 +453,12 @@ void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEval
 }
 
 /**
- * Build/return the DDX and the BLOB part of the DAP4 data response.
+ * Build/return the DDX and the BLOB part of the DAP3.x data response.
+ * This was never actually used by any server or client, but it has
+ * been used to cache responses for some of the OPULS unstructured
+ * grid work. It was originally intended to be used for DAP4.
  */
-void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS & dds, ConstraintEvaluator & eval,
+void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval,
         const string &boundary, const string &start, bool ce_eval)
 {
     // Write the MPM headers for the DDX (text/xml) part of the response
@@ -453,11 +474,19 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS & dds, Constraint
         strncpy(domain, "opendap.org", 255);
 
     string cid = string(&uuid[0]) + "@" + string(&domain[0]);
-
+#if 0
+    // FIXME Remove
+    DDS::Vars_iter i = dds.var_begin();
+    while (i != dds.var_end()) {
+    	if ((*i)->send_p())
+    		cerr << (*i)->name() << " is marked (3)." << endl;
+    	++i;
+    }
+#endif
     // Send constrained DDX with a data blob reference
     dds.print_xml_writer(out, true, cid);
 
-    // write the data part mime heraders here
+    // write the data part mime headers here
     set_mime_data_boundary(out, boundary, cid, dap4_data, x_plain);
 
     XDRStreamMarshaller m(out);
@@ -467,7 +496,6 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS & dds, Constraint
     // Internal variables are not.
     for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++) {
         if ((*i)->send_p()) {
-            DBG(cerr << "Sending " << (*i)->name() << endl);
             (*i)->serialize(eval, dds, m, ce_eval);
         }
     }
@@ -576,13 +604,8 @@ void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEval
  DDS and DAS objects are built using code that already exists in the
  servers.
 
- @note This is the DAP4 metadata response; it is supported by most DAP2
- servers as well, although the DAP4 DDX will contain types not present in
- DAP2.
-
- FIXME!!!
- @todo I am broken WRT the other code here for sending data and DDS
- responses
+ @note This is the DAP3.x metadata response; it is supported by most DAP2
+ servers as well. The DAP4 DDX will contain types not present in DAP2 or 3.x
 
  @param dds The dataset's DDS \e with attributes in the variables.
  @param eval A reference to the ConstraintEvaluator to use.
@@ -595,7 +618,7 @@ void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval
         if (with_mime_headers)
             set_mime_text(out, dap4_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
-        dds.print_xml_writer(out, false, "");
+        dds.print_xml_writer(out, false /*constrained */, "");
         //dds.print(out);
         out << flush;
         return;
@@ -663,8 +686,8 @@ void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval
  encoded using a Marshaller, and enclosed in a MIME document which is all sent
  to \c data_stream.
 
- @note This is not the DAP4 data response. This is used for now to cache
- responses, so it does not read responses from the cache itself.
+ @note This is not the DAP4 data response, although that was the original
+ intent.
 
  @brief Transmit data.
  @param dds A DDS object containing the data to be sent.
@@ -679,7 +702,7 @@ void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval
 void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, ConstraintEvaluator & eval, const string &start,
         const string &boundary, bool with_mime_headers)
 {
-    // Set up the alarm.
+	// Set up the alarm.
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
@@ -931,7 +954,7 @@ void ResponseBuilder::set_mime_binary(ostream &strm, ObjectType type, EncodingTy
 
     strm << CRLF;
 }
-
+#if 0
 /** Build the initial headers for the DAP4 data response */
 
 void ResponseBuilder::set_mime_multipart(ostream &strm, const string &boundary, const string &start, ObjectType type, EncodingType enc,
@@ -971,7 +994,7 @@ void ResponseBuilder::set_mime_multipart(ostream &strm, const string &boundary, 
 
     strm << CRLF;
 }
-
+#endif
 #if 0
 void ResponseBuilder::set_mime_ddx_boundary(ostream &strm, const string &boundary, const string &cid) const
 {

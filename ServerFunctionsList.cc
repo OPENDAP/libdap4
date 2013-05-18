@@ -105,6 +105,8 @@ ServerFunctionsList * ServerFunctionsList::TheList() {
  *
  * @brief Adds the passed ServerFunction pointer to the list of ServerFunctions.
  * @param *func A pointer to the ServerFunction object to add to the ServerFunctionList.
+ * The pointer is copied, not the object referenced; this class does not
+ * delete the pointer.
  */
 void ServerFunctionsList::add_function(ServerFunction *func )
 {

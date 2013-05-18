@@ -76,7 +76,7 @@ public:
         initialize();
     }
 
-    virtual ~ResponseBuilder();
+    virtual ~ResponseBuilder() {}
 
     virtual std::string get_ce() const;
     virtual void set_ce(std::string _ce);
@@ -141,12 +141,12 @@ public:
                          EncodingType enc = x_plain,
                          const time_t last_modified = 0,
                          const std::string &protocol = "") const;
-
+#if 0
     void set_mime_multipart(std::ostream &out, const std::string &boundary,
     	const std::string &start, ObjectType type = unknown_type, EncodingType enc = x_plain,
     	const time_t last_modified = 0, const std::string &protocol = "",
     	const std::string &url = "") const;
-
+#endif
     void set_mime_error(std::ostream &out, int code = 404,
                         const std::string &reason = "Dataset not found",
                         const std::string &protocol = "") const;
