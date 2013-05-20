@@ -34,6 +34,10 @@
 #include <dirent.h>
 #include <fcntl.h>
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #include <string>
 #include <sstream>
 #include <vector>
@@ -69,6 +73,33 @@ static const unsigned long long BYTES_PER_MEG = 1048576ULL;
 static const unsigned long long MAX_CACHE_SIZE_IN_MEGABYTES = (1ULL << 44);
 
 DAPCache3 *DAPCache3::d_instance = 0;
+
+
+/** @brief Private constructor that takes as arguments keys to the cache directory,
+ * file prefix, and size of the cache to be looked up a configuration file
+ *
+ * The keys specified are looked up in the specified keys object. If not
+ * found or not set correctly then an exception is thrown. I.E., if the
+ * cache directory is empty, the size is zero, or the prefix is empty.
+ *
+ * @param cache_dir_key key to look up in the keys file to find cache dir
+ * @param prefix_key key to look up in the keys file to find the cache prefix
+ * @param size_key key to look up in the keys file to find the cache size (in MBytes)
+ * @throws BESSyntaxUserError if keys not set, cache dir or prefix empty,
+ * size is 0, or if cache dir does not exist.
+ */
+DAPCache3::DAPCache3(const string &cache_dir, const string &prefix, unsigned long long size) :
+        d_cache_dir(cache_dir), d_prefix(prefix), d_max_cache_size_in_bytes(size)
+{
+    m_initialize_cache_info();
+}
+
+void DAPCache3::delete_instance() {
+    DBG(cerr << "DAPCache3::delete_instance() - Deleting singleton DAPCache3 instance." << endl);
+    delete d_instance;
+    d_instance = 0;
+}
+
 #if 0
 // The BESCache3 code is a singleton that assumes it's running in the absence of threads but that
 // the cache is shared by several processes, each of which have their own instance of BESCache3.
@@ -106,9 +137,12 @@ BESCache3::get_instance(BESKeys *keys, const string &cache_dir_key, const string
 DAPCache3 *
 DAPCache3::get_instance(const string &cache_dir, const string &prefix, unsigned long long size)
 {
-    if (d_instance == 0)
+    if (d_instance == 0){
         d_instance = new DAPCache3(cache_dir, prefix, size);
-
+#if HAVE_ATEXIT
+        atexit(delete_instance);
+#endif
+    }
     return d_instance;
 }
 
@@ -475,24 +509,7 @@ BESCache3::BESCache3(BESKeys *keys, const string &cache_dir_key, const string &p
     m_initialize_cache_info();
 }
 #endif
-/** @brief Private constructor that takes as arguments keys to the cache directory,
- * file prefix, and size of the cache to be looked up a configuration file
- *
- * The keys specified are looked up in the specified keys object. If not
- * found or not set correctly then an exception is thrown. I.E., if the
- * cache directory is empty, the size is zero, or the prefix is empty.
- *
- * @param cache_dir_key key to look up in the keys file to find cache dir
- * @param prefix_key key to look up in the keys file to find the cache prefix
- * @param size_key key to look up in the keys file to find the cache size (in MBytes)
- * @throws BESSyntaxUserError if keys not set, cache dir or prefix empty,
- * size is 0, or if cache dir does not exist.
- */
-DAPCache3::DAPCache3(const string &cache_dir, const string &prefix, unsigned long long size) :
-        d_cache_dir(cache_dir), d_prefix(prefix), d_max_cache_size_in_bytes(size)
-{
-    m_initialize_cache_info();
-}
+
 
 /** Build the name of file that will holds the uncompressed data from
  * 'src' in the cache.
@@ -526,6 +543,9 @@ string DAPCache3::get_cache_file_name(const string &src, bool mangle)
             target = target.substr(0, last_dot);
         }
     }
+    DBG(cerr << "  d_cache_dir: '" << d_cache_dir << "'" << endl);
+    DBG(cerr << "  d_prefix:    '" << d_prefix << "'" << endl);
+    DBG(cerr << "  target:      '" << target  << "'" << endl);
 
     return d_cache_dir + "/" + d_prefix + DAPCache3::DAP_CACHE_CHAR + target;
 }

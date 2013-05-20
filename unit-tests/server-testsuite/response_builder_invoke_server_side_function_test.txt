@@ -1,0 +1,19 @@
+HTTP/1.0 200 OK
+XDODS-Server: .*
+XOPeNDAP-Server: .*
+XDAP: .*
+Date: .*
+Last-Modified: .*
+Content-Type: application/octet-stream
+Content-Description: dods_data
+
+Dataset .
+    String version;
+. function_result_test;
+Data:
+.<.xml version="1.0" encoding="UTF-8".>
+<ds:functions xmlns:ds="http://xml.opendap.org/ns/DAP/4.0/dataset-services#">
+    <ds:function  name="rbFuncTest" version="1.0" type="basetype" role="http://services.opendap.org/dap4/unit-tests/ResponseBuilderTest" >
+        <ds:Description href="http://docs.opendap.org/index.php/Hyrax:_Server_Side_Functions">Returns a list of the functions held in the ServerFunctionsList object</ds:Description>
+    </ds:function>
+</functions>

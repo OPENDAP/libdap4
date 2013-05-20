@@ -13,7 +13,7 @@ xsi:schemaLocation="http://www.dods.org/ns/DODS  http://dods.coas.oregonstate.ed
 		<dimension name="twizzle" size="41024"/>
 		<dimension name="dizzle" size="25211"/>
 	</Array>
-	<Structure name="bunghole">
+	<Structure name="mystruct">
 	    <Attribute name="leaf04a" type="Float64">
 		<value>1451.87567</value>
 	    </Attribute>

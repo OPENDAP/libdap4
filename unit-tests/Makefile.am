@@ -46,8 +46,7 @@ TESTS = $(UNIT_TESTS)
 noinst_HEADERS = test_config.h
 
 DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
-	rcreader-testsuite server-testsuite cgi-util-tests	\
-	ce-functions-testsuite D4-xml
+	rcreader-testsuite server-testsuite cgi-util-tests D4-xml
 
 EXTRA_DIST = $(DIRS_EXTRA) testFile.cc testFile.h test_config.h.in
 
@@ -70,10 +69,8 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	HTTPConnectTest parserUtilTest RCReaderTest \
 	SequenceTest SignalHandlerTest  MarshallerTest \
 	ResponseBuilderTest Keywords2Test HTTPCacheTest \
-	ServerFunctionsListUnitTest
+	ServerFunctionsListUnitTest ResponseCacheTest
 	
-# Breaks valgrind: HTTPCacheTest 
-
 if DAP4_DEFINED
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest \
         D4DimensionsTest D4EnumDefsTest D4GroupTest D4ParserSax2Test \
@@ -180,18 +177,11 @@ ddsT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 dasT_SOURCES = dasT.cc $(TEST_SRC)
 dasT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
-#CEFunctionsTest_SOURCES = CEFunctionsTest.cc
-#CEFunctionsTest_LDADD = ../tests/libtest-types.a  ../libdap.la $(AM_LDADD)
-
-#GridGeoConstraintTest_SOURCES = GridGeoConstraintTest.cc
-#GridGeoConstraintTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
-
-#ArrayGeoConstraintTest_SOURCES = ArrayGeoConstraintTest.cc
-#ArrayGeoConstraintTest_LDADD =  ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
-
-
 ServerFunctionsListUnitTest_SOURCES = ServerFunctionsListUnitTest.cc
 ServerFunctionsListUnitTest_LDADD = ../libdap.la $(AM_LDADD)
+
+ResponseCacheTest_SOURCES = ResponseCacheTest.cc
+ResponseCacheTest_LDADD = ../tests/libtest-types.a ../libdapserver.la ../libdap.la $(AM_LDADD)
 
 if DAP4_DEFINED
 

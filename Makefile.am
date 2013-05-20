@@ -86,8 +86,6 @@ getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y \
 Error.lex Error.y
 
-# gse.lex gse.y 
-
 EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI		\
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf		\
 	libdap.spec VCPP dods-datatypes-static.h			\

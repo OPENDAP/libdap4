@@ -32,10 +32,10 @@
 
 #include <map>
 #include <string>
+#include <expr.h>
 
 #include "ServerFunction.h"
 
-#include <expr.h>
 
 namespace libdap {
 class ServerFunctionsListUnitTest;

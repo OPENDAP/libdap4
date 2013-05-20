@@ -1,12 +1,10 @@
 // ServerFunctionsList.cc
 
-// -*- mode: c++; c-basic-offset:4 -*-
-
-// This file is part of libdap, A C++ implementation of the OPeNDAP Data
-// Access Protocol.
+// This file is part of bes, A C++ back-end server implementation framework
+// for the OPeNDAP Data Access Protocol.
 
 // Copyright (c) 2013 OPeNDAP, Inc.
-// Author: Nathan Potter <npotter@opendap.org>
+// Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -24,15 +22,23 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #include <pthread.h>
 
 #include <iostream>
 #include <algorithm>
 
+//#define DODS_DEBUG
+
 #include <expr.h>
+#include "debug.h"
 
 #include "ServerFunctionsList.h"
-#include "debug.h"
 
 using std::cerr;
 using std::string;
@@ -40,20 +46,22 @@ using std::endl;
 using namespace std;
 using namespace libdap;
 
-
-static pthread_once_t instance_control = PTHREAD_ONCE_INIT;
-
 namespace libdap {
+
+static pthread_once_t ServerFunctionsList_instance_control = PTHREAD_ONCE_INIT;
 
 ServerFunctionsList *ServerFunctionsList::d_instance = 0 ;
 
 /**
- * private static that only get's called once by dint of...    EXPLAIN
+ * private static that only gets called once in the life cycle of the process.
  */
 void ServerFunctionsList::initialize_instance() {
     if (d_instance == 0) {
+        DBG(cerr << "ServerFunctionsList::initialize_instance() - Creating singleton ServerFunctionList instance." << endl);
         d_instance = new ServerFunctionsList;
-        atexit(delete_instance);
+        #if HAVE_ATEXIT
+            atexit(delete_instance);
+        #endif
     }
 }
 
@@ -61,6 +69,7 @@ void ServerFunctionsList::initialize_instance() {
  * Private static function can only be called by friends andf pThreads code.
  */
 void ServerFunctionsList::delete_instance() {
+    DBG(cerr << "ServerFunctionsList::delete_instance() - Deleting singleton ServerFunctionList instance." << endl);
     delete d_instance;
     d_instance = 0;
 }
@@ -82,7 +91,8 @@ ServerFunctionsList::~ServerFunctionsList() {
 
 
 ServerFunctionsList * ServerFunctionsList::TheList() {
-    pthread_once(&instance_control, initialize_instance);
+    pthread_once(&ServerFunctionsList_instance_control, initialize_instance);
+    DBG(cerr << "ServerFunctionsList::TheList() - Returning singleton ServerFunctionList instance." << endl);
     return d_instance;
 }
 
@@ -95,9 +105,12 @@ ServerFunctionsList * ServerFunctionsList::TheList() {
  *
  * @brief Adds the passed ServerFunction pointer to the list of ServerFunctions.
  * @param *func A pointer to the ServerFunction object to add to the ServerFunctionList.
+ * The pointer is copied, not the object referenced; this class does not
+ * delete the pointer.
  */
 void ServerFunctionsList::add_function(ServerFunction *func )
 {
+    DBG(cerr << "ServerFunctionsList::add_function() - Adding ServerFunction " << func->getName() << endl);
     d_func_list.insert(std::make_pair(func->getName(),func));
 }
 
@@ -214,6 +227,7 @@ bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) c
     ret = d_func_list.equal_range(name);
     for (std::multimap<std::string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_bool_func())){
+            DBG(cerr << "ServerFunctionsList::find_function() - Found boolean function " << it->second->getName() << endl);
             return true;
         }
     }
@@ -263,11 +277,13 @@ bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
 
     if (d_func_list.empty())
         return false;
+    DBG(cerr << "ServerFunctionsList::find_function() - Looking for ServerFunction '" << name << "'" << endl);
 
     std::pair <std::multimap<string,libdap::ServerFunction *>::const_iterator, std::multimap<string,libdap::ServerFunction *>::const_iterator> ret;
     ret = d_func_list.equal_range(name);
     for (std::multimap<string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_btp_func())){
+            DBG(cerr << "ServerFunctionsList::find_function() - Found basetype function " << it->second->getName() << endl);
             return true;
         }
     }
@@ -323,7 +339,8 @@ bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
     ret = d_func_list.equal_range(name);
     for (std::multimap<string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_proj_func())){
-            return true;
+            DBG(cerr << "ServerFunctionsList::find_function() - Found projection function " << it->second->getName() << endl);
+           return true;
         }
     }
     return false;

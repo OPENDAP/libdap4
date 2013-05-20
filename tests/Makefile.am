@@ -12,7 +12,7 @@ endif
 
 # These are not used by automake but are often useful for certain types of
 # debugging. 
-CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
+CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 check_PROGRAMS = das-test dds-test expr-test 
@@ -30,9 +30,12 @@ dist_check_SCRIPTS = DASTest DDSTest EXPRTest atconfig atlocal
 # Build the test drivers. The drivers all use the
 # subclassed types in Test*.cc and the TestTypesFactory.
 
-noinst_LIBRARIES = libtest-types.a
+lib_LIBRARIES = libtest-types.a
 
 libtest_types_a_SOURCES = $(TESTSRCS) $(TEST_HDR)
+
+testheadersdir = $(pkgincludedir)/test
+testheaders_HEADERS = $(TEST_HDR)
 
 das_test_SOURCES = das-test.cc
 das_test_LDADD =  libtest-types.a ../libdapserver.la ../libdap.la 

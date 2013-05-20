@@ -24,6 +24,8 @@
 
 #include "config.h"
 
+//#define DODS_DEBUG
+
 #include <sys/stat.h>
 
 #include <iostream>
@@ -46,10 +48,7 @@
 #include "mime_util.h"	// for last_modified_time() and rfc_822_date()
 #include "util.h"
 
-#define FUNCTION_CACHE "/tmp/dap_functions_cache/"
-#define FUNCTION_CACHE_PREFIX "f"
-// Cache size in megabytes; 20,000M -> 20GB
-#define FUNCTION_CACHE_SIZE 20000
+#define CRLF "\r\n"
 
 using namespace std;
 
@@ -57,16 +56,12 @@ namespace libdap {
 
 /** Called when initializing a ResponseCache that's not going to be passed
  command line arguments. */
-void ResponseCache::initialize()
+void ResponseCache::initialize(const string &cache_path, const string &prefix, unsigned long size_in_megabytes)
 {
-    // Cache size is given in megabytes and later converted to bytes
-    // for internal use.
-    d_cache = 0;
-
     // The directory is a low-budget config param since
     // the cache will only be used if the directory exists.
-    if (dir_exists(FUNCTION_CACHE)) {
-        d_cache = DAPCache3::get_instance(FUNCTION_CACHE, FUNCTION_CACHE_PREFIX, FUNCTION_CACHE_SIZE);
+    if (dir_exists(cache_path)) {
+        d_cache = DAPCache3::get_instance(cache_path, prefix, size_in_megabytes);
     }
 }
 
@@ -172,8 +167,9 @@ void ResponseCache::read_data_from_cache(FILE *data, DDS *fdds)
     ddx_parser.intern_stream(data, fdds, data_cid, boundary);
 
     // Munge the CID into something we can work with
+    DBG(cerr << "Data CID (before): " << data_cid << endl);
     data_cid = cid_to_header_value(data_cid);
-    DBG(cerr << "Data CID: " << data_cid << endl);
+    DBG(cerr << "Data CID (after): " << data_cid << endl);
 
     // Read the data part's MPM part headers (boundary was read by
     // DDXParse::intern)
@@ -189,11 +185,16 @@ void ResponseCache::read_data_from_cache(FILE *data, DDS *fdds)
 
 /**
  * Read data from cache. Allocates a new DDS using the given factory.
+ *
+ * @todo Does this need the name of the dataset? Could read it from the
+ * DDS.
+ * @todo Check that the objects read from the cache really need the send
+ * property set. Other code might set this or depend on it not being set.
  */
 DDS *
 ResponseCache::get_cached_data_ddx(const string &cache_file_name, BaseTypeFactory *factory, const string &dataset)
 {
-    DBG(cerr << "Reading cache for " << d_dataset + "?" + d_btp_func_ce << endl);
+    DBG(cerr << "Reading cache for " << cache_file_name << endl);
 
     DDS *fdds = new DDS(factory);
 
@@ -207,66 +208,96 @@ ResponseCache::get_cached_data_ddx(const string &cache_file_name, BaseTypeFactor
 
     fdds->set_factory( 0 ) ;
 
-    // mark everything as read.
-    DDS::Vars_iter i = fdds->var_begin() ;
-    DDS::Vars_iter e = fdds->var_end() ;
-    for( ; i != e; i++ ) {
-        BaseType *b = (*i) ;
-        b->set_read_p( true ) ;
+    // mark everything as read. and send. That is, make sure that when a response
+    // is retrieved from teh cache all of the variables are marked as to be sent
+    DDS::Vars_iter i = fdds->var_begin();
+    while(i != fdds->var_end()) {
+        (*i)->set_read_p( true );
+        (*i++)->set_send_p(true);
     }
 
     return fdds;
 }
 
 /**
- * Get the cache DDS pointer - which will contain both attributes
- * and data values.
+ * Get the cached DDS object. Unlike the DAP2 DDS response, this is a C++
+ * DDS object that holds the response's variables, their attributes and
+ * their data. The DDS built by the handlers (but without data) is passed
+ * into this method along with an CE evaluator, a ResponseBuilder and a
+ * reference to a string. If the DDS has already been cached, the cached
+ * copy is read and returned (complete with the attributes and data) and
+ * the 'cache_token' value-result parameter is set to a string that should
+ * be used with the unlock_and_close() method to release the cache's lock
+ * on the response. If the DDS is not in the cache, the response is built,
+ * cached, locked and returned. In both cases, the cache-token is used to
+ * unlock the entry.
  *
- * @param dds The DDS of the dataset
- * @param eval The ConstraintEvaluator to use if the dataset is not in the
- * cache.
- * @param responseBuilder A ResponseBuilder to use to build the response if
- * the dataset is not in the cache.
- * @param cache_token A value-result parameter that contains an opaque
- * reference to the file in the cache. Used to release the lock on the cached file.
  * @return The DDS that resulted from calling the server functions
  * in the original CE.
  */
-DDS *ResponseCache::read_cached_dataset(DDS &dds, ConstraintEvaluator &eval, ResponseBuilder &responseBuilder, string &cache_token)
+DDS *ResponseCache::read_cached_dataset(DDS &dds, const string &constraint, ResponseBuilder *rb, ConstraintEvaluator *eval, string &cache_token)
 {
-    DBG(cerr << "Found function(s) in CE: " << responseBuilder.get_btp_func_ce() << endl);
-
     // These are used for the cached or newly created DDS object
     BaseTypeFactory factory;
     DDS *fdds;
 
     // Get the cache filename for this thing. Do not use the default
     // name mangling; instead use what build_cache_file_name() does.
-    string cache_file_name = d_cache->get_cache_file_name(
-    		build_cache_file_name(responseBuilder.get_dataset_name(), responseBuilder.get_btp_func_ce()),
-    		false);
+    string cache_file_name = d_cache->get_cache_file_name(build_cache_file_name(dds.get_dataset_name(), constraint), false);
     int fd;
     try {
         // If the object in the cache is not valid, remove it. The read_lock will
         // then fail and the code will drop down to the create_and_lock() call.
         // is_valid() tests for a non-zero object and for d_dateset newer than
         // the cached object.
-        if (!is_valid(cache_file_name, responseBuilder.get_dataset_name()))
+        if (!is_valid(cache_file_name, dds.get_dataset_name()))
             d_cache->purge_file(cache_file_name);
 
         if (d_cache->get_read_lock(cache_file_name, fd)) {
             DBG(cerr << "function ce - cached hit: " << cache_file_name << endl);
-            fdds = get_cached_data_ddx(cache_file_name, &factory, responseBuilder.get_dataset_name());
+            fdds = get_cached_data_ddx(cache_file_name, &factory, dds.get_dataset_name());
         }
         else if (d_cache->create_and_lock(cache_file_name, fd)) {
             // If here, the cache_file_name could not be locked for read access;
             // try to build it. First make an empty file and get an exclusive lock on it.
-            DBG(cerr << "function ce - caching " << cache_file_name << endl);
+            DBG(cerr << "function ce - caching " << cache_file_name << ", constraint: " << constraint << endl);
 
-            eval.parse_constraint(responseBuilder.get_btp_func_ce(), dds);
-            fdds = eval.eval_function_clauses(dds);
+            fdds = new DDS(dds);
+            eval->parse_constraint(constraint, *fdds);
 
-            responseBuilder.cache_data_ddx(cache_file_name, *fdds);
+           if (eval->function_clauses()) {
+            	DDS *temp_fdds = eval->eval_function_clauses(*fdds);
+            	delete fdds;
+            	fdds = temp_fdds;
+            }
+
+            ofstream data_stream(cache_file_name.c_str());
+            if (!data_stream)
+            	throw InternalErr(__FILE__, __LINE__, "Could not open '" + cache_file_name + "' to write cached response.");
+
+            string start="dataddx_cache_start", boundary="dataddx_cache_boundary";
+
+            // Use a ConstraintEvaluator that has not parsed a CE so the code can use
+            // the send method(s)
+            ConstraintEvaluator eval;
+
+            // Setting the version to 3.2 causes send_data_ddx to write the MIME headers that
+            // the cache expects.
+            fdds->set_dap_version("3.2");
+
+            // This is a bit of a hack, but it effectively uses ResponseBuilder to write the
+            // cached object/response without calling the machinery in one of the send_*()
+            // methods. Those methods assume they need to evaluate the ResponseBuilder's
+            // CE, which is not necessary and will alter the values of the send_p property
+            // of the DDS's variables.
+			set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(rb->get_dataset_name()));
+			//data_stream << flush;
+			rb->dataset_constraint_ddx(data_stream, *fdds, eval, boundary, start);
+			//data_stream << flush;
+
+			data_stream << CRLF << "--" << boundary << "--" << CRLF;
+
+			data_stream.close();
 
             // Change the exclusive lock on the new file to a shared lock. This keeps
             // other processes from purging the new file and ensures that the reading
@@ -284,7 +315,7 @@ DDS *ResponseCache::read_cached_dataset(DDS &dds, ConstraintEvaluator &eval, Res
         // but blocks waiting to get a shared lock if the file does exist.
         else if (d_cache->get_read_lock(cache_file_name, fd)) {
             DBG(cerr << "function ce - cached hit: " << cache_file_name << endl);
-            fdds = get_cached_data_ddx(cache_file_name, &factory, responseBuilder.get_dataset_name());
+            fdds = get_cached_data_ddx(cache_file_name, &factory, dds.get_dataset_name());
         }
         else {
             throw InternalErr(__FILE__, __LINE__, "Cache error during function invocation.");

@@ -103,8 +103,8 @@ public:
 
     CPPUNIT_TEST_SUITE( libdap::ServerFunctionsListUnitTest );
 
-    //CPPUNIT_TEST(sflut_test);
-    CPPUNIT_TEST(always_pass);
+    CPPUNIT_TEST(sflut_test);
+    //CPPUNIT_TEST(always_pass);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -202,7 +202,7 @@ int main(int argc, char*argv[]) {
     }
     else {
         while (i < argc) {
-            test = string("ugrid::BindTest::") + argv[i++];
+            test = string("libdap::ServerFunctionsListUnitTest::") + argv[i++];
 
             wasSuccessful = wasSuccessful && runner.run(test);
         }

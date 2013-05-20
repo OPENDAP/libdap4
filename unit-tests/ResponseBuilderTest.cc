@@ -29,9 +29,12 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <sys/types.h>
+
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
+#endif
+
 #include <unistd.h>  // for stat
-#include <cstring>
 #include <sstream>
 
 //#define DODS_DEBUG
@@ -39,12 +42,16 @@
 #include "ObjectType.h"
 #include "EncodingType.h"
 #include "ResponseBuilder.h"
+#include "ServerFunction.h"
+#include "ServerFunctionsList.h"
 #include "DAS.h"
 #include "DDS.h"
-//#include "ce_functions.h"
+#include "Str.h"
+#include "GetOpt.h"
 
 #include "GNURegex.h"
 #include "util.h"
+#include "mime_util.h"
 #include "debug.h"
 
 #include "../tests/TestTypeFactory.h"
@@ -59,11 +66,56 @@ using namespace libdap;
 
 int test_variable_sleep_interval = 0;
 
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
+
+static void
+rb_simple_function(int, BaseType *[], DDS &, BaseType **btpp)
+{
+    Str *response = new Str("result");
+
+    response->set_value("qwerty");
+    *btpp = response;
+    return;
+}
+
+static void
+parse_datadds_response(istream &in, string &prolog, vector<char> &blob)
+{
+	// Split the stuff in the input stream into two parts:
+	// The text prolog and the binary blob
+	const int line_length = 1024;
+    // Read up to 'Data:'
+	char line[line_length];
+	while (!in.eof()) {
+		in.getline(line, line_length);
+		DBG(cerr << "prolog line: " << line << endl);
+		if (strncmp(line, "Data:", 5) == 0)
+			break;
+		prolog += string(line);
+		prolog += "\n";
+	}
+
+	// Read the blob
+	streampos pos = in.tellg();
+	in.seekg(0, in.end);
+	unsigned int length = in.tellg() - pos;
+	DBG(cerr << "blob length: " << length << endl);
+
+	// return to byte just after 'Data:'
+	in.seekg(pos, in.beg);
+
+	blob.reserve(length);
+	in.read(&blob[0], length);
+}
+
 namespace libdap {
 
 class ResponseBuilderTest: public TestFixture {
 private:
-    ResponseBuilder *df, *df1, *df2, *df3, *df4, *df5;
+    ResponseBuilder *df, *df1, *df2, *df3, *df4, *df5, *df6;
 
     AttrTable *cont_a;
     DAS *das;
@@ -71,14 +123,45 @@ private:
     ostringstream oss;
     time_t now;
     char now_array[256];
+    libdap::ServerFunction *rbSSF;
+
+    // TODO leaked.
+    void loadServerSideFunction() {
+        rbSSF = new libdap::ServerFunction(
+
+            // The name of the function as it will appear in a constraint expression
+            "rbSimpleFunc",
+
+            // The version of the function
+            "1.0",
+
+            // A brief description of the function
+            "Returns a string",
+
+            // A usage/syntax statement
+            "rbSimpleFunc()",
+
+            // A URL that points two a web page describing the function
+            "http://docs.opendap.org/index.php/Hyrax:_Server_Side_Functions",
+
+            // A URI that defines the role of the function
+            "http://services.opendap.org/dap4/unit-tests/ResponseBuilderTest",
+
+            // A pointer to the helloWorld() function
+            rb_simple_function
+        );
+
+        libdap::ServerFunctionsList::TheList()->add_function(rbSSF);
+    }
 
 public:
-    ResponseBuilderTest() {
+    ResponseBuilderTest(): df(0), df1(0), df2(0), df3(0), df4(0), df5(0), df6(0), cont_a(0), das(0), dds(0) {
         now = time(0);
         ostringstream time_string;
         time_string << (int) now;
         strncpy(now_array, time_string.str().c_str(), 255);
         now_array[255] = '\0';
+
     }
 
     ~ResponseBuilderTest() {
@@ -114,6 +197,13 @@ public:
         df5->set_dataset_name("nowhere%5Bmydisk%5Dmyfile");
         df5->set_ce("u%5B0%5D");
 
+        // Try a server side function call.
+        loadServerSideFunction();
+        df6 = new ResponseBuilder();
+        df6->set_dataset_name((string) TEST_SRC_DIR + "/server-testsuite/bears.data");
+        df6->set_ce("rbFuncTest()");
+        df6->set_timeout(1);
+
         cont_a = new AttrTable;
         cont_a->append_attr("size", "Int32", "7");
         cont_a->append_attr("type", "String", "cars");
@@ -145,6 +235,7 @@ public:
         delete df3; df3 = 0;
         delete df4; df4 = 0;
         delete df5; df5 = 0;
+        delete df6; df6 = 0;
 
         delete das; das = 0;
         delete dds; dds = 0;
@@ -164,48 +255,29 @@ public:
         return pos > 0;
     }
 
-   void send_das_test() {
-        Regex
-                r1(
-                        "HTTP/1.0 200 OK\r\n\
-XDODS-Server: .*\
-XOPeNDAP-Server: .*\
-XDAP: .*\
-Date: .*\
-Last-Modified: .*\
-Content-Type: text/plain\r\n\
-Content-Description: dods_das\r\n\
-\r\n\
-Attributes \\{\n\
-    a \\{\n\
-        Int32 size 7;\n\
-        String type \"cars\";\n\
-    \\}\n\
-\\}\n");
+	void send_das_test() {
+		try {
+		string baseline = readTestBaseline((string) TEST_SRC_DIR + "/server-testsuite/send_das_baseline.txt");
+		DBG( cerr << "---- start baseline ----" << endl << baseline << "---- end baseline ----" << endl);
+		Regex r1(baseline.c_str());
 
-        df->send_das(oss, *das);
+		df->send_das(oss, *das);
 
-        DBG(cerr << "DAS: " << oss.str() << endl);
+		DBG(cerr << "DAS: " << oss.str() << endl);
 
-        CPPUNIT_ASSERT(re_match(r1, oss.str()));
-        oss.str("");
-    }
+		CPPUNIT_ASSERT(re_match(r1, oss.str()));
+		oss.str("");
+		}
+		catch (Error &e) {
+			CPPUNIT_FAIL(e.get_error_message());
+		}
+	}
 
     void send_dds_test() {
-        Regex
-                r1(
-                        "HTTP/1.0 200 OK\r\n\
-XDODS-Server: .*\
-XOPeNDAP-Server: .*\
-XDAP: .*\
-Date: .*\
-Last-Modified: .*\
-Content-Type: text/plain\r\n\
-Content-Description: dods_dds\r\n\
-\r\n\
-Dataset \\{\n\
-    Byte a;\n\
-\\} test;\n");
+    	try {
+    	string baseline = readTestBaseline((string) TEST_SRC_DIR + "/server-testsuite/send_dds_baseline.txt");
+		DBG( cerr << "---- start baseline ----" << endl << baseline << "---- end baseline ----" << endl);
+		Regex r1(baseline.c_str());
 
         ConstraintEvaluator ce;
 
@@ -215,6 +287,10 @@ Dataset \\{\n\
 
         CPPUNIT_ASSERT(re_match(r1, oss.str()));
         oss.str("");
+		}
+		catch (Error &e) {
+			CPPUNIT_FAIL(e.get_error_message());
+		}
     }
 
     void send_ddx_test() {
@@ -234,79 +310,7 @@ Dataset \\{\n\
             CPPUNIT_FAIL("Error: " + e.get_error_message());
         }
     }
-#if 0
-    void send_data_ddx_test() {
-        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/tmp.xml"); //"/ddx-testsuite/response_builder_send_data_ddx_test_3.xml");
-        Regex r1(baseline.c_str());
-        // I do not look for the closing '--boundary' because the binary
-        // data breaks the regex functions in the c library WRT subsequent
-        // pattern matches. jhrg
-        //--boundary--\r\n");
 
-        ConstraintEvaluator ce;
-
-        try {
-            df->send_data_ddx(oss, *dds, ce, "start@opendap.org", "boundary", true);
-
-            DBG(cerr << "DataDDX: " << oss.str() << endl);
-            //DBG(cerr << "glob: " << glob(baseline.c_str(), oss.str().c_str()) << endl);
-            //CPPUNIT_ASSERT(glob(baseline.c_str(), oss.str().c_str()) == 0);
-            CPPUNIT_ASSERT(re_match_binary(r1, oss.str()));
-            //oss.str("");
-        } catch (Error &e) {
-            CPPUNIT_FAIL("Error: " + e.get_error_message());
-        }
-    }
-
-    void send_data_ddx_test2() {
-        Regex
-                r1(
-                        "--boundary\r\n\
-Content-Type: Text/xml; charset=iso-8859-1\r\n\
-Content-Id: <start@opendap.org>\r\n\
-Content-Description: dap4-ddx\r\n\
-\r\n\
-<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>.*\
-<Dataset name=\"test\".*\
-.*\
-dapVersion=\"3.2\">.*\
-.*\
-    <Byte name=\"a\">.*\
-        <Attribute name=\"size\" type=\"Int32\">.*\
-            <value>7</value>.*\
-        </Attribute>.*\
-        <Attribute name=\"type\" type=\"String\">.*\
-            <value>cars</value>.*\
-        </Attribute>.*\
-    </Byte>.*\
-.*\
-    <blob href=\"cid:.*@.*\"/>.*\
-</Dataset>.*\
---boundary\r\n\
-Content-Type: application/octet-stream\r\n\
-Content-Id: <.*@.*>\r\n\
-Content-Description: dap4-data\r\n\
-Content-Encoding: binary\r\n\
-\r\n\
-.*");
-
-        ConstraintEvaluator ce;
-
-        try {
-            df->send_data_ddx(oss, *dds, ce, "start@opendap.org", "boundary", false);
-            DBG(cerr << "DataDDX: " << oss.str() << endl);
-            CPPUNIT_ASSERT(re_match_binary(r1, oss.str()));
-
-            // Unlike the test where the full headers are generated, there's
-            // no check for a conditional response here because that feature
-            // of ResponseBuilder is only supported when MIME headers are built by
-            // the class. In order to return a '304' response, headers must be
-            // built.
-        } catch (Error &e) {
-            CPPUNIT_FAIL("Error: " + e.get_error_message());
-        }
-    }
-#endif
 
     void escape_code_test() {
         // These should NOT be escaped.
@@ -336,98 +340,106 @@ Content-Encoding: binary\r\n\
         CPPUNIT_ASSERT(df3->get_timeout() == 1);
         CPPUNIT_ASSERT(df1->get_timeout() == 0);
     }
+
+    void invoke_server_side_function_test() {
+        DBG( cerr << endl);
+        DBG( cerr << "invoke_server_side_function_test():" << endl);
+
+        try {
+            string baseline = readTestBaseline((string) TEST_SRC_DIR + "/server-testsuite/simple_function_baseline.txt");
+            Regex r1(baseline.c_str());
+
+            DBG( cerr << "---- start baseline ----" << endl << baseline << "---- end baseline ----" << endl);
+
+            df6->set_ce("rbSimpleFunc()");
+            ConstraintEvaluator ce;
+            df6->send_data(oss, *dds, ce);
+
+            DBG( cerr << "---- start result ----" << endl << oss.str() << "---- end result ----" << endl);
+
+			string prolog;
+			vector<char> blob;
+			istringstream iss(oss.str());
+			parse_datadds_response(iss, prolog, blob);
+
+            CPPUNIT_ASSERT(re_match(r1, prolog));
+
+            // This block of code was going to test if the binary data
+            // in the response document matches some sequence of bytes
+            // in a baseline file. it's not working and likely not that
+            // important - the function under test returns a string and
+            // it's clearly present in the output when instrumentation is
+            // on. Return to this when there's time.
 #if 0
-    // The server functions have been moved out of libdap and into a bes
-    // module.
-    void split_ce_test_1() {
-        ConstraintEvaluator eval;
-        register_functions(eval);
-        df->split_ce(eval, "x,y,z");
-        CPPUNIT_ASSERT(df->get_ce() == "x,y,z");
-        CPPUNIT_ASSERT(df->get_btp_func_ce() == "");
-    }
+            ifstream blob_baseline_in(((string)TEST_SRC_DIR + "/server-testsuite/blob_baseline.bin").c_str());
 
-    void split_ce_test_2() {
-        ConstraintEvaluator eval;
-        register_functions(eval);
-        df->split_ce(eval, "honker(noise),x,y,z");
-        CPPUNIT_ASSERT(df->get_ce() == "honker(noise),x,y,z");
-        CPPUNIT_ASSERT(df->get_btp_func_ce() == "");
-    }
+            blob_baseline_in.seekg(0, blob_baseline_in.end);
+        	unsigned int blob_baseline_length = blob_baseline_in.tellg();
 
-    void split_ce_test_3() {
-        ConstraintEvaluator eval;
-        register_functions(eval);
-        df->split_ce(eval, "grid(noise),x,y,z");
-        CPPUNIT_ASSERT(df->get_ce() == "x,y,z");
-        CPPUNIT_ASSERT(df->get_btp_func_ce() == "grid(noise)");
-    }
+        	DBG(cerr << "blob_baseline length: " << blob_baseline_length << endl);
+        	DBG(cerr << "blob size: " << blob.size() << endl);
 
-    void split_ce_test_4() {
-        ConstraintEvaluator eval;
-        register_functions(eval);
-        df->split_ce(eval, "grid(noise),linear_scale(noise2),x,y,z");
-        CPPUNIT_ASSERT(df->get_ce() == "x,y,z");
-        CPPUNIT_ASSERT(df->get_btp_func_ce() == "grid(noise),linear_scale(noise2)");
-    }
+        	CPPUNIT_ASSERT(blob_baseline_length == blob.size());
 
-    void split_ce_test_5() {
-         ConstraintEvaluator eval;
-         register_functions(eval);
-         df->split_ce(eval, "grid(noise),honker(foo),grid(noise2),x,y,z");
-         CPPUNIT_ASSERT(df->get_ce() == "honker(foo),x,y,z");
-         CPPUNIT_ASSERT(df->get_btp_func_ce() == "grid(noise),grid(noise2)");
-     }
+        	blob_baseline_in.seekg(0, blob_baseline_in.beg);
 
-    void split_ce_test_6() {
-         ConstraintEvaluator eval;
-         register_functions(eval);
-         df->split_ce(eval, "grid(noise),honker(foo),grid(noise2),x,y,z,foo()");
-         CPPUNIT_ASSERT(df->get_ce() == "honker(foo),x,y,z,foo()");
-         CPPUNIT_ASSERT(df->get_btp_func_ce() == "grid(noise),grid(noise2)");
-     }
+            char blob_baseline[blob_baseline_length];
+            blob_baseline_in.read(blob_baseline, blob_baseline_length);
+            blob_baseline_in.close();
+            for (int i = 0; i < blob_baseline_length; ++i) {
+            	DBG(cerr << "bb[" << i << "]: " << blob_baseline[i] << endl);
+            	DBG(cerr << "blob[" << i << "]: " << blob_baseline[i] << endl);
+            }
 #endif
+        } catch (Error &e) {
+            CPPUNIT_FAIL("Caught libdap::Error!! Message:" + e.get_error_message());
+        }
+    }
 
-CPPUNIT_TEST_SUITE( ResponseBuilderTest );
+
+    CPPUNIT_TEST_SUITE( ResponseBuilderTest );
 
         CPPUNIT_TEST(send_das_test);
         CPPUNIT_TEST(send_dds_test);
         CPPUNIT_TEST(send_ddx_test);
 
-        // These tests fail because the regex comparison code is hosed.
-        // I've tried using some simpler globbing code, but that fails, too,
-        // likely because of the MIME header line termination chars. These
-        // methods do work and I'm spending more time on the these two tests
-        // than on all of the XMLWriter methods!
-        //
-        // Removed send_data_ddx from the class; it was never used.
-        // CPPUNIT_TEST(send_data_ddx_test);
-        // CPPUNIT_TEST(send_data_ddx_test2);
         CPPUNIT_TEST(escape_code_test);
+        CPPUNIT_TEST(invoke_server_side_function_test);
 
-#if 0
-        // not written yet 9/14/12
-        CPPUNIT_TEST(send_dmr_test_1);
-#endif
-#if 0
-        CPPUNIT_TEST(split_ce_test_1);
-        CPPUNIT_TEST(split_ce_test_2);
-        CPPUNIT_TEST(split_ce_test_3);
-        CPPUNIT_TEST(split_ce_test_4);
-        CPPUNIT_TEST(split_ce_test_5);
-        CPPUNIT_TEST(split_ce_test_6);
-#endif
     CPPUNIT_TEST_SUITE_END();
 };
 CPPUNIT_TEST_SUITE_REGISTRATION(ResponseBuilderTest);
 }
 
-int main(int, char**) {
+int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run("", false);
+    GetOpt getopt(argc, argv, "d");
+    char option_char;
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        default:
+            break;
+        }
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("libdap::ResponseBuilderTest::") + argv[i++];
+
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }
-
