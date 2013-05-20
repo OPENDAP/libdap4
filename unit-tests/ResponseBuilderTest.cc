@@ -115,7 +115,7 @@ namespace libdap {
 
 class ResponseBuilderTest: public TestFixture {
 private:
-    ResponseBuilder *df, *df1, *df2, *df3, *df4, *df5, *df6;
+    ResponseBuilder *df, *df3, *df5, *df6;
 
     AttrTable *cont_a;
     DAS *das;
@@ -125,7 +125,6 @@ private:
     char now_array[256];
     libdap::ServerFunction *rbSSF;
 
-    // TODO leaked.
     void loadServerSideFunction() {
         rbSSF = new libdap::ServerFunction(
 
@@ -155,29 +154,23 @@ private:
     }
 
 public:
-    ResponseBuilderTest(): df(0), df1(0), df2(0), df3(0), df4(0), df5(0), df6(0), cont_a(0), das(0), dds(0) {
+    ResponseBuilderTest(): df(0), df3(0), df5(0), df6(0), cont_a(0), das(0), dds(0) {
         now = time(0);
         ostringstream time_string;
         time_string << (int) now;
         strncpy(now_array, time_string.str().c_str(), 255);
         now_array[255] = '\0';
 
+        loadServerSideFunction();
     }
 
     ~ResponseBuilderTest() {
+    	// delete rbSSF; NB: ServerFunctionsList is a singleton that deletes its entries at exit.
     }
 
     void setUp() {
         // Test pathname
         df = new ResponseBuilder();
-        // Test missing file
-        df1 = new ResponseBuilder();
-        df1->set_dataset_name("no-such-file");
-
-        // Test files in CWD. Note that the time is the GM time : Tue, 01 May
-        // 2001 01:08:14 -0700
-        df2 = new ResponseBuilder();
-        df2->set_dataset_name("test_config.h");
 
         // This file has an ancillary DAS in the server-testsuite dir.
         // df3 is also used to test escaping stuff in URLs. 5/4/2001 jhrg
@@ -186,22 +179,16 @@ public:
         df3->set_ce("u,x,z[0]&grid(u,\"lat<10.0\")");
         df3->set_timeout(1);
 
-        // Go back to this data source to test w/o an ancillary DAS.
-        df4 = new ResponseBuilder();
-        df4->set_dataset_name((string) TEST_SRC_DIR + "/server-testsuite/bears.data");
-        df4->set_ce("u,x,z[0]&grid(u,\"lat<10.0\")");
-        df4->set_timeout(1);
-
         // Test escaping stuff. 5/4/2001 jhrg
         df5 = new ResponseBuilder();
         df5->set_dataset_name("nowhere%5Bmydisk%5Dmyfile");
         df5->set_ce("u%5B0%5D");
 
         // Try a server side function call.
-        loadServerSideFunction();
+        // loadServerSideFunction(); NB: This is called by the test's ctor
         df6 = new ResponseBuilder();
         df6->set_dataset_name((string) TEST_SRC_DIR + "/server-testsuite/bears.data");
-        df6->set_ce("rbFuncTest()");
+        //df6->set_ce("rbFuncTest()");
         df6->set_timeout(1);
 
         cont_a = new AttrTable;
@@ -229,22 +216,13 @@ public:
     }
 
     void tearDown() {
-        delete df;
-        df = 0;
-        delete df1;
-        df1 = 0;
-        delete df2;
-        df2 = 0;
-        delete df3;
-        df3 = 0;
-        delete df4;
-        df4 = 0;
-        delete df5;
-        df5 = 0;
+        delete df; df = 0;
+        delete df3; df3 = 0;
+        delete df5; df5 = 0;
         delete df6; df6 = 0;
 
-        delete das;
-        das = 0;
+        delete das; das = 0;
+        delete dds; dds = 0;
     }
 
     bool re_match(Regex &r, const string &s) {
@@ -320,7 +298,6 @@ public:
 
     void escape_code_test() {
         // These should NOT be escaped.
-
         DBG(cerr << df3->get_dataset_name() << endl); DBG(cerr << df3->get_ce() << endl);
 
         CPPUNIT_ASSERT(df3->get_dataset_name() == (string)TEST_SRC_DIR + "/server-testsuite/coads.data");
@@ -344,7 +321,7 @@ public:
     // This tests reading the timeout value from argv[].
     void timeout_test() {
         CPPUNIT_ASSERT(df3->get_timeout() == 1);
-        CPPUNIT_ASSERT(df1->get_timeout() == 0);
+        CPPUNIT_ASSERT(df5->get_timeout() == 0);
     }
 
     void invoke_server_side_function_test() {
@@ -356,8 +333,11 @@ public:
             Regex r1(baseline.c_str());
 
             DBG( cerr << "---- start baseline ----" << endl << baseline << "---- end baseline ----" << endl);
-
+#if 1
             df6->set_ce("rbSimpleFunc()");
+#else
+            df6->set_ce("");
+#endif
             ConstraintEvaluator ce;
             df6->send_data(oss, *dds, ce);
 
@@ -375,7 +355,7 @@ public:
             // in a baseline file. it's not working and likely not that
             // important - the function under test returns a string and
             // it's clearly present in the output when instrumentation is
-            // on. Return to this when there's time.
+            // on. Return to this when there's time. 5/20/13 jhrg
 #if 0
             ifstream blob_baseline_in(((string)TEST_SRC_DIR + "/server-testsuite/blob_baseline.bin").c_str());
 

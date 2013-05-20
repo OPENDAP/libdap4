@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -22,7 +21,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -34,79 +33,87 @@
 #include <fcntl.h>
 #include <process.h>
 #endif
- 
+
 #include "SignalHandler.h"
 #include "debug.h"
 
 using namespace CppUnit;
 using namespace std;
 
-namespace libdap
-{
+namespace libdap {
 
-class SignalHandlerTest : public TestFixture {
+class SignalHandlerTest: public TestFixture {
 private:
-    SignalHandler *sh;
-    TestHandler *th;
+	SignalHandler *sh;
+	TestHandler *th;
 
-public: 
-    SignalHandlerTest() {}
-    ~SignalHandlerTest() {}
+public:
+	SignalHandlerTest()
+	{
+	}
+	~SignalHandlerTest()
+	{
+	}
 
-    void setUp() {
-	sh = SignalHandler::instance();
-	th = new TestHandler;
-    }
+	void setUp()
+	{
+		sh = SignalHandler::instance();
+		th = new TestHandler;
+	}
 
-    void tearDown() {
-	delete th; th = 0;
-    }
+	void tearDown()
+	{
+		delete th;
+		th = 0;
+	}
 
-    // Tests for methods
-    void register_handler_test() {
-	sh->register_handler(SIGALRM, th);
-	CPPUNIT_ASSERT(sh->d_signal_handlers[SIGALRM] == th);
-    }
+	// Tests for methods
+	void register_handler_test()
+	{
+		sh->register_handler(SIGALRM, th);
+		CPPUNIT_ASSERT(sh->d_signal_handlers[SIGALRM] == th);
+	}
 
-    void remove_handler_test() {
-	CPPUNIT_ASSERT(sh->remove_handler(SIGALRM) == th);
-    }
+	void remove_handler_test()
+	{
+		CPPUNIT_ASSERT(sh->remove_handler(SIGALRM) == th);
+	}
 
-    void alarm_test() {
-	// Ignore the alarm signal and then register our handler. Without
-	// setting alram to ignore first the SignalHandler will call our
-	// EventHandler and then perform the default action for the signal,
-	// which is call exit() with EXIT_FAILURE.
-	signal(SIGALRM, SIG_IGN);
-	sh->register_handler(SIGALRM, th);
-	alarm(1);
-	sleep(10);
-	CPPUNIT_ASSERT(th->flag == 1);
-    }
+	void alarm_test()
+	{
+		// Ignore the alarm signal and then register our handler. Without
+		// setting alram to ignore first the SignalHandler will call our
+		// EventHandler and then perform the default action for the signal,
+		// which is call exit() with EXIT_FAILURE.
+		signal(SIGALRM, SIG_IGN);
+		sh->register_handler(SIGALRM, th);
+		alarm(1);
+		sleep(10);
+		CPPUNIT_ASSERT(th->flag == 1);
+	}
 
-    CPPUNIT_TEST_SUITE( SignalHandlerTest );
+CPPUNIT_TEST_SUITE( SignalHandlerTest )
+	;
 
-    CPPUNIT_TEST(register_handler_test);
-    CPPUNIT_TEST(remove_handler_test);
-    CPPUNIT_TEST(alarm_test);
+	CPPUNIT_TEST(register_handler_test);
+	CPPUNIT_TEST(remove_handler_test);
+	CPPUNIT_TEST(alarm_test);
 
-    CPPUNIT_TEST_SUITE_END();
+	CPPUNIT_TEST_SUITE_END()
+	;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SignalHandlerTest);
 
 }
 
-int 
-main( int, char** )
+int main(int, char**)
 {
-    CppUnit::TextTestRunner runner;
-    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+	CppUnit::TextTestRunner runner;
+	runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run( "", false ) ;
+	bool wasSuccessful = runner.run("", false);
 
-    return wasSuccessful ? 0 : 1;
+	return wasSuccessful ? 0 : 1;
 }
-
-
 
