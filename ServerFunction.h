@@ -95,7 +95,7 @@ public:
 	 * dataset structure should be the basis for determining the applicability of a function to the dataset.
 	 * @return true If this function operate on all or some portion of the contents of this dataset, false otherwise.
 	 */
-	virtual bool canOperateOn(DDS &dds) { return true; }
+	virtual bool canOperateOn(DDS &) { return true; }
 
 	void setFunction(bool_func bf){
 		d_bool_func = bf;

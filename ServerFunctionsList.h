@@ -51,7 +51,7 @@ private:
     static void initialize_instance();
     static void delete_instance();
 
-    virtual ~ServerFunctionsList(void);
+    virtual ~ServerFunctionsList();
 
     friend class libdap::ServerFunctionsListUnitTest;
 

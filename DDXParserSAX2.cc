@@ -496,6 +496,7 @@ void DDXParser::finish_variable(const char *tag, Type t, const char *expected)
         DDXParser::ddx_fatal_error(this,
                                    "No dimension element included in the Array '%s'.",
                                    btp->name().c_str());
+        delete btp;
         return;
     }
 
@@ -507,10 +508,12 @@ void DDXParser::finish_variable(const char *tag, Type t, const char *expected)
                                    tag,
                                    bt_stack.top()->type_name().c_str(),
                                    bt_stack.top()->name().c_str());
+        delete btp;
         return;
     }
 
     parent->add_var(btp);
+    delete btp;
 }
 
 /** @name SAX Parser Callbacks
@@ -552,22 +555,24 @@ void DDXParser::ddx_end_document(void * p)
          endl);
 
     if (parser->get_state() != parser_start)
-        DDXParser::ddx_fatal_error(parser,
-                                   "The document contained unbalanced tags.");
+        DDXParser::ddx_fatal_error(parser, "The document contained unbalanced tags.");
 
     // If we've found any sort of error, don't make the DDX; intern() will
     // take care of the error.
-    if (parser->get_state() == parser_error)
+    if (parser->get_state() == parser_error) {
+    	delete parser->bt_stack.top();
         return;
+    }
 
     // Pop the temporary Structure off the stack and transfer its variables
     // to the DDS.
     Constructor *cp = dynamic_cast < Constructor * >(parser->bt_stack.top());
     if (!cp) {
     	ddx_fatal_error(parser, "Parse error: Expected a Structure, Sequence or Grid variable.");
+    	delete cp;
 		return;
     }
-    
+
     for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end(); ++i) {
         (*i)->set_parent(0);        // top-level vars have no parents
         parser->dds->add_var(*i);
@@ -915,8 +920,10 @@ void DDXParser::ddx_sax2_end_element(void *p, const xmlChar *l,
 
             BaseType *parent = parser->bt_stack.top();
 
-            if (parent->is_vector_type() || parent->is_constructor_type())
+            if (parent->is_vector_type() || parent->is_constructor_type()) {
                 parent->add_var(btp);
+                delete btp;
+            }
             else
                 DDXParser::ddx_fatal_error(parser,
                                            "Tried to add the simple-type variable '%s' to a non-constructor type (%s %s).",
