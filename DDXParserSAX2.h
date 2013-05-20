@@ -240,8 +240,8 @@ public:
     {}
 
     void intern(const string &document, DDS *dest_dds, string &cid);
-    void intern_stream(FILE *in, DDS *dds, string &cid,
-		const string &boundary = "");
+    void intern_stream(FILE *in, DDS *dds, string &cid, const string &boundary = "");
+    void intern_stream(istream &in, DDS *dds, string &cid, const string &boundary = "");
 
     static void ddx_start_document(void *parser);
     static void ddx_end_document(void *parser);

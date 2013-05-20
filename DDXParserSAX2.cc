@@ -1122,13 +1122,85 @@ void DDXParser::cleanup_parse(xmlParserCtxtPtr & context) const
     xmlFreeParserCtxt(context);
 }
 
-/** @brief Read the DDX from a stream instead of a file.
-    @see DDXParser::intern(). */
-void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid,
-	const string &boundary)
+/** Read a DDX from a C++ input stream and populate a DDS object.
+ *
+ * @param in
+ * @param dds
+ * @param cid
+ * @param boundary
+ */
+void DDXParser::intern_stream(istream &in, DDS *dest_dds, string &cid, const string &boundary)
 {
     // Code example from libxml2 docs re: read from a stream.
+    if (!in || in.eof())
+        throw InternalErr(__FILE__, __LINE__, "Input stream not open or read error");
 
+    const int size = 1024;
+    char chars[size + 1];
+
+    // int res = fread(chars, 1, 4, in);
+    in.readsome(chars, 4);
+    int res = in.gcount();
+    if (res > 0) {
+        chars[4]='\0';
+        xmlParserCtxtPtr context = xmlCreatePushParserCtxt(NULL, NULL, chars, res, "stream");
+
+        ctxt = context;         // need ctxt for error messages
+        dds = dest_dds;         // dump values here
+        blob_href = &cid; 	// cid goes here
+
+        xmlSAXHandler ddx_sax_parser;
+        memset( &ddx_sax_parser, 0, sizeof(xmlSAXHandler) );
+
+        ddx_sax_parser.getEntity = &DDXParser::ddx_get_entity;
+        ddx_sax_parser.startDocument = &DDXParser::ddx_start_document;
+        ddx_sax_parser.endDocument = &DDXParser::ddx_end_document;
+        ddx_sax_parser.characters = &DDXParser::ddx_get_characters;
+        ddx_sax_parser.ignorableWhitespace = &DDXParser::ddx_ignoreable_whitespace;
+        ddx_sax_parser.cdataBlock = &DDXParser::ddx_get_cdata;
+        ddx_sax_parser.warning = &DDXParser::ddx_fatal_error;
+        ddx_sax_parser.error = &DDXParser::ddx_fatal_error;
+        ddx_sax_parser.fatalError = &DDXParser::ddx_fatal_error;
+        ddx_sax_parser.initialized = XML_SAX2_MAGIC;
+        ddx_sax_parser.startElementNs = &DDXParser::ddx_sax2_start_element;
+        ddx_sax_parser.endElementNs = &DDXParser::ddx_sax2_end_element;
+
+        context->sax = &ddx_sax_parser;
+        context->userData = this;
+        context->validate = true;
+
+#if 0
+        while ((fgets(chars, size, in) > 0) && !is_boundary(chars, boundary)) {
+            chars[size-1] = '\0';
+            DBG(cerr << "line: " << chars << endl);
+            xmlParseChunk(ctxt, chars, strlen(chars), 0);
+        }
+#endif
+        in.readsome(chars, size);	// chars has size+1 elements
+        res = in.gcount();
+        chars[res] = '\0';
+        while (res > 0 && !is_boundary(chars, boundary)) {
+            DBG(cerr << "line: " << chars << endl);
+            xmlParseChunk(ctxt, chars, res, 0);
+
+            in.readsome(chars, size);	// chars has size+1 elements
+            res = in.gcount();
+            chars[res] = '\0';
+        }
+
+        // This call ends the parse: The fourth argument of xmlParseChunk is
+        // the bool 'terminate.'
+        xmlParseChunk(ctxt, chars, 0, 1);
+
+        cleanup_parse(context);
+    }
+}
+
+/** @brief Read the DDX from a stream instead of a file.
+    @see DDXParser::intern(). */
+void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid, const string &boundary)
+{
+    // Code example from libxml2 docs re: read from a stream.
     if (!in || feof(in) || ferror(in))
         throw InternalErr(__FILE__, __LINE__,
                           "Input stream not open or read error");

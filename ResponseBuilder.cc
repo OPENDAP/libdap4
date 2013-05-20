@@ -100,6 +100,16 @@ ResponseBuilder::responseCache()
 	return d_response_cache->is_available() ? d_response_cache: 0;
 }
 
+ResponseBuilder::~ResponseBuilder()
+{
+	if (d_response_cache) delete d_response_cache;
+
+	// If an alarm was registered, delete it. The register code in SignalHandler
+	// always deletes the old alarm handler object, so only the one returned by
+	// remove_handler needs to be deleted at this point.
+	delete dynamic_cast<AlarmHandler*>(SignalHandler::instance()->remove_handler(SIGALRM));
+}
+
 /** Return the entire constraint expression in a string.  This
  includes both the projection and selection clauses, but not the
  question mark.
@@ -474,15 +484,6 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS &dds, ConstraintE
         strncpy(domain, "opendap.org", 255);
 
     string cid = string(&uuid[0]) + "@" + string(&domain[0]);
-#if 0
-    // FIXME Remove
-    DDS::Vars_iter i = dds.var_begin();
-    while (i != dds.var_end()) {
-    	if ((*i)->send_p())
-    		cerr << (*i)->name() << " is marked (3)." << endl;
-    	++i;
-    }
-#endif
     // Send constrained DDX with a data blob reference
     dds.print_xml_writer(out, true, cid);
 
@@ -517,8 +518,7 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS &dds, ConstraintE
  @param with_mime_headers If true, include the MIME headers in the response.
  Defaults to true.
  @return void */
-void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEvaluator & eval,
-        bool with_mime_headers)
+void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers)
 {
     // Set up the alarm.
     establish_timeout(data_stream);

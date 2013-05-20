@@ -76,7 +76,7 @@ public:
         initialize();
     }
 
-    virtual ~ResponseBuilder() {}
+    virtual ~ResponseBuilder();
 
     virtual std::string get_ce() const;
     virtual void set_ce(std::string _ce);
