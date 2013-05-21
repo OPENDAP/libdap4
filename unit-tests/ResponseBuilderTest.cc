@@ -34,6 +34,10 @@
 #include <sys/stat.h>
 #endif
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
 #include <unistd.h>  // for stat
 #include <sstream>
 
