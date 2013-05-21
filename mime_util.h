@@ -107,6 +107,10 @@ void set_mime_text(FILE *out, ObjectType type = unknown_type,
 void set_mime_text(ostream &out, ObjectType type = unknown_type,
                    const string &version = "", EncodingType enc = x_plain,
                    const time_t last_modified = 0);
+void set_mime_text(std::ostream &out, ObjectType type = unknown_type,
+                   EncodingType enc = x_plain,
+                   const time_t last_modified = 0,
+                   const std::string &protocol = "");
 
 void set_mime_html(FILE *out, ObjectType type = unknown_type,
                    const string &version = "", EncodingType enc = x_plain,
@@ -114,6 +118,10 @@ void set_mime_html(FILE *out, ObjectType type = unknown_type,
 void set_mime_html(ostream &out, ObjectType type = unknown_type,
                    const string &version = "", EncodingType enc = x_plain,
                    const time_t last_modified = 0);
+void set_mime_html(std::ostream &out, ObjectType type = unknown_type,
+                   EncodingType enc = x_plain,
+                   const time_t last_modified = 0,
+                   const std::string &protocol = "");
 
 void set_mime_binary(FILE *out, ObjectType type = unknown_type,
                      const string &version = "", EncodingType enc = x_plain,
@@ -121,6 +129,10 @@ void set_mime_binary(FILE *out, ObjectType type = unknown_type,
 void set_mime_binary(ostream &out, ObjectType type = unknown_type,
                      const string &version = "", EncodingType enc = x_plain,
                      const time_t last_modified = 0);
+void set_mime_binary(std::ostream &out, ObjectType type = unknown_type,
+                     EncodingType enc = x_plain,
+                     const time_t last_modified = 0,
+                     const std::string &protocol = "");
 
 void set_mime_multipart(ostream &out, const string &boundary,
 	const string &start, ObjectType type = unknown_type,

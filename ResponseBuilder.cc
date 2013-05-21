@@ -809,7 +809,7 @@ void ResponseBuilder::cache_data_ddx(const string &cache_file_name, DDS &dds)
 #endif
 }
 #endif
-
+#if 0
 static const char *descrip[] = { "unknown", "dods_das", "dods_dds", "dods_data", "dods_error", "web_error", "dap4-ddx",
         "dap4-data", "dap4-error", "dap4-data-ddx", "dods_ddx" };
 static const char *encoding[] = { "unknown", "deflate", "x-plain", "gzip", "binary" };
@@ -867,7 +867,8 @@ void ResponseBuilder::set_mime_text(ostream &strm, ObjectType type, EncodingType
         strm << "Content-Encoding: " << encoding[enc] << CRLF;
     strm << CRLF;
 }
-
+#endif
+#if 0
 /** Generate an HTTP 1.0 response header for a html document.
 
  @param strm Write the MIME header to this stream.
@@ -911,7 +912,8 @@ void ResponseBuilder::set_mime_html(ostream &strm, ObjectType type, EncodingType
         strm << "Content-Encoding: " << encoding[enc] << CRLF;
     strm << CRLF;
 }
-
+#endif
+#if 0
 /** Write an HTTP 1.0 response header for our binary response document (i.e.,
  the DataDDS object).
 
@@ -954,6 +956,7 @@ void ResponseBuilder::set_mime_binary(ostream &strm, ObjectType type, EncodingTy
 
     strm << CRLF;
 }
+#endif
 #if 0
 /** Build the initial headers for the DAP4 data response */
 
@@ -1007,7 +1010,7 @@ void ResponseBuilder::set_mime_ddx_boundary(ostream &strm, const string &boundar
     strm << CRLF;
 }
 #endif
-
+#if 0
 /** Generate an HTTP 1.0 response header for an Error object.
  @param strm Write the MIME header to this stream.
  @param code HTTP 1.0 response code. Should be 400, ... 500, ...
@@ -1031,6 +1034,6 @@ void ResponseBuilder::set_mime_error(ostream &strm, int code, const string &reas
     strm << "Cache-Control: no-cache" << CRLF;
     strm << CRLF;
 }
-
+#endif
 } // namespace libdap
 

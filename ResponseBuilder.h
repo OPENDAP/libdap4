@@ -126,30 +126,35 @@ public:
     // These functions are used both by the methods above and by other code.
     // However, Hyrax uses the OLFS to send the HTTP headers, so these functions
     // are never used in Hyrax. The BES may uses these in other contexts.
-
+#if 0
     void set_mime_text(std::ostream &out, ObjectType type = unknown_type,
                        EncodingType enc = x_plain,
                        const time_t last_modified = 0,
                        const std::string &protocol = "") const;
-
+#endif
+#if 0
     void set_mime_html(std::ostream &out, ObjectType type = unknown_type,
                        EncodingType enc = x_plain,
                        const time_t last_modified = 0,
                        const std::string &protocol = "") const;
-
+#endif
+#if 0
     void set_mime_binary(std::ostream &out, ObjectType type = unknown_type,
                          EncodingType enc = x_plain,
                          const time_t last_modified = 0,
                          const std::string &protocol = "") const;
+#endif
 #if 0
     void set_mime_multipart(std::ostream &out, const std::string &boundary,
     	const std::string &start, ObjectType type = unknown_type, EncodingType enc = x_plain,
     	const time_t last_modified = 0, const std::string &protocol = "",
     	const std::string &url = "") const;
 #endif
+#if 0
     void set_mime_error(std::ostream &out, int code = 404,
                         const std::string &reason = "Dataset not found",
                         const std::string &protocol = "") const;
+#endif
 };
 
 } // namespace libdap
