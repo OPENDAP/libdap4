@@ -4,7 +4,6 @@
    fun:malloc
    fun:xmlInitParserCtxt
    fun:xmlNewParserCtxt
-   fun:xmlCreateURLParserCtxt
    ...
 }
 

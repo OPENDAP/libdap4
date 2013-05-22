@@ -429,6 +429,60 @@ set_mime_text(ostream &strm, ObjectType type, const string &ver,
     strm << CRLF ;
 }
 
+/** Generate an HTTP 1.0 response header for a text document. This is used
+ when returning a serialized DAS or DDS object.
+
+ @note In Hyrax these headers are not used. Instead the front end of the
+ server will build the response headers
+
+ @param strm Write the MIME header to this stream.
+ @param type The type of this this response. Defaults to
+ application/octet-stream.
+ @param ver The version string; denotes the libdap implementation
+ version.
+ @param enc How is this response encoded? Can be plain or deflate or the
+ x_... versions of those. Default is x_plain.
+ @param last_modified The time to use for the Last-Modified header value.
+ Default is zero which means use the current time. */
+void set_mime_text(ostream &strm, ObjectType type, EncodingType enc, const time_t last_modified,
+        const string &protocol)
+{
+    strm << "HTTP/1.0 200 OK" << CRLF;
+
+    strm << "XDODS-Server: " << DVR<< CRLF;
+    strm << "XOPeNDAP-Server: " << DVR<< CRLF;
+
+    if (protocol == "")
+        strm << "XDAP: " << DAP_PROTOCOL_VERSION << CRLF;
+    else
+        strm << "XDAP: " << protocol << CRLF;
+
+    const time_t t = time(0);
+    strm << "Date: " << rfc822_date(t).c_str() << CRLF;
+
+    strm << "Last-Modified: ";
+    if (last_modified > 0)
+        strm << rfc822_date(last_modified).c_str() << CRLF;
+    else
+        strm << rfc822_date(t).c_str() << CRLF;
+
+    if (type == dap4_ddx)
+        strm << "Content-Type: text/xml" << CRLF;
+    else
+        strm << "Content-Type: text/plain" << CRLF;
+
+    // Note that Content-Description is from RFC 2045 (MIME, pt 1), not 2616.
+    // jhrg 12/23/05
+    strm << "Content-Description: " << descrip[type] << CRLF;
+    if (type == dods_error) // don't cache our error responses.
+        strm << "Cache-Control: no-cache" << CRLF;
+    // Don't write a Content-Encoding header for x-plain since that breaks
+    // Netscape on NT. jhrg 3/23/97
+    if (enc != x_plain)
+        strm << "Content-Encoding: " << encoding[enc] << CRLF;
+    strm << CRLF;
+}
+
 /** Generate an HTTP 1.0 response header for a html document.
 
     @deprecated
@@ -494,6 +548,50 @@ set_mime_html(ostream &strm, ObjectType type, const string &ver,
     if (enc != x_plain)
         strm << "Content-Encoding: " << encoding[enc] << CRLF ;
     strm << CRLF ;
+}
+
+/** Generate an HTTP 1.0 response header for a html document.
+
+ @param strm Write the MIME header to this stream.
+ @param type The type of this this response.
+ @param ver The version string; denotes the libdap implementation
+ version.
+ @param enc How is this response encoded? Can be plain or deflate or the
+ x_... versions of those. Default is x_plain.
+ @param last_modified The time to use for the Last-Modified header value.
+ Default is zero which means use the current time. */
+void set_mime_html(ostream &strm, ObjectType type, EncodingType enc, const time_t last_modified,
+        const string &protocol)
+{
+    strm << "HTTP/1.0 200 OK" << CRLF;
+
+    strm << "XDODS-Server: " << DVR<< CRLF;
+    strm << "XOPeNDAP-Server: " << DVR<< CRLF;
+
+    if (protocol == "")
+        strm << "XDAP: " << DAP_PROTOCOL_VERSION << CRLF;
+    else
+        strm << "XDAP: " << protocol << CRLF;
+
+    const time_t t = time(0);
+    strm << "Date: " << rfc822_date(t).c_str() << CRLF;
+
+    strm << "Last-Modified: ";
+    if (last_modified > 0)
+        strm << rfc822_date(last_modified).c_str() << CRLF;
+    else
+        strm << rfc822_date(t).c_str() << CRLF;
+
+    strm << "Content-type: text/html" << CRLF;
+    // See note above about Content-Description header. jhrg 12/23/05
+    strm << "Content-Description: " << descrip[type] << CRLF;
+    if (type == dods_error) // don't cache our error responses.
+        strm << "Cache-Control: no-cache" << CRLF;
+    // Don't write a Content-Encoding header for x-plain since that breaks
+    // Netscape on NT. jhrg 3/23/97
+    if (enc != x_plain)
+        strm << "Content-Encoding: " << encoding[enc] << CRLF;
+    strm << CRLF;
 }
 
 /** Write an HTTP 1.0 response header for our binary response document (i.e.,
@@ -563,6 +661,49 @@ set_mime_binary(ostream &strm, ObjectType type, const string &ver,
         strm << "Content-Encoding: " << encoding[enc] << CRLF ;
 
     strm << CRLF ;
+}
+
+/** Write an HTTP 1.0 response header for our binary response document (i.e.,
+ the DataDDS object).
+
+ @param strm Write the MIME header to this stream.
+ @param type The type of this this response. Defaults to
+ application/octet-stream.
+ @param ver The version string; denotes the libdap implementation
+ version.
+ @param enc How is this response encoded? Can be plain or deflate or the
+ x_... versions of those. Default is x_plain.
+ @param last_modified The time to use for the Last-Modified header value.
+ Default is zero which means use the current time.
+ */
+void set_mime_binary(ostream &strm, ObjectType type, EncodingType enc, const time_t last_modified,
+        const string &protocol)
+{
+    strm << "HTTP/1.0 200 OK" << CRLF;
+
+    strm << "XDODS-Server: " << DVR << CRLF;
+    strm << "XOPeNDAP-Server: " << DVR << CRLF;
+
+    if (protocol == "")
+        strm << "XDAP: " << DAP_PROTOCOL_VERSION << CRLF;
+    else
+        strm << "XDAP: " << protocol << CRLF;
+
+    const time_t t = time(0);
+    strm << "Date: " << rfc822_date(t).c_str() << CRLF;
+
+    strm << "Last-Modified: ";
+    if (last_modified > 0)
+        strm << rfc822_date(last_modified).c_str() << CRLF;
+    else
+        strm << rfc822_date(t).c_str() << CRLF;
+
+    strm << "Content-Type: application/octet-stream" << CRLF;
+    strm << "Content-Description: " << descrip[type] << CRLF;
+    if (enc != x_plain)
+        strm << "Content-Encoding: " << encoding[enc] << CRLF;
+
+    strm << CRLF;
 }
 
 void set_mime_multipart(ostream &strm, const string &boundary,

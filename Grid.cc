@@ -695,8 +695,6 @@ public:
 
     void operator()(BaseType *btp)
     {
-    	// FIXME Remove
-    	cerr << "PrintGridFieldXMLWriter: tag = " << d_tag << ", type = " << btp->type_name() << "typeid: " << typeid(btp).name() << endl;
         Array *a = dynamic_cast<Array*>(btp);
         if (!a)
             throw InternalErr(__FILE__, __LINE__, "Expected an Array.");

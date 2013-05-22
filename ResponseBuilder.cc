@@ -100,6 +100,16 @@ ResponseBuilder::responseCache()
 	return d_response_cache->is_available() ? d_response_cache: 0;
 }
 
+ResponseBuilder::~ResponseBuilder()
+{
+	if (d_response_cache) delete d_response_cache;
+
+	// If an alarm was registered, delete it. The register code in SignalHandler
+	// always deletes the old alarm handler object, so only the one returned by
+	// remove_handler needs to be deleted at this point.
+	delete dynamic_cast<AlarmHandler*>(SignalHandler::instance()->remove_handler(SIGALRM));
+}
+
 /** Return the entire constraint expression in a string.  This
  includes both the projection and selection clauses, but not the
  question mark.
@@ -474,15 +484,6 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS &dds, ConstraintE
         strncpy(domain, "opendap.org", 255);
 
     string cid = string(&uuid[0]) + "@" + string(&domain[0]);
-#if 0
-    // FIXME Remove
-    DDS::Vars_iter i = dds.var_begin();
-    while (i != dds.var_end()) {
-    	if ((*i)->send_p())
-    		cerr << (*i)->name() << " is marked (3)." << endl;
-    	++i;
-    }
-#endif
     // Send constrained DDX with a data blob reference
     dds.print_xml_writer(out, true, cid);
 
@@ -517,8 +518,7 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS &dds, ConstraintE
  @param with_mime_headers If true, include the MIME headers in the response.
  Defaults to true.
  @return void */
-void ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEvaluator & eval,
-        bool with_mime_headers)
+void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers)
 {
     // Set up the alarm.
     establish_timeout(data_stream);
@@ -809,7 +809,7 @@ void ResponseBuilder::cache_data_ddx(const string &cache_file_name, DDS &dds)
 #endif
 }
 #endif
-
+#if 0
 static const char *descrip[] = { "unknown", "dods_das", "dods_dds", "dods_data", "dods_error", "web_error", "dap4-ddx",
         "dap4-data", "dap4-error", "dap4-data-ddx", "dods_ddx" };
 static const char *encoding[] = { "unknown", "deflate", "x-plain", "gzip", "binary" };
@@ -867,7 +867,8 @@ void ResponseBuilder::set_mime_text(ostream &strm, ObjectType type, EncodingType
         strm << "Content-Encoding: " << encoding[enc] << CRLF;
     strm << CRLF;
 }
-
+#endif
+#if 0
 /** Generate an HTTP 1.0 response header for a html document.
 
  @param strm Write the MIME header to this stream.
@@ -911,7 +912,8 @@ void ResponseBuilder::set_mime_html(ostream &strm, ObjectType type, EncodingType
         strm << "Content-Encoding: " << encoding[enc] << CRLF;
     strm << CRLF;
 }
-
+#endif
+#if 0
 /** Write an HTTP 1.0 response header for our binary response document (i.e.,
  the DataDDS object).
 
@@ -954,6 +956,7 @@ void ResponseBuilder::set_mime_binary(ostream &strm, ObjectType type, EncodingTy
 
     strm << CRLF;
 }
+#endif
 #if 0
 /** Build the initial headers for the DAP4 data response */
 
@@ -1007,7 +1010,7 @@ void ResponseBuilder::set_mime_ddx_boundary(ostream &strm, const string &boundar
     strm << CRLF;
 }
 #endif
-
+#if 0
 /** Generate an HTTP 1.0 response header for an Error object.
  @param strm Write the MIME header to this stream.
  @param code HTTP 1.0 response code. Should be 400, ... 500, ...
@@ -1031,6 +1034,6 @@ void ResponseBuilder::set_mime_error(ostream &strm, int code, const string &reas
     strm << "Cache-Control: no-cache" << CRLF;
     strm << CRLF;
 }
-
+#endif
 } // namespace libdap
 
