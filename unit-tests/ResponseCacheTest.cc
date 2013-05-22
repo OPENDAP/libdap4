@@ -33,7 +33,7 @@
 #include "ConstraintEvaluator.h"
 #include "ResponseBuilder.h"
 #include "DDS.h"
-#include "DDXParserSax2.h"
+#include "DDXParserSAX2.h"
 #include "ResponseCache.h"
 
 #include "GetOpt.h"

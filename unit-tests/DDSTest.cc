@@ -22,16 +22,13 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <sstream>
-
-#include "config.h"
-
-//#define DODS_DEBUG2
-//#define DODS_DEBUG
 
 #include "Byte.h"
 #include "Int16.h"
@@ -52,9 +49,15 @@
 #include "GNURegex.h"
 #include "util.h"
 #include "debug.h"
+#include "GetOpt.h"
 
 #include "testFile.h"
 #include "test_config.h"
+
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) {x;} } while(false)
 
 using namespace CppUnit;
 using namespace std;
@@ -90,8 +93,7 @@ public:
 
     bool re_match(Regex &r, const string &s) {
         int match = r.match(s.c_str(), s.length());
-        DBG(cerr << "Match: " << match << " should be: " << s.length()
-                << endl);
+        DBG(cerr << "Match: " << match << " should be: " << s.length() << endl);
         return match == static_cast<int> (s.length());
     }
 
@@ -101,15 +103,13 @@ public:
     // DAS, it will need to specialize the BaseType::transfer_attributes()
     // method.
     CPPUNIT_TEST_SUITE( DDSTest );
-#if 1
-        CPPUNIT_TEST(transfer_attributes_test_1);
+
+		CPPUNIT_TEST(transfer_attributes_test_1);
         CPPUNIT_TEST(transfer_attributes_test_2);
 
         CPPUNIT_TEST(symbol_name_test);
-#endif
         // These test both transfer_attributes() and print_xml()
         CPPUNIT_TEST(print_xml_test);
-#if 1
         CPPUNIT_TEST(print_xml_test2);
         CPPUNIT_TEST(print_xml_test3);
 
@@ -130,7 +130,6 @@ public:
         CPPUNIT_TEST(get_response_size_test_c3);
         CPPUNIT_TEST(get_response_size_test_seq);
         CPPUNIT_TEST(get_response_size_test_seq_c);
-#endif
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -268,7 +267,7 @@ public:
 
         dds2->transfer_attributes(&das);
 
-        DBG(AttrTable &at2 = dds2->var("c%20d")->get_attr_table()); DBG(at2.print(stderr));
+        DBG(AttrTable &at2 = dds2->var("c%20d")->get_attr_table(); at2.print(stderr));
 
         ostringstream oss;
         dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
@@ -292,7 +291,7 @@ public:
             CPPUNIT_FAIL("Error exception");
         }
 
-        DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table()); DBG(at2.print(stderr));
+        DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table(); at2.print(stderr));
 
         ostringstream oss;
         dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
@@ -318,7 +317,7 @@ public:
             CPPUNIT_FAIL("Error exception");
         }
 
-        DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table()); DBG(at2.print(stderr));
+        DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table(); at2.print(stderr));
 
         ostringstream oss;
         dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
@@ -361,7 +360,7 @@ public:
             CPPUNIT_FAIL("Error exception");
         }
 
-        DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table()); DBG(at2.print(stderr));
+        DBG(AttrTable &at2 = dds2->var("huh")->get_attr_table(); at2.print(stderr));
 
         ostringstream oss;
         dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
@@ -467,6 +466,42 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DDSTest);
 
 }
 
+int main(int argc, char*argv[]) {
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
+
+    GetOpt getopt(argc, argv, "d");
+    char option_char;
+
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        default:
+            break;
+        }
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("libdap::DDSTest::") + argv[i++];
+            DBG(cerr << "test: " << test << endl);
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
+
+    xmlMemoryDump();
+
+    return wasSuccessful ? 0 : 1;
+}
+#if 0
 int main(int, char *[]) {
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
@@ -475,4 +510,4 @@ int main(int, char *[]) {
 
     return wasSuccessful ? 0 : 1;
 }
-
+#endif
