@@ -440,7 +440,8 @@ Grid::Map_riter
 Grid::map_rbegin()
 {
     // see above
-    return d_is_array_set/*(d_array_var != 0)*/ ? d_vars.rbegin() + 1: d_vars.rbegin();
+    // return d_is_array_set/*(d_array_var != 0)*/ ? d_vars.rbegin() + 1: d_vars.rbegin();
+    return d_vars.rbegin();
 }
 
 /** Returns an iterator referencing the end of the list of Map vectors.
@@ -448,7 +449,7 @@ Grid::map_rbegin()
 Grid::Map_riter
 Grid::map_rend()
 {
-    return d_vars.rend();
+    return d_is_array_set ? d_vars.rend() - 1: d_vars.rend();
 }
 
 /** Return the iterator for the \e ith map.
@@ -457,7 +458,8 @@ Grid::map_rend()
 Grid::Map_iter
 Grid::get_map_iter(int i)
 {
-    return map_begin() + i;
+    // return map_begin() + i;
+    return d_is_array_set ? map_begin() + 1 + i : map_begin() + i;
 }
 
 /** Returns the number of components in the Grid object.  This is
