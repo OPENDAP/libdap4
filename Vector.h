@@ -174,6 +174,15 @@ public:
     virtual void value(dods_float64 *b) const;
     virtual void value(vector<string> &b) const;
 
+    void value(vector<unsigned int> *index, dods_byte *b) const;
+    void value(vector<unsigned int> *index, dods_int16 *b) const;
+    void value(vector<unsigned int> *index, dods_uint16 *b) const;
+    void value(vector<unsigned int> *index, dods_int32 *b) const;
+    void value(vector<unsigned int> *index, dods_uint32 *b) const;
+    void value(vector<unsigned int> *index, dods_float32 *b) const;
+    void value(vector<unsigned int> *index, dods_float64 *b) const;
+    void value(vector<unsigned int> *index, vector<string> &b) const;
+
     virtual void *value();
 
     virtual BaseType *var(const string &name = "", bool exact_match = true,
