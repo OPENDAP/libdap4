@@ -1419,7 +1419,7 @@ void Vector::value(vector<unsigned int> *subsetIndex, dods_byte *b) const
                     "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
             throw Error(s.str());
         }
-        b[i] = *reinterpret_cast<dods_byte*>(_buf ) + currentIndex;
+        b[i] = reinterpret_cast<dods_byte*>(_buf )[currentIndex]; // I like this version - and it works!
     }
 }
 
@@ -1437,7 +1437,7 @@ void Vector::value(vector<unsigned int> *subsetIndex, dods_uint16 *b) const
                     "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
             throw Error(s.str());
         }
-        b[i] = *reinterpret_cast<dods_uint16*>(_buf ) + currentIndex;
+        b[i] = reinterpret_cast<dods_uint16*>(_buf )[currentIndex]; // I like this version - and it works!
     }
 }
 
@@ -1455,7 +1455,7 @@ void Vector::value(vector<unsigned int> *subsetIndex, dods_int16 *b) const
                     "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
             throw Error(s.str());
         }
-        b[i] = *reinterpret_cast<dods_int16*>(_buf ) + currentIndex;
+        b[i] = reinterpret_cast<dods_int16*>(_buf )[currentIndex]; // I like this version - and it works!
     }
 }
 
@@ -1472,7 +1472,7 @@ void Vector::value(vector<unsigned int> *subsetIndex, dods_uint32 *b) const
                     "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
             throw Error(s.str());
         }
-        b[i] = *reinterpret_cast<dods_uint32*>(_buf ) + currentIndex;
+        b[i] = reinterpret_cast<dods_uint32*>(_buf )[currentIndex]; // I like this version - and it works!
     }
 }
 
@@ -1483,16 +1483,13 @@ void Vector::value(vector<unsigned int> *subsetIndex, dods_int32 *b) const
 
     for(unsigned long i=0; i<subsetIndex->size() ;++i){
         currentIndex = (*subsetIndex)[i] ;
-
-        //cerr << "currentIndex: " << currentIndex << endl;
         if(currentIndex> (unsigned int)length()){
             stringstream s;
             s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
                     "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
             throw Error(s.str());
         }
-        b[i] = *reinterpret_cast<dods_int32*>(_buf ) + currentIndex;
-        //cerr << "b[" << i << "]=" <<  b[i] << endl;
+        b[i] = reinterpret_cast<dods_int32*>(_buf )[currentIndex]; // I like this version - and it works!
     }
 }
 
@@ -1510,7 +1507,12 @@ void Vector::value(vector<unsigned int> *subsetIndex, dods_float32 *b) const
                     "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
             throw Error(s.str());
         }
-        b[i] = *reinterpret_cast<dods_float32*>(_buf ) + currentIndex;
+        // b[i] = *reinterpret_cast<dods_float32*>(_buf ) + currentIndex; // BROKEN
+        // b[i] = *(reinterpret_cast<dods_float32*>(_buf ) + currentIndex); // Works but I like other forms
+        // b[i] = ((dods_float32*)_buf )[currentIndex]; // Works but isn't as 'safe'
+
+        b[i] = reinterpret_cast<dods_float32*>(_buf )[currentIndex]; // I like this version - and it works!
+
         //cerr << "b[" << i << "]=" <<  b[i] << endl;
     }
 }
@@ -1528,7 +1530,7 @@ void Vector::value(vector<unsigned int> *subsetIndex, dods_float64 *b) const
                     "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
             throw Error(s.str());
         }
-        b[i] = *reinterpret_cast<dods_float64*>(_buf ) + currentIndex;
+        b[i] = reinterpret_cast<dods_float64*>(_buf )[currentIndex]; // I like this version - and it works!
     }
 }
 
