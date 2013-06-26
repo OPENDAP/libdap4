@@ -54,7 +54,7 @@
 
 namespace libdap {
 
-static const not_used char *states[] =
+static const char *states[] =
     {
         "start",
 
@@ -1169,23 +1169,18 @@ void DDXParser::intern_stream(istream &in, DDS *dest_dds, string &cid, const str
         context->userData = this;
         context->validate = true;
 
-#if 0
-        while ((fgets(chars, size, in) > 0) && !is_boundary(chars, boundary)) {
-            chars[size-1] = '\0';
-            DBG(cerr << "line: " << chars << endl);
-            xmlParseChunk(ctxt, chars, strlen(chars), 0);
-        }
-#endif
-        in.readsome(chars, size);	// chars has size+1 elements
+        in.getline(chars, size);	// chars has size+1 elements
         res = in.gcount();
+        chars[res-1] = '\n';		// libxml needs the newline; w/o it the parse will fail
         chars[res] = '\0';
         while (res > 0 && !is_boundary(chars, boundary)) {
-            DBG(cerr << "line: " << chars << endl);
-            xmlParseChunk(ctxt, chars, res, 0);
+        	DBG(cerr << "line (" << res << "): " << chars << endl);
+        	xmlParseChunk(ctxt, chars, res, 0);
 
-            in.readsome(chars, size);	// chars has size+1 elements
-            res = in.gcount();
-            chars[res] = '\0';
+        	in.getline(chars, size);	// chars has size+1 elements
+        	res = in.gcount();
+        	chars[res-1] = '\n';
+        	chars[res] = '\0';
         }
 
         // This call ends the parse: The fourth argument of xmlParseChunk is
@@ -1240,8 +1235,9 @@ void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid, const string
 
 
         while ((fgets(chars, size, in) > 0) && !is_boundary(chars, boundary)) {
-            chars[size-1] = '\0';
-            DBG(cerr << "line: " << chars << endl);
+            //chars[size-1] = '\0';
+            DBG(cerr << "line (" << strlen(chars) << "): " << chars << endl);
+
             xmlParseChunk(ctxt, chars, strlen(chars), 0);
         }
         // This call ends the parse: The fourth argument of xmlParseChunk is

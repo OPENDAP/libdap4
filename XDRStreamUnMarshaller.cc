@@ -256,19 +256,17 @@ void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, Vector &)
     //XDR *source = 0;
     // Must address the case where the string is larger than the buffer
     if (i + 4 > XDR_DAP_BUFF_SIZE) {
-        char *buf = (char *) malloc(i + 4);
-        if (!buf)
-            throw InternalErr(__FILE__, __LINE__, "Error allocating memory");
-        XDR source;// = new XDR;
-        xdrmem_create( &source, buf, i + 4, XDR_DECODE);
-        memcpy(buf, d_buf, 4);
+    	vector<char> buf(i+4);
+        XDR source;
+        xdrmem_create(&source, &buf[0], i + 4, XDR_DECODE);
+        memcpy(&buf[0], d_buf, 4);
 
-        d_in.read(buf + 4, i);
+        d_in.read(&buf[0] + 4, i);
         DBG2(cerr << "bytes read: " << d_in.gcount() << endl);
 
-        xdr_setpos( &source, 0);
-        if (!xdr_bytes( &d_source, val, &num, DODS_MAX_ARRAY)) {
-            xdr_destroy( &source );
+        xdr_setpos(&source, 0);
+        if (!xdr_bytes(&d_source, val, &num, DODS_MAX_ARRAY)) {
+            xdr_destroy(&source);
             throw Error("Network I/O Error. Could not read byte array data.");
         }
 
@@ -278,7 +276,7 @@ void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, Vector &)
         d_in.read(d_buf + 4, i);
         DBG2(cerr << "bytes read: " << d_in.gcount() << endl);
 
-        xdr_setpos( &d_source, 0);
+        xdr_setpos(&d_source, 0);
         if (!xdr_bytes(&d_source, val, &num, DODS_MAX_ARRAY))
             throw Error("Network I/O Error. Could not read byte array data.");
     }
@@ -286,7 +284,7 @@ void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, Vector &)
 
 void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, int width, Vector &vec)
 {
-    get_vector(val, num, width, vec.type());
+    get_vector(val, num, width, vec.var()->type());
 }
 
 void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, int width, Type type)
@@ -298,26 +296,21 @@ void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, int width,
     width += width & 3;
     DBG(std::cerr << "width: " << width << std::endl);
 
-    //char *buf = 0;
-    //XDR *source = 0;
     int size = i * width; // + 4; // '+ 4' to hold the int already read
-    //BaseType *var = vec.var();
 
     // Must address the case where the string is larger than the buffer
     if (size > XDR_DAP_BUFF_SIZE) {
-        char *buf = (char *) malloc(size + 4);
-        if (!buf)
-            throw InternalErr(__FILE__, __LINE__, "Error allocating memory");
-        XDR source; // = new XDR;
-        xdrmem_create( &source, buf, size + 4, XDR_DECODE);
-        DBG2(cerr << "size: " << size << endl);
-        memcpy(buf, d_buf, 4);
+    	vector<char> buf(size+4);
+        XDR source;
+        xdrmem_create(&source, &buf[0], size + 4, XDR_DECODE);
+        DBG(cerr << "size: " << size << endl);
+        memcpy(&buf[0], d_buf, 4);
 
-        d_in.read(buf + 4, size); // +4 for the int already read
-        DBG2(cerr << "bytes read: " << d_in.gcount() << endl);
+        d_in.read(&buf[0] + 4, size); // +4 for the int already read
+        DBG(cerr << "bytes read: " << d_in.gcount() << endl);
 
-        xdr_setpos( &source, 0);
-        if (!xdr_array( &source, val, &num, DODS_MAX_ARRAY, width, XDRUtils::xdr_coder(type))) {
+        xdr_setpos(&source, 0);
+        if (!xdr_array(&source, val, &num, DODS_MAX_ARRAY, width, XDRUtils::xdr_coder(type))) {
             xdr_destroy( &source );
             throw Error("Network I/O Error. Could not read array data.");
         }
@@ -326,7 +319,7 @@ void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, int width,
     }
     else {
         d_in.read(d_buf + 4, size);
-        DBG2(cerr << "bytes read: " << d_in.gcount() << endl);
+        DBG(cerr << "bytes read (2): " << d_in.gcount() << endl);
 
         xdr_setpos( &d_source, 0);
         if (!xdr_array(&d_source, val, &num, DODS_MAX_ARRAY, width, XDRUtils::xdr_coder(type)))

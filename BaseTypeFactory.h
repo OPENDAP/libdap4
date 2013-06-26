@@ -82,6 +82,8 @@ public:
     virtual ~BaseTypeFactory()
     {}
 
+    virtual BaseType *NewVariable(Type type, const string &name = "") const;
+
     virtual Byte *NewByte(const string &n = "") const;
     virtual Int16 *NewInt16(const string &n = "") const;
     virtual UInt16 *NewUInt16(const string &n = "") const;

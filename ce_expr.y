@@ -201,7 +201,7 @@ projection: proj_clause
 ;
 
 proj_clause: name 
-         { 
+         {
 		     BaseType *var = DDS(arg)->var($1);
 		     if (var) {
 			     DBG(cerr << "Marking " << $1 << endl);
@@ -231,7 +231,7 @@ proj_function:  SCAN_WORD '(' arg_list ')'
 			    EVALUATOR(arg)->append_clause(f, $3);
 			    $$ = true;
 		    }
-		    else if ((p_f = get_proj_function(*(EVALUATOR(arg)), $1))) {
+		    else if ((p_f = get_proj_function(*(EVALUATOR(arg)), $1))) { 
 		        DDS &dds = dynamic_cast<DDS&>(*(DDS(arg)));
 			    BaseType **args = build_btp_args( $3, dds );
 			    (*p_f)(($3) ? $3->size():0, args, dds, *(EVALUATOR(arg)));
@@ -290,15 +290,15 @@ bool_function: SCAN_WORD '(' arg_list ')'
 	       }
 ;
 
-r_value:        id_or_const
+r_value: id_or_const
 		| SCAN_WORD '(' arg_list ')'
 		{
 		    btp_func func = get_btp_function((*EVALUATOR(arg)), $1);
 		    if (func) {
-			$$ = new rvalue(func, $3);
+			    $$ = new rvalue(func, $3);
 		    } 
-		    else {  		
-			no_such_func($1);
+		    else { 
+			    no_such_func($1);
 		    }
 		}
 ;
@@ -306,26 +306,26 @@ r_value:        id_or_const
 r_value_list:	r_value
 		{
 		    if ($1)
-			$$ = make_rvalue_list($1);
+			    $$ = make_rvalue_list($1);
 		    else
-			$$ = 0;
+			    $$ = 0;
 		}
 		| r_value_list ',' r_value
-                {
+        {
 		    if ($1 && $3)
-			$$ = append_rvalue_list($1, $3);
+			    $$ = append_rvalue_list($1, $3);
 		    else
-			$$ = 0;
+			    $$ = 0;
 		}
 ;
 
-arg_list:     r_value_list
-              {  
-		  $$ = $1;
+arg_list: r_value_list
+          {  
+		      $$ = $1;
 	      }
-              | /* Null, argument lists may be empty */
-              { 
-		  $$ = 0; 
+          | /* Null, argument lists may be empty */
+          { 
+		      $$ = 0; 
 	      }
 ;
 
@@ -354,7 +354,7 @@ id_or_const:    SCAN_WORD
 			    new_val.type = dods_str_c;
 			    new_val.v.s = new string($1);
 			}
-			BaseType *btp = make_variable((*EVALUATOR(arg)), new_val); 
+			BaseType *btp = make_variable((*EVALUATOR(arg)), new_val);
 			// *** test for btp == null
 			// delete new_val.v.s; // Str::val2buf copies the value.
 			$$ = new rvalue(btp);
@@ -972,6 +972,12 @@ make_variable(ConstraintEvaluator &eval, const value &val)
     switch (val.type) {
     case dods_int32_c: {
         var = new Int32("dummy");
+        var->val2buf((void *) &val.v.i);
+        break;
+    }
+
+    case dods_uint32_c: {
+        var = new UInt32("dummy");
         var->val2buf((void *) &val.v.i);
         break;
     }

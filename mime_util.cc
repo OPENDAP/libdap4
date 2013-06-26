@@ -845,6 +845,7 @@ string get_next_mime_header(FILE *in)
 
 string get_next_mime_header(istream &in)
 {
+#if 0
     // Get the header line and strip \r\n. Some headers end with just \n.
     // If a blank line is found, return an empty string.
 	char line[line_length];
@@ -860,6 +861,17 @@ string get_next_mime_header(istream &in)
 				line[slen - 2] = '\0';
 			return string(line);
 		}
+	}
+#endif
+    // Get the header line and strip \r\n. Some headers end with just \n.
+    // If a blank line is found, return an empty string.
+	char raw_line[line_length];
+	while (!in.eof()) {
+		in.getline(raw_line, line_length); // strips the trailing newline; terminates with null
+		string line = raw_line;
+		if (line.find('\r') != string::npos)
+			line = line.substr(0, line.size()-1);
+		return line;
 	}
 
 	throw Error("I expected to find a MIME header, but got EOF instead.");
@@ -931,6 +943,20 @@ string read_multipart_boundary(FILE *in, const string &boundary)
     return boundary_line;
 }
 
+string read_multipart_boundary(istream &in, const string &boundary)
+{
+    string boundary_line = get_next_mime_header(in);
+    // If the caller passed in a value for the boundary, test for that value,
+    // else just see that this line starts with '--'.
+    // The value of 'boundary_line' is returned by this function.
+    if ((!boundary.empty() && is_boundary(boundary_line.c_str(), boundary))
+	    || boundary_line.find("--") != 0)
+	throw Error(
+		"The DAP4 data response document is broken - missing or malformed boundary.");
+
+    return boundary_line;
+}
+
 /** Consume the Multipart MIME headers that prefix the DDX in a DataDDX
     response. The stream pointer is advanced to the start of the DDX. It might
     seem odd that this function both takes the value of the MPM boundary as
@@ -952,6 +978,38 @@ string read_multipart_boundary(FILE *in, const string &boundary)
     are given (the default values are not tested).
  */
 void read_multipart_headers(FILE *in, const string &content_type, const ObjectType object_type, const string &cid)
+{
+	bool ct = false, cd = false, ci = false;
+
+	string header = get_next_mime_header(in);
+	while (!header.empty()) {
+		string name, value;
+		parse_mime_header(header, name, value);
+
+		if (name == "content-type") {
+			ct = true;
+			if (value.find(content_type) == string::npos)
+				throw Error("Content-Type for this part of a DAP4 data response must be " + content_type + ".");
+		}
+		else if (name == "content-description") {
+			cd = true;
+			if (get_description_type(value) != object_type)
+				throw Error(
+						"Content-Description for this part of a DAP4 data response must be dap4-ddx or dap4-data-ddx");
+		}
+		else if (name == "content-id") {
+			ci = true;
+			if (!cid.empty() && value != cid)
+				throw Error("Content-Id mismatch. Expected: " + cid + ", but got: " + value);
+		}
+
+		header = get_next_mime_header(in);
+	}
+
+	if (!(ct && cd && ci)) throw Error("The DAP4 data response document is broken - missing header.");
+}
+
+void read_multipart_headers(istream &in, const string &content_type, const ObjectType object_type, const string &cid)
 {
 	bool ct = false, cd = false, ci = false;
 
