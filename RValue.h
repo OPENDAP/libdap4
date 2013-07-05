@@ -68,6 +68,8 @@ typedef std::vector<rvalue *> rvalue_list;
 typedef std::vector<rvalue *>::const_iterator rvalue_list_citer ;
 typedef std::vector<rvalue *>::iterator rvalue_list_iter ;
 
+typedef std::vector<dods_int32> *int32_arg_list;
+
 rvalue_list *make_rvalue_list(rvalue *rv);
 rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
 

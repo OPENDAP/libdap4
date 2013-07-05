@@ -350,6 +350,9 @@ void test_scanner(bool show_prompt)
         case '&':
             cout << "Ampersand" << endl;
             break;
+        case SCAN_HASH_INT32:
+            cout << "Hash Int32" << endl;
+            break;
         default:
             cout << "Error: Unrecognized input" << endl;
             break;

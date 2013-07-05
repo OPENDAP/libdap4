@@ -49,6 +49,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include <cstring>
 
 #include <iostream>
+#include <sstream>
 #include <iterator>
 #include <string>
 #include <stack>
@@ -96,10 +97,16 @@ using namespace libdap ;
 
 int ce_exprlex(void);		/* the scanner; see expr.lex */
 
+/* This global is used by the rule 'arg_length_hint' so that the hint can 
+   be used during the paraent rule's parse. See fast_int32_arg_list. */
+unsigned long arg_length_hint_value = 0;
+
+#if 0
 void ce_exprerror(const char *s);	/* easier to overload than to use stdarg... */
 void ce_exprerror(const char *s, const char *s2);
 void no_such_func(char *name);
 void no_such_ident(char *name, char *word);
+#endif
 
 void ce_exprerror(const string &s); 
 void ce_exprerror(const string &s, const string &s2);
@@ -113,8 +120,7 @@ int_list_list *make_array_indices(int_list *index);
 int_list_list *append_array_index(int_list_list *indices, int_list *index);
 
 void delete_array_indices(int_list_list *indices);
-bool bracket_projection(DDS &table, const char *name, 
-			int_list_list *indices);
+bool bracket_projection(DDS &table, const char *name, int_list_list *indices);
 
 void process_array_indices(BaseType *variable, int_list_list *indices); 
 void process_grid_indices(BaseType *variable, int_list_list *indices); 
@@ -130,12 +136,19 @@ bool_func get_function(const ConstraintEvaluator &eval, const char *name);
 btp_func get_btp_function(const ConstraintEvaluator &eval, const char *name);
 proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 
+int32_arg_list make_int32_arg_list(unsigned long vector_size_hint, dods_int32 arg_value);
+int32_arg_list make_int32_arg_list(int32_arg_list int_values, dods_int32 arg_value);
+
 %}
 
 %union {
     bool boolean;
     int op;
     char id[ID_MAX];
+    
+    int int_value;
+    
+    libdap::int32_arg_list int_values;
 
     libdap::value val;               // value is defined in expr.h
 
@@ -152,6 +165,7 @@ proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 %token <val> SCAN_STR
 
 %token <id> SCAN_WORD
+//%token <text> SCAN_WORD
 
 %token <op> SCAN_EQUAL
 %token <op> SCAN_NOT_EQUAL
@@ -163,14 +177,21 @@ proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 
 %token <op> SCAN_STAR
 
+%token <op> SCAN_HASH_INT32
+
 %type <boolean> constraint_expr projection proj_clause proj_function
-%type <boolean> array_projection selection clause bool_function
+%type <boolean> array_projection selection clause bool_function arg_length_hint
 %type <id> array_proj_clause name
 %type <op> rel_op
+
 %type <int_l_ptr> array_index
 %type <int_ll_ptr> array_indices
-%type <rval_ptr> r_value id_or_const
+
+%type <rval_ptr> r_value id_or_const array_const_special_form
 %type <r_val_l_ptr> r_value_list arg_list
+
+%type <int_value> fast_int32_arg 
+%type <int_values> fast_int32_arg_list
 
 %%
 
@@ -220,8 +241,87 @@ proj_clause: name
         {
 		    $$ = $1;
 		}
+        | array_const_special_form
+        {
+            Array *array = dynamic_cast<Array*>($1->bvalue(*DDS(arg)));
+            if (array) { 
+                /* When the special form appears here (not as a function argument)
+                set send_p so the data will be sent and add it to the DDS. This 
+                streamlines testing (and is likely what is intended). */
+                
+                array->set_send_p(true);
+                DDS(arg)->add_var_nocopy(array);
+                
+                return true;
+            }
+            else {
+                ce_exprerror("Could not create the anonymous vector using the # special form");
+                return false;
+            }
+        }
 ;
 
+/* The value parsed by arg_length_hint is stored in a global variable by that rule
+   so that it can be used during the parse of fast_int32_arg_list. */
+
+/* return a rvalue */
+array_const_special_form: SCAN_HASH_INT32 '(' arg_length_hint ':' fast_int32_arg_list ')'
+        {
+            /* Make a Array*, pack it with values as a vector and load those into a rvalue */
+            vector<dods_int32> *values = $5;
+            
+            Int32 i("");
+            Array *array = new Array("", &i);
+            array->append_dim(values->size());
+            // TODO Make set_value_nocopy() methods so that values' pointers can be copied
+            // instead of allocating memory twice. jhrg 7/5/13
+            array->set_value(*values, values->size());
+            delete values;
+            array->set_read_p(true);
+            
+            static unsigned long counter = 1;
+            string name;
+            do {
+                name = "g" + long_to_string(counter++);
+            } while (DDS(arg)->var(name));
+            array->set_name(name);
+            
+            $$ = new rvalue(array);
+        }
+;
+
+/* Here the arg length hint is stored in a global so it can be used by the 
+   function that allocates the vector. The value is passed to vector::reserve(). */
+   
+arg_length_hint: SCAN_WORD
+          {
+              if (!check_int32($1))
+                  throw Error(malformed_expr, "#<type>(hint, value, ...) special form expected hint to be an integer");
+                   
+              arg_length_hint_value = atoi($1);
+              $$ = true;
+          }
+;
+
+/* return an int_arg_list (a std::vector<int>*) */
+fast_int32_arg_list: fast_int32_arg
+          {
+              $$ = make_int32_arg_list(arg_length_hint_value, $1);
+          }
+          | fast_int32_arg_list ',' fast_int32_arg
+          {
+              $$ = make_int32_arg_list($1, $3);
+          }
+;
+
+/* This rule does not check SCAN_WORD nor does it perform www escaping */
+fast_int32_arg: SCAN_WORD
+          {
+              $$ = atoi($1);
+          }
+;
+
+/* This rule does not check SCAN_WORD nor does it perform www escaping */
 proj_function:  SCAN_WORD '(' arg_list ')'
 	    {
 		    proj_func p_f = 0;
@@ -277,6 +377,7 @@ clause:		r_value rel_op '{' r_value_list '}'
 		}
 ;
 
+/* This rule does not check SCAN_WORD nor does it perform www escaping */
 bool_function: SCAN_WORD '(' arg_list ')'
 	       {
 		   bool_func b_func = get_function((*EVALUATOR(arg)), $1);
@@ -290,6 +391,7 @@ bool_function: SCAN_WORD '(' arg_list ')'
 	       }
 ;
 
+/* This rule does not check SCAN_WORD nor does it perform www escaping */
 r_value: id_or_const
 		| SCAN_WORD '(' arg_list ')'
 		{
@@ -301,6 +403,10 @@ r_value: id_or_const
 			    no_such_func($1);
 		    }
 		}
+        | array_const_special_form
+        {
+            $$ = $1
+        }
 ;
 
 r_value_list:	r_value
@@ -329,43 +435,41 @@ arg_list: r_value_list
 	      }
 ;
 
-id_or_const:    SCAN_WORD
+id_or_const: SCAN_WORD
 		{ 
-		    BaseType *btp = DDS(arg)->var(www2id(string($1)));
+		    BaseType *btp = DDS(arg)->var(www2id($1));
 		    if (btp) {
-                        btp->set_in_selection(true);
-                        $$ = new rvalue(btp);
+                btp->set_in_selection(true);
+                $$ = new rvalue(btp);
 		    }
 		    else {
-			value new_val;
-			if (check_int32($1)) {
-			    new_val.type = dods_int32_c;
-			    new_val.v.i = atoi($1);
-			}
-			else if (check_uint32($1)) {
-			    new_val.type = dods_uint32_c;
-			    new_val.v.ui = atoi($1);
-			}
-			else if (check_float64($1)) {
-			    new_val.type = dods_float64_c;
-			    new_val.v.f = atof($1);
-			}
-			else {
-			    new_val.type = dods_str_c;
-			    new_val.v.s = new string($1);
-			}
-			BaseType *btp = make_variable((*EVALUATOR(arg)), new_val);
-			// *** test for btp == null
-			// delete new_val.v.s; // Str::val2buf copies the value.
-			$$ = new rvalue(btp);
+			    value new_val;
+			    if (check_int32($1)) {
+			        new_val.type = dods_int32_c;
+			        new_val.v.i = atoi($1);
+			    }
+			    else if (check_uint32($1)) {
+			        new_val.type = dods_uint32_c;
+			        new_val.v.ui = atoi($1);
+			    }
+			    else if (check_float64($1)) {
+			        new_val.type = dods_float64_c;
+			        new_val.v.f = atof($1);
+			    }
+			    else {
+			        new_val.type = dods_str_c;
+			        new_val.v.s = new string(www2id($1));
+			    }
+			    BaseType *btp = make_variable((*EVALUATOR(arg)), new_val);
+			    $$ = new rvalue(btp);
 		    }
 		}
-                | SCAN_STR
+        | SCAN_STR
                 {
                     if ($1.type != dods_str_c || $1.v.s == 0 || $1.v.s->empty())
                         ce_exprerror("Malformed string", "");
                         
-                    BaseType *var = DDS(arg)->var(*($1.v.s));
+                    BaseType *var = DDS(arg)->var(www2id(*($1.v.s)));
                     if (var) {
                         $$ = new rvalue(var);
                     }
@@ -383,21 +487,22 @@ array_projection : array_proj_clause
                 
 array_proj_clause: name array_indices
                 {
+                    //string name = www2id($1);
                     if (!bracket_projection((*DDS(arg)), $1, $2))
                       no_such_ident($1, "array, grid or sequence");
-
+                    
                     strncpy($$, $1, ID_MAX-1);
                     $$[ID_MAX-1] = '\0';
                 }
                 | array_proj_clause name
                 {
-                    string name = string($1) + string ($2);
+                    string name = string($1) + string($2);
                     strncpy($$, name.c_str(), ID_MAX-1);
                     $$[ID_MAX-1] = '\0';
                 }
                 | array_proj_clause name array_indices
                 {
-                    string name = string($1) + string ($2);
+                    string name = string($1) + string($2);
                     if (!bracket_projection((*DDS(arg)), name.c_str(), $3))
                       no_such_ident(name.c_str(), "array, grid or sequence");
 
@@ -407,6 +512,10 @@ array_proj_clause: name array_indices
 ;
 
 name:           SCAN_WORD
+                { 
+                    strncpy($$, www2id($1).c_str(), ID_MAX-1);
+                    $$[ID_MAX-1] = '\0';
+                }
                 | SCAN_STR
                 {
                     if ($1.type != dods_str_c || $1.v.s == 0 || $1.v.s->empty())
@@ -522,48 +631,63 @@ rel_op:		SCAN_EQUAL
 void
 ce_exprerror(const string &s)
 {
-    ce_exprerror(s.c_str());
+    //ce_exprerror(s.c_str());
+    string msg = "Constraint expression parse error: " + (string) s;
+    throw Error(malformed_expr, msg);
+    
 }
 
+#if 0
 void ce_exprerror(const char *s)
 {
     // cerr << "Expression parse error: " << s << endl;
     string msg = "Constraint expression parse error: " + (string) s;
     throw Error(malformed_expr, msg);
 }
+#endif
 
 void ce_exprerror(const string &s, const string &s2)
 {
-    ce_exprerror(s.c_str(), s2.c_str());
+    //ce_exprerror(s.c_str(), s2.c_str());
+    string msg = "Constraint expression parse error: " + (string) s + ": " + (string) s2;
+    throw Error(malformed_expr, msg);
+    
 }
 
+#if 0
 void ce_exprerror(const char *s, const char *s2)
 {
     string msg = "Constraint expression parse error: " + (string) s + ": " + (string) s2;
     throw Error(malformed_expr, msg);
 }
+#endif
 
 void no_such_ident(const string &name, const string &word)
 {
     string msg = "No such " + word + " in dataset";
-    ce_exprerror(msg.c_str(), name);
+    ce_exprerror(msg /*.c_str()*/, name);
 }
 
+#if 0
 void no_such_ident(char *name, char *word)
 {
     string msg = "No such " + (string) word + " in dataset";
     ce_exprerror(msg.c_str(), name);
 }
+#endif
 
 void no_such_func(const string &name)
 {
-    no_such_func(name.c_str());
+    ce_exprerror("Not a registered function", name);
+    //no_such_func(name/*.c_str()*/);
 }
 
+#if 0
 void no_such_func(char *name)
 {
     ce_exprerror("Not a registered function", name);
 }
+#endif
 
 /* If we're calling this, assume var is not a Sequence. But assume that the
  name contains a dot and it's a separator. Look for the rightmost dot and
@@ -1041,3 +1165,20 @@ proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name)
         return 0;
 }
 
+int32_arg_list
+make_int32_arg_list(unsigned long vector_size_hint, dods_int32 arg_value)
+{
+    int32_arg_list arg_list = new std::vector<dods_int32>;
+    
+    if (vector_size_hint > 0) arg_list->reserve(vector_size_hint);
+    
+    arg_list->push_back(arg_value);
+    return arg_list;
+}
+
+int32_arg_list
+make_int32_arg_list(int32_arg_list int_values, dods_int32 arg_value)
+{
+    int_values->push_back(arg_value);
+    return int_values;
+}

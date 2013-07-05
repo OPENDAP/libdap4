@@ -113,10 +113,11 @@ SCAN_GREATER_EQL >=
 SCAN_LESS	    <
 SCAN_LESS_EQL	<=
 SCAN_REGEXP	    =~
+SCAN_HASH_INT32 #Int32
 
 SCAN_STAR       \*
 
-NEVER		[^\-+a-zA-Z0-9_/%.\\#:,(){}[\]&<>=~]
+NEVER		[^\-+a-zA-Z0-9_/%.\\:,(){}[\]&<>=~]
 
 %%
 
@@ -130,17 +131,19 @@ NEVER		[^\-+a-zA-Z0-9_/%.\\#:,(){}[\]&<>=~]
 "{"		return (int)*yytext;
 "}"		return (int)*yytext;
 
-{SCAN_WORD}	store_id(); return SCAN_WORD;
+{SCAN_WORD}	        store_id(); return SCAN_WORD;
 
-{SCAN_EQUAL}	store_op(SCAN_EQUAL); return SCAN_EQUAL;
-{SCAN_NOT_EQUAL} store_op(SCAN_NOT_EQUAL); return SCAN_NOT_EQUAL;
-{SCAN_GREATER}	store_op(SCAN_GREATER); return SCAN_GREATER;
-{SCAN_GREATER_EQL} store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
-{SCAN_LESS}	store_op(SCAN_LESS); return SCAN_LESS;
-{SCAN_LESS_EQL}	store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
-{SCAN_REGEXP}	store_op(SCAN_REGEXP); return SCAN_REGEXP;
+{SCAN_EQUAL}	    store_op(SCAN_EQUAL); return SCAN_EQUAL;
+{SCAN_NOT_EQUAL}    store_op(SCAN_NOT_EQUAL); return SCAN_NOT_EQUAL;
+{SCAN_GREATER}	    store_op(SCAN_GREATER); return SCAN_GREATER;
+{SCAN_GREATER_EQL}  store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
+{SCAN_LESS}	        store_op(SCAN_LESS); return SCAN_LESS;
+{SCAN_LESS_EQL}	    store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
+{SCAN_REGEXP}	    store_op(SCAN_REGEXP); return SCAN_REGEXP;
 
-{SCAN_STAR}   store_op(SCAN_STAR); return SCAN_STAR;
+{SCAN_STAR}         store_op(SCAN_STAR); return SCAN_STAR;
+
+{SCAN_HASH_INT32}   return SCAN_HASH_INT32;
 
 [ \t\r\n]+
 <INITIAL><<EOF>> yy_init = 1; yyterminate();
@@ -200,7 +203,7 @@ ce_expr_delete_buffer(void *buf)
 static void
 store_id()
 {
-    strncpy(ce_exprlval.id, www2id(string(yytext)).c_str(), ID_MAX-1);
+    strncpy(ce_exprlval.id, yytext, ID_MAX-1);
     ce_exprlval.id[ID_MAX-1] = '\0';
 }
 
@@ -208,7 +211,7 @@ static void
 store_str()
 {
     // transform %20 to a space. 7/11/2001 jhrg
-    string *s = new string(www2id(string(yytext)));  // XXX memory leak?
+    string *s = new string(yytext); // move all calls of www2id into the parser. jhrg 7/5/13 www2id(string(yytext)));
 
     if (*s->begin() == '\"' && *(s->end()-1) == '\"') {
 	s->erase(s->begin());
