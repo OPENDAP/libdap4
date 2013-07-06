@@ -101,13 +101,6 @@ int ce_exprlex(void);		/* the scanner; see expr.lex */
    be used during the paraent rule's parse. See fast_int32_arg_list. */
 unsigned long arg_length_hint_value = 0;
 
-#if 0
-void ce_exprerror(const char *s);	/* easier to overload than to use stdarg... */
-void ce_exprerror(const char *s, const char *s2);
-void no_such_func(char *name);
-void no_such_ident(char *name, char *word);
-#endif
-
 void ce_exprerror(const string &s); 
 void ce_exprerror(const string &s, const string &s2);
 void no_such_func(const string &name);
@@ -136,8 +129,14 @@ bool_func get_function(const ConstraintEvaluator &eval, const char *name);
 btp_func get_btp_function(const ConstraintEvaluator &eval, const char *name);
 proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name);
 
-int32_arg_list make_int32_arg_list(unsigned long vector_size_hint, dods_int32 arg_value);
-int32_arg_list make_int32_arg_list(int32_arg_list int_values, dods_int32 arg_value);
+template<class arg_list, class arg_type>
+arg_list make_fast_arg_list(unsigned long vector_size_hint, arg_type arg_value);
+
+template<class arg_list, class arg_type>
+arg_list make_fast_arg_list(arg_list int_values, arg_type arg_value);
+
+template<class t, class T>
+rvalue *build_constant_array(vector<t> *values, DDS *dds);
 
 %}
 
@@ -146,10 +145,22 @@ int32_arg_list make_int32_arg_list(int32_arg_list int_values, dods_int32 arg_val
     int op;
     char id[ID_MAX];
     
-    int int_value;
+    libdap::dods_byte byte_value;
+    libdap::dods_int16 int16_value;
+    libdap::dods_uint16 uint16_value;
+    libdap::dods_int32 int32_value;
+    libdap::dods_uint32 uint32_value;
+    libdap::dods_float32 float32_value;
+    libdap::dods_float64 float64_value;
     
-    libdap::int32_arg_list int_values;
-
+    libdap::byte_arg_list byte_values;
+    libdap::int16_arg_list int16_values;
+    libdap::uint16_arg_list uint16_values;
+    libdap::int32_arg_list int32_values;
+    libdap::uint32_arg_list uint32_values;
+    libdap::float32_arg_list float32_values;
+    libdap::float64_arg_list float64_values;
+    
     libdap::value val;               // value is defined in expr.h
 
     libdap::bool_func b_func;
@@ -165,7 +176,6 @@ int32_arg_list make_int32_arg_list(int32_arg_list int_values, dods_int32 arg_val
 %token <val> SCAN_STR
 
 %token <id> SCAN_WORD
-//%token <text> SCAN_WORD
 
 %token <op> SCAN_EQUAL
 %token <op> SCAN_NOT_EQUAL
@@ -177,7 +187,13 @@ int32_arg_list make_int32_arg_list(int32_arg_list int_values, dods_int32 arg_val
 
 %token <op> SCAN_STAR
 
+%token <op> SCAN_HASH_BYTE
+%token <op> SCAN_HASH_INT16
+%token <op> SCAN_HASH_UINT16
 %token <op> SCAN_HASH_INT32
+%token <op> SCAN_HASH_UINT32
+%token <op> SCAN_HASH_FLOAT32
+%token <op> SCAN_HASH_FLOAT64
 
 %type <boolean> constraint_expr projection proj_clause proj_function
 %type <boolean> array_projection selection clause bool_function arg_length_hint
@@ -190,8 +206,26 @@ int32_arg_list make_int32_arg_list(int32_arg_list int_values, dods_int32 arg_val
 %type <rval_ptr> r_value id_or_const array_const_special_form
 %type <r_val_l_ptr> r_value_list arg_list
 
-%type <int_value> fast_int32_arg 
-%type <int_values> fast_int32_arg_list
+%type <byte_value> fast_byte_arg
+%type <byte_values> fast_byte_arg_list
+
+%type <int16_value> fast_int16_arg 
+%type <int16_values> fast_int16_arg_list
+
+%type <uint16_value> fast_uint16_arg 
+%type <uint16_values> fast_uint16_arg_list
+
+%type <int32_value> fast_int32_arg 
+%type <int32_values> fast_int32_arg_list
+
+%type <uint32_value> fast_uint32_arg 
+%type <uint32_values> fast_uint32_arg_list
+
+%type <float32_value> fast_float32_arg 
+%type <float32_values> fast_float32_arg_list
+
+%type <float64_value> fast_float64_arg 
+%type <float64_values> fast_float64_arg_list
 
 %%
 
@@ -262,31 +296,48 @@ proj_clause: name
 ;
 
 /* The value parsed by arg_length_hint is stored in a global variable by that rule
-   so that it can be used during the parse of fast_int32_arg_list. */
+   so that it can be used during the parse of fast_byte_arg_list. */
 
 /* return a rvalue */
+array_const_special_form: SCAN_HASH_BYTE '(' arg_length_hint ':' fast_byte_arg_list ')'
+        {
+            $$ = build_constant_array<dods_byte, Byte>($5, DDS(arg));
+        }
+;
+
+array_const_special_form: SCAN_HASH_INT16 '(' arg_length_hint ':' fast_int16_arg_list ')'
+        {
+            $$ = build_constant_array<dods_int16, Int16>($5, DDS(arg));
+        }
+;
+
+array_const_special_form: SCAN_HASH_UINT16 '(' arg_length_hint ':' fast_uint16_arg_list ')'
+        {
+            $$ = build_constant_array<dods_uint16, UInt16>($5, DDS(arg));
+        }
+;
+
 array_const_special_form: SCAN_HASH_INT32 '(' arg_length_hint ':' fast_int32_arg_list ')'
         {
-            /* Make a Array*, pack it with values as a vector and load those into a rvalue */
-            vector<dods_int32> *values = $5;
-            
-            Int32 i("");
-            Array *array = new Array("", &i);
-            array->append_dim(values->size());
-            // TODO Make set_value_nocopy() methods so that values' pointers can be copied
-            // instead of allocating memory twice. jhrg 7/5/13
-            array->set_value(*values, values->size());
-            delete values;
-            array->set_read_p(true);
-            
-            static unsigned long counter = 1;
-            string name;
-            do {
-                name = "g" + long_to_string(counter++);
-            } while (DDS(arg)->var(name));
-            array->set_name(name);
-            
-            $$ = new rvalue(array);
+            $$ = build_constant_array<dods_int32, Int32>($5, DDS(arg));
+        }
+;
+
+array_const_special_form: SCAN_HASH_UINT32 '(' arg_length_hint ':' fast_uint32_arg_list ')'
+        {
+            $$ = build_constant_array<dods_uint32, UInt32>($5, DDS(arg));
+        }
+;
+
+array_const_special_form: SCAN_HASH_FLOAT32 '(' arg_length_hint ':' fast_float32_arg_list ')'
+        {
+            $$ = build_constant_array<dods_float32, Float32>($5, DDS(arg));
+        }
+;
+
+array_const_special_form: SCAN_HASH_FLOAT64 '(' arg_length_hint ':' fast_float64_arg_list ')'
+        {
+            $$ = build_constant_array<dods_float64, Float64>($5, DDS(arg));
         }
 ;
 
@@ -304,20 +355,128 @@ arg_length_hint: SCAN_WORD
 ;
 
 /* return an int_arg_list (a std::vector<int>*) */
+fast_byte_arg_list: fast_byte_arg
+          {
+              $$ = make_fast_arg_list<byte_arg_list, dods_byte>(arg_length_hint_value, $1);
+          }
+          | fast_byte_arg_list ',' fast_byte_arg
+          {
+              $$ = make_fast_arg_list<byte_arg_list, dods_byte>($1, $3);
+          }
+;
+
+/* This rule does not check SCAN_WORD nor does it perform www escaping */
+fast_byte_arg: SCAN_WORD
+          {
+              $$ = strtol($1, 0, 0);
+          }
+;
+
+/* return an int_arg_list (a std::vector<int>*) */
+fast_int16_arg_list: fast_int16_arg
+          {
+              $$ = make_fast_arg_list<int16_arg_list, dods_int16>(arg_length_hint_value, $1);
+          }
+          | fast_int16_arg_list ',' fast_int16_arg
+          {
+              $$ = make_fast_arg_list<int16_arg_list, dods_int16>($1, $3);
+          }
+;
+
+/* This rule does not check SCAN_WORD nor does it perform www escaping */
+fast_int16_arg: SCAN_WORD
+          {
+              $$ = strtol($1, 0, 0);
+          }
+;
+
+/* return an int_arg_list (a std::vector<int>*) */
+fast_uint16_arg_list: fast_uint16_arg
+          {
+              $$ = make_fast_arg_list<uint16_arg_list, dods_uint16>(arg_length_hint_value, $1);
+          }
+          | fast_uint16_arg_list ',' fast_uint16_arg
+          {
+              $$ = make_fast_arg_list<uint16_arg_list, dods_uint16>($1, $3);
+          }
+;
+
+/* This rule does not check SCAN_WORD nor does it perform www escaping */
+fast_uint16_arg: SCAN_WORD
+          {
+              $$ = strtoul($1, 0, 0);
+          }
+;
+
+/* return an int_arg_list (a std::vector<int>*) */
 fast_int32_arg_list: fast_int32_arg
           {
-              $$ = make_int32_arg_list(arg_length_hint_value, $1);
+              $$ = make_fast_arg_list<int32_arg_list, dods_int32>(arg_length_hint_value, $1);
           }
           | fast_int32_arg_list ',' fast_int32_arg
           {
-              $$ = make_int32_arg_list($1, $3);
+              $$ = make_fast_arg_list<int32_arg_list, dods_int32>($1, $3);
           }
 ;
 
 /* This rule does not check SCAN_WORD nor does it perform www escaping */
 fast_int32_arg: SCAN_WORD
           {
-              $$ = atoi($1);
+              $$ = strtol($1, 0, 0);
+          }
+;
+
+/* return an int_arg_list (a std::vector<int>*) */
+fast_uint32_arg_list: fast_uint32_arg
+          {
+              $$ = make_fast_arg_list<uint32_arg_list, dods_uint32>(arg_length_hint_value, $1);
+          }
+          | fast_uint32_arg_list ',' fast_uint32_arg
+          {
+              $$ = make_fast_arg_list<uint32_arg_list, dods_uint32>($1, $3);
+          }
+;
+
+/* This rule does not check SCAN_WORD nor does it perform www escaping */
+fast_uint32_arg: SCAN_WORD
+          {
+              $$ = strtoul($1, 0, 0);
+          }
+;
+
+/* return an int_arg_list (a std::vector<int>*) */
+fast_float32_arg_list: fast_float32_arg
+          {
+              $$ = make_fast_arg_list<float32_arg_list, dods_float32>(arg_length_hint_value, $1);
+          }
+          | fast_float32_arg_list ',' fast_float32_arg
+          {
+              $$ = make_fast_arg_list<float32_arg_list, dods_float32>($1, $3);
+          }
+;
+
+/* This rule does not check SCAN_WORD nor does it perform www escaping */
+fast_float32_arg: SCAN_WORD
+          {
+              $$ = strtof($1, 0);
+          }
+;
+
+/* return an int_arg_list (a std::vector<int>*) */
+fast_float64_arg_list: fast_float64_arg
+          {
+              $$ = make_fast_arg_list<float64_arg_list, dods_float64>(arg_length_hint_value, $1);
+          }
+          | fast_float64_arg_list ',' fast_float64_arg
+          {
+              $$ = make_fast_arg_list<float64_arg_list, dods_float64>($1, $3);
+          }
+;
+
+/* This rule does not check SCAN_WORD nor does it perform www escaping */
+fast_float64_arg: SCAN_WORD
+          {
+              $$ = strtod($1, 0);
           }
 ;
 
@@ -1165,20 +1324,49 @@ proj_func get_proj_function(const ConstraintEvaluator &eval, const char *name)
         return 0;
 }
 
-int32_arg_list
-make_int32_arg_list(unsigned long vector_size_hint, dods_int32 arg_value)
+template<class arg_type_list, class arg_type>
+arg_type_list
+make_fast_arg_list(unsigned long vector_size_hint, arg_type value)
 {
-    int32_arg_list arg_list = new std::vector<dods_int32>;
+    arg_type_list args = new std::vector<arg_type>;
     
-    if (vector_size_hint > 0) arg_list->reserve(vector_size_hint);
+    if (vector_size_hint > 0) args->reserve(vector_size_hint);
     
-    arg_list->push_back(arg_value);
-    return arg_list;
+    args->push_back(value);
+    return args;
 }
 
-int32_arg_list
-make_int32_arg_list(int32_arg_list int_values, dods_int32 arg_value)
+template<class arg_type_list, class arg_type>
+arg_type_list
+make_fast_arg_list(arg_type_list values, arg_type value)
 {
-    int_values->push_back(arg_value);
-    return int_values;
+    values->push_back(value);
+    return values;
 }
+
+template<class t, class T>
+rvalue *build_constant_array(vector<t> *values, DDS *dds)
+{
+    //vector<t> *values = $5;
+            
+    T i("");
+    Array *array = new Array("", &i);
+    array->append_dim(values->size());
+    
+    // TODO Make set_value_nocopy() methods so that values' pointers can be copied
+    // instead of allocating memory twice. jhrg 7/5/13
+            
+    array->set_value(*values, values->size());
+    delete values;
+    array->set_read_p(true);
+            
+    static unsigned long counter = 1;
+    string name;
+    do {
+        name = "g" + long_to_string(counter++);
+    } while (dds->var(name));
+    array->set_name(name);
+            
+    return new rvalue(array);
+}
+
