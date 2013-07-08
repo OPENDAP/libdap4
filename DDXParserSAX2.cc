@@ -54,6 +54,7 @@
 
 namespace libdap {
 
+#if defined(DODS_DEBUG) || defined(DODS_DEUG2)
 static const char *states[] =
     {
         "start",
@@ -83,7 +84,7 @@ static const char *states[] =
         "unknown",
         "error"
     };
-
+#endif
 // Glue the BaseTypeFactory to the enum-based factory defined statically
 // here.
 

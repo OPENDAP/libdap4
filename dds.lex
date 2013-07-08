@@ -80,6 +80,7 @@ using namespace libdap ;
 
 #define YY_FATAL_ERROR(msg) {\
     throw(Error(string("Error scanning DDS object text: ") + string(msg))); \
+    yy_fatal_error(msg); /* see das.lex */ \
 }
 
 int dds_line_num = 1;

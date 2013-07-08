@@ -48,8 +48,6 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id$"};
-
 #include <cstring>
 #include <cassert>
 #include <iostream>
@@ -107,7 +105,7 @@ of a datatype and that the Array: and Maps: sections of a Grid are\n\
 labeled properly.";
  
 int ddslex();
-void ddserror(char *s);
+void ddserror(const string &s /*char *s*/);
 void error_exit_cleanup();
 void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, 
 	       Part p);
@@ -432,7 +430,7 @@ name:		var_name { (*DDS_OBJ(arg)).set_dataset_name($1); }
  */
 
 void
-ddserror(char *)
+ddserror(const string & /*char * */)
 {
 }
 

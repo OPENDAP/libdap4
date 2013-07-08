@@ -63,6 +63,7 @@ using namespace libdap;
 
 #define YY_FATAL_ERROR(msg) {\
     throw(Error(string("Error scanning the error response: ") + string(msg))); \
+    yy_fatal_error(msg); /* see das.lex */ \
 }
 
 int error_line_num = 1;

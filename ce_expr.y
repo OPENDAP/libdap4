@@ -42,8 +42,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used = {"$Id$"};
-
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -793,33 +791,14 @@ ce_exprerror(const string &s)
     //ce_exprerror(s.c_str());
     string msg = "Constraint expression parse error: " + (string) s;
     throw Error(malformed_expr, msg);
-    
 }
-
-#if 0
-void ce_exprerror(const char *s)
-{
-    // cerr << "Expression parse error: " << s << endl;
-    string msg = "Constraint expression parse error: " + (string) s;
-    throw Error(malformed_expr, msg);
-}
-#endif
 
 void ce_exprerror(const string &s, const string &s2)
 {
     //ce_exprerror(s.c_str(), s2.c_str());
     string msg = "Constraint expression parse error: " + (string) s + ": " + (string) s2;
-    throw Error(malformed_expr, msg);
-    
+    throw Error(malformed_expr, msg);    
 }
-
-#if 0
-void ce_exprerror(const char *s, const char *s2)
-{
-    string msg = "Constraint expression parse error: " + (string) s + ": " + (string) s2;
-    throw Error(malformed_expr, msg);
-}
-#endif
 
 void no_such_ident(const string &name, const string &word)
 {
@@ -827,26 +806,11 @@ void no_such_ident(const string &name, const string &word)
     ce_exprerror(msg /*.c_str()*/, name);
 }
 
-#if 0
-void no_such_ident(char *name, char *word)
-{
-    string msg = "No such " + (string) word + " in dataset";
-    ce_exprerror(msg.c_str(), name);
-}
-#endif
-
 void no_such_func(const string &name)
 {
     ce_exprerror("Not a registered function", name);
     //no_such_func(name/*.c_str()*/);
 }
-
-#if 0
-void no_such_func(char *name)
-{
-    ce_exprerror("Not a registered function", name);
-}
-#endif
 
 /* If we're calling this, assume var is not a Sequence. But assume that the
  name contains a dot and it's a separator. Look for the rightmost dot and
