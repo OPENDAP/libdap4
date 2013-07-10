@@ -16,14 +16,10 @@ CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 check_PROGRAMS = das-test dds-test expr-test 
-# noinst_PROGRAMS = io_test
 
 TESTS = DASTest DDSTest EXPRTest
-# EXPRTest
 
 dist_check_SCRIPTS = DASTest DDSTest EXPRTest atconfig atlocal
-
-##CLEANFILES = *.log *.sum
 
 # Build the test drivers. The drivers all use the
 # subclassed types in Test*.cc and the TestTypesFactory.
@@ -45,7 +41,7 @@ das_test_LDADD =  libtest-types.a ../libdapserver.la ../libdap.la
 dds_test_SOURCES = dds-test.cc
 dds_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la 
 
-expr_test_SOURCES = expr-test.cc
+expr_test_SOURCES = expr-test.cc ResponseBuilder.cc ResponseBuilder.h
 expr_test_LDADD = libtest-types.a ../libdapserver.la ../libdapclient.la ../libdap.la
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
@@ -58,10 +54,6 @@ TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 	TestStructure.h TestTypeFactory.h TestUInt16.h TestUInt32.h TestUrl.h
 
 DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite 
-
-# grid-func-testsuite cache-testsuite ais_testsuite rcreader-testsuite 
-# server-testsuite cgi-util-tests
-# ddx-testsuite	  
 
 EXTRA_DIST = DASTest.at  $(DASTESTSUITE) DDSTest.at  $(DDSTESTSUITE) \
 	EXPRTest.at $(EXPRTESTSUITE) atlocal.in $(srcdir)/package.m4 \

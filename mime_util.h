@@ -73,17 +73,26 @@ time_t last_modified_time(const string &name);
 ObjectType get_description_type(const string &value);
 bool is_boundary(const char *line, const string &boundary);
 string cid_to_header_value(const string &cid);
-string read_multipart_boundary(FILE *in, const string &boundary = "");
+
+string read_multipart_boundary(istream &in, const string &boundary = "");
+
 void parse_mime_header(const string &header, string &name, string &value);
 string name_path(const string &path);
 string get_next_mime_header(istream &in);
 
+void read_multipart_headers(istream &in, const string &content_type,
+	const ObjectType object_type, const string &cid = "");
+
 // All of these are deprecated
+string read_multipart_boundary(FILE *in, const string &boundary = "");
+void read_multipart_headers(FILE *in, const string &content_type,
+	const ObjectType object_type, const string &cid = "");
 bool do_version(const string &script_ver, const string &dataset_ver);
 void ErrMsgT(const string &Msgt);
 ObjectType get_type(const string &value);
 bool remove_mime_header(FILE *in);
 string get_next_mime_header(FILE *in);
+
 #if 0
 bool found_override(string name, string &doc);
 #endif
@@ -151,9 +160,6 @@ void set_mime_ddx_boundary(ostream &out, const string &boundary,
 void set_mime_data_boundary(ostream &out, const string &boundary,
 	const string &cid, ObjectType type = unknown_type,
         EncodingType enc = x_plain);
-
-void read_multipart_headers(FILE *in, const string &content_type,
-	const ObjectType object_type, const string &cid = "");
 
 void set_mime_error(FILE *out, int code = 404,
                     const string &reason = "Dataset not found",

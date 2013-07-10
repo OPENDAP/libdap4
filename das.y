@@ -44,8 +44,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used = {"$Id$"};
-
 #include <string>
 
 #include <vector>
@@ -110,7 +108,7 @@ Check that the URL is correct.";
 typedef int checker(const char *);
 
 int daslex(void);
-static void daserror(char *s);
+static void daserror(const string &s /*char *s*/);
 static void add_attribute(const string &type, const string &name, 
 			  const string &value, checker *chk) throw (Error);
 static void add_alias(AttrTable *das, AttrTable *current, const string &name, 
@@ -432,7 +430,7 @@ alias:          SCAN_ALIAS SCAN_WORD
 // reporting mechanism.
 
 static void
-daserror(char *)
+daserror(const string &/*char */)
 {
 }
 

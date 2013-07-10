@@ -165,6 +165,7 @@ public:
 
     void append_dim(int size, string name = "");
     void prepend_dim(int size, const string& name = "");
+    void clear_all_dims();
 
     virtual void add_constraint(Dim_iter i, int start, int stride, int stop);
     virtual void reset_constraint();

@@ -350,6 +350,9 @@ void test_scanner(bool show_prompt)
         case '&':
             cout << "Ampersand" << endl;
             break;
+        case SCAN_HASH_INT32:
+            cout << "Hash Int32" << endl;
+            break;
         default:
             cout << "Error: Unrecognized input" << endl;
             break;
@@ -505,36 +508,21 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     ResponseBuilder df;
     df.set_ce(ce);
     df.set_dataset_name(dds_name);
-    // df.set_URL("test://test");
-    // df.set_response("DataDDS");
 
     ofstream out("expr-test-data.bin", ios::out|ios::trunc|ios::binary);
-#if 0
-    df.send_data(server, eval, out, "", false);
-#endif
     df.send_data(out, server, eval, true);
-    //cout << "Server protocol version: " << server.get_dap_major() << "." << server.get_dap_minor() << endl;
     out.close();
 
     // Now do what Connect::request_data() does:
     FILE *fp = fopen("expr-test-data.bin", "r");
 
     Response r(fp, 400);
-#if 0
-    r.set_type(dods_data);
-    r.set_protocol("3.2");
-#endif
     Connect c("http://dummy_argument");
 
     BaseTypeFactory factory;
     DataDDS dds(&factory, "Test_data", "DAP/3.2");      // Must use DataDDS on receiving end
 
-#if 0
-    c.read_data_no_mime(dds, &r);
-#endif
     c.read_data(dds, &r);
-
-    //cout << "Protocol version: " << dds.get_protocol() << endl;
 
     cout << "The data:" << endl;
     for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
@@ -588,19 +576,6 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
     eval.parse_constraint(ce, server);  // Throws Error if the ce doesn't parse.
 
     server.tag_nested_sequences();      // Tag Sequences as Parent or Leaf node.
-
-#if 0
-    if (eval.functional_expression()) {
-        BaseType *var = eval.eval_function(server, dds_name);
-        if (!var)
-            throw Error(unknown_error, "Error calling the CE function.");
-
-        var->intern_data(eval, server);
-
-        var->set_send_p(true);
-        server.add_var(var);
-    }
-#endif
 
     if (eval.function_clauses()) {
         DDS *fdds = eval.eval_function_clauses(server);
