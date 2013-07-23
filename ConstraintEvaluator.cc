@@ -479,9 +479,15 @@ void ConstraintEvaluator::parse_constraint(const string &constraint, DDS &dds)
     ce_parser_arg arg(this, &dds);
 
     // For all errors, exprparse will throw Error.
-    ce_exprparse((void *) &arg);
-
-    ce_expr_delete_buffer(buffer);
+    try {
+    	ce_exprparse((void *) &arg);
+    	ce_expr_delete_buffer(buffer);
+    }
+    catch (...) {
+    	// Make sure to remove the buffer when there's an error
+    	ce_expr_delete_buffer(buffer);
+    	throw;
+    }
 }
 
 } // namespace libdap
