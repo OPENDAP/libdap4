@@ -83,6 +83,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_bindir}/getdap
 %{_libdir}/libdap.so.*
+%{_libdir}/libtest-types.a
 %{_libdir}/libdapclient.so.*
 %{_libdir}/libdapserver.so.*
 %doc README NEWS COPYING COPYRIGHT_URI README.dodsrc
@@ -91,6 +92,7 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(-,root,root,-)
 %{_libdir}/libdap.so
+%{_libdir}/libtest-types.a
 %{_libdir}/libdapclient.so
 %{_libdir}/libdapserver.so
 %{_libdir}/pkgconfig/libdap*.pc
