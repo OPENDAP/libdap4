@@ -48,22 +48,32 @@ public:
     const static unsigned int c_md5_length = 16;
 
 private:
-    istream & d_in;
+    istream &d_in;
     bool d_twiddle_bytes;
 
     // These are used for reals that need to be converted from IEEE 754
     XDR d_source;
-    char *d_buf;
+    dods_float64 d_buf;
 
-    DAP4StreamUnMarshaller() : d_in(cin) {
+    DAP4StreamUnMarshaller();
+#if 0
+    : d_in(cin) {
         throw InternalErr( __FILE__, __LINE__, "not implemented." ) ;
     }
-    DAP4StreamUnMarshaller(const DAP4StreamUnMarshaller &) : UnMarshaller(), d_in(cin) {
+#endif
+    DAP4StreamUnMarshaller(const DAP4StreamUnMarshaller &);
+#if 0
+    : UnMarshaller(), d_in(cin) {
         throw InternalErr( __FILE__, __LINE__, "not implemented." ) ;
     }
-    DAP4StreamUnMarshaller & operator=(const DAP4StreamUnMarshaller &) {
+#endif
+
+    DAP4StreamUnMarshaller & operator=(const DAP4StreamUnMarshaller &);
+#if 0
+    {
         throw InternalErr( __FILE__, __LINE__, "not implemented." ) ;
     }
+#endif
 
     void m_deserialize_reals(char *val, unsigned int num, int width, Type type);
     void m_twidle_vector_elements(char *vals, unsigned int num, int width);

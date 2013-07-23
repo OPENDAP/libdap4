@@ -67,13 +67,16 @@ static inline bool is_host_big_endian()
 DAP4StreamUnMarshaller::DAP4StreamUnMarshaller(istream &in, bool is_stream_big_endian)
     : d_in( in ), d_buf(0)
 {
-    // XDR is used to handle transforming non-ieee754 reals, nothing else.
+#if 0
+	// XDR is used to handle transforming non-ieee754 reals, nothing else.
     if (!d_buf)
+    	// Leaked??? See the XDRStream code
         d_buf = (char *) malloc(sizeof(dods_float64));
     if (!d_buf)
         throw Error("Failed to allocate memory for data serialization.");
+#endif
 
-    xdrmem_create(&d_source, d_buf, sizeof(dods_float64), XDR_DECODE);
+    xdrmem_create(&d_source, &d_buf, sizeof(dods_float64), XDR_DECODE);
 
     // This will cause exceptions to be thrown on i/o errors. The exception
     // will be ostream::failure
@@ -301,12 +304,13 @@ DAP4StreamUnMarshaller::get_vector( char *val, unsigned int num )
 void DAP4StreamUnMarshaller::m_deserialize_reals(char *val, unsigned int num, int width, Type type)
 {
     dods_uint64 size = num * width;
-    char *buf = (char*)malloc(size);
+    //char *buf = (char*)malloc(size); This was leaked; xdr_destroy() does not free it.
+    vector<char> buf(size);
     XDR xdr;
-    xdrmem_create(&xdr, buf, size, XDR_DECODE);
+    xdrmem_create(&xdr, &buf[0], size, XDR_DECODE);
     try {
         xdr_setpos(&d_source, 0);
-        d_in.read(buf, size);
+        d_in.read(&buf[0], size);
 
         if(!xdr_array(&xdr, &val, (unsigned int *)&num, size, width, XDRUtils::xdr_coder(type)))
             throw InternalErr(__FILE__, __LINE__, "Error deserializing a Float64 array");

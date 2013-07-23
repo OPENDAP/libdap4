@@ -463,9 +463,11 @@ void DAP4StreamMarshaller::put_varying_vector(char *val, unsigned int num)
 void DAP4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int width, Type type)
 {
     dods_uint64 size = num * width;
-    char *buf = (char*)malloc(size);
+    // This is a leak!!! xdr_destroy does not free 'buf'.
+    //char *buf = (char*)malloc(size);
+    vector<char> buf(size);
     XDR xdr;
-    xdrmem_create(&xdr, buf, size, XDR_ENCODE);
+    xdrmem_create(&xdr, &buf[0], size, XDR_ENCODE);
     try {
         if(!xdr_array(&xdr, &val, (unsigned int *)&num, size, width, XDRUtils::xdr_coder(type)))
             throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 array");
@@ -477,14 +479,14 @@ void DAP4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int wi
         static bool twiddle_bytes = !is_host_big_endian();
         if (twiddle_bytes) {
             if (width == 4) {
-                dods_float32 *lbuf = reinterpret_cast<dods_float32*>(buf);
+                dods_float32 *lbuf = reinterpret_cast<dods_float32*>(&buf[0]);
                 while (num--) {
                     dods_int32 *i = reinterpret_cast<dods_int32*>(lbuf++);
                     *i = bswap_32(*i);
                 }
             }
             else { // width == 8
-                dods_float64 *lbuf = reinterpret_cast<dods_float64*>(buf);
+                dods_float64 *lbuf = reinterpret_cast<dods_float64*>(&buf[0]);
                 while (num--) {
                     dods_int64 *i = reinterpret_cast<dods_int64*>(lbuf++);
                     *i = bswap_64(*i);
@@ -492,7 +494,7 @@ void DAP4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int wi
             }
         }
 
-        d_out.write(buf, size);
+        d_out.write(&buf[0], size);
     }
     catch (...) {
         xdr_destroy(&xdr);
