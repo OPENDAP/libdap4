@@ -136,11 +136,7 @@ D4StreamMarshaller::D4StreamMarshaller(ostream &out, bool write_data) :
 {
     // XDR is used if the call std::numeric_limits<double>::is_iec559()
     // returns false indicating that the compiler is not using IEEE 754.
-    // If it is, we just write out the bytes. Why malloc()? Because
-    // xdr_destroy is going to call free() for us.
-    d_ieee754_buf = (char*)malloc(sizeof(dods_float64));
-    if (!d_ieee754_buf)
-        throw InternalErr(__FILE__, __LINE__, "Could not create D4StreamMarshaller");
+    // If it is, we just write out the bytes.
     xdrmem_create(&d_scalar_sink, d_ieee754_buf, sizeof(dods_float64), XDR_ENCODE);
 
     // This will cause exceptions to be thrown on i/o errors. The exception
@@ -150,11 +146,6 @@ D4StreamMarshaller::D4StreamMarshaller(ostream &out, bool write_data) :
 
 D4StreamMarshaller::~D4StreamMarshaller()
 {
-    // Free the buffer this contains. The xdr_destroy() macro does not
-    // free the XDR struct (which is fine since we did not dynamically
-    // allocate it).
-    free(d_ieee754_buf);
-    d_ieee754_buf = 0;
     xdr_destroy(&d_scalar_sink);
 }
 
@@ -402,9 +393,10 @@ void D4StreamMarshaller::put_varying_vector(char *val, unsigned int num)
 void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int width, Type type)
 {
     dods_uint64 size = num * width;
-    char *buf = (char*)malloc(size);
+    // char *buf = (char*)malloc(size); jhrg 7/23/13
+    vector<char> buf(size);
     XDR xdr;
-    xdrmem_create(&xdr, buf, size, XDR_ENCODE);
+    xdrmem_create(&xdr, &buf[0], size, XDR_ENCODE);
     try {
         if(!xdr_array(&xdr, &val, (unsigned int *)&num, size, width, XDRUtils::xdr_coder(type)))
             throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 array");
@@ -416,14 +408,14 @@ void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int widt
         static bool twiddle_bytes = !is_host_big_endian();
         if (twiddle_bytes) {
             if (width == 4) {
-                dods_float32 *lbuf = reinterpret_cast<dods_float32*>(buf);
+                dods_float32 *lbuf = reinterpret_cast<dods_float32*>(&buf[0]);
                 while (num--) {
                     dods_int32 *i = reinterpret_cast<dods_int32*>(lbuf++);
                     *i = bswap_32(*i);
                 }
             }
             else { // width == 8
-                dods_float64 *lbuf = reinterpret_cast<dods_float64*>(buf);
+                dods_float64 *lbuf = reinterpret_cast<dods_float64*>(&buf[0]);
                 while (num--) {
                     dods_int64 *i = reinterpret_cast<dods_int64*>(lbuf++);
                     *i = bswap_64(*i);
@@ -431,7 +423,7 @@ void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int widt
             }
         }
 
-        d_out.write(buf, size);
+        d_out.write(&buf[0], size);
     }
     catch (...) {
         xdr_destroy(&xdr);

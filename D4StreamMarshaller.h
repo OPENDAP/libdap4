@@ -43,7 +43,6 @@
 #include <crc.h>
 
 using std::ostream;
-//using std::cout;
 
 #include "Type.h"
 #include "Marshaller.h"
@@ -67,7 +66,7 @@ class D4StreamMarshaller: public Marshaller {
 
 private:
     XDR d_scalar_sink;
-    char *d_ieee754_buf; // used to serialize a float or double
+    char d_ieee754_buf[sizeof(dods_float64)]; // used to serialize a float or double
 
     ostream &d_out;
     bool d_write_data; // jhrg 1/27/12
@@ -75,7 +74,6 @@ private:
     Crc32 d_checksum;
 
     // These are private so they won't ever get used.
-
     D4StreamMarshaller();
     D4StreamMarshaller(const D4StreamMarshaller &);
     D4StreamMarshaller & operator=(const D4StreamMarshaller &);

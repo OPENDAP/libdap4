@@ -63,7 +63,7 @@ private:
 
     // These are used for reals that need to be converted from IEEE 754
     XDR d_source;
-    char *d_buf;
+    char d_buf[sizeof(dods_float64)];
 
     D4StreamUnMarshaller();
     D4StreamUnMarshaller(const D4StreamUnMarshaller &);
