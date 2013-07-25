@@ -1,6 +1,6 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP
-Version: 3.11.7
+Version: 3.12.0
 Release: 1
 
 License: LGPLv2+
@@ -83,6 +83,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_bindir}/getdap
 %{_libdir}/libdap.so.*
+%{_libdir}/libtest-types.a
 %{_libdir}/libdapclient.so.*
 %{_libdir}/libdapserver.so.*
 %doc README NEWS COPYING COPYRIGHT_URI README.dodsrc
@@ -91,6 +92,7 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(-,root,root,-)
 %{_libdir}/libdap.so
+%{_libdir}/libtest-types.a
 %{_libdir}/libdapclient.so
 %{_libdir}/libdapserver.so
 %{_libdir}/pkgconfig/libdap*.pc

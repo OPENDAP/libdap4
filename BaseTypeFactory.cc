@@ -45,6 +45,42 @@
 
 namespace libdap {
 
+BaseType *
+BaseTypeFactory::NewVariable(Type type, const string &name) const
+{
+	switch (type) {
+	case dods_byte_c:
+		return NewByte(name);
+	case dods_int16_c:
+		return NewInt16(name);
+	case dods_uint16_c:
+		return NewUInt16(name);
+	case dods_int32_c:
+		return NewInt32(name);
+	case dods_uint32_c:
+		return NewUInt32(name);
+	case dods_float32_c:
+		return NewFloat32(name);
+	case dods_float64_c:
+		return NewFloat64(name);
+
+	case dods_str_c:
+		return NewStr(name);
+	case dods_url_c:
+		return NewUrl(name);
+
+	case dods_array_c:
+		return NewArray(name);
+	case dods_structure_c:
+		return NewStructure(name);
+	case dods_sequence_c:
+		return NewSequence(name);
+	case dods_grid_c:
+		return NewGrid(name);
+	default:
+		throw InternalErr(__FILE__, __LINE__, "Unknow type");
+	}
+}
 Byte *
 BaseTypeFactory::NewByte(const string &n) const
 {

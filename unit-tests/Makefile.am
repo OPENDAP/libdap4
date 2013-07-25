@@ -65,11 +65,13 @@ if CPPUNIT
 UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	RegexTest \
 	ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest \
-	DDSTest	DDXParserTest DODSFilterTest generalUtilTest \
+	DDSTest	DDXParserTest  generalUtilTest \
 	HTTPConnectTest parserUtilTest RCReaderTest \
 	SequenceTest SignalHandlerTest  MarshallerTest \
-	ResponseBuilderTest Keywords2Test HTTPCacheTest \
-	ServerFunctionsListUnitTest ResponseCacheTest
+    HTTPCacheTest \
+	ServerFunctionsListUnitTest
+		
+# ResponseBuilderTest ResponseCacheTest Keywords2Test DODSFilterTest 
 	
 if DAP4_DEFINED
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest \
@@ -119,16 +121,16 @@ DDXParserTest_SOURCES = DDXParserTest.cc
 DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 DDXParserTest_LDADD = ../libdap.la $(AM_LDADD)
 
-DODSFilterTest_SOURCES = DODSFilterTest.cc $(TEST_SRC)
-DODSFilterTest_LDADD = ../libdapserver.la ../libdap.la \
-	../tests/libtest-types.a $(AM_LDADD)
+# DODSFilterTest_SOURCES = DODSFilterTest.cc $(TEST_SRC)
+# DODSFilterTest_LDADD = ../libdapserver.la ../libdap.la \
+#	../tests/libtest-types.a $(AM_LDADD)
 
-ResponseBuilderTest_SOURCES = ResponseBuilderTest.cc $(TEST_SRC)
-ResponseBuilderTest_LDADD = ../libdapserver.la ../libdap.la \
-	../tests/libtest-types.a $(AM_LDADD)
+# ResponseBuilderTest_SOURCES = ResponseBuilderTest.cc $(TEST_SRC)
+# ResponseBuilderTest_LDADD = ../libdapserver.la ../libdap.la \
+#	../tests/libtest-types.a $(AM_LDADD)
 
-Keywords2Test_SOURCES = Keywords2Test.cc
-Keywords2Test_LDADD = ../libdap.la $(AM_LDADD)
+# Keywords2Test_SOURCES = Keywords2Test.cc
+# Keywords2Test_LDADD = ../libdap.la $(AM_LDADD)
 
 generalUtilTest_SOURCES = generalUtilTest.cc
 generalUtilTest_LDADD = ../libdap.la $(AM_LDADD)
@@ -180,8 +182,8 @@ dasT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 ServerFunctionsListUnitTest_SOURCES = ServerFunctionsListUnitTest.cc
 ServerFunctionsListUnitTest_LDADD = ../libdap.la $(AM_LDADD)
 
-ResponseCacheTest_SOURCES = ResponseCacheTest.cc
-ResponseCacheTest_LDADD = ../tests/libtest-types.a ../libdapserver.la ../libdap.la $(AM_LDADD)
+# ResponseCacheTest_SOURCES = ResponseCacheTest.cc
+# ResponseCacheTest_LDADD = ../tests/libtest-types.a ../libdapserver.la ../libdap.la $(AM_LDADD)
 
 if DAP4_DEFINED
 

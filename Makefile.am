@@ -14,7 +14,7 @@ if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
 endif
 
-AM_YFLAGS = -d -v
+AM_YFLAGS = -d -v -t
 AM_LFLAGS = -8
 
 # These are not used by automake but are often useful for certain types of
@@ -241,7 +241,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	Operators.h XDRUtils.cc XDRFileMarshaller.cc			\
 	XDRStreamMarshaller.cc XDRFileUnMarshaller.cc			\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc \
-	DAPCache3.cc ServerFunctionsList.cc ServerFunction.cc
+	ServerFunctionsList.cc ServerFunction.cc
 
 DAP4_ONLY_SRC = D4StreamMarshaller.cc D4StreamUnMarshaller.cc Int64.cc \
         UInt64.cc Int8.cc D4ParserSax2.cc D4BaseTypeFactory.cc \
@@ -256,8 +256,8 @@ Operators.h: ce_expr.tab.hh
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc	\
 	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc
 
-SERVER_SRC = DODSFilter.cc Ancillary.cc ResponseBuilder.cc \
-	ResponseCache.cc
+SERVER_SRC = DODSFilter.cc Ancillary.cc
+# ResponseBuilder.cc ResponseCache.cc
 
 DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	DDXExceptions.h BaseType.h Byte.h Int32.h Float64.h Str.h	\
@@ -271,7 +271,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	Marshaller.h UnMarshaller.h XDRFileUnMarshaller.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h \
-	DAPCache3.h ServerFunctionsList.h ServerFunction.h
+	ServerFunctionsList.h ServerFunction.h
 
 DAP4_ONLY_HDR = D4StreamMarshaller.h D4StreamUnMarshaller.h Int64.h \
         UInt64.h Int8.h D4ParserSax2.h D4BaseTypeFactory.h \
@@ -294,8 +294,8 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		\
 	StdinResponse.h SignalHandlerRegisteredErr.h			\
 	ResponseTooBigErr.h Resource.h HTTPCacheTable.h HTTPCacheMacros.h
 
-SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h	\
-	ResponseBuilder.h ResponseCache.h
+SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
+#	ResponseBuilder.h ResponseCache.h
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support

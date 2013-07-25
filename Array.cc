@@ -285,6 +285,14 @@ Array::prepend_dim(int size, const string& name/* = "" */)
   update_length(size); // the number is ignored...
 }
 
+/** Remove all the dimensions currently set for the Array. This also
+ * removes all constraint information.
+ */
+void
+Array::clear_all_dims()
+{
+	_shape.clear();
+}
 /** Resets the dimension constraint information so that the entire
     array is selected.
 
@@ -404,13 +412,17 @@ Array::dim_end()
 unsigned int
 Array::dimensions(bool /*constrained*/)
 {
-    // TODO This could be _shape.end() - _shape.begin()
+#if 0
+	// TODO This could be _shape.end() - _shape.begin()
     unsigned int dim = 0;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
         dim++;
     }
 
     return dim;
+#endif
+
+    return _shape.end() - _shape.begin();
 }
 
 /** Return the size of the array dimension referred to by <i>i</i>.

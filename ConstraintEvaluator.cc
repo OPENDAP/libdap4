@@ -31,6 +31,9 @@
 
 #include "ce_parser.h"
 #include "debug.h"
+#include "parser.h"
+#include "expr.h"
+#include "ce_expr.tab.hh"
 
 struct yy_buffer_state;
 
@@ -40,6 +43,8 @@ int ce_exprparse(void *arg);
 void ce_expr_switch_to_buffer(void *new_buffer);
 void ce_expr_delete_buffer(void * buffer);
 void *ce_expr_string(const char *yy_str);
+
+extern int ce_exprdebug;
 
 namespace libdap {
 
@@ -465,14 +470,24 @@ bool ConstraintEvaluator::eval_selection(DDS &dds, const string &)
 void ConstraintEvaluator::parse_constraint(const string &constraint, DDS &dds)
 {
     void *buffer = ce_expr_string(constraint.c_str());
+
+    // Toggle this to debug the parser. A last resort...
+    ce_exprdebug = false;
+
     ce_expr_switch_to_buffer(buffer);
 
     ce_parser_arg arg(this, &dds);
 
     // For all errors, exprparse will throw Error.
-    ce_exprparse((void *) &arg);
-
-    ce_expr_delete_buffer(buffer);
+    try {
+    	ce_exprparse((void *) &arg);
+    	ce_expr_delete_buffer(buffer);
+    }
+    catch (...) {
+    	// Make sure to remove the buffer when there's an error
+    	ce_expr_delete_buffer(buffer);
+    	throw;
+    }
 }
 
 } // namespace libdap

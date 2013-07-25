@@ -1398,6 +1398,168 @@ bool Vector::set_value(vector<string> &val, int sz)
 //@}
 
 //@{
+
+/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return.
+ Read data from this variable's internal storage using the passed std::vector as an sub-setting index to the values to be returned. The
+ memory referenced by \c b must point to enough memory
+ to hold index.size() bytes.
+
+ @param index A std::vector<long> where each value in the vector is the location in the Vector's internal storage from which to read the returned value
+ @param b A pointer to the memory to hold the data; must be at least
+ length() * sizeof(dods_byte) in size.*/
+void Vector::value(vector<unsigned int> *subsetIndex, dods_byte *b) const
+{
+    unsigned long currentIndex;
+
+    for(unsigned long i=0; i<subsetIndex->size() ;++i){
+        currentIndex = (*subsetIndex)[i] ;
+        if(currentIndex> (unsigned int)length()){
+            stringstream s;
+            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
+                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
+            throw Error(s.str());
+        }
+        b[i] = reinterpret_cast<dods_byte*>(_buf )[currentIndex]; // I like this version - and it works!
+    }
+}
+
+
+/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
+void Vector::value(vector<unsigned int> *subsetIndex, dods_uint16 *b) const
+{
+    unsigned long currentIndex;
+
+    for(unsigned long i=0; i<subsetIndex->size() ;++i){
+        currentIndex = (*subsetIndex)[i] ;
+        if(currentIndex> (unsigned int)length()){
+            stringstream s;
+            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
+                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
+            throw Error(s.str());
+        }
+        b[i] = reinterpret_cast<dods_uint16*>(_buf )[currentIndex]; // I like this version - and it works!
+    }
+}
+
+
+/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
+void Vector::value(vector<unsigned int> *subsetIndex, dods_int16 *b) const
+{
+    unsigned long currentIndex;
+
+    for(unsigned long i=0; i<subsetIndex->size() ;++i){
+        currentIndex = (*subsetIndex)[i] ;
+        if(currentIndex> (unsigned int)length()){
+            stringstream s;
+            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
+                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
+            throw Error(s.str());
+        }
+        b[i] = reinterpret_cast<dods_int16*>(_buf )[currentIndex]; // I like this version - and it works!
+    }
+}
+
+/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
+void Vector::value(vector<unsigned int> *subsetIndex, dods_uint32 *b) const
+{
+    unsigned long currentIndex;
+
+    for(unsigned long i=0; i<subsetIndex->size() ;++i){
+        currentIndex = (*subsetIndex)[i] ;
+        if(currentIndex> (unsigned int)length()){
+            stringstream s;
+            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
+                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
+            throw Error(s.str());
+        }
+        b[i] = reinterpret_cast<dods_uint32*>(_buf )[currentIndex]; // I like this version - and it works!
+    }
+}
+
+/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
+void Vector::value(vector<unsigned int> *subsetIndex, dods_int32 *b) const
+{
+    unsigned long currentIndex;
+
+    for(unsigned long i=0; i<subsetIndex->size() ;++i){
+        currentIndex = (*subsetIndex)[i] ;
+        if(currentIndex> (unsigned int)length()){
+            stringstream s;
+            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
+                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
+            throw Error(s.str());
+        }
+        b[i] = reinterpret_cast<dods_int32*>(_buf )[currentIndex]; // I like this version - and it works!
+    }
+}
+
+/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
+void Vector::value(vector<unsigned int> *subsetIndex, dods_float32 *b) const
+{
+    unsigned long currentIndex;
+
+    for(unsigned long i=0; i<subsetIndex->size() ;++i){
+        currentIndex = (*subsetIndex)[i] ;
+        //cerr << "currentIndex: " << currentIndex << endl;
+        if(currentIndex> (unsigned int)length()){
+            stringstream s;
+            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
+                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
+            throw Error(s.str());
+        }
+        // b[i] = *reinterpret_cast<dods_float32*>(_buf ) + currentIndex; // BROKEN
+        // b[i] = *(reinterpret_cast<dods_float32*>(_buf ) + currentIndex); // Works but I like other forms
+        // b[i] = ((dods_float32*)_buf )[currentIndex]; // Works but isn't as 'safe'
+
+        b[i] = reinterpret_cast<dods_float32*>(_buf )[currentIndex]; // I like this version - and it works!
+
+        //cerr << "b[" << i << "]=" <<  b[i] << endl;
+    }
+}
+
+/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
+void Vector::value(vector<unsigned int> *subsetIndex, dods_float64 *b) const
+{
+    unsigned long currentIndex;
+
+    for(unsigned long i=0; i<subsetIndex->size() ;++i){
+        currentIndex = (*subsetIndex)[i] ;
+        if(currentIndex> (unsigned int)length()){
+            stringstream s;
+            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
+                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
+            throw Error(s.str());
+        }
+        b[i] = reinterpret_cast<dods_float64*>(_buf )[currentIndex]; // I like this version - and it works!
+    }
+}
+
+
+/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
+void Vector::value(vector<unsigned int> *subsetIndex, vector<string> &b) const
+{
+    unsigned long currentIndex;
+
+    if (_var->type() == dods_str_c || _var->type() == dods_url_c){
+        for(unsigned long i=0; i<subsetIndex->size() ;++i){
+            currentIndex = (*subsetIndex)[i] ;
+            if(currentIndex > (unsigned int)length()){
+                stringstream s;
+                s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
+                        "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
+                throw Error(s.str());
+            }
+            b[i] = d_str[currentIndex];
+        }
+    }
+}
+
+
+
+
+
+
+
 /** @brief Get a copy of the data held by this variable.
  Read data from this variable's internal storage and load it into the
  memory referenced by \c b. The argument \c b must point to enough memory
@@ -1463,7 +1625,7 @@ void Vector::value(dods_float64 *b) const
 /** @brief Get a copy of the data held by this variable. */
 void Vector::value(vector<string> &b) const
 {
-    if (_var->type() == dods_byte_c || _var->type() == dods_url_c)
+    if (_var->type() == dods_str_c || _var->type() == dods_url_c)
         b = d_str;
 }
 

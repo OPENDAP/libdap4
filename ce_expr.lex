@@ -61,6 +61,7 @@ static char rcsid[] not_used = {"$Id$"};
 #define YY_DECL int ce_exprlex YY_PROTO(( void ))
 #define YY_FATAL_ERROR(msg) {\
     throw(Error(string("Error scanning constraint expression text: ") + string(msg))); \
+    yy_fatal_error(msg); /* see das.lex */ \
 }
 
 #include "Error.h"
@@ -114,9 +115,17 @@ SCAN_LESS	    <
 SCAN_LESS_EQL	<=
 SCAN_REGEXP	    =~
 
+SCAN_HASH_BYTE    #Byte
+SCAN_HASH_INT16   #Int16
+SCAN_HASH_UINT16  #UInt16
+SCAN_HASH_INT32   #Int32
+SCAN_HASH_UINT32  #UInt32
+SCAN_HASH_FLOAT32 #Float32
+SCAN_HASH_FLOAT64 #Float64
+
 SCAN_STAR       \*
 
-NEVER		[^\-+a-zA-Z0-9_/%.\\#:,(){}[\]&<>=~]
+NEVER		[^\-+a-zA-Z0-9_/%.\\:,(){}[\]&<>=~]
 
 %%
 
@@ -130,17 +139,25 @@ NEVER		[^\-+a-zA-Z0-9_/%.\\#:,(){}[\]&<>=~]
 "{"		return (int)*yytext;
 "}"		return (int)*yytext;
 
-{SCAN_WORD}	store_id(); return SCAN_WORD;
+{SCAN_WORD}	        store_id(); return SCAN_WORD;
 
-{SCAN_EQUAL}	store_op(SCAN_EQUAL); return SCAN_EQUAL;
-{SCAN_NOT_EQUAL} store_op(SCAN_NOT_EQUAL); return SCAN_NOT_EQUAL;
-{SCAN_GREATER}	store_op(SCAN_GREATER); return SCAN_GREATER;
-{SCAN_GREATER_EQL} store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
-{SCAN_LESS}	store_op(SCAN_LESS); return SCAN_LESS;
-{SCAN_LESS_EQL}	store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
-{SCAN_REGEXP}	store_op(SCAN_REGEXP); return SCAN_REGEXP;
+{SCAN_EQUAL}	    store_op(SCAN_EQUAL); return SCAN_EQUAL;
+{SCAN_NOT_EQUAL}    store_op(SCAN_NOT_EQUAL); return SCAN_NOT_EQUAL;
+{SCAN_GREATER}	    store_op(SCAN_GREATER); return SCAN_GREATER;
+{SCAN_GREATER_EQL}  store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
+{SCAN_LESS}	        store_op(SCAN_LESS); return SCAN_LESS;
+{SCAN_LESS_EQL}	    store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
+{SCAN_REGEXP}	    store_op(SCAN_REGEXP); return SCAN_REGEXP;
 
-{SCAN_STAR}   store_op(SCAN_STAR); return SCAN_STAR;
+{SCAN_STAR}         store_op(SCAN_STAR); return SCAN_STAR;
+
+{SCAN_HASH_BYTE}      return SCAN_HASH_BYTE;
+{SCAN_HASH_INT16}     return SCAN_HASH_INT16;
+{SCAN_HASH_UINT16}    return SCAN_HASH_UINT16;
+{SCAN_HASH_INT32}     return SCAN_HASH_INT32;
+{SCAN_HASH_UINT32}    return SCAN_HASH_UINT32;
+{SCAN_HASH_FLOAT32}   return SCAN_HASH_FLOAT32;
+{SCAN_HASH_FLOAT64}   return SCAN_HASH_FLOAT64;
 
 [ \t\r\n]+
 <INITIAL><<EOF>> yy_init = 1; yyterminate();
@@ -158,6 +175,7 @@ NEVER		[^\-+a-zA-Z0-9_/%.\\#:,(){}[\]&<>=~]
             }
 
 <quote><<EOF>>	{
+                  BEGIN(INITIAL);   /* resetting the state is needed for reentrant parsers */
                   char msg[256];
                   sprintf(msg, "Unterminated quote\n");
                   YY_FATAL_ERROR(msg);
@@ -200,7 +218,7 @@ ce_expr_delete_buffer(void *buf)
 static void
 store_id()
 {
-    strncpy(ce_exprlval.id, www2id(string(yytext)).c_str(), ID_MAX-1);
+    strncpy(ce_exprlval.id, yytext, ID_MAX-1);
     ce_exprlval.id[ID_MAX-1] = '\0';
 }
 
@@ -208,7 +226,7 @@ static void
 store_str()
 {
     // transform %20 to a space. 7/11/2001 jhrg
-    string *s = new string(www2id(string(yytext)));  // XXX memory leak?
+    string *s = new string(yytext); // move all calls of www2id into the parser. jhrg 7/5/13 www2id(string(yytext)));
 
     if (*s->begin() == '\"' && *(s->end()-1) == '\"') {
 	s->erase(s->begin());

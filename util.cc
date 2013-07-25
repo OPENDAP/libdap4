@@ -724,7 +724,7 @@ is_constructor_type(Type t)
 
 /**
  * Is this an integer type?
- * @return True if the type holds an interger value, false otherwise.
+ * @return True if the type holds an integer value, false otherwise.
  */
 bool is_integer_type(Type t)
 {

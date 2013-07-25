@@ -33,8 +33,6 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id$"};
-
 #include <iostream>
 
 #include "Error.h"
@@ -59,7 +57,7 @@ using namespace libdap;
 extern int error_line_num;	// defined in Error.lex
 
 int Errorlex();			// the scanner
-void Errorerror(char *s);	// gotta love automatically generated names...
+void Errorerror(const string &s /*char *s*/);	// gotta love automatically generated names...
 
 %}
 
@@ -121,7 +119,7 @@ message:	SCAN_MSG '=' SCAN_STR
 %%
 
 void
-Errorerror(char *s)
+Errorerror(const string &s /*char *s*/)
 {
   string msg = s;
   msg += " line: ";

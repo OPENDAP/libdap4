@@ -88,6 +88,7 @@ using namespace libdap ;
 #define YY_DECL int daslex YY_PROTO(( void ))
 #define YY_FATAL_ERROR(msg) {\
     throw(Error(string("Error scanning DAS object text: ") + string(msg))); \
+    yy_fatal_error(msg); /* This will never be run but putting it here removes a warning that the funtion is never used. */ \
 }
 
 #include "das.tab.hh"
