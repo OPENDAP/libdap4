@@ -15,6 +15,8 @@ namespace libdap {
 
 bool D4CEDriver::parse(const std::string &expr)
 {
+	expression = expr;	// set for error messages.
+
 	std::istringstream iss(expr);
 	D4CEScanner *scanner = new D4CEScanner(iss);
 
@@ -23,18 +25,13 @@ bool D4CEDriver::parse(const std::string &expr)
 	return parser->parse() == 0;
 }
 
-#if 0
+// This method is called from the parser (see d4_ce_parser.yy, down in the code
+// section). This will be called during the call to D4CEParser::parse(), that
+// is inside D4CEDriver::parse(...)
 void
 D4CEDriver::error(const libdap::location &l, const std::string &m)
 {
 	std::cerr << l << ": " << m << std::endl;
-}
-#endif
-
-void
-D4CEDriver::error(const std::string &m)
-{
-	std::cerr << m << std::endl;
 }
 
 } /* namespace libdap */

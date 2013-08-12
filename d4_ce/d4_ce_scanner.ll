@@ -35,11 +35,10 @@
 /* typedef to make the returns for the tokens shorter */
 typedef libdap::D4CEParser::token token;
 
+/* This was added because of some notes on the net about compiler version
+   issues. I don't know if it's needed when using the C++ mode of flex. */
 #undef yywrap
 #define yywrap() 1
-
-// The location of the current token
-// static libdap::location loc;
 
 /* define yyterminate as this instead of NULL */
 #define yyterminate() return(token::END)
@@ -54,50 +53,50 @@ typedef libdap::D4CEParser::token token;
    in lex.<prefix>.cc. jhrg 8/8/13 */
 %option prefix="d4_ce"
 
+/* These two options turn on line counting - useful for error messages - 
+   and debuggin, respectively. When debuggin is on, it's possible to see
+   which scanner rules are used at which points in the input. */
 %option yylineno
 %option debug
 
+/* Do not ouput the default rule (where any unmatched input is echoed to 
+   stdout). When set, nodefault will cause the scanner to exit on an error. */
+%option nodefault
+/* noyywrap makes the scanner assume that EOF/EOS is the end of the input.
+   If this is not set, the scanner will assume there are more files to 
+   scane. */ 
 %option noyywrap
 %option nounput
+/* When set, warn prints a message when the default rule can be mathced
+   but nodefault is given (among other warnings). */
 %option warn
 
 %option batch
 
 %x quote
 
-NAN		[Nn][Aa][Nn]
-INF		[Ii][Nn][Ff]
+/* This pattern just ensures that a word does not start with '#' which
+   is the DAP2 comment character. */
+WORD    [-+a-zA-Z0-9_%*\\~@!][-+a-zA-Z0-9_%*\\#~@!]* 
 
-WORD    [-+a-zA-Z0-9_/%.*\\][-+a-zA-Z0-9_/%.*\\#]* 
- 
-EQUAL	    ==
-NOT_EQUAL	!=
-GREATER	    >
-GREATER_EQL >=
-LESS	    <
-LESS_EQL	<=
-REGEXP	    ~=
-LESS_BBOX   <<
-GREATER_BBOX  >>
-MASK        @=
-
-NEVER		[^\-+a-zA-Z0-9_/%.*\\:;,(){}[\]&<>=~@]
+/* NEVER   [^\-+a-zA-Z0-9_/%.*\\#[\]:,;|{}/.=!<>~@"] */
+/* NEVER		[^\-+a-zA-Z0-9_/%.*\\:;,{}[\]<>=~@|#] */
 
 %{
 // Code run each time a pattern is matched
-// #define YY_USER_ACTION loc.columns(yyleng);
+#define YY_USER_ACTION loc->columns(yyleng);
 %}
 
 %%
 
 %{
 // Code run each time yylex is called
-// loc.step();
+loc->step();
 %}
 
-"["    	return token::LBRACKET;
-"]"    	return token::RBRACKET;
-":"    	return token::COLON;
+"["     return token::LBRACKET;
+"]"     return token::RBRACKET;
+":"     return token::COLON;
 ","		return token::COMMA;
 ";"		return token::SEMICOLON;
 "|"     return token::PIPE;
@@ -105,33 +104,47 @@ NEVER		[^\-+a-zA-Z0-9_/%.*\\:;,(){}[\]&<>=~@]
 "}"		return token::RBRACE;
 "/"     return token::GROUP_SEP;
 "."     return token::PATH_SEP;
+"="     return token::ASSIGN;
 
-{WORD}          { yylval->build<std::string>(yytext); return token::WORD; }
+"=="    return token::EQUAL;
+"!="    return token::NOT_EQUAL;
+">"	    return token::GREATER;
+">="    return token::GREATER_EQUAL;
+"<"     return token::LESS;
+"<="    return token::LESS_EQUAL;
+"~="    return token::REGEX_MATCH;
+"<<"    return token::LESS_BBOX;
+">>"    return token::GREATER_BBOX;
+"@="    return token::MASK;
 
-{EQUAL}	        return token::EQUAL;
-{NOT_EQUAL}     return token::NOT_EQUAL;
-{GREATER}	    return token::GREATER;
-{GREATER_EQL}   return token::GREATER_EQUAL;
-{LESS}	        return token::LESS;
-{LESS_EQL}	    return token::LESS_EQUAL;
-{REGEXP}	    return token::REGEX_MATCH;
-{LESS_BBOX}     return token::LESS_BBOX;
-{GREATER_BBOX}  return token::GREATER_BBOX;
-{MASK}          return token::MASK;
+[ \t]+  /* ignore these */
 
-[ \t\r\n]+
+[\r\n]+ /* ignore these */
+
+{WORD}  { yylval->build<std::string>(yytext); return token::WORD; }
+
 <INITIAL><<EOF>> return token::END;
 
-\"		BEGIN(quote); yymore();
+["]    { BEGIN(quote); yymore(); }
 
-<quote>[^"\\]*  yymore(); /*"*/
+<quote>[^"\\]*  yymore(); /* Anything that's not a double quote or a backslash */
 
-<quote>\\.	yymore();
+<quote>[\\]["]	yymore(); /* This matches the escaped double quote (\") */
 
-<quote>\"	{ 
-    		  BEGIN(INITIAL); 
-              { yylval->build<std::string>(yytext); return token::STRING; }
+<quote>[\\]{2}  yymore(); /* This matches an escaped escape (\\) */
 
+<quote>[\\]{1}  {
+                    BEGIN(INITIAL);
+                    if (yytext) {
+                        YY_FATAL_ERROR("Inside a string, backslash (\\) can escape a double quote or must itself be escaped (\\\\).");
+                    }
+                }
+
+<quote>["]  { 
+                /* An unescaped double quote in the 'quote' state indicates the end of the string */
+                BEGIN(INITIAL); 
+                yylval->build<std::string>(yytext); 
+                return token::STRING;
             }
 
 <quote><<EOF>>	{
@@ -139,10 +152,10 @@ NEVER		[^\-+a-zA-Z0-9_/%.*\\:;,(){}[\]&<>=~@]
                   YY_FATAL_ERROR("Unterminated quote");
                 }
 
-{NEVER}         {
-                  BEGIN(INITIAL);
-                  if (yytext) {
-                    YY_FATAL_ERROR("Characters found in the input were not recognized.");
-                  }
-		        }
+.   {
+        BEGIN(INITIAL);
+        if (yytext) {
+            YY_FATAL_ERROR("Characters found in the input were not recognized.");
+        }
+    }
 %%

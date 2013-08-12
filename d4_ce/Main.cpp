@@ -1,7 +1,6 @@
 
 #include "GetOpt.h"
 
-
 #include "D4CEDriver.h"
 
 using namespace std;

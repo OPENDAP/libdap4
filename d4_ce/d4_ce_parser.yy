@@ -60,19 +60,14 @@ namespace libdap {
 %lex-param   { D4CEDriver  &driver  }
 %parse-param { D4CEDriver  &driver  }
 
-
-// The parsing context.
-// FIXME Replaced by the above %param { libdap::D4CEDriver &driver }
-
-/*
 %locations
 %initial-action
 {
-    // Initialize the initial location. 'expression' is a field in D4CEParserDriver
-    // and it is set by D4CEParserDriver::parse(const std::string &expr)
+    // Initialize the initial location. 'expression' is a field in D4CEDriver
+    // and it is set by D4CEDriver::parse(const std::string &expr)
+    // Normally this would be the name of a file...
     @$.begin.filename = @$.end.filename = &driver.expression;
 };
-*/
 
 %code{
    #include <iostream>
@@ -84,12 +79,11 @@ namespace libdap {
 
    /* this is silly, but I can't figure out a way around */
    static int yylex(libdap::D4CEParser::semantic_type *yylval,
+                    libdap::location *loc,
                     libdap::D4CEScanner  &scanner,
                     libdap::D4CEDriver   &driver);
 
 }
-
-// %define api.token.prefix {TOK_}
 
 // The strings used in the token definitions are used for error messages
 %token <std::string> WORD "word"
@@ -174,12 +168,16 @@ filter : predicate
 // the intent of the evaluator design introduces a number of reduce/reduce
 // conflicts because any sensible definition of 'constant' will be the
 // same as the defintion of 'name'. This happens because we must make 'name'
-// far more general than ideal (it must include INT, FLOAT and STRING).
+// far more general than ideal (it must include tokens that start with digits
+// odd characters that clash with the operators, et cetera). Note that the
+// actions here must test for id == "ND" and op == "=", along with a host
+// of other checks.
 
 predicate : id op id { $$ = true; }
           | id op id op id { $$ = true; }
-          | "ND" "=" id { $$ = true; }
 ;
+
+//           | "ND" "=" id { $$ = true; }
 
 op : "<"
    | ">"
@@ -193,6 +191,8 @@ op : "<"
    | ">>"
 
    | "@="
+   
+   | "="
 ;
 
 id : path
@@ -215,30 +215,24 @@ name : WORD | STRING
 
 %%
 
-#if 0
+// Forward the error to the driver for handling. The location parameter
+// provides the line number and character position of the error.
 void
 libdap::D4CEParser::error(const location_type &l, const std::string &m)
 {
     driver.error(l, m);
 }
-#endif
 
-void libdap::D4CEParser::error( // FIXME jhrg const MC::MC_Parser::location_type &l,
-                           const std::string &err_message)
-{
-   std::cerr << "Error: " << err_message << "\n";
-}
-
-
-
-/* include for access to scanner.yylex. This code does not use the driver param,
-   but it could use values set in MC_Driver to control debugging/tracing in the
-   scanner through another method defined for the MC_Scanner class. */
+/* include for access to scanner.yylex */
 #include "D4CEScanner.h"
 
 static int yylex(libdap::D4CEParser::semantic_type *yylval,
-                 libdap::D4CEScanner  &scanner,
-                 libdap::D4CEDriver   &driver)
+                 libdap::location *loc,
+                 libdap::D4CEScanner &scanner,
+                 libdap::D4CEDriver &driver)
 {
-   return( scanner.yylex(yylval) );
+    if (driver.trace_scanning)
+        scanner.set_debug(true);
+    
+    return( scanner.yylex(yylval, loc) );
 }
