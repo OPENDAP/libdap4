@@ -35,8 +35,8 @@
 /* typedef to make the returns for the tokens shorter */
 typedef libdap::D4CEParser::token token;
 
-// #undef yywrap
-// #define yywrap() 1
+#undef yywrap
+#define yywrap() 1
 
 // The location of the current token
 // static libdap::location loc;
@@ -52,9 +52,9 @@ typedef libdap::D4CEParser::token token;
 /* Use this if several scanners are needed. This will cause flex to
    #define yyFlexLexer to be <prefix>FlexLexer (the yyFlexLexer is defined
    in lex.<prefix>.cc. jhrg 8/8/13 */
-/* %option prefix="d4_ce" */
+%option prefix="d4_ce"
 
-/* %option yylineno */
+%option yylineno
 %option debug
 
 %option noyywrap
@@ -146,38 +146,3 @@ NEVER		[^\-+a-zA-Z0-9_/%.*\\:;,(){}[\]&<>=~@]
                   }
 		        }
 %%
-
-#if 0
-namespace libdap {
-
-void 
-D4CEDriver::scan_begin()
-{
-    yy_flex_debug = trace_scanning;
-    
-    //FIXME Need to save the YY_BUFFER_STATE this returns and free it using  yy_delete_buffer
-    // jhrg 8/9/13
-    yy_scan_string(expression.c_str());
-#if 0
-    std::istringstream &iss(expression);
-    yy_switch_streams(iss, std::cerr);
-#endif
-}
-
-void 
-D4CEDriver::scan_end()
-{
-}
-
-} // namespace libdap
-#endif
-#if 0
-int 
-main( int /* argc */, char** /* argv */ )
-{
-    FlexLexer* lexer = new yyFlexLexer;
-    while(lexer->yylex() != 0)
-        ;
-    return 0;
-}
-#endif

@@ -4,6 +4,8 @@
 
 // Only include FlexLexer.h if it hasn't been already included
 #if ! defined(yyFlexLexerOnce)
+#undef yyFlexLexer
+#define yyFlexLexer d4_ceFlexLexer
 #include "FlexLexer.h"
 #endif
 
@@ -22,10 +24,10 @@
 
 namespace libdap {
 
-class D4CEScanner : public yyFlexLexer{
+class D4CEScanner : public d4_ceFlexLexer{
 public:
 
-	D4CEScanner(std::istream &in) : yyFlexLexer(&in), yylval( 0 ) { };
+	D4CEScanner(std::istream &in) : d4_ceFlexLexer(&in), yylval( 0 ) { };
 
 	int yylex(libdap::D4CEParser::semantic_type *lval)
 	{

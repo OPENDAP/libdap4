@@ -34,7 +34,7 @@ public:
 	bool trace_parsing;
 
 	// void error(const libdap::location &l, const std::string &m);
-	//void error(const std::string &m);
+	void error(const std::string &m);
 };
 
 } /* namespace libdap */
