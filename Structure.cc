@@ -532,8 +532,6 @@ Structure::m_exact_match(const string &name, btp_stack *s)
     return 0;
 }
 #endif
-// TODO Can these be removed and the versions in Constructor used instead?
-// Yes.
 #if 0
 void
 Structure::print_val(FILE *out, string space, bool print_decl_p)
