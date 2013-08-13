@@ -167,7 +167,7 @@ filter : predicate
 // supported by the CE evaluator. However, id op constant, which captures
 // the intent of the evaluator design introduces a number of reduce/reduce
 // conflicts because any sensible definition of 'constant' will be the
-// same as the defintion of 'name'. This happens because we must make 'name'
+// same as the definition of 'name'. This happens because we must make 'name'
 // far more general than ideal (it must include tokens that start with digits
 // odd characters that clash with the operators, et cetera). Note that the
 // actions here must test for id == "ND" and op == "=", along with a host
