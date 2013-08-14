@@ -62,6 +62,10 @@ void Errorerror(parser_arg *arg, const string &s);	// gotta love automatically g
 }
 
 %parse-param {parser_arg *arg}
+%name-prefix "Error"
+%defines
+%debug
+%verbose
 
 %union {
 #ifdef __SUNPRO_CC

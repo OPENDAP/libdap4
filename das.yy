@@ -120,6 +120,10 @@ static void add_bad_attribute(AttrTable *attr, const string &type,
 }
 
 %parse-param {parser_arg *arg}
+%name-prefix "das"
+%defines
+%debug
+%verbose
 
 %expect 26
 

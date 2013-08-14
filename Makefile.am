@@ -14,8 +14,8 @@ if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
 endif
 
-AM_YFLAGS = -d -v -t
-AM_LFLAGS = -8
+# AM_YFLAGS = -d -v -t
+# AM_LFLAGS = -8
 
 # These are not used by automake but are often useful for certain types of
 # debugging. The best way to use these is to run configure as:
@@ -280,10 +280,11 @@ DAP4_ONLY_HDR = D4StreamMarshaller.h D4StreamUnMarshaller.h Int64.h \
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h
+	cp -p $< dods-datatypes.h
 else
 dods-datatypes.h: dods-datatypes-config.h
-endif
 	cp -p $< dods-datatypes.h
+endif
 
 xdr-datatypes.h: xdr-datatypes-config.h
 	cp -p $< xdr-datatypes.h
@@ -307,37 +308,31 @@ SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
 # Build the DAS scanner and parser
 
 lex.das.cc: das.lex das.tab.cc das.tab.hh
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+	$(LEX) $(LFLAGS) $<
 
-# The funny if statment accommodates older versions of bison that treat
-# -o differently than the 2.x versions. jhrg 3/2/08
-das.tab.cc das.tab.hh: das.y DAS.h
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p das -o das.tab.cc $<
-	if test -e das.tab.cc.h; then mv das.tab.cc.h das.tab.hh; fi
+das.tab.cc: das.yy DAS.h
+	$(YACC) $(YFLAGS) $<
 
 # DDS
 
 lex.dds.cc: dds.lex dds.tab.cc dds.tab.hh
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+	$(LEX) $(LFLAGS) $<
 
-dds.tab.cc dds.tab.hh: dds.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p dds -o dds.tab.cc $<
-	if test -e dds.tab.cc.h; then mv dds.tab.cc.h dds.tab.hh; fi
+dds.tab.cc: dds.yy
+	$(YACC) $(YFLAGS) $<
 
 # CE
 
 lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.hh
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+	$(LEX) $(LFLAGS) $<
 
-ce_expr.tab.cc ce_expr.tab.hh: ce_expr.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p ce_expr -o ce_expr.tab.cc $<
-	if test -e ce_expr.tab.cc.h; then mv ce_expr.tab.cc.h ce_expr.tab.hh; fi
-
+ce_expr.tab.cc: ce_expr.yy
+	$(YACC) $(YFLAGS) $<
+	
 # Errors
 
 lex.Error.cc: Error.lex Error.tab.cc Error.tab.hh
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+	$(LEX) $(LFLAGS) $<
 
-Error.tab.cc Error.tab.hh: Error.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p Error -o Error.tab.cc $<
-	if test -e Error.tab.cc.h; then mv Error.tab.cc.h Error.tab.hh; fi
+Error.tab.cc: Error.yy
+	$(YACC) $(YFLAGS) $<

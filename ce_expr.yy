@@ -135,6 +135,10 @@ rvalue *build_constant_array(vector<t> *values, DDS *dds);
 }
 
 %parse-param {ce_parser_arg *arg}
+%name-prefix "ce_expr"
+%defines
+%debug
+%verbose
 
 %union {
     bool boolean;
