@@ -53,7 +53,7 @@ extern void Error_switch_to_buffer(void *new_buffer);
 extern void Error_delete_buffer(void * buffer);
 extern void *Error_buffer(FILE *fp);
 
-extern void Errorrestart(FILE *yyin); // defined in Error.tab.c
+//extern void Errorrestart(FILE *yyin); // defined in Error.tab.c
 extern int Errorparse(void *arg);
 
 namespace libdap {

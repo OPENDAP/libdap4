@@ -121,10 +121,16 @@ bool Vector::is_cardinal_type() const
         case dods_int32_c:
         case dods_uint32_c:
         case dods_float32_c:
-        case dods_float64_c: {
+        case dods_float64_c:
+        	// New cardinal types for DAP4
+        case dods_int8_c:
+        case dods_uint8_c:
+        case dods_int64_c:
+        case dods_uint64_c:
+
+        case dods_enum_c:
             return true;
             break;
-        }
 
             // These must be handled differently.
         case dods_str_c:
@@ -133,6 +139,13 @@ bool Vector::is_cardinal_type() const
         case dods_structure_c:
         case dods_sequence_c:
         case dods_grid_c:
+        	// DAP4 only types
+        	// TODO Keep url4 and array4?
+        case dods_url4_c:
+        case dods_array4_c:
+
+        case dods_opaque_c:
+
             return false;
             break;
 
@@ -172,11 +185,13 @@ unsigned int Vector::create_cardinal_data_buffer_for_type(unsigned int numEltsOf
     unsigned int bytesPerElt = _var->width();
     unsigned int bytesNeeded = bytesPerElt * numEltsOfType;
     _buf = new char[bytesNeeded];
+#if 0
     if (!_buf) {
         ostringstream oss;
         oss << "create_cardinal_data_buffer_for_type: new char[] failed to allocate " << bytesNeeded << " bytes!  Out of memory or too large a buffer required!";
         throw InternalErr(__FILE__, __LINE__, oss.str());
     }
+#endif
     _capacity = numEltsOfType;
     return bytesNeeded;
 }
@@ -184,11 +199,11 @@ unsigned int Vector::create_cardinal_data_buffer_for_type(unsigned int numEltsOf
 /** Delete _buf and zero it and _capacity out */
 void Vector::delete_cardinal_data_buffer()
 {
-    if (_buf) {
+    // if (_buf) {
         delete[] _buf;
         _buf = 0;
         _capacity = 0;
-    }
+    //}
 }
 
 /** Helper to reduce cut and paste in the virtual's.
@@ -216,11 +231,10 @@ void Vector::set_cardinal_values_internal(const CardType* fromArray, int numElts
 
  @param n A string containing the name of the variable to be
  created.
- @param v A pointer to a variable of the type to be included
- in the Vector.
+ @param v A pointer to a prototype for elements.
  @param t The type of the resulting Vector object, from the Type
  enum list.  There is no DAP2 Vector object, so all uses of this
- method will be from the List or Array classes.  This defaults to
+ method will be from the Array class.  This defaults to
  <tt>dods_null_c</tt>.
 
  @see Type
@@ -246,11 +260,10 @@ Vector::Vector(const string & n, BaseType * v, const Type & t) :
  created.
  @param d A string containing the dataset name from which the variable is
  being created.
- @param v A pointer to a variable of the type to be included
- in the Vector.
+ @param v A pointer to a prototype for elements.
  @param t The type of the resulting Vector object, from the Type
  enum list.  There is no DAP2 Vector object, so all uses of this
- method will be from the List or Array classes.  This defaults to
+ method will be from the Array class.  This defaults to
  <tt>dods_null_c</tt>.
 
  @see Type
@@ -301,6 +314,7 @@ Vector & Vector::operator=(const Vector & rhs)
     return *this;
 }
 
+#if 0
 /**
  * The Vector (and Array) classes are specific to DAP2. They do not support
  * the semantics of DAP4 which allows varying dimensions.
@@ -309,6 +323,7 @@ bool Vector::is_dap2_only_type()
 {
     return true;
 }
+#endif
 
 void Vector::set_name(const std::string& name)
 {
@@ -589,8 +604,7 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
             break;
 
         case dods_array_c:
-            // I think this is an error since there can never be an Array of
-            // Array.
+            // This is an error since there can never be an Array of Array.
             throw InternalErr(__FILE__, __LINE__, "Array of Array not supported.");
             break;
 
@@ -1041,7 +1055,7 @@ void Vector::clear_local_data()
 
 /**
  * Return the capacity of the Vector in terms of number of
- * elements of its data type that it CAN currently hold (i.e. not bytes).
+ * elements of its data type that it can currently hold (i.e. not bytes).
  * For example, this could be
  * the size of the _buf array in bytes / sizeof(T) for the cardinal
  * types T, or the capacity of the d_str vector if T is string or url type.
@@ -1399,20 +1413,28 @@ bool Vector::set_value(vector<string> &val, int sz)
 
 //@{
 
-/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return.
- Read data from this variable's internal storage using the passed std::vector as an sub-setting index to the values to be returned. The
- memory referenced by \c b must point to enough memory
- to hold index.size() bytes.
-
- @param index A std::vector<long> where each value in the vector is the location in the Vector's internal storage from which to read the returned value
- @param b A pointer to the memory to hold the data; must be at least
- length() * sizeof(dods_byte) in size.*/
+/** @brief Get a copy of the data held by this variable using the passed subsetIndex
+ * vector to identify which values to return.
+ *
+ * Read data from this variable's internal storage using the passed std::vector
+ * as an sub-setting index to the values to be returned. For example, if \c subsetIndex
+ * contains 1,3,5,7 and 9, then 'b' will contain the five values found at indexes
+ * 1,3, ..., 9.
+ *
+ * @note The memory referenced by \c b must point to enough memory to hold index.size()
+ * bytes; no test for this is performed.
+ * @note This can only be called for cardinal types.
+ *
+ * @param index A std::vector<long> where each value in the vector is the
+ * location in the Vector's internal storage from which to read the returned value.
+ * @param b A pointer to the memory to hold the data; must be at least
+ * length() * sizeof(dods_byte) in size.*/
 void Vector::value(vector<unsigned int> *subsetIndex, dods_byte *b) const
 {
-    unsigned long currentIndex;
+   // unsigned long currentIndex;
 
     for(unsigned long i=0; i<subsetIndex->size() ;++i){
-        currentIndex = (*subsetIndex)[i] ;
+    	unsigned long currentIndex = (*subsetIndex)[i] ;
         if(currentIndex> (unsigned int)length()){
             stringstream s;
             s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
@@ -1500,20 +1522,14 @@ void Vector::value(vector<unsigned int> *subsetIndex, dods_float32 *b) const
 
     for(unsigned long i=0; i<subsetIndex->size() ;++i){
         currentIndex = (*subsetIndex)[i] ;
-        //cerr << "currentIndex: " << currentIndex << endl;
         if(currentIndex> (unsigned int)length()){
             stringstream s;
             s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
                     "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
             throw Error(s.str());
         }
-        // b[i] = *reinterpret_cast<dods_float32*>(_buf ) + currentIndex; // BROKEN
-        // b[i] = *(reinterpret_cast<dods_float32*>(_buf ) + currentIndex); // Works but I like other forms
-        // b[i] = ((dods_float32*)_buf )[currentIndex]; // Works but isn't as 'safe'
 
-        b[i] = reinterpret_cast<dods_float32*>(_buf )[currentIndex]; // I like this version - and it works!
-
-        //cerr << "b[" << i << "]=" <<  b[i] << endl;
+        b[i] = reinterpret_cast<dods_float32*>(_buf )[currentIndex];
     }
 }
 

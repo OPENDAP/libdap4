@@ -29,7 +29,7 @@
 // Authors:
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
-%{
+%code requires {
 
 #include "config_dap.h"
 
@@ -52,14 +52,16 @@ using namespace libdap;
 #define ERROR_OBJ(arg) ((Error *)((parser_arg *)(arg))->_object)
 #define STATUS(arg) ((parser_arg *)(arg))->_status
 
-#define YYPARSE_PARAM arg
+//#define YYPARSE_PARAM arg
 
 extern int error_line_num;	// defined in Error.lex
 
 int Errorlex();			// the scanner
-void Errorerror(const string &s /*char *s*/);	// gotta love automatically generated names...
+void Errorerror(parser_arg *arg, const string &s);	// gotta love automatically generated names...
 
-%}
+}
+
+%parse-param {parser_arg *arg}
 
 %union {
 #ifdef __SUNPRO_CC
@@ -119,7 +121,7 @@ message:	SCAN_MSG '=' SCAN_STR
 %%
 
 void
-Errorerror(const string &s /*char *s*/)
+Errorerror(parser_arg *, const string &s)
 {
   string msg = s;
   msg += " line: ";

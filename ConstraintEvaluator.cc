@@ -33,11 +33,11 @@
 #include "debug.h"
 #include "parser.h"
 #include "expr.h"
-#include "ce_expr.tab.hh"
+//#include "ce_expr.tab.hh"
 
 struct yy_buffer_state;
 
-int ce_exprparse(void *arg);
+int ce_exprparse(libdap::ce_parser_arg *arg);
 
 // Glue routines declared in expr.lex
 void ce_expr_switch_to_buffer(void *new_buffer);
@@ -480,7 +480,7 @@ void ConstraintEvaluator::parse_constraint(const string &constraint, DDS &dds)
 
     // For all errors, exprparse will throw Error.
     try {
-    	ce_exprparse((void *) &arg);
+    	ce_exprparse(&arg);
     	ce_expr_delete_buffer(buffer);
     }
     catch (...) {

@@ -1,3 +1,7 @@
+
+#ifndef CE_PARSER_H_
+#define CE_PARSER_H_
+
 namespace libdap
 {
 
@@ -34,3 +38,4 @@ struct ce_parser_arg
 
 } // namespace libdap
 
+#endif // CE_PARSER_H_

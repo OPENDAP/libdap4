@@ -37,7 +37,7 @@
    jhrg 7/12/94 
 */
 
-%{
+%code requires {
 
 #define YYSTYPE char *
 #define ATTR_STRING_QUOTE_FIX
@@ -76,7 +76,7 @@ using namespace libdap ;
 
 #define DAS_OBJ(arg) ((DAS *)((parser_arg *)(arg))->_object)
 
-#define YYPARSE_PARAM arg
+//#define YYPARSE_PARAM arg
 
 extern int das_line_num;	/* defined in das.lex */
 
@@ -108,7 +108,7 @@ Check that the URL is correct.";
 typedef int checker(const char *);
 
 int daslex(void);
-static void daserror(const string &s /*char *s*/);
+static void daserror(parser_arg *arg, const string &s /*char *s*/);
 static void add_attribute(const string &type, const string &name, 
 			  const string &value, checker *chk) throw (Error);
 static void add_alias(AttrTable *das, AttrTable *current, const string &name, 
@@ -117,7 +117,9 @@ static void add_bad_attribute(AttrTable *attr, const string &type,
 			      const string &name, const string &value,
 			      const string &msg);
 
-%}
+}
+
+%parse-param {parser_arg *arg}
 
 %expect 26
 
@@ -430,7 +432,7 @@ alias:          SCAN_ALIAS SCAN_WORD
 // reporting mechanism.
 
 static void
-daserror(const string &/*char */)
+daserror(parser_arg *, const string &)
 {
 }
 

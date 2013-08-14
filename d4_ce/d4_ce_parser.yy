@@ -69,7 +69,7 @@ namespace libdap {
     @$.begin.filename = @$.end.filename = &driver.expression;
 };
 
-%code{
+%code {
    #include <iostream>
    #include <cstdlib>
    #include <fstream>

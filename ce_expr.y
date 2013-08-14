@@ -38,7 +38,7 @@
   jhrg 9/5/95
 */
 
-%{
+%code requires {
 
 #include "config.h"
 
@@ -91,16 +91,12 @@ using namespace libdap ;
 #define EVALUATOR(arg) (static_cast<ce_parser_arg*>(arg)->get_eval())
 #define DDS(arg) (static_cast<ce_parser_arg*>(arg)->get_dds())
 
-#define YYPARSE_PARAM arg
+// #define YYPARSE_PARAM arg
 
 int ce_exprlex(void);		/* the scanner; see expr.lex */
 
-/* This global is used by the rule 'arg_length_hint' so that the hint can 
-   be used during the paraent rule's parse. See fast_int32_arg_list. */
-unsigned long arg_length_hint_value = 0;
-
-void ce_exprerror(const string &s); 
-void ce_exprerror(const string &s, const string &s2);
+void ce_exprerror(ce_parser_arg *arg, const string &s); 
+void ce_exprerror(ce_parser_arg *arg, const string &s, const string &s2);
 void no_such_func(const string &name);
 void no_such_ident(const string &name, const string &word);
 
@@ -136,7 +132,9 @@ arg_list make_fast_arg_list(arg_list int_values, arg_type arg_value);
 template<class t, class T>
 rvalue *build_constant_array(vector<t> *values, DDS *dds);
 
-%}
+}
+
+%parse-param {ce_parser_arg *arg}
 
 %union {
     bool boolean;
@@ -225,6 +223,12 @@ rvalue *build_constant_array(vector<t> *values, DDS *dds);
 %type <float64_value> fast_float64_arg 
 %type <float64_values> fast_float64_arg_list
 
+%code {
+/* This global is used by the rule 'arg_length_hint' so that the hint can 
+   be used during the paraent rule's parse. See fast_int32_arg_list. */
+unsigned long arg_length_hint_value = 0;
+}
+
 %%
 
 constraint_expr: /* empty constraint --> send all */
@@ -287,7 +291,7 @@ proj_clause: name
                 return true;
             }
             else {
-                ce_exprerror("Could not create the anonymous vector using the # special form");
+                ce_exprerror(arg, "Could not create the anonymous vector using the # special form");
                 return false;
             }
         }
@@ -562,7 +566,7 @@ r_value: id_or_const
 		}
         | array_const_special_form
         {
-            $$ = $1
+            $$ = $1;
         }
 ;
 
@@ -624,7 +628,7 @@ id_or_const: SCAN_WORD
         | SCAN_STR
                 {
                     if ($1.type != dods_str_c || $1.v.s == 0 || $1.v.s->empty())
-                        ce_exprerror("Malformed string", "");
+                        ce_exprerror(arg, "Malformed string", "");
                         
                     BaseType *var = DDS(arg)->var(www2id(*($1.v.s)));
                     if (var) {
@@ -676,7 +680,7 @@ name:           SCAN_WORD
                 | SCAN_STR
                 {
                     if ($1.type != dods_str_c || $1.v.s == 0 || $1.v.s->empty())
-                        ce_exprerror("Malformed string", "");
+                        ce_exprerror(arg, "Malformed string", "");
                         
                     strncpy($$, www2id(*($1.v.s)).c_str(), ID_MAX-1);
                     
@@ -786,29 +790,29 @@ rel_op:		SCAN_EQUAL
 // jhrg.
 
 void
-ce_exprerror(const string &s)
+ce_exprerror(ce_parser_arg *, const string &s)
 {
     //ce_exprerror(s.c_str());
     string msg = "Constraint expression parse error: " + (string) s;
     throw Error(malformed_expr, msg);
 }
 
-void ce_exprerror(const string &s, const string &s2)
+void ce_exprerror(ce_parser_arg *, const string &s, const string &s2)
 {
     //ce_exprerror(s.c_str(), s2.c_str());
     string msg = "Constraint expression parse error: " + (string) s + ": " + (string) s2;
     throw Error(malformed_expr, msg);    
 }
 
-void no_such_ident(const string &name, const string &word)
+void no_such_ident(ce_parser_arg *arg, const string &name, const string &word)
 {
     string msg = "No such " + word + " in dataset";
-    ce_exprerror(msg /*.c_str()*/, name);
+    ce_exprerror(arg, msg /*.c_str()*/, name);
 }
 
-void no_such_func(const string &name)
+void no_such_func(ce_parser_arg *arg, const string &name)
 {
-    ce_exprerror("Not a registered function", name);
+    ce_exprerror(arg, "Not a registered function", name);
     //no_such_func(name/*.c_str()*/);
 }
 

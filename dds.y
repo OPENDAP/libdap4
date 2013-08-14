@@ -44,7 +44,7 @@
    jhrg 8/29/94 
 */
 
-%{
+%code requires {
 
 #include "config_dap.h"
 
@@ -84,7 +84,7 @@ using namespace libdap;
 // exceptions. 5/22/2002 jhrg
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
 
-#define YYPARSE_PARAM arg
+// #define YYPARSE_PARAM arg
 
 extern int dds_line_num;	/* defined in dds.lex */
 
@@ -103,16 +103,18 @@ static const char *BAD_DECLARATION =
 (e.g., Int32 i;). Make sure that the variable name is not the name\n\
 of a datatype and that the Array: and Maps: sections of a Grid are\n\
 labeled properly.";
- 
+
 int ddslex();
-void ddserror(const string &s /*char *s*/);
+void ddserror(parser_arg *arg, const string &s /*char *s*/);
 void error_exit_cleanup();
 void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, 
 	       Part p);
 void invalid_declaration(parser_arg *arg, string semantic_err_msg, 
 			 char *type, char *name);
 
-%}
+}
+
+%parse-param {parser_arg *arg}
 
 %expect 52
 
@@ -430,7 +432,7 @@ name:		var_name { (*DDS_OBJ(arg)).set_dataset_name($1); }
  */
 
 void
-ddserror(const string & /*char * */)
+ddserror(parser_arg *arg, const string & /*char * */)
 {
 }
 

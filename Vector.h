@@ -111,7 +111,9 @@ public:
     Vector &operator=(const Vector &rhs);
     virtual BaseType *ptr_duplicate() = 0;
 
+#if 0
     virtual bool is_dap2_only_type();
+#endif
 
     virtual void set_name(const std::string& name);
 
