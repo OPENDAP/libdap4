@@ -61,6 +61,7 @@ void Errorerror(parser_arg *arg, const string &s);	// gotta love automatically g
 
 }
 
+%require "2.5"
 %parse-param {parser_arg *arg}
 %name-prefix "Error"
 %defines

@@ -134,6 +134,8 @@ rvalue *build_constant_array(vector<t> *values, DDS *dds);
 
 }
 
+%require "2.5"
+
 %parse-param {ce_parser_arg *arg}
 %name-prefix "ce_expr"
 %defines

@@ -80,6 +80,9 @@ using namespace libdap ;
 
 extern int das_line_num;	/* defined in das.lex */
 
+} // code requires
+
+%code {
 // No global static objects. We go through this every so often, I guess I
 // should learn... 1/24/2000 jhrg
 static string *name;	/* holds name in attr_pair rule */
@@ -117,7 +120,9 @@ static void add_bad_attribute(AttrTable *attr, const string &type,
 			      const string &name, const string &value,
 			      const string &msg);
 
-}
+} // code
+
+%require "2.5"
 
 %parse-param {parser_arg *arg}
 %name-prefix "das"

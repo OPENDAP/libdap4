@@ -241,7 +241,7 @@ public:
         other_xml(""), other_xml_depth(0), unknown_depth(0),
         error_msg(""), context(0),
         dods_attr_name(""), dods_attr_type(""),
-        char_data(""), root_ns("")
+        char_data(""), root_ns(""), d_debug(false)
     {}
 
     void intern(const string &document, DMR *dest_dmr, bool debug = false);

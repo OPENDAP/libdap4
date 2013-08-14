@@ -88,6 +88,10 @@ using namespace libdap;
 
 extern int dds_line_num;	/* defined in dds.lex */
 
+} // code requires
+
+%code {
+
 // No global static objects in the dap library! 1/24/2000 jhrg
 static stack<BaseType *> *ctor;
 static BaseType *current;
@@ -112,7 +116,9 @@ void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current,
 void invalid_declaration(parser_arg *arg, string semantic_err_msg, 
 			 char *type, char *name);
 
-}
+} // code
+
+%require "2.5"
 
 %parse-param {parser_arg *arg}
 %name-prefix "dds"
@@ -436,7 +442,7 @@ name:		var_name { (*DDS_OBJ(arg)).set_dataset_name($1); }
  */
 
 void
-ddserror(parser_arg *arg, const string & /*char * */)
+ddserror(parser_arg *, const string &)
 {
 }
 
