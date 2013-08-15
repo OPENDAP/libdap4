@@ -56,6 +56,10 @@ using namespace libdap;
 
 extern int error_line_num;	// defined in Error.lex
 
+}
+
+%code {
+
 int Errorlex();			// the scanner
 void Errorerror(parser_arg *arg, const string &s);	// gotta love automatically generated names...
 

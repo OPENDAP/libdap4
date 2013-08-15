@@ -54,7 +54,7 @@ extern void Error_delete_buffer(void * buffer);
 extern void *Error_buffer(FILE *fp);
 
 //extern void Errorrestart(FILE *yyin); // defined in Error.tab.c
-extern int Errorparse(void *arg);
+extern int Errorparse(libdap::parser_arg *arg);
 
 namespace libdap {
 
@@ -168,7 +168,7 @@ Error::parse(FILE *fp)
 
     bool status;
     try {
-        status = Errorparse((void *) & arg) == 0;
+        status = Errorparse(&arg) == 0;
         Error_delete_buffer(buffer);
     }
     catch (Error &e) {

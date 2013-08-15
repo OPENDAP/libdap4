@@ -90,7 +90,7 @@ public:
      * @param t The type of the variable to create
      * @parma name The (optional) name of the variable.
      */
-    virtual BaseType *NewVariable(Type /* t */, const string &/* name = "" */) const;
+    virtual BaseType *NewVariable(Type t, const string &name = "") const;
 #if 0
     {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented.");

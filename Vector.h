@@ -78,28 +78,28 @@ namespace libdap
 class Vector: public BaseType
 {
 private:
-    int _length;  // number of elements in the vector
-    BaseType *_var;  // base type of the Vector
+    int d_length;  		// number of elements in the vector
+    BaseType *d_proto;  // element prototype for the Vector
 
     // _buf was a pointer to void; delete[] complained. 6/4/2001 jhrg
-    char *_buf;   // array which holds cardinal data
-    vector<string> d_str;       // special storage for strings. jhrg 2/11/05
-    vector<BaseType *> _vec; // array for other data
+    char *d_buf;   		// storage for cardinal data
+    vector<string> d_str;		// special storage for strings. jhrg 2/11/05
+    vector<BaseType *> d_compound_buf; 	// storage for data in compound types (e.g., Structure)
 
     // the number of elements we have allocated memory to store.
     // This should be either the sizeof(buf)/width() for cardinal data
     // or the capacity of d_str for strings or capacity of _vec.
-    unsigned int _capacity;
+    unsigned int d_capacity;
 
 protected:
     // This function copies the private members of Vector.
-    void _duplicate(const Vector &v);
+    void m_duplicate(const Vector &v);
 
-    bool is_cardinal_type() const;
-    unsigned int create_cardinal_data_buffer_for_type(unsigned int numEltsOfType);
-    void delete_cardinal_data_buffer();
+    bool m_is_cardinal_type() const;
+    unsigned int m_create_cardinal_data_buffer_for_type(unsigned int numEltsOfType);
+    void m_delete_cardinal_data_buffer();
 
-    template <class CardType> void set_cardinal_values_internal(const CardType* fromArray, int numElts);
+    template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int numElts);
 
 public:
     Vector(const string &n, BaseType *v, const Type &t);
@@ -138,6 +138,7 @@ public:
     virtual unsigned int buf2val(void **val);
 
     void set_vec(unsigned int i, BaseType *val);
+    void set_vec_nocopy(unsigned int i, BaseType * val);
 
     void vec_resize(int l);
 
@@ -152,31 +153,51 @@ public:
 
     virtual bool set_value(dods_byte *val, int sz);
     virtual bool set_value(vector<dods_byte> &val, int sz);
+
+    virtual bool set_value(dods_int8 *val, int sz);
+    virtual bool set_value(vector<dods_int8> &val, int sz);
+
     virtual bool set_value(dods_int16 *val, int sz);
     virtual bool set_value(vector<dods_int16> &val, int sz);
+
     virtual bool set_value(dods_uint16 *val, int sz);
     virtual bool set_value(vector<dods_uint16> &val, int sz);
+
     virtual bool set_value(dods_int32 *val, int sz);
     virtual bool set_value(vector<dods_int32> &val, int sz);
+
     virtual bool set_value(dods_uint32 *val, int sz);
     virtual bool set_value(vector<dods_uint32> &val, int sz);
+
+    virtual bool set_value(dods_int64 *val, int sz);
+    virtual bool set_value(vector<dods_int64> &val, int sz);
+
+    virtual bool set_value(dods_uint64 *val, int sz);
+    virtual bool set_value(vector<dods_uint64> &val, int sz);
+
     virtual bool set_value(dods_float32 *val, int sz);
     virtual bool set_value(vector<dods_float32> &val, int sz);
+
     virtual bool set_value(dods_float64 *val, int sz);
     virtual bool set_value(vector<dods_float64> &val, int sz);
+
     virtual bool set_value(string *val, int sz);
     virtual bool set_value(vector<string> &val, int sz);
 
     virtual void value(dods_byte *b) const;
+    virtual void value(dods_int8 *b) const;
     virtual void value(dods_int16 *b) const;
     virtual void value(dods_uint16 *b) const;
     virtual void value(dods_int32 *b) const;
     virtual void value(dods_uint32 *b) const;
+    virtual void value(dods_int64 *b) const;
+    virtual void value(dods_uint64 *b) const;
     virtual void value(dods_float32 *b) const;
     virtual void value(dods_float64 *b) const;
     virtual void value(vector<string> &b) const;
 
     void value(vector<unsigned int> *index, dods_byte *b) const;
+    void value(vector<unsigned int> *index, dods_int8 *b) const;
     void value(vector<unsigned int> *index, dods_int16 *b) const;
     void value(vector<unsigned int> *index, dods_uint16 *b) const;
     void value(vector<unsigned int> *index, dods_int32 *b) const;

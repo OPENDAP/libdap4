@@ -97,8 +97,8 @@ int ce_exprlex(void);		/* the scanner; see expr.lex */
 
 void ce_exprerror(ce_parser_arg *arg, const string &s); 
 void ce_exprerror(ce_parser_arg *arg, const string &s, const string &s2);
-void no_such_func(const string &name);
-void no_such_ident(const string &name, const string &word);
+void no_such_func(ce_parser_arg *arg, const string &name);
+void no_such_ident(ce_parser_arg *arg, const string &name, const string &word);
 
 int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list *make_array_index(value &i1, value &i2);
@@ -272,7 +272,7 @@ proj_clause: name
 			     DBG(cerr << "result: " << $$ << endl);
 		     }
 		     else {
-			     no_such_ident($1, "identifier");
+			     no_such_ident(arg, $1, "identifier");
 		     }
 		}
         | proj_function
@@ -506,7 +506,7 @@ proj_function:  SCAN_WORD '(' arg_list ')'
 			    $$ = true;
 		    }
 		    else {
-			    no_such_func($1);
+			    no_such_func(arg, $1);
 		    }
 		}
 ;
@@ -549,7 +549,7 @@ bool_function: SCAN_WORD '(' arg_list ')'
 	       {
 		   bool_func b_func = get_function((*EVALUATOR(arg)), $1);
 		   if (!b_func) {
-		       no_such_func($1);
+		       no_such_func(arg, $1);
 		   }
 		   else {
 		       EVALUATOR(arg)->append_clause(b_func, $3);
@@ -567,7 +567,7 @@ r_value: id_or_const
 			    $$ = new rvalue(func, $3);
 		    } 
 		    else { 
-			    no_such_func($1);
+			    no_such_func(arg, $1);
 		    }
 		}
         | array_const_special_form
@@ -656,7 +656,7 @@ array_proj_clause: name array_indices
                 {
                     //string name = www2id($1);
                     if (!bracket_projection((*DDS(arg)), $1, $2))
-                      no_such_ident($1, "array, grid or sequence");
+                      no_such_ident(arg, $1, "array, grid or sequence");
                     
                     strncpy($$, $1, ID_MAX-1);
                     $$[ID_MAX-1] = '\0';
@@ -671,7 +671,7 @@ array_proj_clause: name array_indices
                 {
                     string name = string($1) + string($2);
                     if (!bracket_projection((*DDS(arg)), name.c_str(), $3))
-                      no_such_ident(name.c_str(), "array, grid or sequence");
+                      no_such_ident(arg, name.c_str(), "array, grid or sequence");
 
                     strncpy($$, name.c_str(), ID_MAX-1);
                     $$[ID_MAX-1] = '\0';
