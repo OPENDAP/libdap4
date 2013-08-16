@@ -506,10 +506,10 @@ Type get_type(const char *name)
     if (strcmp(name, "String") == 0)
         return dods_str_c;
 
-    if (strcmp(name, "URL") == 0)
-        return dods_url4_c;
-
-    if (strcmp(name, "Url") == 0)
+    // accept both spellings; this might be confusing since URL
+    // could be filtered through code and come out Url. Don't know...
+    // jhrg 8/15/13
+    if (strcmp(name, "Url") == 0 || strcmp(name, "URL") == 0)
         return dods_url_c;
 
     if (strcmp(name, "Enum") == 0)
@@ -533,9 +533,15 @@ Type get_type(const char *name)
     return dods_null_c;
 }
 
-/** @brief Returns the type of the class instance as a string. */
+/**
+ * @brief Returns the type of the class instance as a string.
+ * Supports all DAP2 types and not the DAP4-only types. Also
+ * returns Url (DAP2) and not "URL" (DAP4) for the URL type.
+ * @param t The type code
+ * @return The type name in a string
+ */
 string
-type_name(Type t)
+D2type_name(Type t)
 {
     switch (t) {
     case dods_null_c:
@@ -558,6 +564,7 @@ type_name(Type t)
         return string("String");
     case dods_url_c:
         return string("Url");
+
     case dods_array_c:
         return string("Array");
     case dods_structure_c:
@@ -567,25 +574,72 @@ type_name(Type t)
     case dods_grid_c:
         return string("Grid");
 
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown type.");
+    }
+}
+
+/**
+ * @brief Returns the type of the class instance as a string.
+ * Supports all DAP4 types and not the DAP2-only types. Also
+ * returns URL (DAP4) and not "Url" (DAP2) for the URL type.
+ * @param t The type code
+ * @return The type name in a string
+ */
+string
+D4type_name(Type t)
+{
+    switch (t) {
+    case dods_null_c:
+        return string("Null");
+    case dods_byte_c:
+        return string("Byte");
     case dods_int8_c:
         return string("Int8");
     case dods_uint8_c:
         return string("UInt8");
+    case dods_int16_c:
+        return string("Int16");
+    case dods_uint16_c:
+        return string("UInt16");
+    case dods_int32_c:
+        return string("Int32");
+    case dods_uint32_c:
+        return string("UInt32");
     case dods_int64_c:
         return string("Int64");
     case dods_uint64_c:
         return string("UInt64");
-    case dods_url4_c:
-        return string("URL");
-    case dods_group_c:
-        return string("Group");
     case dods_enum_c:
         return string("Enum");
+
+    case dods_float32_c:
+        return string("Float32");
+    case dods_float64_c:
+        return string("Float64");
+
+    case dods_str_c:
+        return string("String");
+    case dods_url_c:
+        return string("URL");
+    case dods_opaque_c:
+    	return string("Opaque");
+
+    case dods_array_c:
+        return string("Array");
+
+    case dods_structure_c:
+        return string("Structure");
+    case dods_sequence_c:
+        return string("Sequence");
+    case dods_group_c:
+        return string("Group");
 
     default:
         throw InternalErr(__FILE__, __LINE__, "Unknown type.");
     }
 }
+
 
 /** @brief Returns true if the instance is a numeric, string or URL
     type variable.
@@ -614,8 +668,9 @@ is_simple_type(Type t)
     case dods_float64_c:
     case dods_str_c:
     case dods_url_c:
-
+#if 0
     case dods_url4_c:
+#endif
     case dods_enum_c:
         return true;
 
@@ -659,8 +714,9 @@ is_vector_type(Type t)
 
     case dods_str_c:
     case dods_url_c:
-
+#if 0
     case dods_url4_c:
+#endif
     case dods_enum_c:
         return false;
 
@@ -704,8 +760,9 @@ is_constructor_type(Type t)
     case dods_float64_c:
     case dods_str_c:
     case dods_url_c:
-
+#if 0
     case dods_url4_c:
+#endif
     case dods_enum_c:
 
     case dods_array_c:

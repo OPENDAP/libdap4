@@ -82,7 +82,8 @@ public:
     D4Enum(const string &name, const string &enum_type)
     : BaseType(name, dods_enum_c, true /*is_dap4*/),
       d_buf(0), d_element_type(dods_null_c), d_enum_type(enum_type) {
-        if (is_integer_type(type)) {
+    	d_element_type = get_type(enum_type.c_str());
+        if (is_integer_type(d_element_type)) {
             d_buf = new char[m_type_width()];
         }
     }

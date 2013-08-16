@@ -142,7 +142,6 @@ BaseType::print_xml_writer(XMLWriter &xml, bool constrained)
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-    if (is_integer_type(d_element_type)
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "enum", (const xmlChar*)type_name(d_element_type).c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 

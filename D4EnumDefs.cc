@@ -122,7 +122,7 @@ void D4EnumDefs::m_print_enum(XMLWriter &xml, D4EnumDef *e) const
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)e->name().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "basetype", (const xmlChar*)type_name(e->type()).c_str()) < 0)
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "basetype", (const xmlChar*)D4type_name(e->type()).c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
     // print each of e.values

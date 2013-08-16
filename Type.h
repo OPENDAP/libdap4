@@ -113,9 +113,10 @@ enum Type {
 
     dods_int64_c,
     dods_uint64_c,
-
+#if 0
+    // jhrg 8/15/13
     dods_url4_c,
-
+#endif
     dods_array4_c,
     dods_enum_c,
     dods_opaque_c,

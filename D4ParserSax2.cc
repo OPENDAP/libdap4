@@ -319,7 +319,7 @@ inline bool D4ParserSax2::process_enum_const(const char *name, const xmlChar **a
     }
     else if (!enum_def()->is_valid_enum_value(value)) {
         dmr_error(this, "In an Enumeration constant, the value '%s' cannot fit in a variable of type '%s'.",
-                xml_attrs["value"].value.c_str(), type_name(d_enum_def->type()).c_str());
+                xml_attrs["value"].value.c_str(), D4type_name(d_enum_def->type()).c_str());
     }
     else {
         // unfortunate choice of names... args are 'label' and 'value'

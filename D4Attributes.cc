@@ -68,8 +68,8 @@ string D4AttributeTypeToString(D4AttributeType at)
         case attr_str_c:
             return "String";
 
-        case attr_url4_c:
-            return "URL";
+        case attr_url_c:
+            return "Url";
 
         // Added for DAP4
         case attr_int8_c:
@@ -137,7 +137,7 @@ D4AttributeType StringToD4AttributeType(string s)
     else if (s == "string")
         return attr_str_c;
     else if (s == "url")
-        return attr_url4_c;
+        return attr_url_c;
     else if (s == "otherxml")
         return attr_otherxml_c;
     else

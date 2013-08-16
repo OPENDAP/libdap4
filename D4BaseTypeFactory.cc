@@ -44,13 +44,14 @@
 
 #include "Str.h"
 #include "Url.h"
-// #include "D4Enum.h"
+//#include "D4Enum.h"
 
-#include "Structure.h"
-#if 0
 #include "Array.h"
 
+#include "Structure.h"
 #include "Sequence.h"
+
+#if 0
 #include "Grid.h"
 #endif
 #include "D4Group.h"
@@ -89,11 +90,16 @@ BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
             return NewStr(name);
         case dods_url_c:
             return NewUrl(name);
+#if 0
+            // Noooo ...not adding a new type just to change the case of two letters.
+            // jhrg 8/15/13
         case dods_url4_c:
             return NewURL(name);
+#endif
         case dods_structure_c:
             return NewStructure(name);
 
+            // FIXME Array and Sequence are back in. jhrg 8/15/13
         case dods_array_c:
             throw InternalErr(__FILE__, __LINE__, "Array is not part of DAP4.");
         case dods_sequence_c:
@@ -196,17 +202,14 @@ D4BaseTypeFactory::NewUrl(const string &n) const
     return new Url(n);
 }
 
-/** Note that this method is called NewURL - URL in caps - and is the DAP4
- * type. The DAP2 type is named 'Url'. Unfortunately, both are using the
- * C++ class 'Url'.
+/** Note that this method is called NewURL - URL in caps.
  */
 Url *
 D4BaseTypeFactory::NewURL(const string &n) const
 {
-    Url *u = new Url(n);
-    u->set_type(dods_url4_c);
-    return u;
+    return NewUrl(n);
 }
+
 #if 0
 /** For an Enum, both it's name and type must be know before use. This
  * factory method uses "" and dods_null_c as the default values for name
@@ -222,6 +225,7 @@ D4BaseTypeFactory::NewEnum(const string &name, Type type) const
     return new D4Enum(name, type);
 }
 #endif
+
 Structure *
 D4BaseTypeFactory::NewStructure(const string &n) const
 {

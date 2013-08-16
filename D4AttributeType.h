@@ -50,7 +50,10 @@ enum D4AttributeType {
     attr_int64_c,
     attr_uint64_c,
 
+#if 0
+    // just use attr_url_c. jhrg 8/15/13
     attr_url4_c,
+#endif
 
     attr_enum_c,
     attr_opaque_c,

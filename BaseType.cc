@@ -281,7 +281,10 @@ BaseType::set_type(const Type &t)
 string
 BaseType::type_name() const
 {
-    return libdap::type_name(d_type);
+	if (is_dap4())
+		return libdap::D4type_name(d_type);
+	else
+		return libdap::D2type_name(d_type);
 }
 
 /** @brief Returns true if the instance is a numeric, string or URL
