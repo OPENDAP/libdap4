@@ -152,8 +152,8 @@ public:
         @see dim_end() */
     typedef std::vector<dimension>::iterator Dim_iter ;
 
-    Array(const string &n, BaseType *v);
-    Array(const string &n, const string &d, BaseType *v);
+    Array(const string &n, BaseType *v, bool is_dap4 = false);
+    Array(const string &n, const string &d, BaseType *v, bool is_dap4 = false);
     Array(const Array &rhs);
     virtual ~Array();
 
@@ -170,7 +170,7 @@ public:
     virtual void add_constraint(Dim_iter i, int start, int stride, int stop);
     virtual void reset_constraint();
 
-    virtual void clear_constraint();
+    virtual void clear_constraint(); // deprecated
 
     virtual void update_length(int size);
     virtual unsigned int width(bool constrained = true);
@@ -185,6 +185,10 @@ public:
     virtual string dimension_name(Dim_iter i);
 
     virtual unsigned int dimensions(bool constrained = false);
+
+    virtual void print_dap4(XMLWriter &xml, bool constrained = false);
+
+    // These are all DAP2 output methods
 
     virtual void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,

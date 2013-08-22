@@ -26,6 +26,8 @@
 #ifndef _D4Enum_h
 #define _D4Enum_h 1
 
+#include <cassert>
+
 #include "BaseType.h"
 
 #include "dods-datatypes.h"
@@ -40,23 +42,35 @@ class UnMarshaller;
 
 /**
  * @brief Holds a DAP4 enumeration.
+ * For a single enumeration, it makes little sense to optimize it's
+ * in-memory storage. This class uses an unsigned 64-bit int to hold
+ * the value and casts it to a signed value if needed. The various
+ * set_value() methods ensure that the value stored never exceeds the
+ * range of values associated with the declared type.
+ *
+ * @note When constructed a type for the Enum must be specified. If
+ * it is not an integer type, the Enum will use unsigned int 64.
  */
 class D4Enum: public BaseType
 {
+	friend class D4EnumTest;
+
+private:
+	/**
+	 * @brief The empty constructor is not supported.
+	 */
+	D4Enum();
+
 protected:
-    char *d_buf;
+    unsigned long long d_buf;
     Type d_element_type;
-    string d_enum_type;
 
     void m_duplicate(const D4Enum &src) {
-        if (is_integer_type(d_element_type)) {
-            d_buf = new char[m_type_width()];
-            memcpy(d_buf, src.d_buf, m_type_width());
-        }
-
+        d_buf = src.d_buf;
         d_element_type = src.d_element_type;
     }
 
+    // TODO Use this only for an Array version of this type? jhrg 8/19/13
     unsigned int m_type_width() const {
         switch(d_element_type) {
             case dods_byte_c:
@@ -80,18 +94,32 @@ protected:
 
 public:
     D4Enum(const string &name, const string &enum_type)
-    : BaseType(name, dods_enum_c, true /*is_dap4*/),
-      d_buf(0), d_element_type(dods_null_c), d_enum_type(enum_type) {
+    : BaseType(name, dods_enum_c, true /*is_dap4*/), d_buf(0), d_element_type(dods_null_c)//, d_enum_type(enum_type)
+	{
     	d_element_type = get_type(enum_type.c_str());
-        if (is_integer_type(d_element_type)) {
-            d_buf = new char[m_type_width()];
-        }
+
+    	assert(is_integer_type(d_element_type));
+
+        if (!is_integer_type(d_element_type))
+        	d_element_type = dods_uint64_c;
     }
-    D4Enum(const string &name, const string &dataset, Type type) :
-        BaseType(name, dataset, dods_enum_c, true /*is_dap4*/), d_buf(0), d_element_type(type) {
-        if (is_integer_type(type)) {
-            d_buf = new char[m_type_width()];
-        }
+
+    D4Enum(const string &name, Type type)
+		: BaseType(name, dods_enum_c, true /*is_dap4*/), d_buf(0), d_element_type(type)
+	{
+    	assert(is_integer_type(d_element_type));
+
+        if (!is_integer_type(d_element_type))
+        	d_element_type = dods_uint64_c;
+    }
+
+    D4Enum(const string &name, const string &dataset, Type type)
+		: BaseType(name, dataset, dods_enum_c, true /*is_dap4*/), d_buf(0), d_element_type(type)
+	{
+    	assert(is_integer_type(d_element_type));
+
+        if (!is_integer_type(d_element_type))
+        	d_element_type = dods_uint64_c;
     }
 
     D4Enum(const D4Enum &src) : BaseType(src) { m_duplicate(src); }
@@ -104,40 +132,56 @@ public:
         return *this;
     }
 
-    virtual ~D4Enum() {
-        delete d_buf;
-    }
+    virtual ~D4Enum() { }
 
     virtual BaseType *ptr_duplicate() { return new D4Enum(*this); }
 
     Type element_type() { return d_element_type; }
     void set_element_type(Type type) { d_element_type = type; }
 
-    virtual void value(dods_byte *v) const;
-    virtual void value(dods_int16 *v) const;
-    virtual void value(dods_uint16 *v) const;
-    virtual void value(dods_int32 *v) const;
-    virtual void value(dods_uint32 *v) const;
-    virtual void value(dods_int64 *v) const;
-    virtual void value(dods_uint64 *v) const;
+    /**
+     * @brief Copy the value of this Enum into \c v.
+     * Template member function that can be used to read the value of the
+     * Enum. This template is explicitly instantiated so libdap includes
+     * D4Enum::value(dods_byte* v), ..., value(dods_uint64) (i.e., all
+     * of the integer types).
+     *
+     * @param v Value-result parameter; return the value of the Enum
+     * in this variable.
+     */
+    template <typename T> void value(T *v) const { *v = static_cast<T>(d_buf); }
 
-    virtual void set_value(dods_byte v) ;
-    virtual void set_value(dods_int16 v) ;
-    virtual void set_value(dods_uint16 v) ;
-    virtual void set_value(dods_int32 v) ;
-    virtual void set_value(dods_uint32 v) ;
-    virtual void set_value(dods_int64 v) ;
-    virtual void set_value(dods_uint64 v) ;
+    /**
+     * @brief Set the value of the Enum
+     * Template member function to set the value of the Enum. The libdap library
+     * contains versions of this member function for dods_byte, ..., dods_uint64
+     * types for the parameter \c v.
+     *
+     * @param v Set the Enum to this value.
+     */
+    template <typename T> void set_value(T v) { d_buf = static_cast<unsigned long long>(v); }
 
-    virtual unsigned int width() const { return m_type_width(); }
+    /**
+     * @brief Return the number of bytes in an instance of an Enum.
+     * This returns the number of bytes an instance of Enum will use
+     * either in memory or on the wire (i.e., in a serialization of
+     * the type).
+     *
+     * @note This version of the method works for scalar Enums only.
+     * @return The number of bytes used by a value.
+     */
+    virtual unsigned int width() {
+    	return sizeof(d_buf); //return m_type_width();
+    }
 
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
 
-    virtual void print_dap4(XMLWriter &xml, bool constrained = false);
+    virtual void print_xml_writer(XMLWriter &xml, bool constrained);
+
+    //virtual void print_dap4(XMLWriter &xml, bool constrained = false);
 
     virtual bool ops(BaseType *b, int op);
 

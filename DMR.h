@@ -166,7 +166,7 @@ public:
     void set_timeout(int t) { d_timeout = t; }
 #endif
     D4Group *root() {
-        if (!d_root) d_root = new D4Group("");
+        if (!d_root) d_root = new D4Group("/");
         return d_root;
     }
 

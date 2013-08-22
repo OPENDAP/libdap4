@@ -246,7 +246,7 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 DAP4_ONLY_SRC = D4StreamMarshaller.cc D4StreamUnMarshaller.cc Int64.cc \
         UInt64.cc Int8.cc D4ParserSax2.cc D4BaseTypeFactory.cc \
         D4Maps.cc D4Dimensions.cc  D4EnumDefs.cc D4Group.cc DMR.cc \
-        D4Attributes.cc 
+        D4Attributes.cc D4Enum.cc
         
 #        # D4ResponseBuilder.cc
 
@@ -278,7 +278,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 DAP4_ONLY_HDR = D4StreamMarshaller.h D4StreamUnMarshaller.h Int64.h \
         UInt64.h Int8.h D4ParserSax2.h D4BaseTypeFactory.h \
         D4Maps.h D4Dimensions.h D4EnumDefs.h D4Group.h DMR.h D4Attributes.h \
-        D4AttributeType.h
+        D4AttributeType.h  D4Enum.h
 
 # D4ResponseBuilder.h 
 
@@ -314,7 +314,7 @@ SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
 lex.das.cc: das.lex das.tab.cc das.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-das.tab.cc: das.yy DAS.h
+das.tab.cc das.tab.hh: das.yy DAS.h
 	$(YACC) $(YFLAGS) $<
 
 # DDS
@@ -322,7 +322,7 @@ das.tab.cc: das.yy DAS.h
 lex.dds.cc: dds.lex dds.tab.cc dds.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-dds.tab.cc: dds.yy
+dds.tab.cc dds.tab.hh: dds.yy
 	$(YACC) $(YFLAGS) $<
 
 # CE
@@ -330,7 +330,7 @@ dds.tab.cc: dds.yy
 lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-ce_expr.tab.cc: ce_expr.yy
+ce_expr.tab.cc ce_expr.tab.hh: ce_expr.yy
 	$(YACC) $(YFLAGS) $<
 	
 # Errors
@@ -338,5 +338,5 @@ ce_expr.tab.cc: ce_expr.yy
 lex.Error.cc: Error.lex Error.tab.cc Error.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-Error.tab.cc: Error.yy
+Error.tab.cc Error.tab.hh: Error.yy
 	$(YACC) $(YFLAGS) $<

@@ -36,6 +36,7 @@
 #include "config.h"
 
 #include <cstring>
+#include <cassert>
 
 //#define DODS_DEBUG
 
@@ -72,9 +73,9 @@ void Vector::m_duplicate(const Vector & v)
         d_proto = 0;
     }
 
-    // d_compound_buf and _buf (further down) hold the values of the Vector. The field
+    // d_compound_buf and d_buf (further down) hold the values of the Vector. The field
     // d_compound_buf is used when the Vector holds non-numeric data (including strings
-    // although it used to be that was not the case jhrg 2/10/05) while _buf
+    // although it used to be that was not the case jhrg 2/10/05) while d_buf
     // holds numeric values.
     if (v.d_compound_buf.empty()) {
         d_compound_buf = v.d_compound_buf;
@@ -85,9 +86,9 @@ void Vector::m_duplicate(const Vector & v)
         d_compound_buf.resize(d_length);
         for (int i = 0; i < d_length; ++i) {
             // There's no need to call set_parent() for each element; we
-            // maintain the back pointer using the _var member. These
-            // instances are used to hold _values_ only while the _var
-            // field holds the type of the elements.
+            // maintain the back pointer using the d_proto member. These
+            // instances are used to hold _values_ only while the d_proto
+            // field holds the type information for the elements.
             d_compound_buf[i] = v.d_compound_buf[i]->ptr_duplicate();
         }
     }
@@ -109,7 +110,7 @@ void Vector::m_duplicate(const Vector & v)
  */
 bool Vector::m_is_cardinal_type() const
 {
-    // Not cardinal if no _var at all!
+    // Not cardinal if no d_proto at all!
     if (!d_proto) {
         return false;
     }
@@ -152,7 +153,7 @@ bool Vector::m_is_cardinal_type() const
             break;
 
         default:
-            cerr << "Vector::var: Unrecognized type" << endl;
+            assert("Vector::var: Unrecognized type");
             return false;
     } // switch
 }
@@ -198,7 +199,7 @@ unsigned int Vector::m_create_cardinal_data_buffer_for_type(unsigned int numElts
     return bytesNeeded;
 }
 
-/** Delete _buf and zero it and _capacity out */
+/** Delete d_buf and zero it and d_capacity out */
 void Vector::m_delete_cardinal_data_buffer()
 {
     // if (_buf) {
@@ -241,8 +242,8 @@ void Vector::m_set_cardinal_values_internal(const CardType* fromArray, int numEl
 
  @see Type
  @brief The Vector constructor.  */
-Vector::Vector(const string & n, BaseType * v, const Type & t) :
-    BaseType(n, t), d_length(-1), d_proto(0), d_buf(0), d_compound_buf(0), d_capacity(0)
+Vector::Vector(const string & n, BaseType * v, const Type & t, bool is_dap4 /* default:false */) :
+    BaseType(n, t, is_dap4), d_length(-1), d_proto(0), d_buf(0), d_compound_buf(0), d_capacity(0)
 {
     if (v)
         add_var(v);
@@ -270,8 +271,8 @@ Vector::Vector(const string & n, BaseType * v, const Type & t) :
 
  @see Type
  @brief The Vector constructor.  */
-Vector::Vector(const string & n, const string &d, BaseType * v, const Type & t) :
-    BaseType(n, d, t), d_length(-1), d_proto(0), d_buf(0), d_compound_buf(0), d_capacity(0)
+Vector::Vector(const string & n, const string &d, BaseType * v, const Type & t, bool is_dap4 /* default:false */) :
+    BaseType(n, d, t, is_dap4), d_length(-1), d_proto(0), d_buf(0), d_compound_buf(0), d_capacity(0)
 {
     if (v)
         add_var(v);
@@ -342,8 +343,9 @@ int Vector::element_count(bool leaves)
     if (!leaves)
         return 1;
     else
+    	return d_proto->element_count(leaves);
         // var() only works for simple types!
-        return var(0)->element_count(leaves);
+        // jhrg 8/19/13 return var(0)->element_count(leaves);
 }
 
 // These mfuncs set the _send_p and _read_p fields of BaseType. They differ

@@ -41,6 +41,11 @@
 #include <sstream>
 
 #include "Array.h"
+
+#if D4_ATTR
+#include "D4Attributes.h"
+#endif
+
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
@@ -97,7 +102,8 @@ Array::update_length(int)
     in the Array. May be null and set later using add_var() or add_var_nocopy()
     @brief Array constructor
 */
-Array::Array(const string &n, BaseType *v) : Vector(n, 0, dods_array_c)
+Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */)
+	: Vector(n, 0, dods_array_c, is_dap4)
 {
     add_var(v); // Vector::add_var() stores null if v is null
 }
@@ -115,8 +121,8 @@ Array::Array(const string &n, BaseType *v) : Vector(n, 0, dods_array_c)
     in the Array.
     @brief Array constructor
 */
-Array::Array(const string &n, const string &d, BaseType *v)
-    : Vector(n, d, 0, dods_array_c)
+Array::Array(const string &n, const string &d, BaseType *v, bool is_dap4 /* default:false */)
+    : Vector(n, d, 0, dods_array_c, is_dap4)
 {
     add_var(v); // Vector::add_var() stores null is v is null
 }
@@ -573,6 +579,63 @@ unsigned int Array::width(bool constrained)
 		}
 		return length * var()->width(false);
 	}
+}
+
+class PrintD4ArrayDimXMLWriter : public unary_function<Array::dimension&, void>
+{
+    XMLWriter &xml;
+    bool d_constrained;
+public:
+    PrintD4ArrayDimXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) {}
+
+    void operator()(Array::dimension &d)
+    {
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)"Dim") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
+
+        if (!d.name.empty())
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d.name.c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+        ostringstream size;
+        size << (d_constrained ? d.c_size : d.size);
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "size", (const xmlChar*)size.str().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not end Dim element");
+    }
+};
+
+/**
+ * @brief Print the DAP4 representation of an array.
+ * @param xml
+ * @param constrained
+ */
+void
+Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/)
+{
+	if (constrained && !send_p()) return;
+
+	if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) var()->type_name().c_str()) < 0)
+		throw InternalErr(__FILE__, __LINE__, "Could not write " + type_name() + " element");
+
+	if (!name().empty())
+		if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+    for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml, constrained));
+
+#if D4_ATTR
+	if (is_dap4()) attributes()->print_dap4(xml);
+
+	if (!is_dap4() && get_attr_table().get_size() > 0) get_attr_table().print_xml_writer(xml);
+#else
+	if (get_attr_table().get_size() > 0) get_attr_table().print_xml_writer(xml);
+#endif
+
+	if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+		throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
 }
 
 /** Prints a declaration for the Array.  This is what appears in a

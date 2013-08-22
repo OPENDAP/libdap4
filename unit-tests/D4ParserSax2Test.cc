@@ -54,6 +54,7 @@ using namespace std;
 using namespace libdap;
 
 static bool debug = false;
+static bool parser_debug = false;
 
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
@@ -91,7 +92,7 @@ public:
             if (!ifile)
                 throw InternalErr(__FILE__, __LINE__, "Could not open file: " + src);
 
-            parser->intern(ifile, dmr);
+            parser->intern(ifile, dmr, parser_debug);
 
             ifile.close();
 
@@ -140,6 +141,22 @@ public:
     {
         compare_dmr_round_trip("/D4-xml/DMR_3.1.xml", "/D4-xml/DMR_3.1_baseline.xml");
     }
+
+    void test_array_var_def()
+    {
+        compare_dmr_round_trip("/D4-xml/DMR_3.2.xml", "/D4-xml/DMR_3.2_baseline.xml");
+    }
+
+    void test_array_var_def2()
+    {
+        compare_dmr_round_trip("/D4-xml/DMR_3.3.xml", "/D4-xml/DMR_3.3_baseline.xml");
+    }
+
+    void test_array_var_def3()
+    {
+        compare_dmr_round_trip("/D4-xml/DMR_3.4.xml", "/D4-xml/DMR_3.4_baseline.xml");
+    }
+
     void test_all_simple_var_def()
     {
         compare_dmr_round_trip("/D4-xml/DMR_4_baseline.xml", "/D4-xml/DMR_4_baseline.xml");
@@ -174,6 +191,9 @@ public:
     CPPUNIT_TEST(test_enum_def);
     CPPUNIT_TEST(test_simple_var_def);
     CPPUNIT_TEST(test_simple_var_with_attributes_def);
+    CPPUNIT_TEST(test_array_var_def);
+    CPPUNIT_TEST(test_array_var_def2);
+    CPPUNIT_TEST(test_array_var_def3);
     CPPUNIT_TEST(test_all_simple_var_def);
     CPPUNIT_TEST(test_structure_def);
     CPPUNIT_TEST(test_structure_with_attributes_def);
@@ -189,7 +209,7 @@ int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    GetOpt getopt(argc, argv, "d");
+    GetOpt getopt(argc, argv, "dp");
     char option_char;
 
     while ((option_char = getopt()) != EOF)
@@ -197,6 +217,9 @@ int main(int argc, char*argv[]) {
         case 'd':
             debug = 1;  // debug is a static global
             break;
+        case 'p':
+        	parser_debug = true;
+        	break;
         default:
             break;
         }

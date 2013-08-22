@@ -102,8 +102,8 @@ protected:
     template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int numElts);
 
 public:
-    Vector(const string &n, BaseType *v, const Type &t);
-    Vector(const string &n, const string &d, BaseType *v, const Type &t);
+    Vector(const string &n, BaseType *v, const Type &t, bool is_dap4 = false);
+    Vector(const string &n, const string &d, BaseType *v, const Type &t, bool is_dap4 = false);
     Vector(const Vector &rhs);
 
     virtual ~Vector();

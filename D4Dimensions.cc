@@ -74,6 +74,21 @@ D4Dimension::print_dap4(XMLWriter &xml) const
         throw InternalErr(__FILE__, __LINE__, "Could not end Dimension element");
 }
 
+// Note that in order for this to work the second argument must not be a reference.
+// jhrg 8/20/13
+static bool
+dim_name_eq(D4Dimension *d, const string name)
+{
+	return d->name() == name;
+}
+
+D4Dimension *
+D4Dimensions::find_dim(const string &name)
+{
+	D4DimensionsIter d = find_if(dim_begin(), dim_end(), bind2nd(ptr_fun(dim_name_eq), name));
+	return (d != dim_end()) ? *d: 0;
+}
+
 void
 D4Dimensions::print_dap4(XMLWriter &xml) const
 {

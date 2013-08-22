@@ -107,6 +107,56 @@ D4Group::operator=(const D4Group &rhs)
     return *this;
 }
 
+// Note that in order for this to work the second argument must not be a reference.
+// jhrg 8/20/13
+static bool
+name_eq(D4Group *g, const string name)
+{
+	return g->name() == name;
+}
+
+D4Group *
+D4Group::find_child_grp(const string &grp_name)
+{
+	groupsIter g = find_if(grp_begin(), grp_end(), bind2nd(ptr_fun(name_eq), grp_name));
+	return (g != grp_end()) ? *g: 0;
+}
+
+/**
+ * @brief Find the dimension using a path.
+ * Using the DAP4 name syntax, lookup a dimension. The dimension must
+ * be defined before it is used. The \c path argument may be either an
+ * absolute path or a relative path. Note that the name syntax does not
+ * provide for paths to contain an 'up one level' symbol.
+ * @param path The path to the dimension
+ * @return A pointer to the D4Dimension object.
+ */
+D4Dimension *
+D4Group::find_dim(const string &path)
+{
+	string lpath = path;		// get a mutable copy
+
+	// special-case for the root group
+	if (lpath[0] == '/') {
+		if (name() != "/")
+			throw InternalErr(__FILE__, __LINE__, "Lookup of a FQN starting in non-root group.");
+		else
+			lpath = lpath.substr(1);
+	}
+
+	string::size_type pos = lpath.find('/');
+	if (pos == string::npos) {
+		return dims()->find_dim(lpath);
+	}
+
+	// name looks like foo/bar/baz where foo an bar must be groups
+	string grp_name = lpath.substr(0, pos);
+	lpath = lpath.substr(pos + 1);
+
+	D4Group *grp = find_child_grp(grp_name);
+	return (grp != 0) ? grp->find_dim(lpath): 0;
+}
+
 /** Compute the size of all of the variables in this group and it's children,
  * in kilobytes
  *
@@ -142,7 +192,7 @@ D4Group::request_size(bool constrained)
 void
 D4Group::print_dap4(XMLWriter &xml, bool constrained)
 {
-    if (!name().empty()) {
+    if (!name().empty() && name() != "/") {
         // For named groups, if constrained is true only print if this group
         // has variables that are marked for transmission. For the root group
         // this test is not made.
@@ -182,7 +232,7 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
     while (g != d_groups.end())
         (*g++)->print_dap4(xml, constrained);
 
-    if (!name().empty()) {
+    if (!name().empty() && name() != "/") {
         if (xmlTextWriterEndElement(xml.get_writer()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
     }

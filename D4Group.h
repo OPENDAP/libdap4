@@ -77,6 +77,8 @@ public:
         return d_dims;
     }
 
+    D4Dimension *find_dim(const string &path);
+
     /// Get  the enumerations defined for this Group
     D4EnumDefs *enum_defs() {
         if (!d_enum_defs) d_enum_defs = new D4EnumDefs;
@@ -98,6 +100,8 @@ public:
     void insert_group_nocopy(D4Group *g, groupsIter i) {
         d_groups.insert(i, g);
     }
+
+    D4Group *find_child_grp(const string &grp_name);
 
     long request_size(bool constrained);
 

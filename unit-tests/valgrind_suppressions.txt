@@ -1,4 +1,12 @@
 {
+   libcurl_1
+   Memcheck:Leak
+   fun:malloc
+   fun:xmlCreatePushParserCtxt
+   ...
+}
+
+{
    libxml2_1
    Memcheck:Leak
    fun:malloc

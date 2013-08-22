@@ -40,15 +40,17 @@ namespace libdap {
 class D4Dimension {
     string d_name;
     unsigned long d_size;
-    bool d_varying;
+    bool d_varying; //FIXME Remove. jhrg 8/20/13
 
 public:
     D4Dimension(const string &name, unsigned long size): d_name(name), d_size(size), d_varying(false) {}
     D4Dimension(const string &name): d_name(name), d_size(0), d_varying(true) {}
     D4Dimension() : d_name(""), d_size(0), d_varying(0) {}
 
-    string name() {return d_name;}
+    string name() const {return d_name;}
     void set_name(const string &name) { d_name = name; }
+    /// Return true if this D4Dimension's name is \c name. Useful w/STL algorithms.
+    // bool name_equals(const string &name) { return name == d_name; }
 
     unsigned long size() { return d_size; }
     void set_size(unsigned long size) { d_size = size; if (d_size == 0) d_varying = true; }
@@ -113,7 +115,7 @@ public:
      * dimensions the value of 'size' will be ignored - any value can be used
      * when called this method.
      *
-     * @param dim Pointer to the D4Dimension object to add; deep dopy
+     * @param dim Pointer to the D4Dimension object to add; deep copy
      */
     void add_dim(D4Dimension *dim) { d_dims.push_back(new D4Dimension(*dim)); }
 
@@ -127,6 +129,8 @@ public:
 
     /// Get an iterator to the end of the dimensions
     D4DimensionsIter dim_end() { return d_dims.end(); }
+
+    D4Dimension *find_dim(const string &name);
 
     /** Insert a dimension.
      * Insert a dimension before the position specified by the iterator.

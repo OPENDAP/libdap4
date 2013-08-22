@@ -31,12 +31,14 @@
 
 #include <cstring>
 #include <cstdarg>
+#include <cassert>
 
 #include <libxml/parserInternals.h>
 
 #include "DMR.h"
 
 #include "BaseType.h"
+#include "Array.h"
 #include "D4Group.h"
 #include "D4Attributes.h"
 
@@ -71,7 +73,8 @@ static const char *states[] = {
         // This covers Byte, ..., Url, Opaque
         "inside_simple_type",
 
-        "inside_array",
+        // "inside_array",
+        "inside_dim",
         "inside_dimension",
 
         "inside_structure",
@@ -175,6 +178,23 @@ bool D4ParserSax2::process_dimension_def(const char *name, const xmlChar **attrs
     return true;
 }
 
+/**
+ * @brief Process a Dim element.
+ * If a Dim element is found, the current variable is an Array. If the BaseType
+ * on the TOS is not already an Array, make it one. Append the dimension
+ * information to the Array variable on the TOS.
+ *
+ * @note Dim elements can have two attributes: name or size. The latter defines
+ * an 'anonymous' dimension (one without a name that does not reference a
+ * shared dimension object. If the \c name attribute is used, then the shared
+ * dimension used is the one defined by the enclosing group or found using the
+ * fully qualified name. The \name and \c size attributes are mutually exclusive.
+ *
+ * @param name XML element name; must be Dim
+ * @param attrs XML Attributes
+ * @param nb_attributes The number of XML Attributes
+ * @return True if the element is a Dim, false otherwise.
+ */
 bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, int nb_attributes)
 {
     if (is_not(name, "Dim"))
@@ -182,9 +202,53 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
 
     transfer_xml_attrs(attrs, nb_attributes);
 
-    // Do stuff and return true if it's a valid Dim
+	if (check_attribute("size") && check_attribute("name")) {
+		dmr_error(this, "Only one of 'size' and 'name' are allowed in a Dim element, but both were used.");
+		return false;
+	}
+	if (!(check_attribute("size") || check_attribute("name"))) {
+		dmr_error(this, "Either 'size' and 'name' must be used in a Dim element.");
+		return false;
+	}
 
-    return true;
+	if (!top_basetype()->is_vector_type()) {
+		// Make the top BaseType* an array
+		BaseType *b = top_basetype();
+		pop_basetype();
+
+		Array *a = new Array(b->name(), 0, true /* is_dap4 */);
+		a->add_var_nocopy(b);
+		a->set_attributes_nocopy(b->attributes());
+		// trick: instead of popping b's attributes, copying them and then pushing
+		// a's copy, just move the pointer (but make sure there's only one object that
+		// references that pointer.
+		b->set_attributes_nocopy(0);
+
+		push_basetype(a);
+	}
+
+	assert(top_basetype()->is_vector_type());
+
+	// FIXME Array --> D4Array so that the dimension sizes can be uint64s?
+	// unsigned long long size = strtoul(xml_attrs["size"].value.c_str(), 0, 0);
+	Array *a = static_cast<Array*>(top_basetype());
+    if (check_attribute("size")) {
+    	a->append_dim(atoi(xml_attrs["size"].value.c_str())); // low budget code for now. jhrg 8/20/13
+        return true;
+    }
+    else if (check_attribute("name")) {
+    	string name = xml_attrs["name"].value;
+    	D4Dimension *dim = 0;
+    	if (name[0] == '/')		// lookup the Dimension in the root group
+    		dim = dmr()->root()->find_dim(name);
+    	else					// get enclosing Group and lookup Dimension there
+    		dim = top_group()->find_dim(name);
+
+    	a->append_dim(dim->size(), dim->name());
+    	return true;
+    }
+
+    return false;
 }
 
 bool D4ParserSax2::process_group(const char *name, const xmlChar **attrs, int nb_attributes)
@@ -205,12 +269,24 @@ bool D4ParserSax2::process_group(const char *name, const xmlChar **attrs, int nb
         return false;
     }
 
-    // Need to set this to get teh D4Attribute behavior in the type classes
-    // shared between DAP2 and DAP4. jhrg 4/18/13
-    btp->set_is_dap4(true);
-    push_basetype(btp);
+    D4Group *grp = static_cast<D4Group*>(btp);
 
-    push_attributes(btp->attributes());
+    // Need to set this to get the D4Attribute behavior in the type classes
+    // shared between DAP2 and DAP4. jhrg 4/18/13
+    grp->set_is_dap4(true);
+
+    // link it up and change the current group
+    D4Group *parent = top_group();
+	if (!parent) {
+		dmr_fatal_error(this, "No Group on the Group stack.");
+		return false;
+	}
+
+	grp->set_parent(parent);
+	parent->add_group_nocopy(grp);
+
+    push_group(grp);
+    push_attributes(grp->attributes());
     return true;
 }
 
@@ -377,6 +453,7 @@ void D4ParserSax2::process_variable_helper(Type t, ParseState s, const xmlChar *
     }
 }
 
+#if 0
 // TODO this is called for array and structure only, but 'array' is about to
 // get subsumed by the code that processes simple types, so maybe this can
 // be retired?
@@ -409,6 +486,7 @@ void D4ParserSax2::finish_variable(const char *tag, Type t, const char *expected
 
     pop_state();
 }
+#endif
 
 /** @name SAX Parser Callbacks
 
@@ -450,12 +528,14 @@ void D4ParserSax2::dmr_end_document(void * p)
     if (parser->get_state() == parser_error || parser->get_state() == parser_fatal_error)
         return;
 
+    // FIXME Add tests to make sure the basetype and attribute stacks are empty
+#if 0
     // The root group should be on the stack
     if (parser->top_basetype()->type() != dods_group_c) {
         D4ParserSax2::dmr_error(parser, "The document did not contain a valid root Group.");
     }
-
-    parser->pop_basetype();     // leave the stack 'clean'
+#endif
+    parser->pop_group();     // leave the stack 'clean'
 }
 
 void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *prefix, const xmlChar *URI,
@@ -491,7 +571,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
                 parser->dmr()->set_namespace(parser->root_ns);
 
             // Push the root Group on the stack
-            parser->push_basetype(parser->dmr()->root());
+            parser->push_group(parser->dmr()->root());
 
             parser->push_state(inside_dataset);
 
@@ -598,25 +678,14 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             break;
 
         case inside_simple_type:
-            // TODO Add support for arrays here because this is where
-            // dimensions will appear.
             if (parser->process_attribute(localname, attributes, nb_attributes))
                 break;
-            else
-                dmr_error(parser, "Expected an 'Attribute' element; found '%s' instead.", localname);
-            break;
-
-        case inside_array:
-            if (is_not(localname, "Array") && parser->process_variable(localname, attributes, nb_attributes))
-                break;
-            else if (strcmp(localname, "dimension") == 0) {
-                parser->process_dimension(localname, attributes, nb_attributes);
-                // next state: inside_dimension
+            else if (parser->process_dimension(localname, attributes, nb_attributes)) {
+            	parser->push_state(inside_dim);
+            	break;
             }
-            else if (parser->process_attribute(localname, attributes, nb_attributes))
-                break;
             else
-                dmr_error(parser, "Expected an 'Attribute' element; found '%s' instead.", localname);
+                dmr_error(parser, "Expected an 'Attribute' or 'Dim' element; found '%s' instead.", localname);
             break;
 
         case inside_dim_def:
@@ -624,6 +693,10 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             break;
 
         case inside_dimension:
+            // No content.
+            break;
+
+        case inside_dim:
             // No content.
             break;
 
@@ -676,17 +749,21 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
                 D4ParserSax2::dmr_error(parser, "Expected an end tag for a Group; found '%s' instead.", localname);
                 break;
             }
-
+#if 0
             // Pop the stack, the Group should be there. If an error is found,
             // make sure to delete the BaseType*.
-            BaseType *btp = parser->top_basetype();
-            parser->pop_basetype();
-            if (btp->type() != dods_group_c) {
+            D4Group *grp = parser->top_group();
+#endif
+#if 0
+            if (grp && grp->type() != dods_group_c) {
                 D4ParserSax2::dmr_error(parser, "Expected to find a Group element on the stack.");
-                delete btp;
+                delete grp;
             }
+#endif
+#if 0
+            // This is now done in the process_group code. jhrg 8/21/13
 
-            // Link the group we just poped to the thing on the stack, which
+            // Link the group we just popped to the thing on the stack, which
             // should also be a group.
             BaseType *parent = parser->top_basetype();
             if (parent && !parent->type() == dods_group_c) {
@@ -696,7 +773,9 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             }
             else
                 static_cast<D4Group*>(parent)->add_group_nocopy(static_cast<D4Group*>(btp));
-
+#endif
+            // TODO Test for an empty stack
+            parser->pop_group();
             parser->pop_state();
             break;
         }
@@ -775,12 +854,14 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
         case inside_enum_def:
             if (is_not(localname, "Enumeration"))
                 D4ParserSax2::dmr_error(parser, "Expected an end Enumeration tag; found '%s' instead.", localname);
-
-            if (!parser->top_basetype() || parser->top_basetype()->type() != dods_group_c)
-                D4ParserSax2::dmr_error(parser, "Expected a Group to be the current item, while finishing up an Enumeration.");
+            // FIXME broken error message
+            if (!parser->top_group()) //  || parser->top_basetype()->type() != dods_group_c)
+                D4ParserSax2::dmr_fatal_error(parser, "Expected a Group to be the current item, while finishing up an Enumeration.");
             else {
                 // copy the pointer; not a deep copy
-                parser->dmr()->root()->enum_defs()->add_enum_nocopy(parser->enum_def());
+            	//FIXME use top group
+                //parser->dmr()->root()->enum_defs()->add_enum_nocopy(parser->enum_def());
+                parser->top_group()->enum_defs()->add_enum_nocopy(parser->enum_def());
                 // Set the enum_def to null; next call to enum_def() will
                 // allocate a new object
                 parser->clear_enum_def();
@@ -799,11 +880,13 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             if (is_not(localname, "Dimension"))
                 D4ParserSax2::dmr_error(parser, "Expected an end Dimension tag; found '%s' instead.",  localname);
 
-            if (!parser->top_basetype() || parser->top_basetype()->type() != dods_group_c)
+            if (!parser->top_group())
                 D4ParserSax2::dmr_error(parser, "Expected a Group to be the current item, while finishing up an Dimension.");
 
+            // FIXME Use the Group on the top of the group stack
             // copy the pointer; not a deep copy
-            parser->dmr()->root()->dims()->add_dim_nocopy(parser->dim_def());
+            parser->top_group()->dims()->add_dim_nocopy(parser->dim_def());
+            //parser->dmr()->root()->dims()->add_dim_nocopy(parser->dim_def());
             // Set the dim_def to null; next call to dim_def() will
             // allocate a new object. Calling 'clear' is important because
             // the cleanup method will free dim_def if it's not null and
@@ -816,15 +899,31 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
 
         case inside_simple_type:
             if (is_simple_type(get_type(localname))) {
-                parser->pop_state();
+                // parser->pop_state();
                 BaseType *btp = parser->top_basetype();
                 parser->pop_basetype();
                 parser->pop_attributes();
 
-                BaseType *parent = parser->top_basetype();
+                BaseType *parent = 0;
+                if (!parser->empty_basetype())
+                	parent= parser->top_basetype();
+                else if (!parser->empty_group())
+                	parent = parser->top_group();
+                else {
+                	dmr_fatal_error(parser, "Both the Variable and Groups stacks are empty while closing a %s element.", localname);
+                	delete btp;
+                }
 
+                parent->add_var_nocopy(btp);
+            }
+            else
+                D4ParserSax2::dmr_error(parser, "Expected an end tag for a simple type; found '%s' instead.", localname);
+
+            parser->pop_state();
+#if 0
+                // Check that we have a constructor BaseType (Structure, Sequence, or Group)
                if (parent && parent->is_constructor_type())
-                    parent->add_var_nocopy(btp);
+
                 else {
                     D4ParserSax2::dmr_error(parser,
                             "Tried to add the simple-type variable '%s' to a non-constructor type (%s %s).", localname,
@@ -836,10 +935,14 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             }
             else
                 D4ParserSax2::dmr_error(parser, "Expected an end tag for a simple type; found '%s' instead.", localname);
+#endif
             break;
 
-        case inside_array:
-            parser->finish_variable(localname, dods_array_c, "Array");
+        case inside_dim:
+            if (is_not(localname, "Dim"))
+                D4ParserSax2::dmr_fatal_error(parser, "Expected an end Dim tag; found '%s' instead.", localname);
+
+            parser->pop_state();
             break;
 
         case inside_dimension:
@@ -849,9 +952,49 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             parser->pop_state();
             break;
 
-        case inside_structure:
-            parser->finish_variable(localname, dods_structure_c, "Structure");
+        case inside_structure: {
+            if (strcmp(localname, "Structure") != 0) {
+                D4ParserSax2::dmr_error(parser, "Expected an end tag for a %s; found '%s' instead.", "Structure", localname);
+                return;
+            }
+
+            BaseType *btp = parser->top_basetype();
+            parser->pop_basetype();
+            parser->pop_attributes();
+
+            if (btp->type() != dods_structure_c) {
+                D4ParserSax2::dmr_error(parser, "Expected a %s variable.", "Structure");
+                delete btp;
+                return;
+            }
+
+            BaseType *parent = 0;
+            if (!parser->empty_basetype())
+            	parent= parser->top_basetype();
+            else if (!parser->empty_group())
+            	parent = parser->top_group();
+            else {
+            	dmr_fatal_error(parser, "Both the Variable and Groups stacks are empty while closing a %s element.", localname);
+            	delete btp;
+            }
+
+            // parent->add_var_nocopy(btp);
+#if 0
+            BaseType *parent = parser->top_basetype();
+            if (!parent)
+            	parent = parser->top_group();
+            // Check that we have a constructor BaseType (Structure, Sequence, or Group)
+            if (parent && !parent->is_constructor_type()) {
+                D4ParserSax2::dmr_error(parser, "Tried to add the variable '%s' to a non-constructor type (%s %s).",
+                		localname, parser->top_basetype()->type_name().c_str(), parser->top_basetype()->name().c_str());
+                delete btp;
+                return;
+            }
+#endif
+            parent->add_var_nocopy(btp);
+            parser->pop_state();
             break;
+        }
 
         case parser_unknown:
             parser->pop_state();

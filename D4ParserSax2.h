@@ -92,7 +92,8 @@ private:
         // This covers Byte, ..., Url, Opaque
         inside_simple_type,
 
-        inside_array,
+        // inside_array,
+        inside_dim,
         inside_dimension,
 
         inside_structure,
@@ -108,21 +109,29 @@ private:
     DMR *dmr() const { return d_dmr; }
 
     // These stacks hold the state of the parse as it progresses.
-
     stack<ParseState> s; // Current parse state
     void push_state(D4ParserSax2::ParseState state) { s.push(state); }
     D4ParserSax2::ParseState get_state() const { return s.top(); }
     void pop_state() { s.pop(); }
+    bool empty_state() const { return s.empty(); }
 
-    stack<BaseType*> btp_stack; // current variable(s)/groups(s)
+    stack<BaseType*> btp_stack; // current variable(s)
     void push_basetype(BaseType *btp) { btp_stack.push(btp); }
-    BaseType * top_basetype() const { return btp_stack.top(); }
+    BaseType *top_basetype() const { return btp_stack.top(); }
     void pop_basetype() { btp_stack.pop(); }
+    bool empty_basetype() const { return btp_stack.empty(); }
+
+    stack<D4Group*> grp_stack; // current groups(s)
+    void push_group(D4Group *grp) { grp_stack.push(grp); }
+    D4Group *top_group() const { return grp_stack.top(); }
+    void pop_group() { grp_stack.pop(); }
+    bool empty_group() const { return grp_stack.empty(); }
 
     stack<D4Attributes*> d_attrs_stack; // DAP4 Attributes
     void push_attributes(D4Attributes *attr) { d_attrs_stack.push(attr); }
     D4Attributes *top_attributes() const { return d_attrs_stack.top(); }
     void pop_attributes() { d_attrs_stack.pop(); }
+    bool empty_attributes() const { return d_attrs_stack.empty(); }
 
     D4EnumDef *d_enum_def;
     D4EnumDef *enum_def() {

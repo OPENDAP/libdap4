@@ -34,36 +34,48 @@
 #include "UInt16.h"
 #include "Int32.h"
 #include "UInt32.h"
+
 #include "D4Enum.h"
-//#include "UD4Enum.h"
+#include "D4Attributes.h"
+
 #include "Float32.h"
 #include "Float64.h"
-#include "Str.h"
-#include "Url.h"
-
-#if 0
-#include "Array.h"
-#include "Structure.h"
-#include "Sequence.h"
-#include "Grid.h"
-#endif
 
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
 
-#include "DDS.h"
-#include "util.h"
-#include "parser.h"
 #include "Operators.h"
-#include "dods-limits.h"
-#include "debug.h"
-#include "util.h"
 #include "InternalErr.h"
+#include "util.h"
+#include "debug.h"
 
 using std::cerr;
 using std::endl;
 
 namespace libdap {
+
+// Explicit instantiation of the template member function 'value(T *)'.
+// This is required in order to have the library contain these member
+// function when its own code does not use them. Normally, C++ instantiates
+// templates when they are used, and this forces that process so the
+// library file contains the various versions of the member function.
+//
+// NB: I could not get this syntax to work in the header file. jhrg 8/19/13
+template void D4Enum::value<dods_byte>(dods_byte *v) const;
+template void D4Enum::value<dods_int16>(dods_int16 *v) const;
+template void D4Enum::value<dods_uint16>(dods_uint16 *v) const;
+template void D4Enum::value<dods_int32>(dods_int32 *v) const;
+template void D4Enum::value<dods_uint32>(dods_uint32 *v) const;
+template void D4Enum::value<dods_int64>(dods_int64 *v) const;
+template void D4Enum::value<dods_uint64>(dods_uint64 *v) const;
+
+template void D4Enum::set_value<dods_byte>(dods_byte v);
+template void D4Enum::set_value<dods_int16>(dods_int16 v);
+template void D4Enum::set_value<dods_uint16>(dods_uint16 v);
+template void D4Enum::set_value<dods_int32>(dods_int32 v);
+template void D4Enum::set_value<dods_uint32>(dods_uint32 v);
+template void D4Enum::set_value<dods_int64>(dods_int64 v);
+template void D4Enum::set_value<dods_uint64>(dods_uint64 v);
 
 bool
 D4Enum::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
@@ -92,32 +104,18 @@ D4Enum::deserialize(UnMarshaller &um, DDS *, bool)
 {
     assert(typeid(um) == typeid(D4StreamUnMarshaller));
 
-    static_cast<D4StreamUnMarshaller*>(&um)->get_int64( &d_buf ) ;
+    // d_buf passed by reference.
+    static_cast<D4StreamUnMarshaller*>(&um)->get_uint64( d_buf ) ;
 
     return false;
 }
 
-virtual void value(dods_byte *v) const;
-virtual void value(dods_int16 *v) const;
-virtual void value(dods_uint16 *v) const;
-virtual void value(dods_int32 *v) const;
-virtual void value(dods_uint32 *v) const;
-virtual void value(dods_int64 *v) const;
-virtual void value(dods_uint64 *v) const;
-
-virtual void set_value(dods_byte v) ;
-virtual void set_value(dods_int16 v) ;
-virtual void set_value(dods_uint16 v) ;
-virtual void set_value(dods_int32 v) ;
-virtual void set_value(dods_uint32 v) ;
-virtual void set_value(dods_int64 v) ;
-virtual void set_value(dods_uint64 v) ;
-
+// FIXME: Make this print signed or unsigned depending on the underlying type. jhrg 8/19/13
 void D4Enum::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
         print_decl(out, space, false);
-        out << " = " << (dods_int64) d_buf << ";\n";
+        out << " = " << d_buf << ";\n";
     }
     else
         out << (int) d_buf;
@@ -130,20 +128,22 @@ void D4Enum::print_val(ostream &out, string space, bool print_decl_p)
     @param constrained If true, only print this if it's part part of the
     current projection. Default is False. */
 void
-BaseType::print_xml_writer(XMLWriter &xml, bool constrained)
+D4Enum::print_xml_writer(XMLWriter &xml, bool constrained)
 {
     if (constrained && !send_p())
         return;
 
-    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)Enum) < 0)
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)"Enum") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write Enum element");
 
-    if (!d_name.empty())
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
+    if (!name().empty())
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "enum", (const xmlChar*)type_name(d_element_type).c_str()) < 0)
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "enum", (const xmlChar*)D4type_name(d_element_type).c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+    attributes()->print_dap4(xml);
 
     if (get_attr_table().get_size() > 0)
         get_attr_table().print_xml_writer(xml);
@@ -177,10 +177,13 @@ D4Enum::ops(BaseType *b, int op)
             return Cmp<dods_int64, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
         case dods_uint32_c:
             return SUCmp<dods_int64, dods_uint32>(op, d_buf, static_cast<UInt32*>(b)->value());
+#if 0
+            // FIXME
         case dods_int64_c:
             return Cmp<dods_int64, dods_int64>(op, d_buf, static_cast<D4Enum*>(b)->value());
         case dods_uint64_c:
-            return SUCmp<dods_int64, dods_uint64>(op, d_buf, static_cast<UD4Enum*>(b)->value());
+            return SUCmp<dods_int64, dods_uint64>(op, d_buf, static_cast<D4Enum*>(b)->value());
+#endif
         case dods_float32_c:
             return Cmp<dods_int64, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
         case dods_float64_c:
