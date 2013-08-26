@@ -78,7 +78,7 @@ namespace libdap
 class Vector: public BaseType
 {
 private:
-    int _length;  // number of elements in the vector
+    int d_length;  // number of elements in the vector
     BaseType *_var;  // base type of the Vector
 
     // _buf was a pointer to void; delete[] complained. 6/4/2001 jhrg
@@ -95,9 +95,9 @@ protected:
     // This function copies the private members of Vector.
     void _duplicate(const Vector &v);
 
-    bool is_cardinal_type() const;
-    unsigned int create_cardinal_data_buffer_for_type(unsigned int numEltsOfType);
-    void delete_cardinal_data_buffer();
+    bool m_is_cardinal_type() const;
+    unsigned int m_create_cardinal_data_buffer_for_type(unsigned int numEltsOfType);
+    void m_delete_cardinal_data_buffer();
 
     template <class CardType> void set_cardinal_values_internal(const CardType* fromArray, int numElts);
 

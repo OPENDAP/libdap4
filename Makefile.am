@@ -316,37 +316,31 @@ SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
 # Build the DAS scanner and parser
 
 lex.das.cc: das.lex das.tab.cc das.tab.hh
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+	$(LEX) $(LFLAGS) $<
 
-# The funny if statment accommodates older versions of bison that treats
-# -o differently than the 2.x versions. jhrg 3/2/08
-das.tab.cc das.tab.hh: das.y DAS.h
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p das -o das.tab.cc $<
-	if test -e das.tab.cc.h; then mv das.tab.cc.h das.tab.hh; fi
+das.tab.cc das.tab.hh: das.yy DAS.h
+	$(YACC) $(YFLAGS) $<
 
 # DDS
 
 lex.dds.cc: dds.lex dds.tab.cc dds.tab.hh
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+	$(LEX) $(LFLAGS) $<
 
-dds.tab.cc dds.tab.hh: dds.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p dds -o dds.tab.cc $<
-	if test -e dds.tab.cc.h; then mv dds.tab.cc.h dds.tab.hh; fi
+dds.tab.cc dds.tab.hh: dds.yy
+	$(YACC) $(YFLAGS) $<
 
 # CE
 
 lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.hh
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+	$(LEX) $(LFLAGS) $<
 
-ce_expr.tab.cc ce_expr.tab.hh: ce_expr.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p ce_expr -o ce_expr.tab.cc $<
-	if test -e ce_expr.tab.cc.h; then mv ce_expr.tab.cc.h ce_expr.tab.hh; fi
-
+ce_expr.tab.cc ce_expr.tab.hh: ce_expr.yy
+	$(YACC) $(YFLAGS) $<
+	
 # Errors
 
 lex.Error.cc: Error.lex Error.tab.cc Error.tab.hh
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) $<
+	$(LEX) $(LFLAGS) $<
 
-Error.tab.cc Error.tab.hh: Error.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p Error -o Error.tab.cc $<
-	if test -e Error.tab.cc.h; then mv Error.tab.cc.h Error.tab.hh; fi
+Error.tab.cc Error.tab.hh: Error.yy
+	$(YACC) $(YFLAGS) $<

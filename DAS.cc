@@ -66,7 +66,8 @@ extern void das_delete_buffer(void * buffer);
 extern void *das_buffer(FILE *fp);
 
 //extern void dasrestart(FILE *yyin);
-extern int dasparse(void *arg); // defined in das.tab.c
+//extern int dasparse(void *arg); // defined in das.tab.c
+extern int dasparse(libdap::parser_arg *arg); // defined in das.tab.c
 
 namespace libdap {
 
@@ -312,7 +313,8 @@ DAS::parse(FILE *in)
 
     parser_arg arg(this);
 
-    bool status = dasparse((void *) & arg) == 0;
+    //bool status = dasparse((void *) & arg) == 0;
+    bool status = dasparse(&arg) == 0;
 
     das_delete_buffer(buffer);
 

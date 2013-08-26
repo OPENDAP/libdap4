@@ -60,7 +60,7 @@ namespace libdap {
 
 void Vector::_duplicate(const Vector & v)
 {
-    _length = v._length;
+    d_length = v.d_length;
 
     // _var holds the type of the elements. That is, it holds a BaseType
     // which acts as a template for the type of each element.
@@ -82,8 +82,8 @@ void Vector::_duplicate(const Vector & v)
     else {
         // Failure to set the size will make the [] operator barf on the LHS
         // of the assignment inside the loop.
-        _vec.resize(_length);
-        for (int i = 0; i < _length; ++i) {
+        _vec.resize(d_length);
+        for (int i = 0; i < d_length; ++i) {
             // There's no need to call set_parent() for each element; we
             // maintain the back pointer using the _var member. These
             // instances are used to hold _values_ only while the _var
@@ -107,7 +107,7 @@ void Vector::_duplicate(const Vector & v)
  * @return whether the type of this Vector is a cardinal type
  * (ie stored in _buf)
  */
-bool Vector::is_cardinal_type() const
+bool Vector::m_is_cardinal_type() const
 {
     // Not cardinal if no _var at all!
     if (!_var) {
@@ -154,7 +154,7 @@ bool Vector::is_cardinal_type() const
  * @return the size of the buffer created.
  * @exception if the Vector's type is not cardinal type.
  */
-unsigned int Vector::create_cardinal_data_buffer_for_type(unsigned int numEltsOfType)
+unsigned int Vector::m_create_cardinal_data_buffer_for_type(unsigned int numEltsOfType)
 {
     // Make sure we HAVE a _var, or we cannot continue.
     if (!_var) {
@@ -162,11 +162,11 @@ unsigned int Vector::create_cardinal_data_buffer_for_type(unsigned int numEltsOf
     }
 
     // Make sure we only do this for the correct data types.
-    if (!is_cardinal_type()) {
+    if (!m_is_cardinal_type()) {
         throw InternalErr(__FILE__, __LINE__, "create_cardinal_data_buffer_for_type: incorrectly used on Vector whose type was not a cardinal (simple data types).");
     }
 
-    delete_cardinal_data_buffer();
+    m_delete_cardinal_data_buffer();
 
     // Actually new up the array with enough bytes to hold numEltsOfType of the actual type.
     unsigned int bytesPerElt = _var->width();
@@ -182,7 +182,7 @@ unsigned int Vector::create_cardinal_data_buffer_for_type(unsigned int numEltsOf
 }
 
 /** Delete _buf and zero it and _capacity out */
-void Vector::delete_cardinal_data_buffer()
+void Vector::m_delete_cardinal_data_buffer()
 {
     if (_buf) {
         delete[] _buf;
@@ -204,7 +204,7 @@ void Vector::set_cardinal_values_internal(const CardType* fromArray, int numElts
         throw InternalErr(__FILE__, __LINE__, "Logic error: Vector::set_cardinal_values_internal() called with null fromArray!");
     }
     set_length(numElts);
-    create_cardinal_data_buffer_for_type(numElts);
+    m_create_cardinal_data_buffer_for_type(numElts);
     memcpy(_buf, fromArray, numElts * sizeof(CardType));
     set_read_p(true);
 }
@@ -226,7 +226,7 @@ void Vector::set_cardinal_values_internal(const CardType* fromArray, int numElts
  @see Type
  @brief The Vector constructor.  */
 Vector::Vector(const string & n, BaseType * v, const Type & t) :
-    BaseType(n, t), _length(-1), _var(0), _buf(0), _vec(0), _capacity(0)
+    BaseType(n, t), d_length(-1), _var(0), _buf(0), _vec(0), _capacity(0)
 {
     if (v)
         add_var(v);
@@ -256,7 +256,7 @@ Vector::Vector(const string & n, BaseType * v, const Type & t) :
  @see Type
  @brief The Vector constructor.  */
 Vector::Vector(const string & n, const string &d, BaseType * v, const Type & t) :
-    BaseType(n, d, t), _length(-1), _var(0), _buf(0), _vec(0), _capacity(0)
+    BaseType(n, d, t), d_length(-1), _var(0), _buf(0), _vec(0), _capacity(0)
 {
     if (v)
         add_var(v);
@@ -518,7 +518,7 @@ unsigned int Vector::width()
  @see Vector::append_dim */
 int Vector::length() const
 {
-    return _length;
+    return d_length;
 }
 
 // set the number of elements in the vector.
@@ -529,7 +529,7 @@ int Vector::length() const
  any new space. */
 void Vector::set_length(int l)
 {
-    _length = l;
+    d_length = l;
 }
 
 // \e l is the number of elements the vector can hold (e.g., if l == 20, then
@@ -724,7 +724,7 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
         case dods_float32_c:
         case dods_float64_c:
             if (_buf && !reuse) {
-                delete_cardinal_data_buffer();
+                m_delete_cardinal_data_buffer();
             }
 
             um.get_int((int &) num);
@@ -740,7 +740,7 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
 
             if (!_buf) {
                 // Make _buf be large enough for length() elements of _var->type()
-                create_cardinal_data_buffer_for_type(length());
+                m_create_cardinal_data_buffer_for_type(length());
                 DBG(cerr << "Vector::deserialize: allocating "
                         << width() << " bytes for an array of "
                         << length() << " " << _var->type_name() << endl);
@@ -858,11 +858,11 @@ unsigned int Vector::val2buf(void *val, bool reuse)
             // width() returns the size given the constraint
             unsigned int array_wid = width();
             if (_buf && !reuse) {
-                delete_cardinal_data_buffer();
+                m_delete_cardinal_data_buffer();
             }
 
             if (!_buf) { // First time or no reuse (free'd above)
-                create_cardinal_data_buffer_for_type(length());
+                m_create_cardinal_data_buffer_for_type(length());
             }
 
             memcpy(_buf, val, array_wid);
@@ -873,9 +873,9 @@ unsigned int Vector::val2buf(void *val, bool reuse)
         case dods_url_c: {
             // Assume val points to an array of C++ string objects. Copy
             // them into the vector<string> field of this object.
-            d_str.resize(_length);
-            _capacity = _length;
-            for (int i = 0; i < _length; ++i)
+            d_str.resize(d_length);
+            _capacity = d_length;
+            for (int i = 0; i < d_length; ++i)
                 d_str[i] = *(static_cast<string *> (val) + i);
 
             break;
@@ -955,9 +955,9 @@ unsigned int Vector::buf2val(void **val)
         case dods_str_c:
         case dods_url_c: {
             if (!*val)
-                *val = new string[_length];
+                *val = new string[d_length];
 
-            for (int i = 0; i < _length; ++i)
+            for (int i = 0; i < d_length; ++i)
                 *(static_cast<string *> (*val) + i) = d_str[i];
 
             break;
@@ -997,7 +997,7 @@ void Vector::set_vec(unsigned int i, BaseType * val)
     // This is a public method which allows users to set the elements
     // of *this* vector. Passing an invalid index, a NULL pointer or
     // mismatching the vector type are internal errors.
-    if (i >= static_cast<unsigned int> (_length))
+    if (i >= static_cast<unsigned int> (d_length))
         throw InternalErr(__FILE__, __LINE__, "Invalid data: index too large.");
     if (!val)
         throw InternalErr(__FILE__, __LINE__, "Invalid data: null pointer to BaseType object.");
@@ -1074,7 +1074,7 @@ void Vector::reserve_value_capacity(unsigned int numElements)
         case dods_float32_c:
         case dods_float64_c: {
             // Make _buf be the right size and set _capacity
-            create_cardinal_data_buffer_for_type(numElements);
+            m_create_cardinal_data_buffer_for_type(numElements);
         }
             break;
 
@@ -1778,7 +1778,7 @@ void Vector::dump(ostream &strm) const
     strm << DapIndent::LMarg << "Vector::dump - (" << (void *) this << ")" << endl;
     DapIndent::Indent();
     BaseType::dump(strm);
-    strm << DapIndent::LMarg << "# elements in vector: " << _length << endl;
+    strm << DapIndent::LMarg << "# elements in vector: " << d_length << endl;
     if (_var) {
         strm << DapIndent::LMarg << "base type:" << endl;
         DapIndent::Indent();
@@ -1807,7 +1807,7 @@ void Vector::dump(ostream &strm) const
         switch (_var->type()) {
             case dods_byte_c: {
                 strm << DapIndent::LMarg << "_buf: ";
-                strm.write(_buf, _length);
+                strm.write(_buf, d_length);
                 strm << endl;
             }
                 break;

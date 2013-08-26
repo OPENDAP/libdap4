@@ -101,7 +101,7 @@ const string c_dap_40_n_sl = c_dap40_namespace + " " + c_default_dap40_schema_lo
 
 using namespace std;
 
-int ddsparse(void *arg);
+int ddsparse(libdap::parser_arg *arg);
 
 // Glue for the DDS parser defined in dds.lex
 void dds_switch_to_buffer(void *new_buffer);
@@ -955,7 +955,7 @@ DDS::parse(FILE *in)
 
     parser_arg arg(this);
 
-    bool status = ddsparse((void *) & arg) == 0;
+    bool status = ddsparse(&arg) == 0;
 
     dds_delete_buffer(buffer);
 
