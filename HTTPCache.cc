@@ -1554,7 +1554,7 @@ HTTPCache::release_cached_response(FILE *body)
     lock_cache_interface();
 
     try {
-    	fclose(body);
+    	// fclose(body); This results in a seg fault on linux jhrg 8/27/13
     	d_http_cache_table->uncouple_entry_from_data(body);
     }
     catch (...) {
