@@ -118,7 +118,7 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 
 } // code
 
-%require "2.5"
+%require "2.4"
 
 %parse-param {parser_arg *arg}
 %name-prefix "dds"
