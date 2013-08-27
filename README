@@ -1,3 +1,17 @@
+Updated for version 3.12.0
+
+The server functions have been moved out of libdap and into their own 
+BES module. Currently this modules is part of the BES, but that will change
+in the future. This version of libdap supports building very large arrays
+made up of constant value (e.g., to be used as masks in server functions
+you write). 
+
+For information on the way to make these functions, see:
+http://docs.opendap.org/index.php/Expanded_arguments_for_Constraint_Expressions 
+Note that this version of libdap requries bison 2.4. This is a change so
+the parsers can use C++ I/O streams and we can eventually drop the FILE*
+interfaces.
+
 Updated for version 3.11.7
 
 Minor tweak for the server function caching code: turn on or off the 

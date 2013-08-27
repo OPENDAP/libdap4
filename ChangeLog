@@ -1,3 +1,564 @@
+2013-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Audit fixes.
+
+	M    RValue.cc
+	M    HTTPCacheTable.cc
+	M    Array.cc
+	M    DDXParserSAX2.cc
+	M    Makefile.am
+	M    HTTPCache.cc
+	M    XDRStreamUnMarshaller.cc
+	M    Structure.cc
+	M    Sequence.cc
+	M    XDRFileUnMarshaller.cc
+	M    XDRFileUnMarshaller.h
+	M    mime_util.cc
+	M    util.cc
+	M    util_mit.cc
+
+2013-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Changed the required bison version number to 2.4 and removed a
+	bogus include from das.yy that breaks bison 2.4.
+
+	M    das.yy
+	M    Error.yy
+	M    dds.yy
+	M    ce_expr.yy
+
+2013-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Removed bad character from the Makefile.am
+
+	M    Makefile.am
+
+2013-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Added the newly hacked grammar files - these along with updated
+	versions of DAS.cc, DDS.cc, ConstraintEvaluator.cc and Error.cc
+	and Makefile.am were copied over from the dap4 branch. A kind of
+	cheap merge operation...
+
+	A    das.yy
+	A    Error.yy
+	A    dds.yy
+	A    ce_expr.yy
+
+2013-08-26  James Gallagher <jgallagher@opendap.org>
+
+	Chnages so that a newer bison can be used.
+
+	M    Error.lex
+	M    Error.cc
+	M    ce_parser.h
+	M    ConstraintEvaluator.cc
+	M    DDS.cc
+	M    Makefile.am
+	M    dds.lex
+	M    Vector.cc
+	M    das.lex
+	M    Vector.h
+	M    DAS.cc
+	M    ce_expr.lex
+
+2013-07-23  James Gallagher <jgallagher@opendap.org>
+
+	Removed the openssl/evp.h header because it winds up including
+	des_old.h on OSX 10.5 and that has a conflict with set_key() in
+	BESKeys.h. Also, the code no longer uses the evp.h header...
+
+	M    XDRStreamMarshaller.h
+
+2013-07-23  James Gallagher <jgallagher@opendap.org>
+
+	Memory leaks fixed in the DAP4 Stream Marshaller classes - but
+	these are in code in the trunk. will check in all the same and
+	make corresponding changes to the code on the dap4 branch (which
+	uses the filename prefix 'D4' instead of 'DAP4').
+
+2013-07-23  James Gallagher <jgallagher@opendap.org>
+
+	Modified ConstraintEvaluator so that it always frees the
+	scanner/parser string buffer when an exception is thrown. I made
+	this change while working on a problem that turned out to be in
+	the scanner (state was not reset when an error was found) but even
+	though this change is not the fix for that - see ce_expr.lex - it
+	seems like a good idea.
+
+2013-07-23  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the rpm build - libtest-types.a was missiing from the spec file.
+
+2013-07-10  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a bug where a CE with mismatched quotes left the CE parser
+	in the <quote> state, making subsequent requests fail. The fix was
+	in the scanner to reset the parser (technically the scanner's)
+	state to INITIAL when an error was detected. I also added code to
+	catch the Error object thrown by the scanner and delete the parse
+	buffer, although that might be overkill.
+
+2013-07-10  James Gallagher <jgallagher@opendap.org>
+
+	Merged changes from the miic_6.2013 branch. These changes support the
+	new #<type>() special forms that enable big arrays to be use in CEs.
+
+	_M   .
+	M    Error.lex
+	M    ConstraintEvaluator.cc
+	M    Array.cc
+	M    tests/expr-test.cc
+	A  + tests/ResponseBuilder.cc
+	A  + tests/ResponseBuilder.h
+	M    tests/Makefile.am
+	M    DDXParserSAX2.cc
+	M    Makefile.am
+	M    ce_expr.y
+	M    Error.y
+	M    dds.lex
+	MM   mime_util.h
+	M    XDRStreamUnMarshaller.cc
+	M    RValue.h
+	M    BaseTypeFactory.h
+	M    das.lex
+	MM   mime_util.cc
+	M    das.y
+	M    BaseTypeFactory.cc
+	M    util.cc
+	D    unit-tests/server-testsuite/geturl.0
+	D    unit-tests/server-testsuite/config
+	_M   unit-tests/ancT.cc
+	M    unit-tests/DDXParserTest.cc
+	D    unit-tests/response_cache
+	M    unit-tests/Makefile.am
+	M    dds.y
+	M    Array.h
+	M    ce_expr.lex
+
+2013-07-09  James Gallagher <jgallagher@opendap.org>
+
+	Trunk fixes for the functions module in the libdap andbes spec
+	files. Also a repair to XDRStreamMarshaller.cc
+
+2013-06-06  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: new value() methods so that the correct thinmgs are
+	accessed and returned.
+
+2013-06-06  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Added new 'value' function to Vector that allows you use
+	an subset_index array to retrieve non contiguous values in a
+	single operation
+
+2013-06-05  James Gallagher <jgallagher@opendap.org>
+
+	Added libdap-* to svn-ignore
+
+2013-05-21  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for linux
+
+	M    unit-tests/ResponseBuilderTest.cc
+	M    unit-tests/ResponseCacheTest.cc
+
+2013-05-21  James Gallagher <jgallagher@opendap.org>
+
+	added valgrind suppressions for stuff in libxml2
+
+2013-05-20  James Gallagher <jgallagher@opendap.org>
+
+	Moved four set_mime_*() methods from ResponseBuilder to mime_util.
+
+2013-05-20  James Gallagher <jgallagher@opendap.org>
+
+	Modified DDXParser so that it includes an intern_stream() method
+	that takes a cpp istream. Added tests. Also modified
+	ResponseBuilder so that it frees the AlarmHandler allocated when
+	establish_timeout() is called.
+
+2013-05-20  James Gallagher <jgallagher@opendap.org>
+
+	Fixed memory leaks in the DDXParserSax2 code. Other minor edits.
+
+2013-05-20  James Gallagher <jgallagher@opendap.org>
+
+	Test fixes
+
+2013-05-20  James Gallagher <jgallagher@opendap.org>
+
+	added
+
+2013-05-17  James Gallagher <jgallagher@opendap.org>
+
+	Added these baseline files for ResponseBuilderTest
+
+2013-05-17  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for ResponseCache - I added tests and have tested most
+	modes. Not tested: how it works with server functions. There are
+	also fixes/modifications for ResponseBuilder that ResponseCache
+	uses. Added a note to ServerFunctionsList that it stores weak
+	pointers. I worked on the ResponseBuilderTests but never got the
+	test for server functions to work completely; the test examines
+	the response document and checks that the metadata part is correct
+	but not the (trivial) data part.
+
+2013-05-17  James Gallagher <jgallagher@opendap.org>
+
+	Added get_next_mime_header() for an istream (the existing version
+	took a FILE*) and moved some of the MIME header methods from
+	ResponseBuilder here.
+
+2013-05-15  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Moving trunk/libdap/unit-tests/ce-functions-testsuite to
+	trunk/bes/functions/unit-tests because that's where the functions
+	are that need the contents of that directory.
+
+2013-05-14  James Gallagher <jgallagher@opendap.org>
+
+	ResponseCache mostly working...
+
+2013-05-14  James Gallagher <jgallagher@opendap.org>
+
+	We now install the library and *Test headers.
+
+2013-05-14  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Repaired problems with conditional build in ServerFcuntionsList
+
+2013-05-14  James Gallagher <jgallagher@opendap.org>
+
+	Added HAVE_STDLIB_H and HAVE_ATEXIT to DAPCache3.cc.
+
+2013-05-10  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Instrumentation in Regex. Fixed baseline for
+	ResponseBuilderTest::invoke_server_side_function_test
+
+2013-05-10  Nathan Potter <ndp@coas.oregonstate.edu>
+
+2013-05-10  Nathan Potter <ndp@coas.oregonstate.edu>
+
+2013-05-10  Nathan Potter <ndp@coas.oregonstate.edu>
+
+2013-05-10  Nathan Potter <ndp@coas.oregonstate.edu>
+
+2013-05-10  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Added life cycle control to DAPCache3 singleton.
+
+2013-05-10  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Added life cycle control to DAPCache3 singleton.
+
+2013-05-10  James Gallagher <jgallagher@opendap.org>
+
+	(potential) fix for the ResponseBuilder cache bug
+
+2013-05-10  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Updated ResponseBuilderTest to run a server side function.
+
+2013-05-10  James Gallagher <jgallagher@opendap.org>
+
+	Removed (commented) #define DODS_DEBUG from ServerFunctionsList.
+
+2013-05-10  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Added instrumentation (enabled in this check in) to
+	ServerFunctionsList in an effort to understand the seg fault
+	problem that seems to be associated with server side function
+	calls.
+
+2013-05-10  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Added instrumentation (enabled in this check in) to
+	ServerFunctionsList in an effort to understand the seg fault
+	problem that seems to be associated with server side function
+	calls.
+
+2013-05-10  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Added instrumentation (enabled in this check in) to
+	ServerFunctionsList in an effort to understand the seg fault
+	problem that seems to be associated with server side function
+	calls.
+
+2013-05-09  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Checking in repaired ServerFunctionsList
+
+2013-05-06  James Gallagher <jgallagher@opendap.org>
+
+	Removed old code
+
+2013-05-06  James Gallagher <jgallagher@opendap.org>
+
+	DAPCache3 is now in the libdap namespace. The cache-specific
+	methods of ResponseBuilder have been factored out to
+	ResponseCache; RB still makes explicit calls to the cache code,
+	however. The ResponseCache class was added.
+
+2013-05-03  James Gallagher <jgallagher@opendap.org>
+
+	Added correct copyright headers for the ServerFunctions classes.
+
+2013-05-03  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Attempting to fix memory leaks in ServerFucntionsList - adding unit tests for same.
+
+2013-05-02  James Gallagher <jgallagher@opendap.org>
+
+	Removed old code in util
+
+2013-05-02  James Gallagher <jgallagher@opendap.org>
+
+	Removed old code from ResponseBuilder
+
+2013-05-01  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Change type signature for setter methods in ServerFunction
+	so that they accept const parameters
+
+2013-05-01  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Change type signature for setter methods in ServerFunction
+	so that they accept const parameters
+
+2013-04-27  James Gallagher <jgallagher@opendap.org>
+
+	Wrapped the two DAP4-only includes in #if DAP4. Those headers are not
+	installed in a regular build and the includes break clients that
+	included the file.
+
+	M    BaseType.h
+
+2013-04-03  James Gallagher <jgallagher@opendap.org>
+
+	distcheck works on linux now...
+
+	A  + D4ParserSax2.cc
+	M    Makefile.am
+	D    D4ParserSAX2.cc
+
+2013-04-03  James Gallagher <jgallagher@opendap.org>
+
+2013-04-02  James Gallagher <jgallagher@opendap.org>
+
+	Added climit include to fix 'UINT/INT_MAX missing' on Linux.
+
+	M    util.cc
+
+2013-04-01  James Gallagher <jgallagher@opendap.org>
+
+	Added unit tests for D4Dimensions and D4EnumDefs. Removed old code from the AttrTable tests.
+
+2013-04-01  James Gallagher <jgallagher@opendap.org>
+
+	Added D4EnumDefs
+
+2013-03-26  Nathan Potter <ndp@coas.oregonstate.edu>
+
+2013-03-25  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Disabling cruft code from earlier ugrid work.
+
+2013-02-25  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Comments
+
+2013-02-12  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: comments
+
+2013-02-08  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Updated ServerFunction API
+
+2013-02-07  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Added methods to ServerFunctionsList to allow inspection of the list contents.
+
+2013-02-06  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Moved AbstractFunction class to ServerFunction class
+
+2013-02-06  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Added the use of AbstractFunction class.
+
+2013-02-05  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	team sync
+
+2013-02-05  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	team sync
+
+2013-02-04  Nathan Potter <ndp@coas.oregonstate.edu>
+
+2013-02-04  Nathan Potter <ndp@coas.oregonstate.edu>
+
+2013-02-04  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Adding AbstractServerSideFunction
+
+2013-01-31  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for bes distcheck
+
+	M    ServerFunctionsList.cc
+	M    ServerFunctionsList.h
+	M    ConstraintEvaluator.h
+
+2013-01-30  James Gallagher <jgallagher@opendap.org>
+
+	Distcheck now works; removed more old server function code.
+
+	_M   .
+	M    configure.ac
+	M    main_page.doxygen
+	M    ConstraintEvaluator.cc
+	_M   tests
+	M    Makefile.am
+	D    swath2grid
+	D    ugridFunctions
+	M    NEWS
+	M    ConstraintEvaluator.h
+	M    unit-tests/HTTPCacheTest.cc
+	M    doxy.conf
+
+2013-01-30  James Gallagher <jgallagher@opendap.org>
+
+	Added stuff to svn:ignore
+
+2013-01-30  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	libdap: Updating configre.ac for automake-1.13
+
+2013-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Changed the way functions are registered so that CE does not have to copy all the functions into every instance of the CE class. Now CE uses functions directly from a list in libdap.
+
+2013-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Changed the way functions are registered so that CE does not have to copy all the functions into every instance of the CE class. Now CE uses functions directly from a list in libdap.
+
+2013-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Fixed checkin - I checked in some code with debugging on
+
+2013-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Removing 'basic' server functions.
+
+	_M   .
+	M    Keywords2.cc
+	M    ConstraintEvaluator.cc
+	M    tests/TestArray.cc
+	M    tests/EXPRTest.at
+	M    Makefile.am
+	M    swath2grid/reproj_functions.cc
+	M    HTTPCache.cc
+	M    util.h
+	M    expr.h
+	M    util.cc
+	M    unit-tests/HTTPCacheTest.cc
+	D    unit-tests/ArrayGeoConstraintTest.cc
+	RM + unit-tests/ancT.cc
+	M    unit-tests/ddsT.cc
+	M    unit-tests/ResponseBuilderTest.cc
+	D    unit-tests/CEFunctionsTest.cc
+	D    unit-tests/GridGeoConstraintTest.cc
+	M    unit-tests/Makefile.am
+	M    unit-tests/Keywords2Test.cc
+
+2013-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Added stuff to svn:ignore
+
+2013-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Added stuff to svn:ignore
+
+2013-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Added stuff to svn:ignore
+
+2013-01-25  Patrick West <pwest@ucar.edu>
+
+	Removing dependency on DAP4 code for DAP3 responses
+	M    ResponseBuilder.h
+	M    ResponseBuilder.cc
+	M    Int64.h
+
+2013-01-25  Patrick West <pwest@ucar.edu>
+
+	Need autoconf 2.61, not 2.62
+	M    configure.ac
+
+2013-01-18  James Gallagher <jgallagher@opendap.org>
+
+	Merge of the code from hyrax 1.8 release (version 3.11.7)
+
+	_M   .
+	A  + gridfields_functions.h
+	M    configure.ac
+	M    Connect.h
+	M    ChangeLog
+	A  + gridfields_functions.cc
+	M    ResponseBuilder.h
+	M    main_page.doxygen
+	A  + DAPCache3.cc
+	A  + DAPCache3.h
+	_M   OSX_Resources
+	M    ConstraintEvaluator.cc
+	M    DDS.cc
+	M    HTTPCacheTable.cc
+	M    Array.cc
+	_M   tests
+	M    tests/TestGrid.cc
+	M    tests/expr-test.cc
+	M    tests/TestStructure.cc
+	M    INSTALL
+	M    DDXParserSAX2.cc
+	M    libdap.spec
+	M    ResponseBuilder.cc
+	M    README
+	M    BaseType.cc
+	M    DDS.h
+	_M   win32/gl
+	M    Makefile.am
+	AM + swath2grid
+	M    DataDDS.cc
+	M    ce_expr.y
+	M    util.h
+	AM + ugridFunctions
+	M    XDRStreamUnMarshaller.cc
+	M    NEWS
+	A  + doxy.conf.in
+	M    Vector.cc
+	A  + main_page.doxygen.in
+	_M   gl
+	M    ce_functions.cc
+	M    expr.h
+	MM   mime_util.cc
+	M    GridGeoConstraint.cc
+	M    Vector.h
+	M    util.cc
+	M    Grid.cc
+	M    Connect.cc
+	_M   unit-tests
+	MM   unit-tests/MIMEUtilTest.cc
+	M    unit-tests/ResponseBuilderTest.cc
+	M    Clause.cc
+	M    Array.h
+	M    doxy.conf
+	M    ce_expr.lex
+
 2012-11-07  James Gallagher <jgallagher@opendap.org>
 
 	Changed svn ignore properties
