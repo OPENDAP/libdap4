@@ -54,21 +54,19 @@
 namespace libdap {
 
 XDRFileUnMarshaller::XDRFileUnMarshaller( FILE *out )
-    : _source( 0 )
+    : _source( 0 ), d_out(out)
 {
-    _source = new_xdrstdio( out, XDR_DECODE ) ;
+    _source = new_xdrstdio( d_out, XDR_DECODE ) ;
 }
 
 XDRFileUnMarshaller::XDRFileUnMarshaller()
-    : UnMarshaller(),
-      _source( 0 )
+    : UnMarshaller(), _source( 0 ), d_out(0)
 {
     throw InternalErr( __FILE__, __LINE__, "Default constructor not implemented." ) ;
 }
 
 XDRFileUnMarshaller::XDRFileUnMarshaller( const XDRFileUnMarshaller &um )
-    : UnMarshaller( um ),
-      _source( 0 )
+    : UnMarshaller( um ), _source( 0 ), d_out(0)
 {
     throw InternalErr( __FILE__, __LINE__, "Copy constructor not implemented." ) ;
 }
@@ -83,6 +81,8 @@ XDRFileUnMarshaller::operator=( const XDRFileUnMarshaller & )
 
 XDRFileUnMarshaller::~XDRFileUnMarshaller( )
 {
+	fclose(d_out);
+	d_out = 0;
     delete_xdrstdio( _source ) ;
 }
 

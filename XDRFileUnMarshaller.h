@@ -46,6 +46,7 @@ class XDRFileUnMarshaller : public UnMarshaller
 {
 private:
     XDR *			_source ;
+    FILE *d_out; // keep a pointer to the stream so it can be closed.
     				XDRFileUnMarshaller() ;
     				XDRFileUnMarshaller( const XDRFileUnMarshaller &um ) ;
     XDRFileUnMarshaller &	operator=( const XDRFileUnMarshaller & ) ;

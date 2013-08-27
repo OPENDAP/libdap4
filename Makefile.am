@@ -133,9 +133,9 @@ cccc:
 # Fortify targets.
 .PHONY: fortify
 fortify: $(BUILT_SOURCES)
-	(cd gl && sourceanalyzer -b @PACKAGE@-gl $(MAKE) )
-	sourceanalyzer -b @PACKAGE@-parsers $(MAKE) libparsers.la
-	sourceanalyzer -b @PACKAGE@ $(MAKE) libdap.la libdapserver.la libdapclient.la
+	(cd gl && sourceanalyzer -b @PACKAGE@-gl $(MAKE) $(MFLAGS) )
+	sourceanalyzer -b @PACKAGE@-parsers $(MAKE) $(MFLAGS) libparsers.la
+	sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS) libdap.la libdapserver.la libdapclient.la
 	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
 
 # run fortify on only our code, not the gnulib code or the flex/bison code.

@@ -493,7 +493,7 @@ void DDXParser::finish_variable(const char *tag, Type t, const char *expected)
     }
     // Once libxml2 validates, this can go away. 05/30/03 jhrg
     if (t == dods_array_c
-        && dynamic_cast < Array * >(btp)->dimensions() == 0) {
+        && static_cast<Array*>(btp)->dimensions() == 0) {
         DDXParser::ddx_fatal_error(this,
                                    "No dimension element included in the Array '%s'.",
                                    btp->name().c_str());

@@ -1554,6 +1554,7 @@ HTTPCache::release_cached_response(FILE *body)
     lock_cache_interface();
 
     try {
+    	fclose(body);
     	d_http_cache_table->uncouple_entry_from_data(body);
     }
     catch (...) {
