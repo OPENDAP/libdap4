@@ -336,7 +336,7 @@ lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.hh
 
 ce_expr.tab.cc ce_expr.tab.hh: ce_expr.yy
 	$(YACC) $(YFLAGS) $<
-	
+
 # Errors
 
 lex.Error.cc: Error.lex Error.tab.cc Error.tab.hh
