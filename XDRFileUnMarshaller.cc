@@ -54,19 +54,19 @@
 namespace libdap {
 
 XDRFileUnMarshaller::XDRFileUnMarshaller( FILE *out )
-    : _source( 0 ), d_out(out)
+    : _source( 0 ) //, d_out(out) jhrg 8/27/13
 {
     _source = new_xdrstdio( d_out, XDR_DECODE ) ;
 }
 
 XDRFileUnMarshaller::XDRFileUnMarshaller()
-    : UnMarshaller(), _source( 0 ), d_out(0)
+    : UnMarshaller(), _source( 0 ) //, d_out(0) jhrg 8/27/13
 {
     throw InternalErr( __FILE__, __LINE__, "Default constructor not implemented." ) ;
 }
 
 XDRFileUnMarshaller::XDRFileUnMarshaller( const XDRFileUnMarshaller &um )
-    : UnMarshaller( um ), _source( 0 ), d_out(0)
+    : UnMarshaller( um ), _source( 0 ) //, d_out(0) jhrg 8/27/13
 {
     throw InternalErr( __FILE__, __LINE__, "Copy constructor not implemented." ) ;
 }
@@ -81,8 +81,12 @@ XDRFileUnMarshaller::operator=( const XDRFileUnMarshaller & )
 
 XDRFileUnMarshaller::~XDRFileUnMarshaller( )
 {
-	fclose(d_out);
-	d_out = 0;
+#if 0
+	// This seems like it is closed by delete_xdrstdio; deleting it here
+	// causes a seg fault on linux. jhrg 8/27/13
+	//fclose(d_out);
+	//d_out = 0;
+#endif
     delete_xdrstdio( _source ) ;
 }
 
