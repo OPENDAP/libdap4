@@ -54,19 +54,19 @@
 namespace libdap {
 
 XDRFileUnMarshaller::XDRFileUnMarshaller( FILE *out )
-    : _source( 0 ) //, d_out(out) jhrg 8/27/13
+    : _source( 0 )
 {
-    _source = new_xdrstdio( d_out, XDR_DECODE ) ;
+    _source = new_xdrstdio( out, XDR_DECODE ) ;
 }
 
 XDRFileUnMarshaller::XDRFileUnMarshaller()
-    : UnMarshaller(), _source( 0 ) //, d_out(0) jhrg 8/27/13
+    : UnMarshaller(), _source( 0 )
 {
     throw InternalErr( __FILE__, __LINE__, "Default constructor not implemented." ) ;
 }
 
 XDRFileUnMarshaller::XDRFileUnMarshaller( const XDRFileUnMarshaller &um )
-    : UnMarshaller( um ), _source( 0 ) //, d_out(0) jhrg 8/27/13
+    : UnMarshaller( um ), _source( 0 )
 {
     throw InternalErr( __FILE__, __LINE__, "Copy constructor not implemented." ) ;
 }
@@ -81,12 +81,10 @@ XDRFileUnMarshaller::operator=( const XDRFileUnMarshaller & )
 
 XDRFileUnMarshaller::~XDRFileUnMarshaller( )
 {
-#if 0
-	// This seems like it is closed by delete_xdrstdio; deleting it here
-	// causes a seg fault on linux. jhrg 8/27/13
-	//fclose(d_out);
-	//d_out = 0;
-#endif
+    // Some static code analysis tools complain that delete_xdrstdio
+    // does not close the FILE* it holds, but that's not true with
+    // modern XDR libraries. Don't try to close that FILE*. jhrg 8/27/13
+
     delete_xdrstdio( _source ) ;
 }
 
