@@ -246,7 +246,7 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
     	else					// get enclosing Group and lookup Dimension there
     		dim = top_group()->find_dim(name);
 
-    	a->append_dim(dim /*dim->size(), dim->name()*/);
+    	a->append_dim(dim);
     	return true;
     }
 

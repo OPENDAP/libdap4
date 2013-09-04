@@ -67,7 +67,7 @@ private:
     XMLWriter *xml;
 
 public:
-    D4ParserSax2Test() {}
+    D4ParserSax2Test() : parser(0), dmr(0), btf(0), xml(0) {}
     ~D4ParserSax2Test() {}
 
     void setUp() {

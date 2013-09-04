@@ -461,7 +461,9 @@ Constructor::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool 
             if (sm && sm->checksums() && (*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
                 sm->get_checksum();
 #else
-            (*i)->serialize(eval, dds, m, false);
+            // (*i)->serialize(eval, dds, m, false);
+            // Only Sequence and Vector run the evaluator.
+            (*i)->serialize(eval, dds, m, true);
 #endif
         }
     }

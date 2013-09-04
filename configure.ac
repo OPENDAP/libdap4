@@ -31,8 +31,11 @@ AC_SUBST(PACKAGE_MAJOR_VERSION)
 AC_SUBST(PACKAGE_MINOR_VERSION)
 AC_SUBST(PACKAGE_SUBMINOR_VERSION)
 
-AC_DEFINE(EVAL, 1, [Should all the classes run ConstraintEvaluator::eval()?])
-AC_SUBST(EVAL)
+dnl Removed this; only the Array and Sequence classes ever have constraints that 
+dnl need to be evaluated at run time (DAP4) or only Sequences (DAP2). jhrg 9/4/13
+
+dnl AC_DEFINE(EVAL, 1, [Should all the classes run ConstraintEvaluator::eval()?])
+dnl AC_SUBST(EVAL)
 
 dnl flags for the compilers and linkers - set these before locating the
 dnl actual tools since some of the AC_PROG macros set these `flag variables'

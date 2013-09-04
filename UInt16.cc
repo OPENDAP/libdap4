@@ -72,7 +72,7 @@ namespace libdap {
     @param n A string containing the name of the variable to be created.
 */
 UInt16::UInt16(const string &n)
-        : BaseType(n, dods_uint16_c)
+        : BaseType(n, dods_uint16_c), d_buf(0)
 {}
 
 /** The UInt16 server-side constructor accepts the name of the variable to
@@ -83,7 +83,7 @@ UInt16::UInt16(const string &n)
     variable is created
 */
 UInt16::UInt16(const string &n, const string &d)
-        : BaseType(n, d, dods_uint16_c)
+        : BaseType(n, d, dods_uint16_c), d_buf(0)
 {}
 
 UInt16::UInt16(const UInt16 &copy_from) : BaseType(copy_from)

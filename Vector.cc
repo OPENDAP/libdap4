@@ -640,10 +640,10 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
     if (!read_p())
         read(); // read() throws Error and InternalErr
 
-#if EVAL
+//#if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-#endif
+//#endif
 
     dds.timeout_off();
 
