@@ -1,17 +1,4 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<Enumeration name="colors" basetype="Byte">
-    <EnumConst name="red" value="1"/>
-    <EnumConst name="green" value="2"/>
-    <EnumConst name="blue" value="3"/>
-</Enumeration>
-<Dimension name="lat" size="1024"/>
-<Dimension name="lon" size="1024"/>
-<Dimension name="time" size="*"/>
-<Attribute name="test" type="Int16">
-    <value>1</value>
-</Attribute>
-<Byte name="b"/>
-<Int64 name="i64"/>
 <Group name="child">
     <Enumeration name="colors" basetype="Byte">
         <EnumConst name="red" value="1"/>
@@ -20,10 +7,23 @@
     </Enumeration>
     <Dimension name="lat" size="1024"/>
     <Dimension name="lon" size="1024"/>
-    <Dimension name="time" size="*"/>
+    <Dimension name="time" size="20"/>
     <Attribute name="test" type="Int16">
         <value>1</value>
     </Attribute>
     <Byte name="b"/>
     <Int64 name="i64"/>
 </Group>
+<Enumeration name="colors" basetype="Byte">
+    <EnumConst name="red" value="1"/>
+    <EnumConst name="green" value="2"/>
+    <EnumConst name="blue" value="3"/>
+</Enumeration>
+<Dimension name="lat" size="1024"/>
+<Dimension name="lon" size="1024"/>
+<Dimension name="time" size="20"/>
+<Attribute name="test" type="Int16">
+    <value>1</value>
+</Attribute>
+<Byte name="b"/>
+<Int64 name="i64"/>

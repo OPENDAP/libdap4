@@ -36,29 +36,29 @@ namespace libdap {
 
 // FIXME Why does this break other .cc files?
 //class XMLWriter;
+class D4Group;
+class D4Dimensions;
 
 class D4Dimension {
     string d_name;
     unsigned long d_size;
-    bool d_varying; //FIXME Remove. jhrg 8/20/13
+    D4Dimensions *d_parent;	// This is used to get the Dimensions and then Group object
 
 public:
-    D4Dimension(const string &name, unsigned long size): d_name(name), d_size(size), d_varying(false) {}
-    D4Dimension(const string &name): d_name(name), d_size(0), d_varying(true) {}
-    D4Dimension() : d_name(""), d_size(0), d_varying(0) {}
+    D4Dimension() : d_name(""), d_size(0),  d_parent(0) {}
+    D4Dimension(const string &name, unsigned long size, D4Dimensions *d = 0): d_name(name), d_size(size), d_parent(d) {}
 
     string name() const {return d_name;}
     void set_name(const string &name) { d_name = name; }
-    /// Return true if this D4Dimension's name is \c name. Useful w/STL algorithms.
-    // bool name_equals(const string &name) { return name == d_name; }
+    string fully_qualified_name() const;
 
-    unsigned long size() { return d_size; }
-    void set_size(unsigned long size) { d_size = size; if (d_size == 0) d_varying = true; }
+    unsigned long size() const { return d_size; }
+    void set_size(unsigned long size) { d_size = size; }
     // Because we build these in the XML parser and it's all text...
     void set_size(const string &size);
 
-    bool varying() { return d_varying; }
-    void set_varying(bool varying) { d_varying = varying; if (d_varying) d_size = 0;}
+    D4Dimensions *parent() const { return d_parent; }
+    void set_parent(D4Dimensions *d) { d_parent = d; }
 
     void print_dap4(XMLWriter &xml) const;
 };
@@ -67,23 +67,21 @@ public:
  * This class holds information about dimensions. This can be used to store
  * actual dimension information in an instance of BaseType and it can be
  * used to store the definition of a dimension in an instance of Group.
- *
- * @note In DAP4, dimensions are either of a known size or are 'varying.'
- * Users of this class will need to know this and test the 'size' and 'varying'
- * fields of the 'dimension' struct to figure out which of the two cases are
- * true for any given dimension.
- *
- * @todo Add methods to record constraints? Or subclass this and add that
- * behavior to the specialization?
  */
 class D4Dimensions {
     vector<D4Dimension*> d_dims;
 
+    D4Group *d_parent;		// the group that holds this set of D4Dimensions; weak pointer, don't delete
+
+protected:
     void m_duplicate(const D4Dimensions &rhs) {
         D4DimensionsCIter i = rhs.d_dims.begin();
         while (i != rhs.d_dims.end()) {
             d_dims.push_back(new D4Dimension(**i++));    // deep copy
+            d_dims.back()->set_parent(this);			// Set the Dimension's parent
         }
+
+        d_parent = rhs.d_parent;
     }
 
 public:
@@ -91,8 +89,9 @@ public:
     typedef vector<D4Dimension*>::iterator D4DimensionsIter;
     typedef vector<D4Dimension*>::const_iterator D4DimensionsCIter;
 
-    D4Dimensions() {}
-    D4Dimensions(const D4Dimensions &rhs) { m_duplicate(rhs); }
+    D4Dimensions() : d_parent(0) {}
+    D4Dimensions(D4Group *g) : d_parent(g) {}
+    D4Dimensions(const D4Dimensions &rhs) : d_parent(0) { m_duplicate(rhs); }
 
     virtual ~D4Dimensions() {
         D4DimensionsIter i = d_dims.begin();
@@ -109,6 +108,9 @@ public:
     /// Does this D4Dimensions object actually have dimensions?
     bool empty() const { return d_dims.empty(); }
 
+    D4Group *parent() const { return d_parent;}
+    void set_parent(D4Group *g) { d_parent = g; }
+
     /** Append a new dimension.
      * In DAP4 dimensions are either of a known size or are varying. For
      * fixed-size dimensions, the value of varying should be false. For varying
@@ -117,12 +119,12 @@ public:
      *
      * @param dim Pointer to the D4Dimension object to add; deep copy
      */
-    void add_dim(D4Dimension *dim) { d_dims.push_back(new D4Dimension(*dim)); }
+    void add_dim(D4Dimension *dim) { add_dim_nocopy(new D4Dimension(*dim)); }
 
     /** Append a new dimension.
      * @param dim Pointer to the D4Dimension object to add; copies the pointer
      */
-    void add_dim_nocopy(D4Dimension *dim) { d_dims.push_back(dim); }
+    void add_dim_nocopy(D4Dimension *dim) { dim->set_parent(this); d_dims.push_back(dim); }
 
     /// Get an iterator to the start of the dimensions
     D4DimensionsIter dim_begin() { return d_dims.begin(); }
@@ -140,7 +142,7 @@ public:
      * @param i iterator
      */
     void insert_dim(D4Dimension *dim, D4DimensionsIter i) {
-        d_dims.insert(i, new D4Dimension(*dim));
+    	insert_dim_nocopy(new D4Dimension(*dim), i);
     }
 
     /** Insert a dimension.
@@ -148,6 +150,7 @@ public:
      * @param i iterator
      */
     void insert_dim_nocopy(D4Dimension *dim, D4DimensionsIter i) {
+    	dim->set_parent(this);
         d_dims.insert(i, dim);
     }
 

@@ -41,6 +41,12 @@
 
 #include "testFile.h"
 #include "test_config.h"
+#include "GetOpt.h"
+
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
 
 using namespace CppUnit;
 using namespace std;
@@ -52,14 +58,14 @@ private:
     D4Group *root, *named;
 
 public:
-    D4GroupTest() : root(0), named(0), xml(0 ){
+    D4GroupTest() : xml(0), root(0), named(0) {
     }
 
     ~D4GroupTest() {
     }
 
     void setUp() {
-        root = new D4Group("");
+        root = new D4Group("/");
         named = new D4Group("test");
         xml = new XMLWriter;
     }
@@ -78,7 +84,7 @@ public:
     void load_group_with_stuff(D4Group *g) {
         g->dims()->add_dim_nocopy(new D4Dimension("lat", 1024));
         g->dims()->add_dim_nocopy(new D4Dimension("lon", 1024));
-        g->dims()->add_dim_nocopy(new D4Dimension("time"));
+        g->dims()->add_dim_nocopy(new D4Dimension("time", 20));
 
         D4EnumDef *color_values = new D4EnumDef("colors", dods_byte_c);
         color_values->add_value("red", 1);
@@ -167,6 +173,8 @@ public:
         load_group_with_stuff(child);
         root->add_group(child);
 
+        child->dims()->add_dim_nocopy(new D4Dimension("extra", 17));
+
         // Used add_group() and not add_group_nocopy()
         delete child;
 
@@ -237,12 +245,39 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(D4GroupTest);
 
-int main(int, char**) {
+int
+main(int argc, char *argv[])
+{
+    GetOpt getopt(argc, argv, "d");
+    char option_char;
+
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+            case 'd':
+                debug = 1;  // debug is a static global
+                break;
+            default:
+                break;
+        }
+
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run("", false);
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("D4GroupTest::") + argv[i++];
+            if (debug)
+                cerr << "Running " << test << endl;
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }
-

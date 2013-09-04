@@ -53,7 +53,7 @@ void test_object(Error &err);
 void usage();
 
 int Errorlex();
-int Errorparse(parser_arg *);
+//int Errorparse(parser_arg *);
 
 extern YYSTYPE Errorlval;
 extern int Errordebug;

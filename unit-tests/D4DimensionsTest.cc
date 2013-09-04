@@ -139,7 +139,7 @@ public:
             throw;
         }
     }
-
+#ifdef VARYING
     void test_print_varying() {
         d->add_dim_nocopy(new D4Dimension("first", 10));
         d->add_dim_nocopy(new D4Dimension("second", 100));
@@ -152,11 +152,11 @@ public:
         DBG(cerr << "test_print_varying: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
-
+#endif
     void test_print_insert_dim() {
         d->add_dim_nocopy(new D4Dimension("first", 10));
         d->add_dim_nocopy(new D4Dimension("second", 100));
-        d->add_dim_nocopy(new D4Dimension("third"));
+        d->add_dim_nocopy(new D4Dimension("third", 1000));
 
         //vector<D4Dimensions::dimension>::iterator i = d->dim_begin() + 1;
         D4Dimensions::D4DimensionsIter i = d->dim_begin() + 1;
@@ -173,7 +173,7 @@ public:
     void test_print_assignment() {
         d->add_dim_nocopy(new D4Dimension("first", 10));
         d->add_dim_nocopy(new D4Dimension("second", 100));
-        d->add_dim_nocopy(new D4Dimension("third"));
+        d->add_dim_nocopy(new D4Dimension("third", 1000));
 
         D4Dimensions lhs = *d;
 
@@ -188,7 +188,7 @@ public:
     void test_print_copy_ctor() {
         d->add_dim_nocopy(new D4Dimension("first", 10));
         d->add_dim_nocopy(new D4Dimension("second", 100));
-        d->add_dim_nocopy(new D4Dimension("third"));
+        d->add_dim_nocopy(new D4Dimension("third", 1000));
 
         D4Dimensions lhs(*d);
 
@@ -209,8 +209,9 @@ public:
         CPPUNIT_TEST_EXCEPTION( test_error, Error );
         //CPPUNIT_TEST( test_error );
         CPPUNIT_TEST_EXCEPTION( test_error_2, Error );
-
+#ifdef VARYING
         CPPUNIT_TEST(test_print_varying);
+#endif
         CPPUNIT_TEST(test_print_insert_dim);
         CPPUNIT_TEST(test_print_assignment);
         CPPUNIT_TEST(test_print_copy_ctor);

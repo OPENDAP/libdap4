@@ -56,6 +56,7 @@ private:
     // work as expected when making Groups.
     vector<D4Group*> d_groups;
 
+protected:
     void m_duplicate(const D4Group &g);
 
 public:
@@ -73,7 +74,8 @@ public:
 
     /// Get the dimensions defined for this Group
     D4Dimensions *dims() {
-        if (!d_dims) d_dims = new D4Dimensions;
+    	// If not built yet, make one and set this as parent.
+        if (!d_dims) d_dims = new D4Dimensions(this);
         return d_dims;
     }
 
@@ -91,13 +93,16 @@ public:
     /// Get an iterator to the end of the values
     groupsIter grp_end() { return d_groups.end(); }
 
-    void add_group(D4Group *g) {
-        d_groups.push_back(new D4Group(*g));
+    void add_group(const D4Group *g) {
+    	add_group_nocopy(new D4Group(*g));
     }
+
     void add_group_nocopy(D4Group *g) {
+    	g->set_parent(this);
         d_groups.push_back(g);
     }
     void insert_group_nocopy(D4Group *g, groupsIter i) {
+    	g->set_parent(this);
         d_groups.insert(i, g);
     }
 

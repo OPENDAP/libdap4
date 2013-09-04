@@ -46,6 +46,8 @@
 #include "D4Attributes.h"
 #endif
 
+#include "D4Dimensions.h"
+
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
@@ -246,23 +248,46 @@ Array::add_var_nocopy(BaseType *v, Part)
     an empty string.
     @brief Add a dimension of a given size. */
 void
-Array::append_dim(int size, string name)
+Array::append_dim(int size, const string &name)
 {
-    dimension d;
-
+    dimension d(size, www2id(name));
+#if 0
     // This is invariant
     d.size = size;
     d.name = www2id(name);
+    d.dim = 0;	// Added for DAP4 jhrg 9/4/13
 
     // this information changes with each constraint expression
     d.start = 0;
     d.stop = size - 1;
     d.stride = 1;
     d.c_size = size;
-
+#endif
     _shape.push_back(d);
 
-    update_length(size);
+    update_length();
+}
+
+void
+Array::append_dim(D4Dimension *dim)
+{
+	dimension d(dim->size(), www2id(dim->name()), dim);
+#if 0
+    // This is invariant
+    d.size = dim->size();
+    d.name = www2id(dim->name()); // This is the leaf name; use 'dim' to get the FQN
+
+    d.dim = dim;
+
+    // this information changes with each constraint expression
+    d.start = 0;
+    d.stop = d.size - 1;
+    d.stride = 1;
+    d.c_size = d.size;
+#endif
+    _shape.push_back(d);
+
+    update_length();
 }
 
 /** Creates a new OUTER dimension (slowest varying in rowmajor)
@@ -273,8 +298,8 @@ Array::append_dim(int size, string name)
 void
 Array::prepend_dim(int size, const string& name/* = "" */)
 {
-  dimension d;
-
+  dimension d(size, www2id(name));
+#if 0
   // This is invariant
   d.size = size;
   d.name = www2id(name);
@@ -284,11 +309,32 @@ Array::prepend_dim(int size, const string& name/* = "" */)
   d.stop = size - 1;
   d.stride = 1;
   d.c_size = size;
-
+#endif
   // Shifts the whole array, but it's tiny in general
   _shape.insert(_shape.begin(), d);
 
-  update_length(size); // the number is ignored...
+  update_length(); // the number is ignored...
+}
+
+void
+Array::prepend_dim(D4Dimension *dim)
+{
+  dimension d(dim->size(), www2id(dim->name()), dim);
+#if 0
+  // This is invariant
+  d.size = size;
+  d.name = www2id(name);
+
+  // this information changes with each constraint expression
+  d.start = 0;
+  d.stop = size - 1;
+  d.stride = 1;
+  d.c_size = size;
+#endif
+  // Shifts the whole array, but it's tiny in general
+  _shape.insert(_shape.begin(), d);
+
+  update_length(); // the number is ignored...
 }
 
 /** Remove all the dimensions currently set for the Array. This also
@@ -316,7 +362,7 @@ Array::reset_constraint()
         (*i).stride = 1;
         (*i).c_size = (*i).size;
 
-        update_length((*i).size);
+        update_length();
     }
 }
 
@@ -389,7 +435,7 @@ Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 
     DBG(cerr << "add_constraint: c_size = " << d.c_size << endl);
 
-    update_length(d.c_size);
+    update_length();
 }
 
 /** Returns an iterator to the first dimension of the Array. */
@@ -406,6 +452,8 @@ Array::dim_end()
     return _shape.end() ;
 }
 
+//TODO Many of these methods take a bool parameter that serves no use; remove.
+
 /** Return the total number of dimensions contained in the array.
     When <i>constrained</i> is TRUE, return the number of dimensions
     given the most recently evaluated constraint expression.
@@ -414,7 +462,6 @@ Array::dim_end()
     @param constrained A boolean flag to indicate whether the array is
     constrained or not.  Ignored.
 */
-
 unsigned int
 Array::dimensions(bool /*constrained*/)
 {
@@ -427,7 +474,6 @@ Array::dimensions(bool /*constrained*/)
 
     return dim;
 #endif
-
     return _shape.end() - _shape.begin();
 }
 
@@ -560,6 +606,12 @@ Array::dimension_name(Dim_iter i)
     return (*i).name;
 }
 
+D4Dimension *
+Array::dimension_D4dim(Dim_iter i)
+{
+	return (!_shape.empty()) ? (*i).dim : 0;
+}
+
 /** Returns the number of bytes needed to hold the array.
 
     @brief Returns the width of the data, in bytes. */
@@ -581,30 +633,30 @@ unsigned int Array::width(bool constrained)
 	}
 }
 
-class PrintD4ArrayDimXMLWriter : public unary_function<Array::dimension&, void>
-{
-    XMLWriter &xml;
-    bool d_constrained;
+class PrintD4ArrayDimXMLWriter: public unary_function<Array::dimension&, void> {
+	XMLWriter &xml;
+	bool d_constrained;
 public:
-    PrintD4ArrayDimXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) {}
+	PrintD4ArrayDimXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) { }
 
-    void operator()(Array::dimension &d)
-    {
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)"Dim") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
+	void operator()(Array::dimension &d)
+	{
+		if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dim") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
 
-        if (!d.name.empty())
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d.name.c_str()) < 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+		string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
+		if (!name.empty())
+			if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*) name.c_str())
+					< 0) throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-        ostringstream size;
-        size << (d_constrained ? d.c_size : d.size);
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "size", (const xmlChar*)size.str().c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+		ostringstream size;
+		size << (d_constrained ? d.c_size : d.size);
+		if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "size", (const xmlChar*) size.str().c_str())
+				< 0) throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not end Dim element");
-    }
+		if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not end Dim element");
+	}
 };
 
 /**

@@ -221,8 +221,10 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
 		a->set_attributes_nocopy(b->attributes());
 		// trick: instead of popping b's attributes, copying them and then pushing
 		// a's copy, just move the pointer (but make sure there's only one object that
-		// references that pointer.
+		// references that pointer).
 		b->set_attributes_nocopy(0);
+
+		// TODO delete b?
 
 		push_basetype(a);
 	}
@@ -244,7 +246,7 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
     	else					// get enclosing Group and lookup Dimension there
     		dim = top_group()->find_dim(name);
 
-    	a->append_dim(dim->size(), dim->name());
+    	a->append_dim(dim /*dim->size(), dim->name()*/);
     	return true;
     }
 

@@ -24,8 +24,14 @@
 
 #include "config.h"
 
-#include "D4Group.h"
+#include "XMLWriter.h"
 #include "D4Attributes.h"
+#include "D4Dimensions.h"
+#include "D4Group.h"
+
+//#define DODS_DEBUG
+
+#include "debug.h"
 
 #define D4_ATTR 1
 
@@ -33,8 +39,11 @@ namespace libdap {
 
 void D4Group::m_duplicate(const D4Group &g)
 {
-    // dims; deep copy
+	DBG(cerr << "In D4Group::m_duplicate for " << g.name() << endl);
+
+    // dims; deep copy, this is the parent
     d_dims = new D4Dimensions(*g.d_dims);
+    d_dims->set_parent(this);
 
     // enums; deep copy
     d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
@@ -43,9 +52,12 @@ void D4Group::m_duplicate(const D4Group &g)
     groupsCIter i = g.d_groups.begin();
     while(i != g.d_groups.end()) {
         D4Group *g = (*i++)->ptr_duplicate();
-        this->d_groups.push_back(g);
+        add_group_nocopy(g);
+        // Using push_back failed to set the group's parent pointer. jhrg 9/3/13
+        //this->d_groups.push_back(g);
     }
 
+    DBG(cerr << "Exiting D4Group::m_duplicate" << endl);
 }
 
 /** The D4Group constructor requires only the name of the variable
@@ -72,20 +84,18 @@ D4Group::D4Group(const string &name, const string &dataset)
 /** The D4Group copy constructor. */
 D4Group::D4Group(const D4Group &rhs) : Constructor(rhs), d_dims(0), d_enum_defs(0)
 {
+	DBG(cerr << "In D4Group::copy_ctor for " << rhs.name() << endl);
     m_duplicate(rhs);
 }
 
 D4Group::~D4Group()
 {
-    //for_each(d_groups.begin(), d_groups.end(), group_delete);
-
     delete d_dims;
     delete d_enum_defs;
 
     groupsIter i = d_groups.begin();
     while(i != d_groups.end())
         delete *i++;
-
 }
 
 D4Group *
@@ -146,6 +156,7 @@ D4Group::find_dim(const string &path)
 
 	string::size_type pos = lpath.find('/');
 	if (pos == string::npos) {
+		// name looks like 'bar'
 		return dims()->find_dim(lpath);
 	}
 
@@ -206,6 +217,11 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
     }
 
+    // groups
+    groupsIter g = d_groups.begin();
+    while (g != d_groups.end())
+        (*g++)->print_dap4(xml, constrained);
+
     // Print the Group body if this method is called on either a named group
     // or the root group.
     // enums
@@ -226,11 +242,6 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
         (*v++)->print_dap4(xml, constrained);
         //++v;
     }
-
-    // groups
-    groupsIter g = d_groups.begin();
-    while (g != d_groups.end())
-        (*g++)->print_dap4(xml, constrained);
 
     if (!name().empty() && name() != "/") {
         if (xmlTextWriterEndElement(xml.get_writer()) < 0)

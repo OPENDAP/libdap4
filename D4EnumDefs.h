@@ -36,9 +36,13 @@ using namespace std;
 
 namespace libdap {
 
+class D4EnumDefs;
+class D4Group;
+
 class D4EnumDef {
     string d_name;
     Type d_type;
+    D4EnumDefs *d_parent;
 
     struct tuple {
         string label;
@@ -54,14 +58,17 @@ class D4EnumDef {
 public:
     typedef vector<tuple>::iterator D4EnumValueIter;
 
-    D4EnumDef() : d_name(""), d_type(dods_null_c) {}
-    D4EnumDef(const string &n, const Type &t) : d_name(n), d_type(t) {}
+    D4EnumDef() : d_name(""), d_type(dods_null_c), d_parent(0) {}
+    D4EnumDef(const string &n, const Type &t, D4EnumDefs *e = 0) : d_name(n), d_type(t), d_parent(e) {}
 
     string name() const { return d_name; }
     void set_name(const string &n) { d_name = n; }
 
     Type type() const { return d_type; }
     void set_type(Type t) { d_type = t; }
+
+    D4EnumDefs *parent() const { return d_parent; }
+    void set_parent(D4EnumDefs *e) { d_parent = e; }
 
     bool empty() const { return d_tuples.empty(); }
 
@@ -82,6 +89,8 @@ public:
 class D4EnumDefs {
     vector<D4EnumDef*> d_enums;
 
+    D4Group *d_parent;		// the group that holds this set of D4EnumDefs; weak pointer, don't delete
+
     void m_print_enum(XMLWriter &xml, D4EnumDef *e) const;
 
     void m_duplicate(const D4EnumDefs &rhs) {
@@ -89,13 +98,15 @@ class D4EnumDefs {
         while (i != rhs.d_enums.end()) {
             d_enums.push_back(new D4EnumDef(**i++));    // deep copy
         }
+
+        d_parent = rhs.d_parent;
     }
 
 public:
     typedef vector<D4EnumDef*>::iterator D4EnumDefIter;
     typedef vector<D4EnumDef*>::const_iterator D4EnumDefCIter;
 
-    D4EnumDefs() {}
+    D4EnumDefs() : d_parent(0) {}
     D4EnumDefs(const D4EnumDefs &rhs) {
         m_duplicate(rhs);
     }
@@ -120,9 +131,10 @@ public:
      * @param enum_def The enumeration.
      */
     void add_enum(D4EnumDef *enum_def) {
-        d_enums.push_back(new D4EnumDef(*enum_def));
+    	add_enum_nocopy(new D4EnumDef(*enum_def));
     }
     void add_enum_nocopy(D4EnumDef *enum_def) {
+    	enum_def->set_parent(this);
         d_enums.push_back(enum_def);
     }
 
@@ -142,7 +154,9 @@ public:
      * @param i iterator
      */
     void insert_enum(D4EnumDef *enum_def, D4EnumDefIter i) {
-        d_enums.insert(i, new D4EnumDef(*enum_def));
+    	D4EnumDef *enum_def_copy = new D4EnumDef(*enum_def);
+    	enum_def_copy->set_parent(this);
+        d_enums.insert(i, enum_def_copy);
     }
 #endif
     void print_dap4(XMLWriter &xml) const;

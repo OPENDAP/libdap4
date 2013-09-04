@@ -55,6 +55,8 @@
 namespace libdap
 {
 
+class D4Dimension;
+
 const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
 /** This class is used to hold arrays of data. The elements of the array can
@@ -115,12 +117,31 @@ public:
         typedefs. */
     struct dimension
     {
+    	// In DAP2, the name and size of a dimension is stored here, along
+    	// with information about any constraint. In DAP4, either the name
+    	// and size are stored in the two fields below _or_ the name and
+    	// size information comes from a dimension object defined in a
+    	// group that is referenced by the 'dim' pointer. Do not free this
+    	// pointer; it is shared between the array and the Group where the
+    	// Dimension is defined. To keep Array manageable to implement, size
+    	// will be set here using the value from 'dim' if it is not null.
         int size;  ///< The unconstrained dimension size.
         string name;    ///< The name of this dimension.
+
+        D4Dimension *dim; ///< If not null, a (shared) pointer to the Dimension
+
         int start;  ///< The constraint start index
         int stop;  ///< The constraint end index
         int stride;  ///< The constraint stride
         int c_size;  ///< Size of dimension once constrained
+
+        dimension(unsigned long s, string n, D4Dimension *d = 0) : size(s), name(n), dim(d) {
+            // this information changes with each constraint expression
+            start = 0;
+            stop = size - 1;
+            stride = 1;
+            c_size = size;
+        }
     };
 
 private:
@@ -163,8 +184,10 @@ public:
     void add_var(BaseType *v, Part p = nil);
     void add_var_nocopy(BaseType *v, Part p = nil);
 
-    void append_dim(int size, string name = "");
+    void append_dim(int size, const string &name = "");
+    void append_dim(D4Dimension *dim);
     void prepend_dim(int size, const string& name = "");
+    void prepend_dim(D4Dimension *dim);
     void clear_all_dims();
 
     virtual void add_constraint(Dim_iter i, int start, int stride, int stop);
@@ -172,7 +195,7 @@ public:
 
     virtual void clear_constraint(); // deprecated
 
-    virtual void update_length(int size);
+    virtual void update_length(int size = 0); // should be used internally only
     virtual unsigned int width(bool constrained = true);
 
     Dim_iter dim_begin() ;
@@ -183,6 +206,7 @@ public:
     virtual int dimension_stop(Dim_iter i, bool constrained = false);
     virtual int dimension_stride(Dim_iter i, bool constrained = false);
     virtual string dimension_name(Dim_iter i);
+    virtual D4Dimension *dimension_D4dim(Dim_iter i);
 
     virtual unsigned int dimensions(bool constrained = false);
 

@@ -157,6 +157,11 @@ public:
         compare_dmr_round_trip("/D4-xml/DMR_3.4.xml", "/D4-xml/DMR_3.4_baseline.xml");
     }
 
+    void test_array_var_def4()
+    {
+        compare_dmr_round_trip("/D4-xml/DMR_3.5.xml", "/D4-xml/DMR_3.5_baseline.xml");
+    }
+
     void test_all_simple_var_def()
     {
         compare_dmr_round_trip("/D4-xml/DMR_4_baseline.xml", "/D4-xml/DMR_4_baseline.xml");
@@ -194,6 +199,7 @@ public:
     CPPUNIT_TEST(test_array_var_def);
     CPPUNIT_TEST(test_array_var_def2);
     CPPUNIT_TEST(test_array_var_def3);
+    CPPUNIT_TEST(test_array_var_def4);
     CPPUNIT_TEST(test_all_simple_var_def);
     CPPUNIT_TEST(test_structure_def);
     CPPUNIT_TEST(test_structure_with_attributes_def);

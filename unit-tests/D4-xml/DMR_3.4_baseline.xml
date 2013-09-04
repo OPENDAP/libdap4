@@ -7,7 +7,7 @@
     </Enumeration>
     <Dimension name="dim1" size="5"/>
     <Byte name="b1">
-        <Dim name="dim1" size="5"/>
+        <Dim name="/dim1" size="5"/>
         <Dim size="30"/>
     </Byte>
 </Dataset>
