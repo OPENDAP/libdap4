@@ -154,6 +154,9 @@ string
 rfc822_date(const time_t t)
 {
     struct tm *stm = gmtime(&t);
+    if (!stm)
+    	return "";
+
     char d[256];
 
     snprintf(d, 255, "%s, %02d %s %4d %02d:%02d:%02d GMT", days[stm->tm_wday],
@@ -222,8 +225,17 @@ ErrMsgT(const string &Msgt)
     if (time(&TimBin) == (time_t) - 1)
         strncpy(TimStr, "time() error           ", TimLen-1);
     else {
-        strncpy(TimStr, ctime(&TimBin), TimLen-1);
-        TimStr[TimLen - 2] = '\0'; // overwrite the \n
+    	char *ctime_value = ctime(&TimBin);
+    	if (!ctime_value)
+    		strncpy(TimStr, "Unknown", TimLen-1);
+    	else {
+    		strncpy(TimStr, ctime_value, TimLen-1);
+    		TimStr[TimLen - 2] = '\0'; // overwrite the \n
+    	}
+#if 0
+    	strncpy(TimStr, ctime(&TimBin), TimLen-1);
+    	TimStr[TimLen - 2] = '\0'; // overwrite the \n
+#endif
     }
 
     cerr << "[" << TimStr << "] DAP server error: " << Msgt << endl;

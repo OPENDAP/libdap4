@@ -46,6 +46,7 @@ class XDRFileUnMarshaller : public UnMarshaller
 {
 private:
     XDR *			_source ;
+
     				XDRFileUnMarshaller() ;
     				XDRFileUnMarshaller( const XDRFileUnMarshaller &um ) ;
     XDRFileUnMarshaller &	operator=( const XDRFileUnMarshaller & ) ;

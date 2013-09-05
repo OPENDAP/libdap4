@@ -135,6 +135,13 @@ public:
         int stride;  ///< The constraint stride
         int c_size;  ///< Size of dimension once constrained
 
+        dimension() : size(0), name(""), dim(0) {
+            // this information changes with each constraint expression
+            start = 0;
+            stop = 0;
+            stride = 1;
+            c_size = size;
+        }
         dimension(unsigned long s, string n, D4Dimension *d = 0) : size(s), name(n), dim(d) {
             // this information changes with each constraint expression
             start = 0;

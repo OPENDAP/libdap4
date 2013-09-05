@@ -60,15 +60,13 @@ XDRFileUnMarshaller::XDRFileUnMarshaller( FILE *out )
 }
 
 XDRFileUnMarshaller::XDRFileUnMarshaller()
-    : UnMarshaller(),
-      _source( 0 )
+    : UnMarshaller(), _source( 0 )
 {
     throw InternalErr( __FILE__, __LINE__, "Default constructor not implemented." ) ;
 }
 
 XDRFileUnMarshaller::XDRFileUnMarshaller( const XDRFileUnMarshaller &um )
-    : UnMarshaller( um ),
-      _source( 0 )
+    : UnMarshaller( um ), _source( 0 )
 {
     throw InternalErr( __FILE__, __LINE__, "Copy constructor not implemented." ) ;
 }
@@ -83,6 +81,10 @@ XDRFileUnMarshaller::operator=( const XDRFileUnMarshaller & )
 
 XDRFileUnMarshaller::~XDRFileUnMarshaller( )
 {
+    // Some static code analysis tools complain that delete_xdrstdio
+    // does not close the FILE* it holds, but that's not true with
+    // modern XDR libraries. Don't try to close that FILE*. jhrg 8/27/13
+
     delete_xdrstdio( _source ) ;
 }
 

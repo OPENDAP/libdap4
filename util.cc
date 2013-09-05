@@ -115,6 +115,8 @@ bool is_host_big_endian()
  a DAP String. */
 string extract_string_argument(BaseType * arg)
 {
+	assert(arg);
+
     if (arg->type() != dods_str_c)
         throw Error(malformed_expr,
                 "The function requires a DAP string argument.");
@@ -123,7 +125,7 @@ string extract_string_argument(BaseType * arg)
         throw InternalErr(__FILE__, __LINE__,
                 "The CE Evaluator built an argument list where some constants held no values.");
 
-    string s = dynamic_cast<Str&>(*arg).value();
+    string s = static_cast<Str*>(arg)->value();
 
     DBG(cerr << "s: " << s << endl);
 
@@ -301,19 +303,19 @@ double extract_double_value(BaseType * arg)
     // just arguments.
     switch (arg->type()) {
     case dods_byte_c:
-        return (double)(dynamic_cast<Byte&>(*arg).value());
+        return (double)(static_cast<Byte*>(arg)->value());
     case dods_uint16_c:
-        return (double)(dynamic_cast<UInt16&>(*arg).value());
+        return (double)(static_cast<UInt16*>(arg)->value());
     case dods_int16_c:
-        return (double)(dynamic_cast<Int16&>(*arg).value());
+        return (double)(static_cast<Int16*>(arg)->value());
     case dods_uint32_c:
-        return (double)(dynamic_cast<UInt32&>(*arg).value());
+        return (double)(static_cast<UInt32*>(arg)->value());
     case dods_int32_c:
-        return (double)(dynamic_cast<Int32&>(*arg).value());
+        return (double)(static_cast<Int32*>(arg)->value());
     case dods_float32_c:
-        return (double)(dynamic_cast<Float32&>(*arg).value());
+        return (double)(static_cast<Float32*>(arg)->value());
     case dods_float64_c:
-        return dynamic_cast<Float64&>(*arg).value();
+        return static_cast<Float64*>(arg)->value();
     default:
         throw InternalErr(__FILE__, __LINE__,
                 "The argument list built by the CE parser contained an unsupported numeric type.");
@@ -425,8 +427,16 @@ systime()
     if (time(&TimBin) == (time_t) - 1)
         return string("time() error");
     else {
+#if 0
         string TimStr = ctime(&TimBin);
-        return TimStr.substr(0, TimStr.size() - 2); // remove the \n
+#endif
+        char *ctime_value = ctime(&TimBin);
+        if (ctime_value) {
+        	string TimStr = ctime_value;
+        	return TimStr.substr(0, TimStr.size() - 2); // remove the \n
+        }
+        else
+        	return "Unknown";
     }
 }
 

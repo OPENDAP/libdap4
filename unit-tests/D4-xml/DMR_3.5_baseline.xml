@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:DMR_3.xml" dapVersion="1.0" dmrVersion="1.0" name="DMR_3">
+    <Dimension name="dim1" size="5"/>
+    <Enumeration name="colors" basetype="Byte">
+        <EnumConst name="red" value="1"/>
+        <EnumConst name="green" value="2"/>
+        <EnumConst name="blue" value="3"/>
+    </Enumeration>
     <Group name="g1">
+        <Dimension name="dim1" size="10"/>
         <Group name="g2">
             <Dimension name="dim1" size="20"/>
             <Int32 name="thing1">
@@ -9,7 +16,6 @@
                 <Dim name="/g1/g2/dim1" size="20"/>
             </Int32>
         </Group>
-        <Dimension name="dim1" size="10"/>
         <Int32 name="thing1">
             <Dim name="/dim1" size="5"/>
             <Dim name="/g1/dim1" size="10"/>
@@ -24,12 +30,6 @@
             <Dim name="/g1/g2/dim1" size="20"/>
         </Int32>
     </Group>
-    <Enumeration name="colors" basetype="Byte">
-        <EnumConst name="red" value="1"/>
-        <EnumConst name="green" value="2"/>
-        <EnumConst name="blue" value="3"/>
-    </Enumeration>
-    <Dimension name="dim1" size="5"/>
     <Byte name="b1">
         <Dim name="/dim1" size="5"/>
         <Dim size="30"/>

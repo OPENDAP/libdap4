@@ -2,6 +2,15 @@ News for version 3.12.0
 
 Moved server functions out of libdap; they are now stored in a BES module.
 
+Added support for building large (constant) arrays to be used in
+server functions. The arrays are defined using a new special form that
+the ConstraintEvaluator class supports. The server side functions are
+now in their own BES module (built as part of the BES for now) and
+it's possible to name the constant arrays. Arrays of 1 million
+elements can be made in a fraction of a second (although it will take
+longer to send the constraint to the server). See the README file for
+more details.
+
 News for version 3.11.7
 
 Bug fix for the server function caching code. Now if the function

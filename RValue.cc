@@ -109,15 +109,17 @@ build_btp_args(rvalue_list *args, DDS &dds)
         for (rvalue::Args_iter i = args->begin(); i != args->end() && index
                 < argc + 1; ++i)
             argv[index++] = (*i)->bvalue(dds);
+
+        argv[index] = 0; // Add the null terminator.
     }
 
     if (index != argc) {
         delete[] argv;
         throw InternalErr(__FILE__, __LINE__, "index out of range.");
     }
-
+#if 0
     argv[index] = 0; // Add the null terminator.
-
+#endif
     return argv;
 }
 

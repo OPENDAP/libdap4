@@ -217,10 +217,9 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
     }
 
-    // groups
-    groupsIter g = d_groups.begin();
-    while (g != d_groups.end())
-        (*g++)->print_dap4(xml, constrained);
+    // dims
+    if (!dims()->empty())
+        dims()->print_dap4(xml);
 
     // Print the Group body if this method is called on either a named group
     // or the root group.
@@ -228,9 +227,10 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
     if (!enum_defs()->empty())
         enum_defs()->print_dap4(xml);
 
-    // dims
-    if (!dims()->empty())
-        dims()->print_dap4(xml);
+    // groups
+    groupsIter g = d_groups.begin();
+    while (g != d_groups.end())
+        (*g++)->print_dap4(xml, constrained);
 
 #if D4_ATTR
     attributes()->print_dap4(xml);
@@ -240,7 +240,6 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
     Constructor::Vars_iter v = var_begin();
     while (v != var_end()) {
         (*v++)->print_dap4(xml, constrained);
-        //++v;
     }
 
     if (!name().empty() && name() != "/") {

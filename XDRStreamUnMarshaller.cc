@@ -181,14 +181,18 @@ void XDRStreamUnMarshaller::get_str(string &val)
     //XDR *source = 0;
     // Must address the case where the string is larger than the buffer
     if (i + 4 > XDR_DAP_BUFF_SIZE) {
+#if 0
         char *buf = (char *) malloc(i + 4);
         if (!buf)
             throw InternalErr(__FILE__, __LINE__, "Error allocating memory");
-        XDR source;// = new XDR;
-        xdrmem_create(&source, buf, i + 4, XDR_DECODE);
-        memcpy(buf, d_buf, 4);
+#endif
+        vector<char> buf(i+4);
 
-        d_in.read(buf + 4, i);
+        XDR source;// = new XDR;
+        xdrmem_create(&source, &buf[0], i + 4, XDR_DECODE);
+        memcpy(&buf[0], d_buf, 4);
+
+        d_in.read(&buf[0] + 4, i);
 
         xdr_setpos( &source, 0);
         if (!xdr_string( &source, &in_tmp, max_str_len)) {

@@ -324,6 +324,8 @@ string date_time_str(time_t *calendar, bool local)
                 loctime.tm_sec);
 #else
     struct tm *loctime = localtime(calendar);
+    if (!loctime)
+    	return "";
     snprintf(buf, 40, "%s, %02d %s %04d %02d:%02d:%02d",
             wkdays[loctime->tm_wday],
             loctime->tm_mday,
@@ -348,6 +350,8 @@ string date_time_str(time_t *calendar, bool local)
                 gmt.tm_sec);
 #else
     struct tm *gmt = gmtime(calendar);
+    if (!gmt)
+    	return "";
     snprintf(buf, 40, "%s, %02d %s %04d %02d:%02d:%02d GMT",
             wkdays[gmt->tm_wday],
             gmt->tm_mday,

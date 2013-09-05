@@ -83,8 +83,8 @@ getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la
 getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 
-LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y ce_expr.lex ce_expr.y \
-Error.lex Error.y
+LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
+Error.lex Error.yy
 
 EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI		\
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf		\
@@ -126,13 +126,13 @@ cccc:
 # Fortify targets.
 .PHONY: fortify
 fortify: $(BUILT_SOURCES)
-	(cd gl && sourceanalyzer -b @PACKAGE@-gl $(MAKE) )
-	sourceanalyzer -b @PACKAGE@-parsers $(MAKE) libparsers.la
-	sourceanalyzer -b @PACKAGE@ $(MAKE) libdap.la libdapserver.la libdapclient.la
+	(cd gl && sourceanalyzer -b @PACKAGE@-gl $(MAKE) $(MFLAGS) )
+	sourceanalyzer -b @PACKAGE@-parsers $(MAKE) $(MFLAGS) libparsers.la
+	sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS) libdap.la libdapserver.la libdapclient.la
 	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
 
 # run fortify on only our code, not the gnulib code or the flex/bison code.
-# This does skip testing some of the functions we wrote in the *.lex/*.y
+# This does skip testing some of the functions we wrote in the *.lex/*.yy
 # files but should eliminate the false positives from flex and bison, too.
 .PHONY: fortify-lite
 fortify-lite: dods-datatypes.h xdr-datatypes.h
@@ -332,7 +332,7 @@ lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.hh
 
 ce_expr.tab.cc ce_expr.tab.hh: ce_expr.yy
 	$(YACC) $(YFLAGS) $<
-	
+
 # Errors
 
 lex.Error.cc: Error.lex Error.tab.cc Error.tab.hh

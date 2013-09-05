@@ -42,10 +42,10 @@ using namespace libdap;
 void test_dap4_parser(const string &name, bool debug, bool print);
 
 void usage(string name) {
-    cerr << "Usage: " << name << "-p | -P <file> [-d -x]" << endl
-            << "where p or P parse stdin or a file" << endl
+    cerr << "Usage: " << name << "-p <file> [-d -x]" << endl
+            << "p: parse a file (use "-" for stdin)" << endl
             << "d: turn on detailed debugging" << endl
-            << "x: print the binary object(s) built by the parse.";
+            << "x: print the binary object(s) built by the parse." << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -64,10 +64,6 @@ int main(int argc, char *argv[]) {
             break;
 
         case 'p':
-            dap4_parser_test = 1;
-            break;
-
-        case 'P':
             dap4_parser_test = 1;
             name = getopt.optarg;
             break;
@@ -112,7 +108,7 @@ void test_dap4_parser(const string &name, bool /*debug*/, bool print)
 
     try {
         D4ParserSax2 parser;
-        if (name.empty()) {
+        if (name == "-") {
             parser.intern(cin, &table);
         }
         else {

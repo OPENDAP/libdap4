@@ -55,7 +55,7 @@
 #include "debug.h"
 #include "parser.h"
 #include "util.h"
-#include "das.tab.hh"
+// #include "das.tab.hh"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -122,7 +122,7 @@ static void add_bad_attribute(AttrTable *attr, const string &type,
 
 } // code
 
-%require "2.5"
+%require "2.4"
 
 %parse-param {parser_arg *arg}
 %name-prefix "das"

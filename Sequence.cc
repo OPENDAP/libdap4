@@ -299,10 +299,10 @@ Sequence::is_linear()
                 break;
             }
             seq_found = true;
-            linear = dynamic_cast<Sequence *>((*iter))->is_linear();
+            linear = static_cast<Sequence *>((*iter))->is_linear();
         }
         else if ((*iter)->type() == dods_structure_c) {
-            linear = dynamic_cast<Structure*>((*iter))->is_linear();
+            linear = static_cast<Structure*>((*iter))->is_linear();
         }
         else {
             // A linear sequence cannot have Arrays, Lists or Grids.
@@ -888,7 +888,7 @@ Sequence::serialize_parent_part_two(DDS &dds,
 
     BaseType *btp = get_parent();
     if (btp && btp->type() == dods_sequence_c)
-        dynamic_cast<Sequence&>(*btp).serialize_parent_part_two(dds, eval, m);
+        static_cast<Sequence&>(*btp).serialize_parent_part_two(dds, eval, m);
 
     if (d_unsent_data) {
         DBG(cerr << "Writing Start of Instance marker" << endl);
@@ -939,7 +939,7 @@ Sequence::serialize_leaf(DDS &dds,
     if (status && !is_end_of_rows(i)) {
         BaseType *btp = get_parent();
         if (btp && btp->type() == dods_sequence_c)
-            dynamic_cast<Sequence&>(*btp).serialize_parent_part_two(dds,
+            static_cast<Sequence&>(*btp).serialize_parent_part_two(dds,
 								    eval, m);
     }
 
@@ -1063,7 +1063,7 @@ Sequence::intern_data_parent_part_one(DDS & dds,
             if ((*iter)->send_p()) {
                 switch ((*iter)->type()) {
                 case dods_sequence_c:
-                    dynamic_cast<Sequence&>(**iter).intern_data_private(
+                	static_cast<Sequence&>(**iter).intern_data_private(
                             eval, dds, sequence_values_stack);
                     break;
 
@@ -1104,7 +1104,7 @@ Sequence::intern_data_parent_part_two(DDS &dds,
 
     BaseType *btp = get_parent();
     if (btp && btp->type() == dods_sequence_c) {
-        dynamic_cast<Sequence&>(*btp).intern_data_parent_part_two(
+    	static_cast<Sequence&>(*btp).intern_data_parent_part_two(
                                       dds, eval, sequence_values_stack);
     }
 
@@ -1167,7 +1167,7 @@ Sequence::intern_data_for_leaf(DDS &dds,
             // This call will read the values for the parent sequences and
             // then allocate a new instance for the leaf and push that onto
             // the stack.
-            dynamic_cast<Sequence&>(*btp).intern_data_parent_part_two(
+        	static_cast<Sequence&>(*btp).intern_data_parent_part_two(
 					    dds, eval, sequence_values_stack);
         }
 
@@ -1397,7 +1397,7 @@ Sequence::print_one_row(ostream &out, int row, string space,
         bt_ptr = var_value(row, j++);
         if (bt_ptr) {  // data
             if (bt_ptr->type() == dods_sequence_c)
-                dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
+            	static_cast<Sequence*>(bt_ptr)->print_val_by_rows
                      (out, space + "    ", false, print_row_num);
             else
                 bt_ptr->print_val(out, space, false);
@@ -1410,7 +1410,7 @@ Sequence::print_one_row(ostream &out, int row, string space,
         if (bt_ptr) {  // data
             out << ", ";
             if (bt_ptr->type() == dods_sequence_c)
-                dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
+            	static_cast<Sequence*>(bt_ptr)->print_val_by_rows
                         (out, space + "    ", false, print_row_num);
             else
                 bt_ptr->print_val(out, space, false);
@@ -1543,10 +1543,10 @@ Sequence::set_leaf_sequence(int lvl)
                 throw Error("This implementation does not support more than one nested sequence at a level. Contact the server administrator.");
 
             has_child_sequence = true;
-            dynamic_cast<Sequence&>(**iter).set_leaf_sequence(++lvl);
+            static_cast<Sequence&>(**iter).set_leaf_sequence(++lvl);
         }
         else if ((*iter)->type() == dods_structure_c) {
-            dynamic_cast<Structure&>(**iter).set_leaf_sequence(lvl);
+        	static_cast<Structure&>(**iter).set_leaf_sequence(lvl);
         }
     }
 

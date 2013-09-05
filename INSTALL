@@ -1,5 +1,5 @@
 
-Updated for version 3.11.7 of the OPeNDAP DAP 3.4 library software.
+Updated for version 3.12.0 of the OPeNDAP DAP 3.4 library software.
 
 Installing the DAP2/3.x library
 
@@ -74,7 +74,7 @@ REQUIREMENTS
     autoconf 2.63 and libtool 2.2.6. Earlier versions may work, but
     may cause problems, particularly with the 'distcheck' target for
     make. Given those requirements, use 'autoreconf --force --install
-    --verbose' and then build as described above. You also need bison
+    --verbose' and then build as described above. You also need bison 2.4
     and flex as of version 3.7.9.
 
   o The library uses libcurl and libxml2. You will need these libraries

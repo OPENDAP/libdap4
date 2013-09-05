@@ -474,7 +474,8 @@ Array::dimensions(bool /*constrained*/)
 
     return dim;
 #endif
-    return _shape.end() - _shape.begin();
+    // guard against the case where begin and end are hosed.
+    return (unsigned int)((_shape.begin() < _shape.end()) ? _shape.end() - _shape.begin(): 0);
 }
 
 /** Return the size of the array dimension referred to by <i>i</i>.

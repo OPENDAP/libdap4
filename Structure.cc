@@ -179,7 +179,7 @@ Structure::is_linear()
     bool linear = true;
     for (Vars_iter i = d_vars.begin(); linear && i != d_vars.end(); i++) {
         if ((*i)->type() == dods_structure_c)
-            linear = linear && dynamic_cast<Structure*>((*i))->is_linear();
+            linear = linear && static_cast<Structure*>((*i))->is_linear();
         else
             linear = linear && (*i)->is_simple_type();
     }
@@ -230,9 +230,9 @@ Structure::set_leaf_sequence(int level)
 {
     for (Vars_iter i = var_begin(); i != var_end(); i++) {
         if ((*i)->type() == dods_sequence_c)
-            dynamic_cast<Sequence&>(**i).set_leaf_sequence(++level);
+        	static_cast<Sequence&>(**i).set_leaf_sequence(++level);
         else if ((*i)->type() == dods_structure_c)
-            dynamic_cast<Structure&>(**i).set_leaf_sequence(level);
+        	static_cast<Structure&>(**i).set_leaf_sequence(level);
     }
 }
 
