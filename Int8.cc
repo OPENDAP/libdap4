@@ -61,7 +61,7 @@ namespace libdap {
 
     @param n A string containing the name of the variable to be created.
 */
-Int8::Int8(const string &n) : BaseType(n, dods_int8_c)
+Int8::Int8(const string &n) : BaseType(n, dods_int8_c), d_buf(0)
 {}
 
 /** The Int8 server-side constructor accepts the name of the variable and
@@ -71,7 +71,7 @@ Int8::Int8(const string &n) : BaseType(n, dods_int8_c)
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-Int8::Int8(const string &n, const string &d) : BaseType(n, d, dods_int8_c)
+Int8::Int8(const string &n, const string &d) : BaseType(n, d, dods_int8_c), d_buf(0)
 {}
 
 Int8::Int8(const Int8 &copy_from) : BaseType(copy_from)
@@ -104,27 +104,25 @@ Int8::width()
     return sizeof(dods_int8);
 }
 
-bool
-Int8::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
+/**
+ * @brief Serialize an Int8
+ * @param m
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+Int8::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
 {
-    dds.timeout_on();
-
     if (!read_p())
-        read();  // read() throws Error and InternalErr
+        read();          // read() throws Error
 
-#if EVAL
-    if (ce_eval && !eval.eval_selection(dds, dataset()))
-        return true;
-#endif
-
-    dds.timeout_off();
-
-    assert(typeid(m)==typeid(D4StreamMarshaller));
-    static_cast<D4StreamMarshaller&>(m).put_int8( d_buf ) ;
-
-    return true;
+    m.put_int8( d_buf ) ;
 }
 
+#if 0
+// TODO remove this: not Int8 in DAP2 so use the new default method that throws...
 bool
 Int8::deserialize(UnMarshaller &um, DDS *, bool)
 {
@@ -133,6 +131,7 @@ Int8::deserialize(UnMarshaller &um, DDS *, bool)
 
     return false;
 }
+#endif
 
 dods_int8
 Int8::value() const

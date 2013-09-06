@@ -68,8 +68,13 @@ public:
 
     virtual unsigned int width();
 
+#if 0
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+#endif
+
+    // DAP4
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
 
     virtual bool set_value(dods_int64 i);
     virtual dods_int64 value() const;

@@ -774,6 +774,25 @@ BaseType::intern_data(ConstraintEvaluator &, DDS &dds)
     dds.timeout_off();
 }
 
+bool
+BaseType::serialize(ConstraintEvaluator &, DDS &,  Marshaller &, bool)
+{
+	throw InternalErr(__FILE__, __LINE__, "The DAP2 serialize() method has not been implemented for " + type_name());
+}
+
+bool
+BaseType::deserialize(UnMarshaller &, DDS *, bool)
+{
+	throw InternalErr(__FILE__, __LINE__, "The DAP2 deserialize() method has not been implemented for " + type_name());
+}
+
+void
+BaseType::serialize(D4StreamMarshaller &, DMR &, ConstraintEvaluator &, bool)
+{
+	throw InternalErr(__FILE__, __LINE__, "The DAP4 serialize() method has not been implemented for " + type_name());
+}
+
+
 /** Write the variable's declaration in a C-style syntax. This
     function is used to create textual representation of the Data
     Descriptor Structure (DDS).  See <i>The DODS User Manual</i> for

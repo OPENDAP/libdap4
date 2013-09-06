@@ -52,10 +52,13 @@
 #include "Sequence.h"
 #include "Grid.h"
 
+#include "DDS.h"
 #include "Marshaller.h"
 #include "UnMarshaller.h"
 
-#include "DDS.h"
+#include "DMR.h"
+#include "D4StreamMarshaller.h"
+
 #include "util.h"
 #include "parser.h"
 #include "Operators.h"
@@ -87,8 +90,7 @@ Str::Str(const string &n) : BaseType(n, dods_str_c), d_buf("")
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-Str::Str(const string &n, const string &d)
-    : BaseType(n, d, dods_str_c), d_buf("")
+Str::Str(const string &n, const string &d) : BaseType(n, d, dods_str_c), d_buf("")
 {}
 
 Str::Str(const Str &copy_from) : BaseType(copy_from)
@@ -129,8 +131,7 @@ Str::width()
 }
 
 bool
-Str::serialize(ConstraintEvaluator &eval, DDS &dds,
-               Marshaller &m, bool ce_eval)
+Str::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
 
     DBG(cerr << "Entering (" << this->name() << " [" << this << "])" << endl);
@@ -140,10 +141,8 @@ Str::serialize(ConstraintEvaluator &eval, DDS &dds,
     if (!read_p())
         read();
 
-#if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-#endif
 
     dds.timeout_off();
 
@@ -163,6 +162,24 @@ Str::deserialize(UnMarshaller &um, DDS *, bool)
 
     return false;
 }
+
+/**
+ * @brief Serialize an Int8
+ * @param m
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+Str::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
+{
+    if (!read_p())
+        read();          // read() throws Error
+
+    m.put_str( d_buf ) ;
+}
+
 
 /** Read the object's value and put a copy in the C++ string object
     referenced by \e **val. If \e *val is null, this method will allocate

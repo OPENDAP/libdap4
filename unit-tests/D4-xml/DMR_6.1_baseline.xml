@@ -7,31 +7,31 @@
         <EnumConst name="blue" value="3"/>
     </Enumeration>
     <Group name="g1">
-        <Attribute name="test" type="Int16">
-            <value>1</value>
-            <value>2</value>
-            <value>3</value>
-        </Attribute>
         <Int8 name="i8"/>
         <Structure name="s">
             <Int16 name="i16"/>
             <UInt16 name="ui16"/>
             <URL name="u"/>
         </Structure>
+        <Attribute name="test" type="Int16">
+            <value>1</value>
+            <value>2</value>
+            <value>3</value>
+        </Attribute>
     </Group>
     <Group name="g2">
         <Group name="gg2">
-            <Attribute name="test" type="Int16">
-                <value>1</value>
-                <value>2</value>
-                <value>3</value>
-            </Attribute>
             <Float64 name="f64"/>
             <Structure name="s">
                 <Int32 name="i16"/>
                 <UInt32 name="ui16"/>
                 <URL name="u"/>
             </Structure>
+            <Attribute name="test" type="Int16">
+                <value>1</value>
+                <value>2</value>
+                <value>3</value>
+            </Attribute>
         </Group>
         <String name="s"/>
     </Group>

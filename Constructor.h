@@ -92,9 +92,14 @@ public:
     virtual void del_var(Vars_iter i);
 
     virtual bool read();
+
+    // DAP2
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+
+    // DAP4
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
 
     // Do not store values in memory as for C; users work with the C++ objects
     virtual unsigned int val2buf(void *, bool) {

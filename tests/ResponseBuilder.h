@@ -30,10 +30,14 @@
 
 class libdap::ConstraintEvaluator;
 class libdap::DDS;
+class libdap::DMR;
 
 /**
  * Used for testing only. This duplicates code in the bes/dap module.
  * jhrg 6/11/13
+ *
+ * This has now been extended with DAP4 DMR and Data response code.
+ * jhrg 9/5/13
  */
 
 class ResponseBuilder
@@ -55,20 +59,45 @@ public:
     /** Make an empty instance. Use the set_*() methods to load with needed
         values. You must call at least set_dataset_name() or be requesting
         version information. */
-    ResponseBuilder() {
-        initialize();
-    }
+    ResponseBuilder() { initialize();  }
 
     virtual ~ResponseBuilder();
 
-    virtual std::string get_ce() const;
+    /** Return the entire constraint expression in a string.  This
+     includes both the projection and selection clauses, but not the
+     question mark.
+
+     @brief Get the constraint expression.
+     @return A string object that contains the constraint expression. */
+    virtual std::string get_ce() const { return d_ce; }
     virtual void set_ce(std::string _ce);
 
-    virtual std::string get_dataset_name() const;
+    /** The dataset name is the filename or other string that the
+     filter program will use to access the data. In some cases this
+     will indicate a disk file containing the data.  In others, it
+     may represent a database query or some other exotic data
+     access method.
+
+     @brief Get the dataset name.
+     @return A string object that contains the name of the dataset. */
+    virtual std::string get_dataset_name() const { return d_dataset; }
     virtual void set_dataset_name(const std::string _dataset);
 
+    // These are used for DAP2 testing by expr-test.
     virtual void dataset_constraint(std::ostream &out, libdap::DDS &dds, libdap::ConstraintEvaluator &eval, bool ce_eval = true);
     virtual void send_data(std::ostream &data_stream, libdap::DDS &dds, libdap::ConstraintEvaluator &eval, bool with_mime_headers = true);
+
+    // These are used for DAP4 testing by dmr-test.
+    virtual void establish_timeout(ostream &stream) const;
+    virtual void remove_timeout() const;
+
+    virtual void dataset_constraint_dmr(std::ostream &out, libdap::DMR &dmr, libdap::ConstraintEvaluator &eval,
+            const string &start, const string &boundary, bool filter);
+
+    virtual void send_dmr(std::ostream &out, libdap::DMR &dmr, libdap::ConstraintEvaluator &eval, bool with_mime_headers);
+
+    virtual void send_data_dmr(std::ostream &out, libdap::DMR &dmr, libdap::ConstraintEvaluator &eval,
+    		const string &start, const string &boundary, bool with_mime_headers);
 };
 
 #endif // _response_builder_h

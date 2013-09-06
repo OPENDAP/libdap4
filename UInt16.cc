@@ -51,10 +51,13 @@
 #include "Str.h"
 #include "Url.h"
 
+#include "DDS.h"
 #include "Marshaller.h"
 #include "UnMarshaller.h"
 
-#include "DDS.h"
+#include "DMR.h"
+#include "D4StreamMarshaller.h"
+
 #include "util.h"
 #include "parser.h"
 #include "Operators.h"
@@ -71,8 +74,7 @@ namespace libdap {
 
     @param n A string containing the name of the variable to be created.
 */
-UInt16::UInt16(const string &n)
-        : BaseType(n, dods_uint16_c), d_buf(0)
+UInt16::UInt16(const string &n) : BaseType(n, dods_uint16_c), d_buf(0)
 {}
 
 /** The UInt16 server-side constructor accepts the name of the variable to
@@ -82,8 +84,7 @@ UInt16::UInt16(const string &n)
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-UInt16::UInt16(const string &n, const string &d)
-        : BaseType(n, d, dods_uint16_c), d_buf(0)
+UInt16::UInt16(const string &n, const string &d) : BaseType(n, d, dods_uint16_c), d_buf(0)
 {}
 
 UInt16::UInt16(const UInt16 &copy_from) : BaseType(copy_from)
@@ -117,18 +118,15 @@ UInt16::width()
 }
 
 bool
-UInt16::serialize(ConstraintEvaluator &eval, DDS &dds,
-                  Marshaller &m, bool ce_eval)
+UInt16::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
     if (!read_p())
         read();  // read() throws Error and InternalErr
 
-#if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-#endif
 
     dds.timeout_off();
 
@@ -144,6 +142,24 @@ UInt16::deserialize(UnMarshaller &um, DDS *, bool)
 
     return false;
 }
+
+/**
+ * @brief Serialize an Int8
+ * @param m
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+UInt16::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
+{
+    if (!read_p())
+        read();          // read() throws Error
+
+    m.put_uint16( d_buf ) ;
+}
+
 
 unsigned int
 UInt16::val2buf(void *val, bool)

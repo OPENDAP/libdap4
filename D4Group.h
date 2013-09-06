@@ -110,6 +110,12 @@ public:
 
     long request_size(bool constrained);
 
+    virtual void set_send_p(bool state);
+    virtual void set_read_p(bool state);
+
+    // DAP4
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
+
     void print_dap4(XMLWriter &xml, bool constrained = false);
 };
 

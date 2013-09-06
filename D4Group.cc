@@ -28,6 +28,7 @@
 #include "D4Attributes.h"
 #include "D4Dimensions.h"
 #include "D4Group.h"
+#include "D4StreamMarshaller.h"
 
 //#define DODS_DEBUG
 
@@ -201,6 +202,64 @@ D4Group::request_size(bool constrained)
 }
 
 void
+D4Group::set_read_p(bool state)
+{
+    groupsIter g = d_groups.begin();
+    while (g != d_groups.end())
+        (*g++)->set_read_p(state);
+
+    Constructor::set_read_p(state);
+}
+
+void
+D4Group::set_send_p(bool state)
+{
+    groupsIter g = d_groups.begin();
+    while (g != d_groups.end())
+        (*g++)->set_send_p(state);
+
+    Constructor::set_send_p(state);
+}
+
+/**
+ * @brief Serialize a Group
+ * @param m The DAP4 Stream Marshaller. This object serializes the data values and
+ * writes checksums (using CRC32) for the top level variables in every Group for which
+ * one or more variables are sent. The DAP4 Marshaller object can be made so that only
+ * the checksums are written.
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter)
+{
+    if (!read_p())
+        read();  // read() throws Error
+
+    groupsIter g = d_groups.begin();
+    while (g != d_groups.end())
+        (*g++)->serialize(m, dmr, eval, filter);
+
+    // Specialize how the top-level variables in any Group are set; include
+    // a checksum for them.
+	// Constructor::serialize(m, dmr, eval, filter);
+	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+		if ((*i)->send_p()) {
+			// TODO not sure if this should be any constructor or just structure. jhrg 9/6/13
+			if ((*i)->type() != dods_structure_c) m.reset_checksum();
+
+			(*i)->serialize(m, dmr, eval, filter);
+
+			// get_checksum() writes it out.
+			if ((*i)->type() != dods_structure_c) m.get_checksum();
+		}
+	}
+
+}
+
+void
 D4Group::print_dap4(XMLWriter &xml, bool constrained)
 {
     if (!name().empty() && name() != "/") {
@@ -221,8 +280,6 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
     if (!dims()->empty())
         dims()->print_dap4(xml);
 
-    // Print the Group body if this method is called on either a named group
-    // or the root group.
     // enums
     if (!enum_defs()->empty())
         enum_defs()->print_dap4(xml);
@@ -232,15 +289,15 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
     while (g != d_groups.end())
         (*g++)->print_dap4(xml, constrained);
 
-#if D4_ATTR
-    attributes()->print_dap4(xml);
-#endif
-
     // variables
     Constructor::Vars_iter v = var_begin();
-    while (v != var_end()) {
+    while (v != var_end())
         (*v++)->print_dap4(xml, constrained);
-    }
+
+#if D4_ATTR
+    // attributes
+    attributes()->print_dap4(xml);
+#endif
 
     if (!name().empty() && name() != "/") {
         if (xmlTextWriterEndElement(xml.get_writer()) < 0)

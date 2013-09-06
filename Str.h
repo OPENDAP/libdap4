@@ -61,7 +61,6 @@ const unsigned int max_str_len = DODS_USHRT_MAX - 1;
 
 class Str: public BaseType
 {
-
 protected:
     string d_buf;
 
@@ -84,9 +83,12 @@ public:
     // stored in the instance's internal buffer.
     unsigned int length();
 
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
-			   Marshaller &m, bool ce_eval = true);
+    // DAP2
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+
+    // DAP4
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);

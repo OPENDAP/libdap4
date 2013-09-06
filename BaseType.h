@@ -65,10 +65,14 @@ using namespace std;
 namespace libdap
 {
 
-class DDS;
 class ConstraintEvaluator;
+
+class DDS;
 class Marshaller;
 class UnMarshaller;
+
+class DMR;
+class D4StreamMarshaller;
 
 class D4Attributes;
 
@@ -380,8 +384,20 @@ public:
 	@exception InternalErr.
 	@exception Error.
 	@see DDS */
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
-			   Marshaller &m, bool ce_eval = true) = 0;
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,  Marshaller &m, bool ce_eval = true);
+
+    /**
+     * @brief The DAP4 serialization method.
+     * Serialize a variable's values for DAP4. This does not write the DMR
+     * persistent representation but does write that part of the binary
+     * data blob that holds a variable's data.
+     * @param m
+     * @param dmr
+     * @param eval
+     * @param filter True if there is one variable that should be 'filtered'
+     * @exception Error or InternalErr
+     */
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
 
     /** Receives data from the network connection identified by the
 	<tt>source</tt> parameter. The data is put into the class data
@@ -407,7 +423,7 @@ public:
 	@exception Error when a problem reading from the UnMarshaller is
 	found.
 	@see DDS */
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) = 0;
+    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS

@@ -56,6 +56,9 @@
 #include "Marshaller.h"
 #include "UnMarshaller.h"
 
+#include "DMR.h"
+#include "D4StreamMarshaller.h"
+
 #include "util.h"
 #include "parser.h"
 #include "dods-limits.h"
@@ -128,18 +131,15 @@ unsigned int Byte::width()
     @return False if a failure to read, send or flush is detected, true
     otherwise.
 */
-bool Byte::serialize(ConstraintEvaluator & eval, DDS & dds,
-		     Marshaller &m, bool ce_eval)
+bool Byte::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
     if (!read_p())
         read();          // read() throws Error and InternalErr
 
-#if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-#endif
 
     dds.timeout_off();
 
@@ -156,6 +156,23 @@ bool Byte::deserialize(UnMarshaller &um, DDS *, bool)
     um.get_byte( d_buf ) ;
 
     return false;
+}
+
+/**
+ * @brief Serialize a Byte
+ * @param m
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+Byte::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
+{
+    if (!read_p())
+        read();          // read() throws Error
+
+    m.put_byte( d_buf ) ;
 }
 
 /** Store the value referenced by <i>val</i> in the object's internal

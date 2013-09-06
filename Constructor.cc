@@ -42,6 +42,9 @@
 #include "Constructor.h"
 #include "Grid.h"
 
+#include "DMR.h"
+#include "D4StreamMarshaller.h"
+
 #include "D4Attributes.h"
 
 #include "debug.h"
@@ -442,10 +445,8 @@ Constructor::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool 
     if (!read_p())
         read();  // read() throws Error and InternalErr
 
-#if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-#endif
 
     dds.timeout_off();
 
@@ -480,6 +481,35 @@ Constructor::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 
     return false;
 }
+
+/**
+ * @brief Serialize a Constructor
+ * @param m
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+Constructor::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter)
+{
+    if (!read_p())
+        read();  // read() throws Error
+
+#if 0
+    // place holder for now. There may be no need for this; only Array and Seq?
+    // jhrg 9/6/13
+    if (ce_eval && !eval.eval_selection(dmr, dataset()))
+        return true;
+#endif
+
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        if ((*i)->send_p()) {
+            (*i)->serialize(m, dmr, eval, filter);
+        }
+    }
+}
+
 
 void
 Constructor::print_decl(FILE *out, string space, bool print_semi,

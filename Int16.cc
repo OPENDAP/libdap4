@@ -51,11 +51,13 @@
 #include "Str.h"
 #include "Url.h"
 
-
+#include "DDS.h"
 #include "Marshaller.h"
 #include "UnMarshaller.h"
 
-#include "DDS.h"
+#include "DMR.h"
+#include "D4StreamMarshaller.h"
+
 #include "util.h"
 #include "parser.h"
 #include "Operators.h"
@@ -72,7 +74,7 @@ namespace libdap {
 
     @param n A string containing the name of the variable to be created.
 */
-Int16::Int16(const string &n) : BaseType(n, dods_int16_c)
+Int16::Int16(const string &n) : BaseType(n, dods_int16_c), d_buf(0)
 {}
 
 /** The Int16 server-side constructor accepts the name of the variable and
@@ -82,7 +84,7 @@ Int16::Int16(const string &n) : BaseType(n, dods_int16_c)
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-Int16::Int16(const string &n, const string &d) : BaseType(n, d, dods_int16_c)
+Int16::Int16(const string &n, const string &d) : BaseType(n, d, dods_int16_c), d_buf(0)
 {}
 
 Int16::Int16(const Int16 &copy_from) : BaseType(copy_from)
@@ -116,18 +118,15 @@ Int16::width()
 }
 
 bool
-Int16::serialize(ConstraintEvaluator &eval, DDS &dds,
-                 Marshaller &m, bool ce_eval)
+Int16::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
     if (!read_p())
         read();  // read() throws Error and InternalErr
 
-#if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-#endif
 
     dds.timeout_off();
 
@@ -142,6 +141,23 @@ Int16::deserialize(UnMarshaller &um, DDS *, bool)
     um.get_int16( d_buf ) ;
 
     return false;
+}
+
+/**
+ * @brief Serialize an Int8
+ * @param m
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+Int16::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
+{
+    if (!read_p())
+        read();          // read() throws Error
+
+    m.put_int16( d_buf ) ;
 }
 
 unsigned int

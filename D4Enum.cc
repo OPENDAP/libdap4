@@ -77,6 +77,7 @@ template void D4Enum::set_value<dods_uint32>(dods_uint32 v);
 template void D4Enum::set_value<dods_int64>(dods_int64 v);
 template void D4Enum::set_value<dods_uint64>(dods_uint64 v);
 
+#if 0
 bool
 D4Enum::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
@@ -108,6 +109,24 @@ D4Enum::deserialize(UnMarshaller &um, DDS *, bool)
     static_cast<D4StreamUnMarshaller*>(&um)->get_uint64( d_buf ) ;
 
     return false;
+}
+#endif
+
+/**
+ * @brief Serialize a Byte
+ * @param m
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+D4Enum::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
+{
+    if (!read_p())
+        read();          // read() throws Error
+
+    m.put_uint64( d_buf ) ;
 }
 
 // FIXME: Make this print signed or unsigned depending on the underlying type. jhrg 8/19/13

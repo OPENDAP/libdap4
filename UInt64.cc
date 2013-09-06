@@ -61,8 +61,7 @@ namespace libdap {
     @param n A string containing the name of the variable to be created.
     variable is created
 */
-UInt64::UInt64(const string &n)
-        : BaseType(n, dods_uint64_c)
+UInt64::UInt64(const string &n) : BaseType(n, dods_uint64_c), d_buf(0)
 {}
 
 /** The UInt64 server-side constructor accepts the name of the variable and
@@ -72,8 +71,7 @@ UInt64::UInt64(const string &n)
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-UInt64::UInt64(const string &n, const string &d)
-        : BaseType(n, d, dods_uint64_c)
+UInt64::UInt64(const string &n, const string &d)  : BaseType(n, d, dods_uint64_c), d_buf(0)
 {}
 
 UInt64::UInt64(const UInt64 &copy_from) : BaseType(copy_from)
@@ -106,6 +104,7 @@ UInt64::width()
     return sizeof(dods_uint64);
 }
 
+#if 0
 bool
 UInt64::serialize(ConstraintEvaluator &eval, DDS &dds,
                   Marshaller &m, bool ce_eval)
@@ -134,6 +133,24 @@ UInt64::deserialize(UnMarshaller &um, DDS *, bool)
     static_cast<D4StreamUnMarshaller*>(&um)->get_uint64( d_buf ) ;
 
     return false;
+}
+#endif
+
+/**
+ * @brief Serialize an Int8
+ * @param m
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+UInt64::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
+{
+    if (!read_p())
+        read();          // read() throws Error
+
+    m.put_uint64( d_buf ) ;
 }
 
 dods_uint64

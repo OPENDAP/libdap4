@@ -174,8 +174,8 @@ public:
     	return sizeof(d_buf); //return m_type_width();
     }
 
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+    // DAP4
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
 
     virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
 

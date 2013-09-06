@@ -224,8 +224,6 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
 		// references that pointer).
 		b->set_attributes_nocopy(0);
 
-		// TODO delete b?
-
 		push_basetype(a);
 	}
 
@@ -267,7 +265,7 @@ bool D4ParserSax2::process_group(const char *name, const xmlChar **attrs, int nb
 
     BaseType *btp = dmr()->factory()->NewVariable(dods_group_c, xml_attrs["name"].value);
     if (!btp) {
-        dmr_fatal_error(this, "Could not instantiate the variable '%s'.", xml_attrs["name"].value.c_str());
+        dmr_fatal_error(this, "Could not instantiate the Group '%s'.", xml_attrs["name"].value.c_str());
         return false;
     }
 
@@ -455,41 +453,6 @@ void D4ParserSax2::process_variable_helper(Type t, ParseState s, const xmlChar *
     }
 }
 
-#if 0
-// TODO this is called for array and structure only, but 'array' is about to
-// get subsumed by the code that processes simple types, so maybe this can
-// be retired?
-void D4ParserSax2::finish_variable(const char *tag, Type t, const char *expected)
-{
-    if (strcmp(tag, expected) != 0) {
-        D4ParserSax2::dmr_error(this, "Expected an end tag for a %s; found '%s' instead.", expected, tag);
-        return;
-    }
-
-    BaseType *btp = top_basetype();
-    pop_basetype();
-    pop_attributes();
-
-    if (btp->type() != t) {
-        D4ParserSax2::dmr_error(this, "Expected a %s variable.", expected);
-        delete btp;
-        return;
-    }
-
-    BaseType *parent = top_basetype();
-    if (parent && !parent->is_constructor_type()) {
-        D4ParserSax2::dmr_error(this, "Tried to add the variable '%s' to a non-constructor type (%s %s).",
-                tag, top_basetype()->type_name().c_str(), top_basetype()->name().c_str());
-        delete btp;
-        return;
-    }
-
-    parent->add_var_nocopy(btp);
-
-    pop_state();
-}
-#endif
-
 /** @name SAX Parser Callbacks
 
  These methods are declared static in the class header. This gives them C
@@ -530,14 +493,11 @@ void D4ParserSax2::dmr_end_document(void * p)
     if (parser->get_state() == parser_error || parser->get_state() == parser_fatal_error)
         return;
 
-    // FIXME Add tests to make sure the basetype and attribute stacks are empty
-#if 0
-    // The root group should be on the stack
-    if (parser->top_basetype()->type() != dods_group_c) {
-        D4ParserSax2::dmr_error(parser, "The document did not contain a valid root Group.");
-    }
-#endif
+    if (!parser->empty_basetype() || parser->empty_group())
+    	D4ParserSax2::dmr_error(parser, "The document did not contain a valid root Group or contained unbalanced tags.");
+
     parser->pop_group();     // leave the stack 'clean'
+    parser->pop_attributes();
 }
 
 void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *prefix, const xmlChar *URI,
@@ -747,36 +707,12 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             break;
 
         case inside_group: {
-            if (is_not(localname, "Group")) {
+            if (is_not(localname, "Group"))
                 D4ParserSax2::dmr_error(parser, "Expected an end tag for a Group; found '%s' instead.", localname);
-                break;
-            }
-#if 0
-            // Pop the stack, the Group should be there. If an error is found,
-            // make sure to delete the BaseType*.
-            D4Group *grp = parser->top_group();
-#endif
-#if 0
-            if (grp && grp->type() != dods_group_c) {
-                D4ParserSax2::dmr_error(parser, "Expected to find a Group element on the stack.");
-                delete grp;
-            }
-#endif
-#if 0
-            // This is now done in the process_group code. jhrg 8/21/13
 
-            // Link the group we just popped to the thing on the stack, which
-            // should also be a group.
-            BaseType *parent = parser->top_basetype();
-            if (parent && !parent->type() == dods_group_c) {
-                D4ParserSax2::dmr_error(parser, "Tried to add a Group to a non-group type '%s %s' (will continue with parse).",
-                        parser->top_basetype()->type_name().c_str(), parser->top_basetype()->name().c_str());
-                delete btp;
-            }
-            else
-                static_cast<D4Group*>(parent)->add_group_nocopy(static_cast<D4Group*>(btp));
-#endif
-            // TODO Test for an empty stack
+            if (!parser->empty_basetype() || parser->empty_group())
+            	D4ParserSax2::dmr_error(parser, "The document did not contain a valid root Group or contained unbalanced tags.");
+
             parser->pop_group();
             parser->pop_state();
             break;
@@ -1108,6 +1044,7 @@ void D4ParserSax2::dmr_fatal_error(void * p, const char *msg, ...)
 
     int line = xmlSAX2GetLineNumber(parser->context);
 
+    if (!parser->error_msg.empty()) parser->error_msg += "\n";
     parser->error_msg += "At line " + long_to_string(line) + ": " + string(str);
 }
 
@@ -1125,23 +1062,11 @@ void D4ParserSax2::dmr_error(void *p, const char *msg, ...)
 
     int line = xmlSAX2GetLineNumber(parser->context);
 
+    if (!parser->error_msg.empty()) parser->error_msg += "\n";
     parser->error_msg += "At line " + long_to_string(line) + ": " + string(str);
 }
 //@}
-#if 0
-/** Helper to delete allocated stuff. */
-void D4ParserSax2::delete_parser_locals()
-{
-    context->sax = NULL;
-    xmlFreeParserCtxt(context);
 
-    delete d_enum_def;
-    d_enum_def = 0;
-
-    delete d_dim_def;
-    d_dim_def = 0;
-}
-#endif
 /** Clean up after a parse operation. If the parser encountered an error,
  * throw either an Error or InternalErr object.
  */
@@ -1167,13 +1092,13 @@ void D4ParserSax2::cleanup_parse()
     }
 
     if (!wellFormed)
-        throw Error("Error: The DMR was not well formed. " + error_msg);
+        throw Error("The DMR was not well formed. " + error_msg);
     else if (!valid)
-        throw Error("Error: The DMR was not valid." + error_msg);
+        throw Error("The DMR was not valid." + error_msg);
     else if (get_state() == parser_error)
-        throw Error("Error: " + error_msg);
+        throw Error(error_msg);
     else if (get_state() == parser_fatal_error)
-        throw InternalErr("Internal Error: " + error_msg);
+        throw InternalErr(error_msg);
 }
 
 /**

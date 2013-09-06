@@ -70,10 +70,7 @@ private:
 
     /// The namespace to use when printing the XML serialization
     string d_namespace;
-#if 0
-    /// When sending data, timeout after this many seconds
-    int d_timeout;
-#endif
+
     /// The maximum response size (in Kilo bytes)
     long d_max_response_size;
 
@@ -157,14 +154,6 @@ public:
     /// Get the estimated response size, in kilo bytes
     long request_size(bool constrained);
 
-#if 0
-    // This is now handled by D4ResponseBuilder
-    void timeout_on();
-    void timeout_off();
-
-    int get_timeout() const { return d_timeout; }
-    void set_timeout(int t) { d_timeout = t; }
-#endif
     D4Group *root() {
         if (!d_root) d_root = new D4Group("/");
         return d_root;

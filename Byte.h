@@ -78,8 +78,12 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval);
-    bool deserialize(UnMarshaller &um, DDS *, bool);
+    // DAP2
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval);
+    virtual bool deserialize(UnMarshaller &um, DDS *, bool);
+
+    // DAP4
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
