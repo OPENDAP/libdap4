@@ -533,6 +533,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
                 parser->dmr()->set_namespace(parser->root_ns);
 
             // Push the root Group on the stack
+            // parser->dmr()->set_root(static_cast<D4Group*>(parser->dmr()->factory()->NewVariable(dods_group_c, "/")));
             parser->push_group(parser->dmr()->root());
 
             parser->push_state(inside_dataset);

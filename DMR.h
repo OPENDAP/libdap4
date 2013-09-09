@@ -25,6 +25,8 @@
 #ifndef _dmr_h
 #define _dmr_h 1
 
+#include <cassert>
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -84,12 +86,18 @@ protected:
 
 public:
     DMR();
-    DMR(const DMR &dds);
+    DMR(const DMR &dmr);
     DMR(D4BaseTypeFactory *factory, const string &name = "");
 
     virtual ~DMR();
 
     DMR &operator=(const DMR &rhs);
+
+    /**
+     * Class invariant. If true, any method can be used.
+     * @return True if the instance is OK to use, false otherwise.
+     */
+    bool OK() const { return (d_factory && d_root && !d_dap_version.empty()); }
 
     /** Get and set the DMR's name. This is effectively the 'dataset' name.
      * It should not be used to reference the dataset's data store
@@ -120,11 +128,10 @@ public:
     void set_filename(const string &fn) { d_filename = fn;}
     //@}
 
-    // TODO Add documentation
     string dap_version() const { return d_dap_version; }
+    void set_dap_version(const string &version_string);
     int dap_major() const { return d_dap_major; }
     int dap_minor() const { return d_dap_minor; }
-    void set_dap_version(const string &version_string);
 
     string dmr_version() const { return d_dmr_version; }
     void set_dmr_version(const string &v) { d_dmr_version = v; }
@@ -142,7 +149,6 @@ public:
     void set_namespace(const string &ns) { d_namespace = ns; }
 
     // TODO Move the response_limit methods to D4ResponseBuilder? jhrg 5/1/13
-
     /// Get the maximum response size, in KB. Zero indicates no limit.
     long response_limit() { return d_max_response_size; }
 
@@ -154,10 +160,11 @@ public:
     /// Get the estimated response size, in kilo bytes
     long request_size(bool constrained);
 
-    D4Group *root() {
-        if (!d_root) d_root = new D4Group("/");
-        return d_root;
-    }
+    /** Return the root group of this Dataset. If no root group has been
+     * set, use the D4BaseType factory to make it.
+     * @return The root group of the dataset.
+     */
+    D4Group *root();
 
     void print_dap4(XMLWriter &xml, bool constrained = false);
 

@@ -33,17 +33,19 @@
 #include <sys/wait.h>
 #endif
 
+#include <cassert>
+
 #include <iostream>
 #include <sstream>
 
 //#define DODS_DEBUG
 //#define DODS_DEBUG2
 
+#include "D4Group.h"
 #include "DMR.h"
+#include "D4BaseTypeFactory.h"
 
 #include "debug.h"
-
-#include "D4Group.h"
 
 const string c_xml_xsi = "http://www.w3.org/2001/XMLSchema-instance";
 const string c_xml_namespace = "http://www.w3.org/XML/1998/namespace";
@@ -61,6 +63,9 @@ namespace libdap {
 void
 DMR::m_duplicate(const DMR &dmr)
 {
+	// This is needed because we use the factory to make a new instance of the rot group
+	assert(dmr.OK());
+
     d_factory = dmr.d_factory; // Shallow copy here
 
     d_name = dmr.d_name;
@@ -75,12 +80,10 @@ DMR::m_duplicate(const DMR &dmr)
     d_request_xml_base = dmr.d_request_xml_base;
 
     d_namespace = dmr.d_namespace;
-#if 0
-    d_timeout = dmr.d_timeout;
-#endif
+
     d_max_response_size = dmr.d_max_response_size;
 
-    d_root = new D4Group(*dmr.d_root); // Deep copy
+    d_root = static_cast<D4Group*>(dmr.d_factory->NewVariable(dods_group_c, dmr.d_root->name())); // new D4Group(*dmr.d_root); // Deep copy
 }
 
 /**
@@ -99,9 +102,6 @@ DMR::DMR(D4BaseTypeFactory *factory, const string &name)
         : d_factory(factory), d_name(name), d_filename(""),
           d_dmr_version("1.0"), d_request_xml_base(""),
           d_namespace(""), d_max_response_size(0), d_root(0)
-#if 0
-d_timeout(0),
-#endif
 {
     // sets d_dap_version string and the two integer fields too
     set_dap_version("4.0");
@@ -117,9 +117,6 @@ DMR::DMR()
         : d_factory(0), d_name(""), d_filename(""),
           d_dmr_version("1.0"), d_request_xml_base(""),
           d_namespace(""), d_max_response_size(0), d_root(0)
-#if 0
-d_timeout(0),
-#endif
 {
     // sets d_dap_version string and the two integer fields too
     set_dap_version("4.0");
@@ -148,6 +145,13 @@ DMR::operator=(const DMR &rhs)
     m_duplicate(rhs);
 
     return *this;
+}
+
+D4Group *
+DMR::root()
+{
+	if (!d_root) d_root = static_cast<D4Group*>(d_factory->NewVariable(dods_group_c, "/"));
+	return d_root;
 }
 
 /**
@@ -206,24 +210,6 @@ DMR::request_size(bool constrained)
 {
     return d_root->request_size(constrained);
 }
-
-#if 0
-void
-DMR::timeout_on()
-{
-#ifndef WIN32
-    alarm(d_timeout);
-#endif
-}
-
-void
-DMR::timeout_off()
-{
-#ifndef WIN32
-    d_timeout = alarm(0);
-#endif
-}
-#endif
 
 /**
  * Print the DAP4 DMR object.

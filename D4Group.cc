@@ -253,7 +253,7 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, b
 			(*i)->serialize(m, dmr, eval, filter);
 
 			// get_checksum() writes it out.
-			if ((*i)->type() != dods_structure_c) m.get_checksum();
+			if ((*i)->type() != dods_structure_c) m.put_checksum();
 		}
 	}
 

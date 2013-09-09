@@ -41,6 +41,8 @@
 #include "D4ParserSax2.h"
 #include "D4TestTypeFactory.h"
 
+#include "util.h"
+
 int test_variable_sleep_interval = 0;   // Used in Test* classes for testing timeouts.
 
 using namespace libdap;
@@ -98,24 +100,20 @@ set_series_values(DMR *dmr, bool state)
 	if (tc)
 		tc->set_series_values(state);
 	else
-		cerr << "Could not cast root group to TestCommon" << endl;
+		cerr << "Could not cast root group to TestCommon (" << dmr->root()->type_name() << ", " << dmr->root()->name() << ")" << endl;
 }
 
-// Test the transmission of constrained datasets. Use read_table() to read
-// the DDS from a file. Once done, prompt for the variable name and
-// constraint expression. In a real client-server system the server would
-// read the DDS for the entire dataset and send it to the client. The client
-// would then respond to the server by asking for a variable given a
-// constraint.
-//
-// Once the constraint has been entered, it is evaluated in the context of
-// the DDS using DDS:eval_constraint() (this would happen on the server-side
-// in a real system). Once the evaluation is complete,
-// DDS::print_constrained() is used to create a DDS describing only those
-// parts of the dataset that are to be sent to the client process and written
-// to the output stream. After that, the marker `Data:' is written to the
-// output stream, followed by the binary data.
-
+/**
+ * Call the parser and then serialize the resulting DMR after applying the
+ * constraint. The persistent representation is written to a file. The file
+ * is name '<name>_data.bin'.
+ *
+ * @param name The name of the XML file that holds the dataset DMR
+ * @param debug Turn on parser debugging
+ * @param print Use libdap to print the in-memory DMR/DDS object
+ * @param constraint The constraint expression to apply.
+ * @param series_values Use the Test* classes' series values?
+ */
 void
 send_data(const string &name, bool debug, bool print, const string &constraint, bool series_values)
 {
@@ -132,7 +130,8 @@ send_data(const string &name, bool debug, bool print, const string &constraint, 
     // Mark all variables to be sent in their entirety.
     server->root()->set_send_p(true);
 
-    ofstream out("dmr-test-data.bin", ios::out|ios::trunc|ios::binary);
+    string file_name = path_to_filename(name) + "_data.bin";
+    ofstream out(file_name.c_str(), ios::out|ios::trunc|ios::binary);
     rb.send_data_dmr(out, *server, eval, "start", "boundary", true);
     out.close();
 
