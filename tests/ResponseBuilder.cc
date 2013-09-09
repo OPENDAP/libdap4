@@ -271,14 +271,8 @@ void ResponseBuilder::dataset_constraint_dmr(ostream &out, DMR &dmr, ConstraintE
     set_mime_data_boundary(out, boundary, cid, dap4_data, x_plain);
 
     D4StreamMarshaller m(out);
-#if 1
-    // Send all variables in the current projection (send_p()). In DAP4,
-    // all of the top-level variables are serialized with their checksums.
-    // Internal variables are not.
 
-    // pas in m, dmr, eval, filter
     dmr.root()->serialize(m, dmr, eval, filter);
-#endif
 }
 
 void ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, ConstraintEvaluator &eval,
@@ -301,7 +295,7 @@ void ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, ConstraintEvaluator 
 		if (with_mime_headers)
 			set_mime_multipart(out, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
 
-		dataset_constraint_dmr(out, dmr, eval, boundary, start, true /*filter*/);
+		dataset_constraint_dmr(out, dmr, eval, start, boundary, true /*filter*/);
 
 		if (with_mime_headers) out << CRLF << "--" << boundary << "--" << CRLF;
 

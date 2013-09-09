@@ -1208,5 +1208,21 @@ remove_mime_header(FILE *in)
     return false;
 }
 
+/**
+ * Used for test code; strip the leading MIME headers from a response.
+ * @param in
+ */
+void
+remove_mime_header(istream &in)
+{
+	while(!get_next_mime_header(in).empty()) ;
+#if 0
+	string header;
+	do {
+		header = get_next_mime_header(in);
+	} while (!header.empty());
+#endif
+}
+
 } // namespace libdap
 

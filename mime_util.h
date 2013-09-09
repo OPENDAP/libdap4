@@ -83,6 +83,9 @@ string get_next_mime_header(istream &in);
 void read_multipart_headers(istream &in, const string &content_type,
 	const ObjectType object_type, const string &cid = "");
 
+// For testing only
+void remove_mime_header(istream &in);
+
 // All of these are deprecated
 string read_multipart_boundary(FILE *in, const string &boundary = "");
 void read_multipart_headers(FILE *in, const string &content_type,
@@ -90,8 +93,8 @@ void read_multipart_headers(FILE *in, const string &content_type,
 bool do_version(const string &script_ver, const string &dataset_ver);
 void ErrMsgT(const string &Msgt);
 ObjectType get_type(const string &value);
-bool remove_mime_header(FILE *in);
 string get_next_mime_header(FILE *in);
+bool remove_mime_header(FILE *in);
 
 #if 0
 bool found_override(string name, string &doc);

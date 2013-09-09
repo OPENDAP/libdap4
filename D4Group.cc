@@ -29,8 +29,7 @@
 #include "D4Dimensions.h"
 #include "D4Group.h"
 #include "D4StreamMarshaller.h"
-
-//#define DODS_DEBUG
+#include "D4StreamUnMarshaller.h"
 
 #include "debug.h"
 
@@ -242,21 +241,42 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, b
     while (g != d_groups.end())
         (*g++)->serialize(m, dmr, eval, filter);
 
-    // Specialize how the top-level variables in any Group are set; include
-    // a checksum for them.
-	// Constructor::serialize(m, dmr, eval, filter);
+    // Specialize how the top-level variables in any Group are sent; include
+    // a checksum for them. Variables not at the top-level of a group do not get
+    // checksums.
+    // FIXME THis code is broken because a subset might make an interior set of
+    // variables the 'top-level' but the code below will print only one crc32 for
+    // them all.
 	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+		// Only send the stuff in the current subset.
 		if ((*i)->send_p()) {
-			// TODO not sure if this should be any constructor or just structure. jhrg 9/6/13
-			if ((*i)->type() != dods_structure_c) m.reset_checksum();
+			m.reset_checksum();
 
 			(*i)->serialize(m, dmr, eval, filter);
 
-			// get_checksum() writes it out.
-			if ((*i)->type() != dods_structure_c) m.put_checksum();
+			DBG(cerr << "CRC32: " << m.get_checksum() << endl);
+			m.put_checksum();
 		}
 	}
+}
 
+void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
+{
+	groupsIter g = d_groups.begin();
+	while (g != d_groups.end())
+		(*g++)->deserialize(um, dmr);
+
+	// Specialize how the top-level variables in any Group are received; read
+	// their checksum and store the value in a magic attribute of the variable
+	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+		(*i)->deserialize(um, dmr);
+
+		D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
+		string crc = um.get_checksum_str();
+		a->add_value(crc);
+		DBG(cerr << "CRC32: " << crc << endl);
+		(*i)->attributes()->add_attribute_nocopy(a);
+	}
 }
 
 void

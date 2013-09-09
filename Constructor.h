@@ -33,6 +33,8 @@
 namespace libdap
 {
 
+class D4StreamUnMarshaller;
+
 /** Common methods for all constructor types. */
 class Constructor: public BaseType
 {
@@ -100,6 +102,7 @@ public:
 
     // DAP4
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     // Do not store values in memory as for C; users work with the C++ objects
     virtual unsigned int val2buf(void *, bool) {

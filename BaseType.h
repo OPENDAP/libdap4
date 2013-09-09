@@ -73,6 +73,7 @@ class UnMarshaller;
 
 class DMR;
 class D4StreamMarshaller;
+class D4StreamUnMarshaller;
 
 class D4Attributes;
 
@@ -176,9 +177,9 @@ public:
 
     string dataset() const ;
 
-    virtual bool is_simple_type();
-    virtual bool is_vector_type();
-    virtual bool is_constructor_type();
+    virtual bool is_simple_type() const;
+    virtual bool is_vector_type() const;
+    virtual bool is_constructor_type() const;
 
     virtual bool synthesized_p();
     virtual void set_synthesized_p(bool state);
@@ -424,6 +425,14 @@ public:
 	found.
 	@see DDS */
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+
+    /**
+     * The DAP4 deserialization method.
+     * @param um
+     * @param dmr
+     * @exception Error or InternalErr
+     */
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS

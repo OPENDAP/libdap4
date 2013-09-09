@@ -115,6 +115,7 @@ public:
 
     // DAP4
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     void print_dap4(XMLWriter &xml, bool constrained = false);
 };

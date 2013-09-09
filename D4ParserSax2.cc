@@ -1103,17 +1103,20 @@ void D4ParserSax2::cleanup_parse()
 }
 
 /**
- * Read the DMR from a stream instead of a file.
+ * Read the DMR from a stream.
  *
  * @param f The input stream
  * @param dest_dmr Value-result parameter. Pass a pointer to a DMR in and
  * the information in the DMR will be added to it.
+ * @param boundary If not empty, use this as the boundary tag in a MPM document
+ * that marks the end of the part hat holds the DMR. Stop reading when the
+ * boundary is found.
  * @param debug If true, ouput helpful debugging messages, False by default.
  *
  * @exception Error Thrown if the XML document could not be read or parsed.
  * @exception InternalErr Thrown if an internal error is found.
  */
-void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
+void D4ParserSax2::intern(istream &f, DMR *dest_dmr, const string &boundary, bool debug)
 {
     d_debug = debug;
 
@@ -1130,7 +1133,7 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
     f.getline(chars, size);
     int res = f.gcount();
     if (res > 0) {
-        if (debug) cerr << "line: (" << res << "): " << chars << endl;
+        if (debug) cerr << "line: (" << res << "): '" << chars << "'" << endl;
         d_dmr = dest_dmr; // dump values here
 
         xmlSAXHandler ddx_sax_parser;
@@ -1152,9 +1155,18 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
         context = xmlCreatePushParserCtxt(&ddx_sax_parser, this, chars, res - 1, "stream");
         context->validate = true;
 
+        string boundary_line = "--";
+        bool boundary_test = false;
+        if (!boundary.empty()) {
+        	boundary_line += boundary;
+        	boundary_test = true;
+        }
+
+        int line = 1;
         f.getline(chars, size);
-        while ((f.gcount() > 0)) {
-            if (debug) cerr << "line: (" << f.gcount() << "): " << chars << endl;
+        while ((f.gcount() > 0)
+        		&& (!boundary_test || strncmp(chars, boundary_line.c_str(), boundary_line.length()) != 0)) {
+            if (debug) cerr << "line: (" << line++ << "): '" << chars << "'" << endl;
             xmlParseChunk(context, chars, f.gcount() - 1, 0);
             f.getline(chars, size);
         }
@@ -1163,6 +1175,23 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 
         cleanup_parse();
     }
+}
+
+/**
+ * Read the DMR from a stream. This version does not test for a boundary
+ * marker.
+ *
+ * @param f The input stream
+ * @param dest_dmr Value-result parameter. Pass a pointer to a DMR in and
+ * the information in the DMR will be added to it.
+ * @param debug If true, ouput helpful debugging messages, False by default.
+ *
+ * @exception Error Thrown if the XML document could not be read or parsed.
+ * @exception InternalErr Thrown if an internal error is found.
+ */
+void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
+{
+	intern(f, dest_dmr, "", debug);
 }
 
 /** Parse a DMR document stored in a string.

@@ -253,6 +253,7 @@ public:
         char_data(""), root_ns(""), d_debug(false)
     {}
 
+    void intern(istream &f, DMR *dest_dmr, const string &boundary, bool debug = false);
     void intern(const string &document, DMR *dest_dmr, bool debug = false);
     void intern(istream &in, DMR *dest_dmr, bool debug = false);
 

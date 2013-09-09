@@ -121,17 +121,11 @@ Int8::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
     m.put_int8( d_buf ) ;
 }
 
-#if 0
-// TODO remove this: not Int8 in DAP2 so use the new default method that throws...
-bool
-Int8::deserialize(UnMarshaller &um, DDS *, bool)
+void
+Int8::deserialize(D4StreamUnMarshaller &um, DMR &)
 {
-    assert(typeid(um)==typeid(D4StreamUnMarshaller));
-    static_cast<D4StreamUnMarshaller&>(um).get_int8( d_buf ) ;
-
-    return false;
+    um.get_int8( d_buf ) ;
 }
-#endif
 
 dods_int8
 Int8::value() const

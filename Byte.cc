@@ -58,6 +58,7 @@
 
 #include "DMR.h"
 #include "D4StreamMarshaller.h"
+#include "D4StreamUnMarshaller.h"
 
 #include "util.h"
 #include "parser.h"
@@ -173,6 +174,12 @@ Byte::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
         read();          // read() throws Error
 
     m.put_byte( d_buf ) ;
+}
+
+void
+Byte::deserialize(D4StreamUnMarshaller &um, DMR &)
+{
+    um.get_byte( d_buf ) ;
 }
 
 /** Store the value referenced by <i>val</i> in the object's internal

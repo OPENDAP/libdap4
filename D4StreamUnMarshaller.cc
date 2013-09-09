@@ -45,7 +45,7 @@
 
 namespace libdap {
 
-D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in, bool is_stream_big_endian) : d_in( in )
+D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in, bool is_stream_bigendian) : d_in( in ), d_twiddle_bytes(false)
 {
     // XDR is used to handle transforming non-ieee754 reals, nothing else.
     xdrmem_create(&d_source, d_buf, sizeof(dods_float64), XDR_DECODE);
@@ -56,16 +56,38 @@ D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in, bool is_stream_big_endia
 
     DBG(cerr << "Host is big endian: " << is_host_big_endian() << endl);
 
-    if ((is_host_big_endian() && is_stream_big_endian)
-        || (!is_host_big_endian() && !is_stream_big_endian))
-        d_twiddle_bytes = false;
-    else
-        d_twiddle_bytes = true;
+    set_twiddle_bytes(is_stream_bigendian);
+}
+
+/**
+ * When using this constructor, set_twiddle_bytes() should be called
+ * before data are processed.
+ *
+ * @param in
+ */
+D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in) : d_in( in ), d_twiddle_bytes(false)
+{
+    // XDR is used to handle transforming non-ieee754 reals, nothing else.
+    xdrmem_create(&d_source, d_buf, sizeof(dods_float64), XDR_DECODE);
+
+    // This will cause exceptions to be thrown on i/o errors. The exception
+    // will be ostream::failure
+    d_in.exceptions(istream::failbit | istream::badbit);
 }
 
 D4StreamUnMarshaller::~D4StreamUnMarshaller( )
 {
     xdr_destroy(&d_source);
+}
+
+void
+D4StreamUnMarshaller::set_twiddle_bytes(bool is_stream_bigendian)
+{
+    if ((is_host_big_endian() && is_stream_bigendian)
+        || (!is_host_big_endian() && !is_stream_bigendian))
+        d_twiddle_bytes = false;
+    else
+        d_twiddle_bytes = true;
 }
 
 Crc32::checksum D4StreamUnMarshaller::get_checksum()
@@ -76,11 +98,11 @@ Crc32::checksum D4StreamUnMarshaller::get_checksum()
     return c;
 }
 
-string D4StreamUnMarshaller::get_checksum(Crc32::checksum c)
+string D4StreamUnMarshaller::get_checksum_str()
 {
     ostringstream oss;
     oss.setf(ios::hex, ios::basefield);
-    oss << setfill('0') << setw(8) << c;
+    oss << setfill('0') << setw(8) << get_checksum();
 
     return oss.str();
 }

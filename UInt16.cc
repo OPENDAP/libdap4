@@ -57,6 +57,7 @@
 
 #include "DMR.h"
 #include "D4StreamMarshaller.h"
+#include "D4StreamUnMarshaller.h"
 
 #include "util.h"
 #include "parser.h"
@@ -160,6 +161,11 @@ UInt16::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
     m.put_uint16( d_buf ) ;
 }
 
+void
+UInt16::deserialize(D4StreamUnMarshaller &um, DMR &)
+{
+    um.get_uint16( d_buf ) ;
+}
 
 unsigned int
 UInt16::val2buf(void *val, bool)

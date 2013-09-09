@@ -44,6 +44,7 @@
 
 #include "DMR.h"
 #include "D4StreamMarshaller.h"
+#include "D4StreamUnMarshaller.h"
 
 #include "D4Attributes.h"
 
@@ -510,6 +511,13 @@ Constructor::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eva
     }
 }
 
+void
+Constructor::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
+{
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        (*i)->deserialize(um, dmr);
+    }
+}
 
 void
 Constructor::print_decl(FILE *out, string space, bool print_semi,

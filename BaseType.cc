@@ -293,7 +293,7 @@ BaseType::type_name() const
     False otherwise. Arrays (even of simple types) return False.
     @see is_vector_type() */
 bool
-BaseType::is_simple_type()
+BaseType::is_simple_type() const
 {
     return libdap::is_simple_type(type());
 }
@@ -302,7 +302,7 @@ BaseType::is_simple_type()
     variable.
     @return True if the instance is an Array, False otherwise. */
 bool
-BaseType::is_vector_type()
+BaseType::is_vector_type() const
 {
     return libdap::is_vector_type(type());
 }
@@ -312,7 +312,7 @@ BaseType::is_vector_type()
     @return True if the instance is a Structure, Sequence or Grid, False
     otherwise. */
 bool
-BaseType::is_constructor_type()
+BaseType::is_constructor_type() const
 {
     return libdap::is_constructor_type(type());
 }
@@ -792,6 +792,11 @@ BaseType::serialize(D4StreamMarshaller &, DMR &, ConstraintEvaluator &, bool)
 	throw InternalErr(__FILE__, __LINE__, "The DAP4 serialize() method has not been implemented for " + type_name());
 }
 
+void
+BaseType::deserialize(D4StreamUnMarshaller &, DMR &)
+{
+	throw InternalErr(__FILE__, __LINE__, "The DAP4 deserialize() method has not been implemented for " + type_name());
+}
 
 /** Write the variable's declaration in a C-style syntax. This
     function is used to create textual representation of the Data

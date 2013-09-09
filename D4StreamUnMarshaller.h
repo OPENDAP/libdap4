@@ -74,10 +74,13 @@ private:
 
 public:
     D4StreamUnMarshaller(istream &in, bool is_stream_bigendian);
+    D4StreamUnMarshaller(istream &in);
     virtual ~D4StreamUnMarshaller();
 
+    void set_twiddle_bytes(bool is_stream_bigendian);
+
     Crc32::checksum get_checksum();
-    string get_checksum(Crc32::checksum c);
+    string get_checksum_str();
 
     virtual void get_byte(dods_byte &val);
     virtual void get_int8(dods_int8 &val);

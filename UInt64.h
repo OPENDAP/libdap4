@@ -75,6 +75,7 @@ public:
 #endif
     // DAP4
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     virtual dods_uint64 value() const;
     virtual bool set_value(dods_uint64 val);

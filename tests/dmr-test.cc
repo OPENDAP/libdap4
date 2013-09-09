@@ -32,6 +32,8 @@
 #include <GetOpt.h>
 
 #include "DMR.h"
+#include "D4StreamUnMarshaller.h"
+
 #include "util.h"
 #include "Error.h"
 
@@ -42,6 +44,7 @@
 #include "D4TestTypeFactory.h"
 
 #include "util.h"
+#include "mime_util.h"
 
 int test_variable_sleep_interval = 0;   // Used in Test* classes for testing timeouts.
 
@@ -58,7 +61,7 @@ DMR *
 test_dap4_parser(const string &name, bool debug, bool print)
 {
     D4TestTypeFactory *factory = new D4TestTypeFactory;
-    DMR *table = new DMR(factory);
+    DMR *table = new DMR(factory, path_to_filename(name));
 
     try {
         D4ParserSax2 parser;
@@ -70,14 +73,13 @@ test_dap4_parser(const string &name, bool debug, bool print)
             parser.intern(in, table, debug);
         }
     }
-    catch(Error &e) {
-        cerr << "Parse error: " << e.get_error_message() << endl;
+    catch(...) {
         delete factory;
         delete table;
-        return 0;
+        throw;
     }
 
-    cerr << "Parse successful" << endl;
+    cout << "Parse successful" << endl;
 
     if (print) {
         XMLWriter xml("    ");
@@ -113,45 +115,72 @@ set_series_values(DMR *dmr, bool state)
  * @param print Use libdap to print the in-memory DMR/DDS object
  * @param constraint The constraint expression to apply.
  * @param series_values Use the Test* classes' series values?
+ * @return The name of the file that hods the response.
  */
-void
-send_data(const string &name, bool debug, bool print, const string &constraint, bool series_values)
+string
+send_data(DMR *server, const string &constraint, bool series_values)
 {
-    DMR *server = test_dap4_parser(name, debug, print);
-
     set_series_values(server, series_values);
 
     ConstraintEvaluator eval;	// This is a place holder. jhrg 9/6/13
     ResponseBuilder rb;
     rb.set_ce(constraint);
-    rb.set_dataset_name(name);
+    rb.set_dataset_name(server->name());
 
     // TODO Remove once real CE evaluator is written. jhrg 9/6/13
     // Mark all variables to be sent in their entirety.
     server->root()->set_send_p(true);
 
-    string file_name = path_to_filename(name) + "_data.bin";
+    string file_name = server->name() + "_data.bin";
     ofstream out(file_name.c_str(), ios::out|ios::trunc|ios::binary);
     rb.send_data_dmr(out, *server, eval, "start", "boundary", true);
     out.close();
 
-#if 0
-    // Now do what Connect::request_data() does:
-    FILE *fp = fopen("expr-test-data.bin", "r");
+    return file_name;
+}
 
-    Response r(fp, 400);
-    Connect c("http://dummy_argument");
+DMR *
+read_data(const string &file_name, bool debug)
+{
+    D4BaseTypeFactory *factory = new D4BaseTypeFactory;
+    DMR *dmr = new DMR(factory, "Test_data");
 
-    BaseTypeFactory factory;
-    DataDDS dds(&factory, "Test_data", "DAP/3.2");      // Must use DataDDS on receiving end
+    fstream in(file_name.c_str(), ios::in|ios::binary);
 
-    c.read_data(dds, &r);
+    // Gobble up the response's initial set of MIME headers. Normally
+    // a client would extract the boundary and start information from
+    // these headers.
+    remove_mime_header(in);
 
-    cout << "The data:" << endl;
-    for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
-        (*q)->print_val(cout);
+    // Read the MPM boundary. dmr-test uses 'boundary' for the boundary
+    // marker and 'start' for the CID.
+    string boundary = read_multipart_boundary(in, "boundary");
+    cerr << "MPM Boundary: " << boundary << endl;
+
+    // Not passing the fourth param skips testing hte CID header's value
+    read_multipart_headers(in, "text/xml", dap4_ddx /*, "start"*/);
+
+    // parse the DMR, stopping when the boundary is found.
+    try {
+    	D4ParserSax2 parser;
+    	parser.intern(in, dmr, "boundary", debug);
     }
-#endif
+    catch(...) {
+    	delete factory;
+    	delete dmr;
+    	throw;
+    }
+
+    // If we knew the value of the CID header, we could test for it here by passing
+    // it as the fourth parameter.
+    read_multipart_headers(in, "application/octet-stream", dap4_data);
+
+    D4StreamUnMarshaller um(in);
+    um.set_twiddle_bytes(false);
+
+    dmr->root()->deserialize(um, *dmr);
+
+    return dmr;
 }
 
 void usage()
@@ -166,12 +195,13 @@ void usage()
 int
 main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "p:s:xd");
+    GetOpt getopt(argc, argv, "p:s:t:xd");
     int option_char;
     bool parse = false;
     bool debug = false;
     bool print = false;
     bool send = false;
+    bool trans = false;
     string name = "";
 
     // process options
@@ -196,6 +226,11 @@ main(int argc, char *argv[])
         	name = getopt.optarg;
         	break;
 
+        case 't':
+        	trans = true;
+        	name = getopt.optarg;
+        	break;
+
         case '?':
         case 'h':
             usage();
@@ -207,19 +242,46 @@ main(int argc, char *argv[])
             return 1;
         }
 
-    if (! (parse || send)) {
+    if (! (parse || send || trans)) {
         cerr << "Error: ";
         usage();
         return 1;
     }
 
     try {
-        if (parse)
-            (void)test_dap4_parser(name, debug, print);	// ignore the return value
-
+        if (parse) {
+            DMR *dmr = test_dap4_parser(name, debug, print);
+            delete dmr;
+        }
         // Add constraint and series values when ready
-        if (send)
-        	send_data(name, debug, print, "", false);
+        if (send) {
+        	DMR *server = test_dap4_parser(name, debug, print);
+        	string file_name = send_data(server, "", false);
+        	delete server;
+        }
+
+        if (trans) {
+        	DMR *server = test_dap4_parser(name, debug, print);
+        	string file_name = send_data(server, "", false);
+        	delete server;
+
+        	cerr << "file_name: " << file_name << endl;
+
+        	DMR *client = read_data(file_name, debug);
+
+        	if (print) {
+        		XMLWriter xml;
+        		client->print_dap4(xml, false /*constrained*/);
+        		cout << xml.get_doc() << endl;
+
+        		cout << "The data:" << endl;
+
+        		client->root()->print_val(cout, "", false);
+        		cout << endl;
+        	}
+        	delete client;
+        }
+
     }
     catch (Error &e) {
         cerr << e.get_error_message() << endl;

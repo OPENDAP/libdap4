@@ -40,10 +40,10 @@
 #include "Str.h"
 #include "Url.h"
 
+#include "DMR.h"
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
 
-#include "DDS.h"
 #include "util.h"
 #include "parser.h"
 #include "Operators.h"
@@ -151,6 +151,12 @@ UInt64::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
         read();          // read() throws Error
 
     m.put_uint64( d_buf ) ;
+}
+
+void
+UInt64::deserialize(D4StreamUnMarshaller &um, DMR &)
+{
+    um.get_uint64( d_buf ) ;
 }
 
 dods_uint64

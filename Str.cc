@@ -58,6 +58,7 @@
 
 #include "DMR.h"
 #include "D4StreamMarshaller.h"
+#include "D4StreamUnMarshaller.h"
 
 #include "util.h"
 #include "parser.h"
@@ -180,6 +181,11 @@ Str::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
     m.put_str( d_buf ) ;
 }
 
+void
+Str::deserialize(D4StreamUnMarshaller &um, DMR &)
+{
+    um.get_str( d_buf ) ;
+}
 
 /** Read the object's value and put a copy in the C++ string object
     referenced by \e **val. If \e *val is null, this method will allocate
