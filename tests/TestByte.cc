@@ -84,13 +84,13 @@ TestByte::_duplicate(const TestByte &ts)
 
 TestByte::TestByte(const string &n) : Byte(n), d_series_values(false)
 {
-    d_buf = 255;
+    d_buf = 23;
 }
 
 TestByte::TestByte(const string &n, const string &d)
     : Byte(n, d), d_series_values(false)
 {
-    d_buf = 255;
+    d_buf = 23;
 }
 
 BaseType *

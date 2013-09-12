@@ -40,15 +40,15 @@
 #include <sstream>
 #include <iomanip>
 
-using namespace std;
-
-//#define DODS_DEBUG 1
+#define DODS_DEBUG 1
 #include "D4StreamMarshaller.h"
 
 #include "dods-datatypes.h"
 #include "XDRUtils.h"
 #include "util.h"
 #include "debug.h"
+
+using namespace std;
 
 namespace libdap {
 

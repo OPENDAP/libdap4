@@ -175,22 +175,14 @@ UInt64::set_value(dods_uint64 i)
 }
 
 void
-UInt64::print_val(FILE *out, string space, bool print_decl_p)
-{
-    ostringstream oss;
-    print_val(oss, space, print_decl_p);
-    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-}
-
-void
 UInt64::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
         print_decl(out, space, false);
-	out << " = " << (unsigned int)d_buf << ";\n" ;
+	out << " = " << d_buf << ";\n" ;
     }
     else
-	out << (unsigned int)d_buf ;
+	out << d_buf ;
 }
 
 bool

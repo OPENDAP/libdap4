@@ -27,24 +27,27 @@
 #include "config.h"
 
 #include <fstream>
-#include <tr1/memory>
+// #include <tr1/memory>
 
 #include <GetOpt.h>
 
 #include "DMR.h"
 #include "D4StreamUnMarshaller.h"
+#include "chunked_ostream.h"
 
 #include "util.h"
 #include "Error.h"
 
-#include "ResponseBuilder.h"
+#include "ResponseBuilder.h"	// clone of code defined by the BES
 #include "ConstraintEvaluator.h"
 
 #include "D4ParserSax2.h"
 #include "D4TestTypeFactory.h"
+#include "TestCommon.h"
 
 #include "util.h"
 #include "mime_util.h"
+#include "debug.h"
 
 int test_variable_sleep_interval = 0;   // Used in Test* classes for testing timeouts.
 
@@ -118,7 +121,7 @@ set_series_values(DMR *dmr, bool state)
  * @return The name of the file that hods the response.
  */
 string
-send_data(DMR *server, const string &constraint, bool series_values)
+send_data(DMR *server, const string &constraint, bool series_values, bool multipart)
 {
     set_series_values(server, series_values);
 
@@ -133,14 +136,17 @@ send_data(DMR *server, const string &constraint, bool series_values)
 
     string file_name = server->name() + "_data.bin";
     ofstream out(file_name.c_str(), ios::out|ios::trunc|ios::binary);
-    rb.send_data_dmr(out, *server, eval, "start", "boundary", true);
+    if (multipart)
+    	rb.send_data_dmr_multipart(out, *server, eval, "start", "boundary", true);
+    else
+    	rb.send_data_dmr(out, *server, eval, true);
     out.close();
 
     return file_name;
 }
 
 DMR *
-read_data(const string &file_name, bool debug)
+read_data_multipart(const string &file_name, bool debug)
 {
     D4BaseTypeFactory *factory = new D4BaseTypeFactory;
     DMR *dmr = new DMR(factory, "Test_data");
@@ -155,7 +161,7 @@ read_data(const string &file_name, bool debug)
     // Read the MPM boundary. dmr-test uses 'boundary' for the boundary
     // marker and 'start' for the CID.
     string boundary = read_multipart_boundary(in, "boundary");
-    cerr << "MPM Boundary: " << boundary << endl;
+    DBG(cerr << "MPM Boundary: " << boundary << endl);
 
     // Not passing the fourth param skips testing hte CID header's value
     read_multipart_headers(in, "text/xml", dap4_ddx /*, "start"*/);
@@ -183,42 +189,109 @@ read_data(const string &file_name, bool debug)
     return dmr;
 }
 
+DMR *
+read_data_plain(const string &file_name, bool debug)
+{
+    D4BaseTypeFactory *factory = new D4BaseTypeFactory;
+    DMR *dmr = new DMR(factory, "Test_data");
+
+    fstream in(file_name.c_str(), ios::in|ios::binary);
+
+    // Gobble up the response's initial set of MIME headers. Normally
+    // a client would extract information from these headers.
+    remove_mime_header(in);
+
+    // FIXME
+    // Read the byte-order byte
+
+    // get a chunked input stream
+
+    // parse the DMR, stopping when the boundary is found.
+    try {
+    	D4ParserSax2 parser;
+    	parser.intern(in, dmr, debug);
+    }
+    catch(...) {
+    	delete factory;
+    	delete dmr;
+    	throw;
+    }
+
+    D4StreamUnMarshaller um(in);
+    um.set_twiddle_bytes(false);
+
+    dmr->root()->deserialize(um, *dmr);
+
+    return dmr;
+}
+
+void
+write_chunked_data(const string &file)
+{
+	fstream infile(file.c_str(), ios::in|ios::binary);
+	if (!infile.good())
+		cerr << "File not open" << endl;
+
+	string out = file + ".out";
+	fstream outfile(out.c_str(), ios::out|ios::binary);
+
+	chunked_ostream chunked_outfile(outfile, 32);
+#if 0
+	char c;
+	infile.get(c);
+	int num = infile.gcount();
+	while (infile.good()) {
+		chunked_outfile.write(&c, num);
+		infile.get(c);
+		num = infile.gcount();
+	}
+#endif
+
+	char str[128];
+	infile.read(str, 128);
+	int num = infile.gcount();
+	cerr << "read " << num << " chars" << endl;
+	while (infile.good()) {
+		chunked_outfile.write(str, num);
+		infile.read(str, 128);
+		num = infile.gcount();
+		cerr << "read " << num << " chars" << endl;
+	}
+}
+
+
 void usage()
 {
     cerr << "Usage: dmr-test -p|s <file> [-d -x]" << endl
             << "p: parse a file (use "-" for stdin)" << endl
-            << "s: parse and 'send' a file (or stdin)" << endl
-            << "d: turn on detailed debugging" << endl
-            << "x: print the binary object(s) built by the parse." << endl;
+            << "s: parse and then 'send' a response to a file" << endl
+            << "t: parse, send and then read the response file" << endl
+            << "d: turn on detailed parser debugging" << endl
+            << "x: print the binary object(s) built by the parse, send or trans operations." << endl
+            << "m: use multipart MIME for the response (default is to follow the spec)." << endl;
 }
 
 int
 main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "p:s:t:xd");
+    GetOpt getopt(argc, argv, "p:s:t:xdmc:");
     int option_char;
     bool parse = false;
     bool debug = false;
     bool print = false;
     bool send = false;
     bool trans = false;
+    bool multipart = false;
+    bool chunked_output = false;
     string name = "";
 
     // process options
 
     while ((option_char = getopt()) != EOF)
         switch (option_char) {
-        case 'd':
-            debug = true;
-            break;
-
         case 'p':
             parse = true;
             name = getopt.optarg;
-            break;
-
-        case 'x':
-            print = true;
             break;
 
         case 's':
@@ -228,6 +301,23 @@ main(int argc, char *argv[])
 
         case 't':
         	trans = true;
+        	name = getopt.optarg;
+        	break;
+
+        case 'd':
+            debug = true;
+            break;
+
+        case 'x':
+            print = true;
+            break;
+
+        case 'm':
+        	multipart = true;
+        	break;
+
+        case 'c':
+        	chunked_output = true;
         	name = getopt.optarg;
         	break;
 
@@ -242,7 +332,7 @@ main(int argc, char *argv[])
             return 1;
         }
 
-    if (! (parse || send || trans)) {
+    if (! (parse || send || trans || chunked_output)) {
         cerr << "Error: ";
         usage();
         return 1;
@@ -256,32 +346,39 @@ main(int argc, char *argv[])
         // Add constraint and series values when ready
         if (send) {
         	DMR *server = test_dap4_parser(name, debug, print);
-        	string file_name = send_data(server, "", false);
+        	string file_name = send_data(server, "", false, multipart);
+        	if (print)
+        		cout << "Response file:" << file_name << endl;
         	delete server;
         }
 
         if (trans) {
         	DMR *server = test_dap4_parser(name, debug, print);
-        	string file_name = send_data(server, "", false);
+        	string file_name = send_data(server, "", false, multipart);
+        	if (print)
+        		cout << "Response file:" << file_name << endl;
         	delete server;
 
-        	cerr << "file_name: " << file_name << endl;
-
-        	DMR *client = read_data(file_name, debug);
+        	DMR *client = read_data_multipart(file_name, debug);
 
         	if (print) {
         		XMLWriter xml;
         		client->print_dap4(xml, false /*constrained*/);
         		cout << xml.get_doc() << endl;
 
-        		cout << "The data:" << endl;
-
-        		client->root()->print_val(cout, "", false);
-        		cout << endl;
+				cout << "The data:" << endl;
         	}
+
+        	// if trans is used, the data are printed regardless of print's value
+    		client->root()->print_val(cout, "", false);
+    		cout << endl;
+
         	delete client;
         }
 
+        if (chunked_output) {
+        	write_chunked_data(name);
+        }
     }
     catch (Error &e) {
         cerr << e.get_error_message() << endl;

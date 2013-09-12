@@ -202,22 +202,14 @@ Int64::set_value(dods_int64 i)
     return true;
 }
 
-void
-Int64::print_val(FILE *out, string space, bool print_decl_p)
-{
-    ostringstream oss;
-    print_val(oss, space, print_decl_p);
-    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-}
-
 void Int64::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
         print_decl(out, space, false);
-        out << " = " << (dods_int64) d_buf << ";\n";
+        out << " = " << d_buf << ";\n";
     }
     else
-        out << (int) d_buf;
+        out << d_buf;
 }
 
 bool

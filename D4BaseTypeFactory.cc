@@ -36,6 +36,7 @@
 #include "UInt16.h"
 #include "Int32.h"
 #include "UInt32.h"
+
 #include "Int64.h"
 #include "UInt64.h"
 
@@ -70,6 +71,7 @@ BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
             return NewUInt8(name);
         case dods_int8_c:
             return NewInt8(name);
+
         case dods_int16_c:
             return NewInt16(name);
         case dods_uint16_c:
@@ -78,24 +80,22 @@ BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
             return NewInt32(name);
         case dods_uint32_c:
             return NewUInt32(name);
+
         case dods_int64_c:
             return NewInt64(name);
         case dods_uint64_c:
             return NewUInt64(name);
+
         case dods_float32_c:
             return NewFloat32(name);
         case dods_float64_c:
             return NewFloat64(name);
+
         case dods_str_c:
             return NewStr(name);
         case dods_url_c:
-            return NewUrl(name);
-#if 0
-            // Noooo ...not adding a new type just to change the case of two letters.
-            // jhrg 8/15/13
-        case dods_url4_c:
             return NewURL(name);
-#endif
+
         case dods_structure_c:
             return NewStructure(name);
 
@@ -104,8 +104,6 @@ BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
             throw InternalErr(__FILE__, __LINE__, "Array is not part of DAP4.");
         case dods_sequence_c:
             throw InternalErr(__FILE__, __LINE__, "Sequence is not part of DAP4.");
-        case dods_grid_c:
-            throw InternalErr(__FILE__, __LINE__, "Grid is not part of DAP4.");
 #if 0
         case dods_enum_c:
             return  NewEnum(name);
@@ -116,7 +114,7 @@ BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
         case dods_group_c:
             return NewGroup(name);
         default:
-            return 0;
+            throw InternalErr(__FILE__, __LINE__, "Unimplemented type in DAP4");
     }
 }
 
@@ -207,8 +205,7 @@ D4BaseTypeFactory::NewUrl(const string &n) const
 Url *
 D4BaseTypeFactory::NewURL(const string &n) const
 {
-    return NewUrl(n);
-}
+    return new Url(n);}
 
 #if 0
 /** For an Enum, both it's name and type must be know before use. This

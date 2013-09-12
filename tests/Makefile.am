@@ -53,12 +53,12 @@ TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestSequence.cc		 \
 	   TestGrid.cc TestUInt32.cc TestInt16.cc TestUInt16.cc		 \
 	   TestFloat32.cc TestCommon.cc TestTypeFactory.cc D4TestTypeFactory.cc \
-	   TestD4Group.cc TestInt8.cc
+	   TestD4Group.cc TestInt8.cc TestInt64.cc testUInt64.cc
 
 TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 	TestGrid.h TestInt16.h TestInt32.h TestSequence.h TestStr.h	      \
 	TestStructure.h TestTypeFactory.h TestUInt16.h TestUInt32.h TestUrl.h \
-	D4TestTypeFactory.h TestD4Group.h TestInt8.h
+	D4TestTypeFactory.h TestD4Group.h TestInt8.h TestInt64.h testUInt64.h
 
 DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite dmr-testsuite
 

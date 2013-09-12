@@ -28,26 +28,6 @@
 
 #include <string>
 
-#include "TestByte.h"
-
-#include "TestInt8.h"
-
-#include "TestInt16.h"
-#include "TestUInt16.h"
-#include "TestInt32.h"
-#include "TestUInt32.h"
-
-#include "TestFloat32.h"
-#include "TestFloat64.h"
-
-#include "TestStr.h"
-#include "TestUrl.h"
-
-#include "TestArray.h"
-#include "TestStructure.h"
-
-#include "TestD4Group.h"
-
 #include "D4BaseTypeFactory.h"
 
 using namespace libdap ;
@@ -59,34 +39,44 @@ public:
     D4TestTypeFactory() {}
     virtual ~D4TestTypeFactory() {}
 
+    virtual BaseTypeFactory *ptr_duplicate() const { return new D4TestTypeFactory; }
+
     virtual BaseType *NewVariable(Type t, const string &name) const;
 
-    virtual BaseTypeFactory *ptr_duplicate() const {
-        return new D4TestTypeFactory;
-    }
+    virtual Byte *NewByte(const string &n = "") const;
 
-    virtual Byte *NewByte(const string &n = "") const { return new TestByte(n); }
+    // New for DAP4
+    virtual Int8 *NewInt8(const string &n = "") const;
+    virtual Byte *NewUInt8(const string &n = "") const;
 
-    virtual Byte *NewUInt8(const string &n = "") const { return new TestByte(n); }
-    virtual Int8 *NewInt8(const string &n = "") const { return new TestInt8(n); }
+    virtual Int16 *NewInt16(const string &n = "") const;
+    virtual UInt16 *NewUInt16(const string &n = "") const;
+    virtual Int32 *NewInt32(const string &n = "") const;
+    virtual UInt32 *NewUInt32(const string &n = "") const;
 
-    virtual Int16 *NewInt16(const string &n = "") const { return new TestInt16(n); }
-    virtual UInt16 *NewUInt16(const string &n = "") const { return new TestUInt16(n); }
-    virtual Int32 *NewInt32(const string &n = "") const { return new TestInt32(n); }
-    virtual UInt32 *NewUInt32(const string &n = "") const { return new TestUInt32(n); }
+    // New for DAP4
+    virtual Int64 *NewInt64(const string &n = "") const;
+    virtual UInt64 *NewUInt64(const string &n = "") const;
 
-    // TODO Add 64bit ints
+    virtual Float32 *NewFloat32(const string &n = "") const;
+    virtual Float64 *NewFloat64(const string &n = "") const;
 
-    virtual Float32 *NewFloat32(const string &n = "") const { return new TestFloat32(n); }
-    virtual Float64 *NewFloat64(const string &n = "") const { return new TestFloat64(n); }
+    virtual Str *NewStr(const string &n = "") const;
+    virtual Url *NewUrl(const string &n = "") const;
+    virtual Url *NewURL(const string &n = "") const;
 
-    virtual Str *NewStr(const string &n = "") const { return new TestStr(n); }
-    virtual Url *NewUrl(const string &n = "") const { return new TestUrl(n); }
+#if 0
+    virtual D4Enum *NewEnum(const string &n = "", Type type = dods_null_c) const;
+#endif
+    virtual Structure *NewStructure(const string &n = "") const;
 
-    virtual Array *NewArray(const string &n = "", BaseType *v = 0) const { return new TestArray(n, v); }
-    virtual Structure *NewStructure(const string &n = "") const { return new TestStructure(n); }
+    virtual D4Group *NewGroup(const string &n = "") const;
 
-    virtual D4Group *NewGroup(const string &n = "") const { return new TestD4Group(n); }
+    // FIXME Define these
+#if 0
+    virtual Opaque *NewOpaque(const string &n = "") const;
+    virtual D4Array *NewArray(const string &n = "", BaseType *v = 0) const;
+#endif
 
 };
 

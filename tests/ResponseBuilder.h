@@ -91,13 +91,19 @@ public:
     virtual void establish_timeout(ostream &stream) const;
     virtual void remove_timeout() const;
 
-    virtual void dataset_constraint_dmr(std::ostream &out, libdap::DMR &dmr, libdap::ConstraintEvaluator &eval,
-            const string &start, const string &boundary, bool filter);
-
     virtual void send_dmr(std::ostream &out, libdap::DMR &dmr, libdap::ConstraintEvaluator &eval, bool with_mime_headers);
 
-    virtual void send_data_dmr(std::ostream &out, libdap::DMR &dmr, libdap::ConstraintEvaluator &eval,
+    virtual void dataset_constraint_dmr_multipart(std::ostream &out, libdap::DMR &dmr, libdap::ConstraintEvaluator &eval,
+            const string &start, const string &boundary, bool filter);
+
+    virtual void send_data_dmr_multipart(std::ostream &out, libdap::DMR &dmr, libdap::ConstraintEvaluator &eval,
     		const string &start, const string &boundary, bool with_mime_headers);
+
+    virtual void dataset_constraint_dmr(std::ostream &out, libdap::DMR &dmr, libdap::ConstraintEvaluator &eval,
+            bool filter);
+
+    virtual void send_data_dmr(std::ostream &out, libdap::DMR &dmr, libdap::ConstraintEvaluator &eval,
+    		bool with_mime_headers);
 };
 
 #endif // _response_builder_h

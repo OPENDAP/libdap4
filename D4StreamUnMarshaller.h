@@ -41,11 +41,13 @@
 
 #include <crc.h>
 
-using std::istream;
-
 #include "Type.h"
 #include "UnMarshaller.h"
 #include "InternalErr.h"
+
+#include "debug.h"
+
+using std::istream;
 
 namespace libdap {
 

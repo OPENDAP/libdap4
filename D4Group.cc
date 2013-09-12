@@ -24,6 +24,8 @@
 
 #include "config.h"
 
+#define DODS_DEBUG
+
 #include "XMLWriter.h"
 #include "D4Attributes.h"
 #include "D4Dimensions.h"
@@ -250,12 +252,14 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, b
 	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
 		// Only send the stuff in the current subset.
 		if ((*i)->send_p()) {
+#if 0
 			m.reset_checksum();
-
+#endif
 			(*i)->serialize(m, dmr, eval, filter);
-
-			DBG(cerr << "CRC32: " << m.get_checksum() << endl);
+#if 0
+			DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << (*i)->name() << endl);
 			m.put_checksum();
+#endif
 		}
 	}
 }
@@ -270,12 +274,13 @@ void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 	// their checksum and store the value in a magic attribute of the variable
 	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
 		(*i)->deserialize(um, dmr);
-
+#if 0
 		D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
 		string crc = um.get_checksum_str();
 		a->add_value(crc);
-		DBG(cerr << "CRC32: " << crc << endl);
+		DBG(cerr << "Read CRC32: " << crc << " for " << (*i)->name() << endl);
 		(*i)->attributes()->add_attribute_nocopy(a);
+#endif
 	}
 }
 

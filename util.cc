@@ -632,6 +632,7 @@ D4type_name(Type t)
         return string("String");
     case dods_url_c:
         return string("URL");
+
     case dods_opaque_c:
     	return string("Opaque");
 

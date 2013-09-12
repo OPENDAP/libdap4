@@ -25,12 +25,18 @@
 
 
 #include <string>
-#if 0
+#if 1
 #include "TestByte.h"
+
+#include "TestInt8.h"
+
 #include "TestInt16.h"
 #include "TestUInt16.h"
 #include "TestInt32.h"
 #include "TestUInt32.h"
+
+#include "TestInt64.h"
+#include "TestUInt64.h"
 
 #include "TestFloat32.h"
 #include "TestFloat64.h"
@@ -43,7 +49,7 @@
 
 #include "TestD4Group.h"
 
-#include "D4BaseTypeFactory.h"
+//#include "D4BaseTypeFactory.h"
 #endif
 
 #include "D4TestTypeFactory.h"
@@ -55,10 +61,12 @@ BaseType *D4TestTypeFactory::NewVariable(Type t, const string &name) const
     switch (t) {
         case dods_byte_c:
             return NewByte(name);
+
         case dods_uint8_c:
             return NewUInt8(name);
         case dods_int8_c:
             return NewInt8(name);
+
         case dods_int16_c:
             return NewInt16(name);
         case dods_uint16_c:
@@ -67,26 +75,22 @@ BaseType *D4TestTypeFactory::NewVariable(Type t, const string &name) const
             return NewInt32(name);
         case dods_uint32_c:
             return NewUInt32(name);
-#if 0
+
         case dods_int64_c:
             return NewInt64(name);
         case dods_uint64_c:
             return NewUInt64(name);
-#endif
+
         case dods_float32_c:
             return NewFloat32(name);
         case dods_float64_c:
             return NewFloat64(name);
+
         case dods_str_c:
             return NewStr(name);
         case dods_url_c:
-            return NewUrl(name);
-#if 0
-            // Noooo ...not adding a new type just to change the case of two letters.
-            // jhrg 8/15/13
-        case dods_url4_c:
             return NewURL(name);
-#endif
+
         case dods_structure_c:
             return NewStructure(name);
 
@@ -95,8 +99,6 @@ BaseType *D4TestTypeFactory::NewVariable(Type t, const string &name) const
             throw InternalErr(__FILE__, __LINE__, "Array is not part of DAP4.");
         case dods_sequence_c:
             throw InternalErr(__FILE__, __LINE__, "Sequence is not part of DAP4.");
-        case dods_grid_c:
-            throw InternalErr(__FILE__, __LINE__, "Grid is not part of DAP4.");
 #if 0
         case dods_enum_c:
             return  NewEnum(name);
@@ -108,6 +110,126 @@ BaseType *D4TestTypeFactory::NewVariable(Type t, const string &name) const
             return NewGroup(name);
 
         default:
-            return 0;
+            throw InternalErr(__FILE__, __LINE__, "Unimplemented type in DAP4.");
     }
 }
+
+
+Byte *
+D4TestTypeFactory::NewByte(const string &n) const
+{
+    return new TestByte(n);
+}
+
+Byte *
+D4TestTypeFactory::NewUInt8(const string &n) const
+{
+    Byte *b = new TestByte(n);
+    b->set_type(dods_uint8_c);
+    return b;
+}
+
+Int8 *
+D4TestTypeFactory::NewInt8(const string &n) const
+{
+    return new TestInt8(n);
+}
+
+Int16 *
+D4TestTypeFactory::NewInt16(const string &n) const
+{
+    return new TestInt16(n);
+}
+
+UInt16 *
+D4TestTypeFactory::NewUInt16(const string &n) const
+{
+    return new TestUInt16(n);
+}
+
+Int32 *
+D4TestTypeFactory::NewInt32(const string &n) const
+{
+    DBG(cerr << "Inside DAP4BaseTypeFactory::NewInt32" << endl);
+    return new TestInt32(n);
+}
+
+UInt32 *
+D4TestTypeFactory::NewUInt32(const string &n) const
+{
+    return new TestUInt32(n);
+}
+
+Int64 *
+D4TestTypeFactory::NewInt64(const string &n) const
+{
+    DBG(cerr << "Inside DAP4BaseTypeFactory::NewInt64" << endl);
+    return new TestInt64(n);
+}
+
+UInt64 *
+D4TestTypeFactory::NewUInt64(const string &n) const
+{
+    return new TestUInt64(n);
+}
+
+Float32 *
+D4TestTypeFactory::NewFloat32(const string &n) const
+{
+    return new TestFloat32(n);
+}
+
+Float64 *
+D4TestTypeFactory::NewFloat64(const string &n) const
+{
+    return new TestFloat64(n);
+}
+
+Str *
+D4TestTypeFactory::NewStr(const string &n) const
+{
+    return new TestStr(n);
+}
+
+Url *
+D4TestTypeFactory::NewUrl(const string &n) const
+{
+    return new TestUrl(n);
+}
+
+/** Note that this method is called NewURL - URL in caps.
+ */
+Url *
+D4TestTypeFactory::NewURL(const string &n) const
+{
+    return NewURL(n);
+}
+
+#if 0
+/** For an Enum, both it's name and type must be know before use. This
+ * factory method uses "" and dods_null_c as the default values for name
+ * and type, respectively.
+ *
+ * @name The name of the Enum
+ * @type The Enum's element type.
+ * @return A new Enum variable
+ */
+D4Enum *
+D4TestTypeFactory::NewEnum(const string &name, Type type) const
+{
+    return new TestD4Enum(name, type);
+}
+#endif
+
+Structure *
+D4TestTypeFactory::NewStructure(const string &n) const
+{
+    return new TestStructure(n);
+}
+
+D4Group *
+D4TestTypeFactory::NewGroup(const string &n) const
+{
+    return new TestD4Group(n);
+}
+

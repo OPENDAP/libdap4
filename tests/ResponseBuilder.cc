@@ -223,7 +223,7 @@ void ResponseBuilder::remove_timeout() const
  * @param eval Use this ConstraintEvaluator
  * @param with_mime_headers If true, include the MIME headers in the response
  */
-void ResponseBuilder::send_dmr(ostream &out, DMR &dmr, ConstraintEvaluator &eval, bool with_mime_headers)
+void ResponseBuilder::send_dmr(ostream &out, DMR &dmr, ConstraintEvaluator &, bool with_mime_headers)
 {
 #if 0
 	// TODO Add CE Parser; and see below
@@ -245,7 +245,7 @@ void ResponseBuilder::send_dmr(ostream &out, DMR &dmr, ConstraintEvaluator &eval
  * @param boundary
  * @param filter true if there are filters to apply to variables
  */
-void ResponseBuilder::dataset_constraint_dmr(ostream &out, DMR &dmr, ConstraintEvaluator &eval,
+void ResponseBuilder::dataset_constraint_dmr_multipart(ostream &out, DMR &dmr, ConstraintEvaluator &eval,
         const string &start, const string &boundary, bool filter)
 {
     // Write the MPM headers for the DDX (text/xml) part of the response
@@ -275,7 +275,7 @@ void ResponseBuilder::dataset_constraint_dmr(ostream &out, DMR &dmr, ConstraintE
     dmr.root()->serialize(m, dmr, eval, filter);
 }
 
-void ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, ConstraintEvaluator &eval,
+void ResponseBuilder::send_data_dmr_multipart(ostream &out, DMR &dmr, ConstraintEvaluator &eval,
 		const string &start, const string &boundary, bool with_mime_headers)
 {
 	// Set up the alarm.
@@ -295,9 +295,73 @@ void ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, ConstraintEvaluator 
 		if (with_mime_headers)
 			set_mime_multipart(out, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
 
-		dataset_constraint_dmr(out, dmr, eval, start, boundary, true /*filter*/);
+		dataset_constraint_dmr_multipart(out, dmr, eval, start, boundary, true /*filter*/);
 
 		if (with_mime_headers) out << CRLF << "--" << boundary << "--" << CRLF;
+
+		out << flush;
+
+		remove_timeout();
+	}
+	catch (...) {
+		remove_timeout();
+		throw;
+	}
+}
+
+/**
+ *
+ * @param out
+ * @param dmr
+ * @param eval
+ * @param start
+ * @param boundary
+ * @param filter true if there are filters to apply to variables
+ */
+void ResponseBuilder::dataset_constraint_dmr(ostream &out, DMR &dmr, ConstraintEvaluator &eval, bool filter)
+{
+	// Write the byte-order byte
+
+    // Write the DMR
+    XMLWriter xml;
+    dmr.print_dap4(xml, filter);
+
+    // Make out be a chunking stream and put the entire doc in as it's first chunk
+    // For now, simulate the first chunk
+    char byte_order = 0x00;	// little endian
+    int32_t chunkheader = xml.get_doc_size(); // a total hack
+
+    out << byte_order << chunkheader;
+    out << xml.get_doc() << flush;
+
+    // Write the separator
+    out << CRLF;
+
+    // Write the data, chunked with checksums
+    D4StreamMarshaller m(out);
+    dmr.root()->serialize(m, dmr, eval, filter);
+}
+
+void ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, ConstraintEvaluator &eval, bool with_mime_headers)
+{
+	try {
+		// Set up the alarm.
+		establish_timeout(out);
+
+#if 0
+		bool filter = eval.parse_constraint(d_ce, dmr); // Throws Error if the ce doesn't parse.
+#endif
+		if (dmr.response_limit() != 0 && dmr.request_size(true) > dmr.response_limit()) {
+			string msg = "The Request for " + long_to_string(dmr.request_size(true) / 1024)
+					+ "MB is too large; requests for this user are limited to "
+					+ long_to_string(dmr.response_limit() / 1024) + "MB.";
+			throw Error(msg);
+		}
+
+		if (with_mime_headers)
+			set_mime_binary(out, dap4_data_ddx, x_plain, last_modified_time(d_dataset), dmr.dap_version());
+
+		dataset_constraint_dmr(out, dmr, eval, true /*filter*/);
 
 		out << flush;
 

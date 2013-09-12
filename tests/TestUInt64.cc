@@ -1,9 +1,10 @@
+
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2013 OPeNDAP, Inc.
+// Copyright (c) 2002,2003 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -21,10 +22,10 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
-
+ 
 #include "config.h"
 
-#ifndef WIN32
+#ifndef WIN64
 #include <unistd.h>
 #else
 #include <io.h>
@@ -32,70 +33,76 @@
 #include <process.h>
 #endif
 
-#include "TestInt8.h"
+#include "TestUInt64.h"
 
 extern int test_variable_sleep_interval;
 
-void TestInt8::m_duplicate(const TestInt8 &ts)
+void
+TestUInt64::_duplicate(const TestUInt64 &ts)
 {
-	d_series_values = ts.d_series_values;
+    d_series_values = ts.d_series_values;
 }
 
-TestInt8::TestInt8(const string &n) :
-		Int8(n), d_series_values(false)
+
+TestUInt64::TestUInt64(const string &n) : UInt64(n), d_series_values(false)
 {
-	d_buf = 1;
+    d_buf = 1;
 }
 
-TestInt8::TestInt8(const string &n, const string &d) :
-		Int8(n, d), d_series_values(false)
+TestUInt64::TestUInt64(const string &n, const string &d)
+    : UInt64(n, d), d_series_values(false)
 {
-	d_buf = 1;
+    d_buf = 1;
 }
 
-TestInt8::TestInt8(const TestInt8 &rhs) :
-		Int8(rhs), TestCommon(rhs)
+TestUInt64::TestUInt64(const TestUInt64 &rhs) : UInt64(rhs), TestCommon(rhs)
 {
-	m_duplicate(rhs);
+    _duplicate(rhs);
 }
 
-TestInt8 &
-TestInt8::operator=(const TestInt8 &rhs)
+TestUInt64 &
+TestUInt64::operator=(const TestUInt64 &rhs)
 {
-	if (this == &rhs) return *this;
-
-	dynamic_cast<Int8 &>(*this) = rhs; // run Constructor=
-
-	m_duplicate(rhs);
-
+    if (this == &rhs)
 	return *this;
+
+    dynamic_cast<UInt64 &>(*this) = rhs; // run Constructor=
+
+    _duplicate(rhs);
+
+    return *this;
 }
+
 
 BaseType *
-TestInt8::ptr_duplicate()
+TestUInt64::ptr_duplicate()
 {
-	return new TestInt8(*this);
+    return new TestUInt64(*this);
 }
 
-void TestInt8::output_values(std::ostream &out)
+void 
+TestUInt64::output_values(std::ostream &out)
 {
-	print_val(out, "", false);
+    print_val(out, "", false);
 }
 
-bool TestInt8::read()
+bool
+TestUInt64::read()
 {
-	if (read_p()) return true;
-
-	if (test_variable_sleep_interval > 0) sleep (test_variable_sleep_interval);
-
-	if (get_series_values()) {
-		d_buf = (dods_int8) (2 * d_buf);
-	}
-	else {
-		d_buf = 127;
-	}
-
-	set_read_p(true);
-
+    if (read_p())
 	return true;
+
+    if (test_variable_sleep_interval > 0)
+	sleep(test_variable_sleep_interval);
+
+    if (get_series_values()) {
+        d_buf = 64 * d_buf;
+    }
+    else {
+        d_buf = 0xffffffffffffffff;		// really big
+    }
+
+    set_read_p(true);
+    
+    return true;
 }

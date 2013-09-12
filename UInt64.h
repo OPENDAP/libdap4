@@ -50,6 +50,7 @@ class UInt64: public BaseType
 {
     virtual unsigned int val2buf(void *, bool)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
     virtual unsigned int buf2val(void **)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
+    virtual void print_val(FILE *, string, bool) { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
 
 protected:
     dods_uint64 d_buf;
@@ -80,10 +81,7 @@ public:
     virtual dods_uint64 value() const;
     virtual bool set_value(dods_uint64 val);
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "",  bool print_decl_p = true);
 
     virtual bool ops(BaseType *b, int op);
 

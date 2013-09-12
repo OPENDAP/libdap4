@@ -37,12 +37,13 @@
 namespace libdap
 {
 
-/** @brief Holds a 16-bit signed integer value. */
+/** @brief Holds an 8-bit signed integer value. */
 
 class Int8: public BaseType
 {
     virtual unsigned int val2buf(void *, bool)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int8"); }
     virtual unsigned int buf2val(void **)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int8"); }
+    virtual void print_val(FILE *, string , bool) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int8"); }
 
 protected:
     dods_int8 d_buf;
@@ -74,10 +75,7 @@ public:
     virtual dods_int8 value() const;
     virtual bool set_value(dods_int8 val);
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
 
     virtual bool ops(BaseType *b, int op);
 

@@ -48,8 +48,9 @@ class UnMarshaller;
 
 class Int64: public BaseType
 {
-    unsigned int val2buf(void *, bool)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
-    unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
+    virtual unsigned int val2buf(void *, bool)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
+    virtual unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
+    virtual void print_val(FILE *, string, bool) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
 
 protected:
     dods_int64 d_buf;
@@ -80,10 +81,7 @@ public:
     virtual bool set_value(dods_int64 i);
     virtual dods_int64 value() const;
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
 
     virtual bool ops(BaseType *b, int op);
 
