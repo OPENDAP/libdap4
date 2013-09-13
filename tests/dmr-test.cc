@@ -34,8 +34,10 @@
 #include "DMR.h"
 #include "D4StreamUnMarshaller.h"
 #include "chunked_ostream.h"
+#include "chunked_istream.h"
 
 #include "util.h"
+#include "InternalErr.h"
 #include "Error.h"
 
 #include "ResponseBuilder.h"	// clone of code defined by the BES
@@ -232,10 +234,11 @@ write_chunked_data(const string &file)
 	if (!infile.good())
 		cerr << "File not open" << endl;
 
-	string out = file + ".out";
+	string out = file + ".chunked";
 	fstream outfile(out.c_str(), ios::out|ios::binary);
 
 	chunked_ostream chunked_outfile(outfile, 32);
+
 #if 0
 	char c;
 	infile.get(c);
@@ -245,20 +248,123 @@ write_chunked_data(const string &file)
 		infile.get(c);
 		num = infile.gcount();
 	}
+	if (num > 0 && !(infile.bad() && infile.fail()) ) {
+		chunked_outfile.write(str, num);
+	}
 #endif
 
+#if 0
 	char str[128];
 	infile.read(str, 128);
 	int num = infile.gcount();
-	cerr << "read " << num << " chars" << endl;
 	while (infile.good()) {
 		chunked_outfile.write(str, num);
 		infile.read(str, 128);
 		num = infile.gcount();
-		cerr << "read " << num << " chars" << endl;
+	}
+	if (num > 0 && !(infile.bad() && infile.fail()) ) {
+		chunked_outfile.write(str, num);
+	}
+#endif
+
+	try {
+		char str[24];
+		infile.read(str, 24);
+		int num = infile.gcount();
+		if (infile.good()) {
+			chunked_outfile.write(str, num);
+			chunked_outfile.flush();
+		}
+
+		infile.read(str, 24);
+		num = infile.gcount();
+		if (infile.good()) chunked_outfile.write(str, num);
+
+		// Send an error chunk; the 24 bytes read here are lost...
+		throw InternalErr(__FILE__, __LINE__, "The serialization failed!");
+
+		infile.read(str, 24);
+		num = infile.gcount();
+		while (infile.good()) {
+			chunked_outfile.write(str, num);
+			infile.read(str, 24);
+			num = infile.gcount();
+		}
+
+		if (num > 0 && !(infile.bad() && infile.fail())) {
+			chunked_outfile.write(str, num);
+		}
+	}
+	catch (Error &e) {
+		chunked_outfile.write_err_chunk(e.get_error_message());
 	}
 }
 
+void
+read_chunked_data(const string &file)
+{
+	string in = file + ".chunked";
+	fstream infile(in.c_str(), ios::in|ios::binary);
+	if (!infile.good())
+		cerr << "File not open" << endl;
+	chunked_istream chunked_infile(infile, 32);
+
+	string out = file + ".plain";
+	fstream outfile(out.c_str(), ios::out|ios::binary);
+
+#if 0
+	char c;
+	chunked_infile.get(c);
+	int num = chunked_infile.gcount();
+	while (chunked_infile.good()) {
+		outfile.write(&c, num);
+		chunked_infile.get(c);
+		num = chunked_infile.gcount();
+	}
+#endif
+
+#if 0
+	char str[128];
+	chunked_infile.read(str, 128);
+	int num = chunked_infile.gcount();
+	while (chunked_infile.good()) {
+		outfile.write(str, num);
+		chunked_infile.read(str, 128);
+		num = chunked_infile.gcount();
+	}
+	if (num > 0 && !(chunked_infile.bad() && chunked_infile.fail()) ) {
+		outfile.write(str, num);
+	}
+
+#endif
+
+#if 1
+	try {
+		char str[24];
+		chunked_infile.read(str, 24);
+		int num = chunked_infile.gcount();
+		if (chunked_infile.good()) {
+			outfile.write(str, num);
+			outfile.flush();
+		}
+
+		chunked_infile.read(str, 24);
+		num = chunked_infile.gcount();
+		while (chunked_infile.good()) {
+			outfile.write(str, num);
+			chunked_infile.read(str, 24);
+			num = chunked_infile.gcount();
+		}
+
+		if (num > 0 && !(chunked_infile.bad() && chunked_infile.fail())) {
+			outfile.write(str, num);
+		}
+	}
+	catch (Error &e) {
+		cerr << "Error chunk found: " << e.get_error_message() << endl;
+	}
+#endif
+}
 
 void usage()
 {
@@ -378,6 +484,8 @@ main(int argc, char *argv[])
 
         if (chunked_output) {
         	write_chunked_data(name);
+
+        	read_chunked_data(name);
         }
     }
     catch (Error &e) {

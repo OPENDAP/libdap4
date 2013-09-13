@@ -27,15 +27,25 @@
 
 #include "config.h"
 
+#include <string>
+
+#define DODS_DEBUG
+
+#include "chunked_stream.h"
 #include "chunked_ostream.h"
 #include "debug.h"
 
 namespace libdap {
 
 // flush the characters in the buffer
+/**
+ * @brief Write out the contents of the buffer as a chunk.
+ *
+ * @return EOF on error, otherwise the number of bytes in the chunk body.
+ */
 int chunked_outbuf::data_chunk()
 {
-	cerr << "In chunked_outbuf::data_chunk" << endl;
+	DBG(cerr << "In chunked_outbuf::data_chunk" << endl);
 
 	int32_t num = pptr() - pbase();	// int needs to be signed for the call to pbump
 
@@ -76,7 +86,7 @@ int chunked_outbuf::data_chunk()
  */
 int chunked_outbuf::end_chunk()
 {
-	cerr << "In chunked_outbuf::end_chunk" << endl;
+	DBG(cerr << "In chunked_outbuf::end_chunk" << endl);
 
 	int32_t num = pptr() - pbase();	// int needs to be signed for the call to pbump
 
@@ -102,6 +112,49 @@ int chunked_outbuf::end_chunk()
 }
 
 /**
+ * @brief Send an error chunk
+ * While building up the next chunk, send an error chunk, ignoring the data currently
+ * write buffer. The buffer is left in a consistent state.
+ * @param msg The error message to include in the error chunk
+ * @return The number of characters ignored.
+ */
+int
+chunked_outbuf::err_chunk(const std::string &m)
+{
+	DBG(cerr << "In chunked_outbuf::err_chunk" << endl);
+	std::string msg = m;
+
+	// Figure out how many chars are in the buffer - these will be
+	// ignored.
+	int32_t num = pptr() - pbase();	// int needs to be signed for the call to pbump
+
+	// write out the chunk headers: CHUNKTYPE and CHUNKSIZE
+	// as a 32-bit unsigned int. Here I assume that num is never
+	// more than 2^24 because that was tested in the constructor
+	if (msg.length() > 0x00FFFFFF)
+		msg = "Error message too long";
+
+	uint32_t chunk_header = (uint32_t)msg.length() | CHUNK_ERR;
+
+	// Write out the CHUNK_END header with the byte count.
+	// This should be called infrequently, so it's probably not worth
+	// optimizing away chunk_header
+	d_os.write((const char *)&chunk_header, sizeof(uint32_t));
+
+	// Should bad() throw an error?
+	// Are these functions fast or would the bits be faster?
+	d_os.write(msg.data(), msg.length());
+	if (d_os.eof() || d_os.bad())
+		return EOF;
+
+	// Reset the buffer pointer, effectively ignoring what's in there now
+	pbump(-num);
+
+	// return the number of characters ignored
+	return num;
+}
+
+/**
  * @brief Virtual method called when the internal buffer would overflow.
  * When the internal buffer fills, this method is called by the byte that
  * would cause that overflow. The buffer pointers have been set so that
@@ -115,7 +168,7 @@ int chunked_outbuf::end_chunk()
  */
 int chunked_outbuf::overflow(int c)
 {
-	cerr << "In chunked_outbuf::overflow" << endl;
+	DBG(cerr << "In chunked_outbuf::overflow" << endl);
 
 	if (c != EOF) {
 		*pptr() = c;
@@ -132,12 +185,12 @@ int chunked_outbuf::overflow(int c)
 
 /**
  * @brief Synchronize the stream with its data sink.
- * @note This method is called by ?
+ * @note This method is called by flush() among others
  * @return -1 on error, 0 otherwise.
  */
 int chunked_outbuf::sync()
 {
-	cerr << "In chunked_outbuf::sync" << endl;
+	DBG(cerr << "In chunked_outbuf::sync" << endl);
 
 	if (data_chunk() == EOF) {
 		// Error
