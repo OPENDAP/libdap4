@@ -58,6 +58,8 @@
 #include "DMR.h"
 #include "XMLWriter.h"
 #include "D4StreamMarshaller.h"
+#include "chunked_ostream.h"
+#include "chunked_istream.h"
 
 #include "debug.h"
 #include "mime_util.h"	// for last_modified_time() and rfc_822_date()
@@ -326,19 +328,18 @@ void ResponseBuilder::dataset_constraint_dmr(ostream &out, DMR &dmr, ConstraintE
     XMLWriter xml;
     dmr.print_dap4(xml, filter);
 
-    // Make out be a chunking stream and put the entire doc in as it's first chunk
-    // For now, simulate the first chunk
-    char byte_order = 0x00;	// little endian
-    int32_t chunkheader = xml.get_doc_size(); // a total hack
 
-    out << byte_order << chunkheader;
-    out << xml.get_doc() << flush;
+    // the byte order info precedes the start of chunking
+    char byte_order = 0x00; // little endian
+    out << byte_order << flush;
 
-    // Write the separator
-    out << CRLF;
+    // now make the chunked output stream
+    chunked_ostream cos(out, 1024);
+    // using flush means that the DMR and CRLF are in the first chunk.
+    cos << xml.get_doc() << CRLF << flush;
 
     // Write the data, chunked with checksums
-    D4StreamMarshaller m(out);
+    D4StreamMarshaller m(cos);
     dmr.root()->serialize(m, dmr, eval, filter);
 }
 

@@ -205,13 +205,16 @@ read_data_plain(const string &file_name, bool debug)
 
     // FIXME
     // Read the byte-order byte
+    char byte_order;
+    in >> byte_order;
 
     // get a chunked input stream
+    chunked_istream cis(in, 1024);
 
     // parse the DMR, stopping when the boundary is found.
     try {
     	D4ParserSax2 parser;
-    	parser.intern(in, dmr, debug);
+    	parser.intern(cis, dmr, debug);
     }
     catch(...) {
     	delete factory;
@@ -219,7 +222,9 @@ read_data_plain(const string &file_name, bool debug)
     	throw;
     }
 
-    D4StreamUnMarshaller um(in);
+    D4StreamUnMarshaller um(cis);
+
+    // Could use byte_order here
     um.set_twiddle_bytes(false);
 
     dmr->root()->deserialize(um, *dmr);
@@ -465,7 +470,11 @@ main(int argc, char *argv[])
         		cout << "Response file:" << file_name << endl;
         	delete server;
 
-        	DMR *client = read_data_multipart(file_name, debug);
+        	DMR *client = 0;
+        	if (multipart)
+        		client = read_data_multipart(file_name, debug);
+        	else
+        		client = read_data_plain(file_name, debug);
 
         	if (print) {
         		XMLWriter xml;
