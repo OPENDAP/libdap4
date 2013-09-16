@@ -147,7 +147,7 @@ send_data(DMR *server, const string &constraint, bool series_values, bool multip
     return file_name;
 }
 
-#if 1
+#if 0
 DMR *
 read_data_multipart(const string &file_name, bool debug)
 {
@@ -224,6 +224,7 @@ read_data_plain(const string &file_name, bool debug)
          cis.read(chunk, chunk_size);
         // parse char * with given size
     	D4ParserSax2 parser;
+    	// '-2' to discard the CRLF pair
     	string dmr_doc(chunk, chunk_size-2);
     	parser.intern(dmr_doc, dmr, debug);
     }
@@ -243,6 +244,7 @@ read_data_plain(const string &file_name, bool debug)
     return dmr;
 }
 
+#if 0
 void
 write_chunked_data(const string &file)
 {
@@ -297,7 +299,7 @@ write_chunked_data(const string &file)
 		if (infile.good()) chunked_outfile.write(str, num);
 
 		// Send an error chunk; the 24 bytes read here are lost...
-		throw InternalErr(__FILE__, __LINE__, "The serialization failed!");
+		//throw InternalErr(__FILE__, __LINE__, "The serialization failed!");
 
 		infile.read(str, 24);
 		num = infile.gcount();
@@ -381,7 +383,7 @@ read_chunked_data(const string &file)
 	}
 #endif
 }
-
+#endif
 void usage()
 {
     cerr << "Usage: dmr-test -p|s <file> [-d -x]" << endl
@@ -396,15 +398,15 @@ void usage()
 int
 main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "p:s:t:xdmc:");
+    GetOpt getopt(argc, argv, "p:s:t:xd");
     int option_char;
     bool parse = false;
     bool debug = false;
     bool print = false;
     bool send = false;
     bool trans = false;
-    bool multipart = false;
-    bool chunked_output = false;
+    //bool multipart = false;
+    //bool chunked_output = false;
     string name = "";
 
     // process options
@@ -433,16 +435,12 @@ main(int argc, char *argv[])
         case 'x':
             print = true;
             break;
-
-        case 'm':
-        	multipart = true;
-        	break;
-
+#if 0
         case 'c':
         	chunked_output = true;
         	name = getopt.optarg;
         	break;
-
+#endif
         case '?':
         case 'h':
             usage();
@@ -454,7 +452,7 @@ main(int argc, char *argv[])
             return 1;
         }
 
-    if (! (parse || send || trans || chunked_output)) {
+    if (! (parse || send || trans/* || chunked_output*/)) {
         cerr << "Error: ";
         usage();
         return 1;
@@ -468,7 +466,7 @@ main(int argc, char *argv[])
         // Add constraint and series values when ready
         if (send) {
         	DMR *server = test_dap4_parser(name, debug, print);
-        	string file_name = send_data(server, "", false, multipart);
+        	string file_name = send_data(server, "", false, false /*multipart*/);
         	if (print)
         		cout << "Response file:" << file_name << endl;
         	delete server;
@@ -476,15 +474,12 @@ main(int argc, char *argv[])
 
         if (trans) {
         	DMR *server = test_dap4_parser(name, debug, print);
-        	string file_name = send_data(server, "", false, multipart);
+        	string file_name = send_data(server, "", false, false /*multipart*/);
         	if (print)
         		cout << "Response file:" << file_name << endl;
         	delete server;
 
         	DMR *client = 0;
-        	if (multipart)
-        		client = read_data_multipart(file_name, debug);
-        	else
         		client = read_data_plain(file_name, debug);
 
         	if (print) {
@@ -501,12 +496,13 @@ main(int argc, char *argv[])
 
         	delete client;
         }
-
+#if 0
         if (chunked_output) {
         	write_chunked_data(name);
 
         	read_chunked_data(name);
         }
+#endif
     }
     catch (Error &e) {
         cerr << e.get_error_message() << endl;

@@ -63,20 +63,17 @@ test_config.h: test_config.h.in Makefile
 
 if CPPUNIT
 UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
-	RegexTest \
-	ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest \
-	DDSTest	DDXParserTest  generalUtilTest \
-	HTTPConnectTest parserUtilTest RCReaderTest \
-	SequenceTest SignalHandlerTest  MarshallerTest \
-    HTTPCacheTest \
-	ServerFunctionsListUnitTest
+	RegexTest ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest \
+	DDSTest	DDXParserTest  generalUtilTest HTTPConnectTest parserUtilTest \
+	RCReaderTest SequenceTest SignalHandlerTest  MarshallerTest \
+    HTTPCacheTest ServerFunctionsListUnitTest
 		
 # ResponseBuilderTest ResponseCacheTest Keywords2Test DODSFilterTest 
 	
 if DAP4_DEFINED
-UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest \
-        D4DimensionsTest D4EnumDefsTest D4GroupTest D4ParserSax2Test \
-        D4AttributesTest D4EnumTest
+UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
+	D4EnumDefsTest D4GroupTest D4ParserSax2Test D4AttributesTest D4EnumTest \
+	chunked_iostreamTest
 endif
 
 else
@@ -210,5 +207,8 @@ D4AttributesTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4EnumTest_SOURCES = D4EnumTest.cc $(TEST_SRC)
 D4EnumTest_LDADD = ../libdap.la $(AM_LDADD)
+
+chunked_iostreamTest_SOURCES = chunked_iostreamTest.cc $(TEST_SRC)
+chunked_iostreamTest_LDADD = ../libdap.la $(AM_LDADD)
 
 endif
