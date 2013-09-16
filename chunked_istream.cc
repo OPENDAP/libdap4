@@ -64,6 +64,12 @@ int chunked_inbuf::underflow()
 	// gptr() == egptr() so shuffle the last putBack chars to the 'put back'
 	// area of the buffer and read more data from the underlying input source.
 
+	// read_next_chunk() returns EOF or the size of the chunk while underflow
+	// returns EOF or the next char in the input.
+	int result = read_next_chunk();
+	return (result == EOF) ? EOF: *gptr();
+
+#if 0
 	// How many characters are in the 'put back' part of the buffer? Cap
 	// this number at putBack, which is nominally 128.
 	int numPutBack = gptr() - eback();
@@ -71,25 +77,26 @@ int chunked_inbuf::underflow()
 
 	// In most cases numPutBack is putBack, so the code copies putBack chars
 	// from the end of the buffer to the front. Note that if the code gets here
-	// gptr() is likely == to egptr() (or one position past the end of the
-	// buffer. In that case gptr() - numPutBack is the position numPutBack
-	// characters before the end of the buffer.
+	// gptr() is likely == to egptr() (or one position past egptr()). In that
+	// case gptr() - numPutBack is the position numPutBack characters before
+	// the end of the buffer.
 	memcpy(d_buffer + (putBack - numPutBack), gptr() - numPutBack, numPutBack);
 
 	// To read data from the chunked stream, first read the header
 	int32_t  header;
 	d_is.read((char *)&header, 4);
-	int chunk_size = header & CHUNK_SIZE_MASK;
+	// Note that d_chunk_size is accessible via a protected method.
+	d_chunk_size = header & CHUNK_SIZE_MASK;
 
 	// Handle the case where the buffer is not big enough to hold the incoming chunk
-	if (chunk_size > d_buf_size) {
+	if (d_chunk_size > d_buf_size) {
 		DBG(cerr << "Chunk size too big, reallocating buffer" << endl);
-		d_buf_size = chunk_size;
+		d_buf_size = d_chunk_size;
 		m_buffer_alloc();
 	}
 
 	// NB: d_buffer is d_buf_size + putBack characters in length
-	d_is.read(d_buffer + putBack, chunk_size);
+	d_is.read(d_buffer + putBack, d_chunk_size);
 	if (d_is.bad() || d_is.eof())
 		return EOF;
 
@@ -103,13 +110,66 @@ int chunked_inbuf::underflow()
 		return *gptr();
 		break;
 	case CHUNK_ERR:
-		// this is pretty much hte end of the show...
+		// this is pretty much the end of the show...
 		string msg(d_buffer + putBack, chunk_size);
 		throw Error(msg);
 		break;
 	}
 
 	return EOF;
+#endif
+}
+
+int chunked_inbuf::read_next_chunk()
+{
+    // How many characters are in the 'put back' part of the buffer? Cap
+    // this number at putBack, which is nominally 128.
+    int numPutBack = gptr() - eback();
+    if (putBack < numPutBack) numPutBack = putBack;
+
+    // In most cases numPutBack is putBack, so the code copies putBack chars
+    // from the end of the buffer to the front. Note that if the code gets here
+    // gptr() is likely == to egptr() (or one position past egptr()). In that
+    // case gptr() - numPutBack is the position numPutBack characters before
+    // the end of the buffer.
+    memcpy(d_buffer + (putBack - numPutBack), gptr() - numPutBack, numPutBack);
+
+    // To read data from the chunked stream, first read the header
+    int32_t  header;
+    d_is.read((char *)&header, 4);
+    // Note that d_chunk_size is accessible via a protected method.
+    d_chunk_size = header & CHUNK_SIZE_MASK;
+
+    // Handle the case where the buffer is not big enough to hold the incoming chunk
+    if (d_chunk_size > d_buf_size) {
+        DBG(cerr << "Chunk size too big, reallocating buffer" << endl);
+        d_buf_size = d_chunk_size;
+        m_buffer_alloc();
+    }
+
+    // NB: d_buffer is d_buf_size + putBack characters in length
+    d_is.read(d_buffer + putBack, d_chunk_size);
+    if (d_is.bad() || d_is.eof())
+        return EOF;
+
+    setg(d_buffer + (putBack - numPutBack), // beginning of put back area
+         d_buffer + putBack,                // read position (gptr() == eback())
+         d_buffer + putBack + d_is.gcount()); // end of buffer (egptr())
+
+    switch (header & CHUNK_TYPE_MASK) {
+    case CHUNK_DATA:
+    case CHUNK_END:
+        return d_chunk_size;
+        break;
+    case CHUNK_ERR:
+        // this is pretty much the end of the show... Assume the buffer/chunk holds
+        // the error message text.
+        string msg(d_buffer + putBack, d_chunk_size);
+        throw Error(msg);
+        break;
+    }
+
+    return EOF;
 }
 
 }

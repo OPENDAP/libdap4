@@ -44,6 +44,8 @@ protected:
 	int d_buf_size; 	// Size of the data buffer
 	char *d_buffer;		// data buffer
 
+	int d_chunk_size;
+
 	/**
 	 * @brief allocate the internal buffer.
 	 * Allocate d_buf_size + putBack characters for the read buffer.
@@ -59,7 +61,7 @@ protected:
 	}
 
 public:
-	chunked_inbuf(std::istream &is, int size) : d_is(is), d_buf_size(size), d_buffer(0) {
+	chunked_inbuf(std::istream &is, int size) : d_is(is), d_buf_size(size), d_buffer(0), d_chunk_size(0) {
 		if (d_buf_size & CHUNK_TYPE_MASK)
 			throw std::out_of_range("A chunked_outbuf (or chunked_ostream) was built using a buffer larger than 0x00ffffff");
 
@@ -69,6 +71,10 @@ public:
 	virtual ~chunked_inbuf() {
 		delete d_buffer;
 	}
+
+    int read_next_chunk();
+
+    int chunk_size() { return d_chunk_size; }
 
 protected:
 	virtual int underflow();
@@ -82,6 +88,7 @@ protected:
 	chunked_inbuf d_cbuf;
 public:
 	chunked_istream(std::istream &is, int size) : std::istream(&d_cbuf), d_cbuf(is, size) { }
+	int read_next_chunk() { return d_cbuf.read_next_chunk(); }
 };
 
 }

@@ -81,7 +81,9 @@ static const char *states[] = {
 
         "parser_unknown",
         "parser_error",
-        "parser_fatal_error"
+        "parser_fatal_error",
+
+        "parser_end"
 };
 
 static bool is_not(const char *name, const char *tag)
@@ -470,7 +472,10 @@ void D4ParserSax2::dmr_start_document(void * p)
     parser->error_msg = "";
     parser->char_data = "";
 
-    parser->push_state(parser_start);
+    // Set this in intern_helper so that the loop test for the parser_end
+    // state works for the first iteration. It seems like XMLParseChunk calls this
+    // function on it's first run. jhrg 9/16/13
+    // parser->push_state(parser_start);
 
     parser->push_attributes(parser->dmr()->root()->attributes());
 
@@ -485,7 +490,7 @@ void D4ParserSax2::dmr_end_document(void * p)
 
     if (parser->debug()) cerr << "Parser end state: " << states[parser->get_state()] << endl;
 
-    if (parser->get_state() != parser_start)
+    if (parser->get_state() != parser_end)
         D4ParserSax2::dmr_error(parser, "The document contained unbalanced tags.");
 
     // If we've found any sort of error, don't make the DMR; intern() will
@@ -683,6 +688,10 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
         case parser_error:
         case parser_fatal_error:
             break;
+
+        case parser_end:
+            // FIXME Error?
+            break;
     }
 
     if (parser->debug()) cerr << "Start element exit state: " << states[parser->get_state()] << endl;
@@ -705,6 +714,12 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
                 D4ParserSax2::dmr_error(parser, "Expected an end Dataset tag; found '%s' instead.", localname);
 
             parser->pop_state();
+            if (parser->get_state() != parser_start)
+                dmr_fatal_error(parser, "Unexpected state, expected start state.");
+            else {
+                parser->pop_state();
+                parser->push_state(parser_end);
+            }
             break;
 
         case inside_group: {
@@ -942,6 +957,10 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
         case parser_error:
         case parser_fatal_error:
             break;
+
+        case parser_end:
+            // FIXME Error?
+            break;
     }
 
     if (parser->debug()) cerr << "End element exit state: " << states[parser->get_state()] << endl;
@@ -1116,7 +1135,7 @@ void D4ParserSax2::cleanup_parse()
  * @exception Error Thrown if the XML document could not be read or parsed.
  * @exception InternalErr Thrown if an internal error is found.
  */
-void D4ParserSax2::intern(istream &f, DMR *dest_dmr, const string &boundary, bool debug)
+void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 {
     d_debug = debug;
 
@@ -1127,71 +1146,52 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, const string &boundary, boo
     if (!dest_dmr)
         throw InternalErr(__FILE__, __LINE__, "DMR object is null");
 
+    d_dmr = dest_dmr; // dump values here
+
+    xmlSAXHandler ddx_sax_parser;
+    memset(&ddx_sax_parser, 0, sizeof(xmlSAXHandler));
+
+    ddx_sax_parser.getEntity = &D4ParserSax2::dmr_get_entity;
+    ddx_sax_parser.startDocument = &D4ParserSax2::dmr_start_document;
+    ddx_sax_parser.endDocument = &D4ParserSax2::dmr_end_document;
+    ddx_sax_parser.characters = &D4ParserSax2::dmr_get_characters;
+    ddx_sax_parser.ignorableWhitespace = &D4ParserSax2::dmr_ignoreable_whitespace;
+    ddx_sax_parser.cdataBlock = &D4ParserSax2::dmr_get_cdata;
+    ddx_sax_parser.warning = &D4ParserSax2::dmr_error;
+    ddx_sax_parser.error = &D4ParserSax2::dmr_error;
+    ddx_sax_parser.fatalError = &D4ParserSax2::dmr_fatal_error;
+    ddx_sax_parser.initialized = XML_SAX2_MAGIC;
+    ddx_sax_parser.startElementNs = &D4ParserSax2::dmr_start_element;
+    ddx_sax_parser.endElementNs = &D4ParserSax2::dmr_end_element;
+
     const int size = 1024;
     char chars[size];
+    int line = 1;
 
     f.getline(chars, size);
     int res = f.gcount();
-    if (res > 0) {
-        if (debug) cerr << "line: (" << res << "): '" << chars << "'" << endl;
-        d_dmr = dest_dmr; // dump values here
+    if (res == 0) throw Error("No input found while parsing the DMR.");
 
-        xmlSAXHandler ddx_sax_parser;
-        memset(&ddx_sax_parser, 0, sizeof(xmlSAXHandler));
+    if (debug) cerr << "line: (" << line++ << "): '" << chars << "'" << endl;
 
-        ddx_sax_parser.getEntity = &D4ParserSax2::dmr_get_entity;
-        ddx_sax_parser.startDocument = &D4ParserSax2::dmr_start_document;
-        ddx_sax_parser.endDocument = &D4ParserSax2::dmr_end_document;
-        ddx_sax_parser.characters = &D4ParserSax2::dmr_get_characters;
-        ddx_sax_parser.ignorableWhitespace = &D4ParserSax2::dmr_ignoreable_whitespace;
-        ddx_sax_parser.cdataBlock = &D4ParserSax2::dmr_get_cdata;
-        ddx_sax_parser.warning = &D4ParserSax2::dmr_error;
-        ddx_sax_parser.error = &D4ParserSax2::dmr_error;
-        ddx_sax_parser.fatalError = &D4ParserSax2::dmr_fatal_error;
-        ddx_sax_parser.initialized = XML_SAX2_MAGIC;
-        ddx_sax_parser.startElementNs = &D4ParserSax2::dmr_start_element;
-        ddx_sax_parser.endElementNs = &D4ParserSax2::dmr_end_element;
+    context = xmlCreatePushParserCtxt(&ddx_sax_parser, this, chars, res - 1, "stream");
+    context->validate = true;
+    push_state(parser_start);
 
-        context = xmlCreatePushParserCtxt(&ddx_sax_parser, this, chars, res - 1, "stream");
-        context->validate = true;
-
-        string boundary_line = "--";
-        bool boundary_test = false;
-        if (!boundary.empty()) {
-        	boundary_line += boundary;
-        	boundary_test = true;
-        }
-
-        int line = 1;
+    f.getline(chars, size);
+    while ((f.gcount() > 0) && (get_state() != parser_end)) {
+            //&& (!boundary_test || strncmp(chars, boundary_line.c_str(), boundary_line.length()) != 0)) {
+        if (debug) cerr << "line: (" << line++ << "): '" << chars << "'" << endl;
+        xmlParseChunk(context, chars, f.gcount() - 1, 0);
         f.getline(chars, size);
-        while ((f.gcount() > 0)
-        		&& (!boundary_test || strncmp(chars, boundary_line.c_str(), boundary_line.length()) != 0)) {
-            if (debug) cerr << "line: (" << line++ << "): '" << chars << "'" << endl;
-            xmlParseChunk(context, chars, f.gcount() - 1, 0);
-            f.getline(chars, size);
-        }
-        // This call ends the parse.
-        xmlParseChunk(context, chars, 0, 1/*terminate*/);
-
-        cleanup_parse();
     }
-}
 
-/**
- * Read the DMR from a stream. This version does not test for a boundary
- * marker.
- *
- * @param f The input stream
- * @param dest_dmr Value-result parameter. Pass a pointer to a DMR in and
- * the information in the DMR will be added to it.
- * @param debug If true, ouput helpful debugging messages, False by default.
- *
- * @exception Error Thrown if the XML document could not be read or parsed.
- * @exception InternalErr Thrown if an internal error is found.
- */
-void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
-{
-	intern(f, dest_dmr, "", debug);
+    // This call ends the parse.
+    xmlParseChunk(context, chars, 0, 1/*terminate*/);
+
+    // This checks that the state on the parser stack is parser_end and throws
+    // an exception if it's not (i.e., the loop exited with gcount() == 0).
+    cleanup_parse();
 }
 
 /** Parse a DMR document stored in a string.
@@ -1207,6 +1207,25 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 void D4ParserSax2::intern(const string &document, DMR *dest_dmr, bool debug)
 {
     istringstream iss(document);
+    intern(iss, dest_dmr, debug);
+}
+
+/** Parse a DMR document stored in a string.
+ *
+ * @todo optimize this code.
+ *
+ * @param document Read the DMR from this string.
+ * @param dest_dmr Value/result parameter; dumps the information to this DMR
+ * instance.
+ * @param debug If true, ouput helpful debugging messages, False by default
+ *
+ * @exception Error Thrown if the XML document could not be read or parsed.
+ * @exception InternalErr Thrown if an internal error is found.
+ */
+void D4ParserSax2::intern(char *s, int size, DMR *dest_dmr, bool debug)
+{
+    string doc(s, size);
+    istringstream iss(doc);
     intern(iss, dest_dmr, debug);
 }
 

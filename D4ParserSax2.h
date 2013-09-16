@@ -35,6 +35,8 @@
 
 #include <libxml/parserInternals.h>
 
+#define CRLF "\r\n"
+
 namespace libdap
 {
 
@@ -100,7 +102,9 @@ private:
 
         parser_unknown,
         parser_error,
-        parser_fatal_error
+        parser_fatal_error,
+
+        parser_end
     };
 
     // The results of the parse operation are stored in these fields.
@@ -253,9 +257,9 @@ public:
         char_data(""), root_ns(""), d_debug(false)
     {}
 
-    void intern(istream &f, DMR *dest_dmr, const string &boundary, bool debug = false);
+    void intern(istream &f, DMR *dest_dmr, bool debug = false);
     void intern(const string &document, DMR *dest_dmr, bool debug = false);
-    void intern(istream &in, DMR *dest_dmr, bool debug = false);
+    void intern(char *s, int size, DMR *dest_dmr, bool debug = false);
 
     static void dmr_start_document(void *parser);
     static void dmr_end_document(void *parser);

@@ -71,7 +71,7 @@ public:
     ~D4ParserSax2Test() {}
 
     void setUp() {
-        parser = new D4ParserSax2;
+        parser = new D4ParserSax2();
         btf = new D4BaseTypeFactory;
         dmr = new DMR(btf);
         xml = new XMLWriter("    ");

@@ -147,6 +147,7 @@ send_data(DMR *server, const string &constraint, bool series_values, bool multip
     return file_name;
 }
 
+#if 1
 DMR *
 read_data_multipart(const string &file_name, bool debug)
 {
@@ -171,7 +172,8 @@ read_data_multipart(const string &file_name, bool debug)
     // parse the DMR, stopping when the boundary is found.
     try {
     	D4ParserSax2 parser;
-    	parser.intern(in, dmr, "boundary", debug);
+    	//parser.intern(in, dmr, "boundary", debug);
+    	throw InternalErr("Removed multipar support from D4ParserSax2");
     }
     catch(...) {
     	delete factory;
@@ -190,6 +192,7 @@ read_data_multipart(const string &file_name, bool debug)
 
     return dmr;
 }
+#endif
 
 DMR *
 read_data_plain(const string &file_name, bool debug)
@@ -213,8 +216,16 @@ read_data_plain(const string &file_name, bool debug)
 
     // parse the DMR, stopping when the boundary is found.
     try {
+        // force chunk read
+        // get chunk size
+        int chunk_size = cis.read_next_chunk();
+        // get chunk
+        char chunk[chunk_size];
+         cis.read(chunk, chunk_size);
+        // parse char * with given size
     	D4ParserSax2 parser;
-    	parser.intern(cis, dmr, debug);
+    	string dmr_doc(chunk, chunk_size-2);
+    	parser.intern(dmr_doc, dmr, debug);
     }
     catch(...) {
     	delete factory;
