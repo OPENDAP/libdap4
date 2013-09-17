@@ -27,6 +27,8 @@
 
 #include "config.h"
 
+#include <byteswap.h>
+
 #include <algorithm>
 
 #include "chunked_stream.h"
@@ -137,6 +139,10 @@ int chunked_inbuf::read_next_chunk()
     // To read data from the chunked stream, first read the header
     int32_t  header;
     d_is.read((char *)&header, 4);
+    if (d_twiddle_bytes) {
+        header = bswap_32(header);
+    }
+
     // Note that d_chunk_size is accessible via a protected method.
     d_chunk_size = header & CHUNK_SIZE_MASK;
 

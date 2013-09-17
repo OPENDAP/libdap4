@@ -45,6 +45,16 @@
 
 namespace libdap {
 
+/**
+ * @brief Build a DAP4 Stream unMarshaller.
+ *
+ * Build a DAP4 Stream UnMarshaller initialed to read from am istream object.
+ * Figure out if the words read for values need to be 'twiddled' based on the
+ * byte-order of the stream an this host (see set_twiddle_bytes()).
+ *
+ * @param in Read from this input stream
+ * @param is_stream_bigendian The byte order of the data in the stream
+ */
 D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in, bool is_stream_bigendian) : d_in( in ), d_twiddle_bytes(false)
 {
     // XDR is used to handle transforming non-ieee754 reals, nothing else.

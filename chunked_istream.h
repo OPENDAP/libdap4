@@ -46,6 +46,8 @@ protected:
 
 	int d_chunk_size;
 
+	bool d_twiddle_bytes;
+
 	/**
 	 * @brief allocate the internal buffer.
 	 * Allocate d_buf_size + putBack characters for the read buffer.
@@ -61,7 +63,25 @@ protected:
 	}
 
 public:
-	chunked_inbuf(std::istream &is, int size) : d_is(is), d_buf_size(size), d_buffer(0), d_chunk_size(0) {
+	/**
+	 * @brief Build a chunked input buffer.
+	 *
+	 * This reads from a chunked stream, extracting an entire chunk and storing it in a
+	 * buffer in one operation. If the chunked_inbuf reads a chunk header that indicates
+	 * the next chunk is goin gto be bigger than its current buffer size, the object will
+	 * make the buffer larger. This object supprt 128 characters of 'put back' space. Since
+	 * DAP4 uses receiver makes right, the buffer must be told if it should 'twiddle' the
+	 * header size information. In DAP4 the byte order is sent using a one-byte code _before_
+	 * the chunked transmission starts.
+	 *
+	 * @param is Use this as a data source
+	 * @param size The size of the input buffer. This should match the likely chunk size.
+	 * If it is smaller than a chunk, it will be resized.
+	 * @param twiddle_bytes Should the header bytes be twiddled? True if this host and the
+	 * send use a different byte-order. The sender's byte order must be sent out-of-band.
+	 */
+	chunked_inbuf(std::istream &is, int size, bool twiddle_bytes = false)
+        : d_is(is), d_buf_size(size), d_buffer(0), d_chunk_size(0), d_twiddle_bytes(twiddle_bytes) {
 		if (d_buf_size & CHUNK_TYPE_MASK)
 			throw std::out_of_range("A chunked_outbuf (or chunked_ostream) was built using a buffer larger than 0x00ffffff");
 

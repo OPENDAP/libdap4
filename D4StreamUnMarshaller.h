@@ -75,7 +75,7 @@ private:
     void m_twidle_vector_elements(char *vals, unsigned int num, int width);
 
 public:
-    D4StreamUnMarshaller(istream &in, bool is_stream_bigendian);
+    D4StreamUnMarshaller(istream &in, bool twiddle_bytes);
     D4StreamUnMarshaller(istream &in);
     virtual ~D4StreamUnMarshaller();
 

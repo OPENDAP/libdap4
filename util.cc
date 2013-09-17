@@ -86,7 +86,7 @@ using namespace std;
 
 namespace libdap {
 
-/** @brief DOes thsi host use big-endian byte order? */
+/** @brief Does this host use big-endian byte order? */
 bool is_host_big_endian()
 {
 #ifdef COMPUTE_ENDIAN_AT_RUNTIME
