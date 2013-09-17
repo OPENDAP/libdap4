@@ -1,3 +1,90 @@
+2013-08-28  James Gallagher <jgallagher@opendap.org>
+
+	Build/Audit fixes.
+
+	M    libdap/XDRFileUnMarshaller.cc
+	M    libdap/XDRFileUnMarshaller.h
+	M    bes/dispatch/unit-tests/keysT.cc
+	M    bes/functions/Makefile.am
+
+2013-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Backed out an errant call to fclose()
+
+2013-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Removed errant call to fclose() in XDRFileUnMarshaller. This
+	caused a segfault on Linux.
+
+2013-08-27  James Gallagher <jgallagher@opendap.org>
+
+	audit fixes
+
+	M    libdap/Makefile.am
+	M    bes/dispatch/unit-tests/BESCache3Test.cc
+	M    bes/functions/tests/functionsTest.at
+	M    bes/functions/tests/bescmd/bind_name_4.dods.bescmd.baseline
+	M    bes/functions/tests/bescmd/bind_name_2.dods.bescmd.baseline
+
+2013-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Source release info
+
+	M    configure.ac
+	M    ChangeLog
+	M    INSTALL
+	M    README
+	M    NEWS
+
+2013-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Audit fixes.
+
+	M    RValue.cc
+	M    HTTPCacheTable.cc
+	M    Array.cc
+	M    DDXParserSAX2.cc
+	M    Makefile.am
+	M    HTTPCache.cc
+	M    XDRStreamUnMarshaller.cc
+	M    Structure.cc
+	M    Sequence.cc
+	M    XDRFileUnMarshaller.cc
+	M    XDRFileUnMarshaller.h
+	M    mime_util.cc
+	M    util.cc
+	M    util_mit.cc
+
+2013-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Changed the required bison version number to 2.4 and removed a bogus include
+	from das.yy that breaks bison 2.4.
+
+	M    das.yy
+	M    Error.yy
+	M    dds.yy
+	M    ce_expr.yy
+
+2013-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Removed bad character from the Makefile.am
+
+	M    Makefile.am
+
+2013-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Added the newly hacked grammar files - these along with updated versions
+	of DAS.cc, DDS.cc, ConstraintEvaluator.cc and Error.cc and Makefile.am
+	were copied over from the dap4 branch. A kind of cheap merge operation...
+
+	A    das.yy
+	A    Error.yy
+	A    dds.yy
+	A    ce_expr.yy
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2013-08-27  James Gallagher <jgallagher@opendap.org>
 
 	Audit fixes.
