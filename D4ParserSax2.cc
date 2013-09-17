@@ -1147,7 +1147,7 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
         throw InternalErr(__FILE__, __LINE__, "DMR object is null");
 
     d_dmr = dest_dmr; // dump values here
-
+#if 0
     xmlSAXHandler ddx_sax_parser;
     memset(&ddx_sax_parser, 0, sizeof(xmlSAXHandler));
 
@@ -1163,6 +1163,7 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
     ddx_sax_parser.initialized = XML_SAX2_MAGIC;
     ddx_sax_parser.startElementNs = &D4ParserSax2::dmr_start_element;
     ddx_sax_parser.endElementNs = &D4ParserSax2::dmr_end_element;
+#endif
 
     const int size = 1024;
     char chars[size];
@@ -1206,13 +1207,10 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
  */
 void D4ParserSax2::intern(const string &document, DMR *dest_dmr, bool debug)
 {
-    istringstream iss(document);
-    intern(iss, dest_dmr, debug);
+    intern(document.c_str(), document.length(), dest_dmr, debug);
 }
 
-/** Parse a DMR document stored in a string.
- *
- * @todo optimize this code.
+/** Parse a DMR document stored in a char *buffer.
  *
  * @param document Read the DMR from this string.
  * @param dest_dmr Value/result parameter; dumps the information to this DMR
@@ -1222,11 +1220,28 @@ void D4ParserSax2::intern(const string &document, DMR *dest_dmr, bool debug)
  * @exception Error Thrown if the XML document could not be read or parsed.
  * @exception InternalErr Thrown if an internal error is found.
  */
-void D4ParserSax2::intern(char *s, int size, DMR *dest_dmr, bool debug)
+void D4ParserSax2::intern(const char *buffer, int size, DMR *dest_dmr, bool debug)
 {
-    string doc(s, size);
-    istringstream iss(doc);
-    intern(iss, dest_dmr, debug);
+    if (!(size > 0)) return;
+
+    d_debug = debug;
+
+    // Code example from libxml2 docs re: read from a stream.
+
+    if (!dest_dmr) throw InternalErr(__FILE__, __LINE__, "DMR object is null");
+    d_dmr = dest_dmr; // dump values in dest_dmr
+
+    push_state(parser_start);
+    context = xmlCreatePushParserCtxt(&ddx_sax_parser, this, buffer, size, "stream");
+    context->validate = true;
+    push_state(parser_start);
+
+    // This call ends the parse.
+    xmlParseChunk(context, buffer, 0, 1/*terminate*/);
+
+    // This checks that the state on the parser stack is parser_end and throws
+    // an exception if it's not (i.e., the loop exited with gcount() == 0).
+    cleanup_parse();
 }
 
 } // namespace libdap

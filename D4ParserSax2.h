@@ -107,6 +107,8 @@ private:
         parser_end
     };
 
+    xmlSAXHandler ddx_sax_parser;
+
     // The results of the parse operation are stored in these fields.
     // This is passed into the parser using the intern() methods.
     DMR *d_dmr;   // dump DMR here
@@ -255,11 +257,27 @@ public:
         error_msg(""), context(0),
         dods_attr_name(""), dods_attr_type(""),
         char_data(""), root_ns(""), d_debug(false)
-    {}
+    {
+        //xmlSAXHandler ddx_sax_parser;
+        memset(&ddx_sax_parser, 0, sizeof(xmlSAXHandler));
+
+        ddx_sax_parser.getEntity = &D4ParserSax2::dmr_get_entity;
+        ddx_sax_parser.startDocument = &D4ParserSax2::dmr_start_document;
+        ddx_sax_parser.endDocument = &D4ParserSax2::dmr_end_document;
+        ddx_sax_parser.characters = &D4ParserSax2::dmr_get_characters;
+        ddx_sax_parser.ignorableWhitespace = &D4ParserSax2::dmr_ignoreable_whitespace;
+        ddx_sax_parser.cdataBlock = &D4ParserSax2::dmr_get_cdata;
+        ddx_sax_parser.warning = &D4ParserSax2::dmr_error;
+        ddx_sax_parser.error = &D4ParserSax2::dmr_error;
+        ddx_sax_parser.fatalError = &D4ParserSax2::dmr_fatal_error;
+        ddx_sax_parser.initialized = XML_SAX2_MAGIC;
+        ddx_sax_parser.startElementNs = &D4ParserSax2::dmr_start_element;
+        ddx_sax_parser.endElementNs = &D4ParserSax2::dmr_end_element;
+    }
 
     void intern(istream &f, DMR *dest_dmr, bool debug = false);
     void intern(const string &document, DMR *dest_dmr, bool debug = false);
-    void intern(char *s, int size, DMR *dest_dmr, bool debug = false);
+    void intern(const char *buffer, int size, DMR *dest_dmr, bool debug = false);
 
     static void dmr_start_document(void *parser);
     static void dmr_end_document(void *parser);

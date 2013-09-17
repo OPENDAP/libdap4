@@ -107,14 +107,45 @@ public:
         }
     }
 
+    void compare_dmr_round_trip_string_version(const string &src, const string &bl)
+    {
+        try {
+            string document = readTestBaseline(string(TEST_SRC_DIR) + src);
+            DBG(cerr << "Parsing: " << document << endl);
+
+            parser->intern(document, dmr, parser_debug);
+
+            dmr->print_dap4(*xml, false);
+            string doc = xml->get_doc();
+            string baseline = readTestBaseline(string(TEST_SRC_DIR) + bl);
+            DBG(cerr << "DMR: " << doc << endl);
+            CPPUNIT_ASSERT(doc == baseline);
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message().c_str());
+        }
+    }
+
     void test_empty_dmr()
     {
         compare_dmr_round_trip("/D4-xml/DMR_empty.xml", "/D4-xml/DMR_empty_baseline.xml");
+
+    }
+
+    void test_empty_dmr_string_version()
+    {
+        compare_dmr_round_trip_string_version("/D4-xml/DMR_empty.xml", "/D4-xml/DMR_empty_baseline.xml");
     }
 
     void test_attribute_def()
     {
         compare_dmr_round_trip("/D4-xml/DMR_0.xml", "/D4-xml/DMR_0_baseline.xml");
+
+    }
+
+    void test_attribute_def_string_version()
+    {
+        compare_dmr_round_trip_string_version("/D4-xml/DMR_0.xml", "/D4-xml/DMR_0_baseline.xml");
     }
 
     void test_nested_attribute_def()
@@ -162,6 +193,11 @@ public:
         compare_dmr_round_trip("/D4-xml/DMR_3.5.xml", "/D4-xml/DMR_3.5_baseline.xml");
     }
 
+    void test_array_var_def4_string_version()
+    {
+        compare_dmr_round_trip_string_version("/D4-xml/DMR_3.5.xml", "/D4-xml/DMR_3.5_baseline.xml");
+    }
+
     void test_all_simple_var_def()
     {
         compare_dmr_round_trip("/D4-xml/DMR_4_baseline.xml", "/D4-xml/DMR_4_baseline.xml");
@@ -177,6 +213,11 @@ public:
         compare_dmr_round_trip("/D4-xml/DMR_5.1.xml", "/D4-xml/DMR_5.1_baseline.xml");
     }
 
+    void test_structure_with_attributes_def_string_version()
+    {
+        compare_dmr_round_trip_string_version("/D4-xml/DMR_5.1.xml", "/D4-xml/DMR_5.1_baseline.xml");
+    }
+
     void test_group_def()
     {
         compare_dmr_round_trip("/D4-xml/DMR_6.xml", "/D4-xml/DMR_6_baseline.xml");
@@ -185,6 +226,11 @@ public:
     void test_group_with_attributes_def()
     {
         compare_dmr_round_trip("/D4-xml/DMR_6.1.xml", "/D4-xml/DMR_6.1_baseline.xml");
+    }
+
+    void test_group_with_attributes_def_string_version()
+    {
+        compare_dmr_round_trip_string_version("/D4-xml/DMR_6.1.xml", "/D4-xml/DMR_6.1_baseline.xml");
     }
 
     CPPUNIT_TEST_SUITE( D4ParserSax2Test );
@@ -205,6 +251,12 @@ public:
     CPPUNIT_TEST(test_structure_with_attributes_def);
     CPPUNIT_TEST(test_group_def);
     CPPUNIT_TEST(test_group_with_attributes_def);
+
+    CPPUNIT_TEST(test_empty_dmr_string_version);
+    CPPUNIT_TEST(test_attribute_def_string_version);
+    CPPUNIT_TEST(test_group_with_attributes_def_string_version);
+    CPPUNIT_TEST(test_structure_with_attributes_def_string_version);
+    CPPUNIT_TEST(test_array_var_def4_string_version);
 
     CPPUNIT_TEST_SUITE_END();
 };
