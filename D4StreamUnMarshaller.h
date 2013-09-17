@@ -79,7 +79,7 @@ public:
     D4StreamUnMarshaller(istream &in);
     virtual ~D4StreamUnMarshaller();
 
-    void set_twiddle_bytes(bool is_stream_bigendian);
+    void set_twiddle_bytes(bool twiddle) { d_twiddle_bytes = twiddle; }
 
     Crc32::checksum get_checksum();
     string get_checksum_str();

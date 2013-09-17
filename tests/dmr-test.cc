@@ -212,7 +212,7 @@ read_data_plain(const string &file_name, bool debug)
     if (debug) cerr << "Byte order: " << ((byte_order) ? "big endian" : "little endian") << endl;
 
     // get a chunked input stream
-    chunked_istream cis(in, 1024);
+    chunked_istream cis(in, 1024, byte_order == is_host_big_endian());
 
     // parse the DMR, stopping when the boundary is found.
     try {
@@ -234,7 +234,7 @@ read_data_plain(const string &file_name, bool debug)
     	throw;
     }
 
-    D4StreamUnMarshaller um(cis, byte_order);
+    D4StreamUnMarshaller um(cis, byte_order == is_host_big_endian());
 
     dmr->root()->deserialize(um, *dmr);
 

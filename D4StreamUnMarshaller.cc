@@ -55,7 +55,7 @@ namespace libdap {
  * @param in Read from this input stream
  * @param is_stream_bigendian The byte order of the data in the stream
  */
-D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in, bool is_stream_bigendian) : d_in( in ), d_twiddle_bytes(false)
+D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in, bool twiddle_bytes) : d_in( in ), d_twiddle_bytes(twiddle_bytes)
 {
     // XDR is used to handle transforming non-ieee754 reals, nothing else.
     xdrmem_create(&d_source, d_buf, sizeof(dods_float64), XDR_DECODE);
@@ -65,8 +65,9 @@ D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in, bool is_stream_bigendian
     d_in.exceptions(istream::failbit | istream::badbit);
 
     DBG(cerr << "Host is big endian: " << is_host_big_endian() << endl);
-
-    set_twiddle_bytes(is_stream_bigendian);
+#if 0
+    set_twiddle_bytes(twiddle_bytes);
+#endif
 }
 
 /**
@@ -90,15 +91,20 @@ D4StreamUnMarshaller::~D4StreamUnMarshaller( )
     xdr_destroy(&d_source);
 }
 
+#if 0
 void
-D4StreamUnMarshaller::set_twiddle_bytes(bool is_stream_bigendian)
+D4StreamUnMarshaller::set_twiddle_bytes(bool twiddle)
 {
+#if 0
     if ((is_host_big_endian() && is_stream_bigendian)
         || (!is_host_big_endian() && !is_stream_bigendian))
         d_twiddle_bytes = false;
     else
         d_twiddle_bytes = true;
+#endif
+    d_twiddle_bytes = twiddle
 }
+#endif
 
 Crc32::checksum D4StreamUnMarshaller::get_checksum()
 {
