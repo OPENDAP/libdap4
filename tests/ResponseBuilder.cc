@@ -330,7 +330,7 @@ void ResponseBuilder::dataset_constraint_dmr(ostream &out, DMR &dmr, ConstraintE
 
 
     // the byte order info precedes the start of chunking
-    char byte_order = 0x00; // little endian
+    char byte_order = is_host_big_endian() ? 0x01 : 0x00; // is_host_big_endian is in util.cc
     out << byte_order << flush;
 
     // now make the chunked output stream

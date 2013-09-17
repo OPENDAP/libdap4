@@ -40,7 +40,7 @@
 #include <sstream>
 #include <iomanip>
 
-#define DODS_DEBUG 1
+//#define DODS_DEBUG 1
 #include "D4StreamMarshaller.h"
 
 #include "dods-datatypes.h"

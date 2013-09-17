@@ -29,7 +29,7 @@
 
 #include <string>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "chunked_stream.h"
 #include "chunked_ostream.h"

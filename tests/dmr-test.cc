@@ -206,10 +206,10 @@ read_data_plain(const string &file_name, bool debug)
     // a client would extract information from these headers.
     remove_mime_header(in);
 
-    // FIXME
-    // Read the byte-order byte
+    // Read the byte-order byte; used later on
     char byte_order;
     in >> byte_order;
+    if (debug) cerr << "Byte order: " << ((byte_order) ? "big endian" : "little endian") << endl;
 
     // get a chunked input stream
     chunked_istream cis(in, 1024);
@@ -225,8 +225,8 @@ read_data_plain(const string &file_name, bool debug)
         // parse char * with given size
     	D4ParserSax2 parser;
     	// '-2' to discard the CRLF pair
-    	string dmr_doc(chunk, chunk_size-2);
-    	parser.intern(dmr_doc, dmr, debug);
+        parser.intern(chunk, chunk_size-2, dmr, debug);
+
     }
     catch(...) {
     	delete factory;
@@ -234,10 +234,7 @@ read_data_plain(const string &file_name, bool debug)
     	throw;
     }
 
-    D4StreamUnMarshaller um(cis);
-
-    // Could use byte_order here
-    um.set_twiddle_bytes(false);
+    D4StreamUnMarshaller um(cis, byte_order);
 
     dmr->root()->deserialize(um, *dmr);
 
@@ -384,9 +381,10 @@ read_chunked_data(const string &file)
 #endif
 }
 #endif
-void usage()
+
+static void usage()
 {
-    cerr << "Usage: dmr-test -p|s <file> [-d -x]" << endl
+    cerr << "Usage: dmr-test -p|s|t <file> [-d -x]" << endl
             << "p: parse a file (use "-" for stdin)" << endl
             << "s: parse and then 'send' a response to a file" << endl
             << "t: parse, send and then read the response file" << endl
