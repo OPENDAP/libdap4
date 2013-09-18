@@ -63,7 +63,7 @@ using namespace libdap;
 class chunked_iostream_test: public TestFixture {
 private:
 	// This should be big enough to do meaningful timing tests
-	string big_file;
+	string big_file, big_file_2;
 	// This should be smaller than a single buffer
 	string small_file;
 	// A modest sized text file - makes looking at the results easier
@@ -79,6 +79,7 @@ public:
     void setUp()
     {
     	big_file = "test_big_binary_file.bin";
+    	big_file_2 = "test_big_binary_file_2.bin";
     	small_file = "test_small_text_file.txt";
     	text_file = "test_text_file.txt";
     }
@@ -207,13 +208,15 @@ public:
     	int count = 1;
     	chunked_infile.read(&c, 1);
     	int num = chunked_infile.gcount();
-    	DBG(cerr << "num: " << count++ << endl);
+    	DBG(cerr << "num: " << num << ", " << count++ << endl);
     	while (num > 0 && !chunked_infile.eof()) {
     		outfile.write(&c, num);
     		chunked_infile.read(&c, 1);
     		num = chunked_infile.gcount();
-            DBG(cerr << "num: " << count++ << endl);
+            DBG(cerr << "num: " << num << ", " << count++ << endl);
     	}
+
+    	DBG(cerr << "eof is :" << chunked_infile.eof() << ", num: " << num << endl);
 
     	if (num > 0 && !chunked_infile.bad())
     	    outfile.write(&c, num);
@@ -308,10 +311,16 @@ public:
     }
 
     void test_write_1_read_1_big_file() {
-    	single_char_write(big_file, 28);
-    	single_char_read(big_file, 28);
-    	string cmp = "cmp " + big_file + " " + big_file + ".plain";
-    	CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
+        single_char_write(big_file, 28);
+        single_char_read(big_file, 28);
+        string cmp = "cmp " + big_file + " " + big_file + ".plain";
+        CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
+    }
+    void test_write_1_read_1_big_file_2() {
+        single_char_write(big_file_2, 28);
+        single_char_read(big_file_2, 28);
+        string cmp = "cmp " + big_file_2 + " " + big_file_2 + ".plain";
+        CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
     // these are the tests
@@ -336,15 +345,24 @@ public:
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
+    void test_write_1_read_128_big_file_2() {
+        single_char_write(big_file_2, 28);
+        read_128char_data(big_file_2, 28);
+        string cmp = "cmp " + big_file_2 + " " + big_file_2 + ".plain";
+        CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
+    }
+
     CPPUNIT_TEST_SUITE(chunked_iostream_test);
 
     CPPUNIT_TEST(test_write_1_read_1_small_file);
     CPPUNIT_TEST(test_write_1_read_1_text_file);
     CPPUNIT_TEST(test_write_1_read_1_big_file);
+    CPPUNIT_TEST(test_write_1_read_1_big_file_2);
 
     CPPUNIT_TEST(test_write_1_read_128_small_file);
     CPPUNIT_TEST(test_write_1_read_128_text_file);
     CPPUNIT_TEST(test_write_1_read_128_big_file);
+    CPPUNIT_TEST(test_write_1_read_128_big_file_2);
 
     CPPUNIT_TEST_SUITE_END();
 };
