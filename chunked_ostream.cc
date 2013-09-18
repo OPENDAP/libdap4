@@ -61,7 +61,11 @@ int chunked_outbuf::data_chunk()
 	// unsigned int chunk_header = (unsigned int)num | CHUNK_type;
 
 	// Write out the CHUNK_DATA header with the byte count
-	d_os.write((const char *)&num, sizeof(int32_t));
+	// shift 8 bits to the right to make room for the chunk type, which happens to
+	// be 0x00, so we don't need to do anything
+	uint32_t header = num; // >> 8;
+
+	d_os.write((const char *)&header, sizeof(int32_t));
 
 	// Should bad() throw an error?
 	// Are these functions fast or would the bits be faster?

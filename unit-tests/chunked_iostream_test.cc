@@ -60,7 +60,7 @@ using namespace libdap;
  * sizes. There are three write functions and three read functions and
  * all combinations are tested.
  */
-class chunked_iostreamTest: public TestFixture {
+class chunked_iostream_test: public TestFixture {
 private:
 	// This should be big enough to do meaningful timing tests
 	string big_file;
@@ -69,10 +69,10 @@ private:
 	// A modest sized text file - makes looking at the results easier
 	string text_file;
 public:
-    chunked_iostreamTest()
+    chunked_iostream_test()
     {
     }
-    ~chunked_iostreamTest()
+    ~chunked_iostream_test()
     {
     }
 
@@ -92,7 +92,7 @@ public:
     {
     	fstream infile(file.c_str(), ios::in|ios::binary);
     	if (!infile.good())
-    		CPPUNIT_FAIL("File not open");
+    		CPPUNIT_FAIL("File not open or eof");
 
     	string out = file + ".chunked";
     	fstream outfile(out.c_str(), ios::out|ios::binary);
@@ -100,17 +100,19 @@ public:
     	chunked_ostream chunked_outfile(outfile, buf_size);
 
     	char c;
-    	infile.get(c);
+    	infile.read(&c, 1);
     	int num = infile.gcount();
-    	while (infile.good()) {
+    	while (num > 0 && !infile.eof()) {
     		chunked_outfile.write(&c, num);
-    		infile.get(c);
+    		infile.read(&c, 1);
     		num = infile.gcount();
     	}
 
-    	if (num > 0 && !(infile.bad() && infile.fail()) ) {
+    	if (num > 0 && !infile.bad()) {
     		chunked_outfile.write(&c, num);
     	}
+
+    	chunked_outfile.flush();
     }
 
     void
@@ -118,7 +120,7 @@ public:
     {
     	fstream infile(file.c_str(), ios::in|ios::binary);
     	if (!infile.good())
-    		CPPUNIT_FAIL("File not open");
+    		CPPUNIT_FAIL("File not open or eof");
 
     	string out = file + ".chunked";
     	fstream outfile(out.c_str(), ios::out|ios::binary);
@@ -128,14 +130,17 @@ public:
     	char str[128];
     	infile.read(str, 128);
     	int num = infile.gcount();
-    	while (infile.good()) {
+    	while (num > 0 && !infile.eof()) {
     		chunked_outfile.write(str, num);
     		infile.read(str, 128);
     		num = infile.gcount();
     	}
-    	if (num > 0 && !(infile.bad() && infile.fail()) ) {
+
+    	if (num > 0 && !infile.bad()) {
     		chunked_outfile.write(str, num);
     	}
+
+        chunked_outfile.flush();
     }
 
     void
@@ -143,7 +148,7 @@ public:
     {
     	fstream infile(file.c_str(), ios::in|ios::binary);
     	if (!infile.good())
-    		CPPUNIT_FAIL("File not open");
+    		CPPUNIT_FAIL("File not open or eof");
 
     	string out = file + ".chunked";
     	fstream outfile(out.c_str(), ios::out|ios::binary);
@@ -154,14 +159,14 @@ public:
     		char str[24];
     		infile.read(str, 24);
     		int num = infile.gcount();
-    		if (infile.good()) {
+    		if (num > 0 && !infile.eof()) {
     			chunked_outfile.write(str, num);
     			chunked_outfile.flush();
     		}
 
     		infile.read(str, 24);
     		num = infile.gcount();
-    		if (infile.good()) chunked_outfile.write(str, num);
+    		if (num > 0 && !infile.eof()) chunked_outfile.write(str, num);
 
     		// Send an error chunk; the 24 bytes read here are lost...
     		if (error)
@@ -169,15 +174,17 @@ public:
 
     		infile.read(str, 24);
     		num = infile.gcount();
-    		while (infile.good()) {
+    		while (num > 0 && !infile.eof()) {
     			chunked_outfile.write(str, num);
     			infile.read(str, 24);
     			num = infile.gcount();
     		}
 
-    		if (num > 0 && !(infile.bad() && infile.fail())) {
+    		if (num > 0 && !infile.bad()) {
     			chunked_outfile.write(str, num);
     		}
+
+            chunked_outfile.flush();
     	}
     	catch (Error &e) {
     		chunked_outfile.write_err_chunk(e.get_error_message());
@@ -190,56 +197,69 @@ public:
     	string in = file + ".chunked";
     	fstream infile(in.c_str(), ios::in|ios::binary);
     	if (!infile.good())
-    		CPPUNIT_FAIL("File not open");
-    	chunked_istream chunked_infile(infile, buf_size);
+    		CPPUNIT_FAIL("File not open or eof");
+    	chunked_istream chunked_infile(infile, buf_size, 0x00);
 
     	string out = file + ".plain";
     	fstream outfile(out.c_str(), ios::out|ios::binary);
 
     	char c;
-    	// FIXME Use read() for binary IO
+    	int count = 1;
     	chunked_infile.read(&c, 1);
     	int num = chunked_infile.gcount();
-    	while (num > 0 /*chunked_infile.good()*/) {
+    	DBG(cerr << "num: " << count++ << endl);
+    	while (num > 0 && !chunked_infile.eof()) {
     		outfile.write(&c, num);
     		chunked_infile.read(&c, 1);
     		num = chunked_infile.gcount();
+            DBG(cerr << "num: " << count++ << endl);
     	}
+
+    	if (num > 0 && !chunked_infile.bad())
+    	    outfile.write(&c, num);
+
+    	outfile.flush();
     }
 
     void
-    read_128char_data(const string &file)
+    read_128char_data(const string &file, int buf_size)
     {
     	string in = file + ".chunked";
     	fstream infile(in.c_str(), ios::in|ios::binary);
     	if (!infile.good())
-    		cerr << "File not open" << endl;
-    	chunked_istream chunked_infile(infile, 32);
+    		cerr << "File not open or eof" << endl;
+    	chunked_istream chunked_infile(infile, buf_size);
 
     	string out = file + ".plain";
     	fstream outfile(out.c_str(), ios::out|ios::binary);
 
     	char str[128];
+    	int count = 1;
     	chunked_infile.read(str, 128);
     	int num = chunked_infile.gcount();
-    	while (chunked_infile.good()) {
+    	DBG(cerr << "num: " << num << ", " << count++ << endl);
+    	while (num > 0 && !chunked_infile.eof()) {
     		outfile.write(str, num);
     		chunked_infile.read(str, 128);
     		num = chunked_infile.gcount();
+    		DBG(cerr << "num: " << num << ", " <<  count++ << endl);
     	}
-    	if (num > 0 && !(chunked_infile.bad() && chunked_infile.fail()) ) {
+
+    	if (num > 0 && !chunked_infile.bad()) {
     		outfile.write(str, num);
     	}
+
+    	outfile.flush();
     }
 
     void
-    write_24char_data_with_error_option(const string &file)
+    read_24char_data_with_error_option(const string &file, int buf_size)
     {
     	string in = file + ".chunked";
     	fstream infile(in.c_str(), ios::in|ios::binary);
     	if (!infile.good())
-    		cerr << "File not open" << endl;
-    	chunked_istream chunked_infile(infile, 32);
+    		cerr << "File not open or eof" << endl;
+    	chunked_istream chunked_infile(infile, buf_size);
 
     	string out = file + ".plain";
     	fstream outfile(out.c_str(), ios::out|ios::binary);
@@ -248,22 +268,24 @@ public:
     		char str[24];
     		chunked_infile.read(str, 24);
     		int num = chunked_infile.gcount();
-    		if (chunked_infile.good()) {
+    		if (num > 0 && !chunked_infile.eof()) {
     			outfile.write(str, num);
     			outfile.flush();
     		}
 
     		chunked_infile.read(str, 24);
     		num = chunked_infile.gcount();
-    		while (chunked_infile.good()) {
+    		while (num > 0 && !chunked_infile.eof()) {
     			outfile.write(str, num);
     			chunked_infile.read(str, 24);
     			num = chunked_infile.gcount();
     		}
 
-    		if (num > 0 && !(chunked_infile.bad() && chunked_infile.fail())) {
+    		if (num > 0 && !chunked_infile.bad()) {
     			outfile.write(str, num);
     		}
+
+    		outfile.flush();
     	}
     	catch (Error &e) {
     		cerr << "Error chunk found: " << e.get_error_message() << endl;
@@ -286,22 +308,48 @@ public:
     }
 
     void test_write_1_read_1_big_file() {
-    	single_char_write(big_file, 32);
-    	single_char_read(big_file, 32);
+    	single_char_write(big_file, 28);
+    	single_char_read(big_file, 28);
     	string cmp = "cmp " + big_file + " " + big_file + ".plain";
     	CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    CPPUNIT_TEST_SUITE(chunked_iostreamTest);
+    // these are the tests
+    void test_write_1_read_128_small_file() {
+        single_char_write(small_file, 32);
+        read_128char_data(small_file, 32);
+        string cmp = "cmp " + small_file + " " + small_file + ".plain";
+        CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
+    }
+
+    void test_write_1_read_128_text_file() {
+        single_char_write(text_file, 32);
+        read_128char_data(text_file, 32);
+        string cmp = "cmp " + text_file + " " + text_file + ".plain";
+        CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
+    }
+
+    void test_write_1_read_128_big_file() {
+        single_char_write(big_file, 28);
+        read_128char_data(big_file, 28);
+        string cmp = "cmp " + big_file + " " + big_file + ".plain";
+        CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
+    }
+
+    CPPUNIT_TEST_SUITE(chunked_iostream_test);
 
     CPPUNIT_TEST(test_write_1_read_1_small_file);
     CPPUNIT_TEST(test_write_1_read_1_text_file);
     CPPUNIT_TEST(test_write_1_read_1_big_file);
 
+    CPPUNIT_TEST(test_write_1_read_128_small_file);
+    CPPUNIT_TEST(test_write_1_read_128_text_file);
+    CPPUNIT_TEST(test_write_1_read_128_big_file);
+
     CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(chunked_iostreamTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(chunked_iostream_test);
 
 int
 main(int argc, char *argv[])
@@ -330,7 +378,7 @@ main(int argc, char *argv[])
     }
     else {
         while (i < argc) {
-            test = string("D4GroupTest::") + argv[i++];
+            test = string("chunked_iostream_test::") + argv[i++];
             if (debug)
                 cerr << "Running " << test << endl;
             wasSuccessful = wasSuccessful && runner.run(test);

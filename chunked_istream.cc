@@ -37,6 +37,9 @@
 #include "Error.h"
 
 #define DODS_DEBUG
+#ifdef DODS_DEBUG
+#include <iostream>
+#endif
 #include "debug.h"
 
 namespace libdap {
@@ -59,6 +62,9 @@ namespace libdap {
 /** Insert new characters into the buffer */
 int chunked_inbuf::underflow()
 {
+    DBG(cerr << "underflow..." << endl);
+    DBG(cerr << "eback(): " << (void*)eback() << ", gptr(): " << (void*)(gptr()-eback()) << ", egptr(): " << (void*)(egptr()-eback()) << endl);
+
 	// return the next character; uflow() increments the puffer pointer.
 	if (gptr() < egptr())
 		return *gptr();
@@ -69,6 +75,8 @@ int chunked_inbuf::underflow()
 	// read_next_chunk() returns EOF or the size of the chunk while underflow
 	// returns EOF or the next char in the input.
 	int result = read_next_chunk();
+	DBG(cerr << "underflow: read_next_chunk: " << result << endl);
+
 	return (result == EOF) ? EOF: *gptr();
 
 #if 0
@@ -137,7 +145,7 @@ int chunked_inbuf::read_next_chunk()
     memcpy(d_buffer + (putBack - numPutBack), gptr() - numPutBack, numPutBack);
 
     // To read data from the chunked stream, first read the header
-    int32_t  header;
+    uint32_t  header;
     d_is.read((char *)&header, 4);
     if (d_twiddle_bytes) {
         header = bswap_32(header);
@@ -145,6 +153,8 @@ int chunked_inbuf::read_next_chunk()
 
     // Note that d_chunk_size is accessible via a protected method.
     d_chunk_size = header & CHUNK_SIZE_MASK;
+    DBG(cerr << "read_next_chunk: chunk size from header: " << d_chunk_size << endl);
+    DBG(cerr << "read_next_chunk: chunk type from header: " << (void*)(header & CHUNK_TYPE_MASK) << endl);
 
     // Handle the case where the buffer is not big enough to hold the incoming chunk
     if (d_chunk_size > d_buf_size) {
@@ -155,16 +165,23 @@ int chunked_inbuf::read_next_chunk()
 
     // NB: d_buffer is d_buf_size + putBack characters in length
     d_is.read(d_buffer + putBack, d_chunk_size);
-    if (d_is.bad() || d_is.eof())
+    DBG(cerr << "read_next_chunk: size read: " << d_is.gcount()  << endl);
+    if (d_is.bad())
         return EOF;
+
+    // FIXME Record EOF for use later in underflow, etc.
+
+    DBG(cerr << "eback(): " << (void*)eback() << ", gptr(): " << (void*)(gptr()-eback()) << ", egptr(): " << (void*)(egptr()-eback()) << endl);
 
     setg(d_buffer + (putBack - numPutBack), // beginning of put back area
          d_buffer + putBack,                // read position (gptr() == eback())
          d_buffer + putBack + d_is.gcount()); // end of buffer (egptr())
 
+    DBG(cerr << "eback(): " << (void*)eback() << ", gptr(): " << (void*)(gptr()-eback()) << ", egptr(): " << (void*)(egptr()-eback()) << endl);
+
     switch (header & CHUNK_TYPE_MASK) {
-    case CHUNK_DATA:
     case CHUNK_END:
+    case CHUNK_DATA:
         return d_chunk_size;
         break;
     case CHUNK_ERR:

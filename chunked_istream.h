@@ -107,7 +107,7 @@ class chunked_istream: public std::istream {
 protected:
 	chunked_inbuf d_cbuf;
 public:
-	chunked_istream(std::istream &is, int size) : std::istream(&d_cbuf), d_cbuf(is, size) { }
+	chunked_istream(std::istream &is, int size, bool twiddle_bytes = false) : std::istream(&d_cbuf), d_cbuf(is, size, twiddle_bytes) { }
 	int read_next_chunk() { return d_cbuf.read_next_chunk(); }
 };
 
