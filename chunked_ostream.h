@@ -78,10 +78,10 @@ public:
 protected:
 	// data_chunk and end_chunk might not be needed because they
 	// are called via flush() and ~chunked_outbuf(), resp. jhrg 9/13/13
-	int data_chunk();	// sync() and overflow() call this
-	int end_chunk();
+	int_type data_chunk();	// sync() and overflow() call this
+	int_type end_chunk();
 
-	int err_chunk(const std::string &msg);
+	int_type err_chunk(const std::string &msg);
 
 	// TODO Implement xsputn() for efficiency
 	// virtual std::streamsize xsputn(const char *s, std:streamsize num);
@@ -89,8 +89,8 @@ protected:
 	// and then call data_chunk(). Leave remainder in buffer. Or copy logic
 	// for data_chunk() into loop in this code.
 
-	virtual int overflow(int c);
-	virtual int sync();
+	virtual int_type overflow(int c);
+	virtual int_type sync();
 };
 
 /**
@@ -134,7 +134,7 @@ public:
 	 * @note An end chunk is sent when the stream is closed.
 	 * @return EOF on error or the number of bytes sent in the chunk body.
 	 */
-	int write_end_chunk() { return d_cbuf.end_chunk(); }
+	int_type write_end_chunk() { return d_cbuf.end_chunk(); }
 
 	/**
 	 * @brief Send the current contents of the buffer as a data chunk.
@@ -144,7 +144,7 @@ public:
 	 * @note Calling flush() on the stream forces a data chunk to be sent.
 	 * @return EOF on error, otherwise the number of bytes sent in the chunk body.
 	 */
-	int write_data_chunk() { return d_cbuf.data_chunk(); }
+	int_type write_data_chunk() { return d_cbuf.data_chunk(); }
 
 	/**
 	 * @brief Send an error message down the stream.
@@ -154,7 +154,7 @@ public:
 	 * @param msg The error message text
 	 * @return The number of bytes 'dumped' from the write buffer.
 	 */
-	int write_err_chunk(const std::string &msg) { return d_cbuf.err_chunk(msg); }
+	int_type write_err_chunk(const std::string &msg) { return d_cbuf.err_chunk(msg); }
 };
 
 }

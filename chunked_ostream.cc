@@ -43,11 +43,17 @@ namespace libdap {
  *
  * @return EOF on error, otherwise the number of bytes in the chunk body.
  */
-int chunked_outbuf::data_chunk()
+std::streambuf::int_type
+chunked_outbuf::data_chunk()
 {
 	DBG(cerr << "In chunked_outbuf::data_chunk" << endl);
 
 	int32_t num = pptr() - pbase();	// int needs to be signed for the call to pbump
+
+	// Since this is called by sync() (e.g., flush()), return 0 and do nothing
+	// when there's no data to send.
+	if (num == 0)
+		return 0;
 
 	// here, write out the chunk headers: CHUNKTYPE and CHUNKSIZE
 	// as a 32-bit unsigned int. Here I assume that num is never
@@ -56,14 +62,10 @@ int chunked_outbuf::data_chunk()
 	// Trick: This method always writes CHUNK_DATA type chunks so the chunk type is
 	// always 0x00, and given that num never has anything bigger than 24-bits, the
 	// high order byte is always 0x00. Of course bit-wise OR with 0x00 isn't going to
-	// do much anyway... Here's the general idea al the same:
+	// do much anyway... Here's the general idea all the same:
 	//
 	// unsigned int chunk_header = (unsigned int)num | CHUNK_type;
-
-	// Write out the CHUNK_DATA header with the byte count
-	// shift 8 bits to the right to make room for the chunk type, which happens to
-	// be 0x00, so we don't need to do anything
-	uint32_t header = num; // >> 8;
+	uint32_t header = num;
 
 	d_os.write((const char *)&header, sizeof(int32_t));
 
@@ -71,7 +73,7 @@ int chunked_outbuf::data_chunk()
 	// Are these functions fast or would the bits be faster?
 	d_os.write(d_buffer, num);
 	if (d_os.eof() || d_os.bad())
-		return EOF;
+		return traits_type::eof();
 
 	pbump(-num);
 	return num;
@@ -88,7 +90,8 @@ int chunked_outbuf::data_chunk()
  * bytes
  * @return EOF on error, otherwise the number of bytes sent in the chunk.
  */
-int chunked_outbuf::end_chunk()
+std::streambuf::int_type
+chunked_outbuf::end_chunk()
 {
 	DBG(cerr << "In chunked_outbuf::end_chunk" << endl);
 
@@ -109,7 +112,7 @@ int chunked_outbuf::end_chunk()
 	// Are these functions fast or would the bits be faster?
 	d_os.write(d_buffer, num);
 	if (d_os.eof() || d_os.bad())
-		return EOF;
+		return traits_type::eof();
 
 	pbump(-num);
 	return num;
@@ -122,7 +125,7 @@ int chunked_outbuf::end_chunk()
  * @param msg The error message to include in the error chunk
  * @return The number of characters ignored.
  */
-int
+std::streambuf::int_type
 chunked_outbuf::err_chunk(const std::string &m)
 {
 	DBG(cerr << "In chunked_outbuf::err_chunk" << endl);
@@ -149,7 +152,7 @@ chunked_outbuf::err_chunk(const std::string &m)
 	// Are these functions fast or would the bits be faster?
 	d_os.write(msg.data(), msg.length());
 	if (d_os.eof() || d_os.bad())
-		return EOF;
+		return traits_type::eof();
 
 	// Reset the buffer pointer, effectively ignoring what's in there now
 	pbump(-num);
@@ -170,21 +173,22 @@ chunked_outbuf::err_chunk(const std::string &m)
  * next chunk.
  * @return EOF on error, otherwise the value of \c c.
  */
-int chunked_outbuf::overflow(int c)
+std::streambuf::int_type
+chunked_outbuf::overflow(int c)
 {
 	DBG(cerr << "In chunked_outbuf::overflow" << endl);
 
-	if (c != EOF) {
-		*pptr() = c;
+	if (!traits_type::eq_int_type(c, traits_type::eof())) {
+		*pptr() = traits_type::not_eof(c);
 		pbump(1);
 	}
 	// flush the buffer
-	if (data_chunk() == EOF) {
+	if (data_chunk() == traits_type::eof()) {
 		//Error
-		return EOF;
+		return traits_type::eof();
 	}
 
-	return c;
+	return traits_type::not_eof(c);
 }
 
 /**
@@ -192,15 +196,16 @@ int chunked_outbuf::overflow(int c)
  * @note This method is called by flush() among others
  * @return -1 on error, 0 otherwise.
  */
-int chunked_outbuf::sync()
+std::streambuf::int_type
+chunked_outbuf::sync()
 {
 	DBG(cerr << "In chunked_outbuf::sync" << endl);
 
-	if (data_chunk() == EOF) {
+	if (data_chunk() == traits_type::eof()) {
 		// Error
-		return -1;
+		return traits_type::not_eof(-1);
 	}
-	return 0;
+	return traits_type::not_eof(0);
 }
 
 } // namespace libdap

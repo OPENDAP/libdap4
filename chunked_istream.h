@@ -33,20 +33,27 @@
 #include <streambuf>
 #include <istream>
 #include <stdexcept>
+#include <string>
 
 namespace libdap {
 
 class chunked_inbuf: public std::streambuf {
 protected:
+	// TODO make this stuff private?
 	std::istream &d_is;
 
-	static const int putBack = 128;
+	// FIXME
+	// static const int putBack = 128;
 	int d_buf_size; 	// Size of the data buffer
 	char *d_buffer;		// data buffer
 
-	int d_chunk_size;
+	// TODO Not needed?
+	int d_chunk_size;	// size of the current chunk
 
-	bool d_twiddle_bytes;
+	bool d_twiddle_bytes; // receiver-makes-right encoding (endianness)...
+
+	std::string d_error_message;
+	bool d_error;
 
 	/**
 	 * @brief allocate the internal buffer.
@@ -55,12 +62,19 @@ protected:
 	 * chars.
 	 */
 	void m_buffer_alloc() {
-		d_buffer = new char[d_buf_size + putBack];
-
+		d_buffer = new char[d_buf_size/* + putBack*/];
+#if 0
 		setg(d_buffer + putBack, 	// beginning of put back area
 			 d_buffer + putBack, 	// read position
 		     d_buffer + putBack); 	// end position
+#endif
+		setg(d_buffer, 	// beginning of put back area
+			 d_buffer, 	// read position
+		     d_buffer); 	// end position
 	}
+
+	// TODO remove if not needed
+	int_type read_next_chunk();
 
 public:
 	/**
@@ -81,7 +95,7 @@ public:
 	 * send use a different byte-order. The sender's byte order must be sent out-of-band.
 	 */
 	chunked_inbuf(std::istream &is, int size, bool twiddle_bytes = false)
-        : d_is(is), d_buf_size(size), d_buffer(0), d_chunk_size(0), d_twiddle_bytes(twiddle_bytes) {
+        : d_is(is), d_buf_size(size), d_buffer(0), d_chunk_size(0), d_twiddle_bytes(twiddle_bytes), d_error(false) {
 		if (d_buf_size & CHUNK_TYPE_MASK)
 			throw std::out_of_range("A chunked_outbuf (or chunked_ostream) was built using a buffer larger than 0x00ffffff");
 
@@ -92,15 +106,13 @@ public:
 		delete d_buffer;
 	}
 
-    int read_next_chunk();
-
-    int chunk_size() { return d_chunk_size; }
+	bool error() const { return d_error; }
+	std::string error_message() const { return d_error_message; }
 
 protected:
-	virtual int underflow();
+	virtual int_type underflow();
 
-	// TODO
-	// virtual std::streamsize xsgetn(char* s, std::streamsize num);
+	virtual std::streamsize xsgetn(char* s, std::streamsize num);
 };
 
 class chunked_istream: public std::istream {
@@ -108,7 +120,8 @@ protected:
 	chunked_inbuf d_cbuf;
 public:
 	chunked_istream(std::istream &is, int size, bool twiddle_bytes = false) : std::istream(&d_cbuf), d_cbuf(is, size, twiddle_bytes) { }
-	int read_next_chunk() { return d_cbuf.read_next_chunk(); }
+	bool error() const { return d_cbuf.error(); }
+	std::string error_message() const { return d_cbuf.error_message(); }
 };
 
 }
