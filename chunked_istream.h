@@ -41,14 +41,12 @@ class chunked_inbuf: public std::streambuf {
 private:
 	std::istream &d_is;
 
-	int d_buf_size; 	// Size of the data buffer
-	char *d_buffer;		// data buffer
+	uint32_t d_buf_size;	// Size of the data buffer
+	char *d_buffer;			// data buffer
 
-	// TODO Not needed?
-	int d_chunk_size;	// size of the current chunk
+	bool d_twiddle_bytes; 	// receiver-makes-right encoding (endianness)...
 
-	bool d_twiddle_bytes; // receiver-makes-right encoding (endianness)...
-
+	// If an error chunk is read, save the message here
 	std::string d_error_message;
 	bool d_error;
 
@@ -88,7 +86,7 @@ public:
 	 * send use a different byte-order. The sender's byte order must be sent out-of-band.
 	 */
 	chunked_inbuf(std::istream &is, int size, bool twiddle_bytes = false)
-        : d_is(is), d_buf_size(size), d_buffer(0), d_chunk_size(0), d_twiddle_bytes(twiddle_bytes), d_error(false) {
+        : d_is(is), d_buf_size(size), d_buffer(0), d_twiddle_bytes(twiddle_bytes), d_error(false) {
 		if (d_buf_size & CHUNK_TYPE_MASK)
 			throw std::out_of_range("A chunked_outbuf (or chunked_ostream) was built using a buffer larger than 0x00ffffff");
 
