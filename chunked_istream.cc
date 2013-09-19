@@ -291,21 +291,15 @@ chunked_inbuf::read_next_chunk()
     if (d_chunk_size == 0 && (header & CHUNK_TYPE_MASK) == CHUNK_END)
     	return traits_type::eof();
 
-    // NB: d_buffer is d_buf_size + putBack characters in length
-    d_is.read(d_buffer/* + putBack*/, d_chunk_size);
+    d_is.read(d_buffer, d_chunk_size);
     DBG2(cerr << "read_next_chunk: size read: " << d_is.gcount() << ", eof: " << d_is.eof() << ", bad: " << d_is.bad() << endl);
     if (d_is.bad())
         return traits_type::eof();
 
     DBG2(cerr << "eback(): " << (void*)eback() << ", gptr(): " << (void*)(gptr()-eback()) << ", egptr(): " << (void*)(egptr()-eback()) << endl);
-#if 0
-    setg(d_buffer + (putBack - numPutBack), // beginning of put back area
-         d_buffer + putBack,                // read position (gptr() == eback())
-         d_buffer + putBack + d_is.gcount()); // end of buffer (egptr())
-#endif
-    setg(d_buffer, // beginning of put back area
-         d_buffer,                // read position (gptr() == eback())
-         d_buffer + d_is.gcount()); // end of buffer (egptr())
+    setg(d_buffer, 					// beginning of put back area
+         d_buffer,                	// read position (gptr() == eback())
+         d_buffer + d_chunk_size /*d_is.gcount()*/); // end of buffer (egptr())
 
     DBG2(cerr << "eback(): " << (void*)eback() << ", gptr(): " << (void*)(gptr()-eback()) << ", egptr(): " << (void*)(egptr()-eback()) << endl);
 
@@ -314,20 +308,16 @@ chunked_inbuf::read_next_chunk()
     	DBG(cerr << "Found end chunk" << endl);
     case CHUNK_DATA:
         return d_chunk_size;
-        break;
+
     case CHUNK_ERR:
         // this is pretty much the end of the show... Assume the buffer/chunk holds
         // the error message text.
-
-        DBG(cerr << "read_next_chunk: About to throw an exception" << endl);
-
         d_error = true;
-        d_error_message = string(d_buffer/* + putBack*/, d_chunk_size);
+        d_error_message = string(d_buffer, d_chunk_size);
         return traits_type::eof();
-        break;
     }
 
-    return traits_type::eof();
+    return traits_type::eof();	// Can never get here; this quiets g++
 }
 
 }

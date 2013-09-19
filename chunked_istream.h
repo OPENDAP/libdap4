@@ -38,12 +38,9 @@
 namespace libdap {
 
 class chunked_inbuf: public std::streambuf {
-protected:
-	// TODO make this stuff private?
+private:
 	std::istream &d_is;
 
-	// FIXME
-	// static const int putBack = 128;
 	int d_buf_size; 	// Size of the data buffer
 	char *d_buffer;		// data buffer
 
@@ -62,15 +59,11 @@ protected:
 	 * chars.
 	 */
 	void m_buffer_alloc() {
-		d_buffer = new char[d_buf_size/* + putBack*/];
-#if 0
-		setg(d_buffer + putBack, 	// beginning of put back area
-			 d_buffer + putBack, 	// read position
-		     d_buffer + putBack); 	// end position
-#endif
+		delete d_buffer;
+		d_buffer = new char[d_buf_size];
 		setg(d_buffer, 	// beginning of put back area
 			 d_buffer, 	// read position
-		     d_buffer); 	// end position
+		     d_buffer); // end position
 	}
 
 	// TODO remove if not needed
