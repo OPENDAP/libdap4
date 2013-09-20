@@ -65,7 +65,7 @@ private:
 	}
 
 	// TODO remove if not needed
-	int_type read_next_chunk();
+	//int_type read_next_chunk();
 
 public:
 	/**

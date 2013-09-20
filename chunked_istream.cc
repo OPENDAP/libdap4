@@ -79,15 +79,67 @@ chunked_inbuf::underflow()
 	if (gptr() < egptr())
 		return traits_type::to_int_type(*gptr());
 
-	// gptr() == egptr() so shuffle the last putBack chars to the 'put back'
-	// area of the buffer and read more data from the underlying input source.
+	// gptr() == egptr() so read more data from the underlying input source.
 
+	// To read data from the chunked stream, first read the header
+	uint32_t header;
+	d_is.read((char *) &header, 4);
+
+	// There are two 'EOF' cases: One where the END chunk is zero bytes and one where
+	// it holds data. In the latter case, bytes those will be read and moved into the
+	// buffer. Once those data are consumed, we'll be back here again and this read()
+	// will return EOF. See below for the other case...
+	if (d_is.eof()) return traits_type::eof();
+	if (d_twiddle_bytes) header = bswap_32(header);
+
+	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
+
+	DBG2(cerr << "read_next_chunk: chunk size from header: " << chunk_size << endl); DBG2(cerr << "read_next_chunk: chunk type from header: " << (void*)(header & CHUNK_TYPE_MASK) << endl);
+
+	// Handle the case where the buffer is not big enough to hold the incoming chunk
+	if (chunk_size > d_buf_size) {
+		d_buf_size = chunk_size;
+		m_buffer_alloc();
+	}
+
+	// If the END chunk has zero bytes, return EOF. See above for more information
+	if (chunk_size == 0 && (header & CHUNK_TYPE_MASK) == CHUNK_END) return traits_type::eof();
+
+	// Read the chunk's data
+	d_is.read(d_buffer, chunk_size);
+	DBG2(cerr << "read_next_chunk: size read: " << d_is.gcount() << ", eof: " << d_is.eof() << ", bad: " << d_is.bad() << endl);
+	if (d_is.bad()) return traits_type::eof();
+
+	DBG2(cerr << "eback(): " << (void*)eback() << ", gptr(): " << (void*)(gptr()-eback()) << ", egptr(): " << (void*)(egptr()-eback()) << endl);
+	setg(d_buffer, 						// beginning of put back area
+			d_buffer,                	// read position (gptr() == eback())
+			d_buffer + chunk_size);  	// end of buffer (egptr()) chunk_size == d_is.gcount() unless there's an error
+
+	DBG2(cerr << "eback(): " << (void*)eback() << ", gptr(): " << (void*)(gptr()-eback()) << ", egptr(): " << (void*)(egptr()-eback()) << endl);
+
+	switch (header & CHUNK_TYPE_MASK) {
+	case CHUNK_END:
+		DBG(cerr << "Found end chunk" << endl);
+	case CHUNK_DATA:
+		return traits_type::to_int_type(*gptr());
+
+	case CHUNK_ERR:
+		// this is pretty much the end of the show... Assume the buffer/chunk holds
+		// the error message text.
+		d_error = true;
+		d_error_message = string(d_buffer, chunk_size);
+		return traits_type::eof();
+	}
+
+	return traits_type::eof();	// Can never get here; this quiets g++
+#if 0
 	// read_next_chunk() returns EOF or the size of the chunk while underflow
 	// returns EOF or the next char in the input.
 	std::streambuf::int_type result = read_next_chunk();
 	DBG2(cerr << "underflow: read_next_chunk: " << result << endl);
 
 	return (result == traits_type::eof()) ? traits_type::eof(): traits_type::to_int_type(*gptr());
+#endif
 }
 
 #if 1
@@ -214,6 +266,7 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 	return traits_type::not_eof(num-bytes_left_to_read);
 }
 #endif
+#if 0
 std::streambuf::int_type
 chunked_inbuf::read_next_chunk()
 {
@@ -269,5 +322,5 @@ chunked_inbuf::read_next_chunk()
 
 	return traits_type::eof();	// Can never get here; this quiets g++
 }
-
+#endif
 }
