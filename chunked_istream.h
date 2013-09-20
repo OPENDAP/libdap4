@@ -64,9 +64,6 @@ private:
 		     d_buffer); // end position
 	}
 
-	// TODO remove if not needed
-	//int_type read_next_chunk();
-
 public:
 	/**
 	 * @brief Build a chunked input buffer.
@@ -97,6 +94,8 @@ public:
 		delete d_buffer;
 	}
 
+	int_type read_next_chunk();
+
 	bool error() const { return d_error; }
 	std::string error_message() const { return d_error_message; }
 
@@ -111,6 +110,7 @@ protected:
 	chunked_inbuf d_cbuf;
 public:
 	chunked_istream(std::istream &is, int size, bool twiddle_bytes = false) : std::istream(&d_cbuf), d_cbuf(is, size, twiddle_bytes) { }
+	int read_next_chunk() { return d_cbuf.read_next_chunk(); }
 	bool error() const { return d_cbuf.error(); }
 	std::string error_message() const { return d_cbuf.error_message(); }
 };

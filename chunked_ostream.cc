@@ -28,6 +28,7 @@
 #include "config.h"
 
 #include <string>
+#include <streambuf>
 
 //#define DODS_DEBUG
 
@@ -48,7 +49,7 @@ chunked_outbuf::data_chunk()
 {
 	DBG(cerr << "In chunked_outbuf::data_chunk" << endl);
 
-	int32_t num = pptr() - pbase();	// int needs to be signed for the call to pbump
+	int32_t num = pptr() - pbase();	// num needs to be signed for the call to pbump
 
 	// Since this is called by sync() (e.g., flush()), return 0 and do nothing
 	// when there's no data to send.
@@ -95,7 +96,7 @@ chunked_outbuf::end_chunk()
 {
 	DBG(cerr << "In chunked_outbuf::end_chunk" << endl);
 
-	int32_t num = pptr() - pbase();	// int needs to be signed for the call to pbump
+	int32_t num = pptr() - pbase();	// num needs to be signed for the call to pbump
 
 	// write out the chunk headers: CHUNKTYPE and CHUNKSIZE
 	// as a 32-bit unsigned int. Here I assume that num is never
@@ -133,7 +134,7 @@ chunked_outbuf::err_chunk(const std::string &m)
 
 	// Figure out how many chars are in the buffer - these will be
 	// ignored.
-	int32_t num = pptr() - pbase();	// int needs to be signed for the call to pbump
+	int32_t num = pptr() - pbase();	// num needs to be signed for the call to pbump
 
 	// write out the chunk headers: CHUNKTYPE and CHUNKSIZE
 	// as a 32-bit unsigned int. Here I assume that num is never
@@ -178,6 +179,9 @@ chunked_outbuf::overflow(int c)
 {
 	DBG(cerr << "In chunked_outbuf::overflow" << endl);
 
+	// Note that the buffer and eptr() were set so that when pptr() is
+	// at the end of the buffer, there is actually one more character
+	// available in the buffer.
 	if (!traits_type::eq_int_type(c, traits_type::eof())) {
 		*pptr() = traits_type::not_eof(c);
 		pbump(1);
@@ -189,6 +193,97 @@ chunked_outbuf::overflow(int c)
 	}
 
 	return traits_type::not_eof(c);
+}
+
+/*
+
+  d_buffer
+  |
+  v
+  |--------------------------------------------|....
+  |                                            |   .
+  |--------------------------------------------|....
+  ^                         ^                   ^
+  |                         |                   |
+  pbase()                   pptr()              epptr()
+
+ */
+
+/**
+ * @brief Write bytes to the chunked stream
+ * Write the bytes in \c s to the chunked stream
+ * @param s
+ * @param num
+ * @return The number of bytes written
+ */
+std::streamsize
+chunked_outbuf::xsputn(const char *s, std::streamsize num)
+{
+	DBG(cerr << "In chunked_outbuf::xsputn: num: " << num << endl);
+
+	// if the current block of data will fit in the buffer, put it there.
+	// else, there is at least a complete chunk between what's in the buffer
+	// and what's in 's'; send a chunk header, the stuff in the buffer and
+	// bytes from 's' to make a complete chunk. Then iterate over 's' sending
+	// more chunks until there's less than a complete chunk left in 's'. Put
+	// the bytes remaining 's' in the buffer. Return the number of bytes sent
+	// or 0 if an error is encountered.
+
+	int32_t bytes_in_buffer = pptr() - pbase();	// num needs to be signed for the call to pbump
+
+	// Will num bytes fit in the buffer? The location of epptr() is one back from
+	// the actual end of the buffer, so the next char written will trigger a write
+	// of the buffer as a new data chunk.
+	if (bytes_in_buffer + num < d_buf_size) {
+		DBG2(cerr << ":xsputn: buffering num: " << num << endl);
+		memcpy(pptr(), s, num);
+		pbump(num);
+		return traits_type::not_eof(num);
+	}
+
+	// If here, write a chunk header and a chunk's worth of data by combining the
+	// data in the buffer and some data from 's'.
+	uint32_t header = d_buf_size;
+	d_os.write((const char *)&header, sizeof(int32_t));	// Data chunk's CHUNK_TYPE is 0x00000000
+
+	// Reset the pptr() and epptr() now in case of an error exit. See the 'if'
+	// at teh end of this for the only code from here down that will modify the
+	// pptr() value.
+	setp(d_buffer, d_buffer + (d_buf_size - 1));
+
+	d_os.write(d_buffer, bytes_in_buffer);
+	if (d_os.eof() || d_os.bad())
+		return traits_type::not_eof(0);
+
+	int bytes_to_fill_out_buffer =  d_buf_size - bytes_in_buffer;
+	d_os.write(s, bytes_to_fill_out_buffer);
+	if (d_os.eof() || d_os.bad())
+		return traits_type::not_eof(0);
+	s += bytes_to_fill_out_buffer;
+	uint32_t bytes_still_to_send = num - bytes_to_fill_out_buffer;
+
+	// Now send all the remaining data in s until the amount remaining doesn't
+	// fill a complete chunk and buffer those data.
+	while (bytes_still_to_send >= d_buf_size) {
+		// This is header for  a chunk of d_buf_size bytes; the size was set above
+		d_os.write((const char *) &header, sizeof(int32_t));
+		d_os.write(s, d_buf_size);
+		if (d_os.eof() || d_os.bad()) return traits_type::not_eof(0);
+		s += d_buf_size;
+		bytes_still_to_send -= d_buf_size;
+	}
+
+	if (bytes_still_to_send > 0) {
+		// if the code is here, one or more chunks have been sent, the
+		// buffer is empty and there are < d_buf_size bytes to send. Buffer
+		// them.
+		memcpy(d_buffer, s, bytes_still_to_send);
+		pbump(bytes_still_to_send);
+	}
+
+	// Unless an error was detected while writing to the stream, the code must
+	// have sent num bytes.
+	return traits_type::not_eof(num);
 }
 
 /**

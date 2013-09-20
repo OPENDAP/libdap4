@@ -47,6 +47,14 @@
 namespace libdap {
 
 /*
+  This code does not use a 'put back' buffer, but here's a picture of the
+  d_buffer pointer, eback(), gptr() and egptr() that can be used to see how
+  the I/O Stream library's streambuf class works. For the case with no
+  putback, just imagine it as zero and eliminate the leftmost extension. This
+  might also come in useful if the code was extended to support put back. I
+  removed that feature because I don't see it being used with our chunked
+  transmission protocol and it requires an extra call to memcopy() when data
+  are added to the internal buffer.
 
   d_buffer  d_buffer + putBack
   |         |
@@ -142,7 +150,22 @@ chunked_inbuf::underflow()
 #endif
 }
 
-#if 1
+/**
+ * @brief Read a block of data
+ * This specialization of xsgetn() reads \c num bytes and puts them in \c s
+ * first reading from the internal beffer and then from the stream. Any
+ * characters read from the last chunk that won't fit in to \c s are put
+ * in the buffer, otherwise all data are read directly into \c s, bypassing
+ * the internal buffer (and the extra copy operation that would imply). If
+ * the END chunk is found EOF is not returned and the final read of the
+ * underlying stream is not made; the next call to read(), get(), ..., will
+ * return EOF.
+ * @param s Address of a buffer to hold the data
+ * @param num Number of bytes to read
+ * @return NUmber of bytes actually transferred into \c s. Note that this
+ * number does not include the bytes read from the last chunk that won't
+ * fit into \c s so this will never return a number greater than num.
+ */
 std::streamsize
 chunked_inbuf::xsgetn(char* s, std::streamsize num)
 {
@@ -150,21 +173,18 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 
 	// if num is <= the chars currently in the buffer
 	if (num <= (egptr() - gptr())) {
-		DBG2(cerr << "xsgetn... getting chars from buffer: " << num << endl);
 		memcpy(s, gptr(), num);
 		gbump(num);
 
 		return traits_type::not_eof(num);
 	}
 
-	DBG2(cerr << "xsgetn... going to read from stream" << endl);
 	// else they asked for more
 	uint32_t bytes_left_to_read = num;
 
 	// are there any bytes in the buffer? if so grab them first
 	if (gptr() < egptr()) {
 		int bytes_to_transfer = egptr() - gptr();
-		DBG2(cerr << "xsgetn... getting chars from buffer first: " << bytes_to_transfer << endl);
 		memcpy(s, gptr(), bytes_to_transfer);
 		gbump(bytes_to_transfer);
 		s += bytes_to_transfer;
@@ -182,7 +202,6 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 	// read at least one chunk here.
 	bool done = false;
 	while (!done) {
-		DBG2(cerr << "xsgetn... getting chunks from underlying stream: " << bytes_left_to_read << endl);
 		// Get a chunk header
 	    uint32_t  header;
 	    d_is.read((char *)&header, 4);
@@ -197,20 +216,12 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 	        header = bswap_32(header);
 
 	    uint32_t chunk_size = header & CHUNK_SIZE_MASK;
-	    DBG2(cerr << "xsgetn: chunk size from header: " << chunk_size << endl);
-	    DBG2(cerr << "xsgetn: chunk type from header: " << (void*)(header & CHUNK_TYPE_MASK) << endl);
-
-	    // TODO move this down inside if
-	    // Handle the case where the buffer is not big enough to hold the incoming chunk
-	    if (chunk_size > d_buf_size) {
-	        DBG(cerr << "Chunk size too big, reallocating buffer" << endl);
-	        d_buf_size = chunk_size;
-	        m_buffer_alloc();
-	    }
-
-	    // handle error chunks here; this will
+	    // handle error chunks here
 	    if ((header & CHUNK_TYPE_MASK) == CHUNK_ERR) {
 			d_error = true;
+			// Note that d_buffer is not used to avoid calling resize if it is too
+			// small to hold the error message. At this point, there's not much reason
+			// to optimize transport efficiency, however.
 			std::vector<char> message(chunk_size);
 			d_is.read(&message[0], chunk_size);
 			d_error_message = string(&message[0], chunk_size);
@@ -221,14 +232,17 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 	    // chunk into 's' an some into the internal buffer.
 	    else if (chunk_size > bytes_left_to_read) {
 			d_is.read(s, bytes_left_to_read);
-			DBG2(cerr << "xsgetn: size read: " << d_is.gcount() << ", eof: " << d_is.eof() << ", bad: " << d_is.bad() << endl);
 			if (d_is.bad()) return traits_type::eof();
 
-			// Now slurp out the remain part of the chunk and store it in the buffer
-			int bytes_leftover = chunk_size - bytes_left_to_read;
-			// read the remain stuff in to d_buffer
+			// Now slurp up the remain part of the chunk and store it in the buffer
+			uint32_t bytes_leftover = chunk_size - bytes_left_to_read;
+			// expand the internal buffer if needed
+		    if (bytes_leftover > d_buf_size) {
+		        d_buf_size = chunk_size;
+		        m_buffer_alloc();
+		    }
+		    // read the remain stuff in to d_buffer
 			d_is.read(d_buffer, bytes_leftover);
-			DBG2(cerr << "xsgetn: size read: " << d_is.gcount() << ", eof: " << d_is.eof() << ", bad: " << d_is.bad() << endl);
 			if (d_is.bad()) return traits_type::eof();
 
 			setg(d_buffer, 										// beginning of put back area
@@ -238,8 +252,12 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 			bytes_left_to_read = 0 /* -= d_is.gcount()*/;
 		}
 		else {
+			// expand the internal buffer if needed
+		    if (chunk_size > d_buf_size) {
+		        d_buf_size = chunk_size;
+		        m_buffer_alloc();
+		    }
 			d_is.read(s, chunk_size);
-			DBG2(cerr << "xsgetn: size read: " << d_is.gcount() << ", eof: " << d_is.eof() << ", bad: " << d_is.bad() << endl);
 			if (d_is.bad()) return traits_type::eof();
 			bytes_left_to_read -= chunk_size /*d_is.gcount()*/;
 			s += chunk_size;
@@ -258,6 +276,7 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 	    case CHUNK_ERR:
 			// this is pretty much the end of the show... The error message has
 	    	// already been read above
+
 			return traits_type::eof();
 	        break;
 	    }
@@ -265,8 +284,23 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 
 	return traits_type::not_eof(num-bytes_left_to_read);
 }
-#endif
-#if 0
+
+/**
+ * @brief Read a chunk
+ * Normally the chunked nature of a chunked_istream/chunked_inbuf is
+ * hidden from the caller. This method provides a way to get one chunk
+ * from the stream by forcing its read and returning the size. A subsequent
+ * call to read() for that number of bytes will return all of the data in
+ * the chunk. If there is any data in the chunk_inbuf object's buffer, it is
+ * lost.
+ *
+ * @todo If this is going to be used after regular calls to read() or get()
+ * are used, add a method to return the number of bytes remaining in the buffer.
+ * That will enable a caller to read those data before this method erases them.
+ *
+ * @return The number of bytes read, which is exactly the size of the
+ * next chunk in the stream. Returns EOF on error.
+ */
 std::streambuf::int_type
 chunked_inbuf::read_next_chunk()
 {
@@ -283,7 +317,8 @@ chunked_inbuf::read_next_chunk()
 
 	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 
-	DBG2(cerr << "read_next_chunk: chunk size from header: " << chunk_size << endl); DBG2(cerr << "read_next_chunk: chunk type from header: " << (void*)(header & CHUNK_TYPE_MASK) << endl);
+	DBG2(cerr << "read_next_chunk: chunk size from header: " << chunk_size << endl);
+	DBG2(cerr << "read_next_chunk: chunk type from header: " << (void*)(header & CHUNK_TYPE_MASK) << endl);
 
 	// Handle the case where the buffer is not big enough to hold the incoming chunk
 	if (chunk_size > d_buf_size) {
@@ -310,7 +345,7 @@ chunked_inbuf::read_next_chunk()
 	case CHUNK_END:
 		DBG(cerr << "Found end chunk" << endl);
 	case CHUNK_DATA:
-		return chunk_size;
+		return traits_type::not_eof(chunk_size);
 
 	case CHUNK_ERR:
 		// this is pretty much the end of the show... Assume the buffer/chunk holds
@@ -322,5 +357,5 @@ chunked_inbuf::read_next_chunk()
 
 	return traits_type::eof();	// Can never get here; this quiets g++
 }
-#endif
+
 }
