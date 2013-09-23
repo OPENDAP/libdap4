@@ -88,7 +88,8 @@ public:
         for (; remaining--; ++pCur)
             _crc = ( _crc >> 8 ) ^ kCrc32Table[(_crc ^ *pCur) & 0xff];
     }
-    const checksum GetCrc32() { return ~_crc; }
+
+    checksum GetCrc32() const { return ~_crc; }
 
 private:
     uint32_t _crc;

@@ -244,19 +244,20 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, b
         (*g++)->serialize(m, dmr, eval, filter);
 
     // Specialize how the top-level variables in any Group are sent; include
-    // a checksum for them. Variables not at the top-level of a group do not get
-    // checksums.
-    // FIXME THis code is broken because a subset might make an interior set of
-    // variables the 'top-level' but the code below will print only one crc32 for
-    // them all.
+    // a checksum for them. A subset operation might make an interior set of
+    // variables, but the parent structure will still be present and the checksum
+    // will be computed for that structure. In other words, DAP4 does not try
+    // to sort out which variables are the 'real' top-level variables and instead
+    // simply computes the CRC for whatever appears as a variable in the root
+    // group.
 	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
 		// Only send the stuff in the current subset.
 		if ((*i)->send_p()) {
-#if 0
+#if 1
 			m.reset_checksum();
 #endif
 			(*i)->serialize(m, dmr, eval, filter);
-#if 0
+#if 1
 			DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << (*i)->name() << endl);
 			m.put_checksum();
 #endif
@@ -274,7 +275,7 @@ void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 	// their checksum and store the value in a magic attribute of the variable
 	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
 		(*i)->deserialize(um, dmr);
-#if 0
+#if 1
 		D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
 		string crc = um.get_checksum_str();
 		a->add_value(crc);
