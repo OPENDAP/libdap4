@@ -26,7 +26,7 @@ AM_LFLAGS = -8
 #     export CXXFLAGS='...'; ./configure --disable-shared
 # or ./configure --enable-developer --disable-shared
 # the --disable-shared is not required, but it seems to help with debuggers.
-CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align 
+CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align 
 # -Werror There are some warnings in this code that are here to stay...
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 

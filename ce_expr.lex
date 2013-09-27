@@ -81,6 +81,7 @@ static void store_op(int op);
 
 %option noyywrap
 %option nounput
+%option noinput
 %option 8bit
 %option prefix="ce_expr"
 %option outfile="lex.ce_expr.cc"

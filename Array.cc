@@ -422,8 +422,7 @@ Array::dimensions(bool /*constrained*/)
     return dim;
 #endif
 
-    // guard against the case where begin and end are hosed.
-    return (unsigned int)((_shape.begin() < _shape.end()) ? _shape.end() - _shape.begin(): 0);
+    return _shape.end() - _shape.begin();
 }
 
 /** Return the size of the array dimension referred to by <i>i</i>.
@@ -555,9 +554,12 @@ Array::dimension_name(Dim_iter i)
     return (*i).name;
 }
 
-/** Returns the number of bytes needed to hold the array.
-
-    @brief Returns the width of the data, in bytes. */
+/**
+ * @brief Returns the width of the data, in bytes.
+ * @param constrained if true, return the size of the array in bytes taking into
+ * account the current constraints on various dimensions. False by default.
+ * @return The number of bytes needed to store the array values.
+ */
 unsigned int Array::width(bool constrained)
 {
 

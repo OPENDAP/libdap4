@@ -1180,8 +1180,10 @@ void DDXParser::intern_stream(istream &in, DDS *dest_dds, string &cid, const str
 
         	in.getline(chars, size);	// chars has size+1 elements
         	res = in.gcount();
-        	chars[res-1] = '\n';
-        	chars[res] = '\0';
+        	if (res > 0) {
+        		chars[res-1] = '\n';
+        		chars[res] = '\0';
+        	}
         }
 
         // This call ends the parse: The fourth argument of xmlParseChunk is
