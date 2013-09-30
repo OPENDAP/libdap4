@@ -211,9 +211,9 @@ Grid::set_in_selection(bool state)
 
     BaseType::set_in_selection(state);
 }
-
+#if 0
 unsigned int
-Grid::width()
+Grid::width(bool)
 {
     unsigned int sz = d_array_var->width();
 
@@ -223,7 +223,7 @@ Grid::width()
 
     return sz;
 }
-
+#endif
 /** This version of width simply returns the same thing as width() for simple
     types and Arrays. For Structure it returns the total size if constrained
     is false, or the size of the elements in the current projection if true.

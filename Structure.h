@@ -119,7 +119,7 @@ public:
 #endif
     virtual void set_leaf_sequence(int level = 1);
 #if 0
-    virtual unsigned int width();
+    virtual unsigned int width(bool constrained = false);
     virtual unsigned int width(bool constrained);
 #endif
 #if 0

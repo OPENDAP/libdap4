@@ -74,7 +74,7 @@ public:
 
     Byte &operator=(const Byte &rhs);
 
-    virtual unsigned int width();
+    virtual unsigned int width(bool constrained = false);
 
     virtual BaseType *ptr_duplicate();
 

@@ -123,7 +123,7 @@ Str::length()
 }
 
 unsigned int
-Str::width()
+Str::width(bool)
 {
     return sizeof(string);
 }

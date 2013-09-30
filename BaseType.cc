@@ -1204,6 +1204,7 @@ BaseType::ops(BaseType *, int)
     throw InternalErr(__FILE__, __LINE__, "Unimplemented operator.");
 }
 
+// FIXME update this comment if the removal of width() works
 /** This version of width simply returns the same thing as width() for simple
     types and Arrays. For Constructors, it needs to be specialized. This is
     partly due to an inconsistency in the way Vector::width() is implemented.
@@ -1214,9 +1215,12 @@ BaseType::ops(BaseType *, int)
     @return  The number of bytes used by the variable.
  */
 unsigned int
-BaseType::width(bool /*constrained*/)
+BaseType::width(bool /* constrained */)
 {
-	return width();
+	throw InternalErr(__FILE__, __LINE__, "not implemented");
+#if 0
+	return width(constrained);
+#endif
 }
 
 } // namespace libdap

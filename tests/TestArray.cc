@@ -156,10 +156,10 @@ void TestArray::constrained_matrix(char *constrained_array)
     Dim_iter d = dim_begin();
     while (d != dim_end())
         unconstrained_size *= dimension_size(d++, false);
-    char *whole_array = new char[unconstrained_size * width()];
+    char *whole_array = new char[unconstrained_size * width(true)];
     DBG(cerr << "unconstrained size: " << unconstrained_size << endl);
 
-    int elem_width = var()->width(); // size of an element
+    int elem_width = var()->width(true); // size of an element
     char *elem_val = new char[elem_width];
 
     for (int i = 0; i < unconstrained_size; ++i) {
@@ -287,7 +287,7 @@ bool TestArray::read()
         case dods_float64_c: {
 
             //char *tmp = new char[width()];
-            vector<char> tmp(width());
+            vector<char> tmp(width(true));
 
             unsigned int elem_wid = var()->width(); // size of an element
             char *elem_val = 0; // Null forces buf2val to allocate memory
@@ -333,7 +333,7 @@ bool TestArray::read()
         case dods_str_c:
         case dods_url_c: {
             // char *tmp = new char[width()];
-            vector<char> tmp(width());
+            vector<char> tmp(width(true));
             unsigned int elem_wid = var()->width(); // size of an element
             char *elem_val = 0; // Null forces buf2val to allocate memory
 

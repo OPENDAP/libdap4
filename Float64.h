@@ -74,7 +74,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual unsigned int width();
+    virtual unsigned int width(bool constrained = false);
 
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
 			   Marshaller &m, bool ce_eval = true);

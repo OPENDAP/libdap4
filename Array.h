@@ -173,7 +173,7 @@ public:
     virtual void clear_constraint();
 
     virtual void update_length(int size);
-    virtual unsigned int width(bool constrained = true);
+    virtual unsigned int width(bool constrained = false);
 
     Dim_iter dim_begin() ;
     Dim_iter dim_end() ;

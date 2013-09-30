@@ -87,7 +87,7 @@ private:
     vector<BaseType *> _vec; // array for other data
 
     // the number of elements we have allocated memory to store.
-    // This should be either the sizeof(buf)/width() for cardinal data
+    // This should be either the sizeof(buf)/width(bool constrained = false) for cardinal data
     // or the capacity of d_str for strings or capacity of _vec.
     unsigned int _capacity;
 
@@ -121,7 +121,7 @@ public:
 
     virtual void set_read_p(bool state);
 
-    virtual unsigned int width();
+    virtual unsigned int width(bool constrained = false);
 
     virtual int length() const;
 

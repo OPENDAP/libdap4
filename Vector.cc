@@ -500,14 +500,14 @@ BaseType *Vector::var(unsigned int i)
  element.
 
  @brief Returns the width of the data, in bytes. */
-unsigned int Vector::width()
+unsigned int Vector::width(bool constrained)
 {
     // Jose Garcia
     if (!_var) {
         throw InternalErr(__FILE__, __LINE__, "Cannot get width since *this* object is not holding data.");
     }
 
-    return length() * _var->width();
+    return length() * _var->width(constrained);
 }
 
 // Returns: the number of elements in the vector.
@@ -855,8 +855,8 @@ unsigned int Vector::val2buf(void *val, bool reuse)
         case dods_uint32_c:
         case dods_float32_c:
         case dods_float64_c: {
-            // width() returns the size given the constraint
-            unsigned int array_wid = width();
+            // width(true) returns the size given the constraint
+            unsigned int array_wid = width(true);
             if (_buf && !reuse) {
                 m_delete_cardinal_data_buffer();
             }
@@ -886,7 +886,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
 
     }
 
-    return width();
+    return width(true);
 }
 
 /** Copies data from the Vector buffer.  This function assumes that
@@ -926,7 +926,7 @@ unsigned int Vector::buf2val(void **val)
     if (!val)
         throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
 
-    unsigned int wid = static_cast<unsigned int> (width());
+    unsigned int wid = static_cast<unsigned int> (width(true /* constrained */));
     // This is the width computed using length(). The
     // length() property is changed when a projection
     // constraint is applied. Thus this is the number of
@@ -1197,7 +1197,7 @@ unsigned int Vector::set_value_slice_from_row_major_vector(const Vector& rowMajo
             // memcpy the data into this, taking care to do ptr arithmetic on bytes and not sizeof(element)
             int varWidth = _var->width();
             char* pFromBuf = rowMajorData._buf;
-            int numBytesToCopy = rowMajorData.width();
+            int numBytesToCopy = rowMajorData.width(true);
             char* pIntoBuf = _buf + (startElement * varWidth);
             memcpy(pIntoBuf, pFromBuf, numBytesToCopy);
         }
@@ -1633,9 +1633,9 @@ void Vector::value(vector<string> &b) const
  buffer's pointer. The caller must delete the storage. */
 void *Vector::value()
 {
-    void *buffer = new char[width()];
+    void *buffer = new char[width(true)];
 
-    memcpy(buffer, _buf, width());
+    memcpy(buffer, _buf, width(true));
 
     return buffer;
 }

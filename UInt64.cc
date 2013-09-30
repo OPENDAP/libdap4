@@ -101,7 +101,7 @@ UInt64::operator=(const UInt64 &rhs)
 }
 
 unsigned int
-UInt64::width()
+UInt64::width(bool)
 {
     return sizeof(dods_uint64);
 }
