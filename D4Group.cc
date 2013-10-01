@@ -302,13 +302,13 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
     }
 
-    // dims
-    if (!dims()->empty())
-        dims()->print_dap4(xml);
-
     // enums
     if (!enum_defs()->empty())
         enum_defs()->print_dap4(xml);
+
+    // dims
+    if (!dims()->empty())
+        dims()->print_dap4(xml);
 
     // groups
     groupsIter g = d_groups.begin();
