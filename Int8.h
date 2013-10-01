@@ -60,7 +60,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual unsigned int width();
+    virtual unsigned int width(bool constrained = false);
 
 #if 0
     // DAP2

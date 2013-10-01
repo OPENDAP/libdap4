@@ -12,7 +12,7 @@ endif
 
 # These are not used by automake but are often useful for certain types of
 # debugging. 
-CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align
+CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 check_PROGRAMS = das-test dds-test expr-test 

@@ -203,7 +203,7 @@ public:
     virtual void clear_constraint(); // deprecated
 
     virtual void update_length(int size = 0); // should be used internally only
-    virtual unsigned int width(bool constrained = true);
+    virtual unsigned int width(bool constrained = false);
 
     Dim_iter dim_begin() ;
     Dim_iter dim_end() ;

@@ -51,7 +51,7 @@ public:
 
 	try
 	{
-	    int w = ar.width() ;
+	    int w = ar.width(true) ;
 	    cerr << "w = " << w << endl;
 	    cerr << "(int)bt->width() " << (int)bt->width() << endl;
 	    cerr << "L " << l << endl;

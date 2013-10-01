@@ -117,7 +117,7 @@ Byte & Byte::operator=(const Byte & rhs)
     return *this;
 }
 
-unsigned int Byte::width()
+unsigned int Byte::width(bool)
 {
     return sizeof(dods_byte);
 }

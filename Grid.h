@@ -152,6 +152,8 @@ public:
     BaseType *array_var();
     Array *get_array();
 
+    // virtual unsigned int width(bool constrained = false);
+
     virtual int components(bool constrained = false);
 
     virtual bool projection_yields_grid();

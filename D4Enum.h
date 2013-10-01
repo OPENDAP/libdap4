@@ -170,7 +170,7 @@ public:
      * @note This version of the method works for scalar Enums only.
      * @return The number of bytes used by a value.
      */
-    virtual unsigned int width() {
+    virtual unsigned int width(bool /* constrained */ = false) {
     	return sizeof(d_buf); //return m_type_width();
     }
 

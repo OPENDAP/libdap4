@@ -77,7 +77,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual unsigned int width();
+    virtual unsigned int width(bool constrained = false);
 
     // Return the length of the stored string or zero if no string has been
     // stored in the instance's internal buffer.

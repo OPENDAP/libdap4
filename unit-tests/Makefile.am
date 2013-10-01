@@ -23,7 +23,7 @@ endif
 
 # These are not used by automake but are often useful for certain types of
 # debugging. Set CXXFLAGS to this in the nightly build using export ...
-CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align
+CXXFLAGS_DEBUG = -g3 -O0 -Wall -Wcast-align
 
 if USE_VALGRIND
 TESTS_ENVIRONMENT=valgrind --quiet --trace-children=yes --error-exitcode=1 \

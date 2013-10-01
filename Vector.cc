@@ -504,14 +504,15 @@ BaseType *Vector::var(unsigned int i)
  element.
 
  @brief Returns the width of the data, in bytes. */
-unsigned int Vector::width()
+unsigned int Vector::width(bool constrained)
 {
     // Jose Garcia
-    if (!d_proto) {
+	// TODO Use assert.
+	if (!d_proto) {
         throw InternalErr(__FILE__, __LINE__, "Cannot get width since *this* object is not holding data.");
     }
 
-    return length() * d_proto->width();
+    return length() * d_proto->width(constrained);
 }
 
 /** Returns the number of elements in the vector. Note that some
@@ -873,17 +874,19 @@ unsigned int Vector::val2buf(void *val, bool reuse)
                 m_delete_cardinal_data_buffer();
 
             // First time or no reuse (free'd above)
+            // TODO Check that length() returns the constrained size
             if (!d_buf)
                 m_create_cardinal_data_buffer_for_type(length());
 
-            // width() returns the size given the constraint
-            memcpy(d_buf, val, width());
+            // width(true) returns the size given the constraint
+            memcpy(d_buf, val, width(true));
             break;
 
         case dods_str_c:
         case dods_url_c:
             // Assume val points to an array of C++ string objects. Copy
             // them into the vector<string> field of this object.
+        	// TODO d_length or length() here?
             d_str.resize(d_length);
             d_capacity = d_length;
             for (int i = 0; i < d_length; ++i)
@@ -896,7 +899,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
 
     }
 
-    return width();
+    return width(true);
 }
 
 /** Copies data from the Vector buffer.  This function assumes that
@@ -936,7 +939,8 @@ unsigned int Vector::buf2val(void **val)
     if (!val)
         throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
 
-    //unsigned int wid = static_cast<unsigned int> (width());
+    unsigned int wid = static_cast<unsigned int> (width(true /* constrained */));
+
     // This is the width computed using length(). The
     // length() property is changed when a projection
     // constraint is applied. Thus this is the number of
@@ -957,9 +961,9 @@ unsigned int Vector::buf2val(void **val)
             if (!d_buf)
                 throw InternalErr(__FILE__, __LINE__, "Vector::buf2val: Logic error: called when cardinal type data buffer was empty!");
             if (!*val)
-                *val = new char[width()];
+                *val = new char[wid];
 
-            memcpy(*val, d_buf, width());
+            memcpy(*val, d_buf, wid);
             return width();
             break;
 
@@ -1235,7 +1239,7 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 			// memcpy the data into this, taking care to do ptr arithmetic on bytes and not sizeof(element)
 			int varWidth = d_proto->width();
 			char* pFromBuf = rowMajorData.d_buf;
-			int numBytesToCopy = rowMajorData.width();
+			int numBytesToCopy = rowMajorData.width(true);
 			char* pIntoBuf = d_buf + (startElement * varWidth);
 			memcpy(pIntoBuf, pFromBuf, numBytesToCopy);
 			break;
@@ -1782,9 +1786,9 @@ void Vector::value(vector<string> &b) const
  buffer's pointer. The caller must delete the storage. */
 void *Vector::value()
 {
-    void *buffer = new char[width()];
+    void *buffer = new char[width(true)];
 
-    memcpy(buffer, d_buf, width());
+    memcpy(buffer, d_buf, width(true));
 
     return buffer;
 }

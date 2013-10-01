@@ -125,7 +125,7 @@ Int64::operator=(const Int64 &rhs)
 }
 
 unsigned int
-Int64::width()
+Int64::width(bool)
 {
     return sizeof(dods_int64);
 }

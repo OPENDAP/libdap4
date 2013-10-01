@@ -81,6 +81,7 @@ static void store_op(int op);
 
 %option noyywrap
 %option nounput
+%option noinput
 %option 8bit
 %option prefix="ce_expr"
 %option outfile="lex.ce_expr.cc"
@@ -116,13 +117,13 @@ SCAN_LESS	    <
 SCAN_LESS_EQL	<=
 SCAN_REGEXP	    =~
 
-SCAN_HASH_BYTE    #Byte
-SCAN_HASH_INT16   #Int16
-SCAN_HASH_UINT16  #UInt16
-SCAN_HASH_INT32   #Int32
-SCAN_HASH_UINT32  #UInt32
-SCAN_HASH_FLOAT32 #Float32
-SCAN_HASH_FLOAT64 #Float64
+SCAN_HASH_BYTE    $Byte
+SCAN_HASH_INT16   $Int16
+SCAN_HASH_UINT16  $UInt16
+SCAN_HASH_INT32   $Int32
+SCAN_HASH_UINT32  $UInt32
+SCAN_HASH_FLOAT32 $Float32
+SCAN_HASH_FLOAT64 $Float64
 
 SCAN_STAR       \*
 

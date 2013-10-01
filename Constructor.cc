@@ -167,7 +167,8 @@ Constructor::set_read_p(bool state)
     BaseType::set_read_p(state);
 }
 
-// TODO Recode to use width(bool). But see comments in BaseType.h
+#if 0
+// TODO Recode to use width(bool). Bur see comments in BaseType.h
 unsigned int
 Constructor::width()
 {
@@ -179,7 +180,7 @@ Constructor::width()
 
     return sz;
 }
-
+#endif
 /** This version of width simply returns the same thing as width() for simple
     types and Arrays. For Structure it returns the total size if constrained
     is false, or the size of the elements in the current projection if true.

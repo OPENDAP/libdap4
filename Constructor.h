@@ -70,9 +70,10 @@ public:
     virtual void set_read_p(bool state);
 
     /// @deprecated
-    virtual unsigned int width();
+    virtual unsigned int width(bool constrained = false);
+#if 0
     virtual unsigned int width(bool constrained);
-
+#endif
     // TODO Rewrite these methods to use the back pointers and keep this
     // for older code.
     /// btp_stack no longer needed; use back pointers (BaseType::get_parent())

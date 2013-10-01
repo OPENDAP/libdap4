@@ -276,11 +276,11 @@ public:
 
     /** @name Abstract Methods */
     //@{
-
+#if 0
     /** Return the number of bytes that are required to hold the
 	instance's value. In the case of simple types such as Int32,
 	this is the size of one Int32 (four bytes). For a String or
-	Url type, <tt>width()</tt> returns the number of bytes needed
+	Url type, <tt>width(bool constrained = false)</tt> returns the number of bytes needed
 	for a <tt>String *</tt> variable, not the bytes needed for all
 	the characters, since that value cannot be determined from
 	type information alone. For Structure, and other constructor
@@ -288,8 +288,9 @@ public:
 	pointers to the C++ objects.
 
 	@brief Returns the size of the class instance data. */
-    virtual unsigned int width() = 0;
-    virtual unsigned int width(bool constrained);
+    virtual unsigned int width(bool constrained = false) = 0;
+#endif
+    virtual unsigned int width(bool constrained = false);
 
     /** Reads the class data into the memory referenced by <i>val</i>.
 	The caller should either allocate enough storage to <i>val</i>
