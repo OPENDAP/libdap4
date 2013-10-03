@@ -233,9 +233,19 @@ public:
         compare_dmr_round_trip_string_version("/D4-xml/DMR_6.1.xml", "/D4-xml/DMR_6.1_baseline.xml");
     }
 
-    void test_array()
+    void test_array_1()
     {
         compare_dmr_round_trip_string_version("/D4-xml/DMR_7.xml", "/D4-xml/DMR_7_baseline.xml");
+    }
+
+    void test_array_2()
+    {
+        compare_dmr_round_trip_string_version("/D4-xml/DMR_7.1.xml", "/D4-xml/DMR_7.1_baseline.xml");
+    }
+
+    void test_array_3()
+    {
+        compare_dmr_round_trip_string_version("/D4-xml/DMR_7.2.xml", "/D4-xml/DMR_7.2_baseline.xml");
     }
 
     CPPUNIT_TEST_SUITE( D4ParserSax2Test );
@@ -263,7 +273,9 @@ public:
     CPPUNIT_TEST(test_structure_with_attributes_def_string_version);
     CPPUNIT_TEST(test_array_var_def4_string_version);
 
-    CPPUNIT_TEST(test_array);
+    CPPUNIT_TEST(test_array_1);
+    CPPUNIT_TEST(test_array_2);
+    CPPUNIT_TEST(test_array_3);
 
     CPPUNIT_TEST_SUITE_END();
 };
