@@ -362,6 +362,11 @@ void D4StreamMarshaller::put_length_prefix(dods_uint64 val)
     }
 }
 
+/**
+ * @brief Write a fixed size vector
+ * @param val Pointer to the data
+ * @param num Number of bytes to write
+ */
 void D4StreamMarshaller::put_vector(char *val, unsigned int num)
 {
     checksum_update(val, num);
@@ -432,6 +437,13 @@ void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int widt
     xdr_destroy(&xdr);
 }
 
+/**
+ * @brief Write a fixed size vector
+ * @param val Pointer to the data
+ * @param num Number of elements
+ * @param width Size of a single element
+ * @param type DAP variable type; used to handle float32 and float64 types correctly
+ */
 void D4StreamMarshaller::put_vector(char *val, unsigned int num, int width, Type type)
 {
     checksum_update(val, num * width);

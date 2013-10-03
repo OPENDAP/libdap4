@@ -130,9 +130,11 @@ public:
     virtual void set_length(int l);
 
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
-			   Marshaller &m, bool ce_eval = true);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);

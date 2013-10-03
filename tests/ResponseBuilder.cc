@@ -74,7 +74,11 @@
 
 #include "ResponseBuilder.h"
 
-#define CRLF "\r\n"             // Change here, expr-test.cc
+const std::string CRLF = "\r\n";             // Change here, expr-test.cc
+const int chunk_size = 4096;
+const int8_t big_endian = 0x01;
+const int8_t little_endian = 0x00;
+
 using namespace std;
 using namespace libdap;
 
@@ -330,11 +334,11 @@ void ResponseBuilder::dataset_constraint_dmr(ostream &out, DMR &dmr, ConstraintE
 
 
     // the byte order info precedes the start of chunking
-    char byte_order = is_host_big_endian() ? 0x01 : 0x00; // is_host_big_endian is in util.cc
+    char byte_order = is_host_big_endian() ? big_endian : little_endian; // is_host_big_endian is in util.cc
     out << byte_order << flush;
 
     // now make the chunked output stream
-    chunked_ostream cos(out, 1024);
+    chunked_ostream cos(out, chunk_size);
     // using flush means that the DMR and CRLF are in the first chunk.
     cos << xml.get_doc() << CRLF << flush;
 

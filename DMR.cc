@@ -83,7 +83,8 @@ DMR::m_duplicate(const DMR &dmr)
 
     d_max_response_size = dmr.d_max_response_size;
 
-    d_root = static_cast<D4Group*>(dmr.d_factory->NewVariable(dods_group_c, dmr.d_root->name())); // new D4Group(*dmr.d_root); // Deep copy
+    // TODO Deep copy, using ptr_duplicate() instead?
+    d_root = static_cast<D4Group*>(dmr.d_factory->NewVariable(dods_group_c, dmr.d_root->name()));
 }
 
 /**
@@ -160,7 +161,7 @@ DMR::root()
  * @param v The version string.
  */
 void
-DMR::set_dap_version(const string &v /* = "2.0" */)
+DMR::set_dap_version(const string &v)
 {
     istringstream iss(v);
 
@@ -239,8 +240,7 @@ DMR::print_dap4(XMLWriter &xml, bool constrained)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:schemaLocation");
 #endif
 
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns",
-            (const xmlChar*) get_namespace().c_str()) < 0)
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns", (const xmlChar*) get_namespace().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
 
     if (!request_xml_base().empty()) {

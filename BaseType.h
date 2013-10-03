@@ -254,6 +254,8 @@ public:
 
     virtual bool ops(BaseType *b, int op);
 
+    virtual unsigned int width(bool constrained = false);
+
     virtual void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
@@ -290,8 +292,6 @@ public:
 	@brief Returns the size of the class instance data. */
     virtual unsigned int width(bool constrained = false) = 0;
 #endif
-    virtual unsigned int width(bool constrained = false);
-
     /** Reads the class data into the memory referenced by <i>val</i>.
 	The caller should either allocate enough storage to <i>val</i>
 	to hold the class data or set \c *val to null. If <i>*val</i>

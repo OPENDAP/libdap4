@@ -99,20 +99,22 @@ BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
         case dods_structure_c:
             return NewStructure(name);
 
-            // FIXME Array and Sequence are back in. jhrg 8/15/13
-        case dods_array_c:
-            throw InternalErr(__FILE__, __LINE__, "Array is not part of DAP4.");
         case dods_sequence_c:
-            throw InternalErr(__FILE__, __LINE__, "Sequence is not part of DAP4.");
+            throw InternalErr(__FILE__, __LINE__, "Not yet implemented for DAP4.");
 #if 0
         case dods_enum_c:
             return  NewEnum(name);
 #endif
+#if 0
+            // removed jhrg 10/2/13
         case dods_array4_c:
-            throw InternalErr(__FILE__, __LINE__, "Array4 not impl yet.");
+#endif
+        case dods_array_c:
+            return NewArray(name);
 
         case dods_group_c:
             return NewGroup(name);
+
         default:
             throw InternalErr(__FILE__, __LINE__, "Unimplemented type in DAP4");
     }
@@ -205,7 +207,8 @@ D4BaseTypeFactory::NewUrl(const string &n) const
 Url *
 D4BaseTypeFactory::NewURL(const string &n) const
 {
-    return new Url(n);}
+    return new Url(n);
+}
 
 #if 0
 /** For an Enum, both it's name and type must be know before use. This
@@ -222,6 +225,12 @@ D4BaseTypeFactory::NewEnum(const string &name, Type type) const
     return new D4Enum(name, type);
 }
 #endif
+
+Array *
+D4BaseTypeFactory::NewArray(const string &n, BaseType *v) const
+{
+	return new Array(n, v, true /* is_dap4 */);
+}
 
 Structure *
 D4BaseTypeFactory::NewStructure(const string &n) const

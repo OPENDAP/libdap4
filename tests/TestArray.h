@@ -49,8 +49,8 @@ class TestArray: public Array, public TestCommon {
 			     unsigned int dims, unsigned int shape[]);
 
 public:
-    TestArray(const string &n, BaseType *v);
-    TestArray(const string &n, const string &d, BaseType *v);
+    TestArray(const string &n, BaseType *v, bool is_dap4 = false);
+    TestArray(const string &n, const string &d, BaseType *v, bool is_dap4 = false);
     TestArray(const TestArray &rhs);
 
     virtual ~TestArray();

@@ -209,7 +209,7 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
 		return false;
 	}
 	if (!(check_attribute("size") || check_attribute("name"))) {
-		dmr_error(this, "Either 'size' and 'name' must be used in a Dim element.");
+		dmr_error(this, "Either 'size' or 'name' must be used in a Dim element.");
 		return false;
 	}
 
@@ -218,7 +218,9 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
 		BaseType *b = top_basetype();
 		pop_basetype();
 
-		Array *a = new Array(b->name(), 0, true /* is_dap4 */);
+		Array *a = static_cast<Array*>(dmr()->factory()->NewVariable(dods_array_c, b->name()));
+		// Array *a = new Array(b->name(), 0, true /* is_dap4 */);
+		a->set_is_dap4(true);	// TODO this will be redundant if the factory sets it
 		a->add_var_nocopy(b);
 		a->set_attributes_nocopy(b->attributes());
 		// trick: instead of popping b's attributes, copying them and then pushing
@@ -231,7 +233,7 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
 
 	assert(top_basetype()->is_vector_type());
 
-	// FIXME Array --> D4Array so that the dimension sizes can be uint64s?
+	// FIXME Array --> D4Array so that the dimension sizes can be int64s?
 	// unsigned long long size = strtoul(xml_attrs["size"].value.c_str(), 0, 0);
 	Array *a = static_cast<Array*>(top_basetype());
     if (check_attribute("size")) {
@@ -529,7 +531,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
                 parser->dmr()->set_dap_version(parser->xml_attrs["dapVersion"].value);
 
             if (parser->check_attribute("dmrVersion"))
-                parser->dmr()->set_dap_version(parser->xml_attrs["dmrVersion"].value);
+                parser->dmr()->set_dmr_version(parser->xml_attrs["dmrVersion"].value);
 
             if (parser->check_attribute("base"))
                 parser->dmr()->set_request_xml_base(parser->xml_attrs["base"].value);
@@ -538,7 +540,6 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
                 parser->dmr()->set_namespace(parser->root_ns);
 
             // Push the root Group on the stack
-            // parser->dmr()->set_root(static_cast<D4Group*>(parser->dmr()->factory()->NewVariable(dods_group_c, "/")));
             parser->push_group(parser->dmr()->root());
 
             parser->push_state(inside_dataset);
@@ -645,17 +646,6 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             // No content; nothing to do
             break;
 
-        case inside_simple_type:
-            if (parser->process_attribute(localname, attributes, nb_attributes))
-                break;
-            else if (parser->process_dimension(localname, attributes, nb_attributes)) {
-            	parser->push_state(inside_dim);
-            	break;
-            }
-            else
-                dmr_error(parser, "Expected an 'Attribute' or 'Dim' element; found '%s' instead.", localname);
-            break;
-
         case inside_dim_def:
             // No content; nothing to do
             break;
@@ -666,6 +656,17 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
 
         case inside_dim:
             // No content.
+            break;
+
+        case inside_simple_type:
+            if (parser->process_attribute(localname, attributes, nb_attributes))
+                break;
+            else if (parser->process_dimension(localname, attributes, nb_attributes)) {
+            	parser->push_state(inside_dim);
+            	break;
+            }
+            else
+                dmr_error(parser, "Expected an 'Attribute' or 'Dim' element; found '%s' instead.", localname);
             break;
 
         case inside_structure:
@@ -1147,23 +1148,6 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
         throw InternalErr(__FILE__, __LINE__, "DMR object is null");
 
     d_dmr = dest_dmr; // dump values here
-#if 0
-    xmlSAXHandler ddx_sax_parser;
-    memset(&ddx_sax_parser, 0, sizeof(xmlSAXHandler));
-
-    ddx_sax_parser.getEntity = &D4ParserSax2::dmr_get_entity;
-    ddx_sax_parser.startDocument = &D4ParserSax2::dmr_start_document;
-    ddx_sax_parser.endDocument = &D4ParserSax2::dmr_end_document;
-    ddx_sax_parser.characters = &D4ParserSax2::dmr_get_characters;
-    ddx_sax_parser.ignorableWhitespace = &D4ParserSax2::dmr_ignoreable_whitespace;
-    ddx_sax_parser.cdataBlock = &D4ParserSax2::dmr_get_cdata;
-    ddx_sax_parser.warning = &D4ParserSax2::dmr_error;
-    ddx_sax_parser.error = &D4ParserSax2::dmr_error;
-    ddx_sax_parser.fatalError = &D4ParserSax2::dmr_fatal_error;
-    ddx_sax_parser.initialized = XML_SAX2_MAGIC;
-    ddx_sax_parser.startElementNs = &D4ParserSax2::dmr_start_element;
-    ddx_sax_parser.endElementNs = &D4ParserSax2::dmr_end_element;
-#endif
 
     const int size = 1024;
     char chars[size];
@@ -1181,7 +1165,6 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 
     f.getline(chars, size);
     while ((f.gcount() > 0) && (get_state() != parser_end)) {
-            //&& (!boundary_test || strncmp(chars, boundary_line.c_str(), boundary_line.length()) != 0)) {
         if (debug) cerr << "line: (" << line++ << "): '" << chars << "'" << endl;
         xmlParseChunk(context, chars, f.gcount() - 1, 0);
         f.getline(chars, size);
@@ -1234,7 +1217,8 @@ void D4ParserSax2::intern(const char *buffer, int size, DMR *dest_dmr, bool debu
     push_state(parser_start);
     context = xmlCreatePushParserCtxt(&ddx_sax_parser, this, buffer, size, "stream");
     context->validate = true;
-    push_state(parser_start);
+    //push_state(parser_start);
+    //xmlParseChunk(context, buffer, size, 0);
 
     // This call ends the parse.
     xmlParseChunk(context, buffer, 0, 1/*terminate*/);

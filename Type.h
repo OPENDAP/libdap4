@@ -117,7 +117,10 @@ enum Type {
     // jhrg 8/15/13
     dods_url4_c,
 #endif
+#if 0
+    // Use the is_dap4 member of BaseType instead. jhrg 10/2/13
     dods_array4_c,
+#endif
     dods_enum_c,
     dods_opaque_c,
     dods_group_c

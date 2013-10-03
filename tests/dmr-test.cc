@@ -66,21 +66,21 @@ DMR *
 test_dap4_parser(const string &name, bool debug, bool print)
 {
     D4TestTypeFactory *factory = new D4TestTypeFactory;
-    DMR *table = new DMR(factory, path_to_filename(name));
+    DMR *dataset = new DMR(factory, path_to_filename(name));
 
     try {
         D4ParserSax2 parser;
         if (name == "-") {
-            parser.intern(cin, table, debug);
+            parser.intern(cin, dataset, debug);
         }
         else {
             fstream in(name.c_str(), ios_base::in);
-            parser.intern(in, table, debug);
+            parser.intern(in, dataset, debug);
         }
     }
     catch(...) {
         delete factory;
-        delete table;
+        delete dataset;
         throw;
     }
 
@@ -88,11 +88,11 @@ test_dap4_parser(const string &name, bool debug, bool print)
 
     if (print) {
         XMLWriter xml("    ");
-        table->print_dap4(xml, false);
+        dataset->print_dap4(xml, false);
         cout << xml.get_doc() << endl;
     }
 
-    return table;
+    return dataset;
 }
 
 /**
@@ -115,84 +115,36 @@ set_series_values(DMR *dmr, bool state)
  * constraint. The persistent representation is written to a file. The file
  * is name '<name>_data.bin'.
  *
- * @param name The name of the XML file that holds the dataset DMR
- * @param debug Turn on parser debugging
- * @param print Use libdap to print the in-memory DMR/DDS object
- * @param constraint The constraint expression to apply.
- * @param series_values Use the Test* classes' series values?
+ * @param dataset
+ * @param constraint
+ * @param series_values
+ * @param multipart
  * @return The name of the file that hods the response.
  */
 string
-send_data(DMR *server, const string &constraint, bool series_values, bool multipart)
+send_data(DMR *dataset, const string &constraint, bool series_values, bool multipart)
 {
-    set_series_values(server, series_values);
+    set_series_values(dataset, series_values);
 
     ConstraintEvaluator eval;	// This is a place holder. jhrg 9/6/13
     ResponseBuilder rb;
     rb.set_ce(constraint);
-    rb.set_dataset_name(server->name());
+    rb.set_dataset_name(dataset->name());
 
     // TODO Remove once real CE evaluator is written. jhrg 9/6/13
     // Mark all variables to be sent in their entirety.
-    server->root()->set_send_p(true);
+    dataset->root()->set_send_p(true);
 
-    string file_name = server->name() + "_data.bin";
+    string file_name = dataset->name() + "_data.bin";
     ofstream out(file_name.c_str(), ios::out|ios::trunc|ios::binary);
     if (multipart)
-    	rb.send_data_dmr_multipart(out, *server, eval, "start", "boundary", true);
+    	rb.send_data_dmr_multipart(out, *dataset, eval, "start", "boundary", true);
     else
-    	rb.send_data_dmr(out, *server, eval, true);
+    	rb.send_data_dmr(out, *dataset, eval, true);
     out.close();
 
     return file_name;
 }
-
-#if 0
-DMR *
-read_data_multipart(const string &file_name, bool debug)
-{
-    D4BaseTypeFactory *factory = new D4BaseTypeFactory;
-    DMR *dmr = new DMR(factory, "Test_data");
-
-    fstream in(file_name.c_str(), ios::in|ios::binary);
-
-    // Gobble up the response's initial set of MIME headers. Normally
-    // a client would extract the boundary and start information from
-    // these headers.
-    remove_mime_header(in);
-
-    // Read the MPM boundary. dmr-test uses 'boundary' for the boundary
-    // marker and 'start' for the CID.
-    string boundary = read_multipart_boundary(in, "boundary");
-    DBG(cerr << "MPM Boundary: " << boundary << endl);
-
-    // Not passing the fourth param skips testing hte CID header's value
-    read_multipart_headers(in, "text/xml", dap4_ddx /*, "start"*/);
-
-    // parse the DMR, stopping when the boundary is found.
-    try {
-    	D4ParserSax2 parser;
-    	//parser.intern(in, dmr, "boundary", debug);
-    	throw InternalErr("Removed multipar support from D4ParserSax2");
-    }
-    catch(...) {
-    	delete factory;
-    	delete dmr;
-    	throw;
-    }
-
-    // If we knew the value of the CID header, we could test for it here by passing
-    // it as the fourth parameter.
-    read_multipart_headers(in, "application/octet-stream", dap4_data);
-
-    D4StreamUnMarshaller um(in);
-    um.set_twiddle_bytes(false);
-
-    dmr->root()->deserialize(um, *dmr);
-
-    return dmr;
-}
-#endif
 
 DMR *
 read_data_plain(const string &file_name, bool debug)
@@ -221,17 +173,29 @@ read_data_plain(const string &file_name, bool debug)
         int chunk_size = cis.read_next_chunk();
         // get chunk
         char chunk[chunk_size];
-         cis.read(chunk, chunk_size);
+        cis.read(chunk, chunk_size);
         // parse char * with given size
     	D4ParserSax2 parser;
     	// '-2' to discard the CRLF pair
         parser.intern(chunk, chunk_size-2, dmr, debug);
-
+    }
+    catch(Error &e) {
+    	delete factory;
+    	delete dmr;
+    	cerr << "Exception: " << e.get_error_message() << endl;
+    	return 0;
+    }
+    catch(std::exception &e) {
+    	delete factory;
+    	delete dmr;
+    	cerr << "Exception: " << e.what() << endl;
+    	return 0;
     }
     catch(...) {
     	delete factory;
     	delete dmr;
-    	throw;
+    	cerr << "Exception: unknown error" << endl;
+    	return 0;
     }
 
     D4StreamUnMarshaller um(cis, byte_order);
@@ -240,147 +204,6 @@ read_data_plain(const string &file_name, bool debug)
 
     return dmr;
 }
-
-#if 0
-void
-write_chunked_data(const string &file)
-{
-	fstream infile(file.c_str(), ios::in|ios::binary);
-	if (!infile.good())
-		cerr << "File not open" << endl;
-
-	string out = file + ".chunked";
-	fstream outfile(out.c_str(), ios::out|ios::binary);
-
-	chunked_ostream chunked_outfile(outfile, 32);
-
-#if 0
-	char c;
-	infile.get(c);
-	int num = infile.gcount();
-	while (infile.good()) {
-		chunked_outfile.write(&c, num);
-		infile.get(c);
-		num = infile.gcount();
-	}
-	if (num > 0 && !(infile.bad() && infile.fail()) ) {
-		chunked_outfile.write(str, num);
-	}
-#endif
-
-#if 0
-	char str[128];
-	infile.read(str, 128);
-	int num = infile.gcount();
-	while (infile.good()) {
-		chunked_outfile.write(str, num);
-		infile.read(str, 128);
-		num = infile.gcount();
-	}
-	if (num > 0 && !(infile.bad() && infile.fail()) ) {
-		chunked_outfile.write(str, num);
-	}
-#endif
-
-	try {
-		char str[24];
-		infile.read(str, 24);
-		int num = infile.gcount();
-		if (infile.good()) {
-			chunked_outfile.write(str, num);
-			chunked_outfile.flush();
-		}
-
-		infile.read(str, 24);
-		num = infile.gcount();
-		if (infile.good()) chunked_outfile.write(str, num);
-
-		// Send an error chunk; the 24 bytes read here are lost...
-		//throw InternalErr(__FILE__, __LINE__, "The serialization failed!");
-
-		infile.read(str, 24);
-		num = infile.gcount();
-		while (infile.good()) {
-			chunked_outfile.write(str, num);
-			infile.read(str, 24);
-			num = infile.gcount();
-		}
-
-		if (num > 0 && !(infile.bad() && infile.fail())) {
-			chunked_outfile.write(str, num);
-		}
-	}
-	catch (Error &e) {
-		chunked_outfile.write_err_chunk(e.get_error_message());
-	}
-}
-
-void
-read_chunked_data(const string &file)
-{
-	string in = file + ".chunked";
-	fstream infile(in.c_str(), ios::in|ios::binary);
-	if (!infile.good())
-		cerr << "File not open" << endl;
-	chunked_istream chunked_infile(infile, 32);
-
-	string out = file + ".plain";
-	fstream outfile(out.c_str(), ios::out|ios::binary);
-
-#if 0
-	char c;
-	chunked_infile.get(c);
-	int num = chunked_infile.gcount();
-	while (chunked_infile.good()) {
-		outfile.write(&c, num);
-		chunked_infile.get(c);
-		num = chunked_infile.gcount();
-	}
-#endif
-
-#if 0
-	char str[128];
-	chunked_infile.read(str, 128);
-	int num = chunked_infile.gcount();
-	while (chunked_infile.good()) {
-		outfile.write(str, num);
-		chunked_infile.read(str, 128);
-		num = chunked_infile.gcount();
-	}
-	if (num > 0 && !(chunked_infile.bad() && chunked_infile.fail()) ) {
-		outfile.write(str, num);
-	}
-
-#endif
-
-#if 1
-	try {
-		char str[24];
-		chunked_infile.read(str, 24);
-		int num = chunked_infile.gcount();
-		if (chunked_infile.good()) {
-			outfile.write(str, num);
-			outfile.flush();
-		}
-
-		chunked_infile.read(str, 24);
-		num = chunked_infile.gcount();
-		while (chunked_infile.good()) {
-			outfile.write(str, num);
-			chunked_infile.read(str, 24);
-			num = chunked_infile.gcount();
-		}
-
-		if (num > 0 && !(chunked_infile.bad() && chunked_infile.fail())) {
-			outfile.write(str, num);
-		}
-	}
-	catch (Error &e) {
-		cerr << "Error chunk found: " << e.get_error_message() << endl;
-	}
-#endif
-}
-#endif
 
 static void usage()
 {
@@ -433,12 +256,7 @@ main(int argc, char *argv[])
         case 'x':
             print = true;
             break;
-#if 0
-        case 'c':
-        	chunked_output = true;
-        	name = getopt.optarg;
-        	break;
-#endif
+
         case '?':
         case 'h':
             usage();
@@ -463,22 +281,22 @@ main(int argc, char *argv[])
         }
         // Add constraint and series values when ready
         if (send) {
-        	DMR *server = test_dap4_parser(name, debug, print);
-        	string file_name = send_data(server, "", false, false /*multipart*/);
+        	DMR *dmr = test_dap4_parser(name, debug, print);
+
+        	string file_name = send_data(dmr, "", false, false /*multipart*/);
         	if (print)
-        		cout << "Response file:" << file_name << endl;
-        	delete server;
+        		cout << "Response file: " << file_name << endl;
+        	delete dmr;
         }
 
         if (trans) {
-        	DMR *server = test_dap4_parser(name, debug, print);
-        	string file_name = send_data(server, "", false, false /*multipart*/);
+        	DMR *dmr = test_dap4_parser(name, debug, print);
+        	string file_name = send_data(dmr, "", false, false /*multipart*/);
         	if (print)
-        		cout << "Response file:" << file_name << endl;
-        	delete server;
+        		cout << "Response file: " << file_name << endl;
+        	delete dmr;
 
-        	DMR *client = 0;
-        		client = read_data_plain(file_name, debug);
+        	DMR *client = read_data_plain(file_name, debug);
 
         	if (print) {
         		XMLWriter xml;
@@ -494,13 +312,6 @@ main(int argc, char *argv[])
 
         	delete client;
         }
-#if 0
-        if (chunked_output) {
-        	write_chunked_data(name);
-
-        	read_chunked_data(name);
-        }
-#endif
     }
     catch (Error &e) {
         cerr << e.get_error_message() << endl;

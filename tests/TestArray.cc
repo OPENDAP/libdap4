@@ -72,13 +72,13 @@ TestArray::ptr_duplicate()
     return new TestArray(*this);
 }
 
-TestArray::TestArray(const string &n, BaseType *v) :
-    Array(n, v), d_series_values(false)
+TestArray::TestArray(const string &n, BaseType *v, bool is_dap4) :
+    Array(n, v, is_dap4), d_series_values(false)
 {
 }
 
-TestArray::TestArray(const string &n, const string &d, BaseType *v) :
-    Array(n, d, v), d_series_values(false)
+TestArray::TestArray(const string &n, const string &d, BaseType *v, bool is_dap4) :
+    Array(n, d, v, is_dap4), d_series_values(false)
 {
 }
 

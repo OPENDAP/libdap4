@@ -49,7 +49,6 @@
 
 #include "TestD4Group.h"
 
-//#include "D4BaseTypeFactory.h"
 #endif
 
 #include "D4TestTypeFactory.h"
@@ -95,16 +94,16 @@ BaseType *D4TestTypeFactory::NewVariable(Type t, const string &name) const
             return NewStructure(name);
 
             // FIXME Array and Sequence are back in. jhrg 8/15/13
-        case dods_array_c:
-            throw InternalErr(__FILE__, __LINE__, "Array is not part of DAP4.");
+
         case dods_sequence_c:
-            throw InternalErr(__FILE__, __LINE__, "Sequence is not part of DAP4.");
+            throw InternalErr(__FILE__, __LINE__, "Not yet implemented for DAP4.");
 #if 0
         case dods_enum_c:
             return  NewEnum(name);
 #endif
-        case dods_array4_c:
-            throw InternalErr(__FILE__, __LINE__, "Array4 not impl yet.");
+        case dods_array_c:
+        //case dods_array4_c:
+            return NewArray(name);
 
         case dods_group_c:
             return NewGroup(name);
@@ -202,7 +201,7 @@ D4TestTypeFactory::NewUrl(const string &n) const
 Url *
 D4TestTypeFactory::NewURL(const string &n) const
 {
-    return NewURL(n);
+    return NewUrl(n);
 }
 
 #if 0
@@ -220,6 +219,12 @@ D4TestTypeFactory::NewEnum(const string &name, Type type) const
     return new TestD4Enum(name, type);
 }
 #endif
+
+Array *
+D4TestTypeFactory::NewArray(const string &n, BaseType *v) const
+{
+	return new TestArray(n, v, true /* is_dap4 */);
+}
 
 Structure *
 D4TestTypeFactory::NewStructure(const string &n) const

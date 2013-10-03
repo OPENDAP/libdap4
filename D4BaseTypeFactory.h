@@ -53,6 +53,8 @@ class Url;
 
 //class D4Enum;
 
+class Array;
+
 class Structure;
 
 class D4Group;
@@ -112,6 +114,8 @@ public:
     virtual Opaque *NewOpaque(const string &n = "") const;
     virtual D4Array *NewArray(const string &n = "", BaseType *v = 0) const;
 #endif
+
+    virtual Array *NewArray(const string &n = "", BaseType *v = 0) const;
 
 };
 

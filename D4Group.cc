@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "XMLWriter.h"
 #include "D4Attributes.h"
@@ -253,14 +253,12 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, b
 	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
 		// Only send the stuff in the current subset.
 		if ((*i)->send_p()) {
-#if 1
 			m.reset_checksum();
-#endif
+
 			(*i)->serialize(m, dmr, eval, filter);
-#if 1
+
 			DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << (*i)->name() << endl);
 			m.put_checksum();
-#endif
 		}
 	}
 }

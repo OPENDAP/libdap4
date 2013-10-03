@@ -78,6 +78,7 @@ public:
     virtual D4Array *NewArray(const string &n = "", BaseType *v = 0) const;
 #endif
 
+    virtual Array *NewArray(const string &n = "", BaseType *v = 0) const;
 };
 
 #endif // d4_test_type_factory_h

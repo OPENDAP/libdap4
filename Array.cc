@@ -648,14 +648,19 @@ public:
 			throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
 
 		string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
-		if (!name.empty())
+		// If there is a name, there must be a Dimension (named dimension) in scope
+		// so write its name but not its size.
+		if (!name.empty()) {
 			if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*) name.c_str())
 					< 0) throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-
-		ostringstream size;
-		size << (d_constrained ? d.c_size : d.size);
-		if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "size", (const xmlChar*) size.str().c_str())
-				< 0) throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+		}
+		else {
+			ostringstream size;
+			size << (d_constrained ? d.c_size : d.size);
+			if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "size",
+					(const xmlChar*) size.str().c_str()) < 0)
+				throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+		}
 
 		if (xmlTextWriterEndElement(xml.get_writer()) < 0)
 			throw InternalErr(__FILE__, __LINE__, "Could not end Dim element");

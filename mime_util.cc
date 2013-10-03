@@ -696,7 +696,7 @@ void set_mime_binary(ostream &strm, ObjectType type, EncodingType enc, const tim
     strm << "XDODS-Server: " << DVR << CRLF;
     strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
-    if (protocol == "")
+    if (protocol.empty())
         strm << "XDAP: " << DAP_PROTOCOL_VERSION << CRLF;
     else
         strm << "XDAP: " << protocol << CRLF;
