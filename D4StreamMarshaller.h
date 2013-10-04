@@ -30,6 +30,12 @@
 
 #include <iostream>
 
+// By default, only support platforms that use IEEE754 for floating point values.
+// Hacked up code leftover from an older version of the class; largely untested.
+// jhrg 10/3/13
+#define USE_XDR_FOR_IEEE754_ENCODING 0
+
+#if USE_XDR_FOR_IEEE754_ENCODING
 #ifdef WIN32
 #include <rpc.h>
 #include <winsock2.h>
@@ -39,12 +45,13 @@
 #include <netinet/in.h>
 #include <rpc/xdr.h>
 #endif
+#endif
 
 #include <crc.h>
 
 using std::ostream;
 
-#include "Type.h"
+// #include "Type.h"
 #include "Marshaller.h"
 #include "InternalErr.h"
 
@@ -65,8 +72,10 @@ class Vector;
 class D4StreamMarshaller: public Marshaller {
 
 private:
+#if USE_XDR_FOR_IEEE754_ENCODING
     XDR d_scalar_sink;
     char d_ieee754_buf[sizeof(dods_float64)]; // used to serialize a float or double
+#endif
 
     ostream &d_out;
     bool d_write_data; // jhrg 1/27/12
@@ -77,9 +86,11 @@ private:
     D4StreamMarshaller();
     D4StreamMarshaller(const D4StreamMarshaller &);
     D4StreamMarshaller & operator=(const D4StreamMarshaller &);
-#if 0
+
+#if USE_XDR_FOR_IEEE754_ENCODING
     void m_serialize_reals(char *val, int64_t num, int width, Type type);
 #endif
+
 public:
     D4StreamMarshaller(ostream &out, bool write_data = true);
     virtual ~D4StreamMarshaller();
@@ -118,21 +129,11 @@ public:
     virtual void put_int(int) {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_length_prefix.");
     }
-#if 0
-    // Added; This method does not add its argument to the checksum;
-    // put_uint64() does.
-    virtual void put_length_prefix(dods_uint64 val);
-#endif
 
     virtual void put_vector(char *val, int64_t num_bytes);
     virtual void put_vector(char *val, int64_t num_elem, int elem_size);
     virtual void put_vector_float32(char *val, int64_t num_elem);
     virtual void put_vector_float64(char *val, int64_t num_elem);
-
-#if 0
-    virtual void put_varying_vector(char *val, unsigned int num);
-    virtual void put_varying_vector(char *val, unsigned int num, int width, Type type);
-#endif
 
     virtual void put_vector(char *, int , Vector &) {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_length_prefix.");

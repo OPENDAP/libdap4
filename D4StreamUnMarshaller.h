@@ -29,6 +29,10 @@
 
 #include <iostream>
 
+// See comment in D4StreamMarshaller
+#define USE_XDR_FOR_IEEE754_ENCODING 0
+
+#if USE_XDR_FOR_IEEE754_ENCODING
 #ifdef WIN32
 #include <rpc.h>
 #include <winsock2.h>
@@ -38,10 +42,11 @@
 #include <netinet/in.h>
 #include <rpc/xdr.h>
 #endif
+#endif
 
 #include <crc.h>
 
-#include "Type.h"
+// #include "Type.h"
 #include "UnMarshaller.h"
 #include "InternalErr.h"
 
@@ -63,14 +68,16 @@ private:
     istream &d_in;
     bool d_twiddle_bytes;
 
+#if USE_XDR_FOR_IEEE754_ENCODING
     // These are used for reals that need to be converted from IEEE 754
     XDR d_source;
     char d_buf[sizeof(dods_float64)];
+#endif
 
     D4StreamUnMarshaller();
     D4StreamUnMarshaller(const D4StreamUnMarshaller &);
     D4StreamUnMarshaller & operator=(const D4StreamUnMarshaller &);
-#if 0
+#if USE_XDR_FOR_IEEE754_ENCODING
     void m_deserialize_reals(char *val, int64_t num, int width, Type type);
 #endif
     void m_twidle_vector_elements(char *vals, int64_t num, int width);
@@ -113,9 +120,7 @@ public:
     virtual void get_int(int &) {
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
-#if 0
-    virtual dods_uint64 get_length_prefix();
-#endif
+
     // Note that DAP4 assumes clients know the size of arrays when they
     // read the data; it's the 'varying' get methods that read & return the
     // number of elements. These methods are here to appease the UnMarshaller
@@ -133,10 +138,6 @@ public:
     virtual void get_vector_float32(char *val, int64_t num_elem);
     virtual void get_vector_float64(char *val, int64_t num_elem);
 
-#if 0
-    virtual void get_varying_vector(char **val, unsigned int &num);
-    virtual void get_varying_vector(char **val, unsigned int &num, int width, Type type);
-#endif
     virtual void dump(ostream &strm) const;
 };
 

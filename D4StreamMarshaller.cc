@@ -23,17 +23,9 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
-//
-// Portions of this code are from Google's great protocol buffers library and
-// are copyrighted as follows:
-
-// Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
-// http://code.google.com/p/protobuf/
 
 #include "config.h"
 
-//#include <stdint.h>     // for the Google protobuf code
 #include <byteswap.h>
 #include <cassert>
 
@@ -42,11 +34,14 @@
 #include <iomanip>
 
 //#define DODS_DEBUG 1
+
 #include "D4StreamMarshaller.h"
 
-#include "dods-datatypes.h"
+#if USE_XDR_FOR_IEEE754_ENCODING
 #include "XDRUtils.h"
 #include "util.h"
+#endif
+
 #include "debug.h"
 
 using namespace std;
@@ -130,6 +125,55 @@ inline uint8_t* WriteVarint64ToArrayInline(uint64_t value, uint8_t* target) {
 }
 #endif
 
+#if USE_XDR_FOR_IEEE754_ENCODING
+/**
+ * @todo recode this so that it does not copy data to a new buffer but
+ * serializes directly to the stream (element by element) and compare the
+ * run times.
+ */
+void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int width, Type type)
+{
+    dods_uint64 size = num * width;
+    // char *buf = (char*)malloc(size); jhrg 7/23/13
+    vector<char> buf(size);
+    XDR xdr;
+    xdrmem_create(&xdr, &buf[0], size, XDR_ENCODE);
+    try {
+        if(!xdr_array(&xdr, &val, (unsigned int *)&num, size, width, XDRUtils::xdr_coder(type)))
+            throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 array");
+
+        if (xdr_getpos(&xdr) != size)
+            throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 array");
+
+        // If this is a little-endian host, twiddle the bytes
+        static bool twiddle_bytes = !is_host_big_endian();
+        if (twiddle_bytes) {
+            if (width == 4) {
+                dods_float32 *lbuf = reinterpret_cast<dods_float32*>(&buf[0]);
+                while (num--) {
+                    dods_int32 *i = reinterpret_cast<dods_int32*>(lbuf++);
+                    *i = bswap_32(*i);
+                }
+            }
+            else { // width == 8
+                dods_float64 *lbuf = reinterpret_cast<dods_float64*>(&buf[0]);
+                while (num--) {
+                    dods_int64 *i = reinterpret_cast<dods_int64*>(lbuf++);
+                    *i = bswap_64(*i);
+                }
+            }
+        }
+
+        d_out.write(&buf[0], size);
+    }
+    catch (...) {
+        xdr_destroy(&xdr);
+        throw;
+    }
+    xdr_destroy(&xdr);
+}
+#endif
+
 /** Build an instance of D4StreamMarshaller. Bind the C++ stream out to this
  * instance. If the write_data parameter is true, write the data in addition
  * to computing and sending the checksum.
@@ -142,10 +186,12 @@ D4StreamMarshaller::D4StreamMarshaller(ostream &out, bool write_data) :
 {
 	assert(sizeof(std::streamsize) >= sizeof(int64_t));
 
+#if USE_XDR_FOR_IEEE754_ENCODING
     // XDR is used if the call std::numeric_limits<double>::is_iec559()
     // returns false indicating that the compiler is not using IEEE 754.
     // If it is, we just write out the bytes.
     xdrmem_create(&d_scalar_sink, d_ieee754_buf, sizeof(dods_float64), XDR_ENCODE);
+#endif
 
     // This will cause exceptions to be thrown on i/o errors. The exception
     // will be ostream::failure
@@ -154,23 +200,10 @@ D4StreamMarshaller::D4StreamMarshaller(ostream &out, bool write_data) :
 
 D4StreamMarshaller::~D4StreamMarshaller()
 {
+#if USE_XDR_FOR_IEEE754_ENCODING
     xdr_destroy(&d_scalar_sink);
-}
-
-#if 0
-
-/**
- * Return the is the host big- or little-endian?
- *
- * @return 'big' or ' little'.
- */
-
-string
-D4StreamMarshaller::get_endian() const
-{
-    return (is_host_big_endian()) ? "big": "little";
-}
 #endif
+}
 
 /** Initialize the checksum buffer. This resets the checksum calculation.
  */
@@ -263,6 +296,7 @@ void D4StreamMarshaller::put_int64(dods_int64 val)
 
 void D4StreamMarshaller::put_float32(dods_float32 val)
 {
+#if !USE_XDR_FOR_IEEE754_ENCODING
 	assert(std::numeric_limits<float>::is_iec559);
 
     checksum_update(&val, sizeof(dods_float32));
@@ -270,14 +304,14 @@ void D4StreamMarshaller::put_float32(dods_float32 val)
     if (d_write_data)
     	d_out.write(reinterpret_cast<const char*>(&val), sizeof(dods_float32));
 
+#else
     // This code uses XDR to convert from a local representation to IEEE754;
     // The extra 'twiddle' operation makes the byte-order correct for this
     // host should it not be big-endian. Also note the assert() at the
     // start of the method.
-#if 0
+
     if (d_write_data) {
         if (std::numeric_limits<float>::is_iec559 ) {
-            DBG2(cerr << "Native rep is ieee754." << endl);
             d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_float32));
         }
         else {
@@ -305,6 +339,7 @@ void D4StreamMarshaller::put_float32(dods_float32 val)
 
 void D4StreamMarshaller::put_float64(dods_float64 val)
 {
+#if !USE_XDR_FOR_IEEE754_ENCODING
 	assert(std::numeric_limits<double>::is_iec559);
 
     checksum_update(&val, sizeof(dods_float64));
@@ -312,8 +347,8 @@ void D4StreamMarshaller::put_float64(dods_float64 val)
     if (d_write_data)
     	d_out.write(reinterpret_cast<const char*>(&val), sizeof(dods_float64));
 
+#else
     // See the comment above in put_float32()
-#if 0
     if (d_write_data) {
         if (std::numeric_limits<double>::is_iec559)
             d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_float64));
@@ -370,9 +405,8 @@ void D4StreamMarshaller::put_str(const string &val)
     checksum_update(val.c_str(), val.length());
 
     if (d_write_data) {
-        //put_length_prefix(val.length());
     	int64_t len = val.length();
-    	cerr << "D4StreamMarshaller::put_str, len: " << len << endl;
+
     	d_out.write(reinterpret_cast<const char*>(&len), sizeof(int64_t));
         d_out.write(val.data(), val.length());
     }
@@ -393,21 +427,6 @@ void D4StreamMarshaller::put_opaque_dap4(char *val, int64_t len)
     }
 }
 
-#if 0
-void D4StreamMarshaller::put_length_prefix(dods_uint64 val)
-{
-    if (d_write_data) {
-        DBG2(cerr << "val: " << val << endl);
-
-        vector<uint8_t> target(sizeof(dods_uint64) + 1, 0);
-        uint8_t* to_send = WriteVarint64ToArrayInline(val, &target[0]);
-        d_out.write(reinterpret_cast<char*>(&target[0]), to_send - &target[0]);
-
-        DBG2(cerr << "varint: " << hex << *(uint64_t*)&target[0] << dec << endl);
-    }
-}
-#endif
-
 /**
  * @brief Write a fixed size vector
  * @param val Pointer to the data
@@ -420,72 +439,6 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_bytes)
     if (d_write_data)
         d_out.write(val, num_bytes);
 }
-
-#if 0
-/**
- * Write a vector of values prefixed by the number of elements. This is a
- * special version for vectors of bytes and it calls put_opaque()
- *
- * @note This function writes the number of elements in the vector which,
- * in this case, is equal to the number of bytes
- *
- * @param val Pointer to the data to write
- * @param num The number of elements to write
- */
-void D4StreamMarshaller::put_varying_vector(char *val, unsigned int num)
-{
-    put_opaque(val, num);
-}
-#endif
-
-#if 0
-/**
- * @todo recode this so that it does not copy data to a new buffer but
- * serializes directly to the stream (element by element) and compare the
- * run times.
- */
-void D4StreamMarshaller::m_serialize_reals(char *val, int64_t num, int width, Type type)
-{
-    dods_uint64 size = num * width;
-    // char *buf = (char*)malloc(size); jhrg 7/23/13
-    vector<char> buf(size);
-    XDR xdr;
-    xdrmem_create(&xdr, &buf[0], size, XDR_ENCODE);
-    try {
-        if(!xdr_array(&xdr, &val, (unsigned int *)&num, size, width, XDRUtils::xdr_coder(type)))
-            throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 array");
-
-        if (xdr_getpos(&xdr) != size)
-            throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 array");
-
-        // If this is a little-endian host, twiddle the bytes
-        static bool twiddle_bytes = !is_host_big_endian();
-        if (twiddle_bytes) {
-            if (width == 4) {
-                dods_float32 *lbuf = reinterpret_cast<dods_float32*>(&buf[0]);
-                while (num--) {
-                    dods_int32 *i = reinterpret_cast<dods_int32*>(lbuf++);
-                    *i = bswap_32(*i);
-                }
-            }
-            else { // width == 8
-                dods_float64 *lbuf = reinterpret_cast<dods_float64*>(&buf[0]);
-                while (num--) {
-                    dods_int64 *i = reinterpret_cast<dods_int64*>(lbuf++);
-                    *i = bswap_64(*i);
-                }
-            }
-        }
-
-        d_out.write(&buf[0], size);
-    }
-    catch (...) {
-        xdr_destroy(&xdr);
-        throw;
-    }
-    xdr_destroy(&xdr);
-}
-#endif
 
 void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size)
 {
@@ -535,6 +488,8 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size)
  */
 void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem)
 {
+#if !USE_XDR_FOR_IEEE754_ENCODING
+
 	assert(std::numeric_limits<float>::is_iec559);
 	assert(val);
 	assert(num_elem >= 0);
@@ -544,26 +499,33 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem)
 	// to test that num can be multiplied by 4. A
 	assert(!(num_elem & 0xe000000000000000));
 
-	num_elem = num_elem << 2;
+	num_elem = num_elem << 2;	// num_elem is now the number of bytes
 
     checksum_update(val, num_elem);
 
     if (d_write_data)
     	d_out.write(val, num_elem);
 
-    // As with put_float32() and put_float64(), do not support the case where
-    // IEEE754 is not used by the host.
-#if 0
+#else
+	assert(val);
+	assert(num_elem >= 0);
+	// sizeof() a 32-bit float is 4, so we're going to send 4 * num_elem bytes, so
+	// make sure that doesn't overflow a 63-bit integer (the max positive value in
+	// a signed int64; use 1110 0000 0.. (0xe000 ...) to mask for non-zero bits
+	// to test that num can be multiplied by 4. A
+	assert(!(num_elem & 0xe000000000000000));
+
+	int64_t bytes = num_elem << 2;	// num_elem is now the number of bytes
+
+    checksum_update(val, bytes);
+
     if (d_write_data) {
-        if (type == dods_float32_c && !std::numeric_limits<float>::is_iec559) {
+        if (!std::numeric_limits<float>::is_iec559) {
             // If not using IEEE 754, use XDR to get it that way.
-            m_serialize_reals(val, num, 4, type);
-        }
-        else if (type == dods_float64_c && !std::numeric_limits<double>::is_iec559) {
-            m_serialize_reals(val, num, 8, type);
+            m_serialize_reals(val, num_elem, 4, type);
         }
         else {
-            d_out.write(val, num * width);
+            d_out.write(val, bytes);
         }
     }
 #endif
@@ -579,38 +541,45 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem)
  */
 void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem)
 {
+#if !USE_XDR_FOR_IEEE754_ENCODING
+
 	assert(std::numeric_limits<double>::is_iec559);
 	assert(val);
 	assert(num_elem >= 0);
 	// See comment above
 	assert(!(num_elem & 0xf000000000000000));
 
-	num_elem = num_elem << 3;
+	num_elem = num_elem << 3;	// num_elem is now the number of bytes
 
     checksum_update(val, num_elem);
 
     if (d_write_data)
     	d_out.write(val, num_elem);
-}
+#else
+	assert(val);
+	assert(num_elem >= 0);
+	// sizeof() a 32-bit float is 4, so we're going to send 4 * num_elem bytes, so
+	// make sure that doesn't overflow a 63-bit integer (the max positive value in
+	// a signed int64; use 1110 0000 0.. (0xe000 ...) to mask for non-zero bits
+	// to test that num can be multiplied by 4. A
+	assert(!(num_elem & 0xe000000000000000));
 
-#if 0
-/**
- * Write a vector of values prefixed by the number of elements.
- *
- * @note This function writes the number of elements in the vector, not the
- * number of bytes.
- *
- * @param val Pointer to the data to write
- * @param num The number of elements to write
- * @param width The number of bytes in each element
- * @param type The DAP type code (used only for float32 and float64 values).
- */
-void D4StreamMarshaller::put_varying_vector(char *val, unsigned int num, int width, Type type)
-{
-    put_length_prefix(num);
-    put_vector(val, num, width, type);
-}
+	int64_t bytes = num_elem << 3;	// num_elem is now the number of bytes
+
+    checksum_update(val, bytes);
+
+    if (d_write_data) {
+        if (!std::numeric_limits<double>::is_iec559) {
+            // If not using IEEE 754, use XDR to get it that way.
+            m_serialize_reals(val, num_elem, 8, type);
+        }
+        else {
+            d_out.write(val, bytes);
+        }
+    }
 #endif
+
+}
 
 void D4StreamMarshaller::dump(ostream &strm) const
 {

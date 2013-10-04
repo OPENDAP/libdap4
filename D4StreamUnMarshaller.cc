@@ -60,17 +60,15 @@ D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in, bool twiddle_bytes) : d_
 {
 	assert(sizeof(std::streamsize) >= sizeof(int64_t));
 
+#if USE_XDR_FOR_IEEE754_ENCODING
 	// XDR is used to handle transforming non-ieee754 reals, nothing else.
     xdrmem_create(&d_source, d_buf, sizeof(dods_float64), XDR_DECODE);
+#endif
 
     // This will cause exceptions to be thrown on i/o errors. The exception
     // will be ostream::failure
     d_in.exceptions(istream::failbit | istream::badbit);
 
-    DBG(cerr << "Host is big endian: " << is_host_big_endian() << endl);
-#if 0
-    set_twiddle_bytes(twiddle_bytes);
-#endif
 }
 
 /**
@@ -83,8 +81,10 @@ D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in) : d_in( in ), d_twiddle_
 {
 	assert(sizeof(std::streamsize) >= sizeof(int64_t));
 
+#if USE_XDR_FOR_IEEE754_ENCODING
     // XDR is used to handle transforming non-ieee754 reals, nothing else.
     xdrmem_create(&d_source, d_buf, sizeof(dods_float64), XDR_DECODE);
+#endif
 
     // This will cause exceptions to be thrown on i/o errors. The exception
     // will be ostream::failure
@@ -93,23 +93,10 @@ D4StreamUnMarshaller::D4StreamUnMarshaller(istream &in) : d_in( in ), d_twiddle_
 
 D4StreamUnMarshaller::~D4StreamUnMarshaller( )
 {
+#if USE_XDR_FOR_IEEE754_ENCODING
     xdr_destroy(&d_source);
-}
-
-#if 0
-void
-D4StreamUnMarshaller::set_twiddle_bytes(bool twiddle)
-{
-#if 0
-    if ((is_host_big_endian() && is_stream_bigendian)
-        || (!is_host_big_endian() && !is_stream_bigendian))
-        d_twiddle_bytes = false;
-    else
-        d_twiddle_bytes = true;
 #endif
-    d_twiddle_bytes = twiddle
 }
-#endif
 
 Crc32::checksum D4StreamUnMarshaller::get_checksum()
 {
@@ -167,6 +154,16 @@ D4StreamUnMarshaller::get_int64( dods_int64 &val )
 void
 D4StreamUnMarshaller::get_float32( dods_float32 &val )
 {
+#if !USE_XDR_FOR_IEEE754_ENCODING
+	assert(std::numeric_limits<float>::is_iec559);
+
+    d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_float32));
+    if (d_twiddle_bytes) {
+        dods_int32 *i = reinterpret_cast<dods_int32*>(&val);
+        *i = bswap_32(*i);
+    }
+
+#else
     if (std::numeric_limits<float>::is_iec559) {
         d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_float32));
         if (d_twiddle_bytes) {
@@ -182,16 +179,27 @@ D4StreamUnMarshaller::get_float32( dods_float32 &val )
         if (!xdr_float(&d_source, &val))
             throw Error("Network I/O Error. Could not read float 64 data.");
     }
+#endif
 }
 
 void
 D4StreamUnMarshaller::get_float64( dods_float64 &val )
 {
+#if !USE_XDR_FOR_IEEE754_ENCODING
+	assert(std::numeric_limits<double>::is_iec559);
+
+    d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_float64));
+    if (d_twiddle_bytes) {
+        dods_int64 *i = reinterpret_cast<dods_int64*>(&val);
+        *i = bswap_64(*i);
+    }
+
+#else
     if (std::numeric_limits<float>::is_iec559) {
         d_in.read(reinterpret_cast<char*>(&val), sizeof(dods_float64));
         if (d_twiddle_bytes) {
             dods_int64 *i = reinterpret_cast<dods_int64*>(&val);
-            *i = bswap_32(*i);
+            *i = bswap_64(*i);
         }
     }
     else {
@@ -201,6 +209,7 @@ D4StreamUnMarshaller::get_float64( dods_float64 &val )
         if (!xdr_double(&d_source, &val))
             throw Error("Network I/O Error. Could not read float 64 data.");
     }
+#endif
 }
 
 void
@@ -227,43 +236,14 @@ D4StreamUnMarshaller::get_uint64( dods_uint64 &val )
         val = bswap_64(val);
 }
 
-#if 0
-/**
- * Read a varint (128-bit varying integer). Not the most optimized version
- * possible. It would be better if the values were in memory and we could
- * operate on them without a separate read for each byte.
- */
-dods_uint64 D4StreamUnMarshaller::get_length_prefix()
-{
-    uint8_t b;
-    int count = 0;
-    dods_uint64 result = 0;
-    do {
-        d_in.read(reinterpret_cast<char*>(&b), 1);
-
-        uint64_t v = (b & 0x7f) << 7 * count;
-        result += v; // is v needed? Does it matter?
-        count++;
-
-    } while (b & 0x80);
-
-    return result;
-}
-#endif
-
 void
 D4StreamUnMarshaller::get_str( string &val )
 {
-    int64_t len; // get_length_prefix();
+    int64_t len;
     d_in.read(reinterpret_cast<char*>(&len), sizeof(int64_t));
-    cerr << "D4StreamUnMarshaller::get_str, len: " << len << endl;
 
-    // TODO Remove copy?
-    vector<char> raw(len+1);
-    d_in.read(&raw[0], len);
-
-    val.reserve(len);
-    val.assign(&raw[0], len);
+    val.resize(len);
+    d_in.read(&val[0], len);
 }
 
 void
@@ -271,27 +251,6 @@ D4StreamUnMarshaller::get_url( string &val )
 {
     get_str( val ) ;
 }
-
-#if 0
-/**
- * Get opaque data when the size of the data to read is known.
- *
- * @param val Pointer to 'len' bytes; store the data here.
- * @param len Number of bytes referenced adn expected
- * @exception Error if the number of bytes indicated in the stream does not
- * match 'len'
- */
-void
-D4StreamUnMarshaller::get_opaque( char *val, unsigned int len )
-{
-    dods_int64 rlen = get_length_prefix();
-    if (len != rlen)
-        throw Error("Expected opaque data of " + long_to_string(len)
-                + " bytes, but got " + long_to_string(rlen) + " instead.");
-
-    d_in.read(val, len);
-}
-#endif
 
 /**
  * Get opaque data when the size of the data to be read is not known in
@@ -316,12 +275,7 @@ D4StreamUnMarshaller::get_vector( char *val, int64_t bytes )
     d_in.read(val, bytes);
 }
 
-#if 0
-/**
- * @todo recode this so that it does not copy data to a new buffer but
- * serializes directly to the stream (element by element) and compare the
- * run times.
- */
+#if USE_XDR_FOR_IEEE754_ENCODING
 void D4StreamUnMarshaller::m_deserialize_reals(char *val, int64_t num, int width, Type type)
 {
     int64_t size = num * width;
@@ -422,6 +376,7 @@ D4StreamUnMarshaller::get_vector(char *val, int64_t num_elem, int elem_size)
 void
 D4StreamUnMarshaller::get_vector_float32(char *val, int64_t num_elem)
 {
+#if !USE_XDR_FOR_IEEE754_ENCODING
 	assert(std::numeric_limits<float>::is_iec559);
 	assert(val);
 	assert(num_elem >= 0);
@@ -434,7 +389,7 @@ D4StreamUnMarshaller::get_vector_float32(char *val, int64_t num_elem)
     if (d_twiddle_bytes)
         m_twidle_vector_elements(val, num_elem, sizeof(dods_float32));
 
-#if 0
+#else
     if (type == dods_float32_c && !std::numeric_limits<float>::is_iec559) {
         // If not using IEEE 754, use XDR to get it that way.
         m_deserialize_reals(val, num, 4, type);
@@ -453,6 +408,7 @@ D4StreamUnMarshaller::get_vector_float32(char *val, int64_t num_elem)
 void
 D4StreamUnMarshaller::get_vector_float64(char *val, int64_t num_elem)
 {
+#if !USE_XDR_FOR_IEEE754_ENCODING
 	assert(std::numeric_limits<float>::is_iec559);
 	assert(val);
 	assert(num_elem >= 0);
@@ -465,7 +421,7 @@ D4StreamUnMarshaller::get_vector_float64(char *val, int64_t num_elem)
     if (d_twiddle_bytes)
         m_twidle_vector_elements(val, num_elem, sizeof(dods_float64));
 
-#if 0
+#else
     if (type == dods_float32_c && !std::numeric_limits<float>::is_iec559) {
         // If not using IEEE 754, use XDR to get it that way.
         m_deserialize_reals(val, num, 4, type);
@@ -480,36 +436,6 @@ D4StreamUnMarshaller::get_vector_float64(char *val, int64_t num_elem)
     }
 #endif
 }
-
-
-#if 0
-void
-D4StreamUnMarshaller::get_varying_vector( char **val, unsigned int &num )
-{
-    get_opaque(val, num);
-}
-
-void
-D4StreamUnMarshaller::get_varying_vector( char **val, unsigned int &num, int width, Type type )
-{
-    num = get_length_prefix();
-
-    int size = num * width;
-    *val = new char[size];
-
-    if (type == dods_float32_c && !std::numeric_limits<float>::is_iec559) {
-        m_deserialize_reals(*val, num, 4, type);
-    }
-    else if (type == dods_float64_c && !std::numeric_limits<double>::is_iec559) {
-        m_deserialize_reals(*val, num, 8, type);
-    }
-    else {
-        d_in.read(*val, size);
-        if (d_twiddle_bytes)
-            m_twidle_vector_elements(*val, num, width);
-    }
-}
-#endif
 
 void
 D4StreamUnMarshaller::dump(ostream &strm) const
