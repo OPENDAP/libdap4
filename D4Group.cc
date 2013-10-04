@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "XMLWriter.h"
 #include "D4Attributes.h"
@@ -273,13 +273,12 @@ void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 	// their checksum and store the value in a magic attribute of the variable
 	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
 		(*i)->deserialize(um, dmr);
-#if 1
+
 		D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
 		string crc = um.get_checksum_str();
 		a->add_value(crc);
 		DBG(cerr << "Read CRC32: " << crc << " for " << (*i)->name() << endl);
 		(*i)->attributes()->add_attribute_nocopy(a);
-#endif
 	}
 }
 

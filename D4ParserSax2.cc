@@ -233,8 +233,6 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
 
 	assert(top_basetype()->is_vector_type());
 
-	// FIXME Array --> D4Array so that the dimension sizes can be int64s?
-	// unsigned long long size = strtoul(xml_attrs["size"].value.c_str(), 0, 0);
 	Array *a = static_cast<Array*>(top_basetype());
     if (check_attribute("size")) {
     	a->append_dim(atoi(xml_attrs["size"].value.c_str())); // low budget code for now. jhrg 8/20/13
@@ -248,6 +246,8 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
     	else					// get enclosing Group and lookup Dimension there
     		dim = top_group()->find_dim(name);
 
+    	if (!dim)
+    		throw Error("The dimension '" + name + "' was not found while parsing the variable '" + a->name() + "'.");
     	a->append_dim(dim);
     	return true;
     }

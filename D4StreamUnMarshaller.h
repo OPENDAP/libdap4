@@ -70,9 +70,10 @@ private:
     D4StreamUnMarshaller();
     D4StreamUnMarshaller(const D4StreamUnMarshaller &);
     D4StreamUnMarshaller & operator=(const D4StreamUnMarshaller &);
-
-    void m_deserialize_reals(char *val, unsigned int num, int width, Type type);
-    void m_twidle_vector_elements(char *vals, unsigned int num, int width);
+#if 0
+    void m_deserialize_reals(char *val, int64_t num, int width, Type type);
+#endif
+    void m_twidle_vector_elements(char *vals, int64_t num, int width);
 
 public:
     D4StreamUnMarshaller(istream &in, bool twiddle_bytes);
@@ -103,15 +104,18 @@ public:
     virtual void get_str(string &val);
     virtual void get_url(string &val);
 
-    virtual void get_opaque(char *val, unsigned int len);
-    virtual void get_opaque(char **val, unsigned int &len);
+    virtual void get_opaque(char *, unsigned int) {
+    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4, use get_opaque_dap4() instead.");
+    }
+
+    virtual void get_opaque_dap4(char **val, int64_t &len);
 
     virtual void get_int(int &) {
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
-
+#if 0
     virtual dods_uint64 get_length_prefix();
-
+#endif
     // Note that DAP4 assumes clients know the size of arrays when they
     // read the data; it's the 'varying' get methods that read & return the
     // number of elements. These methods are here to appease the UnMarshaller
@@ -124,12 +128,15 @@ public:
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
 
-    virtual void get_vector(char *val, unsigned int num);
-    virtual void get_vector(char *val, unsigned int num, int width, Type type);
+    virtual void get_vector(char *val, int64_t num_bytes);
+    virtual void get_vector(char *val, int64_t num_elem, int elem_size);
+    virtual void get_vector_float32(char *val, int64_t num_elem);
+    virtual void get_vector_float64(char *val, int64_t num_elem);
 
+#if 0
     virtual void get_varying_vector(char **val, unsigned int &num);
     virtual void get_varying_vector(char **val, unsigned int &num, int width, Type type);
-
+#endif
     virtual void dump(ostream &strm) const;
 };
 

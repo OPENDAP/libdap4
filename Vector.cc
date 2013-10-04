@@ -38,7 +38,7 @@
 #include <cstring>
 #include <cassert>
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include <sstream>
 #include <vector>
@@ -404,7 +404,7 @@ void Vector::set_read_p(bool state)
 BaseType *Vector::var(const string &n, bool exact, btp_stack *s)
 {
     string name = www2id(n);
-    DBG(cerr << "Vector::var: Looking for " << n << endl);
+    DBG2(cerr << "Vector::var: Looking for " << name << endl);
 
     // If this is a Vector of constructor types, look for 'name' recursively.
     // Make sure to check for the case where name is the default (the empty
@@ -831,7 +831,7 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bo
     if (filter && !eval.eval_selection(dmr, dataset()))
         return true;
 #endif
-    unsigned long long num = length();	// The constrained length in elements
+    int64_t num = length();	// The constrained length in elements
 
     switch (d_proto->type()) {
         case dods_byte_c:
@@ -845,19 +845,21 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bo
         case dods_uint32_c:
         case dods_int64_c:
         case dods_uint64_c:
-        	m.put_vector(d_buf, num * d_proto->width());
+        	m.put_vector(d_buf, num, d_proto->width());
+        	break;
         case dods_float32_c:
+            m.put_vector_float32(d_buf, num);
+            break;
+
         case dods_float64_c:
-            m.put_vector(d_buf, num, d_proto->width(), d_proto->type());
+            m.put_vector_float64(d_buf, num);
             break;
 
         case dods_str_c:
         case dods_url_c:
-            assert(d_str.capacity() >= num);
+            assert((int64_t)d_str.capacity() >= num);
 
-            m.put_length_prefix(num);
-
-            for (unsigned long i = 0; i < num; ++i)
+            for (int64_t i = 0; i < num; ++i)
                 m.put_str(d_str[i]);
 
             break;
@@ -869,9 +871,7 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bo
         case dods_sequence_c:
             assert(d_compound_buf.capacity() >= 0);
 
-            m.put_length_prefix(num);
-
-            for (unsigned long i = 0; i < num; ++i)
+            for (int64_t i = 0; i < num; ++i)
                 d_compound_buf[i]->serialize(m, dmr, eval, filter);
 
             break;
@@ -901,39 +901,42 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
         throw InternalErr(__FILE__, __LINE__, "The server sent declarations and data with mismatched sizes.");
 #endif
 
-    // ugh TODO Make is_number_type()...
-    if (d_proto->is_simple_type() && (d_proto->type() != dods_str_c || d_proto->type() != dods_url_c )) {
+    if (m_is_cardinal_type()) {
         if (d_buf)
             m_delete_cardinal_data_buffer();
         if (!d_buf)
             m_create_cardinal_data_buffer_for_type(length());
     }
 
+    DBG(cerr << "Vector::deserialize, " << name() << ", length(): " << length() << endl);
+
     switch (d_proto->type()) {
         case dods_byte_c:
-       	um.get_vector((char *)d_buf, length());
+        	um.get_vector((char *)d_buf, length());
         	break;
 
         case dods_int16_c:
         case dods_uint16_c:
         case dods_int32_c:
         case dods_uint32_c:
-        	um.get_vector((char *)d_buf, d_proto->width() * length());
+        	um.get_vector((char *)d_buf, length(), d_proto->width());
         	break;
 
         case dods_float32_c:
+            um.get_vector_float32((char *)d_buf, length());
+            break;
+
         case dods_float64_c:
-            um.get_vector((char *)d_buf, length(), d_proto->width(), d_proto->type());
+        	um.get_vector_float64((char *)d_buf, length());
             break;
 
         case dods_str_c:
         case dods_url_c: {
-        	unsigned long long num = um.get_length_prefix();
+        	int64_t len = length();
+            d_str.resize((len > 0) ? len : 0); // Fill with NULLs
+            d_capacity = len; // capacity is number of strings we can fit.
 
-            d_str.resize((num > 0) ? num : 0); // Fill with NULLs
-            d_capacity = num; // capacity is number of strings we can fit.
-
-            for (unsigned long i = 0; i < num; ++i) {
+            for (int64_t i = 0; i < len; ++i) {
                 string str;
                 um.get_str(str);
                 d_str[i] = str;
@@ -948,11 +951,9 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 
         case dods_structure_c:
         case dods_sequence_c: {
-        	unsigned long long num = um.get_length_prefix();
+            vec_resize(length());
 
-            vec_resize(num);
-
-            for (unsigned long i = 0; i < num; ++i) {
+            for (int64_t i = 0, end = length(); i < end; ++i) {
                 d_compound_buf[i] = d_proto->ptr_duplicate();
                 d_compound_buf[i]->deserialize(um, dmr);
             }

@@ -77,14 +77,12 @@ private:
     D4StreamMarshaller();
     D4StreamMarshaller(const D4StreamMarshaller &);
     D4StreamMarshaller & operator=(const D4StreamMarshaller &);
-
-    void m_serialize_reals(char *val, unsigned int num, int width, Type type);
-
+#if 0
+    void m_serialize_reals(char *val, int64_t num, int width, Type type);
+#endif
 public:
     D4StreamMarshaller(ostream &out, bool write_data = true);
     virtual ~D4StreamMarshaller();
-
-    virtual string get_endian() const;
 
     virtual void reset_checksum();
     virtual string get_checksum();
@@ -110,23 +108,31 @@ public:
     virtual void put_str(const string &val);
     virtual void put_url(const string &val);
 
-    virtual void put_opaque(char *val, unsigned int len);
+    virtual void put_opaque(char *, unsigned int) {
+    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4; use put_opaque_dap4() instead.");
+    }
 
-    // Never use put_int() to send length information in DAP4, use
-    // put_length_prefix() instead.
+    virtual void put_opaque_dap4(char *val, int64_t len);
+
+    // Never use put_int() to send length information in DAP4.
     virtual void put_int(int) {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_length_prefix.");
     }
-
+#if 0
     // Added; This method does not add its argument to the checksum;
     // put_uint64() does.
     virtual void put_length_prefix(dods_uint64 val);
+#endif
 
-    virtual void put_vector(char *val, unsigned int num);
-    virtual void put_vector(char *val, unsigned int num, int width, Type type);
+    virtual void put_vector(char *val, int64_t num_bytes);
+    virtual void put_vector(char *val, int64_t num_elem, int elem_size);
+    virtual void put_vector_float32(char *val, int64_t num_elem);
+    virtual void put_vector_float64(char *val, int64_t num_elem);
 
+#if 0
     virtual void put_varying_vector(char *val, unsigned int num);
     virtual void put_varying_vector(char *val, unsigned int num, int width, Type type);
+#endif
 
     virtual void put_vector(char *, int , Vector &) {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_length_prefix.");
@@ -134,7 +140,6 @@ public:
     virtual void put_vector(char *, int , int , Vector &) {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_length_prefix.");
     }
-
 
     virtual void dump(ostream &strm) const;
 };
