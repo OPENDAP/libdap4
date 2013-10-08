@@ -933,38 +933,36 @@ Array::print_array(FILE *out, unsigned int index, unsigned int dims,
 
     @brief Print the value given the current constraint.
 */
-unsigned int
-Array::print_array(ostream &out, unsigned int index, unsigned int dims,
-                   unsigned int shape[])
+unsigned int Array::print_array(ostream &out, unsigned int index, unsigned int dims, unsigned int shape[])
 {
-    if (dims == 1) {
-	out << "{" ;
-        for (unsigned i = 0; i < shape[0] - 1; ++i) {
-            var(index++)->print_val(out, "", false);
-	    out << ", " ;
-        }
-        var(index++)->print_val(out, "", false);
-	out << "}" ;
+	if (dims == 1) {
+		out << "{";
+		for (unsigned i = 0; i < shape[0] - 1; ++i) {
+			var(index++)->print_val(out, "", false);
+			out << ", ";
+		}
+		var(index++)->print_val(out, "", false);
+		out << "}";
 
-        return index;
-    }
-    else {
-	out << "{" ;
-        // Fixed an off-by-one error in the following loop. Since the array
-        // length is shape[dims-1]-1 *and* since we want one less dimension
-        // than that, the correct limit on this loop is shape[dims-2]-1. From
-        // Todd Karakasian.
-        // The saga continues; the loop test should be `i < shape[0]-1'. jhrg
-        // 9/12/96.
-        for (unsigned i = 0; i < shape[0] - 1; ++i) {
-            index = print_array(out, index, dims - 1, shape + 1);
-	    out << "," ;
-        }
-        index = print_array(out, index, dims - 1, shape + 1);
-	out << "}" ;
+		return index;
+	}
+	else {
+		out << "{";
+		// Fixed an off-by-one error in the following loop. Since the array
+		// length is shape[dims-1]-1 *and* since we want one less dimension
+		// than that, the correct limit on this loop is shape[dims-2]-1. From
+		// Todd Karakasian.
+		// The saga continues; the loop test should be `i < shape[0]-1'. jhrg
+		// 9/12/96.
+		for (unsigned i = 0; i < shape[0] - 1; ++i) {
+			index = print_array(out, index, dims - 1, shape + 1);
+			out << ",";
+		}
+		index = print_array(out, index, dims - 1, shape + 1);
+		out << "}";
 
-        return index;
-    }
+		return index;
+	}
 }
 
 void

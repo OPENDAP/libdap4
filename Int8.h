@@ -41,9 +41,13 @@ namespace libdap
 
 class Int8: public BaseType
 {
-    virtual unsigned int val2buf(void *, bool)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int8"); }
-    virtual unsigned int buf2val(void **)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int8"); }
-    virtual void print_val(FILE *, string , bool) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int8"); }
+	// This is used in BaseType *Vector::var(unsigned int i)
+	virtual unsigned int val2buf(void *val, bool)  {
+    	set_value(*reinterpret_cast<dods_int8*>(val));
+    	return sizeof(dods_int8);
+    }
+    virtual unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "buf2val: Not implemented for Int8"); }
+    virtual void print_val(FILE *, string , bool) { throw InternalErr(__FILE__, __LINE__, "print_val: Not implemented for Int8"); }
 
 protected:
     dods_int8 d_buf;

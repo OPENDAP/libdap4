@@ -53,6 +53,22 @@
 #include "util.h"
 #include "debug.h"
 
+#include "TestInt8.h"
+
+#include "TestByte.h"
+#include "TestInt16.h"
+#include "TestUInt16.h"
+#include "TestInt32.h"
+#include "TestUInt32.h"
+
+#include "TestInt64.h"
+#include "TestUInt64.h"
+
+#include "TestFloat32.h"
+#include "TestFloat64.h"
+
+#include "TestStr.h"
+
 #include "TestArray.h"
 #include "TestCommon.h"
 
@@ -98,22 +114,76 @@ TestArray::operator=(const TestArray &rhs)
     if (this == &rhs)
         return *this;
 
-    dynamic_cast<Array &> (*this) = rhs; // run Constructor=
+    dynamic_cast<Array &> (*this) = rhs;
 
     _duplicate(rhs);
 
     return *this;
 }
 
+
+// This code calls 'output_values()' because print_val() does not test
+// the value of send_p(). We need to wrap a method around the calls to
+// print_val() to ensure that only values for variables with send_p() set
+// are called. In the serialize/deserialize case, the 'client' DDS only
+// has variables sent by the 'server' but in the intern_data() case, the
+// whole DDS is still present but only variables selected in the CE have
+// values.
+
+unsigned int TestArray::m_print_array(ostream &out, unsigned int index, unsigned int dims, unsigned int shape[])
+{
+    if (dims == 1) {
+        out << "{";
+        for (unsigned i = 0; i < shape[0] - 1; ++i) {
+            dynamic_cast<TestCommon&> (*var(index++)).output_values(out);
+            out << ", ";
+        }
+        dynamic_cast<TestCommon&> (*var(index++)).output_values(out);
+        out << "}";
+
+        return index;
+    }
+    else {
+        out << "{";
+        // Fixed an off-by-one error in the following loop. Since the array
+        // length is shape[dims-1]-1 *and* since we want one less dimension
+        // than that, the correct limit on this loop is shape[dims-2]-1. From
+        // Todd Karakasian.
+        // The saga continues; the loop test should be `i < shape[0]-1'. jhrg
+        // 9/12/96.
+        for (unsigned i = 0; i < shape[0] - 1; ++i) {
+            index = m_print_array(out, index, dims - 1, shape + 1);
+            out << ",";
+        }
+        index = m_print_array(out, index, dims - 1, shape + 1);
+        out << "}";
+
+        return index;
+    }
+}
+
+void TestArray::output_values(std::ostream &out)
+{
+    unsigned int *shape = new unsigned int[dimensions(true)];
+    unsigned int index = 0;
+    for (Dim_iter i = dim_begin(); i != dim_end() && index < dimensions(true); ++i)
+        shape[index++] = dimension_size(i, true);
+
+    m_print_array(out, 0, dimensions(true), shape);
+
+    delete[] shape;
+    shape = 0;
+}
+
 /** Special names are ones that start with 'lat' or 'lon'. These indicate
  that the vector (this is only for vectors) is a vector of latitude or
  longitude values. */
-bool TestArray::name_is_special()
+bool TestArray::m_name_is_special()
 {
     return (name().find("lat") != string::npos || name().find("lon") != string::npos);
 }
 
-void TestArray::build_special_values()
+void TestArray::m_build_special_values()
 {
     if (name().find("lat_reversed") != string::npos) {
         int array_len = length();
@@ -149,122 +219,149 @@ int TestArray::m_offset(int y, Dim_iter X, int x)
     return y * dimension_size(X, false) + x;
 }
 
-/** Only call this method for a two dimensional array */
-void TestArray::constrained_matrix(char *constrained_array)
+/**
+ * @brief Load an 2D array with values.
+ * Use the read() function for the prototype element of the array to
+ * get values and load them into an array, then constrain the array.
+ * Thus if 'series values' are used and the array is constrained, the
+ * result will 'make sense'
+ *
+ * @param constrained_array
+ */
+template <typename T, class C>
+void TestArray::m_constrained_matrix(vector<T>/*char * */&constrained_array)
 {
     int unconstrained_size = 1;
     Dim_iter d = dim_begin();
     while (d != dim_end())
         unconstrained_size *= dimension_size(d++, false);
+
+    vector<T> whole_array(unconstrained_size);
+#if 0
     char *whole_array = new char[unconstrained_size * width(true)];
     DBG(cerr << "unconstrained size: " << unconstrained_size << endl);
 
     int elem_width = var()->width(true); // size of an element
     char *elem_val = new char[elem_width];
-
+#endif
     for (int i = 0; i < unconstrained_size; ++i) {
         var()->read();
-        var()->buf2val((void **) &elem_val);
+        whole_array[i] = static_cast<C*>(var())->value();
+#if 0
+        var()->buf2val((void **) &elem_val); //FIXME use value() instead
 
         memcpy(whole_array + i * elem_width, elem_val, elem_width);
+#endif
         var()->set_read_p(false); // pick up the next value
     }
 
+#if 0
     DBG(cerr << "whole_array: ";
             for (int i = 0; i < unconstrained_size; ++i) {
                 cerr << (int)*(dods_byte*)(whole_array + (i * elem_width)) << ", ";
             }
             cerr << endl);
+#endif
+    DBG(cerr << "whole_array: "; copy(whole_array.begin(), whole_array.end(), ostream_iterator<T>(cerr, ", ")); cerr << endl);
 
     Dim_iter Y = dim_begin();
     Dim_iter X = Y + 1;
-    char *dest = constrained_array;
+    //char *dest = constrained_array;
 
-    DBG(cerr << "dimension_start(Y): " << dimension_start(Y) << endl); DBG(cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl); DBG(cerr << "dimension_start(X): " << dimension_start(X) << endl); DBG(cerr << "dimension_stop(X): " << dimension_stop(X) << endl);
-
+    DBG(cerr << "dimension_start(Y): " << dimension_start(Y) << endl);
+    DBG(cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl);
+    DBG(cerr << "dimension_start(X): " << dimension_start(X) << endl);
+    DBG(cerr << "dimension_stop(X): " << dimension_stop(X) << endl);
+    int elem_width = var()->width(true); // size of an element
     int constrained_size = 0;
     int y = dimension_start(Y);
     while (y < dimension_stop(Y) + 1) {
 
         int x = dimension_start(X);
         while (x < dimension_stop(X) + 1) {
-
+#if 0
             DBG2(cerr << "whole[" << y << "][" << x << "]: ("
                     << m_offset(y, Y, x) << ") "
                     << *(dods_byte*)(whole_array + m_offset(y, X, x)*elem_width)
                     << endl);
-
+#endif
+#if 0
             memcpy(dest, whole_array + m_offset(y, X, x) * elem_width, elem_width);
+#endif
+            //memcpy(dest, &whole_array[m_offset(y, X, x)], elem_width);
 
-            dest += elem_width;
+            constrained_array[constrained_size++] = whole_array[m_offset(y, X, x)];
+
+            //dest += elem_width;
             x += dimension_stride(X);
-            constrained_size++;
+            //constrained_size++;
         }
 
         y += dimension_stride(Y);
     }
-
+#if 0
     DBG(cerr << "constrained size: " << constrained_size << endl); DBG(cerr << "constrained_array: ";
             for (int i = 0; i < constrained_size; ++i) {
                 cerr << (int)*(dods_byte*)(constrained_array + (i * elem_width)) << ", ";
             }
             cerr << endl);
-
+#endif
+#if 0
     delete[] whole_array;
     delete[] elem_val;
+#endif
 }
 
-// This code calls 'output_values()' because print_val() does not test
-// the value of send_p(). We need to wrap a method around the calls to
-// print_val() to ensure that only values for variables with send_p() set
-// are called. In the serialize/deserialize case, the 'client' DDS only
-// has variables sent by the 'server' but in the intern_data() case, the
-// whole DDS is still present but only variables selected in the CE have
-// values.
-
-unsigned int TestArray::print_array(ostream &out, unsigned int index, unsigned int dims, unsigned int shape[])
+/**
+ * Load the variable's internal data buffer with values, simulating a read()
+ * call to some data store. A private method.
+ */
+template <typename T, class C>
+void TestArray::m_cardinal_type_read_helper()
 {
-    if (dims == 1) {
-        out << "{";
-        for (unsigned i = 0; i < shape[0] - 1; ++i) {
-            dynamic_cast<TestCommon&> (*var(index++)).output_values(out);
-            out << ", ";
+    if (get_series_values()) {
+        // Special case code for vectors that have specific names.
+        // This is used to test code that works with lat/lon data.
+        if (dimensions() == 1 && m_name_is_special()) {
+            m_build_special_values();
         }
-        dynamic_cast<TestCommon&> (*var(index++)).output_values(out);
-        out << "}";
+        else if (dimensions() == 2) {
+#if 0
+            vector<char> tmp(width(true));
+            m_constrained_matrix<T, C>(&tmp[0]);
+            val2buf(&tmp[0]);	// This is a call to Array::val2buf which defaults to Vector::val2buf
+#endif
+            vector<T> tmp(length());
+            m_constrained_matrix<T, C>(tmp);
+            set_value(tmp, length());
+        }
+        else {
+            vector<T> tmp(length());
+            for (int64_t i = 0, end = length(); i < end; ++i) {
+                var()->read();
+#if 0
+                T value = static_cast<C*>(var())->value();
+                tmp[i] = value;
+#endif
+                tmp[i] = static_cast<C*>(var())->value();
 
-        return index;
+                var()->set_read_p(false); // pick up the next value
+            }
+            set_value(tmp, length());
+        }
     }
     else {
-        out << "{";
-        // Fixed an off-by-one error in the following loop. Since the array
-        // length is shape[dims-1]-1 *and* since we want one less dimension
-        // than that, the correct limit on this loop is shape[dims-2]-1. From
-        // Todd Karakasian.
-        // The saga continues; the loop test should be `i < shape[0]-1'. jhrg
-        // 9/12/96.
-        for (unsigned i = 0; i < shape[0] - 1; ++i) {
-            index = print_array(out, index, dims - 1, shape + 1);
-            out << ",";
+    	// read a value into the Array's prototype element
+        var()->read();
+        T value = static_cast<C*>(var())->value();
+
+        vector<T> tmp(length());
+        for (int64_t i = 0, end = length(); i < end; ++i) {
+        	tmp[i] = value;
         }
-        index = print_array(out, index, dims - 1, shape + 1);
-        out << "}";
 
-        return index;
+        set_value(tmp, length());
     }
-}
-
-void TestArray::output_values(std::ostream &out)
-{
-    unsigned int *shape = new unsigned int[dimensions(true)];
-    unsigned int index = 0;
-    for (Dim_iter i = dim_begin(); i != dim_end() && index < dimensions(true); ++i)
-        shape[index++] = dimension_size(i, true);
-
-    print_array(out, 0, dimensions(true), shape);
-
-    delete[] shape;
-    shape = 0;
 }
 
 bool TestArray::read()
@@ -275,118 +372,84 @@ bool TestArray::read()
     if (test_variable_sleep_interval > 0)
         sleep(test_variable_sleep_interval);
 
-    unsigned int array_len = length(); // elements in the array
+    int64_t array_len = length(); // elements in the array
 
     switch (var()->type()) {
-        case dods_byte_c:
+		// These are the DAP2 types and the classes that implement them all define
+		// the old buf2val() and val2buf() methods. For the new DAP4 types see below.
+        //case dods_byte_c:
+        //case dods_uint8_c:
         case dods_int16_c:
+        	m_cardinal_type_read_helper<dods_int16, Int16>();
+        	break;
+
         case dods_uint16_c:
+        	m_cardinal_type_read_helper<dods_uint16, UInt16>();
+        	break;
+
         case dods_int32_c:
-        case dods_uint32_c:
+        	m_cardinal_type_read_helper<dods_int32, Int32>();
+        	break;
+
+       case dods_uint32_c:
+        	m_cardinal_type_read_helper<dods_uint32, UInt32>();
+        	break;
+
         case dods_float32_c:
-        case dods_float64_c: {
+        	m_cardinal_type_read_helper<dods_float32, Float32>();
+        	break;
 
-            //char *tmp = new char[width()];
-            vector<char> tmp(width(true));
+        case dods_float64_c:
+        	m_cardinal_type_read_helper<dods_float64, Float64>();
+        	break;
 
-            unsigned int elem_wid = var()->width(); // size of an element
-            char *elem_val = 0; // Null forces buf2val to allocate memory
+        case dods_int8_c:
+        	m_cardinal_type_read_helper<dods_int8, Int8>();
+        	break;
 
-            if (get_series_values()) {
-                // Special case code for vectors that have specific names.
-                // This is used to test code that works with lat/lon data.
-                if (dimensions() == 1 && name_is_special()) {
-                    build_special_values();
-                }
-                else if (dimensions() == 2) {
-                    constrained_matrix(&tmp[0]);
-                    val2buf(&tmp[0]);
-                }
-                else {
-                    for (unsigned i = 0; i < array_len; ++i) {
-                        var()->read();
-                        var()->buf2val((void **) &elem_val); // internal buffer to ELEM_VAL
-                        memcpy(&tmp[0] + i * elem_wid, elem_val, elem_wid);
-                        var()->set_read_p(false); // pick up the next value
-                    }
-                    val2buf(&tmp[0]);
-                }
-            }
-            else {
-                var()->read();
-                var()->buf2val((void **) &elem_val);
+        case dods_byte_c:
+        case dods_uint8_c:
+        	m_cardinal_type_read_helper<dods_byte, Byte>();
+        	break;
 
-                for (unsigned i = 0; i < array_len; ++i) {
-                    memcpy(&tmp[0] + i * elem_wid, elem_val, elem_wid);
-                }
+        case dods_int64_c:
+        	m_cardinal_type_read_helper<dods_int64, Int64>();
+        	break;
 
-                val2buf(&tmp[0]);
-            }
-
-            delete elem_val;
-            elem_val = 0; // alloced in buf2val()
-            // delete[] tmp; tmp = 0;	// alloced above
-
-            break;
-        }
+        case dods_uint64_c:
+        	m_cardinal_type_read_helper<dods_uint64, UInt64>();
+        	break;
 
         case dods_str_c:
         case dods_url_c: {
-            // char *tmp = new char[width()];
-            vector<char> tmp(width(true));
-            unsigned int elem_wid = var()->width(); // size of an element
-            char *elem_val = 0; // Null forces buf2val to allocate memory
+        	vector<string> tmp(array_len);
 
-            if (get_series_values()) {
-                for (unsigned i = 0; i < array_len; ++i) {
-                    var()->read();
-                    var()->buf2val((void **) &elem_val); // internal buffer to ELEM_VAL
-                    memcpy(&tmp[0] + i * elem_wid, elem_val, elem_wid);
-                    var()->set_read_p(false); // pick up the next value
-                }
-            }
-            else {
-                var()->read();
-                var()->buf2val((void **) &elem_val);
+			if (get_series_values()) {
+				for (int64_t i = 0; i < array_len; ++i) {
+					var()->read();
+					// URL isa Str
+					tmp[i] = static_cast<Str*>(var())->value();
+					var()->set_read_p(false); // pick up the next value
+				}
+			}
+			else {
+				var()->read();
+				string value = static_cast<Str*>(var())->value();
 
-                for (unsigned i = 0; i < array_len; ++i) {
-                    memcpy(&tmp[0] + i * elem_wid, elem_val, elem_wid);
-                }
-            }
+				for (unsigned i = 0; i < array_len; ++i)
+					tmp[i] = value;
+			}
 
-            val2buf(&tmp[0]);
-
-            delete elem_val;
-            elem_val = 0; // alloced in buf2val()
-            // delete[] tmp; tmp = 0;  // alloced above
-
-            break;
+			set_value(tmp, array_len);
+			break;
         }
 
         case dods_structure_c:
-
-            // Arrays of Structure, ... must load each element into the array
-            // manually. Because these are stored as C++/DODS objects, there is
-            // no need to manipulate blocks of memory by hand as in the above
-            // case.
-            // NB: Strings are handled like Byte, etc. because, even though they
-            // are represented using C++ objects they are *not* represented using
-            // objects defined by DODS, while Structure, etc. are.
-
             for (unsigned i = 0; i < array_len; ++i) {
-
-                // Create a new object that is a copy of `var()' (whatever that
-                // is). The copy will have the value read in by the read() mfunc
-                // executed before this switch stmt.
-
+            	// Copy the prototype and read a value into it
                 BaseType *elem = var()->ptr_duplicate();
-
-                // read values into the new instance.
-
                 elem->read();
-
-                // now load the new instance in the array.
-
+                // Load the new value into this object's array
                 set_vec(i, elem);
             }
 

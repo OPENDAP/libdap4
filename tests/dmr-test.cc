@@ -103,6 +103,9 @@ test_dap4_parser(const string &name, bool debug, bool print)
 void
 set_series_values(DMR *dmr, bool state)
 {
+	if (state == true)
+		dmr->root()->set_read_p(false);
+
 	TestCommon *tc = dynamic_cast<TestCommon*>(dmr->root());
 	if (tc)
 		tc->set_series_values(state);
@@ -122,7 +125,7 @@ set_series_values(DMR *dmr, bool state)
  * @return The name of the file that hods the response.
  */
 string
-send_data(DMR *dataset, const string &constraint, bool series_values, bool multipart)
+send_data(DMR *dataset, const string &constraint, bool series_values)//, bool multipart)
 {
     set_series_values(dataset, series_values);
 
@@ -137,10 +140,13 @@ send_data(DMR *dataset, const string &constraint, bool series_values, bool multi
 
     string file_name = dataset->name() + "_data.bin";
     ofstream out(file_name.c_str(), ios::out|ios::trunc|ios::binary);
+#if 0
     if (multipart)
     	rb.send_data_dmr_multipart(out, *dataset, eval, "start", "boundary", true);
     else
-    	rb.send_data_dmr(out, *dataset, eval, true);
+#endif
+
+    rb.send_data_dmr(out, *dataset, eval, true);
     out.close();
 
     return file_name;
@@ -213,21 +219,20 @@ static void usage()
             << "t: parse, send and then read the response file" << endl
             << "d: turn on detailed parser debugging" << endl
             << "x: print the binary object(s) built by the parse, send or trans operations." << endl
-            << "m: use multipart MIME for the response (default is to follow the spec)." << endl;
+            << "e: use sEries values." << endl;
 }
 
 int
 main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "p:s:t:xd");
+    GetOpt getopt(argc, argv, "p:s:t:xde");
     int option_char;
     bool parse = false;
     bool debug = false;
     bool print = false;
     bool send = false;
     bool trans = false;
-    //bool multipart = false;
-    //bool chunked_output = false;
+    bool series_values = false;
     string name = "";
 
     // process options
@@ -257,6 +262,10 @@ main(int argc, char *argv[])
             print = true;
             break;
 
+        case 'e':
+        	series_values = true;
+        	break;
+
         case '?':
         case 'h':
             usage();
@@ -283,7 +292,7 @@ main(int argc, char *argv[])
         if (send) {
         	DMR *dmr = test_dap4_parser(name, debug, print);
 
-        	string file_name = send_data(dmr, "", false, false /*multipart*/);
+        	string file_name = send_data(dmr, "", series_values);//, false /*multipart*/);
         	if (print)
         		cout << "Response file: " << file_name << endl;
         	delete dmr;
@@ -291,7 +300,7 @@ main(int argc, char *argv[])
 
         if (trans) {
         	DMR *dmr = test_dap4_parser(name, debug, print);
-        	string file_name = send_data(dmr, "", false, false /*multipart*/);
+        	string file_name = send_data(dmr, "", series_values);//, false /*multipart*/);
         	if (print)
         		cout << "Response file: " << file_name << endl;
         	delete dmr;

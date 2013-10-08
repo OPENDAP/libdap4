@@ -23,6 +23,8 @@
 
 #include "D4StreamUnMarshaller.h"
 
+#include "Type.h"
+
 #include "GetOpt.h"
 #include "debug.h"
 
@@ -43,8 +45,9 @@ class D4UnMarshallerTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(test_str);
     CPPUNIT_TEST(test_opaque);
     CPPUNIT_TEST(test_vector);
+#if 0
     CPPUNIT_TEST(test_varying_vector);
-
+#endif
     CPPUNIT_TEST_SUITE_END( );
 
     static inline bool is_host_big_endian()
@@ -220,6 +223,9 @@ public:
         try {
             in.open("test_opaque_1_bin.dat", fstream::binary | fstream::in);
             D4StreamUnMarshaller dsm(in, is_host_big_endian());
+#if 0
+            // removed this test since DAP4 specifies that the size of an opaque
+            // value is not known until the value is read. jhrg 10/7/13
 
             // Test both get_opaque calls; this one that expects the caller
             // to allocate memory.
@@ -230,14 +236,14 @@ public:
             string ck = dsm.get_checksum_str();
             DBG2(cerr << "ck: " << ck << endl);
             CPPUNIT_ASSERT(ck == "199ad7f5");
-
+#endif
             char *buf2;
-            unsigned int len;
-            dsm.get_opaque(&buf2, len);
+            int64_t len;
+            dsm.get_opaque_dap4(&buf2, len);
             CPPUNIT_ASSERT(len == 32768);
             for (int i = 0; i < 32768; ++i)
                 CPPUNIT_ASSERT(buf2[i] == i % (1 << 7));
-            ck = dsm.get_checksum_str();
+            string ck = dsm.get_checksum_str();
             DBG2(cerr << "ck: " << ck << endl);
             CPPUNIT_ASSERT(ck == "199ad7f5");
 
@@ -271,7 +277,7 @@ public:
             CPPUNIT_ASSERT(ck == "199ad7f5");
 
             vector<dods_int32> buf2(32768);
-            dsm.get_vector(reinterpret_cast<char*>(&buf2[0]), 32768, sizeof(dods_int32), dods_int32_c);
+            dsm.get_vector(reinterpret_cast<char*>(&buf2[0]), 32768, sizeof(dods_int32));
             for (int i = 0; i < 32768; ++i)
                 CPPUNIT_ASSERT(buf2[i] == i % (1 << 9));
             ck = dsm.get_checksum_str();
@@ -279,7 +285,7 @@ public:
             CPPUNIT_ASSERT(ck == "5c1bf29f");
 
             vector<dods_float64> buf3(32768);
-            dsm.get_vector(reinterpret_cast<char*>(&buf3[0]), 32768, sizeof(dods_float64), dods_float64_c);
+            dsm.get_vector_float64(reinterpret_cast<char*>(&buf3[0]), 32768);
             for (int i = 0; i < 32768; ++i) {
                 if (buf3[i] != i % (1 << 9))
                     cerr << "buf3[" << i << "]: " << buf3[i] << endl;
@@ -298,7 +304,7 @@ public:
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
-
+#if 0
     void test_varying_vector() {
         fstream in;
         in.exceptions(ostream::failbit | ostream::badbit);
@@ -352,6 +358,7 @@ public:
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
+#endif
 
 };
 

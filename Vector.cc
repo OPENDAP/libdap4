@@ -38,7 +38,7 @@
 #include <cstring>
 #include <cassert>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include <sstream>
 #include <vector>
@@ -109,7 +109,7 @@ void Vector::m_duplicate(const Vector & v)
 
 /**
  * @return whether the type of this Vector is a cardinal type
- * (ie stored in _buf)
+ * (i.e., stored in d_buf)
  */
 bool Vector::m_is_cardinal_type() const
 {
@@ -658,16 +658,12 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
 
     switch (d_proto->type()) {
         case dods_byte_c:
-        case dods_int8_c:
-        case dods_uint8_c:
             m.put_vector(d_buf, num, *this);
             break;
         case dods_int16_c:
         case dods_uint16_c:
         case dods_int32_c:
         case dods_uint32_c:
-        case dods_int64_c:
-        case dods_uint64_c:
         case dods_float32_c:
         case dods_float64_c:
             m.put_vector(d_buf, num, d_proto->width(), *this);
@@ -839,6 +835,7 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bo
         case dods_uint8_c:
             m.put_vector(d_buf, num);
             break;
+
         case dods_int16_c:
         case dods_uint16_c:
         case dods_int32_c:
@@ -847,6 +844,7 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bo
         case dods_uint64_c:
         	m.put_vector(d_buf, num, d_proto->width());
         	break;
+
         case dods_float32_c:
             m.put_vector_float32(d_buf, num);
             break;
@@ -859,8 +857,10 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bo
         case dods_url_c:
             assert((int64_t)d_str.capacity() >= num);
 
-            for (int64_t i = 0; i < num; ++i)
+            for (int64_t i = 0; i < num; ++i) {
+            	cerr << "String values: " << d_str[i] << endl;
                 m.put_str(d_str[i]);
+            }
 
             break;
 
@@ -912,6 +912,8 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 
     switch (d_proto->type()) {
         case dods_byte_c:
+        case dods_int8_c:
+        case dods_uint8_c:
         	um.get_vector((char *)d_buf, length());
         	break;
 
@@ -919,6 +921,8 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
         case dods_uint16_c:
         case dods_int32_c:
         case dods_uint32_c:
+        case dods_int64_c:
+        case dods_uint64_c:
         	um.get_vector((char *)d_buf, length(), d_proto->width());
         	break;
 
@@ -937,9 +941,9 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
             d_capacity = len; // capacity is number of strings we can fit.
 
             for (int64_t i = 0; i < len; ++i) {
-                string str;
-                um.get_str(str);
-                d_str[i] = str;
+                // string str;
+                um.get_str(d_str[i]);
+                // d_str[i] = str;
 
             }
 
@@ -1031,7 +1035,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
             if (!d_buf)
                 m_create_cardinal_data_buffer_for_type(length());
 
-            // width(true) returns the size given the constraint
+            // width(true) returns the size in bytes given the constraint
             memcpy(d_buf, val, width(true));
             break;
 
@@ -1039,7 +1043,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
         case dods_url_c:
             // Assume val points to an array of C++ string objects. Copy
             // them into the vector<string> field of this object.
-        	// TODO d_length or length() here?
+        	// Note: d_length is the number of elements in the Vector
             d_str.resize(d_length);
             d_capacity = d_length;
             for (int i = 0; i < d_length; ++i)
@@ -1117,7 +1121,7 @@ unsigned int Vector::buf2val(void **val)
                 *val = new char[wid];
 
             memcpy(*val, d_buf, wid);
-            return width();
+            return wid; // width(); jhrg 10/7/13
             break;
 
         case dods_str_c:
@@ -1430,6 +1434,14 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 /** @brief set the value of a byte array */
 bool Vector::set_value(dods_byte *val, int sz)
 {
+	assert(var()->type() == dods_byte_c || var()->type() == dods_uint8_c);
+	assert(val);
+
+    m_set_cardinal_values_internal<dods_byte> (val, sz);
+    return true;
+
+#if 0
+    // TODO Recoce all of these like this and drop the bool return type?
     if (var()->type() == dods_byte_c && val) {
         m_set_cardinal_values_internal<dods_byte> (val, sz);
         return true;
@@ -1437,11 +1449,13 @@ bool Vector::set_value(dods_byte *val, int sz)
     else {
         return false;
     }
+#endif
 }
 
 /** @brief set the value of a byte array */
 bool Vector::set_value(vector<dods_byte> &val, int sz)
 {
+	// TODO Drop the extra call or is it not worth the optimization cost?
     return set_value(&val[0], sz);
 }
 

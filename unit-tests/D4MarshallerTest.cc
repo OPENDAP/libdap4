@@ -46,8 +46,9 @@ class D4MarshallerTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(test_str);
     CPPUNIT_TEST(test_opaque);
     CPPUNIT_TEST(test_vector);
+#if 0
     CPPUNIT_TEST(test_varying_vector);
-
+#endif
     CPPUNIT_TEST_SUITE_END( );
 
     /**
@@ -219,15 +220,15 @@ public:
 
             dsm.reset_checksum();
 
-            dsm.put_opaque(reinterpret_cast<char*>(&buf[0]), 32768);
+            dsm.put_opaque_dap4(reinterpret_cast<char*>(&buf[0]), 32768);
             dsm.put_checksum();
             DBG(cerr << "test_opaque: checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
-
+#if 0
             dsm.put_opaque(reinterpret_cast<char*>(&buf[0]), 32768);
             dsm.put_checksum();
             DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
-
+#endif
             if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_opaque_1_bin.dat");
             CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_opaque_1_bin.dat"));
        }
@@ -256,7 +257,7 @@ public:
             for (int i = 0; i < 32768; ++i)
                 buf2[i] = i % (1 << 9);
 
-            dsm.put_vector(reinterpret_cast<char*>(&buf2[0]), 32768, sizeof(dods_int32), dods_int32_c);
+            dsm.put_vector(reinterpret_cast<char*>(&buf2[0]), 32768, sizeof(dods_int32));
             dsm.put_checksum();
             DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
@@ -265,7 +266,7 @@ public:
             for (int i = 0; i < 32768; ++i)
                 buf3[i] = i % (1 << 9);
 
-            dsm.put_vector(reinterpret_cast<char*>(&buf3[0]), 32768, sizeof(dods_float64), dods_float64_c);
+            dsm.put_vector_float64(reinterpret_cast<char*>(&buf3[0]), 32768);
             dsm.put_checksum();
             DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
 
@@ -277,7 +278,7 @@ public:
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
-
+#if 0
     void test_varying_vector() {
         ostringstream oss;
         try {
@@ -297,7 +298,7 @@ public:
             for (int i = 0; i < 32768; ++i)
                 buf2[i] = i % (1 << 9);
 
-            dsm.put_varying_vector(reinterpret_cast<char*>(&buf2[0]), 32768, sizeof(dods_int32), dods_int32_c);
+            dsm.put_varying_vector(reinterpret_cast<char*>(&buf2[0]), 32768, sizeof(dods_int32));
             dsm.put_checksum();
             DBG(cerr << "second checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
@@ -318,7 +319,7 @@ public:
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
-
+#endif
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( D4MarshallerTest ) ;
@@ -352,7 +353,7 @@ int main(int argc, char*argv[]) {
     }
     else {
         while (i < argc) {
-            test = string("DAP4MarshallerTest::") + argv[i++];
+            test = string("D4MarshallerTest::") + argv[i++];
 
             wasSuccessful = wasSuccessful && runner.run(test);
         }

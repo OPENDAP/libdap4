@@ -43,7 +43,7 @@ using namespace libdap ;
 
 class TestStructure: public Structure, public TestCommon {
     bool d_series_values;
-    void _duplicate(const TestStructure &ts);
+    void m_duplicate(const TestStructure &ts);
 
 public:
     TestStructure(const string &n);

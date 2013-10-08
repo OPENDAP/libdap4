@@ -97,21 +97,18 @@ TestStr::output_values(std::ostream &out)
     print_val(out, "", false);
 }
 
-bool
-TestStr::read()
+bool TestStr::read()
 {
-    static int count = 0;
-    
-    if (read_p())
+	static int count = 0;
+
+	if (read_p()) return true;
+
+	if (test_variable_sleep_interval > 0) sleep(test_variable_sleep_interval);
+
+	string dods_str_test = "Silly test string: " + long_to_string(++count);
+	(void) val2buf(&dods_str_test);
+
+	set_read_p(true);
+
 	return true;
-
-    if (test_variable_sleep_interval > 0)
-	sleep(test_variable_sleep_interval);
-
-    string dods_str_test = "Silly test string: " + long_to_string(++count);
-    (void) val2buf(&dods_str_test);
-
-    set_read_p(true);
-
-    return true;
 }
