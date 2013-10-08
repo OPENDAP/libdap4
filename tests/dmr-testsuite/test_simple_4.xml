@@ -2,7 +2,7 @@
 
 <!-- Attributes -->
 
-<Dataset name="test_dap4_1" dapVersion="4.0" dmrVersion="1.0" xml:base="file:dap4/test_dap4_1.xml"
+<Dataset name="test_simple_4" dapVersion="4.0" dmrVersion="1.0" xml:base="file:dap4/test_simple_4.xml"
   xmlns="http://xml.opendap.org/ns/DAP/4.0#"
   xmlns:dap="http://xml.opendap.org/ns/DAP/4.0#">
   

@@ -1,6 +1,6 @@
 Parse successful
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_array_4.xml" dapVersion="4.0" dmrVersion="1.0" name="test_array_4">
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_array_5.xml" dapVersion="4.0" dmrVersion="1.0" name="test_array_5">
     <Dimension name="row" size="3"/>
     <Dimension name="col" size="4"/>
     <Int8 name="a">
@@ -21,8 +21,4 @@ Parse successful
     </UInt64>
 </Dataset>
 
-D4Group.cc: 260:Wrote CRC32: 82c3d109 for a
-D4Group.cc: 260:Wrote CRC32: bb99ff8a for b
-D4Group.cc: 260:Wrote CRC32: 38d2ecf4 for c
-D4Group.cc: 260:Wrote CRC32: 46d91cd0 for d
-Response file: test_array_4_data.bin
+Response file: test_array_5_data.bin

@@ -1,6 +1,6 @@
 Parse successful
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_dap5_1.xml" dapVersion="4.0" dmrVersion="1.0" name="test_dap5_1">
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_simple_5.xml" dapVersion="4.0" dmrVersion="1.0" name="test_simple_5">
     <Int8 name="i"/>
     <Int16 name="j"/>
     <Int32 name="k"/>
@@ -12,13 +12,4 @@ Parse successful
     <UInt64 name="uz"/>
 </Dataset>
 
-D4Group.cc: 260:Wrote CRC32: 12b88320 for i
-D4Group.cc: 260:Wrote CRC32: 6f6d1f7e for j
-D4Group.cc: 260:Wrote CRC32: 18df6c9e for k
-D4Group.cc: 260:Wrote CRC32: 0c463091 for z
-D4Group.cc: 260:Wrote CRC32: ff000000 for ui
-D4Group.cc: 260:Wrote CRC32: ff000000 for uii
-D4Group.cc: 260:Wrote CRC32: 1cb109fd for uj
-D4Group.cc: 260:Wrote CRC32: 9cf92d00 for uk
-D4Group.cc: 260:Wrote CRC32: 2144df1c for uz
-Response file: test_dap5_1_data.bin
+Response file: test_simple_5_data.bin
