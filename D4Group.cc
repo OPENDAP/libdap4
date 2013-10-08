@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "XMLWriter.h"
 #include "D4Attributes.h"

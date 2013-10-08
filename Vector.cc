@@ -857,10 +857,8 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bo
         case dods_url_c:
             assert((int64_t)d_str.capacity() >= num);
 
-            for (int64_t i = 0; i < num; ++i) {
-            	cerr << "String values: " << d_str[i] << endl;
+            for (int64_t i = 0; i < num; ++i)
                 m.put_str(d_str[i]);
-            }
 
             break;
 
