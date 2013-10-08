@@ -1,0 +1,95 @@
+# Process with autom4te to create an -*- Autotest -*- test suite.
+
+AT_INIT([dmr-test])
+
+AT_ARG_OPTION_ARG([generate-parse p],
+    [-p arg, --generate-parse=arg   Build the baseline file for parser test 'arg'],
+    [echo "./dmr-test -x -p dmr-testsuite/$at_arg_generate_parse > dmr-testsuite/$at_arg_generate_parse.baseline 2>&1";
+     ./dmr-test -x -p dmr-testsuite/$at_arg_generate_parse > dmr-testsuite/$at_arg_generate_parse.baseline 2>&1;
+     echo "Built baseline for dmr-testsuite/$at_arg_generate_parse";
+     exit],[])
+
+AT_ARG_OPTION_ARG([generate-send s],
+    [-s arg, --generate-send=arg   Build the baseline file for sender test 'arg'. 
+                                   This depends on the 'name' attribute in the xml matching the filename root],
+    [echo "./dmr-test -x -s dmr-testsuite/$at_arg_generate_send > dmr-testsuite/$at_arg_generate_send.send_base 2>&1";
+     ./dmr-test -x -s dmr-testsuite/$at_arg_generate_send > dmr-testsuite/$at_arg_generate_send.send_base 2>&1;
+     root_name=`basename $at_arg_generate_send .xml`;
+     cp ${root_name}_data.bin dmr-testsuite/;
+     echo "Built baseline for dmr-testsuite/$at_arg_generate_send";
+     exit],[])
+
+# Usage: _DMR_TEST($1 <flags>, $2 <dmr>, $3 <baseline file>, $4 <xfail?>)
+
+m4_define([_DMR_TEST], [
+    AT_SETUP([dmr-test $1 $2 ($4)])
+    AT_KEYWORDS([parse])
+
+    AT_CHECK([$abs_builddir/dmr-test $1 $2 || true], [], [stdout], [stderr])
+    AT_CHECK([diff -b -B $3 stdout || diff -b -B $3 stderr], [], [ignore],[],[])
+    AT_XFAIL_IF([test "$4" = "xfail"])
+    AT_CLEANUP
+])
+
+m4_define([DMR_PARSE], [
+    AT_SETUP([dmr-test -x -p $1 baseline: $1.baseline (pass/xfail: $2)])
+    AT_KEYWORDS([parse])
+
+    AT_CHECK([$abs_builddir/dmr-test -x -p $1 || true], [], [stdout], [stderr])
+    AT_CHECK([diff -b -B $2 stdout || diff -b -B $2 stderr], [], [ignore],[],[])
+    AT_XFAIL_IF([test "$3" = "xfail"])
+    AT_CLEANUP
+])
+
+m4_define([DMR_SEND], [
+    # Test the parser
+    AT_SETUP([dmr-test -x -s $1 baseline: $1.send_base (pass/xfail: $2)])
+    AT_KEYWORDS([send])
+    
+    baseline=$1.send_base
+    AT_CHECK([$abs_builddir/dmr-test -x -s $1 || true], [], [stdout], [stderr])
+    AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
+
+    binary="`basename $1 .xml`_data.bin"
+    AT_CHECK([cmp $abs_srcdir/$binary $abs_srcdir/dmr-testsuite/$binary])
+    
+    AT_XFAIL_IF([test "$3" = "xfail"])
+    AT_CLEANUP
+])
+
+m4_define([DMR_TRANS], [
+    # Test the parser
+    # _DMR_TEST([x -t], [$abs_srcdir/dmr-testsuite/$1], [$abs_srcdir/dmr-testsuite/$1.trans_base], $2)
+])
+
+DMR_PARSE([test_simple_1.xml], [pass])
+DMR_PARSE([test_simple_2.xml], [pass])
+DMR_PARSE([test_simple_3.xml], [pass])
+
+DMR_PARSE([test_simple_3_error_1.xml], [pass])
+DMR_PARSE([test_simple_3_error_2.xml], [pass])
+DMR_PARSE([test_simple_3_error_3.xml], [pass])
+
+DMR_PARSE([test_simple_4.xml], [pass])
+DMR_PARSE([test_simple_5.xml], [pass])
+
+DMR_PARSE([test_array_1.xml], [pass])
+DMR_PARSE([test_array_2.xml], [pass])
+DMR_PARSE([test_array_3.xml], [pass])
+DMR_PARSE([test_array_4.xml], [pass])
+DMR_PARSE([test_array_5.xml], [pass])
+
+DMR_SEND([test_simple_1.xml], [pass])
+DMR_SEND([test_simple_2.xml], [pass])
+DMR_SEND([test_simple_3.xml], [pass])
+DMR_SEND([test_simple_4.xml], [pass])
+DMR_SEND([test_simple_5.xml], [pass])
+
+DMR_SEND([test_array_1.xml], [pass])
+DMR_SEND([test_array_2.xml], [pass])
+DMR_SEND([test_array_3.xml], [pass])
+DMR_SEND([test_array_4.xml], [pass])
+DMR_SEND([test_array_5.xml], [pass])
+
+
+

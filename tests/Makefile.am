@@ -21,9 +21,9 @@ if DAP4_DEFINED
 check_PROGRAMS += dmr-test
 endif
 
-TESTS = DASTest DDSTest EXPRTest
+TESTS = DASTest DDSTest EXPRTest DMRTest
 
-dist_check_SCRIPTS = DASTest DDSTest EXPRTest atconfig atlocal
+dist_check_SCRIPTS = DASTest DDSTest EXPRTest DMRTest atconfig atlocal
 
 # Build the test drivers. The drivers all use the
 # subclassed types in Test*.cc and the TestTypesFactory.
@@ -63,10 +63,10 @@ TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite dmr-testsuite
 
 EXTRA_DIST = DASTest.at  $(DASTESTSUITE) DDSTest.at  $(DDSTESTSUITE) \
-	EXPRTest.at $(EXPRTESTSUITE) atlocal.in $(srcdir)/package.m4 \
-	$(DIRS_EXTRA)
+	EXPRTest.at $(EXPRTESTSUITE) DMRTest.at $(DMRTESTSUITE) \
+	atlocal.in $(srcdir)/package.m4 $(DIRS_EXTRA)
 
-DISTCLEANFILES = *.log DASTest.dir/* DDSTest.dir/* EXPRTest.dir/*
+DISTCLEANFILES = *.log DASTest.dir/* DDSTest.dir/* EXPRTest.dir/* DMRTest.dir/*
 
 ############## Autotest follows #####################
 
@@ -74,10 +74,15 @@ AUTOM4TE = autom4te
 
 DASTESTSUITE = $(srcdir)/DASTest 
 DASTESTSUITEFLAGS =
+
 DDSTESTSUITE = $(srcdir)/DDSTest 
 DDSTESTSUITEFLAGS =
+
 EXPRTESTSUITE = $(srcdir)/EXPRTest 
 EXPRTESTSUITEFLAGS =
+
+DMRTESTSUITE = $(srcdir)/DMRTest 
+DMRTESTSUITEFLAGS =
 
 clean-local:
 	test ! -f '$(DASTESTSUITE)' || $(SHELL) $(DASTESTSUITE) --clean
@@ -99,6 +104,11 @@ $(DDSTESTSUITE): $(srcdir)/DDSTest.at $(srcdir)/package.m4
 $(EXPRTESTSUITE): $(srcdir)/EXPRTest.at $(srcdir)/package.m4
 	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
 	mv $@.tmp $@
+
+$(DMRTESTSUITE): $(srcdir)/DMRTest.at $(srcdir)/package.m4
+	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
+	mv $@.tmp $@
+
 
 # The `:;' works around a Bash 3.2 bug when the output is not writable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
