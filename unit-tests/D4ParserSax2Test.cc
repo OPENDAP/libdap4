@@ -248,6 +248,11 @@ public:
         compare_dmr_round_trip_string_version("/D4-xml/DMR_7.2.xml", "/D4-xml/DMR_7.2_baseline.xml");
     }
 
+    void test_array_4()
+    {
+        compare_dmr_round_trip_string_version("/D4-xml/DMR_7.3.xml", "/D4-xml/DMR_7.3_baseline.xml");
+    }
+
     CPPUNIT_TEST_SUITE( D4ParserSax2Test );
 
     CPPUNIT_TEST(test_empty_dmr);
@@ -276,6 +281,7 @@ public:
     CPPUNIT_TEST(test_array_1);
     CPPUNIT_TEST(test_array_2);
     CPPUNIT_TEST(test_array_3);
+    CPPUNIT_TEST(test_array_4);
 
     CPPUNIT_TEST_SUITE_END();
 };
