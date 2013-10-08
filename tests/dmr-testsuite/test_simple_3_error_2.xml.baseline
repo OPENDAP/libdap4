@@ -1,0 +1,3 @@
+At line 1: The Enumeration 'e1' must have an integer type, instead the type 'Float64' was used.
+At line 1: Expected an Attribute, Enumeration, Dimension, Group or variable element; found 'Enumeration' instead.
+At line 1: The document contained unbalanced tags.

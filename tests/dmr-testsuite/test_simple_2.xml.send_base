@@ -1,0 +1,32 @@
+Parse successful
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_simple_1.xml" dapVersion="4.0" dmrVersion="1.0" name="test_dap4_1">
+    <Byte name="b"/>
+    <Int8 name="i8"/>
+    <UInt8 name="ui8"/>
+    <Int16 name="i16"/>
+    <UInt16 name="ui16"/>
+    <Int32 name="i32"/>
+    <UInt32 name="ui32"/>
+    <Int64 name="i64"/>
+    <UInt64 name="ui64"/>
+    <Float32 name="f32"/>
+    <Float64 name="f64"/>
+    <String name="s"/>
+    <URL name="u"/>
+</Dataset>
+
+D4Group.cc: 260:Wrote CRC32: ff000000 for b
+D4Group.cc: 260:Wrote CRC32: 12b88320 for i8
+D4Group.cc: 260:Wrote CRC32: ff000000 for ui8
+D4Group.cc: 260:Wrote CRC32: 6f6d1f7e for i16
+D4Group.cc: 260:Wrote CRC32: 1cb109fd for ui16
+D4Group.cc: 260:Wrote CRC32: 18df6c9e for i32
+D4Group.cc: 260:Wrote CRC32: 9cf92d00 for ui32
+D4Group.cc: 260:Wrote CRC32: 0c463091 for i64
+D4Group.cc: 260:Wrote CRC32: 2144df1c for ui64
+D4Group.cc: 260:Wrote CRC32: 1ae0f285 for f32
+D4Group.cc: 260:Wrote CRC32: 946c3797 for f64
+D4Group.cc: 260:Wrote CRC32: 3d9a4edd for s
+D4Group.cc: 260:Wrote CRC32: 08f792c4 for u
+Response file: test_dap4_1_data.bin

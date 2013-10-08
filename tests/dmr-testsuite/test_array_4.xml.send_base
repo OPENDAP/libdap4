@@ -1,0 +1,87 @@
+Parse successful
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_array_4.xml" dapVersion="4.0" dmrVersion="1.0" name="test_array_4">
+    <Dimension name="row" size="3"/>
+    <Dimension name="col" size="4"/>
+    <Byte name="a">
+        <Dim name="/row"/>
+        <Dim name="/col"/>
+    </Byte>
+    <Int16 name="b">
+        <Dim name="/row"/>
+        <Dim name="/col"/>
+    </Int16>
+    <Int32 name="c">
+        <Dim name="/row"/>
+        <Dim name="/col"/>
+    </Int32>
+    <UInt16 name="d">
+        <Dim name="/row"/>
+        <Dim name="/col"/>
+    </UInt16>
+    <UInt32 name="e">
+        <Dim name="/row"/>
+        <Dim name="/col"/>
+    </UInt32>
+    <Float32 name="f">
+        <Dim name="/row"/>
+        <Dim name="/col"/>
+    </Float32>
+    <Float64 name="g">
+        <Dim name="/row"/>
+        <Dim name="/col"/>
+    </Float64>
+    <String name="h">
+        <Dim name="/row"/>
+        <Dim name="/col"/>
+    </String>
+    <URL name="i">
+        <Dim name="/row"/>
+        <Dim name="/col"/>
+    </URL>
+    <Int32 name="x">
+        <Dim name="/row"/>
+        <Dim size="5"/>
+    </Int32>
+    <Int32 name="y">
+        <Dim size="5"/>
+        <Dim name="/col"/>
+    </Int32>
+</Dataset>
+
+D4Group.cc: 260:Wrote CRC32: bb99ff8a for a
+D4Group.cc: 260:Wrote CRC32: 4a491560 for b
+D4Group.cc: 260:Wrote CRC32: 46997ac6 for c
+D4Group.cc: 260:Wrote CRC32: aba172e1 for d
+D4Group.cc: 260:Wrote CRC32: 6dee122e for e
+D4Group.cc: 260:Wrote CRC32: 03d5492a for f
+D4Group.cc: 260:Wrote CRC32: d6764865 for g
+String values: Silly test string: 1
+String values: Silly test string: 1
+String values: Silly test string: 1
+String values: Silly test string: 1
+String values: Silly test string: 1
+String values: Silly test string: 1
+String values: Silly test string: 1
+String values: Silly test string: 1
+String values: Silly test string: 1
+String values: Silly test string: 1
+String values: Silly test string: 1
+String values: Silly test string: 1
+D4Group.cc: 260:Wrote CRC32: 2004aea7 for h
+String values: http://dcz.gso.uri.edu/avhrr-archive/archive.html
+String values: http://dcz.gso.uri.edu/avhrr-archive/archive.html
+String values: http://dcz.gso.uri.edu/avhrr-archive/archive.html
+String values: http://dcz.gso.uri.edu/avhrr-archive/archive.html
+String values: http://dcz.gso.uri.edu/avhrr-archive/archive.html
+String values: http://dcz.gso.uri.edu/avhrr-archive/archive.html
+String values: http://dcz.gso.uri.edu/avhrr-archive/archive.html
+String values: http://dcz.gso.uri.edu/avhrr-archive/archive.html
+String values: http://dcz.gso.uri.edu/avhrr-archive/archive.html
+String values: http://dcz.gso.uri.edu/avhrr-archive/archive.html
+String values: http://dcz.gso.uri.edu/avhrr-archive/archive.html
+String values: http://dcz.gso.uri.edu/avhrr-archive/archive.html
+D4Group.cc: 260:Wrote CRC32: 546a7c3d for i
+D4Group.cc: 260:Wrote CRC32: e787d509 for x
+D4Group.cc: 260:Wrote CRC32: 972f55fc for y
+Response file: test_array_4_data.bin
