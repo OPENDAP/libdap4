@@ -2,21 +2,28 @@
 
 AT_INIT([dmr-test])
 
-AT_ARG_OPTION_ARG([generate-parse p],
-    [-p arg, --generate-parse=arg   Build the baseline file for parser test 'arg'],
+AT_ARG_OPTION_ARG([generate-parse],
+    [--generate-parse=arg   Build the baseline file for parser test 'arg'],
     [echo "./dmr-test -x -p $at_arg_generate_parse > $at_arg_generate_parse.baseline 2>&1";
      ./dmr-test -x -p $at_arg_generate_parse > $at_arg_generate_parse.baseline 2>&1;
      echo "Built baseline for $at_arg_generate_parse";
      exit],[])
 
-AT_ARG_OPTION_ARG([generate-send s],
-    [-s arg, --generate-send=arg   Build the baseline file for sender test 'arg'. 
-                                   This depends on the 'name' attribute in the xml matching the filename root],
+AT_ARG_OPTION_ARG([generate-send],
+    [--generate-send=arg   Build the baseline file for sender test 'arg'. 
+                           This depends on the 'name' attribute in the xml matching the filename root],
     [echo "./dmr-test -x -s $at_arg_generate_send > $at_arg_generate_send.send_base 2>&1";
      ./dmr-test -x -s $at_arg_generate_send > $at_arg_generate_send.send_base 2>&1;
      root_name=`basename $at_arg_generate_send .xml`;
      cp ${root_name}_data.bin dmr-testsuite/;
      echo "Built baseline for $at_arg_generate_send";
+     exit],[])
+
+AT_ARG_OPTION_ARG([generate-trans],
+    [--generate-trans=arg  Build the baseline file for roundtrip transmission test 'arg'],
+    [echo "./dmr-test -x -t $at_arg_generate_trans > $at_arg_generate_trans.trans_base 2>&1";
+     ./dmr-test -x -t $at_arg_generate_trans > $at_arg_generate_trans.trans_base 2>&1;
+     echo "Built baseline for $at_arg_generate_trans";
      exit],[])
 
 # Usage DMR_PARSE $1 <test_input> $2 <pass/xfail>
@@ -36,8 +43,11 @@ m4_define([DMR_PARSE], [
     AT_CLEANUP
 ])
 
+# Usage DMR_SEND $1 <test_input> $2 <pass/xfail>
+# This code tests the parser output and does a binary compare on the 'reponse document'
+# built by the 'sender'.
 m4_define([DMR_SEND], [
-    # Test sending data (i.e., writing the Data DMR to a file
+    # Test sending data (i.e., writing the Data DMR to a file)
     AT_SETUP([send $1])
     AT_KEYWORDS([send])
     
@@ -52,13 +62,25 @@ m4_define([DMR_SEND], [
     # like the current date/time.
     AT_CHECK([cmp -s $abs_srcdir/$binary $abs_srcdir/dmr-testsuite/$binary 250 250])
     
-    AT_XFAIL_IF([test "$3" = "xfail"])
+    AT_XFAIL_IF([test "$2" = "xfail"])
     AT_CLEANUP
 ])
 
+# Usage DMR_TRANS $1 <test_input> $2 <pass/xfail>
+# This code tests the values printed when the received document is decoded.
 m4_define([DMR_TRANS], [
-    # Test the parser
-    # _DMR_TEST([x -t], [$abs_srcdir/dmr-testsuite/$1], [$abs_srcdir/dmr-testsuite/$1.trans_base], $2)
+    # Test transmitting data (i.e., writing the Data DMR to a file and then decoding it)
+    AT_SETUP([trans/receive $1])
+    AT_KEYWORDS([trans])
+    
+    input=$abs_srcdir/$1
+    baseline=$input.trans_base
+
+    AT_CHECK([$abs_builddir/dmr-test -x -t $input || true], [], [stdout], [stderr])
+    AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
+    
+    AT_XFAIL_IF([test "$2" = "xfail"])
+    AT_CLEANUP
 ])
 
 DMR_PARSE([dmr-testsuite/test_simple_1.xml], [pass])
@@ -78,6 +100,8 @@ DMR_PARSE([dmr-testsuite/test_array_3.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_4.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_5.xml], [pass])
 
+# Send: Test building the response
+
 DMR_SEND([dmr-testsuite/test_simple_1.xml], [pass])
 DMR_SEND([dmr-testsuite/test_simple_2.xml], [pass])
 DMR_SEND([dmr-testsuite/test_simple_3.xml], [pass])
@@ -89,6 +113,20 @@ DMR_SEND([dmr-testsuite/test_array_2.xml], [pass])
 DMR_SEND([dmr-testsuite/test_array_3.xml], [pass])
 DMR_SEND([dmr-testsuite/test_array_4.xml], [pass])
 DMR_SEND([dmr-testsuite/test_array_5.xml], [pass])
+
+# Transmit: Test building and then decoding the response
+
+DMR_TRANS([dmr-testsuite/test_simple_1.xml], [pass])
+DMR_TRANS([dmr-testsuite/test_simple_2.xml], [pass])
+DMR_TRANS([dmr-testsuite/test_simple_3.xml], [pass])
+DMR_TRANS([dmr-testsuite/test_simple_4.xml], [pass])
+DMR_TRANS([dmr-testsuite/test_simple_5.xml], [pass])
+
+DMR_TRANS([dmr-testsuite/test_array_1.xml], [pass])
+DMR_TRANS([dmr-testsuite/test_array_2.xml], [pass])
+DMR_TRANS([dmr-testsuite/test_array_3.xml], [pass])
+DMR_TRANS([dmr-testsuite/test_array_4.xml], [pass])
+DMR_TRANS([dmr-testsuite/test_array_5.xml], [pass])
 
 
 

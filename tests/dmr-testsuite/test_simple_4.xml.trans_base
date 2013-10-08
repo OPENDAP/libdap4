@@ -1,0 +1,25 @@
+Parse successful
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_simple_4.xml" dapVersion="4.0" dmrVersion="1.0" name="test_simple_4">
+    <Int32 name="x">
+        <Attribute name="long_name" type="String">
+            <value>x_axis_value</value>
+        </Attribute>
+    </Int32>
+</Dataset>
+
+Response file: test_simple_4_data.bin
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_simple_4.xml" dapVersion="4.0" dmrVersion="1.0" name="test_simple_4">
+    <Int32 name="x">
+        <Attribute name="long_name" type="String">
+            <value>x_axis_value</value>
+        </Attribute>
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>18df6c9e</value>
+        </Attribute>
+    </Int32>
+</Dataset>
+
+The data:
+{ 123456789 }

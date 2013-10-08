@@ -1,0 +1,66 @@
+Parse successful
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_simple_5.xml" dapVersion="4.0" dmrVersion="1.0" name="test_simple_5">
+    <Int8 name="i"/>
+    <Int16 name="j"/>
+    <Int32 name="k"/>
+    <Int64 name="z"/>
+    <Byte name="ui"/>
+    <UInt8 name="uii"/>
+    <UInt16 name="uj"/>
+    <UInt32 name="uk"/>
+    <UInt64 name="uz"/>
+</Dataset>
+
+Response file: test_simple_5_data.bin
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_simple_5.xml" dapVersion="4.0" dmrVersion="1.0" name="test_simple_5">
+    <Int8 name="i">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>12b88320</value>
+        </Attribute>
+    </Int8>
+    <Int16 name="j">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>6f6d1f7e</value>
+        </Attribute>
+    </Int16>
+    <Int32 name="k">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>18df6c9e</value>
+        </Attribute>
+    </Int32>
+    <Int64 name="z">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>0c463091</value>
+        </Attribute>
+    </Int64>
+    <Byte name="ui">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>ff000000</value>
+        </Attribute>
+    </Byte>
+    <UInt8 name="uii">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>ff000000</value>
+        </Attribute>
+    </UInt8>
+    <UInt16 name="uj">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>1cb109fd</value>
+        </Attribute>
+    </UInt16>
+    <UInt32 name="uk">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>9cf92d00</value>
+        </Attribute>
+    </UInt32>
+    <UInt64 name="uz">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>2144df1c</value>
+        </Attribute>
+    </UInt64>
+</Dataset>
+
+The data:
+{ 127, 32000, 123456789, 72057594037927935, 255, 255, 64000, 4026531840, 18446744073709551615 }

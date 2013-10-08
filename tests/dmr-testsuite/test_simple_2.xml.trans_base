@@ -1,0 +1,90 @@
+Parse successful
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_simple_2.xml" dapVersion="4.0" dmrVersion="1.0" name="test_simple_2">
+    <Byte name="b"/>
+    <Int8 name="i8"/>
+    <UInt8 name="ui8"/>
+    <Int16 name="i16"/>
+    <UInt16 name="ui16"/>
+    <Int32 name="i32"/>
+    <UInt32 name="ui32"/>
+    <Int64 name="i64"/>
+    <UInt64 name="ui64"/>
+    <Float32 name="f32"/>
+    <Float64 name="f64"/>
+    <String name="s"/>
+    <URL name="u"/>
+</Dataset>
+
+Response file: test_simple_2_data.bin
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_simple_2.xml" dapVersion="4.0" dmrVersion="1.0" name="test_simple_2">
+    <Byte name="b">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>ff000000</value>
+        </Attribute>
+    </Byte>
+    <Int8 name="i8">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>12b88320</value>
+        </Attribute>
+    </Int8>
+    <UInt8 name="ui8">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>ff000000</value>
+        </Attribute>
+    </UInt8>
+    <Int16 name="i16">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>6f6d1f7e</value>
+        </Attribute>
+    </Int16>
+    <UInt16 name="ui16">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>1cb109fd</value>
+        </Attribute>
+    </UInt16>
+    <Int32 name="i32">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>18df6c9e</value>
+        </Attribute>
+    </Int32>
+    <UInt32 name="ui32">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>9cf92d00</value>
+        </Attribute>
+    </UInt32>
+    <Int64 name="i64">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>0c463091</value>
+        </Attribute>
+    </Int64>
+    <UInt64 name="ui64">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>2144df1c</value>
+        </Attribute>
+    </UInt64>
+    <Float32 name="f32">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>1ae0f285</value>
+        </Attribute>
+    </Float32>
+    <Float64 name="f64">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>946c3797</value>
+        </Attribute>
+    </Float64>
+    <String name="s">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>3d9a4edd</value>
+        </Attribute>
+    </String>
+    <URL name="u">
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <value>08f792c4</value>
+        </Attribute>
+    </URL>
+</Dataset>
+
+The data:
+{ 255, 127, 255, 32000, 64000, 123456789, 4026531840, 72057594037927935, 18446744073709551615, 99.999, 99.999, "Silly test string: 1", "http://dcz.gso.uri.edu/avhrr-archive/archive.html" }
