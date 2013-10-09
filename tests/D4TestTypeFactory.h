@@ -32,7 +32,7 @@
 
 using namespace libdap ;
 
-/** A factory for the TestByte, ..., TestGrid types.
+/** A factory for the DAP4 TestByte, ...,  types.
     @author James Gallagher */
 class D4TestTypeFactory : public D4BaseTypeFactory {
 public:
@@ -61,22 +61,20 @@ public:
     virtual Float32 *NewFloat32(const string &n = "") const;
     virtual Float64 *NewFloat64(const string &n = "") const;
 
+    // FIXME Define these
+#if 0
+    virtual Opaque *NewOpaque(const string &n = "") const;
+    virtual D4Enum *NewEnum(const string &n = "", Type type = dods_null_c) const;
+#endif
+
     virtual Str *NewStr(const string &n = "") const;
     virtual Url *NewUrl(const string &n = "") const;
     virtual Url *NewURL(const string &n = "") const;
 
-#if 0
-    virtual D4Enum *NewEnum(const string &n = "", Type type = dods_null_c) const;
-#endif
     virtual Structure *NewStructure(const string &n = "") const;
+    virtual D4Sequence *NewD4Sequence(const string &n = "") const;
 
     virtual D4Group *NewGroup(const string &n = "") const;
-
-    // FIXME Define these
-#if 0
-    virtual Opaque *NewOpaque(const string &n = "") const;
-    virtual D4Array *NewArray(const string &n = "", BaseType *v = 0) const;
-#endif
 
     virtual Array *NewArray(const string &n = "", BaseType *v = 0) const;
 };

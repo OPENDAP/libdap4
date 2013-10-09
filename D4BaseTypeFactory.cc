@@ -50,11 +50,8 @@
 #include "Array.h"
 
 #include "Structure.h"
-#include "Sequence.h"
+#include "D4Sequence.h"
 
-#if 0
-#include "Grid.h"
-#endif
 #include "D4Group.h"
 
 #include "D4BaseTypeFactory.h"
@@ -100,14 +97,11 @@ BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
             return NewStructure(name);
 
         case dods_sequence_c:
-            throw InternalErr(__FILE__, __LINE__, "Not yet implemented for DAP4.");
+            return NewD4Sequence(name);
+
 #if 0
         case dods_enum_c:
             return  NewEnum(name);
-#endif
-#if 0
-            // removed jhrg 10/2/13
-        case dods_array4_c:
 #endif
         case dods_array_c:
             return NewArray(name);
@@ -236,6 +230,12 @@ Structure *
 D4BaseTypeFactory::NewStructure(const string &n) const
 {
     return new Structure(n);
+}
+
+D4Sequence *
+D4BaseTypeFactory::NewD4Sequence(const string &n) const
+{
+	return new D4Sequence(n);
 }
 
 D4Group *

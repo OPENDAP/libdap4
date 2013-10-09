@@ -25,7 +25,7 @@
 
 
 #include <string>
-#if 1
+
 #include "TestByte.h"
 
 #include "TestInt8.h"
@@ -47,9 +47,8 @@
 #include "TestArray.h"
 #include "TestStructure.h"
 
+#include "TestD4Sequence.h"
 #include "TestD4Group.h"
-
-#endif
 
 #include "D4TestTypeFactory.h"
 
@@ -90,20 +89,22 @@ BaseType *D4TestTypeFactory::NewVariable(Type t, const string &name) const
         case dods_url_c:
             return NewURL(name);
 
+#if 0
+        case dods_enum_c:
+            return NewEnum(name);
+
+        case dods_opaque_c:
+        	return NewOpaque(name);
+#endif
+
+        case dods_array_c:
+            return NewArray(name);
+
         case dods_structure_c:
             return NewStructure(name);
 
-            // FIXME Array and Sequence are back in. jhrg 8/15/13
-
         case dods_sequence_c:
-            throw InternalErr(__FILE__, __LINE__, "Not yet implemented for DAP4.");
-#if 0
-        case dods_enum_c:
-            return  NewEnum(name);
-#endif
-        case dods_array_c:
-        //case dods_array4_c:
-            return NewArray(name);
+            return NewD4Sequence(name);
 
         case dods_group_c:
             return NewGroup(name);
@@ -230,6 +231,12 @@ Structure *
 D4TestTypeFactory::NewStructure(const string &n) const
 {
     return new TestStructure(n);
+}
+
+D4Sequence *
+D4TestTypeFactory::NewD4Sequence(const string &n) const
+{
+    return new TestD4Sequence(n);
 }
 
 D4Group *

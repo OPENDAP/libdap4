@@ -62,14 +62,11 @@ public:
 
     Constructor &operator=(const Constructor &rhs);
 
-    //virtual void transfer_attributes(AttrTable *at_container);
-
     virtual int element_count(bool leaves = false);
 
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
 
-    /// @deprecated
     virtual unsigned int width(bool constrained = false);
 #if 0
     virtual unsigned int width(bool constrained);

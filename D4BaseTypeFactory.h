@@ -56,6 +56,7 @@ class Url;
 class Array;
 
 class Structure;
+class D4Sequence;
 
 class D4Group;
 
@@ -102,21 +103,18 @@ public:
     virtual Url *NewUrl(const string &n = "") const;
     virtual Url *NewURL(const string &n = "") const;
 
-#if 0
-    virtual D4Enum *NewEnum(const string &n = "", Type type = dods_null_c) const;
-#endif
-    virtual Structure *NewStructure(const string &n = "") const;
-
-    virtual D4Group *NewGroup(const string &n = "") const;
+    virtual Array *NewArray(const string &n = "", BaseType *v = 0) const;
 
     // FIXME Define these
 #if 0
+    virtual D4Enum *NewEnum(const string &n = "", Type type = dods_null_c) const;
     virtual Opaque *NewOpaque(const string &n = "") const;
-    virtual D4Array *NewArray(const string &n = "", BaseType *v = 0) const;
 #endif
 
-    virtual Array *NewArray(const string &n = "", BaseType *v = 0) const;
+    virtual Structure *NewStructure(const string &n = "") const;
+    virtual D4Sequence *NewD4Sequence(const string &n = "") const;
 
+    virtual D4Group *NewGroup(const string &n = "") const;
 };
 
 } // namespace libdap

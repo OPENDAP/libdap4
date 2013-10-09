@@ -747,18 +747,25 @@ BaseType::add_var_nocopy(BaseType *, Part)
 
     @brief Read data into a local buffer.
 
-    @return The return value of this method for all types except Sequence
-    should always be false. Sequences should return true to indicate more
-    values remain in the Sequence, false to indicate no more values remain.
-    (see Sequence::serialize() and Sequence::read_row()).
+	@todo Modify the D4 serialize code so that it supports the true/false
+	behavior of read() for arrays.
 
-    @see BaseType
-    @see Sequence  */
+	@todo Modify all of the stock handlers so they conform to this!
+
+    @return False means more data remains to be read, True indicates that no
+    more data need to be read. For Sequence and D4Sequence, this method will
+    generally read one instance of the Sequence; for other types it will generally
+    read the entire variable modulo any limitations due to a constraint. However,
+    the library should be written so that read can return less than all of the data
+    for a variable - serialize() would then call the function until it returns
+    True.
+
+    @see BaseType */
 bool
 BaseType::read()
 {
     if (d_is_read)
-        return false;
+        return true;
 
     throw InternalErr("Unimplemented BaseType::read() method called for the variable named: " + name());
 }

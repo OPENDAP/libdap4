@@ -82,7 +82,8 @@ public:
     virtual ~BaseTypeFactory()
     {}
 
-    /** Build a new variable and return it using a BaseType pointer. The
+    /**
+     * Build a new variable and return it using a BaseType pointer. The
      * type of the variable is given using  Type enumeration.
      *
      * @note Added for DAP4
@@ -91,12 +92,9 @@ public:
      * @parma name The (optional) name of the variable.
      */
     virtual BaseType *NewVariable(Type t, const string &name = "") const;
-#if 0
-    {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented.");
-    }
-#endif
-    /** Clone this object and return a pointer to the clone.
+
+    /**
+     * Clone this object and return a pointer to the clone.
      *
      * @note added for DAP4
      */

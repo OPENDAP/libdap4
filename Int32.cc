@@ -246,8 +246,6 @@ Int32::print_val(ostream &out, string space, bool print_decl_p)
 bool
 Int32::ops(BaseType *b, int op)
 {
-
-    // Extract the Byte arg's value.
     if (!read_p() && !read()) {
         // Jose Garcia
         // Since the read method is virtual and implemented outside

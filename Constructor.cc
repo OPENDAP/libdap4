@@ -108,12 +108,9 @@ Constructor::Constructor(const Constructor &rhs) : BaseType(rhs), d_vars(0)
 
 Constructor::~Constructor()
 {
-	// TODO use clear() here instead of the loop?
     Vars_iter i = d_vars.begin();
     while (i != d_vars.end()) {
         delete *i++;
-        //*i = 0;
-        //++i;
     }
 }
 
