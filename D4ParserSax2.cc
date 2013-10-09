@@ -869,16 +869,8 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
                 	delete btp;
                 }
 
-                // FIXME
-                cerr << parent->name() << ": " << parent->type_name() << endl;
-                if (parent->type() == dods_array_c) {
-                    cerr << static_cast<Array*>(parent)->prototype()->name() << ": " << static_cast<Array*>(parent)->prototype()->type_name() << endl;
+                if (parent->type() == dods_array_c)
                     static_cast<Array*>(parent)->prototype()->add_var_nocopy(btp);
-                    cerr << btp->name() << ": " << btp->type_name() << endl;
-                    XMLWriter xml;
-                    parent->print_dap4(xml);
-                    cerr << xml.get_doc() << endl;
-                }
                 else
                     parent->add_var_nocopy(btp);
             }

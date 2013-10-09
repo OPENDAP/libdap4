@@ -1439,7 +1439,7 @@ bool Vector::set_value(dods_byte *val, int sz)
     return true;
 
 #if 0
-    // TODO Recoce all of these like this and drop the bool return type?
+    // TODO Recode all of these like this and drop the bool return type?
     if (var()->type() == dods_byte_c && val) {
         m_set_cardinal_values_internal<dods_byte> (val, sz);
         return true;

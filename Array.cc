@@ -126,7 +126,7 @@ Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */)
 Array::Array(const string &n, const string &d, BaseType *v, bool is_dap4 /* default:false */)
     : Vector(n, d, 0, dods_array_c, is_dap4)
 {
-    add_var(v); // Vector::add_var() stores null is v is null
+    add_var(v); // Vector::add_var() stores null if v is null
 }
 
 /** @brief The Array copy constructor. */
@@ -667,6 +667,18 @@ public:
 	}
 };
 
+class PrintD4ConstructorVarXMLWriter: public unary_function<BaseType*, void> {
+	XMLWriter &xml;
+	bool d_constrained;
+public:
+	PrintD4ConstructorVarXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) { }
+
+	void operator()(BaseType *btp)
+	{
+		btp->print_dap4(xml, d_constrained);
+	}
+};
+
 /**
  * @brief Print the DAP4 representation of an array.
  * @param xml
@@ -683,6 +695,12 @@ Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/)
 	if (!name().empty())
 		if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
 			throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+	if (prototype()->is_constructor_type()) {
+		Constructor &c = static_cast<Constructor&>(*prototype());
+		for_each(c.var_begin(), c.var_end(), PrintD4ConstructorVarXMLWriter(xml, constrained));
+		// bind2nd(mem_fun_ref(&BaseType::print_dap4), xml));
+	}
 
     for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml, constrained));
 
