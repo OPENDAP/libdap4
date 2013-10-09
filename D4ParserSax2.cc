@@ -861,7 +861,7 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
 
                 BaseType *parent = 0;
                 if (!parser->empty_basetype())
-                	parent= parser->top_basetype();
+                	parent = parser->top_basetype();
                 else if (!parser->empty_group())
                 	parent = parser->top_group();
                 else {
@@ -869,7 +869,18 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
                 	delete btp;
                 }
 
-                parent->add_var_nocopy(btp);
+                // FIXME
+                cerr << parent->name() << ": " << parent->type_name() << endl;
+                if (parent->type() == dods_array_c) {
+                    cerr << static_cast<Array*>(parent)->prototype()->name() << ": " << static_cast<Array*>(parent)->prototype()->type_name() << endl;
+                    static_cast<Array*>(parent)->prototype()->add_var_nocopy(btp);
+                    cerr << btp->name() << ": " << btp->type_name() << endl;
+                    XMLWriter xml;
+                    parent->print_dap4(xml);
+                    cerr << xml.get_doc() << endl;
+                }
+                else
+                    parent->add_var_nocopy(btp);
             }
             else
                 D4ParserSax2::dmr_error(parser, "Expected an end tag for a simple type; found '%s' instead.", localname);

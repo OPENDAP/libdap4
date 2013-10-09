@@ -115,6 +115,8 @@ public:
     virtual bool is_dap2_only_type();
 #endif
 
+    virtual BaseType *prototype() const { return d_proto; }
+
     virtual void set_name(const std::string& name);
 
     virtual int element_count(bool leaves);

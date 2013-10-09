@@ -12,12 +12,20 @@
         <Dim name="dim1"/>
 
         <Int32 name="i"/>
+        <Int32 name="j"/> 
+    </Structure>
+<!--
+    <Structure name="s">
+        <Dim name="dim1"/>
+
+        <Int32 name="i"/>
             
         <String name="a">
             <Dim size="3"/>
         </String>
     </Structure>
-
+-->
+<!--
     <Structure name="t">
         <Int32 name="i"/>
             
@@ -27,5 +35,5 @@
         
         <Dim name="dim1"/>
     </Structure>
-
+-->
 </Dataset>   

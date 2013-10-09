@@ -378,6 +378,8 @@ Constructor::add_var_nocopy(BaseType *bt, Part)
     if (bt->is_dap4_only_type())
         throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Structure.");
 #endif
+    // FIXME
+    cerr << "Constructor::add_var_nocopy adding " << bt->name() << endl;
     bt->set_parent(this);
     d_vars.push_back(bt);
 }
@@ -391,6 +393,7 @@ Constructor::del_var(const string &n)
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->name() == n) {
             BaseType *bt = *i ;
+            // TODO Is this erase needed
             d_vars.erase(i) ;
             delete bt ; bt = 0;
             return;
