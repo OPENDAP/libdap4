@@ -661,10 +661,8 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
         case inside_simple_type:
             if (parser->process_attribute(localname, attributes, nb_attributes))
                 break;
-            else if (parser->process_dimension(localname, attributes, nb_attributes)) {
+            else if (parser->process_dimension(localname, attributes, nb_attributes))
             	parser->push_state(inside_dim);
-            	break;
-            }
             else
                 dmr_error(parser, "Expected an 'Attribute' or 'Dim' element; found '%s' instead.", localname);
             break;
@@ -676,6 +674,8 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
                 break;
             else if (parser->process_attribute(localname, attributes, nb_attributes))
                 break;
+            else if (parser->process_dimension(localname, attributes, nb_attributes))
+                parser->push_state(inside_dim);
             else
                 D4ParserSax2::dmr_error(parser, "Expected an Attribute or variable element; found '%s' instead.", localname);
             break;
@@ -916,16 +916,16 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             BaseType *btp = parser->top_basetype();
             parser->pop_basetype();
             parser->pop_attributes();
-
+#if 0
             if (btp->type() != dods_structure_c) {
                 D4ParserSax2::dmr_error(parser, "Expected a %s variable.", "Structure");
                 delete btp;
                 return;
             }
-
+#endif
             BaseType *parent = 0;
             if (!parser->empty_basetype())
-            	parent= parser->top_basetype();
+            	parent = parser->top_basetype();
             else if (!parser->empty_group())
             	parent = parser->top_group();
             else {
