@@ -43,6 +43,11 @@ m4_define([DMR_PARSE], [
     AT_CLEANUP
 ])
 
+# NB: This is a good idea, but the test doesn't work because dmr-test is actually run
+# in some odd directory so the 'response file' is not written in the dir where the test
+# is run. cmp will return an error indicating file not found. The 'trans' tests check
+# that the values are being sent correctly. jhrg 10/9/13
+
 # Usage DMR_SEND $1 <test_input> $2 <pass/xfail>
 # This code tests the parser output and does a binary compare on the 'reponse document'
 # built by the 'sender'.
@@ -60,7 +65,7 @@ m4_define([DMR_SEND], [
     binary="`basename $input .xml`_data.bin"
     # Skip in 250 charactes to get past the MIME headers that include variable text
     # like the current date/time.
-    AT_CHECK([cmp -s $abs_srcdir/$binary $abs_srcdir/dmr-testsuite/$binary 250 250])
+    AT_CHECK([cmp $abs_srcdir/$binary $abs_srcdir/dmr-testsuite/$binary 250 250])
     
     AT_XFAIL_IF([test "$2" = "xfail"])
     AT_CLEANUP
@@ -99,20 +104,22 @@ DMR_PARSE([dmr-testsuite/test_array_2.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_3.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_4.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_5.xml], [pass])
+DMR_PARSE([dmr-testsuite/test_array_6.xml], [pass])
 
 # Send: Test building the response
 
-DMR_SEND([dmr-testsuite/test_simple_1.xml], [pass])
-DMR_SEND([dmr-testsuite/test_simple_2.xml], [pass])
-DMR_SEND([dmr-testsuite/test_simple_3.xml], [pass])
-DMR_SEND([dmr-testsuite/test_simple_4.xml], [pass])
-DMR_SEND([dmr-testsuite/test_simple_5.xml], [pass])
+# DMR_SEND([dmr-testsuite/test_simple_1.xml], [pass])
+# DMR_SEND([dmr-testsuite/test_simple_2.xml], [pass])
+# DMR_SEND([dmr-testsuite/test_simple_3.xml], [pass])
+# DMR_SEND([dmr-testsuite/test_simple_4.xml], [pass])
+# DMR_SEND([dmr-testsuite/test_simple_5.xml], [pass])
 
-DMR_SEND([dmr-testsuite/test_array_1.xml], [pass])
-DMR_SEND([dmr-testsuite/test_array_2.xml], [pass])
-DMR_SEND([dmr-testsuite/test_array_3.xml], [pass])
-DMR_SEND([dmr-testsuite/test_array_4.xml], [pass])
-DMR_SEND([dmr-testsuite/test_array_5.xml], [pass])
+# DMR_SEND([dmr-testsuite/test_array_1.xml], [pass])
+# DMR_SEND([dmr-testsuite/test_array_2.xml], [pass])
+# DMR_SEND([dmr-testsuite/test_array_3.xml], [pass])
+# DMR_SEND([dmr-testsuite/test_array_4.xml], [pass])
+# DMR_SEND([dmr-testsuite/test_array_5.xml], [pass])
+# DMR_SEND([dmr-testsuite/test_array_6.xml], [pass])
 
 # Transmit: Test building and then decoding the response
 
@@ -127,6 +134,7 @@ DMR_TRANS([dmr-testsuite/test_array_2.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_3.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_4.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_5.xml], [pass])
+DMR_TRANS([dmr-testsuite/test_array_6.xml], [pass])
 
 
 

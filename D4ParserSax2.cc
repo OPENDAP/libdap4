@@ -219,8 +219,7 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
 		pop_basetype();
 
 		Array *a = static_cast<Array*>(dmr()->factory()->NewVariable(dods_array_c, b->name()));
-		// Array *a = new Array(b->name(), 0, true /* is_dap4 */);
-		a->set_is_dap4(true);	// TODO this will be redundant if the factory sets it
+		a->set_is_dap4(true);
 		a->add_var_nocopy(b);
 		a->set_attributes_nocopy(b->attributes());
 		// trick: instead of popping b's attributes, copying them and then pushing
@@ -421,12 +420,19 @@ inline bool D4ParserSax2::process_variable(const char *name, const xmlChar **att
         process_variable_helper(t, inside_simple_type, attrs, nb_attributes);
         return true;
     }
-    else if (strcmp(name, "Structure") == 0) {
-        process_variable_helper(dods_structure_c, inside_structure, attrs, nb_attributes);
-        return true;
-    }
     else {
-        return false;
+    	switch(t) {
+    	case dods_structure_c:
+            process_variable_helper(t, inside_structure, attrs, nb_attributes);
+            return true;
+
+    	case dods_sequence_c:
+            process_variable_helper(t, inside_structure, attrs, nb_attributes);
+            return true;
+
+    	default:
+    		return false;
+    	}
     }
 }
 
