@@ -33,8 +33,8 @@ using namespace libdap ;
 
 class TestD4Sequence: public D4Sequence, public TestCommon {
 private:
-    int d_len;
-    int d_current;
+    int d_len; // The number of elements/instances in this sequence
+    int d_current; // Which instance are we currently reading
     bool d_series_values;
     
     void m_duplicate(const TestD4Sequence &ts);
@@ -56,7 +56,7 @@ public:
     void set_series_values(bool);
     bool get_series_values() { return d_series_values; }
 
-    virtual int length();
+    virtual int length() const { return d_len; }
 };
 
 #endif // _testsequence_h

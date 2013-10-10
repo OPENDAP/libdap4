@@ -22,36 +22,22 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#ifndef _sequence_h
-#define _sequence_h 1
+#ifndef _d4sequence_h
+#define _d4sequence_h 1
 
-#include <stack>
-
-#ifndef _basetype_h
-#include "BaseType.h"
-#endif
-
-#ifndef _constructor_h
 #include "Constructor.h"
-#endif
-
-#ifndef constraint_evaluator_h
-#include "ConstraintEvaluator.h"
-#endif
-
-#ifndef S_XDRUtils_h
-#include "XDRUtils.h"
-#endif
 
 namespace libdap
 {
 
+class BaseType;
+
 /** The type BaseTypeRow is used to store single rows of values in an
     instance of D4Sequence. Values are stored in instances of BaseType. */
-typedef vector<BaseType *> BaseTypeRow;
+typedef vector<BaseType *> D4SeqRow;
 
 /** This type holds all of the values of a D4Sequence. */
-typedef vector<BaseTypeRow *> SequenceValues;
+typedef vector<D4SeqRow *> D4SeqValues;
 
 /** This is the interface for the class D4Sequence. A sequence contains
     a single set of variables, all at the same lexical level just like
@@ -156,7 +142,7 @@ private:
     // instances of BaseTypeRow objects which hold instances of BaseType.
 	//
 	// TODO Optimize
-    SequenceValues d_values;
+    D4SeqValues d_values;
 
     // The number of the row that has just been deserialized. Before
     // deserialized has been called, this field is -1.
@@ -176,7 +162,7 @@ private:
 
 protected:
     void m_duplicate(const D4Sequence &s);
-    typedef stack<SequenceValues*> sequence_values_stack_t;
+    // typedef stack<SequenceValues*> sequence_values_stack_t;
 #if 0
     virtual bool serialize_parent_part_one(DDS &dds,
                                            ConstraintEvaluator &eval,
@@ -216,14 +202,77 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool is_linear();
+    /** Returns the number of elements in a Sequence object. Note that
+        this is <i>not</i> the number of items in a row, but the number
+        of rows in the complete sequence object. To be meaningful, this
+        must be computed after constraint expression (CE) evaluation.
+        The purpose of this function is to facilitate translations
+        between Sequence objects and Array objects, particularly when
+        the Sequence is too large to be transferred from the server to
+        the client in its entirety.
 
-    virtual int length();
+        This function, to be useful, must be specialized for the API and
+        data format in use.
 
-    virtual int number_of_rows();
+        @return The base implementation returns -1, indicating that the
+        length is not known.  Sub-classes specific to a particular API
+        will have a more complete implementation. */
+    virtual int length() const { return -1; }
 
-    virtual bool read_row(int row, DDS &dds,
-                          ConstraintEvaluator &eval, bool ce_eval = true);
+    /**
+     * @return The number of rows stored in this D4Sequence
+     */
+    virtual int number_of_rows() const { return d_values.size(); }
+
+    /** When reading a nested sequence, use this method to reset the internal
+        row number counter. This is necessary so that the second, ... instances
+        of the inner/nested sequence will start off reading row zero. */
+    virtual void reset_row_number() { d_row_number = -1; }
+
+#if 0
+    // TODO Support row constraints?
+    /** Return the starting row number if the sequence was constrained using
+        row numbers (instead of, or in addition to, a relational constraint).
+        If a relational constraint was also given, the row number corresponds
+        to the row number of the sequence <i>after</i> applying the relational
+        constraint.
+
+        If the bracket notation was not used to constrain this sequence, this
+        method returns -1.
+
+        @brief Get the starting row number.
+        @return The starting row number. */
+    virtual int get_starting_row_number() const { return d_starting_row_number; }
+
+    /** Return the row stride number if the sequence was constrained using
+        row numbers (instead of, or in addition to, a relational constraint).
+        If a relational constraint was also given, the row stride is applied
+        to the sequence <i>after</i> applying the relational constraint.
+
+        If the bracket notation was not used to constrain this sequence, this
+        method returns -1.
+
+        @brief Get the row stride.
+        @return The row stride. */
+    virtual int get_row_stride() const { return d_row_stride; }
+
+    /** Return the ending row number if the sequence was constrained using
+        row numbers (instead of, or in addition to, a relational constraint).
+        If a relational constraint was also given, the row number corresponds
+        to the row number of the sequence <i>after</i> applying the
+        relational constraint.
+
+        If the bracket notation was not used to constrain this sequence, this
+        method returns -1.
+
+        @brief Get the ending row number.
+        @return The ending row number. */
+    virtual int get_ending_row_number() const { return d_ending_row_number; }
+
+    virtual void set_row_number_constraint(int start, int stop, int stride = 1);
+#endif
+    virtual bool read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_eval = true);
+
 #if 0
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds) {
     	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
@@ -244,25 +293,14 @@ public:
     	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
 #endif
-    /// Rest the row number counter
-    void reset_row_number();
 
-    int get_starting_row_number();
-
-    virtual int get_row_stride();
-
-    virtual int get_ending_row_number();
-
-    virtual void set_row_number_constraint(int start, int stop, int stride = 1);
-
-    virtual void set_value(SequenceValues &values);
-    virtual SequenceValues value();
+    virtual void set_value(D4SeqValues &values);
+    virtual D4SeqValues value();
 
     virtual BaseType *var_value(size_t row, const string &name);
-
     virtual BaseType *var_value(size_t row, size_t i);
 
-    virtual BaseTypeRow *row_value(size_t row);
+    virtual D4SeqRow *row_value(size_t row);
 
     virtual void print_one_row(ostream &out, int row, string space,
                                bool print_row_num = false);
@@ -270,14 +308,6 @@ public:
                                    bool print_decl_p = true,
                                    bool print_row_numbers = true);
     virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
-
-    virtual void print_one_row(FILE *out, int row, string space,
-                               bool print_row_num = false);
-    virtual void print_val_by_rows(FILE *out, string space = "",
-                                   bool print_decl_p = true,
-                                   bool print_row_numbers = true);
-    virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
 
     virtual void dump(ostream &strm) const ;

@@ -86,7 +86,20 @@ TestD4Sequence::read()
 {
     if (read_p())
         return true;
-        
+
+    if (d_current < d_len) {
+    	for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i)
+            if ((*i)->send_p() || (*i)->is_in_selection())
+                (*i)->read();
+    	++d_current;
+    	return false;
+    }
+    else {
+        d_current = 0;              // reset
+        reset_row_number();			// Reset the row counter in the parent
+        return true;                // No more values
+    }
+#if 0
     // When we get to the end of a Sequence, reset the row number counter so
     // that, in case this is an inner sequence, the next instance will be read
     // and the "Trying to back up in a Sequence" error won't be generated.
@@ -95,7 +108,7 @@ TestD4Sequence::read()
         reset_row_number();
         return true;                   // No more values
     }
-        
+
     Vars_iter i = var_begin();
     while (i != var_end()) {
         if ((*i)->send_p() || (*i)->is_in_selection()) {
@@ -105,6 +118,7 @@ TestD4Sequence::read()
     }
     
     return false;	// more values
+#endif
 }
 
 void
@@ -117,10 +131,4 @@ TestD4Sequence::set_series_values(bool sv)
     }
     
     d_series_values = sv;
-}
-
-int
-TestD4Sequence::length()
-{
-    return 5;
 }
