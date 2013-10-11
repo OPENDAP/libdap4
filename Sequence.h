@@ -273,7 +273,7 @@ public:
     virtual unsigned int width(bool constrained);
 #endif
 
-    virtual int length();
+    virtual int length() const;
 
     virtual int number_of_rows();
 

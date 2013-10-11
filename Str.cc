@@ -119,8 +119,8 @@ Str::operator=(const Str &rhs)
     return *this;
 }
 
-unsigned int
-Str::length()
+int
+Str::length() const
 {
     return d_buf.length();
 }

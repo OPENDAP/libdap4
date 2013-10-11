@@ -253,6 +253,22 @@ D4StreamUnMarshaller::get_url( string &val )
 }
 
 /**
+ * Read a count value from the stream. This is used with D4Sequence
+ * which needs to use various other 'get' methods to read its fields.
+ * Methods like get_opaque_dap4() handle reading their count values
+ * themselves.
+ *
+ * @param count The number of elements to follow.
+ */
+int64_t
+D4StreamUnMarshaller::get_count()
+{
+	int64_t count;
+	d_in.read(reinterpret_cast<char*>(&count), sizeof(count));
+	return count;
+}
+
+/**
  * Get opaque data when the size of the data to be read is not known in
  * advance.
  *

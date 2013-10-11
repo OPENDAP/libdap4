@@ -99,12 +99,30 @@ is_end_of_sequence(unsigned char marker)
 
 // Private member functions
 
+// A reminder of these type defs
+//
+// typedef vector<BaseType *> D4SeqRow;
+// typedef vector<D4SeqRow *> D4SeqValues;
+// D4SeqValues d_values;
+
 void D4Sequence::m_duplicate(const D4Sequence &s)
 {
 	d_row_number = s.d_row_number;
 	d_starting_row_number = s.d_starting_row_number;
 	d_ending_row_number = s.d_ending_row_number;
 	d_row_stride = s.d_row_stride;
+
+	// Deep copy for the values
+	for (D4SeqValues::const_iterator i = s.d_values.begin(), e = s.d_values.end(); i != e; ++i) {
+		D4SeqRow &row = **i;
+		D4SeqRow *dest = new D4SeqRow;
+		for (D4SeqRow::const_iterator j = row.begin(), e = row.end(); j != e; ++j) {
+			// *j is a BaseType*
+			dest->push_back((*j)->ptr_duplicate());
+		}
+
+		d_values.push_back(dest);
+	}
 #if 0
 	D4Sequence &cs = const_cast<D4Sequence &>(s);
 
@@ -144,9 +162,8 @@ void D4Sequence::m_duplicate(const D4Sequence &s)
  created.
 
  @brief The Sequence constructor. */
-D4Sequence::D4Sequence(const string &n) :
-		Constructor(n, dods_sequence_c, true /* is dap4 */), d_row_number(-1), d_starting_row_number(-1), d_row_stride(
-				1), d_ending_row_number(-1)
+D4Sequence::D4Sequence(const string &n) : Constructor(n, dods_sequence_c, true /* is dap4 */),
+		d_row_number(-1), d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
 }
 
@@ -160,15 +177,13 @@ D4Sequence::D4Sequence(const string &n) :
  variable is being created.
 
  @brief The Sequence server-side constructor. */
-D4Sequence::D4Sequence(const string &n, const string &d) :
-		Constructor(n, d, dods_sequence_c, true /* is dap4 */), d_row_number(-1), d_starting_row_number(-1), d_row_stride(
-				1), d_ending_row_number(-1)
+D4Sequence::D4Sequence(const string &n, const string &d) : Constructor(n, d, dods_sequence_c, true /* is dap4 */),
+		d_row_number(-1), d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
 }
 
 /** @brief The Sequence copy constructor. */
-D4Sequence::D4Sequence(const D4Sequence &rhs) :
-		Constructor(rhs)
+D4Sequence::D4Sequence(const D4Sequence &rhs) : Constructor(rhs)
 {
 	m_duplicate(rhs);
 }
@@ -208,6 +223,30 @@ D4Sequence::operator=(const D4Sequence &rhs)
 	return *this;
 }
 
+void
+D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter)
+{
+	// Read the data values, then serialize.
+
+	// read_next_instance() stores the values for one instance in the proto
+#if 0
+	while (!read_next_instance(dmr, eval, filter)) {
+		;
+	}
+#endif
+    // write D4Sequecne::length(); don't include the length in the checksum
+    // For each of those instances, write the instance's values; build checksum
+    int64_t count = length(); 	// TODO remove once length() gets normalized to int64_t
+    m.put_count(count);
+
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        if ((*i)->send_p()) {
+            (*i)->serialize(m, dmr, eval, filter);
+        }
+    }
+}
+
+
 #if 0
 /** Set the start, stop and stride for a row-number type constraint.
  This should be used only when the sequence is constrained using the
@@ -228,74 +267,7 @@ virtual void set_row_number_constraint(int start, int stop, int stride)
 }
 #endif
 
-/** @brief Get a whole row from the sequence.
- @param row Get row number <i>row</i> from the sequence.
- @return A BaseTypeRow object (vector<BaseType *>). Null if there's no such
- row number as \e row. */
-D4SeqRow *
-D4Sequence::row_value(size_t row)
-{
-	if (row >= d_values.size()) return 0;
-	return d_values[row];
-}
-
-/** Set value of this Sequence. This does not perform a deep copy, so data
- should be allocated on the heap and freed only when the Sequence dtor is
- called.
- @see SequenceValues
- @see BaseTypeRow
- @param values Set the value of this Sequence. */
-void D4Sequence::set_value(D4SeqValues &values)
-{
-	d_values = values;
-}
-
-/** Get the value for this sequence.
- @return The SequenceValues object for this Sequence. */
-D4SeqValues D4Sequence::value()
-{
-	return d_values;
-}
-
-/** @brief Get the BaseType pointer to the named variable of a given row.
- @param row Read from <i>row</i> in the sequence.
- @param name Return <i>name</i> from <i>row</i>.
- @return A BaseType which holds the variable and its value.
- @see number_of_rows */
-BaseType *
-D4Sequence::var_value(size_t row, const string &name)
-{
-	D4SeqRow *bt_row_ptr = row_value(row);
-	if (!bt_row_ptr) return 0;
-
-	// TODO find_if?
-	D4SeqRow::iterator bt_row_iter = bt_row_ptr->begin();
-	D4SeqRow::iterator bt_row_end = bt_row_ptr->end();
-	while (bt_row_iter != bt_row_end && (*bt_row_iter)->name() != name)
-		++bt_row_iter;
-
-	if (bt_row_iter == bt_row_end)
-		return 0;
-	else
-		return *bt_row_iter;
-}
-
-/** @brief Get the BaseType pointer to the $i^{th}$ variable of <i>row</i>.
- @param row Read from <i>row</i> in the sequence.
- @param i Return the $i^{th}$ variable from <i>row</i>.
- @return A BaseType which holds the variable and its value.
- @see number_of_rows */
-BaseType *
-D4Sequence::var_value(size_t row, size_t i)
-{
-	D4SeqRow *bt_row_ptr = row_value(row);
-	if (!bt_row_ptr) return 0;
-
-	if (i >= bt_row_ptr->size()) return 0;
-
-	return (*bt_row_ptr)[i];
-}
-
+#if 0
 /** Read row number <i>row</i> of the Sequence. The values of the row
  are obtained by calling the read() method of the sequence. The
  current \e row just read is stored in the Sequence instance
@@ -328,30 +300,28 @@ D4Sequence::var_value(size_t row, size_t i)
  @param eval Use this as the constraint expression evaluator.
  @param ce_eval If True, evaluate any CE, otherwise do not.
  */
-bool D4Sequence::read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_eval)
+bool D4Sequence::read_next_instance(DMR &dmr, ConstraintEvaluator &eval, bool filter)
 {
 	DBG2(cerr << "Entering Sequence::read_row for " << name() << endl);
 	if (row < d_row_number) throw InternalErr("Trying to back up inside a sequence!");
 
-	DBG2(cerr << "read_row: row number " << row
-			<< ", current row " << d_row_number << endl);
-	if (row == d_row_number) {
-		DBG2(cerr << "Leaving Sequence::read_row for " << name() << endl);
-		return true;
-	}
+	DBG2(cerr << "read_row: row number " << row << ", current row " << d_row_number << endl);
+	if (row == d_row_number) return false;
 
-	dds.timeout_on();
-
-	int eof = 0;  // Start out assuming EOF is false.
+	bool eof = false;
 	while (!eof && d_row_number < row) {
 		if (!read_p()) {
-			eof = (read() == false);
+			// read() should return true when its done (eof), false otherwise
+			// (i.e., it needs to be called again).
+			eof = read();
 		}
 
 		// Advance the row number if ce_eval is false (we're not supposed to
-		// evaluate the selection) or both ce_eval and the selection are
+		// evaluate the selection) or both filter and the selection are
 		// true.
-		if (!eof && (!ce_eval || eval.eval_selection(dds, dataset()))) d_row_number++;
+		// FIXME CE's not supported for DAP4 yet. jhrg 10/11/13
+		//if (!eof && (!filter || eval.eval_selection(dmr, dataset()))) d_row_number++;
+		d_row_number++;
 
 		set_read_p(false); // ...so that the next instance will be read
 	}
@@ -369,7 +339,8 @@ bool D4Sequence::read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_
 			<< " with " << (eof == 0) << endl);
 	return eof == 0;
 }
-
+#endif
+#if 0
 // Private. This is used to process constraints on the rows of a sequence.
 // Starting with 3.2 we support constraints like Sequence[10:2:20]. This
 // odd-looking logic first checks if d_ending_row_number is the sentinel
@@ -381,7 +352,8 @@ inline bool D4Sequence::is_end_of_rows(int i)
 {
 	return ((d_ending_row_number == -1) ? false : (i > d_ending_row_number));
 }
-
+#endif
+#if 0
 /** Serialize a Sequence.
 
  Leaf Sequences must be marked as such (see DDS::tag_nested_sequence()),
@@ -442,7 +414,7 @@ inline bool D4Sequence::is_end_of_rows(int i)
  completely empty response.</li>
  </ol>
  */
-
+#endif
 #if 0
 // We know this is not a leaf Sequence. That means that this Sequence holds
 // another Sequence as one of its fields _and_ that child Sequence triggers
@@ -908,6 +880,65 @@ D4Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 	return false;
 }
 #endif
+
+/** @brief Get a whole row from the sequence.
+ @param row Get row number <i>row</i> from the sequence.
+ @return A BaseTypeRow object (vector<BaseType *>). Null if there's no such
+ row number as \e row. */
+D4SeqRow *
+D4Sequence::row_value(size_t row)
+{
+	if (row >= d_values.size()) return 0;
+	return d_values[row];
+}
+
+static bool
+base_type_name_eq(BaseType *btp, const string name)
+{
+	return btp->name() == name;
+}
+
+/** @brief Get the BaseType pointer to the named variable of a given row.
+ @param row Read from <i>row</i> in the sequence.
+ @param name Return <i>name</i> from <i>row</i>.
+ @return A BaseType which holds the variable and its value.
+ @see number_of_rows */
+BaseType *
+D4Sequence::var_value(size_t row_num, const string &name)
+{
+	D4SeqRow *row = row_value(row_num);
+	if (!row) return 0;
+
+	D4SeqRow::iterator elem = find_if(row->begin(), row->end(), bind2nd(ptr_fun(base_type_name_eq), name));
+	return (elem != row->end()) ? *elem: 0;
+#if 0
+	D4SeqRow::iterator bt_row_iter = bt_row_ptr->begin();
+	D4SeqRow::iterator bt_row_end = bt_row_ptr->end();
+	while (bt_row_iter != bt_row_end && (*bt_row_iter)->name() != name)
+		++bt_row_iter;
+
+	if (bt_row_iter == bt_row_end)
+		return 0;
+	else
+		return *bt_row_iter;
+#endif
+}
+
+/** @brief Get the BaseType pointer to the $i^{th}$ variable of <i>row</i>.
+ @param row Read from <i>row</i> in the sequence.
+ @param i Return the $i^{th}$ variable from <i>row</i>.
+ @return A BaseType which holds the variable and its value.
+ @see number_of_rows */
+BaseType *
+D4Sequence::var_value(size_t row_num, size_t i)
+{
+	D4SeqRow *row = row_value(row_num);
+	if (!row) return 0;
+
+	if (i >= row->size()) return 0;
+
+	return (*row)[i];
+}
 
 void D4Sequence::print_one_row(ostream &out, int row, string space, bool print_row_num)
 {

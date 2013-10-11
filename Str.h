@@ -81,7 +81,7 @@ public:
 
     // Return the length of the stored string or zero if no string has been
     // stored in the instance's internal buffer.
-    unsigned int length();
+    virtual int length() const;
 
     // DAP2
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);

@@ -399,6 +399,18 @@ void D4StreamMarshaller::put_uint64(dods_uint64 val)
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_uint64));
 }
 
+/**
+ * Used only for Sequences, where the count must be added to the stream
+ * and then the fields sent using separate calls to methods here. The
+ * methods put_opaque_dap4(), ..., that need counts sent as prefixes to
+ * their data handle it themselves.
+ *
+ * @param count How many elements follow.
+ */
+void D4StreamMarshaller::put_count(int64_t count)
+{
+	d_out.write(reinterpret_cast<const char*>(&count), sizeof(int64_t));
+}
 
 void D4StreamMarshaller::put_str(const string &val)
 {

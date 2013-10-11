@@ -147,8 +147,6 @@ bool Vector::m_is_cardinal_type() const
         	// FIXME Keep url4 and array4?
 #if 0
         case dods_url4_c:
-#endif
-#if 0
         	// jhrg 10/2/13
         case dods_array4_c:
 #endif

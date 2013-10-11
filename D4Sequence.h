@@ -81,37 +81,27 @@ typedef vector<D4SeqRow *> D4SeqValues;
     } person;
     </pre>
 
-    This is still represented as a single table, but each row contains
-    the elements of both the main D4Sequence and the nested one:
-
     <pre>
     Fred       34     Norman
-    Fred       34     Andrea
-    Fred       34     Ralph
-    Fred       34     Lisa
+                      Andrea
+                      Ralph
+                      Lisa
     Ralph      23     Norman
-    Ralph      23     Andrea
-    Ralph      23     Lisa
-    Ralph      23     Marth
-    Ralph      23     Throckmorton
-    Ralph      23     Helga
-    Ralph      23     Millicent
+                      Andrea
+                      Lisa
+                      Marth
+                      Throckmorton
+                      Helga
+                      Millicent
     Andrea     29     Ralph
-    Andrea     29     Natasha
-    Andrea     29     Norman
+                      Natasha
+                      Norman
     ...        ..     ...
     </pre>
 
     Internally, the D4Sequence is represented by a vector of vectors. The
     members of the outer vector are the members of the D4Sequence. This
     includes the nested D4Sequences, as in the above example.
-
-    NB: Note that in the past this class had a different behavior. It held
-    only one row at a time and the deserialize(...) method had to be called
-    from within a loop. This is <i>no longer true</i>. Now the
-    deserailize(...) method should be called once and will read the entire
-    sequence's values from the server. All the values are now stored in an
-    instance of D4Sequence, not just a single row's.
 
     Because the length of a D4Sequence is indeterminate, there are
     changes to the behavior of the functions to read this class of
@@ -123,15 +113,6 @@ typedef vector<D4SeqRow *> D4SeqValues;
     a member D4Sequence called ``Tom'' and Tom has a member Float32
     called ``shoe_size'', you can refer to Tom's shoe size as
     ``Tom.shoe_size''.
-
-    @note This class contains the 'logic' for both the server- and client-side
-    behavior. The field \e d_values is used by the client-side methods to store
-    the entire D4Sequence. On the server-side, the read() method uses an underlying
-    data system to read one row of data values which are then serialized using the
-    serialize() methods of each variable.
-
-    @todo Add an isEmpty() method which returns true if the D4Sequence is
-    empty. This should work before and after calling deserialize().
 
     @brief Holds a sequence. */
 
@@ -217,6 +198,7 @@ public:
         @return The base implementation returns -1, indicating that the
         length is not known.  Sub-classes specific to a particular API
         will have a more complete implementation. */
+    // TODO d_values.size()?
     virtual int length() const { return -1; }
 
     /**
@@ -271,7 +253,8 @@ public:
 
     virtual void set_row_number_constraint(int start, int stop, int stride = 1);
 #endif
-    virtual bool read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_eval = true);
+
+   // virtual bool read_row(int row, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
 
 #if 0
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds) {
@@ -284,23 +267,34 @@ public:
     virtual bool deserialize(UnMarshaller &, DDS *, bool ) {
     	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
-#if 0
+
     // DAP4
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false) {
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
+    virtual void deserialize(D4StreamUnMarshaller &, DMR &) {
     	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
-    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
-    }
-#endif
 
-    virtual void set_value(D4SeqValues &values);
-    virtual D4SeqValues value();
+    /**
+     * @brief Set the internal value.
+     * The 'values' of a D4Sequence is a vector of vectors of BaseType* objects.
+     * Using this method does not perform a deep copy; the BaseType*s are
+     * copied so the caller should not free them.
+     * @param values
+     */
+    virtual void set_value(D4SeqValues &values) { d_values = values; }
 
-    virtual BaseType *var_value(size_t row, const string &name);
-    virtual BaseType *var_value(size_t row, size_t i);
+    /**
+     * @brief Get the values for this D4Sequence
+     * This method does not perform a deep copy of the values so the caller
+     * should not free the BaseType*s in this vector of vectors since this
+     * object will free those in its destructor.
+     * @return The entire vector of vector of BaseType*
+     */
+    virtual D4SeqValues value() const { return d_values; }
 
     virtual D4SeqRow *row_value(size_t row);
+    virtual BaseType *var_value(size_t row, const string &name);
+    virtual BaseType *var_value(size_t row, size_t i);
 
     virtual void print_one_row(ostream &out, int row, string space,
                                bool print_row_num = false);

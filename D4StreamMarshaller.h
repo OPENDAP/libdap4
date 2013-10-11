@@ -98,7 +98,9 @@ public:
     virtual void reset_checksum();
     virtual string get_checksum();
     virtual void checksum_update(const void *data, unsigned long len);
-    void put_checksum();
+
+    virtual void put_checksum();
+    virtual void put_count(int64_t count);
 
     virtual void put_byte(dods_byte val);
     virtual void put_int8(dods_int8 val);

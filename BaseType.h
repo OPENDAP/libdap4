@@ -177,6 +177,20 @@ public:
 
     string dataset() const ;
 
+    /**
+     * @brief How many elements are in this variable.
+     * @todo change the return type to int64_t
+     * @return The number of elements; 1 for scalars
+     */
+    virtual int length() const { return 1; }
+
+    /**
+     * @brief Set the number of elements for this variable
+     * @todo change param type to int64_t
+     * @param l The number of elements
+     */
+    virtual void set_length(int) { }
+
     virtual bool is_simple_type() const;
     virtual bool is_vector_type() const;
     virtual bool is_constructor_type() const;

@@ -203,15 +203,12 @@ Sequence::ptr_duplicate()
 static inline void
 delete_bt(BaseType *bt_ptr)
 {
-    DBG2(cerr << "In delete_bt: " << bt_ptr << endl);
     delete bt_ptr; bt_ptr = 0;
 }
 
 static inline void
 delete_rows(BaseTypeRow *bt_row_ptr)
 {
-    DBG2(cerr << "In delete_rows: " << bt_row_ptr << endl);
-
     for_each(bt_row_ptr->begin(), bt_row_ptr->end(), delete_bt);
 
     delete bt_row_ptr; bt_row_ptr = 0;
@@ -219,15 +216,7 @@ delete_rows(BaseTypeRow *bt_row_ptr)
 
 Sequence::~Sequence()
 {
-    DBG2(cerr << "Entering Sequence::~Sequence" << endl);
-#if 0
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        BaseType *btp = *i ;
-        delete btp ; btp = 0;
-    }
-#endif
     for_each(d_values.begin(), d_values.end(), delete_rows);
-    DBG2(cerr << "exiting Sequence::~Sequence" << endl);
 }
 
 Sequence &
@@ -604,7 +593,7 @@ Sequence::width(bool constrained)
     length is not known.  Sub-classes specific to a particular API
     will have a more complete implementation. */
 int
-Sequence::length()
+Sequence::length() const
 {
     return -1;
 }
@@ -677,52 +666,45 @@ Sequence::reset_row_number()
     @param eval Use this as the constraint expression evaluator.
     @param ce_eval If True, evaluate any CE, otherwise do not.
 */
-bool
-Sequence::read_row(int row, DDS &dds,
-                   ConstraintEvaluator &eval, bool ce_eval)
+bool Sequence::read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_eval)
 {
-    DBG2(cerr << "Entering Sequence::read_row for " << name() << endl);
-    if (row < d_row_number)
-        throw InternalErr("Trying to back up inside a sequence!");
+	DBG2(cerr << "Entering Sequence::read_row for " << name() << endl);
+	if (row < d_row_number) throw InternalErr("Trying to back up inside a sequence!");
 
-    DBG2(cerr << "read_row: row number " << row
-              << ", current row " << d_row_number << endl);
-    if (row == d_row_number)
-    {
-	DBG2(cerr << "Leaving Sequence::read_row for " << name() << endl);
-        return true;
-    }
+	DBG2(cerr << "read_row: row number " << row << ", current row " << d_row_number << endl);
+	if (row == d_row_number) {
+		DBG2(cerr << "Leaving Sequence::read_row for " << name() << endl);
+		return false;
+	}
 
-    dds.timeout_on();
+	dds.timeout_on();
 
-    int eof = 0;  // Start out assuming EOF is false.
-    while (!eof && d_row_number < row) {
-        if (!read_p()) {
-            // jhrg original version from 10/9/13 : eof = (read() == false);
-            eof = (read() == true);
-        }
+	bool eof = false;  // Start out assuming EOF is false.
+	while (!eof && d_row_number < row) {
+		if (!read_p()) {
+			// jhrg original version from 10/9/13 : eof = (read() == false);
+			eof = read();
+		}
 
-        // Advance the row number if ce_eval is false (we're not supposed to
-        // evaluate the selection) or both ce_eval and the selection are
-        // true.
-        if (!eof && (!ce_eval || eval.eval_selection(dds, dataset())))
-            d_row_number++;
+		// Advance the row number if ce_eval is false (we're not supposed to
+		// evaluate the selection) or both ce_eval and the selection are
+		// true.
+		if (!eof && (!ce_eval || eval.eval_selection(dds, dataset()))) d_row_number++;
 
-        set_read_p(false); // ...so that the next instance will be read
-    }
+		set_read_p(false); // ...so that the next instance will be read
+	}
 
-    // Once we finish the above loop, set read_p to true so that the caller
-    // knows that data *has* been read. This is how the read() methods of the
-    // elements of the sequence know to not call read() but instead look for
-    // data values inside themselves.
-    set_read_p(true);
+	// Once we finish the above loop, set read_p to true so that the caller
+	// knows that data *has* been read. This is how the read() methods of the
+	// elements of the sequence know to not call read() but instead look for
+	// data values inside themselves.
+	set_read_p(true);
 
-    dds.timeout_off();
+	dds.timeout_off();
 
-    // Return true if we have valid data, false if we've read to the EOF.
-    DBG2(cerr << "Leaving Sequence::read_row for " << name()
-              << " with " << (eof == 0) << endl);
-    return eof == 0;
+	// Return true if we have valid data, false if we've read to the EOF.
+	DBG2(cerr << "Leaving Sequence::read_row for " << name() << " with eof: " << eof << endl);
+	return !eof; // jhrg 10/10/13 was: eof == 0;
 }
 
 // Private. This is used to process constraints on the rows of a sequence.

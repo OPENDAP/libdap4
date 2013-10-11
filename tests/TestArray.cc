@@ -272,7 +272,7 @@ void TestArray::m_constrained_matrix(vector<T>/*char * */&constrained_array)
     DBG(cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl);
     DBG(cerr << "dimension_start(X): " << dimension_start(X) << endl);
     DBG(cerr << "dimension_stop(X): " << dimension_stop(X) << endl);
-    int elem_width = var()->width(true); // size of an element
+    // int elem_width = var()->width(true); // size of an element
     int constrained_size = 0;
     int y = dimension_start(Y);
     while (y < dimension_stop(Y) + 1) {

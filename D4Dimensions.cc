@@ -104,7 +104,7 @@ D4Dimension *
 D4Dimensions::find_dim(const string &name)
 {
 	D4DimensionsIter d = find_if(d_dims.begin(), d_dims.end(), bind2nd(ptr_fun(dim_name_eq), name));
-	return (d != dim_end()) ? *d: 0;
+	return (d != d_dims.end()) ? *d: 0;
 }
 
 void

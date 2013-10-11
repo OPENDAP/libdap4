@@ -91,6 +91,7 @@ public:
 
     Crc32::checksum get_checksum();
     string get_checksum_str();
+    int64_t get_count();
 
     virtual void get_byte(dods_byte &val);
     virtual void get_int8(dods_int8 &val);
