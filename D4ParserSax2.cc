@@ -423,11 +423,11 @@ inline bool D4ParserSax2::process_variable(const char *name, const xmlChar **att
     else {
     	switch(t) {
     	case dods_structure_c:
-            process_variable_helper(t, inside_structure, attrs, nb_attributes);
+            process_variable_helper(t, inside_constructor, attrs, nb_attributes);
             return true;
 
     	case dods_sequence_c:
-            process_variable_helper(t, inside_structure, attrs, nb_attributes);
+            process_variable_helper(t, inside_constructor, attrs, nb_attributes);
             return true;
 
     	default:
@@ -673,7 +673,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
                 dmr_error(parser, "Expected an 'Attribute' or 'Dim' element; found '%s' instead.", localname);
             break;
 
-        case inside_structure:
+        case inside_constructor:
             if (parser->process_variable(localname, attributes, nb_attributes))
                 // This will push either inside_simple_type or inside_structure
                 // onto the parser state stack.
@@ -916,22 +916,16 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             parser->pop_state();
             break;
 
-        case inside_structure: {
-            if (strcmp(localname, "Structure") != 0) {
-                D4ParserSax2::dmr_error(parser, "Expected an end tag for a %s; found '%s' instead.", "Structure", localname);
+        case inside_constructor: {
+            if (strcmp(localname, "Structure") != 0 && strcmp(localname, "Sequence") != 0) {
+                D4ParserSax2::dmr_error(parser, "Expected an end tag for a constructor; found '%s' instead.", localname);
                 return;
             }
 
             BaseType *btp = parser->top_basetype();
             parser->pop_basetype();
             parser->pop_attributes();
-#if 0
-            if (btp->type() != dods_structure_c) {
-                D4ParserSax2::dmr_error(parser, "Expected a %s variable.", "Structure");
-                delete btp;
-                return;
-            }
-#endif
+
             BaseType *parent = 0;
             if (!parser->empty_basetype())
             	parent = parser->top_basetype();
@@ -942,19 +936,8 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             	delete btp;
             }
 
-            // parent->add_var_nocopy(btp);
-#if 0
-            BaseType *parent = parser->top_basetype();
-            if (!parent)
-            	parent = parser->top_group();
-            // Check that we have a constructor BaseType (Structure, Sequence, or Group)
-            if (parent && !parent->is_constructor_type()) {
-                D4ParserSax2::dmr_error(parser, "Tried to add the variable '%s' to a non-constructor type (%s %s).",
-                		localname, parser->top_basetype()->type_name().c_str(), parser->top_basetype()->name().c_str());
-                delete btp;
-                return;
-            }
-#endif
+            // TODO Why doesn't this code mirror the simple_var case and test
+            // for the parent being an array? jhrg 10/13/13
             parent->add_var_nocopy(btp);
             parser->pop_state();
             break;

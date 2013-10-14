@@ -98,7 +98,7 @@ private:
         inside_dim,
         inside_dimension,
 
-        inside_structure,
+        inside_constructor,
 
         parser_unknown,
         parser_error,
