@@ -456,6 +456,19 @@ bool TestArray::read()
             break;
 
         case dods_sequence_c:
+        	if (!is_dap4())
+        		throw InternalErr(__FILE__, __LINE__, "Bad data type");
+
+            for (unsigned i = 0; i < array_len; ++i) {
+            	// Copy the prototype and read a value into it
+                BaseType *elem = var()->ptr_duplicate();
+                //elem->read();
+                // Load the new value into this object's array
+                set_vec(i, elem);
+            }
+
+            break;
+
         case dods_grid_c:
         case dods_array_c:
         case dods_null_c:

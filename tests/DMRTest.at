@@ -108,6 +108,8 @@ DMR_PARSE([dmr-testsuite/test_array_3.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_4.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_5.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_6.xml], [pass])
+DMR_PARSE([dmr-testsuite/test_array_7.xml], [pass])
+DMR_PARSE([dmr-testsuite/test_array_8.xml], [pass])
 
 # Send: Test building the response
 
@@ -141,6 +143,8 @@ DMR_TRANS([dmr-testsuite/test_array_3.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_4.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_5.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_6.xml], [pass])
+DMR_TRANS([dmr-testsuite/test_array_7.xml], [pass])
+DMR_TRANS([dmr-testsuite/test_array_8.xml], [pass])
 
 
 
