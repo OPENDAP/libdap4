@@ -143,15 +143,7 @@ bool Vector::m_is_cardinal_type() const
         case dods_structure_c:
         case dods_sequence_c:
         case dods_grid_c:
-        	// DAP4 only types
-        	// FIXME Keep url4 and array4?
-#if 0
-        case dods_url4_c:
-        	// jhrg 10/2/13
-        case dods_array4_c:
-#endif
         case dods_opaque_c:
-
             return false;
             break;
 
@@ -494,7 +486,6 @@ BaseType *Vector::var(unsigned int i)
 
         default:
             throw Error ("Vector::var: Unrecognized type");
-            //cerr << "Vector::var: Unrecognized type" << endl;
             break;
     }
 

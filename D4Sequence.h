@@ -173,11 +173,9 @@ public:
 
     virtual bool read_next_instance(DMR &dmr, ConstraintEvaluator &eval, bool filter);
 
-#if 0
-    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds) {
+    virtual void intern_data(ConstraintEvaluator &, DDS &) {
     	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
-#endif
     virtual bool serialize(ConstraintEvaluator &, DDS &, Marshaller &, bool ) {
     	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
