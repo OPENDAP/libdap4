@@ -23,10 +23,13 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
+
+#define DODS_DEBUG
+
 #include "TestD4Sequence.h"
 #include "TestCommon.h"
 
-#include "config.h"
 #include "debug.h"
 
 void
@@ -84,6 +87,7 @@ TestD4Sequence::output_values(std::ostream &out)
 bool
 TestD4Sequence::read()
 {
+    DBG(cerr << "TestD4Sequence::read this:" << this << endl);
     if (read_p())
         return true;
 
@@ -91,10 +95,13 @@ TestD4Sequence::read()
     	for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i)
             if ((*i)->send_p() || (*i)->is_in_selection())
                 (*i)->read();
+
     	++d_current;
+    	DBG(cerr << "TestD4Sequence::read d_current:" << d_current << endl);
     	return false;
     }
     else {
+        DBG(cerr << "TestD4Sequence::read return true:" << endl);
         return true;                // No more values
     }
 }

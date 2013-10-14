@@ -28,7 +28,7 @@
 #include <string>
 #include <sstream>
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 //#define DODS_DEBUG2
 
 #include "Byte.h"
@@ -230,8 +230,9 @@ D4Sequence::operator=(const D4Sequence &rhs)
  * large variables), this class assumes that the underlying data store is return
  * data from a table of unknown size. Thus, D4Sequence::read() is assumed to return
  * one instance (or element or row) of the sequence per call and return true when the
- * EOF (end of the sequence) is reached. This is one past the last instnace of the
- * sequence. For each call to read, the values for each of the sequence's members
+ * EOF (end of the sequence) is reached.
+ *
+ * For each call to read, the values for each of the sequence's members
  * are expected to have been loaded into the member's BaseType variables; this
  * method will copy them out and store then in the D4Sequence's internal storage.
  * This method always returns the next instance that satisfies the CE when 'filter'
@@ -243,7 +244,7 @@ D4Sequence::operator=(const D4Sequence &rhs)
  * @param dmr
  * @param eval
  * @param filter
- * @return True when read() indicates that the EOF was found, false otherwise.
+ * @return False when read() indicates that the EOF was found, true otherwise.
  */
 bool D4Sequence::read_next_instance(DMR &/*dmr*/, ConstraintEvaluator &/*eval*/, bool filter)
 {
@@ -251,32 +252,20 @@ bool D4Sequence::read_next_instance(DMR &/*dmr*/, ConstraintEvaluator &/*eval*/,
     bool done = false;
 
     do {
-        if (!read_p()) {
-            // read() should return true when its done (eof), false otherwise
-            // (i.e., it needs to be called again).
-            eof = read();
-        }
-
+        eof = read();
         // Advance the row number if ce_eval is false (we're not supposed to
         // evaluate the selection) or both filter and the selection are
         // true.
         // FIXME CE's not supported for DAP4 yet. jhrg 10/11/13
         filter = false;
-        if (!filter /*|| eval.eval_selection(dmr, dataset()*/) {
+        if (!eof && (!filter /*|| eval.eval_selection(dmr, dataset()*/)) {
             d_row_number++;
             done = true;
         }
-
-        set_read_p(false); // ...so that the next instance will be read
     } while (!eof && !done);
 
-    // Once we finish the above loop, set read_p to true so that the caller
-    // knows that data *has* been read. This is how the read() methods of the
-    // elements of the sequence know to not call read() but instead look for
-    // data values inside themselves.
-    set_read_p(true);
-
-    return eof;
+    DBG(cerr << "D4Sequence::read_next_instance eof: " << eof << endl);
+    return !eof;
 }
 
 /**
@@ -299,8 +288,7 @@ void
 D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter)
 {
 	// Read the data values, then serialize.
-
-	while (!read_next_instance(dmr, eval, filter)) {
+	while (read_next_instance(dmr, eval, filter)) {
 	    D4SeqRow *row = new D4SeqRow;
 	    for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
 	        if ((*i)->send_p()) {
@@ -309,11 +297,13 @@ D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval
 	        }
 	    }
 	    d_values.push_back(row);
+	    DBG(cerr << "D4Sequence::serialize Added row" << endl);
 	}
 
     // write D4Sequecne::length(); don't include the length in the checksum
     int64_t count = length(); 	// TODO remove once length() gets normalized to int64_t
     m.put_count(count);
+    DBG(cerr << "D4Sequence::serialize count: " << count << endl);
 
     // By this point the d_values object holds all and only the values to be sent;
     // use the serialize methods to send them (but no need to test send_p).
@@ -328,6 +318,7 @@ void D4Sequence::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 {
     int64_t count = um.get_count();
     set_length(count);
+    DBG(cerr << "D4Sequence::deserialize count: " << count << endl);
 
     while (count-- > 0) {
         D4SeqRow *row = new D4SeqRow;
