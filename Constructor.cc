@@ -493,13 +493,16 @@ Constructor::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 void
 Constructor::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter)
 {
+#if 0
+	// Not used for the same reason the equivalent code in D4Group::serialize()
+	// is not used. Fail for D4Sequence and general issues with memory use.
     if (!read_p())
         read();  // read() throws Error
-
+#endif
 #if 0
     // place holder for now. There may be no need for this; only Array and Seq?
     // jhrg 9/6/13
-    if (ce_eval && !eval.eval_selection(dmr, dataset()))
+    if (filter && !eval.eval_selection(dmr, dataset()))
         return true;
 #endif
 

@@ -125,7 +125,7 @@ set_series_values(DMR *dmr, bool state)
  * @return The name of the file that hods the response.
  */
 string
-send_data(DMR *dataset, const string &constraint, bool series_values)//, bool multipart)
+send_data(DMR *dataset, const string &constraint, bool series_values)
 {
     set_series_values(dataset, series_values);
 
@@ -292,7 +292,7 @@ main(int argc, char *argv[])
         if (send) {
         	DMR *dmr = test_dap4_parser(name, debug, print);
 
-        	string file_name = send_data(dmr, "", series_values);//, false /*multipart*/);
+        	string file_name = send_data(dmr, "", series_values);
         	if (print)
         		cout << "Response file: " << file_name << endl;
         	delete dmr;
@@ -300,7 +300,7 @@ main(int argc, char *argv[])
 
         if (trans) {
         	DMR *dmr = test_dap4_parser(name, debug, print);
-        	string file_name = send_data(dmr, "", series_values);//, false /*multipart*/);
+        	string file_name = send_data(dmr, "", series_values);
         	if (print)
         		cout << "Response file: " << file_name << endl;
         	delete dmr;

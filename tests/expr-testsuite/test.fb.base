@@ -1,0 +1,14 @@
+The complete DDS:
+Dataset {
+    Sequence {
+        Structure {
+            UInt32 i;
+        } inner;
+    } names;
+} test.e;
+The data:
+Sequence {
+    Structure {
+        UInt32 i;
+    } inner;
+} names = { { { 32 } }, { { 1024 } } };

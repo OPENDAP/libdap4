@@ -87,7 +87,6 @@ TestD4Sequence::output_values(std::ostream &out)
 bool
 TestD4Sequence::read()
 {
-    DBG(cerr << "TestD4Sequence::read this:" << this << endl);
     if (read_p())
         return true;
 
@@ -96,12 +95,14 @@ TestD4Sequence::read()
             if ((*i)->send_p() || (*i)->is_in_selection())
                 (*i)->read();
 
+    	// Make sure the child member read() methods are called since
+    	// that is how the 'series' values work.
+    	set_read_p(false);
+
     	++d_current;
-    	DBG(cerr << "TestD4Sequence::read d_current:" << d_current << endl);
     	return false;
     }
     else {
-        DBG(cerr << "TestD4Sequence::read return true:" << endl);
         return true;                // No more values
     }
 }

@@ -27,6 +27,10 @@
 
 #include "Constructor.h"
 
+// DAP2 Sequence supported subsetting using the array notation. This might
+// be introduced into DAP4 later on.
+#define INDEX_SUBSETTING 0
+
 namespace libdap
 {
 
@@ -125,51 +129,19 @@ private:
 	// TODO Optimize
     D4SeqValues d_values;
 
-    // The number of the row that has just been deserialized. Before
-    // deserialized has been called, this field is -1.
-    int d_row_number;
+    int64_t d_length;	// How many elements are in the sequence; -1 if not currently known
 
-    // If a client asks for certain rows of a sequence using the bracket
-    // notation (<tt>[<start>:<stride>:<stop>]</tt>)
-    // record that information in the next three fields.
-    // Values of -1 indicate that these have not yet been set.
+#if INDEX_SUBSETTING
     int d_starting_row_number;
     int d_row_stride;
     int d_ending_row_number;
-
-    bool is_end_of_rows(int i);
+#endif
 
     friend class D4SequenceTest;
 
 protected:
     void m_duplicate(const D4Sequence &s);
-    // typedef stack<SequenceValues*> sequence_values_stack_t;
-#if 0
-    virtual bool serialize_parent_part_one(DDS &dds,
-                                           ConstraintEvaluator &eval,
-					   Marshaller &m);
-    virtual void serialize_parent_part_two(DDS &dds,
-                                           ConstraintEvaluator &eval,
-					   Marshaller &m);
-    virtual bool serialize_leaf(DDS &dds,
-                                ConstraintEvaluator &eval,
-				Marshaller &m, bool ce_eval);
 
-    virtual void intern_data_private( ConstraintEvaluator &eval,
-                                      DDS &dds,
-                                      sequence_values_stack_t &sequence_values_stack);
-    virtual void intern_data_for_leaf(DDS &dds,
-                                      ConstraintEvaluator &eval,
-                                      sequence_values_stack_t &sequence_values_stack);
-
-    virtual void intern_data_parent_part_one(DDS &dds,
-            ConstraintEvaluator &eval,
-            sequence_values_stack_t &sequence_values_stack);
-
-    virtual void intern_data_parent_part_two(DDS &dds,
-            ConstraintEvaluator &eval,
-            sequence_values_stack_t &sequence_values_stack);
-#endif
 public:
 
     D4Sequence(const string &n);
@@ -183,19 +155,21 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    /** Returns the number of elements in a Sequence object. Note that
-        this is <i>not</i> the number of items in a row, but the number
-        of rows in the complete sequence object.
+    /**
+     * @brief The number of elements in a Sequence object.
+     * @note This is not the number of items in a row, but the number
+     * of rows in the complete sequence object.
+     *
+     * @return 0 if the number of elements is unknown, else
+     * return the number of elements.
+     */
+    virtual int length() const { return (int)d_length; }
 
-        @return -1 if no rows have been read. For the server this means
-        read using the read() and read_next_instance() methods; for the
-        client it means read from the server and deserialized. */
-    virtual int length() const { return d_row_number + 1; }
-
-    /** When reading a nested sequence, use this method to reset the internal
-        row number counter. This is necessary so that the second, ... instances
-        of the inner/nested sequence will start off reading row zero. */
-    virtual void reset_row_number() { d_row_number = -1; }
+    /**
+     * Set the length of the sequence.
+     * @param count
+     */
+    virtual void set_length(int count) { d_length = (int64_t)count; }
 
     virtual bool read_next_instance(DMR &dmr, ConstraintEvaluator &eval, bool filter);
 
@@ -215,8 +189,7 @@ public:
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
-#if 0
-    // TODO Support row constraints?
+#if INDEX_SUBSETTING
     /** Return the starting row number if the sequence was constrained using
         row numbers (instead of, or in addition to, a relational constraint).
         If a relational constraint was also given, the row number corresponds

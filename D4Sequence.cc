@@ -28,7 +28,7 @@
 #include <string>
 #include <sstream>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 //#define DODS_DEBUG2
 
 #include "Byte.h"
@@ -107,11 +107,12 @@ is_end_of_sequence(unsigned char marker)
 
 void D4Sequence::m_duplicate(const D4Sequence &s)
 {
-	d_row_number = s.d_row_number;
+	d_length = s.d_length;
+#if INDEX_SUBSETTING
 	d_starting_row_number = s.d_starting_row_number;
 	d_ending_row_number = s.d_ending_row_number;
 	d_row_stride = s.d_row_stride;
-
+#endif
 	// Deep copy for the values
 	for (D4SeqValues::const_iterator i = s.d_values.begin(), e = s.d_values.end(); i != e; ++i) {
 		D4SeqRow &row = **i;
@@ -123,33 +124,6 @@ void D4Sequence::m_duplicate(const D4Sequence &s)
 
 		d_values.push_back(dest);
 	}
-#if 0
-	D4Sequence &cs = const_cast<D4Sequence &>(s);
-
-	// Copy the BaseType objects used to hold values.
-	// TODO Review this
-	// Deep copy of d_values
-
-	for (vector<D4SeqRow *>::iterator rows_iter = cs.d_values.begin();
-			rows_iter != cs.d_values.end();
-			rows_iter++) {
-		// Get the current BaseType Row
-		BaseTypeRow *src_bt_row_ptr = *rows_iter;
-		// Create a new row.
-		BaseTypeRow *dest_bt_row_ptr = new BaseTypeRow;
-		// Copy the BaseType objects from a row to new BaseType objects.
-		// Push new BaseType objects onto new row.
-		for (BaseTypeRow::iterator bt_row_iter = src_bt_row_ptr->begin();
-				bt_row_iter != src_bt_row_ptr->end();
-				bt_row_iter++) {
-			BaseType *src_bt_ptr = *bt_row_iter;
-			BaseType *dest_bt_ptr = src_bt_ptr->ptr_duplicate();
-			dest_bt_row_ptr->push_back(dest_bt_ptr);
-		}
-		// Push new row onto d_values.
-		d_values.push_back(dest_bt_row_ptr);
-	}
-#endif
 }
 
 // Public member functions
@@ -163,7 +137,7 @@ void D4Sequence::m_duplicate(const D4Sequence &s)
 
  @brief The Sequence constructor. */
 D4Sequence::D4Sequence(const string &n) : Constructor(n, dods_sequence_c, true /* is dap4 */),
-		d_row_number(-1), d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
+		d_length(0) // , d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
 }
 
@@ -178,7 +152,7 @@ D4Sequence::D4Sequence(const string &n) : Constructor(n, dods_sequence_c, true /
 
  @brief The Sequence server-side constructor. */
 D4Sequence::D4Sequence(const string &n, const string &d) : Constructor(n, d, dods_sequence_c, true /* is dap4 */),
-		d_row_number(-1), d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
+		d_length(0) //, d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
 }
 
@@ -259,7 +233,7 @@ bool D4Sequence::read_next_instance(DMR &/*dmr*/, ConstraintEvaluator &/*eval*/,
         // FIXME CE's not supported for DAP4 yet. jhrg 10/11/13
         filter = false;
         if (!eof && (!filter /*|| eval.eval_selection(dmr, dataset()*/)) {
-            d_row_number++;
+            d_length++;
             done = true;
         }
     } while (!eof && !done);
@@ -294,6 +268,10 @@ D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval
 	        if ((*i)->send_p()) {
 	            // store the variable's value.
 	            row->push_back((*i)->ptr_duplicate());
+	            // the copy should have read_p true to prevent the serialize() call
+	            // below in the nested for loops from triggering a second call to
+	            // read().
+	            row->back()->set_read_p(true);
 	        }
 	    }
 	    d_values.push_back(row);
@@ -301,9 +279,8 @@ D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval
 	}
 
     // write D4Sequecne::length(); don't include the length in the checksum
-    int64_t count = length(); 	// TODO remove once length() gets normalized to int64_t
-    m.put_count(count);
-    DBG(cerr << "D4Sequence::serialize count: " << count << endl);
+    m.put_count(d_length);
+    DBG(cerr << "D4Sequence::serialize count: " << d_length << endl);
 
     // By this point the d_values object holds all and only the values to be sent;
     // use the serialize methods to send them (but no need to test send_p).
@@ -316,11 +293,10 @@ D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval
 
 void D4Sequence::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 {
-    int64_t count = um.get_count();
-    set_length(count);
-    DBG(cerr << "D4Sequence::deserialize count: " << count << endl);
+    set_length(um.get_count());
+    DBG(cerr << "D4Sequence::deserialize count: " << d_length << endl);
 
-    while (count-- > 0) {
+    for (int64_t i = 0; i < d_length; ++i) {
         D4SeqRow *row = new D4SeqRow;
         for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; ++i) {
             (*i)->deserialize(um, dmr);
@@ -330,7 +306,7 @@ void D4Sequence::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
     }
 }
 
-#if 0
+#if INDEX_SUBSETTING
 /** Set the start, stop and stride for a row-number type constraint.
  This should be used only when the sequence is constrained using the
  bracket notation (which supplies start, stride and stop information).
@@ -449,13 +425,14 @@ void D4Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p
 
 	out << "{ ";
 
-	int rows = length();
-	int i;
-	for (i = 0; i < rows; ++i) {
-		print_one_row(out, i, space, print_row_numbers);
-		out << ", ";
+	if (length() != 0) {
+		int rows = length() - 1;	// -1 because the last row is treated specially
+		for (int i = 0; i < rows; ++i) {
+			print_one_row(out, i, space, print_row_numbers);
+			out << ", ";
+		}
+		print_one_row(out, rows, space, print_row_numbers);
 	}
-	print_one_row(out, i, space, print_row_numbers);
 
 	out << " }";
 
@@ -480,13 +457,15 @@ void D4Sequence::dump(ostream &strm) const
 	strm << DapIndent::LMarg << "Sequence::dump - (" << (void *) this << ")" << endl;
 	DapIndent::Indent();
 	Constructor::dump(strm);
-	strm << DapIndent::LMarg << "# rows deserialized: " << d_row_number << endl;
+	strm << DapIndent::LMarg << "# rows deserialized: " << d_length << endl;
 	strm << DapIndent::LMarg << "bracket notation information:" << endl;
 
 	DapIndent::Indent();
+#if INDEX_SUBSETTING
 	strm << DapIndent::LMarg << "starting row #: " << d_starting_row_number << endl;
 	strm << DapIndent::LMarg << "row stride: " << d_row_stride << endl;
 	strm << DapIndent::LMarg << "ending row #: " << d_ending_row_number << endl;
+#endif
 	DapIndent::UnIndent();
 
 	DapIndent::UnIndent();
