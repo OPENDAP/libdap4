@@ -185,31 +185,35 @@ public:
 
     /** Returns the number of elements in a Sequence object. Note that
         this is <i>not</i> the number of items in a row, but the number
-        of rows in the complete sequence object. To be meaningful, this
-        must be computed after constraint expression (CE) evaluation.
-        The purpose of this function is to facilitate translations
-        between Sequence objects and Array objects, particularly when
-        the Sequence is too large to be transferred from the server to
-        the client in its entirety.
+        of rows in the complete sequence object.
 
-        This function, to be useful, must be specialized for the API and
-        data format in use.
-
-        @return The base implementation returns -1, indicating that the
-        length is not known.  Sub-classes specific to a particular API
-        will have a more complete implementation. */
-    // TODO d_values.size()?
-    virtual int length() const { return -1; }
-
-    /**
-     * @return The number of rows stored in this D4Sequence
-     */
-    virtual int number_of_rows() const { return d_values.size(); }
+        @return -1 if no rows have been read. For the server this means
+        read using the read() and read_next_instance() methods; for the
+        client it means read from the server and deserialized. */
+    virtual int length() const { return d_row_number + 1; }
 
     /** When reading a nested sequence, use this method to reset the internal
         row number counter. This is necessary so that the second, ... instances
         of the inner/nested sequence will start off reading row zero. */
     virtual void reset_row_number() { d_row_number = -1; }
+
+    virtual bool read_next_instance(DMR &dmr, ConstraintEvaluator &eval, bool filter);
+
+#if 0
+    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds) {
+    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
+    }
+#endif
+    virtual bool serialize(ConstraintEvaluator &, DDS &, Marshaller &, bool ) {
+    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
+    }
+    virtual bool deserialize(UnMarshaller &, DDS *, bool ) {
+    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
+    }
+
+    // DAP4
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
 #if 0
     // TODO Support row constraints?
@@ -253,27 +257,6 @@ public:
 
     virtual void set_row_number_constraint(int start, int stop, int stride = 1);
 #endif
-
-   // virtual bool read_row(int row, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
-
-#if 0
-    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds) {
-    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
-    }
-#endif
-    virtual bool serialize(ConstraintEvaluator &, DDS &, Marshaller &, bool ) {
-    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
-    }
-    virtual bool deserialize(UnMarshaller &, DDS *, bool ) {
-    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
-    }
-
-    // DAP4
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &, DMR &) {
-    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
-    }
-
     /**
      * @brief Set the internal value.
      * The 'values' of a D4Sequence is a vector of vectors of BaseType* objects.

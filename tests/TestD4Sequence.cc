@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #include "TestD4Sequence.h"
 #include "TestCommon.h"
 
@@ -81,7 +81,7 @@ TestD4Sequence::output_values(std::ostream &out)
     print_val(out, "", false);
 }
 
-bool 
+bool
 TestD4Sequence::read()
 {
     if (read_p())
@@ -95,30 +95,8 @@ TestD4Sequence::read()
     	return false;
     }
     else {
-        d_current = 0;              // reset
-        reset_row_number();			// Reset the row counter in the parent
         return true;                // No more values
     }
-#if 0
-    // When we get to the end of a Sequence, reset the row number counter so
-    // that, in case this is an inner sequence, the next instance will be read
-    // and the "Trying to back up in a Sequence" error won't be generated.
-    if (++d_current > d_len) {
-        d_current = 0;                  // reset
-        reset_row_number();
-        return true;                   // No more values
-    }
-
-    Vars_iter i = var_begin();
-    while (i != var_end()) {
-        if ((*i)->send_p() || (*i)->is_in_selection()) {
-            (*i)->read();
-        }
-        ++i;
-    }
-    
-    return false;	// more values
-#endif
 }
 
 void
@@ -129,6 +107,6 @@ TestD4Sequence::set_series_values(bool sv)
         dynamic_cast<TestCommon&>(*(*i)).set_series_values(sv);
         ++i;
     }
-    
+
     d_series_values = sv;
 }

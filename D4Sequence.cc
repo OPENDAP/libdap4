@@ -223,29 +223,121 @@ D4Sequence::operator=(const D4Sequence &rhs)
 	return *this;
 }
 
+/**
+ * @brief Read the next instance of the sequence
+ * While the rest of the variables' read() methods are assumed to return the entire
+ * variable in one call (modulo enhancements of the library to support streaming
+ * large variables), this class assumes that the underlying data store is return
+ * data from a table of unknown size. Thus, D4Sequence::read() is assumed to return
+ * one instance (or element or row) of the sequence per call and return true when the
+ * EOF (end of the sequence) is reached. This is one past the last instnace of the
+ * sequence. For each call to read, the values for each of the sequence's members
+ * are expected to have been loaded into the member's BaseType variables; this
+ * method will copy them out and store then in the D4Sequence's internal storage.
+ * This method always returns the next instance that satisfies the CE when 'filter'
+ * is true.
+ *
+ * @note this method is called by D4Sequence::serialize() and it will evaluate the
+ * CE for each set of values read.
+ *
+ * @param dmr
+ * @param eval
+ * @param filter
+ * @return True when read() indicates that the EOF was found, false otherwise.
+ */
+bool D4Sequence::read_next_instance(DMR &/*dmr*/, ConstraintEvaluator &/*eval*/, bool filter)
+{
+    bool eof = false;
+    bool done = false;
+
+    do {
+        if (!read_p()) {
+            // read() should return true when its done (eof), false otherwise
+            // (i.e., it needs to be called again).
+            eof = read();
+        }
+
+        // Advance the row number if ce_eval is false (we're not supposed to
+        // evaluate the selection) or both filter and the selection are
+        // true.
+        // FIXME CE's not supported for DAP4 yet. jhrg 10/11/13
+        filter = false;
+        if (!filter /*|| eval.eval_selection(dmr, dataset()*/) {
+            d_row_number++;
+            done = true;
+        }
+
+        set_read_p(false); // ...so that the next instance will be read
+    } while (!eof && !done);
+
+    // Once we finish the above loop, set read_p to true so that the caller
+    // knows that data *has* been read. This is how the read() methods of the
+    // elements of the sequence know to not call read() but instead look for
+    // data values inside themselves.
+    set_read_p(true);
+
+    return eof;
+}
+
+/**
+ * @brief Serialize the values of a D4Sequence
+ * This method assumes that the underlying data store cannot/does not return a count
+ * of items separately from the items themselves. For a data store that does, this
+ * method should probably be specialized to take advantage of that. Because the DAP4
+ * spec requires that a sequence be prefixed by a count, this method reads the entire
+ * sequence into memory before sending it (and counts the number of elements in the
+ * the process). For a data store where the count is available a priori, this could
+ * be rewritten so that the count is sent and then each instance/element of the sequence
+ * sent in succession.
+ *
+ * @param m Stream data sink
+ * @param dmr DMR object for the evaluator
+ * @param eval CE Evaluator object
+ * @param filter True if the CE should be evaluated, false otherwise.
+ */
 void
 D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter)
 {
 	// Read the data values, then serialize.
 
-	// read_next_instance() stores the values for one instance in the proto
-#if 0
 	while (!read_next_instance(dmr, eval, filter)) {
-		;
+	    D4SeqRow *row = new D4SeqRow;
+	    for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
+	        if ((*i)->send_p()) {
+	            // store the variable's value.
+	            row->push_back((*i)->ptr_duplicate());
+	        }
+	    }
+	    d_values.push_back(row);
 	}
-#endif
+
     // write D4Sequecne::length(); don't include the length in the checksum
-    // For each of those instances, write the instance's values; build checksum
     int64_t count = length(); 	// TODO remove once length() gets normalized to int64_t
     m.put_count(count);
 
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        if ((*i)->send_p()) {
-            (*i)->serialize(m, dmr, eval, filter);
+    // By this point the d_values object holds all and only the values to be sent;
+    // use the serialize methods to send them (but no need to test send_p).
+    for (D4SeqValues::iterator i = d_values.begin(), e = d_values.end(); i != e; ++i) {
+        for (D4SeqRow::iterator j = (*i)->begin(), f = (*i)->end(); j != f; ++j) {
+            (*j)->serialize(m, dmr, eval, false);
         }
     }
 }
 
+void D4Sequence::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
+{
+    int64_t count = um.get_count();
+    set_length(count);
+
+    while (count-- > 0) {
+        D4SeqRow *row = new D4SeqRow;
+        for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; ++i) {
+            (*i)->deserialize(um, dmr);
+            row->push_back((*i)->ptr_duplicate());
+        }
+        d_values.push_back(row);
+    }
+}
 
 #if 0
 /** Set the start, stop and stride for a row-number type constraint.
@@ -258,626 +350,12 @@ D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval
  @param stride The stride. A stride of two skips every other row. */
 virtual void set_row_number_constraint(int start, int stop, int stride)
 {
-	if (stop < start)
-	throw Error(malformed_expr, "Starting row number must precede the ending row number.");
-
-	d_starting_row_number = start;
-	d_row_stride = stride;
-	d_ending_row_number = stop;
-}
-#endif
-
-#if 0
-/** Read row number <i>row</i> of the Sequence. The values of the row
- are obtained by calling the read() method of the sequence. The
- current \e row just read is stored in the Sequence instance
- along with its row number. If a selection expression has been
- supplied, rows are counted only if they satisfy that expression.
-
- Note that we can only advance in a Sequence. It is not possible to back up
- and read a row numbered lower than the current row. If you need that
- you will need to replace the serialize() method with one of your own.
-
- Used on the server side.
-
- @note The first row is row number zero. A Sequence with 100 rows will
- have row numbers 0 to 99.
-
- @todo This code ignores the main reason for nesting the sequences, that
- if the outer Sequence's current instance fails the CE, there's no need to
- look at the values of the inner Sequence. But in the code that calls this
- method (serialize() and intern_data()) the CE is not evaluated until the
- inner-most Sequence (i.e., the leaf Sequence) is read. That means that
- each instance of the inner Sequence is read and the CE evaluated for each
- of those reads. To fix this, and the overall problem of complexity here,
- we need to re-think Sequences and how they behave. 11/13/2007 jhrg
-
- @return A boolean value, with TRUE indicating that read_row
- should be called again because there's more data to be read.
- FALSE indicates the end of the Sequence.
- @param row The row number to read.
- @param dds A reference to the DDS for this dataset.
- @param eval Use this as the constraint expression evaluator.
- @param ce_eval If True, evaluate any CE, otherwise do not.
- */
-bool D4Sequence::read_next_instance(DMR &dmr, ConstraintEvaluator &eval, bool filter)
-{
-	DBG2(cerr << "Entering Sequence::read_row for " << name() << endl);
-	if (row < d_row_number) throw InternalErr("Trying to back up inside a sequence!");
-
-	DBG2(cerr << "read_row: row number " << row << ", current row " << d_row_number << endl);
-	if (row == d_row_number) return false;
-
-	bool eof = false;
-	while (!eof && d_row_number < row) {
-		if (!read_p()) {
-			// read() should return true when its done (eof), false otherwise
-			// (i.e., it needs to be called again).
-			eof = read();
-		}
-
-		// Advance the row number if ce_eval is false (we're not supposed to
-		// evaluate the selection) or both filter and the selection are
-		// true.
-		// FIXME CE's not supported for DAP4 yet. jhrg 10/11/13
-		//if (!eof && (!filter || eval.eval_selection(dmr, dataset()))) d_row_number++;
-		d_row_number++;
-
-		set_read_p(false); // ...so that the next instance will be read
-	}
-
-	// Once we finish the above loop, set read_p to true so that the caller
-	// knows that data *has* been read. This is how the read() methods of the
-	// elements of the sequence know to not call read() but instead look for
-	// data values inside themselves.
-	set_read_p(true);
-
-	dds.timeout_off();
-
-	// Return true if we have valid data, false if we've read to the EOF.
-	DBG2(cerr << "Leaving Sequence::read_row for " << name()
-			<< " with " << (eof == 0) << endl);
-	return eof == 0;
-}
-#endif
-#if 0
-// Private. This is used to process constraints on the rows of a sequence.
-// Starting with 3.2 we support constraints like Sequence[10:2:20]. This
-// odd-looking logic first checks if d_ending_row_number is the sentinel
-// value of -1. If so, the sequence was not constrained by row number and
-// this method should never return true (which indicates that we're at the
-// end of a row-number constraint). If d_ending_row_number is not -1, then is
-// \e i at the end point? 6/1/2001 jhrg
-inline bool D4Sequence::is_end_of_rows(int i)
-{
-	return ((d_ending_row_number == -1) ? false : (i > d_ending_row_number));
-}
-#endif
-#if 0
-/** Serialize a Sequence.
-
- Leaf Sequences must be marked as such (see DDS::tag_nested_sequence()),
- as must the top most Sequence.
-
- How the code works. Methods called for various functions are named in
- brackets:
- <ol>
- <li>Sending a one-level sequence:
- <pre>
- Dataset {
- Sequence {
- Int x;
- Int y;
- } flat;
- } case_1;
- </pre>
-
- Serialize it by reading successive rows and sending all of those that
- satisfy the CE. Before each row, send a start of instance (SOI) marker.
- Once all rows have been sent, send an End of Sequence (EOS)
- marker.[serialize_leaf].</li>
-
- <li>Sending a nested sequence:
- <pre>
- Dataset {
- Sequence {
- Int t;
- Sequence {
- Int z;
- } inner;
- } outer;
- } case_2;
- </pre>
-
- Serialize by reading the first row of outer and storing the values. Do
- not evaluate the CE [serialize_parent_part_one]. Call serialize() for inner
- and read each row for it, evaluating the CE for each row that is read.
- After the first row of inner is read and satisfies the CE, write out the
- SOI marker and values for outer [serialize_parent_part_two], then write
- the SOI and values for the first row of inner. Continue to read and send
- rows of inner until the last row has been read. Send EOS for inner
- [serialize_leaf]. Now read the next row of outer and repeat. Once outer
- is completely read, send its EOS marker.</li>
- </ol>
-
- Notes:
- <ol>
- <li>For a nested Sequence, the child sequence must follow all other types
- in the parent sequence (like the example). There may be only one nested
- Sequence per level.</li>
-
- <li>CE evaluation happens only in a leaf sequence.</li>
-
- <li>When no data satisfies a CE, the empty Sequence is signaled by a
- single EOS marker, regardless of the level of nesting of Sequences. That
- is, the EOS marker is sent for only the outer Sequence in the case of a
- completely empty response.</li>
- </ol>
- */
-#endif
-#if 0
-// We know this is not a leaf Sequence. That means that this Sequence holds
-// another Sequence as one of its fields _and_ that child Sequence triggers
-// the actual transmission of values.
-
-bool
-D4Sequence::serialize_parent_part_one(DDS &dds,
-		ConstraintEvaluator &eval, Marshaller &m)
-{
-	DBG2(cerr << "Entering serialize_parent_part_one for " << name() << endl);
-
-	int i = (d_starting_row_number != -1) ? d_starting_row_number : 0;
-
-	// read_row returns true if valid data was read, false if the EOF was
-	// found. 6/1/2001 jhrg
-	// Since this is a parent sequence, read the row ignoring the CE (all of
-	// the CE clauses will be evaluated by the leaf sequence).
-	bool status = read_row(i, dds, eval, false);
-	DBG2(cerr << "Sequence::serialize_parent_part_one::read_row() status: " << status << endl);
-
-	while (status && !is_end_of_rows(i)) {
-		i += d_row_stride;
-
-		// DBG(cerr << "Writing Start of Instance marker" << endl);
-		// write_start_of_instance(sink);
-
-		// In this loop serialize will signal an error with an exception.
-		for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
-			// Only call serialize for child Sequences; the leaf sequence
-			// will trigger the transmission of values for its parents (this
-			// sequence and maybe others) once it gets some valid data to
-			// send.
-			// Note that if the leaf sequence has no variables in the current
-			// projection, its serialize() method will never be called and that's
-			// the method that triggers actually sending values. Thus the leaf
-			// sequence must be the lowest level sequence with values whose send_p
-			// property is true.
-			if ((*iter)->send_p() && (*iter)->type() == dods_sequence_c)
-			(*iter)->serialize(eval, dds, m);
-		}
-
-		set_read_p(false); // ...so this will read the next instance
-
-		status = read_row(i, dds, eval, false);
-		DBG(cerr << "Sequence::serialize_parent_part_one::read_row() status: " << status << endl);
-	}
-	// Reset current row number for next nested sequence element.
-	d_row_number = -1;
-
-	// Always write the EOS marker? 12/23/04 jhrg
-	// Yes. According to DAP2, a completely empty response is signaled by
-	// a return value of only the EOS marker for the outermost sequence.
-	if (d_top_most || d_wrote_soi) {
-		DBG(cerr << "Writing End of Sequence marker" << endl);
-		write_end_of_sequence(m);
-		d_wrote_soi = false;
-	}
-
-	return true;  // Signal errors with exceptions.
-}
-
-// If we are here then we know that this is 'parent sequence' and that the
-// leaf sequence has found valid data to send. We also know that
-// serialize_parent_part_one has been called so data are in the instance's
-// fields. This is where we send data. Whereas ..._part_one() contains a
-// loop to iterate over all of rows in a parent sequence, this does not. This
-// method assumes that the serialize_leaf() will call it each time it needs
-// to be called.
-//
-// NB: This code only works if the child sequences appear after all other
-// variables.
-void
-D4Sequence::serialize_parent_part_two(DDS &dds,
-		ConstraintEvaluator &eval, Marshaller &m)
-{
-	DBG(cerr << "Entering serialize_parent_part_two for " << name() << endl);
-
-	BaseType *btp = get_parent();
-	if (btp && btp->type() == dods_sequence_c)
-	static_cast<D4Sequence&>(*btp).serialize_parent_part_two(dds, eval, m);
-
-	if (d_unsent_data) {
-		DBG(cerr << "Writing Start of Instance marker" << endl);
-		d_wrote_soi = true;
-		write_start_of_instance(m);
-
-		// In this loop serialize will signal an error with an exception.
-		for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
-			// Send all the non-sequence variables
-			DBG(cerr << "Sequence::serialize_parent_part_two(), serializing "
-					<< (*iter)->name() << endl);
-			if ((*iter)->send_p() && (*iter)->type() != dods_sequence_c) {
-				DBG(cerr << "Send P is true, sending " << (*iter)->name() << endl);
-				(*iter)->serialize(eval, dds, m, false);
-			}
-		}
-
-		d_unsent_data = false;              // read should set this.
-	}
-}
-
-// This code is only run by a leaf sequence. Note that a one level sequence
-// is also a leaf sequence.
-bool
-D4Sequence::serialize_leaf(DDS &dds,
-		ConstraintEvaluator &eval, Marshaller &m, bool ce_eval)
-{
-	DBG(cerr << "Entering Sequence::serialize_leaf for " << name() << endl);
-	int i = (d_starting_row_number != -1) ? d_starting_row_number : 0;
-
-	// read_row returns true if valid data was read, false if the EOF was
-	// found. 6/1/2001 jhrg
-	bool status = read_row(i, dds, eval, ce_eval);
-	DBG(cerr << "Sequence::serialize_leaf::read_row() status: " << status << endl);
-
-	// Once the first valid (satisfies the CE) row of the leaf sequence has
-	// been read, we know we're going to send data. Send the current instance
-	// of the parent/ancestor sequences now, if there are any. We only need
-	// to do this once, hence it's not inside the while loop, but we only
-	// send the parent seq data _if_ there's data in the leaf to send, that's
-	// why we wait until after the first call to read_row() here in the leaf
-	// sequence.
-	//
-	// NB: It's important to only call serialize_parent_part_two() for a
-	// Sequence that really is the parent of a leaf sequence. The fancy cast
-	// will throw and exception if btp is not a Sequence, but doesn't test
-	// that it's a parent sequence as we've defined them here.
-	if (status && !is_end_of_rows(i)) {
-		BaseType *btp = get_parent();
-		if (btp && btp->type() == dods_sequence_c)
-		static_cast<D4Sequence&>(*btp).serialize_parent_part_two(dds,
-				eval, m);
-	}
-
-	d_wrote_soi = false;
-	while (status && !is_end_of_rows(i)) {
-		i += d_row_stride;
-
-		DBG(cerr << "Writing Start of Instance marker" << endl);
-		d_wrote_soi = true;
-		write_start_of_instance(m);
-
-		// In this loop serialize will signal an error with an exception.
-		for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
-			DBG(cerr << "Sequence::serialize_leaf(), serializing "
-					<< (*iter)->name() << endl);
-			if ((*iter)->send_p()) {
-				DBG(cerr << "Send P is true, sending " << (*iter)->name() << endl);
-				(*iter)->serialize(eval, dds, m, false);
-			}
-		}
-
-		set_read_p(false); // ...so this will read the next instance
-
-		status = read_row(i, dds, eval, ce_eval);
-		DBG(cerr << "Sequence::serialize_leaf::read_row() status: " << status << endl);
-	}
-
-	// Only write the EOS marker if there's a matching Start Of Instance
-	// Marker in the stream.
-	if (d_wrote_soi || d_top_most) {
-		DBG(cerr << "Writing End of Sequence marker" << endl);
-		write_end_of_sequence(m);
-	}
-
-	return true;  // Signal errors with exceptions.
-}
-
-/** This method is used to evaluate a constraint and based on those results
- load the Sequence variable with data. This simulates having a server call
- the serialize() method and a client call the deserialize() method without
- the overhead of any IPC. Use this method on the server-side to 'load the
- d_values field with data' so that other code and work with those data.
-
- The somewhat odd algorithm used by serialize() is largely copied here, so
- comments about logic in serialize() and the related methods apply here
- as well.
-
- @note Even though each Sequence variable has a \e values field, only the
- top-most Sequence in a hierarchy of Sequences holds values. The field
- accessed by the var_value() method is completely linked object; access
- the values of nested Sequences using the BaseType objects returned by
- var_value().
-
- @note Only call this method for top-most Sequences. Never call it for
- Sequences which have a parent (directly or indirectly) variable that is
- a Sequence.
-
- @param eval Use this constraint evaluator
- @param dds This DDS holds the variables for the data source */
-void
-D4Sequence::intern_data(ConstraintEvaluator &eval, DDS &dds)
-{
-	DBG(cerr << "Sequence::intern_data - for " << name() << endl);
-	DBG2(cerr << "    intern_data, values: " << &d_values << endl);
-
-	// Why use a stack instead of return values? We need the stack because
-	// Sequences neted three of more levels deep will loose the middle
-	// instances when the intern_data_parent_part_two() code is run.
-	sequence_values_stack_t sequence_values_stack;
-
-	DBG2(cerr << "    pushing d_values of " << name() << " (" << &d_values
-			<< ") on stack; size: " << sequence_values_stack.size() << endl);
-	sequence_values_stack.push(&d_values);
-
-	intern_data_private(eval, dds, sequence_values_stack);
-}
-
-void
-D4Sequence::intern_data_private(ConstraintEvaluator &eval,
-		DDS &dds,
-		sequence_values_stack_t &sequence_values_stack)
-{
-	DBG(cerr << "Entering intern_data_private for " << name() << endl);
-
-	if (is_leaf_sequence())
-	intern_data_for_leaf(dds, eval, sequence_values_stack);
-	else
-	intern_data_parent_part_one(dds, eval, sequence_values_stack);
-}
-
-void
-D4Sequence::intern_data_parent_part_one(DDS & dds,
-		ConstraintEvaluator & eval,
-		sequence_values_stack_t &
-		sequence_values_stack)
-{
-	DBG(cerr << "Entering intern_data_parent_part_one for " << name() << endl);
-
-	int i = (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
-
-	// read_row returns true if valid data was read, false if the EOF was
-	// found. 6/1/2001 jhrg
-	// Since this is a parent sequence, read the row ignoring the CE (all of
-	// the CE clauses will be evaluated by the leaf sequence).
-	bool status = read_row(i, dds, eval, false);
-
-	// Grab the current size of the value stack. We do this because it is
-	// possible that no nested sequences for this row happened to be
-	// selected because of a constraint evaluation or the last row is not
-	// selected because of a constraint evaluation. In either case, no
-	// nested sequence d_values are pushed onto the stack, so there is
-	// nothing to pop at the end of this function. pcw 07/14/08
-	SequenceValues::size_type orig_stack_size = sequence_values_stack.size();
-
-	while (status
-			&& (get_ending_row_number() == -1
-					|| i <= get_ending_row_number()))
-	{
-		i += get_row_stride();
-		for (Vars_iter iter = var_begin(); iter != var_end(); iter++) {
-			if ((*iter)->send_p()) {
-				switch ((*iter)->type()) {
-					case dods_sequence_c:
-					static_cast<D4Sequence&>(**iter).intern_data_private(
-							eval, dds, sequence_values_stack);
-					break;
-
-					default:
-					(*iter)->intern_data(eval, dds);
-					break;
-				}
-			}
-		}
-
-		set_read_p(false);      // ...so this will read the next instance
-
-		status = read_row(i, dds, eval, false);
-	}
-
-	// Reset current row number for next nested sequence element.
-	reset_row_number();
-
-	// if the size of the stack is larger than the original size (retrieved
-	// above) then pop the top set of d_values from the stack. If it's the
-	// same, then no nested sequences, or possible the last nested sequence,
-	// were pushed onto the stack, so there is nothing to pop.
-	if( sequence_values_stack.size() > orig_stack_size )
-	{
-		DBG2(cerr << "    popping d_values (" << sequence_values_stack.top()
-				<< ") off stack; size: " << sequence_values_stack.size() << endl);
-		sequence_values_stack.pop();
-	}
-	DBG(cerr << "Leaving intern_data_parent_part_one for " << name() << endl);
-}
-
-void
-D4Sequence::intern_data_parent_part_two(DDS &dds,
-		ConstraintEvaluator &eval,
-		sequence_values_stack_t &sequence_values_stack)
-{
-	DBG(cerr << "Entering intern_data_parent_part_two for " << name() << endl);
-
-	BaseType *btp = get_parent();
-	if (btp && btp->type() == dods_sequence_c) {
-		static_cast<D4Sequence&>(*btp).intern_data_parent_part_two(
-				dds, eval, sequence_values_stack);
-	}
-
-	DBG2(cerr << "    stack size: " << sequence_values_stack.size() << endl);
-	SequenceValues *values = sequence_values_stack.top();
-	DBG2(cerr << "    using values = " << (void *)values << endl);
-
-	if (get_unsent_data()) {
-		BaseTypeRow *row_data = new BaseTypeRow;
-
-		// In this loop transfer_data will signal an error with an exception.
-		for (Vars_iter iter = var_begin(); iter != var_end(); iter++) {
-
-			if ((*iter)->send_p() && (*iter)->type() != dods_sequence_c) {
-				row_data->push_back((*iter)->ptr_duplicate());
-			}
-			else if ((*iter)->send_p()) { //Sequence; must be the last variable
-				D4Sequence *tmp = dynamic_cast<D4Sequence*>((*iter)->ptr_duplicate());
-				if (!tmp) {
-					delete row_data;
-					throw InternalErr(__FILE__, __LINE__, "Expected a Sequence.");
-				}
-				row_data->push_back(tmp);
-				DBG2(cerr << "    pushing d_values of " << tmp->name()
-						<< " (" << &(tmp->d_values)
-						<< ") on stack; size: " << sequence_values_stack.size()
-						<< endl);
-				// This pushes the d_values field of the newly created leaf
-				// Sequence onto the stack. The code then returns to intern
-				// _data_for_leaf() where this value will be used.
-				sequence_values_stack.push(&(tmp->d_values));
-			}
-		}
-
-		DBG2(cerr << "    pushing values for " << name()
-				<< " to " << values << endl);
-		values->push_back(row_data);
-		set_unsent_data(false);
-	}
-	DBG(cerr << "Leaving intern_data_parent_part_two for " << name() << endl);
-}
-
-void
-D4Sequence::intern_data_for_leaf(DDS &dds,
-		ConstraintEvaluator &eval,
-		sequence_values_stack_t &sequence_values_stack)
-{
-	DBG(cerr << "Entering intern_data_for_leaf for " << name() << endl);
-
-	int i = (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
-
-	DBG2(cerr << "    reading row " << i << endl);
-	bool status = read_row(i, dds, eval, true);
-	DBG2(cerr << "    status: " << status << endl);
-	DBG2(cerr << "    ending row number: " << get_ending_row_number() << endl);
-
-	if (status && (get_ending_row_number() == -1 || i <= get_ending_row_number())) {
-		BaseType *btp = get_parent();
-		if (btp && btp->type() == dods_sequence_c) {
-			// This call will read the values for the parent sequences and
-			// then allocate a new instance for the leaf and push that onto
-			// the stack.
-			static_cast<D4Sequence&>(*btp).intern_data_parent_part_two(
-					dds, eval, sequence_values_stack);
-		}
-
-		// intern_data_parent_part_two pushes the d_values field of the leaf
-		// onto the stack, so this operation grabs that value and then loads
-		// data into it.
-		SequenceValues *values = sequence_values_stack.top();
-		DBG2(cerr << "    using values = " << values << endl);
-
-		while (status && (get_ending_row_number() == -1
-						|| i <= get_ending_row_number())) {
-			i += get_row_stride();
-
-			// Copy data from the object's fields to this new BaeTypeRow instance
-			BaseTypeRow *row_data = new BaseTypeRow;
-			for (Vars_iter iter = var_begin(); iter != var_end(); iter++) {
-				if ((*iter)->send_p()) {
-					row_data->push_back((*iter)->ptr_duplicate());
-				}
-			}
-
-			DBG2(cerr << "    pushing values for " << name()
-					<< " to " << values << endl);
-			// Save the row_data to values().
-			values->push_back(row_data);
-
-			set_read_p(false);// ...so this will read the next instance
-			// Read the ith row into this object's fields
-			status = read_row(i, dds, eval, true);
-		}
-
-		DBG2(cerr << "    popping d_values (" << sequence_values_stack.top()
-				<< ") off stack; size: " << sequence_values_stack.size() << endl);
-		sequence_values_stack.pop();
-	}
-	DBG(cerr << "Leaving intern_data_for_leaf for " << name() << endl);
-}
-#endif
-
-#if 0
-/** @brief Deserialize (read from the network) the entire Sequence.
-
- This method used to read a single row at a time. Now the entire
- sequence is read at once. The method used to return True to indicate
- that more data needed to be deserialized and False when the sequence
- was completely read. Now it simply returns false. This might seem odd,
- but making this method return false breaks existing software the least.
-
- @param um An UnMarshaller that knows how to deserialize data
- @param dds A DataDDS from which to read.
- @param reuse Passed to child objects when they are deserialized. Some
- implementations of deserialize() use this to determine if new storage should
- be allocated or existing storage reused.
- @exception Error if a sequence stream marker cannot be read.
- @exception InternalErr if the <tt>dds</tt> param is not a DataDDS.
- @return A return value of false indicates that an EOS ("end of
- Sequence") marker was found, while a value of true indicates
- that there are more rows to be read. This version always reads the
- entire sequence, so it always returns false.
- */
-bool
-D4Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
-{
-	DataDDS *dd = dynamic_cast<DataDDS *>(dds);
-	if (!dd)
-	throw InternalErr("Expected argument 'dds' to be a DataDDS!");
-
-	DBG2(cerr << "Reading from server/protocol version: "
-			<< dd->get_protocol_major() << "." << dd->get_protocol_minor()
-			<< endl);
-
-	// Check for old servers.
-	if (dd->get_protocol_major() < 2) {
-		throw Error(string("The protocl version (") + dd->get_protocol()
-				+ ") indicates that this\nis an old server which may not correctly transmit Sequence variables.\nContact the server administrator.");
-	}
-
-	while (true) {
-		// Grab the sequence stream's marker.
-		unsigned char marker = read_marker(um);
-		if (is_end_of_sequence(marker))
-		break;// EXIT the while loop here!!!
-		else if (is_start_of_instance(marker)) {
-			d_row_number++;
-			DBG2(cerr << "Reading row " << d_row_number << " of "
-					<< name() << endl);
-			BaseTypeRow *bt_row_ptr = new BaseTypeRow;
-			// Read the instance's values, building up the row
-			for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
-				BaseType *bt_ptr = (*iter)->ptr_duplicate();
-				bt_ptr->deserialize(um, dds, reuse);
-				DBG2(cerr << "Deserialized " << bt_ptr->name() << " ("
-						<< bt_ptr << ") = ");
-				DBG2(bt_ptr->print_val(stderr, ""));
-				bt_row_ptr->push_back(bt_ptr);
-			}
-			// Append this row to those accumulated.
-			d_values.push_back(bt_row_ptr);
-		}
-		else
-		throw Error("I could not read the expected Sequence data stream marker!");
-	};
-
-	return false;
+    if (stop < start)
+    throw Error(malformed_expr, "Starting row number must precede the ending row number.");
+
+    d_starting_row_number = start;
+    d_row_stride = stride;
+    d_ending_row_number = stop;
 }
 #endif
 
@@ -911,17 +389,6 @@ D4Sequence::var_value(size_t row_num, const string &name)
 
 	D4SeqRow::iterator elem = find_if(row->begin(), row->end(), bind2nd(ptr_fun(base_type_name_eq), name));
 	return (elem != row->end()) ? *elem: 0;
-#if 0
-	D4SeqRow::iterator bt_row_iter = bt_row_ptr->begin();
-	D4SeqRow::iterator bt_row_end = bt_row_ptr->end();
-	while (bt_row_iter != bt_row_end && (*bt_row_iter)->name() != name)
-		++bt_row_iter;
-
-	if (bt_row_iter == bt_row_end)
-		return 0;
-	else
-		return *bt_row_iter;
-#endif
 }
 
 /** @brief Get the BaseType pointer to the $i^{th}$ variable of <i>row</i>.
@@ -991,7 +458,7 @@ void D4Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p
 
 	out << "{ ";
 
-	int rows = number_of_rows() - 1;
+	int rows = length();
 	int i;
 	for (i = 0; i < rows; ++i) {
 		print_one_row(out, i, space, print_row_numbers);
