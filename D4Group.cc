@@ -236,8 +236,17 @@ D4Group::set_send_p(bool state)
 void
 D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter)
 {
+#if 0
+    // This will call Constructor read which will, for everything but a Sequence,
+    // read all of the data in one shot. However, the serialize() methods for the
+    // Arrays, Structures, etc., also have read() calls in them and those can be
+    // used to control how long the data are in memory, e.g., limiting the lifetime
+    // of a large array and avoiding having overlapping arrays when they are not
+    // needed. For a sequence read() has different semantics. It is called once
+    // for every instance and the read_p flag is not used.
     if (!read_p())
         read();  // read() throws Error
+#endif
 
     groupsIter g = d_groups.begin();
     while (g != d_groups.end())
