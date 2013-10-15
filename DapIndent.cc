@@ -33,6 +33,8 @@
 // Methods for the class DapIndent - an indentation class to support
 // debugging and the dump methods.
 
+#include "config.h"
+
 #include "DapIndent.h"
 
 namespace libdap {

@@ -28,6 +28,8 @@
  *      Author: jimg
  */
 
+#include "config.h"
+
 #include "XMLWriter.h"
 
 #include <libxml/encoding.h>

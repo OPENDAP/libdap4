@@ -36,7 +36,6 @@
 #ifndef _byte_h
 #define _byte_h 1
 
-
 #ifndef _dods_datatypes_h
 #include "dods-datatypes.h"
 #endif

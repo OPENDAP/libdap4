@@ -30,6 +30,8 @@
 // Authors:
 //      pwest       Patrick West <pwest@ucar.edu>
 
+#include "config.h"
+
 #include "XDRFileUnMarshaller.h"
 
 #include "Byte.h"

@@ -33,6 +33,7 @@
 //
 // jhrg 9/7/94
 
+#include "config.h"
 
 #include "Url.h"
 

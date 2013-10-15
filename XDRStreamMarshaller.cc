@@ -30,6 +30,8 @@
 // Authors:
 //      pwest       Patrick West <pwest@ucar.edu>
 
+#include "config.h"
+
 #include "XDRStreamMarshaller.h"
 
 #include <iostream>
