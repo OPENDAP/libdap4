@@ -2,7 +2,7 @@
 dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.61)
+AC_PREREQ(2.68)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
 AC_INIT(libdap, 3.12.0, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["3.4"], [Highest DAP version implemented?])
@@ -243,7 +243,8 @@ then
 	XML2_LIBS="`xml2-config --libs`"
 	dnl XML2_STATIC_LIBS=$XML2_LIBS
 	XML2_CFLAGS="`xml2-config --cflags`"
-	xmlprivatelibs="`xml2-config --libs`"
+	xmlprivatelibs="`xml2-config --libs `"
+	dnl `
 	AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
 else
 	AC_MSG_ERROR([I could not find ml2-config])
@@ -286,7 +287,8 @@ AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])
 fi
 
 AC_ARG_ENABLE([dap4], 
-    AC_HELP_STRING([--enable-dap4], [Enable DAP4 types and responses (default is NO)]))
+    AC_HELP_STRING([--enable-dap4], [Enable DAP4 types and responses (default is Yes)]),
+    [], [enable_dap4="yes"])
 
 AS_IF([test "x$enable_dap4" = "xyes"], [
     dnl Do the stuff needed for enabling the feature
