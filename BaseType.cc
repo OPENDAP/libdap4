@@ -781,6 +781,20 @@ BaseType::intern_data(ConstraintEvaluator &, DDS &dds)
     dds.timeout_off();
 }
 
+/**
+ * @brief Read data into this variable
+ * @param eval Evaluator for a constraint expression
+ * @param dmr DMR for the whole dataset
+ */
+void
+BaseType::intern_data(Crc32 &checksum, DMR &, ConstraintEvaluator &)
+{
+    if (!read_p())
+        read();          // read() throws Error and InternalErr
+
+    compute_checksum(checksum);
+}
+
 bool
 BaseType::serialize(ConstraintEvaluator &, DDS &,  Marshaller &, bool)
 {

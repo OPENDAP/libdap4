@@ -242,6 +242,56 @@ bool D4Sequence::read_next_instance(DMR &/*dmr*/, ConstraintEvaluator &/*eval*/,
     return !eof;
 }
 
+#if 0
+// Used the version in Constructor, which throws an exception because we should
+// not compute these for constructor types. In the case of Sequence, it requires
+// that the values all get read.
+/**
+ * @brief Compute the checksum for a D4Sequence
+ *
+ * @param checksum
+ * @param dmr
+ * @param eval
+ */
+void
+D4Sequence::compute_checksum(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval)
+{
+	// Read the data values, then serialize.
+	while (read_next_instance(dmr, eval, true)) {
+	    for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
+	        if ((*i)->send_p()) {
+	            (*i)->compute_checksum(checksum);
+	        }
+	    }
+	}
+}
+#endif
+
+void
+D4Sequence::intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval)
+{
+	// Read the data values, then serialize.
+	while (read_next_instance(dmr, eval, true)) {
+	    D4SeqRow *row = new D4SeqRow;
+	    for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
+	        if ((*i)->send_p()) {
+	            // store the variable's value.
+	            row->push_back((*i)->ptr_duplicate());
+	            // the copy should have read_p true to prevent the serialize() call
+	            // below in the nested for loops from triggering a second call to
+	            // read().
+	            row->back()->set_read_p(true);
+	            // Do not compute the checksum for constructor types; those
+	            // types will compute the checksum on the values they contain.
+	            // TODO Check on this
+	            if (!row->back()->is_constructor_type())
+	            	row->back()->compute_checksum(checksum);
+	        }
+	    }
+	    d_values.push_back(row);
+	}
+}
+
 /**
  * @brief Serialize the values of a D4Sequence
  * This method assumes that the underlying data store cannot/does not return a count

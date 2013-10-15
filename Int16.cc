@@ -144,6 +144,12 @@ Int16::deserialize(UnMarshaller &um, DDS *, bool)
     return false;
 }
 
+void
+Int16::compute_checksum(Crc32 &checksum)
+{
+	checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(d_buf));
+}
+
 /**
  * @brief Serialize an Int8
  * @param m

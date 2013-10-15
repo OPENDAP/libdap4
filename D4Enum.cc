@@ -77,40 +77,11 @@ template void D4Enum::set_value<dods_uint32>(dods_uint32 v);
 template void D4Enum::set_value<dods_int64>(dods_int64 v);
 template void D4Enum::set_value<dods_uint64>(dods_uint64 v);
 
-#if 0
-bool
-D4Enum::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
+void
+D4Enum::compute_checksum(Crc32 &checksum)
 {
-    dds.timeout_on();
-
-    if (!read_p())
-        read();  // read() throws Error and InternalErr
-
-#if EVAL
-    if (ce_eval && !eval.eval_selection(dds, dataset()))
-        return true;
-#endif
-
-    dds.timeout_off();
-
-    assert(typeid(m) == typeid(D4StreamMarshaller));
-
-    static_cast<D4StreamMarshaller*>(&m)->put_int64( d_buf ) ;
-
-    return true;
+	checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(uint64_t));
 }
-
-bool
-D4Enum::deserialize(UnMarshaller &um, DDS *, bool)
-{
-    assert(typeid(um) == typeid(D4StreamUnMarshaller));
-
-    // d_buf passed by reference.
-    static_cast<D4StreamUnMarshaller*>(&um)->get_uint64( d_buf ) ;
-
-    return false;
-}
-#endif
 
 /**
  * @brief Serialize a Byte

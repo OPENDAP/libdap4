@@ -989,7 +989,7 @@ Sequence::intern_data(ConstraintEvaluator &eval, DDS &dds)
     DBG2(cerr << "    intern_data, values: " << &d_values << endl);
 
     // Why use a stack instead of return values? We need the stack because
-    // Sequences neted three of more levels deep will loose the middle
+    // Sequences nested three of more levels deep will loose the middle
     // instances when the intern_data_parent_part_two() code is run.
     sequence_values_stack_t sequence_values_stack;
 

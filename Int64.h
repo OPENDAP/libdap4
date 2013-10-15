@@ -72,12 +72,8 @@ public:
 
     virtual unsigned int width(bool constrained = false);
 
-#if 0
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
-#endif
-
     // DAP4
+    virtual void compute_checksum(Crc32 &checksum);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 

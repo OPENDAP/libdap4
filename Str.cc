@@ -164,6 +164,12 @@ Str::deserialize(UnMarshaller &um, DDS *, bool)
     return false;
 }
 
+void
+Str::compute_checksum(Crc32 &checksum)
+{
+	checksum.AddData(reinterpret_cast<const uint8_t*>(d_buf.data()), d_buf.length());
+}
+
 /**
  * @brief Serialize an Int8
  * @param m

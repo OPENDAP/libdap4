@@ -62,7 +62,7 @@ private:
 	D4Enum();
 
 protected:
-    unsigned long long d_buf;
+    uint64_t d_buf;
     Type d_element_type;
 
     void m_duplicate(const D4Enum &src) {
@@ -175,6 +175,7 @@ public:
     }
 
     // DAP4
+    virtual void compute_checksum(Crc32 &checksum);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
 
     virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);

@@ -44,6 +44,10 @@
 #include <vector>
 #include <algorithm>
 
+#include <stdint.h>
+
+#include "crc.h"
+
 #include "Vector.h"
 #include "Marshaller.h"
 #include "UnMarshaller.h"
@@ -805,6 +809,89 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
     }
 
     return false;
+}
+
+void Vector::compute_checksum(Crc32 &checksum)
+{
+    switch (d_proto->type()) {
+        case dods_byte_c:
+        case dods_int8_c:
+        case dods_uint8_c:
+        	checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length());
+            break;
+
+        case dods_int16_c:
+        case dods_uint16_c:
+        	checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * sizeof(int16_t));
+            break;
+
+        case dods_int32_c:
+        case dods_uint32_c:
+        case dods_float32_c:
+        	checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * sizeof(int32_t));
+            break;
+
+        case dods_int64_c:
+        case dods_uint64_c:
+        case dods_float64_c:
+        	checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * sizeof(int64_t));
+            break;
+
+        case dods_str_c:
+        case dods_url_c:
+        	for (int64_t i = 0, e = length(); i < e; ++i)
+        		checksum.AddData(reinterpret_cast<const uint8_t*>(d_str[i].data()), d_str[i].length());
+            break;
+
+        case dods_structure_c:
+        case dods_sequence_c:
+        	d_proto->compute_checksum(checksum);
+        	break;
+
+        case dods_array_c:	// No array of array
+        case dods_grid_c:	// No grids in DAP4
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Unknown or unsupported datatype (" + d_proto->type_name() + ").");
+            break;
+    }
+}
+
+void Vector::intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval)
+{
+    if (!read_p())
+        read(); // read() throws Error and InternalErr
+
+    switch (d_proto->type()) {
+        case dods_byte_c:
+        case dods_int8_c:
+        case dods_uint8_c:
+        case dods_int16_c:
+        case dods_uint16_c:
+        case dods_int32_c:
+        case dods_uint32_c:
+        case dods_int64_c:
+        case dods_uint64_c:
+        case dods_float32_c:
+        case dods_float64_c:
+        case dods_str_c:
+        case dods_url_c:
+        	compute_checksum(checksum);
+            break;
+
+        case dods_structure_c:
+        case dods_sequence_c:
+            assert(d_compound_buf.capacity() != 0);
+
+            for (int i = 0, e = length(); i < e; ++i)
+                d_compound_buf[i]->intern_data(checksum, dmr, eval);
+            break;
+
+        case dods_array_c:
+        case dods_grid_c:
+        default:
+        	throw InternalErr(__FILE__, __LINE__, "Unknown or unsupported datatype (" + d_proto->type_name() + ").");
+            break;
+    }
 }
 
 void

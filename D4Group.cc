@@ -24,7 +24,15 @@
 
 #include "config.h"
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+
+#include <stdint.h>
+
 //#define DODS_DEBUG
+
+#include "crc.h"
 
 #include "XMLWriter.h"
 #include "D4Attributes.h"
@@ -220,6 +228,38 @@ D4Group::set_send_p(bool state)
         (*g++)->set_send_p(state);
 
     Constructor::set_send_p(state);
+}
+
+void
+D4Group::intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval)
+{
+    groupsIter g = d_groups.begin();
+    while (g != d_groups.end())
+        (*g++)->intern_data(checksum, dmr, eval);
+
+    // Specialize how the top-level variables in any Group are sent; include
+    // a checksum for them. A subset operation might make an interior set of
+    // variables, but the parent structure will still be present and the checksum
+    // will be computed for that structure. In other words, DAP4 does not try
+    // to sort out which variables are the 'real' top-level variables and instead
+    // simply computes the CRC for whatever appears as a variable in the root
+    // group.
+	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+		// Only send the stuff in the current subset.
+		if ((*i)->send_p()) {
+			checksum.Reset();
+
+			(*i)->intern_data(checksum, dmr, eval);
+
+			D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
+		    ostringstream oss;
+		    oss.setf(ios::hex, ios::basefield);
+		    oss << setfill('0') << setw(8) << checksum.GetCrc32();
+		    a->add_value(oss.str());
+			(*i)->attributes()->add_attribute_nocopy(a);
+			DBG(cerr << "CRC32: " << oss.str() << " for " << (*i)->name() << endl);
+		}
+	}
 }
 
 /**

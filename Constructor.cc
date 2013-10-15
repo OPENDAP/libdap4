@@ -37,7 +37,10 @@
 #include <algorithm>
 #include <functional>
 
+#include <stdint.h>
+
 //#define DODS_DEBUG
+#include "crc.h"
 
 #include "Constructor.h"
 #include "Grid.h"
@@ -481,6 +484,30 @@ Constructor::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 
     return false;
 }
+
+void
+Constructor::compute_checksum(Crc32 &checksum)
+{
+	throw InternalErr(__FILE__, __LINE__, "Computing a checksum alone is not supported for Constructor types.");
+#if 0
+    for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
+        if ((*i)->send_p()) {
+            (*i)->compute_checksum(checksum);
+        }
+    }
+#endif
+}
+
+void
+Constructor::intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator & eval)
+{
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        if ((*i)->send_p()) {
+            (*i)->intern_data(checksum, dmr, eval);
+        }
+    }
+}
+
 
 /**
  * @brief Serialize a Constructor

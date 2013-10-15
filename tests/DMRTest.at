@@ -88,6 +88,24 @@ m4_define([DMR_TRANS], [
     AT_CLEANUP
 ])
 
+# Usage DMR_INTERN $1 <test_input> $2 <pass/xfail>
+# This code tests the values printed when the received document is decoded.
+m4_define([DMR_INTERN], [
+    # Test reading/interning data (i.e., using the read() methods to load up objects with
+    # values without running them through serialize/deserialize)
+    AT_SETUP([intern data $1])
+    AT_KEYWORDS([intern])
+    
+    input=$abs_srcdir/$1
+    baseline=$input.trans_base
+
+    AT_CHECK([$abs_builddir/dmr-test -x -i $input || true], [], [stdout], [stderr])
+    AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
+    
+    AT_XFAIL_IF([test "$2" = "xfail"])
+    AT_CLEANUP
+])
+
 DMR_PARSE([dmr-testsuite/test_simple_1.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_simple_2.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_simple_3.xml], [pass])
@@ -145,6 +163,24 @@ DMR_TRANS([dmr-testsuite/test_array_5.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_6.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_7.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_8.xml], [pass])
+
+DMR_INTERN([dmr-testsuite/test_simple_1.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_simple_2.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_simple_3.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_simple_4.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_simple_5.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_simple_6.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_simple_7.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_simple_8.xml], [pass])
+
+DMR_INTERN([dmr-testsuite/test_array_1.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_array_2.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_array_3.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_array_4.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_array_5.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_array_6.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_array_7.xml], [pass])
+DMR_INTERN([dmr-testsuite/test_array_8.xml], [pass])
 
 
 

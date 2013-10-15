@@ -47,11 +47,9 @@
 #endif
 #endif
 
-#include <crc.h>
+#include <stdint.h>
+#include "crc.h"
 
-using std::ostream;
-
-// #include "Type.h"
 #include "Marshaller.h"
 #include "InternalErr.h"
 
@@ -92,7 +90,7 @@ private:
 #endif
 
 public:
-    D4StreamMarshaller(ostream &out, bool write_data = true);
+    D4StreamMarshaller(std::ostream &out, bool write_data = true);
     virtual ~D4StreamMarshaller();
 
     virtual void reset_checksum();
@@ -144,7 +142,7 @@ public:
         throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_length_prefix.");
     }
 
-    virtual void dump(ostream &strm) const;
+    virtual void dump(std::ostream &strm) const;
 };
 
 } // namespace libdap

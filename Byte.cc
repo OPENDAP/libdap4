@@ -159,6 +159,12 @@ bool Byte::deserialize(UnMarshaller &um, DDS *, bool)
     return false;
 }
 
+void
+Byte::compute_checksum(Crc32 &checksum)
+{
+	checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(d_buf));
+}
+
 /**
  * @brief Serialize a Byte
  * @param m

@@ -104,37 +104,11 @@ UInt64::width(bool)
     return sizeof(dods_uint64);
 }
 
-#if 0
-bool
-UInt64::serialize(ConstraintEvaluator &eval, DDS &dds,
-                  Marshaller &m, bool ce_eval)
+void
+UInt64::compute_checksum(Crc32 &checksum)
 {
-    dds.timeout_on();
-
-    if (!read_p())
-        read();  // read() throws Error and InternalErr
-
-#if EVAL
-    if (ce_eval && !eval.eval_selection(dds, dataset()))
-        return true;
-#endif
-
-    dds.timeout_off();
-
-    static_cast<D4StreamMarshaller*>(&m)->put_uint64( d_buf ) ;
-
-    return true;
+	checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(d_buf));
 }
-
-bool
-UInt64::deserialize(UnMarshaller &um, DDS *, bool)
-{
-    // TODO assert
-    static_cast<D4StreamUnMarshaller*>(&um)->get_uint64( d_buf ) ;
-
-    return false;
-}
-#endif
 
 /**
  * @brief Serialize an Int8

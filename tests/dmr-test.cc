@@ -29,6 +29,10 @@
 #include <fstream>
 // #include <tr1/memory>
 
+#include <stdint.h>
+
+#include "crc.h"
+
 #include <GetOpt.h>
 
 #include "DMR.h"
@@ -121,7 +125,6 @@ set_series_values(DMR *dmr, bool state)
  * @param dataset
  * @param constraint
  * @param series_values
- * @param multipart
  * @return The name of the file that hods the response.
  */
 string
@@ -150,6 +153,21 @@ send_data(DMR *dataset, const string &constraint, bool series_values)
     out.close();
 
     return file_name;
+}
+
+void
+intern_data(DMR *dataset, const string &/*constraint*/, bool series_values)
+{
+    set_series_values(dataset, series_values);
+
+    ConstraintEvaluator eval;	// This is a place holder. jhrg 9/6/13
+
+    // TODO Remove once real CE evaluator is written. jhrg 9/6/13
+    // Mark all variables to be sent in their entirety.
+    dataset->root()->set_send_p(true);
+
+    Crc32 checksum;
+    dataset->root()->intern_data(checksum, *dataset, eval);
 }
 
 DMR *
@@ -225,13 +243,14 @@ static void usage()
 int
 main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "p:s:t:xde");
+    GetOpt getopt(argc, argv, "p:s:t:i:xde");
     int option_char;
     bool parse = false;
     bool debug = false;
     bool print = false;
     bool send = false;
     bool trans = false;
+    bool intern = false;
     bool series_values = false;
     string name = "";
 
@@ -251,6 +270,11 @@ main(int argc, char *argv[])
 
         case 't':
         	trans = true;
+        	name = getopt.optarg;
+        	break;
+
+        case 'i':
+        	intern = true;
         	name = getopt.optarg;
         	break;
 
@@ -277,7 +301,7 @@ main(int argc, char *argv[])
             return 1;
         }
 
-    if (! (parse || send || trans/* || chunked_output*/)) {
+    if (! (parse || send || trans || intern)) {
         cerr << "Error: ";
         usage();
         return 1;
@@ -301,9 +325,7 @@ main(int argc, char *argv[])
         if (trans) {
         	DMR *dmr = test_dap4_parser(name, debug, print);
         	string file_name = send_data(dmr, "", series_values);
-        	if (print)
-        		cout << "Response file: " << file_name << endl;
-        	delete dmr;
+         	delete dmr;
 
         	DMR *client = read_data_plain(file_name, debug);
 
@@ -320,6 +342,25 @@ main(int argc, char *argv[])
     		cout << endl;
 
         	delete client;
+        }
+
+        if (intern) {
+        	DMR *dmr = test_dap4_parser(name, debug, print);
+        	intern_data(dmr, "", series_values);
+
+        	if (print) {
+        		XMLWriter xml;
+        		dmr->print_dap4(xml, false /*constrained*/);
+        		cout << xml.get_doc() << endl;
+
+				cout << "The data:" << endl;
+        	}
+
+        	// if trans is used, the data are printed regardless of print's value
+    		dmr->root()->print_val(cout, "", false);
+    		cout << endl;
+
+        	delete dmr;
         }
     }
     catch (Error &e) {

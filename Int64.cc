@@ -130,40 +130,12 @@ Int64::width(bool)
     return sizeof(dods_int64);
 }
 
-#if 0
-// TODO remove; not impl for DAP2
-bool
-Int64::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
+void
+Int64::compute_checksum(Crc32 &checksum)
 {
-    dds.timeout_on();
-
-    if (!read_p())
-        read();  // read() throws Error and InternalErr
-
-#if EVAL
-    if (ce_eval && !eval.eval_selection(dds, dataset()))
-        return true;
-#endif
-
-    dds.timeout_off();
-
-    assert(typeid(m) == typeid(D4StreamMarshaller));
-
-    static_cast<D4StreamMarshaller*>(&m)->put_int64( d_buf ) ;
-
-    return true;
+	checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(d_buf));
 }
 
-bool
-Int64::deserialize(UnMarshaller &um, DDS *, bool)
-{
-    assert(typeid(um) == typeid(D4StreamUnMarshaller));
-
-    static_cast<D4StreamUnMarshaller*>(&um)->get_int64( d_buf ) ;
-
-    return false;
-}
-#endif
 /**
  * @brief Serialize an Int8
  * @param m

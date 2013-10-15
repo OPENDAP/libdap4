@@ -31,9 +31,10 @@
 // be introduced into DAP4 later on.
 #define INDEX_SUBSETTING 0
 
+class Crc32;
+
 namespace libdap
 {
-
 class BaseType;
 
 /** The type BaseTypeRow is used to store single rows of values in an
@@ -184,6 +185,7 @@ public:
     }
 
     // DAP4
+    virtual void intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 

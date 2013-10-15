@@ -62,6 +62,8 @@
 
 using namespace std;
 
+class Crc32;
+
 namespace libdap
 {
 
@@ -401,6 +403,16 @@ public:
 	@exception Error.
 	@see DDS */
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,  Marshaller &m, bool ce_eval = true);
+
+    /**
+     * @brief include the data for this variable in the checksum
+     * DAP4 includes a checksum with every data response. This method adds the
+     * variable's data to that checksum.
+     * @param checksum A Crc32 instance that holds the current checksum.
+     */
+    virtual void compute_checksum(Crc32 &checksum) = 0;
+
+    virtual void intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval);
 
     /**
      * @brief The DAP4 serialization method.
