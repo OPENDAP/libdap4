@@ -25,6 +25,8 @@
 
 #include "config.h"
 
+#include <cstring>
+
 #include <iostream>
 #include <fstream>
 

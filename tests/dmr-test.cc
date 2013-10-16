@@ -26,10 +26,10 @@
 
 #include "config.h"
 
-#include <fstream>
-// #include <tr1/memory>
-
 #include <stdint.h>
+#include <cstring>
+
+#include <fstream>
 
 #include "crc.h"
 

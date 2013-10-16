@@ -27,9 +27,10 @@
 
 #include "config.h"
 
+#include <stdint.h>
 #include <byteswap.h>
 
-#include <algorithm>
+#include <cstring>
 #include <vector>
 
 #include "chunked_stream.h"

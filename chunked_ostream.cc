@@ -27,8 +27,12 @@
 
 #include "config.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <streambuf>
+
+#include <cstring>
 
 //#define DODS_DEBUG
 
@@ -60,10 +64,11 @@ chunked_outbuf::data_chunk()
 	// as a 32-bit unsigned int. Here I assume that num is never
 	// more than 2^24 because that was tested in the constructor
 
-	// Trick: This method always writes CHUNK_DATA type chunks so the chunk type is
-	// always 0x00, and given that num never has anything bigger than 24-bits, the
-	// high order byte is always 0x00. Of course bit-wise OR with 0x00 isn't going to
-	// do much anyway... Here's the general idea all the same:
+	// Trick: This method always writes CHUNK_DATA type chunks so
+	// the chunk type is always 0x00, and given that num never has
+	// anything bigger than 24-bits, the high order byte is always
+	// 0x00. Of course bit-wise OR with 0x00 isn't going to do
+	// much anyway... Here's the general idea all the same:
 	//
 	// unsigned int chunk_header = (unsigned int)num | CHUNK_type;
 	uint32_t header = num;

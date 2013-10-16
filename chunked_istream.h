@@ -30,6 +30,8 @@
 
 #include "chunked_stream.h"
 
+#include <stdint.h>
+
 #include <streambuf>
 #include <istream>
 #include <stdexcept>
