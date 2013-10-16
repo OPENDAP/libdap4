@@ -19,15 +19,13 @@
 //
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
-
-//#define DODS_DEBUG
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -46,6 +44,8 @@
 #include "debug.h"
 
 static bool debug = false;
+
+const string path = (string)TEST_SRC_DIR + "/chunked-io";
 
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
@@ -78,12 +78,12 @@ public:
 
     void setUp()
     {
-    	big_file = "test_big_binary_file.bin";
-    	big_file_2 = "test_big_binary_file_2.bin";
-    	big_file_3 = "test_big_binary_file_3.bin"; // not used yet
+    	big_file = path + "/test_big_binary_file.bin";
+    	big_file_2 = path + "/test_big_binary_file_2.bin";
+    	big_file_3 = path + "/test_big_binary_file_3.bin"; // not used yet
 
-    	small_file = "test_small_text_file.txt";
-    	text_file = "test_text_file.txt";
+    	small_file = path + "/test_small_text_file.txt";
+    	text_file = path + "/test_text_file.txt";
     }
 
     void tearDown()
@@ -94,6 +94,7 @@ public:
     single_char_write(const string &file, int buf_size)
     {
     	fstream infile(file.c_str(), ios::in|ios::binary);
+	DBG(cerr << "infile: " << file << endl);
     	if (!infile.good())
     		CPPUNIT_FAIL("File not open or eof");
 

@@ -1,4 +1,28 @@
 
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2013 OPeNDAP, Inc.
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
+
 #include "config.h"
 
 #include <cppunit/TestFixture.h>
@@ -26,9 +50,11 @@
 
 #include "GetOpt.h"
 #include "debug.h"
+#include "test_config.h"
 
 static bool debug = false;
 static bool write_baselines = false;
+const string path = (string)TEST_SRC_DIR + "/D4-marshaller";
 
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
@@ -46,9 +72,7 @@ class D4MarshallerTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(test_str);
     CPPUNIT_TEST(test_opaque);
     CPPUNIT_TEST(test_vector);
-#if 0
-    CPPUNIT_TEST(test_varying_vector);
-#endif
+
     CPPUNIT_TEST_SUITE_END( );
 
     /**
@@ -100,7 +124,7 @@ public:
 
     void test_cmp() {
         char buf[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-        CPPUNIT_ASSERT(cmp(buf, 16, "test_cmp.dat"));
+        CPPUNIT_ASSERT(cmp(buf, 16, path + "/test_cmp.dat"));
     }
 
     void test_scalars() {
@@ -146,8 +170,8 @@ public:
         DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
         dsm.reset_checksum();
 
-        if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_scalars_1_bin.dat");
-        CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_scalars_1_bin.dat"));
+        if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), path + "/test_scalars_1_bin.dat");
+        CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), path + "/test_scalars_1_bin.dat"));
         }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
@@ -173,8 +197,8 @@ public:
         DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
         dsm.reset_checksum();
 
-        if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_scalars_2_bin.dat");
-        CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_scalars_2_bin.dat"));
+        if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), path + "/test_scalars_2_bin.dat");
+        CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), path + "/test_scalars_2_bin.dat"));
         }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
@@ -201,8 +225,8 @@ public:
             dsm.reset_checksum();
 
             // True these are not really scalars...
-            if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_scalars_3_bin.dat");
-            CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_scalars_3_bin.dat"));
+            if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), path + "/test_scalars_3_bin.dat");
+            CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), path + "/test_scalars_3_bin.dat"));
        }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
@@ -224,13 +248,9 @@ public:
             dsm.put_checksum();
             DBG(cerr << "test_opaque: checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
-#if 0
-            dsm.put_opaque(reinterpret_cast<char*>(&buf[0]), 32768);
-            dsm.put_checksum();
-            DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
-#endif
-            if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_opaque_1_bin.dat");
-            CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_opaque_1_bin.dat"));
+
+            if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), path + "/test_opaque_1_bin.dat");
+            CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), path + "/test_opaque_1_bin.dat"));
        }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
@@ -270,8 +290,8 @@ public:
             dsm.put_checksum();
             DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
 
-            if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_vector_1_bin.dat");
-            CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_vector_1_bin.dat"));
+            if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), path + "/test_vector_1_bin.dat");
+            CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), path + "/test_vector_1_bin.dat"));
        }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
@@ -311,8 +331,8 @@ public:
             dsm.put_checksum();
             DBG(cerr << "third checksum: " << dsm.get_checksum() << endl);
 
-            if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), "test_vector_2_bin.dat");
-            CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), "test_vector_2_bin.dat"));
+            if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), path + "/test_vector_2_bin.dat");
+            CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), path + "/test_vector_2_bin.dat"));
        }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;

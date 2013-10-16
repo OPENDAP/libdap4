@@ -19,7 +19,7 @@
 //
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
@@ -486,16 +486,9 @@ Constructor::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 }
 
 void
-Constructor::compute_checksum(Crc32 &checksum)
+Constructor::compute_checksum(Crc32 &)
 {
 	throw InternalErr(__FILE__, __LINE__, "Computing a checksum alone is not supported for Constructor types.");
-#if 0
-    for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
-        if ((*i)->send_p()) {
-            (*i)->compute_checksum(checksum);
-        }
-    }
-#endif
 }
 
 void

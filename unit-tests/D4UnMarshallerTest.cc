@@ -1,4 +1,28 @@
 
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2013 OPeNDAP, Inc.
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
+
 #include "config.h"
 
 #include <cppunit/TestFixture.h>
@@ -14,8 +38,6 @@
 #include <fcntl.h>
 #include <stdint.h>
 
-//#define DODS_DEBUG2 1
-
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -27,8 +49,10 @@
 
 #include "GetOpt.h"
 #include "debug.h"
+#include "test_config.h"
 
 static bool debug = false;
+const string path = (string)TEST_SRC_DIR + "/D4-marshaller";
 
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
@@ -45,9 +69,7 @@ class D4UnMarshallerTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(test_str);
     CPPUNIT_TEST(test_opaque);
     CPPUNIT_TEST(test_vector);
-#if 0
-    CPPUNIT_TEST(test_varying_vector);
-#endif
+
     CPPUNIT_TEST_SUITE_END( );
 
     static inline bool is_host_big_endian()
@@ -86,7 +108,9 @@ public:
 
         // computes checksums and writes data
         try {
-            in.open("test_scalars_1_bin.dat", fstream::binary | fstream::in);
+	    string file = path + "/test_scalars_1_bin.dat";
+	    DBG(cerr << "file: " << file << endl);
+	    in.open(file.c_str(), fstream::binary | fstream::in);
             D4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             dods_byte b;
@@ -155,7 +179,8 @@ public:
 
         // computes checksums and writes data
         try {
-            in.open("test_scalars_2_bin.dat", fstream::binary | fstream::in);
+	    string file = path + "/test_scalars_2_bin.dat";
+            in.open(file.c_str(), fstream::binary | fstream::in);
             D4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             dods_float32 r1;
@@ -188,7 +213,8 @@ public:
 
         // computes checksums and writes data
         try {
-            in.open("test_scalars_3_bin.dat", fstream::binary | fstream::in);
+	    string file = path + "/test_scalars_3_bin.dat";
+            in.open(file.c_str(), fstream::binary | fstream::in);
             D4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             string s;
@@ -221,22 +247,10 @@ public:
 
         // computes checksums and writes data
         try {
-            in.open("test_opaque_1_bin.dat", fstream::binary | fstream::in);
+	    string file = path + "/test_opaque_1_bin.dat";
+            in.open(file.c_str(), fstream::binary | fstream::in);
             D4StreamUnMarshaller dsm(in, is_host_big_endian());
-#if 0
-            // removed this test since DAP4 specifies that the size of an opaque
-            // value is not known until the value is read. jhrg 10/7/13
 
-            // Test both get_opaque calls; this one that expects the caller
-            // to allocate memory.
-            vector<unsigned char> buf(32768);
-            dsm.get_opaque(reinterpret_cast<char*>(&buf[0]), 32768);
-            for (int i = 0; i < 32768; ++i)
-                CPPUNIT_ASSERT(buf[i] == i % (1 << 7));
-            string ck = dsm.get_checksum_str();
-            DBG2(cerr << "ck: " << ck << endl);
-            CPPUNIT_ASSERT(ck == "199ad7f5");
-#endif
             char *buf2;
             int64_t len;
             dsm.get_opaque_dap4(&buf2, len);
@@ -265,7 +279,8 @@ public:
 
         // computes checksums and writes data
         try {
-            in.open("test_vector_1_bin.dat", fstream::binary | fstream::in);
+	    string file = path + "/test_vector_1_bin.dat";
+            in.open(file.c_str(), fstream::binary | fstream::in);
             D4StreamUnMarshaller dsm(in, is_host_big_endian());
 
             vector<unsigned char> buf1(32768);
@@ -304,61 +319,6 @@ public:
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
-#if 0
-    void test_varying_vector() {
-        fstream in;
-        in.exceptions(ostream::failbit | ostream::badbit);
-
-        // computes checksums and writes data
-        try {
-            in.open("test_vector_2_bin.dat", fstream::binary | fstream::in);
-            D4StreamUnMarshaller dsm(in, is_host_big_endian());
-
-            // Reuse the same pointer for all of the data...
-            char *buf;
-            unsigned int len;
-            dsm.get_varying_vector(&buf, len);
-            CPPUNIT_ASSERT(len == 32768);
-            for (int i = 0; i < 32768; ++i)
-                CPPUNIT_ASSERT(buf[i] == i % (1 << 7));
-            string ck = dsm.get_checksum_str();
-            DBG2(cerr << "ck: " << ck << endl);
-            CPPUNIT_ASSERT(ck == "199ad7f5");
-            delete buf;
-
-            dods_int32 *i_buf;
-            dsm.get_varying_vector(reinterpret_cast<char**>(&i_buf), len, sizeof(dods_int32), dods_int32_c);
-            CPPUNIT_ASSERT(len == 32768);
-            for (int i = 0; i < 32768; ++i) {
-                if (i_buf[i] != i % (1 << 9))
-                    cerr << "i_buf[" << i << "]: " << i_buf[i] << endl;
-                CPPUNIT_ASSERT(i_buf[i] == i % (1 << 9));
-            }
-            ck = dsm.get_checksum_str();
-            DBG2(cerr << "ck: " << ck << endl);
-            CPPUNIT_ASSERT(ck == "5c1bf29f");
-            delete i_buf;
-
-            dods_float64 *f_buf;
-            dsm.get_varying_vector(reinterpret_cast<char**>(&f_buf), len, sizeof(dods_float64), dods_float64_c);
-            CPPUNIT_ASSERT(len == 32768);
-            for (int i = 0; i < 32768; ++i)
-                CPPUNIT_ASSERT(f_buf[i] == i % (1 << 9));
-            ck = dsm.get_checksum_str();
-            DBG2(cerr << "ck: " << ck << endl);
-            CPPUNIT_ASSERT(ck == "aafc2a91");
-            delete f_buf;
-        }
-        catch (Error &e) {
-            cerr << "Error: " << e.get_error_message() << endl;
-            CPPUNIT_FAIL("Caught an exception.");
-        }
-        catch (istream::failure &e) {
-            cerr << "File error: " << e.what() << endl;
-            CPPUNIT_FAIL("Caught an exception.");
-        }
-    }
-#endif
 
 };
 
@@ -390,7 +350,7 @@ int main(int argc, char*argv[]) {
     }
     else {
         while (i < argc) {
-            test = string("DAP4MarshallerTest::") + argv[i++];
+            test = string("D4UnMarshallerTest::") + argv[i++];
 
             wasSuccessful = wasSuccessful && runner.run(test);
         }

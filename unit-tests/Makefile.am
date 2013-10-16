@@ -46,7 +46,8 @@ TESTS = $(UNIT_TESTS)
 noinst_HEADERS = test_config.h
 
 DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
-	rcreader-testsuite server-testsuite cgi-util-tests D4-xml
+	rcreader-testsuite server-testsuite cgi-util-tests D4-xml \
+	chunked-io D4-marshaller
 
 EXTRA_DIST = $(DIRS_EXTRA) testFile.cc testFile.h test_config.h.in
 

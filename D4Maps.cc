@@ -5,6 +5,8 @@
  *      Author: jimg
  */
 
+#include "config.h"
+
 #include "D4Maps.h"
 
 namespace libdap {

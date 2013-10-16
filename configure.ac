@@ -324,14 +324,7 @@ dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in
 AH_TOP([#ifndef _config_h
 #define _config_h])
 
-AH_BOTTOM([/* Shorthand for gcc's unused attribute feature */
-#if defined(__GNUG__) || defined(__GNUC__)
-#define not_used __attribute__ ((unused))
-#else
-#define not_used 
-#endif /* __GNUG__ || __GNUC__ */
-
-#endif /* _config_h */])
+AH_BOTTOM([#endif /* _config_h */])
 
 AC_CONFIG_FILES([Makefile
                  libdap.pc

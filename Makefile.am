@@ -6,16 +6,13 @@ ACLOCAL_AMFLAGS = -I conf -I gl/m4
 aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
-AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
+AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
 AM_CXXFLAGS = 
 CXXFLAGS = 
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
 endif
-
-# AM_YFLAGS = -d -v -t
-# AM_LFLAGS = -8
 
 # These are not used by automake but are often useful for certain types of
 # debugging. The best way to use these is to run configure as:
