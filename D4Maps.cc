@@ -7,19 +7,22 @@
 
 #include "config.h"
 
+#include "XMLWriter.h"
+#include "InternalErr.h"
 #include "D4Maps.h"
 
-namespace libdap {
+using namespace libdap;
 
-D4Maps::D4Maps()
+void
+D4Map::print_dap4(XMLWriter &xml)
 {
-    // TODO Auto-generated constructor stub
+	if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Map") < 0)
+		throw InternalErr(__FILE__, __LINE__, "Could not write Map element");
+
+	if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
+		throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+	if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+		throw InternalErr(__FILE__, __LINE__, "Could not end Map element");
 
 }
-
-D4Maps::~D4Maps()
-{
-    // TODO Auto-generated destructor stub
-}
-
-} /* namespace libdap */

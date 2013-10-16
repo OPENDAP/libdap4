@@ -34,16 +34,15 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-//#define DODS_DEBUG 1
-
 #include "GetOpt.h"
 
 #include "DMR.h"
 #include "XMLWriter.h"
+#include "Array.h"
 
 #include "D4BaseTypeFactory.h"
-
 #include "D4ParserSax2.h"
+#include "D4Maps.h"
 
 #include "InternalErr.h"
 #include "debug.h"
@@ -260,6 +259,22 @@ public:
         compare_dmr_round_trip_string_version("/D4-xml/DMR_7.4.xml", "/D4-xml/DMR_7.4_baseline.xml");
     }
 
+    void test_map_1()
+    {
+        compare_dmr_round_trip_string_version("/D4-xml/DMR_8.xml", "/D4-xml/DMR_8_baseline.xml");
+
+        // NB: dmr is global
+        Array *b1 = dynamic_cast<Array*>(dmr->root()->var("b1"));
+        CPPUNIT_ASSERT(b1 && b1->name() == "b1");
+        Array *x = dynamic_cast<Array*>(dmr->root()->var("x"));	// this is the map
+        CPPUNIT_ASSERT(x && x->name() == "x");
+
+        D4Maps::D4MapsIter m = b1->maps()->map_begin(); // there's only one map...
+        CPPUNIT_ASSERT((*m)->name() == "x");
+        CPPUNIT_ASSERT((*m)->array() == x);
+        CPPUNIT_ASSERT((*m)->parent() == b1);
+    }
+
     CPPUNIT_TEST_SUITE( D4ParserSax2Test );
 
     CPPUNIT_TEST(test_empty_dmr);
@@ -290,6 +305,8 @@ public:
     CPPUNIT_TEST(test_array_3);
     CPPUNIT_TEST(test_array_4);
     CPPUNIT_TEST(test_array_5);
+
+    CPPUNIT_TEST(test_map_1);
 
     CPPUNIT_TEST_SUITE_END();
 };

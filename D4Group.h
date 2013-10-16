@@ -33,6 +33,9 @@ class Crc32;
 
 namespace libdap {
 
+class BaseType;
+class Array;
+
 /** A DAP4 Group object. A Group is-a Constructor, so it inherits a set of
  * BaseType objects and an attribute table, along with methods to search for
  * variables by name where dots (.) in a fully qualified name serve as
@@ -58,6 +61,8 @@ private:
     // work as expected when making Groups.
     vector<D4Group*> d_groups;
 
+    BaseType *m_find_map_source_helper(const string &name);
+
 protected:
     void m_duplicate(const D4Group &g);
 
@@ -82,6 +87,8 @@ public:
     }
 
     D4Dimension *find_dim(const string &path);
+
+    Array *find_map_source(const string &name);
 
     /// Get  the enumerations defined for this Group
     D4EnumDefs *enum_defs() {

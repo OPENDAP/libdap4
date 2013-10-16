@@ -96,7 +96,7 @@ private:
 
         // inside_array,
         inside_dim,
-        inside_dimension,
+        inside_map,
 
         inside_constructor,
 
@@ -216,10 +216,6 @@ private:
 
     map<string, string> namespace_table;
 
-    // Common cleanup code for intern()
-#if 0
-    void delete_parser_locals();
-#endif
     void cleanup_parse();
 
     /** @name Parser Actions
@@ -239,6 +235,7 @@ private:
 
     bool process_dimension(const char *name, const xmlChar **attrs, int nb_attrs);
     bool process_dimension_def(const char *name, const xmlChar **attrs, int nb_attrs);
+    bool process_map(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_attribute(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_variable(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_group(const char *name, const xmlChar **attrs, int nb_attributes);

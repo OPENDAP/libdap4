@@ -41,6 +41,7 @@
 #include "Array.h"
 #include "D4Group.h"
 #include "D4Attributes.h"
+#include "D4Maps.h"
 
 #include "D4BaseTypeFactory.h"
 
@@ -75,9 +76,9 @@ static const char *states[] = {
 
         // "inside_array",
         "inside_dim",
-        "inside_dimension",
+        "inside_map",
 
-        "inside_structure",
+        "inside_constructor",
 
         "parser_unknown",
         "parser_error",
@@ -252,6 +253,55 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
     }
 
     return false;
+}
+
+bool D4ParserSax2::process_map(const char *name, const xmlChar **attrs, int nb_attributes)
+{
+    if (is_not(name, "Map"))
+        return false;
+
+    transfer_xml_attrs(attrs, nb_attributes);
+
+	if (!check_attribute("name")) {
+		dmr_error(this, "The 'name' attribute must be used in a Map element.");
+		return false;
+	}
+
+	if (!top_basetype()->is_vector_type()) {
+		// Make the top BaseType* an array
+		BaseType *b = top_basetype();
+		pop_basetype();
+
+		Array *a = static_cast<Array*>(dmr()->factory()->NewVariable(dods_array_c, b->name()));
+		a->set_is_dap4(true);
+		a->add_var_nocopy(b);
+		a->set_attributes_nocopy(b->attributes());
+		// trick: instead of popping b's attributes, copying them and then pushing
+		// a's copy, just move the pointer (but make sure there's only one object that
+		// references that pointer).
+		b->set_attributes_nocopy(0);
+
+		push_basetype(a);
+	}
+
+	assert(top_basetype()->is_vector_type());
+
+	Array *a = static_cast<Array*>(top_basetype());
+    string map_name = xml_attrs["name"].value;
+
+    Array *map_source = 0;	// The array variable that holds the data for the Map
+
+	if (map_name[0] == '/')		// lookup the Map in the root group
+		map_source = dmr()->root()->find_map_source(map_name);
+	else					// get enclosing Group and lookup Map there
+		map_source = top_group()->find_map_source(map_name);
+
+	if (!map_source)
+		throw Error("The Map '" + map_name + "' was not found while parsing the variable '" + a->name() + "'.");
+
+	a->maps()->add_map(new D4Map(map_name, map_source));
+
+	return true;
 }
 
 bool D4ParserSax2::process_group(const char *name, const xmlChar **attrs, int nb_attributes)
@@ -655,12 +705,16 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
         case inside_dim_def:
             // No content; nothing to do
             break;
-
+#if 0
         case inside_dimension:
             // No content.
             break;
-
+#endif
         case inside_dim:
+            // No content.
+            break;
+
+        case inside_map:
             // No content.
             break;
 
@@ -669,6 +723,8 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
                 break;
             else if (parser->process_dimension(localname, attributes, nb_attributes))
             	parser->push_state(inside_dim);
+            else if (parser->process_map(localname, attributes, nb_attributes))
+            	parser->push_state(inside_map);
             else
                 dmr_error(parser, "Expected an 'Attribute' or 'Dim' element; found '%s' instead.", localname);
             break;
@@ -683,7 +739,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             else if (parser->process_dimension(localname, attributes, nb_attributes))
                 parser->push_state(inside_dim);
             else
-                D4ParserSax2::dmr_error(parser, "Expected an Attribute or variable element; found '%s' instead.", localname);
+                D4ParserSax2::dmr_error(parser, "Expected an Attribute, Dim or variable element; found '%s' instead.", localname);
             break;
 
         case parser_unknown:
@@ -902,20 +958,28 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
 #endif
             break;
 
-        case inside_dim:
-            if (is_not(localname, "Dim"))
-                D4ParserSax2::dmr_fatal_error(parser, "Expected an end Dim tag; found '%s' instead.", localname);
+    case inside_dim:
+        if (is_not(localname, "Dim"))
+            D4ParserSax2::dmr_fatal_error(parser, "Expected an end Dim tag; found '%s' instead.", localname);
 
-            parser->pop_state();
-            break;
+        parser->pop_state();
+        break;
 
+    case inside_map:
+        if (is_not(localname, "Map"))
+            D4ParserSax2::dmr_fatal_error(parser, "Expected an end Map tag; found '%s' instead.", localname);
+
+        parser->pop_state();
+        break;
+#if 0
+            // a nicer name, but not what we chose
         case inside_dimension:
             if (is_not(localname, "dimension"))
                 D4ParserSax2::dmr_fatal_error(parser, "Expected an end Dimension tag; found '%s' instead.", localname);
 
             parser->pop_state();
             break;
-
+#endif
         case inside_constructor: {
             if (strcmp(localname, "Structure") != 0 && strcmp(localname, "Sequence") != 0) {
                 D4ParserSax2::dmr_error(parser, "Expected an end tag for a constructor; found '%s' instead.", localname);

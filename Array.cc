@@ -47,6 +47,7 @@
 #endif
 
 #include "D4Dimensions.h"
+#include "D4Maps.h"
 
 #include "util.h"
 #include "debug.h"
@@ -61,6 +62,7 @@ void
 Array::_duplicate(const Array &a)
 {
     _shape = a._shape;
+    d_maps = a.d_maps;
 }
 
 // The first method of calculating length works when only one dimension is
@@ -105,7 +107,7 @@ Array::update_length(int)
     @brief Array constructor
 */
 Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */)
-	: Vector(n, 0, dods_array_c, is_dap4)
+	: Vector(n, 0, dods_array_c, is_dap4), d_maps(0)
 {
     add_var(v); // Vector::add_var() stores null if v is null
 }
@@ -124,7 +126,7 @@ Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */)
     @brief Array constructor
 */
 Array::Array(const string &n, const string &d, BaseType *v, bool is_dap4 /* default:false */)
-    : Vector(n, d, 0, dods_array_c, is_dap4)
+    : Vector(n, d, 0, dods_array_c, is_dap4), d_maps(0)
 {
     add_var(v); // Vector::add_var() stores null if v is null
 }
@@ -138,8 +140,7 @@ Array::Array(const Array &rhs) : Vector(rhs)
 /** @brief The Array destructor. */
 Array::~Array()
 {
-    DBG(cerr << "Entering ~Array (" << this << ")" << endl);
-    DBG(cerr << "Exiting ~Array" << endl);
+	delete d_maps;
 }
 
 BaseType *
@@ -612,6 +613,13 @@ Array::dimension_D4dim(Dim_iter i)
 	return (!_shape.empty()) ? (*i).dim : 0;
 }
 
+D4Maps *
+Array::maps()
+{
+	if (!d_maps) d_maps = new D4Maps(this); 	// init with this as parent
+	return d_maps;
+}
+
 /**
  * @brief Returns the width of the data, in bytes.
  * @param constrained if true, return the size of the array in bytes taking into
@@ -679,6 +687,18 @@ public:
 	}
 };
 
+class PrintD4MapXMLWriter: public unary_function<D4Map*, void> {
+	XMLWriter &xml;
+
+public:
+	PrintD4MapXMLWriter(XMLWriter &xml) : xml(xml) { }
+
+	void operator()(D4Map *m)
+	{
+		m->print_dap4(xml);
+	}
+};
+
 /**
  * @brief Print the DAP4 representation of an array.
  * @param xml
@@ -704,7 +724,10 @@ Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/)
 
     for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml, constrained));
 
+    for_each(maps()->map_begin(), maps()->map_end(), PrintD4MapXMLWriter(xml));
+
 #if D4_ATTR
+    // TODO Calling is_dap4() is likely redundant in print_dap4()... jhrg 10/16/13
 	if (is_dap4()) attributes()->print_dap4(xml);
 
 	if (!is_dap4() && get_attr_table().get_size() > 0) get_attr_table().print_xml_writer(xml);

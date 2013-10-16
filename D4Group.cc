@@ -34,6 +34,9 @@
 
 #include "crc.h"
 
+#include "BaseType.h"
+#include "Array.h"
+
 #include "XMLWriter.h"
 #include "D4Attributes.h"
 #include "D4Dimensions.h"
@@ -176,6 +179,45 @@ D4Group::find_dim(const string &path)
 
 	D4Group *grp = find_child_grp(grp_name);
 	return (grp != 0) ? grp->find_dim(lpath): 0;
+}
+
+Array *
+D4Group::find_map_source(const string &path)
+{
+	BaseType *map_source = m_find_map_source_helper(path);
+
+	// TODO more complete semantic checking jhrg 10/16/13
+	if (map_source->type() == dods_array_c) return static_cast<Array*>(map_source);
+
+	return 0;
+}
+
+BaseType *
+D4Group::m_find_map_source_helper(const string &path)
+{
+	string lpath = path;		// get a mutable copy
+
+	// special-case for the root group
+	if (lpath[0] == '/') {
+		if (name() != "/")
+			throw InternalErr(__FILE__, __LINE__, "Lookup of a FQN starting in non-root group.");
+		else
+			lpath = lpath.substr(1);
+	}
+
+	string::size_type pos = lpath.find('/');
+	if (pos == string::npos) {
+		// name looks like 'bar'
+		return var(lpath);
+	}
+
+	// name looks like foo/bar/baz where foo an bar must be groups
+	string grp_name = lpath.substr(0, pos);
+	lpath = lpath.substr(pos + 1);
+
+	D4Group *grp = find_child_grp(grp_name);
+	return (grp != 0) ? grp->var(lpath): 0;
+
 }
 
 /** Compute the size of all of the variables in this group and it's children,

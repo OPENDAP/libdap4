@@ -242,9 +242,9 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 
 DAP4_ONLY_SRC = D4StreamMarshaller.cc D4StreamUnMarshaller.cc Int64.cc \
         UInt64.cc Int8.cc D4ParserSax2.cc D4BaseTypeFactory.cc \
-        D4Maps.cc D4Dimensions.cc  D4EnumDefs.cc D4Group.cc DMR.cc \
+        D4Dimensions.cc  D4EnumDefs.cc D4Group.cc DMR.cc \
         D4Attributes.cc D4Enum.cc chunked_ostream.cc chunked_istream.cc \
-        D4Sequence.cc
+        D4Sequence.cc D4Maps.cc
 
 Operators.h: ce_expr.tab.hh
 

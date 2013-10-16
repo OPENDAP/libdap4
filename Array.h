@@ -56,6 +56,7 @@ namespace libdap
 {
 
 class D4Dimension;
+class D4Maps;
 
 const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
@@ -128,7 +129,7 @@ public:
         int size;  ///< The unconstrained dimension size.
         string name;    ///< The name of this dimension.
 
-        D4Dimension *dim; ///< If not null, a (shared) pointer to the Dimension
+        D4Dimension *dim; ///< If not null, a weak pointer to the Dimension
 
         int start;  ///< The constraint start index
         int stop;  ///< The constraint end index
@@ -150,6 +151,8 @@ public:
             c_size = size;
         }
     };
+
+    D4Maps *d_maps;
 
 private:
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
@@ -216,6 +219,8 @@ public:
     virtual D4Dimension *dimension_D4dim(Dim_iter i);
 
     virtual unsigned int dimensions(bool constrained = false);
+
+    virtual D4Maps *maps();
 
     virtual void print_dap4(XMLWriter &xml, bool constrained = false);
 
