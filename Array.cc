@@ -620,13 +620,14 @@ Array::maps()
 	return d_maps;
 }
 
+#if 0
 /**
  * @brief Returns the width of the data, in bytes.
  * @param constrained if true, return the size of the array in bytes taking into
  * account the current constraints on various dimensions. False by default.
  * @return The number of bytes needed to store the array values.
  */
-unsigned int Array::width(bool constrained)
+unsigned int Array::width(bool constrained) const
 {
 
 	if (constrained) {
@@ -643,6 +644,7 @@ unsigned int Array::width(bool constrained)
 		return length * var()->width(false);
 	}
 }
+#endif
 
 class PrintD4ArrayDimXMLWriter: public unary_function<Array::dimension&, void> {
 	XMLWriter &xml;

@@ -114,7 +114,7 @@ UInt32::operator=(const UInt32 &rhs)
 }
 
 unsigned int
-UInt32::width(bool)
+UInt32::width(bool) const
 {
     return sizeof(dods_uint32);
 }

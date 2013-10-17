@@ -270,7 +270,7 @@ public:
 
     virtual bool ops(BaseType *b, int op);
 
-    virtual unsigned int width(bool constrained = false);
+    virtual unsigned int width(bool constrained = false) const;
 
     virtual void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,

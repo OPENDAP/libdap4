@@ -117,7 +117,7 @@ Float64::operator=(const Float64 &rhs)
 }
 
 unsigned int
-Float64::width(bool)
+Float64::width(bool) const
 {
     return sizeof(dods_float64);
 }

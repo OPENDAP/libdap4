@@ -126,7 +126,7 @@ Str::length() const
 }
 
 unsigned int
-Str::width(bool)
+Str::width(bool) const
 {
     return sizeof(string);
 }

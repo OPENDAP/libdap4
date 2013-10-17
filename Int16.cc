@@ -113,7 +113,7 @@ Int16::operator=(const Int16 &rhs)
 }
 
 unsigned int
-Int16::width(bool)
+Int16::width(bool) const
 {
     return sizeof(dods_int16);
 }

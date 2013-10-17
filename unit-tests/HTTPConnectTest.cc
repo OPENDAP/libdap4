@@ -64,7 +64,7 @@ class HTTPConnectTest: public TestFixture {
     string lm;
     string netcdf_das_url;
 
-    char env_data[128];
+    // char env_data[128];
 
   protected:
     bool re_match(Regex & r, const char *s) {

@@ -100,13 +100,19 @@ public:
     	D4Enum e("second", dods_byte_c);
     	dods_byte db = 200;
     	e.set_value(db);
-    	CPPUNIT_ASSERT(e.d_buf == 200);
+    	CPPUNIT_ASSERT(e.d_buf.ui8 == 200);
     }
 
     void test_set_value2() {
     	D4Enum e("second", dods_byte_c);
     	e.set_value(200);
-    	CPPUNIT_ASSERT(e.d_buf == 200);
+    	CPPUNIT_ASSERT(e.d_buf.ui8 == 200);
+    }
+
+    void test_set_value3() {
+    	D4Enum e("third", dods_int32_c);
+    	e.set_value(-65535);
+    	CPPUNIT_ASSERT(e.d_buf.i32 == -65535);
     }
 
     void test_value() {
@@ -117,6 +123,14 @@ public:
     	CPPUNIT_ASSERT(db == 200);
     }
 
+    void test_value2() {
+    	D4Enum e("third", dods_int32_c);
+    	e.set_value(-65535);
+    	int32_t db;
+    	e.value(&db);
+    	CPPUNIT_ASSERT(db == -65535);
+    }
+
     void test_copy_ctor() {
     	D4Enum e("second", dods_byte_c);
     	e.set_value(200);
@@ -124,7 +138,7 @@ public:
     	D4Enum f(e);
     	CPPUNIT_ASSERT(f.d_element_type == dods_byte_c);
     	CPPUNIT_ASSERT(f.name() == "second");
-    	CPPUNIT_ASSERT(f.d_buf == 200);
+    	CPPUNIT_ASSERT(f.d_buf.ui8 == 200);
     }
 
     void test_assignment() {
@@ -134,7 +148,7 @@ public:
     	D4Enum f = e;
     	CPPUNIT_ASSERT(f.d_element_type == dods_byte_c);
     	CPPUNIT_ASSERT(f.name() == "second");
-    	CPPUNIT_ASSERT(f.d_buf == 200);
+    	CPPUNIT_ASSERT(f.d_buf.ui8 == 200);
     }
 
     void test_print() {
@@ -176,8 +190,10 @@ public:
 
         CPPUNIT_TEST(test_set_value);
         CPPUNIT_TEST(test_set_value2);
+        CPPUNIT_TEST(test_set_value3);
 
         CPPUNIT_TEST(test_value);
+        CPPUNIT_TEST(test_value2);
 
         CPPUNIT_TEST(test_copy_ctor);
         CPPUNIT_TEST(test_assignment);
@@ -216,7 +232,7 @@ int main(int argc, char*argv[]) {
     }
     else {
         while (i < argc) {
-            test = string("libdap::D4Enum::") + argv[i++];
+            test = string("libdap::D4EnumTest::") + argv[i++];
 
             wasSuccessful = wasSuccessful && runner.run(test);
         }

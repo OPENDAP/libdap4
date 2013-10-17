@@ -502,7 +502,7 @@ BaseType *Vector::var(unsigned int i)
  element.
 
  @brief Returns the width of the data, in bytes. */
-unsigned int Vector::width(bool constrained)
+unsigned int Vector::width(bool constrained) const
 {
     // Jose Garcia
 	// TODO Use assert.

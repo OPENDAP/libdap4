@@ -83,6 +83,7 @@ D4Enum::compute_checksum(Crc32 &checksum)
 	checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(uint64_t));
 }
 
+// FIXME Use type info to optimize
 /**
  * @brief Serialize a Byte
  * @param m
@@ -100,15 +101,26 @@ D4Enum::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
     m.put_uint64( d_buf ) ;
 }
 
-// FIXME: Make this print signed or unsigned depending on the underlying type. jhrg 8/19/13
 void D4Enum::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
         print_decl(out, space, false);
-        out << " = " << d_buf << ";\n";
+        out << " = ";
     }
-    else
-        out << (int) d_buf;
+
+    if (is_signed()) {
+    	int64_t v;
+    	value(&v);
+    	out << v;
+    }
+    else {
+    	uint64_t v;
+    	value(&v);
+    	out << v;
+    }
+
+    if (print_decl_p)
+    	out << ";" << endl;
 }
 
 /** Write the XML representation of this variable. This method is used to
@@ -200,7 +212,7 @@ D4Enum::dump(ostream &strm) const
     << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
     BaseType::dump(strm) ;
-    strm << DapIndent::LMarg << "value: " << d_buf << endl ;
+    strm << DapIndent::LMarg << "value: " << d_buf.ui64 << endl ;
     DapIndent::UnIndent() ;
 }
 

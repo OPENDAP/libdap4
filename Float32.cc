@@ -116,7 +116,7 @@ Float32::operator=(const Float32 &rhs)
 }
 
 unsigned int
-Float32::width(bool)
+Float32::width(bool) const
 {
     return sizeof(dods_float32);
 }

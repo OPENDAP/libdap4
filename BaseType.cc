@@ -1138,7 +1138,7 @@ BaseType::ops(BaseType *, int)
     @return  The number of bytes used by the variable.
  */
 unsigned int
-BaseType::width(bool /* constrained */)
+BaseType::width(bool /* constrained */) const
 {
 	throw InternalErr(__FILE__, __LINE__, "not implemented");
 #if 0

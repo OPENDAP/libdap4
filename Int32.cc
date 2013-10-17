@@ -122,7 +122,7 @@ Int32::operator=(const Int32 &rhs)
 }
 
 unsigned int
-Int32::width(bool)
+Int32::width(bool) const
 {
     return sizeof(dods_int32);
 }

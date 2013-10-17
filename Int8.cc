@@ -99,7 +99,7 @@ Int8::operator=(const Int8 &rhs)
 }
 
 unsigned int
-Int8::width(bool)
+Int8::width(bool) const
 {
     return sizeof(dods_int8);
 }

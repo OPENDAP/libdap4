@@ -127,7 +127,7 @@ public:
 
     virtual void set_read_p(bool state);
 
-    virtual unsigned int width(bool constrained = false);
+    virtual unsigned int width(bool constrained = false) const;
 
     virtual int length() const;
 

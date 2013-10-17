@@ -69,7 +69,7 @@ public:
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
 
-    virtual unsigned int width(bool constrained = false);
+    virtual unsigned int width(bool constrained = false) const;
 #if 0
     virtual unsigned int width(bool constrained);
 #endif

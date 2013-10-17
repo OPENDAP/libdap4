@@ -64,7 +64,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual unsigned int width(bool constrained = false);
+    virtual unsigned int width(bool constrained = false) const;
 
     // DAP4
     virtual void compute_checksum(Crc32 &checksum);

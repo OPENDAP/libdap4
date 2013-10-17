@@ -189,11 +189,11 @@ Constructor::width()
     @return  The number of bytes used by the variable.
  */
 unsigned int
-Constructor::width(bool constrained)
+Constructor::width(bool constrained) const
 {
     unsigned int sz = 0;
 
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+    for (Vars_citer i = d_vars.begin(); i != d_vars.end(); i++) {
         if (constrained) {
             if ((*i)->send_p())
                 sz += (*i)->width(constrained);

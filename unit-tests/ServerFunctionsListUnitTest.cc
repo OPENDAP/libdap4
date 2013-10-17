@@ -122,7 +122,7 @@ public:
             return;
         }
 
-        for(int i=0; i<names->size() ;i++){
+        for(size_t i=0; i<names->size() ;i++){
             DBG(cerr <<  "   name["<< i << "]: "<< (*names)[i] << endl);
         }
     }
