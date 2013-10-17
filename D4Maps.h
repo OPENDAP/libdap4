@@ -77,7 +77,6 @@ public:
 
     D4Maps &operator=(const D4Maps &rhs);
 
-
     void add_map(D4Map *map) {
     	d_maps.push_back(map);
     	// if the Map parent is not set, do so now

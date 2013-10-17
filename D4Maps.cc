@@ -26,3 +26,11 @@ D4Map::print_dap4(XMLWriter &xml)
 		throw InternalErr(__FILE__, __LINE__, "Could not end Map element");
 
 }
+
+D4Maps&
+D4Maps::operator=(const D4Maps &rhs)
+{
+	if (this == &rhs) return *this;
+	m_duplicate(rhs);
+	return *this;
+}
