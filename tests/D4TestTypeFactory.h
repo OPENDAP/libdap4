@@ -61,11 +61,12 @@ public:
     virtual Float32 *NewFloat32(const string &n = "") const;
     virtual Float64 *NewFloat64(const string &n = "") const;
 
-    // FIXME Define these
+    // FIXME
 #if 0
     virtual Opaque *NewOpaque(const string &n = "") const;
-    virtual D4Enum *NewEnum(const string &n = "", Type type = dods_null_c) const;
 #endif
+
+    virtual D4Enum *NewEnum(const string &n = "", Type type = dods_null_c) const;
 
     virtual Str *NewStr(const string &n = "") const;
     virtual Url *NewUrl(const string &n = "") const;

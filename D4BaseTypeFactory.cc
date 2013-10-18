@@ -99,10 +99,9 @@ BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
         case dods_sequence_c:
             return NewD4Sequence(name);
 
-#if 0
         case dods_enum_c:
-            return  NewEnum(name);
-#endif
+            return  NewEnum(name, "");
+
         case dods_array_c:
             return NewArray(name);
 
@@ -204,21 +203,18 @@ D4BaseTypeFactory::NewURL(const string &n) const
     return new Url(n);
 }
 
-#if 0
-/** For an Enum, both it's name and type must be know before use. This
- * factory method uses "" and dods_null_c as the default values for name
- * and type, respectively.
- *
- * @name The name of the Enum
- * @type The Enum's element type.
- * @return A new Enum variable
+/**
+ * Enums need a name and the name of an enumeration that was defined by the
+ * dataset. If the later is not known, it must be set before the enum is used.
+ * @param name
+ * @param enum_name
+ * @return
  */
 D4Enum *
-D4BaseTypeFactory::NewEnum(const string &name, Type type) const
+D4BaseTypeFactory::NewEnum(const string &name, const string &enum_name) const
 {
-    return new D4Enum(name, type);
+    return new D4Enum(name, enum_name);
 }
-#endif
 
 Array *
 D4BaseTypeFactory::NewArray(const string &n, BaseType *v) const

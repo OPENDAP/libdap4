@@ -98,7 +98,71 @@ D4Enum::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
     if (!read_p())
         read();          // read() throws Error
 
-    m.put_uint64( d_buf ) ;
+	switch (d_element_type) {
+	case dods_byte_c:
+	case dods_uint8_c:
+		m.put_byte(d_buf.ui8);
+		break;
+	case dods_uint16_c:
+		m.put_uint16(d_buf.ui16);
+		break;
+	case dods_uint32_c:
+		m.put_uint32(d_buf.ui32);
+		break;
+	case dods_uint64_c:
+		m.put_uint64(d_buf.ui64);
+		break;
+
+	case dods_int8_c:
+		m.put_int8(d_buf.i8);
+		break;
+	case dods_int16_c:
+		m.put_int16(d_buf.i16);
+		break;
+	case dods_int32_c:
+		m.put_int32(d_buf.i32);
+		break;
+	case dods_int64_c:
+		m.put_int64(d_buf.i64);
+		break;
+	default:
+		assert(!"illegal type for D4Enum");
+	}
+}
+
+void
+D4Enum::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
+{
+	switch (d_element_type) {
+	case dods_byte_c:
+	case dods_uint8_c:
+		um.get_byte(d_buf.ui8);
+		break;
+	case dods_uint16_c:
+		um.get_uint16(d_buf.ui16);
+		break;
+	case dods_uint32_c:
+		um.get_uint32(d_buf.ui32);
+		break;
+	case dods_uint64_c:
+		um.get_uint64(d_buf.ui64);
+		break;
+
+	case dods_int8_c:
+		um.get_int8(d_buf.i8);
+		break;
+	case dods_int16_c:
+		um.get_int16(d_buf.i16);
+		break;
+	case dods_int32_c:
+		um.get_int32(d_buf.i32);
+		break;
+	case dods_int64_c:
+		um.get_int64(d_buf.i64);
+		break;
+	default:
+		assert(!"illegal type for D4Enum");
+	}
 }
 
 void D4Enum::print_val(ostream &out, string space, bool print_decl_p)

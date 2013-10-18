@@ -105,9 +105,10 @@ public:
 
     virtual Array *NewArray(const string &n = "", BaseType *v = 0) const;
 
-    // FIXME Define these
-#if 0
     virtual D4Enum *NewEnum(const string &n = "", Type type = dods_null_c) const;
+
+#if 0
+    // FIXME Define these
     virtual Opaque *NewOpaque(const string &n = "") const;
 #endif
 

@@ -37,20 +37,20 @@
 namespace libdap
 {
 
+class D4EnumDef;
 class ConstraintEvaluator;
 class Marshaller;
 class UnMarshaller;
 
 /**
  * @brief Holds a DAP4 enumeration.
- * For a single enumeration, it makes little sense to optimize it's
- * in-memory storage. This class uses an unsigned 64-bit int to hold
- * the value and casts it to a signed value if needed. The various
- * set_value() methods ensure that the value stored never exceeds the
- * range of values associated with the declared type.
  *
  * @note When constructed a type for the Enum must be specified. If
- * it is not an integer type, the Enum will use unsigned int 64.
+ * it is not an integer type, the Enum will use unsigned int 64. This
+ * is not the same as the enumeration type that is defined using the
+ * Enumeration XML element in the DMR - that information is stored
+ * in additional fields and used for checking values and printing the
+ * variable's declaration, but not for the internal storage of values.
  */
 class D4Enum: public BaseType
 {
@@ -78,6 +78,7 @@ public:
     	enum_value(int64_t i) : i64(i) {}
     	enum_value(uint64_t i) : ui64(i) {}
 
+    	// cast operators; use by set_value()
     	operator int8_t() const { return i8; }
     	operator uint8_t() const { return ui8; }
     	operator int16_t() const { return i16; }
@@ -92,7 +93,7 @@ private:
     enum_value d_buf;
 
     Type d_element_type;
-
+    D4EnumDef *d_enum;	// The enumeration defined in the DMR, not an integer type
     bool d_is_signed;
 
     void m_duplicate(const D4Enum &src) {
@@ -100,7 +101,6 @@ private:
         d_element_type = src.d_element_type;
     }
 
-    // TODO Use this only for an Array version of this type? jhrg 8/19/13
     unsigned int m_type_width() const {
         switch(d_element_type) {
             case dods_byte_c:
@@ -160,6 +160,12 @@ public:
 
     virtual ~D4Enum() { }
 
+    virtual D4EnumDef *enumeration() const { return d_enum; }
+    virtual void set_enumeration(D4EnumDef *enum_def) {
+    	d_enum = enum_def;
+    	if (enum_def->type() != d_element_type) throw InternalErr(__FILE__, __LINE__, "Enum type mismatch.");
+    }
+
     virtual BaseType *ptr_duplicate() { return new D4Enum(*this); }
 
     Type element_type() { return d_element_type; }
@@ -209,10 +215,10 @@ public:
 			*v = static_cast<T>(d_buf.ui16);
 			break;
 		case dods_uint32_c:
-			*v = static_cast<T>(d_buf.ui16);
+			*v = static_cast<T>(d_buf.ui32);
 			break;
 		case dods_uint64_c:
-			*v = static_cast<T>(d_buf.ui16);
+			*v = static_cast<T>(d_buf.ui64);
 			break;
 
 		case dods_int8_c:
@@ -256,6 +262,7 @@ public:
     // DAP4
     virtual void compute_checksum(Crc32 &checksum);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
 

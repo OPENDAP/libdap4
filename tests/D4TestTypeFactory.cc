@@ -89,14 +89,12 @@ BaseType *D4TestTypeFactory::NewVariable(Type t, const string &name) const
         case dods_url_c:
             return NewURL(name);
 
-#if 0
         case dods_enum_c:
             return NewEnum(name);
-
+#if 0
         case dods_opaque_c:
         	return NewOpaque(name);
 #endif
-
         case dods_array_c:
             return NewArray(name);
 
@@ -205,21 +203,11 @@ D4TestTypeFactory::NewURL(const string &n) const
     return NewUrl(n);
 }
 
-#if 0
-/** For an Enum, both it's name and type must be know before use. This
- * factory method uses "" and dods_null_c as the default values for name
- * and type, respectively.
- *
- * @name The name of the Enum
- * @type The Enum's element type.
- * @return A new Enum variable
- */
 D4Enum *
-D4TestTypeFactory::NewEnum(const string &name, Type type) const
+D4BaseTypeFactory::NewEnum(const string &name, Type type) const
 {
-    return new TestD4Enum(name, type);
+    return new D4Enum(name, type);
 }
-#endif
 
 Array *
 D4TestTypeFactory::NewArray(const string &n, BaseType *v) const

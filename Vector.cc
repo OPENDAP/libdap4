@@ -117,6 +117,7 @@ void Vector::m_duplicate(const Vector & v)
  */
 bool Vector::m_is_cardinal_type() const
 {
+	// TODO Is this true? It might not be
     // Not cardinal if no d_proto at all!
     if (!d_proto) {
         return false;
@@ -187,13 +188,7 @@ unsigned int Vector::m_create_cardinal_data_buffer_for_type(unsigned int numElts
     unsigned int bytesPerElt = d_proto->width();
     unsigned int bytesNeeded = bytesPerElt * numEltsOfType;
     d_buf = new char[bytesNeeded];
-#if 0
-    if (!d_buf) {
-        ostringstream oss;
-        oss << "create_cardinal_data_buffer_for_type: new char[] failed to allocate " << bytesNeeded << " bytes!  Out of memory or too large a buffer required!";
-        throw InternalErr(__FILE__, __LINE__, oss.str());
-    }
-#endif
+
     d_capacity = numEltsOfType;
     return bytesNeeded;
 }
@@ -962,19 +957,6 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bo
 void
 Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 {
-#if 0
-    unsigned int num;
-    um.get_int((int &) num);
-    if (length() == -1)
-        set_length(num);
-
-    DBG(cerr << "Vector::deserialize: num = " << num << endl);
-    DBG(cerr << "Vector::deserialize: length = " << length() << endl);
-
-    if (num != (unsigned int) length())
-        throw InternalErr(__FILE__, __LINE__, "The server sent declarations and data with mismatched sizes.");
-#endif
-
     if (m_is_cardinal_type()) {
         if (d_buf)
             m_delete_cardinal_data_buffer();
