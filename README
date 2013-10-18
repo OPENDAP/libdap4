@@ -1,3 +1,8 @@
+Updated for version 3.12.1
+
+Note that the documented behavior of BaseType::read() is now correctly
+implemented.
+
 Updated for version 3.12.0
 
 The server functions have been moved out of libdap and into their own 
