@@ -36,6 +36,7 @@
 #include "UInt32.h"
 
 #include "D4Enum.h"
+#include "D4EnumDefs.h"
 #include "D4Attributes.h"
 
 #include "Float32.h"
@@ -76,6 +77,12 @@ template void D4Enum::set_value<dods_int32>(dods_int32 v);
 template void D4Enum::set_value<dods_uint32>(dods_uint32 v);
 template void D4Enum::set_value<dods_int64>(dods_int64 v);
 template void D4Enum::set_value<dods_uint64>(dods_uint64 v);
+
+void
+D4Enum::set_enumeration(D4EnumDef *enum_def) {
+    d_enum = enum_def;
+    if (enum_def->type() != d_element_type) throw InternalErr(__FILE__, __LINE__, "Enum type mismatch.");
+}
 
 void
 D4Enum::compute_checksum(Crc32 &checksum)
@@ -131,7 +138,7 @@ D4Enum::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
 }
 
 void
-D4Enum::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
+D4Enum::deserialize(D4StreamUnMarshaller &um, DMR &)
 {
 	switch (d_element_type) {
 	case dods_byte_c:

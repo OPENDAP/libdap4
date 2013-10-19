@@ -28,14 +28,14 @@
 #include <string>
 #include <vector>
 
-#include "XMLWriter.h"
+// #include "XMLWriter.h"
 
 using namespace std;
 
+class XMLWriter;
+
 namespace libdap {
 
-// FIXME Why does this break other .cc files?
-//class XMLWriter;
 class D4Group;
 class D4Dimensions;
 

@@ -144,8 +144,9 @@ public:
     /// Get an iterator to the end of the enumerations
     D4EnumDefIter enum_end() { return d_enums.end(); }
 
-    //TODO Needed? Aggregation maybe?
-#if 1
+    D4EnumDef *find_enum_def(const string &name);
+
+#if 0
     /** Insert a D4EnumDef.
      * Insert a D4EnumDef before the position specified by the iterator.
      * @note Calling this method invalidates all iterators that reference this

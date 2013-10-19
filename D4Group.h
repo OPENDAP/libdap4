@@ -88,7 +88,9 @@ public:
 
     D4Dimension *find_dim(const string &path);
 
-    Array *find_map_source(const string &name);
+    Array *find_map_source(const string &path);
+
+    D4EnumDef *find_enum_def(const string &path);
 
     /// Get  the enumerations defined for this Group
     D4EnumDefs *enum_defs() {

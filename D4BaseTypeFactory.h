@@ -51,7 +51,7 @@ class Float64;
 class Str;
 class Url;
 
-//class D4Enum;
+class D4Enum;
 
 class Array;
 

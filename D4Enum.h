@@ -126,6 +126,7 @@ private:
 	D4Enum();	// No empty constructor
 
 public:
+	// TODO add a way to set the EnumDef to these
     D4Enum(const string &name, const string &enum_type) : BaseType(name, dods_enum_c, true /*is_dap4*/),
 			d_buf((uint64_t)0), d_element_type(dods_null_c) {
     	d_element_type = get_type(enum_type.c_str());
@@ -161,15 +162,13 @@ public:
     virtual ~D4Enum() { }
 
     virtual D4EnumDef *enumeration() const { return d_enum; }
-    virtual void set_enumeration(D4EnumDef *enum_def) {
-    	d_enum = enum_def;
-    	if (enum_def->type() != d_element_type) throw InternalErr(__FILE__, __LINE__, "Enum type mismatch.");
-    }
+    virtual void set_enumeration(D4EnumDef *enum_def);
 
     virtual BaseType *ptr_duplicate() { return new D4Enum(*this); }
 
     Type element_type() { return d_element_type; }
     void set_element_type(Type type) { d_element_type = type; }
+
     bool is_signed() const { return d_is_signed; }
     void set_is_signed(Type t) {
     	switch (t) {

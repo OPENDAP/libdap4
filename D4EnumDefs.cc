@@ -64,32 +64,20 @@ D4EnumDef::is_valid_enum_value(long long value)
     }
 }
 
-#if 0
-void D4EnumDefValues::print_value(XMLWriter &xml, const D4EnumDefValues::tuple &ev) const
+// Note that in order for this to work the second argument must not be a reference.
+// jhrg 8/20/13
+static bool
+enum_def_name_eq(D4EnumDef *d, const string name)
 {
-    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)"EnumConst") < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write EnumConst element");
-
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)ev.label.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-
-    ostringstream oss;
-    oss << ev.value;
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "value", (const xmlChar*)oss.str().c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for value");
-
-    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not end EnumConst element");
+    return d->name() == name;
 }
 
-void D4EnumDefValues::print_dap4(XMLWriter &xml) const
+D4EnumDef *
+D4EnumDefs::find_enum_def(const string &name)
 {
-    vector<D4EnumDefValues::tuple>::const_iterator i = d_tuples.begin();
-    while(i != d_tuples.end()) {
-        print_value(xml, *i++);
-    }
+    D4EnumDefIter d = find_if(d_enums.begin(), d_enums.end(), bind2nd(ptr_fun(enum_def_name_eq), name));
+    return (d != d_enums.end()) ? *d: 0;
 }
-#endif
 
 void D4EnumDef::print_value(XMLWriter &xml, const D4EnumDef::tuple &tuple) const
 {

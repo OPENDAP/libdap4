@@ -871,13 +871,10 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
         case inside_enum_def:
             if (is_not(localname, "Enumeration"))
                 D4ParserSax2::dmr_error(parser, "Expected an end Enumeration tag; found '%s' instead.", localname);
-            // FIXME broken error message
-            if (!parser->top_group()) //  || parser->top_basetype()->type() != dods_group_c)
+            if (!parser->top_group())
                 D4ParserSax2::dmr_fatal_error(parser, "Expected a Group to be the current item, while finishing up an Enumeration.");
             else {
                 // copy the pointer; not a deep copy
-            	//FIXME use top group
-                //parser->dmr()->root()->enum_defs()->add_enum_nocopy(parser->enum_def());
                 parser->top_group()->enum_defs()->add_enum_nocopy(parser->enum_def());
                 // Set the enum_def to null; next call to enum_def() will
                 // allocate a new object
@@ -916,8 +913,9 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
 
         case inside_simple_type:
             if (is_simple_type(get_type(localname))) {
-                // parser->pop_state();
                 BaseType *btp = parser->top_basetype();
+                // TODO
+                // If this is an enum, find the EnumDef object and link it in.
                 parser->pop_basetype();
                 parser->pop_attributes();
 

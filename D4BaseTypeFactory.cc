@@ -45,7 +45,7 @@
 
 #include "Str.h"
 #include "Url.h"
-//#include "D4Enum.h"
+#include "D4Enum.h"
 
 #include "Array.h"
 
@@ -100,7 +100,7 @@ BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
             return NewD4Sequence(name);
 
         case dods_enum_c:
-            return  NewEnum(name, "");
+            return NewEnum(name);
 
         case dods_array_c:
             return NewArray(name);
@@ -211,9 +211,9 @@ D4BaseTypeFactory::NewURL(const string &n) const
  * @return
  */
 D4Enum *
-D4BaseTypeFactory::NewEnum(const string &name, const string &enum_name) const
+D4BaseTypeFactory::NewEnum(const string &name, Type type) const
 {
-    return new D4Enum(name, enum_name);
+    return new D4Enum(name, type);
 }
 
 Array *
