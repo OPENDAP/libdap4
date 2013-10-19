@@ -31,6 +31,7 @@
 //#define DODS_DEBUG
 
 #include "D4Enum.h"
+#include "D4EnumDefs.h"
 #include "XMLWriter.h"
 #include "debug.h"
 #include "GetOpt.h"
@@ -153,7 +154,11 @@ public:
 
     void test_print() {
     	D4Enum e("test", dods_byte_c);
-    	e.set_value(200);
+        D4EnumDef enum_def("Colors", dods_byte_c);
+
+        e.set_enumeration(&enum_def);
+    	e.set_value((dods_byte)200);
+
     	XMLWriter xml;
 
         e.print_dap4(xml);
@@ -166,7 +171,11 @@ public:
 
     void test_print_val() {
     	D4Enum e("test", dods_byte_c);
+        D4EnumDef enum_def("Colors", dods_byte_c);
+
+        e.set_enumeration(&enum_def);
     	e.set_value(200);
+
     	ostringstream oss;
 
         e.print_val(oss, "", true);
