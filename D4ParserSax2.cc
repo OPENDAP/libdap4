@@ -42,6 +42,7 @@
 #include "D4Group.h"
 #include "D4Attributes.h"
 #include "D4Maps.h"
+#include "D4Enum.h"
 
 #include "D4BaseTypeFactory.h"
 
@@ -504,6 +505,14 @@ void D4ParserSax2::process_variable_helper(Type t, ParseState s, const xmlChar *
             return;
         }
 
+        if ((t == dods_enum_c) && check_required_attribute("enum")) {
+            D4EnumDef *enum_def = top_group()->find_enum_def(xml_attrs["enum"].value);
+            if (!enum_def)
+                dmr_fatal_error(this, "Could not find the Enumeration definition '%s'.", xml_attrs["enum"].value.c_str());
+
+            static_cast<D4Enum*>(btp)->set_enumeration(enum_def);
+        }
+
         btp->set_is_dap4(true); // see comment above
         push_basetype(btp);
 
@@ -914,8 +923,6 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
         case inside_simple_type:
             if (is_simple_type(get_type(localname))) {
                 BaseType *btp = parser->top_basetype();
-                // TODO
-                // If this is an enum, find the EnumDef object and link it in.
                 parser->pop_basetype();
                 parser->pop_attributes();
 

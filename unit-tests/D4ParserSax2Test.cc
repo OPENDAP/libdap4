@@ -164,6 +164,11 @@ public:
         compare_dmr_round_trip("/D4-xml/DMR_2.xml", "/D4-xml/DMR_2_baseline.xml");
     }
 
+    void test_enum_def2()
+    {
+        compare_dmr_round_trip("/D4-xml/DMR_2.1.xml", "/D4-xml/DMR_2.1_baseline.xml");
+    }
+
     void test_simple_var_def()
     {
         compare_dmr_round_trip("/D4-xml/DMR_3.xml", "/D4-xml/DMR_3_baseline.xml");
@@ -282,6 +287,7 @@ public:
     CPPUNIT_TEST(test_attribute_def);
     CPPUNIT_TEST(test_nested_attribute_def);
     CPPUNIT_TEST(test_enum_def);
+    CPPUNIT_TEST(test_enum_def2);
     CPPUNIT_TEST(test_simple_var_def);
     CPPUNIT_TEST(test_simple_var_with_attributes_def);
     CPPUNIT_TEST(test_array_var_def);

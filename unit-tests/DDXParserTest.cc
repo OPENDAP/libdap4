@@ -29,11 +29,9 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-//#define DODS_DEBUG 1
 #include "GetOpt.h"
 
 #include "DDXParserSAX2.h"
-//#include "DDXParser.h"
 #include "BaseTypeFactory.h"
 #include "ObjectType.h"
 #include "mime_util.h"
@@ -76,27 +74,6 @@ public:
 
     CPPUNIT_TEST_SUITE( DDXParserTest );
 
-#if 0 // working code on dap4 branch
-    CPPUNIT_TEST(other_xml_parse_test1);
-    CPPUNIT_TEST(other_xml_parse_test2);
-    CPPUNIT_TEST(other_xml_parse_test3);
-    CPPUNIT_TEST(dap_version_test);
-    CPPUNIT_TEST(no_blob_version_32_test);
-    CPPUNIT_TEST(blob_in_version_32_test);
-    CPPUNIT_TEST(parsing_ddx_from_dataddx_test);
-    CPPUNIT_TEST(top_level_attribute_test);
-    CPPUNIT_TEST(top_level_attribute_container_test);
-    CPPUNIT_TEST(top_level_simple_types_test);
-    CPPUNIT_TEST(top_level_simple_types_with_attributes_test);
-    CPPUNIT_TEST(simple_arrays_test);
-    CPPUNIT_TEST(simple_arrays_multi_dim_test);
-    CPPUNIT_TEST(simple_arrays_attributes_test);
-    CPPUNIT_TEST(structure_test);
-    CPPUNIT_TEST(sequence_test);
-    CPPUNIT_TEST(grid_test);
-    CPPUNIT_TEST(intern_stream_test);
-    CPPUNIT_TEST(intern_ddx_from_dataddx_test);
-#else
 	CPPUNIT_TEST(other_xml_parse_test1);
 	CPPUNIT_TEST(other_xml_parse_test2);
 	CPPUNIT_TEST(other_xml_parse_test3);
@@ -124,7 +101,6 @@ public:
 	CPPUNIT_TEST(structure_test_cpp_stream);
 	CPPUNIT_TEST(sequence_test_cpp_stream);
 	CPPUNIT_TEST(grid_test_cpp_stream);
-#endif
 
     // Error tests
     CPPUNIT_TEST(unknown_tag_test);

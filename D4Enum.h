@@ -93,7 +93,7 @@ private:
     enum_value d_buf;
 
     Type d_element_type;
-    D4EnumDef *d_enum;	// The enumeration defined in the DMR, not an integer type
+    D4EnumDef *d_enum_def;	// The enumeration defined in the DMR, not an integer type
     bool d_is_signed;
 
     void m_duplicate(const D4Enum &src) {
@@ -130,21 +130,21 @@ public:
     D4Enum(const string &name, const string &enum_type) : BaseType(name, dods_enum_c, true /*is_dap4*/),
 			d_buf((uint64_t)0), d_element_type(dods_null_c) {
     	d_element_type = get_type(enum_type.c_str());
-    	assert(is_integer_type(d_element_type));
+    	// assert(is_integer_type(d_element_type));
     	if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
     	set_is_signed(d_element_type);
     }
 
     D4Enum(const string &name, Type type) : BaseType(name, dods_enum_c, true /*is_dap4*/),
     		d_buf((uint64_t)0), d_element_type(type) {
-    	assert(is_integer_type(d_element_type));
+    	//assert(is_integer_type(d_element_type));
     	if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
     	set_is_signed(d_element_type);
     }
 
     D4Enum(const string &name, const string &dataset, Type type) : BaseType(name, dataset, dods_enum_c, true /*is_dap4*/),
     		d_buf((uint64_t)0), d_element_type(type) {
-    	assert(is_integer_type(d_element_type));
+    	//assert(is_integer_type(d_element_type));
     	if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
     	set_is_signed(d_element_type);
     }
@@ -161,7 +161,7 @@ public:
 
     virtual ~D4Enum() { }
 
-    virtual D4EnumDef *enumeration() const { return d_enum; }
+    virtual D4EnumDef *enumeration() const { return d_enum_def; }
     virtual void set_enumeration(D4EnumDef *enum_def);
 
     virtual BaseType *ptr_duplicate() { return new D4Enum(*this); }

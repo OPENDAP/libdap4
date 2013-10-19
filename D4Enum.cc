@@ -80,8 +80,8 @@ template void D4Enum::set_value<dods_uint64>(dods_uint64 v);
 
 void
 D4Enum::set_enumeration(D4EnumDef *enum_def) {
-    d_enum = enum_def;
-    if (enum_def->type() != d_element_type) throw InternalErr(__FILE__, __LINE__, "Enum type mismatch.");
+    d_enum_def = enum_def;
+    d_element_type = enum_def->type();
 }
 
 void
@@ -213,7 +213,7 @@ D4Enum::print_xml_writer(XMLWriter &xml, bool constrained)
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "enum", (const xmlChar*)D4type_name(d_element_type).c_str()) < 0)
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "enum", (const xmlChar*)d_enum_def->name().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
     attributes()->print_dap4(xml);

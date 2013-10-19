@@ -146,8 +146,8 @@ public:
 
     D4EnumDef *find_enum_def(const string &name);
 
-#if 0
-    /** Insert a D4EnumDef.
+    /**
+     * @brief Insert a D4EnumDef.
      * Insert a D4EnumDef before the position specified by the iterator.
      * @note Calling this method invalidates all iterators that reference this
      * D4EnumDef object.
@@ -159,7 +159,7 @@ public:
     	enum_def_copy->set_parent(this);
         d_enums.insert(i, enum_def_copy);
     }
-#endif
+
     void print_dap4(XMLWriter &xml) const;
 };
 

@@ -206,7 +206,7 @@ D4TestTypeFactory::NewURL(const string &n) const
 }
 
 D4Enum *
-D4BaseTypeFactory::NewEnum(const string &name, Type type) const
+D4TestTypeFactory::NewEnum(const string &name, Type type) const
 {
     return new D4Enum(name, type);
 }
