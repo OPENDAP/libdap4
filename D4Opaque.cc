@@ -26,6 +26,7 @@
 #include "config.h"
 
 #include <sstream>
+#include <iterator>
 
 #include "D4Opaque.h"
 
@@ -151,6 +152,9 @@ D4Opaque::dump(ostream &strm) const
     DapIndent::Indent() ;
     BaseType::dump(strm) ;
     //strm << DapIndent::LMarg << "value: " << d_buf << endl ;
+    ostream_iterator<uint8_t> out_it (strm," ");
+    std::copy ( d_buf.begin(), d_buf.end(), out_it );
+
     DapIndent::UnIndent() ;
 }
 
