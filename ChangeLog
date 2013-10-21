@@ -1,3 +1,8 @@
+2013-10-21  Hyo-Kyung Lee  <hyoklee@hdfgroup.org>
+
+	* escaping.cc (escattr): fixed the double escaping problem by changing
+	the order of the first two while() loops.
+
 2013-10-18  James Gallagher <jgallagher@opendap.org>
 
 	svn:ignore

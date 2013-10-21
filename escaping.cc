@@ -373,17 +373,17 @@ escattr(string s)
     const string QUOTE = "\"";
     const string ESCQUOTE = ESC + QUOTE;
 
-    // escape non-printing characters with octal escape
-    string::size_type ind = 0;
-    while ((ind = s.find_first_not_of(printable, ind)) != s.npos)
-        s.replace(ind, 1, ESC + octstring(s[ind]));
-
     // escape \ with a second backslash
-    ind = 0;
+    string::size_type ind = 0;
     while ((ind = s.find(ESC, ind)) != s.npos) {
         s.replace(ind, 1, DOUBLE_ESC);
         ind += DOUBLE_ESC.length();
     }
+
+    // escape non-printing characters with octal escape
+    ind = 0;
+    while ((ind = s.find_first_not_of(printable, ind)) != s.npos)
+        s.replace(ind, 1, ESC + octstring(s[ind]));
 
     // escape " with backslash
     ind = 0;
