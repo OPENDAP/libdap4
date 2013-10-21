@@ -52,6 +52,7 @@ class Str;
 class Url;
 
 class D4Enum;
+class D4Opaque;
 
 class Array;
 
@@ -99,18 +100,15 @@ public:
     virtual Float32 *NewFloat32(const string &n = "") const;
     virtual Float64 *NewFloat64(const string &n = "") const;
 
+    virtual D4Enum *NewEnum(const string &n = "", Type type = dods_null_c) const;
+
     virtual Str *NewStr(const string &n = "") const;
     virtual Url *NewUrl(const string &n = "") const;
     virtual Url *NewURL(const string &n = "") const;
 
+    virtual D4Opaque *NewOpaque(const string &n = "") const;
+
     virtual Array *NewArray(const string &n = "", BaseType *v = 0) const;
-
-    virtual D4Enum *NewEnum(const string &n = "", Type type = dods_null_c) const;
-
-#if 0
-    // FIXME Define these
-    virtual Opaque *NewOpaque(const string &n = "") const;
-#endif
 
     virtual Structure *NewStructure(const string &n = "") const;
     virtual D4Sequence *NewD4Sequence(const string &n = "") const;

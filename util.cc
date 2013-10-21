@@ -679,10 +679,8 @@ is_simple_type(Type t)
     case dods_float64_c:
     case dods_str_c:
     case dods_url_c:
-#if 0
-    case dods_url4_c:
-#endif
     case dods_enum_c:
+    case dods_opaque_c:
         return true;
 
     case dods_null_c:
@@ -725,10 +723,8 @@ is_vector_type(Type t)
 
     case dods_str_c:
     case dods_url_c:
-#if 0
-    case dods_url4_c:
-#endif
     case dods_enum_c:
+    case dods_opaque_c:
         return false;
 
     case dods_array_c:
@@ -771,10 +767,8 @@ is_constructor_type(Type t)
     case dods_float64_c:
     case dods_str_c:
     case dods_url_c:
-#if 0
-    case dods_url4_c:
-#endif
     case dods_enum_c:
+    case dods_opaque_c:
 
     case dods_array_c:
         return false;

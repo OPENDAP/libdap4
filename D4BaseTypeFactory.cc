@@ -43,9 +43,12 @@
 #include "Float32.h"
 #include "Float64.h"
 
+#include "D4Enum.h"
+
 #include "Str.h"
 #include "Url.h"
-#include "D4Enum.h"
+
+#include "D4Opaque.h"
 
 #include "Array.h"
 
@@ -88,19 +91,22 @@ BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
         case dods_float64_c:
             return NewFloat64(name);
 
+        case dods_enum_c:
+            return NewEnum(name);
+
         case dods_str_c:
             return NewStr(name);
         case dods_url_c:
             return NewURL(name);
+
+        case dods_opaque_c:
+            return NewOpaque(name);
 
         case dods_structure_c:
             return NewStructure(name);
 
         case dods_sequence_c:
             return NewD4Sequence(name);
-
-        case dods_enum_c:
-            return NewEnum(name);
 
         case dods_array_c:
             return NewArray(name);
@@ -183,6 +189,20 @@ D4BaseTypeFactory::NewFloat64(const string &n) const
     return new Float64(n);
 }
 
+/**
+ * Enums need a name and the name of an enumeration that was defined by the
+ * dataset. If the later is not known, it must be set before the enum is used.
+ * @param name
+ * @param enum_name
+ * @return
+ */
+D4Enum *
+D4BaseTypeFactory::NewEnum(const string &name, Type type) const
+{
+    return new D4Enum(name, type);
+}
+
+
 Str *
 D4BaseTypeFactory::NewStr(const string &n) const
 {
@@ -195,25 +215,18 @@ D4BaseTypeFactory::NewUrl(const string &n) const
     return new Url(n);
 }
 
+D4Opaque *
+D4BaseTypeFactory::NewOpaque(const string &n) const
+{
+    return new D4Opaque(n);
+}
+
 /** Note that this method is called NewURL - URL in caps.
  */
 Url *
 D4BaseTypeFactory::NewURL(const string &n) const
 {
     return new Url(n);
-}
-
-/**
- * Enums need a name and the name of an enumeration that was defined by the
- * dataset. If the later is not known, it must be set before the enum is used.
- * @param name
- * @param enum_name
- * @return
- */
-D4Enum *
-D4BaseTypeFactory::NewEnum(const string &name, Type type) const
-{
-    return new D4Enum(name, type);
 }
 
 Array *

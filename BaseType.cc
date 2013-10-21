@@ -1127,15 +1127,18 @@ BaseType::ops(BaseType *, int)
     throw InternalErr(__FILE__, __LINE__, "Unimplemented operator.");
 }
 
-// FIXME update this comment if the removal of width() works
-/** This version of width simply returns the same thing as width() for simple
-    types and Arrays. For Constructors, it needs to be specialized. This is
-    partly due to an inconsistency in the way Vector::width() is implemented.
-    That method uses the constrained size of the array (while the Constructor
-    versions do not take the constraint into account).
-
-    @param constrained If true, return the size after applying a constraint.
-    @return  The number of bytes used by the variable.
+/**
+ * @brief How many bytes does this use
+ * Return the number of bytes of storage this variable uses. For scalar types,
+ * this is pretty simple (an int32 uses 4 bytes, etc.). For arrays and Constructors,
+ * it is a bit more complex. Note that a scalar String variable uses sizeof(String*)
+ * bytes, not the length of the string. In other words, the value returned is
+ * independent of the type. Also note width() of a String array returns the number of
+ * elements in the array times sizeof(String*). That is, each different array size
+ * is a different data type.
+ *
+ * @param constrained Should the current constraint be taken into account?
+ * @return Bytes of storage
  */
 unsigned int
 BaseType::width(bool /* constrained */) const

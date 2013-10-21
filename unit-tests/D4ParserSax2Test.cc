@@ -206,7 +206,7 @@ public:
 
     void test_all_simple_var_def()
     {
-        compare_dmr_round_trip("/D4-xml/DMR_4_baseline.xml", "/D4-xml/DMR_4_baseline.xml");
+        compare_dmr_round_trip("/D4-xml/DMR_4.xml", "/D4-xml/DMR_4_baseline.xml");
     }
 
     void test_structure_def()

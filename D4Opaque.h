@@ -22,8 +22,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#ifndef _str_h
-#define _str_h 1
+#ifndef _d4_opaque_h
+#define _d4_opaque_h 1
 
 #include <vector>
 
@@ -98,5 +98,5 @@ public:
 
 } // namespace libdap
 
-#endif // _str_h
+#endif // _d4_opaque_h
 

@@ -23,9 +23,7 @@
     <Float64 name="f64"/>
     <String name="s"/>
     <URL name="u"/>
-    <!--
-        Not yet implemented. jhrg 4/15/13
     <Enum name="e" enum="colors"/>
     <Opaque name="o"/>
-    -->
+
 </Dataset>   
