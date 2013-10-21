@@ -429,7 +429,7 @@ void D4StreamMarshaller::put_url(const string &val)
     put_str(val);
 }
 
-void D4StreamMarshaller::put_opaque_dap4(char *val, int64_t len)
+void D4StreamMarshaller::put_opaque_dap4(const char *val, int64_t len)
 {
     checksum_update(val, len);
 

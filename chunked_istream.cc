@@ -129,6 +129,7 @@ chunked_inbuf::underflow()
 	switch (header & CHUNK_TYPE_MASK) {
 	case CHUNK_END:
 		DBG(cerr << "Found end chunk" << endl);
+		return traits_type::to_int_type(*gptr());
 	case CHUNK_DATA:
 		return traits_type::to_int_type(*gptr());
 
@@ -345,6 +346,7 @@ chunked_inbuf::read_next_chunk()
 	switch (header & CHUNK_TYPE_MASK) {
 	case CHUNK_END:
 		DBG(cerr << "Found end chunk" << endl);
+		return traits_type::not_eof(chunk_size);
 	case CHUNK_DATA:
 		return traits_type::not_eof(chunk_size);
 

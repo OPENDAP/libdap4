@@ -293,7 +293,7 @@ D4StreamUnMarshaller::get_opaque_dap4( vector<uint8_t> &val )
 	d_in.read(reinterpret_cast<char*>(&len), sizeof(len));
 
     val.resize(len);
-    d_in.read(&val[0], len);
+    d_in.read(reinterpret_cast<char*>(&val[0]), len);
 }
 
 void

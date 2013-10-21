@@ -117,6 +117,7 @@ public:
     }
 
     virtual void get_opaque_dap4(char **val, int64_t &len);
+    virtual void get_opaque_dap4( vector<uint8_t> &val );
 
     virtual void get_int(int &) {
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");

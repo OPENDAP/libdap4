@@ -123,7 +123,7 @@ public:
     	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4; use put_opaque_dap4() instead.");
     }
 
-    virtual void put_opaque_dap4(char *val, int64_t len);
+    virtual void put_opaque_dap4(const char *val, int64_t len);
 
     // Never use put_int() to send length information in DAP4.
     virtual void put_int(int) {

@@ -41,7 +41,7 @@ public:
 	typedef std::vector<uint8_t> dods_opaque;
 
 protected:
-    std::vector<uint8_t> d_buf;
+    dods_opaque d_buf;
 
 public:
     D4Opaque(const std::string &n) : BaseType(n, dods_opaque_c), d_buf(0) { }
@@ -61,7 +61,7 @@ public:
 
     // Return the length of the stored data or zero if no string has been
     // stored in the instance's internal buffer.
-    virtual int length() const { d_buf.length(); }
+    virtual int length() const { return d_buf.size(); }
 
     // DAP2
     virtual bool serialize(ConstraintEvaluator &, DDS &, Marshaller &, bool = true) {
@@ -79,17 +79,19 @@ public:
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual bool set_value(const std::vector<char> &value);
-    virtual std::vector<char> value() const;
+    virtual bool set_value(const dods_opaque &value);
+    virtual dods_opaque value() const;
 
-    virtual void print_val(FILE *out, std::string = "", bool = true)  {
+    virtual void print_val(FILE *, std::string = "", bool = true)  {
     	throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
     }
     virtual void print_val(std::ostream &out, std::string space = "", bool print_decl_p = true);
 
-    virtual void print_dap4(XMLWriter &xml, bool constrained = false);
+    //virtual void print_dap4(XMLWriter &xml, bool constrained = false);
 
-    virtual bool ops(BaseType *b, int op);
+    virtual bool ops(BaseType *, int) {
+        throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
+    }
 
     virtual void dump(std::ostream &strm) const ;
 };
