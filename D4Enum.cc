@@ -87,12 +87,37 @@ D4Enum::set_enumeration(D4EnumDef *enum_def) {
 void
 D4Enum::compute_checksum(Crc32 &checksum)
 {
-	checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(uint64_t));
+    switch (d_element_type) {
+    case dods_byte_c:
+    case dods_uint8_c:
+    case dods_int8_c:
+        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf.ui8), sizeof(uint8_t));
+        break;
+    case dods_uint16_c:
+    case dods_int16_c:
+        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf.ui16), sizeof(uint16_t));
+        break;
+    case dods_uint32_c:
+    case dods_int32_c:
+        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf.ui32), sizeof(uint32_t));
+        break;
+    case dods_uint64_c:
+    case dods_int64_c:
+        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf.ui64), sizeof(uint64_t));
+        break;
+
+    default:
+        assert(!"illegal type for D4Enum");
+    }
 }
 
-// FIXME Use type info to optimize
+
 /**
- * @brief Serialize a Byte
+ * @brief Serialize a D4Enum
+ * Use the (integer) data type associated with an Enumeration definition to
+ * serialize the value of a D4Enum variable. This send just the bits that
+ * correspond to the declared type, not all 64-bits of storage used by a
+ * scalar D4Enum.
  * @param m
  * @param dmr Unused
  * @param eval Unused
