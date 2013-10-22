@@ -125,7 +125,10 @@ void TestD4Group::set_series_values(bool sv)
 {
 	Vars_iter i = var_begin();
 	while (i != var_end()) {
-		dynamic_cast<TestCommon*>(*i)->set_series_values(sv);
+		TestCommon *tc = dynamic_cast<TestCommon*>(*i);
+		if (!tc)
+		    throw InternalErr (__FILE__, __LINE__, "Variable '" + (*i)->name() + "' is not a TestCommon.");
+		tc->set_series_values(sv);
 		++i;
 	}
 

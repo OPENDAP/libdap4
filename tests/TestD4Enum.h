@@ -37,8 +37,8 @@ class TestD4Enum: public D4Enum, public TestCommon {
     void _duplicate(const TestD4Enum &ts);
 
 public:
-    TestD4Enum(const string &n);
-    TestD4Enum(const string &n, const string &d);
+    TestD4Enum(const string &n, Type t);
+    TestD4Enum(const string &n, const string &d, Type t);
     TestD4Enum(const TestD4Enum &rhs);
 
     virtual ~TestD4Enum() {}

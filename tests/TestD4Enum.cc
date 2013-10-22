@@ -46,15 +46,15 @@ TestD4Enum::_duplicate(const TestD4Enum &ts)
     d_series_values = ts.d_series_values;
 }
 
-TestD4Enum::TestD4Enum(const string &n) : D4Enum(n, dods_int64_c), d_series_values(false)
+TestD4Enum::TestD4Enum(const string &n, Type t) : D4Enum(n, t), TestCommon(), d_series_values(false)
 {
-    set_value(1); //d_buf.i64 = 1;
+    set_value(0);
 }
 
-TestD4Enum::TestD4Enum(const string &n, const string &)
-    : D4Enum(n, dods_int64_c), d_series_values(false)
+TestD4Enum::TestD4Enum(const string &n, const string &d, Type t)
+    : D4Enum(n, d, t), TestCommon(), d_series_values(false)
 {
-    set_value(1); //d_buf.i64 = 1;
+    set_value(0);
 }
 
 TestD4Enum::TestD4Enum(const TestD4Enum &rhs) : D4Enum(rhs), TestCommon(rhs)
@@ -96,13 +96,13 @@ bool TestD4Enum::read() {
     if (get_series_values()) {
         int64_t v;
         value(&v);
-        set_value(64 * v);
-        value(&v);
-        if (v == 0)
-            set_value(64);
+        if (v == 3)
+            set_value(1);
+        else
+            set_value(v + 1);
     }
     else {
-        set_value((int64_t)0x00ffffffffffffff);
+        set_value((uint8_t)1);
     }
 
     set_read_p(true);

@@ -364,7 +364,7 @@ main(int argc, char *argv[])
         }
     }
     catch (Error &e) {
-        cerr << e.get_error_message() << endl;
+        cerr << "Error: " << e.get_error_message() << endl;
         return 1;
     }
 

@@ -46,6 +46,8 @@
 
 #include "TestD4Enum.h"
 
+#include "TestD4Opaque.h"
+
 #include "TestArray.h"
 #include "TestStructure.h"
 
@@ -93,10 +95,10 @@ BaseType *D4TestTypeFactory::NewVariable(Type t, const string &name) const
 
         case dods_enum_c:
             return NewEnum(name);
-#if 0
+
         case dods_opaque_c:
         	return NewOpaque(name);
-#endif
+
         case dods_array_c:
             return NewArray(name);
 
@@ -205,10 +207,17 @@ D4TestTypeFactory::NewURL(const string &n) const
     return NewUrl(n);
 }
 
+D4Opaque *
+D4TestTypeFactory::NewOpaque(const string &n) const
+{
+    return new TestD4Opaque(n);
+}
+
+
 D4Enum *
 D4TestTypeFactory::NewEnum(const string &name, Type type) const
 {
-    return new D4Enum(name, type);
+    return new TestD4Enum(name, type);
 }
 
 Array *
