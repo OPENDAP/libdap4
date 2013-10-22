@@ -506,7 +506,11 @@ void D4ParserSax2::process_variable_helper(Type t, ParseState s, const xmlChar *
         }
 
         if ((t == dods_enum_c) && check_required_attribute("enum")) {
-            D4EnumDef *enum_def = top_group()->find_enum_def(xml_attrs["enum"].value);
+            D4EnumDef *enum_def = 0;
+            if (xml_attrs["enum"].value[0] == '/')
+                enum_def = dmr()->root()->find_enum_def(xml_attrs["enum"].value);
+            else
+                enum_def = top_group()->find_enum_def(xml_attrs["enum"].value);
             if (!enum_def)
                 dmr_fatal_error(this, "Could not find the Enumeration definition '%s'.", xml_attrs["enum"].value.c_str());
 

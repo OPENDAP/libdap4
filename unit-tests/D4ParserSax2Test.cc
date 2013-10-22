@@ -234,6 +234,11 @@ public:
         compare_dmr_round_trip("/D4-xml/DMR_6.1.xml", "/D4-xml/DMR_6.1_baseline.xml");
     }
 
+    void test_group_with_enums_def()
+    {
+        compare_dmr_round_trip("/D4-xml/DMR_6.2.xml", "/D4-xml/DMR_6.2_baseline.xml");
+    }
+
     void test_group_with_attributes_def_string_version()
     {
         compare_dmr_round_trip_string_version("/D4-xml/DMR_6.1.xml", "/D4-xml/DMR_6.1_baseline.xml");
@@ -299,6 +304,7 @@ public:
     CPPUNIT_TEST(test_structure_with_attributes_def);
     CPPUNIT_TEST(test_group_def);
     CPPUNIT_TEST(test_group_with_attributes_def);
+    CPPUNIT_TEST(test_group_with_enums_def);
 
     CPPUNIT_TEST(test_empty_dmr_string_version);
     CPPUNIT_TEST(test_attribute_def_string_version);
