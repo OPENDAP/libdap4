@@ -614,7 +614,7 @@ BaseType::set_parent(BaseType *parent)
 
     @return A BaseType pointer to the variable's parent. */
 BaseType *
-BaseType::get_parent()
+BaseType::get_parent() const
 {
     return d_parent;
 }

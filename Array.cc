@@ -654,6 +654,11 @@ public:
 
 	void operator()(Array::dimension &d)
 	{
+		// This duplicates code in D4Dimensions (where D4Dimension::print_dap4() is defined
+		// because of the need to print the constrained size of a dimension. I think that
+		// the constraint information has to be kept here and not in the dimension (since they
+		// are shared dims). Could hack print_dap4() to take the constrained size, however.
+		// TODO Think about this. jhrg 10/22/13
 		if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dim") < 0)
 			throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
 

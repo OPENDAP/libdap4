@@ -126,6 +126,9 @@ public:
 
     bool empty() const { return d_enums.empty(); }
 
+    D4Group *parent() const { return d_parent; }
+    void set_parent(D4Group *p) { d_parent = p; }
+
     /** Append a new D4EnumDef.
      *
      * @param enum_def The enumeration.

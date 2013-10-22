@@ -35,6 +35,7 @@
 #include "Int32.h"
 #include "UInt32.h"
 
+#include "D4Group.h"
 #include "D4Enum.h"
 #include "D4EnumDefs.h"
 #include "D4Attributes.h"
@@ -238,7 +239,10 @@ D4Enum::print_xml_writer(XMLWriter &xml, bool constrained)
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "enum", (const xmlChar*)d_enum_def->name().c_str()) < 0)
+    // print the FQN for the enum def; D4Group::FQN() includes the trailing '/'
+    string path = static_cast<D4Group*>(d_enum_def->parent()->parent())->FQN();
+    path.append(d_enum_def->name());
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "enum", (const xmlChar*)path.c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
     attributes()->print_dap4(xml);

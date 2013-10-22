@@ -6,6 +6,6 @@
     </Float32>
     <Byte name="b1">
         <Dim name="/x-axis"/>
-        <Map name="x"/>
+        <Map name="/x"/>
     </Byte>
 </Dataset>

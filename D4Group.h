@@ -22,6 +22,8 @@
 #ifndef D4GROUP_H_
 #define D4GROUP_H_
 
+#include <string>
+
 #include "Constructor.h"
 #include "D4Dimensions.h"
 #include "D4EnumDefs.h"
@@ -83,6 +85,8 @@ public:
         return d_dims;
     }
 
+    std::string  FQN() const;
+
     D4Dimension *find_dim(const string &path);
 
     Array *find_map_source(const string &path);
@@ -91,7 +95,10 @@ public:
 
     /// Get  the enumerations defined for this Group
     D4EnumDefs *enum_defs() {
-        if (!d_enum_defs) d_enum_defs = new D4EnumDefs;
+        if (!d_enum_defs) {
+        	d_enum_defs = new D4EnumDefs;
+        	d_enum_defs->set_parent(this);
+        }
         return d_enum_defs;
     }
 

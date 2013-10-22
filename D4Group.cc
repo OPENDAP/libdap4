@@ -130,6 +130,13 @@ D4Group::operator=(const D4Group &rhs)
     return *this;
 }
 
+string
+D4Group::FQN() const
+{
+	// The root group is named "/" (always)
+	return (name() == "/") ? "/" : static_cast<D4Group*>(get_parent())->FQN() + name() + "/";
+}
+
 // Note that in order for this to work the second argument must not be a reference.
 // jhrg 8/20/13
 static bool

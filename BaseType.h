@@ -220,7 +220,7 @@ public:
     virtual void set_in_selection(bool state);
 
     virtual void set_parent(BaseType *parent);
-    virtual BaseType *get_parent();
+    virtual BaseType *get_parent() const;
 
     virtual void transfer_attributes(AttrTable *at);
 

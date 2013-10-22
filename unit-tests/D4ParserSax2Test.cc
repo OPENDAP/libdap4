@@ -280,7 +280,7 @@ public:
         CPPUNIT_ASSERT(x && x->name() == "x");
 
         D4Maps::D4MapsIter m = b1->maps()->map_begin(); // there's only one map...
-        CPPUNIT_ASSERT((*m)->name() == "x");
+        CPPUNIT_ASSERT((*m)->name() == "/x");
         CPPUNIT_ASSERT((*m)->array() == x);
         CPPUNIT_ASSERT((*m)->parent() == b1);
     }

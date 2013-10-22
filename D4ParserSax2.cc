@@ -241,6 +241,7 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
     }
     else if (check_attribute("name")) {
     	string name = xml_attrs["name"].value;
+
     	D4Dimension *dim = 0;
     	if (name[0] == '/')		// lookup the Dimension in the root group
     		dim = dmr()->root()->find_dim(name);
@@ -288,7 +289,10 @@ bool D4ParserSax2::process_map(const char *name, const xmlChar **attrs, int nb_a
 	assert(top_basetype()->is_vector_type());
 
 	Array *a = static_cast<Array*>(top_basetype());
-    string map_name = xml_attrs["name"].value;
+
+	string map_name = xml_attrs["name"].value;
+	if (xml_attrs["name"].value[0] != '/')
+		map_name = top_group()->FQN() + map_name;
 
     Array *map_source = 0;	// The array variable that holds the data for the Map
 
@@ -421,7 +425,13 @@ inline bool D4ParserSax2::process_enum_def(const char *name, const xmlChar **att
     }
 
     // This getter allocates a new object if needed.
-    enum_def()->set_name(xml_attrs["name"].value);
+    string enum_def_path = xml_attrs["name"].value;
+#if 0
+	// Use FQNs when things are referenced, not when they are defined
+    if (xml_attrs["name"].value[0] != '/')
+    	enum_def_path = top_group()->FQN() + enum_def_path;
+#endif
+    enum_def()->set_name(enum_def_path);
     enum_def()->set_type(t);
 
     return true;
@@ -507,12 +517,14 @@ void D4ParserSax2::process_variable_helper(Type t, ParseState s, const xmlChar *
 
         if ((t == dods_enum_c) && check_required_attribute("enum")) {
             D4EnumDef *enum_def = 0;
-            if (xml_attrs["enum"].value[0] == '/')
-                enum_def = dmr()->root()->find_enum_def(xml_attrs["enum"].value);
+            string enum_path = xml_attrs["enum"].value;
+			if (enum_path[0] == '/')
+                enum_def = dmr()->root()->find_enum_def(enum_path);
             else
-                enum_def = top_group()->find_enum_def(xml_attrs["enum"].value);
+                enum_def = top_group()->find_enum_def(enum_path);
+
             if (!enum_def)
-                dmr_fatal_error(this, "Could not find the Enumeration definition '%s'.", xml_attrs["enum"].value.c_str());
+                dmr_fatal_error(this, "Could not find the Enumeration definition '%s'.", enum_path.c_str());
 
             static_cast<D4Enum*>(btp)->set_enumeration(enum_def);
         }
