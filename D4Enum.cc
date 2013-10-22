@@ -239,9 +239,15 @@ D4Enum::print_xml_writer(XMLWriter &xml, bool constrained)
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-    // print the FQN for the enum def; D4Group::FQN() includes the trailing '/'
-    string path = static_cast<D4Group*>(d_enum_def->parent()->parent())->FQN();
-    path.append(d_enum_def->name());
+
+    string path = d_enum_def->name();
+    // Not every D4EnumDef is a menber of an instance of D4EnumDefs - the D4EnumDefs instance
+    // holds a reference to the D4Group that holds the Enum definitions.
+    // TODO Should this be changed - so the EnumDef holds a reference to its parent Group?
+    if (d_enum_def->parent()) {
+    	// print the FQN for the enum def; D4Group::FQN() includes the trailing '/'
+    	path = static_cast<D4Group*>(d_enum_def->parent()->parent())->FQN() + path;
+    }
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "enum", (const xmlChar*)path.c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 

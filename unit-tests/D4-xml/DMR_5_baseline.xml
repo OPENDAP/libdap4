@@ -20,7 +20,7 @@
         <Float64 name="f64"/>
         <String name="s"/>
         <URL name="u"/>
-        <Enum name="e" enum="colors"/>
+        <Enum name="e" enum="/colors"/>
         <Opaque name="o"/>
     </Structure>
 </Dataset>
