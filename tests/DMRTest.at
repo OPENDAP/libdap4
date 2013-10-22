@@ -120,6 +120,8 @@ DMR_PARSE([dmr-testsuite/test_simple_6.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_simple_7.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_simple_8.xml], [pass])
 
+DMR_PARSE([dmr-testsuite/test_simple_9.xml], [pass])
+
 DMR_PARSE([dmr-testsuite/test_array_1.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_2.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_3.xml], [pass])
@@ -155,6 +157,8 @@ DMR_TRANS([dmr-testsuite/test_simple_6.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_simple_7.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_simple_8.xml], [pass])
 
+DMR_TRANS([dmr-testsuite/test_simple_9.xml], [pass])
+
 DMR_TRANS([dmr-testsuite/test_array_1.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_2.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_3.xml], [pass])
@@ -172,6 +176,8 @@ DMR_INTERN([dmr-testsuite/test_simple_5.xml], [pass])
 DMR_INTERN([dmr-testsuite/test_simple_6.xml], [pass])
 DMR_INTERN([dmr-testsuite/test_simple_7.xml], [pass])
 DMR_INTERN([dmr-testsuite/test_simple_8.xml], [pass])
+
+DMR_INTERN([dmr-testsuite/test_simple_9.xml], [pass])
 
 DMR_INTERN([dmr-testsuite/test_array_1.xml], [pass])
 DMR_INTERN([dmr-testsuite/test_array_2.xml], [pass])
