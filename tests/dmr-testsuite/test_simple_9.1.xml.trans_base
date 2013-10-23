@@ -12,8 +12,8 @@ Parse successful
         <EnumConst name="dark" value="3"/>
         <EnumConst name="pitch" value="256"/>
     </Enumeration>
-    <Enum name="e" enum="color"/>
-    <Enum name="f" enum="shade"/>
+    <Enum name="e" enum="/color"/>
+    <Enum name="f" enum="/shade"/>
 </Dataset>
 
 <?xml version="1.0" encoding="ISO-8859-1"?>
@@ -29,12 +29,12 @@ Parse successful
         <EnumConst name="dark" value="3"/>
         <EnumConst name="pitch" value="256"/>
     </Enumeration>
-    <Enum name="e" enum="color">
+    <Enum name="e" enum="/color">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
             <value>99f8b879</value>
         </Attribute>
     </Enum>
-    <Enum name="f" enum="shade">
+    <Enum name="f" enum="/shade">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
             <value>a988dff7</value>
         </Attribute>

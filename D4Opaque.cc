@@ -128,21 +128,16 @@ D4Opaque::value() const
 void
 D4Opaque::print_val(ostream &out, string space, bool print_decl_p)
 {
-    if (print_decl_p) print_decl(out, space, false);
+	if (print_decl_p) print_decl(out, space, false);
 
-    if (d_buf.size()) {
-#if 1
-        std::ostream_iterator<uint8_t> out_it(std::cout, ", ");
-        std::copy ( d_buf.begin(), d_buf.end() - 1, out_it );
-        out << *d_buf.end();
-#else
-        for (dods_opaque::iterator i = d_buf.begin(), e = d_buf.end() - 1; i != e; ++i)
-            out << *i << ", ";
-        out << *d_buf.end();
-#endif
-    }
+	if (d_buf.size()) {
+		// end() - 1 is only OK if size() is > 0
+		std::ostream_iterator<unsigned int> out_it(out, ",");
+		std::copy(d_buf.begin(), d_buf.end() - 1, out_it);
+		out << (unsigned int) d_buf.back(); // can also use: *(d_buf.end()-1);
+	}
 
-    if (print_decl_p) out << ";" << endl;
+	if (print_decl_p) out << ";" << endl;
 }
 
 void

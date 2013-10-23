@@ -6,6 +6,6 @@ Parse successful
         <EnumConst name="blue" value="2"/>
         <EnumConst name="gray" value="3"/>
     </Enumeration>
-    <Enum name="e" enum="color"/>
+    <Enum name="e" enum="/color"/>
 </Dataset>
 

@@ -6,7 +6,7 @@ Parse successful
         <EnumConst name="blue" value="2"/>
         <EnumConst name="gray" value="3"/>
     </Enumeration>
-    <Enum name="e" enum="color"/>
+    <Enum name="e" enum="/color"/>
 </Dataset>
 
 <?xml version="1.0" encoding="ISO-8859-1"?>
@@ -16,7 +16,7 @@ Parse successful
         <EnumConst name="blue" value="2"/>
         <EnumConst name="gray" value="3"/>
     </Enumeration>
-    <Enum name="e" enum="color">
+    <Enum name="e" enum="/color">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
             <value>a505df1b</value>
         </Attribute>

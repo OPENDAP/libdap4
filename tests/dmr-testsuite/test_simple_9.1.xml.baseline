@@ -12,7 +12,7 @@ Parse successful
         <EnumConst name="dark" value="3"/>
         <EnumConst name="pitch" value="256"/>
     </Enumeration>
-    <Enum name="e" enum="color"/>
-    <Enum name="f" enum="shade"/>
+    <Enum name="e" enum="/color"/>
+    <Enum name="f" enum="/shade"/>
 </Dataset>
 
