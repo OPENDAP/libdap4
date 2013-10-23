@@ -50,7 +50,7 @@ class TestArray: public Array, public TestCommon {
     void m_build_special_values();
 
     int m_offset(int y, Dim_iter Y, int x);
-    template <typename T, class C> void m_constrained_matrix(/*char **/vector<T> &constrained_array);
+    template <typename T, class C> void m_constrained_matrix(vector<T> &constrained_array);
 
     template <typename T, class C> void m_cardinal_type_read_helper();
 

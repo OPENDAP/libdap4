@@ -144,11 +144,13 @@ bool Vector::m_is_cardinal_type() const
             // These must be handled differently.
         case dods_str_c:
         case dods_url_c:
+        case dods_opaque_c:
+
         case dods_array_c:
+
         case dods_structure_c:
         case dods_sequence_c:
         case dods_grid_c:
-        case dods_opaque_c:
             return false;
             break;
 
@@ -311,17 +313,6 @@ Vector & Vector::operator=(const Vector & rhs)
     return *this;
 }
 
-#if 0
-/**
- * The Vector (and Array) classes are specific to DAP2. They do not support
- * the semantics of DAP4 which allows varying dimensions.
- */
-bool Vector::is_dap2_only_type()
-{
-    return true;
-}
-#endif
-
 void Vector::set_name(const std::string& name)
 {
     BaseType::set_name(name);
@@ -476,6 +467,7 @@ BaseType *Vector::var(unsigned int i)
             return d_proto;
             break;
 
+        case dods_opaque_c:
         case dods_array_c:
         case dods_structure_c:
         case dods_sequence_c:
@@ -838,6 +830,7 @@ void Vector::compute_checksum(Crc32 &checksum)
         		checksum.AddData(reinterpret_cast<const uint8_t*>(d_str[i].data()), d_str[i].length());
             break;
 
+        case dods_opaque_c:
         case dods_structure_c:
         case dods_sequence_c:
         	d_proto->compute_checksum(checksum);
@@ -873,6 +866,7 @@ void Vector::intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval)
         	compute_checksum(checksum);
             break;
 
+        case dods_opaque_c:
         case dods_structure_c:
         case dods_sequence_c:
             assert(d_compound_buf.capacity() != 0);
@@ -936,6 +930,7 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bo
         case dods_array_c:
         	throw InternalErr(__FILE__, __LINE__, "Array of Array not allowed.");
 
+        case dods_opaque_c:
         case dods_structure_c:
         case dods_sequence_c:
             assert(d_compound_buf.capacity() >= 0);
@@ -946,7 +941,7 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bo
             break;
 
         case dods_grid_c:
-        	throw InternalErr(__FILE__, __LINE__, "Grid not part of DAP4.");
+        	throw InternalErr(__FILE__, __LINE__, "Grid is not part of DAP4.");
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
@@ -1009,6 +1004,7 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
         case dods_array_c:
         	throw InternalErr(__FILE__, __LINE__, "Array of Array not allowed.");
 
+        case dods_opaque_c:
         case dods_structure_c:
         case dods_sequence_c: {
             vec_resize(length());
@@ -1022,7 +1018,7 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
         }
 
         case dods_grid_c:
-        	throw InternalErr(__FILE__, __LINE__, "Grid not part of DAP4.");
+        	throw InternalErr(__FILE__, __LINE__, "Grid is not part of DAP4.");
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown type.");
@@ -1334,6 +1330,7 @@ void Vector::reserve_value_capacity(unsigned int numElements)
             throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Arrays not supported!");
             break;
 
+        case dods_opaque_c:
         case dods_structure_c:
         case dods_sequence_c:
         case dods_grid_c:
@@ -1467,13 +1464,14 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 			break;
 
 		case dods_array_c:
+        case dods_opaque_c:
 		case dods_structure_c:
 		case dods_sequence_c:
 		case dods_grid_c:
 			// Not sure that this function will be used for these type of nested objects, so I will throw here.
 			// TODO impl and test this path if it's ever needed.
 			throw InternalErr(__FILE__, __LINE__,
-					funcName + "Unimplemented method for Vectors of type: dods_array_c, dods_structure_c, dods_sequence_c and dods_grid_c.");
+					funcName + "Unimplemented method for Vectors of type: array, opaque, structure, sequence or grid.");
 			break;
 
 		default:
@@ -2056,8 +2054,8 @@ void Vector::add_var(BaseType * v, Part /*p*/)
         // we let the owner of 'v' to deallocate it as necessary.
         d_proto = v->ptr_duplicate();
 
-        // If 'v' has a name, use it as the name of the array. If it *is*
-        // empty, then make sure to copy the array's name to the template
+        // If 'v' has a name, use it as the name of the array. If v doesn't have
+        // a name, then make sure to copy the array's name to it
         // so that software which uses the template's name will still work.
         if (!v->name().empty())
             set_name(v->name());
@@ -2095,9 +2093,9 @@ void Vector::add_var_nocopy(BaseType * v, Part)
         else
             d_proto->set_name(name());
 
-        d_proto->set_parent(this); // Vector --> child
+        d_proto->set_parent(this); // Vector is the parent; proto is the child
 
-        DBG(cerr << "Vector::add_var: Added variable " << v << " ("
+        DBG(cerr << "Vector::add_var_no_copy: Added variable " << v << " ("
                 << v->name() << " " << v->type_name() << ")" << endl);
     }
 }

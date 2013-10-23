@@ -133,10 +133,12 @@ public:
 
     virtual void set_length(int l);
 
+    // DAP2
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
+    // DAP4
     virtual void compute_checksum(Crc32 &checksum);
     virtual void intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
@@ -156,9 +158,9 @@ public:
     virtual void reserve_value_capacity(unsigned int numElements);
     virtual void reserve_value_capacity();
 
-    virtual unsigned int set_value_slice_from_row_major_vector
-      (const Vector& rowMajorData, unsigned int startElement);
+    virtual unsigned int set_value_slice_from_row_major_vector(const Vector& rowMajorData, unsigned int startElement);
 
+    // TODO Use templates?
     virtual bool set_value(dods_byte *val, int sz);
     virtual bool set_value(vector<dods_byte> &val, int sz);
 
@@ -216,8 +218,7 @@ public:
 
     virtual void *value();
 
-    virtual BaseType *var(const string &name = "", bool exact_match = true,
-                          btp_stack *s = 0);
+    virtual BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = 0);
     virtual BaseType *var(const string &name, btp_stack &s);
     virtual BaseType *var(unsigned int i);
 

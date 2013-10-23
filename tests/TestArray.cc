@@ -229,7 +229,7 @@ int TestArray::m_offset(int y, Dim_iter X, int x)
  * @param constrained_array
  */
 template <typename T, class C>
-void TestArray::m_constrained_matrix(vector<T>/*char * */&constrained_array)
+void TestArray::m_constrained_matrix(vector<T>&constrained_array)
 {
     int unconstrained_size = 1;
     Dim_iter d = dim_begin();
@@ -444,6 +444,7 @@ bool TestArray::read()
 			break;
         }
 
+        case dods_opaque_c:
         case dods_structure_c:
             for (unsigned i = 0; i < array_len; ++i) {
             	// Copy the prototype and read a value into it
