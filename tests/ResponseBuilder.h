@@ -28,8 +28,10 @@
 
 #include <string>
 
-class libdap::ConstraintEvaluator;
-class libdap::DDS;
+namespace libdap {
+
+class ConstraintEvaluator;
+class DDS;
 
 /**
  * Used for testing only. This duplicates code in the bes/dap module.
@@ -64,6 +66,8 @@ public:
     virtual std::string get_ce() const;
     virtual void set_ce(std::string _ce);
 
+    void split_ce(ConstraintEvaluator &eval, const string &expr = "");
+
     virtual std::string get_dataset_name() const;
     virtual void set_dataset_name(const std::string _dataset);
 
@@ -71,4 +75,5 @@ public:
     virtual void send_data(std::ostream &data_stream, libdap::DDS &dds, libdap::ConstraintEvaluator &eval, bool with_mime_headers = true);
 };
 
+}
 #endif // _response_builder_h

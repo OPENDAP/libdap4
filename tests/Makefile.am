@@ -47,11 +47,12 @@ expr_test_LDADD = libtest-types.a ../libdapserver.la ../libdapclient.la ../libda
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestSequence.cc		 \
 	   TestGrid.cc TestUInt32.cc TestInt16.cc TestUInt16.cc		 \
-	   TestFloat32.cc TestCommon.cc TestTypeFactory.cc
+	   TestFloat32.cc TestCommon.cc TestTypeFactory.cc  TestFunction.cc
 
 TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 	TestGrid.h TestInt16.h TestInt32.h TestSequence.h TestStr.h	      \
-	TestStructure.h TestTypeFactory.h TestUInt16.h TestUInt32.h TestUrl.h
+	TestStructure.h TestTypeFactory.h TestUInt16.h TestUInt32.h TestUrl.h \
+	TestFunction.h
 
 DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite 
 

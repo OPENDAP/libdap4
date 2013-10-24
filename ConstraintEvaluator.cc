@@ -28,12 +28,13 @@
 
 #include "ServerFunctionsList.h"
 #include "ConstraintEvaluator.h"
+#include "Clause.h"
+#include "DataDDS.h"
 
 #include "ce_parser.h"
 #include "debug.h"
 #include "parser.h"
 #include "expr.h"
-//#include "ce_expr.tab.hh"
 
 struct yy_buffer_state;
 
@@ -162,119 +163,22 @@ void ConstraintEvaluator::append_constant(BaseType *btp)
     constants.push_back(btp);
 }
 
-// This code was removed when I switched from CE having it's own internal
-// list of functions to using an external list.
-#if 0
-class func_name_is {
-private:
-    const string d_name;
-
-public:
-    func_name_is(const string &name) :
-            d_name(name)
-    {
-    }
-    bool operator()(const ConstraintEvaluator::function f)
-    {
-        return f.name == d_name;
-    }
-};
-
-/** The Constraint Evaluator carries with it a list of external functions it
- can use while evaluate a constraint expression. If a constraint contains
- any of these functions, the entries in the list allow the parser to evaluate
- it. The functions are of three types: those that return boolean values,
- those that return real (also called BaseType) values, and those that
- are applied during evaluation of the projection for side effect
-
- @note The add_function() methods will replace a function of the same name,
- so it is possible to overwrite functions in specific handlers if the
- handler need special behavior to implement one of the standard functions.
-
- @see ce_functions for the standard functions
-
- These methods are used to manipulate this list of known
- external functions.
-
- @name External Function Accessors
- */
-//@{
-/** @brief Add a boolean function to the list. */
-void ConstraintEvaluator::add_function(const string &name, bool_func f)
-{
-    functions.remove_if(func_name_is(name));
-    function func(name, f);
-    functions.push_back(func);
-}
-
-/** @brief Add a BaseType function to the list. */
-void ConstraintEvaluator::add_function(const string &name, btp_func f)
-{
-    functions.remove_if(func_name_is(name));
-    function func(name, f);
-    functions.push_back(func);
-}
-
-/** @brief Add a projection function to the list. */
-void ConstraintEvaluator::add_function(const string &name, proj_func f)
-{
-    functions.remove_if(func_name_is(name));
-    function func(name, f);
-    functions.push_back(func);
-}
-#endif
-
 /** @brief Find a Boolean function with a given name in the function list. */
 bool ConstraintEvaluator::find_function(const string &name, bool_func *f) const
 {
     return d_functions_list->find_function(name, f);
-#if 0
-    if (functions.empty())
-        return false;
-
-    for (Functions_citer i = functions.begin(); i != functions.end(); i++) {
-        if (name == (*i).name && (*f = (*i).b_func)) {
-            return true;
-        }
-    }
-
-    return false;
-#endif
 }
 
 /** @brief Find a BaseType function with a given name in the function list. */
 bool ConstraintEvaluator::find_function(const string &name, btp_func *f) const
 {
     return d_functions_list->find_function(name, f);
-#if 0
-    if (functions.empty())
-        return false;
-
-    for (Functions_citer i = functions.begin(); i != functions.end(); i++) {
-        if (name == (*i).name && (*f = (*i).bt_func)) {
-            return true;
-        }
-    }
-
-    return false;
-#endif
 }
 
 /** @brief Find a projection function with a given name in the function list. */
 bool ConstraintEvaluator::find_function(const string &name, proj_func *f) const
 {
     return d_functions_list->find_function(name, f);
-#if 0
-    if (functions.empty())
-        return false;
-
-    for (Functions_citer i = functions.begin(); i != functions.end(); i++)
-        if (name == (*i).name && (*f = (*i).p_func)) {
-            return true;
-        }
-
-    return false;
-#endif
 }
 //@}
 
@@ -376,15 +280,6 @@ ConstraintEvaluator::eval_function_clauses(DDS &dds)
 
 /** @brief Evaluate a function-valued constraint expression that contains
  several function calls. Takes and returns a DataDDS.
-
- @todo Change this so that the new variables are inserted into the
- original DDS object - this will allow constraints that mix simple
- projections with function calls. The function is responsible for
- setting the new variable's read_p property and this 'evaluator'
- sets the send_p property. The original variables would have to be
- removed from the original DDS for this to work or the names of
- the new variables would have to not clash with the original variables'
- names.
 
  @see ConstraintEvaluator::eval_function_clauses(DataDDS &dds)
  @note Added for libdap 3.11 */

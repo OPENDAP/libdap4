@@ -181,6 +181,7 @@ void ResponseBuilder::establish_timeout(ostream &stream) const
     }
 #endif
 }
+#endif
 
 /**
  *  Split the CE so that the server functions that compute new values are
@@ -236,6 +237,7 @@ ResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
     d_btp_func_ce = btp_function_ce;
 }
 
+#if 0
 /** This function formats and prints an ASCII representation of a
  DAS on stdout.  This has the effect of sending the DAS object
  back to the client program.
@@ -423,12 +425,12 @@ void ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval
     out << flush;
 }
 #endif
+
 /**
  * Build/return the BLOB part of the DAP2 data response.
  */
 void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEvaluator & eval, bool ce_eval)
 {
-    // send constrained DDS
     DBG(cerr << "Inside dataset_constraint" << endl);
 
     dds.print_constrained(out);
@@ -467,13 +469,35 @@ void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEval
  @return void */
 void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers)
 {
-        DBG(cerr << "Simple constraint" << endl);
+    // Split constraint into two halves
+    split_ce(eval);
 
-        eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+    // If there are functions, parse them and eval.
+    // Use that DDS and parse the non-function ce
+    // Serialize using the second ce and the second dds
+    if (!d_btp_func_ce.empty()) {
+        DBG(cerr << "Found function(s) in CE: " << d_btp_func_ce << endl);
+        string cache_token = "";
+        DDS *fdds = 0;
 
-        dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
+        // The BES code caches the function result
+            eval.parse_constraint(d_btp_func_ce, dds);
+            fdds = eval.eval_function_clauses(dds);
 
-        if (dds.get_response_limit() != 0 && dds.get_request_size(true) > dds.get_response_limit()) {
+        DBG(fdds->print_constrained(cerr));
+
+        // Server functions might mark variables to use their read()
+        // methods. Clear that so the CE in d_ce will control what is
+        // sent. If that is empty (there was only a function call) all
+        // of the variables in the intermediate DDS (i.e., the function
+        // result) will be sent.
+        fdds->mark_all(false);
+
+        eval.parse_constraint(d_ce, *fdds);
+
+        fdds->tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
+
+        if (fdds->get_response_limit() != 0 && fdds->get_request_size(true) > fdds->get_response_limit()) {
             string msg = "The Request for " + long_to_string(dds.get_request_size(true) / 1024)
                     + "KB is too large; requests for this user are limited to "
                     + long_to_string(dds.get_response_limit() / 1024) + "KB.";
@@ -483,6 +507,31 @@ void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvalua
         if (with_mime_headers)
             set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
-        dataset_constraint(data_stream, dds, eval);
-    data_stream << flush;
+        DBG(cerr << "About to call dataset_constraint" << endl);
+        dataset_constraint(data_stream, *fdds, eval, false);
+
+        delete fdds;
+    }
+    else {
+
+	DBG(cerr << "Simple constraint" << endl);
+
+	eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+
+	dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
+
+	if (dds.get_response_limit() != 0 && dds.get_request_size(true) > dds.get_response_limit()) {
+		string msg = "The Request for " + long_to_string(dds.get_request_size(true) / 1024)
+				+ "KB is too large; requests for this user are limited to "
+				+ long_to_string(dds.get_response_limit() / 1024) + "KB.";
+		throw Error(msg);
+	}
+
+	if (with_mime_headers)
+		set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+
+	dataset_constraint(data_stream, dds, eval);
+    }
+
+	data_stream << flush;
 }

@@ -205,7 +205,7 @@ rvalue *build_constant_array(vector<t> *values, DDS *dds);
 %type <int_l_ptr> array_index
 %type <int_ll_ptr> array_indices
 
-%type <rval_ptr> r_value id_or_const array_const_special_form
+%type <rval_ptr> r_value id_or_const array_const_special_form array_projection_rvalue
 %type <r_val_l_ptr> r_value_list arg_list
 
 %type <byte_value> fast_byte_arg
@@ -574,6 +574,10 @@ r_value: id_or_const
         {
             $$ = $1;
         }
+        | array_projection_rvalue
+        {
+            $$ = $1;
+        }
 ;
 
 r_value_list:	r_value
@@ -647,10 +651,27 @@ id_or_const: SCAN_WORD
                 }
 ;
 
+/* this must return an rvalue. It should run bracket_projection() 
+   and then return the BaseType of the Array wrapped in a RValue
+   object. */
+array_projection_rvalue : name array_indices
+                {
+                    if (!bracket_projection((*DDS(arg)), $1, $2))
+                      no_such_ident(arg, $1, "array, grid or sequence");
+                    
+                    // strncpy($$, $1, ID_MAX-1);
+                    // $$[ID_MAX-1] = '\0';
+
+                    DDS(arg)->mark($1, true);
+                    $$ = new rvalue(DDS(arg)->var($1));
+                }
+;
+
 array_projection : array_proj_clause
                 {
                     $$ = (*DDS(arg)).mark($1, true);
                 }
+;
                 
 array_proj_clause: name array_indices
                 {
@@ -851,9 +872,7 @@ bool bracket_projection(DDS &table, const char *name, int_list_list *indices)
 {
     BaseType *var = table.var(name);
     Sequence *seq; // used in last else-if clause
-#if 0
-    Array *array;
-#endif    
+
     if (!var)
         return false;
 
