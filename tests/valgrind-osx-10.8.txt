@@ -1,0 +1,2420 @@
+{
+   mem 0
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 1
+   Memcheck:Leak
+   fun:malloc
+   ...
+   obj:/bin/sh
+}
+{
+   mem 2
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 3
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 4
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 5
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 6
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 7
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 8
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 9
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 10
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 11
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 12
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 13
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 14
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 15
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 16
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 17
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 18
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 19
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 20
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 21
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 22
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 23
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 24
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 25
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 26
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 27
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 28
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 29
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 30
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 31
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 32
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 33
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 34
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 35
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 36
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 37
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 38
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+
+{
+   mem 39
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 40
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 41
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 42
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 43
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:(below main)
+}
+{
+   mem 44
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 45
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 46
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 47
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 48
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 49
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 50
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 51
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 52
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 53
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 54
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 55
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 56
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 57
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 58
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+
+{
+   mem 59
+   Memcheck:Leak
+   fun:malloc
+   ...
+   obj:/bin/sh
+}
+{
+   mem 60
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 61
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 62
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 63
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 64
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 65
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 66
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 67
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 68
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 69
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 70
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 71
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 72
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 73
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 74
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 75
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 76
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 77
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 78
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 79
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN4dyld36registerImageStateBatchChangeHandlerE17dyld_image_statesPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 80
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 81
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 82
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 83
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 84
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 85
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 86
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 87
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 88
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 89
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 90
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 91
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 92
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 93
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 94
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 95
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 96
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 97
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 98
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 99
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 100
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 101
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 102
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 103
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 104
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 105
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 106
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 107
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 108
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 109
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 110
+   Memcheck:Cond
+   fun:fts_close$INODE64
+   ...
+   fun:(below main)
+}
+{
+   mem 111
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 112
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN4dyld36registerImageStateBatchChangeHandlerE17dyld_image_statesPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 113
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 114
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 115
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 116
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 117
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 118
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 119
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:(below main)
+}
+{
+   mem 120
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 121
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 122
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 123
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 124
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 125
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 126
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 127
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:(below main)
+}
+{
+   mem 128
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 129
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 130
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 131
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 132
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 133
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:(below main)
+}
+{
+   mem 134
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN4dyld36registerImageStateBatchChangeHandlerE17dyld_image_statesPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 135
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 136
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 137
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 138
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 139
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 140
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 141
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 142
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 143
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 144
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 145
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 146
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 147
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 148
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 149
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 150
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 151
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 152
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 153
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 154
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 155
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 156
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 157
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 158
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 159
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 160
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 161
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 162
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 163
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 164
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+
+{
+   mem 165
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 166
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 167
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 168
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 169
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 170
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 171
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 172
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 173
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 174
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 175
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 176
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 177
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 178
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 179
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 180
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 181
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 182
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 183
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+
+{
+   mem 184
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 185
+   Memcheck:Leak
+   fun:malloc
+   ...
+   obj:/bin/sh
+}
+{
+   mem 186
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 187
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 188
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 189
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 190
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 191
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 192
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 193
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 194
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 195
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 196
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 197
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 198
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 199
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 200
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 201
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 202
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 203
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 204
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN4dyld36registerImageStateBatchChangeHandlerE17dyld_image_statesPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 205
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 206
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 207
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 208
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 209
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 210
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 211
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 212
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 213
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 214
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 215
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 216
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 217
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 218
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 219
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 220
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 221
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 222
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 223
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 224
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 225
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dyld_register_image_state_change_handler
+}
+{
+   mem 226
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_objc_init
+}
+{
+   mem 227
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 228
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 229
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 230
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 231
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 232
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 233
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 234
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+
+{
+   mem 235
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 236
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:+[NSObject new]
+}
+{
+   mem 237
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:+[NSObject new]
+}
+{
+   mem 238
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:+[NSDictionary allocWithZone:]
+}
+{
+   mem 239
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_NSThreadGet0
+}
+{
+   mem 240
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN11ImageLoader4linkERKNS_11LinkContextEbbRKNS_10RPathChainE
+}
+{
+   mem 241
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:dlopen
+}
+{
+   mem 242
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN4dyld36registerImageStateBatchChangeHandlerE17dyld_image_statesPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 243
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 244
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 245
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 246
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 247
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 248
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 249
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 250
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 251
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 252
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 253
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dlopen
+}
+{
+   mem 254
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dlopen
+}
+{
+   mem 255
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:dlopen
+}
+{
+   mem 256
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:heim_load_frameworks
+}
+{
+   mem 257
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 258
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 259
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 260
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 261
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 262
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 263
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 264
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 265
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 266
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 267
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 268
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN4dyldL12notifySingleE17dyld_image_statesPK11ImageLoader
+}
+{
+   mem 269
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 270
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 271
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:call_load_methods
+}
+{
+   mem 272
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_NSInitializePlatform
+}
+{
+   mem 273
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:load_images
+}
+{
+   mem 274
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 275
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 276
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 277
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 278
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 279
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 280
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 281
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 282
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 283
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 284
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 285
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 286
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 287
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 288
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 289
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 290
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 291
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 292
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 293
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 294
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 295
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 296
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 297
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 298
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 299
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 300
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 301
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 302
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 303
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 304
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:main
+}
+{
+   mem 305
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 306
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 307
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 308
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 309
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 310
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 311
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 312
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 313
+   Memcheck:Leak
+   fun:malloc_zone_realloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 314
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 315
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 316
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 317
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 318
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 319
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 320
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 321
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 322
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 323
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 324
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 325
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN16ImageLoaderMachO11doImageInitERKN11ImageLoader11LinkContextE
+}
+{
+   mem 326
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZThn120_N11TestFloat6413output_valuesERSo
+}
+{
+   mem 327
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 328
+   Memcheck:Leak
+   fun:malloc_zone_realloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 329
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 330
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 331
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 332
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:dlopen
+}
+{
+   mem 333
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN4dyldL18notifyBatchPartialE17dyld_image_statesbPFPKcS0_jPK15dyld_image_infoE
+}
+{
+   mem 334
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:heim_load_frameworks
+}
+{
+   mem 335
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 336
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+}
+{
+   mem 337
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:libSystem_initializer
+}
+{
+   mem 338
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEjRNS_21InitializerTimingListE
+}
+{
+   mem 339
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_ZN4dyld15runInitializersEP11ImageLoader
+}
+{
+   mem 340
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:dlopen
+}
+{
+   mem 341
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN13dyldbootstrap5startEPK12macho_headeriPPKclS2_Pm
+}
+{
+   mem 342
+   Memcheck:Leak
+   fun:malloc_zone_memalign
+   ...
+   fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextERNS_21InitializerTimingListE
+}
+{
+   mem 343
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}
+{
+   mem 344
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+}

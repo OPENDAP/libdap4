@@ -29,9 +29,9 @@
 #include <sstream>
 
 #include <BaseType.h>
-#include <Float64.h>
-#include <Str.h>
-#include <Array.h>
+#include <TestFloat64.h>
+#include <TestStr.h>
+#include <TestArray.h>
 // #include <Grid.h>
 
 #include <Error.h>
@@ -151,7 +151,7 @@ function_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     "</function>";
 
     if (argc == 0) {
-        Str *response = new Str("info");
+        Str *response = new TestStr("info");
         response->set_value(info);
         *btpp = response;
         return;
@@ -193,7 +193,7 @@ function_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 
         data *= m;
 
-        Float64 *fdest = new Float64(argv[0]->name());
+        Float64 *fdest = new TestFloat64(argv[0]->name());
 
         fdest->set_value(data);
         dest = fdest;

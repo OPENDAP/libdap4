@@ -85,7 +85,6 @@ EXPR_RESPONSE_P([test.5], [scale\(i[[3]],2\)], [test.5.func3], [pass])
 # This doesn't work yet 10/23/13 jhrg 
 EXPR_RESPONSE_P([test.5], [scale\(j,2\)], [test.5.func4], [pass])
 
-
 EXPR_RESPONSE_P([test.a], ["" -b], [test.a], [pass])
 EXPR_RESPONSE_P([test.a], ["&i<2000" -b], [test.aa], [pass])
 EXPR_RESPONSE_P([test.a], ["j&i>2000" -b], [test.ab], [pass])
