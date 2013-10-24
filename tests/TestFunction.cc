@@ -170,7 +170,7 @@ function_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     BaseType *dest = 0;
     double *data;
     if (argv[0]->is_vector_type()) {
-        Array &source = dynamic_cast<Array&>(*argv[0]);
+        Array &source = static_cast<Array&>(*argv[0]);
         source.read();
 
         data = extract_double_array(&source);
@@ -188,6 +188,7 @@ function_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
         dest = result;
     }
     else if (argv[0]->is_simple_type() && !(argv[0]->type() == dods_str_c || argv[0]->type() == dods_url_c)) {
+    	argv[0]->read();
         double data = extract_double_value(argv[0]);
 
         data *= m;
