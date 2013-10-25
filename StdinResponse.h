@@ -46,11 +46,14 @@ namespace libdap
     This class holds stdin and provides an interface from which
     Connect can read DAP2 information from standard input. Unlike the
     other Response classes, StdinResponse does \e not close the input
-    stream when it's done reading. */
+    stream when it's done reading.
+
+    @note Modified 10/25/13 to accommodate C++ istreams. */
 class StdinResponse: public Response
 {
 private:
     FILE *d_stdin;
+    istream *d_cin;
 
 protected:
 
@@ -64,21 +67,22 @@ public:
         
         @param s Pointer to standard input.
         */
-    StdinResponse(FILE *s) : Response(0), d_stdin(s)
-    {}
+    StdinResponse(FILE *s) : Response(0), d_stdin(s), d_cin(0) {}
+
+    /**
+     * @brief Build a instance using a C++ istream
+     * @param in A pointer to the input stream
+     */
+    StdinResponse(istream *in) : Response(0), d_stdin(0), d_cin(in) {}
 
     /** Destructor. Does not close standard input. */
-    virtual ~StdinResponse()
-    {}
+    virtual ~StdinResponse() {}
 
-    virtual FILE *get_stream() const
-    {
-        return d_stdin;
-    }
-    virtual void set_stream(FILE *s)
-    {
-        d_stdin = s;
-    }
+    virtual FILE *get_stream() const { return d_stdin; }
+    virtual void set_stream(FILE *s) { d_stdin = s; }
+
+    virtual istream &get_istream() const { return *d_cin; }
+    virtual void set_istream(istream *in) { d_cin = in; }
 };
 
 } // namespace libdap

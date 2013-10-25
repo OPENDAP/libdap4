@@ -203,10 +203,9 @@ public:
 /** A libcurl callback function used to read response headers. Read headers,
     line by line, from ptr. The fourth param is really supposed to be a FILE
     *, but libcurl just holds the pointer and passes it to this function
-    without using it itself. I use that to pass in a pointer to the
-    HTTPConnect that initiated the HTTP request so that there's some place to
-    dump the headers. Note that this function just saves the headers in a
-    vector of strings. Later on the code (see fetch_url()) parses the headers
+    without using it itself. I use that to pass in a pointer to a vector
+    of strings so that there's some place to
+    dump the headers. Later on the code (see fetch_url()) parses the headers
     special to the DAP.
 
     @param ptr A pointer to one line of character data; one header.
@@ -337,7 +336,7 @@ HTTPConnect::www_lib_init()
 
     // Look to see if cookies are turned on in the .dodsrc file. If so,
     // activate here. We honor 'session cookies' (cookies without an
-    // expiration date) here so that session-base SSO systems will work as
+    // expiration date) here so that session-based SSO systems will work as
     // expected.
     if (!d_cookie_jar.empty()) {
 	DBG(cerr << "Setting the cookie jar to: " << d_cookie_jar << endl);
@@ -405,10 +404,10 @@ HTTPConnect::read_url(const string &url, FILE *stream,
     //  this issue is that one should not pass a FILE * to a windows DLL.  Close
     //  inspection of libcurl yields that their default write function when using
     //  the CURLOPT_WRITEDATA is just "fwrite".
-    curl_easy_setopt(d_curl, CURLOPT_FILE, stream);
+    curl_easy_setopt(d_curl, CURLOPT_WRITEDATA, stream);
     curl_easy_setopt(d_curl, CURLOPT_WRITEFUNCTION, &fwrite);
 #else
-    curl_easy_setopt(d_curl, CURLOPT_FILE, stream);
+    curl_easy_setopt(d_curl, CURLOPT_WRITEDATA, stream);
 #endif
 
     DBG(copy(d_request_headers.begin(), d_request_headers.end(),
@@ -602,7 +601,7 @@ HTTPConnect::fetch_url(const string &url)
     // handle redirection case (2007-04-27, gaffigan@sfos.uaf.edu)
     if (parser.get_location() != "" &&
 	    url.substr(0,url.find("?",0)).compare(parser.get_location().substr(0,url.find("?",0))) != 0) {
-	delete stream;
+    	delete stream;
         return fetch_url(parser.get_location());
     }
 
@@ -725,11 +724,8 @@ get_temp_file(FILE *&stream) throw(InternalErr)
     stream = fdopen(mkstemp(&pathname[0]), "w+");
 #endif
 
-    if (!stream) {
-	throw InternalErr(__FILE__, __LINE__,
-		"Failed to open a temporary file for the data values ("
-		+ dods_temp + ")");
-    }
+    if (!stream)
+    	throw Error("Failed to open a temporary file for the data values (" + dods_temp + ")");
 
     dods_temp = &pathname[0];
     return dods_temp;

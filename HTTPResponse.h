@@ -54,7 +54,7 @@ extern void close_temp(FILE *s, const string &name);
     pointer from which a response is read and vector of headers, return an
     instance of this object.
 
-    @todo Maybe refactor so that the header parsing code is hear and not in
+    @todo Maybe refactor so that the header parsing code is here and not in
     HTTPConnect? */
 class HTTPResponse : public Response
 {

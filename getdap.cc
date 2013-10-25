@@ -64,56 +64,42 @@ extern int libdap::www_trace;
 
 void usage(string name)
 {
-    cerr << "Usage: " << name << endl;
-    cerr <<
-    " [idDaxAVvks] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]" <<
-    endl;
-    cerr << " [VvksM] <file> [<file> ...]" << endl;
-    cerr << endl;
-    cerr << "In the first form of the command, dereference the URL and"
-    << endl;
-    cerr << "perform the requested operations. This includes routing" <<
-    endl;
-    cerr << "the returned information through the DAP processing" << endl;
-    cerr << "library (parsing the returned objects, et c.). If none" <<
-    endl;
-    cerr << "of a, d, or D are used with a URL, then the DAP library" <<
-    endl;
-    cerr << "routines are NOT used and the URLs contents are dumped" <<
-    endl;
-    cerr << "to standard output." << endl;
-    cerr << endl;
-    cerr << "In the second form of the command, assume the files are" <<
-    endl;
-    cerr << "DataDDS objects (stored in files or read from pipes)" << endl;
-    cerr << "and process them as if -D were given. In this case the" <<
-    endl;
-    cerr << "information *must* contain valid MIME header in order" <<
-    endl;
-    cerr << "to be processed." << endl;
-    cerr << endl;
-    cerr << "Options:" << endl;
-    cerr << "        i: For each URL, get the server version." << endl;
-    cerr << "        d: For each URL, get the the DDS." << endl;
-    cerr << "        a: For each URL, get the the DAS." << endl;
-    cerr << "        D: For each URL, get the the DataDDS." << endl;
-    cerr <<
-    "        x: For each URL, get the DDX object. Does not get data."
-    << endl;
-    cerr << "        X: Request a DataDDX from the server (the DAP4 data response" << endl;
-    cerr << "        B: Build a DDX in getdap using the DDS and DAS." << endl;
-    cerr << "        v: Verbose output." << endl;
-    cerr << "        V: Version of this client; see 'i' for server version." << endl;
-    cerr << "        c: <expr> is a constraint expression. Used with -D/X." <<
-    endl;
-    cerr << "           NB: You can use a `?' for the CE also." << endl;
-    cerr << "        k: Keep temporary files created by libdap." << endl;
-    cerr << "        m: Request the same URL <num> times." << endl;
-    cerr << "        z: Ask the server to compress data." << endl;
-    cerr << "        s: Print Sequences using numbered rows." << endl;
-    cerr << "        M: Assume data read from a file has no MIME headers" << endl;
-    cerr << "           (the default is to assume the headers are present)." << endl;
-    cerr << "        p: Set DAP protocol to x.y" << endl;
+	cerr << "Usage: " << name << endl;
+	cerr << " [idaDxBzp vVkms][-c <expr>][-m <num>] <url> [<url> ...]" << endl;
+	cerr << " [M vVkms] <file> [<file> ...]" << endl;
+	cerr << endl;
+	cerr << "In the first form of the command, dereference the URL and" << endl;
+	cerr << "perform the requested operations. This includes routing" << endl;
+	cerr << "the returned information through the DAP processing" << endl;
+	cerr << "library (parsing the returned objects, et c.). If none" << endl;
+	cerr << "of a, d, or D are used with a URL, then the DAP library" << endl;
+	cerr << "routines are NOT used and the URLs contents are dumped" << endl;
+	cerr << "to standard output." << endl;
+	cerr << endl;
+	cerr << "In the second form of the command, assume the files are" << endl;
+	cerr << "DataDDS objects (stored in files or read from pipes)" << endl;
+	cerr << "and process them as if -D were given. In this case the" << endl;
+	cerr << "information *must* contain valid MIME header in order" << endl;
+	cerr << "to be processed." << endl;
+	cerr << endl;
+	cerr << "Options:" << endl;
+	cerr << "        i: For each URL, get the server version." << endl;
+	cerr << "        d: For each URL, get the the DDS." << endl;
+	cerr << "        a: For each URL, get the the DAS." << endl;
+	cerr << "        D: For each URL, get the the DataDDS." << endl;
+	cerr << "        x: For each URL, get the (DAP2) DDX object. Does not get data." << endl;
+	cerr << "        B: Build a DDX in getdap using the DDS and DAS." << endl;
+	cerr << "        v: Verbose output." << endl;
+	cerr << "        V: Version of this client; see 'i' for server version." << endl;
+	cerr << "        c: <expr> is a constraint expression. Used with -D/X and -d/r" << endl;
+	cerr << "           NB: You can use a `?' for the CE also." << endl;
+	cerr << "        k: Keep temporary files created by libdap." << endl;
+	cerr << "        m: Request the same URL <num> times." << endl;
+	cerr << "        z: Ask the server to compress data." << endl;
+	cerr << "        s: Print Sequences using numbered rows." << endl;
+	cerr << "        M: Assume data read from a file has no MIME headers" << endl;
+	cerr << "           (the default is to assume the headers are present)." << endl;
+	cerr << "        p: Set DAP protocol to x.y" << endl;
 }
 
 bool read_data(FILE * fp)
@@ -149,14 +135,13 @@ static void print_data(DDS & dds, bool print_rows = false)
 
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "idaDxXBVvkc:m:zshM?Hp:t");
+    GetOpt getopt(argc, argv, "idaDxrXBVvkc:m:zshM?Hp:t");
     int option_char;
 
     bool get_das = false;
     bool get_dds = false;
     bool get_data = false;
     bool get_ddx = false;
-    bool get_data_ddx = false;
     bool build_ddx = false;
     bool get_version = false;
     bool cexpr = false;
@@ -187,9 +172,6 @@ int main(int argc, char *argv[])
             break;
         case 'x':
             get_ddx = true;
-            break;
-        case 'X':
-            get_data_ddx = true;
             break;
         case 'V':
             fprintf(stderr, "getdap version: %s\n", version);
@@ -263,11 +245,11 @@ int main(int argc, char *argv[])
 
             if (url->is_local()) {
                 if (verbose) {
-                    fprintf(stderr,
-                            "Assuming that the argument %s is a file that contains a DAP2 data object; decoding.\n", argv[i]);
+                    fprintf(stderr, "Assuming that the argument %s is a file that contains a response object; decoding.\n", argv[i]);
                 }
 
                 Response *r = 0;
+
                 BaseTypeFactory factory;
                 DataDDS dds(&factory);
 
@@ -444,32 +426,6 @@ int main(int argc, char *argv[])
                     }
                 }
             }
-
-            else if (get_data_ddx) {
-                for (int j = 0; j < times; ++j) {
-                    BaseTypeFactory factory;
-                    DataDDS dds(&factory);
-                    try {
-                        DBG(cerr << "URL: " << url->URL(false) << endl);
-                        DBG(cerr << "CE: " << expr << endl);
-                        url->request_data_ddx(dds, expr);
-
-                        if (verbose)
-                            fprintf(stderr, "DAP version: %s, Server version: %s\n",
-                                    url->get_protocol().c_str(),
-                                    url->get_version().c_str());
-
-                        print_data(dds, print_rows);
-                    }
-                    catch (Error & e) {
-                        cerr << e.get_error_message() << endl;
-                        delete url;
-                        url = 0;
-                        continue;
-                    }
-                }
-            }
-
             else {
                 // if (!get_das && !get_dds && !get_data) This code uses
                 // HTTPConnect::fetch_url which cannot be accessed using an

@@ -899,14 +899,16 @@ string get_next_mime_header(istream &in)
 void parse_mime_header(const string &header, string &name, string &value)
 {
     istringstream iss(header);
-    // Set downcase
-    char s[line_length];
-    iss.getline(s, 1023, ':');
-    name = s;
 
-    iss.ignore(1023, ' ');
-    iss.getline(s, 1023);
-    value = s;
+    size_t length = header.length() + 1;
+    vector<char> s(length);
+    //char s[line_length];
+    iss.getline(&s[0], length, ':');
+    name = &s[0];
+
+    iss.ignore(length, ' ');
+    iss.getline(&s[0], length);
+    value = &s[0];
 
     downcase(name);
     downcase(value);

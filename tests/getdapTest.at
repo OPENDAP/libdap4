@@ -1,0 +1,34 @@
+# Process with autom4te to create an -*- Autotest -*- test suite.
+
+AT_INIT([getdap])
+
+# AT_ARG_OPTION_ARG([generate],
+#    [--generate=arg   Build the baseline file for test 'arg'],
+#    dnl Break the arg into the last thing (file | url) and all of the previous things (switches)
+#    [url=
+#    
+#    echo "getdap $at_arg_generate > $at_arg_generate_parse.baseline 2>&1";
+#     ./dmr-test -x -p $at_arg_generate_parse > $at_arg_generate_parse.baseline 2>&1;
+#     echo "Built baseline for $at_arg_generate_parse";
+#     exit],[])
+
+# Usage: GETDAP_TEST(<flags>, <path|url>, <baseline file>, <xfail?>)
+
+m4_define([GETDAP_TEST], [
+    AT_SETUP([getdap $1 $2 $3 ($4)])
+    AT_KEYWORDS([getdap])
+
+    # Added || true because expr-test returns 0 (failure) for some of
+    # these tests which is correct for the test - we expect some of
+    # the input to trigger an error response from the parser, et
+    # cetera. That's also why we capture both stdout and stderr -
+    # successful runs are sent to stdout while the errors are sent to
+    # stderr.
+
+    AT_CHECK([$abs_builddir/../getdap $1 $2 || true], [], [stdout], [stderr])
+    AT_CHECK([diff -b -B $abs_builddir/$3 stdout || diff -b -B $abs_builddir/$3 stderr], [], [ignore],[],[])
+    AT_XFAIL_IF([test "$4" = "xfail"])
+    AT_CLEANUP
+])
+
+GETDAP_TEST([-d], [http://test.opendap.org/dap/data/nc/fnoc1.nc], [getdap-testsuite/fnoc1.nc.dds], [pass])
