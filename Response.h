@@ -57,7 +57,7 @@ namespace libdap
     @todo If the code that parses the MIME headers was moved from Connect and
     HTTPConnect to this class and its children, it would be easier to build
     a FileConnect class (or maybe the specifics of the connection type could
-    be held in the Response object and HTTPConnect and the to be written
+    be held in the Response object and HTTPConnect and the to-be-written
     FileConnect would not be needed). */
 class Response
 {

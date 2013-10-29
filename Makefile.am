@@ -1,4 +1,4 @@
-# Build libdap, libtest-types.a, getdap
+# Build libdap, libtest-types.a, getdap, getdap4
 
 AUTOMAKE_OPTIONS = foreign check-news
 ACLOCAL_AMFLAGS = -I conf -I gl/m4
@@ -35,11 +35,11 @@ lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 
 bin_SCRIPTS = dap-config dap-config-pkgconfig
 
-bin_PROGRAMS = getdap
+bin_PROGRAMS = getdap getdap4
 
-BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1
+BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
 
-man_MANS = getdap.1 dap-config.1
+man_MANS = getdap.1 dap-config.1 getdap4.1
 
 %.1: %.man1
 	groff -t -e -mandoc -Tascii $< | col -bx > $@
@@ -80,6 +80,10 @@ getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la
 getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 
+getdap4_SOURCES = getdap4.cc
+getdap4_LDADD = libdapclient.la libdap.la
+getdap4_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
+
 LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
@@ -87,13 +91,13 @@ EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI		\
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf		\
 	libdap.spec VCPP dods-datatypes-static.h			\
 	xdr-datatypes-static.h dap-config-pkgconfig $(LEX_YACC_EXTRA)	\
-	$(GRAM_SRC) OSX_Resources getdap.man1 dap-config.man1
+	$(GRAM_SRC) OSX_Resources getdap.man1 dap-config.man1 getdap4.man1
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
 CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h \
-    xdr-datatypes.h getdap.1 dap-config.1
+    xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
 
 # Not nearly as clean as it could be, but this removes .svn directories
 # in subdirs.
