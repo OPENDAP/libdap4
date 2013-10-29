@@ -64,6 +64,9 @@ libdapclient_la_SOURCES = $(CLIENT_SRC)
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
 libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
+if DAP4_DEFINED
+    libdapclient_la_SOURCES += $(DAP4_CLIENT_HDR) $(DAP4_CLIENT_SRC)
+endif
 
 libdapserver_la_SOURCES = $(SERVER_SRC)
 libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
@@ -257,6 +260,8 @@ Operators.h: ce_expr.tab.hh
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc	\
 	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc
+	
+DAP4_CLIENT_SRC = D4Connect.cc
 
 SERVER_SRC = DODSFilter.cc Ancillary.cc
 # ResponseBuilder.cc ResponseCache.cc
@@ -297,6 +302,8 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		\
 	Response.h HTTPResponse.h HTTPCacheResponse.h PipeResponse.h	\
 	StdinResponse.h SignalHandlerRegisteredErr.h			\
 	ResponseTooBigErr.h Resource.h HTTPCacheTable.h HTTPCacheMacros.h
+
+DAP4_CLIENT_HDR = D4Connect.h
 
 SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
 #	ResponseBuilder.h ResponseCache.h

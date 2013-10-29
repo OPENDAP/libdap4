@@ -28,20 +28,10 @@
 
 #include <cstdio>
 #include <string>
+#include <fstream>
 
-#ifndef _debug_h
-#include "debug.h"
-#endif
-
-using namespace std;
-
-#ifndef _object_type_h
 #include "ObjectType.h"
-#endif
-
-#ifndef _internalerr_h
-#include "InternalErr.h"
-#endif
+#include "debug.h"
 
 namespace libdap
 {
@@ -64,29 +54,29 @@ class Response
 private:
     /// The data stream
     FILE *d_stream;
+    std::fstream *d_cpp_stream;
+
     /// Response object type
     ObjectType d_type;
     /// Server version
-    string d_version;
+    std::string d_version;
     /// The DAP server's protocol
-    string d_protocol;
+    std::string d_protocol;
     /// The HTTP response code
     int d_status;
 
 protected:
     /** @name Suppressed default methods */
     //@{
-    Response()
-    {}
-    Response(const Response &)
-    {}
-    Response &operator=(const Response &)
-    {
-        throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
-    }
+    Response(const Response &);
+    Response &operator=(const Response &);
     //@}
 
 public:
+    Response() : d_stream(0), d_cpp_stream(0), d_type(unknown_type),  d_version("dods/0.0"), d_protocol("2.0"),
+		d_status(0)
+	{ }
+
     /** Initialize with a stream. Create an instance initialized to a stream.
 	by default get_type() and get_version() return default values of
 	unknown_type and "dods/0.0", respectively. Specializations (see
@@ -94,9 +84,12 @@ public:
 	values.
         @param s Read data from this stream.
         @param status The HTTP response status code.*/
-    Response(FILE *s, int status = 0) : d_stream(s), d_type(unknown_type),
-            d_version("dods/0.0"), d_protocol("2.0"),
-            d_status(status)
+    Response(FILE *s, int status = 0) : d_stream(s), d_cpp_stream(0), d_type(unknown_type),
+            d_version("dods/0.0"), d_protocol("2.0"), d_status(status)
+    { }
+
+    Response(fstream *f, int status = 0) : d_stream(0), d_cpp_stream(f), d_type(unknown_type),
+            d_version("dods/0.0"), d_protocol("2.0"), d_status(status)
     { }
 
     /** Close the stream. */
@@ -104,54 +97,29 @@ public:
     {
         if (d_stream)
             fclose(d_stream);
+        if (d_cpp_stream)
+        	d_cpp_stream->close();
     }
 
-    /** @name Accessors */
+    /** @name getters */
     //@{
-    virtual int get_status() const
-    {
-        return d_status;
-    }
-    virtual FILE *get_stream() const
-    {
-        return d_stream;
-    }
-    virtual ObjectType get_type() const
-    {
-        return d_type;
-    }
-    virtual string get_version() const
-    {
-        return d_version;
-    }
-    virtual string get_protocol() const
-    {
-        return d_protocol;
-    }
+    virtual int get_status() const {  return d_status; }
+    virtual FILE *get_stream() const { return d_stream; }
+    virtual std::fstream *get_cpp_stream() const { return d_cpp_stream; }
+
+    virtual ObjectType get_type() const { return d_type; }
+    virtual std::string get_version() const { return d_version; }
+    virtual std::string get_protocol() const { return d_protocol; }
     //@}
 
-    /** @name Mutators */
+    /** @name setters */
     //@{
-    virtual void set_status(int s)
-    {
-        d_status = s;
-    }
-    virtual void set_stream(FILE *s)
-    {
-        d_stream = s;
-    }
-    virtual void set_type(ObjectType o)
-    {
-        d_type = o;
-    }
-    virtual void set_version(const string &v)
-    {
-        d_version = v;
-    }
-    virtual void set_protocol(const string &p)
-    {
-        d_protocol = p;
-    }
+    virtual void set_status(int s) { d_status = s; }
+    virtual void set_stream(FILE *s) { d_stream = s; }
+    virtual void set_cpp_stream(std::fstream *s) { d_cpp_stream = s; }
+    virtual void set_type(ObjectType o) { d_type = o; }
+    virtual void set_version(const std::string &v) { d_version = v; }
+    virtual void set_protocol(const std::string &p) { d_protocol = p; }
     //@}
 };
 

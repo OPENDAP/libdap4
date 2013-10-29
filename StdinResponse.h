@@ -67,13 +67,13 @@ public:
         
         @param s Pointer to standard input.
         */
-    StdinResponse(FILE *s) : Response(0), d_stdin(s), d_cin(0) {}
+    StdinResponse(FILE *s) : Response(), d_stdin(s), d_cin(0) {}
 
     /**
      * @brief Build a instance using a C++ istream
      * @param in A pointer to the input stream
      */
-    StdinResponse(istream *in) : Response(0), d_stdin(0), d_cin(in) {}
+    StdinResponse(istream &in) : Response(), d_stdin(0), d_cin(&in) {}
 
     /** Destructor. Does not close standard input. */
     virtual ~StdinResponse() {}

@@ -26,28 +26,31 @@
 #ifndef _d4connect_h
 #define _d4connect_h
 
-#include <std::string>
+#include <string>
 
 namespace libdap
 {
 
+class HTTPConnect;
+class DMR;
+class Response;
+
 class D4Connect
 {
 private:
-    bool d_local;  // Is this a local connection?
-
     HTTPConnect *d_http;
 
+    bool d_local;  // Is this a local connection?
     std::string d_URL;  // URL to remote dataset (minus CE)
     std::string d_ce; 	// CE
 
     std::string d_server; // Server implementation information (the XDAP-Server header)
     std::string d_protocol; // DAP protocol from the server (XDAP)
 
-    void process_data(DMR &data, Response *rs);
+    void process_data(DMR &data, Response &rs);
 
     // Use when you cannot use but have a complete response with MIME headers
-    void parse_mime(Response *rs);
+    void parse_mime(Response &rs);
 
 protected:
     /** @name Suppress the C++ defaults for these. */
@@ -60,17 +63,17 @@ public:
 
     virtual ~D4Connect();
 
-    bool is_local();
+    bool is_local() const { return d_local; }
 
-    virtual std::string URL();
-    virtual std::string CE();
+    virtual std::string URL() const { return d_URL; }
+    virtual std::string CE() const { return d_ce; }
 
     void set_credentials(std::string u, std::string p);
     void set_accept_deflate(bool deflate);
     void set_xdap_protocol(int major, int minor);
 
     void set_cache_enabled(bool enabled);
-    bool cache_enabled();
+    bool is_cache_enabled();
 
     void set_xdap_accept(int major, int minor);
 
@@ -89,7 +92,7 @@ public:
         response. Before a response is made, this contains the std::string "2.0."
         */
     std::string get_protocol() { return d_protocol; }
-
+#if 0
     virtual void request_version();
 
     virtual void request_dmr(DDS &dds, std::string expr = "");
@@ -97,9 +100,14 @@ public:
 
     virtual void request_data(DDS &data, std::string expr = "");
     virtual void request_data_url(DDS &data);
+#endif
 
-    virtual void read_data(DDS &data, Response *rs);
-    virtual void read_data_no_mime(DDS &data, Response *rs);
+#if 0
+    virtual void read_dmr(DMR &dmr, Response &rs);
+    virtual void read_dmr_no_mime(DMR &dmr, Response &rs);
+#endif
+    virtual void read_data(DMR &data, Response &rs);
+    virtual void read_data_no_mime(DMR &data, Response &rs);
 };
 
 } // namespace libdap

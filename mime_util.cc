@@ -339,27 +339,27 @@ get_type(const string &value)
 ObjectType
 get_description_type(const string &value)
 {
-    if ((value == "dods_das") | (value == "dods-das"))
+    if ((value == "dods_das") || (value == "dods-das"))
         return dods_das;
-    else if ((value == "dods_dds") | (value == "dods-dds"))
+    else if ((value == "dods_dds") || (value == "dods-dds"))
         return dods_dds;
-    else if ((value == "dods_data") | (value == "dods-data"))
+    else if ((value == "dods_data") || (value == "dods-data"))
         return dods_data;
-    else if ((value == "dods_error") | (value == "dods-error"))
+    else if ((value == "dods_error") || (value == "dods-error"))
         return dods_error;
-    else if ((value == "web_error") | (value == "web-error"))
+    else if ((value == "web_error") || (value == "web-error"))
         return web_error;
-    else if ((value == "dods_ddx") | (value == "dods-ddx"))
+    else if ((value == "dods_ddx") || (value == "dods-ddx"))
         return dods_ddx;
-    else if ((value == "dap4_ddx") | (value == "dap4-ddx"))
+    else if ((value == "dap4_ddx") || (value == "dap4-ddx"))
         return dap4_ddx;
-    else if ((value == "dap4_data") | (value == "dap4-data"))
+    else if ((value == "dap4_data") || (value == "dap4-data"))
         return dap4_data;
-    else if ((value == "dap4_error") | (value == "dap4-error"))
+    else if ((value == "dap4_error") || (value == "dap4-error"))
         return dap4_error;
-    else if ((value == "dap4_data_ddx") | (value == "dap4-data-ddx"))
+    else if ((value == "dap4_data_ddx") || (value == "dap4-data-ddx"))
         return dap4_data_ddx;
-    else if ((value == "dods_ddx") | (value == "dods-ddx"))
+    else if ((value == "dods_ddx") || (value == "dods-ddx"))
         return dods_ddx;
     else
         return unknown_type;

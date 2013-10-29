@@ -34,13 +34,17 @@
 
 #include "config.h"
 
-
+#include <cassert>
 #include <cstring>
-#include <fstream>
-#include <algorithm>
 
-#include "DMR.h"
 #include "D4Connect.h"
+#include "HTTPConnect.h"
+#include "Response.h"
+#include "DMR.h"
+
+#include "D4ParserSax2.h"
+#include "chunked_istream.h"
+#include "D4StreamUnMarshaller.h"
 
 #include "mime_util.h"
 #include "debug.h"
@@ -51,77 +55,72 @@ namespace libdap {
 
 /** This private method process data from both local and remote sources. It
     exists to eliminate duplication of code. */
-void D4Connect::process_data(DMR &data, Response *rs)
+void D4Connect::process_data(DMR &data, Response &rs)
 {
-#if 0
-	DBG(cerr << "Entering Connect::process_data" << endl);
+	DBG(cerr << "Entering D4Connect::process_data" << endl);
 
-	data.set_dap_version(rs->get_protocol());
+	data.set_dap_version(rs.get_protocol());
 
 	DBG(cerr << "Entering process_data: d_stream = " << rs << endl);
-	switch (rs->get_type()) {
-		case dods_error: {
-			Error e;
-			if (!e.parse(rs->get_stream()))
-			throw InternalErr(__FILE__, __LINE__,
-					"Could not parse the Error object returned by the server!");
-			throw e;
-		}
+	switch (rs.get_type()) {
+	case dods_error: {
+		Error e;
+		if (!e.parse(rs.get_stream()))
+			throw InternalErr(__FILE__, __LINE__, "Could not parse the Error object returned by the server!");
+		throw e;
+	}
 
-		case web_error:
+	case web_error:
 		// Web errors (those reported in the return document's MIME header)
 		// are processed by the WWW library.
-		throw InternalErr(__FILE__, __LINE__, "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
+		throw InternalErr(__FILE__, __LINE__,
+				"An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 
-		case dap4_data_ddx: {
-			// Parse the DDX; throw an exception on error.
-			DDXParser ddx_parser(data.get_factory());
+	case dap4_data_ddx: {
+		// Read the byte-order byte; used later on
+		char byte_order;
+		*rs.get_cpp_stream() >> byte_order;
+		//if (debug) cerr << "Byte order: " << ((byte_order) ? "big endian" : "little endian") << endl;
 
-			// Read the MPM boundary and then read the subsequent headers
-			string boundary = read_multipart_boundary(rs->get_stream());
-			DBG(cerr << "MPM Boundary: " << boundary << endl);
-			read_multipart_headers(rs->get_stream(), "text/xml", dap4_ddx);
+		// get a chunked input stream
+		chunked_istream cis(*rs.get_cpp_stream(), 1024, byte_order);
 
-			// Parse the DDX, reading up to and including the next boundary.
-			// Return the CID for the matching data part
-			string data_cid;
-			ddx_parser.intern_stream(rs->get_stream(), &data, data_cid, boundary);
-
-			// Munge the CID into something we can work with
-			data_cid = cid_to_header_value(data_cid);
-			DBG(cerr << "Data CID: " << data_cid << endl);
-
-			// Read the data part's MPM part headers (boundary was read by
-			// DDXParse::intern)
-			read_multipart_headers(rs->get_stream(),
-					"application/octet-stream", dap4_data, data_cid);
-
-			// Now read the data
-			XDRFileUnMarshaller um( rs->get_stream() );
-
-			for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
-					i++) {
-				(*i)->deserialize(um, &data);
-			}
+		// parse the DMR, stopping when the boundary is found.
+		try {
+			// force chunk read
+			// get chunk size
+			int chunk_size = cis.read_next_chunk();
+			// get chunk
+			char chunk[chunk_size];
+			cis.read(chunk, chunk_size);
+			// parse char * with given size
+			D4ParserSax2 parser;
+			// '-2' to discard the CRLF pair
+			parser.intern(chunk, chunk_size - 2, &data, /*debug*/false);
+		}
+		catch (Error &e) {
+			cerr << "Exception: " << e.get_error_message() << endl;
+			return;
+		}
+		catch (std::exception &e) {
+			cerr << "Exception: " << e.what() << endl;
+			return;
+		}
+		catch (...) {
+			cerr << "Exception: unknown error" << endl;
 			return;
 		}
 
-		case dods_data:
-		default: {
-			// Parse the DDS; throw an exception on error.
-			data.parse(rs->get_stream());
+		D4StreamUnMarshaller um(cis, byte_order);
 
-			XDRFileUnMarshaller um( rs->get_stream() );
+		data.root()->deserialize(um, data);
 
-			// Load the DDS with data.
-			for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
-					i++) {
-				(*i)->deserialize(um, &data);
-			}
-			return;
-		}
+		return;
 	}
-#endif
+
+	default:
+		throw Error("Unknown response type");
+	}
 }
 
 /** Use when you cannot use libcurl.
@@ -132,40 +131,40 @@ void D4Connect::process_data(DMR &data, Response *rs)
 
  @param rs Value/Result parameter. Dump version and type information here.
  */
-void D4Connect::parse_mime(Response *rs)
+void D4Connect::parse_mime(Response &rs)
 {
-    rs->set_version("dods/0.0"); // initial value; for backward compatibility.
-    rs->set_protocol("2.0");
+    rs.set_version("dods/0.0"); // initial value; for backward compatibility.
+    rs.set_protocol("2.0");
 
-    FILE *data_source = rs->get_stream();
+    fstream &data_source = *rs.get_cpp_stream();
     string mime = get_next_mime_header(data_source);
     while (!mime.empty()) {
         string header, value;
         parse_mime_header(mime, header, value);
 
         // Note that this is an ordered list
-        if (header == "content-description:") {
+        if (header == "content-description") {
             DBG(cout << header << ": " << value << endl);
-            rs->set_type(get_description_type(value));
+            rs.set_type(get_description_type(value));
         }
         // Use the value of xdods-server only if no other value has been read
-        else if (header == "xdods-server:" && rs->get_version() == "dods/0.0") {
+        else if (header == "xdods-server" && rs.get_version() == "dods/0.0") {
             DBG(cout << header << ": " << value << endl);
-            rs->set_version(value);
+            rs.set_version(value);
         }
         // This trumps 'xdods-server' and 'server'
-        else if (header == "xopendap-server:") {
+        else if (header == "xopendap-server") {
             DBG(cout << header << ": " << value << endl);
-            rs->set_version(value);
+            rs.set_version(value);
         }
-        else if (header == "xdap:") {
+        else if (header == "xdap") {
             DBG(cout << header << ": " << value << endl);
-            rs->set_protocol(value);
+            rs.set_protocol(value);
         }
         // Only look for 'server' if no other header supplies this info.
-        else if (rs->get_version() == "dods/0.0" && header == "server:") {
+        else if (rs.get_version() == "dods/0.0" && header == "server") {
             DBG(cout << header << ": " << value << endl);
-            rs->set_version(value);
+            rs.set_version(value);
         }
 
         mime = get_next_mime_header(data_source);
@@ -181,9 +180,9 @@ void D4Connect::parse_mime(Response *rs)
  @param password Password to use for authentication. Null by default.
  @brief Create an instance of Connect. */
 D4Connect::D4Connect(const string &url, string uname, string password) :
-        d_http(0), d_version("unknown"), d_protocol("2.0")
+        d_http(0), d_local(false), d_URL(""), d_ce(""), d_server("unknown"), d_protocol("4.0")
 {
-    string name = prune_spaces(n);
+    string name = prune_spaces(url);
 
     // Figure out if the URL starts with 'http', if so, make sure that we
     // talk to an instance of HTTPConnect.
@@ -194,33 +193,16 @@ D4Connect::D4Connect(const string &url, string uname, string password) :
         // Find and store any CE given with the URL.
         string::size_type dotpos = name.find('?');
         if (dotpos != name.npos) {
-            _URL = name.substr(0, dotpos);
-            string expr = name.substr(dotpos + 1);
-
-            dotpos = expr.find('&');
-            if (dotpos != expr.npos) {
-                _proj = expr.substr(0, dotpos);
-                _sel = expr.substr(dotpos); // XXX includes '&'
-            }
-            else {
-                _proj = expr;
-                _sel = "";
-            }
+            d_URL = name.substr(0, dotpos);
+            d_ce = name.substr(dotpos + 1);
         }
         else {
-            _URL = name;
-            _proj = "";
-            _sel = "";
+            d_URL = name;
         }
-
-        _local = false;
     }
     else {
         DBG(cerr << "Connect: The identifier is a local data source." << endl);
-
-        d_http = 0;
-        _URL = "";
-        _local = true; // local in this case means non-DAP
+        d_local = true; // local in this case means non-DAP
     }
 
     set_credentials(uname, password);
@@ -228,10 +210,10 @@ D4Connect::D4Connect(const string &url, string uname, string password) :
 
 D4Connect::~D4Connect()
 {
-    if (d_http)
-        delete d_http;
+	if (d_http) delete d_http;
 }
 
+#if 0
 /** Get version information from the server. This is a new method which will
  ease the transition to DAP 4.
 
@@ -239,7 +221,7 @@ D4Connect::~D4Connect()
 
  @return The DAP version string.
  @see request_protocol() */
-string D4Connect::request_version()
+string D4D4Connect::request_version()
 {
     string version_url = _URL + ".ver";
     if (_proj.length() + _sel.length())
@@ -254,8 +236,8 @@ string D4Connect::request_version()
         throw;
     }
 
-    d_server = rs->get_server();
-    d_protocol = rs->get_protocol();
+    d_server = rs.get_server();
+    d_protocol = rs.get_protocol();
 
     delete rs;
 
@@ -273,7 +255,7 @@ string D4Connect::request_version()
  response (e.g., from the last DDX response returned by the server).
 
  @return The DAP protocol version string. */
-string D4Connect::request_protocol()
+string D4D4Connect::request_protocol()
 {
     string version_url = _URL + ".ver";
     if (_proj.length() + _sel.length())
@@ -289,8 +271,8 @@ string D4Connect::request_protocol()
         throw;
     }
 
-    d_version = rs->get_version();
-    d_protocol = rs->get_protocol();
+    d_version = rs.get_version();
+    d_protocol = rs.get_protocol();
 
     delete rs;
     rs = 0;
@@ -305,7 +287,7 @@ string D4Connect::request_protocol()
 
  @brief Get the DAS from a server.
  @param das Result. */
-void Connect::request_das(DAS &das)
+void D4Connect::request_das(DAS &das)
 {
     string das_url = _URL + ".das";
     if (_proj.length() + _sel.length())
@@ -321,13 +303,13 @@ void Connect::request_das(DAS &das)
         throw;
     }
 
-    d_version = rs->get_version();
-    d_protocol = rs->get_protocol();
+    d_version = rs.get_version();
+    d_protocol = rs.get_protocol();
 
-    switch (rs->get_type()) {
+    switch (rs.get_type()) {
         case dods_error: {
             Error e;
-            if (!e.parse(rs->get_stream())) {
+            if (!e.parse(rs.get_stream())) {
                 delete rs;
                 rs = 0;
                 throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
@@ -346,7 +328,7 @@ void Connect::request_das(DAS &das)
         default:
             // DAS::parse throws an exception on error.
             try {
-                das.parse(rs->get_stream()); // read and parse the das from a file
+                das.parse(rs.get_stream()); // read and parse the das from a file
             }
             catch (Error &e) {
                 delete rs;
@@ -371,7 +353,7 @@ void Connect::request_das(DAS &das)
 
  @brief Get the DAS from a server.
  @param das Result. */
-void Connect::request_das_url(DAS &das)
+void D4Connect::request_das_url(DAS &das)
 {
     string use_url = _URL + "?" + _proj + _sel;
     Response *rs = 0;
@@ -384,13 +366,13 @@ void Connect::request_das_url(DAS &das)
         throw;
     }
 
-    d_version = rs->get_version();
-    d_protocol = rs->get_protocol();
+    d_version = rs.get_version();
+    d_protocol = rs.get_protocol();
 
-    switch (rs->get_type()) {
+    switch (rs.get_type()) {
         case dods_error: {
             Error e;
-            if (!e.parse(rs->get_stream())) {
+            if (!e.parse(rs.get_stream())) {
                 delete rs;
                 rs = 0;
                 throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
@@ -409,7 +391,7 @@ void Connect::request_das_url(DAS &das)
         default:
             // DAS::parse throws an exception on error.
             try {
-                das.parse(rs->get_stream()); // read and parse the das from a file
+                das.parse(rs.get_stream()); // read and parse the das from a file
             }
             catch (Error &e) {
                 delete rs;
@@ -437,7 +419,7 @@ void Connect::request_das_url(DAS &das)
  @brief Get the DDS from a server.
  @param dds Result.
  @param expr Send this constraint expression to the server. */
-void Connect::request_dds(DDS &dds, string expr)
+void D4Connect::request_dds(DDS &dds, string expr)
 {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
@@ -462,13 +444,13 @@ void Connect::request_dds(DDS &dds, string expr)
         throw;
     }
 
-    d_version = rs->get_version();
-    d_protocol = rs->get_protocol();
+    d_version = rs.get_version();
+    d_protocol = rs.get_protocol();
 
-    switch (rs->get_type()) {
+    switch (rs.get_type()) {
         case dods_error: {
             Error e;
-            if (!e.parse(rs->get_stream())) {
+            if (!e.parse(rs.get_stream())) {
                 delete rs;
                 rs = 0;
                 throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
@@ -487,7 +469,7 @@ void Connect::request_dds(DDS &dds, string expr)
         default:
             // DDS::prase throws an exception on error.
             try {
-                dds.parse(rs->get_stream()); // read and parse the dds from a file
+                dds.parse(rs.get_stream()); // read and parse the dds from a file
             }
             catch (Error &e) {
                 delete rs;
@@ -517,7 +499,7 @@ void Connect::request_dds(DDS &dds, string expr)
 
  @brief Get the DDS from a server.
  @param dds Result. */
-void Connect::request_dds_url(DDS &dds)
+void D4Connect::request_dds_url(DDS &dds)
 {
     string use_url = _URL + "?" + _proj + _sel;
     Response *rs = 0;
@@ -530,13 +512,13 @@ void Connect::request_dds_url(DDS &dds)
         throw;
     }
 
-    d_version = rs->get_version();
-    d_protocol = rs->get_protocol();
+    d_version = rs.get_version();
+    d_protocol = rs.get_protocol();
 
-    switch (rs->get_type()) {
+    switch (rs.get_type()) {
         case dods_error: {
             Error e;
-            if (!e.parse(rs->get_stream())) {
+            if (!e.parse(rs.get_stream())) {
                 delete rs;
                 rs = 0;
                 throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
@@ -555,7 +537,7 @@ void Connect::request_dds_url(DDS &dds)
         default:
             // DDS::prase throws an exception on error.
             try {
-                dds.parse(rs->get_stream()); // read and parse the dds from a file
+                dds.parse(rs.get_stream()); // read and parse the dds from a file
             }
             catch (Error &e) {
                 delete rs;
@@ -580,7 +562,7 @@ void Connect::request_dds_url(DDS &dds)
  @brief Get the DDX from a server.
  @param dds Result.
  @param expr Send this constraint expression to the server. */
-void Connect::request_ddx(DDS &dds, string expr)
+void D4Connect::request_ddx(DDS &dds, string expr)
 {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
@@ -605,13 +587,13 @@ void Connect::request_ddx(DDS &dds, string expr)
         throw;
     }
 
-    d_version = rs->get_version();
-    d_protocol = rs->get_protocol();
+    d_version = rs.get_version();
+    d_protocol = rs.get_protocol();
 
-    switch (rs->get_type()) {
+    switch (rs.get_type()) {
         case dods_error: {
             Error e;
-            if (!e.parse(rs->get_stream())) {
+            if (!e.parse(rs.get_stream())) {
                 delete rs;
                 rs = 0;
                 throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
@@ -632,7 +614,7 @@ void Connect::request_ddx(DDS &dds, string expr)
                 string blob;
 
                 DDXParser ddxp(dds.get_factory());
-                ddxp.intern_stream(rs->get_stream(), &dds, blob);
+                ddxp.intern_stream(rs.get_stream(), &dds, blob);
             }
             catch (Error &e) {
                 delete rs;
@@ -648,7 +630,7 @@ void Connect::request_ddx(DDS &dds, string expr)
                     "The site did not return a valid response (it lacked the\n\
 expected content description header value of 'dap4-ddx' and\n\
 instead returned '"
-                            + long_to_string(rs->get_type())
+                            + long_to_string(rs.get_type())
                             + "').\n\
 This may indicate that the server at the site is not correctly\n\
 configured, or that the URL has changed.");
@@ -659,8 +641,8 @@ configured, or that the URL has changed.");
 }
 
 /** @brief The 'url' version of request_ddx
- @see Connect::request_ddx. */
-void Connect::request_ddx_url(DDS &dds)
+ @see D4Connect::request_ddx. */
+void D4Connect::request_ddx_url(DDS &dds)
 {
     string use_url = _URL + "?" + _proj + _sel;
 
@@ -674,13 +656,13 @@ void Connect::request_ddx_url(DDS &dds)
         throw;
     }
 
-    d_version = rs->get_version();
-    d_protocol = rs->get_protocol();
+    d_version = rs.get_version();
+    d_protocol = rs.get_protocol();
 
-    switch (rs->get_type()) {
+    switch (rs.get_type()) {
         case dods_error: {
             Error e;
-            if (!e.parse(rs->get_stream())) {
+            if (!e.parse(rs.get_stream())) {
                 delete rs;
                 rs = 0;
                 throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
@@ -701,7 +683,7 @@ void Connect::request_ddx_url(DDS &dds)
                 string blob;
 
                 DDXParser ddxp(dds.get_factory());
-                ddxp.intern_stream(rs->get_stream(), &dds, blob);
+                ddxp.intern_stream(rs.get_stream(), &dds, blob);
             }
             catch (Error &e) {
                 delete rs;
@@ -717,7 +699,7 @@ void Connect::request_ddx_url(DDS &dds)
                     "The site did not return a valid response (it lacked the\n\
 expected content description header value of 'dap4-ddx' and\n\
 instead returned '"
-                            + long_to_string(rs->get_type())
+                            + long_to_string(rs.get_type())
                             + "').\n\
 This may indicate that the server at the site is not correctly\n\
 configured, or that the URL has changed.");
@@ -742,7 +724,7 @@ configured, or that the URL has changed.");
  @brief Get the DAS from a server.
  @param data Result.
  @param expr Send this constraint expression to the server. */
-void Connect::request_data(DataDDS &data, string expr)
+void D4Connect::request_data(DataDDS &data, string expr)
 {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
@@ -762,8 +744,8 @@ void Connect::request_data(DataDDS &data, string expr)
     try {
         rs = d_http->fetch_url(data_url);
 
-        d_version = rs->get_version();
-        d_protocol = rs->get_protocol();
+        d_version = rs.get_version();
+        d_protocol = rs.get_protocol();
 
         process_data(data, rs);
         delete rs;
@@ -793,7 +775,7 @@ void Connect::request_data(DataDDS &data, string expr)
 
  @brief Get the DAS from a server.
  @param data Result. */
-void Connect::request_data_url(DataDDS &data)
+void D4Connect::request_data_url(DataDDS &data)
 {
     string use_url = _URL + "?" + _proj + _sel;
     Response *rs = 0;
@@ -801,8 +783,8 @@ void Connect::request_data_url(DataDDS &data)
     try {
         rs = d_http->fetch_url(use_url);
 
-        d_version = rs->get_version();
-        d_protocol = rs->get_protocol();
+        d_version = rs.get_version();
+        d_protocol = rs.get_protocol();
 
         process_data(data, rs);
         delete rs;
@@ -815,7 +797,7 @@ void Connect::request_data_url(DataDDS &data)
     }
 }
 
-void Connect::request_data_ddx(DataDDS &data, string expr)
+void D4Connect::request_data_ddx(DataDDS &data, string expr)
 {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
@@ -835,8 +817,8 @@ void Connect::request_data_ddx(DataDDS &data, string expr)
     try {
         rs = d_http->fetch_url(data_url);
 
-        d_version = rs->get_version();
-        d_protocol = rs->get_protocol();
+        d_version = rs.get_version();
+        d_protocol = rs.get_protocol();
 
         process_data(data, rs);
         delete rs;
@@ -849,7 +831,7 @@ void Connect::request_data_ddx(DataDDS &data, string expr)
     }
 }
 
-void Connect::request_data_ddx_url(DataDDS &data)
+void D4Connect::request_data_ddx_url(DataDDS &data)
 {
     string use_url = _URL + "?" + _proj + _sel;
     Response *rs = 0;
@@ -857,8 +839,8 @@ void Connect::request_data_ddx_url(DataDDS &data)
     try {
         rs = d_http->fetch_url(use_url);
 
-        d_version = rs->get_version();
-        d_protocol = rs->get_protocol();
+        d_version = rs.get_version();
+        d_protocol = rs.get_protocol();
 
         process_data(data, rs);
         delete rs;
@@ -870,177 +852,33 @@ void Connect::request_data_ddx_url(DataDDS &data)
         throw;
     }
 }
+#endif
 
-/** @brief Read data which is preceded by MIME headers.
- This method works for both data dds and data ddx responses.
-
- @note If you need the DataDDS to hold specializations of the type classes,
- be sure to include the factory class which will instantiate those
- specializations in the DataDDS. Either pass a pointer to the factory to
- DataDDS constructor or use the DDS::set_factory() method after the
- object is built.
-
- @see read_data_no_mime()
- @param data Result.
- @param rs Read from this Response object. */
-
-void Connect::read_data(DataDDS &data, Response *rs)
-{
-    if (!rs)
-        throw InternalErr(__FILE__, __LINE__, "Response object is null.");
-
-    // Read from data_source and parse the MIME headers specific to DAP2/4.
-    parse_mime(rs);
-
-    read_data_no_mime(data, rs);
-}
 void
-Connect::read_data(DDS &data, Response *rs)
+D4Connect::read_data(DMR &data, Response &rs)
 {
-    if (!rs)
-        throw InternalErr(__FILE__, __LINE__, "Response object is null.");
-
-    // Read from data_source and parse the MIME headers specific to DAP2/4.
     parse_mime(rs);
+    if (rs.get_type() == unknown_type)
+        throw Error("Unknown response type.");
 
     read_data_no_mime(data, rs);
 }
 
-// This function looks at the input stream and makes its best guess at what
-// lies in store for downstream processing code. Definitely heuristic.
-// Assumptions:
-// #1 The current file position is past any MIME headers (if they were present).
-// #2 We must reset the FILE* position to the start of the DDS or DDX headers
-static void divine_type_information(Response *rs)
+void D4Connect::read_data_no_mime(DMR &data, Response &rs)
 {
-    // Consume whitespace
-    char c = getc(rs->get_stream());
-    while (isspace(c)) {
-        c = getc(rs->get_stream());
-    }
+	// Assume callers know what they are doing
+    if (rs.get_type() == unknown_type)
+        rs.set_type(dap4_data_ddx);
 
-    // The heuristic here is that a DataDDX is a multipart MIME document and
-    // The first non space character found after the headers is the start of
-    // the first part which looks like '--<boundary>' while a DataDDS starts
-    // with a DDS (;Dataset {' ...). I take into account that our parsers have
-    // accepted both 'Dataset' and 'dataset' for a long time.
-    switch (c) {
-        case '-':
-            rs->set_type(dap4_data_ddx);
-            break;
-        case 'D':
-        case 'd':
-            rs->set_type(dods_data);
-            break;
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Could not determine type of response object in stream.");
-    }
-
-    ungetc(c, rs->get_stream());
-}
-
-/** @brief Read data from a file which does not have response MIME headers.
- This method is a companion to read_data(). While read_data() assumes that
- the response has MIME headers, this method does not. If you call this
- with a Response that does contain headers, it will throw an Error (and
- the message is likely to be inscrutable).
-
- @note This method will use the 'type' information in the Response object
- to choose between processing the response as a data dds or data ddx. If
- there is no type information, it will attempt to figure it out.
-
- @param data Result.
- @param rs Read from this Response object. */
-void Connect::read_data_no_mime(DataDDS &data, Response *rs)
-{
-    if (rs->get_type() == unknown_type)
-        divine_type_information(rs);
-
-    switch (rs->get_type()) {
-        case dods_data:
-            d_version = rs->get_version();
-            d_protocol = rs->get_protocol();
-            process_data(data, rs);
-            break;
-        case dap4_data_ddx:
-            process_data(data, rs);
-            d_version = rs->get_version();
-            d_protocol = data.get_protocol();
-            break;
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Should have been a DataDDS or DataDDX.");
-    }
-}
-void Connect::read_data_no_mime(DDS &data, Response *rs)
-{
-    if (rs->get_type() == unknown_type)
-        divine_type_information(rs);
-
-    switch (rs->get_type()) {
-    case dods_data:
-        d_version = rs->get_version();
-        d_protocol = rs->get_protocol();
-        process_data(data, rs);
-        break;
+    switch (rs.get_type()) {
     case dap4_data_ddx:
         process_data(data, rs);
-        d_version = rs->get_version();
-        // TODO should check to see if this hack is a correct replacement
-        // for get_protocol from DataDDS
-        d_protocol = data.get_dap_version();
+        d_server = rs.get_version();
+        d_protocol = data.dap_version();
         break;
     default:
-        throw InternalErr(__FILE__, __LINE__, "Should have been a DataDDS or DataDDX.");
+        throw Error("Expected a DAP4 Data response.");
     }
-}
-
-bool
-Connect::is_local()
-{
-    return _local;
-}
-
-/** Return the Connect object's URL in a string.  The URL was set by
- the class constructor, and may not be reset.  If you want to
- open another URL, you must create another Connect object.  There
- is a Connections class created to handle the management of
- multiple Connect objects.
-
- @brief Get the object's URL.
- @see Connections
- @return A string containing the URL of the data to which the
- Connect object refers.  If the object refers to local data,
- the function returns the null string.
- @param ce If TRUE, the returned URL will include any constraint
- expression enclosed with the Connect object's URL (including the
- <tt>?</tt>).  If FALSE, any constraint expression will be removed from
- the URL.  The default is TRUE.
- */
-string Connect::URL(bool ce)
-{
-    if (_local)
-        throw InternalErr(__FILE__, __LINE__, "URL(): This call is only valid for a DAP data source.");
-
-    if (ce)
-        return _URL + "?" + _proj + _sel;
-    else
-        return _URL;
-}
-
-/** Return the constraint expression (CE) part of the Connect URL. Note
- that this CE is supplied as part of the URL passed to the
- Connect's constructor.  It is not the CE passed to the
- <tt>request_data()</tt> function.
-
- @brief Get the Connect's constraint expression.
- @return A string containing the constraint expression (if any)
- submitted to the Connect object's constructor.  */
-string Connect::CE()
-{
-    if (_local)
-        throw InternalErr(__FILE__, __LINE__, "CE(): This call is only valid for a DAP data source.");
-
-    return _proj + _sel;
 }
 
 /** @brief Set the credentials for responding to challenges while dereferencing
@@ -1048,7 +886,7 @@ string Connect::CE()
  @param u The username.
  @param p The password.
  @see extract_auth_info() */
-void Connect::set_credentials(string u, string p)
+void D4Connect::set_credentials(string u, string p)
 {
     if (d_http)
         d_http->set_credentials(u, p);
@@ -1057,7 +895,7 @@ void Connect::set_credentials(string u, string p)
 /** Set the \e accept deflate property.
  @param deflate True if the client can accept compressed responses, False
  otherwise. */
-void Connect::set_accept_deflate(bool deflate)
+void D4Connect::set_accept_deflate(bool deflate)
 {
     if (d_http)
         d_http->set_accept_deflate(deflate);
@@ -1068,7 +906,7 @@ void Connect::set_accept_deflate(bool deflate)
 
  @param major The client dap protocol major version
  @param minor The client dap protocol minor version */
-void Connect::set_xdap_protocol(int major, int minor)
+void D4Connect::set_xdap_protocol(int major, int minor)
 {
     if (d_http)
         d_http->set_xdap_protocol(major, minor);
@@ -1077,23 +915,18 @@ void Connect::set_xdap_protocol(int major, int minor)
 /** Disable any further use of the client-side cache. In a future version
  of this software, this should be handled so that the www library is
  not initialized with the cache running by default. */
-void Connect::set_cache_enabled(bool cache)
+void D4Connect::set_cache_enabled(bool cache)
 {
     if (d_http)
         d_http->set_cache_enabled(cache);
 }
 
-bool Connect::is_cache_enabled()
+bool D4Connect::is_cache_enabled()
 {
-    bool status;
-    DBG(cerr << "Entering is_cache_enabled (" << hex << d_http << dec
-            << ")... ");
     if (d_http)
-        status = d_http->is_cache_enabled();
+        return d_http->is_cache_enabled();
     else
-        status = false;
-    DBGN(cerr << "exiting" << endl);
-    return status;
+        return false;
 }
 
 } // namespace libdap
