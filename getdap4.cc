@@ -117,19 +117,23 @@ bool read_data(FILE * fp)
 }
 #endif
 
-static void read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool mime_headers, bool get_dap4_data, bool /*get_dmr*/)
+static void read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool mime_headers, bool get_dap4_data, bool get_dmr)
 {
     if (mime_headers) {
     	if (get_dap4_data)
     		url->read_data(dmr, r);
+    	else if (get_dmr)
+    		url->read_dmr(dmr, r);
     	else
-    		throw Error("Only data read from files...");
+    		throw Error("Only supports Data or DMR responses");
     }
     else {
     	if (get_dap4_data)
     		url->read_data_no_mime(dmr, r);
+    	else if (get_dmr)
+    		url->read_dmr_no_mime(dmr, r);
     	else
-    		throw Error("Only data read from files...");
+    		throw Error("Only supports Data or DMR responses");
     }
 }
 

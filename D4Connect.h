@@ -48,6 +48,7 @@ private:
     std::string d_protocol; // DAP protocol from the server (XDAP)
 
     void process_data(DMR &data, Response &rs);
+    void process_dmr(DMR &data, Response &rs);
 
     // Use when you cannot use but have a complete response with MIME headers
     void parse_mime(Response &rs);
@@ -102,7 +103,7 @@ public:
     virtual void request_data_url(DDS &data);
 #endif
 
-#if 0
+#if 1
     virtual void read_dmr(DMR &dmr, Response &rs);
     virtual void read_dmr_no_mime(DMR &dmr, Response &rs);
 #endif

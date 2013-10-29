@@ -53,6 +53,72 @@ using namespace std;
 
 namespace libdap {
 
+
+/** This private method process data from both local and remote sources. It
+    exists to eliminate duplication of code. */
+void D4Connect::process_dmr(DMR &data, Response &rs)
+{
+	DBG(cerr << "Entering D4Connect::process_dmr" << endl);
+
+	data.set_dap_version(rs.get_protocol());
+
+	DBG(cerr << "Entering process_data: d_stream = " << rs << endl);
+	switch (rs.get_type()) {
+	case dods_error: {
+		Error e;
+		if (!e.parse(rs.get_stream()))
+			throw InternalErr(__FILE__, __LINE__, "Could not parse the Error object returned by the server!");
+		throw e;
+	}
+
+	case web_error:
+		// Web errors (those reported in the return document's MIME header)
+		// are processed by the WWW library.
+		throw InternalErr(__FILE__, __LINE__,
+				"An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
+
+	case dap4_ddx: {
+		// Read the byte-order byte; used later on
+		char byte_order;
+		*rs.get_cpp_stream() >> byte_order;
+
+		// get a chunked input stream
+		chunked_istream cis(*rs.get_cpp_stream(), 1024, byte_order);
+
+		// parse the DMR, stopping when the boundary is found.
+		try {
+			// force chunk read
+			// get chunk size
+			int chunk_size = cis.read_next_chunk();
+			// get chunk
+			char chunk[chunk_size];
+			cis.read(chunk, chunk_size);
+			// parse char * with given size
+			D4ParserSax2 parser;
+			// '-2' to discard the CRLF pair
+			parser.intern(chunk, chunk_size - 2, &data, /*debug*/false);
+		}
+		catch (Error &e) {
+			cerr << "Exception: " << e.get_error_message() << endl;
+			return;
+		}
+		catch (std::exception &e) {
+			cerr << "Exception: " << e.what() << endl;
+			return;
+		}
+		catch (...) {
+			cerr << "Exception: unknown error" << endl;
+			return;
+		}
+
+		return;
+	}
+
+	default:
+		throw Error("Unknown response type");
+	}
+}
+
 /** This private method process data from both local and remote sources. It
     exists to eliminate duplication of code. */
 void D4Connect::process_data(DMR &data, Response &rs)
@@ -853,6 +919,33 @@ void D4Connect::request_data_ddx_url(DataDDS &data)
     }
 }
 #endif
+
+void
+D4Connect::read_dmr(DMR &dmr, Response &rs)
+{
+    parse_mime(rs);
+    if (rs.get_type() == unknown_type)
+        throw Error("Unknown response type.");
+
+    read_dmr_no_mime(dmr, rs);
+}
+
+void D4Connect::read_dmr_no_mime(DMR &dmr, Response &rs)
+{
+	// Assume callers know what they are doing
+    if (rs.get_type() == unknown_type)
+        rs.set_type(dap4_data_ddx);
+
+    switch (rs.get_type()) {
+    case dap4_ddx:
+        process_dmr(dmr, rs);
+        d_server = rs.get_version();
+        d_protocol = dmr.dap_version();
+        break;
+    default:
+        throw Error("Expected a DAP4 DMR response.");
+    }
+}
 
 void
 D4Connect::read_data(DMR &data, Response &rs)
