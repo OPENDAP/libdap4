@@ -934,7 +934,7 @@ void D4Connect::read_dmr_no_mime(DMR &dmr, Response &rs)
 {
 	// Assume callers know what they are doing
     if (rs.get_type() == unknown_type)
-        rs.set_type(dap4_data_ddx);
+        rs.set_type(dap4_ddx);
 
     switch (rs.get_type()) {
     case dap4_ddx:
