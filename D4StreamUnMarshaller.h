@@ -47,6 +47,7 @@
 #include <crc.h>
 
 // #include "Type.h"
+#include "dods-datatypes.h"
 #include "UnMarshaller.h"
 #include "InternalErr.h"
 

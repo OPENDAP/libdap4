@@ -61,7 +61,7 @@ const char *version = CVER " (" DVR " DAP/" DAP_PROTOCOL_VERSION ")";
 extern int libdap::dods_keep_temps;     // defined in HTTPResponse.h
 extern int libdap::www_trace;
 #endif
-void usage(string name)
+static void usage(const string &name)
 {
 	cerr << "Usage: " << name << endl;
 	cerr << " [dD vVikmzstM][-c <expr>][-m <num>] <url> [<url> ...] | <file> [<file> ...]" << endl;
