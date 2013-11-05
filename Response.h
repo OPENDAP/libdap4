@@ -63,7 +63,7 @@ class Response
 {
 private:
     /// The data stream
-    FILE *d_stream;
+    FILE *d_file;
     /// Response object type
     ObjectType d_type;
     /// Server version
@@ -94,7 +94,7 @@ public:
 	values.
         @param s Read data from this stream.
         @param status The HTTP response status code.*/
-    Response(FILE *s, int status = 0) : d_stream(s), d_type(unknown_type),
+    Response(FILE *s, int status = 0) : d_file(s), d_type(unknown_type),
             d_version("dods/0.0"), d_protocol("2.0"),
             d_status(status)
     { }
@@ -102,8 +102,8 @@ public:
     /** Close the stream. */
     virtual ~Response()
     {
-        if (d_stream)
-            fclose(d_stream);
+        if (d_file)
+            fclose(d_file);
     }
 
     /** @name Accessors */
@@ -114,7 +114,7 @@ public:
     }
     virtual FILE *get_stream() const
     {
-        return d_stream;
+        return d_file;
     }
     virtual ObjectType get_type() const
     {
@@ -138,7 +138,7 @@ public:
     }
     virtual void set_stream(FILE *s)
     {
-        d_stream = s;
+        d_file = s;
     }
     virtual void set_type(ObjectType o)
     {

@@ -731,7 +731,9 @@ array_indices:  array_index
  * from n to the end with a stride of m. To encode this with as little 
  * disruption as possible, we represent the star with -1. jhrg 12/20/12
  */ 
-array_index:    '[' SCAN_WORD ']'
+array_index:
+
+'[' SCAN_WORD ']'
 {
     if (!check_uint32($2))
         throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
