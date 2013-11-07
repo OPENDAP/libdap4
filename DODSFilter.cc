@@ -889,7 +889,7 @@ DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
                                const string &start, bool ce_eval) const
 {
     // Write the MPM headers for the DDX (text/xml) part of the response
-    set_mime_ddx_boundary(out, boundary, start, dap4_ddx);
+    set_mime_ddx_boundary(out, boundary, start, dods_ddx);
 
     // Make cid
     uuid_t uu;
@@ -1083,7 +1083,7 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
     }
     else {
         if (with_mime_headers)
-            set_mime_text(out, dap4_ddx, d_cgi_ver, x_plain, dds_lmt);
+            set_mime_text(out, dods_ddx, d_cgi_ver, x_plain, dds_lmt);
         dds.print_xml_writer(out, !d_ce.empty(), "");
     }
 }
@@ -1143,7 +1143,7 @@ DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
             throw Error(unknown_error, "Error calling the CE function.");
 
         if (with_mime_headers)
-            set_mime_multipart(data_stream, boundary, start, dap4_data_ddx,
+            set_mime_multipart(data_stream, boundary, start, dods_data_ddx,
 		d_cgi_ver, x_plain, data_lmt);
 	data_stream << flush ;
 	BaseTypeFactory btf;
@@ -1160,7 +1160,7 @@ DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
     if (eval.function_clauses()) {
     	DDS *fdds = eval.eval_function_clauses(dds);
         if (with_mime_headers)
-            set_mime_multipart(data_stream, boundary, start, dap4_data_ddx,
+            set_mime_multipart(data_stream, boundary, start, dods_data_ddx,
         	    d_cgi_ver, x_plain, data_lmt);
         data_stream << flush ;
         dataset_constraint(*fdds, eval, data_stream, false);
@@ -1168,7 +1168,7 @@ DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
     }
     else {
         if (with_mime_headers)
-            set_mime_multipart(data_stream, boundary, start, dap4_data_ddx,
+            set_mime_multipart(data_stream, boundary, start, dods_data_ddx,
         	    d_cgi_ver, x_plain, data_lmt);
         data_stream << flush ;
         dataset_constraint_ddx(dds, eval, data_stream, boundary, start);

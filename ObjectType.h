@@ -4,7 +4,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Copyright (c) 2002,2003,2013 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -29,11 +29,9 @@
 namespace libdap
 {
 
-/** When a version 2.x or greater DAP data server sends an object, it uses
+/** When a version 2.x or greater DAP data server sends an object, it may use
     the Content-Description header of the response to indicate the type of
-    object contained in the response. During the parse of the header a member
-    of Connect is set to one of these values so that other mfuncs can tell
-    the type of object without parsing the stream themselves.
+    object contained in the response.
 
     <pre>
      enum ObjectType {
@@ -41,13 +39,14 @@ namespace libdap
        dods_das,
        dods_dds,
        dods_data,
+       dods_ddx,
+       dods_data_ddx,
        dods_error,
        web_error,
-       dods_ddx,
-       dap4_ddx,
+
+       dap4_dmr,
        dap4_data,
        dap4_error,
-       dap4_data_ddx
      };
      </pre>
 
@@ -59,13 +58,14 @@ enum ObjectType {
     dods_das,
     dods_dds,
     dods_data,
+    dods_ddx,	   	// This is the old XML DDS/DAS used prior to dap4
+    dods_data_ddx,	// This is used for caching data responses
     dods_error,
     web_error,
-    dap4_ddx,		// This describes the DDX part of the data_ddx response
-    dap4_data,		// The Data part of the data_ddx
-    dap4_error,
-    dap4_data_ddx,	// This is the description for the whole data_ddx
-    dods_ddx	   	// This is the old value used prior to dap4
+
+    dap4_dmr,		// DAP4 metadata
+    dap4_data,		// The DMR with a data blob
+    dap4_error		// The error response for DAP4
 };
 
 } // namespace libdap

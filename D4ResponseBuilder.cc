@@ -1125,7 +1125,7 @@ void D4ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &ev
                 "Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
 
     if (with_mime_headers)
-        set_mime_text(out, dap4_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+        set_mime_text(out, dods_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
     dds.print_xml_writer(out, !d_ce.empty(), "");
 }
@@ -1250,7 +1250,7 @@ void D4ResponseBuilder::cache_data_ddx(const string &cache_file_name, DDS &dds)
 #if 1
     // Does this really need the full set of MIME headers? Not including these
     // might make it comparable with the dapreader module in the BES.
-    set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
+    set_mime_multipart(data_stream, boundary, start, dods_data_ddx, x_plain, last_modified_time(d_dataset));
     data_stream << flush;
 #endif
 
@@ -1307,7 +1307,7 @@ void D4ResponseBuilder::read_data_from_cache(FILE *data, DDS *fdds)
     string boundary = read_multipart_boundary(data);
     DBG(cerr << "MPM Boundary: " << boundary << endl);
 
-    read_multipart_headers(data, "text/xml", dap4_ddx);
+    read_multipart_headers(data, "text/xml", dods_ddx);
 
     // Parse the DDX, reading up to and including the next boundary.
     // Return the CID for the matching data part
@@ -1476,7 +1476,7 @@ void D4ResponseBuilder::set_mime_text(ostream &strm, ObjectType type, EncodingTy
     else
         strm << rfc822_date(t).c_str() << CRLF;
 
-    if (type == dap4_ddx)
+    if (type == dods_ddx)
         strm << "Content-Type: text/xml" << CRLF;
     else
         strm << "Content-Type: text/plain" << CRLF;

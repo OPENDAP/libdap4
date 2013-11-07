@@ -672,7 +672,7 @@ public:
             FILE *in = fopen(file_name.c_str(), "r");
 
             // First read the initial set of 'part' headers for the DDX
-            read_multipart_headers(in, "text/xml", dap4_ddx);
+            read_multipart_headers(in, "text/xml", dods_ddx);
 
             string blob;
             ddx_parser->intern_stream(in, dds, blob, "--boundary-string-1");

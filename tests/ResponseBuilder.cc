@@ -235,7 +235,7 @@ void ResponseBuilder::send_dmr(ostream &out, DMR &dmr, ConstraintEvaluator &, bo
 	// TODO Add CE Parser; and see below
 	if (!d_ce.empty()) eval.parse_constraint(d_ce, dmr); // Throws Error if the ce doesn't parse.
 #endif
-	if (with_mime_headers) set_mime_text(out, dap4_ddx, x_plain, last_modified_time(d_dataset), dmr.dap_version());
+	if (with_mime_headers) set_mime_text(out, dods_ddx, x_plain, last_modified_time(d_dataset), dmr.dap_version());
 
 	XMLWriter xml;
 	dmr.print_dap4(xml, !d_ce.empty() /* true == constrained */);
@@ -255,7 +255,7 @@ void ResponseBuilder::dataset_constraint_dmr_multipart(ostream &out, DMR &dmr, C
         const string &start, const string &boundary, bool filter)
 {
     // Write the MPM headers for the DDX (text/xml) part of the response
-    libdap::set_mime_ddx_boundary(out, boundary, start, dap4_ddx, x_plain);
+    libdap::set_mime_ddx_boundary(out, boundary, start, dods_ddx, x_plain);
 
     // Write the DMR
     XMLWriter xml;
@@ -299,7 +299,7 @@ void ResponseBuilder::send_data_dmr_multipart(ostream &out, DMR &dmr, Constraint
 		}
 
 		if (with_mime_headers)
-			set_mime_multipart(out, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
+			set_mime_multipart(out, boundary, start, dods_data_ddx, x_plain, last_modified_time(d_dataset));
 
 		dataset_constraint_dmr_multipart(out, dmr, eval, start, boundary, true /*filter*/);
 
@@ -364,7 +364,7 @@ void ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, ConstraintEvaluator 
 		}
 
 		if (with_mime_headers)
-			set_mime_binary(out, dap4_data_ddx, x_plain, last_modified_time(d_dataset), dmr.dap_version());
+			set_mime_binary(out, dods_data_ddx, x_plain, last_modified_time(d_dataset), dmr.dap_version());
 
 		dataset_constraint_dmr(out, dmr, eval, true /*filter*/);
 

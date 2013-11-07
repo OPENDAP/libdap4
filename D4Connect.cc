@@ -77,7 +77,7 @@ void D4Connect::process_dmr(DMR &data, Response &rs)
 		throw InternalErr(__FILE__, __LINE__,
 				"An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 
-	case dap4_ddx: {
+	case dods_ddx: {
 		// Read the byte-order byte; used later on
 		char byte_order;
 		*rs.get_cpp_stream() >> byte_order;
@@ -142,7 +142,7 @@ void D4Connect::process_data(DMR &data, Response &rs)
 		throw InternalErr(__FILE__, __LINE__,
 				"An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 
-	case dap4_data_ddx: {
+	case dods_data_ddx: {
 		// Read the byte-order byte; used later on
 		char byte_order;
 		*rs.get_cpp_stream() >> byte_order;
@@ -674,7 +674,7 @@ void D4Connect::request_ddx(DDS &dds, string expr)
             // (called by fetch_url) and result in a thrown Error object.
             break;
 
-        case dap4_ddx:
+        case dods_ddx:
         case dods_ddx:
             try {
                 string blob;
@@ -743,7 +743,7 @@ void D4Connect::request_ddx_url(DDS &dds)
             // (called by fetch_url) and result in a thrown Error object.
             break;
 
-        case dap4_ddx:
+        case dods_ddx:
         case dods_ddx:
             try {
                 string blob;
@@ -934,10 +934,10 @@ void D4Connect::read_dmr_no_mime(DMR &dmr, Response &rs)
 {
 	// Assume callers know what they are doing
     if (rs.get_type() == unknown_type)
-        rs.set_type(dap4_ddx);
+        rs.set_type(dods_ddx);
 
     switch (rs.get_type()) {
-    case dap4_ddx:
+    case dods_ddx:
         process_dmr(dmr, rs);
         d_server = rs.get_version();
         d_protocol = dmr.dap_version();
@@ -961,10 +961,10 @@ void D4Connect::read_data_no_mime(DMR &data, Response &rs)
 {
 	// Assume callers know what they are doing
     if (rs.get_type() == unknown_type)
-        rs.set_type(dap4_data_ddx);
+        rs.set_type(dods_data_ddx);
 
     switch (rs.get_type()) {
-    case dap4_data_ddx:
+    case dods_data_ddx:
         process_data(data, rs);
         d_server = rs.get_version();
         d_protocol = data.dap_version();

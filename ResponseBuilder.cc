@@ -472,7 +472,7 @@ void ResponseBuilder::dataset_constraint_ddx(ostream &out, DDS &dds, ConstraintE
         const string &boundary, const string &start, bool ce_eval)
 {
     // Write the MPM headers for the DDX (text/xml) part of the response
-    libdap::set_mime_ddx_boundary(out, boundary, start, dap4_ddx, x_plain);
+    libdap::set_mime_ddx_boundary(out, boundary, start, dods_ddx, x_plain);
 
     // Make cid
     uuid_t uu;
@@ -616,7 +616,7 @@ void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval
 {
     if (d_ce.empty()) {
         if (with_mime_headers)
-            set_mime_text(out, dap4_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+            set_mime_text(out, dods_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
         dds.print_xml_writer(out, false /*constrained */, "");
         //dds.print(out);
@@ -658,7 +658,7 @@ void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval
         eval.parse_constraint(d_ce, *fdds);
 
         if (with_mime_headers)
-            set_mime_text(out, dap4_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+            set_mime_text(out, dods_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
         fdds->print_constrained(out);
 
@@ -673,7 +673,7 @@ void ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval
         eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
 
         if (with_mime_headers)
-            set_mime_text(out, dap4_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+            set_mime_text(out, dods_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
         //dds.print_constrained(out);
         dds.print_xml_writer(out, true, "");
@@ -726,7 +726,7 @@ void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, Constraint
         DDS *fdds = eval.eval_function_clauses(dds);
         try {
             if (with_mime_headers)
-                set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
+                set_mime_multipart(data_stream, boundary, start, dods_data_ddx, x_plain, last_modified_time(d_dataset));
             data_stream << flush;
             dataset_constraint_ddx(data_stream, *fdds, eval, boundary, start);
         }
@@ -738,7 +738,7 @@ void ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, Constraint
     }
     else {
         if (with_mime_headers)
-            set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
+            set_mime_multipart(data_stream, boundary, start, dods_data_ddx, x_plain, last_modified_time(d_dataset));
         data_stream << flush;
         dataset_constraint_ddx(data_stream, dds, eval, boundary, start);
     }
@@ -788,7 +788,7 @@ void ResponseBuilder::cache_data_ddx(const string &cache_file_name, DDS &dds)
 
     // Does this really need the full set of MIME headers? Not including these
     // might make it comparable with the dapreader module in the BES.
-    // set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(d_dataset));
+    // set_mime_multipart(data_stream, boundary, start, dods_data_ddx, x_plain, last_modified_time(d_dataset));
     set_mime_multipart(data_stream, boundary, start, dods_ddx, x_plain, last_modified_time(d_dataset));
     data_stream << flush;
 
@@ -851,7 +851,7 @@ void ResponseBuilder::set_mime_text(ostream &strm, ObjectType type, EncodingType
     else
         strm << rfc822_date(t).c_str() << CRLF;
 
-    if (type == dap4_ddx)
+    if (type == dods_ddx)
         strm << "Content-Type: text/xml" << CRLF;
     else
         strm << "Content-Type: text/plain" << CRLF;

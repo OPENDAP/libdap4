@@ -291,9 +291,8 @@ name_path(const string &path)
 // not be started, true otherwise.
 
 static const char *descrip[] =
-    {"unknown", "dods_das", "dods_dds", "dods_data",
-     "dods_error", "web_error", "dap4-ddx", "dap4-data", "dap4-error",
-     "dap4-data-ddx", "dods_ddx"
+    {"unknown", "dods_das", "dods_dds", "dods_data", "dods_ddx",
+     "dods_error", "web_error", "dap4-dmr", "dap4-data", "dap4-error"
     };
 static const char *encoding[] =
     {"unknown", "deflate", "x-plain", "gzip", "binary"
@@ -307,28 +306,32 @@ static const char *encoding[] =
 ObjectType
 get_type(const string &value)
 {
+	return get_description_type(value);
+
+#if 0
     if ((value == "dods_das") | (value == "dods-das"))
         return dods_das;
     else if ((value == "dods_dds") | (value == "dods-dds"))
         return dods_dds;
     else if ((value == "dods_data") | (value == "dods-data"))
         return dods_data;
+    else if ((value == "dods_ddx") | (value == "dods-ddx"))
+        return dods_ddx;
     else if ((value == "dods_error") | (value == "dods-error"))
         return dods_error;
     else if ((value == "web_error") | (value == "web-error"))
         return web_error;
-    else if ((value == "dap4_ddx") | (value == "dap4-ddx"))
-        return dap4_ddx;
+
+    else if ((value == "dap4_dmr") | (value == "dap4-dmr"))
+        return dap4_dmr;
     else if ((value == "dap4_data") | (value == "dap4-data"))
         return dap4_data;
     else if ((value == "dap4_error") | (value == "dap4-error"))
         return dap4_error;
-    else if ((value == "dap4_data_ddx") | (value == "dap4-data-ddx"))
-        return dap4_data_ddx;
-    else if ((value == "dods_ddx") | (value == "dods-ddx"))
-        return dods_ddx;
+
     else
         return unknown_type;
+#endif
 }
 
 /** This function returns the ObjectType value that matches the given string.
@@ -345,22 +348,20 @@ get_description_type(const string &value)
         return dods_dds;
     else if ((value == "dods_data") || (value == "dods-data"))
         return dods_data;
+    else if ((value == "dods_ddx") || (value == "dods-ddx"))
+        return dods_ddx;
     else if ((value == "dods_error") || (value == "dods-error"))
         return dods_error;
     else if ((value == "web_error") || (value == "web-error"))
         return web_error;
-    else if ((value == "dods_ddx") || (value == "dods-ddx"))
-        return dods_ddx;
-    else if ((value == "dap4_ddx") || (value == "dap4-ddx"))
-        return dap4_ddx;
+
+    else if ((value == "dap4_dmr") || (value == "dap4-dmr"))
+        return dap4_dmr;
     else if ((value == "dap4_data") || (value == "dap4-data"))
         return dap4_data;
     else if ((value == "dap4_error") || (value == "dap4-error"))
         return dap4_error;
-    else if ((value == "dap4_data_ddx") || (value == "dap4-data-ddx"))
-        return dap4_data_ddx;
-    else if ((value == "dods_ddx") || (value == "dods-ddx"))
-        return dods_ddx;
+
     else
         return unknown_type;
 }
@@ -424,8 +425,8 @@ set_mime_text(ostream &strm, ObjectType type, const string &ver,
     else
         strm << rfc822_date(t).c_str() << CRLF ;
 
-    if (type == dap4_ddx)
-        strm << "Content-Type: text/xml" << CRLF ;
+    if (type == dap4_dmr)
+        strm << "Content-Type: application/vnd.org.opendap.dap4.dataset-metadata+xml" << CRLF ;
     else
         strm << "Content-Type: text/plain" << CRLF ;
 
@@ -461,8 +462,8 @@ void set_mime_text(ostream &strm, ObjectType type, EncodingType enc, const time_
 {
     strm << "HTTP/1.0 200 OK" << CRLF;
 
-    strm << "XDODS-Server: " << DVR<< CRLF;
-    strm << "XOPeNDAP-Server: " << DVR<< CRLF;
+    strm << "XDODS-Server: " << DVR << CRLF;
+    strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
     if (protocol == "")
         strm << "XDAP: " << DAP_PROTOCOL_VERSION << CRLF;
@@ -478,8 +479,8 @@ void set_mime_text(ostream &strm, ObjectType type, EncodingType enc, const time_
     else
         strm << rfc822_date(t).c_str() << CRLF;
 
-    if (type == dap4_ddx)
-        strm << "Content-Type: text/xml" << CRLF;
+    if (type == dap4_dmr)
+        strm << "Content-Type: application/vnd.org.opendap.dap4.dataset-metadata+xml" << CRLF;
     else
         strm << "Content-Type: text/plain" << CRLF;
 
@@ -1003,13 +1004,13 @@ void read_multipart_headers(FILE *in, const string &content_type, const ObjectTy
 		if (name == "content-type") {
 			ct = true;
 			if (value.find(content_type) == string::npos)
-				throw Error("Content-Type for this part of a DAP4 data response must be " + content_type + ".");
+				throw Error("Content-Type for this part of a DAP2 data ddx response must be " + content_type + ".");
 		}
 		else if (name == "content-description") {
 			cd = true;
 			if (get_description_type(value) != object_type)
 				throw Error(
-						"Content-Description for this part of a DAP4 data response must be dap4-ddx or dap4-data-ddx");
+						"Content-Description for this part of a DAP2 data ddx response must be dods-ddx or dods-data-ddx");
 		}
 		else if (name == "content-id") {
 			ci = true;

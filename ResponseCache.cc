@@ -159,7 +159,7 @@ void ResponseCache::read_data_from_cache(FILE *data, DDS *fdds)
     string boundary = read_multipart_boundary(data);
     DBG(cerr << "MPM Boundary: " << boundary << endl);
 
-    read_multipart_headers(data, "text/xml", dap4_ddx);
+    read_multipart_headers(data, "text/xml", dods_ddx);
 
     // Parse the DDX, reading up to and including the next boundary.
     // Return the CID for the matching data part
@@ -290,7 +290,7 @@ DDS *ResponseCache::read_cached_dataset(DDS &dds, const string &constraint, Resp
             // methods. Those methods assume they need to evaluate the ResponseBuilder's
             // CE, which is not necessary and will alter the values of the send_p property
             // of the DDS's variables.
-			set_mime_multipart(data_stream, boundary, start, dap4_data_ddx, x_plain, last_modified_time(rb->get_dataset_name()));
+			set_mime_multipart(data_stream, boundary, start, dods_data_ddx, x_plain, last_modified_time(rb->get_dataset_name()));
 			//data_stream << flush;
 			rb->dataset_constraint_ddx(data_stream, *fdds, eval, boundary, start);
 			//data_stream << flush;
