@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
                     if (strcmp(argv[i], "-") == 0) {
                         StdinResponse r(cin);
 
-                        if (!r.get_cpp_stream())
+                        if (!r.get_istream())
                             throw Error("Could not open standard input.");
 
                         read_response_from_file(url, dmr, r, mime_headers, get_dap4_data, get_dmr);
