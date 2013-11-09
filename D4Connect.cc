@@ -286,6 +286,7 @@ void D4Connect::request_dmr(DMR &dmr, const string expr)
 		d_protocol = rs->get_protocol();
 
 		switch (rs->get_type()) {
+		case 0:			// FIXME Pure hackery!
 		case dap4_dmr: {
 			D4ParserSax2 parser;
 			parser.intern(*rs->get_cpp_stream(), &dmr, false /* debug */);
@@ -301,12 +302,9 @@ void D4Connect::request_dmr(DMR &dmr, const string expr)
 			throw InternalErr(__FILE__, __LINE__, "Web error found where it should never be.");
 			break;
 
-		default: {
-			D4ParserSax2 parser;
-			parser.intern(*rs->get_cpp_stream(), &dmr, false /* debug */);
-			break;
-		}
-			//throw InternalErr(__FILE__, __LINE__, "Response type not handled.");
+		default:
+			throw InternalErr(__FILE__, __LINE__, "Response type not handled (got "
+					+ long_to_string(rs->get_type()) + ").");
 		}
 	}
 	catch (...) {

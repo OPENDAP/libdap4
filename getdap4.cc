@@ -52,6 +52,7 @@
 #include "D4Sequence.h"
 #include "D4Connect.h"
 #include "StdinResponse.h"
+#include "HTTPConnect.h"
 #include "RCReader.h"
 
 using namespace std;
@@ -99,7 +100,7 @@ static void usage(const string &name)
 	cerr << "           NB: You can use a `?' for the CE also." << endl;
 }
 
-#if 0
+#if 1
 // Used for raw http access/transfer
 bool read_data(FILE * fp)
 {
@@ -313,6 +314,37 @@ int main(int argc, char *argv[])
                     cout << xml.get_doc() << endl;
                 }
             }
+            else {
+                HTTPConnect http(RCReader::instance());
+
+                // This overrides the value set in the .dodsrc file.
+                if (accept_deflate)
+                    http.set_accept_deflate(accept_deflate);
+
+                if (dap_client_major > 2)
+                    url->set_xdap_protocol(dap_client_major, dap_client_minor);
+
+                string url_string = argv[i];
+                for (int j = 0; j < times; ++j) {
+                    try {
+                        HTTPResponse *r = http.fetch_url(url_string);
+                        if (verbose) {
+                        	vector<string> *headers = r->get_headers();
+                        	copy(headers->begin(), headers->end(), ostream_iterator<string>(cout, "\n"));
+                        }
+                        if (!read_data(r->get_stream())) {
+                            continue;
+                        }
+                        delete r;
+                        r = 0;
+                    }
+                    catch (Error & e) {
+                        cerr << e.get_error_message() << endl;
+                        continue;
+                    }
+                }
+            }
+
 #endif
 #if 0
             else if (get_version) {
@@ -348,37 +380,6 @@ int main(int argc, char *argv[])
             }
 #endif
 #if 0
-            else {
-                // if (!get_das && !get_dds && !get_data) This code uses
-                // HTTPConnect::fetch_url which cannot be accessed using an
-                // instance of Connect. So some of the options supported by
-                // other URLs won't work here (e.g., the verbose option
-                // doesn't show the server version number).
-                HTTPConnect http(RCReader::instance());
-
-                // This overrides the value set in the .dodsrc file.
-                if (accept_deflate)
-                    http.set_accept_deflate(accept_deflate);
-
-                if (dap_client_major > 2)
-                    url->set_xdap_protocol(dap_client_major, dap_client_minor);
-
-                string url_string = argv[i];
-                for (int j = 0; j < times; ++j) {
-                    try {
-                        Response *r = http.fetch_url(url_string);
-                        if (!read_data(r->get_stream())) {
-                            continue;
-                        }
-                        delete r;
-                        r = 0;
-                    }
-                    catch (Error & e) {
-                        cerr << e.get_error_message() << endl;
-                        continue;
-                    }
-                }
-            }
 #endif
 
             delete url;  url = 0;
