@@ -46,6 +46,7 @@
 #include "chunked_istream.h"
 #include "D4StreamUnMarshaller.h"
 
+#include "escaping.h"
 #include "mime_util.h"
 #include "debug.h"
 
@@ -56,19 +57,22 @@ namespace libdap {
 
 /** This private method process data from both local and remote sources. It
     exists to eliminate duplication of code. */
-void D4Connect::process_dmr(DMR &data, Response &rs)
+void D4Connect::process_dmr(DMR &dmr, Response &rs)
 {
 	DBG(cerr << "Entering D4Connect::process_dmr" << endl);
 
-	data.set_dap_version(rs.get_protocol());
+	dmr.set_dap_version(rs.get_protocol());
 
 	DBG(cerr << "Entering process_data: d_stream = " << rs << endl);
 	switch (rs.get_type()) {
-	case dods_error: {
+	case dap4_error: {
+#if 0
 		Error e;
 		if (!e.parse(rs.get_stream()))
 			throw InternalErr(__FILE__, __LINE__, "Could not parse the Error object returned by the server!");
 		throw e;
+#endif
+		throw InternalErr(__FILE__, __LINE__, "DAP4 errors not processed yet: FIXME!");
 	}
 
 	case web_error:
@@ -77,26 +81,11 @@ void D4Connect::process_dmr(DMR &data, Response &rs)
 		throw InternalErr(__FILE__, __LINE__,
 				"An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 
-	case dods_ddx: {
-		// Read the byte-order byte; used later on
-		char byte_order;
-		*rs.get_cpp_stream() >> byte_order;
-
-		// get a chunked input stream
-		chunked_istream cis(*rs.get_cpp_stream(), 1024, byte_order);
-
-		// parse the DMR, stopping when the boundary is found.
+	case dap4_dmr: {
+		// parse the DMR
 		try {
-			// force chunk read
-			// get chunk size
-			int chunk_size = cis.read_next_chunk();
-			// get chunk
-			char chunk[chunk_size];
-			cis.read(chunk, chunk_size);
-			// parse char * with given size
 			D4ParserSax2 parser;
-			// '-2' to discard the CRLF pair
-			parser.intern(chunk, chunk_size - 2, &data, /*debug*/false);
+			parser.intern(*rs.get_cpp_stream(), &dmr, /*debug*/false);
 		}
 		catch (Error &e) {
 			cerr << "Exception: " << e.get_error_message() << endl;
@@ -125,15 +114,20 @@ void D4Connect::process_data(DMR &data, Response &rs)
 {
 	DBG(cerr << "Entering D4Connect::process_data" << endl);
 
+	assert(rs.get_cpp_stream());	// DAP4 code uses cpp streams
+
 	data.set_dap_version(rs.get_protocol());
 
 	DBG(cerr << "Entering process_data: d_stream = " << rs << endl);
 	switch (rs.get_type()) {
-	case dods_error: {
+	case dap4_error: {
+#if 0
 		Error e;
-		if (!e.parse(rs.get_stream()))
+		if (!e.parse(rs.get_cpp_stream()))
 			throw InternalErr(__FILE__, __LINE__, "Could not parse the Error object returned by the server!");
 		throw e;
+#endif
+		throw InternalErr(__FILE__, __LINE__, "DAP4 errors not processed yet: FIXME!");
 	}
 
 	case web_error:
@@ -142,7 +136,7 @@ void D4Connect::process_data(DMR &data, Response &rs)
 		throw InternalErr(__FILE__, __LINE__,
 				"An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 
-	case dods_data_ddx: {
+	case dap4_data: {
 		// Read the byte-order byte; used later on
 		char byte_order;
 		*rs.get_cpp_stream() >> byte_order;
@@ -202,7 +196,7 @@ void D4Connect::parse_mime(Response &rs)
     rs.set_version("dods/0.0"); // initial value; for backward compatibility.
     rs.set_protocol("2.0");
 
-    fstream &data_source = *rs.get_cpp_stream();
+    istream &data_source = *rs.get_cpp_stream();
     string mime = get_next_mime_header(data_source);
     while (!mime.empty()) {
         string header, value;
@@ -255,6 +249,7 @@ D4Connect::D4Connect(const string &url, string uname, string password) :
     if (name.find("http") == 0) {
         DBG(cerr << "Connect: The identifier is an http URL" << endl);
         d_http = new HTTPConnect(RCReader::instance());
+        d_http->set_use_cpp_streams(true);
 
         // Find and store any CE given with the URL.
         string::size_type dotpos = name.find('?');
@@ -277,6 +272,49 @@ D4Connect::D4Connect(const string &url, string uname, string password) :
 D4Connect::~D4Connect()
 {
 	if (d_http) delete d_http;
+}
+
+void D4Connect::request_dmr(DMR &dmr, const string expr)
+{
+	string url = d_URL + ".dmr" + "?" + id2www_ce(d_ce + expr);
+
+	Response *rs = 0;
+	try {
+		rs = d_http->fetch_url(url);
+
+		d_server = rs->get_version();
+		d_protocol = rs->get_protocol();
+
+		switch (rs->get_type()) {
+		case dap4_dmr: {
+			D4ParserSax2 parser;
+			parser.intern(*rs->get_cpp_stream(), &dmr, false /* debug */);
+			break;
+		}
+
+		case dap4_error:
+			throw InternalErr(__FILE__, __LINE__, "DAP4 errors are not processed yet.");
+
+		case web_error:
+			// We should never get here; a web error should be picked up read_url
+			// (called by fetch_url) and result in a thrown Error object.
+			throw InternalErr(__FILE__, __LINE__, "Web error found where it should never be.");
+			break;
+
+		default: {
+			D4ParserSax2 parser;
+			parser.intern(*rs->get_cpp_stream(), &dmr, false /* debug */);
+			break;
+		}
+			//throw InternalErr(__FILE__, __LINE__, "Response type not handled.");
+		}
+	}
+	catch (...) {
+		delete rs;
+		throw;
+	}
+
+	delete rs;
 }
 
 #if 0
@@ -934,10 +972,10 @@ void D4Connect::read_dmr_no_mime(DMR &dmr, Response &rs)
 {
 	// Assume callers know what they are doing
     if (rs.get_type() == unknown_type)
-        rs.set_type(dods_ddx);
+        rs.set_type(dap4_dmr);
 
     switch (rs.get_type()) {
-    case dods_ddx:
+    case dap4_dmr:
         process_dmr(dmr, rs);
         d_server = rs.get_version();
         d_protocol = dmr.dap_version();
@@ -961,10 +999,10 @@ void D4Connect::read_data_no_mime(DMR &data, Response &rs)
 {
 	// Assume callers know what they are doing
     if (rs.get_type() == unknown_type)
-        rs.set_type(dods_data_ddx);
+        rs.set_type(dap4_data);
 
     switch (rs.get_type()) {
-    case dods_data_ddx:
+    case dap4_data:
         process_data(data, rs);
         d_server = rs.get_version();
         d_protocol = data.dap_version();

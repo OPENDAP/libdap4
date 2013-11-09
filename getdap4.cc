@@ -52,6 +52,7 @@
 #include "D4Sequence.h"
 #include "D4Connect.h"
 #include "StdinResponse.h"
+#include "RCReader.h"
 
 using namespace std;
 using namespace libdap ;
@@ -257,25 +258,14 @@ int main(int argc, char *argv[])
                     if (strcmp(argv[i], "-") == 0) {
                         StdinResponse r(cin);
 
-                        if (!r.get_istream())
+                        if (!r.get_cpp_stream())
                             throw Error("Could not open standard input.");
 
                         read_response_from_file(url, dmr, r, mime_headers, get_dap4_data, get_dmr);
-#if 0
-                        if (mime_headers) {
-                        	if (get_dap4_data)
-                        		url->read_data(dmr, r); // The default case
-                        	else
-                        		throw Error("Only data read from files...");
-                        }
-                        else {
-                            url->read_data_no_mime(dmr, r);
-                        }
-#endif
                     }
                     else {
                     	fstream f(argv[i], std::ios_base::in);
-                    	if (!f || f.bad() || f.eof())
+                    	if (!f.is_open() || f.bad() || f.eof())
                     		throw Error((string)"Could not open: " + argv[i]);
 
                     	Response r(&f, 0);
@@ -287,123 +277,52 @@ int main(int argc, char *argv[])
                         cerr << "DAP version: " << url->get_protocol().c_str() << " Server version: "
     						<< url->get_version().c_str() << endl;
 
-                    print_data(dmr, print_rows);
+                    // Always write the DMR
+                    XMLWriter xml;
+                    dmr.print_dap4(xml);
+                    cout << xml.get_doc() << endl;
+
+                    if (get_dap4_data)
+                    	print_data(dmr, print_rows);
                 }
                 catch (Error & e) {
                     cerr << "Error: " << e.get_error_message() << endl;
                     delete url; url = 0;
                 }
             }
+#if 1
+            else if (get_dmr) {
+                for (int j = 0; j < times; ++j) {
+                    D4BaseTypeFactory factory;
+                    DMR dmr(&factory);
+                    try {
+                        url->request_dmr(dmr, expr);
+                    }
+                    catch (Error & e) {
+                        cerr << e.get_error_message() << endl;
+                        continue;       // Goto the next URL or exit the loop.
+                    }
+
+                    if (verbose) {
+                        cout << "DAP version: " << url->get_protocol() << ", Server version: " << url->get_version() << endl;
+                        cout << "DMR:" << endl;
+                    }
+
+                    XMLWriter xml;
+                    dmr.print_dap4(xml);
+                    cout << xml.get_doc() << endl;
+                }
+            }
+#endif
 #if 0
             else if (get_version) {
                 fprintf(stderr, "DAP version: %s, Server version: %s\n",
                         url->request_protocol().c_str(),
                         url->get_version().c_str());
             }
-
-            else if (get_das) {
-                for (int j = 0; j < times; ++j) {
-                    DAS das;
-                    try {
-                        url->request_das(das);
-                    }
-                    catch (Error & e) {
-                        cerr << e.get_error_message() << endl;
-                        delete url;
-                        url = 0;
-                        continue;
-                    }
-
-                    if (verbose) {
-                        fprintf(stderr, "DAP version: %s, Server version: %s\n",
-                                url->get_protocol().c_str(),
-                                url->get_version().c_str());
-
-                        fprintf(stderr, "DAS:\n");
-                    }
-
-                    das.print(stdout);
-                }
-            }
-
-            else if (get_dds) {
-                for (int j = 0; j < times; ++j) {
-                    BaseTypeFactory factory;
-                    DDS dds(&factory);
-                    try {
-                        url->request_dds(dds, expr);
-                    }
-                    catch (Error & e) {
-                        cerr << e.get_error_message() << endl;
-                        delete url;
-                        url = 0;
-                        continue;       // Goto the next URL or exit the loop.
-                    }
-
-                    if (verbose) {
-                        fprintf(stderr, "DAP version: %s, Server version: %s\n",
-                                url->get_protocol().c_str(),
-                                url->get_version().c_str());
-
-                        fprintf(stderr, "DDS:\n");
-                    }
-
-                    dds.print(cout);
-                }
-            }
-
-            else if (get_ddx) {
-                for (int j = 0; j < times; ++j) {
-                    BaseTypeFactory factory;
-                    DDS dds(&factory);
-                    try {
-                        url->request_ddx(dds, expr);
-                    }
-                    catch (Error & e) {
-                        cerr << e.get_error_message() << endl;
-                        continue;       // Goto the next URL or exit the loop.
-                    }
-
-                    if (verbose) {
-                        fprintf(stderr, "DAP version: %s, Server version: %s\n",
-                                url->get_protocol().c_str(),
-                                url->get_version().c_str());
-
-                        fprintf(stderr, "DDX:\n");
-                    }
-
-                    dds.print_xml(cout, false);
-                }
-            }
-
-            else if (build_ddx) {
-                for (int j = 0; j < times; ++j) {
-                    BaseTypeFactory factory;
-                    DDS dds(&factory);
-                    try {
-                        url->request_dds(dds, expr);
-                        DAS das;
-                        url->request_das(das);
-                        dds.transfer_attributes(&das);
-                    }
-                    catch (Error & e) {
-                        cerr << e.get_error_message() << endl;
-                        continue;       // Goto the next URL or exit the loop.
-                    }
-
-                    if (verbose) {
-                        fprintf(stderr, "DAP version: %s, Server version: %s\n",
-                                url->get_protocol().c_str(),
-                                url->get_version().c_str());
-
-                        fprintf(stderr, "Client-built DDX:\n");
-                    }
-
-                    dds.print_xml(cout, false);
-                }
-            }
-
-            else if (get_data) {
+#endif
+#if 0
+            else if (get_dap4_data) {
                 for (int j = 0; j < times; ++j) {
                     BaseTypeFactory factory;
                     DataDDS dds(&factory);
@@ -427,33 +346,7 @@ int main(int argc, char *argv[])
                     }
                 }
             }
-
-            else if (get_dap4_data) {
-                for (int j = 0; j < times; ++j) {
-                    BaseTypeFactory factory;
-                    DataDDS dds(&factory);
-                    try {
-                        DBG(cerr << "URL: " << url->URL(false) << endl);
-                        DBG(cerr << "CE: " << expr << endl);
-                        url->request_data_ddx(dds, expr);
-
-                        if (verbose)
-                            fprintf(stderr, "DAP version: %s, Server version: %s\n",
-                                    url->get_protocol().c_str(),
-                                    url->get_version().c_str());
-
-                        print_data(dds, print_rows);
-                    }
-                    catch (Error & e) {
-                        cerr << e.get_error_message() << endl;
-                        delete url;
-                        url = 0;
-                        continue;
-                    }
-                }
-            }
 #endif
-
 #if 0
             else {
                 // if (!get_das && !get_dds && !get_data) This code uses

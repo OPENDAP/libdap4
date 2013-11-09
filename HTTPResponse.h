@@ -46,8 +46,8 @@ using std::vector ;
 namespace libdap
 {
 
-extern int dods_keep_temps; // defined in HTTPConnect.cc
-
+// defined in HTTPConnect.cc
+extern int dods_keep_temps;
 extern void close_temp(FILE *s, const string &name);
 
 /** Encapsulate an http response. Instead of directly returning the FILE
@@ -59,22 +59,15 @@ extern void close_temp(FILE *s, const string &name);
 class HTTPResponse : public Response
 {
 private:
-    // TODO Make this a value, not a pointer. Fix all uses and then
-    // change code in HTTPConnect
     vector<string> *d_headers; // Response headers
     string d_file;  // Temp file that holds response body
 
 protected:
     /** @name Suppressed default methods */
     //@{
-    HTTPResponse()
-    {}
-    HTTPResponse(const HTTPResponse &rs) : Response(rs)
-    {}
-    HTTPResponse &operator=(const HTTPResponse &)
-    {
-        throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
-    }
+    HTTPResponse();
+    HTTPResponse(const HTTPResponse &rs);
+    HTTPResponse &operator=(const HTTPResponse &);
     //@}
 
 public:
@@ -103,6 +96,24 @@ public:
         DBGN(cerr << "end of headers." << endl);
     }
 
+    /**
+     * @brief Build a HTTPResponse using a cpp fstream
+     * When working with DAP4 responses, use C++ streams for I/0.
+     * @todo Decide on how the temp files fit into DAP4
+     * @param s
+     * @param status
+     * @param h
+     * @param temp_file
+     */
+    HTTPResponse(std::fstream *s, int status, vector<string> *h, const string &temp_file)
+            : Response(s, status), d_headers(h), d_file(temp_file)
+    {
+        DBG(cerr << "Headers: " << endl);
+        DBGN(copy(d_headers->begin(), d_headers->end(),
+                  ostream_iterator<string>(cerr, "\n")));
+        DBGN(cerr << "end of headers." << endl);
+    }
+
     /** When an instance is destroyed, free the temporary resources: the
     temp_file and headers are deleted. If the tmp file name is "", it is
     not deleted. */
@@ -110,38 +121,51 @@ public:
     {
         DBG(cerr << "Freeing HTTPConnect resources (" + d_file + ")... ");
 
+        // This can always be done - if the cpp_stream is null, delete has no effect;
+        // if non-null in this class it was allocated in HTTPConnect::plain_fetch_url
+        // (or caching_fetch_url when that's implemented)
+		delete get_cpp_stream();
+		set_cpp_stream(0);
+
         if (!dods_keep_temps && !d_file.empty()) {
-            close_temp(get_stream(), d_file);
-            set_stream(0);
+			if (get_stream()) {
+				close_temp(get_stream(), d_file);
+				set_stream(0);
+			}
+			else {
+				long res = unlink(d_file.c_str());
+				if (res != 0) throw InternalErr(__FILE__, __LINE__, "!FAIL! " + long_to_string(res));
+			}
         }
 
-        delete d_headers; d_headers = 0;
+        delete d_headers;
 
         DBGN(cerr << endl);
     }
+
+    /**
+     * Build a new HTTPResponse object that works with C++ streams. Assume that
+     * the FILE* references a disk file.
+     * @return
+     */
+    void transform_to_cpp() {
+    	// ~Response() will take care of closing the FILE*. A better version of this
+    	// code would not leave the FILE* open when it's not needed, but this implementation
+    	// can use the existing HTTPConnect and HTTPCache software with very minimal
+    	// (or no) modification. jhrg 11/8/13
+    	set_cpp_stream(new std::fstream(d_file.c_str(), std::ios::in|std::ios::binary));
+    }
+
     /** @name Accessors */
     //@{
-    virtual vector<string> *get_headers() const
-    {
-        return d_headers;
-    }
-    virtual string get_file() const
-    {
-        return d_file;
-    }
+    virtual vector<string> *get_headers() const { return d_headers; }
+    virtual string get_file() const { return d_file; }
     //@}
 
     /** @name Mutators */
     //@{
-    virtual void set_headers(vector<string> *h)
-    {
-        d_headers = h;
-    }
-
-    virtual void set_file(const string &n)
-    {
-	d_file = n;
-    }
+    virtual void set_headers(vector<string> *h) { d_headers = h; }
+    virtual void set_file(const string &n) { d_file = n; }
     //@}
 };
 

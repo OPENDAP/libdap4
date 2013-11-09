@@ -97,6 +97,8 @@ private:
     int d_dap_client_protocol_major;
     int d_dap_client_protocol_minor;
 
+    bool d_use_cpp_streams;	// Build HTTPResponse objects using fstream and not FILE*
+
     void www_lib_init();
     long read_url(const string &url, FILE *stream, vector<string> *resp_hdrs,
                   const vector<string> *headers = 0);
@@ -120,19 +122,13 @@ protected:
     methods to suppress the C++-supplied default versions (which will
     break this object). */
     //@{
-    HTTPConnect() {
-		throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
-	}
-	HTTPConnect(const HTTPConnect &) {
-		throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
-	}
-	HTTPConnect &operator=(const HTTPConnect &) {
-		throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
-	}
+    HTTPConnect();
+	HTTPConnect(const HTTPConnect &);
+	HTTPConnect &operator=(const HTTPConnect &);
     //@}
 
 public:
-    HTTPConnect(RCReader *rcr);
+    HTTPConnect(RCReader *rcr, bool use_cpp = false);
 
     virtual ~HTTPConnect();
 
@@ -140,33 +136,29 @@ public:
     void set_accept_deflate(bool defalte);
     void set_xdap_protocol(int major, int minor);
 
+    bool use_cpp_streams() const { return d_use_cpp_streams; }
+    void set_use_cpp_streams(bool use_cpp_streams) { d_use_cpp_streams = use_cpp_streams; }
+
     /** Set the cookie jar. This function sets the name of a file used to store
     cookies returned by servers. This will help with things like single
     sign on systems.
 
     @param cookie_jar The pathname to the file that stores cookies. If this
     is the empty string saving cookies is disabled. */
-    void set_cookie_jar(const string &cookie_jar)
-    {
-	d_cookie_jar = cookie_jar;
-    }
+    void set_cookie_jar(const string &cookie_jar) { d_cookie_jar = cookie_jar; }
 
     /** Set the state of the HTTP cache. By default, the HTTP cache is
     enabled or disabled using the value of the \c USE_CACHE property in
     the \c .dodsrc file. Use this method to set the state from within a
     program.
     @param enabled True to use the cache, False to disable. */
-    void set_cache_enabled(bool enabled)
-    {
+    void set_cache_enabled(bool enabled) {
         if (d_http_cache)
             d_http_cache->set_cache_enabled(enabled);
     }
 
     /** Return the current state of the HTTP cache. */
-    bool is_cache_enabled()
-    {
-        return (d_http_cache) ? d_http_cache->is_cache_enabled() : false;
-    }
+    bool is_cache_enabled() { return (d_http_cache) ? d_http_cache->is_cache_enabled() : false; }
 
     HTTPResponse *fetch_url(const string &url);
 };

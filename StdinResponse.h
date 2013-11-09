@@ -28,15 +28,7 @@
 
 #include <cstdio>
 
-#ifndef response_h
 #include "Response.h"
-#endif
-
-#ifndef _debug_h
-#include "debug.h"
-#endif
-
-using namespace std;
 
 namespace libdap
 {
@@ -53,7 +45,7 @@ class StdinResponse: public Response
 {
 private:
     FILE *d_stdin;
-    istream *d_cin;
+    std::istream *d_cin;
 
 protected:
 
@@ -73,7 +65,7 @@ public:
      * @brief Build a instance using a C++ istream
      * @param in A pointer to the input stream
      */
-    StdinResponse(istream &in) : Response(), d_stdin(0), d_cin(&in) {}
+    StdinResponse(std::istream &in) : Response(), d_stdin(0), d_cin(&in) {}
 
     /** Destructor. Does not close standard input. */
     virtual ~StdinResponse() {}
@@ -81,8 +73,8 @@ public:
     virtual FILE *get_stream() const { return d_stdin; }
     virtual void set_stream(FILE *s) { d_stdin = s; }
 
-    virtual istream &get_istream() const { return *d_cin; }
-    virtual void set_istream(istream *in) { d_cin = in; }
+    virtual std::istream *get_cpp_stream() const { return d_cin; }
+    virtual void set_cpp_stream(std::istream *in) { d_cin = in; }
 };
 
 } // namespace libdap

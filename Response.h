@@ -28,6 +28,7 @@
 
 #include <cstdio>
 #include <string>
+//#include <iostream>
 #include <fstream>
 
 #include "ObjectType.h"
@@ -88,7 +89,7 @@ public:
             d_version("dods/0.0"), d_protocol("2.0"), d_status(status)
     { }
 
-    Response(fstream *f, int status = 0) : d_stream(0), d_cpp_stream(f), d_type(unknown_type),
+    Response(std::fstream *s, int status = 0) : d_stream(0), d_cpp_stream(s), d_type(unknown_type),
             d_version("dods/0.0"), d_protocol("2.0"), d_status(status)
     { }
 
@@ -105,7 +106,7 @@ public:
     //@{
     virtual int get_status() const {  return d_status; }
     virtual FILE *get_stream() const { return d_stream; }
-    virtual std::fstream *get_cpp_stream() const { return d_cpp_stream; }
+    virtual std::istream *get_cpp_stream() const { return d_cpp_stream; }
 
     virtual ObjectType get_type() const { return d_type; }
     virtual std::string get_version() const { return d_version; }
@@ -115,8 +116,10 @@ public:
     /** @name setters */
     //@{
     virtual void set_status(int s) { d_status = s; }
+
     virtual void set_stream(FILE *s) { d_stream = s; }
-    virtual void set_cpp_stream(std::fstream *s) { d_cpp_stream = s; }
+    virtual void set_cpp_stream(std::istream *s) { d_cpp_stream = dynamic_cast<std::fstream*>(s); }
+
     virtual void set_type(ObjectType o) { d_type = o; }
     virtual void set_version(const std::string &v) { d_version = v; }
     virtual void set_protocol(const std::string &p) { d_protocol = p; }

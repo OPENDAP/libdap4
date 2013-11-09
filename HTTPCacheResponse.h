@@ -49,14 +49,9 @@ private:
 protected:
     /** @name Suppressed default methods */
     //@{
-    HTTPCacheResponse()
-    {}
-    HTTPCacheResponse(const HTTPCacheResponse &rs) : HTTPResponse(rs)
-    {}
-    HTTPCacheResponse &operator=(const HTTPCacheResponse &)
-    {
-        throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
-    }
+    HTTPCacheResponse();
+    HTTPCacheResponse(const HTTPCacheResponse &rs);
+    HTTPCacheResponse &operator=(const HTTPCacheResponse &);
     //@}
 
 public:

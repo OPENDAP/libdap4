@@ -4,7 +4,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Copyright (c) 2002,2003,2013 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -128,12 +128,23 @@ class HTTPConnectTest: public TestFixture {
     CPPUNIT_TEST_SUITE(HTTPConnectTest);
 
     CPPUNIT_TEST(read_url_test);
-    CPPUNIT_TEST(fetch_url_test);
+
+    CPPUNIT_TEST(fetch_url_test_1);
+    CPPUNIT_TEST(fetch_url_test_2);
+    CPPUNIT_TEST(fetch_url_test_3);
+    CPPUNIT_TEST(fetch_url_test_4);
+
+    CPPUNIT_TEST(fetch_url_test_1_cpp);
+    CPPUNIT_TEST(fetch_url_test_2_cpp);
+    CPPUNIT_TEST(fetch_url_test_3_cpp);
+    CPPUNIT_TEST(fetch_url_test_4_cpp);
+
     CPPUNIT_TEST(get_response_headers_test);
     CPPUNIT_TEST(server_version_test);
     CPPUNIT_TEST(type_test);
 
     CPPUNIT_TEST(cache_test);
+    CPPUNIT_TEST(cache_test_cpp);
 
     CPPUNIT_TEST(set_accept_deflate_test);
     CPPUNIT_TEST(set_xdap_protocol_test);
@@ -197,14 +208,12 @@ class HTTPConnectTest: public TestFixture {
         }
     }
 
-    void fetch_url_test() {
-        DBG(cerr << "Entering fetch_url_test" << endl);
+    void fetch_url_test_1() {
+        DBG(cerr << "Entering fetch_url_test 1" << endl);
         HTTPResponse *stuff = 0;
         char c;
         try {
-            DBG(cerr << "    First request..." << endl);
             stuff = http->fetch_url(localhost_url);
-            DBG(cerr << "    Back from first request." << endl);
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
                            && !ferror(stuff->get_stream())
                            && !feof(stuff->get_stream()));
@@ -231,7 +240,49 @@ class HTTPConnectTest: public TestFixture {
             delete stuff; stuff = 0;
             throw;
         }
+    }
 
+    void fetch_url_test_1_cpp() {
+        DBG(cerr << "Entering fetch_url_test 1" << endl);
+        HTTPResponse *stuff = 0;
+        http->set_use_cpp_streams(true);
+        char c;
+        try {
+            stuff = http->fetch_url(localhost_url);
+            stuff->get_cpp_stream()->read(&c, 1);
+            CPPUNIT_ASSERT(*(stuff->get_cpp_stream()));
+            CPPUNIT_ASSERT(!stuff->get_cpp_stream()->bad());
+            CPPUNIT_ASSERT(!stuff->get_cpp_stream()->eof());
+
+            delete stuff;
+        }
+        catch(InternalErr &e) {
+            delete stuff;
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
+        }
+        catch(Error &e) {
+            delete stuff;
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        catch(std::exception &e) {
+            delete stuff;
+            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
+        }
+        // Catch the exception from a failed ASSERT and clean up. Deleting a
+        // Response object also unlocks the HTTPCache in some cases. If delete
+        // is not called, then a failed test can leave the cache with locked
+        // entries
+        catch (...) {
+            cerr << "Caught unknown exception" << endl;
+            delete stuff;
+            throw;
+        }
+    }
+
+    void fetch_url_test_2() {
+        DBG(cerr << "Entering fetch_url_test 2" << endl);
+        HTTPResponse *stuff = 0;
+        char c;
         try {
             stuff = http->fetch_url(netcdf_das_url);
             DBG2(char ln[1024]; while (!feof(stuff->get_stream())) {
@@ -262,7 +313,51 @@ class HTTPConnectTest: public TestFixture {
             delete stuff; stuff = 0;
             throw;
         }
+    }
 
+	void fetch_url_test_2_cpp() {
+		DBG(cerr << "Entering fetch_url_test 2" << endl);
+		http->set_use_cpp_streams(true);
+
+		HTTPResponse *stuff = 0;
+		char c;
+
+		try {
+			stuff = http->fetch_url(netcdf_das_url);
+
+            stuff->get_cpp_stream()->read(&c, 1);
+            CPPUNIT_ASSERT(*(stuff->get_cpp_stream())
+            		&& !stuff->get_cpp_stream()->bad()
+            		&& !stuff->get_cpp_stream()->eof());
+
+			delete stuff;
+			stuff = 0;
+		}
+		catch (InternalErr & e) {
+			delete stuff;
+			stuff = 0;
+			CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
+		}
+		catch (Error & e) {
+			delete stuff;
+			stuff = 0;
+			CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+		}
+		// Catch the exception from a failed ASSERT and clean up. Deleting a
+		// Response object also unlocks the HTTPCache in some cases. If delete
+		// is not called, then a failed test can leave the cache with locked
+		// entries
+		catch (...) {
+			delete stuff;
+			stuff = 0;
+			throw;
+		}
+	}
+
+    void fetch_url_test_3() {
+        DBG(cerr << "Entering fetch_url_test 3" << endl);
+        HTTPResponse *stuff = 0;
+        char c;
         try {
             stuff = http->fetch_url("file:///etc/passwd");
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
@@ -289,13 +384,93 @@ class HTTPConnectTest: public TestFixture {
             delete stuff; stuff = 0;
             throw;
         }
+    }
 
+    void fetch_url_test_3_cpp() {
+        DBG(cerr << "Entering fetch_url_test 3" << endl);
+		http->set_use_cpp_streams(true);
+
+        HTTPResponse *stuff = 0;
+        char c;
+        try {
+            stuff = http->fetch_url("file:///etc/passwd");
+
+            stuff->get_cpp_stream()->read(&c, 1);
+            CPPUNIT_ASSERT(*(stuff->get_cpp_stream())
+            		&& !stuff->get_cpp_stream()->bad()
+            		&& !stuff->get_cpp_stream()->eof());
+
+            delete stuff;
+            stuff = 0;
+        }
+        catch(InternalErr & e) {
+            delete stuff;
+            stuff = 0;
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
+        }
+        catch(Error & e) {
+            delete stuff;
+            stuff = 0;
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        // Catch the exception from a failed ASSERT and clean up. Deleting a
+        // Response object also unlocks the HTTPCache in some cases. If delete
+        // is not called, then a failed test can leave the cache with locked
+        // entries
+        catch (...) {
+            delete stuff; stuff = 0;
+            throw;
+        }
+    }
+
+    void fetch_url_test_4() {
+        DBG(cerr << "Entering fetch_url_test 4" << endl);
+        HTTPResponse *stuff = 0;
+        char c;
         try {
 	    string url = (string)"file://test_config.h" ;
             stuff = http->fetch_url(url);
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
                            && !ferror(stuff->get_stream())
                            && !feof(stuff->get_stream()));
+            delete stuff;
+            stuff = 0;
+        }
+        catch(InternalErr & e) {
+            delete stuff;
+            stuff = 0;
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
+        }
+        catch(Error & e) {
+            delete stuff;
+            stuff = 0;
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        // Catch the exception from a failed ASSERT and clean up. Deleting a
+        // Response object also unlocks the HTTPCache in some cases. If delete
+        // is not called, then a failed test can leave the cache with locked
+        // entries
+        catch (...) {
+            delete stuff; stuff = 0;
+            throw;
+        }
+    }
+
+    void fetch_url_test_4_cpp() {
+        DBG(cerr << "Entering fetch_url_test 4" << endl);
+		http->set_use_cpp_streams(true);
+
+        HTTPResponse *stuff = 0;
+        char c;
+        try {
+	    string url = (string)"file://test_config.h" ;
+            stuff = http->fetch_url(url);
+
+            stuff->get_cpp_stream()->read(&c, 1);
+            CPPUNIT_ASSERT(*(stuff->get_cpp_stream())
+            		&& !stuff->get_cpp_stream()->bad()
+            		&& !stuff->get_cpp_stream()->eof());
+
             delete stuff;
             stuff = 0;
         }
@@ -412,35 +587,68 @@ class HTTPConnectTest: public TestFixture {
         }
     }
 
-    void cache_test() {
-        DBG(cerr << endl << "Entering Caching tests." << endl);
-	try {
-	    // The cache-testsuite/dodsrc file turns this off; all the other
-	    // params are set up. It used to be that HTTPConnect had an option to
-	    // turn caching on, but that no longer is present. This hack enables
-	    // caching for this test. 06/18/04 jhrg
-	    http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root(), true);
-	    DBG(cerr << "Instantiate the cache" << endl);
+	void cache_test()
+	{
+		DBG(cerr << endl << "Entering Caching tests." << endl);
+		try {
+			// The cache-testsuite/dodsrc file turns this off; all the other
+			// params are set up. It used to be that HTTPConnect had an option to
+			// turn caching on, but that no longer is present. This hack enables
+			// caching for this test. 06/18/04 jhrg
+			http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root(), true);
+			DBG(cerr << "Instantiate the cache" << endl);
 
-	    CPPUNIT_ASSERT(http->d_http_cache != 0);
-	    http->d_http_cache->set_cache_enabled(true);
-	    DBG(cerr << "Enable the cache" << endl);
+			CPPUNIT_ASSERT(http->d_http_cache != 0);
+			http->d_http_cache->set_cache_enabled(true);
+			DBG(cerr << "Enable the cache" << endl);
 
-	    fetch_url_test();
-	    DBG(cerr << "fetch_url_test" << endl);
-	    get_response_headers_test();
-	    DBG(cerr << "get_response_headers_test" << endl);
-	    server_version_test();
-	    DBG(cerr << "server_version_test" << endl);
-	    type_test();
-	    DBG(cerr << "type_test" << endl);
+			fetch_url_test_4();
+			DBG(cerr << "fetch_url_test" << endl);
+			get_response_headers_test();
+			DBG(cerr << "get_response_headers_test" << endl);
+			server_version_test();
+			DBG(cerr << "server_version_test" << endl);
+			type_test();
+			DBG(cerr << "type_test" << endl);
+		}
+		catch (Error &e) {
+			CPPUNIT_FAIL((string )"Error: " + e.get_error_message());
+		}
 	}
-	catch (Error &e) {
-	    CPPUNIT_FAIL((string)"Error: " + e.get_error_message());
-	}
-    }
 
-    void set_accept_deflate_test() {
+	void cache_test_cpp()
+	{
+		DBG(cerr << endl << "Entering Caching tests." << endl);
+		try {
+			// The cache-testsuite/dodsrc file turns this off; all the other
+			// params are set up. It used to be that HTTPConnect had an option to
+			// turn caching on, but that no longer is present. This hack enables
+			// caching for this test. 06/18/04 jhrg
+			http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root(), true);
+			DBG(cerr << "Instantiate the cache" << endl);
+
+			CPPUNIT_ASSERT(http->d_http_cache != 0);
+			http->d_http_cache->set_cache_enabled(true);
+			DBG(cerr << "Enable the cache" << endl);
+
+			fetch_url_test_4_cpp();
+			DBG(cerr << "fetch_url_test_4_cpp" << endl);
+
+			get_response_headers_test();
+			DBG(cerr << "get_response_headers_test" << endl);
+
+			server_version_test();
+			DBG(cerr << "server_version_test" << endl);
+
+			type_test();
+			DBG(cerr << "type_test" << endl);
+		}
+		catch (Error &e) {
+			CPPUNIT_FAIL((string )"Error: " + e.get_error_message());
+		}
+	}
+
+	void set_accept_deflate_test() {
         http->set_accept_deflate(false);
         CPPUNIT_ASSERT(count(http->d_request_headers.begin(),
                              http->d_request_headers.end(),
@@ -512,34 +720,6 @@ class HTTPConnectTest: public TestFixture {
         delete resp_h;
         resp_h = 0;
     }
-
-    // I'm going to remove this test. All of the other tests now work off of
-    // test.opendap.org. jhrg 7/13/05
-    void read_url_password_proxy_test() {
-        cerr << endl <<
-            "This test will fail if localhost is not configured as a proxy server\n\
-with authentication. The username must be jimg and the password must be\n\
-dods_test." << endl;
-
-        delete http;
-        http = 0;               // get rid of the default object; build a
-        // special one.
-        RCReader::delete_instance();
-        // this dodsrc directs all access through a proxy server. The
-        // localhost must be configured as such.
-        putenv((char*)"DODS_CONF=cache-testsuite/dodsrc_proxy");
-        try {
-            RCReader::initialize_instance();    // work-around pthreads for tests
-            http = new HTTPConnect(RCReader::instance());
-
-            fetch_url_test();
-        }
-        catch(Error & e) {
-            cerr << "Error: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(!"Error");
-        }
-    }
-
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(HTTPConnectTest);

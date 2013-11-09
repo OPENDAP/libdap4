@@ -41,6 +41,7 @@
 #include <functional>
 #include <algorithm>
 #include <sstream>
+#include <fstream>
 #include <iterator>
 #include <cstdlib>
 #include <cstring>
@@ -390,9 +391,7 @@ public:
     error message is stuffed into the Error object. */
 
 long
-HTTPConnect::read_url(const string &url, FILE *stream,
-                      vector<string> *resp_hdrs,
-                      const vector<string> *headers)
+HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs, const vector<string> *headers)
 {
     curl_easy_setopt(d_curl, CURLOPT_URL, url.c_str());
 
@@ -500,10 +499,8 @@ HTTPConnect::url_uses_no_proxy_for(const string &url) throw()
     @param rcr A pointer to the RCReader object which holds configuration
     file information to be used by this virtual connection. */
 
-HTTPConnect::HTTPConnect(RCReader *rcr) : d_username(""), d_password(""),
-  					  d_cookie_jar(""),
-					  d_dap_client_protocol_major(2),
-					  d_dap_client_protocol_minor(0)
+HTTPConnect::HTTPConnect(RCReader *rcr, bool use_cpp) : d_username(""), d_password(""), d_cookie_jar(""),
+		d_dap_client_protocol_major(2),	d_dap_client_protocol_minor(0), d_use_cpp_streams(use_cpp)
 
 {
     d_accept_deflate = rcr->get_deflate();
@@ -573,7 +570,7 @@ HTTPConnect::fetch_url(const string &url)
 
     HTTPResponse *stream;
 
-    if (d_http_cache && d_http_cache->is_cache_enabled()) {
+    if (/*d_http_cache && d_http_cache->*/is_cache_enabled()) {
         stream = caching_fetch_url(url);
     }
     else {
@@ -581,18 +578,17 @@ HTTPConnect::fetch_url(const string &url)
     }
 
 #ifdef HTTP_TRACE
-    stringstream ss;
-    ss << "HTTP/1.0 " << stream->get_status() << " -" << endl;
-    for (size_t i = 0; i < stream->get_headers()->size(); i++) {
-	ss << stream->get_headers()->at(i) << endl;
-    }
-    cout << ss.str();
+	stringstream ss;
+	ss << "HTTP/1.0 " << stream->get_status() << " -" << endl;
+	for (size_t i = 0; i < stream->get_headers()->size(); i++) {
+		ss << stream->get_headers()->at(i) << endl;
+	}
+	cout << ss.str();
 #endif
 
     ParseHeader parser;
 
-    parser = for_each(stream->get_headers()->begin(),
-                      stream->get_headers()->end(), ParseHeader());
+    parser = for_each(stream->get_headers()->begin(), stream->get_headers()->end(), ParseHeader());
 
 #ifdef HTTP_TRACE
     cout << endl << endl;
@@ -608,6 +604,10 @@ HTTPConnect::fetch_url(const string &url)
     stream->set_type(parser.get_object_type());
     stream->set_version(parser.get_server());
     stream->set_protocol(parser.get_protocol());
+
+    if (d_use_cpp_streams) {
+    	stream->transform_to_cpp();
+    }
 
     return stream;
 }
@@ -731,7 +731,12 @@ get_temp_file(FILE *&stream) throw(InternalErr)
     return dods_temp;
 }
 
-/** Close the temporary file opened for read_url(). */
+
+/**
+ * close temporary files - used here and in ~HTTPResponse
+ * @param s
+ * @param name
+ */
 void
 close_temp(FILE *s, const string &name)
 {
@@ -871,33 +876,43 @@ HTTPConnect::caching_fetch_url(const string &url)
 HTTPResponse *
 HTTPConnect::plain_fetch_url(const string &url)
 {
-    DBG(cerr << "Getting URL: " << url << endl);
-    FILE *stream = 0;
-    string dods_temp = get_temp_file(stream);
-    vector<string> *resp_hdrs = new vector<string>;
+	DBG(cerr << "Getting URL: " << url << endl);
+	FILE *stream = 0;
+	string dods_temp = get_temp_file(stream);
+	vector<string> *resp_hdrs = new vector<string>;
 
-    int status = -1;
-    try {
-        status = read_url(url, stream, resp_hdrs); // Throws Error.
-        if (status >= 400) {
-        	// delete resp_hdrs; resp_hdrs = 0;
-            string msg = "Error while reading the URL: ";
-            msg += url;
-            msg += ".\nThe OPeNDAP server returned the following message:\n";
-            msg += http_status_to_string(status);
-            throw Error(msg);
-        }
-    }
+	int status = -1;
+	try {
+		status = read_url(url, stream, resp_hdrs); // Throws Error.
+		if (status >= 400) {
+			// delete resp_hdrs; resp_hdrs = 0;
+			string msg = "Error while reading the URL: ";
+			msg += url;
+			msg += ".\nThe OPeNDAP server returned the following message:\n";
+			msg += http_status_to_string(status);
+			throw Error(msg);
+		}
+	}
 
-    catch (Error &e) {
-    	delete resp_hdrs;
-        close_temp(stream, dods_temp);
-        throw;
-    }
+	catch (Error &e) {
+		delete resp_hdrs;
+		close_temp(stream, dods_temp);
+		throw;
+	}
 
-    rewind(stream);
-
-    return new HTTPResponse(stream, status, resp_hdrs, dods_temp);
+#if 0
+	if (d_use_cpp_streams) {
+		fclose(stream);
+		fstream *in = new fstream(dods_temp.c_str(), ios::in|ios::binary);
+		return new HTTPResponse(in, status, resp_hdrs, dods_temp);
+	}
+	else {
+#endif
+	rewind(stream);
+	return new HTTPResponse(stream, status, resp_hdrs, dods_temp);
+#if 0
+}
+#endif
 }
 
 /** Set the <em>accept deflate</em> property. If true, the DAP client

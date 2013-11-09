@@ -93,20 +93,17 @@ public:
         response. Before a response is made, this contains the std::string "2.0."
         */
     std::string get_protocol() { return d_protocol; }
+
+    virtual void request_dmr(DMR &dmr, const std::string expr = "");
+
 #if 0
     virtual void request_version();
-
-    virtual void request_dmr(DDS &dds, std::string expr = "");
-    virtual void request_dmr_url(DDS &dds);
-
-    virtual void request_data(DDS &data, std::string expr = "");
-    virtual void request_data_url(DDS &data);
+    virtual void request_data(DMR &data, std::string expr = "");
 #endif
 
-#if 1
     virtual void read_dmr(DMR &dmr, Response &rs);
     virtual void read_dmr_no_mime(DMR &dmr, Response &rs);
-#endif
+
     virtual void read_data(DMR &data, Response &rs);
     virtual void read_data_no_mime(DMR &data, Response &rs);
 };
