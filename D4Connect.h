@@ -95,10 +95,9 @@ public:
     std::string get_protocol() { return d_protocol; }
 
     virtual void request_dmr(DMR &dmr, const std::string expr = "");
-
+    virtual void request_dap4_data(DMR &dmr, const std::string expr = "");
 #if 0
     virtual void request_version();
-    virtual void request_data(DMR &data, std::string expr = "");
 #endif
 
     virtual void read_dmr(DMR &dmr, Response &rs);

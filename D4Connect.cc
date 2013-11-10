@@ -315,6 +315,72 @@ void D4Connect::request_dmr(DMR &dmr, const string expr)
 	delete rs;
 }
 
+void D4Connect::request_dap4_data(DMR &dmr, const string expr)
+{
+    string url = d_URL + ".dap" + "?" + id2www_ce(d_ce + expr);
+
+    Response *rs = 0;
+    try {
+        rs = d_http->fetch_url(url);
+
+        d_server = rs->get_version();
+        d_protocol = rs->get_protocol();
+
+        switch (rs->get_type()) {
+        case 0:         // FIXME Pure hackery!
+        case dap4_dmr: {
+            // TODO Move to a function 11/9/13
+            istream &in = *rs->get_cpp_stream();
+
+            // Read the byte-order byte; used later on
+            char byte_order;
+            in >> byte_order;
+
+            // get a chunked input stream
+            chunked_istream cis(in, 1024, byte_order);
+
+            // parse the DMR, stopping when the boundary is found.
+
+            // force chunk read
+            // get chunk size
+            int chunk_size = cis.read_next_chunk();
+            // get chunk
+            char chunk[chunk_size];
+            cis.read(chunk, chunk_size);
+            // parse char * with given size
+            D4ParserSax2 parser;
+            // '-2' to discard the CRLF pair
+            parser.intern(chunk, chunk_size - 2, &dmr, false /*debug*/);
+
+            // Read data and store in the DMR
+            D4StreamUnMarshaller um(cis, byte_order);
+            dmr.root()->deserialize(um, dmr);
+
+            break;
+        }
+
+        case dap4_error:
+            throw InternalErr(__FILE__, __LINE__, "DAP4 errors are not processed yet.");
+
+        case web_error:
+            // We should never get here; a web error should be picked up read_url
+            // (called by fetch_url) and result in a thrown Error object.
+            throw InternalErr(__FILE__, __LINE__, "Web error found where it should never be.");
+            break;
+
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Response type not handled (got "
+                    + long_to_string(rs->get_type()) + ").");
+        }
+    }
+    catch (...) {
+        delete rs;
+        throw;
+    }
+
+    delete rs;
+}
+
 #if 0
 /** Get version information from the server. This is a new method which will
  ease the transition to DAP 4.

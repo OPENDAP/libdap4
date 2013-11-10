@@ -291,28 +291,51 @@ int main(int argc, char *argv[])
                     delete url; url = 0;
                 }
             }
-#if 1
             else if (get_dmr) {
                 for (int j = 0; j < times; ++j) {
                     D4BaseTypeFactory factory;
                     DMR dmr(&factory);
                     try {
                         url->request_dmr(dmr, expr);
+
+                        if (verbose) {
+                            cout << "DAP version: " << url->get_protocol() << ", Server version: " << url->get_version() << endl;
+                            cout << "DMR:" << endl;
+                        }
+
+                        XMLWriter xml;
+                        dmr.print_dap4(xml);
+                        cout << xml.get_doc() << endl;
                     }
                     catch (Error & e) {
                         cerr << e.get_error_message() << endl;
                         continue;       // Goto the next URL or exit the loop.
                     }
-
-                    if (verbose) {
-                        cout << "DAP version: " << url->get_protocol() << ", Server version: " << url->get_version() << endl;
-                        cout << "DMR:" << endl;
-                    }
-
-                    XMLWriter xml;
-                    dmr.print_dap4(xml);
-                    cout << xml.get_doc() << endl;
                 }
+            }
+            else if (get_dap4_data) {
+                 for (int j = 0; j < times; ++j) {
+                     D4BaseTypeFactory factory;
+                     DMR dmr(&factory);
+                     try {
+                         url->request_dap4_data(dmr, expr);
+
+                         if (verbose) {
+                             cout << "DAP version: " << url->get_protocol() << ", Server version: " << url->get_version() << endl;
+                             cout << "DMR:" << endl;
+                         }
+
+                         XMLWriter xml;
+                         dmr.print_dap4(xml);
+                         cout << xml.get_doc() << endl;
+
+                         print_data(dmr, print_rows);
+                    }
+                     catch (Error & e) {
+                         cerr << e.get_error_message() << endl;
+                         continue;       // Goto the next URL or exit the loop.
+                     }
+                 }
             }
             else {
                 HTTPConnect http(RCReader::instance());
@@ -345,41 +368,12 @@ int main(int argc, char *argv[])
                 }
             }
 
-#endif
 #if 0
             else if (get_version) {
                 fprintf(stderr, "DAP version: %s, Server version: %s\n",
                         url->request_protocol().c_str(),
                         url->get_version().c_str());
             }
-#endif
-#if 0
-            else if (get_dap4_data) {
-                for (int j = 0; j < times; ++j) {
-                    BaseTypeFactory factory;
-                    DataDDS dds(&factory);
-                    try {
-                        DBG(cerr << "URL: " << url->URL(false) << endl);
-                        DBG(cerr << "CE: " << expr << endl);
-                        url->request_data(dds, expr);
-
-                        if (verbose)
-                            fprintf(stderr, "DAP version: %s, Server version: %s\n",
-                                    url->get_protocol().c_str(),
-                                    url->get_version().c_str());
-
-                        print_data(dds, print_rows);
-                    }
-                    catch (Error & e) {
-                        cerr << e.get_error_message() << endl;
-                        delete url;
-                        url = 0;
-                        continue;
-                    }
-                }
-            }
-#endif
-#if 0
 #endif
 
             delete url;  url = 0;
