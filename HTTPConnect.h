@@ -67,12 +67,6 @@ extern int dods_keep_temps;
     headers used by DAP 2.0 and extract their values. The body of the
     response is made available using a FILE pointer.
 
-    @todo Change the way this class returns information so that the headers
-    and the stream (aka FILE pointer) are returned using an object. Design
-    this object so that its destructor closes the stream (this will prevent
-    resource leaks). It will also obviate the need for the (now broken)
-    is_response_present() predicate.
-
     @author jhrg */
 
 class HTTPConnect
@@ -83,6 +77,7 @@ private:
     HTTPCache *d_http_cache;
 
     char d_error_buffer[CURL_ERROR_SIZE]; // A human-readable message.
+    std::string d_content_type; // apparently read by libcurl; this is valid only after curl_easy_perform()
 
     bool d_accept_deflate;
 
@@ -102,7 +97,7 @@ private:
     void www_lib_init();
     long read_url(const string &url, FILE *stream, vector<string> *resp_hdrs,
                   const vector<string> *headers = 0);
-    // string get_temp_file(FILE *&stream) throw(InternalErr);
+
     HTTPResponse *plain_fetch_url(const string &url);
     HTTPResponse *caching_fetch_url(const string &url);
 

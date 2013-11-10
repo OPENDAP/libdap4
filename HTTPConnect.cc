@@ -128,6 +128,38 @@ http_status_to_string(int status)
         return string("Unknown Error: This indicates a problem with libdap++.\nPlease report this to support@opendap.org.");
 }
 
+static ObjectType
+determine_object_type(const string &header_value)
+{
+    // DAP4 Data: application/vnd.opendap.org.dap4.data
+    // DAP4 DMR: application/vnd.opendap.org.dap4.dataset-metadata+xml
+
+    string::size_type plus = header_value.find('+');
+    string base_type;
+    string type_extension = "";
+    if (plus != string::npos) {
+        base_type= header_value.substr(0, plus);
+        type_extension = header_value.substr(plus+1);
+    }
+    else
+        base_type = header_value;
+
+    if (base_type == "application/vnd.opendap.org.dap4.dataset-metadata") {
+        if (type_extension == "xml")
+            return dap4_dmr;
+        else
+            return unknown_type;     // TODO Throw Error here? jhrg 11/10/13
+    }
+    else if (base_type == "application/vnd.opendap.org.dap4.data") {
+        return dap4_data;
+    }
+    else if (header_value.find("text/html") != string::npos) {
+        return web_error;
+    }
+    else
+        return unknown_type;
+}
+
 /** Functor to parse the headers in the d_headers field. After the headers
     have been read off the wire and written into the d_headers field, scan
     them and set special fields for certain headers special to the DAP. */
@@ -147,37 +179,35 @@ public:
     {
         string name, value;
         parse_mime_header(line, name, value);
-        if (name == "content-description") {
-            DBG2(cerr << name << ": " << value << endl);
-            type = get_description_type(value);
+
+        DBG2(cerr << name << ": " << value << endl);
+
+        // Content-Type is used to determine the content of DAP4 responses. Prefer that
+        // to the Content-Description header. Content-Description was used by DAP2 instead
+        // of Content-Type.
+        if (name == "content-type") {
+            type = determine_object_type(value); // see above
+        }
+        if (type == unknown_type && name == "content-description") {
+            type = get_description_type(value); // defined in mime_util.cc
         }
         // The second test (== "dods/0.0") tests if xopendap-server has already
         // been seen. If so, use that header in preference to the old
         // XDODS-Server header. jhrg 2/7/06
         else if (name == "xdods-server" && server == "dods/0.0") {
-            DBG2(cerr << name << ": " << value << endl);
             server = value;
         }
         else if (name == "xopendap-server") {
-            DBG2(cerr << name << ": " << value << endl);
             server = value;
         }
         else if (name == "xdap") {
-            DBG2(cerr << name << ": " << value << endl);
             protocol = value;
         }
         else if (server == "dods/0.0" && name == "server") {
-            DBG2(cerr << name << ": " << value << endl);
             server = value;
         }
        	else if (name == "location") {
-       	    DBG2(cerr << name << ": " << value << endl);
        	    location = value;
-        }
-        else if (type == unknown_type && name == "content-type"
-                 && line.find("text/html") != string::npos) {
-            DBG2(cerr << name << ": text/html..." << endl);
-            type = web_error;
         }
     }
 
@@ -463,6 +493,13 @@ HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs
     if (res != 0)
         throw Error(d_error_buffer);
 
+    char *ct_ptr = 0;
+    res = curl_easy_getinfo(d_curl, CURLINFO_CONTENT_TYPE, ct_ptr);
+    if (res == CURLE_OK)
+        d_content_type = ct_ptr;
+    else
+        d_content_type = "";
+
     return status;
 }
 
@@ -588,6 +625,8 @@ HTTPConnect::fetch_url(const string &url)
 
     ParseHeader parser;
 
+    if (!d_content_type.empty())
+        stream->get_headers()->push_back("Content-Type: " + d_content_type);
     parser = for_each(stream->get_headers()->begin(), stream->get_headers()->end(), ParseHeader());
 
 #ifdef HTTP_TRACE
@@ -601,7 +640,8 @@ HTTPConnect::fetch_url(const string &url)
         return fetch_url(parser.get_location());
     }
 
-    stream->set_type(parser.get_object_type());
+    stream->set_type(parser.get_object_type()); // uses the value of content-description
+
     stream->set_version(parser.get_server());
     stream->set_protocol(parser.get_protocol());
 
@@ -621,7 +661,7 @@ HTTPConnect::fetch_url(const string &url)
 // descriptor. Use information from https://buildsecurityin.us-cert.gov/
 // (see open()) to make it more secure. Ideal solution: get deserialize()
 // methods to read from a stream returned by libcurl, not from a temporary
-// file. 9/21/07 jhrg Updated to use strings, so other misc changes. 3/22/11
+// file. 9/21/07 jhrg Updated to use strings, other misc changes. 3/22/11
 static string
 get_tempfile_template(const string &file_template)
 {
@@ -705,7 +745,7 @@ valid_temp_directory:
     @exception InternalErr thrown if the FILE* could not be opened. */
 
 string
-get_temp_file(FILE *&stream) throw(InternalErr)
+get_temp_file(FILE *&stream) throw(Error)
 {
     string dods_temp = get_tempfile_template((string)"dodsXXXXXX");
 
