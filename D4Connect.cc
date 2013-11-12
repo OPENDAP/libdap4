@@ -288,6 +288,7 @@ void D4Connect::request_dmr(DMR &dmr, const string expr)
 		switch (rs->get_type()) {
 		case unknown_type:			// FIXME Pure hackery!
 		    cerr << "Response type unknown, assuming it's a DMR response." << endl;
+		    /* no break */
 		case dap4_dmr: {
 			D4ParserSax2 parser;
 			parser.intern(*rs->get_cpp_stream(), &dmr, false /* debug */);
@@ -330,6 +331,7 @@ void D4Connect::request_dap4_data(DMR &dmr, const string expr)
         switch (rs->get_type()) {
         case unknown_type:          // FIXME Pure hackery!
             cerr << "Response type unknown, assuming it's a DAP4 Data response." << endl;
+            /* no break */
         case dap4_dmr: {
             // TODO Move to a function 11/9/13
             istream &in = *rs->get_cpp_stream();

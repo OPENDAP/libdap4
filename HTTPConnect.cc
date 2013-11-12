@@ -144,13 +144,15 @@ determine_object_type(const string &header_value)
     else
         base_type = header_value;
 
-    if (base_type == "application/vnd.opendap.org.dap4.dataset-metadata") {
+    // TODO Find a good home for constants for these values. And maybe use find()
+    // instead of ==. jhrg 11/11/13
+    if (base_type == "application/vnd.org.opendap.dap4.dataset-metadata") {
         if (type_extension == "xml")
             return dap4_dmr;
         else
             return unknown_type;     // TODO Throw Error here? jhrg 11/10/13
     }
-    else if (base_type == "application/vnd.opendap.org.dap4.data") {
+    else if (base_type == "application/vnd.org.opendap.dap4.data") {
         return dap4_data;
     }
     else if (header_value.find("text/html") != string::npos) {
@@ -494,7 +496,7 @@ HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs
         throw Error(d_error_buffer);
 
     char *ct_ptr = 0;
-    res = curl_easy_getinfo(d_curl, CURLINFO_CONTENT_TYPE, ct_ptr);
+    res = curl_easy_getinfo(d_curl, CURLINFO_CONTENT_TYPE, &ct_ptr);
     if (res == CURLE_OK)
         d_content_type = ct_ptr;
     else
