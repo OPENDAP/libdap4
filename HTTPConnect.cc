@@ -55,6 +55,7 @@
 
 #include "debug.h"
 #include "mime_util.h"
+#include "media_types.h"
 #include "GNURegex.h"
 #include "HTTPCache.h"
 #include "HTTPConnect.h"
@@ -114,9 +115,6 @@ static const char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN + 1] =
         "Gateway Time-out.",
         "HTTP Version Not Supported."
     };
-
-static const string DMR_Content_Type = "application/vnd.opendap.dap4.dataset-metadata";
-static const string DAP4_DATA_Content_Type = "application/vnd.opendap.dap4.data";
 
 /** This function translates the HTTP status codes into error messages. It
     works for those code greater than or equal to 400. */
@@ -195,7 +193,7 @@ public:
         if (type == unknown_type && name == "content-type") {
             type = determine_object_type(value); // see above
         }
-        if (name == "content-description") {
+        if (name == "content-description" && !(type == dap4_dmr || type == dap4_data || type == dap4_error)) {
             type = get_description_type(value); // defined in mime_util.cc
         }
         // The second test (== "dods/0.0") tests if xopendap-server has already

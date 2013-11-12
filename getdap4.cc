@@ -156,7 +156,7 @@ static void print_data(DMR &dmr, bool print_rows = false)
 
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "[dDvVikm:Mzstc:]");
+    GetOpt getopt(argc, argv, "[dDvVikrm:Mzstc:]");
     int option_char;
 
     bool get_dmr = false;
@@ -168,6 +168,7 @@ int main(int argc, char *argv[])
     bool accept_deflate = false;
     bool print_rows = false;
     bool mime_headers = true;
+    bool report_errors = false;
     int times = 1;
     int dap_client_major = 4;
     int dap_client_minor = 0;
@@ -199,6 +200,9 @@ int main(int argc, char *argv[])
             dods_keep_temps = 1;
             break;              // keep_temp is in Connect.cc
 #endif
+        case 'r':
+        	report_errors = true;
+        	break;
         case 'm':
             multi = true;
             times = atoi(getopt.optarg);
@@ -309,6 +313,8 @@ int main(int argc, char *argv[])
                     }
                     catch (Error & e) {
                         cerr << e.get_error_message() << endl;
+                        if (report_errors)
+                        	return EXIT_FAILURE;
                         continue;       // Goto the next URL or exit the loop.
                     }
                 }

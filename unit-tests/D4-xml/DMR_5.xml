@@ -12,6 +12,7 @@
     </Enumeration>
     <Byte name="b1"/>
     <Structure name="s">
+        <Char name="c1"/>
         <Int8 name="i8"/>
         <UInt8 name="ui8"/>
         <Int16 name="i16"/>

@@ -67,6 +67,8 @@
 #include <string>
 
 #include "mime_util.h"
+#include "media_types.h"
+
 #include "Ancillary.h"
 #include "util.h"  // This supplies flush_stream for WIN32.
 #include "debug.h"
@@ -307,32 +309,9 @@ ObjectType
 get_type(const string &value)
 {
 	return get_description_type(value);
-
-#if 0
-    if ((value == "dods_das") | (value == "dods-das"))
-        return dods_das;
-    else if ((value == "dods_dds") | (value == "dods-dds"))
-        return dods_dds;
-    else if ((value == "dods_data") | (value == "dods-data"))
-        return dods_data;
-    else if ((value == "dods_ddx") | (value == "dods-ddx"))
-        return dods_ddx;
-    else if ((value == "dods_error") | (value == "dods-error"))
-        return dods_error;
-    else if ((value == "web_error") | (value == "web-error"))
-        return web_error;
-
-    else if ((value == "dap4_dmr") | (value == "dap4-dmr"))
-        return dap4_dmr;
-    else if ((value == "dap4_data") | (value == "dap4-data"))
-        return dap4_data;
-    else if ((value == "dap4_error") | (value == "dap4-error"))
-        return dap4_error;
-
-    else
-        return unknown_type;
-#endif
 }
+
+// TODO Recode to use the constants in media_types.h. jhrg 11/12/13
 
 /** This function returns the ObjectType value that matches the given string.
     Modified to include tests for the descriptions that use hyphens in addition
@@ -342,7 +321,7 @@ get_type(const string &value)
 ObjectType
 get_description_type(const string &value)
 {
-    if ((value == "dods_das") || (value == "dods-das"))
+    if ((value == DAS1) || (value == "dods-das"))
         return dods_das;
     else if ((value == "dods_dds") || (value == "dods-dds"))
         return dods_dds;
@@ -355,9 +334,9 @@ get_description_type(const string &value)
     else if ((value == "web_error") || (value == "web-error"))
         return web_error;
 
-    else if ((value == "dap4_dmr") || (value == "dap4-dmr"))
+    else if ((value == "dap4_dmr") || (value == "dap4-dmr") || (value == DMR_Content_Type))
         return dap4_dmr;
-    else if ((value == "dap4_data") || (value == "dap4-data"))
+    else if ((value == "dap4_data") || (value == "dap4-data") || (value == DAP4_DATA_Content_Type))
         return dap4_data;
     else if ((value == "dap4_error") || (value == "dap4-error"))
         return dap4_error;

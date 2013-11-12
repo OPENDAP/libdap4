@@ -37,6 +37,8 @@
 #ifndef _mime_util_h
 #define _mime_util_h
 
+#include "media_types.h"	// Remove when the deprecated stuff comes out of the library. 11/12/13 jhrg
+
 #ifndef _object_type_h
 #include "ObjectType.h"
 #endif

@@ -332,7 +332,7 @@ void D4Connect::request_dap4_data(DMR &dmr, const string expr)
         case unknown_type:          // FIXME Pure hackery!
             cerr << "Response type unknown, assuming it's a DAP4 Data response." << endl;
             /* no break */
-        case dap4_dmr: {
+        case dap4_data: {
             // TODO Move to a function 11/9/13
             istream &in = *rs->get_cpp_stream();
 

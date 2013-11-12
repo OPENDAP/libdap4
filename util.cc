@@ -483,6 +483,9 @@ Type get_type(const char *name)
     if (strcmp(name, "Byte") == 0)
         return dods_byte_c;
 
+    if (strcmp(name, "Char") == 0)
+        return dods_char_c;
+
     if (strcmp(name, "Int8") == 0)
         return dods_int8_c;
 
@@ -665,6 +668,7 @@ is_simple_type(Type t)
     switch (t) {
 
     case dods_byte_c:
+    case dods_char_c:
 
     case dods_int8_c:
     case dods_uint8_c:
@@ -707,6 +711,7 @@ is_vector_type(Type t)
     switch (t) {
     case dods_null_c:
     case dods_byte_c:
+    case dods_char_c:
 
     case dods_int8_c:
     case dods_uint8_c:
@@ -753,6 +758,7 @@ is_constructor_type(Type t)
     switch (t) {
     case dods_null_c:
     case dods_byte_c:
+    case dods_char_c:
 
     case dods_int8_c:
     case dods_uint8_c:
@@ -794,6 +800,7 @@ bool is_integer_type(Type t)
 {
     switch (t) {
         case dods_byte_c:
+        case dods_char_c:
         case dods_int8_c:
         case dods_uint8_c:
         case dods_int16_c:

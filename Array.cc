@@ -48,6 +48,9 @@
 
 #include "D4Dimensions.h"
 #include "D4Maps.h"
+#include "D4Group.h"
+#include "D4EnumDefs.h"
+#include "D4Enum.h"
 
 #include "util.h"
 #include "debug.h"
@@ -189,10 +192,6 @@ Array::operator=(const Array &rhs)
 void
 Array::add_var(BaseType *v, Part)
 {
-#if 0
-    if (v && v->is_dap4_only_type())
-        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Array.");
-#endif
     // If 'v' is an Array, add the template instance to this object and
     // then copy the dimension information. Odd semantics; I wonder if this
     //is ever used. jhrg 6/13/12
@@ -215,10 +214,6 @@ Array::add_var(BaseType *v, Part)
 void
 Array::add_var_nocopy(BaseType *v, Part)
 {
-#if 0
-    if (v && v->is_dap4_only_type())
-        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Array.");
-#endif
     // If 'v' is an Array, add the template instance to this object and
     // then copy the dimension information. Odd semantics; I wonder if this
     //is ever used. jhrg 6/13/12
@@ -252,18 +247,6 @@ void
 Array::append_dim(int size, const string &name)
 {
     dimension d(size, www2id(name));
-#if 0
-    // This is invariant
-    d.size = size;
-    d.name = www2id(name);
-    d.dim = 0;	// Added for DAP4 jhrg 9/4/13
-
-    // this information changes with each constraint expression
-    d.start = 0;
-    d.stop = size - 1;
-    d.stride = 1;
-    d.c_size = size;
-#endif
     _shape.push_back(d);
 
     update_length();
@@ -273,19 +256,6 @@ void
 Array::append_dim(D4Dimension *dim)
 {
 	dimension d(dim->size(), www2id(dim->name()), dim);
-#if 0
-    // This is invariant
-    d.size = dim->size();
-    d.name = www2id(dim->name()); // This is the leaf name; use 'dim' to get the FQN
-
-    d.dim = dim;
-
-    // this information changes with each constraint expression
-    d.start = 0;
-    d.stop = d.size - 1;
-    d.stride = 1;
-    d.c_size = d.size;
-#endif
     _shape.push_back(d);
 
     update_length();
@@ -300,17 +270,6 @@ void
 Array::prepend_dim(int size, const string& name/* = "" */)
 {
   dimension d(size, www2id(name));
-#if 0
-  // This is invariant
-  d.size = size;
-  d.name = www2id(name);
-
-  // this information changes with each constraint expression
-  d.start = 0;
-  d.stop = size - 1;
-  d.stride = 1;
-  d.c_size = size;
-#endif
   // Shifts the whole array, but it's tiny in general
   _shape.insert(_shape.begin(), d);
 
@@ -321,17 +280,6 @@ void
 Array::prepend_dim(D4Dimension *dim)
 {
   dimension d(dim->size(), www2id(dim->name()), dim);
-#if 0
-  // This is invariant
-  d.size = size;
-  d.name = www2id(name);
-
-  // this information changes with each constraint expression
-  d.start = 0;
-  d.stop = size - 1;
-  d.stride = 1;
-  d.c_size = size;
-#endif
   // Shifts the whole array, but it's tiny in general
   _shape.insert(_shape.begin(), d);
 
@@ -475,7 +423,8 @@ Array::dimensions(bool /*constrained*/)
 
     return dim;
 #endif
-    return _shape.end() - _shape.begin();
+    // return _shape.end() - _shape.begin();
+    return _shape.size();
 }
 
 /** Return the size of the array dimension referred to by <i>i</i>.
@@ -722,6 +671,18 @@ Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/)
 	if (!name().empty())
 		if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
 			throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+	// Hack job... Copied from D4Enum::print_xml_writer. jhrg 11/12/13
+	if (var()->type() == dods_enum_c) {
+		D4Enum *e = static_cast<D4Enum*>(var());
+		string path = e->enumeration()->name();
+		if (e->enumeration()->parent()) {
+			// print the FQN for the enum def; D4Group::FQN() includes the trailing '/'
+			path = static_cast<D4Group*>(e->enumeration()->parent()->parent())->FQN() + path;
+		}
+		if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "enum", (const xmlChar*)path.c_str()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write attribute for enum");
+	}
 
 	if (prototype()->is_constructor_type()) {
 		Constructor &c = static_cast<Constructor&>(*prototype());

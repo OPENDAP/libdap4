@@ -9,6 +9,9 @@
     <Byte name="a">
         <Dim name="dim1"/>
     </Byte>
+    <Char name="a1">
+        <Dim name="dim1"/>
+    </Char>
     <Int8 name="b">
         <Dim name="dim1"/>
     </Int8>

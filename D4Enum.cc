@@ -241,7 +241,7 @@ D4Enum::print_xml_writer(XMLWriter &xml, bool constrained)
 
 
     string path = d_enum_def->name();
-    // Not every D4EnumDef is a menber of an instance of D4EnumDefs - the D4EnumDefs instance
+    // Not every D4EnumDef is a member of an instance of D4EnumDefs - the D4EnumDefs instance
     // holds a reference to the D4Group that holds the Enum definitions.
     // TODO Should this be changed - so the EnumDef holds a reference to its parent Group?
     if (d_enum_def->parent()) {
@@ -249,7 +249,7 @@ D4Enum::print_xml_writer(XMLWriter &xml, bool constrained)
     	path = static_cast<D4Group*>(d_enum_def->parent()->parent())->FQN() + path;
     }
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "enum", (const xmlChar*)path.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for enum");
 
     attributes()->print_dap4(xml);
 
