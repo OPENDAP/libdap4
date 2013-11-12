@@ -67,16 +67,19 @@ enum Part {
     dods_float64_c,
     dods_str_c,
     dods_url_c,
-    dods_array_c,
+
     dods_structure_c,
+    dods_array_c,
     dods_sequence_c,
+
     dods_grid_c,
 
+    dods_char_c,
     dods_int8_c,
     dods_uint8_c,
+
     dods_int64_c,
     dods_uint64_c,
-    dods_url4_c
     dods_enum_c,
     dods_opaque_c,
     dods_group_c
@@ -101,26 +104,19 @@ enum Type {
     dods_url_c,
 
     dods_structure_c,
-
-    // These are not used with DAP4
     dods_array_c,
     dods_sequence_c,
+
+    // Not used for DAP4
     dods_grid_c,
 
     // Added for DAP4
+    dods_char_c,	// a synonym for UInt8 (and Byte)
     dods_int8_c,
     dods_uint8_c,
 
     dods_int64_c,
     dods_uint64_c,
-#if 0
-    // jhrg 8/15/13
-    dods_url4_c,
-#endif
-#if 0
-    // Use the is_dap4 member of BaseType instead. jhrg 10/2/13
-    dods_array4_c,
-#endif
     dods_enum_c,
     dods_opaque_c,
     dods_group_c

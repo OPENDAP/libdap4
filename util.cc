@@ -604,6 +604,8 @@ D4type_name(Type t)
         return string("Null");
     case dods_byte_c:
         return string("Byte");
+    case dods_char_c:
+        return string("Char");
     case dods_int8_c:
         return string("Int8");
     case dods_uint8_c:

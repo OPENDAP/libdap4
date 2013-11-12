@@ -102,7 +102,7 @@ bool TestD4Enum::read() {
             set_value(v + 1);
     }
     else {
-        set_value((uint8_t)1);
+        set_value((uint64_t)1);
     }
 
     set_read_p(true);

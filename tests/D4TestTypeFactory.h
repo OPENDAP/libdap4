@@ -48,6 +48,7 @@ public:
     // New for DAP4
     virtual Int8 *NewInt8(const string &n = "") const;
     virtual Byte *NewUInt8(const string &n = "") const;
+    virtual Byte *NewChar(const string &n = "") const;
 
     virtual Int16 *NewInt16(const string &n = "") const;
     virtual UInt16 *NewUInt16(const string &n = "") const;

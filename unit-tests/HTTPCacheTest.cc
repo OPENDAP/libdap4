@@ -45,8 +45,6 @@
 #include "RCReader.h"		// ditto
 #include"GetOpt.h"
 
-//#define DODS_DEBUG 1
-//#define DODS_DEBUG2 2
 #include "debug.h"
 
 #if defined(DODS_DEBUG) || defined(DODS_DEBUG2)
@@ -732,14 +730,12 @@ public:
                 HTTPResponse *rs = http_conn->fetch_url(localhost_url);
                 c->cache_response(localhost_url, time(0), *(rs->get_headers()), rs->get_stream());
                 delete rs;
-                rs = 0;
             }
 
             if (!c->is_url_in_cache(expired)) {
                 HTTPResponse *rs = http_conn->fetch_url(expired);
                 c->cache_response(expired, time(0), *(rs->get_headers()), rs->get_stream());
                 delete rs;
-                rs = 0;
             }
 
             // Yes, there's stuff here.
@@ -748,6 +744,7 @@ public:
 
             vector<string> orig_h;
             FILE *cr = c->get_cached_response(localhost_url, orig_h);
+
             DBG(copy(orig_h.begin(), orig_h.end(), ostream_iterator<string>(cerr, "\n")));
 
             // Before we merge, et c., check that the headers we're going to
@@ -767,6 +764,8 @@ public:
             vector<string> updated_h;
             cr = c->get_cached_response(localhost_url, updated_h);
             c->release_cached_response(cr);
+
+            DBG(cerr << endl);
             DBG(copy(updated_h.begin(), updated_h.end(), ostream_iterator<string>(cerr, "\n")));
 
             // The XHTTPCacheTest header should be new, Date should replace the

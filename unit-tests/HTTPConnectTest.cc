@@ -33,8 +33,6 @@
 #include <algorithm>
 #include <functional>
 
-//#define DODS_DEBUG
-
 #include "GNURegex.h"
 #include "HTTPConnect.h"
 #include "RCReader.h"
@@ -159,6 +157,8 @@ class HTTPConnectTest: public TestFixture {
         vector < string > *resp_h = new vector < string >;;
 
         try {
+        	DBG(cerr << "Entering read_url_test... " << endl);
+
             FILE *dump = fopen("/dev/null", "w");
             long status = http->read_url(localhost_url, dump, resp_h);
             CPPUNIT_ASSERT(status == 200);

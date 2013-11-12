@@ -115,6 +115,9 @@ static const char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN + 1] =
         "HTTP Version Not Supported."
     };
 
+static const string DMR_Content_Type = "application/vnd.opendap.dap4.dataset-metadata";
+static const string DAP4_DATA_Content_Type = "application/vnd.opendap.dap4.data";
+
 /** This function translates the HTTP status codes into error messages. It
     works for those code greater than or equal to 400. */
 static string
@@ -131,8 +134,8 @@ http_status_to_string(int status)
 static ObjectType
 determine_object_type(const string &header_value)
 {
-    // DAP4 Data: application/vnd.opendap.org.dap4.data
-    // DAP4 DMR: application/vnd.opendap.org.dap4.dataset-metadata+xml
+    // DAP4 Data: application/vnd.opendap.dap4.data
+    // DAP4 DMR: application/vnd.opendap.dap4.dataset-metadata+xml
 
     string::size_type plus = header_value.find('+');
     string base_type;
@@ -144,15 +147,17 @@ determine_object_type(const string &header_value)
     else
         base_type = header_value;
 
-    // TODO Find a good home for constants for these values. And maybe use find()
-    // instead of ==. jhrg 11/11/13
-    if (base_type == "application/vnd.org.opendap.dap4.dataset-metadata") {
+    if (base_type == DMR_Content_Type
+    	|| (base_type.find("application/") != string::npos
+    		&& base_type.find("dap4.dataset-metadata") != string::npos)) {
         if (type_extension == "xml")
             return dap4_dmr;
         else
-            return unknown_type;     // TODO Throw Error here? jhrg 11/10/13
+            return unknown_type;
     }
-    else if (base_type == "application/vnd.org.opendap.dap4.data") {
+    else if (base_type == DAP4_DATA_Content_Type
+    		|| (base_type.find("application/") != string::npos
+    			&& base_type.find("dap4.data") != string::npos)) {
         return dap4_data;
     }
     else if (header_value.find("text/html") != string::npos) {
@@ -184,13 +189,13 @@ public:
 
         DBG2(cerr << name << ": " << value << endl);
 
-        // Content-Type is used to determine the content of DAP4 responses. Prefer that
-        // to the Content-Description header. Content-Description was used by DAP2 instead
-        // of Content-Type.
-        if (name == "content-type") {
+        // Content-Type is used to determine the content of DAP4 responses, but allow the
+        // Content-Description header to override CT o preserve operation with DAP2 servers.
+        // jhrg 11/12/13
+        if (type == unknown_type && name == "content-type") {
             type = determine_object_type(value); // see above
         }
-        if (type == unknown_type && name == "content-description") {
+        if (name == "content-description") {
             type = get_description_type(value); // defined in mime_util.cc
         }
         // The second test (== "dods/0.0") tests if xopendap-server has already
@@ -497,7 +502,7 @@ HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs
 
     char *ct_ptr = 0;
     res = curl_easy_getinfo(d_curl, CURLINFO_CONTENT_TYPE, &ct_ptr);
-    if (res == CURLE_OK)
+    if (res == CURLE_OK && ct_ptr)
         d_content_type = ct_ptr;
     else
         d_content_type = "";
@@ -588,6 +593,14 @@ HTTPConnect::~HTTPConnect()
     DBG2(cerr << "Leaving the HTTPConnect dtor" << endl);
 }
 
+/** Look for a certain header */
+class HeaderMatch : public unary_function<const string &, bool> {
+    const string &d_header;
+    public:
+        HeaderMatch(const string &header) : d_header(header) {}
+        bool operator()(const string &arg) { return arg.find(d_header) == 0; }
+};
+
 /** Dereference a URL. This method dereferences a URL and stores the result
     (i.e., it formulates an HTTP request and processes the HTTP server's
     response). After this method is successfully called, the value of
@@ -627,7 +640,12 @@ HTTPConnect::fetch_url(const string &url)
 
     ParseHeader parser;
 
-    if (!d_content_type.empty())
+    // An apparent quirk of libcurl is that it does not pass the Content-type
+    // header to the callback used to save them, but check and add it from the
+    // saved state variable only if it's not there (without this a test failed
+    // in HTTPCacheTest). jhrg 11/12/13
+    if (!d_content_type.empty() && find_if(stream->get_headers()->begin(), stream->get_headers()->end(),
+    									   HeaderMatch("Content-Type:")) == stream->get_headers()->end())
         stream->get_headers()->push_back("Content-Type: " + d_content_type);
     parser = for_each(stream->get_headers()->begin(), stream->get_headers()->end(), ParseHeader());
 
@@ -988,14 +1006,6 @@ HTTPConnect::set_accept_deflate(bool deflate)
         d_request_headers.erase(i, d_request_headers.end());
     }
 }
-
-/** Look for a certain header */
-class HeaderMatch : public unary_function<const string &, bool> {
-    const string &d_header;
-    public:
-        HeaderMatch(const string &header) : d_header(header) {}
-        bool operator()(const string &arg) { return arg.find(d_header) == 0; }
-};
 
 /** Set the <em>xdap_accept</em> property/HTTP-header. This sets the value
     of the DAP which the client advertises to servers that it understands.

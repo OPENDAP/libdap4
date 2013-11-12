@@ -67,6 +67,8 @@ BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
     switch (t) {
         case dods_byte_c:
             return NewByte(name);
+        case dods_char_c:
+        	return NewChar(name);
         case dods_uint8_c:
             return NewUInt8(name);
         case dods_int8_c:
@@ -123,6 +125,16 @@ Byte *
 D4BaseTypeFactory::NewByte(const string &n) const
 {
     return new Byte(n);
+}
+
+// Use the type constants specific to Char and UInt8 so the print reps will
+// match the server's idea of the types.
+Byte *
+D4BaseTypeFactory::NewChar(const string &n) const
+{
+    Byte *b = new Byte(n);
+    b->set_type(dods_char_c);
+    return b;
 }
 
 Byte *

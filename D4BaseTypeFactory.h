@@ -86,6 +86,7 @@ public:
 
     // The Int8 types are new for DAP4
     virtual Int8 *NewInt8(const string &n = "") const;
+    virtual Byte *NewChar(const string &n = "") const;
     virtual Byte *NewUInt8(const string &n = "") const;
 
     virtual Int16 *NewInt16(const string &n = "") const;

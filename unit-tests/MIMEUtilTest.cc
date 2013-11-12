@@ -42,9 +42,10 @@
 
 #include "GNURegex.h"
 
+#include "Error.h"
 #include "mime_util.h"
 #include "debug.h"
-#include <test_config.h>
+#include "test_config.h"
 
 using namespace CppUnit;
 using namespace std;

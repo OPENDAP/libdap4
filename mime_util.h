@@ -37,10 +37,6 @@
 #ifndef _mime_util_h
 #define _mime_util_h
 
-#ifndef _dds_h
-#include "DDS.h"
-#endif
-
 #ifndef _object_type_h
 #include "ObjectType.h"
 #endif
@@ -68,36 +64,36 @@ namespace libdap
     */
 
 //@{
-string rfc822_date(const time_t t);
-time_t last_modified_time(const string &name);
-ObjectType get_description_type(const string &value);
-bool is_boundary(const char *line, const string &boundary);
-string cid_to_header_value(const string &cid);
+std::string rfc822_date(const time_t t);
+time_t last_modified_time(const std::string &name);
+ObjectType get_description_type(const std::string &value);
+bool is_boundary(const char *line, const std::string &boundary);
+std::string cid_to_header_value(const std::string &cid);
 
-string read_multipart_boundary(istream &in, const string &boundary = "");
+std::string read_multipart_boundary(std::istream &in, const std::string &boundary = "");
 
-void parse_mime_header(const string &header, string &name, string &value);
-string name_path(const string &path);
-string get_next_mime_header(istream &in);
+void parse_mime_header(const std::string &header, std::string &name, std::string &value);
+std::string name_path(const std::string &path);
+std::string get_next_mime_header(std::istream &in);
 
-void read_multipart_headers(istream &in, const string &content_type,
-	const ObjectType object_type, const string &cid = "");
+void read_multipart_headers(std::istream &in, const std::string &content_type,
+	const ObjectType object_type, const std::string &cid = "");
 
 // For testing only
-void remove_mime_header(istream &in);
+void remove_mime_header(std::istream &in);
 
 // All of these are deprecated
-string read_multipart_boundary(FILE *in, const string &boundary = "");
-void read_multipart_headers(FILE *in, const string &content_type,
-	const ObjectType object_type, const string &cid = "");
-bool do_version(const string &script_ver, const string &dataset_ver);
-void ErrMsgT(const string &Msgt);
-ObjectType get_type(const string &value);
-string get_next_mime_header(FILE *in);
+std::string read_multipart_boundary(FILE *in, const std::string &boundary = "");
+void read_multipart_headers(FILE *in, const std::string &content_type,
+	const ObjectType object_type, const std::string &cid = "");
+bool do_version(const std::string &script_ver, const std::string &dataset_ver);
+void ErrMsgT(const std::string &Msgt);
+ObjectType get_type(const std::string &value);
+std::string get_next_mime_header(FILE *in);
 bool remove_mime_header(FILE *in);
 
 #if 0
-bool found_override(string name, string &doc);
+bool found_override(std::string name, std::string &doc);
 #endif
 //@}
 
@@ -114,10 +110,10 @@ bool found_override(string name, string &doc);
 */
 //@{
 void set_mime_text(FILE *out, ObjectType type = unknown_type,
-                   const string &version = "", EncodingType enc = x_plain,
+                   const std::string &version = "", EncodingType enc = x_plain,
                    const time_t last_modified = 0);
-void set_mime_text(ostream &out, ObjectType type = unknown_type,
-                   const string &version = "", EncodingType enc = x_plain,
+void set_mime_text(std::ostream &out, ObjectType type = unknown_type,
+                   const std::string &version = "", EncodingType enc = x_plain,
                    const time_t last_modified = 0);
 void set_mime_text(std::ostream &out, ObjectType type = unknown_type,
                    EncodingType enc = x_plain,
@@ -125,10 +121,10 @@ void set_mime_text(std::ostream &out, ObjectType type = unknown_type,
                    const std::string &protocol = "");
 
 void set_mime_html(FILE *out, ObjectType type = unknown_type,
-                   const string &version = "", EncodingType enc = x_plain,
+                   const std::string &version = "", EncodingType enc = x_plain,
                    const time_t last_modified = 0);
-void set_mime_html(ostream &out, ObjectType type = unknown_type,
-                   const string &version = "", EncodingType enc = x_plain,
+void set_mime_html(std::ostream &out, ObjectType type = unknown_type,
+                   const std::string &version = "", EncodingType enc = x_plain,
                    const time_t last_modified = 0);
 void set_mime_html(std::ostream &out, ObjectType type = unknown_type,
                    EncodingType enc = x_plain,
@@ -136,19 +132,19 @@ void set_mime_html(std::ostream &out, ObjectType type = unknown_type,
                    const std::string &protocol = "");
 
 void set_mime_binary(FILE *out, ObjectType type = unknown_type,
-                     const string &version = "", EncodingType enc = x_plain,
+                     const std::string &version = "", EncodingType enc = x_plain,
                      const time_t last_modified = 0);
-void set_mime_binary(ostream &out, ObjectType type = unknown_type,
-                     const string &version = "", EncodingType enc = x_plain,
+void set_mime_binary(std::ostream &out, ObjectType type = unknown_type,
+                     const std::string &version = "", EncodingType enc = x_plain,
                      const time_t last_modified = 0);
 void set_mime_binary(std::ostream &out, ObjectType type = unknown_type,
                      EncodingType enc = x_plain,
                      const time_t last_modified = 0,
                      const std::string &protocol = "");
 
-void set_mime_multipart(ostream &out, const string &boundary,
-	const string &start, ObjectType type = unknown_type,
-        const string &version = "", EncodingType enc = x_plain,
+void set_mime_multipart(std::ostream &out, const std::string &boundary,
+	const std::string &start, ObjectType type = unknown_type,
+        const std::string &version = "", EncodingType enc = x_plain,
         const time_t last_modified = 0);
 
 void set_mime_multipart(std::ostream &out, const std::string &boundary,
@@ -156,23 +152,23 @@ void set_mime_multipart(std::ostream &out, const std::string &boundary,
 	const time_t last_modified = 0, const std::string &protocol = "",
 	const std::string &url = "");
 
-void set_mime_ddx_boundary(ostream &out, const string &boundary,
-	const string &start, ObjectType type = unknown_type,
+void set_mime_ddx_boundary(std::ostream &out, const std::string &boundary,
+	const std::string &start, ObjectType type = unknown_type,
         EncodingType enc = x_plain);
 
-void set_mime_data_boundary(ostream &out, const string &boundary,
-	const string &cid, ObjectType type = unknown_type,
+void set_mime_data_boundary(std::ostream &out, const std::string &boundary,
+	const std::string &cid, ObjectType type = unknown_type,
         EncodingType enc = x_plain);
 
 void set_mime_error(FILE *out, int code = 404,
-                    const string &reason = "Dataset not found",
-                    const string &version = "");
-void set_mime_error(ostream &out, int code = 404,
-                    const string &reason = "Dataset not found",
-                    const string &version = "");
+                    const std::string &reason = "Dataset not found",
+                    const std::string &version = "");
+void set_mime_error(std::ostream &out, int code = 404,
+                    const std::string &reason = "Dataset not found",
+                    const std::string &version = "");
 
 void set_mime_not_modified(FILE *out);
-void set_mime_not_modified(ostream &out);
+void set_mime_not_modified(std::ostream &out);
 
 
 //@}
