@@ -205,7 +205,9 @@ public:
     virtual void value(dods_float32 *b) const;
     virtual void value(dods_float64 *b) const;
     virtual void value(vector<string> &b) const;
-
+#if 0
+    template <typename T> void get_value(T *v) const;
+#endif
     void value(vector<unsigned int> *index, dods_byte *b) const;
     void value(vector<unsigned int> *index, dods_int8 *b) const;
     void value(vector<unsigned int> *index, dods_int16 *b) const;

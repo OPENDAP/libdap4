@@ -1910,6 +1910,25 @@ void Vector::value(vector<unsigned int> *subsetIndex, vector<string> &b) const
     }
 }
 
+#if 0
+static string
+get_type_name(Type t)
+{
+    switch (t) {
+    case dods_byte_c:
+        return "dods_byte";
+    default:
+        return "";
+    }
+}
+template <typename T>
+void Vector::get_value(T *v) const
+{
+    if (v && get_type_name(d_proto->type()) == typeid(T).name())
+        memcpy(v, d_buf, length() * sizeof(T));
+}
+#endif
+
 /** @brief Get a copy of the data held by this variable.
  Read data from this variable's internal storage and load it into the
  memory referenced by \c b. The argument \c b must point to enough memory
