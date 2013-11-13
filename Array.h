@@ -206,7 +206,7 @@ public:
     virtual void clear_constraint(); // deprecated
 
     virtual void update_length(int size = 0); // should be used internally only
-    // TODO Use Vector?
+    // Use Vector
     // virtual unsigned int width(bool constrained = false) const;
 
     Dim_iter dim_begin() ;

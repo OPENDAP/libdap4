@@ -198,11 +198,9 @@ unsigned int Vector::m_create_cardinal_data_buffer_for_type(unsigned int numElts
 /** Delete d_buf and zero it and d_capacity out */
 void Vector::m_delete_cardinal_data_buffer()
 {
-    // if (_buf) {
-        delete[] d_buf;
-        d_buf = 0;
-        d_capacity = 0;
-    //}
+	delete[] d_buf;
+	d_buf = 0;
+	d_capacity = 0;
 }
 
 /** Helper to reduce cut and paste in the virtual's.
@@ -453,13 +451,15 @@ BaseType *Vector::var(unsigned int i)
         case dods_uint32_c:
         case dods_int64_c:
         case dods_uint64_c:
+
+        case dods_enum_c:
+
         case dods_float32_c:
-        case dods_float64_c: {
+        case dods_float64_c:
             // Transfer the ith value to the BaseType *d_proto
             d_proto->val2buf(d_buf + (i * d_proto->width()));
             return d_proto;
             break;
-        }
 
         case dods_str_c:
         case dods_url_c:
@@ -546,7 +546,8 @@ void Vector::vec_resize(int l)
  This method is intended to be used by objects which transform DAP objects
  like the DataDDS into an ASCII CSV representation.
 
- the data source.
+ @note A DAP2-only method
+
  @param eval A reference to a constraint evaluator
  @param dds The complete DDS to which this variable belongs */
 void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
@@ -715,10 +716,6 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
         case dods_uint32_c:
         case dods_float32_c:
         case dods_float64_c:
-            if (d_buf && !reuse) {
-                m_delete_cardinal_data_buffer();
-            }
-
             um.get_int((int &) num);
 
             DBG(cerr << "Vector::deserialize: num = " << num << endl);
@@ -730,8 +727,9 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
             if (num != (unsigned int) length())
                 throw InternalErr(__FILE__, __LINE__, "The server sent declarations and data with mismatched sizes.");
 
-            if (!d_buf) {
-                // Make _buf be large enough for length() elements of _var->type()
+            if (!d_buf || !reuse) {
+                // Make d_buf be large enough for length() elements of _var->type()
+            	// m_create...() deletes the old buffer.
                 m_create_cardinal_data_buffer_for_type(length());
                 DBG(cerr << "Vector::deserialize: allocating "
                         << width() << " bytes for an array of "
@@ -804,25 +802,29 @@ void Vector::compute_checksum(Crc32 &checksum)
         case dods_byte_c:
         case dods_int8_c:
         case dods_uint8_c:
-        	checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length());
-            break;
+        	//checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length());
+            //break;
 
         case dods_int16_c:
         case dods_uint16_c:
-        	checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * sizeof(int16_t));
-            break;
+        	//checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * sizeof(int16_t));
+            //break;
 
         case dods_int32_c:
         case dods_uint32_c:
         case dods_float32_c:
-        	checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * sizeof(int32_t));
-            break;
+        	//checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * sizeof(int32_t));
+            //break;
 
         case dods_int64_c:
         case dods_uint64_c:
         case dods_float64_c:
-        	checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * sizeof(int64_t));
-            break;
+        	//checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * sizeof(int64_t));
+            //break;
+
+        case dods_enum_c:
+        	checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * d_proto->width());
+        	break;
 
         case dods_str_c:
         case dods_url_c:
@@ -859,8 +861,12 @@ void Vector::intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval)
         case dods_uint32_c:
         case dods_int64_c:
         case dods_uint64_c:
+
+        case dods_enum_c:
+
         case dods_float32_c:
         case dods_float64_c:
+
         case dods_str_c:
         case dods_url_c:
         	compute_checksum(checksum);
@@ -896,6 +902,7 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bo
 
     switch (d_proto->type()) {
         case dods_byte_c:
+        case dods_char_c:
         case dods_int8_c:
         case dods_uint8_c:
             m.put_vector(d_buf, num);
@@ -908,6 +915,13 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bo
         case dods_int64_c:
         case dods_uint64_c:
         	m.put_vector(d_buf, num, d_proto->width());
+        	break;
+
+        case dods_enum_c:
+        	if (d_proto->width() == 1)
+        		m.put_vector(d_buf, num);
+        	else
+        		m.put_vector(d_buf, num, d_proto->width());
         	break;
 
         case dods_float32_c:
@@ -963,6 +977,7 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 
     switch (d_proto->type()) {
         case dods_byte_c:
+        case dods_char_c:
         case dods_int8_c:
         case dods_uint8_c:
         	um.get_vector((char *)d_buf, length());
@@ -975,6 +990,13 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
         case dods_int64_c:
         case dods_uint64_c:
         	um.get_vector((char *)d_buf, length(), d_proto->width());
+        	break;
+
+        case dods_enum_c:
+        	if (d_proto->width() == 1)
+        		um.get_vector((char *)d_buf, length());
+        	else
+        		um.get_vector((char *)d_buf, length(), d_proto->width());
         	break;
 
         case dods_float32_c:
@@ -992,10 +1014,7 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
             d_capacity = len; // capacity is number of strings we can fit.
 
             for (int64_t i = 0; i < len; ++i) {
-                // string str;
                 um.get_str(d_str[i]);
-                // d_str[i] = str;
-
             }
 
             break;
@@ -1077,14 +1096,17 @@ unsigned int Vector::val2buf(void *val, bool reuse)
         case dods_uint32_c:
         case dods_int64_c:
         case dods_uint64_c:
+
+        case dods_enum_c:
+
         case dods_float32_c:
         case dods_float64_c:
-            if (d_buf && !reuse)
+#if 0
+        	if (d_buf && !reuse)
                 m_delete_cardinal_data_buffer();
-
+#endif
             // First time or no reuse (free'd above)
-            // TODO Check that length() returns the constrained size
-            if (!d_buf)
+            if (!d_buf || !reuse)
                 m_create_cardinal_data_buffer_for_type(length());
 
             // width(true) returns the size in bytes given the constraint
@@ -1165,6 +1187,9 @@ unsigned int Vector::buf2val(void **val)
         case dods_uint32_c:
         case dods_int64_c:
         case dods_uint64_c:
+
+        case dods_enum_c:
+
         case dods_float32_c:
         case dods_float64_c:
             if (!d_buf)
@@ -1173,7 +1198,7 @@ unsigned int Vector::buf2val(void **val)
                 *val = new char[wid];
 
             memcpy(*val, d_buf, wid);
-            return wid; // width(); jhrg 10/7/13
+            return wid;
             break;
 
         case dods_str_c:
@@ -1312,6 +1337,9 @@ void Vector::reserve_value_capacity(unsigned int numElements)
         case dods_uint32_c:
         case dods_int64_c:
         case dods_uint64_c:
+
+        case dods_enum_c:
+
         case dods_float32_c:
         case dods_float64_c:
             // Make _buf be the right size and set _capacity
@@ -1438,6 +1466,9 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 		case dods_uint32_c:
 		case dods_int64_c:
 		case dods_uint64_c:
+
+		case dods_enum_c:
+
 		case dods_float32_c:
 		case dods_float64_c: {
 			if (!d_buf) {
@@ -1909,6 +1940,16 @@ void Vector::value(vector<unsigned int> *subsetIndex, vector<string> &b) const
         }
     }
 }
+
+
+#if 0
+template <typename T>
+void Vector::value(T *v)
+{
+	if (v && T.type_id() == dods_byte)
+}
+#endif
+
 
 #if 0
 static string
