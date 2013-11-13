@@ -161,6 +161,9 @@ public:
     virtual unsigned int set_value_slice_from_row_major_vector(const Vector& rowMajorData, unsigned int startElement);
 
     // TODO Use templates?
+    template <typename T> bool set_value(T *v, int sz);
+    template <typename T> bool set_value(vector<T> &v, int sz);
+#if 0
     virtual bool set_value(dods_byte *val, int sz);
     virtual bool set_value(vector<dods_byte> &val, int sz);
 
@@ -190,10 +193,12 @@ public:
 
     virtual bool set_value(dods_float64 *val, int sz);
     virtual bool set_value(vector<dods_float64> &val, int sz);
-
+#endif
     virtual bool set_value(string *val, int sz);
     virtual bool set_value(vector<string> &val, int sz);
 
+    template <typename T> void value(T *v) const;
+#if 0
     virtual void value(dods_byte *b) const;
     virtual void value(dods_int8 *b) const;
     virtual void value(dods_int16 *b) const;
@@ -204,10 +209,11 @@ public:
     virtual void value(dods_uint64 *b) const;
     virtual void value(dods_float32 *b) const;
     virtual void value(dods_float64 *b) const;
-    virtual void value(vector<string> &b) const;
-#if 0
-    template <typename T> void get_value(T *v) const;
 #endif
+    virtual void value(vector<string> &b) const;
+
+    template <typename T> void value(vector<unsigned int> *indices, T *b) const;
+#if 0
     void value(vector<unsigned int> *index, dods_byte *b) const;
     void value(vector<unsigned int> *index, dods_int8 *b) const;
     void value(vector<unsigned int> *index, dods_int16 *b) const;
@@ -216,6 +222,7 @@ public:
     void value(vector<unsigned int> *index, dods_uint32 *b) const;
     void value(vector<unsigned int> *index, dods_float32 *b) const;
     void value(vector<unsigned int> *index, dods_float64 *b) const;
+#endif
     void value(vector<unsigned int> *index, vector<string> &b) const;
 
     virtual void *value();

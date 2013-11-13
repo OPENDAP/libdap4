@@ -55,6 +55,8 @@
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
 
+#include "D4Enum.h"
+
 #include "dods-datatypes.h"
 #include "escaping.h"
 #include "util.h"
@@ -1515,8 +1517,107 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 	return (unsigned int) rowMajorData.length();
 }
 
+/**
+ * Does the C++ type correspond to the DAP Type enum value? This works only for
+ * numeric cardinal types. For Enums, pass the value of element_type(); for all
+ * others use type().
+ * @param t
+ * @param dt
+ * @return True if the types match, false otherwise
+ */
+template <typename T>
+static bool types_match(Type t, T *cpp_var)
+{
+    switch (t) {
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_uint8_c:
+        return typeid(cpp_var) == typeid(dods_byte*);
+
+    case dods_int8_c:
+        return typeid(cpp_var) == typeid(dods_int8*);
+    case dods_int16_c:
+        return typeid(cpp_var) == typeid(dods_int16*);
+    case dods_uint16_c:
+        return typeid(cpp_var) == typeid(dods_uint16*);
+    case dods_int32_c:
+        return typeid(cpp_var) == typeid(dods_int32*);
+    case dods_uint32_c:
+        return typeid(cpp_var) == typeid(dods_uint32*);
+    case dods_int64_c:
+        return typeid(cpp_var) == typeid(dods_int64*);
+    case dods_uint64_c:
+        return typeid(cpp_var) == typeid(dods_uint32*);
+
+    case dods_float32_c:
+        return typeid(cpp_var) == typeid(dods_float32*);
+    case dods_float64_c:
+        return typeid(cpp_var) == typeid(dods_float64*);
+
+    case dods_null_c:
+    case dods_enum_c:
+    case dods_str_c:
+    case dods_url_c:
+    case dods_opaque_c:
+    case dods_array_c:
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_group_c:
+    default:
+        return false;
+    }
+}
+
 //@{
 /** @brief set the value of a byte array */
+
+template <typename T>
+bool Vector::set_value(T *v, int sz)
+{
+    if (!v || !types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
+        return false;
+
+    m_set_cardinal_values_internal(v, sz);
+    return true;
+}
+
+template <typename T>
+bool Vector::set_value(vector<T> &v, int sz)
+{
+    // Extra call worth the overhead?
+    return set_value(&v[0], sz);
+#if 0
+    if (!v || !types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
+        return false;
+
+    m_set_cardinal_values_internal(&v[0], sz);
+    return true;
+#endif
+}
+
+template bool Vector::set_value(dods_byte *val, int sz);
+template bool Vector::set_value(dods_int8 *val, int sz);
+template bool Vector::set_value(dods_int16 *val, int sz);
+template bool Vector::set_value(dods_uint16 *val, int sz);
+template bool Vector::set_value(dods_int32 *val, int sz);
+template bool Vector::set_value(dods_uint32 *val, int sz);
+template bool Vector::set_value(dods_int64 *val, int sz);
+template bool Vector::set_value(dods_uint64 *val, int sz);
+template bool Vector::set_value(dods_float32 *val, int sz);
+template bool Vector::set_value(dods_float64 *val, int sz);
+
+template bool Vector::set_value(vector<dods_byte> &val, int sz);
+template bool Vector::set_value(vector<dods_int8> &val, int sz);
+template bool Vector::set_value(vector<dods_int16> &val, int sz);
+template bool Vector::set_value(vector<dods_uint16> &val, int sz);
+template bool Vector::set_value(vector<dods_int32> &val, int sz);
+template bool Vector::set_value(vector<dods_uint32> &val, int sz);
+template bool Vector::set_value(vector<dods_int64> &val, int sz);
+template bool Vector::set_value(vector<dods_uint64> &val, int sz);
+template bool Vector::set_value(vector<dods_float32> &val, int sz);
+template bool Vector::set_value(vector<dods_float64> &val, int sz);
+
+#if 0
 bool Vector::set_value(dods_byte *val, int sz)
 {
 	assert(var()->type() == dods_byte_c || var()->type() == dods_uint8_c);
@@ -1705,6 +1806,7 @@ bool Vector::set_value(vector<dods_float64> &val, int sz)
 {
     return set_value(&val[0], sz);
 }
+#endif
 
 /** @brief set the value of a string or url array */
 bool Vector::set_value(string *val, int sz)
@@ -1761,6 +1863,47 @@ bool Vector::set_value(vector<string> &val, int sz)
  * location in the Vector's internal storage from which to read the returned value.
  * @param b A pointer to the memory to hold the data; must be at least
  * length() * sizeof(dods_byte) in size.*/
+template <typename T>
+void Vector::value(vector<unsigned int> *indices, T *b) const
+{
+   // unsigned long currentIndex;
+#if 0
+    // Iterator version. Not tested, jhrg 8/14/13
+    for (vector<unsigned int>::iterator i = indices->begin(), e = indices->end(); i != e; ++i) {
+        unsigned long currentIndex = *i;
+        if(currentIndex > (unsigned int)length()){
+            stringstream s;
+            s << "Vector::value() - Subset index[" << i - subsetIndex->begin() <<  "] = " << currentIndex << " references a value that is " <<
+                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
+            throw Error(s.str());
+        }
+        b[i - indices->begin()] = reinterpret_cast<T*>(d_buf )[currentIndex];
+    }
+#endif
+    for (unsigned long i = 0, e = indices->size(); i < e; ++i) {
+        unsigned long currentIndex = (*indices)[i];
+        if (currentIndex > (unsigned int)length()) {
+            stringstream s;
+            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
+                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
+            throw Error(s.str());
+        }
+        b[i] = reinterpret_cast<T*>(d_buf )[currentIndex]; // I like this version - and it works!
+    }
+}
+
+template void Vector::value(vector<unsigned int> *indices, dods_byte *b) const;
+template void Vector::value(vector<unsigned int> *indices, dods_int8 *b) const;
+template void Vector::value(vector<unsigned int> *indices, dods_int16 *b) const;
+template void Vector::value(vector<unsigned int> *indices, dods_uint16 *b) const;
+template void Vector::value(vector<unsigned int> *indices, dods_int32 *b) const;
+template void Vector::value(vector<unsigned int> *indices, dods_uint32 *b) const;
+template void Vector::value(vector<unsigned int> *indices, dods_int64 *b) const;
+template void Vector::value(vector<unsigned int> *indices, dods_uint64 *b) const;
+template void Vector::value(vector<unsigned int> *indices, dods_float32 *b) const;
+template void Vector::value(vector<unsigned int> *indices, dods_float64 *b) const;
+
+#if 0
 void Vector::value(vector<unsigned int> *subsetIndex, dods_byte *b) const
 {
    // unsigned long currentIndex;
@@ -1920,7 +2063,7 @@ void Vector::value(vector<unsigned int> *subsetIndex, dods_float64 *b) const
         b[i] = reinterpret_cast<dods_float64*>(d_buf )[currentIndex]; // I like this version - and it works!
     }
 }
-
+#endif
 
 /** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
 void Vector::value(vector<unsigned int> *subsetIndex, vector<string> &b) const
@@ -1941,35 +2084,27 @@ void Vector::value(vector<unsigned int> *subsetIndex, vector<string> &b) const
     }
 }
 
-
-#if 0
 template <typename T>
-void Vector::value(T *v)
+void Vector::value(T *v) const
 {
-	if (v && T.type_id() == dods_byte)
-}
-#endif
-
-
-#if 0
-static string
-get_type_name(Type t)
-{
-    switch (t) {
-    case dods_byte_c:
-        return "dods_byte";
-    default:
-        return "";
-    }
-}
-template <typename T>
-void Vector::get_value(T *v) const
-{
-    if (v && get_type_name(d_proto->type()) == typeid(T).name())
+    // Only copy if v is not null and the proto's  type matches.
+    // For Enums, use the element type since type == dods_enum_c.
+    if (v && types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
         memcpy(v, d_buf, length() * sizeof(T));
 }
-#endif
 
+template void Vector::value(dods_byte *v) const;
+template void Vector::value(dods_int8 *v) const;
+template void Vector::value(dods_int16 *v) const;
+template void Vector::value(dods_uint16 *v) const;
+template void Vector::value(dods_int32 *v) const;
+template void Vector::value(dods_uint32 *v) const;
+template void Vector::value(dods_int64 *v) const;
+template void Vector::value(dods_uint64 *v) const;
+template void Vector::value(dods_float32 *v) const;
+template void Vector::value(dods_float64 *v) const;
+
+#if 0
 /** @brief Get a copy of the data held by this variable.
  Read data from this variable's internal storage and load it into the
  memory referenced by \c b. The argument \c b must point to enough memory
@@ -2055,6 +2190,7 @@ void Vector::value(dods_float64 *b) const
         memcpy(b, d_buf, length() * sizeof(dods_float64));
     }
 }
+#endif
 
 /** @brief Get a copy of the data held by this variable. */
 void Vector::value(vector<string> &b) const
