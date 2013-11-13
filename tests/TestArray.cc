@@ -49,7 +49,6 @@
 
 //#define DODS_DEBUG
 
-//#include "ce_functions.h"
 #include "util.h"
 #include "debug.h"
 
@@ -63,6 +62,8 @@
 
 #include "TestInt64.h"
 #include "TestUInt64.h"
+
+#include "TestD4Enum.h"
 
 #include "TestFloat32.h"
 #include "TestFloat64.h"
@@ -237,79 +238,83 @@ void TestArray::m_constrained_matrix(vector<T>&constrained_array)
         unconstrained_size *= dimension_size(d++, false);
 
     vector<T> whole_array(unconstrained_size);
-#if 0
-    char *whole_array = new char[unconstrained_size * width(true)];
-    DBG(cerr << "unconstrained size: " << unconstrained_size << endl);
-
-    int elem_width = var()->width(true); // size of an element
-    char *elem_val = new char[elem_width];
-#endif
     for (int i = 0; i < unconstrained_size; ++i) {
+        T v;
         var()->read();
-        whole_array[i] = static_cast<C*>(var())->value();
 #if 0
-        var()->buf2val((void **) &elem_val); //FIXME use value() instead
-
-        memcpy(whole_array + i * elem_width, elem_val, elem_width);
+        if (var()->type() == dods_enum_c)
+            static_cast<C*>(var())->value(&v);
+        else
 #endif
+            v = static_cast<C*>(var())->value();
+
+        whole_array[i] = v;
         var()->set_read_p(false); // pick up the next value
     }
 
-#if 0
-    DBG(cerr << "whole_array: ";
-            for (int i = 0; i < unconstrained_size; ++i) {
-                cerr << (int)*(dods_byte*)(whole_array + (i * elem_width)) << ", ";
-            }
-            cerr << endl);
-#endif
     DBG(cerr << "whole_array: "; copy(whole_array.begin(), whole_array.end(), ostream_iterator<T>(cerr, ", ")); cerr << endl);
 
     Dim_iter Y = dim_begin();
     Dim_iter X = Y + 1;
-    //char *dest = constrained_array;
 
     DBG(cerr << "dimension_start(Y): " << dimension_start(Y) << endl);
     DBG(cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl);
     DBG(cerr << "dimension_start(X): " << dimension_start(X) << endl);
     DBG(cerr << "dimension_stop(X): " << dimension_stop(X) << endl);
-    // int elem_width = var()->width(true); // size of an element
+
     int constrained_size = 0;
     int y = dimension_start(Y);
     while (y < dimension_stop(Y) + 1) {
-
         int x = dimension_start(X);
+
         while (x < dimension_stop(X) + 1) {
-#if 0
-            DBG2(cerr << "whole[" << y << "][" << x << "]: ("
-                    << m_offset(y, Y, x) << ") "
-                    << *(dods_byte*)(whole_array + m_offset(y, X, x)*elem_width)
-                    << endl);
-#endif
-#if 0
-            memcpy(dest, whole_array + m_offset(y, X, x) * elem_width, elem_width);
-#endif
-            //memcpy(dest, &whole_array[m_offset(y, X, x)], elem_width);
-
             constrained_array[constrained_size++] = whole_array[m_offset(y, X, x)];
-
-            //dest += elem_width;
             x += dimension_stride(X);
-            //constrained_size++;
         }
 
         y += dimension_stride(Y);
     }
-#if 0
-    DBG(cerr << "constrained size: " << constrained_size << endl); DBG(cerr << "constrained_array: ";
-            for (int i = 0; i < constrained_size; ++i) {
-                cerr << (int)*(dods_byte*)(constrained_array + (i * elem_width)) << ", ";
-            }
-            cerr << endl);
-#endif
-#if 0
-    delete[] whole_array;
-    delete[] elem_val;
-#endif
+}
+
+template <typename T>
+void TestArray::m_enum_constrained_matrix(vector<T>&constrained_array)
+{
+    int unconstrained_size = 1;
+    Dim_iter d = dim_begin();
+    while (d != dim_end())
+        unconstrained_size *= dimension_size(d++, false);
+
+    vector<T> whole_array(unconstrained_size);
+    for (int i = 0; i < unconstrained_size; ++i) {
+        T v;
+        var()->read();
+        static_cast<D4Enum*>(var())->value(&v);
+        whole_array[i] = v;
+        var()->set_read_p(false); // pick up the next value
+    }
+
+    DBG(cerr << "whole_array: "; copy(whole_array.begin(), whole_array.end(), ostream_iterator<T>(cerr, ", ")); cerr << endl);
+
+    Dim_iter Y = dim_begin();
+    Dim_iter X = Y + 1;
+
+    DBG(cerr << "dimension_start(Y): " << dimension_start(Y) << endl);
+    DBG(cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl);
+    DBG(cerr << "dimension_start(X): " << dimension_start(X) << endl);
+    DBG(cerr << "dimension_stop(X): " << dimension_stop(X) << endl);
+
+    int constrained_size = 0;
+    int y = dimension_start(Y);
+    while (y < dimension_stop(Y) + 1) {
+        int x = dimension_start(X);
+
+        while (x < dimension_stop(X) + 1) {
+            constrained_array[constrained_size++] = whole_array[m_offset(y, X, x)];
+            x += dimension_stride(X);
+        }
+
+        y += dimension_stride(Y);
+    }
 }
 
 /**
@@ -326,11 +331,6 @@ void TestArray::m_cardinal_type_read_helper()
             m_build_special_values();
         }
         else if (dimensions() == 2) {
-#if 0
-            vector<char> tmp(width(true));
-            m_constrained_matrix<T, C>(&tmp[0]);
-            val2buf(&tmp[0]);	// This is a call to Array::val2buf which defaults to Vector::val2buf
-#endif
             vector<T> tmp(length());
             m_constrained_matrix<T, C>(tmp);
             set_value(tmp, length());
@@ -339,25 +339,60 @@ void TestArray::m_cardinal_type_read_helper()
             vector<T> tmp(length());
             for (int64_t i = 0, end = length(); i < end; ++i) {
                 var()->read();
-#if 0
-                T value = static_cast<C*>(var())->value();
-                tmp[i] = value;
-#endif
                 tmp[i] = static_cast<C*>(var())->value();
-
                 var()->set_read_p(false); // pick up the next value
             }
             set_value(tmp, length());
         }
     }
     else {
-    	// read a value into the Array's prototype element
+        // read a value into the Array's prototype element
         var()->read();
         T value = static_cast<C*>(var())->value();
+        vector<T> tmp(length());
+        for (int64_t i = 0, end = length(); i < end; ++i) {
+            tmp[i] = value;
+        }
+
+        set_value(tmp, length());
+    }
+}
+
+/**
+ * Load the variable's internal data buffer with values, simulating a read()
+ * call to some data store. A private method.
+ */
+template <typename T>
+void TestArray::m_enum_type_read_helper()
+{
+    if (get_series_values()) {
+        if (dimensions() == 2) {
+            vector<T> tmp(length());
+            m_enum_constrained_matrix<T>(tmp);
+            set_value(tmp, length());
+        }
+        else {
+            vector<T> tmp(length());
+            for (int64_t i = 0, end = length(); i < end; ++i) {
+                var()->read();
+                T v;
+                static_cast<D4Enum*>(var())->value(&v);
+
+                tmp[i] = v;
+                var()->set_read_p(false); // pick up the next value
+            }
+            set_value(tmp, length());
+        }
+    }
+    else {
+        // read a value into the Array's prototype element
+        var()->read();
+        T value;
+        static_cast<D4Enum*>(var())->value(&value);
 
         vector<T> tmp(length());
         for (int64_t i = 0, end = length(); i < end; ++i) {
-        	tmp[i] = value;
+            tmp[i] = value;
         }
 
         set_value(tmp, length());
@@ -408,6 +443,7 @@ bool TestArray::read()
         	break;
 
         case dods_byte_c:
+        case dods_char_c:
         case dods_uint8_c:
         	m_cardinal_type_read_helper<dods_byte, Byte>();
         	break;
@@ -419,6 +455,39 @@ bool TestArray::read()
         case dods_uint64_c:
         	m_cardinal_type_read_helper<dods_uint64, UInt64>();
         	break;
+
+        case dods_enum_c:
+            switch (static_cast<D4Enum*>(var())->element_type()) {
+            case dods_byte_c:
+            case dods_char_c:
+            case dods_uint8_c:
+                m_enum_type_read_helper<dods_byte>();
+                break;
+            case dods_int8_c:
+                m_enum_type_read_helper<dods_int8>();
+                break;
+            case dods_int16_c:
+                m_enum_type_read_helper<dods_int16>();
+                break;
+            case dods_uint16_c:
+                m_enum_type_read_helper<dods_uint16>();
+                break;
+            case dods_int32_c:
+                m_enum_type_read_helper<dods_int32>();
+                break;
+            case dods_uint32_c:
+                m_enum_type_read_helper<dods_uint32>();
+                break;
+            case dods_int64_c:
+                m_enum_type_read_helper<dods_int64>();
+                break;
+            case dods_uint64_c:
+                m_enum_type_read_helper<dods_uint64>();
+                break;
+            default:
+                throw InternalErr(__FILE__, __LINE__, "Enum with undefined type.");
+            }
+            break;
 
         case dods_str_c:
         case dods_url_c: {
@@ -457,6 +526,7 @@ bool TestArray::read()
             break;
 
         case dods_sequence_c:
+            // No sequence arrays in DAP2
         	if (!is_dap4())
         		throw InternalErr(__FILE__, __LINE__, "Bad data type");
 
@@ -470,6 +540,7 @@ bool TestArray::read()
 
             break;
 
+            // No Grids in DAP4; No arrays of arrays and no null-typed vars in DAP2 or 4
         case dods_grid_c:
         case dods_array_c:
         case dods_null_c:

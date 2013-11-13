@@ -50,9 +50,12 @@ class TestArray: public Array, public TestCommon {
     void m_build_special_values();
 
     int m_offset(int y, Dim_iter Y, int x);
+
     template <typename T, class C> void m_constrained_matrix(vector<T> &constrained_array);
+    template <typename T> void m_enum_constrained_matrix(vector<T> &constrained_array);
 
     template <typename T, class C> void m_cardinal_type_read_helper();
+    template <typename T> void m_enum_type_read_helper();
 
 public:
     TestArray(const string &n, BaseType *v, bool is_dap4 = false);
