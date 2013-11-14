@@ -191,7 +191,6 @@ unsigned int Vector::m_create_cardinal_data_buffer_for_type(unsigned int numElts
     // Actually new up the array with enough bytes to hold numEltsOfType of the actual type.
     unsigned int bytesPerElt = d_proto->width();
     unsigned int bytesNeeded = bytesPerElt * numEltsOfType;
-    cerr << "Allocating space for d_buf for " << name() << endl; // FIXME
     d_buf = new char[bytesNeeded];
 
     d_capacity = numEltsOfType;
@@ -1548,7 +1547,7 @@ static bool types_match(Type t, T *cpp_var)
     case dods_int64_c:
         return typeid(cpp_var) == typeid(dods_int64*);
     case dods_uint64_c:
-        return typeid(cpp_var) == typeid(dods_uint32*);
+        return typeid(cpp_var) == typeid(dods_uint64*);
 
     case dods_float32_c:
         return typeid(cpp_var) == typeid(dods_float32*);
