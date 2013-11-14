@@ -2296,39 +2296,6 @@ void Vector::add_var_nocopy(BaseType * v, Part)
     }
 }
 
-#if 0
-// branch version
-void Vector::add_var_nocopy(BaseType * v, Part)
-{
-    // Delete the current template variable
-    if (d_proto) {
-        delete d_proto;
-        d_proto = 0;
-    }
-
-    // if 'v' is null, just set _var to null and exit.
-    if (!v) {
-        d_proto = 0;
-    }
-    else {
-        d_proto = v;
-
-        // If 'v' has a name, use it as the name of the array. If it *is*
-        // empty, then make sure to copy the array's name to the template
-        // so that software which uses the template's name will still work.
-        if (!v->name().empty())
-            set_name(v->name());
-        else
-            d_proto->set_name(name());
-
-        d_proto->set_parent(this); // Vector --> child
-
-        DBG(cerr << "Vector::add_var: Added variable " << v << " ("
-                << v->name() << " " << v->type_name() << ")" << endl);
-    }
-}
-#endif
-
 bool Vector::check_semantics(string & msg, bool)
 {
     return BaseType::check_semantics(msg);
