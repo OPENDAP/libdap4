@@ -198,6 +198,92 @@ D4Enum::deserialize(D4StreamUnMarshaller &um, DMR &)
 	}
 }
 
+unsigned int D4Enum::val2buf(void *val, bool)
+{
+    if (!val)
+        throw InternalErr("The incoming pointer does not contain any data.");
+
+    switch (d_element_type) {
+     case dods_byte_c:
+     case dods_uint8_c:
+         d_buf.ui8 = *(dods_byte*)val;
+         break;
+     case dods_uint16_c:
+         d_buf.ui16 = *(dods_uint16*)val;
+         break;
+     case dods_uint32_c:
+         d_buf.ui32 = *(dods_uint32*)val;
+         break;
+     case dods_uint64_c:
+         d_buf.ui64 = *(dods_uint64*)val;
+         break;
+
+     case dods_int8_c:
+         d_buf.i8 = *(dods_int8*)val;
+         break;
+     case dods_int16_c:
+         d_buf.i16 = *(dods_int16*)val;
+         break;
+     case dods_int32_c:
+         d_buf.i32 = *(dods_int32*)val;
+         break;
+     case dods_int64_c:
+         d_buf.i64 = *(dods_int64*)val;
+         break;
+     default:
+         assert(!"illegal type for D4Enum");
+     }
+
+    return width();
+}
+
+unsigned int D4Enum::buf2val(void **val)
+{
+    if (!val)
+        throw InternalErr("NULL pointer");
+
+    switch (d_element_type) {
+     case dods_byte_c:
+     case dods_uint8_c:
+         if (!*val) *val = new dods_byte;
+         *(dods_byte *) * val = d_buf.ui8;
+         break;
+     case dods_uint16_c:
+         if (!*val) *val = new dods_uint16;
+         *(dods_uint16 *) * val = d_buf.ui16;
+         break;
+     case dods_uint32_c:
+         if (!*val) *val = new dods_uint32;
+         *(dods_uint32 *) * val = d_buf.ui32;
+         break;
+     case dods_uint64_c:
+         if (!*val) *val = new dods_uint64;
+         *(dods_uint64 *) * val = d_buf.ui64;
+         break;
+
+     case dods_int8_c:
+         if (!*val) *val = new dods_int8;
+         *(dods_int8*) * val = d_buf.i8;
+         break;
+     case dods_int16_c:
+         if (!*val) *val = new dods_int16;
+         *(dods_int16 *) * val = d_buf.i16;
+         break;
+     case dods_int32_c:
+         if (!*val) *val = new dods_int32;
+         *(dods_int32 *) * val = d_buf.i32;
+         break;
+     case dods_int64_c:
+         if (!*val) *val = new dods_int64;
+         *(dods_int64 *) * val = d_buf.i64;
+         break;
+     default:
+         assert(!"illegal type for D4Enum");
+     }
+
+    return width();
+}
+
 void D4Enum::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {

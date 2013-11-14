@@ -271,8 +271,8 @@ public:
 
     virtual void dump(ostream &strm) const;
 
-    unsigned int val2buf(void *, bool)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for D4Enum"); }
-    unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "Not implemented for D4Enum"); }
+    unsigned int val2buf(void *, bool);
+    unsigned int buf2val(void **);
 };
 
 } // namespace libdap
