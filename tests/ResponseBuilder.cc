@@ -326,12 +326,9 @@ void ResponseBuilder::send_data_dmr_multipart(ostream &out, DMR &dmr, Constraint
  */
 void ResponseBuilder::dataset_constraint_dmr(ostream &out, DMR &dmr, ConstraintEvaluator &eval, bool filter)
 {
-	// Write the byte-order byte
-
     // Write the DMR
     XMLWriter xml;
     dmr.print_dap4(xml, filter);
-
 
     // the byte order info precedes the start of chunking
     char byte_order = is_host_big_endian() ? big_endian : little_endian; // is_host_big_endian is in util.cc
@@ -340,6 +337,7 @@ void ResponseBuilder::dataset_constraint_dmr(ostream &out, DMR &dmr, ConstraintE
     // now make the chunked output stream
     chunked_ostream cos(out, chunk_size);
     // using flush means that the DMR and CRLF are in the first chunk.
+    // TODO Unless they are bigger than chunk_size... jhrg 11/19/13
     cos << xml.get_doc() << CRLF << flush;
 
     // Write the data, chunked with checksums

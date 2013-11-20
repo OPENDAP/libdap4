@@ -1,4 +1,6 @@
 
+#include <iostream>
+
 #include "GetOpt.h"
 
 #include "D4CEDriver.h"
@@ -26,10 +28,10 @@ int main(int argc, char * argv[])
         	verbose = true;
         	break;
         case 'd':
-            parser.trace_scanning = true;
+            parser.set_trace_scanning(true);
             break;
         case 'D':
-            parser.trace_parsing = true;
+            parser.set_trace_parsing(true);
             break;
         case 'h':
         case '?':

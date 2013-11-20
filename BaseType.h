@@ -120,6 +120,8 @@ private:
 
     bool d_is_read;  // true if the value has been read
     bool d_is_send;  // Is the variable in the projection?
+
+    // These were/are used for DAP2 CEs, but not for DAP4 ones
     bool d_in_selection; // Is the variable in the selection?
     bool d_is_synthesized; // true if the variable is synthesized
 

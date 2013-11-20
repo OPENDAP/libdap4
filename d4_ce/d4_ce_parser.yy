@@ -89,7 +89,7 @@ namespace libdap {
 %token <std::string> WORD "word"
 %token <std::string> STRING "string"
 
-%type <bool> predicate filter fields indexes subset selection selections
+%type <bool> predicate filter fields indexes index subset projection projections
 
 %token 
     END  0  "end of file"
@@ -130,25 +130,32 @@ namespace libdap {
 
 %start expression;
 
-expression : selections { driver.result = $1; }
+expression : projections { driver.set_result($1); }
 ;
 
-selections : selection
-           | selections ";" selection
+projections : projection
+           | projections ";" projection
 ;
                     
-selection : subset
+projection : subset
           | subset "|" filter
 ;
-          
-subset : id { $$ = true; }
+
+// FIXME push id's BaseType on a stack here. We'll need to access it 
+// for indexes and filters. For 'fields indexes' maybe use a set
+// so maybe push a set of BaseTypes?
+subset : id { driver.dmr()->root()->find_var($1)->set_send_p(true); $$ = true; }
        | id indexes { $$ = true; }
        | id fields { $$ = true; }
        | id indexes fields { $$ = true; }
        | fields indexes { $$ = true; }
 ;
-       
-indexes : "[" "]" { $$ = true; }
+    
+indexes : index
+        | index indexes
+;
+   
+index   : "[" "]" { $$ = true; }
         | "[" WORD "]" { $$ = true; }
         | "[" WORD ":" WORD "]" { $$ = true; }
         | "[" WORD ":" WORD ":" WORD "]" { $$ = true; }
@@ -156,7 +163,7 @@ indexes : "[" "]" { $$ = true; }
         | "[" WORD ":" WORD ":" "]" { $$ = true; }
 ;
         
-fields : "{" selections "}" { $$ = true; }
+fields : "{" projections "}" { $$ = true; }
 ;
 
 filter : predicate 
@@ -231,7 +238,7 @@ static int yylex(libdap::D4CEParser::semantic_type *yylval,
                  libdap::D4CEScanner &scanner,
                  libdap::D4CEDriver &driver)
 {
-    if (driver.trace_scanning)
+    if (driver.trace_scanning())
         scanner.set_debug(true);
     
     return( scanner.yylex(yylval, loc) );

@@ -85,7 +85,7 @@ public:
         return d_dims;
     }
 
-    std::string  FQN() const;
+    std::string FQN() const;
 
     D4Dimension *find_dim(const string &path);
 

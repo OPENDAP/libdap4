@@ -143,11 +143,6 @@ send_data(DMR *dataset, const string &constraint, bool series_values)
 
     string file_name = dataset->name() + "_data.bin";
     ofstream out(file_name.c_str(), ios::out|ios::trunc|ios::binary);
-#if 0
-    if (multipart)
-    	rb.send_data_dmr_multipart(out, *dataset, eval, "start", "boundary", true);
-    else
-#endif
 
     rb.send_data_dmr(out, *dataset, eval, true);
     out.close();

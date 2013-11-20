@@ -10,6 +10,7 @@
 
 #include "D4CEScanner.h"
 #include "D4CEDriver.h"
+#include "d4_ce_parser.tab.hh"
 
 namespace libdap {
 
@@ -21,6 +22,11 @@ bool D4CEDriver::parse(const std::string &expr)
 	D4CEScanner *scanner = new D4CEScanner(iss);
 
 	D4CEParser *parser = new D4CEParser(*scanner, *this /* driver */);
+
+	if (trace_parsing()) {
+		parser->set_debug_level(1);
+		parser->set_debug_stream(std::cerr);
+	}
 
 	return parser->parse() == 0;
 }
