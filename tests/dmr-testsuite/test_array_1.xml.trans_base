@@ -11,7 +11,7 @@ Parse successful
     <Int32 name="x">
         <Dim size="5"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>33fc3688</value>
+            <Value>33fc3688</Value>
         </Attribute>
     </Int32>
 </Dataset>

@@ -29,14 +29,14 @@ Parse successful
     <Enum name="e1" enum="/colors">
         <Dim name="/d1"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>2c20d228</value>
+            <Value>2c20d228</Value>
         </Attribute>
     </Enum>
     <Enum name="e2" enum="/colors">
         <Dim name="/d1"/>
         <Dim name="/d2"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>c7a0f194</value>
+            <Value>c7a0f194</Value>
         </Attribute>
     </Enum>
 </Dataset>

@@ -21,7 +21,7 @@ Parse successful
         <Dim name="/row"/>
         <Dim name="/col"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>d9ce8457</value>
+            <Value>d9ce8457</Value>
         </Attribute>
     </Structure>
 </Dataset>

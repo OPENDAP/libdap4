@@ -16,7 +16,7 @@ Parse successful
     </Enumeration>
     <Int32 name="x">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>18df6c9e</value>
+            <Value>18df6c9e</Value>
         </Attribute>
     </Int32>
 </Dataset>

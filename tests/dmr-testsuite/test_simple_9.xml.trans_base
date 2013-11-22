@@ -18,7 +18,7 @@ Parse successful
     </Enumeration>
     <Enum name="e" enum="/color">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>a505df1b</value>
+            <Value>a505df1b</Value>
         </Attribute>
     </Enum>
 </Dataset>

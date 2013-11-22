@@ -20,67 +20,67 @@ Parse successful
 <Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_simple_2.xml" dapVersion="4.0" dmrVersion="1.0" name="test_simple_2">
     <Byte name="b">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>ff000000</value>
+            <Value>ff000000</Value>
         </Attribute>
     </Byte>
     <Int8 name="i8">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>12b88320</value>
+            <Value>12b88320</Value>
         </Attribute>
     </Int8>
     <UInt8 name="ui8">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>ff000000</value>
+            <Value>ff000000</Value>
         </Attribute>
     </UInt8>
     <Int16 name="i16">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>6f6d1f7e</value>
+            <Value>6f6d1f7e</Value>
         </Attribute>
     </Int16>
     <UInt16 name="ui16">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>1cb109fd</value>
+            <Value>1cb109fd</Value>
         </Attribute>
     </UInt16>
     <Int32 name="i32">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>18df6c9e</value>
+            <Value>18df6c9e</Value>
         </Attribute>
     </Int32>
     <UInt32 name="ui32">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>9cf92d00</value>
+            <Value>9cf92d00</Value>
         </Attribute>
     </UInt32>
     <Int64 name="i64">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>0c463091</value>
+            <Value>0c463091</Value>
         </Attribute>
     </Int64>
     <UInt64 name="ui64">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>2144df1c</value>
+            <Value>2144df1c</Value>
         </Attribute>
     </UInt64>
     <Float32 name="f32">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>1ae0f285</value>
+            <Value>1ae0f285</Value>
         </Attribute>
     </Float32>
     <Float64 name="f64">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>946c3797</value>
+            <Value>946c3797</Value>
         </Attribute>
     </Float64>
     <String name="s">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>3d9a4edd</value>
+            <Value>3d9a4edd</Value>
         </Attribute>
     </String>
     <URL name="u">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>08f792c4</value>
+            <Value>08f792c4</Value>
         </Attribute>
     </URL>
 </Dataset>

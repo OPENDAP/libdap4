@@ -13,7 +13,7 @@ Parse successful
         <Dim size="5"/>
         <Dim size="4"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>972f55fc</value>
+            <Value>972f55fc</Value>
         </Attribute>
     </Int32>
 </Dataset>

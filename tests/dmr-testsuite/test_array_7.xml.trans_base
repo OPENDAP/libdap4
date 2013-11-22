@@ -15,7 +15,7 @@ Parse successful
         <String name="s"/>
         <Dim size="2"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>8584f220</value>
+            <Value>8584f220</Value>
         </Attribute>
     </Sequence>
 </Dataset>

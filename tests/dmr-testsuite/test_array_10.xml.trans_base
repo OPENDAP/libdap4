@@ -19,14 +19,14 @@ Parse successful
     <Opaque name="o">
         <Dim name="/d1"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>3d021e3e</value>
+            <Value>3d021e3e</Value>
         </Attribute>
     </Opaque>
     <Opaque name="p">
         <Dim name="/d1"/>
         <Dim name="/d2"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>c9ba1dbe</value>
+            <Value>c9ba1dbe</Value>
         </Attribute>
     </Opaque>
 </Dataset>

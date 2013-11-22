@@ -29,28 +29,28 @@ Parse successful
         <Dim name="/row"/>
         <Dim name="/col"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>82c3d109</value>
+            <Value>82c3d109</Value>
         </Attribute>
     </Int8>
     <UInt8 name="b">
         <Dim name="/row"/>
         <Dim name="/col"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>bb99ff8a</value>
+            <Value>bb99ff8a</Value>
         </Attribute>
     </UInt8>
     <Int64 name="c">
         <Dim name="/row"/>
         <Dim name="/col"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>38d2ecf4</value>
+            <Value>38d2ecf4</Value>
         </Attribute>
     </Int64>
     <UInt64 name="d">
         <Dim name="/row"/>
         <Dim name="/col"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>46d91cd0</value>
+            <Value>46d91cd0</Value>
         </Attribute>
     </UInt64>
 </Dataset>

@@ -8,7 +8,7 @@
   
   <dap:Int32 name="x">
     <Attribute name="long_name" type="String">
-      <value>x_axis_value</value>
+      <Value>x_axis_value</Value>
     </Attribute>
   </dap:Int32>
   

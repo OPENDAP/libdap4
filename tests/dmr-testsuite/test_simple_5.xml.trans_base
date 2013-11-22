@@ -16,47 +16,47 @@ Parse successful
 <Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_simple_5.xml" dapVersion="4.0" dmrVersion="1.0" name="test_simple_5">
     <Int8 name="i">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>12b88320</value>
+            <Value>12b88320</Value>
         </Attribute>
     </Int8>
     <Int16 name="j">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>6f6d1f7e</value>
+            <Value>6f6d1f7e</Value>
         </Attribute>
     </Int16>
     <Int32 name="k">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>18df6c9e</value>
+            <Value>18df6c9e</Value>
         </Attribute>
     </Int32>
     <Int64 name="z">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>0c463091</value>
+            <Value>0c463091</Value>
         </Attribute>
     </Int64>
     <Byte name="ui">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>ff000000</value>
+            <Value>ff000000</Value>
         </Attribute>
     </Byte>
     <UInt8 name="uii">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>ff000000</value>
+            <Value>ff000000</Value>
         </Attribute>
     </UInt8>
     <UInt16 name="uj">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>1cb109fd</value>
+            <Value>1cb109fd</Value>
         </Attribute>
     </UInt16>
     <UInt32 name="uk">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>9cf92d00</value>
+            <Value>9cf92d00</Value>
         </Attribute>
     </UInt32>
     <UInt64 name="uz">
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <value>2144df1c</value>
+            <Value>2144df1c</Value>
         </Attribute>
     </UInt64>
 </Dataset>
