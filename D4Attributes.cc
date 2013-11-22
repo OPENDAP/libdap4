@@ -268,7 +268,7 @@ D4Attribute::print_dap4(XMLWriter &xml) const
             // Assume only valid types make it into instances
             D4AttributeCIter i = d_values.begin();//value_begin();
             while (i != d_values.end()) {
-                if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "value") < 0)
+                if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Value") < 0)
                     throw InternalErr(__FILE__, __LINE__, "Could not write value element");
 
                 if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) (*i++).c_str()) < 0)

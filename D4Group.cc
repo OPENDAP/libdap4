@@ -194,7 +194,7 @@ D4Group::find_map_source(const string &path)
 	BaseType *map_source = m_find_map_source_helper(path);
 
 	// TODO more complete semantic checking jhrg 10/16/13
-	if (map_source->type() == dods_array_c) return static_cast<Array*>(map_source);
+	if (map_source && map_source->type() == dods_array_c) return static_cast<Array*>(map_source);
 
 	return 0;
 }

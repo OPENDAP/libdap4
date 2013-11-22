@@ -660,10 +660,10 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
         case inside_attribute:
             if (parser->process_attribute(localname, attributes, nb_attributes))
                 break;
-            else if (strcmp(localname, "value") == 0)
+            else if (strcmp(localname, "Value") == 0)
                 parser->push_state(inside_attribute_value);
             else
-                dmr_error(parser, "Expected an 'Attribute' or 'value' element; found '%s' instead.", localname);
+                dmr_error(parser, "Expected an 'Attribute' or 'Value' element; found '%s' instead.", localname);
             break;
 
         case inside_attribute_value:
@@ -751,7 +751,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             else if (parser->process_map(localname, attributes, nb_attributes))
             	parser->push_state(inside_map);
             else
-                dmr_error(parser, "Expected an 'Attribute' or 'Dim' element; found '%s' instead.", localname);
+                dmr_error(parser, "Expected an 'Attribute', 'Dim' or 'Map' element; found '%s' instead.", localname);
             break;
 
         case inside_constructor:
@@ -763,8 +763,10 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
                 break;
             else if (parser->process_dimension(localname, attributes, nb_attributes))
                 parser->push_state(inside_dim);
+            else if (parser->process_map(localname, attributes, nb_attributes))
+            	parser->push_state(inside_map);
             else
-                D4ParserSax2::dmr_error(parser, "Expected an Attribute, Dim or variable element; found '%s' instead.", localname);
+                D4ParserSax2::dmr_error(parser, "Expected an Attribute, Dim, Map or variable element; found '%s' instead.", localname);
             break;
 
         case parser_unknown:
@@ -838,7 +840,7 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
             break;
 
         case inside_attribute_value: {
-            if (is_not(localname, "value"))
+            if (is_not(localname, "Value"))
                 D4ParserSax2::dmr_error(parser, "Expected an end value tag; found '%s' instead.", localname);
 
             parser->pop_state();
@@ -1234,7 +1236,7 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
     int res = f.gcount();
     if (res == 0) throw Error("No input found while parsing the DMR.");
 
-    if (debug) cerr << "line: (" << line++ << "): '" << chars << "'" << endl;
+    if (debug) cerr << "line: (" << line++ << "): " << chars << endl;
 
     context = xmlCreatePushParserCtxt(&ddx_sax_parser, this, chars, res - 1, "stream");
     context->validate = true;
@@ -1242,7 +1244,7 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 
     f.getline(chars, size);
     while ((f.gcount() > 0) && (get_state() != parser_end)) {
-        if (debug) cerr << "line: (" << line++ << "): '" << chars << "'" << endl;
+        if (debug) cerr << "line: (" << line++ << "): " << chars << endl;
         xmlParseChunk(context, chars, f.gcount() - 1, 0);
         f.getline(chars, size);
     }

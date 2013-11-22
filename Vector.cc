@@ -57,6 +57,7 @@
 
 #include "D4Enum.h"
 
+#include "Type.h"
 #include "dods-datatypes.h"
 #include "escaping.h"
 #include "util.h"
@@ -127,6 +128,7 @@ bool Vector::m_is_cardinal_type() const
 
     switch (d_proto->type()) {
         case dods_byte_c:
+        case dods_char_c:
         case dods_int16_c:
         case dods_uint16_c:
         case dods_int32_c:
@@ -445,6 +447,7 @@ BaseType *Vector::var(unsigned int i)
 
     switch (d_proto->type()) {
         case dods_byte_c:
+        case dods_char_c:
         case dods_int8_c:
         case dods_uint8_c:
         case dods_int16_c:
@@ -563,14 +566,10 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
     switch (d_proto->type()) {
         case dods_byte_c:
-        case dods_int8_c:
-        case dods_uint8_c:
         case dods_int16_c:
         case dods_uint16_c:
         case dods_int32_c:
         case dods_uint32_c:
-        case dods_int64_c:
-        case dods_uint64_c:
         case dods_float32_c:
         case dods_float64_c:
             // For these cases, read() puts the data into d_buf,
@@ -802,27 +801,20 @@ void Vector::compute_checksum(Crc32 &checksum)
 {
     switch (d_proto->type()) {
         case dods_byte_c:
+        case dods_char_c:
         case dods_int8_c:
         case dods_uint8_c:
-        	//checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length());
-            //break;
 
         case dods_int16_c:
         case dods_uint16_c:
-        	//checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * sizeof(int16_t));
-            //break;
 
         case dods_int32_c:
         case dods_uint32_c:
         case dods_float32_c:
-        	//checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * sizeof(int32_t));
-            //break;
 
         case dods_int64_c:
         case dods_uint64_c:
         case dods_float64_c:
-        	//checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * sizeof(int64_t));
-            //break;
 
         case dods_enum_c:
         	checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * d_proto->width());
@@ -855,6 +847,7 @@ void Vector::intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval)
 
     switch (d_proto->type()) {
         case dods_byte_c:
+        case dods_char_c:
         case dods_int8_c:
         case dods_uint8_c:
         case dods_int16_c:
@@ -1090,6 +1083,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
 
     switch (d_proto->type()) {
         case dods_byte_c:
+        case dods_char_c:
         case dods_int8_c:
         case dods_uint8_c:
         case dods_int16_c:
@@ -1181,6 +1175,7 @@ unsigned int Vector::buf2val(void **val)
 
     switch (d_proto->type()) {
         case dods_byte_c:
+        case dods_char_c:
         case dods_int8_c:
         case dods_uint8_c:
         case dods_int16_c:
@@ -1331,6 +1326,7 @@ void Vector::reserve_value_capacity(unsigned int numElements)
     }
     switch (d_proto->type()) {
         case dods_byte_c:
+        case dods_char_c:
         case dods_int8_c:
         case dods_uint8_c:
         case dods_int16_c:
@@ -1462,6 +1458,7 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 		case dods_int8_c:
 		case dods_uint8_c:
 		case dods_byte_c:
+        case dods_char_c:
 		case dods_int16_c:
 		case dods_uint16_c:
 		case dods_int32_c:
@@ -2341,7 +2338,8 @@ void Vector::dump(ostream &strm) const
     DapIndent::UnIndent();
     if (d_buf) {
         switch (d_proto->type()) {
-            case dods_byte_c: {
+            case dods_byte_c:
+            case dods_char_c: {
                 strm << DapIndent::LMarg << "_buf: ";
                 strm.write(d_buf, d_length);
                 strm << endl;
