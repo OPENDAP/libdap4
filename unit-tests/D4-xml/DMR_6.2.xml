@@ -16,9 +16,9 @@
     <Byte name="b1"/>
     <Group name="g1">
         <Attribute name="test" type="Int16">
-            <value>1</value>
-            <value>2</value>
-            <value>3</value>
+            <Value>1</Value>
+            <Value>2</Value>
+            <Value>3</Value>
         </Attribute>
         
         <Enum name="e" enum="/colors"/>
@@ -37,9 +37,9 @@
         
         <Group name="gg2">
             <Attribute name="test" type="Int16">
-                <value>1</value>
-                <value>2</value>
-                <value>3</value>
+                <Value>1</Value>
+                <Value>2</Value>
+                <Value>3</Value>
             </Attribute>
 
             <Enum name="e" enum="/g2/shades"/>

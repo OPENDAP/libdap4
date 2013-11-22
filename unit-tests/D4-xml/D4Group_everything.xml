@@ -19,11 +19,11 @@
     <Byte name="b"/>
     <Int64 name="i64"/>
     <Attribute name="test" type="Int16">
-        <value>1</value>
+        <Value>1</Value>
     </Attribute>
 </Group>
 <Byte name="b"/>
 <Int64 name="i64"/>
 <Attribute name="test" type="Int16">
-    <value>1</value>
+    <Value>1</Value>
 </Attribute>

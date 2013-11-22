@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <Attribute name="first" type="Byte">
-    <value>1</value>
-    <value>2</value>
+    <Value>1</Value>
+    <Value>2</Value>
 </Attribute>

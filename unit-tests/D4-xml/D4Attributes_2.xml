@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <Attribute name="first" type="Byte">
-    <value>1</value>
-    <value>2</value>
+    <Value>1</Value>
+    <Value>2</Value>
 </Attribute>
 <Attribute name="second" type="Int32">
-    <value>10000</value>
+    <Value>10000</Value>
 </Attribute>
