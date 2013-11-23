@@ -82,7 +82,6 @@ protected:
 
 	int_type err_chunk(const std::string &msg);
 
-	// TODO Implement xsputn() for efficiency
 	virtual std::streamsize xsputn(const char *s, std::streamsize num);
 	// Manipulate the buffer pointers using pbump() after filling the buffer
 	// and then call data_chunk(). Leave remainder in buffer. Or copy logic

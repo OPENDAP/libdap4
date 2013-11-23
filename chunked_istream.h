@@ -72,8 +72,8 @@ public:
 	 *
 	 * This reads from a chunked stream, extracting an entire chunk and storing it in a
 	 * buffer in one operation. If the chunked_inbuf reads a chunk header that indicates
-	 * the next chunk is goin gto be bigger than its current buffer size, the object will
-	 * make the buffer larger. This object supprt 128 characters of 'put back' space. Since
+	 * the next chunk is going  be bigger than its current buffer size, the object will
+	 * make the buffer larger. This object support 128 characters of 'put back' space. Since
 	 * DAP4 uses receiver makes right, the buffer must be told if it should 'twiddle' the
 	 * header size information. In DAP4 the byte order is sent using a one-byte code _before_
 	 * the chunked transmission starts.
