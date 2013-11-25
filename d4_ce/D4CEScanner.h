@@ -27,7 +27,7 @@ namespace libdap {
 class D4CEScanner : public d4_ceFlexLexer{
 public:
 
-	D4CEScanner(std::istream &in) : d4_ceFlexLexer(&in), loc(0), yylval(0) { };
+	D4CEScanner(std::istream &in) : d4_ceFlexLexer(&in), yylval(0), loc(0) { };
 
 	int yylex(libdap::D4CEParser::semantic_type *lval, libdap::location *l)
 	{

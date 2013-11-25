@@ -73,6 +73,9 @@ namespace libdap {
    #include <iostream>
    #include <cstdlib>
    #include <fstream>
+   
+   #include "BaseType.h"
+   #include "DMR.h"
 
    /* include for all driver functions */
    #include "D4CEDriver.h"
@@ -90,6 +93,7 @@ namespace libdap {
 %token <std::string> STRING "string"
 
 %type <bool> predicate filter fields indexes index subset projection projections
+%type <std::string> id path group name
 
 %token 
     END  0  "end of file"
@@ -144,8 +148,20 @@ projection : subset
 // FIXME push id's BaseType on a stack here. We'll need to access it 
 // for indexes and filters. For 'fields indexes' maybe use a set
 // so maybe push a set of BaseTypes?
-subset : id { driver.dmr()->root()->find_var($1)->set_send_p(true); $$ = true; }
-       | id indexes { $$ = true; }
+subset : 
+id 
+{ 
+    BaseType *btp = driver.dmr()->root()->find_var($1);
+    if (btp) {
+        btp->set_send_p(true); 
+        $$ = true; 
+    }
+    else {
+        $$ = false;
+    }
+}
+
+| id indexes { $$ = true; }
        | id fields { $$ = true; }
        | id indexes fields { $$ = true; }
        | fields indexes { $$ = true; }
@@ -203,15 +219,43 @@ op : "<"
 ;
 
 id : path
-   | group "/" path
+
+| group "/" path
+{
+    $1.append(".");
+    $1.append($3);
+    $$ = $1;
+}
+
 ;
 
 group : "/" name
-      | group "/" name
+{
+    $$.append("/");
+    $$.append($2);
+    
+    /* FIXME: remove...
+    string group = "/";
+    group.append($2);
+    $$ = group; */
+}
+
+| group "/" name
+{
+    $1.append(".");
+    $1.append($3);
+    $$ = $1;
+}
 ;
 
 path : name 
-     | path "." name
+  
+| path "." name
+{
+    $1.append(".");
+    $1.append($3);
+    $$ = $1;
+}
 ;
 
 // Because some formats/datasets allow 'any' name for a variable, it's possible
