@@ -46,6 +46,12 @@ private:
 	uint32_t d_buf_size;	// Size of the data buffer
 	char *d_buffer;			// data buffer
 
+	// In the original implementation of this class and its companion, chunked_ostream
+	// had the endian nature of the data stream passed in via constructors. When
+	// BYTE_ORDER_PREFIX is defined that is the case. However, when it is not defined,
+	// the byte order is read from the chunk header's high order byte (bit position 2).
+	// jhrg 11/24/13
+
 	bool d_twiddle_bytes; 	// receiver-makes-right encoding (endianness)...
 
 	// If an error chunk is read, save the message here
@@ -78,12 +84,17 @@ public:
 	 * header size information. In DAP4 the byte order is sent using a one-byte code _before_
 	 * the chunked transmission starts.
 	 *
+	 * @note In the current implementation, the byte order of the sender is read from the
+	 * chunk header. The method twiddle_bytes() returns false until the first chunk is read,
+	 * then it returns the correct value.
+	 *
 	 * @param is Use this as a data source
 	 * @param size The size of the input buffer. This should match the likely chunk size.
 	 * If it is smaller than a chunk, it will be resized.
 	 * @param twiddle_bytes Should the header bytes be twiddled? True if this host and the
 	 * send use a different byte-order. The sender's byte order must be sent out-of-band.
 	 */
+#if BYTE_ORDER_PREFIX
 	chunked_inbuf(std::istream &is, int size, bool twiddle_bytes = false)
         : d_is(is), d_buf_size(size), d_buffer(0), d_twiddle_bytes(twiddle_bytes), d_error(false) {
 		if (d_buf_size & CHUNK_TYPE_MASK)
@@ -91,12 +102,25 @@ public:
 
 		m_buffer_alloc();
 	}
+#else
+    chunked_inbuf(std::istream &is, int size)
+        : d_is(is), d_buf_size(size), d_buffer(0), d_twiddle_bytes(false), d_error(false) {
+        if (d_buf_size & CHUNK_TYPE_MASK)
+            throw std::out_of_range("A chunked_outbuf (or chunked_ostream) was built using a buffer larger than 0x00ffffff");
+
+        m_buffer_alloc();
+    }
+#endif
 
 	virtual ~chunked_inbuf() {
 		delete d_buffer;
 	}
 
 	int_type read_next_chunk();
+
+	// d_twiddle_bytes is false initially and is set to the correct value
+	// once the first chunk is read.
+	bool twiddle_bytes() const { return d_twiddle_bytes; }
 
 	bool error() const { return d_error; }
 	std::string error_message() const { return d_error_message; }
@@ -111,8 +135,24 @@ class chunked_istream: public std::istream {
 protected:
 	chunked_inbuf d_cbuf;
 public:
+#if BYTE_ORDER_PREFIX
 	chunked_istream(std::istream &is, int size, bool twiddle_bytes = false) : std::istream(&d_cbuf), d_cbuf(is, size, twiddle_bytes) { }
+#else
+    chunked_istream(std::istream &is, int size) : std::istream(&d_cbuf), d_cbuf(is, size) { }
+#endif
+
 	int read_next_chunk() { return d_cbuf.read_next_chunk(); }
+	/**
+	 * Should the receiver twiddle the bytes to match the local machine's byte order?
+	 * Since DAP4 uses 'receiver makes right' encoding, the onus is on the client to
+	 * reorder the bytes if it is, e.g., a big endian machine reading data from a little
+	 * endian server.
+	 *
+	 * @return True if the client (caller) should swap bytes in multi-byte integers, etc.,
+	 * and false if not. This does not directly tell the endian nature of the remote server,
+	 * although that can be inferred.
+	 */
+	bool twiddle_bytes() const { return d_cbuf.d_twiddle_byes(); }
 	bool error() const { return d_cbuf.error(); }
 	std::string error_message() const { return d_cbuf.error_message(); }
 };

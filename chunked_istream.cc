@@ -43,6 +43,7 @@
 #ifdef DODS_DEBUG
 #include <iostream>
 #endif
+#include "util.h"
 #include "debug.h"
 
 namespace libdap {
@@ -93,14 +94,23 @@ chunked_inbuf::underflow()
 	// To read data from the chunked stream, first read the header
 	uint32_t header;
 	d_is.read((char *) &header, 4);
+#if !BYTE_ORDER_PREFIX
+	// When the endian nature of the server is encoded in the chunk header, the header is
+	// sent using network byte order
+	ntohl(header);
+#endif
 
 	// There are two 'EOF' cases: One where the END chunk is zero bytes and one where
 	// it holds data. In the latter case, bytes those will be read and moved into the
 	// buffer. Once those data are consumed, we'll be back here again and this read()
 	// will return EOF. See below for the other case...
 	if (d_is.eof()) return traits_type::eof();
+#if BYTE_ORDER_PREFIX
 	if (d_twiddle_bytes) header = bswap_32(header);
-
+#else
+	// (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
+	d_twiddle_bytes = is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN);
+#endif
 	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 
 	DBG2(cerr << "read_next_chunk: chunk size from header: " << chunk_size << endl); DBG2(cerr << "read_next_chunk: chunk type from header: " << (void*)(header & CHUNK_TYPE_MASK) << endl);
@@ -142,14 +152,6 @@ chunked_inbuf::underflow()
 	}
 
 	return traits_type::eof();	// Can never get here; this quiets g++
-#if 0
-	// read_next_chunk() returns EOF or the size of the chunk while underflow
-	// returns EOF or the next char in the input.
-	std::streambuf::int_type result = read_next_chunk();
-	DBG2(cerr << "underflow: read_next_chunk: " << result << endl);
-
-	return (result == traits_type::eof()) ? traits_type::eof(): traits_type::to_int_type(*gptr());
-#endif
 }
 
 /**
@@ -203,19 +205,25 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 	// next call to read() will fall through the previous tests and
 	// read at least one chunk here.
 	bool done = false;
-	while (!done) {
-		// Get a chunk header
-	    uint32_t  header;
-	    d_is.read((char *)&header, 4);
+    while (!done) {
+        // Get a chunk header
+        uint32_t header;
+        d_is.read((char *) &header, 4);
+#if !BYTE_ORDER_PREFIX
+        ntohl(header);
+#endif
 
-	    // There are two EOF cases: One where the END chunk is zero bytes and one where
-	    // it holds data. In the latter case, those will be read and moved into the
-	    // buffer. Once those data are consumed, we'll be back here again and this read()
-	    // will return EOF. See below for the other case...
-	    if (d_is.eof())
-	    	return traits_type::eof();
-	    if (d_twiddle_bytes)
-	        header = bswap_32(header);
+        // There are two EOF cases: One where the END chunk is zero bytes and one where
+        // it holds data. In the latter case, those will be read and moved into the
+        // buffer. Once those data are consumed, we'll be back here again and this read()
+        // will return EOF. See below for the other case...
+        if (d_is.eof()) return traits_type::eof();
+#if BYTE_ORDER_PREFIX
+        if (d_twiddle_bytes) header = bswap_32(header);
+#else
+        // (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
+        d_twiddle_bytes = is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN);
+#endif
 
 	    uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 	    // handle error chunks here
@@ -309,13 +317,21 @@ chunked_inbuf::read_next_chunk()
 	// To read data from the chunked stream, first read the header
 	uint32_t header;
 	d_is.read((char *) &header, 4);
+#if !BYTE_ORDER_PREFIX
+    ntohl(header);
+#endif
 
 	// There are two 'EOF' cases: One where the END chunk is zero bytes and one where
 	// it holds data. In the latter case, bytes those will be read and moved into the
 	// buffer. Once those data are consumed, we'll be back here again and this read()
 	// will return EOF. See below for the other case...
 	if (d_is.eof()) return traits_type::eof();
-	if (d_twiddle_bytes) header = bswap_32(header);
+#if BYTE_ORDER_PREFIX
+    if (d_twiddle_bytes) header = bswap_32(header);
+#else
+    // (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
+    d_twiddle_bytes = is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN);
+#endif
 
 	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 

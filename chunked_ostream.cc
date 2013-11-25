@@ -72,6 +72,11 @@ chunked_outbuf::data_chunk()
 	//
 	// unsigned int chunk_header = (unsigned int)num | CHUNK_type;
 	uint32_t header = num;
+#if !BYTE_ORDER_PREFIX
+	htonl(header);
+	// Add encoding of host's byte order. jhrg 11/24/13
+	if (!is_host_big_endian()) header |= CHUNK_LITTLE_ENDIAN;
+#endif
 
 	d_os.write((const char *)&header, sizeof(int32_t));
 
