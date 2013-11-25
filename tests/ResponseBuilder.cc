@@ -40,6 +40,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+//#include <algorithm>
 
 #include <cstring>
 #include <ctime>
@@ -339,8 +340,8 @@ void ResponseBuilder::dataset_constraint_dmr(ostream &out, DMR &dmr, ConstraintE
 #endif
     // now make the chunked output stream; set the size to be at least chunk_size
     // but make sure that the whole of the xml plus the CRLF can fit in the first
-    // chunk.
-    chunked_ostream cos(out, max(CHUNK_SIZE, xml.get_doc_size()+2));
+    // chunk. (+2 for the CRLF bytes).
+    chunked_ostream cos(out, max((unsigned int)CHUNK_SIZE, xml.get_doc_size()+2));
 
     // using flush means that the DMR and CRLF are in the first chunk.
     cos << xml.get_doc() << CRLF << flush;

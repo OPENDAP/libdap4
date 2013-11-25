@@ -113,7 +113,7 @@ chunked_outbuf::end_chunk()
 	// as a 32-bit unsigned int. Here I assume that num is never
 	// more than 2^24 because that was tested in the constructor
 
-	uint32_t chunk_header = (uint32_t)num | CHUNK_END;
+	uint32_t header = (uint32_t)num | CHUNK_END;
 
 #if !BYTE_ORDER_PREFIX
     // Add encoding of host's byte order. jhrg 11/24/13
@@ -125,7 +125,7 @@ chunked_outbuf::end_chunk()
     // Write out the CHUNK_END header with the byte count.
 	// This should be called infrequently, so it's probably not worth
 	// optimizing away chunk_header
-	d_os.write((const char *)&chunk_header, sizeof(uint32_t));
+	d_os.write((const char *)&header, sizeof(uint32_t));
 
 	// Should bad() throw an error?
 	// Are these functions fast or would the bits be faster?
@@ -160,7 +160,7 @@ chunked_outbuf::err_chunk(const std::string &m)
 	if (msg.length() > 0x00FFFFFF)
 		msg = "Error message too long";
 
-	uint32_t chunk_header = (uint32_t)msg.length() | CHUNK_ERR;
+	uint32_t header = (uint32_t)msg.length() | CHUNK_ERR;
 
 #if !BYTE_ORDER_PREFIX
     // Add encoding of host's byte order. jhrg 11/24/13
@@ -172,7 +172,7 @@ chunked_outbuf::err_chunk(const std::string &m)
     // Write out the CHUNK_END header with the byte count.
 	// This should be called infrequently, so it's probably not worth
 	// optimizing away chunk_header
-	d_os.write((const char *)&chunk_header, sizeof(uint32_t));
+	d_os.write((const char *)&header, sizeof(uint32_t));
 
 	// Should bad() throw an error?
 	// Are these functions fast or would the bits be faster?

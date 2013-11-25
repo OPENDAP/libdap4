@@ -59,7 +59,7 @@ public:
 
     /** Store information to be used by the handler.
     @param out Write to this stream. */
-    AlarmHandler(ostream &out) : d_file(0)//, d_stream( out )
+    AlarmHandler(ostream &) : d_file(0)//, d_stream( out )
     {}
 
     virtual ~AlarmHandler()

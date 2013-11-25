@@ -43,6 +43,7 @@
 #ifdef DODS_DEBUG
 #include <iostream>
 #endif
+
 #include "util.h"
 #include "debug.h"
 
@@ -116,7 +117,8 @@ chunked_inbuf::underflow()
 #endif
 	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 
-	DBG2(cerr << "read_next_chunk: chunk size from header: " << chunk_size << endl); DBG2(cerr << "read_next_chunk: chunk type from header: " << (void*)(header & CHUNK_TYPE_MASK) << endl);
+	DBG2(cerr << "read_next_chunk: chunk size from header: " << chunk_size << endl);
+	DBG2(cerr << "read_next_chunk: chunk type from header: " << (void*)(header & CHUNK_TYPE_MASK) << endl);
 
 	// Handle the case where the buffer is not big enough to hold the incoming chunk
 	if (chunk_size > d_buf_size) {
@@ -151,6 +153,10 @@ chunked_inbuf::underflow()
 		// the error message text.
 		d_error = true;
 		d_error_message = string(d_buffer, chunk_size);
+		return traits_type::eof();
+	default:
+		d_error = true;
+		d_error_message = "Failed to read known chunk header type.";
 		return traits_type::eof();
 	}
 
@@ -244,7 +250,11 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 			// leave the buffer and gptr(), ..., in a consistent state (empty)
 			setg(d_buffer, d_buffer, d_buffer);
 	    }
-	    // The first case is complicated because we read some data from the current
+	    // And zero-length END chunks here.
+	    else if (chunk_size == 0 && (header & CHUNK_TYPE_MASK) == CHUNK_END) {
+	    	return traits_type::not_eof(num-bytes_left_to_read);
+	    }
+	    // The next case is complicated because we read some data from the current
 	    // chunk into 's' an some into the internal buffer.
 	    else if (chunk_size > bytes_left_to_read) {
 			d_is.read(s, bytes_left_to_read);
@@ -273,10 +283,14 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 		        d_buf_size = chunk_size;
 		        m_buffer_alloc();
 		    }
-			d_is.read(s, chunk_size);
-			if (d_is.bad()) return traits_type::eof();
-			bytes_left_to_read -= chunk_size /*d_is.gcount()*/;
-			s += chunk_size;
+		    // If we get a chunk that's zero bytes, Don't call read()
+		    // to save the kernel context switch overhead.
+			if (chunk_size > 0) {
+				d_is.read(s, chunk_size);
+				if (d_is.bad()) return traits_type::eof();
+				bytes_left_to_read -= chunk_size /*d_is.gcount()*/;
+				s += chunk_size;
+			}
 		}
 
 	    switch (header & CHUNK_TYPE_MASK) {
@@ -292,9 +306,12 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 	    case CHUNK_ERR:
 			// this is pretty much the end of the show... The error message has
 	    	// already been read above
-
 			return traits_type::eof();
 	        break;
+		default:
+			d_error = true;
+			d_error_message = "Failed to read known chunk header type.";
+			return traits_type::eof();
 	    }
 	}
 
@@ -380,6 +397,10 @@ chunked_inbuf::read_next_chunk()
 		// the error message text.
 		d_error = true;
 		d_error_message = string(d_buffer, chunk_size);
+		return traits_type::eof();
+	default:
+		d_error = true;
+		d_error_message = "Failed to read known chunk header type.";
 		return traits_type::eof();
 	}
 

@@ -153,7 +153,7 @@ public:
 	 * and false if not. This does not directly tell the endian nature of the remote server,
 	 * although that can be inferred.
 	 */
-	bool twiddle_bytes() const { return d_cbuf.d_twiddle_byes(); }
+	bool twiddle_bytes() const { return d_cbuf.twiddle_bytes(); }
 	bool error() const { return d_cbuf.error(); }
 	std::string error_message() const { return d_cbuf.error_message(); }
 };

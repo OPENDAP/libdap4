@@ -43,6 +43,7 @@
 #include "DMR.h"
 
 #include "D4ParserSax2.h"
+#include "chunked_stream.h"
 #include "chunked_istream.h"
 #include "D4StreamUnMarshaller.h"
 
@@ -143,8 +144,11 @@ void D4Connect::process_data(DMR &data, Response &rs)
 		//if (debug) cerr << "Byte order: " << ((byte_order) ? "big endian" : "little endian") << endl;
 
 		// get a chunked input stream
+#if BYTE_ORDER_PREFIX
 		chunked_istream cis(*rs.get_cpp_stream(), 1024, byte_order);
-
+#else
+		chunked_istream cis(*(rs.get_cpp_stream()), CHUNK_SIZE);
+#endif
 		// parse the DMR, stopping when the boundary is found.
 		try {
 			// force chunk read
@@ -341,7 +345,11 @@ void D4Connect::request_dap4_data(DMR &dmr, const string expr)
             in >> byte_order;
 
             // get a chunked input stream
-            chunked_istream cis(in, 1024, byte_order);
+#if BYTE_ORDER_PREFIX
+		chunked_istream cis(*(rs->get_cpp_stream()), 1024, byte_order);
+#else
+		chunked_istream cis(*(rs->get_cpp_stream()), CHUNK_SIZE);
+#endif
 
             // parse the DMR, stopping when the boundary is found.
 

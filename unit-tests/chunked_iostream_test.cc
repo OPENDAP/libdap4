@@ -95,7 +95,7 @@ public:
     single_char_write(const string &file, int buf_size)
     {
     	fstream infile(file.c_str(), ios::in|ios::binary);
-	DBG(cerr << "infile: " << file << endl);
+    	DBG(cerr << "infile: " << file << endl);
     	if (!infile.good())
     		CPPUNIT_FAIL("File not open or eof");
 
@@ -214,8 +214,11 @@ public:
     	fstream infile(in.c_str(), ios::in|ios::binary);
     	if (!infile.good())
     		CPPUNIT_FAIL("File not open or eof");
+#if BYTE_ORDER_PREFIX
     	chunked_istream chunked_infile(infile, buf_size, 0x00);
-
+#else
+    	chunked_istream chunked_infile(infile, buf_size);
+#endif
     	string out = file + ".plain";
     	fstream outfile(out.c_str(), ios::out|ios::binary);
 

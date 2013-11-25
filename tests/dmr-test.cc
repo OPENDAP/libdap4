@@ -223,7 +223,7 @@ read_data_plain(const string &file_name, bool debug)
 #if BYTE_ORDER_PREFIX
     D4StreamUnMarshaller um(cis, byte_order);
 #else
-    D4StreamUnMarshaller um(cis, cis.byte_order());
+    D4StreamUnMarshaller um(cis, cis.twiddle_bytes());
 #endif
 
     dmr->root()->deserialize(um, *dmr);
@@ -233,19 +233,20 @@ read_data_plain(const string &file_name, bool debug)
 
 static void usage()
 {
-    cerr << "Usage: dmr-test -p|s|t <file> [-d -x]" << endl
-            << "p: parse a file (use "-" for stdin)" << endl
-            << "s: parse and then 'send' a response to a file" << endl
-            << "t: parse, send and then read the response file" << endl
+    cerr << "Usage: dmr-test -p|s|t|i <file> [-d -x -e]" << endl
+            << "p: Parse a file (use "-" for stdin)" << endl
+            << "s: Send - parse and then 'send' a response to a file" << endl
+            << "t: Transmit - parse, send and then read the response file" << endl
+            << "i: Intern values" << endl
             << "d: turn on detailed parser debugging" << endl
-            << "x: print the binary object(s) built by the parse, send or trans operations." << endl
+            << "x: print the binary object(s) built by the parse, send, trans or intern operations." << endl
             << "e: use sEries values." << endl;
 }
 
 int
 main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "p:s:t:i:xde");
+    GetOpt getopt(argc, argv, "p:s:t:i:xdeh?");
     int option_char;
     bool parse = false;
     bool debug = false;
