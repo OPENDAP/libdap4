@@ -327,10 +327,6 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
  * the chunk. If there is any data in the chunk_inbuf object's buffer, it is
  * lost.
  *
- * @todo If this is going to be used after regular calls to read() or get()
- * are used, add a method to return the number of bytes remaining in the buffer.
- * That will enable a caller to read those data before this method erases them.
- *
  * @return The number of bytes read, which is exactly the size of the
  * next chunk in the stream. Returns EOF on error.
  */
