@@ -34,6 +34,8 @@
 #include <ostream>
 #include <stdexcept>      // std::out_of_range
 
+#include "util.h"
+
 namespace libdap {
 
 class chunked_ostream;
@@ -54,12 +56,14 @@ protected:
 	std::ostream &d_os;			// Write stuff here
 	unsigned int d_buf_size; 	// Size of the data buffer
 	char *d_buffer;				// Data buffer
+	bool d_big_endian;
 
 public:
 	chunked_outbuf(std::ostream &os, unsigned int buf_size) : d_os(os), d_buf_size(buf_size), d_buffer(0) {
 		if (d_buf_size & CHUNK_TYPE_MASK)
 			throw std::out_of_range("A chunked_outbuf (or chunked_ostream) was built using a buffer larger than 0x00ffffff");
 
+		d_big_endian = is_host_big_endian();
 		d_buffer = new char[buf_size];
 		// Trick: making the pointers think the buffer is one char smaller than it
 		// really is ensures that overflow() will be called when there's space for

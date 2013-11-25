@@ -186,7 +186,7 @@ read_data_plain(const string &file_name, bool debug)
     // get a chunked input stream
     chunked_istream cis(in, 1024, byte_order);
 #endif
-    chunked_istream cis(in, 1024);
+    chunked_istream cis(in, CHUNK_SIZE);
 
     // parse the DMR, stopping when the boundary is found.
     try {

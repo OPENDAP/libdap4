@@ -109,7 +109,10 @@ chunked_inbuf::underflow()
 	if (d_twiddle_bytes) header = bswap_32(header);
 #else
 	// (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
-	d_twiddle_bytes = is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN);
+	if (!d_set_twiddle) {
+	    d_twiddle_bytes = is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN);
+	    d_set_twiddle = true;
+	}
 #endif
 	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 
@@ -222,7 +225,10 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
         if (d_twiddle_bytes) header = bswap_32(header);
 #else
         // (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
-        d_twiddle_bytes = is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN);
+        if (!d_set_twiddle) {
+            d_twiddle_bytes = is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN);
+            d_set_twiddle = true;
+        }
 #endif
 
 	    uint32_t chunk_size = header & CHUNK_SIZE_MASK;
@@ -330,7 +336,10 @@ chunked_inbuf::read_next_chunk()
     if (d_twiddle_bytes) header = bswap_32(header);
 #else
     // (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
-    d_twiddle_bytes = is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN);
+    if (!d_set_twiddle) {
+        d_twiddle_bytes = is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN);
+        d_set_twiddle = true;
+    }
 #endif
 
 	uint32_t chunk_size = header & CHUNK_SIZE_MASK;

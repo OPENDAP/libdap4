@@ -46,13 +46,13 @@ private:
 	uint32_t d_buf_size;	// Size of the data buffer
 	char *d_buffer;			// data buffer
 
-	// In the original implementation of this class and its companion, chunked_ostream
-	// had the endian nature of the data stream passed in via constructors. When
-	// BYTE_ORDER_PREFIX is defined that is the case. However, when it is not defined,
-	// the byte order is read from the chunk header's high order byte (bit position 2).
-	// jhrg 11/24/13
+	// In the original implementation of this class, the byte order of the data stream
+	// was passed in via constructors. When BYTE_ORDER_PREFIX is defined that is the
+	// case. However, when it is not defined, the byte order is read from the chunk
+	// header's high order byte (in bit position 2 - see chunked_stream.h). jhrg 11/24/13
 
-	bool d_twiddle_bytes; 	// receiver-makes-right encoding (endianness)...
+	bool d_twiddle_bytes; 	// receiver-makes-right encoding (byte order)...
+	bool d_set_twiddle;
 
 	// If an error chunk is read, save the message here
 	std::string d_error_message;
@@ -85,8 +85,9 @@ public:
 	 * the chunked transmission starts.
 	 *
 	 * @note In the current implementation, the byte order of the sender is read from the
-	 * chunk header. The method twiddle_bytes() returns false until the first chunk is read,
-	 * then it returns the correct value.
+	 * first chunk header. The method twiddle_bytes() returns false until the first chunk is
+	 * read, then it returns the correct value. Only the first chunk_header is tested for the
+	 * byte order flag; all subsequent chunks are assumed to use the same byte order.
 	 *
 	 * @param is Use this as a data source
 	 * @param size The size of the input buffer. This should match the likely chunk size.
@@ -104,7 +105,7 @@ public:
 	}
 #else
     chunked_inbuf(std::istream &is, int size)
-        : d_is(is), d_buf_size(size), d_buffer(0), d_twiddle_bytes(false), d_error(false) {
+        : d_is(is), d_buf_size(size), d_buffer(0), d_twiddle_bytes(false), d_set_twiddle(false), d_error(false) {
         if (d_buf_size & CHUNK_TYPE_MASK)
             throw std::out_of_range("A chunked_outbuf (or chunked_ostream) was built using a buffer larger than 0x00ffffff");
 
