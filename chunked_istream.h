@@ -119,6 +119,8 @@ public:
 
 	int_type read_next_chunk();
 
+	int bytes_in_buffer() const { return (egptr() - gptr()); }
+
 	// d_twiddle_bytes is false initially and is set to the correct value
 	// once the first chunk is read.
 	bool twiddle_bytes() const { return d_twiddle_bytes; }
@@ -143,6 +145,13 @@ public:
 #endif
 
 	int read_next_chunk() { return d_cbuf.read_next_chunk(); }
+
+	/**
+	 * How many bytes have been read from the stream and are now in the internal buffer?
+	 * @return Number of buffered bytes.
+	 */
+	int bytes_in_buffer() const { return d_cbuf.bytes_in_buffer(); }
+
 	/**
 	 * Should the receiver twiddle the bytes to match the local machine's byte order?
 	 * Since DAP4 uses 'receiver makes right' encoding, the onus is on the client to
