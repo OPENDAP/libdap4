@@ -233,11 +233,12 @@ read_data_plain(const string &file_name, bool debug)
 
 static void usage()
 {
-    cerr << "Usage: dmr-test -p|s|t|i <file> [-d -x -e]" << endl
+    cerr << "Usage: dmr-test -p|s|t|i <file> [-c <expr>] [-d -x -e]" << endl
             << "p: Parse a file (use "-" for stdin)" << endl
             << "s: Send - parse and then 'send' a response to a file" << endl
             << "t: Transmit - parse, send and then read the response file" << endl
             << "i: Intern values" << endl
+            << "c: Constraint expression "
             << "d: turn on detailed parser debugging" << endl
             << "x: print the binary object(s) built by the parse, send, trans or intern operations." << endl
             << "e: use sEries values." << endl;
@@ -246,7 +247,7 @@ static void usage()
 int
 main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "p:s:t:i:xdeh?");
+    GetOpt getopt(argc, argv, "p:s:t:i:c:xdeh?");
     int option_char;
     bool parse = false;
     bool debug = false;
@@ -255,7 +256,9 @@ main(int argc, char *argv[])
     bool trans = false;
     bool intern = false;
     bool series_values = false;
+    bool constrained = false;
     string name = "";
+    string ce = "";
 
     // process options
 
@@ -279,6 +282,11 @@ main(int argc, char *argv[])
         case 'i':
         	intern = true;
         	name = getopt.optarg;
+        	break;
+
+        case 'c':
+        	constrained = true;
+        	ce = getopt.optarg;
         	break;
 
         case 'd':
@@ -319,7 +327,7 @@ main(int argc, char *argv[])
         if (send) {
         	DMR *dmr = test_dap4_parser(name, debug, print);
 
-        	string file_name = send_data(dmr, "", series_values);
+        	string file_name = send_data(dmr, ce, series_values);
         	if (print)
         		cout << "Response file: " << file_name << endl;
         	delete dmr;
@@ -327,14 +335,14 @@ main(int argc, char *argv[])
 
         if (trans) {
         	DMR *dmr = test_dap4_parser(name, debug, print);
-        	string file_name = send_data(dmr, "", series_values);
+        	string file_name = send_data(dmr, ce, series_values);
          	delete dmr;
 
         	DMR *client = read_data_plain(file_name, debug);
 
         	if (print) {
         		XMLWriter xml;
-        		client->print_dap4(xml, false /*constrained*/);
+        		client->print_dap4(xml, constrained);
         		cout << xml.get_doc() << endl;
 
 				cout << "The data:" << endl;
