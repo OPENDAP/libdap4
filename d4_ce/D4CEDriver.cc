@@ -11,6 +11,8 @@
 #include "D4CEScanner.h"
 #include "D4CEDriver.h"
 #include "d4_ce_parser.tab.hh"
+#include "DMR.h"
+#include "BaseType.h"
 
 namespace libdap {
 
@@ -30,6 +32,20 @@ bool D4CEDriver::parse(const std::string &expr)
 
 	return parser->parse() == 0;
 }
+
+bool
+D4CEDriver::mark_variable(const std::string &id)
+{
+    BaseType *btp = dmr()->root()->find_var(id);
+    if (btp) {
+        btp->set_send_p(true);
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 
 // This method is called from the parser (see d4_ce_parser.yy, down in the code
 // section). This will be called during the call to D4CEParser::parse(), that

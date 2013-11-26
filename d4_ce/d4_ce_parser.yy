@@ -151,6 +151,8 @@ projection : subset
 subset : 
 id 
 {
+    $$ = driver.mark_variable($1);
+#if 0
     BaseType *btp = driver.dmr()->root()->find_var($1);
     if (btp) {
         btp->set_send_p(true); 
@@ -159,6 +161,7 @@ id
     else {
         $$ = false;
     }
+#endif
 }
 | id indexes { $$ = true; }
 | id fields { $$ = true; }

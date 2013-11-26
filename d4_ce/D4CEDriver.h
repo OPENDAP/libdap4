@@ -35,6 +35,7 @@ public:
 	virtual ~D4CEDriver() { }
 
 	bool parse(const std::string &expr);
+	bool mark_variable(const std::string &id);
 
 	std::string expression;	// This may have to be a public field. jhrg 11/19/13
 
