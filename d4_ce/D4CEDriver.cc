@@ -18,7 +18,7 @@ namespace libdap {
 
 bool D4CEDriver::parse(const std::string &expr)
 {
-	expression = expr;	// set for error messages.
+	d_expr = expr;	// set for error messages. See the %initial-action section of .yy
 
 	std::istringstream iss(expr);
 	D4CEScanner *scanner = new D4CEScanner(iss);
@@ -42,7 +42,8 @@ D4CEDriver::mark_variable(const std::string &id)
         return true;
     }
     else {
-        return false;
+    	throw Error(d_expr + ": The variable " + id + " was not found in the dataset.");
+        // return false;
     }
 }
 

@@ -25,19 +25,24 @@ class D4CEDriver {
 	bool d_trace_scanning;
 	bool d_trace_parsing;
 	bool d_result;
+	std::string d_expr;
 
 	DMR *d_dmr;
 
+	// d_expr should be set by parse! Its value is used by the parser right before
+	// the actual parsing operation starts. jhrg 11/26/13
+	std::string *expression() { return &d_expr; }
+	bool mark_variable(const std::string &id);
+
+	friend class D4CEParser;
+
 public:
-	D4CEDriver() : d_trace_scanning(false), d_trace_parsing(false), d_result(false), d_dmr(0), expression("") { }
-	D4CEDriver(DMR *dmr) : d_trace_scanning(false), d_trace_parsing(false), d_result(false), d_dmr(dmr), expression("") { }
+	D4CEDriver() : d_trace_scanning(false), d_trace_parsing(false), d_result(false), d_expr(""), d_dmr(0) { }
+	D4CEDriver(DMR *dmr) : d_trace_scanning(false), d_trace_parsing(false), d_result(false), d_expr(""), d_dmr(dmr) { }
 
 	virtual ~D4CEDriver() { }
 
 	bool parse(const std::string &expr);
-	bool mark_variable(const std::string &id);
-
-	std::string expression;	// This may have to be a public field. jhrg 11/19/13
 
 	bool trace_scanning() const { return d_trace_scanning; }
 	void set_trace_scanning(bool ts) { d_trace_scanning = ts; }

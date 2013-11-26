@@ -66,7 +66,10 @@ namespace libdap {
     // Initialize the initial location. 'expression' is a field in D4CEDriver
     // and it is set by D4CEDriver::parse(const std::string &expr)
     // Normally this would be the name of a file...
-    @$.begin.filename = @$.end.filename = &driver.expression;
+    
+    // @$.begin.filename = @$.end.filename = &driver.expression;
+
+    @$.initialize (driver.expression());
 };
 
 %code {

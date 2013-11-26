@@ -63,7 +63,7 @@ public:
 	virtual ~FlexLexer()	{ }
 
 	const char* YYText() const	{ return yytext; }
-	int YYLeng()	const	{ return yyleng; }
+	unsigned long/*int*/ YYLeng()	const	{ return yyleng; }
 
 	virtual void
 		yy_switch_to_buffer( struct yy_buffer_state* new_buffer ) = 0;
@@ -93,7 +93,7 @@ public:
 
 protected:
 	char* yytext;
-	int yyleng;
+	unsigned long yyleng; // originally int; jhrg 11/26/13
 	int yylineno;		// only maintained if you use %option yylineno
 	int yy_flex_debug;	// only has effect with -d or "%option debug"
 };
