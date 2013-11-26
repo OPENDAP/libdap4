@@ -220,7 +220,7 @@ D4Sequence::operator=(const D4Sequence &rhs)
  * @param filter
  * @return False when read() indicates that the EOF was found, true otherwise.
  */
-bool D4Sequence::read_next_instance(DMR &/*dmr*/, ConstraintEvaluator &/*eval*/, bool filter)
+bool D4Sequence::read_next_instance(DMR &/*dmr*/ /*, ConstraintEvaluator &eval*/, bool filter)
 {
     bool eof = false;
     bool done = false;
@@ -268,10 +268,10 @@ D4Sequence::compute_checksum(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eva
 #endif
 
 void
-D4Sequence::intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval)
+D4Sequence::intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &/*eval*/)
 {
 	// Read the data values, then serialize.
-	while (read_next_instance(dmr, eval, true)) {
+	while (read_next_instance(dmr, /*eval,*/ true)) {
 	    D4SeqRow *row = new D4SeqRow;
 	    for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
 	        if ((*i)->send_p()) {
@@ -309,10 +309,10 @@ D4Sequence::intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval)
  * @param filter True if the CE should be evaluated, false otherwise.
  */
 void
-D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter)
+D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter)
 {
 	// Read the data values, then serialize.
-	while (read_next_instance(dmr, eval, filter)) {
+	while (read_next_instance(dmr, /*eval,*/ filter)) {
 	    D4SeqRow *row = new D4SeqRow;
 	    for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
 	        if ((*i)->send_p()) {
@@ -336,7 +336,7 @@ D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval
     // use the serialize methods to send them (but no need to test send_p).
     for (D4SeqValues::iterator i = d_values.begin(), e = d_values.end(); i != e; ++i) {
         for (D4SeqRow::iterator j = (*i)->begin(), f = (*i)->end(); j != f; ++j) {
-            (*j)->serialize(m, dmr, eval, false);
+            (*j)->serialize(m, dmr, /*eval,*/ false);
         }
     }
 }

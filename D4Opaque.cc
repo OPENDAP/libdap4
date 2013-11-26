@@ -64,7 +64,7 @@ D4Opaque::compute_checksum(Crc32 &checksum)
 }
 
 void
-D4Opaque::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
+D4Opaque::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
 {
     if (!read_p())
         read();          // read() throws Error

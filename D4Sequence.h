@@ -172,7 +172,7 @@ public:
      */
     virtual void set_length(int count) { d_length = (int64_t)count; }
 
-    virtual bool read_next_instance(DMR &dmr, ConstraintEvaluator &eval, bool filter);
+    virtual bool read_next_instance(DMR &dmr/*, ConstraintEvaluator &eval*/, bool filter);
 
     virtual void intern_data(ConstraintEvaluator &, DDS &) {
     	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
@@ -186,7 +186,7 @@ public:
 
     // DAP4
     virtual void intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
 #if INDEX_SUBSETTING

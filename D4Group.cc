@@ -149,7 +149,7 @@ D4Group *
 D4Group::find_child_grp(const string &grp_name)
 {
 	groupsIter g = find_if(grp_begin(), grp_end(), bind2nd(ptr_fun(name_eq), grp_name));
-	return (g != grp_end()) ? *g: 0;
+	return (g == grp_end()) ? 0: *g;
 }
 
 /**
@@ -180,12 +180,12 @@ D4Group::find_dim(const string &path)
 		return dims()->find_dim(lpath);
 	}
 
-	// name looks like foo/bar/baz where foo an bar must be groups
+	// name looks like foo/bar/baz where foo and bar must be groups
 	string grp_name = lpath.substr(0, pos);
 	lpath = lpath.substr(pos + 1);
 
 	D4Group *grp = find_child_grp(grp_name);
-	return (grp != 0) ? grp->find_dim(lpath): 0;
+	return (grp == 0) ? 0: grp->find_dim(lpath);
 }
 
 Array *
@@ -223,7 +223,7 @@ D4Group::m_find_map_source_helper(const string &path)
 	lpath = lpath.substr(pos + 1);
 
 	D4Group *grp = find_child_grp(grp_name);
-	return (grp != 0) ? grp->var(lpath): 0;
+	return (grp == 0) ? 0: grp->var(lpath);
 }
 
 D4EnumDef *
@@ -245,12 +245,39 @@ D4Group::find_enum_def(const string &path)
         return enum_defs()->find_enum_def(lpath);
     }
 
-    // name looks like foo/bar/baz where foo an bar must be groups
+    // name looks like foo/bar/baz where foo and bar must be groups
     string grp_name = lpath.substr(0, pos);
     lpath = lpath.substr(pos + 1);
 
     D4Group *grp = find_child_grp(grp_name);
-    return (grp != 0) ? grp->enum_defs()->find_enum_def(lpath): 0;
+    return (grp == 0) ? 0: grp->enum_defs()->find_enum_def(lpath);
+}
+
+BaseType *
+D4Group::find_var(const string &path)
+{
+    string lpath = path;        // get a mutable copy
+
+    // special-case for the root group
+    if (lpath[0] == '/') {
+        if (name() != "/")
+            throw InternalErr(__FILE__, __LINE__, "Lookup of a FQN starting in non-root group.");
+        else
+            lpath = lpath.substr(1);
+    }
+
+    string::size_type pos = lpath.find('/');
+    if (pos == string::npos) {
+        // name looks like 'bar' or bar.baz; lookup in the Constructor that's part of the Group
+    	return var(lpath);
+    }
+
+    // name looks like foo/bar/baz where foo and bar must be groups
+    string grp_name = lpath.substr(0, pos);
+    lpath = lpath.substr(pos + 1);
+
+    D4Group *grp = find_child_grp(grp_name);
+    return (grp == 0) ? 0 : grp->find_var(lpath);
 }
 
 /** Compute the size of all of the variables in this group and it's children,
@@ -349,7 +376,7 @@ D4Group::intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval)
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
 void
-D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter)
+D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter)
 {
 #if 0
     // This will call Constructor read which will, for everything but a Sequence,
@@ -365,7 +392,7 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, b
 
     groupsIter g = d_groups.begin();
     while (g != d_groups.end())
-        (*g++)->serialize(m, dmr, eval, filter);
+        (*g++)->serialize(m, dmr, /*eval,*/ filter);
 
     // Specialize how the top-level variables in any Group are sent; include
     // a checksum for them. A subset operation might make an interior set of
@@ -379,7 +406,7 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, b
 		if ((*i)->send_p()) {
 			m.reset_checksum();
 
-			(*i)->serialize(m, dmr, eval, filter);
+			(*i)->serialize(m, dmr, /*eval,*/ filter);
 
 			DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << (*i)->name() << endl);
 			m.put_checksum();

@@ -119,7 +119,7 @@ UInt64::compute_checksum(Crc32 &checksum)
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
 void
-UInt64::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
+UInt64::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
 {
     if (!read_p())
         read();          // read() throws Error

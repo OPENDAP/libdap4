@@ -427,7 +427,7 @@ public:
      * @param filter True if there is one variable that should be 'filtered'
      * @exception Error or InternalErr
      */
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
 
     /** Receives data from the network connection identified by the
 	<tt>source</tt> parameter. The data is put into the class data

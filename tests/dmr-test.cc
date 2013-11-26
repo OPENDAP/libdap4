@@ -132,7 +132,7 @@ send_data(DMR *dataset, const string &constraint, bool series_values)
 {
     set_series_values(dataset, series_values);
 
-    ConstraintEvaluator eval;	// This is a place holder. jhrg 9/6/13
+    // ConstraintEvaluator eval;	// This is a place holder. jhrg 9/6/13
     ResponseBuilder rb;
     rb.set_ce(constraint);
     rb.set_dataset_name(dataset->name());
@@ -144,7 +144,7 @@ send_data(DMR *dataset, const string &constraint, bool series_values)
     string file_name = dataset->name() + "_data.bin";
     ofstream out(file_name.c_str(), ios::out|ios::trunc|ios::binary);
 
-    rb.send_data_dmr(out, *dataset, eval, true);
+    rb.send_data_dmr(out, *dataset, /*eval,*/ true);
     out.close();
 
     return file_name;

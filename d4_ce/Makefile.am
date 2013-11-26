@@ -15,10 +15,10 @@ endif
 CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
-noinst_LIBRARIES = libd4_ce_parser.a
+noinst_LTLIBRARIES = libd4_ce_parser.la
 
-libd4_ce_parser_a_SOURCES = d4_ce_parser.tab.cc d4_ce_parser.tab.hh lex.d4_ce.cc \
-	FlexLexer.h location.hh position.hh stack.hh D4CEDriver.cc D4CEDriver.h \
+libd4_ce_parser_la_SOURCES = d4_ce_parser.tab.cc d4_ce_parser.tab.hh lex.d4_ce.cc \
+	FlexLexer.h  location.hh position.hh stack.hh D4CEDriver.cc D4CEDriver.h \
 	D4CEScanner.h 
 
 EXTRA_DIST = 
@@ -28,5 +28,5 @@ DISTCLEANFILES =
 lex.d4_ce.cc: d4_ce_scanner.ll d4_ce_parser.tab.cc d4_ce_parser.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-d4_ce_parser.tab.cc d4_ce_parser.tab.hh: d4_ce_parser.yy
+d4_ce_parser.tab.cc d4_ce_parser.tab.hh stack.hh location.hh position.hh: d4_ce_parser.yy
 	$(YACC) $(YFLAGS) $<

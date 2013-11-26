@@ -159,7 +159,7 @@ Int16::compute_checksum(Crc32 &checksum)
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
 void
-Int16::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
+Int16::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
 {
     if (!read_p())
         read();          // read() throws Error

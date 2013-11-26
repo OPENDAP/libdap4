@@ -221,6 +221,8 @@ Constructor::var(const string &name, bool exact_match, btp_stack *s)
 BaseType *
 Constructor::var(const string &n, btp_stack &s)
 {
+	// This should probably be removed. The BES code should remove web encoding
+	// with the possible exception of spaces. jhrg 11/25/13
     string name = www2id(n);
 
     BaseType *btp = m_exact_match(name, &s);
@@ -511,7 +513,7 @@ Constructor::intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator & eval)
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
 void
-Constructor::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter)
+Constructor::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter)
 {
 #if 0
 	// Not used for the same reason the equivalent code in D4Group::serialize()
@@ -528,7 +530,7 @@ Constructor::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eva
 
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->send_p()) {
-            (*i)->serialize(m, dmr, eval, filter);
+            (*i)->serialize(m, dmr, /*eval,*/ filter);
         }
     }
 }

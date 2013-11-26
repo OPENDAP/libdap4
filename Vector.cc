@@ -885,7 +885,7 @@ void Vector::intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval)
 }
 
 void
-Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter /*= false*/)
+Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter /*= false*/)
 {
     if (!read_p())
         read(); // read() throws Error and InternalErr
@@ -945,7 +945,7 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bo
             assert(d_compound_buf.capacity() >= 0);
 
             for (int64_t i = 0; i < num; ++i)
-                d_compound_buf[i]->serialize(m, dmr, eval, filter);
+                d_compound_buf[i]->serialize(m, dmr, /*eval,*/ filter);
 
             break;
 

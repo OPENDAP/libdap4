@@ -164,6 +164,33 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
+    void test_find_var() {
+        load_group_with_scalars(root);
+        load_group_with_stuff(root);
+
+        D4Group *child = new D4Group("child");
+        load_group_with_scalars(child);
+        load_group_with_stuff(child);
+        root->add_group(child);
+
+        child->dims()->add_dim_nocopy(new D4Dimension("extra", 17));
+
+        // Used add_group() and not add_group_nocopy()
+        delete child;
+
+        BaseType *btp = root->find_var("/b");
+        DBG(cerr << "btp: " << btp << ", name:" << btp->name() << endl);
+        DBG(cerr << "btp->parent: " << btp->get_parent() << ", name:" << btp->get_parent()->name() << endl);
+        CPPUNIT_ASSERT(btp && btp->name() == "b");
+        CPPUNIT_ASSERT(btp->get_parent()->name() == "/");
+
+        btp = root->find_var("/child/b");
+        DBG(cerr << "btp: " << btp << ", name:" << btp->name() << endl);
+        DBG(cerr << "btp->parent: " << btp->get_parent() << ", name:" << btp->get_parent()->name() << endl);
+        CPPUNIT_ASSERT(btp && btp->name() == "b");
+        CPPUNIT_ASSERT(btp->get_parent()->name() == "child" && btp->get_parent()->get_parent()->name() == "/");
+    }
+
     void test_print_everything() {
         load_group_with_scalars(root);
         load_group_with_stuff(root);
@@ -236,6 +263,8 @@ public:
 
         CPPUNIT_TEST(test_print_named_with_vars_and_stuff);
         CPPUNIT_TEST(test_print_everything);
+
+        CPPUNIT_TEST(test_find_var);
 
         CPPUNIT_TEST(test_print_copy_ctor);
         CPPUNIT_TEST(test_print_assignment);

@@ -163,7 +163,7 @@ Float64::compute_checksum(Crc32 &checksum)
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
 void
-Float64::serialize(D4StreamMarshaller &m, DMR &, ConstraintEvaluator &, bool)
+Float64::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
 {
     if (!read_p())
         read();          // read() throws Error

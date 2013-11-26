@@ -808,7 +808,7 @@ BaseType::deserialize(UnMarshaller &, DDS *, bool)
 }
 
 void
-BaseType::serialize(D4StreamMarshaller &, DMR &, ConstraintEvaluator &, bool)
+BaseType::serialize(D4StreamMarshaller &, DMR &, /*ConstraintEvaluator &,*/ bool)
 {
 	throw InternalErr(__FILE__, __LINE__, "The DAP4 serialize() method has not been implemented for " + type_name());
 }

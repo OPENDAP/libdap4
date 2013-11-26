@@ -26,8 +26,8 @@ if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
 endif
 
-SUBDIRS = gl . tests unit-tests
-DIST_SUBDIRS = gl tests unit-tests
+SUBDIRS = gl d4_ce .  tests unit-tests
+DIST_SUBDIRS = gl d4_ce tests unit-tests
 
 noinst_LTLIBRARIES = libparsers.la
 
@@ -55,7 +55,7 @@ endif
 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_CPPFLAGS = $(AM_CPPFLAGS)
-libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la libparsers.la
+libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la d4_ce/libd4_ce_parser.la libparsers.la
 if DAP4_DEFINED
     libdap_la_LIBADD += -lcrypto 
 endif

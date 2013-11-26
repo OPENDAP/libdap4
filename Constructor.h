@@ -103,7 +103,7 @@ public:
     // DAP4
     virtual void compute_checksum(Crc32 &checksum);
     virtual void intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     // Do not store values in memory as for C; users work with the C++ objects

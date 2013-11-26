@@ -331,16 +331,16 @@ AC_CONFIG_FILES([Makefile
                  libdapclient.pc
                  libdapserver.pc
                  main_page.doxygen
-	         doxy.conf
+	             doxy.conf
+	             
                  gl/Makefile
+                 d4_ce/Makefile
+                 
                  tests/Makefile
                  tests/atlocal
+                 
                  unit-tests/Makefile
                  unit-tests/cache-testsuite/Makefile])
-
-dnl swath2grid/Makefile
-dnl swath2grid/bes.conf
-dnl ugridFunctions/Makefile
 
 AC_CONFIG_FILES([dap-config], [chmod +x dap-config]) 
 	

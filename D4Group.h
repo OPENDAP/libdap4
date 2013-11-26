@@ -102,6 +102,8 @@ public:
         return d_enum_defs;
     }
 
+    BaseType *find_var(const string &name);
+
     /// Get an iterator to the start of the values
     groupsIter grp_begin() { return d_groups.begin(); }
 
@@ -130,7 +132,7 @@ public:
 
     // DAP4
     virtual void intern_data(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, ConstraintEvaluator &eval, bool filter = false);
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     void print_dap4(XMLWriter &xml, bool constrained = false);
