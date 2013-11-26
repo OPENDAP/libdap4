@@ -136,11 +136,11 @@ send_data(DMR *dataset, const string &constraint, bool series_values)
     ResponseBuilder rb;
     rb.set_ce(constraint);
     rb.set_dataset_name(dataset->name());
-
+#if 0
     // TODO Remove once real CE evaluator is written. jhrg 9/6/13
     // Mark all variables to be sent in their entirety.
     dataset->root()->set_send_p(true);
-
+#endif
     string file_name = dataset->name() + "_data.bin";
     ofstream out(file_name.c_str(), ios::out|ios::trunc|ios::binary);
 

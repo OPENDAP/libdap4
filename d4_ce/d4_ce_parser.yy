@@ -150,7 +150,7 @@ projection : subset
 // so maybe push a set of BaseTypes?
 subset : 
 id 
-{ 
+{
     BaseType *btp = driver.dmr()->root()->find_var($1);
     if (btp) {
         btp->set_send_p(true); 
@@ -160,11 +160,10 @@ id
         $$ = false;
     }
 }
-
 | id indexes { $$ = true; }
-       | id fields { $$ = true; }
-       | id indexes fields { $$ = true; }
-       | fields indexes { $$ = true; }
+| id fields { $$ = true; }
+| id indexes fields { $$ = true; }
+| fields indexes { $$ = true; }
 ;
     
 indexes : index
@@ -219,14 +218,15 @@ op : "<"
 ;
 
 id : path
-
+{
+    $$ = $1;
+}
 | group "/" path
 {
     $1.append(".");
     $1.append($3);
     $$ = $1;
 }
-
 ;
 
 group : "/" name
@@ -239,7 +239,6 @@ group : "/" name
     group.append($2);
     $$ = group; */
 }
-
 | group "/" name
 {
     $1.append(".");
@@ -249,7 +248,9 @@ group : "/" name
 ;
 
 path : name 
-  
+{
+    $$ = $1;
+}
 | path "." name
 {
     $1.append(".");
@@ -261,7 +262,14 @@ path : name
 // Because some formats/datasets allow 'any' name for a variable, it's possible
 // that a variable name will be a number, etc. The grammar also allows STRING
 // to support "name"."name with spaces and dots (.)".x
-name : WORD | STRING
+name : WORD 
+{
+    $$=$1;
+}
+| STRING 
+{
+    $$=$1;
+}
 ;
 
 %%
