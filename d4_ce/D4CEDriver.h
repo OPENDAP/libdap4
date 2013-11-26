@@ -31,8 +31,6 @@ class D4CEDriver {
 public:
 	D4CEDriver() : d_trace_scanning(false), d_trace_parsing(false), d_result(false), d_dmr(0), expression("") { }
 	D4CEDriver(DMR *dmr) : d_trace_scanning(false), d_trace_parsing(false), d_result(false), d_dmr(dmr), expression("") { }
-	D4CEDriver(DMR *dmr, const std::string &expr) : d_trace_scanning(false), d_trace_parsing(false), d_result(false),
-			d_dmr(dmr), expression(expr) { }
 
 	virtual ~D4CEDriver() { }
 
