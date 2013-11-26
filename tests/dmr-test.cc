@@ -342,7 +342,8 @@ main(int argc, char *argv[])
 
         	if (print) {
         		XMLWriter xml;
-        		client->print_dap4(xml, constrained);
+        		// received data never have send_p set; don't set 'constrained'
+        		client->print_dap4(xml, false /* constrained */);
         		cout << xml.get_doc() << endl;
 
 				cout << "The data:" << endl;
