@@ -74,7 +74,7 @@ chunked_outbuf::data_chunk()
 	uint32_t header = num;
 #if !BYTE_ORDER_PREFIX
 	// Add encoding of host's byte order. jhrg 11/24/13
-	if (d_big_endian) header |= CHUNK_BIG_ENDIAN;
+	if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
     // network byte order for the header
     htonl(header);
 #endif
@@ -117,7 +117,7 @@ chunked_outbuf::end_chunk()
 
 #if !BYTE_ORDER_PREFIX
     // Add encoding of host's byte order. jhrg 11/24/13
-    if (d_big_endian) header |= CHUNK_BIG_ENDIAN;
+    if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
     // network byte order for the header
     htonl(header);
 #endif
@@ -164,7 +164,7 @@ chunked_outbuf::err_chunk(const std::string &m)
 
 #if !BYTE_ORDER_PREFIX
     // Add encoding of host's byte order. jhrg 11/24/13
-    if (d_big_endian) header |= CHUNK_BIG_ENDIAN;
+    if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
     // network byte order for the header
     htonl(header);
 #endif
@@ -271,7 +271,7 @@ chunked_outbuf::xsputn(const char *s, std::streamsize num)
 	uint32_t header = d_buf_size;
 #if !BYTE_ORDER_PREFIX
     // Add encoding of host's byte order. jhrg 11/24/13
-    if (d_big_endian) header |= CHUNK_BIG_ENDIAN;
+    if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
     // network byte order for the header
     htonl(header);
 #endif
