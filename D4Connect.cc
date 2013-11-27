@@ -138,11 +138,12 @@ void D4Connect::process_data(DMR &data, Response &rs)
 				"An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 
 	case dap4_data: {
+#if BYTE_ORDER_PREFIX
 		// Read the byte-order byte; used later on
 		char byte_order;
 		*rs.get_cpp_stream() >> byte_order;
 		//if (debug) cerr << "Byte order: " << ((byte_order) ? "big endian" : "little endian") << endl;
-
+#endif
 		// get a chunked input stream
 #if BYTE_ORDER_PREFIX
 		chunked_istream cis(*rs.get_cpp_stream(), 1024, byte_order);
@@ -175,8 +176,11 @@ void D4Connect::process_data(DMR &data, Response &rs)
 			return;
 		}
 
+#if BYTE_ORDER_PREFIX
 		D4StreamUnMarshaller um(cis, byte_order);
-
+#else
+		D4StreamUnMarshaller um(cis, cis.twiddle_bytes());
+#endif
 		data.root()->deserialize(um, data);
 
 		return;
@@ -337,12 +341,13 @@ void D4Connect::request_dap4_data(DMR &dmr, const string expr)
             cerr << "Response type unknown, assuming it's a DAP4 Data response." << endl;
             /* no break */
         case dap4_data: {
-            // TODO Move to a function 11/9/13
+            // TODO Move to a function 11/9/13 process_data()???
+#if BYTE_ORDER_PREFIX
             istream &in = *rs->get_cpp_stream();
-
             // Read the byte-order byte; used later on
             char byte_order;
             in >> byte_order;
+#endif
 
             // get a chunked input stream
 #if BYTE_ORDER_PREFIX
@@ -365,7 +370,11 @@ void D4Connect::request_dap4_data(DMR &dmr, const string expr)
             parser.intern(chunk, chunk_size - 2, &dmr, false /*debug*/);
 
             // Read data and store in the DMR
+#if BYTE_ORDER_PREFIX
             D4StreamUnMarshaller um(cis, byte_order);
+#else
+            D4StreamUnMarshaller um(cis, cis.twiddle_bytes());
+#endif
             dmr.root()->deserialize(um, dmr);
 
             break;
@@ -1044,7 +1053,8 @@ D4Connect::read_dmr(DMR &dmr, Response &rs)
     read_dmr_no_mime(dmr, rs);
 }
 
-void D4Connect::read_dmr_no_mime(DMR &dmr, Response &rs)
+void
+D4Connect::read_dmr_no_mime(DMR &dmr, Response &rs)
 {
 	// Assume callers know what they are doing
     if (rs.get_type() == unknown_type)

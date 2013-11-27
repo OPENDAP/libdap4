@@ -177,6 +177,8 @@ int check_uint16(const char *val);
 int check_int32(const char *val);
 int check_uint32(const char *val);
 
+unsigned long long get_ull(const char *val);
+
 /** Like <tt>check_byte()</tt> but for 64-bit float values.
 
     @brief Is the value a valid float? */

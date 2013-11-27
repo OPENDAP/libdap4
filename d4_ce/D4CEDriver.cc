@@ -7,12 +7,16 @@
 
 #include <string>
 #include <sstream>
+#include <iterator>
 
 #include "D4CEScanner.h"
 #include "D4CEDriver.h"
 #include "d4_ce_parser.tab.hh"
 #include "DMR.h"
 #include "BaseType.h"
+#include "Array.h"
+
+#include "parser.h"		// for get_ull()
 
 namespace libdap {
 
@@ -33,13 +37,13 @@ bool D4CEDriver::parse(const std::string &expr)
 	return parser->parse() == 0;
 }
 
-bool
+BaseType *
 D4CEDriver::mark_variable(const std::string &id)
 {
     BaseType *btp = dmr()->root()->find_var(id);
     if (btp) {
         btp->set_send_p(true);
-        return true;
+        return btp;	// the return value is used by the parser logic. Maybe drop this?
     }
     else {
     	throw Error(d_expr + ": The variable " + id + " was not found in the dataset.");
@@ -47,6 +51,63 @@ D4CEDriver::mark_variable(const std::string &id)
     }
 }
 
+BaseType *
+D4CEDriver::mark_array_variable(const std::string &id)
+{
+	BaseType *btp = mark_variable(id);
+	if (btp->type() != dods_array_c)
+		throw Error("The variable '" + id + "' is not an Array variable.");
+
+	Array *a = static_cast<Array*>(btp);
+
+	// Test that the indexes and dimensions match in number
+	if (d_indexes.size() != a->dimensions())
+		throw Error("The index constraint for '" + id + "' does not match its rank.");
+
+	Array::Dim_iter d = a->dim_begin();
+	for (vector<index>::iterator i = d_indexes.begin(), e = d_indexes.end(); i != e; ++i) {
+		if ((*i).stride > (unsigned long long)a->dimension_stop(d, false))
+			throw Error("For '" + id + "', the index stride value is greater than the number of elements in the Array");
+		if (!(*i).rest && ((*i).stop) > (unsigned long long)a->dimension_stop(d, false))
+			throw Error("For '" + id + "', the index stop value is greater than the number of elements in the Array");
+
+		a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? a->dimension_stop(d, false): (*i).stop);
+		++d;
+	}
+
+	return btp;
+}
+
+D4CEDriver::index
+D4CEDriver::make_index(const std::string &i)
+{
+	unsigned long long v = get_ull(i.c_str());
+	return index(v, 1, v, false);
+}
+
+D4CEDriver::index
+D4CEDriver::make_index(const std::string &i, const std::string &s, const std::string &e)
+{
+	return index(get_ull(i.c_str()), get_ull(s.c_str()), get_ull(e.c_str()), false);
+}
+
+D4CEDriver::index
+D4CEDriver::make_index(const std::string &i, unsigned long long s, const std::string &e)
+{
+	return index(get_ull(i.c_str()), s, get_ull(e.c_str()), false);
+}
+
+D4CEDriver::index
+D4CEDriver::make_index(const std::string &i, const std::string &s)
+{
+	return index(get_ull(i.c_str()), get_ull(s.c_str()), 0, true);
+}
+
+D4CEDriver::index
+D4CEDriver::make_index(const std::string &i, unsigned long long s)
+{
+	return index(get_ull(i.c_str()), s, 0, true);
+}
 
 // This method is called from the parser (see d4_ce_parser.yy, down in the code
 // section). This will be called during the call to D4CEParser::parse(), that

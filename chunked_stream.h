@@ -13,7 +13,10 @@
 #define CHUNK_ERR  0x02000000
 
 #if !BYTE_ORDER_PREFIX
-#define CHUNK_LITTLE_ENDIAN  0x04000000
+// LITTLE or BIG endian if set? jhrg 11/26/13
+#define CHUNK_BIG_ENDIAN  0x04000000
+
+// #define CHUNK_LITTLE_ENDIAN  0x04000000
 #endif
 
 // Chunk type mask masks off the low bytes and the little endian bit.

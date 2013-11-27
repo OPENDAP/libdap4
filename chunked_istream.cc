@@ -111,14 +111,15 @@ chunked_inbuf::underflow()
 #else
 	// (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
 	if (!d_set_twiddle) {
-	    d_twiddle_bytes = is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN);
+	    d_twiddle_bytes = !(is_host_big_endian() == (header & CHUNK_BIG_ENDIAN));
 	    d_set_twiddle = true;
 	}
 #endif
 	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 
-	DBG2(cerr << "read_next_chunk: chunk size from header: " << chunk_size << endl);
-	DBG2(cerr << "read_next_chunk: chunk type from header: " << (void*)(header & CHUNK_TYPE_MASK) << endl);
+	DBG(cerr << "underflow: chunk size from header: " << chunk_size << endl);
+	DBG(cerr << "underflow: chunk type from header: " << hex << (header & CHUNK_TYPE_MASK) << endl);
+	DBG(cerr << "underflow: chunk byte order from header: " << hex << (header & CHUNK_BIG_ENDIAN) << endl);
 
 	// Handle the case where the buffer is not big enough to hold the incoming chunk
 	if (chunk_size > d_buf_size) {
@@ -131,7 +132,7 @@ chunked_inbuf::underflow()
 
 	// Read the chunk's data
 	d_is.read(d_buffer, chunk_size);
-	DBG2(cerr << "read_next_chunk: size read: " << d_is.gcount() << ", eof: " << d_is.eof() << ", bad: " << d_is.bad() << endl);
+	DBG2(cerr << "underflow: size read: " << d_is.gcount() << ", eof: " << d_is.eof() << ", bad: " << d_is.bad() << endl);
 	if (d_is.bad()) return traits_type::eof();
 
 	DBG2(cerr << "eback(): " << (void*)eback() << ", gptr(): " << (void*)(gptr()-eback()) << ", egptr(): " << (void*)(egptr()-eback()) << endl);
@@ -143,7 +144,7 @@ chunked_inbuf::underflow()
 
 	switch (header & CHUNK_TYPE_MASK) {
 	case CHUNK_END:
-		DBG(cerr << "Found end chunk" << endl);
+		DBG2(cerr << "Found end chunk" << endl);
 		return traits_type::to_int_type(*gptr());
 	case CHUNK_DATA:
 		return traits_type::to_int_type(*gptr());
@@ -232,13 +233,17 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 #else
         // (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
         if (!d_set_twiddle) {
-            d_twiddle_bytes = is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN);
+            d_twiddle_bytes = !(is_host_big_endian() == (header & CHUNK_BIG_ENDIAN));
             d_set_twiddle = true;
         }
 #endif
 
 	    uint32_t chunk_size = header & CHUNK_SIZE_MASK;
-	    // handle error chunks here
+		DBG(cerr << "xsgetn: chunk size from header: " << chunk_size << endl);
+		DBG(cerr << "xsgetn: chunk type from header: " << hex << (header & CHUNK_TYPE_MASK) << endl);
+		DBG(cerr << "xsgetn: chunk byte order from header: " << hex << (header & CHUNK_BIG_ENDIAN) << endl);
+
+		// handle error chunks here
 	    if ((header & CHUNK_TYPE_MASK) == CHUNK_ERR) {
 			d_error = true;
 			// Note that d_buffer is not used to avoid calling resize if it is too
@@ -295,6 +300,7 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 
 	    switch (header & CHUNK_TYPE_MASK) {
 	    case CHUNK_END:
+			DBG(cerr << "Found end chunk" << endl);
 	    	// in this case bytes_left_to_read can be > 0 because we ran out of data
 	    	// before reading all the requested bytes. The next read() call will return
 	    	// eof; this call returns the number of bytes read and transferred to 's'.
@@ -350,15 +356,16 @@ chunked_inbuf::read_next_chunk()
 #else
     // (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
     if (!d_set_twiddle) {
-        d_twiddle_bytes = is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN);
+        d_twiddle_bytes = !(is_host_big_endian() == (header & CHUNK_BIG_ENDIAN));
         d_set_twiddle = true;
     }
 #endif
 
 	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 
-	DBG2(cerr << "read_next_chunk: chunk size from header: " << chunk_size << endl);
-	DBG2(cerr << "read_next_chunk: chunk type from header: " << (void*)(header & CHUNK_TYPE_MASK) << endl);
+	DBG(cerr << "read_next_chunk: chunk size from header: " << chunk_size << endl);
+	DBG(cerr << "read_next_chunk: chunk type from header: " << hex << (header & CHUNK_TYPE_MASK) << endl);
+	DBG(cerr << "read_next_chunk: chunk byte order from header: " << hex << (header & CHUNK_BIG_ENDIAN) << endl);
 
 	// Handle the case where the buffer is not big enough to hold the incoming chunk
 	if (chunk_size > d_buf_size) {

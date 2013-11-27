@@ -9,19 +9,40 @@
 #define D4CEDRIVER_H_
 
 #include <string>
-
-//#include "D4CEScanner.h"
-//#include "d4_ce_parser.tab.hh"
+#include <vector>
 
 namespace libdap {
 
 class location;
 class DMR;
+class BaseType;
 
 /**
  * Driver for the DAP4 Constraint Expression parser.
  */
 class D4CEDriver {
+	struct index {
+		// start and stride are simple numbers; stop is either the stopping index or
+		// if to_end is true, is ignored and the subset runs to the end of the dimension
+		unsigned long long start, stride, stop;
+		bool rest;
+
+		// Added because the parser code needs it. Our code does not use this. jhrg 11/26/13
+		index(): start(0), stride(0), stop(0), rest(false) {}
+		index(unsigned long long i, unsigned long long s, unsigned long long e, bool r)
+			: start(i), stride(s), stop(e), rest(r) {}
+	};
+
+	index make_index() { return index(0, 1, 0, true); }
+
+	index make_index(const std::string &is);
+
+	index make_index(const std::string &i, const std::string &s, const std::string &e);
+	index make_index(const std::string &i, unsigned long long s, const std::string &e);
+
+	index make_index(const std::string &i, const std::string &s);
+	index make_index(const std::string &i, unsigned long long s);
+
 	bool d_trace_scanning;
 	bool d_trace_parsing;
 	bool d_result;
@@ -29,10 +50,15 @@ class D4CEDriver {
 
 	DMR *d_dmr;
 
+	std::vector<index> d_indexes;
+
 	// d_expr should be set by parse! Its value is used by the parser right before
 	// the actual parsing operation starts. jhrg 11/26/13
 	std::string *expression() { return &d_expr; }
-	bool mark_variable(const std::string &id);
+	BaseType *mark_variable(const std::string &id);
+	BaseType *mark_array_variable(const std::string &id);
+
+	void push_index(const index &i) { d_indexes.push_back(i); }
 
 	friend class D4CEParser;
 

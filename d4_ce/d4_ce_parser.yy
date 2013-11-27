@@ -45,8 +45,9 @@
 // %define api.prefix { d4_ce }
 
 %code requires {
+#include "D4CEDriver.h"
 namespace libdap {
-    class D4CEDriver;
+    //class D4CEDriver;
     class D4CEScanner;
 }
 
@@ -63,11 +64,9 @@ namespace libdap {
 %locations
 %initial-action
 {
-    // Initialize the initial location. 'expression' is a field in D4CEDriver
-    // and it is set by D4CEDriver::parse(const std::string &expr)
-    // Normally this would be the name of a file...
-    
-    // @$.begin.filename = @$.end.filename = &driver.expression;
+    // Initialize the initial location. This is printed when the parser builds
+    // its own error messages - when the parse fails as opposed to when the 
+    // CE names a missing variables, ...
 
     @$.initialize (driver.expression());
 };
@@ -95,8 +94,9 @@ namespace libdap {
 %token <std::string> WORD "word"
 %token <std::string> STRING "string"
 
-%type <bool> predicate filter fields indexes index subset projection projections
+%type <bool> predicate filter fields indexes subset projection projections
 %type <std::string> id path group name
+%type <libdap::D4CEDriver::index> index
 
 %token 
     END  0  "end of file"
@@ -141,47 +141,33 @@ expression : projections { driver.set_result($1); }
 ;
 
 projections : projection
-           | projections ";" projection
+    | projections ";" projection
 ;
                     
 projection : subset
-          | subset "|" filter
+    | subset "|" filter
 ;
 
-// FIXME push id's BaseType on a stack here. We'll need to access it 
-// for indexes and filters. For 'fields indexes' maybe use a set
-// so maybe push a set of BaseTypes?
-subset : 
-id 
-{
-    $$ = driver.mark_variable($1);
-#if 0
-    BaseType *btp = driver.dmr()->root()->find_var($1);
-    if (btp) {
-        btp->set_send_p(true); 
-        $$ = true; 
-    }
-    else {
-        $$ = false;
-    }
-#endif
-}
-| id indexes { $$ = true; }
-| id fields { $$ = true; }
-| id indexes fields { $$ = true; }
-| fields indexes { $$ = true; }
-;
+// mark_variable returns a BaseType* or throws Error
+subset : id { driver.mark_variable($1); $$ = true; }
+    | id indexes { driver.mark_array_variable($1); $$ = true; }
     
-indexes : index
-        | index indexes
+    | id fields { $$ = true; }
+    | id indexes fields { $$ = true; }
+    | fields indexes { $$ = true; }
+;
+
+// push_index stores the index in the D4CEDriver
+indexes : index { driver.push_index($1); $$ = true; }
+    | index { driver.push_index($1); } indexes { $$ = $3; }
 ;
    
-index   : "[" "]" { $$ = true; }
-        | "[" WORD "]" { $$ = true; }
-        | "[" WORD ":" WORD "]" { $$ = true; }
-        | "[" WORD ":" WORD ":" WORD "]" { $$ = true; }
-        | "[" WORD ":" "]" { $$ = true; }
-        | "[" WORD ":" WORD ":" "]" { $$ = true; }
+index   : "[" "]" { $$ = driver.make_index(); }
+    | "[" WORD "]" { $$ = driver.make_index($2); }
+    | "[" WORD ":" WORD "]" { $$ = driver.make_index($2, 1, $4); }
+    | "[" WORD ":" WORD ":" WORD "]" { $$ = driver.make_index($2, $4, $6); }
+    | "[" WORD ":" "]" { $$ = driver.make_index($2, 1); }
+    | "[" WORD ":" WORD ":" "]" { $$ = driver.make_index($2, $4); }
 ;
         
 fields : "{" projections "}" { $$ = true; }
