@@ -110,7 +110,7 @@ Array::update_length(int)
     @brief Array constructor
 */
 Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */)
-	: Vector(n, 0, dods_array_c, is_dap4), d_maps(0)
+	: Vector(n, 0, dods_array_c, is_dap4), d_maps(0), d_local_constraint(false)
 {
     add_var(v); // Vector::add_var() stores null if v is null
 }
@@ -129,7 +129,7 @@ Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */)
     @brief Array constructor
 */
 Array::Array(const string &n, const string &d, BaseType *v, bool is_dap4 /* default:false */)
-    : Vector(n, d, 0, dods_array_c, is_dap4), d_maps(0)
+    : Vector(n, d, 0, dods_array_c, is_dap4), d_maps(0), d_local_constraint(false)
 {
     add_var(v); // Vector::add_var() stores null if v is null
 }
@@ -304,6 +304,7 @@ void
 Array::reset_constraint()
 {
     set_length(-1);
+    d_local_constraint = false;
 
     for (Dim_iter i = _shape.begin(); i != _shape.end(); i++) {
         (*i).start = 0;
@@ -353,7 +354,8 @@ specified do not match the array variable.";
     dimensions.
     @param start The start index of the constraint.
     @param stride The stride value of the constraint.
-    @param stop The stop index of the constraint.
+    @param stop The stop index of the constraint. A value of -1 indicates
+    'to the end' of the array.
     @exception Error Thrown if the any of values of start, stop or stride
     cannot be applied to this array. */
 void
@@ -383,6 +385,8 @@ Array::add_constraint(Dim_iter i, int start, int stride, int stop)
     d.c_size = (stop - start) / stride + 1;
 
     DBG(cerr << "add_constraint: c_size = " << d.c_size << endl);
+
+    d_local_constraint = true;
 
     update_length();
 }
@@ -597,6 +601,8 @@ unsigned int Array::width(bool constrained) const
 
 class PrintD4ArrayDimXMLWriter: public unary_function<Array::dimension&, void> {
 	XMLWriter &xml;
+	// Was this variable constrained using local/direct slicing? i.e., is d_local_constraint set?
+	// If so, don't use shared dimensions; instead emit Dim elements that are anonymous.
 	bool d_constrained;
 public:
 	PrintD4ArrayDimXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) { }
@@ -614,7 +620,7 @@ public:
 		string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
 		// If there is a name, there must be a Dimension (named dimension) in scope
 		// so write its name but not its size.
-		if (!name.empty()) {
+		if (! d_constrained && !name.empty()) {
 			if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*) name.c_str())
 					< 0) throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 		}
@@ -690,7 +696,7 @@ Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/)
 		// bind2nd(mem_fun_ref(&BaseType::print_dap4), xml));
 	}
 
-    for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml, constrained));
+    for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml, d_local_constraint));
 
     for_each(maps()->map_begin(), maps()->map_end(), PrintD4MapXMLWriter(xml));
 

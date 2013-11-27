@@ -37,6 +37,13 @@ bool D4CEDriver::parse(const std::string &expr)
 	return parser->parse() == 0;
 }
 
+/**
+ * When an identifier is used in a CE, is becomes part of the 'current projection,'
+ * which means it is part of the set of variable to be sent back to the client. This
+ * method sets a flag in the variable (send_p: send predicate) indicating that.
+ * @param id
+ * @return The BaseType* to the variable; the send_p flag is set as a side effect.
+ */
 BaseType *
 D4CEDriver::mark_variable(const std::string &id)
 {
@@ -51,6 +58,13 @@ D4CEDriver::mark_variable(const std::string &id)
     }
 }
 
+/**
+ * Add an array to the current projection with slicing. Calling this method will result
+ * in the array being returned with anonymous dimensions.
+ * @param id
+ * @return The BaseType* to the Array variable; the send_p and slicing information is
+ * set as a side effect.
+ */
 BaseType *
 D4CEDriver::mark_array_variable(const std::string &id)
 {
@@ -71,7 +85,8 @@ D4CEDriver::mark_array_variable(const std::string &id)
 		if (!(*i).rest && ((*i).stop) > (unsigned long long)a->dimension_stop(d, false))
 			throw Error("For '" + id + "', the index stop value is greater than the number of elements in the Array");
 
-		a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? a->dimension_stop(d, false): (*i).stop);
+		// -1 for a stop value means 'to the end' of the array.
+		a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1: (*i).stop);
 		++d;
 	}
 

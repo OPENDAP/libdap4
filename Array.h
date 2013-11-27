@@ -129,7 +129,7 @@ public:
         int size;  ///< The unconstrained dimension size.
         string name;    ///< The name of this dimension.
 
-        D4Dimension *dim; ///< If not null, a weak pointer to the Dimension
+        D4Dimension *dim; ///< If not null, a weak pointer to the D4Dimension
 
         int start;  ///< The constraint start index
         int stop;  ///< The constraint end index
@@ -156,6 +156,14 @@ public:
 
 private:
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
+
+    // in DAP4 an array can be sliced using either a local operator or by slicing
+    // its shared dimensions (if it has them). If the local (aka direct) slicing is
+    // done, record that so when the CDMR is sent the array will be sent using the
+    // correct Dim elements (i.e., ones that indicate anonymous dimensions). NB:
+    // This dies not indicate whether the array has shared dimensions, just that the
+    // local/direct slicing form of the CE was applied to it.
+    bool d_local_constraint;
 
     friend class ArrayTest;
 
