@@ -62,7 +62,7 @@
 #include "chunked_ostream.h"
 #include "chunked_istream.h"
 
-#include "d4_ce/D4CEDriver.h"
+#include "D4CEDriver.h"
 
 #include "debug.h"
 #include "mime_util.h"	// for last_modified_time() and rfc_822_date()
@@ -251,7 +251,7 @@ void ResponseBuilder::send_dmr(ostream &out, DMR &dmr, bool with_mime_headers)
 			throw Error("Constraint Expression failed to parse.");
 	}
 
-	if (with_mime_headers) set_mime_text(out, dods_ddx, x_plain, last_modified_time(d_dataset), dmr.dap_version());
+	if (with_mime_headers) set_mime_text(out, dap4_dmr, x_plain, last_modified_time(d_dataset), dmr.dap_version());
 
 	XMLWriter xml;
 	dmr.print_dap4(xml, !d_ce.empty() /* true == constrained */);
@@ -326,7 +326,7 @@ void ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_heade
 		}
 
 		if (with_mime_headers)
-			set_mime_binary(out, dods_data_ddx, x_plain, last_modified_time(d_dataset), dmr.dap_version());
+			set_mime_binary(out, dap4_data, x_plain, last_modified_time(d_dataset), dmr.dap_version());
 
 	    // Write the DMR
 	    XMLWriter xml;
