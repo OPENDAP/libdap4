@@ -114,11 +114,13 @@ D4Dimensions::find_dim(const string &name)
 }
 
 void
-D4Dimensions::print_dap4(XMLWriter &xml) const
+D4Dimensions::print_dap4(XMLWriter &xml, bool constrained) const
 {
     D4DimensionsCIter i = d_dims.begin();
     while (i != d_dims.end()) {
-        (*i++)->print_dap4(xml);
+        if (!constrained || parent()->find_first_var_that_uses_dimension(*i))
+            (*i)->print_dap4(xml);
+        ++i;
     }
 }
 

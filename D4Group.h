@@ -39,8 +39,6 @@ class Array;
  * BaseType objects and an attribute table, along with methods to search for
  * variables by name where dots (.) in a fully qualified name serve as
  * separators.
- *
- * @todo Add search methods for FQNs the encompass the Group hierarchy
  */
 class D4Group :public Constructor {
 private:
@@ -101,6 +99,9 @@ public:
         }
         return d_enum_defs;
     }
+
+    BaseType *find_first_var_that_uses_dimension(D4Dimension *dim);
+    // BaseType *find_first_var_that_uses_enumeration(D4EnumDef *enumdef);
 
     BaseType *find_var(const string &name);
 

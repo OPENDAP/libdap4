@@ -152,6 +152,38 @@ D4Group::find_child_grp(const string &grp_name)
 	return (g == grp_end()) ? 0: *g;
 }
 
+// TODO Add constraint param? jhrg 11/17/13
+BaseType *
+D4Group::find_first_var_that_uses_dimension(D4Dimension *dim)
+{
+    // for each group, starting with the root group
+    //    for each variable in the group that is marked to send and is an array
+    //        return the btp if it uses the D4Dimension
+    //    if it contains child groups, search those
+    //        return the btp if it uses the D4Dimension
+    // return null
+
+    // exhaustive breadth-first search for 'dim
+
+    // root group
+    for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i) {
+        if ((*i)->send_p() && (*i)->type() == dods_array_c) {
+            Array *a = static_cast<Array*>(*i);
+            for (Array::Dim_iter di = a->dim_begin(), de = a->dim_end(); di != de; ++di) {
+                if (!a->local_slice_constraint() && a->dimension_D4dim(di) == dim)
+                    return a;
+            }
+        }
+    }
+
+    for (groupsIter i = grp_begin(), e = grp_end(); i != e; ++i) {
+        BaseType *btp = (*i)->find_first_var_that_uses_dimension(dim);
+        if (btp) return btp;
+    }
+
+    return 0;
+}
+
 /**
  * @brief Find the dimension using a path.
  * Using the DAP4 name syntax, lookup a dimension. The dimension must
@@ -456,7 +488,7 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
 
     // dims
     if (!dims()->empty())
-        dims()->print_dap4(xml);
+        dims()->print_dap4(xml, constrained);
 
     // groups
     groupsIter g = d_groups.begin();
