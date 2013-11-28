@@ -27,6 +27,8 @@
 
 #include "config.h"
 
+#include <arpa/inet.h>
+
 #include <stdint.h>
 
 #include <string>
@@ -75,8 +77,8 @@ chunked_outbuf::data_chunk()
 #if !BYTE_ORDER_PREFIX
 	// Add encoding of host's byte order. jhrg 11/24/13
 	if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
-    // network byte order for the header
-    htonl(header);
+	// network byte order for the header
+	htonl(header);
 #endif
 
 	d_os.write((const char *)&header, sizeof(int32_t));

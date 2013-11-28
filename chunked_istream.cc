@@ -29,6 +29,7 @@
 
 #include <stdint.h>
 #include <byteswap.h>
+#include <arpa/inet.h>
 
 #include <cstring>
 #include <vector>

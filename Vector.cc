@@ -43,6 +43,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <typeinfo>
 
 #include <stdint.h>
 

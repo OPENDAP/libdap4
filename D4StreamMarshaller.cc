@@ -32,6 +32,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <limits>
 
 //#define DODS_DEBUG 1
 
