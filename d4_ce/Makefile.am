@@ -25,6 +25,9 @@ EXTRA_DIST =
 
 DISTCLEANFILES = 
 
+clean-local:
+	-rm location.hh position.hh stack.hh d4_ce_parser.tab.cc d4_ce_parser.tab.hh lex.d4_ce.cc
+
 lex.d4_ce.cc: d4_ce_scanner.ll d4_ce_parser.tab.cc d4_ce_parser.tab.hh
 	$(LEX) $(LFLAGS) $<
 
