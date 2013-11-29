@@ -291,11 +291,28 @@ name_path(const string &path)
 //
 // Returns: false if the compression output filter was to be used but could
 // not be started, true otherwise.
-
+#if 0
 static const char *descrip[] =
     {"unknown", "dods_das", "dods_dds", "dods_data", "dods_ddx",
      "dods_error", "web_error", "dap4-dmr", "dap4-data", "dap4-error"
     };
+#endif
+
+static const char *descrip[] = {
+"unknown_type",
+"dods_das",
+"dods_dds",
+"dods_data",
+"dods_ddx",       // This is the old XML DDS/DAS used prior to dap4
+"dods_data_ddx",  // This is used for caching data responses
+"dods_error",
+"web_error",
+
+"dap4_dmr",       // DAP4 metadata
+"dap4_data",      // The DMR with a data blob
+"dap4_error"      // The error response for DAP4
+};
+
 static const char *encoding[] =
     {"unknown", "deflate", "x-plain", "gzip", "binary"
     };
@@ -329,6 +346,8 @@ get_description_type(const string &value)
         return dods_data;
     else if ((value == "dods_ddx") || (value == "dods-ddx"))
         return dods_ddx;
+    else if ((value == "dods_data_ddx" || (value == "dods-data-ddx")))
+        return dods_data_ddx;
     else if ((value == "dods_error") || (value == "dods-error"))
         return dods_error;
     else if ((value == "web_error") || (value == "web-error"))
@@ -1019,9 +1038,9 @@ void read_multipart_headers(istream &in, const string &content_type, const Objec
 		}
 		else if (name == "content-description") {
 			cd = true;
+			cerr << "value: " << value << endl; // FIXME
 			if (get_description_type(value) != object_type)
-				throw Error(
-						"Content-Description for this part of a DAP4 data response must be dap4-ddx or dap4-data-ddx");
+				throw Error("Content-Description '" + value + "' not the expected value (expected: " + descrip[object_type] + ").");
 		}
 		else if (name == "content-id") {
 			ci = true;

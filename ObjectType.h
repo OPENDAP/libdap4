@@ -50,6 +50,8 @@ namespace libdap
      };
      </pre>
 
+    @note If this is cjanged, update the char* array 'descrip' in mime_util.h.
+
     @brief The type of object in the stream coming from the data
     server.  */
 
