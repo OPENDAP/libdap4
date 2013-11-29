@@ -31,6 +31,8 @@ dist_check_SCRIPTS = DASTest DDSTest EXPRTest DMRTest getdapTest atconfig atloca
 lib_LIBRARIES = libtest-types.a
 
 libtest_types_a_SOURCES = $(TESTSRCS) $(TEST_HDR)
+libtest_types_a_CXXFLAGS = -fPIC
+# libtest_types_a_SOURCES = $(TESTSRCS) $(TEST_HDR)
 
 testheadersdir = $(pkgincludedir)/test
 testheaders_HEADERS = $(TEST_HDR)
