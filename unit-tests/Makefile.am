@@ -51,12 +51,15 @@ DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
 
 EXTRA_DIST = $(DIRS_EXTRA) testFile.cc testFile.h test_config.h.in
 
-CLEANFILES = testout .dodsrc  *.gcda *.gcno
+CLEANFILES = testout .dodsrc  *.gcda *.gcno D4-xml.tar.gz
 
 DISTCLEANFILES = test_config.h *.strm *.file tmp.txt
 
 test_config.h: test_config.h.in Makefile
 	sed -e "s%[@]abs_srcdir[@]%${abs_srcdir}%" $< > test_config.h
+
+D4-xml.tar.gz: D4-xml/DMR_*[0-9].xml
+	tar -czf $@ $^
 
 ############################################################################
 # Unit Tests
@@ -67,10 +70,8 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	RegexTest ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest \
 	DDSTest	DDXParserTest  generalUtilTest HTTPConnectTest parserUtilTest \
 	RCReaderTest SequenceTest SignalHandlerTest  MarshallerTest \
-    HTTPCacheTest ServerFunctionsListUnitTest
-		
-# ResponseBuilderTest ResponseCacheTest Keywords2Test DODSFilterTest 
-	
+	HTTPCacheTest ServerFunctionsListUnitTest
+
 if DAP4_DEFINED
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
 	D4EnumDefsTest D4GroupTest D4ParserSax2Test D4AttributesTest D4EnumTest \

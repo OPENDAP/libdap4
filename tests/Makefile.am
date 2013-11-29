@@ -32,7 +32,6 @@ lib_LIBRARIES = libtest-types.a
 
 libtest_types_a_SOURCES = $(TESTSRCS) $(TEST_HDR)
 libtest_types_a_CXXFLAGS = -fPIC
-# libtest_types_a_SOURCES = $(TESTSRCS) $(TEST_HDR)
 
 testheadersdir = $(pkgincludedir)/test
 testheaders_HEADERS = $(TEST_HDR)
@@ -71,8 +70,13 @@ EXTRA_DIST = DASTest.at  $(DASTESTSUITE) DDSTest.at $(DDSTESTSUITE) \
 	EXPRTest.at $(EXPRTESTSUITE) DMRTest.at $(DMRTESTSUITE) \
 	 getdapTest.at getdap-testsuite atlocal.in $(srcdir)/package.m4 $(DIRS_EXTRA)
 
+CLEANFILES = dmr-testsuite.tar.gz
+
 DISTCLEANFILES = *.log DASTest.dir/* DDSTest.dir/* EXPRTest.dir/* DMRTest.dir/* \
 	getdapTest.dir/*
+
+dmr-testsuite.tar.gz: dmr-testsuite/*.xml
+	tar -czf $@ $^
 
 ############## Autotest follows #####################
 
