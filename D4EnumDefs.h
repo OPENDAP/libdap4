@@ -163,7 +163,7 @@ public:
         d_enums.insert(i, enum_def_copy);
     }
 
-    void print_dap4(XMLWriter &xml) const;
+    void print_dap4(XMLWriter &xml, bool constrained = false) const;
 };
 
 } /* namespace libdap */

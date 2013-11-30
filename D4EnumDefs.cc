@@ -24,6 +24,7 @@
 
 #include "config.h"
 
+#include "D4Group.h"
 #include "D4EnumDefs.h"
 
 #include <sstream>
@@ -122,11 +123,13 @@ void D4EnumDefs::m_print_enum(XMLWriter &xml, D4EnumDef *e) const
         throw InternalErr(__FILE__, __LINE__, "Could not end Enumeration element");
 }
 
-void D4EnumDefs::print_dap4(XMLWriter &xml) const
+void D4EnumDefs::print_dap4(XMLWriter &xml, bool constrained) const
 {
     D4EnumDefCIter i = d_enums.begin();
     while (i != d_enums.end()) {
-        m_print_enum(xml, *i++);
+        if (!constrained || parent()->find_first_var_that_uses_enumeration(*i))
+            m_print_enum(xml, *i);
+        ++i;
     }
 }
 

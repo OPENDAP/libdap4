@@ -90,6 +90,8 @@ D4CEDriver::mark_array_variable(const std::string &id)
 		++d;
 	}
 
+	d_indexes.clear();
+
 	return btp;
 }
 

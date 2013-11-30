@@ -41,6 +41,8 @@
 #include "D4Attributes.h"
 #include "D4Dimensions.h"
 #include "D4Group.h"
+#include "D4Enum.h"
+
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
 
@@ -178,6 +180,35 @@ D4Group::find_first_var_that_uses_dimension(D4Dimension *dim)
 
     for (groupsIter i = grp_begin(), e = grp_end(); i != e; ++i) {
         BaseType *btp = (*i)->find_first_var_that_uses_dimension(dim);
+        if (btp) return btp;
+    }
+
+    return 0;
+}
+
+BaseType *
+D4Group::find_first_var_that_uses_enumeration(D4EnumDef *enum_def)
+{
+    // for each group, starting with the root group
+    //    for each variable in the group that is marked to send and is an array
+    //        return the btp if it uses the D4EnumDef
+    //    if it contains child groups, search those
+    //        return the btp if it uses the D4EnumDef
+    // return null
+
+    // exhaustive breadth-first search for 'dim
+
+    // root group
+    for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i) {
+        if ((*i)->send_p() && (*i)->type() == dods_enum_c) {
+            D4Enum *e = static_cast<D4Enum*>(*i);
+            if (e->enumeration() == enum_def)
+                return e;
+        }
+    }
+
+    for (groupsIter i = grp_begin(), e = grp_end(); i != e; ++i) {
+        BaseType *btp = (*i)->find_first_var_that_uses_enumeration(enum_def);
         if (btp) return btp;
     }
 
@@ -484,7 +515,7 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
 
     // enums
     if (!enum_defs()->empty())
-        enum_defs()->print_dap4(xml);
+        enum_defs()->print_dap4(xml, constrained);
 
     // dims
     if (!dims()->empty())

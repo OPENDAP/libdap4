@@ -213,9 +213,14 @@ id : path
 {
     $$ = $1;
 }
+| "/" path
+{
+    $$.append("/");
+    $$.append($2);
+}
 | group "/" path
 {
-    $1.append(".");
+    $1.append("/");
     $1.append($3);
     $$ = $1;
 }
@@ -225,11 +230,6 @@ group : "/" name
 {
     $$.append("/");
     $$.append($2);
-    
-    /* FIXME: remove...
-    string group = "/";
-    group.append($2);
-    $$ = group; */
 }
 | group "/" name
 {

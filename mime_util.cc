@@ -1038,7 +1038,6 @@ void read_multipart_headers(istream &in, const string &content_type, const Objec
 		}
 		else if (name == "content-description") {
 			cd = true;
-			cerr << "value: " << value << endl; // FIXME
 			if (get_description_type(value) != object_type)
 				throw Error("Content-Description '" + value + "' not the expected value (expected: " + descrip[object_type] + ").");
 		}

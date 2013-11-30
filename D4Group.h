@@ -101,7 +101,7 @@ public:
     }
 
     BaseType *find_first_var_that_uses_dimension(D4Dimension *dim);
-    // BaseType *find_first_var_that_uses_enumeration(D4EnumDef *enumdef);
+    BaseType *find_first_var_that_uses_enumeration(D4EnumDef *enum_def);
 
     BaseType *find_var(const string &name);
 
