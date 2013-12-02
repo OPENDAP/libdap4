@@ -152,6 +152,7 @@ projection : subset
 subset : id { driver.mark_variable($1); $$ = true; }
     | id indexes { driver.mark_array_variable($1); $$ = true; }
     
+    // must store id associated with current set of fields - will need a stack for that
     | id fields { $$ = true; }
     | id indexes fields { $$ = true; }
     | fields indexes { $$ = true; }
