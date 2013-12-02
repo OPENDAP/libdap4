@@ -15,10 +15,10 @@ Parse successful
         <String name="s"/>
         <Dim size="2"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <Value>8584f220</Value>
+            <Value>766f5e81</Value>
         </Attribute>
     </Sequence>
 </Dataset>
 
 The data:
-{ {{ { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 2" }, { 123456789, "Silly test string: 3" }, { 123456789, "Silly test string: 4" } }, { { 123456789, "Silly test string: 5" }, { 123456789, "Silly test string: 6" }, { 123456789, "Silly test string: 7" }, { 123456789, "Silly test string: 8" } }} }
+{ {{ { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" } }, { { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" } }} }

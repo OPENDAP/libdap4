@@ -19,10 +19,10 @@ Parse successful
         <Dim size="2"/>
         <Dim name="/col"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            <Value>b705ded8</Value>
+            <Value>f95dfb1c</Value>
         </Attribute>
     </Sequence>
 </Dataset>
 
 The data:
-{ {{{ { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 2" }, { 123456789, "Silly test string: 3" }, { 123456789, "Silly test string: 4" } }, { { 123456789, "Silly test string: 5" }, { 123456789, "Silly test string: 6" }, { 123456789, "Silly test string: 7" }, { 123456789, "Silly test string: 8" } }, { { 123456789, "Silly test string: 9" }, { 123456789, "Silly test string: 10" }, { 123456789, "Silly test string: 11" }, { 123456789, "Silly test string: 12" } }},{{ { 123456789, "Silly test string: 13" }, { 123456789, "Silly test string: 14" }, { 123456789, "Silly test string: 15" }, { 123456789, "Silly test string: 16" } }, { { 123456789, "Silly test string: 17" }, { 123456789, "Silly test string: 18" }, { 123456789, "Silly test string: 19" }, { 123456789, "Silly test string: 20" } }, { { 123456789, "Silly test string: 21" }, { 123456789, "Silly test string: 22" }, { 123456789, "Silly test string: 23" }, { 123456789, "Silly test string: 24" } }}} }
+{ {{{ { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" } }, { { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" } }, { { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" } }},{{ { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" } }, { { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" } }, { { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" }, { 123456789, "Silly test string: 1" } }}} }
