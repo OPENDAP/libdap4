@@ -58,8 +58,24 @@ EXPR_RESPONSE_P([test.2a], [s2[[2:4]].m[[0:4]],s2[[2:4]].l[[0:5]]], [test.2f], [
 EXPR_RESPONSE_P([test.3], [i[[1:10]]], [test.3], [pass])
 EXPR_RESPONSE_P([test.4], ['s&s=~"^Silly.*"'], [test.4], [pass])
 
-EXPR_RESPONSE_P([test.e], ['names.s&names.s=~".*: 3"'], [test.ea], [pass])
+dnl In changing the TestStr class so that it writes a constant value (Silly ...: 1)
+dnl I had to hack this test to use the -b option to expr-test. EXPR_RESPONSE_P uses
+dnl only the -w/-W options, so I dropped using that macro kluge and went right for the
+dnl actual test macro. 12/2/13/ jhrg
+dnl
+dnl EXPR_RESPONSE_P([test.e], ['names.s&names.s=~".*: 3"'], [test.ea], [pass])
+    
+_EXPR_TEST([-b -w], [$abs_srcdir/expr-testsuite/test.e], ['names.s&names.s=~".*: 3"'], 
+    [$abs_srcdir/expr-testsuite/test.ea.base], [pass])
+    
+_EXPR_TEST([-b -W], [$abs_srcdir/expr-testsuite/test.e], ['names.s&names.s=~".*: 3"'], 
+    [$abs_srcdir/expr-testsuite/test.ea.base], [pass])
+
+dnl since 'Silly ...:5' will never be produced, this tests what happens when the sequence
+dnl does not contain the value. Note that this test does not have to be rewritten because
+dnl of the change to the TestStr code. 12/2/13 jhrg
 EXPR_RESPONSE_P([test.e], ['names.s&names.s=~".*: 5"'], [test.eb], [pass])
+
 EXPR_RESPONSE_P([test.5], [g[[0:2:4]][[0]][[0]]], [test.5], [pass])
 EXPR_RESPONSE_P([test.5], [g[[0:2:4]][[0:2:4]][[0:2:4]]], [test.5a], [pass])
 EXPR_RESPONSE_P([test.6], [i], [test.6], [pass])

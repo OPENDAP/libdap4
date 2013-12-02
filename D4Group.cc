@@ -526,15 +526,15 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
     while (v != var_end())
         (*v++)->print_dap4(xml, constrained);
 
-    // groups
-    groupsIter g = d_groups.begin();
-    while (g != d_groups.end())
-        (*g++)->print_dap4(xml, constrained);
-
 #if D4_ATTR
     // attributes
     attributes()->print_dap4(xml);
 #endif
+
+    // groups
+    groupsIter g = d_groups.begin();
+    while (g != d_groups.end())
+        (*g++)->print_dap4(xml, constrained);
 
     if (!name().empty() && name() != "/") {
         if (xmlTextWriterEndElement(xml.get_writer()) < 0)

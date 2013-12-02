@@ -698,8 +698,6 @@ Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/)
 
     for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml, d_local_constraint));
 
-    for_each(maps()->map_begin(), maps()->map_end(), PrintD4MapXMLWriter(xml));
-
 #if D4_ATTR
     // TODO Calling is_dap4() is likely redundant in print_dap4()... jhrg 10/16/13
 	if (is_dap4()) attributes()->print_dap4(xml);
@@ -708,6 +706,8 @@ Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/)
 #else
 	if (get_attr_table().get_size() > 0) get_attr_table().print_xml_writer(xml);
 #endif
+
+	for_each(maps()->map_begin(), maps()->map_end(), PrintD4MapXMLWriter(xml));
 
 	if (xmlTextWriterEndElement(xml.get_writer()) < 0)
 		throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
