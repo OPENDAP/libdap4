@@ -19,10 +19,11 @@ noinst_LTLIBRARIES = libd4_ce_parser.la
 pkginclude_HEADERS = D4CEDriver.h
 
 libd4_ce_parser_la_SOURCES = d4_ce_parser.tab.cc d4_ce_parser.tab.hh lex.d4_ce.cc \
-	FlexLexer.h  location.hh position.hh stack.hh D4CEDriver.cc D4CEDriver.h \
-	D4CEScanner.h 
+	location.hh position.hh stack.hh D4CEDriver.cc D4CEDriver.h D4CEScanner.h
+	 
 libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
-EXTRA_DIST = 
+
+EXTRA_DIST = d4_ce_parser.yy d4_ce_scanner.ll
 
 DISTCLEANFILES = 
 
