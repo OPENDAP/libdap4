@@ -26,7 +26,7 @@ m4_define([GETDAP_TEST], [
     # stderr.
 
     AT_CHECK([$abs_builddir/../getdap $1 $2 || true], [], [stdout], [stderr])
-    AT_CHECK([diff -b -B $abs_builddir/$3 stdout || diff -b -B $abs_builddir/$3 stderr], [], [ignore],[],[])
+    AT_CHECK([diff -b -B $abs_srcdir/$3 stdout || diff -b -B $abs_srcdir/$3 stderr], [], [ignore],[],[])
     AT_XFAIL_IF([test "$4" = "xfail"])
     AT_CLEANUP
 ])
