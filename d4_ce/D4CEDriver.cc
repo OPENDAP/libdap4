@@ -95,6 +95,36 @@ D4CEDriver::mark_array_variable(const std::string &id)
 	return btp;
 }
 
+/**
+ * Add an array to the current projection with slicing. Calling this method will result
+ * in the array being returned with anonymous dimensions.
+ * @param id
+ * @return The BaseType* to the Array variable; the send_p and slicing information is
+ * set as a side effect.
+ */
+D4Dimension *
+D4CEDriver::slice_dimension(const std::string &id)
+{
+    D4Dimension *dim = dmr()->root()->find_dim(id);
+
+    // Test that there is only one index slide (Shared Dimensions are always 1D)
+    if (d_indexes.size() != 1)
+        throw Error("The too many dimensions for the shared dimension '" + id + "'; must be of rank one.");
+
+    index i = *d_indexes.begin();
+
+    if (i.stride > dim->size())
+        throw Error("For '" + id + "', the index stride value is greater than the size of the dimension");
+    if (!i.rest && (i.stop > dim->size() - 1))
+        throw Error("For '" + id + "', the index stop value is greater than the size of the dimension");
+
+    dim->set_constraint(i.start, i.stride, i.rest ? dim->size() - 1: i.stop);
+
+    d_indexes.clear();
+
+    return dim;
+}
+
 D4CEDriver::index
 D4CEDriver::make_index(const std::string &i)
 {

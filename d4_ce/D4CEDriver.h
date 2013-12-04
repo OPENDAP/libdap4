@@ -57,6 +57,7 @@ class D4CEDriver {
 	std::string *expression() { return &d_expr; }
 	BaseType *mark_variable(const std::string &id);
 	BaseType *mark_array_variable(const std::string &id);
+	D4Dimension *slice_dimension(const std::string &id);
 
 	void push_index(const index &i) { d_indexes.push_back(i); }
 

@@ -45,9 +45,13 @@ class D4Dimension {
     // TODO what about making this hold the Group pointer directly? jhrg 10/16/13
     D4Dimensions *d_parent;	// This is used to get the Dimensions and then Group object
 
+    bool d_constrained;
+    unsigned long long d_c_start, d_c_stride, d_c_stop;
+
 public:
-    D4Dimension() : d_name(""), d_size(0),  d_parent(0) {}
-    D4Dimension(const string &name, unsigned long size, D4Dimensions *d = 0): d_name(name), d_size(size), d_parent(d) {}
+    D4Dimension() : d_name(""), d_size(0),  d_parent(0), d_constrained(false), d_c_start(0), d_c_stride(0), d_c_stop(0) {}
+    D4Dimension(const string &name, unsigned long size, D4Dimensions *d = 0)
+        : d_name(name), d_size(size), d_parent(d), d_constrained(false), d_c_start(0), d_c_stride(0), d_c_stop(0) {}
 
     string name() const {return d_name;}
     void set_name(const string &name) { d_name = name; }
@@ -60,6 +64,25 @@ public:
 
     D4Dimensions *parent() const { return d_parent; }
     void set_parent(D4Dimensions *d) { d_parent = d; }
+
+    bool constrained() const { return d_constraint; }
+    unsigned long long c_start() const { return d_c_start; }
+    unsigned long long c_stride() const { return d_c_stride; }
+    unsigned long long c_stop() const { return d_c_stop; }
+    /**
+     * Set this Shared Diemension's constraint. While an Array Dimension object uses a
+     * stop value of -1 to indicate the end of the dimension, this method does not support
+     * that; the caller will have to sort out the correct end value for 'stop'.
+     * @param start Starting index (zero-based)
+     * @param stride The stride for the slice
+     * @param stop The stopping index (never greater than size -1)
+     */
+    void set_constraint(unsigned long long start, unsigned long long stride, unsigned long long stop) {
+        d_c_start = start;
+        d_c_stride = stride;
+        d_c_stop = stop;
+        d_constrained = true;
+    }
 
     void print_dap4(XMLWriter &xml) const;
 };
