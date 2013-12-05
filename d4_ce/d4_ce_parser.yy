@@ -137,20 +137,39 @@ namespace libdap {
 
 %start expression;
 
-expression : projections { driver.set_result($1); }
+expression : clauses { driver.set_result($1); }
+| dimensions ";" clauses { driver.set_result($1); }
 ;
 
-projections : projection
-    | projections ";" projection
+dimensions : dimension
+{
+    
+}
+| dimensions ";" dimension
+;
+
+dimension : id "=" indexes
+;
+
+clauses : clause
+| clauses ";" clause
 ;
                     
-projection : subset
-    | subset "|" filter
+clause : subset
+| subset "|" filter
 ;
 
 // mark_variable returns a BaseType* or throws Error
-subset : id { driver.mark_variable($1); $$ = true; }
-    | id indexes { driver.mark_array_variable($1); $$ = true; }
+subset : id 
+{
+    driver.mark_variable($1);
+    $$ = true;
+}
+| id indexes 
+{
+    driver.mark_array_variable($1);
+    $$ = true;
+}
     
     // must store id associated with current set of fields - will need a stack for that
     | id fields { $$ = true; }
@@ -160,15 +179,15 @@ subset : id { driver.mark_variable($1); $$ = true; }
 
 // push_index stores the index in the D4CEDriver
 indexes : index { driver.push_index($1); $$ = true; }
-    | index { driver.push_index($1); } indexes { $$ = $3; }
+| index { driver.push_index($1); } indexes { $$ = $3; }
 ;
    
 index   : "[" "]" { $$ = driver.make_index(); }
-    | "[" WORD "]" { $$ = driver.make_index($2); }
-    | "[" WORD ":" WORD "]" { $$ = driver.make_index($2, 1, $4); }
-    | "[" WORD ":" WORD ":" WORD "]" { $$ = driver.make_index($2, $4, $6); }
-    | "[" WORD ":" "]" { $$ = driver.make_index($2, 1); }
-    | "[" WORD ":" WORD ":" "]" { $$ = driver.make_index($2, $4); }
+| "[" WORD "]" { $$ = driver.make_index($2); }
+| "[" WORD ":" WORD "]" { $$ = driver.make_index($2, 1, $4); }
+| "[" WORD ":" WORD ":" WORD "]" { $$ = driver.make_index($2, $4, $6); }
+| "[" WORD ":" "]" { $$ = driver.make_index($2, 1); }
+| "[" WORD ":" WORD ":" "]" { $$ = driver.make_index($2, $4); }
 ;
         
 fields : "{" projections "}" { $$ = true; }
