@@ -13,6 +13,7 @@
 #include "D4CEDriver.h"
 #include "d4_ce_parser.tab.hh"
 #include "DMR.h"
+#include "D4Dimensions.h"
 #include "BaseType.h"
 #include "Array.h"
 
@@ -61,6 +62,11 @@ D4CEDriver::mark_variable(const std::string &id)
 /**
  * Add an array to the current projection with slicing. Calling this method will result
  * in the array being returned with anonymous dimensions.
+ *
+ * @note If id is an array that has shared dimensions and uses '[]' where a shared dimension
+ * is found and if that shared dimension has been sliced, then the slice is used as the array's
+ * slice for that dimension (there must be an easier way to explain that...)
+ *
  * @param id
  * @return The BaseType* to the Array variable; the send_p and slicing information is
  * set as a side effect.
@@ -103,15 +109,9 @@ D4CEDriver::mark_array_variable(const std::string &id)
  * set as a side effect.
  */
 D4Dimension *
-D4CEDriver::slice_dimension(const std::string &id)
+D4CEDriver::slice_dimension(const std::string &id, const index &i)
 {
     D4Dimension *dim = dmr()->root()->find_dim(id);
-
-    // Test that there is only one index slide (Shared Dimensions are always 1D)
-    if (d_indexes.size() != 1)
-        throw Error("The too many dimensions for the shared dimension '" + id + "'; must be of rank one.");
-
-    index i = *d_indexes.begin();
 
     if (i.stride > dim->size())
         throw Error("For '" + id + "', the index stride value is greater than the size of the dimension");
@@ -119,8 +119,6 @@ D4CEDriver::slice_dimension(const std::string &id)
         throw Error("For '" + id + "', the index stop value is greater than the size of the dimension");
 
     dim->set_constraint(i.start, i.stride, i.rest ? dim->size() - 1: i.stop);
-
-    d_indexes.clear();
 
     return dim;
 }

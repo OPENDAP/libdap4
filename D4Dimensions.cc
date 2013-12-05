@@ -90,7 +90,10 @@ D4Dimension::print_dap4(XMLWriter &xml) const
 		throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 #endif
 	ostringstream oss;
-	oss << d_size;
+	if (d_constrained)
+	    oss << (d_c_stop - d_c_start) / d_c_stride + 1;
+	else
+	    oss << d_size;
 	if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "size", (const xmlChar*) oss.str().c_str()) < 0)
 		throw InternalErr(__FILE__, __LINE__, "Could not write attribute for size");
 

@@ -16,6 +16,7 @@ namespace libdap {
 class location;
 class DMR;
 class BaseType;
+class D4Dimension;
 
 /**
  * Driver for the DAP4 Constraint Expression parser.
@@ -57,7 +58,7 @@ class D4CEDriver {
 	std::string *expression() { return &d_expr; }
 	BaseType *mark_variable(const std::string &id);
 	BaseType *mark_array_variable(const std::string &id);
-	D4Dimension *slice_dimension(const std::string &id);
+	D4Dimension *slice_dimension(const std::string &id, const index &i);
 
 	void push_index(const index &i) { d_indexes.push_back(i); }
 

@@ -65,7 +65,7 @@ public:
     D4Dimensions *parent() const { return d_parent; }
     void set_parent(D4Dimensions *d) { d_parent = d; }
 
-    bool constrained() const { return d_constraint; }
+    bool constrained() const { return d_constrained; }
     unsigned long long c_start() const { return d_c_start; }
     unsigned long long c_stride() const { return d_c_stride; }
     unsigned long long c_stop() const { return d_c_stop; }

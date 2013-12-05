@@ -94,7 +94,7 @@ namespace libdap {
 %token <std::string> WORD "word"
 %token <std::string> STRING "string"
 
-%type <bool> predicate filter fields indexes subset projection projections
+%type <bool> predicate filter fields indexes subset clause clauses dimension dimensions
 %type <std::string> id path group name
 %type <libdap::D4CEDriver::index> index
 
@@ -138,37 +138,35 @@ namespace libdap {
 %start expression;
 
 expression : clauses { driver.set_result($1); }
-| dimensions ";" clauses { driver.set_result($1); }
+| dimensions ";" clauses { driver.set_result($1 && $3); }
 ;
 
-dimensions : dimension
+dimensions : dimension { $$ = $1; }
+| dimensions ";" dimension { $$ = $1 && $3; }
+;
+
+dimension : id "=" index
 {
-    
+    $$ = driver.slice_dimension($1, $3);
 }
-| dimensions ";" dimension
 ;
 
-dimension : id "=" indexes
-;
-
-clauses : clause
-| clauses ";" clause
+clauses : clause { $$ = $1; }
+| clauses ";" clause { $$ = $1 && $3; }
 ;
                     
-clause : subset
-| subset "|" filter
+clause : subset { $$ = $1; }
+| subset "|" filter { $$ = $1 && $3; }
 ;
 
 // mark_variable returns a BaseType* or throws Error
 subset : id 
 {
-    driver.mark_variable($1);
-    $$ = true;
+    $$ = driver.mark_variable($1);
 }
 | id indexes 
 {
-    driver.mark_array_variable($1);
-    $$ = true;
+    $$ = driver.mark_array_variable($1);
 }
     
     // must store id associated with current set of fields - will need a stack for that
@@ -178,7 +176,11 @@ subset : id
 ;
 
 // push_index stores the index in the D4CEDriver
-indexes : index { driver.push_index($1); $$ = true; }
+indexes : index 
+{ 
+    driver.push_index($1); 
+    $$ = true; 
+}
 | index { driver.push_index($1); } indexes { $$ = $3; }
 ;
    
@@ -190,7 +192,7 @@ index   : "[" "]" { $$ = driver.make_index(); }
 | "[" WORD ":" WORD ":" "]" { $$ = driver.make_index($2, $4); }
 ;
         
-fields : "{" projections "}" { $$ = true; }
+fields : "{" clauses "}" { $$ = $2; }
 ;
 
 filter : predicate 

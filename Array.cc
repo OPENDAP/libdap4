@@ -363,6 +363,8 @@ Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 {
     dimension &d = *i ;
 
+    // TODO Check for 0, 1, -1 and d is shared and constrained.
+
     // if stop is -1, set it to the array's max element index
     // jhrg 12/20/12
     if (stop == -1)
