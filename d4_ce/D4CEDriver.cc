@@ -51,6 +51,8 @@ D4CEDriver::mark_variable(const std::string &id)
     BaseType *btp = dmr()->root()->find_var(id);
     if (btp) {
         btp->set_send_p(true);
+        // TODO might have to do something special about array dimensions - make this
+        // case the same as [] for each dim
         return btp;	// the return value is used by the parser logic. Maybe drop this?
     }
     else {
@@ -91,8 +93,28 @@ D4CEDriver::mark_array_variable(const std::string &id)
 		if (!(*i).rest && ((*i).stop) > (unsigned long long)a->dimension_stop(d, false))
 			throw Error("For '" + id + "', the index stop value is greater than the number of elements in the Array");
 
-		// -1 for a stop value means 'to the end' of the array.
-		a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1: (*i).stop);
+		D4Dimension *dim = a->dimension_D4dim(d);
+		if (dim->constrained() && (*i).empty) {
+			cerr << "Shared dimension constrained" << endl;
+			a->add_constraint(d, dim->c_start(), dim->c_stride(), dim->c_stop());
+//			set_local_slice_constraint(false);
+			d->use_sdim_for_slice = true;
+		}
+		else if (!dim->constrained() && (*i).empty) {
+			cerr << "Shared dimension not constrained" << endl;
+			// This is set to cover the case where a slice is applied using []
+			// and some dims are anonymous - this lets the code tell when to use
+			// shared dims. jhrg 12/8/13
+//			set_local_slice_constraint(false);
+			d->use_sdim_for_slice = true;
+		}
+		else {
+			cerr << "anonymous dimension constrained" << endl;
+			// -1 for a stop value means 'to the end' of the array.
+			a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
+			d->use_sdim_for_slice = false;
+		}
+
 		++d;
 	}
 
@@ -127,31 +149,31 @@ D4CEDriver::index
 D4CEDriver::make_index(const std::string &i)
 {
 	unsigned long long v = get_ull(i.c_str());
-	return index(v, 1, v, false);
+	return index(v, 1, v, false, false /*empty*/);
 }
 
 D4CEDriver::index
 D4CEDriver::make_index(const std::string &i, const std::string &s, const std::string &e)
 {
-	return index(get_ull(i.c_str()), get_ull(s.c_str()), get_ull(e.c_str()), false);
+	return index(get_ull(i.c_str()), get_ull(s.c_str()), get_ull(e.c_str()), false, false /*empty*/);
 }
 
 D4CEDriver::index
 D4CEDriver::make_index(const std::string &i, unsigned long long s, const std::string &e)
 {
-	return index(get_ull(i.c_str()), s, get_ull(e.c_str()), false);
+	return index(get_ull(i.c_str()), s, get_ull(e.c_str()), false, false /*empty*/);
 }
 
 D4CEDriver::index
 D4CEDriver::make_index(const std::string &i, const std::string &s)
 {
-	return index(get_ull(i.c_str()), get_ull(s.c_str()), 0, true);
+	return index(get_ull(i.c_str()), get_ull(s.c_str()), 0, true, false /*empty*/);
 }
 
 D4CEDriver::index
 D4CEDriver::make_index(const std::string &i, unsigned long long s)
 {
-	return index(get_ull(i.c_str()), s, 0, true);
+	return index(get_ull(i.c_str()), s, 0, true, false /*empty*/);
 }
 
 // This method is called from the parser (see d4_ce_parser.yy, down in the code

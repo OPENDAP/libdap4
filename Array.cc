@@ -388,7 +388,10 @@ Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 
     DBG(cerr << "add_constraint: c_size = " << d.c_size << endl);
 
-    d_local_constraint = true;
+#if 0
+    if (!dimension_D4dim(i)->constrained())
+    	d_local_constraint = true;
+#endif
 
     update_length();
 }
@@ -607,8 +610,12 @@ class PrintD4ArrayDimXMLWriter: public unary_function<Array::dimension&, void> {
 	// If so, don't use shared dimensions; instead emit Dim elements that are anonymous.
 	bool d_constrained;
 public:
+#if 1
+	// Drop 'constrained' as a per-array idea and use the information bound to the dimension
 	PrintD4ArrayDimXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) { }
-
+#else
+	PrintD4ArrayDimXMLWriter(XMLWriter &xml) : xml(xml), d_constrained(false /*ignored*/) { }
+#endif
 	void operator()(Array::dimension &d)
 	{
 		// This duplicates code in D4Dimensions (where D4Dimension::print_dap4() is defined
@@ -622,7 +629,12 @@ public:
 		string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
 		// If there is a name, there must be a Dimension (named dimension) in scope
 		// so write its name but not its size.
-		if (! d_constrained && !name.empty()) {
+		if (! d_constrained&& !name.empty()) {
+			if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*) name.c_str())
+					< 0) throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+		}
+		else if (d.use_sdim_for_slice) {
+			assert(!name.empty());
 			if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*) name.c_str())
 					< 0) throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 		}
@@ -698,7 +710,13 @@ Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/)
 		// bind2nd(mem_fun_ref(&BaseType::print_dap4), xml));
 	}
 
-    for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml, d_local_constraint));
+#if 1
+	// Drop the local_constraint which is per-array and use a per-dimension on instead
+    for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml, constrained /*d_local_constraint*/));
+#else
+    for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml)); //, d_local_constraint));
+
+#endif
 
 #if D4_ATTR
     // TODO Calling is_dap4() is likely redundant in print_dap4()... jhrg 10/16/13

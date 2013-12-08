@@ -26,15 +26,21 @@ class D4CEDriver {
 		// start and stride are simple numbers; stop is either the stopping index or
 		// if to_end is true, is ignored and the subset runs to the end of the dimension
 		unsigned long long start, stride, stop;
+		// true if the slice indicates it does not contain a specific 'stop' value but
+		// goes to the end, whatever that value is.
 		bool rest;
+		// An empty slice ([]) means either the entire dimension or apply the shared
+		// dimension slice, depending on whether the corresponding shared dimension has
+		// been sliced.
+		bool empty;
 
 		// Added because the parser code needs it. Our code does not use this. jhrg 11/26/13
-		index(): start(0), stride(0), stop(0), rest(false) {}
-		index(unsigned long long i, unsigned long long s, unsigned long long e, bool r)
-			: start(i), stride(s), stop(e), rest(r) {}
+		index(): start(0), stride(0), stop(0), rest(false), empty(false) {}
+		index(unsigned long long i, unsigned long long s, unsigned long long e, bool r, bool em)
+			: start(i), stride(s), stop(e), rest(r), empty(em) {}
 	};
 
-	index make_index() { return index(0, 1, 0, true); }
+	index make_index() { return index(0, 1, 0, true /*rest*/, true /*empty*/); }
 
 	index make_index(const std::string &is);
 

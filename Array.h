@@ -131,19 +131,22 @@ public:
 
         D4Dimension *dim; ///< If not null, a weak pointer to the D4Dimension
 
+        bool use_sdim_for_slice;
+
         int start;  ///< The constraint start index
         int stop;  ///< The constraint end index
         int stride;  ///< The constraint stride
         int c_size;  ///< Size of dimension once constrained
 
-        dimension() : size(0), name(""), dim(0) {
+        dimension() : size(0), name(""), dim(0), use_sdim_for_slice(false) {
             // this information changes with each constraint expression
             start = 0;
             stop = 0;
             stride = 1;
             c_size = size;
         }
-        dimension(unsigned long s, string n, D4Dimension *d = 0) : size(s), name(n), dim(d) {
+        dimension(unsigned long s, string n, D4Dimension *d = 0)
+			: size(s), name(n), dim(d), use_sdim_for_slice(d?true:false) {
             // this information changes with each constraint expression
             start = 0;
             stop = size - 1;
@@ -161,7 +164,7 @@ private:
     // its shared dimensions (if it has them). If the local (aka direct) slicing is
     // done, record that so when the CDMR is sent the array will be sent using the
     // correct Dim elements (i.e., ones that indicate anonymous dimensions). NB:
-    // This dies not indicate whether the array has shared dimensions, just that the
+    // This does not indicate whether the array has shared dimensions, just that the
     // local/direct slicing form of the CE was applied to it.
     bool d_local_constraint;
 
@@ -211,6 +214,7 @@ public:
     virtual void add_constraint(Dim_iter i, int start, int stride, int stop);
     virtual void reset_constraint();
     bool local_slice_constraint() const { return d_local_constraint; }
+    void set_local_slice_constraint(bool state) { d_local_constraint = state; }
 
     virtual void clear_constraint(); // deprecated
 

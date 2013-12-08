@@ -69,6 +69,7 @@ public:
     unsigned long long c_start() const { return d_c_start; }
     unsigned long long c_stride() const { return d_c_stride; }
     unsigned long long c_stop() const { return d_c_stop; }
+
     /**
      * Set this Shared Diemension's constraint. While an Array Dimension object uses a
      * stop value of -1 to indicate the end of the dimension, this method does not support
