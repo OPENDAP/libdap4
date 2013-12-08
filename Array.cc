@@ -110,7 +110,7 @@ Array::update_length(int)
     @brief Array constructor
 */
 Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */)
-	: Vector(n, 0, dods_array_c, is_dap4), d_maps(0), d_local_constraint(false)
+	: Vector(n, 0, dods_array_c, is_dap4), d_maps(0)
 {
     add_var(v); // Vector::add_var() stores null if v is null
 }
@@ -129,7 +129,7 @@ Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */)
     @brief Array constructor
 */
 Array::Array(const string &n, const string &d, BaseType *v, bool is_dap4 /* default:false */)
-    : Vector(n, d, 0, dods_array_c, is_dap4), d_maps(0), d_local_constraint(false)
+    : Vector(n, d, 0, dods_array_c, is_dap4), d_maps(0)
 {
     add_var(v); // Vector::add_var() stores null if v is null
 }
@@ -304,7 +304,6 @@ void
 Array::reset_constraint()
 {
     set_length(-1);
-    d_local_constraint = false;
 
     for (Dim_iter i = _shape.begin(); i != _shape.end(); i++) {
         (*i).start = 0;
@@ -610,19 +609,15 @@ class PrintD4ArrayDimXMLWriter: public unary_function<Array::dimension&, void> {
 	// If so, don't use shared dimensions; instead emit Dim elements that are anonymous.
 	bool d_constrained;
 public:
-#if 1
-	// Drop 'constrained' as a per-array idea and use the information bound to the dimension
+
 	PrintD4ArrayDimXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) { }
-#else
-	PrintD4ArrayDimXMLWriter(XMLWriter &xml) : xml(xml), d_constrained(false /*ignored*/) { }
-#endif
+
 	void operator()(Array::dimension &d)
 	{
 		// This duplicates code in D4Dimensions (where D4Dimension::print_dap4() is defined
 		// because of the need to print the constrained size of a dimension. I think that
 		// the constraint information has to be kept here and not in the dimension (since they
 		// are shared dims). Could hack print_dap4() to take the constrained size, however.
-		// TODO Think about this. jhrg 10/22/13
 		if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dim") < 0)
 			throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
 
@@ -710,13 +705,8 @@ Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/)
 		// bind2nd(mem_fun_ref(&BaseType::print_dap4), xml));
 	}
 
-#if 1
 	// Drop the local_constraint which is per-array and use a per-dimension on instead
-    for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml, constrained /*d_local_constraint*/));
-#else
-    for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml)); //, d_local_constraint));
-
-#endif
+    for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml, constrained));
 
 #if D4_ATTR
     // TODO Calling is_dap4() is likely redundant in print_dap4()... jhrg 10/16/13

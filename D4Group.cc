@@ -172,7 +172,7 @@ D4Group::find_first_var_that_uses_dimension(D4Dimension *dim)
         if ((*i)->send_p() && (*i)->type() == dods_array_c) {
             Array *a = static_cast<Array*>(*i);
             for (Array::Dim_iter di = a->dim_begin(), de = a->dim_end(); di != de; ++di) {
-                if (!a->local_slice_constraint() && a->dimension_D4dim(di) == dim)
+                if (a->dimension_D4dim(di) == dim)
                     return a;
             }
         }

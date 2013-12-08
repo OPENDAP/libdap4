@@ -97,7 +97,6 @@ D4CEDriver::mark_array_variable(const std::string &id)
 		if (dim->constrained() && (*i).empty) {
 			cerr << "Shared dimension constrained" << endl;
 			a->add_constraint(d, dim->c_start(), dim->c_stride(), dim->c_stop());
-//			set_local_slice_constraint(false);
 			d->use_sdim_for_slice = true;
 		}
 		else if (!dim->constrained() && (*i).empty) {
@@ -105,7 +104,6 @@ D4CEDriver::mark_array_variable(const std::string &id)
 			// This is set to cover the case where a slice is applied using []
 			// and some dims are anonymous - this lets the code tell when to use
 			// shared dims. jhrg 12/8/13
-//			set_local_slice_constraint(false);
 			d->use_sdim_for_slice = true;
 		}
 		else {

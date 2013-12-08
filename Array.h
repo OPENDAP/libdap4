@@ -159,7 +159,7 @@ public:
 
 private:
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
-
+#if 0
     // in DAP4 an array can be sliced using either a local operator or by slicing
     // its shared dimensions (if it has them). If the local (aka direct) slicing is
     // done, record that so when the CDMR is sent the array will be sent using the
@@ -167,7 +167,7 @@ private:
     // This does not indicate whether the array has shared dimensions, just that the
     // local/direct slicing form of the CE was applied to it.
     bool d_local_constraint;
-
+#endif
     friend class ArrayTest;
 
 protected:
@@ -213,9 +213,10 @@ public:
 
     virtual void add_constraint(Dim_iter i, int start, int stride, int stop);
     virtual void reset_constraint();
+#if 0
     bool local_slice_constraint() const { return d_local_constraint; }
     void set_local_slice_constraint(bool state) { d_local_constraint = state; }
-
+#endif
     virtual void clear_constraint(); // deprecated
 
     virtual void update_length(int size = 0); // should be used internally only
