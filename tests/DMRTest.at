@@ -20,10 +20,20 @@ AT_ARG_OPTION_ARG([generate-send],
      exit],[])
 
 AT_ARG_OPTION_ARG([generate-trans],
-    [--generate-trans=arg  Build the baseline file for roundtrip transmission test 'arg'],
+    [--generate-trans=arg  Build the baseline file for round trip transmission test 'arg'],
     [echo "./dmr-test -x -t $at_arg_generate_trans > $at_arg_generate_trans.trans_base 2>&1";
      ./dmr-test -x -t $at_arg_generate_trans > $at_arg_generate_trans.trans_base 2>&1;
      echo "Built baseline for $at_arg_generate_trans";
+     exit],[])
+
+AT_ARG_OPTION_ARG([generate-trans-ce],
+    [--generate-trans-ce=dataset,ce,ext  Build the baseline (ext) file for round trip transmission test 'arg' with 'ce'],
+    [data=`echo $at_arg_generate_trans_ce | sed 's@\(.*\),\(.*\),\(.*\)@\1@g'`
+     ce=`echo $at_arg_generate_trans_ce | sed 's@\(.*\),\(.*\),\(.*\)@\2@g'`
+     code=`echo $at_arg_generate_trans_ce | sed 's@\(.*\),\(.*\),\(.*\)@\3@g'`
+     echo "./dmr-test -x -t $data -c $ce > $data.$code.trans_base 2>&1";
+     ./dmr-test -x -t $data -c "$ce" > $data.$code.trans_base 2>&1;
+     echo "Built baseline for $at_arg_generate_trans_ce";
      exit],[])
 
 # Usage DMR_PARSE $1 <test_input> $2 <pass/xfail>
@@ -85,6 +95,25 @@ m4_define([DMR_TRANS], [
     AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
     
     AT_XFAIL_IF([test "$2" = "xfail"])
+    AT_CLEANUP
+])
+
+# Usage DMR_TRANS_CE <test_input> <ce> <baseline> <pass/xfail>
+# This code tests the values printed when the received document is decoded.
+m4_define([DMR_TRANS_CE], [
+    # Test transmitting data (i.e., writing the Data DMR to a file and then decoding it)
+    AT_SETUP([trans/receive $1 $2])
+    AT_KEYWORDS([trans])
+    
+    input=$abs_srcdir/$1
+    baseline=$abs_srcdir/$3
+    
+    echo "baseline: $baseline"
+
+    AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2" || true], [], [stdout], [stderr])
+    AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
+    
+    AT_XFAIL_IF([test "X$4" = "Xxfail"])
     AT_CLEANUP
 ])
 
@@ -158,6 +187,15 @@ DMR_TRANS([dmr-testsuite/test_array_7.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_8.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_10.xml], [pass])
 DMR_TRANS([dmr-testsuite/test_array_11.xml], [pass])
+
+DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [a], [dmr-testsuite/test_array_4.xml.1.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [a[[]][[]] ], [dmr-testsuite/test_array_4.xml.2.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [/row=[[0:1]];/col=[[3]];a], 
+    [dmr-testsuite/test_array_4.xml.3.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [/row=[[0:1]];/col=[[3]];a[[]][[]] ], 
+    [dmr-testsuite/test_array_4.xml.4.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [/row=[[0:1]];/col=[[3]];a[[]][[]];b[[0]][[]];c[[0:]][[0:]] ], 
+    [dmr-testsuite/test_array_4.xml.5.trans_base], [pass])
 
 DMR_INTERN([dmr-testsuite/test_simple_1.xml], [pass])
 DMR_INTERN([dmr-testsuite/test_simple_2.xml], [pass])

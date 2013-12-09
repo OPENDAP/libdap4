@@ -95,19 +95,16 @@ D4CEDriver::mark_array_variable(const std::string &id)
 
 		D4Dimension *dim = a->dimension_D4dim(d);
 		if (dim->constrained() && (*i).empty) {
-			cerr << "Shared dimension constrained" << endl;
 			a->add_constraint(d, dim->c_start(), dim->c_stride(), dim->c_stop());
 			d->use_sdim_for_slice = true;
 		}
 		else if (!dim->constrained() && (*i).empty) {
-			cerr << "Shared dimension not constrained" << endl;
 			// This is set to cover the case where a slice is applied using []
 			// and some dims are anonymous - this lets the code tell when to use
 			// shared dims. jhrg 12/8/13
 			d->use_sdim_for_slice = true;
 		}
 		else {
-			cerr << "anonymous dimension constrained" << endl;
 			// -1 for a stop value means 'to the end' of the array.
 			a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
 			d->use_sdim_for_slice = false;
