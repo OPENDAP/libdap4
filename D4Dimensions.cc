@@ -121,8 +121,19 @@ D4Dimensions::print_dap4(XMLWriter &xml, bool constrained) const
 {
     D4DimensionsCIter i = d_dims.begin();
     while (i != d_dims.end()) {
-        if (!constrained || parent()->find_first_var_that_uses_dimension(*i))
+#if 0
+    	if (!constrained || parent()->find_first_var_that_uses_dimension(*i))
             (*i)->print_dap4(xml);
+#endif
+    	if (constrained) {
+    		// parent() of a D4Dimensions is the Group that holds the set of D4Dimensions
+    		BaseType *var = parent()->find_first_var_that_uses_dimension(*i);
+    		if (var)
+    			(*i)->print_dap4(xml);
+    	}
+    	else {
+    		(*i)->print_dap4(xml);
+    	}
         ++i;
     }
 }

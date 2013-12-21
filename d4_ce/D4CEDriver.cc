@@ -51,13 +51,15 @@ D4CEDriver::mark_variable(const std::string &id)
     BaseType *btp = dmr()->root()->find_var(id);
     if (btp) {
         btp->set_send_p(true);
-        // TODO might have to do something special about array dimensions - make this
-        // case the same as [] for each dim
-        return btp;	// the return value is used by the parser logic. Maybe drop this?
+        BaseType *parent = btp->get_parent();
+		while (parent) {
+			parent->BaseType::set_send_p(true); // don't set all of the children in this case
+			parent = parent->get_parent();
+        }
+        return btp;
     }
     else {
     	throw Error(d_expr + ": The variable " + id + " was not found in the dataset.");
-        // return false;
     }
 }
 
@@ -94,20 +96,17 @@ D4CEDriver::mark_array_variable(const std::string &id)
 			throw Error("For '" + id + "', the index stop value is greater than the number of elements in the Array");
 
 		D4Dimension *dim = a->dimension_D4dim(d);
-		if (dim->constrained() && (*i).empty) {
-			a->add_constraint(d, dim->c_start(), dim->c_stride(), dim->c_stop());
-			d->use_sdim_for_slice = true;
-		}
-		else if (!dim->constrained() && (*i).empty) {
-			// This is set to cover the case where a slice is applied using []
-			// and some dims are anonymous - this lets the code tell when to use
-			// shared dims. jhrg 12/8/13
-			d->use_sdim_for_slice = true;
+
+		// In a DAP4 CE, specifying '[]' as an array dimension slice has two meanings.
+		// It can mean 'all the elements' of the dimension or 'apply the slicing inherited
+		// from the shared dimension'. The latter might be provide 'all the elements'
+		// but regardless, the Array object must record the CE correctly.
+
+		if (dim && (*i).empty) {
+			a->add_constraint(d, dim);
 		}
 		else {
-			// -1 for a stop value means 'to the end' of the array.
 			a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
-			d->use_sdim_for_slice = false;
 		}
 
 		++d;

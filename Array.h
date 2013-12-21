@@ -48,6 +48,8 @@
 #include "Vector.h"
 #endif
 
+#include "D4Dimensions.h"
+
 #ifndef XMLWRITER_H_
 #include "XMLWriter.h"
 #endif
@@ -55,7 +57,7 @@
 namespace libdap
 {
 
-class D4Dimension;
+// class D4Dimension;
 class D4Maps;
 
 const int DODS_MAX_ARRAY = DODS_INT_MAX;
@@ -131,7 +133,13 @@ public:
 
         D4Dimension *dim; ///< If not null, a weak pointer to the D4Dimension
 
-        bool use_sdim_for_slice;
+        // when a DMR is printed for a data reponse, if an array uses shared
+        // dimensions and those sdims have been sliced, make sure to use those
+        // and get the syntax correct. That's what this field does - in every
+        // case the array records the sizes of its dimensions and their slices
+        // regardless of whether they were provided explicitly in a CE or inherited
+        // from a sliced sdim.
+        bool use_sdim_for_slice; ///< Used to control printing the DMR in data responses
 
         int start;  ///< The constraint start index
         int stop;  ///< The constraint end index
@@ -145,9 +153,18 @@ public:
             stride = 1;
             c_size = size;
         }
-        dimension(unsigned long s, string n, D4Dimension *d = 0)
-			: size(s), name(n), dim(d), use_sdim_for_slice(d?true:false) {
-            // this information changes with each constraint expression
+
+        dimension(unsigned long s, string n) : size(s), name(n), dim(0), use_sdim_for_slice(false) {
+            start = 0;
+            stop = size - 1;
+            stride = 1;
+            c_size = size;
+        }
+
+        dimension(D4Dimension *d) : dim(d), use_sdim_for_slice(true) {
+        	size = d->size();
+        	name = d->name();
+
             start = 0;
             stop = size - 1;
             stride = 1;
@@ -159,15 +176,7 @@ public:
 
 private:
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
-#if 0
-    // in DAP4 an array can be sliced using either a local operator or by slicing
-    // its shared dimensions (if it has them). If the local (aka direct) slicing is
-    // done, record that so when the CDMR is sent the array will be sent using the
-    // correct Dim elements (i.e., ones that indicate anonymous dimensions). NB:
-    // This does not indicate whether the array has shared dimensions, just that the
-    // local/direct slicing form of the CE was applied to it.
-    bool d_local_constraint;
-#endif
+
     friend class ArrayTest;
 
 protected:
@@ -212,16 +221,12 @@ public:
     void clear_all_dims();
 
     virtual void add_constraint(Dim_iter i, int start, int stride, int stop);
+    virtual void add_constraint(Dim_iter i, D4Dimension *dim);
     virtual void reset_constraint();
-#if 0
-    bool local_slice_constraint() const { return d_local_constraint; }
-    void set_local_slice_constraint(bool state) { d_local_constraint = state; }
-#endif
+
     virtual void clear_constraint(); // deprecated
 
     virtual void update_length(int size = 0); // should be used internally only
-    // Use Vector
-    // virtual unsigned int width(bool constrained = false) const;
 
     Dim_iter dim_begin() ;
     Dim_iter dim_end() ;

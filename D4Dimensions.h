@@ -42,7 +42,7 @@ class D4Dimensions;
 class D4Dimension {
     string d_name;
     unsigned long d_size;
-    // TODO what about making this hold the Group pointer directly? jhrg 10/16/13
+
     D4Dimensions *d_parent;	// This is used to get the Dimensions and then Group object
 
     bool d_constrained;

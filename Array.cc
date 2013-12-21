@@ -255,7 +255,7 @@ Array::append_dim(int size, const string &name)
 void
 Array::append_dim(D4Dimension *dim)
 {
-	dimension d(dim->size(), www2id(dim->name()), dim);
+	dimension d(/*dim->size(), www2id(dim->name()),*/ dim);
     _shape.push_back(d);
 
     update_length();
@@ -279,7 +279,7 @@ Array::prepend_dim(int size, const string& name/* = "" */)
 void
 Array::prepend_dim(D4Dimension *dim)
 {
-  dimension d(dim->size(), www2id(dim->name()), dim);
+  dimension d(/*dim->size(), www2id(dim->name()),*/ dim);
   // Shifts the whole array, but it's tiny in general
   _shape.insert(_shape.begin(), d);
 
@@ -362,8 +362,6 @@ Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 {
     dimension &d = *i ;
 
-    // TODO Check for 0, 1, -1 and d is shared and constrained.
-
     // if stop is -1, set it to the array's max element index
     // jhrg 12/20/12
     if (stop == -1)
@@ -387,12 +385,22 @@ Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 
     DBG(cerr << "add_constraint: c_size = " << d.c_size << endl);
 
-#if 0
-    if (!dimension_D4dim(i)->constrained())
-    	d_local_constraint = true;
-#endif
-
     update_length();
+
+    d.use_sdim_for_slice = false;
+}
+
+void
+Array::add_constraint(Dim_iter i, D4Dimension *dim)
+{
+    dimension &d = *i ;
+
+    if (dim->constrained())
+    	add_constraint(i, dim->c_start(), dim->c_stride(), dim->c_stop());
+
+	// In this case the value below overrides the value for use_sdim_for_slice
+	// set in the above call. jhrg 12/20/13
+	d.use_sdim_for_slice = true;
 }
 
 /** Returns an iterator to the first dimension of the Array. */
@@ -624,7 +632,7 @@ public:
 		string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
 		// If there is a name, there must be a Dimension (named dimension) in scope
 		// so write its name but not its size.
-		if (! d_constrained&& !name.empty()) {
+		if (!d_constrained && !name.empty()) {
 			if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*) name.c_str())
 					< 0) throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 		}
