@@ -38,28 +38,67 @@ bool D4CEDriver::parse(const std::string &expr)
 	return parser->parse() == 0;
 }
 
+#if 0
+void
+D4CEDriver::set_array_slices(const std::string &id, Array *a)
+{
+    // Test that the indexes and dimensions match in number
+    if (d_indexes.size() != a->dimensions())
+        throw Error("The index constraint for '" + id + "' does not match its rank.");
+
+    Array::Dim_iter d = a->dim_begin();
+    for (vector<index>::iterator i = d_indexes.begin(), e = d_indexes.end(); i != e; ++i) {
+        if ((*i).stride > (unsigned long long)a->dimension_stop(d, false))
+            throw Error("For '" + id + "', the index stride value is greater than the number of elements in the Array");
+        if (!(*i).rest && ((*i).stop) > (unsigned long long)a->dimension_stop(d, false))
+            throw Error("For '" + id + "', the index stop value is greater than the number of elements in the Array");
+
+        D4Dimension *dim = a->dimension_D4dim(d);
+
+        // In a DAP4 CE, specifying '[]' as an array dimension slice has two meanings.
+        // It can mean 'all the elements' of the dimension or 'apply the slicing inherited
+        // from the shared dimension'. The latter might be provide 'all the elements'
+        // but regardless, the Array object must record the CE correctly.
+
+        if (dim && (*i).empty) {
+            a->add_constraint(d, dim);
+        }
+        else {
+            a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
+        }
+
+        ++d;
+    }
+
+    d_indexes.clear();
+}
+#endif
+
 /**
  * When an identifier is used in a CE, is becomes part of the 'current projection,'
  * which means it is part of the set of variable to be sent back to the client. This
  * method sets a flag in the variable (send_p: send predicate) indicating that.
+ *
+ * @note This will check if the variable is an array and set it's slices accordingly
  * @param id
  * @return The BaseType* to the variable; the send_p flag is set as a side effect.
  */
 BaseType *
-D4CEDriver::mark_variable(const std::string &id)
+D4CEDriver::mark_variable(BaseType *btp)
 {
-    BaseType *btp = dmr()->root()->find_var(id);
     if (btp) {
         btp->set_send_p(true);
+
+        // Now set the parent variables
         BaseType *parent = btp->get_parent();
 		while (parent) {
-			parent->BaseType::set_send_p(true); // don't set all of the children in this case
+			parent->BaseType::set_send_p(true); // Just set the parent
 			parent = parent->get_parent();
         }
         return btp;
     }
     else {
-    	throw Error(d_expr + ": The variable " + id + " was not found in the dataset.");
+    	throw Error(d_expr + ": The variable " + btp->name() + " was not found in the dataset.");
     }
 }
 
@@ -76,43 +115,61 @@ D4CEDriver::mark_variable(const std::string &id)
  * set as a side effect.
  */
 BaseType *
-D4CEDriver::mark_array_variable(const std::string &id)
+D4CEDriver::mark_array_variable(BaseType *btp)
 {
-	BaseType *btp = mark_variable(id);
+    mark_variable(btp);
+
 	if (btp->type() != dods_array_c)
-		throw Error("The variable '" + id + "' is not an Array variable.");
+		throw Error("The variable '" + btp->name() + "' is not an Array variable.");
 
 	Array *a = static_cast<Array*>(btp);
 
-	// Test that the indexes and dimensions match in number
-	if (d_indexes.size() != a->dimensions())
-		throw Error("The index constraint for '" + id + "' does not match its rank.");
-
-	Array::Dim_iter d = a->dim_begin();
-	for (vector<index>::iterator i = d_indexes.begin(), e = d_indexes.end(); i != e; ++i) {
-		if ((*i).stride > (unsigned long long)a->dimension_stop(d, false))
-			throw Error("For '" + id + "', the index stride value is greater than the number of elements in the Array");
-		if (!(*i).rest && ((*i).stop) > (unsigned long long)a->dimension_stop(d, false))
-			throw Error("For '" + id + "', the index stop value is greater than the number of elements in the Array");
-
-		D4Dimension *dim = a->dimension_D4dim(d);
-
-		// In a DAP4 CE, specifying '[]' as an array dimension slice has two meanings.
-		// It can mean 'all the elements' of the dimension or 'apply the slicing inherited
-		// from the shared dimension'. The latter might be provide 'all the elements'
-		// but regardless, the Array object must record the CE correctly.
-
-		if (dim && (*i).empty) {
-			a->add_constraint(d, dim);
-		}
-		else {
-			a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
-		}
-
-		++d;
+	// If an array appears in a CE without the slicing operators ([]) we still have to
+	// call set_user_by_projected_var(true) for all of it's sdims for them to appear in
+	// the CDMR.
+	if (d_indexes.empty()) {
+	    for (Array::Dim_iter d = a->dim_begin(), de = a->dim_end(); d != de; ++d) {
+	        D4Dimension *dim = a->dimension_D4dim(d);
+	        if (dim) {
+	            dim->set_used_by_projected_var(true);
+	        }
+	    }
 	}
+    else {
+        // Test that the indexes and dimensions match in number
+        if (d_indexes.size() != a->dimensions())
+            throw Error("The index constraint for '" + btp->name() + "' does not match its rank.");
 
-	d_indexes.clear();
+        Array::Dim_iter d = a->dim_begin();
+        for (vector<index>::iterator i = d_indexes.begin(), e = d_indexes.end(); i != e; ++i) {
+            if ((*i).stride > (unsigned long long) a->dimension_stop(d, false))
+                throw Error(
+                        "For '" + btp->name()
+                                + "', the index stride value is greater than the number of elements in the Array");
+            if (!(*i).rest && ((*i).stop) > (unsigned long long) a->dimension_stop(d, false))
+                throw Error(
+                        "For '" + btp->name()
+                                + "', the index stop value is greater than the number of elements in the Array");
+
+            D4Dimension *dim = a->dimension_D4dim(d);
+
+            // In a DAP4 CE, specifying '[]' as an array dimension slice has two meanings.
+            // It can mean 'all the elements' of the dimension or 'apply the slicing inherited
+            // from the shared dimension'. The latter might be provide 'all the elements'
+            // but regardless, the Array object must record the CE correctly.
+
+            if (dim && (*i).empty) {
+                a->add_constraint(d, dim);  // calls set_used_by_projected_var(true) + more
+            }
+            else {
+                a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
+            }
+
+            ++d;
+        }
+
+        d_indexes.clear();
+    }
 
 	return btp;
 }

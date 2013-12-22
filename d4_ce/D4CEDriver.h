@@ -16,6 +16,7 @@ namespace libdap {
 class location;
 class DMR;
 class BaseType;
+class Array;
 class D4Dimension;
 
 /**
@@ -62,8 +63,12 @@ class D4CEDriver {
 	// d_expr should be set by parse! Its value is used by the parser right before
 	// the actual parsing operation starts. jhrg 11/26/13
 	std::string *expression() { return &d_expr; }
-	BaseType *mark_variable(const std::string &id);
-	BaseType *mark_array_variable(const std::string &id);
+#if 0
+	void set_array_slices(const std::string &id, Array *a);
+#endif
+	BaseType *mark_variable(BaseType *btp);
+	BaseType *mark_array_variable(BaseType *btp);
+
 	D4Dimension *slice_dimension(const std::string &id, const index &i);
 
 	void push_index(const index &i) { d_indexes.push_back(i); }

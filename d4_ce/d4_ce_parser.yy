@@ -162,11 +162,16 @@ clause : subset { $$ = $1; }
 // mark_variable returns a BaseType* or throws Error
 subset : id 
 {
-    $$ = driver.mark_variable($1);
+    BaseType *btp = driver.dmr()->root()->find_var($1); 
+    if (btp->type() == dods_array_c)
+        $$ = driver.mark_array_variable(btp);   // handle array w/o slice ops
+    else
+        $$ = driver.mark_variable(btp);
 }
 | id indexes 
 {
-    $$ = driver.mark_array_variable($1);
+    // in this case we know the btp should be an array because the CE used slicing ops ([])
+    BaseType *btp = driver.dmr()->root()->find_var($1); $$ = driver.mark_array_variable(btp);
 }
     
     // must store id associated with current set of fields - will need a stack for that

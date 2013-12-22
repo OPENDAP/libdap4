@@ -126,10 +126,8 @@ D4Dimensions::print_dap4(XMLWriter &xml, bool constrained) const
             (*i)->print_dap4(xml);
 #endif
     	if (constrained) {
-    		// parent() of a D4Dimensions is the Group that holds the set of D4Dimensions
-    		BaseType *var = parent()->find_first_var_that_uses_dimension(*i);
-    		if (var)
-    			(*i)->print_dap4(xml);
+    		if ((*i)->used_by_projected_var())
+    		    (*i)->print_dap4(xml);
     	}
     	else {
     		(*i)->print_dap4(xml);

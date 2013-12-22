@@ -48,10 +48,13 @@ class D4Dimension {
     bool d_constrained;
     unsigned long long d_c_start, d_c_stride, d_c_stop;
 
+    bool d_used_by_projected_var;
+
 public:
-    D4Dimension() : d_name(""), d_size(0),  d_parent(0), d_constrained(false), d_c_start(0), d_c_stride(0), d_c_stop(0) {}
-    D4Dimension(const string &name, unsigned long size, D4Dimensions *d = 0)
-        : d_name(name), d_size(size), d_parent(d), d_constrained(false), d_c_start(0), d_c_stride(0), d_c_stop(0) {}
+    D4Dimension() : d_name(""), d_size(0),  d_parent(0), d_constrained(false), d_c_start(0), d_c_stride(0),
+            d_c_stop(0), d_used_by_projected_var(false) {}
+    D4Dimension(const string &name, unsigned long size, D4Dimensions *d = 0) : d_name(name), d_size(size), d_parent(d),
+            d_constrained(false), d_c_start(0), d_c_stride(0), d_c_stop(0), d_used_by_projected_var(false) {}
 
     string name() const {return d_name;}
     void set_name(const string &name) { d_name = name; }
@@ -69,6 +72,9 @@ public:
     unsigned long long c_start() const { return d_c_start; }
     unsigned long long c_stride() const { return d_c_stride; }
     unsigned long long c_stop() const { return d_c_stop; }
+
+    bool used_by_projected_var() const { return d_used_by_projected_var; }
+    void set_used_by_projected_var(bool state) { d_used_by_projected_var = state; }
 
     /**
      * Set this Shared Diemension's constraint. While an Array Dimension object uses a

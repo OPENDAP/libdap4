@@ -33,7 +33,6 @@
 //
 // jhrg 9/13/94
 
-
 #include "config.h"
 
 #include <algorithm>
@@ -397,6 +396,8 @@ Array::add_constraint(Dim_iter i, D4Dimension *dim)
 
     if (dim->constrained())
     	add_constraint(i, dim->c_start(), dim->c_stride(), dim->c_stop());
+
+    dim->set_used_by_projected_var(true);
 
 	// In this case the value below overrides the value for use_sdim_for_slice
 	// set in the above call. jhrg 12/20/13
