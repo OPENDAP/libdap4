@@ -674,6 +674,54 @@ Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
 }
 
+class PrintDAP4FieldXMLWriter : public unary_function<BaseType *, void>
+{
+    XMLWriter &d_xml;
+    bool d_constrained;
+public:
+    PrintDAP4FieldXMLWriter(XMLWriter &x, bool c) : d_xml(x), d_constrained(c) {}
+
+    void operator()(BaseType *btp)
+    {
+        btp->print_dap4(d_xml, d_constrained);
+    }
+};
+
+
+void
+Constructor::print_dap4(XMLWriter &xml, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)type_name().c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write " + type_name() + " element");
+
+    if (!name().empty())
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+    bool has_variables = (var_begin() != var_end());
+    if (has_variables)
+        for_each(var_begin(), var_end(), PrintDAP4FieldXMLWriter(xml, constrained));
+
+#if D4_ATTR
+    if (is_dap4())
+        attributes()->print_dap4(xml);
+
+    if (!is_dap4() && get_attr_table().get_size() > 0)
+        get_attr_table().print_xml_writer(xml);
+#else
+    bool has_attributes = get_attr_table().get_size() > 0;
+    if (has_attributes)
+        get_attr_table().print_xml_writer(xml);
+#endif
+
+    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
+}
+
+
 bool
 Constructor::check_semantics(string &msg, bool all)
 {

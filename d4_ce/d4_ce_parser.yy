@@ -181,8 +181,6 @@ subset : id
 
 | id indexes 
 {
-    // in this case we know the btp should be an array because the CE used slicing ops ([])
-    //BaseType *btp = driver.dmr()->root()->find_var($1);
     BaseType *btp = 0;
     if (driver.top_basetype()) {
         btp = driver.top_basetype()->var($1);
