@@ -16,6 +16,7 @@
 #include "D4Dimensions.h"
 #include "BaseType.h"
 #include "Array.h"
+#include "Constructor.h"
 
 #include "parser.h"		// for get_ull()
 
@@ -80,6 +81,27 @@ D4CEDriver::throw_not_found(const string &id)
     throw Error(d_expr + ": The variable " + id + " was not found in the dataset.");
 }
 
+void
+D4CEDriver::search_for_and_mark_arrays(BaseType *btp)
+{
+	assert(btp->is_constructor_type());
+
+	Constructor *ctor = static_cast<Constructor*>(btp);
+	for (Constructor::Vars_iter i = ctor->var_begin(), e = ctor->var_end(); i != e; ++i) {
+		switch ((*i)->type()) {
+		case dods_array_c:
+			mark_array_variable(*i);
+			break;
+		case dods_structure_c:
+		case dods_sequence_c:
+			search_for_and_mark_arrays(*i);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 /**
  * When an identifier is used in a CE, is becomes part of the 'current projection,'
  * which means it is part of the set of variable to be sent back to the client. This
@@ -96,7 +118,28 @@ D4CEDriver::mark_variable(BaseType *btp)
 
     btp->set_send_p(true);
 
-    // TODO Test for Constructors and marks arrays they contain
+	// Test for Constructors and marks arrays they contain
+	if (btp->is_constructor_type()) {
+		search_for_and_mark_arrays(btp);
+	}
+
+#if 0
+		Constructor *ctor = static_cast<Constructor*>(btp);
+		for (Vars_iter i = ctor->var_begin(), e = ctor->var_end(); i != e; ++i) {
+			switch ((*i)->type()) {
+			case dods_array_c:
+				mark_array_variable(*i);
+				break;
+			case dods_structure_c:
+			case dods_sequence_c:
+				search_for_and_mark_arrays(*i);
+				break;
+			default:
+				break;
+			}
+		}
+	}
+#endif
 
     // Now set the parent variables
     BaseType *parent = btp->get_parent();

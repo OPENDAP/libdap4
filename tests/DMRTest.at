@@ -215,10 +215,23 @@ DMR_TRANS_CE([dmr-testsuite/test_simple_6.xml], [s{s}], [dmr-testsuite/test_simp
 DMR_TRANS_CE([dmr-testsuite/test_simple_6.1.xml], [s{inner.i2}], [dmr-testsuite/test_simple_6.1.xml.1.trans_base], [pass])
 DMR_TRANS_CE([dmr-testsuite/test_simple_6.1.xml], [s{inner{i2}}], [dmr-testsuite/test_simple_6.1.xml.1.trans_base], [pass])
 
+# test_array_6 holds a 2D array of Structure
 DMR_TRANS_CE([dmr-testsuite/test_array_6.xml], [a], [dmr-testsuite/test_array_6.xml.1.trans_base], [pass])
 DMR_TRANS_CE([dmr-testsuite/test_array_6.xml], [a[[]][[]] ], [dmr-testsuite/test_array_6.xml.1.trans_base], [pass])
 DMR_TRANS_CE([dmr-testsuite/test_array_6.xml], [/row=[[0:1]];a[[]][[]] ], [dmr-testsuite/test_array_6.xml.2.trans_base], [pass])
 DMR_TRANS_CE([dmr-testsuite/test_array_6.xml], [/row=[[0:1]];a[[]][[1:2]] ], [dmr-testsuite/test_array_6.xml.3.trans_base], [pass])
+
+# test_array holds a Structure that has a 2D array for a field
+DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a], [dmr-testsuite/test_array_6.2.xml.1.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a{i;j}], [dmr-testsuite/test_array_6.2.xml.1.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a.i], [dmr-testsuite/test_array_6.2.xml.2.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a{i}], [dmr-testsuite/test_array_6.2.xml.2.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a.i[[0]][[1:2]] ], [dmr-testsuite/test_array_6.2.xml.3.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a{i[[0]][[1:2]]} ], [dmr-testsuite/test_array_6.2.xml.3.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [/row=[[0:1]];a.i[[]][[1:2]] ], [dmr-testsuite/test_array_6.2.xml.4.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [/row=[[0:1]];a{i[[]][[1:2]]} ], [dmr-testsuite/test_array_6.2.xml.4.trans_base], [pass])
+
+DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a.j], [dmr-testsuite/test_array_6.2.xml.5.trans_base], [pass])
 
 DMR_INTERN([dmr-testsuite/test_simple_1.xml], [pass])
 DMR_INTERN([dmr-testsuite/test_simple_2.xml], [pass])

@@ -69,6 +69,7 @@ class D4CEDriver {
 #if 0
 	void set_array_slices(const std::string &id, Array *a);
 #endif
+	void search_for_and_mark_arrays(BaseType *btp);
 	BaseType *mark_variable(BaseType *btp);
 	BaseType *mark_array_variable(BaseType *btp);
 
