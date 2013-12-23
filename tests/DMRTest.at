@@ -210,6 +210,11 @@ DMR_TRANS_CE([dmr-testsuite/test_simple_6.xml], [s.i1], [dmr-testsuite/test_simp
 DMR_TRANS_CE([dmr-testsuite/test_simple_6.xml], [s.s], [dmr-testsuite/test_simple_6.xml.3.trans_base], [pass])
 DMR_TRANS_CE([dmr-testsuite/test_simple_6.1.xml], [s.inner.i2], [dmr-testsuite/test_simple_6.1.xml.1.trans_base], [pass])
 
+DMR_TRANS_CE([dmr-testsuite/test_simple_6.xml], [s{i1}], [dmr-testsuite/test_simple_6.xml.2.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_simple_6.xml], [s{s}], [dmr-testsuite/test_simple_6.xml.3.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_simple_6.1.xml], [s{inner.i2}], [dmr-testsuite/test_simple_6.1.xml.1.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_simple_6.1.xml], [s{inner{i2}}], [dmr-testsuite/test_simple_6.1.xml.1.trans_base], [pass])
+
 DMR_TRANS_CE([dmr-testsuite/test_array_6.xml], [a], [dmr-testsuite/test_array_6.xml.1.trans_base], [pass])
 DMR_TRANS_CE([dmr-testsuite/test_array_6.xml], [a[[]][[]] ], [dmr-testsuite/test_array_6.xml.1.trans_base], [pass])
 DMR_TRANS_CE([dmr-testsuite/test_array_6.xml], [/row=[[0:1]];a[[]][[]] ], [dmr-testsuite/test_array_6.xml.2.trans_base], [pass])

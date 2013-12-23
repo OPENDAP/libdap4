@@ -162,22 +162,67 @@ clause : subset { $$ = $1; }
 // mark_variable returns a BaseType* or throws Error
 subset : id 
 {
-    BaseType *btp = driver.dmr()->root()->find_var($1); 
+    BaseType *btp = 0;
+    if (driver.top_basetype()) {
+        btp = driver.top_basetype()->var($1);
+    }
+    else {
+        btp = driver.dmr()->root()->find_var($1);
+    }
+    
+    if (!btp)
+        driver.throw_not_found($1);
+    
     if (btp->type() == dods_array_c)
         $$ = driver.mark_array_variable(btp);   // handle array w/o slice ops
     else
         $$ = driver.mark_variable(btp);
 }
+
 | id indexes 
 {
     // in this case we know the btp should be an array because the CE used slicing ops ([])
-    BaseType *btp = driver.dmr()->root()->find_var($1); $$ = driver.mark_array_variable(btp);
-}
+    //BaseType *btp = driver.dmr()->root()->find_var($1);
+    BaseType *btp = 0;
+    if (driver.top_basetype()) {
+        btp = driver.top_basetype()->var($1);
+    }
+    else {
+        btp = driver.dmr()->root()->find_var($1);
+    }
     
-    // must store id associated with current set of fields - will need a stack for that
-    | id fields { $$ = true; }
-    | id indexes fields { $$ = true; }
-    | fields indexes { $$ = true; }
+    if (!btp)
+        driver.throw_not_found($1);
+        
+    $$ = driver.mark_array_variable(btp);
+}
+
+| id 
+{
+    BaseType *btp = 0;
+    if (driver.top_basetype()) {
+        btp = driver.top_basetype()->var($1);
+    }
+    else {
+        btp = driver.dmr()->root()->find_var($1);
+    }
+
+    if (!btp)
+        driver.throw_not_found($1);
+      
+    driver.push_basetype(btp);
+        
+    if (!driver.top_basetype()->is_constructor_type())
+        throw Error("The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
+} 
+fields 
+{ 
+    driver.pop_basetype(); 
+    $$ = true; 
+}
+
+| id indexes fields { $$ = true; }
+| fields indexes { $$ = true; }
 ;
 
 // push_index stores the index in the D4CEDriver

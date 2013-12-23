@@ -74,32 +74,36 @@ D4CEDriver::set_array_slices(const std::string &id, Array *a)
 }
 #endif
 
+void
+D4CEDriver::throw_not_found(const string &id)
+{
+    throw Error(d_expr + ": The variable " + id + " was not found in the dataset.");
+}
+
 /**
  * When an identifier is used in a CE, is becomes part of the 'current projection,'
  * which means it is part of the set of variable to be sent back to the client. This
  * method sets a flag in the variable (send_p: send predicate) indicating that.
  *
  * @note This will check if the variable is an array and set it's slices accordingly
- * @param id
+ * @param btp BaseType pointer to the variable. Must be non-null
  * @return The BaseType* to the variable; the send_p flag is set as a side effect.
  */
 BaseType *
 D4CEDriver::mark_variable(BaseType *btp)
 {
-    if (btp) {
-        btp->set_send_p(true);
+    assert(btp);
 
-        // Now set the parent variables
-        BaseType *parent = btp->get_parent();
-		while (parent) {
-			parent->BaseType::set_send_p(true); // Just set the parent
-			parent = parent->get_parent();
-        }
-        return btp;
+    btp->set_send_p(true);
+
+    // Now set the parent variables
+    BaseType *parent = btp->get_parent();
+    while (parent) {
+        parent->BaseType::set_send_p(true); // Just set the parent
+        parent = parent->get_parent();
     }
-    else {
-    	throw Error(d_expr + ": The variable " + btp->name() + " was not found in the dataset.");
-    }
+
+    return btp;
 }
 
 /**
@@ -120,7 +124,7 @@ D4CEDriver::mark_array_variable(BaseType *btp)
     mark_variable(btp);
 
 	if (btp->type() != dods_array_c)
-		throw Error("The variable '" + btp->name() + "' is not an Array variable.");
+		throw Error(d_expr + ": The variable '" + btp->name() + "' is not an Array variable.");
 
 	Array *a = static_cast<Array*>(btp);
 

@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include <stack>
 
 namespace libdap {
 
@@ -60,6 +61,8 @@ class D4CEDriver {
 
 	std::vector<index> d_indexes;
 
+	std::stack<BaseType*> d_basetype_stack;
+
 	// d_expr should be set by parse! Its value is used by the parser right before
 	// the actual parsing operation starts. jhrg 11/26/13
 	std::string *expression() { return &d_expr; }
@@ -72,6 +75,13 @@ class D4CEDriver {
 	D4Dimension *slice_dimension(const std::string &id, const index &i);
 
 	void push_index(const index &i) { d_indexes.push_back(i); }
+
+	void push_basetype(BaseType *btp) { d_basetype_stack.push(btp); }
+	BaseType *top_basetype() const { return d_basetype_stack.empty() ? 0 : d_basetype_stack.top(); }
+	// throw on pop with an empty stack?
+	void pop_basetype() { d_basetype_stack.pop(); }
+
+	void throw_not_found(const std::string &id);
 
 	friend class D4CEParser;
 
