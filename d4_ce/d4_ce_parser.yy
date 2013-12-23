@@ -174,7 +174,7 @@ subset : id
         driver.throw_not_found($1);
     
     if (btp->type() == dods_array_c)
-        $$ = driver.mark_array_variable(btp);   // handle array w/o slice ops
+        $$ = driver.mark_variable(btp) && driver.mark_array_variable(btp);   // handle array w/o slice ops
     else
         $$ = driver.mark_variable(btp);
 }
@@ -192,7 +192,7 @@ subset : id
     if (!btp)
         driver.throw_not_found($1);
         
-    $$ = driver.mark_array_variable(btp);
+    $$ = driver.mark_variable(btp) && driver.mark_array_variable(btp);
 }
 
 | id 
@@ -207,11 +207,19 @@ subset : id
 
     if (!btp)
         driver.throw_not_found($1);
-      
+    
+    if (btp->type() == dods_array_c) {
+        if (btp->var() && !btp->var()->is_constructor_type())
+            throw Error("The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
+        // This call also tests the btp to make sure it's an array
+        driver.mark_array_variable(btp);
+    }
+    else {
+        if (!btp->is_constructor_type())
+            throw Error("The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
+    }
+
     driver.push_basetype(btp);
-        
-    if (!driver.top_basetype()->is_constructor_type())
-        throw Error("The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
 } 
 fields 
 { 
@@ -219,8 +227,36 @@ fields
     $$ = true; 
 }
 
-| id indexes fields { $$ = true; }
-| fields indexes { $$ = true; }
+| id indexes
+{
+    BaseType *btp = 0;
+    if (driver.top_basetype()) {
+        btp = driver.top_basetype()->var($1);
+    }
+    else {
+        btp = driver.dmr()->root()->find_var($1);
+    }
+
+    if (!btp)
+        driver.throw_not_found($1);
+    
+    // This call also tests the btp to make sure it's an array
+    driver.mark_array_variable(btp);
+    
+    if (!btp->var()->is_constructor_type())
+        throw Error("The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
+      
+    driver.push_basetype(btp->var());       
+} 
+fields 
+{ 
+    driver.pop_basetype();
+    $$ = true; 
+}
+
+
+// The following has be removed from the syntax
+// | fields indexes { $$ = true; }
 ;
 
 // push_index stores the index in the D4CEDriver

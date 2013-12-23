@@ -166,8 +166,9 @@ D4CEDriver::mark_variable(BaseType *btp)
 BaseType *
 D4CEDriver::mark_array_variable(BaseType *btp)
 {
-    mark_variable(btp);
-
+#if 0
+	mark_variable(btp);
+#endif
 	if (btp->type() != dods_array_c)
 		throw Error(d_expr + ": The variable '" + btp->name() + "' is not an Array variable.");
 
