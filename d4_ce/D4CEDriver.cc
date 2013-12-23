@@ -96,6 +96,8 @@ D4CEDriver::mark_variable(BaseType *btp)
 
     btp->set_send_p(true);
 
+    // TODO Test for Constructors and marks arrays they contain
+
     // Now set the parent variables
     BaseType *parent = btp->get_parent();
     while (parent) {
