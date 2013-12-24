@@ -298,3 +298,40 @@ DMR_TRANS_CE([dmr-testsuite/test_array_7.xml], [s[[1]]{i1}], [dmr-testsuite/test
 DMR_TRANS_CE([dmr-testsuite/test_array_8.xml], [/col=[[1:2]];s[[1]][[]]{i1}], [dmr-testsuite/test_array_8.xml.1.trans_base], [pass])
 DMR_TRANS_CE([dmr-testsuite/test_array_8.xml], [col=[[1:2]];s[[1]][[]]{i1}], [dmr-testsuite/test_array_8.xml.1.trans_base], [pass])
 
+# test_array_7.1 holds a sequence that has an array for one of its fields
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [], [dmr-testsuite/test_array_7.1.xml.1.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s], [dmr-testsuite/test_array_7.1.xml.1.trans_base], [pass])
+
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s.i1], [dmr-testsuite/test_array_7.1.xml.2.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s.i1[[]][[]] ], [dmr-testsuite/test_array_7.1.xml.2.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s{i1}], [dmr-testsuite/test_array_7.1.xml.2.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s{i1[[]][[]]} ], [dmr-testsuite/test_array_7.1.xml.2.trans_base], [pass])
+
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s.i1[[0]][[0]] ], [dmr-testsuite/test_array_7.1.xml.3.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s{i1[[0]][[0]]} ], [dmr-testsuite/test_array_7.1.xml.3.trans_base], [pass])
+
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s.i1[[0:2]][[1:2]] ], [dmr-testsuite/test_array_7.1.xml.4.trans_base], [pass])
+
+# Should this CE be supported? jhrg 12/23/13
+# DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]] ], [dmr-testsuite/test_array_7.1.xml.5.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s ], [dmr-testsuite/test_array_7.1.xml.5.trans_base], [pass])
+
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s.i1 ], [dmr-testsuite/test_array_7.1.xml.6.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s.i1[[]][[]] ], [dmr-testsuite/test_array_7.1.xml.6.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s{i1} ], [dmr-testsuite/test_array_7.1.xml.6.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s{i1[[]][[]]} ], [dmr-testsuite/test_array_7.1.xml.6.trans_base], [pass])
+
+# test_array_7.2 is a sequence array that holds an array as one of its fields
+DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[]]{i1}], [dmr-testsuite/test_array_7.2.xml.1.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[]]{i1[[]][[]]}], [dmr-testsuite/test_array_7.2.xml.1.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s{i1[[]][[]]}], [dmr-testsuite/test_array_7.2.xml.1.trans_base], [pass])
+
+DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[]]{i1[[0]][[]]}], [dmr-testsuite/test_array_7.2.xml.2.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s{i1[[0]][[]]}], [dmr-testsuite/test_array_7.2.xml.2.trans_base], [pass])
+
+DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1}], [dmr-testsuite/test_array_7.2.xml.3.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1[[]][[]]}], [dmr-testsuite/test_array_7.2.xml.3.trans_base], [pass])
+
+DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1[[0]][[]]}], [dmr-testsuite/test_array_7.2.xml.4.trans_base], [pass])
+
+
