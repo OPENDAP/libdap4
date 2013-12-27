@@ -101,6 +101,7 @@ class D4CEDriver {
 	void pop_basetype() { d_basetype_stack.pop(); }
 
 	void throw_not_found(const std::string &id, const std::string &ident);
+	void throw_not_array(const std::string &id, const std::string &ident);
 
 	friend class D4CEParser;
 

@@ -26,7 +26,7 @@
 #include <sstream>
 #include <iterator>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "D4CEScanner.h"
 #include "D4CEDriver.h"
@@ -102,6 +102,12 @@ D4CEDriver::throw_not_found(const string &id, const string &ident)
 }
 
 void
+D4CEDriver::throw_not_array(const string &id, const string &ident)
+{
+	throw Error(d_expr + ": The variable '" + id + "' is not an Array variable (" + ident + ").");
+}
+
+void
 D4CEDriver::search_for_and_mark_arrays(BaseType *btp)
 {
 	DBG(cerr << "Entering D4CEDriver::search_for_and_mark_arrays...(" << btp->name() << ")" << endl);
@@ -144,33 +150,22 @@ D4CEDriver::mark_variable(BaseType *btp)
 
     btp->set_send_p(true);
 
-	// Test for Constructors and marks arrays they contain
+    if (btp->type() == dods_array_c ) {
+    	mark_array_variable(btp);
+    }
+
+    // Test for Constructors and marks arrays they contain
 	if (btp->is_constructor_type()) {
 		search_for_and_mark_arrays(btp);
 	}
-
-#if 0
-		Constructor *ctor = static_cast<Constructor*>(btp);
-		for (Vars_iter i = ctor->var_begin(), e = ctor->var_end(); i != e; ++i) {
-			switch ((*i)->type()) {
-			case dods_array_c:
-				mark_array_variable(*i);
-				break;
-			case dods_structure_c:
-			case dods_sequence_c:
-				search_for_and_mark_arrays(*i);
-				break;
-			default:
-				break;
-			}
-		}
+	else if (btp->type() == dods_array_c && btp->var() && btp->var()->is_constructor_type()) {
+		search_for_and_mark_arrays(btp->var());
 	}
-#endif
 
     // Now set the parent variables
     BaseType *parent = btp->get_parent();
     while (parent) {
-        parent->BaseType::set_send_p(true); // Just set the parent
+        parent->BaseType::set_send_p(true); // Just set the parent using BaseType's impl.
         parent = parent->get_parent();
     }
 
@@ -192,11 +187,7 @@ D4CEDriver::mark_variable(BaseType *btp)
 BaseType *
 D4CEDriver::mark_array_variable(BaseType *btp)
 {
-#if 0
-	mark_variable(btp);
-#endif
-	if (btp->type() != dods_array_c)
-		throw Error(d_expr + ": The variable '" + btp->name() + "' is not an Array variable.");
+	assert(btp->type() == dods_array_c);
 
 	Array *a = static_cast<Array*>(btp);
 
@@ -207,7 +198,7 @@ D4CEDriver::mark_array_variable(BaseType *btp)
 	    for (Array::Dim_iter d = a->dim_begin(), de = a->dim_end(); d != de; ++d) {
 	        D4Dimension *dim = a->dimension_D4dim(d);
 	        if (dim) {
-	            dim->set_used_by_projected_var(true);
+	        	a->add_constraint(d, dim);
 	        }
 	    }
 	}

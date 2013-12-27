@@ -214,7 +214,7 @@ DMR_INTERN([dmr-testsuite/test_array_11.xml], [pass])
 # Test various factes of the CE parser and evaluation engine
 
 DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [a], [dmr-testsuite/test_array_4.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [a[[]][[]] ], [dmr-testsuite/test_array_4.xml.2.trans_base], [pass])
+DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [a[[]][[]] ], [dmr-testsuite/test_array_4.xml.1.trans_base], [pass])
 
 DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [/row=[[0:1]];/col=[[3]];a],  [dmr-testsuite/test_array_4.xml.3.trans_base], [pass])
     

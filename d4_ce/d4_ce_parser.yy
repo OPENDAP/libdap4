@@ -172,11 +172,14 @@ subset : id
     
     if (!btp)
         driver.throw_not_found($1, "id");
-    
+
+#if 0    
     if (btp->type() == dods_array_c)
         $$ = driver.mark_variable(btp) && driver.mark_array_variable(btp);   // handle array w/o slice ops
     else
-        $$ = driver.mark_variable(btp);
+#endif
+
+    $$ = driver.mark_variable(btp);
 }
 
 | id indexes 
@@ -192,7 +195,10 @@ subset : id
     if (!btp)
         driver.throw_not_found($1, "id indexes");
         
-    $$ = driver.mark_variable(btp) && driver.mark_array_variable(btp);
+    if (btp->type() != dods_array_c)
+        driver.throw_not_array($1, "id indexes");
+        
+    $$ = driver.mark_variable(btp); //  && driver.mark_array_variable(btp);
 }
 
 | id 
@@ -211,6 +217,7 @@ subset : id
     if (btp->type() == dods_array_c) {
         if (btp->var() && !btp->var()->is_constructor_type())
             throw Error("The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
+            
         // This call also tests the btp to make sure it's an array
         driver.mark_array_variable(btp);
     }
@@ -244,6 +251,9 @@ fields
     if (!btp)
         driver.throw_not_found($1, "id indexes fields");
     
+    if (btp->type() != dods_array_c)
+        driver.throw_not_array($1, "id indexes fields");
+
     // This call also tests the btp to make sure it's an array
     driver.mark_array_variable(btp);
     
