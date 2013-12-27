@@ -1,13 +1,32 @@
-/*
- * D4CEParserDriver.cc
- *
- *  Created on: Aug 8, 2013
- *      Author: jimg
- */
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <string>
 #include <sstream>
 #include <iterator>
+
+#define DODS_DEBUG
 
 #include "D4CEScanner.h"
 #include "D4CEDriver.h"
@@ -19,6 +38,7 @@
 #include "Constructor.h"
 
 #include "parser.h"		// for get_ull()
+#include "debug.h"
 
 namespace libdap {
 
@@ -76,24 +96,28 @@ D4CEDriver::set_array_slices(const std::string &id, Array *a)
 #endif
 
 void
-D4CEDriver::throw_not_found(const string &id)
+D4CEDriver::throw_not_found(const string &id, const string &ident)
 {
-    throw Error(d_expr + ": The variable " + id + " was not found in the dataset.");
+    throw Error(d_expr + ": The variable " + id + " was not found in the dataset (" + ident + ").");
 }
 
 void
 D4CEDriver::search_for_and_mark_arrays(BaseType *btp)
 {
+	DBG(cerr << "Entering D4CEDriver::search_for_and_mark_arrays...(" << btp->name() << ")" << endl);
+
 	assert(btp->is_constructor_type());
 
 	Constructor *ctor = static_cast<Constructor*>(btp);
 	for (Constructor::Vars_iter i = ctor->var_begin(), e = ctor->var_end(); i != e; ++i) {
 		switch ((*i)->type()) {
 		case dods_array_c:
+			DBG(cerr << "Found an array: " << (*i)->name() << endl);
 			mark_array_variable(*i);
 			break;
 		case dods_structure_c:
 		case dods_sequence_c:
+			DBG(cerr << "Found a ctor: " << (*i)->name() << endl);
 			search_for_and_mark_arrays(*i);
 			break;
 		default:
@@ -115,6 +139,8 @@ BaseType *
 D4CEDriver::mark_variable(BaseType *btp)
 {
     assert(btp);
+
+    DBG(cerr << "In D4CEDriver::mark_variable... (" << btp->name() << "; " << btp->type_name() << ")" << endl);
 
     btp->set_send_p(true);
 

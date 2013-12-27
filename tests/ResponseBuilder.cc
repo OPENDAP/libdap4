@@ -293,7 +293,7 @@ void ResponseBuilder::dataset_constraint_dmr(ostream &out, DMR &dmr, bool filter
 }
 #endif
 
-void ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_headers)
+void ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_headers, bool ce_parse_debug)
 {
 	try {
 		// Set up the alarm.
@@ -307,9 +307,13 @@ void ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_heade
 		// throw Error
 		if (!d_ce.empty()) {
 			D4CEDriver parser(&dmr);
+			if (ce_parse_debug)
+			    parser.set_trace_parsing(true);
 			bool parse_ok = parser.parse(d_ce);
 			if (!parse_ok)
 				throw Error("Constraint Expression failed to parse.");
+			else if (ce_parse_debug)
+			    cerr << "CE Parse OK" << endl;
 		}
 		// with an empty CE, send everything. Even though print_dap4() and serialize()
 		// don't need this, other code may depend on send_p being set. This may change

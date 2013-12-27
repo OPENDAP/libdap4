@@ -95,7 +95,7 @@ public:
 #if 0
     virtual void dataset_constraint_dmr(std::ostream &out, libdap::DMR &dmr, bool filter);
 #endif
-    virtual void send_data_dmr(std::ostream &out, libdap::DMR &dmr, bool with_mime_headers);
+    virtual void send_data_dmr(std::ostream &out, libdap::DMR &dmr, bool with_mime_headers, bool ce_parse_debug);
 
     // These are old and not used
     virtual void dataset_constraint_dmr_multipart(std::ostream &out, libdap::DMR &dmr, libdap::ConstraintEvaluator &eval,
