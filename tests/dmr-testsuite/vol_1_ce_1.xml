@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- This is the DMR used for the first example in the CE section of the DAP4 spec. jhrg 12/30/12 -->
+<!-- This is the DMR used for the first example in the CE section of the DAP4 spec. jhrg 12/30/13 -->
 
 <Dataset name="vol_1_ce_1" dapVersion="4.0" dmrVersion="1.0" xml:base="file:dap4/vol_1_ce_1.xml"
   xmlns="http://xml.opendap.org/ns/DAP/4.0#"

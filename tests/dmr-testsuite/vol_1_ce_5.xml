@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- Example in the CE section of the DAP4 spec. jhrg 12/31/12 -->
+<!-- Example in the CE section of the DAP4 spec. jhrg 12/31/13 -->
 
 <Dataset name="vol_1_ce_5" dapVersion="4.0" dmrVersion="1.0" xml:base="file:dap4/vol_1_ce_5.xml"
   xmlns="http://xml.opendap.org/ns/DAP/4.0#" xmlns:dap="http://xml.opendap.org/ns/DAP/4.0#">
