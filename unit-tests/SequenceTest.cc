@@ -64,7 +64,7 @@ static const char *s_as_string = \
           _read_p: 0\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
-          d_parent: 0x.*\n\
+          d_parent: 0.*\n\
           d_attr: 0x.*\n\
 BaseType \\(0x.*\\):\n\
           _name: i1\n\
