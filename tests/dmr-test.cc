@@ -44,7 +44,7 @@
 #include "InternalErr.h"
 #include "Error.h"
 
-#include "ResponseBuilder.h"	// clone of code defined by the BES
+#include "D4ResponseBuilder.h"
 #include "ConstraintEvaluator.h"
 
 #include "D4ParserSax2.h"
@@ -133,7 +133,7 @@ send_data(DMR *dataset, const string &constraint, bool series_values, bool ce_pa
     set_series_values(dataset, series_values);
 
     // ConstraintEvaluator eval;	// This is a place holder. jhrg 9/6/13
-    ResponseBuilder rb;
+    D4ResponseBuilder rb;
     rb.set_ce(constraint);
     rb.set_dataset_name(dataset->name());
 #if 0
@@ -157,7 +157,7 @@ intern_data(DMR *dataset, const string &/*constraint*/, bool series_values)
 
     ConstraintEvaluator eval;	// This is a place holder. jhrg 9/6/13
 
-    // TODO Remove once real CE evaluator is written. jhrg 9/6/13
+    // TODO Remove once a real CE evaluator is written. jhrg 9/6/13
     // Mark all variables to be sent in their entirety.
     dataset->root()->set_send_p(true);
 

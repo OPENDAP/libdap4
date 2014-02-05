@@ -26,6 +26,8 @@
 #ifndef http_response_h
 #define http_response_h
 
+#include <unistd.h>
+
 #include <cstdio>
 #include <string>
 #include <iostream>

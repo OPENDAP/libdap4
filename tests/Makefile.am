@@ -46,7 +46,7 @@ expr_test_SOURCES = expr-test.cc ResponseBuilder.cc ResponseBuilder.h
 expr_test_LDADD = libtest-types.a ../libdapserver.la ../libdapclient.la ../libdap.la
 
 if DAP4_DEFINED
-dmr_test_SOURCES = dmr-test.cc ResponseBuilder.cc ResponseBuilder.h
+dmr_test_SOURCES = dmr-test.cc D4ResponseBuilder.cc D4ResponseBuilder.h
 dmr_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la
 endif
 
