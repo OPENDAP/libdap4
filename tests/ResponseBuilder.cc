@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <uuid/uuid.h>  // used to build CID header value for data ddx
+
 #ifndef WIN32
 #include <sys/wait.h>
 #else
@@ -40,7 +41,6 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-//#include <algorithm>
 
 #include <cstring>
 #include <ctime>
@@ -49,20 +49,15 @@
 
 #include "DAS.h"
 #include "DDS.h"
-
 #include "ConstraintEvaluator.h"
 #include "DDXParserSAX2.h"
 #include "Ancillary.h"
+#include "ResponseBuilder.h"
 #include "XDRStreamMarshaller.h"
 #include "XDRFileUnMarshaller.h"
 
-#include "DMR.h"
-#include "XMLWriter.h"
-#include "D4StreamMarshaller.h"
-#include "chunked_ostream.h"
-#include "chunked_istream.h"
-
-#include "D4CEDriver.h"
+//#include "DAPCache3.h"
+//#include "ResponseCache.h"
 
 #include "debug.h"
 #include "mime_util.h"	// for last_modified_time() and rfc_822_date()
@@ -75,14 +70,7 @@
 #include "AlarmHandler.h"
 #endif
 
-#include "ResponseBuilder.h"
-
-const std::string CRLF = "\r\n";             // Change here, expr-test.cc/dmr-test.cc
-
-#if BYTE_ORDER_PREFIX
-const int8_t big_endian = 0x01;
-const int8_t little_endian = 0x00;
-#endif
+#define CRLF "\r\n"             // Change here, expr-test.cc
 
 using namespace std;
 using namespace libdap;
@@ -91,14 +79,14 @@ using namespace libdap;
  command line arguments. */
 void ResponseBuilder::initialize()
 {
-	// Set default values. Don't use the C++ constructor initialization so
-	// that a subclass can have more control over this process.
-	d_dataset = "";
-	d_ce = "";
-	d_btp_func_ce = "";
-	d_timeout = 0;
+    // Set default values. Don't use the C++ constructor initialization so
+    // that a subclass can have more control over this process.
+    d_dataset = "";
+    d_ce = "";
+    d_btp_func_ce = "";
+    d_timeout = 0;
 
-	d_default_protocol = DAP_PROTOCOL_VERSION;
+    d_default_protocol = DAP_PROTOCOL_VERSION;
 }
 
 ResponseBuilder::~ResponseBuilder()
@@ -107,6 +95,17 @@ ResponseBuilder::~ResponseBuilder()
 	// always deletes the old alarm handler object, so only the one returned by
 	// remove_handler needs to be deleted at this point.
 	delete dynamic_cast<AlarmHandler*>(SignalHandler::instance()->remove_handler(SIGALRM));
+}
+
+/** Return the entire constraint expression in a string.  This
+ includes both the projection and selection clauses, but not the
+ question mark.
+
+ @brief Get the constraint expression.
+ @return A string object that contains the constraint expression. */
+string ResponseBuilder::get_ce() const
+{
+    return d_ce;
 }
 
 /** Set the constraint expression. This will filter the CE text removing
@@ -121,7 +120,20 @@ ResponseBuilder::~ResponseBuilder()
  */
 void ResponseBuilder::set_ce(string _ce)
 {
-	d_ce = www2id(_ce, "%", "%20");
+    d_ce = www2id(_ce, "%", "%20");
+}
+
+/** The ``dataset name'' is the filename or other string that the
+ filter program will use to access the data. In some cases this
+ will indicate a disk file containing the data.  In others, it
+ may represent a database query or some other exotic data
+ access method.
+
+ @brief Get the dataset name.
+ @return A string object that contains the name of the dataset. */
+string ResponseBuilder::get_dataset_name() const
+{
+    return d_dataset;
 }
 
 /** Set the dataset name, which is a string used to access the dataset
@@ -136,34 +148,307 @@ void ResponseBuilder::set_ce(string _ce)
  */
 void ResponseBuilder::set_dataset_name(const string ds)
 {
-	d_dataset = www2id(ds, "%", "%20");
+    d_dataset = www2id(ds, "%", "%20");
 }
+#if 0
+/** Set the server's timeout value. A value of zero (the default) means no
+ timeout.
+
+ @see To establish a timeout, call establish_timeout(ostream &)
+ @param t Server timeout in seconds. Default is zero (no timeout). */
+void ResponseBuilder::set_timeout(int t)
+{
+    d_timeout = t;
+}
+
+/** Get the server's timeout value. */
+int ResponseBuilder::get_timeout() const
+{
+    return d_timeout;
+}
+
+/** Use values of this instance to establish a timeout alarm for the server.
+ If the timeout value is zero, do nothing.
+*/
+void ResponseBuilder::establish_timeout(ostream &stream) const
+{
+#ifndef WIN32
+    if (d_timeout > 0) {
+        SignalHandler *sh = SignalHandler::instance();
+        EventHandler *old_eh = sh->register_handler(SIGALRM, new AlarmHandler(stream));
+        delete old_eh;
+        alarm(d_timeout);
+    }
+#endif
+}
+#endif
+
+/**
+ *  Split the CE so that the server functions that compute new values are
+ *  separated into their own string and can be evaluated separately from
+ *  the rest of the CE (which can contain simple and slicing projection
+ *  as well as other types of function calls).
+ */
+void
+ResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
+{
+    string ce;
+    if (!expr.empty())
+        ce = expr;
+    else
+        ce = d_ce;
+
+    string btp_function_ce = "";
+    string::size_type pos = 0;
+    DBG(cerr << "ce: " << ce << endl);
+
+    string::size_type first_paren = ce.find("(", pos);
+    string::size_type closing_paren = ce.find(")", pos);
+    while (first_paren != string::npos && closing_paren != string::npos) {
+        // Maybe a BTP function; get the name of the potential function
+        string name = ce.substr(pos, first_paren-pos);
+        DBG(cerr << "name: " << name << endl);
+        // is this a BTP function
+        btp_func f;
+        if (eval.find_function(name, &f)) {
+            // Found a BTP function
+            if (!btp_function_ce.empty())
+                btp_function_ce += ",";
+            btp_function_ce += ce.substr(pos, closing_paren+1-pos);
+            ce.erase(pos, closing_paren+1-pos);
+            if (ce[pos] == ',')
+                ce.erase(pos, 1);
+        }
+        else {
+            pos = closing_paren + 1;
+            // exception?
+            if (pos < ce.length() && ce.at(pos) == ',')
+                ++pos;
+        }
+
+        first_paren = ce.find("(", pos);
+        closing_paren = ce.find(")", pos);
+    }
+
+    DBG(cerr << "Modified constraint: " << ce << endl);
+    DBG(cerr << "BTP Function part: " << btp_function_ce << endl);
+
+    d_ce = ce;
+    d_btp_func_ce = btp_function_ce;
+}
+
+#if 0
+/** This function formats and prints an ASCII representation of a
+ DAS on stdout.  This has the effect of sending the DAS object
+ back to the client program.
+
+ @note This is the DAP2 attribute response.
+
+ @brief Send a DAS.
+
+ @param out The output stream to which the DAS is to be sent.
+ @param das The DAS object to be sent.
+ @param with_mime_headers If true (the default) send MIME headers.
+ @return void
+ @see DAS
+ @deprecated */
+void ResponseBuilder::send_das(ostream &out, DAS &das, bool with_mime_headers) const
+{
+    if (with_mime_headers)
+        set_mime_text(out, dods_das, x_plain, last_modified_time(d_dataset), "2.0");
+
+    das.print(out);
+
+    out << flush;
+}
+
+/** Send the DAP2 DAS response to the given stream. This version of
+ * send_das() uses the DDS object, assuming that it contains attribute
+ * information. If there is a constraint expression associated with this
+ * instance of ResponseBuilder, then it will be applied. This means
+ * that CEs that contain server functions will populate the response cache
+ * even if the server's initial request is for a DAS. This is different
+ * from the older behavior of libdap where CEs were never evaluated for
+ * the DAS response. This does not actually change the resulting DAS,
+ * just the behavior 'under the covers'.
+ *
+ * @param out Send the response to this ostream
+ * @param dds Use this DDS object
+ * @param eval A Constraint Evaluator to use for any CE bound to this
+ * ResponseBuilder instance
+ * @param constrained Should the result be constrained
+ * @param with_mime_headers Should MIME headers be sent to out?
+ */
+void ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool constrained, bool with_mime_headers)
+{
+    // Set up the alarm.
+    establish_timeout(out);
+    dds.set_timeout(d_timeout);
+
+    if (!constrained) {
+        if (with_mime_headers)
+            set_mime_text(out, dods_das, x_plain, last_modified_time(d_dataset), "2.0");
+
+        dds.print_das(out);
+        out << flush;
+
+        return;
+    }
+
+    split_ce(eval);
+
+    // If there are functions, parse them and eval.
+    // Use that DDS and parse the non-function ce
+    // Serialize using the second ce and the second dds
+    if (!d_btp_func_ce.empty()) {
+        DDS *fdds = 0;
+        string cache_token = "";
+
+        if (responseCache()) {
+            DBG(cerr << "Using the cache for the server function CE" << endl);
+            fdds = responseCache()->read_cached_dataset(dds, d_btp_func_ce, this, &eval, cache_token);
+        }
+        else {
+            DBG(cerr << "Cache not found; (re)calculating" << endl);
+            eval.parse_constraint(d_btp_func_ce, dds);
+            fdds = eval.eval_function_clauses(dds);
+        }
+
+        if (with_mime_headers)
+            set_mime_text(out, dods_das, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+
+        fdds->print_das(out);
+
+        if (responseCache())
+        	responseCache()->unlock_and_close(cache_token);
+
+        delete fdds;
+    }
+    else {
+        DBG(cerr << "Simple constraint" << endl);
+
+        eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+
+        if (with_mime_headers)
+            set_mime_text(out, dods_das, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+
+        dds.print_das(out);
+    }
+
+    out << flush;
+}
+
+/** This function formats and prints an ASCII representation of a
+ DDS on stdout. Either an entire DDS or a constrained DDS may be sent.
+ This function looks in the local cache and uses a DDS object there
+ if it's valid. Otherwise, if the request CE contains server functions
+ that build data for the response, the resulting DDS will be cached.
+
+ @brief Transmit a DDS.
+ @param out The output stream to which the DAS is to be sent.
+ @param dds The DDS to send back to a client.
+ @param eval A reference to the ConstraintEvaluator to use.
+ @param constrained If this argument is true, evaluate the
+ current constraint expression and send the `constrained DDS'
+ back to the client.
+ @param constrained If true, apply the constraint bound to this instance
+ of ResponseBuilder
+ @param with_mime_headers If true (default) send MIME headers.
+ @return void
+ @see DDS */
+void ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool constrained,
+        bool with_mime_headers)
+{
+    if (!constrained) {
+        if (with_mime_headers)
+            set_mime_text(out, dods_dds, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+
+        dds.print(out);
+        out << flush;
+        return;
+    }
+
+    // Set up the alarm.
+    establish_timeout(out);
+    dds.set_timeout(d_timeout);
+
+    // Split constraint into two halves
+    split_ce(eval);
+
+    // If there are functions, parse them and eval.
+    // Use that DDS and parse the non-function ce
+    // Serialize using the second ce and the second dds
+    if (!d_btp_func_ce.empty()) {
+        string cache_token = "";
+        DDS *fdds = 0;
+
+        if (responseCache()) {
+            DBG(cerr << "Using the cache for the server function CE" << endl);
+            fdds = responseCache()->read_cached_dataset(dds, d_btp_func_ce, this, &eval, cache_token);
+        }
+        else {
+            DBG(cerr << "Cache not found; (re)calculating" << endl);
+            eval.parse_constraint(d_btp_func_ce, dds);
+            fdds = eval.eval_function_clauses(dds);
+        }
+
+        // Server functions might mark variables to use their read()
+        // methods. Clear that so the CE in d_ce will control what is
+        // sent. If that is empty (there was only a function call) all
+        // of the variables in the intermediate DDS (i.e., the function
+        // result) will be sent.
+        fdds->mark_all(false);
+
+        eval.parse_constraint(d_ce, *fdds);
+
+        if (with_mime_headers)
+            set_mime_text(out, dods_dds, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+
+        fdds->print_constrained(out);
+
+        if (responseCache())
+        	responseCache()->unlock_and_close(cache_token);
+
+        delete fdds;
+    }
+    else {
+        DBG(cerr << "Simple constraint" << endl);
+
+        eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+
+        if (with_mime_headers)
+            set_mime_text(out, dods_dds, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+
+        dds.print_constrained(out);
+    }
+
+    out << flush;
+}
+#endif
 
 /**
  * Build/return the BLOB part of the DAP2 data response.
  */
-void ResponseBuilder::dataset_constraint(ostream &out, DDS &dds, ConstraintEvaluator & eval, bool ce_eval)
+void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEvaluator & eval, bool ce_eval)
 {
-	// send constrained DDS
-	DBG(cerr << "Inside dataset_constraint" << endl);
+    DBG(cerr << "Inside dataset_constraint" << endl);
 
-	dds.print_constrained(out);
-	out << "Data:\n";
-	out << flush;
+    dds.print_constrained(out);
+    out << "Data:\n";
+    out << flush;
 
-	XDRStreamMarshaller m(out);
+    XDRStreamMarshaller m(out);
 
-	try {
-		// Send all variables in the current projection (send_p())
-		for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++) {
-			if ((*i)->send_p()) {
-				(*i)->serialize(eval, dds, m, ce_eval);
-			}
-		}
-	}
-	catch (Error & e) {
-		throw;
-	}
+    try {
+        // Send all variables in the current projection (send_p())
+        for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
+            if ((*i)->send_p()) {
+                (*i)->serialize(eval, dds, m, ce_eval);
+            }
+    }
+    catch (Error & e) {
+        throw;
+    }
 }
 
 /** Send the data in the DDS object back to the client program. The data is
@@ -184,6 +469,51 @@ void ResponseBuilder::dataset_constraint(ostream &out, DDS &dds, ConstraintEvalu
  @return void */
 void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers)
 {
+    // Split constraint into two halves
+    split_ce(eval);
+
+    // If there are functions, parse them and eval.
+    // Use that DDS and parse the non-function ce
+    // Serialize using the second ce and the second dds
+    if (!d_btp_func_ce.empty()) {
+        DBG(cerr << "Found function(s) in CE: " << d_btp_func_ce << endl);
+        string cache_token = "";
+        DDS *fdds = 0;
+
+        // The BES code caches the function result
+            eval.parse_constraint(d_btp_func_ce, dds);
+            fdds = eval.eval_function_clauses(dds);
+
+        DBG(fdds->print_constrained(cerr));
+
+        // Server functions might mark variables to use their read()
+        // methods. Clear that so the CE in d_ce will control what is
+        // sent. If that is empty (there was only a function call) all
+        // of the variables in the intermediate DDS (i.e., the function
+        // result) will be sent.
+        fdds->mark_all(false);
+
+        eval.parse_constraint(d_ce, *fdds);
+
+        fdds->tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
+
+        if (fdds->get_response_limit() != 0 && fdds->get_request_size(true) > fdds->get_response_limit()) {
+            string msg = "The Request for " + long_to_string(dds.get_request_size(true) / 1024)
+                    + "KB is too large; requests for this user are limited to "
+                    + long_to_string(dds.get_response_limit() / 1024) + "KB.";
+            throw Error(msg);
+        }
+
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+
+        DBG(cerr << "About to call dataset_constraint" << endl);
+        dataset_constraint(data_stream, *fdds, eval, false);
+
+        delete fdds;
+    }
+    else {
+
 	DBG(cerr << "Simple constraint" << endl);
 
 	eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
@@ -201,239 +531,7 @@ void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvalua
 		set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
 	dataset_constraint(data_stream, dds, eval);
-	data_stream << flush;
-}
-
-//// DAP4 methods follow
-
-/** Use values of this instance to establish a timeout alarm for the server.
- If the timeout value is zero, do nothing.
-*/
-void ResponseBuilder::establish_timeout(ostream &stream) const
-{
-    if (d_timeout > 0) {
-        SignalHandler *sh = SignalHandler::instance();
-        EventHandler *old_eh = sh->register_handler(SIGALRM, new AlarmHandler(stream));
-        delete old_eh;
-        alarm(d_timeout);
     }
-}
 
-void ResponseBuilder::remove_timeout() const
-{
-	alarm(0);
-}
-
-/**
- * Write the on-the-wire DMR response.
- *
- * @note There is no timeout set on this reponse.
- *
- * @param out Write to this stream object
- * @param dmr This is the DMR to write
- * @param eval Use this ConstraintEvaluator
- * @param with_mime_headers If true, include the MIME headers in the response
- */
-void ResponseBuilder::send_dmr(ostream &out, DMR &dmr, bool with_mime_headers)
-{
-#if 0
-	// TODO Add CE Parser; and see below
-	if (!d_ce.empty()) eval.parse_constraint(d_ce, dmr); // Throws Error if the ce doesn't parse.
-#endif
-
-	// If the CE is not empty, parse it. The projections, etc., are set as a side effect.
-	// If the parser returns false, the expression did not parse. The parser may also
-	// throw Error
-	if (!d_ce.empty()) {
-		D4CEDriver parser(&dmr);
-		bool parse_ok = parser.parse(d_ce);
-		if (!parse_ok)
-			throw Error("Constraint Expression failed to parse.");
-	}
-
-	if (with_mime_headers) set_mime_text(out, dap4_dmr, x_plain, last_modified_time(d_dataset), dmr.dap_version());
-
-	XMLWriter xml;
-	dmr.print_dap4(xml, !d_ce.empty() /* true == constrained */);
-	out << xml.get_doc() << flush;
-}
-
-#if 0
-/**
- *
- * @param out
- * @param dmr
- * @param eval
- * @param start
- * @param boundary
- * @param filter true if there are filters to apply to variables
- */
-void ResponseBuilder::dataset_constraint_dmr(ostream &out, DMR &dmr, bool filter)
-{
-    // Write the DMR
-    XMLWriter xml;
-    dmr.print_dap4(xml, filter);
-
-#if BYTE_ORDER_PREFIX
-    // the byte order info precedes the start of chunking
-    char byte_order = is_host_big_endian() ? big_endian : little_endian; // is_host_big_endian is in util.cc
-    out << byte_order << flush;
-#endif
-    // now make the chunked output stream; set the size to be at least chunk_size
-    // but make sure that the whole of the xml plus the CRLF can fit in the first
-    // chunk. (+2 for the CRLF bytes).
-    chunked_ostream cos(out, max((unsigned int)CHUNK_SIZE, xml.get_doc_size()+2));
-
-    // using flush means that the DMR and CRLF are in the first chunk.
-    cos << xml.get_doc() << CRLF << flush;
-
-    // Write the data, chunked with checksums
-    D4StreamMarshaller m(cos);
-    dmr.root()->serialize(m, dmr, eval, filter);
-}
-#endif
-
-void ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_headers, bool ce_parse_debug)
-{
-	try {
-		// Set up the alarm.
-		establish_timeout(out);
-
-#if 0
-		bool filter = eval.parse_constraint(d_ce, dmr); // Throws Error if the ce doesn't parse.
-#endif
-		// If the CE is not empty, parse it. The projections, etc., are set as a side effect.
-		// If the parser returns false, the expression did not parse. The parser may also
-		// throw Error
-		if (!d_ce.empty()) {
-			D4CEDriver parser(&dmr);
-			if (ce_parse_debug)
-			    parser.set_trace_parsing(true);
-			bool parse_ok = parser.parse(d_ce);
-			if (!parse_ok)
-				throw Error("Constraint Expression failed to parse.");
-			else if (ce_parse_debug)
-			    cerr << "CE Parse OK" << endl;
-		}
-		// with an empty CE, send everything. Even though print_dap4() and serialize()
-		// don't need this, other code may depend on send_p being set. This may change
-		// if DAP4 has a separate function evaluation phase. jhrg 11/25/13
-		else {
-			dmr.root()->set_send_p(true);
-		}
-
-		if (dmr.response_limit() != 0 && dmr.request_size(true) > dmr.response_limit()) {
-			string msg = "The Request for " + long_to_string(dmr.request_size(true) / 1024)
-					+ "MB is too large; requests for this user are limited to "
-					+ long_to_string(dmr.response_limit() / 1024) + "MB.";
-			throw Error(msg);
-		}
-
-		if (with_mime_headers)
-			set_mime_binary(out, dap4_data, x_plain, last_modified_time(d_dataset), dmr.dap_version());
-
-	    // Write the DMR
-	    XMLWriter xml;
-	    dmr.print_dap4(xml, !d_ce.empty());
-
-	#if BYTE_ORDER_PREFIX
-	    // the byte order info precedes the start of chunking
-	    char byte_order = is_host_big_endian() ? big_endian : little_endian; // is_host_big_endian is in util.cc
-	    out << byte_order << flush;
-	#endif
-	    // now make the chunked output stream; set the size to be at least chunk_size
-	    // but make sure that the whole of the xml plus the CRLF can fit in the first
-	    // chunk. (+2 for the CRLF bytes).
-	    chunked_ostream cos(out, max((unsigned int)CHUNK_SIZE, xml.get_doc_size()+2));
-
-	    // using flush means that the DMR and CRLF are in the first chunk.
-	    cos << xml.get_doc() << CRLF << flush;
-
-	    // Write the data, chunked with checksums
-	    D4StreamMarshaller m(cos);
-	    dmr.root()->serialize(m, dmr, !d_ce.empty());
-
-		out << flush;
-
-		remove_timeout();
-	}
-	catch (...) {
-		remove_timeout();
-		throw;
-	}
-}
-
-// Unused
-
-/**
- *
- * @param out
- * @param dmr
- * @param eval
- * @param start
- * @param boundary
- * @param filter true if there are filters to apply to variables
- */
-void ResponseBuilder::dataset_constraint_dmr_multipart(ostream &out, DMR &dmr, ConstraintEvaluator &,
-        const string &start, const string &boundary, bool filter)
-{
-    // Write the MPM headers for the DDX (text/xml) part of the response
-    libdap::set_mime_ddx_boundary(out, boundary, start, dods_ddx, x_plain);
-
-    // Write the DMR
-    XMLWriter xml;
-    dmr.print_dap4(xml, filter);
-    out << xml.get_doc() << flush;
-
-    // Make cid
-    uuid_t uu;
-    uuid_generate(uu);
-    char uuid[37];
-    uuid_unparse(uu, &uuid[0]);
-    char domain[256];
-    if (getdomainname(domain, 255) != 0 || strlen(domain) == 0)
-        strncpy(domain, "opendap.org", 255);
-
-    string cid = string(&uuid[0]) + "@" + string(&domain[0]);
-
-    // write the data part mime headers here
-    set_mime_data_boundary(out, boundary, cid, dap4_data, x_plain);
-
-    D4StreamMarshaller m(out);
-
-    dmr.root()->serialize(m, dmr, /*eval,*/ filter);
-}
-
-void ResponseBuilder::send_data_dmr_multipart(ostream &out, DMR &dmr, ConstraintEvaluator &eval,
-		const string &start, const string &boundary, bool with_mime_headers)
-{
-	// Set up the alarm.
-	establish_timeout(out);
-
-	try {
-#if 0
-		bool filter = eval.parse_constraint(d_ce, dmr); // Throws Error if the ce doesn't parse.
-#endif
-		if (dmr.response_limit() != 0 && dmr.request_size(true) > dmr.response_limit()) {
-			string msg = "The Request for " + long_to_string(dmr.request_size(true) / 1024)
-					+ "MB is too large; requests for this user are limited to "
-					+ long_to_string(dmr.response_limit() / 1024) + "MB.";
-			throw Error(msg);
-		}
-
-		if (with_mime_headers)
-			set_mime_multipart(out, boundary, start, dods_data_ddx, x_plain, last_modified_time(d_dataset));
-
-		dataset_constraint_dmr_multipart(out, dmr, eval, start, boundary, true /*filter*/);
-
-		if (with_mime_headers) out << CRLF << "--" << boundary << "--" << CRLF;
-
-		out << flush;
-
-		remove_timeout();
-	}
-	catch (...) {
-		remove_timeout();
-		throw;
-	}
+	data_stream << flush;
 }

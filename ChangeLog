@@ -1,3 +1,198 @@
+2013-10-21  Hyo-Kyung Lee  <hyoklee@hdfgroup.org>
+
+	* escaping.cc (escattr): fixed the double escaping problem by changing
+	the order of the first two while() loops.
+
+2013-10-18  James Gallagher <jgallagher@opendap.org>
+
+	svn:ignore
+
+2013-10-17  James Gallagher <jgallagher@opendap.org>
+
+	Manually patched changes to Sequence::read_row and
+	TestSequence::read() from the DAP4 development branch so they work
+	with the newly modified handlers (the DAP4 branch uses _trunk_ copies
+	of the handlers). We will have to document this change before
+	releasing the code!
+
+	M    tests/TestSequence.cc
+	M    Sequence.cc
+
+2013-10-17  James Gallagher <jgallagher@opendap.org>
+
+	Added to svn:ignore
+
+2013-10-15  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+	A    gl/glthread
+	A    gl/glthread/threadlib.c
+	A    gl/glthread/lock.c
+	A    gl/glthread/lock.h
+
+2013-10-15  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+	AM   config.rpath
+
+2013-10-15  James Gallagher <jgallagher@opendap.org>
+
+	Added to gl
+
+	A    gl/m4/lib-link.m4
+	A    gl/m4/lock.m4
+	A    gl/m4/lib-prefix.m4
+	A    gl/m4/lib-ld.m4
+	A    gl/m4/eealloc.m4
+	A    gl/m4/extern-inline.m4
+	A    gl/m4/threadlib.m4
+	A    gl/wctype-h.c
+	A    gl/unistd.c
+
+2013-10-15  James Gallagher <jgallagher@opendap.org>
+
+	Updated gnulib.
+
+	M    XMLWriter.cc
+	M    conf/snippet/c++defs.h
+	M    conf/snippet/warn-on-use.h
+	M    conf/snippet/arg-nonnull.h
+	M    Byte.h
+	M    XDRUtils.cc
+	M    ServerFunction.cc
+	M    Url.cc
+	M    XDRFileUnMarshaller.cc
+	M    gl/m4/fcntl-o.m4
+	M    gl/m4/configmake.m4
+	M    gl/m4/localcharset.m4
+	M    gl/m4/locale_h.m4
+	M    gl/m4/sys_types_h.m4
+	M    gl/m4/mbrtowc.m4
+	M    gl/m4/btowc.m4
+	M    gl/m4/longlong.m4
+	M    gl/m4/00gnulib.m4
+	M    gl/m4/ssize_t.m4
+	M    gl/m4/glibc21.m4
+	M    gl/m4/localeconv.m4
+	M    gl/m4/codeset.m4
+	M    gl/m4/alloca.m4
+	M    gl/m4/off_t.m4
+	M    gl/m4/locale-fr.m4
+	M    gl/m4/langinfo_h.m4
+	M    gl/m4/wint_t.m4
+	M    gl/m4/mbsinit.m4
+	M    gl/m4/stdint.m4
+	M    gl/m4/gnulib-common.m4
+	M    gl/m4/stdbool.m4
+	M    gl/m4/malloc.m4
+	M    gl/m4/regex.m4
+	M    gl/m4/warn-on-use.m4
+	M    gl/m4/wchar_h.m4
+	M    gl/m4/gnulib-comp.m4
+	M    gl/m4/unistd_h.m4
+	M    gl/m4/wcrtomb.m4
+	M    gl/m4/locale-zh.m4
+	M    gl/m4/stddef_h.m4
+	M    gl/m4/gnulib-cache.m4
+	M    gl/m4/include_next.m4
+	M    gl/m4/mbstate_t.m4
+	M    gl/m4/wctype_h.m4
+	M    gl/m4/nl_langinfo.m4
+	M    gl/m4/locale-ja.m4
+	M    gl/m4/wchar_t.m4
+	M    gl/m4/multiarch.m4
+	M    gl/m4/stdlib_h.m4
+	M    gl/m4/mbtowc.m4
+	M    gl/m4/gnulib-tool.m4
+	M    gl/m4/byteswap.m4
+	M    gl/m4/extensions.m4
+	M    gl/localcharset.c
+	M    gl/mbsinit.c
+	M    gl/regex_internal.c
+	M    gl/malloc.c
+	M    gl/byteswap.in.h
+	M    gl/localcharset.h
+	M    gl/locale.in.h
+	M    gl/regex_internal.h
+	M    gl/sys_types.in.h
+	M    gl/wcrtomb.c
+	M    gl/btowc.c
+	M    gl/regexec.c
+	M    gl/ref-del.sin
+	M    gl/mbtowc.c
+	M    gl/regcomp.c
+	M    gl/mbtowc-impl.h
+	M    gl/streq.h
+	M    gl/alloca.in.h
+	M    gl/langinfo.in.h
+	M    gl/ref-add.sin
+	M    gl/verify.h
+	M    gl/regex.c
+	M    gl/config.charset
+	M    gl/mbrtowc.c
+	M    gl/wchar.in.h
+	M    gl/regex.h
+	M    gl/stdint.in.h
+	M    gl/stdbool.in.h
+	M    gl/unistd.in.h
+	M    gl/stddef.in.h
+	M    gl/localeconv.c
+	M    gl/wctype.in.h
+	M    gl/nl_langinfo.c
+	M    gl/Makefile.am
+	M    gl/gettext.h
+	M    gl/stdlib.in.h
+	M    BaseTypeFactory.cc
+	M    XDRStreamMarshaller.cc
+	M    escaping.cc
+	M    DapIndent.cc
+	M    XDRFileMarshaller.cc
+
+2013-10-01  James Gallagher <jgallagher@opendap.org>
+
+	Updated the FSF address in the copyright headers
+
+2013-09-30  James Gallagher <jgallagher@opendap.org>
+
+	This checkin contains a fix for the conflicting definitions of
+	width() in BaseType, Vector and Array, where Array provided a
+	version/definition that clashes with the one in BaseType. BaseType
+	defined width() and Array defined width(bool constrained = true),
+	which shadowed the former. I changed BaseType width so that its
+	signature is width(bool constrained = false) and made that the
+	only version of the method. There are some changes to uses of
+	width() in libdap and the BES, but not in the handlers.
+
+2013-09-27  James Gallagher <jgallagher@opendap.org>
+
+	misc changes; a minor fix for Array; a fix for the DDX parser; A
+	minor change in the scanners for the Error, DAS, DDS and CE
+	parsers (added %option noinput to suppress a warning); removed
+	-fno-defer-pop from the Makefile.ams.
+
+2013-09-17  James Gallagher <jgallagher@opendap.org>
+
+	I changed the character used for the Type special form (from # to
+	$, because # is a URL delim. and tomcat was filtering it).
+
+2013-08-28  James Gallagher <jgallagher@opendap.org>
+
+	Build/Audit fixes.
+
+	M    libdap/XDRFileUnMarshaller.cc
+	M    libdap/XDRFileUnMarshaller.h
+	M    bes/dispatch/unit-tests/keysT.cc
+	M    bes/functions/Makefile.am
+
+2013-08-27  James Gallagher <jgallagher@opendap.org>
+
+	Backed out an errant call to fclose()
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2013-08-28  James Gallagher <jgallagher@opendap.org>
 
 	Build/Audit fixes.

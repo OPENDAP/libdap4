@@ -1,3 +1,10 @@
+News for version 3.12.1
+
+Fixed the behavior of Sequence::read_row() so that the documented
+semantics of read() are used. This will require changes in some of the
+handlers but does not change the libray's ABI. Handler's that don't
+need the new/corrected behavior can use version 3.12.0.
+
 News for version 3.12.0
 
 Moved server functions out of libdap; they are now stored in a BES module.

@@ -55,6 +55,7 @@
 #include "DDS.h"
 #include "DataDDS.h"
 #include "ConstraintEvaluator.h"
+#include "ServerFunctionsList.h"
 #include "XDRStreamUnMarshaller.h"
 #include "XDRStreamMarshaller.h"
 #include "ResponseBuilder.h"
@@ -66,13 +67,13 @@
 #include "TestCommon.h"
 #include "TestTypeFactory.h"
 
+#include "TestFunction.h"
+
 #include "parser.h"
 #include "expr.h"
 #include "ce_expr.tab.hh"
 #include "util.h"
-#if 0
-#include "fdiostream.h"
-#endif
+
 #include "debug.h"
 
 using namespace std;
@@ -162,7 +163,10 @@ int main(int argc, char *argv[])
     string constraint = "";
     TestTypeFactory ttf;
     DDS table(&ttf);
-    ConstraintEvaluator eval;
+
+    // Load our one server function...
+    ServerFunction *scale = new TestFunction;
+    ServerFunctionsList::TheList()->add_function(scale);
 
     // process options
 
@@ -241,6 +245,8 @@ int main(int argc, char *argv[])
         }
 
         if (parser_test) {
+            ConstraintEvaluator eval;
+
             test_parser(eval, table, dds_file_name, constraint);
         }
 
@@ -249,12 +255,10 @@ int main(int argc, char *argv[])
         }
 
         if (whole_enchalada) {
-            constrained_trans(dds_file_name, constraint_expr, constraint,
-                              series_values);
+            constrained_trans(dds_file_name, constraint_expr, constraint, series_values);
         }
         if (whole_intern_enchalada) {
-            intern_data_test(dds_file_name, constraint_expr, constraint,
-                             series_values);
+            intern_data_test(dds_file_name, constraint_expr, constraint, series_values);
         }
     }
     catch(Error & e) {
@@ -483,8 +487,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
         char c[256];
         cin.getline(c, 256);
         if (!cin) {
-            throw InternalErr(__FILE__, __LINE__,
-                              "Could not read the constraint expression\n");
+            throw InternalErr(__FILE__, __LINE__, "Could not read the constraint expression\n");
         }
         ce = c;
     }

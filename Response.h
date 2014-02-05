@@ -86,12 +86,10 @@ public:
         @param s Read data from this stream.
         @param status The HTTP response status code.*/
     Response(FILE *s, int status = 0) : d_stream(s), d_cpp_stream(0), d_type(unknown_type),
-            d_version("dods/0.0"), d_protocol("2.0"), d_status(status)
-    { }
+            d_version("dods/0.0"), d_protocol("2.0"), d_status(status) { }
 
     Response(std::fstream *s, int status = 0) : d_stream(0), d_cpp_stream(s), d_type(unknown_type),
-            d_version("dods/0.0"), d_protocol("2.0"), d_status(status)
-    { }
+            d_version("dods/0.0"), d_protocol("2.0"), d_status(status) { }
 
     /** Close the stream. */
     virtual ~Response()

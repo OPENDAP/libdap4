@@ -36,12 +36,10 @@
 
 #include "ServerFunction.h"
 
-
 namespace libdap {
+
 class ServerFunctionsListUnitTest;
 class ConstraintEvaluator;
-
-//#include "BESObj.h"
 
 class ServerFunctionsList {
 private:
@@ -61,7 +59,6 @@ protected:
 public:
     static ServerFunctionsList * TheList();
 
-
     virtual void add_function(libdap::ServerFunction *func);
 
     virtual bool find_function(const std::string &name, libdap::bool_func *f) const;
@@ -75,7 +72,6 @@ public:
     ServerFunction *getFunction(std::multimap<string,libdap::ServerFunction *>::iterator it);
 
     virtual void getFunctionNames(vector<string> *names);
-
 };
 
 }

@@ -25,58 +25,27 @@
 #ifndef constraint_evaluator_h
 #define constraint_evaluator_h
 
-#include <list>
+#include <vector>
 
-#ifndef _dds_h
-#include "DDS.h"
-#endif
-
-#ifndef _datadds_h
-#include "DataDDS.h"
-#endif
-
-#ifndef _clause_h
-#include "Clause.h"
-#endif
+#include "expr.h"
+#include "RValue.h"
 
 namespace libdap
 {
 
+class DDS;
+class DataDDS;
+struct Clause;
 class ServerFunctionsList;
 
 /** @brief Evaluate a constraint expression */
 class ConstraintEvaluator
 {
 private:
-#if 0
-    // This struct is used to hold all the known `user defined' functions
-    // (including those that are `built-in').
-    struct function
-    {
-        string name;
-        bool_func b_func;
-        btp_func bt_func;
-        proj_func p_func;
-
-        function(const string &n, const bool_func f)
-                : name(n), b_func(f), bt_func(0), p_func(0)
-        {}
-        function(const string &n, const btp_func f)
-                : name(n), bt_func(f), p_func(0)
-        {}
-        function(const string &n, const proj_func f)
-                : name(n), bt_func(0), p_func(f)
-        {}
-        function(): name(""), bt_func(0), p_func(0)
-        {}
-    };
-#endif
     vector<Clause *> expr;      // List of CE Clauses
 
     vector<BaseType *> constants;// List of temporary objects
-#if 0
-    list<function> functions; // Known external functions
-#endif
+
     ServerFunctionsList *d_functions_list;  // Know external functions from
                                             // modules
 
@@ -98,19 +67,10 @@ public:
 
     typedef std::vector<BaseType *>::const_iterator Constants_citer ;
     typedef std::vector<BaseType *>::iterator Constants_iter ;
-#if 0
-    typedef std::list<function>::const_iterator Functions_citer ;
-    typedef std::list<function>::iterator Functions_iter ;
-#endif
 
     ConstraintEvaluator();
 
     virtual ~ConstraintEvaluator();
-#if 0
-    void add_function(const string &name, bool_func f);
-    void add_function(const string &name, btp_func f);
-    void add_function(const string &name, proj_func f);
-#endif
     bool find_function(const string &name, bool_func *f) const;
     bool find_function(const string &name, btp_func *f) const;
     bool find_function(const string &name, proj_func *f) const;

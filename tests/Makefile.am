@@ -55,13 +55,13 @@ TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestGrid.cc TestUInt32.cc TestInt16.cc TestUInt16.cc		 \
 	   TestFloat32.cc TestCommon.cc TestTypeFactory.cc D4TestTypeFactory.cc \
 	   TestD4Group.cc TestInt8.cc TestInt64.cc TestUInt64.cc TestD4Sequence.cc \
-	   TestD4Enum.cc TestD4Opaque.cc
+	   TestD4Enum.cc TestD4Opaque.cc TestFunction.cc
 
 TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 	TestGrid.h TestInt16.h TestInt32.h TestSequence.h TestStr.h	      \
 	TestStructure.h TestTypeFactory.h TestUInt16.h TestUInt32.h TestUrl.h \
 	D4TestTypeFactory.h TestD4Group.h TestInt8.h TestInt64.h TestUInt64.h \
-	TestD4Sequence.h TestD4Enum.h TestD4Opaque.h
+	TestD4Sequence.h TestD4Enum.h TestD4Opaque.h TestFunction.h
 
 DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite dmr-testsuite \
 	getdap-testsuite

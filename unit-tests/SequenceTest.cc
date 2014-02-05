@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -41,7 +41,13 @@
 #include "../tests/TestStr.h"
 
 #include "GNURegex.h"
+#include "GetOpt.h"
 #include "debug.h"
+
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
 
 using namespace CppUnit;
 using namespace std;
@@ -58,7 +64,7 @@ static const char *s_as_string = \
           _read_p: 0\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
-          d_parent: 0\n\
+          d_parent: 0x.*\n\
           d_attr: 0x.*\n\
 BaseType \\(0x.*\\):\n\
           _name: i1\n\
@@ -103,13 +109,13 @@ public:
     SequenceTest() {}
     ~SequenceTest() {}
 
-    void setUp() { 
+    void setUp() {
         // Set up a simple sequence. Used to test ctor, assigment, et cetera.
         s = new TestSequence("s");
         s->add_var_nocopy(new TestInt32("i1"));
         s->add_var_nocopy(new TestStr("str1"));
         s->add_var_nocopy(new TestInt32("i2"));
-        s->set_series_values(true);        
+        s->set_series_values(true);
 
         // Set ss, a two level sequence
         ss = new TestSequence("ss");
@@ -142,9 +148,9 @@ public:
         dds->add_var_nocopy(s);
         dds->add_var_nocopy(ss);
         dds->add_var_nocopy(sss);
-    } 
+    }
 
-    void tearDown() { 
+    void tearDown() {
         delete dds; dds = 0;
     }
 
@@ -172,6 +178,7 @@ public:
 
     CPPUNIT_TEST_SUITE_END();
 
+#if 0
     // Tests for methods
     void intern_data_test1() {
         ConstraintEvaluator ce;
@@ -387,17 +394,18 @@ public:
         Sequence *inner2 = dynamic_cast<Sequence*>(*++i);
         CPPUNIT_ASSERT(inner2 && inner2->is_leaf_sequence());
     }
-
-    void ctor_test() {
-        DBG(cerr << "s: " << s->toString() << endl);
-        CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
-    }
+#endif
 
     void assignment() {
         Sequence ts2 = *s;
         DBG(cerr << "ts2: " << ts2.toString() << endl);
         CPPUNIT_ASSERT(re_match(s_regex, ts2.toString().c_str()));
     }
+
+    void ctor_test() {
+		DBG(cerr << "s: " << s->toString() << endl);
+		CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
+	}
 
     void copy_ctor() {
         Sequence s2 = *s;
@@ -409,13 +417,35 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SequenceTest);
 
 }
 
-int 
-main( int, char** )
-{
+int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;
-    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run( "", false ) ;
+    GetOpt getopt(argc, argv, "d");
+    char option_char;
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        default:
+            break;
+        }
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("libdap::SequenceTest::") + argv[i++];
+
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }
