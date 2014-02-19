@@ -245,13 +245,13 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	Operators.h XDRUtils.cc XDRFileMarshaller.cc			\
 	XDRStreamMarshaller.cc XDRFileUnMarshaller.cc			\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc \
-	ServerFunctionsList.cc ServerFunction.cc
+	ServerFunctionsList.cc ServerFunction.cc DapXmlNamespaces.cc
 
 DAP4_ONLY_SRC = D4StreamMarshaller.cc D4StreamUnMarshaller.cc Int64.cc \
         UInt64.cc Int8.cc D4ParserSax2.cc D4BaseTypeFactory.cc \
         D4Dimensions.cc  D4EnumDefs.cc D4Group.cc DMR.cc \
         D4Attributes.cc D4Enum.cc chunked_ostream.cc chunked_istream.cc \
-        D4Sequence.cc D4Maps.cc D4Opaque.cc
+        D4Sequence.cc D4Maps.cc D4Opaque.cc D4AsyncUtil.cc
 
 Operators.h: ce_expr.tab.hh
 
@@ -278,13 +278,14 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	Marshaller.h UnMarshaller.h XDRFileUnMarshaller.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h \
-	ServerFunctionsList.h ServerFunction.h media_types.h
+	ServerFunctionsList.h ServerFunction.h media_types.h \
+	DapXmlNamespaces.h 
 
 DAP4_ONLY_HDR = D4StreamMarshaller.h D4StreamUnMarshaller.h Int64.h \
         UInt64.h Int8.h D4ParserSax2.h D4BaseTypeFactory.h \
         D4Maps.h D4Dimensions.h D4EnumDefs.h D4Group.h DMR.h D4Attributes.h \
         D4AttributeType.h D4Enum.h chunked_stream.h chunked_ostream.h \
-        chunked_istream.h D4Sequence.h crc.h D4Opaque.h
+        chunked_istream.h D4Sequence.h crc.h D4Opaque.h D4AsyncUtil.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h

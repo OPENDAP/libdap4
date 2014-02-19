@@ -82,6 +82,16 @@
 
 #include "escaping.h"
 
+/**
+ * ############################################################################################
+ * ############################################################################################
+ * ############################################################################################
+ * DapXmlNamespaces
+ *
+ * FIXME Replace all usages of the following variable with calls to DapXmlNamespaces
+ * TODO  Replace all usages of the following variable with calls to DapXmlNamespaces
+ *
+ */
 const string c_xml_xsi = "http://www.w3.org/2001/XMLSchema-instance";
 const string c_xml_namespace = "http://www.w3.org/XML/1998/namespace";
 
@@ -98,6 +108,15 @@ const string c_dap40_namespace = "http://xml.opendap.org/ns/DAP/4.0#";
 const string c_dap_20_n_sl = c_dap20_namespace + " " + c_default_dap20_schema_location;
 const string c_dap_32_n_sl = c_dap32_namespace + " " + c_default_dap32_schema_location;
 const string c_dap_40_n_sl = c_dap40_namespace + " " + c_default_dap40_schema_location;
+/**
+ *
+ * DapXmlNamespaces
+ * ############################################################################################
+ * ############################################################################################
+ * ############################################################################################
+ */
+
+
 
 using namespace std;
 

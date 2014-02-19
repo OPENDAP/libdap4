@@ -41,6 +41,11 @@ using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
+
 class D4AttributesTest: public TestFixture {
 private:
     XMLWriter *xml;
