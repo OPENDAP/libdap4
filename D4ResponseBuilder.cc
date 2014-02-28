@@ -517,7 +517,7 @@ void D4ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &ev
 
             if (d_cache->get_read_lock(cache_file_name, fd)) {
                 DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-                fdds = get_cached_data_ddx(cache_file_name, &factory);
+                fdds = get_cached_dap2_data_ddx(cache_file_name, &factory);
             }
 
             // If here, the cache_file_name could not be locked for read access;
@@ -547,7 +547,7 @@ void D4ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &ev
             }
             else if (d_cache->get_read_lock(cache_file_name, fd)) {
                 DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-                fdds = get_cached_data_ddx(cache_file_name, &factory);
+                fdds = get_cached_dap2_data_ddx(cache_file_name, &factory);
             }
             else {
                 throw InternalErr(__FILE__, __LINE__, "Cache error during function invocation.");
@@ -658,7 +658,7 @@ void D4ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &ev
 
             if (d_cache->get_read_lock(cache_file_name, fd)) {
                 DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-                fdds = get_cached_data_ddx(cache_file_name, &factory);
+                fdds = get_cached_dap2_data_ddx(cache_file_name, &factory);
             }
 
             // If here, the cache_file_name could not be locked for read access;
@@ -687,7 +687,7 @@ void D4ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &ev
             }
             else if (d_cache->get_read_lock(cache_file_name, fd)) {
                     DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-                    fdds = get_cached_data_ddx(cache_file_name, &factory);
+                    fdds = get_cached_dap2_data_ddx(cache_file_name, &factory);
             }
             else {
                 throw InternalErr(__FILE__, __LINE__, "Cache error during function invocation.");
@@ -908,7 +908,7 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
 
             if (d_cache->get_read_lock(cache_file_name, fd)) {
                 DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-                fdds = get_cached_data_ddx(cache_file_name, &factory);
+                fdds = get_cached_dap2_data_ddx(cache_file_name, &factory);
             }
 
             // If here, the cache_file_name could not be locked for read access;
@@ -939,7 +939,7 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
             }
             else if (d_cache->get_read_lock(cache_file_name, fd)) {
                     DBG(cerr << "function ce - cached hit: " << cache_file_name << endl );
-                    fdds = get_cached_data_ddx(cache_file_name, &factory);
+                    fdds = get_cached_dap2_data_ddx(cache_file_name, &factory);
             }
             else {
                 throw InternalErr(__FILE__, __LINE__, "Cache error during function invocation.");
@@ -957,7 +957,7 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
 
         // Check to see if the cached data ddx exists and is valid
         if (cached_data_ddx_exists(cache_file_name)) {
-            fdds = get_cached_data_ddx(cache_file_name, &factory);
+            fdds = get_cached_dap2_data_ddx(cache_file_name, &factory);
 #if 0
             // Use the cache file and don't eval the function(s)
             DBG(cerr << "Reading cache for " << d_dataset + "?" + d_btp_func_ce << endl);
@@ -1082,14 +1082,14 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
         if (with_mime_headers)
             set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
-        dataset_constraint(data_stream, *fdds, eval, false);
+        serialize_dap2_data_dds(data_stream, *fdds, eval, false);
         delete fdds;
     }
     else {
         if (with_mime_headers)
             set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
-        dataset_constraint(data_stream, dds, eval);
+        serialize_dap2_data_dds(data_stream, dds, eval);
     }
 #endif
 
@@ -1173,7 +1173,7 @@ void D4ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, Constrai
     // Handle *functional* constraint expressions specially
     if (eval.function_clauses()) {
         // We could unique_ptr<DDS> here to avoid memory leaks if
-        // dataset_constraint_ddx() throws an exception.
+        // serialize_dap2_data_ddx() throws an exception.
         DDS *fdds = eval.eval_function_clauses(dds);
         try {
             if (with_mime_headers)
@@ -1254,7 +1254,7 @@ void D4ResponseBuilder::cache_data_ddx(const string &cache_file_name, DDS &dds)
     data_stream << flush;
 #endif
 
-    // dataset_constraint_ddx() needs a ConstraintEvaluator because
+    // serialize_dap2_data_ddx() needs a ConstraintEvaluator because
     // it calls serialize().
     ConstraintEvaluator eval;
 

@@ -177,15 +177,6 @@ read_data_plain(const string &file_name, bool debug)
     // a client would extract information from these headers.
     remove_mime_header(in);
 
-#if BYTE_ORDER_PREFIX
-    // Read the byte-order byte; used later on
-    char byte_order;
-    in >> byte_order;
-    if (debug) cerr << "Byte order: " << ((byte_order) ? "big endian" : "little endian") << endl;
-
-    // get a chunked input stream
-    chunked_istream cis(in, 1024, byte_order);
-#endif
     chunked_istream cis(in, CHUNK_SIZE);
 
     // parse the DMR, stopping when the boundary is found.
@@ -220,11 +211,7 @@ read_data_plain(const string &file_name, bool debug)
     	return 0;
     }
 
-#if BYTE_ORDER_PREFIX
-    D4StreamUnMarshaller um(cis, byte_order);
-#else
     D4StreamUnMarshaller um(cis, cis.twiddle_bytes());
-#endif
 
     dmr->root()->deserialize(um, *dmr);
 

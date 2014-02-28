@@ -1150,7 +1150,7 @@ DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
 	DDS var_dds(&btf, var->name());
 	var->set_send_p(true);
 	var_dds.add_var(var);
-        dataset_constraint_ddx(var_dds, eval, data_stream, boundary, start);
+        serialize_dap2_data_ddx(var_dds, eval, data_stream, boundary, start);
 
         // functional_constraint_ddx(*var, dds, eval, data_stream, boundary);
         delete var;
