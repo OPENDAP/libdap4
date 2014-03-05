@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type='text/xsl' href='http://someServer:8080/opendap/xsl/asyncResponse.xsl'?>
+<dap:AsynchronousResponse status="rejected" xmlns:dap="http://xml.opendap.org/ns/DAP/4.0#">
+    <dap:reason code="time"/>
+    <dap:description>The time to process your request is longer than the time you indicated was acceptable.</dap:description>
+</dap:AsynchronousResponse>

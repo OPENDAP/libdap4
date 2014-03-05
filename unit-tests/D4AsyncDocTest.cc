@@ -80,7 +80,9 @@ public:
     	D4AsyncUtil dau;
         DBG(cerr << endl);
 
-    	dau.writeD4AsyncRequired(*xml, 6001, 600007);
+        string *stylesheet_ref=0;
+
+    	dau.writeD4AsyncRequired(*xml, 6001, 600007, stylesheet_ref);
 
         string doc = xml->get_doc();
         DBG(cerr << "[test_async_required - candidate doc]" << endl << doc << endl);
@@ -88,94 +90,209 @@ public:
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncRequired.xml");
         DBG(cerr << "[test_async_required - baseline doc]" << endl << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
+
         DBG(cerr << endl << " ---- test_async_required - END" << endl);
     }
 
     // An empty D4Dimensions object prints nothing; the XMLWriter class adds
     // a xml doc preface.
-    void test_async_accepted() {
-        DBG(cerr << endl << " ---- test_async_accepted - BEGIN" << endl);
+    void test_async_required_with_stylesheet_ref() {
+        DBG(cerr << endl << " ---- test_async_required - BEGIN" << endl);
 
     	D4AsyncUtil dau;
         DBG(cerr << endl);
 
-    	dau.writeD4AsyncAccepted(*xml, 6003, 600009,"http://test.opendap.org:8080/opendap/storedResults/result_87697163.dap");
+        string stylesheet_ref =  "http://someServer:8080/opendap/xsl/asyncResponse.xsl";
+
+    	dau.writeD4AsyncRequired(*xml, 6001, 600007, &stylesheet_ref);
 
         string doc = xml->get_doc();
-        DBG(cerr << "[test_async_accepted - candidate doc]" << endl << doc << endl);
+        DBG(cerr << "[test_async_required - candidate doc]" << endl << doc << endl);
 
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncAccepted.xml");
-        DBG(cerr << "[test_async_accepted - baseline doc]" << endl << baseline << endl);
+        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncRequired_StyleRef.xml");
+        DBG(cerr << "[test_async_required - baseline doc]" << endl << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
-        DBG(cerr << endl << " ---- test_async_accepted - END" << endl);
-    }
 
-
-    // An empty D4Dimensions object prints nothing; the XMLWriter class adds
-    // a xml doc preface.
-    void test_async_pending() {
-        DBG(cerr << endl << " ---- test_async_pending - BEGIN" << endl);
-
-    	D4AsyncUtil dau;
-        DBG(cerr << endl);
-
-    	dau.writeD4AsyncPending(*xml);
-
-        string doc = xml->get_doc();
-        DBG(cerr << "[test_async_pending - candidate doc]" << endl << doc << endl);
-
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncPending.xml");
-        DBG(cerr << "[test_async_pending - baseline doc]" << endl << baseline << endl);
-        CPPUNIT_ASSERT(doc == baseline);
-        DBG(cerr << endl << " ---- test_async_pending - END" << endl);
+        DBG(cerr << endl << " ---- test_async_required - END" << endl);
     }
 
     // An empty D4Dimensions object prints nothing; the XMLWriter class adds
-    // a xml doc preface.
-    void test_async_ResponseGone() {
-        DBG(cerr << endl << " ---- test_async_ResponseGone - BEGIN" << endl);
+     // a xml doc preface.
+     void test_async_accepted() {
+         DBG(cerr << endl << " ---- test_async_accepted - BEGIN" << endl);
 
-    	D4AsyncUtil dau;
-        DBG(cerr << endl);
+     	D4AsyncUtil dau;
+         DBG(cerr << endl);
 
-    	dau.writeD4AsyncResponseGone(*xml);
+         string stylesheet_ref =  "http://someServer:8080/opendap/xsl/asyncResponse.xsl";
 
-        string doc = xml->get_doc();
-        DBG(cerr << "[test_async_ResponseGone - candidate doc]" << endl << doc << endl);
+     	dau.writeD4AsyncAccepted(*xml, 6003, 600009,"http://test.opendap.org:8080/opendap/storedResults/result_87697163.dap");
 
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncGone.xml");
-        DBG(cerr << "[test_async_ResponseGone - baseline doc]" << endl << baseline << endl);
-        CPPUNIT_ASSERT(doc == baseline);
-        DBG(cerr << endl << " ---- test_async_ResponseGone - END" << endl);
-    }
+         string doc = xml->get_doc();
+         DBG(cerr << "[test_async_accepted - candidate doc]" << endl << doc << endl);
 
-    // An empty D4Dimensions object prints nothing; the XMLWriter class adds
-    // a xml doc preface.
-    void test_async_ResponseRejected() {
+         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncAccepted.xml");
+         DBG(cerr << "[test_async_accepted - baseline doc]" << endl << baseline << endl);
+         CPPUNIT_ASSERT(doc == baseline);
+         DBG(cerr << endl << " ---- test_async_accepted - END" << endl);
+     }
 
-    	D4AsyncUtil dau;
-        DBG(cerr << endl << " ---- test_async_ResponseRejected - BEGIN" << endl);
+     // An empty D4Dimensions object prints nothing; the XMLWriter class adds
+      // a xml doc preface.
+      void test_async_accepted_with_stylesheet_ref() {
+          DBG(cerr << endl << " ---- test_async_accepted - BEGIN" << endl);
 
-    	dau.writeD4AsyncResponseRejected(*xml, TIME,"The time to process your request is longer than the time you indicated was acceptable.");
+      	D4AsyncUtil dau;
+          DBG(cerr << endl);
+          string stylesheet_ref =  "http://someServer:8080/opendap/xsl/asyncResponse.xsl";
 
-        string doc = xml->get_doc();
-        DBG(cerr << "[test_async_ResponseRejected - candidate doc]" << endl << doc << endl);
+      	dau.writeD4AsyncAccepted(*xml, 6003, 600009,"http://test.opendap.org:8080/opendap/storedResults/result_87697163.dap", &stylesheet_ref);
 
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncRejected.xml");
-        DBG(cerr << "[test_async_ResponseRejected - baseline doc]" << endl << baseline << endl);
-        CPPUNIT_ASSERT(doc == baseline);
+          string doc = xml->get_doc();
+          DBG(cerr << "[test_async_accepted - candidate doc]" << endl << doc << endl);
 
-        DBG(cerr << endl << " ---- test_async_ResponseRejected - END" << endl);
-    }
+          string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncAccepted_StyleRef.xml");
+          DBG(cerr << "[test_async_accepted - baseline doc]" << endl << baseline << endl);
+          CPPUNIT_ASSERT(doc == baseline);
+          DBG(cerr << endl << " ---- test_async_accepted - END" << endl);
+      }
+
+
+      // An empty D4Dimensions object prints nothing; the XMLWriter class adds
+      // a xml doc preface.
+      void test_async_pending() {
+          DBG(cerr << endl << " ---- test_async_pending - BEGIN" << endl);
+
+      	D4AsyncUtil dau;
+          DBG(cerr << endl);
+
+          dau.writeD4AsyncPending(*xml);
+
+          string doc = xml->get_doc();
+          DBG(cerr << "[test_async_pending - candidate doc]" << endl << doc << endl);
+
+          string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncPending.xml");
+          DBG(cerr << "[test_async_pending - baseline doc]" << endl << baseline << endl);
+          CPPUNIT_ASSERT(doc == baseline);
+          DBG(cerr << endl << " ---- test_async_pending - END" << endl);
+      }
+
+
+
+      // An empty D4Dimensions object prints nothing; the XMLWriter class adds
+      // a xml doc preface.
+      void test_async_pending_with_stylesheet_ref() {
+          DBG(cerr << endl << " ---- test_async_pending - BEGIN" << endl);
+
+      	D4AsyncUtil dau;
+          DBG(cerr << endl);
+          string stylesheet_ref =  "http://someServer:8080/opendap/xsl/asyncResponse.xsl";
+
+      	dau.writeD4AsyncPending(*xml, &stylesheet_ref);
+
+          string doc = xml->get_doc();
+          DBG(cerr << "[test_async_pending - candidate doc]" << endl << doc << endl);
+
+          string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncPending_StyleRef.xml");
+          DBG(cerr << "[test_async_pending - baseline doc]" << endl << baseline << endl);
+          CPPUNIT_ASSERT(doc == baseline);
+          DBG(cerr << endl << " ---- test_async_pending - END" << endl);
+      }
+
+      // An empty D4Dimensions object prints nothing; the XMLWriter class adds
+      // a xml doc preface.
+      void test_async_ResponseGone() {
+          DBG(cerr << endl << " ---- test_async_ResponseGone - BEGIN" << endl);
+
+      	D4AsyncUtil dau;
+          DBG(cerr << endl);
+
+      	dau.writeD4AsyncResponseGone(*xml);
+
+          string doc = xml->get_doc();
+          DBG(cerr << "[test_async_ResponseGone - candidate doc]" << endl << doc << endl);
+
+          string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncGone.xml");
+          DBG(cerr << "[test_async_ResponseGone - baseline doc]" << endl << baseline << endl);
+          CPPUNIT_ASSERT(doc == baseline);
+          DBG(cerr << endl << " ---- test_async_ResponseGone - END" << endl);
+      }
+
+	// An empty D4Dimensions object prints nothing; the XMLWriter class adds
+	// a xml doc preface.
+	void test_async_ResponseGone_with_stylesheet_ref() {
+		DBG(cerr << endl << " ---- test_async_ResponseGone - BEGIN" << endl);
+
+		D4AsyncUtil dau;
+		DBG(cerr << endl);
+		string stylesheet_ref =  "http://someServer:8080/opendap/xsl/asyncResponse.xsl";
+
+		dau.writeD4AsyncResponseGone(*xml, &stylesheet_ref);
+
+		string doc = xml->get_doc();
+		DBG(cerr << "[test_async_ResponseGone - candidate doc]" << endl << doc << endl);
+
+		string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncGone_StyleRef.xml");
+		DBG(cerr << "[test_async_ResponseGone - baseline doc]" << endl << baseline << endl);
+		CPPUNIT_ASSERT(doc == baseline);
+		DBG(cerr << endl << " ---- test_async_ResponseGone - END" << endl);
+	}
+
+
+	// An empty D4Dimensions object prints nothing; the XMLWriter class adds
+	// a xml doc preface.
+	void test_async_ResponseRejected() {
+
+		D4AsyncUtil dau;
+		DBG(cerr << endl << " ---- test_async_ResponseRejected - BEGIN" << endl);
+
+		dau.writeD4AsyncResponseRejected(*xml, TIME,"The time to process your request is longer than the time you indicated was acceptable.");
+
+		string doc = xml->get_doc();
+		DBG(cerr << "[test_async_ResponseRejected - candidate doc]" << endl << doc << endl);
+
+		string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncRejected.xml");
+		DBG(cerr << "[test_async_ResponseRejected - baseline doc]" << endl << baseline << endl);
+		CPPUNIT_ASSERT(doc == baseline);
+
+		DBG(cerr << endl << " ---- test_async_ResponseRejected - END" << endl);
+	}
+
+
+
+      // An empty D4Dimensions object prints nothing; the XMLWriter class adds
+      // a xml doc preface.
+      void test_async_ResponseRejected_with_stylesheet_ref() {
+
+      	D4AsyncUtil dau;
+          DBG(cerr << endl << " ---- test_async_ResponseRejected - BEGIN" << endl);
+          string stylesheet_ref =  "http://someServer:8080/opendap/xsl/asyncResponse.xsl";
+
+      	dau.writeD4AsyncResponseRejected(*xml, TIME,"The time to process your request is longer than the time you indicated was acceptable.", &stylesheet_ref);
+
+          string doc = xml->get_doc();
+          DBG(cerr << "[test_async_ResponseRejected - candidate doc]" << endl << doc << endl);
+
+          string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncRejected_StyleRef.xml");
+          DBG(cerr << "[test_async_ResponseRejected - baseline doc]" << endl << baseline << endl);
+          CPPUNIT_ASSERT(doc == baseline);
+
+          DBG(cerr << endl << " ---- test_async_ResponseRejected - END" << endl);
+      }
 
 
     CPPUNIT_TEST_SUITE( D4AsyncDocTest );
 
 	CPPUNIT_TEST(test_async_required);
+	CPPUNIT_TEST(test_async_required_with_stylesheet_ref);
 	CPPUNIT_TEST(test_async_accepted);
+	CPPUNIT_TEST(test_async_accepted_with_stylesheet_ref);
 	CPPUNIT_TEST(test_async_pending);
+	CPPUNIT_TEST(test_async_pending_with_stylesheet_ref);
 	CPPUNIT_TEST(test_async_ResponseGone);
+	CPPUNIT_TEST(test_async_ResponseGone_with_stylesheet_ref);
 	CPPUNIT_TEST(test_async_ResponseRejected);
+	CPPUNIT_TEST(test_async_ResponseRejected_with_stylesheet_ref);
 
 	CPPUNIT_TEST_SUITE_END();
 };

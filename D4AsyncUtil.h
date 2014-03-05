@@ -17,10 +17,14 @@ enum RejectReasonCode { TIME, UNAVAILABLE, PRIVILEGES, OTHER };
 
 
 class D4AsyncUtil {
+private:
+	string *d_stylesheet_ref;
 
 public:
 	D4AsyncUtil();
 	virtual ~D4AsyncUtil();
+
+	const static string STYLESHEET_REFERENCE_KEY;
 
 
 	/**
@@ -28,7 +32,7 @@ public:
 	 * Print the AsyncRequired in XML form.
 	 * @param xml Print to this XMLWriter instance
 	 */
-	void writeD4AsyncRequired(XMLWriter &xml, long expectedDelay, long responseLifetime);
+	void writeD4AsyncRequired(XMLWriter &xml, long expectedDelay, long responseLifetime, string *stylesheet_ref=0);
 
 
 	/**
@@ -36,14 +40,14 @@ public:
 	 * Write the AsyncAccepted in XML form.
 	 * @param xml Print to this XMLWriter instance
 	 */
-	void writeD4AsyncAccepted(XMLWriter &xml, long expectedDelay, long responseLifetime, string asyncResourceUrl);
+	void writeD4AsyncAccepted(XMLWriter &xml, long expectedDelay, long responseLifetime, string asyncResourceUrl, string *stylesheet_ref=0);
 
 	/**
 	 * @brief Write the DAP4 AsyncPending response.
 	 * Write the DAP4 AsyncPending in XML form.
 	 * @param xml Print to this XMLWriter instance
 	 */
-	void writeD4AsyncPending(XMLWriter &xml);
+	void writeD4AsyncPending(XMLWriter &xml, string *stylesheet_ref=0);
 
 
 	/**
@@ -51,14 +55,14 @@ public:
 	 * Write the DAP4 AsyncRequired in XML form.
 	 * @param xml Print to this XMLWriter instance
 	 */
-	void writeD4AsyncResponseGone(XMLWriter &xml);
+	void writeD4AsyncResponseGone(XMLWriter &xml, string *stylesheet_ref=0);
 
 	/**
 	 * @brief Write the DAP4 ResponseRejected response.
 	 * Write the DAP4 AsyncRequired in XML form.
 	 * @param xml Print to this XMLWriter instance
 	 */
-	void writeD4AsyncResponseRejected(XMLWriter &xml, RejectReasonCode code, string description);
+	void writeD4AsyncResponseRejected(XMLWriter &xml, RejectReasonCode code, string description, string *stylesheet_ref=0);
 	string getRejectReasonCodeString(RejectReasonCode code);
 
 	/**

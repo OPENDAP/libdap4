@@ -23,12 +23,12 @@
 
 namespace libdap {
 
-D4AsyncUtil::D4AsyncUtil() {
-}
+const string D4AsyncUtil::STYLESHEET_REFERENCE_KEY = "DAP.Async.StyleSheet.Ref";
 
-D4AsyncUtil::~D4AsyncUtil() {
-}
 
+D4AsyncUtil::D4AsyncUtil()  {}
+
+D4AsyncUtil::~D4AsyncUtil() {}
 
 
 
@@ -38,7 +38,7 @@ D4AsyncUtil::~D4AsyncUtil() {
  * Print the AsyncRequired in XML form.
  * @param xml Print to this XMLWriter instance
  */
-void D4AsyncUtil::writeD4AsyncRequired(XMLWriter &xml, long expectedDelay, long responseLifetime) {
+void D4AsyncUtil::writeD4AsyncRequired(XMLWriter &xml, long expectedDelay, long responseLifetime, string *stylesheet_ref) {
 
 	// ------ AsynchronousResponse Element and Attributes - BEGIN
 
@@ -48,7 +48,22 @@ void D4AsyncUtil::writeD4AsyncRequired(XMLWriter &xml, long expectedDelay, long 
 						 const xmlChar * name,
 						 const xmlChar * namespaceURI,
 						 const xmlChar * content)
-    */
+	*/
+
+	if(stylesheet_ref){
+		string href = "href='" + *stylesheet_ref +"'";
+		if(xmlTextWriterStartPI(xml.get_writer(), (const xmlChar*) "xml-stylesheet") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not start XML Processing Instruction.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) "type='text/xsl'") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) " ") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) href.c_str()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterEndPI(xml.get_writer()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not Close XML Processing Instruction.");
+	}
+
 	DapXmlNamspaces dapns;
 	if (xmlTextWriterStartElementNS(xml.get_writer(),
 			(const xmlChar*)"dap",
@@ -94,10 +109,25 @@ void D4AsyncUtil::writeD4AsyncRequired(XMLWriter &xml, long expectedDelay, long 
  * Print the AsyncRequired in XML form.
  * @param xml Print to this XMLWriter instance
  */
-void D4AsyncUtil::writeD4AsyncAccepted(XMLWriter &xml, long expectedDelay, long responseLifetime, string asyncResourceUrl)  {
+void D4AsyncUtil::writeD4AsyncAccepted(XMLWriter &xml, long expectedDelay, long responseLifetime, string asyncResourceUrl, string *stylesheet_ref)  {
 
 	// ------ AsynchronousResponse Element and Attributes - BEGIN
 	DapXmlNamspaces dapns;
+
+	if(stylesheet_ref){
+		string href = "href='" + *stylesheet_ref +"'";
+		if(xmlTextWriterStartPI(xml.get_writer(), (const xmlChar*) "xml-stylesheet") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not start XML Processing Instruction.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) "type='text/xsl'") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) " ") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) href.c_str()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterEndPI(xml.get_writer()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not Close XML Processing Instruction.");
+	}
+
 	if (xmlTextWriterStartElementNS(xml.get_writer(),
 			(const xmlChar*)"dap",
 			(const xmlChar*) "AsynchronousResponse",
@@ -152,10 +182,26 @@ void D4AsyncUtil::writeD4AsyncAccepted(XMLWriter &xml, long expectedDelay, long 
  * Print the AsyncRequired in XML form.
  * @param xml Print to this XMLWriter instance
  */
-void D4AsyncUtil::writeD4AsyncPending(XMLWriter &xml)  {
+void D4AsyncUtil::writeD4AsyncPending(XMLWriter &xml, string *stylesheet_ref)  {
 
 	// ------ AsynchronousResponse Element and Attributes - BEGIN
 	DapXmlNamspaces dapns;
+
+
+	if(stylesheet_ref){
+		string href = "href='" + *stylesheet_ref +"'";
+		if(xmlTextWriterStartPI(xml.get_writer(), (const xmlChar*) "xml-stylesheet") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not start XML Processing Instruction.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) "type='text/xsl'") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) " ") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) href.c_str()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterEndPI(xml.get_writer()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not Close XML Processing Instruction.");
+	}
+
 	if (xmlTextWriterStartElementNS(xml.get_writer(),
 			(const xmlChar*)"dap",
 			(const xmlChar*) "AsynchronousResponse",
@@ -175,10 +221,26 @@ void D4AsyncUtil::writeD4AsyncPending(XMLWriter &xml)  {
  * Print the AsyncRequired in XML form.
  * @param xml Print to this XMLWriter instance
  */
-void D4AsyncUtil::writeD4AsyncResponseGone(XMLWriter &xml)  {
+void D4AsyncUtil::writeD4AsyncResponseGone(XMLWriter &xml, string *stylesheet_ref)  {
 
 	// ------ AsynchronousResponse Element and Attributes - BEGIN
 	DapXmlNamspaces dapns;
+
+
+	if(stylesheet_ref){
+		string href = "href='" + *stylesheet_ref +"'";
+		if(xmlTextWriterStartPI(xml.get_writer(), (const xmlChar*) "xml-stylesheet") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not start XML Processing Instruction.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) "type='text/xsl'") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) " ") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) href.c_str()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterEndPI(xml.get_writer()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not Close XML Processing Instruction.");
+	}
+
 	if (xmlTextWriterStartElementNS(xml.get_writer(),
 			(const xmlChar*)"dap",
 			(const xmlChar*) "AsynchronousResponse",
@@ -198,10 +260,26 @@ void D4AsyncUtil::writeD4AsyncResponseGone(XMLWriter &xml)  {
  * Print the AsyncRequired in XML form.
  * @param xml Print to this XMLWriter instance
  */
-void D4AsyncUtil::writeD4AsyncResponseRejected(XMLWriter &xml, RejectReasonCode code, string description) {
+void D4AsyncUtil::writeD4AsyncResponseRejected(XMLWriter &xml, RejectReasonCode code, string description, string *stylesheet_ref) {
 
 	// ------ AsynchronousResponse Element and Attributes - BEGIN
 	DapXmlNamspaces dapns;
+
+
+	if(stylesheet_ref){
+		string href = "href='" + *stylesheet_ref +"'";
+		if(xmlTextWriterStartPI(xml.get_writer(), (const xmlChar*) "xml-stylesheet") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not start XML Processing Instruction.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) "type='text/xsl'") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) " ") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) href.c_str()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Processing Instruction content.");
+		if(xmlTextWriterEndPI(xml.get_writer()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not Close XML Processing Instruction.");
+	}
+
 	if (xmlTextWriterStartElementNS(xml.get_writer(),
 			(const xmlChar*)"dap",
 			(const xmlChar*) "AsynchronousResponse",
