@@ -29,21 +29,16 @@
 #include <unistd.h>
 
 #include <cstdio>
+
 #include <string>
 #include <iostream>
 #include <algorithm>
 #include <iterator>
 #include <vector>
 
-using std::vector ;
-
-#ifndef response_h
 #include "Response.h"
-#endif
-
-#ifndef _debug_h
+#include "util.h"
 #include "debug.h"
-#endif
 
 namespace libdap
 {
@@ -61,8 +56,8 @@ extern void close_temp(FILE *s, const string &name);
 class HTTPResponse : public Response
 {
 private:
-    vector<string> *d_headers; // Response headers
-    string d_file;  // Temp file that holds response body
+    std::vector<std::string> *d_headers; // Response headers
+    std::string d_file;  // Temp file that holds response body
 
 protected:
     /** @name Suppressed default methods */
@@ -89,7 +84,7 @@ public:
     the instance that contains it is destroyed.
     @param temp_file Name a the temporary file that holds the response
     body; this file is deleted when this instance is deleted. */
-    HTTPResponse(FILE *s, int status, vector<string> *h, const string &temp_file)
+    HTTPResponse(FILE *s, int status, std::vector<std::string> *h, const std::string &temp_file)
             : Response(s, status), d_headers(h), d_file(temp_file)
     {
         DBG(cerr << "Headers: " << endl);
@@ -107,7 +102,7 @@ public:
      * @param h
      * @param temp_file
      */
-    HTTPResponse(std::fstream *s, int status, vector<string> *h, const string &temp_file)
+    HTTPResponse(std::fstream *s, int status, std::vector<std::string> *h, const std::string &temp_file)
             : Response(s, status), d_headers(h), d_file(temp_file)
     {
         DBG(cerr << "Headers: " << endl);
@@ -160,14 +155,14 @@ public:
 
     /** @name Accessors */
     //@{
-    virtual vector<string> *get_headers() const { return d_headers; }
-    virtual string get_file() const { return d_file; }
+    virtual std::vector<std::string> *get_headers() const { return d_headers; }
+    virtual std::string get_file() const { return d_file; }
     //@}
 
     /** @name Mutators */
     //@{
-    virtual void set_headers(vector<string> *h) { d_headers = h; }
-    virtual void set_file(const string &n) { d_file = n; }
+    virtual void set_headers(std::vector<std::string> *h) { d_headers = h; }
+    virtual void set_file(const std::string &n) { d_file = n; }
     //@}
 };
 
