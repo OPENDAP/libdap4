@@ -42,9 +42,9 @@ class ServerFunctionsList;
 class ConstraintEvaluator
 {
 private:
-    vector<Clause *> expr;      // List of CE Clauses
+    std::vector<Clause *> expr;      // List of CE Clauses
 
-    vector<BaseType *> constants;// List of temporary objects
+    std::vector<BaseType *> constants;// List of temporary objects
 
     ServerFunctionsList *d_functions_list;  // Know external functions from
                                             // modules
@@ -52,12 +52,8 @@ private:
     // The default versions of these methods will break this class. Because
     // Clause does not support deep copies, that class will need to be modified
     // before these can be properly implemented. jhrg 4/3/06
-    ConstraintEvaluator(const ConstraintEvaluator &)
-    {}
-    ConstraintEvaluator &operator=(const ConstraintEvaluator &)
-    {
-        throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
-    }
+    ConstraintEvaluator(const ConstraintEvaluator &);
+    ConstraintEvaluator &operator=(const ConstraintEvaluator &);
 
     friend class func_name_is;
 
@@ -71,9 +67,9 @@ public:
     ConstraintEvaluator();
 
     virtual ~ConstraintEvaluator();
-    bool find_function(const string &name, bool_func *f) const;
-    bool find_function(const string &name, btp_func *f) const;
-    bool find_function(const string &name, proj_func *f) const;
+    bool find_function(const std::string &name, bool_func *f) const;
+    bool find_function(const std::string &name, btp_func *f) const;
+    bool find_function(const std::string &name, proj_func *f) const;
 
     void append_clause(int op, rvalue *arg1, rvalue_list *arg2);
     void append_clause(bool_func func, rvalue_list *args);
@@ -81,8 +77,8 @@ public:
 
     bool functional_expression();
     bool boolean_expression();
-    bool eval_selection(DDS &dds, const string &dataset);
-    BaseType *eval_function(DDS &dds, const string &dataset);
+    bool eval_selection(DDS &dds, const std::string &dataset);
+    BaseType *eval_function(DDS &dds, const std::string &dataset);
 
     // New for libdap 3.11. These methods provide a way to evaluate multiple
     // functions in one CE
@@ -94,7 +90,7 @@ public:
     Clause_iter clause_end();
     bool clause_value(Clause_iter &i, DDS &dds);
 
-    void parse_constraint(const string &constraint, DDS &dds);
+    void parse_constraint(const std::string &constraint, DDS &dds);
     void append_constant(BaseType *btp);
 
 };
