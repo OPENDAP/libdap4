@@ -32,6 +32,8 @@
 #ifndef _rvalue_h
 #define _rvalue_h
 
+#include <dods-datatypes.h>
+
 namespace libdap
 {
 
@@ -53,11 +55,11 @@ public:
     typedef std::vector<rvalue *>::const_iterator Args_citer ;
 
     rvalue(BaseType *bt);
-    rvalue(btp_func f, vector<rvalue *> *a);
+    rvalue(btp_func f, std::vector<rvalue *> *a);
     rvalue();
 
     virtual ~rvalue();
-    string value_name();
+    std::string value_name();
 
     BaseType *bvalue(DDS &dds);
 };
