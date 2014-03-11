@@ -23,69 +23,74 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 /*
- * AbstractFunction.h
+ * ServerFunction.h
  *
  *  Created on: Feb 2, 2013
  *      Author: ndp
  */
 
-#ifndef ABSTRACTFUNCTION_H_
-#define ABSTRACTFUNCTION_H_
+#ifndef SERVER_FUNCTION_H_
+#define SERVER_FUNCTION_H_
 
 #include <iostream>
-#include "expr.h"
 
-using std::endl;
-
-#include "BaseType.h"
+#include <expr.h>
+#include <D4Function.h>
 
 namespace libdap {
-
 
 class ServerFunction {
 
 private:
-    string name;
-    string description;
-    string usage;
-    string doc_url; // @TODO 'doc_url' Should be a URL object.
-    string role;    // @TODO 'role' Should be a URI object.
-    string version;
+    std::string name;
+    std::string description;
+    std::string usage;
+    std::string doc_url;
+    std::string role;
+    std::string version;
 
-    libdap::bool_func d_bool_func;
-    libdap::btp_func  d_btp_func;
-    libdap::proj_func d_proj_func;
+    // These are typedefs from DAP2 that are used with its CE parser
+    // and are found in expr.h. jhrg 3/10/14
+    bool_func d_bool_func;
+    btp_func  d_btp_func;
+    proj_func d_proj_func;
+
+    D4Function d_d4_function;
 
 public:
     ServerFunction();
-    ServerFunction(string name, string version, string description, string usage, string doc_url, string role, bool_func f);
-    ServerFunction(string name, string version, string description, string usage, string doc_url, string role, btp_func f);
-    ServerFunction(string name, string version, string description, string usage, string doc_url, string role, proj_func f);
-    virtual ~ServerFunction();
+    ServerFunction(std::string name, std::string version, std::string description, std::string usage,
+    		std::string doc_url, std::string role, bool_func f);
+    ServerFunction(std::string name, std::string version, std::string description, std::string usage,
+    		std::string doc_url, std::string role, btp_func f);
+    ServerFunction(std::string name, std::string version, std::string description, std::string usage,
+    		std::string doc_url, std::string role, proj_func f);
+    ServerFunction(std::string name, std::string version, std::string description, std::string usage,
+    		std::string doc_url, std::string role, D4Function f);
 
+    virtual ~ServerFunction() {	}
 
+	std::string getName() { return name; }
+	void setName(const std::string &n){ name = n; }
 
-	string getName() { return name; }
-	void   setName(const string &n){ name = n; }
+	std::string getUsageString() { return usage; }
+	void setUsageString(const std::string &u){ usage = u; }
 
-	string getUsageString() { return usage; }
-	void   setUsageString(const string &u){ usage = u; }
+	std::string getDocUrl() { return doc_url; }
+	void setDocUrl(const std::string &url){ doc_url = url; }
 
-	string getDocUrl() { return doc_url; }
-	void   setDocUrl(const string &url){ doc_url = url; }
+	std::string getRole() { return role; }
+	void setRole(const std::string &r){ role = r; }
 
-	string getRole() { return role; }
-	void   setRole(const string &r){ role = r; }
+	std::string getDescriptionString(){ return description; }
+	void setDescriptionString(const std::string &desc){ description = desc; }
 
-	string getDescriptionString(){ return description; }
-	void   setDescriptionString(const string &desc){ description = desc; }
-
-	string getVersion(){ return version; }
-	void   setVersion(const string &ver){ version = ver; }
+	std::string getVersion(){ return version; }
+	void setVersion(const std::string &ver){ version = ver; }
 
 	/**
 	 * If you are writing a function that can only operate on a particular kind of data, or one that relies on the presence
-	 * of particular metadata, then you might orride this method in order to stop the server from
+	 * of particular metadata, then you might override this method in order to stop the server from
 	 * advertising the function in conjunction with datasets to which it cannot be applied.
 	 *
 	 * @param dds A DDS object for the dataset about which we will ask the question:
@@ -97,40 +102,54 @@ public:
 	 */
 	virtual bool canOperateOn(DDS &) { return true; }
 
-	void setFunction(bool_func bf){
+	/**
+	 * @see canOperateOn(DDS &)
+	 * @param The Dataset's DMR.
+	 * @return True if the function can work with the dataset, false otherwise.
+	 */
+	virtual bool canOperateOn(DMR &) { return true; }
+
+	void setFunction(bool_func bf) {
 		d_bool_func = bf;
 		d_btp_func  = 0;
 		d_proj_func = 0;
+		d_d4_function = 0;
 	}
 
-	void setFunction(btp_func btp){
+	void setFunction(btp_func btp) {
 		d_bool_func = 0;
 		d_btp_func  = btp;
 		d_proj_func = 0;
+		d_d4_function = 0;
 	}
 
-	void setFunction(proj_func pf){
+	void setFunction(proj_func pf) {
 		d_bool_func = 0;
 		d_btp_func  = 0;
 		d_proj_func = pf;
+		d_d4_function = 0;
 	}
 
-	string getTypeString(){
-		if(d_bool_func)
-			return "boolean";
-		if(d_btp_func)
-			return "basetype";
-		if(d_proj_func)
-			return "projection";
+	void setFunction(D4Function pf) {
+		d_bool_func = 0;
+		d_btp_func  = 0;
+		d_proj_func = 0;
+		d_d4_function = pf;
+	}
+
+	std::string getTypeString() {
+		if (d_bool_func) return "boolean";
+		if (d_btp_func) return "basetype";
+		if (d_proj_func) return "projection";
+		if (d_d4_function) return "D4Function";
 		return "null";
 	}
-
 
 	bool_func get_bool_func(){ return d_bool_func; }
 	btp_func  get_btp_func() { return d_btp_func;  }
 	proj_func get_proj_func(){ return d_proj_func; }
-
+	D4Function get_d4_function() { return d_d4_function; }
 };
 
 } /* namespace libdap */
-#endif /* ABSTRACTFUNCTION_H_ */
+#endif /* SERVER_FUNCTION_H_ */

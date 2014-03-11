@@ -32,9 +32,11 @@
 
 #include <map>
 #include <string>
-#include <expr.h>
 
-#include "ServerFunction.h"
+#include <expr.h>
+#include <D4Function.h>
+
+#include <ServerFunction.h>
 
 namespace libdap {
 
@@ -44,34 +46,37 @@ class ConstraintEvaluator;
 class ServerFunctionsList {
 private:
     static ServerFunctionsList * d_instance;
-    std::multimap<std::string, libdap::ServerFunction *> d_func_list;
+    std::multimap<std::string, ServerFunction *> d_func_list;
 
     static void initialize_instance();
     static void delete_instance();
 
     virtual ~ServerFunctionsList();
 
-    friend class libdap::ServerFunctionsListUnitTest;
+    friend class ServerFunctionsListUnitTest;
 
 protected:
     ServerFunctionsList() {}
 
 public:
+    // Added typedefs to reduce clutter jhrg 3/12/14
+    typedef std::multimap<std::string, ServerFunction *>::iterator SFLIter;
+    typedef std::multimap<std::string, ServerFunction *>::const_iterator SFLCIter;
+
     static ServerFunctionsList * TheList();
 
-    virtual void add_function(libdap::ServerFunction *func);
+    virtual void add_function(ServerFunction *func);
 
-    virtual bool find_function(const std::string &name, libdap::bool_func *f) const;
-    virtual bool find_function(const std::string &name, libdap::btp_func  *f) const;
-    virtual bool find_function(const std::string &name, libdap::proj_func *f) const;
+    virtual bool find_function(const std::string &name, bool_func *f) const;
+    virtual bool find_function(const std::string &name, btp_func  *f) const;
+    virtual bool find_function(const std::string &name, proj_func *f) const;
+    virtual bool find_function(const std::string &name, D4Function *f) const;
 
-    //virtual void dump(ostream &strm) const;
+    SFLIter begin();
+    SFLIter end();
+    ServerFunction *getFunction(SFLIter it);
 
-    std::multimap<string,libdap::ServerFunction *>::iterator begin();
-    std::multimap<string,libdap::ServerFunction *>::iterator end();
-    ServerFunction *getFunction(std::multimap<string,libdap::ServerFunction *>::iterator it);
-
-    virtual void getFunctionNames(vector<string> *names);
+    virtual void getFunctionNames(std::vector<std::string> *names);
 };
 
 }
