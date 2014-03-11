@@ -104,12 +104,8 @@ private:
     rvalue *_arg1;  // only for operator
     rvalue_list *_args;  // vector arg
 
-    Clause(const Clause &)
-    {}
-    Clause &operator=(const Clause &)
-    {
-        throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
-    }
+    Clause(const Clause &);
+    Clause &operator=(const Clause &);
 
 public:
     Clause(const int oper, rvalue *a1, rvalue_list *rv);
