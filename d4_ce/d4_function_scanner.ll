@@ -5,7 +5,7 @@
  This file is part of libdap, A C++ implementation of the OPeNDAP Data
  Access Protocol.
 
- Copyright (c) 2013 OPeNDAP, Inc.
+ Copyright (c) 2014 OPeNDAP, Inc.
  Author: James Gallagher <jgallagher@opendap.org>
 
  This library is free software; you can redistribute it and/or
@@ -30,10 +30,23 @@
 
 #include <string>
 
-#include "D4CEScanner.h"
+#include "D4FunctionScanner.h"
 
 /* typedef to make the returns for the tokens shorter */
-typedef libdap::D4CEParser::token token;
+
+/* NB: It would be best to use the same scanner (and maybe parser) for
+   both the D4 CE and Function parameter, but for the initial version 
+   far less complexity is requires (since the initial version will just
+   support variables, constants, functions and the #array special form.
+   
+   This comment is here because this is the first place where there is 
+   coupling between the CE parser and its scanner. I'm not sure, however,
+   if one sting can be parsed by two parsers if they are using two scanners,
+   so extending the Function parser to allow function args to be any CE 
+   clause may mean some more serious work with the parsers.
+   
+   jhrg 3/10/14 */
+typedef libdap::D4FunctionParser::token token;
 
 /* This was added because of some notes on the net about compiler version
    issues. I don't know if it's needed when using the C++ mode of flex. */
@@ -46,12 +59,12 @@ typedef libdap::D4CEParser::token token;
 %}
 
 %option c++
-%option yyclass="D4CEScanner"
+%option yyclass="D4FunctionScanner"
 
 /* Use this if several scanners are needed. This will cause flex to
    #define yyFlexLexer to be <prefix>FlexLexer (the yyFlexLexer is defined
    in lex.<prefix>.cc. jhrg 8/8/13 */
-%option prefix="d4_ce"
+%option prefix="d4_functions"
 
 /* These two options turn on line counting - useful for error messages - 
    and debugging, respectively. When debugging is on, it's possible to see
@@ -75,9 +88,12 @@ typedef libdap::D4CEParser::token token;
 
 %x quote
 
-/* This pattern just ensures that a word does not start with '#' which
-   is the DAP2 comment character. */
-WORD    [-+a-zA-Z0-9_%*\\~@!][-+a-zA-Z0-9_%*\\#~@!]* 
+/* This pattern is slightly different from the one used by the CE scanner
+   because it allows a WORD to start with a '#' so that the #<type> 
+   array constant syntax can be used in functions. Otherwise, a WORD must
+   be able to contain this hideous mix of characters because a variable 
+   can. jhrg 3/10/14 */
+WORD    [-+a-zA-Z0-9_%*\\~@!#][-+a-zA-Z0-9_%*\\~@!#]* 
 
 %{
 // Code run each time a pattern is matched
@@ -91,28 +107,14 @@ WORD    [-+a-zA-Z0-9_%*\\~@!][-+a-zA-Z0-9_%*\\#~@!]*
 loc->step();
 %}
 
-"["     return token::LBRACKET;
-"]"     return token::RBRACKET;
-":"     return token::COLON;
 ","		return token::COMMA;
 ";"		return token::SEMICOLON;
-"|"     return token::PIPE;
-"{"		return token::LBRACE;
-"}"		return token::RBRACE;
+
+"("     return token::LPAREN;
+")"     return token::RPAREN;
+
 "/"     return token::GROUP_SEP;
 "."     return token::PATH_SEP;
-"="     return token::ASSIGN;
-
-"=="    return token::EQUAL;
-"!="    return token::NOT_EQUAL;
-">"	    return token::GREATER;
-">="    return token::GREATER_EQUAL;
-"<"     return token::LESS;
-"<="    return token::LESS_EQUAL;
-"~="    return token::REGEX_MATCH;
-"<<"    return token::LESS_BBOX;
-">>"    return token::GREATER_BBOX;
-"@="    return token::MASK;
 
 [ \t]+  /* ignore these */
 
