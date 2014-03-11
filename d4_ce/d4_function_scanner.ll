@@ -64,7 +64,7 @@ typedef libdap::D4FunctionParser::token token;
 /* Use this if several scanners are needed. This will cause flex to
    #define yyFlexLexer to be <prefix>FlexLexer (the yyFlexLexer is defined
    in lex.<prefix>.cc. jhrg 8/8/13 */
-%option prefix="d4_functions"
+%option prefix="d4_function"
 
 /* These two options turn on line counting - useful for error messages - 
    and debugging, respectively. When debugging is on, it's possible to see

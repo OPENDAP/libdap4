@@ -33,11 +33,15 @@
 namespace libdap {
 
 class location;
-class DMR;
+
 class BaseType;
 class Array;
+class ServerFunctionsList;
+
+class DMR;
 class D4Dimension;
 class D4RValue;
+class D4RValueList;
 
 /**
  * Driver for the DAP4 Functional expression parser.
@@ -45,11 +49,12 @@ class D4RValue;
 class D4FunctionDriver {
 	bool d_trace_scanning;
 	bool d_trace_parsing;
-	bool d_result;
 	std::string d_expr;
 
 	DMR *d_dmr;
 	ServerFunctionsList *d_sf_list;
+
+	D4RValueList *d_result;
 
 	std::stack<BaseType*> d_basetype_stack;
 
@@ -67,12 +72,12 @@ class D4FunctionDriver {
 
 	D4RValue *build_rvalue(const std::string &id);
 
-	friend class D4CEParser;
+	friend class D4FunctionParser;
 
 public:
-	D4FunctionDriver() : d_trace_scanning(false), d_trace_parsing(false), d_result(false), d_expr(""), d_dmr(0) { }
+	D4FunctionDriver() : d_trace_scanning(false), d_trace_parsing(false), d_expr(""), d_dmr(0), d_sf_list(0), d_result(0) { }
 	D4FunctionDriver(DMR *dmr, ServerFunctionsList *sf_list) : d_trace_scanning(false), d_trace_parsing(false),
-			d_result(false), d_expr(""), d_dmr(dmr), d_sf_list(sf_list) { }
+			d_expr(""), d_dmr(dmr), d_sf_list(sf_list), d_result(0) { }
 
 	virtual ~D4FunctionDriver() { }
 
@@ -85,13 +90,13 @@ public:
 	void set_trace_parsing(bool tp) { d_trace_parsing = tp; }
 
 	bool result() const { return d_result; }
-	void set_result(bool r) { d_result = r; }
+	void set_result(D4RValueList *rv_list) { d_result = rv_list; }
 
 	DMR *dmr() const { return d_dmr; }
 	void set_dmr(DMR *dmr) { d_dmr = dmr; }
 
 	ServerFunctionsList *sf_list() const { return d_sf_list; }
-	void set_sf_list(ServerFunctionsList *sf_list) { d_sf_list = sf_ist; }
+	void set_sf_list(ServerFunctionsList *sf_list) { d_sf_list = sf_list; }
 
 	void error(const libdap::location &l, const std::string &m);
 };

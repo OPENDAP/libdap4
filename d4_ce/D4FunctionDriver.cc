@@ -22,6 +22,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include <cstdlib>
+
 #include <string>
 #include <sstream>
 #include <iterator>
@@ -36,6 +38,7 @@
 
 #include "BaseType.h"
 
+#include "escaping.h"
 #include "debug.h"
 
 namespace libdap {
@@ -45,7 +48,7 @@ bool D4FunctionDriver::parse(const std::string &expr)
 	d_expr = expr;	// set for error messages. See the %initial-action section of .yy
 
 	std::istringstream iss(expr);
-	D4FunctionScanner *scanner = new D4CEScanner(iss);
+	D4FunctionScanner *scanner = new D4FunctionScanner(iss);
 
 	D4FunctionParser *parser = new D4FunctionParser(*scanner, *this /* driver */);
 
@@ -100,7 +103,7 @@ D4FunctionDriver::build_rvalue(const std::string &id)
     	return new D4RValue(ll_val);
 
     errno = 0;
-    double d_val = strtod(id.c_str(), &end_ptr, 0);
+    double d_val = strtod(id.c_str(), &end_ptr);
     if (end_ptr == '\0' && errno == 0)
     	return new D4RValue(d_val);
 

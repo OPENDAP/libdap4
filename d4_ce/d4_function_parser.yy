@@ -27,9 +27,9 @@
 %require "2.5"
 %defines
 
-
 // The d4_function_parser.tab.cc and .hh files define and declare this class
 %define parser_class_name {D4FunctionParser}
+
 // D4FunctionParser is in this namespace
 %define api.namespace {libdap}
 
@@ -47,6 +47,8 @@
 %code requires {
 
 #include "D4FunctionDriver.h"
+#include "D4RValue.h"
+
 namespace libdap {
     class D4FunctionScanner;
 }
@@ -78,9 +80,11 @@ namespace libdap {
    
    #include "BaseType.h"
    #include "DMR.h"
+   #include "D4RValue.h"
+   #include "ServerFunctionsList.h"
 
    /* include for all driver functions */
-   #include "D4FunctionsDriver.h"
+   #include "D4FunctionDriver.h"
 
    /* this is silly, but I can't figure out a way around */
    static int yylex(libdap::D4FunctionParser::semantic_type *yylval,
@@ -90,14 +94,14 @@ namespace libdap {
 
 }
 
-%type <RValueList*> functions "functions"
-%type <RValueList*> args "arguments"
+%type <D4RValueList*> functions "functions"
+%type <D4RValueList*> args "arguments"
 
-%type <RValue*> function "function"
-%type <RValue*> arg "argument"
+%type <D4RValue*> arg "argument"
+%type <D4RValue*> function "function"
 
 %type <D4Function> fname "function name"
-%type <RValue*> variable_or_constant "variable or constant"
+%type <D4RValue*> variable_or_constant "variable or constant"
 
 %type <std::string> id path group name
 
@@ -126,28 +130,33 @@ namespace libdap {
 program : functions { driver.set_result($1); }
 ;
 
-functions : function { } // build a program object (holds a list of functions)
-| functions ";" function { } // ditto
+functions : function { $$ = new D4RValueList($1); }
+| functions ";" function { $1->add_rvalue($3); $$ = $1; }
 ;
                     
-function : fname "(" args ")" { $$ = new D4RValue($1, $3); } // Build a RValue: function pointer and RValuesList
+function : fname "(" args ")" { $$ = new D4RValue($1, $3); } // Build a D4RValue from a D4Function pointer and RValuesList
 ;
 
-fname: WORD { } // lookup the name and return a pointer
+fname: WORD 
+{ 
+    D4Function f;
+    driver.sf_list()->find_function($1, &f); 
+    $$ = f;
+}
 ;
 
-args: arg { } // build a RValueList from the RValue
-| args "," arg { } // Append the RValue ($3) to the RValueList ($1), then return
+args: arg { $$ = new D4RValueList($1); } // build a D4RValueList from the D4RValue
+| args "," arg { $1->add_rvalue($3); $$ = $1; } // Append the D4RValue ($3) to the D4RValueList ($1), then return
 ;
 
 arg: function { } // Build a RValue
-| variable_or_constant { }
+| variable_or_constant { $$ = $1; }
 // | array_constant { } // FIXME
 ;
 
 variable_or_constant : id
 {
-    $$ = driver.build_rvalue($1)
+    $$ = driver.build_rvalue($1);
 }
 ;
         
@@ -211,7 +220,7 @@ name : WORD
 // Forward the error to the driver for handling. The location parameter
 // provides the line number and character position of the error.
 void
-libdap::D4CFunctionParser::error(const location_type &l, const std::string &m)
+libdap::D4FunctionParser::error(const location_type &l, const std::string &m)
 {
     driver.error(l, m);
 }
