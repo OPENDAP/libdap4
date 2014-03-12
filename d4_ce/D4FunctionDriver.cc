@@ -108,7 +108,12 @@ D4FunctionDriver::build_rvalue(const std::string &id)
     if (end_ptr == '\0' && errno == 0)
     	return new D4RValue(d_val);
 
-    return new D4RValue(www2id(id));
+    // To be a valid string, the id must be quoted (using double quotes)
+    if (id[0] == '\"' && id[id.size()-1] == '\"')
+    	return new D4RValue(www2id(id));
+
+    // if it's none of these, return null
+    return 0;
 }
 
 void

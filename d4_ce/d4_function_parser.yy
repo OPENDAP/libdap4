@@ -127,36 +127,68 @@ namespace libdap {
 
 %start program;
 
-program : functions { driver.set_result($1); }
+program : functions 
+{ 
+    driver.set_result($1); 
+}
 ;
 
-functions : function { $$ = new D4RValueList($1); }
-| functions ";" function { $1->add_rvalue($3); $$ = $1; }
+functions : function 
+{
+    $$ = new D4RValueList($1); 
+}
+| functions ";" function 
+{ 
+    $1->add_rvalue($3); $$ = $1; 
+}
 ;
                     
-function : fname "(" args ")" { $$ = new D4RValue($1, $3); } // Build a D4RValue from a D4Function pointer and RValuesList
+function : fname "(" args ")" 
+{ 
+    $$ = new D4RValue($1, $3); // Build a D4RValue from a D4Function pointer and a D4RValueList 
+} 
 ;
 
 fname: WORD 
 { 
     D4Function f;
-    driver.sf_list()->find_function($1, &f); 
+    if (!driver.sf_list()->find_function($1, &f)) {
+        // ...cloud use @1.{first,last}_column in these error messages.
+        throw Error("'" + $1 + "' is not a registered DAP4 server function.");
+    }
+
     $$ = f;
+}        
+;
+
+args: arg
+{ 
+    $$ = new D4RValueList($1); // build a D4RValueList from the D4RValue
+} 
+| args "," arg 
+{ 
+    $1->add_rvalue($3); $$ = $1; // Append the D4RValue ($3) to the D4RValueList ($1), then return
+} 
+;
+
+arg: function
+{
+    $$ = $1;
 }
-;
+| variable_or_constant
+{
+    $$ = $1;
+}
 
-args: arg { $$ = new D4RValueList($1); } // build a D4RValueList from the D4RValue
-| args "," arg { $1->add_rvalue($3); $$ = $1; } // Append the D4RValue ($3) to the D4RValueList ($1), then return
-;
-
-arg: function { } // Build a RValue
-| variable_or_constant { $$ = $1; }
 // | array_constant { } // FIXME
 ;
 
 variable_or_constant : id
 {
     $$ = driver.build_rvalue($1);
+    if (!$$) {
+        throw Error("'" + $1 + "' is not a variable, number or string.");
+    }
 }
 ;
         
