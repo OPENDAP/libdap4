@@ -54,6 +54,7 @@
 #include "D4CEDriver.h"
 #include "D4FunctionDriver.h"
 #include "ServerFunctionsList.h"
+#include "D4TestFunction.h"
 
 #include "util.h"
 #include "mime_util.h"
@@ -383,6 +384,8 @@ main(int argc, char *argv[])
 			if (!function.empty()) {
 				try {
 					ServerFunctionsList *sf_list = ServerFunctionsList::TheList();
+				    ServerFunction *scale = new D4TestFunction;
+				    sf_list->add_function(scale);
 
 					D4FunctionDriver parser(dmr, sf_list);
 					if (ce_parser_debug) parser.set_trace_parsing(true);

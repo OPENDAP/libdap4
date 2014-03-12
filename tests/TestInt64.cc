@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -33,7 +33,7 @@
 #include <process.h>
 #endif
 
-//#define DODS_DEBUG 
+//#define DODS_DEBUG
 
 #include "TestInt64.h"
 #include "debug.h"
@@ -81,7 +81,7 @@ TestInt64::ptr_duplicate()
     return new TestInt64(*this);
 }
 
-void 
+void
 TestInt64::output_values(std::ostream &out)
 {
     print_val(out, "", false);
@@ -98,7 +98,9 @@ TestInt64::read()
 	sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
-        d_buf = 64 * d_buf;
+    	// was d_buf = 64 * d_buf; but a change in the compiler broke eqiv code in Int32.cc
+    	// jhrg 3/12/14
+    	d_buf <<= 6;
         if (!d_buf)
             d_buf = 64;
     }
@@ -109,6 +111,6 @@ TestInt64::read()
     set_read_p(true);
 
     DBG(cerr << "In TestInt64::read, _buf = " << d_buf << endl);
-    
+
     return true;
 }

@@ -28,9 +28,11 @@
 
 #include <string>
 
-class libdap::ConstraintEvaluator;
-class libdap::DDS;
-class libdap::DMR;
+namespace libdap {
+
+// class ConstraintEvaluator;
+class DDS;
+class DMR;
 
 /**
  * Used for testing only. This duplicates code in the bes/dap module.
@@ -76,5 +78,7 @@ public:
     virtual void send_dmr(std::ostream &out, libdap::DMR &dmr, bool with_mime_headers, bool constrained);
     virtual void send_data_dmr(std::ostream &out, libdap::DMR &dmr, bool with_mime_headers, bool constrained);
 };
+
+} // namespace libdap
 
 #endif // _response_builder_h
