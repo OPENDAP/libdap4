@@ -90,8 +90,10 @@ void D4ResponseBuilder::initialize()
 	// Set default values. Don't use the C++ constructor initialization so
 	// that a subclass can have more control over this process.
 	d_dataset = "";
+#if 0
 	d_ce = "";
 	d_btp_func_ce = "";
+#endif
 	d_timeout = 0;
 
 	d_default_protocol = DAP_PROTOCOL_VERSION;
@@ -105,6 +107,7 @@ D4ResponseBuilder::~D4ResponseBuilder()
 	delete dynamic_cast<AlarmHandler*>(SignalHandler::instance()->remove_handler(SIGALRM));
 }
 
+#if 0
 /** Set the constraint expression. This will filter the CE text removing
  * any 'WWW' escape characters except space. Spaces are left in the CE
  * because the CE parser uses whitespace to delimit tokens while some
@@ -119,6 +122,7 @@ void D4ResponseBuilder::set_ce(string _ce)
 {
 	d_ce = www2id(_ce, "%", "%20");
 }
+#endif
 
 /** Set the dataset name, which is a string used to access the dataset
  * on the machine running the server. That is, this is typically a pathname
@@ -135,6 +139,7 @@ void D4ResponseBuilder::set_dataset_name(const string ds)
 	d_dataset = www2id(ds, "%", "%20");
 }
 
+#if 0
 /**
  * Build/return the BLOB part of the DAP2 data response.
  */
@@ -199,7 +204,7 @@ void D4ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEval
 	dataset_constraint(data_stream, dds, eval);
 	data_stream << flush;
 }
-
+#endif
 //// DAP4 methods follow
 
 /** Use values of this instance to establish a timeout alarm for the server.
@@ -230,8 +235,9 @@ void D4ResponseBuilder::remove_timeout() const
  * @param eval Use this ConstraintEvaluator
  * @param with_mime_headers If true, include the MIME headers in the response
  */
-void D4ResponseBuilder::send_dmr(ostream &out, DMR &dmr, bool with_mime_headers)
+void D4ResponseBuilder::send_dmr(ostream &out, DMR &dmr, bool with_mime_headers, bool constrained)
 {
+#if 0
 	// If the CE is not empty, parse it. The projections, etc., are set as a side effect.
 	// If the parser returns false, the expression did not parse. The parser may also
 	// throw Error
@@ -241,20 +247,20 @@ void D4ResponseBuilder::send_dmr(ostream &out, DMR &dmr, bool with_mime_headers)
 		if (!parse_ok)
 			throw Error("Constraint Expression failed to parse.");
 	}
-
+#endif
 	if (with_mime_headers) set_mime_text(out, dap4_dmr, x_plain, last_modified_time(d_dataset), dmr.dap_version());
 
 	XMLWriter xml;
-	dmr.print_dap4(xml, !d_ce.empty() /* true == constrained */);
+	dmr.print_dap4(xml, constrained /* true == constrained */);
 	out << xml.get_doc() << flush;
 }
 
-void D4ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_headers, bool ce_parse_debug)
+void D4ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_headers, bool constrained)
 {
 	try {
 		// Set up the alarm.
 		establish_timeout(out);
-
+#if 0
 		// If the CE is not empty, parse it. The projections, etc., are set as a side effect.
 		// If the parser returns false, the expression did not parse. The parser may also
 		// throw Error
@@ -274,7 +280,7 @@ void D4ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_hea
 		else {
 			dmr.root()->set_send_p(true);
 		}
-
+#endif
 		if (dmr.response_limit() != 0 && dmr.request_size(true) > dmr.response_limit()) {
 			string msg = "The Request for " + long_to_string(dmr.request_size(true) / 1024)
 					+ "MB is too large; requests for this user are limited to "
@@ -287,7 +293,7 @@ void D4ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_hea
 
 	    // Write the DMR
 	    XMLWriter xml;
-	    dmr.print_dap4(xml, !d_ce.empty());
+	    dmr.print_dap4(xml, constrained /*!d_ce.empty()*/);
 
 	    // now make the chunked output stream; set the size to be at least chunk_size
 	    // but make sure that the whole of the xml plus the CRLF can fit in the first
@@ -299,7 +305,7 @@ void D4ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_hea
 
 	    // Write the data, chunked with checksums
 	    D4StreamMarshaller m(cos);
-	    dmr.root()->serialize(m, dmr, !d_ce.empty());
+	    dmr.root()->serialize(m, dmr, constrained /*!d_ce.empty()*/);
 
 		out << flush;
 
