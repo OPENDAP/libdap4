@@ -44,12 +44,14 @@
 #include "InternalErr.h"
 #include "Error.h"
 
-#include "D4ResponseBuilder.h"
+#include "D4ResponseBuilder.h"	// For send_data() this class handles the CE
 #include "ConstraintEvaluator.h"
 
 #include "D4ParserSax2.h"
 #include "D4TestTypeFactory.h"
 #include "TestCommon.h"
+
+#include "D4CEDriver.h"	// included for intern_data()
 
 #include "util.h"
 #include "mime_util.h"
@@ -132,37 +134,45 @@ send_data(DMR *dataset, const string &constraint, bool series_values, bool ce_pa
 {
     set_series_values(dataset, series_values);
 
-    // ConstraintEvaluator eval;	// This is a place holder. jhrg 9/6/13
     D4ResponseBuilder rb;
     rb.set_ce(constraint);
     rb.set_dataset_name(dataset->name());
-#if 0
-    // TODO Remove once real CE evaluator is written. jhrg 9/6/13
-    // Mark all variables to be sent in their entirety.
-    dataset->root()->set_send_p(true);
-#endif
+
     string file_name = dataset->name() + "_data.bin";
     ofstream out(file_name.c_str(), ios::out|ios::trunc|ios::binary);
 
-    rb.send_data_dmr(out, *dataset, /*eval,*/ true, ce_parse_debug);
+    rb.send_data_dmr(out, *dataset, /*with mime headers*/ true, ce_parse_debug);
     out.close();
 
     return file_name;
 }
 
 void
-intern_data(DMR *dataset, const string &/*constraint*/, bool series_values)
+intern_data(DMR *dataset, const string &constraint, bool series_values)
 {
     set_series_values(dataset, series_values);
 
+#if 0
     ConstraintEvaluator eval;	// This is a place holder. jhrg 9/6/13
 
     // TODO Remove once a real CE evaluator is written. jhrg 9/6/13
     // Mark all variables to be sent in their entirety.
     dataset->root()->set_send_p(true);
+#endif
+
+    if (!constraint.empty()) {
+		D4CEDriver parser(dataset);
+		bool parse_ok = parser.parse(constraint);
+		if (!parse_ok)
+			throw Error("Constraint Expression failed to parse.");
+	}
+    else {
+    	dataset->root()->set_send_p(true);
+    }
 
     Crc32 checksum;
-    dataset->root()->intern_data(checksum, *dataset, eval);
+
+    dataset->root()->intern_data(checksum, *dataset/*, eval*/);
 }
 
 DMR *

@@ -90,17 +90,15 @@ public:
     virtual void remove_timeout() const;
 
     virtual void send_dmr(std::ostream &out, libdap::DMR &dmr, bool with_mime_headers);
-#if 0
-    virtual void dataset_constraint_dmr(std::ostream &out, libdap::DMR &dmr, bool filter);
-#endif
     virtual void send_data_dmr(std::ostream &out, libdap::DMR &dmr, bool with_mime_headers, bool ce_parse_debug);
-
+#if 0
     // These are old and not used
     virtual void dataset_constraint_dmr_multipart(std::ostream &out, libdap::DMR &dmr, libdap::ConstraintEvaluator &eval,
             const string &start, const string &boundary, bool filter);
 
     virtual void send_data_dmr_multipart(std::ostream &out, libdap::DMR &dmr, libdap::ConstraintEvaluator &eval,
     		const string &start, const string &boundary, bool with_mime_headers);
+#endif
 };
 
 #endif // _response_builder_h

@@ -63,6 +63,7 @@
 #include "chunked_istream.h"
 
 #include "D4CEDriver.h"
+#include "D4FunctionDriver.h"
 
 #include "debug.h"
 #include "mime_util.h"	// for last_modified_time() and rfc_822_date()
@@ -78,11 +79,6 @@
 #include "D4ResponseBuilder.h"
 
 const std::string CRLF = "\r\n";             // Change here, expr-test.cc/dmr-test.cc
-
-#if BYTE_ORDER_PREFIX
-const int8_t big_endian = 0x01;
-const int8_t little_endian = 0x00;
-#endif
 
 using namespace std;
 using namespace libdap;
@@ -236,11 +232,6 @@ void D4ResponseBuilder::remove_timeout() const
  */
 void D4ResponseBuilder::send_dmr(ostream &out, DMR &dmr, bool with_mime_headers)
 {
-#if 0
-	// TODO Add CE Parser; and see below
-	if (!d_ce.empty()) eval.parse_constraint(d_ce, dmr); // Throws Error if the ce doesn't parse.
-#endif
-
 	// If the CE is not empty, parse it. The projections, etc., are set as a side effect.
 	// If the parser returns false, the expression did not parse. The parser may also
 	// throw Error
@@ -258,50 +249,12 @@ void D4ResponseBuilder::send_dmr(ostream &out, DMR &dmr, bool with_mime_headers)
 	out << xml.get_doc() << flush;
 }
 
-#if 0
-/**
- *
- * @param out
- * @param dmr
- * @param eval
- * @param start
- * @param boundary
- * @param filter true if there are filters to apply to variables
- */
-void D4ResponseBuilder::dataset_constraint_dmr(ostream &out, DMR &dmr, bool filter)
-{
-    // Write the DMR
-    XMLWriter xml;
-    dmr.print_dap4(xml, filter);
-
-#if BYTE_ORDER_PREFIX
-    // the byte order info precedes the start of chunking
-    char byte_order = is_host_big_endian() ? big_endian : little_endian; // is_host_big_endian is in util.cc
-    out << byte_order << flush;
-#endif
-    // now make the chunked output stream; set the size to be at least chunk_size
-    // but make sure that the whole of the xml plus the CRLF can fit in the first
-    // chunk. (+2 for the CRLF bytes).
-    chunked_ostream cos(out, max((unsigned int)CHUNK_SIZE, xml.get_doc_size()+2));
-
-    // using flush means that the DMR and CRLF are in the first chunk.
-    cos << xml.get_doc() << CRLF << flush;
-
-    // Write the data, chunked with checksums
-    D4StreamMarshaller m(cos);
-    dmr.root()->serialize(m, dmr, eval, filter);
-}
-#endif
-
 void D4ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_headers, bool ce_parse_debug)
 {
 	try {
 		// Set up the alarm.
 		establish_timeout(out);
 
-#if 0
-		bool filter = eval.parse_constraint(d_ce, dmr); // Throws Error if the ce doesn't parse.
-#endif
 		// If the CE is not empty, parse it. The projections, etc., are set as a side effect.
 		// If the parser returns false, the expression did not parse. The parser may also
 		// throw Error
@@ -336,11 +289,6 @@ void D4ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_hea
 	    XMLWriter xml;
 	    dmr.print_dap4(xml, !d_ce.empty());
 
-	#if BYTE_ORDER_PREFIX
-	    // the byte order info precedes the start of chunking
-	    char byte_order = is_host_big_endian() ? big_endian : little_endian; // is_host_big_endian is in util.cc
-	    out << byte_order << flush;
-	#endif
 	    // now make the chunked output stream; set the size to be at least chunk_size
 	    // but make sure that the whole of the xml plus the CRLF can fit in the first
 	    // chunk. (+2 for the CRLF bytes).
@@ -363,6 +311,7 @@ void D4ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_hea
 	}
 }
 
+#if 0
 // Unused
 
 /**
@@ -437,3 +386,4 @@ void D4ResponseBuilder::send_data_dmr_multipart(ostream &out, DMR &dmr, Constrai
 		throw;
 	}
 }
+#endif
