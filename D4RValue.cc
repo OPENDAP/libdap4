@@ -66,10 +66,13 @@ D4RValue::value(DMR &dmr)
 	// FIXME Memory leak. This returns a weak pointer while the other
 	// cases return new storage that the caller must free. jhrg 3/10/14
 	case basetype:
+		d_variable->read();
+		d_variable->set_read_p(true);
 		return d_variable;
 
-	case function:
+	case function: {
 		return (*d_func)(d_args, dmr);
+	}
 
 	case uinteger: {
 		UInt64 *ui = new UInt64("constant");

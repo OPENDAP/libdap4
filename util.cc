@@ -78,6 +78,7 @@
 
 #include "Int64.h"
 #include "UInt64.h"
+#include "Int8.h"
 
 #include "Error.h"
 
@@ -127,11 +128,6 @@ string extract_string_argument(BaseType *arg)
                 "The CE Evaluator built an argument list where some constants held no values.");
 
     return static_cast<Str*>(arg)->value();
-#if 0
-    DBG(cerr << "s: " << s << endl);
-
-    return s;
-#endif
 }
 
 template<class T> static void set_array_using_double_helper(Array *a, double *src, int src_len)
@@ -144,21 +140,8 @@ template<class T> static void set_array_using_double_helper(Array *a, double *sr
     for (int i = 0; i < src_len; ++i)
         values[i] = (T) src[i];
 
+    // This copie the values
     a->set_value(values, src_len);
-#if 0
-    T *values = new T[src_len];
-    // TODO Replace new with vector<T> (vector<T> values(src_len);)
-    for (int i = 0; i < src_len; ++i)
-        values[i] = (T) src[i];
-
-#ifdef VAL2BUF
-    a->val2buf(values, true);
-#else
-    a->set_value(values, src_len);
-#endif
-
-    delete[]values;
-#endif
 }
 
 /** Given an array that holds some sort of numeric data, load it with values
@@ -232,6 +215,12 @@ void set_array_using_double(Array *dest, double *src, int src_len)
         break;
 
         // DAP4 support
+    case dods_uint8_c:
+        set_array_using_double_helper<dods_byte>(dest, src, src_len);
+        break;
+    case dods_int8_c:
+        set_array_using_double_helper<dods_int8>(dest, src, src_len);
+        break;
     case dods_uint64_c:
         set_array_using_double_helper<dods_uint64>(dest, src, src_len);
         break;
@@ -255,17 +244,11 @@ template<class T> static double *extract_double_array_helper(Array * a)
 
     vector<T> b(length);
     a->value(&b[0]);	// Extract the values of 'a' to 'b'
-#if 0
-    // Could improve this using vector<T>. jhrg
-    T *b = new T[length];
-    a->value(b);
-#endif
+
     double *dest = new double[length];
     for (int i = 0; i < length; ++i)
         dest[i] = (double) b[i];
-#if 0
-    delete[]b;
-#endif
+
     return dest;
 }
 
@@ -316,6 +299,10 @@ double *extract_double_array(Array * a)
         return extract_double_array_helper<dods_float64>(a);
 
     // Support for DAP4
+    case dods_uint8_c:
+        return extract_double_array_helper<dods_byte>(a);
+    case dods_int8_c:
+        return extract_double_array_helper<dods_int8>(a);
     case dods_uint64_c:
         return extract_double_array_helper<dods_uint64>(a);
     case dods_int64_c:
@@ -368,7 +355,11 @@ double extract_double_value(BaseType *arg)
     case dods_float64_c:
         return static_cast<Float64*>(arg)->value();
 
-        // Support for DAP4 types.
+    // Support for DAP4 types.
+    case dods_uint8_c:
+    	return (double)(static_cast<Byte*>(arg)->value());
+    case dods_int8_c:
+    	return (double)(static_cast<Int8*>(arg)->value());
     case dods_uint64_c:
     	return (double)(static_cast<UInt64*>(arg)->value());
     case dods_int64_c:
@@ -484,9 +475,6 @@ systime()
     if (time(&TimBin) == (time_t) - 1)
         return string("time() error");
     else {
-#if 0
-        string TimStr = ctime(&TimBin);
-#endif
         char *ctime_value = ctime(&TimBin);
         if (ctime_value) {
         	string TimStr = ctime_value;

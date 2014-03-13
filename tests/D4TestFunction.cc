@@ -53,7 +53,7 @@ function_scale_dap2(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 {
     string info =
     string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
-    "<function name=\"scale\" version=\"1.0\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions\">\n" +
+    "<function name=\"scale\" version=\"1.1\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions\">\n" +
     "</function>";
 
     if (argc == 0) {
@@ -111,7 +111,7 @@ function_scale_dap2(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     *btpp = dest;
     return;
 }
-#if 1
+
 /**
  * @brief DAP4 scale a scalar or array variable
  * This does not work for DAP2 Grids; only Array and scalar variables.
@@ -121,34 +121,34 @@ function_scale_dap4(D4RValueList *args, DMR &dmr)
 {
     string info =
     string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
-    "<function name=\"scale\" version=\"1.0\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions\">\n" +
+    "<function name=\"scale\" version=\"1.1\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions\">\n" +
     "</function>";
 
-    if (args->size()/*argc*/ == 0) {
+    // DAP4 function porting information: in place of 'argc' use 'args.size()'
+    if (args->size() == 0) {
         Str *response = new TestStr("info");
         response->set_value(info);
-#if 0
-        *btpp = response;
-        return;
-#endif
+        // DAP4 function porting: return a BaseType* instead of using the value-result parameter
         return response;
     }
 
     // Check for 2 arguments
-    DBG(cerr << "args.size() = " << args.size()/*argc*/ << endl);
-    if (args->size()/*argc*/ != 2)
+    DBG(cerr << "args.size() = " << args.size() << endl);
+    if (args->size() != 2)
         throw Error(malformed_expr,"Wrong number of arguments to scale().");
 
-    double m = extract_double_value(args->get_rvalue(1)->value(dmr)/*argv[1]*/);
+    // DAP4 function porting information: in place of 'argv[n]' use args->get_rvalue(n)->value(dmr)
+    // where 'n' is between 0 and args.size()-1. The line below is the DAP4 equivalent of 'argv[1].'
+    double m = extract_double_value(args->get_rvalue(1)->value(dmr));
 
     DBG(cerr << "m: " << m << << endl);
 
     // Read the data, scale and return the result.
     BaseType *dest = 0;
     double *data;
-    BaseType *arg0 = args->get_rvalue(0)->value(dmr);
-    if (/*argv[0]*/arg0->is_vector_type()) {
-        TestArray &source = static_cast<TestArray&>(*arg0 /*argv[0]*/);
+    BaseType *arg0 = args->get_rvalue(0)->value(dmr); // DAP4 function porting: ... 'argv[0]'
+    if (arg0->is_vector_type()) {
+        TestArray &source = static_cast<TestArray&>(*arg0);
         source.read();
 
         data = extract_double_array(&source);
@@ -163,34 +163,25 @@ function_scale_dap4(D4RValueList *args, DMR &dmr)
 
         delete[] data; // set_value copies.
 
+        // DAP4 function porting: return a BaseType* instead of using the value-result parameter
         return result;
-#if 0
-        dest = result;
-#endif
     }
-    else if (/*argv[0]*/arg0->is_simple_type() && !(/*argv[0]*/arg0->type() == dods_str_c || /*argv[0]*/arg0->type() == dods_url_c)) {
-    	/*argv[0]*/arg0->read();
-        double data = extract_double_value(arg0/*argv[0]*/);
+    else if (arg0->is_simple_type() && !(arg0->type() == dods_str_c || arg0->type() == dods_url_c)) {
+    	arg0->read();
+        double data = extract_double_value(arg0);
 
         data *= m;
 
-        Float64 *fdest = new TestFloat64(/*argv[0]*/arg0->name());
+        Float64 *fdest = new TestFloat64(arg0->name());
 
         fdest->set_value(data);
         return fdest;
-#if 0
-        dest = fdest;
-#endif
     }
     else {
-        throw Error(malformed_expr,"The scale() function works only for Arrays and scalars.");
+        throw Error(malformed_expr,"The scale() function works only for numerical arrays and scalars.");
     }
 
-#if 0
-    *btpp = dest;
-    return;
-#endif
     return 0;
 }
-#endif
+
 } // namesspace libdap

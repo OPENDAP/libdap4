@@ -46,21 +46,32 @@ public:
 	D4RValueList() { }
 	D4RValueList(D4RValue *rv) { add_rvalue(rv); }
 
-	~D4RValueList() { }
+	~D4RValueList() {
+#if 0
+		for (iter i = begin(), e = end(); i != e; ++i) {
+			switch ((*i)->d_value_kind) {
+			case basetype:
+			case function:
+			case unknown:
+				continue;
 
-	std::vector<D4RValue *> &get_rvalues() {
-		return d_rvalues;
+			case uinteger:
+			case integer:
+			case real:
+			case string:
+				delete (*i)->d_constant;
+
+			default:
+				continue;
+			}
+		}
+#endif
 	}
 
 	void add_rvalue(D4RValue *rv) {
 		d_rvalues.push_back(rv);
 	}
 
-#if 0
-	D4RValue *get_rvalue(D4RValueListIter &i) {
-		return (*i);
-	}
-#endif
 	D4RValue *get_rvalue(unsigned int i) {
 		return d_rvalues.at(i);
 	}
@@ -99,6 +110,8 @@ private:
     };
 
     value_kind d_value_kind;
+
+    friend class D4RValueList;
 
 public:
     D4RValue() : d_variable(0), d_func(0), d_args(0), d_value_kind(unknown) { }

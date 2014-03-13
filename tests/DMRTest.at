@@ -95,7 +95,7 @@ m4_define([DMR_TRANS_FUNC_CE], [
     
     input=$abs_srcdir/$1
     fe="$2"
-    ce=$3
+    ce="$3"
     baseline=$abs_srcdir/$4
     expect=$5
     
@@ -334,7 +334,37 @@ DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,0.001)], [], [dmr-t
 DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,-0.001)], [], [dmr-testsuite/test_array_1.xml.5.func_base], [pass])
 
 # Test the largest signed int64 value (it will be stored in a D4RValue that 
-# holds a Int64 variable.
+# holds a Int64 variable).
 DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,0x7fffffffffffffff)], [], [dmr-testsuite/test_array_1.xml.6.func_base], [pass])
 # This only fits in a unsigned long long (DAP4's UInt64)
 DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,0x8fffffffffffffff)], [], [dmr-testsuite/test_array_1.xml.7.func_base], [pass])
+
+# test_array_5 has 64 bit ints in c and d; a and b are Int8 and UInt8 types
+# all of these test arrays that use named dimensions
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_5.xml], [scale(a,0.001)], [], [dmr-testsuite/test_array_5.xml.1.func_base], [xfail])
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_5.xml], [scale(a,0.001)], [], [dmr-testsuite/test_array_5.xml.2.func_base], [xfail])
+
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_5.xml], [scale(c,0.001)], [], [dmr-testsuite/test_array_5.xml.3.func_base], [xfail])
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_5.xml], [scale(d,0.001)], [], [dmr-testsuite/test_array_5.xml.4.func_base], [xfail])
+
+# Use the vol_1_ce_* datasets for tests
+
+# Test using variables for source values and functional composition
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(u,10)], [], [dmr-testsuite/vol_1_ce_1.xml.1.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(u,v)], [], [dmr-testsuite/vol_1_ce_1.xml.2.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(scale(u,10),0.01)], [], [dmr-testsuite/vol_1_ce_1.xml.3.func_base], [pass])
+
+# Test name parsing for Structure members
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(Point.x,10)], [], [dmr-testsuite/vol_1_ce_1.xml.4.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(Point.x,Point.y)], [], [dmr-testsuite/vol_1_ce_1.xml.5.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(scale(Point.x,10),0.01)], [], [dmr-testsuite/vol_1_ce_1.xml.6.func_base], [pass])
+
+# Test a sequence of function calls and the application of a Constraint to 
+# a function result
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_10.xml], [scale(lat,10)], [], [dmr-testsuite/vol_1_ce_10.xml.1.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_10.xml], [scale(lat,10);scale(lon,10)], [], [dmr-testsuite/vol_1_ce_10.xml.2.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_10.xml], [scale(lat,10);scale(lon,10)], [lat[[10:11]][[10:11]];lon[[10:11]][[10:11]]], [dmr-testsuite/vol_1_ce_10.xml.3.func_base], [pass])
+
+
+
+
