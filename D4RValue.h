@@ -94,19 +94,13 @@ private:
     D4Function d_func;  	// (weak) Pointer to a function returning BaseType *
     D4RValueList *d_args;  	// Strong pointer to arguments to the function; delete
 
-    unsigned long long d_u_int_val;
-    long long d_int_val;
-    double d_real_val;
-    std::string d_string_val;
+    BaseType *d_constant;	// Strong pointer; delete
 
     enum value_kind {
     	unknown,
     	basetype,
     	function,
-    	uinteger,
-    	integer,
-    	real,
-    	string
+    	constant
     };
 
     value_kind d_value_kind;
@@ -114,20 +108,17 @@ private:
     friend class D4RValueList;
 
 public:
-    D4RValue() : d_variable(0), d_func(0), d_args(0), d_value_kind(unknown) { }
+    D4RValue() : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(unknown) { }
 
-    D4RValue(BaseType *btp)  : d_variable(btp), d_func(0), d_args(0), d_value_kind(basetype) { }
-    D4RValue(D4Function f, D4RValueList *args)  : d_variable(0), d_func(f), d_args(args), d_value_kind(function) { }
+    D4RValue(BaseType *btp)  : d_variable(btp), d_func(0), d_args(0), d_constant(0), d_value_kind(basetype) { }
+    D4RValue(D4Function f, D4RValueList *args)  : d_variable(0), d_func(f), d_args(args), d_constant(0), d_value_kind(function) { }
 
-    D4RValue(unsigned long long ui) : d_variable(0), d_func(0), d_args(0), d_u_int_val(ui), d_value_kind(uinteger) { }
-    D4RValue(long long i) : d_variable(0), d_func(0), d_args(0), d_int_val(i), d_value_kind(integer) { }
-    D4RValue(double r) : d_variable(0), d_func(0), d_args(0), d_real_val(r), d_value_kind(real) { }
-    D4RValue(std::string s) : d_variable(0), d_func(0), d_args(0), d_string_val(s), d_value_kind(string) { }
+    D4RValue(unsigned long long ui);
+    D4RValue(long long i);
+    D4RValue(double r);
+    D4RValue(std::string s);
 
-    virtual ~D4RValue() {
-    	// d_variable and d_func are weak pointers; don't delete.
-    	delete d_args;
-    }
+    virtual ~D4RValue();
 
     // This is the call that will be used to return the value of a function.
     // jhrg 3/10/14

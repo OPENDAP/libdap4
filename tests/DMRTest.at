@@ -97,14 +97,13 @@ m4_define([DMR_TRANS_FUNC_CE], [
     fe="$2"
     ce="$3"
     baseline=$abs_srcdir/$4
-    expect=$5
+    # This doesn't work for some reason. jhrg 3/13/14 expect="$5"
     
-    #echo "baseline: $baseline"
-
     AT_CHECK([$abs_builddir/dmr-test -x -t $input -f "$fe" -c "$ce" || true], [], [stdout], [stderr])
     AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
     
-    AT_XFAIL_IF([test "X$expect" = "Xxfail"])
+    AT_XFAIL_IF([test "X$5" = "Xxfail"])
+
     AT_CLEANUP
 ])
 

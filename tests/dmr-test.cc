@@ -164,6 +164,10 @@ send_data(DMR *dataset, const string &constraint, const string &function, bool s
 				function_result->root()->add_var_nocopy((*i)->value(*dataset));
 			}
 
+			// Variables can use Dimensions and Enumerations, so those need to be copied
+			// from the source dataset to the result.
+
+
 			// Now use the results of running the functions for the remainder of the
 			// send_data operation.
 			dataset = function_result;

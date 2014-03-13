@@ -44,6 +44,36 @@ using namespace std;
 
 namespace libdap {
 
+D4RValue::D4RValue(unsigned long long ull) : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+	UInt64 *ui = new UInt64("constant");
+	ui->set_value(ull);
+	d_constant = ui;
+}
+
+D4RValue::D4RValue(long long ll) : d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant) {
+	Int64 *i = new Int64("constant");
+	i->set_value(ll);
+	d_constant = i;
+}
+
+D4RValue::D4RValue(double r) : d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant) {
+	Float64 *f = new Float64("constant");
+	f->set_value(r);
+	d_constant = f;
+}
+
+D4RValue::D4RValue(std::string cpps) : d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant) {
+	Str *s = new Str("constant");
+	s->set_value(cpps);
+	d_constant = s;
+}
+
+D4RValue::~D4RValue() {
+	// d_variable and d_func are weak pointers; don't delete.
+	delete d_args;
+	delete d_constant;
+}
+
 /** Return the BaseType * for a given RValue.
  *
  * @note A lingering issue with server functions is: Who or what is responsible
@@ -63,17 +93,21 @@ BaseType *
 D4RValue::value(DMR &dmr)
 {
 	switch (d_value_kind) {
-	// FIXME Memory leak. This returns a weak pointer while the other
-	// cases return new storage that the caller must free. jhrg 3/10/14
 	case basetype:
 		d_variable->read();
 		d_variable->set_read_p(true);
 		return d_variable;
 
+	// FIXME Memory leak: when composition is used the result of the inner function
+	// calls will not be deleted. jhrg 3/13/14
 	case function: {
 		return (*d_func)(d_args, dmr);
 	}
 
+	case constant:
+		return d_constant;
+
+#if 0
 	case uinteger: {
 		UInt64 *ui = new UInt64("constant");
 		ui->set_value(d_u_int_val);
@@ -97,7 +131,7 @@ D4RValue::value(DMR &dmr)
 		s->set_value(d_string_val);
 		return s;
 	}
-
+#endif
 	default:
 		throw InternalErr(__FILE__, __LINE__, "Unknown rvalue type.");
 	};
