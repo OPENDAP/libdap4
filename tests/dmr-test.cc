@@ -55,6 +55,7 @@
 #include "D4FunctionDriver.h"
 #include "ServerFunctionsList.h"
 #include "D4TestFunction.h"
+#include "D4RValue.h"
 
 #include "util.h"
 #include "mime_util.h"
@@ -133,23 +134,43 @@ set_series_values(DMR *dmr, bool state)
  * @return The name of the file that hods the response.
  */
 string
-send_data(DMR *dataset, const string &constraint, const string &function, bool series_values, bool ce_parse_debug)
+send_data(DMR *dataset, const string &constraint, const string &function, bool series_values, bool ce_parser_debug)
 {
     set_series_values(dataset, series_values);
 
-#if 0
-    if (!function.empty()) {
-		D4FunctionDriver parser(dataset);
+    // This will be used by the DMR that holds the results of running the functions.
+    // It's declared at this scope because we (may) need it for the code beyond the
+    // function parse/eval code that immediately follows. jhrg 3/12/14
+    D4TestTypeFactory d4_factory;
+    DMR *function_result = 0;
+
+	// The Function Parser
+	if (!function.empty()) {
+		ServerFunctionsList *sf_list = ServerFunctionsList::TheList();
+		ServerFunction *scale = new D4TestFunction;
+		sf_list->add_function(scale);
+
+		D4FunctionDriver parser(dataset, sf_list);
+		if (ce_parser_debug) parser.set_trace_parsing(true);
 		bool parse_ok = parser.parse(function);
 		if (!parse_ok)
-			throw Error("Functional Expression failed to parse.");
+			Error("Function Expression failed to parse.");
+		else {
+			if (ce_parser_debug) cerr << "Function Parse OK" << endl;
+			D4RValueList *result = parser.result();
+
+			function_result = new DMR(&d4_factory, "function_results");
+			for (D4RValueList::iter i = result->begin(), e = result->end(); i != e; ++i) {
+				function_result->root()->add_var_nocopy((*i)->value(*dataset));
+			}
+
+			// Now use the results of running the functions for the remainder of the
+			// send_data operation.
+			dataset = function_result;
+		}
 	}
-#endif
 
     D4ResponseBuilder rb;
-#if 0
-    rb.set_ce(constraint);
-#endif
     rb.set_dataset_name(dataset->name());
 
     string file_name = dataset->name() + "_data.bin";
@@ -157,12 +178,12 @@ send_data(DMR *dataset, const string &constraint, const string &function, bool s
 
 	if (!constraint.empty()) {
 		D4CEDriver parser(dataset);
-		if (ce_parse_debug)
+		if (ce_parser_debug)
 		    parser.set_trace_parsing(true);
 		bool parse_ok = parser.parse(constraint);
 		if (!parse_ok)
 			throw Error("Constraint Expression failed to parse.");
-		else if (ce_parse_debug)
+		else if (ce_parser_debug)
 		    cerr << "CE Parse OK" << endl;
 	}
     else {
@@ -405,8 +426,8 @@ main(int argc, char *argv[])
 
 			delete dmr;
 		}
-		// Add constraint and series values when ready
-        if (send) {
+
+		if (send) {
         	DMR *dmr = test_dap4_parser(name, debug, print);
 
         	string file_name = send_data(dmr, ce, function, series_values, ce_parser_debug);

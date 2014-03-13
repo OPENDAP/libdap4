@@ -89,7 +89,7 @@ public:
 	bool trace_parsing() const { return d_trace_parsing; }
 	void set_trace_parsing(bool tp) { d_trace_parsing = tp; }
 
-	bool result() const { return d_result; }
+	D4RValueList *result() const { return d_result; }
 	void set_result(D4RValueList *rv_list) { d_result = rv_list; }
 
 	DMR *dmr() const { return d_dmr; }

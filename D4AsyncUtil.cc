@@ -5,8 +5,6 @@
  *      Author: ndp
  */
 
-
-
 #include "config.h"
 
 #include <sstream>
@@ -20,18 +18,13 @@
 #include "D4AsyncUtil.h"
 #include "DapXmlNamespaces.h"
 
-
 namespace libdap {
 
 const string D4AsyncUtil::STYLESHEET_REFERENCE_KEY = "DAP.Async.StyleSheet.Ref";
 
-
 D4AsyncUtil::D4AsyncUtil()  {}
 
 D4AsyncUtil::~D4AsyncUtil() {}
-
-
-
 
 /**
  * @brief Print the AsyncRequired response to the.
@@ -339,44 +332,26 @@ string D4AsyncUtil::getRejectReasonCodeString(RejectReasonCode code){
 	return codeStr;
 }
 
+// Unused paramters generate warnings, so I removed/commented them below. jhrg 3/12/14
+void D4AsyncUtil::writeD2AsyncRequired(XMLWriter &/*xml*/, long /*expectedDelay*/, long /*responseLifetime*/)  {
+	throw InternalErr(__FILE__, __LINE__, "DAP2 Doesn't handle Async.");
+}
 
-
-
-
-/**
- * @brief Print the AsyncRequired response to the.
- * Print the AsyncRequired in XML form.
- * @param xml Print to this XMLWriter instance
- */
-void D4AsyncUtil::writeD2AsyncRequired(XMLWriter &xml, long expectedDelay, long responseLifetime)  {
+void D4AsyncUtil::writeD2AsyncAccepted(XMLWriter &, long , long , string /*asyncResourceUrl*/)  {
 	throw InternalErr(__FILE__, __LINE__, "DAP2 Doesn't handle Async.");
 }
 
 
-
-void D4AsyncUtil::writeD2AsyncAccepted(XMLWriter &xml, long expectedDelay, long responseLifetime, string asyncResourceUrl)  {
+void D4AsyncUtil::writeD2AsyncPending(XMLWriter &)  {
 	throw InternalErr(__FILE__, __LINE__, "DAP2 Doesn't handle Async.");
 }
 
-
-void D4AsyncUtil::writeD2AsyncPending(XMLWriter &xml)  {
+void D4AsyncUtil::writeD2AsyncResponseGone(XMLWriter &)  {
 	throw InternalErr(__FILE__, __LINE__, "DAP2 Doesn't handle Async.");
 }
 
-void D4AsyncUtil::writeD2AsyncResponseGone(XMLWriter &xml)  {
+void D4AsyncUtil::writeD2AsyncResponseRejected(XMLWriter &, RejectReasonCode /*code*/, string /*description*/)  {
 	throw InternalErr(__FILE__, __LINE__, "DAP2 Doesn't handle Async.");
 }
-
-void D4AsyncUtil::writeD2AsyncResponseRejected(XMLWriter &xml, RejectReasonCode code, string description)  {
-	throw InternalErr(__FILE__, __LINE__, "DAP2 Doesn't handle Async.");
-}
-
-
-
-
-
-
-
-
 
 } /* namespace libdap */

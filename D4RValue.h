@@ -41,7 +41,7 @@ private:
 	std::vector<D4RValue *> d_rvalues;
 
 public:
-	typedef std::vector<D4RValue *>::iterator D4RValueListIter;
+	typedef std::vector<D4RValue *>::iterator iter;
 
 	D4RValueList() { }
 	D4RValueList(D4RValue *rv) { add_rvalue(rv); }
@@ -56,12 +56,17 @@ public:
 		d_rvalues.push_back(rv);
 	}
 
+#if 0
 	D4RValue *get_rvalue(D4RValueListIter &i) {
 		return (*i);
 	}
+#endif
+	D4RValue *get_rvalue(unsigned int i) {
+		return d_rvalues.at(i);
+	}
 
-	D4RValueListIter rvalue_begin() { return d_rvalues.begin(); }
-	D4RValueListIter rvalue_end() { return d_rvalues.end(); }
+	iter begin() { return d_rvalues.begin(); }
+	iter end() { return d_rvalues.end(); }
 
 	unsigned int size() const { return d_rvalues.size(); }
 
