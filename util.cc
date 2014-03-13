@@ -76,6 +76,9 @@
 #include "Str.h"
 #include "Array.h"
 
+#include "Int64.h"
+#include "UInt64.h"
+
 #include "Error.h"
 
 #include "util.h"
@@ -106,34 +109,43 @@ bool is_host_big_endian()
 #endif
 }
 
-/** Given a BaseType pointer, extract the string value it contains and return
- it.
+/** Given a BaseType pointer, extract the string value it contains
 
  @param arg The BaseType pointer
  @return A C++ string
  @exception Error thrown if the referenced BaseType object does not contain
  a DAP String. */
-string extract_string_argument(BaseType * arg)
+string extract_string_argument(BaseType *arg)
 {
 	assert(arg);
 
     if (arg->type() != dods_str_c)
-        throw Error(malformed_expr,
-                "The function requires a DAP string argument.");
+        throw Error(malformed_expr, "The function requires a string argument.");
 
     if (!arg->read_p())
         throw InternalErr(__FILE__, __LINE__,
                 "The CE Evaluator built an argument list where some constants held no values.");
 
-    string s = static_cast<Str*>(arg)->value();
-
+    return static_cast<Str*>(arg)->value();
+#if 0
     DBG(cerr << "s: " << s << endl);
 
     return s;
+#endif
 }
 
-template<class T> static void set_array_using_double_helper(Array * a, double *src, int src_len)
+template<class T> static void set_array_using_double_helper(Array *a, double *src, int src_len)
 {
+	assert(a);
+	assert(src);
+	assert(src_len > 0);
+
+	vector<T> values(src_len);
+    for (int i = 0; i < src_len; ++i)
+        values[i] = (T) src[i];
+
+    a->set_value(values, src_len);
+#if 0
     T *values = new T[src_len];
     // TODO Replace new with vector<T> (vector<T> values(src_len);)
     for (int i = 0; i < src_len; ++i)
@@ -146,6 +158,7 @@ template<class T> static void set_array_using_double_helper(Array * a, double *s
 #endif
 
     delete[]values;
+#endif
 }
 
 /** Given an array that holds some sort of numeric data, load it with values
@@ -160,6 +173,7 @@ template<class T> static void set_array_using_double_helper(Array * a, double *s
  that this variable already holds data values and, given that, the
  serialization code will not try to read the values.
 
+ @note Support for DAP4 added.
  @param dest An Array. The values are written to this array, reusing
  its storage. Existing values are lost.
  @param src The source data.
@@ -167,14 +181,18 @@ template<class T> static void set_array_using_double_helper(Array * a, double *s
  @exception Error Thrown if \e dest is not a numeric-type array (Byte, ...,
  Float64) or if the number of elements in \e src does not match the number
  is \e dest. */
-void set_array_using_double(Array * dest, double *src, int src_len)
+void set_array_using_double(Array *dest, double *src, int src_len)
 {
+	assert(dest);
+	assert(src);
+	assert(src_len > 0);
+
     // Simple types are Byte, ..., Float64, String and Url.
     if ((dest->type() == dods_array_c && !dest->var()->is_simple_type())
     || dest->var()->type() == dods_str_c
     || dest->var()->type() == dods_url_c)
         throw InternalErr(__FILE__, __LINE__,
-                "The function requires a DAP numeric-type array argument.");
+                "The function requires a numeric-type array argument.");
 
     // Test sizes. Note that Array::length() takes any constraint into account
     // when it returns the length. Even if this was removed, the 'helper'
@@ -212,6 +230,14 @@ void set_array_using_double(Array * dest, double *src, int src_len)
     case dods_float64_c:
         set_array_using_double_helper<dods_float64>(dest, src, src_len);
         break;
+
+        // DAP4 support
+    case dods_uint64_c:
+        set_array_using_double_helper<dods_uint64>(dest, src, src_len);
+        break;
+    case dods_int64_c:
+        set_array_using_double_helper<dods_int64>(dest, src, src_len);
+        break;
     default:
         throw InternalErr(__FILE__, __LINE__,
                 "The argument list built by the CE parser contained an unsupported numeric type.");
@@ -223,25 +249,41 @@ void set_array_using_double(Array * dest, double *src, int src_len)
 
 template<class T> static double *extract_double_array_helper(Array * a)
 {
+	assert(a);
+
     int length = a->length();
+
+    vector<T> b(length);
+    a->value(&b[0]);	// Extract the values of 'a' to 'b'
+#if 0
     // Could improve this using vector<T>. jhrg
     T *b = new T[length];
     a->value(b);
-
+#endif
     double *dest = new double[length];
     for (int i = 0; i < length; ++i)
         dest[i] = (double) b[i];
+#if 0
     delete[]b;
-
+#endif
     return dest;
 }
 
-/** Given a pointer to an Array which holds a numeric type, extract the
- values and return in an array of doubles. This function allocates the
- array using 'new double[n]' so delete[] MUST be used when you are done
- the data. */
+/**  */
+/**
+ * Given a pointer to an Array which holds a numeric type, extract the
+ * values and return in an array of doubles. This function allocates the
+ * array using 'new double[n]' so delete[] MUST be used when you are done
+ * the data.
+ *
+ * @note Support added for DAP4.
+ * @param a Extract value from this Array.
+ * @return A C++/C array of doubles.
+ */
 double *extract_double_array(Array * a)
 {
+	assert(a);
+
     // Simple types are Byte, ..., Float64, String and Url.
     if ((a->type() == dods_array_c && !a->var()->is_simple_type())
     || a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
@@ -272,6 +314,12 @@ double *extract_double_array(Array * a)
         return extract_double_array_helper<dods_float32>(a);
     case dods_float64_c:
         return extract_double_array_helper<dods_float64>(a);
+
+    // Support for DAP4
+    case dods_uint64_c:
+        return extract_double_array_helper<dods_uint64>(a);
+    case dods_int64_c:
+        return extract_double_array_helper<dods_int64>(a);
     default:
         throw InternalErr(__FILE__, __LINE__,
                 "The argument list built by the CE parser contained an unsupported numeric type.");
@@ -281,21 +329,24 @@ double *extract_double_array(Array * a)
 /** Given a BaseType pointer, extract the numeric value it contains and return
  it in a C++ double.
 
+ @note Support for DAP4 types added.
+
  @param arg The BaseType pointer
  @return A C++ double
  @exception Error thrown if the referenced BaseType object does not contain
  a DAP numeric value. */
-double extract_double_value(BaseType * arg)
+double extract_double_value(BaseType *arg)
 {
+	assert(arg);
+
     // Simple types are Byte, ..., Float64, String and Url.
-    if (!arg->is_simple_type() || arg->type() == dods_str_c || arg->type()
-            == dods_url_c)
+    if (!arg->is_simple_type() || arg->type() == dods_str_c || arg->type() == dods_url_c)
         throw Error(malformed_expr,
-                "The function requires a DAP numeric-type argument.");
+                "The function requires a numeric-type argument.");
 
     if (!arg->read_p())
         throw InternalErr(__FILE__, __LINE__,
-                "The CE Evaluator built an argument list where some constants held no values.");
+                "The Evaluator built an argument list where some constants held no values.");
 
     // The types of arguments that the CE Parser will build for numeric
     // constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
@@ -316,9 +367,16 @@ double extract_double_value(BaseType * arg)
         return (double)(static_cast<Float32*>(arg)->value());
     case dods_float64_c:
         return static_cast<Float64*>(arg)->value();
+
+        // Support for DAP4 types.
+    case dods_uint64_c:
+    	return (double)(static_cast<UInt64*>(arg)->value());
+    case dods_int64_c:
+    	return (double)(static_cast<Int64*>(arg)->value());
+
     default:
         throw InternalErr(__FILE__, __LINE__,
-                "The argument list built by the CE parser contained an unsupported numeric type.");
+                "The argument list built by the parser contained an unsupported numeric type.");
     }
 }
 
@@ -407,9 +465,8 @@ libdap_version()
     return PACKAGE_VERSION;
 }
 
-extern "C"
-    const char *
-    libdap_name()
+extern "C" const char *
+libdap_name()
 {
     return PACKAGE_NAME;
 }

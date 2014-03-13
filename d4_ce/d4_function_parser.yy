@@ -185,10 +185,12 @@ arg: function
 
 variable_or_constant : id
 {
-    $$ = driver.build_rvalue($1);
-    if (!$$) {
+    D4RValue *rvalue = driver.build_rvalue($1);
+    if (!rvalue) {
         throw Error("'" + $1 + "' is not a variable, number or string.");
     }
+    
+    $$ = rvalue;
 }
 ;
         

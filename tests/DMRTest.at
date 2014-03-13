@@ -9,16 +9,6 @@ AT_ARG_OPTION_ARG([generate-parse],
      echo "Built baseline for $at_arg_generate_parse";
      exit],[])
 
-AT_ARG_OPTION_ARG([generate-send],
-    [--generate-send=arg   Build the baseline file for sender test 'arg'. 
-                           This depends on the 'name' attribute in the xml matching the filename root],
-    [echo "./dmr-test -x -s $at_arg_generate_send > $at_arg_generate_send.send_base 2>&1";
-     ./dmr-test -x -s $at_arg_generate_send > $at_arg_generate_send.send_base 2>&1;
-     root_name=`basename $at_arg_generate_send .xml`;
-     cp ${root_name}_data.bin dmr-testsuite/;
-     echo "Built baseline for $at_arg_generate_send";
-     exit],[])
-
 AT_ARG_OPTION_ARG([generate-trans],
     [--generate-trans=arg  Build the baseline file for round trip transmission test 'arg'],
     [echo "./dmr-test -x -t $at_arg_generate_trans > $at_arg_generate_trans.trans_base 2>&1";
@@ -36,6 +26,10 @@ AT_ARG_OPTION_ARG([generate-trans-ce],
      echo "Built baseline for $at_arg_generate_trans_ce";
      exit],[])
 
+# There is no easy way to write a --generate... option for the function expression
+# tests. Better to do it by hand... Use ... .num.func_base as the extension for the
+# baselines.
+ 
 # Usage DMR_PARSE $1 <test_input> $2 <pass/xfail>
 # The baseline is assumed to be $1.baseline
 m4_define([DMR_PARSE], [
@@ -50,34 +44,6 @@ m4_define([DMR_PARSE], [
     AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
     AT_XFAIL_IF([test "$2" = "xfail"])
     
-    AT_CLEANUP
-])
-
-# NB: This is a good idea, but the test doesn't work because dmr-test is actually run
-# in some odd directory so the 'response file' is not written in the dir where the test
-# is run. cmp will return an error indicating file not found. The 'trans' tests check
-# that the values are being sent correctly. jhrg 10/9/13
-
-# Usage DMR_SEND $1 <test_input> $2 <pass/xfail>
-# This code tests the parser output and does a binary compare on the 'reponse document'
-# built by the 'sender'.
-m4_define([DMR_SEND], [
-    # Test sending data (i.e., writing the Data DMR to a file)
-    AT_SETUP([send $1])
-    AT_KEYWORDS([send])
-    
-    input=$abs_srcdir/$1
-    baseline=$input.send_base
-
-    AT_CHECK([$abs_builddir/dmr-test -x -s $input || true], [], [stdout], [stderr])
-    AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
-
-    binary="`basename $input .xml`_data.bin"
-    # Skip in 250 charactes to get past the MIME headers that include variable text
-    # like the current date/time.
-    AT_CHECK([cmp $abs_srcdir/$binary $abs_srcdir/dmr-testsuite/$binary 250 250])
-    
-    AT_XFAIL_IF([test "$2" = "xfail"])
     AT_CLEANUP
 ])
 
@@ -102,18 +68,43 @@ m4_define([DMR_TRANS], [
 # This code tests the values printed when the received document is decoded.
 m4_define([DMR_TRANS_CE], [
     # Test transmitting data (i.e., writing the Data DMR to a file and then decoding it)
+    # after applying a constraint expression to the source DMR.
     AT_SETUP([trans/receive $1 $2])
     AT_KEYWORDS([trans])
     
     input=$abs_srcdir/$1
     baseline=$abs_srcdir/$3
     
-    echo "baseline: $baseline"
+    # echo "baseline: $baseline"
 
     AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2" || true], [], [stdout], [stderr])
     AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
     
     AT_XFAIL_IF([test "X$4" = "Xxfail"])
+    AT_CLEANUP
+])
+
+# Usage DMR_TRANS_FUNC_CE <test_input> <func expr> <ce> <baseline> <pass/xfail>
+# This code tests the values printed when the received document is decoded.
+m4_define([DMR_TRANS_FUNC_CE], [
+    # Test transmitting data (i.e., writing the Data DMR to a file and then decoding it)
+    # after applying a function and constraint expression to the source DMR. If either
+    # the function or constraint are empty strings, they will be ignored.
+    AT_SETUP([trans/receive $1 $2 $3])
+    AT_KEYWORDS([trans])
+    
+    input=$abs_srcdir/$1
+    fe="$2"
+    ce=$3
+    baseline=$abs_srcdir/$4
+    expect=$5
+    
+    #echo "baseline: $baseline"
+
+    AT_CHECK([$abs_builddir/dmr-test -x -t $input -f "$fe" -c "$ce" || true], [], [stdout], [stderr])
+    AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
+    
+    AT_XFAIL_IF([test "X$expect" = "Xxfail"])
     AT_CLEANUP
 ])
 
@@ -334,4 +325,16 @@ DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1[[]][[]]
 
 DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1[[0]][[]]}], [dmr-testsuite/test_array_7.2.xml.4.trans_base], [pass])
 
+# Test the function parser and evaluator. The function 'scale' is defined 
+# for both DAP2 and DAP4 in D4TestFunction.cc/h
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,1)], [], [dmr-testsuite/test_array_1.xml.1.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,10)], [], [dmr-testsuite/test_array_1.xml.2.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,-10)], [], [dmr-testsuite/test_array_1.xml.3.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,0.001)], [], [dmr-testsuite/test_array_1.xml.4.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,-0.001)], [], [dmr-testsuite/test_array_1.xml.5.func_base], [pass])
 
+# Test the largest signed int64 value (it will be stored in a D4RValue that 
+# holds a Int64 variable.
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,0x7fffffffffffffff)], [], [dmr-testsuite/test_array_1.xml.6.func_base], [pass])
+# This only fits in a unsigned long long (DAP4's UInt64)
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,0x8fffffffffffffff)], [], [dmr-testsuite/test_array_1.xml.7.func_base], [pass])

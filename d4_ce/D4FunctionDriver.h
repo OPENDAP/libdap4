@@ -66,10 +66,10 @@ class D4FunctionDriver {
 	BaseType *top_basetype() const { return d_basetype_stack.empty() ? 0 : d_basetype_stack.top(); }
 	// throw on pop with an empty stack?
 	void pop_basetype() { d_basetype_stack.pop(); }
-
+#if 0
 	void throw_not_found(const std::string &id, const std::string &ident);
 	void throw_not_array(const std::string &id, const std::string &ident);
-
+#endif
 	D4RValue *build_rvalue(const std::string &id);
 
 	friend class D4FunctionParser;
