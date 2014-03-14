@@ -175,7 +175,7 @@ void D4ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_hea
 
 	    // Write the DMR
 	    XMLWriter xml;
-	    dmr.print_dap4(xml, constrained /*!d_ce.empty()*/);
+	    dmr.print_dap4(xml, constrained /*!d_dap2ce.empty()*/);
 
 	    // now make the chunked output stream; set the size to be at least chunk_size
 	    // but make sure that the whole of the xml plus the CRLF can fit in the first
@@ -187,7 +187,7 @@ void D4ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_hea
 
 	    // Write the data, chunked with checksums
 	    D4StreamMarshaller m(cos);
-	    dmr.root()->serialize(m, dmr, constrained /*!d_ce.empty()*/);
+	    dmr.root()->serialize(m, dmr, constrained /*!d_dap2ce.empty()*/);
 
 		out << flush;
 
