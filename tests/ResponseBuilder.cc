@@ -82,8 +82,8 @@ void ResponseBuilder::initialize()
     // Set default values. Don't use the C++ constructor initialization so
     // that a subclass can have more control over this process.
     d_dataset = "";
-    d_ce = "";
-    d_btp_func_ce = "";
+    d_dap2ce = "";
+    d_dap2_btp_func_ce = "";
     d_timeout = 0;
 
     d_default_protocol = DAP_PROTOCOL_VERSION;
@@ -105,7 +105,7 @@ ResponseBuilder::~ResponseBuilder()
  @return A string object that contains the constraint expression. */
 string ResponseBuilder::get_ce() const
 {
-    return d_ce;
+    return d_dap2ce;
 }
 
 /** Set the constraint expression. This will filter the CE text removing
@@ -120,7 +120,7 @@ string ResponseBuilder::get_ce() const
  */
 void ResponseBuilder::set_ce(string _ce)
 {
-    d_ce = www2id(_ce, "%", "%20");
+    d_dap2ce = www2id(_ce, "%", "%20");
 }
 
 /** The ``dataset name'' is the filename or other string that the
@@ -196,7 +196,7 @@ ResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
     if (!expr.empty())
         ce = expr;
     else
-        ce = d_ce;
+        ce = d_dap2ce;
 
     string btp_function_ce = "";
     string::size_type pos = 0;
@@ -233,8 +233,8 @@ ResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
     DBG(cerr << "Modified constraint: " << ce << endl);
     DBG(cerr << "BTP Function part: " << btp_function_ce << endl);
 
-    d_ce = ce;
-    d_btp_func_ce = btp_function_ce;
+    d_dap2ce = ce;
+    d_dap2_btp_func_ce = btp_function_ce;
 }
 
 #if 0
@@ -475,13 +475,13 @@ void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvalua
     // If there are functions, parse them and eval.
     // Use that DDS and parse the non-function ce
     // Serialize using the second ce and the second dds
-    if (!d_btp_func_ce.empty()) {
+    if (!d_dap2_btp_func_ce.empty()) {
         DBG(cerr << "Found function(s) in CE: " << d_btp_func_ce << endl);
         string cache_token = "";
         DDS *fdds = 0;
 
         // The BES code caches the function result
-            eval.parse_constraint(d_btp_func_ce, dds);
+            eval.parse_constraint(d_dap2_btp_func_ce, dds);
             fdds = eval.eval_function_clauses(dds);
 
         DBG(fdds->print_constrained(cerr));
@@ -493,7 +493,7 @@ void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvalua
         // result) will be sent.
         fdds->mark_all(false);
 
-        eval.parse_constraint(d_ce, *fdds);
+        eval.parse_constraint(d_dap2ce, *fdds);
 
         fdds->tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
@@ -516,7 +516,7 @@ void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvalua
 
 	DBG(cerr << "Simple constraint" << endl);
 
-	eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+	eval.parse_constraint(d_dap2ce, dds); // Throws Error if the ce doesn't parse.
 
 	dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
