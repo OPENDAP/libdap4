@@ -29,14 +29,18 @@
 #include <iostream>
 
 #include "BaseType.h"
-#include "UInt64.h"
-#include "Int64.h"
+#include "Array.h"
+#include "Byte.h"
 #include "Float64.h"
 #include "Str.h"
+
+#include "UInt64.h"
+#include "Int64.h"
 
 #include "D4RValue.h"
 #include "InternalErr.h"
 
+#include "dods-datatypes.h"
 #include "dods-limits.h"
 #include "util.h"
 
@@ -44,28 +48,59 @@ using namespace std;
 
 namespace libdap {
 
-D4RValue::D4RValue(unsigned long long ull) : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+template<typename t, class DAP_TYPE>
+static BaseType *
+build_constant_array(vector<t> &values, DAP_TYPE &dt)
+{
+    Array *array = new Array("", &dt);
+    array->append_dim(values.size());
+
+    // TODO Make set_value_nocopy() methods so that values' pointers can be copied
+    // instead of allocating memory twice. jhrg 7/5/13
+
+    array->set_value(values, values.size());
+
+    array->set_read_p(true);
+
+    static unsigned long counter = 1;
+    array->set_name(string("g") + long_to_string(counter++));
+
+    return array;
+}
+
+D4RValue::D4RValue(unsigned long long ull) : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant)
+{
 	UInt64 *ui = new UInt64("constant");
 	ui->set_value(ull);
 	d_constant = ui;
 }
 
-D4RValue::D4RValue(long long ll) : d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant) {
+D4RValue::D4RValue(long long ll) : d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
+{
 	Int64 *i = new Int64("constant");
 	i->set_value(ll);
 	d_constant = i;
 }
 
-D4RValue::D4RValue(double r) : d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant) {
+D4RValue::D4RValue(double r) : d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
+{
 	Float64 *f = new Float64("constant");
 	f->set_value(r);
 	d_constant = f;
 }
 
-D4RValue::D4RValue(std::string cpps) : d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant) {
+D4RValue::D4RValue(std::string cpps) : d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
+{
 	Str *s = new Str("constant");
 	s->set_value(cpps);
 	d_constant = s;
+}
+
+D4RValue::D4RValue(std::vector<dods_byte> &byte_args)
+	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
+{
+	Byte b("");
+	d_constant = build_constant_array(byte_args, b);
 }
 
 D4RValue::~D4RValue() {

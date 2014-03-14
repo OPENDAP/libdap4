@@ -114,7 +114,6 @@ namespace libdap {
 %type <D4RValue*> variable_or_constant "variable or constant"
 %type <D4RValue*> array_constant "array constant"
 
-%type <unsigned long long> arg_length_hint "array length hint"
 %type <std::vector<dods_byte>*> fast_byte_arg_list "fast byte arg list"
 
 %type <std::string> id path group name
@@ -215,24 +214,25 @@ variable_or_constant : id
   
 array_constant : DOLLAR_BYTE "(" arg_length_hint ":" fast_byte_arg_list ")"
 {
-    $$ = new D4RValue();
+    $$ = new D4RValue(*($5));
+    delete $5;
 }
 ;
 
 /* Here the arg length hint is stored in a global so it can be used by the 
-   function that allocates the vector. The value is passed to vector::reserve(). */
+   function that allocates the vector. The value is passed to vector::reserve().
+   This rule is run for it's side-effect only. This is also used to track the 
+   current arg number so that the hint can be used. */
    
 arg_length_hint : WORD
 {
-    $$ = get_ull($1.c_str());
+    driver.set_arg_length_hint(get_ull($1.c_str()));
 }
 ;
 
 fast_byte_arg_list: WORD
 {
-    std::vector<dods_byte> *arg_list = new std::vector<dods_byte>(/*hint*/);
-    arg_list->push_back(strtol($1.c_str(), 0, 0));
-    $$ = arg_list;
+    $$ = driver.init_arg_list(dods_byte(strtol($1.c_str(), 0, 0)));
 }
 | fast_byte_arg_list "," WORD
 {

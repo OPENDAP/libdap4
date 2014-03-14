@@ -358,12 +358,14 @@ DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(Point.x,10)], [], [dmr-
 DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(Point.x,Point.y)], [], [dmr-testsuite/vol_1_ce_1.xml.5.func_base], [pass])
 DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(scale(Point.x,10),0.01)], [], [dmr-testsuite/vol_1_ce_1.xml.6.func_base], [pass])
 
+# Test the 'array constant' special form (we need a dataset only because the parser needs a DMR to run)
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(\$Byte(20:1,2,3,4),10)], [], [dmr-testsuite/vol_1_ce_1.xml.7.func_base], [pass])
+
 # Test a sequence of function calls and the application of a Constraint to 
 # a function result
 DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_10.xml], [scale(lat,10)], [], [dmr-testsuite/vol_1_ce_10.xml.1.func_base], [pass])
 DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_10.xml], [scale(lat,10);scale(lon,10)], [], [dmr-testsuite/vol_1_ce_10.xml.2.func_base], [pass])
 DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_10.xml], [scale(lat,10);scale(lon,10)], [lat[[10:11]][[10:11]];lon[[10:11]][[10:11]]], [dmr-testsuite/vol_1_ce_10.xml.3.func_base], [pass])
-
 
 
 

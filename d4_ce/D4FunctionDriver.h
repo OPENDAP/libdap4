@@ -58,6 +58,8 @@ class D4FunctionDriver {
 
 	std::stack<BaseType*> d_basetype_stack;
 
+	unsigned long long d_arg_length_hint;
+
 	// d_expr should be set by parse! Its value is used by the parser right before
 	// the actual parsing operation starts. jhrg 11/26/13
 	std::string *expression() { return &d_expr; }
@@ -75,9 +77,10 @@ class D4FunctionDriver {
 	friend class D4FunctionParser;
 
 public:
-	D4FunctionDriver() : d_trace_scanning(false), d_trace_parsing(false), d_expr(""), d_dmr(0), d_sf_list(0), d_result(0) { }
+	D4FunctionDriver() : d_trace_scanning(false), d_trace_parsing(false), d_expr(""), d_dmr(0), d_sf_list(0),
+			d_result(0), d_arg_length_hint(0) { }
 	D4FunctionDriver(DMR *dmr, ServerFunctionsList *sf_list) : d_trace_scanning(false), d_trace_parsing(false),
-			d_expr(""), d_dmr(dmr), d_sf_list(sf_list), d_result(0) { }
+			d_expr(""), d_dmr(dmr), d_sf_list(sf_list), d_result(0), d_arg_length_hint(0) { }
 
 	virtual ~D4FunctionDriver() { }
 
@@ -92,11 +95,16 @@ public:
 	D4RValueList *result() const { return d_result; }
 	void set_result(D4RValueList *rv_list) { d_result = rv_list; }
 
+	unsigned long long get_arg_length_hint() const { return d_arg_length_hint; }
+	void set_arg_length_hint(unsigned long long alh) { d_arg_length_hint = alh; }
+
 	DMR *dmr() const { return d_dmr; }
 	void set_dmr(DMR *dmr) { d_dmr = dmr; }
 
 	ServerFunctionsList *sf_list() const { return d_sf_list; }
 	void set_sf_list(ServerFunctionsList *sf_list) { d_sf_list = sf_list; }
+
+	template <typename t> std::vector<t> *init_arg_list(t val);
 
 	void error(const libdap::location &l, const std::string &m);
 };

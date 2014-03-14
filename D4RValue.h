@@ -26,6 +26,9 @@
 #ifndef _D4RValue_h
 #define _D4RValue_h
 
+#include <vector>
+
+#include <dods-datatypes.h>
 #include <D4Function.h>
 
 namespace libdap
@@ -117,6 +120,7 @@ public:
     D4RValue(long long i);
     D4RValue(double r);
     D4RValue(std::string s);
+    D4RValue(std::vector<dods_byte> &byte_args);
 
     virtual ~D4RValue();
 

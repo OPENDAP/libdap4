@@ -122,6 +122,23 @@ D4FunctionDriver::build_rvalue(const std::string &id)
     return 0;
 }
 
+template <typename t>
+std::vector<t> *
+D4FunctionDriver::init_arg_list(t val)
+{
+	std::vector<t> *arg_list = new std::vector<t>();
+	if (get_arg_length_hint() > 0) arg_list->reserve(get_arg_length_hint());
+
+	arg_list->push_back(val);
+
+	return arg_list;
+}
+
+// Force an instantiation so this can be called from withing the d4_function.yy
+// parser.
+template std::vector<dods_byte> *D4FunctionDriver::init_arg_list(dods_byte val);
+
+
 #if 0
 template<class arg_type_list, class arg_type>
 arg_type_list
