@@ -103,8 +103,8 @@ void D4ResponseBuilder::initialize()
     // Set default values. Don't use the C++ constructor initialization so
     // that a subclass can have more control over this process.
     d_dataset = "";
-    d_ce = "";
-    d_btp_func_ce = "";
+    d_dap4ce = "";
+    d_dap4_btp_func_expr = "";
     d_timeout = 0;
 
     d_default_protocol = DAP_PROTOCOL_VERSION;
@@ -146,12 +146,12 @@ void D4ResponseBuilder::initialize()
  @return A string object that contains the constraint expression. */
 string D4ResponseBuilder::get_ce() const
 {
-    return d_ce;
+    return d_dap4ce;
 }
 
 void D4ResponseBuilder::set_ce(string _ce)
 {
-    d_ce = www2id(_ce, "%", "%20");
+    d_dap4ce = www2id(_ce, "%", "%20");
 }
 
 /** The ``dataset name'' is the filename or other string that the
@@ -232,7 +232,7 @@ D4ResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
     if (!expr.empty())
         ce = expr;
     else
-        ce = d_ce;
+        ce = d_dap4ce;
 
     string btp_function_ce = "";
     string::size_type pos = 0;
@@ -269,8 +269,8 @@ D4ResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
     DBG(cerr << "Modified constraint: " << ce << endl);
     DBG(cerr << "BTP Function part: " << btp_function_ce << endl);
 
-    d_ce = ce;
-    d_btp_func_ce = btp_function_ce;
+    d_dap4ce = ce;
+    d_dap4_btp_func_expr = btp_function_ce;
 }
 
 /**
@@ -353,7 +353,7 @@ bool D4ResponseBuilder::is_valid(const string &cache_file_name)
  * Get the cache DDS pointer - which will contain both attributes
  * and data values.
  *
- * @note Do not call this when d_cache is null or when d_btp_func_ce
+ * @note Do not call this when d_cache is null or when d_dap4_btp_func_expr
  * is empty!
  *
  * @param dds The DDS of the dataset referenced by the URL
@@ -365,7 +365,7 @@ bool D4ResponseBuilder::is_valid(const string &cache_file_name)
 DDS *D4ResponseBuilder::read_cached_dataset(DDS &dds, ConstraintEvaluator &eval,
                                           string &cache_token)
 {
-    DBG(cerr << "Found function(s) in CE: " << d_btp_func_ce << endl);
+    DBG(cerr << "Found function(s) in CE: " << d_dap4_btp_func_expr << endl);
 
     // These are used for the cached or newly created DDS object
     BaseTypeFactory factory;
@@ -373,7 +373,7 @@ DDS *D4ResponseBuilder::read_cached_dataset(DDS &dds, ConstraintEvaluator &eval,
 
     // Get the cache filename for this thing. Do not use the default
     // name mangling; instead use what build_cache_file_name() does.
-    string cache_file_name = d_cache->get_cache_file_name(build_cache_file_name(d_dataset, d_btp_func_ce), false);
+    string cache_file_name = d_cache->get_cache_file_name(build_cache_file_name(d_dataset, d_dap4_btp_func_expr), false);
     int fd;
     try {
         // If the object in the cache is not valid, remove it. The read_lock will
@@ -394,7 +394,7 @@ DDS *D4ResponseBuilder::read_cached_dataset(DDS &dds, ConstraintEvaluator &eval,
         if (d_cache->create_and_lock(cache_file_name, fd)) {
             DBG(cerr << "function ce - caching " << cache_file_name << endl );
 
-            eval.parse_constraint(d_btp_func_ce, dds);
+            eval.parse_constraint(d_dap4_btp_func_expr, dds);
             fdds = eval.eval_function_clauses(dds);
 
             // TODO cache it using fd. Since this is advisory locking, this will work...
@@ -495,9 +495,9 @@ void D4ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &ev
     // If there are functions, parse them and eval.
     // Use that DDS and parse the non-function ce
     // Serialize using the second ce and the second dds
-    if (!d_btp_func_ce.empty()) {
+    if (!d_dap4_btp_func_expr.empty()) {
 #if 0
-        DBG(cerr << "Found function(s) in CE: " << d_btp_func_ce << endl);
+        DBG(cerr << "Found function(s) in CE: " << d_dap4_btp_func_expr << endl);
 
         // These are used for the cached or newly created DDS object
         BaseTypeFactory factory;
@@ -505,7 +505,7 @@ void D4ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &ev
 
         // Get the cache filename for this thing. Do not use the default
         // name mangling; instead use what build_cache_file_name() does.
-        string cache_file_name = d_cache->get_cache_file_name(build_cache_file_name(d_dataset, d_btp_func_ce), false);
+        string cache_file_name = d_cache->get_cache_file_name(build_cache_file_name(d_dataset, d_dap4_btp_func_expr), false);
         int fd;
         try {
             // If the object in the cache is not valid, remove it. The read_lock will
@@ -526,7 +526,7 @@ void D4ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &ev
             if (d_cache->create_and_lock(cache_file_name, fd)) {
                 DBG(cerr << "function ce - caching " << cache_file_name << endl );
 
-                eval.parse_constraint(d_btp_func_ce, dds);
+                eval.parse_constraint(d_dap4_btp_func_expr, dds);
                 fdds = eval.eval_function_clauses(dds);
 
                 // TODO cache it using fd. Since this is advisory locking, this will work...
@@ -569,7 +569,7 @@ void D4ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &ev
         }
         else {
             DBG(cerr << "Cache not found; (re)calculating" << endl);
-            eval.parse_constraint(d_btp_func_ce, dds);
+            eval.parse_constraint(d_dap4_btp_func_expr, dds);
             fdds = eval.eval_function_clauses(dds);
         }
 
@@ -586,7 +586,7 @@ void D4ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &ev
     else {
         DBG(cerr << "Simple constraint" << endl);
 
-        eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+        eval.parse_constraint(d_dap4ce, dds); // Throws Error if the ce doesn't parse.
 
         if (with_mime_headers)
             set_mime_text(out, dods_das, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
@@ -636,9 +636,9 @@ void D4ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &ev
     // If there are functions, parse them and eval.
     // Use that DDS and parse the non-function ce
     // Serialize using the second ce and the second dds
-    if (!d_btp_func_ce.empty()) {
+    if (!d_dap4_btp_func_expr.empty()) {
 #if 0
-        DBG(cerr << "Found function(s) in CE: " << d_btp_func_ce << endl);
+        DBG(cerr << "Found function(s) in CE: " << d_dap4_btp_func_expr << endl);
 
         // These are used for the cached or newly created DDS object
         BaseTypeFactory factory;
@@ -646,7 +646,7 @@ void D4ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &ev
 
         // Get the cache filename for this thing. Do not use the default
         // name mangling; instead use what build_cache_file_name() does.
-        string cache_file_name = d_cache->get_cache_file_name(build_cache_file_name(d_dataset, d_btp_func_ce), false);
+        string cache_file_name = d_cache->get_cache_file_name(build_cache_file_name(d_dataset, d_dap4_btp_func_expr), false);
         int fd;
         try {
             // If the object in the cache is not valid, remove it. The read_lock will
@@ -666,7 +666,7 @@ void D4ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &ev
             if (d_cache->create_and_lock(cache_file_name, fd)) {
                 DBG(cerr << "function ce - caching " << cache_file_name << endl );
 
-                eval.parse_constraint(d_btp_func_ce, dds);
+                eval.parse_constraint(d_dap4_btp_func_expr, dds);
                 fdds = eval.eval_function_clauses(dds);
 
                 // TODO cache it using fd. Since this is advisory locking, this will work...
@@ -709,18 +709,18 @@ void D4ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &ev
         }
         else {
             DBG(cerr << "Cache not found; (re)calculating" << endl);
-            eval.parse_constraint(d_btp_func_ce, dds);
+            eval.parse_constraint(d_dap4_btp_func_expr, dds);
             fdds = eval.eval_function_clauses(dds);
         }
 
         // Server functions might mark variables to use their read()
-        // methods. Clear that so the CE in d_ce will control what is
+        // methods. Clear that so the CE in d_dap4ce will control what is
         // sent. If that is empty (there was only a function call) all
         // of the variables in the intermediate DDS (i.e., the function
         // result) will be sent.
         fdds->mark_all(false);
 
-        eval.parse_constraint(d_ce, *fdds);
+        eval.parse_constraint(d_dap4ce, *fdds);
 
         if (with_mime_headers)
             set_mime_text(out, dods_dds, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
@@ -735,7 +735,7 @@ void D4ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &ev
     else {
         DBG(cerr << "Simple constraint" << endl);
 
-        eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+        eval.parse_constraint(d_dap4ce, dds); // Throws Error if the ce doesn't parse.
 
         if (with_mime_headers)
             set_mime_text(out, dods_dds, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
@@ -869,7 +869,7 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
     dds.set_timeout(d_timeout);
 
 #if 0
-    eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+    eval.parse_constraint(d_dap4ce, dds); // Throws Error if the ce doesn't parse.
 
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
@@ -887,8 +887,8 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
     // If there are functions, parse them and eval.
     // Use that DDS and parse the non-function ce
     // Serialize using the second ce and the second dds
-    if (!d_btp_func_ce.empty()) {
-        DBG(cerr << "Found function(s) in CE: " << d_btp_func_ce << endl);
+    if (!d_dap4_btp_func_expr.empty()) {
+        DBG(cerr << "Found function(s) in CE: " << d_dap4_btp_func_expr << endl);
 #if 0
         // These are used for the cached or newly created DDS object
         BaseTypeFactory factory;
@@ -896,7 +896,7 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
 
         // Get the cache filename for this thing. Do not use the default
         // name mangling; instead use what build_cache_file_name() does.
-        string cache_file_name = d_cache->get_cache_file_name(build_cache_file_name(d_dataset, d_btp_func_ce), false);
+        string cache_file_name = d_cache->get_cache_file_name(build_cache_file_name(d_dataset, d_dap4_btp_func_expr), false);
         int fd;
         try {
             // If the object in the cache is not valid, remove it. The read_lock will
@@ -916,7 +916,7 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
             if (d_cache->create_and_lock(cache_file_name, fd)) {
                 DBG(cerr << "function ce - caching " << cache_file_name << endl );
 
-                eval.parse_constraint(d_btp_func_ce, dds);
+                eval.parse_constraint(d_dap4_btp_func_expr, dds);
                 fdds = eval.eval_function_clauses(dds);
 
                 // TODO cache it using fd. Since this is advisory locking, this will work...
@@ -960,7 +960,7 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
             fdds = get_cached_dap2_data_ddx(cache_file_name, &factory);
 #if 0
             // Use the cache file and don't eval the function(s)
-            DBG(cerr << "Reading cache for " << d_dataset + "?" + d_btp_func_ce << endl);
+            DBG(cerr << "Reading cache for " << d_dataset + "?" + d_dap4_btp_func_expr << endl);
             icache_file.close(); // only opened to see if it's there; Connect/Response do their own thing
 
             fdds = new DDS(&factory);
@@ -992,7 +992,7 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
 #endif
         }
         else {
-            eval.parse_constraint(d_btp_func_ce, dds);
+            eval.parse_constraint(d_dap4_btp_func_expr, dds);
             fdds = eval.eval_function_clauses(dds);
 
             cache_data_ddx(cache_file_name, *fdds);
@@ -1000,7 +1000,7 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
             // TODO cache the fdds here
             ofstream ocache_file(cache_file_name.c_str());
 
-            DBG(cerr << "Caching " << d_dataset + "?" + d_btp_func_ce << endl);
+            DBG(cerr << "Caching " << d_dataset + "?" + d_dap4_btp_func_expr << endl);
             cache_data_ddx(ocache_file, *fdds);
             ocache_file.close();
 #endif
@@ -1015,23 +1015,23 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
         }
         else {
             DBG(cerr << "Cache not found; (re)calculating" << endl);
-            eval.parse_constraint(d_btp_func_ce, dds);
+            eval.parse_constraint(d_dap4_btp_func_expr, dds);
             fdds = eval.eval_function_clauses(dds);
         }
 
         DBG(cerr << "Intermediate DDS: " << endl);
         DBG(fdds->print_constrained(cerr));
 
-        DBG(cerr << "Parsing remaining CE: " << d_ce << endl);
+        DBG(cerr << "Parsing remaining CE: " << d_dap4ce << endl);
 
         // Server functions might mark variables to use their read()
-        // methods. Clear that so the CE in d_ce will control what is
+        // methods. Clear that so the CE in d_dap4ce will control what is
         // sent. If that is empty (there was only a function call) all
         // of the variables in the intermediate DDS (i.e., the function
         // result) will be sent.
         fdds->mark_all(false);
 
-        eval.parse_constraint(d_ce, *fdds);
+        eval.parse_constraint(d_dap4ce, *fdds);
 
         fdds->tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
@@ -1056,7 +1056,7 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
     else {
         DBG(cerr << "Simple constraint" << endl);
 
-        eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+        eval.parse_constraint(d_dap4ce, dds); // Throws Error if the ce doesn't parse.
 
         dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
@@ -1117,8 +1117,8 @@ void D4ResponseBuilder::send_data(ostream & data_stream, DDS & dds, ConstraintEv
 void D4ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers)
 {
     // If constrained, parse the constraint. Throws Error or InternalErr.
-    if (!d_ce.empty())
-        eval.parse_constraint(d_ce, dds);
+    if (!d_dap4ce.empty())
+        eval.parse_constraint(d_dap4ce, dds);
 
     if (eval.functional_expression())
         throw Error(
@@ -1127,7 +1127,7 @@ void D4ResponseBuilder::send_ddx(ostream &out, DDS &dds, ConstraintEvaluator &ev
     if (with_mime_headers)
         set_mime_text(out, dods_ddx, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
 
-    dds.print_xml_writer(out, !d_ce.empty(), "");
+    dds.print_xml_writer(out, !d_dap4ce.empty(), "");
 }
 
 /** Send the data in the DDS object back to the client program. The data is
@@ -1157,7 +1157,7 @@ void D4ResponseBuilder::send_data_ddx(ostream & data_stream, DDS & dds, Constrai
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
-    eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+    eval.parse_constraint(d_dap4ce, dds); // Throws Error if the ce doesn't parse.
 
     if (dds.get_response_limit() != 0 && dds.get_request_size(true) > dds.get_response_limit()) {
         string msg = "The Request for " + long_to_string(dds.get_request_size(true) / 1024)
@@ -1215,15 +1215,15 @@ void
 D4ResponseBuilder::send_dmr(ostream &out, DDS &dds, ConstraintEvaluator &eval)
 {
     // If constrained, parse the constraint. Throws Error or InternalErr.
-    if (!d_ce.empty())
-        eval.parse_constraint(d_ce, dds);
+    if (!d_dap4ce.empty())
+        eval.parse_constraint(d_dap4ce, dds);
 
     // TODO Change functions so this is no longer an error
     if (eval.functional_expression())
         throw Error(
                 "Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
 
-    dds.print_dmr(out, !d_ce.empty());
+    dds.print_dmr(out, !d_dap4ce.empty());
 }
 #endif // DAP4
 
@@ -1241,7 +1241,7 @@ D4ResponseBuilder::send_dmr(ostream &out, DDS &dds, ConstraintEvaluator &eval)
 
 void D4ResponseBuilder::cache_data_ddx(const string &cache_file_name, DDS &dds)
 {
-    DBG(cerr << "Caching " << d_dataset + "?" + d_btp_func_ce << endl);
+    DBG(cerr << "Caching " << d_dataset + "?" + d_dap4_btp_func_expr << endl);
 
     ofstream data_stream(cache_file_name.c_str());
     // Test for a valid file open
@@ -1336,7 +1336,7 @@ void D4ResponseBuilder::read_data_from_cache(FILE *data, DDS *fdds)
 DDS *
 D4ResponseBuilder::get_cached_data_ddx(const string &cache_file_name, BaseTypeFactory *factory)
 {
-    DBG(cerr << "Reading cache for " << d_dataset + "?" + d_btp_func_ce << endl);
+    DBG(cerr << "Reading cache for " << d_dataset + "?" + d_dap4_btp_func_expr << endl);
 
     DDS *fdds = new DDS(factory);
 
@@ -1403,7 +1403,7 @@ D4ResponseBuilder::send_dap4_data(ostream &out, DDS &dds, ConstraintEvaluator &e
     // directly to the data.
 
     // Send constrained DMR
-    dds.print_dmr(out, !d_ce.empty());
+    dds.print_dmr(out, !d_dap4ce.empty());
 
     // Grab a stream that encodes for DAP4
     D4StreamMarshaller m(out);

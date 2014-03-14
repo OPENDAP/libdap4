@@ -166,7 +166,7 @@ DODSFilter::DODSFilter(int argc, char *argv[]) throw(Error)
     initialize(argc, argv);
 
     DBG(cerr << "d_comp: " << d_comp << endl);
-    DBG(cerr << "d_ce: " << d_ce << endl);
+    DBG(cerr << "d_ce: " << d_dap2ce << endl);
     DBG(cerr << "d_cgi_ver: " << d_cgi_ver << endl);
     DBG(cerr << "d_response: " << d_response << endl);
     DBG(cerr << "d_anc_dir: " << d_anc_dir << endl);
@@ -193,7 +193,7 @@ DODSFilter::initialize()
     d_bad_options = false;
     d_conditional_request = false;
     d_dataset = "";
-    d_ce = "";
+    d_dap2ce = "";
     d_cgi_ver = "";
     d_anc_dir = "";
     d_anc_file = "";
@@ -343,13 +343,13 @@ question mark.
 string
 DODSFilter::get_ce() const
 {
-    return d_ce;
+    return d_dap2ce;
 }
 
 void
 DODSFilter::set_ce(string _ce)
 {
-    d_ce = www2id(_ce, "%", "%20");
+    d_dap2ce = www2id(_ce, "%", "%20");
 }
 
 /** The ``dataset name'' is the filename or other string that the
@@ -782,7 +782,7 @@ DODSFilter::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
 {
     // If constrained, parse the constraint. Throws Error or InternalErr.
     if (constrained)
-        eval.parse_constraint(d_ce, dds);
+        eval.parse_constraint(d_dap2ce, dds);
 
     if (eval.functional_expression())
         throw Error("Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
@@ -985,7 +985,7 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
-    eval.parse_constraint(d_ce, dds);   // Throws Error if the ce doesn't
+    eval.parse_constraint(d_dap2ce, dds);   // Throws Error if the ce doesn't
 					// parse.
 
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
@@ -1065,8 +1065,8 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
                      bool with_mime_headers) const
 {
     // If constrained, parse the constraint. Throws Error or InternalErr.
-    if (!d_ce.empty())
-        eval.parse_constraint(d_ce, dds);
+    if (!d_dap2ce.empty())
+        eval.parse_constraint(d_dap2ce, dds);
 
     if (eval.functional_expression())
         throw Error("Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
@@ -1084,7 +1084,7 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
     else {
         if (with_mime_headers)
             set_mime_text(out, dods_ddx, d_cgi_ver, x_plain, dds_lmt);
-        dds.print_xml_writer(out, !d_ce.empty(), "");
+        dds.print_xml_writer(out, !d_dap2ce.empty(), "");
     }
 }
 
@@ -1128,7 +1128,7 @@ DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
-    eval.parse_constraint(d_ce, dds);   // Throws Error if the ce doesn't
+    eval.parse_constraint(d_dap2ce, dds);   // Throws Error if the ce doesn't
 					// parse.
 
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.

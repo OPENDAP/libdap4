@@ -327,7 +327,7 @@ void ResponseBuilder::send_das(ostream &out, DDS &dds, ConstraintEvaluator &eval
     else {
         DBG(cerr << "Simple constraint" << endl);
 
-        eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+        eval.parse_constraint(d_dap2ce, dds); // Throws Error if the ce doesn't parse.
 
         if (with_mime_headers)
             set_mime_text(out, dods_das, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
@@ -393,13 +393,13 @@ void ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval
         }
 
         // Server functions might mark variables to use their read()
-        // methods. Clear that so the CE in d_ce will control what is
+        // methods. Clear that so the CE in d_dap2ce will control what is
         // sent. If that is empty (there was only a function call) all
         // of the variables in the intermediate DDS (i.e., the function
         // result) will be sent.
         fdds->mark_all(false);
 
-        eval.parse_constraint(d_ce, *fdds);
+        eval.parse_constraint(d_dap2ce, *fdds);
 
         if (with_mime_headers)
             set_mime_text(out, dods_dds, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
@@ -414,7 +414,7 @@ void ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval
     else {
         DBG(cerr << "Simple constraint" << endl);
 
-        eval.parse_constraint(d_ce, dds); // Throws Error if the ce doesn't parse.
+        eval.parse_constraint(d_dap2ce, dds); // Throws Error if the ce doesn't parse.
 
         if (with_mime_headers)
             set_mime_text(out, dods_dds, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
@@ -487,7 +487,7 @@ void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvalua
         DBG(fdds->print_constrained(cerr));
 
         // Server functions might mark variables to use their read()
-        // methods. Clear that so the CE in d_ce will control what is
+        // methods. Clear that so the CE in d_dap2ce will control what is
         // sent. If that is empty (there was only a function call) all
         // of the variables in the intermediate DDS (i.e., the function
         // result) will be sent.

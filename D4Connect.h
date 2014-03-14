@@ -42,7 +42,7 @@ private:
 
     bool d_local;  // Is this a local connection?
     std::string d_URL;  // URL to remote dataset (minus CE)
-    std::string d_ce; 	// CE
+    std::string d_dap4ce; 	// CE
 
     std::string d_server; // Server implementation information (the XDAP-Server header)
     std::string d_protocol; // DAP protocol from the server (XDAP)
@@ -67,7 +67,7 @@ public:
     bool is_local() const { return d_local; }
 
     virtual std::string URL() const { return d_URL; }
-    virtual std::string CE() const { return d_ce; }
+    virtual std::string CE() const { return d_dap4ce; }
 
     void set_credentials(std::string u, std::string p);
     void set_accept_deflate(bool deflate);

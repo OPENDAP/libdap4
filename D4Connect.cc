@@ -248,7 +248,7 @@ void D4Connect::parse_mime(Response &rs)
  @param password Password to use for authentication. Null by default.
  @brief Create an instance of Connect. */
 D4Connect::D4Connect(const string &url, string uname, string password) :
-        d_http(0), d_local(false), d_URL(""), d_ce(""), d_server("unknown"), d_protocol("4.0")
+        d_http(0), d_local(false), d_URL(""), d_dap4ce(""), d_server("unknown"), d_protocol("4.0")
 {
     string name = prune_spaces(url);
 
@@ -263,7 +263,7 @@ D4Connect::D4Connect(const string &url, string uname, string password) :
         string::size_type dotpos = name.find('?');
         if (dotpos != name.npos) {
             d_URL = name.substr(0, dotpos);
-            d_ce = name.substr(dotpos + 1);
+            d_dap4ce = name.substr(dotpos + 1);
         }
         else {
             d_URL = name;
@@ -284,7 +284,7 @@ D4Connect::~D4Connect()
 
 void D4Connect::request_dmr(DMR &dmr, const string expr)
 {
-	string url = d_URL + ".dmr" + "?" + id2www_ce(d_ce + expr);
+	string url = d_URL + ".dmr" + "?" + id2www_ce(d_dap4ce + expr);
 
 	Response *rs = 0;
 	try {
@@ -327,7 +327,7 @@ void D4Connect::request_dmr(DMR &dmr, const string expr)
 
 void D4Connect::request_dap4_data(DMR &dmr, const string expr)
 {
-    string url = d_URL + ".dap" + "?" + id2www_ce(d_ce + expr);
+    string url = d_URL + ".dap" + "?" + id2www_ce(d_dap4ce + expr);
 
     Response *rs = 0;
     try {
