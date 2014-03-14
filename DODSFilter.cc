@@ -166,7 +166,7 @@ DODSFilter::DODSFilter(int argc, char *argv[]) throw(Error)
     initialize(argc, argv);
 
     DBG(cerr << "d_comp: " << d_comp << endl);
-    DBG(cerr << "d_ce: " << d_dap2ce << endl);
+    DBG(cerr << "d_dap2ce: " << d_dap2ce << endl);
     DBG(cerr << "d_cgi_ver: " << d_cgi_ver << endl);
     DBG(cerr << "d_response: " << d_response << endl);
     DBG(cerr << "d_anc_dir: " << d_anc_dir << endl);
