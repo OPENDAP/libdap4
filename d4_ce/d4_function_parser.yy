@@ -46,8 +46,12 @@
 
 %code requires {
 
+#include <vector>
+#include <cstdlib>
+
 #include "D4FunctionDriver.h"
 #include "D4RValue.h"
+#include "dods-datatypes.h"
 
 namespace libdap {
     class D4FunctionScanner;
@@ -74,24 +78,30 @@ namespace libdap {
 };
 
 %code {
-   #include <iostream>
-   #include <cstdlib>
-   #include <fstream>
+    #include <fstream>
    
-   #include "BaseType.h"
-   #include "DMR.h"
-   #include "D4RValue.h"
-   #include "ServerFunctionsList.h"
+    #include <cstdlib>
+    #include <iostream>
+    //#include <vector>
 
-   /* include for all driver functions */
-   #include "D4FunctionDriver.h"
+    #include "BaseType.h"
+    #include "DMR.h"
+    #include "D4RValue.h"
+    #include "ServerFunctionsList.h"
+   
+    // #include "dods-datatypes.h"
+    #include "parser-util.h"
 
-   /* this is silly, but I can't figure out a way around */
-   static int yylex(libdap::D4FunctionParser::semantic_type *yylval,
-                    libdap::location *loc,
-                    libdap::D4FunctionScanner  &scanner,
-                    libdap::D4FunctionDriver   &driver);
+    /* include for all driver functions */
+    #include "D4FunctionDriver.h"
 
+    using namespace libdap ;
+    
+    /* this is silly, but I can't figure out a way around */
+    static int yylex(libdap::D4FunctionParser::semantic_type *yylval,
+                     libdap::location *loc,
+                     libdap::D4FunctionScanner  &scanner,
+                     libdap::D4FunctionDriver   &driver);
 }
 
 %type <D4RValueList*> functions "functions"
@@ -102,6 +112,10 @@ namespace libdap {
 
 %type <D4Function> fname "function name"
 %type <D4RValue*> variable_or_constant "variable or constant"
+%type <D4RValue*> array_constant "array constant"
+
+%type <unsigned long long> arg_length_hint "array length hint"
+%type <std::vector<dods_byte>*> fast_byte_arg_list "fast byte arg list"
 
 %type <std::string> id path group name
 
@@ -113,6 +127,7 @@ namespace libdap {
     END  0  "end of file"
     
     SEMICOLON ";"
+    COLON ":"
 
     LPAREN "("
     RPAREN ")"
@@ -121,6 +136,8 @@ namespace libdap {
 
     GROUP_SEP "/"
     PATH_SEP "."
+    
+    DOLLAR_BYTE "$Byte"
 ;
 
 %%
@@ -179,8 +196,10 @@ arg: function
 {
     $$ = $1;
 }
-
-// | array_constant { } // FIXME
+| array_constant 
+{
+    $$ = $1;
+}
 ;
 
 variable_or_constant : id
@@ -193,7 +212,35 @@ variable_or_constant : id
     $$ = rvalue;
 }
 ;
-        
+  
+array_constant : DOLLAR_BYTE "(" arg_length_hint ":" fast_byte_arg_list ")"
+{
+    $$ = new D4RValue();
+}
+;
+
+/* Here the arg length hint is stored in a global so it can be used by the 
+   function that allocates the vector. The value is passed to vector::reserve(). */
+   
+arg_length_hint : WORD
+{
+    $$ = get_ull($1.c_str());
+}
+;
+
+fast_byte_arg_list: WORD
+{
+    std::vector<dods_byte> *arg_list = new std::vector<dods_byte>(/*hint*/);
+    arg_list->push_back(strtol($1.c_str(), 0, 0));
+    $$ = arg_list;
+}
+| fast_byte_arg_list "," WORD
+{
+    $1->push_back(strtol($3.c_str(), 0, 0));
+    $$ = $1;
+}
+;
+
 id : path
 {
     $$ = $1;

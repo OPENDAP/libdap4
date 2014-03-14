@@ -279,7 +279,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h \
 	ServerFunctionsList.h ServerFunction.h media_types.h \
-	DapXmlNamespaces.h 
+	DapXmlNamespaces.h parser-util.h
 
 DAP4_ONLY_HDR = D4StreamMarshaller.h D4StreamUnMarshaller.h Int64.h \
         UInt64.h Int8.h D4ParserSax2.h D4BaseTypeFactory.h \

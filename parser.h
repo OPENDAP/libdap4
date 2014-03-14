@@ -133,66 +133,9 @@ void parse_error(const string &msg, const int line_num,
                  const char *context = 0);
 //@}
 
-/** Given a string (<tt>const char *src</tt>), save it to the
-    temporary variable pointed to by <tt>dst</tt>. If the string is
-    longer than <tt>ID_MAX</tt>, generate and error indicating that
-    <tt>src</tt> was truncated to <tt>ID_MAX</tt> characters during
-    the copy operation. There are two versions of this function; one
-    calls the version of <tt>parser_error()</tt> which writes to
-    stderr. The version which accepts the <tt>parser_arg *arg</tt>
-    argument calls the version of <tt>parser_error()</tt> which
-    generates and Error object.
-
-    @return void
-    @brief Save a string to a temporary variable during the parse.
-    */
-
-void save_str(char *dst, const char *src, const int line_num);
-void save_str(string &dst, const char *src, const int);
-
-bool is_keyword(string id, const string &keyword);
-
-/** Check to see if <tt>val</tt> is a valid byte value. If not,
-    generate an error message using <tt>parser_error()</tt>. There are
-    two versions of <tt>check_byte()</tt>, one which calls
-    <tt>parser_error()</tt> and prints an error message to stderr an
-    one which calls <tt>parser_error()</tt> and generates and Error
-    object.
-
-    @return Returns: True if <i>val</i> is a byte value, False otherwise.
-    @brief Is the value a valid byte?
-    */
-
-int check_byte(const char *val);
-
-/** Like <tt>check_byte()</tt> but for 32-bit integers
-    (<tt>check_uint()</tt> is for unsigned integers).
-
-
-    @brief Is the value a valid integer?
-    */
-
-int check_int16(const char *val);
-int check_uint16(const char *val);
-int check_int32(const char *val);
-int check_uint32(const char *val);
-
-unsigned long long get_ull(const char *val);
-
-/** Like <tt>check_byte()</tt> but for 64-bit float values.
-
-    @brief Is the value a valid float? */
-
-int check_float32(const char *val);
-int check_float64(const char *val);
-
-/** Currently this function always returns true.
-
-    @brief Is the value a valid URL? */
-
-int check_url(const char *val);
-
 } // namespace libdap
+
+#include "parser-util.h"
 
 #endif // _parser_h
 

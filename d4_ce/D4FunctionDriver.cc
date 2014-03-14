@@ -123,19 +123,54 @@ D4FunctionDriver::build_rvalue(const std::string &id)
 }
 
 #if 0
-void
-D4FunctionDriver::throw_not_found(const string &id, const string &ident)
+template<class arg_type_list, class arg_type>
+arg_type_list
+make_fast_arg_list(unsigned long vector_size_hint, arg_type value)
 {
-    throw Error(d_expr + ": The variable " + id + " was not found in the dataset (" + ident + ").");
+    arg_type_list args = new std::vector<arg_type>;
+
+    if (vector_size_hint > 0) args->reserve(vector_size_hint);
+
+    args->push_back(value);
+    return args;
 }
 
-void
-D4FunctionDriver::throw_not_array(const string &id, const string &ident)
+template<class arg_type_list, class arg_type>
+arg_type_list
+make_fast_arg_list(arg_type_list values, arg_type value)
 {
-	throw Error(d_expr + ": The variable '" + id + "' is not an Array variable (" + ident + ").");
+    values->push_back(value);
+    return values;
+}
+
+template<class t, class T>
+rvalue *build_constant_array(vector<t> *values, DDS *dds)
+{
+    //vector<t> *values = $5;
+
+    T i("");
+    Array *array = new Array("", &i);
+    array->append_dim(values->size());
+
+    // TODO Make set_value_nocopy() methods so that values' pointers can be copied
+    // instead of allocating memory twice. jhrg 7/5/13
+
+    array->set_value(*values, values->size());
+    delete values;
+    array->set_read_p(true);
+
+    static unsigned long counter = 1;
+    string name;
+    do {
+        name = "g" + long_to_string(counter++);
+    } while (dds->var(name));
+    array->set_name(name);
+
+    return new rvalue(array);
 }
 #endif
-// This method is called from the parser (see d4_ce_parser.yy, down in the code
+
+// This method is called from the parser (see d4_function_parser.yy, down in the code
 // section). This will be called during the call to D4FunctionParser::parse(), that
 // is inside D4FunctionDriver::parse(...)
 void

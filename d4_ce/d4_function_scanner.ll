@@ -109,12 +109,15 @@ loc->step();
 
 ","		return token::COMMA;
 ";"		return token::SEMICOLON;
+":"     return token::COLON;
 
 "("     return token::LPAREN;
 ")"     return token::RPAREN;
 
 "/"     return token::GROUP_SEP;
 "."     return token::PATH_SEP;
+
+"$Byte" return token::DOLLAR_BYTE;
 
 [ \t]+  /* ignore these */
 
