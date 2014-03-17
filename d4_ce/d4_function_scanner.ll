@@ -26,6 +26,7 @@
 */ 
 
 %{ /* -*- C++ -*- */
+
 //#include "config.h"
 
 #include <string>
@@ -35,13 +36,15 @@
 /* typedef to make the returns for the tokens shorter */
 
 /* NB: It would be best to use the same scanner (and maybe parser) for
-   both the D4 CE and Function parameter, but for the initial version 
-   far less complexity is requires (since the initial version will just
-   support variables, constants, functions and the #array special form.
+   both the D4 CE and Function parameters, but for the initial version 
+   far less complexity is require by the Function expression scanner
+   (since the initial version will just support variables, constants, 
+   functions and the $<type> array special form) and not function arguments
+   that are general expressions (like array slicing and/or filters).
    
    This comment is here because this is the first place where there is 
    coupling between the CE parser and its scanner. I'm not sure, however,
-   if one sting can be parsed by two parsers if they are using two scanners,
+   if one string can be parsed by two parsers if they are using two scanners,
    so extending the Function parser to allow function args to be any CE 
    clause may mean some more serious work with the parsers.
    
@@ -95,6 +98,14 @@ typedef libdap::D4FunctionParser::token token;
    can. jhrg 3/10/14 */
 WORD    [-+a-zA-Z0-9_%*\\~@!#][-+a-zA-Z0-9_%*\\~@!#]* 
 
+/* I added these tokens because floating point values may contain dots and
+   added a '.' to WORD will break the parsing of paths (or make for some 
+   fairly obscure code - where $Float32() takes tokens that match 'path'.
+   Since we have a separate scanner for the function expressions, might as
+   well add a FLOAT token... jhg 3/17/14 
+FLOAT   [-+eE.0-9][-+eE.0-9]*
+*/
+
 %{
 // Code run each time a pattern is matched
 #define YY_USER_ACTION loc->columns(yyleng);
@@ -118,6 +129,16 @@ loc->step();
 "."     return token::PATH_SEP;
 
 "$Byte" return token::DOLLAR_BYTE;
+"$UInt8" return token::DOLLAR_UINT8;
+"$Int8" return token::DOLLAR_INT8;
+"$UInt16" return token::DOLLAR_UINT16;
+"$Int16" return token::DOLLAR_INT16;
+"$UInt32" return token::DOLLAR_UINT32;
+"$Int32" return token::DOLLAR_INT32;
+"$UInt64" return token::DOLLAR_UINT64;
+"$Int64" return token::DOLLAR_INT64;
+"$Float32" return token::DOLLAR_FLOAT32;
+"$Float64" return token::DOLLAR_FLOAT64;
 
 [ \t]+  /* ignore these */
 

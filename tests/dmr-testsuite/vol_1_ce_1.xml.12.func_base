@@ -1,0 +1,23 @@
+Parse successful
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/vol_1_ce_1.xml" dapVersion="4.0" dmrVersion="1.0" name="vol_1_ce_1">
+    <Int32 name="u"/>
+    <Int32 name="v"/>
+    <Structure name="Point">
+        <Int32 name="x"/>
+        <Int32 name="y"/>
+    </Structure>
+</Dataset>
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="function_results">
+    <Float64 name="g1">
+        <Dim size="4"/>
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <Value>85b447dc</Value>
+        </Attribute>
+    </Float64>
+</Dataset>
+
+The data:
+{ {10, 20, 30, -40} }

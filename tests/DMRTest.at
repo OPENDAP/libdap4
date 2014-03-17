@@ -360,6 +360,15 @@ DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(scale(Point.x,10),0.01)
 
 # Test the 'array constant' special form (we need a dataset only because the parser needs a DMR to run)
 DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(\$Byte(20:1,2,3,4),10)], [], [dmr-testsuite/vol_1_ce_1.xml.7.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(\$Int8(20:10,11,12,-9),10)], [], [dmr-testsuite/vol_1_ce_1.xml.8.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(\$UInt16(20:1,2,3,4),10)], [], [dmr-testsuite/vol_1_ce_1.xml.9.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(\$Int16(20:1,2,3,-4),10)], [], [dmr-testsuite/vol_1_ce_1.xml.10.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(\$UInt32(20:1,2,3,4),10)], [], [dmr-testsuite/vol_1_ce_1.xml.11.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(\$Int32(20:1,2,3,-4),10)], [], [dmr-testsuite/vol_1_ce_1.xml.12.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(\$UInt64(20:1,2,3,0xffffffffffffffff),1)], [], [dmr-testsuite/vol_1_ce_1.xml.13.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(\$Int64(20:1,2,3,0x7fffffffffffffff),1)], [], [dmr-testsuite/vol_1_ce_1.xml.14.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(\$Float32(20:1,2,3,4.55),10)], [], [dmr-testsuite/vol_1_ce_1.xml.15.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/vol_1_ce_1.xml], [scale(\$Float64(20:1,2,3,4.55),10)], [], [dmr-testsuite/vol_1_ce_1.xml.16.func_base], [pass])
 
 # Test a sequence of function calls and the application of a Constraint to 
 # a function result

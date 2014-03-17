@@ -40,7 +40,7 @@ lex.d4_ce.cc: d4_ce_scanner.ll d4_ce_parser.tab.cc d4_ce_parser.tab.hh
 
 # These used to be targets too, but that lead to annoying warnings. jhrg 3/11/14
 # d4_ce_parser.tab.hh stack.hh location.hh position.hh
-d4_ce_parser.tab.hh d4_ce_parser.tab.cc: d4_ce_parser.yy
+d4_ce_parser.tab.hh d4_ce_parser.tab.cc stack.hh location.hh position.hh: d4_ce_parser.yy
 	$(YACC) $(YFLAGS) $<
 
 lex.d4_function.cc: d4_function_scanner.ll d4_function_parser.tab.cc d4_function_parser.tab.hh

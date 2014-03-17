@@ -137,55 +137,15 @@ D4FunctionDriver::init_arg_list(t val)
 // Force an instantiation so this can be called from withing the d4_function.yy
 // parser.
 template std::vector<dods_byte> *D4FunctionDriver::init_arg_list(dods_byte val);
-
-
-#if 0
-template<class arg_type_list, class arg_type>
-arg_type_list
-make_fast_arg_list(unsigned long vector_size_hint, arg_type value)
-{
-    arg_type_list args = new std::vector<arg_type>;
-
-    if (vector_size_hint > 0) args->reserve(vector_size_hint);
-
-    args->push_back(value);
-    return args;
-}
-
-template<class arg_type_list, class arg_type>
-arg_type_list
-make_fast_arg_list(arg_type_list values, arg_type value)
-{
-    values->push_back(value);
-    return values;
-}
-
-template<class t, class T>
-rvalue *build_constant_array(vector<t> *values, DDS *dds)
-{
-    //vector<t> *values = $5;
-
-    T i("");
-    Array *array = new Array("", &i);
-    array->append_dim(values->size());
-
-    // TODO Make set_value_nocopy() methods so that values' pointers can be copied
-    // instead of allocating memory twice. jhrg 7/5/13
-
-    array->set_value(*values, values->size());
-    delete values;
-    array->set_read_p(true);
-
-    static unsigned long counter = 1;
-    string name;
-    do {
-        name = "g" + long_to_string(counter++);
-    } while (dds->var(name));
-    array->set_name(name);
-
-    return new rvalue(array);
-}
-#endif
+template std::vector<dods_int8> *D4FunctionDriver::init_arg_list(dods_int8 val);
+template std::vector<dods_uint16> *D4FunctionDriver::init_arg_list(dods_uint16 val);
+template std::vector<dods_int16> *D4FunctionDriver::init_arg_list(dods_int16 val);
+template std::vector<dods_uint32> *D4FunctionDriver::init_arg_list(dods_uint32 val);
+template std::vector<dods_int32> *D4FunctionDriver::init_arg_list(dods_int32 val);
+template std::vector<dods_uint64> *D4FunctionDriver::init_arg_list(dods_uint64 val);
+template std::vector<dods_int64> *D4FunctionDriver::init_arg_list(dods_int64 val);
+template std::vector<dods_float32> *D4FunctionDriver::init_arg_list(dods_float32 val);
+template std::vector<dods_float64> *D4FunctionDriver::init_arg_list(dods_float64 val);
 
 // This method is called from the parser (see d4_function_parser.yy, down in the code
 // section). This will be called during the call to D4FunctionParser::parse(), that

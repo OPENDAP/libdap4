@@ -46,9 +46,6 @@
 
 %code requires {
 
-#include <vector>
-#include <cstdlib>
-
 #include "D4FunctionDriver.h"
 #include "D4RValue.h"
 #include "dods-datatypes.h"
@@ -78,18 +75,11 @@ namespace libdap {
 };
 
 %code {
-    #include <fstream>
-   
-    #include <cstdlib>
-    #include <iostream>
-    //#include <vector>
-
     #include "BaseType.h"
     #include "DMR.h"
     #include "D4RValue.h"
     #include "ServerFunctionsList.h"
    
-    // #include "dods-datatypes.h"
     #include "parser-util.h"
 
     /* include for all driver functions */
@@ -115,6 +105,15 @@ namespace libdap {
 %type <D4RValue*> array_constant "array constant"
 
 %type <std::vector<dods_byte>*> fast_byte_arg_list "fast byte arg list"
+%type <std::vector<dods_int8>*> fast_int8_arg_list "fast int8 arg list"
+%type <std::vector<dods_uint16>*> fast_uint16_arg_list "fast uint16 arg list"
+%type <std::vector<dods_int16>*> fast_int16_arg_list "fast int16 arg list"
+%type <std::vector<dods_uint32>*> fast_uint32_arg_list "fast uint32 arg list"
+%type <std::vector<dods_int32>*> fast_int32_arg_list "fast int32 arg list"
+%type <std::vector<dods_uint64>*> fast_uint64_arg_list "fast uint64 arg list"
+%type <std::vector<dods_int64>*> fast_int64_arg_list "fast int64 arg list"
+%type <std::vector<dods_float32>*> fast_float32_arg_list "fast float32 arg list"
+%type <std::vector<dods_float64>*> fast_float64_arg_list "fast float64 arg list"
 
 %type <std::string> id path group name
 
@@ -137,6 +136,16 @@ namespace libdap {
     PATH_SEP "."
     
     DOLLAR_BYTE "$Byte"
+    DOLLAR_UINT8 "$UInt8"
+    DOLLAR_INT8 "$Int8"
+    DOLLAR_UINT16 "$UInt16"
+    DOLLAR_INT16 "$Int16"
+    DOLLAR_UINT32 "$UInt32"
+    DOLLAR_INT32 "$Int32"
+    DOLLAR_UINT64 "$UInt64"
+    DOLLAR_INT64 "$Int64"
+    DOLLAR_FLOAT32 "$Float32"
+    DOLLAR_FLOAT64 "$Float64"
 ;
 
 %%
@@ -212,7 +221,68 @@ variable_or_constant : id
 }
 ;
   
-array_constant : DOLLAR_BYTE "(" arg_length_hint ":" fast_byte_arg_list ")"
+array_constant : 
+DOLLAR_BYTE "(" arg_length_hint ":" fast_byte_arg_list ")"
+{
+    $$ = new D4RValue(*($5));
+    delete $5;
+}
+|
+DOLLAR_UINT8 "(" arg_length_hint ":" fast_byte_arg_list ")"
+{
+    $$ = new D4RValue(*($5));
+    delete $5;
+}
+|
+DOLLAR_INT8 "(" arg_length_hint ":" fast_int8_arg_list ")"
+{
+    $$ = new D4RValue(*($5));
+    delete $5;
+}
+|
+DOLLAR_UINT16 "(" arg_length_hint ":" fast_uint16_arg_list ")"
+{
+    $$ = new D4RValue(*($5));
+    delete $5;
+}
+|
+DOLLAR_INT16 "(" arg_length_hint ":" fast_int16_arg_list ")"
+{
+    $$ = new D4RValue(*($5));
+    delete $5;
+}
+|
+DOLLAR_UINT32 "(" arg_length_hint ":" fast_uint32_arg_list ")"
+{
+    $$ = new D4RValue(*($5));
+    delete $5;
+}
+|
+DOLLAR_INT32 "(" arg_length_hint ":" fast_int32_arg_list ")"
+{
+    $$ = new D4RValue(*($5));
+    delete $5;
+}
+|
+DOLLAR_UINT64 "(" arg_length_hint ":" fast_uint64_arg_list ")"
+{
+    $$ = new D4RValue(*($5));
+    delete $5;
+}
+|
+DOLLAR_INT64 "(" arg_length_hint ":" fast_int64_arg_list ")"
+{
+    $$ = new D4RValue(*($5));
+    delete $5;
+}
+|
+DOLLAR_FLOAT32 "(" arg_length_hint ":" fast_float32_arg_list ")"
+{
+    $$ = new D4RValue(*($5));
+    delete $5;
+}
+|
+DOLLAR_FLOAT64 "(" arg_length_hint ":" fast_float64_arg_list ")"
 {
     $$ = new D4RValue(*($5));
     delete $5;
@@ -237,6 +307,107 @@ fast_byte_arg_list: WORD
 | fast_byte_arg_list "," WORD
 {
     $1->push_back(strtol($3.c_str(), 0, 0));
+    $$ = $1;
+}
+;
+
+fast_int8_arg_list: WORD
+{
+    $$ = driver.init_arg_list(dods_int8(strtol($1.c_str(), 0, 0)));
+}
+| fast_int8_arg_list "," WORD
+{
+    $1->push_back(strtol($3.c_str(), 0, 0));
+    $$ = $1;
+}
+;
+
+fast_uint16_arg_list: WORD
+{
+    $$ = driver.init_arg_list(dods_uint16(strtol($1.c_str(), 0, 0)));
+}
+| fast_uint16_arg_list "," WORD
+{
+    $1->push_back(strtol($3.c_str(), 0, 0));
+    $$ = $1;
+}
+;
+
+fast_int16_arg_list: WORD
+{
+    $$ = driver.init_arg_list(dods_int16(strtol($1.c_str(), 0, 0)));
+}
+| fast_int16_arg_list "," WORD
+{
+    $1->push_back(strtol($3.c_str(), 0, 0));
+    $$ = $1;
+}
+;
+
+fast_uint32_arg_list: WORD
+{
+    $$ = driver.init_arg_list(dods_uint32(strtoul($1.c_str(), 0, 0)));
+}
+| fast_uint32_arg_list "," WORD
+{
+    $1->push_back(strtoul($3.c_str(), 0, 0));
+    $$ = $1;
+}
+;
+fast_int32_arg_list: WORD
+{
+    $$ = driver.init_arg_list(dods_int32(strtol($1.c_str(), 0, 0)));
+}
+| fast_int32_arg_list "," WORD
+{
+    $1->push_back(strtol($3.c_str(), 0, 0));
+    $$ = $1;
+}
+;
+
+fast_uint64_arg_list: WORD
+{
+    $$ = driver.init_arg_list(dods_uint64(strtoull($1.c_str(), 0, 0)));
+}
+| fast_uint64_arg_list "," WORD
+{
+    $1->push_back(strtoull($3.c_str(), 0, 0));
+    $$ = $1;
+}
+;
+
+fast_int64_arg_list: WORD
+{
+    $$ = driver.init_arg_list(dods_int64(strtoll($1.c_str(), 0, 0)));
+}
+| fast_int64_arg_list "," WORD
+{
+    $1->push_back(strtoll($3.c_str(), 0, 0));
+    $$ = $1;
+}
+;
+
+// I'm using path for the $Float constants so that tokens with dots will 
+// parse. I could add a FLOAT token, and I might have to do that later on
+// when filters are added to the CE, but this will work for now.
+fast_float32_arg_list: path
+{
+    $$ = driver.init_arg_list(dods_float32(strtof($1.c_str(), 0)));
+}
+| fast_float32_arg_list "," path
+{
+    $1->push_back(strtof($3.c_str(), 0));
+    $$ = $1;
+}
+;
+
+fast_float64_arg_list: path
+{
+    $$ = driver.init_arg_list(dods_float64(strtod($1.c_str(), 0)));
+}
+| fast_float64_arg_list "," path
+{
+    $1->push_back(strtod($3.c_str(), 0));
     $$ = $1;
 }
 ;

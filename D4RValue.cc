@@ -31,11 +31,16 @@
 #include "BaseType.h"
 #include "Array.h"
 #include "Byte.h"
-#include "Float64.h"
-#include "Str.h"
-
+#include "Int8.h"
+#include "UInt16.h"
+#include "Int16.h"
+#include "UInt32.h"
+#include "Int32.h"
 #include "UInt64.h"
 #include "Int64.h"
+#include "Float32.h"
+#include "Float64.h"
+#include "Str.h"
 
 #include "D4RValue.h"
 #include "InternalErr.h"
@@ -103,6 +108,69 @@ D4RValue::D4RValue(std::vector<dods_byte> &byte_args)
 	d_constant = build_constant_array(byte_args, b);
 }
 
+D4RValue::D4RValue(std::vector<dods_int8> &byte_int8)
+	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
+{
+	Int8 b("");
+	d_constant = build_constant_array(byte_int8, b);
+}
+
+D4RValue::D4RValue(std::vector<dods_uint16> &byte_uint16)
+	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
+{
+	UInt16 b("");
+	d_constant = build_constant_array(byte_uint16, b);
+}
+
+D4RValue::D4RValue(std::vector<dods_int16> &byte_int16)
+	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
+{
+	Int16 b("");
+	d_constant = build_constant_array(byte_int16, b);
+}
+
+D4RValue::D4RValue(std::vector<dods_uint32> &byte_uint32)
+	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
+{
+	UInt32 b("");
+	d_constant = build_constant_array(byte_uint32, b);
+}
+
+D4RValue::D4RValue(std::vector<dods_int32> &byte_int32)
+	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
+{
+	Int32 b("");
+	d_constant = build_constant_array(byte_int32, b);
+}
+
+D4RValue::D4RValue(std::vector<dods_uint64> &byte_uint64)
+	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
+{
+	UInt64 b("");
+	d_constant = build_constant_array(byte_uint64, b);
+}
+
+D4RValue::D4RValue(std::vector<dods_int64> &byte_int64)
+	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
+{
+	Int64 b("");
+	d_constant = build_constant_array(byte_int64, b);
+}
+
+D4RValue::D4RValue(std::vector<dods_float32> &byte_float32)
+	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
+{
+	Float32 b("");
+	d_constant = build_constant_array(byte_float32, b);
+}
+
+D4RValue::D4RValue(std::vector<dods_float64> &byte_float64)
+	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
+{
+	Float64 b("");
+	d_constant = build_constant_array(byte_float64, b);
+}
+
 D4RValue::~D4RValue() {
 	// d_variable and d_func are weak pointers; don't delete.
 	delete d_args;
@@ -142,31 +210,6 @@ D4RValue::value(DMR &dmr)
 	case constant:
 		return d_constant;
 
-#if 0
-	case uinteger: {
-		UInt64 *ui = new UInt64("constant");
-		ui->set_value(d_u_int_val);
-		return ui;
-	}
-
-	case integer: {
-		Int64 *i = new Int64("constant");
-		i->set_value(d_int_val);
-		return i;
-	}
-
-	case real: {
-		Float64 *f = new Float64("constant");
-		f->set_value(d_real_val);
-		return f;
-	}
-
-	case string: {
-		Str *s = new Str("constant");
-		s->set_value(d_string_val);
-		return s;
-	}
-#endif
 	default:
 		throw InternalErr(__FILE__, __LINE__, "Unknown rvalue type.");
 	};

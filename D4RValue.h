@@ -49,27 +49,7 @@ public:
 	D4RValueList() { }
 	D4RValueList(D4RValue *rv) { add_rvalue(rv); }
 
-	~D4RValueList() {
-#if 0
-		for (iter i = begin(), e = end(); i != e; ++i) {
-			switch ((*i)->d_value_kind) {
-			case basetype:
-			case function:
-			case unknown:
-				continue;
-
-			case uinteger:
-			case integer:
-			case real:
-			case string:
-				delete (*i)->d_constant;
-
-			default:
-				continue;
-			}
-		}
-#endif
-	}
+	~D4RValueList() { }
 
 	void add_rvalue(D4RValue *rv) {
 		d_rvalues.push_back(rv);
@@ -121,6 +101,15 @@ public:
     D4RValue(double r);
     D4RValue(std::string s);
     D4RValue(std::vector<dods_byte> &byte_args);
+    D4RValue(std::vector<dods_int8> &byte_int8);
+    D4RValue(std::vector<dods_uint16> &byte_uint16);
+    D4RValue(std::vector<dods_int16> &byte_int16);
+    D4RValue(std::vector<dods_uint32> &byte_uint32);
+    D4RValue(std::vector<dods_int32> &byte_int32);
+    D4RValue(std::vector<dods_uint64> &byte_uint64);
+    D4RValue(std::vector<dods_int64> &byte_int64);
+    D4RValue(std::vector<dods_float32> &byte_float32);
+    D4RValue(std::vector<dods_float64> &byte_float64);
 
     virtual ~D4RValue();
 
