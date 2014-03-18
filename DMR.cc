@@ -42,8 +42,12 @@
 //#define DODS_DEBUG2
 
 #include "D4Group.h"
+#include "BaseType.h"
+#include "Array.h"
 #include "DMR.h"
 #include "D4BaseTypeFactory.h"
+
+#include "DDS.h"	// Included so DMRs can be built using a DDS for 'legacy' handlers
 
 #include "debug.h"
 
@@ -51,7 +55,7 @@
 /**
  * DapXmlNamespaces
  *
- * TODO  Replace all usages of the following variable with calls to DapXmlNamespaces
+ * TODO  Replace all uses of the following variable with calls to DapXmlNamespaces
  */
 const string c_xml_xsi = "http://www.w3.org/2001/XMLSchema-instance";
 const string c_xml_namespace = "http://www.w3.org/XML/1998/namespace";
@@ -113,6 +117,88 @@ DMR::DMR(D4BaseTypeFactory *factory, const string &name)
     // sets d_dap_version string and the two integer fields too
     set_dap_version("4.0");
 }
+
+DMR::DMR(D4BaseTypeFactory *factory, const DDS &dds)
+        : d_factory(factory), d_name(dds.get_dataset_name()),
+          d_filename(dds.filename()),
+          d_dmr_version("1.0"), d_request_xml_base(""),
+          d_namespace(""), d_max_response_size(0), d_root(0)
+{
+    // sets d_dap_version string and the two integer fields too
+    set_dap_version("4.0");
+
+    // Assume that a DDS has only a root group. This is not actually
+    // true for a DDS from the HDF5 handler, because it has Groups
+    // encoded into the variable names. jhrg 3/18/14
+
+    // For each variable in the DDS, perform a deep copy of that
+    // BaseType. Transform the source BaseTypes attributes to D4
+    // Attributes.
+
+    // Types that are special:
+    // Array: DAP2 array dimensions must be morphed to DAP4
+    // Sequence: Make a D4Sequence
+    // Grid: Make a coverage; assume Grids with the same dimension names
+    // have 'shared dimensions'
+    //
+    for (DDS::Vars_citer i = dds.var_cbegin(), e = dds.var_cend(); i != e; ++i) {
+    	// Copy (deep copy) the variable, treating Array, Grid and Sequence
+    	// specially.
+    	BaseType *source = *i;
+    	BaseType *dest;
+    	switch (source->type()) {
+    	case dods_array_c: {
+    		dest = source->ptr_duplicate();
+
+    		// Process the Array's dimensions, making D4 shared dimensions for
+    		// D2 dimensions that are named. If there is just a size, don't make
+    		// a D4Dimension (In DAP4 you cannot share a dimension unless it has
+    		// a name). jhrg 3/18/14
+    		Array &a = static_cast<Array&>(*dest);
+    		for (Array::Dim_iter d = a.dim_begin(), e = a.dim_end(); d != e; ++d) {
+    			if (!(*d).name.empty()) {
+    				// If a D4Dimension with the name already exists, use it.
+    				D4Dimension *d4_dim = root()->dims()->find_dim((*d).name);
+    				if (!d4_dim) {
+    					d4_dim = new D4Dimension((*d).name, (*d).size);
+    					root()->dims()->add_dim_nocopy(d4_dim);
+    				}
+    				// TODO Revisit this decision. jhrg 3/18/14
+    				// ...in case the name/size are different, make a unique D4Dimension
+    				// but don't fiddle with the name. Not sure I like this idea, so I'm
+    				// making the case explicit (could be rolled in to the block above).
+    				// jhrg 3/18/14
+    				else if (d4_dim->size() != (unsigned long)(*d).size) {
+    					d4_dim = new D4Dimension((*d).name, (*d).size);
+    					root()->dims()->add_dim_nocopy(d4_dim);
+    				}
+    				// At this point d4_dim's name and size == those of (*d) so just set
+    				// the D4Dimension pointer so it matches the one in the D4Group.
+    				(*d).dim = d4_dim;
+    			}
+    		}
+    		break;
+    	}
+    	case dods_grid_c:
+    		//break;
+
+    	case dods_sequence_c:
+    		//break;
+
+    	default:
+        	dest = source->ptr_duplicate();
+    		break;
+    	}
+    	// Copy the D2 attributes to D4 Attributes
+
+    	dest->set_is_dap4(true);
+
+    	root()->add_var_nocopy(dest);	// The BaseType was copied above
+    }
+
+    // Now copy the DDS attributes
+}
+
 
 /**
  * Make a DMR which uses the given BaseTypeFactory to create variables.

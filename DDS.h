@@ -256,7 +256,7 @@ public:
 
     virtual AttrTable &get_attr_table();
 
-    string filename();
+    string filename() const;
     void filename(const string &fn);
 
     /// Get the DAP major version as sent by the client
@@ -316,10 +316,14 @@ public:
 
     /// Return an iterator to the first variable
     Vars_iter var_begin();
+    /// Return a const iterator.
+    Vars_citer var_cbegin() const { return vars.cbegin(); }
     /// Return a reverse iterator
     Vars_riter var_rbegin();
     /// Return an iterator
     Vars_iter var_end();
+    /// Return a const iterator
+    Vars_citer var_cend() const { return vars.cend(); }
     /// Return a reverse iterator
     Vars_riter var_rend();
     /// Get an iterator

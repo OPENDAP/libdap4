@@ -39,13 +39,15 @@ namespace libdap
 {
 
 class D4BaseTypeFactory;
+class DDS;
 
 /** DMR is root object for a DAP4 dataset. It holds a D4Group and other
  * information about the dataset (DAP protocol number, DMR version, etc.).
  *
  * @note This class holds the dataset name and filename (which might
- * actually be a daabase name, but it's usually a filename). This might
- * move to D4Group.
+ * actually be a database name, but it's usually a filename). The variables
+ * of a DAP4 dataset are held by the D4Group instance (which is a child
+ * of Constructor).
  */
 class DMR : public DapObj
 {
@@ -88,6 +90,8 @@ public:
     DMR();
     DMR(const DMR &dmr);
     DMR(D4BaseTypeFactory *factory, const string &name = "");
+
+    DMR(D4BaseTypeFactory *factory, const DDS &dds);
 
     virtual ~DMR();
 

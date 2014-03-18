@@ -181,6 +181,13 @@ D4Attribute::attributes()
     return d_attributes;
 }
 
+#if 0
+D4Attributes::D4Attributes(const Attr_table &at)
+{
+	// for every attribute in at, copy it to this.
+}
+#endif
+
 D4Attribute *
 D4Attributes::find_depth_first(const string &name, D4AttributesIter i)
 {

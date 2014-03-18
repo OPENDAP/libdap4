@@ -373,7 +373,7 @@ DDS::get_attr_table()
 //@{
 /** Gets the dataset file d_name. */
 string
-DDS::filename()
+DDS::filename() const
 {
     return d_filename;
 }

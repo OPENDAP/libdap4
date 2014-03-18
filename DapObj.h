@@ -64,16 +64,6 @@ public:
      * contents, in other words, any state they might have, private variables,
      * etc...
      *
-     * The inline function below can be used to dump the contents of an
-     * OPeNDAOObj object. For example, the object Animal is derived from
-     * DapObj. A user could do the following:
-     *
-     * Animal *a = new dog( "Sparky" ) ;
-     * cout << a << endl ;
-     *
-     * And the dump method for dog could display the name passed into the
-     * constructor, the (this) pointer of the object, etc...
-     *
      * @param strm C++ i/o stream to dump the object to
      */
     virtual void dump(ostream &strm) const = 0 ;
@@ -86,15 +76,6 @@ public:
  * This inline method uses the dump method of the DapObj instance passed
  * to it. This allows a user to dump the contents of an object instead of just
  * getting the pointer value of the object.
- *
- * For example, the object Animal is derived from DapObj. A user could
- * do the following:
- *
- * Animal *a = new dog( "Sparky" ) ;
- * cout << a << endl ;
- *
- * And the dump method for dog could display the name passed into the
- * constructor, the (this) pointer of the object, etc...
  *
  * @param strm C++ i/o stream to dump the object to
  * @param obj The DapObj to dump
