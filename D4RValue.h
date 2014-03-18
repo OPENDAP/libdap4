@@ -49,7 +49,7 @@ public:
 	D4RValueList() { }
 	D4RValueList(D4RValue *rv) { add_rvalue(rv); }
 
-	~D4RValueList() { }
+	~D4RValueList();
 
 	void add_rvalue(D4RValue *rv) {
 		d_rvalues.push_back(rv);

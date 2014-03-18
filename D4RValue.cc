@@ -53,6 +53,12 @@ using namespace std;
 
 namespace libdap {
 
+D4RValueList::~D4RValueList()
+{
+	for (std::vector<D4RValue *>::iterator i = d_rvalues.begin(), e = d_rvalues.end(); i != e; ++i)
+		delete *i;
+}
+
 template<typename t, class DAP_TYPE>
 static BaseType *
 build_constant_array(vector<t> &values, DAP_TYPE &dt)
@@ -201,8 +207,6 @@ D4RValue::value(DMR &dmr)
 		d_variable->set_read_p(true);
 		return d_variable;
 
-	// FIXME Memory leak: when composition is used the result of the inner function
-	// calls will not be deleted. jhrg 3/13/14
 	case function: {
 		return (*d_func)(d_args, dmr);
 	}

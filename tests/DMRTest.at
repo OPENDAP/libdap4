@@ -340,11 +340,11 @@ DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,0x8fffffffffffffff)
 
 # test_array_5 has 64 bit ints in c and d; a and b are Int8 and UInt8 types
 # all of these test arrays that use named dimensions
-DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_5.xml], [scale(a,0.001)], [], [dmr-testsuite/test_array_5.xml.1.func_base], [xfail])
-DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_5.xml], [scale(a,0.001)], [], [dmr-testsuite/test_array_5.xml.2.func_base], [xfail])
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_5.xml], [scale(a,0.001)], [], [dmr-testsuite/test_array_5.xml.1.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_5.xml], [scale(b,0.001)], [], [dmr-testsuite/test_array_5.xml.2.func_base], [pass])
 
-DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_5.xml], [scale(c,0.001)], [], [dmr-testsuite/test_array_5.xml.3.func_base], [xfail])
-DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_5.xml], [scale(d,0.001)], [], [dmr-testsuite/test_array_5.xml.4.func_base], [xfail])
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_5.xml], [scale(c,0.001)], [], [dmr-testsuite/test_array_5.xml.3.func_base], [pass])
+DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_5.xml], [scale(d,0.001)], [], [dmr-testsuite/test_array_5.xml.4.func_base], [pass])
 
 # Use the vol_1_ce_* datasets for tests
 

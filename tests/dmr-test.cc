@@ -35,6 +35,10 @@
 
 #include <GetOpt.h>
 
+#include "BaseType.h"
+#include "Array.h"
+#include "D4Enum.h"
+
 #include "DMR.h"
 #include "D4StreamUnMarshaller.h"
 #include "chunked_ostream.h"
@@ -161,12 +165,51 @@ send_data(DMR *dataset, const string &constraint, const string &function, bool s
 
 			function_result = new DMR(&d4_factory, "function_results");
 			for (D4RValueList::iter i = result->begin(), e = result->end(); i != e; ++i) {
-				function_result->root()->add_var_nocopy((*i)->value(*dataset));
+				// Copy the BaseTypes; this means all of the function results can
+				// be deleted, which addresses the memory leak issue with function
+				// results. This should also copy the D4Dimensions. jhrg 3/17/14
+				function_result->root()->add_var((*i)->value(*dataset));
 			}
 
-			// Variables can use Dimensions and Enumerations, so those need to be copied
-			// from the source dataset to the result.
+			delete result;	// The parser/function allocates the BaseType*s that hold the results.
 
+			// Variables can use Dimensions and Enumerations, so those need to be copied
+			// from the source dataset to the result. NB: The variables that refer to these
+			// use weak pointers. So
+
+			// Make a set of D4Dimensions. For each variable in 'function_result', look
+			// for its dimensions in 'dataset' (by name) and add a pointer to those to the
+			// set. Then copy all the stuff int he set into the root group of 'function_
+			// result.'
+			set<D4Dimension*> dim_set;
+			D4Group *root = function_result->root();
+			for (Constructor::Vars_iter i = root->var_begin(), ie = root->var_end(); i != ie; ++i) {
+				if ((*i)->is_vector_type()) {
+					Array *a = static_cast<Array*>(*i);
+					for (Array::Dim_iter d = a->dim_begin(), de = a->dim_end(); d != de; ++d) {
+						if (a->dimension_D4dim(d)) {
+							dim_set.insert(a->dimension_D4dim(d));
+						}
+					}
+				}
+			}
+
+			for (set<D4Dimension*>::iterator i = dim_set.begin(), e = dim_set.end(); i != e; ++i) {
+				// These won't be deleted until the DMR they came from is deleted.
+				// TODO Use reference counted pointers for all of this stuff!!
+				root->dims()->add_dim_nocopy(*i);
+			}
+			// Now lets do the enumerations....
+			set<D4EnumDef*> enum_def_set;
+			for (Constructor::Vars_iter i = root->var_begin(), ie = root->var_end(); i != ie; ++i) {
+				if ((*i)->type() == dods_enum_c) {
+					enum_def_set.insert(static_cast<D4Enum*>(*i)->enumeration());
+				}
+			}
+
+			for (set<D4EnumDef*>::iterator i = enum_def_set.begin(), e = enum_def_set.end(); i != e; ++i) {
+				root->enum_defs()->add_enum_nocopy(*i);
+			}
 
 			// Now use the results of running the functions for the remainder of the
 			// send_data operation.
@@ -205,24 +248,10 @@ intern_data(DMR *dataset, /*const string &constraint,*/ bool series_values)
 {
     set_series_values(dataset, series_values);
 
-#if 0
-    ConstraintEvaluator eval;	// This is a place holder. jhrg 9/6/13
-#endif
     // Mark all variables to be sent in their entirety. No CEs are used
     // when 'interning' variables' data.
     dataset->root()->set_send_p(true);
 
-#if 0
-    if (!constraint.empty()) {
-		D4CEDriver parser(dataset);
-		bool parse_ok = parser.parse(constraint);
-		if (!parse_ok)
-			throw Error("Constraint Expression failed to parse.");
-	}
-    else {
-    	dataset->root()->set_send_p(true);
-    }
-#endif
     Crc32 checksum;
 
     dataset->root()->intern_data(checksum, *dataset/*, eval*/);
