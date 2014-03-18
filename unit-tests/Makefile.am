@@ -75,7 +75,7 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 if DAP4_DEFINED
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
 	D4EnumDefsTest D4GroupTest D4ParserSax2Test D4AttributesTest D4EnumTest \
-	chunked_iostream_test D4AsyncDocTest
+	chunked_iostream_test D4AsyncDocTest DMRTest
 endif
 
 else
@@ -216,5 +216,7 @@ chunked_iostream_test_LDADD = ../libdap.la $(AM_LDADD)
 D4AsyncDocTest_SOURCES = D4AsyncDocTest.cc $(TEST_SRC)
 D4AsyncDocTest_LDADD = ../libdap.la $(AM_LDADD)
 
+DMRTest_SOURCES = DMRTest.cc $(TEST_SRC)
+DMRTest_LDADD = ../libdap.la $(AM_LDADD)
 
 endif
