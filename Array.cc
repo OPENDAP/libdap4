@@ -44,7 +44,7 @@
 #if D4_ATTR
 #include "D4Attributes.h"
 #endif
-
+#include "DMR.h"
 #include "D4Dimensions.h"
 #include "D4Maps.h"
 #include "D4Group.h"
@@ -163,6 +163,47 @@ Array::operator=(const Array &rhs)
     _duplicate(rhs);
 
     return *this;
+}
+
+BaseType *
+Array::transform_to_dap4(DMR &dmr)
+{
+	Array *dest = new Array(*this);
+
+	// Process the Array's dimensions, making D4 shared dimensions for
+	// D2 dimensions that are named. If there is just a size, don't make
+	// a D4Dimension (In DAP4 you cannot share a dimension unless it has
+	// a name). jhrg 3/18/14
+
+	D4Dimensions *dims = dmr.root()->dims();
+	for (Array::Dim_iter d = dest->dim_begin(), e = dest->dim_end(); d != e; ++d) {
+		if (!(*d).name.empty()) {
+			// If a D4Dimension with the name already exists, use it.
+			D4Dimension *d4_dim = dims->find_dim((*d).name);
+			if (!d4_dim) {
+				d4_dim = new D4Dimension((*d).name, (*d).size);
+				dims->add_dim_nocopy(d4_dim);
+			}
+			// TODO Revisit this decision. jhrg 3/18/14
+			// ...in case the name/size are different, make a unique D4Dimension
+			// but don't fiddle with the name. Not sure I like this idea, so I'm
+			// making the case explicit (could be rolled in to the block above).
+			// jhrg 3/18/14
+			else if (d4_dim->size() != (unsigned long) (*d).size) {
+				d4_dim = new D4Dimension((*d).name, (*d).size);
+				dims->add_dim_nocopy(d4_dim);
+			}
+			// At this point d4_dim's name and size == those of (*d) so just set
+			// the D4Dimension pointer so it matches the one in the D4Group.
+			(*d).dim = d4_dim;
+		}
+	}
+
+	// Copy the D2 attributes to D4 Attributes
+
+	dest->set_is_dap4(true);
+
+	return dest;
 }
 
 /** @brief Add the BaseType pointer to this constructor type

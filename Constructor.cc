@@ -132,6 +132,25 @@ Constructor::operator=(const Constructor &rhs)
     return *this;
 }
 
+#if 0
+BaseType *
+Constructor::transform_to_dap4(DMR &dmr)
+{
+	Constructor *dest = new Constructor(name(), type());
+
+    for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
+    	BaseType *new_var = (*i)->transform_to_dap4(dmr);
+    	new_var->set_parent(dest);
+    	dest->add_var_nocopy(new_var);
+    }
+
+    // Add attributes
+
+    dest->set_is_dap4(true);
+
+    return dest;
+}
+#endif
 
 int
 Constructor::element_count(bool leaves)

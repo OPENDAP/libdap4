@@ -157,6 +157,18 @@ public:
 
     virtual string toString();
 
+    // FIXME Make this virtual
+    /** @brief DAP2 to DAP4 transform
+     *
+     * For the current BaseType, return a DAP4 'copy' of the variable.
+     *
+     * @param dmr If things (e.g., D4Dimensions) must be added to a DMR, do so
+     * with this instance, as a side effect. The caller must add the variable
+     * to the DMR or Constructor variable.
+     * @return A pointer to the transformed variable
+     */
+    virtual BaseType *transform_to_dap4(DMR &/*dmr*/) { throw InternalErr(__FILE__, __LINE__, "transform_to_dap4"); }
+
     virtual void dump(ostream &strm) const ;
 
     BaseType &operator=(const BaseType &rhs);

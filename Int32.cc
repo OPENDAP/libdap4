@@ -103,6 +103,17 @@ Int32::ptr_duplicate()
     return new Int32(*this);
 }
 
+BaseType *Int32::transform_to_dap4(DMR &)
+{
+	BaseType *dest = new Int32(*this);
+
+	// Copy the D2 attributes to D4 Attributes
+
+	dest->set_is_dap4(true);
+
+	return dest;
+}
+
 Int32::~Int32()
 {
     DBG(cerr << "~Int32" << endl);

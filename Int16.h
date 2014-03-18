@@ -52,6 +52,8 @@
 namespace libdap
 {
 
+class DMR;
+
 /** @brief Holds a 16-bit signed integer value. */
 
 class Int16: public BaseType
@@ -70,6 +72,7 @@ public:
     Int16 &operator=(const Int16 &rhs);
 
     virtual BaseType *ptr_duplicate();
+    virtual BaseType *transform_to_dap4(DMR &dmr);
 
     virtual unsigned int width(bool constrained = false) const;
 

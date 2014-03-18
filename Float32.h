@@ -52,6 +52,8 @@
 namespace libdap
 {
 
+class DMR;
+
 /** @brief Holds a 32-bit floating point value.
 
     @see BaseType
@@ -73,6 +75,7 @@ public:
     {}
 
     virtual BaseType *ptr_duplicate();
+    virtual BaseType *transform_to_dap4(DMR &dmr);
 
     virtual unsigned int width(bool constrained = false) const;
 

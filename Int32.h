@@ -54,6 +54,7 @@
 namespace libdap
 {
 
+class DMR;
 class ConstraintEvaluator;
 
 /** @brief Holds a 32-bit signed integer.
@@ -77,8 +78,9 @@ public:
     virtual ~Int32();
 
     virtual BaseType *ptr_duplicate();
+    virtual BaseType *transform_to_dap4(DMR &dmr);
 
-     virtual unsigned int width(bool constrained = false) const;
+    virtual unsigned int width(bool constrained = false) const;
 
     //DAP2
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);

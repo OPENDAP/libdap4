@@ -35,6 +35,7 @@ class Crc32;
 namespace libdap
 {
 
+class DMR;
 class D4StreamUnMarshaller;
 
 /** Common methods for all constructor types. */
@@ -63,6 +64,8 @@ public:
     virtual ~Constructor();
 
     Constructor &operator=(const Constructor &rhs);
+
+    // Constructor is abstract BaseType *transform_to_dap4(DMR &dmr);
 
     virtual int element_count(bool leaves = false);
 

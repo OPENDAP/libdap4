@@ -102,6 +102,17 @@ Float32::ptr_duplicate()
     return new Float32(*this);
 }
 
+BaseType *Float32::transform_to_dap4(DMR &)
+{
+	BaseType *dest = new Float32(*this);
+
+	// Copy the D2 attributes to D4 Attributes
+
+	dest->set_is_dap4(true);
+
+	return dest;
+}
+
 Float32 &
 Float32::operator=(const Float32 &rhs)
 {

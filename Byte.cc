@@ -105,6 +105,17 @@ BaseType *Byte::ptr_duplicate()
     return new Byte(*this);
 }
 
+BaseType *Byte::transform_to_dap4(DMR &)
+{
+	BaseType *dest = new Byte(*this);
+
+	// Copy the D2 attributes to D4 Attributes
+
+	dest->set_is_dap4(true);
+
+	return dest;
+}
+
 Byte & Byte::operator=(const Byte & rhs)
 {
     if (this == &rhs)

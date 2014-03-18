@@ -61,6 +61,7 @@
 #if D4_ATTR
 #include "D4Attributes.h"
 #endif
+#include "DMR.h"
 
 #include "InternalErr.h"
 
@@ -203,6 +204,28 @@ BaseType::toString()
 
     return oss.str();
 }
+
+#if 0
+// Virtual in this class
+/** @brief DAP2 to DAP4 transform
+ *
+ * For the current BaseType, return a DAP4 'copy' of the variable.
+ *
+ * @param dmr If stuff
+ * @return
+ */
+void
+BaseType::transform_to_dap4(DMR &dmr)
+{
+	BaseType *dest = ptr_duplicate();
+
+	// Copy the D2 attributes to D4 Attributes
+
+	dest->set_is_dap4(true);
+
+	dmr.root()->add_var_nocopy(dest);
+}
+#endif
 
 /** @brief dumps information about this object
  *

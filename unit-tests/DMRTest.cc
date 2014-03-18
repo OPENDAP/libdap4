@@ -93,7 +93,9 @@ public:
 
     CPPUNIT_TEST(test_dmr_from_dds_1);
     CPPUNIT_TEST(test_dmr_from_dds_2);
-
+#if 0
+    CPPUNIT_TEST(test_dmr_from_dds_3);
+#endif
     CPPUNIT_TEST_SUITE_END();
 
     // Test a DDS with simple scalar types and no attributes
@@ -132,6 +134,26 @@ public:
 			DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
 
 			CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(string(TEST_SRC_DIR) + "/dds-testsuite/fnoc1.nc.dmr"));
+		}
+    	catch (Error &e) {
+    		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
+    	}
+    }
+
+    void test_dmr_from_dds_3() {
+		try {
+			BaseTypeFactory factory;
+			DDS dds(&factory, "test_1");
+			dds.parse(string(TEST_SRC_DIR) + "/dds-testsuite/3B42.980909.5.HDF.dds");
+			DBG(cerr << "DDS: " << endl; dds.print(cerr));
+
+			D4BaseTypeFactory d4_factory;
+			DMR dmr(&d4_factory, dds);
+			XMLWriter xml;
+			dmr.print_dap4(xml);
+			DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
+
+			CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(string(TEST_SRC_DIR) + "/dds-testsuite/3B42.980909.5.HDF.dmr"));
 		}
     	catch (Error &e) {
     		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
