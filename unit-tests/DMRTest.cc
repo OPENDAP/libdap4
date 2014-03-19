@@ -93,9 +93,8 @@ public:
 
     CPPUNIT_TEST(test_dmr_from_dds_1);
     CPPUNIT_TEST(test_dmr_from_dds_2);
-#if 0
     CPPUNIT_TEST(test_dmr_from_dds_3);
-#endif
+
     CPPUNIT_TEST_SUITE_END();
 
     // Test a DDS with simple scalar types and no attributes

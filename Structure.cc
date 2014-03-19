@@ -142,6 +142,29 @@ Structure::ptr_duplicate()
     return new Structure(*this);
 }
 
+BaseType *
+Structure::transform_to_dap4(DMR &dmr)
+{
+	// For this class, ptr_duplicate() calls the const ctor which calls
+	// Constructor's const ctor which calls Constructor::m_duplicate().
+	// Here we replicate some of that functionality, but instead call
+	// transform_to_dap4() on the contained variables.
+
+	Structure *dest = new Structure(name());
+
+    for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
+    	BaseType *new_var = (*i)->transform_to_dap4(dmr);
+    	new_var->set_parent(dest);
+    	dest->add_var_nocopy(new_var);
+    }
+
+    // Add attributes
+
+    dest->set_is_dap4(true);
+
+    return dest;
+}
+
 Structure &
 Structure::operator=(const Structure &rhs)
 {

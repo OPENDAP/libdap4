@@ -102,6 +102,8 @@ public:
     Structure &operator=(const Structure &rhs);
     virtual BaseType *ptr_duplicate();
 
+    virtual BaseType *transform_to_dap4(DMR &dmr);
+
 #if 0
     virtual int element_count(bool leaves = false);
 #endif
