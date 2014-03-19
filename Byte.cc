@@ -105,6 +105,7 @@ BaseType *Byte::ptr_duplicate()
     return new Byte(*this);
 }
 
+#if 0
 BaseType *Byte::transform_to_dap4(DMR &)
 {
 	BaseType *dest = new Byte(*this);
@@ -115,7 +116,7 @@ BaseType *Byte::transform_to_dap4(DMR &)
 
 	return dest;
 }
-
+#endif
 Byte & Byte::operator=(const Byte & rhs)
 {
     if (this == &rhs)

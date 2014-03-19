@@ -157,18 +157,7 @@ public:
 
     virtual string toString();
 
-    // FIXME Make this abstract; change DMR to D4Group; maybe pass in a BaseType*
-    // making this similar to m_duplicate(const <type> &). Not sure...
-    /** @brief DAP2 to DAP4 transform
-     *
-     * For the current BaseType, return a DAP4 'copy' of the variable.
-     *
-     * @param dmr If things (e.g., D4Dimensions) must be added to a DMR, do so
-     * with this instance, as a side effect. The caller must add the variable
-     * to the DMR or Constructor variable.
-     * @return A pointer to the transformed variable
-     */
-    virtual BaseType *transform_to_dap4(DMR &/*dmr*/) { throw InternalErr(__FILE__, __LINE__, "transform_to_dap4"); }
+    virtual BaseType *transform_to_dap4(DMR &dmr);
 
     virtual void dump(ostream &strm) const ;
 

@@ -205,17 +205,26 @@ BaseType::toString()
     return oss.str();
 }
 
-#if 0
-// Virtual in this class
 /** @brief DAP2 to DAP4 transform
  *
  * For the current BaseType, return a DAP4 'copy' of the variable.
  *
- * @param dmr If stuff
- * @return
+ * @note For most DAP2 types, in this implementation of DAP4 the corresponding
+ * DAP4 type is the same. The different types are Sequences (which are D4Sequences
+ * in the DAP4 implementation), Grids (which are coverages) and Arrays (which use
+ *  shared dimensions).
+ *
+ * @todo Replace the DMR param with a D4Group, so that it's 'more correct'. Not
+ * really a super high priority but that change might simplify building DMRs for
+ * the HDF5 handler.
+ *
+ * @param dmr If things (e.g., D4Dimensions) must be added to a DMR, do so
+ * with this instance, as a side effect. The caller must add the variable
+ * to the DMR or Constructor variable.
+ * @return A pointer to the transformed variable
  */
-void
-BaseType::transform_to_dap4(DMR &dmr)
+BaseType *
+BaseType::transform_to_dap4(DMR &)
 {
 	BaseType *dest = ptr_duplicate();
 
@@ -223,9 +232,8 @@ BaseType::transform_to_dap4(DMR &dmr)
 
 	dest->set_is_dap4(true);
 
-	dmr.root()->add_var_nocopy(dest);
+	return dest;
 }
-#endif
 
 /** @brief dumps information about this object
  *

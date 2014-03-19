@@ -98,7 +98,7 @@ Int16::ptr_duplicate()
 {
     return new Int16(*this);
 }
-
+#if 0
 BaseType *
 Int16::transform_to_dap4(DMR &)
 {
@@ -110,8 +110,7 @@ Int16::transform_to_dap4(DMR &)
 
 	return dest;
 }
-
-
+#endif
 Int16 &
 Int16::operator=(const Int16 &rhs)
 {

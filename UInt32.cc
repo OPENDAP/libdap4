@@ -99,6 +99,19 @@ UInt32::ptr_duplicate()
 {
     return new UInt32(*this);
 }
+#if 0
+BaseType *
+UInt32::transform_to_dap4(DMR &)
+{
+	BaseType *dest = new UInt32(*this);
+
+	// Copy the D2 attributes to D4 Attributes
+
+	dest->set_is_dap4(true);
+
+	return dest;
+}
+#endif
 
 UInt32 &
 UInt32::operator=(const UInt32 &rhs)

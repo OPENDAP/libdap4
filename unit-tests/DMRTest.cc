@@ -89,16 +89,40 @@ public:
         return match == static_cast<int> (s.length());
     }
 
+    void test_template(const string &dds_file, const string &dmr_baseline) {
+		try {
+			string prefix = string(TEST_SRC_DIR) + "/dds-testsuite/";
+
+			BaseTypeFactory factory;
+			DDS dds(&factory, dds_file);
+			dds.parse(prefix + dds_file);
+			DBG(cerr << "DDS: " << endl; dds.print(cerr));
+
+			D4BaseTypeFactory d4_factory;
+			DMR dmr(&d4_factory, dds);
+			XMLWriter xml;
+			dmr.print_dap4(xml);
+			DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
+
+			CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(prefix + dmr_baseline));
+		}
+    	catch (Error &e) {
+    		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
+    	}
+    }
     CPPUNIT_TEST_SUITE( DMRTest );
 
     CPPUNIT_TEST(test_dmr_from_dds_1);
     CPPUNIT_TEST(test_dmr_from_dds_2);
     CPPUNIT_TEST(test_dmr_from_dds_3);
+    CPPUNIT_TEST(test_dmr_from_dds_4);
 
     CPPUNIT_TEST_SUITE_END();
 
     // Test a DDS with simple scalar types and no attributes
     void test_dmr_from_dds_1() {
+    	test_template("test.1", "test.1.dmr");
+#if 0
 		try {
 			BaseTypeFactory factory;
 			DDS dds(&factory, "test_1");
@@ -116,11 +140,14 @@ public:
     	catch (Error &e) {
     		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
     	}
+#endif
     }
 
     // What about arrays? This should build shared dimensions
     void test_dmr_from_dds_2() {
-		try {
+    	test_template("fnoc1.nc.dds", "fnoc1.nc.dmr");
+#if 0
+    	try {
 			BaseTypeFactory factory;
 			DDS dds(&factory, "test_1");
 			dds.parse(string(TEST_SRC_DIR) + "/dds-testsuite/fnoc1.nc.dds");
@@ -137,13 +164,16 @@ public:
     	catch (Error &e) {
     		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
     	}
+#endif
     }
 
     void test_dmr_from_dds_3() {
-		try {
+    	test_template("3B42.980909.5.HDF.dds", "3B42.980909.5.HDF.dmr");
+#if 0
+    	try {
 			BaseTypeFactory factory;
 			DDS dds(&factory, "test_1");
-			dds.parse(string(TEST_SRC_DIR) + "/dds-testsuite/3B42.980909.5.HDF.dds");
+			dds.parse(string(TEST_SRC_DIR) + "/dds-testsuite/");
 			DBG(cerr << "DDS: " << endl; dds.print(cerr));
 
 			D4BaseTypeFactory d4_factory;
@@ -152,13 +182,17 @@ public:
 			dmr.print_dap4(xml);
 			DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
 
-			CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(string(TEST_SRC_DIR) + "/dds-testsuite/3B42.980909.5.HDF.dmr"));
+			CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(string(TEST_SRC_DIR) + "/dds-testsuite/"));
 		}
     	catch (Error &e) {
     		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
     	}
+#endif
     }
 
+    void test_dmr_from_dds_4() {
+    	test_template("S2000415.HDF.dds", "S2000415.HDF.dmr");
+    }
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DMRTest);

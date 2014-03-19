@@ -102,7 +102,7 @@ Int32::ptr_duplicate()
 {
     return new Int32(*this);
 }
-
+#if 0
 BaseType *Int32::transform_to_dap4(DMR &)
 {
 	BaseType *dest = new Int32(*this);
@@ -113,7 +113,7 @@ BaseType *Int32::transform_to_dap4(DMR &)
 
 	return dest;
 }
-
+#endif
 Int32::~Int32()
 {
     DBG(cerr << "~Int32" << endl);

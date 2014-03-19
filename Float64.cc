@@ -102,7 +102,18 @@ Float64::ptr_duplicate()
 {
     return new Float64(*this);
 }
+#if 0
+BaseType *Float64::transform_to_dap4(DMR &)
+{
+	BaseType *dest = new Float64(*this);
 
+	// Copy the D2 attributes to D4 Attributes
+
+	dest->set_is_dap4(true);
+
+	return dest;
+}
+#endif
 Float64 &
 Float64::operator=(const Float64 &rhs)
 {

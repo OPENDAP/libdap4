@@ -101,7 +101,7 @@ Float32::ptr_duplicate()
 {
     return new Float32(*this);
 }
-
+#if 0
 BaseType *Float32::transform_to_dap4(DMR &)
 {
 	BaseType *dest = new Float32(*this);
@@ -112,7 +112,7 @@ BaseType *Float32::transform_to_dap4(DMR &)
 
 	return dest;
 }
-
+#endif
 Float32 &
 Float32::operator=(const Float32 &rhs)
 {

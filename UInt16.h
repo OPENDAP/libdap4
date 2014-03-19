@@ -70,7 +70,9 @@ public:
     UInt16 &operator=(const UInt16 &rhs);
 
     virtual BaseType *ptr_duplicate();
-
+#if 0
+	virtual BaseType *transform_to_dap4(DMR &dmr);
+#endif
     virtual unsigned int width(bool constrained = false) const;
 
     // DAP2
