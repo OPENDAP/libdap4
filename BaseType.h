@@ -157,7 +157,8 @@ public:
 
     virtual string toString();
 
-    // FIXME Make this virtual
+    // FIXME Make this abstract; change DMR to D4Group; maybe pass in a BaseType*
+    // making this similar to m_duplicate(const <type> &). Not sure...
     /** @brief DAP2 to DAP4 transform
      *
      * For the current BaseType, return a DAP4 'copy' of the variable.
