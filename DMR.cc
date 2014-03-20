@@ -46,6 +46,7 @@
 #include "Array.h"
 #include "DMR.h"
 #include "D4BaseTypeFactory.h"
+#include "D4Attributes.h"
 
 #include "DDS.h"	// Included so DMRs can be built using a DDS for 'legacy' handlers
 
@@ -118,7 +119,7 @@ DMR::DMR(D4BaseTypeFactory *factory, const string &name)
     set_dap_version("4.0");
 }
 
-DMR::DMR(D4BaseTypeFactory *factory, const DDS &dds)
+DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
         : d_factory(factory), d_name(dds.get_dataset_name()),
           d_filename(dds.filename()),
           d_dmr_version("1.0"), d_request_xml_base(""),
@@ -147,6 +148,7 @@ DMR::DMR(D4BaseTypeFactory *factory, const DDS &dds)
     }
 
     // Now copy the global attributes
+    root()->attributes()->transform_to_dap4(dds.get_attr_table());
 }
 
 

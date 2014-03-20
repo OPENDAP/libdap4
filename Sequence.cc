@@ -69,6 +69,7 @@
 #include "InternalErr.h"
 #include "escaping.h"
 
+#include "D4Attributes.h"
 #include "D4Sequence.h"
 #include "DMR.h"
 
@@ -220,6 +221,7 @@ Sequence::transform_to_dap4(DMR &dmr)
     }
 
     // Add attributes
+	dest->attributes()->transform_to_dap4(get_attr_table());
 
     dest->set_is_dap4(true);
     dest->set_length(-1);

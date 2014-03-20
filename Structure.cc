@@ -56,6 +56,8 @@
 #include "DDS.h"
 #include "ConstraintEvaluator.h"
 
+#include "D4Attributes.h"
+
 #include "XDRStreamMarshaller.h"
 #include "util.h"
 #include "debug.h"
@@ -159,6 +161,7 @@ Structure::transform_to_dap4(DMR &dmr)
     }
 
     // Add attributes
+	dest->attributes()->transform_to_dap4(get_attr_table());
 
     dest->set_is_dap4(true);
 

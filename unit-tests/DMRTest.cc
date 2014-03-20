@@ -89,7 +89,7 @@ public:
         return match == static_cast<int> (s.length());
     }
 
-    void test_template(const string &dds_file, const string &dmr_baseline) {
+    void test_template(const string &dds_file, const string &dmr_baseline, const string &attr = "") {
 		try {
 			string prefix = string(TEST_SRC_DIR) + "/dds-testsuite/";
 
@@ -97,6 +97,12 @@ public:
 			DDS dds(&factory, dds_file);
 			dds.parse(prefix + dds_file);
 			DBG(cerr << "DDS: " << endl; dds.print(cerr));
+
+			if (!attr.empty()) {
+				DAS das;
+				das.parse(prefix + attr);
+				dds.transfer_attributes(&das);
+			}
 
 			D4BaseTypeFactory d4_factory;
 			DMR dmr(&d4_factory, dds);
@@ -116,82 +122,36 @@ public:
     CPPUNIT_TEST(test_dmr_from_dds_2);
     CPPUNIT_TEST(test_dmr_from_dds_3);
     CPPUNIT_TEST(test_dmr_from_dds_4);
+    CPPUNIT_TEST(test_dmr_from_dds_with_attr_1);
+    CPPUNIT_TEST(test_dmr_from_dds_with_attr_2);
 
     CPPUNIT_TEST_SUITE_END();
 
     // Test a DDS with simple scalar types and no attributes
     void test_dmr_from_dds_1() {
     	test_template("test.1", "test.1.dmr");
-#if 0
-		try {
-			BaseTypeFactory factory;
-			DDS dds(&factory, "test_1");
-			dds.parse(string(TEST_SRC_DIR) + "/dds-testsuite/test.1");
-			DBG(cerr << "DDS: " << endl; dds.print(cerr));
-
-			D4BaseTypeFactory d4_factory;
-			DMR dmr(&d4_factory, dds);
-			XMLWriter xml;
-			dmr.print_dap4(xml);
-			DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
-
-			CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(string(TEST_SRC_DIR) + "/dds-testsuite/test.1.dmr"));
-		}
-    	catch (Error &e) {
-    		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
-    	}
-#endif
     }
 
     // What about arrays? This should build shared dimensions
     void test_dmr_from_dds_2() {
     	test_template("fnoc1.nc.dds", "fnoc1.nc.dmr");
-#if 0
-    	try {
-			BaseTypeFactory factory;
-			DDS dds(&factory, "test_1");
-			dds.parse(string(TEST_SRC_DIR) + "/dds-testsuite/fnoc1.nc.dds");
-			DBG(cerr << "DDS: " << endl; dds.print(cerr));
-
-			D4BaseTypeFactory d4_factory;
-			DMR dmr(&d4_factory, dds);
-			XMLWriter xml;
-			dmr.print_dap4(xml);
-			DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
-
-			CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(string(TEST_SRC_DIR) + "/dds-testsuite/fnoc1.nc.dmr"));
-		}
-    	catch (Error &e) {
-    		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
-    	}
-#endif
     }
 
     void test_dmr_from_dds_3() {
     	test_template("3B42.980909.5.HDF.dds", "3B42.980909.5.HDF.dmr");
-#if 0
-    	try {
-			BaseTypeFactory factory;
-			DDS dds(&factory, "test_1");
-			dds.parse(string(TEST_SRC_DIR) + "/dds-testsuite/");
-			DBG(cerr << "DDS: " << endl; dds.print(cerr));
-
-			D4BaseTypeFactory d4_factory;
-			DMR dmr(&d4_factory, dds);
-			XMLWriter xml;
-			dmr.print_dap4(xml);
-			DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
-
-			CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(string(TEST_SRC_DIR) + "/dds-testsuite/"));
-		}
-    	catch (Error &e) {
-    		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
-    	}
-#endif
     }
 
     void test_dmr_from_dds_4() {
     	test_template("S2000415.HDF.dds", "S2000415.HDF.dmr");
+    }
+
+    void test_dmr_from_dds_with_attr_1() {
+    	test_template("test.1", "test.1.attr.dmr", "test.1.das");
+    }
+
+    void  test_dmr_from_dds_with_attr_2() {
+    	// The 'hacked' file has global attributes
+    	test_template("3B42.980909.5.HDF.dds", "3B42.980909.5.HDF.attr.dmr", "3B42.980909.5.hacked.2.HDF.das");
     }
 };
 

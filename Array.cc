@@ -200,6 +200,7 @@ Array::transform_to_dap4(DMR &dmr)
 	}
 
 	// Copy the D2 attributes to D4 Attributes
+	dest->attributes()->transform_to_dap4(get_attr_table());
 
 	dest->set_is_dap4(true);
 

@@ -91,7 +91,7 @@ public:
     DMR(const DMR &dmr);
     DMR(D4BaseTypeFactory *factory, const string &name = "");
 
-    DMR(D4BaseTypeFactory *factory, const DDS &dds);
+    DMR(D4BaseTypeFactory *factory, DDS &dds);
 
     virtual ~DMR();
 
