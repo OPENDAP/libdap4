@@ -37,6 +37,7 @@ using namespace std;
 namespace libdap
 {
 
+class AttrTable;
 class D4Attributes;
 
 class D4Attribute {
@@ -123,6 +124,8 @@ public:
         m_duplicate(rhs);
         return *this;
     }
+
+    void transform_to_dap4(AttrTable &at);
 
     bool empty() const { return d_attrs.empty(); }
 

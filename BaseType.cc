@@ -228,7 +228,8 @@ BaseType::transform_to_dap4(DMR &)
 {
 	BaseType *dest = ptr_duplicate();
 
-	// Copy the D2 attributes to D4 Attributes
+	// Copy the D2 attributes from 'this' to dest's D4 Attributes
+	dest->attributes()->transform_to_dap4(get_attr_table());
 
 	dest->set_is_dap4(true);
 
