@@ -151,7 +151,7 @@ public:
 
     void  test_dmr_from_dds_with_attr_2() {
     	// The 'hacked' file has global attributes
-    	test_template("3B42.980909.5.HDF.dds", "3B42.980909.5.HDF.attr.dmr", "3B42.980909.5.hacked.2.HDF.das");
+    	test_template("3B42.980909.5.HDF.dds", "3B42.980909.5.hacked.2.HDF.attr.dmr", "3B42.980909.5.hacked.2.HDF.das");
     }
 };
 
