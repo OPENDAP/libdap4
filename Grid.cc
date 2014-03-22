@@ -50,6 +50,10 @@
 #include "XDRStreamMarshaller.h"
 #include "debug.h"
 
+#include "DMR.h"
+#include "D4Group.h"
+#include "D4Attributes.h"
+
 using namespace std;
 
 namespace libdap {
@@ -132,6 +136,29 @@ Grid::operator=(const Grid &rhs)
 
     return *this;
 }
+
+// FIXME transform_to_dap4 probably needs to run for side effect only.
+// drop the return BT and add variables to the D4Group that is passed
+// in instead of the DMR.
+//
+// Also need to handle the case where a Grid is part of a Structure
+BaseType *
+Grid::transform_to_dap4(DMR &dmr)
+{
+	D4Group *root = dmr.root();
+
+    for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
+    	BaseType *new_var = (*i)->transform_to_dap4(dmr);
+    	new_var->set_parent(root);
+    	// need to do two things for the array: Add Grid's attributes and add Maps
+    	new_var->attributes()->transform_to_dap4((*i)->get_attr_table());
+    	new_var->set_is_dap4(true);
+    	root->add_var_nocopy(new_var);
+    }
+
+    return root;
+}
+
 
 /**
  * Grid can only be used for DAP2.

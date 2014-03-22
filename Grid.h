@@ -140,6 +140,8 @@ public:
     Grid &operator=(const Grid &rhs);
     virtual BaseType *ptr_duplicate();
 
+    virtual BaseType *transform_to_dap4(DMR &dmr);
+
     virtual bool is_dap2_only_type();
 
     virtual void add_var(BaseType *bt, Part part);
