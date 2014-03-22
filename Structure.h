@@ -48,6 +48,7 @@ namespace libdap
 
 class DDS;
 class ConstraintEvaluator;
+class D4Group;
 
 /** This data type is used to hold a collection of related data types,
     in a manner roughly corresponding to a C structure.  The member
@@ -102,7 +103,7 @@ public:
     Structure &operator=(const Structure &rhs);
     virtual BaseType *ptr_duplicate();
 
-    virtual BaseType *transform_to_dap4(DMR &dmr);
+    virtual void transform_to_dap4(D4Group *root, Constructor *container);
 
 #if 0
     virtual int element_count(bool leaves = false);

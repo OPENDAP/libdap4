@@ -142,21 +142,21 @@ Grid::operator=(const Grid &rhs)
 // in instead of the DMR.
 //
 // Also need to handle the case where a Grid is part of a Structure
-BaseType *
-Grid::transform_to_dap4(DMR &dmr)
+void
+Grid::transform_to_dap4(D4Group *root, Constructor *container)
 {
-	D4Group *root = dmr.root();
+	//D4Group *root = dmr.root();
 
     for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
-    	BaseType *new_var = (*i)->transform_to_dap4(dmr);
+    	/*BaseType *new_var =*/ (*i)->transform_to_dap4(root, container);
+#if 0
     	new_var->set_parent(root);
     	// need to do two things for the array: Add Grid's attributes and add Maps
     	new_var->attributes()->transform_to_dap4((*i)->get_attr_table());
     	new_var->set_is_dap4(true);
     	root->add_var_nocopy(new_var);
+#endif
     }
-
-    return root;
 }
 
 

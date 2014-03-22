@@ -61,6 +61,8 @@
 namespace libdap
 {
 
+class D4Grup;
+
 /** The Grid data type is a collection of an Array and a set of ``Map''
     vectors.  The Map vectors are one-dimensional arrays corresponding
     to each dimension of the central Array.  Using this scheme, a Grid
@@ -140,7 +142,7 @@ public:
     Grid &operator=(const Grid &rhs);
     virtual BaseType *ptr_duplicate();
 
-    virtual BaseType *transform_to_dap4(DMR &dmr);
+    virtual void transform_to_dap4(D4Group *root, Constructor *container);
 
     virtual bool is_dap2_only_type();
 

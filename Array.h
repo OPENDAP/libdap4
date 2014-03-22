@@ -56,10 +56,11 @@
 
 namespace libdap
 {
-
+// TODO Neaten
 // class D4Dimension;
+class D4Group;
 class D4Maps;
-class DMR;
+// class DMR;
 
 const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
@@ -212,7 +213,7 @@ public:
     Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate();
 
-    virtual BaseType *transform_to_dap4(DMR &dmr);
+    virtual void transform_to_dap4(D4Group *root, Constructor *container);
 
     void add_var(BaseType *v, Part p = nil);
     void add_var_nocopy(BaseType *v, Part p = nil);

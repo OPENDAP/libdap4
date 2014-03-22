@@ -143,8 +143,10 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
     // have 'shared dimensions'
     //
     for (DDS::Vars_citer i = dds.var_cbegin(), e = dds.var_cend(); i != e; ++i) {
-    	BaseType *new_var = (*i)->transform_to_dap4(*this);
+    	/*BaseType *new_var = */ (*i)->transform_to_dap4(root(), root());
+#if 0
     	root()->add_var_nocopy(new_var);
+#endif
     }
 
     // Now copy the global attributes

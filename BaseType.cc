@@ -214,17 +214,13 @@ BaseType::toString()
  * in the DAP4 implementation), Grids (which are coverages) and Arrays (which use
  *  shared dimensions).
  *
- * @todo Replace the DMR param with a D4Group, so that it's 'more correct'. Not
- * really a super high priority but that change might simplify building DMRs for
- * the HDF5 handler.
- *
  * @param dmr If things (e.g., D4Dimensions) must be added to a DMR, do so
  * with this instance, as a side effect. The caller must add the variable
  * to the DMR or Constructor variable.
  * @return A pointer to the transformed variable
  */
-BaseType *
-BaseType::transform_to_dap4(DMR &)
+void
+BaseType::transform_to_dap4(D4Group *root, Constructor *container)
 {
 	BaseType *dest = ptr_duplicate();
 
@@ -232,8 +228,9 @@ BaseType::transform_to_dap4(DMR &)
 	dest->attributes()->transform_to_dap4(get_attr_table());
 
 	dest->set_is_dap4(true);
+	dest->set_parent(container);
 
-	return dest;
+	container->add_var_nocopy(dest);
 }
 
 /** @brief dumps information about this object

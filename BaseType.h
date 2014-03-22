@@ -73,7 +73,10 @@ class DDS;
 class Marshaller;
 class UnMarshaller;
 
+class Constructor;
+
 class DMR;
+class D4Group;
 class D4StreamMarshaller;
 class D4StreamUnMarshaller;
 
@@ -157,7 +160,7 @@ public:
 
     virtual string toString();
 
-    virtual BaseType *transform_to_dap4(DMR &dmr);
+    virtual void transform_to_dap4(D4Group *root, Constructor *container);
 
     virtual void dump(ostream &strm) const ;
 

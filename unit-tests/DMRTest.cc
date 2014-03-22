@@ -122,6 +122,8 @@ public:
     CPPUNIT_TEST(test_dmr_from_dds_2);
     CPPUNIT_TEST(test_dmr_from_dds_3);
     CPPUNIT_TEST(test_dmr_from_dds_4);
+    CPPUNIT_TEST(test_dmr_from_dds_5);
+
     CPPUNIT_TEST(test_dmr_from_dds_with_attr_1);
     CPPUNIT_TEST(test_dmr_from_dds_with_attr_2);
 
@@ -143,6 +145,10 @@ public:
 
     void test_dmr_from_dds_4() {
     	test_template("S2000415.HDF.dds", "S2000415.HDF.dmr");
+    }
+
+    void test_dmr_from_dds_5() {
+    	test_template("coads_climatology.nc.dds", "coads_climatology.nc.dmr");
     }
 
     void test_dmr_from_dds_with_attr_1() {

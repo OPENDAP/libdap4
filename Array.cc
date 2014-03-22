@@ -165,8 +165,8 @@ Array::operator=(const Array &rhs)
     return *this;
 }
 
-BaseType *
-Array::transform_to_dap4(DMR &dmr)
+void
+Array::transform_to_dap4(D4Group *root, Constructor *container)
 {
 	Array *dest = new Array(*this);
 
@@ -175,7 +175,7 @@ Array::transform_to_dap4(DMR &dmr)
 	// a D4Dimension (In DAP4 you cannot share a dimension unless it has
 	// a name). jhrg 3/18/14
 
-	D4Dimensions *dims = dmr.root()->dims();
+	D4Dimensions *dims = root->dims();
 	for (Array::Dim_iter d = dest->dim_begin(), e = dest->dim_end(); d != e; ++d) {
 		if (!(*d).name.empty()) {
 			// If a D4Dimension with the name already exists, use it.
@@ -204,7 +204,8 @@ Array::transform_to_dap4(DMR &dmr)
 
 	dest->set_is_dap4(true);
 
-	return dest;
+	container->add_var_nocopy(dest);
+	//return dest;
 }
 
 /** @brief Add the BaseType pointer to this constructor type
