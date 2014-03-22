@@ -142,7 +142,7 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
     // Grid: Make a coverage; assume Grids with the same dimension names
     // have 'shared dimensions'
     //
-    for (DDS::Vars_citer i = dds.var_cbegin(), e = dds.var_cend(); i != e; ++i) {
+    for (DDS::Vars_iter i = dds.var_begin(), e = dds.var_end(); i != e; ++i) {
     	BaseType *new_var = (*i)->transform_to_dap4(root(), root());
     	// If the variable being transformed is a Grid (i.e., (*i)->type() == dods_grid_c)
     	// then Grid::transform_to_dap4() will add all the arrays to the
