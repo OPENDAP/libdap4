@@ -103,7 +103,7 @@ public:
     Structure &operator=(const Structure &rhs);
     virtual BaseType *ptr_duplicate();
 
-    virtual void transform_to_dap4(D4Group *root, Constructor *container);
+    virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
 
 #if 0
     virtual int element_count(bool leaves = false);

@@ -52,6 +52,7 @@
 
 #include "DMR.h"
 #include "D4Group.h"
+#include "D4Maps.h"
 #include "D4Attributes.h"
 
 using namespace std;
@@ -142,11 +143,10 @@ Grid::operator=(const Grid &rhs)
 // in instead of the DMR.
 //
 // Also need to handle the case where a Grid is part of a Structure
-void
+BaseType *
 Grid::transform_to_dap4(D4Group *root, Constructor *container)
 {
-	//D4Group *root = dmr.root();
-
+#if 0
     for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
     	/*BaseType *new_var =*/ (*i)->transform_to_dap4(root, container);
 #if 0
@@ -157,6 +157,49 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
     	root->add_var_nocopy(new_var);
 #endif
     }
+#endif
+
+    BaseType *btp = array_var()->transform_to_dap4(root, container);
+    Array *coverage = static_cast<Array*>(btp);
+    if (!coverage)
+    	throw InternalErr(__FILE__, __LINE__, "Expected an Array while transforming a Grid (coverage)");
+
+	coverage->set_parent(container);
+
+	// Next find the maps; add them to the coverage and to the container,
+	// the latter only on the condition that they are not already there.
+
+	for (Map_iter i = map_begin(), e = map_end(); i != e; ++i) {
+    	btp = (*i)->transform_to_dap4(root, container);
+        Array *map = static_cast<Array*>(btp);
+        if (!map)
+        	throw InternalErr(__FILE__, __LINE__, "Expected an Array while transforming a Grid (map)");
+
+    	// map must be non-null (Grids cannot contain Grids in DAP2)
+		if (map) {
+			// Only add the map/array if it not already present; given the scoping rules
+			// for DAP2 and the assumption the DDS is valid, testing for the same name
+			// is good enough.
+			if (!root->var(map->name())) {
+				map->set_parent(container);
+				container->add_var_nocopy(map);	// this adds the array to the container
+			}
+			D4Map *dap4_map = new D4Map(map->name(), map, coverage);	// bind the 'map' to the coverage
+			coverage->maps()->add_map(dap4_map);	// bind the coverage to the map
+		}
+		else {
+			throw InternalErr(__FILE__, __LINE__,
+					"transform_to_dap4() returned a null value where there can be no Grid.");
+		}
+	}
+
+	container->add_var_nocopy(coverage);
+
+    // Since a Grid (DAP2) to a Coverage (DAP4) removes a lexical scope
+    // in favor of a set of relations, Grid::transform_to_dap4() does not
+    // return a BaseType*. Callers should assume it has correctly added
+    // stuff to the container and group.
+    return 0;
 }
 
 

@@ -165,8 +165,8 @@ Array::operator=(const Array &rhs)
     return *this;
 }
 
-void
-Array::transform_to_dap4(D4Group *root, Constructor *container)
+BaseType *
+Array::transform_to_dap4(D4Group *root, Constructor */*container*/)
 {
 	Array *dest = new Array(*this);
 
@@ -204,8 +204,8 @@ Array::transform_to_dap4(D4Group *root, Constructor *container)
 
 	dest->set_is_dap4(true);
 
-	container->add_var_nocopy(dest);
-	//return dest;
+	//container->add_var_nocopy(dest);
+	return dest;
 }
 
 /** @brief Add the BaseType pointer to this constructor type

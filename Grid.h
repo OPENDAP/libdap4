@@ -142,7 +142,7 @@ public:
     Grid &operator=(const Grid &rhs);
     virtual BaseType *ptr_duplicate();
 
-    virtual void transform_to_dap4(D4Group *root, Constructor *container);
+    virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
 
     virtual bool is_dap2_only_type();
 

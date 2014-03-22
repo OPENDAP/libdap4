@@ -219,8 +219,8 @@ BaseType::toString()
  * to the DMR or Constructor variable.
  * @return A pointer to the transformed variable
  */
-void
-BaseType::transform_to_dap4(D4Group *root, Constructor *container)
+BaseType *
+BaseType::transform_to_dap4(D4Group */*root*/, Constructor */*container*/)
 {
 	BaseType *dest = ptr_duplicate();
 
@@ -228,9 +228,10 @@ BaseType::transform_to_dap4(D4Group *root, Constructor *container)
 	dest->attributes()->transform_to_dap4(get_attr_table());
 
 	dest->set_is_dap4(true);
-	dest->set_parent(container);
+	//dest->set_parent(container);
 
-	container->add_var_nocopy(dest);
+	return dest;
+	// TODO Remove: container->add_var_nocopy(dest);
 }
 
 /** @brief dumps information about this object

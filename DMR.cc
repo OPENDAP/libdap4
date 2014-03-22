@@ -143,10 +143,13 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
     // have 'shared dimensions'
     //
     for (DDS::Vars_citer i = dds.var_cbegin(), e = dds.var_cend(); i != e; ++i) {
-    	/*BaseType *new_var = */ (*i)->transform_to_dap4(root(), root());
-#if 0
-    	root()->add_var_nocopy(new_var);
-#endif
+    	BaseType *new_var = (*i)->transform_to_dap4(root(), root());
+    	// If the variable being transformed is a Grid (i.e., (*i)->type() == dods_grid_c)
+    	// then Grid::transform_to_dap4() will add all the arrays to the
+    	// container (root() in this case) and return null, indicating that
+    	// this code does not need to do anything to add the transformed variable.
+    	if (new_var)
+    		root()->add_var_nocopy(new_var);
     }
 
     // Now copy the global attributes

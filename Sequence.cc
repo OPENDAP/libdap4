@@ -204,7 +204,7 @@ Sequence::ptr_duplicate()
     return new Sequence(*this);
 }
 
-void
+BaseType *
 Sequence::transform_to_dap4(D4Group *root, Constructor *container)
 {
 	// For this class, ptr_duplicate() calls the const ctor which calls
@@ -215,14 +215,15 @@ Sequence::transform_to_dap4(D4Group *root, Constructor *container)
 	D4Sequence *dest = new D4Sequence(name());
 
     for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
-    	/*BaseType *new_var = */(*i)->transform_to_dap4(root, dest);
-    	// FIXME we need to pass 'dest' but it's not a Group, just a Constructor.
-    	// Maybe two args? a Group and a Constructor
-#if 0
-    	new_var->set_parent(dest);
-    	dest->add_var_nocopy(new_var);
-#endif
-    }
+    	BaseType *new_var = (*i)->transform_to_dap4(root, dest);
+		if (new_var) {
+			new_var->set_parent(dest);
+			dest->add_var_nocopy(new_var);
+		}
+		else {
+			throw InternalErr(__FILE__, __LINE__, "transform_to_dap4() returned null, but no Grid could be here.");
+		}
+	}
 
     // Add attributes
 	dest->attributes()->transform_to_dap4(get_attr_table());
@@ -232,7 +233,8 @@ Sequence::transform_to_dap4(D4Group *root, Constructor *container)
 
     dest->set_length(-1);
 
-    container->add_var_nocopy(dest);
+    //container->add_var_nocopy(dest);
+    return dest;
 }
 
 static inline void

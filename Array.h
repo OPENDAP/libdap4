@@ -213,7 +213,7 @@ public:
     Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate();
 
-    virtual void transform_to_dap4(D4Group *root, Constructor *container);
+    virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
 
     void add_var(BaseType *v, Part p = nil);
     void add_var_nocopy(BaseType *v, Part p = nil);
