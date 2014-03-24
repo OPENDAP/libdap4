@@ -35,9 +35,9 @@
 
 #include <string>
 
-// FIXME Remove #include <InternalErr.h>
-
 using namespace std;
+
+namespace libdap {
 
 class XMLWriter {
 private:
@@ -60,4 +60,5 @@ public:
     unsigned int get_doc_size();
 };
 
+} // namespace libdap
 #endif /* XMLWRITER_H_ */

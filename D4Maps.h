@@ -27,14 +27,13 @@
 
 #include <string>
 #include <vector>
-#include <Array.h> // FIXME
-using namespace std;
 
-class XMLWriter;
+using namespace std;
 
 namespace libdap {
 
 class Array;
+class XMLWriter;
 
 class D4Map {
     std::string d_name;

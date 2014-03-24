@@ -37,6 +37,7 @@
 #include "GetOpt.h"
 
 #include "DMR.h"
+#include "D4Group.h"
 #include "XMLWriter.h"
 #include "Array.h"
 

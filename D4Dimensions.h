@@ -32,12 +32,11 @@
 
 using namespace std;
 
-class XMLWriter;
-
 namespace libdap {
 
 class D4Group;
 class D4Dimensions;
+class XMLWriter;
 
 class D4Dimension {
     string d_name;

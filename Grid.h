@@ -62,6 +62,7 @@ namespace libdap
 {
 
 class D4Grup;
+class XMLWriter;
 
 /** The Grid data type is a collection of an Array and a set of ``Map''
     vectors.  The Map vectors are one-dimensional arrays corresponding

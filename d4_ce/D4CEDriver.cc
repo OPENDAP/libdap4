@@ -32,6 +32,7 @@
 #include "D4CEDriver.h"
 #include "d4_ce_parser.tab.hh"
 #include "DMR.h"
+#include "D4Group.h"
 #include "D4Dimensions.h"
 #include "BaseType.h"
 #include "Array.h"

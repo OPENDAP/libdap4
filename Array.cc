@@ -41,15 +41,14 @@
 
 #include "Array.h"
 
-#if D4_ATTR
 #include "D4Attributes.h"
-#endif
 #include "DMR.h"
 #include "D4Dimensions.h"
 #include "D4Maps.h"
 #include "D4Group.h"
 #include "D4EnumDefs.h"
 #include "D4Enum.h"
+#include "XMLWriter.h"
 
 #include "util.h"
 #include "debug.h"
@@ -761,14 +760,7 @@ Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/)
 	// Drop the local_constraint which is per-array and use a per-dimension on instead
     for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml, constrained));
 
-#if D4_ATTR
-    // TODO Calling is_dap4() is likely redundant in print_dap4()... jhrg 10/16/13
-	if (is_dap4()) attributes()->print_dap4(xml);
-
-	if (!is_dap4() && get_attr_table().get_size() > 0) get_attr_table().print_xml_writer(xml);
-#else
-	if (get_attr_table().get_size() > 0) get_attr_table().print_xml_writer(xml);
-#endif
+	attributes()->print_dap4(xml);
 
 	for_each(maps()->map_begin(), maps()->map_end(), PrintD4MapXMLWriter(xml));
 

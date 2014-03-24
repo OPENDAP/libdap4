@@ -50,17 +50,15 @@
 
 #include "D4Dimensions.h"
 
-#ifndef XMLWRITER_H_
-#include "XMLWriter.h"
-#endif
+//#ifndef XMLWRITER_H_
+//#include "XMLWriter.h"
+//#endif
 
 namespace libdap
 {
-// TODO Neaten
-// class D4Dimension;
 class D4Group;
 class D4Maps;
-// class DMR;
+class XMLWriter;
 
 const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
@@ -77,6 +75,11 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
     The Array is used as part of the Grid class, where the dimension names
     are crucial to its structure. The dimension names correspond to \e Map
     vectors, holding the actual values for that column of the array.
+
+    In DAP4, the Array may be a Coverage or a simple Array. In the former case
+    the Array will have both named dimensions and maps, where the maps (instances
+    of D4Map) are what make the Array a Coverage. Coverages are a generalization
+    of DAP2 Grids.
 
     Each array dimension carries with it its own projection information. The
     projection information takes the form of three integers: the start, stop,
@@ -101,6 +104,7 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
     \endverbatim
 
     @note Arrays use zero-based indexing.
+    @note This class is used for both DAP2 and DAP4.
 
     @brief A multidimensional array of identical data types.
     @see Grid

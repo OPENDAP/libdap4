@@ -59,6 +59,8 @@
 //#include "Connect.h"
 //#include "Response.h"
 #include "DDXParserSAX2.h"
+//#include "DMR.h"
+#include "D4Group.h"
 // #include "Ancillary.h"
 
 #include "D4ResponseBuilder.h"

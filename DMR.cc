@@ -45,6 +45,7 @@
 #include "BaseType.h"
 #include "Array.h"
 #include "DMR.h"
+#include "XMLWriter.h"
 #include "D4BaseTypeFactory.h"
 #include "D4Attributes.h"
 
@@ -119,6 +120,26 @@ DMR::DMR(D4BaseTypeFactory *factory, const string &name)
     set_dap_version("4.0");
 }
 
+/** @brief Build a DMR using a DAP2 DDS.
+ *
+ * Given a DDS from code written for DAP2, build a DAP4 DMR object. This
+ * works because DAP4 subsumes DAP2, but there are a few quirks... For
+ * each variable in the DDS, transform it to the equivalent DAP4 variable
+ * type and then copy the variable's attributes. Most types convert easily.
+ * Types that need special treatment are:
+ * Array: DAP2 array dimensions must be morphed to DAP4
+ * Sequence: Make a D4Sequence
+ * Grid: Make a coverage; assume Grids with the same dimension names
+ * have 'shared dimensions' and that maps with the same names are shared too.
+ *
+ * @note Assume that a DDS has only a root group. This is not actually
+ * true for a DDS from the HDF5 handler, because it has Groups encoded
+ * into the variable names. jhrg 3/18/14
+ *
+ * @param factory Factory class used to make new variables
+ * @param dds Get the variables to convert from this DAP2 DDS.
+ * @see BaseType::transform_to_dap4()
+ */
 DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
         : d_factory(factory), d_name(dds.get_dataset_name()),
           d_filename(dds.filename()),
@@ -128,23 +149,9 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
     // sets d_dap_version string and the two integer fields too
     set_dap_version("4.0");
 
-    // Assume that a DDS has only a root group. This is not actually
-    // true for a DDS from the HDF5 handler, because it has Groups
-    // encoded into the variable names. jhrg 3/18/14
-
-    // For each variable in the DDS, perform a deep copy of that
-    // BaseType. Transform the source BaseTypes attributes to D4
-    // Attributes.
-
-    // Types that are special:
-    // Array: DAP2 array dimensions must be morphed to DAP4
-    // Sequence: Make a D4Sequence
-    // Grid: Make a coverage; assume Grids with the same dimension names
-    // have 'shared dimensions'
-    //
     for (DDS::Vars_iter i = dds.var_begin(), e = dds.var_end(); i != e; ++i) {
-    	BaseType *new_var = (*i)->transform_to_dap4(root(), root());
-    	// If the variable being transformed is a Grid (i.e., (*i)->type() == dods_grid_c)
+    	BaseType *new_var = (*i)->transform_to_dap4(root() /*group*/, root() /*container*/);
+    	// If the variable being transformed is a Grid,
     	// then Grid::transform_to_dap4() will add all the arrays to the
     	// container (root() in this case) and return null, indicating that
     	// this code does not need to do anything to add the transformed variable.
@@ -155,7 +162,6 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
     // Now copy the global attributes
     root()->attributes()->transform_to_dap4(dds.get_attr_table());
 }
-
 
 /**
  * Make a DMR which uses the given BaseTypeFactory to create variables.

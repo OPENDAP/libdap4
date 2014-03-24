@@ -50,6 +50,7 @@
 #include "XDRStreamMarshaller.h"
 #include "debug.h"
 
+#include "XMLWriter.h"
 #include "DMR.h"
 #include "D4Group.h"
 #include "D4Maps.h"

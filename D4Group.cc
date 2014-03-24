@@ -48,8 +48,6 @@
 
 #include "debug.h"
 
-#define D4_ATTR 1
-
 namespace libdap {
 
 void D4Group::m_duplicate(const D4Group &g)
@@ -526,10 +524,8 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
     while (v != var_end())
         (*v++)->print_dap4(xml, constrained);
 
-#if D4_ATTR
     // attributes
     attributes()->print_dap4(xml);
-#endif
 
     // groups
     groupsIter g = d_groups.begin();

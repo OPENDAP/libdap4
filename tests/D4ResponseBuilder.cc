@@ -57,6 +57,7 @@
 #include "XDRFileUnMarshaller.h"
 
 #include "DMR.h"
+#include "D4Group.h"
 #include "XMLWriter.h"
 #include "D4StreamMarshaller.h"
 #include "chunked_ostream.h"

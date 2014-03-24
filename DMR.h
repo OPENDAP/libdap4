@@ -31,14 +31,17 @@
 #include <string>
 #include <vector>
 
-#include "D4Group.h"
-#include "XMLWriter.h"
+//#include "D4Group.h"
+//#include "XMLWriter.h"
 #include "DapObj.h"
 
 namespace libdap
 {
 
+class D4Group;
 class D4BaseTypeFactory;
+class XMLWriter;
+
 class DDS;
 
 /** DMR is root object for a DAP4 dataset. It holds a D4Group and other

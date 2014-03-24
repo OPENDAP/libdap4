@@ -35,6 +35,7 @@
 #include "D4FunctionDriver.h"
 #include "d4_function_parser.tab.hh"
 #include "DMR.h"
+#include "D4Group.h"
 #include "D4RValue.h"
 
 #include "BaseType.h"

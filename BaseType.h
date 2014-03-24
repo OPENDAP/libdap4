@@ -56,9 +56,7 @@
 
 #include "DapObj.h"
 
-#include "XMLWriter.h"
-
-#define D4_ATTR 1
+//#include "XMLWriter.h"
 
 using namespace std;
 
@@ -74,9 +72,11 @@ class Marshaller;
 class UnMarshaller;
 
 class Constructor;
+class XMLWrter;
 
 class DMR;
 class D4Group;
+class XMLWriter;
 class D4StreamMarshaller;
 class D4StreamUnMarshaller;
 
@@ -92,11 +92,11 @@ class D4Attributes;
     access and use this data. On the server side, in many cases, the class
     instances will have no data in them at all until the
     <tt>serialize</tt> function
-    is called to send data to the client. On the client side, most DODS
+    is called to send data to the client. On the client side, most DAP
     application programs will unpack the data promptly into whatever local
     data structure the programmer deems the most useful.
 
-    In order to use these classes on the server side of a DODS
+    In order to use these classes on the server side of a DAP
     client/server connection, you must write a <tt>read</tt> method
     for each of the data types you expect to encounter in the
     application. This function, whose purpose is to read data from a
@@ -111,6 +111,8 @@ class D4Attributes;
     For some data types, the <tt>read</tt> function must be aware of
     the constraints
     to be returned. These cautions are outlined where they occur.
+
+	@note This class is ued by both DAP2 and DAP4.
 
     @brief The basic data type for the DODS DAP types.  */
 
@@ -135,12 +137,9 @@ private:
 
     // Attributes for this variable. Added 05/20/03 jhrg
     AttrTable d_attr;
-#if D4_ATTR
-    // This might be removed if we need to keep the 'D4' classes out of
-    // BaseType. If BaseType is split and we make a D4BaseType, it's not
-    // an issue.
+
     D4Attributes *d_attributes;
-#endif
+
     bool d_is_dap4;         // True if this is a DAP4 variable, false ... DAP2
 
     // These are non-empty only for DAP4 variables. Added 9/27/12 jhrg
@@ -217,12 +216,12 @@ public:
 
     virtual AttrTable &get_attr_table();
     virtual void set_attr_table(const AttrTable &at);
-#if D4_ATTR
+
     // DAP4 attributes
     virtual D4Attributes *attributes();
     virtual void set_attributes(D4Attributes *);
     virtual void set_attributes_nocopy(D4Attributes *);
-#endif
+
     virtual bool is_in_selection();
     virtual void set_in_selection(bool state);
 

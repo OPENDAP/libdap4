@@ -41,6 +41,7 @@
 #include "HTTPConnect.h"
 #include "Response.h"
 #include "DMR.h"
+#include "D4Group.h"
 
 #include "D4ParserSax2.h"
 #include "chunked_stream.h"

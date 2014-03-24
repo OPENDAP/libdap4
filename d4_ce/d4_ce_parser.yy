@@ -78,6 +78,7 @@ namespace libdap {
    
    #include "BaseType.h"
    #include "DMR.h"
+   #include "D4Group.h"
 
    /* include for all driver functions */
    #include "D4CEDriver.h"

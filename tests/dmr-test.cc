@@ -40,6 +40,7 @@
 #include "D4Enum.h"
 
 #include "DMR.h"
+#include "D4Group.h"
 #include "D4StreamUnMarshaller.h"
 #include "chunked_ostream.h"
 #include "chunked_istream.h"

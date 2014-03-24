@@ -47,6 +47,7 @@
 #include "GetOpt.h"
 
 #include "DMR.h"
+#include "XMLWriter.h"
 #include "D4BaseTypeFactory.h"
 #include "D4Group.h"
 #include "D4Sequence.h"

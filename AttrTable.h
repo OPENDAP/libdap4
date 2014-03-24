@@ -134,15 +134,7 @@ AttrType String_to_AttrType(const string &s);
     attributes, and <tt>actual_range</tt> and <tt>conversion_data</tt>
     are container attributes containing other attribute tables.
 
-    @todo Look at refactoring this by splitting it into three classes. Move
-    the struct entry into its own calls (maybe called Attribute?), make
-    AttrTable a child of that class and then make aliases a separate class,
-    also a child of Attribute. Look at the design of the Java code.
-
-    @todo A problem with this class is that Attr_iter objects cannot be
-    dereferenced to return attributes. Instead they must be passed to methods
-    which require that you have access to the AttrTable object into which
-    they point.03/09/04 jhrg
+	@note This class is used only for DAP2.
 
     @brief Contains the attributes for a dataset.
     @see DAS

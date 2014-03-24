@@ -46,6 +46,7 @@
 #include "Grid.h"
 
 #include "DMR.h"
+#include "XMLWriter.h"
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
 
@@ -56,8 +57,6 @@
 #include "util.h"
 #include "Error.h"
 #include "InternalErr.h"
-
-#define D4_ATTR 1
 
 using namespace std;
 
@@ -677,17 +676,11 @@ Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
     if (has_variables)
         for_each(var_begin(), var_end(), PrintFieldXMLWriter(xml, constrained));
 
-#if D4_ATTR
     if (is_dap4())
         attributes()->print_dap4(xml);
 
     if (!is_dap4() && get_attr_table().get_size() > 0)
         get_attr_table().print_xml_writer(xml);
-#else
-    bool has_attributes = get_attr_table().get_size() > 0;
-    if (has_attributes)
-        get_attr_table().print_xml_writer(xml);
-#endif
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
@@ -724,17 +717,7 @@ Constructor::print_dap4(XMLWriter &xml, bool constrained)
     if (has_variables)
         for_each(var_begin(), var_end(), PrintDAP4FieldXMLWriter(xml, constrained));
 
-#if D4_ATTR
-    if (is_dap4())
-        attributes()->print_dap4(xml);
-
-    if (!is_dap4() && get_attr_table().get_size() > 0)
-        get_attr_table().print_xml_writer(xml);
-#else
-    bool has_attributes = get_attr_table().get_size() > 0;
-    if (has_attributes)
-        get_attr_table().print_xml_writer(xml);
-#endif
+    attributes()->print_dap4(xml);
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");

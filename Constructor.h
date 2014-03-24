@@ -36,6 +36,7 @@ namespace libdap
 {
 
 class DMR;
+class XMLWriter;
 class D4StreamUnMarshaller;
 
 /** Common methods for all constructor types. */
