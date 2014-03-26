@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1995-1996,1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -44,7 +44,7 @@
 #include <process.h>
 #endif
 
-//#define DODS_DEBUG 
+//#define DODS_DEBUG
 
 #include "TestInt32.h"
 #include "debug.h"
@@ -92,7 +92,7 @@ TestInt32::ptr_duplicate()
     return new TestInt32(*this);
 }
 
-void 
+void
 TestInt32::output_values(std::ostream &out)
 {
     print_val(out, "", false);
@@ -109,9 +109,13 @@ TestInt32::read()
 	sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
-        d_buf = 32 * d_buf;
-        if (!d_buf)
-            d_buf = 32;
+		// This line stopped working when I upgraded the compiler on osx 10.9.
+		// to version Apple LLVM version 5.1 (clang-503.0.38) (based on LLVM 3.4svn)
+		// jhrg 3/12/14
+		// d_buf = d_buf * 32;
+		d_buf <<= 5;
+		if (!d_buf)
+			d_buf = 32;
     }
     else {
         d_buf = 123456789;
@@ -120,6 +124,6 @@ TestInt32::read()
     set_read_p(true);
 
     DBG(cerr << "In TestInt32::read, _buf = " << d_buf << endl);
-    
+
     return true;
 }

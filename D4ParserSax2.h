@@ -96,7 +96,7 @@ private:
         inside_grid,
         inside_map,
 
-        inside_structure,
+        inside_constructor,
         inside_sequence,
 
         parser_unknown,

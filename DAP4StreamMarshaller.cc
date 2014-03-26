@@ -31,6 +31,7 @@
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 
+#include "config.h"
 
 #include "DAP4StreamMarshaller.h"
 

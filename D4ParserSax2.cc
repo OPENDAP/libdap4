@@ -419,7 +419,7 @@ inline bool D4ParserSax2::process_variable(const char *name, const xmlChar **att
         return true;
     }
     else if (strcmp(name, "Structure") == 0) {
-        process_variable_helper(dods_structure_c, inside_structure, attrs, nb_attributes);
+        process_variable_helper(dods_structure_c, inside_constructor, attrs, nb_attributes);
         return true;
     }
     else if (strcmp(name, "Sequence") == 0) {
@@ -708,7 +708,7 @@ void D4ParserSax2::ddx_start_element(void *p, const xmlChar *l, const xmlChar *p
                     localname);
             break;
 
-        case inside_structure:
+        case inside_constructor:
             if (parser->process_attribute(localname, attributes, nb_attributes))
                 break;
             else if (parser->process_variable(localname, attributes, nb_attributes))
@@ -910,7 +910,7 @@ void D4ParserSax2::ddx_end_element(void *p, const xmlChar *l, const xmlChar *pre
                 D4ParserSax2::ddx_fatal_error(parser, "Expected an end dimension tag; found '%s' instead.", localname);
             break;
 
-        case inside_structure:
+        case inside_constructor:
             parser->finish_variable(localname, dods_structure_c, "Structure");
             break;
 
