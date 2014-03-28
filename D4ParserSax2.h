@@ -45,6 +45,10 @@ namespace libdap
 class DMR;
 class BaseType;
 class D4BaseTypeFactory;
+class D4Group;
+class D4Attributes;
+class D4EnumDef;
+class D4Dimension;
 
 /** Parse the XML text which encodes the network/persistent representation of
     the DMR object. In the current implementation, the DMR is held by an

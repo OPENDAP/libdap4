@@ -47,21 +47,8 @@
 
 //#define DODS_DEBUG
 
-#if 0
-//FIXME
-#include "BaseType.h"
-#include "Array.h"
-#include "Grid.h"
-
-#include "DAS.h"
-#include "DDS.h"
-#endif
-//#include "Connect.h"
-//#include "Response.h"
 #include "DDXParserSAX2.h"
-//#include "DMR.h"
 #include "D4Group.h"
-// #include "Ancillary.h"
 
 #include "D4ResponseBuilder.h"
 #include "XDRStreamMarshaller.h"
