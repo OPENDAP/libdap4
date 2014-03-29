@@ -172,7 +172,7 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
  */
 DMR::DMR()
         : d_factory(0), d_name(""), d_filename(""), d_dap_major(4), d_dap_minor(0),
-          d_dap_version("4.0"),   d_dmr_version("1.0"), d_request_xml_base(""),
+          d_dap_version("4.0"), d_dmr_version("1.0"), d_request_xml_base(""),
           d_namespace(c_dap40_namespace), d_max_response_size(0), d_root(0)
 {
     // sets d_dap_version string and the two integer fields too
