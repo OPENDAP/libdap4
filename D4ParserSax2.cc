@@ -93,6 +93,35 @@ static bool is_not(const char *name, const char *tag)
     return strcmp(name, tag) != 0;
 }
 
+/** @brief Return the current Enumeration definition
+ * Allocate the Enumeration definition if needed and return it. Once parsing the current
+ * enumeration definition is complete, the pointer allocated/returned by this method will
+ * be copied into the current Group and this internal storage will be 'reset' using
+ * clear_enum_def().
+ *
+ * @return
+ */
+D4EnumDef *
+D4ParserSax2::enum_def()
+{
+    if (!d_enum_def) d_enum_def = new D4EnumDef;
+
+    return d_enum_def;
+}
+
+/** @brief Return the current Dimension definition
+ * Allocate the Dimension definition if needed and return it.
+ * @see enum_def() for an explanation of how this is used by the parser.
+ *
+ * @return
+ */
+D4Dimension *
+D4ParserSax2::dim_def()    {
+    if (!d_dim_def) d_dim_def = new D4Dimension;
+
+    return d_dim_def;
+}
+
 /** Dump XML attributes to local store so they can be easily manipulated.
  * XML attribute names are always folded to lower case.
  * @param attributes The XML attribute array

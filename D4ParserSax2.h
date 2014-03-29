@@ -146,17 +146,23 @@ private:
     bool empty_attributes() const { return d_attrs_stack.empty(); }
 
     D4EnumDef *d_enum_def;
-    D4EnumDef *enum_def() {
+    D4EnumDef *enum_def();
+#if 0
+    {
         if (!d_enum_def) d_enum_def = new D4EnumDef;
         return d_enum_def;
     }
+#endif
     void clear_enum_def() { d_enum_def = 0; }
 
     D4Dimension *d_dim_def;
-    D4Dimension *dim_def() {
+    D4Dimension *dim_def();
+#if 0
+    {
         if (!d_dim_def) d_dim_def = new D4Dimension;
         return d_dim_def;
     }
+#endif
     void clear_dim_def() { d_dim_def = 0; }
 
     // Accumulate stuff inside an 'OtherXML' DAP attribute here

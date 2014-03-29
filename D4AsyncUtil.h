@@ -18,7 +18,10 @@ enum RejectReasonCode { TIME, UNAVAILABLE, PRIVILEGES, OTHER };
 
 class D4AsyncUtil {
 private:
+#if 0
+    // Not used
 	string *d_stylesheet_ref;
+#endif
 
 public:
 	D4AsyncUtil();

@@ -365,7 +365,7 @@ HTTPConnect::www_lib_init()
     curl_easy_setopt(d_curl, CURLOPT_MAXREDIRS, 5);
 
     // If the user turns off SSL validation...
-    if (!d_rcr->get_validate_ssl() == 0) {
+    if (d_rcr->get_validate_ssl() == 0) {
         curl_easy_setopt(d_curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_easy_setopt(d_curl, CURLOPT_SSL_VERIFYHOST, 0);
     }
