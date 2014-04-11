@@ -1,0 +1,11 @@
+<version>
+    @PACKAGE_VERSION@
+</version>
+
+<headers>
+    @abs_top_srcdir@
+</headers>
+
+<libs>
+    @abs_top_builddir@.libs
+</libs>

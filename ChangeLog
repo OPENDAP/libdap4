@@ -1,3 +1,56 @@
+2014-03-26  James Gallagher <jgallagher@opendap.org>
+
+2014-02-05  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the SequenceTest 'baseline' regex.
+
+	M    unit-tests/SequenceTest.cc
+
+2014-02-04  James Gallagher <jgallagher@opendap.org>
+
+	Unit test updates after the OS upgrade from OSX 10.8 to 10.9.
+	There seems to be an issue with the sizeof(std::string) and also
+	with libxml2 and/or my code to read from a C++ stream and have
+	libxml2 parse text/xml. For now I'm removing these tests... but
+	will return to the libxml2 issue later (the sizeof(std::string)
+	maybe a bad idea since that could be pretty variable between
+	libstdc++ versions - I might just drop that test).
+
+2013-11-05  James Gallagher <jgallagher@opendap.org>
+
+	Minor formatting changes
+
+2013-10-24  James Gallagher <jgallagher@opendap.org>
+
+	All tests now pass for array projections for server function
+	arguments.
+
+2013-10-24  James Gallagher <jgallagher@opendap.org>
+
+	tests pass for array projections in function arg lists
+
+2013-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Fixed an obscure bug in the test function - for the scalar case it
+	was not reading the arg's value.
+
+2013-10-23  James Gallagher <jgallagher@opendap.org>
+
+	missed one baseline for the function stuff...
+
+2013-10-23  James Gallagher <jgallagher@opendap.org>
+
+	Added support for array subsetting (projection) in the argument
+	list of a function. Tests need work and there's an issue when the
+	function arg is a scalar not an array. Also, the intern_data()
+	methods don't work, but this may be a larger issue with the hack
+	to the function evaluation scheme added for 'grads syntax'
+	support.
+
+2013-10-21  hyoklee
+
+	fixed the bug #2016.
+
 2013-10-21  Hyo-Kyung Lee  <hyoklee@hdfgroup.org>
 
 	* escaping.cc (escattr): fixed the double escaping problem by changing
