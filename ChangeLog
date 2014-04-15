@@ -1,3 +1,15 @@
+2014-04-11  James Gallagher <jgallagher@opendap.org>
+
+	Added comment info to abi_checker.xml.in so we'll remember how to use the abi checker.
+
+2014-04-11  James Gallagher <jgallagher@opendap.org>
+
+	path fix/typo
+
+2014-04-11  James Gallagher <jgallagher@opendap.org>
+
+	Added abi_checker.xml.in file for the perl-based abi checker. Seems to work only with gcc.
+
 2014-03-26  James Gallagher <jgallagher@opendap.org>
 
 2014-02-05  James Gallagher <jgallagher@opendap.org>
