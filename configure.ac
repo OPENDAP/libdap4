@@ -41,9 +41,9 @@ dnl to default values otherwise.
 AC_CANONICAL_HOST
 AC_SUBST(host)
 
-DAPLIB_CURRENT=16
-DAPLIB_AGE=5
-DAPLIB_REVISION=1
+DAPLIB_CURRENT=17
+DAPLIB_AGE=0
+DAPLIB_REVISION=0
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)
 AC_SUBST(DAPLIB_REVISION)
@@ -51,8 +51,8 @@ AC_SUBST(DAPLIB_REVISION)
 LIBDAP_VERSION="$DAPLIB_CURRENT:$DAPLIB_REVISION:$DAPLIB_AGE"
 AC_SUBST(LIBDAP_VERSION)
 
-CLIENTLIB_CURRENT=5
-CLIENTLIB_AGE=2
+CLIENTLIB_CURRENT=6
+CLIENTLIB_AGE=0
 CLIENTLIB_REVISION=0
 AC_SUBST(CLIENTLIB_CURRENT)
 AC_SUBST(CLIENTLIB_AGE)
@@ -63,7 +63,7 @@ AC_SUBST(CLIENTLIB_VERSION)
 
 SERVERLIB_CURRENT=12
 SERVERLIB_AGE=5
-SERVERLIB_REVISION=0
+SERVERLIB_REVISION=1
 AC_SUBST(SERVERLIB_CURRENT)
 AC_SUBST(SERVERLIB_AGE)
 AC_SUBST(SERVERLIB_REVISION)
@@ -165,7 +165,7 @@ then
     # curlprivatereq=
     # curlprivatelibs=
     libdap_pkgconfig_libcurl=yes
-    libdap_libcurl_module='libcurl >= 7.10.6'
+    libdap_libcurl_module='libcurl >= 7.19.0'
     PKG_CHECK_MODULES([CURL],[$libdap_libcurl_module],,
         [libdap_pkgconfig_libcurl=no])
     AC_MSG_CHECKING([for libcurl])
@@ -179,8 +179,8 @@ then
     then
 	   version_libcurl=`curl-config --version | sed 's@libcurl \(.*\)@\1@'`
 
-           AS_VERSION_COMPARE(["$version_libcurl"], ["7.10.6"], 
-                [AC_MSG_ERROR([I could not find libcurl 7.10.6 or newer, found $version_libcurl])])
+           AS_VERSION_COMPARE(["$version_libcurl"], ["7.19.0"], 
+                [AC_MSG_ERROR([I could not find libcurl 7.19.0 or newer, found $version_libcurl])])
         
 	   CURL_LIBS="`curl-config --libs`"
 	   CURL_STATIC_LIBS=$CURL_LIBS
@@ -221,7 +221,7 @@ fi
 if test -z "$xml_set"
 then
 libdap_pkgconfig_libxml2=yes
-libdap_libxml2_module='libxml-2.0 >= 2.6.16'
+libdap_libxml2_module='libxml-2.0 >= 2.7.0'
 PKG_CHECK_MODULES([XML2],[$libdap_libxml2_module], ,[libdap_pkgconfig_libxml2=no])
 AC_MSG_CHECKING([for libxml2])
 if test $libdap_pkgconfig_libxml2 = 'yes'
@@ -234,8 +234,8 @@ elif xml2-config --version > /dev/null 2>&1
 then
 	version_libxml2=`xml2-config --version`
 
-        AS_VERSION_COMPARE(["$version_libxml2"], ["2.6.16"], 
-                [AC_MSG_ERROR([I could not find libxml2 2.6.16 or newer])])
+        AS_VERSION_COMPARE(["$version_libxml2"], ["2.7.0"], 
+                [AC_MSG_ERROR([I could not find libxml2 2.7.0 or newer])])
         
 	XML2_LIBS="`xml2-config --libs`"
 	dnl XML2_STATIC_LIBS=$XML2_LIBS
@@ -266,127 +266,6 @@ AC_SUBST([UUID_LIBS])
 AM_PATH_CPPUNIT(1.12.0,
 	[AM_CONDITIONAL([CPPUNIT], [true])],
 	[AM_CONDITIONAL([CPPUNIT], [false])])
-
-dnl When pkgconfig support is added, use this
-libdap_libgridfields_module='libgridfields >= 0.7.0'
-
-libgf_ok="no"
-
-dnl AC_ARG_WITH([gridfields],
-dnl     AC_HELP_STRING([--with-gridfields=path], [Use the gridfields library at this location.]),
-dnl     [if test "$withval" = "yes"
-dnl      then
-dnl          AC_MSG_ERROR([You must supply a path when using --with-gridfields; try --enable-gridfields.])
-dnl      else
-dnl          AC_MSG_NOTICE([Using $withval as the GridFields prefix directory.])
-dnl          GF_LIBS="-L$withval/lib -lgridfields"
-dnl          GF_CFLAGS="-I$withval/include"
-dnl          AC_DEFINE([GRIDFIELDS],[1],[define if gridfields lib is present])
-dnl          libgf_ok="yes"
-dnl      fi],
-dnl     [])
-
-dnl AC_ARG_ENABLE([gridfields],
-dnl     AC_HELP_STRING([--enable-gridfields], [Enable libgridfields-based server functions (default is NO)]))
-
-dnl if test "$libgf_ok" = "no" -a "$enable_gridfields" = "yes"
-dnl then
-     
-dnl AC_MSG_CHECKING([for libgridfields])
-dnl if gridfields-config --version > /dev/null 2>&1
-dnl then
-dnl     version_libgf=`gridfields-config --version | sed 's@libgridfields \(.*\)@\1@'`
-
-dnl     version_M=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
-dnl     version_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
-dnl     version_m_m=`echo $version_libgf | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
-    
-dnl     dnl Test for several different versions of libgridfields
-    
-dnl     if test $version_M -gt 0
-dnl     then
-dnl         libgf_ok='yes'
-dnl     elif test $version_M -eq 0 && test $version_m -gt 7
-dnl     then
-dnl         libgf_ok='yes'
-dnl     elif test $version_M -eq 0 && test $version_m -eq 7 && test $version_m_m -gt 0
-dnl     then
-dnl         libgf_ok='yes'
-dnl     else
-dnl         libgf_ok='no'
-dnl     fi
-
-dnl     if test "$libgf_ok"="no"
-dnl     then
-dnl         AC_MSG_ERROR([must have libgf 0.7.0 or greater, found $version_libgf])
-dnl     fi
-
-dnl     GF_LIBS="`gridfields-config --libs`"
-dnl     GF_CFLAGS="`gridfields-config --cflags`"
-
-dnl     AC_DEFINE([GRDIFIELDS],[1],[define if gridfields lib is present])
-dnl     AC_MSG_RESULT([yes; used gridfields-config])
-dnl else
-dnl     AC_MSG_ERROR([I could not find libgridfields])
-dnl fi
-
-dnl fi
-
-dnl AC_SUBST([GF_LIBS])
-dnl AC_SUBST([GF_CFLAGS])
-
-dnl if test "$libgf_ok" = "yes"
-dnl then
-dnl     echo "Set gridfields CFLAGS to $GF_CFLAGS"
-dnl     echo "Set gridfields LIBS to $GF_LIBS"
-dnl     AM_CONDITIONAL([USING_GRIDFIELDS],[true])
-dnl else
-dnl     AM_CONDITIONAL([USING_GRIDFIELDS],[false])
-dnl fi
-
-dnl # Which, if any, copy of GDAL should be used for the build?
-dnl GDAL_FOUND=
-
-dnl AC_ARG_WITH(gdal, AS_HELP_STRING([--with-gdal], [Use the copy of GDAL at this location]),
-dnl             with_gdal_prefix="$withval", with_gdal_prefix="")
-
-dnl if test -n "$with_gdal_prefix" -a -x $with_gdal_prefix/bin/gdal-config
-dnl then
-dnl     AC_MSG_NOTICE([Using $with_gdal_prefix as the GDAL prefix directory.])
-dnl     GDAL_LIBS="`$with_gdal_prefix/bin/gdal-config --libs` `$with_gdal_prefix/bin/gdal-config --dep-libs`"
-dnl     GDAL_CFLAGS="`$with_gdal_prefix/bin/gdal-config --cflags`"
-dnl     GDAL_FOUND="yes"
-dnl elif test -n "$with_gdal_prefix"
-dnl then
-dnl     AC_MSG_ERROR([You set the gdal-prefix directory to $with_gdal_prefix, but gdal-config is not there.])
-dnl fi
-
-dnl # Because of the run-time errors encountered when there are competing
-dnl # versions of libs, only include GDAL when explictly told to. NB: see
-dnl # the fileout_gdal handler for another place where GDAL can be added to
-dnl # a running Hyrax server. jhrg 11/23/12
-
-dnl # if test -z "$GDAL_FOUND"
-dnl # then
-dnl #    AX_LIB_GDAL([1.9.0])
-dnl #    if test ! -z "$GDAL_CFLAGS" -a ! -z "$GDAL_LDFLAGS"; then
-dnl #        GDAL_FOUND="yes"
-dnl #    fi
-dnl # fi
-
-dnl AC_SUBST([GDAL_LIBS])
-dnl AC_SUBST([GDAL_CFLAGS])
-
-
-dnl if test -n "$GDAL_FOUND"
-dnl then
-dnl     echo "Set GDAL_CFLAGS to $GDAL_CFLAGS"
-dnl     echo "Set GDAL_LIBS to $GF_LIBS"
-dnl     AM_CONDITIONAL([USING_GDAL],[true])
-dnl     AC_DEFINE([GDAL],[1],[define if gdal lib is present])
-dnl else
-dnl     AM_CONDITIONAL([USING_GDAL],[false])
-dnl fi
 
 DODS_DEBUG_OPTION
 
@@ -428,21 +307,6 @@ else
 fi
 AM_CONDITIONAL([BUILD_DEVELOPER], [test "x$build_developer" = "xtrue"])
 
-dnl AC_ARG_ENABLE([checksums], 
-dnl    AC_HELP_STRING([--enable-checksums], [Enable MD5 checksums for DAP2 (default is NO)]))
-dnl
-dnl echo "enable_checksums = $enable_checksums"
-dnl AS_IF([test "x$enable_checksums" = "xyes"], [
-dnl    dnl Do the stuff needed for enabling the feature
-dnl    dnl echo "Defining checksums! "
-dnl    AC_DEFINE([CHECKSUMS], 1, [Should checksums be generated])
-dnl    AM_CONDITIONAL([CHECKSUMS_DEFINED], [true]) ],
-dnl    [ dnl else enable_checksums is false
-dnl    AM_CONDITIONAL([CHECKSUMS_DEFINED], [false])
-dnl])
-
-dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in
-
 AH_TOP([#ifndef _config_h
 #define _config_h])
 
@@ -460,17 +324,13 @@ AC_CONFIG_FILES([Makefile
                  libdapclient.pc
                  libdapserver.pc
                  main_page.doxygen
-	             doxy.conf
-	             abi_checker.xml
+		 doxy.conf
+	         abi_checker.xml
                  gl/Makefile
                  tests/Makefile
                  tests/atlocal
                  unit-tests/Makefile
                  unit-tests/cache-testsuite/Makefile])
-
-dnl swath2grid/Makefile
-dnl swath2grid/bes.conf
-dnl ugridFunctions/Makefile
 
 AC_CONFIG_FILES([dap-config], [chmod +x dap-config]) 
 	
