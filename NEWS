@@ -1,3 +1,11 @@
+News for version 3.13.0
+
+Added a xml file to serve as input for the perl-based abi compatability 
+checker. Seems to be pretty slick; see abi-checker.xml.in for more info.
+
+Some updates - mostly addition of #include <unistd.h> - for OSX 10.9's
+clang compiler.
+
 News for version 3.12.1
 
 Fixed the behavior of Sequence::read_row() so that the documented

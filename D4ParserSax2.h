@@ -106,6 +106,8 @@ private:
 
         inside_constructor,
 
+        // inside_sequence, Removed from merged code jhrg 5/2/14
+
         parser_unknown,
         parser_error,
         parser_fatal_error,

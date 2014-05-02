@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.68)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.12.1, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.13.0, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["3.5"], [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
@@ -44,9 +44,9 @@ dnl to default values otherwise.
 AC_CANONICAL_HOST
 AC_SUBST(host)
 
-DAPLIB_CURRENT=16
-DAPLIB_AGE=5
-DAPLIB_REVISION=1
+DAPLIB_CURRENT=17
+DAPLIB_AGE=0
+DAPLIB_REVISION=0
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)
 AC_SUBST(DAPLIB_REVISION)
@@ -54,8 +54,8 @@ AC_SUBST(DAPLIB_REVISION)
 LIBDAP_VERSION="$DAPLIB_CURRENT:$DAPLIB_REVISION:$DAPLIB_AGE"
 AC_SUBST(LIBDAP_VERSION)
 
-CLIENTLIB_CURRENT=5
-CLIENTLIB_AGE=2
+CLIENTLIB_CURRENT=6
+CLIENTLIB_AGE=0
 CLIENTLIB_REVISION=0
 AC_SUBST(CLIENTLIB_CURRENT)
 AC_SUBST(CLIENTLIB_AGE)
@@ -66,7 +66,7 @@ AC_SUBST(CLIENTLIB_VERSION)
 
 SERVERLIB_CURRENT=12
 SERVERLIB_AGE=5
-SERVERLIB_REVISION=0
+SERVERLIB_REVISION=1
 AC_SUBST(SERVERLIB_CURRENT)
 AC_SUBST(SERVERLIB_AGE)
 AC_SUBST(SERVERLIB_REVISION)
@@ -168,7 +168,7 @@ then
     # curlprivatereq=
     # curlprivatelibs=
     libdap_pkgconfig_libcurl=yes
-    libdap_libcurl_module='libcurl >= 7.10.6'
+    libdap_libcurl_module='libcurl >= 7.19.0'
     PKG_CHECK_MODULES([CURL],[$libdap_libcurl_module],,
         [libdap_pkgconfig_libcurl=no])
     AC_MSG_CHECKING([for libcurl])
@@ -182,8 +182,8 @@ then
     then
 	   version_libcurl=`curl-config --version | sed 's@libcurl \(.*\)@\1@'`
 
-           AS_VERSION_COMPARE(["$version_libcurl"], ["7.10.6"], 
-                [AC_MSG_ERROR([I could not find libcurl 7.10.6 or newer, found $version_libcurl])])
+           AS_VERSION_COMPARE(["$version_libcurl"], ["7.19.0"], 
+                [AC_MSG_ERROR([I could not find libcurl 7.19.0 or newer, found $version_libcurl])])
         
 	   CURL_LIBS="`curl-config --libs`"
 	   CURL_STATIC_LIBS=$CURL_LIBS
@@ -224,7 +224,7 @@ fi
 if test -z "$xml_set"
 then
 libdap_pkgconfig_libxml2=yes
-libdap_libxml2_module='libxml-2.0 >= 2.6.16'
+libdap_libxml2_module='libxml-2.0 >= 2.7.0'
 PKG_CHECK_MODULES([XML2],[$libdap_libxml2_module], ,[libdap_pkgconfig_libxml2=no])
 AC_MSG_CHECKING([for libxml2])
 if test $libdap_pkgconfig_libxml2 = 'yes'
@@ -237,8 +237,8 @@ elif xml2-config --version > /dev/null 2>&1
 then
 	version_libxml2=`xml2-config --version`
 
-        AS_VERSION_COMPARE(["$version_libxml2"], ["2.6.16"], 
-                [AC_MSG_ERROR([I could not find libxml2 2.6.16 or newer])])
+        AS_VERSION_COMPARE(["$version_libxml2"], ["2.7.0"], 
+                [AC_MSG_ERROR([I could not find libxml2 2.7.0 or newer])])
         
 	XML2_LIBS="`xml2-config --libs`"
 	dnl XML2_STATIC_LIBS=$XML2_LIBS
@@ -270,11 +270,6 @@ AC_SUBST([UUID_LIBS])
 AM_PATH_CPPUNIT(1.12.0,
 	[AM_CONDITIONAL([CPPUNIT], [true])],
 	[AM_CONDITIONAL([CPPUNIT], [false])])
-
-dnl When pkgconfig support is added, use this
-dnl libdap_libgridfields_module='libgridfields >= 0.7.0'
-
-dnl libgf_ok="no"
 
 DODS_DEBUG_OPTION
 
@@ -332,7 +327,8 @@ AC_CONFIG_FILES([Makefile
                  libdapserver.pc
                  main_page.doxygen
 	             doxy.conf
-	             
+	             abi_checker.xml
+
                  gl/Makefile
                  d4_ce/Makefile
                  
