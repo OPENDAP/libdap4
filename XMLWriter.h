@@ -35,9 +35,11 @@
 
 #include <string>
 
-#include <InternalErr.h>
+//#include <InternalErr.h>
 
-using namespace std;
+//using namespace std;
+
+namespace libdap {
 
 class XMLWriter {
 private:
@@ -47,17 +49,19 @@ private:
     bool d_started;
     bool d_ended;
 
-    string d_doc;
+    std::string d_doc;
 
     void m_cleanup() ;
 
 public:
-    XMLWriter(const string &pad = "    ");
+    XMLWriter(const std::string &pad = "    ");
     virtual ~XMLWriter();
 
     xmlTextWriterPtr get_writer() { return d_writer; }
     const char *get_doc();
     unsigned int get_doc_size();
 };
+
+} // namespace libdap
 
 #endif /* XMLWRITER_H_ */
