@@ -7,7 +7,7 @@ tests.
  
 Updated 3.13.0
 
-Support fo clang: Apple LLVM version 5.1 (clang-503.0.40) (based on
+Support for clang: Apple LLVM version 5.1 (clang-503.0.40) (based on
 LLVM 3.4svn) added.
 
 Updated for version 3.12.1
