@@ -1,3 +1,10 @@
+Updated for 3.13.1
+
+A test baseline was updated to use both the DAP2 and DAP4 version of
+the XDAP/X-DAP header. This change was likely over doing things on our
+part, but it's important to have the source releases pass all their
+tests.
+ 
 Updated 3.13.0
 
 Support fo clang: Apple LLVM version 5.1 (clang-503.0.40) (based on

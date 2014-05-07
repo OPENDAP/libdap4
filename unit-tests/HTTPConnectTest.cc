@@ -322,7 +322,7 @@ class HTTPConnectTest: public TestFixture {
 
             CPPUNIT_ASSERT(find_if(h->begin(), h->end(), REMatch(header)) != h->end());
 
-            Regex protocol_header("XDAP: .*");
+            Regex protocol_header("X.*DAP: .*");	// Matches both XDAP and X-DAP
             CPPUNIT_ASSERT(find_if(h->begin(), h->end(), REMatch(protocol_header)) != h->end());
 
             delete r;
