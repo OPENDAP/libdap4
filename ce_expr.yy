@@ -629,12 +629,14 @@ id_or_const: SCAN_WORD
 			    }
 			    else {
 			        new_val.type = dods_str_c;
-			        // This line seems to leak the new string. Since make_variable will
-			        // copy the value when type == dods_str_c (via Str::val2buf), the 'new'
-			        // is not needed. jhrg 7/29/14
+				// The 'new' here is needed because www2id() modifies the
+				// std::string arg in place but 'value' holds a string*.
 			        new_val.v.s = new string(www2id($1));
 			    }
 			    BaseType *btp = make_variable((*EVALUATOR(arg)), new_val);
+			    // This call to delete fixes a memory leak reported by Aron.Bartle@mechdyne.com
+			    if (new_val.type == dods_str_c)
+			      delete new_val.v.s;
 			    $$ = new rvalue(btp);
 		    }
 		}
