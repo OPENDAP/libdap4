@@ -629,6 +629,9 @@ id_or_const: SCAN_WORD
 			    }
 			    else {
 			        new_val.type = dods_str_c;
+			        // This line seems to leak the new string. Since make_variable will
+			        // copy the value when type == dods_str_c (via Str::val2buf), the 'new'
+			        // is not needed. jhrg 7/29/14
 			        new_val.v.s = new string(www2id($1));
 			    }
 			    BaseType *btp = make_variable((*EVALUATOR(arg)), new_val);
