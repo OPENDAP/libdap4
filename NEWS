@@ -1,3 +1,7 @@
+News for version 3.13.2
+
+Fixed a memory leak in the CE parser when evaluating server functions.
+
 News for version 3.13.1
 
 Fix for a unit-test that uses the default server at test.opendap.org. 
