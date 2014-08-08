@@ -1,3 +1,56 @@
+2014-08-08  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a leak in RValue.cc using a patch from Aron (ADB)
+
+2014-08-01  James Gallagher <jgallagher@opendap.org>
+
+	Release checklist steps for 3.13.2
+
+	M    ChangeLog
+	M    INSTALL
+	M    NEWS
+	M    README
+	M    configure.ac
+	M    doxy.conf
+	M    libdap.spec
+	M    main_page.doxygen
+
+2014-08-01  James Gallagher <jgallagher@opendap.org>
+
+	Release checklist steps for 3.13.2
+
+	M    ChangeLog
+	M    INSTALL
+	M    NEWS
+	M    README
+	M    configure.ac
+	M    doxy.conf
+	M    libdap.spec
+	M    main_page.doxygen
+
+2014-07-30  James Gallagher <jgallagher@opendap.org>
+
+	Second fix for ticket 2240 - SCAN_STR from the CE scanner
+	was leaking because the parser did not delete the reutrned
+	string. I also modified the first fix so that a local tmp
+	string was used instead of new dynamic storage.
+
+	M    ce_expr.yy
+
+2014-07-30  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a memory leak reported by Aron.Bartle@mechdyne.com. See ticket
+	2240.
+
+	M    ce_expr.yy
+
+2014-07-30  James Gallagher <jgallagher@opendap.org>
+
+	I added a comment about a potential memory leak to ce_expr.yy
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2014-07-30  James Gallagher <jgallagher@opendap.org>
 
 	Second fix for ticket 2240 - SCAN_STR from the CE scanner
