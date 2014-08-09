@@ -615,6 +615,7 @@ id_or_const: SCAN_WORD
 		    }
 		    else {
 			    value new_val;
+			    string name_tmp;
 			    if (check_int32($1)) {
 			        new_val.type = dods_int32_c;
 			        new_val.v.i = atoi($1);
@@ -629,7 +630,15 @@ id_or_const: SCAN_WORD
 			    }
 			    else {
 			        new_val.type = dods_str_c;
-			        new_val.v.s = new string(www2id($1));
+				// The 'new' here was used because www2id() modifies the
+				// std::string arg in place but 'value' holds a string*.
+			        // new_val.v.s = new string(www2id($1));
+				// I replcaed this with a local tmp to avoid the dynamic
+				// allocation and the need to call delete. This was part of
+				// the fix for ticket 2240. jhrg 7/30/14
+				name_tmp = $1;
+				name_tmp = www2id(name_tmp);
+				new_val.v.s = &name_tmp;
 			    }
 			    BaseType *btp = make_variable((*EVALUATOR(arg)), new_val);
 			    $$ = new rvalue(btp);
@@ -648,6 +657,11 @@ id_or_const: SCAN_WORD
                         var = make_variable((*EVALUATOR(arg)), $1); 
                         $$ = new rvalue(var);
                     }
+		    // When the scanner (ce_expr.lex) returns the SCAN_STR token type
+		    // it makes a local copy of the string in a new std::string object
+		    // that we must delete. Fix for a bug report by Aron.Bartle@mechdyne.com
+		    // See ticket 2240. jhrg 7/30/14
+		    delete $1.v.s;
                 }
 ;
 
@@ -710,7 +724,10 @@ name:           SCAN_WORD
                         ce_exprerror(arg, "Malformed string", "");
                         
                     strncpy($$, www2id(*($1.v.s)).c_str(), ID_MAX-1);
-                    
+		    // See comment about regarding the scanner's behavior WRT SCAN_STR.
+		    // jhrg 7/30/14
+                    delete $1.v.s;
+
                     $$[ID_MAX-1] = '\0';
                 }
 ;

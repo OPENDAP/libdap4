@@ -1,3 +1,17 @@
+News for version 3.13.3
+
+Memory leak fix in RValue.cc - affects server function evaluation only.
+
+News for version 3.13.2
+
+Fixed a memory leak in the CE parser when evaluating server functions.
+
+News for version 3.13.1
+
+Fix for a unit-test that uses the default server at test.opendap.org. 
+This affects neither the API nor ABI of libdap; only the test baseline
+was changed.
+
 News for version 3.13.0
 
 Added a xml file to serve as input for the perl-based abi compatability 

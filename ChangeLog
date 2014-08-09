@@ -1,3 +1,125 @@
+2014-08-08  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a leak in RValue.cc using a patch from Aron (ADB)
+
+2014-08-01  James Gallagher <jgallagher@opendap.org>
+
+	Release checklist steps for 3.13.2
+
+	M    ChangeLog
+	M    INSTALL
+	M    NEWS
+	M    README
+	M    configure.ac
+	M    doxy.conf
+	M    libdap.spec
+	M    main_page.doxygen
+
+2014-08-01  James Gallagher <jgallagher@opendap.org>
+
+	Release checklist steps for 3.13.2
+
+	M    ChangeLog
+	M    INSTALL
+	M    NEWS
+	M    README
+	M    configure.ac
+	M    doxy.conf
+	M    libdap.spec
+	M    main_page.doxygen
+
+2014-07-30  James Gallagher <jgallagher@opendap.org>
+
+	Second fix for ticket 2240 - SCAN_STR from the CE scanner
+	was leaking because the parser did not delete the reutrned
+	string. I also modified the first fix so that a local tmp
+	string was used instead of new dynamic storage.
+
+	M    ce_expr.yy
+
+2014-07-30  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a memory leak reported by Aron.Bartle@mechdyne.com. See ticket
+	2240.
+
+	M    ce_expr.yy
+
+2014-07-30  James Gallagher <jgallagher@opendap.org>
+
+	I added a comment about a potential memory leak to ce_expr.yy
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
+2014-07-30  James Gallagher <jgallagher@opendap.org>
+
+	Second fix for ticket 2240 - SCAN_STR from the CE scanner
+	was leaking because the parser did not delete the reutrned
+	string. I also modified the first fix so that a local tmp
+	string was used instead of new dynamic storage.
+
+	M    ce_expr.yy
+
+2014-07-30  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a memory leak reported by Aron.Bartle@mechdyne.com. See ticket
+	2240.
+
+	M    ce_expr.yy
+
+2014-07-30  James Gallagher <jgallagher@opendap.org>
+
+	I added a comment about a potential memory leak to ce_expr.yy
+
+2014-05-07  James Gallagher <jgallagher@opendap.org>
+
+	spelling
+
+2014-05-07  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a test baseline in HTTPConnectTest so that it will work with
+	the new headers returned by H 1.9.3 (which include so things from
+	DAP4).
+
+2014-05-05  James Gallagher <jgallagher@opendap.org>
+
+	namespace libdap addex
+
+	M    XMLWriter.h
+
+2014-05-02  James Gallagher <jgallagher@opendap.org>
+
+	Minor edit to Makefile.am for builds on centos 5 - there libgl
+	builds a copy of unistd.h that doesn't work with flex generated cc
+	files. So I pulled -I./gl from CPP flags for the parsers library.
+
+2014-04-22  James Gallagher <jgallagher@opendap.org>
+
+	Updated for 3.13
+
+	M    INSTALL
+	M    README
+	M    configure.ac
+
+2014-04-15  James Gallagher <jgallagher@opendap.org>
+
+	Updates to NEWS, ChangeLog to match the bump in the vesion number.
+
+2014-04-11  James Gallagher <jgallagher@opendap.org>
+
+	Added comment info to abi_checker.xml.in so we'll remember how to use the abi checker.
+
+2014-04-11  James Gallagher <jgallagher@opendap.org>
+
+	path fix/typo
+
+2014-04-11  James Gallagher <jgallagher@opendap.org>
+
+	Added abi_checker.xml.in file for the perl-based abi checker. Seems to work only with gcc.
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2014-04-11  James Gallagher <jgallagher@opendap.org>
 
 	Added comment info to abi_checker.xml.in so we'll remember how to use the abi checker.

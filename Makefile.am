@@ -45,7 +45,10 @@ man_MANS = getdap.1 dap-config.1 getdap4.1
 	groff -t -e -mandoc -Tascii $< | col -bx > $@
 
 libparsers_la_SOURCES = $(GRAM_SRC) 
-libparsers_la_CPPFLAGS = $(AM_CPPFLAGS)
+libparsers_la_CPPFLAGS = $(XML2_CFLAGS)
+# Removed this because on CentOS 5 using gl/unistd.h with flex-generated
+# sources is broken - assume that flex is suitably portable on its own,
+# so the gl code is not needed anyway. jhrg 5/2/14 $(AM_CPPFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)

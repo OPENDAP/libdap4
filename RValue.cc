@@ -134,6 +134,14 @@ rvalue::~rvalue()
     // those might be variables in the dataset. The DDS dtor will take care
     // of deleting them. The constants wrapped in BaseType objects should be
     // pushed on the list of CE-allocated temp objects which the CE frees.
+
+	// ADB: the d_args vector still needs to be deleted
+	if (d_args != 0) {
+		for (std::vector<rvalue *>::iterator iter = d_args->begin(); iter != d_args->end(); ++iter) {
+			delete *iter;
+		}
+		delete d_args;
+	}
 }
 
 string
