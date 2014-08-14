@@ -453,7 +453,6 @@ public:
         }
     }
 
-// #if 0 // <<<<<<< .working
     void sequence_test()
     {
         try {
@@ -469,55 +468,54 @@ public:
             CPPUNIT_FAIL("test.0a.ddx failed.");
         }
     }
-// #else //=======
-	void structure_test_file_ptr()
-	{
-		FILE *in;
-		try {
-			string blob;
-			in = fopen((string(TEST_SRC_DIR) + "/ddx-testsuite/test.09.ddx").c_str(), "r");
-			ddx_parser->intern_stream(in, dds, blob);
-			fclose(in);
-			CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-			DBG(dds->print_xml(cout, false));
-		}
-		catch (DDXParseFailed &e) {
-			fclose(in);
-			DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-			CPPUNIT_FAIL("test.09.ddx failed.");
-		}
-	}
 
-	void structure_test_cpp_stream()
-	{
-		try {
-			string blob;
-			ifstream input((string(TEST_SRC_DIR) + "/ddx-testsuite/test.09.ddx").c_str());
-			ddx_parser->intern_stream(input, dds, blob);
-			CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-			DBG(dds->print_xml(cout, false));
-		}
-		catch (DDXParseFailed &e) {
-			DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-			CPPUNIT_FAIL("test.09.ddx failed.");
-		}
+    void structure_test_file_ptr()
+    {
+	FILE *in;
+	try {
+	    string blob;
+	    in = fopen((string(TEST_SRC_DIR) + "/ddx-testsuite/test.09.ddx").c_str(), "r");
+	    ddx_parser->intern_stream(in, dds, blob);
+	    fclose(in);
+	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
+	    DBG(dds->print_xml(cout, false));
 	}
-// #endif //>>>>>>> .merge-right.r26946
+	catch (DDXParseFailed &e) {
+	    fclose(in);
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_FAIL("test.09.ddx failed.");
+	}
+    }
 
-	void sequence_test_cpp_stream()
-	{
-		try {
-			string blob;
-			ifstream input((string(TEST_SRC_DIR) + "/ddx-testsuite/test.0a.ddx").c_str());
-			ddx_parser->intern_stream(input, dds, blob);
-			CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-			DBG(dds->print_xml(cout, false));
-		}
-		catch (DDXParseFailed &e) {
-			DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-			CPPUNIT_FAIL("test.0a.ddx failed.");
-		}
+    void structure_test_cpp_stream()
+    {
+	try {
+	    string blob;
+	    ifstream input((string(TEST_SRC_DIR) + "/ddx-testsuite/test.09.ddx").c_str());
+	    ddx_parser->intern_stream(input, dds, blob);
+	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
+	    DBG(dds->print_xml(cout, false));
 	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_FAIL("test.09.ddx failed.");
+	}
+    }
+
+    void sequence_test_cpp_stream()
+    {
+	try {
+	    string blob;
+	    ifstream input((string(TEST_SRC_DIR) + "/ddx-testsuite/test.0a.ddx").c_str());
+	    ddx_parser->intern_stream(input, dds, blob);
+	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
+	    DBG(dds->print_xml(cout, false));
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_FAIL("test.0a.ddx failed.");
+	}
+    }
 
     void grid_test()
     {
@@ -701,16 +699,15 @@ int main(int argc, char*argv[]) {
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     GetOpt getopt(argc, argv, "d");
-    char option_char;
-
+    int option_char;
     while ((option_char = getopt()) != EOF)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-        default:
-            break;
-        }
+	switch (option_char) {
+	  case 'd':
+	    debug = 1;  // debug is a static global
+	    break;
+	  default:
+	    break;
+	}
 
     bool wasSuccessful = true;
     string test = "";
