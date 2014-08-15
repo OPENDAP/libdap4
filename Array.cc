@@ -188,8 +188,14 @@ Array::transform_to_dap4(D4Group *root, Constructor */*container*/)
 			// but don't fiddle with the name. Not sure I like this idea, so I'm
 			// making the case explicit (could be rolled in to the block above).
 			// jhrg 3/18/14
+			//
+			// This is causing problems in the FITS handler because there are cases
+			// where two arrays have dimensions with the same name but different
+			// sizes. The deserializing code is using the first size listed, whcih is
+			// wrong in some cases. I'm going to try makig this new D4Dimension using
+			// the dim name along with the variable name. jhrg 8/15/14
 			else if (d4_dim->size() != (unsigned long) (*d).size) {
-				d4_dim = new D4Dimension((*d).name, (*d).size);
+				d4_dim = new D4Dimension((*d).name + "_" + name(), (*d).size);
 				dims->add_dim_nocopy(d4_dim);
 			}
 			// At this point d4_dim's name and size == those of (*d) so just set

@@ -203,7 +203,7 @@ BaseType::toString()
  * @note For most DAP2 types, in this implementation of DAP4 the corresponding
  * DAP4 type is the same. The different types are Sequences (which are D4Sequences
  * in the DAP4 implementation), Grids (which are coverages) and Arrays (which use
- *  shared dimensions).
+ * shared dimensions).
  *
  * @param dmr If things (e.g., D4Dimensions) must be added to a DMR, do so
  * with this instance, as a side effect. The caller must add the variable
