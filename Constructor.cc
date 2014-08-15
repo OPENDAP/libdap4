@@ -672,6 +672,11 @@ Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
+    // DAP2 prints attributes first. For some reason we decided that DAP4 should
+    // print them second. No idea why... jhrg 8/15/14
+    if (!is_dap4() && get_attr_table().get_size() > 0)
+        get_attr_table().print_xml_writer(xml);
+
     bool has_variables = (var_begin() != var_end());
     if (has_variables)
         for_each(var_begin(), var_end(), PrintFieldXMLWriter(xml, constrained));
@@ -679,8 +684,12 @@ Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
     if (is_dap4())
         attributes()->print_dap4(xml);
 
+#if 0
+    // Moved up above so that the DDX tests for various handles will still work.
+    // jhrg 8/15/14
     if (!is_dap4() && get_attr_table().get_size() > 0)
         get_attr_table().print_xml_writer(xml);
+#endif
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
