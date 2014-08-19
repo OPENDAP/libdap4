@@ -147,6 +147,7 @@ Structure::transform_to_dap4(D4Group *root, Constructor *container)
 	// Here we replicate some of that functionality, but instead call
 	// transform_to_dap4() on the contained variables.
 
+	// Structure *dest = static_cast<Structure*>(ptr_duplicate());
 	Structure *dest = new Structure(name());
 
     for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
@@ -163,7 +164,6 @@ Structure::transform_to_dap4(D4Group *root, Constructor *container)
     dest->set_is_dap4(true);
 	dest->set_parent(container);
 
-    //container->add_var_nocopy(dest);
 	return dest;
 }
 

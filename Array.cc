@@ -167,7 +167,7 @@ Array::operator=(const Array &rhs)
 BaseType *
 Array::transform_to_dap4(D4Group *root, Constructor */*container*/)
 {
-	Array *dest = new Array(*this);
+	Array *dest = static_cast<Array*>(ptr_duplicate());
 
 	// Process the Array's dimensions, making D4 shared dimensions for
 	// D2 dimensions that are named. If there is just a size, don't make
@@ -209,7 +209,6 @@ Array::transform_to_dap4(D4Group *root, Constructor */*container*/)
 
 	dest->set_is_dap4(true);
 
-	//container->add_var_nocopy(dest);
 	return dest;
 }
 

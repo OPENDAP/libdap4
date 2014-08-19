@@ -204,6 +204,17 @@ Sequence::ptr_duplicate()
     return new Sequence(*this);
 }
 
+/**
+ * Build a D4Sequence from a DAP2 Sequence.
+ *
+ * Because DAP4 uses a different type for sequences, this code must
+ * be subclassed by anything other than trivial test code or client
+ * side-only uses of the library.
+ *
+ * @param root Use this as the environment for D4Dimensions
+ * @param container Load the result into this container
+ * @return The new D4Sequence
+ */
 BaseType *
 Sequence::transform_to_dap4(D4Group *root, Constructor *container)
 {
