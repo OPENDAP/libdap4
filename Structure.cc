@@ -131,12 +131,6 @@ Structure::Structure(const Structure &rhs) : Constructor(rhs)
 
 Structure::~Structure()
 {
-#if 0
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        BaseType *btp = *i ;
-        delete btp ;  btp = 0;
-    }
-#endif
 }
 
 BaseType *

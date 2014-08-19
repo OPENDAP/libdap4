@@ -56,8 +56,6 @@
 
 #include "DapObj.h"
 
-//#include "XMLWriter.h"
-
 using namespace std;
 
 class Crc32;

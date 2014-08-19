@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "TestD4Sequence.h"
 #include "TestCommon.h"

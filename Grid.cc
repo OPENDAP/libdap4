@@ -147,19 +147,6 @@ Grid::operator=(const Grid &rhs)
 BaseType *
 Grid::transform_to_dap4(D4Group *root, Constructor *container)
 {
-#if 0
-    for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
-    	/*BaseType *new_var =*/ (*i)->transform_to_dap4(root, container);
-#if 0
-    	new_var->set_parent(root);
-    	// need to do two things for the array: Add Grid's attributes and add Maps
-    	new_var->attributes()->transform_to_dap4((*i)->get_attr_table());
-    	new_var->set_is_dap4(true);
-    	root->add_var_nocopy(new_var);
-#endif
-    }
-#endif
-
     BaseType *btp = array_var()->transform_to_dap4(root, container);
     Array *coverage = static_cast<Array*>(btp);
     if (!coverage)

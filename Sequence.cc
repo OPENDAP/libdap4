@@ -233,7 +233,6 @@ Sequence::transform_to_dap4(D4Group *root, Constructor *container)
 
     dest->set_length(-1);
 
-    //container->add_var_nocopy(dest);
     return dest;
 }
 

@@ -144,7 +144,7 @@ function_scale_dap4(D4RValueList *args, DMR &dmr)
     DBG(cerr << "m: " << m << << endl);
 
     // Read the data, scale and return the result.
-    BaseType *dest = 0;
+    //BaseType *dest = 0;
     double *data;
     BaseType *arg0 = args->get_rvalue(0)->value(dmr); // DAP4 function porting: ... 'argv[0]'
     if (arg0->is_vector_type()) {

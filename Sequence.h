@@ -65,7 +65,6 @@ namespace libdap {
 class BaseType;
 class ConstraintEvaluator;
 class D4Group;
-// TODO Remove: class DMR;
 
 /** The type BaseTypeRow is used to store single rows of values in an
  instance of Sequence. Values are stored in instances of BaseType. */
@@ -251,21 +250,8 @@ public:
 	virtual bool is_dap2_only_type();
 
 	virtual string toString();
-#if 0
-	virtual int element_count(bool leaves = false);
-#endif
+
 	virtual bool is_linear();
-#if 0
-	virtual void set_send_p(bool state);
-	virtual void set_read_p(bool state);
-#endif
-#if 0
-	virtual void set_in_selection(bool state);
-#endif
-#if 0
-	virtual unsigned int width(bool constrained = false);
-	virtual unsigned int width(bool constrained);
-#endif
 
 	virtual int length() const;
 

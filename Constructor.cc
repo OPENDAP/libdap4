@@ -40,6 +40,7 @@
 #include <stdint.h>
 
 //#define DODS_DEBUG
+
 #include "crc.h"
 
 #include "Constructor.h"
@@ -130,26 +131,6 @@ Constructor::operator=(const Constructor &rhs)
     DBG(cerr << "Exiting Constructor::operator=" << endl);
     return *this;
 }
-
-#if 0
-BaseType *
-Constructor::transform_to_dap4(DMR &dmr)
-{
-	Constructor *dest = new Constructor(name(), type());
-
-    for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
-    	BaseType *new_var = (*i)->transform_to_dap4(dmr);
-    	new_var->set_parent(dest);
-    	dest->add_var_nocopy(new_var);
-    }
-
-    // Add attributes
-
-    dest->set_is_dap4(true);
-
-    return dest;
-}
-#endif
 
 int
 Constructor::element_count(bool leaves)
@@ -436,6 +417,7 @@ Constructor::del_var(Vars_iter i)
  */
 bool Constructor::read()
 {
+	DBG(cerr << "Entering  Constructor::read..." << endl);
     if (!read_p()) {
         for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
             (*i)->read();
@@ -449,7 +431,7 @@ bool Constructor::read()
 void
 Constructor::intern_data(ConstraintEvaluator & eval, DDS & dds)
 {
-    DBG(cerr << "Structure::intern_data: " << name() << endl);
+    DBG(cerr << "Constructor::intern_data: " << name() << endl);
     if (!read_p())
         read();          // read() throws Error and InternalErr
 

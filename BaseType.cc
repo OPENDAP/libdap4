@@ -60,6 +60,7 @@
 #include "D4Attributes.h"
 #include "DMR.h"
 #include "XMLWriter.h"
+#include "D4BaseTypeFactory.h"
 
 #include "InternalErr.h"
 
@@ -205,9 +206,10 @@ BaseType::toString()
  * in the DAP4 implementation), Grids (which are coverages) and Arrays (which use
  * shared dimensions).
  *
- * @param dmr If things (e.g., D4Dimensions) must be added to a DMR, do so
- * with this instance, as a side effect. The caller must add the variable
- * to the DMR or Constructor variable.
+ * @param root The root group that should hold this new variable. Add Group-level
+ * stuff here (e.g., D4Dimensions).
+ * @param container Add the new variable to this container.
+ *
  * @return A pointer to the transformed variable
  */
 BaseType *
@@ -219,10 +221,8 @@ BaseType::transform_to_dap4(D4Group */*root*/, Constructor */*container*/)
 	dest->attributes()->transform_to_dap4(get_attr_table());
 
 	dest->set_is_dap4(true);
-	//dest->set_parent(container);
 
 	return dest;
-	// TODO Remove: container->add_var_nocopy(dest);
 }
 
 /** @brief dumps information about this object

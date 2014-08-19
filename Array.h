@@ -50,10 +50,6 @@
 
 #include "D4Dimensions.h"
 
-//#ifndef XMLWRITER_H_
-//#include "XMLWriter.h"
-//#endif
-
 namespace libdap
 {
 class D4Group;

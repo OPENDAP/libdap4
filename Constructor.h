@@ -66,8 +66,6 @@ public:
 
     Constructor &operator=(const Constructor &rhs);
 
-    // Constructor is abstract BaseType *transform_to_dap4(DMR &dmr);
-
     virtual int element_count(bool leaves = false);
 
     virtual void set_send_p(bool state);

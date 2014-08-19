@@ -83,15 +83,7 @@ class D4Group;
 class Structure: public Constructor
 {
 private:
-#if 0
-    BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
-    BaseType *m_exact_match(const string &name, btp_stack *s = 0);
-#endif
-
 protected:
-#if 0
-    void m_duplicate(const Structure &s);
-#endif
 
 public:
     Structure(const string &n);
@@ -105,59 +97,10 @@ public:
 
     virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
 
-#if 0
-    virtual int element_count(bool leaves = false);
-#endif
     virtual bool is_linear();
 
-#if 0
-    virtual void set_send_p(bool state);
-    virtual void set_read_p(bool state);
-#endif
-#if 0
-    virtual void set_in_selection(bool state);
-#endif
     virtual void set_leaf_sequence(int level = 1);
-#if 0
-    virtual unsigned int width(bool constrained = false);
-    virtual unsigned int width(bool constrained);
-#endif
-#if 0
-    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
-			   Marshaller &m, bool ce_eval = true);
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
-#endif
-#if 0
-    // Do not store values in memory as for C; force users to work with the
-    // C++ objects as defined by the DAP.
 
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
-#endif
-
-#if 0
-    virtual BaseType *var(const string &name, bool exact_match = true, btp_stack *s = 0);
-    virtual BaseType *var(const string &n, btp_stack &s);
-#endif
-#if 0
-    virtual void add_var(BaseType *bt, Part part = nil);
-    virtual void add_var_nocopy(BaseType *bt, Part part = nil);
-
-    virtual void del_var(const string &name);
-#endif
-#if 0
-    virtual bool read() ;
-#endif
-#if 0
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
-#endif
-#if 0
-    virtual bool check_semantics(string &msg, bool all = false);
-#endif
     virtual void dump(ostream &strm) const ;
 };
 

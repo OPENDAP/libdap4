@@ -76,9 +76,7 @@ public:
     virtual unsigned int width(bool constrained = false) const;
 
     virtual BaseType *ptr_duplicate();
-#if 0
-    virtual BaseType *transform_to_dap4(DMR &dmr);
-#endif
+
     // DAP2
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval);
     virtual bool deserialize(UnMarshaller &um, DDS *, bool);

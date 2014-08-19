@@ -98,19 +98,7 @@ Int16::ptr_duplicate()
 {
     return new Int16(*this);
 }
-#if 0
-BaseType *
-Int16::transform_to_dap4(DMR &)
-{
-	BaseType *dest = new Int16(*this);
 
-	// Copy the D2 attributes to D4 Attributes
-
-	dest->set_is_dap4(true);
-
-	return dest;
-}
-#endif
 Int16 &
 Int16::operator=(const Int16 &rhs)
 {

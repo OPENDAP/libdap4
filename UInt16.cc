@@ -98,19 +98,7 @@ UInt16::ptr_duplicate()
 {
     return new UInt16(*this);
 }
-#if 0
-BaseType *
-UInt16::transform_to_dap4(DMR &)
-{
-	BaseType *dest = new UInt16(*this);
 
-	// Copy the D2 attributes to D4 Attributes
-
-	dest->set_is_dap4(true);
-
-	return dest;
-}
-#endif
 UInt16 &
 UInt16::operator=(const UInt16 &rhs)
 {
