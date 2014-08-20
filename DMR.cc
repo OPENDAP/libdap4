@@ -150,6 +150,8 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
     // sets d_dap_version string and the two integer fields too
     set_dap_version("4.0");
 
+    build_using_dds(dds);
+#if 0
     for (DDS::Vars_iter i = dds.var_begin(), e = dds.var_end(); i != e; ++i) {
     	BaseType *new_var = (*i)->transform_to_dap4(root() /*group*/, root() /*container*/);
     	// If the variable being transformed is a Grid,
@@ -162,6 +164,7 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
 
     // Now copy the global attributes
     root()->attributes()->transform_to_dap4(dds.get_attr_table());
+#endif
 }
 
 /**
@@ -202,6 +205,32 @@ DMR::operator=(const DMR &rhs)
     m_duplicate(rhs);
 
     return *this;
+}
+
+/**
+ * If we have a DDS that includes Attributes, use it to build the DMR. This
+ * will copy all of the variables in the DDS into the DMR using BaseType::transform_to_dap4(),
+ * so the actual types added can be controlled by code that specializes
+ * the various type classes.
+ *
+ * @param dds Read variables and Attributes from this DDS
+ */
+void DMR::build_using_dds(DDS &dds)
+{
+	set_name(dds.get_dataset_name());
+	set_filename(dds.filename());
+
+	for (DDS::Vars_iter i = dds.var_begin(), e = dds.var_end(); i != e; ++i) {
+		BaseType *new_var = (*i)->transform_to_dap4(root() /*group*/, root() /*container*/);
+		// If the variable being transformed is a Grid,
+		// then Grid::transform_to_dap4() will add all the arrays to the
+		// container (root() in this case) and return null, indicating that
+		// this code does not need to do anything to add the transformed variable.
+		if (new_var) root()->add_var_nocopy(new_var);
+	}
+
+	// Now copy the global attributes
+	root()->attributes()->transform_to_dap4(dds.get_attr_table());
 }
 
 D4Group *

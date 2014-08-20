@@ -100,6 +100,8 @@ public:
 
     DMR &operator=(const DMR &rhs);
 
+    virtual void build_using_dds(DDS &dds);
+
     /**
      * Class invariant. If true, any method can be used.
      * @return True if the instance is OK to use, false otherwise.
