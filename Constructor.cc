@@ -506,6 +506,9 @@ Constructor::intern_data(Crc32 &checksum, DMR &dmr/*, ConstraintEvaluator & eval
 
 /**
  * @brief Serialize a Constructor
+ *
+ * @todo See notebook for 8/21/14
+ *
  * @param m
  * @param dmr Unused
  * @param eval Unused
@@ -515,9 +518,17 @@ Constructor::intern_data(Crc32 &checksum, DMR &dmr/*, ConstraintEvaluator & eval
 void
 Constructor::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter)
 {
-#if 0
+#if 1
 	// Not used for the same reason the equivalent code in D4Group::serialize()
 	// is not used. Fail for D4Sequence and general issues with memory use.
+	//
+	// Revisit this - I had to uncomment this to get the netcdf_handler code
+	// to work - it relies on having NCStructure::read() called. The D4Sequence
+	// ::serialize() method calls read_next_instance(). What seems to be happening
+	// is that this call to read gets the first set of values, but does not store
+	// them; the call to serialize then runs the D4Sequence::serialize() method that
+	// _does_ read all of the sequence data and then serialize it. However, the first
+	// sequence instance is missing...
     if (!read_p())
         read();  // read() throws Error
 #endif
