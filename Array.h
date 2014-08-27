@@ -179,7 +179,10 @@ public:
 private:
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
 
+    void update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims);
+
     friend class ArrayTest;
+    friend class D4Group;
 
 protected:
     void _duplicate(const Array &a);

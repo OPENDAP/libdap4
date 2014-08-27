@@ -104,6 +104,9 @@ class D4Dimensions {
     D4Group *d_parent;		// the group that holds this set of D4Dimensions; weak pointer, don't delete
 
 protected:
+    // Note Code in Array depends on the order of these 'new' dimensions
+    // matching the 'old' dimensions they are derived from. See
+    // Array::update_dimension_pointers. jhrg 8/25/14
     void m_duplicate(const D4Dimensions &rhs) {
         D4DimensionsCIter i = rhs.d_dims.begin();
         while (i != rhs.d_dims.end()) {

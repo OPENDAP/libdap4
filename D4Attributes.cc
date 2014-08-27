@@ -203,67 +203,67 @@ D4Attributes::transform_to_dap4(AttrTable &at)
 			D4Attribute *a = new D4Attribute(name, attr_container_c);
 			D4Attributes *attributes = a->attributes(); // allocates a new object
 			attributes->transform_to_dap4(*at.get_attr_table(i));
-			add_attribute(a);
+			add_attribute_nocopy(a);
 			break;
 		}
 		case Attr_byte: {
 			D4Attribute *a = new D4Attribute(name, attr_byte_c);
 			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute(a);
+			add_attribute_nocopy(a);
 			break;
 		}
 		case Attr_int16: {
 			D4Attribute *a = new D4Attribute(name, attr_int16_c);
 			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute(a);
+			add_attribute_nocopy(a);
 			break;
 		}
 		case Attr_uint16: {
 			D4Attribute *a = new D4Attribute(name, attr_uint16_c);
 			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute(a);
+			add_attribute_nocopy(a);
 			break;
 		}
 		case Attr_int32: {
 			D4Attribute *a = new D4Attribute(name, attr_int32_c);
 			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute(a);
+			add_attribute_nocopy(a);
 			break;
 		}
 		case Attr_uint32: {
 			D4Attribute *a = new D4Attribute(name, attr_uint32_c);
 			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute(a);
+			add_attribute_nocopy(a);
 			break;
 		}
 		case Attr_float32: {
 			D4Attribute *a = new D4Attribute(name, attr_byte_c);
 			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute(a);
+			add_attribute_nocopy(a);
 			break;
 		}
 		case Attr_float64: {
 			D4Attribute *a = new D4Attribute(name, attr_float32_c);
 			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute(a);
+			add_attribute_nocopy(a);
 			break;
 		}
 		case Attr_string: {
 			D4Attribute *a = new D4Attribute(name, attr_str_c);
 			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute(a);
+			add_attribute_nocopy(a);
 			break;
 		}
 		case Attr_url: {
 			D4Attribute *a = new D4Attribute(name, attr_url_c);
 			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute(a);
+			add_attribute_nocopy(a);
 			break;
 		}
 		case Attr_other_xml: {
 			D4Attribute *a = new D4Attribute(name, attr_otherxml_c);
 			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute(a);
+			add_attribute_nocopy(a);
 			break;
 		}
 		default:

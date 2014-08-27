@@ -96,7 +96,11 @@ DMR::m_duplicate(const DMR &dmr)
     d_max_response_size = dmr.d_max_response_size;
 
     // TODO Deep copy, using ptr_duplicate() instead?
-    d_root = static_cast<D4Group*>(dmr.d_factory->NewVariable(dods_group_c, dmr.d_root->name()));
+    d_root = dmr.d_root->ptr_duplicate();
+    DBG(cerr << "dmr.d_root: " << dmr.d_root << endl);
+    DBG(cerr << "d_root (from ptr_dup(): " << d_root << endl);
+
+    //d_root = static_cast<D4Group*>(dmr.d_factory->NewVariable(dods_group_c, dmr.d_root->name()));
 }
 
 /**
@@ -193,7 +197,9 @@ DMR::DMR(const DMR &rhs) : DapObj()
  */
 DMR::~DMR()
 {
+#if 1
     delete d_root;
+#endif
 }
 
 DMR &

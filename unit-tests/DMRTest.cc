@@ -89,7 +89,15 @@ public:
         return match == static_cast<int> (s.length());
     }
 
-    void test_template(const string &dds_file, const string &dmr_baseline, const string &attr = "") {
+    /**
+     * Given the name of a DDS and optional DAS file, build a DMR using the
+     * hackery known as transform_to_dap4 and the new DMR ctor.
+     *
+     * @param dds_file
+     * @param attr
+     * @return A pointer to the new DMR; caller must delete
+     */
+    DMR *build_dmr(const string &dds_file, const string &attr = "") {
 		try {
 			string prefix = string(TEST_SRC_DIR) + "/dds-testsuite/";
 
@@ -105,17 +113,33 @@ public:
 			}
 
 			D4BaseTypeFactory d4_factory;
-			DMR dmr(&d4_factory, dds);
-			XMLWriter xml;
-			dmr.print_dap4(xml);
-			DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
-
-			CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(prefix + dmr_baseline));
+			return new DMR(&d4_factory, dds);
 		}
     	catch (Error &e) {
     		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
     	}
+
+    	return 0;
     }
+
+    void test_template(const string &dds_file, const string &dmr_baseline, const string &attr = "") {
+    	DMR *dmr = 0;
+		try {
+			dmr = build_dmr(dds_file, attr);
+			XMLWriter xml;
+			dmr->print_dap4(xml);
+			DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
+
+			string prefix = string(TEST_SRC_DIR) + "/dds-testsuite/";
+			CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(prefix + dmr_baseline));
+			delete dmr;
+		}
+    	catch (Error &e) {
+    		delete dmr;
+    		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
+    	}
+    }
+
     CPPUNIT_TEST_SUITE( DMRTest );
 
     CPPUNIT_TEST(test_dmr_from_dds_1);
@@ -126,6 +150,9 @@ public:
 
     CPPUNIT_TEST(test_dmr_from_dds_with_attr_1);
     CPPUNIT_TEST(test_dmr_from_dds_with_attr_2);
+
+    CPPUNIT_TEST(test_copy_ctor);
+    CPPUNIT_TEST(test_copy_ctor_2);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -158,6 +185,48 @@ public:
     void  test_dmr_from_dds_with_attr_2() {
     	// The 'hacked' file has global attributes
     	test_template("3B42.980909.5.HDF.dds", "3B42.980909.5.hacked.2.HDF.attr.dmr", "3B42.980909.5.hacked.2.HDF.das");
+    }
+
+    void test_copy_ctor() {
+    	DMR *dmr = build_dmr("test.1", "test.1.das");
+    	DMR *dmr_2 = new DMR(*dmr);
+
+		XMLWriter xml;
+		dmr->print_dap4(xml);
+		string dmr_src = string(xml.get_doc());
+		DBG(cerr << "DMR SRC: " << endl << dmr_src << endl);
+
+		XMLWriter xml2;
+		dmr_2->print_dap4(xml2);
+		string dmr_dest = string(xml2.get_doc());
+		DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
+
+		delete dmr;
+		delete dmr_2;
+		CPPUNIT_ASSERT(dmr_src == dmr_dest);
+
+    }
+
+    // This tests if using the copy still works after the original is deleted
+    void test_copy_ctor_2() {
+    	DMR *dmr = build_dmr("test.1", "test.1.das");
+    	DMR *dmr_2 = new DMR(*dmr);
+
+		XMLWriter xml;
+		dmr->print_dap4(xml);
+		string dmr_src = string(xml.get_doc());
+		DBG(cerr << "DMR SRC: " << endl << dmr_src << endl);
+
+		delete dmr;
+
+		XMLWriter xml2;
+		dmr_2->print_dap4(xml2);
+		string dmr_dest = string(xml2.get_doc());
+		DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
+
+		delete dmr_2;
+		CPPUNIT_ASSERT(dmr_src == dmr_dest);
+
     }
 };
 

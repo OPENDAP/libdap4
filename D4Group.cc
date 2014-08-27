@@ -54,20 +54,33 @@ void D4Group::m_duplicate(const D4Group &g)
 {
 	DBG(cerr << "In D4Group::m_duplicate for " << g.name() << endl);
 
-    // dims; deep copy, this is the parent
-    d_dims = new D4Dimensions(*g.d_dims);
-    d_dims->set_parent(this);
+	// dims; deep copy, this is the parent
+	if (g.d_dims) {
+		d_dims = new D4Dimensions(*g.d_dims);
+		d_dims->set_parent(this);
+	}
 
-    // enums; deep copy
-    d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
+	// Update all of the D4Dimension weak pointers in the Array objects.
+	// This is a hack - we know that Constructor::m_duplicate() has been
+	// called at this point and any Array instances have dimension pointers
+	// that reference the 'old' dimensions (g.d_dims) and not the 'new'
+	// dimensions made above. Scan every array and re-wire the weak pointers.
+	// jhrg 8/15/14
+	Vars_citer vi = d_vars.begin();
+	while (vi != d_vars.end()) {
+		if ((*vi)->type() == dods_array_c)
+			static_cast<Array*>(*vi)->update_dimension_pointers(g.d_dims, d_dims);
+		++vi;
+	}
+
+	// enums; deep copy
+	if (g.d_enum_defs) d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
 
     // groups
     groupsCIter i = g.d_groups.begin();
     while(i != g.d_groups.end()) {
         D4Group *g = (*i++)->ptr_duplicate();
         add_group_nocopy(g);
-        // Using push_back failed to set the group's parent pointer. jhrg 9/3/13
-        //this->d_groups.push_back(g);
     }
 
     DBG(cerr << "Exiting D4Group::m_duplicate" << endl);

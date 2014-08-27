@@ -64,7 +64,10 @@ D4Dimension::fully_qualified_name() const
 		// The root group is named "/" (always); this avoids '//name'
 		name = (grp->name() == "/") ? "/" + name : grp->name() + "/" + name;
 
-		grp = static_cast<D4Group*>(grp->get_parent());
+		if (grp->get_parent())
+			grp = static_cast<D4Group*>(grp->get_parent());
+		else
+			grp = 0;
 	}
 
 	return name;

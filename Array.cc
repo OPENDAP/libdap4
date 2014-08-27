@@ -212,6 +212,37 @@ Array::transform_to_dap4(D4Group *root, Constructor */*container*/)
 	return dest;
 }
 
+/**
+ * Hackery that helps build a new D4Group from an old one. We need to re-wire the
+ * D4Diemnsion (note the lack of an 's' at then end) that the copied Array objects
+ * hold. This code does that. Note that these are 'weak pointers' so they should
+ * never be freed - the D4Group object will take care of that.
+ *
+ * @note The order of the D4Dimension instances matches in 'old_dims' and 'new_dims'.
+ *
+ * @param old_dims The Old D4Dimension objects (held in a D4Dimensions instance)
+ * @param new_dims The New D4Dimension objects.
+ */
+void
+Array::update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims)
+{
+	D4Dimension *new_dim_base = (*new_dims->dim_begin());
+
+	std::vector<dimension>::iterator i = _shape.begin(), e = _shape.end();
+	while (i != e) {
+		D4Dimensions::D4DimensionsIter d4i = old_dims->dim_begin(), d4e = old_dims->dim_end();
+		while (d4i != d4e) {
+			if ((*i).dim == *d4i) {
+				// iterator offset == pointer arithmetic
+				(*i).dim =  new_dim_base + (d4i - old_dims->dim_begin());
+			}
+			++d4i;
+		}
+
+		++i;
+	}
+}
+
 /** @brief Add the BaseType pointer to this constructor type
     instance.
 
