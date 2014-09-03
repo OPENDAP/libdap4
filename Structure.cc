@@ -150,6 +150,12 @@ Structure::transform_to_dap4(D4Group *root, Constructor *container)
 	// Structure *dest = static_cast<Structure*>(ptr_duplicate());
 	Structure *dest = new Structure(name());
 
+	Constructor::transform_to_dap4(root, dest);
+	dest->set_parent(container);
+
+	return dest;
+
+#if 0
     for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
     	BaseType *new_var = (*i)->transform_to_dap4(root, dest);
     	if (new_var) {	// Might be a Grid; see the comment in BaseType::transform_to_dap4()
@@ -165,6 +171,7 @@ Structure::transform_to_dap4(D4Group *root, Constructor *container)
 	dest->set_parent(container);
 
 	return dest;
+#endif
 }
 
 Structure &

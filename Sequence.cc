@@ -224,7 +224,7 @@ Sequence::transform_to_dap4(D4Group *root, Constructor *container)
 	// transform_to_dap4() on the contained variables.
 
 	D4Sequence *dest = new D4Sequence(name());
-
+#if 0
     for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
     	BaseType *new_var = (*i)->transform_to_dap4(root, dest);
 		if (new_var) {
@@ -241,8 +241,12 @@ Sequence::transform_to_dap4(D4Group *root, Constructor *container)
 
     dest->set_is_dap4(true);
 	dest->set_parent(container);
+#endif
+
+	Constructor::transform_to_dap4(root, dest);
 
     dest->set_length(-1);
+	dest->set_parent(container);
 
     return dest;
 }

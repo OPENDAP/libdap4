@@ -65,6 +65,7 @@ public:
     virtual ~Constructor();
 
     Constructor &operator=(const Constructor &rhs);
+    BaseType *transform_to_dap4(D4Group *root, Constructor *dest);
 
     virtual int element_count(bool leaves = false);
 
