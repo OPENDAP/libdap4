@@ -152,6 +152,12 @@ Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
 	return dest;
 }
 
+string
+Constructor::FQN() const
+{
+	return get_parent() == 0 ? name() : get_parent()->FQN() + name() + ".";
+}
+
 int
 Constructor::element_count(bool leaves)
 {

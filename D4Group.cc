@@ -143,6 +143,12 @@ D4Group::operator=(const D4Group &rhs)
     return *this;
 }
 
+/**
+ * Get the Fully Qualified Name for this Group, including the Group. This
+ * uses the name representation described in the DAP4 specification.
+ *
+ * @return The FQN in a string
+ */
 string
 D4Group::FQN() const
 {
@@ -327,6 +333,13 @@ D4Group::find_enum_def(const string &path)
     return (grp == 0) ? 0: grp->enum_defs()->find_enum_def(lpath);
 }
 
+/**
+ * Find a variable using it's FUlly Qualified Name (FQN). The leading '/' is optional.
+ *
+ * @param path The FQN to the variable
+ * @return A BaseType* to the variable of null if it was not found
+ * @see BaseType::FQN()
+ */
 BaseType *
 D4Group::find_var(const string &path)
 {

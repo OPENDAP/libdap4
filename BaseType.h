@@ -176,6 +176,7 @@ public:
 
     string name() const;
     virtual void set_name(const string &n);
+    virtual std::string FQN() const;
 
     Type type() const;
     void set_type(const Type &t);

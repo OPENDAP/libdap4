@@ -263,6 +263,18 @@ BaseType::name() const
     return d_name;
 }
 
+/**
+ * Return the FQN for this variable. THis will include the D4 Group
+ * component of the name.
+ *
+ * @return The FQN in a string
+ */
+string
+BaseType::FQN() const
+{
+	return get_parent() == 0 ? name() : get_parent()->FQN() + name();
+}
+
 /** @brief Sets the name of the class instance. */
 void
 BaseType::set_name(const string &n)

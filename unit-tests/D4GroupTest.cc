@@ -35,6 +35,7 @@
 
 #include "Byte.h"
 #include "Int64.h"
+#include "Structure.h"
 
 #include "XMLWriter.h"
 #include "debug.h"
@@ -79,6 +80,24 @@ public:
     void load_group_with_scalars(D4Group *g) {
         g->add_var_nocopy(new Byte("b"));
         g->add_var_nocopy(new Int64("i64"));
+    }
+
+    void load_group_with_constructors_and_scalars(D4Group *g) {
+    	Structure *s = new Structure("s");
+    	s->add_var_nocopy(new Byte("b"));
+    	s->add_var_nocopy(new Int64("i64"));
+    	g->add_var_nocopy(s);
+    }
+
+    void load_group_with_nested_constructors_and_scalars(D4Group *g) {
+    	Structure *c = new Structure("c");
+    	c->add_var_nocopy(new Byte("b"));
+    	c->add_var_nocopy(new Int64("i64"));
+
+    	Structure *p = new Structure("p");
+    	p->add_var_nocopy(c);
+
+    	g->add_var_nocopy(p);
     }
 
     void load_group_with_stuff(D4Group *g) {
@@ -251,6 +270,52 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
+    void test_fqn_1() {
+        load_group_with_scalars(root);
+
+        BaseType *btp = root->find_var("b");
+        DBG(cerr << "test_fqn_1: " << btp->FQN() << endl);
+        CPPUNIT_ASSERT(btp->FQN() == "/b");
+    }
+
+    void test_fqn_2() {
+        load_group_with_constructors_and_scalars(root);
+
+        BaseType *btp = root->find_var("s.b");
+        DBG(cerr << "test_fqn_2: " << btp->FQN() << endl);
+        CPPUNIT_ASSERT(btp->FQN() == "/s.b");
+
+        btp = root->find_var("/s.b");
+		DBG(cerr << "test_fqn_2: " << btp->FQN() << endl);
+		CPPUNIT_ASSERT(btp->FQN() == "/s.b");
+    }
+
+    void test_fqn_3() {
+        load_group_with_nested_constructors_and_scalars(root);
+
+        BaseType *btp = root->find_var("p.c.b");
+        DBG(cerr << "test_fqn_3: " << btp->FQN() << endl);
+        CPPUNIT_ASSERT(btp->FQN() == "/p.c.b");
+
+        btp = root->find_var("/p.c.b");
+		DBG(cerr << "test_fqn_3: " << btp->FQN() << endl);
+		CPPUNIT_ASSERT(btp->FQN() == "/p.c.b");
+    }
+
+    void test_fqn_4() {
+    	D4Group *local = new D4Group("child");
+        load_group_with_nested_constructors_and_scalars(local);
+        root->add_group_nocopy(local);
+
+        BaseType *btp = root->find_var("child/p.c.b");
+        DBG(cerr << "test_fqn_4: " << btp->FQN() << endl);
+        CPPUNIT_ASSERT(btp && btp->FQN() == "/child/p.c.b");
+
+        btp = root->find_var("/child/p.c.b");
+		DBG(cerr << "test_fqn_4: " << btp->FQN() << endl);
+		CPPUNIT_ASSERT(btp && btp->FQN() == "/child/p.c.b");
+    }
+
     CPPUNIT_TEST_SUITE( D4GroupTest );
 
         CPPUNIT_TEST(test_print_empty);
@@ -268,6 +333,11 @@ public:
 
         CPPUNIT_TEST(test_print_copy_ctor);
         CPPUNIT_TEST(test_print_assignment);
+
+        CPPUNIT_TEST(test_fqn_1);
+        CPPUNIT_TEST(test_fqn_2);
+        CPPUNIT_TEST(test_fqn_3);
+        CPPUNIT_TEST(test_fqn_4);
 
     CPPUNIT_TEST_SUITE_END();
 };
