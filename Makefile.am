@@ -1,6 +1,6 @@
 # Build libdap, libtest-types.a, getdap, getdap4
 
-AUTOMAKE_OPTIONS = foreign check-news
+AUTOMAKE_OPTIONS = foreign check-news subdir-objects
 ACLOCAL_AMFLAGS = -I conf -I gl/m4
 
 aclocaldir=$(datadir)/aclocal
@@ -77,7 +77,7 @@ libdapserver_la_LIBADD = libdap.la $(UUID_LIBS)
 
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
 if DAP4_DEFINED
-    pkginclude_HEADERS += $(DAP4_ONLY_HDR)
+    pkginclude_HEADERS += $(DAP4_ONLY_HDR) $(DAP4_CLIENT_HDR)
 endif
 
 noinst_HEADERS = config_dap.h

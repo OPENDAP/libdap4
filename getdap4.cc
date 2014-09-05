@@ -106,7 +106,7 @@ static void usage(const string &name)
 bool read_data(FILE * fp)
 {
     if (!fp) {
-        fprintf(stderr, "getdap: Whoa!!! Null stream pointer.\n");
+        fprintf(stderr, "getdap4: Whoa!!! Null stream pointer.\n");
         return false;
     }
     // Changed from a loop that used getc() to one that uses fread(). getc()
