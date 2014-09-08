@@ -41,6 +41,11 @@
 
 using namespace libdap ;
 
+namespace libdap {
+	class D4Group;
+	class Constructor;
+}
+
 class TestSequence: public Sequence, public TestCommon {
 private:
     int d_len;
@@ -58,6 +63,7 @@ public:
 
     TestSequence &operator=(const TestSequence &rhs);
     virtual BaseType *ptr_duplicate();
+    BaseType * transform_to_dap4(libdap::D4Group *root, libdap::Constructor *container);
 
     virtual bool read();
 

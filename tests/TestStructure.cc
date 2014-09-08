@@ -35,8 +35,13 @@
 //#define DODS_DEBUG
 
 #include "config.h"
-#include "TestStructure.h"
+#include "D4Group.h"
+#include "Constructor.h"
 #include "debug.h"
+
+#include "TestStructure.h"
+
+using namespace libdap;
 
 void TestStructure::m_duplicate(const TestStructure &ts)
 {
@@ -110,6 +115,17 @@ void TestStructure::output_values(std::ostream &out)
 	}
 
 	out << " }";
+}
+
+BaseType *
+TestStructure::transform_to_dap4(D4Group *root, Constructor *container)
+{
+	Structure *dest = new TestStructure(name(), dataset());
+
+	Constructor::transform_to_dap4(root, dest);
+	dest->set_parent(container);
+
+	return dest;
 }
 
 // For this `Test' class, run the read mfunc for each of variables which

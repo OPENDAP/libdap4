@@ -139,6 +139,15 @@ Structure::ptr_duplicate()
     return new Structure(*this);
 }
 
+/**
+ * Build a DAP4 Structure.
+ *
+ * This code must be subclassed for all but the most trivial cases.
+ *
+ * @param root
+ * @param container
+ * @return The new variable
+ */
 BaseType *
 Structure::transform_to_dap4(D4Group *root, Constructor *container)
 {
@@ -154,24 +163,6 @@ Structure::transform_to_dap4(D4Group *root, Constructor *container)
 	dest->set_parent(container);
 
 	return dest;
-
-#if 0
-    for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
-    	BaseType *new_var = (*i)->transform_to_dap4(root, dest);
-    	if (new_var) {	// Might be a Grid; see the comment in BaseType::transform_to_dap4()
-    		new_var->set_parent(dest);
-    		dest->add_var_nocopy(new_var);
-    	}
-    }
-
-    // Add attributes
-	dest->attributes()->transform_to_dap4(get_attr_table());
-
-    dest->set_is_dap4(true);
-	dest->set_parent(container);
-
-	return dest;
-#endif
 }
 
 Structure &

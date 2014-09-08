@@ -37,11 +37,17 @@
 // for single level sequences - that is, it does *not* work for sequences
 // that contain other sequences. jhrg 2/2/98
 
+#include "config.h"
+#include "D4Group.h"
+#include "Constructor.h"
+#include "D4Sequence.h"
+#include "debug.h"
+
 #include "TestSequence.h"
+#include "TestD4Sequence.h"
 #include "TestCommon.h"
 
-#include "config.h"
-#include "debug.h"
+using namespace libdap;
 
 void
 TestSequence::_duplicate(const TestSequence &ts)
@@ -87,6 +93,20 @@ TestSequence::operator=(const TestSequence &rhs)
     _duplicate(rhs);
 
     return *this;
+}
+
+BaseType *
+TestSequence::transform_to_dap4(D4Group *root, Constructor *container)
+{
+
+	D4Sequence *dest = new TestD4Sequence(name());
+
+	Constructor::transform_to_dap4(root, dest);
+
+    dest->set_length(-1);
+	dest->set_parent(container);
+
+    return dest;
 }
 
 void

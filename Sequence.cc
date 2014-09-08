@@ -71,6 +71,8 @@
 
 #include "D4Attributes.h"
 #include "D4Sequence.h"
+#include "D4Group.h"
+#include "Constructor.h"
 #include "DMR.h"
 
 using namespace std;
@@ -211,6 +213,9 @@ Sequence::ptr_duplicate()
  * be subclassed by anything other than trivial test code or client
  * side-only uses of the library.
  *
+ * @note This version of transformto_dap4() builds a new type of object,
+ * so it must be subclassed.
+ *
  * @param root Use this as the environment for D4Dimensions
  * @param container Load the result into this container
  * @return The new D4Sequence
@@ -218,30 +223,7 @@ Sequence::ptr_duplicate()
 BaseType *
 Sequence::transform_to_dap4(D4Group *root, Constructor *container)
 {
-	// For this class, ptr_duplicate() calls the const ctor which calls
-	// Constructor's const ctor which calls Constructor::m_duplicate().
-	// Here we replicate some of that functionality, but instead call
-	// transform_to_dap4() on the contained variables.
-
 	D4Sequence *dest = new D4Sequence(name());
-#if 0
-    for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
-    	BaseType *new_var = (*i)->transform_to_dap4(root, dest);
-		if (new_var) {
-			new_var->set_parent(dest);
-			dest->add_var_nocopy(new_var);
-		}
-		else {
-			throw InternalErr(__FILE__, __LINE__, "transform_to_dap4() returned null, but no Grid could be here.");
-		}
-	}
-
-    // Add attributes
-	dest->attributes()->transform_to_dap4(get_attr_table());
-
-    dest->set_is_dap4(true);
-	dest->set_parent(container);
-#endif
 
 	Constructor::transform_to_dap4(root, dest);
 
