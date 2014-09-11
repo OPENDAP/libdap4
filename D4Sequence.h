@@ -172,7 +172,7 @@ public:
      */
     virtual void set_length(int count) { d_length = (int64_t)count; }
 
-    virtual bool read_next_instance(DMR &dmr/*, ConstraintEvaluator &eval*/, bool filter);
+    virtual bool read_next_instance(/*DMR &dmr, ConstraintEvaluator &eval,*/ bool filter);
 
     virtual void intern_data(ConstraintEvaluator &, DDS &) {
     	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
@@ -185,7 +185,7 @@ public:
     }
 
     // DAP4
-    virtual void intern_data(Crc32 &checksum, DMR &dmr/*, ConstraintEvaluator &eval*/);
+    virtual void intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
@@ -230,6 +230,7 @@ public:
 
     virtual void set_row_number_constraint(int start, int stop, int stride = 1);
 #endif
+
     /**
      * @brief Set the internal value.
      * The 'values' of a D4Sequence is a vector of vectors of BaseType* objects.

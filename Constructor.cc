@@ -520,11 +520,11 @@ Constructor::compute_checksum(Crc32 &)
 }
 
 void
-Constructor::intern_data(Crc32 &checksum, DMR &dmr/*, ConstraintEvaluator & eval*/)
+Constructor::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator & eval*/)
 {
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->send_p()) {
-            (*i)->intern_data(checksum, dmr/*, eval*/);
+            (*i)->intern_data(checksum/*, dmr, eval*/);
         }
     }
 }
