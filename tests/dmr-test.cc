@@ -255,7 +255,7 @@ intern_data(DMR *dataset, /*const string &constraint,*/ bool series_values)
 
     Crc32 checksum;
 
-    dataset->root()->intern_data(checksum, *dataset/*, eval*/);
+    dataset->root()->intern_data(checksum/*, *dataset, eval*/);
 }
 
 DMR *
@@ -314,9 +314,9 @@ read_data_plain(const string &file_name, bool debug)
 static void usage()
 {
     cerr << "Usage: dmr-test -p|s|t|i <file> [-c <expr>] [-f <function expression>] [-d -x -e]" << endl
-            << "p: Parse a file (use "-" for stdin; if a ce or a function is passed those are parsed too)" << endl
-            << "s: Send - parse and then 'send' a response to a file" << endl
-            << "t: Transmit - parse, send and then read the response file" << endl
+            << "p: Parse a file (use \"-\" for stdin; if a ce or a function is passed those are parsed too)" << endl
+            << "s: Send: parse and then 'send' a response to a file" << endl
+            << "t: Transmit: parse, send and then read the response file" << endl
             << "i: Intern values (ce and function will be ignored by this)" << endl
             << "c: Constraint expression " << endl
             << "f: Function expression" << endl
