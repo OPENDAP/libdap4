@@ -155,7 +155,14 @@ Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
 string
 Constructor::FQN() const
 {
-	return get_parent() == 0 ? name() : get_parent()->FQN() + name() + ".";
+	if (get_parent() == 0)
+		return name();
+	else if (get_parent()->type() == dods_group_c)
+		return get_parent()->FQN() + name();
+	else if (get_parent()->type() == dods_array_c)
+		return get_parent()->FQN();
+	else
+		return get_parent()->FQN() + "." + name();
 }
 
 int

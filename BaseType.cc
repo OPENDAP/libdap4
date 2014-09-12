@@ -264,7 +264,7 @@ BaseType::name() const
 }
 
 /**
- * Return the FQN for this variable. THis will include the D4 Group
+ * Return the FQN for this variable. This will include the D4 Group
  * component of the name.
  *
  * @return The FQN in a string
@@ -272,7 +272,12 @@ BaseType::name() const
 string
 BaseType::FQN() const
 {
-	return get_parent() == 0 ? name() : get_parent()->FQN() + name();
+	if (get_parent() == 0)
+		return name();
+	else if (get_parent()->type() == dods_group_c)
+		return get_parent()->FQN() + name();
+	else
+		return get_parent()->FQN() + "." + name();
 }
 
 /** @brief Sets the name of the class instance. */
