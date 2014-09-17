@@ -59,9 +59,9 @@ D4RValueList::~D4RValueList()
 		delete *i;
 }
 
-template<typename t, class DAP_TYPE>
+template<typename T, class DAP_TYPE>
 static BaseType *
-build_constant_array(vector<t> &values, DAP_TYPE &dt)
+build_constant_array(vector<T> &values, DAP_TYPE &dt)
 {
     Array *array = new Array("", &dt);
     array->append_dim(values.size());
@@ -188,7 +188,7 @@ D4RValue::~D4RValue() {
  * @note A lingering issue with server functions is: Who or what is responsible
  * for deleting the BaseType* this method returns? Copying the BaseType wastes
  * memory but not copying it creates ambiguity since the BaseType* may point into
- * the DMR adn thus should not be freed or it might be newly allocated storage
+ * the DMR and thus should not be freed or it might be newly allocated storage
  * (in which case it should). For the function result, we have no way of knowing
  * how/if to dispose of the BaseType*. Sort this out ... (reference counting,
  * mark and sweep, ...). Maybe duplicate it before it contains data? Then it can be
