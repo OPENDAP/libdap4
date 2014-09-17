@@ -185,15 +185,11 @@ D4RValue::~D4RValue() {
 
 /** Return the BaseType * for a given RValue.
  *
- * @note A lingering issue with server functions is: Who or what is responsible
- * for deleting the BaseType* this method returns? Copying the BaseType wastes
- * memory but not copying it creates ambiguity since the BaseType* may point into
- * the DMR and thus should not be freed or it might be newly allocated storage
- * (in which case it should). For the function result, we have no way of knowing
- * how/if to dispose of the BaseType*. Sort this out ... (reference counting,
- * mark and sweep, ...). Maybe duplicate it before it contains data? Then it can be
- * deleted without affecting the DMR
- * jhrg 3/10/14
+ * @note Unlike the DAP2 functions, we have an easier-to-follow memory model for
+ * function values. The values (BaseType*) returned by this method will be packaged
+ * up in a RValueList and deleted when that list is deleted. Constant values and
+ * function result values will be deleted at that time; variables will not. Thus
+ * Server Functions should always allocate storage for their return values.
  *
  * @param dmr The DMR to pass to a function.
  * @return A BaseType* that holds the value.

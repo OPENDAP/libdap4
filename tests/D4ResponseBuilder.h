@@ -76,7 +76,7 @@ public:
     virtual void remove_timeout() const;
 
     virtual void send_dmr(std::ostream &out, DMR &dmr, bool with_mime_headers, bool constrained);
-    virtual void send_data_dmr(std::ostream &out, DMR &dmr, bool with_mime_headers, bool constrained);
+    virtual void send_dap(std::ostream &out, DMR &dmr, bool with_mime_headers, bool constrained);
 };
 
 } // namespace libdap

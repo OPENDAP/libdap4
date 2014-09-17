@@ -23,8 +23,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#ifndef D4_FUNCTION_DRIVER_H_
-#define D4_FUNCTION_DRIVER_H_
+#ifndef D4CEDRIVER_H_
+#define D4CEDRIVER_H_
 
 #include <string>
 #include <vector>
@@ -33,56 +33,83 @@
 namespace libdap {
 
 class location;
-
+class DMR;
 class BaseType;
 class Array;
-class ServerFunctionsList;
-
-class DMR;
 class D4Dimension;
-class D4RValue;
-class D4RValueList;
 
 /**
- * Driver for the DAP4 Functional expression parser.
+ * Driver for the DAP4 Constraint Expression parser.
  */
-class D4FunctionDriver {
+class D4ConstraintEvaluator {
+	struct index {
+		// start and stride are simple numbers; stop is either the stopping index or
+		// if to_end is true, is ignored and the subset runs to the end of the dimension
+		unsigned long long start, stride, stop;
+		// true if the slice indicates it does not contain a specific 'stop' value but
+		// goes to the end, whatever that value is.
+		bool rest;
+		// An empty slice ([]) means either the entire dimension or apply the shared
+		// dimension slice, depending on whether the corresponding shared dimension has
+		// been sliced.
+		bool empty;
+
+		// Added because the parser code needs it. Our code does not use this. jhrg 11/26/13
+		index(): start(0), stride(0), stop(0), rest(false), empty(false) {}
+		index(unsigned long long i, unsigned long long s, unsigned long long e, bool r, bool em)
+			: start(i), stride(s), stop(e), rest(r), empty(em) {}
+	};
+
+	index make_index() { return index(0, 1, 0, true /*rest*/, true /*empty*/); }
+
+	index make_index(const std::string &is);
+
+	index make_index(const std::string &i, const std::string &s, const std::string &e);
+	index make_index(const std::string &i, unsigned long long s, const std::string &e);
+
+	index make_index(const std::string &i, const std::string &s);
+	index make_index(const std::string &i, unsigned long long s);
+
 	bool d_trace_scanning;
 	bool d_trace_parsing;
+	bool d_result;
 	std::string d_expr;
 
 	DMR *d_dmr;
-	ServerFunctionsList *d_sf_list;
 
-	D4RValueList *d_result;
+	std::vector<index> d_indexes;
 
 	std::stack<BaseType*> d_basetype_stack;
-
-	unsigned long long d_arg_length_hint;
 
 	// d_expr should be set by parse! Its value is used by the parser right before
 	// the actual parsing operation starts. jhrg 11/26/13
 	std::string *expression() { return &d_expr; }
+#if 0
+	void set_array_slices(const std::string &id, Array *a);
+#endif
+	void search_for_and_mark_arrays(BaseType *btp);
+	BaseType *mark_variable(BaseType *btp);
+	BaseType *mark_array_variable(BaseType *btp);
+
+	D4Dimension *slice_dimension(const std::string &id, const index &i);
+
+	void push_index(const index &i) { d_indexes.push_back(i); }
 
 	void push_basetype(BaseType *btp) { d_basetype_stack.push(btp); }
 	BaseType *top_basetype() const { return d_basetype_stack.empty() ? 0 : d_basetype_stack.top(); }
 	// throw on pop with an empty stack?
 	void pop_basetype() { d_basetype_stack.pop(); }
-#if 0
+
 	void throw_not_found(const std::string &id, const std::string &ident);
 	void throw_not_array(const std::string &id, const std::string &ident);
-#endif
-	D4RValue *build_rvalue(const std::string &id);
 
-	friend class D4FunctionParser;
+	friend class D4CEParser;
 
 public:
-	D4FunctionDriver() : d_trace_scanning(false), d_trace_parsing(false), d_expr(""), d_dmr(0), d_sf_list(0),
-			d_result(0), d_arg_length_hint(0) { }
-	D4FunctionDriver(DMR *dmr, ServerFunctionsList *sf_list) : d_trace_scanning(false), d_trace_parsing(false),
-			d_expr(""), d_dmr(dmr), d_sf_list(sf_list), d_result(0), d_arg_length_hint(0) { }
+	D4ConstraintEvaluator() : d_trace_scanning(false), d_trace_parsing(false), d_result(false), d_expr(""), d_dmr(0) { }
+	D4ConstraintEvaluator(DMR *dmr) : d_trace_scanning(false), d_trace_parsing(false), d_result(false), d_expr(""), d_dmr(dmr) { }
 
-	virtual ~D4FunctionDriver() { }
+	virtual ~D4ConstraintEvaluator() { }
 
 	bool parse(const std::string &expr);
 
@@ -92,22 +119,14 @@ public:
 	bool trace_parsing() const { return d_trace_parsing; }
 	void set_trace_parsing(bool tp) { d_trace_parsing = tp; }
 
-	D4RValueList *result() const { return d_result; }
-	void set_result(D4RValueList *rv_list) { d_result = rv_list; }
-
-	unsigned long long get_arg_length_hint() const { return d_arg_length_hint; }
-	void set_arg_length_hint(unsigned long long alh) { d_arg_length_hint = alh; }
+	bool result() const { return d_result; }
+	void set_result(bool r) { d_result = r; }
 
 	DMR *dmr() const { return d_dmr; }
 	void set_dmr(DMR *dmr) { d_dmr = dmr; }
-
-	ServerFunctionsList *sf_list() const { return d_sf_list; }
-	void set_sf_list(ServerFunctionsList *sf_list) { d_sf_list = sf_list; }
-
-	template <typename t> std::vector<t> *init_arg_list(t val);
 
 	void error(const libdap::location &l, const std::string &m);
 };
 
 } /* namespace libdap */
-#endif /* D4_FUNCTION_DRIVER_H_ */
+#endif /* D4CEDRIVER_H_ */

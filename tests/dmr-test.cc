@@ -30,6 +30,7 @@
 #include <cstring>
 
 #include <fstream>
+#include <memory>
 
 #include "crc.h"
 
@@ -56,8 +57,8 @@
 #include "D4TestTypeFactory.h"
 #include "TestCommon.h"
 
-#include "D4CEDriver.h"
-#include "D4FunctionDriver.h"
+#include "D4ConstraintEvaluator.h"
+#include "D4FunctionEvaluator.h"
 #include "ServerFunctionsList.h"
 #include "D4TestFunction.h"
 #include "D4RValue.h"
@@ -147,7 +148,7 @@ send_data(DMR *dataset, const string &constraint, const string &function, bool s
     // It's declared at this scope because we (may) need it for the code beyond the
     // function parse/eval code that immediately follows. jhrg 3/12/14
     D4TestTypeFactory d4_factory;
-    DMR *function_result = 0;
+    auto_ptr<DMR> function_result(new DMR(&d4_factory, "function_results"));
 
 	// The Function Parser
 	if (!function.empty()) {
@@ -155,67 +156,19 @@ send_data(DMR *dataset, const string &constraint, const string &function, bool s
 		ServerFunction *scale = new D4TestFunction;
 		sf_list->add_function(scale);
 
-		D4FunctionDriver parser(dataset, sf_list);
+		D4FunctionEvaluator parser(dataset, sf_list);
 		if (ce_parser_debug) parser.set_trace_parsing(true);
 		bool parse_ok = parser.parse(function);
 		if (!parse_ok)
 			Error("Function Expression failed to parse.");
 		else {
 			if (ce_parser_debug) cerr << "Function Parse OK" << endl;
-			D4RValueList *result = parser.result();
 
-			function_result = new DMR(&d4_factory, "function_results");
-			for (D4RValueList::iter i = result->begin(), e = result->end(); i != e; ++i) {
-				// Copy the BaseTypes; this means all of the function results can
-				// be deleted, which addresses the memory leak issue with function
-				// results. This should also copy the D4Dimensions. jhrg 3/17/14
-				function_result->root()->add_var((*i)->value(*dataset));
-			}
-
-			delete result;	// The parser/function allocates the BaseType*s that hold the results.
-
-			// Variables can use Dimensions and Enumerations, so those need to be copied
-			// from the source dataset to the result. NB: The variables that refer to these
-			// use weak pointers.
-
-			// Make a set of D4Dimensions. For each variable in 'function_result', look
-			// for its dimensions in 'dataset' (by name) and add a pointer to those to the
-			// set. Then copy all the stuff in the set into the root group of 'function_
-			// result.'
-			set<D4Dimension*> dim_set;
-			D4Group *root = function_result->root();
-			for (Constructor::Vars_iter i = root->var_begin(), ie = root->var_end(); i != ie; ++i) {
-				if ((*i)->is_vector_type()) {
-					Array *a = static_cast<Array*>(*i);
-					for (Array::Dim_iter d = a->dim_begin(), de = a->dim_end(); d != de; ++d) {
-						if (a->dimension_D4dim(d)) {
-							dim_set.insert(a->dimension_D4dim(d));
-						}
-					}
-				}
-			}
-
-			for (set<D4Dimension*>::iterator i = dim_set.begin(), e = dim_set.end(); i != e; ++i) {
-				// These won't be deleted until the DMR they came from is deleted.
-				// TODO Use reference counted pointers for all of this stuff!!
-				root->dims()->add_dim_nocopy(*i);
-			}
-
-			// Now lets do the enumerations....
-			set<D4EnumDef*> enum_def_set;
-			for (Constructor::Vars_iter i = root->var_begin(), ie = root->var_end(); i != ie; ++i) {
-				if ((*i)->type() == dods_enum_c) {
-					enum_def_set.insert(static_cast<D4Enum*>(*i)->enumeration());
-				}
-			}
-
-			for (set<D4EnumDef*>::iterator i = enum_def_set.begin(), e = enum_def_set.end(); i != e; ++i) {
-				root->enum_defs()->add_enum_nocopy(*i);
-			}
+			parser.eval(function_result.get());
 
 			// Now use the results of running the functions for the remainder of the
 			// send_data operation.
-			dataset = function_result;
+			dataset = function_result.release();
 		}
 	}
 
@@ -226,7 +179,7 @@ send_data(DMR *dataset, const string &constraint, const string &function, bool s
     ofstream out(file_name.c_str(), ios::out|ios::trunc|ios::binary);
 
 	if (!constraint.empty()) {
-		D4CEDriver parser(dataset);
+		D4ConstraintEvaluator parser(dataset);
 		if (ce_parser_debug)
 		    parser.set_trace_parsing(true);
 		bool parse_ok = parser.parse(constraint);
@@ -239,7 +192,7 @@ send_data(DMR *dataset, const string &constraint, const string &function, bool s
     	dataset->root()->set_send_p(true);
     }
 
-    rb.send_data_dmr(out, *dataset, /*with mime headers*/ true, !constraint.empty());
+    rb.send_dap(out, *dataset, /*with mime headers*/ true, !constraint.empty());
     out.close();
 
     return file_name;
@@ -420,7 +373,7 @@ main(int argc, char *argv[])
 			// The CE Parser
 			if (!ce.empty()) {
 				try {
-					D4CEDriver parser(dmr);
+					D4ConstraintEvaluator parser(dmr);
 					if (ce_parser_debug) parser.set_trace_parsing(true);
 					bool parse_ok = parser.parse(ce);
 					if (!parse_ok)
@@ -443,7 +396,7 @@ main(int argc, char *argv[])
 				    ServerFunction *scale = new D4TestFunction;
 				    sf_list->add_function(scale);
 
-					D4FunctionDriver parser(dmr, sf_list);
+					D4FunctionEvaluator parser(dmr, sf_list);
 					if (ce_parser_debug) parser.set_trace_parsing(true);
 					bool parse_ok = parser.parse(function);
 					if (!parse_ok)

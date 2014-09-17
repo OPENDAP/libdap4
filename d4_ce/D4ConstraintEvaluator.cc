@@ -29,7 +29,7 @@
 //#define DODS_DEBUG
 
 #include "D4CEScanner.h"
-#include "D4CEDriver.h"
+#include "D4ConstraintEvaluator.h"
 #include "d4_ce_parser.tab.hh"
 #include "DMR.h"
 #include "D4Group.h"
@@ -43,7 +43,7 @@
 
 namespace libdap {
 
-bool D4CEDriver::parse(const std::string &expr)
+bool D4ConstraintEvaluator::parse(const std::string &expr)
 {
 	d_expr = expr;	// set for error messages. See the %initial-action section of .yy
 
@@ -62,7 +62,7 @@ bool D4CEDriver::parse(const std::string &expr)
 
 #if 0
 void
-D4CEDriver::set_array_slices(const std::string &id, Array *a)
+D4ConstraintEvaluator::set_array_slices(const std::string &id, Array *a)
 {
     // Test that the indexes and dimensions match in number
     if (d_indexes.size() != a->dimensions())
@@ -97,21 +97,21 @@ D4CEDriver::set_array_slices(const std::string &id, Array *a)
 #endif
 
 void
-D4CEDriver::throw_not_found(const string &id, const string &ident)
+D4ConstraintEvaluator::throw_not_found(const string &id, const string &ident)
 {
     throw Error(d_expr + ": The variable " + id + " was not found in the dataset (" + ident + ").");
 }
 
 void
-D4CEDriver::throw_not_array(const string &id, const string &ident)
+D4ConstraintEvaluator::throw_not_array(const string &id, const string &ident)
 {
 	throw Error(d_expr + ": The variable '" + id + "' is not an Array variable (" + ident + ").");
 }
 
 void
-D4CEDriver::search_for_and_mark_arrays(BaseType *btp)
+D4ConstraintEvaluator::search_for_and_mark_arrays(BaseType *btp)
 {
-	DBG(cerr << "Entering D4CEDriver::search_for_and_mark_arrays...(" << btp->name() << ")" << endl);
+	DBG(cerr << "Entering D4ConstraintEvaluator::search_for_and_mark_arrays...(" << btp->name() << ")" << endl);
 
 	assert(btp->is_constructor_type());
 
@@ -143,11 +143,11 @@ D4CEDriver::search_for_and_mark_arrays(BaseType *btp)
  * @return The BaseType* to the variable; the send_p flag is set as a side effect.
  */
 BaseType *
-D4CEDriver::mark_variable(BaseType *btp)
+D4ConstraintEvaluator::mark_variable(BaseType *btp)
 {
     assert(btp);
 
-    DBG(cerr << "In D4CEDriver::mark_variable... (" << btp->name() << "; " << btp->type_name() << ")" << endl);
+    DBG(cerr << "In D4ConstraintEvaluator::mark_variable... (" << btp->name() << "; " << btp->type_name() << ")" << endl);
 
     btp->set_send_p(true);
 
@@ -186,7 +186,7 @@ D4CEDriver::mark_variable(BaseType *btp)
  * set as a side effect.
  */
 BaseType *
-D4CEDriver::mark_array_variable(BaseType *btp)
+D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
 {
 	assert(btp->type() == dods_array_c);
 
@@ -250,7 +250,7 @@ D4CEDriver::mark_array_variable(BaseType *btp)
  * set as a side effect.
  */
 D4Dimension *
-D4CEDriver::slice_dimension(const std::string &id, const index &i)
+D4ConstraintEvaluator::slice_dimension(const std::string &id, const index &i)
 {
     D4Dimension *dim = dmr()->root()->find_dim(id);
 
@@ -264,42 +264,42 @@ D4CEDriver::slice_dimension(const std::string &id, const index &i)
     return dim;
 }
 
-D4CEDriver::index
-D4CEDriver::make_index(const std::string &i)
+D4ConstraintEvaluator::index
+D4ConstraintEvaluator::make_index(const std::string &i)
 {
 	unsigned long long v = get_ull(i.c_str());
 	return index(v, 1, v, false, false /*empty*/);
 }
 
-D4CEDriver::index
-D4CEDriver::make_index(const std::string &i, const std::string &s, const std::string &e)
+D4ConstraintEvaluator::index
+D4ConstraintEvaluator::make_index(const std::string &i, const std::string &s, const std::string &e)
 {
 	return index(get_ull(i.c_str()), get_ull(s.c_str()), get_ull(e.c_str()), false, false /*empty*/);
 }
 
-D4CEDriver::index
-D4CEDriver::make_index(const std::string &i, unsigned long long s, const std::string &e)
+D4ConstraintEvaluator::index
+D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s, const std::string &e)
 {
 	return index(get_ull(i.c_str()), s, get_ull(e.c_str()), false, false /*empty*/);
 }
 
-D4CEDriver::index
-D4CEDriver::make_index(const std::string &i, const std::string &s)
+D4ConstraintEvaluator::index
+D4ConstraintEvaluator::make_index(const std::string &i, const std::string &s)
 {
 	return index(get_ull(i.c_str()), get_ull(s.c_str()), 0, true, false /*empty*/);
 }
 
-D4CEDriver::index
-D4CEDriver::make_index(const std::string &i, unsigned long long s)
+D4ConstraintEvaluator::index
+D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s)
 {
 	return index(get_ull(i.c_str()), s, 0, true, false /*empty*/);
 }
 
 // This method is called from the parser (see d4_ce_parser.yy, down in the code
 // section). This will be called during the call to D4CEParser::parse(), that
-// is inside D4CEDriver::parse(...)
+// is inside D4ConstraintEvaluator::parse(...)
 void
-D4CEDriver::error(const libdap::location &l, const std::string &m)
+D4ConstraintEvaluator::error(const libdap::location &l, const std::string &m)
 {
 	std::cerr << l << ": " << m << std::endl;
 }

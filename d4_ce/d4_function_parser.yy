@@ -46,7 +46,7 @@
 
 %code requires {
 
-#include "D4FunctionDriver.h"
+#include "D4FunctionEvaluator.h"
 #include "D4RValue.h"
 #include "dods-datatypes.h"
 
@@ -61,17 +61,17 @@ namespace libdap {
 %lex-param   { D4FunctionScanner  &scanner  }
 %parse-param { D4FunctionScanner  &scanner  }
 
-%lex-param   { D4FunctionDriver  &driver  }
-%parse-param { D4FunctionDriver  &driver  }
+%lex-param   { D4FunctionEvaluator  &evaluator  }
+%parse-param { D4FunctionEvaluator  &evaluator  }
 
 %locations
 %initial-action
 {
     // Initialize the initial location. This is printed when the parser builds
     // its own error messages - when the parse fails as opposed to when the 
-    // function(s) name(s) a missing variables, ...
+    // function(s) name(s) a missing variable, ...
 
-    @$.initialize (driver.expression());
+    @$.initialize (evaluator.expression());
 };
 
 %code {
@@ -83,15 +83,15 @@ namespace libdap {
     #include "parser-util.h"
 
     /* include for all driver functions */
-    #include "D4FunctionDriver.h"
+    #include "D4FunctionEvaluator.h"
 
     using namespace libdap ;
     
-    /* this is silly, but I can't figure out a way around */
+    /* this is silly, but I can't figure out a way around it */
     static int yylex(libdap::D4FunctionParser::semantic_type *yylval,
                      libdap::location *loc,
                      libdap::D4FunctionScanner  &scanner,
-                     libdap::D4FunctionDriver   &driver);
+                     libdap::D4FunctionEvaluator   &evaluator);
 }
 
 %type <D4RValueList*> functions "functions"
@@ -154,7 +154,7 @@ namespace libdap {
 
 program : functions 
 { 
-    driver.set_result($1); 
+    evaluator.set_result($1); 
 }
 ;
 
@@ -164,7 +164,8 @@ functions : function
 }
 | functions ";" function 
 { 
-    $1->add_rvalue($3); $$ = $1; 
+    $1->add_rvalue($3);
+    $$ = $1; 
 }
 ;
                     
@@ -177,7 +178,7 @@ function : fname "(" args ")"
 fname: WORD 
 { 
     D4Function f;
-    if (!driver.sf_list()->find_function($1, &f)) {
+    if (!evaluator.sf_list()->find_function($1, &f)) {
         // ...cloud use @1.{first,last}_column in these error messages.
         throw Error("'" + $1 + "' is not a registered DAP4 server function.");
     }
@@ -192,7 +193,8 @@ args: arg
 } 
 | args "," arg 
 { 
-    $1->add_rvalue($3); $$ = $1; // Append the D4RValue ($3) to the D4RValueList ($1), then return
+    $1->add_rvalue($3);
+    $$ = $1; // Append the D4RValue ($3) to the D4RValueList ($1), then return
 } 
 ;
 
@@ -212,7 +214,7 @@ arg: function
 
 variable_or_constant : id
 {
-    D4RValue *rvalue = driver.build_rvalue($1);
+    D4RValue *rvalue = evaluator.build_rvalue($1);
     if (!rvalue) {
         throw Error("'" + $1 + "' is not a variable, number or string.");
     }
@@ -289,20 +291,20 @@ DOLLAR_FLOAT64 "(" arg_length_hint ":" fast_float64_arg_list ")"
 }
 ;
 
-/* Here the arg length hint is stored in a global so it can be used by the 
-   function that allocates the vector. The value is passed to vector::reserve().
+/* Here the arg length hint is stored in the eval class so it can be used by the 
+   method that allocates the vector. The value is passed to vector::reserve().
    This rule is run for it's side-effect only. This is also used to track the 
    current arg number so that the hint can be used. */
    
 arg_length_hint : WORD
 {
-    driver.set_arg_length_hint(get_ull($1.c_str()));
+    evaluator.set_arg_length_hint(get_ull($1.c_str()));
 }
 ;
 
 fast_byte_arg_list: WORD
 {
-    $$ = driver.init_arg_list(dods_byte(strtol($1.c_str(), 0, 0)));
+    $$ = evaluator.init_arg_list(dods_byte(strtol($1.c_str(), 0, 0)));
 }
 | fast_byte_arg_list "," WORD
 {
@@ -313,7 +315,7 @@ fast_byte_arg_list: WORD
 
 fast_int8_arg_list: WORD
 {
-    $$ = driver.init_arg_list(dods_int8(strtol($1.c_str(), 0, 0)));
+    $$ = evaluator.init_arg_list(dods_int8(strtol($1.c_str(), 0, 0)));
 }
 | fast_int8_arg_list "," WORD
 {
@@ -324,7 +326,7 @@ fast_int8_arg_list: WORD
 
 fast_uint16_arg_list: WORD
 {
-    $$ = driver.init_arg_list(dods_uint16(strtol($1.c_str(), 0, 0)));
+    $$ = evaluator.init_arg_list(dods_uint16(strtol($1.c_str(), 0, 0)));
 }
 | fast_uint16_arg_list "," WORD
 {
@@ -335,7 +337,7 @@ fast_uint16_arg_list: WORD
 
 fast_int16_arg_list: WORD
 {
-    $$ = driver.init_arg_list(dods_int16(strtol($1.c_str(), 0, 0)));
+    $$ = evaluator.init_arg_list(dods_int16(strtol($1.c_str(), 0, 0)));
 }
 | fast_int16_arg_list "," WORD
 {
@@ -346,7 +348,7 @@ fast_int16_arg_list: WORD
 
 fast_uint32_arg_list: WORD
 {
-    $$ = driver.init_arg_list(dods_uint32(strtoul($1.c_str(), 0, 0)));
+    $$ = evaluator.init_arg_list(dods_uint32(strtoul($1.c_str(), 0, 0)));
 }
 | fast_uint32_arg_list "," WORD
 {
@@ -356,7 +358,7 @@ fast_uint32_arg_list: WORD
 ;
 fast_int32_arg_list: WORD
 {
-    $$ = driver.init_arg_list(dods_int32(strtol($1.c_str(), 0, 0)));
+    $$ = evaluator.init_arg_list(dods_int32(strtol($1.c_str(), 0, 0)));
 }
 | fast_int32_arg_list "," WORD
 {
@@ -367,7 +369,7 @@ fast_int32_arg_list: WORD
 
 fast_uint64_arg_list: WORD
 {
-    $$ = driver.init_arg_list(dods_uint64(strtoull($1.c_str(), 0, 0)));
+    $$ = evaluator.init_arg_list(dods_uint64(strtoull($1.c_str(), 0, 0)));
 }
 | fast_uint64_arg_list "," WORD
 {
@@ -378,7 +380,7 @@ fast_uint64_arg_list: WORD
 
 fast_int64_arg_list: WORD
 {
-    $$ = driver.init_arg_list(dods_int64(strtoll($1.c_str(), 0, 0)));
+    $$ = evaluator.init_arg_list(dods_int64(strtoll($1.c_str(), 0, 0)));
 }
 | fast_int64_arg_list "," WORD
 {
@@ -392,7 +394,7 @@ fast_int64_arg_list: WORD
 // when filters are added to the CE, but this will work for now.
 fast_float32_arg_list: path
 {
-    $$ = driver.init_arg_list(dods_float32(strtof($1.c_str(), 0)));
+    $$ = evaluator.init_arg_list(dods_float32(strtof($1.c_str(), 0)));
 }
 | fast_float32_arg_list "," path
 {
@@ -403,7 +405,7 @@ fast_float32_arg_list: path
 
 fast_float64_arg_list: path
 {
-    $$ = driver.init_arg_list(dods_float64(strtod($1.c_str(), 0)));
+    $$ = evaluator.init_arg_list(dods_float64(strtod($1.c_str(), 0)));
 }
 | fast_float64_arg_list "," path
 {
@@ -474,7 +476,7 @@ name : WORD
 void
 libdap::D4FunctionParser::error(const location_type &l, const std::string &m)
 {
-    driver.error(l, m);
+    evaluator.error(l, m);
 }
 
 /* include for access to scanner.yylex */
@@ -483,9 +485,9 @@ libdap::D4FunctionParser::error(const location_type &l, const std::string &m)
 static int yylex(libdap::D4FunctionParser::semantic_type *yylval,
                  libdap::location *loc,
                  libdap::D4FunctionScanner &scanner,
-                 libdap::D4FunctionDriver &driver)
+                 libdap::D4FunctionEvaluator &evaluator)
 {
-    if (driver.trace_scanning())
+    if (evaluator.trace_scanning())
         scanner.set_debug(true);
     
     return( scanner.yylex(yylval, loc) );

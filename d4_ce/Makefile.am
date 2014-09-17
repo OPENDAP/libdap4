@@ -16,11 +16,11 @@ CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 noinst_LTLIBRARIES = libd4_ce_parser.la
-pkginclude_HEADERS = D4CEDriver.h
+pkginclude_HEADERS = D4ConstraintEvaluator.h D4FunctionEvaluator.h
 
 libd4_ce_parser_la_SOURCES =  \
-	D4CEDriver.cc D4CEDriver.h D4CEScanner.h \
-	D4FunctionDriver.cc D4FunctionDriver.h D4FunctionScanner.h \
+	D4ConstraintEvaluator.cc D4ConstraintEvaluator.h D4CEScanner.h \
+	D4FunctionEvaluator.cc D4FunctionEvaluator.h D4FunctionScanner.h \
 	d4_ce_parser.tab.cc d4_ce_parser.tab.hh lex.d4_ce.cc \
 	d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc \
 	location.hh position.hh stack.hh 

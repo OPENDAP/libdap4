@@ -26,50 +26,18 @@
 
 #include <signal.h>
 #include <unistd.h>
-#include <sys/stat.h>
-#include <uuid/uuid.h>  // used to build CID header value for data ddx
-#ifndef WIN32
-#include <sys/wait.h>
-#else
-#include <io.h>
-#include <fcntl.h>
-#include <process.h>
-#endif
-
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <fstream>
-//#include <algorithm>
-
-#include <cstring>
-#include <ctime>
-
-//#define DODS_DEBUG
-
-#include "DAS.h"
-#include "DDS.h"
-
-#include "ConstraintEvaluator.h"
-#include "DDXParserSAX2.h"
-#include "Ancillary.h"
-#include "XDRStreamMarshaller.h"
-#include "XDRFileUnMarshaller.h"
 
 #include "DMR.h"
 #include "D4Group.h"
 #include "XMLWriter.h"
 #include "D4StreamMarshaller.h"
 #include "chunked_ostream.h"
-#include "chunked_istream.h"
 
-#include "D4CEDriver.h"
-#include "D4FunctionDriver.h"
+#include "D4ConstraintEvaluator.h"
+//#include "D4FunctionEvaluator.h"
 
-#include "debug.h"
 #include "mime_util.h"	// for last_modified_time() and rfc_822_date()
 #include "escaping.h"
-#include "util.h"
 
 #ifndef WIN32
 #include "SignalHandler.h"
@@ -84,8 +52,6 @@ const std::string CRLF = "\r\n";             // Change here, expr-test.cc/dmr-te
 using namespace std;
 using namespace libdap;
 
-/** Called when initializing a D4ResponseBuilder that's not going to be passed
- command line arguments. */
 void D4ResponseBuilder::initialize()
 {
 	// Set default values. Don't use the C++ constructor initialization so
@@ -93,7 +59,7 @@ void D4ResponseBuilder::initialize()
 	d_dataset = "";
 	d_timeout = 0;
 
-	d_default_protocol = DAP_PROTOCOL_VERSION;
+	d_default_protocol = "4.0"; // DAP_PROTOCOL_VERSION;
 }
 
 D4ResponseBuilder::~D4ResponseBuilder()
@@ -158,7 +124,7 @@ void D4ResponseBuilder::send_dmr(ostream &out, DMR &dmr, bool with_mime_headers,
 	out << xml.get_doc() << flush;
 }
 
-void D4ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_headers, bool constrained)
+void D4ResponseBuilder::send_dap(ostream &out, DMR &dmr, bool with_mime_headers, bool constrained)
 {
 	try {
 		// Set up the alarm.
@@ -176,7 +142,7 @@ void D4ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_hea
 
 	    // Write the DMR
 	    XMLWriter xml;
-	    dmr.print_dap4(xml, constrained /*!d_dap2ce.empty()*/);
+	    dmr.print_dap4(xml, constrained);
 
 	    // now make the chunked output stream; set the size to be at least chunk_size
 	    // but make sure that the whole of the xml plus the CRLF can fit in the first
@@ -188,7 +154,7 @@ void D4ResponseBuilder::send_data_dmr(ostream &out, DMR &dmr, bool with_mime_hea
 
 	    // Write the data, chunked with checksums
 	    D4StreamMarshaller m(cos);
-	    dmr.root()->serialize(m, dmr, constrained /*!d_dap2ce.empty()*/);
+	    dmr.root()->serialize(m, dmr, constrained);
 
 		out << flush;
 

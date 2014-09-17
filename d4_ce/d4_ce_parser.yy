@@ -45,9 +45,9 @@
 // %define api.prefix { d4_ce }
 
 %code requires {
-#include "D4CEDriver.h"
+#include "D4ConstraintEvaluator.h"
 namespace libdap {
-    //class D4CEDriver;
+    //class D4ConstraintEvaluator;
     class D4CEScanner;
 }
 
@@ -58,8 +58,8 @@ namespace libdap {
 %lex-param   { D4CEScanner  &scanner  }
 %parse-param { D4CEScanner  &scanner  }
 
-%lex-param   { D4CEDriver  &driver  }
-%parse-param { D4CEDriver  &driver  }
+%lex-param   { D4ConstraintEvaluator  &driver  }
+%parse-param { D4ConstraintEvaluator  &driver  }
 
 %locations
 %initial-action
@@ -81,13 +81,13 @@ namespace libdap {
    #include "D4Group.h"
 
    /* include for all driver functions */
-   #include "D4CEDriver.h"
+   #include "D4ConstraintEvaluator.h"
 
    /* this is silly, but I can't figure out a way around */
    static int yylex(libdap::D4CEParser::semantic_type *yylval,
                     libdap::location *loc,
                     libdap::D4CEScanner  &scanner,
-                    libdap::D4CEDriver   &driver);
+                    libdap::D4ConstraintEvaluator   &driver);
 
 }
 
@@ -97,7 +97,7 @@ namespace libdap {
 
 %type <bool> predicate filter fields indexes subset clause clauses dimension dimensions
 %type <std::string> id path group name
-%type <libdap::D4CEDriver::index> index
+%type <libdap::D4ConstraintEvaluator::index> index
 
 %token 
     END  0  "end of file"
@@ -274,7 +274,7 @@ fields
 // | fields indexes { $$ = true; }
 ;
 
-// push_index stores the index in the D4CEDriver
+// push_index stores the index in the D4ConstraintEvaluator
 indexes : index 
 { 
     driver.push_index($1); 
@@ -401,7 +401,7 @@ libdap::D4CEParser::error(const location_type &l, const std::string &m)
 static int yylex(libdap::D4CEParser::semantic_type *yylval,
                  libdap::location *loc,
                  libdap::D4CEScanner &scanner,
-                 libdap::D4CEDriver &driver)
+                 libdap::D4ConstraintEvaluator &driver)
 {
     if (driver.trace_scanning())
         scanner.set_debug(true);
