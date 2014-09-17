@@ -176,11 +176,11 @@ send_data(DMR *dataset, const string &constraint, const string &function, bool s
 
 			// Variables can use Dimensions and Enumerations, so those need to be copied
 			// from the source dataset to the result. NB: The variables that refer to these
-			// use weak pointers. So
+			// use weak pointers.
 
 			// Make a set of D4Dimensions. For each variable in 'function_result', look
 			// for its dimensions in 'dataset' (by name) and add a pointer to those to the
-			// set. Then copy all the stuff int he set into the root group of 'function_
+			// set. Then copy all the stuff in the set into the root group of 'function_
 			// result.'
 			set<D4Dimension*> dim_set;
 			D4Group *root = function_result->root();
@@ -200,6 +200,7 @@ send_data(DMR *dataset, const string &constraint, const string &function, bool s
 				// TODO Use reference counted pointers for all of this stuff!!
 				root->dims()->add_dim_nocopy(*i);
 			}
+
 			// Now lets do the enumerations....
 			set<D4EnumDef*> enum_def_set;
 			for (Constructor::Vars_iter i = root->var_begin(), ie = root->var_end(); i != ie; ++i) {
