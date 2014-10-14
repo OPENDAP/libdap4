@@ -109,31 +109,27 @@ public:
 	 */
 	virtual bool canOperateOn(DMR &) { return true; }
 
+	/**
+	 * Set the C function pointer for this function object.
+	 * @note This does not alter any of the other function pointers,
+	 * so the same name can be used for all four different kinds of
+	 * functions without conflict.
+	 *
+	 * @param bf
+	 */
 	void setFunction(bool_func bf) {
 		d_bool_func = bf;
-		d_btp_func  = 0;
-		d_proj_func = 0;
-		d_d4_function = 0;
 	}
 
 	void setFunction(btp_func btp) {
-		d_bool_func = 0;
 		d_btp_func  = btp;
-		d_proj_func = 0;
-		d_d4_function = 0;
 	}
 
 	void setFunction(proj_func pf) {
-		d_bool_func = 0;
-		d_btp_func  = 0;
 		d_proj_func = pf;
-		d_d4_function = 0;
 	}
 
 	void setFunction(D4Function pf) {
-		d_bool_func = 0;
-		d_btp_func  = 0;
-		d_proj_func = 0;
 		d_d4_function = pf;
 	}
 

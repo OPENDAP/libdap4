@@ -46,7 +46,7 @@ private:
 
     std::vector<BaseType *> constants;// List of temporary objects
 
-    ServerFunctionsList *d_functions_list;  // Know external functions from
+    ServerFunctionsList *d_functions_list;  // Known external functions from
                                             // modules
 
     // The default versions of these methods will break this class. Because
