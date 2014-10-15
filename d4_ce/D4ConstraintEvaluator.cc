@@ -48,16 +48,15 @@ bool D4ConstraintEvaluator::parse(const std::string &expr)
 	d_expr = expr;	// set for error messages. See the %initial-action section of .yy
 
 	std::istringstream iss(expr);
-	D4CEScanner *scanner = new D4CEScanner(iss);
-
-	D4CEParser *parser = new D4CEParser(*scanner, *this /* driver */);
+	D4CEScanner scanner(iss);
+	D4CEParser parser(scanner, *this /* driver */);
 
 	if (trace_parsing()) {
-		parser->set_debug_level(1);
-		parser->set_debug_stream(std::cerr);
+		parser.set_debug_level(1);
+		parser.set_debug_stream(std::cerr);
 	}
 
-	return parser->parse() == 0;
+	return parser.parse() == 0;
 }
 
 #if 0

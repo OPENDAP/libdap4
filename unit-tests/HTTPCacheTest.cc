@@ -827,7 +827,7 @@ public:
             pc->d_folder_size = pc->d_total_size / 10;
             pc->d_gc_buffer = pc->d_total_size / 10;
 
-            // Thie cache should start empty
+            // The cache should start empty
             CPPUNIT_ASSERT(pc->d_http_cache_table->d_current_size == 0);
 
             // Get a url

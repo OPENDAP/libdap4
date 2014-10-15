@@ -59,6 +59,16 @@ using namespace std;
 
 namespace libdap {
 
+Array::dimension::dimension(D4Dimension *d) : dim(d), use_sdim_for_slice(true) {
+	size = d->size();
+	name = d->name();
+
+    start = 0;
+    stop = size - 1;
+    stride = 1;
+    c_size = size;
+}
+
 void
 Array::_duplicate(const Array &a)
 {

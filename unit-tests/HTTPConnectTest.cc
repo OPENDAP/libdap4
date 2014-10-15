@@ -103,7 +103,9 @@ class HTTPConnectTest: public TestFixture {
         // above URL. The values below much match the etag and last-modified
         // time returned by the server. Run this test with DODS_DEBUG defined
         // to see the values it's returning.
-        etag = "\"a10df-157-139c2680\""; // a10df-157-139c2680a
+        // On 10/13/14 we moved to a new httpd and the etag value changed.
+        // jhrg 10/14/14
+        etag = "\"2a008e-157-3fbcd139c2680\""; //\"a10df-157-139c2680\""; // a10df-157-139c2680a
         lm = "Wed, 13 Jul 2005 19:32:26 GMT";
 
         localhost_pw_url =
@@ -172,6 +174,7 @@ class HTTPConnectTest: public TestFixture {
             DBG(cerr << "If modified since test, status: " << status << endl);
             DBG(copy(resp_h->begin(), resp_h->end(),
                      ostream_iterator < string > (cerr, "\n")));
+            DBG(cerr << endl);
             CPPUNIT_ASSERT(status == 304);
 
             // Now test an etag
@@ -183,6 +186,7 @@ class HTTPConnectTest: public TestFixture {
             DBG(cerr << "If none match test, status: " << status << endl);
             DBG(copy(resp_h->begin(), resp_h->end(),
                      ostream_iterator < string > (cerr, "\n")));
+            DBG(cerr << endl);
             CPPUNIT_ASSERT(status == 304);
 
             // now test a combined etag and time4

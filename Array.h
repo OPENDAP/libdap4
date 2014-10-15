@@ -48,13 +48,15 @@
 #include "Vector.h"
 #endif
 
-#include "D4Dimensions.h"
+//#include "D4Dimensions.h"
 
 namespace libdap
 {
 class D4Group;
 class D4Maps;
 class XMLWriter;
+class D4Dimension;
+class D4Dimensions;
 
 const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
@@ -135,7 +137,7 @@ public:
 
         D4Dimension *dim; ///< If not null, a weak pointer to the D4Dimension
 
-        // when a DMR is printed for a data reponse, if an array uses shared
+        // when a DMR is printed for a data response, if an array uses shared
         // dimensions and those sdims have been sliced, make sure to use those
         // and get the syntax correct. That's what this field does - in every
         // case the array records the sizes of its dimensions and their slices
@@ -163,6 +165,8 @@ public:
             c_size = size;
         }
 
+        dimension(D4Dimension *d);
+#if 0
         dimension(D4Dimension *d) : dim(d), use_sdim_for_slice(true) {
         	size = d->size();
         	name = d->name();
@@ -172,6 +176,7 @@ public:
             stride = 1;
             c_size = size;
         }
+#endif
     };
 
     D4Maps *d_maps;

@@ -66,16 +66,15 @@ bool D4FunctionEvaluator::parse(const std::string &expr)
 	d_expr = expr;	// set for error messages. See the %initial-action section of .yy
 
 	std::istringstream iss(expr);
-	D4FunctionScanner *scanner = new D4FunctionScanner(iss);
-
-	D4FunctionParser *parser = new D4FunctionParser(*scanner, *this /* driver */);
+	D4FunctionScanner scanner(iss);
+	D4FunctionParser parser(scanner, *this /* driver */);
 
 	if (trace_parsing()) {
-		parser->set_debug_level(1);
-		parser->set_debug_stream(std::cerr);
+		parser.set_debug_level(1);
+		parser.set_debug_stream(std::cerr);
 	}
 
-	return parser->parse() == 0;
+	return parser.parse() == 0;
 }
 
 /**
