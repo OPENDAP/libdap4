@@ -56,7 +56,7 @@ void D4Group::m_duplicate(const D4Group &g)
 
 	// dims; deep copy, this is the parent
 	if (g.d_dims) {
-		d_dims = new D4Dimensions(*g.d_dims);
+		d_dims = new D4Dimensions(*(g.d_dims));
 		d_dims->set_parent(this);
 	}
 

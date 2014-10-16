@@ -42,7 +42,7 @@ class D4Dimension {
     string d_name;
     unsigned long d_size;
 
-    D4Dimensions *d_parent;	// This is used to get the Dimensions and then Group object
+    D4Dimensions *d_parent;	// This is used to get the Dimensions and then the Group object
 
     bool d_constrained;
     unsigned long long d_c_start, d_c_stride, d_c_stop;

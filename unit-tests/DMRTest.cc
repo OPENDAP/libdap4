@@ -48,6 +48,7 @@
 #include "DMR.h"
 #include "XMLWriter.h"
 #include "D4BaseTypeFactory.h"
+#include "D4ParserSax2.h"
 
 #include "GNURegex.h"
 #include "GetOpt.h"
@@ -153,6 +154,8 @@ public:
 
     CPPUNIT_TEST(test_copy_ctor);
     CPPUNIT_TEST(test_copy_ctor_2);
+    CPPUNIT_TEST(test_copy_ctor_3);
+    CPPUNIT_TEST(test_copy_ctor_4);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -228,6 +231,56 @@ public:
 		CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
     }
+
+    // Test the grid/coverage and copy ctor code
+    void test_copy_ctor_3() {
+    	DMR *dmr = build_dmr("coads_climatology.nc.dds", "coads_climatology.nc.das");
+    	DMR *dmr_2 = new DMR(*dmr);
+
+		XMLWriter xml;
+		dmr->print_dap4(xml);
+		string dmr_src = string(xml.get_doc());
+		DBG(cerr << "DMR SRC: " << endl << dmr_src << endl);
+
+		XMLWriter xml2;
+		dmr_2->print_dap4(xml2);
+		string dmr_dest = string(xml2.get_doc());
+		DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
+
+		delete dmr;
+		delete dmr_2;
+		CPPUNIT_ASSERT(dmr_src == dmr_dest);
+
+    }
+
+    // Make the same test as above, but bypass the DMR ctor that uses a DDS object.
+    void test_copy_ctor_4() {
+    	D4BaseTypeFactory factory;
+    	DMR *dmr = new DMR(&factory, "coads");
+
+    	string prefix = string(TEST_SRC_DIR) + "/D4-xml/coads_climatology.nc.xml";
+    	ifstream ifs(prefix.c_str());
+    	D4ParserSax2 parser;
+    	parser.intern(ifs, dmr);
+
+    	DMR *dmr_2 = new DMR(*dmr);
+
+		XMLWriter xml;
+		dmr->print_dap4(xml);
+		string dmr_src = string(xml.get_doc());
+		DBG(cerr << "DMR SRC: " << endl << dmr_src << endl);
+
+		XMLWriter xml2;
+		dmr_2->print_dap4(xml2);
+		string dmr_dest = string(xml2.get_doc());
+		DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
+
+		delete dmr;
+		delete dmr_2;
+		CPPUNIT_ASSERT(dmr_src == dmr_dest);
+
+    }
+
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DMRTest);
