@@ -97,7 +97,7 @@ class HTTPConnectTest: public TestFixture {
         // above URL. The values below much match the etag and last-modified
         // time returned by the server. Run this test with DODS_DEBUG defined
         // to see the values it's returning.
-        etag = "\"a10df-157-139c2680\""; // a10df-157-139c2680a
+	etag = "\"2a008e-157-3fbcd139c2680\""; //\"a10df-157-139c2680\""; // a10df-157-139c2680a
         lm = "Wed, 13 Jul 2005 19:32:26 GMT";
 
         localhost_pw_url =
