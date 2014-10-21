@@ -47,7 +47,6 @@
 %code requires {
 #include "D4ConstraintEvaluator.h"
 namespace libdap {
-    //class D4ConstraintEvaluator;
     class D4CEScanner;
 }
 
