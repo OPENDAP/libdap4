@@ -1,0 +1,131 @@
+{
+   AllocateObject2
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:class_createInstance
+   fun:__CFAllocateObject2
+}
+{
+   class_createInstance
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:class_createInstance
+}
+{
+   NXHashInsert
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc_zone_calloc
+   fun:NXHashInsert
+}
+{
+   read_images
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc_zone_realloc
+   fun:_ZL29addUnattachedCategoryForClassP10category_tP10objc_classP12_header_info
+   fun:_read_images
+}
+{
+   NSAllocateObject
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:class_createInstance
+   fun:NSAllocateObject
+}
+{
+   CFBasicHashCreate
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:CFBasicHashCreate
+}
+{
+   xmlNewRMutex
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:xmlNewRMutex
+}
+{
+   _CFRuntimeCreateInstance
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+}
+{
+   _read_images
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc_zone_realloc
+   fun:_ZL29addUnattachedCategoryForClassP10category_tP10objc_classP12_header_info
+   fun:_read_images
+}
+{
+   load_images
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:__NSSetCStringCharToUnichar
+   fun:_NSInitializePlatform
+   fun:call_load_methods
+   fun:load_images
+}
+{
+   xmlInitCharEncodingHandlers
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:xmlInitCharEncodingHandlers
+}
+{
+   NXCreateMapTableFromZone
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc_zone_malloc
+   fun:NXCreateMapTableFromZone
+}
+{
+   fwrite
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:__smakebuf
+   fun:__swsetup
+   fun:__sfvwrite
+   fun:fwrite
+}
+{
+   atexit_register
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:atexit_register
+}
+{
+   NXMapInsert
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc_zone_malloc
+   fun:_ZL12_NXMapRehashP11_NXMapTable
+   fun:NXMapInsert
+}
+{
+   DenseMapInfo
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc_zone_malloc
+   fun:_ZN4objc8DenseMapIP11objc_objectmLb1ENS_12DenseMapInfoIS2_EEE4growEj
+}
+{
+   xmlNewMutex
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:xmlNewMutex
+}
