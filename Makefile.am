@@ -1,6 +1,6 @@
 # Build libdap, libtest-types.a, getdap
 
-AUTOMAKE_OPTIONS = foreign check-news
+AUTOMAKE_OPTIONS = foreign check-news subdir-objects
 ACLOCAL_AMFLAGS = -I conf -I gl/m4
 
 aclocaldir=$(datadir)/aclocal
