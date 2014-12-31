@@ -23,10 +23,12 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
 
 #include <string>
 
 #include "BaseType.h"
+#include "Type.h"
 
 #include "Byte.h"
 #include "Int8.h"
@@ -34,19 +36,24 @@
 #include "UInt16.h"
 #include "Int32.h"
 #include "UInt32.h"
+
 #include "Int64.h"
 #include "UInt64.h"
 
 #include "Float32.h"
 #include "Float64.h"
 
+#include "D4Enum.h"
+
 #include "Str.h"
 #include "Url.h"
 
+#include "D4Opaque.h"
+
 #include "Array.h"
+
 #include "Structure.h"
-#include "Sequence.h"
-#include "Grid.h"
+#include "D4Sequence.h"
 
 #include "D4Group.h"
 
@@ -55,10 +62,79 @@
 
 namespace libdap {
 
+BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
+{
+    switch (t) {
+        case dods_byte_c:
+            return NewByte(name);
+        case dods_char_c:
+        	return NewChar(name);
+        case dods_uint8_c:
+            return NewUInt8(name);
+        case dods_int8_c:
+            return NewInt8(name);
+
+        case dods_int16_c:
+            return NewInt16(name);
+        case dods_uint16_c:
+            return NewUInt16(name);
+        case dods_int32_c:
+            return NewInt32(name);
+        case dods_uint32_c:
+            return NewUInt32(name);
+
+        case dods_int64_c:
+            return NewInt64(name);
+        case dods_uint64_c:
+            return NewUInt64(name);
+
+        case dods_float32_c:
+            return NewFloat32(name);
+        case dods_float64_c:
+            return NewFloat64(name);
+
+        case dods_enum_c:
+            return NewEnum(name);
+
+        case dods_str_c:
+            return NewStr(name);
+        case dods_url_c:
+            return NewURL(name);
+
+        case dods_opaque_c:
+            return NewOpaque(name);
+
+        case dods_structure_c:
+            return NewStructure(name);
+
+        case dods_sequence_c:
+            return NewD4Sequence(name);
+
+        case dods_array_c:
+            return NewArray(name);
+
+        case dods_group_c:
+            return NewGroup(name);
+
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Unimplemented type in DAP4");
+    }
+}
+
 Byte *
 D4BaseTypeFactory::NewByte(const string &n) const
 {
     return new Byte(n);
+}
+
+// Use the type constants specific to Char and UInt8 so the print reps will
+// match the server's idea of the types.
+Byte *
+D4BaseTypeFactory::NewChar(const string &n) const
+{
+    Byte *b = new Byte(n);
+    b->set_type(dods_char_c);
+    return b;
 }
 
 Byte *
@@ -125,6 +201,20 @@ D4BaseTypeFactory::NewFloat64(const string &n) const
     return new Float64(n);
 }
 
+/**
+ * Enums need a name and the name of an enumeration that was defined by the
+ * dataset. If the later is not known, it must be set before the enum is used.
+ * @param name
+ * @param enum_name
+ * @return
+ */
+D4Enum *
+D4BaseTypeFactory::NewEnum(const string &name, Type type) const
+{
+    return new D4Enum(name, type);
+}
+
+
 Str *
 D4BaseTypeFactory::NewStr(const string &n) const
 {
@@ -137,18 +227,24 @@ D4BaseTypeFactory::NewUrl(const string &n) const
     return new Url(n);
 }
 
+D4Opaque *
+D4BaseTypeFactory::NewOpaque(const string &n) const
+{
+    return new D4Opaque(n);
+}
+
+/** Note that this method is called NewURL - URL in caps.
+ */
 Url *
 D4BaseTypeFactory::NewURL(const string &n) const
 {
-    Url *u = new Url(n);
-    u->set_type(dods_url4_c);
-    return u;
+    return new Url(n);
 }
 
 Array *
-D4BaseTypeFactory::NewArray(const string &n , BaseType *v) const
+D4BaseTypeFactory::NewArray(const string &n, BaseType *v) const
 {
-    return new Array(n, v);
+	return new Array(n, v, true /* is_dap4 */);
 }
 
 Structure *
@@ -157,23 +253,16 @@ D4BaseTypeFactory::NewStructure(const string &n) const
     return new Structure(n);
 }
 
+D4Sequence *
+D4BaseTypeFactory::NewD4Sequence(const string &n) const
+{
+	return new D4Sequence(n);
+}
+
 D4Group *
 D4BaseTypeFactory::NewGroup(const string &n) const
 {
     return new D4Group(n);
-}
-
-Sequence *
-D4BaseTypeFactory::NewSequence(const string &n) const
-{
-    DBG(cerr << "Inside DAP4BaseTypeFactory::NewSequence" << endl);
-    return new Sequence(n);
-}
-
-Grid *
-D4BaseTypeFactory::NewGrid(const string &n) const
-{
-    return new Grid(n);
 }
 
 } // namespace libdap

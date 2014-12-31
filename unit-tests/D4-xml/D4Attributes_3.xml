@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Attribute name="first" type="Byte">
+    <Value>1</Value>
+    <Value>2</Value>
+</Attribute>
+<Attribute name="second" type="Int32">
+    <Value>10000</Value>
+</Attribute>
+<Attribute name="container_1" type="Container">
+    <Attribute name="color" type="String">
+        <Value>red</Value>
+        <Value>blue</Value>
+        <Value>green</Value>
+    </Attribute>
+</Attribute>
+<Attribute name="container_2" type="Container">
+    <Attribute name="control" type="Int32">
+        <Value>10000</Value>
+    </Attribute>
+    <Attribute name="container_1" type="Container">
+        <Attribute name="color" type="String">
+            <Value>red</Value>
+            <Value>blue</Value>
+            <Value>green</Value>
+        </Attribute>
+    </Attribute>
+</Attribute>

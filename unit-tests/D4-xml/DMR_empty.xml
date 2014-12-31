@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- This is the smallest DMR possible -->
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" 
+    xml:base="file:DMR_empty.xml"
+    name="DMR_empty" dapVersion="4.0" dmrVersion="1.0">
+    
+</Dataset>

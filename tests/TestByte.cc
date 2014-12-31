@@ -84,13 +84,20 @@ TestByte::_duplicate(const TestByte &ts)
 
 TestByte::TestByte(const string &n) : Byte(n), d_series_values(false)
 {
-    d_buf = 255;
+	// For some reason, d_buf was set to '23' in the version checked in on
+	// 9/12/13, but that seems to break the EXPR regression tests and '255'
+	// seems to be the correct value. Since '23' is an odd choice, I'm leaving
+	// this comment as a reminder should this information be useful in the future.
+	// jhrg 10/1/13
+    // d_buf = 23;
+	d_buf = 255;
 }
 
 TestByte::TestByte(const string &n, const string &d)
     : Byte(n, d), d_series_values(false)
 {
-    d_buf = 255;
+    // d_buf = 23;
+	d_buf = 255;
 }
 
 BaseType *

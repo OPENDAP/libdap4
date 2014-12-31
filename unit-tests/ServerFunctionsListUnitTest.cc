@@ -46,7 +46,7 @@ static bool debug = false;
 #define DBG(x) do { if (debug) (x); } while(false);
 
 
-void sflut(int argc, libdap::BaseType *argv[], libdap::DDS &dds, libdap::BaseType **btpp)
+void sflut(int, libdap::BaseType *[], libdap::DDS &, libdap::BaseType **btpp)
 {
     string info = string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
             + "<function name=\"ugr4\" version=\"0.1\">\n"
@@ -122,7 +122,7 @@ public:
             return;
         }
 
-        for(int i=0; i<names->size() ;i++){
+        for(size_t i=0; i<names->size() ;i++){
             DBG(cerr <<  "   name["<< i << "]: "<< (*names)[i] << endl);
         }
     }

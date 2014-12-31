@@ -153,19 +153,19 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool override)
     // Check first for improper use.
     switch (signum) {
 #ifndef WIN32
-    case SIGHUP:
-    case SIGKILL:
-    case SIGUSR1:
-    case SIGUSR2:
-    case SIGPIPE:
-    case SIGALRM:
+        case SIGHUP:
+        case SIGKILL:
+        case SIGUSR1:
+        case SIGUSR2:
+        case SIGPIPE:
+        case SIGALRM:
 #endif
-    case SIGINT:
-    case SIGTERM: break;
+        case SIGINT:
+        case SIGTERM: break;
 
-    default: throw InternalErr(__FILE__, __LINE__,
-                                   string("Call to register_handler with unsupported signal (")
-                                   + long_to_string(signum) + string(")."));
+        default: throw InternalErr(__FILE__, __LINE__,
+                string("Call to register_handler with unsupported signal (")
+                + long_to_string(signum) + string(")."));
     }
 
     // Save the old EventHandler

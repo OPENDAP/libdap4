@@ -33,7 +33,6 @@
 //
 // jhrg 9/13/94
 
-
 #include "config.h"
 
 #include <algorithm>
@@ -41,6 +40,16 @@
 #include <sstream>
 
 #include "Array.h"
+
+#include "D4Attributes.h"
+#include "DMR.h"
+#include "D4Dimensions.h"
+#include "D4Maps.h"
+#include "D4Group.h"
+#include "D4EnumDefs.h"
+#include "D4Enum.h"
+#include "XMLWriter.h"
+
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
@@ -50,10 +59,22 @@ using namespace std;
 
 namespace libdap {
 
+Array::dimension::dimension(D4Dimension *d) : dim(d), use_sdim_for_slice(true) {
+	size = d->size();
+	name = d->name();
+
+    start = 0;
+    stop = size - 1;
+    stride = 1;
+    c_size = size;
+}
+
 void
 Array::_duplicate(const Array &a)
 {
     _shape = a._shape;
+    // Deep copy the Maps if they are being used.
+    d_maps = a.d_maps ? new D4Maps(*(a.d_maps)) : 0;
 }
 
 // The first method of calculating length works when only one dimension is
@@ -97,7 +118,8 @@ Array::update_length(int)
     in the Array. May be null and set later using add_var() or add_var_nocopy()
     @brief Array constructor
 */
-Array::Array(const string &n, BaseType *v) : Vector(n, 0, dods_array_c)
+Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */)
+	: Vector(n, 0, dods_array_c, is_dap4), d_maps(0)
 {
     add_var(v); // Vector::add_var() stores null if v is null
 }
@@ -115,10 +137,10 @@ Array::Array(const string &n, BaseType *v) : Vector(n, 0, dods_array_c)
     in the Array.
     @brief Array constructor
 */
-Array::Array(const string &n, const string &d, BaseType *v)
-    : Vector(n, d, 0, dods_array_c)
+Array::Array(const string &n, const string &d, BaseType *v, bool is_dap4 /* default:false */)
+    : Vector(n, d, 0, dods_array_c, is_dap4), d_maps(0)
 {
-    add_var(v); // Vector::add_var() stores null is v is null
+    add_var(v); // Vector::add_var() stores null if v is null
 }
 
 /** @brief The Array copy constructor. */
@@ -130,8 +152,7 @@ Array::Array(const Array &rhs) : Vector(rhs)
 /** @brief The Array destructor. */
 Array::~Array()
 {
-    DBG(cerr << "Entering ~Array (" << this << ")" << endl);
-    DBG(cerr << "Exiting ~Array" << endl);
+	delete d_maps;
 }
 
 BaseType *
@@ -151,6 +172,82 @@ Array::operator=(const Array &rhs)
     _duplicate(rhs);
 
     return *this;
+}
+
+BaseType *
+Array::transform_to_dap4(D4Group *root, Constructor */*container*/)
+{
+	Array *dest = static_cast<Array*>(ptr_duplicate());
+
+	// Process the Array's dimensions, making D4 shared dimensions for
+	// D2 dimensions that are named. If there is just a size, don't make
+	// a D4Dimension (In DAP4 you cannot share a dimension unless it has
+	// a name). jhrg 3/18/14
+
+	D4Dimensions *dims = root->dims();
+	for (Array::Dim_iter d = dest->dim_begin(), e = dest->dim_end(); d != e; ++d) {
+		if (!(*d).name.empty()) {
+			// If a D4Dimension with the name already exists, use it.
+			D4Dimension *d4_dim = dims->find_dim((*d).name);
+			if (!d4_dim) {
+				d4_dim = new D4Dimension((*d).name, (*d).size);
+				dims->add_dim_nocopy(d4_dim);
+			}
+			// TODO Revisit this decision. jhrg 3/18/14
+			// ...in case the name/size are different, make a unique D4Dimension
+			// but don't fiddle with the name. Not sure I like this idea, so I'm
+			// making the case explicit (could be rolled in to the block above).
+			// jhrg 3/18/14
+			//
+			// This is causing problems in the FITS handler because there are cases
+			// where two arrays have dimensions with the same name but different
+			// sizes. The deserializing code is using the first size listed, which is
+			// wrong in some cases. I'm going to try making this new D4Dimension using
+			// the dim name along with the variable name. jhrg 8/15/14
+			else if (d4_dim->size() != (unsigned long) (*d).size) {
+				d4_dim = new D4Dimension((*d).name + "_" + name(), (*d).size);
+				dims->add_dim_nocopy(d4_dim);
+			}
+			// At this point d4_dim's name and size == those of (*d) so just set
+			// the D4Dimension pointer so it matches the one in the D4Group.
+			(*d).dim = d4_dim;
+		}
+	}
+
+	// Copy the D2 attributes to D4 Attributes
+	dest->attributes()->transform_to_dap4(get_attr_table());
+
+	dest->set_is_dap4(true);
+
+	return dest;
+}
+
+/**
+ * Hackery that helps build a new D4Group from an old one. We need to re-wire the
+ * D4Dimension (note the lack of an 's' at then end) that the copied Array objects
+ * hold. This code does that. Note that these are 'weak pointers' so they should
+ * never be freed - the D4Group object will take care of that.
+ *
+ * @note The order of the D4Dimension instances matches in 'old_dims' and 'new_dims'.
+ *
+ * @param old_dims The Old D4Dimension objects (held in a D4Dimensions instance)
+ * @param new_dims The New D4Dimension objects.
+ */
+void
+Array::update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims)
+{
+	std::vector<dimension>::iterator i = _shape.begin(), e = _shape.end();
+	while (i != e) {
+		D4Dimensions::D4DimensionsIter old_i = old_dims->dim_begin(), old_e = old_dims->dim_end();
+		while (old_i != old_e) {
+			if ((*i).dim == *old_i) {
+				(*i).dim =  new_dims->find_dim((*old_i)->name());
+			}
+			++old_i;
+		}
+
+		++i;
+	}
 }
 
 /** @brief Add the BaseType pointer to this constructor type
@@ -180,10 +277,6 @@ Array::operator=(const Array &rhs)
 void
 Array::add_var(BaseType *v, Part)
 {
-#if 0
-    if (v && v->is_dap4_only_type())
-        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Array.");
-#endif
     // If 'v' is an Array, add the template instance to this object and
     // then copy the dimension information. Odd semantics; I wonder if this
     //is ever used. jhrg 6/13/12
@@ -206,10 +299,6 @@ Array::add_var(BaseType *v, Part)
 void
 Array::add_var_nocopy(BaseType *v, Part)
 {
-#if 0
-    if (v && v->is_dap4_only_type())
-        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Array.");
-#endif
     // If 'v' is an Array, add the template instance to this object and
     // then copy the dimension information. Odd semantics; I wonder if this
     //is ever used. jhrg 6/13/12
@@ -240,23 +329,21 @@ Array::add_var_nocopy(BaseType *v, Part)
     an empty string.
     @brief Add a dimension of a given size. */
 void
-Array::append_dim(int size, string name)
+Array::append_dim(int size, const string &name)
 {
-    dimension d;
-
-    // This is invariant
-    d.size = size;
-    d.name = www2id(name);
-
-    // this information changes with each constraint expression
-    d.start = 0;
-    d.stop = size - 1;
-    d.stride = 1;
-    d.c_size = size;
-
+    dimension d(size, www2id(name));
     _shape.push_back(d);
 
-    update_length(size);
+    update_length();
+}
+
+void
+Array::append_dim(D4Dimension *dim)
+{
+	dimension d(/*dim->size(), www2id(dim->name()),*/ dim);
+    _shape.push_back(d);
+
+    update_length();
 }
 
 /** Creates a new OUTER dimension (slowest varying in rowmajor)
@@ -267,22 +354,21 @@ Array::append_dim(int size, string name)
 void
 Array::prepend_dim(int size, const string& name/* = "" */)
 {
-  dimension d;
-
-  // This is invariant
-  d.size = size;
-  d.name = www2id(name);
-
-  // this information changes with each constraint expression
-  d.start = 0;
-  d.stop = size - 1;
-  d.stride = 1;
-  d.c_size = size;
-
+  dimension d(size, www2id(name));
   // Shifts the whole array, but it's tiny in general
   _shape.insert(_shape.begin(), d);
 
-  update_length(size); // the number is ignored...
+  update_length(); // the number is ignored...
+}
+
+void
+Array::prepend_dim(D4Dimension *dim)
+{
+  dimension d(/*dim->size(), www2id(dim->name()),*/ dim);
+  // Shifts the whole array, but it's tiny in general
+  _shape.insert(_shape.begin(), d);
+
+  update_length(); // the number is ignored...
 }
 
 /** Remove all the dimensions currently set for the Array. This also
@@ -310,7 +396,7 @@ Array::reset_constraint()
         (*i).stride = 1;
         (*i).c_size = (*i).size;
 
-        update_length((*i).size);
+        update_length();
     }
 }
 
@@ -352,7 +438,8 @@ specified do not match the array variable.";
     dimensions.
     @param start The start index of the constraint.
     @param stride The stride value of the constraint.
-    @param stop The stop index of the constraint.
+    @param stop The stop index of the constraint. A value of -1 indicates
+    'to the end' of the array.
     @exception Error Thrown if the any of values of start, stop or stride
     cannot be applied to this array. */
 void
@@ -383,7 +470,24 @@ Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 
     DBG(cerr << "add_constraint: c_size = " << d.c_size << endl);
 
-    update_length(d.c_size);
+    update_length();
+
+    d.use_sdim_for_slice = false;
+}
+
+void
+Array::add_constraint(Dim_iter i, D4Dimension *dim)
+{
+    dimension &d = *i ;
+
+    if (dim->constrained())
+    	add_constraint(i, dim->c_start(), dim->c_stride(), dim->c_stop());
+
+    dim->set_used_by_projected_var(true);
+
+	// In this case the value below overrides the value for use_sdim_for_slice
+	// set in the above call. jhrg 12/20/13
+	d.use_sdim_for_slice = true;
 }
 
 /** Returns an iterator to the first dimension of the Array. */
@@ -400,6 +504,8 @@ Array::dim_end()
     return _shape.end() ;
 }
 
+//TODO Many of these methods take a bool parameter that serves no use; remove.
+
 /** Return the total number of dimensions contained in the array.
     When <i>constrained</i> is TRUE, return the number of dimensions
     given the most recently evaluated constraint expression.
@@ -408,21 +514,10 @@ Array::dim_end()
     @param constrained A boolean flag to indicate whether the array is
     constrained or not.  Ignored.
 */
-
 unsigned int
 Array::dimensions(bool /*constrained*/)
 {
-#if 0
-	// TODO This could be _shape.end() - _shape.begin()
-    unsigned int dim = 0;
-    for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
-        dim++;
-    }
-
-    return dim;
-#endif
-
-    return _shape.end() - _shape.begin();
+    return _shape.size();
 }
 
 /** Return the size of the array dimension referred to by <i>i</i>.
@@ -554,13 +649,27 @@ Array::dimension_name(Dim_iter i)
     return (*i).name;
 }
 
+D4Dimension *
+Array::dimension_D4dim(Dim_iter i)
+{
+	return (!_shape.empty()) ? (*i).dim : 0;
+}
+
+D4Maps *
+Array::maps()
+{
+	if (!d_maps) d_maps = new D4Maps(this); 	// init with this as parent
+	return d_maps;
+}
+
+#if 0
 /**
  * @brief Returns the width of the data, in bytes.
  * @param constrained if true, return the size of the array in bytes taking into
  * account the current constraints on various dimensions. False by default.
  * @return The number of bytes needed to store the array values.
  */
-unsigned int Array::width(bool constrained)
+unsigned int Array::width(bool constrained) const
 {
 
 	if (constrained) {
@@ -576,6 +685,120 @@ unsigned int Array::width(bool constrained)
 		}
 		return length * var()->width(false);
 	}
+}
+#endif
+
+class PrintD4ArrayDimXMLWriter: public unary_function<Array::dimension&, void> {
+	XMLWriter &xml;
+	// Was this variable constrained using local/direct slicing? i.e., is d_local_constraint set?
+	// If so, don't use shared dimensions; instead emit Dim elements that are anonymous.
+	bool d_constrained;
+public:
+
+	PrintD4ArrayDimXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) { }
+
+	void operator()(Array::dimension &d)
+	{
+		// This duplicates code in D4Dimensions (where D4Dimension::print_dap4() is defined
+		// because of the need to print the constrained size of a dimension. I think that
+		// the constraint information has to be kept here and not in the dimension (since they
+		// are shared dims). Could hack print_dap4() to take the constrained size, however.
+		if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dim") < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
+
+		string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
+		// If there is a name, there must be a Dimension (named dimension) in scope
+		// so write its name but not its size.
+		if (!d_constrained && !name.empty()) {
+			if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*) name.c_str())
+					< 0) throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+		}
+		else if (d.use_sdim_for_slice) {
+			assert(!name.empty());
+			if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*) name.c_str())
+					< 0) throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+		}
+		else {
+			ostringstream size;
+			size << (d_constrained ? d.c_size : d.size);
+			if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "size",
+					(const xmlChar*) size.str().c_str()) < 0)
+				throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+		}
+
+		if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not end Dim element");
+	}
+};
+
+class PrintD4ConstructorVarXMLWriter: public unary_function<BaseType*, void> {
+	XMLWriter &xml;
+	bool d_constrained;
+public:
+	PrintD4ConstructorVarXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) { }
+
+	void operator()(BaseType *btp)
+	{
+		btp->print_dap4(xml, d_constrained);
+	}
+};
+
+class PrintD4MapXMLWriter: public unary_function<D4Map*, void> {
+	XMLWriter &xml;
+
+public:
+	PrintD4MapXMLWriter(XMLWriter &xml) : xml(xml) { }
+
+	void operator()(D4Map *m)
+	{
+		m->print_dap4(xml);
+	}
+};
+
+/**
+ * @brief Print the DAP4 representation of an array.
+ * @param xml
+ * @param constrained
+ */
+void
+Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/)
+{
+	if (constrained && !send_p()) return;
+
+	if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) var()->type_name().c_str()) < 0)
+		throw InternalErr(__FILE__, __LINE__, "Could not write " + type_name() + " element");
+
+	if (!name().empty())
+		if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+	// Hack job... Copied from D4Enum::print_xml_writer. jhrg 11/12/13
+	if (var()->type() == dods_enum_c) {
+		D4Enum *e = static_cast<D4Enum*>(var());
+		string path = e->enumeration()->name();
+		if (e->enumeration()->parent()) {
+			// print the FQN for the enum def; D4Group::FQN() includes the trailing '/'
+			path = static_cast<D4Group*>(e->enumeration()->parent()->parent())->FQN() + path;
+		}
+		if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "enum", (const xmlChar*)path.c_str()) < 0)
+			throw InternalErr(__FILE__, __LINE__, "Could not write attribute for enum");
+	}
+
+	if (prototype()->is_constructor_type()) {
+		Constructor &c = static_cast<Constructor&>(*prototype());
+		for_each(c.var_begin(), c.var_end(), PrintD4ConstructorVarXMLWriter(xml, constrained));
+		// bind2nd(mem_fun_ref(&BaseType::print_dap4), xml));
+	}
+
+	// Drop the local_constraint which is per-array and use a per-dimension on instead
+    for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml, constrained));
+
+	attributes()->print_dap4(xml);
+
+	for_each(maps()->map_begin(), maps()->map_end(), PrintD4MapXMLWriter(xml));
+
+	if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+		throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
 }
 
 /** Prints a declaration for the Array.  This is what appears in a
@@ -813,38 +1036,36 @@ Array::print_array(FILE *out, unsigned int index, unsigned int dims,
 
     @brief Print the value given the current constraint.
 */
-unsigned int
-Array::print_array(ostream &out, unsigned int index, unsigned int dims,
-                   unsigned int shape[])
+unsigned int Array::print_array(ostream &out, unsigned int index, unsigned int dims, unsigned int shape[])
 {
-    if (dims == 1) {
-	out << "{" ;
-        for (unsigned i = 0; i < shape[0] - 1; ++i) {
-            var(index++)->print_val(out, "", false);
-	    out << ", " ;
-        }
-        var(index++)->print_val(out, "", false);
-	out << "}" ;
+	if (dims == 1) {
+		out << "{";
+		for (unsigned i = 0; i < shape[0] - 1; ++i) {
+			var(index++)->print_val(out, "", false);
+			out << ", ";
+		}
+		var(index++)->print_val(out, "", false);
+		out << "}";
 
-        return index;
-    }
-    else {
-	out << "{" ;
-        // Fixed an off-by-one error in the following loop. Since the array
-        // length is shape[dims-1]-1 *and* since we want one less dimension
-        // than that, the correct limit on this loop is shape[dims-2]-1. From
-        // Todd Karakasian.
-        // The saga continues; the loop test should be `i < shape[0]-1'. jhrg
-        // 9/12/96.
-        for (unsigned i = 0; i < shape[0] - 1; ++i) {
-            index = print_array(out, index, dims - 1, shape + 1);
-	    out << "," ;
-        }
-        index = print_array(out, index, dims - 1, shape + 1);
-	out << "}" ;
+		return index;
+	}
+	else {
+		out << "{";
+		// Fixed an off-by-one error in the following loop. Since the array
+		// length is shape[dims-1]-1 *and* since we want one less dimension
+		// than that, the correct limit on this loop is shape[dims-2]-1. From
+		// Todd Karakasian.
+		// The saga continues; the loop test should be `i < shape[0]-1'. jhrg
+		// 9/12/96.
+		for (unsigned i = 0; i < shape[0] - 1; ++i) {
+			index = print_array(out, index, dims - 1, shape + 1);
+			out << ",";
+		}
+		index = print_array(out, index, dims - 1, shape + 1);
+		out << "}";
 
-        return index;
-    }
+		return index;
+	}
 }
 
 void

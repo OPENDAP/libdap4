@@ -67,6 +67,8 @@
 #include <string>
 
 #include "mime_util.h"
+#include "media_types.h"
+
 #include "Ancillary.h"
 #include "util.h"  // This supplies flush_stream for WIN32.
 #include "debug.h"
@@ -289,12 +291,28 @@ name_path(const string &path)
 //
 // Returns: false if the compression output filter was to be used but could
 // not be started, true otherwise.
-
+#if 0
 static const char *descrip[] =
-    {"unknown", "dods_das", "dods_dds", "dods_data",
-     "dods_error", "web_error", "dap4-ddx", "dap4-data", "dap4-error",
-     "dap4-data-ddx", "dods_ddx"
+    {"unknown", "dods_das", "dods_dds", "dods_data", "dods_ddx",
+     "dods_error", "web_error", "dap4-dmr", "dap4-data", "dap4-error"
     };
+#endif
+
+static const char *descrip[] = {
+"unknown_type",
+"dods_das",
+"dods_dds",
+"dods_data",
+"dods_ddx",       // This is the old XML DDS/DAS used prior to dap4
+"dods_data_ddx",  // This is used for caching data responses
+"dods_error",
+"web_error",
+
+"dap4_dmr",       // DAP4 metadata
+"dap4_data",      // The DMR with a data blob
+"dap4_error"      // The error response for DAP4
+};
+
 static const char *encoding[] =
     {"unknown", "deflate", "x-plain", "gzip", "binary"
     };
@@ -307,29 +325,10 @@ static const char *encoding[] =
 ObjectType
 get_type(const string &value)
 {
-    if ((value == "dods_das") | (value == "dods-das"))
-        return dods_das;
-    else if ((value == "dods_dds") | (value == "dods-dds"))
-        return dods_dds;
-    else if ((value == "dods_data") | (value == "dods-data"))
-        return dods_data;
-    else if ((value == "dods_error") | (value == "dods-error"))
-        return dods_error;
-    else if ((value == "web_error") | (value == "web-error"))
-        return web_error;
-    else if ((value == "dap4_ddx") | (value == "dap4-ddx"))
-        return dap4_ddx;
-    else if ((value == "dap4_data") | (value == "dap4-data"))
-        return dap4_data;
-    else if ((value == "dap4_error") | (value == "dap4-error"))
-        return dap4_error;
-    else if ((value == "dap4_data_ddx") | (value == "dap4-data-ddx"))
-        return dap4_data_ddx;
-    else if ((value == "dods_ddx") | (value == "dods-ddx"))
-        return dods_ddx;
-    else
-        return unknown_type;
+	return get_description_type(value);
 }
+
+// TODO Recode to use the constants in media_types.h. jhrg 11/12/13
 
 /** This function returns the ObjectType value that matches the given string.
     Modified to include tests for the descriptions that use hyphens in addition
@@ -339,28 +338,28 @@ get_type(const string &value)
 ObjectType
 get_description_type(const string &value)
 {
-    if ((value == "dods_das") | (value == "dods-das"))
+    if ((value == DAS1) || (value == "dods-das"))
         return dods_das;
-    else if ((value == "dods_dds") | (value == "dods-dds"))
+    else if ((value == "dods_dds") || (value == "dods-dds"))
         return dods_dds;
-    else if ((value == "dods_data") | (value == "dods-data"))
+    else if ((value == "dods_data") || (value == "dods-data"))
         return dods_data;
-    else if ((value == "dods_error") | (value == "dods-error"))
+    else if ((value == "dods_ddx") || (value == "dods-ddx"))
+        return dods_ddx;
+    else if ((value == "dods_data_ddx" || (value == "dods-data-ddx")))
+        return dods_data_ddx;
+    else if ((value == "dods_error") || (value == "dods-error"))
         return dods_error;
-    else if ((value == "web_error") | (value == "web-error"))
+    else if ((value == "web_error") || (value == "web-error"))
         return web_error;
-    else if ((value == "dods_ddx") | (value == "dods-ddx"))
-        return dods_ddx;
-    else if ((value == "dap4_ddx") | (value == "dap4-ddx"))
-        return dap4_ddx;
-    else if ((value == "dap4_data") | (value == "dap4-data"))
+
+    else if ((value == "dap4_dmr") || (value == "dap4-dmr") || (value == DMR_Content_Type))
+        return dap4_dmr;
+    else if ((value == "dap4_data") || (value == "dap4-data") || (value == DAP4_DATA_Content_Type))
         return dap4_data;
-    else if ((value == "dap4_error") | (value == "dap4-error"))
+    else if ((value == "dap4_error") || (value == "dap4-error"))
         return dap4_error;
-    else if ((value == "dap4_data_ddx") | (value == "dap4-data-ddx"))
-        return dap4_data_ddx;
-    else if ((value == "dods_ddx") | (value == "dods-ddx"))
-        return dods_ddx;
+
     else
         return unknown_type;
 }
@@ -424,8 +423,8 @@ set_mime_text(ostream &strm, ObjectType type, const string &ver,
     else
         strm << rfc822_date(t).c_str() << CRLF ;
 
-    if (type == dap4_ddx)
-        strm << "Content-Type: text/xml" << CRLF ;
+    if (type == dap4_dmr)
+        strm << "Content-Type: application/vnd.org.opendap.dap4.dataset-metadata+xml" << CRLF ;
     else
         strm << "Content-Type: text/plain" << CRLF ;
 
@@ -461,8 +460,8 @@ void set_mime_text(ostream &strm, ObjectType type, EncodingType enc, const time_
 {
     strm << "HTTP/1.0 200 OK" << CRLF;
 
-    strm << "XDODS-Server: " << DVR<< CRLF;
-    strm << "XOPeNDAP-Server: " << DVR<< CRLF;
+    strm << "XDODS-Server: " << DVR << CRLF;
+    strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
     if (protocol == "")
         strm << "XDAP: " << DAP_PROTOCOL_VERSION << CRLF;
@@ -478,8 +477,8 @@ void set_mime_text(ostream &strm, ObjectType type, EncodingType enc, const time_
     else
         strm << rfc822_date(t).c_str() << CRLF;
 
-    if (type == dap4_ddx)
-        strm << "Content-Type: text/xml" << CRLF;
+    if (type == dap4_dmr)
+        strm << "Content-Type: application/vnd.org.opendap.dap4.dataset-metadata+xml" << CRLF;
     else
         strm << "Content-Type: text/plain" << CRLF;
 
@@ -696,7 +695,7 @@ void set_mime_binary(ostream &strm, ObjectType type, EncodingType enc, const tim
     strm << "XDODS-Server: " << DVR << CRLF;
     strm << "XOPeNDAP-Server: " << DVR << CRLF;
 
-    if (protocol == "")
+    if (protocol.empty())
         strm << "XDAP: " << DAP_PROTOCOL_VERSION << CRLF;
     else
         strm << "XDAP: " << protocol << CRLF;
@@ -899,14 +898,16 @@ string get_next_mime_header(istream &in)
 void parse_mime_header(const string &header, string &name, string &value)
 {
     istringstream iss(header);
-    // Set downcase
-    char s[line_length];
-    iss.getline(s, 1023, ':');
-    name = s;
 
-    iss.ignore(1023, ' ');
-    iss.getline(s, 1023);
-    value = s;
+    size_t length = header.length() + 1;
+    vector<char> s(length);
+    //char s[line_length];
+    iss.getline(&s[0], length, ':');
+    name = &s[0];
+
+    iss.ignore(length, ' ');
+    iss.getline(&s[0], length);
+    value = &s[0];
 
     downcase(name);
     downcase(value);
@@ -1001,13 +1002,13 @@ void read_multipart_headers(FILE *in, const string &content_type, const ObjectTy
 		if (name == "content-type") {
 			ct = true;
 			if (value.find(content_type) == string::npos)
-				throw Error("Content-Type for this part of a DAP4 data response must be " + content_type + ".");
+				throw Error("Content-Type for this part of a DAP2 data ddx response must be " + content_type + ".");
 		}
 		else if (name == "content-description") {
 			cd = true;
 			if (get_description_type(value) != object_type)
 				throw Error(
-						"Content-Description for this part of a DAP4 data response must be dap4-ddx or dap4-data-ddx");
+						"Content-Description for this part of a DAP2 data ddx response must be dods-ddx or dods-data-ddx");
 		}
 		else if (name == "content-id") {
 			ci = true;
@@ -1038,8 +1039,7 @@ void read_multipart_headers(istream &in, const string &content_type, const Objec
 		else if (name == "content-description") {
 			cd = true;
 			if (get_description_type(value) != object_type)
-				throw Error(
-						"Content-Description for this part of a DAP4 data response must be dap4-ddx or dap4-data-ddx");
+				throw Error("Content-Description '" + value + "' not the expected value (expected: " + descrip[object_type] + ").");
 		}
 		else if (name == "content-id") {
 			ci = true;
@@ -1206,6 +1206,22 @@ remove_mime_header(FILE *in)
     }
 
     return false;
+}
+
+/**
+ * Used for test code; strip the leading MIME headers from a response.
+ * @param in
+ */
+void
+remove_mime_header(istream &in)
+{
+	while(!get_next_mime_header(in).empty()) ;
+#if 0
+	string header;
+	do {
+		header = get_next_mime_header(in);
+	} while (!header.empty());
+#endif
 }
 
 } // namespace libdap

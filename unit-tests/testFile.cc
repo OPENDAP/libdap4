@@ -16,6 +16,9 @@ readTestBaseline(const string &fn)
     ifstream is;
     is.open (fn.c_str(), ios::binary );
 
+    if (!is)
+        return "Could not read baseline file";
+
     // get length of file:
     is.seekg (0, ios::end);
     length = is.tellg();

@@ -69,6 +69,12 @@
 #include "InternalErr.h"
 #include "escaping.h"
 
+#include "D4Attributes.h"
+#include "D4Sequence.h"
+#include "D4Group.h"
+#include "Constructor.h"
+#include "DMR.h"
+
 using namespace std;
 
 namespace libdap {
@@ -92,11 +98,12 @@ Sequence::m_duplicate(const Sequence &s)
 
     Sequence &cs = const_cast<Sequence &>(s);
 
+#if 0
     // Copy the template BaseType objects.
     for (Vars_iter i = cs.var_begin(); i != cs.var_end(); i++) {
         add_var((*i)) ;
     }
-
+#endif
     // Copy the BaseType objects used to hold values.
     for (vector<BaseTypeRow *>::iterator rows_iter = cs.d_values.begin();
          rows_iter != cs.d_values.end();
@@ -199,18 +206,42 @@ Sequence::ptr_duplicate()
     return new Sequence(*this);
 }
 
+/**
+ * Build a D4Sequence from a DAP2 Sequence.
+ *
+ * Because DAP4 uses a different type for sequences, this code must
+ * be subclassed by anything other than trivial test code or client
+ * side-only uses of the library.
+ *
+ * @note This version of transformto_dap4() builds a new type of object,
+ * so it must be subclassed.
+ *
+ * @param root Use this as the environment for D4Dimensions
+ * @param container Load the result into this container
+ * @return The new D4Sequence
+ */
+BaseType *
+Sequence::transform_to_dap4(D4Group *root, Constructor *container)
+{
+	D4Sequence *dest = new D4Sequence(name());
+
+	Constructor::transform_to_dap4(root, dest);
+
+    dest->set_length(-1);
+	dest->set_parent(container);
+
+    return dest;
+}
+
 static inline void
 delete_bt(BaseType *bt_ptr)
 {
-    DBG2(cerr << "In delete_bt: " << bt_ptr << endl);
     delete bt_ptr; bt_ptr = 0;
 }
 
 static inline void
 delete_rows(BaseTypeRow *bt_row_ptr)
 {
-    DBG2(cerr << "In delete_rows: " << bt_row_ptr << endl);
-
     for_each(bt_row_ptr->begin(), bt_row_ptr->end(), delete_bt);
 
     delete bt_row_ptr; bt_row_ptr = 0;
@@ -218,14 +249,7 @@ delete_rows(BaseTypeRow *bt_row_ptr)
 
 Sequence::~Sequence()
 {
-    DBG2(cerr << "Entering Sequence::~Sequence" << endl);
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        BaseType *btp = *i ;
-        delete btp ; btp = 0;
-    }
-
     for_each(d_values.begin(), d_values.end(), delete_rows);
-    DBG2(cerr << "exiting Sequence::~Sequence" << endl);
 }
 
 Sequence &
@@ -602,7 +626,7 @@ Sequence::width(bool constrained)
     length is not known.  Sub-classes specific to a particular API
     will have a more complete implementation. */
 int
-Sequence::length()
+Sequence::length() const
 {
     return -1;
 }

@@ -97,7 +97,7 @@ protected:
 
     string d_program_name; // Name of the filter program
     string d_dataset;  // Name of the dataset/database
-    string d_ce;  // Constraint expression
+    string d_dap2ce;  // DAP2 Constraint expression
     string d_cgi_ver;  // Version of CGI script (caller)
     string d_anc_dir;  // Look here for ancillary files
     string d_anc_file;  // Use this for ancillary file name

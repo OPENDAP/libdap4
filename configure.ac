@@ -31,8 +31,11 @@ AC_SUBST(PACKAGE_MAJOR_VERSION)
 AC_SUBST(PACKAGE_MINOR_VERSION)
 AC_SUBST(PACKAGE_SUBMINOR_VERSION)
 
-AC_DEFINE(EVAL, 1, [Should all the classes run ConstraintEvaluator::eval()?])
-AC_SUBST(EVAL)
+dnl Removed this; only the Array and Sequence classes ever have constraints that 
+dnl need to be evaluated at run time (DAP4) or only Sequences (DAP2). jhrg 9/4/13
+
+dnl AC_DEFINE(EVAL, 1, [Should all the classes run ConstraintEvaluator::eval()?])
+dnl AC_SUBST(EVAL)
 
 dnl flags for the compilers and linkers - set these before locating the
 dnl actual tools since some of the AC_PROG macros set these `flag variables'
@@ -87,6 +90,8 @@ else
     AM_CONDITIONAL([COMPILER_IS_GCC],[false])
 fi
 
+dnl AC_PROG_YACC
+dnl AC_PROG_LEX
 AM_PROG_LEX
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -240,7 +245,8 @@ then
 	XML2_LIBS="`xml2-config --libs`"
 	dnl XML2_STATIC_LIBS=$XML2_LIBS
 	XML2_CFLAGS="`xml2-config --cflags`"
-	xmlprivatelibs="`xml2-config --libs`"
+	xmlprivatelibs="`xml2-config --libs `"
+	dnl `
 	AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
 else
 	AC_MSG_ERROR([I could not find ml2-config])
@@ -278,7 +284,8 @@ AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])
 fi
 
 AC_ARG_ENABLE([dap4], 
-    AC_HELP_STRING([--enable-dap4], [Enable DAP4 types and responses (default is NO)]))
+    AC_HELP_STRING([--enable-dap4], [Enable DAP4 types and responses (default is Yes)]),
+    [], [enable_dap4="yes"])
 
 AS_IF([test "x$enable_dap4" = "xyes"], [
     dnl Do the stuff needed for enabling the feature
@@ -307,28 +314,29 @@ else
 fi
 AM_CONDITIONAL([BUILD_DEVELOPER], [test "x$build_developer" = "xtrue"])
 
+DODS_GCOV_VALGRIND
+
+dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in
+
 AH_TOP([#ifndef _config_h
 #define _config_h])
 
-AH_BOTTOM([/* Shorthand for gcc's unused attribute feature */
-#if defined(__GNUG__) || defined(__GNUC__)
-#define not_used __attribute__ ((unused))
-#else
-#define not_used 
-#endif /* __GNUG__ || __GNUC__ */
-
-#endif /* _config_h */])
+AH_BOTTOM([#endif /* _config_h */])
 
 AC_CONFIG_FILES([Makefile
                  libdap.pc
                  libdapclient.pc
                  libdapserver.pc
                  main_page.doxygen
-		 doxy.conf
-	         abi_checker.xml
+	             doxy.conf
+	             abi_checker.xml
+
                  gl/Makefile
+                 d4_ce/Makefile
+                 
                  tests/Makefile
                  tests/atlocal
+                 
                  unit-tests/Makefile
                  unit-tests/cache-testsuite/Makefile])
 

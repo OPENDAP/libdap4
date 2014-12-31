@@ -42,11 +42,10 @@
 #ifndef _sequence_h
 #define _sequence_h 1
 
-
 #include <stack>
 
 #ifndef _basetype_h
-#include "BaseType.h"
+//#include "BaseType.h"
 #endif
 
 #ifndef _constructor_h
@@ -54,306 +53,280 @@
 #endif
 
 #ifndef constraint_evaluator_h
-#include "ConstraintEvaluator.h"
+//#include "ConstraintEvaluator.h"
 #endif
 
 #ifndef S_XDRUtils_h
 #include "XDRUtils.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
+
+class BaseType;
+class ConstraintEvaluator;
+class D4Group;
 
 /** The type BaseTypeRow is used to store single rows of values in an
-    instance of Sequence. Values are stored in instances of BaseType. */
+ instance of Sequence. Values are stored in instances of BaseType. */
 typedef vector<BaseType *> BaseTypeRow;
 
 /** This type holds all of the values of a Sequence. */
 typedef vector<BaseTypeRow *> SequenceValues;
 
 /** This is the interface for the class Sequence. A sequence contains
-    a single set of variables, all at the same lexical level just like
-    a Structure.  Like a Structure, a Sequence may contain other
-    compound types, including other Sequences.  Unlike a Structure, a
-    Sequence defines a pattern that is repeated N times for a sequence
-    of N elements. It is useful to think of a Sequence as representing
-    a table of values (like a relational database), with each row of
-    the table corresponding to a Sequence ``instance.''  (This usage
-    can be confusing, since ``instance'' also refers to a particular
-    item of class Sequence.)  For example:
+ a single set of variables, all at the same lexical level just like
+ a Structure.  Like a Structure, a Sequence may contain other
+ compound types, including other Sequences.  Unlike a Structure, a
+ Sequence defines a pattern that is repeated N times for a sequence
+ of N elements. It is useful to think of a Sequence as representing
+ a table of values (like a relational database), with each row of
+ the table corresponding to a Sequence ``instance.''  (This usage
+ can be confusing, since ``instance'' also refers to a particular
+ item of class Sequence.)  For example:
 
-    <pre>
-    Sequence {
-      String name;
-      Int32 age;
-    } person;
-    </pre>
+ <pre>
+ Sequence {
+ String name;
+ Int32 age;
+ } person;
+ </pre>
 
-    This represents a Sequence of ``person'' records, each instance of
-    which contains a name and an age:
+ This represents a Sequence of ``person'' records, each instance of
+ which contains a name and an age:
 
-    <pre>
-    Fred       34
-    Ralph      23
-    Andrea     29
-    ...
-    </pre>
+ <pre>
+ Fred       34
+ Ralph      23
+ Andrea     29
+ ...
+ </pre>
 
-    A Sequence can be arbitrarily long, which is to say that its
-    length is not part of its declaration.  A Sequence can contain
-    other Sequences:
+ A Sequence can be arbitrarily long, which is to say that its
+ length is not part of its declaration.  A Sequence can contain
+ other Sequences:
 
-    <pre>
-    Sequence {
-      String name;
-      Int32 age;
-      Sequence {
-        String friend;
-      } friend_list;
-    } person;
-    </pre>
+ <pre>
+ Sequence {
+ String name;
+ Int32 age;
+ Sequence {
+ String friend;
+ } friend_list;
+ } person;
+ </pre>
 
-    This is still represented as a single table, but each row contains
-    the elements of both the main Sequence and the nested one:
+ This is still represented as a single table, but each row contains
+ the elements of both the main Sequence and the nested one:
 
-    <pre>
-    Fred       34     Norman
-    Fred       34     Andrea
-    Fred       34     Ralph
-    Fred       34     Lisa
-    Ralph      23     Norman
-    Ralph      23     Andrea
-    Ralph      23     Lisa
-    Ralph      23     Marth
-    Ralph      23     Throckmorton
-    Ralph      23     Helga
-    Ralph      23     Millicent
-    Andrea     29     Ralph
-    Andrea     29     Natasha
-    Andrea     29     Norman
-    ...        ..     ...
-    </pre>
+ <pre>
+ Fred       34     Norman
+ Fred       34     Andrea
+ Fred       34     Ralph
+ Fred       34     Lisa
+ Ralph      23     Norman
+ Ralph      23     Andrea
+ Ralph      23     Lisa
+ Ralph      23     Marth
+ Ralph      23     Throckmorton
+ Ralph      23     Helga
+ Ralph      23     Millicent
+ Andrea     29     Ralph
+ Andrea     29     Natasha
+ Andrea     29     Norman
+ ...        ..     ...
+ </pre>
 
-    Internally, the Sequence is represented by a vector of vectors. The
-    members of the outer vector are the members of the Sequence. This
-    includes the nested Sequences, as in the above example.
+ Internally, the Sequence is represented by a vector of vectors. The
+ members of the outer vector are the members of the Sequence. This
+ includes the nested Sequences, as in the above example.
 
-    NB: Note that in the past this class had a different behavior. It held
-    only one row at a time and the deserialize(...) method had to be called
-    from within a loop. This is <i>no longer true</i>. Now the
-    deserailize(...) method should be called once and will read the entire
-    sequence's values from the server. All the values are now stored in an
-    instance of Sequence, not just a single row's.
+ NB: Note that in the past this class had a different behavior. It held
+ only one row at a time and the deserialize(...) method had to be called
+ from within a loop. This is <i>no longer true</i>. Now the
+ deserailize(...) method should be called once and will read the entire
+ sequence's values from the server. All the values are now stored in an
+ instance of Sequence, not just a single row's.
 
-    Because the length of a Sequence is indeterminate, there are
-    changes to the behavior of the functions to read this class of
-    data.  The <tt>read()</tt> function for Sequence must be written so that
-    successive calls return values for successive rows of the Sequence.
+ Because the length of a Sequence is indeterminate, there are
+ changes to the behavior of the functions to read this class of
+ data.  The <tt>read()</tt> function for Sequence must be written so that
+ successive calls return values for successive rows of the Sequence.
 
-    Similar to a C structure, you refer to members of Sequence
-    elements with a ``.'' notation.  For example, if the Sequence has
-    a member Sequence called ``Tom'' and Tom has a member Float32
-    called ``shoe_size'', you can refer to Tom's shoe size as
-    ``Tom.shoe_size''.
+ Similar to a C structure, you refer to members of Sequence
+ elements with a ``.'' notation.  For example, if the Sequence has
+ a member Sequence called ``Tom'' and Tom has a member Float32
+ called ``shoe_size'', you can refer to Tom's shoe size as
+ ``Tom.shoe_size''.
 
-    @note This class contains the 'logic' for both the server- and client-side
-    behavior. The field \e d_values is used by the client-side methods to store
-    the entire Sequence. On the server-side, the read() method uses an underlying
-    data system to read one row of data values which are then serialized using the
-    serialize() methods of each variable.
+ @note This class contains the 'logic' for both the server- and client-side
+ behavior. The field \e d_values is used by the client-side methods to store
+ the entire Sequence. On the server-side, the read() method uses an underlying
+ data system to read one row of data values which are then serialized using the
+ serialize() methods of each variable.
 
-    @todo Refactor along with Structure moving methods up into Constructor.
+ @todo Refactor along with Structure moving methods up into Constructor.
 
-    @todo Add an isEmpty() method which returns true if the Sequence is
-    empty. This should work before and after calling deserialize().
+ @todo Add an isEmpty() method which returns true if the Sequence is
+ empty. This should work before and after calling deserialize().
 
-    @brief Holds a sequence. */
+ @brief Holds a sequence. */
 
-class Sequence: public Constructor
-{
+class Sequence: public Constructor {
 private:
-    // This holds the values read off the wire. Values are stored in
-    // instances of BaseTypeRow objects which hold instances of BaseType.
-    SequenceValues d_values;
+	// This holds the values read off the wire. Values are stored in
+	// instances of BaseTypeRow objects which hold instances of BaseType.
+	SequenceValues d_values;
 
-    // The number of the row that has just been deserialized. Before
-    // deserialized has been called, this field is -1.
-    int d_row_number;
+	// The number of the row that has just been deserialized. Before
+	// deserialized has been called, this field is -1.
+	int d_row_number;
 
-    // If a client asks for certain rows of a sequence using the bracket
-    // notation (<tt>[<start>:<stride>:<stop>]</tt>) primarily intended for
-    // arrays
-    // and grids, record that information in the next three fields. This
-    // information can be used by the translation software. s.a. the accessor
-    // and mutator methods for these members. Values of -1 indicate that
-    // these have not yet been set.
-    int d_starting_row_number;
-    int d_row_stride;
-    int d_ending_row_number;
+	// If a client asks for certain rows of a sequence using the bracket
+	// notation (<tt>[<start>:<stride>:<stop>]</tt>) primarily intended for
+	// arrays
+	// and grids, record that information in the next three fields. This
+	// information can be used by the translation software. s.a. the accessor
+	// and mutator methods for these members. Values of -1 indicate that
+	// these have not yet been set.
+	int d_starting_row_number;
+	int d_row_stride;
+	int d_ending_row_number;
 
-    // Used to track if data has not already been sent.
-    bool d_unsent_data;
+	// Used to track if data has not already been sent.
+	bool d_unsent_data;
 
-    // Track if the Start Of Instance marker has been written. Needed to
-    // properly send EOS for only the outer Sequence when a selection
-    // returns an empty Sequence.
-    bool d_wrote_soi;
+	// Track if the Start Of Instance marker has been written. Needed to
+	// properly send EOS for only the outer Sequence when a selection
+	// returns an empty Sequence.
+	bool d_wrote_soi;
 
-    // This signals whether the sequence is a leaf or parent.
-    bool d_leaf_sequence;
+	// This signals whether the sequence is a leaf or parent.
+	bool d_leaf_sequence;
 
-    // In a hierarchy of sequences, is this the top most?
-    bool d_top_most;
+	// In a hierarchy of sequences, is this the top most?
+	bool d_top_most;
 #if 0
-    BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
-    BaseType *m_exact_match(const string &name, btp_stack *s = 0);
+	BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
+	BaseType *m_exact_match(const string &name, btp_stack *s = 0);
 #endif
-    bool is_end_of_rows(int i);
+	bool is_end_of_rows(int i);
 
-    friend class SequenceTest;
+	friend class SequenceTest;
 
 protected:
-    void m_duplicate(const Sequence &s);
-    typedef stack<SequenceValues*> sequence_values_stack_t;
+	void m_duplicate(const Sequence &s);
+	typedef stack<SequenceValues*> sequence_values_stack_t;
 
-    virtual bool serialize_parent_part_one(DDS &dds,
-                                           ConstraintEvaluator &eval,
-					   Marshaller &m);
-    virtual void serialize_parent_part_two(DDS &dds,
-                                           ConstraintEvaluator &eval,
-					   Marshaller &m);
-    virtual bool serialize_leaf(DDS &dds,
-                                ConstraintEvaluator &eval,
-				Marshaller &m, bool ce_eval);
+	virtual bool serialize_parent_part_one(DDS &dds, ConstraintEvaluator &eval, Marshaller &m);
+	virtual void serialize_parent_part_two(DDS &dds, ConstraintEvaluator &eval, Marshaller &m);
+	virtual bool serialize_leaf(DDS &dds, ConstraintEvaluator &eval, Marshaller &m, bool ce_eval);
 
-    virtual void intern_data_private( ConstraintEvaluator &eval,
-                                      DDS &dds,
-                                      sequence_values_stack_t &sequence_values_stack);
-    virtual void intern_data_for_leaf(DDS &dds,
-                                      ConstraintEvaluator &eval,
-                                      sequence_values_stack_t &sequence_values_stack);
+	virtual void intern_data_private(ConstraintEvaluator &eval, DDS &dds,
+			sequence_values_stack_t &sequence_values_stack);
+	virtual void intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval,
+			sequence_values_stack_t &sequence_values_stack);
 
-    virtual void intern_data_parent_part_one(DDS &dds,
-            ConstraintEvaluator &eval,
-            sequence_values_stack_t &sequence_values_stack);
+	virtual void intern_data_parent_part_one(DDS &dds, ConstraintEvaluator &eval,
+			sequence_values_stack_t &sequence_values_stack);
 
-    virtual void intern_data_parent_part_two(DDS &dds,
-            ConstraintEvaluator &eval,
-            sequence_values_stack_t &sequence_values_stack);
+	virtual void intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
+			sequence_values_stack_t &sequence_values_stack);
 
 public:
 
-    Sequence(const string &n);
-    Sequence(const string &n, const string &d);
+	Sequence(const string &n);
+	Sequence(const string &n, const string &d);
 
-    Sequence(const Sequence &rhs);
+	Sequence(const Sequence &rhs);
 
-    virtual ~Sequence();
+	virtual ~Sequence();
 
-    Sequence &operator=(const Sequence &rhs);
+	Sequence &operator=(const Sequence &rhs);
 
-    virtual BaseType *ptr_duplicate();
+	virtual BaseType *ptr_duplicate();
 
-    virtual bool is_dap2_only_type();
+	virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
 
-    virtual string toString();
-#if 0
-    virtual int element_count(bool leaves = false);
-#endif
-    virtual bool is_linear();
-#if 0
-    virtual void set_send_p(bool state);
-    virtual void set_read_p(bool state);
-#endif
-#if 0
-    virtual void set_in_selection(bool state);
-#endif
-#if 0
-    virtual unsigned int width(bool constrained = false);
-    virtual unsigned int width(bool constrained);
-#endif
+	virtual bool is_dap2_only_type();
 
-    virtual int length();
+	virtual string toString();
 
-    virtual int number_of_rows();
+	virtual bool is_linear();
 
-    virtual bool read_row(int row, DDS &dds,
-                          ConstraintEvaluator &eval, bool ce_eval = true);
+	virtual int length() const;
 
-    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+	virtual int number_of_rows();
 
-    /// Rest the row number counter
-    void reset_row_number();
+	virtual bool read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_eval = true);
 
-    int get_starting_row_number();
+	virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
+	virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
+	virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
-    virtual int get_row_stride();
+	/// Rest the row number counter
+	void reset_row_number();
 
-    virtual int get_ending_row_number();
+	int get_starting_row_number();
 
-    virtual void set_row_number_constraint(int start, int stop, int stride = 1);
+	virtual int get_row_stride();
 
-    /// Get the unsent data property
-    bool get_unsent_data()
-    {
-        return d_unsent_data;
-    }
+	virtual int get_ending_row_number();
 
-    /// Set the unsent data property
-    void set_unsent_data(bool usd)
-    {
-        d_unsent_data = usd;
-    }
+	virtual void set_row_number_constraint(int start, int stop, int stride = 1);
+
+	/// Get the unsent data property
+	bool get_unsent_data()
+	{
+		return d_unsent_data;
+	}
+
+	/// Set the unsent data property
+	void set_unsent_data(bool usd)
+	{
+		d_unsent_data = usd;
+	}
 
 #if 0
-    // Move me!
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
+	// Move me!
+	virtual unsigned int val2buf(void *val, bool reuse = false);
+	virtual unsigned int buf2val(void **val);
 #endif
 
-    virtual void set_value(SequenceValues &values);
-    virtual SequenceValues value();
+	virtual void set_value(SequenceValues &values);
+	virtual SequenceValues value();
 #if 0
-    virtual BaseType *var(const string &name, bool exact_match = true,btp_stack *s = 0);
-    virtual BaseType *var(const string &n, btp_stack &s);
+	virtual BaseType *var(const string &name, bool exact_match = true,btp_stack *s = 0);
+	virtual BaseType *var(const string &n, btp_stack &s);
 #endif
 
-    virtual BaseType *var_value(size_t row, const string &name);
+	virtual BaseType *var_value(size_t row, const string &name);
 
-    virtual BaseType *var_value(size_t row, size_t i);
+	virtual BaseType *var_value(size_t row, size_t i);
 
-    virtual BaseTypeRow *row_value(size_t row);
+	virtual BaseTypeRow *row_value(size_t row);
 #if 0
-    virtual void add_var(BaseType *, Part part = nil);
-    virtual void add_var_nocopy(BaseType *, Part part = nil);
+	virtual void add_var(BaseType *, Part part = nil);
+	virtual void add_var_nocopy(BaseType *, Part part = nil);
 #endif
-    virtual void print_one_row(ostream &out, int row, string space,
-                               bool print_row_num = false);
-    virtual void print_val_by_rows(ostream &out, string space = "",
-                                   bool print_decl_p = true,
-                                   bool print_row_numbers = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+	virtual void print_one_row(ostream &out, int row, string space, bool print_row_num = false);
+	virtual void print_val_by_rows(ostream &out, string space = "", bool print_decl_p = true, bool print_row_numbers =
+			true);
+	virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
 
-    virtual void print_one_row(FILE *out, int row, string space,
-                               bool print_row_num = false);
-    virtual void print_val_by_rows(FILE *out, string space = "",
-                                   bool print_decl_p = true,
-                                   bool print_row_numbers = true);
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
+	virtual void print_one_row(FILE *out, int row, string space, bool print_row_num = false);
+	virtual void print_val_by_rows(FILE *out, string space = "", bool print_decl_p = true,
+			bool print_row_numbers = true);
+	virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
 #if 0
-    virtual bool check_semantics(string &msg, bool all = false);
+	virtual bool check_semantics(string &msg, bool all = false);
 #endif
-    virtual void set_leaf_p(bool state);
+	virtual void set_leaf_p(bool state);
 
-    virtual bool is_leaf_sequence();
+	virtual bool is_leaf_sequence();
 
-    virtual void set_leaf_sequence(int lvl = 1);
+	virtual void set_leaf_sequence(int lvl = 1);
 
-    virtual void dump(ostream &strm) const ;
+	virtual void dump(ostream &strm) const;
 };
 
 } // namespace libdap

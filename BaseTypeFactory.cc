@@ -79,9 +79,10 @@ BaseTypeFactory::NewVariable(Type type, const string &name) const
 	case dods_grid_c:
 		return NewGrid(name);
 	default:
-		throw InternalErr(__FILE__, __LINE__, "Unknow type");
+		throw InternalErr(__FILE__, __LINE__, "Unknown type");
 	}
 }
+
 Byte *
 BaseTypeFactory::NewByte(const string &n) const
 {

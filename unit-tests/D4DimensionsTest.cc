@@ -28,10 +28,14 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <GetOpt.h> // Part of libdap
+
 //#define DODS_DEBUG
 
 #include "D4Dimensions.h"
 #include "XMLWriter.h"
+
+#include "Error.h"
 #include "debug.h"
 
 #include "testFile.h"
@@ -41,13 +45,18 @@ using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
+
 class D4DimensionsTest: public TestFixture {
 private:
     XMLWriter *xml;
     D4Dimensions *d;
 
 public:
-    D4DimensionsTest() {
+    D4DimensionsTest() : xml(0), d(0) {
     }
 
     ~D4DimensionsTest() {
@@ -66,7 +75,7 @@ public:
     // An empty D4Dimensions object prints nothing; the XMLWriter class adds
     // a xml doc preface.
     void test_print_empty() {
-        d->print(*xml);
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_empty.xml");
         DBG(cerr << "test_print_empty: doc: " << doc << endl);
@@ -75,9 +84,9 @@ public:
     }
 
     void test_print_1() {
-        d->add_dim("first", 10);
+        d->add_dim_nocopy(new D4Dimension("first", 10));
 
-        d->print(*xml);
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_1.xml");
         DBG(cerr << "test_print_1: doc: " << doc << endl);
@@ -86,10 +95,10 @@ public:
     }
 
     void test_print_2() {
-        d->add_dim("first", 10);
-        d->add_dim("second", 100);
+        d->add_dim_nocopy(new D4Dimension("first", 10));
+        d->add_dim_nocopy(new D4Dimension("second", 100));
 
-        d->print(*xml);
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_2.xml");
         DBG(cerr << "test_print_2: doc: " << doc << endl);
@@ -97,29 +106,63 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_varying() {
-        d->add_dim("first", 10);
-        d->add_dim("second", 100);
-        d->add_dim("third", 0, true);
+    void test_error() {
+        D4Dimension *d3, *d2;
+        try {
+            d2 = new D4Dimension();
+            d2->set_name("error");
+            d2->set_size("10");
 
-        d->print(*xml);
+            d3 = new D4Dimension();
+            d3->set_name("error");
+            d3->set_size("20.0");
+            delete d3; delete d2;
+            CPPUNIT_FAIL("Should throw an Error");
+        }
+        catch(...) {
+            delete d3; delete d2;
+            throw;
+        }
+    }
+
+    void test_error_2() {
+        D4Dimension *d3;
+        try {
+            d3 = new D4Dimension();
+            d3->set_name("error");
+            d3->set_size("bad");
+            delete d3;
+            CPPUNIT_FAIL("Should throw an Error");
+        }
+        catch(...) {
+            delete d3;
+            throw;
+        }
+    }
+#ifdef VARYING
+    void test_print_varying() {
+        d->add_dim_nocopy(new D4Dimension("first", 10));
+        d->add_dim_nocopy(new D4Dimension("second", 100));
+        d->add_dim_nocopy(new D4Dimension("third"));
+
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_3.xml");
         DBG(cerr << "test_print_varying: doc: " << doc << endl);
         DBG(cerr << "test_print_varying: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
-
+#endif
     void test_print_insert_dim() {
-        d->add_dim("first", 10);
-        d->add_dim("second", 100);
-        d->add_dim("third", 0, true);
+        d->add_dim_nocopy(new D4Dimension("first", 10));
+        d->add_dim_nocopy(new D4Dimension("second", 100));
+        d->add_dim_nocopy(new D4Dimension("third", 1000));
 
         //vector<D4Dimensions::dimension>::iterator i = d->dim_begin() + 1;
         D4Dimensions::D4DimensionsIter i = d->dim_begin() + 1;
-        d->insert_dim("odd", 20, false /*varying*/, i);
+        d->insert_dim_nocopy(new D4Dimension("odd", 20), i);
 
-        d->print(*xml);
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_4.xml");
         DBG(cerr << "test_print_insert_dim: doc: " << doc << endl);
@@ -128,13 +171,13 @@ public:
     }
 
     void test_print_assignment() {
-        d->add_dim("first", 10);
-        d->add_dim("second", 100);
-        d->add_dim("third", 0, true);
+        d->add_dim_nocopy(new D4Dimension("first", 10));
+        d->add_dim_nocopy(new D4Dimension("second", 100));
+        d->add_dim_nocopy(new D4Dimension("third", 1000));
 
         D4Dimensions lhs = *d;
 
-        lhs.print(*xml);
+        lhs.print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_3.xml");
         DBG(cerr << "test_print_assignment: doc: " << doc << endl);
@@ -143,13 +186,13 @@ public:
     }
 
     void test_print_copy_ctor() {
-        d->add_dim("first", 10);
-        d->add_dim("second", 100);
-        d->add_dim("third", 0, true);
+        d->add_dim_nocopy(new D4Dimension("first", 10));
+        d->add_dim_nocopy(new D4Dimension("second", 100));
+        d->add_dim_nocopy(new D4Dimension("third", 1000));
 
         D4Dimensions lhs(*d);
 
-        lhs.print(*xml);
+        lhs.print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_3.xml");
         DBG(cerr << "test_print_copy_ctor: doc: " << doc << endl);
@@ -162,7 +205,13 @@ public:
         CPPUNIT_TEST(test_print_empty);
         CPPUNIT_TEST(test_print_1);
         CPPUNIT_TEST(test_print_2);
+
+        CPPUNIT_TEST_EXCEPTION( test_error, Error );
+        //CPPUNIT_TEST( test_error );
+        CPPUNIT_TEST_EXCEPTION( test_error_2, Error );
+#ifdef VARYING
         CPPUNIT_TEST(test_print_varying);
+#endif
         CPPUNIT_TEST(test_print_insert_dim);
         CPPUNIT_TEST(test_print_assignment);
         CPPUNIT_TEST(test_print_copy_ctor);
@@ -172,11 +221,36 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(D4DimensionsTest);
 
-int main(int, char**) {
+int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run("", false);
+    GetOpt getopt(argc, argv, "d");
+    char option_char;
+
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        default:
+            break;
+        }
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("D4DimensionsTest::") + argv[i++];
+
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }

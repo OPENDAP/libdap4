@@ -22,16 +22,13 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <sstream>
-
-#include "config.h"
-
-//#define DODS_DEBUG2
-//#define DODS_DEBUG
 
 #include "Byte.h"
 #include "Int16.h"
@@ -53,6 +50,7 @@
 #include "GetOpt.h"
 #include "util.h"
 #include "debug.h"
+#include "GetOpt.h"
 
 #include "testFile.h"
 #include "test_config.h"
@@ -60,7 +58,7 @@
 static bool debug = false;
 
 #undef DBG
-#define DBG(x) do { if (debug) (x); } while(false);
+#define DBG(x) do { if (debug) {x;} } while(false)
 
 using namespace CppUnit;
 using namespace std;
@@ -96,8 +94,7 @@ public:
 
     bool re_match(Regex &r, const string &s) {
         int match = r.match(s.c_str(), s.length());
-        DBG(cerr << "Match: " << match << " should be: " << s.length()
-                << endl);
+        DBG(cerr << "Match: " << match << " should be: " << s.length() << endl);
         return match == static_cast<int> (s.length());
     }
 
@@ -107,8 +104,7 @@ public:
     // DAS, it will need to specialize the BaseType::transfer_attributes()
     // method.
     CPPUNIT_TEST_SUITE( DDSTest );
-
-    CPPUNIT_TEST(transfer_attributes_test_1);
+		CPPUNIT_TEST(transfer_attributes_test_1);
         CPPUNIT_TEST(transfer_attributes_test_2);
 
         CPPUNIT_TEST(symbol_name_test);
@@ -480,23 +476,13 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DDSTest);
 
 }
 
-#if 0
-int main(int, char *[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = runner.run("", false);
-
-    return wasSuccessful ? 0 : 1;
-}
-#endif
-
 int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     GetOpt getopt(argc, argv, "d");
     int option_char;
+
     while ((option_char = getopt()) != EOF)
         switch (option_char) {
         case 'd':
@@ -516,10 +502,13 @@ int main(int argc, char*argv[]) {
     else {
         while (i < argc) {
             test = string("libdap::DDSTest::") + argv[i++];
-
+            DBG(cerr << "test: " << test << endl);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
 
+    xmlMemoryDump();
+
     return wasSuccessful ? 0 : 1;
 }
+

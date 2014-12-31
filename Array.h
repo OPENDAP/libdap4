@@ -48,12 +48,15 @@
 #include "Vector.h"
 #endif
 
-#ifndef XMLWRITER_H_
-#include "XMLWriter.h"
-#endif
+//#include "D4Dimensions.h"
 
 namespace libdap
 {
+class D4Group;
+class D4Maps;
+class XMLWriter;
+class D4Dimension;
+class D4Dimensions;
 
 const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
@@ -70,6 +73,11 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
     The Array is used as part of the Grid class, where the dimension names
     are crucial to its structure. The dimension names correspond to \e Map
     vectors, holding the actual values for that column of the array.
+
+    In DAP4, the Array may be a Coverage or a simple Array. In the former case
+    the Array will have both named dimensions and maps, where the maps (instances
+    of D4Map) are what make the Array a Coverage. Coverages are a generalization
+    of DAP2 Grids.
 
     Each array dimension carries with it its own projection information. The
     projection information takes the form of three integers: the start, stop,
@@ -94,6 +102,7 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
     \endverbatim
 
     @note Arrays use zero-based indexing.
+    @note This class is used for both DAP2 and DAP4.
 
     @brief A multidimensional array of identical data types.
     @see Grid
@@ -115,18 +124,70 @@ public:
         typedefs. */
     struct dimension
     {
+    	// In DAP2, the name and size of a dimension is stored here, along
+    	// with information about any constraint. In DAP4, either the name
+    	// and size are stored in the two fields below _or_ the name and
+    	// size information comes from a dimension object defined in a
+    	// group that is referenced by the 'dim' pointer. Do not free this
+    	// pointer; it is shared between the array and the Group where the
+    	// Dimension is defined. To keep Array manageable to implement, size
+    	// will be set here using the value from 'dim' if it is not null.
         int size;  ///< The unconstrained dimension size.
         string name;    ///< The name of this dimension.
+
+        D4Dimension *dim; ///< If not null, a weak pointer to the D4Dimension
+
+        // when a DMR is printed for a data response, if an array uses shared
+        // dimensions and those sdims have been sliced, make sure to use those
+        // and get the syntax correct. That's what this field does - in every
+        // case the array records the sizes of its dimensions and their slices
+        // regardless of whether they were provided explicitly in a CE or inherited
+        // from a sliced sdim.
+        bool use_sdim_for_slice; ///< Used to control printing the DMR in data responses
+
         int start;  ///< The constraint start index
         int stop;  ///< The constraint end index
         int stride;  ///< The constraint stride
         int c_size;  ///< Size of dimension once constrained
+
+        dimension() : size(0), name(""), dim(0), use_sdim_for_slice(false) {
+            // this information changes with each constraint expression
+            start = 0;
+            stop = 0;
+            stride = 1;
+            c_size = size;
+        }
+
+        dimension(unsigned long s, string n) : size(s), name(n), dim(0), use_sdim_for_slice(false) {
+            start = 0;
+            stop = size - 1;
+            stride = 1;
+            c_size = size;
+        }
+
+        dimension(D4Dimension *d);
+#if 0
+        dimension(D4Dimension *d) : dim(d), use_sdim_for_slice(true) {
+        	size = d->size();
+        	name = d->name();
+
+            start = 0;
+            stop = size - 1;
+            stride = 1;
+            c_size = size;
+        }
+#endif
     };
+
+    D4Maps *d_maps;
 
 private:
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
 
+    void update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims);
+
     friend class ArrayTest;
+    friend class D4Group;
 
 protected:
     void _duplicate(const Array &a);
@@ -152,28 +213,32 @@ public:
         @see dim_end() */
     typedef std::vector<dimension>::iterator Dim_iter ;
 
-    Array(const string &n, BaseType *v);
-    Array(const string &n, const string &d, BaseType *v);
+    Array(const string &n, BaseType *v, bool is_dap4 = false);
+    Array(const string &n, const string &d, BaseType *v, bool is_dap4 = false);
     Array(const Array &rhs);
     virtual ~Array();
 
     Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate();
 
+    virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
+
     void add_var(BaseType *v, Part p = nil);
     void add_var_nocopy(BaseType *v, Part p = nil);
 
-    void append_dim(int size, string name = "");
+    void append_dim(int size, const string &name = "");
+    void append_dim(D4Dimension *dim);
     void prepend_dim(int size, const string& name = "");
+    void prepend_dim(D4Dimension *dim);
     void clear_all_dims();
 
     virtual void add_constraint(Dim_iter i, int start, int stride, int stop);
+    virtual void add_constraint(Dim_iter i, D4Dimension *dim);
     virtual void reset_constraint();
 
-    virtual void clear_constraint();
+    virtual void clear_constraint(); // deprecated
 
-    virtual void update_length(int size);
-    virtual unsigned int width(bool constrained = false);
+    virtual void update_length(int size = 0); // should be used internally only
 
     Dim_iter dim_begin() ;
     Dim_iter dim_end() ;
@@ -183,8 +248,15 @@ public:
     virtual int dimension_stop(Dim_iter i, bool constrained = false);
     virtual int dimension_stride(Dim_iter i, bool constrained = false);
     virtual string dimension_name(Dim_iter i);
+    virtual D4Dimension *dimension_D4dim(Dim_iter i);
 
     virtual unsigned int dimensions(bool constrained = false);
+
+    virtual D4Maps *maps();
+
+    virtual void print_dap4(XMLWriter &xml, bool constrained = false);
+
+    // These are all DAP2 output methods
 
     virtual void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,

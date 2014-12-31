@@ -10,8 +10,9 @@
 #include "TestArray.h"
 #include "TestInt16.h"
 #include "TestTypeFactory.h"
+
 #include "util.h"
-//#include "Pix.h"
+#include "debug.h"
 
 using std::cerr ;
 using std::endl ;
@@ -52,9 +53,9 @@ public:
 	try
 	{
 	    int w = ar.width(true) ;
-	    cerr << "w = " << w << endl;
-	    cerr << "(int)bt->width() " << (int)bt->width() << endl;
-	    cerr << "L " << l << endl;
+	    DBG(cerr << "w = " << w << endl);
+	    DBG(cerr << "(int)bt->width() " << (int)bt->width() << endl);
+	    DBG(cerr << "L " << l << endl);
 	    CPPUNIT_ASSERT( w == ( l * (int)bt->width() ) ) ;
 	}
 	catch( InternalErr &e )

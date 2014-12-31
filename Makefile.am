@@ -1,4 +1,4 @@
-# Build libdap, libtest-types.a, getdap
+# Build libdap, libtest-types.a, getdap, getdap4
 
 AUTOMAKE_OPTIONS = foreign check-news subdir-objects
 ACLOCAL_AMFLAGS = -I conf -I gl/m4
@@ -6,36 +6,28 @@ ACLOCAL_AMFLAGS = -I conf -I gl/m4
 aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
-AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
+AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
 AM_CXXFLAGS = 
+CXXFLAGS = 
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
 endif
 
-# if USING_GRIDFIELDS
-# AM_CPPFLAGS += $(GF_CFLAGS)
-# GRIDFIELDS = ugridFunctions
-# endif
-
-AM_YFLAGS = -d -v -t
-AM_LFLAGS = -8
-
 # These are not used by automake but are often useful for certain types of
 # debugging. The best way to use these is to run configure as:
-#     export CXXFLAGS='...'; ./configure --disable-shared
+# ./configure --disable-shared CXXFLAGS=...
 # or ./configure --enable-developer --disable-shared
 # the --disable-shared is not required, but it seems to help with debuggers.
 CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align 
-# -Werror There are some warnings in this code that are here to stay...
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
 endif
 
-SUBDIRS = gl . tests unit-tests
-DIST_SUBDIRS = gl tests unit-tests
+SUBDIRS = gl d4_ce .  tests unit-tests
+DIST_SUBDIRS = gl d4_ce tests unit-tests
 
 noinst_LTLIBRARIES = libparsers.la
 
@@ -43,11 +35,11 @@ lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 
 bin_SCRIPTS = dap-config dap-config-pkgconfig
 
-bin_PROGRAMS = getdap
+bin_PROGRAMS = getdap getdap4
 
-BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1
+BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
 
-man_MANS = getdap.1 dap-config.1
+man_MANS = getdap.1 dap-config.1 getdap4.1
 
 %.1: %.man1
 	groff -t -e -mandoc -Tascii $< | col -bx > $@
@@ -66,7 +58,7 @@ endif
 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_CPPFLAGS = $(AM_CPPFLAGS)
-libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la libparsers.la
+libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la d4_ce/libd4_ce_parser.la libparsers.la
 if DAP4_DEFINED
     libdap_la_LIBADD += -lcrypto 
 endif
@@ -75,16 +67,17 @@ libdapclient_la_SOURCES = $(CLIENT_SRC)
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
 libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
+if DAP4_DEFINED
+    libdapclient_la_SOURCES += $(DAP4_CLIENT_HDR) $(DAP4_CLIENT_SRC)
+endif
 
 libdapserver_la_SOURCES = $(SERVER_SRC)
 libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
 libdapserver_la_LIBADD = libdap.la $(UUID_LIBS)
 
 pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
-# TODO Until the compile-time issue with headers like BaseType.h depending on
-# configure params is fixed, always install these headers.
 if DAP4_DEFINED
-    pkginclude_HEADERS += $(DAP4_ONLY_HDR)
+    pkginclude_HEADERS += $(DAP4_ONLY_HDR) $(DAP4_CLIENT_HDR)
 endif
 
 noinst_HEADERS = config_dap.h
@@ -93,6 +86,10 @@ getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la
 getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 
+getdap4_SOURCES = getdap4.cc
+getdap4_LDADD = libdapclient.la libdap.la
+getdap4_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
+
 LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
@@ -100,13 +97,13 @@ EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI		\
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf		\
 	libdap.spec VCPP dods-datatypes-static.h			\
 	xdr-datatypes-static.h dap-config-pkgconfig $(LEX_YACC_EXTRA)	\
-	$(GRAM_SRC) OSX_Resources getdap.man1 dap-config.man1
+	$(GRAM_SRC) OSX_Resources getdap.man1 dap-config.man1 getdap4.man1
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
 CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h \
-    xdr-datatypes.h getdap.1 dap-config.1
+    xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
 
 # Not nearly as clean as it could be, but this removes .svn directories
 # in subdirs.
@@ -251,13 +248,13 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	Operators.h XDRUtils.cc XDRFileMarshaller.cc			\
 	XDRStreamMarshaller.cc XDRFileUnMarshaller.cc			\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc \
-	ServerFunctionsList.cc ServerFunction.cc
+	ServerFunctionsList.cc ServerFunction.cc DapXmlNamespaces.cc
 
-# DAPCache3.cc 
-
-DAP4_ONLY_SRC = DAP4StreamMarshaller.cc DAP4StreamUnMarshaller.cc Int64.cc \
+DAP4_ONLY_SRC = D4StreamMarshaller.cc D4StreamUnMarshaller.cc Int64.cc \
         UInt64.cc Int8.cc D4ParserSax2.cc D4BaseTypeFactory.cc \
-        D4Maps.cc D4Dimensions.cc  D4EnumDef.cc D4Group.cc
+        D4Dimensions.cc  D4EnumDefs.cc D4Group.cc DMR.cc \
+        D4Attributes.cc D4Enum.cc chunked_ostream.cc chunked_istream.cc \
+        D4Sequence.cc D4Maps.cc D4Opaque.cc D4AsyncUtil.cc D4RValue.cc
 
 Operators.h: ce_expr.tab.hh
 
@@ -266,6 +263,8 @@ Operators.h: ce_expr.tab.hh
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc	\
 	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc
+	
+DAP4_CLIENT_SRC = D4Connect.cc
 
 SERVER_SRC = DODSFilter.cc Ancillary.cc
 # ResponseBuilder.cc ResponseCache.cc
@@ -276,26 +275,29 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	Grid.h UInt32.h Int16.h UInt16.h Float32.h BaseTypeFactory.h	\
 	ObjectType.h EncodingType.h SignalHandler.h Error.h		\
 	InternalErr.h util.h escaping.h parser.h debug.h dods-limits.h	\
-	dods-datatypes.h 		\
+	dods-datatypes.h Type.h		\
 	util_mit.h expr.h Clause.h RValue.h ConstraintEvaluator.h	\
 	ce_parser.h DapIndent.h DapObj.h XDRFileMarshaller.h		\
 	Marshaller.h UnMarshaller.h XDRFileUnMarshaller.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h \
-	ServerFunctionsList.h ServerFunction.h
+	ServerFunctionsList.h ServerFunction.h media_types.h \
+	DapXmlNamespaces.h parser-util.h
 
-# DAPCache.h
-
-DAP4_ONLY_HDR = DAP4StreamMarshaller.h DAP4StreamUnMarshaller.h Int64.h \
-        UInt64.h Int8.h D4ParserSax2.h D4BaseTypeFactory.h D4ParseError.h \
-        D4Maps.h D4Dimensions.h D4EnumDef.h D4Group.h
+DAP4_ONLY_HDR = D4StreamMarshaller.h D4StreamUnMarshaller.h Int64.h \
+        UInt64.h Int8.h D4ParserSax2.h D4BaseTypeFactory.h \
+        D4Maps.h D4Dimensions.h D4EnumDefs.h D4Group.h DMR.h D4Attributes.h \
+        D4AttributeType.h D4Enum.h chunked_stream.h chunked_ostream.h \
+        chunked_istream.h D4Sequence.h crc.h D4Opaque.h D4AsyncUtil.h \
+        D4Function.h D4RValue.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h
+	cp -p $< dods-datatypes.h
 else
 dods-datatypes.h: dods-datatypes-config.h
-endif
 	cp -p $< dods-datatypes.h
+endif
 
 xdr-datatypes.h: xdr-datatypes-config.h
 	cp -p $< xdr-datatypes.h
@@ -305,6 +307,8 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		\
 	Response.h HTTPResponse.h HTTPCacheResponse.h PipeResponse.h	\
 	StdinResponse.h SignalHandlerRegisteredErr.h			\
 	ResponseTooBigErr.h Resource.h HTTPCacheTable.h HTTPCacheMacros.h
+
+DAP4_CLIENT_HDR = D4Connect.h
 
 SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
 #	ResponseBuilder.h ResponseCache.h

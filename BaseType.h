@@ -42,127 +42,43 @@
 #ifndef _basetype_h
 #define _basetype_h 1
 
-
 #include <vector>
 #include <stack>
 #include <iostream>
 #include <string>
-
-// These are instantiated only for DAP4 variables
-#if DAP4
-#include "D4Dimensions.h"
-#include "D4Maps.h"
-#endif
 
 #include "AttrTable.h"
 
 #include "InternalErr.h"
 
 #include "dods-datatypes.h"
+#include "Type.h"
 
 #include "DapObj.h"
 
-#include "XMLWriter.h"
-
 using namespace std;
+
+class Crc32;
 
 namespace libdap
 {
 
-class DDS;
 class ConstraintEvaluator;
+
+class DDS;
 class Marshaller;
 class UnMarshaller;
 
-/** <b>Part</b> names the parts of multi-section constructor types.
-    For example, the <b>Grid</b> class has an <i>array</i> and
-    the array <i>maps</i>. Use the <tt>nil</tt> value for data types that
-    don't have separate parts.
+class Constructor;
+class XMLWrter;
 
-    \code
-    enum Part {
-    nil,
-    array,
-    maps
-    };
-    \endcode
+class DMR;
+class D4Group;
+class XMLWriter;
+class D4StreamMarshaller;
+class D4StreamUnMarshaller;
 
-    @brief Names the parts of multi-section constructor data types.
-    @see Grid
-    @see BaseType
-*/
-
-enum Part {
-    nil,   // nil is for types that don't have parts...
-    array,
-    maps
-};
-
-/** <b>Type</b> identifies the data type stored in a particular type
-    class. All the DODS Data Access Protocol (DAP) types inherit from
-    the BaseType class.
-
-    \code
-    enum Type {
-    dods_null_c,
-    dods_byte_c,
-    dods_int16_c,
-    dods_uint16_c,
-    dods_int32_c,
-    dods_uint32_c,
-    dods_float32_c,
-    dods_float64_c,
-    dods_str_c,
-    dods_url_c,
-    dods_array_c,
-    dods_structure_c,
-    dods_sequence_c,
-    dods_grid_c,
-
-    dods_int8_c,
-    dods_uint8_c,
-    dods_int64_c,
-    dods_uint64_c,
-    dods_url4_c
-    dods_enum_c,
-    dods_group_c
-
-    };
-    \endcode
-
-    @brief Identifies the data type.
-    @see BaseType
-*/
-
-enum Type {
-    dods_null_c,
-    dods_byte_c,
-    dods_int16_c,
-    dods_uint16_c,
-    dods_int32_c,  // Added `dods_' to fix clash with IRIX 5.3.
-    dods_uint32_c,
-    dods_float32_c,
-    dods_float64_c,
-    dods_str_c,
-    dods_url_c,
-    dods_array_c,
-    dods_structure_c,
-    dods_sequence_c,
-    dods_grid_c,
-
-    // Added for DAP4
-    dods_int8_c,
-    dods_uint8_c,
-
-    dods_int64_c,
-    dods_uint64_c,
-
-    dods_url4_c,
-
-    dods_enum_c,
-    dods_group_c
-
-};
+class D4Attributes;
 
 /** This defines the basic data type features for the DODS data access
     protocol (DAP) data types. All the DAP type classes (Float64, Array,
@@ -174,11 +90,11 @@ enum Type {
     access and use this data. On the server side, in many cases, the class
     instances will have no data in them at all until the
     <tt>serialize</tt> function
-    is called to send data to the client. On the client side, most DODS
+    is called to send data to the client. On the client side, most DAP
     application programs will unpack the data promptly into whatever local
     data structure the programmer deems the most useful.
 
-    In order to use these classes on the server side of a DODS
+    In order to use these classes on the server side of a DAP
     client/server connection, you must write a <tt>read</tt> method
     for each of the data types you expect to encounter in the
     application. This function, whose purpose is to read data from a
@@ -194,6 +110,8 @@ enum Type {
     the constraints
     to be returned. These cautions are outlined where they occur.
 
+	@note This class is ued by both DAP2 and DAP4.
+
     @brief The basic data type for the DODS DAP types.  */
 
 class BaseType : public DapObj
@@ -205,6 +123,8 @@ private:
 
     bool d_is_read;  // true if the value has been read
     bool d_is_send;  // Is the variable in the projection?
+
+    // These were/are used for DAP2 CEs, but not for DAP4 ones
     bool d_in_selection; // Is the variable in the selection?
     bool d_is_synthesized; // true if the variable is synthesized
 
@@ -216,15 +136,11 @@ private:
     // Attributes for this variable. Added 05/20/03 jhrg
     AttrTable d_attr;
 
+    D4Attributes *d_attributes;
+
     bool d_is_dap4;         // True if this is a DAP4 variable, false ... DAP2
 
     // These are non-empty only for DAP4 variables. Added 9/27/12 jhrg
-
-    // FIXME Remove this. This header cannot have compile-time variation
-#if DAP4
-    D4Dimensions d_dims;   // If non-empty, this BaseType is an DAP4 Array
-    D4Maps d_maps;         // if non-empty, this BaseType is a DAP4 'Grid'
-#endif
 
 protected:
     void m_duplicate(const BaseType &bt);
@@ -235,21 +151,19 @@ public:
     // These ctors assume is_dap4 is false
     BaseType(const string &n, const Type &t, bool is_dap4 = false);
     BaseType(const string &n, const string &d, const Type &t, bool is_dap4 = false);
-#if 0
-    // These provide a way to set is_dap4
-    BaseType(const string &n, const Type &t, bool is_dap4);
-    BaseType(const string &n, const string &d, const Type &t, bool is_dap4);
-#endif
+
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();
 
     virtual string toString();
 
+    virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
+
     virtual void dump(ostream &strm) const ;
 
     BaseType &operator=(const BaseType &rhs);
 
-    bool is_dap4() { return d_is_dap4; }
+    bool is_dap4() const { return d_is_dap4; }
     void set_is_dap4(const bool v) { d_is_dap4 = v;}
 
     /** Clone this instance. Allocate a new instance and copy \c *this into
@@ -262,6 +176,7 @@ public:
 
     string name() const;
     virtual void set_name(const string &n);
+    virtual std::string FQN() const;
 
     Type type() const;
     void set_type(const Type &t);
@@ -269,15 +184,24 @@ public:
 
     string dataset() const ;
 
-    virtual bool is_simple_type();
-    virtual bool is_vector_type();
-    virtual bool is_constructor_type();
+    /**
+     * @brief How many elements are in this variable.
+     * @todo change the return type to int64_t
+     * @return The number of elements; 1 for scalars
+     */
+    virtual int length() const { return 1; }
 
-#if 0
-    // Not yet, if ever. Allow 'sloppy' changeover in the handlers
-    virtual bool is_dap4_only_type();
-    virtual bool is_dap2_only_type();
-#endif
+    /**
+     * @brief Set the number of elements for this variable
+     * @todo change param type to int64_t
+     * @param l The number of elements
+     */
+    virtual void set_length(int) { }
+
+    virtual bool is_simple_type() const;
+    virtual bool is_vector_type() const;
+    virtual bool is_constructor_type() const;
+
     virtual bool synthesized_p();
     virtual void set_synthesized_p(bool state);
 
@@ -292,11 +216,16 @@ public:
     virtual AttrTable &get_attr_table();
     virtual void set_attr_table(const AttrTable &at);
 
+    // DAP4 attributes
+    virtual D4Attributes *attributes();
+    virtual void set_attributes(D4Attributes *);
+    virtual void set_attributes_nocopy(D4Attributes *);
+
     virtual bool is_in_selection();
     virtual void set_in_selection(bool state);
 
     virtual void set_parent(BaseType *parent);
-    virtual BaseType *get_parent();
+    virtual BaseType *get_parent() const;
 
     virtual void transfer_attributes(AttrTable *at);
 
@@ -338,12 +267,15 @@ public:
     virtual BaseType *var(const string &name, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part = nil);
+    virtual void add_var_nocopy(BaseType *bt, Part part = nil);
 
     virtual bool read();
 
     virtual bool check_semantics(string &msg, bool all = false);
 
     virtual bool ops(BaseType *b, int op);
+
+    virtual unsigned int width(bool constrained = false) const;
 
     virtual void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,
@@ -363,6 +295,8 @@ public:
 
     virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
 
+    virtual void print_dap4(XMLWriter &xml, bool constrained = false);
+
     /** @name Abstract Methods */
     //@{
 #if 0
@@ -379,8 +313,6 @@ public:
 	@brief Returns the size of the class instance data. */
     virtual unsigned int width(bool constrained = false) = 0;
 #endif
-    virtual unsigned int width(bool constrained = false);
-
     /** Reads the class data into the memory referenced by <i>val</i>.
 	The caller should either allocate enough storage to <i>val</i>
 	to hold the class data or set \c *val to null. If <i>*val</i>
@@ -475,8 +407,30 @@ public:
 	@exception InternalErr.
 	@exception Error.
 	@see DDS */
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
-			   Marshaller &m, bool ce_eval = true) = 0;
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,  Marshaller &m, bool ce_eval = true);
+
+    /**
+     * @brief include the data for this variable in the checksum
+     * DAP4 includes a checksum with every data response. This method adds the
+     * variable's data to that checksum.
+     * @param checksum A Crc32 instance that holds the current checksum.
+     */
+    virtual void compute_checksum(Crc32 &checksum) = 0;
+
+    virtual void intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/);
+
+    /**
+     * @brief The DAP4 serialization method.
+     * Serialize a variable's values for DAP4. This does not write the DMR
+     * persistent representation but does write that part of the binary
+     * data blob that holds a variable's data.
+     * @param m
+     * @param dmr
+     * @param eval
+     * @param filter True if there is one variable that should be 'filtered'
+     * @exception Error or InternalErr
+     */
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
 
     /** Receives data from the network connection identified by the
 	<tt>source</tt> parameter. The data is put into the class data
@@ -502,7 +456,15 @@ public:
 	@exception Error when a problem reading from the UnMarshaller is
 	found.
 	@see DDS */
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) = 0;
+    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+
+    /**
+     * The DAP4 deserialization method.
+     * @param um
+     * @param dmr
+     * @exception Error or InternalErr
+     */
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS
@@ -520,7 +482,7 @@ public:
 	variable declaration is printed as well as the value. */
 
     virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true) = 0;
+                           bool print_decl_p = true);
 
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS

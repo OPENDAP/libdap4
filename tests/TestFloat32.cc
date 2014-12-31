@@ -118,9 +118,6 @@ TestFloat32::read()
     if (get_series_values()) {
         d_buf += 10.0;
         d_buf = (float)(trunc(10000 * sin(trunc(d_buf))) / 100);
-	/*
-	d_buf -= 0.11 ;
-	*/
     }
     else {
         d_buf = (float)99.999;

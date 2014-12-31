@@ -51,6 +51,7 @@
 double w32strtod(const char *, char **);
 #endif
 
+#include "Error.h"
 #include "debug.h"
 #include "parser.h"             // defines constants such as ID_MAX
 #include "dods-limits.h"
@@ -252,7 +253,7 @@ int check_int32(const char *val)
         return FALSE;
     }
     // This could be combined with the above, or course, but I'm making it
-    // separate to highlite the test. On 64-bit linux boxes 'long' may be 
+    // separate to highlight the test. On 64-bit linux boxes 'long' may be
     // 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
     else if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
 	return FALSE;
@@ -282,20 +283,56 @@ int check_uint32(const char *val)
         return FALSE;
     }
 
-    // check overflow first, or the below check is invalid due to
-    // clamping to the maximum value by strtoul
-    // maybe consider using long long for these checks? mjohnson
+	// check overflow first, or the below check is invalid due to
+	// clamping to the maximum value by strtoul
+	// maybe consider using long long for these checks? mjohnson
+	if (errno == ERANGE) {
+		return FALSE;
+	}
+	// See above.
+	else if (v > DODS_UINT_MAX) {
+		return FALSE;
+	}
+	else {
+		return TRUE;
+	}
+}
+
+unsigned long long get_ull(const char *val)
+{
+  // Eat whitespace and check for an initial '-' sign...
+  // strtoul allows an initial minus. mjohnson
+    const char* c = val;
+    while (c && isspace(*c)) {
+         c++;
+    }
+    if (c && (*c == '-')) {
+    	throw Error("The value '" + string(val) + "' is not a valid array index.");
+        // return FALSE;
+    }
+
+    char *ptr;
+    errno = 0;
+    unsigned long long v = strtoull(val, &ptr, 0);
+
+    if ((v == 0 && val == ptr) || *ptr != '\0') {
+    	throw Error("The value '" + string(val) + "' contains extra characters.");
+        //return FALSE;
+    }
+
     if (errno == ERANGE) {
-      return FALSE;
+    	throw Error("The value '" + string(val) + "' is out of range.");
+    	// return FALSE;
     }
-    // See above.
-    else if (v > DODS_UINT_MAX) {
-	return FALSE;
+    else if (v > DODS_MAX_ARRAY_INDEX) { // 2^61
+    	throw Error("The value '" + string(val) + "' is out of range.");
+    	// return FALSE;
     }
-    else {
-	return TRUE;
+	else {
+		return v;
     }
 }
+
 
 // Check first for system errors (like numbers so small they convert
 // (erroneously) to zero. Then make sure that the value is within

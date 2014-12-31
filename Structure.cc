@@ -56,6 +56,9 @@
 #include "DDS.h"
 #include "ConstraintEvaluator.h"
 
+#include "D4Attributes.h"
+#include "D4Group.h"
+
 #include "XDRStreamMarshaller.h"
 #include "util.h"
 #include "debug.h"
@@ -122,15 +125,12 @@ Structure::Structure(const string &n, const string &d)
 /** The Structure copy constructor. */
 Structure::Structure(const Structure &rhs) : Constructor(rhs)
 {
-    m_duplicate(rhs);
+    DBG(cerr << "In Structure::copy_ctor for " << name() << endl);
+    //m_duplicate(rhs);
 }
 
 Structure::~Structure()
 {
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        BaseType *btp = *i ;
-        delete btp ;  btp = 0;
-    }
 }
 
 BaseType *
@@ -139,16 +139,44 @@ Structure::ptr_duplicate()
     return new Structure(*this);
 }
 
+/**
+ * Build a DAP4 Structure.
+ *
+ * This code must be subclassed for all but the most trivial cases.
+ *
+ * @param root
+ * @param container
+ * @return The new variable
+ */
+BaseType *
+Structure::transform_to_dap4(D4Group *root, Constructor *container)
+{
+	// For this class, ptr_duplicate() calls the const ctor which calls
+	// Constructor's const ctor which calls Constructor::m_duplicate().
+	// Here we replicate some of that functionality, but instead call
+	// transform_to_dap4() on the contained variables.
+
+	// Structure *dest = static_cast<Structure*>(ptr_duplicate());
+	Structure *dest = new Structure(name());
+
+	Constructor::transform_to_dap4(root, dest);
+	dest->set_parent(container);
+
+	return dest;
+}
+
 Structure &
 Structure::operator=(const Structure &rhs)
 {
+    DBG(cerr << "Entering Structure::operator=" << endl);
     if (this == &rhs)
         return *this;
 
     dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
 
-    m_duplicate(rhs);
+    //m_duplicate(rhs);
 
+    DBG(cerr << "Exiting Structure::operator=" << endl);
     return *this;
 }
 
@@ -527,8 +555,6 @@ Structure::m_exact_match(const string &name, btp_stack *s)
     return 0;
 }
 #endif
-// TODO Can these be removed and the versions in Constructor used instead?
-// Yes.
 #if 0
 void
 Structure::print_val(FILE *out, string space, bool print_decl_p)

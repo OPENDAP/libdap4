@@ -54,6 +54,7 @@
 namespace libdap
 {
 
+class DMR;
 class ConstraintEvaluator;
 
 /** @brief Holds a 32-bit signed integer.
@@ -77,12 +78,16 @@ public:
     virtual ~Int32();
 
     virtual BaseType *ptr_duplicate();
+    virtual unsigned int width(bool constrained = false) const;
 
-    virtual unsigned int width(bool constrained = false);
-
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
-			   Marshaller &m, bool ce_eval = true);
+    //DAP2
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+
+    // DAP4
+    virtual void compute_checksum(Crc32 &checksum);
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);

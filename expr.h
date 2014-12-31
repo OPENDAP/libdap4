@@ -39,24 +39,26 @@
 #include <string>
 #include <vector>
 
-#ifndef _basetype_h
-#include "BaseType.h"
-#endif
+#include <Type.h>
 
 namespace libdap
 {
+
+class BaseType;
+class DDS;
+class ConstraintEvaluator;
 
 // VALUE is used to return constant values from the scanner to the parser.
 // Constants are packaged in BaseType *s for evaluation by the parser.
 
 typedef struct
 {
-    Type type;   // Type is an enum defined in BaseType.h
+    Type type;   // Type is an enum defined in Type.h
     union {
         unsigned int ui;
         int i;
         double f;
-        string *s;
+        std::string *s;
     } v;
 } value;
 
@@ -67,18 +69,15 @@ typedef struct
 // evaluated (analogous to the ENVP in UNIX) and a pointer for the function's
 // return value. ARGC is the length of ARGV.
 
-/** @todo A better design would wrap these in a class and record at minimum
-    their names so that error messages could be a bit more informative. jhrg
- */
-typedef void(*bool_func)(int argc, BaseType *argv[], DDS &dds, bool *result);
-typedef void(*btp_func)(int argc, BaseType *argv[], DDS &dds, BaseType **btpp);
+typedef void (*bool_func)(int argc, BaseType *argv[], DDS &dds, bool *result);
+typedef void (*btp_func)(int argc, BaseType *argv[], DDS &dds, BaseType **btpp);
 
 // Projection function: A function that appears in the projection part of the
 // CE and is executed for its side-effect. Usually adds a new variable to
 // the DDS. These are run _during the parse_ so their side-effects can be used
 // by subsequent parts of the CE.
 
-typedef void(*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce);
+typedef void (*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce);
 
 // INT_LIST and INT_LIST_LIST are used by the parser to store the array
 // indexes.

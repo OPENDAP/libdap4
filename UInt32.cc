@@ -51,10 +51,14 @@
 #include "Str.h"
 #include "Url.h"
 
+#include "DDS.h"
 #include "Marshaller.h"
 #include "UnMarshaller.h"
 
-#include "DDS.h"
+#include "DMR.h"
+#include "D4StreamMarshaller.h"
+#include "D4StreamUnMarshaller.h"
+
 #include "util.h"
 #include "parser.h"
 #include "Operators.h"
@@ -72,8 +76,7 @@ namespace libdap {
     @param n A string containing the name of the variable to be created.
     variable is created
 */
-UInt32::UInt32(const string &n)
-        : BaseType(n, dods_uint32_c)
+UInt32::UInt32(const string &n) : BaseType(n, dods_uint32_c), d_buf(0)
 {}
 
 /** The UInt32 server-side constructor accepts the name of the variable and
@@ -83,8 +86,7 @@ UInt32::UInt32(const string &n)
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-UInt32::UInt32(const string &n, const string &d)
-        : BaseType(n, d, dods_uint32_c)
+UInt32::UInt32(const string &n, const string &d) : BaseType(n, d, dods_uint32_c), d_buf(0)
 {}
 
 UInt32::UInt32(const UInt32 &copy_from) : BaseType(copy_from)
@@ -112,24 +114,21 @@ UInt32::operator=(const UInt32 &rhs)
 }
 
 unsigned int
-UInt32::width(bool)
+UInt32::width(bool) const
 {
     return sizeof(dods_uint32);
 }
 
 bool
-UInt32::serialize(ConstraintEvaluator &eval, DDS &dds,
-                  Marshaller &m, bool ce_eval)
+UInt32::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
     if (!read_p())
         read();  // read() throws Error and InternalErr
 
-#if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-#endif
 
     dds.timeout_off();
 
@@ -144,6 +143,35 @@ UInt32::deserialize(UnMarshaller &um, DDS *, bool)
     um.get_uint32( d_buf ) ;
 
     return false;
+}
+
+void
+UInt32::compute_checksum(Crc32 &checksum)
+{
+	checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(d_buf));
+}
+
+/**
+ * @brief Serialize an Int8
+ * @param m
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+UInt32::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
+{
+    if (!read_p())
+        read();          // read() throws Error
+
+    m.put_uint32( d_buf ) ;
+}
+
+void
+UInt32::deserialize(D4StreamUnMarshaller &um, DMR &)
+{
+    um.get_uint32( d_buf ) ;
 }
 
 unsigned int

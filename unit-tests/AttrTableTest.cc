@@ -41,6 +41,12 @@
 #include "debug.h"
 
 #include "testFile.h"
+#include "GetOpt.h"
+
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
 
 using namespace CppUnit;
 using namespace std;
@@ -302,10 +308,6 @@ String longer%20name \"second test\";";
                 CPPUNIT_ASSERT("Caught Error exception!" && false);
             }
             try {
-#if 0
-                string sof;
-                FILE2string(sof, of, top->print(of, ""));
-#endif
                 ostringstream oss;
                 top->print(oss);
                 Regex r(".*Data%20Field \\{\n\
@@ -345,36 +347,46 @@ String longer%20name \"second test\";";
             CPPUNIT_ASSERT(b->get_name(i) == "number");
             i += 2;
             CPPUNIT_ASSERT(b->get_name(i) == "ba");
+
             b->del_attr_table(i);
+
             i = b->attr_begin();
             CPPUNIT_ASSERT(b->get_name(i) == "number");
             i += 2;
             CPPUNIT_ASSERT(i == b->attr_end());
 
             // try a second table. at2 contains a scalar attribute followed by a
-            // container names 'a'.
+            // container named 'a'.
+            AttrTable *at2;
             try {
-                AttrTable *at2 = new AttrTable;
+                at2 = new AttrTable;
+                at2->set_name("at2");
                 at2->append_attr("color", "String", "red");
-                AttrTable *cont_at2 = at2->append_container("a");
+                AttrTable *cont_at2 = at2->append_container("cont_at2");
                 cont_at2->append_attr("size", "Int32", "7");
                 cont_at2->append_attr("type", "String", "cars");
                 i = at2->attr_begin();
                 CPPUNIT_ASSERT(at2->get_name(i) == "color");
-		i++ ;
-                CPPUNIT_ASSERT(at2->get_name(i) == "a");
+                i++ ;
+                CPPUNIT_ASSERT(at2->get_name(i) == "cont_at2");
+
                 at2->del_attr_table(i);
+
                 i = at2->attr_begin();
                 CPPUNIT_ASSERT(at2->get_name(i) == "color");
-		i++ ;
+                i++ ;
                 CPPUNIT_ASSERT(i == at2->attr_end());
+
+                delete at2; at2 = 0;
             }
             catch (Error &e) {
                 cerr << "Error: " << e.get_error_message() << endl;
+                delete at2; at2 = 0;
                 throw;
             }
             catch (...) {
                 cerr << "caught an exception!" << endl;
+                delete at2; at2 = 0;
                 throw;
             }
         }
@@ -401,13 +413,39 @@ String longer%20name \"second test\";";
 
 } // namespace libdap
 
-int main(int, char**)
+int
+main(int argc, char *argv[])
 {
+    GetOpt getopt(argc, argv, "d");
+    char option_char;
+
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+            case 'd':
+                debug = 1;  // debug is a static global
+                break;
+            default:
+                break;
+        }
+
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run("", false);
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("libdap::AttrTableTest::") + argv[i++];
+            if (debug)
+                cerr << "Running " << test << endl;
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }
-

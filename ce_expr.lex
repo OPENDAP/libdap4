@@ -48,8 +48,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used = {"$Id$"};
-
 #include <cstdio>
 #include <string>
 #include <cstring>

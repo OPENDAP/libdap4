@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Example in the CE section of the DAP4 spec. jhrg 1/2/13 -->
+
+<Dataset name="vol_1_ce_9" dapVersion="4.0" dmrVersion="1.0" xml:base="file:dap4/vol_1_ce_9.xml"
+  xmlns="http://xml.opendap.org/ns/DAP/4.0#" xmlns:dap="http://xml.opendap.org/ns/DAP/4.0#">
+  <Sequence name="Points1">
+    <Int32 name="x">
+      <Dim size="100"/>
+    </Int32>
+    <Int32 name="y"/>
+  </Sequence>
+  
+  <Sequence name="Points2">
+    <Int32 name="x"/>
+    <Int32 name="y"/>
+    <Sequence name="sounding">
+      <Int32 name="depth"/>
+      <Int32 name="temp"/>
+      <Dim size="20"/>
+    </Sequence>
+  </Sequence>
+  
+  <Structure name="Points3">
+    <Int32 name="x"/>
+    <Int32 name="y"/>
+    <Sequence name="raw">
+      <Int32 name="depth"/>
+      <Int32 name="temps">
+        <Dim size="4"/>
+      </Int32>
+      <Dim size="300"/>
+    </Sequence>
+  </Structure>
+  
+</Dataset>

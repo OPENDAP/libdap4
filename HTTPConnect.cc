@@ -41,6 +41,7 @@
 #include <functional>
 #include <algorithm>
 #include <sstream>
+#include <fstream>
 #include <iterator>
 #include <cstdlib>
 #include <cstring>
@@ -54,6 +55,7 @@
 
 #include "debug.h"
 #include "mime_util.h"
+#include "media_types.h"
 #include "GNURegex.h"
 #include "HTTPCache.h"
 #include "HTTPConnect.h"
@@ -127,6 +129,42 @@ http_status_to_string(int status)
         return string("Unknown Error: This indicates a problem with libdap++.\nPlease report this to support@opendap.org.");
 }
 
+static ObjectType
+determine_object_type(const string &header_value)
+{
+    // DAP4 Data: application/vnd.opendap.dap4.data
+    // DAP4 DMR: application/vnd.opendap.dap4.dataset-metadata+xml
+
+    string::size_type plus = header_value.find('+');
+    string base_type;
+    string type_extension = "";
+    if (plus != string::npos) {
+        base_type= header_value.substr(0, plus);
+        type_extension = header_value.substr(plus+1);
+    }
+    else
+        base_type = header_value;
+
+    if (base_type == DMR_Content_Type
+    	|| (base_type.find("application/") != string::npos
+    		&& base_type.find("dap4.dataset-metadata") != string::npos)) {
+        if (type_extension == "xml")
+            return dap4_dmr;
+        else
+            return unknown_type;
+    }
+    else if (base_type == DAP4_DATA_Content_Type
+    		|| (base_type.find("application/") != string::npos
+    			&& base_type.find("dap4.data") != string::npos)) {
+        return dap4_data;
+    }
+    else if (header_value.find("text/html") != string::npos) {
+        return web_error;
+    }
+    else
+        return unknown_type;
+}
+
 /** Functor to parse the headers in the d_headers field. After the headers
     have been read off the wire and written into the d_headers field, scan
     them and set special fields for certain headers special to the DAP. */
@@ -146,37 +184,35 @@ public:
     {
         string name, value;
         parse_mime_header(line, name, value);
-        if (name == "content-description") {
-            DBG2(cerr << name << ": " << value << endl);
-            type = get_description_type(value);
+
+        DBG2(cerr << name << ": " << value << endl);
+
+        // Content-Type is used to determine the content of DAP4 responses, but allow the
+        // Content-Description header to override CT o preserve operation with DAP2 servers.
+        // jhrg 11/12/13
+        if (type == unknown_type && name == "content-type") {
+            type = determine_object_type(value); // see above
+        }
+        if (name == "content-description" && !(type == dap4_dmr || type == dap4_data || type == dap4_error)) {
+            type = get_description_type(value); // defined in mime_util.cc
         }
         // The second test (== "dods/0.0") tests if xopendap-server has already
         // been seen. If so, use that header in preference to the old
         // XDODS-Server header. jhrg 2/7/06
         else if (name == "xdods-server" && server == "dods/0.0") {
-            DBG2(cerr << name << ": " << value << endl);
             server = value;
         }
         else if (name == "xopendap-server") {
-            DBG2(cerr << name << ": " << value << endl);
             server = value;
         }
         else if (name == "xdap") {
-            DBG2(cerr << name << ": " << value << endl);
             protocol = value;
         }
         else if (server == "dods/0.0" && name == "server") {
-            DBG2(cerr << name << ": " << value << endl);
             server = value;
         }
        	else if (name == "location") {
-       	    DBG2(cerr << name << ": " << value << endl);
        	    location = value;
-        }
-        else if (type == unknown_type && name == "content-type"
-                 && line.find("text/html") != string::npos) {
-            DBG2(cerr << name << ": text/html..." << endl);
-            type = web_error;
         }
     }
 
@@ -203,10 +239,9 @@ public:
 /** A libcurl callback function used to read response headers. Read headers,
     line by line, from ptr. The fourth param is really supposed to be a FILE
     *, but libcurl just holds the pointer and passes it to this function
-    without using it itself. I use that to pass in a pointer to the
-    HTTPConnect that initiated the HTTP request so that there's some place to
-    dump the headers. Note that this function just saves the headers in a
-    vector of strings. Later on the code (see fetch_url()) parses the headers
+    without using it itself. I use that to pass in a pointer to a vector
+    of strings so that there's some place to
+    dump the headers. Later on the code (see fetch_url()) parses the headers
     special to the DAP.
 
     @param ptr A pointer to one line of character data; one header.
@@ -330,14 +365,14 @@ HTTPConnect::www_lib_init()
     curl_easy_setopt(d_curl, CURLOPT_MAXREDIRS, 5);
 
     // If the user turns off SSL validation...
-    if (!d_rcr->get_validate_ssl() == 0) {
+    if (d_rcr->get_validate_ssl() == 0) {
         curl_easy_setopt(d_curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_easy_setopt(d_curl, CURLOPT_SSL_VERIFYHOST, 0);
     }
 
     // Look to see if cookies are turned on in the .dodsrc file. If so,
     // activate here. We honor 'session cookies' (cookies without an
-    // expiration date) here so that session-base SSO systems will work as
+    // expiration date) here so that session-based SSO systems will work as
     // expected.
     if (!d_cookie_jar.empty()) {
 	DBG(cerr << "Setting the cookie jar to: " << d_cookie_jar << endl);
@@ -391,9 +426,7 @@ public:
     error message is stuffed into the Error object. */
 
 long
-HTTPConnect::read_url(const string &url, FILE *stream,
-                      vector<string> *resp_hdrs,
-                      const vector<string> *headers)
+HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs, const vector<string> *headers)
 {
     curl_easy_setopt(d_curl, CURLOPT_URL, url.c_str());
 
@@ -405,10 +438,10 @@ HTTPConnect::read_url(const string &url, FILE *stream,
     //  this issue is that one should not pass a FILE * to a windows DLL.  Close
     //  inspection of libcurl yields that their default write function when using
     //  the CURLOPT_WRITEDATA is just "fwrite".
-    curl_easy_setopt(d_curl, CURLOPT_FILE, stream);
+    curl_easy_setopt(d_curl, CURLOPT_WRITEDATA, stream);
     curl_easy_setopt(d_curl, CURLOPT_WRITEFUNCTION, &fwrite);
 #else
-    curl_easy_setopt(d_curl, CURLOPT_FILE, stream);
+    curl_easy_setopt(d_curl, CURLOPT_WRITEDATA, stream);
 #endif
 
     DBG(copy(d_request_headers.begin(), d_request_headers.end(),
@@ -465,6 +498,13 @@ HTTPConnect::read_url(const string &url, FILE *stream,
     if (res != 0)
         throw Error(d_error_buffer);
 
+    char *ct_ptr = 0;
+    res = curl_easy_getinfo(d_curl, CURLINFO_CONTENT_TYPE, &ct_ptr);
+    if (res == CURLE_OK && ct_ptr)
+        d_content_type = ct_ptr;
+    else
+        d_content_type = "";
+
     return status;
 }
 
@@ -501,10 +541,8 @@ HTTPConnect::url_uses_no_proxy_for(const string &url) throw()
     @param rcr A pointer to the RCReader object which holds configuration
     file information to be used by this virtual connection. */
 
-HTTPConnect::HTTPConnect(RCReader *rcr) : d_username(""), d_password(""),
-  					  d_cookie_jar(""),
-					  d_dap_client_protocol_major(2),
-					  d_dap_client_protocol_minor(0)
+HTTPConnect::HTTPConnect(RCReader *rcr, bool use_cpp) : d_username(""), d_password(""), d_cookie_jar(""),
+		d_dap_client_protocol_major(2),	d_dap_client_protocol_minor(0), d_use_cpp_streams(use_cpp)
 
 {
     d_accept_deflate = rcr->get_deflate();
@@ -553,6 +591,14 @@ HTTPConnect::~HTTPConnect()
     DBG2(cerr << "Leaving the HTTPConnect dtor" << endl);
 }
 
+/** Look for a certain header */
+class HeaderMatch : public unary_function<const string &, bool> {
+    const string &d_header;
+    public:
+        HeaderMatch(const string &header) : d_header(header) {}
+        bool operator()(const string &arg) { return arg.find(d_header) == 0; }
+};
+
 /** Dereference a URL. This method dereferences a URL and stores the result
     (i.e., it formulates an HTTP request and processes the HTTP server's
     response). After this method is successfully called, the value of
@@ -574,7 +620,7 @@ HTTPConnect::fetch_url(const string &url)
 
     HTTPResponse *stream;
 
-    if (d_http_cache && d_http_cache->is_cache_enabled()) {
+    if (/*d_http_cache && d_http_cache->*/is_cache_enabled()) {
         stream = caching_fetch_url(url);
     }
     else {
@@ -582,18 +628,24 @@ HTTPConnect::fetch_url(const string &url)
     }
 
 #ifdef HTTP_TRACE
-    stringstream ss;
-    ss << "HTTP/1.0 " << stream->get_status() << " -" << endl;
-    for (size_t i = 0; i < stream->get_headers()->size(); i++) {
-	ss << stream->get_headers()->at(i) << endl;
-    }
-    cout << ss.str();
+	stringstream ss;
+	ss << "HTTP/1.0 " << stream->get_status() << " -" << endl;
+	for (size_t i = 0; i < stream->get_headers()->size(); i++) {
+		ss << stream->get_headers()->at(i) << endl;
+	}
+	cout << ss.str();
 #endif
 
     ParseHeader parser;
 
-    parser = for_each(stream->get_headers()->begin(),
-                      stream->get_headers()->end(), ParseHeader());
+    // An apparent quirk of libcurl is that it does not pass the Content-type
+    // header to the callback used to save them, but check and add it from the
+    // saved state variable only if it's not there (without this a test failed
+    // in HTTPCacheTest). jhrg 11/12/13
+    if (!d_content_type.empty() && find_if(stream->get_headers()->begin(), stream->get_headers()->end(),
+    									   HeaderMatch("Content-Type:")) == stream->get_headers()->end())
+        stream->get_headers()->push_back("Content-Type: " + d_content_type);
+    parser = for_each(stream->get_headers()->begin(), stream->get_headers()->end(), ParseHeader());
 
 #ifdef HTTP_TRACE
     cout << endl << endl;
@@ -602,13 +654,18 @@ HTTPConnect::fetch_url(const string &url)
     // handle redirection case (2007-04-27, gaffigan@sfos.uaf.edu)
     if (parser.get_location() != "" &&
 	    url.substr(0,url.find("?",0)).compare(parser.get_location().substr(0,url.find("?",0))) != 0) {
-	delete stream;
+    	delete stream;
         return fetch_url(parser.get_location());
     }
 
-    stream->set_type(parser.get_object_type());
+    stream->set_type(parser.get_object_type()); // uses the value of content-description
+
     stream->set_version(parser.get_server());
     stream->set_protocol(parser.get_protocol());
+
+    if (d_use_cpp_streams) {
+    	stream->transform_to_cpp();
+    }
 
     return stream;
 }
@@ -622,7 +679,7 @@ HTTPConnect::fetch_url(const string &url)
 // descriptor. Use information from https://buildsecurityin.us-cert.gov/
 // (see open()) to make it more secure. Ideal solution: get deserialize()
 // methods to read from a stream returned by libcurl, not from a temporary
-// file. 9/21/07 jhrg Updated to use strings, so other misc changes. 3/22/11
+// file. 9/21/07 jhrg Updated to use strings, other misc changes. 3/22/11
 static string
 get_tempfile_template(const string &file_template)
 {
@@ -706,7 +763,7 @@ valid_temp_directory:
     @exception InternalErr thrown if the FILE* could not be opened. */
 
 string
-get_temp_file(FILE *&stream) throw(InternalErr)
+get_temp_file(FILE *&stream) throw(Error)
 {
     string dods_temp = get_tempfile_template((string)"dodsXXXXXX");
 
@@ -725,17 +782,19 @@ get_temp_file(FILE *&stream) throw(InternalErr)
     stream = fdopen(mkstemp(&pathname[0]), "w+");
 #endif
 
-    if (!stream) {
-	throw InternalErr(__FILE__, __LINE__,
-		"Failed to open a temporary file for the data values ("
-		+ dods_temp + ")");
-    }
+    if (!stream)
+    	throw Error("Failed to open a temporary file for the data values (" + dods_temp + ")");
 
     dods_temp = &pathname[0];
     return dods_temp;
 }
 
-/** Close the temporary file opened for read_url(). */
+
+/**
+ * close temporary files - used here and in ~HTTPResponse
+ * @param s
+ * @param name
+ */
 void
 close_temp(FILE *s, const string &name)
 {
@@ -875,33 +934,43 @@ HTTPConnect::caching_fetch_url(const string &url)
 HTTPResponse *
 HTTPConnect::plain_fetch_url(const string &url)
 {
-    DBG(cerr << "Getting URL: " << url << endl);
-    FILE *stream = 0;
-    string dods_temp = get_temp_file(stream);
-    vector<string> *resp_hdrs = new vector<string>;
+	DBG(cerr << "Getting URL: " << url << endl);
+	FILE *stream = 0;
+	string dods_temp = get_temp_file(stream);
+	vector<string> *resp_hdrs = new vector<string>;
 
-    int status = -1;
-    try {
-        status = read_url(url, stream, resp_hdrs); // Throws Error.
-        if (status >= 400) {
-        	// delete resp_hdrs; resp_hdrs = 0;
-            string msg = "Error while reading the URL: ";
-            msg += url;
-            msg += ".\nThe OPeNDAP server returned the following message:\n";
-            msg += http_status_to_string(status);
-            throw Error(msg);
-        }
-    }
+	int status = -1;
+	try {
+		status = read_url(url, stream, resp_hdrs); // Throws Error.
+		if (status >= 400) {
+			// delete resp_hdrs; resp_hdrs = 0;
+			string msg = "Error while reading the URL: ";
+			msg += url;
+			msg += ".\nThe OPeNDAP server returned the following message:\n";
+			msg += http_status_to_string(status);
+			throw Error(msg);
+		}
+	}
 
-    catch (Error &e) {
-    	delete resp_hdrs;
-        close_temp(stream, dods_temp);
-        throw;
-    }
+	catch (Error &e) {
+		delete resp_hdrs;
+		close_temp(stream, dods_temp);
+		throw;
+	}
 
-    rewind(stream);
-
-    return new HTTPResponse(stream, status, resp_hdrs, dods_temp);
+#if 0
+	if (d_use_cpp_streams) {
+		fclose(stream);
+		fstream *in = new fstream(dods_temp.c_str(), ios::in|ios::binary);
+		return new HTTPResponse(in, status, resp_hdrs, dods_temp);
+	}
+	else {
+#endif
+	rewind(stream);
+	return new HTTPResponse(stream, status, resp_hdrs, dods_temp);
+#if 0
+}
+#endif
 }
 
 /** Set the <em>accept deflate</em> property. If true, the DAP client
@@ -935,14 +1004,6 @@ HTTPConnect::set_accept_deflate(bool deflate)
         d_request_headers.erase(i, d_request_headers.end());
     }
 }
-
-/** Look for a certain header */
-class HeaderMatch : public unary_function<const string &, bool> {
-    const string &d_header;
-    public:
-        HeaderMatch(const string &header) : d_header(header) {}
-        bool operator()(const string &arg) { return arg.find(d_header) == 0; }
-};
 
 /** Set the <em>xdap_accept</em> property/HTTP-header. This sets the value
     of the DAP which the client advertises to servers that it understands.

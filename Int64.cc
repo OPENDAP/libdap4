@@ -59,10 +59,10 @@
 #include "Grid.h"
 #endif
 
-#include "DAP4StreamMarshaller.h"
-#include "DAP4StreamUnMarshaller.h"
+#include "DMR.h"
+#include "D4StreamMarshaller.h"
+#include "D4StreamUnMarshaller.h"
 
-#include "DDS.h"
 #include "util.h"
 #include "parser.h"
 #include "Operators.h"
@@ -82,7 +82,7 @@ namespace libdap {
     @param n A string containing the name of the variable to be
     created.
 */
-Int64::Int64(const string &n) : BaseType(n, dods_int64_c)
+Int64::Int64(const string &n) : BaseType(n, dods_int64_c, true /*is_dap4*/), d_buf(0)
 {}
 
 /** The Int64 server-side constructor accepts the name of the variable and
@@ -92,7 +92,7 @@ Int64::Int64(const string &n) : BaseType(n, dods_int64_c)
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-Int64::Int64(const string &n, const string &d) : BaseType(n, d, dods_int64_c)
+Int64::Int64(const string &n, const string &d) : BaseType(n, d, dods_int64_c, true /*is_dap4*/), d_buf(0)
 {}
 
 Int64::Int64(const Int64 &copy_from) : BaseType(copy_from)
@@ -125,41 +125,38 @@ Int64::operator=(const Int64 &rhs)
 }
 
 unsigned int
-Int64::width(bool)
+Int64::width(bool) const
 {
     return sizeof(dods_int64);
 }
 
-bool
-Int64::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
+void
+Int64::compute_checksum(Crc32 &checksum)
 {
-    dds.timeout_on();
-
-    if (!read_p())
-        read();  // read() throws Error and InternalErr
-
-#if EVAL
-    if (ce_eval && !eval.eval_selection(dds, dataset()))
-        return true;
-#endif
-
-    dds.timeout_off();
-
-    assert(typeid(m) == typeid(DAP4StreamMarshaller));
-
-    static_cast<DAP4StreamMarshaller*>(&m)->put_int64( d_buf ) ;
-
-    return true;
+	checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(d_buf));
 }
 
-bool
-Int64::deserialize(UnMarshaller &um, DDS *, bool)
+/**
+ * @brief Serialize an Int8
+ * @param m
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+Int64::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
 {
-    assert(typeid(um) == typeid(DAP4StreamUnMarshaller));
+    if (!read_p())
+        read();          // read() throws Error
 
-    static_cast<DAP4StreamUnMarshaller*>(&um)->get_int64( d_buf ) ;
+    m.put_int64( d_buf ) ;
+}
 
-    return false;
+void
+Int64::deserialize(D4StreamUnMarshaller &um, DMR &)
+{
+    um.get_int64( d_buf ) ;
 }
 
 dods_int64
@@ -177,22 +174,14 @@ Int64::set_value(dods_int64 i)
     return true;
 }
 
-void
-Int64::print_val(FILE *out, string space, bool print_decl_p)
-{
-    ostringstream oss;
-    print_val(oss, space, print_decl_p);
-    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-}
-
 void Int64::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
         print_decl(out, space, false);
-        out << " = " << (dods_int64) d_buf << ";\n";
+        out << " = " << d_buf << ";\n";
     }
     else
-        out << (int) d_buf;
+        out << d_buf;
 }
 
 bool

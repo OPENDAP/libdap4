@@ -36,127 +36,134 @@ using namespace std;
 
 namespace libdap {
 
-//class XMLWriter;
+class D4EnumDefs;
+class D4Group;
 
-/** Enumeration values. This class is only used when defining an enumeration
- * (which is effectively a type definition).
- */
-class enumValues {
-    struct value {
-        string item;
-        long long num;
+class D4EnumDef {
+    string d_name;
+    Type d_type;
+    D4EnumDefs *d_parent;
 
-        value(const string &i, long long n) : item(i), num(n) {}
+    struct tuple {
+        string label;
+        long long value;
+
+        tuple(const string &l, long long v) : label(l), value(v) {}
     };
 
-    vector<value> d_values;
-    void print_value(XMLWriter &xml, const enumValues::value &ev) const;
+    vector<tuple> d_tuples;
+
+    void print_value(XMLWriter &xml, const D4EnumDef::tuple &tuple) const;
 
 public:
-    typedef vector<value>::iterator valuesIter;
+    typedef vector<tuple>::iterator D4EnumValueIter;
 
-    enumValues() {}
-    virtual ~enumValues() {}
+    D4EnumDef() : d_name(""), d_type(dods_null_c), d_parent(0) {}
+    D4EnumDef(const string &n, const Type &t, D4EnumDefs *e = 0) : d_name(n), d_type(t), d_parent(e) {}
 
-    /** Append a new value.
-     *
-     * @param item Name bound to the value
-     * @param value Numeric value
-     */
-    void add_value(const string &item, const long long num) {
-        d_values.push_back(value(item, num));
+    string name() const { return d_name; }
+    void set_name(const string &n) { d_name = n; }
+
+    Type type() const { return d_type; }
+    void set_type(Type t) { d_type = t; }
+
+    D4EnumDefs *parent() const { return d_parent; }
+    void set_parent(D4EnumDefs *e) { d_parent = e; }
+
+    bool empty() const { return d_tuples.empty(); }
+
+    void add_value(const string &label, long long value) {
+        d_tuples.push_back(tuple(label, value));
     }
 
-    /// Get an iterator to the start of the values
-    valuesIter val_begin() { return d_values.begin(); }
+    D4EnumValueIter value_begin() { return d_tuples.begin(); }
+    D4EnumValueIter value_end() { return d_tuples.end(); }
+    string &label(D4EnumValueIter i) { return (*i).label; }
+    long long value(D4EnumValueIter i) { return (*i).value; }
 
-    /// Get an iterator to the end of the values
-    valuesIter val_end() { return d_values.end(); }
-
-    /// Given an iterator to a value, return its item value.
-    string get_val_name(valuesIter i) const { return (*i).item; }
-
-    /// Given an iterator to a value, return its numeric value.
-    long long get_val_type(valuesIter i) const { return (*i).num; }
-
-    /** Insert a value.
-     * Insert a value before the position specified by the iterator.
-     * @note Calling this method invalidates all iterators that reference this
-     * enumValues object.
-     * @param item
-     * @param value
-     * @param i iterator
-     */
-    void insert_enum(const string &item, long long num, valuesIter i) {
-        d_values.insert(i, value(item, num));
-    }
-
-    void print(XMLWriter &xml) const;
+    bool is_valid_enum_value(long long value);
+    void print_dap4(XMLWriter &xml) const;
 };
 
 /** The Enumerations defined for a Group. */
 class D4EnumDefs {
-    struct enumeration {
-        string name;
-        Type type;
+    vector<D4EnumDef*> d_enums;
 
-        enumValues values;
+    D4Group *d_parent;		// the group that holds this set of D4EnumDefs; weak pointer, don't delete
 
-        enumeration(const string &n, const Type &t, const enumValues &v)
-            : name(n), type(t), values(v) {}
+    void m_print_enum(XMLWriter &xml, D4EnumDef *e) const;
 
-        void print(XMLWriter &xml);
-    };
+    void m_duplicate(const D4EnumDefs &rhs) {
+        D4EnumDefCIter i = rhs.d_enums.begin();
+        while (i != rhs.d_enums.end()) {
+            d_enums.push_back(new D4EnumDef(**i++));    // deep copy
+        }
 
-    vector<enumeration> d_enums;
-
-    void print_enum(XMLWriter &xml, const enumeration &e) const;
+        d_parent = rhs.d_parent;
+    }
 
 public:
-    D4EnumDefs() {}
-    virtual ~D4EnumDefs() {}
+    typedef vector<D4EnumDef*>::iterator D4EnumDefIter;
+    typedef vector<D4EnumDef*>::const_iterator D4EnumDefCIter;
 
-    typedef vector<enumeration>::iterator D4EnumIter;
+    D4EnumDefs() : d_parent(0) {}
+    D4EnumDefs(const D4EnumDefs &rhs) {
+        m_duplicate(rhs);
+    }
 
-    /** Append a new enumeration.
+    virtual ~D4EnumDefs() {
+        D4EnumDefIter i = d_enums.begin();
+        while(i != d_enums.end()) {
+            delete *i++;
+        }
+    }
+
+    D4EnumDefs &operator=(const D4EnumDefs &rhs) {
+        if (this == &rhs) return *this;
+        m_duplicate(rhs);
+        return *this;
+    }
+
+    bool empty() const { return d_enums.empty(); }
+
+    D4Group *parent() const { return d_parent; }
+    void set_parent(D4Group *p) { d_parent = p; }
+
+    /** Append a new D4EnumDef.
      *
-     * @param name Name of the enumeration
-     * @param type Type of the enumeration
-     * @param values The enumeration values
+     * @param enum_def The enumeration.
      */
-    void add_enum(const string &name, const Type type, const enumValues &values) {
-        d_enums.push_back(enumeration(name, type, values));
+    void add_enum(D4EnumDef *enum_def) {
+    	add_enum_nocopy(new D4EnumDef(*enum_def));
+    }
+    void add_enum_nocopy(D4EnumDef *enum_def) {
+    	enum_def->set_parent(this);
+        d_enums.push_back(enum_def);
     }
 
     /// Get an iterator to the start of the enumerations
-    D4EnumIter enum_begin() { return d_enums.begin(); }
+    D4EnumDefIter enum_begin() { return d_enums.begin(); }
 
     /// Get an iterator to the end of the enumerations
-    D4EnumIter enum_end() { return d_enums.end(); }
+    D4EnumDefIter enum_end() { return d_enums.end(); }
 
-    /// Given an iterator  to a enumeration, return its name.
-    string get_enum_name(D4EnumIter i) const { return (*i).name; }
+    D4EnumDef *find_enum_def(const string &name);
 
-    /// Given an iterator to a enumeration, return its type.
-    Type get_enum_type(D4EnumIter i) const { return (*i).type; }
-
-    // Given an iterator to a enumeration, return its vector of items and values?
-    enumValues get_enum_values(D4EnumIter i) const { return (*i).values; }
-
-    /** Insert an enumeration.
-     * Insert an enumeration before the position specified by the iterator.
+    /**
+     * @brief Insert a D4EnumDef.
+     * Insert a D4EnumDef before the position specified by the iterator.
      * @note Calling this method invalidates all iterators that reference this
      * D4EnumDef object.
-     * @param name
-     * @param type
-     * @param values
+     * @param enum_def Make a deep copy and insert the enumeration definition
      * @param i iterator
      */
-    void insert_enum(const string &name, const Type type, const enumValues &values, D4EnumIter i) {
-        d_enums.insert(i, enumeration(name, type, values));
+    void insert_enum(D4EnumDef *enum_def, D4EnumDefIter i) {
+    	D4EnumDef *enum_def_copy = new D4EnumDef(*enum_def);
+    	enum_def_copy->set_parent(this);
+        d_enums.insert(i, enum_def_copy);
     }
 
-    void print(XMLWriter &xml) const;
+    void print_dap4(XMLWriter &xml, bool constrained = false) const;
 };
 
 } /* namespace libdap */

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Example in the CE section of the DAP4 spec. jhrg 1/2/13 -->
+
+<Dataset name="vol_1_ce_8" dapVersion="4.0" dmrVersion="1.0" xml:base="file:dap4/vol_1_ce_8.xml"
+  xmlns="http://xml.opendap.org/ns/DAP/4.0#" xmlns:dap="http://xml.opendap.org/ns/DAP/4.0#">
+  
+  <Float32 name="temp">
+    <Dim size="10"/>
+  </Float32>
+  
+  <Float32 name="u">
+    <Dim size="256"/>
+    <Dim size="256"/>
+  </Float32>
+
+  <Float32 name="v">
+    <Dim size="256"/>
+    <Dim size="256"/>
+  </Float32>
+
+  <Sequence name="Points">
+    <Int32 name="x"/>
+    <Int32 name="y"/>
+  </Sequence>
+  
+</Dataset>

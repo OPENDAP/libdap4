@@ -35,10 +35,6 @@
 
 #include <string>
 
-//#include <InternalErr.h>
-
-//using namespace std;
-
 namespace libdap {
 
 class XMLWriter {

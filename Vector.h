@@ -47,6 +47,8 @@
 #include "ConstraintEvaluator.h"
 #endif
 
+class Crc32;
+
 namespace libdap
 {
 
@@ -78,32 +80,32 @@ namespace libdap
 class Vector: public BaseType
 {
 private:
-    int d_length;  // number of elements in the vector
-    BaseType *_var;  // base type of the Vector
+    int d_length;  		// number of elements in the vector
+    BaseType *d_proto;  // element prototype for the Vector
 
     // _buf was a pointer to void; delete[] complained. 6/4/2001 jhrg
-    char *_buf;   // array which holds cardinal data
-    vector<string> d_str;       // special storage for strings. jhrg 2/11/05
-    vector<BaseType *> _vec; // array for other data
+    char *d_buf;   		// storage for cardinal data
+    vector<string> d_str;		// special storage for strings. jhrg 2/11/05
+    vector<BaseType *> d_compound_buf; 	// storage for data in compound types (e.g., Structure)
 
     // the number of elements we have allocated memory to store.
     // This should be either the sizeof(buf)/width(bool constrained = false) for cardinal data
     // or the capacity of d_str for strings or capacity of _vec.
-    unsigned int _capacity;
+    unsigned int d_capacity;
 
 protected:
     // This function copies the private members of Vector.
-    void _duplicate(const Vector &v);
+    void m_duplicate(const Vector &v);
 
     bool m_is_cardinal_type() const;
     unsigned int m_create_cardinal_data_buffer_for_type(unsigned int numEltsOfType);
     void m_delete_cardinal_data_buffer();
 
-    template <class CardType> void set_cardinal_values_internal(const CardType* fromArray, int numElts);
+    template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int numElts);
 
 public:
-    Vector(const string &n, BaseType *v, const Type &t);
-    Vector(const string &n, const string &d, BaseType *v, const Type &t);
+    Vector(const string &n, BaseType *v, const Type &t, bool is_dap4 = false);
+    Vector(const string &n, const string &d, BaseType *v, const Type &t, bool is_dap4 = false);
     Vector(const Vector &rhs);
 
     virtual ~Vector();
@@ -111,7 +113,11 @@ public:
     Vector &operator=(const Vector &rhs);
     virtual BaseType *ptr_duplicate() = 0;
 
+#if 0
     virtual bool is_dap2_only_type();
+#endif
+
+    virtual BaseType *prototype() const { return d_proto; }
 
     virtual void set_name(const std::string& name);
 
@@ -121,21 +127,28 @@ public:
 
     virtual void set_read_p(bool state);
 
-    virtual unsigned int width(bool constrained = false);
+    virtual unsigned int width(bool constrained = false) const;
 
     virtual int length() const;
 
     virtual void set_length(int l);
 
+    // DAP2
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
-			   Marshaller &m, bool ce_eval = true);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+
+    // DAP4
+    virtual void compute_checksum(Crc32 &checksum);
+    virtual void intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/);
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
     void set_vec(unsigned int i, BaseType *val);
+    void set_vec_nocopy(unsigned int i, BaseType * val);
 
     void vec_resize(int l);
 
@@ -145,48 +158,76 @@ public:
     virtual void reserve_value_capacity(unsigned int numElements);
     virtual void reserve_value_capacity();
 
-    virtual unsigned int set_value_slice_from_row_major_vector
-      (const Vector& rowMajorData, unsigned int startElement);
+    virtual unsigned int set_value_slice_from_row_major_vector(const Vector& rowMajorData, unsigned int startElement);
 
+    // TODO Use templates?
+    template <typename T> bool set_value(T *v, int sz);
+    template <typename T> bool set_value(vector<T> &v, int sz);
+#if 0
     virtual bool set_value(dods_byte *val, int sz);
     virtual bool set_value(vector<dods_byte> &val, int sz);
+
+    virtual bool set_value(dods_int8 *val, int sz);
+    virtual bool set_value(vector<dods_int8> &val, int sz);
+
     virtual bool set_value(dods_int16 *val, int sz);
     virtual bool set_value(vector<dods_int16> &val, int sz);
+
     virtual bool set_value(dods_uint16 *val, int sz);
     virtual bool set_value(vector<dods_uint16> &val, int sz);
+
     virtual bool set_value(dods_int32 *val, int sz);
     virtual bool set_value(vector<dods_int32> &val, int sz);
+
     virtual bool set_value(dods_uint32 *val, int sz);
     virtual bool set_value(vector<dods_uint32> &val, int sz);
+
+    virtual bool set_value(dods_int64 *val, int sz);
+    virtual bool set_value(vector<dods_int64> &val, int sz);
+
+    virtual bool set_value(dods_uint64 *val, int sz);
+    virtual bool set_value(vector<dods_uint64> &val, int sz);
+
     virtual bool set_value(dods_float32 *val, int sz);
     virtual bool set_value(vector<dods_float32> &val, int sz);
+
     virtual bool set_value(dods_float64 *val, int sz);
     virtual bool set_value(vector<dods_float64> &val, int sz);
+#endif
     virtual bool set_value(string *val, int sz);
     virtual bool set_value(vector<string> &val, int sz);
 
+    template <typename T> void value(T *v) const;
+#if 0
     virtual void value(dods_byte *b) const;
+    virtual void value(dods_int8 *b) const;
     virtual void value(dods_int16 *b) const;
     virtual void value(dods_uint16 *b) const;
     virtual void value(dods_int32 *b) const;
     virtual void value(dods_uint32 *b) const;
+    virtual void value(dods_int64 *b) const;
+    virtual void value(dods_uint64 *b) const;
     virtual void value(dods_float32 *b) const;
     virtual void value(dods_float64 *b) const;
+#endif
     virtual void value(vector<string> &b) const;
 
+    template <typename T> void value(vector<unsigned int> *indices, T *b) const;
+#if 0
     void value(vector<unsigned int> *index, dods_byte *b) const;
+    void value(vector<unsigned int> *index, dods_int8 *b) const;
     void value(vector<unsigned int> *index, dods_int16 *b) const;
     void value(vector<unsigned int> *index, dods_uint16 *b) const;
     void value(vector<unsigned int> *index, dods_int32 *b) const;
     void value(vector<unsigned int> *index, dods_uint32 *b) const;
     void value(vector<unsigned int> *index, dods_float32 *b) const;
     void value(vector<unsigned int> *index, dods_float64 *b) const;
+#endif
     void value(vector<unsigned int> *index, vector<string> &b) const;
 
     virtual void *value();
 
-    virtual BaseType *var(const string &name = "", bool exact_match = true,
-                          btp_stack *s = 0);
+    virtual BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = 0);
     virtual BaseType *var(const string &name, btp_stack &s);
     virtual BaseType *var(unsigned int i);
 

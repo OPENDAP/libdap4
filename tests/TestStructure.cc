@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -36,46 +35,50 @@
 //#define DODS_DEBUG
 
 #include "config.h"
-#include "TestStructure.h"
+#include "D4Group.h"
+#include "Constructor.h"
 #include "debug.h"
 
-void
-TestStructure::_duplicate(const TestStructure &ts)
+#include "TestStructure.h"
+
+using namespace libdap;
+
+void TestStructure::m_duplicate(const TestStructure &ts)
 {
-    d_series_values = ts.d_series_values;
+	d_series_values = ts.d_series_values;
 }
 
 BaseType *
 TestStructure::ptr_duplicate()
 {
-    return new TestStructure(*this);
+	return new TestStructure(*this);
 }
 
-TestStructure::TestStructure(const TestStructure &rhs) : Structure(rhs), TestCommon(rhs)
+TestStructure::TestStructure(const TestStructure &rhs) :
+		Structure(rhs), TestCommon(rhs)
 {
-    _duplicate(rhs);
+	m_duplicate(rhs);
 }
 
 TestStructure &
 TestStructure::operator=(const TestStructure &rhs)
 {
-    if (this == &rhs)
+	if (this == &rhs) return *this;
+
+	dynamic_cast<Structure &>(*this) = rhs; // run Constructor=
+
+	m_duplicate(rhs);
+
 	return *this;
-
-    dynamic_cast<Structure &>(*this) = rhs; // run Constructor=
-
-    _duplicate(rhs);
-
-    return *this;
 }
 
-TestStructure::TestStructure(const string &n) : Structure(n),
-        d_series_values(false)
+TestStructure::TestStructure(const string &n) :
+		Structure(n), d_series_values(false)
 {
 }
 
-TestStructure::TestStructure(const string &n, const string &d)
-    : Structure(n, d), d_series_values(false)
+TestStructure::TestStructure(const string &n, const string &d) :
+		Structure(n, d), d_series_values(false)
 {
 }
 
@@ -83,68 +86,73 @@ TestStructure::~TestStructure()
 {
 }
 
-void
-TestStructure::output_values(std::ostream &out)
+void TestStructure::output_values(std::ostream &out)
 {
-    out << "{ " ;
+	out << "{ ";
 
-    bool value_written = false;
-    Vars_citer i = var_begin();
+	bool value_written = false;
+	Vars_citer i = var_begin();
 
-    // Write the first (and maybe only) value.
-    while(i != var_end() && ! value_written) {
-        if ((*i)->send_p()) {
-            (*i++)->print_val(out, "", false);
-            value_written = true;
-        }
-        else {
-            ++i;
-        }
-    }
-    // Each subsequent value will be preceded by a comma
-    while(i != var_end()) {
-        if ((*i)->send_p()) {
-            out << ", ";
-            (*i++)->print_val(out, "", false);
-        }
-        else {
-            ++i;
-        }
-    }
+	// Write the first (and maybe only) value.
+	while (i != var_end() && !value_written) {
+		if ((*i)->send_p()) {
+			(*i++)->print_val(out, "", false);
+			value_written = true;
+		}
+		else {
+			++i;
+		}
+	}
+	// Each subsequent value will be preceded by a comma
+	while (i != var_end()) {
+		if ((*i)->send_p()) {
+			out << ", ";
+			(*i++)->print_val(out, "", false);
+		}
+		else {
+			++i;
+		}
+	}
 
-    out << " }" ;
+	out << " }";
+}
+
+BaseType *
+TestStructure::transform_to_dap4(D4Group *root, Constructor *container)
+{
+	Structure *dest = new TestStructure(name(), dataset());
+
+	Constructor::transform_to_dap4(root, dest);
+	dest->set_parent(container);
+
+	return dest;
 }
 
 // For this `Test' class, run the read mfunc for each of variables which
 // comprise the structure.
 
-bool
-TestStructure::read()
+bool TestStructure::read()
 {
-    if (read_p())
-	return true;
+	if (read_p()) return true;
 
-    for (Vars_iter i = var_begin(); i != var_end(); i++)
-    {
-	if (!(*i)->read())
-	{
-	    return false;
+	for (Vars_iter i = var_begin(); i != var_end(); i++) {
+		if (!(*i)->read()) {
+			return false;
+		}
 	}
-    }
 
-    set_read_p(true);
+	set_read_p(true);
 
-    return true;
+	return true;
 }
 
-void
-TestStructure::set_series_values(bool sv)
+void TestStructure::set_series_values(bool sv)
 {
-    Vars_iter i = var_begin();
-    while (i != var_end()) {
-        dynamic_cast<TestCommon&>(*(*i)).set_series_values(sv);
-        ++i;
-    }
+	Vars_iter i = var_begin();
+	while (i != var_end()) {
+		dynamic_cast<TestCommon&>(*(*i)).set_series_values(sv);
+		++i;
+	}
 
-    d_series_values = sv;
+	d_series_values = sv;
 }

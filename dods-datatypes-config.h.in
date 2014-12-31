@@ -54,5 +54,8 @@ typedef DINT64 dods_int64;
 #undef DUINT64
 typedef DUINT64 dods_uint64;
 
+/* Enums in DAP4 are 64-bit signed integers */
+typedef DINT64 dods_enum;
+
 #endif /* __DODS_DATATYPES__ */
 

@@ -195,7 +195,7 @@ private:
     BaseType *factory(Type t, const string &name);
 
     // Common cleanup code for intern() and intern_stream()
-    void cleanup_parse(xmlParserCtxtPtr &context) const;
+    void cleanup_parse(xmlParserCtxtPtr &context);
 
     /** @name Parser Actions
 

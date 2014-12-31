@@ -37,17 +37,27 @@
 #include <algorithm>
 #include <functional>
 
+#include <stdint.h>
+
 //#define DODS_DEBUG
+
+#include "crc.h"
 
 #include "Constructor.h"
 #include "Grid.h"
+
+#include "DMR.h"
+#include "XMLWriter.h"
+#include "D4StreamMarshaller.h"
+#include "D4StreamUnMarshaller.h"
+
+#include "D4Attributes.h"
 
 #include "debug.h"
 #include "escaping.h"
 #include "util.h"
 #include "Error.h"
 #include "InternalErr.h"
-
 
 using namespace std;
 
@@ -58,19 +68,25 @@ namespace libdap {
 void
 Constructor::m_duplicate(const Constructor &c)
 {
-    Constructor &cs = const_cast<Constructor &>(c);
+	DBG(cerr << "In Constructor::m_duplicate for " << c.name() << endl);
+	// Clear out any spurious vars in Constructor::d_vars
+	// Moved from Grid::m_duplicate. jhrg 4/3/13
+	d_vars.clear(); // [mjohnson 10 Sep 2009]
 
-    for (Vars_iter i = cs.d_vars.begin(); i != cs.d_vars.end(); i++) {
-        BaseType *btp = (*i)->ptr_duplicate();
-        btp->set_parent(this);
-        d_vars.push_back(btp);
-    }
+	Vars_citer i = c.d_vars.begin();
+	while (i != c.d_vars.end()) {
+		BaseType *btp = (*i++)->ptr_duplicate();
+		btp->set_parent(this);
+		d_vars.push_back(btp);
+	}
+
+	DBG(cerr << "Exiting Constructor::m_duplicate for " << c.name() << endl);
 }
 
 // Public member functions
 
-Constructor::Constructor(const string &n, const Type &t, bool is_dap4)
-        : BaseType(n, t, is_dap4)
+Constructor::Constructor(const string &name, const Type &type, bool is_dap4)
+        : BaseType(name, type, is_dap4)
 {}
 
 /** Server-side constructor that takes the name of the variable to be
@@ -78,24 +94,33 @@ Constructor::Constructor(const string &n, const Type &t, bool is_dap4)
  * the type of data being stored in the Constructor. This is a protected
  * constructor, available only to derived classes of Constructor
  *
- * @param n string containing the name of the variable to be created
- * @param d string containing the name of the dataset from which this
+ * @param name string containing the name of the variable to be created
+ * @param dataset string containing the name of the dataset from which this
  * variable is being created
- * @param t type of data being stored
+ * @param type type of data being stored
  */
-Constructor::Constructor(const string &n, const string &d, const Type &t, bool is_dap4)
-        : BaseType(n, d, t, is_dap4)
+Constructor::Constructor(const string &name, const string &dataset, const Type &type, bool is_dap4)
+        : BaseType(name, dataset, type, is_dap4)
 {}
 
 Constructor::Constructor(const Constructor &rhs) : BaseType(rhs), d_vars(0)
-{}
+{
+    DBG(cerr << "In Constructor::copy_ctor for " << rhs.name() << endl);
+    m_duplicate(rhs);
+}
 
 Constructor::~Constructor()
-{}
+{
+    Vars_iter i = d_vars.begin();
+    while (i != d_vars.end()) {
+        delete *i++;
+    }
+}
 
 Constructor &
 Constructor::operator=(const Constructor &rhs)
 {
+    DBG(cerr << "Entering Constructor::operator=" << endl);
     if (this == &rhs)
         return *this;
 
@@ -103,7 +128,41 @@ Constructor::operator=(const Constructor &rhs)
 
     m_duplicate(rhs);
 
+    DBG(cerr << "Exiting Constructor::operator=" << endl);
     return *this;
+}
+
+// A public method, but just barely..
+BaseType *
+Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
+{
+    for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
+    	BaseType *new_var = (*i)->transform_to_dap4(root, dest);
+    	if (new_var) {	// Might be a Grid; see the comment in BaseType::transform_to_dap4()
+    		new_var->set_parent(dest);
+    		dest->add_var_nocopy(new_var);
+    	}
+    }
+
+    // Add attributes
+	dest->attributes()->transform_to_dap4(get_attr_table());
+
+    dest->set_is_dap4(true);
+
+	return dest;
+}
+
+string
+Constructor::FQN() const
+{
+	if (get_parent() == 0)
+		return name();
+	else if (get_parent()->type() == dods_group_c)
+		return get_parent()->FQN() + name();
+	else if (get_parent()->type() == dods_array_c)
+		return get_parent()->FQN();
+	else
+		return get_parent()->FQN() + "." + name();
 }
 
 int
@@ -162,11 +221,11 @@ Constructor::width()
     @return  The number of bytes used by the variable.
  */
 unsigned int
-Constructor::width(bool constrained)
+Constructor::width(bool constrained) const
 {
     unsigned int sz = 0;
 
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+    for (Vars_citer i = d_vars.begin(); i != d_vars.end(); i++) {
         if (constrained) {
             if ((*i)->send_p())
                 sz += (*i)->width(constrained);
@@ -194,6 +253,8 @@ Constructor::var(const string &name, bool exact_match, btp_stack *s)
 BaseType *
 Constructor::var(const string &n, btp_stack &s)
 {
+	// This should probably be removed. The BES code should remove web encoding
+	// with the possible exception of spaces. jhrg 11/25/13
     string name = www2id(n);
 
     BaseType *btp = m_exact_match(name, &s);
@@ -361,6 +422,7 @@ Constructor::add_var_nocopy(BaseType *bt, Part)
 void
 Constructor::del_var(const string &n)
 {
+	// TODO remove_if? find_if?
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->name() == n) {
             BaseType *bt = *i ;
@@ -388,6 +450,7 @@ Constructor::del_var(Vars_iter i)
  */
 bool Constructor::read()
 {
+	DBG(cerr << "Entering  Constructor::read..." << endl);
     if (!read_p()) {
         for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
             (*i)->read();
@@ -401,7 +464,7 @@ bool Constructor::read()
 void
 Constructor::intern_data(ConstraintEvaluator & eval, DDS & dds)
 {
-    DBG(cerr << "Structure::intern_data: " << name() << endl);
+    DBG(cerr << "Constructor::intern_data: " << name() << endl);
     if (!read_p())
         read();          // read() throws Error and InternalErr
 
@@ -420,10 +483,8 @@ Constructor::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool 
     if (!read_p())
         read();  // read() throws Error and InternalErr
 
-#if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-#endif
 
     dds.timeout_off();
 
@@ -439,7 +500,9 @@ Constructor::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool 
             if (sm && sm->checksums() && (*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
                 sm->get_checksum();
 #else
-            (*i)->serialize(eval, dds, m, false);
+            // (*i)->serialize(eval, dds, m, false);
+            // Only Sequence and Vector run the evaluator.
+            (*i)->serialize(eval, dds, m, true);
 #endif
         }
     }
@@ -455,6 +518,73 @@ Constructor::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
     }
 
     return false;
+}
+
+void
+Constructor::compute_checksum(Crc32 &)
+{
+	throw InternalErr(__FILE__, __LINE__, "Computing a checksum alone is not supported for Constructor types.");
+}
+
+void
+Constructor::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator & eval*/)
+{
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        if ((*i)->send_p()) {
+            (*i)->intern_data(checksum/*, dmr, eval*/);
+        }
+    }
+}
+
+
+/**
+ * @brief Serialize a Constructor
+ *
+ * @todo See notebook for 8/21/14
+ *
+ * @param m
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+Constructor::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter)
+{
+#if 1
+	// Not used for the same reason the equivalent code in D4Group::serialize()
+	// is not used. Fail for D4Sequence and general issues with memory use.
+	//
+	// Revisit this - I had to uncomment this to get the netcdf_handler code
+	// to work - it relies on having NCStructure::read() called. The D4Sequence
+	// ::serialize() method calls read_next_instance(). What seems to be happening
+	// is that this call to read gets the first set of values, but does not store
+	// them; the call to serialize then runs the D4Sequence::serialize() method that
+	// _does_ read all of the sequence data and then serialize it. However, the first
+	// sequence instance is missing...
+    if (!read_p())
+        read();  // read() throws Error
+#endif
+#if 0
+    // place holder for now. There may be no need for this; only Array and Seq?
+    // jhrg 9/6/13
+    if (filter && !eval.eval_selection(dmr, dataset()))
+        return true;
+#endif
+
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        if ((*i)->send_p()) {
+            (*i)->serialize(m, dmr, /*eval,*/ filter);
+        }
+    }
+}
+
+void
+Constructor::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
+{
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        (*i)->deserialize(um, dmr);
+    }
 }
 
 void
@@ -568,16 +698,66 @@ Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-    bool has_attributes = get_attr_table().get_size() > 0;
-    bool has_variables = (var_begin() != var_end());
-    if (has_attributes)
+    // DAP2 prints attributes first. For some reason we decided that DAP4 should
+    // print them second. No idea why... jhrg 8/15/14
+    if (!is_dap4() && get_attr_table().get_size() > 0)
         get_attr_table().print_xml_writer(xml);
+
+    bool has_variables = (var_begin() != var_end());
     if (has_variables)
         for_each(var_begin(), var_end(), PrintFieldXMLWriter(xml, constrained));
+
+    if (is_dap4())
+        attributes()->print_dap4(xml);
+
+#if 0
+    // Moved up above so that the DDX tests for various handles will still work.
+    // jhrg 8/15/14
+    if (!is_dap4() && get_attr_table().get_size() > 0)
+        get_attr_table().print_xml_writer(xml);
+#endif
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
 }
+
+class PrintDAP4FieldXMLWriter : public unary_function<BaseType *, void>
+{
+    XMLWriter &d_xml;
+    bool d_constrained;
+public:
+    PrintDAP4FieldXMLWriter(XMLWriter &x, bool c) : d_xml(x), d_constrained(c) {}
+
+    void operator()(BaseType *btp)
+    {
+        btp->print_dap4(d_xml, d_constrained);
+    }
+};
+
+
+void
+Constructor::print_dap4(XMLWriter &xml, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)type_name().c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write " + type_name() + " element");
+
+    if (!name().empty())
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+    bool has_variables = (var_begin() != var_end());
+    if (has_variables)
+        for_each(var_begin(), var_end(), PrintDAP4FieldXMLWriter(xml, constrained));
+
+    attributes()->print_dap4(xml);
+
+    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
+}
+
 
 bool
 Constructor::check_semantics(string &msg, bool all)

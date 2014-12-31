@@ -76,6 +76,10 @@
 #include "Str.h"
 #include "Array.h"
 
+#include "Int64.h"
+#include "UInt64.h"
+#include "Int8.h"
+
 #include "Error.h"
 
 #include "util.h"
@@ -86,46 +90,58 @@ using namespace std;
 
 namespace libdap {
 
-/** Given a BaseType pointer, extract the string value it contains and return
- it.
+/** @brief Does this host use big-endian byte order? */
+bool is_host_big_endian()
+{
+#ifdef COMPUTE_ENDIAN_AT_RUNTIME
+
+    dods_int16 i = 0x0100;
+    char *c = reinterpret_cast<char*>(&i);
+    return *c;
+
+#else
+
+#ifdef WORDS_BIGENDIAN
+    return true;
+#else
+    return false;
+#endif
+
+#endif
+}
+
+/** Given a BaseType pointer, extract the string value it contains
 
  @param arg The BaseType pointer
  @return A C++ string
  @exception Error thrown if the referenced BaseType object does not contain
  a DAP String. */
-string extract_string_argument(BaseType * arg)
+string extract_string_argument(BaseType *arg)
 {
 	assert(arg);
 
     if (arg->type() != dods_str_c)
-        throw Error(malformed_expr,
-                "The function requires a DAP string argument.");
+        throw Error(malformed_expr, "The function requires a string argument.");
 
     if (!arg->read_p())
         throw InternalErr(__FILE__, __LINE__,
                 "The CE Evaluator built an argument list where some constants held no values.");
 
-    string s = static_cast<Str*>(arg)->value();
-
-    DBG(cerr << "s: " << s << endl);
-
-    return s;
+    return static_cast<Str*>(arg)->value();
 }
 
-template<class T> static void set_array_using_double_helper(Array * a, double *src, int src_len)
+template<class T> static void set_array_using_double_helper(Array *a, double *src, int src_len)
 {
-    T *values = new T[src_len];
-    // TODO Replace new with vector<T> (vector<T> values(src_len);)
+	assert(a);
+	assert(src);
+	assert(src_len > 0);
+
+	vector<T> values(src_len);
     for (int i = 0; i < src_len; ++i)
         values[i] = (T) src[i];
 
-#ifdef VAL2BUF
-    a->val2buf(values, true);
-#else
+    // This copie the values
     a->set_value(values, src_len);
-#endif
-
-    delete[]values;
 }
 
 /** Given an array that holds some sort of numeric data, load it with values
@@ -140,6 +156,7 @@ template<class T> static void set_array_using_double_helper(Array * a, double *s
  that this variable already holds data values and, given that, the
  serialization code will not try to read the values.
 
+ @note Support for DAP4 added.
  @param dest An Array. The values are written to this array, reusing
  its storage. Existing values are lost.
  @param src The source data.
@@ -147,14 +164,18 @@ template<class T> static void set_array_using_double_helper(Array * a, double *s
  @exception Error Thrown if \e dest is not a numeric-type array (Byte, ...,
  Float64) or if the number of elements in \e src does not match the number
  is \e dest. */
-void set_array_using_double(Array * dest, double *src, int src_len)
+void set_array_using_double(Array *dest, double *src, int src_len)
 {
+	assert(dest);
+	assert(src);
+	assert(src_len > 0);
+
     // Simple types are Byte, ..., Float64, String and Url.
     if ((dest->type() == dods_array_c && !dest->var()->is_simple_type())
     || dest->var()->type() == dods_str_c
     || dest->var()->type() == dods_url_c)
         throw InternalErr(__FILE__, __LINE__,
-                "The function requires a DAP numeric-type array argument.");
+                "The function requires a numeric-type array argument.");
 
     // Test sizes. Note that Array::length() takes any constraint into account
     // when it returns the length. Even if this was removed, the 'helper'
@@ -192,6 +213,20 @@ void set_array_using_double(Array * dest, double *src, int src_len)
     case dods_float64_c:
         set_array_using_double_helper<dods_float64>(dest, src, src_len);
         break;
+
+        // DAP4 support
+    case dods_uint8_c:
+        set_array_using_double_helper<dods_byte>(dest, src, src_len);
+        break;
+    case dods_int8_c:
+        set_array_using_double_helper<dods_int8>(dest, src, src_len);
+        break;
+    case dods_uint64_c:
+        set_array_using_double_helper<dods_uint64>(dest, src, src_len);
+        break;
+    case dods_int64_c:
+        set_array_using_double_helper<dods_int64>(dest, src, src_len);
+        break;
     default:
         throw InternalErr(__FILE__, __LINE__,
                 "The argument list built by the CE parser contained an unsupported numeric type.");
@@ -203,25 +238,35 @@ void set_array_using_double(Array * dest, double *src, int src_len)
 
 template<class T> static double *extract_double_array_helper(Array * a)
 {
+	assert(a);
+
     int length = a->length();
-    // Could improve this using vector<T>. jhrg
-    T *b = new T[length];
-    a->value(b);
+
+    vector<T> b(length);
+    a->value(&b[0]);	// Extract the values of 'a' to 'b'
 
     double *dest = new double[length];
     for (int i = 0; i < length; ++i)
         dest[i] = (double) b[i];
-    delete[]b;
 
     return dest;
 }
 
-/** Given a pointer to an Array which holds a numeric type, extract the
- values and return in an array of doubles. This function allocates the
- array using 'new double[n]' so delete[] MUST be used when you are done
- the data. */
+/**  */
+/**
+ * Given a pointer to an Array which holds a numeric type, extract the
+ * values and return in an array of doubles. This function allocates the
+ * array using 'new double[n]' so delete[] MUST be used when you are done
+ * the data.
+ *
+ * @note Support added for DAP4.
+ * @param a Extract value from this Array.
+ * @return A C++/C array of doubles.
+ */
 double *extract_double_array(Array * a)
 {
+	assert(a);
+
     // Simple types are Byte, ..., Float64, String and Url.
     if ((a->type() == dods_array_c && !a->var()->is_simple_type())
     || a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
@@ -252,6 +297,16 @@ double *extract_double_array(Array * a)
         return extract_double_array_helper<dods_float32>(a);
     case dods_float64_c:
         return extract_double_array_helper<dods_float64>(a);
+
+    // Support for DAP4
+    case dods_uint8_c:
+        return extract_double_array_helper<dods_byte>(a);
+    case dods_int8_c:
+        return extract_double_array_helper<dods_int8>(a);
+    case dods_uint64_c:
+        return extract_double_array_helper<dods_uint64>(a);
+    case dods_int64_c:
+        return extract_double_array_helper<dods_int64>(a);
     default:
         throw InternalErr(__FILE__, __LINE__,
                 "The argument list built by the CE parser contained an unsupported numeric type.");
@@ -261,21 +316,24 @@ double *extract_double_array(Array * a)
 /** Given a BaseType pointer, extract the numeric value it contains and return
  it in a C++ double.
 
+ @note Support for DAP4 types added.
+
  @param arg The BaseType pointer
  @return A C++ double
  @exception Error thrown if the referenced BaseType object does not contain
  a DAP numeric value. */
-double extract_double_value(BaseType * arg)
+double extract_double_value(BaseType *arg)
 {
+	assert(arg);
+
     // Simple types are Byte, ..., Float64, String and Url.
-    if (!arg->is_simple_type() || arg->type() == dods_str_c || arg->type()
-            == dods_url_c)
+    if (!arg->is_simple_type() || arg->type() == dods_str_c || arg->type() == dods_url_c)
         throw Error(malformed_expr,
-                "The function requires a DAP numeric-type argument.");
+                "The function requires a numeric-type argument.");
 
     if (!arg->read_p())
         throw InternalErr(__FILE__, __LINE__,
-                "The CE Evaluator built an argument list where some constants held no values.");
+                "The Evaluator built an argument list where some constants held no values.");
 
     // The types of arguments that the CE Parser will build for numeric
     // constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
@@ -296,9 +354,20 @@ double extract_double_value(BaseType * arg)
         return (double)(static_cast<Float32*>(arg)->value());
     case dods_float64_c:
         return static_cast<Float64*>(arg)->value();
+
+    // Support for DAP4 types.
+    case dods_uint8_c:
+    	return (double)(static_cast<Byte*>(arg)->value());
+    case dods_int8_c:
+    	return (double)(static_cast<Int8*>(arg)->value());
+    case dods_uint64_c:
+    	return (double)(static_cast<UInt64*>(arg)->value());
+    case dods_int64_c:
+    	return (double)(static_cast<Int64*>(arg)->value());
+
     default:
         throw InternalErr(__FILE__, __LINE__,
-                "The argument list built by the CE parser contained an unsupported numeric type.");
+                "The argument list built by the parser contained an unsupported numeric type.");
     }
 }
 
@@ -387,9 +456,8 @@ libdap_version()
     return PACKAGE_VERSION;
 }
 
-extern "C"
-    const char *
-    libdap_name()
+extern "C" const char *
+libdap_name()
 {
     return PACKAGE_NAME;
 }
@@ -407,9 +475,6 @@ systime()
     if (time(&TimBin) == (time_t) - 1)
         return string("time() error");
     else {
-#if 0
-        string TimStr = ctime(&TimBin);
-#endif
         char *ctime_value = ctime(&TimBin);
         if (ctime_value) {
         	string TimStr = ctime_value;
@@ -463,6 +528,9 @@ Type get_type(const char *name)
     if (strcmp(name, "Byte") == 0)
         return dods_byte_c;
 
+    if (strcmp(name, "Char") == 0)
+        return dods_char_c;
+
     if (strcmp(name, "Int8") == 0)
         return dods_int8_c;
 
@@ -496,13 +564,19 @@ Type get_type(const char *name)
     if (strcmp(name, "String") == 0)
         return dods_str_c;
 
-    if (strcmp(name, "URL") == 0)
-        return dods_url4_c;
-
-    if (strcmp(name, "Url") == 0)
+    // accept both spellings; this might be confusing since URL
+    // could be filtered through code and come out Url. Don't know...
+    // jhrg 8/15/13
+    if (strcmp(name, "Url") == 0 || strcmp(name, "URL") == 0)
         return dods_url_c;
 
-    if (strcmp(name, "Array") == 0)
+    if (strcmp(name, "Enum") == 0)
+        return dods_enum_c;
+
+    if (strcmp(name, "Opaque") == 0)
+        return dods_opaque_c;
+
+   if (strcmp(name, "Array") == 0)
         return dods_array_c;
 
     if (strcmp(name, "Structure") == 0)
@@ -517,9 +591,15 @@ Type get_type(const char *name)
     return dods_null_c;
 }
 
-/** @brief Returns the type of the class instance as a string. */
+/**
+ * @brief Returns the type of the class instance as a string.
+ * Supports all DAP2 types and not the DAP4-only types. Also
+ * returns Url (DAP2) and not "URL" (DAP4) for the URL type.
+ * @param t The type code
+ * @return The type name in a string
+ */
 string
-type_name(Type t)
+D2type_name(Type t)
 {
     switch (t) {
     case dods_null_c:
@@ -542,6 +622,7 @@ type_name(Type t)
         return string("String");
     case dods_url_c:
         return string("Url");
+
     case dods_array_c:
         return string("Array");
     case dods_structure_c:
@@ -551,25 +632,75 @@ type_name(Type t)
     case dods_grid_c:
         return string("Grid");
 
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown type.");
+    }
+}
+
+/**
+ * @brief Returns the type of the class instance as a string.
+ * Supports all DAP4 types and not the DAP2-only types. Also
+ * returns URL (DAP4) and not "Url" (DAP2) for the URL type.
+ * @param t The type code
+ * @return The type name in a string
+ */
+string
+D4type_name(Type t)
+{
+    switch (t) {
+    case dods_null_c:
+        return string("Null");
+    case dods_byte_c:
+        return string("Byte");
+    case dods_char_c:
+        return string("Char");
     case dods_int8_c:
         return string("Int8");
     case dods_uint8_c:
         return string("UInt8");
+    case dods_int16_c:
+        return string("Int16");
+    case dods_uint16_c:
+        return string("UInt16");
+    case dods_int32_c:
+        return string("Int32");
+    case dods_uint32_c:
+        return string("UInt32");
     case dods_int64_c:
         return string("Int64");
     case dods_uint64_c:
         return string("UInt64");
-    case dods_url4_c:
-        return string("URL");
-    case dods_group_c:
-        return string("Group");
     case dods_enum_c:
         return string("Enum");
+
+    case dods_float32_c:
+        return string("Float32");
+    case dods_float64_c:
+        return string("Float64");
+
+    case dods_str_c:
+        return string("String");
+    case dods_url_c:
+        return string("URL");
+
+    case dods_opaque_c:
+    	return string("Opaque");
+
+    case dods_array_c:
+        return string("Array");
+
+    case dods_structure_c:
+        return string("Structure");
+    case dods_sequence_c:
+        return string("Sequence");
+    case dods_group_c:
+        return string("Group");
 
     default:
         throw InternalErr(__FILE__, __LINE__, "Unknown type.");
     }
 }
+
 
 /** @brief Returns true if the instance is a numeric, string or URL
     type variable.
@@ -582,6 +713,7 @@ is_simple_type(Type t)
     switch (t) {
 
     case dods_byte_c:
+    case dods_char_c:
 
     case dods_int8_c:
     case dods_uint8_c:
@@ -598,9 +730,8 @@ is_simple_type(Type t)
     case dods_float64_c:
     case dods_str_c:
     case dods_url_c:
-
-    case dods_url4_c:
     case dods_enum_c:
+    case dods_opaque_c:
         return true;
 
     case dods_null_c:
@@ -609,6 +740,7 @@ is_simple_type(Type t)
     case dods_sequence_c:
     case dods_grid_c:
     case dods_group_c:
+    default:
         return false;
     }
 
@@ -624,6 +756,7 @@ is_vector_type(Type t)
     switch (t) {
     case dods_null_c:
     case dods_byte_c:
+    case dods_char_c:
 
     case dods_int8_c:
     case dods_uint8_c:
@@ -642,9 +775,8 @@ is_vector_type(Type t)
 
     case dods_str_c:
     case dods_url_c:
-
-    case dods_url4_c:
     case dods_enum_c:
+    case dods_opaque_c:
         return false;
 
     case dods_array_c:
@@ -654,6 +786,7 @@ is_vector_type(Type t)
     case dods_sequence_c:
     case dods_grid_c:
     case dods_group_c:
+    default:
         return false;
     }
 
@@ -670,6 +803,7 @@ is_constructor_type(Type t)
     switch (t) {
     case dods_null_c:
     case dods_byte_c:
+    case dods_char_c:
 
     case dods_int8_c:
     case dods_uint8_c:
@@ -686,9 +820,8 @@ is_constructor_type(Type t)
     case dods_float64_c:
     case dods_str_c:
     case dods_url_c:
-
-    case dods_url4_c:
     case dods_enum_c:
+    case dods_opaque_c:
 
     case dods_array_c:
         return false;
@@ -697,6 +830,7 @@ is_constructor_type(Type t)
     case dods_sequence_c:
     case dods_grid_c:
     case dods_group_c:
+    default:
         return true;
     }
 
@@ -711,6 +845,7 @@ bool is_integer_type(Type t)
 {
     switch (t) {
         case dods_byte_c:
+        case dods_char_c:
         case dods_int8_c:
         case dods_uint8_c:
         case dods_int16_c:

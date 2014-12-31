@@ -26,10 +26,6 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    {"$Id$"
-    };
-
 #include <string>
 
 #include "ResponseTooBigErr.h"

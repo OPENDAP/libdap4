@@ -73,12 +73,18 @@ public:
 
     Byte &operator=(const Byte &rhs);
 
-    virtual unsigned int width(bool constrained = false);
+    virtual unsigned int width(bool constrained = false) const;
 
     virtual BaseType *ptr_duplicate();
 
-    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval);
-    bool deserialize(UnMarshaller &um, DDS *, bool);
+    // DAP2
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval);
+    virtual bool deserialize(UnMarshaller &um, DDS *, bool);
+
+    // DAP4
+    virtual void compute_checksum(Crc32 &checksum);
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);

@@ -53,6 +53,8 @@ dods-datatypes-config.h
 dods-datatypes.h
 getdap
 getdap.1
+getdap4
+getdap4.1
 xdr-datatypes-config.h
 xdr-datatypes.h
 
@@ -62,7 +64,13 @@ gl/charset.alias
 gl/ref-add.sed
 gl/ref-del.sed
 gl/sys/
+
+d4_ce/location.hh
+d4_ce/position.hh
+d4_ce/stack.hh
+
 libdap-*.tar.gz
+
 tests/DASTest
 tests/DDSTest
 tests/EXPRTest
@@ -73,6 +81,10 @@ tests/dds-test
 tests/expr-test
 tests/libtest-types.a
 tests/package.m4
+tests/DMRTest
+tests/dmr-test
+tests/getdapTest
+
 unit-tests/.dodsrc
 unit-tests/ArrayTest
 unit-tests/AttrTableTest
@@ -117,3 +129,17 @@ unit-tests/structT
 unit-tests/struct_test.file
 unit-tests/struct_test.strm
 unit-tests/test_config.h
+
+unit-tests/D4AsyncDocTest
+unit-tests/D4AttributesTest
+unit-tests/D4DimensionsTest
+unit-tests/D4EnumDefsTest
+unit-tests/D4EnumTest
+unit-tests/D4GroupTest
+unit-tests/D4MarshallerTest
+unit-tests/D4ParserSax2Test
+unit-tests/D4UnMarshallerTest
+unit-tests/DMRTest
+unit-tests/chunked_iostream_test
+
+unit-tests/chunked-io/

@@ -1,3 +1,4 @@
+
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -34,87 +35,130 @@
 #include <process.h>
 #endif
 
+#include "GetOpt.h"
 #include "SignalHandler.h"
 #include "debug.h"
 
 using namespace CppUnit;
 using namespace std;
 
-namespace libdap {
+static bool debug = false;
 
-class SignalHandlerTest: public TestFixture {
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
+
+namespace libdap
+{
+
+/** Test Handler. This is used with the SignalHandlerTest unit tests. */
+class TestHandler : public EventHandler
+{
+public:
+    int flag;
+
+    TestHandler() : flag(0) {}
+
+    virtual void handle_signal(int signum) {
+        DBG(cerr << "signal number " << signum << " received" << endl);
+        flag = 1;
+    }
+};
+
+class SignalHandlerTest : public TestFixture {
 private:
-	SignalHandler *sh;
-	TestHandler *th;
+    SignalHandler *sh;
+    TestHandler *th;
 
 public:
-	SignalHandlerTest()
-	{
-	}
-	~SignalHandlerTest()
-	{
-	}
+    SignalHandlerTest() {}
+    ~SignalHandlerTest() {}
 
-	void setUp()
-	{
-		sh = SignalHandler::instance();
-		th = new TestHandler;
-	}
+    void setUp()
+    {
+        sh = SignalHandler::instance();
+        th = new TestHandler;
+    }
 
-	void tearDown()
-	{
-		delete th;
-		th = 0;
-	}
+    void tearDown()
+    {
+        delete th;
+        th = 0;
+    }
 
-	// Tests for methods
-	void register_handler_test()
-	{
-		sh->register_handler(SIGALRM, th);
-		CPPUNIT_ASSERT(sh->d_signal_handlers[SIGALRM] == th);
-	}
+    // Tests for methods
+    void register_handler_test()
+    {
+        sh->register_handler(SIGALRM, th);
+        CPPUNIT_ASSERT(sh->d_signal_handlers[SIGALRM] == th);
+    }
 
-	void remove_handler_test()
-	{
-		sh->register_handler(SIGALRM, th);
-		CPPUNIT_ASSERT(sh->remove_handler(SIGALRM) == th);
-	}
+    void remove_handler_test()
+    {
+        sh->register_handler(SIGALRM, th);
+        CPPUNIT_ASSERT(sh->remove_handler(SIGALRM) == th);
+    }
 
-	void alarm_test()
-	{
-		// Ignore the alarm signal and then register our handler. Without
-		// setting alram to ignore first the SignalHandler will call our
-		// EventHandler and then perform the default action for the signal,
-		// which is call exit() with EXIT_FAILURE.
-		signal(SIGALRM, SIG_IGN);
-		sh->register_handler(SIGALRM, th);
-		alarm(1);
-		sleep(10);
-		CPPUNIT_ASSERT(th->flag == 1);
-	}
+    void alarm_test()
+    {
+        sh->register_handler(SIGALRM, th, true);
+        CPPUNIT_ASSERT(th->flag == 0);
+        alarm(1);
 
-CPPUNIT_TEST_SUITE( SignalHandlerTest )
-	;
+        // sleep(2) also works _except_ when run with valgrind; reason
+        // unknown. jhrg 4/26/13
+        int start, end;
+        start = end = time(0);
+        while (end < start + 2)
+            end = time(0);
 
-	CPPUNIT_TEST(register_handler_test);
-	CPPUNIT_TEST(remove_handler_test);
-	CPPUNIT_TEST(alarm_test);
+        DBG(cerr << "Event handler 'flag' value: " << th->flag << endl);
+        CPPUNIT_ASSERT(th->flag == 1);
+    }
 
-	CPPUNIT_TEST_SUITE_END()
-	;
+    CPPUNIT_TEST_SUITE( SignalHandlerTest );
+
+    CPPUNIT_TEST(register_handler_test);
+    CPPUNIT_TEST(remove_handler_test);
+    CPPUNIT_TEST(alarm_test);
+
+    CPPUNIT_TEST_SUITE_END();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SignalHandlerTest);
 
 }
 
-int main(int, char**)
-{
-	CppUnit::TextTestRunner runner;
-	runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
+int main(int argc, char*argv[]) {
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-	bool wasSuccessful = runner.run("", false);
+    GetOpt getopt(argc, argv, "d");
+    char option_char;
 
-	return wasSuccessful ? 0 : 1;
+    while ((option_char = getopt()) != EOF)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        default:
+            break;
+        }
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        while (i < argc) {
+            test = string("libdap::SignalHandlerTest::") + argv[i++];
+            DBG(cerr << "Running " << test << endl);
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
+
+    return wasSuccessful ? 0 : 1;
 }
 

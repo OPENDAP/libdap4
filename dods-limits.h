@@ -81,6 +81,7 @@
 #define DODS_LLONG_MAX 0x7fffffffffffffffLL
 #define DODS_ULLONG_MAX 0xffffffffffffffffULL
 
+#define DODS_MAX_ARRAY_INDEX 0x1fffffffffffffffULL
 
 #define DODS_DBL_DIG 15 /* digits of precision of a "double" */
 #define DODS_DBL_MAX 1.7976931348623157E+308 /* max decimal value of a */

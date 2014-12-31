@@ -26,6 +26,10 @@
 #ifndef d4_parser_sax2_h
 #define d4_parser_sax2_h
 
+#define ATTR 1
+
+#include <string.h>
+
 #include <string>
 #include <iostream>
 #include <map>
@@ -33,15 +37,18 @@
 
 #include <libxml/parserInternals.h>
 
-#include "DDS.h"
-#include "BaseType.h"
-//#include "D4EnumDef.h"
-#include "D4BaseTypeFactory.h"
-
-#include "D4ParseError.h"
+#define CRLF "\r\n"
 
 namespace libdap
 {
+
+class DMR;
+class BaseType;
+class D4BaseTypeFactory;
+class D4Group;
+class D4Attributes;
+class D4EnumDef;
+class D4Dimension;
 
 /** Parse the XML text which encodes the network/persistent representation of
     the DMR object. In the current implementation, the DMR is held by an
@@ -58,14 +65,14 @@ namespace libdap
     construction of an DMR object ends even though the SAX parser still
     calls the various callback functions. The parser treats warnings,
     errors and fatal_errors the same way; when any are found parsing
-    stops. The intern method throws an D4ParseError exception if an
+    stops. The intern method throws an Error of InternalErr exception if an
     error was found.
 
     Note that this class uses the C++-supplied default definitions for the
     default and copy constructors as well as the destructor and assignment
     operator.
 
-    @see DDS */
+    @see DMR */
 class D4ParserSax2
 {
 private:
@@ -74,11 +81,12 @@ private:
     enum ParseState {
         parser_start,
 
+        inside_dataset,
+
         // inside_group is the state just after parsing the start of a Group
         // element.
         inside_group,
 
-        // @TODO Parse attributes once the variables are working.
         inside_attribute_container,
         inside_attribute,
         inside_attribute_value,
@@ -87,33 +95,77 @@ private:
         inside_enum_def,
         inside_enum_const,
 
+        inside_dim_def,
+
         // This covers Byte, ..., Url, Opaque
         inside_simple_type,
 
-        inside_array,
-        inside_dimension,
-
-        inside_grid,
+        // inside_array,
+        inside_dim,
         inside_map,
 
         inside_constructor,
-        inside_sequence,
+
+        // inside_sequence, Removed from merged code jhrg 5/2/14
 
         parser_unknown,
-        parser_error
+        parser_error,
+        parser_fatal_error,
+
+        parser_end
     };
 
-    D4BaseTypeFactory *d_factory;
+    xmlSAXHandler ddx_sax_parser;
+
+    // The results of the parse operation are stored in these fields.
+    // This is passed into the parser using the intern() methods.
+    DMR *d_dmr;   // dump DMR here
+    DMR *dmr() const { return d_dmr; }
 
     // These stacks hold the state of the parse as it progresses.
     stack<ParseState> s; // Current parse state
-    stack<BaseType*> bt_stack; // current variable(s)/groups(s)
-    stack<AttrTable*> at_stack; // current attribute table
+    void push_state(D4ParserSax2::ParseState state) { s.push(state); }
+    D4ParserSax2::ParseState get_state() const { return s.top(); }
+    void pop_state() { s.pop(); }
+    bool empty_state() const { return s.empty(); }
 
-#if 0
-    // If an enumeration being defined, hold it here until its complete
+    stack<BaseType*> btp_stack; // current variable(s)
+    void push_basetype(BaseType *btp) { btp_stack.push(btp); }
+    BaseType *top_basetype() const { return btp_stack.top(); }
+    void pop_basetype() { btp_stack.pop(); }
+    bool empty_basetype() const { return btp_stack.empty(); }
+
+    stack<D4Group*> grp_stack; // current groups(s)
+    void push_group(D4Group *grp) { grp_stack.push(grp); }
+    D4Group *top_group() const { return grp_stack.top(); }
+    void pop_group() { grp_stack.pop(); }
+    bool empty_group() const { return grp_stack.empty(); }
+
+    stack<D4Attributes*> d_attrs_stack; // DAP4 Attributes
+    void push_attributes(D4Attributes *attr) { d_attrs_stack.push(attr); }
+    D4Attributes *top_attributes() const { return d_attrs_stack.top(); }
+    void pop_attributes() { d_attrs_stack.pop(); }
+    bool empty_attributes() const { return d_attrs_stack.empty(); }
+
     D4EnumDef *d_enum_def;
+    D4EnumDef *enum_def();
+#if 0
+    {
+        if (!d_enum_def) d_enum_def = new D4EnumDef;
+        return d_enum_def;
+    }
 #endif
+    void clear_enum_def() { d_enum_def = 0; }
+
+    D4Dimension *d_dim_def;
+    D4Dimension *dim_def();
+#if 0
+    {
+        if (!d_dim_def) d_dim_def = new D4Dimension;
+        return d_dim_def;
+    }
+#endif
+    void clear_dim_def() { d_dim_def = 0; }
 
     // Accumulate stuff inside an 'OtherXML' DAP attribute here
     string other_xml;
@@ -125,16 +177,16 @@ private:
 
     // These are used for processing errors.
     string error_msg;  // Error message(s), if any.
-    xmlParserCtxtPtr ctxt; // used for error message line numbers
-
-    // The results of the parse operation are stored in these fields.
-    DDS *dds;   // dump DMR here
+    xmlParserCtxtPtr context; // used for error message line numbers
 
     // These hold temporary values read during the parse.
     string dods_attr_name; // DAP4 attributes, not XML attributes
     string dods_attr_type; // ... not XML ...
     string char_data;  // char data in value elements; null after use
     string root_ns;     // What is the namespace of the root node (Group)
+
+    bool d_debug;
+    bool debug() const { return d_debug; }
 
     class XMLAttribute {
         public:
@@ -172,26 +224,13 @@ private:
     typedef map<string, XMLAttribute> XMLAttrMap;
     XMLAttrMap xml_attrs; // dump XML attributes here
 
-    XMLAttrMap::iterator xml_attr_begin() {
-        return xml_attrs.begin();
-    }
+    XMLAttrMap::iterator xml_attr_begin() { return xml_attrs.begin(); }
 
-    XMLAttrMap::iterator xml_attr_end() {
-        return xml_attrs.end();
-    }
+    XMLAttrMap::iterator xml_attr_end() {  return xml_attrs.end(); }
 
     map<string, string> namespace_table;
 
-    // These are kind of silly...
-    void set_state(D4ParserSax2::ParseState state);
-    D4ParserSax2::ParseState get_state() const;
-    void pop_state();
-
-    // Glue for the BaseTypeFactory class.
-    BaseType *factory(Type t, const string &name);
-
-    // Common cleanup code for intern() and intern_stream()
-    void cleanup_parse(xmlParserCtxtPtr &context) const;
+    void cleanup_parse();
 
     /** @name Parser Actions
 
@@ -203,19 +242,17 @@ private:
     void transfer_xml_ns(const xmlChar **namespaces, int nb_namespaces);
     bool check_required_attribute(const string &attr);
     bool check_attribute(const string & attr);
-
-    void process_attribute_helper(const xmlChar **attrs, int nb_attrs);
-
     void process_variable_helper(Type t, ParseState s, const xmlChar **attrs, int nb_attributes);
 
     void process_enum_const_helper(const xmlChar **attrs, int nb_attributes);
     void process_enum_def_helper(const xmlChar **attrs, int nb_attributes);
 
-    void process_dimension(const xmlChar **attrs, int nb_attrs);
-
+    bool process_dimension(const char *name, const xmlChar **attrs, int nb_attrs);
+    bool process_dimension_def(const char *name, const xmlChar **attrs, int nb_attrs);
+    bool process_map(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_attribute(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_variable(const char *name, const xmlChar **attrs, int nb_attributes);
-
+    bool process_group(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_enum_def(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_enum_const(const char *name, const xmlChar **attrs, int nb_attributes);
 
@@ -225,35 +262,52 @@ private:
     friend class D4ParserSax2Test;
 
 public:
-    // Read the factory class used to build BaseTypes from the DDS passed
-    // into the intern() method.
-    D4ParserSax2() : d_factory(0),
+    D4ParserSax2() :
+        d_dmr(0), d_enum_def(0), d_dim_def(0),
         other_xml(""), other_xml_depth(0), unknown_depth(0),
-        error_msg(""), ctxt(0), dds(0),
+        error_msg(""), context(0),
         dods_attr_name(""), dods_attr_type(""),
-        char_data(""), root_ns("")
-    {}
+        char_data(""), root_ns(""), d_debug(false)
+    {
+        //xmlSAXHandler ddx_sax_parser;
+        memset(&ddx_sax_parser, 0, sizeof(xmlSAXHandler));
 
-    void intern(const string &document, DDS *dest_dds);
-    void intern(istream &in, DDS *dest_dds);
+        ddx_sax_parser.getEntity = &D4ParserSax2::dmr_get_entity;
+        ddx_sax_parser.startDocument = &D4ParserSax2::dmr_start_document;
+        ddx_sax_parser.endDocument = &D4ParserSax2::dmr_end_document;
+        ddx_sax_parser.characters = &D4ParserSax2::dmr_get_characters;
+        ddx_sax_parser.ignorableWhitespace = &D4ParserSax2::dmr_ignoreable_whitespace;
+        ddx_sax_parser.cdataBlock = &D4ParserSax2::dmr_get_cdata;
+        ddx_sax_parser.warning = &D4ParserSax2::dmr_error;
+        ddx_sax_parser.error = &D4ParserSax2::dmr_error;
+        ddx_sax_parser.fatalError = &D4ParserSax2::dmr_fatal_error;
+        ddx_sax_parser.initialized = XML_SAX2_MAGIC;
+        ddx_sax_parser.startElementNs = &D4ParserSax2::dmr_start_element;
+        ddx_sax_parser.endElementNs = &D4ParserSax2::dmr_end_element;
+    }
 
-    static void ddx_start_document(void *parser);
-    static void ddx_end_document(void *parser);
+    void intern(istream &f, DMR *dest_dmr, bool debug = false);
+    void intern(const string &document, DMR *dest_dmr, bool debug = false);
+    void intern(const char *buffer, int size, DMR *dest_dmr, bool debug = false);
 
-    static void ddx_start_element(void *parser,
+    static void dmr_start_document(void *parser);
+    static void dmr_end_document(void *parser);
+
+    static void dmr_start_element(void *parser,
             const xmlChar *localname, const xmlChar *prefix, const xmlChar *URI,
             int nb_namespaces, const xmlChar **namespaces, int nb_attributes,
             int nb_defaulted, const xmlChar **attributes);
-    static void ddx_end_element(void *parser, const xmlChar *localname,
+    static void dmr_end_element(void *parser, const xmlChar *localname,
             const xmlChar *prefix, const xmlChar *URI);
 
-    static void ddx_get_characters(void *parser, const xmlChar *ch, int len);
-    static void ddx_ignoreable_whitespace(void *parser,
+    static void dmr_get_characters(void *parser, const xmlChar *ch, int len);
+    static void dmr_ignoreable_whitespace(void *parser,
             const xmlChar * ch, int len);
-    static void ddx_get_cdata(void *parser, const xmlChar *value, int len);
+    static void dmr_get_cdata(void *parser, const xmlChar *value, int len);
 
-    static xmlEntityPtr ddx_get_entity(void *parser, const xmlChar *name);
-    static void ddx_fatal_error(void *parser, const char *msg, ...);
+    static xmlEntityPtr dmr_get_entity(void *parser, const xmlChar *name);
+    static void dmr_fatal_error(void *parser, const char *msg, ...);
+    static void dmr_error(void *parser, const char *msg, ...);
 };
 
 } // namespace libdap

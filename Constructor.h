@@ -30,8 +30,14 @@
 
 #include "BaseType.h"
 
+class Crc32;
+
 namespace libdap
 {
+
+class DMR;
+class XMLWriter;
+class D4StreamUnMarshaller;
 
 /** Common methods for all constructor types. */
 class Constructor: public BaseType
@@ -46,8 +52,8 @@ protected:
     BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
     BaseType *m_exact_match(const string &name, btp_stack *s = 0);
 
-    Constructor(const string &n, const Type &t, bool is_dap4 = false);
-    Constructor(const string &n, const string &d, const Type &t, bool is_dap4 = false);
+    Constructor(const string &name, const Type &type, bool is_dap4 = false);
+    Constructor(const string &name, const string &d, const Type &type, bool is_dap4 = false);
 
     Constructor(const Constructor &copy_from);
 
@@ -59,19 +65,21 @@ public:
     virtual ~Constructor();
 
     Constructor &operator=(const Constructor &rhs);
+    BaseType *transform_to_dap4(D4Group *root, Constructor *dest);
 
-    //virtual void transfer_attributes(AttrTable *at_container);
+    virtual std::string FQN() const;
 
     virtual int element_count(bool leaves = false);
 
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
 
-    /// @deprecated
-    virtual unsigned int width(bool constrained = false);
+    virtual unsigned int width(bool constrained = false) const;
 #if 0
     virtual unsigned int width(bool constrained);
 #endif
+    // TODO Rewrite these methods to use the back pointers and keep this
+    // for older code.
     /// btp_stack no longer needed; use back pointers (BaseType::get_parent())
     virtual BaseType *var(const string &name, bool exact_match = true, btp_stack *s = 0);
     /// @deprecated
@@ -91,9 +99,17 @@ public:
     virtual void del_var(Vars_iter i);
 
     virtual bool read();
+
+    // DAP2
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+
+    // DAP4
+    virtual void compute_checksum(Crc32 &checksum);
+    virtual void intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/);
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     // Do not store values in memory as for C; users work with the C++ objects
     virtual unsigned int val2buf(void *, bool) {
@@ -113,6 +129,8 @@ public:
 
     virtual void print_xml(ostream &out, string space = "    ",
                            bool constrained = false);
+
+    void print_dap4(XMLWriter &xml, bool constrained = false);
 
     virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
 

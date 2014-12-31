@@ -87,14 +87,14 @@ void Connect::process_data(DataDDS &data, Response *rs)
             throw InternalErr(__FILE__, __LINE__,
                     "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 
-        case dap4_data_ddx: {
+        case dods_data_ddx: {
             // Parse the DDX; throw an exception on error.
             DDXParser ddx_parser(data.get_factory());
 
             // Read the MPM boundary and then read the subsequent headers
             string boundary = read_multipart_boundary(rs->get_stream());
             DBG(cerr << "MPM Boundary: " << boundary << endl);
-            read_multipart_headers(rs->get_stream(), "text/xml", dap4_ddx);
+            read_multipart_headers(rs->get_stream(), "text/xml", dods_ddx);
 
             // Parse the DDX, reading up to and including the next boundary.
             // Return the CID for the matching data part
@@ -170,14 +170,14 @@ Connect::process_data(DDS &data, Response *rs)
         // are processed by the WWW library.
         throw InternalErr(__FILE__, __LINE__, "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 
-    case dap4_data_ddx: {
+    case dods_data_ddx: {
             // Parse the DDX; throw an exception on error.
         DDXParser ddx_parser(data.get_factory());
 
         // Read the MPM boundary and then read the subsequent headers
         string boundary = read_multipart_boundary(rs->get_stream());
         DBG(cerr << "MPM Boundary: " << boundary << endl);
-        read_multipart_headers(rs->get_stream(), "text/xml", dap4_ddx);
+        read_multipart_headers(rs->get_stream(), "text/xml", dods_ddx);
 
         // Parse the DDX, reading up to and including the next boundary.
         // Return the CID for the matching data part
@@ -768,7 +768,6 @@ void Connect::request_ddx(DDS &dds, string expr)
             // (called by fetch_url) and result in a thrown Error object.
             break;
 
-        case dap4_ddx:
         case dods_ddx:
             try {
                 string blob;
@@ -837,7 +836,6 @@ void Connect::request_ddx_url(DDS &dds)
             // (called by fetch_url) and result in a thrown Error object.
             break;
 
-        case dap4_ddx:
         case dods_ddx:
             try {
                 string blob;
@@ -1068,7 +1066,7 @@ static void divine_type_information(Response *rs)
     // accepted both 'Dataset' and 'dataset' for a long time.
     switch (c) {
         case '-':
-            rs->set_type(dap4_data_ddx);
+            rs->set_type(dods_data_ddx);
             break;
         case 'D':
         case 'd':
@@ -1104,7 +1102,7 @@ void Connect::read_data_no_mime(DataDDS &data, Response *rs)
             d_protocol = rs->get_protocol();
             process_data(data, rs);
             break;
-        case dap4_data_ddx:
+        case dods_data_ddx:
             process_data(data, rs);
             d_version = rs->get_version();
             d_protocol = data.get_protocol();
@@ -1124,7 +1122,7 @@ void Connect::read_data_no_mime(DDS &data, Response *rs)
         d_protocol = rs->get_protocol();
         process_data(data, rs);
         break;
-    case dap4_data_ddx:
+    case dods_data_ddx:
         process_data(data, rs);
         d_version = rs->get_version();
         // TODO should check to see if this hack is a correct replacement

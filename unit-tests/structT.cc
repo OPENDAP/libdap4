@@ -71,6 +71,7 @@ public:
 		delete bt;
 		bt = 0;
 
+		// TODO Check Does this leak the Int16
 		Array *abt = factory->NewArray("name_array", factory->NewInt16("array_int"));
 		abt->append_dim(4, "dim1");
 		abt->append_dim(3, "dim2");

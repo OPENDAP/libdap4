@@ -57,7 +57,7 @@ int test_variable_sleep_interval;
 //  Note: MS VC++ won't tolerate the embedded newlines in strings, hence the \n
 //  is explicit.
 static const char *s_as_string = \
-"BaseType \\(0x.*\\):\n\
+        "BaseType \\(0x.*\\):\n\
           _name: s\n\
           _type: Sequence\n\
           _dataset: \n\
@@ -110,62 +110,55 @@ public:
     ~SequenceTest() {}
 
     void setUp() {
-	// Set up a simple sequence. Used to test ctor, assigment, et cetera.
-	s = new TestSequence("s");
-	s->add_var(new TestInt32("i1"));
-	s->add_var(new TestStr("str1"));
-	s->add_var(new TestInt32("i2"));
+        // Set up a simple sequence. Used to test ctor, assigment, et cetera.
+        s = new TestSequence("s");
+        s->add_var_nocopy(new TestInt32("i1"));
+        s->add_var_nocopy(new TestStr("str1"));
+        s->add_var_nocopy(new TestInt32("i2"));
         s->set_series_values(true);
 
         // Set ss, a two level sequence
         ss = new TestSequence("ss");
-        ss->add_var(new TestInt32("i1"));
+        ss->add_var_nocopy(new TestInt32("i1"));
         ss->set_series_values(true);
 
         ps = new TestSequence("child_of_ss");
-        ps->add_var(new TestInt32("i2"));
+        ps->add_var_nocopy(new TestInt32("i2"));
         ps->set_series_values(true);
 
-        ss->add_var(ps);
+        ss->add_var_nocopy(ps);
 
-	// Set up sss, used to test multi-level sequences
-	sss = new TestSequence("sss");
-	sss->add_var(new TestInt32("i1"));
+        // Set up sss, used to test multi-level sequences
+        sss = new TestSequence("sss");
+        sss->add_var_nocopy(new TestInt32("i1"));
 
-	ts = new TestSequence("child_of_sss");
-	ts->add_var(new TestStr("str1"));
+        ts = new TestSequence("child_of_sss");
+        ts->add_var_nocopy(new TestStr("str1"));
 
-	tts = new TestSequence("child_of_child_of_sss");
-	tts->add_var(new TestInt32("i2"));
-	ts->add_var(tts);
+        tts = new TestSequence("child_of_child_of_sss");
+        tts->add_var_nocopy(new TestInt32("i2"));
+        ts->add_var_nocopy(tts);
 
-	sss->add_var(ts);	// This has to be here because add_var adds
-				// copies of its argument.
+        sss->add_var_nocopy(ts);	// This has to be here because add_var_nocopy adds
+        // copies of its argument.
         sss->set_series_values(true);
 
         TestTypeFactory ttf;
         dds = new DDS(&ttf);
-        dds->add_var(s);
-        dds->add_var(ss);
-        dds->add_var(sss);
+        dds->add_var_nocopy(s);
+        dds->add_var_nocopy(ss);
+        dds->add_var_nocopy(sss);
     }
 
     void tearDown() {
-	delete s; s = 0;
-        delete ss; ss = 0;
-        delete ps; ps = 0;
-	delete sss; sss = 0;
-	delete ts; ts = 0;
-	delete tts; tts = 0;
-
         delete dds; dds = 0;
     }
 
     bool re_match(Regex &r, const char *s) {
-	int match_position = r.match(s, strlen(s));
-	DBG(cerr << "match position: " << match_position
-	    << " string length: " << (int)strlen(s) << endl);
-	return match_position == (int)strlen(s);
+        int match_position = r.match(s, strlen(s));
+        DBG(cerr << "match position: " << match_position
+                << " string length: " << (int)strlen(s) << endl);
+        return match_position == (int)strlen(s);
     }
 
     CPPUNIT_TEST_SUITE( SequenceTest );
@@ -338,15 +331,15 @@ public:
 
     void test_set_leaf_sequence3() {
         // Test for the rejection of a Sequence with two sequences in it.
-        sss->add_var(ss);
+        sss->add_var_nocopy(ss);
         sss->set_send_p(true);
         try {
-             sss->set_leaf_sequence(1);
-             CPPUNIT_ASSERT(!"Should have thrown Error");
+            sss->set_leaf_sequence(1);
+            CPPUNIT_ASSERT(!"Should have thrown Error");
         }
         catch (Error &e) {
-             cerr << e.get_error_message() << endl;
-             CPPUNIT_ASSERT("Caught Error");
+            cerr << e.get_error_message() << endl;
+            CPPUNIT_ASSERT("Caught Error");
         }
     }
 
@@ -383,7 +376,7 @@ public:
         ss->set_send_p(true);
         ss->set_leaf_sequence(1);
         CPPUNIT_ASSERT(!ss->is_leaf_sequence());
-        // add_var() _copies_ the object, so ps should not be used here.
+        // add_var_nocopy() _copies_ the object, so ps should not be used here.
         Sequence::Vars_iter i = ss->var_begin();
         Sequence *inner = dynamic_cast<Sequence*>(*++i);
         CPPUNIT_ASSERT(inner->type() == dods_sequence_c && inner->is_leaf_sequence());
@@ -403,24 +396,21 @@ public:
     }
 #endif
 
-    void ctor_test()
-	{
+    void assignment() {
+        Sequence ts2 = *s;
+        DBG(cerr << "ts2: " << ts2.toString() << endl);
+        CPPUNIT_ASSERT(re_match(s_regex, ts2.toString().c_str()));
+    }
+
+    void ctor_test() {
 		DBG(cerr << "s: " << s->toString() << endl);
 		CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
 	}
 
-	void assignment()
-	{
-		Sequence ts2 = *s;
-		DBG(cerr << "ts2: " << ts2.toString() << endl);
-		CPPUNIT_ASSERT(re_match(s_regex, ts2.toString().c_str()));
-	}
-
-	void copy_ctor()
-	{
-		Sequence s2 = *s;
-		CPPUNIT_ASSERT(re_match(s_regex, s2.toString().c_str()));
-	}
+    void copy_ctor() {
+        Sequence s2 = *s;
+        CPPUNIT_ASSERT(re_match(s_regex, s2.toString().c_str()));
+    }
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SequenceTest);

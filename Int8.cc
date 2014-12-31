@@ -41,8 +41,8 @@
 #include "Str.h"
 #include "Url.h"
 
-#include "DAP4StreamMarshaller.h"
-#include "DAP4StreamUnMarshaller.h"
+#include "D4StreamMarshaller.h"
+#include "D4StreamUnMarshaller.h"
 
 #include "DDS.h"
 #include "util.h"
@@ -61,7 +61,7 @@ namespace libdap {
 
     @param n A string containing the name of the variable to be created.
 */
-Int8::Int8(const string &n) : BaseType(n, dods_int8_c)
+Int8::Int8(const string &n) : BaseType(n, dods_int8_c), d_buf(0)
 {}
 
 /** The Int8 server-side constructor accepts the name of the variable and
@@ -71,7 +71,7 @@ Int8::Int8(const string &n) : BaseType(n, dods_int8_c)
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-Int8::Int8(const string &n, const string &d) : BaseType(n, d, dods_int8_c)
+Int8::Int8(const string &n, const string &d) : BaseType(n, d, dods_int8_c), d_buf(0)
 {}
 
 Int8::Int8(const Int8 &copy_from) : BaseType(copy_from)
@@ -99,39 +99,38 @@ Int8::operator=(const Int8 &rhs)
 }
 
 unsigned int
-Int8::width(bool)
+Int8::width(bool) const
 {
     return sizeof(dods_int8);
 }
 
-bool
-Int8::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
+void
+Int8::compute_checksum(Crc32 &checksum)
 {
-    dds.timeout_on();
-
-    if (!read_p())
-        read();  // read() throws Error and InternalErr
-
-#if EVAL
-    if (ce_eval && !eval.eval_selection(dds, dataset()))
-        return true;
-#endif
-
-    dds.timeout_off();
-
-    assert(typeid(m)==typeid(DAP4StreamMarshaller));
-    static_cast<DAP4StreamMarshaller&>(m).put_int8( d_buf ) ;
-
-    return true;
+	checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(d_buf));
 }
 
-bool
-Int8::deserialize(UnMarshaller &um, DDS *, bool)
+/**
+ * @brief Serialize an Int8
+ * @param m
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+Int8::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
 {
-    assert(typeid(um)==typeid(DAP4StreamUnMarshaller));
-    static_cast<DAP4StreamUnMarshaller&>(um).get_int8( d_buf ) ;
+    if (!read_p())
+        read();          // read() throws Error
 
-    return false;
+    m.put_int8( d_buf ) ;
+}
+
+void
+Int8::deserialize(D4StreamUnMarshaller &um, DMR &)
+{
+    um.get_int8( d_buf ) ;
 }
 
 dods_int8
@@ -149,23 +148,14 @@ Int8::set_value(dods_int8 i)
     return true;
 }
 
-void
-Int8::print_val(FILE *out, string space, bool print_decl_p)
+void Int8::print_val(ostream &out, string space, bool print_decl_p)
 {
-    ostringstream oss;
-    print_val(oss, space, print_decl_p);
-    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
-}
-
-void
-Int8::print_val(ostream &out, string space, bool print_decl_p)
-{
-    if (print_decl_p) {
-        print_decl(out, space, false);
-	out << " = " << d_buf << ";\n" ;
-    }
-    else
-	out << d_buf ;
+	if (print_decl_p) {
+		print_decl(out, space, false);
+		out << " = " << d_buf << ";\n";
+	}
+	else
+		out << (int)d_buf;
 }
 
 bool

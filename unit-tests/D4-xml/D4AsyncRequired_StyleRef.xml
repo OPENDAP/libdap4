@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type='text/xsl' href='http://someServer:8080/opendap/xsl/asyncResponse.xsl'?>
+<dap:AsynchronousResponse status="required" xmlns:dap="http://xml.opendap.org/ns/DAP/4.0#">
+    <dap:expectedDelay seconds="6001"/>
+    <dap:responseLifetime seconds="600007"/>
+</dap:AsynchronousResponse>

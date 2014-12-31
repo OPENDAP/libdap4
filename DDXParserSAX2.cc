@@ -363,6 +363,7 @@ void DDXParser::process_variable(Type t, ParseState s, const xmlChar **attrs,
     transfer_xml_attrs(attrs, nb_attributes);
 
     set_state(s);
+
     if (bt_stack.top()->type() == dods_array_c
             || check_required_attribute("name")) { // throws on error/false
         BaseType *btp = factory(t, attribute_table["name"].value);
@@ -489,6 +490,7 @@ void DDXParser::finish_variable(const char *tag, Type t, const char *expected)
         DDXParser::ddx_fatal_error(this,
                                    "Internal error: Expected a %s variable.",
                                    expected);
+        delete btp;
         return;
     }
     // Once libxml2 validates, this can go away. 05/30/03 jhrg
@@ -513,8 +515,7 @@ void DDXParser::finish_variable(const char *tag, Type t, const char *expected)
         return;
     }
 
-    parent->add_var(btp);
-    delete btp;
+    parent->add_var_nocopy(btp);
 }
 
 /** @name SAX Parser Callbacks
@@ -561,7 +562,6 @@ void DDXParser::ddx_end_document(void * p)
     // If we've found any sort of error, don't make the DDX; intern() will
     // take care of the error.
     if (parser->get_state() == parser_error) {
-    	delete parser->bt_stack.top();
         return;
     }
 
@@ -569,8 +569,9 @@ void DDXParser::ddx_end_document(void * p)
     // to the DDS.
     Constructor *cp = dynamic_cast < Constructor * >(parser->bt_stack.top());
     if (!cp) {
+        delete parser->bt_stack.top();
+        parser->bt_stack.pop();
     	ddx_fatal_error(parser, "Parse error: Expected a Structure, Sequence or Grid variable.");
-    	delete cp;
 		return;
     }
 
@@ -579,8 +580,8 @@ void DDXParser::ddx_end_document(void * p)
         parser->dds->add_var(*i);
     }
 
+    delete parser->bt_stack.top();
     parser->bt_stack.pop();
-    delete cp;
 }
 
 void DDXParser::ddx_sax2_start_element(void *p,
@@ -925,7 +926,7 @@ void DDXParser::ddx_sax2_end_element(void *p, const xmlChar *l,
                 parent->add_var(btp);
                 delete btp;
             }
-            else
+            else {
                 DDXParser::ddx_fatal_error(parser,
                                            "Tried to add the simple-type variable '%s' to a non-constructor type (%s %s).",
                                            localname,
@@ -933,11 +934,14 @@ void DDXParser::ddx_sax2_end_element(void *p, const xmlChar *l,
                                            type_name().c_str(),
                                            parser->bt_stack.top()->name().
                                            c_str());
+                delete btp;
+            }
         }
-        else
+        else {
             DDXParser::ddx_fatal_error(parser,
                                        "Expected an end tag for a simple type; found '%s' instead.",
                                        localname);
+        }
         break;
     }
 
@@ -1094,33 +1098,32 @@ void DDXParser::ddx_fatal_error(void * p, const char *msg, ...)
 
 //@}
 
-void DDXParser::cleanup_parse(xmlParserCtxtPtr & context) const
+void DDXParser::cleanup_parse(xmlParserCtxtPtr & context)
 {
-    if (!context->wellFormed) {
-        context->sax = NULL;
-        xmlFreeParserCtxt(context);
-        throw
-        DDXParseFailed(string
-                       ("\nThe DDX is not a well formed XML document.\n")
-                       + error_msg);
-    }
-
-    if (!context->valid) {
-        context->sax = NULL;
-        xmlFreeParserCtxt(context);
-        throw DDXParseFailed(string("\nThe DDX is not a valid document.\n")
-                             + error_msg);
-    }
-
-    if (get_state() == parser_error) {
-        context->sax = NULL;
-        xmlFreeParserCtxt(context);
-        throw DDXParseFailed(string("\nError parsing DDX response.\n") +
-                             error_msg);
-    }
+    bool wellFormed = context->wellFormed;
+    bool valid = context->valid;
 
     context->sax = NULL;
     xmlFreeParserCtxt(context);
+
+    // If there's an error, there may still be items on the stack at the
+    // end of the parse.
+    while (!bt_stack.empty()) {
+        delete bt_stack.top();
+        bt_stack.pop();
+    }
+
+    if (!wellFormed) {
+        throw DDXParseFailed(string("\nThe DDX is not a well formed XML document.\n") + error_msg);
+    }
+
+    if (!valid) {
+        throw DDXParseFailed(string("\nThe DDX is not a valid document.\n") + error_msg);
+    }
+
+    if (get_state() == parser_error) {
+        throw DDXParseFailed(string("\nError parsing DDX response.\n") + error_msg);
+    }
 }
 
 /** Read a DDX from a C++ input stream and populate a DDS object.

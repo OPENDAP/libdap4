@@ -64,14 +64,8 @@ extern int www_trace;
 extern int dods_keep_temps;
 
 /** Use the CURL library to dereference a HTTP URL. Scan the response for
-    headers used by the DAP 2.0 and extract their values. The body of the
-    response is made available by a FILE pointer.
-
-    @todo Change the way this class returns information so that the headers
-    and the stream (aka FILE pointer) are returned using an object. Design
-    this object so that its destructor closes the stream (this will prevent
-    resource leaks). It will also obviate the need for the (now broken)
-    is_response_present() predicate.
+    headers used by DAP 2.0 and extract their values. The body of the
+    response is made available using a FILE pointer.
 
     @author jhrg */
 
@@ -83,6 +77,7 @@ private:
     HTTPCache *d_http_cache;
 
     char d_error_buffer[CURL_ERROR_SIZE]; // A human-readable message.
+    std::string d_content_type; // apparently read by libcurl; this is valid only after curl_easy_perform()
 
     bool d_accept_deflate;
 
@@ -97,10 +92,12 @@ private:
     int d_dap_client_protocol_major;
     int d_dap_client_protocol_minor;
 
+    bool d_use_cpp_streams;	// Build HTTPResponse objects using fstream and not FILE*
+
     void www_lib_init();
     long read_url(const string &url, FILE *stream, vector<string> *resp_hdrs,
                   const vector<string> *headers = 0);
-    // string get_temp_file(FILE *&stream) throw(InternalErr);
+
     HTTPResponse *plain_fetch_url(const string &url);
     HTTPResponse *caching_fetch_url(const string &url);
 
@@ -120,19 +117,13 @@ protected:
     methods to suppress the C++-supplied default versions (which will
     break this object). */
     //@{
-    HTTPConnect() {
-		throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
-	}
-	HTTPConnect(const HTTPConnect &) {
-		throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
-	}
-	HTTPConnect &operator=(const HTTPConnect &) {
-		throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
-	}
+    HTTPConnect();
+	HTTPConnect(const HTTPConnect &);
+	HTTPConnect &operator=(const HTTPConnect &);
     //@}
 
 public:
-    HTTPConnect(RCReader *rcr);
+    HTTPConnect(RCReader *rcr, bool use_cpp = false);
 
     virtual ~HTTPConnect();
 
@@ -140,33 +131,29 @@ public:
     void set_accept_deflate(bool defalte);
     void set_xdap_protocol(int major, int minor);
 
+    bool use_cpp_streams() const { return d_use_cpp_streams; }
+    void set_use_cpp_streams(bool use_cpp_streams) { d_use_cpp_streams = use_cpp_streams; }
+
     /** Set the cookie jar. This function sets the name of a file used to store
     cookies returned by servers. This will help with things like single
     sign on systems.
 
     @param cookie_jar The pathname to the file that stores cookies. If this
     is the empty string saving cookies is disabled. */
-    void set_cookie_jar(const string &cookie_jar)
-    {
-	d_cookie_jar = cookie_jar;
-    }
+    void set_cookie_jar(const string &cookie_jar) { d_cookie_jar = cookie_jar; }
 
     /** Set the state of the HTTP cache. By default, the HTTP cache is
     enabled or disabled using the value of the \c USE_CACHE property in
     the \c .dodsrc file. Use this method to set the state from within a
     program.
     @param enabled True to use the cache, False to disable. */
-    void set_cache_enabled(bool enabled)
-    {
+    void set_cache_enabled(bool enabled) {
         if (d_http_cache)
             d_http_cache->set_cache_enabled(enabled);
     }
 
     /** Return the current state of the HTTP cache. */
-    bool is_cache_enabled()
-    {
-        return (d_http_cache) ? d_http_cache->is_cache_enabled() : false;
-    }
+    bool is_cache_enabled() { return (d_http_cache) ? d_http_cache->is_cache_enabled() : false; }
 
     HTTPResponse *fetch_url(const string &url);
 };

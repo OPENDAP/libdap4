@@ -159,7 +159,9 @@ public:
 	    bt = factory->NewStr( "var6" ) ;
 	    dds.add_var( bt ) ;
 	    delete bt ;
-	    bt = factory->NewArray( "var7", factory->NewInt16( "" ) ) ;
+	    BaseType *tbt = factory->NewInt16( "" ) ;
+	    bt = factory->NewArray( "var7", tbt ) ;
+	    delete tbt; tbt = 0;
 	    dds.add_var( bt ) ;
 	    delete bt ;
 	    bt = factory->NewStructure( "var8" ) ;
@@ -172,6 +174,7 @@ public:
 	    s->add_var( bts1 ) ;
 	    delete bts1 ; bts1 = 0 ;
 	    dds.add_var( bt ) ;
+	    delete bt; bt = 0;
 	}
 	catch( InternalErr &e )
 	{
@@ -451,7 +454,9 @@ public:
 	    bt = factory->NewStr( "c1var2" ) ;
 	    dds.add_var( bt ) ;
 	    delete bt ;
-	    bt = factory->NewArray( "c1var3", factory->NewInt16( "" ) ) ;
+	    BaseType *tbt = factory->NewInt16( "" );
+	    bt = factory->NewArray( "c1var3", tbt ) ;
+	    delete tbt; tbt = 0;
 	    dds.add_var( bt ) ;
 	    delete bt ;
 	}

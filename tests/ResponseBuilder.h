@@ -45,8 +45,8 @@ public:
 
 protected:
     std::string d_dataset;  		/// Name of the dataset/database
-    std::string d_ce;  		    /// Constraint expression
-    std::string d_btp_func_ce;   /// The BTP functions, extracted from the CE
+    std::string d_dap2ce;  		    /// Constraint expression
+    std::string d_dap2_btp_func_ce;   /// The BTP functions, extracted from the CE
     int d_timeout;  		/// Response timeout after N seconds
     std::string d_default_protocol;	/// Version std::string for the library's default protocol version
 

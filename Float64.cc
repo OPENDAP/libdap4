@@ -55,6 +55,10 @@
 #include "Marshaller.h"
 #include "UnMarshaller.h"
 
+#include "DMR.h"
+#include "D4StreamMarshaller.h"
+#include "D4StreamUnMarshaller.h"
+
 #include "util.h"
 #include "parser.h"
 #include "Operators.h"
@@ -75,8 +79,7 @@ namespace libdap {
     created.
 
 */
-Float64::Float64(const string &n)
-        : BaseType(n, dods_float64_c)
+Float64::Float64(const string &n) : BaseType(n, dods_float64_c), d_buf(0)
 {}
 
 /** The Float64 server-side constructor accepts the name of the variable and
@@ -86,8 +89,7 @@ Float64::Float64(const string &n)
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-Float64::Float64(const string &n, const string &d)
-        : BaseType(n, d, dods_float64_c)
+Float64::Float64(const string &n, const string &d) : BaseType(n, d, dods_float64_c), d_buf(0)
 {}
 
 Float64::Float64(const Float64 &copy_from) : BaseType(copy_from)
@@ -115,24 +117,21 @@ Float64::operator=(const Float64 &rhs)
 }
 
 unsigned int
-Float64::width(bool)
+Float64::width(bool) const
 {
     return sizeof(dods_float64);
 }
 
 bool
-Float64::serialize(ConstraintEvaluator &eval, DDS &dds,
-                   Marshaller &m, bool ce_eval)
+Float64::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
     dds.timeout_on();
 
     if (!read_p())
         read();  // read() throws Error and InternalErr
 
-#if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-#endif
 
     dds.timeout_off();
 
@@ -147,6 +146,35 @@ Float64::deserialize(UnMarshaller &um, DDS *, bool)
     um.get_float64( d_buf ) ;
 
     return false;
+}
+
+void
+Float64::compute_checksum(Crc32 &checksum)
+{
+	checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(d_buf));
+}
+
+/**
+ * @brief Serialize an Int8
+ * @param m
+ * @param dmr Unused
+ * @param eval Unused
+ * @param filter Unused
+ * @exception Error is thrown if the value needs to be read and that operation fails.
+ */
+void
+Float64::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
+{
+    if (!read_p())
+        read();          // read() throws Error
+
+    m.put_float64( d_buf ) ;
+}
+
+void
+Float64::deserialize(D4StreamUnMarshaller &um, DMR &)
+{
+    um.get_float64( d_buf ) ;
 }
 
 unsigned int

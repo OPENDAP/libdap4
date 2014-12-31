@@ -167,6 +167,8 @@ private:
     static HTTPCache *_instance;
 
     friend class HTTPCacheTest; // Unit tests
+    friend class HTTPConnectTest;
+
     friend class HTTPCacheInterruptHandler;
 
     // Private methods

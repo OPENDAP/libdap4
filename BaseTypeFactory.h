@@ -28,6 +28,9 @@
 
 #include <string>
 
+#include "Type.h"
+#include "InternalErr.h"
+
 // Class declarations; Make sure to include the corresponding headers in the
 // implementation file.
 
@@ -82,7 +85,25 @@ public:
     virtual ~BaseTypeFactory()
     {}
 
-    virtual BaseType *NewVariable(Type type, const string &name = "") const;
+    /**
+     * Build a new variable and return it using a BaseType pointer. The
+     * type of the variable is given using  Type enumeration.
+     *
+     * @note Added for DAP4
+     *
+     * @param t The type of the variable to create
+     * @parma name The (optional) name of the variable.
+     */
+    virtual BaseType *NewVariable(Type t, const string &name = "") const;
+
+    /**
+     * Clone this object and return a pointer to the clone.
+     *
+     * @note added for DAP4
+     */
+    virtual BaseTypeFactory *ptr_duplicate() const {
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented.");
+    }
 
     virtual Byte *NewByte(const string &n = "") const;
     virtual Int16 *NewInt16(const string &n = "") const;

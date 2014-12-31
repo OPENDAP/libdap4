@@ -79,9 +79,9 @@ void ServerFunctionsList::delete_instance() {
  */
 
 ServerFunctionsList::~ServerFunctionsList() {
-    std::multimap<string,libdap::ServerFunction *>::iterator fit;
+    SFLIter fit;
     for(fit=d_func_list.begin(); fit!=d_func_list.end() ; fit++){
-        libdap::ServerFunction *func = fit->second;
+        ServerFunction *func = fit->second;
         DBG(cerr << "ServerFunctionsList::~ServerFunctionsList() - Deleting ServerFunction " << func->getName() << " from ServerFunctionsList." << endl);
         delete func;
     }
@@ -109,75 +109,6 @@ void ServerFunctionsList::add_function(ServerFunction *func )
     d_func_list.insert(std::make_pair(func->getName(),func));
 }
 
-#if 0
-
-bool
-ServerFunctionsList::add_function( string name, btp_func func )
-{
-    if (d_btp_func_list[name] == 0) {
-        d_btp_func_list[name] = func;
-        return true;
-    }
-
-    return false;
-}
-
-
-bool
-ServerFunctionsList::add_function( string name, bool_func func )
-{
-    if (d_bool_func_list[name] == 0) {
-        d_bool_func_list[name] = func;
-        return true;
-    }
-
-    return false;
-}
-
-bool
-ServerFunctionsList::add_function( string name, proj_func func )
-{
-    if (d_proj_func_list[name] == 0) {
-        d_proj_func_list[name] = func;
-        return true;
-    }
-
-    return false;
-}
-#endif
-
-#if 0
-void ServerFunctionsList::store_functions(ConstraintEvaluator &ce)
-{
-    if (d_btp_func_list.size() > 0) {
-        map<string, btp_func>::iterator i = d_btp_func_list.begin();
-        map<string, btp_func>::iterator e = d_btp_func_list.end();
-        while (i != e) {
-            ce.add_function((*i).first, (*i).second);
-            ++i;
-        }
-    }
-
-    if (d_bool_func_list.size() > 0) {
-        map<string, bool_func>::iterator i = d_bool_func_list.begin();
-        map<string, bool_func>::iterator e = d_bool_func_list.end();
-        while (i != e) {
-            ce.add_function((*i).first, (*i).second);
-            ++i;
-        }
-    }
-
-    if (d_proj_func_list.size() > 0) {
-        map<string, proj_func>::iterator i = d_proj_func_list.begin();
-        map<string, proj_func>::iterator e = d_proj_func_list.end();
-        while (i != e) {
-            ce.add_function((*i).first, (*i).second);
-            ++i;
-        }
-    }
-}
-#endif
-
 /**
  * Returns the first boolean function in the list whose key value matches the passed string name.
  * When a match is found the function returns true and sets returned value parameter *f to
@@ -200,37 +131,20 @@ void ServerFunctionsList::store_functions(ConstraintEvaluator &ce)
  */
 bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) const
 {
-#if 0
-    if (d_bool_func_list.empty())
-        return false;
-
-    map<string, bool_func>::const_iterator i = d_bool_func_list.begin();
-    while(i != d_bool_func_list.end()) {
-        if (name == (*i).first && (*f = (*i).second)) {
-            return true;
-        }
-        ++i;
-    }
-
-    return false;
-#endif
-
     if (d_func_list.empty())
         return false;
 
-    std::pair <std::multimap<std::string,libdap::ServerFunction *>::const_iterator, std::multimap<std::string,libdap::ServerFunction *>::const_iterator> ret;
+    std::pair <SFLCIter, SFLCIter> ret;
     ret = d_func_list.equal_range(name);
-    for (std::multimap<std::string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
+    for (SFLCIter it = ret.first; it != ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_bool_func())){
             DBG(cerr << "ServerFunctionsList::find_function() - Found boolean function " << it->second->getName() << endl);
             return true;
         }
     }
+
     return false;
-
 }
-
-
 
 /**
  * Returns the first BaseType function in the list whose key value matches the passed string name.
@@ -254,29 +168,13 @@ bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) c
  */
 bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
 {
-
-#if 0
-    if (d_btp_func_list.empty())
-        return false;
-
-    map<string, btp_func>::const_iterator i = d_btp_func_list.begin();
-    while(i != d_btp_func_list.end()) {
-        if (name == (*i).first && (*f = (*i).second)) {
-            return true;
-        }
-        ++i;
-    }
-
-    return false;
-#endif
-
     if (d_func_list.empty())
         return false;
     DBG(cerr << "ServerFunctionsList::find_function() - Looking for ServerFunction '" << name << "'" << endl);
 
-    std::pair <std::multimap<string,libdap::ServerFunction *>::const_iterator, std::multimap<string,libdap::ServerFunction *>::const_iterator> ret;
+    std::pair <SFLCIter, SFLCIter> ret;
     ret = d_func_list.equal_range(name);
-    for (std::multimap<string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
+    for (SFLCIter it = ret.first; it != ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_btp_func())){
             DBG(cerr << "ServerFunctionsList::find_function() - Found basetype function " << it->second->getName() << endl);
             return true;
@@ -284,9 +182,6 @@ bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
     }
 
     return false;
-
-
-
 }
 
 /**
@@ -311,51 +206,55 @@ bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
  */
 bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
 {
-
-#if 0
-    if (d_proj_func_list.empty())
-        return false;
-
-    map<string, proj_func>::const_iterator i = d_proj_func_list.begin();
-    while(i != d_proj_func_list.end()) {
-        if (name == (*i).first && (*f = (*i).second)) {
-            return true;
-        }
-        ++i;
-    }
-
-    return false;
-#endif
-
     if (d_func_list.empty())
         return false;
 
-    std::pair <std::multimap<string,libdap::ServerFunction *>::const_iterator, std::multimap<string,libdap::ServerFunction *>::const_iterator> ret;
+    std::pair <SFLCIter, SFLCIter> ret;
     ret = d_func_list.equal_range(name);
-    for (std::multimap<string,libdap::ServerFunction *>::const_iterator it=ret.first; it!=ret.second; ++it) {
+    for (SFLCIter it = ret.first; it != ret.second; ++it) {
         if (name == it->first && (*f = it->second->get_proj_func())){
             DBG(cerr << "ServerFunctionsList::find_function() - Found projection function " << it->second->getName() << endl);
            return true;
         }
     }
-    return false;
 
+    return false;
 }
 
+/**
+ * Find a DAP4 function in the Server Functions List.
+ *
+ * @param name Look for this function name
+ * @param f Value-result parameter. NULL if the function is not found
+ * @return True if the function was found, otherwise false.
+ */
+bool ServerFunctionsList::find_function(const string &name, D4Function *f) const
+{
+    if (d_func_list.empty())
+        return false;
 
+    std::pair <SFLCIter, SFLCIter> ret;
+    ret = d_func_list.equal_range(name);
+    for (SFLCIter it = ret.first; it != ret.second; ++it) {
+        if (name == it->first && (*f = it->second->get_d4_function())) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 /** @brief Returns an iterator pointing to the first key pair in the ServerFunctionList. */
-std::multimap<string,libdap::ServerFunction *>::iterator ServerFunctionsList::begin()
+ServerFunctionsList::SFLIter ServerFunctionsList::begin()
 {
     return d_func_list.begin();
 }
 
 /** @brief Returns an iterator pointing to the last key pair in the ServerFunctionList. */
-std::multimap<string,libdap::ServerFunction *>::iterator ServerFunctionsList::end()
+ServerFunctionsList::SFLIter ServerFunctionsList::end()
 {
     return d_func_list.end();
 }
-
 
 /**
  *
@@ -363,95 +262,17 @@ std::multimap<string,libdap::ServerFunction *>::iterator ServerFunctionsList::en
  * @brief Returns the ServerFunction pointed to by the passed iterator.
  *
  */
-libdap::ServerFunction *ServerFunctionsList::getFunction(std::multimap<string,libdap::ServerFunction *>::iterator it)
+ServerFunction *ServerFunctionsList::getFunction(SFLIter it)
 {
     return (*it).second;
 }
 
-
-
-
-
-
-#if 0
-/** @brief dumps information about this object
- *
- * Displays the pointer value of this instance along with information about
- * this catalog directory.
- *
- * @param strm C++ i/o stream to dump the information to
- */
-void ServerFunctionsList::dump(ostream &strm) const
-{
-    strm << BESIndent::LMarg << "ServerFunctionsList::dump - (" << (void *) this << ")" << endl;
-    BESIndent::Indent();
-
-    if (d_btp_func_list.size() > 0) {
-        strm << BESIndent::LMarg << "registered btp functions:" << endl;
-        BESIndent::Indent();
-        map<string, btp_func>::const_iterator i = d_btp_func_list.begin();
-        map<string, btp_func>::const_iterator e = d_btp_func_list.end();
-        while (i != e) {
-            strm << (*i).first << endl;
-            ++i;
-        }
-        BESIndent::UnIndent();
-    }
-    else {
-        strm << BESIndent::LMarg << "registered btp functions: none" << endl;
-    }
-
-    if (d_bool_func_list.size() > 0) {
-        strm << BESIndent::LMarg << "registered bool functions:" << endl;
-        BESIndent::Indent();
-        map<string, bool_func>::const_iterator i = d_bool_func_list.begin();
-        map<string, bool_func>::const_iterator e = d_bool_func_list.end();
-        while (i != e) {
-            strm << (*i).first << endl;
-            ++i;
-        }
-        BESIndent::UnIndent();
-    }
-    else {
-        strm << BESIndent::LMarg << "registered bool functions: none" << endl;
-    }
-
-    if (d_proj_func_list.size() > 0) {
-        strm << BESIndent::LMarg << "registered projection functions:" << endl;
-        BESIndent::Indent();
-        map<string, proj_func>::const_iterator i = d_proj_func_list.begin();
-        map<string, proj_func>::const_iterator e = d_proj_func_list.end();
-        while (i != e) {
-            strm << (*i).first << endl;
-            ++i;
-        }
-        BESIndent::UnIndent();
-    }
-    else {
-        strm << BESIndent::LMarg << "registered projection functions: none" << endl;
-    }
-
-    BESIndent::UnIndent();
-}
-
-ServerFunctionsList *
-ServerFunctionsList::TheList()
-{
-    if (d_instance == 0) {
-        d_instance = new ServerFunctionsList;
-    }
-    return d_instance;
-}
-
-#endif
-
 void ServerFunctionsList::getFunctionNames(vector<string> *names){
-    std::multimap<string,libdap::ServerFunction *>::iterator fit;
-    for(fit=d_func_list.begin(); fit!=d_func_list.end() ; fit++){
+	SFLIter fit;
+    for(fit = d_func_list.begin(); fit != d_func_list.end(); fit++) {
         ServerFunction *func = fit->second;
         names->push_back(func->getName());
     }
 }
 
-
-}
+} // namespace libdap

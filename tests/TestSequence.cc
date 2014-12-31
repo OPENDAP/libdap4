@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1995-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -35,13 +35,19 @@
 //
 // Note that the test code here to read values from a data file works only
 // for single level sequences - that is, it does *not* work for sequences
-// that contain other sequences. jhrg 2/2/98 
-
-#include "TestSequence.h"
-#include "TestCommon.h"
+// that contain other sequences. jhrg 2/2/98
 
 #include "config.h"
+#include "D4Group.h"
+#include "Constructor.h"
+#include "D4Sequence.h"
 #include "debug.h"
+
+#include "TestSequence.h"
+#include "TestD4Sequence.h"
+#include "TestCommon.h"
+
+using namespace libdap;
 
 void
 TestSequence::_duplicate(const TestSequence &ts)
@@ -87,6 +93,20 @@ TestSequence::operator=(const TestSequence &rhs)
     _duplicate(rhs);
 
     return *this;
+}
+
+BaseType *
+TestSequence::transform_to_dap4(D4Group *root, Constructor *container)
+{
+
+	D4Sequence *dest = new TestD4Sequence(name());
+
+	Constructor::transform_to_dap4(root, dest);
+
+    dest->set_length(-1);
+	dest->set_parent(container);
+
+    return dest;
 }
 
 void
@@ -141,12 +161,12 @@ TestSequence::set_series_values(bool sv)
         dynamic_cast<TestCommon&>(*(*i)).set_series_values(sv);
         ++i;
     }
-    
+
     d_series_values = sv;
 }
 
 int
-TestSequence::length()
+TestSequence::length() const
 {
     return 5;
 }

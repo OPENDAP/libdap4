@@ -9,6 +9,13 @@ AUTOMAKE_OPTIONS = foreign
 
 AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests $(CURL_CFLAGS) $(XML2_CFLAGS)
 AM_LDADD =
+AM_CXXFLAGS = 
+CXXFLAGS = 
+
+if COMPILER_IS_GCC
+AM_CXXFLAGS += -Wall -W -Wcast-align
+endif
+
 if CPPUNIT
 AM_CPPFLAGS += $(CPPUNIT_CFLAGS)
 AM_LDADD += $(CPPUNIT_LIBS)
@@ -16,8 +23,19 @@ endif
 
 # These are not used by automake but are often useful for certain types of
 # debugging. Set CXXFLAGS to this in the nightly build using export ...
-CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align -Werror
-TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
+CXXFLAGS_DEBUG = -g3 -O0 -Wall -Wcast-align
+
+if USE_VALGRIND
+TESTS_ENVIRONMENT=valgrind --quiet --trace-children=yes --error-exitcode=1 \
+--leak-check=yes --dsymutil=yes --suppressions=valgrind_suppressions.txt
+
+# skip using --log-file="valgrind-%p.log" because it always generates files
+# Might also drop --dsymutil=yes because it can take a long time to run.
+endif
+
+if BUILD_DEVELOPER
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
+endif
 
 # This determines what gets built by make check
 check_PROGRAMS = $(UNIT_TESTS)
@@ -28,35 +46,36 @@ TESTS = $(UNIT_TESTS)
 noinst_HEADERS = test_config.h
 
 DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
-	rcreader-testsuite server-testsuite cgi-util-tests D4-xml
+	rcreader-testsuite server-testsuite cgi-util-tests D4-xml \
+	chunked-io D4-marshaller
 
 EXTRA_DIST = $(DIRS_EXTRA) testFile.cc testFile.h test_config.h.in
 
-CLEANFILES = testout .dodsrc  *.gcda *.gcno
+CLEANFILES = testout .dodsrc  *.gcda *.gcno D4-xml.tar.gz
 
 DISTCLEANFILES = test_config.h *.strm *.file tmp.txt
 
 test_config.h: test_config.h.in Makefile
 	sed -e "s%[@]abs_srcdir[@]%${abs_srcdir}%" $< > test_config.h
 
+D4-xml.tar.gz: D4-xml/DMR_*[0-9].xml
+	tar -czf $@ $^
+
 ############################################################################
 # Unit Tests
 #
 
 if CPPUNIT
-UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT	\
-	RegexTest                                                       \
-	ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest 	\
-	DDSTest	DDXParserTest generalUtilTest 		\
-	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest 	\
-	SequenceTest SignalHandlerTest  MarshallerTest                  \
-	ServerFunctionsListUnitTest 
-	
-# ResponseBuilderTest ResponseCacheTest Keywords2Test DODSFilterTest 
-	
+UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
+	RegexTest ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest \
+	DDSTest	DDXParserTest  generalUtilTest HTTPConnectTest parserUtilTest \
+	RCReaderTest SequenceTest SignalHandlerTest  MarshallerTest \
+	HTTPCacheTest ServerFunctionsListUnitTest 
+
 if DAP4_DEFINED
-    UNIT_TESTS += DAP4MarshallerTest DAP4UnMarshallerTest \
-    D4DimensionsTest D4EnumDefsTest
+UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
+	D4EnumDefsTest D4GroupTest D4ParserSax2Test D4AttributesTest D4EnumTest \
+	chunked_iostream_test D4AsyncDocTest DMRTest
 endif
 
 else
@@ -167,16 +186,37 @@ ServerFunctionsListUnitTest_LDADD = ../libdap.la $(AM_LDADD)
 
 if DAP4_DEFINED
 
-DAP4MarshallerTest_SOURCES = DAP4MarshallerTest.cc
-DAP4MarshallerTest_LDADD = ../libdap.la $(AM_LDADD)
+D4MarshallerTest_SOURCES = D4MarshallerTest.cc
+D4MarshallerTest_LDADD = ../libdap.la $(AM_LDADD)
 
-DAP4UnMarshallerTest_SOURCES = DAP4UnMarshallerTest.cc
-DAP4UnMarshallerTest_LDADD = ../libdap.la $(AM_LDADD)
+D4UnMarshallerTest_SOURCES = D4UnMarshallerTest.cc
+D4UnMarshallerTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4DimensionsTest_SOURCES = D4DimensionsTest.cc $(TEST_SRC)
 D4DimensionsTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4EnumDefsTest_SOURCES = D4EnumDefsTest.cc $(TEST_SRC)
 D4EnumDefsTest_LDADD = ../libdap.la $(AM_LDADD)
+
+D4GroupTest_SOURCES = D4GroupTest.cc $(TEST_SRC)
+D4GroupTest_LDADD = ../libdap.la $(AM_LDADD)
+
+D4ParserSax2Test_SOURCES = D4ParserSax2Test.cc $(TEST_SRC)
+D4ParserSax2Test_LDADD = ../libdap.la $(AM_LDADD)
+
+D4AttributesTest_SOURCES = D4AttributesTest.cc $(TEST_SRC)
+D4AttributesTest_LDADD = ../libdap.la $(AM_LDADD)
+
+D4EnumTest_SOURCES = D4EnumTest.cc $(TEST_SRC)
+D4EnumTest_LDADD = ../libdap.la $(AM_LDADD)
+
+chunked_iostream_test_SOURCES = chunked_iostream_test.cc $(TEST_SRC)
+chunked_iostream_test_LDADD = ../libdap.la $(AM_LDADD)
+
+D4AsyncDocTest_SOURCES = D4AsyncDocTest.cc $(TEST_SRC)
+D4AsyncDocTest_LDADD = ../libdap.la $(AM_LDADD)
+
+DMRTest_SOURCES = DMRTest.cc $(TEST_SRC)
+DMRTest_LDADD = ../libdap.la $(AM_LDADD)
 
 endif

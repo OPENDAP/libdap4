@@ -98,17 +98,13 @@ TestInt32::output_values(std::ostream &out)
     print_val(out, "", false);
 }
 
-bool
-TestInt32::read()
+bool TestInt32::read()
 {
-    DBG(cerr << "Entering TestInt32::read for " << name() << endl);
-    if (read_p())
-	return true;
+	if (read_p()) return true;
 
-    if (test_variable_sleep_interval > 0)
-	sleep(test_variable_sleep_interval);
+	if (test_variable_sleep_interval > 0) sleep(test_variable_sleep_interval);
 
-    if (get_series_values()) {
+	if (get_series_values()) {
 		// This line stopped working when I upgraded the compiler on osx 10.9.
 		// to version Apple LLVM version 5.1 (clang-503.0.38) (based on LLVM 3.4svn)
 		// jhrg 3/12/14
@@ -116,14 +112,12 @@ TestInt32::read()
 		d_buf <<= 5;
 		if (!d_buf)
 			d_buf = 32;
-    }
-    else {
-        d_buf = 123456789;
-    }
+	}
+	else {
+		d_buf = 123456789;
+	}
 
-    set_read_p(true);
+	set_read_p(true);
 
-    DBG(cerr << "In TestInt32::read, _buf = " << d_buf << endl);
-
-    return true;
+	return true;
 }

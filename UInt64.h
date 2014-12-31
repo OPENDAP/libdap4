@@ -48,8 +48,12 @@ namespace libdap
 
 class UInt64: public BaseType
 {
-    virtual unsigned int val2buf(void *, bool)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
+	virtual unsigned int val2buf(void *val, bool)  {
+    	set_value(*reinterpret_cast<dods_uint64*>(val));
+    	return sizeof(dods_uint64);
+    }
     virtual unsigned int buf2val(void **)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
+    virtual void print_val(FILE *, string, bool) { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
 
 protected:
     dods_uint64 d_buf;
@@ -66,19 +70,17 @@ public:
 
     virtual BaseType *ptr_duplicate() ;
 
-    virtual unsigned int width(bool constrained = false);
+    virtual unsigned int width(bool constrained = false) const;
 
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,
-			   Marshaller &m, bool ce_eval = true);
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+    // DAP4
+    virtual void compute_checksum(Crc32 &checksum);
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     virtual dods_uint64 value() const;
     virtual bool set_value(dods_uint64 val);
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "",  bool print_decl_p = true);
 
     virtual bool ops(BaseType *b, int op);
 

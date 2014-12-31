@@ -46,7 +46,7 @@ private:
     XMLWriter *xml;
     D4EnumDefs *d;
 
-    enumValues e, e2;
+    D4EnumDef e, e2;
 
 public:
     D4EnumDefsTest() {
@@ -59,9 +59,13 @@ public:
         d = new D4EnumDefs;
         xml = new XMLWriter;
 
+        e.set_name("first");
+        e.set_type(dods_byte_c);
         e.add_value("red", 1);
         e.add_value("blue", 2);
 
+        e2.set_name("second");
+        e2.set_type(dods_int32_c);
         e2.add_value("snow", 0);
         e2.add_value("ice", 10000);
     }
@@ -74,7 +78,7 @@ public:
     // An empty D4Dimensions object prints nothing; the XMLWriter class adds
     // a xml doc preface.
     void test_print_empty() {
-        d->print(*xml);
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_empty.xml");
         DBG(cerr << "test_print_empty: doc: " << doc << endl);
@@ -83,11 +87,11 @@ public:
     }
 
     void test_print_enum_values_only() {
-        enumValues e;
+        D4EnumDef e;
         e.add_value("red", 1);
         e.add_value("blue", 2);
 
-        e.print(*xml);
+        e.print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_values_1.xml");
         DBG(cerr << "test_print_enum_values_only: doc: " << doc << endl);
@@ -97,9 +101,9 @@ public:
     }
 
     void test_print_1() {
-        d->add_enum("first", dods_byte_c, e);
+        d->add_enum(&e);
 
-        d->print(*xml);
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_1.xml");
         DBG(cerr << "test_print_1: doc: " << doc << endl);
@@ -109,10 +113,10 @@ public:
 
 
     void test_print_2() {
-        d->add_enum("first", dods_byte_c, e);
-        d->add_enum("second", dods_int32_c, e2);
+        d->add_enum(&e);
+        d->add_enum(&e2);
 
-        d->print(*xml);
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_2.xml");
         DBG(cerr << "test_print_2: doc: " << doc << endl);
@@ -121,13 +125,13 @@ public:
     }
 
     void test_print_insert_enum() {
-        d->add_enum("first", dods_byte_c, e);
+        d->add_enum(&e);
 
         // "second' winds up before 'first'
-        D4EnumDefs::D4EnumIter i = d->enum_begin();
-        d->insert_enum("second", dods_int32_c, e2, i);
+        D4EnumDefs::D4EnumDefIter i = d->enum_begin();
+        d->insert_enum(&e2, i);
 
-        d->print(*xml);
+        d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_3.xml");
         DBG(cerr << "test_print_insert_enum: doc: " << doc << endl);
@@ -136,12 +140,12 @@ public:
     }
 
     void test_print_assignment() {
-        d->add_enum("first", dods_byte_c, e);
-        d->add_enum("second", dods_int32_c, e2);
+        d->add_enum(&e);
+        d->add_enum(&e2);
 
         D4EnumDefs lhs = *d;
 
-        lhs.print(*xml);
+        lhs.print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_2.xml");
         DBG(cerr << "test_print_assignment: doc: " << doc << endl);
@@ -150,12 +154,12 @@ public:
     }
 
     void test_print_copy_ctor() {
-        d->add_enum("first", dods_byte_c, e);
-        d->add_enum("second", dods_int32_c, e2);
+        d->add_enum(&e);
+        d->add_enum(&e2);
 
         D4EnumDefs lhs(*d);
 
-        lhs.print(*xml);
+        lhs.print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_2.xml");
         DBG(cerr << "test_print_copy_ctor: doc: " << doc << endl);

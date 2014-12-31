@@ -176,33 +176,21 @@ public:
 
     void tearDown()
     {
-        delete b;
-        b = 0;
-        delete i16;
-        i16 = 0;
-        delete i32;
-        i32 = 0;
-        delete ui16;
-        ui16 = 0;
-        delete ui32;
-        ui32 = 0;
-        delete f32;
-        f32 = 0;
-        delete f64;
-        f64 = 0;
-        delete str;
-        str = 0;
-        delete url;
-        url = 0;
+        delete b; b = 0;
+        delete i16; i16 = 0;
+        delete i32; i32 = 0;
+        delete ui16; ui16 = 0;
+        delete ui32; ui32 = 0;
+        delete f32; f32 = 0;
+        delete f64; f64 = 0;
+        delete str; str = 0;
+        delete url; url = 0;
 
-        delete ab;
-        ab = 0;
+        delete ab;  ab = 0;
 
-        delete arr;
-        arr = 0;
-
-        delete s;
-        s = 0;
+        delete arr; arr = 0;
+        delete db; db = 0;
+        delete s; s = 0;
     }
 
     void simple_types_file_serialize_test()

@@ -57,6 +57,8 @@ inline bool double_eq(double lhs, double rhs, double epsilon = 1.0e-5)
     return fabs(lhs - rhs) < epsilon;
 }
 
+bool is_host_big_endian();
+
 string extract_string_argument(BaseType *arg) ;
 double extract_double_value(BaseType *arg) ;
 double *extract_double_array(Array *a) ;
@@ -80,7 +82,8 @@ bool is_quoted(const string &s);
 string remove_quotes(const string &s);
 
 Type get_type(const char *name);
-string type_name(Type t);
+string D2type_name(Type t);
+string D4type_name(Type t);
 bool is_simple_type(Type t);
 bool is_vector_type(Type t);
 bool is_constructor_type(Type t);

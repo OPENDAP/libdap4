@@ -42,9 +42,10 @@
 
 #include "GNURegex.h"
 
+#include "Error.h"
 #include "mime_util.h"
 #include "debug.h"
-#include <test_config.h>
+#include "test_config.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -191,7 +192,7 @@ Content-Description: dods_dds\r\n\
 	try {
 	    CPPUNIT_ASSERT(get_next_mime_header(in) == "--my_boundary");
 	    CPPUNIT_ASSERT(get_next_mime_header(in) == "Content-Type: Text/xml; charset=iso-8859-1");
-	    CPPUNIT_ASSERT(get_next_mime_header(in) == "Content-Description: dap4-ddx");
+	    CPPUNIT_ASSERT(get_next_mime_header(in) == "Content-Description: dods-ddx");
 	    CPPUNIT_ASSERT(get_next_mime_header(in) == "Content-Id: <1234@opendap.org>");
 	}
 	catch (Error &e) {
@@ -210,7 +211,7 @@ Content-Description: dods_dds\r\n\
 	    CPPUNIT_FAIL("Could not open the mime header file.");
 
 	try {
-	    read_multipart_headers(in, "text/xml", dap4_ddx);
+	    read_multipart_headers(in, "text/xml", dods_ddx);
 	    CPPUNIT_ASSERT(true);
 	}
 	catch (Error &e) {

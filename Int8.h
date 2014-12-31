@@ -37,12 +37,17 @@
 namespace libdap
 {
 
-/** @brief Holds a 16-bit signed integer value. */
+/** @brief Holds an 8-bit signed integer value. */
 
 class Int8: public BaseType
 {
-    virtual unsigned int val2buf(void *, bool)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int8"); }
-    virtual unsigned int buf2val(void **)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int8"); }
+	// This is used in BaseType *Vector::var(unsigned int i)
+	virtual unsigned int val2buf(void *val, bool)  {
+    	set_value(*reinterpret_cast<dods_int8*>(val));
+    	return sizeof(dods_int8);
+    }
+    virtual unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "buf2val: Not implemented for Int8"); }
+    virtual void print_val(FILE *, string , bool) { throw InternalErr(__FILE__, __LINE__, "print_val: Not implemented for Int8"); }
 
 protected:
     dods_int8 d_buf;
@@ -59,18 +64,17 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual unsigned int width(bool constrained = false);
+    virtual unsigned int width(bool constrained = false) const;
 
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+    // DAP4
+    virtual void compute_checksum(Crc32 &checksum);
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
+    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     virtual dods_int8 value() const;
     virtual bool set_value(dods_int8 val);
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
 
     virtual bool ops(BaseType *b, int op);
 

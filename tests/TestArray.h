@@ -44,13 +44,22 @@ using namespace libdap ;
 class TestArray: public Array, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestArray &ts);
+    unsigned int m_print_array(ostream &out, unsigned int index, unsigned int dims, unsigned int shape[]);
+
+    bool m_name_is_special();
+    void m_build_special_values();
+
     int m_offset(int y, Dim_iter Y, int x);
-    unsigned int print_array(ostream &out, unsigned int index,
-			     unsigned int dims, unsigned int shape[]);
+
+    template <typename T, class C> void m_constrained_matrix(vector<T> &constrained_array);
+    template <typename T> void m_enum_constrained_matrix(vector<T> &constrained_array);
+
+    template <typename T, class C> void m_cardinal_type_read_helper();
+    template <typename T> void m_enum_type_read_helper();
 
 public:
-    TestArray(const string &n, BaseType *v);
-    TestArray(const string &n, const string &d, BaseType *v);
+    TestArray(const string &n, BaseType *v, bool is_dap4 = false);
+    TestArray(const string &n, const string &d, BaseType *v, bool is_dap4 = false);
     TestArray(const TestArray &rhs);
 
     virtual ~TestArray();
@@ -60,9 +69,6 @@ public:
     virtual BaseType *ptr_duplicate();
 
     virtual bool read();
-    virtual bool name_is_special();
-    virtual void build_special_values();
-    virtual void constrained_matrix(char *constrained_array);
 
     virtual void output_values(std::ostream &out);
 

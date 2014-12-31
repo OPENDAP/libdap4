@@ -152,24 +152,21 @@ HTTPCache::instance(const string &cache_root, bool force)
             // class is a singleton, we know that only three objects will
             // ever be created and they will all exist until the process
             // exits. We can let this slide... 02/12/04 jhrg
-            EventHandler *old_eh = SignalHandler::instance()->register_handler
-                                   (SIGINT, new HTTPCacheInterruptHandler);
+            EventHandler *old_eh = SignalHandler::instance()->register_handler(SIGINT, new HTTPCacheInterruptHandler, true);
             if (old_eh) {
                 SignalHandler::instance()->register_handler(SIGINT, old_eh);
                 throw SignalHandlerRegisteredErr(
                     "Could not register event handler for SIGINT without superseding an existing one.");
             }
 
-            old_eh = SignalHandler::instance()->register_handler
-                     (SIGPIPE, new HTTPCacheInterruptHandler);
+            old_eh = SignalHandler::instance()->register_handler(SIGPIPE, new HTTPCacheInterruptHandler, true);
             if (old_eh) {
                 SignalHandler::instance()->register_handler(SIGPIPE, old_eh);
                 throw SignalHandlerRegisteredErr(
                     "Could not register event handler for SIGPIPE without superseding an existing one.");
             }
 
-            old_eh = SignalHandler::instance()->register_handler
-                     (SIGTERM, new HTTPCacheInterruptHandler);
+            old_eh = SignalHandler::instance()->register_handler(SIGTERM, new HTTPCacheInterruptHandler, true);
             if (old_eh) {
                 SignalHandler::instance()->register_handler(SIGTERM, old_eh);
                 throw SignalHandlerRegisteredErr(
@@ -197,10 +194,16 @@ void
 HTTPCache::delete_instance()
 {
     DBG(cerr << "Entering delete_instance()..." << endl);
+
     if (HTTPCache::_instance) {
         DBG(cerr << "Deleting the cache: " << HTTPCache::_instance << endl);
         delete HTTPCache::_instance;
         HTTPCache::_instance = 0;
+
+        //Now remove the signal handlers
+        delete SignalHandler::instance()->remove_handler(SIGINT);
+        delete SignalHandler::instance()->remove_handler(SIGPIPE);
+        delete SignalHandler::instance()->remove_handler(SIGTERM);
     }
 
     DBG(cerr << "Exiting delete_instance()" << endl);
@@ -477,7 +480,7 @@ bool HTTPCache::get_single_user_lock(bool force)
 	return true;
     }
 
-    cerr << "locked_open_file is true" << endl;
+    DBG(cerr << "locked_open_file is true" << endl);
     return false;
 }
 
