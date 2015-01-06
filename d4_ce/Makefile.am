@@ -40,7 +40,7 @@ libd4_ce_parser_la_SOURCES =  \
 	location.hh position.hh stack.hh 
 
 # 	d4_ce_parser.yy d4_function_parser.yy d4_ce_scanner.ll d4_function_scanner.ll
-		 
+
 libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
 
 EXTRA_DIST = d4_ce_parser.yy d4_ce_scanner.ll d4_function_parser.yy d4_function_scanner.ll
@@ -65,4 +65,4 @@ lex.d4_function.cc: d4_function_scanner.ll d4_function_parser.tab.cc d4_function
 # ... also was a target: d4_function_parser.tab.hh
 d4_function_parser.tab.hh d4_function_parser.tab.cc: d4_function_parser.yy
 	$(YACC) $(YFLAGS) $<
-	
+

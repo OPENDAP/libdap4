@@ -263,7 +263,7 @@ Operators.h: ce_expr.tab.hh
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc	\
 	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc
-	
+
 DAP4_CLIENT_SRC = D4Connect.cc
 
 SERVER_SRC = DODSFilter.cc Ancillary.cc
