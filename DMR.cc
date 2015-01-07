@@ -75,8 +75,8 @@ namespace libdap {
 void
 DMR::m_duplicate(const DMR &dmr)
 {
-	// This is needed because we use the factory to make a new instance of the rot group
-	assert(dmr.OK());
+    // This is needed because we use the factory to make a new instance of the root group
+    assert(dmr.OK());
 
     d_factory = dmr.d_factory; // Shallow copy here
 
@@ -95,7 +95,7 @@ DMR::m_duplicate(const DMR &dmr)
 
     d_max_response_size = dmr.d_max_response_size;
 
-    // TODO Deep copy, using ptr_duplicate() instead?
+    // Deep copy, using ptr_duplicate()
     d_root = dmr.d_root->ptr_duplicate();
     DBG(cerr << "dmr.d_root: " << dmr.d_root << endl);
     DBG(cerr << "d_root (from ptr_dup(): " << d_root << endl);
