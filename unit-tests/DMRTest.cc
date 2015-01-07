@@ -285,6 +285,7 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DMRTest);
 
+
 } // namepsace libdap
 
 int main(int argc, char*argv[]) {

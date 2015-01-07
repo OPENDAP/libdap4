@@ -41,7 +41,7 @@ class D4Map {
     Array *d_parent;	// what array holds this map; weak pointer
 
 public:
-    D4Map() : d_name(""), d_array(0) { }
+    D4Map() : d_name(""), d_array(0), d_parent(0) { }
     D4Map(const string &name, Array *array, Array *parent = 0) : d_name(name), d_array(array), d_parent(parent) { }
 
 	virtual ~D4Map() { }
@@ -63,13 +63,14 @@ public:
 
 /**
  * Maps in DAP4 are simply the names of Dimensions. When a dimensioned
- * variable (i.e., an array) also has one or more 'maps, ' then that
+ * variable (i.e., an array) also has one or more 'maps,' then that
  * array is a 'grid' (the 'maps' define the domain of a sampled function
  * or a 'coverage').
  */
 class D4Maps {
 public:
     typedef vector<D4Map*>::iterator D4MapsIter;
+    typedef vector<D4Map*>::const_iterator D4MapsCIter;
 
 private:
 	vector<D4Map*> d_maps;
@@ -77,8 +78,8 @@ private:
 
 	void m_duplicate(const D4Maps &maps) {
 		d_parent = maps.d_parent;
-		for (D4MapsIter i = d_maps.begin(), e = d_maps.end(); i != e; ++i) {
-			d_maps.push_back(new D4Map(**i));
+		for (D4MapsCIter ci = maps.d_maps.begin(), ce = maps.d_maps.end(); ci != ce; ++ci) {
+			d_maps.push_back(new D4Map(**ci));
 		}
 	}
 

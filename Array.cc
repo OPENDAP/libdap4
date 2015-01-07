@@ -35,6 +35,8 @@
 
 #include "config.h"
 
+// #define DODS_DEBUG
+
 #include <algorithm>
 #include <functional>
 #include <sstream>
@@ -73,8 +75,15 @@ void
 Array::_duplicate(const Array &a)
 {
     _shape = a._shape;
+
     // Deep copy the Maps if they are being used.
-    d_maps = a.d_maps ? new D4Maps(*(a.d_maps)) : 0;
+    if (a.d_maps) {
+    	d_maps = new D4Maps(*(a.d_maps));
+    }
+    else {
+    	d_maps = 0;
+    }
+    // d_maps = a.d_maps ? new D4Maps(*(a.d_maps)) : 0;
 }
 
 // The first method of calculating length works when only one dimension is
