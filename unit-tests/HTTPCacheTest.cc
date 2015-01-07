@@ -45,6 +45,8 @@
 #include "RCReader.h"		// ditto
 #include"GetOpt.h"
 
+// #define DODS_DEBUG
+
 #include "debug.h"
 
 #if defined(DODS_DEBUG) || defined(DODS_DEBUG2)
@@ -511,7 +513,18 @@ public:
             CPPUNIT_ASSERT(ch == h);
         }
 
-        CPPUNIT_ASSERT(i == cached_headers.end() && j == headers->end());
+#ifdef DODS_DEBUG
+        std::ostream_iterator<string> out_it(std::cerr, "\n");
+        cerr << "Cached headers: ";
+        std::copy(cached_headers.begin(), cached_headers.end(), out_it);
+        cerr << "Headers: ";
+        std::copy(headers->begin(), headers->end(), out_it);
+#endif
+
+        CPPUNIT_ASSERT(i == cached_headers.end());
+        // This may not be true if. For example, keep-alive might appear in the list of headers
+        // received, but not in the list of headers cached.
+        // CPPUNIT_ASSERT(j == headers->end());
 
         // every byte of the cached_body and response body should match.
         while (!feof(rs->get_stream()) && !feof(cached_body) && !ferror(rs->get_stream()) && !ferror(cached_body)) {
