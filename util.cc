@@ -701,6 +701,26 @@ D4type_name(Type t)
     }
 }
 
+/** Return the type name. This function provides backward compatibility
+ * for older code that predates, and has not been ported to, DAP4. It
+ * is prejudiced toward DAP4, but if no D4 type name can be found, it
+ * types D2. If neither would return a type name, and InternalErr object
+ * is thrown.
+ *
+ * @param t The DAP2/DAP4 type
+ * @return A string naming the type, suitable for humans
+ * @exception InternalErr If not such type can be found
+ */
+string
+type_name(Type t)
+{
+	try {
+		return D4type_name(t);
+	}
+	catch (...) {
+		return D2type_name(t);
+	}
+}
 
 /** @brief Returns true if the instance is a numeric, string or URL
     type variable.

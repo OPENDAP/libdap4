@@ -84,6 +84,7 @@ string remove_quotes(const string &s);
 Type get_type(const char *name);
 string D2type_name(Type t);
 string D4type_name(Type t);
+string type_name(Type t);
 bool is_simple_type(Type t);
 bool is_vector_type(Type t);
 bool is_constructor_type(Type t);
