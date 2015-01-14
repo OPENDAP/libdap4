@@ -103,7 +103,7 @@ D4RValue::D4RValue(double r) : d_variable(0), d_func(0), d_args(0),  d_constant(
 D4RValue::D4RValue(std::string cpps) : d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
 {
 	Str *s = new Str("constant");
-	s->set_value(cpps);
+	s->set_value(remove_quotes(cpps));
 	d_constant = s;
 }
 
@@ -203,9 +203,8 @@ D4RValue::value(DMR &dmr)
 		d_variable->set_read_p(true);
 		return d_variable;
 
-	case function: {
+	case function:
 		return (*d_func)(d_args, dmr);
-	}
 
 	case constant:
 		return d_constant;
