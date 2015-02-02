@@ -160,7 +160,6 @@ public:
 
     virtual unsigned int set_value_slice_from_row_major_vector(const Vector& rowMajorData, unsigned int startElement);
 
-    // TODO Use templates?
     template <typename T> bool set_value(T *v, int sz);
     template <typename T> bool set_value(vector<T> &v, int sz);
 #if 0
