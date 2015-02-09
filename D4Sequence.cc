@@ -66,34 +66,34 @@ static const unsigned char start_of_instance = 0x5A;// binary pattern 0101 1010
 static void
 write_end_of_sequence(Marshaller &m)
 {
-	m.put_opaque( (char *)&end_of_sequence, 1 );
+    m.put_opaque( (char *)&end_of_sequence, 1 );
 }
 
 static void
 write_start_of_instance(Marshaller &m)
 {
-	m.put_opaque( (char *)&start_of_instance, 1 );
+    m.put_opaque( (char *)&start_of_instance, 1 );
 }
 
 static unsigned char
 read_marker(UnMarshaller &um)
 {
-	unsigned char marker;
-	um.get_opaque( (char *)&marker, 1 );
+    unsigned char marker;
+    um.get_opaque( (char *)&marker, 1 );
 
-	return marker;
+    return marker;
 }
 
 static bool
 is_start_of_instance(unsigned char marker)
 {
-	return (marker == start_of_instance);
+    return (marker == start_of_instance);
 }
 
 static bool
 is_end_of_sequence(unsigned char marker)
 {
-	return (marker == end_of_sequence);
+    return (marker == end_of_sequence);
 }
 #endif
 
@@ -107,23 +107,23 @@ is_end_of_sequence(unsigned char marker)
 
 void D4Sequence::m_duplicate(const D4Sequence &s)
 {
-	d_length = s.d_length;
+    d_length = s.d_length;
 #if INDEX_SUBSETTING
-	d_starting_row_number = s.d_starting_row_number;
-	d_ending_row_number = s.d_ending_row_number;
-	d_row_stride = s.d_row_stride;
+    d_starting_row_number = s.d_starting_row_number;
+    d_ending_row_number = s.d_ending_row_number;
+    d_row_stride = s.d_row_stride;
 #endif
-	// Deep copy for the values
-	for (D4SeqValues::const_iterator i = s.d_values.begin(), e = s.d_values.end(); i != e; ++i) {
-		D4SeqRow &row = **i;
-		D4SeqRow *dest = new D4SeqRow;
-		for (D4SeqRow::const_iterator j = row.begin(), e = row.end(); j != e; ++j) {
-			// *j is a BaseType*
-			dest->push_back((*j)->ptr_duplicate());
-		}
+    // Deep copy for the values
+    for (D4SeqValues::const_iterator i = s.d_values.begin(), e = s.d_values.end(); i != e; ++i) {
+        D4SeqRow &row = **i;
+        D4SeqRow *dest = new D4SeqRow;
+        for (D4SeqRow::const_iterator j = row.begin(), e = row.end(); j != e; ++j) {
+            // *j is a BaseType*
+            dest->push_back((*j)->ptr_duplicate());
+        }
 
-		d_values.push_back(dest);
-	}
+        d_values.push_back(dest);
+    }
 }
 
 // Public member functions
@@ -136,8 +136,8 @@ void D4Sequence::m_duplicate(const D4Sequence &s)
  created.
 
  @brief The Sequence constructor. */
-D4Sequence::D4Sequence(const string &n) : Constructor(n, dods_sequence_c, true /* is dap4 */),
-		d_length(0) // , d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
+D4Sequence::D4Sequence(const string &n) :
+        Constructor(n, dods_sequence_c, true /* is dap4 */), d_length(0) // , d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
 }
 
@@ -151,50 +151,51 @@ D4Sequence::D4Sequence(const string &n) : Constructor(n, dods_sequence_c, true /
  variable is being created.
 
  @brief The Sequence server-side constructor. */
-D4Sequence::D4Sequence(const string &n, const string &d) : Constructor(n, d, dods_sequence_c, true /* is dap4 */),
-		d_length(0) //, d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
+D4Sequence::D4Sequence(const string &n, const string &d) :
+        Constructor(n, d, dods_sequence_c, true /* is dap4 */), d_length(0) //, d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
 }
 
 /** @brief The Sequence copy constructor. */
-D4Sequence::D4Sequence(const D4Sequence &rhs) : Constructor(rhs)
+D4Sequence::D4Sequence(const D4Sequence &rhs) :
+        Constructor(rhs)
 {
-	m_duplicate(rhs);
+    m_duplicate(rhs);
 }
 
 BaseType *
 D4Sequence::ptr_duplicate()
 {
-	return new D4Sequence(*this);
+    return new D4Sequence(*this);
 }
 
 static inline void delete_bt(BaseType *bt_ptr)
 {
-	delete bt_ptr;
+    delete bt_ptr;
 }
 
 static inline void delete_rows(D4SeqRow *bt_row_ptr)
 {
-	for_each(bt_row_ptr->begin(), bt_row_ptr->end(), delete_bt);
+    for_each(bt_row_ptr->begin(), bt_row_ptr->end(), delete_bt);
 
-	delete bt_row_ptr;
+    delete bt_row_ptr;
 }
 
 D4Sequence::~D4Sequence()
 {
-	for_each(d_values.begin(), d_values.end(), delete_rows);
+    for_each(d_values.begin(), d_values.end(), delete_rows);
 }
 
 D4Sequence &
 D4Sequence::operator=(const D4Sequence &rhs)
 {
-	if (this == &rhs) return *this;
+    if (this == &rhs) return *this;
 
-	dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
+    dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
 
-	m_duplicate(rhs);
+    m_duplicate(rhs);
 
-	return *this;
+    return *this;
 }
 
 /**
@@ -220,7 +221,7 @@ D4Sequence::operator=(const D4Sequence &rhs)
  * @param filter
  * @return False when read() indicates that the EOF was found, true otherwise.
  */
-bool D4Sequence::read_next_instance(/*DMR &dmr, ConstraintEvaluator &eval,*/ bool filter)
+bool D4Sequence::read_next_instance(/*DMR &dmr, ConstraintEvaluator &eval,*/bool filter)
 {
     bool eof = false;
     bool done = false;
@@ -256,40 +257,38 @@ bool D4Sequence::read_next_instance(/*DMR &dmr, ConstraintEvaluator &eval,*/ boo
 void
 D4Sequence::compute_checksum(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval)
 {
-	// Read the data values, then serialize.
-	while (read_next_instance(dmr, eval, true)) {
-	    for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
-	        if ((*i)->send_p()) {
-	            (*i)->compute_checksum(checksum);
-	        }
-	    }
-	}
+    // Read the data values, then serialize.
+    while (read_next_instance(dmr, eval, true)) {
+        for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
+            if ((*i)->send_p()) {
+                (*i)->compute_checksum(checksum);
+            }
+        }
+    }
 }
 #endif
 
-void
-D4Sequence::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
+void D4Sequence::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
 {
-	// Read the data values, then serialize.
-	while (read_next_instance(/*dmr, eval,*/ true /*filter*/)) {
-	    D4SeqRow *row = new D4SeqRow;
-	    for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
-	        if ((*i)->send_p()) {
-	            // store the variable's value.
-	            row->push_back((*i)->ptr_duplicate());
-	            // the copy should have read_p true to prevent the serialize() call
-	            // below in the nested for loops from triggering a second call to
-	            // read().
-	            row->back()->set_read_p(true);
-	            // Do not compute the checksum for constructor types; those
-	            // types will compute the checksum on the values they contain.
-	            // TODO Check on this
-	            if (!row->back()->is_constructor_type())
-	            	row->back()->compute_checksum(checksum);
-	        }
-	    }
-	    d_values.push_back(row);
-	}
+    // Read the data values, then serialize.
+    while (read_next_instance(/*dmr, eval,*/true /*filter*/)) {
+        D4SeqRow *row = new D4SeqRow;
+        for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
+            if ((*i)->send_p()) {
+                // store the variable's value.
+                row->push_back((*i)->ptr_duplicate());
+                // the copy should have read_p true to prevent the serialize() call
+                // below in the nested for loops from triggering a second call to
+                // read().
+                row->back()->set_read_p(true);
+                // Do not compute the checksum for constructor types; those
+                // types will compute the checksum on the values they contain.
+                // TODO Check on this
+                if (!row->back()->is_constructor_type()) row->back()->compute_checksum(checksum);
+            }
+        }
+        d_values.push_back(row);
+    }
 }
 
 /**
@@ -303,30 +302,32 @@ D4Sequence::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/
  * be rewritten so that the count is sent and then each instance/element of the sequence
  * sent in succession.
  *
+ * If this method is specialized, once the data are loaded into the D4SeqValues instance,
+ * make sure to set d_length and make sure to set_read_p for each BaseType in D4SeqValues.
+ *
  * @param m Stream data sink
  * @param dmr DMR object for the evaluator
  * @param eval CE Evaluator object
  * @param filter True if the CE should be evaluated, false otherwise.
  */
-void
-D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter)
+void D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter)
 {
-	// Read the data values, then serialize.
-	while (read_next_instance(/*dmr, eval,*/ filter)) {
-	    D4SeqRow *row = new D4SeqRow;
-	    for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
-	        if ((*i)->send_p()) {
-	            // store the variable's value.
-	            row->push_back((*i)->ptr_duplicate());
-	            // the copy should have read_p true to prevent the serialize() call
-	            // below in the nested for loops from triggering a second call to
-	            // read().
-	            row->back()->set_read_p(true);
-	        }
-	    }
-	    d_values.push_back(row);
-	    DBG(cerr << "D4Sequence::serialize Added row" << endl);
-	}
+    // Read the data values, then serialize. NB: read_next_instance sets d_length.
+    while (read_next_instance(filter)) {
+        D4SeqRow *row = new D4SeqRow;
+        for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
+            if ((*i)->send_p()) {
+                // store the variable's value.
+                row->push_back((*i)->ptr_duplicate());
+                // the copy should have read_p true to prevent the serialize() call
+                // below in the nested for loops from triggering a second call to
+                // read().
+                row->back()->set_read_p(true);
+            }
+        }
+        d_values.push_back(row);
+        DBG(cerr << "D4Sequence::serialize Added row" << endl);
+    }
 
     // write D4Sequecne::length(); don't include the length in the checksum
     m.put_count(d_length);
@@ -336,7 +337,7 @@ D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &ev
     // use the serialize methods to send them (but no need to test send_p).
     for (D4SeqValues::iterator i = d_values.begin(), e = d_values.end(); i != e; ++i) {
         for (D4SeqRow::iterator j = (*i)->begin(), f = (*i)->end(); j != f; ++j) {
-            (*j)->serialize(m, dmr, /*eval,*/ false);
+            (*j)->serialize(m, dmr, /*eval,*/false);
         }
     }
 }
@@ -383,14 +384,13 @@ virtual void set_row_number_constraint(int start, int stop, int stride)
 D4SeqRow *
 D4Sequence::row_value(size_t row)
 {
-	if (row >= d_values.size()) return 0;
-	return d_values[row];
+    if (row >= d_values.size()) return 0;
+    return d_values[row];
 }
 
-static bool
-base_type_name_eq(BaseType *btp, const string name)
+static bool base_type_name_eq(BaseType *btp, const string name)
 {
-	return btp->name() == name;
+    return btp->name() == name;
 }
 
 /** @brief Get the BaseType pointer to the named variable of a given row.
@@ -401,11 +401,11 @@ base_type_name_eq(BaseType *btp, const string name)
 BaseType *
 D4Sequence::var_value(size_t row_num, const string &name)
 {
-	D4SeqRow *row = row_value(row_num);
-	if (!row) return 0;
+    D4SeqRow *row = row_value(row_num);
+    if (!row) return 0;
 
-	D4SeqRow::iterator elem = find_if(row->begin(), row->end(), bind2nd(ptr_fun(base_type_name_eq), name));
-	return (elem != row->end()) ? *elem: 0;
+    D4SeqRow::iterator elem = find_if(row->begin(), row->end(), bind2nd(ptr_fun(base_type_name_eq), name));
+    return (elem != row->end()) ? *elem : 0;
 }
 
 /** @brief Get the BaseType pointer to the $i^{th}$ variable of <i>row</i>.
@@ -416,82 +416,82 @@ D4Sequence::var_value(size_t row_num, const string &name)
 BaseType *
 D4Sequence::var_value(size_t row_num, size_t i)
 {
-	D4SeqRow *row = row_value(row_num);
-	if (!row) return 0;
+    D4SeqRow *row = row_value(row_num);
+    if (!row) return 0;
 
-	if (i >= row->size()) return 0;
+    if (i >= row->size()) return 0;
 
-	return (*row)[i];
+    return (*row)[i];
 }
 
 void D4Sequence::print_one_row(ostream &out, int row, string space, bool print_row_num)
 {
-	if (print_row_num) out << "\n" << space << row << ": ";
+    if (print_row_num) out << "\n" << space << row << ": ";
 
-	out << "{ ";
+    out << "{ ";
 
-	int elements = element_count();
-	int j = 0;
-	BaseType *bt_ptr = 0;
+    int elements = element_count();
+    int j = 0;
+    BaseType *bt_ptr = 0;
 
-	// This version of print_one_row() works for both data read with
-	// deserialize(), where each variable is assumed to have valid data, and
-	// intern_data(), where some/many variables do not. Because of that, it's
-	// not correct to assume that all of the elements will be printed, which
-	// is what the old code did.
+    // This version of print_one_row() works for both data read with
+    // deserialize(), where each variable is assumed to have valid data, and
+    // intern_data(), where some/many variables do not. Because of that, it's
+    // not correct to assume that all of the elements will be printed, which
+    // is what the old code did.
 
-	// Print the first value
-	while (j < elements && !bt_ptr) {
-		bt_ptr = var_value(row, j++);
-		if (bt_ptr) {  // data
-			if (bt_ptr->type() == dods_sequence_c)
-				static_cast<D4Sequence*>(bt_ptr)->print_val_by_rows(out, space + "    ", false, print_row_num);
-			else
-				bt_ptr->print_val(out, space, false);
-		}
-	}
+    // Print the first value
+    while (j < elements && !bt_ptr) {
+        bt_ptr = var_value(row, j++);
+        if (bt_ptr) {  // data
+            if (bt_ptr->type() == dods_sequence_c) static_cast<D4Sequence*>(bt_ptr)->print_val_by_rows(out,
+                    space + "    ", false, print_row_num);
+            else
+                bt_ptr->print_val(out, space, false);
+        }
+    }
 
-	// Print the remaining values
-	while (j < elements) {
-		bt_ptr = var_value(row, j++);
-		if (bt_ptr) {  // data
-			out << ", ";
-			if (bt_ptr->type() == dods_sequence_c)
-				static_cast<D4Sequence*>(bt_ptr)->print_val_by_rows(out, space + "    ", false, print_row_num);
-			else
-				bt_ptr->print_val(out, space, false);
-		}
-	}
+    // Print the remaining values
+    while (j < elements) {
+        bt_ptr = var_value(row, j++);
+        if (bt_ptr) {  // data
+            out << ", ";
+            if (bt_ptr->type() == dods_sequence_c) static_cast<D4Sequence*>(bt_ptr)->print_val_by_rows(out,
+                    space + "    ", false, print_row_num);
+            else
+                bt_ptr->print_val(out, space, false);
+        }
+    }
 
-	out << " }";
+    out << " }";
 }
 
 void D4Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p, bool print_row_numbers)
 {
-	if (print_decl_p) {
-		print_decl(out, space, false);
-		out << " = ";
-	}
+    if (print_decl_p) {
+        print_decl(out, space, false);
+        out << " = ";
+    }
 
-	out << "{ ";
+    out << "{ ";
 
-	if (length() != 0) {
-		int rows = length() - 1;	// -1 because the last row is treated specially
-		for (int i = 0; i < rows; ++i) {
-			print_one_row(out, i, space, print_row_numbers);
-			out << ", ";
-		}
-		print_one_row(out, rows, space, print_row_numbers);
-	}
+    if (length() != 0) {
+        int rows = length() - 1;	// -1 because the last row is treated specially
+        for (int i = 0; i < rows; ++i) {
+            print_one_row(out, i, space, print_row_numbers);
+            out << ", ";
+        }
+        print_one_row(out, rows, space, print_row_numbers);
+    }
 
-	out << " }";
+    out << " }";
 
-	if (print_decl_p) out << ";\n";
+    if (print_decl_p) out << ";\n";
 }
 
 void D4Sequence::print_val(ostream &out, string space, bool print_decl_p)
 {
-	print_val_by_rows(out, space, print_decl_p, false);
+    print_val_by_rows(out, space, print_decl_p, false);
 }
 
 /** @brief dumps information about this object
@@ -504,21 +504,21 @@ void D4Sequence::print_val(ostream &out, string space, bool print_decl_p)
  */
 void D4Sequence::dump(ostream &strm) const
 {
-	strm << DapIndent::LMarg << "Sequence::dump - (" << (void *) this << ")" << endl;
-	DapIndent::Indent();
-	Constructor::dump(strm);
-	strm << DapIndent::LMarg << "# rows deserialized: " << d_length << endl;
-	strm << DapIndent::LMarg << "bracket notation information:" << endl;
+    strm << DapIndent::LMarg << "Sequence::dump - (" << (void *) this << ")" << endl;
+    DapIndent::Indent();
+    Constructor::dump(strm);
+    strm << DapIndent::LMarg << "# rows deserialized: " << d_length << endl;
+    strm << DapIndent::LMarg << "bracket notation information:" << endl;
 
-	DapIndent::Indent();
+    DapIndent::Indent();
 #if INDEX_SUBSETTING
-	strm << DapIndent::LMarg << "starting row #: " << d_starting_row_number << endl;
-	strm << DapIndent::LMarg << "row stride: " << d_row_stride << endl;
-	strm << DapIndent::LMarg << "ending row #: " << d_ending_row_number << endl;
+    strm << DapIndent::LMarg << "starting row #: " << d_starting_row_number << endl;
+    strm << DapIndent::LMarg << "row stride: " << d_row_stride << endl;
+    strm << DapIndent::LMarg << "ending row #: " << d_ending_row_number << endl;
 #endif
-	DapIndent::UnIndent();
+    DapIndent::UnIndent();
 
-	DapIndent::UnIndent();
+    DapIndent::UnIndent();
 }
 
 } // namespace libdap

@@ -124,10 +124,12 @@ typedef vector<D4SeqRow *> D4SeqValues;
 class D4Sequence: public Constructor
 {
 private:
+
+protected:
     // This holds the values of the sequence. Values are stored in
     // instances of BaseTypeRow objects which hold instances of BaseType.
-	//
-	// TODO Optimize
+    //
+    // Allow these values to be accessed by subclasses
     D4SeqValues d_values;
 
     int64_t d_length;	// How many elements are in the sequence; -1 if not currently known
@@ -138,10 +140,9 @@ private:
     int d_ending_row_number;
 #endif
 
-    friend class D4SequenceTest;
-
-protected:
     void m_duplicate(const D4Sequence &s);
+
+    friend class D4SequenceTest;
 
 public:
 
@@ -235,10 +236,12 @@ public:
      * @brief Set the internal value.
      * The 'values' of a D4Sequence is a vector of vectors of BaseType* objects.
      * Using this method does not perform a deep copy; the BaseType*s are
-     * copied so the caller should not free them.
+     * copied so the caller should not free them. Note that this does set
+     * d_length but the read_p flag for the BaseTypes should all be set to
+     * keep the serializer from trying to read each of them.
      * @param values
      */
-    virtual void set_value(D4SeqValues &values) { d_values = values; }
+    virtual void set_value(D4SeqValues &values) { d_values = values; d_length = d_values.size(); }
 
     /**
      * @brief Get the values for this D4Sequence
