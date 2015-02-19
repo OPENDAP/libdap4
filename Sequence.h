@@ -44,17 +44,7 @@
 
 #include <stack>
 
-#ifndef _basetype_h
-//#include "BaseType.h"
-#endif
-
-#ifndef _constructor_h
 #include "Constructor.h"
-#endif
-
-#ifndef constraint_evaluator_h
-//#include "ConstraintEvaluator.h"
-#endif
 
 #ifndef S_XDRUtils_h
 #include "XDRUtils.h"
@@ -164,8 +154,6 @@ typedef vector<BaseTypeRow *> SequenceValues;
  data system to read one row of data values which are then serialized using the
  serialize() methods of each variable.
 
- @todo Refactor along with Structure moving methods up into Constructor.
-
  @todo Add an isEmpty() method which returns true if the Sequence is
  empty. This should work before and after calling deserialize().
 
@@ -205,10 +193,7 @@ private:
 
 	// In a hierarchy of sequences, is this the top most?
 	bool d_top_most;
-#if 0
-	BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
-	BaseType *m_exact_match(const string &name, btp_stack *s = 0);
-#endif
+
 	bool is_end_of_rows(int i);
 
 	friend class SequenceTest;
@@ -255,7 +240,7 @@ public:
 
 	virtual int length() const;
 
-	virtual int number_of_rows();
+	virtual int number_of_rows() const;
 
 	virtual bool read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_eval = true);
 
@@ -286,28 +271,15 @@ public:
 		d_unsent_data = usd;
 	}
 
-#if 0
-	// Move me!
-	virtual unsigned int val2buf(void *val, bool reuse = false);
-	virtual unsigned int buf2val(void **val);
-#endif
-
 	virtual void set_value(SequenceValues &values);
 	virtual SequenceValues value();
-#if 0
-	virtual BaseType *var(const string &name, bool exact_match = true,btp_stack *s = 0);
-	virtual BaseType *var(const string &n, btp_stack &s);
-#endif
+	virtual SequenceValues &value_ref();
 
 	virtual BaseType *var_value(size_t row, const string &name);
 
 	virtual BaseType *var_value(size_t row, size_t i);
 
 	virtual BaseTypeRow *row_value(size_t row);
-#if 0
-	virtual void add_var(BaseType *, Part part = nil);
-	virtual void add_var_nocopy(BaseType *, Part part = nil);
-#endif
 	virtual void print_one_row(ostream &out, int row, string space, bool print_row_num = false);
 	virtual void print_val_by_rows(ostream &out, string space = "", bool print_decl_p = true, bool print_row_numbers =
 			true);
@@ -317,9 +289,7 @@ public:
 	virtual void print_val_by_rows(FILE *out, string space = "", bool print_decl_p = true,
 			bool print_row_numbers = true);
 	virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
-#if 0
-	virtual bool check_semantics(string &msg, bool all = false);
-#endif
+
 	virtual void set_leaf_p(bool state);
 
 	virtual bool is_leaf_sequence();

@@ -32,15 +32,14 @@
 //
 // jhrg 9/14/94
 
+//#define DODS_DEBUG
+//#define DODS_DEBUG2
 
 #include "config.h"
 
 #include <algorithm>
 #include <string>
 #include <sstream>
-
-//#define DODS_DEBUG
-//#define DODS_DEBUG2
 
 #include "Byte.h"
 #include "Int16.h"
@@ -87,6 +86,8 @@ static const unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
 void
 Sequence::m_duplicate(const Sequence &s)
 {
+    DBG(cerr << "In Sequence::m_duplicate" << endl);
+
     d_row_number = s.d_row_number;
     d_starting_row_number = s.d_starting_row_number;
     d_ending_row_number = s.d_ending_row_number;
@@ -98,12 +99,6 @@ Sequence::m_duplicate(const Sequence &s)
 
     Sequence &cs = const_cast<Sequence &>(s);
 
-#if 0
-    // Copy the template BaseType objects.
-    for (Vars_iter i = cs.var_begin(); i != cs.var_end(); i++) {
-        add_var((*i)) ;
-    }
-#endif
     // Copy the BaseType objects used to hold values.
     for (vector<BaseTypeRow *>::iterator rows_iter = cs.d_values.begin();
          rows_iter != cs.d_values.end();
@@ -290,22 +285,6 @@ Sequence::toString()
     return oss.str();
 }
 
-#if 0
-int
-Sequence::element_count(bool leaves)
-{
-    if (!leaves)
-        return d_vars.size();
-    else {
-        int i = 0;
-        for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
-            i += (*iter)->element_count(true);
-        }
-        return i;
-    }
-}
-#endif
-
 bool
 Sequence::is_linear()
 {
@@ -335,166 +314,6 @@ Sequence::is_linear()
     return linear;
 }
 
-#if 0
-void
-Sequence::set_send_p(bool state)
-{
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        (*i)->set_send_p(state);
-    }
-
-    BaseType::set_send_p(state);
-}
-
-void
-Sequence::set_read_p(bool state)
-{
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        (*i)->set_read_p(state);
-    }
-
-    BaseType::set_read_p(state);
-}
-#endif
-#if 0
-void
-Sequence::set_in_selection(bool state)
-{
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        (*i)->set_in_selection(state);
-    }
-
-    BaseType::set_in_selection(state);
-}
-#endif
-#if 0
-/** @brief Adds a variable to the Sequence.
-
-    Remember that if you wish to add a member to a nested
-    Sequence, you must use the <tt>add_var()</tt> of that
-    Sequence.  This means that variable names need not be unique
-    among a set of nested Sequences.
-
-    @param bt A pointer to the DAP2 type variable to add to this Sequence.
-    @param part defaults to nil */
-void
-Sequence::add_var(BaseType *bt, Part)
-{
-    if (!bt)
-        throw InternalErr(__FILE__, __LINE__,
-                          "Cannot add variable: NULL pointer");
-    if (bt->is_dap4_only_type())
-        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Sequence.");
-
-    // Jose Garcia
-    // We append a copy of bt so the owner of bt is free to deallocate
-
-    BaseType *bt_copy = bt->ptr_duplicate();
-    bt_copy->set_parent(this);
-    d_vars.push_back(bt_copy);
-}
-
-/** @brief Adds a variable to the Sequence.
-
-    @note Remember that if you wish to add a member to a nested
-    Sequence, you must use the <tt>add_var()</tt> of that
-    Sequence.  This means that variable names need not be unique
-    among a set of nested Sequences.
-    @note This method does not copy the BaseType object; the caller
-    must not free the pointer.
-
-    @param bt A pointer to the DAP2 type variable to add to this Sequence.
-    @param part defaults to nil */
-void
-Sequence::add_var_nocopy(BaseType *bt, Part)
-{
-    if (!bt)
-        throw InternalErr(__FILE__, __LINE__,
-                          "Cannot add variable: NULL pointer");
-    if (bt->is_dap4_only_type())
-        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Sequence.");
-
-    bt->set_parent(this);
-    d_vars.push_back(bt);
-}
-#endif
-#if 0
-// Deprecated
-BaseType *
-Sequence::var(const string &n, btp_stack &s)
-{
-    string name = www2id(n);
-
-    BaseType *btp = m_exact_match(name, &s);
-    if (btp)
-        return btp;
-
-    return m_leaf_match(name, &s);
-}
-
-BaseType *
-Sequence::var(const string &name, bool exact_match, btp_stack *s)
-{
-    string n = www2id(name);
-
-    if (exact_match)
-        return m_exact_match(n, s);
-    else
-        return m_leaf_match(n, s);
-}
-#endif
-#if 0
-BaseType *
-Sequence::m_leaf_match(const string &name, btp_stack *s)
-{
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        if ((*i)->name() == name) {
-            if (s)
-                s->push(static_cast<BaseType *>(this));
-            return *i;
-        }
-        if ((*i)->is_constructor_type()) {
-            BaseType *btp = (*i)->var(name, false, s);
-            if (btp) {
-                if (s)
-                    s->push(static_cast<BaseType *>(this));
-                return btp;
-            }
-        }
-    }
-
-    return 0;
-}
-
-BaseType *
-Sequence::m_exact_match(const string &name, btp_stack *s)
-{
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        if ((*i)->name() == name) {
-            if (s)
-                s->push(static_cast<BaseType *>(this));
-            return *i;
-        }
-    }
-
-    string::size_type dot_pos = name.find("."); // zero-based index of `.'
-    if (dot_pos != string::npos) {
-        string aggregate = name.substr(0, dot_pos);
-        string field = name.substr(dot_pos + 1);
-
-        BaseType *agg_ptr = var(aggregate);
-        if (agg_ptr) {
-            if (s)
-                s->push(static_cast<BaseType *>(this));
-            return agg_ptr->var(field, true, s); // recurse
-        }
-        else
-            return 0;  // qualified names must be *fully* qualified
-    }
-
-    return 0;
-}
-#endif
 /** @brief Get a whole row from the sequence.
     @param row Get row number <i>row</i> from the sequence.
     @return A BaseTypeRow object (vector<BaseType *>). Null if there's no such
@@ -523,6 +342,14 @@ Sequence::set_value(SequenceValues &values)
     @return The SequenceValues object for this Sequence. */
 SequenceValues
 Sequence::value()
+{
+    return d_values;
+}
+
+/** Get the value for this sequence.
+    @return The SequenceValues object for this Sequence. */
+SequenceValues &
+Sequence::value_ref()
 {
     return d_values;
 }
@@ -568,45 +395,6 @@ Sequence::var_value(size_t row, size_t i)
     return (*bt_row_ptr)[i];
 }
 
-#if 0
-unsigned int
-Sequence::width()
-{
-    unsigned int sz = 0;
-
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        sz += (*i)->width();
-    }
-
-    return sz;
-}
-
-/** This version of width simply returns the same thing as width() for simple
-    types and Arrays. For Sequence it returns the total row size if constrained
-    is false, or the size of the row elements in the current projection if true.
-
-    @param constrained If true, return the size after applying a constraint.
-    @return  The number of bytes used by the variable.
- */
-unsigned int
-Sequence::width(bool constrained)
-{
-    unsigned int sz = 0;
-
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-    	if (constrained) {
-    		if ((*i)->send_p())
-    			sz += (*i)->width(constrained);
-    	}
-    	else {
-    		sz += (*i)->width(constrained);
-    	}
-    }
-
-    return sz;
-}
-#endif
-
 // This version returns -1. Each API-specific subclass should define a more
 // reasonable version. jhrg 5/24/96
 
@@ -631,9 +419,9 @@ Sequence::length() const
     return -1;
 }
 
-
+// Hmmm. how is this different from length()?
 int
-Sequence::number_of_rows()
+Sequence::number_of_rows() const
 {
     return d_values.size();
 }
@@ -1359,28 +1147,6 @@ Sequence::set_row_number_constraint(int start, int stop, int stride)
     d_ending_row_number = stop;
 }
 
-#if 0
-/** Never use this interface for Sequence! To add data to the members of a
-    Sequence, use BaseTypeRow variables and operate on them individually. */
-unsigned int
-Sequence::val2buf(void *, bool)
-{
-    throw InternalErr(__FILE__, __LINE__, "Never use this method; see the programmer's guide documentation.");
-    return sizeof(Sequence);
-}
-
-/** Never use this interface for Sequence! Use Sequence::var_value() or
-    Sequence::row_value().
-
-    @deprecated */
-unsigned int
-Sequence::buf2val(void **)
-{
-    throw InternalErr(__FILE__, __LINE__, "Use Sequence::var_value() or Sequence::row_value() in place of Sequence::buf2val()");
-    return sizeof(Sequence);
-}
-#endif
-
 void
 Sequence::print_one_row(FILE *out, int row, string space,
                         bool print_row_num)
@@ -1481,27 +1247,6 @@ Sequence::print_val(ostream &out, string space, bool print_decl_p)
 {
     print_val_by_rows(out, space, print_decl_p, false);
 }
-
-#if 0
-bool
-Sequence::check_semantics(string &msg, bool all)
-{
-    if (!BaseType::check_semantics(msg))
-        return false;
-
-    if (!unique_names(d_vars, name(), type_name(), msg))
-        return false;
-
-    if (all)
-        for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-            if (!(*i)->check_semantics(msg, true)) {
-                return false;
-            }
-        }
-
-    return true;
-}
-#endif
 
 void
 Sequence::set_leaf_p(bool state)

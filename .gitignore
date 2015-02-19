@@ -20,6 +20,9 @@ lex.*.cc
 .dirstamp
 .cproject
 .project
+.settings
+.DS_Store
+*/.DS_Store
 
 Makefile
 Makefile.in
@@ -84,6 +87,7 @@ tests/package.m4
 tests/DMRTest
 tests/dmr-test
 tests/getdapTest
+tests/*Test.dir
 
 unit-tests/.dodsrc
 unit-tests/ArrayTest

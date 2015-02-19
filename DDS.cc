@@ -285,51 +285,64 @@ DDS::operator=(const DDS &rhs)
  *
  * @param das Transfer (copy) attributes from this DAS object.
  */
-void DDS::transfer_attributes(DAS *das) {
-	// If there is a container set in the DDS then get the container from
-	// the DAS. If they are not the same container, then throw an exception
-	// (should be working on the same container). If the container does not
-	// exist in the DAS, then throw an exception
-	if (d_container) {
-		if (das->container_name() != d_container_name)
-			throw InternalErr(__FILE__, __LINE__,
-					"Error transferring attributes: working on a container in dds, but not das");
-	}
+void DDS::transfer_attributes(DAS *das)
+{
+    // If there is a container set in the DDS then check the container from
+    // the DAS. If they are not the same container, then throw an exception
+    // (should be working on the same container). If the container does not
+    // exist in the DAS, then throw an exception
+    if (d_container && das->container_name() != d_container_name)
+        throw InternalErr(__FILE__, __LINE__,
+                "Error transferring attributes: working on a container in dds, but not das");
 
-	// Give each variable a chance to claim its attributes.
-	AttrTable *top_level = das->get_top_level_attributes();
+    // Give each variable a chance to claim its attributes.
+    AttrTable *top = das->get_top_level_attributes();
 
-	Vars_iter var = var_begin();
-	while (var != var_end()) {
-		try {
-			DBG(cerr << "Processing the attributes for: " << (*var)->d_name() << " a " << (*var)->type_name() << endl);
-			(*var)->transfer_attributes(top_level);
-			var++;
-		} catch (Error &e) {
-			DBG(cerr << "Got this exception: " << e.get_error_message() << endl);
-			var++;
-			throw e;
-		}
-	}
+    for (DDS::Vars_iter i = var_begin(), e = var_end(); i != e; i++) {
+        (*i)->transfer_attributes(top);
+    }
+#if 0
+    Vars_iter var = var_begin();
+    while (var != var_end()) {
+        try {
+            DBG(cerr << "Processing the attributes for: " << (*var)->d_name() << " a " << (*var)->type_name() << endl);
+            (*var)->transfer_attributes(top);
+            var++;
+        }
+        catch (Error &e) {
+            DBG(cerr << "Got this exception: " << e.get_error_message() << endl);
+            var++;
+            throw e;
+        }
+    }
+#endif
+    // Now we transfer all of the attributes still marked as global to the
+    // global container in the DDS.
+    for (AttrTable::Attr_iter i = top->attr_begin(), e = top->attr_end(); i != e; ++i) {
+        if ((*i)->type == Attr_container && (*i)->attributes->is_global_attribute()) {
+            // copy the source container so that the DAS passed in can be
+            // deleted after calling this method.
+            AttrTable *at = new AttrTable(*(*i)->attributes);
+            d_attr.append_container(at, at->get_name());
+        }
+    }
+#if 0
+    AttrTable::Attr_iter at_cont_p = top_level->attr_begin();
+    while (at_cont_p != top_level->attr_end()) {
+        // In truth, all of the top level attributes should be containers, but
+        // this test handles the abnormal case where somehow someone makes a
+        // top level attribute that is not a container by silently dropping it.
+        if ((*at_cont_p)->type == Attr_container && (*at_cont_p)->attributes->is_global_attribute()) {
+            DBG(cerr << (*at_cont_p)->d_name << " is a global attribute." << endl);
+            // copy the source container so that the DAS passed in can be
+            // deleted after calling this method.
+            AttrTable *at = new AttrTable(*(*at_cont_p)->attributes);
+            d_attr.append_container(at, at->get_name());
+        }
 
-	// Now we transfer all of the attributes still marked as global to the
-	// global container in the DDS.
-
-	AttrTable::Attr_iter at_cont_p = top_level->attr_begin();
-	while (at_cont_p != top_level->attr_end()) {
-		// In truth, all of the top level attributes should be containers, but
-		// this test handles the abnormal case where somehow someone makes a
-		// top level attribute that is not a container by silently dropping it.
-		if ((*at_cont_p)->type == Attr_container && (*at_cont_p)->attributes->is_global_attribute()) {
-			DBG(cerr << (*at_cont_p)->d_name << " is a global attribute." << endl);
-			// copy the source container so that the DAS passed in can be
-			// deleted after calling this method.
-			AttrTable *at = new AttrTable(*(*at_cont_p)->attributes);
-			d_attr.append_container(at, at->get_name());
-		}
-
-		at_cont_p++;
-	}
+        at_cont_p++;
+    }
+#endif
 }
 
 /** Get and set the dataset's d_name.  This is the d_name of the dataset

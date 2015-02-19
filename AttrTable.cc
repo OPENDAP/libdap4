@@ -445,10 +445,9 @@ AttrTable::append_container(AttrTable *at, const string &name)
 #endif
 
     if (simple_find(name) != attr_end())
-        throw Error(
-                string("There already exists a container called `") + name + string("' in this attribute table. (1)"));
-    DBG(cerr << "Setting appended attribute container name to: "
-            << lname << endl);
+        throw Error("There already exists a container called '" + name + "' in this attribute table (" + at->get_name() + "). (1)");
+
+    DBG(cerr << "Setting appended attribute container name to: " << lname << endl);
     at->set_name(lname);
 
     entry *e = new entry;
