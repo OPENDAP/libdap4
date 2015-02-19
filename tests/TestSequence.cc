@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -37,6 +36,8 @@
 // for single level sequences - that is, it does *not* work for sequences
 // that contain other sequences. jhrg 2/2/98
 
+//#define DODS_DEBUG
+
 #include "config.h"
 #include "D4Group.h"
 #include "Constructor.h"
@@ -49,8 +50,7 @@
 
 using namespace libdap;
 
-void
-TestSequence::_duplicate(const TestSequence &ts)
+void TestSequence::_duplicate(const TestSequence &ts)
 {
     d_current = ts.d_current;
     d_len = ts.d_len;
@@ -63,17 +63,18 @@ TestSequence::ptr_duplicate()
     return new TestSequence(*this);
 }
 
-TestSequence::TestSequence(const string &n) : Sequence(n), d_len(4),
-	d_current(0), d_series_values(false)
+TestSequence::TestSequence(const string &n) :
+        Sequence(n), d_len(4), d_current(0), d_series_values(false)
 {
 }
 
-TestSequence::TestSequence(const string &n, const string &d)
-    : Sequence(n, d), d_len(4), d_current(0), d_series_values(false)
+TestSequence::TestSequence(const string &n, const string &d) :
+        Sequence(n, d), d_len(4), d_current(0), d_series_values(false)
 {
 }
 
-TestSequence::TestSequence(const TestSequence &rhs) : Sequence(rhs), TestCommon(rhs)
+TestSequence::TestSequence(const TestSequence &rhs) :
+        Sequence(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
 }
@@ -85,8 +86,7 @@ TestSequence::~TestSequence()
 TestSequence &
 TestSequence::operator=(const TestSequence &rhs)
 {
-    if (this == &rhs)
-	return *this;
+    if (this == &rhs) return *this;
 
     dynamic_cast<Sequence &>(*this) = rhs; // run Constructor=
 
@@ -99,18 +99,17 @@ BaseType *
 TestSequence::transform_to_dap4(D4Group *root, Constructor *container)
 {
 
-	D4Sequence *dest = new TestD4Sequence(name());
+    D4Sequence *dest = new TestD4Sequence(name());
 
-	Constructor::transform_to_dap4(root, dest);
+    Constructor::transform_to_dap4(root, dest);
 
     dest->set_length(-1);
-	dest->set_parent(container);
+    dest->set_parent(container);
 
     return dest;
 }
 
-void
-TestSequence::output_values(std::ostream &out)
+void TestSequence::output_values(std::ostream &out)
 {
     print_val(out, "", false);
 }
@@ -120,41 +119,40 @@ TestSequence::output_values(std::ostream &out)
 
 bool TestSequence::read()
 {
-	DBG(cerr << "Entering TestSequence::read for " << name() << endl);
+    DBG(cerr << "Entering TestSequence::read for " << name() << endl);
 
-	if (read_p()) return true;
+    if (read_p()) return true;
 
-	DBG(cerr << "current: " << d_current << ", length: " << d_len << endl);
-	// When we get to the end of a Sequence, reset the row number counter so
-	// that, in case this is an inner sequence, the next instance will be read
-	// and the "Trying to back up in a Sequence" error won't be generated.
-	if (++d_current > d_len) {
-		DBG(cerr << "Leaving TestSequence::read for " << name()
-				<< " because d_current(" << d_current
-				<< ") > d_len(" << d_len << ")" << endl);
-		d_current = 0;                  // reset
-		set_unsent_data(false);
-		reset_row_number();
-		// jhrg original version from 10/9/13: return false; // No more values
-		return true;
-	}
+    DBG(cerr << "current: " << d_current << ", length: " << d_len << endl);
+    // When we get to the end of a Sequence, reset the row number counter so
+    // that, in case this is an inner sequence, the next instance will be read
+    // and the "Trying to back up in a Sequence" error won't be generated.
+    if (++d_current > d_len) {
+        DBG(cerr << "Leaving TestSequence::read for " << name()
+                << " because d_current(" << d_current
+                << ") > d_len(" << d_len << ")" << endl);
+        d_current = 0;                  // reset
+        set_unsent_data(false);
+        reset_row_number();
+        // jhrg original version from 10/9/13: return false; // No more values
+        return true;
+    }
 
-	Vars_iter i = var_begin();
-	while (i != var_end()) {
-		if ((*i)->send_p() || (*i)->is_in_selection()) {
-			DBG(cerr << "Calling " << (*i)->name() << "->read()" << endl);
-			(*i)->read();
-		}
-		++i;
-	}
+    Vars_iter i = var_begin();
+    while (i != var_end()) {
+        if ((*i)->send_p() || (*i)->is_in_selection()) {
+            DBG(cerr << "Calling " << (*i)->name() << "->read()" << endl);
+            (*i)->read();
+        }
+        ++i;
+    }
 
-	set_unsent_data(true);
-	DBG(cerr << "Leaving TestSequence::read for " << name() << endl);
-	return false;
+    set_unsent_data(true);
+    DBG(cerr << "Leaving TestSequence::read for " << name() << endl);
+    return false;
 }
 
-void
-TestSequence::set_series_values(bool sv)
+void TestSequence::set_series_values(bool sv)
 {
     Vars_iter i = var_begin();
     while (i != var_end()) {
@@ -165,8 +163,7 @@ TestSequence::set_series_values(bool sv)
     d_series_values = sv;
 }
 
-int
-TestSequence::length() const
+int TestSequence::length() const
 {
     return 5;
 }
