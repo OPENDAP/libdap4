@@ -21,8 +21,6 @@ AM_CPPFLAGS += $(CPPUNIT_CFLAGS)
 AM_LDADD += $(CPPUNIT_LIBS)
 endif
 
-# These are not used by automake but are often useful for certain types of
-# debugging. Set CXXFLAGS to this in the nightly build using export ...
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -Wcast-align
 
 if USE_VALGRIND

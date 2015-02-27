@@ -238,12 +238,12 @@ void set_array_using_double(Array *dest, double *src, int src_len)
 
 template<class T> static double *extract_double_array_helper(Array * a)
 {
-	assert(a);
+    assert(a);
 
     int length = a->length();
 
     vector<T> b(length);
-    a->value(&b[0]);	// Extract the values of 'a' to 'b'
+    a->value(&b[0]);    // Extract the values of 'a' to 'b'
 
     double *dest = new double[length];
     for (int i = 0; i < length; ++i)
@@ -252,7 +252,6 @@ template<class T> static double *extract_double_array_helper(Array * a)
     return dest;
 }
 
-/**  */
 /**
  * Given a pointer to an Array which holds a numeric type, extract the
  * values and return in an array of doubles. This function allocates the
@@ -265,7 +264,7 @@ template<class T> static double *extract_double_array_helper(Array * a)
  */
 double *extract_double_array(Array * a)
 {
-	assert(a);
+    assert(a);
 
     // Simple types are Byte, ..., Float64, String and Url.
     if ((a->type() == dods_array_c && !a->var()->is_simple_type())
@@ -296,6 +295,10 @@ double *extract_double_array(Array * a)
     case dods_float32_c:
         return extract_double_array_helper<dods_float32>(a);
     case dods_float64_c:
+        // Should not be copying these values, just read them,
+        // but older code may depend on the return of this function
+        // being something that should be deleted, so leave this
+        // alone. jhrg 2/24/15
         return extract_double_array_helper<dods_float64>(a);
 
     // Support for DAP4
@@ -307,6 +310,87 @@ double *extract_double_array(Array * a)
         return extract_double_array_helper<dods_uint64>(a);
     case dods_int64_c:
         return extract_double_array_helper<dods_int64>(a);
+    default:
+        throw InternalErr(__FILE__, __LINE__,
+                "The argument list built by the CE parser contained an unsupported numeric type.");
+    }
+}
+
+// This helper function assume 'dest' is the correct size. This should not
+// be called when the Array 'a' is a Float64, since the values are already
+// in a double array!
+template<class T> static void extract_double_array_helper(Array * a, vector<double> &dest)
+{
+    assert(a);
+    assert(dest.size() == (unsigned long)a->length());
+
+    int length = a->length();
+
+    vector<T> b(length);
+    a->value(&b[0]);    // Extract the values of 'a' to 'b'
+
+    for (int i = 0; i < length; ++i)
+        dest[i] = (double) b[i];
+}
+
+/**
+ * Given a pointer to an Array which holds a numeric type, extract the
+ * values and return in an array of doubles. This function allocates the
+ * array using 'new double[n]' so delete[] MUST be used when you are done
+ * the data.
+ *
+ * @note Support added for DAP4.
+ * @param a Extract value from this Array.
+ * @param dest Put the values in this vector. A value-result parameter.
+ * @return A C++/C array of doubles.
+ */
+void extract_double_array(Array *a, vector<double> &dest)
+{
+    assert(a);
+
+    // Simple types are Byte, ..., Float64, String and Url.
+    if ((a->type() == dods_array_c && !a->var()->is_simple_type())
+    || a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
+        throw Error(malformed_expr,
+                "The function requires a DAP numeric-type array argument.");
+
+    if (!a->read_p())
+        throw InternalErr(__FILE__, __LINE__,
+                string("The Array '") + a->name() +
+                "'does not contain values.");
+
+    dest.resize(a->length());
+
+    // The types of arguments that the CE Parser will build for numeric
+    // constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
+    // Expanded to work for any numeric type so it can be used for more than
+    // just arguments.
+    switch (a->var()->type()) {
+    case dods_byte_c:
+        return extract_double_array_helper<dods_byte>(a, dest);
+    case dods_uint16_c:
+        return extract_double_array_helper<dods_uint16>(a, dest);
+    case dods_int16_c:
+        return extract_double_array_helper<dods_int16>(a, dest);
+    case dods_uint32_c:
+        return extract_double_array_helper<dods_uint32>(a, dest);
+    case dods_int32_c:
+        return extract_double_array_helper<dods_int32>(a, dest);
+    case dods_float32_c:
+        return extract_double_array_helper<dods_float32>(a, dest);
+    case dods_float64_c:
+        return a->value(&dest[0]);      // no need to copy the values
+        // return extract_double_array_helper<dods_float64>(a, dest);
+
+    // Support for DAP4
+    case dods_uint8_c:
+        return extract_double_array_helper<dods_byte>(a, dest);
+    case dods_int8_c:
+        return extract_double_array_helper<dods_int8>(a, dest);
+    case dods_uint64_c:
+        return extract_double_array_helper<dods_uint64>(a, dest);
+    case dods_int64_c:
+        return extract_double_array_helper<dods_int64>(a, dest);
     default:
         throw InternalErr(__FILE__, __LINE__,
                 "The argument list built by the CE parser contained an unsupported numeric type.");
