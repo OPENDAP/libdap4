@@ -532,9 +532,9 @@ void Vector::set_length(int l)
  */
 void Vector::vec_resize(int l)
 {
-	// I added this check, which alters the behavior of the method. jhrg 8/14/13
-	if (m_is_cardinal_type())
-		throw InternalErr(__FILE__, __LINE__, "Vector::vec_resize() is applicable to compound types only");
+    // I added this check, which alters the behavior of the method. jhrg 8/14/13
+    if (m_is_cardinal_type())
+        throw InternalErr(__FILE__, __LINE__, "Vector::vec_resize() is applicable to compound types only");
 
     d_compound_buf.resize((l > 0) ? l : 0, 0); // Fill with NULLs
     d_capacity = l; // capacity in terms of number of elements.
@@ -1114,7 +1114,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
         case dods_url_c:
             // Assume val points to an array of C++ string objects. Copy
             // them into the vector<string> field of this object.
-        	// Note: d_length is the number of elements in the Vector
+            // Note: d_length is the number of elements in the Vector
             d_str.resize(d_length);
             d_capacity = d_length;
             for (int i = 0; i < d_length; ++i)

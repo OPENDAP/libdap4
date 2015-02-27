@@ -21,10 +21,12 @@ endif
 # AM_YFLAGS= -d
 # AM_LFLAGS = -d
 
-# These are not used by automake but are often useful for certain types of
-# debugging. 
 CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
+
+if BUILD_DEVELOPER
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
+endif
 
 noinst_LTLIBRARIES = libd4_ce_parser.la
 pkginclude_HEADERS = D4ConstraintEvaluator.h D4FunctionEvaluator.h

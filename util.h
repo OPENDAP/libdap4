@@ -62,6 +62,7 @@ bool is_host_big_endian();
 string extract_string_argument(BaseType *arg) ;
 double extract_double_value(BaseType *arg) ;
 double *extract_double_array(Array *a) ;
+void extract_double_array(Array *a, vector<double> &dest) ;
 void set_array_using_double(Array *dest, double *src, int src_len) ;
 
 string prune_spaces(const string &);
