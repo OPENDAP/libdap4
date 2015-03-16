@@ -86,21 +86,22 @@ dmr-testsuite.tar.gz: dmr-testsuite/*.xml
 
 AUTOM4TE = autom4te
 
-DASTESTSUITE = $(srcdir)/DASTest 
+DASTESTSUITE = $(srcdir)/DASTest
 DASTESTSUITEFLAGS =
 
-DDSTESTSUITE = $(srcdir)/DDSTest 
+DDSTESTSUITE = $(srcdir)/DDSTest
 DDSTESTSUITEFLAGS =
 
-EXPRTESTSUITE = $(srcdir)/EXPRTest 
+EXPRTESTSUITE = $(srcdir)/EXPRTest
 EXPRTESTSUITEFLAGS =
 
-DMRTESTSUITE = $(srcdir)/DMRTest 
+DMRTESTSUITE = $(srcdir)/DMRTest
 DMRTESTSUITEFLAGS =
 
-GETDAPTESTSUITE = $(srcdir)/getdapTest 
+GETDAPTESTSUITE = $(srcdir)/getdapTest
 GETDAPTESTSUITEFLAGS =
 
+# Make sure there are no spaces after the DASTESTSUITE names. jhrg 3/16/15
 clean-local:
 	test ! -f '$(DASTESTSUITE)' || $(SHELL) $(DASTESTSUITE) --clean
 	test ! -f '$(DDSTESTSUITE)' || $(SHELL) $(DDSTESTSUITE) --clean

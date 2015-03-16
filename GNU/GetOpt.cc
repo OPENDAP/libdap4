@@ -36,10 +36,13 @@ char *alloca ();
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <string.h>		// Added these. 10/20/98 jhrg
+#include <cstdio>
+#include <cstring>		// Added these. 10/20/98 jhrg
+#include <cstdlib>
+
 #include "GetOpt.h"
-#include <stdlib.h>
-#include <string.h>
+
+//#include <string.h>
 
 char* GetOpt::nextchar = 0;
 int GetOpt::first_nonopt = 0;

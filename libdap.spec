@@ -19,28 +19,27 @@ BuildRequires: pkgconfig
 # line
 Prefix: %{_prefix}
 
-%description
-The libdap++ library contains an implementation of DAP2. This package
-contains the library, dap-config, getdap. The script dap-config
-simplifies using the library in other projects. The getdap utility is
-a simple command-line tool to read from DAP2 servers. It is built
-using the library and demonstrates simple uses of it. Note that libdap
-used to include a copy of 'deflate' which was used to compress
-responses. This has been removed since it is no longer used and the
-CGI-based code is no longer supported.
+%description 
+The libdap library contains an implementation of DAP2 and DAP4. This
+package contains the library, dap-config, getdap and getdap4. The
+script dap-config simplifies using the library in other projects. The
+getdap and getdap4 utilities are a simple command-line tool to read
+from DAP2 and DAP4 servers and are built using the library to
+demonstrates simple uses of it. Note that libdap used to include a
+copy of 'deflate' which was used to compress responses.
 
 %package devel
-Summary: Development and header files from libdap
+Summary: Development and header files for libdap
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
-Requires: curl-devel >= 7.10.6 libxml2-devel >= 2.6.16
+Requires: curl-devel >= 7.19.0 libxml2-devel >= 2.7.0
 Requires: pkgconfig
 # for the /usr/share/aclocal directory ownership
 Requires: automake
 
 %description devel
 This package contains all the files needed to develop applications that
-will use libdap.
+use libdap.
 
 # %package doc
 # Summary: Documentation of the libdap library
@@ -82,6 +81,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %{_bindir}/getdap
+%{_bindir}/getdap4
 %{_libdir}/libdap.so.*
 %{_libdir}/libtest-types.a
 %{_libdir}/libdapclient.so.*
@@ -109,8 +109,6 @@ rm -rf $RPM_BUILD_ROOT
 
 * Mon Sep 13 2010 James Gallagehr <jgallagher@opendap.org> - 3.11.0
 - 3.11.0 rc 1
- 
-- 3.10.2 release candidate 1
  
 * Mon Feb  1 2010 James Gallagher <jgallagher@opendap.org> - 3.10.0
 - Removed deflate; general update for 3.10.0 release
