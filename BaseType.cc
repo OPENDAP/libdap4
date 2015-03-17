@@ -431,19 +431,13 @@ BaseType::read_p()
     @note For most of the types the default implementation of this method is
     fine. However, if you're building a server which must handle data
     represented using nested sequences, then you may need to provide a
-    specialization of Sequence::set_read_p(). By default Sequence::set_read_()
+    specialization of Sequence::set_read_p(). By default Sequence::set_read_p()
     recursively sets the \e read_p property for all child variables to
     \e state. For servers where one Sequence reads an outer set of values
     and another reads an inner set, this is cumbersome. In such a case, it is
     easier to specialize Sequence::set_read_p() so that it does \e not
     recursively set the \e read_p property for the inner Sequence. Be sure
     to see the documentation for the read() method!
-
-    @note For synthesized variables, this method does nothing. Thus, if a
-    synthesized variable is added to a Sequence, the Sequence can iteratively
-    reset the \e read_p property without affecting the value of that property
-    for the synthesized variable. That's important since a synthesized
-    variable's value is calculated, not read.
 
     @todo Look at making synthesized variables easier to implement and at
     making them more integrated into the overall CE evaluation process.
@@ -459,11 +453,21 @@ BaseType::read_p()
 void
 BaseType::set_read_p(bool state)
 {
+    d_is_read = state;
+
+    // The is_synthesized property was not being used and the more I thought
+    // about how this was coded, the more this code below seemed like a bad idea.
+    // Once the property was set, the read_p property could not be changed.
+    // That seems a little silly. Also, I think I need to use this is_synthesized
+    // property for some of the server function code I'm working on for Raytheon,
+    // and I'd like to be able to control the read_p property! jhrg 3/9/15
+#if 0
     if (! d_is_synthesized) {
         DBG2(cerr << "Changing read_p state of " << name() << " to "
 	         << state << endl);
         d_is_read = state;
     }
+#endif
 }
 
 /** Returns the state of the \c send_p property. If true, this variable

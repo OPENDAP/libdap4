@@ -2197,7 +2197,7 @@ void Vector::value(vector<string> &b) const
         b = d_str;
 }
 
-/** Allocated memory and copy data into the new buffer. Return the new
+/** Allocate memory and copy data into the new buffer. Return the new
  buffer's pointer. The caller must delete the storage. */
 void *Vector::value()
 {

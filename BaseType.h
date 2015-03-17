@@ -124,10 +124,6 @@ private:
     bool d_is_read;  // true if the value has been read
     bool d_is_send;  // Is the variable in the projection?
 
-    // These were/are used for DAP2 CEs, but not for DAP4 ones
-    bool d_in_selection; // Is the variable in the selection?
-    bool d_is_synthesized; // true if the variable is synthesized
-
     // d_parent points to the Constructor or Vector which holds a particular
     // variable. It is null for simple variables. The Vector and Constructor
     // classes must maintain this variable.
@@ -143,6 +139,10 @@ private:
     // These are non-empty only for DAP4 variables. Added 9/27/12 jhrg
 
 protected:
+    // These were/are used for DAP2 CEs, but not for DAP4 ones
+    bool d_in_selection; // Is the variable in the selection?
+    bool d_is_synthesized; // true if the variable is synthesized
+
     void m_duplicate(const BaseType &bt);
 
 public:

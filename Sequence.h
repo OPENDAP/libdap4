@@ -216,6 +216,10 @@ protected:
 
 	virtual void intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
 			sequence_values_stack_t &sequence_values_stack);
+#if 0
+	// See note in Sequence.cc
+        virtual void load_prototypes_with_values(int d_row_number);
+#endif
 
 public:
 
