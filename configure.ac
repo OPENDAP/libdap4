@@ -310,7 +310,7 @@ if test "x$build_developer" = "xtrue"; then
    AC_MSG_NOTICE(["Building developer version"])
 else
    AC_MSG_NOTICE(["Not building developer version"])
-   AC_DEFINE([NDEBUG], [1], [Remove this to activate assert() calls.])
+   AC_DEFINE([NDEBUG], [1], [Define this to suppres assert() calls.])
 fi
 AM_CONDITIONAL([BUILD_DEVELOPER], [test "x$build_developer" = "xtrue"])
 
