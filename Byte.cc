@@ -79,7 +79,7 @@ namespace libdap {
     created.
 
 */
-Byte::Byte(const string & n): BaseType(n, dods_byte_c)
+Byte::Byte(const string & n): BaseType(n, dods_byte_c), d_buf(0)
 {}
 
 /** This Byte constructor requires the name of the variable to be created
@@ -92,7 +92,7 @@ Byte::Byte(const string & n): BaseType(n, dods_byte_c)
     @param d A string containing the name of the dataset from which the
     variable is being created.
 */
-Byte::Byte(const string &n, const string &d): BaseType(n, d, dods_byte_c)
+Byte::Byte(const string &n, const string &d): BaseType(n, d, dods_byte_c), d_buf(0)
 {}
 
 Byte::Byte(const Byte & copy_from): BaseType(copy_from)

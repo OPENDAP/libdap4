@@ -156,6 +156,7 @@ clauses : clause { $$ = $1; }
 ;
                     
 clause : subset { $$ = $1; }
+// For the DAP4 at this time (3/18/15) filters apply only to D4Sequences 
 | subset "|" filter { $$ = $1 && $3; }
 ;
 
@@ -293,6 +294,9 @@ index   : "[" "]" { $$ = driver.make_index(); }
 fields : "{" clauses "}" { $$ = $2; }
 ;
 
+// A filter should return a list of rvalues; a predicate should return a single
+// rvalue and some sort of evaluator should operate on those clauses.
+
 filter : predicate 
 | filter "," predicate
 ;
@@ -309,10 +313,14 @@ filter : predicate
 
 predicate : id op id { $$ = true; }
           | id op id op id { $$ = true; }
+          | "ND" "=" id { $$ = true; }
 ;
 
-//           | "ND" "=" id { $$ = true; }
-
+// See http://docs.opendap.org/index.php/DAP4:_Constraint_Expressions,_v2
+// for a discussion of filters that's quite a bit longer than the current
+// draft spec. << and >> are the 'less than bbox' and '> bbox' operations
+// that I'm not so sure about now; @= is the same as *= and is the mapping
+// operation. jhrg 3/18/15 
 op : "<"
    | ">"
    | "<="
@@ -325,8 +333,6 @@ op : "<"
    | ">>"
 
    | "@="
-   
-   | "="
 ;
 
 id : path

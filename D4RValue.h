@@ -113,9 +113,13 @@ public:
 
     virtual ~D4RValue();
 
+    // TODO/FIXME Add methods so that it's possible to figure out if a value
+    // is from a variable, function or constant. This way filters can optimize
+    // access/manipulation of constant values that will be used repeatedly.
+
     // This is the call that will be used to return the value of a function.
     // jhrg 3/10/14
-    BaseType *value(DMR &dmr);
+    virtual BaseType *value(DMR &dmr);
 };
 
 } // namespace libdap
