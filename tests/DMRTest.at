@@ -2,22 +2,22 @@
 
 AT_INIT([dmr-test])
 
-AT_ARG_OPTION_ARG([generate-parse],
-    [--generate-parse=arg   Build the baseline file for parser test 'arg'],
+AT_ARG_OPTION_ARG([generate_parse],
+    [--generate_parse=arg   Build the baseline file for parser test 'arg'],
     [echo "./dmr-test -x -p $at_arg_generate_parse > $at_arg_generate_parse.baseline 2>&1";
      ./dmr-test -x -p $at_arg_generate_parse > $at_arg_generate_parse.baseline 2>&1;
      echo "Built baseline for $at_arg_generate_parse";
      exit],[])
 
-AT_ARG_OPTION_ARG([generate-trans],
-    [--generate-trans=arg  Build the baseline file for round trip transmission test 'arg'],
+AT_ARG_OPTION_ARG([generate_trans],
+    [--generate_trans=arg  Build the baseline file for round trip transmission test 'arg'],
     [echo "./dmr-test -x -t $at_arg_generate_trans > $at_arg_generate_trans.trans_base 2>&1";
      ./dmr-test -x -t $at_arg_generate_trans > $at_arg_generate_trans.trans_base 2>&1;
      echo "Built baseline for $at_arg_generate_trans";
      exit],[])
 
-AT_ARG_OPTION_ARG([generate-trans-ce],
-    [--generate-trans-ce=dataset,ce,ext  Build the baseline (ext) file for round trip transmission test 'arg' with 'ce'],
+AT_ARG_OPTION_ARG([generate_trans_ce],
+    [--generate_trans_ce=dataset,ce,ext  Build the baseline (ext) file for round trip transmission test 'arg' with 'ce'],
     [data=`echo $at_arg_generate_trans_ce | sed 's@\(.*\),\(.*\),\(.*\)@\1@g'`
      ce=`echo $at_arg_generate_trans_ce | sed 's@\(.*\),\(.*\),\(.*\)@\2@g'`
      code=`echo $at_arg_generate_trans_ce | sed 's@\(.*\),\(.*\),\(.*\)@\3@g'`
