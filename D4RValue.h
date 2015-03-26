@@ -74,10 +74,10 @@ class D4RValue
 private:
     BaseType *d_variable;	// This is a weak pointer
 
-    D4Function d_func;  	// (weak) Pointer to a function returning BaseType *
-    D4RValueList *d_args;  	// Strong pointer to arguments to the function; delete
+    D4Function d_func;  	// (weak) pointer to a function returning BaseType *
+    D4RValueList *d_args;  	// pointer to arguments to the function; delete
 
-    BaseType *d_constant;	// Strong pointer; delete
+    BaseType *d_constant;	// pointer; delete
 
     enum value_kind {
     	unknown,

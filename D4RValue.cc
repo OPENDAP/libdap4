@@ -191,6 +191,12 @@ D4RValue::~D4RValue() {
  * function result values will be deleted at that time; variables will not. Thus
  * Server Functions should always allocate storage for their return values.
  *
+ * @todo Could move the operation that wraps a constant in a BaseType to this method
+ * while providing oterh ways to access the value(s) (methods to determine if the
+ * rvalue is a constant and what DAP type it is, e.g.). This would provide an optimization
+ * for the filter evaluator which may access the values many times. We might also
+ * modify the server side functions so they could access constant values more efficiently.
+ *
  * @param dmr The DMR to pass to a function.
  * @return A BaseType* that holds the value.
  */
@@ -211,6 +217,7 @@ D4RValue::value(DMR &dmr)
 
 	default:
 		throw InternalErr(__FILE__, __LINE__, "Unknown rvalue type.");
+		return 0; // null_ptr; added return to quiet warning. jhrg 3/24/15
 	};
 }
 
