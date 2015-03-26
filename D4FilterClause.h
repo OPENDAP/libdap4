@@ -86,6 +86,8 @@ private:
     D4FilterClause &operator=(const D4FilterClause &);
 
     template<typename T1, typename T2> bool D4FilterClause::cmp(ops op, T1 arg1, T2 Arg2);
+    bool D4FilterClause::cmp(ops op, const string &arg1, const string &arg2);
+
     template<typename T> bool D4FilterClause::cmp(ops op, BaseType *arg1, T arg2);
     bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2);
 

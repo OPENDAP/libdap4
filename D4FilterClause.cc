@@ -36,6 +36,8 @@
 
 #include <cassert>
 
+#include <string>
+
 #include "BaseType.h"
 #include "Byte.h"
 #include "Int8.h"
@@ -75,12 +77,46 @@ template<typename T1, typename T2> inline bool D4FilterClause::cmp(ops op, T1 ar
 	case match:
 	case ND:
 	case map:
-		assert(false && "Operator not valid for a number");
-		break;
+		throw Error("While evaluating a constraint filter clause: Operator not valid for a number");
 	default:
-		assert(false && "Unrecognized operator");
-		break;
+		throw Error("While evaluating a constraint filter clause: Unrecognized operator");
 	}
+
+	return false;
+}
+
+// special case strings
+inline bool D4FilterClause::cmp(ops op, const string &arg1, const string &arg2)
+{
+	switch (op) {
+	case null:
+		assert(false && "Found a null operator");
+		break;
+	case less:
+		return arg1 < arg2;
+	case greater:
+		return arg1 > arg2;
+	case less_equal:
+		return arg1 <= arg2;
+	case greater_equal:
+		return arg1 >= arg2;
+	case equal:
+		return arg1 == arg2;
+	case not_equal:
+		return arg1 != arg2;
+	case match: {
+		Regex r(arg2.c_str());
+		return r.match(arg1.c_str(), arg1.length()) > 0;
+	}
+
+	case ND:
+	case map:
+		throw Error("While evaluating a constraint filter clause: Operator not valid for a string");
+	default:
+		throw Error("While evaluating a constraint filter clause: Unrecognized operator");
+	}
+
+	return false;
 }
 
 template<typename T> inline bool D4FilterClause::cmp(ops op, BaseType *arg1, T arg2)
@@ -106,6 +142,8 @@ template<typename T> inline bool D4FilterClause::cmp(ops op, BaseType *arg1, T a
 		return cmp(op, static_cast<Float32*>(arg1)->value(), arg2);
 	case dods_float64_c:
 		return cmp(op, static_cast<Float64*>(arg1)->value(), arg2);
+	default:
+		return false;
 	}
 }
 
@@ -132,6 +170,14 @@ inline bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 		return cmp(op, arg1, static_cast<Float32*>(arg2)->value());
 	case dods_float64_c:
 		return cmp(op, arg1, static_cast<Float64*>(arg2)->value());
+
+	case dods_str_c:
+	case dods_url_c:
+		if (arg1->type() != dods_str_c || arg1->type() != dods_url_c)
+			throw Error("While evaluating a constraint filter clause: both operands of the match operator must be strings or URLs.");
+		return cmp(op, static_cast<Str*>(arg1)->value(), static_cast<Str*>(arg1)->value());
+	default:
+		return false;
 	}
 }
 
@@ -147,8 +193,9 @@ bool D4FilterClause::value(DMR &dmr)
 	case greater_equal:
 	case equal:
 	case not_equal:
-		return cmp(d_op, d_arg1->value(dmr), d_arg2->value(dmr));
 	case match:
+		return cmp(d_op, d_arg1->value(dmr), d_arg2->value(dmr));
+
 	case ND:
 	case map:
 		assert(false && "Filter operator not implemented");
