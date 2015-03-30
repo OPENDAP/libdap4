@@ -23,10 +23,11 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+// A minor edit
+
 %skeleton "lalr1.cc" /* -*- C++ -*- */
 %require "2.5"
 %defines
-
 
 // The d4ce_parser.tab.cc and .hh files define and declare this class
 %define parser_class_name {D4CEParser}

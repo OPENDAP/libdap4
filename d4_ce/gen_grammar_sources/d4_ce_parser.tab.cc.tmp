@@ -49,7 +49,7 @@
 
 #line 51 "d4_ce_parser.tab.cc" // lalr1.cc:406
 // Unqualified %code blocks.
-#line 73 "d4_ce_parser.yy" // lalr1.cc:407
+#line 74 "d4_ce_parser.yy" // lalr1.cc:407
 
    #include <iostream>
    #include <cstdlib>
@@ -153,7 +153,7 @@
 #define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
 
-#line 34 "d4_ce_parser.yy" // lalr1.cc:473
+#line 35 "d4_ce_parser.yy" // lalr1.cc:473
 namespace libdap {
 #line 159 "d4_ce_parser.tab.cc" // lalr1.cc:473
 
@@ -883,7 +883,7 @@ namespace libdap {
 
 
     // User initialization code.
-    #line 65 "d4_ce_parser.yy" // lalr1.cc:730
+    #line 66 "d4_ce_parser.yy" // lalr1.cc:730
 {
     // Initialize the initial location. This is printed when the parser builds
     // its own error messages - when the parse fails as opposed to when the 
@@ -1026,31 +1026,31 @@ namespace libdap {
         switch (yyn)
           {
   case 2:
-#line 140 "d4_ce_parser.yy" // lalr1.cc:846
+#line 141 "d4_ce_parser.yy" // lalr1.cc:846
     { driver.set_result(yystack_[0].value.as< bool > ()); }
 #line 1032 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 3:
-#line 141 "d4_ce_parser.yy" // lalr1.cc:846
+#line 142 "d4_ce_parser.yy" // lalr1.cc:846
     { driver.set_result(yystack_[2].value.as< bool > () && yystack_[0].value.as< bool > ()); }
 #line 1038 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 4:
-#line 144 "d4_ce_parser.yy" // lalr1.cc:846
+#line 145 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< bool > () = yystack_[0].value.as< bool > (); }
 #line 1044 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 5:
-#line 145 "d4_ce_parser.yy" // lalr1.cc:846
+#line 146 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< bool > () = yystack_[2].value.as< bool > () && yystack_[0].value.as< bool > (); }
 #line 1050 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 6:
-#line 149 "d4_ce_parser.yy" // lalr1.cc:846
+#line 150 "d4_ce_parser.yy" // lalr1.cc:846
     {
     yylhs.value.as< bool > () = driver.slice_dimension(yystack_[2].value.as< std::string > (), yystack_[0].value.as< libdap::D4ConstraintEvaluator::index > ());
 }
@@ -1058,31 +1058,31 @@ namespace libdap {
     break;
 
   case 7:
-#line 154 "d4_ce_parser.yy" // lalr1.cc:846
+#line 155 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< bool > () = yystack_[0].value.as< bool > (); }
 #line 1064 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 8:
-#line 155 "d4_ce_parser.yy" // lalr1.cc:846
+#line 156 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< bool > () = yystack_[2].value.as< bool > () && yystack_[0].value.as< bool > (); }
 #line 1070 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 9:
-#line 158 "d4_ce_parser.yy" // lalr1.cc:846
+#line 159 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< bool > () = yystack_[0].value.as< bool > (); }
 #line 1076 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 10:
-#line 159 "d4_ce_parser.yy" // lalr1.cc:846
+#line 160 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< bool > () = yystack_[2].value.as< bool > () && yystack_[0].value.as< bool > (); }
 #line 1082 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 11:
-#line 164 "d4_ce_parser.yy" // lalr1.cc:846
+#line 165 "d4_ce_parser.yy" // lalr1.cc:846
     {
     BaseType *btp = 0;
     if (driver.top_basetype()) {
@@ -1107,7 +1107,7 @@ namespace libdap {
     break;
 
   case 12:
-#line 186 "d4_ce_parser.yy" // lalr1.cc:846
+#line 187 "d4_ce_parser.yy" // lalr1.cc:846
     {
     BaseType *btp = 0;
     if (driver.top_basetype()) {
@@ -1129,7 +1129,7 @@ namespace libdap {
     break;
 
   case 13:
-#line 205 "d4_ce_parser.yy" // lalr1.cc:846
+#line 206 "d4_ce_parser.yy" // lalr1.cc:846
     {
     BaseType *btp = 0;
     if (driver.top_basetype()) {
@@ -1164,7 +1164,7 @@ namespace libdap {
     break;
 
   case 14:
-#line 236 "d4_ce_parser.yy" // lalr1.cc:846
+#line 237 "d4_ce_parser.yy" // lalr1.cc:846
     { 
     driver.pop_basetype(); 
     yylhs.value.as< bool > () = true; 
@@ -1173,7 +1173,7 @@ namespace libdap {
     break;
 
   case 15:
-#line 242 "d4_ce_parser.yy" // lalr1.cc:846
+#line 243 "d4_ce_parser.yy" // lalr1.cc:846
     {
     BaseType *btp = 0;
     if (driver.top_basetype()) {
@@ -1201,7 +1201,7 @@ namespace libdap {
     break;
 
   case 16:
-#line 266 "d4_ce_parser.yy" // lalr1.cc:846
+#line 267 "d4_ce_parser.yy" // lalr1.cc:846
     { 
     driver.pop_basetype();
     yylhs.value.as< bool > () = true; 
@@ -1210,7 +1210,7 @@ namespace libdap {
     break;
 
   case 17:
-#line 278 "d4_ce_parser.yy" // lalr1.cc:846
+#line 279 "d4_ce_parser.yy" // lalr1.cc:846
     { 
     driver.push_index(yystack_[0].value.as< libdap::D4ConstraintEvaluator::index > ()); 
     yylhs.value.as< bool > () = true; 
@@ -1219,73 +1219,73 @@ namespace libdap {
     break;
 
   case 18:
-#line 282 "d4_ce_parser.yy" // lalr1.cc:846
+#line 283 "d4_ce_parser.yy" // lalr1.cc:846
     { driver.push_index(yystack_[0].value.as< libdap::D4ConstraintEvaluator::index > ()); }
 #line 1225 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 19:
-#line 282 "d4_ce_parser.yy" // lalr1.cc:846
+#line 283 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< bool > () = yystack_[0].value.as< bool > (); }
 #line 1231 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 20:
-#line 285 "d4_ce_parser.yy" // lalr1.cc:846
+#line 286 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< libdap::D4ConstraintEvaluator::index > () = driver.make_index(); }
 #line 1237 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 21:
-#line 286 "d4_ce_parser.yy" // lalr1.cc:846
+#line 287 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< libdap::D4ConstraintEvaluator::index > () = driver.make_index(yystack_[1].value.as< std::string > ()); }
 #line 1243 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 22:
-#line 287 "d4_ce_parser.yy" // lalr1.cc:846
+#line 288 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< libdap::D4ConstraintEvaluator::index > () = driver.make_index(yystack_[3].value.as< std::string > (), 1, yystack_[1].value.as< std::string > ()); }
 #line 1249 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 23:
-#line 288 "d4_ce_parser.yy" // lalr1.cc:846
+#line 289 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< libdap::D4ConstraintEvaluator::index > () = driver.make_index(yystack_[5].value.as< std::string > (), yystack_[3].value.as< std::string > (), yystack_[1].value.as< std::string > ()); }
 #line 1255 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 24:
-#line 289 "d4_ce_parser.yy" // lalr1.cc:846
+#line 290 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< libdap::D4ConstraintEvaluator::index > () = driver.make_index(yystack_[2].value.as< std::string > (), 1); }
 #line 1261 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 25:
-#line 290 "d4_ce_parser.yy" // lalr1.cc:846
+#line 291 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< libdap::D4ConstraintEvaluator::index > () = driver.make_index(yystack_[4].value.as< std::string > (), yystack_[2].value.as< std::string > ()); }
 #line 1267 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 26:
-#line 293 "d4_ce_parser.yy" // lalr1.cc:846
+#line 294 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< bool > () = yystack_[1].value.as< bool > (); }
 #line 1273 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 29:
-#line 310 "d4_ce_parser.yy" // lalr1.cc:846
+#line 311 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< bool > () = true; }
 #line 1279 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 30:
-#line 311 "d4_ce_parser.yy" // lalr1.cc:846
+#line 312 "d4_ce_parser.yy" // lalr1.cc:846
     { yylhs.value.as< bool > () = true; }
 #line 1285 "d4_ce_parser.tab.cc" // lalr1.cc:846
     break;
 
   case 42:
-#line 333 "d4_ce_parser.yy" // lalr1.cc:846
+#line 334 "d4_ce_parser.yy" // lalr1.cc:846
     {
     yylhs.value.as< std::string > () = yystack_[0].value.as< std::string > ();
 }
@@ -1293,7 +1293,7 @@ namespace libdap {
     break;
 
   case 43:
-#line 337 "d4_ce_parser.yy" // lalr1.cc:846
+#line 338 "d4_ce_parser.yy" // lalr1.cc:846
     {
     yylhs.value.as< std::string > ().append("/");
     yylhs.value.as< std::string > ().append(yystack_[0].value.as< std::string > ());
@@ -1302,7 +1302,7 @@ namespace libdap {
     break;
 
   case 44:
-#line 342 "d4_ce_parser.yy" // lalr1.cc:846
+#line 343 "d4_ce_parser.yy" // lalr1.cc:846
     {
     yystack_[2].value.as< std::string > ().append("/");
     yystack_[2].value.as< std::string > ().append(yystack_[0].value.as< std::string > ());
@@ -1312,7 +1312,7 @@ namespace libdap {
     break;
 
   case 45:
-#line 350 "d4_ce_parser.yy" // lalr1.cc:846
+#line 351 "d4_ce_parser.yy" // lalr1.cc:846
     {
     yylhs.value.as< std::string > ().append("/");
     yylhs.value.as< std::string > ().append(yystack_[0].value.as< std::string > ());
@@ -1321,7 +1321,7 @@ namespace libdap {
     break;
 
   case 46:
-#line 355 "d4_ce_parser.yy" // lalr1.cc:846
+#line 356 "d4_ce_parser.yy" // lalr1.cc:846
     {
     yystack_[2].value.as< std::string > ().append(".");
     yystack_[2].value.as< std::string > ().append(yystack_[0].value.as< std::string > ());
@@ -1331,7 +1331,7 @@ namespace libdap {
     break;
 
   case 47:
-#line 363 "d4_ce_parser.yy" // lalr1.cc:846
+#line 364 "d4_ce_parser.yy" // lalr1.cc:846
     {
     yylhs.value.as< std::string > () = yystack_[0].value.as< std::string > ();
 }
@@ -1339,7 +1339,7 @@ namespace libdap {
     break;
 
   case 48:
-#line 367 "d4_ce_parser.yy" // lalr1.cc:846
+#line 368 "d4_ce_parser.yy" // lalr1.cc:846
     {
     yystack_[2].value.as< std::string > ().append(".");
     yystack_[2].value.as< std::string > ().append(yystack_[0].value.as< std::string > ());
@@ -1349,7 +1349,7 @@ namespace libdap {
     break;
 
   case 49:
-#line 378 "d4_ce_parser.yy" // lalr1.cc:846
+#line 379 "d4_ce_parser.yy" // lalr1.cc:846
     {
     yylhs.value.as< std::string > ()=yystack_[0].value.as< std::string > ();
 }
@@ -1357,7 +1357,7 @@ namespace libdap {
     break;
 
   case 50:
-#line 382 "d4_ce_parser.yy" // lalr1.cc:846
+#line 383 "d4_ce_parser.yy" // lalr1.cc:846
     {
     yylhs.value.as< std::string > ()=yystack_[0].value.as< std::string > ();
 }
@@ -1745,12 +1745,12 @@ namespace libdap {
   const unsigned short int
   D4CEParser::yyrline_[] =
   {
-       0,   140,   140,   141,   144,   145,   148,   154,   155,   158,
-     159,   163,   185,   205,   204,   242,   241,   277,   282,   282,
-     285,   286,   287,   288,   289,   290,   293,   296,   297,   310,
-     311,   316,   317,   318,   319,   320,   321,   322,   324,   325,
-     327,   329,   332,   336,   341,   349,   354,   362,   366,   377,
-     381
+       0,   141,   141,   142,   145,   146,   149,   155,   156,   159,
+     160,   164,   186,   206,   205,   243,   242,   278,   283,   283,
+     286,   287,   288,   289,   290,   291,   294,   297,   298,   311,
+     312,   317,   318,   319,   320,   321,   322,   323,   325,   326,
+     328,   330,   333,   337,   342,   350,   355,   363,   367,   378,
+     382
   };
 
   // Print the state stack on the debug stream.
@@ -1832,10 +1832,10 @@ namespace libdap {
       return undef_token_;
   }
 
-#line 34 "d4_ce_parser.yy" // lalr1.cc:1156
+#line 35 "d4_ce_parser.yy" // lalr1.cc:1156
 } // libdap
 #line 1838 "d4_ce_parser.tab.cc" // lalr1.cc:1156
-#line 387 "d4_ce_parser.yy" // lalr1.cc:1157
+#line 388 "d4_ce_parser.yy" // lalr1.cc:1157
 
 
 // Forward the error to the driver for handling. The location parameter

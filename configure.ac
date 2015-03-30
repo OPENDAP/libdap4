@@ -103,6 +103,20 @@ dnl Makefile will call bison -y which doesn't know how to make the parsers
 dnl we require. jhrg 6/15/05
 AC_CHECK_PROG(YACC,[bison],[bison])
 
+dnl We have found bison; get its version
+dnl the following should work (it does in the shell) but fails in configure.ac
+dnl bison_version="`bison --version | sed -n 's@bison.* \([0-9.]*\)$@\1@p'`"
+bison_version=`bison --version | sed -n '/^bison.*/p' | sed 's@.* \(.*\)@\1@'`
+
+AC_MSG_CHECKING([for bison 3.0])
+
+AS_VERSION_COMPARE(["$bison_version"], ["3.0"], 
+	[AM_CONDITIONAL([BISON3], [false])],
+	[AM_CONDITIONAL([BISON3], [true])],
+	[AM_CONDITIONAL([BISON3], [true])])
+        
+AC_MSG_RESULT([found vesion $bison_version])
+
 dnl Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
@@ -184,7 +198,7 @@ then
     then
 	   version_libcurl=`curl-config --version | sed 's@libcurl \(.*\)@\1@'`
 
-           AS_VERSION_COMPARE(["$version_libcurl"], ["7.19.0"], 
+       AS_VERSION_COMPARE(["$version_libcurl"], ["7.19.0"], 
                 [AC_MSG_ERROR([I could not find libcurl 7.19.0 or newer, found $version_libcurl])])
         
 	   CURL_LIBS="`curl-config --libs`"

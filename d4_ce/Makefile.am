@@ -46,12 +46,19 @@ libd4_ce_parser_la_SOURCES =  \
 libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
 
 EXTRA_DIST = d4_ce_parser.yy d4_ce_scanner.ll d4_function_parser.yy d4_function_scanner.ll
+EXTRA_DIST += gen_grammar_sources
+
+# Used by both the "have bison 3+'" and "don't have ..." cases
+GEN_GRAM_SRCS=gen_grammar_sources
 
 DISTCLEANFILES = 
 
 clean-local:
 	-rm location.hh position.hh stack.hh d4_ce_parser.tab.cc d4_ce_parser.tab.hh lex.d4_ce.cc \
 		d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc
+
+if BISON3
+# If we have bison3+, use it. Otherwise, use files from git.
 
 lex.d4_ce.cc: d4_ce_scanner.ll d4_ce_parser.tab.cc d4_ce_parser.tab.hh
 	$(LEX) $(LFLAGS) $<
@@ -68,3 +75,24 @@ lex.d4_function.cc: d4_function_scanner.ll d4_function_parser.tab.cc d4_function
 d4_function_parser.tab.hh d4_function_parser.tab.cc: d4_function_parser.yy
 	$(YACC) $(YFLAGS) $<
 
+# These rules keep the 'tmp' files up-to-date w/o us having to remember
+# to rule a special target when the grammars change.
+all-local: $(GEN_GRAM_SRCS)/*.tmp
+
+$(GEN_GRAM_SRCS)/%.cc.tmp : %.cc
+	cp $< $@
+
+$(GEN_GRAM_SRCS)/%.hh.tmp: %.hh
+	cp $< $@
+
+$(GEN_GRAM_SRCS)/%.h.tmp: %.h
+	cp $< $@
+
+else
+# The brute force way to get the C++ grammar sources for hosts
+# w/o bison 3
+
+% :: $(GEN_GRAM_SRCS)/%.tmp
+	cp $< $@
+
+endif
