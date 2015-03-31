@@ -71,8 +71,10 @@ gl/sys/
 d4_ce/location.hh
 d4_ce/position.hh
 d4_ce/stack.hh
+d4_ce/FlexLexer.h
 
 libdap-*.tar.gz
+libdap-*
 
 tests/DASTest
 tests/DDSTest
