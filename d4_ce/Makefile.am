@@ -47,7 +47,9 @@ libd4_ce_parser_la_SOURCES = D4ConstraintEvaluator.cc \
 # grammar sources, make sure to use the scanner class that
 # matches the generated code. This addresses an issue where
 # different versions of flex use 'int' or 'size_t' for some 
-# arguments in the scanner's protected methods. jhrg 3/31/15
+# arguments in the scanner's protected methods. This is not
+# automatically updated to match changes in the gnerated files.
+# jhrg 3/31/15
 if !BISON3
 libd4_ce_parser_la_SOURCES += FlexLexer.h
 endif 
@@ -65,8 +67,7 @@ DISTCLEANFILES =
 clean-local:
 	-rm location.hh position.hh stack.hh d4_ce_parser.tab.cc	\
 d4_ce_parser.tab.hh lex.d4_ce.cc d4_function_parser.tab.cc		\
-d4_function_parser.tab.hh lex.d4_function.cc D4CEScanner.h		\
-D4FunctionScanner.h FlexLexer.h
+d4_function_parser.tab.hh lex.d4_function.cc FlexLexer.h
 
 if BISON3
 # If we have bison3+, use it. Otherwise, use files from git.
@@ -87,8 +88,11 @@ d4_function_parser.tab.hh d4_function_parser.tab.cc: d4_function_parser.yy
 	$(YACC) $(YFLAGS) $<
 
 # These rules keep the 'tmp' files up-to-date w/o us having to remember
-# to rule a special target when the grammars change.
-all-local: $(GEN_GRAM_SRCS)/*.tmp
+# to rule a special target when the grammars change. Including the '.hh'
+# in the rule below is a work-around for the 'FlexLexer.h' which is _not_
+# generated and breaks this scheme otherwise. We could list each file
+# by name, each one prefixed with $(GEN_GRA...). jhrg 3/31/15
+all-local: $(GEN_GRAM_SRCS)/*.cc.tmp $(GEN_GRAM_SRCS)/*.hh.tmp
 
 $(GEN_GRAM_SRCS)/%.cc.tmp : %.cc
 	cp $< $@
