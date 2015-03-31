@@ -21,7 +21,7 @@ endif
 # AM_YFLAGS= -d
 # AM_LFLAGS = -d
 
-CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align
+CXXFLAGS_DEBUG = -g3 -O0 -Wall -W -Wcast-align
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 if BUILD_DEVELOPER
@@ -34,28 +34,39 @@ pkginclude_HEADERS = D4ConstraintEvaluator.h D4FunctionEvaluator.h
 BUILT_SOURCES = lex.d4_ce.cc lex.d4_function.cc
 # BUILT_SOURCES = d4_ce_parser.hh stack.hh location.hh position.hh d4_function_parser.hh
 
-libd4_ce_parser_la_SOURCES =  \
-	D4ConstraintEvaluator.cc D4ConstraintEvaluator.h D4CEScanner.h \
-	D4FunctionEvaluator.cc D4FunctionEvaluator.h D4FunctionScanner.h \
-	d4_ce_parser.tab.cc d4_ce_parser.tab.hh lex.d4_ce.cc \
-	d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc \
-	location.hh position.hh stack.hh 
+libd4_ce_parser_la_SOURCES = D4ConstraintEvaluator.cc \
+	D4ConstraintEvaluator.h D4CEScanner.h D4FunctionEvaluator.cc	\
+	D4FunctionEvaluator.h D4FunctionScanner.h d4_ce_parser.tab.cc	\
+	d4_ce_parser.tab.hh lex.d4_ce.cc d4_function_parser.tab.cc	\
+	d4_function_parser.tab.hh lex.d4_function.cc location.hh	\
+	position.hh stack.hh
 
 # 	d4_ce_parser.yy d4_function_parser.yy d4_ce_scanner.ll d4_function_scanner.ll
 
-libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
+# Kludge: If we are not building the scanner/parser from the 
+# grammar sources, make sure to use the scanner class that
+# matches the generated code. This addresses an issue where
+# different versions of flex use 'int' or 'size_t' for some 
+# arguments in the scanner's protected methods. jhrg 3/31/15
+if !BISON3
+libd4_ce_parser_la_SOURCES += FlexLexer.h
+endif 
 
-EXTRA_DIST = d4_ce_parser.yy d4_ce_scanner.ll d4_function_parser.yy d4_function_scanner.ll
-EXTRA_DIST += gen_grammar_sources
+libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
 
 # Used by both the "have bison 3+'" and "don't have ..." cases
 GEN_GRAM_SRCS=gen_grammar_sources
 
+EXTRA_DIST = d4_ce_parser.yy d4_ce_scanner.ll d4_function_parser.yy d4_function_scanner.ll
+EXTRA_DIST += $(GEN_GRAM_SRCS)
+
 DISTCLEANFILES = 
 
 clean-local:
-	-rm location.hh position.hh stack.hh d4_ce_parser.tab.cc d4_ce_parser.tab.hh lex.d4_ce.cc \
-		d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc
+	-rm location.hh position.hh stack.hh d4_ce_parser.tab.cc	\
+d4_ce_parser.tab.hh lex.d4_ce.cc d4_function_parser.tab.cc		\
+d4_function_parser.tab.hh lex.d4_function.cc D4CEScanner.h		\
+D4FunctionScanner.h FlexLexer.h
 
 if BISON3
 # If we have bison3+, use it. Otherwise, use files from git.
