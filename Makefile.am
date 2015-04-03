@@ -105,11 +105,6 @@ pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h \
     xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
 
-# Not nearly as clean as it could be, but this removes .svn directories
-# in subdirs.
-dist-hook:
-	rm -rf `find $(distdir) -name .svn`
-
 # Copy the generated grammar files to the 'grammarfiles' directory.
 .PHONY: grammarfiles
 grammarfiles: $(GRAM_SRC)
@@ -134,6 +129,7 @@ cccc:
 .PHONY: fortify
 fortify: $(BUILT_SOURCES)
 	(cd gl && sourceanalyzer -b @PACKAGE@-gl $(MAKE) $(MFLAGS) )
+	(cd d4_ce && sourceanalyzer -b @PACKAGE@-d4_ce $(MAKE) $(MFLAGS) )
 	sourceanalyzer -b @PACKAGE@-parsers $(MAKE) $(MFLAGS) libparsers.la
 	sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS) libdap.la libdapserver.la libdapclient.la
 	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
@@ -143,9 +139,10 @@ fortify: $(BUILT_SOURCES)
 # files but should eliminate the false positives from flex and bison, too.
 .PHONY: fortify-lite
 fortify-lite: dods-datatypes.h xdr-datatypes.h
-	( cd gl && $(MAKE) )
-	$(MAKE) libparsers.la
-	sourceanalyzer -b @PACKAGE@ $(MAKE) libdap.la libdapserver.la libdapclient.la
+	( cd gl && $(MAKE) $(MFLAGS) )
+	( cd d4_ce && $(MAKE) $(MFLAGS) )
+	$(MAKE)  $(MFLAGS) libparsers.la
+	sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS) libdap.la libdapserver.la libdapclient.la
 	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
 
 # No longer used? jhrg 1/29/13

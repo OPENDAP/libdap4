@@ -16,6 +16,7 @@ lex.*.cc
 *.pc
 *.log
 *.trs
+*.docs
 
 .dirstamp
 .cproject

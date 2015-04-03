@@ -75,15 +75,12 @@ if BISON3
 lex.d4_ce.cc: d4_ce_scanner.ll d4_ce_parser.tab.cc d4_ce_parser.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-# These used to be targets too, but that lead to annoying warnings. jhrg 3/11/14
-# d4_ce_parser.tab.hh stack.hh location.hh position.hh
 d4_ce_parser.tab.hh d4_ce_parser.tab.cc stack.hh location.hh position.hh: d4_ce_parser.yy
 	$(YACC) $(YFLAGS) $<
 
 lex.d4_function.cc: d4_function_scanner.ll d4_function_parser.tab.cc d4_function_parser.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-# ... also was a target: d4_function_parser.tab.hh
 d4_function_parser.tab.hh d4_function_parser.tab.cc: d4_function_parser.yy
 	$(YACC) $(YFLAGS) $<
 
@@ -92,7 +89,7 @@ d4_function_parser.tab.hh d4_function_parser.tab.cc: d4_function_parser.yy
 # in the rule below is a work-around for the 'FlexLexer.h' which is _not_
 # generated and breaks this scheme otherwise. We could list each file
 # by name, each one prefixed with $(GEN_GRA...). jhrg 3/31/15
-all-local: $(GEN_GRAM_SRCS)/*.cc.tmp $(GEN_GRAM_SRCS)/*.hh.tmp
+# all-local: $(GEN_GRAM_SRCS)/*.cc.tmp $(GEN_GRAM_SRCS)/*.hh.tmp
 
 $(GEN_GRAM_SRCS)/%.cc.tmp : %.cc
 	cp $< $@
@@ -104,6 +101,7 @@ $(GEN_GRAM_SRCS)/%.h.tmp: %.h
 	cp $< $@
 
 else
+
 # The brute force way to get the C++ grammar sources for hosts
 # w/o bison 3
 
@@ -111,3 +109,6 @@ else
 	cp $< $@
 
 endif
+
+FlexLexer.h: $(GEN_GRAM_SRCS)/FlexLexer.h.tmp
+	cp $< $@
