@@ -41,7 +41,7 @@ libd4_ce_parser_la_SOURCES = D4ConstraintEvaluator.cc \
 	d4_function_parser.tab.hh lex.d4_function.cc location.hh	\
 	position.hh stack.hh
 
-# 	d4_ce_parser.yy d4_function_parser.yy d4_ce_scanner.ll d4_function_scanner.ll
+# d4_ce_parser.yy d4_function_parser.yy d4_ce_scanner.ll d4_function_scanner.ll
 
 # Kludge: If we are not building the scanner/parser from the 
 # grammar sources, make sure to use the scanner class that
@@ -50,9 +50,15 @@ libd4_ce_parser_la_SOURCES = D4ConstraintEvaluator.cc \
 # arguments in the scanner's protected methods. This is not
 # automatically updated to match changes in the gnerated files.
 # jhrg 3/31/15
-if !BISON3
-libd4_ce_parser_la_SOURCES += FlexLexer.h
-endif 
+#
+# Goog intent behind this idea, but in practice it was not working to
+# build the DAP4 parsers this way. Given more time, it might be
+# something that will work, but for the next release (early April
+# 2015) bison 3.x is going to be a requirement. jhrg 4/5/15
+
+# if !BISON3
+# libd4_ce_parser_la_SOURCES += FlexLexer.h
+# endif 
 
 libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
 
@@ -69,7 +75,7 @@ clean-local:
 d4_ce_parser.tab.hh lex.d4_ce.cc d4_function_parser.tab.cc		\
 d4_function_parser.tab.hh lex.d4_function.cc FlexLexer.h
 
-if BISON3
+# if BISON3
 # If we have bison3+, use it. Otherwise, use files from git.
 
 lex.d4_ce.cc: d4_ce_scanner.ll d4_ce_parser.tab.cc d4_ce_parser.tab.hh
@@ -91,24 +97,23 @@ d4_function_parser.tab.hh d4_function_parser.tab.cc: d4_function_parser.yy
 # by name, each one prefixed with $(GEN_GRA...). jhrg 3/31/15
 # all-local: $(GEN_GRAM_SRCS)/*.cc.tmp $(GEN_GRAM_SRCS)/*.hh.tmp
 
-$(GEN_GRAM_SRCS)/%.cc.tmp : %.cc
-	cp $< $@
+# $(GEN_GRAM_SRCS)/%.cc.tmp : %.cc
+# 	cp $< $@
 
-$(GEN_GRAM_SRCS)/%.hh.tmp: %.hh
-	cp $< $@
+# $(GEN_GRAM_SRCS)/%.hh.tmp: %.hh
+# 	cp $< $@
 
-$(GEN_GRAM_SRCS)/%.h.tmp: %.h
-	cp $< $@
+# $(GEN_GRAM_SRCS)/%.h.tmp: %.h
+# 	cp $< $@
 
-else
+# else
 
-# The brute force way to get the C++ grammar sources for hosts
-# w/o bison 3
+# # The brute force way to get the C++ grammar sources for hosts
+# # w/o bison 3
 
-% :: $(GEN_GRAM_SRCS)/%.tmp
-	cp $< $@
+# % :: $(GEN_GRAM_SRCS)/%.tmp
+# 	cp $< $@
 
-endif
-
-FlexLexer.h: $(GEN_GRAM_SRCS)/FlexLexer.h.tmp
-	cp $< $@
+# FlexLexer.h: $(GEN_GRAM_SRCS)/FlexLexer.h.tmp
+# 	cp $< $@
+# endif

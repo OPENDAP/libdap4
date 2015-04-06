@@ -104,17 +104,24 @@ dnl we require. jhrg 6/15/05
 AC_CHECK_PROG(YACC,[bison],[bison])
 
 dnl We have found bison; get its version
-dnl the following should work (it does in the shell) but fails in configure.ac
-dnl bison_version="`bison --version | sed -n 's@bison.* \([0-9.]*\)$@\1@p'`"
 bison_version=`bison --version | sed -n '/^bison.*/p' | sed 's@.* \(.*\)@\1@'`
 
 AC_MSG_CHECKING([for bison 3.0])
 
-AS_VERSION_COMPARE(["$bison_version"], ["3.0"], 
-	[AM_CONDITIONAL([BISON3], [false])],
-	[AM_CONDITIONAL([BISON3], [true])],
-	[AM_CONDITIONAL([BISON3], [true])])
+# This was used to set a conditional in the d4_ce/Makefile.am to build
+# the DAP4 parsers using bison 3 or get pre-built sources from a set
+# of template files. That didn't work on some linux machines, so bison
+# 3 is a requirement for building until that gets sorted out. jhrg 4/5/15
+dnl AS_VERSION_COMPARE(["$bison_version"], ["3.0"], 
+dnl 	[AM_CONDITIONAL([BISON3], [false])],
+dnl 	[AM_CONDITIONAL([BISON3], [true])],
+dnl 	[AM_CONDITIONAL([BISON3], [true])])
         
+AS_VERSION_COMPARE(["$bison_version"], ["3.0"], 
+	[AC_MSG_ERROR([not found])],
+	[ ],
+	[ ])
+
 AC_MSG_RESULT([found vesion $bison_version])
 
 dnl Checks for header files.
