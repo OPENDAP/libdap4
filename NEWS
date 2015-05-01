@@ -1,5 +1,9 @@
 News for version 3.14.0
 
+This version of libdap contains the current DAP4 implementation for 
+C++. The implementation is nearly complete, lacking only the CE filters
+for Sequences.
+
 News for version 3.13.3
 
 Memory leak fix in RValue.cc - affects server function evaluation only.

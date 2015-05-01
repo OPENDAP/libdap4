@@ -130,7 +130,9 @@ private:
 
 public:
     static RCReader* instance();
-
+#if 0
+    static RCReader* instance(const string &rc_file_path);
+#endif
     // GET METHODS
     string get_dods_cache_root() const throw()
     {

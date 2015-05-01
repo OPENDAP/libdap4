@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -118,10 +117,9 @@ bool is_host_big_endian()
  a DAP String. */
 string extract_string_argument(BaseType *arg)
 {
-	assert(arg);
+    assert(arg);
 
-    if (arg->type() != dods_str_c)
-        throw Error(malformed_expr, "The function requires a string argument.");
+    if (arg->type() != dods_str_c) throw Error(malformed_expr, "The function requires a string argument.");
 
     if (!arg->read_p())
         throw InternalErr(__FILE__, __LINE__,
@@ -132,15 +130,15 @@ string extract_string_argument(BaseType *arg)
 
 template<class T> static void set_array_using_double_helper(Array *a, double *src, int src_len)
 {
-	assert(a);
-	assert(src);
-	assert(src_len > 0);
+    assert(a);
+    assert(src);
+    assert(src_len > 0);
 
-	vector<T> values(src_len);
+    vector<T> values(src_len);
     for (int i = 0; i < src_len; ++i)
         values[i] = (T) src[i];
 
-    // This copie the values
+    // This copies the values
     a->set_value(values, src_len);
 }
 
@@ -166,16 +164,14 @@ template<class T> static void set_array_using_double_helper(Array *a, double *sr
  is \e dest. */
 void set_array_using_double(Array *dest, double *src, int src_len)
 {
-	assert(dest);
-	assert(src);
-	assert(src_len > 0);
+    assert(dest);
+    assert(src);
+    assert(src_len > 0);
 
     // Simple types are Byte, ..., Float64, String and Url.
-    if ((dest->type() == dods_array_c && !dest->var()->is_simple_type())
-    || dest->var()->type() == dods_str_c
-    || dest->var()->type() == dods_url_c)
-        throw InternalErr(__FILE__, __LINE__,
-                "The function requires a numeric-type array argument.");
+    if ((dest->type() == dods_array_c && !dest->var()->is_simple_type()) || dest->var()->type() == dods_str_c
+            || dest->var()->type() == dods_url_c)
+        throw InternalErr(__FILE__, __LINE__, "The function requires a numeric-type array argument.");
 
     // Test sizes. Note that Array::length() takes any constraint into account
     // when it returns the length. Even if this was removed, the 'helper'
@@ -183,9 +179,8 @@ void set_array_using_double(Array *dest, double *src, int src_len)
     // which in turn uses length().
     if (dest->length() != src_len)
         throw InternalErr(__FILE__, __LINE__,
-                "The source and destination array sizes don't match ("
-                + long_to_string(src_len) + " versus "
-                + long_to_string(dest->length()) + ").");
+                "The source and destination array sizes don't match (" + long_to_string(src_len) + " versus "
+                        + long_to_string(dest->length()) + ").");
 
     // The types of arguments that the CE Parser will build for numeric
     // constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
@@ -267,15 +262,12 @@ double *extract_double_array(Array * a)
     assert(a);
 
     // Simple types are Byte, ..., Float64, String and Url.
-    if ((a->type() == dods_array_c && !a->var()->is_simple_type())
-    || a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
-        throw Error(malformed_expr,
-                "The function requires a DAP numeric-type array argument.");
+    if ((a->type() == dods_array_c && !a->var()->is_simple_type()) || a->var()->type() == dods_str_c
+            || a->var()->type() == dods_url_c)
+        throw Error(malformed_expr, "The function requires a DAP numeric-type array argument.");
 
     if (!a->read_p())
-        throw InternalErr(__FILE__, __LINE__,
-                string("The Array '") + a->name() +
-                "'does not contain values.");
+        throw InternalErr(__FILE__, __LINE__, string("The Array '") + a->name() + "'does not contain values.");
 
     // The types of arguments that the CE Parser will build for numeric
     // constants are limited to Uint32, Int32 and Float64. See ce_expr.y.
@@ -301,7 +293,7 @@ double *extract_double_array(Array * a)
         // alone. jhrg 2/24/15
         return extract_double_array_helper<dods_float64>(a);
 
-    // Support for DAP4
+        // Support for DAP4
     case dods_uint8_c:
         return extract_double_array_helper<dods_byte>(a);
     case dods_int8_c:
@@ -322,7 +314,7 @@ double *extract_double_array(Array * a)
 template<class T> static void extract_double_array_helper(Array * a, vector<double> &dest)
 {
     assert(a);
-    assert(dest.size() == (unsigned long)a->length());
+    assert(dest.size() == (unsigned long )a->length());
 
     int length = a->length();
 
@@ -349,15 +341,12 @@ void extract_double_array(Array *a, vector<double> &dest)
     assert(a);
 
     // Simple types are Byte, ..., Float64, String and Url.
-    if ((a->type() == dods_array_c && !a->var()->is_simple_type())
-    || a->var()->type() == dods_str_c || a->var()->type() == dods_url_c)
-        throw Error(malformed_expr,
-                "The function requires a DAP numeric-type array argument.");
+    if ((a->type() == dods_array_c && !a->var()->is_simple_type()) || a->var()->type() == dods_str_c
+            || a->var()->type() == dods_url_c)
+        throw Error(malformed_expr, "The function requires a DAP numeric-type array argument.");
 
     if (!a->read_p())
-        throw InternalErr(__FILE__, __LINE__,
-                string("The Array '") + a->name() +
-                "'does not contain values.");
+        throw InternalErr(__FILE__, __LINE__, string("The Array '") + a->name() + "'does not contain values.");
 
     dest.resize(a->length());
 
@@ -382,7 +371,7 @@ void extract_double_array(Array *a, vector<double> &dest)
         return a->value(&dest[0]);      // no need to copy the values
         // return extract_double_array_helper<dods_float64>(a, dest);
 
-    // Support for DAP4
+        // Support for DAP4
     case dods_uint8_c:
         return extract_double_array_helper<dods_byte>(a, dest);
     case dods_int8_c:
@@ -408,12 +397,11 @@ void extract_double_array(Array *a, vector<double> &dest)
  a DAP numeric value. */
 double extract_double_value(BaseType *arg)
 {
-	assert(arg);
+    assert(arg);
 
     // Simple types are Byte, ..., Float64, String and Url.
     if (!arg->is_simple_type() || arg->type() == dods_str_c || arg->type() == dods_url_c)
-        throw Error(malformed_expr,
-                "The function requires a numeric-type argument.");
+        throw Error(malformed_expr, "The function requires a numeric-type argument.");
 
     if (!arg->read_p())
         throw InternalErr(__FILE__, __LINE__,
@@ -425,29 +413,29 @@ double extract_double_value(BaseType *arg)
     // just arguments.
     switch (arg->type()) {
     case dods_byte_c:
-        return (double)(static_cast<Byte*>(arg)->value());
+        return (double) (static_cast<Byte*>(arg)->value());
     case dods_uint16_c:
-        return (double)(static_cast<UInt16*>(arg)->value());
+        return (double) (static_cast<UInt16*>(arg)->value());
     case dods_int16_c:
-        return (double)(static_cast<Int16*>(arg)->value());
+        return (double) (static_cast<Int16*>(arg)->value());
     case dods_uint32_c:
-        return (double)(static_cast<UInt32*>(arg)->value());
+        return (double) (static_cast<UInt32*>(arg)->value());
     case dods_int32_c:
-        return (double)(static_cast<Int32*>(arg)->value());
+        return (double) (static_cast<Int32*>(arg)->value());
     case dods_float32_c:
-        return (double)(static_cast<Float32*>(arg)->value());
+        return (double) (static_cast<Float32*>(arg)->value());
     case dods_float64_c:
         return static_cast<Float64*>(arg)->value();
 
-    // Support for DAP4 types.
+        // Support for DAP4 types.
     case dods_uint8_c:
-    	return (double)(static_cast<Byte*>(arg)->value());
+        return (double) (static_cast<Byte*>(arg)->value());
     case dods_int8_c:
-    	return (double)(static_cast<Int8*>(arg)->value());
+        return (double) (static_cast<Int8*>(arg)->value());
     case dods_uint64_c:
-    	return (double)(static_cast<UInt64*>(arg)->value());
+        return (double) (static_cast<UInt64*>(arg)->value());
     case dods_int64_c:
-    	return (double)(static_cast<Int64*>(arg)->value());
+        return (double) (static_cast<Int64*>(arg)->value());
 
     default:
         throw InternalErr(__FILE__, __LINE__,
@@ -459,13 +447,12 @@ double extract_double_value(BaseType *arg)
 // expression it contains. 4/7/98 jhrg
 
 /** Removed spaces from the front of a URL and also from the front of the CE.
-    This function assumes that there are no holes in both the URL and the CE.
-    It will remove \e leading space, but not other spaces.
+ This function assumes that there are no holes in both the URL and the CE.
+ It will remove \e leading space, but not other spaces.
 
-    @param name The URL to process
-    @return Returns a new string object that contains the pruned URL. */
-string
-prune_spaces(const string &name)
+ @param name The URL to process
+ @return Returns a new string object that contains the pruned URL. */
+string prune_spaces(const string &name)
 {
     // If the URL does not even have white space return.
     if (name.find_first_of(' ') == name.npos)
@@ -487,15 +474,13 @@ prune_spaces(const string &name)
 // Compare elements in a list of (BaseType *)s and return true if there are
 // no duplicate elements, otherwise return false.
 
-bool
-unique_names(vector<BaseType *> l, const string &var_name,
-             const string &type_name, string &msg)
+bool unique_names(vector<BaseType *> l, const string &var_name, const string &type_name, string &msg)
 {
     // copy the identifier names to a vector
     vector<string> names(l.size());
 
     int nelem = 0;
-    typedef std::vector<BaseType *>::const_iterator citer ;
+    typedef std::vector<BaseType *>::const_iterator citer;
     for (citer i = l.begin(); i != l.end(); i++) {
         assert(*i);
         names[nelem++] = (*i)->name();
@@ -510,11 +495,10 @@ unique_names(vector<BaseType *> l, const string &var_name,
 
     // look for any instance of consecutive names that are ==
     for (int j = 1; j < nelem; ++j) {
-        if (names[j-1] == names[j]) {
+        if (names[j - 1] == names[j]) {
             ostringstream oss;
-            oss << "The variable `" << names[j]
-            << "' is used more than once in " << type_name << " `"
-            << var_name << "'";
+            oss << "The variable `" << names[j] << "' is used more than once in " << type_name << " `" << var_name
+                    << "'";
             msg = oss.str();
 
             return false;
@@ -531,9 +515,9 @@ libdap_root()
 }
 
 /** Return the version string for this package.
-    @note This function has C linkage so that it can be found using autoconf
-    tests.
-    @return The version string. */
+ @note This function has C linkage so that it can be found using autoconf
+ tests.
+ @return The version string. */
 extern "C" const char *
 libdap_version()
 {
@@ -551,21 +535,20 @@ libdap_name()
  * removing the trailing newline that time() includes in its response.
  * @return A C++ string with the current system time as formatted by time()
  */
-string
-systime()
+string systime()
 {
     time_t TimBin;
 
-    if (time(&TimBin) == (time_t) - 1)
+    if (time(&TimBin) == (time_t) -1)
         return string("time() error");
     else {
         char *ctime_value = ctime(&TimBin);
         if (ctime_value) {
-        	string TimStr = ctime_value;
-        	return TimStr.substr(0, TimStr.size() - 2); // remove the \n
+            string TimStr = ctime_value;
+            return TimStr.substr(0, TimStr.size() - 2); // remove the \n
         }
         else
-        	return "Unknown";
+            return "Unknown";
     }
 }
 
@@ -573,8 +556,7 @@ systime()
  * Downcase the source string. This function modifies its argument.
  * @param The string to modify
  */
-void
-downcase(string &s)
+void downcase(string &s)
 {
     for (unsigned int i = 0; i < s.length(); i++)
         s[i] = tolower(s[i]);
@@ -585,10 +567,9 @@ downcase(string &s)
  * @param s The source string
  * @reurn True if the string is quoted, false otherwise.
  */
-bool
-is_quoted(const string &s)
+bool is_quoted(const string &s)
 {
-    return (!s.empty() && s[0] == '\"' && s[s.length()-1] == '\"');
+    return (!s.empty() && s[0] == '\"' && s[s.length() - 1] == '\"');
 }
 
 /**
@@ -597,8 +578,7 @@ is_quoted(const string &s)
  * @param s The source string
  * @return A new string without quotes
  */
-string
-remove_quotes(const string &s)
+string remove_quotes(const string &s)
 {
     if (is_quoted(s))
         return s.substr(1, s.length() - 2);
@@ -609,68 +589,48 @@ remove_quotes(const string &s)
 /** Get the Type enumeration value which matches the given name. */
 Type get_type(const char *name)
 {
-    if (strcmp(name, "Byte") == 0)
-        return dods_byte_c;
+    if (strcmp(name, "Byte") == 0) return dods_byte_c;
 
-    if (strcmp(name, "Char") == 0)
-        return dods_char_c;
+    if (strcmp(name, "Char") == 0) return dods_char_c;
 
-    if (strcmp(name, "Int8") == 0)
-        return dods_int8_c;
+    if (strcmp(name, "Int8") == 0) return dods_int8_c;
 
-    if (strcmp(name, "UInt8") == 0)
-        return dods_uint8_c;
+    if (strcmp(name, "UInt8") == 0) return dods_uint8_c;
 
-    if (strcmp(name, "Int16") == 0)
-        return dods_int16_c;
+    if (strcmp(name, "Int16") == 0) return dods_int16_c;
 
-    if (strcmp(name, "UInt16") == 0)
-        return dods_uint16_c;
+    if (strcmp(name, "UInt16") == 0) return dods_uint16_c;
 
-    if (strcmp(name, "Int32") == 0)
-        return dods_int32_c;
+    if (strcmp(name, "Int32") == 0) return dods_int32_c;
 
-    if (strcmp(name, "UInt32") == 0)
-        return dods_uint32_c;
+    if (strcmp(name, "UInt32") == 0) return dods_uint32_c;
 
-    if (strcmp(name, "Int64") == 0)
-        return dods_int64_c;
+    if (strcmp(name, "Int64") == 0) return dods_int64_c;
 
-    if (strcmp(name, "UInt64") == 0)
-        return dods_uint64_c;
+    if (strcmp(name, "UInt64") == 0) return dods_uint64_c;
 
-    if (strcmp(name, "Float32") == 0)
-        return dods_float32_c;
+    if (strcmp(name, "Float32") == 0) return dods_float32_c;
 
-    if (strcmp(name, "Float64") == 0)
-        return dods_float64_c;
+    if (strcmp(name, "Float64") == 0) return dods_float64_c;
 
-    if (strcmp(name, "String") == 0)
-        return dods_str_c;
+    if (strcmp(name, "String") == 0) return dods_str_c;
 
     // accept both spellings; this might be confusing since URL
     // could be filtered through code and come out Url. Don't know...
     // jhrg 8/15/13
-    if (strcmp(name, "Url") == 0 || strcmp(name, "URL") == 0)
-        return dods_url_c;
+    if (strcmp(name, "Url") == 0 || strcmp(name, "URL") == 0) return dods_url_c;
 
-    if (strcmp(name, "Enum") == 0)
-        return dods_enum_c;
+    if (strcmp(name, "Enum") == 0) return dods_enum_c;
 
-    if (strcmp(name, "Opaque") == 0)
-        return dods_opaque_c;
+    if (strcmp(name, "Opaque") == 0) return dods_opaque_c;
 
-   if (strcmp(name, "Array") == 0)
-        return dods_array_c;
+    if (strcmp(name, "Array") == 0) return dods_array_c;
 
-    if (strcmp(name, "Structure") == 0)
-        return dods_structure_c;
+    if (strcmp(name, "Structure") == 0) return dods_structure_c;
 
-    if (strcmp(name, "Sequence") == 0)
-        return dods_sequence_c;
+    if (strcmp(name, "Sequence") == 0) return dods_sequence_c;
 
-    if (strcmp(name, "Grid") == 0)
-        return dods_grid_c;
+    if (strcmp(name, "Grid") == 0) return dods_grid_c;
 
     return dods_null_c;
 }
@@ -682,8 +642,7 @@ Type get_type(const char *name)
  * @param t The type code
  * @return The type name in a string
  */
-string
-D2type_name(Type t)
+string D2type_name(Type t)
 {
     switch (t) {
     case dods_null_c:
@@ -728,8 +687,7 @@ D2type_name(Type t)
  * @param t The type code
  * @return The type name in a string
  */
-string
-D4type_name(Type t)
+string D4type_name(Type t)
 {
     switch (t) {
     case dods_null_c:
@@ -768,7 +726,7 @@ D4type_name(Type t)
         return string("URL");
 
     case dods_opaque_c:
-    	return string("Opaque");
+        return string("Opaque");
 
     case dods_array_c:
         return string("Array");
@@ -795,24 +753,22 @@ D4type_name(Type t)
  * @return A string naming the type, suitable for humans
  * @exception InternalErr If not such type can be found
  */
-string
-type_name(Type t)
+string type_name(Type t)
 {
-	try {
-		return D4type_name(t);
-	}
-	catch (...) {
-		return D2type_name(t);
-	}
+    try {
+        return D4type_name(t);
+    }
+    catch (...) {
+        return D2type_name(t);
+    }
 }
 
 /** @brief Returns true if the instance is a numeric, string or URL
-    type variable.
-    @return True if the instance is a scalar numeric, String or URL variable,
-    False otherwise. Arrays (even of simple types) return False.
-    @see is_vector_type() */
-bool
-is_simple_type(Type t)
+ type variable.
+ @return True if the instance is a scalar numeric, String or URL variable,
+ False otherwise. Arrays (even of simple types) return False.
+ @see is_vector_type() */
+bool is_simple_type(Type t)
 {
     switch (t) {
 
@@ -852,10 +808,9 @@ is_simple_type(Type t)
 }
 
 /** @brief Returns true if the instance is a vector (i.e., array) type
-    variable.
-    @return True if the instance is an Array, False otherwise. */
-bool
-is_vector_type(Type t)
+ variable.
+ @return True if the instance is an Array, False otherwise. */
+bool is_vector_type(Type t)
 {
     switch (t) {
     case dods_null_c:
@@ -898,11 +853,10 @@ is_vector_type(Type t)
 }
 
 /** @brief Returns true if the instance is a constructor (i.e., Structure,
-    Sequence or Grid) type variable.
-    @return True if the instance is a Structure, Sequence or Grid, False
-    otherwise. */
-bool
-is_constructor_type(Type t)
+ Sequence or Grid) type variable.
+ @return True if the instance is a Structure, Sequence or Grid, False
+ otherwise. */
+bool is_constructor_type(Type t)
 {
     switch (t) {
     case dods_null_c:
@@ -948,19 +902,19 @@ is_constructor_type(Type t)
 bool is_integer_type(Type t)
 {
     switch (t) {
-        case dods_byte_c:
-        case dods_char_c:
-        case dods_int8_c:
-        case dods_uint8_c:
-        case dods_int16_c:
-        case dods_uint16_c:
-        case dods_int32_c:
-        case dods_uint32_c:
-        case dods_int64_c:
-        case dods_uint64_c:
-            return true;
-        default:
-            return false;
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int8_c:
+    case dods_uint8_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_int64_c:
+    case dods_uint64_c:
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -970,8 +924,7 @@ bool is_integer_type(Type t)
  * @param dir The pathname to test.
  * @return True if the directory exists, false otherwise
  */
-bool
-dir_exists(const string &dir)
+bool dir_exists(const string &dir)
 {
     struct stat buf;
 
@@ -979,8 +932,7 @@ dir_exists(const string &dir)
 }
 
 // Jose Garcia
-void
-append_long_to_string(long val, int base, string &str_val)
+void append_long_to_string(long val, int base, string &str_val)
 {
     // The array digits contains 36 elements which are the
     // posible valid digits for out bases in the range
@@ -994,22 +946,19 @@ append_long_to_string(long val, int base, string &str_val)
         std::invalid_argument ex("The parameter base has an invalid value.");
         throw ex;
     }
-    if (val < 0)
-        str_val += '-';
+    if (val < 0) str_val += '-';
     r = ldiv(labs(val), base);
 
     // output digits of val/base first
-    if (r.quot > 0)
-        append_long_to_string(r.quot, base, str_val);
+    if (r.quot > 0) append_long_to_string(r.quot, base, str_val);
 
     // output last digit
 
-    str_val += digits[(int)r.rem];
+    str_val += digits[(int) r.rem];
 }
 
 // base defaults to 10
-string
-long_to_string(long val, int base)
+string long_to_string(long val, int base)
 {
     string s;
     append_long_to_string(val, base, s);
@@ -1027,8 +976,7 @@ void append_double_to_string(const double &num, string &str)
     str += oss.str();
 }
 
-string
-double_to_string(const double &num)
+string double_to_string(const double &num)
 {
     string s;
     append_double_to_string(num, s);
@@ -1043,24 +991,21 @@ double_to_string(const double &num)
 
 #ifdef WIN32
 static const char path_sep[] =
-    {"\\"
-    };
+{   "\\"
+};
 #else
-static const char path_sep[] =
-    {"/"
-    };
+static const char path_sep[] = { "/" };
 #endif
 
 /** Get the filename part from a path. This function can be used to return a
-    string that has the directory components stripped from a path. This is
-    useful when building error message strings.
+ string that has the directory components stripped from a path. This is
+ useful when building error message strings.
 
-    If WIN32 is defined, use '\' as the path separator, otherwise use '/' as
-    the path separator.
+ If WIN32 is defined, use '\' as the path separator, otherwise use '/' as
+ the path separator.
 
-    @return A string containing only the filename given a path. */
-string
-path_to_filename(string path)
+ @return A string containing only the filename given a path. */
+string path_to_filename(string path)
 {
     string::size_type pos = path.rfind(path_sep);
 
@@ -1074,13 +1019,13 @@ path_to_filename(string path)
  * globchars() - build a bitlist to check for character group match
  */
 
-static void globchars(const char *s, const char *e, char *b) {
+static void globchars(const char *s, const char *e, char *b)
+{
     int neg = 0;
 
     memset(b, '\0', BITLISTSIZE);
 
-    if (*s == '^')
-        neg++, s++;
+    if (*s == '^') neg++, s++;
 
     while (s < e) {
         int c;
@@ -1123,11 +1068,9 @@ static void globchars(const char *s, const char *e, char *b) {
  * @return 0 on success, -1 if the pattern is exhausted but there are
  * characters remaining in the string and 1 if the pattern does not match
  */
-int
-glob(const char *c, const char *s)
+int glob(const char *c, const char *s)
 {
-    if (!c || !s)
-        return 1;
+    if (!c || !s) return 1;
 
     char bitlist[BITLISTSIZE];
     int i = 0;
@@ -1138,8 +1081,7 @@ glob(const char *c, const char *s)
             return *s ? -1 : 0;
 
         case '?':
-            if (!*s++)
-                return i/*1*/;
+            if (!*s++) return i/*1*/;
             break;
 
         case '[': {
@@ -1147,8 +1089,7 @@ glob(const char *c, const char *s)
 
             const char *here = c;
             do {
-                if (!*c++)
-                    return i/*1*/;
+                if (!*c++) return i/*1*/;
             } while (here == c || *c != ']');
             c++;
 
@@ -1156,8 +1097,7 @@ glob(const char *c, const char *s)
 
             globchars(here, c, bitlist);
 
-            if (!CHECK_BIT( bitlist, *(unsigned char *)s ))
-                return i/*1*/;
+            if (!CHECK_BIT(bitlist, *(unsigned char * )s)) return i/*1*/;
             s++;
             break;
         }
@@ -1180,8 +1120,7 @@ glob(const char *c, const char *s)
 
                 if (!r)
                     return 0;
-                else if (r < 0)
-                    return i/*1*/;
+                else if (r < 0) return i/*1*/;
 
                 --s;
             }
@@ -1191,13 +1130,11 @@ glob(const char *c, const char *s)
         case '\\':
             /* Force literal match of next char. */
 
-            if (!*c || *s++ != *c++)
-                return i/*1*/;
+            if (!*c || *s++ != *c++) return i/*1*/;
             break;
 
         default:
-            if (*s++ != c[-1])
-                return i/*1*/;
+            if (*s++ != c[-1]) return i/*1*/;
             break;
         }
     }
@@ -1207,50 +1144,44 @@ glob(const char *c, const char *s)
 
 /** @name Security functions */
 //@{
-
 /** @brief sanitize the size of an array.
-    Test for integer overflow when dynamically allocating an array.
-    @param nelem Number of elements.
-    @param sz size of each element.
-    @return True if the \c nelem elements of \c sz size will overflow an array. */
-bool
-size_ok(unsigned int sz, unsigned int nelem)
+ Test for integer overflow when dynamically allocating an array.
+ @param nelem Number of elements.
+ @param sz size of each element.
+ @return True if the \c nelem elements of \c sz size will overflow an array. */
+bool size_ok(unsigned int sz, unsigned int nelem)
 {
     return (sz > 0 && nelem < UINT_MAX / sz);
 }
 
 /** @brief Does the string name a potentially valid pathname?
-    Test the given pathname to verify that it is a valid name. We define this
-    as: Contains only printable characters; and Is less then 256 characters.
-    If \e strict is true, test that the pathname consists of only letters,
-    digits, and underscore, dash and dot characters instead of the more general
-    case where a pathname can be composed of any printable characters.
+ Test the given pathname to verify that it is a valid name. We define this
+ as: Contains only printable characters; and Is less then 256 characters.
+ If \e strict is true, test that the pathname consists of only letters,
+ digits, and underscore, dash and dot characters instead of the more general
+ case where a pathname can be composed of any printable characters.
 
-    @note Using this function does not guarantee that the path is valid, only
-    that the path \e could be valid. The intent is foil attacks where an
-    exploit is encoded in a string then passed to a library function. This code
-    does not address whether the pathname references a valid resource.
+ @note Using this function does not guarantee that the path is valid, only
+ that the path \e could be valid. The intent is foil attacks where an
+ exploit is encoded in a string then passed to a library function. This code
+ does not address whether the pathname references a valid resource.
 
-    @param path The pathname to test
-    @param strict Apply more restrictive tests (true by default)
-    @return true if the pathname consists of legal characters and is of legal
-    size, false otherwise. */
-bool
-pathname_ok(const string &path, bool strict)
+ @param path The pathname to test
+ @param strict Apply more restrictive tests (true by default)
+ @return true if the pathname consists of legal characters and is of legal
+ size, false otherwise. */
+bool pathname_ok(const string &path, bool strict)
 {
-    if (path.length() > 255)
-        return false;
+    if (path.length() > 255) return false;
 
     Regex name("[-0-9A-z_./]+");
-    if (!strict)
-        name = "[:print:]+";
+    if (!strict) name = "[:print:]+";
 
     string::size_type len = path.length();
     int result = name.match(path.c_str(), len);
     // Protect against casting too big an uint to int
     // if LEN is bigger than the max int32, the second test can't work
-    if (len > INT_MAX || result != static_cast<int>(len))
-        return false;
+    if (len > INT_MAX || result != static_cast<int>(len)) return false;
 
     return true;
 }
@@ -1261,10 +1192,9 @@ pathname_ok(const string &path, bool strict)
  * Get the version of the DAP library.
  * @deprecated
  */
-string
-dap_version()
+string dap_version()
 {
-    return (string)"OPeNDAP DAP/" + libdap_version() + ": compiled on " + __DATE__ + ":" + __TIME__ ;
+    return (string) "OPeNDAP DAP/" + libdap_version() + ": compiled on " + __DATE__ + ":" + __TIME__;
 }
 
 } // namespace libdap

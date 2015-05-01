@@ -326,9 +326,9 @@ public:
         RCReader::delete_instance();
         RCReader::initialize_instance();
         RCReader *reader = RCReader::instance();
+        reader->read_rc_file(string(TEST_SRC_DIR) + "/rcreader-testsuite/dodssrc_ssl_1");
         // No param set in file
-        DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl()
-                << endl);
+        DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl() << endl);
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 1);
 
         // Param set in file

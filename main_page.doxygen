@@ -11,8 +11,7 @@
 This reference documentation corresponds to version 3.14.0 of libdap, a C++
 implementation of DAP2, with some extensions. The libdap library
 includes classes and functions which implement DAP 2.0 as well as utilities
-which simpify building clients and servers for DAP 2.0. The library also
-contains a few new features which will eventually become part of DAP 4.0. 
+which simpify building clients and servers for DAP 2.0 and DAP4.0. 
 
 \section conventions Doxygen Conventions
 

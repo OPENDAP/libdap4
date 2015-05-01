@@ -1,3 +1,326 @@
+2015-04-05  James Gallagher  <jgallagher@opendap.org>
+
+	Bison 3 is required for the build.
+	This might change, but for the next release (April 2015) it is a
+	requirement for building the code. It will be possible to get the
+	devel rpm and, however, and develop code that uses libdap w/o
+	needing bison 3.
+
+2015-04-03  James Gallagher  <jgallagher@opendap.org>
+
+	Bumped up the library versions
+	Each of libdap, libdapclient and libdapsever likely have new interfaces
+	but the old interfaces are intact, so CURRENT and AGE are increased,
+	and REVISION is reset to 0.
+
+	Various changes as needed for the release.
+
+2015-03-31  James Gallagher  <jgallagher@opendap.org>
+
+	Added to gitignore
+
+	Hacked more for the FlexLexer.h kludge...
+
+	Resurrected the D4*Scanner.h files
+
+	Modified the FlexLexer.h scheme
+	Now it fits more with the way I'm handling the other generated
+	files. The header is in the generated files dir and is only
+	copied out when bison 3 is not found. It's still a kludge...
+
+	Added FlexLexer.h
+	This might be a mistake - remove if this fails on linux, etc.
+
+2015-03-30  James Gallagher  <jgallagher@opendap.org>
+
+	Rest of changes for template grammar files
+	Now if bison 3.0+ is not found, the build will use
+	template versions of the generated grammar files. This
+	removes the dependence on bison 3.0 for most source
+	builds. Of course, if you want to modify the D4 grammar
+	you need bison 3.
+
+	Added generated grammar sources
+	When a machine does not have bison 3, it's a pain to install it, esp.
+	at a site that doesn't let the builder do that! The work-around is to
+	provide a backup set of sources that can be copied by the Makefile in
+	lieu of the real thing.
+
+2015-03-25  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Dropped the autoconf required version to 2.63
+	This accommodates RH/CentOS 6. I also had to change the AT_ARG_OPTION_ARG
+	calls so that multi-word options used underscores and not dashes.
+
+	Change to libdap.spec
+	I've added the dist info to the RPM and fixed up some of the
+	description, too.
+
+2015-03-17  James Gallagher  <jgallagher@opendap.org>
+
+	Edited comments and reformatted.
+	Also added a new method to Sequence that I subsequently removed
+	from the code using the preprocessor. ...it might come in handy
+	some day.
+
+	Refactored TestCommon
+	Now TestCommon.cc is not used; the constructors, etc. are now
+	in TestCommon.h. In the future this class could be modified so
+	that the 'series_values' property was accessible from TestCommon
+	and not just the individual type classes.
+
+	Change a comment emmited by configure less convoluted.
+
+2015-03-16  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Changes to build and to the Test* classes.
+	Now configure tests for the uuid/uuid.h header (before it tested only
+	for the library which meant that installing the libuuid package and
+	not the needed libuuid-devel package would pass configure but fail
+	during the build). I also removed some unused code from the Test* classes.
+	The TestCommon.cc file was not needed.
+
+	rpm target fixes
+	Added getdap4 to the files list for RPM and fixed distclean/distcheck
+	where some DMR tests are marked xfail (expected fail). With autotest,
+	xfail leaves some cruft behind in the DMRTest.dir directory that
+	./DMRTest --clean should remove (see the clean-local makefile target).
+	However, because a space was added to the names in the Makefile.am,
+	those --clean calls were not being made. Fixed. Somewhat exasperating...
+
+2015-02-26  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Added convenience function to util
+	The new function extracts doubles from numeric arrays using a vector
+	to cu down on memory management complexity (at the cost of an addition
+	to the interface).
+
+2015-02-21  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed GetOpt.cc includes
+	This code used old includes (string.h, etc.) and was missing
+	stdio. I added <cstdio> and changed stdlib.h and string.h to
+	cstdlib and cstring. Removed a duplicate header. Build now works
+	on AWS Centos 6.
+
+2015-02-19  James Gallagher  <jgallagher@opendap.org>
+
+	More Cleanup
+	I re-indented TestSequence and removed some old code
+	as part of my work on the aggregation server (which
+	may not make it into the BES, another story...)
+
+	Cleanup
+	I removed unused code from Sequence, DDS.cc and AttrTable.cc
+
+2015-02-09  James Gallagher  <jgallagher@opendap.org>
+
+	Tweaked D4Sequence for BES function's tabular()
+	The d_length field is now set when set_values()
+	is called.
+
+2015-02-02  James Gallagher  <jgallagher@opendap.org>
+
+	Removed incorrect comment in Vector.h
+
+2015-01-14  James Gallagher  <jgallagher@opendap.org>
+
+	Added a type_name() function to util.cc/h
+	In the merge with DAP4, type_name() split into D2type_name() and
+	D4type_name(). That removes the symbol 'type_name()' from the library.
+	I added a function with that name that first tries to apply D4... and
+	then D2. If both fail, an exception is thrown. This provides forward
+	looking backward compatibility.
+
+	Fixed an issue with String constant arguments to DAP4 functions.
+	The function parser for DAP4 was including the double quotes that
+	delimit string constants in the value itself. I modified the parser
+	to eliminate those.
+
+2015-01-07  James Gallagher  <jgallagher@opendap.org>
+
+	HTTPCacheTest was failing; fixed.
+	The test assumed that the number of headers for a cached response
+	would equal the headers in a response. This might not be the case.
+	For example, the received response might include a Keep-Alive header.
+
+	Error in D4Maps copy ctor fixed.
+	This addresses an error in the DMRTest.cc unit test for the DMR
+	class. DMR's copy ctor was failing to copy the maps from Arrays
+	in the src object to the dest object because of an error in the
+	D4Maps m_duplicate method.
+
+	Corrected some comment text in DMR.cc
+
+2015-01-05  James Gallagher  <jgallagher@opendap.org>
+
+	Minor changes to the Makefile.am files
+
+2014-12-31  James Gallagher  <jgallagher@opendap.org>
+
+	Merge remote-tracking branch 'origin/dap4'
+	Conflicts:
+		unit-tests/HTTPConnectTest.cc
+
+2014-12-12  James Gallagher  <jgallagher@opendap.org>
+
+	Added eclipse meta files to gitignore.
+
+	Merge branch 'master' of https://github.com/opendap/libdap
+
+	comment change in main_page.doxygen
+
+2014-12-03  James Gallagher  <jgallagher@opendap.org>
+
+	Added files  left over from a full build to gitignore
+
+2014-11-19  James Gallagher  <jgallagher@opendap.org>
+
+	Added .gitignore and hacked up Makefile.am so that it uses subdir-objects.
+
+2014-10-21  James Gallagher  <jgallagher@opendap.org>
+
+	Added a valgrind 'suppressions' file for OSX 10.9. Not sure where
+	this is going, but valgrind for unit tests and regression tests is
+	probably a good thing.
+
+	Fixed to the Makefile.am in d4_ce so that the grammar for DAP4 builds correctly.
+
+2014-10-20  James Gallagher  <jgallagher@opendap.org>
+
+	Changed HTTPConnect.cc on the release branch and then copied here. Minor fix in the test baseline to accommadate a change in the test host (etag changed with a change in the Apache server version).
+	M    unit-tests/HTTPConnectTest.cc
+
+2014-10-16  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed ticket 2260 - The issue where the DMR copy ctor built a DMR that would subsequently cause a segfault has been fixed. The problem was in Array::update_dimension_pointers(). The D4Dimension objects were not copied correctly between the old and new set of D4Dimensions in the Groups in the source and dest DMRs
+
+2014-10-14  James Gallagher  <jgallagher@opendap.org>
+
+	Leak fix in the D4CE code - both the CE and Functions parser leaked memory - fixed. Tests HTTPCacheTest and HTTPConnectTest fixed - there were two issue with the new test.o2 server. Array.h - removed the D4Dimensions.h include.
+
+	Bug fix in ServerFunction: The setFunction setters in ServerFunction were setting other function pointers to null so that the ServerFunction object could hold only one kind of function for any given name. If we want linear_scale, e.g., to work for both DAP2 and DAP4, the class has to be able to support a btp_func and D4Function. I fixed the ctors and setters so that works.
+
+2014-09-17  James Gallagher  <jgallagher@opendap.org>
+
+	Renamed the bison 'Driver' classes to be D4ConstraintEvaluator and D4FunctionEvaluator. Added an eval() method to the latter so that the BES can evaluation DAP4 Functions in a some sort of a sane way. I also moved the old and crufty D4ResponseBuilder code out of the libdap dir; there's a class with the same name in tests, but it does different (and more sane) things.
+
+	Comments and changed template type from 't' to 'T'.
+
+	Comments...
+
+2014-09-12  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed FQN() for Constructors that hold arrays.
+
+2014-09-11  James Gallagher  <jgallagher@opendap.org>
+
+	I removed the DMR& parameter to BaseType::intern_data(). This seems to be a relic from DAP2 (where it may not have actually been used either) and it makes employing delegation somewhat harder in the 'transmitter' handlers I'm working on porting over to DAP4.
+
+	Modified to use the new 'DMR-free' version of intern_data(). Also fixed the help message.
+
+	Added a DMR that holds a nested sequence so this can be tested - currently does not work and is not part of the tests.
+
+2014-09-08  James Gallagher  <jgallagher@opendap.org>
+
+	Marked four tests a xfail. See ticket #2244
+	M    tests/DMRTest.at
+
+	I added specializations for transform_to_dap4() to TestStructure and TestSequence so that, among other things, the dapreader code can build DAP4 data responses using DAP2 response files.
+
+2014-09-05  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed hiccup in Makefile.am that prevented the D4Connect.h header from being installed - it was not listed in pkginclude_HEADERS. Added subdir-objects to the options list in the Makefile.am too. Fixed an error message in getdap4 - text change only.
+
+2014-09-04  James Gallagher  <jgallagher@opendap.org>
+
+	Added a FQN() method that will return the FQN for any variable, including the group part. Also added a decent comment on the D4Group::find_var() method. Unit tests added to the D4GroupTest unit test.
+
+2014-09-03  James Gallagher  <jgallagher@opendap.org>
+
+	Removed duplicate code in Sequence and Structure for the transform_to_dap4() method; moved the common code to Constructor.
+
+2014-08-27  James Gallagher  <jgallagher@opendap.org>
+
+	Added an update of the weak pointers held by Array so that the DMR::m_duplicate() method can use D4Group::ptr_duplicate(). This was useful when porting the gdal_handler code to DAP4.
+
+2014-08-21  James Gallagher  <jgallagher@opendap.org>
+
+	Change to Constructor::serialize(). It now calls read(). This was removed because it broke the behavior of D4Sequence - at least in the test code (it still does). More work needs to be done on this, but the FreeForm handler, which builds sequences is working with D4Sequence (DMR/DAP4 Data via the DDS --> DMR hack). I will need to revisit this...
+
+2014-08-19  James Gallagher  <jgallagher@opendap.org>
+
+	Now has a separate method to 'blend in' variables from a DDS into the DMR. This is used by the DDS-ctor for DMR but it can also be called on an existing DMR like the ones built by the BES. This was done so that information set when the BES builds the DMR won't be lost.
+
+	Changes to the transform_to_dap4() method - both Sequence and Structure have implementations that work for tests and clients, but not most servers. Array should be pretty general and may work for most handlers.
+
+2014-08-18  James Gallagher  <jgallagher@opendap.org>
+
+	Removed unused code - part of an aborted attempt to add a factory class as a param to BaseType::transform_to_dap4(...). Instead, it's likely better to subclass that method in the types like FFSequence (in the handlers). In the process I found a fair amount of old code that was commented out and removed it.
+
+2014-08-15  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed an issue in Array where D4Dimensions made using the 'transform dap2 to dap4 code' with the same name but different sizes could be made. This was bad; I changed the code so that when a name conflict is found, the D4Dimension  will have a different name (made using the orig dimension name and the variable name). In this case, the fist D4Dimension gets to use the name exactly as it appears in the Array while the second D4Dimension gets a more cumbersome, but unique, name.
+
+	Fixed the order of printing of attributes and variables for constructor types when working with DAP2 responses (i.e., the DDX). The order (attr; vars) is reversed in DAP4.
+
+2014-08-14  James Gallagher  <jgallagher@opendap.org>
+
+	Patch for getopt applied
+	_M   .
+	M    unit-tests/DDSTest.cc
+	M    unit-tests/DDXParserTest.cc
+	MM   unit-tests/SequenceTest.cc
+	M    unit-tests/ServerFunctionsListUnitTest.cc
+
+	Patch from Orion Poplawski to fix some of the getopt calls in the unit-tests
+	M    unit-tests/DDSTest.cc
+	M    unit-tests/DDXParserTest.cc
+	M    unit-tests/SequenceTest.cc
+	M    unit-tests/ServerFunctionsListUnitTest.cc
+
+2014-08-11  James Gallagher  <jgallagher@opendap.org>
+
+	Changes from H 1.9.9 on the trunk
+
+2014-08-09  James Gallagher  <jgallagher@opendap.org>
+
+	Merge from the trunk to include changes for Hyrax 1.9.9
+	_M   .
+	M    RValue.cc
+	M    XMLWriter.h
+	M    configure.ac
+	M    ChangeLog
+	M    main_page.doxygen
+	M    INSTALL
+	M    libdap.spec
+	M    README
+	M    Makefile.am
+	M    NEWS
+	M    ce_expr.yy
+	M    unit-tests/HTTPConnectTest.cc
+	M    doxy.conf
+
+2014-08-08  James Gallagher  <jgallagher@opendap.org>
+
+	Version 3.13.3
+	M    ChangeLog
+	M    INSTALL
+	M    NEWS
+	M    README
+	M    configure.ac
+	M    doxy.conf
+	M    libdap.spec
+	M    main_page.doxygen
+
+	Fixed a leak in RValue.cc using a patch from Aron (ADB)
+
 2014-08-08  James Gallagher <jgallagher@opendap.org>
 
 	Fixed a leak in RValue.cc using a patch from Aron (ADB)

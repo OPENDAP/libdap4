@@ -73,7 +73,7 @@ private:
     DDS *dds_dap4;
 
 public:
-    DDSTest() {
+    DDSTest() : dds1(0), dds2(0), dds_dap4(0) {
     }
     ~DDSTest() {
     }

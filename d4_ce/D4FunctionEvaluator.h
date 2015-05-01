@@ -1,10 +1,9 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Copyright (c) 2014 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -46,69 +45,126 @@ class D4RValueList;
 /**
  * Driver for the DAP4 Functional expression parser.
  */
-class D4FunctionEvaluator {
-	bool d_trace_scanning;
-	bool d_trace_parsing;
-	std::string d_expr;
+class D4FunctionEvaluator
+{
+    bool d_trace_scanning;
+    bool d_trace_parsing;
+    std::string d_expr;
 
-	DMR *d_dmr;
-	ServerFunctionsList *d_sf_list;
+    DMR *d_dmr;
+    ServerFunctionsList *d_sf_list;
 
-	D4RValueList *d_result;
+    D4RValueList *d_result;
 
-	std::stack<BaseType*> d_basetype_stack;
+    std::stack<BaseType*> d_basetype_stack;
 
-	unsigned long long d_arg_length_hint;
+    unsigned long long d_arg_length_hint;
 
-	// d_expr should be set by parse! Its value is used by the parser right before
-	// the actual parsing operation starts. jhrg 11/26/13
-	std::string *expression() { return &d_expr; }
+    // d_expr should be set by parse! Its value is used by the parser right before
+    // the actual parsing operation starts. jhrg 11/26/13
+    std::string *expression()
+    {
+        return &d_expr;
+    }
 
-	void push_basetype(BaseType *btp) { d_basetype_stack.push(btp); }
-	BaseType *top_basetype() const { return d_basetype_stack.empty() ? 0 : d_basetype_stack.top(); }
-	void pop_basetype() { d_basetype_stack.pop(); }
+    void push_basetype(BaseType *btp)
+    {
+        d_basetype_stack.push(btp);
+    }
+    BaseType *top_basetype() const
+    {
+        return d_basetype_stack.empty() ? 0 : d_basetype_stack.top();
+    }
+    void pop_basetype()
+    {
+        d_basetype_stack.pop();
+    }
 
-	D4RValue *build_rvalue(const std::string &id);
+    D4RValue *build_rvalue(const std::string &id);
 
-	friend class D4FunctionParser;
+    friend class D4FunctionParser;
 
 public:
-	D4FunctionEvaluator() : d_trace_scanning(false), d_trace_parsing(false), d_expr(""), d_dmr(0), d_sf_list(0),
-			d_result(0), d_arg_length_hint(0) { }
-	D4FunctionEvaluator(DMR *dmr, ServerFunctionsList *sf_list) : d_trace_scanning(false), d_trace_parsing(false),
-			d_expr(""), d_dmr(dmr), d_sf_list(sf_list), d_result(0), d_arg_length_hint(0) { }
+    D4FunctionEvaluator() :
+            d_trace_scanning(false), d_trace_parsing(false), d_expr(""), d_dmr(0), d_sf_list(0), d_result(0), d_arg_length_hint(
+                    0)
+    {
+    }
+    D4FunctionEvaluator(DMR *dmr, ServerFunctionsList *sf_list) :
+            d_trace_scanning(false), d_trace_parsing(false), d_expr(""), d_dmr(dmr), d_sf_list(sf_list), d_result(0), d_arg_length_hint(
+                    0)
+    {
+    }
 
-	virtual ~D4FunctionEvaluator() { }
+    virtual ~D4FunctionEvaluator()
+    {
+    }
 
-	bool parse(const std::string &expr);
+    bool parse(const std::string &expr);
 
-	bool trace_scanning() const { return d_trace_scanning; }
-	void set_trace_scanning(bool ts) { d_trace_scanning = ts; }
+    bool trace_scanning() const
+    {
+        return d_trace_scanning;
+    }
+    void set_trace_scanning(bool ts)
+    {
+        d_trace_scanning = ts;
+    }
 
-	bool trace_parsing() const { return d_trace_parsing; }
-	void set_trace_parsing(bool tp) { d_trace_parsing = tp; }
+    bool trace_parsing() const
+    {
+        return d_trace_parsing;
+    }
+    void set_trace_parsing(bool tp)
+    {
+        d_trace_parsing = tp;
+    }
 
-	/** Get the result of parsing the function(s)
-	 *
-	 * @return The result(s) packages in a D4RValueList
-	 */
-	D4RValueList *result() const { return d_result; }
-	void set_result(D4RValueList *rv_list) { d_result = rv_list; }
+    /** Get the result of parsing the function(s)
+     *
+     * @return The result(s) packages in a D4RValueList
+     */
+    D4RValueList *result() const
+    {
+        return d_result;
+    }
+    void set_result(D4RValueList *rv_list)
+    {
+        d_result = rv_list;
+    }
 
-	void eval(DMR *dmr);
+    void eval(DMR *dmr);
 
-	unsigned long long get_arg_length_hint() const { return d_arg_length_hint; }
-	void set_arg_length_hint(unsigned long long alh) { d_arg_length_hint = alh; }
+    unsigned long long get_arg_length_hint() const
+    {
+        return d_arg_length_hint;
+    }
+    void set_arg_length_hint(unsigned long long alh)
+    {
+        d_arg_length_hint = alh;
+    }
 
-	DMR *dmr() const { return d_dmr; }
-	void set_dmr(DMR *dmr) { d_dmr = dmr; }
+    DMR *dmr() const
+    {
+        return d_dmr;
+    }
+    void set_dmr(DMR *dmr)
+    {
+        d_dmr = dmr;
+    }
 
-	ServerFunctionsList *sf_list() const { return d_sf_list; }
-	void set_sf_list(ServerFunctionsList *sf_list) { d_sf_list = sf_list; }
+    ServerFunctionsList *sf_list() const
+    {
+        return d_sf_list;
+    }
+    void set_sf_list(ServerFunctionsList *sf_list)
+    {
+        d_sf_list = sf_list;
+    }
 
-	template <typename t> std::vector<t> *init_arg_list(t val);
+    template<typename t> std::vector<t> *init_arg_list(t val);
 
-	void error(const libdap::location &l, const std::string &m);
+    void error(const libdap::location &l, const std::string &m);
 };
 
 } /* namespace libdap */
