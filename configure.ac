@@ -83,12 +83,9 @@ dnl Call this gnulib macro right after a working C Compiler is found
 gl_EARLY
 
 dnl echo "CC = $CC"
-if test "$CC" = "gcc"
-then
-    AM_CONDITIONAL([COMPILER_IS_GCC],[true])
-else
-    AM_CONDITIONAL([COMPILER_IS_GCC],[false])
-fi
+AS_IF([test x$CC = xgcc],
+      [AM_CONDITIONAL([COMPILER_IS_GCC],[true])],
+      [AM_CONDITIONAL([COMPILER_IS_GCC],[false])])
 
 dnl AC_PROG_YACC
 dnl AC_PROG_LEX
@@ -321,11 +318,11 @@ AC_ARG_ENABLE([developer],
     [build_developer=${enableval}],
     [build_developer=no])
 
-AS_IF([test x$build_developer = xno],
+AS_IF([test x$build_developer = xyes],
       [AC_MSG_NOTICE([Building developer version])
-       AM_CONDITIONAL([BUILD_DEVELOPER], true)],
+       AM_CONDITIONAL([BUILD_DEVELOPER], [true])],
       [AC_MSG_NOTICE([Not building developer version])
-       AM_CONDITIONAL([BUILD_DEVELOPER], false)
+       AM_CONDITIONAL([BUILD_DEVELOPER], [false])
        AC_DEFINE([NDEBUG], [1], [Define this to suppres assert() calls.])])
 
 DODS_GCOV_VALGRIND
