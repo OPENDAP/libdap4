@@ -17,6 +17,9 @@ lex.*.cc
 *.log
 *.trs
 *.docs
+*.gcov
+*.gcno
+*.gcda
 
 .dirstamp
 .cproject
@@ -151,3 +154,4 @@ unit-tests/chunked_iostream_test
 
 unit-tests/chunked-io/
 /Default/
+/docs/
