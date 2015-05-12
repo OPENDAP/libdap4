@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
     bool code_test = false;
     bool deref_alias = false;
     bool as_xml = false;
-    while ((option_char = getopt ()) != EOF)
+    while ((option_char = getopt ()) != -1)
 	switch (option_char)
 	  {
 	    case 'p':

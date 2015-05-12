@@ -222,8 +222,8 @@ int main(int argc, char*argv[]) {
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     GetOpt getopt(argc, argv, "d");
-    char option_char;
-    while ((option_char = getopt()) != EOF)
+    int option_char;
+    while ((option_char = getopt()) != -1)
         switch (option_char) {
         case 'd':
             debug = 1;  // debug is a static global

@@ -262,7 +262,7 @@ DODSFilter::process_options(int argc, char *argv[])
     int option_char;
     GetOpt getopt (argc, argv, "ce: v: d: f: r: l: o: u: t: ");
 
-    while ((option_char = getopt()) != EOF) {
+    while ((option_char = getopt()) != -1) {
         switch (option_char) {
         case 'c': d_comp = true; break;
         case 'e': set_ce(getopt.optarg); break;

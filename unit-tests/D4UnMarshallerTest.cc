@@ -330,9 +330,9 @@ int main(int argc, char*argv[]) {
     runner.setOutputter(CppUnit::CompilerOutputter::defaultOutputter(&runner.result(), std::cerr));
 
     GetOpt getopt(argc, argv, "d");
-    char option_char;
+    int option_char;
 
-    while ((option_char = getopt()) != EOF)
+    while ((option_char = getopt()) != -1)
         switch (option_char) {
         case 'd':
             debug = true;  // debug is a static global
