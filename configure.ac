@@ -297,18 +297,16 @@ AM_PATH_CPPUNIT(1.12.0,
 DODS_DEBUG_OPTION
 
 dnl See util.cc:dods_root()
-if test "$prefix" = "NONE"
-then
-AC_DEFINE([LIBDAP_ROOT], ["/usr/local"], [Set to the prefix directory])
-else
-AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])
-fi
+AS_IF([test "$prefix" = "NONE"],
+      [AC_DEFINE([LIBDAP_ROOT], ["/usr/local"], [Set to the prefix directory])],
+	  [AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])])
 
+dnl By default, DAP4 is enabled. Use this to disable. jhrg 5/12/15
 AC_ARG_ENABLE([dap4], 
-    AC_HELP_STRING([--enable-dap4], [Enable DAP4 types and responses (default is Yes)]),
-    [], [enable_dap4="yes"])
+    [AC_HELP_STRING([--enable-dap4], [Enable DAP4 types and responses (default is Yes)])],
+    [enable_dap4=${enableval}], [enable_dap4=yes])
 
-AS_IF([test "x$enable_dap4" = "xyes"], [
+AS_IF([test x$enable_dap4 = xyes], [
     dnl Do the stuff needed for enabling the feature
     dnl echo "Defining DAP4! "
     AC_DEFINE([DAP4], 1, [Should DAP4 support be enabled?])
@@ -318,22 +316,17 @@ AS_IF([test "x$enable_dap4" = "xyes"], [
 ])
 
 AC_ARG_ENABLE([developer],
-[AS_HELP_STRING([--enable-developer],
-[Build a debug (-g3 -O0) version of this code and include assert() calls in the code (default is no)])],
-[case "${enableval}" in
-       yes) build_developer=true ;;
-       no)  build_developer=false ;;
-       *) AC_MSG_ERROR([bad value ${enableval} for --enable-developer]) ;;
-     esac],
-[build_developer=false])
+	[AS_HELP_STRING([--enable-developer],
+				    [Build a debug (-g3 -O0) version of this code and include assert() calls in the code (default is no)])],
+    [build_developer=${enableval}],
+    [build_developer=no])
 
-if test "x$build_developer" = "xtrue"; then
-   AC_MSG_NOTICE(["Building developer version"])
-else
-   AC_MSG_NOTICE(["Not building developer version"])
-   AC_DEFINE([NDEBUG], [1], [Define this to suppres assert() calls.])
-fi
-AM_CONDITIONAL([BUILD_DEVELOPER], [test "x$build_developer" = "xtrue"])
+AS_IF([test x$build_developer = xno],
+      [AC_MSG_NOTICE([Building developer version])
+       AM_CONDITIONAL([BUILD_DEVELOPER], true)],
+      [AC_MSG_NOTICE([Not building developer version])
+       AM_CONDITIONAL([BUILD_DEVELOPER], false)
+       AC_DEFINE([NDEBUG], [1], [Define this to suppres assert() calls.])])
 
 DODS_GCOV_VALGRIND
 

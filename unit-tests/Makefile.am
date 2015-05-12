@@ -10,7 +10,7 @@ AUTOMAKE_OPTIONS = foreign
 AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests $(CURL_CFLAGS) $(XML2_CFLAGS)
 AM_LDADD =
 AM_CXXFLAGS = 
-CXXFLAGS = 
+# CXXFLAGS =
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
@@ -47,7 +47,8 @@ DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
 	rcreader-testsuite server-testsuite cgi-util-tests D4-xml \
 	chunked-io D4-marshaller
 
-EXTRA_DIST = $(DIRS_EXTRA) testFile.cc testFile.h test_config.h.in
+EXTRA_DIST = $(DIRS_EXTRA) testFile.cc testFile.h test_config.h.in \
+	valgrind_suppressions.txt
 
 CLEANFILES = testout .dodsrc  *.gcda *.gcno D4-xml.tar.gz
 
