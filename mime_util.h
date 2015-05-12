@@ -47,6 +47,8 @@
 #include "EncodingType.h"
 #endif
 
+#include <string>
+
 namespace libdap
 {
 

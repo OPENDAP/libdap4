@@ -26,6 +26,8 @@
 #ifndef MEDIA_TYPES_H_
 #define MEDIA_TYPES_H_
 
+#include <string>
+
 static std::string DAS1 = "dods_das";
 static std::string DAS2 = "dods-das";
 
