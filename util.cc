@@ -1197,5 +1197,41 @@ string dap_version()
     return (string) "OPeNDAP DAP/" + libdap_version() + ": compiled on " + __DATE__ + ":" + __TIME__;
 }
 
+/**
+ * Using the given template, open a temporary file using the given
+ * ofstream object. Uses mkstemp() in a 'safe' way.
+ *
+ * @param f Value-result parameter
+ * @param name_template The template used to name the temporary file.
+ * The template has the form templateXXXXXX where the six Xs will be
+ * overwritten.
+ * @param suffix If present, the template is 'templateXXXXXX.suffix'
+ * @return The new file's name.
+ * @exception Error if there is a problem.
+ */
+string open_temp_fstream(ofstream &f, const string &name_template, const string &suffix /* = "" */)
+{
+    vector<char> name;
+    copy(name_template.begin(), name_template.end(), back_inserter(name));
+    if (!suffix.empty())
+        copy(suffix.begin(), suffix.end(), back_inserter(name));
+    name.push_back('\0');
+
+    // Use mkstemp to make and open the temp file atomically
+    int tmpfile = mkstemps(&name[0], suffix.length());
+    if (tmpfile == -1)
+        throw Error("Could not make a temporary file.");
+    // Open the file using C++ ofstream; get a C++ fstream object
+    f.open(&name[0]);
+    // Close the file descriptor; the file stays open because of the fstream object
+    close(tmpfile);
+    // Now test that the fstream object is valid
+    if (f.fail())
+        throw Error("Could not make a temporary file.");
+
+    return string(&name[0]);
+}
+
+
 } // namespace libdap
 

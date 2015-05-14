@@ -150,6 +150,7 @@ time_t parse_time(const char * str, bool expand);
 bool size_ok(unsigned int sz, unsigned int nelem);
 bool pathname_ok(const string &path, bool strict = true);
 string dap_version();
+string open_temp_fstream(ofstream &f, const string &name_template, const string &suffix = "");
 
 } // namespace libdap
 
