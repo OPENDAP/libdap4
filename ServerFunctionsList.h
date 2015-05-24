@@ -70,7 +70,7 @@ public:
     virtual bool find_function(const std::string &name, bool_func *f) const;
     virtual bool find_function(const std::string &name, btp_func  *f) const;
     virtual bool find_function(const std::string &name, proj_func *f) const;
-    virtual bool find_function(const std::string &name, D4Function *f) const;
+    virtual bool find_function(const std::string &name, D4Function f) const;
 
     SFLIter begin();
     SFLIter end();

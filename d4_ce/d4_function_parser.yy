@@ -178,7 +178,7 @@ function : fname "(" args ")"
 fname: WORD 
 { 
     D4Function f;
-    if (!evaluator.sf_list()->find_function($1, &f)) {
+    if (!evaluator.sf_list()->find_function($1, f)) {
         // ...cloud use @1.{first,last}_column in these error messages.
         throw Error("'" + $1 + "' is not a registered DAP4 server function.");
     }

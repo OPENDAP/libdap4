@@ -31,6 +31,8 @@
 namespace libdap
 {
 
+class D4Rvalue;
+
 /**
  * @brief DAP4 filter clauses
  *
@@ -41,7 +43,7 @@ namespace libdap
  * during the parse phase of the constraint evaluation but is not evaluated
  * until the data are sent or interned (read into the DAP4 variable object
  * so that they can be used as input to some process other than directly
- * being sent to a remote client.
+ * being sent to a remote client).
  *
  * For filter clauses that are to be applied to a Sequence, each D4RValue
  * will either be a constant or a BaseType* that will reference one of the
@@ -53,7 +55,7 @@ namespace libdap
  * value() method that take a value and compares it to the clause's constant
  * value using the supplied op.
  *
- * @note The 'ND' and 'map' ops are the 'still just an idea' parts.
+ * @note The 'ND' and 'map' ops are 'still just an idea' parts.
  */
 class D4FilterClause
 {
@@ -85,11 +87,11 @@ private:
     D4FilterClause(const D4FilterClause &);
     D4FilterClause &operator=(const D4FilterClause &);
 
-    template<typename T1, typename T2> bool D4FilterClause::cmp(ops op, T1 arg1, T2 Arg2);
-    bool D4FilterClause::cmp(ops op, const string &arg1, const string &arg2);
+    template<typename T1, typename T2> bool cmp(ops op, T1 arg1, T2 Arg2);
+    bool cmp(ops op, const string &arg1, const string &arg2);
 
-    template<typename T> bool D4FilterClause::cmp(ops op, BaseType *arg1, T arg2);
-    bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2);
+    template<typename T> bool cmp(ops op, BaseType *arg1, T arg2);
+    bool cmp(ops op, BaseType *arg1, BaseType *arg2);
 
 public:
     /**

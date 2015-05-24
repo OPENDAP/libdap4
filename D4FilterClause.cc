@@ -49,7 +49,11 @@
 #include "UInt64.h"
 #include "Float32.h"
 #include "Float64.h"
+#include "Str.h"
 
+#include "GNURegex.h"
+
+#include "D4RValue.h"
 #include "D4FilterClause.h"
 
 using namespace std;
@@ -106,7 +110,7 @@ inline bool D4FilterClause::cmp(ops op, const string &arg1, const string &arg2)
 		return arg1 != arg2;
 	case match: {
 		Regex r(arg2.c_str());
-		return r.match(arg1.c_str(), arg1.length()) > 0;
+		return r.match(arg1.c_str(), arg1.length(), 0) > 0;
 	}
 
 	case ND:

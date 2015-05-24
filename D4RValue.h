@@ -66,8 +66,9 @@ public:
 
 };
 
-/** Holds the RValues for the D4 function parser
- *
+/**
+ * Holds the RValues for the D4 function parser and for the filter
+ * expression evaluator.
  */
 class D4RValue
 {
@@ -77,7 +78,7 @@ private:
     D4Function d_func;  	// (weak) pointer to a function returning BaseType *
     D4RValueList *d_args;  	// pointer to arguments to the function; delete
 
-    BaseType *d_constant;	// pointer; delete
+    BaseType *d_constant;	// pointer; delete.
 
     enum value_kind {
     	unknown,
