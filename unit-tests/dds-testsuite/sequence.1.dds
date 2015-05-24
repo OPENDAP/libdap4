@@ -1,0 +1,6 @@
+dataset {
+    Sequence {
+	    String name;
+	    Int32 age;
+    } person;
+} data6;
