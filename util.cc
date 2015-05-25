@@ -308,7 +308,7 @@ double *extract_double_array(Array * a)
     }
 }
 
-// This helper function assume 'dest' is the correct size. This should not
+// This helper function assumes 'dest' is the correct size. This should not
 // be called when the Array 'a' is a Float64, since the values are already
 // in a double array!
 template<class T> static void extract_double_array_helper(Array * a, vector<double> &dest)
