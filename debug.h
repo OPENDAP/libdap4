@@ -69,8 +69,10 @@ using std::endl;
 
 #ifdef DODS_DEBUG2
 #define DBG2(x) FILE_N_LINE; x
+#define DBG2N(x) x
 #else
 #define DBG2(x) /* x */
+#define DBG2n(x) /* x */
 #endif
 
 #ifdef DODS_PERF
