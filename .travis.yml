@@ -5,5 +5,21 @@ language: cpp
 compiler:
   - gcc
   - clang
+
 # Change this to your needs
-script: ./configure && make
+
+# Get bison 3
+install:
+  - wget http://mirrors.kernel.org/gnu/bison/bison-3.0.tar.gz
+  - tar -xzvf bison-3.0.tar.gz
+  - cd bison-3.0 && ./configure && make && make install
+  
+# Build from github 
+script:
+  - autoreconf --force --install --verbose 
+  - ./configure && make && make test
+  
+# whitelist
+branches:
+  only:
+    - master
