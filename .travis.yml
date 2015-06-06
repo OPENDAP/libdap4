@@ -1,0 +1,9 @@
+
+# Initial Travic-CI control file. 6.5.15 jhrg
+
+language: cpp
+compiler:
+  - gcc
+  - clang
+# Change this to your needs
+script: ./configure && make
