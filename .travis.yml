@@ -2,9 +2,15 @@
 # Initial Travic-CI control file. 6.5.15 jhrg
 
 language: cpp
+
 compiler:
   - gcc
   - clang
+
+# whitelist
+branches:
+  only:
+    - master
 
 # Building on Ubuntu, we need uuid-dev, xml and curl
 # Get, install bison 3
@@ -21,14 +27,11 @@ before_script:
   - autoreconf --force --install --verbose
   - ./configure 
 
+# I used sudo -i so that sudo make install works for clang - a known issue with travis-ci)
+# jhrg 6.5.15
 script:
   - make -j7
   - make -j7 check
-  - sudo make install
+  - sudo -i make install
   
 # after_script:
-
-# whitelist
-branches:
-  only:
-    - master
