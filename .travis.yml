@@ -8,15 +8,19 @@ compiler:
 
 # Change this to your needs
 
-# Get bison 3
+# Get, install bison 3
 install:
   - wget http://mirrors.kernel.org/gnu/bison/bison-3.0.tar.gz
   - tar -xzvf bison-3.0.tar.gz
-  - cd bison-3.0 && ./configure && make && make install
+  - cd bison-3.0 && ./configure && make
+  - sudo make install
   
-# Build from github 
+# Build from github
+# 
+# Must decide about $prefix and $PATH
+# Also --enable-developer
 script:
-  - autoreconf --force --install --verbose 
+  - autoreconf --force --install --verbose
   - ./configure && make && make test
   
 # whitelist
