@@ -19,20 +19,21 @@ before_install:
   - sudo apt-get install -y libxml2-dev uuid-dev libcurl4-openssl-dev
   
 install:
+  - export prefix=`pwd`/../build
+  - export PATH=$prefix/bin:$prefix/deps/bin:$PATH
   - wget http://mirrors.kernel.org/gnu/bison/bison-3.0.tar.gz
   - tar -xzvf bison-3.0.tar.gz
-  - (cd bison-3.0 && ./configure && make -j7 && sudo make install)
+  - (cd bison-3.0 && ./configure --prefix=$prefix/deps && make -j7 && make install)
  
 before_script:
-  - export PATH=$PATH:`dirname \`which clang\``
   - autoreconf --force --install --verbose
-  - ./configure 
+  - ./configure --prefix=$prefix
 
 # I used sudo -i so that sudo make install works for clang - a known issue with travis-ci)
 # jhrg 6.5.15
 script:
   - make -j7
   - make -j7 check
-  - sudo make install
+  - make install
   
 # after_script:
