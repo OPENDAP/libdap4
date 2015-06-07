@@ -6,23 +6,28 @@ compiler:
   - gcc
 #  - clang
 
-# Change this to your needs
-
+# Building on Ubuntu, we need uuid-dev, xml and curl
 # Get, install bison 3
-install:
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y libxml2-dev uuid-dev libcurl4-openssl-dev
   - wget http://mirrors.kernel.org/gnu/bison/bison-3.0.tar.gz
   - tar -xzvf bison-3.0.tar.gz
   - cd bison-3.0 && ./configure && make -j7
   - sudo make install
   - cd ..
   
+install:
+  - autoreconf --force --install --verbose
+  
 # Build from github
 # 
 # Must decide about $prefix and $PATH
 # Also --enable-developer
 script:
-  - autoreconf --force --install --verbose
-  - ./configure && make -j7 && make -j7 check
+  - ./configure 
+  - make -j7
+  - make -j7 check
   - sudo make install
   
 # whitelist
