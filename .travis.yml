@@ -32,6 +32,6 @@ before_script:
 script:
   - make -j7
   - make -j7 check
-  - sudo -i make install
+  - sudo -i cd libdap4 && make install
   
 # after_script:
