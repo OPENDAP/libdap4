@@ -21,9 +21,12 @@ before_install:
 install:
   - export prefix=`pwd`/../build
   - export PATH=$prefix/bin:$prefix/deps/bin:$PATH
+  - echo $PATH
+  - echo $prefix
   - wget http://mirrors.kernel.org/gnu/bison/bison-3.0.tar.gz
   - tar -xzvf bison-3.0.tar.gz
   - (cd bison-3.0 && ./configure --prefix=$prefix/deps && make -j7 && make install)
+  - ls -lR $prefix
  
 before_script:
   - autoreconf --force --install --verbose
