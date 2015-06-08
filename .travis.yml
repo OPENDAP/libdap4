@@ -12,28 +12,36 @@ branches:
   only:
     - master
 
+# Use this to prepare the system to install prerequisites or dependencies
+#
 # Building on Ubuntu, we need uuid-dev, xml and curl
-# Get, install bison 3
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y libxml2-dev uuid-dev libcurl4-openssl-dev
-  
+
+# Use this to install any prerequisites or dependencies necessary to run your build
+#
+# Get, install bison 3
 install:
-  - export prefix=`pwd`/../build
-  - export PATH=$prefix/bin:$prefix/deps/bin:$PATH
-  - echo $PATH
-  - echo $prefix
   - wget http://mirrors.kernel.org/gnu/bison/bison-3.0.tar.gz
   - tar -xzvf bison-3.0.tar.gz
-  - (cd bison-3.0 && ./configure --prefix=$prefix/deps && make -j7 && make install)
-  - ls -lR $prefix
+  - (cd bison-3.0 && ./configure --prefix=$prefix/deps && make -j7 && sudo make install)
  
+# Use this to prepare your build for testing
+# e.g. copy database configurations, environment variables, etc.
+#
+# I set prefix and PATH even though the later is not needs because it'll be required
+# with the bes build.
 before_script:
+  - export prefix=`pwd`/../build
+  - export PATH=$prefix/bin:$PATH
   - autoreconf --force --install --verbose
   - ./configure --prefix=$prefix
 
-# I used sudo -i so that sudo make install works for clang - a known issue with travis-ci)
-# jhrg 6.5.15
+# All commands must exit with code 0 on success. Anything else is considered failure.
+#
+# NB: sudo make install failed for clang here, hence the use of --prefix (which we'll
+# need anyway later when we build the bes).
 script:
   - make -j7
   - make -j7 check
