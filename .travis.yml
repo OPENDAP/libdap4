@@ -25,7 +25,7 @@ before_install:
 install:
   - wget http://mirrors.kernel.org/gnu/bison/bison-3.0.tar.gz
   - tar -xzvf bison-3.0.tar.gz
-  - (cd bison-3.0 && ./configure --prefix=$prefix/deps && make -j7 && sudo make install)
+  - (cd bison-3.0 && ./configure && make -j7 && sudo make install)
  
 # Use this to prepare your build for testing
 # e.g. copy database configurations, environment variables, etc.
