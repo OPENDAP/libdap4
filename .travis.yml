@@ -16,15 +16,19 @@ branches:
 # Use this to prepare the system to install prerequisites or
 # dependencies
 #
-# Building on Ubuntu, we need uuid-dev, xml, curl and bison 3
+# Building on Ubuntu, we need uuid-dev, xml, curl When Travis-CI moves
+# to Ubuntu 14 (from 12, as of 6/16/15) we can load bison using apt-get
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq --force-yes libxml2-dev uuid-dev libcurl4-openssl-dev bison
+  - sudo apt-get install -qq --force-yes libxml2-dev uuid-dev libcurl4-openssl-dev
 
 # Use this to install any prerequisites or dependencies necessary to
 # run your build
 #
-# install:
+install:
+  - wget http://mirrors.kernel.org/gnu/bison/bison-3.0.tar.gz
+  - tar -xzvf bison-3.0.tar.gz
+  - (cd bison-3.0 && ./configure && make -j7 && sudo make install)
  
 # Use this to prepare your build for testing e.g. copy database
 # configurations, environment variables, etc.
