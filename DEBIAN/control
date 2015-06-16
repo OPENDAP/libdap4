@@ -1,6 +1,6 @@
 Package: libdap
 Version: 3.14.0-1
-Section: base
+Section: science
 Priority: optional
 Architecture: x86-64
 Depends: libcurl4-openssl (>= 7.35), libxml2 (>= 2.9), uuid (>= 2.20)

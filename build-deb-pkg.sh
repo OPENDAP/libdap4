@@ -1,6 +1,12 @@
 #!/bin/bash
 #
-# Build a debian package
+# Build a debian package.
+# 
+# This is not a 'real' debian package build - that will take more work.
+# See https://www.debian.org/doc/manuals/maint-guide/dreq.en.html for more
+# info. The initent of this script is to get a libdap.deb fileso that we
+# can use apt to install a binary libdap during the install phase of the
+# BES travis-ci build.
 
 package=libdap
 
