@@ -2,11 +2,11 @@
 #
 # Build a debian package
 
-revision=1
-version=$1
 package=libdap
 
-deb_dir=${package}_${version}-${revision}
+version=`awk -f get-version.awk < DEBIAN/control`
+
+deb_dir=${package}_${version}
 
 # First, make the destination directory
 

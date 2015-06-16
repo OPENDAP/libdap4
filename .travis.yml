@@ -19,7 +19,7 @@ branches:
 # Building on Ubuntu, we need uuid-dev, xml, curl and bison 3
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libxml2-dev uuid-dev libcurl4-openssl-dev bison
+  - sudo apt-get install -qq --force-yes libxml2-dev uuid-dev libcurl4-openssl-dev bison
 
 # Use this to install any prerequisites or dependencies necessary to
 # run your build
@@ -38,7 +38,7 @@ before_script:
 
 # All commands must exit with code 0 on success. Anything else is
 # considered failure. Note that each line of 'script' is run, regardless
-# of exit status (in the preceeding sections, execution stops on the
+# of exit status (in the preceding sections, execution stops on the
 # first error).
 #
 # NB: sudo make install failed for clang here, hence the use of
@@ -47,8 +47,11 @@ before_script:
 # way it installs clang.
 script:
   - make -j7 && make -j7 check && make install
-  
+
+# Build a debian package and upload
 # after_success:
+  - ./build-deb-pkg.sh
+  - scp libdap_3.14.0-1.deb www.opendap.org:/home/sites/pub/binary/tmp
 
 # after_failure:
 
