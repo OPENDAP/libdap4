@@ -36,7 +36,7 @@ install:
 # I set prefix and PATH even though it's not really needed.
 before_script:
   - export prefix=$HOME/OPENDAP/build
-  - export PATH=$prefix/bin:$PATH
+  - export PATH=$prefix/bin:/usr/local/bin:$PATH
   - autoreconf --force --install --verbose
   - ./configure --prefix=$prefix
 
@@ -52,10 +52,13 @@ before_script:
 script:
   - make -j7 && make -j7 check && make install
 
-# Build a debian package and upload
-# after_success:
+  
+# Build a debian package and upload if the above worked
+after_success:
   - ./build-deb-pkg.sh
-  - scp libdap_3.14.0-1.deb www.opendap.org:/home/sites/pub/binary/tmp
+
+# findout how to deploy...
+#  - scp libdap_3.14.0-1.deb www.opendap.org:/home/sites/pub/binary/tmp
 
 # after_failure:
 
