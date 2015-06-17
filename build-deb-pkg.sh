@@ -12,7 +12,7 @@ package=libdap
 
 version=`awk -f get-version.awk < DEBIAN/control`
 
-deb_dir=${package}_${version}
+deb_dir=`pwd`/${package}_${version}
 
 # First, make the destination directory
 
