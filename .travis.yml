@@ -8,10 +8,11 @@ compiler:
   - gcc
   - clang
 
-# whitelist
+# whitelist; assume tags for releases use the familiar dot notation
 branches:
   only:
     - master
+    - /^*-[0-9]+\.[0-9]+\.[0-9]+/
 
 # Use this to prepare the system to install prerequisites or
 # dependencies
@@ -20,7 +21,7 @@ branches:
 # to Ubuntu 14 (from 12, as of 6/16/15) we can load bison using apt-get
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq --force-yes libxml2-dev uuid-dev libcurl4-openssl-dev
+  - sudo apt-get install -qq libxml2-dev uuid-dev libcurl4-openssl-dev
 
 # Use this to install any prerequisites or dependencies necessary to
 # run your build
@@ -53,7 +54,7 @@ script:
   - make -j7 && make -j7 check && make install
 
   
-# Build a debian package and upload if the above worked
+# Build a debian package if the above worked
 after_success:
   - ./build-deb-pkg.sh
 
@@ -72,5 +73,5 @@ deploy:
   on:
     repo: OPENDAP/libdap4
     condition: $CC = gcc
-    tags: false
+    tags: true
     
