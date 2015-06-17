@@ -22,6 +22,7 @@ branches:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq libxml2-dev uuid-dev libcurl4-openssl-dev
+  - dpkg -l
 
 # Use this to install any prerequisites or dependencies necessary to
 # run your build
