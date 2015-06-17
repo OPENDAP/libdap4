@@ -25,11 +25,10 @@ before_install:
 
 # Use this to install any prerequisites or dependencies necessary to
 # run your build
-#
 install:
-  - wget http://mirrors.kernel.org/gnu/bison/bison-3.0.tar.gz
-  - tar -xzvf bison-3.0.tar.gz
-  - (cd bison-3.0 && ./configure && make -j7 && sudo make install)
+  - wget http://ftp.gnu.org/gnu/bison/bison-3.0.4.tar.gz
+  - tar -xzf bison-3.0.4.tar.gz
+  - (cd bison-3.0.4 && ./configure && make -j7 && sudo make install)
  
 # Use this to prepare your build for testing e.g. copy database
 # configurations, environment variables, etc.
@@ -38,6 +37,8 @@ install:
 before_script:
   - export prefix=$HOME/OPENDAP/build
   - export PATH=$prefix/bin:/usr/local/bin:$PATH
+  - which bison
+  - bison --version
   - autoreconf --force --install --verbose
   - ./configure --prefix=$prefix
 
@@ -53,7 +54,6 @@ before_script:
 script:
   - make -j7 && make -j7 check && make install
 
-  
 # Build a debian package if the above worked
 after_success:
   - ./build-deb-pkg.sh
