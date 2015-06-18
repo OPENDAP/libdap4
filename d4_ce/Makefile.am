@@ -31,12 +31,18 @@ endif
 noinst_LTLIBRARIES = libd4_ce_parser.la
 pkginclude_HEADERS = D4ConstraintEvaluator.h D4FunctionEvaluator.h
 
+# This line forces make to build the grammar files first, which is
+# important because some of the cc files include the parser headers.
+BUILT_SOURCES = lex.d4_ce.cc lex.d4_function.cc
+
 libd4_ce_parser_la_SOURCES = D4ConstraintEvaluator.cc \
 	D4ConstraintEvaluator.h D4CEScanner.h D4FunctionEvaluator.cc	\
 	D4FunctionEvaluator.h D4FunctionScanner.h d4_ce_parser.tab.cc	\
 	d4_ce_parser.tab.hh lex.d4_ce.cc d4_function_parser.tab.cc	\
-	d4_function_parser.tab.hh lex.d4_function.cc location.hh	\
-	position.hh stack.hh
+	d4_function_parser.tab.hh lex.d4_function.cc 
+	
+#	location.hh	\
+#	position.hh stack.hh
 
 libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
 
@@ -45,22 +51,26 @@ EXTRA_DIST = d4_ce_parser.yy d4_ce_scanner.ll d4_function_parser.yy d4_function_
 DISTCLEANFILES = 
 
 clean-local:
-	-rm location.hh position.hh stack.hh d4_ce_parser.tab.cc	\
-d4_ce_parser.tab.hh lex.d4_ce.cc d4_function_parser.tab.cc		\
+	-rm d4_ce_parser.tab.cc	d4_ce_parser.tab.hh lex.d4_ce.cc d4_function_parser.tab.cc \
 d4_function_parser.tab.hh lex.d4_function.cc
+
+# location.hh position.hh stack.hh 
+
+# Using this pattern rule is a way to get gnu make to run bison only once.
+# The targets that explicitly name the two sources to be built will run it
+# twice with a parallel build. jhrg 6/18/15
+
+%.tab.cc %.tab.hh: %.yy
+	$(YACC) $(YFLAGS) $<
 
 lex.d4_ce.cc: d4_ce_scanner.ll d4_ce_parser.tab.cc d4_ce_parser.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-.NOTPARALLEL : 4_ce_parser.tab.hh d4_ce_parser.tab.cc stack.hh location.hh position.hh
-
-d4_ce_parser.tab.hh d4_ce_parser.tab.cc stack.hh location.hh position.hh: d4_ce_parser.yy
-	$(YACC) $(YFLAGS) $<
+#d4_ce_parser.tab.hh d4_ce_parser.tab.cc stack.hh location.hh position.hh: d4_ce_parser.yy
+#	$(YACC) $(YFLAGS) $<
 
 lex.d4_function.cc: d4_function_scanner.ll d4_function_parser.tab.cc d4_function_parser.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-.NOTPARALLEL : d4_function_parser.tab.hh d4_function_parser.tab.cc
-
-d4_function_parser.tab.hh d4_function_parser.tab.cc: d4_function_parser.yy
-	$(YACC) $(YFLAGS) $<
+#d4_function_parser.tab.hh d4_function_parser.tab.cc: d4_function_parser.yy
+#	$(YACC) $(YFLAGS) $<

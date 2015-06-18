@@ -37,6 +37,8 @@ bin_SCRIPTS = dap-config dap-config-pkgconfig
 
 bin_PROGRAMS = getdap getdap4
 
+# Including the generated grammar sources in BUILT_SOURCES ensures
+# they are built first. jhrg 6/18/15
 BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
 
 man_MANS = getdap.1 dap-config.1 getdap4.1
@@ -319,32 +321,41 @@ SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
 #
 # Build the DAS scanner and parser
 
+# Using this pattern rule is a way to get gnu make to run bison only once.
+# The targets that explicitly name the two sources to be built will run it
+# twice with a parallel build. jhrg 6/18/15
+
+%.tab.cc %.tab.hh: %.yy
+	$(YACC) $(YFLAGS) $<
+
 lex.das.cc: das.lex das.tab.cc das.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-das.tab.cc das.tab.hh: das.yy DAS.h
-	$(YACC) $(YFLAGS) $<
+#das.tab.cc das.tab.hh: das.yy DAS.h
+#	$(YACC) $(YFLAGS) $<
 
 # DDS
 
 lex.dds.cc: dds.lex dds.tab.cc dds.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-dds.tab.cc dds.tab.hh: dds.yy
-	$(YACC) $(YFLAGS) $<
+#dds.tab.cc dds.tab.hh: dds.yy
+#	$(YACC) $(YFLAGS) $<
 
 # CE
 
 lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-ce_expr.tab.cc ce_expr.tab.hh: ce_expr.yy
-	$(YACC) $(YFLAGS) $<
+#ce_expr.tab.cc ce_expr.tab.hh: ce_expr.yy
+#	$(YACC) $(YFLAGS) $<
 
 # Errors
 
 lex.Error.cc: Error.lex Error.tab.cc Error.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-Error.tab.cc Error.tab.hh: Error.yy
-	$(YACC) $(YFLAGS) $<
+#Error.tab.cc Error.tab.hh: Error.yy
+#	$(YACC) $(YFLAGS) $<
+	
+	
