@@ -31,8 +31,8 @@ endif
 noinst_LTLIBRARIES = libd4_ce_parser.la
 pkginclude_HEADERS = D4ConstraintEvaluator.h D4FunctionEvaluator.h
 
-BUILT_SOURCES = lex.d4_ce.cc lex.d4_function.cc
-# BUILT_SOURCES = d4_ce_parser.hh stack.hh location.hh position.hh d4_function_parser.hh
+BUILT_SOURCES = d4_ce_parser.tab.cc lex.d4_ce.cc d4_function_parser.tab.cc lex.d4_function.cc
+BUILT_SOURCES += stack.hh location.hh position.hh
 
 libd4_ce_parser_la_SOURCES = D4ConstraintEvaluator.cc \
 	D4ConstraintEvaluator.h D4CEScanner.h D4FunctionEvaluator.cc	\
@@ -41,42 +41,16 @@ libd4_ce_parser_la_SOURCES = D4ConstraintEvaluator.cc \
 	d4_function_parser.tab.hh lex.d4_function.cc location.hh	\
 	position.hh stack.hh
 
-# d4_ce_parser.yy d4_function_parser.yy d4_ce_scanner.ll d4_function_scanner.ll
-
-# Kludge: If we are not building the scanner/parser from the 
-# grammar sources, make sure to use the scanner class that
-# matches the generated code. This addresses an issue where
-# different versions of flex use 'int' or 'size_t' for some 
-# arguments in the scanner's protected methods. This is not
-# automatically updated to match changes in the gnerated files.
-# jhrg 3/31/15
-#
-# Goog intent behind this idea, but in practice it was not working to
-# build the DAP4 parsers this way. Given more time, it might be
-# something that will work, but for the next release (early April
-# 2015) bison 3.x is going to be a requirement. jhrg 4/5/15
-
-# if !BISON3
-# libd4_ce_parser_la_SOURCES += FlexLexer.h
-# endif 
-
 libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
 
-# Used by both the "have bison 3+'" and "don't have ..." cases
-GEN_GRAM_SRCS=gen_grammar_sources
-
 EXTRA_DIST = d4_ce_parser.yy d4_ce_scanner.ll d4_function_parser.yy d4_function_scanner.ll
-EXTRA_DIST += $(GEN_GRAM_SRCS)
 
 DISTCLEANFILES = 
 
 clean-local:
 	-rm location.hh position.hh stack.hh d4_ce_parser.tab.cc	\
 d4_ce_parser.tab.hh lex.d4_ce.cc d4_function_parser.tab.cc		\
-d4_function_parser.tab.hh lex.d4_function.cc FlexLexer.h
-
-# if BISON3
-# If we have bison3+, use it. Otherwise, use files from git.
+d4_function_parser.tab.hh lex.d4_function.cc
 
 lex.d4_ce.cc: d4_ce_scanner.ll d4_ce_parser.tab.cc d4_ce_parser.tab.hh
 	$(LEX) $(LFLAGS) $<
@@ -89,31 +63,3 @@ lex.d4_function.cc: d4_function_scanner.ll d4_function_parser.tab.cc d4_function
 
 d4_function_parser.tab.hh d4_function_parser.tab.cc: d4_function_parser.yy
 	$(YACC) $(YFLAGS) $<
-
-# These rules keep the 'tmp' files up-to-date w/o us having to remember
-# to rule a special target when the grammars change. Including the '.hh'
-# in the rule below is a work-around for the 'FlexLexer.h' which is _not_
-# generated and breaks this scheme otherwise. We could list each file
-# by name, each one prefixed with $(GEN_GRA...). jhrg 3/31/15
-# all-local: $(GEN_GRAM_SRCS)/*.cc.tmp $(GEN_GRAM_SRCS)/*.hh.tmp
-
-# $(GEN_GRAM_SRCS)/%.cc.tmp : %.cc
-# 	cp $< $@
-
-# $(GEN_GRAM_SRCS)/%.hh.tmp: %.hh
-# 	cp $< $@
-
-# $(GEN_GRAM_SRCS)/%.h.tmp: %.h
-# 	cp $< $@
-
-# else
-
-# # The brute force way to get the C++ grammar sources for hosts
-# # w/o bison 3
-
-# % :: $(GEN_GRAM_SRCS)/%.tmp
-# 	cp $< $@
-
-# FlexLexer.h: $(GEN_GRAM_SRCS)/FlexLexer.h.tmp
-# 	cp $< $@
-# endif
