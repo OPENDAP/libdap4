@@ -31,9 +31,6 @@ endif
 noinst_LTLIBRARIES = libd4_ce_parser.la
 pkginclude_HEADERS = D4ConstraintEvaluator.h D4FunctionEvaluator.h
 
-BUILT_SOURCES = d4_ce_parser.tab.cc lex.d4_ce.cc d4_function_parser.tab.cc lex.d4_function.cc
-BUILT_SOURCES += stack.hh location.hh position.hh
-
 libd4_ce_parser_la_SOURCES = D4ConstraintEvaluator.cc \
 	D4ConstraintEvaluator.h D4CEScanner.h D4FunctionEvaluator.cc	\
 	D4FunctionEvaluator.h D4FunctionScanner.h d4_ce_parser.tab.cc	\
@@ -55,11 +52,15 @@ d4_function_parser.tab.hh lex.d4_function.cc
 lex.d4_ce.cc: d4_ce_scanner.ll d4_ce_parser.tab.cc d4_ce_parser.tab.hh
 	$(LEX) $(LFLAGS) $<
 
+.NOTPARALLEL : 4_ce_parser.tab.hh d4_ce_parser.tab.cc stack.hh location.hh position.hh
+
 d4_ce_parser.tab.hh d4_ce_parser.tab.cc stack.hh location.hh position.hh: d4_ce_parser.yy
 	$(YACC) $(YFLAGS) $<
 
 lex.d4_function.cc: d4_function_scanner.ll d4_function_parser.tab.cc d4_function_parser.tab.hh
 	$(LEX) $(LFLAGS) $<
+
+.NOTPARALLEL : d4_function_parser.tab.hh d4_function_parser.tab.cc
 
 d4_function_parser.tab.hh d4_function_parser.tab.cc: d4_function_parser.yy
 	$(YACC) $(YFLAGS) $<
