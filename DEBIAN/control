@@ -3,7 +3,7 @@ Version: 3.14.0-1
 Section: science
 Priority: optional
 Architecture: amd64
-Depends: libcurl4-openssl (>= 7.35), libxml2 (>= 2.9), uuid (>= 2.20)
+Depends: libcurl4-openssl-dev (>= 7.22), libxml2-dev (>= 2.7), uuid-dev (>= 2.20)
 Maintainer: James Gallagher <jgallagher@opendap.org>
 Description: libdap
  The libdap library contains an implementation of DAP2 and DAP4. This
