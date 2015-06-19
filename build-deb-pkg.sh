@@ -33,6 +33,13 @@ cp -r DEBIAN $deb_dir
 
 make -j9 install
 
+# hackery: edit the dap-config script so that the $deb_dir prefix is
+# removed from the paths returned by --cflags and --libs
+sed "s@prefix=$deb_dir/usr@prefix=/usr@g" < $deb_dir/usr/bin/dap-config \
+    > $deb_dir/usr/bin/dap-config.tmp
+
+mv $deb_dir/usr/bin/dap-config.tmp $deb_dir/usr/bin/dap-config
+
 # now, the debian magic
 
 dpkg-deb --build $deb_dir
