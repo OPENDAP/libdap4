@@ -1,5 +1,11 @@
 # Tests
 
+# Don't run this build in parallel becuse both of the bison envokations
+# build location.hh, poistion.hh and stack.hh and sometimes parallel
+# builds result in junk files.
+
+.NOTPARALLEL:
+
 AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
@@ -40,9 +46,6 @@ libd4_ce_parser_la_SOURCES = D4ConstraintEvaluator.cc \
 	D4FunctionEvaluator.h D4FunctionScanner.h d4_ce_parser.tab.cc	\
 	d4_ce_parser.tab.hh lex.d4_ce.cc d4_function_parser.tab.cc	\
 	d4_function_parser.tab.hh lex.d4_function.cc 
-	
-#	location.hh	\
-#	position.hh stack.hh
 
 libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
 
@@ -53,8 +56,6 @@ DISTCLEANFILES =
 clean-local:
 	-rm d4_ce_parser.tab.cc	d4_ce_parser.tab.hh lex.d4_ce.cc d4_function_parser.tab.cc \
 d4_function_parser.tab.hh lex.d4_function.cc
-
-# location.hh position.hh stack.hh 
 
 # Using this pattern rule is a way to get gnu make to run bison only once.
 # The targets that explicitly name the two sources to be built will run it
