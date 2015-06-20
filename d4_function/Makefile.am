@@ -34,26 +34,26 @@ if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
 endif
 
-noinst_LTLIBRARIES = libd4_ce_parser.la
-pkginclude_HEADERS = D4ConstraintEvaluator.h
+noinst_LTLIBRARIES = libd4_function_parser.la
+pkginclude_HEADERS = D4FunctionEvaluator.h
 
 # This line forces make to build the grammar files first, which is
 # important because some of the cc files include the parser headers.
-BUILT_SOURCES = lex.d4_ce.cc
+BUILT_SOURCES = lex.d4_function.cc
 
-libd4_ce_parser_la_SOURCES = D4ConstraintEvaluator.cc \
-	D4ConstraintEvaluator.h D4CEScanner.h d4_ce_parser.tab.cc	\
-	d4_ce_parser.tab.hh lex.d4_ce.cc  
+libd4_function_parser_la_SOURCES = D4FunctionEvaluator.cc	\
+	D4FunctionEvaluator.h D4FunctionScanner.h	\
+	d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc 
 
 libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
 
-EXTRA_DIST = d4_ce_parser.yy d4_ce_scanner.ll
+EXTRA_DIST = d4_function_parser.yy d4_function_scanner.ll
 
 DISTCLEANFILES = 
 
 clean-local:
-	-rm d4_ce_parser.tab.cc	d4_ce_parser.tab.hh lex.d4_ce.cc stack.hh \
-		location.hh position.hh
+	-rm d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc \
+	    stack.hh position.hh location.hh
 
 # Using this pattern rule is a way to get gnu make to run bison only once.
 # The targets that explicitly name the two sources to be built will run it
@@ -62,6 +62,5 @@ clean-local:
 %.tab.cc %.tab.hh: %.yy
 	$(YACC) $(YFLAGS) $<
 
-lex.d4_ce.cc: d4_ce_scanner.ll d4_ce_parser.tab.cc d4_ce_parser.tab.hh
+lex.d4_function.cc: d4_function_scanner.ll d4_function_parser.tab.cc d4_function_parser.tab.hh
 	$(LEX) $(LFLAGS) $<
-
