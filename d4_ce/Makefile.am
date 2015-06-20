@@ -39,11 +39,12 @@ pkginclude_HEADERS = D4ConstraintEvaluator.h
 
 # This line forces make to build the grammar files first, which is
 # important because some of the cc files include the parser headers.
-BUILT_SOURCES = lex.d4_ce.cc
+BUILT_SOURCES = lex.d4_ce.cc d4_ce_parser.tab.hh d4_ce_parser.tab.cc \
+stack.hh location.hh position.hh
 
-libd4_ce_parser_la_SOURCES = D4ConstraintEvaluator.cc \
-	D4ConstraintEvaluator.h D4CEScanner.h d4_ce_parser.tab.cc	\
-	d4_ce_parser.tab.hh lex.d4_ce.cc  
+libd4_ce_parser_la_SOURCES = lex.d4_ce.cc d4_ce_parser.tab.cc	\
+	d4_ce_parser.tab.hh stack.hh location.hh position.hh \
+	D4ConstraintEvaluator.cc  D4ConstraintEvaluator.h D4CEScanner.h   
 
 libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
 
@@ -59,7 +60,9 @@ clean-local:
 # The targets that explicitly name the two sources to be built will run it
 # twice with a parallel build. jhrg 6/18/15
 
-%.tab.cc %.tab.hh: %.yy
+# %.tab.cc %.tab.hh stack.hh: %.yy
+
+d4_ce_parser.tab.cc d4_ce_parser.tab.hh stack.hh location.hh position.hh: d4_ce_parser.yy
 	$(YACC) $(YFLAGS) $<
 
 lex.d4_ce.cc: d4_ce_scanner.ll d4_ce_parser.tab.cc d4_ce_parser.tab.hh
