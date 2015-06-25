@@ -75,7 +75,9 @@ gl/sys/
 d4_ce/location.hh
 d4_ce/position.hh
 d4_ce/stack.hh
-d4_ce/FlexLexer.h
+d4_function/location.hh
+d4_function/position.hh
+d4_function/stack.hh
 
 libdap-*.tar.gz
 libdap-*
