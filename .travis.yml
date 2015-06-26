@@ -9,6 +9,8 @@ compiler:
   - clang
 
 # whitelist; assume tags for releases use the familiar dot notation
+# Building a tag will trigger a deployment; see the 'deploy' section
+# down below
 branches:
   only:
     - master
@@ -22,7 +24,10 @@ branches:
 # to Ubuntu 14 (from 12, as of 6/16/15) we can load bison using apt-get
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libxml2-dev uuid-dev libcurl4-openssl-dev
+  - sudo apt-get install -qq -y libxml2-dev
+  - sudo apt-get install -qq -y uuid-dev 
+  - sudo apt-get install -qq -y libcurl4-openssl-dev
+  - sudo apt-get install -qq -y cppunit-dev
   - dpkg -l
 
 # Use this to install any prerequisites or dependencies necessary to

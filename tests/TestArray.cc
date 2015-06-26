@@ -210,7 +210,7 @@ void TestArray::m_build_special_values()
         for (int i = 0; i < array_len; ++i) {
             lon_data[i] = (360 / array_len) * (i + 1);
         }
-        libdap::set_array_using_double(this, &lon_data[0\], array_len);
+        libdap::set_array_using_double(this, &lon_data[0], array_len);
     }
     else {
         throw InternalErr(__FILE__, __LINE__, "Unrecognized name");
