@@ -54,7 +54,7 @@ before_script:
 # configure above. This is an idiosyncrasy of Travis CI because of the
 # way it installs clang.
 script:
-  - make -j7 && make -j7 check && make install
+  - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then  make -j7 && make -j7 check && make install ; fi
 
 # Build a debian package if the above worked
 # after_success:
@@ -89,7 +89,10 @@ addons:
       name: "OPENDAP/libdap4"
       description: "Build submitted via Travis CI"
     notification_email: jgallagher@opendap.org
-    build_command_prepend: "./configure; make clean"
+    # I don't think this is needed because configure is run
+    # for pushes to the coverity_scan branch as part of the
+    # 'before_script' 6/26/15
+    # build_command_prepend: "./configure --prefix=$prefix"
     build_command: "make -j 4"
     branch_pattern: coverity_scan
     
