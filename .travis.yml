@@ -12,6 +12,7 @@ compiler:
 branches:
   only:
     - master
+    - coverity_scan
     - /^*-[0-9]+\.[0-9]+\.[0-9]+/
 
 # Use this to prepare the system to install prerequisites or
@@ -29,7 +30,7 @@ before_install:
 install:
   - wget http://ftp.gnu.org/gnu/bison/bison-3.0.4.tar.gz
   - tar -xzf bison-3.0.4.tar.gz
-  - (cd bison-3.0.4 && ./configure && make -j7 && sudo make install)
+  - (cd bison-3.0.4 && ./configure && make -j 4 && sudo make install)
  
 # Use this to prepare your build for testing e.g. copy database
 # configurations, environment variables, etc.
@@ -56,8 +57,8 @@ script:
   - make -j7 && make -j7 check && make install
 
 # Build a debian package if the above worked
-after_success:
-  - ./build-deb-pkg.sh
+# after_success:
+#  - ./build-deb-pkg.sh
 
 # after_failure:
 
@@ -75,4 +76,21 @@ deploy:
     repo: OPENDAP/libdap4
     condition: $CC = gcc
     tags: true
+    
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   # via the "travis encrypt" command using the project repo's public key
+   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
+
+addons:
+  coverity_scan:
+    project:
+      name: "OPENDAP/libdap4"
+      description: "Build submitted via Travis CI"
+    notification_email: jgallagher@opendap.org
+    build_command_prepend: "./configure; make clean"
+    build_command: "make -j 4"
+    branch_pattern: coverity_scan
+    
     
