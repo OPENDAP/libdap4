@@ -150,19 +150,25 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 %token <word> SCAN_STRING
 %token <word> SCAN_URL 
 
-%type <boolean> datasets dataset declarations array_decl
+%type <boolean> datasets dataset declarations array_decl name
 
-%type <word> declaration base_type structure sequence grid var var_name name
+%type <word> declaration base_type structure sequence grid var var_name
 
 %%
 
 start:
-                {
-		    /* On entry to the parser, make the BaseType stack. */
-		    ctor = new stack<BaseType *>;
-                }
-                datasets
-                {
+        {
+		    /* On entry to the parser, make the BaseType stack. 
+		       I use if (!ctor) here because in the tab.cc file,
+		       this is a case block in a switch, so it could be
+		       run more than once, causing the storage to be
+		       overwritten. jhrg 6/26/15 */
+		       
+		    if (!ctor)
+		    	ctor = new stack<BaseType *>;
+        }
+        datasets
+        {
 		    delete ctor; ctor = 0;
 		}
 ;
@@ -172,51 +178,43 @@ datasets:	dataset
 ;
 
 dataset:	SCAN_DATASET '{' declarations '}' name ';'
-                {
+        {
 		    $$ = $3 && $5;
 		}
-                | error
-                {
-		    parse_error((parser_arg *)arg, NO_DDS_MSG,
- 				dds_line_num, $<word>1);
+        | error
+        {
+		    parse_error((parser_arg *)arg, NO_DDS_MSG, dds_line_num, $<word>1);
 		    error_exit_cleanup();
 		    YYABORT;
 		}
 ;
 
 declarations:	/* empty */
-                {
+        {
 		    $$ = true;
 		}
-
-                | declaration { $$ = true; }
-                | declarations declaration { $$ = true; }
+        | declaration { $$ = true; }
+        | declarations declaration { $$ = true; }
 ;
 
 /* This non-terminal is here only to keep types like `List List Int32' from
    parsing. DODS does not allow Lists of Lists. Those types make translation
-   to/from arrays too hard. */
+   to/from arrays too hard. 
+   
+   NB: I removed the List type from DAP years ago. jhrg 6/26/15 */
 
 declaration:  base_type var ';' 
-                { 
+        { 
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
-			/* BaseType *current_save = current ; */
-			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
-			/* FIX
-			if( current_save == current )
-			{
-			    delete current ;
-			    current = 0 ;
-			}
-			*/
+			    add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    } else {
 		      invalid_declaration((parser_arg *)arg, smsg, $1, $2);
 		      error_exit_cleanup();
 		      YYABORT;
 		    }
-                    strncpy($$,$2,ID_MAX);
-                    $$[ID_MAX-1] = '\0';
+            strncpy($$,$2,ID_MAX);
+            $$[ID_MAX-1] = '\0';
 		}
 
 		| structure  '{' declarations '}' 
@@ -225,92 +223,93 @@ declaration:  base_type var ';'
 		    current = ctor->top(); 
 		    ctor->pop();
 		} 
-                var ';' 
-                { 
+        var ';' 
+        { 
 		    string smsg;
-		    if (current->check_semantics(smsg))
-			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		    if (current->check_semantics(smsg)) {
+			    add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+			}
 		    else {
-		      invalid_declaration((parser_arg *)arg, smsg, $1, $6);
-		      error_exit_cleanup();
-		      YYABORT;
+		        invalid_declaration((parser_arg *)arg, smsg, $1, $6);
+		        error_exit_cleanup();
+		        YYABORT;
 		    }
-                    strncpy($$,$6,ID_MAX);
-                    $$[ID_MAX-1] = '\0';
+            strncpy($$,$6,ID_MAX);
+            $$[ID_MAX-1] = '\0';
 		}
 
 		| sequence '{' declarations '}' 
-                { 
+        { 
 		    if( current ) delete current ;
 		    current = ctor->top(); 
 		    ctor->pop();
 		} 
-                var ';' 
-                { 
+        var ';' 
+        { 
 		    string smsg;
-		    if (current->check_semantics(smsg))
-			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		    if (current->check_semantics(smsg)) {
+			    add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+			}
 		    else {
 		      invalid_declaration((parser_arg *)arg, smsg, $1, $6);
 		      error_exit_cleanup();
 		      YYABORT;
 		    }
-                    strncpy($$,$6,ID_MAX);
-                    $$[ID_MAX-1] = '\0';
+            strncpy($$,$6,ID_MAX);
+            $$[ID_MAX-1] = '\0';
 		}
 
 		| grid '{' SCAN_WORD ':'
 		{ 
-		    if (is_keyword(string($3), "array"))
-			part = array; 
+		    if (is_keyword(string($3), "array")) {
+			    part = array;
+			}
 		    else {
-			ostringstream msg;
-			msg << BAD_DECLARATION;
-			parse_error((parser_arg *)arg, msg.str().c_str(),
-				    dds_line_num, $3);
-			YYABORT;
+			    ostringstream msg;
+			    msg << BAD_DECLARATION;
+			    parse_error((parser_arg *)arg, msg.str().c_str(), dds_line_num, $3);
+			    YYABORT;
 		    }
-                }
-                declaration SCAN_WORD ':'
+        }
+        declaration SCAN_WORD ':'
 		{ 
-		    if (is_keyword(string($7), "maps"))
-			part = maps; 
+		    if (is_keyword(string($7), "maps")) {
+			    part = maps; 
+			}
 		    else {
-			ostringstream msg;
-			msg << BAD_DECLARATION;
-			parse_error((parser_arg *)arg, msg.str().c_str(),
-				    dds_line_num, $7);
-			YYABORT;
+			    ostringstream msg;
+			    msg << BAD_DECLARATION;
+			    parse_error((parser_arg *)arg, msg.str().c_str(), dds_line_num, $7);
+			    YYABORT;
 		    }
-                }
-                declarations '}' 
+        }
+        declarations '}' 
 		{
 		    if( current ) delete current ;
 		    current = ctor->top(); 
 		    ctor->pop();
 		}
-                var ';' 
-                {
+        var ';' 
+        {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
-			part = nil; 
-			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+			    part = nil; 
+			    add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    }
 		    else {
 		      invalid_declaration((parser_arg *)arg, smsg, $1, $13);
 		      error_exit_cleanup();
 		      YYABORT;
 		    }
-                    strncpy($$,$13,ID_MAX);
-                    $$[ID_MAX-1] = '\0';
+        strncpy($$,$13,ID_MAX);
+        $$[ID_MAX-1] = '\0';
 		}
 
-                | error 
-                {
+        | error 
+        {
 		    ostringstream msg;
 		    msg << BAD_DECLARATION;
-		    parse_error((parser_arg *)arg, msg.str().c_str(),
-				dds_line_num, $<word>1);
+		    parse_error((parser_arg *)arg, msg.str().c_str(), dds_line_num, $<word>1);
 		    YYABORT;
 		}
 ;
@@ -350,87 +349,82 @@ var:		var_name { current->set_name($1); }
 ;
 
 var_name:       SCAN_WORD | SCAN_BYTE | SCAN_INT16 | SCAN_INT32 | SCAN_UINT16
-                | SCAN_UINT32 | SCAN_FLOAT32 | SCAN_FLOAT64 | SCAN_STRING
-                | SCAN_URL | SCAN_STRUCTURE | SCAN_SEQUENCE | SCAN_GRID
-                | SCAN_LIST
+        | SCAN_UINT32 | SCAN_FLOAT32 | SCAN_FLOAT64 | SCAN_STRING
+        | SCAN_URL | SCAN_STRUCTURE | SCAN_SEQUENCE | SCAN_GRID
+        | SCAN_LIST
 ;
 
 array_decl:	'[' SCAN_WORD ']'
-                 { 
-		     if (!check_int32($2)) {
-			 string msg = "In the dataset descriptor object:\n";
-			 msg += "Expected an array subscript.\n";
-			 parse_error((parser_arg *)arg, msg.c_str(), 
-				 dds_line_num, $2);
-		     }
-		     if (current->type() == dods_array_c
-			 && check_int32($2)) {
-			 ((Array *)current)->append_dim(atoi($2));
-		     }
-		     else {
-			 Array *a = DDS_OBJ(arg)->get_factory()->NewArray(); 
-			 a->add_var(current); 
-			 a->append_dim(atoi($2));
-			 if( current ) delete current ;
-			 current = a;
-		     }
+        { 
+		    if (!check_int32($2)) {
+			    string msg = "In the dataset descriptor object:\n";
+			    msg += "Expected an array subscript.\n";
+			    parse_error((parser_arg *)arg, msg.c_str(), dds_line_num, $2);
+		    }
+		    if (current->type() == dods_array_c && check_int32($2)) {
+			    ((Array *)current)->append_dim(atoi($2));
+		    }
+		    else {
+			    Array *a = DDS_OBJ(arg)->get_factory()->NewArray(); 
+			    a->add_var(current); 
+			    a->append_dim(atoi($2));
+			    if( current ) delete current ;
+			    current = a;
+		    }
 
-		     $$ = true;
+		    $$ = true;
 		 }
 
 		 | '[' SCAN_WORD 
 		 {
 		     id = new string($2);
 		 } 
-                 '=' SCAN_WORD 
-                 { 
+         '=' SCAN_WORD 
+         { 
 		     if (!check_int32($5)) {
-			 string msg = "In the dataset descriptor object:\n";
-			 msg += "Expected an array subscript.\n";
-			 parse_error((parser_arg *)arg, msg.c_str(), 
-				 dds_line_num, $5);
-			 error_exit_cleanup();
-			 YYABORT;
+			     string msg = "In the dataset descriptor object:\n";
+			     msg += "Expected an array subscript.\n";
+			     parse_error((parser_arg *)arg, msg.c_str(), dds_line_num, $5);
+			     error_exit_cleanup();
+			     YYABORT;
 		     }
 		     if (current->type() == dods_array_c) {
-			 ((Array *)current)->append_dim(atoi($5), *id);
+			     ((Array *)current)->append_dim(atoi($5), *id);
 		     }
 		     else {
-			 Array *a = DDS_OBJ(arg)->get_factory()->NewArray(); 
-			 a->add_var(current); 
-			 a->append_dim(atoi($5), *id);
-			 if( current ) delete current ;
-			 current = a;
+			     Array *a = DDS_OBJ(arg)->get_factory()->NewArray(); 
+			     a->add_var(current); 
+			     a->append_dim(atoi($5), *id);
+			     if( current ) delete current ;
+			     current = a;
 		     }
 
 		     delete id; id = 0;
 		 }
 		 ']'
-                 {
+         {
 		     $$ = true;
 		 }
 
 		 | error
-                 {
+         {
 		     ostringstream msg;
 		     msg << "In the dataset descriptor object:" << endl
-			 << "Expected an array subscript." << endl;
-		     parse_error((parser_arg *)arg, msg.str().c_str(), 
-				 dds_line_num, $<word>1);
+			     << "Expected an array subscript." << endl;
+		     parse_error((parser_arg *)arg, msg.str().c_str(), dds_line_num, $<word>1);
 		     YYABORT;
 		 }
 ;
 
-name:		var_name { (*DDS_OBJ(arg)).set_dataset_name($1); }
-		| SCAN_DATASET { (*DDS_OBJ(arg)).set_dataset_name($1); }
-                | error 
-                {
-		  ostringstream msg;
-		  msg << "Error parsing the dataset name." << endl
-		      << "The name may be missing or may contain an illegal character." << endl;
-		     parse_error((parser_arg *)arg, msg.str().c_str(),
-				 dds_line_num, $<word>1);
-		     YYABORT;
+name:		var_name { (*DDS_OBJ(arg)).set_dataset_name($1); $$ = true;}
+		| SCAN_DATASET { (*DDS_OBJ(arg)).set_dataset_name($1); $$ = true; }
+        | error 
+        {
+		    ostringstream msg;
+		    msg << "Error parsing the dataset name." << endl
+		        << "The name may be missing or may contain an illegal character." << endl;
+		    parse_error((parser_arg *)arg, msg.str().c_str(), dds_line_num, $<word>1);
+		    YYABORT;
 		}
 ;
 
