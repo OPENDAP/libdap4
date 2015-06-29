@@ -27,7 +27,7 @@ before_install:
   - sudo apt-get install -qq -y libxml2-dev
   - sudo apt-get install -qq -y uuid-dev 
   - sudo apt-get install -qq -y libcurl4-openssl-dev
-  - sudo apt-get install -qq -y cppunit-dev
+  - sudo apt-get install -qq -y libcppunit-dev
   - dpkg -l
 
 # Use this to install any prerequisites or dependencies necessary to
