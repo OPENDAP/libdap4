@@ -377,7 +377,7 @@ array_decl:	'[' SCAN_WORD ']'
 
 		 | '[' SCAN_WORD 
 		 {
-		     id = new string($2);
+		     if (!id) id = new string($2);
 		 } 
          '=' SCAN_WORD 
          { 
