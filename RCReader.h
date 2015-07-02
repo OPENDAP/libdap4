@@ -111,7 +111,7 @@ private:
 
     static RCReader* _instance;
 
-    RCReader() throw(Error);
+    RCReader();
     ~RCReader();
 
     // File I/O methods

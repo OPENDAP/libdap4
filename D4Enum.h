@@ -123,12 +123,13 @@ private:
         }
     }
 
-	D4Enum();	// No empty constructor
+    D4Enum();	// No empty constructor
 
 public:
 	// TODO add a way to set the EnumDef to these
-    D4Enum(const string &name, const string &enum_type) : BaseType(name, dods_enum_c, true /*is_dap4*/),
-			d_buf((uint64_t)0), d_element_type(dods_null_c) {
+    D4Enum(const string &name, const string &enum_type)
+        : BaseType(name, dods_enum_c, true /*is_dap4*/),
+	  d_buf((uint64_t)0), d_element_type(dods_null_c), d_enum_def(0) {
     	d_element_type = get_type(enum_type.c_str());
     	// assert(is_integer_type(d_element_type));
     	if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
@@ -136,14 +137,14 @@ public:
     }
 
     D4Enum(const string &name, Type type) : BaseType(name, dods_enum_c, true /*is_dap4*/),
-    		d_buf((uint64_t)0), d_element_type(type) {
+    		d_buf((uint64_t)0), d_element_type(type), d_enum_def(0) {
     	//assert(is_integer_type(d_element_type));
     	if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
     	set_is_signed(d_element_type);
     }
 
     D4Enum(const string &name, const string &dataset, Type type) : BaseType(name, dataset, dods_enum_c, true /*is_dap4*/),
-    		d_buf((uint64_t)0), d_element_type(type) {
+    		d_buf((uint64_t)0), d_element_type(type), d_enum_def(0) {
     	//assert(is_integer_type(d_element_type));
     	if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
     	set_is_signed(d_element_type);

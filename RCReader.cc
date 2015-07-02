@@ -351,7 +351,7 @@ string RCReader::check_env_var(const string &variable_name)
     return check_string(ev);
 }
 
-RCReader::RCReader() throw (Error)
+RCReader::RCReader() // throw (Error) jhrg 7/2/15
 {
     d_rc_file_path = "";
     d_cache_root = "";

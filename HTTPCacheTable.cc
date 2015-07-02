@@ -505,7 +505,7 @@ HTTPCacheTable::create_location(HTTPCacheTable::CacheEntry *entry)
     int fd = MKSTEMP(&templat[0]); // fd mode is 666 or 600 (Unix)
     if (fd < 0) {
         // delete[] templat; templat = 0;
-        close(fd);
+        // close(fd); Calling close() when fd is < 0 is a bad idea! jhrg 7/2/15
         throw Error("The HTTP Cache could not create a file to hold the response; it will not be cached.");
     }
 

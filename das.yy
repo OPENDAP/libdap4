@@ -192,42 +192,42 @@ static void add_bad_attribute(AttrTable *attr, const string &type,
 
 attr_start:
 	{
-		name = new string();
-		type = new string();
-		attr_tab_stack = new vector<AttrTable *>;
+		if (!name) name = new string();
+		if (!type) type = new string();
+		if (!attr_tab_stack) attr_tab_stack = new vector<AttrTable *>;
 
 		// push outermost AttrTable
 		PUSH(DAS_OBJ(arg)->get_top_level_attributes());
 	}
-        attributes
-        {
+    attributes
+    {
 		POP;	// pop the DAS/AttrTable before stack's dtor
-		delete name;
-		delete type;
-		delete attr_tab_stack;
+		delete name; name = 0;
+		delete type; type = 0;
+		delete attr_tab_stack; attr_tab_stack = 0;
 	}
 ;
 
 attributes:     attribute
-    	    	| attributes attribute
+    | attributes attribute
 
 ;
     	    	
 attribute:    	SCAN_ATTR '{' attr_list '}'
-                | error
-                {
+        | error
+        {
 		    parse_error((parser_arg *)arg, NO_DAS_MSG, das_line_num);
 		}
 ;
 
 attr_list:  	/* empty */
-    	    	| attr_tuple
-    	    	| attr_list attr_tuple
+    	| attr_tuple
+    	| attr_list attr_tuple
 ;
 
 attr_tuple:	alias
 
-                | SCAN_BYTE { save_str(*type, "Byte", das_line_num); }
+        | SCAN_BYTE { save_str(*type, "Byte", das_line_num); }
                 name { save_str(*name, $3, das_line_num); } 
 		bytes ';'
 
@@ -398,9 +398,7 @@ xml:            SCAN_WORD
                     // XML must be quoted in the DAS but the quotes are an
                     // artifact of the DAS syntax so they are not part of the
                     // value.
-                    cerr << "Attr value as read: " << $1 << endl;
                     string xml = unescape_double_quotes($1);
-                    cerr << "w/o quotes: " << remove_quotes(xml) << endl;
                     
                     if (is_quoted(xml))
                         add_attribute(*type, *name, remove_quotes(xml), 0);
@@ -452,9 +450,9 @@ a_or_an(const string &subject)
     string::size_type pos = first_char.find_first_of("aeiouAEIOUyY");
     
     if (pos == string::npos)
-	return "a";
+		return "a";
     else
-	return "an";
+		return "an";
 }
 
 // This code used to throw an exception when a bad attribute value came
@@ -469,16 +467,16 @@ add_attribute(const string &type, const string &name, const string &value,
 	<< " to Attrtable: " << TOP_OF_STACK << endl);
 
     if (chk && !(*chk)(value.c_str())) {
-	string msg = "`";
-	msg += value + "' is not " + a_or_an(type) + " " + type + " value.";
-	add_bad_attribute(TOP_OF_STACK, type, name, value, msg);
-	return;
+		string msg = "`";
+		msg += value + "' is not " + a_or_an(type) + " " + type + " value.";
+		add_bad_attribute(TOP_OF_STACK, type, name, value, msg);
+		return;
     }
     
     if (STACK_EMPTY) {
-	string msg = "Whoa! Attribute table stack empty when adding `" ;
-	msg += name + ".' ";
-	parse_error(msg, das_line_num);
+		string msg = "Whoa! Attribute table stack empty when adding `" ;
+		msg += name + ".' ";
+		parse_error(msg, das_line_num);
     }
     
     try {
@@ -492,8 +490,8 @@ add_attribute(const string &type, const string &name, const string &value,
 	    TOP_OF_STACK->append_attr(name, type, value);
     }
     catch (Error &e) {
-	// re-throw with line number
-	parse_error(e.get_error_message().c_str(), das_line_num);
+	 	// re-throw with line number
+		parse_error(e.get_error_message().c_str(), das_line_num);
     }
 }
 
