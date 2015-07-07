@@ -18,13 +18,15 @@ branches:
     - /^*-travis/
     - /^*-[0-9]+\.[0-9]+\.[0-9]+/
 
-# This may sove the coverity issue where a push to the coverity_scan
+# This may solve the coverity issue where a push to the coverity_scan
 # branch runs the scanner twice (once for each of our compilers).
-# ...not sure and it's hard to test since we get only one run/day.
-#matrix:
-#  exclude:
-#    - compiler: clang
-#    - env: COVERITY_SCAN_BRANCH=1
+# ...not sure and it's hard to test since we get only one run/day,
+# but running the scan twice breaks the build because we're allowed
+# only one run/day.
+matrix:
+  exclude:
+    - compiler: clang
+    - env: COVERITY_SCAN_BRANCH=1
 
 # Use this to prepare the system to install prerequisites or
 # dependencies
