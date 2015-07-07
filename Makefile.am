@@ -62,7 +62,7 @@ libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_CPPFLAGS = $(AM_CPPFLAGS)
 libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la d4_ce/libd4_ce_parser.la \
 d4_function/libd4_function_parser.la libparsers.la
-	
+
 if DAP4_DEFINED
     libdap_la_LIBADD += -lcrypto 
 endif
@@ -359,5 +359,3 @@ lex.Error.cc: Error.lex Error.tab.cc Error.tab.hh
 
 #Error.tab.cc Error.tab.hh: Error.yy
 #	$(YACC) $(YFLAGS) $<
-	
-	

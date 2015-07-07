@@ -15,7 +15,16 @@ branches:
   only:
     - master
     - coverity_scan
+    - /^*-travis/
     - /^*-[0-9]+\.[0-9]+\.[0-9]+/
+
+# This may sove the coverity issue where a push to the coverity_scan
+# branch runs the scanner twice (once for each of our compilers).
+# ...not sure and it's hard to test since we get only one run/day.
+#matrix:
+#  exclude:
+#    - compiler: clang
+#    - env: COVERITY_SCAN_BRANCH=1
 
 # Use this to prepare the system to install prerequisites or
 # dependencies
@@ -94,11 +103,7 @@ addons:
       name: "OPENDAP/libdap4"
       description: "Build submitted via Travis CI"
     notification_email: jgallagher@opendap.org
-    # I don't think this is needed because configure is run
-    # for pushes to the coverity_scan branch as part of the
-    # 'before_script' 6/26/15
-    # build_command_prepend: "./configure --prefix=$prefix"
-    build_command: "make -j 4"
+    build_command: "make -j7"
     branch_pattern: coverity_scan
     
     
