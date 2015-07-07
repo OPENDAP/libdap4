@@ -15,7 +15,7 @@ branches:
   only:
     - master
     - coverity_scan
-    - /^*-travis/
+    - /^*_travis/
     - /^*-[0-9]+\.[0-9]+\.[0-9]+/
 
 # This may solve the coverity issue where a push to the coverity_scan
