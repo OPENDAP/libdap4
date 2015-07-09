@@ -73,6 +73,9 @@ script:
   - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then  make -j7 && make -j7 check && make install ; fi
 
 # Build a debian package if the above worked
+# one way to do this is to load the 'rpm' package using apt-get,
+# then build the RPM (make rpm RPM_OPTIONS=--nodeps) and use
+# alien -d <rpm> (apt-get alien) to build a DEB from it.
 # after_success:
 #  - ./build-deb-pkg.sh
 

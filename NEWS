@@ -1,3 +1,9 @@
+News for version 3.14.1
+
+We started using Travis-CI and Coverity for/with/on this code; there was
+a learning curve... ;-) Also some issues with the parsers have been 
+addressed, hopefully resulting in more straightforward builds.
+
 News for version 3.14.0
 
 This version of libdap contains the current DAP4 implementation for 

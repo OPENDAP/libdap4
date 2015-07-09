@@ -1,3 +1,220 @@
+2015-07-02  James Gallagher  <jgallagher@opendap.org>
+
+	Coverity fix in dds.yy
+	Fixed a potential leak where storage allocated is overwritten.
+	An unlikely bug, but not a big deal to fix.
+
+	Issues found using coverity fixed
+
+2015-06-29  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed cppunit package for travis.yml
+
+	Fixed a memory leak in dds.y
+
+2015-06-26  James Gallagher  <jgallagher@opendap.org>
+
+	Minor syntax error in TestArray; Travis now includes cppunit tests
+
+	Memory leak in TestArray.cc plugged
+
+	More changes WRT coverity and travis
+	...in the travis.yml. Removed the before_build_command
+	stuff from the coverity scan addon section since it seems
+	to be redundant.
+
+	Added coverity scan to travis CI
+
+2015-06-25  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4.git
+
+	Issues found in D4ParserSax2, DAS and DDS using Coverity.
+
+2015-06-20  James Gallagher  <jgallagher@opendap.org>
+
+	Finally fixed...?
+	Using autoconf 2.69 make dist is building a tar-gz that includes the
+	BUILT_SOURCES, which would be great for builders without bison 3. I'm
+	not sure if that will work with autoconf 2.63.
+
+2015-06-19  James Gallagher  <jgallagher@opendap.org>
+
+	Move the D4 Function parser to its own directory.
+	This is an attempt to really fix the stack, position and location.hh
+	problem for once and for all. The Travis build is working, but maybe
+	we're just lucky because a build from the tar.gz made using make dist
+	was still failing.
+
+2015-06-18  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4.git
+
+2015-06-18  Ubuntu  <ubuntu@ip-172-31-34-168.ec2.internal>
+
+	Modified build-deb-pkg.sh so that dap-config matches the installed
+	files.
+
+2015-06-18  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4.git
+
+	Try using NOTPARALLEL with the libdap build - another travis hack.
+
+2015-06-18  Ubuntu  <ubuntu@ip-172-31-34-168.ec2.internal>
+
+	Modified DEBIAN/control to use libcurl4-openssl-dev as a dependency.
+	Not sure why this was not working before.
+	[ci skip]
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Added hackery script to DEBIAN directory.
+	This will help with my simple deb file used for the bes build.
+
+2015-06-18  James Gallagher  <jgallagher@opendap.org>
+
+	Modified Makefile.am and d4_ce/... so bison is called only once
+	This should stop the semi-random build fails for libdap4 on Travis
+	and for other people.
+
+2015-06-17  James Gallagher  <jgallagher@opendap.org>
+
+	Added .NOTPARALLEL to d4_ce/Makefile.am for the grammar files
+	I hope this fixes the odd issue with the generated grammar files
+	breaking hte build in a random fashion. The error may be do to parallel
+	builds running bison several times for each of the generated files, all
+	at the same time.
+
+	Cleaned up the d4_ce code
+	The Makefile.am had leftover parts from the attempt to make the build
+	work when bison 3 was not present. That may have been the cause of the
+	seemingly random build errors I see on Travis CI
+
+	Added dpkg -l to travis.yml
+	This is part of debugging the bes travis build - I cannot seem to sort
+	out the libcurl dependency since my Ubuntu AMI is a 14.x but the build
+	is using 12.x
+
+	travis bison hack...
+
+2015-06-17  Ubuntu  <ubuntu@ip-172-31-34-168.ec2.internal>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Changed DEBIAN/control arch to amd64
+
+2015-06-17  James Gallagher  <jgallagher@opendap.org>
+
+	travis.yml edits
+	Now uses deploy section only for tagged pushes; removed unneeded
+	--force-yes with apt-get; and will build tags in addition to the
+	master branch.
+
+	Fixed build-deb-pkg.sh and added 'deploy' section to travis.
+	Not sure about the deploy bit...
+
+2015-06-16  James Gallagher  <jgallagher@opendap.org>
+
+	Use newly built bison 3
+	Added /usr/local/bin to PATH...
+
+	Build bison from source (circling back)
+	Travis-CI is currently using ubuntu 12 which using bison 2; Ubuntu 14
+	has bison 3 in its package system.
+
+	More tweaks to the simple deb package build
+	This is a deb package for use with travis-ci when we get a bes CI
+	build working
+
+	Added debian package build to travis.yml
+	...also tried using --force-yes to get bison to load with apt-get
+	[ci skip]
+
+2015-06-16  Ubuntu  <ubuntu@ip-172-31-34-168.ec2.internal>
+
+	Added the build-deb-pkg.sh script.
+
+	Added DEBIAN/control
+	Use this along with dpkg-deb --build libdap_<version> to make a
+	debian package.
+
+2015-06-16  James Gallagher  <jgallagher@opendap.org>
+
+	Another change to the travis.yml file
+	It now uses bison installed using apt-get
+
+2015-06-08  James Gallagher  <jgallagher@opendap.org>
+
+	travis-ci error fixed
+	I left --prefix=... on the configure of bison but $prefix's definition
+	was moved to a later step.
+
+	Reorganization of the travis.yml script.
+
+2015-06-07  James Gallagher  <jgallagher@opendap.org>
+
+	clang...
+
+	...another try at clang support
+
+	...another try at clang
+
+2015-06-06  James Gallagher  <jgallagher@opendap.org>
+
+	minor tweak to 'make install' with sudo -i
+
+	fix for clang
+
+	more travis ci changes - learning what this can do...
+
+	Added some package installs to travis ci
+
+	travis ci fix
+
+	travis ci: added install of libdap
+
+	travis ci change: install bison 3 using sudo
+
+2015-06-05  James Gallagher  <jgallagher@opendap.org>
+
+	Travis CI updates
+
+	Added an initial .travis.yml file
+
+2015-06-01  James Gallagher  <jgallagher@opendap.org>
+
+	Added DBG2N - no line number version of DBG2
+
+2015-05-24  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed comment
+
+2015-05-14  James Gallagher  <jgallagher@opendap.org>
+
+	Added a new function to make a temp file using mkstemps()
+	This new function returns the temp file's name and a C++ fstream
+	object that is opened to the temp file. This change adds to the
+	libdap API.
+
+2015-05-12  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed missing <string> include. Patch from O. Poplawski.
+
+	Fix getopt() use. Patch from O. Poplawski
+
+	Broke --enable-developer; now fixed.
+
+	Fixed issues in configure and Makefiles reported by O. Poplawski.
+	--enable-coverage and --enable-valgrind were broken.
+	Setting CXXFLAGS to nothing broke builds on fedroa 21
+
+	Added coverage file to gitignore
+
+2015-05-01  James Gallagher  <jgallagher@opendap.org>
+
+	Formatting, old code removeal, doxygen updates
+
 2015-04-05  James Gallagher  <jgallagher@opendap.org>
 
 	Bison 3 is required for the build.
