@@ -1,6 +1,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+.NOTPARALLEL:
+
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir) $(XML2_CFLAGS)
 AM_CXXFLAGS =  
@@ -33,7 +35,7 @@ pkginclude_HEADERS = D4FunctionEvaluator.h
 # This line forces make to build the grammar files first, which is
 # important because some of the cc files include the parser headers.
 BUILT_SOURCES = lex.d4_function.cc d4_function_parser.tab.cc d4_function_parser.tab.hh \
-stack.hh location.hh position.hh
+	stack.hh location.hh position.hh
 
 libd4_function_parser_la_SOURCES = D4FunctionEvaluator.cc	\
 	D4FunctionEvaluator.h D4FunctionScanner.h	\
@@ -52,6 +54,8 @@ clean-local:
 
 %.tab.cc %.tab.hh: %.yy
 	$(YACC) $(YFLAGS) $<
+
+stack.hh location.hh position.hh: d4_function_parser.tab.cc d4_function_parser.tab.hh
 
 #d4_function_parser.tab.cc d4_function_parser.tab.hh stack.hh location.hh position.hh: d4_function_parser.yy
 #	$(YACC) $(YFLAGS) $<

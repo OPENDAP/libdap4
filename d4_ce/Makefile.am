@@ -1,6 +1,11 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+# We need this to make sure that parallel jobs don't fail for 
+# lack of stack.hh, ... because those are built by bison in one
+# shot.
+.NOTPARALLEL:
+
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir) $(XML2_CFLAGS)
 AM_CXXFLAGS =  
@@ -33,7 +38,7 @@ pkginclude_HEADERS = D4ConstraintEvaluator.h
 # This line forces make to build the grammar files first, which is
 # important because some of the cc files include the parser headers.
 BUILT_SOURCES = lex.d4_ce.cc d4_ce_parser.tab.hh d4_ce_parser.tab.cc \
-stack.hh location.hh position.hh
+	stack.hh location.hh position.hh
 
 libd4_ce_parser_la_SOURCES = lex.d4_ce.cc d4_ce_parser.tab.cc	\
 	d4_ce_parser.tab.hh stack.hh location.hh position.hh \
