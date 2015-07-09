@@ -1,10 +1,3 @@
-# Tests
-
-# Don't run this build in parallel becuse both of the bison envokations
-# build location.hh, poistion.hh and stack.hh and sometimes parallel
-# builds result in junk files.
-
-.NOTPARALLEL:
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -56,14 +49,21 @@ clean-local:
 	-rm d4_ce_parser.tab.cc	d4_ce_parser.tab.hh lex.d4_ce.cc stack.hh \
 		location.hh position.hh
 
-# Using this pattern rule is a way to get gnu make to run bison only once.
-# The targets that explicitly name the two sources to be built will run it
-# twice with a parallel build. jhrg 6/18/15
-
-# %.tab.cc %.tab.hh stack.hh: %.yy
-
-d4_ce_parser.tab.cc d4_ce_parser.tab.hh stack.hh location.hh position.hh: d4_ce_parser.yy
+%.tab.cc %.tab.hh: %.yy
 	$(YACC) $(YFLAGS) $<
+
+#d4_ce_parser.tab.cc d4_ce_parser.tab.hh stack.hh location.hh position.hh: d4_ce_parser.yy
+#	$(YACC) $(YFLAGS) $<
+
+# For now there are two min versions of flex's FlexLexer.h; one that
+# defines the LexerInput() method returning int and one returning size_t.
+# Including the gnerated lex.*.cc code causes a compilation error when
+# the version on the packaging machine differs from the version on the
+# building machine. For now I just remove the generated file. However, 
+# if a fix can be found, then we can remove the flex requirement from
+# a simple (tar.gz) source build. jhrg 7.9.15
+dist-hook:
+	rm $(distdir)/lex.d4_ce.cc
 
 lex.d4_ce.cc: d4_ce_scanner.ll d4_ce_parser.tab.cc d4_ce_parser.tab.hh
 	$(LEX) $(LFLAGS) $<

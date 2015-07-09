@@ -1,10 +1,3 @@
-# Tests
-
-# Don't run this build in parallel becuse both of the bison envokations
-# build location.hh, poistion.hh and stack.hh and sometimes parallel
-# builds result in junk files.
-
-.NOTPARALLEL:
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -57,12 +50,15 @@ clean-local:
 	-rm d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc \
 	    stack.hh position.hh location.hh
 
-# Using this pattern rule is a way to get gnu make to run bison only once.
-# The targets that explicitly name the two sources to be built will run it
-# twice with a parallel build. jhrg 6/18/15
-
-d4_function_parser.tab.cc d4_function_parser.tab.hh stack.hh location.hh position.hh: d4_function_parser.yy
+%.tab.cc %.tab.hh: %.yy
 	$(YACC) $(YFLAGS) $<
+
+#d4_function_parser.tab.cc d4_function_parser.tab.hh stack.hh location.hh position.hh: d4_function_parser.yy
+#	$(YACC) $(YFLAGS) $<
+
+# See the comment in ../d4_ce
+dist-hook:
+	rm $(distdir)/lex.d4_function.cc
 
 lex.d4_function.cc: d4_function_scanner.ll d4_function_parser.tab.cc d4_function_parser.tab.hh
 	$(LEX) $(LFLAGS) $<

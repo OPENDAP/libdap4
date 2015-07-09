@@ -8,7 +8,6 @@ pkgconfigdir=$(libdir)/pkgconfig
 
 AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
 AM_CXXFLAGS = 
-# CXXFLAGS = # This is breaking the link on Fedora 21
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
@@ -39,18 +38,16 @@ bin_PROGRAMS = getdap getdap4
 
 # Including the generated grammar sources in BUILT_SOURCES ensures
 # they are built first. jhrg 6/18/15
-BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
+BUILT_SOURCES = $(BISON_SRC) $(FLEX_SRC) dods-datatypes.h xdr-datatypes.h \
+	getdap.1 dap-config.1 getdap4.1
 
 man_MANS = getdap.1 dap-config.1 getdap4.1
 
 %.1: %.man1
 	groff -t -e -mandoc -Tascii $< | col -bx > $@
 
-libparsers_la_SOURCES = $(GRAM_SRC) 
+libparsers_la_SOURCES = $(FLEX_SRC) $(BISON_SRC)  
 libparsers_la_CPPFLAGS = $(XML2_CFLAGS)
-# Removed this because on CentOS 5 using gl/unistd.h with flex-generated
-# sources is broken - assume that flex is suitably portable on its own,
-# so the gl code is not needed anyway. jhrg 5/2/14 $(AM_CPPFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)
@@ -101,18 +98,13 @@ EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI		\
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf		\
 	libdap.spec VCPP dods-datatypes-static.h			\
 	xdr-datatypes-static.h dap-config-pkgconfig $(LEX_YACC_EXTRA)	\
-	$(GRAM_SRC) OSX_Resources getdap.man1 dap-config.man1 getdap4.man1
+	OSX_Resources getdap.man1 dap-config.man1 getdap4.man1
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
-CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h \
-    xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
-
-# Copy the generated grammar files to the 'grammarfiles' directory.
-.PHONY: grammarfiles
-grammarfiles: $(GRAM_SRC)
-	for f in $(GRAM_SRC); do cp $$f grammarfiles; done
+CLEANFILES = *.log *.output *.gcda *.gcno $(BISON_SRC) $(FLEX_SRC) \
+	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
 
 .PHONY: docs
 docs:
@@ -234,9 +226,10 @@ GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc
 
 GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h
 
-GRAM_SRC = lex.das.cc das.tab.cc das.tab.hh lex.dds.cc dds.tab.cc	\
-	dds.tab.hh lex.ce_expr.cc ce_expr.tab.cc ce_expr.tab.hh		\
-	lex.Error.cc Error.tab.cc Error.tab.hh 
+BISON_SRC = das.tab.cc das.tab.hh dds.tab.cc	dds.tab.hh \
+	ce_expr.tab.cc ce_expr.tab.hh Error.tab.cc Error.tab.hh 
+
+FLEX_SRC = lex.das.cc lex.dds.cc lex.ce_expr.cc lex.Error.cc
 
 DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc		\
