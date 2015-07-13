@@ -78,7 +78,7 @@ before_script:
 # first error).
 #
 script:
-  - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then  make -j7 && make -j7 check && make install ; fi
+  - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then  make -j7 && make -j7 check && make install && make -j7 distcheck; fi
 
 # after_success:
 
