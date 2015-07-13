@@ -54,7 +54,7 @@ addons:
 # run your build
 install:
   - bash ./install_libdap_source_deps.sh
-  - export PATH=$HOME/bison:$PATH
+  - export PATH=$HOME/bison/bin:$PATH
 
 # Use this to prepare your build for testing e.g. copy database
 # configurations, environment variables, etc.
