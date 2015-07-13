@@ -3,7 +3,7 @@
 # Initial Travic-CI control file. 6.5.15 jhrg
 
 # Use the docker container-based build systems
-#sudo: false
+sudo: false
 
 language: cpp
 
@@ -41,10 +41,10 @@ addons:
     branch_pattern: coverity_scan
   apt:
     packages:
-    - libxml2-dev
-    - uuid-dev
-    - libcurl4-openssl-dev
-    - libcppunit-dev
+      - libxml2-dev
+      - uuid-dev
+      - libcurl4-openssl-dev
+      - libcppunit-dev
     
 # Use this to prepare the system to install prerequisites or
 # dependencies
@@ -53,9 +53,9 @@ addons:
 # Use this to install any prerequisites or dependencies necessary to
 # run your build
 install:
-	- bash ./install_libdap_source_deps.sh
-	- export PATH=$HOME/bison:$PATH
-	 
+  - bash ./install_libdap_source_deps.sh
+  - export PATH=$HOME/bison:$PATH
+
 # Use this to prepare your build for testing e.g. copy database
 # configurations, environment variables, etc.
 #
