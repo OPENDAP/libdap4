@@ -1,6 +1,7 @@
 # -*- shell-script -*-
 #
 # Initial Travic-CI control file. 6.5.15 jhrg
+# Updated many times... finally using docker (containers). 7.14.15 jhrg
 
 # Use the docker container-based build systems
 sudo: false
@@ -67,8 +68,6 @@ install:
 before_script:
   - export prefix=$HOME/OPENDAP/build
   - export PATH=$prefix/bin:/usr/local/bin:$PATH
-  - which bison
-  - bison --version
   - autoreconf --force --install --verbose
   - ./configure --prefix=$prefix
 
