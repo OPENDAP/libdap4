@@ -685,6 +685,8 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
             break;
     }
 
+    clear_local_data();
+
     return true;
 }
 
