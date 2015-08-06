@@ -174,7 +174,7 @@ public:
 	@return A newly allocated copy of \c this. */
     virtual BaseType *ptr_duplicate() = 0;
 
-    string name() const;
+    virtual string name() const;
     virtual void set_name(const string &n);
     virtual std::string FQN() const;
 
