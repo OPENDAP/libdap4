@@ -183,7 +183,20 @@ static inline void delete_rows(D4SeqRow *bt_row_ptr)
 
 D4Sequence::~D4Sequence()
 {
+#if 0
     for_each(d_values.begin(), d_values.end(), delete_rows);
+#endif
+    clear_local_data();
+}
+
+void D4Sequence::clear_local_data()
+{
+    if (!d_values.empty()) {
+        for_each(d_values.begin(), d_values.end(), delete_rows);
+        d_values.resize(0);
+    }
+
+    set_read_p(false);
 }
 
 D4Sequence &
@@ -340,6 +353,8 @@ void D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter)
             (*j)->serialize(m, dmr, /*eval,*/false);
         }
     }
+
+    clear_local_data();
 }
 
 void D4Sequence::deserialize(D4StreamUnMarshaller &um, DMR &dmr)

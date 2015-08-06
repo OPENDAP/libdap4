@@ -124,8 +124,8 @@ BaseType::m_duplicate(const BaseType &bt)
     @see Type */
 BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
         : d_name(n), d_type(t), d_dataset(""), d_is_read(false), d_is_send(false),
-        d_in_selection(false), d_is_synthesized(false), d_parent(0),
-        d_attributes(0), d_is_dap4(is_dap4)
+        d_parent(0), d_attributes(0), d_is_dap4(is_dap4),
+		d_in_selection(false), d_is_synthesized(false)
 {}
 
 /** The BaseType constructor needs a name, a dataset, and a type.
@@ -142,8 +142,8 @@ BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
     @see Type */
 BaseType::BaseType(const string &n, const string &d, const Type &t, bool is_dap4)
         : d_name(n), d_type(t), d_dataset(d), d_is_read(false), d_is_send(false),
-        d_in_selection(false), d_is_synthesized(false), d_parent(0),
-        d_attributes(0), d_is_dap4(is_dap4)
+        d_parent(0), d_attributes(0), d_is_dap4(is_dap4),
+		d_in_selection(false), d_is_synthesized(false)
 {}
 
 /** @brief The BaseType copy constructor. */
@@ -180,8 +180,7 @@ BaseType::operator=(const BaseType &rhs)
     debugging when regular inspection w/ddd or gdb isn't enough.
 
     @return A string which shows the object's internal stuff. */
-string
-BaseType::toString()
+string BaseType::toString()
 {
     ostringstream oss;
     oss << "BaseType (" << this << "):" << endl

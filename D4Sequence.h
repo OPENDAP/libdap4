@@ -157,6 +157,8 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
+    virtual void clear_local_data();
+
     /**
      * @brief The number of elements in a Sequence object.
      * @note This is not the number of items in a row, but the number

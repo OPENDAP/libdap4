@@ -172,8 +172,9 @@ Sequence::Sequence(const string &n) :
 
  @brief The Sequence server-side constructor. */
 Sequence::Sequence(const string &n, const string &d) :
-        Constructor(n, d, dods_sequence_c), d_row_number(-1), d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(
-                -1), d_unsent_data(false), d_wrote_soi(false), d_leaf_sequence(false), d_top_most(false)
+		Constructor(n, d, dods_sequence_c), d_row_number(-1), d_starting_row_number(-1),
+		d_row_stride(1), d_ending_row_number(-1), d_unsent_data(false),
+		d_wrote_soi(false), d_leaf_sequence(false), d_top_most(false)
 {
 }
 
@@ -233,7 +234,20 @@ static inline void delete_rows(BaseTypeRow *bt_row_ptr)
 
 Sequence::~Sequence()
 {
+#if 0
     for_each(d_values.begin(), d_values.end(), delete_rows);
+#endif
+    clear_local_data();
+}
+
+void Sequence::clear_local_data()
+{
+    if (!d_values.empty()) {
+        for_each(d_values.begin(), d_values.end(), delete_rows);
+        d_values.resize(0);
+    }
+
+    set_read_p(false);
 }
 
 Sequence &
@@ -669,6 +683,8 @@ bool Sequence::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, boo
         return serialize_leaf(dds, eval, m, ce_eval);
     else
         return serialize_parent_part_one(dds, eval, m);
+
+    clear_local_data();
 }
 
 // We know this is not a leaf Sequence. That means that this Sequence holds

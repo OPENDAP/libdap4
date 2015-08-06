@@ -879,7 +879,7 @@ void Vector::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*
                 d_compound_buf[i]->intern_data(checksum/*, dmr, eval*/);
             break;
 
-        case dods_array_c:
+        case dods_array_c:      // No Array of Array in DAP4 either...
         case dods_grid_c:
         default:
         	throw InternalErr(__FILE__, __LINE__, "Unknown or unsupported datatype (" + d_proto->type_name() + ").");
@@ -959,6 +959,8 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*
             throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
             break;
     }
+
+    clear_local_data();
 }
 
 void
@@ -1278,7 +1280,7 @@ void Vector::set_vec_nocopy(unsigned int i, BaseType * val)
  * Essentially clears the _buf, d_str, and d_compound_buf of any data.
  * Useful for tightening up memory when the data is no longer needed,
  * but the object cannot yet be destroyed.
- * NOTE: this is not virtual, and only affects the data in Vector itself!
+ *
  * On exit: get_value_capacity() == 0 && !read_p()
  */
 void Vector::clear_local_data()
