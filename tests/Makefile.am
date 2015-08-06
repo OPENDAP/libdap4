@@ -77,7 +77,8 @@ DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite dmr-testsuite \
 
 EXTRA_DIST = DASTest.at $(DASTESTSUITE) DDSTest.at $(DDSTESTSUITE) \
 	EXPRTest.at $(EXPRTESTSUITE) DMRTest.at $(DMRTESTSUITE) \
-	getdapTest.at getdap-testsuite atlocal.in $(srcdir)/package.m4 $(DIRS_EXTRA)
+	getdapTest.at $(GETDAPTESTSUITE) getdap-testsuite atlocal.in \
+	$(srcdir)/package.m4 $(DIRS_EXTRA)
 
 CLEANFILES = dmr-testsuite.tar.gz
 
