@@ -57,6 +57,8 @@ public:
 
     virtual BaseType *ptr_duplicate() {  return new D4Opaque(*this); }
 
+    virtual void clear_local_data();
+
     virtual unsigned int width(bool = false) const { return sizeof(vector<uint8_t>); }
 
     // Return the length of the stored data or zero if no string has been

@@ -152,7 +152,7 @@ public:
 
     void vec_resize(int l);
 
-    void clear_local_data();
+    virtual void clear_local_data();
 
     virtual unsigned int get_value_capacity() const;
     virtual void reserve_value_capacity(unsigned int numElements);
