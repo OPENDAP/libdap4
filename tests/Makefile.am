@@ -30,7 +30,8 @@ endif
 
 # TESTS = DASTest DDSTest EXPRTest DMRTest getdapTest
 
-check_SCRIPTS = $(DASTESTSUITE) $(DDSTESTSUITE) $(EXPRTESTSUITE) $(DMRTESTSUITE) $(GETDAPTESTSUITE)
+check_SCRIPTS = $(DASTESTSUITE) $(DDSTESTSUITE) $(EXPRTESTSUITE) \
+	$(DMRTESTSUITE) $(GETDAPTESTSUITE)
 
 # Build the test drivers. The drivers all use the
 # subclassed types in Test*.cc and the TestTypesFactory.
@@ -82,8 +83,9 @@ EXTRA_DIST = DASTest.at $(DASTESTSUITE) DDSTest.at $(DDSTESTSUITE) \
 
 CLEANFILES = dmr-testsuite.tar.gz
 
-DISTCLEANFILES = *.log DASTest.dir/* DDSTest.dir/* EXPRTest.dir/* DMRTest.dir/* \
-	getdapTest.dir/*
+DISTCLEANFILES = *.log
+
+# DASTest.dir/* DDSTest.dir/* EXPRTest.dir/* DMRTest.dir/* getdapTest.dir/*
 
 dmr-testsuite.tar.gz: dmr-testsuite/*.xml
 	tar -czf $@ $^
@@ -104,7 +106,8 @@ DMRTESTSUITE = $(srcdir)/DMRTest
 
 GETDAPTESTSUITE = $(srcdir)/getdapTest
 
-check-local: atconfig atlocal $(DASTESTSUITE) $(DDSTESTSUITE) $(EXPRTESTSUITE) $(DMRTESTSUITE) $(GETDAPTESTSUITE)
+check-local: atconfig atlocal $(DASTESTSUITE) $(DDSTESTSUITE) \
+$(EXPRTESTSUITE) $(DMRTESTSUITE) $(GETDAPTESTSUITE) 
 	$(SHELL) '$(DASTESTSUITE)' $(TESTSUITEFLAGS)
 	$(SHELL) '$(DDSTESTSUITE)' $(TESTSUITEFLAGS)
 	$(SHELL) '$(EXPRTESTSUITE)' $(TESTSUITEFLAGS)
@@ -121,12 +124,10 @@ clean-local:
 	test ! -f '$(EXPRTESTSUITE)' || $(SHELL) $(EXPRTESTSUITE) --clean
 	test ! -f '$(DMRTESTSUITE)' || $(SHELL) $(DMRTESTSUITE) --clean
 	test ! -f '$(GETDAPTESTSUITE)' || $(SHELL) $(GETDAPTESTSUITE) --clean
-	-rm $(DASTESTSUITE) $(DDSTESTSUITE) $(EXPRTESTSUITE) $(DMRTESTSUITE) $(GETDAPTESTSUITE)
 
 distclean-local:
 	-rm atconfig
-	-rm $(srcdir)/package.m4
-	
+
 AUTOTEST = $(AUTOM4TE) --language=autotest
 
 $(DASTESTSUITE): $(srcdir)/DASTest.at $(srcdir)/package.m4
