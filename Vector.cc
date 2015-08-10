@@ -621,6 +621,81 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
+#if 0
+    int i = 0;// TODO move closer to use
+
+    // TODO Time out here? or in ResponseBuilder?
+    dds.timeout_on();
+
+    if (!read_p())
+        read(); // read() throws Error and InternalErr
+
+//#if EVAL
+    if (ce_eval && !eval.eval_selection(dds, dataset()))
+        return true;
+//#endif
+
+    dds.timeout_off();
+
+    // length() is not capacity; it must be set explicitly in read().
+    int num = length();
+
+    switch (d_proto->type()) {
+        case dods_byte_c:
+            m.put_vector(d_buf, num, *this);
+            break;
+        case dods_int16_c:
+        case dods_uint16_c:
+        case dods_int32_c:
+        case dods_uint32_c:
+        case dods_float32_c:
+        case dods_float64_c:
+            m.put_vector(d_buf, num, d_proto->width(), *this);
+            break;
+
+        case dods_str_c:
+        case dods_url_c:
+            if (d_str.capacity() == 0)
+                throw InternalErr(__FILE__, __LINE__, "The capacity of the string vector is 0");
+
+            m.put_int(num);
+
+            for (i = 0; i < num; ++i)
+                m.put_str(d_str[i]);
+
+            break;
+
+        case dods_array_c:
+        case dods_structure_c:
+        case dods_sequence_c:
+        case dods_grid_c:
+            //Jose Garcia
+            // Not setting the capacity of d_compound_buf is an internal error.
+            if (d_compound_buf.capacity() == 0)
+                throw InternalErr(__FILE__, __LINE__, "The capacity of *this* vector is 0.");
+
+            m.put_int(num);
+
+            for (i = 0; i < num; ++i)
+                d_compound_buf[i]->serialize(eval, dds, m, false);
+
+            break;
+
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
+            break;
+    }
+#endif
+
+    bool status = serailize_no_release(eval, dds, m, ce_eval);
+
+    clear_local_data();
+
+    return status;
+}
+
+bool Vector::serailize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval /*true*/)
+{
     int i = 0;// TODO move closer to use
 
     // TODO Time out here? or in ResponseBuilder?
@@ -685,10 +760,9 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
             break;
     }
 
-    clear_local_data();
-
     return true;
 }
+
 
 // Read an object from the network and internalize it. For a Vector this is
 // handled differently for a `cardinal' type. Vectors of Cardinals are
@@ -890,6 +964,7 @@ void Vector::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*
 void
 Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter /*= false*/)
 {
+#if 0
     if (!read_p())
         read(); // read() throws Error and InternalErr
 #if 0
@@ -959,8 +1034,85 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*
             throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
             break;
     }
+#endif
+
+    serialize_no_release(m, dmr, filter);
 
     clear_local_data();
+}
+
+void
+Vector::serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter /* false */)
+{
+    if (!read_p())
+        read(); // read() throws Error and InternalErr
+#if 0
+    if (filter && !eval.eval_selection(dmr, dataset()))
+        return true;
+#endif
+    int64_t num = length();     // The constrained length in elements
+
+    switch (d_proto->type()) {
+        case dods_byte_c:
+        case dods_char_c:
+        case dods_int8_c:
+        case dods_uint8_c:
+            m.put_vector(d_buf, num);
+            break;
+
+        case dods_int16_c:
+        case dods_uint16_c:
+        case dods_int32_c:
+        case dods_uint32_c:
+        case dods_int64_c:
+        case dods_uint64_c:
+                m.put_vector(d_buf, num, d_proto->width());
+                break;
+
+        case dods_enum_c:
+                if (d_proto->width() == 1)
+                        m.put_vector(d_buf, num);
+                else
+                        m.put_vector(d_buf, num, d_proto->width());
+                break;
+
+        case dods_float32_c:
+            m.put_vector_float32(d_buf, num);
+            break;
+
+        case dods_float64_c:
+            m.put_vector_float64(d_buf, num);
+            break;
+
+        case dods_str_c:
+        case dods_url_c:
+            assert((int64_t)d_str.capacity() >= num);
+
+            for (int64_t i = 0; i < num; ++i)
+                m.put_str(d_str[i]);
+
+            break;
+
+        case dods_array_c:
+                throw InternalErr(__FILE__, __LINE__, "Array of Array not allowed.");
+
+        case dods_opaque_c:
+        case dods_structure_c:
+        case dods_sequence_c:
+            assert(d_compound_buf.capacity() >= 0);
+
+            for (int64_t i = 0; i < num; ++i)
+                d_compound_buf[i]->serialize(m, dmr, /*eval,*/ filter);
+
+            break;
+
+        case dods_grid_c:
+                throw InternalErr(__FILE__, __LINE__, "Grid is not part of DAP4.");
+
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
+            break;
+    }
 }
 
 void

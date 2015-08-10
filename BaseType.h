@@ -429,14 +429,41 @@ public:
 	just before data are sent, means that data for any given variable
 	remain in memory for the shortest time possible. Furthermore, since
 	variables are serialized one at a time, no more than one variable's
-	data will be in memory at any given time when using the defaul
+	data will be in memory at any given time when using the default
 	behavior. Some code - code that uses intern_data() or server functions -
-	might alter this default behavior. This change was made on 7/5/15.
+	might alter this default behavior. Only Array (i.e. Vector), Sequence,
+	D4Sequence and D4Opaque types actually hold data in dynamically allocated
+	memory, so sonly those types have the new/changed behavior.
+	This change was made on 7/5/15.
 
 	@exception InternalErr.
 	@exception Error.
 	@see DDS */
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,  Marshaller &m, bool ce_eval = true);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
+
+    /**
+     * Provide a way to get the old behavior of serialize() - calling this
+     * method will serialize the BaseType object's data but _not_ delete its
+     * data storage.
+     *
+     * @note This method's behavior differs only for Array (i.e. Vector), Sequence,
+     * D4Sequence and D4Opaque types; the other types do not use dynamic memory to
+     * hold data values.
+     *
+     * @param eval Use this as the constraint expression evaluator.
+     * @param dds The Data Descriptor Structure object corresponding
+     * to this dataset. See <i>The DODS User Manual</i> for
+     * information about this structure.
+     * @param m A marshaller used to serialize data types
+     * @param ce_eval A boolean value indicating whether to evaluate
+     * the DODS constraint expression that may accompany this
+     * @return This method always returns true. Older versions used
+     * the return value to signal success or failure.
+     * @param
+     */
+    virtual bool serailize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) {
+        return serialize(eval, dds, m, ce_eval);
+    }
 
     /**
      * @brief include the data for this variable in the checksum
@@ -461,7 +488,29 @@ public:
      * @param filter True if there is one variable that should be 'filtered'
      * @exception Error or InternalErr
      */
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
+
+    /**
+     * @brief Variation on the DAP4 serialization method - retain data after serialization
+     * Serialize a variable's values for DAP4. This does not write the DMR
+     * persistent representation but does write that part of the binary
+     * data blob that holds a variable's data. Once a variable's data are
+     * serialized, that memory is reclaimed (by calling BaseType::clear_local_data())
+     *
+     * @note This version does not delete the storage of Array, D4Sequence or
+     * D4Opaque variables, as it the case with serialize(). For other types,
+     * this method and serialize have the same beavior (since those types do
+     * not us dynamic memory to hold data values).
+     *
+     * @param m
+     * @param dmr
+     * @param eval
+     * @param filter True if there is one variable that should be 'filtered'
+     * @exception Error or InternalErr
+     */
+    virtual void serailize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false) {
+        serialize(m, dmr, filter);
+    }
 
     /** Receives data from the network connection identified by the
 	<tt>source</tt> parameter. The data is put into the class data

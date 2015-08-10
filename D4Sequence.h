@@ -190,6 +190,7 @@ public:
     // DAP4
     virtual void intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
+    virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
 #if INDEX_SUBSETTING

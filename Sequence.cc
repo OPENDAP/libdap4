@@ -677,14 +677,30 @@ inline bool Sequence::is_end_of_rows(int i)
 bool Sequence::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
     DBG2(cerr << "Entering Sequence::serialize for " << name() << endl);
+#if 0
+    // Special case leaf sequences!
+    if (is_leaf_sequence())
+        return serialize_leaf(dds, eval, m, ce_eval);
+    else
+        return serialize_parent_part_one(dds, eval, m);
+#endif
+
+    bool status = serialize_no_release(eval, dds, m, ce_eval);
+
+    clear_local_data();
+
+    return status;
+}
+
+bool Sequence::serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
+{
+    DBG2(cerr << "Entering Sequence::serialize for " << name() << endl);
 
     // Special case leaf sequences!
     if (is_leaf_sequence())
         return serialize_leaf(dds, eval, m, ce_eval);
     else
         return serialize_parent_part_one(dds, eval, m);
-
-    clear_local_data();
 }
 
 // We know this is not a leaf Sequence. That means that this Sequence holds
