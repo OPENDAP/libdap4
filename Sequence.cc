@@ -172,8 +172,9 @@ Sequence::Sequence(const string &n) :
 
  @brief The Sequence server-side constructor. */
 Sequence::Sequence(const string &n, const string &d) :
-        Constructor(n, d, dods_sequence_c), d_row_number(-1), d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(
-                -1), d_unsent_data(false), d_wrote_soi(false), d_leaf_sequence(false), d_top_most(false)
+		Constructor(n, d, dods_sequence_c), d_row_number(-1), d_starting_row_number(-1),
+		d_row_stride(1), d_ending_row_number(-1), d_unsent_data(false),
+		d_wrote_soi(false), d_leaf_sequence(false), d_top_most(false)
 {
 }
 
@@ -233,7 +234,20 @@ static inline void delete_rows(BaseTypeRow *bt_row_ptr)
 
 Sequence::~Sequence()
 {
+#if 0
     for_each(d_values.begin(), d_values.end(), delete_rows);
+#endif
+    clear_local_data();
+}
+
+void Sequence::clear_local_data()
+{
+    if (!d_values.empty()) {
+        for_each(d_values.begin(), d_values.end(), delete_rows);
+        d_values.resize(0);
+    }
+
+    set_read_p(false);
 }
 
 Sequence &
@@ -661,6 +675,24 @@ inline bool Sequence::is_end_of_rows(int i)
  </ol>
  */
 bool Sequence::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
+{
+    DBG2(cerr << "Entering Sequence::serialize for " << name() << endl);
+#if 0
+    // Special case leaf sequences!
+    if (is_leaf_sequence())
+        return serialize_leaf(dds, eval, m, ce_eval);
+    else
+        return serialize_parent_part_one(dds, eval, m);
+#endif
+
+    bool status = serialize_no_release(eval, dds, m, ce_eval);
+
+    clear_local_data();
+
+    return status;
+}
+
+bool Sequence::serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
     DBG2(cerr << "Entering Sequence::serialize for " << name() << endl);
 

@@ -124,8 +124,8 @@ BaseType::m_duplicate(const BaseType &bt)
     @see Type */
 BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
         : d_name(n), d_type(t), d_dataset(""), d_is_read(false), d_is_send(false),
-        d_in_selection(false), d_is_synthesized(false), d_parent(0),
-        d_attributes(0), d_is_dap4(is_dap4)
+        d_parent(0), d_attributes(0), d_is_dap4(is_dap4),
+		d_in_selection(false), d_is_synthesized(false)
 {}
 
 /** The BaseType constructor needs a name, a dataset, and a type.
@@ -142,8 +142,8 @@ BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
     @see Type */
 BaseType::BaseType(const string &n, const string &d, const Type &t, bool is_dap4)
         : d_name(n), d_type(t), d_dataset(d), d_is_read(false), d_is_send(false),
-        d_in_selection(false), d_is_synthesized(false), d_parent(0),
-        d_attributes(0), d_is_dap4(is_dap4)
+        d_parent(0), d_attributes(0), d_is_dap4(is_dap4),
+		d_in_selection(false), d_is_synthesized(false)
 {}
 
 /** @brief The BaseType copy constructor. */
@@ -180,12 +180,11 @@ BaseType::operator=(const BaseType &rhs)
     debugging when regular inspection w/ddd or gdb isn't enough.
 
     @return A string which shows the object's internal stuff. */
-string
-BaseType::toString()
+string BaseType::toString()
 {
     ostringstream oss;
     oss << "BaseType (" << this << "):" << endl
-    << "          _name: " << d_name << endl
+    << "          _name: " << name() << endl
     << "          _type: " << type_name() << endl
     << "          _dataset: " << d_dataset << endl
     << "          _read_p: " << d_is_read << endl
@@ -240,7 +239,7 @@ BaseType::dump(ostream &strm) const
     << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
 
-    strm << DapIndent::LMarg << "name: " << d_name << endl ;
+    strm << DapIndent::LMarg << "name: " << name() << endl ;
     strm << DapIndent::LMarg << "type: " << type_name() << endl ;
     strm << DapIndent::LMarg << "dataset: " << d_dataset << endl ;
     strm << DapIndent::LMarg << "read_p: " << d_is_read << endl ;
@@ -961,7 +960,7 @@ BaseType::print_decl(ostream &out, string space, bool print_semi,
     if (constrained && !send_p())
         return;
 
-    out << space << type_name() << " " << id2www(d_name) ;
+    out << space << type_name() << " " << id2www(name()) ;
 
     if (constraint_info) {
         if (send_p())
@@ -1041,8 +1040,8 @@ BaseType::print_xml_writer(XMLWriter &xml, bool constrained)
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)type_name().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write " + type_name() + " element");
 
-    if (!d_name.empty())
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
+    if (!name().empty())
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
     if (is_dap4())
@@ -1110,7 +1109,7 @@ BaseType::print_dap4(XMLWriter &xml, bool constrained)
 bool
 BaseType::check_semantics(string &msg, bool)
 {
-    bool sem = (d_type != dods_null_c && d_name.length());
+    bool sem = (d_type != dods_null_c && name().length());
 
     if (!sem)
         msg = "Every variable must have both a name and a type\n";

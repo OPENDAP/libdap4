@@ -57,6 +57,8 @@ public:
 
     virtual BaseType *ptr_duplicate() {  return new D4Opaque(*this); }
 
+    virtual void clear_local_data();
+
     virtual unsigned int width(bool = false) const { return sizeof(vector<uint8_t>); }
 
     // Return the length of the stored data or zero if no string has been
@@ -74,6 +76,7 @@ public:
     // DAP4
     virtual void compute_checksum(Crc32 &checksum);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
+    virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
