@@ -1,3 +1,15 @@
+News for version 3.14.2
+
+This version of the library _changes the behavior of BaseType::serialize()_
+so that memory allocated on the heap used to hold data (e.g., for an 
+Array) will be deleted as soon as the data are serialized. This was added
+to reduce memory consumption when returning responses with many large 
+variables. The change did not affect any of the code we normally test
+against; I think it was a largely undocumented 'feature' that the data
+were still present after serialized returned. However, if a module needs
+the data after serialize() is called, it can use a new method called
+serialize_no_release() to get the old behavior.
+
 News for version 3.14.1
 
 We started using Travis-CI and Coverity for/with/on this code; there was
