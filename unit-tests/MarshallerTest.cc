@@ -61,45 +61,36 @@ class MarshallerTest: public CppUnit::TestFixture {
 
 CPPUNIT_TEST_SUITE( MarshallerTest );
 
-        CPPUNIT_TEST( simple_types_file_serialize_test );
+    CPPUNIT_TEST(simple_types_file_serialize_test);
 
-        CPPUNIT_TEST( array_file_serialize_test );
-#if 0
-        CPPUNIT_TEST( array_file_serialize_test_2 );
-        CPPUNIT_TEST( array_file_serialize_test_3 );
-        CPPUNIT_TEST( array_file_serialize_test_4 );
-#endif
-        CPPUNIT_TEST( structure_file_serialize_test );
-        CPPUNIT_TEST( grid_file_serialize_test );
-        CPPUNIT_TEST( sequence_file_serialize_test );
+    CPPUNIT_TEST(array_file_serialize_test);
+    CPPUNIT_TEST(structure_file_serialize_test);
+    CPPUNIT_TEST(grid_file_serialize_test);
+    CPPUNIT_TEST(sequence_file_serialize_test);
 
-        CPPUNIT_TEST( simple_types_file_deserialize_test );
-        CPPUNIT_TEST( array_file_deserialize_test );
-        CPPUNIT_TEST( structure_file_deserialize_test );
-        CPPUNIT_TEST( grid_file_deserialize_test );
-        CPPUNIT_TEST( sequence_file_deserialize_test );
+    CPPUNIT_TEST(simple_types_file_deserialize_test);
+    CPPUNIT_TEST(array_file_deserialize_test);
+    CPPUNIT_TEST(structure_file_deserialize_test);
+    CPPUNIT_TEST(grid_file_deserialize_test);
+    CPPUNIT_TEST(sequence_file_deserialize_test);
 
-        CPPUNIT_TEST( simple_types_stream_serialize_test );
-        CPPUNIT_TEST( array_stream_serialize_test );
-        CPPUNIT_TEST( structure_stream_serialize_test );
-        CPPUNIT_TEST( grid_stream_serialize_test );
-        CPPUNIT_TEST( sequence_stream_serialize_test );
+    CPPUNIT_TEST(simple_types_stream_serialize_test);
+    CPPUNIT_TEST(array_stream_serialize_test);
 
-        CPPUNIT_TEST( simple_types_stream_deserialize_test );
-        CPPUNIT_TEST( array_stream_deserialize_test );
-        CPPUNIT_TEST( structure_stream_deserialize_test );
-        CPPUNIT_TEST( grid_stream_deserialize_test );
-        CPPUNIT_TEST( sequence_stream_deserialize_test );
+    CPPUNIT_TEST(array_stream_serialize_test_2);
+    CPPUNIT_TEST(array_stream_serialize_test_3);
+    CPPUNIT_TEST(array_stream_serialize_test_4);
 
-#if CHECKSUMS
-        CPPUNIT_TEST( simple_types_stream_serialize_checksum_test );
-        CPPUNIT_TEST( array_stream_serialize_checksum_test );
-        CPPUNIT_TEST( structure_stream_serialize_checksum_test );
-        CPPUNIT_TEST( grid_stream_serialize_checksum_test );
-#if 0
-        CPPUNIT_TEST( sequence_stream_serialize_checksum_test );
-#endif
-#endif
+    CPPUNIT_TEST(structure_stream_serialize_test);
+    CPPUNIT_TEST(grid_stream_serialize_test);
+    CPPUNIT_TEST(sequence_stream_serialize_test);
+
+    CPPUNIT_TEST(simple_types_stream_deserialize_test);
+    CPPUNIT_TEST(array_stream_deserialize_test);
+    CPPUNIT_TEST(structure_stream_deserialize_test);
+    CPPUNIT_TEST(grid_stream_deserialize_test);
+    CPPUNIT_TEST(sequence_stream_deserialize_test);
+
     CPPUNIT_TEST_SUITE_END( );
 
     TestByte *b;
@@ -128,7 +119,8 @@ CPPUNIT_TEST_SUITE( MarshallerTest );
     dods_byte *db;
 public:
     MarshallerTest() :
-        b(0), i16(0), i32(0), ui16(0), ui32(0), f32(0), f64(0), str(0), url(0), ab(0), arr(0), s(0), dds(&ttf, "dds"), db(0)
+        b(0), i16(0), i32(0), ui16(0), ui32(0), f32(0), f64(0), str(0), url(0), ab(0), arr(0), s(0), dds(&ttf, "dds"), db(
+            0)
     {
 
         url_value = "http://dcz.gso.uri.edu/avhrr-archive/archive.html";
@@ -185,32 +177,41 @@ public:
 
     void tearDown()
     {
-        delete b; b = 0;
-        delete i16; i16 = 0;
-        delete i32; i32 = 0;
-        delete ui16; ui16 = 0;
-        delete ui32; ui32 = 0;
-        delete f32; f32 = 0;
-        delete f64; f64 = 0;
-        delete str; str = 0;
-        delete url; url = 0;
+        delete b;
+        b = 0;
+        delete i16;
+        i16 = 0;
+        delete i32;
+        i32 = 0;
+        delete ui16;
+        ui16 = 0;
+        delete ui32;
+        ui32 = 0;
+        delete f32;
+        f32 = 0;
+        delete f64;
+        f64 = 0;
+        delete str;
+        str = 0;
+        delete url;
+        url = 0;
 
-        delete ab;  ab = 0;
+        delete ab;
+        ab = 0;
 
-        delete arr; arr = 0;
-        delete db; db = 0;
-        delete s; s = 0;
+        delete arr;
+        arr = 0;
+        delete db;
+        db = 0;
+        delete s;
+        s = 0;
     }
 
     void simple_types_file_serialize_test()
     {
         try {
-#if 0
             FILE *f = fopen("st_test.file", "w");
             XDRFileMarshaller fm(f);
-#endif
-            fstream f("st_test.file", fstream::out);
-            XDRStreamMarshaller fm(f);
 
             b->serialize(eval, dds, fm, false);
             i16->serialize(eval, dds, fm, false);
@@ -222,9 +223,9 @@ public:
             str->serialize(eval, dds, fm, false);
             url->serialize(eval, dds, fm, false);
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -236,63 +237,59 @@ public:
 
             Byte fb("fb");
             fb.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( fb.value() == b->value() );
+            CPPUNIT_ASSERT(fb.value() == b->value());
 
             Int16 fi16("i16");
             fi16.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( fi16.value() == i16->value() );
+            CPPUNIT_ASSERT(fi16.value() == i16->value());
 
             Int32 fi32("i32");
             fi32.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( fi32.value() == i32->value() );
+            CPPUNIT_ASSERT(fi32.value() == i32->value());
 
             UInt16 fui16("ui16");
             fui16.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( fui16.value() == ui16->value() );
+            CPPUNIT_ASSERT(fui16.value() == ui16->value());
 
             UInt32 fui32("ui32");
             fui32.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( fui32.value() == ui32->value() );
+            CPPUNIT_ASSERT(fui32.value() == ui32->value());
 
             Float32 ff32("f32");
             ff32.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( ff32.value() == f32->value() );
+            CPPUNIT_ASSERT(ff32.value() == f32->value());
 
             Float64 ff64("f64");
             ff64.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( ff64.value() == f64->value() );
+            CPPUNIT_ASSERT(ff64.value() == f64->value());
 
             Str fstr("str");
             fstr.deserialize(um, &dds, false);
             // Test for the string value like this because the digit after
             // the colon changes each time the read() method is called.
-            CPPUNIT_ASSERT( fstr.value().find("Silly test string:") != string::npos );
+            CPPUNIT_ASSERT(fstr.value().find("Silly test string:") != string::npos);
 
             Url furl("url");
             furl.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( furl.value() == url_value );
+            CPPUNIT_ASSERT(furl.value() == url_value);
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
     void array_file_serialize_test()
     {
         try {
-#if 0
             FILE *f = fopen("a_test.file", "w");
             XDRFileMarshaller fm(f);
-#endif
-            fstream f("a_test.file", fstream::out);
-            XDRStreamMarshaller fm(f);
 
             arr->serialize(eval, dds, fm, false);
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -308,178 +305,18 @@ public:
             farr.append_dim(3, "dim2");
             farr.deserialize(um, &dds, false);
 
-            CPPUNIT_ASSERT( farr.length() == arr->length() );
+            CPPUNIT_ASSERT(farr.length() == arr->length());
 
             dods_byte fdb[farr.length() * sizeof(dods_byte)];
             farr.value(fdb);
-            CPPUNIT_ASSERT( !memcmp( (void *)fdb, (void *)db, farr.length() * sizeof( dods_byte ) ) );
-        }
-        catch( Error &e ) {
-            string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
-        }
-    }
-#if 0
-    // This version of array_file_serialize_test tests the new code in Vector and
-    // Marshaller that enables an Array's serialization to be split over two or more calls.
-    void array_file_serialize_test_2()
-    {
-        try {
-#if 0
-            FILE *f = fopen("a_test_2.file", "w");
-            XDRFileMarshaller fm(f);
-#endif
-            fstream f("a_test_2.file", fstream::out);
-            XDRStreamMarshaller fm(f);
-
-            DBG(cerr << "arr->length(): " << arr->length() << endl);
-            fm.put_int(arr->length());
-            fm.put_int(arr->length());
-
-            DBG(cerr << "&arr->get_buf(): " << hex << (void *)&arr->get_buf() << endl);
-            DBG(cerr << "arr->get_proto().width(): " << arr->get_proto().width() << endl);
-
-            switch (arr->get_proto().type()) {
-            case dods_byte_c:
-                fm.put_vector(&arr->get_buf(), arr->length(), *arr, false /*size_prefix*/);
-
-                break;
-            case dods_int16_c:
-            case dods_uint16_c:
-            case dods_int32_c:
-            case dods_uint32_c:
-            case dods_float32_c:
-            case dods_float64_c:
-                fm.put_vector(&arr->get_buf(), arr->length(), arr->get_proto().width(), *arr, false /*size_prefix*/);
-                break;
-            default:
-                throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
-            }
-
-            // arr->serialize(eval, dds, fm, false);
-        }
-        catch( Error &e ) {
-            string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
-        }
-
-        // now test the file contents to see if the correct stuff was serialized.
-        // Given that this test runs after the first array serialize test, just
-        // use system("cmp ...").
-        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
-        CPPUNIT_ASSERT(0 == system("cmp a_test.file a_test_2.file >/dev/null 2>&1"));
-    }
-
-    void array_file_serialize_test_3()
-    {
-        try {
-#if 0
-            FILE *f = fopen("a_test_3.file", "w");
-            XDRFileMarshaller fm(f);
-#endif
-            fstream f("a_test_3.file", fstream::out);
-            XDRStreamMarshaller fm(f);
-
-            DBG(cerr << "arr->length(): " << arr->length() << endl);
-            fm.put_int(arr->length());
-            fm.put_int(arr->length());
-
-            DBG(cerr << "&arr->get_buf(): " << hex << (void * )&arr->get_buf() << endl);
-            DBG(cerr << "arr->get_proto().width(): " << arr->get_proto().width() << endl);
-
-            const int size_of_first_part = 4;
-            switch (arr->get_proto().type()) {
-            case dods_byte_c:
-                fm.put_vector(&arr->get_buf(), size_of_first_part, *arr, false /*size_prefix*/);
-                fm.put_vector(&arr->get_buf() + size_of_first_part, arr->length() - size_of_first_part, *arr,
-                    false /*size_prefix*/);
-                break;
-
-            case dods_int16_c:
-            case dods_uint16_c:
-            case dods_int32_c:
-            case dods_uint32_c:
-            case dods_float32_c:
-            case dods_float64_c:
-                fm.put_vector(&arr->get_buf(), size_of_first_part, arr->get_proto().width(), *arr,
-                    false /*size_prefix*/);
-                fm.put_vector(&arr->get_buf() + size_of_first_part, arr->length() - size_of_first_part,
-                    arr->get_proto().width(), *arr, false /*size_prefix*/);
-                break;
-
-            default:
-                throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
-            }
-
-            // arr->serialize(eval, dds, fm, false);
+            CPPUNIT_ASSERT(!memcmp((void * )fdb, (void * )db, farr.length() * sizeof(dods_byte)));
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();
             CPPUNIT_FAIL(err.c_str());
         }
-
-        // now test the file contents to see if the correct stuff was serialized.
-        // Given that this test runs after the first array serialize test, just
-        // use system("cmp ...").
-        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
-        CPPUNIT_ASSERT(0 == system("cmp a_test.file a_test_3.file >/dev/null 2>&1"));
     }
 
-    void array_file_serialize_test_4()
-    {
-        try {
-#if 0
-            FILE *f = fopen("a_test_4.file", "w");
-            XDRFileMarshaller fm(f);
-#endif
-            fstream f("a_test_4.file", fstream::out);
-            XDRStreamMarshaller fm(f);
-
-            DBG(cerr << "arr->length(): " << arr->length() << endl);
-            fm.put_int(arr->length());
-            fm.put_int(arr->length());
-
-            DBG(cerr << "&arr->get_buf(): " << hex << (void * )&arr->get_buf() << endl);
-            DBG(cerr << "arr->get_proto().width(): " << arr->get_proto().width() << endl);
-
-            const int size_of_first_part = 5;
-            switch (arr->get_proto().type()) {
-            case dods_byte_c:
-                fm.put_vector(&arr->get_buf(), size_of_first_part, *arr, false /*size_prefix*/);
-                fm.put_vector(&arr->get_buf() + size_of_first_part, arr->length() - size_of_first_part, *arr,
-                    false /*size_prefix*/);
-                break;
-
-            case dods_int16_c:
-            case dods_uint16_c:
-            case dods_int32_c:
-            case dods_uint32_c:
-            case dods_float32_c:
-            case dods_float64_c:
-                fm.put_vector(&arr->get_buf(), size_of_first_part, arr->get_proto().width(), *arr,
-                    false /*size_prefix*/);
-                fm.put_vector(&arr->get_buf() + size_of_first_part, arr->length() - size_of_first_part,
-                    arr->get_proto().width(), *arr, false /*size_prefix*/);
-                break;
-
-            default:
-                throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
-            }
-
-            // arr->serialize(eval, dds, fm, false);
-        }
-        catch (Error &e) {
-            string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL(err.c_str());
-        }
-
-        // now test the file contents to see if the correct stuff was serialized.
-        // Given that this test runs after the first array serialize test, just
-        // use system("cmp ...").
-        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
-        CPPUNIT_ASSERT(0 == system("cmp a_test.file a_test_4.file >/dev/null 2>&1"));
-    }
-#endif
     void structure_file_serialize_test()
     {
         try {
@@ -488,9 +325,9 @@ public:
 
             s->serialize(eval, dds, fm, false);
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -516,28 +353,27 @@ public:
 
             fs.deserialize(um, &dds, false);
 
-            Int32 *fsi32_p = dynamic_cast<Int32 *> (fs.var("fsi32"));
-            CPPUNIT_ASSERT( fsi32_p );
-            CPPUNIT_ASSERT( fsi32_p->value() == i32->value() );
+            Int32 *fsi32_p = dynamic_cast<Int32 *>(fs.var("fsi32"));
+            CPPUNIT_ASSERT(fsi32_p);
+            CPPUNIT_ASSERT(fsi32_p->value() == i32->value());
 
-            Str *fsstr_p = dynamic_cast<Str *> (fs.var("fsstr"));
-            CPPUNIT_ASSERT( fsstr_p );
-            DBG2(cerr << "fsstr_p->value(): " << fsstr_p->value() << endl);
-            CPPUNIT_ASSERT( fsstr_p->value().find("Silly test string:") != string::npos );
+            Str *fsstr_p = dynamic_cast<Str *>(fs.var("fsstr"));
+            CPPUNIT_ASSERT(fsstr_p); DBG2(cerr << "fsstr_p->value(): " << fsstr_p->value() << endl);
+            CPPUNIT_ASSERT(fsstr_p->value().find("Silly test string:") != string::npos);
 
             BaseType *bt = fs.var("fsab");
-            CPPUNIT_ASSERT( bt );
-            Array *fsarr_p = dynamic_cast<Array *> (bt);
-            CPPUNIT_ASSERT( fsarr_p );
+            CPPUNIT_ASSERT(bt);
+            Array *fsarr_p = dynamic_cast<Array *>(bt);
+            CPPUNIT_ASSERT(fsarr_p);
             dods_byte fdb[fsarr_p->length() * sizeof(dods_byte)];
             fsarr_p->value(fdb);
 
-            CPPUNIT_ASSERT( fsarr_p->length() == arr->length() );
-            CPPUNIT_ASSERT( !memcmp( (void *)fdb, (void *)db, fsarr_p->length() * sizeof( dods_byte ) ) );
+            CPPUNIT_ASSERT(fsarr_p->length() == arr->length());
+            CPPUNIT_ASSERT(!memcmp((void * )fdb, (void * )db, fsarr_p->length() * sizeof(dods_byte)));
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -567,9 +403,9 @@ public:
 
             tg.serialize(eval, dds, fm, false);
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -596,17 +432,17 @@ public:
             tg.deserialize(um, &dds, false);
 
             // Check the values in the array
-            CPPUNIT_ASSERT( tg.get_array()->length() == arr->length() );
+            CPPUNIT_ASSERT(tg.get_array()->length() == arr->length());
 
             dods_byte fdb[tg.get_array()->length() * sizeof(dods_byte)];
             tg.get_array()->value(fdb);
-            CPPUNIT_ASSERT( !memcmp( (void *)fdb, (void *)db, tg.get_array()->length() * sizeof( dods_byte ) ) );
+            CPPUNIT_ASSERT(!memcmp((void * )fdb, (void * )db, tg.get_array()->length() * sizeof(dods_byte)));
 
             // Should test the map values here, but skip that for now...
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -631,9 +467,9 @@ public:
 
             seq.serialize(eval, dds, fm, false);
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -658,41 +494,40 @@ public:
 
             seq.deserialize(um, &dds, false);
             unsigned int num_rows = seq.number_of_rows();
-            CPPUNIT_ASSERT( num_rows == 4 );
+            CPPUNIT_ASSERT(num_rows == 4);
             for (unsigned int i = 0; i < num_rows; i++) {
                 BaseTypeRow *row = seq.row_value(i);
-                CPPUNIT_ASSERT( row );
-                CPPUNIT_ASSERT( row->size() == 3 );
-                Float64 *f64_p = dynamic_cast<Float64 *> ((*row)[0]);
-                CPPUNIT_ASSERT( f64_p );
-                CPPUNIT_ASSERT( f64_p->value() == f64->value() );
+                CPPUNIT_ASSERT(row);
+                CPPUNIT_ASSERT(row->size() == 3);
+                Float64 *f64_p = dynamic_cast<Float64 *>((*row)[0]);
+                CPPUNIT_ASSERT(f64_p);
+                CPPUNIT_ASSERT(f64_p->value() == f64->value());
 
-                Array *arr_p = dynamic_cast<Array *> ((*row)[1]);
-                CPPUNIT_ASSERT( arr_p );
+                Array *arr_p = dynamic_cast<Array *>((*row)[1]);
+                CPPUNIT_ASSERT(arr_p);
                 arr_p->value(fdb);
-                CPPUNIT_ASSERT( arr_p->length() == arr->length() );
-                CPPUNIT_ASSERT( !memcmp( (void *)fdb, (void *)db,
-                                arr_p->length() * sizeof( dods_byte ) ) );
-                Sequence *seq_p = dynamic_cast<Sequence *> ((*row)[2]);
-                CPPUNIT_ASSERT( seq_p );
+                CPPUNIT_ASSERT(arr_p->length() == arr->length());
+                CPPUNIT_ASSERT(!memcmp((void * )fdb, (void * )db, arr_p->length() * sizeof(dods_byte)));
+                Sequence *seq_p = dynamic_cast<Sequence *>((*row)[2]);
+                CPPUNIT_ASSERT(seq_p);
                 unsigned int num_rows_sub = seq_p->number_of_rows();
-                CPPUNIT_ASSERT( num_rows == 4 );
+                CPPUNIT_ASSERT(num_rows == 4);
                 for (unsigned int j = 0; j < num_rows_sub; j++) {
                     BaseTypeRow *row_sub = seq_p->row_value(j);
-                    CPPUNIT_ASSERT( row_sub );
-                    CPPUNIT_ASSERT( row_sub->size() == 2 );
-                    UInt16 *ui16_p = dynamic_cast<UInt16 *> ((*row_sub)[0]);
-                    CPPUNIT_ASSERT( ui16_p );
-                    CPPUNIT_ASSERT( ui16_p->value() == ui16->value() );
-                    Url *url_p = dynamic_cast<Url *> ((*row_sub)[1]);
-                    CPPUNIT_ASSERT( url_p );
-                    CPPUNIT_ASSERT( url_p->value() == url->value() );
+                    CPPUNIT_ASSERT(row_sub);
+                    CPPUNIT_ASSERT(row_sub->size() == 2);
+                    UInt16 *ui16_p = dynamic_cast<UInt16 *>((*row_sub)[0]);
+                    CPPUNIT_ASSERT(ui16_p);
+                    CPPUNIT_ASSERT(ui16_p->value() == ui16->value());
+                    Url *url_p = dynamic_cast<Url *>((*row_sub)[1]);
+                    CPPUNIT_ASSERT(url_p);
+                    CPPUNIT_ASSERT(url_p->value() == url->value());
                 }
             }
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -722,9 +557,9 @@ public:
 
             url->serialize(eval, dds, sm, false);
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -740,44 +575,44 @@ public:
 #endif
             Byte fb("fb");
             fb.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( fb.value() == b->value() );
+            CPPUNIT_ASSERT(fb.value() == b->value());
 
             Int16 fi16("i16");
             fi16.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( fi16.value() == i16->value() );
+            CPPUNIT_ASSERT(fi16.value() == i16->value());
 
             Int32 fi32("i32");
             fi32.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( fi32.value() == i32->value() );
+            CPPUNIT_ASSERT(fi32.value() == i32->value());
 
             UInt16 fui16("ui16");
             fui16.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( fui16.value() == ui16->value() );
+            CPPUNIT_ASSERT(fui16.value() == ui16->value());
 
             UInt32 fui32("ui32");
             fui32.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( fui32.value() == ui32->value() );
+            CPPUNIT_ASSERT(fui32.value() == ui32->value());
 
             Float32 ff32("f32");
             ff32.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( ff32.value() == f32->value() );
+            CPPUNIT_ASSERT(ff32.value() == f32->value());
 
             Float64 ff64("f64");
             ff64.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( ff64.value() == f64->value() );
+            CPPUNIT_ASSERT(ff64.value() == f64->value());
 
             Str fstr("str");
             fstr.deserialize(um, &dds, false);
             DBG(cerr << "fstr.value(): " << fstr.value() << endl);
-            CPPUNIT_ASSERT( fstr.value().find("Silly test string:") != string::npos );
+            CPPUNIT_ASSERT(fstr.value().find("Silly test string:") != string::npos);
 
             Url furl("url");
             furl.deserialize(um, &dds, false);
-            CPPUNIT_ASSERT( furl.value() == url_value );
+            CPPUNIT_ASSERT(furl.value() == url_value);
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -853,10 +688,141 @@ public:
 
             arr->serialize(eval, dds, sm, false);
         }
+        catch (Error &e) {
+            string err = "failed:" + e.get_error_message();
+            CPPUNIT_FAIL(err.c_str());
+        }
+    }
+
+    // This version of array_file_serialize_test tests the new code in Vector and
+    // Marshaller that enables an Array's serialization to be split over two or more calls.
+    void array_stream_serialize_test_2()
+    {
+        try {
+            fstream f("a_test_2.file", fstream::out);
+            XDRStreamMarshaller fm(f);
+
+            DBG(cerr << "arr->length(): " << arr->length() << endl);
+            fm.put_vector_size_prefix(arr->length());
+
+            DBG(cerr << "&arr->get_buf(): " << hex << (void *)&arr->get_buf() << endl);
+            DBG(cerr << "arr->var()->width(): " << arr->var()->width() << endl);
+
+            //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
+
+            switch (arr->var()->type()) {
+                case dods_byte_c:
+                case dods_int16_c:
+                case dods_uint16_c:
+                case dods_int32_c:
+                case dods_uint32_c:
+                case dods_float32_c:
+                case dods_float64_c:
+                    fm.put_vector_last(&arr->get_buf(), arr->length(), arr->var()->width(), arr->var()->type());
+                    break;
+
+                default:
+                    throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
+            }
+
+            // arr->serialize(eval, dds, fm, false);
+        }
         catch( Error &e ) {
             string err = "failed:" + e.get_error_message();
             CPPUNIT_FAIL( err.c_str() );
         }
+
+        // now test the file contents to see if the correct stuff was serialized.
+        // Given that this test runs after the first array serialize test, just
+        // use system("cmp ...").
+        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
+        CPPUNIT_ASSERT(0 == system("cmp a_test.file a_test_2.file >/dev/null 2>&1"));
+    }
+
+    void array_stream_serialize_test_3()
+    {
+        try {
+            fstream f("a_test_3.file", fstream::out);
+            XDRStreamMarshaller fm(f);
+
+            DBG(cerr << "arr->length(): " << arr->length() << endl);
+            fm.put_vector_size_prefix(arr->length());
+
+            DBG(cerr << "&arr->get_buf(): " << hex << (void *)&arr->get_buf() << endl);
+            DBG(cerr << "arr->var()->width(): " << arr->var()->width() << endl);
+
+            //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
+            const int size_of_first_part = 4;
+            switch (arr->var()->type()) {
+                case dods_byte_c:
+                case dods_int16_c:
+                case dods_uint16_c:
+                case dods_int32_c:
+                case dods_uint32_c:
+                case dods_float32_c:
+                case dods_float64_c:
+                    fm.put_vector_part(&arr->get_buf(), size_of_first_part, arr->var()->width(), arr->var()->type());
+                    fm.put_vector_last(&arr->get_buf() + size_of_first_part, arr->length() - size_of_first_part,
+                        arr->var()->width(), arr->var()->type());
+                    break;
+
+                default:
+                    throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
+            }
+        }
+        catch (Error &e) {
+            string err = "failed:" + e.get_error_message();
+            CPPUNIT_FAIL(err.c_str());
+        }
+
+        // now test the file contents to see if the correct stuff was serialized.
+        // Given that this test runs after the first array serialize test, just
+        // use system("cmp ...").
+        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
+        CPPUNIT_ASSERT(0 == system("cmp a_test.file a_test_3.file >/dev/null 2>&1"));
+    }
+
+    void array_stream_serialize_test_4()
+    {
+        try {
+            fstream f("a_test_4.file", fstream::out);
+            XDRStreamMarshaller fm(f);
+
+            DBG(cerr << "arr->length(): " << arr->length() << endl);
+            fm.put_vector_size_prefix(arr->length());
+
+            DBG(cerr << "&arr->get_buf(): " << hex << (void *)&arr->get_buf() << endl);
+            DBG(cerr << "arr->var()->width(): " << arr->var()->width() << endl);
+
+            //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
+            const int size_of_first_part = 5;
+            switch (arr->var()->type()) {
+                case dods_byte_c:
+                case dods_int16_c:
+                case dods_uint16_c:
+                case dods_int32_c:
+                case dods_uint32_c:
+                case dods_float32_c:
+                case dods_float64_c:
+                    fm.put_vector_part(&arr->get_buf(), size_of_first_part, arr->var()->width(), arr->var()->type());
+                    fm.put_vector_last(&arr->get_buf() + size_of_first_part, arr->length() - size_of_first_part,
+                        arr->var()->width(), arr->var()->type());
+                    break;
+
+                default:
+                    throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
+            }
+        }
+        catch (Error &e) {
+            string err = "failed:" + e.get_error_message();
+            CPPUNIT_FAIL(err.c_str());
+        }
+
+        // now test the file contents to see if the correct stuff was serialized.
+        // Given that this test runs after the first array serialize test, just
+        // use system("cmp ...").
+        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
+        CPPUNIT_ASSERT(0 == system("cmp a_test.file a_test_4.file >/dev/null 2>&1"));
     }
 
     void array_stream_deserialize_test()
@@ -875,15 +841,15 @@ public:
             farr.append_dim(3, "dim2");
             farr.deserialize(um, &dds, false);
 
-            CPPUNIT_ASSERT( farr.length() == arr->length() );
+            CPPUNIT_ASSERT(farr.length() == arr->length());
 
             dods_byte fdb[arr->length() * sizeof(dods_byte)];
             farr.value(fdb);
-            CPPUNIT_ASSERT( !memcmp( (void *)fdb, (void *)db, farr.length() * sizeof( dods_byte ) ) );
+            CPPUNIT_ASSERT(!memcmp((void * )fdb, (void * )db, farr.length() * sizeof(dods_byte)));
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -894,9 +860,9 @@ public:
             XDRStreamMarshaller sm(strm);
             s->serialize(eval, dds, sm, false);
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -925,27 +891,27 @@ public:
 
             fs.deserialize(um, &dds, false);
 
-            Int32 *fsi32_p = dynamic_cast<Int32 *> (fs.var("fsi32"));
-            CPPUNIT_ASSERT( fsi32_p );
-            CPPUNIT_ASSERT( fsi32_p->value() == i32->value() );
+            Int32 *fsi32_p = dynamic_cast<Int32 *>(fs.var("fsi32"));
+            CPPUNIT_ASSERT(fsi32_p);
+            CPPUNIT_ASSERT(fsi32_p->value() == i32->value());
 
-            Str *fsstr_p = dynamic_cast<Str *> (fs.var("fsstr"));
-            CPPUNIT_ASSERT( fsstr_p );
+            Str *fsstr_p = dynamic_cast<Str *>(fs.var("fsstr"));
+            CPPUNIT_ASSERT(fsstr_p);
             DBG(cerr << "fsstr_p->value(): " << fsstr_p->value() << endl);
-            CPPUNIT_ASSERT( fsstr_p->value().find("Silly test string:") != string::npos );
+            CPPUNIT_ASSERT(fsstr_p->value().find("Silly test string:") != string::npos);
 
             BaseType *bt = fs.var("fsab");
-            CPPUNIT_ASSERT( bt );
-            Array *fsarr_p = dynamic_cast<Array *> (bt);
-            CPPUNIT_ASSERT( fsarr_p );
-            CPPUNIT_ASSERT( fsarr_p->length() == arr->length() );
+            CPPUNIT_ASSERT(bt);
+            Array *fsarr_p = dynamic_cast<Array *>(bt);
+            CPPUNIT_ASSERT(fsarr_p);
+            CPPUNIT_ASSERT(fsarr_p->length() == arr->length());
             dods_byte fdb[fsarr_p->length() * sizeof(dods_byte)];
             fsarr_p->value(fdb);
-            CPPUNIT_ASSERT( !memcmp( (void *)fdb, (void *)db, fsarr_p->length() * sizeof( dods_byte ) ) );
+            CPPUNIT_ASSERT(!memcmp((void * )fdb, (void * )db, fsarr_p->length() * sizeof(dods_byte)));
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -977,9 +943,9 @@ public:
 
             // strm.close() ;
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -1010,19 +976,19 @@ public:
             tg.deserialize(um, &dds, false);
 
             // Check the values in the array
-            CPPUNIT_ASSERT( tg.get_array()->length() == arr->length() );
+            CPPUNIT_ASSERT(tg.get_array()->length() == arr->length());
 
             dods_byte fdb[tg.get_array()->length() * sizeof(dods_byte)];
             tg.get_array()->value(fdb);
-            CPPUNIT_ASSERT( !memcmp( (void *)fdb, (void *)db, tg.get_array()->length() * sizeof( dods_byte ) ) );
+            CPPUNIT_ASSERT(!memcmp((void * )fdb, (void * )db, tg.get_array()->length() * sizeof(dods_byte)));
 
             // Should test the map values here, but skip that for now...
 
             // fclose( sf ) ;
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -1048,9 +1014,9 @@ public:
 
             // strm.close() ;
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 
@@ -1081,51 +1047,51 @@ public:
             seq.deserialize(um, &dds, false);
 
             unsigned int num_rows = seq.number_of_rows();
-            CPPUNIT_ASSERT( num_rows == 4 );
+            CPPUNIT_ASSERT(num_rows == 4);
             for (unsigned int i = 0; i < num_rows; i++) {
                 BaseTypeRow *row = seq.row_value(i);
-                CPPUNIT_ASSERT( row );
-                CPPUNIT_ASSERT( row->size() == 3 );
-                Float64 *f64_p = dynamic_cast<Float64 *> ((*row)[0]);
-                CPPUNIT_ASSERT( f64_p );
-                CPPUNIT_ASSERT( f64_p->value() == f64->value() );
-                Array *arr_p = dynamic_cast<Array *> ((*row)[1]);
-                CPPUNIT_ASSERT( arr_p );
+                CPPUNIT_ASSERT(row);
+                CPPUNIT_ASSERT(row->size() == 3);
+                Float64 *f64_p = dynamic_cast<Float64 *>((*row)[0]);
+                CPPUNIT_ASSERT(f64_p);
+                CPPUNIT_ASSERT(f64_p->value() == f64->value());
+                Array *arr_p = dynamic_cast<Array *>((*row)[1]);
+                CPPUNIT_ASSERT(arr_p);
                 arr_p->value(fdb);
-                CPPUNIT_ASSERT( arr_p->length() == arr->length() );
-                CPPUNIT_ASSERT( !memcmp( (void *)fdb, (void *)db,
-                                arr_p->length() * sizeof( dods_byte ) ) );
-                Sequence *seq_p = dynamic_cast<Sequence *> ((*row)[2]);
-                CPPUNIT_ASSERT( seq_p );
+                CPPUNIT_ASSERT(arr_p->length() == arr->length());
+                CPPUNIT_ASSERT(!memcmp((void * )fdb, (void * )db, arr_p->length() * sizeof(dods_byte)));
+                Sequence *seq_p = dynamic_cast<Sequence *>((*row)[2]);
+                CPPUNIT_ASSERT(seq_p);
                 unsigned int num_rows_sub = seq_p->number_of_rows();
-                CPPUNIT_ASSERT( num_rows == 4 );
+                CPPUNIT_ASSERT(num_rows == 4);
                 for (unsigned int j = 0; j < num_rows_sub; j++) {
                     BaseTypeRow *row_sub = seq_p->row_value(j);
-                    CPPUNIT_ASSERT( row_sub );
-                    CPPUNIT_ASSERT( row_sub->size() == 2 );
-                    UInt16 *ui16_p = dynamic_cast<UInt16 *> ((*row_sub)[0]);
-                    CPPUNIT_ASSERT( ui16_p );
-                    CPPUNIT_ASSERT( ui16_p->value() == ui16->value() );
-                    Url *url_p = dynamic_cast<Url *> ((*row_sub)[1]);
-                    CPPUNIT_ASSERT( url_p );
-                    CPPUNIT_ASSERT( url_p->value() == url->value() );
+                    CPPUNIT_ASSERT(row_sub);
+                    CPPUNIT_ASSERT(row_sub->size() == 2);
+                    UInt16 *ui16_p = dynamic_cast<UInt16 *>((*row_sub)[0]);
+                    CPPUNIT_ASSERT(ui16_p);
+                    CPPUNIT_ASSERT(ui16_p->value() == ui16->value());
+                    Url *url_p = dynamic_cast<Url *>((*row_sub)[1]);
+                    CPPUNIT_ASSERT(url_p);
+                    CPPUNIT_ASSERT(url_p->value() == url->value());
                 }
             }
 
             // fclose( sf ) ;
         }
-        catch( Error &e ) {
+        catch (Error &e) {
             string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
+            CPPUNIT_FAIL(err.c_str());
         }
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( MarshallerTest ) ;
+CPPUNIT_TEST_SUITE_REGISTRATION( MarshallerTest );
 
 } // namepsace libdap
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 

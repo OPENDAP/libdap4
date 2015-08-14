@@ -432,16 +432,13 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
                 throw Error(
                     "Network I/O Error. Could not send byte vector data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
-            // The bytes written minus the 4 length bytes should be no more than 3 more than num
-            assert(bytes_written - num - 4 < 4);
-
             // Only send the num bytes that follow the 4 bytes of length info - we skip the
             // length info because it's already been sent and we don't send any trailing padding
             // bytes in this method (see put_vector_last() for that).
-            unsigned int bytes_sent = d_out.write(&byte_buf[4], num);
+            d_out.write(&byte_buf[4], num);
 
-            if (bytes_sent != num)
-                throw Error ("Network I/O Error. Could not send byte vector data");
+            if (d_out.fail())
+                throw Error ("Network I/O Error. Could not send initial part of byte vector data");
 
             // Now increment the element count so we can figure out about the padding in put_vector_last()
             d_partial_put_element_count += num;
@@ -499,9 +496,10 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
     }
 }
 
-void XDRStreamMarshaller::put_vector_last(char *val, unsigned int num, int width, Type /*type*/)
+void XDRStreamMarshaller::put_vector_last(char *val, unsigned int num, int width, Type type)
 {
     if (width == 1) {
+#if 0
         // this is the word boundary for writing xdr bytes in a vector.
         const unsigned int add_to = 8;
 
@@ -522,35 +520,34 @@ void XDRStreamMarshaller::put_vector_last(char *val, unsigned int num, int width
                 throw Error(
                     "Network I/O Error. Could not send byte vector data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
-            // The bytes written minus the 4 length bytes should be no more than 3 more than num
-            assert(bytes_written - num - 4 < 4);
-
             // Only send the num bytes that follow the 4 bytes of length info - we skip the
             // length info because it's already been sent and we don't send any trailing padding
             // bytes in this method (see put_vector_last() for that).
-            unsigned int bytes_sent = d_out.write(&byte_buf[4], num);
+            d_out.write(&byte_buf[4], num);
 
-            if (bytes_sent != num)
-                throw Error ("Network I/O Error. Could not send byte vector data");
+            if (d_out.fail())
+                throw Error("Network I/O Error. Could not send last part of byte vector data.");
 
             // Now increment the element count so we can figure out about the padding in put_vector_last()
             d_partial_put_element_count += num;
-
-            // now compute the trailing (padding) bytes
-            unsigned int pad = d_partial_put_element_count % 4;
-            if (pad) {
-                vector<char> padding(4, 0); // 4 zeros
-                unsigned int bytes_sent = d_out.write(&padding[0], pad);
-                if (bytes_sent != pad)
-                    throw Error ("Network I/O Error. Could not send byte vector data padding");
-
-            }
 
             xdr_destroy(&byte_sink);
         }
         catch (...) {
             xdr_destroy(&byte_sink);
             throw;
+        }
+#endif
+        // Move this outside the if (width... once the else clause is working.
+        put_vector_part(val, num, width, type);
+
+        // now compute the trailing (padding) bytes
+        unsigned int pad = 4 - (d_partial_put_element_count % 4);
+        if (pad) {
+            vector<char> padding(4, 0); // 4 zeros
+            unsigned int bytes_sent = d_out.write(&padding[0], pad);
+            if (bytes_sent != pad)
+                throw Error ("Network I/O Error. Could not send byte vector data padding");
         }
     }
     else {
