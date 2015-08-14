@@ -36,47 +36,53 @@
 #include <string>
 #include <vector>
 
-using std::string ;
-using std::vector ;
-
 #include "DapObj.h"
-
+#include "Type.h"
 #include "dods-datatypes.h"
 
-namespace libdap
-{
+namespace libdap {
 
-class Vector ;
+class Vector;
 
 /** @brief abstract base class used to marshal/serialize dap data objects
  */
-class Marshaller : public DapObj
-{
+class Marshaller: public DapObj {
 public:
-    virtual void		put_byte( dods_byte val ) = 0 ;
+    virtual void put_byte(dods_byte val) = 0;
 
-    virtual void		put_int16( dods_int16 val ) = 0 ;
-    virtual void		put_int32( dods_int32 val ) = 0 ;
+    virtual void put_int16(dods_int16 val) = 0;
+    virtual void put_int32(dods_int32 val) = 0;
 
-    virtual void		put_float32( dods_float32 val ) = 0 ;
-    virtual void		put_float64( dods_float64 val ) = 0 ;
+    virtual void put_float32(dods_float32 val) = 0;
+    virtual void put_float64(dods_float64 val) = 0;
 
-    virtual void		put_uint16( dods_uint16 val ) = 0 ;
-    virtual void		put_uint32( dods_uint32 val ) = 0 ;
+    virtual void put_uint16(dods_uint16 val) = 0;
+    virtual void put_uint32(dods_uint32 val) = 0;
 
-    virtual void		put_str( const string &val ) = 0 ;
-    virtual void		put_url( const string &val ) = 0 ;
+    virtual void put_str(const std::string &val) = 0;
+    virtual void put_url(const std::string &val) = 0;
 
-    virtual void		put_opaque( char *val, unsigned int len ) = 0 ;
-    virtual void		put_int( int val ) = 0 ;
+    virtual void put_opaque(char *val, unsigned int len) = 0;
+    virtual void put_int(int val) = 0;
 
-    virtual void		put_vector( char *val, int num,
-                                            Vector &vec ) = 0 ;
-    virtual void		put_vector( char *val, int num, int width,
-                                            Vector &vec ) = 0 ;
+    virtual void put_vector(char *val, int num, Vector &vec) = 0;
+    virtual void put_vector(char *val, int num, int width, Vector &vec) = 0;
 
-    virtual void		dump(ostream &strm) const = 0 ;
-} ;
+    /**
+     * Write the prefix bytes for a vector and reset the state/counter for
+     * a vector/array that will be written using put_vector_part() and
+     * put_vector_last().
+     *
+     * @param num The number of elements to write
+     */
+    virtual void put_vector_size_prefix(int num) = 0;
+
+    // FIXME Add a comment. Do we need both type and width?
+    virtual void put_vector_part(char *val, unsigned int num, int width, Type type) = 0;
+    virtual void put_vector_last(char *val, unsigned int num, int width, Type type) = 0;
+
+    virtual void dump(std::ostream &strm) const = 0;
+};
 
 } // namespace libdap
 

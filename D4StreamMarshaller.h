@@ -136,10 +136,22 @@ public:
     virtual void put_vector_float64(char *val, int64_t num_elem);
 
     virtual void put_vector(char *, int , Vector &) {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_length_prefix.");
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented; use other put_vector() versions.");
     }
     virtual void put_vector(char *, int , int , Vector &) {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_length_prefix.");
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented; use other put_vector() versions.");
+    }
+
+    virtual void put_vector_size_prefix(int /*num*/) {
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
+    }
+
+    // FIXME Add a comment. Do we need both type and width?
+    virtual void put_vector_part(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/) {
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
+    }
+    virtual void put_vector_last(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/) {
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
     }
 
     virtual void dump(std::ostream &strm) const;
