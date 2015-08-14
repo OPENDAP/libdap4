@@ -1726,7 +1726,7 @@ static bool types_match(Type t, T *cpp_var)
 /** @brief set the value of a byte array */
 
 template <typename T>
-bool Vector::set_value(T *v, int sz)
+bool Vector::set_value_worker(T *v, int sz)
 {
     if (!v || !types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
         return false;
@@ -1735,33 +1735,16 @@ bool Vector::set_value(T *v, int sz)
     return true;
 }
 
-template <typename T>
-bool Vector::set_value(vector<T> &v, int sz)
-{
-    return set_value(&v[0], sz);
-}
-
-template bool Vector::set_value(dods_byte *val, int sz);
-template bool Vector::set_value(dods_int8 *val, int sz);
-template bool Vector::set_value(dods_int16 *val, int sz);
-template bool Vector::set_value(dods_uint16 *val, int sz);
-template bool Vector::set_value(dods_int32 *val, int sz);
-template bool Vector::set_value(dods_uint32 *val, int sz);
-template bool Vector::set_value(dods_int64 *val, int sz);
-template bool Vector::set_value(dods_uint64 *val, int sz);
-template bool Vector::set_value(dods_float32 *val, int sz);
-template bool Vector::set_value(dods_float64 *val, int sz);
-
-template bool Vector::set_value(vector<dods_byte> &val, int sz);
-template bool Vector::set_value(vector<dods_int8> &val, int sz);
-template bool Vector::set_value(vector<dods_int16> &val, int sz);
-template bool Vector::set_value(vector<dods_uint16> &val, int sz);
-template bool Vector::set_value(vector<dods_int32> &val, int sz);
-template bool Vector::set_value(vector<dods_uint32> &val, int sz);
-template bool Vector::set_value(vector<dods_int64> &val, int sz);
-template bool Vector::set_value(vector<dods_uint64> &val, int sz);
-template bool Vector::set_value(vector<dods_float32> &val, int sz);
-template bool Vector::set_value(vector<dods_float64> &val, int sz);
+bool Vector::set_value(dods_byte *val, int sz)    { set_value_worker(val,sz); }
+bool Vector::set_value(dods_int8 *val, int sz)    { set_value_worker(val,sz); }
+bool Vector::set_value(dods_int16 *val, int sz)   { set_value_worker(val,sz); }
+bool Vector::set_value(dods_uint16 *val, int sz)  { set_value_worker(val,sz); }
+bool Vector::set_value(dods_int32 *val, int sz)   { set_value_worker(val,sz); }
+bool Vector::set_value(dods_uint32 *val, int sz)  { set_value_worker(val,sz); }
+bool Vector::set_value(dods_int64 *val, int sz)   { set_value_worker(val,sz); }
+bool Vector::set_value(dods_uint64 *val, int sz)  { set_value_worker(val,sz); }
+bool Vector::set_value(dods_float32 *val, int sz) { set_value_worker(val,sz); }
+bool Vector::set_value(dods_float64 *val, int sz) { set_value_worker(val,sz); }
 
 /** @brief set the value of a string or url array */
 bool Vector::set_value(string *val, int sz)
@@ -1780,6 +1763,26 @@ bool Vector::set_value(string *val, int sz)
         return false;
     }
 }
+
+
+
+template <typename T>
+bool Vector::set_value_worker(vector<T> &v, int sz)
+{
+    return set_value(&v[0], sz);
+}
+
+bool Vector::set_value(vector<dods_byte> &val, int sz)    { set_value_worker(val,sz); }
+bool Vector::set_value(vector<dods_int8> &val, int sz)    { set_value_worker(val,sz); }
+bool Vector::set_value(vector<dods_int16> &val, int sz)   { set_value_worker(val,sz); }
+bool Vector::set_value(vector<dods_uint16> &val, int sz)  { set_value_worker(val,sz); }
+bool Vector::set_value(vector<dods_int32> &val, int sz)   { set_value_worker(val,sz); }
+bool Vector::set_value(vector<dods_uint32> &val, int sz)  { set_value_worker(val,sz); }
+bool Vector::set_value(vector<dods_int64> &val, int sz)   { set_value_worker(val,sz); }
+bool Vector::set_value(vector<dods_uint64> &val, int sz)  { set_value_worker(val,sz); }
+bool Vector::set_value(vector<dods_float32> &val, int sz) { set_value_worker(val,sz); }
+bool Vector::set_value(vector<dods_float64> &val, int sz) { set_value_worker(val,sz); }
+
 
 /** @brief set the value of a string or url array */
 bool Vector::set_value(vector<string> &val, int sz)
@@ -1819,7 +1822,7 @@ bool Vector::set_value(vector<string> &val, int sz)
  * @param b A pointer to the memory to hold the data; must be at least
  * length() * sizeof(dods_byte) in size.*/
 template <typename T>
-void Vector::value(vector<unsigned int> *indices, T *b) const
+void Vector::value_worker(vector<unsigned int> *indices, T *b) const
 {
    // unsigned long currentIndex;
 #if 0
@@ -1846,7 +1849,18 @@ void Vector::value(vector<unsigned int> *indices, T *b) const
         b[i] = reinterpret_cast<T*>(d_buf )[currentIndex]; // I like this version - and it works!
     }
 }
+void Vector::value(vector<unsigned int> *indices, dods_byte *b) const    { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_int8 *b) const    { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_int16 *b) const   { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_uint16 *b) const  { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_int32 *b) const   { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_uint32 *b) const  { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_int64 *b) const   { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_uint64 *b) const  { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_float32 *b) const { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_float64 *b) const { value_worker(indices, b); }
 
+#if 0
 template void Vector::value(vector<unsigned int> *indices, dods_byte *b) const;
 template void Vector::value(vector<unsigned int> *indices, dods_int8 *b) const;
 template void Vector::value(vector<unsigned int> *indices, dods_int16 *b) const;
@@ -1857,6 +1871,7 @@ template void Vector::value(vector<unsigned int> *indices, dods_int64 *b) const;
 template void Vector::value(vector<unsigned int> *indices, dods_uint64 *b) const;
 template void Vector::value(vector<unsigned int> *indices, dods_float32 *b) const;
 template void Vector::value(vector<unsigned int> *indices, dods_float64 *b) const;
+#endif
 
 /** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
 void Vector::value(vector<unsigned int> *subsetIndex, vector<string> &b) const
@@ -1878,14 +1893,25 @@ void Vector::value(vector<unsigned int> *subsetIndex, vector<string> &b) const
 }
 
 template <typename T>
-void Vector::value(T *v) const
+void Vector::value_worker(T *v) const
 {
     // Only copy if v is not null and the proto's  type matches.
     // For Enums, use the element type since type == dods_enum_c.
     if (v && types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
         memcpy(v, d_buf, length() * sizeof(T));
 }
+void Vector::value(dods_byte *b) const    { value_worker(b); }
+void Vector::value(dods_int8 *b) const    { value_worker(b); }
+void Vector::value(dods_int16 *b) const   { value_worker(b); }
+void Vector::value(dods_uint16 *b) const  { value_worker(b); }
+void Vector::value(dods_int32 *b) const   { value_worker(b); }
+void Vector::value(dods_uint32 *b) const  { value_worker(b); }
+void Vector::value(dods_int64 *b) const   { value_worker(b); }
+void Vector::value(dods_uint64 *b) const  { value_worker(b); }
+void Vector::value(dods_float32 *b) const { value_worker(b); }
+void Vector::value(dods_float64 *b) const { value_worker(b); }
 
+#if 0
 template void Vector::value(dods_byte *v) const;
 template void Vector::value(dods_int8 *v) const;
 template void Vector::value(dods_int16 *v) const;
@@ -1896,6 +1922,8 @@ template void Vector::value(dods_int64 *v) const;
 template void Vector::value(dods_uint64 *v) const;
 template void Vector::value(dods_float32 *v) const;
 template void Vector::value(dods_float64 *v) const;
+#endif
+
 
 /** @brief Get a copy of the data held by this variable. */
 void Vector::value(vector<string> &b) const
