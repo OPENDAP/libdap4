@@ -93,6 +93,8 @@ private:
     // or the capacity of d_str for strings or capacity of _vec.
     unsigned int d_capacity;
 
+    friend class MarshallerTest;
+
 protected:
     // This function copies the private members of Vector.
     void m_duplicate(const Vector &v);
@@ -102,6 +104,39 @@ protected:
     void m_delete_cardinal_data_buffer();
 
     template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int numElts);
+
+    /**
+     * Provide access to internal data by reference. Callers cannot delete this
+     * but can pass them to other methods.
+     *
+     * @note Added so that the NCML handler can code some optimizations in its
+     * specialized versions of Array. jhrg 8/14/15
+     * @return A reference to the data buffer for Vectors/Arrays of the cardinal types.
+     */
+    char &get_buf() const {
+        return *d_buf;
+    }
+
+    /**
+     * Provide access to internal string data by reference. Callers cannot delete this
+     * but can pass them to other methods.
+     *
+     * @return A reference to a vector of strings
+     */
+    vector<string> &get_str() {
+        return d_str;
+    }
+
+    /**
+     * Provide access to internal data by reference. Callers cannot delete this
+     * but can pass them to other methods.
+     *
+     * @return A reference to a vector of BaseType pointers. Treat with care; never
+     * delete these!
+     */
+    vector<BaseType*> &get_compound_buf() {
+        return d_compound_buf;
+    }
 
 public:
     Vector(const string &n, BaseType *v, const Type &t, bool is_dap4 = false);

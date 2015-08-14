@@ -696,18 +696,13 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
 
 bool Vector::serailize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval /*true*/)
 {
-    int i = 0;// TODO move closer to use
-
-    // TODO Time out here? or in ResponseBuilder?
     dds.timeout_on();
 
     if (!read_p())
         read(); // read() throws Error and InternalErr
 
-//#if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-//#endif
 
     dds.timeout_off();
 
@@ -734,12 +729,13 @@ bool Vector::serailize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshalle
 
             m.put_int(num);
 
-            for (i = 0; i < num; ++i)
+            for (int i = 0; i < num; ++i)
                 m.put_str(d_str[i]);
 
             break;
 
         case dods_array_c:
+            // TODO I think this case should be an error. jhrg 8/14/15
         case dods_structure_c:
         case dods_sequence_c:
         case dods_grid_c:
@@ -750,7 +746,7 @@ bool Vector::serailize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshalle
 
             m.put_int(num);
 
-            for (i = 0; i < num; ++i)
+            for (int i = 0; i < num; ++i)
                 d_compound_buf[i]->serialize(eval, dds, m, false);
 
             break;
