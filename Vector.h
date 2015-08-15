@@ -94,7 +94,7 @@ private:
     unsigned int d_capacity;
 
     /*
-     * Made these template methods private because the can't be
+     * Made these template methods private because they can't be
      * overridden anyways (because c++...) - ndp 08/14/2015
      *
      */
