@@ -105,6 +105,16 @@ protected:
 
     template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int numElts);
 
+public:
+    Vector(const string &n, BaseType *v, const Type &t, bool is_dap4 = false);
+    Vector(const string &n, const string &d, BaseType *v, const Type &t, bool is_dap4 = false);
+    Vector(const Vector &rhs);
+
+    virtual ~Vector();
+
+    Vector &operator=(const Vector &rhs);
+    virtual BaseType *ptr_duplicate() = 0;
+
     /**
      * Provide access to internal data by reference. Callers cannot delete this
      * but can pass them to other methods.
@@ -113,8 +123,8 @@ protected:
      * specialized versions of Array. jhrg 8/14/15
      * @return A reference to the data buffer for Vectors/Arrays of the cardinal types.
      */
-    char &get_buf() const {
-        return *d_buf;
+    char *get_buf() {
+        return d_buf;
     }
 
     /**
@@ -137,16 +147,6 @@ protected:
     vector<BaseType*> &get_compound_buf() {
         return d_compound_buf;
     }
-
-public:
-    Vector(const string &n, BaseType *v, const Type &t, bool is_dap4 = false);
-    Vector(const string &n, const string &d, BaseType *v, const Type &t, bool is_dap4 = false);
-    Vector(const Vector &rhs);
-
-    virtual ~Vector();
-
-    Vector &operator=(const Vector &rhs);
-    virtual BaseType *ptr_duplicate() = 0;
 
 #if 0
     virtual bool is_dap2_only_type();

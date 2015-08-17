@@ -791,7 +791,7 @@ public:
                 case dods_uint32_c:
                 case dods_float32_c:
                 case dods_float64_c:
-                    fm.put_vector_part(&arr->get_buf(), arr->length(), arr->var()->width(), arr->var()->type());
+                    fm.put_vector_part(arr->get_buf(), arr->length(), arr->var()->width(), arr->var()->type());
                     fm.put_vector_end();
                     break;
 
@@ -834,8 +834,8 @@ public:
                 case dods_uint32_c:
                 case dods_float32_c:
                 case dods_float64_c:
-                    fm.put_vector_part(&arr->get_buf(), size_of_first_part, arr->var()->width(), arr->var()->type());
-                    fm.put_vector_part(&arr->get_buf() + size_of_first_part, arr->length() - size_of_first_part,
+                    fm.put_vector_part(arr->get_buf(), size_of_first_part, arr->var()->width(), arr->var()->type());
+                    fm.put_vector_part(arr->get_buf() + size_of_first_part, arr->length() - size_of_first_part,
                         arr->var()->width(), arr->var()->type());
                     fm.put_vector_end();
                     break;
@@ -877,8 +877,8 @@ public:
                 case dods_uint32_c:
                 case dods_float32_c:
                 case dods_float64_c:
-                    fm.put_vector_part(&arr->get_buf(), size_of_first_part, arr->var()->width(), arr->var()->type());
-                    fm.put_vector_part(&arr->get_buf() + size_of_first_part, arr->length() - size_of_first_part,
+                    fm.put_vector_part(arr->get_buf(), size_of_first_part, arr->var()->width(), arr->var()->type());
+                    fm.put_vector_part(arr->get_buf() + size_of_first_part, arr->length() - size_of_first_part,
                         arr->var()->width(), arr->var()->type());
                     fm.put_vector_end();
                     break;
@@ -950,7 +950,7 @@ public:
             DBG(cerr << "arr_f32->length(): " << arr_f32->length() << endl);
             fm.put_vector_start(arr_f32->length());
 
-            DBG(cerr << "&arr_f32->get_buf(): " << hex << (void *)&arr_f32->get_buf() << dec << endl);
+            DBG(cerr << "&arr_f32->get_buf(): " << hex << (void *)arr_f32->get_buf() << dec << endl);
             DBG(cerr << "arr_f32->var()->width(): " << arr_f32->var()->width() << endl);
 
             //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
@@ -964,13 +964,13 @@ public:
                 case dods_uint32_c:
                 case dods_float32_c:
                 case dods_float64_c:
-                    fm.put_vector_part(&arr_f32->get_buf(), size_of_first_part, arr_f32->var()->width(),
+                    fm.put_vector_part(arr_f32->get_buf(), size_of_first_part, arr_f32->var()->width(),
                         arr_f32->var()->type());
 
                     // For this call, we have to pass the memory location of the rest of the array,
                     // so we do a little calculation since get_buf() returns a char *. Actual code
                     // would not need to do that.
-                    fm.put_vector_part(&arr_f32->get_buf() + (size_of_first_part * arr_f32->var()->width()),
+                    fm.put_vector_part(arr_f32->get_buf() + (size_of_first_part * arr_f32->var()->width()),
                         arr_f32->length() - size_of_first_part, arr_f32->var()->width(), arr_f32->var()->type());
                     fm.put_vector_end();
                     break;
@@ -1041,7 +1041,7 @@ public:
             DBG(cerr << "arr_f64->length(): " << arr_f64->length() << endl);
             fm.put_vector_start(arr_f64->length());
 
-            DBG(cerr << "&arr_f64->get_buf(): " << hex << (void *)&arr_f64->get_buf() << dec << endl);
+            DBG(cerr << "&arr_f64->get_buf(): " << hex << (void *)arr_f64->get_buf() << dec << endl);
             DBG(cerr << "arr_f64->var()->width(): " << arr_f64->var()->width() << endl);
 
             //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
@@ -1055,13 +1055,13 @@ public:
                 case dods_uint32_c:
                 case dods_float32_c:
                 case dods_float64_c:
-                    fm.put_vector_part(&arr_f64->get_buf(), size_of_first_part, arr_f64->var()->width(),
+                    fm.put_vector_part(arr_f64->get_buf(), size_of_first_part, arr_f64->var()->width(),
                         arr_f64->var()->type());
 
                     // For this call, we have to pass the memory location of the rest of the array,
                     // so we do a little calculation since get_buf() returns a char *. Actual code
                     // would not need to do that.
-                    fm.put_vector_part(&arr_f64->get_buf() + (size_of_first_part * arr_f64->var()->width()),
+                    fm.put_vector_part(arr_f64->get_buf() + (size_of_first_part * arr_f64->var()->width()),
                         arr_f64->length() - size_of_first_part, arr_f64->var()->width(), arr_f64->var()->type());
                     fm.put_vector_end();
                     break;

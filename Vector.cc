@@ -799,7 +799,7 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
                 set_length(num);
 
             if (num != (unsigned int) length())
-                throw InternalErr(__FILE__, __LINE__, "The server sent declarations and data with mismatched sizes.");
+                throw InternalErr(__FILE__, __LINE__, "The server sent declarations and data with mismatched sizes for the variable '" + name() + "'.");
 
             if (!d_buf || !reuse) {
                 // Make d_buf be large enough for length() elements of _var->type()
