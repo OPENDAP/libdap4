@@ -62,7 +62,7 @@ char *XDRStreamMarshaller::d_buf = 0;
  * @param write_data If true, write data values. True by default
  */
 XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) :
-    d_out(out), d_partial_put_element_count(0)
+    d_out(out), d_partial_put_byte_count(0)
 {
     if (!d_buf) d_buf = (char *) malloc(XDR_DAP_BUFF_SIZE);
     if (!d_buf) throw Error("Failed to allocate memory for data serialization.");
@@ -71,13 +71,13 @@ XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) :
 }
 
 XDRStreamMarshaller::XDRStreamMarshaller() :
-    Marshaller(), d_out(cout), d_partial_put_element_count(0)
+    Marshaller(), d_out(cout), d_partial_put_byte_count(0)
 {
     throw InternalErr(__FILE__, __LINE__, "Default constructor not implemented.");
 }
 
 XDRStreamMarshaller::XDRStreamMarshaller(const XDRStreamMarshaller &m) :
-    Marshaller(m), d_out(cout), d_partial_put_element_count(0)
+    Marshaller(m), d_out(cout), d_partial_put_byte_count(0)
 {
     throw InternalErr(__FILE__, __LINE__, "Copy constructor not implemented.");
 }
@@ -97,8 +97,6 @@ XDRStreamMarshaller::~XDRStreamMarshaller()
 
 void XDRStreamMarshaller::put_byte(dods_byte val)
 {
-    DBG( std::cerr << "put_byte: " << val << std::endl );
-
     if (!xdr_setpos(&d_sink, 0))
         throw Error(
             "Network I/O Error. Could not send byte data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
@@ -400,30 +398,49 @@ void XDRStreamMarshaller::put_vector(char *val, unsigned int num, int width, Typ
     }
 }
 
-void XDRStreamMarshaller::put_vector_size_prefix(int num)
+
+/**
+ * Prepare to send a single array/vector using a series of 'put' calls.
+ *
+ * @param num The number of elements in the Array/Vector
+ * @see put_vector_part()
+ * @see put_vector_end()
+ */
+void XDRStreamMarshaller::put_vector_start(int num)
 {
     put_int(num);
     put_int(num);
 
-    d_partial_put_element_count = 0;
+    d_partial_put_byte_count = 0;
 }
 
-void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width, Type /*type*/)
+/**
+ * Write num values for an Array/Vector.
+ *
+ * @param val The values to write
+ * @param num the number of values to write
+ * @param width The width of the values
+ * @param type The DAP2 type of the values.
+ *
+ * @see put_vector_start()
+ * @see put_vector_end()
+ */
+void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width, Type type)
 {
     if (width == 1) {
         // Add space for the 4 bytes of length info and 4 bytes for padding, even though
         // we will not send either of those.
         const unsigned int add_to = 8;
-
-        vector<char> byte_buf(num + add_to);
+        unsigned int bufsiz = num + add_to;
+        vector<char> byte_buf(bufsiz);
         XDR byte_sink;
         try {
-            xdrmem_create(&byte_sink, &byte_buf[0], num + add_to, XDR_ENCODE);
+            xdrmem_create(&byte_sink, &byte_buf[0], bufsiz, XDR_ENCODE);
             if (!xdr_setpos(&byte_sink, 0))
                 throw Error(
                     "Network I/O Error. Could not send byte vector data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
-            if (!xdr_bytes(&byte_sink, (char **) &val, (unsigned int *) &num, num + add_to))
+            if (!xdr_bytes(&byte_sink, (char **) &val, (unsigned int *) &num, bufsiz))
                 throw Error(
                     "Network I/O Error(2). Could not send byte vector data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
 
@@ -441,7 +458,7 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
                 throw Error ("Network I/O Error. Could not send initial part of byte vector data");
 
             // Now increment the element count so we can figure out about the padding in put_vector_last()
-            d_partial_put_element_count += num;
+            d_partial_put_byte_count += num;
 
             xdr_destroy(&byte_sink);
         }
@@ -451,13 +468,10 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
         }
     }
     else {
-#if 0
-        // broken code jhrg 8/14/15
-        int use_width = width;
-        if (width < 4) use_width = 4;
+        int use_width = (width < 4) ? 4: width;
 
         // the size is the number of elements num times the width of each
-        // element, then add 4 bytes for the number of elements
+        // element, then add 4 bytes for the (int) number of elements
         int size = (num * use_width) + 4;
 
         // allocate enough memory for the elements
@@ -483,8 +497,14 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
                     "Network I/O Error. Could not send vector data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
 
             // write that much out to the output stream, skipping the length data that
-            // XDR writes since we have already written the length info.
-            d_out.write(&vec_buf[4], bytes_written - 4);
+            // XDR writes since we have already written the length info using put_vector_start()
+            d_out.write(&vec_buf[4], size - 4);
+
+            if (d_out.fail())
+                throw Error ("Network I/O Error. Could not send part of vector data");
+
+            // Now increment the element count so we can figure out about the padding in put_vector_last()
+            d_partial_put_byte_count += (size - 4);
 
             xdr_destroy(&vec_sink);
         }
@@ -492,105 +512,28 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
             xdr_destroy(&vec_sink);
             throw;
         }
-#endif
     }
 }
 
-void XDRStreamMarshaller::put_vector_last(char *val, unsigned int num, int width, Type type)
+/**
+ * Close a vector when its values are written using put_vector_part().
+ *
+ * @see put_vector_start()
+ * @see put_vector_part()
+ */
+void XDRStreamMarshaller::put_vector_end()
 {
-    if (width == 1) {
-#if 0
-        // this is the word boundary for writing xdr bytes in a vector.
-        const unsigned int add_to = 8;
+    // Compute the trailing (padding) bytes
 
-        vector<char> byte_buf(num + add_to);
-        XDR byte_sink;
-        try {
-            xdrmem_create(&byte_sink, &byte_buf[0], num + add_to, XDR_ENCODE);
-            if (!xdr_setpos(&byte_sink, 0))
-                throw Error(
-                    "Network I/O Error. Could not send byte vector data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+    // Note that the XDR standard pads values to 4 byte boundaries.
+    //unsigned int pad = (d_partial_put_byte_count % 4) == 0 ? 0: 4 - (d_partial_put_byte_count % 4);
+    unsigned int mod_4 = d_partial_put_byte_count & 0x03;
+    unsigned int pad = (mod_4 == 0) ? 0: 4 - mod_4;
 
-            if (!xdr_bytes(&byte_sink, (char **) &val, (unsigned int *) &num, num + add_to))
-                throw Error(
-                    "Network I/O Error(2). Could not send byte vector data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
-
-            unsigned int bytes_written = xdr_getpos(&byte_sink);
-            if (!bytes_written)
-                throw Error(
-                    "Network I/O Error. Could not send byte vector data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
-
-            // Only send the num bytes that follow the 4 bytes of length info - we skip the
-            // length info because it's already been sent and we don't send any trailing padding
-            // bytes in this method (see put_vector_last() for that).
-            d_out.write(&byte_buf[4], num);
-
-            if (d_out.fail())
-                throw Error("Network I/O Error. Could not send last part of byte vector data.");
-
-            // Now increment the element count so we can figure out about the padding in put_vector_last()
-            d_partial_put_element_count += num;
-
-            xdr_destroy(&byte_sink);
-        }
-        catch (...) {
-            xdr_destroy(&byte_sink);
-            throw;
-        }
-#endif
-        // Move this outside the if (width... once the else clause is working.
-        put_vector_part(val, num, width, type);
-
-        // now compute the trailing (padding) bytes
-        unsigned int pad = 4 - (d_partial_put_element_count % 4);
-        if (pad) {
-            vector<char> padding(4, 0); // 4 zeros
-            unsigned int bytes_sent = d_out.write(&padding[0], pad);
-            if (bytes_sent != pad)
-                throw Error ("Network I/O Error. Could not send byte vector data padding");
-        }
-    }
-    else {
-#if 0
-        int use_width = width;
-        if (width < 4) use_width = 4;
-
-        // the size is the number of elements num times the width of each
-        // element, then add 4 bytes for the number of elements
-        int size = (num * use_width) + 4;
-
-        // allocate enough memory for the elements
-        vector<char> vec_buf(size);
-        XDR vec_sink;
-        try {
-            xdrmem_create(&vec_sink, &vec_buf[0], size, XDR_ENCODE);
-
-            // set the position of the sink to 0, we're starting at the beginning
-            if (!xdr_setpos(&vec_sink, 0))
-                throw Error(
-                    "Network I/O Error. Could not send vector data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
-
-            // write the array to the buffer
-            if (!xdr_array(&vec_sink, (char **) &val, (unsigned int *) &num, size, width, XDRUtils::xdr_coder(type)))
-                throw Error(
-                    "Network I/O Error(2). Could not send vector data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
-
-            // how much was written to the buffer
-            unsigned int bytes_written = xdr_getpos(&vec_sink);
-            if (!bytes_written)
-                throw Error(
-                    "Network I/O Error. Could not send vector data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
-
-            // write that much out to the output stream
-            d_out.write(&vec_buf[4], bytes_written - 4);
-
-            xdr_destroy(&vec_sink);
-        }
-        catch (...) {
-            xdr_destroy(&vec_sink);
-            throw;
-        }
-#endif
+    if (pad) {
+        vector<char> padding(4, 0); // 4 zeros
+        d_out.write(&padding[0], pad);
+        if (d_out.fail()) throw Error("Network I/O Error. Could not send vector data padding");
     }
 }
 

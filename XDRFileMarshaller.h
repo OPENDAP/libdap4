@@ -77,7 +77,7 @@ public:
     virtual void put_vector(char *val, int num, Vector &vec);
     virtual void put_vector(char *val, int num, int width, Vector &vec);
 
-    virtual void put_vector_size_prefix(int /*num*/) {
+    virtual void put_vector_start(int /*num*/) {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
     }
 
@@ -85,7 +85,7 @@ public:
     virtual void put_vector_part(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/) {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
     }
-    virtual void put_vector_last(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/) {
+    virtual void put_vector_end() {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
     }
 

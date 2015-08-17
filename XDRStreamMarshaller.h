@@ -56,7 +56,7 @@ private:
     XDR d_sink;
     ostream & d_out;
 
-    int d_partial_put_element_count;
+    int d_partial_put_byte_count;
 
     XDRStreamMarshaller();
     XDRStreamMarshaller(const XDRStreamMarshaller &m);
@@ -88,11 +88,11 @@ public:
     virtual void put_vector(char *val, int num, Vector &vec);
     virtual void put_vector(char *val, int num, int width, Vector &vece);
 
-    virtual void put_vector_size_prefix(int num);
+    virtual void put_vector_start(int num);
 
     // FIXME Add a comment. Do we need both type and width?
     virtual void put_vector_part(char *val, unsigned int num, int width, Type type);
-    virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
+    virtual void put_vector_end();
 
     virtual void dump(ostream &strm) const;
 };

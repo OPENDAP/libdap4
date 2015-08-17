@@ -142,16 +142,15 @@ public:
         throw InternalErr(__FILE__, __LINE__, "Not Implemented; use other put_vector() versions.");
     }
 
-    virtual void put_vector_size_prefix(int /*num*/) {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
+    virtual void put_vector_start(int /*num*/) {
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_vector()");
     }
 
-    // FIXME Add a comment. Do we need both type and width?
     virtual void put_vector_part(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/) {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_vector()");
     }
-    virtual void put_vector_last(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/) {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
+    virtual void put_vector_end() {
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_vector()");
     }
 
     virtual void dump(std::ostream &strm) const;

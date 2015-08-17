@@ -97,6 +97,8 @@ tests/dmr-test
 tests/getdapTest
 tests/*Test.dir
 
+unit-tests/*.file
+unit-tests/*.strm
 unit-tests/.dodsrc
 unit-tests/ArrayTest
 unit-tests/AttrTableTest
@@ -113,8 +115,6 @@ unit-tests/RegexTest
 unit-tests/SequenceTest
 unit-tests/ServerFunctionsListUnitTest
 unit-tests/SignalHandlerTest
-unit-tests/a_test.file
-unit-tests/a_test.strm
 unit-tests/ancT
 unit-tests/arrayT
 unit-tests/attrTableT
@@ -127,19 +127,11 @@ unit-tests/cache-testsuite/purge_cache/
 unit-tests/cache-testsuite/singleton_cache/
 unit-tests/dasT
 unit-tests/ddsT
-unit-tests/g_test.file
-unit-tests/g_test.strm
 unit-tests/generalUtilTest
 unit-tests/marshT
 unit-tests/parserUtilTest
-unit-tests/seq_test.file
-unit-tests/seq_test.strm
 unit-tests/sequenceT
-unit-tests/st_test.file
-unit-tests/st_test.strm
 unit-tests/structT
-unit-tests/struct_test.file
-unit-tests/struct_test.strm
 unit-tests/test_config.h
 
 unit-tests/D4AsyncDocTest

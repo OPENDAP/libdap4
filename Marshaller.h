@@ -71,15 +71,26 @@ public:
     /**
      * Write the prefix bytes for a vector and reset the state/counter for
      * a vector/array that will be written using put_vector_part() and
-     * put_vector_last().
+     * put_vector_end().
      *
      * @param num The number of elements to write
      */
-    virtual void put_vector_size_prefix(int num) = 0;
+    virtual void put_vector_start(int num) = 0;
 
-    // FIXME Add a comment. Do we need both type and width?
+    /**
+     * Write one part of a vector's contents.
+     *
+     * @param val Pointer to the part's values
+     * @param num The number of values in this part
+     * @param width The number of bytes per value
+     * @param type The DAP2 data type for each value
+     */
     virtual void put_vector_part(char *val, unsigned int num, int width, Type type) = 0;
-    virtual void put_vector_last(char *val, unsigned int num, int width, Type type) = 0;
+
+    /**
+     * Close a vector written using put_vector_part()
+     */
+    virtual void put_vector_end() = 0;
 
     virtual void dump(std::ostream &strm) const = 0;
 };
