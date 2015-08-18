@@ -38,7 +38,7 @@
 #include <cstring>
 #include <cassert>
 
-//#define DODS_DEBUG
+//#define DODS_DEBUG 1
 
 #include <sstream>
 #include <vector>
@@ -121,7 +121,6 @@ void Vector::m_duplicate(const Vector & v)
  */
 bool Vector::m_is_cardinal_type() const
 {
-	// TODO Is this true? It might not be
     // Not cardinal if no d_proto at all!
     if (!d_proto) {
         return false;
@@ -498,10 +497,7 @@ BaseType *Vector::var(unsigned int i)
 unsigned int Vector::width(bool constrained) const
 {
     // Jose Garcia
-	// TODO Use assert.
-	if (!d_proto) {
-        throw InternalErr(__FILE__, __LINE__, "Cannot get width since *this* object is not holding data.");
-    }
+	assert(d_proto);
 
     return length() * d_proto->width(constrained);
 }
@@ -622,9 +618,8 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
 #if 0
-    int i = 0;// TODO move closer to use
+    int i = 0;
 
-    // TODO Time out here? or in ResponseBuilder?
     dds.timeout_on();
 
     if (!read_p())
@@ -1652,7 +1647,6 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 		case dods_sequence_c:
 		case dods_grid_c:
 			// Not sure that this function will be used for these type of nested objects, so I will throw here.
-			// TODO impl and test this path if it's ever needed.
 			throw InternalErr(__FILE__, __LINE__,
 					funcName + "Unimplemented method for Vectors of type: array, opaque, structure, sequence or grid.");
 			break;
@@ -1731,16 +1725,46 @@ bool Vector::set_value_worker(T *v, int sz)
     return true;
 }
 
-bool Vector::set_value(dods_byte *val, int sz)    { set_value_worker(val,sz); }
-bool Vector::set_value(dods_int8 *val, int sz)    { set_value_worker(val,sz); }
-bool Vector::set_value(dods_int16 *val, int sz)   { set_value_worker(val,sz); }
-bool Vector::set_value(dods_uint16 *val, int sz)  { set_value_worker(val,sz); }
-bool Vector::set_value(dods_int32 *val, int sz)   { set_value_worker(val,sz); }
-bool Vector::set_value(dods_uint32 *val, int sz)  { set_value_worker(val,sz); }
-bool Vector::set_value(dods_int64 *val, int sz)   { set_value_worker(val,sz); }
-bool Vector::set_value(dods_uint64 *val, int sz)  { set_value_worker(val,sz); }
-bool Vector::set_value(dods_float32 *val, int sz) { set_value_worker(val,sz); }
-bool Vector::set_value(dods_float64 *val, int sz) { set_value_worker(val,sz); }
+bool Vector::set_value(dods_byte *val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(dods_int8 *val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(dods_int16 *val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(dods_uint16 *val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(dods_int32 *val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(dods_uint32 *val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(dods_int64 *val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(dods_uint64 *val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(dods_float32 *val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(dods_float64 *val, int sz)
+{
+    return set_value_worker(val, sz);
+}
 
 /** @brief set the value of a string or url array */
 bool Vector::set_value(string *val, int sz)
@@ -1760,24 +1784,52 @@ bool Vector::set_value(string *val, int sz)
     }
 }
 
-
-
-template <typename T>
+template<typename T>
 bool Vector::set_value_worker(vector<T> &v, int sz)
 {
     return set_value(&v[0], sz);
 }
 
-bool Vector::set_value(vector<dods_byte> &val, int sz)    { set_value_worker(val,sz); }
-bool Vector::set_value(vector<dods_int8> &val, int sz)    { set_value_worker(val,sz); }
-bool Vector::set_value(vector<dods_int16> &val, int sz)   { set_value_worker(val,sz); }
-bool Vector::set_value(vector<dods_uint16> &val, int sz)  { set_value_worker(val,sz); }
-bool Vector::set_value(vector<dods_int32> &val, int sz)   { set_value_worker(val,sz); }
-bool Vector::set_value(vector<dods_uint32> &val, int sz)  { set_value_worker(val,sz); }
-bool Vector::set_value(vector<dods_int64> &val, int sz)   { set_value_worker(val,sz); }
-bool Vector::set_value(vector<dods_uint64> &val, int sz)  { set_value_worker(val,sz); }
-bool Vector::set_value(vector<dods_float32> &val, int sz) { set_value_worker(val,sz); }
-bool Vector::set_value(vector<dods_float64> &val, int sz) { set_value_worker(val,sz); }
+bool Vector::set_value(vector<dods_byte> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_int8> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_int16> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_uint16> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_int32> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_uint32> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_int64> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_uint64> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_float32> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_float64> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
 
 
 /** @brief set the value of a string or url array */
@@ -1958,7 +2010,7 @@ void *Vector::value()
 void Vector::add_var(BaseType * v, Part /*p*/)
 {
 #if 0
-	//TODO Why doesn't this work?  tried all 3 variants. jhrg 8/14/13
+	// Why doesn't this work?  tried all 3 variants. jhrg 8/14/13
 	Vector::add_var_nocopy(v->ptr_duplicate(), p);
 	add_var_nocopy(v->ptr_duplicate(), p);
 	add_var_nocopy(v->ptr_duplicate());
