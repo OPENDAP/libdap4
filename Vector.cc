@@ -39,6 +39,7 @@
 #include <cassert>
 
 //#define DODS_DEBUG 1
+#undef USE_POSIX_THREADS
 
 #include <sstream>
 #include <vector>
@@ -617,27 +618,26 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
-#if 0
-    int i = 0;
-
+#ifdef USE_POSIX_THREADS
     dds.timeout_on();
 
     if (!read_p())
         read(); // read() throws Error and InternalErr
 
-//#if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-//#endif
 
     dds.timeout_off();
 
     // length() is not capacity; it must be set explicitly in read().
     int num = length();
+    bool status = false;
 
     switch (d_proto->type()) {
         case dods_byte_c:
-            m.put_vector(d_buf, num, *this);
+            // send the byte data in a child thread, then call clear_local_data() in the thread
+            m.put_vector_thread(d_buf, num, this);
+            status = true;
             break;
         case dods_int16_c:
         case dods_uint16_c:
@@ -645,7 +645,9 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
         case dods_uint32_c:
         case dods_float32_c:
         case dods_float64_c:
-            m.put_vector(d_buf, num, d_proto->width(), *this);
+            m.put_vector_thread(d_buf, num, d_proto->width(), d_proto->type(), this);
+            status = true;
+
             break;
 
         case dods_str_c:
@@ -655,9 +657,11 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
 
             m.put_int(num);
 
-            for (i = 0; i < num; ++i)
+            for (int i = 0; i < num; ++i)
                 m.put_str(d_str[i]);
 
+            clear_local_data();
+            status = true;
             break;
 
         case dods_array_c:
@@ -670,21 +674,22 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
                 throw InternalErr(__FILE__, __LINE__, "The capacity of *this* vector is 0.");
 
             m.put_int(num);
+            status = true;
+            for (int i = 0; i < num && status; ++i)
+                status = status && d_compound_buf[i]->serialize(eval, dds, m, false);
 
-            for (i = 0; i < num; ++i)
-                d_compound_buf[i]->serialize(eval, dds, m, false);
-
+            clear_local_data();
             break;
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
             break;
     }
-#endif
-
+#else
     bool status = serailize_no_release(eval, dds, m, ce_eval);
 
     clear_local_data();
+#endif
 
     return status;
 }
@@ -706,7 +711,11 @@ bool Vector::serailize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshalle
 
     switch (d_proto->type()) {
         case dods_byte_c:
+#ifdef USE_POSIX_THREADS
+            m.put_vector_thread(d_buf, num, 0);
+#else
             m.put_vector(d_buf, num, *this);
+#endif
             break;
         case dods_int16_c:
         case dods_uint16_c:
@@ -714,7 +723,11 @@ bool Vector::serailize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshalle
         case dods_uint32_c:
         case dods_float32_c:
         case dods_float64_c:
+#ifdef USE_POSIX_THREADS
+            m.put_vector_thread(d_buf, num, d_proto->width(), d_proto->type(), 0);
+#else
             m.put_vector(d_buf, num, d_proto->width(), *this);
+#endif
             break;
 
         case dods_str_c:

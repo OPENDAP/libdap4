@@ -76,7 +76,7 @@ public:
 
     virtual void put_vector(char *val, int num, Vector &vec);
     virtual void put_vector(char *val, int num, int width, Vector &vec);
-
+#if 0
     virtual void put_vector_start(int /*num*/) {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
     }
@@ -88,7 +88,7 @@ public:
     virtual void put_vector_end() {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
     }
-
+#endif
     virtual void dump(ostream &strm) const;
 };
 

@@ -39,6 +39,7 @@
 #include "DapObj.h"
 #include "Type.h"
 #include "dods-datatypes.h"
+#include "InternalErr.h"
 
 namespace libdap {
 
@@ -75,7 +76,9 @@ public:
      *
      * @param num The number of elements to write
      */
-    virtual void put_vector_start(int num) = 0;
+    virtual void put_vector_start(int /*num*/) {
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
+    }// = 0;
 
     /**
      * Write one part of a vector's contents.
@@ -85,12 +88,46 @@ public:
      * @param width The number of bytes per value
      * @param type The DAP2 data type for each value
      */
-    virtual void put_vector_part(char *val, unsigned int num, int width, Type type) = 0;
+    virtual void put_vector_part(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/) {
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
+    }// = 0;
 
     /**
      * Close a vector written using put_vector_part()
      */
-    virtual void put_vector_end() = 0;
+    virtual void put_vector_end() {
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
+    }// = 0;
+
+    /**
+     * Write the contents of an Array/Vector to the Marshaller in a child thread.
+     * In addition, if the last argument is not null, call its clear_local_data()
+     * method.
+     *
+     * @note This may not actually use a child thread, but these methods provide an
+     * interface for a class that implements this interface. If a class doesn't
+     * implement these, simply call the non-threaded version (put_vector())
+     * and then call clear_local_data if 'vec' is not null.
+     */
+    virtual void put_vector_thread(char */*val*/, int /*num*/, Vector */*vec*/) {
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
+    }// = 0;
+
+    /**
+     * Write the contents of an Array/Vector to the Marshaller in a child thread.
+     * @see put_vector_thread()
+     */
+    virtual void put_vector_thread(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/, Vector */*vec*/) {
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
+    }// = 0;
+
+    /**
+     * Write the partial contents of an Array/Vector to the Marshaller in a child thread.
+     * @see put_vector_thread()
+     */
+    virtual void put_vector_part_thread(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/, Vector */*vec*/) {
+        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
+    }// = 0;
 
     virtual void dump(std::ostream &strm) const = 0;
 };
