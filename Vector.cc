@@ -730,7 +730,9 @@ bool Vector::serailize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshalle
             break;
 
         case dods_array_c:
-            // TODO I think this case should be an error. jhrg 8/14/15
+            // This case should be an error. jhrg 8/14/15
+            throw InternalErr(__FILE__, __LINE__, "Array of Array not supported.");
+
         case dods_structure_c:
         case dods_sequence_c:
         case dods_grid_c:
@@ -837,6 +839,7 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
             break;
 
         case dods_array_c:
+            // TODO
         case dods_structure_c:
         case dods_sequence_c:
         case dods_grid_c:

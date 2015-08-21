@@ -11,6 +11,7 @@
 #include <unistd.h>
 #endif
 #include <fcntl.h>
+#include <pthread.h>
 
 // #define DODS_DEBUG 1
 
@@ -40,6 +41,7 @@
 #include "XDRFileUnMarshaller.h"
 #include "XDRStreamUnMarshaller.h"
 #include "GetOpt.h"
+//#include "Locker.h"
 #include "debug.h"
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing timeouts.
@@ -95,6 +97,19 @@ CPPUNIT_TEST_SUITE( MarshallerTest );
     CPPUNIT_TEST(structure_stream_deserialize_test);
     CPPUNIT_TEST(grid_stream_deserialize_test);
     CPPUNIT_TEST(sequence_stream_deserialize_test);
+
+    CPPUNIT_TEST(array_stream_put_vector_thread_test);
+    CPPUNIT_TEST(array_stream_put_vector_thread_test_2);
+    CPPUNIT_TEST(array_stream_put_vector_thread_test_3);
+
+    CPPUNIT_TEST(array_stream_put_vector_thread_test_4);
+    CPPUNIT_TEST(array_stream_put_vector_thread_test_5);
+
+#if 1
+    CPPUNIT_TEST(array_stream_serialize_part_thread_test);
+    CPPUNIT_TEST(array_stream_serialize_part_thread_test_2);
+    CPPUNIT_TEST(array_stream_serialize_part_thread_test_3);
+#endif
 
     CPPUNIT_TEST_SUITE_END( );
 
@@ -1209,10 +1224,6 @@ public:
             dods_byte fdb[tg.get_array()->length() * sizeof(dods_byte)];
             tg.get_array()->value(fdb);
             CPPUNIT_ASSERT(!memcmp((void * )fdb, (void * )&db[0], tg.get_array()->length() * sizeof(dods_byte)));
-
-            // Should test the map values here, but skip that for now...
-
-            // fclose( sf ) ;
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();
@@ -1239,8 +1250,6 @@ public:
             seq.set_leaf_sequence();
 
             seq.serialize(eval, dds, sm, false);
-
-            // strm.close() ;
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();
@@ -1304,14 +1313,455 @@ public:
                     CPPUNIT_ASSERT(url_p->value() == url->value());
                 }
             }
-
-            // fclose( sf ) ;
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();
             CPPUNIT_FAIL(err.c_str());
         }
     }
+
+    // Test put_vector and its operation, both with and without using
+    // pthreads
+    void array_stream_put_vector_thread_test()
+    {
+        try {
+            fstream f("a_test_pv.file", fstream::out);
+            XDRStreamMarshaller fm(f);
+
+            switch (arr->var()->type()) {
+                case dods_byte_c: {
+                    DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
+
+                    // Passing in the object pointer (instead of null) triggers a call
+                    // to clear_local_data() when the thread completes. The code tests
+                    // for that just after it gets the lock.
+                    fm.put_vector_thread(arr->get_buf(), arr->length(), arr);
+
+                    XDRStreamMarshaller::Locker lock(fm.d_out_mutex, fm.d_out_cond, fm.d_child_thread_count);
+
+                    // FIXME
+                    //CPPUNIT_ASSERT(pthread_join(fm.d_thread, 0) == 0);
+                    // sleep(1);
+                    //Locker lock(XDRStreamMarshaller::d_out_mutex);    // wait for last thread
+
+                    DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
+                    CPPUNIT_ASSERT(arr->get_buf() == 0);
+
+                    break;
+                }
+                case dods_int16_c:
+                case dods_uint16_c:
+                case dods_int32_c:
+                case dods_uint32_c:
+                case dods_float32_c:
+                case dods_float64_c:
+                    throw InternalErr(__FILE__, __LINE__, "Unit test fail; array is a byte array.");
+                    //fm.put_vector(arr->get_buf(), arr->length(), arr->var()->width(), *arr/*->var()->type()*/);
+                    break;
+
+                default:
+                    throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
+            }
+        }
+        catch( Error &e ) {
+            string err = "failed:" + e.get_error_message();
+            CPPUNIT_FAIL( err.c_str() );
+        }
+
+        // now test the file contents to see if the correct stuff was serialized.
+        // Given that this test runs after the first array serialize test, just
+        // use system("cmp ...").
+        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
+        CPPUNIT_ASSERT(0 == system("cmp a_test.file a_test_pv.file >/dev/null 2>&1"));
+    }
+
+    // This test doesn't actually check its result - fix or replace
+    void array_stream_put_vector_thread_test_2()
+    {
+        try {
+            fstream f("a_test_pv_2.file", fstream::out);
+            XDRStreamMarshaller fm(f);
+
+            switch (arr->var()->type()) {
+                case dods_byte_c: {
+                    DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
+
+                    // test sequencing of threads and also that clear_local_data() is _not_
+                    // called when the third argument is null
+                    fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
+                    fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
+                    fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
+                    fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
+
+                    XDRStreamMarshaller::Locker lock(fm.d_out_mutex, fm.d_out_cond, fm.d_child_thread_count);
+
+                    //CPPUNIT_ASSERT(pthread_join(fm.d_thread, 0) == 0);  // FIXME
+                    //Locker lock(fm.d_out_mutex);    // wait for last thread
+                    DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
+                    CPPUNIT_ASSERT(arr->get_buf() != 0);
+
+                    break;
+                }
+                case dods_int16_c:
+                case dods_uint16_c:
+                case dods_int32_c:
+                case dods_uint32_c:
+                case dods_float32_c:
+                case dods_float64_c:
+                    throw InternalErr(__FILE__, __LINE__, "Unit test fail; array is a byte array.");
+                    //fm.put_vector(arr->get_buf(), arr->length(), arr->var()->width(), *arr/*->var()->type()*/);
+                    break;
+
+                default:
+                    throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
+            }
+
+            f.close();
+        }
+        catch( Error &e ) {
+            string err = "failed:" + e.get_error_message();
+            CPPUNIT_FAIL( err.c_str() );
+        }
+
+        try{
+            FILE *sf = fopen("a_test_pv_2.file", "r");
+            XDRFileUnMarshaller um(sf);
+
+            TestByte fab("ab");
+            TestArray farr("farr", &fab);
+            farr.append_dim(5, "dim1");
+            farr.append_dim(3, "dim2");
+            farr.deserialize(um, &dds, false);
+
+            CPPUNIT_ASSERT(farr.length() == arr->length());
+
+            dods_byte fdb[arr->length() * sizeof(dods_byte)];
+            farr.value(fdb);
+            CPPUNIT_ASSERT(!memcmp((void * )fdb, (void * )&db[0], farr.length() * sizeof(dods_byte)));
+
+            // now get three more arrays of the same size
+            farr.deserialize(um, &dds, false);
+            farr.value(fdb);
+            CPPUNIT_ASSERT(!memcmp((void * )fdb, (void * )&db[0], farr.length() * sizeof(dods_byte)));
+
+            farr.deserialize(um, &dds, false);
+            farr.value(fdb);
+            CPPUNIT_ASSERT(!memcmp((void * )fdb, (void * )&db[0], farr.length() * sizeof(dods_byte)));
+
+            farr.deserialize(um, &dds, false);
+            farr.value(fdb);
+            CPPUNIT_ASSERT(!memcmp((void * )fdb, (void * )&db[0], farr.length() * sizeof(dods_byte)));
+        }
+        catch( Error &e ) {
+            string err = "failed:" + e.get_error_message();
+            CPPUNIT_FAIL( err.c_str() );
+        }
+    }
+
+    void array_stream_put_vector_thread_test_3()
+    {
+        try {
+            fstream f("a_test_pv_3.file", fstream::out);
+            XDRStreamMarshaller fm(f);
+
+            switch (arr->var()->type()) {
+                case dods_byte_c: {
+                    DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
+
+                    // test sequencing of threads and non-threaded calls. Note that for the
+                    // non-threaded calls, we pass a _reference_ to the object and it's an
+                    // ignored parameter (left over cruft...).
+                    fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
+                    fm.put_vector(arr->get_buf(), arr->length(), *arr);
+                    fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
+                    fm.put_vector(arr->get_buf(), arr->length(), *arr);
+
+                    // No need to wait since put_vector() should be doing that
+                    break;
+                }
+                case dods_int16_c:
+                case dods_uint16_c:
+                case dods_int32_c:
+                case dods_uint32_c:
+                case dods_float32_c:
+                case dods_float64_c:
+                    throw InternalErr(__FILE__, __LINE__, "Unit test fail; array is a byte array.");
+                    //fm.put_vector(arr->get_buf(), arr->length(), arr->var()->width(), *arr/*->var()->type()*/);
+                    break;
+
+                default:
+                    throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
+            }
+
+            f.close();
+        }
+        catch( Error &e ) {
+            string err = "failed:" + e.get_error_message();
+            CPPUNIT_FAIL( err.c_str() );
+        }
+
+        // this should be identical to the output from pv_2 (the previous test).
+        CPPUNIT_ASSERT(0 == system("cmp a_test_pv_2.file a_test_pv_3.file >/dev/null 2>&1"));
+    }
+
+    void array_stream_put_vector_thread_test_4()
+    {
+        try {
+            fstream f("a_f32_test_pv.file", fstream::out);
+            XDRStreamMarshaller fm(f);
+
+            switch (arr_f32->var()->type()) {
+            case dods_byte_c:
+                throw InternalErr(__FILE__, __LINE__, "Unit test fail; array is not a byte array.");
+                break;
+            case dods_int16_c:
+            case dods_uint16_c:
+            case dods_int32_c:
+            case dods_uint32_c:
+            case dods_float32_c:
+            case dods_float64_c: {
+                DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
+
+                // Passing in the object pointer (instead of null) triggers a call
+                // to clear_local_data() when the thread completes. The code tests
+                // for that just after it gets the lock.
+                fm.put_vector_thread(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), arr_f32->var()->type(), 0);
+
+                XDRStreamMarshaller::Locker lock(fm.d_out_mutex, fm.d_out_cond, fm.d_child_thread_count);
+
+                DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
+                CPPUNIT_ASSERT(arr_f32->get_buf() != 0);
+
+                break;
+            }
+
+            default:
+                throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
+            }
+        }
+        catch (Error &e) {
+            string err = "failed:" + e.get_error_message();
+            CPPUNIT_FAIL(err.c_str());
+        }
+
+        // now test the file contents to see if the correct stuff was serialized.
+        // Given that this test runs after the first array serialize test, just
+        // use system("cmp ...").
+        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
+        CPPUNIT_ASSERT(0 == system("cmp a_f32_test.file a_f32_test_pv.file >/dev/null 2>&1"));
+    }
+
+    void array_stream_put_vector_thread_test_5()
+    {
+        try {
+            fstream f("a_f32_test_pv_2.file", fstream::out);
+            XDRStreamMarshaller fm(f);
+
+            switch (arr_f32->var()->type()) {
+            case dods_byte_c:
+                throw InternalErr(__FILE__, __LINE__, "Unit test fail; array is not a byte array.");
+                break;
+            case dods_int16_c:
+            case dods_uint16_c:
+            case dods_int32_c:
+            case dods_uint32_c:
+            case dods_float32_c:
+            case dods_float64_c: {
+                DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
+
+                // Passing in the object pointer (instead of null) triggers a call
+                // to clear_local_data() when the thread completes. The code tests
+                // for that just after it gets the lock.
+                fm.put_vector_thread(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), arr_f32->var()->type(), 0);
+                fm.put_vector_thread(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), arr_f32->var()->type(), 0);
+
+                XDRStreamMarshaller::Locker lock(fm.d_out_mutex, fm.d_out_cond, fm.d_child_thread_count);
+
+                DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
+                CPPUNIT_ASSERT(arr_f32->get_buf() != 0);
+
+                break;
+            }
+
+            default:
+                throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
+            }
+        }
+        catch (Error &e) {
+            string err = "failed:" + e.get_error_message();
+            CPPUNIT_FAIL(err.c_str());
+        }
+
+        try{
+            FILE *sf = fopen("a_f32_test_pv_2.file", "r");
+            XDRFileUnMarshaller um(sf);
+
+            TestFloat32 fa_32("fa_32");
+            TestArray farr("farr", &fa_32);
+            farr.append_dim(5, "dim1");
+            farr.append_dim(3, "dim2");
+            farr.deserialize(um, &dds, false);
+
+            CPPUNIT_ASSERT(farr.length() == arr->length());
+
+            dods_float32 fd_32[arr->length() * sizeof(dods_float32)];
+            farr.value(fd_32);
+            CPPUNIT_ASSERT(!memcmp((void * )fd_32, (void * )&d_f32[0], farr.length() * sizeof(dods_float32)));
+
+            // now get three more arrays of the same size
+            farr.deserialize(um, &dds, false);
+            farr.value(fd_32);
+            CPPUNIT_ASSERT(!memcmp((void * )fd_32, (void * )&d_f32[0], farr.length() * sizeof(dods_byte)));
+        }
+        catch( Error &e ) {
+            string err = "failed:" + e.get_error_message();
+            CPPUNIT_FAIL( err.c_str() );
+        }
+    }
+
+#if 1
+    void array_stream_serialize_part_thread_test()
+    {
+        try {
+            fstream f("a_test_ptv.file", fstream::out);
+            XDRStreamMarshaller fm(f);
+
+            DBG(cerr << "arr->length(): " << arr->length() << endl);
+            fm.put_vector_start(arr->length());
+
+            DBG(cerr << "arr->var()->width(): " << arr->var()->width() << endl);
+
+            //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
+            const int size_of_first_part = 5;
+            switch (arr->var()->type()) {
+                case dods_byte_c:
+                case dods_int16_c:
+                case dods_uint16_c:
+                case dods_int32_c:
+                case dods_uint32_c:
+                case dods_float32_c:
+                case dods_float64_c: {
+                    fm.put_vector_part_thread(arr->get_buf(), size_of_first_part, arr->var()->width(), arr->var()->type(), 0);
+
+                    fm.put_vector_part_thread(arr->get_buf() + size_of_first_part, arr->length() - size_of_first_part,
+                        arr->var()->width(), arr->var()->type(), 0);
+
+                    fm.put_vector_end();    // forces a wait on the thread
+                    break;
+                }
+
+                default:
+                    throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
+            }
+        }
+        catch (Error &e) {
+            string err = "failed:" + e.get_error_message();
+            CPPUNIT_FAIL(err.c_str());
+        }
+
+        // now test the file contents to see if the correct stuff was serialized.
+        // Given that this test runs after the first array serialize test, just
+        // use system("cmp ...").
+        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
+        CPPUNIT_ASSERT(0 == system("cmp a_test.file a_test_ptv.file >/dev/null 2>&1"));
+    }
+
+    void array_stream_serialize_part_thread_test_2()
+    {
+        try {
+            fstream f("a_f32_test_ptv.file", fstream::out);
+            XDRStreamMarshaller fm(f);
+
+            DBG(cerr << "arr_f32->length(): " << arr_f32->length() << endl);
+            fm.put_vector_start(arr_f32->length());
+
+            DBG(cerr << "arr_f32->var()->width(): " << arr_f32->var()->width() << endl);
+
+            const int size_of_first_part = 5;
+            switch (arr_f32->var()->type()) {
+                case dods_byte_c:
+                case dods_int16_c:
+                case dods_uint16_c:
+                case dods_int32_c:
+                case dods_uint32_c:
+                case dods_float32_c:
+                case dods_float64_c: {
+                    fm.put_vector_part_thread(arr_f32->get_buf(), size_of_first_part, arr_f32->var()->width(), arr_f32->var()->type(), 0);
+
+                    fm.put_vector_part_thread(arr_f32->get_buf() + (size_of_first_part * arr_f32->var()->width()),
+                        arr_f32->length() - size_of_first_part, arr_f32->var()->width(), arr_f32->var()->type(), arr_f32);
+
+                    fm.put_vector_end();    // forces a wait on the thread
+                    break;
+                }
+
+                default:
+                    throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
+            }
+
+        }
+        catch (Error &e) {
+            string err = "failed:" + e.get_error_message();
+            CPPUNIT_FAIL(err.c_str());
+        }
+
+        // CPPUNIT_ASSERT(arr_f32->get_buf() == 0);
+
+        // now test the file contents to see if the correct stuff was serialized.
+        // Given that this test runs after the first array serialize test, just
+        // use system("cmp ...").
+        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
+        CPPUNIT_ASSERT(0 == system("cmp a_f32_test.file a_f32_test_ptv.file >/dev/null 2>&1"));
+    }
+
+    void array_stream_serialize_part_thread_test_3()
+    {
+        try {
+            fstream f("a_f64_test_ptv.file", fstream::out);
+            XDRStreamMarshaller fm(f);
+
+            DBG(cerr << "arr_f64->length(): " << arr_f64->length() << endl);
+            fm.put_vector_start(arr_f64->length());
+
+            DBG(cerr << "arr_f64->var()->width(): " << arr_f64->var()->width() << endl);
+
+            //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
+            const int size_of_first_part = 5;
+            switch (arr_f64->var()->type()) {
+            case dods_byte_c:
+            case dods_int16_c:
+            case dods_uint16_c:
+            case dods_int32_c:
+            case dods_uint32_c:
+            case dods_float32_c:
+            case dods_float64_c:
+                fm.put_vector_part_thread(arr_f64->get_buf(), size_of_first_part, arr_f64->var()->width(),
+                    arr_f64->var()->type(), 0);
+
+                fm.put_vector_part_thread(arr_f64->get_buf() + (size_of_first_part * arr_f64->var()->width()),
+                    arr_f64->length() - size_of_first_part, arr_f64->var()->width(), arr_f64->var()->type(), arr_f64);
+
+                fm.put_vector_end();    // forces a wait on the thread
+                break;
+
+            default:
+                throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
+            }
+        }
+        catch (Error &e) {
+            string err = "failed:" + e.get_error_message();
+            CPPUNIT_FAIL(err.c_str());
+        }
+
+        CPPUNIT_ASSERT(arr_f64->get_buf() == 0);
+
+        // now test the file contents to see if the correct stuff was serialized.
+        // Given that this test runs after the first array serialize test, just
+        // use system("cmp ...").
+        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
+        CPPUNIT_ASSERT(0 == system("cmp a_f64_test.file a_f64_test_ptv.file >/dev/null 2>&1"));
+    }
+#endif
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( MarshallerTest );
@@ -1354,15 +1804,3 @@ int main(int argc, char*argv[])
 
     return wasSuccessful ? 0 : 1;
 }
-
-#if 0
-int main(int, char **)
-{
-    CppUnit::TextUi::TestRunner runner;
-    CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();
-    runner.addTest(registry.makeTest());
-    runner.setOutputter(CppUnit::CompilerOutputter::defaultOutputter(&runner.result(), std::cerr));
-    bool wasSuccessful = runner.run("", false);
-    return wasSuccessful ? 0 : 1;
-}
-#endif

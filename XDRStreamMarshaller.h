@@ -35,19 +35,24 @@
 
 #include <iostream>
 
-// #include <openssl/evp.h>
-
-using std::ostream;
-using std::cout;
+#ifdef USE_POSIX_THREADS
+#include <pthread.h>
+#else
+#error "I need pthreads or compile-time directives"
+#endif
 
 #include "Marshaller.h"
+#include "InternalErr.h"
 #include "XDRUtils.h"
-#include "BaseType.h"
+//#include "BaseType.h"
+//#include "debug.h"
 
 namespace libdap {
 
+class BaseType;
+
 /**
- * @brief marshaller that knows how serialize dap data objects to a C++ iostream using XDR
+ * @brief Marshaller that knows how serialize dap data objects to a C++ iostream using XDR
  *
  */
 class XDRStreamMarshaller: public Marshaller {
@@ -58,11 +63,74 @@ private:
 
     int d_partial_put_byte_count;
 
+    pthread_t d_thread;
+    pthread_attr_t d_thread_attr;
+
+    pthread_mutex_t d_out_mutex;
+    pthread_cond_t d_out_cond;
+    int d_child_thread_count;
+    std::string d_thread_error; // non-null indicates an error
+
+    class Locker {
+    public:
+        Locker(pthread_mutex_t &lock, pthread_cond_t &cond, int &count) :
+            m_mutex(lock), m_cond(cond), m_count(count)
+        {
+            int status = pthread_mutex_lock(&m_mutex);
+            if (status != 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not lock m_mutex");
+            while (m_count != 0) {
+                status = pthread_cond_wait(&m_cond, &m_mutex);
+                if (status != 0)
+                    throw InternalErr(__FILE__, __LINE__, "Could not wait on m_cond");
+            }
+            if (m_count != 0)
+                throw InternalErr(__FILE__, __LINE__, "FAIL: left m_cond wait with non-zero child thread count");
+        }
+
+        virtual ~Locker()
+        {
+            int status = pthread_mutex_unlock(&m_mutex);
+            if (status != 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not unlock m_mutex");
+        }
+
+    private:
+        pthread_mutex_t& m_mutex;
+        pthread_cond_t &m_cond;
+        int &m_count;
+
+        Locker();
+        Locker(const Locker &rhs);
+    };
+
+    struct write_args {
+        pthread_mutex_t &d_mutex;
+        pthread_cond_t &d_cond;
+        int &d_count;
+        std::string &d_error;
+        ostream &d_out;     // The output stream protected by the mutex, ...
+        char *d_buf;        // The data to write to the stream
+        int d_num;          // The size of d_buf
+        Vector *d_vec;      // A BaseType; the source of the data; clear_local_data()
+
+        write_args(pthread_mutex_t &m, pthread_cond_t &c, int &count, std::string &e, ostream &s, char *vals, int num, Vector *vec) :
+            d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(s), d_buf(vals), d_num(num), d_vec(vec)
+        {
+        }
+    };
+
+    // These are used for the child I/O threads started by put_vector_thread(), etc.
+    static void *write_thread(void *arg);
+    static void *write_part_thread(void *arg);
+
     XDRStreamMarshaller();
     XDRStreamMarshaller(const XDRStreamMarshaller &m);
     XDRStreamMarshaller &operator=(const XDRStreamMarshaller &);
 
     void put_vector(char *val, unsigned int num, int width, Type type);
+
+    friend class MarshallerTest;
 
 public:
     XDRStreamMarshaller(ostream &out); //, bool checksum = false, bool write_data = true) ;
@@ -86,13 +154,15 @@ public:
     virtual void put_int(int val);
 
     virtual void put_vector(char *val, int num, Vector &vec);
-    virtual void put_vector(char *val, int num, int width, Vector &vece);
+    virtual void put_vector(char *val, int num, int width, Vector &vec);
 
     virtual void put_vector_start(int num);
-
-    // FIXME Add a comment. Do we need both type and width?
     virtual void put_vector_part(char *val, unsigned int num, int width, Type type);
     virtual void put_vector_end();
+
+    virtual void put_vector_thread(char *val, int num, Vector *vec);
+    virtual void put_vector_thread(char *val, unsigned int num, int width, Type type, Vector *vec);
+    virtual void put_vector_part_thread(char *val, unsigned int num, int width, Type type, Vector *vec);
 
     virtual void dump(ostream &strm) const;
 };
