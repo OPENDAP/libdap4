@@ -84,7 +84,7 @@ XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) :
     xdrmem_create(&d_sink, d_buf, XDR_DAP_BUFF_SIZE, XDR_ENCODE);
 
     if (pthread_attr_init(&d_thread_attr) != 0)  throw Error("Failed to initialize pthread attributes.");
-    if (pthread_attr_setdetachstate(&d_thread_attr, PTHREAD_CREATE_JOINABLE) != 0)
+    if (pthread_attr_setdetachstate(&d_thread_attr, PTHREAD_CREATE_DETACHED /*PTHREAD_CREATE_JOINABLE*/) != 0)
         throw Error("Failed to complete pthread attribute initialization.");
 
     if (pthread_mutex_init(&d_out_mutex, 0) != 0) throw Error("Failed to initialize mutex.");
@@ -121,6 +121,9 @@ XDRStreamMarshaller::~XDRStreamMarshaller()
     // inexpensive since these objects should be made/deleted
     // infrequently. jhrg  8/19/15
     pthread_mutex_unlock(&d_out_mutex);
+
+    pthread_mutex_destroy(&d_out_mutex);
+    pthread_cond_destroy(&d_out_cond);
 
     pthread_attr_destroy(&d_thread_attr);
 
