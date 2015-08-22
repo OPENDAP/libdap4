@@ -39,7 +39,7 @@
 #include <cassert>
 
 //#define DODS_DEBUG 1
-#undef USE_POSIX_THREADS
+//#undef USE_POSIX_THREADS
 
 #include <sstream>
 #include <vector>

@@ -116,11 +116,16 @@ XDRStreamMarshaller::operator=(const XDRStreamMarshaller &)
 
 XDRStreamMarshaller::~XDRStreamMarshaller()
 {
-    // just in case... Call unlock in case an exception is thrown
-    // and the object is destroyed. Unlikely to matter, but probably
-    // inexpensive since these objects should be made/deleted
-    // infrequently. jhrg  8/19/15
-    pthread_mutex_unlock(&d_out_mutex);
+    int status = pthread_mutex_lock(&d_out_mutex);
+    if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not lock m_mutex");
+    while (d_child_thread_count != 0) {
+        status = pthread_cond_wait(&d_out_cond, &d_out_mutex);
+        if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not wait on m_cond");
+    }
+    if (d_child_thread_count != 0) throw InternalErr(__FILE__, __LINE__, "FAIL: left m_cond wait with non-zero child thread count");
+
+    status = pthread_mutex_unlock(&d_out_mutex);
+    if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not unlock m_mutex");
 
     pthread_mutex_destroy(&d_out_mutex);
     pthread_cond_destroy(&d_out_cond);
@@ -132,11 +137,9 @@ XDRStreamMarshaller::~XDRStreamMarshaller()
 
 void XDRStreamMarshaller::put_byte(dods_byte val)
 {
-    //Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);    // unlock the mutex when 'lock' goes out of scope.
-
-    if (!xdr_setpos(&d_sink, 0))
+     if (!xdr_setpos(&d_sink, 0))
         throw Error(
-            "Network I/O Error. Could not send byte data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send byte data - unable to set stream position.");
 
     if (!xdr_char(&d_sink, (char *) &val))
         throw Error(
@@ -320,7 +323,7 @@ void XDRStreamMarshaller::put_opaque(char *val, unsigned int len)
 
     if (!xdr_setpos(&d_sink, 0))
         throw Error(
-            "Network I/O Error. Could not send opaque data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send opaque data - unable to set stream position.");
 
     if (!xdr_opaque(&d_sink, val, len))
         throw Error(

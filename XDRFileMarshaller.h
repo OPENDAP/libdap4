@@ -35,6 +35,10 @@
 
 #include "Marshaller.h"
 #include "XDRUtils.h"
+#if 0
+#include "Array.h"
+#include "Vector.h"
+#endif
 
 namespace libdap {
 
@@ -76,19 +80,13 @@ public:
 
     virtual void put_vector(char *val, int num, Vector &vec);
     virtual void put_vector(char *val, int num, int width, Vector &vec);
-#if 0
-    virtual void put_vector_start(int /*num*/) {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
-    }
 
-    // FIXME Add a comment. Do we need both type and width?
-    virtual void put_vector_part(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/) {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
-    }
-    virtual void put_vector_end() {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
-    }
-#endif
+    // Include simple (non-threaded) implementations of the threaded methods.
+    // These are needed because the Vector::serialize() and serialize_n_release()
+    // methods may call them.
+    virtual void put_vector_thread(char *val, int num, Vector *vec);
+    virtual void put_vector_thread(char *val, unsigned int num, int width, Type type, Vector *vec);
+
     virtual void dump(ostream &strm) const;
 };
 

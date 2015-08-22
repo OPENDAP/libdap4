@@ -1336,17 +1336,12 @@ public:
                     // to clear_local_data() when the thread completes. The code tests
                     // for that just after it gets the lock.
                     fm.put_vector_thread(arr->get_buf(), arr->length(), arr);
-
+#if 0
                     XDRStreamMarshaller::Locker lock(fm.d_out_mutex, fm.d_out_cond, fm.d_child_thread_count);
-
-                    // FIXME
-                    //CPPUNIT_ASSERT(pthread_join(fm.d_thread, 0) == 0);
-                    // sleep(1);
-                    //Locker lock(XDRStreamMarshaller::d_out_mutex);    // wait for last thread
 
                     DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
                     CPPUNIT_ASSERT(arr->get_buf() == 0);
-
+#endif
                     break;
                 }
                 case dods_int16_c:
@@ -1367,6 +1362,11 @@ public:
             string err = "failed:" + e.get_error_message();
             CPPUNIT_FAIL( err.c_str() );
         }
+
+        // Leaving the try block calls the XDRStreamMarshaller dtor and that waits for the
+        // last thread to complete. jhrg 8/22/15
+        DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
+        CPPUNIT_ASSERT(arr->get_buf() == 0);
 
         // now test the file contents to see if the correct stuff was serialized.
         // Given that this test runs after the first array serialize test, just
@@ -1392,14 +1392,15 @@ public:
                     fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
                     fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
                     fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
-
+#if 0
+                    // This works fine, but since I've added code to the dtor of XDRStreamMarshaller
+                    // to wait for the last child thread, it's not needed. The end of the try block
+                    // is the end of scope for 'fm' and that becomes a synchronization point.
                     XDRStreamMarshaller::Locker lock(fm.d_out_mutex, fm.d_out_cond, fm.d_child_thread_count);
 
-                    //CPPUNIT_ASSERT(pthread_join(fm.d_thread, 0) == 0);  // FIXME
-                    //Locker lock(fm.d_out_mutex);    // wait for last thread
                     DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
                     CPPUNIT_ASSERT(arr->get_buf() != 0);
-
+#endif
                     break;
                 }
                 case dods_int16_c:
@@ -1415,13 +1416,14 @@ public:
                 default:
                     throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
             }
-
-            f.close();
         }
         catch( Error &e ) {
             string err = "failed:" + e.get_error_message();
             CPPUNIT_FAIL( err.c_str() );
         }
+
+        DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
+        CPPUNIT_ASSERT(arr->get_buf() != 0);
 
         try{
             FILE *sf = fopen("a_test_pv_2.file", "r");
@@ -1527,11 +1529,6 @@ public:
                 // for that just after it gets the lock.
                 fm.put_vector_thread(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), arr_f32->var()->type(), 0);
 
-                XDRStreamMarshaller::Locker lock(fm.d_out_mutex, fm.d_out_cond, fm.d_child_thread_count);
-
-                DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
-                CPPUNIT_ASSERT(arr_f32->get_buf() != 0);
-
                 break;
             }
 
@@ -1543,6 +1540,9 @@ public:
             string err = "failed:" + e.get_error_message();
             CPPUNIT_FAIL(err.c_str());
         }
+
+        DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
+        CPPUNIT_ASSERT(arr_f32->get_buf() != 0);
 
         // now test the file contents to see if the correct stuff was serialized.
         // Given that this test runs after the first array serialize test, just
@@ -1575,11 +1575,6 @@ public:
                 fm.put_vector_thread(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), arr_f32->var()->type(), 0);
                 fm.put_vector_thread(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), arr_f32->var()->type(), 0);
 
-                XDRStreamMarshaller::Locker lock(fm.d_out_mutex, fm.d_out_cond, fm.d_child_thread_count);
-
-                DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
-                CPPUNIT_ASSERT(arr_f32->get_buf() != 0);
-
                 break;
             }
 
@@ -1591,6 +1586,9 @@ public:
             string err = "failed:" + e.get_error_message();
             CPPUNIT_FAIL(err.c_str());
         }
+
+        DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
+        CPPUNIT_ASSERT(arr_f32->get_buf() != 0);
 
         try{
             FILE *sf = fopen("a_f32_test_pv_2.file", "r");
@@ -1619,7 +1617,6 @@ public:
         }
     }
 
-#if 1
     void array_stream_serialize_part_thread_test()
     {
         try {
@@ -1761,7 +1758,6 @@ public:
         //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
         CPPUNIT_ASSERT(0 == system("cmp a_f64_test.file a_f64_test_ptv.file >/dev/null 2>&1"));
     }
-#endif
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( MarshallerTest );

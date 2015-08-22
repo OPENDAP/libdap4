@@ -167,51 +167,10 @@ void XDRFileMarshaller::put_vector(char *val, int num, Vector &)
 
     put_int(num);
 
-#if 1
     if (!xdr_bytes(_sink, (char **) &val, (unsigned int *) &num, DODS_MAX_ARRAY)) {
         throw Error(
             "Network I/O Error(2). This may be due to a bug in libdap or a\nproblem with the network connection.");
     }
-#else
-    // This code was an initial attempt at making XDRFileMarshaller support the
-    // Marshaller feature where an array/vector could be serialized in several
-    // parts. That feature may not every be implemented in this class; it may be
-    // only implemented in XDRStreamMarshaller since it seems the BES/handlers
-    // do not use XDRFileMarshaller. jhrg 8/14/15
-
-    // this is the word boundary for writing xdr bytes in a vector.
-    const unsigned int add_to = 8;
-
-    vector<char> byte_buf(num + add_to);
-    XDR byte_sink;
-    try {
-        xdrmem_create(&byte_sink, &byte_buf[0], num + add_to, XDR_ENCODE);
-        if (!xdr_setpos(&byte_sink, 0))
-            throw Error(
-                "Network I/O Error. Could not send byte vector data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
-
-        if (!xdr_bytes(&byte_sink, (char **) &val, (unsigned int *) &num, num + add_to))
-            throw Error(
-                "Network I/O Error(2). Could not send byte vector data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
-
-        unsigned int bytes_written = xdr_getpos(&byte_sink);
-        if (!bytes_written)
-            throw Error(
-                "Network I/O Error. Could not send byte vector data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
-
-        //d_out.write(&byte_buf[0], bytes_written);
-        if (size_prefix)
-            fwrite(&byte_buf[0], 1, bytes_written, d_out);
-        else
-            fwrite(&byte_buf[4], 1, bytes_written-4, d_out);
-
-        xdr_destroy(&byte_sink);
-    }
-    catch (...) {
-        xdr_destroy(&byte_sink);
-        throw;
-    }
-#endif
 }
 
 void XDRFileMarshaller::put_vector(char *val, int num, int width, Vector &vec)
@@ -227,6 +186,37 @@ void XDRFileMarshaller::put_vector(char *val, int num, int width, Vector &vec)
             "Network I/O Error(2). This may be due to a bug in libdap or a\nproblem with the network connection.");
     }
 }
+
+// Include simple implementations of the threaded methods.
+void XDRFileMarshaller::put_vector_thread(char *val, int num, Vector *vec)
+{
+    if (!val) throw InternalErr(__FILE__, __LINE__, "Buffer pointer is not set.");
+
+    put_int(num);
+
+    if (!xdr_bytes(_sink, (char **) &val, (unsigned int *) &num, DODS_MAX_ARRAY)) {
+        throw Error(
+            "Network I/O Error(2). This may be due to a bug in libdap or a\nproblem with the network connection.");
+    }
+
+    // if the Vector pointer was non-null, delete the data memory
+    if (vec) vec->clear_local_data();
+}
+
+void XDRFileMarshaller::put_vector_thread(char *val, unsigned int num, int width, Type type, Vector *vec)
+{
+    if (!val) throw InternalErr(__FILE__, __LINE__, "Buffer pointer is not set.");
+
+    put_int(num);
+
+    if (!xdr_array(_sink, (char **) &val, (unsigned int *) &num, DODS_MAX_ARRAY, width, XDRUtils::xdr_coder(type))) {
+        throw Error(
+            "Network I/O Error(2). This may be due to a bug in libdap or a\nproblem with the network connection.");
+    }
+
+    if (vec) vec->clear_local_data();
+}
+
 
 void XDRFileMarshaller::dump(ostream &strm) const
 {

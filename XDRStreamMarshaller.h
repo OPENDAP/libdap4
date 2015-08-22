@@ -30,6 +30,9 @@
 // Authors:
 //      pwest       Patrick West <pwest@ucar.edu>
 
+// Hacked massively to add all kinds of things, including pthred support.
+// jhrg 8/21/15
+
 #ifndef I_XDRStreamMarshaller_h
 #define I_XDRStreamMarshaller_h 1
 
