@@ -676,7 +676,7 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
             m.put_int(num);
             status = true;
             for (int i = 0; i < num && status; ++i)
-                status = status && d_compound_buf[i]->serialize(eval, dds, m, false);
+                status = status && d_compound_buf[i]->serialize_no_release(eval, dds, m, false);
 
             clear_local_data();
             break;
@@ -686,7 +686,7 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
             break;
     }
 #else
-    bool status = serailize_no_release(eval, dds, m, ce_eval);
+    bool status = serialize_no_release(eval, dds, m, ce_eval);
 
     clear_local_data();
 #endif
@@ -694,7 +694,7 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
     return status;
 }
 
-bool Vector::serailize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval /*true*/)
+bool Vector::serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval /*true*/)
 {
     dds.timeout_on();
 
@@ -757,7 +757,7 @@ bool Vector::serailize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshalle
             m.put_int(num);
 
             for (int i = 0; i < num; ++i)
-                d_compound_buf[i]->serialize(eval, dds, m, false);
+                d_compound_buf[i]->serialize_no_release(eval, dds, m, false);
 
             break;
 

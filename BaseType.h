@@ -461,7 +461,7 @@ public:
      * the return value to signal success or failure.
      * @param
      */
-    virtual bool serailize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) {
+    virtual bool serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) {
         return serialize(eval, dds, m, ce_eval);
     }
 
@@ -508,7 +508,7 @@ public:
      * @param filter True if there is one variable that should be 'filtered'
      * @exception Error or InternalErr
      */
-    virtual void serailize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false) {
+    virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false) {
         serialize(m, dmr, filter);
     }
 
