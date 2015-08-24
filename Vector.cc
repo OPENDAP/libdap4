@@ -636,16 +636,18 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
     switch (d_proto->type()) {
         case dods_byte_c:
             // send the byte data in a child thread, then call clear_local_data() in the thread
-            m.put_vector_thread(d_buf, num, this);
+            m.put_vector_thread(d_buf, num, /*this*/0);
             status = true;
             break;
+
         case dods_int16_c:
         case dods_uint16_c:
         case dods_int32_c:
         case dods_uint32_c:
         case dods_float32_c:
         case dods_float64_c:
-            m.put_vector_thread(d_buf, num, d_proto->width(), d_proto->type(), this);
+            // ... also calls clear_local_data()
+            m.put_vector_thread(d_buf, num, d_proto->width(), d_proto->type(), /*this*/0);
             status = true;
 
             break;
@@ -660,7 +662,6 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
             for (int i = 0; i < num; ++i)
                 m.put_str(d_str[i]);
 
-            clear_local_data();
             status = true;
             break;
 
@@ -678,14 +679,14 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
             for (int i = 0; i < num && status; ++i)
                 status = status && d_compound_buf[i]->serialize(eval, dds, m, false);
 
-            // FIXME Why does this break the put_vector_thread code? 8/22/15
-            //clear_local_data();
             break;
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
             break;
     }
+
+    clear_local_data();
 #else
     bool status = serialize_no_release(eval, dds, m, ce_eval);
 
@@ -1450,11 +1451,12 @@ void Vector::clear_local_data()
         d_buf = 0;
     }
 
+#if 1
     for (unsigned int i = 0; i < d_compound_buf.size(); ++i) {
         delete d_compound_buf[i];
         d_compound_buf[i] = 0;
     }
-
+#endif
     // Force memory to be reclaimed.
     d_compound_buf.resize(0);
     d_str.resize(0);

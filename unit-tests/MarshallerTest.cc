@@ -677,70 +677,6 @@ public:
         }
     }
 
-#if 0
-    // Not currently run...
-    void simple_types_fdistream_deserialize_test() {
-        try
-        {
-#if 1
-            int in = open( "st_test.strm", O_RDONLY );
-            if (in < 0)
-            throw Error("Could not open file.");
-            fdistream sin( in );
-#else
-            FILE *in = fopen("st_test.strm", "r");
-            if (!in)
-            throw Error("Could not open the file");
-            fpistream sin(in);
-#endif
-            XDRStreamUnMarshaller um( sin );
-
-            Byte fb( "fb" );
-            fb.deserialize( um, &dds, false );
-            DBG(std::cerr << "expected: '" << b.value() << "' ; actual: '" << fb.value() << "'" << std::endl);
-            CPPUNIT_ASSERT( fb.value() == b->value() );
-
-            Int16 fi16( "i16" );
-            fi16.deserialize( um, &dds, false );
-            CPPUNIT_ASSERT( fi16.value() == i16->value() );
-
-            Int32 fi32( "i32" );
-            fi32.deserialize( um, &dds, false );
-            CPPUNIT_ASSERT( fi32.value() == i32->value() );
-
-            UInt16 fui16( "ui16" );
-            fui16.deserialize( um, &dds, false );
-            CPPUNIT_ASSERT( fui16.value() == ui16->value() );
-
-            UInt32 fui32( "ui32" );
-            fui32.deserialize( um, &dds, false );
-            CPPUNIT_ASSERT( fui32.value() == ui32->value() );
-
-            Float32 ff32( "f32" );
-            ff32.deserialize( um, &dds, false );
-            CPPUNIT_ASSERT( ff32.value() == f32->value() );
-
-            Float64 ff64( "f64" );
-            ff64.deserialize( um, &dds, false );
-            CPPUNIT_ASSERT( ff64.value() == f64->value() );
-
-            Str fstr( "str" );
-            fstr.deserialize( um, &dds, false );
-            DBG(cerr << "fstr.value(): " << fstr.value() << endl);
-            CPPUNIT_ASSERT( fstr.value().find("Silly test string:") != string::npos );
-
-            Url furl( "url" );
-            furl.deserialize( um, &dds, false );
-            CPPUNIT_ASSERT( furl.value() == url_value );
-        }
-        catch( Error &e )
-        {
-            string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL( err.c_str() );
-        }
-    }
-#endif
-
     void array_stream_serialize_test()
     {
         try {
@@ -796,8 +732,6 @@ public:
 
             DBG(cerr << "arr->var()->width(): " << arr->var()->width() << endl);
 
-            //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
-
             switch (arr->var()->type()) {
                 case dods_byte_c:
                 case dods_int16_c:
@@ -813,8 +747,6 @@ public:
                 default:
                     throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
             }
-
-            // arr->serialize(eval, dds, fm, false);
         }
         catch( Error &e ) {
             string err = "failed:" + e.get_error_message();
@@ -839,7 +771,6 @@ public:
 
             DBG(cerr << "arr->var()->width(): " << arr->var()->width() << endl);
 
-            //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
             const int size_of_first_part = 4;
             switch (arr->var()->type()) {
                 case dods_byte_c:
@@ -882,7 +813,6 @@ public:
 
             DBG(cerr << "arr->var()->width(): " << arr->var()->width() << endl);
 
-            //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
             const int size_of_first_part = 5;
             switch (arr->var()->type()) {
                 case dods_byte_c:
@@ -968,7 +898,6 @@ public:
             DBG(cerr << "&arr_f32->get_buf(): " << hex << (void *)arr_f32->get_buf() << dec << endl);
             DBG(cerr << "arr_f32->var()->width(): " << arr_f32->var()->width() << endl);
 
-            //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
             const int size_of_first_part = 5;
 
             switch (arr_f32->var()->type()) {
@@ -1059,7 +988,6 @@ public:
             DBG(cerr << "&arr_f64->get_buf(): " << hex << (void *)arr_f64->get_buf() << dec << endl);
             DBG(cerr << "arr_f64->var()->width(): " << arr_f64->var()->width() << endl);
 
-            //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
             const int size_of_first_part = 5;
 
             switch (arr_f64->var()->type()) {
@@ -1183,8 +1111,6 @@ public:
             tg.set_read_p(true);
 
             tg.serialize(eval, dds, sm, false);
-
-            // strm.close() ;
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();
@@ -1330,18 +1256,7 @@ public:
 
             switch (arr->var()->type()) {
                 case dods_byte_c: {
-                    DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
-
-                    // Passing in the object pointer (instead of null) triggers a call
-                    // to clear_local_data() when the thread completes. The code tests
-                    // for that just after it gets the lock.
                     fm.put_vector_thread(arr->get_buf(), arr->length(), arr);
-#if 0
-                    XDRStreamMarshaller::Locker lock(fm.d_out_mutex, fm.d_out_cond, fm.d_child_thread_count);
-
-                    DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
-                    CPPUNIT_ASSERT(arr->get_buf() == 0);
-#endif
                     break;
                 }
                 case dods_int16_c:
@@ -1351,7 +1266,6 @@ public:
                 case dods_float32_c:
                 case dods_float64_c:
                     throw InternalErr(__FILE__, __LINE__, "Unit test fail; array is a byte array.");
-                    //fm.put_vector(arr->get_buf(), arr->length(), arr->var()->width(), *arr/*->var()->type()*/);
                     break;
 
                 default:
@@ -1363,14 +1277,6 @@ public:
             CPPUNIT_FAIL( err.c_str() );
         }
 
-        // Leaving the try block calls the XDRStreamMarshaller dtor and that waits for the
-        // last thread to complete. jhrg 8/22/15
-        DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
-        CPPUNIT_ASSERT(arr->get_buf() == 0);
-
-        // now test the file contents to see if the correct stuff was serialized.
-        // Given that this test runs after the first array serialize test, just
-        // use system("cmp ...").
         //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
         CPPUNIT_ASSERT(0 == system("cmp a_test.file a_test_pv.file >/dev/null 2>&1"));
     }
@@ -1386,21 +1292,10 @@ public:
                 case dods_byte_c: {
                     DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
 
-                    // test sequencing of threads and also that clear_local_data() is _not_
-                    // called when the third argument is null
                     fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
                     fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
                     fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
                     fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
-#if 0
-                    // This works fine, but since I've added code to the dtor of XDRStreamMarshaller
-                    // to wait for the last child thread, it's not needed. The end of the try block
-                    // is the end of scope for 'fm' and that becomes a synchronization point.
-                    XDRStreamMarshaller::Locker lock(fm.d_out_mutex, fm.d_out_cond, fm.d_child_thread_count);
-
-                    DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
-                    CPPUNIT_ASSERT(arr->get_buf() != 0);
-#endif
                     break;
                 }
                 case dods_int16_c:
@@ -1410,7 +1305,6 @@ public:
                 case dods_float32_c:
                 case dods_float64_c:
                     throw InternalErr(__FILE__, __LINE__, "Unit test fail; array is a byte array.");
-                    //fm.put_vector(arr->get_buf(), arr->length(), arr->var()->width(), *arr/*->var()->type()*/);
                     break;
 
                 default:
@@ -1421,9 +1315,6 @@ public:
             string err = "failed:" + e.get_error_message();
             CPPUNIT_FAIL( err.c_str() );
         }
-
-        DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
-        CPPUNIT_ASSERT(arr->get_buf() != 0);
 
         try{
             FILE *sf = fopen("a_test_pv_2.file", "r");
@@ -1488,7 +1379,6 @@ public:
                 case dods_float32_c:
                 case dods_float64_c:
                     throw InternalErr(__FILE__, __LINE__, "Unit test fail; array is a byte array.");
-                    //fm.put_vector(arr->get_buf(), arr->length(), arr->var()->width(), *arr/*->var()->type()*/);
                     break;
 
                 default:
@@ -1524,9 +1414,6 @@ public:
             case dods_float64_c: {
                 DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
 
-                // Passing in the object pointer (instead of null) triggers a call
-                // to clear_local_data() when the thread completes. The code tests
-                // for that just after it gets the lock.
                 fm.put_vector_thread(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), arr_f32->var()->type(), 0);
 
                 break;
@@ -1541,13 +1428,6 @@ public:
             CPPUNIT_FAIL(err.c_str());
         }
 
-        DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
-        CPPUNIT_ASSERT(arr_f32->get_buf() != 0);
-
-        // now test the file contents to see if the correct stuff was serialized.
-        // Given that this test runs after the first array serialize test, just
-        // use system("cmp ...").
-        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
         CPPUNIT_ASSERT(0 == system("cmp a_f32_test.file a_f32_test_pv.file >/dev/null 2>&1"));
     }
 
@@ -1569,9 +1449,6 @@ public:
             case dods_float64_c: {
                 DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
 
-                // Passing in the object pointer (instead of null) triggers a call
-                // to clear_local_data() when the thread completes. The code tests
-                // for that just after it gets the lock.
                 fm.put_vector_thread(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), arr_f32->var()->type(), 0);
                 fm.put_vector_thread(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), arr_f32->var()->type(), 0);
 
@@ -1586,9 +1463,6 @@ public:
             string err = "failed:" + e.get_error_message();
             CPPUNIT_FAIL(err.c_str());
         }
-
-        DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
-        CPPUNIT_ASSERT(arr_f32->get_buf() != 0);
 
         try{
             FILE *sf = fopen("a_f32_test_pv_2.file", "r");
@@ -1628,7 +1502,6 @@ public:
 
             DBG(cerr << "arr->var()->width(): " << arr->var()->width() << endl);
 
-            //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
             const int size_of_first_part = 5;
             switch (arr->var()->type()) {
                 case dods_byte_c:
@@ -1656,10 +1529,6 @@ public:
             CPPUNIT_FAIL(err.c_str());
         }
 
-        // now test the file contents to see if the correct stuff was serialized.
-        // Given that this test runs after the first array serialize test, just
-        // use system("cmp ...").
-        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
         CPPUNIT_ASSERT(0 == system("cmp a_test.file a_test_ptv.file >/dev/null 2>&1"));
     }
 
@@ -1702,12 +1571,6 @@ public:
             CPPUNIT_FAIL(err.c_str());
         }
 
-        // CPPUNIT_ASSERT(arr_f32->get_buf() == 0);
-
-        // now test the file contents to see if the correct stuff was serialized.
-        // Given that this test runs after the first array serialize test, just
-        // use system("cmp ...").
-        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
         CPPUNIT_ASSERT(0 == system("cmp a_f32_test.file a_f32_test_ptv.file >/dev/null 2>&1"));
     }
 
@@ -1722,7 +1585,6 @@ public:
 
             DBG(cerr << "arr_f64->var()->width(): " << arr_f64->var()->width() << endl);
 
-            //virtual void put_vector_last(char *val, unsigned int num, int width, Type type);
             const int size_of_first_part = 5;
             switch (arr_f64->var()->type()) {
             case dods_byte_c:
@@ -1750,12 +1612,6 @@ public:
             CPPUNIT_FAIL(err.c_str());
         }
 
-        CPPUNIT_ASSERT(arr_f64->get_buf() == 0);
-
-        // now test the file contents to see if the correct stuff was serialized.
-        // Given that this test runs after the first array serialize test, just
-        // use system("cmp ...").
-        //int status = system("cmp a_test.file a_test_2.file >/dev/null 2>&1");
         CPPUNIT_ASSERT(0 == system("cmp a_f64_test.file a_f64_test_ptv.file >/dev/null 2>&1"));
     }
 };

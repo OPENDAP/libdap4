@@ -60,13 +60,6 @@ namespace libdap {
 char *XDRStreamMarshaller::d_buf = 0;
 #define XDR_DAP_BUFF_SIZE 256
 
-#if 0
-pthread_mutex_t XDRStreamMarshaller::d_out_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t XDRStreamMarshaller::d_out_cond = PTHREAD_COND_INITIALIZER;
-int XDRStreamMarshaller::d_child_thread_count = 0;
-string XDRStreamMarshaller::d_thread_error = "";
-#endif
-
 /** Build an instance of XDRStreamMarshaller. Bind the C++ stream out to this
  * instance. If the checksum parameter is true, initialize a checksum buffer
  * and enable the use of the reset_checksum() and get_checksum() methods.
@@ -91,28 +84,6 @@ XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) :
     if (pthread_cond_init(&d_out_cond, 0) != 0) throw Error("Failed to initialize cond.");
 
 }
-
-#if 0
-XDRStreamMarshaller::XDRStreamMarshaller() :
-    Marshaller(), d_out(cout), d_partial_put_byte_count(0)
-{
-    throw InternalErr(__FILE__, __LINE__, "Default constructor not implemented.");
-}
-
-XDRStreamMarshaller::XDRStreamMarshaller(const XDRStreamMarshaller &m) :
-    Marshaller(m), d_out(cout), d_partial_put_byte_count(0)
-{
-    throw InternalErr(__FILE__, __LINE__, "Copy constructor not implemented.");
-}
-
-XDRStreamMarshaller &
-XDRStreamMarshaller::operator=(const XDRStreamMarshaller &)
-{
-    throw InternalErr(__FILE__, __LINE__, "Copy operator not implemented.");
-
-    return *this;
-}
-#endif
 
 XDRStreamMarshaller::~XDRStreamMarshaller()
 {
@@ -143,12 +114,12 @@ void XDRStreamMarshaller::put_byte(dods_byte val)
 
     if (!xdr_char(&d_sink, (char *) &val))
         throw Error(
-            "Network I/O Error. Could not send byte data.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send byte data.");
 
     unsigned int bytes_written = xdr_getpos(&d_sink);
     if (!bytes_written)
         throw Error(
-            "Network I/O Error. Could not send byte data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send byte data - unable to get stream position.");
 
     Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
@@ -159,16 +130,16 @@ void XDRStreamMarshaller::put_int16(dods_int16 val)
 {
     if (!xdr_setpos(&d_sink, 0))
         throw Error(
-            "Network I/O Error. Could not send int 16 data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send int 16 data - unable to set stream position.");
 
     if (!XDR_INT16(&d_sink, &val))
         throw Error(
-            "Network I/O Error. Could not send int 16 data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send int 16 data.");
 
     unsigned int bytes_written = xdr_getpos(&d_sink);
     if (!bytes_written)
         throw Error(
-            "Network I/O Error. Could not send int 16 data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send int 16 data - unable to get stream position.");
 
     Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
@@ -179,16 +150,16 @@ void XDRStreamMarshaller::put_int32(dods_int32 val)
 {
     if (!xdr_setpos(&d_sink, 0))
         throw Error(
-            "Network I/O Error. Could not send int 32 data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send int 32 data - unable to set stream position.");
 
     if (!XDR_INT32(&d_sink, &val))
         throw Error(
-            "Network I/O Error. Culd not read int 32 data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Culd not read int 32 data.");
 
     unsigned int bytes_written = xdr_getpos(&d_sink);
     if (!bytes_written)
         throw Error(
-            "Network I/O Error. Could not send int 32 data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send int 32 data - unable to get stream position.");
 
     Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
@@ -199,16 +170,16 @@ void XDRStreamMarshaller::put_float32(dods_float32 val)
 {
     if (!xdr_setpos(&d_sink, 0))
         throw Error(
-            "Network I/O Error. Could not send float 32 data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send float 32 data - unable to set stream position.");
 
     if (!xdr_float(&d_sink, &val))
         throw Error(
-            "Network I/O Error. Could not send float 32 data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send float 32 data.");
 
     unsigned int bytes_written = xdr_getpos(&d_sink);
     if (!bytes_written)
         throw Error(
-            "Network I/O Error. Could not send float 32 data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send float 32 data - unable to get stream position.");
 
     Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
@@ -219,16 +190,16 @@ void XDRStreamMarshaller::put_float64(dods_float64 val)
 {
     if (!xdr_setpos(&d_sink, 0))
         throw Error(
-            "Network I/O Error. Could not send float 64 data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send float 64 data - unable to set stream position.");
 
     if (!xdr_double(&d_sink, &val))
         throw Error(
-            "Network I/O Error. Could not send float 64 data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send float 64 data.");
 
     unsigned int bytes_written = xdr_getpos(&d_sink);
     if (!bytes_written)
         throw Error(
-            "Network I/O Error. Could not send float 64 data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send float 64 data - unable to get stream position.");
 
     Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
@@ -239,7 +210,7 @@ void XDRStreamMarshaller::put_uint16(dods_uint16 val)
 {
     if (!xdr_setpos(&d_sink, 0))
         throw Error(
-            "Network I/O Error. Could not send uint 16 data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send uint 16 data - unable to set stream position.");
 
     if (!XDR_UINT16(&d_sink, &val))
         throw Error(
@@ -248,7 +219,7 @@ void XDRStreamMarshaller::put_uint16(dods_uint16 val)
     unsigned int bytes_written = xdr_getpos(&d_sink);
     if (!bytes_written)
         throw Error(
-            "Network I/O Error. Could not send uint 16 data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send uint 16 data - unable to get stream position.");
 
     Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
@@ -259,7 +230,7 @@ void XDRStreamMarshaller::put_uint32(dods_uint32 val)
 {
     if (!xdr_setpos(&d_sink, 0))
         throw Error(
-            "Network I/O Error. Could not send uint 32 data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send uint 32 data - unable to set stream position.");
 
     if (!XDR_UINT32(&d_sink, &val))
         throw Error(
@@ -268,7 +239,7 @@ void XDRStreamMarshaller::put_uint32(dods_uint32 val)
     unsigned int bytes_written = xdr_getpos(&d_sink);
     if (!bytes_written)
         throw Error(
-            "Network I/O Error. Could not send uint 32 data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send uint 32 data - unable to get stream position.");
 
     Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
@@ -287,17 +258,17 @@ void XDRStreamMarshaller::put_str(const string &val)
 
         if (!xdr_setpos(&str_sink, 0))
             throw Error(
-                "Network I/O Error. Could not send string data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+                "Network I/O Error. Could not send string data - unable to set stream position.");
 
         const char *out_tmp = val.c_str();
         if (!xdr_string(&str_sink, (char **) &out_tmp, size))
             throw Error(
-                "Network I/O Error. Could not send string data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+                "Network I/O Error. Could not send string data.");
 
         unsigned int bytes_written = xdr_getpos(&str_sink);
         if (!bytes_written)
             throw Error(
-                "Network I/O Error. Could not send string data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+                "Network I/O Error. Could not send string data - unable to get stream position.");
 
         Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
@@ -327,12 +298,12 @@ void XDRStreamMarshaller::put_opaque(char *val, unsigned int len)
 
     if (!xdr_opaque(&d_sink, val, len))
         throw Error(
-            "Network I/O Error. Could not send opaque data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send opaque data.");
 
     unsigned int bytes_written = xdr_getpos(&d_sink);
     if (!bytes_written)
         throw Error(
-            "Network I/O Error. Could not send opaque data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send opaque data - unable to get stream position.");
 
     Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
@@ -341,48 +312,22 @@ void XDRStreamMarshaller::put_opaque(char *val, unsigned int len)
 
 void XDRStreamMarshaller::put_int(int val)
 {
-#if 0
-    Locker lock(d_out_mutex, d_out_cond, d_child_thread_count); // Make sure not to lock before uses of put_int() below!
-#endif
     if (!xdr_setpos(&d_sink, 0))
         throw Error(
-            "Network I/O Error. Could not send int data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+            "Network I/O Error. Could not send int data - unable to set stream position.");
 
     if (!xdr_int(&d_sink, &val))
         throw Error(
-            "Network I/O Error(1). Could not send int data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
+            "Network I/O Error(1). Could not send int data.");
 
     unsigned int bytes_written = xdr_getpos(&d_sink);
     if (!bytes_written)
         throw Error(
-            "Network I/O Error. Could not send int data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
-
-#if 0
-    d_out.write(d_buf, bytes_written);
-#endif
-
-#if 0
-    int status = pthread_mutex_lock(&d_out_mutex);
-    if (status != 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not get d_out_mutex");
-    while (d_child_thread_count != 0) {
-        status = pthread_cond_wait(&d_out_cond, &d_out_mutex);
-        if (status != 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not wait on d_out_cond");
-    }
-    if (d_child_thread_count != 0)
-        throw InternalErr(__FILE__, __LINE__, "FAIL: left d_out_cond wait with non-zero child thread count");
-#endif
+            "Network I/O Error. Could not send int data - unable to get stream position.");
 
     Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
     d_out.write(d_buf, bytes_written);
-
-#if 0
-    status = pthread_mutex_unlock(&d_out_mutex);
-    if (status != 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not unlock d_out_mutex");
-#endif
 }
 
 void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
@@ -401,38 +346,20 @@ void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
         xdrmem_create(&byte_sink, &byte_buf[0], num + add_to, XDR_ENCODE);
         if (!xdr_setpos(&byte_sink, 0))
             throw Error(
-                "Network I/O Error. Could not send byte vector data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+                "Network I/O Error. Could not send byte vector data - unable to set stream position.");
 
         if (!xdr_bytes(&byte_sink, (char **) &val, (unsigned int *) &num, num + add_to))
             throw Error(
-                "Network I/O Error(2). Could not send byte vector data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
+                "Network I/O Error(2). Could not send byte vector data.");
 
         unsigned int bytes_written = xdr_getpos(&byte_sink);
         if (!bytes_written)
             throw Error(
-                "Network I/O Error. Could not send byte vector data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
-#if 1
+                "Network I/O Error. Could not send byte vector data - unable to get stream position.");
+
         Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
         d_out.write(&byte_buf[0], bytes_written);
-#else
-        int status = pthread_mutex_lock(&d_out_mutex);
-        if (status != 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not get d_out_mutex");
-        while (d_child_thread_count != 0) {
-            status = pthread_cond_wait(&d_out_cond, &d_out_mutex);
-            if (status != 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not wait on d_out_cond");
-        }
-        if (d_child_thread_count != 0)
-            throw InternalErr(__FILE__, __LINE__, "FAIL: left d_out_cond wait with non-zero child thread count");
-
-        d_out.write(&byte_buf[0], bytes_written);
-
-        status = pthread_mutex_unlock(&d_out_mutex);
-        if (status != 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not unlock d_out_mutex");
-#endif
 
         xdr_destroy(&byte_sink);
     }
@@ -481,18 +408,18 @@ void XDRStreamMarshaller::put_vector(char *val, unsigned int num, int width, Typ
         // set the position of the sink to 0, we're starting at the beginning
         if (!xdr_setpos(&vec_sink, 0))
             throw Error(
-                "Network I/O Error. Could not send vector data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+                "Network I/O Error. Could not send vector data - unable to set stream position.");
 
         // write the array to the buffer
         if (!xdr_array(&vec_sink, (char **) &val, (unsigned int *) &num, size, width, XDRUtils::xdr_coder(type)))
             throw Error(
-                "Network I/O Error(2). Could not send vector data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
+                "Network I/O Error(2). Could not send vector data.");
 
         // how much was written to the buffer
         unsigned int bytes_written = xdr_getpos(&vec_sink);
         if (!bytes_written)
             throw Error(
-                "Network I/O Error. Could not send vector data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+                "Network I/O Error. Could not send vector data - unable to get stream position.");
 
         Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
@@ -546,16 +473,16 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
             xdrmem_create(&byte_sink, &byte_buf[0], bufsiz, XDR_ENCODE);
             if (!xdr_setpos(&byte_sink, 0))
                 throw Error(
-                    "Network I/O Error. Could not send byte vector data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+                    "Network I/O Error. Could not send byte vector data - unable to set stream position.");
 
             if (!xdr_bytes(&byte_sink, (char **) &val, (unsigned int *) &num, bufsiz))
                 throw Error(
-                    "Network I/O Error(2). Could not send byte vector data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
+                    "Network I/O Error(2). Could not send byte vector data.");
 
             unsigned int bytes_written = xdr_getpos(&byte_sink);
             if (!bytes_written)
                 throw Error(
-                    "Network I/O Error. Could not send byte vector data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+                    "Network I/O Error. Could not send byte vector data - unable to get stream position.");
 
             Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
@@ -593,18 +520,18 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
             // set the position of the sink to 0, we're starting at the beginning
             if (!xdr_setpos(&vec_sink, 0))
                 throw Error(
-                    "Network I/O Error. Could not send vector data - unable to set stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+                    "Network I/O Error. Could not send vector data - unable to set stream position.");
 
             // write the array to the buffer
             if (!xdr_array(&vec_sink, (char **) &val, (unsigned int *) &num, size, width, XDRUtils::xdr_coder(type)))
                 throw Error(
-                    "Network I/O Error(2). Could not send vector data.\nThis may be due to a bug in libdap or a\nproblem with the network connection.");
+                    "Network I/O Error(2). Could not send vector data.");
 
             // how much was written to the buffer
             unsigned int bytes_written = xdr_getpos(&vec_sink);
             if (!bytes_written)
                 throw Error(
-                    "Network I/O Error. Could not send vector data - unable to get stream position.\nThis may be due to a bug in DODS, on the server or a\nproblem with the network connection.");
+                    "Network I/O Error. Could not send vector data - unable to get stream position.");
 
             Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
@@ -674,10 +601,10 @@ XDRStreamMarshaller::write_thread(void *arg)
     DBG(cerr << "In write_thread, done writing." << endl);
 
     delete args->d_buf;
-
+#if 0
     if (args->d_vec)
         args->d_vec->clear_local_data();
-
+#endif
     args->d_count = 0;
 
     status = pthread_cond_signal(&args->d_cond);
@@ -733,19 +660,6 @@ void XDRStreamMarshaller::put_vector_thread(char *val, int num, Vector *vec)
         xdr_destroy(&byte_sink);
         delete byte_buf;
 #else
-#if 0
-        int status = pthread_mutex_lock(&d_out_mutex);
-        if (status != 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not get d_out_mutex");
-        while (d_child_thread_count != 0) {
-            status = pthread_cond_wait(&d_out_cond, &d_out_mutex);
-            if (status != 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not wait on d_out_cond");
-        }
-        if (d_child_thread_count != 0)
-            throw InternalErr(__FILE__, __LINE__, "FAIL: left d_out_cond wait with non-zero child thread count");
-#endif
-
         Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
         d_child_thread_count = 1;   // We make the child thread here; it decrements the count
@@ -756,11 +670,6 @@ void XDRStreamMarshaller::put_vector_thread(char *val, int num, Vector *vec)
             throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
 
         xdr_destroy(&byte_sink);
-#if 0
-        status = pthread_mutex_unlock(&d_out_mutex);
-        if (status != 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not unlock d_out_mutex");
-#endif
 #endif
     }
     catch (...) {
@@ -854,10 +763,10 @@ XDRStreamMarshaller::write_part_thread(void *arg)
     DBG(cerr << "In write_part_thread, done writing." << endl);
 
     delete args->d_buf;
-
+#if 0
     if (args->d_vec)
         args->d_vec->clear_local_data();
-
+#endif
     args->d_count = 0;
 
     status = pthread_cond_signal(&args->d_cond);
