@@ -676,9 +676,10 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
             m.put_int(num);
             status = true;
             for (int i = 0; i < num && status; ++i)
-                status = status && d_compound_buf[i]->serialize_no_release(eval, dds, m, false);
+                status = status && d_compound_buf[i]->serialize(eval, dds, m, false);
 
-            clear_local_data();
+            // FIXME Why does this break the put_vector_thread code? 8/22/15
+            //clear_local_data();
             break;
 
         default:
