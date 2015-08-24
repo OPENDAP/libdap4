@@ -38,17 +38,11 @@
 
 #include <iostream>
 
-#ifdef USE_POSIX_THREADS
 #include <pthread.h>
-#else
-#error "I need pthreads or compile-time directives"
-#endif
 
 #include "Marshaller.h"
 #include "InternalErr.h"
 #include "XDRUtils.h"
-//#include "BaseType.h"
-//#include "debug.h"
 
 namespace libdap {
 

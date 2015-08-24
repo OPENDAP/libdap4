@@ -32,8 +32,13 @@
 
 #include "config.h"
 
-#ifdef USE_POSIX_THREADS
+#ifdef HAVE_PTHREAD_H
 #include <pthread.h>
+
+#ifndef USE_POSIX_THREADS
+#define USE_POSIX_THREADS 1
+#endif
+
 #else
 #error "I need pthreads or compile-time directives"
 #endif
