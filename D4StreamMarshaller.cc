@@ -594,6 +594,61 @@ void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem)
 
 }
 
+void D4StreamMarshaller::put_vector_part(char *val, unsigned int num, int width, Type type)
+{
+    switch(type) {
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int8_c:
+    case dods_uint8_c:
+        put_vector(val, num);
+        break;
+
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_int64_c:
+    case dods_uint64_c:
+        put_vector(val, num, width);
+        break;
+
+    case dods_enum_c:
+        if (width == 1)
+            put_vector(val, num);
+        else
+            put_vector(val, num, width);
+        break;
+
+    case dods_float32_c:
+        put_vector_float32(val, num);
+        break;
+
+    case dods_float64_c:
+        put_vector_float32(val, num);
+        break;
+
+    case dods_str_c:
+    case dods_url_c:
+        throw InternalErr(__FILE__, __LINE__, "Array of String should not be passed to put_vector.");
+
+    case dods_array_c:
+        throw InternalErr(__FILE__, __LINE__, "Array of Array not allowed.");
+
+    case dods_opaque_c:
+    case dods_structure_c:
+    case dods_sequence_c:
+        throw InternalErr(__FILE__, __LINE__, "Array of String should not be passed to put_vector.");
+
+    case dods_grid_c:
+        throw InternalErr(__FILE__, __LINE__, "Grid is not part of DAP4.");
+
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
+        break;
+    }
+}
+
 void D4StreamMarshaller::dump(ostream &strm) const
 {
     strm << DapIndent::LMarg << "D4StreamMarshaller::dump - (" << (void *) this << ")" << endl;

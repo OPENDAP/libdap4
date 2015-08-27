@@ -77,7 +77,7 @@ D4Opaque::compute_checksum(Crc32 &checksum)
 }
 
 void
-D4Opaque::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &,*/ bool filter)
+D4Opaque::serialize(D4StreamMarshaller &m, DMR &, bool)
 {
     if (!read_p())
         read();          // read() throws Error
@@ -89,17 +89,6 @@ D4Opaque::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &,*/ 
 #endif
 
 }
-
-#if 0
-void
-D4Opaque::serialize_no_release(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
-{
-    if (!read_p())
-        read();          // read() throws Error
-
-    m.put_opaque_dap4( reinterpret_cast<char*>(&d_buf[0]), d_buf.size() ) ;
-}
-#endif
 
 void
 D4Opaque::deserialize(D4StreamUnMarshaller &um, DMR &)

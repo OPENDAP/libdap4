@@ -80,6 +80,8 @@ private:
 
     Crc32 d_checksum;
 
+
+
     // These are private so they won't ever get used.
     D4StreamMarshaller();
     D4StreamMarshaller(const D4StreamMarshaller &);
@@ -142,15 +144,29 @@ public:
         throw InternalErr(__FILE__, __LINE__, "Not Implemented; use other put_vector() versions.");
     }
 
+    /**
+     * Prepare to send a single array/vector using a series of 'put' calls.
+     * In DAP4 this does nothing because arrays are serialized using the server's
+     * binary representation (i.e., using 'reader make right').
+     *
+     * @param num Ignored
+     * @see put_vector_part()
+     * @see put_vector_end()
+     */
     virtual void put_vector_start(int /*num*/) {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_vector()");
     }
 
-    virtual void put_vector_part(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/) {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_vector()");
-    }
+    virtual void put_vector_part(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/);
+
+    /**
+     * Close a vector when its values are written using put_vector_part().
+     * In DAP4 this does nothing because arrays are serialized using the server's
+     * binary representation (i.e., using 'reader make right').
+     *
+     * @see put_vector_start()
+     * @see put_vector_part()
+     */
     virtual void put_vector_end() {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_vector()");
     }
 
     virtual void dump(std::ostream &strm) const;
