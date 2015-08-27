@@ -66,7 +66,7 @@
 #include "debug.h"
 #include "InternalErr.h"
 
-#define CLEAR_LOCAL_DATA
+#undef CLEAR_LOCAL_DATA
 
 using std::cerr;
 using std::endl;

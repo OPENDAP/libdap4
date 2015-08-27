@@ -53,7 +53,7 @@
 #include "util.h"
 #include "escaping.h"
 
-#define CLEAR_LOCAL_DATA
+#undef CLEAR_LOCAL_DATA
 
 using namespace std;
 

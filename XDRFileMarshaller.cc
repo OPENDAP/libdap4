@@ -187,38 +187,6 @@ void XDRFileMarshaller::put_vector(char *val, int num, int width, Vector &vec)
     }
 }
 
-#if 0
-// Include simple implementations of the threaded methods.
-void XDRFileMarshaller::put_vector_thread(char *val, int num, Vector *vec)
-{
-    if (!val) throw InternalErr(__FILE__, __LINE__, "Buffer pointer is not set.");
-
-    put_int(num);
-
-    if (!xdr_bytes(_sink, (char **) &val, (unsigned int *) &num, DODS_MAX_ARRAY)) {
-        throw Error(
-            "Network I/O Error(2). This may be due to a bug in libdap or a\nproblem with the network connection.");
-    }
-
-    // if the Vector pointer was non-null, delete the data memory
-    if (vec) vec->clear_local_data();
-}
-
-void XDRFileMarshaller::put_vector_thread(char *val, unsigned int num, int width, Type type, Vector *vec)
-{
-    if (!val) throw InternalErr(__FILE__, __LINE__, "Buffer pointer is not set.");
-
-    put_int(num);
-
-    if (!xdr_array(_sink, (char **) &val, (unsigned int *) &num, DODS_MAX_ARRAY, width, XDRUtils::xdr_coder(type))) {
-        throw Error(
-            "Network I/O Error(2). This may be due to a bug in libdap or a\nproblem with the network connection.");
-    }
-
-    if (vec) vec->clear_local_data();
-}
-#endif
-
 void XDRFileMarshaller::dump(ostream &strm) const
 {
     strm << DapIndent::LMarg << "XDRFileMarshaller::dump - (" << (void *) this << ")" << endl;

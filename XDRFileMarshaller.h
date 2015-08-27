@@ -48,11 +48,6 @@ namespace libdap {
 class XDRFileMarshaller: public Marshaller {
 private:
     XDR * _sink;
-#if 0
-    // Added in support of the modifications to put_vector() that are in the .cc
-    // file. That feature may never make into this class
-    FILE *d_out;
-#endif
 
     XDRFileMarshaller();
     XDRFileMarshaller(const XDRFileMarshaller &m);
@@ -81,13 +76,6 @@ public:
     virtual void put_vector(char *val, int num, Vector &vec);
     virtual void put_vector(char *val, int num, int width, Vector &vec);
 
-#if 0
-    // Include simple (non-threaded) implementations of the threaded methods.
-    // These are needed because the Vector::serialize() and serialize_n_release()
-    // methods may call them.
-    virtual void put_vector_thread(char *val, int num, Vector *vec);
-    virtual void put_vector_thread(char *val, unsigned int num, int width, Type type, Vector *vec);
-#endif
     virtual void dump(ostream &strm) const;
 };
 
