@@ -441,6 +441,7 @@ public:
 	@see DDS */
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
 
+#if 0
     /**
      * Provide a way to get the old behavior of serialize() - calling this
      * method will serialize the BaseType object's data but _not_ delete its
@@ -464,6 +465,7 @@ public:
     virtual bool serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) {
         return serialize(eval, dds, m, ce_eval);
     }
+#endif
 
     /**
      * @brief include the data for this variable in the checksum
@@ -490,6 +492,7 @@ public:
      */
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
 
+#if 0
     /**
      * @brief Variation on the DAP4 serialization method - retain data after serialization
      * Serialize a variable's values for DAP4. This does not write the DMR
@@ -511,6 +514,7 @@ public:
     virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false) {
         serialize(m, dmr, filter);
     }
+#endif
 
     /** Receives data from the network connection identified by the
 	<tt>source</tt> parameter. The data is put into the class data

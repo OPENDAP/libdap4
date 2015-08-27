@@ -187,6 +187,7 @@ void XDRFileMarshaller::put_vector(char *val, int num, int width, Vector &vec)
     }
 }
 
+#if 0
 // Include simple implementations of the threaded methods.
 void XDRFileMarshaller::put_vector_thread(char *val, int num, Vector *vec)
 {
@@ -216,7 +217,7 @@ void XDRFileMarshaller::put_vector_thread(char *val, unsigned int num, int width
 
     if (vec) vec->clear_local_data();
 }
-
+#endif
 
 void XDRFileMarshaller::dump(ostream &strm) const
 {

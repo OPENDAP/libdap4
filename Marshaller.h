@@ -99,6 +99,7 @@ public:
         throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
     }// = 0;
 
+#if 0
     /**
      * Write the contents of an Array/Vector to the Marshaller in a child thread.
      * In addition, if the last argument is not null, call its clear_local_data()
@@ -120,7 +121,6 @@ public:
     virtual void put_vector_thread(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/, Vector */*vec*/) {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
     }// = 0;
-
     /**
      * Write the partial contents of an Array/Vector to the Marshaller in a child thread.
      * @see put_vector_thread()
@@ -128,6 +128,7 @@ public:
     virtual void put_vector_part_thread(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/, Vector */*vec*/) {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
     }// = 0;
+#endif
 
     virtual void dump(std::ostream &strm) const = 0;
 };

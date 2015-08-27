@@ -253,7 +253,9 @@ public:
 
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
+#if 0
     virtual bool serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
+#endif
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     /// Rest the row number counter

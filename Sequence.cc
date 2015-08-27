@@ -74,6 +74,8 @@
 #include "Constructor.h"
 #include "DMR.h"
 
+#define CLEAR_LOCAL_DATA
+
 using namespace std;
 
 namespace libdap {
@@ -234,9 +236,6 @@ static inline void delete_rows(BaseTypeRow *bt_row_ptr)
 
 Sequence::~Sequence()
 {
-#if 0
-    for_each(d_values.begin(), d_values.end(), delete_rows);
-#endif
     clear_local_data();
 }
 
@@ -677,21 +676,23 @@ inline bool Sequence::is_end_of_rows(int i)
 bool Sequence::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
     DBG2(cerr << "Entering Sequence::serialize for " << name() << endl);
-#if 0
+
     // Special case leaf sequences!
+    bool status = false;
+
     if (is_leaf_sequence())
-        return serialize_leaf(dds, eval, m, ce_eval);
+        status = serialize_leaf(dds, eval, m, ce_eval);
     else
-        return serialize_parent_part_one(dds, eval, m);
-#endif
+        status = serialize_parent_part_one(dds, eval, m);
 
-    bool status = serialize_no_release(eval, dds, m, ce_eval);
-
+#ifdef CLEAR_LOCAL_DATA
     clear_local_data();
+#endif
 
     return status;
 }
 
+#if 0
 bool Sequence::serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
     DBG2(cerr << "Entering Sequence::serialize for " << name() << endl);
@@ -702,6 +703,7 @@ bool Sequence::serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshal
     else
         return serialize_parent_part_one(dds, eval, m);
 }
+#endif
 
 // We know this is not a leaf Sequence. That means that this Sequence holds
 // another Sequence as one of its fields _and_ that child Sequence triggers

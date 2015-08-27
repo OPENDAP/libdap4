@@ -66,6 +66,8 @@
 #include "debug.h"
 #include "InternalErr.h"
 
+#define CLEAR_LOCAL_DATA
+
 using std::cerr;
 using std::endl;
 
@@ -618,7 +620,6 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
-#ifdef USE_POSIX_THREADS
     dds.timeout_on();
 
     if (!read_p())
@@ -635,8 +636,7 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
 
     switch (d_proto->type()) {
         case dods_byte_c:
-            // send the byte data in a child thread, then call clear_local_data() in the thread
-            m.put_vector_thread(d_buf, num, /*this*/0);
+            m.put_vector(d_buf, num, *this);
             status = true;
             break;
 
@@ -646,8 +646,7 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
         case dods_uint32_c:
         case dods_float32_c:
         case dods_float64_c:
-            // ... also calls clear_local_data()
-            m.put_vector_thread(d_buf, num, d_proto->width(), d_proto->type(), /*this*/0);
+            m.put_vector(d_buf, num, d_proto->width(), *this);
             status = true;
 
             break;
@@ -686,16 +685,14 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
             break;
     }
 
-    clear_local_data();
-#else
-    bool status = serialize_no_release(eval, dds, m, ce_eval);
-
+#ifdef CLEAR_LOCAL_DATA
     clear_local_data();
 #endif
 
     return status;
 }
 
+#if 0
 bool Vector::serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval /*true*/)
 {
     dds.timeout_on();
@@ -770,7 +767,7 @@ bool Vector::serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshalle
 
     return true;
 }
-
+#endif
 
 // Read an object from the network and internalize it. For a Vector this is
 // handled differently for a `cardinal' type. Vectors of Cardinals are
@@ -973,7 +970,6 @@ void Vector::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*
 void
 Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter /*= false*/)
 {
-#if 0
     if (!read_p())
         read(); // read() throws Error and InternalErr
 #if 0
@@ -1043,13 +1039,13 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*
             throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
             break;
     }
-#endif
 
-    serialize_no_release(m, dmr, filter);
-
+#ifdef CLEAR_LOCAL_DATA
     clear_local_data();
+#endif
 }
 
+#if 0
 void
 Vector::serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter /* false */)
 {
@@ -1123,6 +1119,7 @@ Vector::serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter /* fal
             break;
     }
 }
+#endif
 
 void
 Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
@@ -1451,12 +1448,11 @@ void Vector::clear_local_data()
         d_buf = 0;
     }
 
-#if 1
     for (unsigned int i = 0; i < d_compound_buf.size(); ++i) {
         delete d_compound_buf[i];
         d_compound_buf[i] = 0;
     }
-#endif
+
     // Force memory to be reclaimed.
     d_compound_buf.resize(0);
     d_str.resize(0);

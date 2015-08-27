@@ -60,6 +60,8 @@ private:
 
     int d_partial_put_byte_count;
 
+    // pthreads code starts here
+
     pthread_t d_thread;
     pthread_attr_t d_thread_attr;
 
@@ -109,10 +111,9 @@ private:
         ostream &d_out;     // The output stream protected by the mutex, ...
         char *d_buf;        // The data to write to the stream
         int d_num;          // The size of d_buf
-        Vector *d_vec;      // A BaseType; the source of the data; clear_local_data()
 
-        write_args(pthread_mutex_t &m, pthread_cond_t &c, int &count, std::string &e, ostream &s, char *vals, int num, Vector *vec) :
-            d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(s), d_buf(vals), d_num(num), d_vec(vec)
+        write_args(pthread_mutex_t &m, pthread_cond_t &c, int &count, std::string &e, ostream &s, char *vals, int num) :
+            d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(s), d_buf(vals), d_num(num)
         {
         }
     };
@@ -120,6 +121,8 @@ private:
     // These are used for the child I/O threads started by put_vector_thread(), etc.
     static void *write_thread(void *arg);
     static void *write_part_thread(void *arg);
+
+    // pthread code ends here
 
     XDRStreamMarshaller();
     XDRStreamMarshaller(const XDRStreamMarshaller &m);
@@ -157,9 +160,11 @@ public:
     virtual void put_vector_part(char *val, unsigned int num, int width, Type type);
     virtual void put_vector_end();
 
+#if 0
     virtual void put_vector_thread(char *val, int num, Vector *vec);
     virtual void put_vector_thread(char *val, unsigned int num, int width, Type type, Vector *vec);
     virtual void put_vector_part_thread(char *val, unsigned int num, int width, Type type, Vector *vec);
+#endif
 
     virtual void dump(ostream &strm) const;
 };

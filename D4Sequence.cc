@@ -53,6 +53,8 @@
 #include "util.h"
 #include "escaping.h"
 
+#define CLEAR_LOCAL_DATA
+
 using namespace std;
 
 namespace libdap {
@@ -183,9 +185,6 @@ static inline void delete_rows(D4SeqRow *bt_row_ptr)
 
 D4Sequence::~D4Sequence()
 {
-#if 0
-    for_each(d_values.begin(), d_values.end(), delete_rows);
-#endif
     clear_local_data();
 }
 
@@ -325,7 +324,6 @@ void D4Sequence::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &e
  */
 void D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter)
 {
-#if 0
     // Read the data values, then serialize. NB: read_next_instance sets d_length.
     while (read_next_instance(filter)) {
         D4SeqRow *row = new D4SeqRow;
@@ -354,13 +352,14 @@ void D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter)
             (*j)->serialize(m, dmr, /*eval,*/false);
         }
     }
+
+#ifdef CLEAR_LOCAL_DATA
+    clear_local_data();
 #endif
 
-    serialize_no_release(m, dmr, filter);
-
-    clear_local_data();
 }
 
+#if 0
 void D4Sequence::serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter)
 {
     // Read the data values, then serialize. NB: read_next_instance sets d_length.
@@ -392,6 +391,7 @@ void D4Sequence::serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filt
         }
     }
 }
+#endif
 
 void D4Sequence::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 {

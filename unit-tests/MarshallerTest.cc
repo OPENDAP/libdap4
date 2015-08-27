@@ -1256,7 +1256,7 @@ public:
 
             switch (arr->var()->type()) {
                 case dods_byte_c: {
-                    fm.put_vector_thread(arr->get_buf(), arr->length(), arr);
+                    fm.put_vector/*_thread*/(arr->get_buf(), arr->length(), *arr);
                     break;
                 }
                 case dods_int16_c:
@@ -1292,10 +1292,10 @@ public:
                 case dods_byte_c: {
                     DBG(cerr << "arr->get_buf(): " << hex << (void*)arr->get_buf() << dec << endl);
 
-                    fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
-                    fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
-                    fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
-                    fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
+                    fm.put_vector(arr->get_buf(), arr->length(), *arr);
+                    fm.put_vector(arr->get_buf(), arr->length(), *arr);
+                    fm.put_vector(arr->get_buf(), arr->length(), *arr);
+                    fm.put_vector(arr->get_buf(), arr->length(), *arr);
                     break;
                 }
                 case dods_int16_c:
@@ -1364,9 +1364,9 @@ public:
                     // test sequencing of threads and non-threaded calls. Note that for the
                     // non-threaded calls, we pass a _reference_ to the object and it's an
                     // ignored parameter (left over cruft...).
-                    fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
                     fm.put_vector(arr->get_buf(), arr->length(), *arr);
-                    fm.put_vector_thread(arr->get_buf(), arr->length(), 0);
+                    fm.put_vector(arr->get_buf(), arr->length(), *arr);
+                    fm.put_vector(arr->get_buf(), arr->length(), *arr);
                     fm.put_vector(arr->get_buf(), arr->length(), *arr);
 
                     // No need to wait since put_vector() should be doing that
@@ -1384,8 +1384,6 @@ public:
                 default:
                     throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
             }
-
-            f.close();
         }
         catch( Error &e ) {
             string err = "failed:" + e.get_error_message();
@@ -1414,7 +1412,7 @@ public:
             case dods_float64_c: {
                 DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
 
-                fm.put_vector_thread(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), arr_f32->var()->type(), 0);
+                fm.put_vector(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), *arr_f32);
 
                 break;
             }
@@ -1449,8 +1447,8 @@ public:
             case dods_float64_c: {
                 DBG(cerr << "arr_f32->get_buf(): " << hex << (void* )arr_f32->get_buf() << dec << endl);
 
-                fm.put_vector_thread(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), arr_f32->var()->type(), 0);
-                fm.put_vector_thread(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), arr_f32->var()->type(), 0);
+                fm.put_vector(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), *arr_f32);
+                fm.put_vector(arr_f32->get_buf(), arr_f32->length(), arr_f32->var()->width(), *arr_f32);
 
                 break;
             }
@@ -1511,10 +1509,10 @@ public:
                 case dods_uint32_c:
                 case dods_float32_c:
                 case dods_float64_c: {
-                    fm.put_vector_part_thread(arr->get_buf(), size_of_first_part, arr->var()->width(), arr->var()->type(), 0);
+                    fm.put_vector_part(arr->get_buf(), size_of_first_part, arr->var()->width(), arr->var()->type());
 
-                    fm.put_vector_part_thread(arr->get_buf() + size_of_first_part, arr->length() - size_of_first_part,
-                        arr->var()->width(), arr->var()->type(), 0);
+                    fm.put_vector_part(arr->get_buf() + size_of_first_part, arr->length() - size_of_first_part,
+                        arr->var()->width(), arr->var()->type());
 
                     fm.put_vector_end();    // forces a wait on the thread
                     break;
@@ -1552,10 +1550,10 @@ public:
                 case dods_uint32_c:
                 case dods_float32_c:
                 case dods_float64_c: {
-                    fm.put_vector_part_thread(arr_f32->get_buf(), size_of_first_part, arr_f32->var()->width(), arr_f32->var()->type(), 0);
+                    fm.put_vector_part(arr_f32->get_buf(), size_of_first_part, arr_f32->var()->width(), arr_f32->var()->type());
 
-                    fm.put_vector_part_thread(arr_f32->get_buf() + (size_of_first_part * arr_f32->var()->width()),
-                        arr_f32->length() - size_of_first_part, arr_f32->var()->width(), arr_f32->var()->type(), arr_f32);
+                    fm.put_vector_part(arr_f32->get_buf() + (size_of_first_part * arr_f32->var()->width()),
+                        arr_f32->length() - size_of_first_part, arr_f32->var()->width(), arr_f32->var()->type());
 
                     fm.put_vector_end();    // forces a wait on the thread
                     break;
@@ -1594,11 +1592,11 @@ public:
             case dods_uint32_c:
             case dods_float32_c:
             case dods_float64_c:
-                fm.put_vector_part_thread(arr_f64->get_buf(), size_of_first_part, arr_f64->var()->width(),
-                    arr_f64->var()->type(), 0);
+                fm.put_vector_part(arr_f64->get_buf(), size_of_first_part, arr_f64->var()->width(),
+                    arr_f64->var()->type());
 
-                fm.put_vector_part_thread(arr_f64->get_buf() + (size_of_first_part * arr_f64->var()->width()),
-                    arr_f64->length() - size_of_first_part, arr_f64->var()->width(), arr_f64->var()->type(), arr_f64);
+                fm.put_vector_part(arr_f64->get_buf() + (size_of_first_part * arr_f64->var()->width()),
+                    arr_f64->length() - size_of_first_part, arr_f64->var()->width(), arr_f64->var()->type());
 
                 fm.put_vector_end();    // forces a wait on the thread
                 break;
