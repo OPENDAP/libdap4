@@ -1,3 +1,260 @@
+2015-08-28  James Gallagher  <jgallagher@opendap.org>
+
+	Removed old code from MarshallerThread refactor.
+
+	Moved the pthread code from XDRStreamMarshaller
+	It's now in MarshallerThread and used by XDRStreamMarshaller via the
+	'pointer to an implementation' pattern. This means that the pthread.h,
+	which configure looks for but may not find, is not included in XDR-
+	StreamMarshaller's header anymore.
+
+	I did not mention this in the git log, but I've removed the
+	serialize_no_release() method I added after refactoring the code
+	so that it wasn't needed (I moved the 'release' calls to the BES
+	dap module, so libdap's behavior is not changed).
+	
+	
+2015-08-27  James Gallagher  <jgallagher@opendap.org>
+
+	Added support for put_vector_part() to D4StreamMarshaller
+
+	Refactor: CLEAR_LOCAL_DATA and USE_POSIX_THREADS
+	We found that we could call clear_local_data() right after variables
+	were serialized and get a much flatter memory profile. However, putting
+	those calls in serialize() changed its behavior. I've moved them to
+	bes/dap/ResponseBuilder - but that is controllable using a comple-time
+	directive. Similarly, the compile-time switch USE_POSIX_THREADS
+	can be used to turn off that feature (#undef). See XDRStreamMarshaller.
+
+	Refactor: Parallel I/O methods
+	I refactored the three new parallel I/O methods back into the matching
+	put_vector() methods of the same/similar names. This cuts down on the
+	naming mess and means that other classes like XDFFileStream don't have
+	to include hacked methods that throw exceptions. This commit also
+	includes changes tha wrap the clear_local_data() calls in #ifdef
+	CLEAR_LOCAL_DATA. Lastly, this refactor will also require a matching
+	edit to ncml_module.
+
+2015-08-24  James Gallagher  <jgallagher@opendap.org>
+
+	Patch/fix/hack for XDRStreamMarshaller
+	This class' header requires pthread.h but that makes for issues since
+	we cannot put an include of config.h in a .h file that is installed.
+	To get on with testing, I'm checking in this version that just includes
+	it; later on I may modify the class to encapsulate the pthreads stuff.
+
+	Fix for clear_local_data() race condition
+	Took advantage of the current XDRStreamMarshaller impl that copies
+	data before writing it out. This means our code can delete the original
+	data held by the object right after the thread used to send that data
+	hass been called (actually, it could delete it _before_ starting the
+	thread, but doing so afterward keeps that feature out of the marshaller
+	class, which may come in handly later on...). Later on we may switch
+	to reference counted pointers and then this issue will go away.
+
+	Removed call to clear_local_data() in Vector::Serialize()
+	This was colliding with the call to clear_local_data() in the thread
+	when put_vector_thread() was called. This showed up as a 'sometimes'
+	failure of expr test #21. The bug happens only when serializing an
+	array of strucutre that contains arrays.
+
+2015-08-22  James Gallagher  <jgallagher@opendap.org>
+
+	Corrected a spelling mistake with 'serialize_no_release'
+
+	I've added synchronization code to the XDRStreamMarshaller dotr
+	This causes the XDRStreamMarshaller dtor to block on the d_out_mutex
+	until the child thread (possibly) writing to the output stream
+	completes.
+
+2015-08-21  James Gallagher  <jgallagher@opendap.org>
+
+	Added parallel_io to the set of branches Travis will build.
+
+	Now threads in XDRStreamMarshaller are created detached state
+
+	Added the new put_vector_thread methods to Marshaller
+	I made them have a default implementation so that child classes
+	won't break. I'm not sure if that's the best way to go...
+	Also dropped the new *_thread() methods into Vector::serialize(),
+	but they don't work so those are turned off by using #undef
+	USE_POSIX_THREADS
+
+	Parallel I/O for vector data maybe working
+	I have coded put_vector_thread() and put_vector_part_thread() and
+	they are passing unit tests.
+
+2015-08-18  James Gallagher  <jgallagher@opendap.org>
+
+	Removed some of the TODOs in libdap
+	[ci skip]
+
+2015-08-17  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Modified Vector::get_buf() so it can be used in the ncml handler
+
+2015-08-17  Nathan Potter  <ndp@opendap.org>
+
+	Merged the new (template-less) version of Vector inot master branch
+
+2015-08-17  James Gallagher  <jgallagher@opendap.org>
+
+	Completed DAP2 put_vector_part() and associated methods.
+
+2015-08-14  Nathan Potter  <ndp@opendap.org>
+
+	Typo
+
+2015-08-14  James Gallagher  <jgallagher@opendap.org>
+
+	Partial Vector/Array serialization partly working!
+	Must still implement the parts for Arrays of int16, ..., types;
+	only byte arrays work now.
+
+	Checkpoint: Adding methods to allow serailization of Vectors in parts.
+	Missing methods in D4StreamMarshaller, XDRFileMarsahller and parts of
+	methods in XDRStreamMarshaller.
+
+	Added three protected accessors to Vector
+	These provide access to the underlying data held in a Vector/Array
+	and are accessible to descendant classes only.
+
+2015-08-14  Nathan Potter  <ndp@opendap.org>
+
+	Replaced template methods in Vector.cc with more pedantic
+	implmentations. Made the templted methods private and used them in
+	the implementations of the new pedantic methods.
+
+2015-08-10  James Gallagher  <jgallagher@opendap.org>
+
+	Bumped up the version number to 3.14.2
+
+	Bumped up the version (and SO numbers). This is 3.14.2
+
+	Merge branch 'serialize_n_release'
+
+	Added a serialize_no_release() method
+	This rounds out the serialize_n_release branch. The new behavior of
+	freeing the dynamic memory is very desireable, so it's the default,
+	but if some code wants to serialize, do something else and then delete
+	the storage, the new serialize_no_release provides that option. All
+	of our libdap and bes/module tests pass. This will be merged to the
+	master branch once the latter has been tagged.
+
+2015-08-07  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed overwriting commit for Vector::serialize()
+	We decided to make the serialize and release code real, but in the
+	process that collided with changes to BaseType::name() (making it
+	a virtual method). One line was broken, but since it was the call to
+	clear_local_data() in Vector::serialize(), it was an important line!
+
+2015-08-06  James Gallagher  <jgallagher@opendap.org>
+
+	distcheck works locally
+
+	Fix for distcheck and getdapTest
+
+2015-08-05  James Gallagher  <jgallagher@opendap.org>
+
+	make check now supports parallel execution
+	Modified test/Makefile.am so that autotest parallel tests work. Run
+	make check with TESTSUITEFLAGS=-jN
+
+2015-08-05  Nathan Potter  <ndp@opendap.org>
+
+	pulled from github and merged conflicts
+
+	Refactored use of the name() method in BaseType so that it is now overrideable
+
+2015-08-05  James Gallagher  <jgallagher@opendap.org>
+
+	Added BaseType::clear_local_data()
+	The clear_local_data() method is used to free just the parts of a
+	BaseType (child of, really) that hold large amounts of data. It applies
+	to only a handful of the variable types (Vector, Sequence, D4Opaque and
+	D4Sequence). It is used to free memory right after data values are
+	sent to the client using serailize(). This means that data are no longer
+	held by the variable objects once serialize() returns - at least for
+	Array, Sequence, ... Other types like Byte, Int16, ..., will retain
+	their values because those values are not held in dynamically allocated
+	storage.
+
+2015-08-04  James Gallagher  <jgallagher@opendap.org>
+
+	Hacked the marshT unit-test
+	I modified this so that it no longer relies on data being present after
+	serialize() has been called. It seems that none of the handlers use
+	this 'feature' and we can change the code so that memory is freed right
+	after the bits are sent fir each variable. This means that only one
+	variabe's data are in memory at any given time.
+
+2015-08-03  Nathan Potter  <ndp@opendap.org>
+
+	Checking in change to _always_ release array memory after serialization. This causes the Marshaller test for Structure to seg fault.
+
+2015-07-14  James Gallagher  <jgallagher@opendap.org>
+
+	Removed the bisong version print out
+	...I think this is working fine now
+	[ci skip]
+
+2015-07-13  James Gallagher  <jgallagher@opendap.org>
+
+	Added distcheck to travis
+
+	travis caching
+	Modified travis.yml and install_libdap4_source_deps.sh so that
+	the bison source build is cached.
+
+	Another fix: added '/bin' to $HOME/bison in $PATH
+
+	Removed odd ^S from install_libdap4_source_deps.sh
+
+	More travis hacks - addes sudo: false back in; remove tabs
+
+2015-07-12  James Gallagher  <jgallagher@opendap.org>
+
+	travis: The build was not triggered with the last push...
+	... so try removing 'sudo: false'
+
+	Switched travis to use docker/containers
+
+2015-07-09  James Gallagher  <jgallagher@opendap.org>
+
+	Added .NOTPARALLEL: back to the C++ parser Makefile.am files
+	We need this because stack.hh, ..., are built in one shot by
+	bison.
+
+	Updated the library version
+
+	Grammar fixes - for flex and its C++ scanner code.
+	There is a conflict between the defined return type of
+	FlexLexer::LexerInput. Some versions of flex define that
+	method as returning an int and some a returning a size_t.
+	Including generated code using one will break when a build
+	machine uses the other. I used dist-hook to just 'rm' those
+	generated lex.*.cc files  from d4_ce and d4_function - the
+	other generated scanners are OK. This is really a work-around
+	since we should be able to include the generated scanners
+	and then drop the build requirement for both bison and flex.
+
+2015-07-07  James Gallagher  <jgallagher@opendap.org>
+
+	Added absolute-header-m4 and removed .gitignore
+	I think the .gitignore is from the gnulib source
+	and is fine for their git repo, but not for clients
+	of the library.
+
+	Changed the tag for non-master travis builds to _travis
+	... from -travis. Minor, but it bugged me.
+
+	Modified travis.yml so that branches ending in -travis will be built.
+
+	Updated gnulib code - this may affect the coverity results
+
 2015-07-02  James Gallagher  <jgallagher@opendap.org>
 
 	Coverity fix in dds.yy

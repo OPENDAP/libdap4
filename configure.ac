@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.63)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.14.2, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.15.0, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["4.0"], [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
@@ -44,8 +44,13 @@ dnl to default values otherwise.
 AC_CANONICAL_HOST
 AC_SUBST(host)
 
-DAPLIB_CURRENT=19
-DAPLIB_AGE=2
+dnl How to set these SO variables:
+dnl No interfaces changed, only implementations (good): ==> Increment REVISION.
+dnl Interfaces added, none removed (good): ==> Increment CURRENT, increment AGE, set REVISION to 0.
+dnl Interfaces removed or changed (BAD, breaks upward compatibility): ==> Increment CURRENT, set AGE and REVISION to 0.
+
+DAPLIB_CURRENT=20
+DAPLIB_AGE=3
 DAPLIB_REVISION=0
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)
@@ -56,7 +61,7 @@ AC_SUBST(LIBDAP_VERSION)
 
 CLIENTLIB_CURRENT=7
 CLIENTLIB_AGE=1
-CLIENTLIB_REVISION=0
+CLIENTLIB_REVISION=1
 AC_SUBST(CLIENTLIB_CURRENT)
 AC_SUBST(CLIENTLIB_AGE)
 AC_SUBST(CLIENTLIB_REVISION)
@@ -66,7 +71,7 @@ AC_SUBST(CLIENTLIB_VERSION)
 
 SERVERLIB_CURRENT=13
 SERVERLIB_AGE=6
-SERVERLIB_REVISION=0
+SERVERLIB_REVISION=1
 AC_SUBST(SERVERLIB_CURRENT)
 AC_SUBST(SERVERLIB_AGE)
 AC_SUBST(SERVERLIB_REVISION)

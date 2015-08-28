@@ -2,7 +2,7 @@ Name: libdap
 Summary: The C++ DAP2/DAP4 library from OPeNDAP
 # updated 7/6/15 to match the update in configure.ac for a new source
 # dist. There's not (yet) a  binary dist with this version. jhrg 7/6/15
-Version: 3.14.2
+Version: 3.15.0
 Release: 1%{?dist}
 
 License: LGPLv2+

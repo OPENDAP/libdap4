@@ -1,3 +1,20 @@
+News for version 3.15.0
+
+The library now writes to the network using a child thread, allowing 
+parallel processing of data reads and writes when one or more variables
+are returned (or when returning the result of an aggregation).
+
+The library now supports writing 'vector' data (i.e., Array variables)
+in parts so that large arrays that are being built up over time can be
+serialized in pieces as the data becomes available. This is combined
+with the parallel I/O feature when serailizing aggregations - other
+handlers could also take advantage of it
+
+We fixed an issue in Vector where template methods were used in a way
+that broke inheritance, introducing a hard-to-diagbose bug in the NCML 
+code. The problem was that variables that describe the 'aggregation 
+dimension' could not be subset. That's now fixed.
+
 News for version 3.14.2
 
 This version of the library _changes the behavior of BaseType::serialize()_
