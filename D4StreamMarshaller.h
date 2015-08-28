@@ -81,7 +81,6 @@ private:
     Crc32 d_checksum;
 
 
-
     // These are private so they won't ever get used.
     D4StreamMarshaller();
     D4StreamMarshaller(const D4StreamMarshaller &);

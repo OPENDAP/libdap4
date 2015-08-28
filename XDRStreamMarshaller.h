@@ -59,75 +59,6 @@ private:
 
     int d_partial_put_byte_count;
 
-    // pthreads code starts here
-#if 0
-    pthread_t d_thread;
-    pthread_attr_t d_thread_attr;
-
-    pthread_mutex_t d_out_mutex;
-    pthread_cond_t d_out_cond;
-
-    int d_child_thread_count;
-    std::string d_thread_error; // non-null indicates an error
-#endif
-#if 0
-    class Locker {
-    public:
-        Locker(pthread_mutex_t &lock, pthread_cond_t &cond, int &count) :
-            m_mutex(lock), m_cond(cond), m_count(count)
-        {
-            int status = pthread_mutex_lock(&m_mutex);
-            if (status != 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not lock m_mutex");
-            while (m_count != 0) {
-                status = pthread_cond_wait(&m_cond, &m_mutex);
-                if (status != 0)
-                    throw InternalErr(__FILE__, __LINE__, "Could not wait on m_cond");
-            }
-            if (m_count != 0)
-                throw InternalErr(__FILE__, __LINE__, "FAIL: left m_cond wait with non-zero child thread count");
-        }
-
-        virtual ~Locker()
-        {
-            int status = pthread_mutex_unlock(&m_mutex);
-            if (status != 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not unlock m_mutex");
-        }
-
-    private:
-        pthread_mutex_t& m_mutex;
-        pthread_cond_t &m_cond;
-        int &m_count;
-
-        Locker();
-        Locker(const Locker &rhs);
-    };
-#endif
-#if 0
-    struct write_args {
-        pthread_mutex_t &d_mutex;
-        pthread_cond_t &d_cond;
-        int &d_count;
-        std::string &d_error;
-        ostream &d_out;     // The output stream protected by the mutex, ...
-        char *d_buf;        // The data to write to the stream
-        int d_num;          // The size of d_buf
-
-        write_args(pthread_mutex_t &m, pthread_cond_t &c, int &count, std::string &e, ostream &s, char *vals, int num) :
-            d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(s), d_buf(vals), d_num(num)
-        {
-        }
-    };
-#endif
-    // These are used for the child I/O threads started by put_vector_thread(), etc.
-#if 0
-    static void *write_thread(void *arg);
-    static void *write_part_thread(void *arg);
-#endif
-
-    // pthread code ends here
-
     MarshallerThread *tm;
 
     XDRStreamMarshaller();
@@ -166,12 +97,6 @@ public:
     virtual void put_vector_start(int num);
     virtual void put_vector_part(char *val, unsigned int num, int width, Type type);
     virtual void put_vector_end();
-
-#if 0
-    virtual void put_vector_thread(char *val, int num, Vector *vec);
-    virtual void put_vector_thread(char *val, unsigned int num, int width, Type type, Vector *vec);
-    virtual void put_vector_part_thread(char *val, unsigned int num, int width, Type type, Vector *vec);
-#endif
 
     virtual void dump(ostream &strm) const;
 };

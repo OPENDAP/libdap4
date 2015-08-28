@@ -76,9 +76,6 @@ char *XDRStreamMarshaller::d_buf = 0;
  */
 XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) :
     d_out(out), d_partial_put_byte_count(0), tm(0)
-#if 0
-, d_thread(0), d_child_thread_count(0), d_thread_error("")
-#endif
 {
     if (!d_buf) d_buf = (char *) malloc(XDR_DAP_BUFF_SIZE);
     if (!d_buf) throw Error("Failed to allocate memory for data serialization.");
@@ -88,39 +85,10 @@ XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) :
 #ifdef USE_POSIX_THREADS
     tm = new MarshallerThread;
 #endif
-
-#if 0
-    def USE_POSIX_THREADS
-    if (pthread_attr_init(&d_thread_attr) != 0)  throw Error("Failed to initialize pthread attributes.");
-    if (pthread_attr_setdetachstate(&d_thread_attr, PTHREAD_CREATE_DETACHED /*PTHREAD_CREATE_JOINABLE*/) != 0)
-        throw Error("Failed to complete pthread attribute initialization.");
-
-    if (pthread_mutex_init(&d_out_mutex, 0) != 0) throw Error("Failed to initialize mutex.");
-    if (pthread_cond_init(&d_out_cond, 0) != 0) throw Error("Failed to initialize cond.");
-#endif
 }
 
 XDRStreamMarshaller::~XDRStreamMarshaller()
 {
-#if 0
-    def USE_POSIX_THREADS
-    int status = pthread_mutex_lock(&d_out_mutex);
-    if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not lock m_mutex");
-    while (d_child_thread_count != 0) {
-        status = pthread_cond_wait(&d_out_cond, &d_out_mutex);
-        if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not wait on m_cond");
-    }
-    if (d_child_thread_count != 0) throw InternalErr(__FILE__, __LINE__, "FAIL: left m_cond wait with non-zero child thread count");
-
-    status = pthread_mutex_unlock(&d_out_mutex);
-    if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not unlock m_mutex");
-
-    pthread_mutex_destroy(&d_out_mutex);
-    pthread_cond_destroy(&d_out_cond);
-
-    pthread_attr_destroy(&d_thread_attr);
-#endif
-
     delete tm;
 
     xdr_destroy(&d_sink);
@@ -418,54 +386,6 @@ void XDRStreamMarshaller::put_vector_end()
     }
 }
 
-#if 0
-// static method used with pthread_create()
-void *
-XDRStreamMarshaller::write_thread(void *arg)
-{
-    write_args *args = reinterpret_cast<write_args *>(arg);
-
-    int status = pthread_mutex_lock(&args->d_mutex);
-    if (status != 0) {
-        ostringstream oss;
-        oss << "Could not lock d_out_mutex: " << __FILE__ << ":" << __LINE__;
-        args->d_error = oss.str();
-        return (void*)-1;
-    }
-
-    args->d_out.write(args->d_buf, args->d_num);
-    if (args->d_out.fail()) {
-        ostringstream oss;
-        oss << "Could not write data: " << __FILE__ << ":" << __LINE__;
-        args->d_error = oss.str();
-        return (void*)-1;
-    }
-
-    delete args->d_buf;
-
-    args->d_count = 0;
-
-    status = pthread_cond_signal(&args->d_cond);
-    if (status != 0) {
-        ostringstream oss;
-        oss << "Could not signal d_out_cond: " << __FILE__ << ":" << __LINE__;
-        args->d_error = oss.str();
-        return (void*)-1;
-    }
-    status = pthread_mutex_unlock(&args->d_mutex);
-    if (status != 0) {
-        ostringstream oss;
-        oss << "Could not unlock d_out_mutex: " << __FILE__ << ":" << __LINE__;
-        args->d_error = oss.str();
-        return (void*)-1;
-    }
-
-    delete args;
-
-    return 0;
-}
-#endif
-
 // Start of parallel I/O support. jhrg 8/19/15
 void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
 {
@@ -494,16 +414,8 @@ void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
 
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
-
         tm->increment_child_thread_count();
-
         tm->start_thread(MarshallerThread::write_thread, d_out, byte_buf, bytes_written);
-#if 0
-        write_args *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, d_out, byte_buf, bytes_written);
-        int status = pthread_create(&d_thread, &d_thread_attr, &XDRStreamMarshaller::write_thread, args);
-        if (status != 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
-#endif
         xdr_destroy(&byte_sink);
 #else
         d_out.write(byte_buf, bytes_written);
@@ -567,16 +479,8 @@ void XDRStreamMarshaller::put_vector(char *val, unsigned int num, int width, Typ
 
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
-
         tm->increment_child_thread_count();
-
         tm->start_thread(MarshallerThread::write_thread, d_out, vec_buf, bytes_written);
-#if 0
-        write_args *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, d_out, vec_buf, bytes_written);
-        int status = pthread_create(&d_thread, &d_thread_attr, &XDRStreamMarshaller::write_thread, args);
-        if (status != 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
-#endif
         xdr_destroy(&vec_sink);
 #else
         d_out.write(vec_buf, bytes_written);
@@ -591,54 +495,6 @@ void XDRStreamMarshaller::put_vector(char *val, unsigned int num, int width, Typ
     }
 }
 
-#if 0
-void *
-XDRStreamMarshaller::write_part_thread(void *arg)
-{
-    write_args *args = reinterpret_cast<write_args *>(arg);
-
-    int status = pthread_mutex_lock(&args->d_mutex);
-    if (status != 0) {
-        ostringstream oss;
-        oss << "Could not lock d_out_mutex: " << __FILE__ << ":" << __LINE__;
-        args->d_error = oss.str();
-        return (void*)-1;
-    }
-
-    args->d_out.write(args->d_buf + 4, args->d_num);
-    if (args->d_out.fail()) {
-        ostringstream oss;
-        oss << "Could not write data: " << __FILE__ << ":" << __LINE__;
-        args->d_error = oss.str();
-        return (void*)-1;
-    }
-
-    DBG(cerr << "In write_part_thread, done writing." << endl);
-
-    delete args->d_buf;
-
-    args->d_count = 0;
-
-    status = pthread_cond_signal(&args->d_cond);
-    if (status != 0) {
-        ostringstream oss;
-        oss << "Could not signal d_out_cond: " << __FILE__ << ":" << __LINE__;
-        args->d_error = oss.str();
-        return (void*)-1;
-    }
-    status = pthread_mutex_unlock(&args->d_mutex);
-    if (status != 0) {
-        ostringstream oss;
-        oss << "Could not unlock d_out_mutex: " << __FILE__ << ":" << __LINE__;
-        args->d_error = oss.str();
-        return (void*)-1;
-    }
-
-    delete args;
-
-    return 0;
-}
-#endif
 /**
  * Write num values for an Array/Vector.
  *
@@ -668,33 +524,14 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
             if (!xdr_bytes(&byte_sink, (char **) &val, (unsigned int *) &num, bufsiz))
                 throw Error("Network I/O Error(2). Could not send byte vector data - unable to encode data.");
 
-#if 0
-            unsigned int bytes_written = xdr_getpos(&byte_sink);
-            if (!bytes_written)
-                throw Error("Network I/O Error. Could not send byte vector data - unable to get stream position.");
-#endif
 #ifdef USE_POSIX_THREADS
             Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
-
             tm->increment_child_thread_count();
 
             // Increment the element count so we can figure out about the padding in put_vector_last()
             d_partial_put_byte_count += num;
 
             tm->start_thread(MarshallerThread::write_thread_part, d_out, byte_buf, num);
-#if 0
-            Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
-
-            d_child_thread_count = 1;
-
-            // Increment the element count so we can figure out about the padding in put_vector_last()
-            d_partial_put_byte_count += num;
-
-            write_args *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, d_out, byte_buf, num);
-            int status = pthread_create(&d_thread, &d_thread_attr, &XDRStreamMarshaller::write_part_thread, args);
-            if (status != 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
-#endif
             xdr_destroy(&byte_sink);
 #else
             // Only send the num bytes that follow the 4 bytes of length info - we skip the
@@ -740,34 +577,13 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
             if (!xdr_array(&vec_sink, (char **) &val, (unsigned int *) &num, size, width, XDRUtils::xdr_coder(type)))
                 throw Error("Network I/O Error(2). Could not send vector data -unable to encode data.");
 
-#if 0
-            // how much was written to the buffer
-            unsigned int bytes_written = xdr_getpos(&vec_sink);
-            if (!bytes_written)
-                throw Error("Network I/O Error. Could not send vector data - unable to get stream position.");
-#endif
 #ifdef USE_POSIX_THREADS
             Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
-
             tm->increment_child_thread_count();
 
             // Increment the element count so we can figure out about the padding in put_vector_last()
             d_partial_put_byte_count += (size - 4);
-
             tm->start_thread(MarshallerThread::write_thread_part, d_out, vec_buf, size - 4);
-#if 0
-            Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
-
-            d_child_thread_count = 1;
-
-            // Increment the element count so we can figure out about the padding in put_vector_last()
-            d_partial_put_byte_count += (size - 4);
-
-            write_args *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, d_out, vec_buf, size - 4);
-            int status = pthread_create(&d_thread, &d_thread_attr, &XDRStreamMarshaller::write_part_thread, args);
-            if (status != 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
-#endif
             xdr_destroy(&vec_sink);
 #else
             // write that much out to the output stream, skipping the length data that

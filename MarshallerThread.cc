@@ -48,7 +48,7 @@ using namespace std;
  * to make sure it's zero (there are no child threads).
  */
 Locker::Locker(pthread_mutex_t &lock, pthread_cond_t &cond, int &count) :
-    m_mutex(lock)//, m_cond(cond), m_count(count)
+    m_mutex(lock)
 {
     int status = pthread_mutex_lock(&m_mutex);
     if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not lock m_mutex");
@@ -97,6 +97,7 @@ MarshallerThread::~MarshallerThread()
     pthread_attr_destroy(&d_thread_attr);
 }
 
+// not a static method
 void MarshallerThread::start_thread(void* (*thread)(void *arg), ostream &out, char *byte_buf, unsigned int bytes_written)
 {
     write_args *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, out, byte_buf, bytes_written);
@@ -105,6 +106,9 @@ void MarshallerThread::start_thread(void* (*thread)(void *arg), ostream &out, ch
         throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
 }
 
+// below this point, all of these are static methods. These three are all
+// called from within the 'thread functions', so they have to be static
+// as well.
 bool MarshallerThread::lock_thread(write_args *args)
 {
     int status = pthread_mutex_lock(&args->d_mutex);
@@ -193,15 +197,6 @@ MarshallerThread::write_thread_part(void *arg)
     write_args *args = reinterpret_cast<write_args *>(arg);
 
     if (!lock_thread(args)) return (void*)-1;
-#if 0
-    int status = pthread_mutex_lock(&args->d_mutex);
-    if (status != 0) {
-        ostringstream oss;
-        oss << "Could not lock d_out_mutex: " << __FILE__ << ":" << __LINE__;
-        args->d_error = oss.str();
-        return (void*)-1;
-    }
-#endif
 
     args->d_out.write(args->d_buf + 4, args->d_num);
     if (args->d_out.fail()) {
@@ -216,25 +211,9 @@ MarshallerThread::write_thread_part(void *arg)
     args->d_count = 0;
 
     if (!signal_thread(args)) return (void*)-1;
-#if 0
-    status = pthread_cond_signal(&args->d_cond);
-    if (status != 0) {
-        ostringstream oss;
-        oss << "Could not signal d_out_cond: " << __FILE__ << ":" << __LINE__;
-        args->d_error = oss.str();
-        return (void*)-1;
-    }
-#endif
+
     if (!unlock_thread(args)) return (void*)-1;
-#if 0
-    status = pthread_mutex_unlock(&args->d_mutex);
-    if (status != 0) {
-        ostringstream oss;
-        oss << "Could not unlock d_out_mutex: " << __FILE__ << ":" << __LINE__;
-        args->d_error = oss.str();
-        return (void*)-1;
-    }
-#endif
+
     delete args;
 
     return 0;
