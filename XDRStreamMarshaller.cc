@@ -34,8 +34,6 @@
 
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
-#else
-#error "I need pthreads or compile-time directives"
 #endif
 
 #include <cassert>
@@ -47,6 +45,9 @@
 // #define DODS_DEBUG
 
 #include "XDRStreamMarshaller.h"
+#ifdef USE_POSIX_THREADS
+#include "MarshallerThread.h"
+#endif
 #include "Vector.h"
 #include "XDRUtils.h"
 #include "util.h"
@@ -64,6 +65,7 @@ namespace libdap {
 char *XDRStreamMarshaller::d_buf = 0;
 #define XDR_DAP_BUFF_SIZE 256
 
+
 /** Build an instance of XDRStreamMarshaller. Bind the C++ stream out to this
  * instance. If the checksum parameter is true, initialize a checksum buffer
  * and enable the use of the reset_checksum() and get_checksum() methods.
@@ -73,7 +75,10 @@ char *XDRStreamMarshaller::d_buf = 0;
  * @param write_data If true, write data values. True by default
  */
 XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) :
-    d_out(out), d_partial_put_byte_count(0), d_thread(0), d_child_thread_count(0), d_thread_error("")
+    d_out(out), d_partial_put_byte_count(0), tm(0)
+#if 0
+, d_thread(0), d_child_thread_count(0), d_thread_error("")
+#endif
 {
     if (!d_buf) d_buf = (char *) malloc(XDR_DAP_BUFF_SIZE);
     if (!d_buf) throw Error("Failed to allocate memory for data serialization.");
@@ -81,6 +86,11 @@ XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) :
     xdrmem_create(&d_sink, d_buf, XDR_DAP_BUFF_SIZE, XDR_ENCODE);
 
 #ifdef USE_POSIX_THREADS
+    tm = new MarshallerThread;
+#endif
+
+#if 0
+    def USE_POSIX_THREADS
     if (pthread_attr_init(&d_thread_attr) != 0)  throw Error("Failed to initialize pthread attributes.");
     if (pthread_attr_setdetachstate(&d_thread_attr, PTHREAD_CREATE_DETACHED /*PTHREAD_CREATE_JOINABLE*/) != 0)
         throw Error("Failed to complete pthread attribute initialization.");
@@ -92,7 +102,8 @@ XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) :
 
 XDRStreamMarshaller::~XDRStreamMarshaller()
 {
-#ifdef USE_POSIX_THREADS
+#if 0
+    def USE_POSIX_THREADS
     int status = pthread_mutex_lock(&d_out_mutex);
     if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not lock m_mutex");
     while (d_child_thread_count != 0) {
@@ -109,6 +120,8 @@ XDRStreamMarshaller::~XDRStreamMarshaller()
 
     pthread_attr_destroy(&d_thread_attr);
 #endif
+
+    delete tm;
 
     xdr_destroy(&d_sink);
 }
@@ -129,7 +142,7 @@ void XDRStreamMarshaller::put_byte(dods_byte val)
             "Network I/O Error. Could not send byte data - unable to get stream position.");
 
 #ifdef USE_POSIX_THREADS
-    Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
 
     d_out.write(d_buf, bytes_written);
@@ -151,7 +164,7 @@ void XDRStreamMarshaller::put_int16(dods_int16 val)
             "Network I/O Error. Could not send int 16 data - unable to get stream position.");
 
 #ifdef USE_POSIX_THREADS
-    Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
 
     d_out.write(d_buf, bytes_written);
@@ -173,7 +186,7 @@ void XDRStreamMarshaller::put_int32(dods_int32 val)
             "Network I/O Error. Could not send int 32 data - unable to get stream position.");
 
 #ifdef USE_POSIX_THREADS
-    Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
 
     d_out.write(d_buf, bytes_written);
@@ -195,7 +208,7 @@ void XDRStreamMarshaller::put_float32(dods_float32 val)
             "Network I/O Error. Could not send float 32 data - unable to get stream position.");
 
 #ifdef USE_POSIX_THREADS
-    Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
 
     d_out.write(d_buf, bytes_written);
@@ -217,7 +230,7 @@ void XDRStreamMarshaller::put_float64(dods_float64 val)
             "Network I/O Error. Could not send float 64 data - unable to get stream position.");
 
 #ifdef USE_POSIX_THREADS
-    Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
 
     d_out.write(d_buf, bytes_written);
@@ -239,7 +252,7 @@ void XDRStreamMarshaller::put_uint16(dods_uint16 val)
             "Network I/O Error. Could not send uint 16 data - unable to get stream position.");
 
 #ifdef USE_POSIX_THREADS
-    Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
 
     d_out.write(d_buf, bytes_written);
@@ -261,7 +274,7 @@ void XDRStreamMarshaller::put_uint32(dods_uint32 val)
             "Network I/O Error. Could not send uint 32 data - unable to get stream position.");
 
 #ifdef USE_POSIX_THREADS
-    Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
 
     d_out.write(d_buf, bytes_written);
@@ -292,7 +305,7 @@ void XDRStreamMarshaller::put_str(const string &val)
                 "Network I/O Error. Could not send string data - unable to get stream position.");
 
 #ifdef USE_POSIX_THREADS
-        Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
 
         d_out.write(&str_buf[0], bytes_written);
@@ -329,7 +342,7 @@ void XDRStreamMarshaller::put_opaque(char *val, unsigned int len)
             "Network I/O Error. Could not send opaque data - unable to get stream position.");
 
 #ifdef USE_POSIX_THREADS
-    Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
 
     d_out.write(d_buf, bytes_written);
@@ -351,7 +364,7 @@ void XDRStreamMarshaller::put_int(int val)
             "Network I/O Error. Could not send int data - unable to get stream position.");
 
 #ifdef USE_POSIX_THREADS
-    Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
 
     d_out.write(d_buf, bytes_written);
@@ -387,7 +400,7 @@ void XDRStreamMarshaller::put_vector_start(int num)
 void XDRStreamMarshaller::put_vector_end()
 {
 #ifdef USE_POSIX_THREADS
-    Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
 
     // Compute the trailing (padding) bytes
@@ -405,6 +418,7 @@ void XDRStreamMarshaller::put_vector_end()
     }
 }
 
+#if 0
 // static method used with pthread_create()
 void *
 XDRStreamMarshaller::write_thread(void *arg)
@@ -450,6 +464,7 @@ XDRStreamMarshaller::write_thread(void *arg)
 
     return 0;
 }
+#endif
 
 // Start of parallel I/O support. jhrg 8/19/15
 void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
@@ -478,15 +493,17 @@ void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
             throw Error("Network I/O Error. Could not send byte vector data - unable to get stream position.");
 
 #ifdef USE_POSIX_THREADS
-        Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 
-        d_child_thread_count = 1;   // We make the child thread here; it decrements the count
+        tm->increment_child_thread_count();
 
+        tm->start_thread(MarshallerThread::write_thread, d_out, byte_buf, bytes_written);
+#if 0
         write_args *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, d_out, byte_buf, bytes_written);
         int status = pthread_create(&d_thread, &d_thread_attr, &XDRStreamMarshaller::write_thread, args);
         if (status != 0)
             throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
-
+#endif
         xdr_destroy(&byte_sink);
 #else
         d_out.write(byte_buf, bytes_written);
@@ -549,15 +566,17 @@ void XDRStreamMarshaller::put_vector(char *val, unsigned int num, int width, Typ
             throw Error("Network I/O Error. Could not send vector data - unable to get stream position.");
 
 #ifdef USE_POSIX_THREADS
-        Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 
-        d_child_thread_count = 1;
+        tm->increment_child_thread_count();
 
+        tm->start_thread(MarshallerThread::write_thread, d_out, vec_buf, bytes_written);
+#if 0
         write_args *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, d_out, vec_buf, bytes_written);
         int status = pthread_create(&d_thread, &d_thread_attr, &XDRStreamMarshaller::write_thread, args);
         if (status != 0)
             throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
-
+#endif
         xdr_destroy(&vec_sink);
 #else
         d_out.write(vec_buf, bytes_written);
@@ -572,6 +591,7 @@ void XDRStreamMarshaller::put_vector(char *val, unsigned int num, int width, Typ
     }
 }
 
+#if 0
 void *
 XDRStreamMarshaller::write_part_thread(void *arg)
 {
@@ -618,7 +638,7 @@ XDRStreamMarshaller::write_part_thread(void *arg)
 
     return 0;
 }
-
+#endif
 /**
  * Write num values for an Array/Vector.
  *
@@ -654,6 +674,15 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
                 throw Error("Network I/O Error. Could not send byte vector data - unable to get stream position.");
 #endif
 #ifdef USE_POSIX_THREADS
+            Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+
+            tm->increment_child_thread_count();
+
+            // Increment the element count so we can figure out about the padding in put_vector_last()
+            d_partial_put_byte_count += num;
+
+            tm->start_thread(MarshallerThread::write_thread_part, d_out, byte_buf, num);
+#if 0
             Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
             d_child_thread_count = 1;
@@ -665,7 +694,7 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
             int status = pthread_create(&d_thread, &d_thread_attr, &XDRStreamMarshaller::write_part_thread, args);
             if (status != 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
-
+#endif
             xdr_destroy(&byte_sink);
 #else
             // Only send the num bytes that follow the 4 bytes of length info - we skip the
@@ -718,6 +747,15 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
                 throw Error("Network I/O Error. Could not send vector data - unable to get stream position.");
 #endif
 #ifdef USE_POSIX_THREADS
+            Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+
+            tm->increment_child_thread_count();
+
+            // Increment the element count so we can figure out about the padding in put_vector_last()
+            d_partial_put_byte_count += (size - 4);
+
+            tm->start_thread(MarshallerThread::write_thread_part, d_out, vec_buf, size - 4);
+#if 0
             Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
 
             d_child_thread_count = 1;
@@ -729,7 +767,7 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
             int status = pthread_create(&d_thread, &d_thread_attr, &XDRStreamMarshaller::write_part_thread, args);
             if (status != 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
-
+#endif
             xdr_destroy(&vec_sink);
 #else
             // write that much out to the output stream, skipping the length data that

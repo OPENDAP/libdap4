@@ -38,16 +38,14 @@
 
 #include <iostream>
 
-#include <pthread.h>
-
 #include "Marshaller.h"
-#include "InternalErr.h"
 #include "XDRUtils.h"
 
 
 namespace libdap {
 
 class BaseType;
+class MarshallerThread;
 
 /**
  * @brief Marshaller that knows how serialize dap data objects to a C++ iostream using XDR
@@ -62,15 +60,17 @@ private:
     int d_partial_put_byte_count;
 
     // pthreads code starts here
-
+#if 0
     pthread_t d_thread;
     pthread_attr_t d_thread_attr;
 
     pthread_mutex_t d_out_mutex;
     pthread_cond_t d_out_cond;
+
     int d_child_thread_count;
     std::string d_thread_error; // non-null indicates an error
-
+#endif
+#if 0
     class Locker {
     public:
         Locker(pthread_mutex_t &lock, pthread_cond_t &cond, int &count) :
@@ -103,7 +103,8 @@ private:
         Locker();
         Locker(const Locker &rhs);
     };
-
+#endif
+#if 0
     struct write_args {
         pthread_mutex_t &d_mutex;
         pthread_cond_t &d_cond;
@@ -118,12 +119,16 @@ private:
         {
         }
     };
-
+#endif
     // These are used for the child I/O threads started by put_vector_thread(), etc.
+#if 0
     static void *write_thread(void *arg);
     static void *write_part_thread(void *arg);
+#endif
 
     // pthread code ends here
+
+    MarshallerThread *tm;
 
     XDRStreamMarshaller();
     XDRStreamMarshaller(const XDRStreamMarshaller &m);
@@ -132,6 +137,7 @@ private:
     void put_vector(char *val, unsigned int num, int width, Type type);
 
     friend class MarshallerTest;
+    friend class MarshallerThread;
 
 public:
     XDRStreamMarshaller(ostream &out); //, bool checksum = false, bool write_data = true) ;

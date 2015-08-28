@@ -242,7 +242,8 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	Operators.h XDRUtils.cc XDRFileMarshaller.cc			\
 	XDRStreamMarshaller.cc XDRFileUnMarshaller.cc			\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc \
-	ServerFunctionsList.cc ServerFunction.cc DapXmlNamespaces.cc
+	ServerFunctionsList.cc ServerFunction.cc DapXmlNamespaces.cc \
+	MarshallerThread.cc
 
 DAP4_ONLY_SRC = D4StreamMarshaller.cc D4StreamUnMarshaller.cc Int64.cc \
         UInt64.cc Int8.cc D4ParserSax2.cc D4BaseTypeFactory.cc \
@@ -276,7 +277,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h \
 	ServerFunctionsList.h ServerFunction.h media_types.h \
-	DapXmlNamespaces.h parser-util.h
+	DapXmlNamespaces.h parser-util.h MarshallerThread.h
 
 DAP4_ONLY_HDR = D4StreamMarshaller.h D4StreamUnMarshaller.h Int64.h \
         UInt64.h Int8.h D4ParserSax2.h D4BaseTypeFactory.h \
