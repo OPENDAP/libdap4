@@ -39,7 +39,6 @@
 #include <cassert>
 
 //#define DODS_DEBUG 1
-//#undef USE_POSIX_THREADS
 
 #include <sstream>
 #include <vector>
@@ -691,83 +690,6 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
 
     return status;
 }
-
-#if 0
-bool Vector::serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval /*true*/)
-{
-    dds.timeout_on();
-
-    if (!read_p())
-        read(); // read() throws Error and InternalErr
-
-    if (ce_eval && !eval.eval_selection(dds, dataset()))
-        return true;
-
-    dds.timeout_off();
-
-    // length() is not capacity; it must be set explicitly in read().
-    int num = length();
-
-    switch (d_proto->type()) {
-        case dods_byte_c:
-#ifdef USE_POSIX_THREADS
-            m.put_vector_thread(d_buf, num, 0);
-#else
-            m.put_vector(d_buf, num, *this);
-#endif
-            break;
-        case dods_int16_c:
-        case dods_uint16_c:
-        case dods_int32_c:
-        case dods_uint32_c:
-        case dods_float32_c:
-        case dods_float64_c:
-#ifdef USE_POSIX_THREADS
-            m.put_vector_thread(d_buf, num, d_proto->width(), d_proto->type(), 0);
-#else
-            m.put_vector(d_buf, num, d_proto->width(), *this);
-#endif
-            break;
-
-        case dods_str_c:
-        case dods_url_c:
-            if (d_str.capacity() == 0)
-                throw InternalErr(__FILE__, __LINE__, "The capacity of the string vector is 0");
-
-            m.put_int(num);
-
-            for (int i = 0; i < num; ++i)
-                m.put_str(d_str[i]);
-
-            break;
-
-        case dods_array_c:
-            // This case should be an error. jhrg 8/14/15
-            throw InternalErr(__FILE__, __LINE__, "Array of Array not supported.");
-
-        case dods_structure_c:
-        case dods_sequence_c:
-        case dods_grid_c:
-            //Jose Garcia
-            // Not setting the capacity of d_compound_buf is an internal error.
-            if (d_compound_buf.capacity() == 0)
-                throw InternalErr(__FILE__, __LINE__, "The capacity of *this* vector is 0.");
-
-            m.put_int(num);
-
-            for (int i = 0; i < num; ++i)
-                d_compound_buf[i]->serialize_no_release(eval, dds, m, false);
-
-            break;
-
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
-            break;
-    }
-
-    return true;
-}
-#endif
 
 // Read an object from the network and internalize it. For a Vector this is
 // handled differently for a `cardinal' type. Vectors of Cardinals are
