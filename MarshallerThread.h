@@ -35,17 +35,19 @@
 
 #include <pthread.h>
 
+#include <iostream>
 #include <ostream>
 #include <string>
 
 namespace libdap {
 
 /**
- * RAII for the MarshallerThread mutex and condition variable. The constructor locks the
- * mutex and then, if the count of child threads is not zero, blocks on
- * the associated condition variable. When signaled using the condition
- * variable, the child thread count should be zero - the mutex is locked
- * and the ctor returns. The destructor unlocks the mutex.
+ * RAII for the MarshallerThread mutex and condition variable. Used by the
+ * Main thread. The constructor locks the mutex and then, if the count of
+ * child threads is not zero, blocks on the associated condition variable.
+ * When signaled by the child thread using the condition variable (the child
+ * thread count should then be zero), the mutex is (re)locked and the ctor
+ * returns. The destructor unlocks the mutex.
  */
 class Locker {
 public:
@@ -59,6 +61,25 @@ private:
     Locker(const Locker &rhs);
 };
 
+/**
+ * RAII (for MarshallerThread) used by the child thread. The ctor simply
+ * locks the mutex; the dtor clears the child thread count, signals that
+ * count has changed and unlocks the mutex.
+ */
+class ChildLocker {
+public:
+    ChildLocker(pthread_mutex_t &lock, pthread_cond_t &cond, int &count);
+    virtual ~ChildLocker();
+
+private:
+    pthread_mutex_t& m_mutex;
+    pthread_cond_t& m_cond;
+    int& m_count;
+
+    ChildLocker();
+    ChildLocker(const Locker &rhs);
+};
+
 class MarshallerThread {
 private:
     pthread_t d_thread;
@@ -67,12 +88,16 @@ private:
     pthread_mutex_t d_out_mutex;
     pthread_cond_t d_out_cond;
 
-    int d_child_thread_count;
+    int d_child_thread_count;   // 0 or 1
     std::string d_thread_error; // non-null indicates an error
+
+    static bool print_time; // false by default
 
     /**
      * Used to pass information into the static methods that run the
-     * simple stream writer threads.
+     * simple stream writer threads. This can pass both an ostream or
+     * a file descriptor. If a fd is passed, the ostream reference is
+     * set to stderr (i.e., std::cerr).
      */
     struct write_args {
         pthread_mutex_t &d_mutex;
@@ -80,14 +105,27 @@ private:
         int &d_count;
         std::string &d_error;
         std::ostream &d_out;     // The output stream protected by the mutex, ...
+        int d_out_file;       // file descriptor; if not -1, use this.
         char *d_buf;        // The data to write to the stream
         int d_num;          // The size of d_buf
 
+        /**
+         * Build args for an ostream. The file descriptor is set to -1
+         */
         write_args(pthread_mutex_t &m, pthread_cond_t &c, int &count, std::string &e, std::ostream &s, char *vals, int num) :
-            d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(s), d_buf(vals), d_num(num)
+            d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(s), d_out_file(-1), d_buf(vals), d_num(num)
         {
         }
-    };
+
+        /**
+         * Build args for a file descriptr. The ostream is set to cerr (because it is
+         * a reference and has to be initialized to something).
+         */
+        write_args(pthread_mutex_t &m, pthread_cond_t &c, int &count, std::string &e, int fd, char *vals, int num) :
+            d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(std::cerr), d_out_file(fd), d_buf(vals), d_num(num)
+        {
+        }
+   };
 
 public:
     MarshallerThread();
@@ -100,16 +138,15 @@ public:
     void increment_child_thread_count() { ++d_child_thread_count; }
 
     void start_thread(void* (*thread)(void *arg), std::ostream &out, char *byte_buf, unsigned int bytes_written);
-
-    // These three are static so that we can use them in write_thread, ...
-    static bool lock_thread(write_args *args);
-    static bool unlock_thread(write_args *args);
-    static bool signal_thread(write_args *args);
+    void start_thread(void* (*thread)(void *arg), int fd, char *byte_buf, unsigned int bytes_written);
 
     // These are static so they will have c-linkage - required because they
     // are passed to pthread_create()
     static void *write_thread(void *arg);
     static void *write_thread_part(void *arg);
+
+    static void set_print_time(bool state) { print_time = state; }
+    static bool get_print_time() { return print_time; }
 };
 
 }
