@@ -692,19 +692,6 @@ bool Sequence::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, boo
     return status;
 }
 
-#if 0
-bool Sequence::serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
-{
-    DBG2(cerr << "Entering Sequence::serialize for " << name() << endl);
-
-    // Special case leaf sequences!
-    if (is_leaf_sequence())
-        return serialize_leaf(dds, eval, m, ce_eval);
-    else
-        return serialize_parent_part_one(dds, eval, m);
-}
-#endif
-
 // We know this is not a leaf Sequence. That means that this Sequence holds
 // another Sequence as one of its fields _and_ that child Sequence triggers
 // the actual transmission of values.
