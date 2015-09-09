@@ -424,8 +424,11 @@ BaseType::read_p()
 
 /** Sets the value of the <tt>read_p</tt> property. This indicates that the
     value(s) of this variable has/have been read. An implementation of the
-    read() method would typically use this to set the \c read_p property to
-    true.
+    read() method should use this to set the \c read_p property to true.
+
+    @note If the is_synthesized property is true, this method will _not_
+    alter the is_read property. If you need that behavior, specialize the
+    method in your subclasses if the various types.
 
     @note For most of the types the default implementation of this method is
     fine. However, if you're building a server which must handle data
@@ -452,20 +455,28 @@ BaseType::read_p()
 void
 BaseType::set_read_p(bool state)
 {
-    d_is_read = state;
-
+    // The this comment is/was wrong!
     // The is_synthesized property was not being used and the more I thought
     // about how this was coded, the more this code below seemed like a bad idea.
     // Once the property was set, the read_p property could not be changed.
     // That seems a little silly. Also, I think I need to use this is_synthesized
     // property for some of the server function code I'm working on for Raytheon,
     // and I'd like to be able to control the read_p property! jhrg 3/9/15
-#if 0
-    if (! d_is_synthesized) {
-        DBG2(cerr << "Changing read_p state of " << name() << " to "
-	         << state << endl);
+
+    // What's true: The is_synthesized property is used by
+    // 'projection functions' in the freeform handler. It might be better
+    // to modify the FFtypes to support this behavior, but for now I'm returning
+    // the library to its old behavior. That this change (setting is_read
+    // of the value of is_syn...) broke the FF handler was not detected
+    // because the FF tests were not being run due to an error in the FF
+    // bes-testsuite Makefile.am). jhrg 9/9/15
+
+#if 1
+    if (!d_is_synthesized) {
         d_is_read = state;
     }
+#else
+    d_is_read = state;
 #endif
 }
 
