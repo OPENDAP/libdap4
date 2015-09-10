@@ -1,3 +1,22 @@
+Updated for 3.15.0
+
+libdap now supports parallel I/O for certain data write operations,
+mostly those involving larger amounts of data - Marshaller::put_vector
+and put_vector_part. The behavior can be 'turned off' by #undef the
+symbol USE_POSIX_THREADS in the XDSStreamMarshaller classes.
+
+Added to libdap is the ability to send DAP2 responses in parts, so that
+code that builds large responses from multiple reads can write a part
+that is complete and then return to work on the next part. This is
+especially benficial for aggregations that cross many granules. The new
+method is Marshaller::put_vector_part().
+
+Added to libdap is a virtual void BaseType::clear_local_data() method
+that can be used to free the memory used by a BaseType to hold data values.
+This provides a way for the object to persist in memory without holding
+onto all of its data (which can be a substantial part of the object's
+total size).
+
 Updated for 3.14.0
 
 Bison 3 is required to build this code.

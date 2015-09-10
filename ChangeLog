@@ -1,3 +1,33 @@
+2015-09-09  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' into parallel_io
+
+	An error introduced in March has been fixed; Freeform tests now pass.
+	Commit 6b005387 introduced a change where set_read_p() no longer
+	tested the state of the is_synthesized property. Before, if the property
+	was set the method would not change the state of is_read. The change
+	made it so the is_read propery was changed regardless of the state of
+	is_synthesized. This broke the 'projection functions' in the FreeForm
+	handler. I have reverted to the old libdap behavior, and the tests now
+	pass.
+
+2015-09-04  James Gallagher  <jgallagher@opendap.org>
+
+	Removed the old serialize_no_release() method
+
+2015-09-02  James Gallagher  <jgallagher@opendap.org>
+
+	Now has a special class for RAII on the lock in the child thread.
+
+2015-08-31  James Gallagher  <jgallagher@opendap.org>
+
+	Cleaned out more dead code from Vector.cc
+
+2015-08-28  James Gallagher  <jgallagher@opendap.org>
+
+	Updated the versio number to 3.15
+	This because of the parallel IO code and pipelining support.
+
 2015-08-28  James Gallagher  <jgallagher@opendap.org>
 
 	Removed old code from MarshallerThread refactor.
@@ -12,8 +42,7 @@
 	serialize_no_release() method I added after refactoring the code
 	so that it wasn't needed (I moved the 'release' calls to the BES
 	dap module, so libdap's behavior is not changed).
-	
-	
+
 2015-08-27  James Gallagher  <jgallagher@opendap.org>
 
 	Added support for put_vector_part() to D4StreamMarshaller
