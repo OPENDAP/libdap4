@@ -243,12 +243,16 @@ Float64::print_val(ostream &out, string space, bool print_decl_p)
     // FIX: need to set precision in the printing somehow.
     // os.precision(DODS_DBL_DIG);
 
+    std::streamsize prec = out.precision();
+
     if (print_decl_p) {
         print_decl(out, space, false);
-	out << " = " << std::setprecision( 15 ) << d_buf << ";\n" ;
+        out << " = " << std::setprecision(15) << d_buf << ";\n";
     }
     else
-	out << std::setprecision( 15 ) << d_buf ;
+        out << std::setprecision(15) << d_buf;
+
+    out.precision(prec);
 }
 
 bool
