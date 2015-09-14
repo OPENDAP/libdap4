@@ -743,7 +743,6 @@ void Connect::request_ddx(DDS &dds, string expr)
     }
     catch (Error &e) {
         delete rs;
-        rs = 0;
         throw;
     }
 
@@ -759,7 +758,6 @@ void Connect::request_ddx(DDS &dds, string expr)
                 throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
             }
             delete rs;
-            rs = 0;
             throw e;
         }
 
@@ -777,26 +775,17 @@ void Connect::request_ddx(DDS &dds, string expr)
             }
             catch (Error &e) {
                 delete rs;
-                rs = 0;
                 throw;
             }
             break;
 
         default:
+            ObjectType ot = rs->get_type();
             delete rs;
-            rs = 0;
-            throw Error(
-                    "The site did not return a valid response (it lacked the\n\
-expected content description header value of 'dap4-ddx' and\n\
-instead returned '"
-                            + long_to_string(rs->get_type())
-                            + "').\n\
-This may indicate that the server at the site is not correctly\n\
-configured, or that the URL has changed.");
+            throw Error("Invalid response type when requesting a DDX response. Response type: " + long_to_string(ot));
     }
 
     delete rs;
-    rs = 0;
 }
 
 /** @brief The 'url' version of request_ddx
