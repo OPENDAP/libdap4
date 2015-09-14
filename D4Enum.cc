@@ -56,6 +56,15 @@ using std::endl;
 
 namespace libdap {
 
+// Private
+void D4Enum::m_duplicate(const D4Enum &src)
+{
+    d_buf = src.d_buf;
+    d_element_type = src.d_element_type;
+    d_enum_def = src.d_enum_def == 0 ? 0 : new D4EnumDef(*(src.d_enum_def));
+    d_is_signed = src.d_is_signed;
+}
+
 // Explicit instantiation of the template member function 'value(T *)'.
 // This is required in order to have the library contain these member
 // function when its own code does not use them. Normally, C++ instantiates
@@ -400,12 +409,11 @@ D4Enum::ops(BaseType *b, int op)
 void
 D4Enum::dump(ostream &strm) const
 {
-    strm << DapIndent::LMarg << "D4Enum::dump - ("
-    << (void *)this << ")" << endl ;
-    DapIndent::Indent() ;
-    BaseType::dump(strm) ;
-    strm << DapIndent::LMarg << "value: " << d_buf.ui64 << endl ;
-    DapIndent::UnIndent() ;
+    strm << DapIndent::LMarg << "D4Enum::dump - (" << (void *) this << ")" << endl;
+    DapIndent::Indent();
+    BaseType::dump(strm);
+    strm << DapIndent::LMarg << "value: " << d_buf.ui64 << endl;
+    DapIndent::UnIndent();
 }
 
 } // namespace libdap
