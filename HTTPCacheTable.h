@@ -73,7 +73,7 @@
 #define INIT(m) pthread_mutex_init((m), 0)
 #define DESTROY(m) pthread_mutex_destroy((m))
 
-using namespace std;
+//using namespace std;
 
 namespace libdap {
 
@@ -279,25 +279,15 @@ private:
     map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
 
     // Make these private to prevent use
-    HTTPCacheTable(const HTTPCacheTable &)
-    {
-        throw InternalErr(__FILE__, __LINE__, "unimplemented");
-    }
-
-    HTTPCacheTable &operator=(const HTTPCacheTable &)
-    {
-        throw InternalErr(__FILE__, __LINE__, "unimplemented");
-    }
-
-    HTTPCacheTable()
-    {
-        throw InternalErr(__FILE__, __LINE__, "unimplemented");
-    }
+    HTTPCacheTable(const HTTPCacheTable &);
+    HTTPCacheTable &operator=(const HTTPCacheTable &);
+    HTTPCacheTable();
 
     CacheTable &get_cache_table()
     {
         return d_cache_table;
     }
+
     CacheEntry *get_locked_entry_from_cache_table(int hash, const string &url); /*const*/
 
 public:

@@ -36,44 +36,15 @@
 #include <vector>
 #include <map>
 
-#ifndef _http_cache_table_h
-#include "HTTPCacheTable.h"
-#endif
+#include "HTTPCacheTable.h" // included for macros
 
-#ifndef _error_h
-#include "Error.h"
-#endif
-
-#ifndef _internalerr_h
-#include "InternalErr.h"
-#endif
-
-#ifndef _debug_h
-#include "debug.h"
-#endif
-
-// The private method HTTPCache::write_body() could, at one time, throw
-// ResponseTooBig to signal that while writing a response body it was found
-// to be bigger than the max_entry_size property. But I bagged that; the
-// garbage collection methods remove entries larger than max_entry_size. It
-// might be that a really big entry belongs in the cache so long as it
-// doesn't push other entries out. 10/07/02 jhrg
-#ifndef _response_too_big_err_h
-#include "ResponseTooBigErr.h"
-#endif
-
-#ifndef _http_cache_disconnected_mode_h
 #include "HTTPCacheDisconnectedMode.h"
-#endif
-
-#ifndef _signal_handler_registered_err_h
-#include "SignalHandlerRegisteredErr.h"
-#endif
-
-using namespace std;
+//using namespace std;
 
 namespace libdap
 {
+
+class HTTPCacheTabe;
 
 // This function is exported so the test code can use it too.
 bool is_hop_by_hop_header(const string &header);
@@ -172,15 +143,9 @@ private:
     friend class HTTPCacheInterruptHandler;
 
     // Private methods
-    HTTPCache(const HTTPCache &) {
-    	throw InternalErr(__FILE__, __LINE__, "Unimplemented");
-    }
-    HTTPCache() {
-    	throw InternalErr(__FILE__, __LINE__, "Unimplemented");
-    }
-    HTTPCache &operator=(const HTTPCache &) {
-    	throw InternalErr(__FILE__, __LINE__, "Unimplemented");
-    }
+    HTTPCache(const HTTPCache &);
+    HTTPCache();
+    HTTPCache &operator=(const HTTPCache &);
 
     HTTPCache(string cache_root, bool force);
 

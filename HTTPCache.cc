@@ -52,6 +52,7 @@
 #include "HTTPCacheTable.h"
 #include "HTTPCache.h"
 #include "HTTPCacheMacros.h"
+#include "SignalHandlerRegisteredErr.h"
 
 #include "util_mit.h"
 #include "debug.h"
@@ -227,6 +228,9 @@ HTTPCache::HTTPCache(string cache_root, bool force) :
         d_locked_open_file(0),
         d_cache_enabled(false),
         d_cache_protected(false),
+
+        d_cache_disconnected(DISCONNECT_NONE),
+
         d_expire_ignored(false),
         d_always_validate(false),
         d_total_size(CACHE_TOTAL_SIZE * MEGA),
@@ -655,7 +659,6 @@ HTTPCache::is_cache_enabled() const
     @param mode One of DISCONNECT_NONE, DISCONNECT_NORMAL or
     DISCONNECT_EXTERNAL.
     @see CacheDIsconnectedMode */
-
 void
 HTTPCache::set_cache_disconnected(CacheDisconnectedMode mode)
 {
