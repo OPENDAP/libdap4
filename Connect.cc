@@ -1054,10 +1054,15 @@ Connect::read_data(DDS &data, Response *rs)
 static void divine_type_information(Response *rs)
 {
     // Consume whitespace
-    char c = getc(rs->get_stream());
-    while (isspace(c)) {
+    int c = getc(rs->get_stream());
+    while (!feof(rs->get_stream()) && !ferror(rs->get_stream()) && isspace(c)) {
         c = getc(rs->get_stream());
     }
+
+    if (ferror(rs->get_stream()))
+        throw Error("Error reading response type information: " + string(strerror(errno)));
+    if (feof(rs->get_stream()))
+        throw Error("Error reading response type information: Found EOF");
 
     // The heuristic here is that a DataDDX is a multipart MIME document and
     // The first non space character found after the headers is the start of
