@@ -525,17 +525,13 @@ HTTPCache::get_cache_root() const
 void
 HTTPCache::create_cache_root(const string &cache_root)
 {
-    struct stat stat_info;
-    string::size_type cur = 0;
-
 #ifdef WIN32
-    cur = cache_root[1] == ':' ? 3 : 1;
+    string::size_type cur = cache_root[1] == ':' ? 3 : 1;
     typedef int mode_t;
-#else
-    cur = 1;
-#endif
+
     while ((cur = cache_root.find(DIR_SEPARATOR_CHAR, cur)) != string::npos) {
         string dir = cache_root.substr(0, cur);
+        struct stat stat_info;
         if (stat(dir.c_str(), &stat_info) == -1) {
             DBG2(cerr << "Cache....... Creating " << dir << endl);
             mode_t mask = UMASK(0);
@@ -551,6 +547,23 @@ HTTPCache::create_cache_root(const string &cache_root)
         }
         cur++;
     }
+#else
+    // OSX and Linux
+
+    // Save the mask
+    mode_t mask = umask(0);
+
+    // Ignore the error if the directory exists
+    errno = 0;
+    if (mkdir(cache_root.c_str(), 0777) < 0 && errno != EEXIST) {
+        umask(mask);
+        throw Error("Could not create the directory for the cache at '" + cache_root + "' (" + strerror(errno) + ").");
+    }
+
+    // Restore themask
+    umask(mask);
+
+#endif
 }
 
 /** Set the cache's root directory to the given path. If no path is given,
