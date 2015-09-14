@@ -315,7 +315,7 @@ void Connect::parse_mime(Response *rs)
  @param uname Use this username for authentication. Null by default.
  @param password Password to use for authentication. Null by default.
  @brief Create an instance of Connect. */
-Connect::Connect(const string &n, string uname, string password) throw (Error, InternalErr) :
+Connect::Connect(const string &n, string uname, string password) :
         d_http(0), d_version("unknown"), d_protocol("2.0")
 {
     string name = prune_spaces(n);

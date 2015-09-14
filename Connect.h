@@ -148,19 +148,13 @@ private:
 protected:
     /** @name Suppress the C++ defaults for these. */
     //@{
-    Connect() : d_http(0)
-    { }
-    Connect(const Connect &) : d_http(0)
-    { }
-    Connect &operator=(const Connect &)
-    {
-        throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
-    }
+    Connect();
+    Connect(const Connect &);
+    Connect &operator=(const Connect &);
     //@}
 
 public:
-    Connect(const string &name, string uname = "", string password = "")
-    throw(Error, InternalErr);
+    Connect(const string &name, string uname = "", string password = "");
 
     virtual ~Connect();
 
