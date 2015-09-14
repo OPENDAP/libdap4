@@ -1982,23 +1982,24 @@ void Vector::dump(ostream &strm) const
     }
     DapIndent::UnIndent();
     if (d_buf) {
-        switch (d_proto->type()) {
+        switch (d_proto != 0 ? d_proto->type() : 0) {
             case dods_byte_c:
-            case dods_char_c: {
+            case dods_char_c:
                 strm << DapIndent::LMarg << "_buf: ";
                 strm.write(d_buf, d_length);
                 strm << endl;
-            }
                 break;
-            default: {
+
+            case 0:
+            default:
                 strm << DapIndent::LMarg << "_buf: " << (void *) d_buf << endl;
-            }
                 break;
         }
     }
     else {
         strm << DapIndent::LMarg << "_buf: EMPTY" << endl;
     }
+
     DapIndent::UnIndent();
 }
 
