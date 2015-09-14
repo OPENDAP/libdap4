@@ -362,6 +362,9 @@ void D4Connect::request_dap4_data(DMR &dmr, const string expr)
             // force chunk read
             // get chunk size
             int chunk_size = cis.read_next_chunk();
+            if (chunk_size < 0)
+                throw Error("Found an unexpected end of input (EOF) while reading a DAP4 data response.");
+
             // get chunk
             char chunk[chunk_size];
             cis.read(chunk, chunk_size);
