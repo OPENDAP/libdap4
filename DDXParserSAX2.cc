@@ -367,18 +367,19 @@ void DDXParser::process_variable(Type t, ParseState s, const xmlChar **attrs,
     if (bt_stack.top()->type() == dods_array_c
             || check_required_attribute("name")) { // throws on error/false
         BaseType *btp = factory(t, attribute_table["name"].value);
-        if (!btp)
-            ddx_fatal_error(
-                    this,
-                    "Internal parser error; could not instantiate the variable '%s'.",
-                    attribute_table["name"].value.c_str());
-
-        // Once we make the new variable, we not only load it on to the
-        // BaseType stack, we also load its AttrTable on the AttrTable stack.
-        // The attribute processing software always operates on the AttrTable
-        // at the top of the AttrTable stack (at_stack).
-        bt_stack.push(btp);
-        at_stack.push(&btp->get_attr_table());
+        if (!btp) {
+            ddx_fatal_error(this, "Internal parser error; could not instantiate the variable '%s'.",
+                attribute_table["name"].value.c_str());
+        }
+        else {
+            // Only run this code if btp is not null! jhrg 9/14/15
+            // Once we make the new variable, we not only load it on to the
+            // BaseType stack, we also load its AttrTable on the AttrTable stack.
+            // The attribute processing software always operates on the AttrTable
+            // at the top of the AttrTable stack (at_stack).
+            bt_stack.push(btp);
+            at_stack.push(&btp->get_attr_table());
+        }
     }
 }
 
