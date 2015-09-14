@@ -512,7 +512,7 @@ HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs
     current URL matches the regular expression. */
 
 bool
-HTTPConnect::url_uses_proxy_for(const string &url) throw()
+HTTPConnect::url_uses_proxy_for(const string &url)
 {
     if (d_rcr->is_proxy_for_used()) {
         Regex host_regex(d_rcr->get_proxy_for_regexp().c_str());

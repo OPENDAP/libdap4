@@ -101,7 +101,7 @@ private:
     HTTPResponse *plain_fetch_url(const string &url);
     HTTPResponse *caching_fetch_url(const string &url);
 
-    bool url_uses_proxy_for(const string &url) throw();
+    bool url_uses_proxy_for(const string &url);
     bool url_uses_no_proxy_for(const string &url) throw();
 
     void extract_auth_info(string &url);
