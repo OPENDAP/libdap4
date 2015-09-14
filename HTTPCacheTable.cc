@@ -444,6 +444,7 @@ HTTPCacheTable::cache_index_write()
 string
 HTTPCacheTable::create_hash_directory(int hash)
 {
+#if 0
     struct stat stat_info;
     ostringstream path;
 
@@ -463,6 +464,25 @@ HTTPCacheTable::create_hash_directory(int hash)
     }
 
     return p;
+#endif
+
+    ostringstream path;
+    path << d_cache_root << hash;
+
+    // Save the mask
+    mode_t mask = umask(0);
+
+    // Ignore the error if the directory exists
+    errno = 0;
+    if (mkdir(path.str().c_str(), 0777) < 0 && errno != EEXIST) {
+        umask(mask);
+        throw Error("Could not create the directory for the cache at '" + path.str() + "' (" + strerror(errno) + ").");
+    }
+
+    // Restore themask
+    umask(mask);
+
+    return path.str();
 }
 
 /** Create the directory for this url (using the hash value from get_hash())
