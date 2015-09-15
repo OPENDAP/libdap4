@@ -45,6 +45,7 @@
 #include <iterator>
 #include <cstdlib>
 #include <cstring>
+#include <cerrno>
 
 //#define DODS_DEBUG2
 //#define HTTP_TRACE

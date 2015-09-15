@@ -38,6 +38,8 @@
 #define FILE_UN_MARSHALLER 1
 
 #include <cstring>
+#include <cerrno>
+
 #include <fstream>
 #include <algorithm>
 
