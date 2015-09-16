@@ -27,7 +27,12 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/stat.h>
+
+#ifdef HAVE_UUID_UUID_H
 #include <uuid/uuid.h>  // used to build CID header value for data ddx
+#elif defiend(HAVE_UUID_H)
+#include <uuid.h>
+#endif
 
 #ifndef WIN32
 #include <sys/wait.h>

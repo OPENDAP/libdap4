@@ -131,10 +131,10 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 
-AC_CHECK_HEADERS([fcntl.h malloc.h memory.h stddef.h stdlib.h string.h strings.h unistd.h pthread.h])
-AC_CHECK_HEADERS([sys/param.h sys/time.h])
-AC_CHECK_HEADERS([netinet/in.h])
-AC_CHECK_HEADERS([uuid/uuid.h])
+AC_CHECK_HEADERS_ONCE([fcntl.h malloc.h memory.h stddef.h stdlib.h string.h strings.h unistd.h pthread.h])
+AC_CHECK_HEADERS_ONCE([sys/param.h sys/time.h])
+AC_CHECK_HEADERS_ONCE([netinet/in.h])
+AC_CHECK_HEADERS_ONCE([uuid/uuid.h uuid.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
