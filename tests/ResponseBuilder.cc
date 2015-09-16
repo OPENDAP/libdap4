@@ -32,6 +32,8 @@
 #include <uuid/uuid.h>  // used to build CID header value for data ddx
 #elif defined(HAVE_UUID_H)
 #include <uuid.h>
+#else
+#error "Could not find UUID library header"
 #endif
 
 #ifndef WIN32
