@@ -33,6 +33,8 @@
 #include <io.h>   // stat for win32? 09/05/02 jhrg
 #endif
 
+#include <cstring>
+
 #include <string>
 #include <vector>
 #include <map>
@@ -60,13 +62,13 @@
 #define LOCK(m) do { \
 	int code = pthread_mutex_lock((m)); \
 	if (code != 0) \
-		throw InternalErr(__FILE__, __LINE__, "Mutex lock: " + long_to_string(code)); \
+		throw InternalErr(__FILE__, __LINE__, string("Mutex lock: ") + strerror(code)); \
     } while(0);
 
 #define UNLOCK(m) do { \
 	int code = pthread_mutex_unlock((m)); \
 	if (code != 0) \
-		throw InternalErr(__FILE__, __LINE__, "Mutex unlock: " + long_to_string(code)); \
+		throw InternalErr(__FILE__, __LINE__, string("Mutex unlock: ") + strerror(code)); \
     } while(0);
 
 #define TRYLOCK(m) pthread_mutex_trylock((m))
