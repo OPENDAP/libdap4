@@ -134,7 +134,13 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS_ONCE([fcntl.h malloc.h memory.h stddef.h stdlib.h string.h strings.h unistd.h pthread.h])
 AC_CHECK_HEADERS_ONCE([sys/param.h sys/time.h])
 AC_CHECK_HEADERS_ONCE([netinet/in.h])
-AC_CHECK_HEADERS_ONCE([uuid/uuid.h uuid.h])
+
+dnl AC_CHECK_HEADERS_ONCE([uuid/uuid.h uuid.h])
+dnl Do this because we have had a number of problems with the UUID header/library
+AC_CHECK_HEADERS([uuid/uuid.h],[found_uuid_uuid_h=true],[found_uuid_uuid_h=false])
+AC_CHECK_HEADERS([uuid.h],[found_uuid_h=true],[found_uuid_h=false])
+
+AS_IF([test $found_uuid_uuid_h = true -o $found_uuid_h = true], [], [AC_MSG_ERROR([Could not find uuid.h])])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
