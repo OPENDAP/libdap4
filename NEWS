@@ -1,3 +1,7 @@
+News for version 3.15.1
+
+Bug fixes
+
 News for version 3.15.0
 
 The library now writes to the network using a child thread, allowing 
