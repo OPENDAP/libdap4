@@ -1,15 +1,65 @@
+2015-09-18  James Gallagher  <jgallagher@opendap.org>
+
+	Added empty Coverity model file
+
+	Fixed a bug in the DAP4 CE evaluator
+	The DAP4 CE evaluator was using just the stop index value
+	as the size of a dimension when testing if the stride value
+	was valid. When a dimension of length 1 (i.e., [0:0]) was
+	found, it's length was '0' and a stride of '1' was invalid.
+	I fixed this and the test now uses stop-start +1 for the
+	dimension length.
+
+2015-09-17  James Gallagher  <jgallagher@opendap.org>
+
+	HTTPCacheTable uses verbose errors
+	... instead of obscure error codes
+
+	Modified configure.ac to fail if uuid.h is not found.
+
+2015-09-16  James Gallagher  <jgallagher@opendap.org>
+
+	Added #error if uuid.h is not found modified:   DODSFilter.cc modified:   tests/ResponseBuilder.cc
+
+	Fixed a syntax error modified:   tests/ResponseBuilder.cc
+
+	An attempt to fix the uuid.h header issues.
+	I added a test to test for uuid.h in addition to uuid/uuid.h
+	in the hope that it'll find something and compile. I may have to
+	work on this a bit more since it's caused such a hassle on the
+	different build systems.
+
+2015-09-15  James Gallagher  <jgallagher@opendap.org>
+
+	Minor issue in D4EnumDefs.cc with range checking
+
+	Added #include <cerrno> where needed
+
+2015-09-14  James Gallagher  <jgallagher@opendap.org>
+
+	Minor fix for precision in Float64, other fixes.
+
+	CID 81430, CID 81412, CID 81409, CID 81405, CID 81402, CID 81401,
+	CID 81397, formatting, CID 81389, CID 81382, CID 81377, CID 81375,
+	CID 81373, CID 81370, CID 81363, CID 81362, CID 81361, CID 81360,
+	CID 81359
+
+015-09-10  James Gallagher  <jgallagher@opendap.org>
+
+	Updated files for the release of 3.15
+
 2015-09-09  James Gallagher  <jgallagher@opendap.org>
 
 	Merge branch 'master' into parallel_io
 
-	An error introduced in March has been fixed; Freeform tests now pass.
-	Commit 6b005387 introduced a change where set_read_p() no longer
-	tested the state of the is_synthesized property. Before, if the property
-	was set the method would not change the state of is_read. The change
-	made it so the is_read propery was changed regardless of the state of
-	is_synthesized. This broke the 'projection functions' in the FreeForm
-	handler. I have reverted to the old libdap behavior, and the tests now
-	pass.
+	An error introduced in March has been fixed; Freeform tests now
+	pass. Commit 6b005387 introduced a change where set_read_p() no
+	longer tested the state of the is_synthesized property. Before, if
+	the property was set the method would not change the state of
+	is_read. The change made it so the is_read propery was changed
+	regardless of the state of is_synthesized. This broke the
+	'projection functions' in the FreeForm handler. I have reverted to
+	the old libdap behavior, and the tests now pass.
 
 2015-09-04  James Gallagher  <jgallagher@opendap.org>
 

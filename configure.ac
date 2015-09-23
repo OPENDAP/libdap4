@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.63)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.15.0, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.15.1, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["4.0"], [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
@@ -31,8 +31,9 @@ AC_SUBST(PACKAGE_MAJOR_VERSION)
 AC_SUBST(PACKAGE_MINOR_VERSION)
 AC_SUBST(PACKAGE_SUBMINOR_VERSION)
 
-dnl Removed this; only the Array and Sequence classes ever have constraints that 
-dnl need to be evaluated at run time (DAP4) or only Sequences (DAP2). jhrg 9/4/13
+dnl Removed this; only the Array and Sequence classes ever have
+dnl constraints that need to be evaluated at run time (DAP4) or only
+dnl Sequences (DAP2). jhrg 9/4/13
 
 dnl AC_DEFINE(EVAL, 1, [Should all the classes run ConstraintEvaluator::eval()?])
 dnl AC_SUBST(EVAL)
@@ -46,12 +47,14 @@ AC_SUBST(host)
 
 dnl How to set these SO variables:
 dnl No interfaces changed, only implementations (good): ==> Increment REVISION.
-dnl Interfaces added, none removed (good): ==> Increment CURRENT, increment AGE, set REVISION to 0.
-dnl Interfaces removed or changed (BAD, breaks upward compatibility): ==> Increment CURRENT, set AGE and REVISION to 0.
+dnl Interfaces added, none removed (good): ==> Increment CURRENT,
+dnl increment AGE, set REVISION to 0.
+dnl Interfaces removed or changed (BAD, breaks upward compatibility):
+dnl ==> Increment CURRENT, set AGE and REVISION to 0.
 
 DAPLIB_CURRENT=20
 DAPLIB_AGE=3
-DAPLIB_REVISION=0
+DAPLIB_REVISION=1
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)
 AC_SUBST(DAPLIB_REVISION)
