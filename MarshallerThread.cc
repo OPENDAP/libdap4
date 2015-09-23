@@ -210,6 +210,10 @@ void MarshallerThread::start_thread(void* (*thread)(void *arg), int fd, char *by
  * This static method is used to write data to the ostream referenced
  * by the ostream element of write_args. This is used by start_thread()
  * and passed to pthread_create()
+ *
+ * @note The write_args argument may contain either a file descriptor
+ * (d_out_file) or an ostream& (d_out). If the file descriptor is not
+ * -1, then use that, else use the ostream reference.
  */
 void *
 MarshallerThread::write_thread(void *arg)
