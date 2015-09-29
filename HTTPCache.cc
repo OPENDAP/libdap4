@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 // #define DODS_DEBUG2
 #undef USE_GETENV
 
@@ -130,12 +130,11 @@ HTTPCache::instance(const string &cache_root, bool force)
 {
     int status = pthread_once(&once_block, once_init_routine);
     if (status != 0)
-	throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
+        throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
 
     LOCK(&instance_mutex);
 
-    DBG(cerr << "Entering instance(); (" << hex << _instance << dec << ")"
-	    << "... ");
+    DBG(cerr << "Entering instance(); (" << hex << _instance << dec << ")" << "... ");
 
     try {
         if (!_instance) {
@@ -615,7 +614,7 @@ HTTPCache::set_cache_root(const string &root)
     }
 
     // Test d_hhtp_cache_table because this method can be called before that
-    // instance is created and also can be called later to cahnge the cache
+    // instance is created and also can be called later to change the cache
     // root. jhrg 05.14.08
     if (d_http_cache_table)
     	d_http_cache_table->set_cache_root(d_cache_root);

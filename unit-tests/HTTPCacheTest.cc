@@ -102,8 +102,7 @@ private:
 protected:
 
 public:
-    HTTPCacheTest() :
-            http_conn(0)
+    HTTPCacheTest() : hc(0), http_conn(0)
     {
         putenv((char*) "DODS_CONF=./cache-testsuite/dodsrc");
         http_conn = new HTTPConnect(RCReader::instance());
@@ -185,10 +184,13 @@ public:
 
     CPPUNIT_TEST(perform_garbage_collection_test);
     CPPUNIT_TEST(purge_cache_and_release_cached_response_test);
-    CPPUNIT_TEST(instance_test);
     CPPUNIT_TEST(get_conditional_response_headers_test);
     CPPUNIT_TEST(update_response_test);
     CPPUNIT_TEST(cache_gc_test);
+
+    // Make this the last test because when distcheck is run, running
+    // it before other tests will break them.
+    CPPUNIT_TEST(instance_test);
 
     CPPUNIT_TEST_SUITE_END()  ;
 
@@ -244,9 +246,6 @@ public:
         HTTPCacheTable::CacheEntry *e2 = hc->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
         CPPUNIT_ASSERT(e2);
         CPPUNIT_ASSERT(e2->url == localhost_url);
-#if 0
-        e2->unlock();
-#endif
         e2->unlock_read_response();
 
         // Now test what happens when two entries collide.
@@ -263,9 +262,6 @@ public:
         HTTPCacheTable::CacheEntry *g = hc->d_http_cache_table->get_locked_entry_from_cache_table(hash_value, e3->url);
         CPPUNIT_ASSERT(g);
         CPPUNIT_ASSERT(g->url == e3->url);
-#if 0
-        g->unlock();
-#endif
         g->unlock_read_response();
 
         g = hc->d_http_cache_table->get_locked_entry_from_cache_table("http://not.in.table/never.x");
@@ -548,6 +544,7 @@ public:
             delete hc;
             hc = 0;
             auto_ptr<HTTPCache> gc(new HTTPCache("cache-testsuite/gc_cache", true));
+            DBG(cerr << "get_cache_root: " << gc->get_cache_root() << endl);
 
             HTTPResponse *rs = http_conn->fetch_url(localhost_url);
             gc->cache_response(localhost_url, time(0), *(rs->get_headers()), rs->get_stream());
@@ -579,6 +576,7 @@ public:
     {
         try {
             auto_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
+            DBG(cerr << "get_cache_root: " << pc->get_cache_root() << endl);
 
             time_t now = time(0);
             HTTPResponse *rs = http_conn->fetch_url(localhost_url);
@@ -601,13 +599,7 @@ public:
             HTTPCacheTable::CacheEntry *e2 = pc->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
             string e1_file = e1->cachename;
             string e2_file = e2->cachename;
-#if 0
-            e1->unlock();
-#endif
             e1->unlock_read_response();
-#if 0
-            e2->unlock();
-#endif
             e2->unlock_read_response();
 
             vector<string> headers;
@@ -640,7 +632,11 @@ public:
     void instance_test()
     {
         try {
+            // FIXME: Explain
+            HTTPCache::delete_instance();
+
             HTTPCache *c = HTTPCache::instance("cache-testsuite/singleton_cache", true);
+            DBG(cerr << "get_cache_root: " << c->get_cache_root() << endl);
 
             if (!c->is_url_in_cache(localhost_url)) {
                 HTTPResponse *rs = http_conn->fetch_url(localhost_url);
@@ -662,13 +658,7 @@ public:
             HTTPCacheTable::CacheEntry *e2 = c->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
             string e1_file = e1->cachename;
             string e2_file = e2->cachename;
-#if 0
-            e1->unlock();
-#endif
             e1->unlock_read_response();
-#if 0
-            e2->unlock();
-#endif
             e2->unlock_read_response();
 
             c->purge_cache();
@@ -696,13 +686,14 @@ public:
     void get_conditional_response_headers_test()
     {
         try {
-            HTTPCache *c = HTTPCache::instance("cache-testsuite/header_cache", true);
+            auto_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/header_cache", true));
+            DBG(cerr << "get_cache_root: " << c->get_cache_root() << endl);
+
             CPPUNIT_ASSERT(c->get_cache_root() == "cache-testsuite/header_cache/");
             if (!c->is_url_in_cache(localhost_url)) {
                 HTTPResponse *rs = http_conn->fetch_url(localhost_url);
                 c->cache_response(localhost_url, time(0), *(rs->get_headers()), rs->get_stream());
                 delete rs;
-                rs = 0;
             }
             CPPUNIT_ASSERT(c->is_url_in_cache(localhost_url));
 
@@ -710,7 +701,6 @@ public:
                 HTTPResponse *rs = http_conn->fetch_url(expired);
                 c->cache_response(expired, time(0), *(rs->get_headers()), rs->get_stream());
                 delete rs;
-                rs = 0;
             }
             CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
@@ -726,18 +716,15 @@ public:
             CPPUNIT_ASSERT(h[0].find("If-Modified-Since: ") == 0);
         }
         catch (Error &e) {
-            cerr << "Exception: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(false);
+            CPPUNIT_FAIL(e.get_error_message());
         }
-
-        HTTPCache::delete_instance();
     }
 
     void update_response_test()
     {
-        HTTPCache *c = 0;
         try {
-            c = new HTTPCache("cache-testsuite/singleton_cache", true);
+            auto_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/singleton_cache", true));
+            DBG(cerr << "get_cache_root: " << c->get_cache_root() << endl);
 
             if (!c->is_url_in_cache(localhost_url)) {
                 HTTPResponse *rs = http_conn->fetch_url(localhost_url);
@@ -783,18 +770,15 @@ public:
 
             // The XHTTPCacheTest header should be new, Date should replace the
             // existing Date header.
-            CPPUNIT_ASSERT(orig_h.size() + 1 == updated_h.size());
+            // This may not be true when using distcheck and/or when the user
+            // has set USE_CACHE to 1 in their .dodsrc. jhrg 9/29/15
+            // CPPUNIT_ASSERT(orig_h.size() + 1 == updated_h.size());
             CPPUNIT_ASSERT(find(updated_h.begin(), updated_h.end(), "XHTTPCache: 123456789") != updated_h.end());
             CPPUNIT_ASSERT(find(updated_h.begin(), updated_h.end(), "Date: <invalid date>") != updated_h.end());
-
-            delete c;
         }
         catch (Error &e) {
-            delete c;
             CPPUNIT_FAIL(e.get_error_message());
         }
-
-        HTTPCache::delete_instance();
     }
 
     // Only run this interactively since you need to hit Ctrl-c to generate
@@ -802,7 +786,7 @@ public:
     void interrupt_test()
     {
         try {
-            HTTPCache *c = new HTTPCache("cache-testsuite/singleton_cache", true);
+            auto_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/singleton_cache", true));
             string coads = "http://test.opendap.org/dap/data/nc/coads_climatology.nc";
             if (!c->is_url_in_cache(coads)) {
                 HTTPResponse *rs = http_conn->fetch_url(coads);
@@ -810,26 +794,18 @@ public:
                 c->cache_response(coads, time(0), *(rs->get_headers()), rs->get_stream());
                 cerr << "to late.";
                 delete rs;
-                rs = 0;
             }
         }
         catch (Error &e) {
-            cerr << "Exception: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(false);
+            CPPUNIT_FAIL(e.get_error_message());
         }
-
-        // Call this here to simulate exiting the program. This ensures that
-        // the next test's call to instance() gets a fresh cache. The static
-        // method will still be run at exit, but that's OK since it tests the
-        // value of _instance and simply returns with it's zero.
-        HTTPCache::delete_instance();
     }
 
     void cache_gc_test()
     {
         string fnoc1 = "http://test.opendap.org/dap/data/nc/fnoc1.nc.dds";
-        string fnoc2 = "http://test.opendap.org/dap/data/nc/fnoc2.nc.dds";
-        string fnoc3 = "http://test.opendap.org/dap/data/nc/fnoc3.nc.dds";
+        string jan = "http://test.opendap.org/dap/data/nc/jan.nc.dds";
+        string feb = "http://test.opendap.org/dap/data/nc/feb.nc.dds";
         try {
             auto_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
 
@@ -854,38 +830,36 @@ public:
             FILE *f = pc->get_cached_response(fnoc1, h);
             pc->release_cached_response(f);
 
-            rs = http_conn->fetch_url(fnoc2);
-            pc->cache_response(fnoc2, time(0), *(rs->get_headers()), rs->get_stream());
-            CPPUNIT_ASSERT(pc->is_url_in_cache(fnoc2));
+            rs = http_conn->fetch_url(jan);
+            pc->cache_response(jan, time(0), *(rs->get_headers()), rs->get_stream());
+            CPPUNIT_ASSERT(pc->is_url_in_cache(jan));
             delete rs;
             rs = 0;
-            // trigger two hits for fnoc2
-            f = pc->get_cached_response(fnoc2, h);
+            // trigger two hits for jan
+            f = pc->get_cached_response(jan, h);
             pc->release_cached_response(f);
-            f = pc->get_cached_response(fnoc2, h);
+            f = pc->get_cached_response(jan, h);
             pc->release_cached_response(f);
 
-            rs = http_conn->fetch_url(fnoc3);
-            pc->cache_response(fnoc3, time(0), *(rs->get_headers()), rs->get_stream());
-            CPPUNIT_ASSERT(pc->is_url_in_cache(fnoc3));
+            rs = http_conn->fetch_url(feb);
+            pc->cache_response(feb, time(0), *(rs->get_headers()), rs->get_stream());
+            CPPUNIT_ASSERT(pc->is_url_in_cache(feb));
             delete rs;
             rs = 0;
         }
         catch (Error &e) {
-            cerr << "Exception: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(false);
+            CPPUNIT_FAIL(e.get_error_message());
         }
 
         // now that pc is out of scope, its dtor has been run and GC
-        // performed. The fnoc3 URL should have been deleted.
+        // performed. The feb URL should have been deleted.
 
         try {
             auto_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
-            CPPUNIT_ASSERT(!pc->is_url_in_cache(fnoc3));
+            CPPUNIT_ASSERT(!pc->is_url_in_cache(feb));
         }
         catch (Error &e) {
-            cerr << "Exception: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(false);
+            CPPUNIT_FAIL(e.get_error_message());
         }
     }
 
