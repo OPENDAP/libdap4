@@ -54,6 +54,10 @@ m4_define([DMR_TRANS], [
     AT_SETUP([trans/receive $1])
     AT_KEYWORDS([trans])
     
+    # WORD_ORDER is set by configure in atlocal.
+    # This is a fix for the issue where the CRC32 checksum is different
+    # on little- and big-endian machines, so we use different baseline
+    # files.  jhrg 9/30/15
     input=$abs_srcdir/dmr-testsuite/$1
     baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$1.trans_base
 
@@ -72,8 +76,10 @@ m4_define([DMR_TRANS_CE], [
     AT_SETUP([trans/receive $1 $2])
     AT_KEYWORDS([trans])
     
-    input=$abs_srcdir/$1
-    baseline=$abs_srcdir/$3
+    # See above regarding $WORD_ORDER
+    input=$abs_srcdir/dmr-testsuite/$1
+    baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$3.trans_base
+    # baseline=$abs_srcdir/$3
     
     # echo "baseline: $baseline"
 
@@ -203,126 +209,126 @@ DMR_INTERN([test_array_11.xml], [pass])
 
 # Test various factes of the CE parser and evaluation engine
 
-DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [a], [dmr-testsuite/$WORD_ORDER/test_array_4.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [a[[]][[]] ], [dmr-testsuite/$WORD_ORDER/test_array_4.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_4.xml], [a], [$WORD_ORDER/test_array_4.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_4.xml], [a[[]][[]] ], [$WORD_ORDER/test_array_4.xml.1.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [/row=[[0:1]];/col=[[3]];a],  [dmr-testsuite/$WORD_ORDER/test_array_4.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_array_4.xml], [/row=[[0:1]];/col=[[3]];a],  [$WORD_ORDER/test_array_4.xml.3.trans_base], [pass])
     
-DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [/row=[[0:1]];/col=[[3]];a[[]][[]] ],  [dmr-testsuite/$WORD_ORDER/test_array_4.xml.4.trans_base], [pass])
+DMR_TRANS_CE([test_array_4.xml], [/row=[[0:1]];/col=[[3]];a[[]][[]] ],  [$WORD_ORDER/test_array_4.xml.4.trans_base], [pass])
     
-DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [/row=[[0:1]];/col=[[3]];a[[]][[]];b[[0]][[]];c[[0:]][[0:]] ],  [dmr-testsuite/$WORD_ORDER/test_array_4.xml.5.trans_base], [pass])
+DMR_TRANS_CE([test_array_4.xml], [/row=[[0:1]];/col=[[3]];a[[]][[]];b[[0]][[]];c[[0:]][[0:]] ],  [$WORD_ORDER/test_array_4.xml.5.trans_base], [pass])
     
-DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [x[[]][[]] ], [dmr-testsuite/$WORD_ORDER/test_array_4.xml.6.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [/row=[[0:1]];x[[]][[]] ], [dmr-testsuite/$WORD_ORDER/test_array_4.xml.7.trans_base], [pass])
+DMR_TRANS_CE([test_array_4.xml], [x[[]][[]] ], [$WORD_ORDER/test_array_4.xml.6.trans_base], [pass])
+DMR_TRANS_CE([test_array_4.xml], [/row=[[0:1]];x[[]][[]] ], [$WORD_ORDER/test_array_4.xml.7.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_4.xml], [c[[2:]][[2:]] ], [dmr-testsuite/$WORD_ORDER/test_array_4.xml.8.trans_base], [pass])
+DMR_TRANS_CE([test_array_4.xml], [c[[2:]][[2:]] ], [$WORD_ORDER/test_array_4.xml.8.trans_base], [pass])
     
-DMR_TRANS_CE([dmr-testsuite/test_simple_6.xml], [s], [dmr-testsuite/$WORD_ORDER/test_simple_6.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_simple_6.xml], [s.i1], [dmr-testsuite/$WORD_ORDER/test_simple_6.xml.2.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_simple_6.xml], [s.s], [dmr-testsuite/$WORD_ORDER/test_simple_6.xml.3.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_simple_6.1.xml], [s.inner.i2], [dmr-testsuite/$WORD_ORDER/test_simple_6.1.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_simple_6.xml], [s], [$WORD_ORDER/test_simple_6.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_simple_6.xml], [s.i1], [$WORD_ORDER/test_simple_6.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_simple_6.xml], [s.s], [$WORD_ORDER/test_simple_6.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_simple_6.1.xml], [s.inner.i2], [$WORD_ORDER/test_simple_6.1.xml.1.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_simple_6.xml], [s{i1}], [dmr-testsuite/$WORD_ORDER/test_simple_6.xml.2.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_simple_6.xml], [s{s}], [dmr-testsuite/$WORD_ORDER/test_simple_6.xml.3.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_simple_6.1.xml], [s{inner.i2}], [dmr-testsuite/$WORD_ORDER/test_simple_6.1.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_simple_6.1.xml], [s{inner{i2}}], [dmr-testsuite/$WORD_ORDER/test_simple_6.1.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_simple_6.xml], [s{i1}], [$WORD_ORDER/test_simple_6.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_simple_6.xml], [s{s}], [$WORD_ORDER/test_simple_6.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_simple_6.1.xml], [s{inner.i2}], [$WORD_ORDER/test_simple_6.1.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_simple_6.1.xml], [s{inner{i2}}], [$WORD_ORDER/test_simple_6.1.xml.1.trans_base], [pass])
 
 # test_array_6 holds a 2D array of Structure
-DMR_TRANS_CE([dmr-testsuite/test_array_6.xml], [a], [dmr-testsuite/$WORD_ORDER/test_array_6.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_6.xml], [a[[]][[]] ], [dmr-testsuite/$WORD_ORDER/test_array_6.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_6.xml], [/row=[[0:1]];a[[]][[]] ], [dmr-testsuite/$WORD_ORDER/test_array_6.xml.2.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_6.xml], [/row=[[0:1]];a[[]][[1:2]] ], [dmr-testsuite/$WORD_ORDER/test_array_6.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.xml], [a], [$WORD_ORDER/test_array_6.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.xml], [a[[]][[]] ], [$WORD_ORDER/test_array_6.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.xml], [/row=[[0:1]];a[[]][[]] ], [$WORD_ORDER/test_array_6.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.xml], [/row=[[0:1]];a[[]][[1:2]] ], [$WORD_ORDER/test_array_6.xml.3.trans_base], [pass])
 
 # test_array holds a Structure that has a 2D array for a field
-DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a], [dmr-testsuite/$WORD_ORDER/test_array_6.2.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a{i;j}], [dmr-testsuite/$WORD_ORDER/test_array_6.2.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a.i], [dmr-testsuite/$WORD_ORDER/test_array_6.2.xml.2.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a{i}], [dmr-testsuite/$WORD_ORDER/test_array_6.2.xml.2.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a.i[[0]][[1:2]] ], [dmr-testsuite/$WORD_ORDER/test_array_6.2.xml.3.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a{i[[0]][[1:2]]} ], [dmr-testsuite/$WORD_ORDER/test_array_6.2.xml.3.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [/row=[[0:1]];a.i[[]][[1:2]] ], [dmr-testsuite/$WORD_ORDER/test_array_6.2.xml.4.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [/row=[[0:1]];a{i[[]][[1:2]]} ], [dmr-testsuite/$WORD_ORDER/test_array_6.2.xml.4.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.2.xml], [a], [$WORD_ORDER/test_array_6.2.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.2.xml], [a{i;j}], [$WORD_ORDER/test_array_6.2.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.2.xml], [a.i], [$WORD_ORDER/test_array_6.2.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.2.xml], [a{i}], [$WORD_ORDER/test_array_6.2.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.2.xml], [a.i[[0]][[1:2]] ], [$WORD_ORDER/test_array_6.2.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.2.xml], [a{i[[0]][[1:2]]} ], [$WORD_ORDER/test_array_6.2.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.2.xml], [/row=[[0:1]];a.i[[]][[1:2]] ], [$WORD_ORDER/test_array_6.2.xml.4.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.2.xml], [/row=[[0:1]];a{i[[]][[1:2]]} ], [$WORD_ORDER/test_array_6.2.xml.4.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_6.2.xml], [a.j], [dmr-testsuite/$WORD_ORDER/test_array_6.2.xml.5.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.2.xml], [a.j], [$WORD_ORDER/test_array_6.2.xml.5.trans_base], [pass])
 
 # test_array_6.1 is an array of Structure that holds an array and a scalar
-DMR_TRANS_CE([dmr-testsuite/test_array_6.1.xml], [a], [dmr-testsuite/$WORD_ORDER/test_array_6.1.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.1.xml], [a], [$WORD_ORDER/test_array_6.1.xml.1.trans_base], [pass])
 
 # slice the structure but not the field
-DMR_TRANS_CE([dmr-testsuite/test_array_6.1.xml], [/row=[[1:2]];a[[]][[0]] ], [dmr-testsuite/$WORD_ORDER/test_array_6.1.xml.2.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_6.1.xml], [/row=[[1:2]];a[[]][[0]]{i;j} ], [dmr-testsuite/$WORD_ORDER/test_array_6.1.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.1.xml], [/row=[[1:2]];a[[]][[0]] ], [$WORD_ORDER/test_array_6.1.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.1.xml], [/row=[[1:2]];a[[]][[0]]{i;j} ], [$WORD_ORDER/test_array_6.1.xml.2.trans_base], [pass])
 # Do we really need the FQN?
-DMR_TRANS_CE([dmr-testsuite/test_array_6.1.xml], [row=[[1:2]];a[[]][[0]]{i;j} ], [dmr-testsuite/$WORD_ORDER/test_array_6.1.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.1.xml], [row=[[1:2]];a[[]][[0]]{i;j} ], [$WORD_ORDER/test_array_6.1.xml.2.trans_base], [pass])
 
 # slice the field but not the structure
-DMR_TRANS_CE([dmr-testsuite/test_array_6.1.xml], [a{i[[1:2]][[1:3]];j} ], [dmr-testsuite/$WORD_ORDER/test_array_6.1.xml.3.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_6.1.xml], [a[[]][[]]{i[[1:2]][[1:3]];j} ], [dmr-testsuite/$WORD_ORDER/test_array_6.1.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.1.xml], [a{i[[1:2]][[1:3]];j} ], [$WORD_ORDER/test_array_6.1.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.1.xml], [a[[]][[]]{i[[1:2]][[1:3]];j} ], [$WORD_ORDER/test_array_6.1.xml.3.trans_base], [pass])
 
 # slice both the structure and the array it contains using both the shared dim and 
 # a local slice for each
-DMR_TRANS_CE([dmr-testsuite/test_array_6.1.xml], [/row=[[1]];a[[]][[0]]{i[[]][[0:1]]} ], [dmr-testsuite/$WORD_ORDER/test_array_6.1.xml.4.trans_base], [pass])
+DMR_TRANS_CE([test_array_6.1.xml], [/row=[[1]];a[[]][[0]]{i[[]][[0:1]]} ], [$WORD_ORDER/test_array_6.1.xml.4.trans_base], [pass])
 
 # Test sequences and arrays of sequences
-DMR_TRANS_CE([dmr-testsuite/test_simple_7.xml], [s], [dmr-testsuite/$WORD_ORDER/test_simple_7.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_simple_7.xml], [s{i1;s}], [dmr-testsuite/$WORD_ORDER/test_simple_7.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_simple_7.xml], [s], [$WORD_ORDER/test_simple_7.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_simple_7.xml], [s{i1;s}], [$WORD_ORDER/test_simple_7.xml.1.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_simple_7.xml], [s.i1], [dmr-testsuite/$WORD_ORDER/test_simple_7.xml.2.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_simple_7.xml], [s{i1}], [dmr-testsuite/$WORD_ORDER/test_simple_7.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_simple_7.xml], [s.i1], [$WORD_ORDER/test_simple_7.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_simple_7.xml], [s{i1}], [$WORD_ORDER/test_simple_7.xml.2.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_simple_8.xml], [outer], [dmr-testsuite/$WORD_ORDER/test_simple_8.xml.1.trans_base], [xfail])
-DMR_TRANS_CE([dmr-testsuite/test_simple_8.xml], [outer.s.s], [dmr-testsuite/$WORD_ORDER/test_simple_8.xml.2.trans_base], [xfail])
-DMR_TRANS_CE([dmr-testsuite/test_simple_8.xml], [outer{s{s}}], [dmr-testsuite/$WORD_ORDER/test_simple_8.xml.2.trans_base], [xfail])
+DMR_TRANS_CE([test_simple_8.xml], [outer], [$WORD_ORDER/test_simple_8.xml.1.trans_base], [xfail])
+DMR_TRANS_CE([test_simple_8.xml], [outer.s.s], [$WORD_ORDER/test_simple_8.xml.2.trans_base], [xfail])
+DMR_TRANS_CE([test_simple_8.xml], [outer{s{s}}], [$WORD_ORDER/test_simple_8.xml.2.trans_base], [xfail])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_7.xml], [s], [dmr-testsuite/$WORD_ORDER/test_array_7.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.xml], [s{i1;s}], [dmr-testsuite/$WORD_ORDER/test_array_7.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.xml], [s], [$WORD_ORDER/test_array_7.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.xml], [s{i1;s}], [$WORD_ORDER/test_array_7.xml.1.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_7.xml], [s.i1], [dmr-testsuite/$WORD_ORDER/test_array_7.xml.2.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.xml], [s{i1}], [dmr-testsuite/$WORD_ORDER/test_array_7.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.xml], [s.i1], [$WORD_ORDER/test_array_7.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.xml], [s{i1}], [$WORD_ORDER/test_array_7.xml.2.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_7.xml], [s[[1]] ], [dmr-testsuite/$WORD_ORDER/test_array_7.xml.3.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.xml], [s[[1]]{i1;s}], [dmr-testsuite/$WORD_ORDER/test_array_7.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.xml], [s[[1]] ], [$WORD_ORDER/test_array_7.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.xml], [s[[1]]{i1;s}], [$WORD_ORDER/test_array_7.xml.3.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_7.xml], [s[[1]]{i1}], [dmr-testsuite/$WORD_ORDER/test_array_7.xml.4.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.xml], [s[[1]]{i1}], [$WORD_ORDER/test_array_7.xml.4.trans_base], [pass])
 
 # test_array_8 has a 2D Sequence that uses a shared dim
-DMR_TRANS_CE([dmr-testsuite/test_array_8.xml], [/col=[[1:2]];s[[1]][[]]{i1}], [dmr-testsuite/$WORD_ORDER/test_array_8.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_8.xml], [col=[[1:2]];s[[1]][[]]{i1}], [dmr-testsuite/$WORD_ORDER/test_array_8.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_8.xml], [/col=[[1:2]];s[[1]][[]]{i1}], [$WORD_ORDER/test_array_8.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_8.xml], [col=[[1:2]];s[[1]][[]]{i1}], [$WORD_ORDER/test_array_8.xml.1.trans_base], [pass])
 
 # test_array_7.1 holds a sequence that has an array for one of its fields
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [], [$WORD_ORDER/test_array_7.1.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [s], [$WORD_ORDER/test_array_7.1.xml.1.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s.i1], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.2.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s.i1[[]][[]] ], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.2.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s{i1}], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.2.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s{i1[[]][[]]} ], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [s.i1], [$WORD_ORDER/test_array_7.1.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [s.i1[[]][[]] ], [$WORD_ORDER/test_array_7.1.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [s{i1}], [$WORD_ORDER/test_array_7.1.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [s{i1[[]][[]]} ], [$WORD_ORDER/test_array_7.1.xml.2.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s.i1[[0]][[0]] ], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.3.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s{i1[[0]][[0]]} ], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [s.i1[[0]][[0]] ], [$WORD_ORDER/test_array_7.1.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [s{i1[[0]][[0]]} ], [$WORD_ORDER/test_array_7.1.xml.3.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [s.i1[[0:2]][[1:2]] ], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.4.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [s.i1[[0:2]][[1:2]] ], [$WORD_ORDER/test_array_7.1.xml.4.trans_base], [pass])
 
 # Should this CE be supported? jhrg 12/23/13
-# DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]] ], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.5.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s ], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.5.trans_base], [pass])
+# DMR_TRANS_CE([test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]] ], [$WORD_ORDER/test_array_7.1.xml.5.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s ], [$WORD_ORDER/test_array_7.1.xml.5.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s.i1 ], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.6.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s.i1[[]][[]] ], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.6.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s{i1} ], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.6.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s{i1[[]][[]]} ], [dmr-testsuite/$WORD_ORDER/test_array_7.1.xml.6.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s.i1 ], [$WORD_ORDER/test_array_7.1.xml.6.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s.i1[[]][[]] ], [$WORD_ORDER/test_array_7.1.xml.6.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s{i1} ], [$WORD_ORDER/test_array_7.1.xml.6.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.1.xml], [/row=[[2:3]];/col=[[2:3]];s{i1[[]][[]]} ], [$WORD_ORDER/test_array_7.1.xml.6.trans_base], [pass])
 
 # test_array_7.2 is a sequence array that holds an array as one of its fields
-DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[]]{i1}], [dmr-testsuite/$WORD_ORDER/test_array_7.2.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[]]{i1[[]][[]]}], [dmr-testsuite/$WORD_ORDER/test_array_7.2.xml.1.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s{i1[[]][[]]}], [dmr-testsuite/$WORD_ORDER/test_array_7.2.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.2.xml], [/col=[[1:2]];s[[]]{i1}], [$WORD_ORDER/test_array_7.2.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.2.xml], [/col=[[1:2]];s[[]]{i1[[]][[]]}], [$WORD_ORDER/test_array_7.2.xml.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.2.xml], [/col=[[1:2]];s{i1[[]][[]]}], [$WORD_ORDER/test_array_7.2.xml.1.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[]]{i1[[0]][[]]}], [dmr-testsuite/$WORD_ORDER/test_array_7.2.xml.2.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s{i1[[0]][[]]}], [dmr-testsuite/$WORD_ORDER/test_array_7.2.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.2.xml], [/col=[[1:2]];s[[]]{i1[[0]][[]]}], [$WORD_ORDER/test_array_7.2.xml.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.2.xml], [/col=[[1:2]];s{i1[[0]][[]]}], [$WORD_ORDER/test_array_7.2.xml.2.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1}], [dmr-testsuite/$WORD_ORDER/test_array_7.2.xml.3.trans_base], [pass])
-DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1[[]][[]]}], [dmr-testsuite/$WORD_ORDER/test_array_7.2.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1}], [$WORD_ORDER/test_array_7.2.xml.3.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1[[]][[]]}], [$WORD_ORDER/test_array_7.2.xml.3.trans_base], [pass])
 
-DMR_TRANS_CE([dmr-testsuite/test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1[[0]][[]]}], [dmr-testsuite/$WORD_ORDER/test_array_7.2.xml.4.trans_base], [pass])
+DMR_TRANS_CE([test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1[[0]][[]]}], [$WORD_ORDER/test_array_7.2.xml.4.trans_base], [pass])
 
 # Test the function parser and evaluator. The function 'scale' is defined 
 # for both DAP2 and DAP4 in D4TestFunction.cc/h
