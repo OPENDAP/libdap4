@@ -23,7 +23,7 @@ m4_define([DMR_PARSE], [
     
     AS_IF([test -n $baselines -a $baselines = yes],
         [
-        AT_CHECK([$abs_builddir/dmr-test -x -p $input], [], [stdout], [])
+        AT_CHECK([$abs_builddir/dmr-test -x -p $input || true], [], [stdout], [])
         AT_CHECK([mv stdout $baseline.tmp])
         ],
         [
@@ -74,11 +74,11 @@ m4_define([DMR_TRANS_CE], [
     
     # See above regarding $WORD_ORDER
     input=$abs_srcdir/dmr-testsuite/$1
-    baseline=input=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$3
+    baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$3
 
     AS_IF([test -n $baselines -a $baselines = yes],
         [
-        AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2"], [], [stdout], [])
+        AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2" || true], [], [stdout], [])
         AT_CHECK([mv stdout $baseline.tmp])
         ],
         [
