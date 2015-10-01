@@ -236,13 +236,12 @@ parser_driver(DAS &das, bool deref_alias, bool as_xml)
 void
 plain_driver(DAS &das, bool deref_alias)
 {
-    AttrTable *atp;
-    AttrTable *dummy;
-
     string name = "test";
-    atp = new AttrTable;
+    AttrTable *atp = new AttrTable;
     load_attr_table_ptr(atp);
-    dummy = das.get_table(name);
+#if 0
+    AttrTable *dummy = das.get_table(name);
+#endif
     das.add_table(name, atp);
 
     name = "test2";

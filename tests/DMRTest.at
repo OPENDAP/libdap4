@@ -21,7 +21,7 @@ m4_define([DMR_PARSE], [
     input=$abs_srcdir/$1
     baseline=$input.baseline
     
-    AS_IF([test -n $baselines -a $baselines = yes],
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
         AT_CHECK([$abs_builddir/dmr-test -x -p $input || true], [], [stdout], [])
         AT_CHECK([mv stdout $baseline.tmp])
@@ -49,7 +49,7 @@ m4_define([DMR_TRANS], [
     input=$abs_srcdir/dmr-testsuite/$1
     baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$1.trans_base
 
-    AS_IF([test -n $baselines -a $baselines = yes],
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
         AT_CHECK([$abs_builddir/dmr-test -x -t $input], [], [stdout], [])
         AT_CHECK([mv stdout $baseline.tmp])
@@ -76,7 +76,7 @@ m4_define([DMR_TRANS_CE], [
     input=$abs_srcdir/dmr-testsuite/$1
     baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$3
 
-    AS_IF([test -n $baselines -a $baselines = yes],
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
         AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2" || true], [], [stdout], [])
         AT_CHECK([mv stdout $baseline.tmp])
@@ -104,7 +104,7 @@ m4_define([DMR_TRANS_FUNC_CE], [
     ce="$3"
     baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$4
     
-    AS_IF([test -n $baselines -a $baselines = yes],
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
         AT_CHECK([$abs_builddir/dmr-test -x -t $input -f "$fe" -c "$ce"], [], [stdout], [])
         AT_CHECK([mv stdout $baseline.tmp])
@@ -129,17 +129,13 @@ m4_define([DMR_INTERN], [
     input=$abs_srcdir/dmr-testsuite/$1
     baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$1.trans_base
 
-    AS_IF([test -n $baselines -a $baselines = yes],
-        [
-        AT_CHECK([$abs_builddir/dmr-test -x -i $input], [], [stdout], [])
-        AT_CHECK([mv stdout $baseline.tmp])
-        ],
-        [
-        AT_CHECK([$abs_builddir/dmr-test -x -i $input || true], [], [stdout], [stderr])
-        AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
+    dnl AS_IF([test -n $baselines -a $baselines = yes]
+    dnl These tests use teh same baselines as the 'trans' tests. jhrg 10/1/15
+
+    AT_CHECK([$abs_builddir/dmr-test -x -i $input || true], [], [stdout], [stderr])
+    AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
     
-        AT_XFAIL_IF([test "$2" = "xfail"])
-        ])
+    AT_XFAIL_IF([test "$2" = "xfail"])
         
     AT_CLEANUP
 ])
@@ -173,6 +169,12 @@ DMR_PARSE([dmr-testsuite/test_array_10.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_11.xml], [pass])
 
 # Transmit: Test building and then decoding the response
+# These calls don't include the 'dmr-testsuite' directory because the tests
+# need to choose baselines based on the word order. We could probably re-
+# organize these so that the dir names where here - which I prefer, but
+# the new 'baselines' option makes it far eaier to build the baselines, and
+# that was the primary reason for keeping the directory names here and explicit;
+# it made it much easier to sort out what input to use when building a baseline.
 
 DMR_TRANS([test_simple_1.xml], [pass])
 DMR_TRANS([test_simple_2.xml], [pass])
