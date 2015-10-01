@@ -39,7 +39,7 @@ m4_define([DMR_PARSE], [
 # This code tests the values printed when the received document is decoded.
 m4_define([DMR_TRANS], [
     # Test transmitting data (i.e., writing the Data DMR to a file and then decoding it)
-    AT_SETUP([trans/receive $1])
+    AT_SETUP([trans $1])
     AT_KEYWORDS([trans])
     
     # WORD_ORDER is set by configure in atlocal.
@@ -69,7 +69,7 @@ m4_define([DMR_TRANS], [
 m4_define([DMR_TRANS_CE], [
     # Test transmitting data (i.e., writing the Data DMR to a file and then decoding it)
     # after applying a constraint expression to the source DMR.
-    AT_SETUP([trans/receive $1 $2])
+    AT_SETUP([trans ce $1 $2 $3])
     AT_KEYWORDS([trans_ce])
     
     # See above regarding $WORD_ORDER
@@ -96,7 +96,7 @@ m4_define([DMR_TRANS_FUNC_CE], [
     # Test transmitting data (i.e., writing the Data DMR to a file and then decoding it)
     # after applying a function and constraint expression to the source DMR. If either
     # the function or constraint are empty strings, they will be ignored.
-    AT_SETUP([trans/receive $1 $2 $3])
+    AT_SETUP([trans $1 $2 $3 $4])
     AT_KEYWORDS([trans_func_ce])
     
     input=$abs_srcdir/dmr-testsuite/$1
@@ -123,7 +123,7 @@ m4_define([DMR_TRANS_FUNC_CE], [
 m4_define([DMR_INTERN], [
     # Test reading/interning data (i.e., using the read() methods to load up objects with
     # values without running them through serialize/deserialize)
-    AT_SETUP([intern data $1])
+    AT_SETUP([intern $1])
     AT_KEYWORDS([intern])
     
     input=$abs_srcdir/dmr-testsuite/$1
@@ -345,11 +345,11 @@ DMR_TRANS_CE([test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1[[0]][[]]}], [test_arr
 
 # Test the function parser and evaluator. The function 'scale' is defined 
 # for both DAP2 and DAP4 in D4TestFunction.cc/h
-DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,1)], [], [dmr-testsuite/$WORD_ORDER/test_array_1.xml.1.func_base], [pass])
-DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,10)], [], [dmr-testsuite/$WORD_ORDER/test_array_1.xml.2.func_base], [pass])
-DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,-10)], [], [dmr-testsuite/$WORD_ORDER/test_array_1.xml.3.func_base], [pass])
-DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,0.001)], [], [dmr-testsuite/$WORD_ORDER/test_array_1.xml.4.func_base], [pass])
-DMR_TRANS_FUNC_CE([dmr-testsuite/test_array_1.xml], [scale(x,-0.001)], [], [dmr-testsuite/$WORD_ORDER/test_array_1.xml.5.func_base], [pass])
+DMR_TRANS_FUNC_CE([test_array_1.xml], [scale(x,1)], [], [test_array_1.xml.1.func_base], [pass])
+DMR_TRANS_FUNC_CE([test_array_1.xml], [scale(x,10)], [], [test_array_1.xml.2.func_base], [pass])
+DMR_TRANS_FUNC_CE([test_array_1.xml], [scale(x,-10)], [], [test_array_1.xml.3.func_base], [pass])
+DMR_TRANS_FUNC_CE([test_array_1.xml], [scale(x,0.001)], [], [test_array_1.xml.4.func_base], [pass])
+DMR_TRANS_FUNC_CE([test_array_1.xml], [scale(x,-0.001)], [], [test_array_1.xml.5.func_base], [pass])
 
 # Test the largest signed int64 value (it will be stored in a D4RValue that 
 # holds a Int64 variable).
