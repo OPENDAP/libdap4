@@ -51,12 +51,15 @@ class UnMarshaller;
  * Enumeration XML element in the DMR - that information is stored
  * in additional fields and used for checking values and printing the
  * variable's declaration, but not for the internal storage of values.
+ *
+ * @todo Note the hack to remove the union...
  */
 class D4Enum: public BaseType
 {
 	friend class D4EnumTest;
 
 public:
+#if 0
     union enum_value {
     	int8_t i8;
     	uint8_t ui8;
@@ -88,23 +91,19 @@ public:
     	operator int64_t() const { return i64; }
     	operator uint64_t() const { return ui64; }
     };
-
+#endif
 private:
+#if 0
     enum_value d_buf;
+#endif
+
+    uint64_t d_buf;
 
     Type d_element_type;
     D4EnumDef *d_enum_def;	// The enumeration defined in the DMR, not an integer type
     bool d_is_signed;
 
     void m_duplicate(const D4Enum &src);
-#if 0
-    {
-        d_buf = src.d_buf;
-        d_element_type = src.d_element_type;
-        d_enum_def = new D4EnumDef(src.d_enum_def);
-        d_is_signed = src.d_is_signed;
-    }
-#endif
 
     unsigned int m_type_width() const {
         switch(d_element_type) {
@@ -133,7 +132,7 @@ private:
 public:
 	// TODO add a way to set the EnumDef to these
     D4Enum(const string &name, const string &enum_type) :
-        BaseType(name, dods_enum_c, true /*is_dap4*/), d_buf((uint64_t) 0), d_element_type(dods_null_c), d_enum_def(0)
+        BaseType(name, dods_enum_c, true /*is_dap4*/), d_buf(/*(uint64_t)*/ 0), d_element_type(dods_null_c), d_enum_def(0)
     {
         d_element_type = get_type(enum_type.c_str());
 
@@ -142,14 +141,14 @@ public:
     }
 
     D4Enum(const string &name, Type type) :
-        BaseType(name, dods_enum_c, true /*is_dap4*/), d_buf((uint64_t) 0), d_element_type(type), d_enum_def(0)
+        BaseType(name, dods_enum_c, true /*is_dap4*/), d_buf(/*(uint64_t)*/ 0), d_element_type(type), d_enum_def(0)
     {
         if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
         set_is_signed(d_element_type);
     }
 
     D4Enum(const string &name, const string &dataset, Type type) :
-        BaseType(name, dataset, dods_enum_c, true /*is_dap4*/), d_buf((uint64_t) 0), d_element_type(type), d_enum_def(0)
+        BaseType(name, dataset, dods_enum_c, true /*is_dap4*/), d_buf(/*(uint64_t)*/ 0), d_element_type(type), d_enum_def(0)
     {
         if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
         set_is_signed(d_element_type);
@@ -198,50 +197,16 @@ public:
     		throw InternalErr(__FILE__, __LINE__, "Illegal type");
     	}
     }
-
-    /**
-     * @brief Copy the value of this Enum into \c v.
-     * Template member function that can be used to read the value of the
-     * Enum. This template is explicitly instantiated so libdap includes
-     * D4Enum::value(dods_byte* v), ..., value(dods_uint64) (i.e., all
-     * of the integer types).
-     *
-     * @param v Value-result parameter; return the value of the Enum
-     * in this variable.
-     */
-	template<typename T> void value(T *v) const
-	{
-		switch (d_element_type) {
-		case dods_byte_c:
-		case dods_uint8_c:
-			*v = static_cast<T>(d_buf.ui8);
-			break;
-		case dods_uint16_c:
-			*v = static_cast<T>(d_buf.ui16);
-			break;
-		case dods_uint32_c:
-			*v = static_cast<T>(d_buf.ui32);
-			break;
-		case dods_uint64_c:
-			*v = static_cast<T>(d_buf.ui64);
-			break;
-
-		case dods_int8_c:
-			*v = static_cast<T>(d_buf.i8);
-			break;
-		case dods_int16_c:
-			*v = static_cast<T>(d_buf.i16);
-			break;
-		case dods_int32_c:
-			*v = static_cast<T>(d_buf.i32);
-			break;
-		case dods_int64_c:
-			*v = static_cast<T>(d_buf.i64);
-			break;
-		default:
-			assert(!"illegal type for D4Enum");
-		}
+	/**
+	 * @todo Hack!
+	 *
+	 * @param v Value-result parameter; return the value of the Enum
+	 * in this variable.
+	 */
+	template<typename T> void value(T *v) const {
+		*v = static_cast<T>(d_buf);
 	}
+
 
     /**
      * @brief Set the value of the Enum
@@ -251,7 +216,44 @@ public:
      *
      * @param v Set the Enum to this value.
      */
-    template <typename T> void set_value(T v) { d_buf = v; }
+    template <typename T> void set_value(T v)
+    {
+    	d_buf = v;
+#if 0
+    	// save this for use later for type checking
+    	switch (d_element_type) {
+		case dods_byte_c:
+		case dods_uint8_c:
+			if (v > 255 || v < 0)
+				blah...
+			break;
+		case dods_uint16_c:
+			d_buf.ui16 = v;
+			break;
+		case dods_uint32_c:
+			d_buf.ui32 = v;
+			break;
+		case dods_uint64_c:
+			d_buf.ui64 = v;
+			break;
+
+		case dods_int8_c:
+			d_buf.i8 = v;
+			break;
+		case dods_int16_c:
+			d_buf.i16 = v;
+			break;
+		case dods_int32_c:
+			d_buf.i32 = v;
+			break;
+		case dods_int64_c:
+			d_buf.i64 = v;
+			break;
+		default:
+			assert(!"illegal type for D4Enum");
+		}
+#endif
+    }
 
     /**
      * @brief Return the number of bytes in an instance of an Enum.

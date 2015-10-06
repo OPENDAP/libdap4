@@ -25,8 +25,12 @@
 
 #include "config.h"
 
+// #define DODS_DEBUG 1
+
 #include <cassert>
 #include <sstream>
+
+#include <libxml/encoding.h>
 
 #include "Byte.h"           // synonymous with UInt8 and Char
 #include "Int8.h"
@@ -67,7 +71,7 @@ void D4Enum::m_duplicate(const D4Enum &src)
 
 // Explicit instantiation of the template member function 'value(T *)'.
 // This is required in order to have the library contain these member
-// function when its own code does not use them. Normally, C++ instantiates
+// functions when its own code does not use them. Normally, C++ instantiates
 // templates when they are used, and this forces that process so the
 // library file contains the various versions of the member function.
 //
@@ -101,26 +105,25 @@ D4Enum::compute_checksum(Crc32 &checksum)
     case dods_byte_c:
     case dods_uint8_c:
     case dods_int8_c:
-        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf.ui8), sizeof(uint8_t));
+        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(uint8_t));
         break;
     case dods_uint16_c:
     case dods_int16_c:
-        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf.ui16), sizeof(uint16_t));
+        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(uint16_t));
         break;
     case dods_uint32_c:
     case dods_int32_c:
-        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf.ui32), sizeof(uint32_t));
+        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(uint32_t));
         break;
     case dods_uint64_c:
     case dods_int64_c:
-        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf.ui64), sizeof(uint64_t));
+        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(uint64_t));
         break;
 
     default:
         assert(!"illegal type for D4Enum");
     }
 }
-
 
 /**
  * @brief Serialize a D4Enum
@@ -143,29 +146,29 @@ D4Enum::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
 	switch (d_element_type) {
 	case dods_byte_c:
 	case dods_uint8_c:
-		m.put_byte(d_buf.ui8);
+		m.put_byte(d_buf);
 		break;
 	case dods_uint16_c:
-		m.put_uint16(d_buf.ui16);
+		m.put_uint16(d_buf);
 		break;
 	case dods_uint32_c:
-		m.put_uint32(d_buf.ui32);
+		m.put_uint32(d_buf);
 		break;
 	case dods_uint64_c:
-		m.put_uint64(d_buf.ui64);
+		m.put_uint64(d_buf);
 		break;
 
 	case dods_int8_c:
-		m.put_int8(d_buf.i8);
+		m.put_int8(d_buf);
 		break;
 	case dods_int16_c:
-		m.put_int16(d_buf.i16);
+		m.put_int16(d_buf);
 		break;
 	case dods_int32_c:
-		m.put_int32(d_buf.i32);
+		m.put_int32(d_buf);
 		break;
 	case dods_int64_c:
-		m.put_int64(d_buf.i64);
+		m.put_int64(d_buf);
 		break;
 	default:
 		assert(!"illegal type for D4Enum");
@@ -177,31 +180,55 @@ D4Enum::deserialize(D4StreamUnMarshaller &um, DMR &)
 {
 	switch (d_element_type) {
 	case dods_byte_c:
-	case dods_uint8_c:
-		um.get_byte(d_buf.ui8);
+	case dods_uint8_c: {
+		dods_byte v;
+		um.get_byte(v);
+		d_buf = v;
 		break;
-	case dods_uint16_c:
-		um.get_uint16(d_buf.ui16);
+	}
+	case dods_uint16_c: {
+		dods_uint16 v;
+		um.get_uint16(v);
+		d_buf = v;
 		break;
-	case dods_uint32_c:
-		um.get_uint32(d_buf.ui32);
+	}
+	case dods_uint32_c: {
+		dods_uint32 v;
+		um.get_uint32(v);
+		d_buf = v;
 		break;
-	case dods_uint64_c:
-		um.get_uint64(d_buf.ui64);
+	}
+	case dods_uint64_c: {
+		dods_uint64 v;
+		um.get_uint64(v);
+		d_buf = v;
 		break;
+	}
 
-	case dods_int8_c:
-		um.get_int8(d_buf.i8);
+	case dods_int8_c: {
+		dods_int8 v;
+		um.get_int8(v);
+		d_buf = v;
 		break;
-	case dods_int16_c:
-		um.get_int16(d_buf.i16);
+	}
+	case dods_int16_c: {
+		dods_int16 v;
+		um.get_int16(v);
+		d_buf = v;
 		break;
-	case dods_int32_c:
-		um.get_int32(d_buf.i32);
+	}
+	case dods_int32_c: {
+		dods_int32 v;
+		um.get_int32(v);
+		d_buf = v;
 		break;
-	case dods_int64_c:
-		um.get_int64(d_buf.i64);
+	}
+	case dods_int64_c: {
+		dods_int64 v;
+		um.get_int64(v);
+		d_buf = v;
 		break;
+	}
 	default:
 		assert(!"illegal type for D4Enum");
 	}
@@ -215,29 +242,29 @@ unsigned int D4Enum::val2buf(void *val, bool)
     switch (d_element_type) {
      case dods_byte_c:
      case dods_uint8_c:
-         d_buf.ui8 = *(dods_byte*)val;
+         d_buf = *(dods_byte*)val;
          break;
      case dods_uint16_c:
-         d_buf.ui16 = *(dods_uint16*)val;
+         d_buf = *(dods_uint16*)val;
          break;
      case dods_uint32_c:
-         d_buf.ui32 = *(dods_uint32*)val;
+         d_buf = *(dods_uint32*)val;
          break;
      case dods_uint64_c:
-         d_buf.ui64 = *(dods_uint64*)val;
+         d_buf = *(dods_uint64*)val;
          break;
 
      case dods_int8_c:
-         d_buf.i8 = *(dods_int8*)val;
+         d_buf = *(dods_int8*)val;
          break;
      case dods_int16_c:
-         d_buf.i16 = *(dods_int16*)val;
+         d_buf = *(dods_int16*)val;
          break;
      case dods_int32_c:
-         d_buf.i32 = *(dods_int32*)val;
+         d_buf = *(dods_int32*)val;
          break;
      case dods_int64_c:
-         d_buf.i64 = *(dods_int64*)val;
+         d_buf = *(dods_int64*)val;
          break;
      default:
          assert(!"illegal type for D4Enum");
@@ -255,36 +282,36 @@ unsigned int D4Enum::buf2val(void **val)
      case dods_byte_c:
      case dods_uint8_c:
          if (!*val) *val = new dods_byte;
-         *(dods_byte *) * val = d_buf.ui8;
+         *(dods_byte *) * val = d_buf;
          break;
      case dods_uint16_c:
          if (!*val) *val = new dods_uint16;
-         *(dods_uint16 *) * val = d_buf.ui16;
+         *(dods_uint16 *) * val = d_buf;
          break;
      case dods_uint32_c:
          if (!*val) *val = new dods_uint32;
-         *(dods_uint32 *) * val = d_buf.ui32;
+         *(dods_uint32 *) * val = d_buf;
          break;
      case dods_uint64_c:
          if (!*val) *val = new dods_uint64;
-         *(dods_uint64 *) * val = d_buf.ui64;
+         *(dods_uint64 *) * val = d_buf;
          break;
 
      case dods_int8_c:
          if (!*val) *val = new dods_int8;
-         *(dods_int8*) * val = d_buf.i8;
+         *(dods_int8*) * val = d_buf;
          break;
      case dods_int16_c:
          if (!*val) *val = new dods_int16;
-         *(dods_int16 *) * val = d_buf.i16;
+         *(dods_int16 *) * val = d_buf;
          break;
      case dods_int32_c:
          if (!*val) *val = new dods_int32;
-         *(dods_int32 *) * val = d_buf.i32;
+         *(dods_int32 *) * val = d_buf;
          break;
      case dods_int64_c:
          if (!*val) *val = new dods_int64;
-         *(dods_int64 *) * val = d_buf.i64;
+         *(dods_int64 *) * val = d_buf;
          break;
      default:
          assert(!"illegal type for D4Enum");
@@ -299,6 +326,8 @@ void D4Enum::print_val(ostream &out, string space, bool print_decl_p)
         print_decl(out, space, false);
         out << " = ";
     }
+
+    DBG(cerr << "Enum union value: " << hex << d_buf << dec << endl);
 
     if (is_signed()) {
     	int64_t v;
@@ -412,7 +441,7 @@ D4Enum::dump(ostream &strm) const
     strm << DapIndent::LMarg << "D4Enum::dump - (" << (void *) this << ")" << endl;
     DapIndent::Indent();
     BaseType::dump(strm);
-    strm << DapIndent::LMarg << "value: " << d_buf.ui64 << endl;
+    strm << DapIndent::LMarg << "value: " << d_buf << endl;
     DapIndent::UnIndent();
 }
 
