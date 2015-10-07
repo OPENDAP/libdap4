@@ -38,8 +38,6 @@
 #include <fcntl.h>
 #include <stdint.h>
 
-// #define DODS_DEBUG 1
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
