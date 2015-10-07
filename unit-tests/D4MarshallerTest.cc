@@ -54,7 +54,6 @@
 
 static bool debug = false;
 static bool write_baselines = false;
-// const string path = (string)TEST_SRC_DIR + "/D4-marshaller";
 
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);

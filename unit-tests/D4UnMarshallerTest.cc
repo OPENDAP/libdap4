@@ -52,10 +52,15 @@
 #include "test_config.h"
 
 static bool debug = false;
-const string path = (string)TEST_SRC_DIR + "/D4-marshaller";
 
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
+
+#if WORDS_BIGENDIAN == 1
+const static string path = (string)TEST_SRC_DIR + "/D4-marshaller/big-endian";
+#else
+const static string path = (string)TEST_SRC_DIR + "/D4-marshaller/little-endian";
+#endif
 
 using namespace std;
 using namespace libdap;
