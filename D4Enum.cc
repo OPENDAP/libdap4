@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG 1
+#define DODS_DEBUG 1
 
 #include <cassert>
 #include <sstream>
@@ -183,6 +183,8 @@ D4Enum::set_enumeration(D4EnumDef *enum_def) {
 void
 D4Enum::compute_checksum(Crc32 &checksum)
 {
+	DBG(cerr << __func__ << ": element type: " << ::libdap::type_name(d_element_type) << endl);
+
     switch (d_element_type) {
     case dods_byte_c:
     case dods_uint8_c:

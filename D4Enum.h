@@ -62,11 +62,12 @@ class D4Enum: public BaseType
 {
 	friend class D4EnumTest;
 
-private:
+protected:
     // Use an unsigned 64-bit int. the value() and set_value()
     // accessors cast to other types as needed, including signed ones.
     uint64_t d_buf;
 
+private:
     Type d_element_type;
     D4EnumDef *d_enum_def;	// The enumeration defined in the DMR, not an integer type
     bool d_is_signed;
