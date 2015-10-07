@@ -194,13 +194,17 @@ D4Enum::compute_checksum(Crc32 &checksum)
         break;
     }
     case dods_uint16_c:
-    case dods_int16_c:
-        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(uint16_t));
+    case dods_int16_c: {
+    	dods_int16 v = static_cast<dods_int16>(d_buf);
+        checksum.AddData(reinterpret_cast<uint8_t*>(&v), sizeof(uint16_t));
         break;
+    }
     case dods_uint32_c:
-    case dods_int32_c:
-        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(uint32_t));
+    case dods_int32_c: {
+    	dods_int32 v = static_cast<dods_int32>(d_buf);
+        checksum.AddData(reinterpret_cast<uint8_t*>(&v), sizeof(uint32_t));
         break;
+    }
     case dods_uint64_c:
     case dods_int64_c:
         checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(uint64_t));
