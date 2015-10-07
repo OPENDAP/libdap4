@@ -188,9 +188,11 @@ D4Enum::compute_checksum(Crc32 &checksum)
     switch (d_element_type) {
     case dods_byte_c:
     case dods_uint8_c:
-    case dods_int8_c:
-        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(uint8_t));
+    case dods_int8_c: {
+    	dods_byte v = static_cast<dods_byte>(d_buf);
+        checksum.AddData(reinterpret_cast<uint8_t*>(&v), sizeof(uint8_t));
         break;
+    }
     case dods_uint16_c:
     case dods_int16_c:
         checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(uint16_t));
