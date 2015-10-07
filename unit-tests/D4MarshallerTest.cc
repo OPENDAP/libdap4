@@ -54,10 +54,16 @@
 
 static bool debug = false;
 static bool write_baselines = false;
-const string path = (string)TEST_SRC_DIR + "/D4-marshaller";
+// const string path = (string)TEST_SRC_DIR + "/D4-marshaller";
 
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
+
+#if WORDS_BIGENDIAN == 1
+const static string path = (string)TEST_SRC_DIR + "/D4-marshaller/big-endian";
+#else
+const static string path = (string)TEST_SRC_DIR + "/D4-marshaller/little-endian";
+#endif
 
 using namespace std;
 using namespace libdap;
