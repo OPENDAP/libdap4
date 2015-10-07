@@ -58,7 +58,7 @@ static bool write_baselines = false;
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
 
-#if WORDS_BIGENDIAN == 1
+#ifdef __BIG_ENDIAN__
 const static string path = (string)TEST_SRC_DIR + "/D4-marshaller/big-endian";
 #else
 const static string path = (string)TEST_SRC_DIR + "/D4-marshaller/little-endian";
@@ -129,6 +129,7 @@ public:
 
     void test_cmp() {
         char buf[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+	DBG(cerr << "Path: " << path << endl);
         CPPUNIT_ASSERT(cmp(buf, 16, path + "/test_cmp.dat"));
     }
 
