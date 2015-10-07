@@ -52,6 +52,8 @@
 
 #include "Operators.h"
 #include "InternalErr.h"
+#include "dods-datatypes.h"
+#include "dods-limits.h"
 #include "util.h"
 #include "debug.h"
 
@@ -69,13 +71,93 @@ void D4Enum::m_duplicate(const D4Enum &src)
     d_is_signed = src.d_is_signed;
 }
 
+void D4Enum::m_check_value(int64_t v) const
+{
+	switch (d_element_type) {
+	case dods_byte_c:
+	case dods_uint8_c:
+		if ((uint64_t)v > DODS_UCHAR_MAX || v < 0) {
+			ostringstream oss;
+			oss << "The value " << v << " will not fit in an unsigned byte. (" << __func__ << ")";
+			throw Error(oss.str());
+		}
+		break;
+	case dods_uint16_c:
+		if ((uint64_t)v > DODS_USHRT_MAX || v < 0) {
+			ostringstream oss;
+			oss << "The value " << v << " will not fit in an unsigned 16-bit integer. (" << __func__ << ")";
+			throw Error(oss.str());
+		}
+		break;
+	case dods_uint32_c:
+		if ((uint64_t)v > DODS_UINT_MAX || v < 0) {
+			ostringstream oss;
+			oss << "The value " << v << " will not fit in an unsigned 32-bit integer. (" << __func__ << ")";
+			throw Error(oss.str());
+		}
+		break;
+	case dods_uint64_c:
+		// If 'v' can never be bigger than ULLONG_MAX
+		break;
+
+		case dods_int8_c:
+		if (v > DODS_SCHAR_MAX || v < DODS_SCHAR_MIN) {
+			ostringstream oss;
+			oss << "The value " << v << " will not fit in an unsigned byte. (" << __func__ << ")";
+			throw Error(oss.str());
+		}
+
+		break;
+	case dods_int16_c:
+		if (v > DODS_SHRT_MAX || v < DODS_SHRT_MIN) {
+			ostringstream oss;
+			oss << "The value " << v << " will not fit in an unsigned byte. (" << __func__ << ")";
+			throw Error(oss.str());
+		}
+		break;
+	case dods_int32_c:
+		if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
+			ostringstream oss;
+			oss << "The value " << v << " will not fit in an unsigned byte. (" << __func__ << ")";
+			throw Error(oss.str());
+		}
+		break;
+	case dods_int64_c:
+		// There's no value 'v' can have that won't fit into a 64-bit int.
+		break;
+	default:
+		assert(!"illegal type for D4Enum");
+	}
+}
+
+D4Enum::D4Enum(const string &name, const string &enum_type) :
+    BaseType(name, dods_enum_c, true /*is_dap4*/), d_buf(0), d_element_type(dods_null_c), d_enum_def(0)
+{
+    d_element_type = get_type(enum_type.c_str());
+
+    if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
+    set_is_signed(d_element_type);
+}
+
+D4Enum::D4Enum(const string &name, Type type) :
+    BaseType(name, dods_enum_c, true /*is_dap4*/), d_buf(0), d_element_type(type), d_enum_def(0)
+{
+    if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
+    set_is_signed(d_element_type);
+}
+
+D4Enum::D4Enum(const string &name, const string &dataset, Type type) :
+    BaseType(name, dataset, dods_enum_c, true /*is_dap4*/), d_buf(0), d_element_type(type), d_enum_def(0)
+{
+    if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
+    set_is_signed(d_element_type);
+}
+
 // Explicit instantiation of the template member function 'value(T *)'.
 // This is required in order to have the library contain these member
 // functions when its own code does not use them. Normally, C++ instantiates
 // templates when they are used, and this forces that process so the
 // library file contains the various versions of the member function.
-//
-// NB: I could not get this syntax to work in the header file. jhrg 8/19/13
 template void D4Enum::value<dods_byte>(dods_byte *v) const;
 template void D4Enum::value<dods_int16>(dods_int16 *v) const;
 template void D4Enum::value<dods_uint16>(dods_uint16 *v) const;
@@ -84,13 +166,13 @@ template void D4Enum::value<dods_uint32>(dods_uint32 *v) const;
 template void D4Enum::value<dods_int64>(dods_int64 *v) const;
 template void D4Enum::value<dods_uint64>(dods_uint64 *v) const;
 
-template void D4Enum::set_value<dods_byte>(dods_byte v);
-template void D4Enum::set_value<dods_int16>(dods_int16 v);
-template void D4Enum::set_value<dods_uint16>(dods_uint16 v);
-template void D4Enum::set_value<dods_int32>(dods_int32 v);
-template void D4Enum::set_value<dods_uint32>(dods_uint32 v);
-template void D4Enum::set_value<dods_int64>(dods_int64 v);
-template void D4Enum::set_value<dods_uint64>(dods_uint64 v);
+template void D4Enum::set_value<dods_byte>(dods_byte v, bool check_value);
+template void D4Enum::set_value<dods_int16>(dods_int16 v, bool check_value);
+template void D4Enum::set_value<dods_uint16>(dods_uint16 v, bool check_value);
+template void D4Enum::set_value<dods_int32>(dods_int32 v, bool check_value);
+template void D4Enum::set_value<dods_uint32>(dods_uint32 v, bool check_value);
+template void D4Enum::set_value<dods_int64>(dods_int64 v, bool check_value);
+template void D4Enum::set_value<dods_uint64>(dods_uint64 v, bool check_value);
 
 void
 D4Enum::set_enumeration(D4EnumDef *enum_def) {
@@ -124,6 +206,32 @@ D4Enum::compute_checksum(Crc32 &checksum)
         assert(!"illegal type for D4Enum");
     }
 }
+
+void
+D4Enum::set_is_signed(Type t)
+{
+	switch (t) {
+	case dods_byte_c:
+	case dods_uint8_c:
+	case dods_uint16_c:
+	case dods_uint32_c:
+	case dods_uint64_c:
+		d_is_signed = false;
+		break;
+
+	case dods_int8_c:
+	case dods_int16_c:
+	case dods_int32_c:
+	case dods_int64_c:
+		d_is_signed =  true;
+		break;
+
+	default:
+		assert(!"illegal type for D4Enum");
+		throw InternalErr(__FILE__, __LINE__, "Illegal type");
+	}
+}
+
 
 /**
  * @brief Serialize a D4Enum
