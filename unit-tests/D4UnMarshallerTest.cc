@@ -199,14 +199,14 @@ public:
             CPPUNIT_ASSERT(r1 == 17.0);
             string ck = dsm.get_checksum_str();
             DBG(cerr << "ck: " << ck << endl);
-            //CPPUNIT_ASSERT(ck == "d3c5bc59" || ck == "");
+            CPPUNIT_ASSERT(ck == "d3c5bc59" || ck == "edcaaa7c");
 
             dods_float64 r2;
             dsm.get_float64(r2);
             CPPUNIT_ASSERT(r2 == 17.0);
             ck = dsm.get_checksum_str();
             DBG(cerr << "ck: " << ck << endl);
-            //CPPUNIT_ASSERT(ck == "d5a3994b" || ck == "");
+            CPPUNIT_ASSERT(ck == "d5a3994b" || ck == "42abb362");
         }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
@@ -300,7 +300,7 @@ public:
                 CPPUNIT_ASSERT(buf1[i] == i % (1 << 7));
             string ck = dsm.get_checksum_str();
             DBG(cerr << "ck: " << ck << endl);
-            //CPPUNIT_ASSERT(ck == "199ad7f5" || ck == "");
+            CPPUNIT_ASSERT(ck == "199ad7f5" || ck == "199ad7f5");
 
             vector<dods_int32> buf2(32768);
             dsm.get_vector(reinterpret_cast<char*>(&buf2[0]), 32768, sizeof(dods_int32));
@@ -308,7 +308,7 @@ public:
                 CPPUNIT_ASSERT(buf2[i] == i % (1 << 9));
             ck = dsm.get_checksum_str();
             DBG(cerr << "ck: " << ck << endl);
-            //CPPUNIT_ASSERT(ck == "5c1bf29f" || ck == "");
+            CPPUNIT_ASSERT(ck == "5c1bf29f" || ck == "8efd2d3d");
 
             vector<dods_float64> buf3(32768);
             dsm.get_vector_float64(reinterpret_cast<char*>(&buf3[0]), 32768);
@@ -319,7 +319,7 @@ public:
             }
             ck = dsm.get_checksum_str();
             DBG(cerr << "ck: " << ck << endl);
-            //CPPUNIT_ASSERT(ck == "aafc2a91" || ck == "");
+            CPPUNIT_ASSERT(ck == "aafc2a91" || ck == "7bdf9931");
        }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
