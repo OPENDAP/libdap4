@@ -209,7 +209,7 @@ intern_data(DMR *dataset, /*const string &constraint,*/ bool series_values)
 #if 0
     Crc32 checksum;
 #endif
-    dataset->root()->intern_data(/*checksum/*, *dataset, eval*/);
+    dataset->root()->intern_data(/*checksum, *dataset, eval*/);
 }
 
 DMR *
