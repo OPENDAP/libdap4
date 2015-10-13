@@ -280,7 +280,7 @@ D4Sequence::compute_checksum(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eva
 }
 #endif
 
-void D4Sequence::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
+void D4Sequence::intern_data(/*Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
 {
     // Read the data values, then serialize.
     while (read_next_instance(/*dmr, eval,*/true /*filter*/)) {
@@ -293,10 +293,12 @@ void D4Sequence::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &e
                 // below in the nested for loops from triggering a second call to
                 // read().
                 row->back()->set_read_p(true);
+#if 0
                 // Do not compute the checksum for constructor types; those
                 // types will compute the checksum on the values they contain.
                 // TODO Check on this
                 if (!row->back()->is_constructor_type()) row->back()->compute_checksum(checksum);
+#endif
             }
         }
         d_values.push_back(row);

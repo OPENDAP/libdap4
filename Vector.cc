@@ -845,7 +845,7 @@ void Vector::compute_checksum(Crc32 &checksum)
     }
 }
 
-void Vector::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
+void Vector::intern_data(/*Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
 {
     if (!read_p())
         read(); // read() throws Error and InternalErr
@@ -869,7 +869,9 @@ void Vector::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*
 
         case dods_str_c:
         case dods_url_c:
+#if 0
         	compute_checksum(checksum);
+#endif
             break;
 
         case dods_opaque_c:
@@ -878,7 +880,7 @@ void Vector::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*
             assert(d_compound_buf.capacity() != 0);
 
             for (int i = 0, e = length(); i < e; ++i)
-                d_compound_buf[i]->intern_data(checksum/*, dmr, eval*/);
+                d_compound_buf[i]->intern_data(/*checksum/*, dmr, eval*/);
             break;
 
         case dods_array_c:      // No Array of Array in DAP4 either...
