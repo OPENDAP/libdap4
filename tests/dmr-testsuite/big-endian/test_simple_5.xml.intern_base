@@ -1,0 +1,29 @@
+Parse successful
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_simple_5.xml" dapVersion="4.0" dmrVersion="1.0" name="test_simple_5">
+    <Int8 name="i"/>
+    <Int16 name="j"/>
+    <Int32 name="k"/>
+    <Int64 name="z"/>
+    <Byte name="ui"/>
+    <UInt8 name="uii"/>
+    <UInt16 name="uj"/>
+    <UInt32 name="uk"/>
+    <UInt64 name="uz"/>
+</Dataset>
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_simple_5.xml" dapVersion="4.0" dmrVersion="1.0" name="test_simple_5">
+    <Int8 name="i"/>
+    <Int16 name="j"/>
+    <Int32 name="k"/>
+    <Int64 name="z"/>
+    <Byte name="ui"/>
+    <UInt8 name="uii"/>
+    <UInt16 name="uj"/>
+    <UInt32 name="uk"/>
+    <UInt64 name="uz"/>
+</Dataset>
+
+The data:
+{ 127, 32000, 123456789, 72057594037927935, 255, 255, 64000, 4026531840, 18446744073709551615 }
