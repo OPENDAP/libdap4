@@ -475,7 +475,7 @@ public:
      */
     virtual void compute_checksum(Crc32 &checksum) = 0;
 
-    virtual void intern_data(/*Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/);
+    virtual void intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/);
 
     /**
      * @brief The DAP4 serialization method.

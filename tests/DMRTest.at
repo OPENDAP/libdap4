@@ -126,16 +126,24 @@ m4_define([DMR_INTERN], [
     AT_SETUP([intern $1])
     AT_KEYWORDS([intern])
     
+    # WORD_ORDER is set by configure in atlocal.
+    # This is a fix for the issue where the CRC32 checksum is different
+    # on little- and big-endian machines, so we use different baseline
+    # files.  jhrg 9/30/15
     input=$abs_srcdir/dmr-testsuite/$1
-    baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$1.trans_base
+    baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$1.intern_base
 
-    dnl AS_IF([test -n $baselines -a $baselines = yes]
-    dnl These tests use teh same baselines as the 'trans' tests. jhrg 10/1/15
-
-    AT_CHECK([$abs_builddir/dmr-test -x -i $input || true], [], [stdout], [stderr])
-    AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        AT_CHECK([$abs_builddir/dmr-test -x -i $input], [], [stdout], [])
+        AT_CHECK([mv stdout $baseline.tmp])
+        ],
+        [
+        AT_CHECK([$abs_builddir/dmr-test -x -i $input || true], [], [stdout], [stderr])
+        AT_CHECK([diff -b -B $baseline stdout], [], [ignore], [], [])
     
-    AT_XFAIL_IF([test "$2" = "xfail"])
+        AT_XFAIL_IF([test "$2" = "xfail"])
+        ])
         
     AT_CLEANUP
 ])
