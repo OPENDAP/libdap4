@@ -206,10 +206,10 @@ intern_data(DMR *dataset, /*const string &constraint,*/ bool series_values)
     // Mark all variables to be sent in their entirety. No CEs are used
     // when 'interning' variables' data.
     dataset->root()->set_send_p(true);
-
+#if 0
     Crc32 checksum;
-
-    dataset->root()->intern_data(checksum/*, *dataset, eval*/);
+#endif
+    dataset->root()->intern_data(/*checksum/*, *dataset, eval*/);
 }
 
 DMR *

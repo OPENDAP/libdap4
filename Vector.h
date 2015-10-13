@@ -190,7 +190,7 @@ public:
 
     // DAP4
     virtual void compute_checksum(Crc32 &checksum);
-    virtual void intern_data(Crc32 &checksum);
+    virtual void intern_data(/*Crc32 &checksum*/);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
 #if 0
     virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
