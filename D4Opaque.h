@@ -44,8 +44,8 @@ protected:
     dods_opaque d_buf;
 
 public:
-    D4Opaque(const std::string &n) : BaseType(n, dods_opaque_c), d_buf(0) { }
-    D4Opaque(const std::string &n, const std::string &d)  : BaseType(n, d, dods_opaque_c), d_buf(0) { }
+    D4Opaque(const std::string &n) : BaseType(n, dods_opaque_c, true /*is_dap4*/), d_buf(0) { }
+    D4Opaque(const std::string &n, const std::string &d)  : BaseType(n, d, dods_opaque_c, true /*is_dap4*/), d_buf(0) { }
 
     virtual ~D4Opaque()  { }
 

@@ -100,6 +100,10 @@ void D4Group::m_duplicate(const D4Group &g)
     to be created. The name may be omitted, which will create a
     nameless variable. This may be adequate for some applications.
 
+    @note This type is available in DAP4 only.
+    See http://docs.opendap.org/index.php/DAP4:_Specification_Volume_1#Groups
+
+
     @param n A string containing the name of the variable.
 */
 D4Group::D4Group(const string &name)
@@ -109,6 +113,9 @@ D4Group::D4Group(const string &name)
 /** The D4Group server-side constructor requires the name of the variable
     to be created and the dataset name from which this variable is being
     created. Used on server-side handlers.
+
+    @note This type is available in DAP4 only.
+    See http://docs.opendap.org/index.php/DAP4:_Specification_Volume_1#Groups
 
     @param n A string containing the name of the variable.
     @param d A string containing the name of the dataset.
