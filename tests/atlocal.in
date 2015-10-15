@@ -3,3 +3,4 @@
 # autotest-generated script.
 # 
 # : ${path_to_exec=`pwd`}
+WORD_ORDER=@ac_word_order@

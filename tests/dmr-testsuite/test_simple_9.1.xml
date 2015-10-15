@@ -5,9 +5,9 @@
   xmlns:dap="http://xml.opendap.org/ns/DAP/4.0#">
   
   <Enumeration name="color" basetype="Int32">
-    <EnumConst name="red" value="100"/>
-    <EnumConst name="blue" value="200"/>
-    <EnumConst name="gray" value="300"/>
+    <EnumConst name="red" value="1"/>
+    <EnumConst name="blue" value="2"/>
+    <EnumConst name="gray" value="3"/>
   </Enumeration>
   
   <Enumeration name="shade" basetype="UInt64">

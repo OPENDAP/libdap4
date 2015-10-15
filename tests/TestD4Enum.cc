@@ -102,12 +102,12 @@ bool TestD4Enum::read() {
             set_value(v + 1);
     }
     else {
-        set_value((uint64_t)1);
+        set_value(1);
     }
 
     set_read_p(true);
 
-    DBG(cerr << "In TestD4Enum::read, _buf = " << d_buf.i64 << endl);
+    DBG(cerr << "In TestD4Enum::read, _buf = " << d_buf << endl);
 
     return true;
 }

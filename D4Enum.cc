@@ -25,8 +25,12 @@
 
 #include "config.h"
 
+#define DODS_DEBUG 1
+
 #include <cassert>
 #include <sstream>
+
+#include <libxml/encoding.h>
 
 #include "Byte.h"           // synonymous with UInt8 and Char
 #include "Int8.h"
@@ -48,6 +52,8 @@
 
 #include "Operators.h"
 #include "InternalErr.h"
+#include "dods-datatypes.h"
+#include "dods-limits.h"
 #include "util.h"
 #include "debug.h"
 
@@ -65,13 +71,93 @@ void D4Enum::m_duplicate(const D4Enum &src)
     d_is_signed = src.d_is_signed;
 }
 
+void D4Enum::m_check_value(int64_t v) const
+{
+	switch (d_element_type) {
+	case dods_byte_c:
+	case dods_uint8_c:
+		if ((uint64_t)v > DODS_UCHAR_MAX || v < 0) {
+			ostringstream oss;
+			oss << "The value " << v << " will not fit in an unsigned byte. (" << __func__ << ")";
+			throw Error(oss.str());
+		}
+		break;
+	case dods_uint16_c:
+		if ((uint64_t)v > DODS_USHRT_MAX || v < 0) {
+			ostringstream oss;
+			oss << "The value " << v << " will not fit in an unsigned 16-bit integer. (" << __func__ << ")";
+			throw Error(oss.str());
+		}
+		break;
+	case dods_uint32_c:
+		if ((uint64_t)v > DODS_UINT_MAX || v < 0) {
+			ostringstream oss;
+			oss << "The value " << v << " will not fit in an unsigned 32-bit integer. (" << __func__ << ")";
+			throw Error(oss.str());
+		}
+		break;
+	case dods_uint64_c:
+		// If 'v' can never be bigger than ULLONG_MAX
+		break;
+
+		case dods_int8_c:
+		if (v > DODS_SCHAR_MAX || v < DODS_SCHAR_MIN) {
+			ostringstream oss;
+			oss << "The value " << v << " will not fit in an unsigned byte. (" << __func__ << ")";
+			throw Error(oss.str());
+		}
+
+		break;
+	case dods_int16_c:
+		if (v > DODS_SHRT_MAX || v < DODS_SHRT_MIN) {
+			ostringstream oss;
+			oss << "The value " << v << " will not fit in an unsigned byte. (" << __func__ << ")";
+			throw Error(oss.str());
+		}
+		break;
+	case dods_int32_c:
+		if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
+			ostringstream oss;
+			oss << "The value " << v << " will not fit in an unsigned byte. (" << __func__ << ")";
+			throw Error(oss.str());
+		}
+		break;
+	case dods_int64_c:
+		// There's no value 'v' can have that won't fit into a 64-bit int.
+		break;
+	default:
+		assert(!"illegal type for D4Enum");
+	}
+}
+
+D4Enum::D4Enum(const string &name, const string &enum_type) :
+    BaseType(name, dods_enum_c, true /*is_dap4*/), d_buf(0), d_element_type(dods_null_c), d_enum_def(0)
+{
+    d_element_type = get_type(enum_type.c_str());
+
+    if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
+    set_is_signed(d_element_type);
+}
+
+D4Enum::D4Enum(const string &name, Type type) :
+    BaseType(name, dods_enum_c, true /*is_dap4*/), d_buf(0), d_element_type(type), d_enum_def(0)
+{
+    if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
+    set_is_signed(d_element_type);
+}
+
+D4Enum::D4Enum(const string &name, const string &dataset, Type type) :
+    BaseType(name, dataset, dods_enum_c, true /*is_dap4*/), d_buf(0), d_element_type(type), d_enum_def(0)
+{
+    if (!is_integer_type(d_element_type)) d_element_type = dods_uint64_c;
+    set_is_signed(d_element_type);
+}
+
 // Explicit instantiation of the template member function 'value(T *)'.
 // This is required in order to have the library contain these member
-// function when its own code does not use them. Normally, C++ instantiates
+// functions when its own code does not use them. Normally, C++ instantiates
 // templates when they are used, and this forces that process so the
 // library file contains the various versions of the member function.
-//
-// NB: I could not get this syntax to work in the header file. jhrg 8/19/13
 template void D4Enum::value<dods_byte>(dods_byte *v) const;
 template void D4Enum::value<dods_int16>(dods_int16 *v) const;
 template void D4Enum::value<dods_uint16>(dods_uint16 *v) const;
@@ -80,13 +166,13 @@ template void D4Enum::value<dods_uint32>(dods_uint32 *v) const;
 template void D4Enum::value<dods_int64>(dods_int64 *v) const;
 template void D4Enum::value<dods_uint64>(dods_uint64 *v) const;
 
-template void D4Enum::set_value<dods_byte>(dods_byte v);
-template void D4Enum::set_value<dods_int16>(dods_int16 v);
-template void D4Enum::set_value<dods_uint16>(dods_uint16 v);
-template void D4Enum::set_value<dods_int32>(dods_int32 v);
-template void D4Enum::set_value<dods_uint32>(dods_uint32 v);
-template void D4Enum::set_value<dods_int64>(dods_int64 v);
-template void D4Enum::set_value<dods_uint64>(dods_uint64 v);
+template void D4Enum::set_value<dods_byte>(dods_byte v, bool check_value);
+template void D4Enum::set_value<dods_int16>(dods_int16 v, bool check_value);
+template void D4Enum::set_value<dods_uint16>(dods_uint16 v, bool check_value);
+template void D4Enum::set_value<dods_int32>(dods_int32 v, bool check_value);
+template void D4Enum::set_value<dods_uint32>(dods_uint32 v, bool check_value);
+template void D4Enum::set_value<dods_int64>(dods_int64 v, bool check_value);
+template void D4Enum::set_value<dods_uint64>(dods_uint64 v, bool check_value);
 
 void
 D4Enum::set_enumeration(D4EnumDef *enum_def) {
@@ -97,28 +183,61 @@ D4Enum::set_enumeration(D4EnumDef *enum_def) {
 void
 D4Enum::compute_checksum(Crc32 &checksum)
 {
+	DBG(cerr << __func__ << ": element type: " << ::libdap::type_name(d_element_type) << endl);
+
     switch (d_element_type) {
     case dods_byte_c:
     case dods_uint8_c:
-    case dods_int8_c:
-        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf.ui8), sizeof(uint8_t));
+    case dods_int8_c: {
+    	dods_byte v = static_cast<dods_byte>(d_buf);
+        checksum.AddData(reinterpret_cast<uint8_t*>(&v), sizeof(uint8_t));
         break;
+    }
     case dods_uint16_c:
-    case dods_int16_c:
-        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf.ui16), sizeof(uint16_t));
+    case dods_int16_c: {
+    	dods_int16 v = static_cast<dods_int16>(d_buf);
+        checksum.AddData(reinterpret_cast<uint8_t*>(&v), sizeof(uint16_t));
         break;
+    }
     case dods_uint32_c:
-    case dods_int32_c:
-        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf.ui32), sizeof(uint32_t));
+    case dods_int32_c: {
+    	dods_int32 v = static_cast<dods_int32>(d_buf);
+        checksum.AddData(reinterpret_cast<uint8_t*>(&v), sizeof(uint32_t));
         break;
+    }
     case dods_uint64_c:
     case dods_int64_c:
-        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf.ui64), sizeof(uint64_t));
+        checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(uint64_t));
         break;
 
     default:
         assert(!"illegal type for D4Enum");
     }
+}
+
+void
+D4Enum::set_is_signed(Type t)
+{
+	switch (t) {
+	case dods_byte_c:
+	case dods_uint8_c:
+	case dods_uint16_c:
+	case dods_uint32_c:
+	case dods_uint64_c:
+		d_is_signed = false;
+		break;
+
+	case dods_int8_c:
+	case dods_int16_c:
+	case dods_int32_c:
+	case dods_int64_c:
+		d_is_signed =  true;
+		break;
+
+	default:
+		assert(!"illegal type for D4Enum");
+		throw InternalErr(__FILE__, __LINE__, "Illegal type");
+	}
 }
 
 
@@ -143,29 +262,29 @@ D4Enum::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
 	switch (d_element_type) {
 	case dods_byte_c:
 	case dods_uint8_c:
-		m.put_byte(d_buf.ui8);
+		m.put_byte(d_buf);
 		break;
 	case dods_uint16_c:
-		m.put_uint16(d_buf.ui16);
+		m.put_uint16(d_buf);
 		break;
 	case dods_uint32_c:
-		m.put_uint32(d_buf.ui32);
+		m.put_uint32(d_buf);
 		break;
 	case dods_uint64_c:
-		m.put_uint64(d_buf.ui64);
+		m.put_uint64(d_buf);
 		break;
 
 	case dods_int8_c:
-		m.put_int8(d_buf.i8);
+		m.put_int8(d_buf);
 		break;
 	case dods_int16_c:
-		m.put_int16(d_buf.i16);
+		m.put_int16(d_buf);
 		break;
 	case dods_int32_c:
-		m.put_int32(d_buf.i32);
+		m.put_int32(d_buf);
 		break;
 	case dods_int64_c:
-		m.put_int64(d_buf.i64);
+		m.put_int64(d_buf);
 		break;
 	default:
 		assert(!"illegal type for D4Enum");
@@ -177,31 +296,55 @@ D4Enum::deserialize(D4StreamUnMarshaller &um, DMR &)
 {
 	switch (d_element_type) {
 	case dods_byte_c:
-	case dods_uint8_c:
-		um.get_byte(d_buf.ui8);
+	case dods_uint8_c: {
+		dods_byte v;
+		um.get_byte(v);
+		d_buf = v;
 		break;
-	case dods_uint16_c:
-		um.get_uint16(d_buf.ui16);
+	}
+	case dods_uint16_c: {
+		dods_uint16 v;
+		um.get_uint16(v);
+		d_buf = v;
 		break;
-	case dods_uint32_c:
-		um.get_uint32(d_buf.ui32);
+	}
+	case dods_uint32_c: {
+		dods_uint32 v;
+		um.get_uint32(v);
+		d_buf = v;
 		break;
-	case dods_uint64_c:
-		um.get_uint64(d_buf.ui64);
+	}
+	case dods_uint64_c: {
+		dods_uint64 v;
+		um.get_uint64(v);
+		d_buf = v;
 		break;
+	}
 
-	case dods_int8_c:
-		um.get_int8(d_buf.i8);
+	case dods_int8_c: {
+		dods_int8 v;
+		um.get_int8(v);
+		d_buf = v;
 		break;
-	case dods_int16_c:
-		um.get_int16(d_buf.i16);
+	}
+	case dods_int16_c: {
+		dods_int16 v;
+		um.get_int16(v);
+		d_buf = v;
 		break;
-	case dods_int32_c:
-		um.get_int32(d_buf.i32);
+	}
+	case dods_int32_c: {
+		dods_int32 v;
+		um.get_int32(v);
+		d_buf = v;
 		break;
-	case dods_int64_c:
-		um.get_int64(d_buf.i64);
+	}
+	case dods_int64_c: {
+		dods_int64 v;
+		um.get_int64(v);
+		d_buf = v;
 		break;
+	}
 	default:
 		assert(!"illegal type for D4Enum");
 	}
@@ -215,29 +358,29 @@ unsigned int D4Enum::val2buf(void *val, bool)
     switch (d_element_type) {
      case dods_byte_c:
      case dods_uint8_c:
-         d_buf.ui8 = *(dods_byte*)val;
+         d_buf = *(dods_byte*)val;
          break;
      case dods_uint16_c:
-         d_buf.ui16 = *(dods_uint16*)val;
+         d_buf = *(dods_uint16*)val;
          break;
      case dods_uint32_c:
-         d_buf.ui32 = *(dods_uint32*)val;
+         d_buf = *(dods_uint32*)val;
          break;
      case dods_uint64_c:
-         d_buf.ui64 = *(dods_uint64*)val;
+         d_buf = *(dods_uint64*)val;
          break;
 
      case dods_int8_c:
-         d_buf.i8 = *(dods_int8*)val;
+         d_buf = *(dods_int8*)val;
          break;
      case dods_int16_c:
-         d_buf.i16 = *(dods_int16*)val;
+         d_buf = *(dods_int16*)val;
          break;
      case dods_int32_c:
-         d_buf.i32 = *(dods_int32*)val;
+         d_buf = *(dods_int32*)val;
          break;
      case dods_int64_c:
-         d_buf.i64 = *(dods_int64*)val;
+         d_buf = *(dods_int64*)val;
          break;
      default:
          assert(!"illegal type for D4Enum");
@@ -255,36 +398,36 @@ unsigned int D4Enum::buf2val(void **val)
      case dods_byte_c:
      case dods_uint8_c:
          if (!*val) *val = new dods_byte;
-         *(dods_byte *) * val = d_buf.ui8;
+         *(dods_byte *) * val = d_buf;
          break;
      case dods_uint16_c:
          if (!*val) *val = new dods_uint16;
-         *(dods_uint16 *) * val = d_buf.ui16;
+         *(dods_uint16 *) * val = d_buf;
          break;
      case dods_uint32_c:
          if (!*val) *val = new dods_uint32;
-         *(dods_uint32 *) * val = d_buf.ui32;
+         *(dods_uint32 *) * val = d_buf;
          break;
      case dods_uint64_c:
          if (!*val) *val = new dods_uint64;
-         *(dods_uint64 *) * val = d_buf.ui64;
+         *(dods_uint64 *) * val = d_buf;
          break;
 
      case dods_int8_c:
          if (!*val) *val = new dods_int8;
-         *(dods_int8*) * val = d_buf.i8;
+         *(dods_int8*) * val = d_buf;
          break;
      case dods_int16_c:
          if (!*val) *val = new dods_int16;
-         *(dods_int16 *) * val = d_buf.i16;
+         *(dods_int16 *) * val = d_buf;
          break;
      case dods_int32_c:
          if (!*val) *val = new dods_int32;
-         *(dods_int32 *) * val = d_buf.i32;
+         *(dods_int32 *) * val = d_buf;
          break;
      case dods_int64_c:
          if (!*val) *val = new dods_int64;
-         *(dods_int64 *) * val = d_buf.i64;
+         *(dods_int64 *) * val = d_buf;
          break;
      default:
          assert(!"illegal type for D4Enum");
@@ -299,6 +442,8 @@ void D4Enum::print_val(ostream &out, string space, bool print_decl_p)
         print_decl(out, space, false);
         out << " = ";
     }
+
+    DBG(cerr << "Enum union value: " << hex << d_buf << dec << endl);
 
     if (is_signed()) {
     	int64_t v;
@@ -412,7 +557,7 @@ D4Enum::dump(ostream &strm) const
     strm << DapIndent::LMarg << "D4Enum::dump - (" << (void *) this << ")" << endl;
     DapIndent::Indent();
     BaseType::dump(strm);
-    strm << DapIndent::LMarg << "value: " << d_buf.ui64 << endl;
+    strm << DapIndent::LMarg << "value: " << d_buf << endl;
     DapIndent::UnIndent();
 }
 
