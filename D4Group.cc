@@ -437,11 +437,11 @@ D4Group::set_send_p(bool state)
 }
 
 void
-D4Group::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
+D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/)
 {
     groupsIter g = d_groups.begin();
     while (g != d_groups.end())
-        (*g++)->intern_data(checksum/*, dmr, eval*/);
+        (*g++)->intern_data(/*checksum, dmr, eval*/);
 
     // Specialize how the top-level variables in any Group are sent; include
     // a checksum for them. A subset operation might make an interior set of
@@ -453,10 +453,11 @@ D4Group::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
 	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
 		// Only send the stuff in the current subset.
 		if ((*i)->send_p()) {
-			checksum.Reset();
-
-			(*i)->intern_data(checksum/*, dmr, eval*/);
-
+#if 0
+		    checksum.Reset();
+#endif
+			(*i)->intern_data(/*checksum, dmr, eval*/);
+#if 0
 			D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
 		    ostringstream oss;
 		    oss.setf(ios::hex, ios::basefield);
@@ -464,6 +465,7 @@ D4Group::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
 		    a->add_value(oss.str());
 			(*i)->attributes()->add_attribute_nocopy(a);
 			DBG(cerr << "CRC32: " << oss.str() << " for " << (*i)->name() << endl);
+#endif
 		}
 	}
 }

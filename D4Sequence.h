@@ -188,7 +188,7 @@ public:
     }
 
     // DAP4
-    virtual void intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/);
+    virtual void intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
 #if 0
     virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false);

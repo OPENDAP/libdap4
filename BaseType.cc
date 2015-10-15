@@ -837,12 +837,13 @@ BaseType::intern_data(ConstraintEvaluator &, DDS &dds)
  * @param dmr DMR for the whole dataset
  */
 void
-BaseType::intern_data(Crc32 &checksum/*, DMR &, ConstraintEvaluator &*/)
+BaseType::intern_data(/*Crc32 &checksum, DMR &, ConstraintEvaluator &*/)
 {
     if (!read_p())
         read();          // read() throws Error and InternalErr
-
+#if 0
     compute_checksum(checksum);
+#endif
 }
 
 bool
