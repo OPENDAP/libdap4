@@ -143,7 +143,7 @@ static void print_group_data(D4Group *g, bool print_rows = false)
     for (D4Group::groupsIter gi = g->grp_begin(), ge = g->grp_end(); gi != ge; ++gi) {
         for (Constructor::Vars_iter i = (*gi)->var_begin(), e = (*gi)->var_end(); i != e; i++) {
             if (print_rows && (*i)->type() == dods_sequence_c)
-                dynamic_cast < D4Sequence * >(*i)->print_val_by_rows(cout);
+                dynamic_cast < D4Sequence & >(**i).print_val_by_rows(cout);
             else
                 (*i)->print_val(cout);
         }
@@ -162,7 +162,7 @@ static void print_data(DMR &dmr, bool print_rows = false)
 
     for (Constructor::Vars_iter i = g->var_begin(), e = g->var_end(); i != e; i++) {
         if (print_rows && (*i)->type() == dods_sequence_c)
-            dynamic_cast < D4Sequence * >(*i)->print_val_by_rows(cout);
+            dynamic_cast < D4Sequence & >(**i).print_val_by_rows(cout);
         else
             (*i)->print_val(cout);
     }

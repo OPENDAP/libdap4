@@ -69,7 +69,7 @@ protected:
 
 private:
     Type d_element_type;
-    D4EnumDef *d_enum_def;	// The enumeration defined in the DMR, not an integer type
+    D4EnumDef *d_enum_def;	// This is a weak pointer; don't delete
     bool d_is_signed;
 
     void m_duplicate(const D4Enum &src);
