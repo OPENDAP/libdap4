@@ -101,7 +101,6 @@ static void usage(const string &name)
 	cerr << "           NB: You can use a `?' for the CE also." << endl;
 }
 
-#if 1
 // Used for raw http access/transfer
 bool read_data(FILE * fp)
 {
@@ -118,7 +117,6 @@ bool read_data(FILE * fp)
 
     return true;
 }
-#endif
 
 static void read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool mime_headers, bool get_dap4_data, bool get_dmr)
 {
@@ -262,7 +260,7 @@ int main(int argc, char *argv[])
 
             string name = argv[i];
             D4Connect *url = 0;
-
+            // auto_ptr? jhrg 10/19/15
             url = new D4Connect(name);
 
             // This overrides the value set in the .dodsrc file.
@@ -313,6 +311,8 @@ int main(int argc, char *argv[])
                 catch (Error & e) {
                     cerr << "Error: " << e.get_error_message() << endl;
                     delete url; url = 0;
+                    if (report_errors)
+                        return EXIT_FAILURE;
                 }
             }
             else if (get_dmr) {
@@ -359,6 +359,8 @@ int main(int argc, char *argv[])
                     }
                      catch (Error & e) {
                          cerr << e.get_error_message() << endl;
+                         if (report_errors)
+                             return EXIT_FAILURE;
                          continue;       // Goto the next URL or exit the loop.
                      }
                  }
@@ -389,6 +391,8 @@ int main(int argc, char *argv[])
                     }
                     catch (Error & e) {
                         cerr << e.get_error_message() << endl;
+                        if (report_errors)
+                            return EXIT_FAILURE;
                         continue;
                     }
                 }
