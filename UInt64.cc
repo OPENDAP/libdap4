@@ -58,20 +58,26 @@ namespace libdap {
 
 /** The UInt64 constructor accepts the name of the variable to be created.
 
+    @note This type is available in DAP4 only.
+    See http://docs.opendap.org/index.php/DAP4:_Specification_Volume_1#Atomic_Types
+
     @param n A string containing the name of the variable to be created.
     variable is created
 */
-UInt64::UInt64(const string &n) : BaseType(n, dods_uint64_c), d_buf(0)
+UInt64::UInt64(const string &n) : BaseType(n, dods_uint64_c, true /*is_dap4*/), d_buf(0)
 {}
 
 /** The UInt64 server-side constructor accepts the name of the variable and
     the dataset name from which this instance is created.
 
+    @note This type is available in DAP4 only.
+    See http://docs.opendap.org/index.php/DAP4:_Specification_Volume_1#Atomic_Types
+
     @param n A string containing the name of the variable to be created.
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-UInt64::UInt64(const string &n, const string &d)  : BaseType(n, d, dods_uint64_c), d_buf(0)
+UInt64::UInt64(const string &n, const string &d)  : BaseType(n, d, dods_uint64_c, true /*is_dap4*/), d_buf(0)
 {}
 
 UInt64::UInt64(const UInt64 &copy_from) : BaseType(copy_from)

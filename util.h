@@ -57,19 +57,17 @@ inline bool double_eq(double lhs, double rhs, double epsilon = 1.0e-5)
     return fabs(lhs - rhs) < epsilon;
 }
 
-bool is_host_big_endian();
-
 string extract_string_argument(BaseType *arg) ;
 double extract_double_value(BaseType *arg) ;
 double *extract_double_array(Array *a) ;
 void extract_double_array(Array *a, vector<double> &dest) ;
 void set_array_using_double(Array *dest, double *src, int src_len) ;
 
+bool is_host_big_endian();
+
 string prune_spaces(const string &);
 bool unique_names(vector<BaseType *> l, const string &var, const string &type, string &msg);
 string systime();
-//FILE *compressor(FILE *output, int &childpid);
-//bool deflate_exists();
 const char *libdap_root();
 extern "C" const char *libdap_version();
 extern "C" const char *libdap_name();
@@ -152,27 +150,7 @@ time_t parse_time(const char * str, bool expand);
 bool size_ok(unsigned int sz, unsigned int nelem);
 bool pathname_ok(const string &path, bool strict = true);
 string dap_version();
-
-#if COMPRESSION_FOR_SERVER3
-FILE *compressor(FILE *output, int &childpid);
-bool deflate_exists();
-#endif
-
-#if 0
-FILE *text_to_temp(string text);
-#endif
-#if 0
-int wmatch(const char *pat, const char *s);
-#endif
-#if 0
-string file_to_string(FILE *fp);
-
-int wildcmp(const char *wild, const char *string);
-#endif
-#if 0
-const char *dods_progress();
-#endif
-
+string open_temp_fstream(ofstream &f, const string &name_template, const string &suffix = "");
 
 } // namespace libdap
 

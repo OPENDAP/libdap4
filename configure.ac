@@ -2,10 +2,10 @@
 dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.69)
+AC_PREREQ(2.63)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.13.3, opendap-tech@opendap.org)
-AC_DEFINE(DAP_PROTOCOL_VERSION, ["3.5"], [Highest DAP version implemented?])
+AC_INIT(libdap, 3.15.1, opendap-tech@opendap.org)
+AC_DEFINE(DAP_PROTOCOL_VERSION, ["4.0"], [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
 AC_CONFIG_SRCDIR([Connect.cc])
@@ -31,8 +31,9 @@ AC_SUBST(PACKAGE_MAJOR_VERSION)
 AC_SUBST(PACKAGE_MINOR_VERSION)
 AC_SUBST(PACKAGE_SUBMINOR_VERSION)
 
-dnl Removed this; only the Array and Sequence classes ever have constraints that 
-dnl need to be evaluated at run time (DAP4) or only Sequences (DAP2). jhrg 9/4/13
+dnl Removed this; only the Array and Sequence classes ever have
+dnl constraints that need to be evaluated at run time (DAP4) or only
+dnl Sequences (DAP2). jhrg 9/4/13
 
 dnl AC_DEFINE(EVAL, 1, [Should all the classes run ConstraintEvaluator::eval()?])
 dnl AC_SUBST(EVAL)
@@ -44,9 +45,16 @@ dnl to default values otherwise.
 AC_CANONICAL_HOST
 AC_SUBST(host)
 
-DAPLIB_CURRENT=17
-DAPLIB_AGE=0
-DAPLIB_REVISION=2
+dnl How to set these SO variables:
+dnl No interfaces changed, only implementations (good): ==> Increment REVISION.
+dnl Interfaces added, none removed (good): ==> Increment CURRENT,
+dnl increment AGE, set REVISION to 0.
+dnl Interfaces removed or changed (BAD, breaks upward compatibility):
+dnl ==> Increment CURRENT, set AGE and REVISION to 0.
+
+DAPLIB_CURRENT=20
+DAPLIB_AGE=3
+DAPLIB_REVISION=1
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)
 AC_SUBST(DAPLIB_REVISION)
@@ -54,9 +62,9 @@ AC_SUBST(DAPLIB_REVISION)
 LIBDAP_VERSION="$DAPLIB_CURRENT:$DAPLIB_REVISION:$DAPLIB_AGE"
 AC_SUBST(LIBDAP_VERSION)
 
-CLIENTLIB_CURRENT=6
-CLIENTLIB_AGE=0
-CLIENTLIB_REVISION=0
+CLIENTLIB_CURRENT=7
+CLIENTLIB_AGE=1
+CLIENTLIB_REVISION=1
 AC_SUBST(CLIENTLIB_CURRENT)
 AC_SUBST(CLIENTLIB_AGE)
 AC_SUBST(CLIENTLIB_REVISION)
@@ -64,8 +72,8 @@ AC_SUBST(CLIENTLIB_REVISION)
 CLIENTLIB_VERSION="$CLIENTLIB_CURRENT:$CLIENTLIB_REVISION:$CLIENTLIB_AGE"
 AC_SUBST(CLIENTLIB_VERSION)
 
-SERVERLIB_CURRENT=12
-SERVERLIB_AGE=5
+SERVERLIB_CURRENT=13
+SERVERLIB_AGE=6
 SERVERLIB_REVISION=1
 AC_SUBST(SERVERLIB_CURRENT)
 AC_SUBST(SERVERLIB_AGE)
@@ -83,12 +91,9 @@ dnl Call this gnulib macro right after a working C Compiler is found
 gl_EARLY
 
 dnl echo "CC = $CC"
-if test "$CC" = "gcc"
-then
-    AM_CONDITIONAL([COMPILER_IS_GCC],[true])
-else
-    AM_CONDITIONAL([COMPILER_IS_GCC],[false])
-fi
+AS_IF([test x$CC = xgcc],
+      [AM_CONDITIONAL([COMPILER_IS_GCC],[true])],
+      [AM_CONDITIONAL([COMPILER_IS_GCC],[false])])
 
 dnl AC_PROG_YACC
 dnl AC_PROG_LEX
@@ -103,12 +108,42 @@ dnl Makefile will call bison -y which doesn't know how to make the parsers
 dnl we require. jhrg 6/15/05
 AC_CHECK_PROG(YACC,[bison],[bison])
 
+dnl We have found bison; get its version
+bison_version=`bison --version | sed -n '/^bison.*/p' | sed 's@.* \(.*\)@\1@'`
+
+AC_MSG_CHECKING([for bison 3.0])
+
+# This was used to set a conditional in the d4_ce/Makefile.am to build
+# the DAP4 parsers using bison 3 or get pre-built sources from a set
+# of template files. That didn't work on some linux machines, so bison
+# 3 is a requirement for building until that gets sorted out. jhrg 4/5/15
+dnl AS_VERSION_COMPARE(["$bison_version"], ["3.0"], 
+dnl 	[AM_CONDITIONAL([BISON3], [false])],
+dnl 	[AM_CONDITIONAL([BISON3], [true])],
+dnl 	[AM_CONDITIONAL([BISON3], [true])])
+        
+AS_VERSION_COMPARE(["$bison_version"], ["3.0"], 
+	[AC_MSG_ERROR([not found])],
+	[ ],
+	[ ])
+
+AC_MSG_RESULT([found vesion $bison_version])
+
 dnl Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 
-AC_CHECK_HEADERS([fcntl.h malloc.h memory.h netinet/in.h stddef.h stdlib.h string.h strings.h sys/param.h sys/time.h unistd.h uuid/uuid.h])
+AC_CHECK_HEADERS_ONCE([fcntl.h malloc.h memory.h stddef.h stdlib.h string.h strings.h unistd.h pthread.h])
+AC_CHECK_HEADERS_ONCE([sys/param.h sys/time.h])
+AC_CHECK_HEADERS_ONCE([netinet/in.h])
+
+dnl AC_CHECK_HEADERS_ONCE([uuid/uuid.h uuid.h])
+dnl Do this because we have had a number of problems with the UUID header/library
+AC_CHECK_HEADERS([uuid/uuid.h],[found_uuid_uuid_h=true],[found_uuid_uuid_h=false])
+AC_CHECK_HEADERS([uuid.h],[found_uuid_h=true],[found_uuid_h=false])
+
+AS_IF([test $found_uuid_uuid_h = true -o $found_uuid_h = true], [], [AC_MSG_ERROR([Could not find uuid.h])])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -118,7 +153,12 @@ AC_CHECK_MEMBERS([struct stat.st_blksize])
 AC_HEADER_TIME
 AC_STRUCT_TM
 AC_C_VOLATILE
-AC_C_BIGENDIAN
+AC_C_BIGENDIAN([ac_word_order=big-endian], [ac_word_order=little-endian])
+
+# This is used byt eh DMR tests which must choose the correct set of baselines
+# based on word order given that DAP4 uses 'reader make right' and thus the 
+# DAP4 data responses are different for different word order machines. jhrg 9/29/15
+AC_SUBST([ac_word_order])
         
 DODS_CHECK_SIZES
 
@@ -184,7 +224,7 @@ then
     then
 	   version_libcurl=`curl-config --version | sed 's@libcurl \(.*\)@\1@'`
 
-           AS_VERSION_COMPARE(["$version_libcurl"], ["7.19.0"], 
+       AS_VERSION_COMPARE(["$version_libcurl"], ["7.19.0"], 
                 [AC_MSG_ERROR([I could not find libcurl 7.19.0 or newer, found $version_libcurl])])
         
 	   CURL_LIBS="`curl-config --libs`"
@@ -276,18 +316,16 @@ AM_PATH_CPPUNIT(1.12.0,
 DODS_DEBUG_OPTION
 
 dnl See util.cc:dods_root()
-if test "$prefix" = "NONE"
-then
-AC_DEFINE([LIBDAP_ROOT], ["/usr/local"], [Set to the prefix directory])
-else
-AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])
-fi
+AS_IF([test "$prefix" = "NONE"],
+      [AC_DEFINE([LIBDAP_ROOT], ["/usr/local"], [Set to the prefix directory])],
+	  [AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])])
 
+dnl By default, DAP4 is enabled. Use this to disable. jhrg 5/12/15
 AC_ARG_ENABLE([dap4], 
-    AC_HELP_STRING([--enable-dap4], [Enable DAP4 types and responses (default is Yes)]),
-    [], [enable_dap4="yes"])
+    [AC_HELP_STRING([--enable-dap4], [Enable DAP4 types and responses (default is Yes)])],
+    [enable_dap4=${enableval}], [enable_dap4=yes])
 
-AS_IF([test "x$enable_dap4" = "xyes"], [
+AS_IF([test x$enable_dap4 = xyes], [
     dnl Do the stuff needed for enabling the feature
     dnl echo "Defining DAP4! "
     AC_DEFINE([DAP4], 1, [Should DAP4 support be enabled?])
@@ -297,22 +335,17 @@ AS_IF([test "x$enable_dap4" = "xyes"], [
 ])
 
 AC_ARG_ENABLE([developer],
-[AS_HELP_STRING([--enable-developer],
-[Build a debug (-g3 -O0) version of this code and include assert() calls in the code (default is no)])],
-[case "${enableval}" in
-       yes) build_developer=true ;;
-       no)  build_developer=false ;;
-       *) AC_MSG_ERROR([bad value ${enableval} for --enable-developer]) ;;
-     esac],
-[build_developer=false])
+	[AS_HELP_STRING([--enable-developer],
+				    [Build a debug (-g3 -O0) version of this code and include assert() calls in the code (default is no)])],
+    [build_developer=${enableval}],
+    [build_developer=no])
 
-if test "x$build_developer" = "xtrue"; then
-   AC_MSG_NOTICE(["Building developer version"])
-else
-   AC_MSG_NOTICE(["Not building developer version"])
-   AC_DEFINE([NDEBUG], [1], [Define this to suppres assert() calls.])
-fi
-AM_CONDITIONAL([BUILD_DEVELOPER], [test "x$build_developer" = "xtrue"])
+AS_IF([test x$build_developer = xyes],
+      [AC_MSG_NOTICE([Building developer version])
+       AM_CONDITIONAL([BUILD_DEVELOPER], [true])],
+      [AC_MSG_NOTICE([Not building developer version])
+       AM_CONDITIONAL([BUILD_DEVELOPER], [false])
+       AC_DEFINE([NDEBUG], [1], [Define this to suppres assert() calls.])])
 
 DODS_GCOV_VALGRIND
 
@@ -333,6 +366,7 @@ AC_CONFIG_FILES([Makefile
 
                  gl/Makefile
                  d4_ce/Makefile
+                 d4_function/Makefile
                  
                  tests/Makefile
                  tests/atlocal

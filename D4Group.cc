@@ -58,20 +58,30 @@ void D4Group::m_duplicate(const D4Group &g)
 	if (g.d_dims) {
 		d_dims = new D4Dimensions(*(g.d_dims));
 		d_dims->set_parent(this);
+
+	    // Update all of the D4Dimension weak pointers in the Array objects.
+	    // This is a hack - we know that Constructor::m_duplicate() has been
+	    // called at this point and any Array instances have dimension pointers
+	    // that reference the 'old' dimensions (g.d_dims) and not the 'new'
+	    // dimensions made above. Scan every array and re-wire the weak pointers.
+	    // jhrg 8/15/14
+	    Vars_citer vi = d_vars.begin();
+	    while (vi != d_vars.end()) {
+	        if ((*vi)->type() == dods_array_c)
+	            static_cast<Array*>(*vi)->update_dimension_pointers(g.d_dims, d_dims);
+	        ++vi;
+	    }
 	}
 
-	// Update all of the D4Dimension weak pointers in the Array objects.
-	// This is a hack - we know that Constructor::m_duplicate() has been
-	// called at this point and any Array instances have dimension pointers
-	// that reference the 'old' dimensions (g.d_dims) and not the 'new'
-	// dimensions made above. Scan every array and re-wire the weak pointers.
-	// jhrg 8/15/14
+#if 0
+	// Moved this block up inside the if because g.d_dims might be false. jhrg 9/14/15
 	Vars_citer vi = d_vars.begin();
 	while (vi != d_vars.end()) {
 		if ((*vi)->type() == dods_array_c)
 			static_cast<Array*>(*vi)->update_dimension_pointers(g.d_dims, d_dims);
 		++vi;
 	}
+#endif
 
 	// enums; deep copy
 	if (g.d_enum_defs) d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
@@ -90,6 +100,10 @@ void D4Group::m_duplicate(const D4Group &g)
     to be created. The name may be omitted, which will create a
     nameless variable. This may be adequate for some applications.
 
+    @note This type is available in DAP4 only.
+    See http://docs.opendap.org/index.php/DAP4:_Specification_Volume_1#Groups
+
+
     @param n A string containing the name of the variable.
 */
 D4Group::D4Group(const string &name)
@@ -99,6 +113,9 @@ D4Group::D4Group(const string &name)
 /** The D4Group server-side constructor requires the name of the variable
     to be created and the dataset name from which this variable is being
     created. Used on server-side handlers.
+
+    @note This type is available in DAP4 only.
+    See http://docs.opendap.org/index.php/DAP4:_Specification_Volume_1#Groups
 
     @param n A string containing the name of the variable.
     @param d A string containing the name of the dataset.
@@ -420,11 +437,11 @@ D4Group::set_send_p(bool state)
 }
 
 void
-D4Group::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
+D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/)
 {
     groupsIter g = d_groups.begin();
     while (g != d_groups.end())
-        (*g++)->intern_data(checksum/*, dmr, eval*/);
+        (*g++)->intern_data(/*checksum, dmr, eval*/);
 
     // Specialize how the top-level variables in any Group are sent; include
     // a checksum for them. A subset operation might make an interior set of
@@ -436,10 +453,11 @@ D4Group::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
 	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
 		// Only send the stuff in the current subset.
 		if ((*i)->send_p()) {
-			checksum.Reset();
-
-			(*i)->intern_data(checksum/*, dmr, eval*/);
-
+#if 0
+		    checksum.Reset();
+#endif
+			(*i)->intern_data(/*checksum, dmr, eval*/);
+#if 0
 			D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
 		    ostringstream oss;
 		    oss.setf(ios::hex, ios::basefield);
@@ -447,6 +465,7 @@ D4Group::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
 		    a->add_value(oss.str());
 			(*i)->attributes()->add_attribute_nocopy(a);
 			DBG(cerr << "CRC32: " << oss.str() << " for " << (*i)->name() << endl);
+#endif
 		}
 	}
 }

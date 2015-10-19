@@ -8,7 +8,6 @@ pkgconfigdir=$(libdir)/pkgconfig
 
 AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
 AM_CXXFLAGS = 
-CXXFLAGS = 
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
@@ -26,8 +25,8 @@ if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
 endif
 
-SUBDIRS = gl d4_ce .  tests unit-tests
-DIST_SUBDIRS = gl d4_ce tests unit-tests
+SUBDIRS = gl d4_ce d4_function .  tests unit-tests
+DIST_SUBDIRS = gl d4_ce d4_function tests unit-tests
 
 noinst_LTLIBRARIES = libparsers.la
 
@@ -37,18 +36,18 @@ bin_SCRIPTS = dap-config dap-config-pkgconfig
 
 bin_PROGRAMS = getdap getdap4
 
-BUILT_SOURCES = $(GRAM_SRC) dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
+# Including the generated grammar sources in BUILT_SOURCES ensures
+# they are built first. jhrg 6/18/15
+BUILT_SOURCES = $(BISON_SRC) $(FLEX_SRC) dods-datatypes.h xdr-datatypes.h \
+	getdap.1 dap-config.1 getdap4.1
 
 man_MANS = getdap.1 dap-config.1 getdap4.1
 
 %.1: %.man1
 	groff -t -e -mandoc -Tascii $< | col -bx > $@
 
-libparsers_la_SOURCES = $(GRAM_SRC) 
+libparsers_la_SOURCES = $(FLEX_SRC) $(BISON_SRC)  
 libparsers_la_CPPFLAGS = $(XML2_CFLAGS)
-# Removed this because on CentOS 5 using gl/unistd.h with flex-generated
-# sources is broken - assume that flex is suitably portable on its own,
-# so the gl code is not needed anyway. jhrg 5/2/14 $(AM_CPPFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)
@@ -58,7 +57,9 @@ endif
 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_CPPFLAGS = $(AM_CPPFLAGS)
-libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la d4_ce/libd4_ce_parser.la libparsers.la
+libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la d4_ce/libd4_ce_parser.la \
+d4_function/libd4_function_parser.la libparsers.la
+
 if DAP4_DEFINED
     libdap_la_LIBADD += -lcrypto 
 endif
@@ -97,23 +98,13 @@ EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI		\
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf		\
 	libdap.spec VCPP dods-datatypes-static.h			\
 	xdr-datatypes-static.h dap-config-pkgconfig $(LEX_YACC_EXTRA)	\
-	$(GRAM_SRC) OSX_Resources getdap.man1 dap-config.man1 getdap4.man1
+	OSX_Resources getdap.man1 dap-config.man1 getdap4.man1
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
-CLEANFILES = *.log *.output *.gcda *.gcno $(GRAM_SRC) dods-datatypes.h \
-    xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
-
-# Not nearly as clean as it could be, but this removes .svn directories
-# in subdirs.
-dist-hook:
-	rm -rf `find $(distdir) -name .svn`
-
-# Copy the generated grammar files to the 'grammarfiles' directory.
-.PHONY: grammarfiles
-grammarfiles: $(GRAM_SRC)
-	for f in $(GRAM_SRC); do cp $$f grammarfiles; done
+CLEANFILES = *.log *.output *.gcda *.gcno $(BISON_SRC) $(FLEX_SRC) \
+	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
 
 .PHONY: docs
 docs:
@@ -134,6 +125,7 @@ cccc:
 .PHONY: fortify
 fortify: $(BUILT_SOURCES)
 	(cd gl && sourceanalyzer -b @PACKAGE@-gl $(MAKE) $(MFLAGS) )
+	(cd d4_ce && sourceanalyzer -b @PACKAGE@-d4_ce $(MAKE) $(MFLAGS) )
 	sourceanalyzer -b @PACKAGE@-parsers $(MAKE) $(MFLAGS) libparsers.la
 	sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS) libdap.la libdapserver.la libdapclient.la
 	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
@@ -143,9 +135,10 @@ fortify: $(BUILT_SOURCES)
 # files but should eliminate the false positives from flex and bison, too.
 .PHONY: fortify-lite
 fortify-lite: dods-datatypes.h xdr-datatypes.h
-	( cd gl && $(MAKE) )
-	$(MAKE) libparsers.la
-	sourceanalyzer -b @PACKAGE@ $(MAKE) libdap.la libdapserver.la libdapclient.la
+	( cd gl && $(MAKE) $(MFLAGS) )
+	( cd d4_ce && $(MAKE) $(MFLAGS) )
+	$(MAKE)  $(MFLAGS) libparsers.la
+	sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS) libdap.la libdapserver.la libdapclient.la
 	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
 
 # No longer used? jhrg 1/29/13
@@ -233,9 +226,10 @@ GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc
 
 GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h
 
-GRAM_SRC = lex.das.cc das.tab.cc das.tab.hh lex.dds.cc dds.tab.cc	\
-	dds.tab.hh lex.ce_expr.cc ce_expr.tab.cc ce_expr.tab.hh		\
-	lex.Error.cc Error.tab.cc Error.tab.hh 
+BISON_SRC = das.tab.cc das.tab.hh dds.tab.cc	dds.tab.hh \
+	ce_expr.tab.cc ce_expr.tab.hh Error.tab.cc Error.tab.hh 
+
+FLEX_SRC = lex.das.cc lex.dds.cc lex.ce_expr.cc lex.Error.cc
 
 DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc		\
@@ -248,7 +242,8 @@ DAP_SRC = AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc	\
 	Operators.h XDRUtils.cc XDRFileMarshaller.cc			\
 	XDRStreamMarshaller.cc XDRFileUnMarshaller.cc			\
 	XDRStreamUnMarshaller.cc mime_util.cc Keywords2.cc XMLWriter.cc \
-	ServerFunctionsList.cc ServerFunction.cc DapXmlNamespaces.cc
+	ServerFunctionsList.cc ServerFunction.cc DapXmlNamespaces.cc \
+	MarshallerThread.cc
 
 DAP4_ONLY_SRC = D4StreamMarshaller.cc D4StreamUnMarshaller.cc Int64.cc \
         UInt64.cc Int8.cc D4ParserSax2.cc D4BaseTypeFactory.cc \
@@ -283,7 +278,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h	\
 	cgi_util.h XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h \
 	ServerFunctionsList.h ServerFunction.h media_types.h \
-	DapXmlNamespaces.h parser-util.h
+	DapXmlNamespaces.h parser-util.h MarshallerThread.h
 
 DAP4_ONLY_HDR = D4StreamMarshaller.h D4StreamUnMarshaller.h Int64.h \
         UInt64.h Int8.h D4ParserSax2.h D4BaseTypeFactory.h \
@@ -323,32 +318,39 @@ SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
 #
 # Build the DAS scanner and parser
 
+# Using this pattern rule is a way to get gnu make to run bison only once.
+# The targets that explicitly name the two sources to be built will run it
+# twice with a parallel build. jhrg 6/18/15
+
+%.tab.cc %.tab.hh: %.yy
+	$(YACC) $(YFLAGS) $<
+
 lex.das.cc: das.lex das.tab.cc das.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-das.tab.cc das.tab.hh: das.yy DAS.h
-	$(YACC) $(YFLAGS) $<
+#das.tab.cc das.tab.hh: das.yy DAS.h
+#	$(YACC) $(YFLAGS) $<
 
 # DDS
 
 lex.dds.cc: dds.lex dds.tab.cc dds.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-dds.tab.cc dds.tab.hh: dds.yy
-	$(YACC) $(YFLAGS) $<
+#dds.tab.cc dds.tab.hh: dds.yy
+#	$(YACC) $(YFLAGS) $<
 
 # CE
 
 lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-ce_expr.tab.cc ce_expr.tab.hh: ce_expr.yy
-	$(YACC) $(YFLAGS) $<
+#ce_expr.tab.cc ce_expr.tab.hh: ce_expr.yy
+#	$(YACC) $(YFLAGS) $<
 
 # Errors
 
 lex.Error.cc: Error.lex Error.tab.cc Error.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-Error.tab.cc Error.tab.hh: Error.yy
-	$(YACC) $(YFLAGS) $<
+#Error.tab.cc Error.tab.hh: Error.yy
+#	$(YACC) $(YFLAGS) $<

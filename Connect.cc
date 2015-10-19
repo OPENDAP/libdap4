@@ -38,6 +38,8 @@
 #define FILE_UN_MARSHALLER 1
 
 #include <cstring>
+#include <cerrno>
+
 #include <fstream>
 #include <algorithm>
 
@@ -315,7 +317,7 @@ void Connect::parse_mime(Response *rs)
  @param uname Use this username for authentication. Null by default.
  @param password Password to use for authentication. Null by default.
  @brief Create an instance of Connect. */
-Connect::Connect(const string &n, string uname, string password) throw (Error, InternalErr) :
+Connect::Connect(const string &n, string uname, string password) :
         d_http(0), d_version("unknown"), d_protocol("2.0")
 {
     string name = prune_spaces(n);
@@ -743,7 +745,6 @@ void Connect::request_ddx(DDS &dds, string expr)
     }
     catch (Error &e) {
         delete rs;
-        rs = 0;
         throw;
     }
 
@@ -759,7 +760,6 @@ void Connect::request_ddx(DDS &dds, string expr)
                 throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
             }
             delete rs;
-            rs = 0;
             throw e;
         }
 
@@ -777,26 +777,17 @@ void Connect::request_ddx(DDS &dds, string expr)
             }
             catch (Error &e) {
                 delete rs;
-                rs = 0;
                 throw;
             }
             break;
 
         default:
+            ObjectType ot = rs->get_type();
             delete rs;
-            rs = 0;
-            throw Error(
-                    "The site did not return a valid response (it lacked the\n\
-expected content description header value of 'dap4-ddx' and\n\
-instead returned '"
-                            + long_to_string(rs->get_type())
-                            + "').\n\
-This may indicate that the server at the site is not correctly\n\
-configured, or that the URL has changed.");
+            throw Error("Invalid response type when requesting a DDX response. Response type: " + long_to_string(ot));
     }
 
     delete rs;
-    rs = 0;
 }
 
 /** @brief The 'url' version of request_ddx
@@ -811,7 +802,6 @@ void Connect::request_ddx_url(DDS &dds)
     }
     catch (Error &e) {
         delete rs;
-        rs = 0;
         throw;
     }
 
@@ -823,18 +813,17 @@ void Connect::request_ddx_url(DDS &dds)
             Error e;
             if (!e.parse(rs->get_stream())) {
                 delete rs;
-                rs = 0;
                 throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
             }
             delete rs;
-            rs = 0;
             throw e;
         }
 
         case web_error:
             // We should never get here; a web error should be picked up read_url
             // (called by fetch_url) and result in a thrown Error object.
-            break;
+            delete rs;
+            throw InternalErr(__FILE__, __LINE__, "Web error.");
 
         case dods_ddx:
             try {
@@ -845,26 +834,19 @@ void Connect::request_ddx_url(DDS &dds)
             }
             catch (Error &e) {
                 delete rs;
-                rs = 0;
                 throw;
             }
             break;
 
-        default:
+        default: {
+            ObjectType ot = rs->get_type();
             delete rs;
-            rs = 0;
-            throw Error(
-                    "The site did not return a valid response (it lacked the\n\
-expected content description header value of 'dap4-ddx' and\n\
-instead returned '"
-                            + long_to_string(rs->get_type())
-                            + "').\n\
-This may indicate that the server at the site is not correctly\n\
-configured, or that the URL has changed.");
+
+            throw Error("Invalid response type when requesting a DDX response. Response type: " + long_to_string(ot));
+        }
     }
 
     delete rs;
-    rs = 0;
 }
 
 /** Reads the DataDDS object corresponding to the dataset in the Connect
@@ -1054,10 +1036,15 @@ Connect::read_data(DDS &data, Response *rs)
 static void divine_type_information(Response *rs)
 {
     // Consume whitespace
-    char c = getc(rs->get_stream());
-    while (isspace(c)) {
+    int c = getc(rs->get_stream());
+    while (!feof(rs->get_stream()) && !ferror(rs->get_stream()) && isspace(c)) {
         c = getc(rs->get_stream());
     }
+
+    if (ferror(rs->get_stream()))
+        throw Error("Error reading response type information: " + string(strerror(errno)));
+    if (feof(rs->get_stream()))
+        throw Error("Error reading response type information: Found EOF");
 
     // The heuristic here is that a DataDDX is a multipart MIME document and
     // The first non space character found after the headers is the start of

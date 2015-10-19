@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
 
     // process options
 
-    while ((option_char = getopt()) != EOF)
+    while ((option_char = getopt()) != -1)
         switch (option_char) {
         case 'b':
             series_values = true;

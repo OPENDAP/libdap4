@@ -166,7 +166,8 @@ public:
         entry(): name(""), type(Attr_unknown), is_alias(false),
                 aliased_to(""), is_global(true), attributes(0), attr(0) {}
 
-        entry(const entry &rhs)
+        entry(const entry &rhs): name(rhs.name), type(rhs.type), is_alias(rhs.is_alias),
+                aliased_to(rhs.aliased_to), is_global(rhs.is_global),attributes(0), attr(0)
         {
             clone(rhs);
         }
@@ -190,11 +191,13 @@ public:
 
         void clone(const entry &rhs)
         {
+#if 0
             name = rhs.name;
             type = rhs.type;
             is_alias = rhs.is_alias;
             aliased_to = rhs.aliased_to;
             is_global = rhs.is_global;
+#endif
             switch (rhs.type) {
             case Attr_unknown:
                 break;

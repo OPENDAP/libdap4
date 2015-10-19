@@ -157,6 +157,8 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
+    virtual void clear_local_data();
+
     /**
      * @brief The number of elements in a Sequence object.
      * @note This is not the number of items in a row, but the number
@@ -186,8 +188,11 @@ public:
     }
 
     // DAP4
-    virtual void intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/);
+    virtual void intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
+#if 0
+    virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
+#endif
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
 #if INDEX_SUBSETTING

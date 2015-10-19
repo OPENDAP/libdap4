@@ -73,7 +73,7 @@ private:
     DDS *dds_dap4;
 
 public:
-    DDSTest() {
+    DDSTest() : dds1(0), dds2(0), dds_dap4(0) {
     }
     ~DDSTest() {
     }
@@ -483,7 +483,7 @@ int main(int argc, char*argv[]) {
     GetOpt getopt(argc, argv, "d");
     int option_char;
 
-    while ((option_char = getopt()) != EOF)
+    while ((option_char = getopt()) != -1)
         switch (option_char) {
         case 'd':
             debug = 1;  // debug is a static global

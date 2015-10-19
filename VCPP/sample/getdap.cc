@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
     _setmode(_fileno(stdout), _O_BINARY);
 #endif
 
-    while ((option_char = getopt()) != EOF)
+    while ((option_char = getopt()) != -1)
         switch (option_char) {
         case 'd':
             get_dds = true;

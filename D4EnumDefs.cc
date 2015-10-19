@@ -57,9 +57,9 @@ D4EnumDef::is_valid_enum_value(long long value)
         case dods_uint32_c:
             return (value >= 0 && static_cast<unsigned long long>(value) <= DODS_UINT_MAX);
         case dods_int64_c:
-            return (value >= DODS_LLONG_MIN && value <= DODS_LLONG_MAX);
+            return true; // This is always true: (value >= DODS_LLONG_MIN && value <= DODS_LLONG_MAX);
         case dods_uint64_c:
-            return (value >= 0 && static_cast<unsigned long long>(value) <= DODS_ULLONG_MAX);
+            return (value >= 0 /*Always true: && static_cast<unsigned long long>(value) <= DODS_ULLONG_MAX*/);
         default:
             return false;
     }

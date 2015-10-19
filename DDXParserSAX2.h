@@ -224,9 +224,8 @@ private:
     void finish_variable(const char *tag, Type t, const char *expected);
     //@}
 
-    /// Define the default ctor here to prevent its use.
-    DDXParser() {}
-    //{throw InternalErr(__FILE__, __LINE__, "DDXParser internal ctor called!");}
+    /// Declare the default ctor here to prevent its use.
+    DDXParser();
 
     friend class DDXParserTest;
 

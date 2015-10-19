@@ -163,8 +163,22 @@ public:
 
     BaseType &operator=(const BaseType &rhs);
 
-    bool is_dap4() const { return d_is_dap4; }
-    void set_is_dap4(const bool v) { d_is_dap4 = v;}
+    /**
+     * Remove any read or set data in the private data of the variable,
+     * setting read_p() to false. Used to clear any dynamically allocated
+     * storage that holds (potentially large) data. For the simple types,
+     * this no-op version is all that's needed. Vector and some other classes
+     * define a special version and have serialize() implementations that
+     * call it to free data as soon as possible after sending it.
+     *
+     * @note Added 7/5/15 jhrg
+     * @note Any specialization of this should make sure to reset the read_p
+     * property.
+     */
+    virtual void clear_local_data() { set_read_p(false); }
+
+    virtual bool is_dap4() const { return d_is_dap4; }
+    virtual void set_is_dap4(const bool v) { d_is_dap4 = v;}
 
     /** Clone this instance. Allocate a new instance and copy \c *this into
 	it. This method must perform a deep copy.
@@ -174,15 +188,15 @@ public:
 	@return A newly allocated copy of \c this. */
     virtual BaseType *ptr_duplicate() = 0;
 
-    string name() const;
+    virtual string name() const;
     virtual void set_name(const string &n);
     virtual std::string FQN() const;
 
-    Type type() const;
-    void set_type(const Type &t);
-    string type_name() const;
+    virtual Type type() const;
+    virtual void set_type(const Type &t);
+    virtual string type_name() const;
 
-    string dataset() const ;
+    virtual string dataset() const ;
 
     /**
      * @brief How many elements are in this variable.
@@ -372,7 +386,9 @@ public:
         to/from a stream.
 
         This method is defined by the various data type classes. It calls the
-        read() abstract method.
+        read() abstract method. Unlike serialize(), this method does not
+        clear the memory use to hold the data values, so the caller should
+        make sure to delete the DDS or the variable as soon as possible.
 
         @param eval Use this as the constraint expression evaluator.
         @param dds The Data Descriptor Structure object corresponding
@@ -381,9 +397,12 @@ public:
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
 
     /** Sends the data from the indicated (local) dataset through the
-	connection identified by the <i>sink</i> parameter. If the
+	connection identified by the Marshaller parameter. If the
 	data is not already incorporated into the DDS object, read the
-	data from the dataset.
+	data from the dataset. Once the data are sent (written to the
+	Marshaller), they are deleted from the object and the object
+	state is reset so that they will be read again if the read()
+	method is called.
 
 	This function is only used on the server side of the
 	client/server connection, and is generally only called from
@@ -391,7 +410,7 @@ public:
 	implementation; each datatype child class supplies its own
 	implementation.
 
-	@brief Move data to the net.
+	@brief Move data to the net, then remove them from the object.
 
         @param eval Use this as the constraint expression evaluator.
 	@param dds The Data Descriptor Structure object corresponding
@@ -400,14 +419,53 @@ public:
 	@param m A marshaller used to serialize data types
 	@param ce_eval A boolean value indicating whether to evaluate
 	the DODS constraint expression that may accompany this
-	dataset. The constraint expression is stored in <i>dds</i>.
+	dataset. The constraint expression is stored in the <i>dds</i>.
 	@return This method always returns true. Older versions used
 	the return value to signal success or failure.
+
+	@note We changed the default behavior of this method so that it
+	calls BaseType::clear_local_data() once the values are sent. This,
+	combined with the behavior that read() is called by this method
+	just before data are sent, means that data for any given variable
+	remain in memory for the shortest time possible. Furthermore, since
+	variables are serialized one at a time, no more than one variable's
+	data will be in memory at any given time when using the default
+	behavior. Some code - code that uses intern_data() or server functions -
+	might alter this default behavior. Only Array (i.e. Vector), Sequence,
+	D4Sequence and D4Opaque types actually hold data in dynamically allocated
+	memory, so sonly those types have the new/changed behavior.
+	This change was made on 7/5/15.
 
 	@exception InternalErr.
 	@exception Error.
 	@see DDS */
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,  Marshaller &m, bool ce_eval = true);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
+
+#if 0
+    /**
+     * Provide a way to get the old behavior of serialize() - calling this
+     * method will serialize the BaseType object's data but _not_ delete its
+     * data storage.
+     *
+     * @note This method's behavior differs only for Array (i.e. Vector), Sequence,
+     * D4Sequence and D4Opaque types; the other types do not use dynamic memory to
+     * hold data values.
+     *
+     * @param eval Use this as the constraint expression evaluator.
+     * @param dds The Data Descriptor Structure object corresponding
+     * to this dataset. See <i>The DODS User Manual</i> for
+     * information about this structure.
+     * @param m A marshaller used to serialize data types
+     * @param ce_eval A boolean value indicating whether to evaluate
+     * the DODS constraint expression that may accompany this
+     * @return This method always returns true. Older versions used
+     * the return value to signal success or failure.
+     * @param
+     */
+    virtual bool serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) {
+        return serialize(eval, dds, m, ce_eval);
+    }
+#endif
 
     /**
      * @brief include the data for this variable in the checksum
@@ -417,20 +475,46 @@ public:
      */
     virtual void compute_checksum(Crc32 &checksum) = 0;
 
-    virtual void intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/);
+    virtual void intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/);
 
     /**
      * @brief The DAP4 serialization method.
      * Serialize a variable's values for DAP4. This does not write the DMR
      * persistent representation but does write that part of the binary
-     * data blob that holds a variable's data.
+     * data blob that holds a variable's data. Once a variable's data are
+     * serialized, that memory is reclaimed (by calling BaseType::clear_local_data())
+     *
      * @param m
      * @param dmr
      * @param eval
      * @param filter True if there is one variable that should be 'filtered'
      * @exception Error or InternalErr
      */
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
+    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
+
+#if 0
+    /**
+     * @brief Variation on the DAP4 serialization method - retain data after serialization
+     * Serialize a variable's values for DAP4. This does not write the DMR
+     * persistent representation but does write that part of the binary
+     * data blob that holds a variable's data. Once a variable's data are
+     * serialized, that memory is reclaimed (by calling BaseType::clear_local_data())
+     *
+     * @note This version does not delete the storage of Array, D4Sequence or
+     * D4Opaque variables, as it the case with serialize(). For other types,
+     * this method and serialize have the same beavior (since those types do
+     * not us dynamic memory to hold data values).
+     *
+     * @param m
+     * @param dmr
+     * @param eval
+     * @param filter True if there is one variable that should be 'filtered'
+     * @exception Error or InternalErr
+     */
+    virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false) {
+        serialize(m, dmr, filter);
+    }
+#endif
 
     /** Receives data from the network connection identified by the
 	<tt>source</tt> parameter. The data is put into the class data

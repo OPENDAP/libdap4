@@ -38,7 +38,7 @@
 #include <cstring>
 #include <cassert>
 
-//#define DODS_DEBUG
+//#define DODS_DEBUG 1
 
 #include <sstream>
 #include <vector>
@@ -64,6 +64,8 @@
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
+
+#undef CLEAR_LOCAL_DATA
 
 using std::cerr;
 using std::endl;
@@ -121,7 +123,6 @@ void Vector::m_duplicate(const Vector & v)
  */
 bool Vector::m_is_cardinal_type() const
 {
-	// TODO Is this true? It might not be
     // Not cardinal if no d_proto at all!
     if (!d_proto) {
         return false;
@@ -498,10 +499,7 @@ BaseType *Vector::var(unsigned int i)
 unsigned int Vector::width(bool constrained) const
 {
     // Jose Garcia
-	// TODO Use assert.
-	if (!d_proto) {
-        throw InternalErr(__FILE__, __LINE__, "Cannot get width since *this* object is not holding data.");
-    }
+	assert(d_proto);
 
     return length() * d_proto->width(constrained);
 }
@@ -621,28 +619,26 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
-    int i = 0;// TODO move closer to use
-
-    // TODO Time out here? or in ResponseBuilder?
     dds.timeout_on();
 
     if (!read_p())
         read(); // read() throws Error and InternalErr
 
-//#if EVAL
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-//#endif
 
     dds.timeout_off();
 
     // length() is not capacity; it must be set explicitly in read().
     int num = length();
+    bool status = false;
 
     switch (d_proto->type()) {
         case dods_byte_c:
             m.put_vector(d_buf, num, *this);
+            status = true;
             break;
+
         case dods_int16_c:
         case dods_uint16_c:
         case dods_int32_c:
@@ -650,6 +646,8 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
         case dods_float32_c:
         case dods_float64_c:
             m.put_vector(d_buf, num, d_proto->width(), *this);
+            status = true;
+
             break;
 
         case dods_str_c:
@@ -659,9 +657,10 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
 
             m.put_int(num);
 
-            for (i = 0; i < num; ++i)
+            for (int i = 0; i < num; ++i)
                 m.put_str(d_str[i]);
 
+            status = true;
             break;
 
         case dods_array_c:
@@ -674,9 +673,9 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
                 throw InternalErr(__FILE__, __LINE__, "The capacity of *this* vector is 0.");
 
             m.put_int(num);
-
-            for (i = 0; i < num; ++i)
-                d_compound_buf[i]->serialize(eval, dds, m, false);
+            status = true;
+            for (int i = 0; i < num && status; ++i)
+                status = status && d_compound_buf[i]->serialize(eval, dds, m, false);
 
             break;
 
@@ -685,7 +684,11 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
             break;
     }
 
-    return true;
+#ifdef CLEAR_LOCAL_DATA
+    clear_local_data();
+#endif
+
+    return status;
 }
 
 // Read an object from the network and internalize it. For a Vector this is
@@ -727,7 +730,7 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
                 set_length(num);
 
             if (num != (unsigned int) length())
-                throw InternalErr(__FILE__, __LINE__, "The server sent declarations and data with mismatched sizes.");
+                throw InternalErr(__FILE__, __LINE__, "The server sent declarations and data with mismatched sizes for the variable '" + name() + "'.");
 
             if (!d_buf || !reuse) {
                 // Make d_buf be large enough for length() elements of _var->type()
@@ -770,6 +773,7 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
             break;
 
         case dods_array_c:
+            // TODO
         case dods_structure_c:
         case dods_sequence_c:
         case dods_grid_c:
@@ -841,7 +845,7 @@ void Vector::compute_checksum(Crc32 &checksum)
     }
 }
 
-void Vector::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
+void Vector::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/)
 {
     if (!read_p())
         read(); // read() throws Error and InternalErr
@@ -865,7 +869,9 @@ void Vector::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*
 
         case dods_str_c:
         case dods_url_c:
+#if 0
         	compute_checksum(checksum);
+#endif
             break;
 
         case dods_opaque_c:
@@ -874,10 +880,10 @@ void Vector::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*
             assert(d_compound_buf.capacity() != 0);
 
             for (int i = 0, e = length(); i < e; ++i)
-                d_compound_buf[i]->intern_data(checksum/*, dmr, eval*/);
+                d_compound_buf[i]->intern_data(/*checksum, dmr, eval*/);
             break;
 
-        case dods_array_c:
+        case dods_array_c:      // No Array of Array in DAP4 either...
         case dods_grid_c:
         default:
         	throw InternalErr(__FILE__, __LINE__, "Unknown or unsupported datatype (" + d_proto->type_name() + ").");
@@ -957,6 +963,10 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*
             throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
             break;
     }
+
+#ifdef CLEAR_LOCAL_DATA
+    clear_local_data();
+#endif
 }
 
 void
@@ -1276,7 +1286,7 @@ void Vector::set_vec_nocopy(unsigned int i, BaseType * val)
  * Essentially clears the _buf, d_str, and d_compound_buf of any data.
  * Useful for tightening up memory when the data is no longer needed,
  * but the object cannot yet be destroyed.
- * NOTE: this is not virtual, and only affects the data in Vector itself!
+ *
  * On exit: get_value_capacity() == 0 && !read_p()
  */
 void Vector::clear_local_data()
@@ -1500,7 +1510,6 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 		case dods_sequence_c:
 		case dods_grid_c:
 			// Not sure that this function will be used for these type of nested objects, so I will throw here.
-			// TODO impl and test this path if it's ever needed.
 			throw InternalErr(__FILE__, __LINE__,
 					funcName + "Unimplemented method for Vectors of type: array, opaque, structure, sequence or grid.");
 			break;
@@ -1570,7 +1579,7 @@ static bool types_match(Type t, T *cpp_var)
 /** @brief set the value of a byte array */
 
 template <typename T>
-bool Vector::set_value(T *v, int sz)
+bool Vector::set_value_worker(T *v, int sz)
 {
     if (!v || !types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
         return false;
@@ -1579,232 +1588,46 @@ bool Vector::set_value(T *v, int sz)
     return true;
 }
 
-template <typename T>
-bool Vector::set_value(vector<T> &v, int sz)
-{
-    // Extra call worth the overhead?
-    return set_value(&v[0], sz);
-#if 0
-    if (!v || !types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
-        return false;
-
-    m_set_cardinal_values_internal(&v[0], sz);
-    return true;
-#endif
-}
-
-template bool Vector::set_value(dods_byte *val, int sz);
-template bool Vector::set_value(dods_int8 *val, int sz);
-template bool Vector::set_value(dods_int16 *val, int sz);
-template bool Vector::set_value(dods_uint16 *val, int sz);
-template bool Vector::set_value(dods_int32 *val, int sz);
-template bool Vector::set_value(dods_uint32 *val, int sz);
-template bool Vector::set_value(dods_int64 *val, int sz);
-template bool Vector::set_value(dods_uint64 *val, int sz);
-template bool Vector::set_value(dods_float32 *val, int sz);
-template bool Vector::set_value(dods_float64 *val, int sz);
-
-template bool Vector::set_value(vector<dods_byte> &val, int sz);
-template bool Vector::set_value(vector<dods_int8> &val, int sz);
-template bool Vector::set_value(vector<dods_int16> &val, int sz);
-template bool Vector::set_value(vector<dods_uint16> &val, int sz);
-template bool Vector::set_value(vector<dods_int32> &val, int sz);
-template bool Vector::set_value(vector<dods_uint32> &val, int sz);
-template bool Vector::set_value(vector<dods_int64> &val, int sz);
-template bool Vector::set_value(vector<dods_uint64> &val, int sz);
-template bool Vector::set_value(vector<dods_float32> &val, int sz);
-template bool Vector::set_value(vector<dods_float64> &val, int sz);
-
-#if 0
 bool Vector::set_value(dods_byte *val, int sz)
 {
-	assert(var()->type() == dods_byte_c || var()->type() == dods_uint8_c);
-	assert(val);
-
-    m_set_cardinal_values_internal<dods_byte> (val, sz);
-    return true;
-
-#if 0
-    // TODO Recode all of these like this and drop the bool return type?
-    if (var()->type() == dods_byte_c && val) {
-        m_set_cardinal_values_internal<dods_byte> (val, sz);
-        return true;
-    }
-    else {
-        return false;
-    }
-#endif
+    return set_value_worker(val, sz);
 }
-
-/** @brief set the value of a byte array */
-bool Vector::set_value(vector<dods_byte> &val, int sz)
-{
-	// TODO Drop the extra call or is it not worth the optimization cost?
-    return set_value(&val[0], sz);
-}
-
-/** @brief set the value of an int8 array */
 bool Vector::set_value(dods_int8 *val, int sz)
 {
-    if (var()->type() == dods_int8_c && val) {
-        m_set_cardinal_values_internal<dods_int8> (val, sz);
-        return true;
-    }
-    else {
-        return false;
-    }
+    return set_value_worker(val, sz);
 }
-
-/** @brief set the value of an int8 array */
-bool Vector::set_value(vector<dods_int8> &val, int sz)
-{
-    return set_value(&val[0], sz);
-}
-
-/** @brief set the value of an int16 array */
 bool Vector::set_value(dods_int16 *val, int sz)
 {
-    if (var()->type() == dods_int16_c && val) {
-        m_set_cardinal_values_internal<dods_int16> (val, sz);
-        return true;
-    }
-    else {
-        return false;
-    }
+    return set_value_worker(val, sz);
 }
-
-/** @brief set the value of an int16 array */
-bool Vector::set_value(vector<dods_int16> &val, int sz)
-{
-    return set_value(&val[0], sz);
-}
-
-/** @brief set the value of an int32 array */
-bool Vector::set_value(dods_int32 *val, int sz)
-{
-    if (var()->type() == dods_int32_c && val) {
-        m_set_cardinal_values_internal<dods_int32> (val, sz);
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-/** @brief set the value of an int32 array */
-bool Vector::set_value(vector<dods_int32> &val, int sz)
-{
-    return set_value(&val[0], sz);
-}
-
-/** @brief set the value of an int64 array */
-bool Vector::set_value(dods_int64 *val, int sz)
-{
-    if (var()->type() == dods_int64_c && val) {
-        m_set_cardinal_values_internal<dods_int64> (val, sz);
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-/** @brief set the value of an int64 array */
-bool Vector::set_value(vector<dods_int64> &val, int sz)
-{
-    return set_value(&val[0], sz);
-}
-
-/** @brief set the value of a uint16 array */
 bool Vector::set_value(dods_uint16 *val, int sz)
 {
-    if (var()->type() == dods_uint16_c && val) {
-        m_set_cardinal_values_internal<dods_uint16> (val, sz);
-        return true;
-    }
-    else {
-        return false;
-    }
+    return set_value_worker(val, sz);
 }
-
-/** @brief set the value of a uint16 array */
-bool Vector::set_value(vector<dods_uint16> &val, int sz)
+bool Vector::set_value(dods_int32 *val, int sz)
 {
-    return set_value(&val[0], sz);
+    return set_value_worker(val, sz);
 }
-
-/** @brief set the value of a uint32 array */
 bool Vector::set_value(dods_uint32 *val, int sz)
 {
-    if (var()->type() == dods_uint32_c && val) {
-        m_set_cardinal_values_internal<dods_uint32> (val, sz);
-        return true;
-    }
-    else {
-        return false;
-    }
+    return set_value_worker(val, sz);
 }
-
-/** @brief set the value of a uint32 array */
-bool Vector::set_value(vector<dods_uint32> &val, int sz)
+bool Vector::set_value(dods_int64 *val, int sz)
 {
-    return set_value(&val[0], sz);
+    return set_value_worker(val, sz);
 }
-
-/** @brief set the value of a uint64 array */
 bool Vector::set_value(dods_uint64 *val, int sz)
 {
-    if (var()->type() == dods_uint64_c && val) {
-        m_set_cardinal_values_internal<dods_uint64> (val, sz);
-        return true;
-    }
-    else {
-        return false;
-    }
+    return set_value_worker(val, sz);
 }
-
-/** @brief set the value of a uint64 array */
-bool Vector::set_value(vector<dods_uint64> &val, int sz)
-{
-    return set_value(&val[0], sz);
-}
-
-/** @brief set the value of a float32 array */
 bool Vector::set_value(dods_float32 *val, int sz)
 {
-    if (var()->type() == dods_float32_c && val) {
-        m_set_cardinal_values_internal<dods_float32> (val, sz);
-        return true;
-    }
-    else {
-        return false;
-    }
+    return set_value_worker(val, sz);
 }
-
-/** @brief set the value of a float32 array */
-bool Vector::set_value(vector<dods_float32> &val, int sz)
-{
-    return set_value(&val[0], sz);
-}
-
-/** @brief set the value of a float64 array */
 bool Vector::set_value(dods_float64 *val, int sz)
 {
-    if (var()->type() == dods_float64_c && val) {
-        m_set_cardinal_values_internal<dods_float64> (val, sz);
-        return true;
-    }
-    else {
-        return false;
-    }
+    return set_value_worker(val, sz);
 }
-
-/** @brief set the value of a float64 array */
-bool Vector::set_value(vector<dods_float64> &val, int sz)
-{
-    return set_value(&val[0], sz);
-}
-#endif
 
 /** @brief set the value of a string or url array */
 bool Vector::set_value(string *val, int sz)
@@ -1823,6 +1646,54 @@ bool Vector::set_value(string *val, int sz)
         return false;
     }
 }
+
+template<typename T>
+bool Vector::set_value_worker(vector<T> &v, int sz)
+{
+    return set_value(&v[0], sz);
+}
+
+bool Vector::set_value(vector<dods_byte> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_int8> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_int16> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_uint16> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_int32> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_uint32> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_int64> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_uint64> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_float32> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+bool Vector::set_value(vector<dods_float64> &val, int sz)
+{
+    return set_value_worker(val, sz);
+}
+
 
 /** @brief set the value of a string or url array */
 bool Vector::set_value(vector<string> &val, int sz)
@@ -1862,7 +1733,7 @@ bool Vector::set_value(vector<string> &val, int sz)
  * @param b A pointer to the memory to hold the data; must be at least
  * length() * sizeof(dods_byte) in size.*/
 template <typename T>
-void Vector::value(vector<unsigned int> *indices, T *b) const
+void Vector::value_worker(vector<unsigned int> *indices, T *b) const
 {
    // unsigned long currentIndex;
 #if 0
@@ -1889,7 +1760,18 @@ void Vector::value(vector<unsigned int> *indices, T *b) const
         b[i] = reinterpret_cast<T*>(d_buf )[currentIndex]; // I like this version - and it works!
     }
 }
+void Vector::value(vector<unsigned int> *indices, dods_byte *b) const    { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_int8 *b) const    { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_int16 *b) const   { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_uint16 *b) const  { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_int32 *b) const   { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_uint32 *b) const  { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_int64 *b) const   { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_uint64 *b) const  { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_float32 *b) const { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_float64 *b) const { value_worker(indices, b); }
 
+#if 0
 template void Vector::value(vector<unsigned int> *indices, dods_byte *b) const;
 template void Vector::value(vector<unsigned int> *indices, dods_int8 *b) const;
 template void Vector::value(vector<unsigned int> *indices, dods_int16 *b) const;
@@ -1900,167 +1782,6 @@ template void Vector::value(vector<unsigned int> *indices, dods_int64 *b) const;
 template void Vector::value(vector<unsigned int> *indices, dods_uint64 *b) const;
 template void Vector::value(vector<unsigned int> *indices, dods_float32 *b) const;
 template void Vector::value(vector<unsigned int> *indices, dods_float64 *b) const;
-
-#if 0
-void Vector::value(vector<unsigned int> *subsetIndex, dods_byte *b) const
-{
-   // unsigned long currentIndex;
-#if 0
-	// Iterator version. Not tested, jhrg 8/14/13
-	for (vector<unsigned int>::iterator i = subsetIndex->begin(); i != subsetIndex->end(); ++i) {
-		unsigned long currentIndex = *i;
-        if(currentIndex > (unsigned int)length()){
-            stringstream s;
-            s << "Vector::value() - Subset index[" << i - subsetIndex->begin() <<  "] = " << currentIndex << " references a value that is " <<
-                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
-            throw Error(s.str());
-        }
-        b[i] = reinterpret_cast<dods_byte*>(d_buf )[currentIndex];
-	}
-#endif
-    for(unsigned long i=0; i<subsetIndex->size() ;++i){
-    	unsigned long currentIndex = (*subsetIndex)[i] ;
-        if(currentIndex> (unsigned int)length()){
-            stringstream s;
-            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
-                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
-            throw Error(s.str());
-        }
-        b[i] = reinterpret_cast<dods_byte*>(d_buf )[currentIndex]; // I like this version - and it works!
-    }
-}
-
-void Vector::value(vector<unsigned int> *subsetIndex, dods_int8 *b) const
-{
-   // unsigned long currentIndex;
-#if 0
-	// Iterator version. Not tested, jhrg 8/14/13
-	for (vector<unsigned int>::iterator i = subsetIndex->begin(); i != subsetIndex->end(); ++i) {
-		unsigned long currentIndex = *i;
-        if(currentIndex > (unsigned int)length()){
-            stringstream s;
-            s << "Vector::value() - Subset index[" << i - subsetIndex->begin() <<  "] = " << currentIndex << " references a value that is " <<
-                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
-            throw Error(s.str());
-        }
-        b[i] = reinterpret_cast<dods_byte*>(d_buf )[currentIndex];
-	}
-#endif
-    for(unsigned long i=0; i<subsetIndex->size() ;++i){
-    	unsigned long currentIndex = (*subsetIndex)[i] ;
-        if(currentIndex> (unsigned int)length()){
-            stringstream s;
-            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
-                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
-            throw Error(s.str());
-        }
-        b[i] = reinterpret_cast<dods_int8*>(d_buf )[currentIndex]; // I like this version - and it works!
-    }
-}
-
-/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
-void Vector::value(vector<unsigned int> *subsetIndex, dods_uint16 *b) const
-{
-    unsigned long currentIndex;
-
-    for(unsigned long i=0; i<subsetIndex->size() ;++i){
-        currentIndex = (*subsetIndex)[i] ;
-        if(currentIndex> (unsigned int)length()){
-            stringstream s;
-            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
-                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
-            throw Error(s.str());
-        }
-        b[i] = reinterpret_cast<dods_uint16*>(d_buf )[currentIndex]; // I like this version - and it works!
-    }
-}
-
-
-/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
-void Vector::value(vector<unsigned int> *subsetIndex, dods_int16 *b) const
-{
-    unsigned long currentIndex;
-
-    for(unsigned long i=0; i<subsetIndex->size() ;++i){
-        currentIndex = (*subsetIndex)[i] ;
-        if(currentIndex> (unsigned int)length()){
-            stringstream s;
-            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
-                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
-            throw Error(s.str());
-        }
-        b[i] = reinterpret_cast<dods_int16*>(d_buf )[currentIndex]; // I like this version - and it works!
-    }
-}
-
-/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
-void Vector::value(vector<unsigned int> *subsetIndex, dods_uint32 *b) const
-{
-    unsigned long currentIndex;
-
-    for(unsigned long i=0; i<subsetIndex->size() ;++i){
-        currentIndex = (*subsetIndex)[i] ;
-        if(currentIndex> (unsigned int)length()){
-            stringstream s;
-            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
-                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
-            throw Error(s.str());
-        }
-        b[i] = reinterpret_cast<dods_uint32*>(d_buf )[currentIndex]; // I like this version - and it works!
-    }
-}
-
-/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
-void Vector::value(vector<unsigned int> *subsetIndex, dods_int32 *b) const
-{
-    unsigned long currentIndex;
-
-    for(unsigned long i=0; i<subsetIndex->size() ;++i){
-        currentIndex = (*subsetIndex)[i] ;
-        if(currentIndex> (unsigned int)length()){
-            stringstream s;
-            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
-                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
-            throw Error(s.str());
-        }
-        b[i] = reinterpret_cast<dods_int32*>(d_buf )[currentIndex]; // I like this version - and it works!
-    }
-}
-
-/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
-void Vector::value(vector<unsigned int> *subsetIndex, dods_float32 *b) const
-{
-    unsigned long currentIndex;
-
-    for(unsigned long i=0; i<subsetIndex->size() ;++i){
-        currentIndex = (*subsetIndex)[i] ;
-        if(currentIndex> (unsigned int)length()){
-            stringstream s;
-            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
-                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
-            throw Error(s.str());
-        }
-
-        b[i] = reinterpret_cast<dods_float32*>(d_buf )[currentIndex];
-    }
-}
-
-/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
-void Vector::value(vector<unsigned int> *subsetIndex, dods_float64 *b) const
-{
-    unsigned long currentIndex;
-
-    for(unsigned long i=0; i<subsetIndex->size() ;++i){
-        currentIndex = (*subsetIndex)[i] ;
-        if(currentIndex> (unsigned int)length()){
-            stringstream s;
-            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
-                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
-            throw Error(s.str());
-        }
-        b[i] = reinterpret_cast<dods_float64*>(d_buf )[currentIndex]; // I like this version - and it works!
-    }
-}
 #endif
 
 /** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
@@ -2083,14 +1804,25 @@ void Vector::value(vector<unsigned int> *subsetIndex, vector<string> &b) const
 }
 
 template <typename T>
-void Vector::value(T *v) const
+void Vector::value_worker(T *v) const
 {
     // Only copy if v is not null and the proto's  type matches.
     // For Enums, use the element type since type == dods_enum_c.
     if (v && types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
         memcpy(v, d_buf, length() * sizeof(T));
 }
+void Vector::value(dods_byte *b) const    { value_worker(b); }
+void Vector::value(dods_int8 *b) const    { value_worker(b); }
+void Vector::value(dods_int16 *b) const   { value_worker(b); }
+void Vector::value(dods_uint16 *b) const  { value_worker(b); }
+void Vector::value(dods_int32 *b) const   { value_worker(b); }
+void Vector::value(dods_uint32 *b) const  { value_worker(b); }
+void Vector::value(dods_int64 *b) const   { value_worker(b); }
+void Vector::value(dods_uint64 *b) const  { value_worker(b); }
+void Vector::value(dods_float32 *b) const { value_worker(b); }
+void Vector::value(dods_float64 *b) const { value_worker(b); }
 
+#if 0
 template void Vector::value(dods_byte *v) const;
 template void Vector::value(dods_int8 *v) const;
 template void Vector::value(dods_int16 *v) const;
@@ -2101,94 +1833,8 @@ template void Vector::value(dods_int64 *v) const;
 template void Vector::value(dods_uint64 *v) const;
 template void Vector::value(dods_float32 *v) const;
 template void Vector::value(dods_float64 *v) const;
-
-#if 0
-/** @brief Get a copy of the data held by this variable.
- Read data from this variable's internal storage and load it into the
- memory referenced by \c b. The argument \c b must point to enough memory
- to hold length() Bytes.
-
- @param b A pointer to the memory to hold the data; must be at least
- length() * sizeof(dods_byte) in size.*/
-void Vector::value(dods_byte *b) const
-{
-    if (b && d_proto->type() == dods_byte_c) {
-        memcpy(b, d_buf, length() * sizeof(dods_byte));
-    }
-}
-
-/** @brief Get a copy of the data held by this variable. */
-void Vector::value(dods_int8 *b) const
-{
-    if (b && d_proto->type() == dods_int8_c) {
-        memcpy(b, d_buf, length() * sizeof(dods_int8));
-    }
-}
-
-/** @brief Get a copy of the data held by this variable. */
-void Vector::value(dods_uint16 *b) const
-{
-    if (b && d_proto->type() == dods_uint16_c) {
-        memcpy(b, d_buf, length() * sizeof(dods_uint16));
-    }
-}
-
-/** @brief Get a copy of the data held by this variable. */
-void Vector::value(dods_int16 *b) const
-{
-    if (b && d_proto->type() == dods_int16_c) {
-        memcpy(b, d_buf, length() * sizeof(dods_int16));
-    }
-}
-
-/** @brief Get a copy of the data held by this variable. */
-void Vector::value(dods_uint32 *b) const
-{
-    if (b && d_proto->type() == dods_uint32_c) {
-        memcpy(b, d_buf, length() * sizeof(dods_uint32));
-    }
-}
-
-/** @brief Get a copy of the data held by this variable. */
-void Vector::value(dods_int32 *b) const
-{
-    if (b && d_proto->type() == dods_int32_c) {
-        memcpy(b, d_buf, length() * sizeof(dods_int32));
-    }
-}
-
-/** @brief Get a copy of the data held by this variable. */
-void Vector::value(dods_uint64 *b) const
-{
-    if (b && d_proto->type() == dods_uint64_c) {
-        memcpy(b, d_buf, length() * sizeof(dods_uint64));
-    }
-}
-
-/** @brief Get a copy of the data held by this variable. */
-void Vector::value(dods_int64 *b) const
-{
-    if (b && d_proto->type() == dods_int64_c) {
-        memcpy(b, d_buf, length() * sizeof(dods_int64));
-    }
-}
-
-/** @brief Get a copy of the data held by this variable. */
-void Vector::value(dods_float32 *b) const
-{
-    if (b && d_proto->type() == dods_float32_c) {
-        memcpy(b, d_buf, length() * sizeof(dods_float32));
-    }
-}
-
-/** @brief Get a copy of the data held by this variable. */
-void Vector::value(dods_float64 *b) const
-{
-    if (b && d_proto->type() == dods_float64_c) {
-        memcpy(b, d_buf, length() * sizeof(dods_float64));
-    }
-}
 #endif
+
 
 /** @brief Get a copy of the data held by this variable. */
 void Vector::value(vector<string> &b) const
@@ -2227,7 +1873,7 @@ void *Vector::value()
 void Vector::add_var(BaseType * v, Part /*p*/)
 {
 #if 0
-	//TODO Why doesn't this work?  tried all 3 variants. jhrg 8/14/13
+	// Why doesn't this work?  tried all 3 variants. jhrg 8/14/13
 	Vector::add_var_nocopy(v->ptr_duplicate(), p);
 	add_var_nocopy(v->ptr_duplicate(), p);
 	add_var_nocopy(v->ptr_duplicate());
@@ -2338,23 +1984,24 @@ void Vector::dump(ostream &strm) const
     }
     DapIndent::UnIndent();
     if (d_buf) {
-        switch (d_proto->type()) {
+        switch (d_proto != 0 ? d_proto->type() : 0) {
             case dods_byte_c:
-            case dods_char_c: {
+            case dods_char_c:
                 strm << DapIndent::LMarg << "_buf: ";
                 strm.write(d_buf, d_length);
                 strm << endl;
-            }
                 break;
-            default: {
+
+            case 0:
+            default:
                 strm << DapIndent::LMarg << "_buf: " << (void *) d_buf << endl;
-            }
                 break;
         }
     }
     else {
         strm << DapIndent::LMarg << "_buf: EMPTY" << endl;
     }
+
     DapIndent::UnIndent();
 }
 

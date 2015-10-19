@@ -36,6 +36,8 @@
 #include <sys/stat.h>
 
 #include <cstring>
+#include <cerrno>
+
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -444,6 +446,7 @@ HTTPCacheTable::cache_index_write()
 string
 HTTPCacheTable::create_hash_directory(int hash)
 {
+#if 0
     struct stat stat_info;
     ostringstream path;
 
@@ -463,6 +466,25 @@ HTTPCacheTable::create_hash_directory(int hash)
     }
 
     return p;
+#endif
+
+    ostringstream path;
+    path << d_cache_root << hash;
+
+    // Save the mask
+    mode_t mask = umask(0);
+
+    // Ignore the error if the directory exists
+    errno = 0;
+    if (mkdir(path.str().c_str(), 0777) < 0 && errno != EEXIST) {
+        umask(mask);
+        throw Error("Could not create the directory for the cache at '" + path.str() + "' (" + strerror(errno) + ").");
+    }
+
+    // Restore themask
+    umask(mask);
+
+    return path.str();
 }
 
 /** Create the directory for this url (using the hash value from get_hash())
@@ -505,7 +527,7 @@ HTTPCacheTable::create_location(HTTPCacheTable::CacheEntry *entry)
     int fd = MKSTEMP(&templat[0]); // fd mode is 666 or 600 (Unix)
     if (fd < 0) {
         // delete[] templat; templat = 0;
-        close(fd);
+        // close(fd); Calling close() when fd is < 0 is a bad idea! jhrg 7/2/15
         throw Error("The HTTP Cache could not create a file to hold the response; it will not be cached.");
     }
 

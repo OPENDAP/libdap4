@@ -159,148 +159,154 @@ typedef vector<BaseTypeRow *> SequenceValues;
 
  @brief Holds a sequence. */
 
-class Sequence: public Constructor {
+class Sequence: public Constructor
+{
 private:
-	// This holds the values read off the wire. Values are stored in
-	// instances of BaseTypeRow objects which hold instances of BaseType.
-	SequenceValues d_values;
+    // This holds the values read off the wire. Values are stored in
+    // instances of BaseTypeRow objects which hold instances of BaseType.
+    SequenceValues d_values;
 
-	// The number of the row that has just been deserialized. Before
-	// deserialized has been called, this field is -1.
-	int d_row_number;
+    // The number of the row that has just been deserialized. Before
+    // deserialized has been called, this field is -1.
+    int d_row_number;
 
-	// If a client asks for certain rows of a sequence using the bracket
-	// notation (<tt>[<start>:<stride>:<stop>]</tt>) primarily intended for
-	// arrays
-	// and grids, record that information in the next three fields. This
-	// information can be used by the translation software. s.a. the accessor
-	// and mutator methods for these members. Values of -1 indicate that
-	// these have not yet been set.
-	int d_starting_row_number;
-	int d_row_stride;
-	int d_ending_row_number;
+    // If a client asks for certain rows of a sequence using the bracket
+    // notation (<tt>[<start>:<stride>:<stop>]</tt>) primarily intended for
+    // arrays
+    // and grids, record that information in the next three fields. This
+    // information can be used by the translation software. s.a. the accessor
+    // and mutator methods for these members. Values of -1 indicate that
+    // these have not yet been set.
+    int d_starting_row_number;
+    int d_row_stride;
+    int d_ending_row_number;
 
-	// Used to track if data has not already been sent.
-	bool d_unsent_data;
+    // Used to track if data has not already been sent.
+    bool d_unsent_data;
 
-	// Track if the Start Of Instance marker has been written. Needed to
-	// properly send EOS for only the outer Sequence when a selection
-	// returns an empty Sequence.
-	bool d_wrote_soi;
+    // Track if the Start Of Instance marker has been written. Needed to
+    // properly send EOS for only the outer Sequence when a selection
+    // returns an empty Sequence.
+    bool d_wrote_soi;
 
-	// This signals whether the sequence is a leaf or parent.
-	bool d_leaf_sequence;
+    // This signals whether the sequence is a leaf or parent.
+    bool d_leaf_sequence;
 
-	// In a hierarchy of sequences, is this the top most?
-	bool d_top_most;
+    // In a hierarchy of sequences, is this the top most?
+    bool d_top_most;
 
-	bool is_end_of_rows(int i);
+    bool is_end_of_rows(int i);
 
-	friend class SequenceTest;
+    friend class SequenceTest;
 
 protected:
-	void m_duplicate(const Sequence &s);
-	typedef stack<SequenceValues*> sequence_values_stack_t;
+    void m_duplicate(const Sequence &s);
+    typedef stack<SequenceValues*> sequence_values_stack_t;
 
-	virtual bool serialize_parent_part_one(DDS &dds, ConstraintEvaluator &eval, Marshaller &m);
-	virtual void serialize_parent_part_two(DDS &dds, ConstraintEvaluator &eval, Marshaller &m);
-	virtual bool serialize_leaf(DDS &dds, ConstraintEvaluator &eval, Marshaller &m, bool ce_eval);
+    virtual bool serialize_parent_part_one(DDS &dds, ConstraintEvaluator &eval, Marshaller &m);
+    virtual void serialize_parent_part_two(DDS &dds, ConstraintEvaluator &eval, Marshaller &m);
+    virtual bool serialize_leaf(DDS &dds, ConstraintEvaluator &eval, Marshaller &m, bool ce_eval);
 
-	virtual void intern_data_private(ConstraintEvaluator &eval, DDS &dds,
-			sequence_values_stack_t &sequence_values_stack);
-	virtual void intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval,
-			sequence_values_stack_t &sequence_values_stack);
+    virtual void intern_data_private(ConstraintEvaluator &eval, DDS &dds,
+            sequence_values_stack_t &sequence_values_stack);
+    virtual void intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval,
+            sequence_values_stack_t &sequence_values_stack);
 
-	virtual void intern_data_parent_part_one(DDS &dds, ConstraintEvaluator &eval,
-			sequence_values_stack_t &sequence_values_stack);
+    virtual void intern_data_parent_part_one(DDS &dds, ConstraintEvaluator &eval,
+            sequence_values_stack_t &sequence_values_stack);
 
-	virtual void intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
-			sequence_values_stack_t &sequence_values_stack);
+    virtual void intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
+            sequence_values_stack_t &sequence_values_stack);
 #if 0
-	// See note in Sequence.cc
-        virtual void load_prototypes_with_values(int d_row_number);
+    // See note in Sequence.cc
+    virtual void load_prototypes_with_values(int d_row_number);
 #endif
 
 public:
 
-	Sequence(const string &n);
-	Sequence(const string &n, const string &d);
+    Sequence(const string &n);
+    Sequence(const string &n, const string &d);
 
-	Sequence(const Sequence &rhs);
+    Sequence(const Sequence &rhs);
 
-	virtual ~Sequence();
+    virtual ~Sequence();
 
-	Sequence &operator=(const Sequence &rhs);
+    Sequence &operator=(const Sequence &rhs);
 
-	virtual BaseType *ptr_duplicate();
+    virtual BaseType *ptr_duplicate();
 
-	virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
+    virtual void clear_local_data();
 
-	virtual bool is_dap2_only_type();
+    virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
 
-	virtual string toString();
+    virtual bool is_dap2_only_type();
 
-	virtual bool is_linear();
+    virtual string toString();
 
-	virtual int length() const;
+    virtual bool is_linear();
 
-	virtual int number_of_rows() const;
+    virtual int length() const;
 
-	virtual bool read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_eval = true);
+    virtual int number_of_rows() const;
 
-	virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
-	virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-	virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+    virtual bool read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_eval = true);
 
-	/// Rest the row number counter
-	void reset_row_number();
+    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
+    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
+#if 0
+    virtual bool serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
+#endif
+    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
-	int get_starting_row_number();
+    /// Rest the row number counter
+    void reset_row_number();
 
-	virtual int get_row_stride();
+    int get_starting_row_number();
 
-	virtual int get_ending_row_number();
+    virtual int get_row_stride();
 
-	virtual void set_row_number_constraint(int start, int stop, int stride = 1);
+    virtual int get_ending_row_number();
 
-	/// Get the unsent data property
-	bool get_unsent_data()
-	{
-		return d_unsent_data;
-	}
+    virtual void set_row_number_constraint(int start, int stop, int stride = 1);
 
-	/// Set the unsent data property
-	void set_unsent_data(bool usd)
-	{
-		d_unsent_data = usd;
-	}
+    /// Get the unsent data property
+    bool get_unsent_data()
+    {
+        return d_unsent_data;
+    }
 
-	virtual void set_value(SequenceValues &values);
-	virtual SequenceValues value();
-	virtual SequenceValues &value_ref();
+    /// Set the unsent data property
+    void set_unsent_data(bool usd)
+    {
+        d_unsent_data = usd;
+    }
 
-	virtual BaseType *var_value(size_t row, const string &name);
+    virtual void set_value(SequenceValues &values);
+    virtual SequenceValues value();
+    virtual SequenceValues &value_ref();
 
-	virtual BaseType *var_value(size_t row, size_t i);
+    virtual BaseType *var_value(size_t row, const string &name);
 
-	virtual BaseTypeRow *row_value(size_t row);
-	virtual void print_one_row(ostream &out, int row, string space, bool print_row_num = false);
-	virtual void print_val_by_rows(ostream &out, string space = "", bool print_decl_p = true, bool print_row_numbers =
-			true);
-	virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
+    virtual BaseType *var_value(size_t row, size_t i);
 
-	virtual void print_one_row(FILE *out, int row, string space, bool print_row_num = false);
-	virtual void print_val_by_rows(FILE *out, string space = "", bool print_decl_p = true,
-			bool print_row_numbers = true);
-	virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
+    virtual BaseTypeRow *row_value(size_t row);
+    virtual void print_one_row(ostream &out, int row, string space, bool print_row_num = false);
+    virtual void print_val_by_rows(ostream &out, string space = "", bool print_decl_p = true, bool print_row_numbers =
+            true);
+    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
 
-	virtual void set_leaf_p(bool state);
+    virtual void print_one_row(FILE *out, int row, string space, bool print_row_num = false);
+    virtual void print_val_by_rows(FILE *out, string space = "", bool print_decl_p = true,
+            bool print_row_numbers = true);
+    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
 
-	virtual bool is_leaf_sequence();
+    virtual void set_leaf_p(bool state);
 
-	virtual void set_leaf_sequence(int lvl = 1);
+    virtual bool is_leaf_sequence();
 
-	virtual void dump(ostream &strm) const;
+    virtual void set_leaf_sequence(int lvl = 1);
+
+    virtual void dump(ostream &strm) const;
 };
 
 } // namespace libdap

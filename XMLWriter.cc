@@ -30,12 +30,11 @@
 
 #include "config.h"
 
-#include "XMLWriter.h"
-
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
 
-#include <InternalErr.h>
+#include "XMLWriter.h"
+#include "InternalErr.h"
 
 const char *ENCODING = "ISO-8859-1";
 const int XML_BUF_SIZE = 2000000;
@@ -117,11 +116,6 @@ const char *XMLWriter::get_doc() {
 
     if (!d_doc_buf->content)
         throw InternalErr(__FILE__, __LINE__, "Error retrieving response document as string");
-#if 0
-    // This is not needed when the TextWriter is freed before getting buffer content.
-    if (xmlTextWriterFlush(d_writer) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Error flushing the xml writer buffer");
-#endif
 
     return (const char *)d_doc_buf->content;
 }
@@ -141,11 +135,6 @@ unsigned int XMLWriter::get_doc_size() {
 
     if (!d_doc_buf->content)
         throw InternalErr(__FILE__, __LINE__, "Error retrieving response document as string");
-#if 0
-    // This is not needed when the TextWriter is freed before getting buffer content.
-    if (xmlTextWriterFlush(d_writer) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Error flushing the xml writer buffer");
-#endif
 
     // how much of the buffer is in use?
     return d_doc_buf->use;

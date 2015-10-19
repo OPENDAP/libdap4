@@ -59,19 +59,27 @@ namespace libdap {
 
 /** The Int8 constructor accepts the name of the variable to be created.
 
+    @note This type is available in DAP4 only.
+    See http://docs.opendap.org/index.php/DAP4:_Specification_Volume_1#Atomic_Types
+
     @param n A string containing the name of the variable to be created.
 */
-Int8::Int8(const string &n) : BaseType(n, dods_int8_c), d_buf(0)
+Int8::Int8(const string &n) : BaseType(n, dods_int8_c, true /*is_dap4*/), d_buf(0)
 {}
 
 /** The Int8 server-side constructor accepts the name of the variable and
-    the dataset name from which this instance is created.
+    the dataset name from which this instance is created. This is a signed
+    8-bit integer and was added for DAP4; Byte and UInt8 are unsigned 8-bit
+    integers.
+
+    @note This integer type cannot be used with DAP2; it is only present in DAP4.
+    See http://docs.opendap.org/index.php/DAP4:_Specification_Volume_1#Atomic_Types.
 
     @param n A string containing the name of the variable to be created.
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-Int8::Int8(const string &n, const string &d) : BaseType(n, d, dods_int8_c), d_buf(0)
+Int8::Int8(const string &n, const string &d) : BaseType(n, d, dods_int8_c, true /*is_dap4*/), d_buf(0)
 {}
 
 Int8::Int8(const Int8 &copy_from) : BaseType(copy_from)

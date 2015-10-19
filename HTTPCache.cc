@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 // #define DODS_DEBUG2
 #undef USE_GETENV
 
@@ -36,6 +36,8 @@
 #include <sys/stat.h>
 
 #include <cstring>
+#include <cerrno>
+
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -52,6 +54,7 @@
 #include "HTTPCacheTable.h"
 #include "HTTPCache.h"
 #include "HTTPCacheMacros.h"
+#include "SignalHandlerRegisteredErr.h"
 
 #include "util_mit.h"
 #include "debug.h"
@@ -127,12 +130,11 @@ HTTPCache::instance(const string &cache_root, bool force)
 {
     int status = pthread_once(&once_block, once_init_routine);
     if (status != 0)
-	throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
+        throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
 
     LOCK(&instance_mutex);
 
-    DBG(cerr << "Entering instance(); (" << hex << _instance << dec << ")"
-	    << "... ");
+    DBG(cerr << "Entering instance(); (" << hex << _instance << dec << ")" << "... ");
 
     try {
         if (!_instance) {
@@ -227,6 +229,9 @@ HTTPCache::HTTPCache(string cache_root, bool force) :
         d_locked_open_file(0),
         d_cache_enabled(false),
         d_cache_protected(false),
+
+        d_cache_disconnected(DISCONNECT_NONE),
+
         d_expire_ignored(false),
         d_always_validate(false),
         d_total_size(CACHE_TOTAL_SIZE * MEGA),
@@ -525,17 +530,13 @@ HTTPCache::get_cache_root() const
 void
 HTTPCache::create_cache_root(const string &cache_root)
 {
-    struct stat stat_info;
-    string::size_type cur = 0;
-
 #ifdef WIN32
-    cur = cache_root[1] == ':' ? 3 : 1;
+    string::size_type cur = cache_root[1] == ':' ? 3 : 1;
     typedef int mode_t;
-#else
-    cur = 1;
-#endif
+
     while ((cur = cache_root.find(DIR_SEPARATOR_CHAR, cur)) != string::npos) {
         string dir = cache_root.substr(0, cur);
+        struct stat stat_info;
         if (stat(dir.c_str(), &stat_info) == -1) {
             DBG2(cerr << "Cache....... Creating " << dir << endl);
             mode_t mask = UMASK(0);
@@ -551,6 +552,23 @@ HTTPCache::create_cache_root(const string &cache_root)
         }
         cur++;
     }
+#else
+    // OSX and Linux
+
+    // Save the mask
+    mode_t mask = umask(0);
+
+    // Ignore the error if the directory exists
+    errno = 0;
+    if (mkdir(cache_root.c_str(), 0777) < 0 && errno != EEXIST) {
+        umask(mask);
+        throw Error("Could not create the directory for the cache at '" + cache_root + "' (" + strerror(errno) + ").");
+    }
+
+    // Restore themask
+    umask(mask);
+
+#endif
 }
 
 /** Set the cache's root directory to the given path. If no path is given,
@@ -596,7 +614,7 @@ HTTPCache::set_cache_root(const string &root)
     }
 
     // Test d_hhtp_cache_table because this method can be called before that
-    // instance is created and also can be called later to cahnge the cache
+    // instance is created and also can be called later to change the cache
     // root. jhrg 05.14.08
     if (d_http_cache_table)
     	d_http_cache_table->set_cache_root(d_cache_root);
@@ -642,7 +660,6 @@ HTTPCache::is_cache_enabled() const
     @param mode One of DISCONNECT_NONE, DISCONNECT_NORMAL or
     DISCONNECT_EXTERNAL.
     @see CacheDIsconnectedMode */
-
 void
 HTTPCache::set_cache_disconnected(CacheDisconnectedMode mode)
 {
@@ -710,8 +727,7 @@ HTTPCache::set_max_size(unsigned long size)
 
     try {
         unsigned long new_size = size < MIN_CACHE_TOTAL_SIZE ?
-                                 MIN_CACHE_TOTAL_SIZE * MEGA :
-                                 (size > ULONG_MAX ? ULONG_MAX : size * MEGA);
+                                 MIN_CACHE_TOTAL_SIZE * MEGA : size * MEGA;
         unsigned long old_size = d_total_size;
         d_total_size = new_size;
         d_folder_size = d_total_size / CACHE_FOLDER_PCT;

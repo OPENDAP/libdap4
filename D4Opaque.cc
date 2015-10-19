@@ -39,6 +39,8 @@
 
 #include "debug.h"
 
+#undef CLEAR_LOCAL_DATA
+
 using namespace std;
 
 namespace libdap {
@@ -58,18 +60,34 @@ D4Opaque::operator=(const D4Opaque &rhs)
 }
 
 void
+D4Opaque::clear_local_data()
+{
+    if (!d_buf.empty()) {
+        d_buf.erase(d_buf.begin(), d_buf.end());
+        d_buf.resize(0);
+    }
+
+    set_read_p(false);
+}
+
+void
 D4Opaque::compute_checksum(Crc32 &checksum)
 {
 	checksum.AddData(&d_buf[0], d_buf.size());
 }
 
 void
-D4Opaque::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
+D4Opaque::serialize(D4StreamMarshaller &m, DMR &, bool)
 {
     if (!read_p())
         read();          // read() throws Error
 
     m.put_opaque_dap4( reinterpret_cast<char*>(&d_buf[0]), d_buf.size() ) ;
+
+#ifdef CLEAR_LOCAL_DATA
+    clear_local_data();
+#endif
+
 }
 
 void

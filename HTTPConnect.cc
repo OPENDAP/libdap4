@@ -45,6 +45,7 @@
 #include <iterator>
 #include <cstdlib>
 #include <cstring>
+#include <cerrno>
 
 //#define DODS_DEBUG2
 //#define HTTP_TRACE
@@ -512,7 +513,7 @@ HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs
     current URL matches the regular expression. */
 
 bool
-HTTPConnect::url_uses_proxy_for(const string &url) throw()
+HTTPConnect::url_uses_proxy_for(const string &url)
 {
     if (d_rcr->is_proxy_for_used()) {
         Regex host_regex(d_rcr->get_proxy_for_regexp().c_str());
@@ -778,8 +779,15 @@ get_temp_file(FILE *&stream) throw(Error)
     stream = fopen(_mktemp(&pathname[0]), "w+b");
 #else
     // Make sure that temp files are accessible only by the owner.
-    umask(077);
-    stream = fdopen(mkstemp(&pathname[0]), "w+");
+    int mask = umask(077);
+    if (mask < 0)
+        throw Error("Could not set the file creation mask: " + string(strerror(errno)));
+    int fd = mkstemp(&pathname[0]);
+    if (fd < 0)
+        throw Error("Could not create a temporary file to store the response: " + string(strerror(errno)));
+
+    stream = fdopen(fd, "w+");
+    umask(mask);
 #endif
 
     if (!stream)

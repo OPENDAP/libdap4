@@ -53,6 +53,8 @@
 #include "util.h"
 #include "escaping.h"
 
+#undef CLEAR_LOCAL_DATA
+
 using namespace std;
 
 namespace libdap {
@@ -183,7 +185,17 @@ static inline void delete_rows(D4SeqRow *bt_row_ptr)
 
 D4Sequence::~D4Sequence()
 {
-    for_each(d_values.begin(), d_values.end(), delete_rows);
+    clear_local_data();
+}
+
+void D4Sequence::clear_local_data()
+{
+    if (!d_values.empty()) {
+        for_each(d_values.begin(), d_values.end(), delete_rows);
+        d_values.resize(0);
+    }
+
+    set_read_p(false);
 }
 
 D4Sequence &
@@ -268,7 +280,7 @@ D4Sequence::compute_checksum(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eva
 }
 #endif
 
-void D4Sequence::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &eval*/)
+void D4Sequence::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/)
 {
     // Read the data values, then serialize.
     while (read_next_instance(/*dmr, eval,*/true /*filter*/)) {
@@ -281,10 +293,12 @@ void D4Sequence::intern_data(Crc32 &checksum/*, DMR &dmr, ConstraintEvaluator &e
                 // below in the nested for loops from triggering a second call to
                 // read().
                 row->back()->set_read_p(true);
+#if 0
                 // Do not compute the checksum for constructor types; those
                 // types will compute the checksum on the values they contain.
                 // TODO Check on this
                 if (!row->back()->is_constructor_type()) row->back()->compute_checksum(checksum);
+#endif
             }
         }
         d_values.push_back(row);
@@ -340,7 +354,46 @@ void D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter)
             (*j)->serialize(m, dmr, /*eval,*/false);
         }
     }
+
+#ifdef CLEAR_LOCAL_DATA
+    clear_local_data();
+#endif
+
 }
+
+#if 0
+void D4Sequence::serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter)
+{
+    // Read the data values, then serialize. NB: read_next_instance sets d_length.
+    while (read_next_instance(filter)) {
+        D4SeqRow *row = new D4SeqRow;
+        for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
+            if ((*i)->send_p()) {
+                // store the variable's value.
+                row->push_back((*i)->ptr_duplicate());
+                // the copy should have read_p true to prevent the serialize() call
+                // below in the nested for loops from triggering a second call to
+                // read().
+                row->back()->set_read_p(true);
+            }
+        }
+        d_values.push_back(row);
+        DBG(cerr << "D4Sequence::serialize Added row" << endl);
+    }
+
+    // write D4Sequecne::length(); don't include the length in the checksum
+    m.put_count(d_length);
+    DBG(cerr << "D4Sequence::serialize count: " << d_length << endl);
+
+    // By this point the d_values object holds all and only the values to be sent;
+    // use the serialize methods to send them (but no need to test send_p).
+    for (D4SeqValues::iterator i = d_values.begin(), e = d_values.end(); i != e; ++i) {
+        for (D4SeqRow::iterator j = (*i)->begin(), f = (*i)->end(); j != f; ++j) {
+            (*j)->serialize(m, dmr, /*eval,*/false);
+        }
+    }
+}
+#endif
 
 void D4Sequence::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 {

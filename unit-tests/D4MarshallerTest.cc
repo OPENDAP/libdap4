@@ -38,8 +38,6 @@
 #include <fcntl.h>
 #include <stdint.h>
 
-// #define DODS_DEBUG 1
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -54,10 +52,15 @@
 
 static bool debug = false;
 static bool write_baselines = false;
-const string path = (string)TEST_SRC_DIR + "/D4-marshaller";
 
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
+
+#ifdef __BIG_ENDIAN__
+const static string path = (string)TEST_SRC_DIR + "/D4-marshaller/big-endian";
+#else
+const static string path = (string)TEST_SRC_DIR + "/D4-marshaller/little-endian";
+#endif
 
 using namespace std;
 using namespace libdap;
@@ -124,6 +127,7 @@ public:
 
     void test_cmp() {
         char buf[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+	DBG(cerr << "Path: " << path << endl);
         CPPUNIT_ASSERT(cmp(buf, 16, path + "/test_cmp.dat"));
     }
 
@@ -350,9 +354,9 @@ int main(int argc, char*argv[]) {
     runner.setOutputter(CppUnit::CompilerOutputter::defaultOutputter(&runner.result(), std::cerr));
 
     GetOpt getopt(argc, argv, "dw");
-    char option_char;
+    int option_char;
 
-    while ((option_char = getopt()) != EOF)
+    while ((option_char = getopt()) != -1)
         switch (option_char) {
         case 'd':
             debug = true;  // debug is a static global

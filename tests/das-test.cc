@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
     bool code_test = false;
     bool deref_alias = false;
     bool as_xml = false;
-    while ((option_char = getopt ()) != EOF)
+    while ((option_char = getopt ()) != -1)
 	switch (option_char)
 	  {
 	    case 'p':
@@ -236,13 +236,12 @@ parser_driver(DAS &das, bool deref_alias, bool as_xml)
 void
 plain_driver(DAS &das, bool deref_alias)
 {
-    AttrTable *atp;
-    AttrTable *dummy;
-
     string name = "test";
-    atp = new AttrTable;
+    AttrTable *atp = new AttrTable;
     load_attr_table_ptr(atp);
-    dummy = das.get_table(name);
+#if 0
+    AttrTable *dummy = das.get_table(name);
+#endif
     das.add_table(name, atp);
 
     name = "test2";

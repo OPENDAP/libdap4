@@ -4,33 +4,35 @@
 AC_DEFUN([DODS_GCOV_VALGRIND],
 [
                
-coverage=no
 AC_ARG_ENABLE(coverage,
-[  --enable-coverage       Enable coverage testing. ],
-[ coverage=yes ])
-              
-if [[ "$coverage" = "yes" ]]; then
-    if [[ "$GCC" = "yes" ]]; then
-        CFLAGS="-fprofile-arcs -ftest-coverage $CFLAGS"
-    else
-        AC_MSG_ERROR([Can only enable coverage when using gcc.])
-    fi
-fi
+    [AS_HELP_STRING([--enable-coverage],
+                    [Collect coverage data (default is no)]) ],
+    [coverage=$enableval],
+    [coverage=no])
+ 
+AS_IF([test x$coverage = xyes], 
+    [ AS_IF([test x$GCC = xyes],
+            [ CFLAGS="-fprofile-arcs -ftest-coverage -pg $CFLAGS"
+              CXXFLAGS="-fprofile-arcs -ftest-coverage -pg $CXXFLAGS"
+              LDFLAGS="-pg $LDFLAGS"
+	          AC_MSG_NOTICE([Building coverage reporting.]) ],
+            [ AC_MSG_ERROR([Can only enable coverage when using gcc.]) ]) ])
                
 # Support for running test cases using valgrind:
                
-use_valgrind=false
+use_valgrind=no
 AC_ARG_ENABLE(valgrind,
-[  --enable-valgrind       Use valgrind when running unit tests. ],
-[ use_valgrind=true ])
+    [AS_HELP_STRING([--enable-valgrind], 
+    	            [Use valgrind when running unit tests. (default is no)])],
+    [use_valgrind=$enableval],
+    [use_valgrind=no])
                
-if [[ "$use_valgrind" = "true" ]]; then
-    AC_CHECK_PROG(HAVE_VALGRIND, valgrind, yes, no)
-             
-    if [[ "$HAVE_VALGRIND" = "no" ]]; then
-        AC_MSG_ERROR([Valgrind not found in PATH. ])
-    fi
-fi
-               
-AM_CONDITIONAL(USE_VALGRIND, $use_valgrind)
+AS_IF([test x$use_valgrind = xyes ],
+      [ AC_CHECK_PROG(HAVE_VALGRIND, valgrind, yes, no)
+        AS_IF([test x$HAVE_VALGRIND = xyes ],
+	          [AC_MSG_NOTICE([Using valgrind with unit tests.])],
+	          [AC_MSG_ERROR([Valgrind not found in PATH.])])])
+
+AM_CONDITIONAL(USE_VALGRIND, [test x$use_valgrind = xyes])
+
 ])

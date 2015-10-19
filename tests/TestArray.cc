@@ -90,17 +90,17 @@ TestArray::ptr_duplicate()
 }
 
 TestArray::TestArray(const string &n, BaseType *v, bool is_dap4) :
-    Array(n, v, is_dap4), d_series_values(false)
+        Array(n, v, is_dap4), d_series_values(false)
 {
 }
 
 TestArray::TestArray(const string &n, const string &d, BaseType *v, bool is_dap4) :
-    Array(n, d, v, is_dap4), d_series_values(false)
+        Array(n, d, v, is_dap4), d_series_values(false)
 {
 }
 
 TestArray::TestArray(const TestArray &rhs) :
-    Array(rhs), TestCommon(rhs)
+        Array(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
 }
@@ -112,16 +112,14 @@ TestArray::~TestArray()
 TestArray &
 TestArray::operator=(const TestArray &rhs)
 {
-    if (this == &rhs)
-        return *this;
+    if (this == &rhs) return *this;
 
-    dynamic_cast<Array &> (*this) = rhs;
+    dynamic_cast<Array &>(*this) = rhs;
 
     _duplicate(rhs);
 
     return *this;
 }
-
 
 // This code calls 'output_values()' because print_val() does not test
 // the value of send_p(). We need to wrap a method around the calls to
@@ -136,10 +134,10 @@ unsigned int TestArray::m_print_array(ostream &out, unsigned int index, unsigned
     if (dims == 1) {
         out << "{";
         for (unsigned i = 0; i < shape[0] - 1; ++i) {
-            dynamic_cast<TestCommon&> (*var(index++)).output_values(out);
+            dynamic_cast<TestCommon&>(*var(index++)).output_values(out);
             out << ", ";
         }
-        dynamic_cast<TestCommon&> (*var(index++)).output_values(out);
+        dynamic_cast<TestCommon&>(*var(index++)).output_values(out);
         out << "}";
 
         return index;
@@ -165,15 +163,17 @@ unsigned int TestArray::m_print_array(ostream &out, unsigned int index, unsigned
 
 void TestArray::output_values(std::ostream &out)
 {
-    unsigned int *shape = new unsigned int[dimensions(true)];
+    //unsigned int *shape = new unsigned int[dimensions(true)];
+
+    vector<unsigned int> shape(dimensions(true));
     unsigned int index = 0;
     for (Dim_iter i = dim_begin(); i != dim_end() && index < dimensions(true); ++i)
         shape[index++] = dimension_size(i, true);
 
-    m_print_array(out, 0, dimensions(true), shape);
+    m_print_array(out, 0, dimensions(true), &shape[0]);
 
-    delete[] shape;
-    shape = 0;
+    //delete[] shape;
+    //shape = 0;
 }
 
 /** Special names are ones that start with 'lat' or 'lon'. These indicate
@@ -188,27 +188,30 @@ void TestArray::m_build_special_values()
 {
     if (name().find("lat_reversed") != string::npos) {
         int array_len = length();
-        double *lat_data = new double[array_len];
+        //double *lat_data = new double[array_len];
+        vector<double> lat_data(array_len);
         for (int i = 0; i < array_len; ++i) {
             lat_data[i] = -89 + (180 / array_len) * (i + 1);
         }
-        libdap::set_array_using_double(this, lat_data, array_len);
+        libdap::set_array_using_double(this, &lat_data[0], array_len);
     }
     else if (name().find("lat") != string::npos) {
         int array_len = length();
-        double *lat_data = new double[array_len];
+        // double *lat_data = new double[array_len];
+        vector<double> lat_data(array_len);
         for (int i = 0; i < array_len; ++i) {
             lat_data[i] = 90 - (180 / array_len) * (i + 1);
         }
-        libdap::set_array_using_double(this, lat_data, array_len);
+        libdap::set_array_using_double(this, &lat_data[0], array_len);
     }
     else if (name().find("lon") != string::npos) {
         int array_len = length();
-        double *lon_data = new double[array_len];
+        //double *lon_data = new double[array_len];
+        vector<double> lon_data(array_len);
         for (int i = 0; i < array_len; ++i) {
             lon_data[i] = (360 / array_len) * (i + 1);
         }
-        libdap::set_array_using_double(this, lon_data, array_len);
+        libdap::set_array_using_double(this, &lon_data[0], array_len);
     }
     else {
         throw InternalErr(__FILE__, __LINE__, "Unrecognized name");
@@ -229,7 +232,7 @@ int TestArray::m_offset(int y, Dim_iter X, int x)
  *
  * @param constrained_array
  */
-template <typename T, class C>
+template<typename T, class C>
 void TestArray::m_constrained_matrix(vector<T>&constrained_array)
 {
     int unconstrained_size = 1;
@@ -243,10 +246,10 @@ void TestArray::m_constrained_matrix(vector<T>&constrained_array)
         var()->read();
 #if 0
         if (var()->type() == dods_enum_c)
-            static_cast<C*>(var())->value(&v);
+        static_cast<C*>(var())->value(&v);
         else
 #endif
-            v = static_cast<C*>(var())->value();
+        v = static_cast<C*>(var())->value();
 
         whole_array[i] = v;
         var()->set_read_p(false); // pick up the next value
@@ -257,10 +260,7 @@ void TestArray::m_constrained_matrix(vector<T>&constrained_array)
     Dim_iter Y = dim_begin();
     Dim_iter X = Y + 1;
 
-    DBG(cerr << "dimension_start(Y): " << dimension_start(Y) << endl);
-    DBG(cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl);
-    DBG(cerr << "dimension_start(X): " << dimension_start(X) << endl);
-    DBG(cerr << "dimension_stop(X): " << dimension_stop(X) << endl);
+    DBG(cerr << "dimension_start(Y): " << dimension_start(Y) << endl); DBG(cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl); DBG(cerr << "dimension_start(X): " << dimension_start(X) << endl); DBG(cerr << "dimension_stop(X): " << dimension_stop(X) << endl);
 
     int constrained_size = 0;
     int y = dimension_start(Y);
@@ -276,7 +276,7 @@ void TestArray::m_constrained_matrix(vector<T>&constrained_array)
     }
 }
 
-template <typename T>
+template<typename T>
 void TestArray::m_enum_constrained_matrix(vector<T>&constrained_array)
 {
     int unconstrained_size = 1;
@@ -298,10 +298,7 @@ void TestArray::m_enum_constrained_matrix(vector<T>&constrained_array)
     Dim_iter Y = dim_begin();
     Dim_iter X = Y + 1;
 
-    DBG(cerr << "dimension_start(Y): " << dimension_start(Y) << endl);
-    DBG(cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl);
-    DBG(cerr << "dimension_start(X): " << dimension_start(X) << endl);
-    DBG(cerr << "dimension_stop(X): " << dimension_stop(X) << endl);
+    DBG(cerr << "dimension_start(Y): " << dimension_start(Y) << endl); DBG(cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl); DBG(cerr << "dimension_start(X): " << dimension_start(X) << endl); DBG(cerr << "dimension_stop(X): " << dimension_stop(X) << endl);
 
     int constrained_size = 0;
     int y = dimension_start(Y);
@@ -321,7 +318,7 @@ void TestArray::m_enum_constrained_matrix(vector<T>&constrained_array)
  * Load the variable's internal data buffer with values, simulating a read()
  * call to some data store. A private method.
  */
-template <typename T, class C>
+template<typename T, class C>
 void TestArray::m_cardinal_type_read_helper()
 {
     if (get_series_values()) {
@@ -362,7 +359,7 @@ void TestArray::m_cardinal_type_read_helper()
  * Load the variable's internal data buffer with values, simulating a read()
  * call to some data store. A private method.
  */
-template <typename T>
+template<typename T>
 void TestArray::m_enum_type_read_helper()
 {
     if (get_series_values()) {
@@ -401,152 +398,149 @@ void TestArray::m_enum_type_read_helper()
 
 bool TestArray::read()
 {
-    if (read_p())
-        return true;
+    if (read_p()) return true;
 
-    if (test_variable_sleep_interval > 0)
-        sleep(test_variable_sleep_interval);
+    if (test_variable_sleep_interval > 0) sleep(test_variable_sleep_interval);
 
     int64_t array_len = length(); // elements in the array
 
     switch (var()->type()) {
-		// These are the DAP2 types and the classes that implement them all define
-		// the old buf2val() and val2buf() methods. For the new DAP4 types see below.
-        //case dods_byte_c:
-        //case dods_uint8_c:
-        case dods_int16_c:
-        	m_cardinal_type_read_helper<dods_int16, Int16>();
-        	break;
+    // These are the DAP2 types and the classes that implement them all define
+    // the old buf2val() and val2buf() methods. For the new DAP4 types see below.
+    //case dods_byte_c:
+    //case dods_uint8_c:
+    case dods_int16_c:
+        m_cardinal_type_read_helper<dods_int16, Int16>();
+        break;
 
-        case dods_uint16_c:
-        	m_cardinal_type_read_helper<dods_uint16, UInt16>();
-        	break;
+    case dods_uint16_c:
+        m_cardinal_type_read_helper<dods_uint16, UInt16>();
+        break;
 
-        case dods_int32_c:
-        	m_cardinal_type_read_helper<dods_int32, Int32>();
-        	break;
+    case dods_int32_c:
+        m_cardinal_type_read_helper<dods_int32, Int32>();
+        break;
 
-       case dods_uint32_c:
-        	m_cardinal_type_read_helper<dods_uint32, UInt32>();
-        	break;
+    case dods_uint32_c:
+        m_cardinal_type_read_helper<dods_uint32, UInt32>();
+        break;
 
-        case dods_float32_c:
-        	m_cardinal_type_read_helper<dods_float32, Float32>();
-        	break;
+    case dods_float32_c:
+        m_cardinal_type_read_helper<dods_float32, Float32>();
+        break;
 
-        case dods_float64_c:
-        	m_cardinal_type_read_helper<dods_float64, Float64>();
-        	break;
+    case dods_float64_c:
+        m_cardinal_type_read_helper<dods_float64, Float64>();
+        break;
 
-        case dods_int8_c:
-        	m_cardinal_type_read_helper<dods_int8, Int8>();
-        	break;
+    case dods_int8_c:
+        m_cardinal_type_read_helper<dods_int8, Int8>();
+        break;
 
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_uint8_c:
+        m_cardinal_type_read_helper<dods_byte, Byte>();
+        break;
+
+    case dods_int64_c:
+        m_cardinal_type_read_helper<dods_int64, Int64>();
+        break;
+
+    case dods_uint64_c:
+        m_cardinal_type_read_helper<dods_uint64, UInt64>();
+        break;
+
+    case dods_enum_c:
+        switch (static_cast<D4Enum*>(var())->element_type()) {
         case dods_byte_c:
         case dods_char_c:
         case dods_uint8_c:
-        	m_cardinal_type_read_helper<dods_byte, Byte>();
-        	break;
-
-        case dods_int64_c:
-        	m_cardinal_type_read_helper<dods_int64, Int64>();
-        	break;
-
-        case dods_uint64_c:
-        	m_cardinal_type_read_helper<dods_uint64, UInt64>();
-        	break;
-
-        case dods_enum_c:
-            switch (static_cast<D4Enum*>(var())->element_type()) {
-            case dods_byte_c:
-            case dods_char_c:
-            case dods_uint8_c:
-                m_enum_type_read_helper<dods_byte>();
-                break;
-            case dods_int8_c:
-                m_enum_type_read_helper<dods_int8>();
-                break;
-            case dods_int16_c:
-                m_enum_type_read_helper<dods_int16>();
-                break;
-            case dods_uint16_c:
-                m_enum_type_read_helper<dods_uint16>();
-                break;
-            case dods_int32_c:
-                m_enum_type_read_helper<dods_int32>();
-                break;
-            case dods_uint32_c:
-                m_enum_type_read_helper<dods_uint32>();
-                break;
-            case dods_int64_c:
-                m_enum_type_read_helper<dods_int64>();
-                break;
-            case dods_uint64_c:
-                m_enum_type_read_helper<dods_uint64>();
-                break;
-            default:
-                throw InternalErr(__FILE__, __LINE__, "Enum with undefined type.");
-            }
+            m_enum_type_read_helper<dods_byte>();
             break;
+        case dods_int8_c:
+            m_enum_type_read_helper<dods_int8>();
+            break;
+        case dods_int16_c:
+            m_enum_type_read_helper<dods_int16>();
+            break;
+        case dods_uint16_c:
+            m_enum_type_read_helper<dods_uint16>();
+            break;
+        case dods_int32_c:
+            m_enum_type_read_helper<dods_int32>();
+            break;
+        case dods_uint32_c:
+            m_enum_type_read_helper<dods_uint32>();
+            break;
+        case dods_int64_c:
+            m_enum_type_read_helper<dods_int64>();
+            break;
+        case dods_uint64_c:
+            m_enum_type_read_helper<dods_uint64>();
+            break;
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Enum with undefined type.");
+        }
+        break;
 
-        case dods_str_c:
-        case dods_url_c: {
-        	vector<string> tmp(array_len);
+    case dods_str_c:
+    case dods_url_c: {
+        vector<string> tmp(array_len);
 
-			if (get_series_values()) {
-				for (int64_t i = 0; i < array_len; ++i) {
-					var()->read();
-					// URL isa Str
-					tmp[i] = static_cast<Str*>(var())->value();
-					var()->set_read_p(false); // pick up the next value
-				}
-			}
-			else {
-				var()->read();
-				string value = static_cast<Str*>(var())->value();
+        if (get_series_values()) {
+            for (int64_t i = 0; i < array_len; ++i) {
+                var()->read();
+                // URL isa Str
+                tmp[i] = static_cast<Str*>(var())->value();
+                var()->set_read_p(false); // pick up the next value
+            }
+        }
+        else {
+            var()->read();
+            string value = static_cast<Str*>(var())->value();
 
-				for (unsigned i = 0; i < array_len; ++i)
-					tmp[i] = value;
-			}
-
-			set_value(tmp, array_len);
-			break;
+            for (unsigned i = 0; i < array_len; ++i)
+                tmp[i] = value;
         }
 
-        case dods_opaque_c:
-        case dods_structure_c:
-            for (unsigned i = 0; i < array_len; ++i) {
-            	// Copy the prototype and read a value into it
-                BaseType *elem = var()->ptr_duplicate();
-                elem->read();
-                // Load the new value into this object's array
-                set_vec(i, elem);
-            }
+        set_value(tmp, array_len);
+        break;
+    }
 
-            break;
+    case dods_opaque_c:
+    case dods_structure_c:
+        for (unsigned i = 0; i < array_len; ++i) {
+            // Copy the prototype and read a value into it
+            BaseType *elem = var()->ptr_duplicate();
+            elem->read();
+            // Load the new value into this object's array
+            set_vec(i, elem);
+        }
 
-        case dods_sequence_c:
-            // No sequence arrays in DAP2
-        	if (!is_dap4())
-        		throw InternalErr(__FILE__, __LINE__, "Bad data type");
+        break;
 
-            for (unsigned i = 0; i < array_len; ++i) {
-            	// Copy the prototype and read a value into it
-                BaseType *elem = var()->ptr_duplicate();
-                //elem->read();
-                // Load the new value into this object's array
-                set_vec(i, elem);
-            }
+    case dods_sequence_c:
+        // No sequence arrays in DAP2
+        if (!is_dap4()) throw InternalErr(__FILE__, __LINE__, "Bad data type");
 
-            break;
+        for (unsigned i = 0; i < array_len; ++i) {
+            // Copy the prototype and read a value into it
+            BaseType *elem = var()->ptr_duplicate();
+            //elem->read();
+            // Load the new value into this object's array
+            set_vec(i, elem);
+        }
 
-            // No Grids in DAP4; No arrays of arrays and no null-typed vars in DAP2 or 4
-        case dods_grid_c:
-        case dods_array_c:
-        case dods_null_c:
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Bad data type");
-            break;
+        break;
+
+        // No Grids in DAP4; No arrays of arrays and no null-typed vars in DAP2 or 4
+    case dods_grid_c:
+    case dods_array_c:
+    case dods_null_c:
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Bad data type");
+        break;
     }
 
     set_read_p(true);
@@ -556,6 +550,6 @@ bool TestArray::read()
 
 void TestArray::set_series_values(bool sv)
 {
-    dynamic_cast<TestCommon&> (*var()).set_series_values(sv);
+    dynamic_cast<TestCommon&>(*var()).set_series_values(sv);
     d_series_values = sv;
 }

@@ -44,8 +44,8 @@ protected:
     dods_opaque d_buf;
 
 public:
-    D4Opaque(const std::string &n) : BaseType(n, dods_opaque_c), d_buf(0) { }
-    D4Opaque(const std::string &n, const std::string &d)  : BaseType(n, d, dods_opaque_c), d_buf(0) { }
+    D4Opaque(const std::string &n) : BaseType(n, dods_opaque_c, true /*is_dap4*/), d_buf(0) { }
+    D4Opaque(const std::string &n, const std::string &d)  : BaseType(n, d, dods_opaque_c, true /*is_dap4*/), d_buf(0) { }
 
     virtual ~D4Opaque()  { }
 
@@ -56,6 +56,8 @@ public:
     D4Opaque &operator=(const D4Opaque &rhs);
 
     virtual BaseType *ptr_duplicate() {  return new D4Opaque(*this); }
+
+    virtual void clear_local_data();
 
     virtual unsigned int width(bool = false) const { return sizeof(vector<uint8_t>); }
 
@@ -74,6 +76,9 @@ public:
     // DAP4
     virtual void compute_checksum(Crc32 &checksum);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
+#if 0
+    virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
+#endif
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);

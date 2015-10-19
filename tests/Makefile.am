@@ -3,7 +3,8 @@
 AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU -I$(top_srcdir)/d4_ce $(XML2_CFLAGS) $(CURL_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU -I$(top_srcdir)/d4_ce \
+-I$(top_srcdir)/d4_function $(XML2_CFLAGS) $(CURL_CFLAGS)
 AM_CXXFLAGS =  
 
 if COMPILER_IS_GCC
@@ -23,9 +24,14 @@ if DAP4_DEFINED
 check_PROGRAMS += dmr-test
 endif
 
-TESTS = DASTest DDSTest EXPRTest DMRTest getdapTest
+# This will use automake's test envokation code. It's better to use
+# our own so we can pass in flags for autotest, esp --jobs=N to get
+# the autotest tests to run in parallel. See check-local: below.
 
-dist_check_SCRIPTS = DASTest DDSTest EXPRTest DMRTest getdapTest atconfig atlocal
+# TESTS = DASTest DDSTest EXPRTest DMRTest getdapTest
+
+check_SCRIPTS = $(DASTESTSUITE) $(DDSTESTSUITE) $(EXPRTESTSUITE) \
+	$(DMRTESTSUITE) $(GETDAPTESTSUITE)
 
 # Build the test drivers. The drivers all use the
 # subclassed types in Test*.cc and the TestTypesFactory.
@@ -70,14 +76,16 @@ TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite dmr-testsuite \
 	getdap-testsuite
 
-EXTRA_DIST = DASTest.at  $(DASTESTSUITE) DDSTest.at $(DDSTESTSUITE) \
+EXTRA_DIST = DASTest.at $(DASTESTSUITE) DDSTest.at $(DDSTESTSUITE) \
 	EXPRTest.at $(EXPRTESTSUITE) DMRTest.at $(DMRTESTSUITE) \
-	 getdapTest.at getdap-testsuite atlocal.in $(srcdir)/package.m4 $(DIRS_EXTRA)
+	getdapTest.at $(GETDAPTESTSUITE) getdap-testsuite atlocal.in \
+	$(srcdir)/package.m4 $(DIRS_EXTRA)
 
 CLEANFILES = dmr-testsuite.tar.gz
 
-DISTCLEANFILES = *.log DASTest.dir/* DDSTest.dir/* EXPRTest.dir/* DMRTest.dir/* \
-	getdapTest.dir/*
+DISTCLEANFILES = *.log
+
+# DASTest.dir/* DDSTest.dir/* EXPRTest.dir/* DMRTest.dir/* getdapTest.dir/*
 
 dmr-testsuite.tar.gz: dmr-testsuite/*.xml
 	tar -czf $@ $^
@@ -86,22 +94,30 @@ dmr-testsuite.tar.gz: dmr-testsuite/*.xml
 
 AUTOM4TE = autom4te
 
+TESTSUITEFLAGS =
+
 DASTESTSUITE = $(srcdir)/DASTest
-DASTESTSUITEFLAGS =
 
 DDSTESTSUITE = $(srcdir)/DDSTest
-DDSTESTSUITEFLAGS =
 
 EXPRTESTSUITE = $(srcdir)/EXPRTest
-EXPRTESTSUITEFLAGS =
 
 DMRTESTSUITE = $(srcdir)/DMRTest
-DMRTESTSUITEFLAGS =
 
 GETDAPTESTSUITE = $(srcdir)/getdapTest
-GETDAPTESTSUITEFLAGS =
+
+check-local: atconfig atlocal $(DASTESTSUITE) $(DDSTESTSUITE) \
+$(EXPRTESTSUITE) $(DMRTESTSUITE) $(GETDAPTESTSUITE) 
+	$(SHELL) '$(DASTESTSUITE)' $(TESTSUITEFLAGS)
+	$(SHELL) '$(DDSTESTSUITE)' $(TESTSUITEFLAGS)
+	$(SHELL) '$(EXPRTESTSUITE)' $(TESTSUITEFLAGS)
+	$(SHELL) '$(DMRTESTSUITE)' $(TESTSUITEFLAGS)
+	$(SHELL) '$(GETDAPTESTSUITE)' $(TESTSUITEFLAGS)
 
 # Make sure there are no spaces after the DASTESTSUITE names. jhrg 3/16/15
+# Delete the scripts here and not using CLEANFILES because this target is
+# run after the 'regular' clean: and we need the test scripts to run their
+# --clean option. Once that's done, then remove them. 
 clean-local:
 	test ! -f '$(DASTESTSUITE)' || $(SHELL) $(DASTESTSUITE) --clean
 	test ! -f '$(DDSTESTSUITE)' || $(SHELL) $(DDSTESTSUITE) --clean

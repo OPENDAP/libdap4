@@ -950,10 +950,14 @@ void
 DDS::parse(int fd)
 {
 #ifdef WIN32
-    FILE *in = fdopen(_dup(fd), "r");
+    int new_fd = _dup(fd);
 #else
-    FILE *in = fdopen(dup(fd), "r");
+    int new_fd = dup(fd);
 #endif
+
+    if (new_fd < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not access file.");
+    FILE *in = fdopen(new_fd, "r");
 
     if (!in) {
         throw InternalErr(__FILE__, __LINE__, "Could not access file.");

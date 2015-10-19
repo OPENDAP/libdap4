@@ -35,47 +35,49 @@
 
 #include "Marshaller.h"
 #include "XDRUtils.h"
+#if 0
+#include "Array.h"
+#include "Vector.h"
+#endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** @brief marshaller that knows how to marshall/serialize dap data objects
  * to a file using XDR
  */
-class XDRFileMarshaller : public Marshaller
-{
+class XDRFileMarshaller: public Marshaller {
 private:
-    XDR *			_sink ;
-    				XDRFileMarshaller() ;
-    				XDRFileMarshaller( const XDRFileMarshaller &m ) ;
-    XDRFileMarshaller &		operator=( const XDRFileMarshaller & ) ;
+    XDR * _sink;
+
+    XDRFileMarshaller();
+    XDRFileMarshaller(const XDRFileMarshaller &m);
+    XDRFileMarshaller & operator=(const XDRFileMarshaller &);
 public:
-    				XDRFileMarshaller( FILE *out ) ;
-    virtual			~XDRFileMarshaller() ;
+    XDRFileMarshaller(FILE *out);
+    virtual ~XDRFileMarshaller();
 
-    virtual void		put_byte( dods_byte val ) ;
+    virtual void put_byte(dods_byte val);
 
-    virtual void		put_int16( dods_int16 val ) ;
-    virtual void		put_int32( dods_int32 val ) ;
+    virtual void put_int16(dods_int16 val);
+    virtual void put_int32(dods_int32 val);
 
-    virtual void		put_float32( dods_float32 val ) ;
-    virtual void		put_float64( dods_float64 val ) ;
+    virtual void put_float32(dods_float32 val);
+    virtual void put_float64(dods_float64 val);
 
-    virtual void		put_uint16( dods_uint16 val ) ;
-    virtual void		put_uint32( dods_uint32 val ) ;
+    virtual void put_uint16(dods_uint16 val);
+    virtual void put_uint32(dods_uint32 val);
 
-    virtual void		put_str( const string &val ) ;
-    virtual void		put_url( const string &val ) ;
+    virtual void put_str(const string &val);
+    virtual void put_url(const string &val);
 
-    virtual void		put_opaque( char *val, unsigned int len ) ;
-    virtual void		put_int( int val ) ;
+    virtual void put_opaque(char *val, unsigned int len);
+    virtual void put_int(int val);
 
-    virtual void		put_vector( char *val, int num,
-					    Vector &vec ) ;
-    virtual void		put_vector( char *val, int num, int width,
-                                            Vector &vec ) ;
-    virtual void		dump(ostream &strm) const ;
-} ;
+    virtual void put_vector(char *val, int num, Vector &vec);
+    virtual void put_vector(char *val, int num, int width, Vector &vec);
+
+    virtual void dump(ostream &strm) const;
+};
 
 } // namespace libdap
 

@@ -101,7 +101,6 @@ static void usage(const string &name)
 	cerr << "           NB: You can use a `?' for the CE also." << endl;
 }
 
-#if 1
 // Used for raw http access/transfer
 bool read_data(FILE * fp)
 {
@@ -118,7 +117,6 @@ bool read_data(FILE * fp)
 
     return true;
 }
-#endif
 
 static void read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool mime_headers, bool get_dap4_data, bool get_dmr)
 {
@@ -140,17 +138,36 @@ static void read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool 
     }
 }
 
+static void print_group_data(D4Group *g, bool print_rows = false)
+{
+    for (D4Group::groupsIter gi = g->grp_begin(), ge = g->grp_end(); gi != ge; ++gi) {
+        for (Constructor::Vars_iter i = (*gi)->var_begin(), e = (*gi)->var_end(); i != e; i++) {
+            if (print_rows && (*i)->type() == dods_sequence_c)
+                dynamic_cast < D4Sequence * >(*i)->print_val_by_rows(cout);
+            else
+                (*i)->print_val(cout);
+        }
+
+        for (D4Group::groupsIter gi = g->grp_begin(), ge = g->grp_end(); gi != ge; ++gi) {
+            print_group_data(*gi, print_rows);
+        }
+    }
+}
+
 static void print_data(DMR &dmr, bool print_rows = false)
 {
     cout << "The data:" << endl;
 
     D4Group *g = dmr.root();
+
     for (Constructor::Vars_iter i = g->var_begin(), e = g->var_end(); i != e; i++) {
         if (print_rows && (*i)->type() == dods_sequence_c)
             dynamic_cast < D4Sequence * >(*i)->print_val_by_rows(cout);
         else
             (*i)->print_val(cout);
     }
+
+    print_group_data(g, print_rows);
 
     cout << endl << flush;
 }
@@ -179,7 +196,7 @@ int main(int argc, char *argv[])
     _setmode(_fileno(stdout), _O_BINARY);
 #endif
 
-    while ((option_char = getopt()) != EOF)
+    while ((option_char = getopt()) != -1)
         switch (option_char) {
         case 'd':
             get_dmr = true;
@@ -243,7 +260,7 @@ int main(int argc, char *argv[])
 
             string name = argv[i];
             D4Connect *url = 0;
-
+            // auto_ptr? jhrg 10/19/15
             url = new D4Connect(name);
 
             // This overrides the value set in the .dodsrc file.
@@ -294,6 +311,8 @@ int main(int argc, char *argv[])
                 catch (Error & e) {
                     cerr << "Error: " << e.get_error_message() << endl;
                     delete url; url = 0;
+                    if (report_errors)
+                        return EXIT_FAILURE;
                 }
             }
             else if (get_dmr) {
@@ -340,6 +359,8 @@ int main(int argc, char *argv[])
                     }
                      catch (Error & e) {
                          cerr << e.get_error_message() << endl;
+                         if (report_errors)
+                             return EXIT_FAILURE;
                          continue;       // Goto the next URL or exit the loop.
                      }
                  }
@@ -370,6 +391,8 @@ int main(int argc, char *argv[])
                     }
                     catch (Error & e) {
                         cerr << e.get_error_message() << endl;
+                        if (report_errors)
+                            return EXIT_FAILURE;
                         continue;
                     }
                 }

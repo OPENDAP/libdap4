@@ -1,0 +1,29 @@
+Parse successful
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_array_6.xml" dapVersion="4.0" dmrVersion="1.0" name="test_array_6">
+    <Dimension name="row" size="3"/>
+    <Dimension name="col" size="4"/>
+    <Structure name="a">
+        <Int32 name="i">
+            <Dim name="/row"/>
+            <Dim name="/col"/>
+        </Int32>
+        <Int32 name="j"/>
+    </Structure>
+</Dataset>
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/test_array_6.xml" dapVersion="4.0" dmrVersion="1.0" name="test_array_6">
+    <Structure name="a">
+        <Int32 name="i">
+            <Dim size="1"/>
+            <Dim size="2"/>
+        </Int32>
+        <Attribute name="DAP4_Checksum_CRC32" type="String">
+            <Value>a5f4caa5</Value>
+        </Attribute>
+    </Structure>
+</Dataset>
+
+The data:
+{ { {{123456789, 123456789}} } }

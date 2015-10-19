@@ -109,4 +109,4 @@ function_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     return;
 }
 
-} // namesspace libdap
+} // namespace libdap

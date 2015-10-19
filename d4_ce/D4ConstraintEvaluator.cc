@@ -209,14 +209,10 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
 
         Array::Dim_iter d = a->dim_begin();
         for (vector<index>::iterator i = d_indexes.begin(), e = d_indexes.end(); i != e; ++i) {
-            if ((*i).stride > (unsigned long long) a->dimension_stop(d, false))
-                throw Error(
-                        "For '" + btp->name()
-                                + "', the index stride value is greater than the number of elements in the Array");
-            if (!(*i).rest && ((*i).stop) > (unsigned long long) a->dimension_stop(d, false))
-                throw Error(
-                        "For '" + btp->name()
-                                + "', the index stop value is greater than the number of elements in the Array");
+            if ((*i).stride > (unsigned long long) (a->dimension_stop(d, false) - a->dimension_start(d, false)) + 1)
+                throw Error("For '" + btp->name() + "', the index stride value is greater than the number of elements in the Array");
+            if (!(*i).rest && ((*i).stop) > (unsigned long long) (a->dimension_stop(d, false) - a->dimension_start(d, false)) + 1)
+                throw Error("For '" + btp->name() + "', the index stop value is greater than the number of elements in the Array");
 
             D4Dimension *dim = a->dimension_D4dim(d);
 

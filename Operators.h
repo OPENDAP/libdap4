@@ -39,7 +39,7 @@
 // #include "parser.h"  // for ID_MAX
 #include "ce_expr.tab.hh"
 
-using namespace std;
+//using namespace std;
 
 namespace libdap {
 

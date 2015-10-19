@@ -1,3 +1,48 @@
+News for version 3.15.1
+
+Bug fixes
+
+News for version 3.15.0
+
+The library now writes to the network using a child thread, allowing 
+parallel processing of data reads and writes when one or more variables
+are returned (or when returning the result of an aggregation).
+
+The library now supports writing 'vector' data (i.e., Array variables)
+in parts so that large arrays that are being built up over time can be
+serialized in pieces as the data becomes available. This is combined
+with the parallel I/O feature when serailizing aggregations - other
+handlers could also take advantage of it
+
+We fixed an issue in Vector where template methods were used in a way
+that broke inheritance, introducing a hard-to-diagbose bug in the NCML 
+code. The problem was that variables that describe the 'aggregation 
+dimension' could not be subset. That's now fixed.
+
+News for version 3.14.2
+
+This version of the library _changes the behavior of BaseType::serialize()_
+so that memory allocated on the heap used to hold data (e.g., for an 
+Array) will be deleted as soon as the data are serialized. This was added
+to reduce memory consumption when returning responses with many large 
+variables. The change did not affect any of the code we normally test
+against; I think it was a largely undocumented 'feature' that the data
+were still present after serialized returned. However, if a module needs
+the data after serialize() is called, it can use a new method called
+serialize_no_release() to get the old behavior.
+
+News for version 3.14.1
+
+We started using Travis-CI and Coverity for/with/on this code; there was
+a learning curve... ;-) Also some issues with the parsers have been 
+addressed, hopefully resulting in more straightforward builds.
+
+News for version 3.14.0
+
+This version of libdap contains the current DAP4 implementation for 
+C++. The implementation is nearly complete, lacking only the CE filters
+for Sequences.
+
 News for version 3.13.3
 
 Memory leak fix in RValue.cc - affects server function evaluation only.
