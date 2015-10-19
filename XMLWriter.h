@@ -30,7 +30,6 @@
 #ifndef XMLWRITER_H_
 #define XMLWRITER_H_
 
-#include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
 
 #include <string>
@@ -53,7 +52,7 @@ public:
     XMLWriter(const std::string &pad = "    ");
     virtual ~XMLWriter();
 
-    xmlTextWriterPtr get_writer() { return d_writer; }
+    xmlTextWriterPtr get_writer() const { return d_writer; }
     const char *get_doc();
     unsigned int get_doc_size();
 };
