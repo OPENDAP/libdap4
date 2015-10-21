@@ -1,5 +1,5 @@
 
-Updated for version 3.15.0 of the OPeNDAP DAP2/4 library software.
+Updated for version 3.16.0 of the OPeNDAP DAP2/4 library software.
 
 Installing the DAP2/4 library
 
@@ -20,7 +20,7 @@ BUILDING THE SOFTWARE
      before reporting problems. Thanks.
 
   1. Type `./configure' at the system prompt. On some systems you may have
-     to type `sh configure'.
+     to type `sh configure'. For people building from git, see below.
 
   2. Type `make' to build the library, `make check' to run the tests.
      You must have CppUnit to run `make check.' On a Mandrake/Mandriva

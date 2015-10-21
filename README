@@ -1,4 +1,4 @@
-Updated for 3.15.0
+Updated for 3.16.0
 
 libdap now supports parallel I/O for certain data write operations,
 mostly those involving larger amounts of data - Marshaller::put_vector

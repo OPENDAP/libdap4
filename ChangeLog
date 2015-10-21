@@ -1,3 +1,168 @@
+2015-10-19  James Gallagher  <jgallagher@opendap.org>
+
+	Fixes #1
+
+	Added changes to exit when 'report_errors' (-r) is true
+
+	Fix for the missing 'child groups' in getdap4's output
+	And some minor mods to XMLWriter - clean up the includes a bit.
+
+2015-10-15  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #5 from OPENDAP/intern_no_crc32
+	Intern no crc32
+
+	Merge pull request #4 from OPENDAP/endian_fixes
+	Endian fixes
+
+2015-10-14  James Gallagher  <jgallagher@opendap.org>
+
+	Some of the DAP4-only types were not setting is_dap4
+	This casued the DMR output code to throw an error (Unknown Type) in
+	cases where those types were used.
+	See https://opendap.atlassian.net/browse/HR-63
+
+2015-10-13  James Gallagher  <jgallagher@opendap.org>
+
+	fixed a warning in dmr-test - /* in a comment
+
+2015-10-13  jgallagher59701  <jgallagher@opendap.org>
+
+	Added test baselines for intern_data with no checksum
+	I dropped computing the checksum in the intern_data() method,
+	so the baselines for the tests had to be updated.
+
+2015-10-13  James Gallagher  <jgallagher@opendap.org>
+
+	Now the intern_data() method used with DAP4 does not compute the
+	checksum It is only computed by the code that serializes the
+	response - sends it to a remote client. I added baselines
+	specifically for the intern tests on little endian machines. Will
+	add ones for big endian next...
+
+	Merge branch 'intern_no_crc32' of
+	https://github.com/opendap/libdap4.git into intern_no_crc32
+
+2015-10-12  James Gallagher  <jgallagher@opendap.org>
+
+	Removed crc32 generation from intern_data()
+	This seems better - I htink computing the CRC code
+	when interning values is not necessary. Those should
+	only be computed when the server is going to send values.
+
+	Completed changes to D4UnMarshallerTest.cc
+	This copy of the tests hould work on both little- and big-endian
+	hosts.
+
+	More changes to D4UnMarshallerTest.cc
+
+2015-10-12  jgallagher59701  <jgallagher@opendap.org>
+
+	Partial fix for D4UnMarshallerTest.cc
+
+2015-10-12  James Gallagher  <jgallagher@opendap.org>
+
+	Changed WORDS_BIGENDIAN to __BIG_ENDIAN__
+
+2015-10-07  jgallagher59701  <jgallagher@opendap.org>
+
+	One step closer to the tests working on big endian machines
+	D4MarshallerTest now works
+
+	Update to D4Marshaller/UnMarshaller tests - added baselines for
+	big-endian ...There's still an issue, however.
+
+2015-10-07  James Gallagher  <jgallagher@opendap.org>
+
+	D4UnMarshallerTest also needs two sets of baselines. Added
+	little-endian ones.
+
+	D4MarshallerTest need two sets of baselines...
+	One for big- and one for litte-endian machines. I made the little
+	endian set.
+
+2015-10-07  jgallagher59701  <jgallagher@opendap.org>
+
+	Changed to D4EnumTest to support changes for big-endian machines.
+
+2015-10-07  James Gallagher  <jgallagher@opendap.org>
+
+	The change to D4Enum::compute_checksum() was correct. This fixes
+	the last of the issues with Enum on big-endian machines. The
+	problems we caused by the assumption that 64-, 32-, 16- and 8-bit
+	integers would align on the LSB, which is the case for
+	little-endian machines (but not big...). In several places where
+	reinterpret_cast<>() was used I first assigned the Enum _value_ to
+	a temp variable of the correct size and then passed the address of
+	that to the checksum calculation function. High cost in one sense,
+	but really, scalar Enum variables will be rare and Arrays of Enums
+	are handled differently. I also have dropped the overly-complex
+	design that used a union. It eliminated some casts, but was based
+	on the erroneous assumption regarding alignment.
+
+	Test change in computing checksum for big-endian machines.
+
+	Debugging big-endian issues still..
+
+2015-10-07  James Gallagher  <jimg@idoru.local>
+
+	Merge branch 'endian_fixes' of https://github.com/opendap/libdap4
+	into endian_fixes
+
+	Cleanup of a version of this that should work on big and
+	little-endian machines.
+
+2015-10-06  jgallagher59701  <jgallagher@opendap.org>
+
+	Baselines for Enum tests on big endian machines
+	Now only the tests 54 and 55 fail on the big enian machines...
+
+2015-10-06  James Gallagher  <jimg@idoru.local>
+
+	Removed union in the D4Enum implementation
+	This is an attempt to fix the issues found on big endian machines.
+
+2015-10-01  James Gallagher  <jgallagher@opendap.org>
+
+	The DMR tests now work on little endian machines, mostly
+	There is an issue with D4Enum that causes some tests to fail.
+
+2015-10-01  jgallagher59701  <jgallagher@opendap.org>
+
+	Fixes for function/ce tests modified:   tests/DMRTest.at
+
+2015-09-30  jgallagher59701  <jgallagher@opendap.org>
+
+	Baselines for a big endian machine.
+
+2015-09-30  James Gallagher  <jgallagher@opendap.org>
+
+	Fail: fixed a syntax error that got pushed.
+
+	Added capability to build baselines that's sane
+
+	Continue with fixes for data + ce tests
+
+	DMRTest is dependent on word order - this is a trial fix.
+
+2015-09-29  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed an issue in HTTPCacheTest; version number bump.
+	In HTTPCacheTest, a quirk of RCReader meant that when the tests
+	were run as part of distcheck they would fail if the user has set
+	USE_CACHE to 1 in their ~/.dodsrc. Version numbers bumped to 3.15.1.
+
+2015-09-23  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Fixed a syntx error in cgi_util.h
+	... and added comentary to MarshallerThread.cc
+
+2015-09-20  James Gallagher  <jgallagher@opendap.org>
+
+	Version 3.15.1
+
 2015-09-18  James Gallagher  <jgallagher@opendap.org>
 
 	Added empty Coverity model file

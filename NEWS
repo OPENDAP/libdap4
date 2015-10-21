@@ -1,3 +1,21 @@
+
+News for version 3.16.0
+
+I've bumped up the version because of an API change in libdap - the 
+library no longer computes the DAP4 CRC32 checksum as part of the 
+BaseType::intern_data() method. This API change affects DAP4 only. 
+Otherwise, this is a bug-fix release for 3.15.1
+
+Bugs fixed:
+
+getdap4 correctly produces output for dataset with child groups.
+
+Tests now work correctly for big-endian machines - before the DMR tests
+were failing because the CRC32 codes are different for the same, e.g.,
+int32 value, with different byte order. Not addressed are the issues 
+of how best to encode the byte order used when CRC32 computations are
+done. Thanks to the folks at RedHat for help (a VM) to work on this.
+
 News for version 3.15.1
 
 Bug fixes
