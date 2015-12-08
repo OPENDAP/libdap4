@@ -237,13 +237,13 @@ D4Attributes::transform_to_dap4(AttrTable &at)
 			break;
 		}
 		case Attr_float32: {
-			D4Attribute *a = new D4Attribute(name, attr_byte_c);
+			D4Attribute *a = new D4Attribute(name, attr_float32_c);
 			a->add_value_vector(*at.get_attr_vector(i));
 			add_attribute_nocopy(a);
 			break;
 		}
 		case Attr_float64: {
-			D4Attribute *a = new D4Attribute(name, attr_float32_c);
+			D4Attribute *a = new D4Attribute(name, attr_float64_c);
 			a->add_value_vector(*at.get_attr_vector(i));
 			add_attribute_nocopy(a);
 			break;
