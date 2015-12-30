@@ -51,6 +51,8 @@ stamp-h?
 aclocal.m4
 libtool
 
+CMakeLists.txt
+
 ## libdap specific files
 gl/*.h
 
