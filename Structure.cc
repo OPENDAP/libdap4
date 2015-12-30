@@ -396,8 +396,9 @@ bool
 Structure::serialize(ConstraintEvaluator &eval, DDS &dds,
                      Marshaller &m, bool ce_eval)
 {
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_on();
-
+#endif
     if (!read_p())
         read();  // read() throws Error and InternalErr
 
@@ -405,9 +406,9 @@ Structure::serialize(ConstraintEvaluator &eval, DDS &dds,
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
 #endif
-
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_off();
-
+#endif
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->send_p()) {
 #ifdef CHECKSUMS

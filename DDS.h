@@ -205,8 +205,6 @@ private:
 
     long d_max_response_size;   // In bytes...
 
-
-
     friend class DDSTest;
 
 protected:
@@ -342,10 +340,16 @@ public:
     /// Removes a range of variables from the DDS.
     void del_var(Vars_iter i1, Vars_iter i2);
 
+    /** @name DDS_timeout
+     *  Old deprecated DDS timeout code
+     *  @deprecated
+     */
+    ///@{
     void timeout_on();
     void timeout_off();
     void set_timeout(int t);
     int get_timeout();
+    //@}
 
     // These parse the DAP2 curly-brace document and make a C++ object.
     void parse(string fname);

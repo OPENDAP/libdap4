@@ -823,12 +823,15 @@ BaseType::read()
 void
 BaseType::intern_data(ConstraintEvaluator &, DDS &dds)
 {
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_on();
+#endif
     DBG2(cerr << "BaseType::intern_data: " << name() << endl);
     if (!read_p())
         read();          // read() throws Error and InternalErr
-
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_off();
+#endif
 }
 
 /**

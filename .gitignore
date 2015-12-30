@@ -149,3 +149,4 @@ unit-tests/chunked_iostream_test
 unit-tests/chunked-io/
 /Default/
 /docs/
+/.idea/

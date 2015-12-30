@@ -125,16 +125,17 @@ Float64::width(bool) const
 bool
 Float64::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_on();
-
+#endif
     if (!read_p())
         read();  // read() throws Error and InternalErr
 
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_off();
-
+#endif
     m.put_float64( d_buf ) ;
 
     return true;

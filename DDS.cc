@@ -190,7 +190,6 @@ DDS::duplicate(const DDS &dds)
     d_max_response_size = dds.d_max_response_size;
 }
 
-//FIXME says 3.2 when it's 2.0
 /**
  * Make a DDS which uses the given BaseTypeFactory to create variables.
  *
@@ -208,7 +207,7 @@ DDS::DDS(BaseTypeFactory *factory, const string &name)
           d_request_xml_base(""),
           d_timeout(0), d_keywords(), d_max_response_size(0)
 {
-    DBG(cerr << "Building a DDS for the default version (3.2)" << endl);
+    DBG(cerr << "Building a DDS for the default version (2.0)" << endl);
 
     // This method sets a number of values, including those returned by
     // get_protocol_major(), ..., get_namespace().
@@ -885,31 +884,51 @@ DDS::num_var()
 void
 DDS::timeout_on()
 {
+#if USE_LOCAL_TIMEOUT_SCHEME
 #ifndef WIN32
     alarm(d_timeout);
+#endif
 #endif
 }
 
 void
 DDS::timeout_off()
 {
+#if USE_LOCAL_TIMEOUT_SCHEME
 #ifndef WIN32
-    d_timeout = alarm(0);
+    // Old behavior commented out. I think it is an error to change the value
+    // of d_timeout. The way this will likely be used is to set the timeout
+    // value once and then 'turn on' or turn off' that timeout as the situation
+    // dictates. The initeded use for the DDS timeout is so that timeouts for
+    // data responses will include the CPU resources needed to build the response
+    // but not the time spent transmitting the response. This may change when
+    // more parallelism is added to the server... These methods are called from
+    // BESDapResponseBuilder in bes/dap. jhrg 12/22/15
+
+    // d_timeout = alarm(0);
+
+    alarm(0);
+#endif
 #endif
 }
 
 void
 DDS::set_timeout(int t)
 {
+#if USE_LOCAL_TIMEOUT_SCHEME
     //  Has no effect under win32
     d_timeout = t;
+#endif
 }
 
 int
 DDS::get_timeout()
 {
+#if USE_LOCAL_TIMEOUT_SCHEME
     //  Has to effect under win32
     return d_timeout;
+#endif
+    return 0;
 }
 
 /** @brief Traverse DDS, set Sequence leaf nodes. */

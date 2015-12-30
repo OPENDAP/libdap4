@@ -559,9 +559,9 @@ bool Sequence::read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_ev
         DBG2(cerr << "Leaving Sequence::read_row for " << name() << endl);
         return false;
     }
-
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_on();
-
+#endif
     bool eof = false;  // Start out assuming EOF is false.
     while (!eof && d_row_number < row) {
         if (!read_p()) {
@@ -593,9 +593,9 @@ bool Sequence::read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_ev
     // elements of the sequence know to not call read() but instead look for
     // data values inside themselves.
     set_read_p(true);
-
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_off();
-
+#endif
     // Return true if we have valid data, false if we've read to the EOF.
     DBG2(cerr << "Leaving Sequence::read_row for " << name() << " with eof: " << eof << endl);
     return !eof; // jhrg 10/10/13 was: eof == 0;

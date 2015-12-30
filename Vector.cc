@@ -619,16 +619,17 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
+#if 0
     dds.timeout_on();
-
+#endif
     if (!read_p())
         read(); // read() throws Error and InternalErr
 
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-
+#if 0
     dds.timeout_off();
-
+#endif
     // length() is not capacity; it must be set explicitly in read().
     int num = length();
     bool status = false;
