@@ -107,9 +107,12 @@ CLEANFILES = *.log *.output *.gcda *.gcno $(BISON_SRC) $(FLEX_SRC) \
 	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
 
 .PHONY: docs
-docs:
-	doxygen $(srcdir)/doxy.conf
+docs: doxy.conf
+	doxygen doxy.conf
 	(cd docs && tar -czf html.tar.gz html)
+
+doxy.conf: doxy.conf.in config.status
+	./config.status --file=doxy.conf
 
 # cccc computes metrics like Lines of code and McCabe. It'a available
 # on the web...
