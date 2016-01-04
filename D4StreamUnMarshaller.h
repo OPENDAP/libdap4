@@ -51,6 +51,7 @@
 #include "UnMarshaller.h"
 #include "InternalErr.h"
 
+#include "util.h"
 #include "debug.h"
 
 using std::istream;
@@ -89,6 +90,19 @@ public:
     virtual ~D4StreamUnMarshaller();
 
     void set_twiddle_bytes(bool twiddle) { d_twiddle_bytes = twiddle; }
+
+    /**
+     * @brief Is the data source we are reading from a big-endian machine?
+     * We need this because the value of the CRC32 checksum is dependent on
+     * byte order.
+     *
+     * @note This is somewhat tortured logic, but if this host is big-endian and
+     * twiddle_bytes is not true, then the remote host must be big-endian. Similarly,
+     * if this host is not big-endian and twiddle_bytes is true, then the remote
+     * host must be big-endian
+     */
+    bool is_source_big_endian() const { return (is_host_big_endian() && !d_twiddle_bytes)
+                                               || (!is_host_big_endian() && d_twiddle_bytes); }
 
     Crc32::checksum get_checksum();
     string get_checksum_str();
