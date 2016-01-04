@@ -899,7 +899,7 @@ DDS::timeout_off()
 }
 
 void
-DDS::set_timeout(int)
+DDS::set_timeout(int t)
 {
     //  Has no effect under win32
     d_timeout = t;

@@ -453,6 +453,7 @@ HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs
                         req_hdrs);
     if (headers)
         req_hdrs = for_each(headers->begin(), headers->end(), req_hdrs);
+
     curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, req_hdrs.get_headers());
 
     // Turn off the proxy for this URL?
@@ -646,6 +647,7 @@ HTTPConnect::fetch_url(const string &url)
     if (!d_content_type.empty() && find_if(stream->get_headers()->begin(), stream->get_headers()->end(),
     									   HeaderMatch("Content-Type:")) == stream->get_headers()->end())
         stream->get_headers()->push_back("Content-Type: " + d_content_type);
+
     parser = for_each(stream->get_headers()->begin(), stream->get_headers()->end(), ParseHeader());
 
 #ifdef HTTP_TRACE
