@@ -427,7 +427,7 @@ int main(int argc, char *argv[])
                 }
             }
             else {
-                // if (!get_das && !get_dds && !get_data) This code uses
+                // if (!get_das && !get_dds && !get_data ...) This code uses
                 // HTTPConnect::fetch_url which cannot be accessed using an
                 // instance of Connect. So some of the options supported by
                 // other URLs won't work here (e.g., the verbose option

@@ -144,7 +144,7 @@ void Connect::process_data(DataDDS &data, Response *rs)
 }
 
 /** This private method process data from both local and remote sources. It
- exists to eliminate duplication of code. */
+    exists to eliminate duplication of code. */
 void Connect::process_data(DDS &data, Response *rs)
 {
     DBG(cerr << "Entering Connect::process_data" << endl);
@@ -165,8 +165,9 @@ void Connect::process_data(DDS &data, Response *rs)
         // Web errors (those reported in the return document's MIME header)
         // are processed by the WWW library.
         throw InternalErr(__FILE__, __LINE__,
-            "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
+            "An error was reported by the remote httpd; this should have been processed by HTTPConnect.");
 
+        // FIXME: The following case is never used. There is no such response. jhrg 10/20/15
     case dods_data_ddx: {
         // Parse the DDX; throw an exception on error.
         DDXParser ddx_parser(data.get_factory());
@@ -190,12 +191,7 @@ void Connect::process_data(DDS &data, Response *rs)
         read_multipart_headers(rs->get_stream(), "application/octet-stream", dap4_data, data_cid);
 
         // Now read the data
-#if FILE_UN_MARSHALLER
         XDRFileUnMarshaller um(rs->get_stream());
-#else
-        fpistream in ( rs->get_stream() );
-        XDRStreamUnMarshaller um( in );
-#endif
         for (DDS::Vars_iter i = data.var_begin(); i != data.var_end(); i++) {
             (*i)->deserialize(um, &data);
         }
@@ -206,13 +202,9 @@ void Connect::process_data(DDS &data, Response *rs)
     default: {
         // Parse the DDS; throw an exception on error.
         data.parse(rs->get_stream());
-        data.tag_nested_sequences();
-#if FILE_UN_MARSHALLER
+
         XDRFileUnMarshaller um(rs->get_stream());
-#else
-        fpistream in ( rs->get_stream() );
-        XDRStreamUnMarshaller um( in );
-#endif
+
         // Load the DDS with data.
         for (DDS::Vars_iter i = data.var_begin(); i != data.var_end(); i++) {
             (*i)->deserialize(um, &data);
@@ -912,6 +904,7 @@ void Connect::request_data_url(DataDDS &data)
     }
 }
 
+// FIXME Unused?
 void Connect::request_data_ddx(DataDDS &data, string expr)
 {
     string proj, sel;
@@ -946,6 +939,7 @@ void Connect::request_data_ddx(DataDDS &data, string expr)
     }
 }
 
+// FIXME Unused?
 void Connect::request_data_ddx_url(DataDDS &data)
 {
     string use_url = _URL + "?" + _proj + _sel;
@@ -1015,6 +1009,7 @@ static void divine_type_information(Response *rs)
     while (!feof(rs->get_stream()) && !ferror(rs->get_stream()) && isspace(c)) {
         c = getc(rs->get_stream());
     }
+
 
     if (ferror(rs->get_stream()))
         throw Error("Error reading response type information: " + string(strerror(errno)));

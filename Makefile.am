@@ -94,11 +94,11 @@ getdap4_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
-EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI		\
-	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf		\
-	libdap.spec VCPP dods-datatypes-static.h			\
-	xdr-datatypes-static.h dap-config-pkgconfig $(LEX_YACC_EXTRA)	\
-	OSX_Resources getdap.man1 dap-config.man1 getdap4.man1
+EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI	\
+	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec VCPP	\
+	dods-datatypes-static.h xdr-datatypes-static.h		\
+	dap-config-pkgconfig $(LEX_YACC_EXTRA) OSX_Resources	\
+	getdap.man1 dap-config.man1 getdap4.man1
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
@@ -107,9 +107,13 @@ CLEANFILES = *.log *.output *.gcda *.gcno $(BISON_SRC) $(FLEX_SRC) \
 	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
 
 .PHONY: docs
-docs:
-	doxygen $(srcdir)/doxy.conf
+docs: doxy.conf
+	doxygen doxy.conf
 	(cd docs && tar -czf html.tar.gz html)
+
+# Not needed. jhrg 1/4/16
+# doxy.conf: doxy.conf.in config.status
+# 	./config.status --file=doxy.conf
 
 # cccc computes metrics like Lines of code and McCabe. It'a available
 # on the web...
