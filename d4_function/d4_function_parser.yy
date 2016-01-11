@@ -180,7 +180,7 @@ fname: WORD
     D4Function f;
     if (!evaluator.sf_list()->find_function($1, &f)) {
         // ...cloud use @1.{first,last}_column in these error messages.
-        throw Error("'" + $1 + "' is not a registered DAP4 server function.");
+        throw Error(malformed_expr, "'" + $1 + "' is not a registered DAP4 server function.");
     }
 
     $$ = f;
@@ -216,7 +216,7 @@ variable_or_constant : id
 {
     D4RValue *rvalue = evaluator.build_rvalue($1);
     if (!rvalue) {
-        throw Error("'" + $1 + "' is not a variable, number or string.");
+        throw Error(malformed_expr, "'" + $1 + "' is not a variable, number or string.");
     }
     
     $$ = rvalue;

@@ -64,7 +64,7 @@ typedef int ErrorCode; //using standard errno+netCDF error codes from server
 #define    malformed_expr    1005
 #define    no_authorization  1006
 #define    cannot_read_file  1007
-#define    dummy_message     1008 // Dumplicate of 1007; see Error.cc
+#define    dummy_message     1008 // Duplicate of 1007; see Error.cc
 
 //@}
 

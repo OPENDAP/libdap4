@@ -65,14 +65,14 @@ D4ConstraintEvaluator::set_array_slices(const std::string &id, Array *a)
 {
     // Test that the indexes and dimensions match in number
     if (d_indexes.size() != a->dimensions())
-        throw Error("The index constraint for '" + id + "' does not match its rank.");
+        throw Error(malformed_expr, "The index constraint for '" + id + "' does not match its rank.");
 
     Array::Dim_iter d = a->dim_begin();
     for (vector<index>::iterator i = d_indexes.begin(), e = d_indexes.end(); i != e; ++i) {
         if ((*i).stride > (unsigned long long)a->dimension_stop(d, false))
-            throw Error("For '" + id + "', the index stride value is greater than the number of elements in the Array");
+            throw Error(malformed_expr, "For '" + id + "', the index stride value is greater than the number of elements in the Array");
         if (!(*i).rest && ((*i).stop) > (unsigned long long)a->dimension_stop(d, false))
-            throw Error("For '" + id + "', the index stop value is greater than the number of elements in the Array");
+            throw Error(malformed_expr, "For '" + id + "', the index stop value is greater than the number of elements in the Array");
 
         D4Dimension *dim = a->dimension_D4dim(d);
 
@@ -98,13 +98,13 @@ D4ConstraintEvaluator::set_array_slices(const std::string &id, Array *a)
 void
 D4ConstraintEvaluator::throw_not_found(const string &id, const string &ident)
 {
-    throw Error(d_expr + ": The variable " + id + " was not found in the dataset (" + ident + ").");
+    throw Error(no_such_variable, d_expr + ": The variable " + id + " was not found in the dataset (" + ident + ").");
 }
 
 void
 D4ConstraintEvaluator::throw_not_array(const string &id, const string &ident)
 {
-	throw Error(d_expr + ": The variable '" + id + "' is not an Array variable (" + ident + ").");
+	throw Error(no_such_variable, d_expr + ": The variable '" + id + "' is not an Array variable (" + ident + ").");
 }
 
 void
@@ -205,14 +205,14 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
     else {
         // Test that the indexes and dimensions match in number
         if (d_indexes.size() != a->dimensions())
-            throw Error("The index constraint for '" + btp->name() + "' does not match its rank.");
+            throw Error(malformed_expr, "The index constraint for '" + btp->name() + "' does not match its rank.");
 
         Array::Dim_iter d = a->dim_begin();
         for (vector<index>::iterator i = d_indexes.begin(), e = d_indexes.end(); i != e; ++i) {
             if ((*i).stride > (unsigned long long) (a->dimension_stop(d, false) - a->dimension_start(d, false)) + 1)
-                throw Error("For '" + btp->name() + "', the index stride value is greater than the number of elements in the Array");
+                throw Error(malformed_expr, "For '" + btp->name() + "', the index stride value is greater than the number of elements in the Array");
             if (!(*i).rest && ((*i).stop) > (unsigned long long) (a->dimension_stop(d, false) - a->dimension_start(d, false)) + 1)
-                throw Error("For '" + btp->name() + "', the index stop value is greater than the number of elements in the Array");
+                throw Error(malformed_expr, "For '" + btp->name() + "', the index stop value is greater than the number of elements in the Array");
 
             D4Dimension *dim = a->dimension_D4dim(d);
 
@@ -250,9 +250,9 @@ D4ConstraintEvaluator::slice_dimension(const std::string &id, const index &i)
     D4Dimension *dim = dmr()->root()->find_dim(id);
 
     if (i.stride > dim->size())
-        throw Error("For '" + id + "', the index stride value is greater than the size of the dimension");
+        throw Error(malformed_expr, "For '" + id + "', the index stride value is greater than the size of the dimension");
     if (!i.rest && (i.stop > dim->size() - 1))
-        throw Error("For '" + id + "', the index stop value is greater than the size of the dimension");
+        throw Error(malformed_expr, "For '" + id + "', the index stop value is greater than the size of the dimension");
 
     dim->set_constraint(i.start, i.stride, i.rest ? dim->size() - 1: i.stop);
 
