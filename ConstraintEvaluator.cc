@@ -271,7 +271,7 @@ ConstraintEvaluator::eval_function_clauses(DDS &dds)
         }
         else {
             delete fdds;
-            throw Error("A function was called but failed to return a value.");
+            throw Error(internal_error, "A function was called but failed to return a value.");
         }
     }
 
@@ -300,7 +300,7 @@ ConstraintEvaluator::eval_function_clauses(DataDDS &dds)
         }
         else {
             delete fdds;
-            throw Error("A function was called but failed to return a value.");
+            throw Error(internal_error, "A function was called but failed to return a value.");
         }
     }
 
