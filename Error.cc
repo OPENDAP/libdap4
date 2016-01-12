@@ -65,7 +65,8 @@ static const char *err_messages[] = {
     "Malformed expression",
     "No authorization",
     "Cannot read file",
-    "Cannot read file"
+    "Not Implemented",
+    ""
 };
 
 /** Specializations of Error should use this to set the error code and

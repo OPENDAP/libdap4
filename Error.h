@@ -57,15 +57,15 @@ typedef int ErrorCode; //using standard errno+netCDF error codes from server
 /** @name Internal DAP errors */
 //@{
 #define    undefined_error   1000 ///< Undefined error code
-#define    unknown_error     1001 ///< Unknown error
-#define    internal_error    1002 ///< Internal server error
+#define    unknown_error     1001 ///< Unknown error (the default code) (HTTP 400)
+#define    internal_error    1002 ///< Internal server error (500)
 #define    no_such_file      1003
 #define    no_such_variable  1004
 #define    malformed_expr    1005
 #define    no_authorization  1006
 #define    cannot_read_file  1007
-#define    dummy_message     1008 // Duplicate of 1007; see Error.cc
-
+#define    not_implemented   1008 ///< Implies that it will/might be impl. (501)
+#define    dummy_code        1009 ///< @see Error.cc; end the array with ""
 //@}
 
 /** The Error class is used to transport error information from the server to

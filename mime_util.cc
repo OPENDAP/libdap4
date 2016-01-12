@@ -950,8 +950,7 @@ string read_multipart_boundary(FILE *in, const string &boundary)
     // The value of 'boundary_line' is returned by this function.
     if ((!boundary.empty() && is_boundary(boundary_line.c_str(), boundary))
 	    || boundary_line.find("--") != 0)
-	throw Error(
-		"The DAP4 data response document is broken - missing or malformed boundary.");
+	throw Error(internal_error, "The DAP4 data response document is broken - missing or malformed boundary.");
 
     return boundary_line;
 }
@@ -964,8 +963,7 @@ string read_multipart_boundary(istream &in, const string &boundary)
     // The value of 'boundary_line' is returned by this function.
     if ((!boundary.empty() && is_boundary(boundary_line.c_str(), boundary))
 	    || boundary_line.find("--") != 0)
-	throw Error(
-		"The DAP4 data response document is broken - missing or malformed boundary.");
+	throw Error(internal_error, "The DAP4 data response document is broken - missing or malformed boundary.");
 
     return boundary_line;
 }
@@ -1002,13 +1000,12 @@ void read_multipart_headers(FILE *in, const string &content_type, const ObjectTy
 		if (name == "content-type") {
 			ct = true;
 			if (value.find(content_type) == string::npos)
-				throw Error("Content-Type for this part of a DAP2 data ddx response must be " + content_type + ".");
+				throw Error(internal_error, "Content-Type for this part of a DAP2 data ddx response must be " + content_type + ".");
 		}
 		else if (name == "content-description") {
 			cd = true;
 			if (get_description_type(value) != object_type)
-				throw Error(
-						"Content-Description for this part of a DAP2 data ddx response must be dods-ddx or dods-data-ddx");
+				throw Error(internal_error, "Content-Description for this part of a DAP2 data ddx response must be dods-ddx or dods-data-ddx");
 		}
 		else if (name == "content-id") {
 			ci = true;
@@ -1019,7 +1016,7 @@ void read_multipart_headers(FILE *in, const string &content_type, const ObjectTy
 		header = get_next_mime_header(in);
 	}
 
-	if (!(ct && cd && ci)) throw Error("The DAP4 data response document is broken - missing header.");
+	if (!(ct && cd && ci)) throw Error(internal_error, "The DAP4 data response document is broken - missing header.");
 }
 
 void read_multipart_headers(istream &in, const string &content_type, const ObjectType object_type, const string &cid)
@@ -1034,7 +1031,7 @@ void read_multipart_headers(istream &in, const string &content_type, const Objec
 		if (name == "content-type") {
 			ct = true;
 			if (value.find(content_type) == string::npos)
-				throw Error("Content-Type for this part of a DAP4 data response must be " + content_type + ".");
+				throw Error(internal_error, "Content-Type for this part of a DAP4 data response must be " + content_type + ".");
 		}
 		else if (name == "content-description") {
 			cd = true;
@@ -1050,7 +1047,7 @@ void read_multipart_headers(istream &in, const string &content_type, const Objec
 		header = get_next_mime_header(in);
 	}
 
-	if (!(ct && cd && ci)) throw Error("The DAP4 data response document is broken - missing header.");
+	if (!(ct && cd && ci)) throw Error(internal_error, "The DAP4 data response document is broken - missing header.");
 }
 
 /** Given a Content-Id read from the DDX, return the value to look for in a
@@ -1065,7 +1062,7 @@ string cid_to_header_value(const string &cid)
 {
     string::size_type offset = cid.find("cid:");
     if (offset != 0)
-        throw Error("expected CID to start with 'cid:'");
+        throw Error(internal_error, "expected CID to start with 'cid:'");
 
     string value = "<";
     value.append(cid.substr(offset + 4));

@@ -142,7 +142,7 @@ parse_error(const char *msg, const int line_num, const char *context)
     else
         oss += (string) "\n" + msg + (string) "\n";
 
-    throw Error(oss);
+    throw Error(malformed_expr, oss);
 }
 
 // context comes from the parser and will always be a char * unless the

@@ -119,7 +119,7 @@ SignalHandler::dispatcher(int signum)
         // Calling _exit() or abort() is not a good thing for a library to be
         // doing. This results in a warning from rpmlint
         default:
-            throw Error("Signal handler operation on an unsupported signal.");
+            throw Error(internal_error, "Signal handler operation on an unsupported signal.");
         }
     }
     else

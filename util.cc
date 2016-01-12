@@ -1220,14 +1220,14 @@ string open_temp_fstream(ofstream &f, const string &name_template, const string 
     // Use mkstemp to make and open the temp file atomically
     int tmpfile = mkstemps(&name[0], suffix.length());
     if (tmpfile == -1)
-        throw Error("Could not make a temporary file.");
+        throw Error(internal_error, "Could not make a temporary file.");
     // Open the file using C++ ofstream; get a C++ fstream object
     f.open(&name[0]);
     // Close the file descriptor; the file stays open because of the fstream object
     close(tmpfile);
     // Now test that the fstream object is valid
     if (f.fail())
-        throw Error("Could not make a temporary file.");
+        throw Error(internal_error, "Could not make a temporary file.");
 
     return string(&name[0]);
 }

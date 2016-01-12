@@ -122,15 +122,13 @@ void XDRFileMarshaller::put_float64(dods_float64 val)
 void XDRFileMarshaller::put_uint16(dods_uint16 val)
 {
     if (!XDR_UINT16(_sink, &val))
-        throw Error(
-            "Network I/O Error. Could not send uint 16 data. This may be due to a\nbug in libdap or a problem with the network connection.");
+        throw Error("Network I/O Error. Could not send uint 16 data.");
 }
 
 void XDRFileMarshaller::put_uint32(dods_uint32 val)
 {
     if (!XDR_UINT32(_sink, &val))
-        throw Error(
-            "Network I/O Error. Could not send uint 32 data. This may be due to a\nbug in libdap or a problem with the network connection.");
+        throw Error("Network I/O Error. Could not send uint 32 data.");
 }
 
 void XDRFileMarshaller::put_str(const string &val)
@@ -138,8 +136,7 @@ void XDRFileMarshaller::put_str(const string &val)
     const char *out_tmp = val.c_str();
 
     if (!xdr_string(_sink, (char **) &out_tmp, max_str_len))
-        throw Error(
-            "Network I/O Error. Could not send string data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+        throw Error("Network I/O Error. Could not send string data.");
 }
 
 void XDRFileMarshaller::put_url(const string &val)
@@ -150,15 +147,13 @@ void XDRFileMarshaller::put_url(const string &val)
 void XDRFileMarshaller::put_opaque(char *val, unsigned int len)
 {
     if (!xdr_opaque(_sink, val, len))
-        throw Error(
-            "Network I/O Error. Could not send opaque data.\nThis may be due to a bug in libdap, on the server or a\nproblem with the network connection.");
+        throw Error("Network I/O Error. Could not send opaque data.");
 }
 
 void XDRFileMarshaller::put_int(int val)
 {
     if (!xdr_int(_sink, &val))
-        throw Error(
-            "Network I/O Error(1). This may be due to a bug in libdap or a\nproblem with the network connection.");
+        throw Error("Network I/O Error(1).");
 }
 
 void XDRFileMarshaller::put_vector(char *val, int num, Vector &)
@@ -168,8 +163,7 @@ void XDRFileMarshaller::put_vector(char *val, int num, Vector &)
     put_int(num);
 
     if (!xdr_bytes(_sink, (char **) &val, (unsigned int *) &num, DODS_MAX_ARRAY)) {
-        throw Error(
-            "Network I/O Error(2). This may be due to a bug in libdap or a\nproblem with the network connection.");
+        throw Error("Network I/O Error(2).");
     }
 }
 
@@ -182,8 +176,7 @@ void XDRFileMarshaller::put_vector(char *val, int num, int width, Vector &vec)
     BaseType *var = vec.var();
     if (!xdr_array(_sink, (char **) &val, (unsigned int *) &num, DODS_MAX_ARRAY, width,
         XDRUtils::xdr_coder(var->type()))) {
-        throw Error(
-            "Network I/O Error(2). This may be due to a bug in libdap or a\nproblem with the network connection.");
+        throw Error("Network I/O Error(2).");
     }
 }
 

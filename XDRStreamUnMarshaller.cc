@@ -56,7 +56,7 @@ XDRStreamUnMarshaller::XDRStreamUnMarshaller(istream &in) : /*&d_source( 0 ),*/
     if (!d_buf)
         d_buf = (char *) malloc(XDR_DAP_BUFF_SIZE);
     if (!d_buf)
-        throw Error("Failed to allocate memory for data serialization.");
+        throw Error(internal_error, "Failed to allocate memory for data serialization.");
 
     //&d_source = new XDR;
     xdrmem_create(&d_source, d_buf, XDR_DAP_BUFF_SIZE, XDR_DECODE);
