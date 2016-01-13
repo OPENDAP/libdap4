@@ -65,7 +65,7 @@ typedef int ErrorCode; //using standard errno+netCDF error codes from server
 #define    no_authorization  1006 ///< (401)
 #define    cannot_read_file  1007 ///< (400)
 #define    not_implemented   1008 ///< Implies that it will/might be impl. (501)
-#define    dummy_code        1009 ///< @see Error.cc; end the array with ""
+#define    dummy_message     1009 ///< @see Error.cc; end the array with ""
 //@}
 
 /** The Error class is used to transport error information from the server to
