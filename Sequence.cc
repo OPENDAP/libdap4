@@ -1318,8 +1318,7 @@ void Sequence::set_leaf_sequence(int lvl)
         // in serialize_leaf() and serialize_parent_part_one()).
         if ((*iter)->type() == dods_sequence_c && (*iter)->send_p()) {
             if (has_child_sequence)
-                throw Error(
-                        "This implementation does not support more than one nested sequence at a level. Contact the server administrator.");
+                throw Error("This implementation does not support more than one nested sequence at a level. Contact the server administrator.");
 
             has_child_sequence = true;
             static_cast<Sequence&>(**iter).set_leaf_sequence(++lvl);

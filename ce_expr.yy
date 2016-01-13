@@ -355,7 +355,7 @@ array_const_special_form: SCAN_HASH_FLOAT64 '(' arg_length_hint ':' fast_float64
 arg_length_hint: SCAN_WORD
           {
               if (!check_int32($1))
-                  throw Error(malformed_expr, "#<type>(hint, value, ...) special form expected hint to be an integer");
+                  throw Error(malformed_expr, "$<type>(hint, value, ...) special form expected hint to be an integer");
                    
               arg_length_hint_value = atoi($1);
               $$ = true;
@@ -838,28 +838,30 @@ rel_op:		SCAN_EQUAL
 void
 ce_exprerror(ce_parser_arg *, const string &s)
 {
-    //ce_exprerror(s.c_str());
-    string msg = "Constraint expression parse error: " + (string) s;
+    string msg = "Constraint expression parse error: " +s;
     throw Error(malformed_expr, msg);
 }
 
 void ce_exprerror(ce_parser_arg *, const string &s, const string &s2)
 {
-    //ce_exprerror(s.c_str(), s2.c_str());
-    string msg = "Constraint expression parse error: " + (string) s + ": " + (string) s2;
+    string msg = "Constraint expression parse error: " + s + ": " + s2;
     throw Error(malformed_expr, msg);    
 }
 
 void no_such_ident(ce_parser_arg *arg, const string &name, const string &word)
 {
+#if 0
     string msg = "No such " + word + " in dataset";
-    ce_exprerror(arg, msg /*.c_str()*/, name);
+    ce_exprerror(arg, msg , name);
+#endif
+    string msg = "Constraint expression parse error: No such " + word + " in dataset: " + name;
+    throw Error(no_such_variable, msg);    
+    
 }
 
 void no_such_func(ce_parser_arg *arg, const string &name)
 {
     ce_exprerror(arg, "Not a registered function", name);
-    //no_such_func(name/*.c_str()*/);
 }
 
 /* If we're calling this, assume var is not a Sequence. But assume that the

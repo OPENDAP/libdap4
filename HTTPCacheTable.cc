@@ -385,7 +385,7 @@ public:
                          (long)(e->response_time),
                          (long)(e->corrected_initial_age),
                          e->must_revalidate ? '1' : '0') < 0)
-            throw Error("Cache Index. Error writing cache index\n");
+            throw Error(internal_error, "Cache Index. Error writing cache index\n");
     }
 };
 
@@ -478,7 +478,7 @@ HTTPCacheTable::create_hash_directory(int hash)
     errno = 0;
     if (mkdir(path.str().c_str(), 0777) < 0 && errno != EEXIST) {
         umask(mask);
-        throw Error("Could not create the directory for the cache at '" + path.str() + "' (" + strerror(errno) + ").");
+        throw Error(internal_error, "Could not create the directory for the cache at '" + path.str() + "' (" + strerror(errno) + ").");
     }
 
     // Restore themask
@@ -528,7 +528,7 @@ HTTPCacheTable::create_location(HTTPCacheTable::CacheEntry *entry)
     if (fd < 0) {
         // delete[] templat; templat = 0;
         // close(fd); Calling close() when fd is < 0 is a bad idea! jhrg 7/2/15
-        throw Error("The HTTP Cache could not create a file to hold the response; it will not be cached.");
+        throw Error(internal_error, "The HTTP Cache could not create a file to hold the response; it will not be cached.");
     }
 
     entry->cachename = &templat[0];

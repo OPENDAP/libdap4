@@ -115,7 +115,7 @@ void D4FunctionEvaluator::eval(DMR *function_result)
     if (ce_parser_debug) parser.set_trace_parsing(true);
     bool parse_ok = parser.parse(function);
     if (!parse_ok)
-    Error("Function Expression failed to parse.");
+    Error(malformed_expr, "Function Expression failed to parse.");
     else {
         if (ce_parser_debug) cerr << "Function Parse OK" << endl;
         D4RValueList *result = parser.result();

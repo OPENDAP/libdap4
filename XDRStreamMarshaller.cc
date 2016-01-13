@@ -78,7 +78,7 @@ XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) :
     d_out(out), d_partial_put_byte_count(0), tm(0)
 {
     if (!d_buf) d_buf = (char *) malloc(XDR_DAP_BUFF_SIZE);
-    if (!d_buf) throw Error("Failed to allocate memory for data serialization.");
+    if (!d_buf) throw Error(internal_error, "Failed to allocate memory for data serialization.");
 
     xdrmem_create(&d_sink, d_buf, XDR_DAP_BUFF_SIZE, XDR_ENCODE);
 
@@ -97,8 +97,7 @@ XDRStreamMarshaller::~XDRStreamMarshaller()
 void XDRStreamMarshaller::put_byte(dods_byte val)
 {
      if (!xdr_setpos(&d_sink, 0))
-        throw Error(
-            "Network I/O Error. Could not send byte data - unable to set stream position.");
+        throw Error("Network I/O Error. Could not send byte data - unable to set stream position.");
 
     if (!xdr_char(&d_sink, (char *) &val))
         throw Error(
@@ -212,7 +211,7 @@ void XDRStreamMarshaller::put_uint16(dods_uint16 val)
 
     if (!XDR_UINT16(&d_sink, &val))
         throw Error(
-            "Network I/O Error. Could not send uint 16 data. This may be due to a\nbug in libdap or a problem with the network connection.");
+            "Network I/O Error. Could not send uint 16 data.");
 
     unsigned int bytes_written = xdr_getpos(&d_sink);
     if (!bytes_written)
@@ -234,7 +233,7 @@ void XDRStreamMarshaller::put_uint32(dods_uint32 val)
 
     if (!XDR_UINT32(&d_sink, &val))
         throw Error(
-            "Network I/O Error. Could not send uint 32 data. This may be due to a\nbug in libdap or a problem with the network connection.");
+            "Network I/O Error. Could not send uint 32 data.");
 
     unsigned int bytes_written = xdr_getpos(&d_sink);
     if (!bytes_written)

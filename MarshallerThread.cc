@@ -152,12 +152,12 @@ ChildLocker::~ChildLocker()
 MarshallerThread::MarshallerThread() :
     d_thread(0), d_child_thread_count(0)
 {
-    if (pthread_attr_init(&d_thread_attr) != 0) throw Error("Failed to initialize pthread attributes.");
+    if (pthread_attr_init(&d_thread_attr) != 0) throw Error(internal_error, "Failed to initialize pthread attributes.");
     if (pthread_attr_setdetachstate(&d_thread_attr, PTHREAD_CREATE_DETACHED /*PTHREAD_CREATE_JOINABLE*/) != 0)
-        throw Error("Failed to complete pthread attribute initialization.");
+        throw Error(internal_error, "Failed to complete pthread attribute initialization.");
 
-    if (pthread_mutex_init(&d_out_mutex, 0) != 0) throw Error("Failed to initialize mutex.");
-    if (pthread_cond_init(&d_out_cond, 0) != 0) throw Error("Failed to initialize cond.");
+    if (pthread_mutex_init(&d_out_mutex, 0) != 0) throw Error(internal_error, "Failed to initialize mutex.");
+    if (pthread_cond_init(&d_out_cond, 0) != 0) throw Error(internal_error, "Failed to initialize cond.");
 }
 
 MarshallerThread::~MarshallerThread()

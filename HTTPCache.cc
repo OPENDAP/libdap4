@@ -266,7 +266,7 @@ HTTPCache::HTTPCache(string cache_root, bool force) :
 	int block_size;
 
 	if (!get_single_user_lock(force))
-	    throw Error("Could not get single user lock for the cache");
+	    throw Error(internal_error, "Could not get single user lock for the cache");
 
 #ifdef WIN32
 	//  Windows is unable to provide us this information.  4096 appears
@@ -279,7 +279,7 @@ HTTPCache::HTTPCache(string cache_root, bool force) :
 	if (stat(cache_root.c_str(), &s) == 0)
 		block_size = s.st_blksize;
 	else
-		throw Error("Could not set file system block size.");
+		throw Error(internal_error, "Could not set file system block size.");
 #endif
 	d_http_cache_table = new HTTPCacheTable(d_cache_root, block_size);
 	d_cache_enabled = true;
@@ -1258,7 +1258,7 @@ HTTPCache::get_conditional_request_headers(const string &url)
     try {
         entry = d_http_cache_table->get_locked_entry_from_cache_table(url);
         if (!entry)
-            throw Error("There is no cache entry for the URL: " + url);
+            throw Error(internal_error, "There is no cache entry for the URL: " + url);
 
         if (entry->get_etag() != "")
             headers.push_back(string("If-None-Match: ") + entry->get_etag());
@@ -1327,7 +1327,7 @@ HTTPCache::update_response(const string &url, time_t request_time,
     try {
         entry = d_http_cache_table->get_write_locked_entry_from_cache_table(url);
         if (!entry)
-            throw Error("There is no cache entry for the URL: " + url);
+            throw Error(internal_error, "There is no cache entry for the URL: " + url);
 
         // Merge the new headers with the exiting HTTPCacheTable::CacheEntry object.
         d_http_cache_table->parse_headers(entry, d_max_entry_size, headers);
@@ -1402,7 +1402,7 @@ HTTPCache::is_url_valid(const string &url)
 
         entry = d_http_cache_table->get_locked_entry_from_cache_table(url);
         if (!entry)
-            throw Error("There is no cache entry for the URL: " + url);
+            throw Error(internal_error, "There is no cache entry for the URL: " + url);
 
         // If we supported range requests, we'd need code here to check if
         // there was only a partial response in the cache. 10/02/02 jhrg
@@ -1603,7 +1603,7 @@ HTTPCache::purge_cache()
 
     try {
         if (d_http_cache_table->is_locked_read_responses())
-            throw Error("Attempt to purge the cache with entries in use.");
+            throw Error(internal_error, "Attempt to purge the cache with entries in use.");
 
         d_http_cache_table->delete_all_entries();
     }
