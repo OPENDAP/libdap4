@@ -263,7 +263,14 @@ template std::vector<dods_float64> *D4FunctionEvaluator::init_arg_list(dods_floa
 // is inside D4FunctionEvaluator::parse(...)
 void D4FunctionEvaluator::error(const libdap::location &l, const std::string &m)
 {
+#if 0
     std::cerr << l << ": " << m << std::endl;
+#else
+    ostringstream oss;
+    oss << l << ": " << m << ends;
+    throw Error(malformed_expr, oss.str());
+#endif
+
 }
 
 } /* namespace libdap */
