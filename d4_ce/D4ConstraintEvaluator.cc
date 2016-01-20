@@ -296,13 +296,9 @@ D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s)
 void
 D4ConstraintEvaluator::error(const libdap::location &l, const std::string &m)
 {
-#if 0
-	std::cerr << l << ": " << m << std::endl;
-#else
 	ostringstream oss;
 	oss << l << ": " << m << ends;
 	throw Error(malformed_expr, oss.str());
-#endif
 }
 
 } /* namespace libdap */
