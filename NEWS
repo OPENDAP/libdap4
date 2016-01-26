@@ -1,3 +1,21 @@
+News for version 3.17.0
+
+Better error reporting. Error objects are now always thrown with a
+code that 'make sense' and use the default code only when really
+necessary. This means that the BES will not report most Error throws
+as an internal error (only a few are) unless that's really the case.
+This is used, in turn, by the front end to make better error responses
+for users.
+
+The old timeout code is still present but not used. This matches 
+changes made in the BES to correctly process timeouts.
+
+Improved support for doxygen.
+
+Support for DAP4: Attributes were sometimes mis-coded as Byte when
+they should have been Float32. Fixed.
+
+Child Groups were sometimes printed twice. No more.
 
 News for version 3.16.0
 

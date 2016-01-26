@@ -1,3 +1,104 @@
+2016-01-20  James Gallagher  <jgallagher@opendap.org>
+
+	Removed #if 0 in the D4Function/ConstraintEvaluator::error() methods
+
+2016-01-19  James Gallagher  <jgallagher@opendap.org>
+
+	Found one more place in the DAP4 CE and Function parser where
+	errors did not result in an exception.
+
+2016-01-13  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #6 from OPENDAP/BES-87
+	BES 87
+
+2016-01-12  James Gallagher  <jgallagher@opendap.org>
+
+	Added comments re how the Error object codes map to HTTP codes
+
+	Added mapping between libdap and HTTP codes (suggestions)
+
+	Added a code to Error; made sure Error was used consistently
+	Changes to mesh with those in the OLFS. Error(unknown_error, ...)
+	maps to an HTTP 400, internal_error --> 500, not_impelemented -->501,
+	etc.
+
+	DAP2 and 4 scanners now throw Error(malformed_expr, <msg>)
+	They were writing to stderr...
+
+	DAP2 CE parser uses no_such_identifier where apropos
+
+2016-01-11  James Gallagher  <jgallagher@opendap.org>
+
+	Added codes Error response in the DAP2 parser
+
+	There were only a handful since most of the Error throws were well
+	behaved.
+
+	Modified the DAP4 ce and function parsers to include code w/Errors
+	See https://opendap.atlassian.net/browse/BES-87.
+
+2016-01-05  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' into bes-40
+
+2016-01-04  James Gallagher  <jgallagher@opendap.org>
+
+	Modified the CRC32 byte-order change so that it's not included by default
+
+	Popped old changes for Connect; fix for Makefile.am; etc.
+
+2015-12-31  James Gallagher  <jgallagher@opendap.org>
+
+	Hacks for doxygen.
+	The Makefile works now (rebuilds doxy.conf when needed) and the docs
+	are better. I stopped including docs for methods w/o doc comments
+	and those are now listed in the doxygen_warnings.txt file.
+	[ci skip]
+
+2015-12-30  James Gallagher  <jgallagher@opendap.org>
+
+	Tried CLion; added CMakeLists.txt to gitignore
+
+	Removed the calls to DDS:timeout_{on,off}
+	This code is no longer used. The timeout feature of the BES is far
+	better.
+
+2015-12-08  James Gallagher  <jgallagher@opendap.org>
+
+	Removed commented-out code
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Float32 attributes mis-coded as Byte in the DMR
+
+2015-12-03  Nathan Potter  <ndp@opendap.org>
+
+	Travis install check
+
+	Travis install check
+
+2015-11-30  Patrick West  <pwest@vsto.tw.rpi.edu>
+
+	Missing xml2 libraries in unit-tests build
+	Added $(XML2_LIBS) to the Makefile.am in unit-tests so that tests would
+	build. On Ubuntu 14.04.
+
+2015-11-12  James Gallagher  <jgallagher@opendap.org>
+
+	I removed the deploy lines from the travis.yml file
+	These seem broken - I have to investigate how to handle
+	deployment of RPMs out of travis
+
+2015-10-22  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed error in printing of child groups.
+	The child group values were printed twice.
+
+2015-10-21  James Gallagher  <jgallagher@opendap.org>
+
+	Source release version, ChangeLog, News, ... for 3.16.0
+
 2015-10-19  James Gallagher  <jgallagher@opendap.org>
 
 	Fixes #1

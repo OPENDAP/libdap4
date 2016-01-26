@@ -1,3 +1,8 @@
+Updated for version 3.17.0
+
+Bug fixes and improved error messages; see NEWS and ChangeLog for 
+details.
+
 Updated for 3.16.0
 
 libdap now supports parallel I/O for certain data write operations,
