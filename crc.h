@@ -78,9 +78,23 @@ class Crc32
 public:
     typedef uint32_t checksum;
 
+    /**
+     * Initialize the Crc32 instance to 0.
+     */
     Crc32() { Reset(); }
+
     ~Crc32() throw() {}
+
+    /**
+     * Re-initialize/re-set the Crc32 instance to zero.
+     * @note The constructor uses this method to initialize a new instance.
+     */
     void Reset() { _crc = (uint32_t)~0; }
+
+    /**
+     * Add new data, incrementally computing the CRC 32 checksum. If
+     * length is zero, calling this has no effect on the checksum.
+     */
     void AddData(const uint8_t* pData, const uint32_t length)
     {
         uint8_t* pCur = (uint8_t*)pData;
@@ -89,6 +103,10 @@ public:
             _crc = ( _crc >> 8 ) ^ kCrc32Table[(_crc ^ *pCur) & 0xff];
     }
 
+    /**
+     * Get the current value of the CRC 32 checksum.
+     * @return An unsigned 32-bit checksum value.
+     */
     checksum GetCrc32() const { return ~_crc; }
 
 private:
