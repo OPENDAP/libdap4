@@ -47,11 +47,11 @@ are returned (or when returning the result of an aggregation).
 The library now supports writing 'vector' data (i.e., Array variables)
 in parts so that large arrays that are being built up over time can be
 serialized in pieces as the data becomes available. This is combined
-with the parallel I/O feature when serailizing aggregations - other
+with the parallel I/O feature when serializing aggregations - other
 handlers could also take advantage of it
 
 We fixed an issue in Vector where template methods were used in a way
-that broke inheritance, introducing a hard-to-diagbose bug in the NCML 
+that broke inheritance, introducing a hard-to-diagnose bug in the NCML 
 code. The problem was that variables that describe the 'aggregation 
 dimension' could not be subset. That's now fixed.
 
@@ -95,7 +95,7 @@ was changed.
 
 News for version 3.13.0
 
-Added a xml file to serve as input for the perl-based abi compatability 
+Added a xml file to serve as input for the perl-based abi compatibility 
 checker. Seems to be pretty slick; see abi-checker.xml.in for more info.
 
 Some updates - mostly addition of #include <unistd.h> - for OSX 10.9's
@@ -153,7 +153,7 @@ Merged to trunk; tagged.
 News for version 3.11.3
 
 Changed the return value for dap-config --libs so that it does not contain 
-the curl static libs. This causes problems whenlinking on CentOS 6 in some
+the curl static libs. This causes problems when linking on CentOS 6 in some
 cases.
 
 News for version 3.11.2
@@ -209,7 +209,7 @@ News for version 3.10.2
 Changed the way the DAS object's attributes are merged into a DDS
 object, which did two things. First, the process of merging the
 attributes has a default behavior that will work if the DAS and DDS
-are built according to the DAp 2.0 specification, and second, the
+are built according to the DAP 2.0 specification, and second, the
 handlers can specialize the process to suite their own needs. This
 means that new handlers that build odd DAS objects will need to
 specialize the transfer_attributes() method defined by BaseType,
@@ -254,12 +254,12 @@ NcML handler is a separate project).
 News for version 3.9.2
 
 Memory leak fixed when using DDS::transfer_attributes on a DAS that uses the
-ALias keyword.
+Alias keyword.
 
 News for version 3.9.1
 
 The CE parser now returns an error if an array of structures that contains
-arrays is imporperly constrained (the enclosing structure array _may_ be
+arrays is improperly constrained (the enclosing structure array _may_ be
 subsampled, but that subsampling must be the same for each of its fields. The
 fields can be independently subsampled.
 
@@ -270,7 +270,7 @@ Variable names can now be quoted! That is, in a CE you can say:
   "my odd name"."% H2O"[10:13] 
 
 and it will parse. Must clients and all web browsers will encode all of this
-using the web's URL escape syntax, whic his hard to read, but this means that
+using the web's URL escape syntax, which his hard to read, but this means that
 any character can now appear in a variable name (double quotes can be escaped
 using a backslash and backslashes can be includes using '\\'). The quotes are
 optional, of course, so all CEs that work now will continue to work.
@@ -354,7 +354,7 @@ The syntax for PROXY_SERVER and NO_PROXY_FOR have been fixed so that they are
 easier to use. PROXY_SERVER now takes a value like
 'http://user:pw@squid.proxy.edu:3128' and uses it correctly. In that value,
 all parts but the host name (squid.proxy.edu) are optional and the old syntax,
-as well as several comman variants, are accepted. For the NO_PROXY_FOR entry,
+as well as several common variants, are accepted. For the NO_PROXY_FOR entry,
 the '<protocol>,' is now optional. Only the HTTP protocol is supported or the
 proxy server.
 
@@ -391,7 +391,7 @@ fixes a bug where the BES fails to start on smaller machines.
 
 News for version 3.7.9, 21 November 2007
 
-Bumped up the soname version numbers for libdaoclient and libdapserver due
+Bumped up the soname version numbers for libdapclient and libdapserver due
 to changes in the HTTPResponse and AlarmHandler interfaces.
 
 The transfer_data() method defined for Sequence and Structure has been

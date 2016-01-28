@@ -42,8 +42,8 @@ Building from Our GIT Repository
       autoreconf --force --install --verbose
   Then run ./configure, make and make check. Use --prefix with configure
   to set the installation to a location other than /usr/local. Use
-  --enable-developer to trun on the library's asserts and build with
-  debuggin symbols. Use --jobs=N with make and make check to run those
+  --enable-developer to turn on the library's asserts and build with
+  debugging symbols. Use --jobs=N with make and make check to run those
   in parallel on multi core machines and add TESTSUITEFLAGS=-j9 to make
   check to run the regression tests in parallel.
 

@@ -20,7 +20,7 @@
 
 	Added a code to Error; made sure Error was used consistently
 	Changes to mesh with those in the OLFS. Error(unknown_error, ...)
-	maps to an HTTP 400, internal_error --> 500, not_impelemented -->501,
+	maps to an HTTP 400, internal_error --> 500, not_implemented -->501,
 	etc.
 
 	DAP2 and 4 scanners now throw Error(malformed_expr, <msg>)
@@ -119,7 +119,7 @@
 2015-10-14  James Gallagher  <jgallagher@opendap.org>
 
 	Some of the DAP4-only types were not setting is_dap4
-	This casued the DMR output code to throw an error (Unknown Type) in
+	This caused the DMR output code to throw an error (Unknown Type) in
 	cases where those types were used.
 	See https://opendap.atlassian.net/browse/HR-63
 
@@ -147,12 +147,12 @@
 2015-10-12  James Gallagher  <jgallagher@opendap.org>
 
 	Removed crc32 generation from intern_data()
-	This seems better - I htink computing the CRC code
+	This seems better - I think computing the CRC code
 	when interning values is not necessary. Those should
 	only be computed when the server is going to send values.
 
 	Completed changes to D4UnMarshallerTest.cc
-	This copy of the tests hould work on both little- and big-endian
+	This copy of the tests should work on both little- and big-endian
 	hosts.
 
 	More changes to D4UnMarshallerTest.cc
@@ -216,7 +216,7 @@
 2015-10-06  jgallagher59701  <jgallagher@opendap.org>
 
 	Baselines for Enum tests on big endian machines
-	Now only the tests 54 and 55 fail on the big enian machines...
+	Now only the tests 54 and 55 fail on the big endian machines...
 
 2015-10-06  James Gallagher  <jimg@idoru.local>
 
@@ -257,8 +257,8 @@
 
 	Merge branch 'master' of https://github.com/opendap/libdap4
 
-	Fixed a syntx error in cgi_util.h
-	... and added comentary to MarshallerThread.cc
+	Fixed a syntax error in cgi_util.h
+	... and added commentary to MarshallerThread.cc
 
 2015-09-20  James Gallagher  <jgallagher@opendap.org>
 
@@ -322,7 +322,7 @@
 	pass. Commit 6b005387 introduced a change where set_read_p() no
 	longer tested the state of the is_synthesized property. Before, if
 	the property was set the method would not change the state of
-	is_read. The change made it so the is_read propery was changed
+	is_read. The change made it so the is_read property was changed
 	regardless of the state of is_synthesized. This broke the
 	'projection functions' in the FreeForm handler. I have reverted to
 	the old libdap behavior, and the tests now pass.
@@ -341,7 +341,7 @@
 
 2015-08-28  James Gallagher  <jgallagher@opendap.org>
 
-	Updated the versio number to 3.15
+	Updated the version number to 3.15
 	This because of the parallel IO code and pipelining support.
 
 2015-08-28  James Gallagher  <jgallagher@opendap.org>
@@ -367,7 +367,7 @@
 	We found that we could call clear_local_data() right after variables
 	were serialized and get a much flatter memory profile. However, putting
 	those calls in serialize() changed its behavior. I've moved them to
-	bes/dap/ResponseBuilder - but that is controllable using a comple-time
+	bes/dap/ResponseBuilder - but that is controllable using a compile-time
 	directive. Similarly, the compile-time switch USE_POSIX_THREADS
 	can be used to turn off that feature (#undef). See XDRStreamMarshaller.
 
@@ -376,7 +376,7 @@
 	put_vector() methods of the same/similar names. This cuts down on the
 	naming mess and means that other classes like XDFFileStream don't have
 	to include hacked methods that throw exceptions. This commit also
-	includes changes tha wrap the clear_local_data() calls in #ifdef
+	includes changes that wrap the clear_local_data() calls in #ifdef
 	CLEAR_LOCAL_DATA. Lastly, this refactor will also require a matching
 	edit to ncml_module.
 
@@ -392,22 +392,22 @@
 	Took advantage of the current XDRStreamMarshaller impl that copies
 	data before writing it out. This means our code can delete the original
 	data held by the object right after the thread used to send that data
-	hass been called (actually, it could delete it _before_ starting the
+	has been called (actually, it could delete it _before_ starting the
 	thread, but doing so afterward keeps that feature out of the marshaller
-	class, which may come in handly later on...). Later on we may switch
+	class, which may come in handy later on...). Later on we may switch
 	to reference counted pointers and then this issue will go away.
 
 	Removed call to clear_local_data() in Vector::Serialize()
 	This was colliding with the call to clear_local_data() in the thread
 	when put_vector_thread() was called. This showed up as a 'sometimes'
 	failure of expr test #21. The bug happens only when serializing an
-	array of strucutre that contains arrays.
+	array of structure that contains arrays.
 
 2015-08-22  James Gallagher  <jgallagher@opendap.org>
 
 	Corrected a spelling mistake with 'serialize_no_release'
 
-	I've added synchronization code to the XDRStreamMarshaller dotr
+	I've added synchronization code to the XDRStreamMarshaller dtor
 	This causes the XDRStreamMarshaller dtor to block on the d_out_mutex
 	until the child thread (possibly) writing to the output stream
 	completes.
@@ -442,7 +442,7 @@
 
 2015-08-17  Nathan Potter  <ndp@opendap.org>
 
-	Merged the new (template-less) version of Vector inot master branch
+	Merged the new (template-less) version of Vector into master branch
 
 2015-08-17  James Gallagher  <jgallagher@opendap.org>
 
@@ -458,7 +458,7 @@
 	Must still implement the parts for Arrays of int16, ..., types;
 	only byte arrays work now.
 
-	Checkpoint: Adding methods to allow serailization of Vectors in parts.
+	Checkpoint: Adding methods to allow serialization of Vectors in parts.
 	Missing methods in D4StreamMarshaller, XDRFileMarsahller and parts of
 	methods in XDRStreamMarshaller.
 
@@ -469,7 +469,7 @@
 2015-08-14  Nathan Potter  <ndp@opendap.org>
 
 	Replaced template methods in Vector.cc with more pedantic
-	implmentations. Made the templted methods private and used them in
+	implementations. Made the templed methods private and used them in
 	the implementations of the new pedantic methods.
 
 2015-08-10  James Gallagher  <jgallagher@opendap.org>
@@ -482,7 +482,7 @@
 
 	Added a serialize_no_release() method
 	This rounds out the serialize_n_release branch. The new behavior of
-	freeing the dynamic memory is very desireable, so it's the default,
+	freeing the dynamic memory is very desirable, so it's the default,
 	but if some code wants to serialize, do something else and then delete
 	the storage, the new serialize_no_release provides that option. All
 	of our libdap and bes/module tests pass. This will be merged to the
@@ -512,7 +512,7 @@
 
 	pulled from github and merged conflicts
 
-	Refactored use of the name() method in BaseType so that it is now overrideable
+	Refactored use of the name() method in BaseType so that it is now override-able
 
 2015-08-05  James Gallagher  <jgallagher@opendap.org>
 
@@ -521,7 +521,7 @@
 	BaseType (child of, really) that hold large amounts of data. It applies
 	to only a handful of the variable types (Vector, Sequence, D4Opaque and
 	D4Sequence). It is used to free memory right after data values are
-	sent to the client using serailize(). This means that data are no longer
+	sent to the client using serialize(). This means that data are no longer
 	held by the variable objects once serialize() returns - at least for
 	Array, Sequence, ... Other types like Byte, Int16, ..., will retain
 	their values because those values are not held in dynamically allocated
@@ -534,7 +534,7 @@
 	serialize() has been called. It seems that none of the handlers use
 	this 'feature' and we can change the code so that memory is freed right
 	after the bits are sent fir each variable. This means that only one
-	variabe's data are in memory at any given time.
+	variate's data are in memory at any given time.
 
 2015-08-03  Nathan Potter  <ndp@opendap.org>
 
@@ -542,7 +542,7 @@
 
 2015-07-14  James Gallagher  <jgallagher@opendap.org>
 
-	Removed the bisong version print out
+	Removed the bison version print out
 	...I think this is working fine now
 	[ci skip]
 
@@ -558,7 +558,7 @@
 
 	Removed odd ^S from install_libdap4_source_deps.sh
 
-	More travis hacks - addes sudo: false back in; remove tabs
+	More travis hacks - added sudo: false back in; remove tabs
 
 2015-07-12  James Gallagher  <jgallagher@opendap.org>
 

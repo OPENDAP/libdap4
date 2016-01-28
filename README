@@ -13,7 +13,7 @@ symbol USE_POSIX_THREADS in the XDSStreamMarshaller classes.
 Added to libdap is the ability to send DAP2 responses in parts, so that
 code that builds large responses from multiple reads can write a part
 that is complete and then return to work on the next part. This is
-especially benficial for aggregations that cross many granules. The new
+especially beneficial for aggregations that cross many granules. The new
 method is Marshaller::put_vector_part().
 
 Added to libdap is a virtual void BaseType::clear_local_data() method
@@ -61,7 +61,7 @@ you write).
 
 For information on the way to make these functions, see:
 http://docs.opendap.org/index.php/Expanded_arguments_for_Constraint_Expressions 
-Note that this version of libdap requries bison 2.4. This is a change so
+Note that this version of libdap requires bison 2.4. This is a change so
 the parsers can use C++ I/O streams and we can eventually drop the FILE*
 interfaces.
 
