@@ -244,6 +244,10 @@ void D4StreamMarshaller::put_checksum()
     d_out.write(reinterpret_cast<char*>(&chk), sizeof(Crc32::checksum));
 }
 
+/**
+ * Update the current CRC 32 checksum value. Calling this with len equal to
+ * zero has no effect on the checksum value.
+ */
 void D4StreamMarshaller::checksum_update(const void *data, unsigned long len)
 {
     d_checksum.AddData(reinterpret_cast<const uint8_t*>(data), len);
@@ -432,6 +436,9 @@ void D4StreamMarshaller::put_url(const string &val)
 
 void D4StreamMarshaller::put_opaque_dap4(const char *val, int64_t len)
 {
+    assert(val);
+    assert(len >= 0);
+
     checksum_update(val, len);
 
     if (d_write_data) {
@@ -447,6 +454,9 @@ void D4StreamMarshaller::put_opaque_dap4(const char *val, int64_t len)
  */
 void D4StreamMarshaller::put_vector(char *val, int64_t num_bytes)
 {
+    assert(val);
+    assert(num_bytes >= 0);
+
     checksum_update(val, num_bytes);
 
     if (d_write_data)
@@ -596,6 +606,10 @@ void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem)
 
 void D4StreamMarshaller::put_vector_part(char *val, unsigned int num, int width, Type type)
 {
+    assert(val);
+    assert(num >= 0);
+    assert(width > 0);
+
     switch(type) {
     case dods_byte_c:
     case dods_char_c:

@@ -5,6 +5,11 @@ AT_INIT([expr-test])
 
 # AT_TESTED([expr-test])
 
+AT_ARG_OPTION_ARG([baselines],
+    [--baselines=yes|no   Build the baseline file for parser test 'arg'],
+    [echo "baselines set to $at_arg_baselines";
+     baselines=$at_arg_baselines],[baselines=])
+
 # Usage: _EXPR_TEST(<flags>, <dds>, <constraint>, <baseline file>, <xfail?>)
 
 m4_define([_EXPR_TEST], [
@@ -19,12 +24,19 @@ m4_define([_EXPR_TEST], [
     # successful runs are sent to stdout while the errors are sent to
     # stderr.
 
-    AT_CHECK([$abs_builddir/expr-test $1 $2 -k $3 -f "dummy" || true], [], [stdout], [stderr])
-    AT_CHECK([diff -b -B $4 stdout || diff -b -B $4 stderr], [], [ignore],[],[])
-    AT_XFAIL_IF([test "$5" = "xfail"])
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        AT_CHECK([$abs_builddir/expr-test $1 $2 -k $3 -f "dummy" || true], [0], [stdout], [stderr])
+        AT_CHECK([mv stdout $4.tmp])
+        ],
+        [
+        AT_CHECK([$abs_builddir/expr-test $1 $2 -k $3 -f "dummy" || true], [0], [stdout], [stderr])
+        AT_CHECK([diff -b -B $4 stdout || diff -b -B $4 stderr], [0], [ignore])
+        AT_XFAIL_IF([test "$5" = "xfail"])
+        ])
+    
     AT_CLEANUP
 ])
-
 
 m4_define([EXPR_RESPONSE_P], [
     # AT_BANNER([EXPR response for $1, $2, $4.])
@@ -128,3 +140,11 @@ EXPR_RESPONSE_B([test.c0], [SST], [data.z1], [pass])
 
 EXPR_RESPONSE_B([test.f], [""], [test.fa], [pass])
 EXPR_RESPONSE_B([test.f], ["&i<3000"], [test.fb], [pass])
+
+# tests for zero-length arrays. jhrg 1/28/16
+
+EXPR_RESPONSE_B([test.21.dds], [""], [data.21], [pass])
+EXPR_RESPONSE_B([test.22.dds], [""], [data.22], [pass])
+EXPR_RESPONSE_B([test.23.dds], [""], [data.23], [pass])
+EXPR_RESPONSE_B([test.24.dds], [""], [data.24], [pass])
+

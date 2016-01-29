@@ -30,7 +30,7 @@
 
 #include <stdint.h>
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "crc.h"
 

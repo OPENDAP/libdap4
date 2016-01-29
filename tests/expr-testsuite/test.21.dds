@@ -1,0 +1,6 @@
+
+# Zero-length array. jhrg 1/28/16
+
+Dataset {
+   Int32 a[0];
+} test.21;
