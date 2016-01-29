@@ -1110,6 +1110,10 @@ unsigned int Vector::val2buf(void *val, bool reuse)
 {
     // Jose Garcia
 
+    // Added for zero-length arrays - support in the handlers. jhrg 1/29/16
+    if (!val && length() == 0)
+        return 0;
+
     // I *think* this method has been mainly designed to be use by read which
     // is implemented in the surrogate library. Passing NULL as a pointer to
     // this method will be an error of the creator of the surrogate library.
