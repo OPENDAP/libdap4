@@ -148,3 +148,8 @@ EXPR_RESPONSE_B([test.22.dds], [""], [data.22], [pass])
 EXPR_RESPONSE_B([test.23.dds], [""], [data.23], [pass])
 EXPR_RESPONSE_B([test.24.dds], [""], [data.24], [pass])
 
+# Empty Structures. jhrg 1/29/16
+
+EXPR_RESPONSE_B([test.25.dds], [""], [data.25], [pass])
+EXPR_RESPONSE_B([test.26.dds], [""], [data.26], [pass])
+

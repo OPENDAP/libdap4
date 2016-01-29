@@ -1,0 +1,16 @@
+The complete DDS:
+Dataset {
+    Structure {
+        Int32 j;
+        Int32 i;
+        Structure {
+        } data;
+    } exp;
+} data6;
+The data:
+Structure {
+    Int32 j;
+    Int32 i;
+    Structure {
+    } data;
+} exp = { 32, 32, {  } };

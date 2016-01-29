@@ -1,0 +1,10 @@
+DDS past semantic check
+DDS past full semantic check
+Dataset {
+    Structure {
+        Int32 j;
+        Int32 i;
+        Structure {
+        } data;
+    } exp;
+} data6;

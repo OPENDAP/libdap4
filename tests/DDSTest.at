@@ -82,4 +82,7 @@ AT_DDS_RESPONSE_TEST([test.22.dds])
 AT_DDS_RESPONSE_TEST([test.23.dds])
 AT_DDS_RESPONSE_TEST([test.24.dds], [xpass])
 
+# Empty Structures
+AT_DDS_RESPONSE_TEST([test.25.dds], [xpass])
+AT_DDS_RESPONSE_TEST([test.26.dds], [xpass])
 

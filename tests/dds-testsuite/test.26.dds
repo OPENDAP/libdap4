@@ -1,0 +1,8 @@
+dataset {
+    Structure {
+	Int32 j;
+	Int32 i;
+	Structure {
+	} data;
+    } exp;
+} data6;
