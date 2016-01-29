@@ -236,6 +236,10 @@ DMR_PARSE([dmr-testsuite/test_array_12.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_13.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_14.xml], [pass])
 
+# Test empty Structures. jhrg 1/29/16
+DMR_PARSE([dmr-testsuite/test_simple_6.2.xml], [pass])
+DMR_PARSE([dmr-testsuite/test_simple_6.3.xml], [pass])
+
 # These tests for zero-length array values only work for
 # little-endian machines at this time. If baselines for
 # big-endian machines are built, this AS_IF can be removed.
@@ -247,10 +251,18 @@ DMR_TRANS([test_array_12.xml], [pass])
 DMR_TRANS([test_array_13.xml], [pass])
 DMR_TRANS([test_array_14.xml], [pass])
 
+DMR_TRANS([test_simple_6.2.xml], [pass])
+DMR_TRANS([test_simple_6.3.xml], [pass])
+
+
 DMR_INTERN([test_array_9.xml], [pass])
 DMR_INTERN([test_array_12.xml], [pass])
 DMR_INTERN([test_array_13.xml], [pass])
 DMR_INTERN([test_array_14.xml], [pass])
+
+DMR_INTERN([test_simple_6.2.xml], [pass])
+DMR_INTERN([test_simple_6.3.xml], [pass])
+
 ],
 [])
 
