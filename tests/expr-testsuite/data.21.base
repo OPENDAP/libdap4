@@ -1,0 +1,6 @@
+The complete DDS:
+Dataset {
+    Int32 a[0];
+} test.21;
+The data:
+Int32 a[0] = {};

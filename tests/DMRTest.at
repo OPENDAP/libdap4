@@ -51,7 +51,7 @@ m4_define([DMR_TRANS], [
 
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
-        AT_CHECK([$abs_builddir/dmr-test -x -t $input], [], [stdout], [])
+        AT_CHECK([$abs_builddir/dmr-test -x -t $input], [0], [stdout], [ignore])
         AT_CHECK([mv stdout $baseline.tmp])
         ],
         [
@@ -230,7 +230,43 @@ DMR_INTERN([test_array_8.xml], [pass])
 DMR_INTERN([test_array_10.xml], [pass])
 DMR_INTERN([test_array_11.xml], [pass])
 
-# Test various factes of the CE parser and evaluation engine
+# Test zero-length arrays. jhrg 1/28/16
+DMR_PARSE([dmr-testsuite/test_array_9.xml], [pass])
+DMR_PARSE([dmr-testsuite/test_array_12.xml], [pass])
+DMR_PARSE([dmr-testsuite/test_array_13.xml], [pass])
+DMR_PARSE([dmr-testsuite/test_array_14.xml], [pass])
+
+# Test empty Structures. jhrg 1/29/16
+DMR_PARSE([dmr-testsuite/test_simple_6.2.xml], [pass])
+DMR_PARSE([dmr-testsuite/test_simple_6.3.xml], [pass])
+
+# These tests for zero-length array values only work for
+# little-endian machines at this time. If baselines for
+# big-endian machines are built, this AS_IF can be removed.
+#  jhrg 1/28/16
+AS_IF([test "$WORD_ORDER" = "little-endian"],
+[
+DMR_TRANS([test_array_9.xml], [pass])
+DMR_TRANS([test_array_12.xml], [pass])
+DMR_TRANS([test_array_13.xml], [pass])
+DMR_TRANS([test_array_14.xml], [pass])
+
+DMR_TRANS([test_simple_6.2.xml], [pass])
+DMR_TRANS([test_simple_6.3.xml], [pass])
+
+
+DMR_INTERN([test_array_9.xml], [pass])
+DMR_INTERN([test_array_12.xml], [pass])
+DMR_INTERN([test_array_13.xml], [pass])
+DMR_INTERN([test_array_14.xml], [pass])
+
+DMR_INTERN([test_simple_6.2.xml], [pass])
+DMR_INTERN([test_simple_6.3.xml], [pass])
+
+],
+[])
+
+# Test various facets of the CE parser and evaluation engine
 
 DMR_TRANS_CE([test_array_4.xml], [a], [test_array_4.xml.1.trans_base], [pass])
 DMR_TRANS_CE([test_array_4.xml], [a[[]][[]] ], [test_array_4.xml.1.trans_base], [pass])

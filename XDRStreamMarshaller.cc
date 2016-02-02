@@ -444,10 +444,16 @@ void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
  */
 void XDRStreamMarshaller::put_vector(char *val, unsigned int num, int width, Type type)
 {
+#if 0
     if (!val) throw InternalErr(__FILE__, __LINE__, "Buffer pointer is not set.");
+#endif
+    assert(val || num == 0);
 
     // write the number of array members being written, then set the position back to 0
     put_int(num);
+
+    if (num == 0)
+        return;
 
     int use_width = width;
     if (use_width < 4) use_width = 4;

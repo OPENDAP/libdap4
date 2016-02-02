@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.63)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.16.0, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.17.0, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["4.0"], [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
@@ -31,13 +31,6 @@ AC_SUBST(PACKAGE_MAJOR_VERSION)
 AC_SUBST(PACKAGE_MINOR_VERSION)
 AC_SUBST(PACKAGE_SUBMINOR_VERSION)
 
-dnl Removed this; only the Array and Sequence classes ever have
-dnl constraints that need to be evaluated at run time (DAP4) or only
-dnl Sequences (DAP2). jhrg 9/4/13
-
-dnl AC_DEFINE(EVAL, 1, [Should all the classes run ConstraintEvaluator::eval()?])
-dnl AC_SUBST(EVAL)
-
 dnl flags for the compilers and linkers - set these before locating the
 dnl actual tools since some of the AC_PROG macros set these `flag variables'
 dnl to default values otherwise.
@@ -52,8 +45,8 @@ dnl increment AGE, set REVISION to 0.
 dnl Interfaces removed or changed (BAD, breaks upward compatibility):
 dnl ==> Increment CURRENT, set AGE and REVISION to 0.
 
-DAPLIB_CURRENT=21
-DAPLIB_AGE=0
+DAPLIB_CURRENT=22
+DAPLIB_AGE=1
 DAPLIB_REVISION=0
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)
@@ -64,7 +57,7 @@ AC_SUBST(LIBDAP_VERSION)
 
 CLIENTLIB_CURRENT=7
 CLIENTLIB_AGE=1
-CLIENTLIB_REVISION=2
+CLIENTLIB_REVISION=3
 AC_SUBST(CLIENTLIB_CURRENT)
 AC_SUBST(CLIENTLIB_AGE)
 AC_SUBST(CLIENTLIB_REVISION)
@@ -74,7 +67,7 @@ AC_SUBST(CLIENTLIB_VERSION)
 
 SERVERLIB_CURRENT=13
 SERVERLIB_AGE=6
-SERVERLIB_REVISION=2
+SERVERLIB_REVISION=3
 AC_SUBST(SERVERLIB_CURRENT)
 AC_SUBST(SERVERLIB_AGE)
 AC_SUBST(SERVERLIB_REVISION)

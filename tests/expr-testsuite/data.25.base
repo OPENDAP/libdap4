@@ -1,0 +1,8 @@
+The complete DDS:
+Dataset {
+    Structure {
+    } exp;
+} data6;
+The data:
+Structure {
+} exp = {  };
