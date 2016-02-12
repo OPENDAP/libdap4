@@ -262,7 +262,7 @@ declaration:  base_type var ';'
 		| grid '{' SCAN_WORD ':'
 		{ 
 		    if (is_keyword(string($3), "array")) {
-			    part = array;
+			    part = libdap::array;
 			}
 		    else {
 			    ostringstream msg;

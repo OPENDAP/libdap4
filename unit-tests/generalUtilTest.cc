@@ -265,7 +265,7 @@ CPPUNIT_TEST_SUITE(generalUtilTest);
         DBG(cerr << "XXX" << unescattr("\\\"attr") << "XXX" << endl);
         CPPUNIT_ASSERT(unescattr("\\\"attr") == "\"attr");
 
-        char A_200_177[4] = { 128, 127, 'A', '\0' };
+        char A_200_177[4] = { (char)128, 127, 'A', '\0' };
         DBG(cerr << "XXX" << unescattr("\\200\\177A") << "XXX" << endl);
         CPPUNIT_ASSERT(unescattr("\\200\\177A") == string(A_200_177));
 
