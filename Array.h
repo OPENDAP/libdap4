@@ -166,17 +166,6 @@ public:
         }
 
         dimension(D4Dimension *d);
-#if 0
-        dimension(D4Dimension *d) : dim(d), use_sdim_for_slice(true) {
-        	size = d->size();
-        	name = d->name();
-
-            start = 0;
-            stop = size - 1;
-            stride = 1;
-            c_size = size;
-        }
-#endif
     };
 
     D4Maps *d_maps;
@@ -204,14 +193,15 @@ public:
 
         @see dim_begin()
         @see dim_end() */
-    typedef std::vector<dimension>::const_iterator Dim_citer ;
+    typedef std::vector<dimension>::const_iterator Dim_citer;
+
     /** An iterator used to access the various dimensions of an
         Array. Most of the methods that access various properties of a
         dimension use an instance of Dim_iter.
 
         @see dim_begin()
         @see dim_end() */
-    typedef std::vector<dimension>::iterator Dim_iter ;
+    typedef std::vector<dimension>::iterator Dim_iter;
 
     Array(const string &n, BaseType *v, bool is_dap4 = false);
     Array(const string &n, const string &d, BaseType *v, bool is_dap4 = false);
