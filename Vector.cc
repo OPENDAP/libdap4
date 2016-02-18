@@ -629,7 +629,14 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
 #if 0
     dds.timeout_on();
 #endif
-    if (!read_p())
+    // Added to streamline zero-length arrays. Not needed for correct function,
+    // but explicitly handling this case here makes the code easier to follow.
+    // In libdap::Vector::val2buf() there is a test that will catch the zero-length
+    // case as well. We still need to call serialize since it will write size
+    // information that the client depends on. jhrg 2/17/16
+    if (length() == 0)
+        set_read_p(true);
+    else if (!read_p())
         read(); // read() throws Error and InternalErr
 
     if (ce_eval && !eval.eval_selection(dds, dataset()))
