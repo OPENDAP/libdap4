@@ -56,7 +56,7 @@ static bool write_baselines = false;
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
 
-#ifdef __BIG_ENDIAN__
+#if WORDS_BIGENDIAN
 const static string path = (string)TEST_SRC_DIR + "/D4-marshaller/big-endian";
 #else
 const static string path = (string)TEST_SRC_DIR + "/D4-marshaller/little-endian";
