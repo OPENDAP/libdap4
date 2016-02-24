@@ -146,11 +146,12 @@ AC_CHECK_MEMBERS([struct stat.st_blksize])
 AC_HEADER_TIME
 AC_STRUCT_TM
 AC_C_VOLATILE
-AC_C_BIGENDIAN([ac_word_order=big-endian], [ac_word_order=little-endian])
+AC_C_BIGENDIAN
 
 # This is used byt eh DMR tests which must choose the correct set of baselines
 # based on word order given that DAP4 uses 'reader make right' and thus the 
 # DAP4 data responses are different for different word order machines. jhrg 9/29/15
+AS_IF([test $ac_cv_c_bigendian = yes], [ac_word_order=big-endian], [ac_word_order=little-endian])
 AC_SUBST([ac_word_order])
         
 DODS_CHECK_SIZES
