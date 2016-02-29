@@ -401,13 +401,22 @@ int main(int argc, char *argv[])
         }
     }
     catch (Error &e) {
-        cerr << "Error: " << e.get_error_message() << endl;
-        cerr << "exiting" << endl;
+
+    	if(e.get_error_code() == malformed_expr || e.get_error_code() == malformed_expr){
+        	cerr << e.get_error_message() << endl;
+        	usage(argv[0]);
+    	}
+    	else {
+        	cerr << e.get_error_message() << endl;
+
+    	}
+
+        cerr << "Exiting." << endl;
         return 1;
     }
     catch (exception &e) {
         cerr << "C++ library exception: " << e.what() << endl;
-        cerr << "exiting" << endl;
+        cerr << "Exiting." << endl;
         return 1;
     }
 
