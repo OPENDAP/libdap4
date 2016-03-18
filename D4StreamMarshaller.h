@@ -56,6 +56,7 @@
 namespace libdap {
 
 class Vector;
+class MarshallerThread;
 
 /** @brief Marshaller that knows how to marshal/serialize dap data objects
  * to a C++ iostream using DAP4's receiver-makes-right scheme. This code
@@ -80,6 +81,7 @@ private:
 
     Crc32 d_checksum;
 
+    MarshallerThread *tm;
 
     // These are private so they won't ever get used.
     D4StreamMarshaller();

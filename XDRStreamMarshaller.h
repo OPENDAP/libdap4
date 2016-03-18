@@ -68,7 +68,6 @@ private:
     void put_vector(char *val, unsigned int num, int width, Type type);
 
     friend class MarshallerTest;
-    friend class MarshallerThread;
 
 public:
     XDRStreamMarshaller(ostream &out); //, bool checksum = false, bool write_data = true) ;

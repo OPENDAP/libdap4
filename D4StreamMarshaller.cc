@@ -36,7 +36,14 @@
 
 //#define DODS_DEBUG 1
 
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
+
 #include "D4StreamMarshaller.h"
+#ifdef USE_POSIX_THREADS
+#include "MarshallerThread.h"
+#endif
 
 #if USE_XDR_FOR_IEEE754_ENCODING
 #include "XDRUtils.h"
@@ -127,16 +134,11 @@ inline uint8_t* WriteVarint64ToArrayInline(uint64_t value, uint8_t* target) {
 #endif
 
 #if USE_XDR_FOR_IEEE754_ENCODING
-/**
- * @todo recode this so that it does not copy data to a new buffer but
- * serializes directly to the stream (element by element) and compare the
- * run times.
- */
 void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int width, Type type)
 {
     dods_uint64 size = num * width;
-    // char *buf = (char*)malloc(size); jhrg 7/23/13
-    vector<char> buf(size);
+
+    char *buf = new char[size];
     XDR xdr;
     xdrmem_create(&xdr, &buf[0], size, XDR_ENCODE);
     try {
@@ -164,14 +166,26 @@ void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int widt
                 }
             }
         }
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 
+        tm->increment_child_thread_count();
+        tm->start_thread(MarshallerThread::write_thread, d_out, buf, size);
+
+        // The child thread will delete buf when it's done
+        xdr_destroy(&xdr);
+#else
         d_out.write(&buf[0], size);
+        xdr_destroy(&xdr);
+        delete [] buf;
+#endif
     }
     catch (...) {
         xdr_destroy(&xdr);
+        delete [] buf;
+
         throw;
     }
-    xdr_destroy(&xdr);
 }
 #endif
 
@@ -183,7 +197,7 @@ void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int widt
  * @param write_data If true, write data values. True by default
  */
 D4StreamMarshaller::D4StreamMarshaller(ostream &out, bool write_data) :
-        d_out(out), d_write_data(write_data)
+        d_out(out), d_write_data(write_data), tm(0)
 {
 	assert(sizeof(std::streamsize) >= sizeof(int64_t));
 
@@ -192,6 +206,10 @@ D4StreamMarshaller::D4StreamMarshaller(ostream &out, bool write_data) :
     // returns false indicating that the compiler is not using IEEE 754.
     // If it is, we just write out the bytes.
     xdrmem_create(&d_scalar_sink, d_ieee754_buf, sizeof(dods_float64), XDR_ENCODE);
+#endif
+
+#ifdef USE_POSIX_THREADS
+    tm = new MarshallerThread;
 #endif
 
     // This will cause exceptions to be thrown on i/o errors. The exception
@@ -204,6 +222,8 @@ D4StreamMarshaller::~D4StreamMarshaller()
 #if USE_XDR_FOR_IEEE754_ENCODING
     xdr_destroy(&d_scalar_sink);
 #endif
+
+    delete tm;
 }
 
 /** Initialize the checksum buffer. This resets the checksum calculation.
@@ -241,6 +261,9 @@ string D4StreamMarshaller::get_checksum()
 void D4StreamMarshaller::put_checksum()
 {
     Crc32::checksum chk = d_checksum.GetCrc32();
+#ifdef USE_POSIX_THREADS
+    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
     d_out.write(reinterpret_cast<char*>(&chk), sizeof(Crc32::checksum));
 }
 
@@ -259,7 +282,10 @@ void D4StreamMarshaller::put_byte(dods_byte val)
 
     if (d_write_data) {
         DBG( std::cerr << "put_byte: " << val << std::endl );
-
+#ifdef USE_POSIX_THREADS
+        // make sure that a child thread is not writing to d_out.
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_byte));
     }
 }
@@ -270,7 +296,9 @@ void D4StreamMarshaller::put_int8(dods_int8 val)
 
     if (d_write_data) {
         DBG( std::cerr << "put_int8: " << val << std::endl );
-
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_int8));
     }
 }
@@ -279,24 +307,36 @@ void D4StreamMarshaller::put_int16(dods_int16 val)
 {
     checksum_update(&val, sizeof(dods_int16));
 
-    if (d_write_data)
+    if (d_write_data) {
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_int16));
+    }
 }
 
 void D4StreamMarshaller::put_int32(dods_int32 val)
 {
     checksum_update(&val, sizeof(dods_int32));
 
-    if (d_write_data)
+    if (d_write_data) {
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_int32));
+    }
 }
 
 void D4StreamMarshaller::put_int64(dods_int64 val)
 {
     checksum_update(&val, sizeof(dods_int64));
 
-    if (d_write_data)
+    if (d_write_data) {
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
         d_out.write(reinterpret_cast<const char*>(&val), sizeof(dods_int64));
+    }
 }
 
 void D4StreamMarshaller::put_float32(dods_float32 val)
@@ -306,8 +346,12 @@ void D4StreamMarshaller::put_float32(dods_float32 val)
 
     checksum_update(&val, sizeof(dods_float32));
 
-    if (d_write_data)
+    if (d_write_data) {
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
     	d_out.write(reinterpret_cast<const char*>(&val), sizeof(dods_float32));
+    }
 
 #else
     // This code uses XDR to convert from a local representation to IEEE754;
@@ -317,6 +361,9 @@ void D4StreamMarshaller::put_float32(dods_float32 val)
 
     if (d_write_data) {
         if (std::numeric_limits<float>::is_iec559 ) {
+#ifdef USE_POSIX_THREADS
+            Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
             d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_float32));
         }
         else {
@@ -335,7 +382,9 @@ void D4StreamMarshaller::put_float32(dods_float32 val)
                 dods_int32 *i = reinterpret_cast<dods_int32*>(&d_ieee754_buf);
                 *i = bswap_32(*i);
             }
-
+#ifdef USE_POSIX_THREADS
+            Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
             d_out.write(d_ieee754_buf, sizeof(dods_float32));
         }
     }
@@ -349,14 +398,22 @@ void D4StreamMarshaller::put_float64(dods_float64 val)
 
     checksum_update(&val, sizeof(dods_float64));
 
-    if (d_write_data)
+    if (d_write_data) {
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
     	d_out.write(reinterpret_cast<const char*>(&val), sizeof(dods_float64));
+    }
 
 #else
     // See the comment above in put_float32()
     if (d_write_data) {
-        if (std::numeric_limits<double>::is_iec559)
-            d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_float64));
+        if (std::numeric_limits<double>::is_iec559) {
+#ifdef USE_POSIX_THREADS
+            Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
+            d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_float64));}
+    }
         else {
             if (!xdr_setpos(&d_scalar_sink, 0))
                 throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 variable");
@@ -374,6 +431,9 @@ void D4StreamMarshaller::put_float64(dods_float64 val)
                 *i = bswap_64(*i);
             }
 
+#ifdef USE_POSIX_THREADS
+            Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
             d_out.write(d_ieee754_buf, sizeof(dods_float64));
         }
     }
@@ -384,24 +444,36 @@ void D4StreamMarshaller::put_uint16(dods_uint16 val)
 {
     checksum_update(&val, sizeof(dods_uint16));
 
-    if (d_write_data)
+    if (d_write_data) {
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_uint16));
+    }
 }
 
 void D4StreamMarshaller::put_uint32(dods_uint32 val)
 {
     checksum_update(&val, sizeof(dods_uint32));
 
-    if (d_write_data)
+    if (d_write_data) {
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_uint32));
+    }
 }
 
 void D4StreamMarshaller::put_uint64(dods_uint64 val)
 {
     checksum_update(&val, sizeof(dods_uint64));
 
-    if (d_write_data)
+    if (d_write_data) {
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
         d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_uint64));
+    }
 }
 
 /**
@@ -414,6 +486,9 @@ void D4StreamMarshaller::put_uint64(dods_uint64 val)
  */
 void D4StreamMarshaller::put_count(int64_t count)
 {
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
 	d_out.write(reinterpret_cast<const char*>(&count), sizeof(int64_t));
 }
 
@@ -423,7 +498,9 @@ void D4StreamMarshaller::put_str(const string &val)
 
     if (d_write_data) {
     	int64_t len = val.length();
-
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+#endif
     	d_out.write(reinterpret_cast<const char*>(&len), sizeof(int64_t));
         d_out.write(val.data(), val.length());
     }
@@ -442,8 +519,20 @@ void D4StreamMarshaller::put_opaque_dap4(const char *val, int64_t len)
     checksum_update(val, len);
 
     if (d_write_data) {
-    	d_out.write(reinterpret_cast<const char*>(&len), sizeof(int64_t));
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+
+        d_out.write(reinterpret_cast<const char*>(&len), sizeof(int64_t));
+
+        char *byte_buf = new char[len];
+        memcpy(byte_buf, val, len);
+
+        tm->increment_child_thread_count();
+        tm->start_thread(MarshallerThread::write_thread, d_out, byte_buf, len);
+#else
+        d_out.write(reinterpret_cast<const char*>(&len), sizeof(int64_t));
         d_out.write(val, len);
+#endif
     }
 }
 
@@ -459,8 +548,19 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_bytes)
 
     checksum_update(val, num_bytes);
 
-    if (d_write_data)
+    if (d_write_data) {
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+
+        char *buf = new char[num_bytes];
+        memcpy(buf, val, num_bytes);
+
+        tm->increment_child_thread_count();
+        tm->start_thread(MarshallerThread::write_thread, d_out, buf, num_bytes);
+#else
         d_out.write(val, num_bytes);
+#endif
+    }
 }
 
 void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size)
@@ -496,8 +596,19 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size)
 
     checksum_update(val, bytes);
 
-    if (d_write_data)
-    	d_out.write(val, bytes);
+    if (d_write_data) {
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+
+        char *buf = new char[bytes];
+        memcpy(buf, val, bytes);
+
+        tm->increment_child_thread_count();
+        tm->start_thread(MarshallerThread::write_thread, d_out, buf, bytes);
+#else
+        d_out.write(val, bytes);
+#endif
+    }
 }
 
 /**
@@ -526,8 +637,19 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem)
 
     checksum_update(val, num_elem);
 
-    if (d_write_data)
+    if (d_write_data) {
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+
+        char *buf = new char[num_elem];
+        memcpy(buf, val, num_elem);
+
+        tm->increment_child_thread_count();
+        tm->start_thread(MarshallerThread::write_thread, d_out, buf, num_elem);
+#else
     	d_out.write(val, num_elem);
+#endif
+    }
 
 #else
 	assert(val);
@@ -548,7 +670,17 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem)
             m_serialize_reals(val, num_elem, 4, type);
         }
         else {
-            d_out.write(val, bytes);
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+
+        char *buf = new char[bytes];
+        memcpy(buf, val, bytes);
+
+        tm->increment_child_thread_count();
+        tm->start_thread(MarshallerThread::write_thread, d_out, buf, bytes);
+#else
+        d_out.write(val, bytes);
+#endif
         }
     }
 #endif
@@ -576,8 +708,19 @@ void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem)
 
     checksum_update(val, num_elem);
 
-    if (d_write_data)
-    	d_out.write(val, num_elem);
+    if (d_write_data) {
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+
+        char *buf = new char[num_elem];
+        memcpy(buf, val, num_elem);
+
+        tm->increment_child_thread_count();
+        tm->start_thread(MarshallerThread::write_thread, d_out, buf, num_elem);
+#else
+        d_out.write(val, num_elem);
+#endif
+    }
 #else
 	assert(val);
 	assert(num_elem >= 0);
@@ -597,7 +740,17 @@ void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem)
             m_serialize_reals(val, num_elem, 8, type);
         }
         else {
-            d_out.write(val, bytes);
+#ifdef USE_POSIX_THREADS
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+
+        char *buf = new char[bytes];
+        memcpy(buf, val, bytes);
+
+        tm->increment_child_thread_count();
+        tm->start_thread(MarshallerThread::write_thread, d_out, buf, bytes);
+#else
+        d_out.write(val, bytes);
+#endif
         }
     }
 #endif

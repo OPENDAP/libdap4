@@ -63,7 +63,7 @@ using namespace std;
 namespace libdap {
 
 char *XDRStreamMarshaller::d_buf = 0;
-#define XDR_DAP_BUFF_SIZE 256
+static const int XDR_DAP_BUFF_SIZE=256;
 
 
 /** Build an instance of XDRStreamMarshaller. Bind the C++ stream out to this
