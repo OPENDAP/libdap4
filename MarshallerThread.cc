@@ -47,6 +47,7 @@
 using namespace libdap;
 using namespace std;
 
+#if 0
 bool MarshallerThread::print_time = false;
 
 /**
@@ -72,6 +73,8 @@ static double time_diff_to_hundredths(struct timeval *stop, struct timeval *star
     result += double(stop->tv_usec - start->tv_usec) / 1000000;
     return result;
 }
+#endif
+
 
 /**
  * Lock the mutex then wait for the child thread to signal using the
@@ -222,8 +225,10 @@ MarshallerThread::write_thread(void *arg)
 
     ChildLocker lock(args->d_mutex, args->d_cond, args->d_count); // RAII; will unlock on exit
 
+#if 0
     struct timeval tp_s;
     if (print_time && gettimeofday(&tp_s, 0) != 0) cerr << "could not read time" << endl;
+#endif
 
     // force an error
     // return (void*)-1;
@@ -246,12 +251,14 @@ MarshallerThread::write_thread(void *arg)
     delete [] args->d_buf;
     delete args;
 
+#if 0
     struct timeval tp_e;
     if (print_time) {
         if (gettimeofday(&tp_e, 0) != 0) cerr << "could not read time" << endl;
 
         cerr << "time for child thread write: " << time_diff_to_hundredths(&tp_e, &tp_s) << endl;
     }
+#endif
 
     return 0;
 }

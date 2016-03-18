@@ -100,7 +100,7 @@ bool is_host_big_endian()
 
 #else
 
-#ifdef __BIG_ENDIAN__
+#if WORDS_BIGENDIAN
     return true;
 #else
     return false;

@@ -36,6 +36,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <sstream>
 
 #include "D4Connect.h"
 #include "HTTPConnect.h"
@@ -252,7 +253,7 @@ void D4Connect::parse_mime(Response &rs)
  @param password Password to use for authentication. Null by default.
  @brief Create an instance of Connect. */
 D4Connect::D4Connect(const string &url, string uname, string password) :
-        d_http(0), d_local(false), d_URL(""), d_dap4ce(""), d_server("unknown"), d_protocol("4.0")
+        d_http(0), d_local(false), d_URL(""), d_UrlQueryString(""), d_server("unknown"), d_protocol("4.0")
 {
     string name = prune_spaces(url);
 
@@ -263,14 +264,26 @@ D4Connect::D4Connect(const string &url, string uname, string password) :
         d_http = new HTTPConnect(RCReader::instance());
         d_http->set_use_cpp_streams(true);
 
+        d_URL = name;
+
         // Find and store any CE given with the URL.
         string::size_type dotpos = name.find('?');
-        if (dotpos != name.npos) {
-            d_URL = name.substr(0, dotpos);
-            d_dap4ce = name.substr(dotpos + 1);
-        }
-        else {
-            d_URL = name;
+        if (dotpos != std::string::npos) { // Found a match.
+        	d_URL = name.substr(0, dotpos);
+
+            d_UrlQueryString = name.substr(dotpos + 1);
+
+            if(d_UrlQueryString.find(DAP4_CE_QUERY_KEY) != std::string::npos){
+                std::stringstream msg;
+                msg << endl;
+                msg << "WARNING: A DAP4 constraint expression key was found in the query string!" << endl;
+                msg << "The submitted dataset URL: " << name <<  endl;
+    			msg << "Contains the query string: " << d_UrlQueryString << endl;
+    			msg << "This will cause issues when making DAP4 requests that specify additional constraints. " << endl;
+    			cerr << msg.str() << endl;
+                // throw Error(malformed_expr, msg.str());
+            }
+
         }
     }
     else {
@@ -286,9 +299,47 @@ D4Connect::~D4Connect()
 	if (d_http) delete d_http;
 }
 
+
+
+std::string D4Connect::build_dap4_ce(const string requestSuffix, const string dap4ce){
+
+    std::stringstream url;
+	bool needsAmpersand = false;
+
+	url << d_URL << requestSuffix  << "?";
+
+	if(d_UrlQueryString.length()> 0){
+		url << d_UrlQueryString;
+		needsAmpersand = true;
+	}
+
+	if(dap4ce.length()> 0){
+
+		if(needsAmpersand)
+			url << "&";
+
+		url << DAP4_CE_QUERY_KEY <<  "=" << id2www_ce(dap4ce);
+
+	}
+
+#if 1
+	cerr << "D4Connect::build_dap4_ce() - Source URL: " << d_URL << endl;
+	cerr << "D4Connect::build_dap4_ce() - Source URL Query String: " << d_UrlQueryString << endl;
+	cerr << "D4Connect::build_dap4_ce() - dap4ce: " << dap4ce << endl;
+	cerr << "D4Connect::build_dap4_ce() - request URL: " << url.str() << endl;
+
+#endif
+
+	return url.str();
+
+}
+
+
+
 void D4Connect::request_dmr(DMR &dmr, const string expr)
 {
-	string url = d_URL + ".dmr" + "?" + id2www_ce(d_dap4ce + expr);
+	string url = build_dap4_ce(".dmr", expr);
+
 
 	Response *rs = 0;
 	try {
@@ -331,7 +382,7 @@ void D4Connect::request_dmr(DMR &dmr, const string expr)
 
 void D4Connect::request_dap4_data(DMR &dmr, const string expr)
 {
-    string url = d_URL + ".dap" + "?" + id2www_ce(d_dap4ce + expr);
+	string url = build_dap4_ce(".dap", expr);
 
     Response *rs = 0;
     try {
