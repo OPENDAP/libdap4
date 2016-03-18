@@ -419,14 +419,14 @@ void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
 #else
         d_out.write(byte_buf, bytes_written);
         xdr_destroy(&byte_sink);
-        delete byte_buf;
+        delete [] byte_buf;
 #endif
 
     }
     catch (...) {
         DBG(cerr << "Caught an exception in put_vector_thread" << endl);
         xdr_destroy(&byte_sink);
-        delete byte_buf;
+        delete [] byte_buf;
         throw;
     }
 }
@@ -444,9 +444,6 @@ void XDRStreamMarshaller::put_vector(char *val, int num, Vector &)
  */
 void XDRStreamMarshaller::put_vector(char *val, unsigned int num, int width, Type type)
 {
-#if 0
-    if (!val) throw InternalErr(__FILE__, __LINE__, "Buffer pointer is not set.");
-#endif
     assert(val || num == 0);
 
     // write the number of array members being written, then set the position back to 0
@@ -490,12 +487,12 @@ void XDRStreamMarshaller::put_vector(char *val, unsigned int num, int width, Typ
 #else
         d_out.write(vec_buf, bytes_written);
         xdr_destroy(&vec_sink);
-        delete vec_buf;
+        delete [] vec_buf;
 #endif
     }
     catch (...) {
         xdr_destroy(&vec_sink);
-        delete vec_buf;
+        delete [] vec_buf;
         throw;
     }
 }
@@ -551,12 +548,12 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
             d_partial_put_byte_count += num;
 
             xdr_destroy(&byte_sink);
-            delete byte_buf;
+            delete [] byte_buf;
 #endif
         }
         catch (...) {
             xdr_destroy(&byte_sink);
-            delete byte_buf;
+            delete [] byte_buf;
             throw;
         }
     }
@@ -602,12 +599,12 @@ void XDRStreamMarshaller::put_vector_part(char *val, unsigned int num, int width
             d_partial_put_byte_count += (size - 4);
 
             xdr_destroy(&vec_sink);
-            delete vec_buf;
+            delete [] vec_buf;
 #endif
         }
         catch (...) {
             xdr_destroy(&vec_sink);
-            delete vec_buf;
+            delete [] vec_buf;
             throw;
         }
     }

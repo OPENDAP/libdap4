@@ -243,7 +243,7 @@ MarshallerThread::write_thread(void *arg)
         }
     }
 
-    delete args->d_buf;
+    delete [] args->d_buf;
     delete args;
 
     struct timeval tp_e;
@@ -289,7 +289,7 @@ MarshallerThread::write_thread_part(void *arg)
         }
     }
 
-    delete args->d_buf;
+    delete [] args->d_buf;
     delete args;
 
     return 0;
