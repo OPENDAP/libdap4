@@ -1,3 +1,13 @@
+News for version 3.17.1
+
+A bug fix release. 
+
+Fix for endian detection issues and unqualified use of 'array' (it
+should have been libdap::array). The latter affects builds with 
+recent versions of gcc.
+
+See the ChangeLog for other issues that this version addresses.
+
 News for version 3.17.0
 
 Better error reporting. Error objects are now always thrown with a

@@ -1,3 +1,108 @@
+2016-04-01  James Gallagher  <jgallagher@opendap.org>
+
+	Added #include <string> to D4RValue.h to fix an issue over in the BES
+
+2016-03-22  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #11 from OPENDAP/d4-threads
+	D4StreamMarshaller now uses the double buffering code for transmission
+
+2016-03-18  James Gallagher  <jgallagher@opendap.org>
+
+	Added #include <cstring> for linux
+
+	D4StreamMarshaller now uses the double buffering code for
+	transmission of vector and opaque data.
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Possible fix for the memory issue in Hyrax-152.
+	Push this to github and test on linux.
+
+2016-03-01  Nathan Potter  <ndp@opendap.org>
+
+	Updated getdap4 usage statement to better reflect the new behavior of the application.
+
+2016-02-29  Nathan Potter  <ndp@opendap.org>
+
+	Fixed BES-102 in which getdap4 was bumbling the DAP4 CE.
+
+2016-02-26  Nathan Potter  <ndp@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Removed timing code fro MarshllerThread using our friend #if 0
+
+2016-02-24  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #9 from sharkcz/endian
+	fix big endian detection
+
+2016-02-22  James Gallagher  <jgallagher@opendap.org>
+
+	Edit Int8::print_val() so that Int8 values always print as numbers.
+
+2016-02-20  Dan Horák  <dan@danny.cz>
+
+	fix big endian detection
+	Currently there is a endian detection during configure, but the code relies
+	on non-portable __BIG_ENDIAN__ define. The default actions in AC_C_BIGENDIAN
+	break setting the correct value for WORD_BIGENDIAN.
+	See also https://bugzilla.redhat.com/show_bug.cgi?id=962091#c48
+
+2016-02-18  James Gallagher  <jgallagher@opendap.org>
+
+	Added long-needed const constructor and operator=()
+	This was done to support some experiments with memory caching,
+	but it's a long-overdue fix in general.
+
+	Zero-length array support: Vector::serialize() traps calls when length() == 0
+	This is part of a series of changes to support netCDF files
+	that use zero-length arrays as arbitrary attribute containers.
+
+	Removed old code that was commented out.
+
+	Replaced fgets() > 0 with fgets() != 0 in the parser's main loop
+	A suggestions from David Binderman.
+
+2016-02-12  James Gallagher  <jgallagher@opendap.org>
+
+	Patch for gcc 6 from Orion Poplawski
+
+2016-02-02  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #8 from OPENDAP/BES-97
+	Bes 97
+
+2016-01-29  James Gallagher  <jgallagher@opendap.org>
+
+	Modified Vector::val2buf() in support of zero-length arrays
+	val2buf() was throwing an InternalErr when called with a null data
+	pointer. I modified it so that if the pointer is null and the length()
+	of the vector/array is zero, it returns zero. The exception is still
+	thrown if the pointer is null and the length() is not zero.
+
+	Removed #define DODS_DEBUG
+
+	Tests for empty DAP2 Structures
+
+	Tests for empty structures added.
+
+2016-01-28  James Gallagher  <jgallagher@opendap.org>
+
+	Zero-length arrays now work with libdap, with caveats
+	I have implemented and tested zero-length arrays of the
+	cardinal types for DAP2 and 4. There's more to be done and
+	no testing outside of libdap has been done.
+
+	Added documentation comments in crc.h
+
+	Spelling fixes in the ChangeLog, ...
+
+2016-01-26  James Gallagher  <jgallagher@opendap.org>
+
+	ChangeLog, et al., updated Version 3.17.0
+	
 2016-01-20  James Gallagher  <jgallagher@opendap.org>
 
 	Removed #if 0 in the D4Function/ConstraintEvaluator::error() methods
