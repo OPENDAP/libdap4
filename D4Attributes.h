@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+#include "DapObj.h"
 #include "D4AttributeType.h"
 #include "XMLWriter.h"
 
@@ -40,7 +41,7 @@ namespace libdap
 class AttrTable;
 class D4Attributes;
 
-class D4Attribute {
+class D4Attribute : public DapObj {
     string d_name;
     D4AttributeType d_type;    // Attributes are limited to the simple types
 
@@ -86,9 +87,11 @@ public:
     D4Attributes *attributes();
 
     void print_dap4(XMLWriter &xml) const;
+
+    virtual void dump(ostream &strm) const;
 };
 
-class D4Attributes {
+class D4Attributes : public DapObj {
 public:
     typedef vector<D4Attribute*>::iterator D4AttributesIter;
     typedef vector<D4Attribute*>::const_iterator D4AttributesCIter;
@@ -151,6 +154,8 @@ public:
     // Might add erase()
 
     void print_dap4(XMLWriter &xml) const;
+
+    virtual void dump(ostream &strm) const;
 };
 
 string D4AttributeTypeToString(D4AttributeType at);

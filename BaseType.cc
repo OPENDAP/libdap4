@@ -248,7 +248,12 @@ BaseType::dump(ostream &strm) const
     strm << DapIndent::LMarg << "parent: " << (void *)d_parent << endl ;
     strm << DapIndent::LMarg << "attributes: " << endl ;
     DapIndent::Indent() ;
-    d_attr.dump(strm) ;
+
+    if (d_attributes)
+        d_attributes->dump(strm);
+    else
+        d_attr.dump(strm) ;
+
     DapIndent::UnIndent() ;
 
     DapIndent::UnIndent() ;
