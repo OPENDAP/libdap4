@@ -180,7 +180,7 @@ DMR_PARSE([dmr-testsuite/test_array_11.xml], [pass])
 # These calls don't include the 'dmr-testsuite' directory because the tests
 # need to choose baselines based on the word order. We could probably re-
 # organize these so that the dir names where here - which I prefer, but
-# the new 'baselines' option makes it far eaier to build the baselines, and
+# the new 'baselines' option makes it far easier to build the baselines, and
 # that was the primary reason for keeping the directory names here and explicit;
 # it made it much easier to sort out what input to use when building a baseline.
 
@@ -262,6 +262,14 @@ DMR_INTERN([test_array_14.xml], [pass])
 
 DMR_INTERN([test_simple_6.2.xml], [pass])
 DMR_INTERN([test_simple_6.3.xml], [pass])
+
+# Added these tests as part of https://opendap.atlassian.net/browse/HYRAX-98.
+# jhrg 4/13/16
+DMR_TRANS_CE([test_array_3.1.dmr], [row;x], [test_array_3.1.dmr.1.trans_base], [pass])
+DMR_TRANS_CE([test_array_3.1.dmr], [row=[[2:3]];x], [test_array_3.1.dmr.2.trans_base], [pass])
+DMR_TRANS_CE([test_array_3.1.dmr], [row=[[2:3]];x[[0:1]]], [test_array_3.1.dmr.3.trans_base], [pass])
+DMR_TRANS_CE([test_array_3.1.dmr], [x[[0:1]]], [test_array_3.1.dmr.4.trans_base], [pass])
+DMR_TRANS_CE([test_array_3.1.dmr], [x], [test_array_3.1.dmr.5.trans_base], [pass])
 
 ],
 [])

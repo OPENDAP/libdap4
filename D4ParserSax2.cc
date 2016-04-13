@@ -330,7 +330,13 @@ bool D4ParserSax2::process_map(const char *name, const xmlChar **attrs, int nb_a
 	else					// get enclosing Group and lookup Map there
 		map_source = top_group()->find_map_source(map_name);
 
-	if (!map_source)
+	// Change: If the parser is in 'strict' mode (the default) and the Array named by
+	// the Map cannot be fond, it is an error. If 'strict' mode is false (permissive
+	// mode), then this is not an error. However, the Array referenced by the Map will
+	// be null. This is a change in the parser's behavior to accommodate requests for
+	// Arrays that include Maps that do not also include the Map(s) in the request.
+	// See https://opendap.atlassian.net/browse/HYRAX-98. jhrg 4/13/16
+	if (!map_source && d_strict)
 		throw Error("The Map '" + map_name + "' was not found while parsing the variable '" + a->name() + "'.");
 
 	a->maps()->add_map(new D4Map(map_name, map_source));
