@@ -28,9 +28,7 @@
 
 #include <string>
 
-
 #define DAP4_CE_QUERY_KEY "dap4.ce"
-
 
 namespace libdap
 {
@@ -111,10 +109,6 @@ public:
 
     virtual void read_data(DMR &data, Response &rs);
     virtual void read_data_no_mime(DMR &data, Response &rs);
-
-
-
-
 };
 
 } // namespace libdap

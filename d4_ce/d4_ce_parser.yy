@@ -178,12 +178,6 @@ subset : id
     if (!btp)
         driver.throw_not_found($1, "id");
 
-#if 0    
-    if (btp->type() == dods_array_c)
-        $$ = driver.mark_variable(btp) && driver.mark_array_variable(btp);   // handle array w/o slice ops
-    else
-#endif
-
     $$ = driver.mark_variable(btp);
 }
 
@@ -203,7 +197,7 @@ subset : id
     if (btp->type() != dods_array_c)
         driver.throw_not_array($1, "id indexes");
         
-    $$ = driver.mark_variable(btp); //  && driver.mark_array_variable(btp);
+    $$ = driver.mark_variable(btp);
 }
 
 // Note this case is '| id fields'

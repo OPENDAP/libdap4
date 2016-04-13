@@ -149,22 +149,10 @@ private:
 
     D4EnumDef *d_enum_def;
     D4EnumDef *enum_def();
-#if 0
-    {
-        if (!d_enum_def) d_enum_def = new D4EnumDef;
-        return d_enum_def;
-    }
-#endif
     void clear_enum_def() { d_enum_def = 0; }
 
     D4Dimension *d_dim_def;
     D4Dimension *dim_def();
-#if 0
-    {
-        if (!d_dim_def) d_dim_def = new D4Dimension;
-        return d_dim_def;
-    }
-#endif
     void clear_dim_def() { d_dim_def = 0; }
 
     // Accumulate stuff inside an 'OtherXML' DAP attribute here
@@ -187,6 +175,8 @@ private:
 
     bool d_debug;
     bool debug() const { return d_debug; }
+
+    bool d_strict;
 
     class XMLAttribute {
         public:
@@ -267,7 +257,7 @@ public:
         other_xml(""), other_xml_depth(0), unknown_depth(0),
         error_msg(""), context(0),
         dods_attr_name(""), dods_attr_type(""),
-        char_data(""), root_ns(""), d_debug(false)
+        char_data(""), root_ns(""), d_debug(false), d_strict(true)
     {
         //xmlSAXHandler ddx_sax_parser;
         memset(&ddx_sax_parser, 0, sizeof(xmlSAXHandler));
@@ -289,6 +279,25 @@ public:
     void intern(istream &f, DMR *dest_dmr, bool debug = false);
     void intern(const string &document, DMR *dest_dmr, bool debug = false);
     void intern(const char *buffer, int size, DMR *dest_dmr, bool debug = false);
+
+    /**
+     * @defgroup strict The 'strict' mode
+     * @{
+     * The strict mode of the parser is the default. In this mode any error
+     * will result in an exception and parsing will stop. When strict mode
+     * is set to false (forgiving mode?), some errors will be silently ignored.
+     * The list of allowed errors is:
+     *     The Array named by a Map element is not required to be in the DMR.
+     *     There are no other allowed errors at this time (4/13/16)
+     */
+
+    /** @brief Set the 'strict' mode to true or false. */
+    void set_strict(bool s) { d_strict = s; }
+    /** @brief Get the setting of the 'strict' mode.
+     * @return True or False.
+     */
+    bool get_strict() const { return d_strict; }
+    /** @} */
 
     static void dmr_start_document(void *parser);
     static void dmr_end_document(void *parser);
