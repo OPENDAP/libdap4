@@ -1,3 +1,34 @@
+2016-04-15  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #15 from sharkcz/cppunit
+	fallback to pkg-config if cppunit-config is not available
+
+	Fixed an error in the script related to Coverity support
+	The env var COVERITY_SCAN_BRANCH should have been quoted.
+
+	Merge pull request #13 from sharkcz/dmr-bigendian
+	add missing big endian baselines
+
+2016-04-15  Dan Horák  <dan@danny.cz>
+
+	fallback to pkg-config if cppunit-config is not available
+	Recent version of cppunit packages do not distribute the cppunit-config script
+	and expect the usage of pkgconfig file.
+
+2016-04-14  Dan Horák  <dan@danny.cz>
+
+	remove the condition because we added the missing baselines
+
+	add big endian baseline files for new tests
+
+2016-04-08  James Gallagher  <jgallagher@opendap.org>
+
+	Added comments to D4 parser code.
+
+2016-04-06  James Gallagher  <jgallagher@opendap.org>
+
+	Added dump() methods for D4Attribute and D4Attributes.
+	
 2016-04-01  James Gallagher  <jgallagher@opendap.org>
 
 	Added #include <string> to D4RValue.h to fix an issue over in the BES
