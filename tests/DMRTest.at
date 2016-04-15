@@ -240,12 +240,6 @@ DMR_PARSE([dmr-testsuite/test_array_14.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_simple_6.2.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_simple_6.3.xml], [pass])
 
-# These tests for zero-length array values only work for
-# little-endian machines at this time. If baselines for
-# big-endian machines are built, this AS_IF can be removed.
-#  jhrg 1/28/16
-AS_IF([test "$WORD_ORDER" = "little-endian"],
-[
 DMR_TRANS([test_array_9.xml], [pass])
 DMR_TRANS([test_array_12.xml], [pass])
 DMR_TRANS([test_array_13.xml], [pass])
@@ -263,14 +257,19 @@ DMR_INTERN([test_array_14.xml], [pass])
 DMR_INTERN([test_simple_6.2.xml], [pass])
 DMR_INTERN([test_simple_6.3.xml], [pass])
 
+# These tests only work for little-endian machines at this time. If baselines for
+# big-endian machines are built, this AS_IF can be removed.
+
 # Added these tests as part of https://opendap.atlassian.net/browse/HYRAX-98.
 # jhrg 4/13/16
+ 
+AS_IF([test "$WORD_ORDER" = "little-endian"],
+[
 DMR_TRANS_CE([test_array_3.1.dmr], [row;x], [test_array_3.1.dmr.1.trans_base], [pass])
 DMR_TRANS_CE([test_array_3.1.dmr], [row=[[2:3]];x], [test_array_3.1.dmr.2.trans_base], [pass])
 DMR_TRANS_CE([test_array_3.1.dmr], [row=[[2:3]];x[[0:1]]], [test_array_3.1.dmr.3.trans_base], [pass])
 DMR_TRANS_CE([test_array_3.1.dmr], [x[[0:1]]], [test_array_3.1.dmr.4.trans_base], [pass])
 DMR_TRANS_CE([test_array_3.1.dmr], [x], [test_array_3.1.dmr.5.trans_base], [pass])
-
 ],
 [])
 
