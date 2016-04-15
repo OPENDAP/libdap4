@@ -120,7 +120,7 @@ public:
     }
 
     void remove_map(D4Map *map) {
-        for (D4MapsCIter i = d_maps.cbegin(), e = d_maps.cend(); i != e; ++i) {
+        for (D4MapsIter i = d_maps.begin(), e = d_maps.end(); i != e; ++i) {
             /* && (*i)->parent() == map->parent() */
             // Don't test if the map->parent() matches - we only care about the name and array.
             // This method is intended for processing CE array slices that are edge cases and
