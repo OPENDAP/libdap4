@@ -305,7 +305,13 @@ AC_SUBST([UUID_LIBS])
 
 AM_PATH_CPPUNIT(1.12.0,
 	[AM_CONDITIONAL([CPPUNIT], [true])],
-	[AM_CONDITIONAL([CPPUNIT], [false])])
+	[
+	    PKG_CHECK_MODULES(CPPUNIT, [cppunit >= 1.12.0],
+		[AM_CONDITIONAL([CPPUNIT], [true])],
+		[AM_CONDITIONAL([CPPUNIT], [false])]
+	    )
+	]
+)
 
 DODS_DEBUG_OPTION
 
