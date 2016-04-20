@@ -136,17 +136,17 @@ Str::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
 
     DBG(cerr << "Entering (" << this->name() << " [" << this << "])" << endl);
-
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_on();
-
+#endif
     if (!read_p())
         read();
 
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_off();
-
+#endif
     m.put_str( d_buf ) ;
 
     DBG(cerr << "Exiting: buf = " << d_buf << endl);

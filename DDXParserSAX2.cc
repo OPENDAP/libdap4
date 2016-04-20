@@ -1241,10 +1241,8 @@ void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid, const string
         context->validate = true;
 
 
-        while ((fgets(chars, size, in) > 0) && !is_boundary(chars, boundary)) {
-            //chars[size-1] = '\0';
+        while ((fgets(chars, size, in) != 0) && !is_boundary(chars, boundary)) {
             DBG(cerr << "line (" << strlen(chars) << "): " << chars << endl);
-
             xmlParseChunk(ctxt, chars, strlen(chars), 0);
         }
         // This call ends the parse: The fourth argument of xmlParseChunk is

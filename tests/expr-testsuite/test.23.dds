@@ -1,0 +1,8 @@
+
+# Data containing two zero-length arrays. jhrg 1/28/16
+
+Dataset {
+   Int32 a;
+   Int32 b[10];
+   Int32 c[4][0];
+} test.22;

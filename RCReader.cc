@@ -221,8 +221,7 @@ bool RCReader::read_rc_file(const string &pathname)
                     d_dods_proxy_server_protocol = proxy.substr(0, comma);
                     downcase(d_dods_proxy_server_protocol);
                     if (d_dods_proxy_server_protocol != "http")
-                        throw Error(
-                                "The only supported protocol for a proxy server is \"HTTP\". Correct your \".dodsrc\" file.");
+                        throw Error("The only supported protocol for a proxy server is \"HTTP\". Correct your \".dodsrc\" file.");
                     proxy = proxy.substr(comma + 1);
                 }
                 else {

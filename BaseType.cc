@@ -248,7 +248,12 @@ BaseType::dump(ostream &strm) const
     strm << DapIndent::LMarg << "parent: " << (void *)d_parent << endl ;
     strm << DapIndent::LMarg << "attributes: " << endl ;
     DapIndent::Indent() ;
-    d_attr.dump(strm) ;
+
+    if (d_attributes)
+        d_attributes->dump(strm);
+    else
+        d_attr.dump(strm) ;
+
     DapIndent::UnIndent() ;
 
     DapIndent::UnIndent() ;
@@ -823,12 +828,15 @@ BaseType::read()
 void
 BaseType::intern_data(ConstraintEvaluator &, DDS &dds)
 {
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_on();
+#endif
     DBG2(cerr << "BaseType::intern_data: " << name() << endl);
     if (!read_p())
         read();          // read() throws Error and InternalErr
-
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_off();
+#endif
 }
 
 /**

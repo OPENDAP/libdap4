@@ -76,6 +76,13 @@ static void usage(const string &name)
 	cerr << "of a, d, or D are used with a URL, then the DAP library" << endl;
 	cerr << "routines are NOT used and the URLs contents are dumped" << endl;
 	cerr << "to standard output." << endl;
+	cerr << "Note: If the URL contains a query string the query string" << endl;
+	cerr << "will be preserved in the request. However, if the query " << endl;
+	cerr << "string contains DAP4 keys they may interfere with the" << endl;
+	cerr << "operation of " << name << ". A warning will be" << endl;
+	cerr << "written to stderr when "<< name << " identifies" << endl;
+	cerr << "the presence of a DAP4 query key in the submitted" << endl;
+	cerr << "URL's query string." << endl;
 	cerr << endl;
 	cerr << "In the second form of the command, assume the files are" << endl;
 	cerr << "DataDDS objects (stored in files or read from pipes)" << endl;
@@ -140,17 +147,15 @@ static void read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool 
 
 static void print_group_data(D4Group *g, bool print_rows = false)
 {
-    for (D4Group::groupsIter gi = g->grp_begin(), ge = g->grp_end(); gi != ge; ++gi) {
-        for (Constructor::Vars_iter i = (*gi)->var_begin(), e = (*gi)->var_end(); i != e; i++) {
-            if (print_rows && (*i)->type() == dods_sequence_c)
-                dynamic_cast < D4Sequence * >(*i)->print_val_by_rows(cout);
-            else
-                (*i)->print_val(cout);
-        }
+    for (Constructor::Vars_iter i = g->var_begin(), e = g->var_end(); i != e; i++) {
+        if (print_rows && (*i)->type() == dods_sequence_c)
+            dynamic_cast<D4Sequence &>(**i).print_val_by_rows(cout);
+        else
+            (*i)->print_val(cout);
+    }
 
-        for (D4Group::groupsIter gi = g->grp_begin(), ge = g->grp_end(); gi != ge; ++gi) {
-            print_group_data(*gi, print_rows);
-        }
+    for (D4Group::groupsIter gi = g->grp_begin(), ge = g->grp_end(); gi != ge; ++gi) {
+        print_group_data(*gi, print_rows);
     }
 }
 
@@ -159,13 +164,6 @@ static void print_data(DMR &dmr, bool print_rows = false)
     cout << "The data:" << endl;
 
     D4Group *g = dmr.root();
-
-    for (Constructor::Vars_iter i = g->var_begin(), e = g->var_end(); i != e; i++) {
-        if (print_rows && (*i)->type() == dods_sequence_c)
-            dynamic_cast < D4Sequence * >(*i)->print_val_by_rows(cout);
-        else
-            (*i)->print_val(cout);
-    }
 
     print_group_data(g, print_rows);
 
@@ -410,13 +408,22 @@ int main(int argc, char *argv[])
         }
     }
     catch (Error &e) {
-        cerr << "Error: " << e.get_error_message() << endl;
-        cerr << "exiting" << endl;
+
+    	if(e.get_error_code() == malformed_expr || e.get_error_code() == malformed_expr){
+        	cerr << e.get_error_message() << endl;
+        	usage(argv[0]);
+    	}
+    	else {
+        	cerr << e.get_error_message() << endl;
+
+    	}
+
+        cerr << "Exiting." << endl;
         return 1;
     }
     catch (exception &e) {
         cerr << "C++ library exception: " << e.what() << endl;
-        cerr << "exiting" << endl;
+        cerr << "Exiting." << endl;
         return 1;
     }
 

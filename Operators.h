@@ -67,9 +67,9 @@ bool Cmp(int op, T1 v1, T2 v2)
         case SCAN_LESS_EQL:
             return v1 <= v2;
         case SCAN_REGEXP:
-            throw Error("Regular expressions are supported for strings only.");
+            throw Error(malformed_expr, "Regular expressions are supported for strings only.");
         default:
-            throw Error("Unrecognized operator.");
+            throw Error(malformed_expr, "Unrecognized operator.");
     }
 }
 
@@ -104,9 +104,9 @@ bool USCmp(int op, UT1 v1, T2 v2)
         case SCAN_LESS_EQL:
             return v1 <= dap_floor_zero<T2>(v2);
         case SCAN_REGEXP:
-            throw Error("Regular expressions are supported for strings only.");
+            throw Error(malformed_expr, "Regular expressions are supported for strings only.");
         default:
-            throw Error("Unrecognized operator.");
+            throw Error(malformed_expr, "Unrecognized operator.");
     }
 }
 
@@ -139,9 +139,9 @@ bool SUCmp(int op, T1 v1, UT2 v2)
         case SCAN_LESS_EQL:
             return dap_floor_zero<T1>(v1) <= v2;
         case SCAN_REGEXP:
-            throw Error("Regular expressions are supported for strings only.");
+            throw Error(malformed_expr, "Regular expressions are supported for strings only.");
         default:
-            throw Error("Unrecognized operator.");
+            throw Error(malformed_expr, "Unrecognized operator.");
     }
 }
 
@@ -171,7 +171,7 @@ bool StrCmp(int op, T1 v1, T2 v2)
             return r.match(v1.c_str(), v1.length()) > 0;
         }
         default:
-            throw Error("Unrecognized operator.");
+            throw Error(malformed_expr, "Unrecognized operator.");
     }
 }
 

@@ -1,3 +1,405 @@
+2016-04-15  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #15 from sharkcz/cppunit
+	fallback to pkg-config if cppunit-config is not available
+
+	Fixed an error in the script related to Coverity support
+	The env var COVERITY_SCAN_BRANCH should have been quoted.
+
+	Merge pull request #13 from sharkcz/dmr-bigendian
+	add missing big endian baselines
+
+2016-04-15  Dan Horák  <dan@danny.cz>
+
+	fallback to pkg-config if cppunit-config is not available
+	Recent version of cppunit packages do not distribute the cppunit-config script
+	and expect the usage of pkgconfig file.
+
+2016-04-14  Dan Horák  <dan@danny.cz>
+
+	remove the condition because we added the missing baselines
+
+	add big endian baseline files for new tests
+
+2016-04-08  James Gallagher  <jgallagher@opendap.org>
+
+	Added comments to D4 parser code.
+
+2016-04-06  James Gallagher  <jgallagher@opendap.org>
+
+	Added dump() methods for D4Attribute and D4Attributes.
+	
+2016-04-01  James Gallagher  <jgallagher@opendap.org>
+
+	Added #include <string> to D4RValue.h to fix an issue over in the BES
+
+2016-03-22  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #11 from OPENDAP/d4-threads
+	D4StreamMarshaller now uses the double buffering code for transmission
+
+2016-03-18  James Gallagher  <jgallagher@opendap.org>
+
+	Added #include <cstring> for linux
+
+	D4StreamMarshaller now uses the double buffering code for
+	transmission of vector and opaque data.
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Possible fix for the memory issue in Hyrax-152.
+	Push this to github and test on linux.
+
+2016-03-01  Nathan Potter  <ndp@opendap.org>
+
+	Updated getdap4 usage statement to better reflect the new behavior of the application.
+
+2016-02-29  Nathan Potter  <ndp@opendap.org>
+
+	Fixed BES-102 in which getdap4 was bumbling the DAP4 CE.
+
+2016-02-26  Nathan Potter  <ndp@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Removed timing code fro MarshllerThread using our friend #if 0
+
+2016-02-24  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #9 from sharkcz/endian
+	fix big endian detection
+
+2016-02-22  James Gallagher  <jgallagher@opendap.org>
+
+	Edit Int8::print_val() so that Int8 values always print as numbers.
+
+2016-02-20  Dan Horák  <dan@danny.cz>
+
+	fix big endian detection
+	Currently there is a endian detection during configure, but the code relies
+	on non-portable __BIG_ENDIAN__ define. The default actions in AC_C_BIGENDIAN
+	break setting the correct value for WORD_BIGENDIAN.
+	See also https://bugzilla.redhat.com/show_bug.cgi?id=962091#c48
+
+2016-02-18  James Gallagher  <jgallagher@opendap.org>
+
+	Added long-needed const constructor and operator=()
+	This was done to support some experiments with memory caching,
+	but it's a long-overdue fix in general.
+
+	Zero-length array support: Vector::serialize() traps calls when length() == 0
+	This is part of a series of changes to support netCDF files
+	that use zero-length arrays as arbitrary attribute containers.
+
+	Removed old code that was commented out.
+
+	Replaced fgets() > 0 with fgets() != 0 in the parser's main loop
+	A suggestions from David Binderman.
+
+2016-02-12  James Gallagher  <jgallagher@opendap.org>
+
+	Patch for gcc 6 from Orion Poplawski
+
+2016-02-02  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #8 from OPENDAP/BES-97
+	Bes 97
+
+2016-01-29  James Gallagher  <jgallagher@opendap.org>
+
+	Modified Vector::val2buf() in support of zero-length arrays
+	val2buf() was throwing an InternalErr when called with a null data
+	pointer. I modified it so that if the pointer is null and the length()
+	of the vector/array is zero, it returns zero. The exception is still
+	thrown if the pointer is null and the length() is not zero.
+
+	Removed #define DODS_DEBUG
+
+	Tests for empty DAP2 Structures
+
+	Tests for empty structures added.
+
+2016-01-28  James Gallagher  <jgallagher@opendap.org>
+
+	Zero-length arrays now work with libdap, with caveats
+	I have implemented and tested zero-length arrays of the
+	cardinal types for DAP2 and 4. There's more to be done and
+	no testing outside of libdap has been done.
+
+	Added documentation comments in crc.h
+
+	Spelling fixes in the ChangeLog, ...
+
+2016-01-26  James Gallagher  <jgallagher@opendap.org>
+
+	ChangeLog, et al., updated Version 3.17.0
+	
+2016-01-20  James Gallagher  <jgallagher@opendap.org>
+
+	Removed #if 0 in the D4Function/ConstraintEvaluator::error() methods
+
+2016-01-19  James Gallagher  <jgallagher@opendap.org>
+
+	Found one more place in the DAP4 CE and Function parser where
+	errors did not result in an exception.
+
+2016-01-13  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #6 from OPENDAP/BES-87
+	BES 87
+
+2016-01-12  James Gallagher  <jgallagher@opendap.org>
+
+	Added comments re how the Error object codes map to HTTP codes
+
+	Added mapping between libdap and HTTP codes (suggestions)
+
+	Added a code to Error; made sure Error was used consistently
+	Changes to mesh with those in the OLFS. Error(unknown_error, ...)
+	maps to an HTTP 400, internal_error --> 500, not_implemented -->501,
+	etc.
+
+	DAP2 and 4 scanners now throw Error(malformed_expr, <msg>)
+	They were writing to stderr...
+
+	DAP2 CE parser uses no_such_identifier where apropos
+
+2016-01-11  James Gallagher  <jgallagher@opendap.org>
+
+	Added codes Error response in the DAP2 parser
+
+	There were only a handful since most of the Error throws were well
+	behaved.
+
+	Modified the DAP4 ce and function parsers to include code w/Errors
+	See https://opendap.atlassian.net/browse/BES-87.
+
+2016-01-05  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' into bes-40
+
+2016-01-04  James Gallagher  <jgallagher@opendap.org>
+
+	Modified the CRC32 byte-order change so that it's not included by default
+
+	Popped old changes for Connect; fix for Makefile.am; etc.
+
+2015-12-31  James Gallagher  <jgallagher@opendap.org>
+
+	Hacks for doxygen.
+	The Makefile works now (rebuilds doxy.conf when needed) and the docs
+	are better. I stopped including docs for methods w/o doc comments
+	and those are now listed in the doxygen_warnings.txt file.
+	[ci skip]
+
+2015-12-30  James Gallagher  <jgallagher@opendap.org>
+
+	Tried CLion; added CMakeLists.txt to gitignore
+
+	Removed the calls to DDS:timeout_{on,off}
+	This code is no longer used. The timeout feature of the BES is far
+	better.
+
+2015-12-08  James Gallagher  <jgallagher@opendap.org>
+
+	Removed commented-out code
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Float32 attributes mis-coded as Byte in the DMR
+
+2015-12-03  Nathan Potter  <ndp@opendap.org>
+
+	Travis install check
+
+	Travis install check
+
+2015-11-30  Patrick West  <pwest@vsto.tw.rpi.edu>
+
+	Missing xml2 libraries in unit-tests build
+	Added $(XML2_LIBS) to the Makefile.am in unit-tests so that tests would
+	build. On Ubuntu 14.04.
+
+2015-11-12  James Gallagher  <jgallagher@opendap.org>
+
+	I removed the deploy lines from the travis.yml file
+	These seem broken - I have to investigate how to handle
+	deployment of RPMs out of travis
+
+2015-10-22  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed error in printing of child groups.
+	The child group values were printed twice.
+
+2015-10-21  James Gallagher  <jgallagher@opendap.org>
+
+	Source release version, ChangeLog, News, ... for 3.16.0
+
+2015-10-19  James Gallagher  <jgallagher@opendap.org>
+
+	Fixes #1
+
+	Added changes to exit when 'report_errors' (-r) is true
+
+	Fix for the missing 'child groups' in getdap4's output
+	And some minor mods to XMLWriter - clean up the includes a bit.
+
+2015-10-15  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #5 from OPENDAP/intern_no_crc32
+	Intern no crc32
+
+	Merge pull request #4 from OPENDAP/endian_fixes
+	Endian fixes
+
+2015-10-14  James Gallagher  <jgallagher@opendap.org>
+
+	Some of the DAP4-only types were not setting is_dap4
+	This caused the DMR output code to throw an error (Unknown Type) in
+	cases where those types were used.
+	See https://opendap.atlassian.net/browse/HR-63
+
+2015-10-13  James Gallagher  <jgallagher@opendap.org>
+
+	fixed a warning in dmr-test - /* in a comment
+
+2015-10-13  jgallagher59701  <jgallagher@opendap.org>
+
+	Added test baselines for intern_data with no checksum
+	I dropped computing the checksum in the intern_data() method,
+	so the baselines for the tests had to be updated.
+
+2015-10-13  James Gallagher  <jgallagher@opendap.org>
+
+	Now the intern_data() method used with DAP4 does not compute the
+	checksum It is only computed by the code that serializes the
+	response - sends it to a remote client. I added baselines
+	specifically for the intern tests on little endian machines. Will
+	add ones for big endian next...
+
+	Merge branch 'intern_no_crc32' of
+	https://github.com/opendap/libdap4.git into intern_no_crc32
+
+2015-10-12  James Gallagher  <jgallagher@opendap.org>
+
+	Removed crc32 generation from intern_data()
+	This seems better - I think computing the CRC code
+	when interning values is not necessary. Those should
+	only be computed when the server is going to send values.
+
+	Completed changes to D4UnMarshallerTest.cc
+	This copy of the tests should work on both little- and big-endian
+	hosts.
+
+	More changes to D4UnMarshallerTest.cc
+
+2015-10-12  jgallagher59701  <jgallagher@opendap.org>
+
+	Partial fix for D4UnMarshallerTest.cc
+
+2015-10-12  James Gallagher  <jgallagher@opendap.org>
+
+	Changed WORDS_BIGENDIAN to __BIG_ENDIAN__
+
+2015-10-07  jgallagher59701  <jgallagher@opendap.org>
+
+	One step closer to the tests working on big endian machines
+	D4MarshallerTest now works
+
+	Update to D4Marshaller/UnMarshaller tests - added baselines for
+	big-endian ...There's still an issue, however.
+
+2015-10-07  James Gallagher  <jgallagher@opendap.org>
+
+	D4UnMarshallerTest also needs two sets of baselines. Added
+	little-endian ones.
+
+	D4MarshallerTest need two sets of baselines...
+	One for big- and one for litte-endian machines. I made the little
+	endian set.
+
+2015-10-07  jgallagher59701  <jgallagher@opendap.org>
+
+	Changed to D4EnumTest to support changes for big-endian machines.
+
+2015-10-07  James Gallagher  <jgallagher@opendap.org>
+
+	The change to D4Enum::compute_checksum() was correct. This fixes
+	the last of the issues with Enum on big-endian machines. The
+	problems we caused by the assumption that 64-, 32-, 16- and 8-bit
+	integers would align on the LSB, which is the case for
+	little-endian machines (but not big...). In several places where
+	reinterpret_cast<>() was used I first assigned the Enum _value_ to
+	a temp variable of the correct size and then passed the address of
+	that to the checksum calculation function. High cost in one sense,
+	but really, scalar Enum variables will be rare and Arrays of Enums
+	are handled differently. I also have dropped the overly-complex
+	design that used a union. It eliminated some casts, but was based
+	on the erroneous assumption regarding alignment.
+
+	Test change in computing checksum for big-endian machines.
+
+	Debugging big-endian issues still..
+
+2015-10-07  James Gallagher  <jimg@idoru.local>
+
+	Merge branch 'endian_fixes' of https://github.com/opendap/libdap4
+	into endian_fixes
+
+	Cleanup of a version of this that should work on big and
+	little-endian machines.
+
+2015-10-06  jgallagher59701  <jgallagher@opendap.org>
+
+	Baselines for Enum tests on big endian machines
+	Now only the tests 54 and 55 fail on the big endian machines...
+
+2015-10-06  James Gallagher  <jimg@idoru.local>
+
+	Removed union in the D4Enum implementation
+	This is an attempt to fix the issues found on big endian machines.
+
+2015-10-01  James Gallagher  <jgallagher@opendap.org>
+
+	The DMR tests now work on little endian machines, mostly
+	There is an issue with D4Enum that causes some tests to fail.
+
+2015-10-01  jgallagher59701  <jgallagher@opendap.org>
+
+	Fixes for function/ce tests modified:   tests/DMRTest.at
+
+2015-09-30  jgallagher59701  <jgallagher@opendap.org>
+
+	Baselines for a big endian machine.
+
+2015-09-30  James Gallagher  <jgallagher@opendap.org>
+
+	Fail: fixed a syntax error that got pushed.
+
+	Added capability to build baselines that's sane
+
+	Continue with fixes for data + ce tests
+
+	DMRTest is dependent on word order - this is a trial fix.
+
+2015-09-29  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed an issue in HTTPCacheTest; version number bump.
+	In HTTPCacheTest, a quirk of RCReader meant that when the tests
+	were run as part of distcheck they would fail if the user has set
+	USE_CACHE to 1 in their ~/.dodsrc. Version numbers bumped to 3.15.1.
+
+2015-09-23  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Fixed a syntax error in cgi_util.h
+	... and added commentary to MarshallerThread.cc
+
+2015-09-20  James Gallagher  <jgallagher@opendap.org>
+
+	Version 3.15.1
+
 2015-09-18  James Gallagher  <jgallagher@opendap.org>
 
 	Added empty Coverity model file
@@ -56,7 +458,7 @@
 	pass. Commit 6b005387 introduced a change where set_read_p() no
 	longer tested the state of the is_synthesized property. Before, if
 	the property was set the method would not change the state of
-	is_read. The change made it so the is_read propery was changed
+	is_read. The change made it so the is_read property was changed
 	regardless of the state of is_synthesized. This broke the
 	'projection functions' in the FreeForm handler. I have reverted to
 	the old libdap behavior, and the tests now pass.
@@ -75,7 +477,7 @@
 
 2015-08-28  James Gallagher  <jgallagher@opendap.org>
 
-	Updated the versio number to 3.15
+	Updated the version number to 3.15
 	This because of the parallel IO code and pipelining support.
 
 2015-08-28  James Gallagher  <jgallagher@opendap.org>
@@ -101,7 +503,7 @@
 	We found that we could call clear_local_data() right after variables
 	were serialized and get a much flatter memory profile. However, putting
 	those calls in serialize() changed its behavior. I've moved them to
-	bes/dap/ResponseBuilder - but that is controllable using a comple-time
+	bes/dap/ResponseBuilder - but that is controllable using a compile-time
 	directive. Similarly, the compile-time switch USE_POSIX_THREADS
 	can be used to turn off that feature (#undef). See XDRStreamMarshaller.
 
@@ -110,7 +512,7 @@
 	put_vector() methods of the same/similar names. This cuts down on the
 	naming mess and means that other classes like XDFFileStream don't have
 	to include hacked methods that throw exceptions. This commit also
-	includes changes tha wrap the clear_local_data() calls in #ifdef
+	includes changes that wrap the clear_local_data() calls in #ifdef
 	CLEAR_LOCAL_DATA. Lastly, this refactor will also require a matching
 	edit to ncml_module.
 
@@ -126,22 +528,22 @@
 	Took advantage of the current XDRStreamMarshaller impl that copies
 	data before writing it out. This means our code can delete the original
 	data held by the object right after the thread used to send that data
-	hass been called (actually, it could delete it _before_ starting the
+	has been called (actually, it could delete it _before_ starting the
 	thread, but doing so afterward keeps that feature out of the marshaller
-	class, which may come in handly later on...). Later on we may switch
+	class, which may come in handy later on...). Later on we may switch
 	to reference counted pointers and then this issue will go away.
 
 	Removed call to clear_local_data() in Vector::Serialize()
 	This was colliding with the call to clear_local_data() in the thread
 	when put_vector_thread() was called. This showed up as a 'sometimes'
 	failure of expr test #21. The bug happens only when serializing an
-	array of strucutre that contains arrays.
+	array of structure that contains arrays.
 
 2015-08-22  James Gallagher  <jgallagher@opendap.org>
 
 	Corrected a spelling mistake with 'serialize_no_release'
 
-	I've added synchronization code to the XDRStreamMarshaller dotr
+	I've added synchronization code to the XDRStreamMarshaller dtor
 	This causes the XDRStreamMarshaller dtor to block on the d_out_mutex
 	until the child thread (possibly) writing to the output stream
 	completes.
@@ -176,7 +578,7 @@
 
 2015-08-17  Nathan Potter  <ndp@opendap.org>
 
-	Merged the new (template-less) version of Vector inot master branch
+	Merged the new (template-less) version of Vector into master branch
 
 2015-08-17  James Gallagher  <jgallagher@opendap.org>
 
@@ -192,7 +594,7 @@
 	Must still implement the parts for Arrays of int16, ..., types;
 	only byte arrays work now.
 
-	Checkpoint: Adding methods to allow serailization of Vectors in parts.
+	Checkpoint: Adding methods to allow serialization of Vectors in parts.
 	Missing methods in D4StreamMarshaller, XDRFileMarsahller and parts of
 	methods in XDRStreamMarshaller.
 
@@ -203,7 +605,7 @@
 2015-08-14  Nathan Potter  <ndp@opendap.org>
 
 	Replaced template methods in Vector.cc with more pedantic
-	implmentations. Made the templted methods private and used them in
+	implementations. Made the templed methods private and used them in
 	the implementations of the new pedantic methods.
 
 2015-08-10  James Gallagher  <jgallagher@opendap.org>
@@ -216,7 +618,7 @@
 
 	Added a serialize_no_release() method
 	This rounds out the serialize_n_release branch. The new behavior of
-	freeing the dynamic memory is very desireable, so it's the default,
+	freeing the dynamic memory is very desirable, so it's the default,
 	but if some code wants to serialize, do something else and then delete
 	the storage, the new serialize_no_release provides that option. All
 	of our libdap and bes/module tests pass. This will be merged to the
@@ -246,7 +648,7 @@
 
 	pulled from github and merged conflicts
 
-	Refactored use of the name() method in BaseType so that it is now overrideable
+	Refactored use of the name() method in BaseType so that it is now override-able
 
 2015-08-05  James Gallagher  <jgallagher@opendap.org>
 
@@ -255,7 +657,7 @@
 	BaseType (child of, really) that hold large amounts of data. It applies
 	to only a handful of the variable types (Vector, Sequence, D4Opaque and
 	D4Sequence). It is used to free memory right after data values are
-	sent to the client using serailize(). This means that data are no longer
+	sent to the client using serialize(). This means that data are no longer
 	held by the variable objects once serialize() returns - at least for
 	Array, Sequence, ... Other types like Byte, Int16, ..., will retain
 	their values because those values are not held in dynamically allocated
@@ -268,7 +670,7 @@
 	serialize() has been called. It seems that none of the handlers use
 	this 'feature' and we can change the code so that memory is freed right
 	after the bits are sent fir each variable. This means that only one
-	variabe's data are in memory at any given time.
+	variate's data are in memory at any given time.
 
 2015-08-03  Nathan Potter  <ndp@opendap.org>
 
@@ -276,7 +678,7 @@
 
 2015-07-14  James Gallagher  <jgallagher@opendap.org>
 
-	Removed the bisong version print out
+	Removed the bison version print out
 	...I think this is working fine now
 	[ci skip]
 
@@ -292,7 +694,7 @@
 
 	Removed odd ^S from install_libdap4_source_deps.sh
 
-	More travis hacks - addes sudo: false back in; remove tabs
+	More travis hacks - added sudo: false back in; remove tabs
 
 2015-07-12  James Gallagher  <jgallagher@opendap.org>
 

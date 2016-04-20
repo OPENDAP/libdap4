@@ -27,6 +27,7 @@
 #define _D4RValue_h
 
 #include <vector>
+#include <string>
 
 #include <dods-datatypes.h>
 #include <D4Function.h>

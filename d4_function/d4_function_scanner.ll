@@ -30,6 +30,7 @@
 //#include "config.h"
 
 #include <string>
+#include "Error.h"
 
 #include "D4FunctionScanner.h"
 
@@ -58,6 +59,10 @@ typedef libdap::D4FunctionParser::token token;
 
 /* define yyterminate as this instead of NULL */
 #define yyterminate() return(token::END)
+
+#define YY_FATAL_ERROR(msg) {\
+    throw(libdap::Error(malformed_expr, std::string("Error scanning function expression text: ") + std::string(msg))); \
+}
 
 %}
 

@@ -121,18 +121,41 @@ namespace libdap
 class DAS : public DapObj
 {
 private:
+    // The DAS support the notion of a current attribute table for a given
+    // container. Containers are used by the BES to support datasets that
+    // are built using several files (but not exactly the same way as
+    // NCML builds them.
     AttrTable *d_container ;
-    string _container_name ;
+    string d_container_name ;
+
+    // A DAS is a shell around an attribute table. Since tables can be nested,
+    // there is one top-level table and the attribute tables for individual
+    // variables are its children.
     AttrTable d_attrs ;
 
+    void duplicate(const DAS &src);
+
 public:
-    DAS();
+    DAS() : DapObj(), d_container( 0 ) { }
+    DAS(const DAS &das) { duplicate(das); }
 
-    virtual ~DAS();
+    virtual ~DAS() { }
 
-    virtual string container_name() ;
+    DAS & operator=(const DAS &rhs);
+
+    /** @brief Returns the name of the current attribute container when multiple
+     * files used to build this DAS
+     */
+    virtual string container_name() const {return d_container_name; }
+
     virtual void container_name( const string &cn ) ;
-    virtual AttrTable *container() ;
+
+    /** @brief Returns the current attribute container when multiple files
+     * used to build this DAS.
+     *
+     * @return current attribute table for current container
+     */
+    virtual AttrTable *container() { return d_container; }
 
     /** @brief Returns the top most set of attributes
      *

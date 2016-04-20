@@ -115,7 +115,7 @@ void D4FunctionEvaluator::eval(DMR *function_result)
     if (ce_parser_debug) parser.set_trace_parsing(true);
     bool parse_ok = parser.parse(function);
     if (!parse_ok)
-    Error("Function Expression failed to parse.");
+    Error(malformed_expr, "Function Expression failed to parse.");
     else {
         if (ce_parser_debug) cerr << "Function Parse OK" << endl;
         D4RValueList *result = parser.result();
@@ -263,7 +263,9 @@ template std::vector<dods_float64> *D4FunctionEvaluator::init_arg_list(dods_floa
 // is inside D4FunctionEvaluator::parse(...)
 void D4FunctionEvaluator::error(const libdap::location &l, const std::string &m)
 {
-    std::cerr << l << ": " << m << std::endl;
+    ostringstream oss;
+    oss << l << ": " << m << ends;
+    throw Error(malformed_expr, oss.str());
 }
 
 } /* namespace libdap */

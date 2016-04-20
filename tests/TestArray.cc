@@ -133,11 +133,17 @@ unsigned int TestArray::m_print_array(ostream &out, unsigned int index, unsigned
 {
     if (dims == 1) {
         out << "{";
-        for (unsigned i = 0; i < shape[0] - 1; ++i) {
+
+        // Added this test for zero-length arrays. jhrg 1/28/16
+        if (shape[0] >= 1) {
+            for (unsigned i = 0; i < shape[0] - 1; ++i) {
+                dynamic_cast<TestCommon&>(*var(index++)).output_values(out);
+                out << ", ";
+            }
+
             dynamic_cast<TestCommon&>(*var(index++)).output_values(out);
-            out << ", ";
         }
-        dynamic_cast<TestCommon&>(*var(index++)).output_values(out);
+
         out << "}";
 
         return index;
@@ -148,13 +154,21 @@ unsigned int TestArray::m_print_array(ostream &out, unsigned int index, unsigned
         // length is shape[dims-1]-1 *and* since we want one less dimension
         // than that, the correct limit on this loop is shape[dims-2]-1. From
         // Todd Karakasian.
+        //
         // The saga continues; the loop test should be `i < shape[0]-1'. jhrg
         // 9/12/96.
-        for (unsigned i = 0; i < shape[0] - 1; ++i) {
+        //
+        // Added this (primitive) guard against errors when a zero-length array
+        // is declared with a shape like [0][4]. jhrg 1/28/16
+        if (shape[0] > 0) {
+            for (unsigned i = 0; i < shape[0] - 1; ++i) {
+                index = m_print_array(out, index, dims - 1, shape + 1);
+                out << ",";
+            }
+
             index = m_print_array(out, index, dims - 1, shape + 1);
-            out << ",";
         }
-        index = m_print_array(out, index, dims - 1, shape + 1);
+
         out << "}";
 
         return index;

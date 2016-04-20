@@ -1,0 +1,5 @@
+DDS past semantic check
+DDS past full semantic check
+Dataset {
+    Int32 a[0];
+} test.21;

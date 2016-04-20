@@ -160,7 +160,7 @@ void Int8::print_val(ostream &out, string space, bool print_decl_p)
 {
 	if (print_decl_p) {
 		print_decl(out, space, false);
-		out << " = " << d_buf << ";\n";
+		out << " = " << (int)d_buf << ";\n";
 	}
 	else
 		out << (int)d_buf;

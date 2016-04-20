@@ -67,7 +67,12 @@ void D4Enum::m_duplicate(const D4Enum &src)
 {
     d_buf = src.d_buf;
     d_element_type = src.d_element_type;
+    d_enum_def = src.d_enum_def;
+#if 0
+    // The enum_def is a weak pointer managed by D4Group. We just copy it
+    // and do not delete it. jhrg 1019/15
     d_enum_def = src.d_enum_def == 0 ? 0 : new D4EnumDef(*(src.d_enum_def));
+#endif
     d_is_signed = src.d_is_signed;
 }
 

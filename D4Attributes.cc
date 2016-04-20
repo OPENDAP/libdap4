@@ -237,13 +237,13 @@ D4Attributes::transform_to_dap4(AttrTable &at)
 			break;
 		}
 		case Attr_float32: {
-			D4Attribute *a = new D4Attribute(name, attr_byte_c);
+			D4Attribute *a = new D4Attribute(name, attr_float32_c);
 			a->add_value_vector(*at.get_attr_vector(i));
 			add_attribute_nocopy(a);
 			break;
 		}
 		case Attr_float64: {
-			D4Attribute *a = new D4Attribute(name, attr_float32_c);
+			D4Attribute *a = new D4Attribute(name, attr_float64_c);
 			a->add_value_vector(*at.get_attr_vector(i));
 			add_attribute_nocopy(a);
 			break;
@@ -377,6 +377,29 @@ D4Attribute::print_dap4(XMLWriter &xml) const
         throw InternalErr(__FILE__, __LINE__, "Could not end Attribute element");
 }
 
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and then displays information
+ * about this base type.
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+D4Attribute::dump(ostream &strm) const
+{
+    strm << DapIndent::LMarg << "D4Attribute::dump - (" << (void *)this << ")" << endl;
+
+    DapIndent::Indent() ;
+
+    XMLWriter xml;
+    print_dap4(xml);
+    strm << DapIndent::LMarg << xml.get_doc() << flush;
+
+    DapIndent::UnIndent() ;
+}
+
+
 void
 D4Attributes::print_dap4(XMLWriter &xml) const
 {
@@ -388,6 +411,29 @@ D4Attributes::print_dap4(XMLWriter &xml) const
         (*i++)->print_dap4(xml);
     }
 }
+
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance and then displays information
+ * about this base type.
+ *
+ * @param strm C++ i/o stream to dump the information to
+ * @return void
+ */
+void
+D4Attributes::dump(ostream &strm) const
+{
+    strm << DapIndent::LMarg << "D4Attributes::dump - (" << (void *)this << ")" << endl;
+
+    DapIndent::Indent() ;
+
+    XMLWriter xml;
+    print_dap4(xml);
+    strm << DapIndent::LMarg << xml.get_doc() << flush;
+
+    DapIndent::UnIndent() ;
+}
+
 
 } // namespace libdap
 

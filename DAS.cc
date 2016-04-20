@@ -71,33 +71,26 @@ extern int dasparse(libdap::parser_arg *arg); // defined in das.tab.c
 
 namespace libdap {
 
-/** Create an empty DAS
- */
-DAS::DAS() : DapObj(), d_container( 0 )
-{}
-
-#if 0
-DAS::DAS(AttrTable *attr, string name)
+void DAS::duplicate(const DAS &src)
 {
-    append_container(attr, www2id(name));
+    // If the container field is set, perform a deep copy
+    if (src.d_container)
+        d_container  = new AttrTable(*src.d_container);
+    else
+        d_container = 0;
+
+    d_container_name = src.d_container_name;
+    d_attrs = src.d_attrs;
 }
-#endif
 
-// FIXME: Need to create copy constructor and op=.
-
-/** @brief This deletes the pointers to AttrTables allocated during the parse
- * (and at other times). jhrg 7/29/94
- */
-DAS::~DAS()
-{}
-
-/** @brief Returns the name of the current attribute container when multiple
- * files used to build this DAS
- */
-string
-DAS::container_name()
+DAS &DAS::operator=(const DAS &rhs)
 {
-    return _container_name ;
+    if (this == &rhs)
+        return *this;
+
+    duplicate(rhs);
+
+    return *this;
 }
 
 /** @brief Sets the name of the current attribute container when multiple
@@ -110,7 +103,7 @@ void DAS::container_name(const string &cn)
     // We want to find a top level attribute table with the given name. So
     // set d_container to null first so that we aren't searching some
     // previous container
-    if (cn != _container_name) {
+    if (cn != d_container_name) {
         d_container = 0;
         if (!cn.empty()) {
             d_container = get_table(cn);
@@ -118,19 +111,8 @@ void DAS::container_name(const string &cn)
                 d_container = add_table(cn, new AttrTable);
             }
         }
-        _container_name = cn;
+        d_container_name = cn;
     }
-}
-
-/** @brief Returns the current attribute container when multiple files
- * used to build this DAS.
- *
- * @return current attribute table for current container
- */
-AttrTable *
-DAS::container()
-{
-    return d_container ;
 }
 
 /** @brief Returns the number of attributes in the current attribute table
@@ -383,23 +365,18 @@ DAS::print(ostream &out, bool dereference)
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void
-DAS::dump(ostream &strm) const
+void DAS::dump(ostream &strm) const
 {
-    strm << DapIndent::LMarg << "DAS::dump - ("
-         << (void *)this << ")" << endl ;
-    DapIndent::Indent() ;
-    if( d_container )
-    {
-	strm << DapIndent::LMarg << "current container: " << _container_name
-	     << endl ;
+    strm << DapIndent::LMarg << "DAS::dump - (" << (void *) this << ")" << endl;
+    DapIndent::Indent();
+    if (d_container) {
+        strm << DapIndent::LMarg << "current container: " << d_container_name << endl;
     }
-    else
-    {
-	strm << DapIndent::LMarg << "current container: NONE" << endl ;
+    else {
+        strm << DapIndent::LMarg << "current container: NONE" << endl;
     }
-    d_attrs.dump(strm) ;
-    DapIndent::UnIndent() ;
+    d_attrs.dump(strm);
+    DapIndent::UnIndent();
 }
 
 } // namespace libdap

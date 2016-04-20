@@ -62,7 +62,12 @@ private:
 };
 
 /**
- * RAII (for MarshallerThread) used by the child thread. The ctor simply
+ * Synchronization for the child thread in the multi-threaded version of
+ * the DAP2 and DAP4 (when it gets implement) 'Marshaller' class used to
+ * send data. The class declared below (MarshallerThread) manages the
+ * child thread.
+ *
+ * The ctor of this class simply
  * locks the mutex; the dtor clears the child thread count, signals that
  * count has changed and unlocks the mutex.
  */
@@ -80,6 +85,14 @@ private:
     ChildLocker(const Locker &rhs);
 };
 
+/**
+ * Implement a multi-threaded data transmission sub-system for libdap.
+ * This class makes it fairly painless to send data using a child thread
+ * so that the main thread can be used to read the next chunk of data
+ * while whatever has been read to this point is sent over the wire.
+ *
+ * This code is used by XDRStreamMarshaller and (soon) D4StreamMarshaller.
+ */
 class MarshallerThread {
 private:
     pthread_t d_thread;
@@ -91,7 +104,9 @@ private:
     int d_child_thread_count;   // 0 or 1
     std::string d_thread_error; // non-null indicates an error
 
+#if 0
     static bool print_time; // false by default
+#endif
 
     /**
      * Used to pass information into the static methods that run the
@@ -145,8 +160,11 @@ public:
     static void *write_thread(void *arg);
     static void *write_thread_part(void *arg);
 
+#if 0
     static void set_print_time(bool state) { print_time = state; }
     static bool get_print_time() { return print_time; }
+#endif
+
 };
 
 }

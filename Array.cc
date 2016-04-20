@@ -104,7 +104,12 @@ Array::update_length(int)
 {
     int length = 1;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
+#if 0
+        // If the size of any dimension is zero, then the array is not
+        // capable of storing any values. jhrg 1/28/16
         length *= (*i).c_size > 0 ? (*i).c_size : 1;
+#endif
+        length *= (*i).c_size;
     }
 
     set_length(length);
@@ -1050,11 +1055,16 @@ unsigned int Array::print_array(ostream &out, unsigned int index, unsigned int d
 {
 	if (dims == 1) {
 		out << "{";
-		for (unsigned i = 0; i < shape[0] - 1; ++i) {
-			var(index++)->print_val(out, "", false);
-			out << ", ";
-		}
-		var(index++)->print_val(out, "", false);
+
+		// Added test in case this method is passed an array with no elements. jhrg 1/27/16
+		if (shape[0] >= 1) {
+            for (unsigned i = 0; i < shape[0] - 1; ++i) {
+                var(index++)->print_val(out, "", false);
+                out << ", ";
+            }
+            var(index++)->print_val(out, "", false);
+        }
+
 		out << "}";
 
 		return index;
@@ -1065,13 +1075,22 @@ unsigned int Array::print_array(ostream &out, unsigned int index, unsigned int d
 		// length is shape[dims-1]-1 *and* since we want one less dimension
 		// than that, the correct limit on this loop is shape[dims-2]-1. From
 		// Todd Karakasian.
+		//
 		// The saga continues; the loop test should be `i < shape[0]-1'. jhrg
 		// 9/12/96.
-		for (unsigned i = 0; i < shape[0] - 1; ++i) {
-			index = print_array(out, index, dims - 1, shape + 1);
-			out << ",";
-		}
-		index = print_array(out, index, dims - 1, shape + 1);
+		//
+		// For arrays that hold zero values but have rank > 1, the print out
+		// may look a little odd (e.g., x[4][0] will print as { {}, {}, {}, {} })
+		// but it's not wrong and this is really for debugging mostly. jhrg 1/28/16
+        if (shape[0] > 0) {
+            for (unsigned i = 0; i < shape[0] - 1; ++i) {
+                index = print_array(out, index, dims - 1, shape + 1);
+                out << ",";
+            }
+
+            index = print_array(out, index, dims - 1, shape + 1);
+        }
+
 		out << "}";
 
 		return index;

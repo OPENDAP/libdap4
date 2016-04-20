@@ -145,35 +145,31 @@ void Connect::process_data(DataDDS &data, Response *rs)
 
 /** This private method process data from both local and remote sources. It
     exists to eliminate duplication of code. */
-void
-Connect::process_data(DDS &data, Response *rs)
+void Connect::process_data(DDS &data, Response *rs)
 {
     DBG(cerr << "Entering Connect::process_data" << endl);
 
-#if 0
-    data.set_version(rs->get_version());
-    data.set_protocol(rs->get_protocol());
-#endif
     // TODO is this the correct info?
     data.set_dap_version(rs->get_protocol());
 
     DBG(cerr << "Entering process_data: d_stream = " << rs << endl);
     switch (rs->get_type()) {
     case dods_error: {
-            Error e;
-            if (!e.parse(rs->get_stream()))
-                throw InternalErr(__FILE__, __LINE__,
-                                  "Could not parse the Error object returned by the server!");
-            throw e;
-        }
+        Error e;
+        if (!e.parse(rs->get_stream()))
+            throw InternalErr(__FILE__, __LINE__, "Could not parse the Error object returned by the server!");
+        throw e;
+    }
 
     case web_error:
         // Web errors (those reported in the return document's MIME header)
         // are processed by the WWW library.
-        throw InternalErr(__FILE__, __LINE__, "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
+        throw InternalErr(__FILE__, __LINE__,
+            "An error was reported by the remote httpd; this should have been processed by HTTPConnect.");
 
+        // FIXME: The following case is never used. There is no such response. jhrg 10/20/15
     case dods_data_ddx: {
-            // Parse the DDX; throw an exception on error.
+        // Parse the DDX; throw an exception on error.
         DDXParser ddx_parser(data.get_factory());
 
         // Read the MPM boundary and then read the subsequent headers
@@ -192,58 +188,29 @@ Connect::process_data(DDS &data, Response *rs)
 
         // Read the data part's MPM part headers (boundary was read by
         // DDXParse::intern)
-        read_multipart_headers(rs->get_stream(),
-            "application/octet-stream", dap4_data, data_cid);
+        read_multipart_headers(rs->get_stream(), "application/octet-stream", dap4_data, data_cid);
 
         // Now read the data
-#if FILE_UN_MARSHALLER
-        XDRFileUnMarshaller um( rs->get_stream() ) ;
-#else
-        fpistream in ( rs->get_stream() );
-        XDRStreamUnMarshaller um( in ) ;
-#endif
-#if 0
-        try {
-#endif
-            for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
-                     i++) {
-                    (*i)->deserialize(um, &data);
-                }
-#if 0
-            }
-            catch (Error &e) {
-                throw ;
-            }
-#endif
-            return;
+        XDRFileUnMarshaller um(rs->get_stream());
+        for (DDS::Vars_iter i = data.var_begin(); i != data.var_end(); i++) {
+            (*i)->deserialize(um, &data);
         }
+        return;
+    }
 
     case dods_data:
     default: {
-            // Parse the DDS; throw an exception on error.
-            data.parse(rs->get_stream());
-#if FILE_UN_MARSHALLER
-            XDRFileUnMarshaller um( rs->get_stream() ) ;
-#else
-           fpistream in ( rs->get_stream() );
-        XDRStreamUnMarshaller um( in ) ;
-#endif
-            // Load the DDS with data.
-#if 0
-            try {
-#endif
-                for (DDS::Vars_iter i = data.var_begin(); i != data.var_end();
-                     i++) {
-                    (*i)->deserialize(um, &data);
-                }
-#if 0
-            }
-            catch (Error &e) {
-                throw ;
-            }
-#endif
-            return;
+        // Parse the DDS; throw an exception on error.
+        data.parse(rs->get_stream());
+
+        XDRFileUnMarshaller um(rs->get_stream());
+
+        // Load the DDS with data.
+        for (DDS::Vars_iter i = data.var_begin(); i != data.var_end(); i++) {
+            (*i)->deserialize(um, &data);
         }
+        return;
+    }
     }
 }
 
@@ -937,6 +904,7 @@ void Connect::request_data_url(DataDDS &data)
     }
 }
 
+// FIXME Unused?
 void Connect::request_data_ddx(DataDDS &data, string expr)
 {
     string proj, sel;
@@ -971,6 +939,7 @@ void Connect::request_data_ddx(DataDDS &data, string expr)
     }
 }
 
+// FIXME Unused?
 void Connect::request_data_ddx_url(DataDDS &data)
 {
     string use_url = _URL + "?" + _proj + _sel;
@@ -1040,6 +1009,7 @@ static void divine_type_information(Response *rs)
     while (!feof(rs->get_stream()) && !ferror(rs->get_stream()) && isspace(c)) {
         c = getc(rs->get_stream());
     }
+
 
     if (ferror(rs->get_stream()))
         throw Error("Error reading response type information: " + string(strerror(errno)));

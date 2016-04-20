@@ -1,33 +1,47 @@
 # Process with autom4te to create an -*- Autotest -*- test suite.
 
-
-# ------------------------------
-#
-
 AT_INIT([dds-test])
 # AT_COPYRIGHT([])
 
 #AT_TESTED([dds-test])
 
-# Usage: _AT_TEST_*(<dds source>, <baseline file>)
+AT_ARG_OPTION_ARG([baselines],
+    [--baselines=yes|no   Build the baseline file for parser test 'arg'],
+    [echo "baselines set to $at_arg_baselines";
+     baselines=$at_arg_baselines],[baselines=])
+
+# Usage: _AT_TEST_*(<dds source>, <baseline file>, [xfail|xpass])
 
 m4_define([_AT_DDS_TEST],   
 [
-# AT_BANNER([Test $1 $2])
-AT_SETUP([DDS $1])
-AT_KEYWORDS([dds])
-#Added || true because the $abs_srcdir/dds-test -p < $1 needs to be true whether the
-#output is printed to stdout or stderr
-AT_CHECK([$abs_builddir/dds-test -p < $1 || true], [], [stdout], [stderr])
-#Need to compare either stdout or stderr because of the directory the above
-#AT_CHECK prints output to
-AT_CHECK([diff -b -B $2 stdout || diff -b -B $2 stderr], [], [ignore],[],[])
-AT_CLEANUP])
+    # AT_BANNER([Test $1 $2])
+    AT_SETUP([DDS $1])
+    AT_KEYWORDS([dds])
+    
+    input=$1
+    baseline=$2
+    
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        # The --baselines=yes option works only for tests that write to stdout
+        AT_CHECK([$abs_builddir/dds-test -p < $input || true], [0], [stdout], [ignore])
+        AT_CHECK([mv stdout $baseline.tmp])
+        ],
+        [        
+        # Added '|| true' to ensure the command returns '0'
+        AT_CHECK([$abs_builddir/dds-test -p < $input || true], [0], [stdout], [stderr])
+        # Need to compare either stdout or stderr
+        AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [0], [ignore])
+        AT_XFAIL_IF([test "$3" = "xfail"])
+        ])
+        
+    AT_CLEANUP
+])
 
 m4_define([AT_DDS_RESPONSE_TEST],
 [
-# AT_BANNER([DDS response for $1.])
-_AT_DDS_TEST([$abs_srcdir/dds-testsuite/$1], [$abs_srcdir/dds-testsuite/$1.base])
+    # AT_BANNER([DDS response for $1.])
+    _AT_DDS_TEST([$abs_srcdir/dds-testsuite/$1], [$abs_srcdir/dds-testsuite/$1.base], $2)
 ])
 
 
@@ -60,4 +74,15 @@ AT_DDS_RESPONSE_TEST([test.6.dds])
 AT_DDS_RESPONSE_TEST([test.7.dds])
 AT_DDS_RESPONSE_TEST([test.8.dds])
 AT_DDS_RESPONSE_TEST([test.9.dds])
+
+# Added these to test zero-length arrays
+
+AT_DDS_RESPONSE_TEST([test.21.dds])
+AT_DDS_RESPONSE_TEST([test.22.dds])
+AT_DDS_RESPONSE_TEST([test.23.dds])
+AT_DDS_RESPONSE_TEST([test.24.dds], [xpass])
+
+# Empty Structures
+AT_DDS_RESPONSE_TEST([test.25.dds], [xpass])
+AT_DDS_RESPONSE_TEST([test.26.dds], [xpass])
 

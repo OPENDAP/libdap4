@@ -53,11 +53,10 @@
 
 #include "debug.h"
 
-
 /**
  * DapXmlNamespaces
  *
- * TODO  Replace all uses of the following variable with calls to DapXmlNamespaces
+ * TODO  Replace all uses of the following variables with calls to DapXmlNamespaces
  */
 const string c_xml_xsi = "http://www.w3.org/2001/XMLSchema-instance";
 const string c_xml_namespace = "http://www.w3.org/XML/1998/namespace";

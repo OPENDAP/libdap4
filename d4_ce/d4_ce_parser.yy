@@ -54,7 +54,8 @@ namespace libdap {
 }
 
 // Pass both the scanner and parser objects to both the automatically generated
-// parser and scanner.
+// parser and scanner. Note that in the actions bound to the rules, 'driver' 
+// means use the 'D4ConstraintEvaluator' instance.
 %lex-param   { D4CEScanner  &scanner  }
 %parse-param { D4CEScanner  &scanner  }
 
@@ -162,6 +163,9 @@ clause : subset { $$ = $1; }
 ;
 
 // mark_variable returns a BaseType* or throws Error
+// Note that this is a fairly long production rule with a number
+// of different right hand sides spanning about 110 lines.
+// jhrg 4/8/16
 subset : id 
 {
     BaseType *btp = 0;
@@ -203,6 +207,7 @@ subset : id
     $$ = driver.mark_variable(btp); //  && driver.mark_array_variable(btp);
 }
 
+// Note this case is '| id fields'
 | id 
 {
     BaseType *btp = 0;
@@ -218,7 +223,7 @@ subset : id
     
     if (btp->type() == dods_array_c) {
         if (btp->var() && !btp->var()->is_constructor_type())
-            throw Error("The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
+            throw Error(no_such_variable, "The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
             
         // This call also tests the btp to make sure it's an array
         driver.mark_array_variable(btp);
@@ -227,7 +232,7 @@ subset : id
         // Don't mark the variable here because only some fields are to be sent and those
         // will be marked when the fields are parsed
         if (!btp->is_constructor_type())
-            throw Error("The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
+            throw Error(no_such_variable, "The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
     }
     
     // push the basetype (a ctor or array of ctor) on the stack so that it is
@@ -260,7 +265,7 @@ fields
     driver.mark_array_variable(btp);
     
     if (!btp->var()->is_constructor_type())
-        throw Error("The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
+        throw Error(no_such_variable, "The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
       
     driver.push_basetype(btp->var());       
 } 
@@ -269,7 +274,6 @@ fields
     driver.pop_basetype();
     $$ = true; 
 }
-
 
 // The following has be removed from the syntax
 // | fields indexes { $$ = true; }

@@ -23,14 +23,13 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include "config.h"
+// #define DODS_DEBUG 1
 
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 
 #include <stdint.h>
-
-//#define DODS_DEBUG
 
 #include "crc.h"
 
@@ -47,6 +46,13 @@
 #include "D4StreamUnMarshaller.h"
 
 #include "debug.h"
+
+/**
+ * Define this symbol iff we decide to include information about the
+ * byte order of the response (as sent from the server) so that the
+ * client can determine the correct CRC32 hash code. jhrg 1/4/16
+ */
+#undef INCLUDE_SOURCE_BYTE_ORDER
 
 namespace libdap {
 
@@ -459,11 +465,18 @@ D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/)
 			(*i)->intern_data(/*checksum, dmr, eval*/);
 #if 0
 			D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
-		    ostringstream oss;
+
+			ostringstream oss;
 		    oss.setf(ios::hex, ios::basefield);
 		    oss << setfill('0') << setw(8) << checksum.GetCrc32();
-		    a->add_value(oss.str());
-			(*i)->attributes()->add_attribute_nocopy(a);
+            a->add_value(oss.str());
+#if INCLUDE_SOURCE_BYTE_ORDER
+	        if (um.is_source_big_endian())
+	            a->add_value("source:big-endian");
+	        else
+	            a->add_value("source:little-endian");
+#endif
+	        (*i)->attributes()->add_attribute_nocopy(a);
 			DBG(cerr << "CRC32: " << oss.str() << " for " << (*i)->name() << endl);
 #endif
 		}
@@ -512,6 +525,7 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,
 		if ((*i)->send_p()) {
 			m.reset_checksum();
 
+	        DBG(cerr << "Serializing variable " << (*i)->type_name() << " " << (*i)->name() << endl);
 			(*i)->serialize(m, dmr, /*eval,*/ filter);
 
 			DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << (*i)->name() << endl);
@@ -523,17 +537,25 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,
 void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 {
 	groupsIter g = d_groups.begin();
-	while (g != d_groups.end())
+	while (g != d_groups.end()) {
+        DBG(cerr << "Deserializing group " << (*g)->name() << endl);
 		(*g++)->deserialize(um, dmr);
-
+	}
 	// Specialize how the top-level variables in any Group are received; read
 	// their checksum and store the value in a magic attribute of the variable
 	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        DBG(cerr << "Deserializing variable " << (*i)->type_name() << " " << (*i)->name() << endl);
 		(*i)->deserialize(um, dmr);
 
 		D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
 		string crc = um.get_checksum_str();
 		a->add_value(crc);
+#if INCLUDE_SOURCE_BYTE_ORDER
+		if (um.is_source_big_endian())
+		    a->add_value("source:big-endian");
+		else
+		    a->add_value("source:little-endian");
+#endif
 		DBG(cerr << "Read CRC32: " << crc << " for " << (*i)->name() << endl);
 		(*i)->attributes()->add_attribute_nocopy(a);
 	}

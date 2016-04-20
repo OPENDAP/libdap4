@@ -32,10 +32,11 @@
 //
 // jhrg 9/14/94
 
+#include "config.h"
+
 //#define DODS_DEBUG
 //#define DODS_DEBUG2
 
-#include "config.h"
 
 #include <algorithm>
 #include <string>
@@ -559,9 +560,9 @@ bool Sequence::read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_ev
         DBG2(cerr << "Leaving Sequence::read_row for " << name() << endl);
         return false;
     }
-
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_on();
-
+#endif
     bool eof = false;  // Start out assuming EOF is false.
     while (!eof && d_row_number < row) {
         if (!read_p()) {
@@ -593,9 +594,9 @@ bool Sequence::read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_ev
     // elements of the sequence know to not call read() but instead look for
     // data values inside themselves.
     set_read_p(true);
-
+#if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_off();
-
+#endif
     // Return true if we have valid data, false if we've read to the EOF.
     DBG2(cerr << "Leaving Sequence::read_row for " << name() << " with eof: " << eof << endl);
     return !eof; // jhrg 10/10/13 was: eof == 0;
@@ -1318,8 +1319,7 @@ void Sequence::set_leaf_sequence(int lvl)
         // in serialize_leaf() and serialize_parent_part_one()).
         if ((*iter)->type() == dods_sequence_c && (*iter)->send_p()) {
             if (has_child_sequence)
-                throw Error(
-                        "This implementation does not support more than one nested sequence at a level. Contact the server administrator.");
+                throw Error("This implementation does not support more than one nested sequence at a level. Contact the server administrator.");
 
             has_child_sequence = true;
             static_cast<Sequence&>(**iter).set_leaf_sequence(++lvl);

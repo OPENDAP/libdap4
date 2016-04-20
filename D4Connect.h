@@ -28,6 +28,10 @@
 
 #include <string>
 
+
+#define DAP4_CE_QUERY_KEY "dap4.ce"
+
+
 namespace libdap
 {
 
@@ -42,7 +46,7 @@ private:
 
     bool d_local;  // Is this a local connection?
     std::string d_URL;  // URL to remote dataset (minus CE)
-    std::string d_dap4ce; 	// CE
+    std::string d_UrlQueryString; 	// CE
 
     std::string d_server; // Server implementation information (the XDAP-Server header)
     std::string d_protocol; // DAP protocol from the server (XDAP)
@@ -52,6 +56,8 @@ private:
 
     // Use when you cannot use but have a complete response with MIME headers
     void parse_mime(Response &rs);
+
+    std::string build_dap4_ce(const std::string requestSuffix, const std::string expr);
 
 protected:
     /** @name Suppress the C++ defaults for these. */
@@ -67,7 +73,7 @@ public:
     bool is_local() const { return d_local; }
 
     virtual std::string URL() const { return d_URL; }
-    virtual std::string CE() const { return d_dap4ce; }
+    virtual std::string CE() const { return d_UrlQueryString; }
 
     void set_credentials(std::string u, std::string p);
     void set_accept_deflate(bool deflate);
@@ -105,6 +111,10 @@ public:
 
     virtual void read_data(DMR &data, Response &rs);
     virtual void read_data_no_mime(DMR &data, Response &rs);
+
+
+
+
 };
 
 } // namespace libdap

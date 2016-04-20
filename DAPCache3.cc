@@ -431,15 +431,6 @@ void DAPCache3::m_check_ctor_params()
 /** Private method. */
 void DAPCache3::m_initialize_cache_info()
 {
-#if 0
-    // In the libdap version of this caching code, there is not a way to read key-value
-    // pairs from the bes.conf file (yet) so punt on this message. And there is no BES
-    // Log
-
-    // TODO Fix this so that some sort of configuration file is used. jhrg 10/22/12
-    if (d_max_cache_size_in_bytes > MAX_CACHE_SIZE_IN_MEGABYTES)
-        *(BESLog::TheLog()) << "Cache size too big in configuration file, set to max limit." << endl ;
-#endif
     // The value set in configuration files, etc., is the size in megabytes. The private
     // variable holds the size in bytes (converted below).
     d_max_cache_size_in_bytes = min(d_max_cache_size_in_bytes, MAX_CACHE_SIZE_IN_MEGABYTES);
@@ -469,6 +460,7 @@ void DAPCache3::m_initialize_cache_info()
 
     DBG(cerr << "d_cache_info_fd: " << d_cache_info_fd << endl);
 }
+
 #if 0
 /** @brief Private constructor that takes as arguments keys to the cache directory,
  * file prefix, and size of the cache to be looked up a configuration file

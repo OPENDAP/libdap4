@@ -9,7 +9,7 @@
         <Attribute name="long_name" type="String">
             <Value>int32_i</Value>
         </Attribute>
-        <Attribute name="scale_factor" type="Byte">
+        <Attribute name="scale_factor" type="Float32">
             <Value>1.2</Value>
         </Attribute>
         <Attribute name="coefs" type="Int32">

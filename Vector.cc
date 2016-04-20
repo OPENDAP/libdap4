@@ -192,6 +192,10 @@ unsigned int Vector::m_create_cardinal_data_buffer_for_type(unsigned int numElts
 
     m_delete_cardinal_data_buffer();
 
+    // Handle this special case where this is an array that holds no values
+    if (numEltsOfType == 0)
+        return 0;
+
     // Actually new up the array with enough bytes to hold numEltsOfType of the actual type.
     unsigned int bytesPerElt = d_proto->width();
     unsigned int bytesNeeded = bytesPerElt * numEltsOfType;
@@ -592,8 +596,11 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
             DBG(cerr << "Vector::intern_data: found ctor" << endl);
             // For these cases, we need to call read() for each of the 'num'
             // elements in the 'd_compound_buf[]' array of BaseType object pointers.
-            if (d_compound_buf.capacity() == 0)
-                throw InternalErr(__FILE__, __LINE__, "The capacity of *this* vector is 0.");
+            //
+            // I changed the test here from '... = 0' to '... < num' to accommodate
+            // the case where the array is zero-length.
+            if (d_compound_buf.capacity() < (unsigned)num)
+                throw InternalErr(__FILE__, __LINE__, "The capacity of this Vector is less than the number of elements.");
 
             for (int i = 0; i < num; ++i)
                 d_compound_buf[i]->intern_data(eval, dds);
@@ -619,18 +626,27 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
+#if 0
     dds.timeout_on();
-
-    if (!read_p())
+#endif
+    // Added to streamline zero-length arrays. Not needed for correct function,
+    // but explicitly handling this case here makes the code easier to follow.
+    // In libdap::Vector::val2buf() there is a test that will catch the zero-length
+    // case as well. We still need to call serialize since it will write size
+    // information that the client depends on. jhrg 2/17/16
+    if (length() == 0)
+        set_read_p(true);
+    else if (!read_p())
         read(); // read() throws Error and InternalErr
 
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-
+#if 0
     dds.timeout_off();
-
+#endif
     // length() is not capacity; it must be set explicitly in read().
     int num = length();
+
     bool status = false;
 
     switch (d_proto->type()) {
@@ -740,6 +756,13 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
                         << width() << " bytes for an array of "
                         << length() << " " << d_proto->type_name() << endl);
             }
+
+            // Added to accommodate zero-length arrays.
+            // Note that the rest of the cases will just send the size without data
+            // but that these calls trigger error testing in the UnMarshaller code.
+            // jhrg 1/28/16
+            if (num == 0)
+                return true;
 
             if (d_proto->type() == dods_byte_c)
                 um.get_vector((char **) &d_buf, num, *this);
@@ -877,7 +900,9 @@ void Vector::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*
         case dods_opaque_c:
         case dods_structure_c:
         case dods_sequence_c:
-            assert(d_compound_buf.capacity() != 0);
+            // Modified the assert here from '... != 0' to '... >= length())
+            // to accommodate the case of a zero-length array. jhrg 1/28/16
+            assert(d_compound_buf.capacity() >= (unsigned)length());
 
             for (int i = 0, e = length(); i < e; ++i)
                 d_compound_buf[i]->intern_data(/*checksum, dmr, eval*/);
@@ -901,6 +926,12 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*
         return true;
 #endif
     int64_t num = length();	// The constrained length in elements
+
+    DBG(cerr << __PRETTY_FUNCTION__ << ", num: " << num << endl);
+
+    // Added in case we're trying to serialize a zero-length array. jhrg 1/27/16
+    if (num == 0)
+        return;
 
     switch (d_proto->type()) {
         case dods_byte_c:
@@ -979,7 +1010,11 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
             m_create_cardinal_data_buffer_for_type(length());
     }
 
-    DBG(cerr << "Vector::deserialize, " << name() << ", length(): " << length() << endl);
+    DBG(cerr << __FUNCTION__ << name() << ", length(): " << length() << endl);
+
+    // Added in case we're trying to deserialize a zero-length array. jhrg 1/27/16
+    if (length() == 0)
+        return;
 
     switch (d_proto->type()) {
         case dods_byte_c:
@@ -1081,6 +1116,10 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 unsigned int Vector::val2buf(void *val, bool reuse)
 {
     // Jose Garcia
+
+    // Added for zero-length arrays - support in the handlers. jhrg 1/29/16
+    if (!val && length() == 0)
+        return 0;
 
     // I *think* this method has been mainly designed to be use by read which
     // is implemented in the surrogate library. Passing NULL as a pointer to

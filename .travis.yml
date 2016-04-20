@@ -76,7 +76,7 @@ before_script:
 # first error).
 #
 script:
-  - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then  make -j7 && make -j7 check && make install && make -j7 distcheck; fi
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then  make -j7 && make -j7 check && make install && make -j7 distcheck; fi
 
 # after_success:
 
@@ -86,16 +86,17 @@ script:
 
 # Figure out how to do this for incremental builds. This version works
 # only for tagged pushes.
-deploy:
-  provider: releases
-  skip_cleanup: true
-  api_key:
-    secure: r4QZiJ+Pp9VPZYeL7s7jW1XMIgnceymGUqDS083AoqylSYsZOElqv2PCOrXSLAo1l0xgGwDaDFCy0HPEVCJzM7b/rNEOkQFQ6lUCuKQy4Jy3kNDpxLZdg8qk65ZkHxlUAwnbJ0HPF8sri6gXLO/7ytz4tYnVuVsMPl3qXG25I9o=
-  file: libdap_*.deb
-  on:
-    repo: OPENDAP/libdap4
-    condition: $CC = gcc
-    tags: true
+# deploy:
+#   provider: releases
+#   skip_cleanup: true
+#   api_key:
+#     secure: r4QZiJ+Pp9VPZYeL7s7jW1XMIgnceymGUqDS083AoqylSYsZOElqv2PCOrXSLAo1l0xgGwDaDFCy0HPEVCJzM7b/rNEOkQFQ6lUCuKQy4Jy3kNDpxLZdg8qk65ZkHxlUAwnbJ0HPF8sri6gXLO/7ytz4tYnVuVsMPl3qXG25I9o=
+#   file: libdap_*.deb
+#   on:
+#     repo: OPENDAP/libdap4
+#     condition: $CC = gcc
+#     tags: true
+
     
 env:
   global:
