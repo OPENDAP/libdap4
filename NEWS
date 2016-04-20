@@ -1,3 +1,13 @@
+News for version 3.17.3
+
+Fixed a soname error - Adding a const constructor seems to have
+*removed* the old constructor as far as some code is cncerned (it's
+still there, but with a different mangled name).
+
+News for version 3.17.2
+
+Added tests for big-endian machines from Dan Horák  <dan@danny.cz>
+
 News for version 3.17.1
 
 A bug fix release. 

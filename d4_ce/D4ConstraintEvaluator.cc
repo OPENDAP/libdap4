@@ -134,8 +134,8 @@ D4ConstraintEvaluator::search_for_and_mark_arrays(BaseType *btp)
 
 /**
  * When an identifier is used in a CE, is becomes part of the 'current projection,'
- * which means it is part of the set of variable to be sent back to the client. This
- * method sets a flag in the variable (send_p: send predicate) indicating that.
+ * which means it is part of the set of variables to be sent back to the client. This
+ * method sets a flag in the variable (send_p; pronounced 'send predicate') indicating that.
  *
  * @note This will check if the variable is an array and set it's slices accordingly
  * @param btp BaseType pointer to the variable. Must be non-null
@@ -176,11 +176,11 @@ D4ConstraintEvaluator::mark_variable(BaseType *btp)
  * Add an array to the current projection with slicing. Calling this method will result
  * in the array being returned with anonymous dimensions.
  *
- * @note If id is an array that has shared dimensions and uses '[]' where a shared dimension
+ * @note If btp is an array that has shared dimensions and uses '[]' where a shared dimension
  * is found and if that shared dimension has been sliced, then the slice is used as the array's
  * slice for that dimension (there must be an easier way to explain that...)
  *
- * @param id
+ * @param btp
  * @return The BaseType* to the Array variable; the send_p and slicing information is
  * set as a side effect.
  */
@@ -192,8 +192,8 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
 	Array *a = static_cast<Array*>(btp);
 
 	// If an array appears in a CE without the slicing operators ([]) we still have to
-	// call set_user_by_projected_var(true) for all of it's sdims for them to appear in
-	// the CDMR.
+	// call add_constraint(...) for all of it's sdims for them to appear in
+	// the Constrained DMR.
 	if (d_indexes.empty()) {
 	    for (Array::Dim_iter d = a->dim_begin(), de = a->dim_end(); d != de; ++d) {
 	        D4Dimension *dim = a->dimension_D4dim(d);
@@ -240,6 +240,7 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
 /**
  * Add an array to the current projection with slicing. Calling this method will result
  * in the array being returned with anonymous dimensions.
+ *
  * @param id
  * @return The BaseType* to the Array variable; the send_p and slicing information is
  * set as a side effect.
