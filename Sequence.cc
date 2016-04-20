@@ -32,10 +32,11 @@
 //
 // jhrg 9/14/94
 
+#include "config.h"
+
 //#define DODS_DEBUG
 //#define DODS_DEBUG2
 
-#include "config.h"
 
 #include <algorithm>
 #include <string>

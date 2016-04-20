@@ -33,6 +33,9 @@
 //      reza            Reza Nekovei <reza@intcomm.net>
 
 #include "config.h"
+// #define DODS_DEBUG 1
+
+
 
 #include <cassert>
 #include <cstring>
@@ -53,6 +56,8 @@
 #include "mime_util.h"
 #include "debug.h"
 
+
+
 using namespace std;
 
 namespace libdap {
@@ -66,7 +71,7 @@ void D4Connect::process_dmr(DMR &dmr, Response &rs)
 
 	dmr.set_dap_version(rs.get_protocol());
 
-	DBG(cerr << "Entering process_data: d_stream = " << rs << endl);
+	DBG(cerr << "Entering process_data. Response.getVersion() = " << rs.get_version() << endl);
 	switch (rs.get_type()) {
 	case dap4_error: {
 #if 0
@@ -121,9 +126,11 @@ void D4Connect::process_data(DMR &data, Response &rs)
 
 	data.set_dap_version(rs.get_protocol());
 
-	DBG(cerr << "Entering process_data: d_stream = " << rs << endl);
+    DBG(cerr << "Entering process_data. Response.getVersion() = " << rs.get_version() << endl);
 	switch (rs.get_type()) {
 	case dap4_error: {
+        DBG(cerr << "This is a DAP4 ERROR. " << endl);
+
 #if 0
 		Error e;
 		if (!e.parse(rs.get_cpp_stream()))
@@ -133,13 +140,17 @@ void D4Connect::process_data(DMR &data, Response &rs)
 		throw InternalErr(__FILE__, __LINE__, "DAP4 errors not processed yet: FIXME!");
 	}
 
-	case web_error:
+	case web_error:{
+        DBG(cerr << "This is a WEB ERROR. " << endl);
 		// Web errors (those reported in the return document's MIME header)
 		// are processed by the WWW library.
 		throw InternalErr(__FILE__, __LINE__,
 				"An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
+	}
 
 	case dap4_data: {
+	    DBG(cerr << "This is a DAP4 Data Request. " << endl);
+
 #if BYTE_ORDER_PREFIX
 		// Read the byte-order byte; used later on
 		char byte_order;
@@ -154,6 +165,7 @@ void D4Connect::process_data(DMR &data, Response &rs)
 #endif
 		// parse the DMR, stopping when the boundary is found.
 		try {
+	        DBG(cerr << "Reading DMR from chunked stream. " << endl);
 			// force chunk read
 			// get chunk size
 			int chunk_size = cis.read_next_chunk();
@@ -163,6 +175,7 @@ void D4Connect::process_data(DMR &data, Response &rs)
 			// get chunk
 			char chunk[chunk_size];
 			cis.read(chunk, chunk_size);
+            DBG(cerr << "Parsing DMR from chunk." << endl);
 			// parse char * with given size
 			D4ParserSax2 parser;
 			// '-2' to discard the CRLF pair
@@ -180,12 +193,14 @@ void D4Connect::process_data(DMR &data, Response &rs)
 			cerr << "Exception: unknown error" << endl;
 			return;
 		}
+        DBG(cerr << "Creating D4StreamUnMarshaller. cis.bytes_in_buffer(): " << cis.bytes_in_buffer() << endl);
 
 #if BYTE_ORDER_PREFIX
 		D4StreamUnMarshaller um(cis, byte_order);
 #else
 		D4StreamUnMarshaller um(cis, cis.twiddle_bytes());
 #endif
+        DBG(cerr << "Deserializing data. cis.bytes_in_buffer(): " << cis.bytes_in_buffer() << endl);
 		data.root()->deserialize(um, data);
 
 		return;

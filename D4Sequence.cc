@@ -23,13 +23,13 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include "config.h"
+// #define DODS_DEBUG 1
+//#define DODS_DEBUG2
 
 #include <algorithm>
 #include <string>
 #include <sstream>
 
-//#define DODS_DEBUG
-//#define DODS_DEBUG2
 
 #include "Byte.h"
 #include "Int16.h"
@@ -326,12 +326,16 @@ void D4Sequence::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &e
  */
 void D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter)
 {
+    DBG(cerr << ":serialize() - BEGIN" << endl);
+
     // Read the data values, then serialize. NB: read_next_instance sets d_length.
     while (read_next_instance(filter)) {
+        DBG(cerr << ":serialize() - Adding row" << endl);
         D4SeqRow *row = new D4SeqRow;
         for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
             if ((*i)->send_p()) {
-                // store the variable's value.
+                DBG(cerr << ":serialize() - reading data for " << (*i)->type_name() << " "  << (*i)->name() << endl);
+               // store the variable's value.
                 row->push_back((*i)->ptr_duplicate());
                 // the copy should have read_p true to prevent the serialize() call
                 // below in the nested for loops from triggering a second call to
@@ -340,24 +344,26 @@ void D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter)
             }
         }
         d_values.push_back(row);
-        DBG(cerr << "D4Sequence::serialize Added row" << endl);
+        DBG(cerr << ":serialize() - Row completed" << endl);
     }
 
     // write D4Sequecne::length(); don't include the length in the checksum
     m.put_count(d_length);
-    DBG(cerr << "D4Sequence::serialize count: " << d_length << endl);
+    DBG(cerr << ":serialize() count: " << d_length << endl);
 
     // By this point the d_values object holds all and only the values to be sent;
     // use the serialize methods to send them (but no need to test send_p).
     for (D4SeqValues::iterator i = d_values.begin(), e = d_values.end(); i != e; ++i) {
         for (D4SeqRow::iterator j = (*i)->begin(), f = (*i)->end(); j != f; ++j) {
-            (*j)->serialize(m, dmr, /*eval,*/false);
+            DBG(cerr << ":serialize() - serializing " << (*j)->type_name() << " "  << (*j)->name() << endl);
+           (*j)->serialize(m, dmr, /*eval,*/false);
         }
     }
 
 #ifdef CLEAR_LOCAL_DATA
     clear_local_data();
 #endif
+    DBG(cerr << ":serialize() - END" << endl);
 
 }
 
@@ -397,8 +403,12 @@ void D4Sequence::serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filt
 
 void D4Sequence::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 {
-    set_length(um.get_count());
-    DBG(cerr << "D4Sequence::deserialize count: " << d_length << endl);
+
+    int64_t um_count = um.get_count();
+    DBG(cerr << ":deserialize() -  D4StreamUnMarshaller.get_count(): " << um_count << endl);
+
+    set_length(um_count);
+    DBG(cerr << ":deserialize() count: " << d_length << endl);
 
     for (int64_t i = 0; i < d_length; ++i) {
         D4SeqRow *row = new D4SeqRow;

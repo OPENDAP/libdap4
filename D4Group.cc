@@ -23,14 +23,13 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include "config.h"
+// #define DODS_DEBUG 1
 
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 
 #include <stdint.h>
-
-//#define DODS_DEBUG
 
 #include "crc.h"
 
@@ -526,6 +525,7 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,
 		if ((*i)->send_p()) {
 			m.reset_checksum();
 
+	        DBG(cerr << "Serializing variable " << (*i)->type_name() << " " << (*i)->name() << endl);
 			(*i)->serialize(m, dmr, /*eval,*/ filter);
 
 			DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << (*i)->name() << endl);
@@ -537,12 +537,14 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,
 void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 {
 	groupsIter g = d_groups.begin();
-	while (g != d_groups.end())
+	while (g != d_groups.end()) {
+        DBG(cerr << "Deserializing group " << (*g)->name() << endl);
 		(*g++)->deserialize(um, dmr);
-
+	}
 	// Specialize how the top-level variables in any Group are received; read
 	// their checksum and store the value in a magic attribute of the variable
 	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        DBG(cerr << "Deserializing variable " << (*i)->type_name() << " " << (*i)->name() << endl);
 		(*i)->deserialize(um, dmr);
 
 		D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
