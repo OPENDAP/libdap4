@@ -53,10 +53,29 @@ using namespace std;
 
 namespace libdap {
 
+void
+D4RValueList::m_duplicate(const D4RValueList &src)
+{
+    for (std::vector<D4RValue *>::const_iterator i = src.d_rvalues.begin(), e = src.d_rvalues.end(); i != e; ++i)
+        d_rvalues.push_back(new D4RValue(**i));
+}
+
 D4RValueList::~D4RValueList()
 {
-	for (std::vector<D4RValue *>::iterator i = d_rvalues.begin(), e = d_rvalues.end(); i != e; ++i)
-		delete *i;
+    for (std::vector<D4RValue *>::iterator i = d_rvalues.begin(), e = d_rvalues.end(); i != e; ++i)
+        delete *i;
+}
+
+void
+D4RValue::m_duplicate(const D4RValue &src)
+{
+    d_variable = src.d_variable;
+    d_func = src.d_func;
+
+    d_args = new D4RValueList(*d_args);
+    d_constant = d_constant->ptr_duplicate();
+
+    d_value_kind = src.d_value_kind;
 }
 
 template<typename T, class DAP_TYPE>
@@ -183,7 +202,16 @@ D4RValue::~D4RValue() {
 	delete d_constant;
 }
 
-/** Return the BaseType * for a given RValue.
+/**
+ * @brief Get the value for a RValue object
+ * Return the BaseType * for a given RValue. For a dataset variable, read the
+ * variable's value and, for a function, evaluate that function. Since read()
+ * is called for a dataset variable each time this method is called, if the
+ * variable is part of a Sequence, the next value in the sequence will be returned.
+ * However, since this code also sets the read_p property after calling read(),
+ * if the variable does not have a new value, read() will not be called (using the
+ * read_p property, the read() method is called only when the variable has a new
+ * value to be read.
  *
  * @note Unlike the DAP2 functions, we have an easier-to-follow memory model for
  * function values. The values (BaseType*) returned by this method will be packaged
@@ -192,7 +220,7 @@ D4RValue::~D4RValue() {
  * Server Functions should always allocate storage for their return values.
  *
  * @todo Could move the operation that wraps a constant in a BaseType to this method
- * while providing oterh ways to access the value(s) (methods to determine if the
+ * while providing other ways to access the value(s) (methods to determine if the
  * rvalue is a constant and what DAP type it is, e.g.). This would provide an optimization
  * for the filter evaluator which may access the values many times. We might also
  * modify the server side functions so they could access constant values more efficiently.
@@ -220,6 +248,38 @@ D4RValue::value(DMR &dmr)
 	}
 
 	return 0; // null_ptr; added return to quiet warning. jhrg 3/24/15
+}
+
+/**
+ * @brief Get the value for a RValue object
+ *
+ * This version of value() will not work for function RValues, but has the advantage that
+ * it can be used more easily for the D4RValue objects built for, and stored in, D4Filter-
+ * Clause instances.
+ *
+ * @see D4RValue::value(DMR&)
+ * @return The vaaue wrapped in a BaseType*
+ */
+BaseType *
+D4RValue::value()
+{
+    switch (d_value_kind) {
+    case basetype:
+        d_variable->read();
+        d_variable->set_read_p(true);
+        return d_variable;
+
+    case function:
+        throw Error(malformed_expr, "An expression that included a function call was used in a place where that won't work.");
+
+    case constant:
+        return d_constant;
+
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown rvalue type.");
+    }
+
+    return 0; // null_ptr; added return to quiet warning. jhrg 3/24/15
 }
 
 } // namespace libdap

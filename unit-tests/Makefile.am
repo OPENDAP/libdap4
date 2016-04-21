@@ -50,7 +50,7 @@ DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite		\
 EXTRA_DIST = $(DIRS_EXTRA) testFile.cc testFile.h test_config.h.in \
 	valgrind_suppressions.txt
 
-CLEANFILES = testout .dodsrc  *.gcda *.gcno D4-xml.tar.gz
+CLEANFILES = testout .dodsrc  *.gcda *.gcno *.gcov *.trs *.log *.file D4-xml.tar.gz
 
 DISTCLEANFILES = test_config.h *.strm *.file tmp.txt
 
@@ -74,7 +74,7 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 if DAP4_DEFINED
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
 	D4EnumDefsTest D4GroupTest D4ParserSax2Test D4AttributesTest D4EnumTest \
-	chunked_iostream_test D4AsyncDocTest DMRTest
+	chunked_iostream_test D4AsyncDocTest DMRTest D4FilterClauseTest
 endif
 
 else
@@ -217,5 +217,8 @@ D4AsyncDocTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DMRTest_SOURCES = DMRTest.cc $(TEST_SRC)
 DMRTest_LDADD = ../libdap.la $(AM_LDADD)
+
+D4FilterClauseTest_SOURCES = D4FilterClauseTest.cc
+D4FilterClauseTest_LDADD = ../libdap.la $(AM_LDADD)
 
 endif

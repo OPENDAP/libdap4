@@ -50,9 +50,9 @@ class D4Rvalue;
  * Sequences fields. The method 'value()' is effectively the evaluator for
  * the clause and nominally reads values from the rvalue objects.
  *
- * @note Potentail optimization: Because Sequences might have an optimized
+ * @note Potential optimization: Because Sequences might have an optimized
  * representation as a STL vector of some built in types, there could be a
- * value() method that take a value and compares it to the clause's constant
+ * value() method that takes a value and compares it to the clause's constant
  * value using the supplied op.
  *
  * @note The 'ND' and 'map' ops are 'still just an idea' parts.
@@ -73,7 +73,7 @@ public:
 		match,
 		// The mapping operator; not sure if this will be implemented
 		map,
-		// No Data 'operator' for array filtering
+		// No Data 'operator' for array filtering; may not be impl'd
 		ND
 	};
 
@@ -87,10 +87,14 @@ private:
     D4FilterClause(const D4FilterClause &);
     D4FilterClause &operator=(const D4FilterClause &);
 
+    // These perform the actual comparisons, with a specail case for
+    // const string & arguments.
     template<typename T1, typename T2> bool cmp(ops op, T1 arg1, T2 Arg2);
     bool cmp(ops op, const string &arg1, const string &arg2);
 
-    template<typename T> bool cmp(ops op, BaseType *arg1, T arg2);
+    // These methods factor out first the first argument and then the
+    // second. I could write one really large cmp() for all of this...
+    //template<typename T> bool cmp(ops op, BaseType *arg1, T arg2);
     bool cmp(ops op, BaseType *arg1, BaseType *arg2);
 
 public:
@@ -118,19 +122,15 @@ public:
     	assert(arg2 && "null arg2");
     }
 
-#if 0
-    /**
-     * Build an empty clause.
-     */
-    D4FilterClause() : d_op(null), d_arg1(0), d_arg2(0) { }
-#endif
-
     virtual ~D4FilterClause() {
     	delete d_arg1;
     	delete d_arg2;
     }
 
+    // get the clause value; this version supports functional clauses
     bool value(DMR &dmr);
+
+    bool value();
 };
 
 } // namespace libdap

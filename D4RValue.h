@@ -36,7 +36,6 @@ namespace libdap
 {
 
 class BaseType;
-class D4Constant;
 class D4RValue;
 
 class D4RValueList
@@ -44,13 +43,16 @@ class D4RValueList
 private:
 	std::vector<D4RValue *> d_rvalues;
 
+	void m_duplicate(const D4RValueList &src);
+
 public:
 	typedef std::vector<D4RValue *>::iterator iter;
 
 	D4RValueList() { }
+	D4RValueList(const D4RValueList &src) { m_duplicate(src); }
 	D4RValueList(D4RValue *rv) { add_rvalue(rv); }
 
-	~D4RValueList();
+	virtual ~D4RValueList();
 
 	void add_rvalue(D4RValue *rv) {
 		d_rvalues.push_back(rv);
@@ -74,7 +76,7 @@ public:
 class D4RValue
 {
 private:
-    BaseType *d_variable;	// This is a weak pointer
+    BaseType *d_variable;	// This is a weak pointer; do not delete
 
     D4Function d_func;  	// (weak) pointer to a function returning BaseType *
     D4RValueList *d_args;  	// pointer to arguments to the function; delete
@@ -90,11 +92,14 @@ private:
 
     value_kind d_value_kind;
 
+    /** @brief Clone 'src' to 'this'. */
+    void m_duplicate(const D4RValue &src);
+
     friend class D4RValueList;
 
 public:
     D4RValue() : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(unknown) { }
-
+    D4RValue(const D4RValue &src) { m_duplicate(src); }
     D4RValue(BaseType *btp)  : d_variable(btp), d_func(0), d_args(0), d_constant(0), d_value_kind(basetype) { }
     D4RValue(D4Function f, D4RValueList *args)  : d_variable(0), d_func(f), d_args(args), d_constant(0), d_value_kind(function) { }
 
@@ -115,13 +120,31 @@ public:
 
     virtual ~D4RValue();
 
-    // TODO/FIXME Add methods so that it's possible to figure out if a value
-    // is from a variable, function or constant. This way filters can optimize
-    // access/manipulation of constant values that will be used repeatedly.
+    D4RValue &operator=(D4RValue &rhs) {
+        if (this == &rhs)
+            return *this;
+
+        m_duplicate(rhs);
+
+        return *this;
+    }
+
+    /**
+     * @brief What kind of thing holds the value
+     * Values in DAP4 constraints are either constants, dataset variables
+     * or function results. It might be nice to know the source of a
+     * given value in order to optimize the evaluation of certain kinds of
+     * expressions.
+     * @return The 'value_kind' of this value.
+     */
+    value_kind get_kind() const { return d_value_kind; }
 
     // This is the call that will be used to return the value of a function.
     // jhrg 3/10/14
     virtual BaseType *value(DMR &dmr);
+    // And this optimizes value() for filters, where functions are not supported.
+    virtual BaseType *value();
+
 };
 
 } // namespace libdap

@@ -84,7 +84,7 @@ namespace libdap {
    /* include for all driver functions */
    #include "D4ConstraintEvaluator.h"
 
-   /* this is silly, but I can't figure out a way around */
+   /* this is silly, but I can't figure out a way around it */
    static int yylex(libdap::D4CEParser::semantic_type *yylval,
                     libdap::location *loc,
                     libdap::D4CEScanner  &scanner,
@@ -311,7 +311,7 @@ filter : predicate
 // the intent of the evaluator design introduces a number of reduce/reduce
 // conflicts because any sensible definition of 'constant' will be the
 // same as the definition of 'name'. This happens because we must make 'name'
-// far more general than ideal (it must include tokens that start with digits
+// far more general than ideal (it must include tokens that start with digits,
 // odd characters that clash with the operators, et cetera). Note that the
 // actions here must test for id == "ND" and op == "=", along with a host
 // of other checks.

@@ -123,74 +123,19 @@ inline bool D4FilterClause::cmp(ops op, const string &arg1, const string &arg2)
 	return false;
 }
 
-template<typename T> inline bool D4FilterClause::cmp(ops op, BaseType *arg1, T arg2)
-{
-	switch (arg1->type()) {
-	case dods_byte_c:
-		return cmp(op, static_cast<Byte*>(arg1)->value(), arg2);
-	case dods_int8_c:
-		return cmp(op, static_cast<Int8*>(arg1)->value(), arg2);
-	case dods_int16_c:
-		return cmp(op, static_cast<Int16*>(arg1)->value(), arg2);
-	case dods_uint16_c:
-		return cmp(op, static_cast<UInt16*>(arg1)->value(), arg2);
-	case dods_int32_c:
-		return cmp(op, static_cast<Int32*>(arg1)->value(), arg2);
-	case dods_uint32_c:
-		return cmp(op, static_cast<UInt32*>(arg1)->value(), arg2);
-	case dods_int64_c:
-		return cmp(op, static_cast<Int64*>(arg1)->value(), arg2);
-	case dods_uint64_c:
-		return cmp(op, static_cast<UInt64*>(arg1)->value(), arg2);
-	case dods_float32_c:
-		return cmp(op, static_cast<Float32*>(arg1)->value(), arg2);
-	case dods_float64_c:
-		return cmp(op, static_cast<Float64*>(arg1)->value(), arg2);
-	default:
-		return false;
-	}
-}
-
-inline bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
-{
-	switch (arg2->type()) {
-	case dods_byte_c:
-		return cmp(op, arg1, static_cast<Byte*>(arg2)->value());
-	case dods_int8_c:
-		return cmp(op, arg1, static_cast<Int8*>(arg2)->value());
-	case dods_int16_c:
-		return cmp(op, arg1, static_cast<Int16*>(arg2)->value());
-	case dods_uint16_c:
-		return cmp(op, arg1, static_cast<UInt16*>(arg2)->value());
-	case dods_int32_c:
-		return cmp(op, arg1, static_cast<Int32*>(arg2)->value());
-	case dods_uint32_c:
-		return cmp(op, arg1, static_cast<UInt32*>(arg2)->value());
-	case dods_int64_c:
-		return cmp(op, arg1, static_cast<Int64*>(arg2)->value());
-	case dods_uint64_c:
-		return cmp(op, arg1, static_cast<UInt64*>(arg2)->value());
-	case dods_float32_c:
-		return cmp(op, arg1, static_cast<Float32*>(arg2)->value());
-	case dods_float64_c:
-		return cmp(op, arg1, static_cast<Float64*>(arg2)->value());
-
-	case dods_str_c:
-	case dods_url_c:
-		if (arg1->type() != dods_str_c || arg1->type() != dods_url_c)
-			throw Error("While evaluating a constraint filter clause: both operands of the match operator must be strings or URLs.");
-		return cmp(op, static_cast<Str*>(arg1)->value(), static_cast<Str*>(arg1)->value());
-	default:
-		return false;
-	}
-}
-
+/**
+ * @brief Get the value of this relational expression.
+ * This version of value() works for function clauses, although that's
+ * not supported by the syntax at this time.
+ * @param dmr The DMR to use when evaluating a function
+ * @return True if the clause is true, false otherwise.
+ */
 bool D4FilterClause::value(DMR &dmr)
 {
 	switch (d_op) {
 	case null:
-		assert("Found a null operator");
 		throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Found a null operator");
+
 	case less:
 	case greater:
 	case less_equal:
@@ -202,18 +147,50 @@ bool D4FilterClause::value(DMR &dmr)
 
 	case ND:
 	case map:
-		assert(false && "Filter operator not implemented");
 		throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Filter operator not implemented");
+
 	default:
-		assert(false && "Unrecognized operator");
 		throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Unrecognized operator");
 	}
 }
 
+/**
+ * @brief Get the value of this relational expression.
+ * This version of value() will not work for clauses where one of the
+ * rvalues is a function call. This is not currently supported by the
+ * DAP4 specification, so it's probably no great loss.
+ * @return True if the clause is true, false otherwise.
+ */
+bool D4FilterClause::value()
+{
+    switch (d_op) {
+    case null:
+        throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Found a null operator");
 
+    case less:
+    case greater:
+    case less_equal:
+    case greater_equal:
+    case equal:
+    case not_equal:
+    case match:
+        return cmp(d_op, d_arg1->value(), d_arg2->value());
 
-// I don't think there's any real benefit to this code... jhrg 3/24/15
-#if 0
+    case ND:
+    case map:
+        throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Filter operator not implemented");
+
+    default:
+        throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Unrecognized operator");
+    }
+}
+
+// It may be better to use the code in the Byte, ..., classes that was
+// impl'd for DAP2 (with extensions). For now, test this and build the
+// rest of the filter implementation. But there is certainly a more _compact_
+// way to code this!
+//
+// Optimize the extraction of constant values.
 bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 {
 	switch (arg1->type()) {
@@ -239,6 +216,11 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+        case dods_str_c:
+        case dods_url_c:
+		    throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
+        default:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, non-scalar).");
 		}
 		break;
 	case dods_int8_c:
@@ -263,6 +245,11 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+        case dods_str_c:
+        case dods_url_c:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
+        default:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, non-scalar).");
 		}
 		break;
 	case dods_int16_c:
@@ -287,6 +274,11 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+        case dods_str_c:
+        case dods_url_c:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
+        default:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, non-scalar).");
 		}
 		break;
 	case dods_uint16_c:
@@ -311,6 +303,11 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+        case dods_str_c:
+        case dods_url_c:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
+        default:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, non-scalar).");
 		}
 		break;
 	case dods_int32_c:
@@ -335,6 +332,11 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+        case dods_str_c:
+        case dods_url_c:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
+        default:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, non-scalar).");
 		}
 		break;
 	case dods_uint32_c:
@@ -359,6 +361,11 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+        case dods_str_c:
+        case dods_url_c:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
+        default:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, non-scalar).");
 		}
 		break;
 	case dods_int64_c:
@@ -383,6 +390,11 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+        case dods_str_c:
+        case dods_url_c:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
+        default:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, non-scalar).");
 		}
 		break;
 	case dods_uint64_c:
@@ -407,6 +419,11 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+        case dods_str_c:
+        case dods_url_c:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
+        default:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, non-scalar).");
 		}
 		break;
 	case dods_float32_c:
@@ -431,6 +448,11 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+        case dods_str_c:
+        case dods_url_c:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
+        default:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, non-scalar).");
 		}
 		break;
 	case dods_float64_c:
@@ -455,10 +477,40 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
 			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+        case dods_str_c:
+        case dods_url_c:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
+        default:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, non-scalar).");
 		}
 		break;
-	}
+
+    case dods_str_c:
+    case dods_url_c:
+        switch (arg2->type()) {
+        case dods_byte_c:
+        case dods_int8_c:
+        case dods_int16_c:
+        case dods_uint16_c:
+        case dods_int32_c:
+        case dods_uint32_c:
+        case dods_int64_c:
+        case dods_uint64_c:
+        case dods_float32_c:
+        case dods_float64_c:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (string, number).");
+        case dods_str_c:
+        case dods_url_c:
+            // We can do this because URL/Url is-a Str.
+            return cmp(op, static_cast<Str*>(arg1)->value(), static_cast<Str*>(arg2)->value());
+        default:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (string, non-scalar).");
+        }
+        break;
+
+    default:
+        throw Error(malformed_expr, "Relational operators only work with scalar types.");
+    }   // switch (arg1...)
 }
-#endif
 
 } // namespace libdap
