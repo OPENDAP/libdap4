@@ -142,8 +142,6 @@ unit-tests/parserUtilTest
 unit-tests/sequenceT
 unit-tests/structT
 unit-tests/test_config.h
-unit-tests/D4FilterClauseTest
-
 unit-tests/D4AsyncDocTest
 unit-tests/D4AttributesTest
 unit-tests/D4DimensionsTest
@@ -155,6 +153,8 @@ unit-tests/D4ParserSax2Test
 unit-tests/D4UnMarshallerTest
 unit-tests/DMRTest
 unit-tests/chunked_iostream_test
+unit-tests/D4FilterClauseTest
+unit-tests/D4SequenceTest
 
 unit-tests/chunked-io/
 /Default/
