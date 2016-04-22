@@ -197,6 +197,18 @@ public:
 #endif
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
+    /**
+     * @brief Access the filter clauses for this D4Sequence
+     *
+     * When a filter is supplied with a DAP4 constraint, the expression is
+     * parsed and one or more D4FilterClause objects are built and stored in
+     * a D4FilterClauseList bound to the D4Sequence to be filtered.
+     *
+     * @return A reference to this D4Sequence's filter clause list
+     * @see D4FilterClauseList
+     */
+    D4FilterClauseList &clauses() { return *d_clauses; }
+
 #if INDEX_SUBSETTING
     /** Return the starting row number if the sequence was constrained using
         row numbers (instead of, or in addition to, a relational constraint).

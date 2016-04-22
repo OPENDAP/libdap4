@@ -130,7 +130,7 @@ void D4Sequence::m_duplicate(const D4Sequence &s)
         d_values.push_back(dest);
     }
 
-    d_clauses = s.d_clauses;    // deep copy
+    d_clauses = new D4FilterClauseList(*s.d_clauses);    // deep copy
 }
 
 // Public member functions
@@ -147,6 +147,7 @@ D4Sequence::D4Sequence(const string &n) :
         Constructor(n, dods_sequence_c, true /* is dap4 */), d_clauses(0), d_length(0)
 // , d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
+    d_clauses = new D4FilterClauseList();
 }
 
 /** The Sequence server-side constructor requires the name of the variable
@@ -163,6 +164,7 @@ D4Sequence::D4Sequence(const string &n, const string &d) :
         Constructor(n, d, dods_sequence_c, true /* is dap4 */), d_clauses(0), d_length(0)
 //, d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
+    d_clauses = new D4FilterClauseList();
 }
 
 /** @brief The Sequence copy constructor. */
@@ -192,6 +194,7 @@ static inline void delete_rows(D4SeqRow *bt_row_ptr)
 D4Sequence::~D4Sequence()
 {
     clear_local_data();
+    delete d_clauses;
 }
 
 void D4Sequence::clear_local_data()
@@ -246,10 +249,12 @@ bool D4Sequence::read_next_instance(/*DMR &dmr*/bool filter)
 
     do {
         eof = read();
-        // Advance the row number if ce_eval is false (we're not supposed to
-        // evaluate the selection) or both filter and the selection are true.
-        filter = false;
-        if (!eof && (!filter || d_clauses->value())) {
+        // Advance the row number if filter is false (we're not supposed to
+        // evaluate the selection) or both filter and the clauses are true.
+        if (eof) {
+            continue;
+        }
+        else if (!filter || d_clauses->value()) {
             d_length++;
             done = true;
         }
@@ -284,10 +289,10 @@ D4Sequence::compute_checksum(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eva
 }
 #endif
 
-void D4Sequence::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/)
+void D4Sequence::intern_data()
 {
     // Read the data values, then serialize.
-    while (read_next_instance(/*dmr, eval,*/true /*filter*/)) {
+    while (read_next_instance(true /*filter*/)) {
         D4SeqRow *row = new D4SeqRow;
         for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
             if ((*i)->send_p()) {
@@ -307,6 +312,8 @@ void D4Sequence::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &e
         }
         d_values.push_back(row);
     }
+
+    set_length(d_values.size());
 }
 
 /**
@@ -351,6 +358,8 @@ void D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter)
         d_values.push_back(row);
         DBG(cerr << ":serialize() - Row completed" << endl);
     }
+
+    set_length(d_values.size());
 
     // write D4Sequecne::length(); don't include the length in the checksum
     m.put_count(d_length);

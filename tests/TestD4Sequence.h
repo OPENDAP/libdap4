@@ -56,6 +56,7 @@ public:
     void set_series_values(bool);
     bool get_series_values() { return d_series_values; }
 
+    void set_length(int len) { d_len = len; }
     virtual int length() const { return d_len; }
 };
 
