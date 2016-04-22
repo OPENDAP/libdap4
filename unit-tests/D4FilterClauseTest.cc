@@ -424,8 +424,16 @@ public:
         CPPUNIT_ASSERT(clauses->value());
     }
 
+    // This should return true
+    void no_clauses_test() {
+        auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
+
+        CPPUNIT_ASSERT(clauses->size() == 0);
+        CPPUNIT_ASSERT(clauses->value(dmr));
+        CPPUNIT_ASSERT(clauses->value());
+    }
+
     void false_clauses_test() {
-        // Testing this as a pointer since that's how it will be stored in D4Sequence
         auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
 
         D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
@@ -451,7 +459,6 @@ public:
     }
 
     void evaluation_order_test() {
-        // Testing this as a pointer since that's how it will be stored in D4Sequence
         auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
 
         D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
@@ -485,7 +492,6 @@ public:
     }
 
     void evaluation_order_test_2() {
-        // Testing this as a pointer since that's how it will be stored in D4Sequence
         auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
 
         D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
@@ -543,6 +549,7 @@ public:
 
     // FilterClauseList tests
     CPPUNIT_TEST(true_clauses_test);
+    CPPUNIT_TEST(no_clauses_test);
     CPPUNIT_TEST(false_clauses_test);
     CPPUNIT_TEST(evaluation_order_test);
     CPPUNIT_TEST(evaluation_order_test_2);

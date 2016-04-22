@@ -36,6 +36,7 @@ class Crc32;
 namespace libdap
 {
 class BaseType;
+class D4FilterClauseList;
 
 /** The type BaseTypeRow is used to store single rows of values in an
     instance of D4Sequence. Values are stored in instances of BaseType. */
@@ -124,6 +125,7 @@ typedef vector<D4SeqRow *> D4SeqValues;
 class D4Sequence: public Constructor
 {
 private:
+    D4FilterClauseList *d_clauses;
 
 protected:
     // This holds the values of the sequence. Values are stored in

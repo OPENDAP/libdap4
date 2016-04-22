@@ -58,6 +58,15 @@ public:
 
     virtual ~D4FilterClauseList();
 
+    D4FilterClauseList &operator=(const D4FilterClauseList &rhs) {
+        if (this == &rhs)
+            return *this;
+
+        m_duplicate(rhs);
+
+        return *this;
+    }
+
     void add_clause(D4FilterClause *c) {
         d_clauses.push_back(c);
     }

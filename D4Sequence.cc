@@ -47,6 +47,9 @@
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
 
+#include "D4RValue.h"
+#include "D4FilterClause.h"     // also contains D4FilterClauseList
+
 #include "debug.h"
 #include "Error.h"
 #include "InternalErr.h"
@@ -126,6 +129,8 @@ void D4Sequence::m_duplicate(const D4Sequence &s)
 
         d_values.push_back(dest);
     }
+
+    d_clauses = s.d_clauses;    // deep copy
 }
 
 // Public member functions
@@ -139,7 +144,8 @@ void D4Sequence::m_duplicate(const D4Sequence &s)
 
  @brief The Sequence constructor. */
 D4Sequence::D4Sequence(const string &n) :
-        Constructor(n, dods_sequence_c, true /* is dap4 */), d_length(0) // , d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
+        Constructor(n, dods_sequence_c, true /* is dap4 */), d_clauses(0), d_length(0)
+// , d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
 }
 
@@ -154,13 +160,13 @@ D4Sequence::D4Sequence(const string &n) :
 
  @brief The Sequence server-side constructor. */
 D4Sequence::D4Sequence(const string &n, const string &d) :
-        Constructor(n, d, dods_sequence_c, true /* is dap4 */), d_length(0) //, d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
+        Constructor(n, d, dods_sequence_c, true /* is dap4 */), d_clauses(0), d_length(0)
+//, d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
 }
 
 /** @brief The Sequence copy constructor. */
-D4Sequence::D4Sequence(const D4Sequence &rhs) :
-        Constructor(rhs)
+D4Sequence::D4Sequence(const D4Sequence &rhs) : Constructor(rhs)
 {
     m_duplicate(rhs);
 }
@@ -233,7 +239,7 @@ D4Sequence::operator=(const D4Sequence &rhs)
  * @param filter
  * @return False when read() indicates that the EOF was found, true otherwise.
  */
-bool D4Sequence::read_next_instance(/*DMR &dmr, ConstraintEvaluator &eval,*/bool filter)
+bool D4Sequence::read_next_instance(/*DMR &dmr*/bool filter)
 {
     bool eof = false;
     bool done = false;
@@ -241,11 +247,9 @@ bool D4Sequence::read_next_instance(/*DMR &dmr, ConstraintEvaluator &eval,*/bool
     do {
         eof = read();
         // Advance the row number if ce_eval is false (we're not supposed to
-        // evaluate the selection) or both filter and the selection are
-        // true.
-        // FIXME CE's not supported for DAP4 yet. jhrg 10/11/13
+        // evaluate the selection) or both filter and the selection are true.
         filter = false;
-        if (!eof && (!filter /*|| eval.eval_selection(dmr, dataset()*/)) {
+        if (!eof && (!filter || d_clauses->value())) {
             d_length++;
             done = true;
         }
@@ -328,7 +332,8 @@ void D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter)
 {
     DBG(cerr << ":serialize() - BEGIN" << endl);
 
-    // Read the data values, then serialize. NB: read_next_instance sets d_length.
+    // Read the data values, then serialize. NB: read_next_instance sets d_length
+    // evaluates the filter expression
     while (read_next_instance(filter)) {
         DBG(cerr << ":serialize() - Adding row" << endl);
         D4SeqRow *row = new D4SeqRow;
