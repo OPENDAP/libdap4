@@ -142,6 +142,7 @@ unit-tests/parserUtilTest
 unit-tests/sequenceT
 unit-tests/structT
 unit-tests/test_config.h
+unit-tests/D4FilterClauseTest
 
 unit-tests/D4AsyncDocTest
 unit-tests/D4AttributesTest
