@@ -225,7 +225,7 @@ bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
  * @param f Value-result parameter. NULL if the function is not found
  * @return True if the function was found, otherwise false.
  */
-bool ServerFunctionsList::find_function(const string &name, D4Function f) const
+bool ServerFunctionsList::find_function(const string &name, D4Function *f) const
 {
     if (d_func_list.empty())
         return false;
@@ -233,7 +233,7 @@ bool ServerFunctionsList::find_function(const string &name, D4Function f) const
     std::pair <SFLCIter, SFLCIter> ret;
     ret = d_func_list.equal_range(name);
     for (SFLCIter it = ret.first; it != ret.second; ++it) {
-        if (name == it->first && (f = it->second->get_d4_function())) {
+        if (name == it->first && (*f = it->second->get_d4_function())) {
             return true;
         }
     }
