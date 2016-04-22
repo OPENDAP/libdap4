@@ -826,7 +826,7 @@ BaseType::read()
 }
 
 void
-BaseType::intern_data(ConstraintEvaluator &, DDS &dds)
+BaseType::intern_data(ConstraintEvaluator &, DDS &/*dds*/)
 {
 #if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_on();
@@ -1170,7 +1170,9 @@ BaseType::check_semantics(string &msg, bool)
     is implied. Choose one from the following: <tt>EQUAL</tt>,
     <tt>NOT_EQUAL</tt>, <tt>GREATER</tt>, <tt>GREATER_EQL</tt>,
     <tt>LESS</tt>, <tt>LESS_EQL</tt>, and <tt>REGEXP</tt>.
-    @return The boolean value of the comparison. */
+    @return The boolean value of the comparison.
+    @see BaseType::d4_ops(BaseType *, int)
+*/
 bool
 BaseType::ops(BaseType *, int)
 {
@@ -1178,6 +1180,28 @@ BaseType::ops(BaseType *, int)
     // they will never have a BaseType object since this class is abstract,
     // however any of the child classes could by mistake call BaseType::ops
     // so this is an internal error. Jose Garcia
+    throw InternalErr(__FILE__, __LINE__, "Unimplemented operator.");
+}
+
+/**
+ * @brief Evaluator a relop for DAP4
+ *
+ * This method is used by the filter expression evaluation code in DAP4.
+ * Each of the 'data type' classes that support relops must overload this
+ * method. In an expression of the form arg1 op arg2, this object is arg1,
+ * the parameter 'b' is arg2 and op is the relational operator.
+ *
+ * @note I used the same relop codes for DAP4 as in the DAP2 parser/scanner
+ * which makes for some coupling between them, but cuts way down on the
+ * duplication of the evaluator logic, which is somewhat involved.
+ *
+ * @param b The second argument in the relational expression
+ * @param op The infix relational operator
+ * @return True if the expression is true, False otherwise.
+ */
+bool
+BaseType::d4_ops(BaseType *, int)
+{
     throw InternalErr(__FILE__, __LINE__, "Unimplemented operator.");
 }
 

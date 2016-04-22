@@ -35,6 +35,8 @@
 
 #include "config.h"
 
+//#define DODS_DEBUG
+
 #include <sstream>
 #include <iomanip>
 
@@ -59,12 +61,13 @@
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
 
-#include "util.h"
 #include "parser.h"
 #include "Operators.h"
 #include "dods-limits.h"
 #include "InternalErr.h"
 
+#include "util.h"
+#include "debug.h"
 
 using std::cerr;
 using std::endl;
@@ -269,29 +272,42 @@ Float32::ops(BaseType *b, int op)
         throw InternalErr(__FILE__, __LINE__, "This value not read!");
     }
 
+    return d4_ops(b, op);
+}
+
+/**
+ * @see BaseType::d4_ops(BaseType *, int)
+ */
+bool Float32::d4_ops(BaseType *b, int op)
+{
     switch (b->type()) {
-        case dods_int8_c:
-            return Cmp<dods_float32, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
-        case dods_byte_c:
-            return SUCmp<dods_float32, dods_byte>(op, d_buf, static_cast<Byte*>(b)->value());
-        case dods_int16_c:
-            return Cmp<dods_float32, dods_int16>(op, d_buf, static_cast<Int16*>(b)->value());
-        case dods_uint16_c:
-            return SUCmp<dods_float32, dods_uint16>(op, d_buf, static_cast<UInt16*>(b)->value());
-        case dods_int32_c:
-            return Cmp<dods_float32, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
-        case dods_uint32_c:
-            return SUCmp<dods_float32, dods_uint32>(op, d_buf, static_cast<UInt32*>(b)->value());
-        case dods_int64_c:
-            return Cmp<dods_float32, dods_int64>(op, d_buf, static_cast<Int64*>(b)->value());
-        case dods_uint64_c:
-            return SUCmp<dods_float32, dods_uint64>(op, d_buf, static_cast<UInt64*>(b)->value());
-        case dods_float32_c:
-            return Cmp<dods_float32, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
-        case dods_float64_c:
-            return Cmp<dods_float32, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
-        default:
-            return false;
+    case dods_int8_c:
+        return Cmp<dods_float32, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
+    case dods_byte_c:
+        return SUCmp<dods_float32, dods_byte>(op, d_buf, static_cast<Byte*>(b)->value());
+    case dods_int16_c:
+        return Cmp<dods_float32, dods_int16>(op, d_buf, static_cast<Int16*>(b)->value());
+    case dods_uint16_c:
+        return SUCmp<dods_float32, dods_uint16>(op, d_buf, static_cast<UInt16*>(b)->value());
+    case dods_int32_c:
+        return Cmp<dods_float32, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
+    case dods_uint32_c:
+        return SUCmp<dods_float32, dods_uint32>(op, d_buf, static_cast<UInt32*>(b)->value());
+    case dods_int64_c:
+        return Cmp<dods_float32, dods_int64>(op, d_buf, static_cast<Int64*>(b)->value());
+    case dods_uint64_c:
+        return SUCmp<dods_float32, dods_uint64>(op, d_buf, static_cast<UInt64*>(b)->value());
+    case dods_float32_c:
+        return Cmp<dods_float32, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
+    case dods_float64_c:
+        DBG(cerr << "arg1: " << d_buf << " " << op  << " arg2: " << static_cast<Float64*>(b)->value() << endl);
+        // See the code in Float64::d4_ops() for an explanation of this odd-looking cast.
+        return Cmp<dods_float32, dods_float32>(op, d_buf, (float)static_cast<Float64*>(b)->value());
+    case dods_str_c:
+    case dods_url_c:
+        throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
+    default:
+        throw Error(malformed_expr, "Relational operators only work with scalar types.");
     }
 }
 

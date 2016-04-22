@@ -31,15 +31,18 @@
 #include <sstream>
 
 #include "Byte.h"
+#include "Int8.h"
 #include "Int16.h"
 #include "UInt16.h"
 #include "Int32.h"
 #include "UInt32.h"
+
 #include "Float32.h"
 #include "Float64.h"
+
 #include "Str.h"
 #include "Url.h"
-#include "Array.h"
+//#include "Array.h"
 #include "Structure.h"
 
 #include "D4RValue.h"
@@ -50,8 +53,8 @@
 #include "util.h"
 #include "debug.h"
 
-#include "testFile.h"
-#include "test_config.h"
+//#include "testFile.h"
+//#include "test_config.h"
 
 static bool debug = false;
 
@@ -99,6 +102,8 @@ public:
         delete byte;
         delete str;
     }
+
+    // FilterClauseList tests further down...
 
     void Byte_and_long_long_test() {
         D4RValue *arg1 = new D4RValue(byte);    // holds 17
@@ -247,7 +252,7 @@ public:
             // will balk at this comparison. jhrg 4/21/16
             DBG(cerr << "built filter clause instance" << endl);
 
-            CPPUNIT_ASSERT(less->value());
+            less->value();
             CPPUNIT_FAIL("Expected error");
         }
         catch (Error &e) {
@@ -359,6 +364,159 @@ public:
         CPPUNIT_ASSERT(match->value(dmr));
     }
 
+    void float_test() {
+        D4RValue *arg2_1 = new D4RValue(f32);
+        D4RValue *arg2_2 = new D4RValue(3.1415);
+
+        auto_ptr<D4FilterClause> clause(new D4FilterClause(D4FilterClause::equal, arg2_1, arg2_2));
+        CPPUNIT_ASSERT(clause->value());
+    }
+
+    void float_test_2() {
+        D4RValue *arg2_1 = new D4RValue(f32);
+        D4RValue *arg2_2 = new D4RValue(3.1415);
+
+        auto_ptr<D4FilterClause> clause(new D4FilterClause(D4FilterClause::greater_equal, arg2_1, arg2_2));
+        CPPUNIT_ASSERT(clause->value());
+    }
+
+    void float_test_3() {
+        D4RValue *arg2_1 = new D4RValue(f32);
+        D4RValue *arg2_2 = new D4RValue(3.1415);
+
+        auto_ptr<D4FilterClause> clause(new D4FilterClause(D4FilterClause::less_equal, arg2_1, arg2_2));
+        CPPUNIT_ASSERT(clause->value());
+    }
+
+    void int_test() {
+        auto_ptr<Int8> i8(new Int8(""));
+        i8->set_value(17);
+        D4RValue *arg2_1 = new D4RValue(i8.get());
+        D4RValue *arg2_2 = new D4RValue((long long)17);
+
+        auto_ptr<D4FilterClause> clause(new D4FilterClause(D4FilterClause::equal, arg2_1, arg2_2));
+        CPPUNIT_ASSERT(clause->value());
+    }
+
+
+    void true_clauses_test() {
+        // Testing this as a pointer since that's how it will be stored in D4Sequence
+        auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
+
+        D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
+        D4RValue *arg1_2 = new D4RValue((double)21.0);
+        clauses->add_clause(new D4FilterClause(D4FilterClause::less, arg1_1, arg1_2));
+
+        D4RValue *arg2_1 = new D4RValue(f32);       // holds pi
+        D4RValue *arg2_2 = new D4RValue(17.0);
+        clauses->add_clause(new D4FilterClause(D4FilterClause::less, arg2_1, arg2_2));
+
+        D4RValue *arg3_1 = new D4RValue(url);
+        D4RValue *arg3_2 = new D4RValue("https://github.com/opendap");
+        clauses->add_clause(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
+
+        D4RValue *arg4_1 = new D4RValue(url);
+        D4RValue *arg4_2 = new D4RValue("https://.*dap$");
+        clauses->add_clause(new D4FilterClause(D4FilterClause::match, arg4_1, arg4_2));
+
+        CPPUNIT_ASSERT(clauses->size() == 4);
+        CPPUNIT_ASSERT(clauses->value(dmr));
+        CPPUNIT_ASSERT(clauses->value());
+    }
+
+    void false_clauses_test() {
+        // Testing this as a pointer since that's how it will be stored in D4Sequence
+        auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
+
+        D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
+        D4RValue *arg1_2 = new D4RValue((double)21.0);
+        clauses->add_clause(new D4FilterClause(D4FilterClause::less, arg1_1, arg1_2));
+
+        // This clause will fail
+        D4RValue *arg2_1 = new D4RValue(f32);       // holds pi
+        D4RValue *arg2_2 = new D4RValue(17.0);
+        clauses->add_clause(new D4FilterClause(D4FilterClause::greater, arg2_1, arg2_2));
+
+        D4RValue *arg3_1 = new D4RValue(url);
+        D4RValue *arg3_2 = new D4RValue("https://github.com/opendap");
+        clauses->add_clause(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
+
+        D4RValue *arg4_1 = new D4RValue(url);
+        D4RValue *arg4_2 = new D4RValue("https://.*dap$");
+        clauses->add_clause(new D4FilterClause(D4FilterClause::match, arg4_1, arg4_2));
+
+        CPPUNIT_ASSERT(clauses->size() == 4);
+        CPPUNIT_ASSERT(clauses->value(dmr) == false);
+        CPPUNIT_ASSERT(clauses->value() == false);
+    }
+
+    void evaluation_order_test() {
+        // Testing this as a pointer since that's how it will be stored in D4Sequence
+        auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
+
+        D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
+        D4RValue *arg1_2 = new D4RValue((double)21.0);
+        clauses->add_clause(new D4FilterClause(D4FilterClause::less, arg1_1, arg1_2));
+
+        // This clause will fail and we should not get to the next clause, which will
+        // throw and exception.
+        D4RValue *arg2_1 = new D4RValue(f32);       // holds pi
+        D4RValue *arg2_2 = new D4RValue(17.0);
+        clauses->add_clause(new D4FilterClause(D4FilterClause::greater, arg2_1, arg2_2));
+
+        D4RValue *arg3_1 = new D4RValue(url);
+        D4RValue *arg3_2 = new D4RValue(17.0); // Error - mismatched types
+        clauses->add_clause(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
+
+        D4RValue *arg4_1 = new D4RValue(url);
+        D4RValue *arg4_2 = new D4RValue("https://.*dap$");
+        clauses->add_clause(new D4FilterClause(D4FilterClause::match, arg4_1, arg4_2));
+
+        try {
+            CPPUNIT_ASSERT(clauses->size() == 4);
+            CPPUNIT_ASSERT(clauses->value(dmr) == false);
+            CPPUNIT_ASSERT(clauses->value() == false);
+        }
+        catch (Error &e) {
+            DBG(cerr << "Caught error: " + e.get_error_message() << endl);
+            CPPUNIT_FAIL("Exception, but the thrid clause should not have been evaluated");
+
+        }
+    }
+
+    void evaluation_order_test_2() {
+        // Testing this as a pointer since that's how it will be stored in D4Sequence
+        auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
+
+        D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
+        D4RValue *arg1_2 = new D4RValue((double)21.0);
+        clauses->add_clause(new D4FilterClause(D4FilterClause::less, arg1_1, arg1_2));
+
+        // This clause will *pass* and we *should* get to the next clause, which will
+        // throw and exception.
+        D4RValue *arg2_1 = new D4RValue(f32);       // holds pi
+        D4RValue *arg2_2 = new D4RValue(17.0);
+        clauses->add_clause(new D4FilterClause(D4FilterClause::less, arg2_1, arg2_2));
+
+        D4RValue *arg3_1 = new D4RValue(url);
+        D4RValue *arg3_2 = new D4RValue(17.0); // Error - mismatched types
+        clauses->add_clause(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
+
+        D4RValue *arg4_1 = new D4RValue(url);
+        D4RValue *arg4_2 = new D4RValue("https://.*dap$");
+        clauses->add_clause(new D4FilterClause(D4FilterClause::match, arg4_1, arg4_2));
+
+        try {
+            CPPUNIT_ASSERT(clauses->size() == 4);
+            CPPUNIT_ASSERT(clauses->value(dmr));
+
+            CPPUNIT_FAIL("Expected the third clause to throw an exception.");
+        }
+        catch (Error &e) {
+            DBG(cerr << "Caught error: " + e.get_error_message() << endl);
+            CPPUNIT_ASSERT("Expected exception found.");
+        }
+    }
 
     CPPUNIT_TEST_SUITE( D4FilterClauseTest );
 
@@ -378,6 +536,16 @@ public:
     CPPUNIT_TEST(Str_and_Structure_error_test);
 
     CPPUNIT_TEST(grab_bag_test);
+    CPPUNIT_TEST(float_test);
+    CPPUNIT_TEST(float_test_2);
+    CPPUNIT_TEST(float_test_3);
+    CPPUNIT_TEST(int_test);
+
+    // FilterClauseList tests
+    CPPUNIT_TEST(true_clauses_test);
+    CPPUNIT_TEST(false_clauses_test);
+    CPPUNIT_TEST(evaluation_order_test);
+    CPPUNIT_TEST(evaluation_order_test_2);
 
     CPPUNIT_TEST_SUITE_END();
 };

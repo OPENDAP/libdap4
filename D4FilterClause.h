@@ -27,11 +27,55 @@
 #define _d4_filter_clause_h
 
 #include <cassert>
+#include <vector>
+
+#include "ce_expr.tab.hh"   // Use the same codes for D4 as we use in DAP2
 
 namespace libdap
 {
 
 class D4Rvalue;
+class D4FilterClause;
+
+/**
+ * @brief List of DAP4 Filter Clauses
+ *
+ */
+class D4FilterClauseList
+{
+private:
+    std::vector<D4FilterClause *> d_clauses;
+
+    void m_duplicate(const D4FilterClauseList &src);
+
+public:
+    typedef std::vector<D4FilterClause *>::iterator iter;
+    typedef std::vector<D4FilterClause *>::const_iterator citer;
+
+    D4FilterClauseList() { }
+    D4FilterClauseList(const D4FilterClauseList &src) { m_duplicate(src); }
+    D4FilterClauseList(D4FilterClause *c) { add_clause(c); }
+
+    virtual ~D4FilterClauseList();
+
+    void add_clause(D4FilterClause *c) {
+        d_clauses.push_back(c);
+    }
+
+    D4FilterClause *get_clause(unsigned int i) {
+        return d_clauses.at(i);
+    }
+
+    iter begin() { return d_clauses.begin(); }
+    iter end() { return d_clauses.end(); }
+
+    unsigned int size() const { return d_clauses.size(); }
+
+    // get the clause value; this version supports functional clauses
+    bool value(DMR &dmr);
+
+    bool value();
+};
 
 /**
  * @brief DAP4 filter clauses
@@ -62,15 +106,15 @@ class D4FilterClause
 public:
 	enum ops {
 		// Stock relops
-		null,
-		less,
-		greater,
-		less_equal,
-		greater_equal,
-		equal,
-		not_equal,
+		null = 0,
+		less = SCAN_LESS,
+		greater = SCAN_GREATER,
+		less_equal = SCAN_LESS_EQL,
+		greater_equal = SCAN_GREATER_EQL,
+		equal = SCAN_EQUAL,
+		not_equal = SCAN_NOT_EQUAL,
 		// Regex match for strings
-		match,
+		match = SCAN_REGEXP,
 		// The mapping operator; not sure if this will be implemented
 		map,
 		// No Data 'operator' for array filtering; may not be impl'd
@@ -89,13 +133,15 @@ private:
 
     // These perform the actual comparisons, with a specail case for
     // const string & arguments.
-    template<typename T1, typename T2> bool cmp(ops op, T1 arg1, T2 Arg2);
-    bool cmp(ops op, const string &arg1, const string &arg2);
+    template<typename T1, typename T2> bool cmp_impl(ops op, T1 arg1, T2 Arg2);
+    bool cmp_impl(ops op, const string &arg1, const string &arg2);
 
     // These methods factor out first the first argument and then the
     // second. I could write one really large cmp() for all of this...
     //template<typename T> bool cmp(ops op, BaseType *arg1, T arg2);
     bool cmp(ops op, BaseType *arg1, BaseType *arg2);
+
+    friend class D4FilterClauseList;
 
 public:
     /**

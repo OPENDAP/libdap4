@@ -34,6 +34,8 @@
 
 #include "config.h"
 
+#define DODS_DEBUG
+
 #include <cassert>
 
 #include <string>
@@ -56,12 +58,75 @@
 #include "D4RValue.h"
 #include "D4FilterClause.h"
 
+#include "debug.h"
+
 using namespace std;
 
 namespace libdap {
 
-template<typename T1, typename T2> inline bool D4FilterClause::cmp(ops op, T1 arg1, T2 arg2)
+void
+D4FilterClauseList::m_duplicate(const D4FilterClauseList &src)
 {
+    D4FilterClauseList &non_c_src = const_cast<D4FilterClauseList &>(src);
+
+    for (D4FilterClauseList::iter i = non_c_src.begin(), e = non_c_src.end(); i != e; ++i) {
+        d_clauses.push_back(new D4FilterClause(**i));
+    }
+}
+
+D4FilterClauseList::~D4FilterClauseList()
+{
+    for (D4FilterClauseList::iter i = d_clauses.begin(), e = d_clauses.end(); i != e; ++i) {
+        delete *i;
+    }
+}
+
+/**
+ * @brief Evaluate the list of clauses
+ *
+ * Evaluate the list of clauses and return false when/if one is found to be false.
+ * This evaluates the clauses in the order they are stored and stops evaluation a
+ * the first false clause.
+ *
+ * @param dmr Use this DMR when evaluating clauses - for clauses that contain functions,
+ * not currently in the DAP4 specification.
+ * @return True if each of the clauses' value is true, otherwise false
+ */
+bool
+D4FilterClauseList::value(DMR &dmr)
+{
+    for (D4FilterClauseList::iter i = d_clauses.begin(), e = d_clauses.end(); i != e; ++i) {
+        if ((*i)->value(dmr) == false)
+            return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Evaluate the list of clauses
+ *
+ * This version of value() does not need a DMR parameter (but will not work
+ * if the clauses contain a function call (which is not currently supported
+ * by the spec).
+ *
+ * @return True if each clauses' value is true, false otherwise
+ * @see D4FilterClauseList::value(DMR &dmr)
+ */
+bool
+D4FilterClauseList::value()
+{
+    for (D4FilterClauseList::iter i = d_clauses.begin(), e = d_clauses.end(); i != e; ++i) {
+        if ((*i)->value() == false)
+            return false;
+    }
+
+    return true;
+}
+
+template<typename T1, typename T2> inline bool D4FilterClause::cmp_impl(ops op, T1 arg1, T2 arg2)
+{
+    DBG(cerr << "arg1: " << arg1 << ", arg2: " << arg2 << endl);
 	switch (op) {
 	case null:
 		assert(false && "Found a null operator");
@@ -90,7 +155,7 @@ template<typename T1, typename T2> inline bool D4FilterClause::cmp(ops op, T1 ar
 }
 
 // special case strings
-inline bool D4FilterClause::cmp(ops op, const string &arg1, const string &arg2)
+inline bool D4FilterClause::cmp_impl(ops op, const string &arg1, const string &arg2)
 {
 	switch (op) {
 	case null:
@@ -193,29 +258,35 @@ bool D4FilterClause::value()
 // Optimize the extraction of constant values.
 bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 {
+    return arg1->d4_ops(arg2, op);
+}
+
+#if 0
+bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
+{
 	switch (arg1->type()) {
 	case dods_byte_c:
 		switch (arg2->type()) {
 		case dods_byte_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
+			return cmp_impl(op, static_cast<Byte*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
 		case dods_int8_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
+			return cmp_impl(op, static_cast<Byte*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
 		case dods_int16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Byte*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
 		case dods_uint16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
 		case dods_int32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Byte*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
 		case dods_uint32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
 		case dods_int64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Byte*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
 		case dods_uint64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
 		case dods_float32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
         case dods_str_c:
         case dods_url_c:
 		    throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
@@ -226,25 +297,25 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 	case dods_int8_c:
 		switch (arg2->type()) {
 		case dods_byte_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int8*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
 		case dods_int8_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int8*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
 		case dods_int16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int8*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
 		case dods_uint16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int8*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
 		case dods_int32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int8*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
 		case dods_uint32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int8*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
 		case dods_int64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int8*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
 		case dods_uint64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int8*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
 		case dods_float32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int8*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int8*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
         case dods_str_c:
         case dods_url_c:
             throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
@@ -255,25 +326,25 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 	case dods_int16_c:
 		switch (arg2->type()) {
 		case dods_byte_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int16*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
 		case dods_int8_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int16*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
 		case dods_int16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int16*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
 		case dods_uint16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int16*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
 		case dods_int32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int16*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
 		case dods_uint32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int16*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
 		case dods_int64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int16*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
 		case dods_uint64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int16*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
 		case dods_float32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int16*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int16*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
         case dods_str_c:
         case dods_url_c:
             throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
@@ -284,25 +355,25 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 	case dods_uint16_c:
 		switch (arg2->type()) {
 		case dods_byte_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt16*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
 		case dods_int8_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt16*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
 		case dods_int16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt16*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
 		case dods_uint16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt16*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
 		case dods_int32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt16*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
 		case dods_uint32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt16*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
 		case dods_int64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt16*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
 		case dods_uint64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt16*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
 		case dods_float32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt16*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt16*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
         case dods_str_c:
         case dods_url_c:
             throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
@@ -313,25 +384,25 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 	case dods_int32_c:
 		switch (arg2->type()) {
 		case dods_byte_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int32*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
 		case dods_int8_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int32*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
 		case dods_int16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int32*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
 		case dods_uint16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int32*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
 		case dods_int32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int32*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
 		case dods_uint32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int32*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
 		case dods_int64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int32*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
 		case dods_uint64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int32*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
 		case dods_float32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int32*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int32*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
         case dods_str_c:
         case dods_url_c:
             throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
@@ -342,25 +413,25 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 	case dods_uint32_c:
 		switch (arg2->type()) {
 		case dods_byte_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt32*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
 		case dods_int8_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt32*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
 		case dods_int16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt32*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
 		case dods_uint16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt32*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
 		case dods_int32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt32*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
 		case dods_uint32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt32*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
 		case dods_int64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt32*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
 		case dods_uint64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt32*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
 		case dods_float32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt32*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt32*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
         case dods_str_c:
         case dods_url_c:
             throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
@@ -371,25 +442,25 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 	case dods_int64_c:
 		switch (arg2->type()) {
 		case dods_byte_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int64*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
 		case dods_int8_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int64*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
 		case dods_int16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int64*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
 		case dods_uint16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int64*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
 		case dods_int32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int64*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
 		case dods_uint32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int64*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
 		case dods_int64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int64*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
 		case dods_uint64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int64*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
 		case dods_float32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int64*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Int64*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
         case dods_str_c:
         case dods_url_c:
             throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
@@ -400,25 +471,25 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 	case dods_uint64_c:
 		switch (arg2->type()) {
 		case dods_byte_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt64*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
 		case dods_int8_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt64*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
 		case dods_int16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt64*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
 		case dods_uint16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt64*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
 		case dods_int32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt64*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
 		case dods_uint32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt64*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
 		case dods_int64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt64*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
 		case dods_uint64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt64*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
 		case dods_float32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt64*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+			return cmp_impl(op, static_cast<UInt64*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
         case dods_str_c:
         case dods_url_c:
             throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
@@ -429,25 +500,25 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 	case dods_float32_c:
 		switch (arg2->type()) {
 		case dods_byte_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float32*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
 		case dods_int8_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float32*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
 		case dods_int16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float32*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
 		case dods_uint16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float32*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
 		case dods_int32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float32*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
 		case dods_uint32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float32*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
 		case dods_int64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float32*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
 		case dods_uint64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float32*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
 		case dods_float32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float32*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float32*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
         case dods_str_c:
         case dods_url_c:
             throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
@@ -458,25 +529,25 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
 	case dods_float64_c:
 		switch (arg2->type()) {
 		case dods_byte_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float64*>(arg1)->value(), static_cast<Byte*>(arg2)->value());
 		case dods_int8_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float64*>(arg1)->value(), static_cast<Int8*>(arg2)->value());
 		case dods_int16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float64*>(arg1)->value(), static_cast<Int16*>(arg2)->value());
 		case dods_uint16_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float64*>(arg1)->value(), static_cast<UInt16*>(arg2)->value());
 		case dods_int32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float64*>(arg1)->value(), static_cast<Int32*>(arg2)->value());
 		case dods_uint32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float64*>(arg1)->value(), static_cast<UInt32*>(arg2)->value());
 		case dods_int64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float64*>(arg1)->value(), static_cast<Int64*>(arg2)->value());
 		case dods_uint64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float64*>(arg1)->value(), static_cast<UInt64*>(arg2)->value());
 		case dods_float32_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float64*>(arg1)->value(), static_cast<Float32*>(arg2)->value());
 		case dods_float64_c:
-			return cmp(op, static_cast<Byte*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
+			return cmp_impl(op, static_cast<Float64*>(arg1)->value(), static_cast<Float64*>(arg2)->value());
         case dods_str_c:
         case dods_url_c:
             throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
@@ -502,7 +573,7 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
         case dods_str_c:
         case dods_url_c:
             // We can do this because URL/Url is-a Str.
-            return cmp(op, static_cast<Str*>(arg1)->value(), static_cast<Str*>(arg2)->value());
+            return cmp_impl(op, static_cast<Str*>(arg1)->value(), static_cast<Str*>(arg2)->value());
         default:
             throw Error(malformed_expr, "Relational operators can only compare compatible types (string, non-scalar).");
         }
@@ -512,5 +583,6 @@ bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
         throw Error(malformed_expr, "Relational operators only work with scalar types.");
     }   // switch (arg1...)
 }
+#endif
 
 } // namespace libdap

@@ -177,6 +177,14 @@ Int8::ops(BaseType *b, int op)
     if (!b->read_p() && !b->read())
         throw InternalErr(__FILE__, __LINE__, "This value not read!");
 
+    return d4_ops(b, op);
+}
+
+/**
+ * @see BaseType::d4_ops(BaseType *, int)
+ */
+bool Int8::d4_ops(BaseType *b, int op)
+{
     switch (b->type()) {
         case dods_int8_c:
             return Cmp<dods_int8, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
@@ -198,36 +206,16 @@ Int8::ops(BaseType *b, int op)
             return Cmp<dods_int8, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
         case dods_float64_c:
             return Cmp<dods_int8, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
+        case dods_str_c:
+        case dods_url_c:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
         default:
-            return false;
+            throw Error(malformed_expr, "Relational operators only work with scalar types.");
     }
-#if 0
-    switch (b->type()) {
-        case dods_byte_c:
-            return rops<dods_int8, dods_byte, SUCmp<dods_int8, dods_byte> >(d_buf, static_cast<Byte*>(b)->value());
-        case dods_int16_c:
-            return rops<dods_int8, dods_int16, Cmp<dods_int8, dods_int16> >(d_buf, static_cast<Int16 *>(b)->value());
-        case dods_uint16_c:
-            return rops<dods_int8, dods_uint16, SUCmp<dods_int8, dods_uint16> >(d_buf, static_cast<UInt16 *>(b)->value());
-        case dods_int32_c:
-            return rops<dods_int8, dods_int32, Cmp<dods_int8, dods_int32> >(d_buf, static_cast<Int32 *>(b)->value());
-        case dods_uint32_c:
-            return rops<dods_int8, dods_uint32, SUCmp<dods_int8, dods_uint32> >(d_buf, static_cast<UInt32 *>(b)->value());
-        case dods_int64_c:
-            return rops<dods_int8, dods_int64, Cmp<dods_int8, dods_int64> >(d_buf, static_cast<Int64 *>(b)->value());
-        case dods_uint64_c:
-            return rops<dods_int8, dods_uint64, Cmp<dods_int8, dods_uint64> >(d_buf, static_cast<UInt64 *>(b)->value());
-        case dods_float32_c:
-            return rops<dods_int8, dods_float32, Cmp<dods_int64, dods_float32> >(d_buf, static_cast<Float32 *>(b)->value());
-        case dods_float64_c:
-            return rops<dods_int8, dods_float64, Cmp<dods_int64, dods_float64> >(d_buf, static_cast<Float64 *>(b)->value());
-        default:
-            return false;
-    }
-#endif
 }
 
-/** @brief dumps information about this object
+/**
+ * @brief dumps information about this object
  *
  * Displays the pointer value of this instance and information about this
  * instance.

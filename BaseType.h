@@ -288,6 +288,7 @@ public:
     virtual bool check_semantics(string &msg, bool all = false);
 
     virtual bool ops(BaseType *b, int op);
+    virtual bool d4_ops(BaseType *b, int op);
 
     virtual unsigned int width(bool constrained = false) const;
 

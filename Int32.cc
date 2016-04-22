@@ -272,6 +272,14 @@ Int32::ops(BaseType *b, int op)
         throw InternalErr(__FILE__, __LINE__, "This value not read!");
     }
 
+    return d4_ops(b, op);
+}
+
+/**
+ * @see BaseType::d4_ops(BaseType *, int)
+ */
+bool Int32::d4_ops(BaseType *b, int op)
+{
     switch (b->type()) {
         case dods_int8_c:
             return Cmp<dods_int32, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
@@ -293,8 +301,11 @@ Int32::ops(BaseType *b, int op)
             return Cmp<dods_int32, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
         case dods_float64_c:
             return Cmp<dods_int32, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
+        case dods_str_c:
+        case dods_url_c:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
         default:
-            return false;
+            throw Error(malformed_expr, "Relational operators only work with scalar types.");
     }
 }
 
