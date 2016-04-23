@@ -59,9 +59,12 @@ using namespace CppUnit;
 using namespace std;
 
 int test_variable_sleep_interval;
+
 const static string prefix = string(TEST_SRC_DIR) + "/D4-type-testsuite/";
+
 const static string s_txt = "TestD4Sequence_s.txt";
-const static string one_clause_txt = "TestD4Sequence_s_one_clause.txt";
+const static string one_clause_txt = "TestD4Sequence_one_clause.txt";
+const static string two_clause_txt = "TestD4Sequence_two_clause.txt";
 
 namespace libdap
 {
@@ -102,10 +105,6 @@ public:
         CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + s_txt));
     }
 
-    // FIXME This test passes when called on its own but fails when called
-    // after ctor_test(). The fault is that the members of D4Sequence s
-    // values don't reset.
-    // jhrg 4/22/16
     void assignment_test() {
         TestD4Sequence ts = *s;
         ts.intern_data();
@@ -138,15 +137,15 @@ public:
 
         s->intern_data();
 
-        DBG(cerr << "s->length(): " << s->length() << endl);
+        DBG(cerr << "one_clause_test, s->length(): " << s->length() << endl);
 
         ostringstream oss;
         s->output_values(oss);
 
-        DBG(cerr << "s: " << oss.str() << endl);
-        CPPUNIT_ASSERT(s->length() == 2);
+        DBG(cerr << "one_clause_test, s: " << oss.str() << endl);
+        CPPUNIT_ASSERT(s->length() == 1);
 
-        //CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + one_clause_txt));
+        CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + one_clause_txt));
     }
 
 
@@ -161,16 +160,16 @@ public:
 
         s->intern_data();
 
-        DBG(cerr << "s->length(): " << s->length() << endl);
+        DBG(cerr << "two_clause_test, s->length(): " << s->length() << endl);
 
         ostringstream oss;
         s->output_values(oss);
 
-        DBG(cerr << "s: " << oss.str() << endl);
+        DBG(cerr << "two_clause_test, s: " << oss.str() << endl);
 
-        CPPUNIT_ASSERT(s->length() == 4);
+        CPPUNIT_ASSERT(s->length() == 3);
 
-        //FIXME CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + one_clause_txt));
+        CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + two_clause_txt));
     }
 
     void two_variable_test() {
@@ -184,16 +183,16 @@ public:
 
         s->intern_data();
 
-        DBG(cerr << "s->length(): " << s->length() << endl);
+        DBG(cerr << "two_variable_test, s->length(): " << s->length() << endl);
 
         ostringstream oss;
         s->output_values(oss);
 
-        DBG(cerr << "s: " << oss.str() << endl);
+        DBG(cerr << "two_variable_test, s: " << oss.str() << endl);
 
         CPPUNIT_ASSERT(s->length() == 1);
-
-        //FIXME CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + one_clause_txt));
+        // ...just happens to be hte same baseline file at one_clause_test()
+        CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + one_clause_txt));
     }
 
     CPPUNIT_TEST_SUITE( D4SequenceTest );

@@ -1,1 +1,0 @@
-{ { 1024, "Silly test string: 1", -54.4 }, { 1024, "Silly test string: 7", 10.59 } }

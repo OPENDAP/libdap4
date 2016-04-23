@@ -69,7 +69,7 @@ TestD4Sequence &
 TestD4Sequence::operator=(const TestD4Sequence &rhs)
 {
     if (this == &rhs)
-	return *this;
+        return *this;
 
     dynamic_cast<D4Sequence &>(*this) = rhs;
 
@@ -94,10 +94,6 @@ TestD4Sequence::read()
     	for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i)
             if ((*i)->send_p() || (*i)->is_in_selection())
                 (*i)->read();
-
-    	// Make sure the child member read() methods are called since
-    	// that is how the 'series' values work.
-    	set_read_p(false);
 
     	++d_current;
     	return false;

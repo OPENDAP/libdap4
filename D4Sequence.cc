@@ -258,6 +258,10 @@ bool D4Sequence::read_next_instance(/*DMR &dmr*/bool filter)
             d_length++;
             done = true;
         }
+
+        // Set up the next call to get another row's worth of data
+        set_read_p(false);
+
     } while (!eof && !done);
 
     DBG(cerr << "D4Sequence::read_next_instance eof: " << eof << endl);

@@ -44,7 +44,7 @@
 #include <process.h>
 #endif
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "TestInt32.h"
 #include "debug.h"
