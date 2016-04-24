@@ -334,7 +334,7 @@ filter : predicate { $$ = true; }
 
 predicate : id op id { driver.add_filter_clause($2, $1, $3); $$ = true; }
           | id op id op id { $$ = false; } // FIXME
-          | "ND" "=" id { $$ = false; } // FIXME
+          | "ND" "=" id { throw Error(malformed_expr, "The 'ND' operator is not currently supported."); }
 ;
 
 // See http://docs.opendap.org/index.php/DAP4:_Constraint_Expressions,_v2

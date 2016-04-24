@@ -26,7 +26,7 @@
 #include <sstream>
 #include <iterator>
 
-#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include "D4CEScanner.h"
 #include "D4ConstraintEvaluator.h"
