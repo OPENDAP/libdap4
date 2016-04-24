@@ -71,6 +71,8 @@ int check_int16(const char *val);
 int check_uint16(const char *val);
 int check_int32(const char *val);
 int check_uint32(const char *val);
+long long check_int64(const char *val);
+unsigned long long check_uint64(const char *val);
 
 unsigned long long get_ull(const char *val);
 

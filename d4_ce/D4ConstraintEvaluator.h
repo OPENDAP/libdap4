@@ -105,8 +105,8 @@ class D4ConstraintEvaluator {
 	void throw_not_found(const std::string &id, const std::string &ident);
 	void throw_not_array(const std::string &id, const std::string &ident);
 
-	// Build FilterClauseLists for filter clauses
-	D4FilterClause *make_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2);
+	// Build FilterClauseList for filter clauses for a Sequence
+	void add_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2);
 
 	friend class D4CEParser;
 

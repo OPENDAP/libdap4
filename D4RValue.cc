@@ -47,6 +47,7 @@
 
 #include "dods-datatypes.h"
 #include "dods-limits.h"
+#include "parser-util.h"
 #include "util.h"
 
 using namespace std;
@@ -200,6 +201,36 @@ D4RValue::~D4RValue() {
 	// d_variable and d_func are weak pointers; don't delete.
 	delete d_args;
 	delete d_constant;
+}
+
+/**
+ * @brief Build an appropriate RValue
+ *
+ * Look at the value in the string parameter and build an appropriate
+ * BaseType, use that as a constant and build an RValue. This can be used
+ * by the DAP4 parser directly to build the constants in filter clauses.
+ *
+ * @param cpps The string argument read by the parser.
+ * @return A D4RValue pointer.
+ */
+D4RValue *D4RValueFactory(std::string cpps)
+{
+    long long ll;
+    unsigned long long ull;
+    double d;
+
+    if ((ull = check_uint64(cpps.c_str()))) {
+        return new D4RValue(ull);
+    }
+    else if ((ll = check_int64(cpps.c_str()))) {
+        return new D4RValue(ll);
+    }
+    else if ((d = check_float64(cpps.c_str()))) {
+        return new D4RValue(d);
+    }
+    else {
+        return new D4RValue(cpps);
+    }
 }
 
 /**

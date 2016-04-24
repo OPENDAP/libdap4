@@ -302,21 +302,56 @@ expr_msg(const std::string &op, const std::string &arg1, const std::string &arg2
     return "(" + arg1 + " " + op + " " + arg2 + ").";
 }
 
-// FIXME
+/**
+ * @brief Return the D4FilterClause constant for an operator
+ *
+ * Here are the strings returned by the parser:
+ *   GREATER ">"
+ *   LESS_EQUAL "<="
+ *   GREATER_EQUAL ">="
+ *   EQUAL "=="
+ *   NOT_EQUAL "!="
+ *   REGEX_MATCH "~="
+ *
+ *   LESS_BBOX "<<"
+ *   GREATER_BBOX ">>"
+ *
+ *   MASK "@="
+ *   ND "ND"
+ */
 static D4FilterClause::ops
-get_op_code(const std::string &/*op*/)
+get_op_code(const std::string &op)
 {
-    return D4FilterClause::null;
+    if (op == "<")
+        return D4FilterClause::less;
+    else if (op == ">")
+        return D4FilterClause::greater;
+    else if (op == "<=")
+        return D4FilterClause::less_equal;
+    else if (op == ">=")
+        return D4FilterClause::greater_equal;
+    else if (op == "==")
+        return D4FilterClause::equal;
+    else if (op == "!=")
+        return D4FilterClause::not_equal;
+    else if (op == "~=")
+        return D4FilterClause::match;
+    else
+        throw Error(malformed_expr, "The opertator '" + op + "' is not supported.");
 }
 
 /**
- * @brief Build a D4FilterClause
+ * @brief Add a D4FilterClause
+ *
+ * This method adds a filter clause to the D4Sequence that is on the top of the
+ * parser's stack. If there is not a D4Sequence on the stack, an exception is
+ * thrown. Similarly, if the filter clause parameters are not valid, then an
+ * exception is thrown.
  *
  * Filter clause rules: One of the parameters must be a variable in a D4Sequence
  * and the other must be a constant. The operator must be one of the valid relops.
  * Note that the D4FilterClause objects use the same numerical codes as the DAP2
- * parser/evaluator, so the string passed to this method by the parser must make
- * that translation too.
+ * parser/evaluator.
  *
  * @note The parser will have pushed the Sequence onto the BaseType stack during
  * the parse, so variables can be looked up using the top_basetype() (which
@@ -325,10 +360,9 @@ get_op_code(const std::string &/*op*/)
  * @param arg1 The first argument; a D4Sequence variable or a constant.
  * @param arg2 The second argument; a D4Sequence variable or a constant.
  * @param op The infix relop
- * @return A D4FilterClause instance.
  */
-D4FilterClause *
-D4ConstraintEvaluator::make_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2)
+void
+D4ConstraintEvaluator::add_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2)
 {
     DBG(cerr << "Entering: " << __PRETTY_FUNCTION__  << endl);
 
@@ -346,18 +380,17 @@ D4ConstraintEvaluator::make_filter_clause(const std::string &op, const std::stri
     DBG(cerr << "a1: " << a1 << ", a2: " << a2 << endl);
 
     if (a1 && a2)
-        throw Error(malformed_expr, "One of the arguments in a filter expression must be a constant: " + expr_msg(op, arg1, arg2));
+        throw Error(malformed_expr,
+            "One of the arguments in a filter expression must be a constant: " + expr_msg(op, arg1, arg2));
     if (!(a1 || a2))
-        throw Error(malformed_expr, "One of the arguments in a filter expression must be a variable in a Sequence: " + expr_msg(op, arg1, arg2));
+        throw Error(malformed_expr,
+            "One of the arguments in a filter expression must be a variable in a Sequence: " + expr_msg(op, arg1, arg2));
 
-    return 0;
-
-    // FIXME how to sort out the types of the constants
     if (a1) {
-        return new D4FilterClause(get_op_code(op), new D4RValue(a1), new D4RValue(arg2));
+        s->clauses().add_clause(new D4FilterClause(get_op_code(op), new D4RValue(a1), D4RValueFactory(arg2)));
     }
     else {
-        return new D4FilterClause(get_op_code(op), new D4RValue(arg1), new D4RValue(a2));
+        s->clauses().add_clause(new D4FilterClause(get_op_code(op), new D4RValue(a1), D4RValueFactory(arg2)));
     }
 }
 

@@ -38,6 +38,9 @@ namespace libdap
 class BaseType;
 class D4RValue;
 
+// Factory class to build RValue objects. User by the parser/ce-evaluator
+D4RValue *D4RValueFactory(std::string cpps);
+
 class D4RValueList
 {
 private:

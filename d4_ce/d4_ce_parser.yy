@@ -96,11 +96,13 @@ namespace libdap {
 %token <std::string> WORD "word"
 %token <std::string> STRING "string"
 
-%type <bool> predicate filter fields indexes subset clause clauses dimension dimensions
-%type <std::string> id path group name
-%type <libdap::D4ConstraintEvaluator::index> index
+// %type is used to set the return type of non-terminals; %token sets the
+// return type for terminals.
+%type <bool> filter predicate fields indexes subset clause clauses dimension dimensions
+%type <std::string> id path group name op
 
-%type <std::string> op
+%type <libdap::D4ConstraintEvaluator::index> index
+// %type <libdap::D4FilterClause> predicate
 
 %token
     END  0  "end of file"
@@ -168,8 +170,10 @@ clauses : clause { $$ = $1; }
 // jhrg 4/23/16
                
 clause : subset { $$ = $1; driver.pop_basetype(); }
+
 // For the DAP4 at this time (3/18/15) filters apply only to D4Sequences 
-| subset "|" filter { $$ = $1 && $3; driver.pop_basetype(); }
+
+| subset "|" filter { driver.pop_basetype(); $$ = $1 && $3; }
 ;
 
 // mark_variable returns a BaseType* or throws Error
@@ -316,8 +320,8 @@ fields : "{" clauses "}" { $$ = $2; }
 // A filter should return a FilterClauseList; a predicate should return a single
 // FilterClause.
 
-filter : predicate 
-| filter "," predicate
+filter : predicate { $$ = true; }
+| filter "," predicate { $$ = $1 && $3; }
 ;
 
 // Here we use a grammar that is overly general: id op id is not really
@@ -328,9 +332,9 @@ filter : predicate
 // far more general than ideal (it must include tokens that start with digits,
 // odd characters that clash with the operators, et cetera).
 
-predicate : id op id { driver.make_filter_clause($2, $1, $3); $$ = true; }
-          | id op id op id { $$ = true; }
-          | "ND" "=" id { $$ = true; }
+predicate : id op id { driver.add_filter_clause($2, $1, $3); $$ = true; }
+          | id op id op id { $$ = false; } // FIXME
+          | "ND" "=" id { $$ = false; } // FIXME
 ;
 
 // See http://docs.opendap.org/index.php/DAP4:_Constraint_Expressions,_v2
