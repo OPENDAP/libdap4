@@ -26,17 +26,22 @@
 #include <sstream>
 #include <iterator>
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "D4CEScanner.h"
 #include "D4ConstraintEvaluator.h"
 #include "d4_ce_parser.tab.hh"
+
 #include "DMR.h"
 #include "D4Group.h"
 #include "D4Dimensions.h"
 #include "BaseType.h"
 #include "Array.h"
 #include "Constructor.h"
+#include "D4Sequence.h"
+
+#include "D4RValue.h"
+#include "D4FilterClause.h"
 
 #include "parser.h"		// for get_ull()
 #include "debug.h"
@@ -289,6 +294,71 @@ D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s)
 {
 	return index(get_ull(i.c_str()), s, 0, true, false /*empty*/);
+}
+
+static string
+expr_msg(const std::string &op, const std::string &arg1, const std::string &arg2)
+{
+    return "(" + arg1 + " " + op + " " + arg2 + ").";
+}
+
+// FIXME
+static D4FilterClause::ops
+get_op_code(const std::string &/*op*/)
+{
+    return D4FilterClause::null;
+}
+
+/**
+ * @brief Build a D4FilterClause
+ *
+ * Filter clause rules: One of the parameters must be a variable in a D4Sequence
+ * and the other must be a constant. The operator must be one of the valid relops.
+ * Note that the D4FilterClause objects use the same numerical codes as the DAP2
+ * parser/evaluator, so the string passed to this method by the parser must make
+ * that translation too.
+ *
+ * @note The parser will have pushed the Sequence onto the BaseType stack during
+ * the parse, so variables can be looked up using the top_basetype() (which
+ * must be a D4Sequence).
+ *
+ * @param arg1 The first argument; a D4Sequence variable or a constant.
+ * @param arg2 The second argument; a D4Sequence variable or a constant.
+ * @param op The infix relop
+ * @return A D4FilterClause instance.
+ */
+D4FilterClause *
+D4ConstraintEvaluator::make_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2)
+{
+    DBG(cerr << "Entering: " << __PRETTY_FUNCTION__  << endl);
+
+    // Check that there really is a D4Sequence associated with this filter clause.
+    D4Sequence *s = dynamic_cast<D4Sequence*>(top_basetype());
+    if (!s)
+        throw Error(malformed_expr,
+            "When a filter expression is used, it must be bound to a Sequence variable: " + expr_msg(op, arg1, arg2));
+
+    DBG(cerr << "s->name(): " << s->name() << endl);
+
+    // Check that arg1 and 2 are valid
+    BaseType *a1 = s->var(arg1);
+    BaseType *a2 = s->var(arg2);
+    DBG(cerr << "a1: " << a1 << ", a2: " << a2 << endl);
+
+    if (a1 && a2)
+        throw Error(malformed_expr, "One of the arguments in a filter expression must be a constant: " + expr_msg(op, arg1, arg2));
+    if (!(a1 || a2))
+        throw Error(malformed_expr, "One of the arguments in a filter expression must be a variable in a Sequence: " + expr_msg(op, arg1, arg2));
+
+    return 0;
+
+    // FIXME how to sort out the types of the constants
+    if (a1) {
+        return new D4FilterClause(get_op_code(op), new D4RValue(a1), new D4RValue(arg2));
+    }
+    else {
+        return new D4FilterClause(get_op_code(op), new D4RValue(arg1), new D4RValue(a2));
+    }
 }
 
 // This method is called from the parser (see d4_ce_parser.yy, down in the code

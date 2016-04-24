@@ -100,9 +100,12 @@ namespace libdap {
 %type <std::string> id path group name
 %type <libdap::D4ConstraintEvaluator::index> index
 
-%token 
+%type <std::string> op
+
+%token
     END  0  "end of file"
-    
+  
+%token 
     SEMICOLON ";"
     PIPE "|"
 
@@ -115,9 +118,12 @@ namespace libdap {
 
     COMMA ","
 
-    ND "ND"
     ASSIGN "="
 
+    GROUP_SEP "/"
+    PATH_SEP "."
+    
+%token
     LESS "<"
     GREATER ">"
     LESS_EQUAL "<="
@@ -130,10 +136,7 @@ namespace libdap {
     GREATER_BBOX ">>"
 
     MASK "@="
-
-    GROUP_SEP "/"
-    PATH_SEP "."
-;
+    ND "ND"
 
 %%
 
@@ -156,10 +159,17 @@ dimension : id "=" index
 clauses : clause { $$ = $1; }
 | clauses ";" clause { $$ = $1 && $3; }
 ;
-                    
-clause : subset { $$ = $1; }
+    
+// Change: I moved the pop_basetype() call out of the 'fields'
+// actions in 'subset' so that I could push the basetype for
+// all of the cases. That way I'm sure to have a top_baseype()
+// when processing the 'filter' part of the grammar. I need the
+// the top basetype so that I know which Sequence to use.
+// jhrg 4/23/16
+               
+clause : subset { $$ = $1; driver.pop_basetype(); }
 // For the DAP4 at this time (3/18/15) filters apply only to D4Sequences 
-| subset "|" filter { $$ = $1 && $3; }
+| subset "|" filter { $$ = $1 && $3; driver.pop_basetype(); }
 ;
 
 // mark_variable returns a BaseType* or throws Error
@@ -179,13 +189,11 @@ subset : id
     if (!btp)
         driver.throw_not_found($1, "id");
 
-#if 0    
-    if (btp->type() == dods_array_c)
-        $$ = driver.mark_variable(btp) && driver.mark_array_variable(btp);   // handle array w/o slice ops
-    else
-#endif
-
     $$ = driver.mark_variable(btp);
+    
+    // push the basetype so that it is
+    // accessible if/while filters are parsed
+    driver.push_basetype(btp);
 }
 
 | id indexes 
@@ -204,7 +212,11 @@ subset : id
     if (btp->type() != dods_array_c)
         driver.throw_not_array($1, "id indexes");
         
-    $$ = driver.mark_variable(btp); //  && driver.mark_array_variable(btp);
+    $$ = driver.mark_variable(btp);
+    
+    // push the basetype so that it is
+    // accessible if/while filters are parsed
+    driver.push_basetype(btp);
 }
 
 // Note this case is '| id fields'
@@ -235,15 +247,17 @@ subset : id
             throw Error(no_such_variable, "The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
     }
     
-    // push the basetype (a ctor or array of ctor) on the stack so that it is
-    // accessible while the fields are being parsed
+    // push the basetype so that it is
+    // accessible when fields and if/while filters are parsed
     driver.push_basetype(btp);
 } 
 fields 
 { 
-    driver.pop_basetype(); 
+    //driver.pop_basetype(); 
     $$ = true; 
 }
+
+// Note this case is '| id indexes fields'
 
 | id indexes
 {
@@ -271,11 +285,11 @@ fields
 } 
 fields 
 { 
-    driver.pop_basetype();
+    //driver.pop_basetype();
     $$ = true; 
 }
 
-// The following has be removed from the syntax
+// The following has been removed from the syntax
 // | fields indexes { $$ = true; }
 ;
 
@@ -299,8 +313,8 @@ index   : "[" "]" { $$ = driver.make_index(); }
 fields : "{" clauses "}" { $$ = $2; }
 ;
 
-// A filter should return a list of rvalues; a predicate should return a single
-// rvalue and some sort of evaluator should operate on those clauses.
+// A filter should return a FilterClauseList; a predicate should return a single
+// FilterClause.
 
 filter : predicate 
 | filter "," predicate
@@ -314,7 +328,7 @@ filter : predicate
 // far more general than ideal (it must include tokens that start with digits,
 // odd characters that clash with the operators, et cetera).
 
-predicate : id op id { $$ = true; }
+predicate : id op id { driver.make_filter_clause($2, $1, $3); $$ = true; }
           | id op id op id { $$ = true; }
           | "ND" "=" id { $$ = true; }
 ;
@@ -324,18 +338,18 @@ predicate : id op id { $$ = true; }
 // draft spec. << and >> are the 'less than bbox' and '> bbox' operations
 // that I'm not so sure about now; @= is the same as *= and is the mapping
 // operation. jhrg 3/18/15 
-op : "<"
-   | ">"
-   | "<="
-   | ">="
-   | "=="
-   | "!="
-   | "~="
+op : "<" {$$ = "<";}
+   | ">" {$$ = ">";}
+   | "<=" {$$ = "<=";}
+   | ">=" {$$ = ">=";}
+   | "==" {$$ = "==";}
+   | "!=" {$$ = "!=";}
+   | "~=" {$$ = "~=";}
 
-   | "<<"
-   | ">>"
+   | "<<" {$$ = "<<";}
+   | ">>" {$$ = ">>";}
 
-   | "@="
+   | "@=" {$$ = "@=";}
 ;
 
 id : path

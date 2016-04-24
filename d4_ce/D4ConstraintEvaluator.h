@@ -38,6 +38,7 @@ class BaseType;
 class Array;
 class D4Dimension;
 class D4FilterClause;
+class D4FilterClauseList;
 
 /**
  * Driver for the DAP4 Constraint Expression parser.
@@ -105,7 +106,7 @@ class D4ConstraintEvaluator {
 	void throw_not_array(const std::string &id, const std::string &ident);
 
 	// Build FilterClauseLists for filter clauses
-	D4FilterClause *make_fileter_clause(const std::string &arg1, const std::string &arg2, const std::string &op);
+	D4FilterClause *make_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2);
 
 	friend class D4CEParser;
 
