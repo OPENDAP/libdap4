@@ -26,7 +26,7 @@
 #include <sstream>
 #include <iterator>
 
-// #define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "D4CEScanner.h"
 #include "D4ConstraintEvaluator.h"
@@ -386,11 +386,12 @@ D4ConstraintEvaluator::add_filter_clause(const std::string &op, const std::strin
         throw Error(malformed_expr,
             "One of the arguments in a filter expression must be a variable in a Sequence: " + expr_msg(op, arg1, arg2));
 
+    // Now we know a1 XOR a2 is true
     if (a1) {
         s->clauses().add_clause(new D4FilterClause(get_op_code(op), new D4RValue(a1), D4RValueFactory(arg2)));
     }
     else {
-        s->clauses().add_clause(new D4FilterClause(get_op_code(op), new D4RValue(a1), D4RValueFactory(arg2)));
+        s->clauses().add_clause(new D4FilterClause(get_op_code(op), D4RValueFactory(arg1), new D4RValue(a2)));
     }
 }
 

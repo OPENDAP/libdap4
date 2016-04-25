@@ -332,9 +332,17 @@ filter : predicate { $$ = true; }
 // far more general than ideal (it must include tokens that start with digits,
 // odd characters that clash with the operators, et cetera).
 
-predicate : id op id { driver.add_filter_clause($2, $1, $3); $$ = true; }
-          | id op id op id { $$ = false; } // FIXME
-          | "ND" "=" id { throw Error(malformed_expr, "The 'ND' operator is not currently supported."); }
+predicate : id op id
+{ driver.add_filter_clause($2, $1, $3); $$ = true; }
+          
+| id op id op id 
+{ 
+    driver.add_filter_clause($2, $1, $3); 
+    driver.add_filter_clause($4, $3, $5); 
+    $$ = true; 
+
+}
+| "ND" "=" id { throw Error(malformed_expr, "The 'ND' operator is not currently supported."); }
 ;
 
 // See http://docs.opendap.org/index.php/DAP4:_Constraint_Expressions,_v2
