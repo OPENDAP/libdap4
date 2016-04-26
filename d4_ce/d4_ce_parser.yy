@@ -118,14 +118,6 @@ namespace libdap {
     LBRACE "{"
     RBRACE "}"
 
-    COMMA ","
-
-    ASSIGN "="
-
-    GROUP_SEP "/"
-    PATH_SEP "."
-    
-%token
     LESS "<"
     GREATER ">"
     LESS_EQUAL "<="
@@ -140,6 +132,13 @@ namespace libdap {
     MASK "@="
     ND "ND"
 
+    COMMA ","
+
+    ASSIGN "="
+
+    GROUP_SEP "/"
+    PATH_SEP "."
+    
 %%
 
 %start expression;

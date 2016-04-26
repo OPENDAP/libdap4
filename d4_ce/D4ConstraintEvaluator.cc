@@ -322,6 +322,8 @@ expr_msg(const std::string &op, const std::string &arg1, const std::string &arg2
 static D4FilterClause::ops
 get_op_code(const std::string &op)
 {
+    DBGN(cerr << "Entering " << __PRETTY_FUNCTION__ << endl << "op: " << op << endl);
+
     if (op == "<")
         return D4FilterClause::less;
     else if (op == ">")
