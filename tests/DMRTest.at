@@ -118,6 +118,31 @@ m4_define([DMR_TRANS_FUNC_CE], [
     AT_CLEANUP
 ])
 
+# Usage DMR_TRANS_SERIES_CE <test_input> <ce> <baseline> <pass/xfail>
+# This macro tests CEs using the series values from the Test classes.
+# It's intended to be used to test the filter expressions.
+m4_define([DMR_TRANS_SERIES_CE], [
+    AT_SETUP([filter $1 $2 $3])
+    AT_KEYWORDS([filter])
+    
+    input=$abs_srcdir/dmr-testsuite/$1
+    ce="$2"
+    baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$3
+    
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        AT_CHECK([$abs_builddir/dmr-test -x -e -t $input -c "$ce"], [], [stdout], [])
+        AT_CHECK([mv stdout $baseline.tmp])
+        ],
+        [
+        AT_CHECK([$abs_builddir/dmr-test -x -e -t $input -c "$ce"], [], [stdout], [])
+        AT_CHECK([diff -b -B $baseline stdout], [], [ignore],[],[])
+        AT_XFAIL_IF([test "X$5" = "Xxfail"])
+        ])
+
+    AT_CLEANUP
+])
+
 # Usage DMR_INTERN $1 <test_input> $2 <pass/xfail>
 # This code tests the values printed when the received document is decoded.
 m4_define([DMR_INTERN], [
@@ -432,5 +457,35 @@ DMR_TRANS_FUNC_CE([vol_1_ce_10.xml], [scale(lat,10)], [], [vol_1_ce_10.xml.1.fun
 DMR_TRANS_FUNC_CE([vol_1_ce_10.xml], [scale(lat,10);scale(lon,10)], [], [vol_1_ce_10.xml.2.func_base], [pass])
 DMR_TRANS_FUNC_CE([vol_1_ce_10.xml], [scale(lat,10);scale(lon,10)], [lat[[10:11]][[10:11]];lon[[10:11]][[10:11]]], [vol_1_ce_10.xml.3.func_base], [pass])
 
+# Tests added for the D4Sequence filter support. jhrg 4/28/16
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s], [test_simple_7.xml.f.trans_base], [pass])
+
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|i1==1024], [test_simple_7.xml.f1.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|i1!=1024], [test_simple_7.xml.f2.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|i1<=1024], [test_simple_7.xml.f3.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|i1<1024], [test_simple_7.xml.f4.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|i1<=1024], [test_simple_7.xml.f5.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|i1>1024], [test_simple_7.xml.f6.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|i1>=1024], [test_simple_7.xml.f7.trans_base], [pass])
+
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|1024<i1], [test_simple_7.xml.f8.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|1024<=i1<=32768], [test_simple_7.xml.f9.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|i1>=1024.0], [test_simple_7.xml.fa.trans_base], [pass])
+
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|s==\"Silly test string: 2\"], [test_simple_7.xml.fs1.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|s!=\"Silly test string: 2\"], [test_simple_7.xml.fs2.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|s<\"Silly test string: 2\"], [test_simple_7.xml.fs3.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|s<=\"Silly test string: 2\"], [test_simple_7.xml.fs4.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|s>\"Silly test string: 2\"], [test_simple_7.xml.fs5.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|s>=\"Silly test string: 2\"], [test_simple_7.xml.fs6.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s|s~=\".*2\"], [test_simple_7.xml.fs7.trans_base], [pass])
+
+# Test filtering a sequence that has only one field projected, including filtering on the values
+# of a filed not projected.
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s{i1}|i1<32768], [test_simple_7.xml.g1.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_7.xml], [s{i1}|s<=\"Silly test string: 2\"], [test_simple_7.xml.g1.trans_base], [pass])
+
+# A nested sequence with flots in the outer sequence and the int, string combination in the inner
+DMR_TRANS_SERIES_CE([test_simple_8.1.xml], [outer], [test_simple_8.1.xml.f1.trans_base], [pass])
 
 

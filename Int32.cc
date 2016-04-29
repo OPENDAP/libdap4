@@ -36,6 +36,8 @@
 
 #include "config.h"
 
+#define DODS_DEBUG
+
 #include <sstream>
 
 #include "Byte.h"           // synonymous with UInt8 and Char
@@ -280,6 +282,7 @@ Int32::ops(BaseType *b, int op)
  */
 bool Int32::d4_ops(BaseType *b, int op)
 {
+	DBG(cerr << "b->typename(): " << b->type_name() << endl);
     switch (b->type()) {
         case dods_int8_c:
             return Cmp<dods_int32, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
