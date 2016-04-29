@@ -215,18 +215,23 @@ D4RValue::~D4RValue() {
  */
 D4RValue *D4RValueFactory(std::string cpps)
 {
-    long long ll;
-    unsigned long long ull;
-    double d;
+    char *ptr;
 
-    if ((ull = check_uint64(cpps.c_str()))) {
-        return new D4RValue(ull);
+    // First check if the string is a uint64, ..., then convert it.
+    // Since the check_* function use the strtoull() functions, no
+    // need to test for errors when building the actual values.
+    if (check_uint64(cpps.c_str())) {
+        return new D4RValue(strtoull(cpps.c_str(), &ptr, 0));
     }
-    else if ((ll = check_int64(cpps.c_str()))) {
-        return new D4RValue(ll);
+    else if (check_int64(cpps.c_str())) {
+        return new D4RValue(strtoll(cpps.c_str(), &ptr, 0));
     }
-    else if ((d = check_float64(cpps.c_str()))) {
-        return new D4RValue(d);
+    else if (check_float64(cpps.c_str())) {
+#ifdef WIN32
+        return new D4RValue(w32strtod(cpps.c_str(), &ptr));
+#else
+        return new D4RValue(strtod(cpps.c_str(), &ptr));
+#endif
     }
     else {
         return new D4RValue(cpps);

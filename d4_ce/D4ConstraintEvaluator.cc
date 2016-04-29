@@ -268,32 +268,32 @@ D4ConstraintEvaluator::slice_dimension(const std::string &id, const index &i)
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i)
 {
-	unsigned long long v = get_ull(i.c_str());
+	unsigned long long v = get_uint64(i.c_str());
 	return index(v, 1, v, false, false /*empty*/);
 }
 
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i, const std::string &s, const std::string &e)
 {
-	return index(get_ull(i.c_str()), get_ull(s.c_str()), get_ull(e.c_str()), false, false /*empty*/);
+	return index(get_uint64(i.c_str()), get_uint64(s.c_str()), get_uint64(e.c_str()), false, false /*empty*/);
 }
 
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s, const std::string &e)
 {
-	return index(get_ull(i.c_str()), s, get_ull(e.c_str()), false, false /*empty*/);
+	return index(get_uint64(i.c_str()), s, get_uint64(e.c_str()), false, false /*empty*/);
 }
 
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i, const std::string &s)
 {
-	return index(get_ull(i.c_str()), get_ull(s.c_str()), 0, true, false /*empty*/);
+	return index(get_uint64(i.c_str()), get_uint64(s.c_str()), 0, true, false /*empty*/);
 }
 
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s)
 {
-	return index(get_ull(i.c_str()), s, 0, true, false /*empty*/);
+	return index(get_uint64(i.c_str()), s, 0, true, false /*empty*/);
 }
 
 static string

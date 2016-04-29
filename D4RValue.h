@@ -78,6 +78,14 @@ public:
  */
 class D4RValue
 {
+public:
+    enum value_kind {
+        unknown,
+        basetype,
+        function,
+        constant
+    };
+
 private:
     BaseType *d_variable;	// This is a weak pointer; do not delete
 
@@ -85,13 +93,6 @@ private:
     D4RValueList *d_args;  	// pointer to arguments to the function; delete
 
     BaseType *d_constant;	// pointer; delete.
-
-    enum value_kind {
-    	unknown,
-    	basetype,
-    	function,
-    	constant
-    };
 
     value_kind d_value_kind;
 

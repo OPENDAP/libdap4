@@ -124,6 +124,7 @@ D4FilterClauseList::value()
     return true;
 }
 
+#if 0
 template<typename T1, typename T2> inline bool D4FilterClause::cmp_impl(ops op, T1 arg1, T2 arg2)
 {
     DBG(cerr << "arg1: " << arg1 << ", arg2: " << arg2 << endl);
@@ -186,6 +187,36 @@ inline bool D4FilterClause::cmp_impl(ops op, const string &arg1, const string &a
 	}
 
 	return false;
+}
+#endif
+
+void D4FilterClause::m_duplicate(const D4FilterClause &rhs) {
+    d_op = rhs.d_op;
+
+    // Copy the D4RValue pointer if the 'value_kind' is a basetype,
+    // but build a new D4RValue if it is a constant (because the
+    // basetype is a weak pointer.
+    switch (rhs.d_arg1->get_kind()) {
+    case D4RValue::basetype:
+        d_arg1 = rhs.d_arg1;
+        break;
+    case D4RValue::constant:
+        d_arg1 = new D4RValue(*rhs.d_arg1);
+        break;
+    default:
+        throw Error(malformed_expr, "found a filter clause with a function call.");
+    }
+
+    switch (rhs.d_arg2->get_kind()) {
+    case D4RValue::basetype:
+        d_arg2 = rhs.d_arg2;
+        break;
+    case D4RValue::constant:
+        d_arg2 = new D4RValue(*rhs.d_arg2);
+        break;
+    default:
+        throw Error(malformed_expr, "found a filter clause with a function call.");
+    }
 }
 
 /**

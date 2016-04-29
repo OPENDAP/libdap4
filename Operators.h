@@ -35,8 +35,6 @@
 #ifndef _operators_h
 #define _operators_h
 
-#define DODS_DEBUG
-
 #include "GNURegex.h"  // GNU Regex class used for string =~ op.
 #include "ce_expr.tab.hh"
 
@@ -181,7 +179,5 @@ bool StrCmp(int op, T1 v1, T2 v2)
 }
 
 } // namespace libdap
-
-#undef DODS_DEBUG
 
 #endif // _operators_h

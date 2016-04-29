@@ -136,14 +136,19 @@ private:
 
     D4RValue *d_arg1, *d_arg2;
 
-    D4FilterClause();
+    D4FilterClause() : d_op(null), d_arg1(0), d_arg2(0) { }
+#if 0
     D4FilterClause(const D4FilterClause &);
     D4FilterClause &operator=(const D4FilterClause &);
-
+#endif
+#if 0
     // These perform the actual comparisons, with a specail case for
     // const string & arguments.
     template<typename T1, typename T2> bool cmp_impl(ops op, T1 arg1, T2 Arg2);
     bool cmp_impl(ops op, const string &arg1, const string &arg2);
+#endif
+
+    void m_duplicate(const D4FilterClause &rhs);
 
     // These methods factor out first the first argument and then the
     // second. I could write one really large cmp() for all of this...
@@ -175,6 +180,19 @@ public:
     	assert(op != null && "null operator");
     	assert(arg1 && "null arg1");
     	assert(arg2 && "null arg2");
+    }
+
+    D4FilterClause(const D4FilterClause &src) {
+        m_duplicate(src);
+    }
+
+    D4FilterClause &operator=(const D4FilterClause &rhs) {
+        if (this == &rhs)
+            return *this;
+
+        m_duplicate(rhs);
+
+        return *this;
     }
 
     virtual ~D4FilterClause() {
