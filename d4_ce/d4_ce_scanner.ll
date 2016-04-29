@@ -81,8 +81,15 @@ typedef libdap::D4CEParser::token token;
 %x quote
 
 /* This pattern just ensures that a word does not start with '#' which
-   is the DAP2 comment character. */
-WORD    [-+a-zA-Z0-9_%*\\~@!][-+a-zA-Z0-9_%*\\#~@!]* 
+   is the DAP2 comment character. 
+
+   Having the characters !, ~, and @ in the second set of the chars allowed
+   in a WORD token meant that 'var!=' parsed as WORD == 'var!' and '=' ane not
+   'var' and '!='. I see that in DAP2 I did not include these in the definition
+   of a WORD.
+   jhrg 4/29/16 */
+   
+WORD    [-+a-zA-Z0-9_%*\\!~@][-+a-zA-Z0-9_%*\\#]* 
 
 %{
 // Code run each time a pattern is matched
