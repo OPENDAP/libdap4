@@ -39,7 +39,7 @@
 
 #include <stdint.h>
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "crc.h"
 
@@ -638,8 +638,11 @@ Constructor::print_val(ostream &out, string space, bool print_decl_p)
     }
 
     out << "{ " ;
-    for (Vars_citer i = d_vars.begin(); i != d_vars.end();
-         i++, (void)(i != d_vars.end() && out << ", ")) {
+    for (Vars_citer i = d_vars.begin(), e = d_vars.end(); i != e;
+         i++, (void)(i != e && out << ", ")) {
+
+        DBG(cerr << (*i)->name() << " isa " << (*i)->type_name() << endl);
+
         (*i)->print_val(out, "", false);
     }
 

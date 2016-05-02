@@ -112,6 +112,8 @@ bool TestInt32::read()
 		d_buf <<= 5;
 		if (!d_buf)
 			d_buf = 32;
+
+	    DBGN(cerr << __PRETTY_FUNCTION__ << "d_buf: " << d_buf << endl);
 	}
 	else {
 		d_buf = 123456789;

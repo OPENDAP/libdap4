@@ -143,6 +143,7 @@ protected:
 #endif
 
     void m_duplicate(const D4Sequence &s);
+    void read_sequence_values(bool filter);
 
     friend class D4SequenceTest;
 

@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include "TestD4Sequence.h"
 #include "TestCommon.h"
@@ -91,9 +91,12 @@ TestD4Sequence::read()
         return true;
 
     if (d_current < d_len) {
-    	for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i)
-            if ((*i)->send_p() || (*i)->is_in_selection())
+    	for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i) {
+            if ((*i)->send_p() || (*i)->is_in_selection()) {
+                DBGN(cerr << __PRETTY_FUNCTION__ << "Calling " << (*i)->name() << "->read()" << endl);
                 (*i)->read();
+            }
+    	}
 
     	++d_current;
     	return false;

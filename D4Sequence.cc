@@ -23,7 +23,8 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include "config.h"
-// #define DODS_DEBUG 1
+
+#define DODS_DEBUG 1
 //#define DODS_DEBUG2
 
 #include <algorithm>
@@ -264,7 +265,6 @@ bool D4Sequence::read_next_instance(/*DMR &dmr*/bool filter)
 
     } while (!eof && !done);
 
-    DBG(cerr << "D4Sequence::read_next_instance eof: " << eof << endl);
     return !eof;
 }
 
@@ -295,6 +295,9 @@ D4Sequence::compute_checksum(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eva
 
 void D4Sequence::intern_data()
 {
+    read_sequence_values(true);
+
+#if 0
     // Read the data values, then serialize.
     while (read_next_instance(true /*filter*/)) {
         D4SeqRow *row = new D4SeqRow;
@@ -317,6 +320,47 @@ void D4Sequence::intern_data()
         d_values.push_back(row);
     }
 
+    set_length(d_values.size());
+#endif
+}
+
+/**
+ * @brief Read a Sequence's value into memory
+ *
+ * This is a helper method for serialize() that enables the code
+ * to recursively read values for child sequences.
+ *
+ * @todo Seems to drop the first row a child sequence. jhrg 5/2/16
+ */
+void D4Sequence::read_sequence_values(bool filter)
+{
+    if (read_p()) return;
+
+    // Read the data values, then serialize. NB: read_next_instance sets d_length
+    // evaluates the filter expression
+    while (read_next_instance(filter)) {
+        DBG(cerr << "read_sequence_values() - Adding row" << endl);
+        D4SeqRow* row = new D4SeqRow;
+        for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
+            if ((*i)->send_p()) {
+                DBG(cerr << ":serialize() - reading data for " << (*i)->type_name() << " "  << (*i)->name() << endl);
+                if ((*i)->type() == dods_sequence_c) {
+                    DBG(cerr << "Reading child sequence values for " << (*i)->name() << endl);
+                    static_cast<D4Sequence*>(*i)->read_sequence_values(filter);
+                }
+                // store the variable's value.
+                row->push_back((*i)->ptr_duplicate());
+                // the copy should have read_p true to prevent the serialize() call
+                // below in the nested for loops from triggering a second call to
+                // read().
+                row->back()->set_read_p(true);
+            }
+        }
+        d_values.push_back(row);
+        DBG(cerr << " read_sequence_values() - Row completed" << endl);
+    }
+
+    DBG(cerr << " read_sequence_values() - added " << d_values.size() << " row" << endl);
     set_length(d_values.size());
 }
 
@@ -341,48 +385,26 @@ void D4Sequence::intern_data()
  */
 void D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter)
 {
-    DBG(cerr << ":serialize() - BEGIN" << endl);
+    DBG(cerr << __PRETTY_FUNCTION__ << " BEGIN" << endl);
 
     // Read the data values, then serialize. NB: read_next_instance sets d_length
     // evaluates the filter expression
-    while (read_next_instance(filter)) {
-        DBG(cerr << ":serialize() - Adding row" << endl);
-        D4SeqRow *row = new D4SeqRow;
-        for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
-            if ((*i)->send_p()) {
-                DBG(cerr << ":serialize() - reading data for " << (*i)->type_name() << " "  << (*i)->name() << endl);
-               // store the variable's value.
-                row->push_back((*i)->ptr_duplicate());
-                // the copy should have read_p true to prevent the serialize() call
-                // below in the nested for loops from triggering a second call to
-                // read().
-                row->back()->set_read_p(true);
-            }
-        }
-        d_values.push_back(row);
-        DBG(cerr << ":serialize() - Row completed" << endl);
-    }
-
-    set_length(d_values.size());
+    read_sequence_values(filter);
 
     // write D4Sequecne::length(); don't include the length in the checksum
     m.put_count(d_length);
-    DBG(cerr << ":serialize() count: " << d_length << endl);
+    DBG(cerr << " serialize() count: " << d_length << endl);
 
     // By this point the d_values object holds all and only the values to be sent;
     // use the serialize methods to send them (but no need to test send_p).
     for (D4SeqValues::iterator i = d_values.begin(), e = d_values.end(); i != e; ++i) {
         for (D4SeqRow::iterator j = (*i)->begin(), f = (*i)->end(); j != f; ++j) {
-            DBG(cerr << ":serialize() - serializing " << (*j)->type_name() << " "  << (*j)->name() << endl);
+            DBG(cerr << " serialize() - serializing " << (*j)->type_name() << " "  << (*j)->name() << endl);
            (*j)->serialize(m, dmr, /*eval,*/false);
         }
     }
 
-#ifdef CLEAR_LOCAL_DATA
-    clear_local_data();
-#endif
-    DBG(cerr << ":serialize() - END" << endl);
-
+    DBG(cerr << __PRETTY_FUNCTION__ << " END" << endl);
 }
 
 #if 0
@@ -572,6 +594,8 @@ void D4Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p
 
 void D4Sequence::print_val(ostream &out, string space, bool print_decl_p)
 {
+    DBG(cerr << name() << " isa " << type_name() << endl);
+
     print_val_by_rows(out, space, print_decl_p, false);
 }
 
