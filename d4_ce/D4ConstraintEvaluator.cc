@@ -64,42 +64,6 @@ bool D4ConstraintEvaluator::parse(const std::string &expr)
 	return parser.parse() == 0;
 }
 
-#if 0
-void
-D4ConstraintEvaluator::set_array_slices(const std::string &id, Array *a)
-{
-    // Test that the indexes and dimensions match in number
-    if (d_indexes.size() != a->dimensions())
-        throw Error(malformed_expr, "The index constraint for '" + id + "' does not match its rank.");
-
-    Array::Dim_iter d = a->dim_begin();
-    for (vector<index>::iterator i = d_indexes.begin(), e = d_indexes.end(); i != e; ++i) {
-        if ((*i).stride > (unsigned long long)a->dimension_stop(d, false))
-            throw Error(malformed_expr, "For '" + id + "', the index stride value is greater than the number of elements in the Array");
-        if (!(*i).rest && ((*i).stop) > (unsigned long long)a->dimension_stop(d, false))
-            throw Error(malformed_expr, "For '" + id + "', the index stop value is greater than the number of elements in the Array");
-
-        D4Dimension *dim = a->dimension_D4dim(d);
-
-        // In a DAP4 CE, specifying '[]' as an array dimension slice has two meanings.
-        // It can mean 'all the elements' of the dimension or 'apply the slicing inherited
-        // from the shared dimension'. The latter might be provide 'all the elements'
-        // but regardless, the Array object must record the CE correctly.
-
-        if (dim && (*i).empty) {
-            a->add_constraint(d, dim);
-        }
-        else {
-            a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
-        }
-
-        ++d;
-    }
-
-    d_indexes.clear();
-}
-#endif
-
 void
 D4ConstraintEvaluator::throw_not_found(const string &id, const string &ident)
 {

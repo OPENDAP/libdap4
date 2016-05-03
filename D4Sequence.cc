@@ -30,7 +30,6 @@
 #include <string>
 #include <sstream>
 
-
 #include "Byte.h"
 #include "Int16.h"
 #include "UInt16.h"
@@ -130,7 +129,7 @@ void D4Sequence::m_duplicate(const D4Sequence &s)
         d_values.push_back(dest);
     }
 
-    d_clauses = new D4FilterClauseList(*s.d_clauses);    // deep copy
+    d_clauses = (s.d_clauses != 0) ? new D4FilterClauseList(*s.d_clauses) : 0;    // deep copy if != 0
 }
 
 // Public member functions
@@ -147,7 +146,9 @@ D4Sequence::D4Sequence(const string &n) :
         Constructor(n, dods_sequence_c, true /* is dap4 */), d_clauses(0), d_length(0)
 // , d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
+#if 0
     d_clauses = new D4FilterClauseList();
+#endif
 }
 
 /** The Sequence server-side constructor requires the name of the variable
@@ -164,7 +165,9 @@ D4Sequence::D4Sequence(const string &n, const string &d) :
         Constructor(n, d, dods_sequence_c, true /* is dap4 */), d_clauses(0), d_length(0)
 //, d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
+#if 0
     d_clauses = new D4FilterClauseList();
+#endif
 }
 
 /** @brief The Sequence copy constructor. */
@@ -249,16 +252,27 @@ bool D4Sequence::read_next_instance(bool filter)
 
     do {
         eof = read();
-        // Advance the row number if filter is false (we're not supposed to
-        // evaluate the selection) or both filter and the clauses are true.
-        if (eof) {
+        if (eof) {  // bail if EOF
             continue;
         }
-        else if (!filter || d_clauses->value()) {
+        // if we are supposed to filter and the clauses eval to true, we're done
+        else if (filter && d_clauses && d_clauses->value()) {
+            d_length++;
+            done = true;
+        }
+        // else if we're not supposed to filter or there are no clauses, we're done
+        else if (!filter || !d_clauses) {
             d_length++;
             done = true;
         }
 
+        // Or, get the next row
+#if 0
+        else if (!filter || (d_clauses && d_clauses->value())) {
+            d_length++;
+            done = true;
+        }
+#endif
         // Set up the next call to get another row's worth of data
         set_read_p(false);
 
@@ -266,31 +280,6 @@ bool D4Sequence::read_next_instance(bool filter)
 
     return !eof;
 }
-
-#if 0
-// Used the version in Constructor, which throws an exception because we should
-// not compute these for constructor types. In the case of Sequence, it requires
-// that the values all get read.
-/**
- * @brief Compute the checksum for a D4Sequence
- *
- * @param checksum
- * @param dmr
- * @param eval
- */
-void
-D4Sequence::compute_checksum(Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval)
-{
-    // Read the data values, then serialize.
-    while (read_next_instance(dmr, eval, true)) {
-        for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
-            if ((*i)->send_p()) {
-                (*i)->compute_checksum(checksum);
-            }
-        }
-    }
-}
-#endif
 
 void D4Sequence::intern_data()
 {
@@ -358,14 +347,19 @@ void D4Sequence::read_sequence_values(bool filter)
                 DBG(cerr << ":serialize() - reading data for " << (*i)->type_name() << " "  << (*i)->name() << endl);
                 if ((*i)->type() == dods_sequence_c) {
                     DBG(cerr << "Reading child sequence values for " << (*i)->name() << endl);
-                    static_cast<D4Sequence*>(*i)->read_sequence_values(filter);
+                    D4Sequence *d4s = static_cast<D4Sequence*>(*i);
+                    d4s->read_sequence_values(filter);
+                    row->push_back(d4s->ptr_duplicate()); // TODO don't copy filter clauses
+                    row->back()->set_read_p(true);
                 }
-                // store the variable's value.
-                row->push_back((*i)->ptr_duplicate());
-                // the copy should have read_p true to prevent the serialize() call
-                // below in the nested for loops from triggering a second call to
-                // read().
-                row->back()->set_read_p(true);
+                else {
+                    // store the variable's value.
+                    row->push_back((*i)->ptr_duplicate());
+                    // the copy should have read_p true to prevent the serialize() call
+                    // below in the nested for loops from triggering a second call to
+                    // read().
+                    row->back()->set_read_p(true);
+                }
             }
         }
 
@@ -421,40 +415,6 @@ void D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter)
     DBG(cerr << __PRETTY_FUNCTION__ << " END" << endl);
 }
 
-#if 0
-void D4Sequence::serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter)
-{
-    // Read the data values, then serialize. NB: read_next_instance sets d_length.
-    while (read_next_instance(filter)) {
-        D4SeqRow *row = new D4SeqRow;
-        for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
-            if ((*i)->send_p()) {
-                // store the variable's value.
-                row->push_back((*i)->ptr_duplicate());
-                // the copy should have read_p true to prevent the serialize() call
-                // below in the nested for loops from triggering a second call to
-                // read().
-                row->back()->set_read_p(true);
-            }
-        }
-        d_values.push_back(row);
-        DBG(cerr << "D4Sequence::serialize Added row" << endl);
-    }
-
-    // write D4Sequecne::length(); don't include the length in the checksum
-    m.put_count(d_length);
-    DBG(cerr << "D4Sequence::serialize count: " << d_length << endl);
-
-    // By this point the d_values object holds all and only the values to be sent;
-    // use the serialize methods to send them (but no need to test send_p).
-    for (D4SeqValues::iterator i = d_values.begin(), e = d_values.end(); i != e; ++i) {
-        for (D4SeqRow::iterator j = (*i)->begin(), f = (*i)->end(); j != f; ++j) {
-            (*j)->serialize(m, dmr, /*eval,*/false);
-        }
-    }
-}
-#endif
-
 void D4Sequence::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 {
 
@@ -473,6 +433,23 @@ void D4Sequence::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
         d_values.push_back(row);
     }
 }
+
+/**
+ * @brief Access the filter clauses for this D4Sequence
+ *
+ * When a filter is supplied with a DAP4 constraint, the expression is
+ * parsed and one or more D4FilterClause objects are built and stored in
+ * a D4FilterClauseList bound to the D4Sequence to be filtered.
+ *
+ * @return A reference to this D4Sequence's filter clause list
+ * @see D4FilterClauseList
+ */
+D4FilterClauseList & D4Sequence::clauses()
+{
+    if (!d_clauses) d_clauses = new D4FilterClauseList();
+    return *d_clauses;
+}
+
 
 #if INDEX_SUBSETTING
 /** Set the start, stop and stride for a row-number type constraint.

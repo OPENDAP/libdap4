@@ -125,6 +125,7 @@ typedef vector<D4SeqRow *> D4SeqValues;
 class D4Sequence: public Constructor
 {
 private:
+    // This may be zero (nullptr).
     D4FilterClauseList *d_clauses;
 
 protected:
@@ -196,22 +197,9 @@ public:
     // DAP4
     virtual void intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
-#if 0
-    virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
-#endif
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
-    /**
-     * @brief Access the filter clauses for this D4Sequence
-     *
-     * When a filter is supplied with a DAP4 constraint, the expression is
-     * parsed and one or more D4FilterClause objects are built and stored in
-     * a D4FilterClauseList bound to the D4Sequence to be filtered.
-     *
-     * @return A reference to this D4Sequence's filter clause list
-     * @see D4FilterClauseList
-     */
-    D4FilterClauseList &clauses() { return *d_clauses; }
+    D4FilterClauseList &clauses();
 
 #if INDEX_SUBSETTING
     /** Return the starting row number if the sequence was constrained using

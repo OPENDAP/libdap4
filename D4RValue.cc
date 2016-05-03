@@ -57,8 +57,10 @@ namespace libdap {
 void
 D4RValueList::m_duplicate(const D4RValueList &src)
 {
-    for (std::vector<D4RValue *>::const_iterator i = src.d_rvalues.begin(), e = src.d_rvalues.end(); i != e; ++i)
-        d_rvalues.push_back(new D4RValue(**i));
+    for (std::vector<D4RValue *>::const_iterator i = src.d_rvalues.begin(), e = src.d_rvalues.end(); i != e; ++i) {
+        D4RValue *rv = *i;
+        d_rvalues.push_back(new D4RValue(*rv));
+    }
 }
 
 D4RValueList::~D4RValueList()
@@ -70,13 +72,14 @@ D4RValueList::~D4RValueList()
 void
 D4RValue::m_duplicate(const D4RValue &src)
 {
-    d_variable = src.d_variable;
-    d_func = src.d_func;
-
-    d_args = new D4RValueList(*d_args);
-    d_constant = d_constant->ptr_duplicate();
-
     d_value_kind = src.d_value_kind;
+
+    d_variable = src.d_variable;    // weak pointers
+
+    d_func = src.d_func;
+    d_args = (src.d_args != 0) ? new D4RValueList(*(src.d_args)) : 0; // deep copy these
+
+    d_constant = (src.d_constant != 0) ? src.d_constant->ptr_duplicate() : 0;
 }
 
 template<typename T, class DAP_TYPE>

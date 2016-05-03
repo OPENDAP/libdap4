@@ -54,6 +54,7 @@ public:
 
     D4FilterClauseList() { }
     D4FilterClauseList(const D4FilterClauseList &src) { m_duplicate(src); }
+
     D4FilterClauseList(D4FilterClause *c) { add_clause(c); }
 
     virtual ~D4FilterClauseList();
@@ -75,8 +76,8 @@ public:
         return d_clauses.at(i);
     }
 
-    iter begin() { return d_clauses.begin(); }
-    iter end() { return d_clauses.end(); }
+    citer cbegin() const { return d_clauses.begin(); }
+    citer cend() const { return d_clauses.end(); }
 
     unsigned int size() const { return d_clauses.size(); }
 
@@ -137,16 +138,6 @@ private:
     D4RValue *d_arg1, *d_arg2;
 
     D4FilterClause() : d_op(null), d_arg1(0), d_arg2(0) { }
-#if 0
-    D4FilterClause(const D4FilterClause &);
-    D4FilterClause &operator=(const D4FilterClause &);
-#endif
-#if 0
-    // These perform the actual comparisons, with a specail case for
-    // const string & arguments.
-    template<typename T1, typename T2> bool cmp_impl(ops op, T1 arg1, T2 Arg2);
-    bool cmp_impl(ops op, const string &arg1, const string &arg2);
-#endif
 
     void m_duplicate(const D4FilterClause &rhs);
 
