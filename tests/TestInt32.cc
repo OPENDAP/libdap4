@@ -36,6 +36,8 @@
 
 #include "config.h"
 
+//#define DODS_DEBUG
+
 #ifndef WIN32
 #include <unistd.h>
 #else
@@ -43,8 +45,6 @@
 #include <fcntl.h>
 #include <process.h>
 #endif
-
-#define DODS_DEBUG
 
 #include "TestInt32.h"
 #include "debug.h"

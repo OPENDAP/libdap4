@@ -24,8 +24,7 @@
 
 #include "config.h"
 
-#define DODS_DEBUG 1
-//#define DODS_DEBUG2
+//#define DODS_DEBUG
 
 #include <algorithm>
 #include <string>
@@ -235,7 +234,7 @@ D4Sequence::operator=(const D4Sequence &rhs)
  * This method always returns the next instance that satisfies the CE when 'filter'
  * is true.
  *
- * @note this method is called by D4Sequence::serialize() and it will evaluate the
+ * @note This method is called by D4Sequence::serialize() and it will evaluate the
  * CE for each set of values read.
  *
  * @param dmr
@@ -243,7 +242,7 @@ D4Sequence::operator=(const D4Sequence &rhs)
  * @param filter
  * @return False when read() indicates that the EOF was found, true otherwise.
  */
-bool D4Sequence::read_next_instance(/*DMR &dmr*/bool filter)
+bool D4Sequence::read_next_instance(bool filter)
 {
     bool eof = false;
     bool done = false;
@@ -328,9 +327,22 @@ void D4Sequence::intern_data()
  * @brief Read a Sequence's value into memory
  *
  * This is a helper method for serialize() that enables the code
- * to recursively read values for child sequences.
+ * to recursively read values for child sequences. This method assumes
+ * that the D4Sequence::read() method does not call itself recursively
+ * for child sequences, as is the case with DAP2 sequences. If you
+ * have a data store that requires the outer-most sequence to read
+ * values for its child sequences, you will need to specialize this
+ * method. See also the methods associated with the sequence values
+ * because unlike DAP2 sequences, in DAP4 the sequences hold all their
+ * values in memory before writing them out.
  *
- * @todo Seems to drop the first row a child sequence. jhrg 5/2/16
+ * @note We may revisit the idea that values must be held in memory
+ * before being written. That is a consequence of using a length prefix
+ * instead of a series of sentinel values.
+ *
+ * @param filter True if the/a file expression bound to this sequence
+ * should be evaluated.
+ * @see set_value()
  */
 void D4Sequence::read_sequence_values(bool filter)
 {
@@ -356,6 +368,8 @@ void D4Sequence::read_sequence_values(bool filter)
                 row->back()->set_read_p(true);
             }
         }
+
+        // When specializing this, use set_value()
         d_values.push_back(row);
         DBG(cerr << " read_sequence_values() - Row completed" << endl);
     }

@@ -32,14 +32,14 @@
 
 #include "config.h"
 
+//#define DODS_DEBUG
+
 #include <string>
 #include <sstream>
 #include <algorithm>
 #include <functional>
 
 #include <stdint.h>
-
-#define DODS_DEBUG
 
 #include "crc.h"
 

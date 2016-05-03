@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "TestD4Sequence.h"
 #include "TestCommon.h"
@@ -84,6 +84,10 @@ TestD4Sequence::output_values(std::ostream &out)
     print_val(out, "", false);
 }
 
+/**
+ * In DAP2, TestSequence::read() also reads the child sequence data. However,
+ * in DAP4 it's up to each sequence to read its own data.
+ */
 bool
 TestD4Sequence::read()
 {
@@ -92,7 +96,7 @@ TestD4Sequence::read()
 
     if (d_current < d_len) {
     	for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i) {
-            if ((*i)->send_p() || (*i)->is_in_selection()) {
+            if ((*i)->type() != dods_sequence_c && ((*i)->send_p() || (*i)->is_in_selection())) {
                 DBGN(cerr << __PRETTY_FUNCTION__ << "Calling " << (*i)->name() << "->read()" << endl);
                 (*i)->read();
             }

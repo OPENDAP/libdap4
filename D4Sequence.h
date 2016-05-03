@@ -143,6 +143,9 @@ protected:
 #endif
 
     void m_duplicate(const D4Sequence &s);
+
+    // Specialize this if you have a data source that requires read()
+    // recursively call itself for child sequences.
     void read_sequence_values(bool filter);
 
     friend class D4SequenceTest;
@@ -178,7 +181,7 @@ public:
      */
     virtual void set_length(int count) { d_length = (int64_t)count; }
 
-    virtual bool read_next_instance(/*DMR &dmr, ConstraintEvaluator &eval,*/ bool filter);
+    virtual bool read_next_instance(bool filter);
 
     virtual void intern_data(ConstraintEvaluator &, DDS &) {
     	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
@@ -265,12 +268,13 @@ public:
 
     /**
      * @brief Get the values for this D4Sequence
-     * This method does not perform a deep copy of the values so the caller
-     * should not free the BaseType*s in this vector of vectors since this
-     * object will free those in its destructor.
-     * @return The entire vector of vector of BaseType*
+     * This method returns a reference to the values held by the instance.
+     * You should make sure that the instance really holds values before
+     * calling it! Do not free the BaseType*s contained in the vector of
+     * vectors.
+     * @return A reference tp the vector of vector of BaseType*
      */
-    virtual D4SeqValues value() const { return d_values; }
+    virtual D4SeqValues &value() { return d_values; }
 
     virtual D4SeqRow *row_value(size_t row);
     virtual BaseType *var_value(size_t row, const string &name);
