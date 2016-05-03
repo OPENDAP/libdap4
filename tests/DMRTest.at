@@ -487,5 +487,8 @@ DMR_TRANS_SERIES_CE([test_simple_7.xml], [s{i1}|s<=\"Silly test string: 2\"], [t
 
 # A nested sequence with flots in the outer sequence and the int, string combination in the inner
 DMR_TRANS_SERIES_CE([test_simple_8.1.xml], [outer], [test_simple_8.1.xml.f1.trans_base], [pass])
-
+DMR_TRANS_SERIES_CE([test_simple_8.1.xml], [outer{x;y}], [test_simple_8.1.xml.f2.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_8.1.xml], [outer{x;y;inner}], [test_simple_8.1.xml.f3.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_8.1.xml], [outer{x;y;inner|i1<1000}], [test_simple_8.1.xml.f4.trans_base], [pass])
+DMR_TRANS_SERIES_CE([test_simple_8.1.xml], [outer{x;y;inner|i1<1000}|x<0.0], [test_simple_8.1.xml.f5.trans_base], [pass])
 
