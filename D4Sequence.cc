@@ -129,6 +129,7 @@ void D4Sequence::m_duplicate(const D4Sequence &s)
         d_values.push_back(dest);
     }
 
+    d_copy_clauses = s.d_copy_clauses;
     d_clauses = (s.d_clauses != 0) ? new D4FilterClauseList(*s.d_clauses) : 0;    // deep copy if != 0
 }
 
@@ -143,7 +144,7 @@ void D4Sequence::m_duplicate(const D4Sequence &s)
 
  @brief The Sequence constructor. */
 D4Sequence::D4Sequence(const string &n) :
-        Constructor(n, dods_sequence_c, true /* is dap4 */), d_clauses(0), d_length(0)
+        Constructor(n, dods_sequence_c, true /* is dap4 */), d_clauses(0), d_copy_clauses(true), d_length(0)
 // , d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
 #if 0
@@ -162,7 +163,7 @@ D4Sequence::D4Sequence(const string &n) :
 
  @brief The Sequence server-side constructor. */
 D4Sequence::D4Sequence(const string &n, const string &d) :
-        Constructor(n, d, dods_sequence_c, true /* is dap4 */), d_clauses(0), d_length(0)
+        Constructor(n, d, dods_sequence_c, true /* is dap4 */), d_clauses(0), d_copy_clauses(true), d_length(0)
 //, d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(-1)
 {
 #if 0
@@ -349,7 +350,9 @@ void D4Sequence::read_sequence_values(bool filter)
                     DBG(cerr << "Reading child sequence values for " << (*i)->name() << endl);
                     D4Sequence *d4s = static_cast<D4Sequence*>(*i);
                     d4s->read_sequence_values(filter);
+                    d4s->d_copy_clauses = false;
                     row->push_back(d4s->ptr_duplicate()); // TODO don't copy filter clauses
+                    d4s->d_copy_clauses = true;  // Must be sure to not break the object in general
                     row->back()->set_read_p(true);
                 }
                 else {

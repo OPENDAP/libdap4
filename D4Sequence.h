@@ -128,6 +128,13 @@ private:
     // This may be zero (nullptr).
     D4FilterClauseList *d_clauses;
 
+    // Use this to control if ptr_duplicate(), ..., copy the filter clauses.
+    // Because the values of a child sequence are held in copies of the Seq
+    // object they clauses will bound to the 'master' instance will be copied
+    // but the copies will never be used. This field can be used to control
+    // that. ...purely an optimization.
+    bool d_copy_clauses;
+
 protected:
     // This holds the values of the sequence. Values are stored in
     // instances of BaseTypeRow objects which hold instances of BaseType.
