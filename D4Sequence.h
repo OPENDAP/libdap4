@@ -44,6 +44,14 @@ typedef vector<BaseType *> D4SeqRow;
 /** This type holds all of the values of a D4Sequence. */
 typedef vector<D4SeqRow *> D4SeqValues;
 
+/** The type BaseTypeRow is used to store single rows of values in an
+ instance of Sequence. Values are stored in instances of BaseType. */
+typedef vector<BaseType *> BaseTypeRow;
+
+/** This type holds all of the values of a Sequence. */
+typedef vector<BaseTypeRow *> SequenceValues;
+
+
 /** This is the interface for the class D4Sequence. A sequence contains
     a single set of variables, all at the same lexical level just like
     a Structure.  Like a Structure, a D4Sequence may contain other
@@ -190,9 +198,6 @@ public:
     // DAP4
     virtual void intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
-#if 0
-    virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
-#endif
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
 #if INDEX_SUBSETTING
@@ -256,6 +261,15 @@ public:
      * @return The entire vector of vector of BaseType*
      */
     virtual D4SeqValues value() const { return d_values; }
+    /**
+     * @brief Get the sequence values by reference
+     * This method returns a reference to the D4Sequence's values,
+     * eliminating the copy of all the pointers. For large sequences,
+     * that could be a substantial number of values (even though
+     * they are 'just' pointers).
+     * @return A reference to the vector of vector of BaseType*
+     */
+    virtual D4SeqValues &value_ref() { return d_values; }
 
     virtual D4SeqRow *row_value(size_t row);
     virtual BaseType *var_value(size_t row, const string &name);

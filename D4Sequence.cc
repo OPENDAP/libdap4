@@ -214,7 +214,7 @@ D4Sequence::operator=(const D4Sequence &rhs)
  * @brief Read the next instance of the sequence
  * While the rest of the variables' read() methods are assumed to return the entire
  * variable in one call (modulo enhancements of the library to support streaming
- * large variables), this class assumes that the underlying data store is return
+ * large variables), this class assumes that the underlying data store is returning
  * data from a table of unknown size. Thus, D4Sequence::read() is assumed to return
  * one instance (or element or row) of the sequence per call and return true when the
  * EOF (end of the sequence) is reached.
