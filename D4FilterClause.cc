@@ -34,31 +34,8 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
-
-#include <cassert>
-
-#include <string>
-
-#include "BaseType.h"
-#include "Byte.h"
-#include "Int8.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
-#include "Int64.h"
-#include "UInt64.h"
-#include "Float32.h"
-#include "Float64.h"
-#include "Str.h"
-
-#include "GNURegex.h"
-
 #include "D4RValue.h"
 #include "D4FilterClause.h"
-
-#include "debug.h"
 
 using namespace std;
 

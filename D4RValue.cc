@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <iostream>
 
 #include "BaseType.h"
@@ -77,7 +76,7 @@ D4RValue::m_duplicate(const D4RValue &src)
     d_variable = src.d_variable;    // weak pointers
 
     d_func = src.d_func;
-    d_args = (src.d_args != 0) ? new D4RValueList(*(src.d_args)) : 0; // deep copy these
+    d_args = (src.d_args != 0) ? new D4RValueList(*src.d_args) : 0; // deep copy these
 
     d_constant = (src.d_constant != 0) ? src.d_constant->ptr_duplicate() : 0;
 }
@@ -286,7 +285,7 @@ D4RValue::value(DMR &dmr)
 		throw InternalErr(__FILE__, __LINE__, "Unknown rvalue type.");
 	}
 
-	return 0; // null_ptr; added return to quiet warning. jhrg 3/24/15
+	return 0; // nullptr; added return to quiet warning. jhrg 3/24/15
 }
 
 /**
@@ -297,7 +296,7 @@ D4RValue::value(DMR &dmr)
  * Clause instances.
  *
  * @see D4RValue::value(DMR&)
- * @return The vaaue wrapped in a BaseType*
+ * @return The value wrapped in a BaseType*
  */
 BaseType *
 D4RValue::value()
@@ -318,7 +317,7 @@ D4RValue::value()
         throw InternalErr(__FILE__, __LINE__, "Unknown rvalue type.");
     }
 
-    return 0; // null_ptr; added return to quiet warning. jhrg 3/24/15
+    return 0; // nullptr; added return to quiet warning. jhrg 3/24/15
 }
 
 } // namespace libdap

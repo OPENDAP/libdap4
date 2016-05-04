@@ -125,7 +125,8 @@ typedef vector<D4SeqRow *> D4SeqValues;
 class D4Sequence: public Constructor
 {
 private:
-    // This may be zero (nullptr).
+    // This may be zero (nullptr) but the accessor (clauses()) allocates an
+    // instance if that is the case.
     D4FilterClauseList *d_clauses;
 
     // Use this to control if ptr_duplicate(), ..., copy the filter clauses.

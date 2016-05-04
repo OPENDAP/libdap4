@@ -132,7 +132,7 @@ Constructor::operator=(const Constructor &rhs)
     return *this;
 }
 
-// A public method, but just barely..
+// A public method, but just barely...
 BaseType *
 Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
 {
