@@ -148,75 +148,6 @@ BaseType *DDXParser::factory(Type t, const string & name)
     }
 }
 
-#if 0
-/** Get the Type enumeration value which matches the given name. */
-static Type get_type(const char *name)
-{
-    if (strcmp(name, "Byte") == 0)
-        return dods_byte_c;
-
-    if (strcmp(name, "Int16") == 0)
-        return dods_int16_c;
-
-    if (strcmp(name, "UInt16") == 0)
-        return dods_uint16_c;
-
-    if (strcmp(name, "Int32") == 0)
-        return dods_int32_c;
-
-    if (strcmp(name, "UInt32") == 0)
-        return dods_uint32_c;
-
-    if (strcmp(name, "Float32") == 0)
-        return dods_float32_c;
-
-    if (strcmp(name, "Float64") == 0)
-        return dods_float64_c;
-
-    if (strcmp(name, "String") == 0)
-        return dods_str_c;
-
-    if (strcmp(name, "Url") == 0)
-        return dods_url_c;
-
-    if (strcmp(name, "Array") == 0)
-        return dods_array_c;
-
-    if (strcmp(name, "Structure") == 0)
-        return dods_structure_c;
-
-    if (strcmp(name, "Sequence") == 0)
-        return dods_sequence_c;
-
-    if (strcmp(name, "Grid") == 0)
-        return dods_grid_c;
-
-    return dods_null_c;
-}
-#endif
-
-#if 0
-// Not used. jhrg 1/17/13
-static Type is_simple_type(const char *name)
-{
-    Type t = get_type(name);
-    switch (t) {
-    case dods_byte_c:
-    case dods_int16_c:
-    case dods_uint16_c:
-    case dods_int32_c:
-    case dods_uint32_c:
-    case dods_float32_c:
-    case dods_float64_c:
-    case dods_str_c:
-    case dods_url_c:
-        return t;
-    default:
-        return dods_null_c;
-    }
-}
-#endif
-
 static bool is_not(const char *name, const char *tag)
 {
     return strcmp(name, tag) != 0;
@@ -1115,15 +1046,15 @@ void DDXParser::cleanup_parse(xmlParserCtxtPtr & context)
     }
 
     if (!wellFormed) {
-        throw DDXParseFailed(string("\nThe DDX is not a well formed XML document.\n") + error_msg);
+        throw DDXParseFailed(string("The DDX is not a well formed XML document.\n") + error_msg);
     }
 
     if (!valid) {
-        throw DDXParseFailed(string("\nThe DDX is not a valid document.\n") + error_msg);
+        throw DDXParseFailed(string("The DDX is not a valid document.\n") + error_msg);
     }
 
     if (get_state() == parser_error) {
-        throw DDXParseFailed(string("\nError parsing DDX response.\n") + error_msg);
+        throw DDXParseFailed(string("Error parsing DDX response.\n") + error_msg);
     }
 }
 
@@ -1144,11 +1075,14 @@ void DDXParser::intern_stream(istream &in, DDS *dest_dds, string &cid, const str
     char chars[size + 1];
 
     // int res = fread(chars, 1, 4, in);
-    in.readsome(chars, 4);
+    in.read(chars, 4);
     int res = in.gcount();
     if (res > 0) {
         chars[4]='\0';
         xmlParserCtxtPtr context = xmlCreatePushParserCtxt(NULL, NULL, chars, res, "stream");
+
+        if (!context)
+            throw DDXParseFailed("Error parsing DDX response: Input does not look like XML");
 
         ctxt = context;         // need ctxt for error messages
         dds = dest_dds;         // dump values here
@@ -1196,6 +1130,9 @@ void DDXParser::intern_stream(istream &in, DDS *dest_dds, string &cid, const str
 
         cleanup_parse(context);
     }
+    else {
+        throw DDXParseFailed("Error parsing DDX response: Could not read from input stream.");
+    }
 }
 
 /** @brief Read the DDX from a stream instead of a file.
@@ -1204,8 +1141,7 @@ void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid, const string
 {
     // Code example from libxml2 docs re: read from a stream.
     if (!in || feof(in) || ferror(in))
-        throw InternalErr(__FILE__, __LINE__,
-                          "Input stream not open or read error");
+        throw InternalErr(__FILE__, __LINE__, "Input stream not open or read error");
 
     const int size = 1024;
     char chars[size];
@@ -1213,8 +1149,10 @@ void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid, const string
     int res = fread(chars, 1, 4, in);
     if (res > 0) {
         chars[4]='\0';
-        xmlParserCtxtPtr context =
-            xmlCreatePushParserCtxt(NULL, NULL, chars, res, "stream");
+        xmlParserCtxtPtr context = xmlCreatePushParserCtxt(NULL, NULL, chars, res, "stream");
+
+        if (!context)
+            throw DDXParseFailed("Error parsing DDX response: Input does not look like XML");
 
         ctxt = context;         // need ctxt for error messages
         dds = dest_dds;         // dump values here
@@ -1250,6 +1188,9 @@ void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid, const string
         xmlParseChunk(ctxt, chars, 0, 1);
 
         cleanup_parse(context);
+    }
+    else {
+        throw DDXParseFailed("Error parsing DDX response: Could not read from input file.");
     }
 }
 
