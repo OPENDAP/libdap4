@@ -55,15 +55,16 @@ void
 TestStr::_duplicate(const TestStr &ts)
 {
     d_series_values = ts.d_series_values;
+    d_count = ts.d_count;
 }
 
 
-TestStr::TestStr(const string &n) : Str(n), d_series_values(false)
+TestStr::TestStr(const string &n) : Str(n), d_series_values(false), d_count(0)
 {
 }
 
 TestStr::TestStr(const string &n, const string &d)
-    : Str(n, d), d_series_values(false)
+    : Str(n, d), d_series_values(false), d_count(0)
 {
 }
 
@@ -99,15 +100,13 @@ TestStr::output_values(std::ostream &out)
 
 bool TestStr::read()
 {
-	static int count = 0;
-
 	if (read_p()) return true;
 
 	if (test_variable_sleep_interval > 0) sleep(test_variable_sleep_interval);
 
 	string dods_str_test;
 	if (get_series_values())
-	    dods_str_test = "Silly test string: " + long_to_string(++count);
+	    dods_str_test = "Silly test string: " + long_to_string(++d_count);
 	else
 	    dods_str_test = "Silly test string: 1";
 

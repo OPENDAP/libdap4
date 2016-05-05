@@ -298,7 +298,7 @@ DOLLAR_FLOAT64 "(" arg_length_hint ":" fast_float64_arg_list ")"
    
 arg_length_hint : WORD
 {
-    evaluator.set_arg_length_hint(get_ull($1.c_str()));
+    evaluator.set_arg_length_hint(get_uint64($1.c_str()));
 }
 ;
 

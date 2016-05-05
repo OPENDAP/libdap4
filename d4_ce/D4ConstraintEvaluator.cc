@@ -31,12 +31,17 @@
 #include "D4CEScanner.h"
 #include "D4ConstraintEvaluator.h"
 #include "d4_ce_parser.tab.hh"
+
 #include "DMR.h"
 #include "D4Group.h"
 #include "D4Dimensions.h"
 #include "BaseType.h"
 #include "Array.h"
 #include "Constructor.h"
+#include "D4Sequence.h"
+
+#include "D4RValue.h"
+#include "D4FilterClause.h"
 
 #include "parser.h"		// for get_ull()
 #include "debug.h"
@@ -58,42 +63,6 @@ bool D4ConstraintEvaluator::parse(const std::string &expr)
 
 	return parser.parse() == 0;
 }
-
-#if 0
-void
-D4ConstraintEvaluator::set_array_slices(const std::string &id, Array *a)
-{
-    // Test that the indexes and dimensions match in number
-    if (d_indexes.size() != a->dimensions())
-        throw Error(malformed_expr, "The index constraint for '" + id + "' does not match its rank.");
-
-    Array::Dim_iter d = a->dim_begin();
-    for (vector<index>::iterator i = d_indexes.begin(), e = d_indexes.end(); i != e; ++i) {
-        if ((*i).stride > (unsigned long long)a->dimension_stop(d, false))
-            throw Error(malformed_expr, "For '" + id + "', the index stride value is greater than the number of elements in the Array");
-        if (!(*i).rest && ((*i).stop) > (unsigned long long)a->dimension_stop(d, false))
-            throw Error(malformed_expr, "For '" + id + "', the index stop value is greater than the number of elements in the Array");
-
-        D4Dimension *dim = a->dimension_D4dim(d);
-
-        // In a DAP4 CE, specifying '[]' as an array dimension slice has two meanings.
-        // It can mean 'all the elements' of the dimension or 'apply the slicing inherited
-        // from the shared dimension'. The latter might be provide 'all the elements'
-        // but regardless, the Array object must record the CE correctly.
-
-        if (dim && (*i).empty) {
-            a->add_constraint(d, dim);
-        }
-        else {
-            a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
-        }
-
-        ++d;
-    }
-
-    d_indexes.clear();
-}
-#endif
 
 void
 D4ConstraintEvaluator::throw_not_found(const string &id, const string &ident)
@@ -263,32 +232,133 @@ D4ConstraintEvaluator::slice_dimension(const std::string &id, const index &i)
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i)
 {
-	unsigned long long v = get_ull(i.c_str());
+	unsigned long long v = get_uint64(i.c_str());
 	return index(v, 1, v, false, false /*empty*/);
 }
 
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i, const std::string &s, const std::string &e)
 {
-	return index(get_ull(i.c_str()), get_ull(s.c_str()), get_ull(e.c_str()), false, false /*empty*/);
+	return index(get_uint64(i.c_str()), get_uint64(s.c_str()), get_uint64(e.c_str()), false, false /*empty*/);
 }
 
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s, const std::string &e)
 {
-	return index(get_ull(i.c_str()), s, get_ull(e.c_str()), false, false /*empty*/);
+	return index(get_uint64(i.c_str()), s, get_uint64(e.c_str()), false, false /*empty*/);
 }
 
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i, const std::string &s)
 {
-	return index(get_ull(i.c_str()), get_ull(s.c_str()), 0, true, false /*empty*/);
+	return index(get_uint64(i.c_str()), get_uint64(s.c_str()), 0, true, false /*empty*/);
 }
 
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s)
 {
-	return index(get_ull(i.c_str()), s, 0, true, false /*empty*/);
+	return index(get_uint64(i.c_str()), s, 0, true, false /*empty*/);
+}
+
+static string
+expr_msg(const std::string &op, const std::string &arg1, const std::string &arg2)
+{
+    return "(" + arg1 + " " + op + " " + arg2 + ").";
+}
+
+/**
+ * @brief Return the D4FilterClause constant for an operator
+ *
+ * Here are the strings returned by the parser:
+ *   GREATER ">"
+ *   LESS_EQUAL "<="
+ *   GREATER_EQUAL ">="
+ *   EQUAL "=="
+ *   NOT_EQUAL "!="
+ *   REGEX_MATCH "~="
+ *
+ *   LESS_BBOX "<<"
+ *   GREATER_BBOX ">>"
+ *
+ *   MASK "@="
+ *   ND "ND"
+ */
+static D4FilterClause::ops
+get_op_code(const std::string &op)
+{
+    DBGN(cerr << "Entering " << __PRETTY_FUNCTION__ << endl << "op: " << op << endl);
+
+    if (op == "<")
+        return D4FilterClause::less;
+    else if (op == ">")
+        return D4FilterClause::greater;
+    else if (op == "<=")
+        return D4FilterClause::less_equal;
+    else if (op == ">=")
+        return D4FilterClause::greater_equal;
+    else if (op == "==")
+        return D4FilterClause::equal;
+    else if (op == "!=")
+        return D4FilterClause::not_equal;
+    else if (op == "~=")
+        return D4FilterClause::match;
+    else
+        throw Error(malformed_expr, "The opertator '" + op + "' is not supported.");
+}
+
+/**
+ * @brief Add a D4FilterClause
+ *
+ * This method adds a filter clause to the D4Sequence that is on the top of the
+ * parser's stack. If there is not a D4Sequence on the stack, an exception is
+ * thrown. Similarly, if the filter clause parameters are not valid, then an
+ * exception is thrown.
+ *
+ * Filter clause rules: One of the parameters must be a variable in a D4Sequence
+ * and the other must be a constant. The operator must be one of the valid relops.
+ * Note that the D4FilterClause objects use the same numerical codes as the DAP2
+ * parser/evaluator.
+ *
+ * @note The parser will have pushed the Sequence onto the BaseType stack during
+ * the parse, so variables can be looked up using the top_basetype() (which
+ * must be a D4Sequence).
+ *
+ * @param arg1 The first argument; a D4Sequence variable or a constant.
+ * @param arg2 The second argument; a D4Sequence variable or a constant.
+ * @param op The infix relop
+ */
+void
+D4ConstraintEvaluator::add_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2)
+{
+    DBG(cerr << "Entering: " << __PRETTY_FUNCTION__  << endl);
+
+    // Check that there really is a D4Sequence associated with this filter clause.
+    D4Sequence *s = dynamic_cast<D4Sequence*>(top_basetype());
+    if (!s)
+        throw Error(malformed_expr,
+            "When a filter expression is used, it must be bound to a Sequence variable: " + expr_msg(op, arg1, arg2));
+
+    DBG(cerr << "s->name(): " << s->name() << endl);
+
+    // Check that arg1 and 2 are valid
+    BaseType *a1 = s->var(arg1);
+    BaseType *a2 = s->var(arg2);
+    DBG(cerr << "a1: " << a1 << ", a2: " << a2 << endl);
+
+    if (a1 && a2)
+        throw Error(malformed_expr,
+            "One of the arguments in a filter expression must be a constant: " + expr_msg(op, arg1, arg2));
+    if (!(a1 || a2))
+        throw Error(malformed_expr,
+            "One of the arguments in a filter expression must be a variable in a Sequence: " + expr_msg(op, arg1, arg2));
+
+    // Now we know a1 XOR a2 is true
+    if (a1) {
+        s->clauses().add_clause(new D4FilterClause(get_op_code(op), new D4RValue(a1), D4RValueFactory(arg2)));
+    }
+    else {
+        s->clauses().add_clause(new D4FilterClause(get_op_code(op), D4RValueFactory(arg1), new D4RValue(a2)));
+    }
 }
 
 // This method is called from the parser (see d4_ce_parser.yy, down in the code

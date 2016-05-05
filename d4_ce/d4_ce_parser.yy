@@ -84,7 +84,7 @@ namespace libdap {
    /* include for all driver functions */
    #include "D4ConstraintEvaluator.h"
 
-   /* this is silly, but I can't figure out a way around */
+   /* this is silly, but I can't figure out a way around it */
    static int yylex(libdap::D4CEParser::semantic_type *yylval,
                     libdap::location *loc,
                     libdap::D4CEScanner  &scanner,
@@ -96,13 +96,18 @@ namespace libdap {
 %token <std::string> WORD "word"
 %token <std::string> STRING "string"
 
-%type <bool> predicate filter fields indexes subset clause clauses dimension dimensions
-%type <std::string> id path group name
-%type <libdap::D4ConstraintEvaluator::index> index
+// %type is used to set the return type of non-terminals; %token sets the
+// return type for terminals.
+%type <bool> filter predicate fields indexes subset clause clauses dimension dimensions
+%type <std::string> id path group name op
 
-%token 
+%type <libdap::D4ConstraintEvaluator::index> index
+// %type <libdap::D4FilterClause> predicate
+
+%token
     END  0  "end of file"
-    
+  
+%token 
     SEMICOLON ";"
     PIPE "|"
 
@@ -112,11 +117,6 @@ namespace libdap {
 
     LBRACE "{"
     RBRACE "}"
-
-    COMMA ","
-
-    ND "ND"
-    ASSIGN "="
 
     LESS "<"
     GREATER ">"
@@ -130,11 +130,15 @@ namespace libdap {
     GREATER_BBOX ">>"
 
     MASK "@="
+    ND "ND"
+
+    COMMA ","
+
+    ASSIGN "="
 
     GROUP_SEP "/"
     PATH_SEP "."
-;
-
+    
 %%
 
 %start expression;
@@ -156,9 +160,19 @@ dimension : id "=" index
 clauses : clause { $$ = $1; }
 | clauses ";" clause { $$ = $1 && $3; }
 ;
-                    
-clause : subset { $$ = $1; }
-| subset "|" filter { $$ = $1 && $3; }
+    
+// Change: I moved the pop_basetype() call out of the 'fields'
+// actions in 'subset' so that I could push the basetype for
+// all of the cases. That way I'm sure to have a top_baseype()
+// when processing the 'filter' part of the grammar. I need the
+// the top basetype so that I know which Sequence to use.
+// jhrg 4/23/16
+               
+clause : subset { $$ = $1; driver.pop_basetype(); }
+
+// For the DAP4 at this time (3/18/15) filters apply only to D4Sequences 
+
+| subset "|" filter { driver.pop_basetype(); $$ = $1 && $3; }
 ;
 
 // mark_variable returns a BaseType* or throws Error
@@ -178,13 +192,11 @@ subset : id
     if (!btp)
         driver.throw_not_found($1, "id");
 
-#if 0    
-    if (btp->type() == dods_array_c)
-        $$ = driver.mark_variable(btp) && driver.mark_array_variable(btp);   // handle array w/o slice ops
-    else
-#endif
-
     $$ = driver.mark_variable(btp);
+    
+    // push the basetype so that it is
+    // accessible if/while filters are parsed
+    driver.push_basetype(btp);
 }
 
 | id indexes 
@@ -203,7 +215,11 @@ subset : id
     if (btp->type() != dods_array_c)
         driver.throw_not_array($1, "id indexes");
         
-    $$ = driver.mark_variable(btp); //  && driver.mark_array_variable(btp);
+    $$ = driver.mark_variable(btp);
+    
+    // push the basetype so that it is
+    // accessible if/while filters are parsed
+    driver.push_basetype(btp);
 }
 
 // Note this case is '| id fields'
@@ -234,15 +250,17 @@ subset : id
             throw Error(no_such_variable, "The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
     }
     
-    // push the basetype (a ctor or array of ctor) on the stack so that it is
-    // accessible while the fields are being parsed
+    // push the basetype so that it is
+    // accessible when fields and if/while filters are parsed
     driver.push_basetype(btp);
 } 
 fields 
 { 
-    driver.pop_basetype(); 
+    //driver.pop_basetype(); 
     $$ = true; 
 }
+
+// Note this case is '| id indexes fields'
 
 | id indexes
 {
@@ -270,11 +288,11 @@ fields
 } 
 fields 
 { 
-    driver.pop_basetype();
+    //driver.pop_basetype();
     $$ = true; 
 }
 
-// The following has be removed from the syntax
+// The following has been removed from the syntax
 // | fields indexes { $$ = true; }
 ;
 
@@ -298,8 +316,11 @@ index   : "[" "]" { $$ = driver.make_index(); }
 fields : "{" clauses "}" { $$ = $2; }
 ;
 
-filter : predicate 
-| filter "," predicate
+// A filter should return a FilterClauseList; a predicate should return a single
+// FilterClause.
+
+filter : predicate { $$ = true; }
+| filter "," predicate { $$ = $1 && $3; }
 ;
 
 // Here we use a grammar that is overly general: id op id is not really
@@ -307,31 +328,39 @@ filter : predicate
 // the intent of the evaluator design introduces a number of reduce/reduce
 // conflicts because any sensible definition of 'constant' will be the
 // same as the definition of 'name'. This happens because we must make 'name'
-// far more general than ideal (it must include tokens that start with digits
-// odd characters that clash with the operators, et cetera). Note that the
-// actions here must test for id == "ND" and op == "=", along with a host
-// of other checks.
+// far more general than ideal (it must include tokens that start with digits,
+// odd characters that clash with the operators, et cetera).
 
-predicate : id op id { $$ = true; }
-          | id op id op id { $$ = true; }
+predicate : id op id
+{ driver.add_filter_clause($2, $1, $3); $$ = true; }
+          
+| id op id op id 
+{ 
+    driver.add_filter_clause($2, $1, $3); 
+    driver.add_filter_clause($4, $3, $5); 
+    $$ = true; 
+
+}
+| "ND" "=" id { throw Error(malformed_expr, "The 'ND' operator is not currently supported."); }
 ;
 
-//           | "ND" "=" id { $$ = true; }
+// See http://docs.opendap.org/index.php/DAP4:_Constraint_Expressions,_v2
+// for a discussion of filters that's quite a bit longer than the current
+// draft spec. << and >> are the 'less than bbox' and '> bbox' operations
+// that I'm not so sure about now; @= is the same as *= and is the mapping
+// operation. jhrg 3/18/15 
+op : "<" {$$ = "<";}
+   | ">" {$$ = ">";}
+   | "<=" {$$ = "<=";}
+   | ">=" {$$ = ">=";}
+   | "==" {$$ = "==";}
+   | "!=" {$$ = "!=";}
+   | "~=" {$$ = "~=";}
 
-op : "<"
-   | ">"
-   | "<="
-   | ">="
-   | "=="
-   | "!="
-   | "~="
+   | "<<" {$$ = "<<";}
+   | ">>" {$$ = ">>";}
 
-   | "<<"
-   | ">>"
-
-   | "@="
-   
-   | "="
+   | "@=" {$$ = "@=";}
 ;
 
 id : path

@@ -913,7 +913,7 @@ DDS::timeout_off()
 }
 
 void
-DDS::set_timeout(int t)
+DDS::set_timeout(int)
 {
 #if USE_LOCAL_TIMEOUT_SCHEME
     //  Has no effect under win32

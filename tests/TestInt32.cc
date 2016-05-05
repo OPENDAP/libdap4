@@ -36,6 +36,8 @@
 
 #include "config.h"
 
+//#define DODS_DEBUG
+
 #ifndef WIN32
 #include <unistd.h>
 #else
@@ -43,8 +45,6 @@
 #include <fcntl.h>
 #include <process.h>
 #endif
-
-//#define DODS_DEBUG
 
 #include "TestInt32.h"
 #include "debug.h"
@@ -112,6 +112,8 @@ bool TestInt32::read()
 		d_buf <<= 5;
 		if (!d_buf)
 			d_buf = 32;
+
+	    DBGN(cerr << __PRETTY_FUNCTION__ << "d_buf: " << d_buf << endl);
 	}
 	else {
 		d_buf = 123456789;

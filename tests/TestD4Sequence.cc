@@ -69,7 +69,7 @@ TestD4Sequence &
 TestD4Sequence::operator=(const TestD4Sequence &rhs)
 {
     if (this == &rhs)
-	return *this;
+        return *this;
 
     dynamic_cast<D4Sequence &>(*this) = rhs;
 
@@ -84,6 +84,10 @@ TestD4Sequence::output_values(std::ostream &out)
     print_val(out, "", false);
 }
 
+/**
+ * In DAP2, TestSequence::read() also reads the child sequence data. However,
+ * in DAP4 it's up to each sequence to read its own data.
+ */
 bool
 TestD4Sequence::read()
 {
@@ -91,13 +95,12 @@ TestD4Sequence::read()
         return true;
 
     if (d_current < d_len) {
-    	for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i)
-            if ((*i)->send_p() || (*i)->is_in_selection())
+    	for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i) {
+            if ((*i)->type() != dods_sequence_c && ((*i)->send_p() || (*i)->is_in_selection())) {
+                DBGN(cerr << __PRETTY_FUNCTION__ << "Calling " << (*i)->name() << "->read()" << endl);
                 (*i)->read();
-
-    	// Make sure the child member read() methods are called since
-    	// that is how the 'series' values work.
-    	set_read_p(false);
+            }
+    	}
 
     	++d_current;
     	return false;

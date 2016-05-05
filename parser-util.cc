@@ -177,6 +177,16 @@ bool is_keyword(string id, const string & keyword)
     return id == keyword;
 }
 
+/** Check to see if <tt>val</tt> is a valid byte value. If not,
+    generate an error message using <tt>parser_error()</tt>. There are
+    two versions of <tt>check_byte()</tt>, one which calls
+    <tt>parser_error()</tt> and prints an error message to stderr an
+    one which calls <tt>parser_error()</tt> and generates and Error
+    object.
+
+    @return Returns: TRUE (1) if <i>val</i> is a byte value, FALSE (0) otherwise.
+    @brief Is the value a valid byte?
+    */
 int check_byte(const char *val)
 {
     char *ptr;
@@ -241,7 +251,6 @@ int check_int32(const char *val)
     errno = 0;
     long v = strtol(val, &ptr, 0);      // `0' --> use val to determine base
 
-
     if ((v == 0 && val == ptr) || *ptr != '\0') {
         return FALSE;
     }
@@ -256,10 +265,10 @@ int check_int32(const char *val)
     // separate to highlight the test. On 64-bit linux boxes 'long' may be
     // 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
     else if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
-	return FALSE;
+        return FALSE;
     }
     else {
-	return TRUE;
+        return TRUE;
     }
 }
 
@@ -298,7 +307,34 @@ int check_uint32(const char *val)
 	}
 }
 
-unsigned long long get_ull(const char *val)
+int check_int64(const char *val)
+{
+    char *ptr;
+    errno = 0;
+    long long v = strtoll(val, &ptr, 0);      // `0' --> use val to determine base
+
+    if ((v == 0 && val == ptr) || *ptr != '\0') {
+        return FALSE;
+    }
+
+    // We need to check errno since strtol return clamps on overflow so the
+    // check against the DODS values below will always pass, even for out of
+    // bounds values in the string. mjohnson 7/20/09
+    if (errno == ERANGE) {
+        return FALSE;
+    }
+    // This could be combined with the above, or course, but I'm making it
+    // separate to highlight the test. On 64-bit linux boxes 'long' may be
+    // 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
+    else if (v > DODS_LLONG_MAX || v < DODS_LLONG_MIN) {
+        return FALSE;
+    }
+    else {
+        return TRUE;
+    }
+}
+
+int check_uint64(const char *val)
 {
   // Eat whitespace and check for an initial '-' sign...
   // strtoul allows an initial minus. mjohnson
@@ -307,8 +343,7 @@ unsigned long long get_ull(const char *val)
          c++;
     }
     if (c && (*c == '-')) {
-    	throw Error("The value '" + string(val) + "' is not a valid array index.");
-        // return FALSE;
+        return FALSE;
     }
 
     char *ptr;
@@ -316,23 +351,19 @@ unsigned long long get_ull(const char *val)
     unsigned long long v = strtoull(val, &ptr, 0);
 
     if ((v == 0 && val == ptr) || *ptr != '\0') {
-    	throw Error("The value '" + string(val) + "' contains extra characters.");
-        //return FALSE;
+        return FALSE;
     }
 
     if (errno == ERANGE) {
-    	throw Error("The value '" + string(val) + "' is out of range.");
-    	// return FALSE;
+        return FALSE;
     }
-    else if (v > DODS_MAX_ARRAY_INDEX) { // 2^61
-    	throw Error("The value '" + string(val) + "' is out of range.");
-    	// return FALSE;
+    else if (v > DODS_ULLONG_MAX) { // 2^61
+        return FALSE;
     }
-	else {
-		return v;
+    else {
+        return v;
     }
 }
-
 
 // Check first for system errors (like numbers so small they convert
 // (erroneously) to zero. Then make sure that the value is within
@@ -402,6 +433,87 @@ int check_float64(const char *val)
         return FALSE;
 
     return TRUE;
+}
+
+long long get_int64(const char *val)
+{
+    char *ptr;
+    errno = 0;
+    long long v = strtoll(val, &ptr, 0);      // `0' --> use val to determine base
+
+    if ((v == 0 && val == ptr) || *ptr != '\0') {
+        throw Error("The value '" + string(val) + "' contains extra characters.");
+    }
+
+    // We need to check errno since strtol return clamps on overflow so the
+    // check against the DODS values below will always pass, even for out of
+    // bounds values in the string. mjohnson 7/20/09
+    if (errno == ERANGE) {
+        throw Error("The value '" + string(val) + "' is out of range.");
+    }
+    // This could be combined with the above, or course, but I'm making it
+    // separate to highlight the test. On 64-bit linux boxes 'long' may be
+    // 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
+    else if (v > DODS_LLONG_MAX || v < DODS_LLONG_MIN) {
+        throw Error("The value '" + string(val) + "' is out of range.");
+    }
+    else {
+        return v;
+    }
+}
+
+unsigned long long get_uint64(const char *val)
+{
+    // Eat whitespace and check for an initial '-' sign...
+    // strtoul allows an initial minus. mjohnson
+    const char* c = val;
+    while (c && isspace(*c)) {
+         c++;
+    }
+    if (c && (*c == '-')) {
+        throw Error("The value '" + string(val) + "' is not a valid array index.");
+    }
+
+    char *ptr;
+    errno = 0;
+    unsigned long long v = strtoull(val, &ptr, 0);
+
+    if ((v == 0 && val == ptr) || *ptr != '\0') {
+        throw Error("The value '" + string(val) + "' contains extra characters.");
+    }
+
+    if (errno == ERANGE) {
+        throw Error("The value '" + string(val) + "' is out of range.");
+    }
+    else if (v > DODS_MAX_ARRAY_INDEX) { // 2^61
+        throw Error("The value '" + string(val) + "' is out of range.");
+    }
+    else {
+        return v;
+    }
+}
+
+double get_float64(const char *val)
+{
+    DBG(cerr << "val: " << val << endl);
+    char *ptr;
+    errno = 0;                  // Clear previous value. 5/21/2001 jhrg
+
+#ifdef WIN32
+    double v = w32strtod(val, &ptr);
+#else
+    double v = strtod(val, &ptr);
+#endif
+
+    if (errno == ERANGE || (v == 0.0 && val == ptr) || *ptr != '\0')
+        throw Error("The value '" + string(val) + "' is out of range.");;
+
+    DBG(cerr << "fabs(" << val << ") = " << fabs(v) << endl);
+    double abs_val = fabs(v);
+    if (abs_val > DODS_DBL_MAX || (abs_val != 0.0 && abs_val < DODS_DBL_MIN))
+        throw Error("The value '" + string(val) + "' is out of range.");;
+
+    return v;
 }
 
 /*

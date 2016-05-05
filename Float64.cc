@@ -35,6 +35,8 @@
 
 #include "config.h"
 
+//#define DODS_DEBUG
+
 #include <sstream>
 #include <iomanip>
 
@@ -278,6 +280,14 @@ Float64::ops(BaseType *b, int op)
         throw InternalErr(__FILE__, __LINE__, "This value not read!");
     }
 
+    return d4_ops(b, op);
+}
+
+bool
+Float64::d4_ops(BaseType *b, int op)
+{
+    DBG(cerr << "b->typename(): " << b->type_name() << endl);
+
     switch (b->type()) {
         case dods_int8_c:
             return Cmp<dods_float64, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
@@ -296,14 +306,22 @@ Float64::ops(BaseType *b, int op)
         case dods_uint64_c:
             return SUCmp<dods_float64, dods_uint64>(op, d_buf, static_cast<UInt64*>(b)->value());
         case dods_float32_c:
-            return Cmp<dods_float64, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
+            // Note that this code casts the double (dods_float64) to a float because when
+            // real numbers are approximated using float or double, errors are larger in the float
+            // case, making <= and == operators fail. By casting to the smaller type, the
+            // same values have the same error and we can avoid using a range compare and a
+            // delta value.
+            return Cmp<dods_float32, dods_float32>(op, (float)d_buf, static_cast<Float32*>(b)->value());
         case dods_float64_c:
             return Cmp<dods_float64, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
+        case dods_str_c:
+        case dods_url_c:
+            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
         default:
-            return false;
+            throw Error(malformed_expr, "Relational operators only work with scalar types.");
     }
-}
 
+}
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and information about this

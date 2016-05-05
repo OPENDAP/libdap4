@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <iostream>
 
 #include "BaseType.h"
@@ -47,16 +46,39 @@
 
 #include "dods-datatypes.h"
 #include "dods-limits.h"
+#include "parser-util.h"
 #include "util.h"
 
 using namespace std;
 
 namespace libdap {
 
+void
+D4RValueList::m_duplicate(const D4RValueList &src)
+{
+    for (std::vector<D4RValue *>::const_iterator i = src.d_rvalues.begin(), e = src.d_rvalues.end(); i != e; ++i) {
+        D4RValue *rv = *i;
+        d_rvalues.push_back(new D4RValue(*rv));
+    }
+}
+
 D4RValueList::~D4RValueList()
 {
-	for (std::vector<D4RValue *>::iterator i = d_rvalues.begin(), e = d_rvalues.end(); i != e; ++i)
-		delete *i;
+    for (std::vector<D4RValue *>::iterator i = d_rvalues.begin(), e = d_rvalues.end(); i != e; ++i)
+        delete *i;
+}
+
+void
+D4RValue::m_duplicate(const D4RValue &src)
+{
+    d_value_kind = src.d_value_kind;
+
+    d_variable = src.d_variable;    // weak pointers
+
+    d_func = src.d_func;
+    d_args = (src.d_args != 0) ? new D4RValueList(*src.d_args) : 0; // deep copy these
+
+    d_constant = (src.d_constant != 0) ? src.d_constant->ptr_duplicate() : 0;
 }
 
 template<typename T, class DAP_TYPE>
@@ -183,13 +205,63 @@ D4RValue::~D4RValue() {
 	delete d_constant;
 }
 
-/** Return the BaseType * for a given RValue.
+/**
+ * @brief Build an appropriate RValue
+ *
+ * Look at the value in the string parameter and build an appropriate
+ * BaseType, use that as a constant and build an RValue. This can be used
+ * by the DAP4 parser directly to build the constants in filter clauses.
+ *
+ * @param cpps The string argument read by the parser.
+ * @return A D4RValue pointer.
+ */
+D4RValue *D4RValueFactory(std::string cpps)
+{
+    char *ptr;
+
+    // First check if the string is a uint64, ..., then convert it.
+    // Since the check_* function use the strtoull() functions, no
+    // need to test for errors when building the actual values.
+    if (check_uint64(cpps.c_str())) {
+        return new D4RValue(strtoull(cpps.c_str(), &ptr, 0));
+    }
+    else if (check_int64(cpps.c_str())) {
+        return new D4RValue(strtoll(cpps.c_str(), &ptr, 0));
+    }
+    else if (check_float64(cpps.c_str())) {
+#ifdef WIN32
+        return new D4RValue(w32strtod(cpps.c_str(), &ptr));
+#else
+        return new D4RValue(strtod(cpps.c_str(), &ptr));
+#endif
+    }
+    else {
+        return new D4RValue(cpps);
+    }
+}
+
+/**
+ * @brief Get the value for a RValue object
+ * Return the BaseType * for a given RValue. For a dataset variable, read the
+ * variable's value and, for a function, evaluate that function. Since read()
+ * is called for a dataset variable each time this method is called, if the
+ * variable is part of a Sequence, the next value in the sequence will be returned.
+ * However, since this code also sets the read_p property after calling read(),
+ * if the variable does not have a new value, read() will not be called (using the
+ * read_p property, the read() method is called only when the variable has a new
+ * value to be read.
  *
  * @note Unlike the DAP2 functions, we have an easier-to-follow memory model for
  * function values. The values (BaseType*) returned by this method will be packaged
  * up in a RValueList and deleted when that list is deleted. Constant values and
  * function result values will be deleted at that time; variables will not. Thus
  * Server Functions should always allocate storage for their return values.
+ *
+ * @todo Could move the operation that wraps a constant in a BaseType to this method
+ * while providing other ways to access the value(s) (methods to determine if the
+ * rvalue is a constant and what DAP type it is, e.g.). This would provide an optimization
+ * for the filter evaluator which may access the values many times. We might also
+ * modify the server side functions so they could access constant values more efficiently.
  *
  * @param dmr The DMR to pass to a function.
  * @return A BaseType* that holds the value.
@@ -211,7 +283,41 @@ D4RValue::value(DMR &dmr)
 
 	default:
 		throw InternalErr(__FILE__, __LINE__, "Unknown rvalue type.");
-	};
+	}
+
+	return 0; // nullptr; added return to quiet warning. jhrg 3/24/15
+}
+
+/**
+ * @brief Get the value for a RValue object
+ *
+ * This version of value() will not work for function RValues, but has the advantage that
+ * it can be used more easily for the D4RValue objects built for, and stored in, D4Filter-
+ * Clause instances.
+ *
+ * @see D4RValue::value(DMR&)
+ * @return The value wrapped in a BaseType*
+ */
+BaseType *
+D4RValue::value()
+{
+    switch (d_value_kind) {
+    case basetype:
+        d_variable->read();
+        d_variable->set_read_p(true);
+        return d_variable;
+
+    case function:
+        throw Error(malformed_expr, "An expression that included a function call was used in a place where that won't work.");
+
+    case constant:
+        return d_constant;
+
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown rvalue type.");
+    }
+
+    return 0; // nullptr; added return to quiet warning. jhrg 3/24/15
 }
 
 } // namespace libdap

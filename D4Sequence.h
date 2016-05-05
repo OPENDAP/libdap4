@@ -36,6 +36,7 @@ class Crc32;
 namespace libdap
 {
 class BaseType;
+class D4FilterClauseList;
 
 /** The type BaseTypeRow is used to store single rows of values in an
     instance of D4Sequence. Values are stored in instances of BaseType. */
@@ -132,6 +133,16 @@ typedef vector<BaseTypeRow *> SequenceValues;
 class D4Sequence: public Constructor
 {
 private:
+    // This may be zero (nullptr) but the accessor (clauses()) allocates an
+    // instance if that is the case.
+    D4FilterClauseList *d_clauses;
+
+    // Use this to control if ptr_duplicate(), ..., copy the filter clauses.
+    // Because the values of a child sequence are held in copies of the Seq
+    // object they clauses will bound to the 'master' instance will be copied
+    // but the copies will never be used. This field can be used to control
+    // that. ...purely an optimization.
+    bool d_copy_clauses;
 
 protected:
     // This holds the values of the sequence. Values are stored in
@@ -149,6 +160,10 @@ protected:
 #endif
 
     void m_duplicate(const D4Sequence &s);
+
+    // Specialize this if you have a data source that requires read()
+    // recursively call itself for child sequences.
+    void read_sequence_values(bool filter);
 
     friend class D4SequenceTest;
 
@@ -183,7 +198,7 @@ public:
      */
     virtual void set_length(int count) { d_length = (int64_t)count; }
 
-    virtual bool read_next_instance(/*DMR &dmr, ConstraintEvaluator &eval,*/ bool filter);
+    virtual bool read_next_instance(bool filter);
 
     virtual void intern_data(ConstraintEvaluator &, DDS &) {
     	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
@@ -199,6 +214,8 @@ public:
     virtual void intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/);
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+
+    D4FilterClauseList &clauses();
 
 #if INDEX_SUBSETTING
     /** Return the starting row number if the sequence was constrained using
@@ -255,12 +272,14 @@ public:
 
     /**
      * @brief Get the values for this D4Sequence
-     * This method does not perform a deep copy of the values so the caller
-     * should not free the BaseType*s in this vector of vectors since this
-     * object will free those in its destructor.
-     * @return The entire vector of vector of BaseType*
+     * This method returns a reference to the values held by the instance.
+     * You should make sure that the instance really holds values before
+     * calling it! Do not free the BaseType*s contained in the vector of
+     * vectors.
+     * @return A reference tp the vector of vector of BaseType*
      */
     virtual D4SeqValues value() const { return d_values; }
+
     /**
      * @brief Get the sequence values by reference
      * This method returns a reference to the D4Sequence's values,

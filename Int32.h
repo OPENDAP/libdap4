@@ -101,6 +101,7 @@ public:
                            bool print_decl_p = true);
 
     virtual bool ops(BaseType *b, int op);
+    virtual bool d4_ops(BaseType *b, int op);
 
     virtual void dump(ostream &strm) const ;
 };

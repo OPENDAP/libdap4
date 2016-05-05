@@ -37,6 +37,8 @@ class DMR;
 class BaseType;
 class Array;
 class D4Dimension;
+class D4FilterClause;
+class D4FilterClauseList;
 
 /**
  * Driver for the DAP4 Constraint Expression parser.
@@ -102,6 +104,9 @@ class D4ConstraintEvaluator {
 
 	void throw_not_found(const std::string &id, const std::string &ident);
 	void throw_not_array(const std::string &id, const std::string &ident);
+
+	// Build FilterClauseList for filter clauses for a Sequence
+	void add_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2);
 
 	friend class D4CEParser;
 

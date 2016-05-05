@@ -1,0 +1,1 @@
+{ { 32, "Silly test string: 1", -54.4 }, { 1024, "Silly test string: 2", -1.77 }, { 32768, "Silly test string: 3", 98.93 }, { 1048576, "Silly test string: 4", 92.68 }, { 33554432, "Silly test string: 5", 99.48 }, { 1073741824, "Silly test string: 6", 81.67 }, { 32, "Silly test string: 7", 10.59 } }

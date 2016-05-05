@@ -36,10 +36,7 @@
 #define _operators_h
 
 #include "GNURegex.h"  // GNU Regex class used for string =~ op.
-#include "parser.h"  // for ID_MAX
 #include "ce_expr.tab.hh"
-
-//using namespace std;
 
 namespace libdap {
 
@@ -53,6 +50,8 @@ namespace libdap {
 template<class T1, class T2>
 bool Cmp(int op, T1 v1, T2 v2)
 {
+	DBGN(cerr << __PRETTY_FUNCTION__ << v1 << " " << op << " " << v2 << endl);
+
     switch (op) {
         case SCAN_EQUAL:
             return v1 == v2;
@@ -90,6 +89,8 @@ static inline unsigned long long dap_floor_zero(T i)
 template<class UT1, class T2>
 bool USCmp(int op, UT1 v1, T2 v2)
 {
+	DBGN(cerr << __PRETTY_FUNCTION__ << v1 << " " << op << " " << v2 << endl);
+
     switch (op) {
         case SCAN_EQUAL:
             return v1 == dap_floor_zero<T2>(v2);
@@ -125,6 +126,8 @@ bool USCmp(int op, UT1 v1, T2 v2)
 template<class T1, class UT2>
 bool SUCmp(int op, T1 v1, UT2 v2)
 {
+	DBGN(cerr << __PRETTY_FUNCTION__ << v1 << " " << op << " " << v2 << endl);
+
     switch (op) {
         case SCAN_EQUAL:
             return dap_floor_zero<T1>(v1) == v2;

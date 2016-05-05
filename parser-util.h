@@ -47,45 +47,38 @@ void save_str(string &dst, const char *src, const int);
 
 bool is_keyword(string id, const string &keyword);
 
-/** Check to see if <tt>val</tt> is a valid byte value. If not,
-    generate an error message using <tt>parser_error()</tt>. There are
-    two versions of <tt>check_byte()</tt>, one which calls
-    <tt>parser_error()</tt> and prints an error message to stderr an
-    one which calls <tt>parser_error()</tt> and generates and Error
-    object.
-
-    @return Returns: True if <i>val</i> is a byte value, False otherwise.
-    @brief Is the value a valid byte?
-    */
-
+/**
+ * @defgroup check_type
+ * @{
+ * @brief Can the given string be converted into a byte, ...?
+ */
 int check_byte(const char *val);
-
-/** Like <tt>check_byte()</tt> but for 32-bit integers
-    (<tt>check_uint()</tt> is for unsigned integers).
-
-
-    @brief Is the value a valid integer?
-    */
-
 int check_int16(const char *val);
 int check_uint16(const char *val);
 int check_int32(const char *val);
 int check_uint32(const char *val);
-
-unsigned long long get_ull(const char *val);
-
-/** Like <tt>check_byte()</tt> but for 64-bit float values.
-
-    @brief Is the value a valid float? */
+int check_int64(const char *val);
+int check_uint64(const char *val);
 
 int check_float32(const char *val);
 int check_float64(const char *val);
 
 /** Currently this function always returns true.
-
     @brief Is the value a valid URL? */
-
 int check_url(const char *val);
+
+/** @} */
+
+/**
+ * @defgroup get_type
+ * @{
+ * @brief Convert the string to a value; throw if the conversion fails.
+ */
+long long get_int64(const char *val);
+unsigned long long get_uint64(const char *val);
+double get_float64(const char *val);
+
+/** @} */
 
 } // namespace libdap
 

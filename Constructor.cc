@@ -32,14 +32,14 @@
 
 #include "config.h"
 
+//#define DODS_DEBUG
+
 #include <string>
 #include <sstream>
 #include <algorithm>
 #include <functional>
 
 #include <stdint.h>
-
-//#define DODS_DEBUG
 
 #include "crc.h"
 
@@ -132,7 +132,7 @@ Constructor::operator=(const Constructor &rhs)
     return *this;
 }
 
-// A public method, but just barely..
+// A public method, but just barely...
 BaseType *
 Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
 {
@@ -638,8 +638,11 @@ Constructor::print_val(ostream &out, string space, bool print_decl_p)
     }
 
     out << "{ " ;
-    for (Vars_citer i = d_vars.begin(); i != d_vars.end();
-         i++, (void)(i != d_vars.end() && out << ", ")) {
+    for (Vars_citer i = d_vars.begin(), e = d_vars.end(); i != e;
+         i++, (void)(i != e && out << ", ")) {
+
+        DBG(cerr << (*i)->name() << " isa " << (*i)->type_name() << endl);
+
         (*i)->print_val(out, "", false);
     }
 

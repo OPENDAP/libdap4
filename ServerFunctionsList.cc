@@ -40,9 +40,6 @@
 
 #include "ServerFunctionsList.h"
 
-using std::cerr;
-using std::string;
-using std::endl;
 using namespace std;
 using namespace libdap;
 
