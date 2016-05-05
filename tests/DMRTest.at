@@ -46,9 +46,10 @@ m4_define([DMR_TRANS], [
     # This is a fix for the issue where the CRC32 checksum is different
     # on little- and big-endian machines, so we use different baseline
     # files.  jhrg 9/30/15
+        
     input=$abs_srcdir/dmr-testsuite/$1
     baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$1.trans_base
-
+    
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
         AT_CHECK([$abs_builddir/dmr-test -x -t $input], [0], [stdout], [ignore])
@@ -57,6 +58,38 @@ m4_define([DMR_TRANS], [
         [
         AT_CHECK([$abs_builddir/dmr-test -x -t $input || true], [], [stdout], [stderr])
         AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
+    
+        AT_XFAIL_IF([test "$2" = "xfail"])
+        ])
+        
+    AT_CLEANUP
+])
+
+# Usage DMR_TRANS_UNIVERSAL $1 <test_input> $2 <pass/xfail>
+# This code tests the values printed when the received document is decoded.
+m4_define([DMR_TRANS_UNIVERSAL], [
+    # Test transmitting data (i.e., writing the Data DMR to a file and then decoding it)
+    AT_SETUP([trans $1])
+    AT_KEYWORDS([trans])
+    
+    # WORD_ORDER is set by configure in atlocal.
+    # This is a fix for the issue where the CRC32 checksum is different
+    # on little- and big-endian machines, so we use different baseline
+    # files.  jhrg 9/30/15
+    
+    input=$abs_srcdir/dmr-testsuite/$1
+    baseline=$abs_srcdir/dmr-testsuite/universal/$1.trans_base
+    
+    
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        echo "The command <>$abs_builddir/dmr-test -x -t $input $checksum_filt<>"
+        AT_CHECK([$abs_builddir/dmr-test -x -t $input | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [0], [stdout], [ignore])
+        AT_CHECK([mv stdout $baseline.tmp])
+        ],
+        [
+        AT_CHECK([$abs_builddir/dmr-test -x -t $input | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [], [stdout], [ignore])
+        AT_CHECK([diff -b -B $baseline stdout], [], [ignore],[],[])
     
         AT_XFAIL_IF([test "$2" = "xfail"])
         ])
@@ -78,7 +111,7 @@ m4_define([DMR_TRANS_CE], [
 
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
-        AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2" || true], [], [stdout], [])
+        AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2"], [], [stdout], [])
         AT_CHECK([mv stdout $baseline.tmp])
         ],
         [
@@ -273,6 +306,15 @@ DMR_TRANS([test_array_14.xml], [pass])
 DMR_TRANS([test_simple_6.2.xml], [pass])
 DMR_TRANS([test_simple_6.3.xml], [pass])
 
+# *** FIXME
+DMR_TRANS_UNIVERSAL([test_array_9.xml], [pass])
+DMR_TRANS_UNIVERSAL([test_array_12.xml], [pass])
+DMR_TRANS_UNIVERSAL([test_array_13.xml], [pass])
+DMR_TRANS_UNIVERSAL([test_array_14.xml], [pass])
+
+DMR_TRANS_UNIVERSAL([test_simple_6.2.xml], [pass])
+DMR_TRANS_UNIVERSAL([test_simple_6.3.xml], [pass])
+# *** /FIXME
 
 DMR_INTERN([test_array_9.xml], [pass])
 DMR_INTERN([test_array_12.xml], [pass])
