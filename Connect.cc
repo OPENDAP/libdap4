@@ -149,7 +149,6 @@ void Connect::process_data(DDS &data, Response *rs)
 {
     DBG(cerr << "Entering Connect::process_data" << endl);
 
-    // TODO is this the correct info?
     data.set_dap_version(rs->get_protocol());
 
     DBG(cerr << "Entering process_data: d_stream = " << rs << endl);
@@ -165,9 +164,12 @@ void Connect::process_data(DDS &data, Response *rs)
         // Web errors (those reported in the return document's MIME header)
         // are processed by the WWW library.
         throw InternalErr(__FILE__, __LINE__,
-            "An error was reported by the remote httpd; this should have been processed by HTTPConnect.");
+            "An error was reported by the remote web server; this should have been processed by HTTPConnect.");
 
+#if 0
         // FIXME: The following case is never used. There is no such response. jhrg 10/20/15
+        // This code triggers a security warning from Coverity; since it is not used,
+        // I have removed it. jhrg 5/5/16
     case dods_data_ddx: {
         // Parse the DDX; throw an exception on error.
         DDXParser ddx_parser(data.get_factory());
@@ -197,6 +199,7 @@ void Connect::process_data(DDS &data, Response *rs)
         }
         return;
     }
+#endif
 
     case dods_data:
     default: {
@@ -209,6 +212,7 @@ void Connect::process_data(DDS &data, Response *rs)
         for (DDS::Vars_iter i = data.var_begin(); i != data.var_end(); i++) {
             (*i)->deserialize(um, &data);
         }
+
         return;
     }
     }
