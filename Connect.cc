@@ -89,6 +89,9 @@ void Connect::process_data(DataDDS &data, Response *rs)
             throw InternalErr(__FILE__, __LINE__,
                     "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 
+#if 0
+            // This code triggers a security warning from Coverity; since it is not used,
+            // I have removed it. jhrg 5/5/16
         case dods_data_ddx: {
             // Parse the DDX; throw an exception on error.
             DDXParser ddx_parser(data.get_factory());
@@ -123,6 +126,7 @@ void Connect::process_data(DataDDS &data, Response *rs)
             }
             return;
         }
+#endif
 
         case dods_data:
         default: {

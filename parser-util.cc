@@ -385,7 +385,8 @@ int check_float32(const char *val)
         << ", errno: " << errno << ", val==ptr: " << (val == ptr) << endl);
 
     if (errno == ERANGE || (v == 0.0 && val == ptr) || *ptr != '\0')
-	return FALSE;
+        return FALSE;
+
 #if 0
     if ((v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE))
         || *ptr != '\0') {
@@ -451,12 +452,19 @@ long long get_int64(const char *val)
     if (errno == ERANGE) {
         throw Error("The value '" + string(val) + "' is out of range.");
     }
+
+#if 0
     // This could be combined with the above, or course, but I'm making it
     // separate to highlight the test. On 64-bit linux boxes 'long' may be
     // 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
+    //
+    // Removed because coverity flags it as useless, which it is until we
+    // have 128-bit ints... jhrg 5/9/16
     else if (v > DODS_LLONG_MAX || v < DODS_LLONG_MIN) {
         throw Error("The value '" + string(val) + "' is out of range.");
     }
+#endif
+
     else {
         return v;
     }
@@ -485,9 +493,12 @@ unsigned long long get_uint64(const char *val)
     if (errno == ERANGE) {
         throw Error("The value '" + string(val) + "' is out of range.");
     }
+#if 0
+    // Coverity; see above. jhrg 5/9/16
     else if (v > DODS_MAX_ARRAY_INDEX) { // 2^61
         throw Error("The value '" + string(val) + "' is out of range.");
     }
+#endif
     else {
         return v;
     }
