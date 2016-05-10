@@ -323,12 +323,16 @@ int check_int64(const char *val)
     if (errno == ERANGE) {
         return FALSE;
     }
+#if 0
     // This could be combined with the above, or course, but I'm making it
     // separate to highlight the test. On 64-bit linux boxes 'long' may be
     // 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
-    else if (v > DODS_LLONG_MAX || v < DODS_LLONG_MIN) {
+    //
+    // Removed - Coverity says it can never be false. Makes sense. jhrg 5/10/16
+    else if (v <= DODS_LLONG_MAX && v >= DODS_LLONG_MIN) {
         return FALSE;
     }
+#endif
     else {
         return TRUE;
     }
