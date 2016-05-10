@@ -5,8 +5,9 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Copyright (c) 2002,2003,2016 OPeNDAP, Inc.
 // Author: Patrick West <pwest@ucar.edu>
+//         James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,6 +30,7 @@
 //
 // Authors:
 //      pwest       Patrick West <pwest@ucar.edu>
+
 
 #include "config.h"
 
