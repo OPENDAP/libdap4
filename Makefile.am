@@ -25,8 +25,8 @@ if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
 endif
 
-SUBDIRS = gl d4_ce d4_function .  tests unit-tests
-DIST_SUBDIRS = gl d4_ce d4_function tests unit-tests
+SUBDIRS = gl d4_ce d4_function . unit-tests tests 
+DIST_SUBDIRS = gl d4_ce d4_function unit-tests tests
 
 noinst_LTLIBRARIES = libparsers.la
 

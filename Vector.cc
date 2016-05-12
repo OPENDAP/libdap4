@@ -368,7 +368,26 @@ void Vector::set_read_p(bool state)
 {
     if (d_proto) {
         d_proto->set_read_p(state);
+
+        switch (d_proto->type()) {
+        case dods_structure_c:
+        case dods_sequence_c:
+        case dods_grid_c:
+            DBGN(cerr << __PRETTY_FUNCTION__ << " found structure, etc., size: " << d_compound_buf.size() << endl);
+            DBG(cerr << "constrained size: " << d_length << endl);
+            if (d_compound_buf.size() > 0) {
+                for (unsigned long long i = 0; i < (unsigned)d_length; ++i) {
+                    d_compound_buf[i]->set_read_p(state);
+                }
+            }
+            break;
+
+
+        default:
+            break;
+        }
     }
+
     BaseType::set_read_p(state);
 }
 

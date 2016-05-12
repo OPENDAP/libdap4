@@ -425,44 +425,54 @@ bool TestArray::read()
     //case dods_uint8_c:
     case dods_int16_c:
         m_cardinal_type_read_helper<dods_int16, Int16>();
+        set_read_p(true);
         break;
 
     case dods_uint16_c:
         m_cardinal_type_read_helper<dods_uint16, UInt16>();
+        set_read_p(true);
         break;
 
     case dods_int32_c:
         m_cardinal_type_read_helper<dods_int32, Int32>();
+        set_read_p(true);
         break;
 
     case dods_uint32_c:
         m_cardinal_type_read_helper<dods_uint32, UInt32>();
+        set_read_p(true);
         break;
 
     case dods_float32_c:
         m_cardinal_type_read_helper<dods_float32, Float32>();
+        set_read_p(true);
         break;
 
     case dods_float64_c:
         m_cardinal_type_read_helper<dods_float64, Float64>();
+        set_read_p(true);
         break;
 
     case dods_int8_c:
         m_cardinal_type_read_helper<dods_int8, Int8>();
+        set_read_p(true);
         break;
 
     case dods_byte_c:
     case dods_char_c:
     case dods_uint8_c:
         m_cardinal_type_read_helper<dods_byte, Byte>();
+        set_read_p(true);
         break;
 
     case dods_int64_c:
         m_cardinal_type_read_helper<dods_int64, Int64>();
+        set_read_p(true);
         break;
 
     case dods_uint64_c:
         m_cardinal_type_read_helper<dods_uint64, UInt64>();
+        set_read_p(true);
         break;
 
     case dods_enum_c:
@@ -496,6 +506,7 @@ bool TestArray::read()
         default:
             throw InternalErr(__FILE__, __LINE__, "Enum with undefined type.");
         }
+        set_read_p(true);
         break;
 
     case dods_str_c:
@@ -519,6 +530,7 @@ bool TestArray::read()
         }
 
         set_value(tmp, array_len);
+        set_read_p(true);
         break;
     }
 
@@ -531,7 +543,7 @@ bool TestArray::read()
             // Load the new value into this object's array
             set_vec(i, elem);
         }
-
+        set_read_p(true);
         break;
 
     case dods_sequence_c:
@@ -557,7 +569,7 @@ bool TestArray::read()
         break;
     }
 
-    set_read_p(true);
+    // set_read_p(true);
 
     return true;
 }
