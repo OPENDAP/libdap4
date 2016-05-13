@@ -354,7 +354,25 @@ int Vector::element_count(bool leaves)
  @brief Indicates that the data is ready to send. */
 void Vector::set_send_p(bool state)
 {
-    d_proto->set_send_p(state);
+    if (d_proto) {
+	d_proto->set_send_p(state);
+
+        switch (d_proto->type()) {
+        case dods_structure_c:
+        case dods_sequence_c:
+        case dods_grid_c:
+            if (d_compound_buf.size() > 0) {
+                for (unsigned long long i = 0; i < (unsigned)d_length; ++i) {
+                    d_compound_buf[i]->set_send_p(state);
+                }
+            }
+            break;
+
+        default:
+            break;
+        }
+    }
+
     BaseType::set_send_p(state);
 }
 
@@ -373,15 +391,12 @@ void Vector::set_read_p(bool state)
         case dods_structure_c:
         case dods_sequence_c:
         case dods_grid_c:
-            DBGN(cerr << __PRETTY_FUNCTION__ << " found structure, etc., size: " << d_compound_buf.size() << endl);
-            DBG(cerr << "constrained size: " << d_length << endl);
             if (d_compound_buf.size() > 0) {
                 for (unsigned long long i = 0; i < (unsigned)d_length; ++i) {
                     d_compound_buf[i]->set_read_p(state);
                 }
             }
             break;
-
 
         default:
             break;
