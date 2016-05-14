@@ -35,7 +35,7 @@
 #include "config.h"
 
 //#define DODS_DEBUG
-//#define DODS_DEBUG2
+#define DODS_DEBUG2
 
 
 #include <algorithm>
@@ -1074,6 +1074,8 @@ void Sequence::intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval, sequenc
  */
 bool Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 {
+#if 0
+    // Nathan's tip - this is something that should never happen
     DataDDS *dd = dynamic_cast<DataDDS *>(dds);
     if (!dd) throw InternalErr("Expected argument 'dds' to be a DataDDS!");
 
@@ -1087,7 +1089,7 @@ bool Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
                 string("The protocl version (") + dd->get_protocol()
                         + ") indicates that this\nis an old server which may not correctly transmit Sequence variables.\nContact the server administrator.");
     }
-
+#endif
     while (true) {
         // Grab the sequence stream's marker.
         unsigned char marker = read_marker(um);
