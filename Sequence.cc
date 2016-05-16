@@ -37,7 +37,6 @@
 //#define DODS_DEBUG
 //#define DODS_DEBUG2
 
-
 #include <algorithm>
 #include <string>
 #include <sstream>
@@ -320,7 +319,7 @@ bool Sequence::is_linear()
 BaseTypeRow *
 Sequence::row_value(size_t row)
 {
-    if (row >= d_values.size()) return 0;
+    if (row >= d_values.size()) return 0;   //nullptr
     return d_values[row];
 }
 
@@ -423,6 +422,21 @@ int Sequence::number_of_rows() const
 void Sequence::reset_row_number()
 {
     d_row_number = -1;
+}
+
+/**
+ * @brief A recursive version of reset_row_number()
+ *
+ * @param recur If true, reset the row number of child sequences as well
+ */
+void Sequence::reset_row_number(bool recur)
+{
+    reset_row_number();
+
+    if (recur)
+        for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i)
+            if ((*i)->type() == dods_sequence_c)
+                reset_row_number(true);
 }
 
 // Notes:
