@@ -217,10 +217,6 @@ protected:
 
     virtual void intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
             sequence_values_stack_t &sequence_values_stack);
-#if 0
-    // See note in Sequence.cc
-    virtual void load_prototypes_with_values(int d_row_number);
-#endif
 
 public:
 
@@ -253,13 +249,12 @@ public:
 
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-#if 0
-    virtual bool serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-#endif
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     /// Rest the row number counter
     void reset_row_number();
+    void increment_row_number(unsigned int i) { d_row_number += i; }
+    int get_row_number() const { return d_row_number; }
 
     int get_starting_row_number();
 
