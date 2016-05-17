@@ -217,10 +217,6 @@ protected:
 
     virtual void intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
             sequence_values_stack_t &sequence_values_stack);
-#if 0
-    // See note in Sequence.cc
-    virtual void load_prototypes_with_values(int d_row_number);
-#endif
 
 public:
 
@@ -253,13 +249,15 @@ public:
 
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-#if 0
-    virtual bool serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-#endif
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     /// Rest the row number counter
     void reset_row_number();
+    // I added a second method instead of a param with a default value because I think
+    // this will result only in an addition to the ABI/API, not a change. 5/16/15 jhrg
+    void reset_row_number(bool recur);
+    void increment_row_number(unsigned int i) { d_row_number += i; }
+    int get_row_number() const { return d_row_number; }
 
     int get_starting_row_number();
 
@@ -270,7 +268,7 @@ public:
     virtual void set_row_number_constraint(int start, int stop, int stride = 1);
 
     /// Get the unsent data property
-    bool get_unsent_data()
+    bool get_unsent_data() const
     {
         return d_unsent_data;
     }

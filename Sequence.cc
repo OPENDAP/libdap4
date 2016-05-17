@@ -37,7 +37,6 @@
 //#define DODS_DEBUG
 //#define DODS_DEBUG2
 
-
 #include <algorithm>
 #include <string>
 #include <sstream>
@@ -320,7 +319,7 @@ bool Sequence::is_linear()
 BaseTypeRow *
 Sequence::row_value(size_t row)
 {
-    if (row >= d_values.size()) return 0;
+    if (row >= d_values.size()) return 0;   //nullptr
     return d_values[row];
 }
 
@@ -425,78 +424,20 @@ void Sequence::reset_row_number()
     d_row_number = -1;
 }
 
-#if 0
-// written but not used - this was written so that values loaded from
-// Arrays into a new ('synthesized') sequence by the 'tablar() server
-// function would be properly used during the evaluation of a selection
-// expression. But I forgot that tabular() uses a specialized version of
-// Sequence: TabularSequence and that has it's own version of serialize().
-// To get the returnAs="ascii" to filter values, I also need to specialize
-// the intern_data() method of Sequence. jhrg 3/9/15
-
 /**
- * Protected method to be used when a Sequence has values loaded in from
- * someplace like a function and will never need to use the read() method.
- * This transfers the ith value from the SequenceValues object that holds
- * the complete set of values for the Sequence into the prototype variables
- * (which are scalars) so that evaluation of the selection operation can
- * proceed correctly.
+ * @brief A recursive version of reset_row_number()
  *
- * @note The vector<>.at() method is quite a bit slower than the [] access;
- * refactor this once were done testing.
- *
- * @param row_number Transfer this row's data values. Could use the object's
- * d_row_number field.
+ * @param recur If true, reset the row number of child sequences as well
  */
-void Sequence::load_prototypes_with_values(int row_number)
+void Sequence::reset_row_number(bool recur)
 {
-    vector<BaseType*> *row = d_values.at(row_number);
+    reset_row_number();
 
-    // For each of the prototype variables in the Sequence, load it
-    // with a values from the BaseType* vector. The order should match.
-    // Test the type, but assume if that matches, the value is correct
-    // for the variable.
-    int pos = 0;
-    for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i) {
-        if ((*i)->type() != row->at(pos)->var()->type())
-            throw InternalErr(__FILE__, __LINE__, "Expected types to match when loading values for selection expression evaluation.");
-
-        // Ugly...
-        switch ((*i)->type()) {
-        case dods_byte_c:
-            static_cast<Byte*>(*i)->set_value(static_cast<Byte*>(row->at(pos++))->value());
-            break;
-        case dods_int16_c:
-            static_cast<Int16*>(*i)->set_value(static_cast<Int16*>(row->at(pos++))->value());
-            break;
-        case dods_int32_c:
-            static_cast<Int32*>(*i)->set_value(static_cast<Int32*>(row->at(pos++))->value());
-            break;
-        case dods_uint16_c:
-            static_cast<UInt16*>(*i)->set_value(static_cast<UInt16*>(row->at(pos++))->value());
-            break;
-        case dods_uint32_c:
-            static_cast<UInt32*>(*i)->set_value(static_cast<UInt32*>(row->at(pos++))->value());
-            break;
-        case dods_float32_c:
-            static_cast<Float32*>(*i)->set_value(static_cast<Float32*>(row->at(pos++))->value());
-            break;
-        case dods_float64_c:
-            static_cast<Float64*>(*i)->set_value(static_cast<Float64*>(row->at(pos++))->value());
-            break;
-        case dods_str_c:
-            static_cast<Str*>(*i)->set_value(static_cast<Str*>(row->at(pos++))->value());
-            break;
-        case dods_url_c:
-            static_cast<Url*>(*i)->set_value(static_cast<Url*>(row->at(pos++))->value());
-            break;
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Expected a scalar type when loading values for selection expression evaluation.");
-        }
-    }
+    if (recur)
+        for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i)
+            if ((*i)->type() == dods_sequence_c)
+                reset_row_number(true);
 }
-
-#endif
 
 // Notes:
 // Assume that read() is implemented so that, when reading data for a nested
@@ -552,35 +493,21 @@ void Sequence::load_prototypes_with_values(int row_number)
  */
 bool Sequence::read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_eval)
 {
-    DBG2(cerr << "Entering Sequence::read_row for " << name() << endl);
+    DBG2(cerr << "Entering Sequence::read_row for " << name() << ", row number " << row << ", current row " << d_row_number << endl);
     if (row < d_row_number) throw InternalErr("Trying to back up inside a sequence!");
 
-    DBG2(cerr << "read_row: row number " << row << ", current row " << d_row_number << endl);
     if (row == d_row_number) {
         DBG2(cerr << "Leaving Sequence::read_row for " << name() << endl);
         return false;
     }
-#if USE_LOCAL_TIMEOUT_SCHEME
-    dds.timeout_on();
-#endif
+
     bool eof = false;  // Start out assuming EOF is false.
     while (!eof && d_row_number < row) {
         if (!read_p()) {
             // jhrg original version from 10/9/13 : eof = (read() == false);
             eof = read();
         }
-#if 0
-        // A change (3/9/15): I've made the is_synthesized property
-        // work so that the prototype variables in the Sequence are loaded
-        // with the scalar values for the ith row so that the eval_selection()
-        // method will function correctly.
 
-        // See note above
-
-        if (d_is_synthesized) {
-            load_prototypes_with_values(d_row_number);
-        }
-#endif
         // Advance the row number if ce_eval is false (we're not supposed to
         // evaluate the selection) or both ce_eval and the selection are
         // true.
@@ -594,9 +521,7 @@ bool Sequence::read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_ev
     // elements of the sequence know to not call read() but instead look for
     // data values inside themselves.
     set_read_p(true);
-#if USE_LOCAL_TIMEOUT_SCHEME
-    dds.timeout_off();
-#endif
+
     // Return true if we have valid data, false if we've read to the EOF.
     DBG2(cerr << "Leaving Sequence::read_row for " << name() << " with eof: " << eof << endl);
     return !eof; // jhrg 10/10/13 was: eof == 0;
@@ -625,14 +550,14 @@ inline bool Sequence::is_end_of_rows(int i)
  <li>Sending a one-level sequence:
  <pre>
  Dataset {
- Sequence {
- Int x;
- Int y;
- } flat;
+     Sequence {
+         Int x;
+         Int y;
+     } flat;
  } case_1;
  </pre>
 
- Serialize it by reading successive rows and sending all of those that
+ Serialize case_1 by reading successive rows and sending all of those that
  satisfy the CE. Before each row, send a start of instance (SOI) marker.
  Once all rows have been sent, send an End of Sequence (EOS)
  marker.[serialize_leaf].</li>
@@ -640,16 +565,16 @@ inline bool Sequence::is_end_of_rows(int i)
  <li>Sending a nested sequence:
  <pre>
  Dataset {
- Sequence {
- Int t;
- Sequence {
- Int z;
- } inner;
- } outer;
+     Sequence {
+         Int t;
+         Sequence {
+             Int z;
+         } inner;
+     } outer;
  } case_2;
  </pre>
 
- Serialize by reading the first row of outer and storing the values. Do
+ Serialize case_2 by reading the first row of outer and storing the values. Do
  not evaluate the CE [serialize_parent_part_one]. Call serialize() for inner
  and read each row for it, evaluating the CE for each row that is read.
  After the first row of inner is read and satisfies the CE, write out the
@@ -676,8 +601,6 @@ inline bool Sequence::is_end_of_rows(int i)
  */
 bool Sequence::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
-    DBG2(cerr << "Entering Sequence::serialize for " << name() << endl);
-
     // Special case leaf sequences!
     bool status = false;
 
@@ -685,10 +608,6 @@ bool Sequence::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, boo
         status = serialize_leaf(dds, eval, m, ce_eval);
     else
         status = serialize_parent_part_one(dds, eval, m);
-
-#ifdef CLEAR_LOCAL_DATA
-    clear_local_data();
-#endif
 
     return status;
 }
@@ -860,7 +779,7 @@ bool Sequence::serialize_leaf(DDS &dds, ConstraintEvaluator &eval, Marshaller &m
 
  @note Even though each Sequence variable has a \e values field, only the
  top-most Sequence in a hierarchy of Sequences holds values. The field
- accessed by the var_value() method is completely linked object; access
+ accessed by the var_value() method is a completely linked object; access
  the values of nested Sequences using the BaseType objects returned by
  var_value().
 
@@ -879,8 +798,6 @@ void Sequence::intern_data(ConstraintEvaluator &eval, DDS &dds)
     // instances when the intern_data_parent_part_two() code is run.
     sequence_values_stack_t sequence_values_stack;
 
-    DBG2(cerr << "    pushing d_values of " << name() << " (" << &d_values
-            << ") on stack; size: " << sequence_values_stack.size() << endl);
     sequence_values_stack.push(&d_values);
 
     intern_data_private(eval, dds, sequence_values_stack);
@@ -943,13 +860,15 @@ void Sequence::intern_data_parent_part_one(DDS & dds, ConstraintEvaluator & eval
 
     // if the size of the stack is larger than the original size (retrieved
     // above) then pop the top set of d_values from the stack. If it's the
-    // same, then no nested sequences, or possible the last nested sequence,
+    // same, then no nested sequences, or possibly the last nested sequence,
     // were pushed onto the stack, so there is nothing to pop.
     if (sequence_values_stack.size() > orig_stack_size) {
         DBG2(cerr << "    popping d_values (" << sequence_values_stack.top()
                 << ") off stack; size: " << sequence_values_stack.size() << endl);
         sequence_values_stack.pop();
-    } DBG(cerr << "Leaving intern_data_parent_part_one for " << name() << endl);
+    }
+
+    DBG(cerr << "Leaving intern_data_parent_part_one for " << name() << endl);
 }
 
 void Sequence::intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
@@ -997,7 +916,9 @@ void Sequence::intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
                 << " to " << values << endl);
         values->push_back(row_data);
         set_unsent_data(false);
-    } DBG(cerr << "Leaving intern_data_parent_part_two for " << name() << endl);
+    }
+
+    DBG(cerr << "Leaving intern_data_parent_part_two for " << name() << endl);
 }
 
 void Sequence::intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval, sequence_values_stack_t &sequence_values_stack)
@@ -1049,7 +970,9 @@ void Sequence::intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval, sequenc
         DBG2(cerr << "    popping d_values (" << sequence_values_stack.top()
                 << ") off stack; size: " << sequence_values_stack.size() << endl);
         sequence_values_stack.pop();
-    } DBG(cerr << "Leaving intern_data_for_leaf for " << name() << endl);
+    }
+
+    DBG(cerr << "Leaving intern_data_for_leaf for " << name() << endl);
 }
 
 /** @brief Deserialize (read from the network) the entire Sequence.
@@ -1074,6 +997,8 @@ void Sequence::intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval, sequenc
  */
 bool Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 {
+#if 0
+    // Nathan's tip - this is something that should never happen
     DataDDS *dd = dynamic_cast<DataDDS *>(dds);
     if (!dd) throw InternalErr("Expected argument 'dds' to be a DataDDS!");
 
@@ -1087,7 +1012,7 @@ bool Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
                 string("The protocl version (") + dd->get_protocol()
                         + ") indicates that this\nis an old server which may not correctly transmit Sequence variables.\nContact the server administrator.");
     }
-
+#endif
     while (true) {
         // Grab the sequence stream's marker.
         unsigned char marker = read_marker(um);

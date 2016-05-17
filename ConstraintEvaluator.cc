@@ -322,7 +322,7 @@ bool ConstraintEvaluator::boolean_expression()
 }
 
 /** @brief Evaluate a boolean-valued constraint expression.
- This is main method for the evaluator ans is called by the
+ This is main method for the evaluator and is called by the
  BaseType::serialize() methods.
 
  @param dds Use these variables when evaluating the expressions.
