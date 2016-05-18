@@ -35,6 +35,22 @@ namespace libdap {
 class Array;
 class XMLWriter;
 
+/**
+ * A 'Map' in DAP4 is an Array in the dataset that is used to provide the
+ * domain values for a Coverage (aka a Grid). These Maps are a more
+ * general case of the DAP2 'Map vectors' because a DAP4 Map can have N
+ * dimensions.
+ *
+ * Because the Maps can be shared by any or all of the Arrays in a dataset,
+ * they also correspond to the NetCDF/CF notion of a Shared Dimension.
+ *
+ * In this implementation of the D4Map, each Map has a name and two weak
+ * pointers, one to the Array that holds the domain values and one to the
+ * Array that uses the Map. Note that while Maps can be shared by Arrays,
+ * each Array has it's own collection f these D4Map objects. This makes
+ * processing constraints possible (because it is possible to write
+ * different constraints for two arrays that share Maps).
+ */
 class D4Map {
     std::string d_name;
     Array *d_array;		// the actual map data; weak pointer
@@ -62,10 +78,8 @@ public:
 };
 
 /**
- * Maps in DAP4 are simply the names of Dimensions. When a dimensioned
- * variable (i.e., an array) also has one or more 'maps,' then that
- * array is a 'grid' (the 'maps' define the domain of a sampled function
- * or a 'coverage').
+ * The D4Maps object holds pointers to all of the Maps used by
+ * a given Array.
  */
 class D4Maps {
 public:
@@ -94,11 +108,29 @@ public:
 
     D4Maps &operator=(const D4Maps &rhs);
 
+    /**
+     * Add a map. This does not test for duplicate names or Array pointers;
+     * It assumes that the caller has done that!
+     */
     void add_map(D4Map *map) {
     	d_maps.push_back(map);
     	// if the Map parent is not set, do so now
     	if (!d_maps.back()->parent())
     		d_maps.back()->set_parent(d_parent);
+    }
+
+    void remove_map(D4Map *map) {
+        for (D4MapsIter i = d_maps.begin(), e = d_maps.end(); i != e; ++i) {
+            /* && (*i)->parent() == map->parent() */
+            // Don't test if the map->parent() matches - we only care about the name and array.
+            // This method is intended for processing CE array slices that are edge cases and
+            // is only called from code where we know map->parent() matches *i->parent().
+            // jhrg 4/12/16
+            if ((*i)->name() == map->name() && (*i)->array() == map->array()) {
+                d_maps.erase(i);
+                break;
+            }
+        }
     }
 
     D4Map* get_map(int i) { return d_maps.at(i); }

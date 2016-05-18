@@ -859,31 +859,28 @@ Array::print_decl(FILE *out, string space, bool print_semi,
     @param constrained This argument should be TRUE if the Array is
     constrained, and FALSE otherwise.
 */
-void
-Array::print_decl(ostream &out, string space, bool print_semi,
-                  bool constraint_info, bool constrained)
+void Array::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained)
 {
-    if (constrained && !send_p())
-        return;
+    if (constrained && !send_p()) return;
 
     // print it, but w/o semicolon
     var()->print_decl(out, space, false, constraint_info, constrained);
 
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
-	out << "[" ;
+        out << "[";
         if ((*i).name != "") {
-	    out << id2www((*i).name) << " = " ;
+            out << id2www((*i).name) << " = ";
         }
         if (constrained) {
-	    out << (*i).c_size << "]" ;
+            out << (*i).c_size << "]";
         }
         else {
-	    out << (*i).size << "]" ;
+            out << (*i).size << "]";
         }
     }
 
     if (print_semi) {
-	out << ";\n" ;
+        out << ";\n";
     }
 }
 

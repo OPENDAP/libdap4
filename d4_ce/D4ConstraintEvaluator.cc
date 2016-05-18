@@ -35,6 +35,7 @@
 #include "DMR.h"
 #include "D4Group.h"
 #include "D4Dimensions.h"
+#include "D4Maps.h"
 #include "BaseType.h"
 #include "Array.h"
 #include "Constructor.h"
@@ -141,6 +142,17 @@ D4ConstraintEvaluator::mark_variable(BaseType *btp)
     return btp;
 }
 
+static bool
+array_uses_shared_dimension(Array *map, D4Dimension *source_dim)
+{
+    for (Array::Dim_iter d = map->dim_begin(), e = map->dim_end(); d != e; ++d) {
+        if (source_dim->name() == (*d).name)
+            return true;
+    }
+
+    return false;
+}
+
 /**
  * Add an array to the current projection with slicing. Calling this method will result
  * in the array being returned with anonymous dimensions.
@@ -153,6 +165,9 @@ D4ConstraintEvaluator::mark_variable(BaseType *btp)
  * @return The BaseType* to the Array variable; the send_p and slicing information is
  * set as a side effect.
  */
+
+// Note: If a Map is not part of the current projection, do not include mention of it
+// in the response DMR (CDMR)
 BaseType *
 D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
 {
@@ -191,17 +206,51 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
             // but regardless, the Array object must record the CE correctly.
 
             if (dim && (*i).empty) {
+                // This case corresponds to a CE that uses the '[]' notation for a
+                // particular dimension - meaning, use the Shared Dimension size for
+                // this dimension's 'slice'.
                 a->add_constraint(d, dim);  // calls set_used_by_projected_var(true) + more
             }
             else {
+                // This case corresponds to a 'local dimension slice' (See sections 8.6.2 and
+                // 8.7 of the spec as of 4/12/16). When a local dimension slice is used, drop
+                // the Map(s) that include that dimension. This enables people to constrain
+                // an Array when some of the Array's dimensions don't use Shared Dimensions
+                // but others do.
+
+                // First apply the constraint to the Array's dimension
                 a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
+
+                // Then, if the Array has Maps, scan those Maps for any that use dimensions
+                // that match the name of this particular dimension. If any such Maps are found
+                // remove them. This ensure that the Array can be constrained using the  'local
+                // dimension slice' without the constrained DMR containing references to Maps
+                // that don't exist (or are otherwise nonsensical).
+                //
+                // This code came about as a fix for problems discovered during testing of
+                // local dimension slices. See https://opendap.atlassian.net/browse/HYRAX-98
+                // jhrg 4/12/16
+                if (!a->maps()->empty()) {
+                    for(D4Maps::D4MapsIter m = a->maps()->map_begin(), e = a->maps()->map_end(); m != e; ++m) {
+                        if ((*m)->array() == 0)
+                            throw Error(malformed_expr, "An array with Maps was found, but one of the Maps was not defined correctly.");
+
+                        Array *map = const_cast<Array*>((*m)->array()); // Array lacks const iterator support
+                        if (array_uses_shared_dimension(map, dim)) {
+                            D4Map *map_to_be_removed = *m;
+                            a->maps()->remove_map(map_to_be_removed); // Invalidates the iterator
+                            delete map_to_be_removed;   // removed from container; delete
+                            break; // must leave the for loop because 'm' is now invalid
+                        }
+                    }
+                }
             }
 
             ++d;
         }
-
-        d_indexes.clear();
     }
+
+    d_indexes.clear();  // Clear the info so the next slice expression can be parsed.
 
 	return btp;
 }
@@ -232,32 +281,32 @@ D4ConstraintEvaluator::slice_dimension(const std::string &id, const index &i)
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i)
 {
-	unsigned long long v = get_uint64(i.c_str());
-	return index(v, 1, v, false, false /*empty*/);
+	unsigned long long v = get_int64(i.c_str());
+	return index(v, 1, v, false, false /*empty*/, "");
 }
 
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i, const std::string &s, const std::string &e)
 {
-	return index(get_uint64(i.c_str()), get_uint64(s.c_str()), get_uint64(e.c_str()), false, false /*empty*/);
+	return index(get_int64(i.c_str()), get_int64(s.c_str()), get_int64(e.c_str()), false, false /*empty*/, "");
 }
 
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s, const std::string &e)
 {
-	return index(get_uint64(i.c_str()), s, get_uint64(e.c_str()), false, false /*empty*/);
+	return index(get_int64(i.c_str()), s, get_int64(e.c_str()), false, false /*empty*/, "");
 }
 
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i, const std::string &s)
 {
-	return index(get_uint64(i.c_str()), get_uint64(s.c_str()), 0, true, false /*empty*/);
+	return index(get_int64(i.c_str()), get_int64(s.c_str()), 0, true, false /*empty*/, "");
 }
 
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s)
 {
-	return index(get_uint64(i.c_str()), s, 0, true, false /*empty*/);
+    return index(get_uint64(i.c_str()), s, 0, true, false /*empty*/, "");
 }
 
 static string
