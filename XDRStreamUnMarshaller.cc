@@ -102,7 +102,9 @@ void XDRStreamUnMarshaller::get_byte(dods_byte &val)
         }
     }
 
-    DBG2( std::cerr << "_in.gcount(): " << d_in.gcount() << std::endl ); DBG2( std::cerr << "_in.tellg(): " << d_in.tellg() << std::endl ); DBG2( std::cerr << "_buf[0]: " << hex << d_buf[0] << "; _buf[1]: " << d_buf[1]
+    DBG2( std::cerr << "_in.gcount(): " << d_in.gcount() << std::endl );
+    DBG2( std::cerr << "_in.tellg(): " << d_in.tellg() << std::endl );
+    DBG2( std::cerr << "_buf[0]: " << hex << d_buf[0] << "; _buf[1]: " << d_buf[1]
             << "; _buf[2]: " << d_buf[2] << "; _buf[3]: " << d_buf[3]
             << dec << std::endl );
 
