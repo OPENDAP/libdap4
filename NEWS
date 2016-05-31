@@ -1,3 +1,16 @@
+News for version 3.18.0
+
+Fixed a long-standing bug in BaseType::set_send_p() and set_read_p().
+
+Added a way to build 'universal' baselines for tests that include
+data. Tests that included data had different checksums on different
+architectures and this meant two sets of baselines for them. No more.
+I'm keeping the old tests with their dual baselines (they test the
+checksum code) but all newer tests should use the 'universal' test
+macros.
+
+Added DAP4 filter support!
+
 News for version 3.17.3
 
 Fixed a soname error - Adding a const constructor seems to have
