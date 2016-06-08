@@ -1,4 +1,6 @@
-News for version 3.18.0
+News for version 3.18.1
+
+Minor fix for the source distribution.
 
 Fixed a long-standing bug in BaseType::set_send_p() and set_read_p().
 
