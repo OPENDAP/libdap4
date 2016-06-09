@@ -91,8 +91,11 @@ XDRStreamMarshaller::XDRStreamMarshaller(ostream &out) :
 
 XDRStreamMarshaller::~XDRStreamMarshaller()
 {
+    // Added this because when USE_POS... is not defined, 'tm' has no
+    // type, which the compiler complains about.
+#ifdef USE_POSIX_THREADS
     delete tm;
-
+#endif
     xdr_destroy(&d_sink);
 }
 
