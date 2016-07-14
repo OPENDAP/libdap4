@@ -331,6 +331,9 @@ template<class T> static void extract_double_array_helper(Array * a, vector<doub
  * array using 'new double[n]' so delete[] MUST be used when you are done
  * the data.
  *
+ * @note Before you call this function, you must call read on the array,
+ * or load the array with values and set the read_p property.
+ *
  * @note Support added for DAP4.
  * @param a Extract value from this Array.
  * @param dest Put the values in this vector. A value-result parameter.
@@ -346,7 +349,7 @@ void extract_double_array(Array *a, vector<double> &dest)
         throw Error(malformed_expr, "The function requires a DAP numeric-type array argument.");
 
     if (!a->read_p())
-        throw InternalErr(__FILE__, __LINE__, string("The Array '") + a->name() + "'does not contain values.");
+        throw InternalErr(__FILE__, __LINE__, string("The Array '") + a->name() + "' does not contain values.");
 
     dest.resize(a->length());
 

@@ -47,9 +47,6 @@ Building from Our GIT Repository
   in parallel on multi core machines and add TESTSUITEFLAGS=-j9 to make
   check to run the regression tests in parallel.
 
-  Make certain that you have recent versions of autoconf, automake and
-  libtool.
-
 AFTER INSTALLING
 
   o Set the PATH environment variable to include the bin directory where
@@ -77,13 +74,13 @@ REQUIREMENTS
     --verbose' and then build as described above. You also need bison 3
     and flex 2.5.35 or greater.
 
-  o The library uses libcurl and libxml2. You will need these libraries
-    installed on your system to successfully run configure and build the
-    library. You must have libcurl version 7.19.0 or newer and libxml2 2.7.0
-    or newer.
+  o The library uses libcurl, libxml2 and libuuid (the latter on linux 
+    but not OSX). You will need these libraries installed on your system
+    to successfully run configure and build the library. You must have
+    libcurl version 7.19.0 or newer and libxml2 2.7.0 or newer.
 
   o If you are concerned about introducing problems with your OS's package
-    system, build and install curl, et c., into a special directory (e.g.,
+    system, build and install curl, etc., into a special directory (e.g.,
     /opt/opendap/) and then be sure to set PATH to include the curl-config
     and xml2-config scripts before running configure (e.g., run configure as
     'PATH="$PATH:/opt/opendap/bin';./configure'). You probably should install
