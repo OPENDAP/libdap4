@@ -133,7 +133,7 @@ public:
      *
      * @note Added so that the NCML handler can code some optimizations in its
      * specialized versions of Array. jhrg 8/14/15
-     * @return A reference to the data buffer for Vectors/Arrays of the cardinal types.
+     * @return A pointer to the data buffer for Vectors/Arrays of the cardinal types.
      */
     char *get_buf() {
         return d_buf;
