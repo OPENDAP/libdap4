@@ -152,7 +152,7 @@ loc->step();
 <quote>["]  { 
                 /* An unescaped double quote in the 'quote' state indicates the end of the string */
                 BEGIN(INITIAL); 
-                yylval->build<std::string>(yytext); 
+                yylval->build<std::string>(yytext);
                 return token::STRING;
             }
 

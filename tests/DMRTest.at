@@ -555,3 +555,18 @@ DMR_TRANS_SERIES_CE([test_simple_8.1.xml], [outer{x;y;inner}], [test_simple_8.1.
 DMR_TRANS_SERIES_CE([test_simple_8.1.xml], [outer{x;y;inner|i1<1000}], [test_simple_8.1.xml.f4.trans_base], [pass])
 DMR_TRANS_SERIES_CE([test_simple_8.1.xml], [outer{x;y;inner|i1<1000}|x<0.0], [test_simple_8.1.xml.f5.trans_base], [pass])
 
+# These tests are regression tests for bug Hyrax-267. Spaces in variables names
+# broke the DAP4 CE parser
+
+# These mostly fail because thee's a second bug where the variables in a group are 
+# not printing values. 
+DMR_TRANS_SERIES_CE([names_with_spaces.dmr], [/u], [names_with_spaces.dmr.1.trans_base], [pass])
+DMR_TRANS_SERIES_CE([names_with_spaces.dmr], [/inst2/u], [names_with_spaces.dmr.2.trans_base], [xfail])
+DMR_TRANS_SERIES_CE([names_with_spaces.dmr], [/inst2/Point.x], [names_with_spaces.dmr.3.trans_base], [xfail])
+
+DMR_TRANS_SERIES_CE([names_with_spaces2.dmr], [/inst2/\"Point Break\".x], [names_with_spaces2.dmr.1.trans_base], [xfail])
+DMR_TRANS_SERIES_CE([names_with_spaces2.dmr], [/inst2/Point%20Break.x], [names_with_spaces2.dmr.1.trans_base], [xfail])
+DMR_TRANS_SERIES_CE([names_with_spaces2.dmr], [/inst2/\"Point%20Break\".x], [names_with_spaces2.dmr.1.trans_base], [xfail])
+
+DMR_TRANS_SERIES_CE([names_with_spaces2.dmr], [/inst2/\"New Group\"/x], [names_with_spaces3.dmr.1.trans_base], [xfail])
+DMR_TRANS_SERIES_CE([names_with_spaces2.dmr], [/inst2/New%20Group/x], [names_with_spaces3.dmr.1.trans_base], [xfail])

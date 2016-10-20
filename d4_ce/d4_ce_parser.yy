@@ -47,6 +47,7 @@
 
 %code requires {
 #include "D4ConstraintEvaluator.h"
+#include "escaping.h" // for www2id() used with WORD and STRING
 namespace libdap {
     class D4CEScanner;
 }
@@ -304,7 +305,9 @@ indexes : index
 }
 | index { driver.push_index($1); } indexes { $$ = $3; }
 ;
-   
+
+// Note that the index values are scanned as WORDs but the web escaping is
+// not supported as it is for identifiers. jhrg 10/20/16
 index   : "[" "]" { $$ = driver.make_index(); }
 | "[" WORD "]" { $$ = driver.make_index($2); }
 | "[" WORD ":" WORD "]" { $$ = driver.make_index($2, 1, $4); }
@@ -387,7 +390,7 @@ group : "/" name
 }
 | group "/" name
 {
-    $1.append(".");
+    $1.append("/");
     $1.append($3);
     $$ = $1;
 }
@@ -408,13 +411,19 @@ path : name
 // Because some formats/datasets allow 'any' name for a variable, it's possible
 // that a variable name will be a number, etc. The grammar also allows STRING
 // to support "name"."name with spaces and dots (.)".x
+//
+// I added calls here to remove the double quotes because they were breaking
+// the parse for STRINGs and also added www2id() for WORDs (so that %20, etc.
+// can be used for escaping stuff). However, the two cannot be mixed - if the
+// parser id passed"Point%20Break" the %20 will remain as a literal in the STRING.
+// jhrg 10/20/16
 name : WORD 
 {
-    $$=$1;
+    $$=www2id($1);
 }
 | STRING 
 {
-    $$=$1;
+    $$=driver.remove_quotes($1);
 }
 ;
 

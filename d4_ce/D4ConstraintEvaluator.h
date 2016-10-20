@@ -113,6 +113,8 @@ class D4ConstraintEvaluator {
 	// Build FilterClauseList for filter clauses for a Sequence
 	void add_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2);
 
+	std::string &remove_quotes(std::string &src);
+
 	friend class D4CEParser;
 
 public:

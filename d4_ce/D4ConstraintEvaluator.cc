@@ -44,6 +44,7 @@
 #include "D4RValue.h"
 #include "D4FilterClause.h"
 
+#include "escaping.h"
 #include "parser.h"		// for get_ull()
 #include "debug.h"
 
@@ -408,6 +409,23 @@ D4ConstraintEvaluator::add_filter_clause(const std::string &op, const std::strin
     else {
         s->clauses().add_clause(new D4FilterClause(get_op_code(op), D4RValueFactory(arg1), new D4RValue(a2)));
     }
+}
+
+/**
+ * @brief If the string has surrounding quotes, remove them.
+ *
+ * @param src The source string, passed by reference and modified in place
+ * @return A reference to the sting parameter.
+ */
+string &
+D4ConstraintEvaluator::remove_quotes(string &s)
+{
+    if (*s.begin() == '\"' && *(s.end() - 1) == '\"') {
+        s.erase(s.begin());
+        s.erase(s.end() - 1);
+    }
+
+    return s;
 }
 
 // This method is called from the parser (see d4_ce_parser.yy, down in the code
