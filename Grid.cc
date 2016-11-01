@@ -816,12 +816,11 @@ Grid::print_val(FILE *out, string space, bool print_decl_p)
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void
-Grid::print_val(ostream &out, string space, bool print_decl_p)
+void Grid::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
         print_decl(out, space, false);
-	out << " = " ;
+        out << " = ";
     }
 
     // If we are printing a value on the client-side, projection_yields_grid
@@ -830,19 +829,21 @@ Grid::print_val(ostream &out, string space, bool print_decl_p)
     // the value of this function should be ignored. 4/6/2000 jhrg
     bool pyg = projection_yields_grid(); // hack 12/1/99 jhrg
     if (pyg || !send_p())
-	out << "{  Array: " ;
+        out << "{  Array: ";
     else
-	out << "{" ;
+        out << "{";
+
     get_array()->print_val(out, "", false);
-    if (pyg || !send_p())
-	out << "  Maps: " ;
-    for (Map_citer i = map_begin(); i != map_end(); i++, (void)(i != map_end() && out << ", ")) {
+
+    if (pyg || !send_p()) out << "  Maps: ";
+
+    for (Map_citer i = map_begin(); i != map_end(); i++, (void) (i != map_end() && out << ", ")) {
         (*i)->print_val(out, "", false);
     }
-    out << " }" ;
 
-    if (print_decl_p)
-	out << ";\n" ;
+    out << " }";
+
+    if (print_decl_p) out << ";\n";
 }
 
 // Grids have ugly semantics.
