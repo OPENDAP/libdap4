@@ -1,13 +1,9 @@
-Updated for version 3.18.0
+
+Updated for version 3.18.2
 
 Added support for DAP4 filter operations.
 
-For otehr information, see NEWS and ChangeLog
-
-Updated for version 3.17.2
-
-Bug fixes and improved error messages; see NEWS and ChangeLog for 
-details.
+For other information, see NEWS and ChangeLog
 
 Updated for 3.16.0
 

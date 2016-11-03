@@ -1,3 +1,14 @@
+News for version 3.18.2
+
+Fixed an issue with DAP4 CE parsing, double quotes and %20 escape
+characters.
+
+Type fix for getopt() for platforms where char is unsigned by default.
+
+Added more bigendian test baselines.
+
+Added libuuid to the requirements listed in INSTALL.
+
 News for version 3.18.1
 
 Minor fix for the source distribution.

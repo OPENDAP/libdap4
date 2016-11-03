@@ -1,3 +1,72 @@
+2016-11-01  James Gallagher  <jgallagher@opendap.org>
+
+	Formatting Grid.cc
+
+2016-10-20  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed Hyrax-267
+	The DAP4 ce parser was not removing double quotes or the %<hex>
+	escaping, so names that needed those were not 'found' in the
+	dataset. Also, the grammar used by the parser had a syntax error
+	in it where /s in the id name were turned into dots and the
+	resulting names could not be found. The result was a valid names
+	were being rejected.
+
+2016-10-12  James Gallagher  <jgallagher@opendap.org>
+
+	Corrected a comment in Vector.h
+
+2016-08-30  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #22 from sharkcz/getopt
+	type fix for getopt
+
+2016-08-30  Dan Horák  <dan@danny.cz>
+
+	type fix for getopt
+
+	The getopt() function uses int as return type and using char for a
+	variable storing the return value makes problem on platform where
+	char is unsgined by default.
+	http://www.arm.linux.org.uk/docs/faqs/signedchar.php
+
+	Fix by Orion Poplawski <orion[at]cora.nwra.com> for
+	https://bugzilla.redhat.com/show_bug.cgi?id=1366787
+
+2016-08-26  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #21 from sharkcz/dmr-bigendian-2
+	add missing big endian baselines
+
+2016-08-26  Dan Horák  <dan@danny.cz>
+
+	add missing big endian baselines
+
+2016-08-22  James Gallagher  <jgallagher@opendap.org>
+
+	Added main_page.doxygen to gitignore
+
+2016-07-14  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Added libuuid to the requirements listed in INSTALL.
+	Also added a comment and fixed error message text in util.cc for
+	void extract_double_array(Array *a, vector<double> &dest)
+
+2016-06-09  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed a compiler warning when USE_POSIX_THREADS is not def'd in XDRStreamMarshaller
+
+2016-06-08  James Gallagher  <jgallagher@opendap.org>
+
+	Removed generagted file since it's causing grief on Travis
+
+	Updates for the source dist and unit-tests
+
+2016-05-31  James Gallagher  <jgallagher@opendap.org>
+
+	Version 3.18.0
 2016-05-25  James Gallagher  <jgallagher@opendap.org>
 
 	Fixed ugly DBG2() macro calls
