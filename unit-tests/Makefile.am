@@ -48,7 +48,7 @@ rcreader-testsuite server-testsuite cgi-util-tests D4-xml \
 chunked-io D4-marshaller D4-type-testsuite
 
 EXTRA_DIST = $(DIRS_EXTRA) testFile.cc testFile.h test_config.h.in \
-test_config.h valgrind_suppressions.txt
+valgrind_suppressions.txt
 
 CLEANFILES = testout .dodsrc  *.gcda *.gcno *.gcov *.trs *.log *.file D4-xml.tar.gz
 
