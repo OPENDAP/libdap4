@@ -432,7 +432,7 @@ class HTTPConnectTest: public TestFixture {
         HTTPResponse *stuff = 0;
         char c;
         try {
-	    string url = (string)"file:test_config.h" ;
+	    string url = (string)"file://" + TEST_SRC_DIR + "/test_config.h" ;
             stuff = http->fetch_url(url);
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
                            && !ferror(stuff->get_stream())
@@ -467,7 +467,7 @@ class HTTPConnectTest: public TestFixture {
         HTTPResponse *stuff = 0;
         char c;
         try {
-	    string url = (string)"file:test_config.h" ;
+	    string url = (string)"file://" + TEST_SRC_DIR + "/test_config.h" ;
             stuff = http->fetch_url(url);
 
             stuff->get_cpp_stream()->read(&c, 1);
