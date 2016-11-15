@@ -8,6 +8,7 @@
 #ifndef DAPXMLNAMSPACES_H_
 #define DAPXMLNAMSPACES_H_
 
+#include <string.h>
 
 namespace libdap {
 
@@ -22,21 +23,21 @@ public:
 	/**
 	 * Returns the XML Schema-instance namespace string.
 	 */
-	static string getXmlXsiNamespace(){
+	static std::string getXmlXsiNamespace(){
 		return "http://www.w3.org/2001/XMLSchema-instance";
 	}
 
 	/**
 	 * Returns the XML  namespace string.
 	 */
-	static string getXmlNamespace(){
+	static std::string getXmlNamespace(){
 		return "http://www.w3.org/XML/1998/namespace";
 	}
 
 	/**
 	 * Returns the GRDDL transformation URL for the passed DAP version.
 	 */
-	static string getGrddlTransformation(DAPVersion version){
+	static std::string getGrddlTransformation(DAPVersion version){
 
 		switch(version) {
 		case DAP_2_0:
@@ -63,7 +64,7 @@ public:
 	/**
 	 * Returns the DAP XML namespace string for the passed DAP version.
 	 */
-	static string getDapNamespaceString(DAPVersion version){
+	static std::string getDapNamespaceString(DAPVersion version){
 
 		switch(version) {
 		case DAP_2_0:
@@ -87,7 +88,7 @@ public:
 	/**
 	 * Returns the schema location URI string for the passed DAP version.
 	 */
-	static string getSchemaLocationString(DAPVersion version){
+	static std::string getSchemaLocationString(DAPVersion version){
 
 		switch(version) {
 		case DAP_2_0:
@@ -114,7 +115,7 @@ public:
 	 * Returns the schema location declaration (the namespace string followed by a
 	 * space followed by the schema location string) for the passed DAP version.
 	 */
-	static string getSchemaLocationDeclarationString(DAPVersion version){
+	static std::string getSchemaLocationDeclarationString(DAPVersion version){
 		return getDapNamespaceString(version).append(" ").append(getSchemaLocationString(version));
 	}
 
