@@ -624,6 +624,19 @@ void D4ParserSax2::dmr_end_document(void * p)
     parser->pop_attributes();
 }
 
+/**
+ * Callback run when libxml2 reads the start of an element
+ *
+ * @param p Pointer to the parser object
+ * @param l Localname of the element
+ * @param prefix Namespace prefix of the element
+ * @param URI the Element namespace name if available
+ * @param nb_namespaces Number of namespace definitions on that node
+ * @param namespaces Pointer to the array of prefix/URI pairs namespace definitions
+ * @param nb_attributes The number of attributes on that node
+ * @param nb_defaulted The number of defaulted attributes. The defaulted ones are at the end of the array
+ * @param attributes Pointer to the array of (localname/prefix/URI/value/end) attribute values.
+ */
 void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *prefix, const xmlChar *URI,
         int nb_namespaces, const xmlChar **namespaces, int nb_attributes, int /*nb_defaulted*/,
         const xmlChar **attributes)
