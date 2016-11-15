@@ -8,7 +8,7 @@
 #ifndef DAPXMLNAMSPACES_H_
 #define DAPXMLNAMSPACES_H_
 
-#include <string.h>
+#include <string>
 
 namespace libdap {
 
