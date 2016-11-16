@@ -108,6 +108,8 @@ private:
 
         // inside_sequence, Removed from merged code jhrg 5/2/14
 
+        not_dap4_element,
+
         parser_unknown,
         parser_error,
         parser_fatal_error,
