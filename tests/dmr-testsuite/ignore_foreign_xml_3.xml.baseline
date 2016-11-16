@@ -1,0 +1,291 @@
+Parse successful
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="Global_0p25deg_best_hs002.nc">
+    <Dimension name="time" size="112"/>
+    <Dimension name="isobaric" size="31"/>
+    <Dimension name="lat" size="361"/>
+    <Dimension name="lon" size="720"/>
+    <Float64 name="time">
+        <Dim name="/time"/>
+        <Attribute name="units" type="String">
+            <Value>Hour since 2016-06-17T00:00:00Z</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>time</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>GRIB forecast or observation time</Value>
+        </Attribute>
+        <Attribute name="calendar" type="String">
+            <Value>proleptic_gregorian</Value>
+        </Attribute>
+        <Attribute name="_CoordinateAxisType" type="String">
+            <Value>Time</Value>
+        </Attribute>
+    </Float64>
+    <Float32 name="isobaric">
+        <Dim name="/isobaric"/>
+        <Attribute name="units" type="String">
+            <Value>Pa</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>Isobaric surface</Value>
+        </Attribute>
+        <Attribute name="positive" type="String">
+            <Value>down</Value>
+        </Attribute>
+        <Attribute name="Grib_level_type" type="Int32">
+            <Value>100</Value>
+        </Attribute>
+        <Attribute name="_CoordinateAxisType" type="String">
+            <Value>Pressure</Value>
+        </Attribute>
+        <Attribute name="_CoordinateZisPositive" type="String">
+            <Value>down</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="lat">
+        <Dim name="/lat"/>
+        <Attribute name="units" type="String">
+            <Value>degrees_north</Value>
+        </Attribute>
+        <Attribute name="_CoordinateAxisType" type="String">
+            <Value>Lat</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>latitude</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="lon">
+        <Dim name="/lon"/>
+        <Attribute name="units" type="String">
+            <Value>degrees_east</Value>
+        </Attribute>
+        <Attribute name="_CoordinateAxisType" type="String">
+            <Value>Lon</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>longitude</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="u-component_of_wind_isobaric">
+        <Dim name="/time"/>
+        <Dim name="/isobaric"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>u-component of wind @ Isobaric surface</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>m/s</Value>
+        </Attribute>
+        <Attribute name="abbreviation" type="String">
+            <Value>UGRD</Value>
+        </Attribute>
+        <Attribute name="missing_value" type="Float32">
+            <Value>NaN</Value>
+        </Attribute>
+        <Attribute name="grid_mapping" type="String">
+            <Value>LatLon_Projection</Value>
+        </Attribute>
+        <Attribute name="coordinates" type="String">
+            <Value>reftime time isobaric lat lon lat lon</Value>
+        </Attribute>
+        <Attribute name="Grib_Variable_Id" type="String">
+            <Value>VAR_0-2-2_L100</Value>
+        </Attribute>
+        <Attribute name="Grib2_Parameter" type="Int32">
+            <Value>0</Value>
+            <Value>2</Value>
+            <Value>2</Value>
+        </Attribute>
+        <Attribute name="Grib2_Parameter_Category" type="String">
+            <Value>Momentum</Value>
+        </Attribute>
+        <Attribute name="Grib2_Parameter_Name" type="String">
+            <Value>u-component of wind</Value>
+        </Attribute>
+        <Attribute name="Grib2_Level_Type" type="String">
+            <Value>Isobaric surface</Value>
+        </Attribute>
+        <Attribute name="Grib2_Generating_Process_Type" type="String">
+            <Value>Forecast</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/isobaric"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float32>
+    <Float64 name="reftime">
+        <Dim name="/time"/>
+        <Attribute name="standard_name" type="String">
+            <Value>forecast_reference_time</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>GRIB reference time</Value>
+        </Attribute>
+        <Attribute name="calendar" type="String">
+            <Value>proleptic_gregorian</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>Hour since 2016-06-17T00:00:00Z</Value>
+        </Attribute>
+        <Attribute name="_CoordinateAxisType" type="String">
+            <Value>RunTime</Value>
+        </Attribute>
+        <Map name="/time"/>
+    </Float64>
+    <Float64 name="time">
+        <Dim name="/time"/>
+        <Attribute name="units" type="String">
+            <Value>Hour since 2016-06-17T00:00:00Z</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>time</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>GRIB forecast or observation time</Value>
+        </Attribute>
+        <Attribute name="calendar" type="String">
+            <Value>proleptic_gregorian</Value>
+        </Attribute>
+        <Attribute name="_CoordinateAxisType" type="String">
+            <Value>Time</Value>
+        </Attribute>
+    </Float64>
+    <Float32 name="isobaric">
+        <Dim name="/isobaric"/>
+        <Attribute name="units" type="String">
+            <Value>Pa</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>Isobaric surface</Value>
+        </Attribute>
+        <Attribute name="positive" type="String">
+            <Value>down</Value>
+        </Attribute>
+        <Attribute name="Grib_level_type" type="Int32">
+            <Value>100</Value>
+        </Attribute>
+        <Attribute name="_CoordinateAxisType" type="String">
+            <Value>Pressure</Value>
+        </Attribute>
+        <Attribute name="_CoordinateZisPositive" type="String">
+            <Value>down</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="lat">
+        <Dim name="/lat"/>
+        <Attribute name="units" type="String">
+            <Value>degrees_north</Value>
+        </Attribute>
+        <Attribute name="_CoordinateAxisType" type="String">
+            <Value>Lat</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>latitude</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="lon">
+        <Dim name="/lon"/>
+        <Attribute name="units" type="String">
+            <Value>degrees_east</Value>
+        </Attribute>
+        <Attribute name="_CoordinateAxisType" type="String">
+            <Value>Lon</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>longitude</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="v-component_of_wind_isobaric">
+        <Dim name="/time"/>
+        <Dim name="/isobaric"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>v-component of wind @ Isobaric surface</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>m/s</Value>
+        </Attribute>
+        <Attribute name="abbreviation" type="String">
+            <Value>VGRD</Value>
+        </Attribute>
+        <Attribute name="missing_value" type="Float32">
+            <Value>NaN</Value>
+        </Attribute>
+        <Attribute name="grid_mapping" type="String">
+            <Value>LatLon_Projection</Value>
+        </Attribute>
+        <Attribute name="coordinates" type="String">
+            <Value>reftime time isobaric lat lon lat lon</Value>
+        </Attribute>
+        <Attribute name="Grib_Variable_Id" type="String">
+            <Value>VAR_0-2-3_L100</Value>
+        </Attribute>
+        <Attribute name="Grib2_Parameter" type="Int32">
+            <Value>0</Value>
+            <Value>2</Value>
+            <Value>3</Value>
+        </Attribute>
+        <Attribute name="Grib2_Parameter_Category" type="String">
+            <Value>Momentum</Value>
+        </Attribute>
+        <Attribute name="Grib2_Parameter_Name" type="String">
+            <Value>v-component of wind</Value>
+        </Attribute>
+        <Attribute name="Grib2_Level_Type" type="String">
+            <Value>Isobaric surface</Value>
+        </Attribute>
+        <Attribute name="Grib2_Generating_Process_Type" type="String">
+            <Value>Forecast</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/isobaric"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float32>
+    <Attribute name="NC_GLOBAL" type="Container">
+        <Attribute name="Originating_or_generating_Center" type="String">
+            <Value>US National Weather Service, National Centres for Environmental Prediction (NCEP)</Value>
+        </Attribute>
+        <Attribute name="Originating_or_generating_Subcenter" type="String">
+            <Value>0</Value>
+        </Attribute>
+        <Attribute name="GRIB_table_version" type="String">
+            <Value>2,1</Value>
+        </Attribute>
+        <Attribute name="Type_of_generating_process" type="String">
+            <Value>Forecast</Value>
+        </Attribute>
+        <Attribute name="Analysis_or_forecast_generating_process_identifier_defined_by_originating_centre" type="String">
+            <Value>Analysis from GFS (Global Forecast System)</Value>
+        </Attribute>
+        <Attribute name="Conventions" type="String">
+            <Value>CF-1.6</Value>
+        </Attribute>
+        <Attribute name="history" type="String">
+            <Value>Read using CDM IOSP GribCollection v3</Value>
+        </Attribute>
+        <Attribute name="featureType" type="String">
+            <Value>GRID</Value>
+        </Attribute>
+        <Attribute name="History" type="String">
+            <Value>Translated to CF-1.0 Conventions by Netcdf-Java CDM (CFGridWriter2)\012Original Dataset = /data/ldm/pub/native/grid/NCEP/GFS/Global_0p25deg/GFS-Global_0p25deg.ncx3; Translation Date = 2016-06-20T21:22:16.485Z</Value>
+        </Attribute>
+        <Attribute name="geospatial_lat_min" type="Float64">
+            <Value>-90.00000000000000</Value>
+        </Attribute>
+        <Attribute name="geospatial_lat_max" type="Float64">
+            <Value>90.00000000000000</Value>
+        </Attribute>
+        <Attribute name="geospatial_lon_min" type="Float64">
+            <Value>0.000000000000000</Value>
+        </Attribute>
+        <Attribute name="geospatial_lon_max" type="Float64">
+            <Value>359.5000000000000</Value>
+        </Attribute>
+    </Attribute>
+</Dataset>
+
