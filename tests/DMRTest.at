@@ -236,6 +236,10 @@ DMR_PARSE([dmr-testsuite/test_array_8.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_10.xml], [pass])
 DMR_PARSE([dmr-testsuite/test_array_11.xml], [pass])
 
+DMR_PARSE([dmr-testsuite/ignore_foreign_xml_1.xml], [pass])
+DMR_PARSE([dmr-testsuite/ignore_foreign_xml_2.xml], [pass])
+DMR_PARSE([dmr-testsuite/ignore_foreign_xml_3.xml], [pass])
+
 # Transmit: Test building and then decoding the response
 # These calls don't include the 'dmr-testsuite' directory because the tests
 # need to choose baselines based on the word order. We could probably re-

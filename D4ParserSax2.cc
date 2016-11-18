@@ -43,13 +43,14 @@
 #include "D4Attributes.h"
 #include "D4Maps.h"
 #include "D4Enum.h"
-
 #include "D4BaseTypeFactory.h"
 
+#include "DapXmlNamespaces.h"
 #include "D4ParserSax2.h"
 
 #include "util.h"
 #include "debug.h"
+
 
 namespace libdap {
 
@@ -80,6 +81,8 @@ static const char *states[] = {
         "inside_map",
 
         "inside_constructor",
+
+        "not_dap4_element",
 
         "parser_unknown",
         "parser_error",
@@ -644,7 +647,23 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
     D4ParserSax2 *parser = static_cast<D4ParserSax2*>(p);
     const char *localname = (const char *) l;
 
-    if (parser->debug()) cerr << "Start element " << localname << " (state " << states[parser->get_state()] << ")" << endl;
+    if (parser->debug()) cerr << "Start element " << localname << "  prefix:  "<< (prefix?(char *)prefix:"null") << "  ns: "<< (URI?(char *)URI:"null")
+    		   << " (state: " << states[parser->get_state()] << ")" << endl;
+
+    if(parser->get_state() != parser_error){
+        string dap4_ns_name = DapXmlNamspaces::getDapNamespaceString(DAP_4_0);
+        if (parser->debug()) cerr << "dap4_ns_name:         " << dap4_ns_name << endl;
+
+        string this_element_ns_name((char *)URI);
+        if (parser->debug()) cerr << "this_element_ns_name: " << this_element_ns_name << endl;
+
+        if(this_element_ns_name.compare(dap4_ns_name)){
+            if (parser->debug()) cerr << "Start of non DAP4 element: " << localname << " detected." << endl;
+        	parser->push_state(not_dap4_element);
+        	// return;
+        }
+    }
+
 
     switch (parser->get_state()) {
         case parser_start:
@@ -817,6 +836,10 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             else
                 D4ParserSax2::dmr_error(parser, "Expected an Attribute, Dim, Map or variable element; found '%s' instead.", localname);
             break;
+
+        case not_dap4_element:
+            if (parser->debug()) cerr << "Inside non DAP4 element. localname: " << localname << endl;
+        	break;
 
         case parser_unknown:
             // FIXME?
@@ -1065,6 +1088,11 @@ void D4ParserSax2::dmr_end_element(void *p, const xmlChar *l, const xmlChar *pre
         parser->pop_state();
         break;
     }
+
+    case not_dap4_element:
+        if (parser->debug()) cerr << "End of non DAP4 element: " << localname << endl;
+        parser->pop_state();
+    	break;
 
     case parser_unknown:
         parser->pop_state();
