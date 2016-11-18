@@ -74,7 +74,9 @@ public:
     virtual ~D4Group();
 
     D4Group &operator=(const D4Group &rhs);
-    virtual D4Group *ptr_duplicate();
+
+    // This method returned a D4Group * previously. jhrg 11/17/16
+    virtual BaseType *ptr_duplicate();
 
     /// Get the dimensions defined for this Group
     D4Dimensions *dims() {
