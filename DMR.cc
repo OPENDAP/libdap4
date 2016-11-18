@@ -95,7 +95,8 @@ DMR::m_duplicate(const DMR &dmr)
     d_max_response_size = dmr.d_max_response_size;
 
     // Deep copy, using ptr_duplicate()
-    d_root = dmr.d_root->ptr_duplicate();
+    // d_root can only be a D4Group, so the thing returned by ptr_duplicate() must be a D4Group.
+    d_root = static_cast<D4Group*>(dmr.d_root->ptr_duplicate());
     DBG(cerr << "dmr.d_root: " << dmr.d_root << endl);
     DBG(cerr << "d_root (from ptr_dup(): " << d_root << endl);
 

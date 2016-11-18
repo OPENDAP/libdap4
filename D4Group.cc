@@ -95,7 +95,8 @@ void D4Group::m_duplicate(const D4Group &g)
     // groups
     groupsCIter i = g.d_groups.begin();
     while(i != g.d_groups.end()) {
-        D4Group *g = (*i++)->ptr_duplicate();
+        // Only D4Groups are in the d_groups container.
+        D4Group *g = static_cast<D4Group*>((*i++)->ptr_duplicate());
         add_group_nocopy(g);
     }
 
@@ -147,7 +148,12 @@ D4Group::~D4Group()
         delete *i++;
 }
 
+#if 0
 D4Group *
+
+// I think this was a mistake. jhrg 11/17/16
+#endif
+BaseType *
 D4Group::ptr_duplicate()
 {
     return new D4Group(*this);
