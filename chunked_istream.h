@@ -114,7 +114,7 @@ public:
 #endif
 
 	virtual ~chunked_inbuf() {
-		delete d_buffer;
+		delete[] d_buffer;
 	}
 
 	int_type read_next_chunk();
