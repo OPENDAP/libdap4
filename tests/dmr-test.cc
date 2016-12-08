@@ -108,6 +108,8 @@ test_dap4_parser(const string &name, bool debug, bool print)
         cout << xml.get_doc() << endl;
     }
 
+    delete factory;
+    dataset->set_factory(0);
     return dataset;
 }
 
@@ -267,6 +269,8 @@ read_data_plain(const string &file_name, bool debug)
 
     dmr->root()->deserialize(um, *dmr);
 
+    delete factory;
+    dmr->set_factory(0);
     return dmr;
 }
 
