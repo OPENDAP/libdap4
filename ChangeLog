@@ -1,3 +1,70 @@
+2016-12-08  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #25 from OPENDAP/chunked_istream_bug
+	Fixed a memory issue in chunked_istream.h
+
+	Fixed a memory issue in chunked_istream.h (new[] mis-matched with delete)
+
+2016-11-18  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #24 from OPENDAP/dmr++
+	Dmr++
+
+	Merge pull request #23 from OPENDAP/D4Group_ptr_duplicate_fix
+	Fix fir D4Group::ptr_duplicate(). It was not returning BaseType*
+
+2016-11-17  James Gallagher  <jgallagher@opendap.org>
+
+	Fix fir D4Group::ptr_duplicate(). It was not returning BaseType*
+	Instead, it returned D4Group. There may have been a good reason,
+	But I think consistency is better. ...maybe
+
+2016-11-16  ndp-opendap  <ndp@opendap.org>
+
+	DMR parser will now ignore and XML not in the DAP4 namespace. woot.
+
+2016-11-15  ndp-opendap  <ndp@opendap.org>
+
+	XML namespace thing sorted. DMR parser will now ignore all
+	elements that are not in DAP4 namespace. woot.
+
+	Still working the namespace thing
+
+2016-11-15  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4.git
+
+2016-11-15  ndp-opendap  <ndp@opendap.org>
+
+	Trying to get name space centralization class working. ugh. Static methods
+
+2016-11-15  James Gallagher  <jgallagher@opendap.org>
+
+	Added comment for dmr_start_element()
+
+2016-11-04  James Gallagher  <jgallagher@opendap.org>
+
+	Corrected the file: URL in HTTPConnectTest - I think ...
+
+	Merge branch 'master' of http://github.com/opendap/libdap4
+
+	Another try at fixing the travis build
+
+	Trial fix of test_config.h error on Travis.
+
+	Stopped running the tests using multiple jobs on Travis.
+	This might have been the cause of failures there.
+
+2016-11-03  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of http://github.com/opendap/libdap4
+
+2016-11-02  James Gallagher  <jgallagher@opendap.org>
+
+	Updated the library version info for version 3.18.2
+
+	Version 3.18.2
+
 2016-11-01  James Gallagher  <jgallagher@opendap.org>
 
 	Formatting Grid.cc

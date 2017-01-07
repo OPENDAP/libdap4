@@ -1,3 +1,14 @@
+News for version 3.18.3
+
+Bug fix for DAP4 data transmissions.
+
+XML Parser fixes for DAP4: We are now tolerant of elements that
+are not in the DAP4 namespace, so the DMR document can be extended
+with additional information without breaking our parser.
+
+D4Group's clone (aka ptr_duplicate) method returned a D4Group and not
+a BaseType; fixed.
+
 News for version 3.18.2
 
 Fixed an issue with DAP4 CE parsing, double quotes and %20 escape
