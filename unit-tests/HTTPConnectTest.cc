@@ -105,7 +105,7 @@ class HTTPConnectTest: public TestFixture {
         // to see the values it's returning.
         // On 10/13/14 we moved to a new httpd and the etag value changed.
         // jhrg 10/14/14
-        etag = "\"2a008e-157-3fbcd139c2680\""; //\"a10df-157-139c2680\""; // a10df-157-139c2680a
+        etag = "\"181893-157-3fbcd139c2680\""; //"\"2a008e-157-3fbcd139c2680\""; //\"a10df-157-139c2680\""; // a10df-157-139c2680a
         lm = "Wed, 13 Jul 2005 19:32:26 GMT";
 
         localhost_pw_url =
