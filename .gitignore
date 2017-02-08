@@ -28,6 +28,10 @@ lex.*.cc
 .DS_Store
 */.DS_Store
 .idea
+# OSX Instruments run-time profiling 
+*.trace
+# CLion CMake directory; might make this visible later on... jhrg 2/8/17
+cmake-build-*
 
 Makefile
 Makefile.in
@@ -161,3 +165,4 @@ unit-tests/chunked-io/
 /Default/
 /docs/
 /.idea/
+/tmp
