@@ -79,10 +79,11 @@ before_script:
 #
 script:
   - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then \
-        make -j7 && make check -j7 \
-        ./get_code_cov.sh \
-        make install && make distcheck -j7 \
+       make -j7 && make check -j7 \
     fi
+
+#         ./get_code_cov.sh
+# Remove temporarily: make install && make distcheck -j7 \
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
