@@ -53,7 +53,7 @@ addons:
 # Use this to prepare the system to install prerequisites or
 # dependencies
 before_install:
-  - sudo pip install codecov
+  - pip install codecov
 
 # Use this to install any prerequisites or dependencies necessary to
 # run your build
@@ -79,12 +79,14 @@ before_script:
 # first error).
 #
 script:
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then  make -j7 && make check -j7 && make install && make distcheck -j7; fi
-  - ./get_code_cov.sh
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then \
+        make -j7 && make check -j7 \
+        ./get_code_cov.sh \
+        make install && make distcheck -j7 \
+    fi
+
+after_success:
   - codecov
-
-
-# after_success:
 
 # after_failure:
 
