@@ -52,8 +52,7 @@ addons:
     
 # Use this to prepare the system to install prerequisites or
 # dependencies
-before_install:
-  - pip install codecov
+# before_install:
 
 # Use this to install any prerequisites or dependencies necessary to
 # run your build
@@ -86,7 +85,7 @@ script:
     fi
 
 after_success:
-  - codecov
+  - bash <(curl -s https://codecov.io/bash)
 
 # after_failure:
 
