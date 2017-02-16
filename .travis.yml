@@ -78,8 +78,8 @@ before_script:
 # first error).
 #
 script:
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then \
-       make -j7 && make check -j7 \
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then
+       make -j7 && make check -j7
     fi
 
 #         ./get_code_cov.sh
