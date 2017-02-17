@@ -70,9 +70,7 @@ before_script:
   - export prefix=$HOME/OPENDAP/build
   - export PATH=$prefix/bin:/usr/local/bin:$PATH
   - autoreconf --force --install --verbose
-  - ./configure --prefix=$prefix
-
-#  --enable-coverage
+  - ./configure --prefix=$prefix --enable-coverage --enable-developer
 
 # All commands must exit with code 0 on success. Anything else is
 # considered failure. Note that each line of 'script' is run, regardless
