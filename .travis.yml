@@ -70,7 +70,9 @@ before_script:
   - export prefix=$HOME/OPENDAP/build
   - export PATH=$prefix/bin:/usr/local/bin:$PATH
   - autoreconf --force --install --verbose
-  - ./configure --prefix=$prefix --enable-coverage
+  - ./configure --prefix=$prefix
+
+#  --enable-coverage
 
 # All commands must exit with code 0 on success. Anything else is
 # considered failure. Note that each line of 'script' is run, regardless
@@ -78,7 +80,7 @@ before_script:
 # first error).
 #
 script:
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && ./get_code_cov.sh; fi
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7; fi
 
 #         ./get_code_cov.sh
 # Remove temporarily: make install && make distcheck -j7 \
