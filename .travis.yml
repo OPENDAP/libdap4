@@ -70,7 +70,10 @@ before_script:
   - export prefix=$HOME/OPENDAP/build
   - export PATH=$prefix/bin:/usr/local/bin:$PATH
   - autoreconf --force --install --verbose
-  - ./configure --prefix=$prefix --enable-coverage --enable-developer
+  - ./configure --prefix=$prefix
+
+# Code coverage is not working on link.
+# debug on AWS and then test--enable-coverage --enable-developer
 
 # All commands must exit with code 0 on success. Anything else is
 # considered failure. Note that each line of 'script' is run, regardless
@@ -78,13 +81,18 @@ before_script:
 # first error).
 #
 script:
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7; fi
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then \
+        make -j7 \
+	&& make check -j7 \
+	&& make install \
+	&& make distcheck -j7; \
+    fi
 
-#         ./get_code_cov.sh
-# Remove temporarily: make install && make distcheck -j7 \
+# Add ./get_code_cov.sh when linux code coverage builds
 
-after_success:
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then bash <(curl -s https://codecov.io/bash)
+# Add this once coverage builds and the gcov script works.
+# after_success:
+#  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then bash <(curl -s https://codecov.io/bash)
 
 # after_failure:
 
