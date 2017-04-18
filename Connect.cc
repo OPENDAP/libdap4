@@ -240,6 +240,9 @@ void Connect::process_data(DDS &data, Response *rs)
  (\r\n) and Newlines (\n). In either case, the line terminators are removed
  before each header is processed.
 
+ @note FIXME The code uses tainted data via get_next_mime_header() whcih
+ should be fixed. See the note in mime_util.cc
+
  @param data_source Read from this stream.
  @param rs Value/Result parameter. Dump version and type information here.
  */
