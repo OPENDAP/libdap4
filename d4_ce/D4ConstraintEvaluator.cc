@@ -237,7 +237,9 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
                             throw Error(malformed_expr, "An array with Maps was found, but one of the Maps was not defined correctly.");
 
                         Array *map = const_cast<Array*>((*m)->array()); // Array lacks const iterator support
-                        if (array_uses_shared_dimension(map, dim)) {
+                        // Added a test to ensure 'dim' is not null. This could be the case if
+                        // execution gets here and the index *i was not empty. jhrg 4/18/17
+                        if (dim && array_uses_shared_dimension(map, dim)) {
                             D4Map *map_to_be_removed = *m;
                             a->maps()->remove_map(map_to_be_removed); // Invalidates the iterator
                             delete map_to_be_removed;   // removed from container; delete
