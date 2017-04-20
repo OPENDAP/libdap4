@@ -223,21 +223,59 @@ DMR::operator=(const DMR &rhs)
  */
 void DMR::build_using_dds(DDS &dds)
 {
-	set_name(dds.get_dataset_name());
-	set_filename(dds.filename());
+    set_name(dds.get_dataset_name());
+    set_filename(dds.filename());
 
-	for (DDS::Vars_iter i = dds.var_begin(), e = dds.var_end(); i != e; ++i) {
-		BaseType *new_var = (*i)->transform_to_dap4(root() /*group*/, root() /*container*/);
-		// If the variable being transformed is a Grid,
-		// then Grid::transform_to_dap4() will add all the arrays to the
-		// container (root() in this case) and return null, indicating that
-		// this code does not need to do anything to add the transformed variable.
-		if (new_var) root()->add_var_nocopy(new_var);
-	}
+    for (DDS::Vars_iter i = dds.var_begin(), e = dds.var_end(); i != e; ++i) {
+        BaseType *new_var = (*i)->transform_to_dap4(root() /*group*/, root() /*container*/);
+        // If the variable being transformed is a Grid,
+        // then Grid::transform_to_dap4() will add all the arrays to the
+        // container (root() in this case) and return null, indicating that
+        // this code does not need to do anything to add the transformed variable.
+        if (new_var) root()->add_var_nocopy(new_var);
+    }
 
-	// Now copy the global attributes
-	root()->attributes()->transform_to_dap4(dds.get_attr_table());
+    // Now copy the global attributes
+    root()->attributes()->transform_to_dap4(dds.get_attr_table());
 }
+#if 1
+/**
+ * If we have a DMR that includes Attributes, use it to build the DDS. This
+ * will copy all of the variables in the DMR into the DDS using
+ * BaseType::transform_to_dap2(), so the actual types added can be
+ * controlled by code that specializes the various type classes.
+ *
+ * @param dds Read variables and Attributes from this DDS
+ */
+DDS *getDDS(DMR &dmr)
+{
+    DDS *dds = new DDS(0,dmr.name());
+    dds->filename(dmr.filename());
+
+    D4Group *root = dmr.root();
+
+    for (D4Group::Vars_iter i = root->var_begin(), e = root->var_end(); i != e; ++i)
+    {
+        BaseType *new_var = (*i)->transform_to_dap2();
+        // If the variable being transformed is a Grid,
+        // then Grid::transform_to_dap4() will add all the arrays to the
+        // container (root() in this case) and return null, indicating that
+        // this code does not need to do anything to add the transformed variable.
+        if (new_var) dds->add_var_nocopy(new_var);
+    }
+
+
+    // Now copy the global attributes
+    AttrTable target_at = dds->get_attr_table();
+    D4Attributes::load_AttrTable(&target_at,root->attributes());
+    return dds;
+}
+
+
+
+
+
+#endif
 
 D4Group *
 DMR::root()

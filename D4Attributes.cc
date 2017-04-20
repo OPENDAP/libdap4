@@ -185,8 +185,9 @@ D4Attribute::attributes()
 
 /** @brief copy attributes from DAP2 to DAP4
  *
- * Given a DAP2 AttrTable, copy all of its attributes into a DAP4 D4Attributes
- * object.
+ * Given a DAP2 AttrTable, copy all of its attributes into
+ * this DAP4 D4Attributes object as D4Attribute object instances.
+ *
  *
  * @param at Read the DAP2 attributes from here.
  */
@@ -271,6 +272,104 @@ D4Attributes::transform_to_dap4(AttrTable &at)
 		}
 	}
 }
+
+void
+D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_attrs)
+{
+
+    // for every attribute in at, copy it to this.
+    for ( D4Attributes::D4AttributesIter i = d4_attrs->attribute_begin(), e = d4_attrs->attribute_end(); i != e; ++i) {
+        string name = (*i)->name();
+        D4AttributeType type = (*i)->type();
+
+        D4Attribute::D4AttributeIter vitr =(*i)->value_begin();
+        D4Attribute::D4AttributeIter end =(*i)->value_end();
+        vector<string> values;
+        for(;vitr!=end; vitr++){
+            values.push_back((*vitr));
+        }
+
+        switch (type) {
+        case attr_container_c: {
+            // Attr_container
+            AttrTable *child_attr_table = new AttrTable();
+            child_attr_table->set_name(name);
+            load_AttrTable(child_attr_table,(*i)->attributes());
+            d2_attr_table->append_container(child_attr_table,name);
+            break;
+        }
+        case attr_byte_c: {
+            // Attr_byte
+            d2_attr_table->append_attr(name,AttrType_to_String(Attr_byte), &values);
+            break;
+        }
+        case attr_int16_c: {
+            //Attr_int16
+            d2_attr_table->append_attr(name,AttrType_to_String(Attr_int16), &values);
+            break;
+        }
+        case attr_uint16_c: {
+            //Attr_uint16
+            d2_attr_table->append_attr(name,AttrType_to_String(Attr_uint16), &values);
+            break;
+        }
+        case attr_int32_c: {
+            // Attr_int32
+            d2_attr_table->append_attr(name,AttrType_to_String(Attr_int32), &values);
+            break;
+        }
+        case attr_uint32_c: {
+            // Attr_uint32
+            d2_attr_table->append_attr(name,AttrType_to_String(Attr_uint32), &values);
+            break;
+        }
+        case attr_float32_c: {
+            // Attr_float32
+            d2_attr_table->append_attr(name,AttrType_to_String(Attr_float32), &values);
+            break;
+        }
+        case attr_float64_c: {
+            // Attr_float64
+            d2_attr_table->append_attr(name,AttrType_to_String(Attr_float64), &values);
+            break;
+        }
+        case attr_str_c: {
+            // Attr_string
+            d2_attr_table->append_attr(name,AttrType_to_String(Attr_string), &values);
+            break;
+        }
+        case attr_url_c: {
+            // Attr_url
+            d2_attr_table->append_attr(name,AttrType_to_String(Attr_url), &values);
+            break;
+        }
+        case attr_otherxml_c: {
+            // Attr_other_xml
+            d2_attr_table->append_attr(name,AttrType_to_String(Attr_other_xml), &values);
+            break;
+        }
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Unknown DAP4 attribute");
+        }
+
+    }
+}
+
+
+/** @brief copy attributes from DAP4 to DAP2
+ *
+ * Given a DAP4 AttrTable, copy all of its attributes into a DAP4 D4Attributes
+ * object.
+ *
+ * @param at Read the DAP2 attributes from here.
+ */
+AttrTable *D4Attributes::get_AttrTable()
+{
+    AttrTable *my_pretty_pony = new AttrTable();
+    load_AttrTable(my_pretty_pony, this);
+    return my_pretty_pony;
+}
+
 
 D4Attribute *
 D4Attributes::find_depth_first(const string &name, D4AttributesIter i)

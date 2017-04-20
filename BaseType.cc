@@ -224,6 +224,34 @@ BaseType::transform_to_dap4(D4Group */*root*/, Constructor */*container*/)
 	return dest;
 }
 
+
+/** @brief DAP4 to DAP2 transform
+ *
+ * For the current BaseType, return a DAP2 'copy' of the variable.
+ *
+ * @note For most DAP4 types, in this implementation of DAP2 the corresponding
+ * DAP4 type is the same. The different types are Sequences (which are D4Sequences
+ * in the DAP4 implementation), Grids (which are coverages) and Arrays (which use
+ * shared dimensions).
+ *
+ * @param root The root group that should hold this new variable. Add Group-level
+ * stuff here (e.g., D4Dimensions).
+ * @param container Add the new variable to this container.
+ *
+ * @return A pointer to the transformed variable
+ */
+BaseType *
+BaseType::transform_to_dap2()
+{
+    BaseType *dest = this->ptr_duplicate();
+    // convert the d4 attributes to a dap2 attribute table.
+    AttrTable *attrs = this->attributes()->get_AttrTable();
+    dest->set_attr_table(*attrs);
+    dest->set_is_dap4(false);
+    return dest;
+}
+
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and then displays information
