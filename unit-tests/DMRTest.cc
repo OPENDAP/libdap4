@@ -124,21 +124,44 @@ public:
     }
 
     void test_template(const string &dds_file, const string &dmr_baseline, const string &attr = "") {
-    	DMR *dmr = 0;
-		try {
-			dmr = build_dmr(dds_file, attr);
-			XMLWriter xml;
-			dmr->print_dap4(xml);
-			DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
+        DMR *dmr = 0;
+        try {
+            dmr = build_dmr(dds_file, attr);
+            XMLWriter xml;
+            dmr->print_dap4(xml);
+            DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
 
-			string prefix = string(TEST_SRC_DIR) + "/dds-testsuite/";
-			CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(prefix + dmr_baseline));
-			delete dmr;
-		}
-    	catch (Error &e) {
-    		delete dmr;
-    		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
-    	}
+            string prefix = string(TEST_SRC_DIR) + "/dds-testsuite/";
+            CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(prefix + dmr_baseline));
+            delete dmr;
+        }
+        catch (Error &e) {
+            delete dmr;
+            CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
+        }
+    }
+
+    void test_roundtrip_template(const string &dds_file, const string &dmr_baseline, const string &attr = "") {
+        DMR *dmr = 0;
+        try {
+            dmr = build_dmr(dds_file, attr);
+            XMLWriter xml;
+            dmr->print_dap4(xml);
+            DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
+
+            string prefix = string(TEST_SRC_DIR) + "/dds-testsuite/";
+            CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(prefix + dmr_baseline));
+
+            DDS *dds =  dmr->getDDS();
+            DBG(cerr << "DDS: " << endl; dds->print(cerr); cerr<< endl);
+
+            delete dmr;
+            delete dds;
+        }
+        catch (Error &e) {
+            delete dmr;
+            CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
+        }
     }
 
     CPPUNIT_TEST_SUITE( DMRTest );
@@ -161,7 +184,11 @@ public:
 
     // Test a DDS with simple scalar types and no attributes
     void test_dmr_from_dds_1() {
-    	test_template("test.1", "test.1.dmr");
+        test_template("test.1", "test.1.dmr");
+    }
+
+    void test_dds_to_dmr_to_dds_1() {
+        test_roundtrip_template("test.1", "test.1.dmr");
     }
 
     // What about arrays? This should build shared dimensions

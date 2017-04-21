@@ -247,9 +247,10 @@ void DMR::build_using_dds(DDS &dds)
  *
  * @param dds Read variables and Attributes from this DDS
  */
-DDS *getDDS(DMR &dmr)
+DDS *DMR::getDDS(DMR &dmr)
 {
-    DDS *dds = new DDS(0,dmr.name());
+    BaseTypeFactory *btf = new BaseTypeFactory();
+    DDS *dds = new DDS(btf,dmr.name());
     dds->filename(dmr.filename());
 
     D4Group *root = dmr.root();
@@ -272,6 +273,10 @@ DDS *getDDS(DMR &dmr)
 }
 
 
+DDS *DMR::getDDS()
+{
+    return DMR::getDDS(*this);
+}
 
 
 

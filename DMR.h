@@ -175,6 +175,12 @@ public:
      */
     D4Group *root();
 
+    static DDS *getDDS(DMR &dmr);
+    virtual DDS *getDDS();
+
+
+
+
     void print_dap4(XMLWriter &xml, bool constrained = false);
 
     virtual void dump(ostream &strm) const ;
