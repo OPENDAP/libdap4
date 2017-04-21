@@ -131,7 +131,7 @@ public:
             dmr->print_dap4(xml);
             DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
 
-            string prefix = string(TEST_SRC_DIR) + "/dds-testsuite/";
+            string prefix = string(TEST_SRC_DIR) + "/dmr-testsuite/";
             CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(prefix + dmr_baseline));
             delete dmr;
         }
@@ -149,11 +149,18 @@ public:
             dmr->print_dap4(xml);
             DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
 
-            string prefix = string(TEST_SRC_DIR) + "/dds-testsuite/";
+            string prefix = string(TEST_SRC_DIR) + "/dmr-testsuite/";
             CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(prefix + dmr_baseline));
 
             DDS *dds =  dmr->getDDS();
-            DBG(cerr << "DDS: " << endl; dds->print(cerr); cerr<< endl);
+            std::ostringstream result_dds;
+            dds->print(result_dds);
+
+            string source_dds = readTestBaseline(prefix + dds_file);
+            DBG(cerr << "SOURCE DDS("<< source_dds.size() << " chars): " << endl << source_dds << endl);
+
+            DBG(cerr << "RESULT DDS("<< result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
+            CPPUNIT_ASSERT(result_dds.str() == source_dds);
 
             delete dmr;
             delete dds;
@@ -166,6 +173,12 @@ public:
 
     CPPUNIT_TEST_SUITE( DMRTest );
 
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_1);
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_2);
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_3);
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_4);
+    //CPPUNIT_TEST(test_dds_to_dmr_to_dds_5);
+#if 1
     CPPUNIT_TEST(test_dmr_from_dds_1);
     CPPUNIT_TEST(test_dmr_from_dds_2);
     CPPUNIT_TEST(test_dmr_from_dds_3);
@@ -179,16 +192,33 @@ public:
     CPPUNIT_TEST(test_copy_ctor_2);
     CPPUNIT_TEST(test_copy_ctor_3);
     CPPUNIT_TEST(test_copy_ctor_4);
-
+#endif
     CPPUNIT_TEST_SUITE_END();
+
+
+    void test_dds_to_dmr_to_dds_1() {
+        test_roundtrip_template("test.1", "test.1.dmr");
+    }
+    void test_dds_to_dmr_to_dds_2() {
+        test_roundtrip_template("fnoc1.nc.dds", "fnoc1.nc.dmr");
+    }
+    void test_dds_to_dmr_to_dds_3() {
+        test_roundtrip_template("3B42.980909.5.HDF.dds", "3B42.980909.5.HDF.dmr");
+    }
+    void test_dds_to_dmr_to_dds_4() {
+        test_roundtrip_template("S2000415.HDF.dds", "S2000415.HDF.dmr");
+    }
+    void test_dds_to_dmr_to_dds_5() {
+        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.dmr");
+    }
+
+
+
+
 
     // Test a DDS with simple scalar types and no attributes
     void test_dmr_from_dds_1() {
         test_template("test.1", "test.1.dmr");
-    }
-
-    void test_dds_to_dmr_to_dds_1() {
-        test_roundtrip_template("test.1", "test.1.dmr");
     }
 
     // What about arrays? This should build shared dimensions
