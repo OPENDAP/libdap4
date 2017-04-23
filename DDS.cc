@@ -1060,14 +1060,16 @@ DDS::print(ostream &out)
 void
 DDS::print_das(ostream &out)
 {
-    out << "Attributes {\n" ;
-
-    d_attr.print(out, "    ");
+    string indent("    ");
+    out << "Attributes {" << endl ;
+    d_attr.print(out,indent);
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
-        (*i)->get_attr_table().print(out, "    ");
+        AttrTable attr_table = (*i)->get_attr_table();
+        out << indent << (*i)->name() << " {" << endl;
+        attr_table.print(out, indent+indent);
+        out << indent << "}" << endl;
     }
-
-    out << "}\n" ;
+    out << "}" << endl ;
 }
 
 /** @brief Print a constrained DDS to the specified file.

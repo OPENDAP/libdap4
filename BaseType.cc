@@ -246,8 +246,10 @@ BaseType::transform_to_dap2()
     BaseType *dest = this->ptr_duplicate();
     // convert the d4 attributes to a dap2 attribute table.
     AttrTable *attrs = this->attributes()->get_AttrTable();
+    attrs->set_name(name());
     dest->set_attr_table(*attrs);
     dest->set_is_dap4(false);
+    attrs->print(cerr,"",true);
     return dest;
 }
 

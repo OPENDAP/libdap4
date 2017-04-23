@@ -98,22 +98,30 @@ public:
      * @param attr
      * @return A pointer to the new DMR; caller must delete
      */
-    DMR *build_dmr(const string &dds_file, const string &attr = "") {
+    DMR *build_dmr(const string &dds_file, const string &das_file = "") {
+        DBG(cerr << __func__ << "() - BEGIN" << endl);
+        DBG(cerr << __func__ << "() - dds_file: " << dds_file << endl);
+        DBG(cerr << __func__ << "() - das_file: " << das_file << endl);
+
 		try {
-			string prefix = string(TEST_SRC_DIR) + "/dds-testsuite/";
+			string prefix = string(TEST_SRC_DIR) + "/dmr-testsuite/";
 
 			BaseTypeFactory factory;
 			DDS dds(&factory, dds_file);
 			dds.parse(prefix + dds_file);
-			DBG(cerr << "DDS: " << endl; dds.print(cerr));
+			DBG(cerr << "SOURCE DDS: " << endl; dds.print(cerr));
 
-			if (!attr.empty()) {
+			if (!das_file.empty()) {
 				DAS das;
-				das.parse(prefix + attr);
+				das.parse(prefix + das_file);
 				dds.transfer_attributes(&das);
+                DBG(cerr << "SOURCE DAS: " << endl; das.print(cerr));
+
+                DBG(cerr << "dds.print_das(): " << endl; dds.print_das(cerr));
 			}
 
 			D4BaseTypeFactory d4_factory;
+	        DBG(cerr << __func__ << "() - END" << endl);
 			return new DMR(&d4_factory, dds);
 		}
     	catch (Error &e) {
@@ -124,6 +132,7 @@ public:
     }
 
     void test_template(const string &dds_file, const string &dmr_baseline, const string &attr = "") {
+        DBG(cerr << __func__ << "() - BEGIN" << endl);
         DMR *dmr = 0;
         try {
             dmr = build_dmr(dds_file, attr);
@@ -139,18 +148,25 @@ public:
             delete dmr;
             CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
         }
+        DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void test_roundtrip_template(const string &dds_file, const string &dmr_baseline, const string &attr = "") {
+    void test_roundtrip_template(const string &dds_file, const string &dmr_baseline, const string &das_file = "") {
+        DBG(cerr << __func__ << "() - BEGIN" << endl);
         DMR *dmr = 0;
         try {
-            dmr = build_dmr(dds_file, attr);
+            dmr = build_dmr(dds_file, das_file);
             XMLWriter xml;
             dmr->print_dap4(xml);
             DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
 
             string prefix = string(TEST_SRC_DIR) + "/dmr-testsuite/";
-            CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(prefix + dmr_baseline));
+            string result_dmr(xml.get_doc());
+            string baseline_dmr = readTestBaseline(prefix + dmr_baseline);
+            DBG(cerr << "BASELINE DMR("<< baseline_dmr.size() << " chars): " << endl << baseline_dmr << endl);
+            DBG(cerr << "RESULT DMR("<< result_dmr.size() << " chars): " << endl << result_dmr << endl);
+
+            CPPUNIT_ASSERT(result_dmr == baseline_dmr);
 
             DDS *dds =  dmr->getDDS();
             std::ostringstream result_dds;
@@ -162,6 +178,17 @@ public:
             DBG(cerr << "RESULT DDS("<< result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
             CPPUNIT_ASSERT(result_dds.str() == source_dds);
 
+            if(!das_file.empty()){
+                std::ostringstream result_das;
+                dds->print_das(result_das);
+
+                string source_das = readTestBaseline(prefix + das_file);
+                DBG(cerr << "SOURCE DAS("<< source_das.size() << " chars): " << endl << source_das << endl);
+
+                DBG(cerr << "RESULT DAS("<< result_das.str().size() << " chars): " << endl << result_das.str() << endl);
+                CPPUNIT_ASSERT(result_das.str() == source_das);
+
+            }
             delete dmr;
             delete dds;
         }
@@ -169,16 +196,17 @@ public:
             delete dmr;
             CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
         }
+        DBG(cerr << __func__ << "() - END" << endl);
     }
 
     CPPUNIT_TEST_SUITE( DMRTest );
 
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_1);
+#if 0
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_2);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_3);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_4);
-    //CPPUNIT_TEST(test_dds_to_dmr_to_dds_5);
-#if 1
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_5);
     CPPUNIT_TEST(test_dmr_from_dds_1);
     CPPUNIT_TEST(test_dmr_from_dds_2);
     CPPUNIT_TEST(test_dmr_from_dds_3);
@@ -197,19 +225,29 @@ public:
 
 
     void test_dds_to_dmr_to_dds_1() {
-        test_roundtrip_template("test.1", "test.1.dmr");
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        test_roundtrip_template("test.1", "test.1.dmr", "test.1.das");
+        DBG(cerr << __func__ << "() - END" << endl);
     }
     void test_dds_to_dmr_to_dds_2() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_roundtrip_template("fnoc1.nc.dds", "fnoc1.nc.dmr");
+        DBG(cerr << __func__ << "() - END" << endl);
     }
     void test_dds_to_dmr_to_dds_3() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_roundtrip_template("3B42.980909.5.HDF.dds", "3B42.980909.5.HDF.dmr");
+        DBG(cerr << __func__ << "() - END" << endl);
     }
     void test_dds_to_dmr_to_dds_4() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_roundtrip_template("S2000415.HDF.dds", "S2000415.HDF.dmr");
+        DBG(cerr << __func__ << "() - END" << endl);
     }
     void test_dds_to_dmr_to_dds_5() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.dmr");
+        DBG(cerr << __func__ << "() - END" << endl);
     }
 
 
@@ -218,36 +256,51 @@ public:
 
     // Test a DDS with simple scalar types and no attributes
     void test_dmr_from_dds_1() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("test.1", "test.1.dmr");
+        DBG(cerr << __func__ << "() - END" << endl);
     }
 
     // What about arrays? This should build shared dimensions
     void test_dmr_from_dds_2() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
     	test_template("fnoc1.nc.dds", "fnoc1.nc.dmr");
+        DBG(cerr << __func__ << "() - END" << endl);
     }
 
     void test_dmr_from_dds_3() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
     	test_template("3B42.980909.5.HDF.dds", "3B42.980909.5.HDF.dmr");
+        DBG(cerr << __func__ << "() - END" << endl);
     }
 
     void test_dmr_from_dds_4() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
     	test_template("S2000415.HDF.dds", "S2000415.HDF.dmr");
+        DBG(cerr << __func__ << "() - END" << endl);
     }
 
     void test_dmr_from_dds_5() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
     	test_template("coads_climatology.nc.dds", "coads_climatology.nc.dmr");
+        DBG(cerr << __func__ << "() - END" << endl);
     }
 
     void test_dmr_from_dds_with_attr_1() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
     	test_template("test.1", "test.1.attr.dmr", "test.1.das");
+        DBG(cerr << __func__ << "() - END" << endl);
     }
 
     void  test_dmr_from_dds_with_attr_2() {
     	// The 'hacked' file has global attributes
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
     	test_template("3B42.980909.5.HDF.dds", "3B42.980909.5.hacked.2.HDF.attr.dmr", "3B42.980909.5.hacked.2.HDF.das");
+        DBG(cerr << __func__ << "() - END" << endl);
     }
 
     void test_copy_ctor() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
     	DMR *dmr = build_dmr("test.1", "test.1.das");
     	DMR *dmr_2 = new DMR(*dmr);
 
@@ -265,11 +318,13 @@ public:
 		delete dmr_2;
 		CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
+        DBG(cerr << __func__ << "() - END" << endl);
     }
 
     // This tests if using the copy still works after the original is deleted
     void test_copy_ctor_2() {
-    	DMR *dmr = build_dmr("test.1", "test.1.das");
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+     	DMR *dmr = build_dmr("test.1", "test.1.das");
     	DMR *dmr_2 = new DMR(*dmr);
 
 		XMLWriter xml;
@@ -287,10 +342,12 @@ public:
 		delete dmr_2;
 		CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
+        DBG(cerr << __func__ << "() - END" << endl);
     }
 
     // Test the grid/coverage and copy ctor code
     void test_copy_ctor_3() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
     	DMR *dmr = build_dmr("coads_climatology.nc.dds", "coads_climatology.nc.das");
     	DMR *dmr_2 = new DMR(*dmr);
 
@@ -308,10 +365,12 @@ public:
 		delete dmr_2;
 		CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
+		DBG(cerr << __func__ << "() - END" << endl);
     }
 
     // Make the same test as above, but bypass the DMR ctor that uses a DDS object.
     void test_copy_ctor_4() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
     	D4BaseTypeFactory factory;
     	DMR *dmr = new DMR(&factory, "coads");
 
@@ -336,6 +395,7 @@ public:
 		delete dmr_2;
 		CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
+        DBG(cerr << __func__ << "() - END" << endl);
     }
 
 };
