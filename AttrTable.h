@@ -344,6 +344,10 @@ public:
     virtual void dump(ostream &strm) const ;
 };
 
+
+string remove_space_encoding(const string &s);
+string add_space_encoding(const string &s);
+
 } // namespace libdap
 
 #endif // _attrtable_h

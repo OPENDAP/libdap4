@@ -1057,18 +1057,35 @@ DDS::print(ostream &out)
  *
  * @param out Write the DAS here.
  */
+static string four_spaces = "    ";
+void print_var_das(ostream &out, BaseType *bt, string indent=""){
+
+    AttrTable attr_table = bt->get_attr_table();
+    out << indent << add_space_encoding(bt->name()) << " {" << endl;
+    attr_table.print(out, indent+four_spaces);
+    Constructor *cnstrctr = dynamic_cast < Constructor * >(bt);
+    if(cnstrctr) {
+        Constructor::Vars_iter i = cnstrctr->var_begin();
+        Constructor::Vars_iter e = cnstrctr->var_end();
+        for (; i!=e; i++) {
+            print_var_das(out,*i,indent+four_spaces);
+        }
+
+    }
+    out << indent << "}" << endl;
+
+}
+
 void
 DDS::print_das(ostream &out)
 {
     string indent("    ");
     out << "Attributes {" << endl ;
-    d_attr.print(out,indent);
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
-        AttrTable attr_table = (*i)->get_attr_table();
-        out << indent << (*i)->name() << " {" << endl;
-        attr_table.print(out, indent+indent);
-        out << indent << "}" << endl;
+        print_var_das(out, *i, four_spaces);
     }
+    // Print the global attributes at the end.
+    d_attr.print(out,indent);
     out << "}" << endl ;
 }
 

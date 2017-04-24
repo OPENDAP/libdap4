@@ -267,8 +267,10 @@ DDS *DMR::getDDS(DMR &dmr)
 
 
     // Now copy the global attributes
-    AttrTable target_at = dds->get_attr_table();
-    D4Attributes::load_AttrTable(&target_at,root->attributes());
+    AttrTable *target_at = &(dds->get_attr_table());
+    // cerr << __func__ << "Top Level AttrTable: " << (void *)target_at << endl;
+    D4Attributes::load_AttrTable(target_at,root->attributes());
+    // cerr << __func__ << "Top Level AttrTable size: " << target_at->get_size() << endl;
     return dds;
 }
 

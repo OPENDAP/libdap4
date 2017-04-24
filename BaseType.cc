@@ -67,6 +67,8 @@
 #include "util.h"
 #include "escaping.h"
 
+
+// #define DODS_DEBUG 1
 #include "debug.h"
 
 using namespace std;
@@ -249,7 +251,7 @@ BaseType::transform_to_dap2()
     attrs->set_name(name());
     dest->set_attr_table(*attrs);
     dest->set_is_dap4(false);
-    attrs->print(cerr,"",true);
+    // attrs->print(cerr,"",true);
     return dest;
 }
 
@@ -619,21 +621,30 @@ BaseType::set_attributes_nocopy(D4Attributes *attrs)
 void BaseType::transfer_attributes(AttrTable *at_container) {
 	AttrTable *at = at_container->get_attr_table(name());
 
-	DBG(cerr << "In BaseType::transfer_attributes; processing " << name() << endl);
+	DBG(cerr << "BaseType::"<< __func__ << "() - processing '" << name() << "'  addr: "<< (void *) at << endl);
 
 	if (at) {
 		at->set_is_global_attribute(false);
-		DBG(cerr << "Processing AttrTable: " << at->get_name() << endl);
+		DBG(cerr << "BaseType::"<< __func__ << "Processing AttrTable: " << at->get_name() << endl);
 
 		AttrTable::Attr_iter at_p = at->attr_begin();
 		while (at_p != at->attr_end()) {
-			DBG(cerr << "About to append " << "attr name, type:" << at->get_name(at_p) << ", " << at->get_type(at_p) << endl);
-
-			if (at->get_attr_type(at_p) == Attr_container)
-				get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)), at->get_name(at_p));
-			else
+			DBG(cerr << "About to append " << "attr name: '" << at->get_name(at_p) << "', type: " << at->get_type(at_p) << endl);
+			if (at->get_attr_type(at_p) == Attr_container){
+			    // Since an attribute container may actually be associated with a child member variable
+			    // We will capitalize on the magic of the BaseType API and utilize the var() method
+			    // to check for a child variable of the same name and, if one exists, we'll skip
+			    // this AttrTable and let a child constructor class like Grid or Constructor
+			    // deal with it.
+	            BaseType *bt = var(at->get_name(at_p),true);
+	            DBG(cerr << "BaseType::"<< __func__ << "() - var: " << (void *) bt << endl);
+	            if(bt==0){
+	                get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)), at->get_name(at_p));
+	            }
+			}
+			else {
 				get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
-
+			}
 			at_p++;
 		}
 	}

@@ -148,6 +148,8 @@ public:
 
     virtual bool check_semantics(string &msg, bool all = false);
 
+    virtual void transfer_attributes(AttrTable *at);
+
     virtual void dump(ostream &strm) const ;
 };
 

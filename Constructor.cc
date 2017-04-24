@@ -53,11 +53,14 @@
 
 #include "D4Attributes.h"
 
-#include "debug.h"
 #include "escaping.h"
 #include "util.h"
 #include "Error.h"
 #include "InternalErr.h"
+
+
+// #define DODS_DEBUG 1
+#include "debug.h"
 
 using namespace std;
 
@@ -814,6 +817,23 @@ Constructor::set_in_selection(bool state)
 
     BaseType::set_in_selection(state);
 }
+
+
+void Constructor::transfer_attributes(AttrTable *at_container)
+{
+    AttrTable *at = at_container->get_attr_table(name());
+    DBG(cerr << "Constructor::transfer_attributes() - processing " << name() << "'  addr: "<< (void*) at << endl);
+    if (at) {
+        BaseType::transfer_attributes(at_container);
+        for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+            BaseType *bt  = (*i);
+            bt->transfer_attributes(at);
+        }
+
+    }
+}
+
+
 
 /** @brief dumps information about this object
  *
