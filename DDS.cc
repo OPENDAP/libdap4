@@ -1078,7 +1078,7 @@ DDS::print_das(ostream &out)
     are marked to be sent after evaluating the constraint
     expression.
 
-    \note This function only works for scalars at the top level.
+    @note This function only works for scalars at the top level.
 
     @returns true.
 */
