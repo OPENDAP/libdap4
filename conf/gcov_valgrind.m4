@@ -15,6 +15,7 @@ AS_IF([test x$coverage = xyes],
             [ CFLAGS="-fprofile-arcs -ftest-coverage -pg $CFLAGS"
               CXXFLAGS="-fprofile-arcs -ftest-coverage -pg $CXXFLAGS"
               LDFLAGS="-pg $LDFLAGS"
+              AC_CHECK_LIB([gcov], [gcov_open],[LIBS="$LIBS -lgcov"],[],[])
 	          AC_MSG_NOTICE([Building coverage reporting.]) ],
             [ AC_MSG_ERROR([Can only enable coverage when using gcc.]) ]) ])
                

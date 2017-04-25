@@ -827,6 +827,7 @@ const size_t line_length = 1024;
     just a newline (a common error).
 
     @deprecated
+    @note FIXME: This function returns tainted data.
     @param in Read from this stream (FILE *)
     @return A string that contains the next header line or is empty indicating
     the separator has been read.
@@ -854,6 +855,18 @@ string get_next_mime_header(FILE *in)
     throw Error("I expected to find a MIME header, but got EOF instead.");
 }
 
+/**
+ * This function and its companion read the next MIME header from an
+ * input stream (or FILE*) and return it as a string. The stream
+ * pointer is updated to the next line of input. It returns an empty
+ * string when the blank line ending the MIME headers is found.
+ *
+ * @note FIXME: This function returns tainted data.
+ *
+ * @param in Read the next header from the input stream
+ * @return Return the next header in a string; an empty string indicates
+ * all headers have been returned.
+ */
 string get_next_mime_header(istream &in)
 {
 #if 0
@@ -992,6 +1005,8 @@ void read_multipart_headers(FILE *in, const string &content_type, const ObjectTy
 {
 	bool ct = false, cd = false, ci = false;
 
+	// The function get_next_mime_header() returns tainted data. Fix this
+	// if we are going to use this code. jhrg 4/18/17
 	string header = get_next_mime_header(in);
 	while (!header.empty()) {
 		string name, value;

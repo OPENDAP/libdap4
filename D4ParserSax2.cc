@@ -654,7 +654,7 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
         string dap4_ns_name = DapXmlNamspaces::getDapNamespaceString(DAP_4_0);
         if (parser->debug()) cerr << "dap4_ns_name:         " << dap4_ns_name << endl;
 
-        string this_element_ns_name((char *)URI);
+        string this_element_ns_name = (URI != 0) ? ((char *)URI) : "";
         if (parser->debug()) cerr << "this_element_ns_name: " << this_element_ns_name << endl;
 
         if(this_element_ns_name.compare(dap4_ns_name)){
