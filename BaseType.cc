@@ -629,7 +629,7 @@ void BaseType::transfer_attributes(AttrTable *at_container) {
 
 		AttrTable::Attr_iter at_p = at->attr_begin();
 		while (at_p != at->attr_end()) {
-			DBG(cerr << "About to append " << "attr name: '" << at->get_name(at_p) << "', type: " << at->get_type(at_p) << endl);
+			DBG(cerr << "BaseType::"<< __func__ << "() - About to append " << "attr name: '" << at->get_name(at_p) << "', type: " << at->get_type(at_p) << endl);
 			if (at->get_attr_type(at_p) == Attr_container){
 			    // Since an attribute container may actually be associated with a child member variable
 			    // We will capitalize on the magic of the BaseType API and utilize the var() method
