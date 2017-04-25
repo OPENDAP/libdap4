@@ -208,7 +208,7 @@ public:
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_2);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_3);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_4);
-    CPPUNIT_TEST(test_dds_to_dmr_to_dds_5);
+    //CPPUNIT_TEST(test_dds_to_dmr_to_dds_5);
 
     CPPUNIT_TEST(test_dmr_from_dds_1);
     CPPUNIT_TEST(test_dmr_from_dds_2);
