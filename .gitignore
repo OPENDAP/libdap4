@@ -1,4 +1,5 @@
 ## directories
+.autotools
 .deps
 .libs
 autom4te.cache
@@ -28,6 +29,7 @@ lex.*.cc
 .DS_Store
 */.DS_Store
 .idea
+.autotools
 
 Makefile
 Makefile.in

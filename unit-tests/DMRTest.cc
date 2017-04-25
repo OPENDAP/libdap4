@@ -118,6 +118,7 @@ public:
                 DBG(cerr << "SOURCE DAS: " << endl; das.print(cerr));
 
                 DBG(cerr << "dds.print_das(): " << endl; dds.print_das(cerr));
+                // DBG(cerr << "dds.print_xml(): " << endl; dds.print_xml(cerr,false,"blob_foo"));
 			}
 
 			D4BaseTypeFactory d4_factory;
@@ -201,12 +202,14 @@ public:
 
     CPPUNIT_TEST_SUITE( DMRTest );
 
+#if 1
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_0);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_1);
-#if 0
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_2);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_3);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_4);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_5);
+
     CPPUNIT_TEST(test_dmr_from_dds_1);
     CPPUNIT_TEST(test_dmr_from_dds_2);
     CPPUNIT_TEST(test_dmr_from_dds_3);
@@ -220,39 +223,44 @@ public:
     CPPUNIT_TEST(test_copy_ctor_2);
     CPPUNIT_TEST(test_copy_ctor_3);
     CPPUNIT_TEST(test_copy_ctor_4);
+
+
 #endif
     CPPUNIT_TEST_SUITE_END();
+
+    void test_dds_to_dmr_to_dds_0() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        test_roundtrip_template("attr_test_00.dds", "attr_test_00.dmr", "attr_test_00.das");
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
+
 
 
     void test_dds_to_dmr_to_dds_1() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
-        test_roundtrip_template("test.1", "test.1.dmr", "test.1.das");
+        test_roundtrip_template("test.1", "test.1.full.dmr", "test.1.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
     void test_dds_to_dmr_to_dds_2() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
-        test_roundtrip_template("fnoc1.nc.dds", "fnoc1.nc.dmr");
+        test_roundtrip_template("fnoc1.nc.dds", "fnoc1.nc.dmr.xml", "fnoc1.nc.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
     void test_dds_to_dmr_to_dds_3() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
-        test_roundtrip_template("3B42.980909.5.HDF.dds", "3B42.980909.5.HDF.dmr");
+        test_roundtrip_template("3B42.980909.5.HDF.dds", "3B42.980909.5.HDF.full.dmr","3B42.980909.5.HDF.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
     void test_dds_to_dmr_to_dds_4() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
-        test_roundtrip_template("S2000415.HDF.dds", "S2000415.HDF.dmr");
+        test_roundtrip_template("S2000415.HDF.dds", "S2000415.HDF.full.dmr","S2000415.HDF.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
     void test_dds_to_dmr_to_dds_5() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
-        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.dmr");
+        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr", "coads_climatology.nc.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-
-
-
-
 
     // Test a DDS with simple scalar types and no attributes
     void test_dmr_from_dds_1() {
