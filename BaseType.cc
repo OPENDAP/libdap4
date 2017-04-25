@@ -631,8 +631,11 @@ void BaseType::transfer_attributes(AttrTable *at_container) {
         while (at_p != at->attr_end()) {
             DBG(cerr << "BaseType::"<< __func__ << "() - About to append " << "attr name: '" << at->get_name(at_p) << "', type: " << at->get_type(at_p) << endl);
             if (at->get_attr_type(at_p) == Attr_container){
-                // Since an attribute container may actually be associated with a child member variable
-                // We will capitalize on the magic of the BaseType API and utilize the var() method
+                // An attribute container may actually represent a child member variable. When
+                // that's the case we don't want to add the container to the parent type, but
+                // rather let any child of BaseType deal with those containers in the child's
+                // overridden transfer_attributes() method.
+                // We capitalize on the magic of the BaseType API and utilize the var() method
                 // to check for a child variable of the same name and, if one exists, we'll skip
                 // this AttrTable and let a child constructor class like Grid or Constructor
                 // deal with it.
