@@ -146,12 +146,12 @@ Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
     		dest->add_var_nocopy(new_var);
     	}
     }
-
-    // Add attributes
+    // If it's already dap4 we don't have to do more.
+    if(is_dap4())
+        return dest;
+    // Otherwise we gotta go get the attributes
 	dest->attributes()->transform_to_dap4(get_attr_table());
-
     dest->set_is_dap4(true);
-
 	return dest;
 }
 

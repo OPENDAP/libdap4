@@ -35,13 +35,14 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG
+#define DODS_DEBUG
 
 #include <algorithm>
 #include <functional>
 #include <sstream>
 
 #include "Array.h"
+#include "Grid.h"
 
 #include "D4Attributes.h"
 #include "DMR.h"
@@ -194,6 +195,10 @@ Array::transform_to_dap4(D4Group *root, Constructor */*container*/)
 {
 	Array *dest = static_cast<Array*>(ptr_duplicate());
 
+	// If it's already a DAP4 object then we can just return it!
+	if(is_dap4())
+	    return dest;
+
 	// Process the Array's dimensions, making D4 shared dimensions for
 	// D2 dimensions that are named. If there is just a size, don't make
 	// a D4Dimension (In DAP4 you cannot share a dimension unless it has
@@ -235,6 +240,86 @@ Array::transform_to_dap4(D4Group *root, Constructor */*container*/)
 	dest->set_is_dap4(true);
 
 	return dest;
+}
+
+bool Array::is_dap2_grid(){
+    bool is_grid = false;
+    if(this->is_dap4()){
+        DBG( cerr << __func__ << "() - Array '"<< name() << "' is DAP4 object!"  << endl;)
+        D4Maps *d4_maps = this->maps();
+        is_grid = d4_maps->size(); // It can't be a grid if there are no maps...
+        if(is_grid){
+            DBG( cerr << __func__ << "() - Array '"<< name() << "' has D4Maps." << endl;)
+            // hmmm this might be a DAP2 Grid...
+            D4Maps::D4MapsIter i = d4_maps->map_begin();
+            D4Maps::D4MapsIter e = d4_maps->map_end();
+            while(i!=e){
+                DBG( cerr << __func__ << "() - Map '"<< (*i)->array()->name() << " has " << (*i)->array()->_shape.size()  << " dimension(s)."  << endl;)
+                if((*i)->array()->_shape.size() > 1){
+                    is_grid = false;
+                    i = e;
+                }
+                else {
+                    i++;
+                }
+            }
+        }
+    }
+    DBG( cerr << __func__ << "() - is_grid: "<< (is_grid?"true":"false") << endl;)
+    return is_grid;
+}
+
+
+BaseType
+*Array::transform_to_dap2(){
+    cerr << __func__ << "() - BEGIN Array '"<< name() << "'" << endl;
+
+    BaseType *dest;
+    if(is_dap4()){
+        if(is_dap2_grid()){
+            cerr << __func__ << "() - Array '"<< name() << " IS DAP2 GRID!"  << endl;
+            Grid *g = new Grid(name());
+            dest = g;
+            Array *grid_array = (Array *) this->ptr_duplicate();
+            g->set_array(grid_array);
+
+            D4Maps *d4_maps = this->maps();
+            D4Maps::D4MapsIter i = d4_maps->map_begin();
+            D4Maps::D4MapsIter e = d4_maps->map_end();
+            for( ; i!=e; i++){
+                D4Map *d4_map =  (*i);
+                Array *d4_map_array = const_cast<Array*>(d4_map->array());
+                Array *d2_map_array = (Array *) d4_map_array->transform_to_dap2();
+                g->add_map(d2_map_array,false);
+                AttrTable at = d2_map_array->get_attr_table();
+                DBG( cerr << __func__ << "() - " <<
+                    "DAS For Grid Map '" << d2_map_array->name() << "':" << endl;
+                     at.print(cerr); );
+            }
+        }
+        else {
+            DBG( cerr << __func__ << "() - Array '"<< name() << " is not a Grid!"  << endl);
+            dest = this->ptr_duplicate();
+            // convert the d4 attributes to a dap2 attribute table.
+            AttrTable *attrs = this->attributes()->get_AttrTable();
+            attrs->set_name(name());
+            dest->set_attr_table(*attrs);
+            dest->set_is_dap4(false);
+            AttrTable at = dest->get_attr_table();
+            DBG( cerr << __func__ << "() - " <<
+                "DAS for new Array '" << dest->name() << "':" << endl;
+                at.print(cerr); )
+
+        }
+
+    }
+    else {
+        dest = this->ptr_duplicate();
+    }
+    // attrs->print(cerr,"",true);
+    cerr << __func__ << "() - END Array '"<< name() << "'" << endl;
+
+    return dest;
 }
 
 /**

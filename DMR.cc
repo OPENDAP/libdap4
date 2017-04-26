@@ -44,6 +44,7 @@
 #include "D4Group.h"
 #include "BaseType.h"
 #include "Array.h"
+#include "Grid.h"
 #include "DMR.h"
 #include "XMLWriter.h"
 #include "D4BaseTypeFactory.h"
@@ -255,14 +256,33 @@ DDS *DMR::getDDS(DMR &dmr)
 
     D4Group *root = dmr.root();
 
+    set<string> shared_dim_candidates;
+
     for (D4Group::Vars_iter i = root->var_begin(), e = root->var_end(); i != e; ++i)
     {
         BaseType *new_var = (*i)->transform_to_dap2();
-        // If the variable being transformed is a Grid,
-        // then Grid::transform_to_dap4() will add all the arrays to the
-        // container (root() in this case) and return null, indicating that
-        // this code does not need to do anything to add the transformed variable.
-        if (new_var) dds->add_var_nocopy(new_var);
+        dds->add_var_nocopy(new_var);
+
+        Grid *grid = dynamic_cast <Grid *>(new_var);
+        if(grid){
+            Grid::Map_iter m = grid->map_begin();
+            for( ; m != grid->map_end() ; m++){
+                shared_dim_candidates.insert((*m)->name());
+            }
+        }
+    }
+
+    // Now drop the top level shared dimensions used by Grids
+    vector<string> shared_dims;
+    for(DDS::Vars_iter j = dds->var_begin(); j!= dds->var_end(); j++){
+        BaseType *bt = (*j);
+        string name=bt->name();
+        if( shared_dim_candidates.find(name)!=shared_dim_candidates.end()){
+            shared_dims.push_back(name);
+        }
+    }
+    for(unsigned int k=0; k<shared_dims.size(); k++){
+        dds->del_var(shared_dims[k]);
     }
 
 

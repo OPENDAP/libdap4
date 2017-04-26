@@ -159,6 +159,10 @@ Structure::transform_to_dap4(D4Group *root, Constructor *container)
 	// Structure *dest = static_cast<Structure*>(ptr_duplicate());
 	Structure *dest = new Structure(name());
 
+    // If it's already a DAP4 object then we can just return it!
+    if(is_dap4())
+        return dest;
+
 	Constructor::transform_to_dap4(root, dest);
 	dest->set_parent(container);
 

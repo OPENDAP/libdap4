@@ -202,13 +202,16 @@ public:
 
     CPPUNIT_TEST_SUITE( DMRTest );
 
-#if 1
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_5);
+
+#if 0
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_0);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_1);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_2);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_3);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_4);
-    //CPPUNIT_TEST(test_dds_to_dmr_to_dds_5);
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_5);
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_6);
 
     CPPUNIT_TEST(test_dmr_from_dds_1);
     CPPUNIT_TEST(test_dmr_from_dds_2);
@@ -259,6 +262,12 @@ public:
     void test_dds_to_dmr_to_dds_5() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr", "coads_climatology.nc.das");
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
+
+    void test_dds_to_dmr_to_dds_6() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        test_roundtrip_template("attr_test_01.dds", "attr_test_01.dmr", "attr_test_01.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
