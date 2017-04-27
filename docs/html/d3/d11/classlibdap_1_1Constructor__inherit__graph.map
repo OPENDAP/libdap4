@@ -1,9 +1,0 @@
-<map id="libdap::Constructor" name="libdap::Constructor">
-<area shape="rect" id="node4" href="$d4/d5c/classlibdap_1_1D4Group.html" title="{libdap::D4Group\n||+ add_group()\l+ add_group_nocopy()\l+ D4Group()\l+ D4Group()\l+ D4Group()\l+ deserialize()\l+ dims()\l+ enum_defs()\l+ find_child_grp()\l+ find_dim()\land 18 more...\l# m_duplicate()\l}" alt="" coords="5,1189,161,1409"/>
-<area shape="rect" id="node5" href="$d8/d39/classlibdap_1_1D4Sequence.html" title="Holds a sequence. " alt="" coords="186,1176,365,1423"/>
-<area shape="rect" id="node6" href="$df/d9d/classlibdap_1_1Grid.html" title="Holds the Grid data type. " alt="" coords="389,1189,533,1409"/>
-<area shape="rect" id="node7" href="$d7/d85/classlibdap_1_1Sequence.html" title="Holds a sequence. " alt="" coords="556,1129,752,1469"/>
-<area shape="rect" id="node8" href="$d0/dda/classlibdap_1_1Structure.html" title="Holds a structure (aggregate) type. " alt="" coords="776,1203,929,1396"/>
-<area shape="rect" id="node2" href="$d5/d1b/classlibdap_1_1BaseType.html" title="The basic data type for the DODS DAP types. " alt="" coords="375,140,547,747"/>
-<area shape="rect" id="node3" href="$db/dbd/classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects " alt="" coords="406,5,515,92"/>
-</map>

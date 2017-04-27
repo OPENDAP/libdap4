@@ -1,7 +1,0 @@
-<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node2" href="$db/d20/classlibdap_1_1chunked__inbuf.html" title="libdap::chunked_inbuf" alt="" coords="138,5,289,31"/>
-<area shape="rect" id="node3" href="$d3/d45/classlibdap_1_1chunked__outbuf.html" title="output buffer for a chunked stream This performs buffered output encoding the data in the stream usin..." alt="" coords="134,55,293,80"/>
-<area shape="rect" id="node4" href="$d3/de7/classlibdap_1_1fdinbuf.html" title="libdap::fdinbuf" alt="" coords="161,104,266,129"/>
-<area shape="rect" id="node5" href="$da/d72/classlibdap_1_1fdoutbuf.html" title="libdap::fdoutbuf" alt="" coords="157,153,270,179"/>
-<area shape="rect" id="node6" href="$d4/ddb/classlibdap_1_1fpinbuf.html" title="libdap::fpinbuf" alt="" coords="161,203,266,228"/>
-</map>
