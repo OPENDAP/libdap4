@@ -1,0 +1,11 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$db/d4a/classlibdap_1_1Error.html" title="A class for error processing. " alt="" coords="5,192,99,217"/>
+<area shape="rect" id="node2" href="$d6/d2d/classlibdap_1_1AISDatabaseReadFailed.html" title="libdap::AISDatabaseReadFailed" alt="" coords="157,5,368,31"/>
+<area shape="rect" id="node3" href="$db/d41/classlibdap_1_1AISDatabaseWriteFailed.html" title="libdap::AISDatabaseWrite\lFailed" alt="" coords="176,55,349,93"/>
+<area shape="rect" id="node4" href="$d2/dbf/classlibdap_1_1D4ParseError.html" title="libdap::D4ParseError" alt="" coords="190,117,335,143"/>
+<area shape="rect" id="node5" href="$d4/d97/classlibdap_1_1DDXParseFailed.html" title="libdap::DDXParseFailed" alt="" coords="181,167,344,192"/>
+<area shape="rect" id="node6" href="$db/dc2/classlibdap_1_1InternalErr.html" title="A class for software fault reporting. " alt="" coords="199,216,326,241"/>
+<area shape="rect" id="node7" href="$d1/d37/classlibdap_1_1NoSuchPrimaryResource.html" title="libdap::NoSuchPrimaryResource" alt="" coords="155,265,370,291"/>
+<area shape="rect" id="node8" href="$d2/d02/classlibdap_1_1ResponseTooBigErr.html" title="libdap::ResponseTooBigErr" alt="" coords="171,315,354,340"/>
+<area shape="rect" id="node9" href="$d1/de1/classlibdap_1_1SignalHandlerRegisteredErr.html" title="libdap::SignalHandlerRegisteredErr" alt="" coords="147,364,378,389"/>
+</map>
