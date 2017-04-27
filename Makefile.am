@@ -19,7 +19,7 @@ endif
 # or ./configure --enable-developer --disable-shared
 # the --disable-shared is not required, but it seems to help with debuggers.
 CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align 
-TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
+TEST_COV_FLAGS = -g3 -ftest-coverage -fprofile-arcs
 
 if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
